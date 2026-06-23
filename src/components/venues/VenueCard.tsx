@@ -13,6 +13,7 @@ import { SocialSignalBar } from '@/components/social/SocialSignalBar';
 import { SignalIcons } from '@/components/social/signalIcons';
 import { QuietAddToTripButton } from '@/components/trips/QuietAddToTripButton';
 import { TagChipRow } from '@/components/tags/TagChipRow';
+import { getVenueVisual } from '@/lib/venueVisual';
 
 const WEEKDAYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
 
@@ -79,7 +80,7 @@ const VenueCardFixture = () => (
 );
 
 function VenueCardImpl({ venue, loading = false, socialSignal }: VenueCardProps) {
-  const venueImage = venue?.images?.[0] ?? venue?.logo_url ?? null;
+  const visual = getVenueVisual(venue);
   const openNow = venue ? isOpenNow(venue.hours) : null;
   const priceTier =
     typeof venue?.price_range === 'number' && venue.price_range > 0
@@ -115,7 +116,8 @@ function VenueCardImpl({ venue, loading = false, socialSignal }: VenueCardProps)
           <CardHoverEffect>
             <Card hoverable className="group overflow-hidden">
               <Image
-                src={venueImage}
+                src={visual.src}
+                fit={visual.fit}
                 alt={venue.name}
                 aspect="card"
                 imageRole="cover"

@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import type { TripWithDetails } from '@/hooks/useTrips';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { resolveTripTitle } from './tripTitle';
+import { isValidImageUrl } from '@/lib/images/resolveEntityImage';
 
 interface Props {
   trip: TripWithDetails;
@@ -44,7 +45,7 @@ export function TripCoverBand({
   const { t } = useTranslation();
   const displayTitle = resolveTripTitle(trip, t);
 
-  const coverImage = trip.cover_image_url;
+  const coverImage = isValidImageUrl(trip.cover_image_url) ? trip.cover_image_url : null;
   const fallbackGradient = gradientForTrip(trip.id);
 
   const visibleMembers = trip.trip_members.slice(0, 4);

@@ -9,8 +9,9 @@ import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { FavoriteButton } from '@/components/ui/favorite-button';
 import { useState, useMemo } from 'react';
 import { decodeHtmlEntities, cleanAuthor, cleanExcerpt } from '@/utils/htmlDecode';
-import { getRandomFallbackImage } from '@/utils/fallbackImages';
+import { getFallbackImage } from '@/utils/fallbackImages';
 import { resolveImageUrl } from '@/utils/resolveImageUrl';
+import { isValidImageUrl } from '@/lib/images/resolveEntityImage';
 import type { EntityImageAsset } from '@/hooks/useEntityImageAssets';
 import { safeText } from '@/utils/safeDisplay';
 import { formatNewsTag } from '@/lib/newsTags';
@@ -113,7 +114,7 @@ export const NewsCard = ({
   const navigate = useLocalizedNavigate();
   const { i18n } = useTranslation();
   const [imgFailed, setImgFailed] = useState(false);
-  const fallbackSrc = useMemo(() => getRandomFallbackImage(), []);
+  const fallbackSrc = useMemo(() => getFallbackImage('news', article?.id), [article?.id]);
 
   if (loading || !article) {
     return (
@@ -175,7 +176,7 @@ export const NewsCard = ({
   const isPremium = (article as Record<string, unknown>).is_premium === true;
 
   const resolvedSrc = resolveImageUrl({
-    imageUrl: article.image_url,
+    imageUrl: isValidImageUrl(article.image_url) ? article.image_url : null,
     optimizedUrl: imageAsset?.optimized_url ?? null,
     thumbnailUrl: imageAsset?.thumbnail_url ?? null,
   });

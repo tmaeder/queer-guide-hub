@@ -80,6 +80,28 @@ export interface TripWithDetails extends Trip {
   trip_places: TripPlace[];
 }
 
+/**
+ * Shape accepted by `addPlacesBulk`. `trip_id`/`created_by` are filled by the
+ * mutation; `booking_status`/`reservation_id` fall back to their column
+ * defaults (intent / null), so callers building rows from search or
+ * recommendation hits can omit them.
+ */
+export type TripPlaceInsert = Omit<
+  TripPlace,
+  | 'id'
+  | 'created_at'
+  | 'trip_id'
+  | 'created_by'
+  | 'venues'
+  | 'events'
+  | 'hotels'
+  | 'cities'
+  | 'countries'
+  | 'booking_status'
+  | 'reservation_id'
+> &
+  Partial<Pick<TripPlace, 'booking_status' | 'reservation_id'>>;
+
 type CreateTripInput = {
   title: string;
   description?: string;
@@ -274,6 +296,25 @@ export function useTripMutations() {
     },
   });
 
+  // Bulk-insert several places in a single round-trip with ONE cache
+  // invalidation. Looping `addPlace` thrashes the `['trip', id]` query (N
+  // refetches) and hits the DB N times — used by the saves→trip bridge and
+  // engine-backed suggestions where the user adds many places at once.
+  const addPlacesBulk = useMutation({
+    mutationFn: async ({ tripId, rows }: { tripId: string; rows: TripPlaceInsert[] }) => {
+      if (rows.length === 0) return { tripId, inserted: 0 };
+      const { error } = await supabase
+        .from('trip_places')
+        .insert(rows.map((r) => ({ ...r, trip_id: tripId, created_by: user!.id })));
+      if (error) throw error;
+      return { tripId, inserted: rows.length };
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['trip', data.tripId] });
+      queryClient.invalidateQueries({ queryKey: ['trips'] });
+    },
+  });
+
   const updatePlace = useMutation({
     mutationFn: async ({ id, ...input }: { id: string; [key: string]: unknown }) => {
       const { data, error } = await supabase
@@ -317,5 +358,14 @@ export function useTripMutations() {
     },
   });
 
-  return { createTrip, updateTrip, deleteTrip, addPlace, updatePlace, removePlace, updateDay };
+  return {
+    createTrip,
+    updateTrip,
+    deleteTrip,
+    addPlace,
+    addPlacesBulk,
+    updatePlace,
+    removePlace,
+    updateDay,
+  };
 }

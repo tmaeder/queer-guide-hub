@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { MapPin } from 'lucide-react';
 import { useFeaturedVenue } from '@/hooks/useVenuesV2Data';
+import { getVenueVisual } from '@/lib/venueVisual';
 
 export function VenuesHero() {
   const { t } = useTranslation();
@@ -14,7 +15,7 @@ export function VenuesHero() {
   }
   if (!venue) return null;
 
-  const cover = venue.images?.[0] ?? venue.logo_url ?? '';
+  const visual = getVenueVisual(venue);
   const blurb = (venue.description ?? '').split(/(?<=[.!?])\s+/)[0];
 
   return (
@@ -23,13 +24,18 @@ export function VenuesHero() {
       aria-label={t('venues.hero.label', 'Featured venue')}
     >
       <div className="grid md:grid-cols-2">
-        {cover && (
+        {visual.src && (
           <div
-            className="relative h-56 md:h-full min-h-[240px] bg-muted bg-cover bg-center"
-            style={{ backgroundImage: `url(${cover})` }}
+            className={`relative h-56 md:h-full min-h-[240px] bg-muted bg-center bg-no-repeat ${
+              visual.isLogo ? 'bg-origin-content bg-contain p-6' : 'bg-cover'
+            }`}
+            style={{ backgroundImage: `url(${visual.src})` }}
             aria-hidden
           >
-            <div className="absolute inset-0 bg-gradient-to-t from-black/65 to-black/15" />
+            {/* Readability scrim only over photos — a gradient over a contained logo looks wrong. */}
+            {!visual.isLogo && (
+              <div className="absolute inset-0 bg-gradient-to-t from-black/65 to-black/15" />
+            )}
           </div>
         )}
         <div className="flex flex-col justify-between gap-6 p-6 md:p-10">

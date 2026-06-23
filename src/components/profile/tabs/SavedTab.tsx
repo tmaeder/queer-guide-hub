@@ -33,6 +33,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { fetchAllUserFavorites } from '@/hooks/usePageFetchers';
 import { FavoriteButton } from '@/components/ui/favorite-button';
 import { AddToTripDialog } from '@/components/trips/AddToTripDialog';
+import { SavedToTripCard } from '@/components/trips/SavedToTripCard';
 import { useCalendarFeed } from '@/hooks/useCalendarFeed';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
 import { EmptyState } from '@/components/ui/EmptyState';
@@ -378,6 +379,10 @@ export function SavedTab() {
 
   return (
     <div className="flex flex-col gap-6 pt-4">
+      {/* Saves → trips bridge: turn clusters of saved places into a plan.
+          Self-hides until there are ≥2 saves in one city. */}
+      {!loading && getTotalCount() > 0 && <SavedToTripCard />}
+
       <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="text-sm text-muted-foreground">
           {loading ? 'Loading your saved items…' : `${getTotalCount()} saved items`}
