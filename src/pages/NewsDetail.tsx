@@ -2,7 +2,6 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useBreadcrumbs } from '@/contexts/BreadcrumbContext';
 import { useParams } from 'react-router';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
-import { SimilarItems } from '@/components/discovery/SimilarItems';
 import { MoreLikeThisByTag } from '@/components/tags/MoreLikeThisByTag';
 import { PodcastPlayer } from '@/components/news/PodcastPlayer';
 import { useEffect, useMemo, useState } from 'react';
@@ -40,6 +39,7 @@ import { ContentLangBadge } from '@/components/i18n/ContentLangBadge';
 import { ReadingProgressBar } from '@/components/news/editorial/ReadingProgressBar';
 import { useAdminEditMode } from '@/hooks/useAdminEditMode';
 import { EditorsPickToggle } from '@/components/admin/news/EditorsPickToggle';
+
 import {
   loadNewsDetail,
   extractDek,
@@ -69,7 +69,7 @@ export default function NewsDetail() {
   const [loading, setLoading] = useState(true);
   const [dbCategories, setDbCategories] = useState<DbCategory[]>([]);
   const { markRead } = useUserNewsReads();
-  const { isAdmin, altHeld } = useAdminEditMode();
+  const { isAdmin } = useAdminEditMode();
   const isMobile = useIsMobile();
 
   const article = data?.article ?? null;
@@ -517,13 +517,6 @@ export default function NewsDetail() {
       </div>
 
       <RelatedNewsRail articleId={article.id} className="mt-12" />
-
-      <MoreLikeThisByTag
-        entityType="news"
-        entityId={article.id}
-        title="Related by tag"
-        className="mt-10"
-      />
     </div>
   );
 }
