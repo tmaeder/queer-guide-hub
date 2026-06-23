@@ -16,6 +16,7 @@ interface EntityTab {
 /** type segment → its companion routes (besides the List page). */
 const QUALITY_ROUTE: Record<string, { quality?: string; duplicates?: string }> = {
   venues: { quality: '/admin/content/venue-quality', duplicates: '/admin/duplicates' },
+  events: { quality: '/admin/content/event-quality' },
   cities: { quality: '/admin/content/city-quality' },
   personalities: { quality: '/admin/content/personality-quality' },
   marketplace_listings: { quality: '/admin/content/marketplace-quality' },

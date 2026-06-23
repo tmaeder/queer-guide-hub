@@ -100,6 +100,8 @@ const AdminRedirects = lazyRetry(() => import('./pages/AdminRedirects'));
 const AdminPipelines = lazyRetry(() => import('./pages/AdminPipelines'));
 const AdminIngestionRules = lazyRetry(() => import('./pages/AdminIngestionRules'));
 const AdminEmailIngestions = lazyRetry(() => import('./pages/AdminEmailIngestions'));
+const AdminImports = lazyRetry(() => import('./pages/AdminImports'));
+const AdminEventQuality = lazyRetry(() => import('./pages/AdminEventQuality'));
 const AdminSearchIntelligence = lazyRetry(() => import('./pages/AdminSearchIntelligence'));
 const AdminRecognition = lazyRetry(() => import('./pages/admin/Recognition'));
 const Contributors = lazyRetry(() => import('./pages/Contributors'));
@@ -328,6 +330,7 @@ export const AppRoutes = () => {
                 <Route path="imports/enrichment" element={<Navigate to="/admin/pipelines?tab=monitor" replace />} />
                 <Route path="imports/venues" element={<Navigate to="/admin/pipelines?tab=sources" replace />} />
                 <Route path="imports/email-ingestions" element={<AdminEmailIngestions />} />
+                <Route path="imports/data" element={<AdminImports />} />
                 <Route path="imports/history" element={<Navigate to="/admin/pipelines?tab=monitor" replace />} />
                 <Route path="workflows" element={<Navigate to="/admin/pipelines" replace />} />
                 <Route path="pipelines" element={<AdminPipelines />} />
@@ -358,6 +361,7 @@ export const AppRoutes = () => {
 
                 {/* Content type admin pages */}
                 <Route path="content/venue-quality" element={<AdminVenueQuality />} />
+                <Route path="content/event-quality" element={<AdminEventQuality />} />
                 <Route path="content/city-quality" element={<AdminCityQuality />} />
                 <Route path="content/personality-quality" element={<AdminPersonalityQuality />} />
                 <Route path="content/marketplace-quality" element={<AdminMarketplaceQuality />} />
