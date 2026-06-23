@@ -27,6 +27,7 @@ export interface EntityTrackView {
   type: string;
   slug?: string;
   title?: string;
+  image?: string;
   city?: string;
   country?: string;
 }

@@ -18,7 +18,8 @@ export type RecentlyViewedType =
   | 'personality'
   | 'hotel'
   | 'marketplace'
-  | 'queer_village';
+  | 'queer_village'
+  | 'organization';
 
 export interface RecentlyViewedItem {
   type: RecentlyViewedType;
@@ -45,6 +46,7 @@ const TYPE_PATH: Record<RecentlyViewedType, string> = {
   hotel: '/hotels',
   marketplace: '/marketplace',
   queer_village: '/villages',
+  organization: '/organizations',
 };
 
 export function recentlyViewedHref(item: RecentlyViewedItem): string {

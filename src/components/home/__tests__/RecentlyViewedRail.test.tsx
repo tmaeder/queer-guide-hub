@@ -12,6 +12,12 @@ vi.mock('@/hooks/useRecentlyViewed', () => ({
   useRecentlyViewed: () => mockItems.value,
 }));
 
+// Backfill hook hits the network/react-query; stub it so these tests stay
+// focused on the rail's own image-vs-fallback rendering.
+vi.mock('@/hooks/useRecentlyViewedImages', () => ({
+  useRecentlyViewedImages: () => ({}),
+}));
+
 import { RecentlyViewedRail } from '../RecentlyViewedRail';
 
 describe('RecentlyViewedRail', () => {
