@@ -1,11 +1,14 @@
-import { Suspense } from 'react';
+import { Suspense, useState } from 'react';
+import { useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { Heart, Users, Plane, MapPin, type LucideIcon } from 'lucide-react';
+import { Heart, Users, Plane, MapPin, SlidersHorizontal, type LucideIcon } from 'lucide-react';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useProfile } from '@/hooks/useProfile';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { lazyRetry } from '@/utils/lazyRetry';
+import { IntentSheet } from '@/components/people/IntentSheet';
 import { PeopleModeView } from './PeopleModeView';
 
 // Dating keeps its own opt-in/age-walled deck; it self-gates when not opted in.
@@ -38,6 +41,12 @@ export default function People({ tab }: { tab?: PeopleTab }) {
   const { t } = useTranslation();
   const navigate = useLocalizedNavigate();
   const { profile } = useProfile();
+  const [searchParams] = useSearchParams();
+  const [intentOpen, setIntentOpen] = useState(false);
+
+  const tripId = searchParams.get('tripId') ?? undefined;
+  const cityId = searchParams.get('cityId') ?? undefined;
+  const showNudge = profile != null && !profile.user_mode;
 
   const fallback = defaultTabFor(profile?.user_mode as string | null | undefined);
   const active: PeopleTab = (TABS as readonly string[]).includes(tab ?? '')
@@ -56,20 +65,41 @@ export default function People({ tab }: { tab?: PeopleTab }) {
   return (
     <>
       <div className="container mx-auto px-4 pt-6">
-        <Tabs value={active} onValueChange={setTab} style={{ width: '100%' }}>
-          <TabsList className="h-auto gap-0 rounded-none border-0 border-b border-border bg-transparent p-0 backdrop-blur-none w-full justify-start overflow-x-auto">
-            {triggers.map(([v, label, Icon]) => (
-              <TabsTrigger
-                key={v}
-                value={v}
-                className="h-10 rounded-none border-b-2 border-transparent bg-transparent px-4 shadow-none data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:border-foreground data-[state=active]:shadow-none flex items-center gap-2"
-              >
-                <Icon size={16} aria-hidden />
-                {label}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-        </Tabs>
+        <div className="flex items-end justify-between gap-4">
+          <Tabs value={active} onValueChange={setTab} style={{ width: '100%' }}>
+            <TabsList className="h-auto gap-0 rounded-none border-0 border-b border-border bg-transparent p-0 backdrop-blur-none w-full justify-start overflow-x-auto">
+              {triggers.map(([v, label, Icon]) => (
+                <TabsTrigger
+                  key={v}
+                  value={v}
+                  className="h-10 rounded-none border-b-2 border-transparent bg-transparent px-4 shadow-none data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:border-foreground data-[state=active]:shadow-none flex items-center gap-2"
+                >
+                  <Icon size={16} aria-hidden />
+                  {label}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </Tabs>
+          <Button
+            variant="outline"
+            size="sm"
+            className="mb-2 shrink-0 gap-2"
+            onClick={() => setIntentOpen(true)}
+          >
+            <SlidersHorizontal size={14} aria-hidden />
+            <span className="hidden sm:inline">{t('people.intent.button', "I'm here for…")}</span>
+          </Button>
+        </div>
+
+        {showNudge && (
+          <button
+            type="button"
+            onClick={() => setIntentOpen(true)}
+            className="mt-4 flex w-full items-center gap-2 rounded-element border border-border px-4 py-2.5 text-left text-sm transition-colors hover:border-foreground"
+          >
+            {t('people.intent.nudge', 'Tell us what you’re here for so we can rank people for you.')}
+          </button>
+        )}
       </div>
 
       <div className="container mx-auto px-4 py-8">
@@ -91,6 +121,8 @@ export default function People({ tab }: { tab?: PeopleTab }) {
           {active === 'travel' && (
             <PeopleModeView
               mode="travel"
+              tripId={tripId}
+              cityId={cityId}
               emptyHint={t(
                 'people.empty.travel',
                 'No travelers to show. Set a travel city in your status so others heading there can find you.',
@@ -100,11 +132,14 @@ export default function People({ tab }: { tab?: PeopleTab }) {
           {active === 'nearby' && (
             <PeopleModeView
               mode="locals"
+              cityId={cityId}
               emptyHint={t('people.empty.nearby', 'No one nearby yet.')}
             />
           )}
         </Suspense>
       </div>
+
+      <IntentSheet open={intentOpen} onOpenChange={setIntentOpen} />
     </>
   );
 }

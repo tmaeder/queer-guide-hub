@@ -20,6 +20,9 @@ vi.mock('../PeopleModeView', () => ({
 vi.mock('@/pages/intimate/IntimateDiscovery', () => ({
   default: () => <div data-testid="dating-deck">dating</div>,
 }));
+vi.mock('@/components/people/IntentSheet', () => ({
+  IntentSheet: () => null,
+}));
 
 import People from '../People';
 
