@@ -120,6 +120,30 @@ jobs:
             exit 1
           fi
 
+  # Migration-version guard (pure-local, no DB). Fails a PR that introduces a
+  # duplicate 14-digit migration version or a malformed filename — the class of
+  # breakage that silently kills `supabase db push` (see PR #1553 and
+  # scripts/check-migration-versions.mjs). Pre-existing duplicates are
+  # grandfathered as warnings.
+  migration-versions:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+      - name: Resolve migration base ref
+        run: |
+          if [ -n "${{ github.base_ref }}" ]; then
+            git fetch --depth=1 origin "${{ github.base_ref }}"
+            echo "MIGRATION_BASE_REF=origin/${{ github.base_ref }}" >> "$GITHUB_ENV"
+          else
+            echo "MIGRATION_BASE_REF=HEAD~1" >> "$GITHUB_ENV"
+          fi
+      - run: node scripts/check-migration-versions.mjs
+
   # Deno tests for supabase/functions. Mirrors pipeline-health.yml's
   # known-working invocation exactly: same Deno version, same test
   # files, same flags. The other 6 test files under _tests/ need
