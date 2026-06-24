@@ -43,6 +43,37 @@ export function logoMirrorConfigured(): boolean {
 }
 
 /**
+ * Generic: mirror arbitrary image bytes to R2 under `<prefix>/<sha256>.<ext>`
+ * via the image-cdn Worker, returning the public token-free CDN URL (or null
+ * if unconfigured / upload failed). `mirrorLogoToR2` is the prefix='logos'
+ * specialisation. Content-addressed, so identical bytes dedupe and re-uploads
+ * are idempotent.
+ */
+export async function mirrorImageToR2(
+  bytes: Uint8Array,
+  contentType: string,
+  prefix: string,
+): Promise<string | null> {
+  if (!CDN_SECRET) return null
+  const type = contentType.split(';')[0].trim().toLowerCase()
+  const ext = EXT_BY_TYPE[type] ?? 'jpg'
+  const hash = await sha256Hex(bytes)
+  const safePrefix = prefix.replace(/[^a-z0-9_-]/gi, '').toLowerCase() || 'img'
+  const key = `${safePrefix}/${hash}.${ext}`
+  try {
+    const res = await fetch(`${CDN_BASE}/upload/${key}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': type || 'image/jpeg', 'X-Admin-Secret': CDN_SECRET },
+      body: bytes,
+    })
+    if (!res.ok) return null
+    return `${CDN_BASE}/${key}`
+  } catch {
+    return null
+  }
+}
+
+/**
  * Upload logo bytes to R2 via the image-cdn Worker and return the public,
  * token-free CDN URL (e.g. https://img.queer.guide/logos/<hash>.png). Returns
  * null if the mirror isn't configured or the upload fails, so the caller can
