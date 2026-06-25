@@ -102,7 +102,14 @@ jobs:
           # step can still run — the repo owner resolves the drift manually
           # with either `supabase db pull` or `supabase migration repair`.
           set +e
-          push_output=$(supabase db push 2>&1)
+          # --include-all: the repo has pending migrations whose version
+          # timestamps predate the latest already-applied version (accumulated
+          # while the pipeline was drift-skipping). Plain `db push` refuses these
+          # "out-of-order" migrations and exits non-zero ("Rerun with
+          # --include-all"); --include-all applies every migration missing from
+          # remote history regardless of order. All such migrations are written
+          # idempotently, so re-application against current prod is a no-op.
+          push_output=$(supabase db push --include-all 2>&1)
           push_exit=$?
           set -e
           echo "$push_output"
