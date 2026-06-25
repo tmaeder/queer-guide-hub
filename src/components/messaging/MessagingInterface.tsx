@@ -164,9 +164,9 @@ const MessageItem = ({
             <button
               type="button"
               onClick={() => onScrollToMessage(replyingTo.id)}
-              className="mb-1 flex w-full flex-col items-start gap-0.5 rounded-element border-l-2 border-accent-brand bg-muted/60 px-2 py-1 text-left"
+              className="mb-1 flex w-full flex-col items-start gap-0.5 rounded-element border-l-2 border-foreground bg-muted/60 px-2 py-1 text-left"
             >
-              <span className="text-2xs font-medium text-accent-brand">
+              <span className="text-2xs font-medium text-foreground">
                 {replyingTo.sender?.display_name || t('chat.reply.someone', { defaultValue: 'Someone' })}
               </span>
               <span className="line-clamp-1 text-xs text-muted-foreground">
@@ -185,7 +185,7 @@ const MessageItem = ({
                 textAlign: isOwn ? 'right' : 'left',
                 opacity: message.status === 'sending' ? 0.6 : 1,
                 ...(highlighted
-                  ? { outline: '2px solid var(--accent-brand)', borderRadius: 'var(--radius-element)' }
+                  ? { outline: '2px solid hsl(var(--foreground))', borderRadius: 'var(--radius-element)' }
                   : {}),
               }}
             >
@@ -211,7 +211,7 @@ const MessageItem = ({
                       borderBottomLeftRadius: 'var(--radius-element)',
                     }),
                 ...(message.status === 'sending' ? { opacity: 0.6 } : {}),
-                ...(highlighted ? { boxShadow: '0 0 0 2px var(--accent-brand)' } : {}),
+                ...(highlighted ? { boxShadow: '0 0 0 2px hsl(var(--foreground))' } : {}),
               }}
             >
               {isDeleted ? (
@@ -316,7 +316,7 @@ const MessageItem = ({
                         onClick={() => react(g.emoji)}
                         className={`rounded-badge border px-1.5 py-0.5 text-xs transition-colors ${
                           g.mine
-                            ? 'border-accent-brand bg-accent-brand/10'
+                            ? 'border-foreground bg-muted'
                             : 'border-border bg-muted hover:bg-muted/70'
                         }`}
                       >
@@ -751,7 +751,7 @@ const ChatView = ({ conversationId, onBack }: ChatViewProps) => {
               </Avatar>
               {isOtherOnline && (
                 <div
-                  className="rounded-full absolute bg-accent-brand"
+                  className="rounded-full absolute bg-foreground"
                   style={{
                     bottom: -2,
                     right: -2,
@@ -883,7 +883,7 @@ const ChatView = ({ conversationId, onBack }: ChatViewProps) => {
       {(replyTarget || editing) && (
         <div className="flex items-center justify-between gap-2 border-t border-border bg-muted/50 px-4 py-2">
           <div className="min-w-0">
-            <p className="text-2xs font-medium text-accent-brand">
+            <p className="text-2xs font-medium text-foreground">
               {editing
                 ? t('chat.editing', { defaultValue: 'Editing message' })
                 : t('chat.replyingTo', {

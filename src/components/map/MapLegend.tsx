@@ -5,7 +5,6 @@ import { tweens } from '@/lib/motion';
 import { distance } from '@/lib/animation';
 import {
   LAYER_COLORS,
-  PRIDE_LAYER_COLORS,
   type LayerType,
 } from '@/hooks/useExploreMapData';
 import { iconForMarker } from './mapIcons';
@@ -15,7 +14,6 @@ import type { MapLens } from './MapShell.types';
 interface MapLegendProps {
   lens: MapLens;
   layers: LayerType[];
-  pridePalette?: boolean;
   /** Lift above the spotlight rail so the two don't overlap on narrow screens. */
   raised?: boolean;
 }
@@ -29,10 +27,10 @@ const LABEL: Record<string, string> = Object.fromEntries(
  * the featured / live treatments, and (for the density + combined lenses) what
  * the heat field encodes. Previously the map had no legend at all.
  */
-export function MapLegend({ lens, layers, pridePalette, raised }: MapLegendProps) {
+export function MapLegend({ lens, layers, raised }: MapLegendProps) {
   const [open, setOpen] = useState(false);
   const reduced = useReducedMotion() ?? false;
-  const palette = pridePalette ? PRIDE_LAYER_COLORS : LAYER_COLORS;
+  const palette = LAYER_COLORS;
   const showHeat = lens === 'density' || lens === 'combined';
   const showPins = lens !== 'density' && lens !== 'boundary';
   // The collapsed button sits low; when the rail (~170px tall) is present, lift
@@ -115,9 +113,8 @@ export function MapLegend({ lens, layers, pridePalette, raised }: MapLegendProps
           <div
             className="h-2 w-full rounded-badge"
             style={{
-              backgroundImage: pridePalette
-                ? 'linear-gradient(to right, rgba(0,77,255,0.3), rgba(0,128,38,0.4), rgba(255,237,0,0.5), rgba(255,140,0,0.55), rgba(228,3,3,0.6))'
-                : 'linear-gradient(to right, rgba(0,0,0,0.1), rgba(0,0,0,0.55))',
+              backgroundImage:
+                'linear-gradient(to right, rgba(0,0,0,0.1), rgba(0,0,0,0.55))',
             }}
             aria-hidden
           />

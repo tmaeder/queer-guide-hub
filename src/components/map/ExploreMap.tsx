@@ -22,7 +22,6 @@ import {
   type ExploreMapFilters,
   type MapMarker,
   LAYER_COLORS,
-  PRIDE_LAYER_COLORS,
 } from '@/hooks/useExploreMapData';
 import { useViewportPoints, POINT_LAYER_TYPES } from '@/hooks/useViewportPoints';
 import { ExploreMapLayers, LAYER_DEFS } from '@/components/map/ExploreMapLayers';
@@ -187,9 +186,11 @@ export interface ExploreMapProps {
    *  `'heatmap'` swaps clusters/markers for the density layer. `'combined'`
    *  draws the heatmap beneath the pins (both visible). */
   renderMode?: RenderMode;
-  /** Use the pride-spectrum canvas palette (markers, area circles, density
-   *  heat). Gated to MapShell; legacy/embedded maps stay on LAYER_COLORS. */
-  pridePalette?: boolean;
+  /** MapShell-only mode flag — enables the queer-voiced empty state and other
+   *  MapShell-specific UX. (The former pride-spectrum palette was removed in
+   *  the monochrome strip; all maps now use the functional LAYER_COLORS and a
+   *  monochrome density ramp.) */
+  mapShellMode?: boolean;
   /** Fired (debounced, on data/viewport change) with the point summaries
    *  currently inside the visible bounds. Powers the spotlight rail. */
   onPointsInView?: (points: MapPointSummary[]) => void;
@@ -231,7 +232,7 @@ export const ExploreMap = ({
   onViewportChange: onViewportChangeProp,
   onLayersChange: onLayersChangeProp,
   renderMode = 'pins',
-  pridePalette = false,
+  mapShellMode = false,
   onPointsInView,
   selectedId,
   highlightedId,
@@ -353,7 +354,7 @@ export const ExploreMap = ({
   } = useViewportPoints({
     enabledLayers: pointEnabledLayers,
     filters,
-    palette: pridePalette ? PRIDE_LAYER_COLORS : LAYER_COLORS,
+    palette: LAYER_COLORS,
   });
 
   // ── Data: boundary polygons ─────────────────────────────────────────────
@@ -891,8 +892,7 @@ export const ExploreMap = ({
 
       const style = AREA_STYLE[type] ?? AREA_STYLE.cities;
       const radii = AREA_RADIUS[type] ?? AREA_RADIUS.cities;
-      const palette = pridePalette ? PRIDE_LAYER_COLORS : LAYER_COLORS;
-      const color = palette[type as LayerType] ?? '#888';
+      const color = LAYER_COLORS[type as LayerType] ?? '#888';
 
       const radiusExpr: unknown[] = ['interpolate', ['linear'], ['zoom']];
       for (const [z, r] of radii) radiusExpr.push(z, r);
@@ -1013,7 +1013,7 @@ export const ExploreMap = ({
         areaLayerIdsRef.current.delete(oldId);
       }
     }
-  }, [areaMarkers, mapReady, showPopupFromMarker, countryBoundaries, pridePalette]);
+  }, [areaMarkers, mapReady, showPopupFromMarker, countryBoundaries]);
 
   // ── Point layers: native MapLibre source with built-in clustering ──────
   useEffect(() => {
@@ -1431,46 +1431,27 @@ export const ExploreMap = ({
       paint: {
         'heatmap-weight': 1,
         'heatmap-intensity': ['interpolate', ['linear'], ['zoom'], 0, 0.5, 9, 1.4],
-        // Pride-spectrum density ramp (MapShell) reads "density of queer
-        // life" as a rainbow heat field; legacy maps keep the monochrome
-        // black-alpha ramp (design system: no hue, no shadow). Both ramps
-        // are kept low-alpha so the field reads as a soft underglow beneath
-        // the pins — never an opaque blanket that buries them.
-        'heatmap-color': pridePalette
-          ? [
-              'interpolate',
-              ['linear'],
-              ['heatmap-density'],
-              0,
-              'rgba(117,7,135,0)', // transparent violet
-              0.2,
-              'rgba(0,77,255,0.30)', // blue
-              0.4,
-              'rgba(0,128,38,0.38)', // green
-              0.6,
-              'rgba(255,237,0,0.45)', // yellow
-              0.8,
-              'rgba(255,140,0,0.52)', // orange
-              1,
-              'rgba(228,3,3,0.60)', // red
-            ]
-          : [
-              'interpolate',
-              ['linear'],
-              ['heatmap-density'],
-              0,
-              'rgba(0,0,0,0)',
-              0.2,
-              'rgba(0,0,0,0.10)',
-              0.4,
-              'rgba(0,0,0,0.20)',
-              0.6,
-              'rgba(0,0,0,0.32)',
-              0.8,
-              'rgba(0,0,0,0.44)',
-              1,
-              'rgba(0,0,0,0.55)',
-            ],
+        // Monochrome black-alpha density ramp (design system: no hue, no
+        // shadow). Kept low-alpha so the field reads as a soft underglow
+        // beneath the pins — never an opaque blanket that buries them. The
+        // former pride-spectrum ramp was removed in the monochrome strip.
+        'heatmap-color': [
+          'interpolate',
+          ['linear'],
+          ['heatmap-density'],
+          0,
+          'rgba(0,0,0,0)',
+          0.2,
+          'rgba(0,0,0,0.10)',
+          0.4,
+          'rgba(0,0,0,0.20)',
+          0.6,
+          'rgba(0,0,0,0.32)',
+          0.8,
+          'rgba(0,0,0,0.44)',
+          1,
+          'rgba(0,0,0,0.55)',
+        ],
         'heatmap-radius': ['interpolate', ['linear'], ['zoom'], 0, 6, 9, 26, 14, 52],
         // Start transparent and cross-fade in when switching into a heat lens.
         'heatmap-opacity': prefersReducedMotion ? heatOpacityExpr : 0,
@@ -1484,7 +1465,7 @@ export const ExploreMap = ({
         if (m?.getLayer(HEATMAP_LAYER)) m.setPaintProperty(HEATMAP_LAYER, 'heatmap-opacity', heatOpacityExpr);
       });
     }
-  }, [renderMode, pointsGeoJSON, pointEnabledLayers, mapReady, pridePalette, prefersReducedMotion]);
+  }, [renderMode, pointsGeoJSON, pointEnabledLayers, mapReady, prefersReducedMotion]);
 
   // ── Focus ring (rail hover / selection) ──────────────────────────────────
   useEffect(() => {
@@ -1635,7 +1616,7 @@ export const ExploreMap = ({
 
       {/* Queer-voiced empty state (MapShell only). Shows when the area has no
           points and we're not mid-fetch — warmer than a hidden zero pill. */}
-      {pridePalette &&
+      {mapShellMode &&
         mapReady &&
         !isFetching &&
         !isCounterStale &&

@@ -77,7 +77,7 @@ export function NavTab({
         }}
         className={cn(
           linkBase,
-          active ? 'text-accent-brand' : 'text-muted-foreground hover:text-foreground',
+          active ? 'text-foreground' : 'text-muted-foreground hover:text-foreground',
         )}
       >
         <span className={iconWrap}>
@@ -90,7 +90,7 @@ export function NavTab({
                     layoutId: 'mobilenav-active-pill',
                     transition: { duration: duration.fast, ease: [0.22, 1, 0.36, 1] },
                   })}
-              className="absolute inset-0 rounded-element bg-accent-brand/12"
+              className="absolute inset-0 rounded-element bg-muted"
             />
           )}
           {avatar ? (

@@ -81,7 +81,7 @@ export function InboxRailItem({
             </Avatar>
             {online && (
               <span
-                className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-background bg-accent-brand"
+                className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-background bg-foreground"
                 role="status"
                 aria-label={t('chat.activeNow', { defaultValue: 'Active now' })}
               />

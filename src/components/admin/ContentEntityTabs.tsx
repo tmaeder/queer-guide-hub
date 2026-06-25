@@ -57,7 +57,7 @@ export function ContentEntityTabs({ type }: { type: string | undefined }) {
             className={cn(
               '-mb-px border-b-2 px-3 py-1.5 text-sm font-medium no-underline transition-colors',
               active
-                ? 'border-accent-brand text-foreground'
+                ? 'border-foreground text-foreground'
                 : 'border-transparent text-muted-foreground hover:text-foreground',
             )}
           >
