@@ -1,10 +1,9 @@
 import type { LayerType } from '@/hooks/useExploreMapData';
 import type { MapLens } from './MapShell.types';
+import { AREA_LAYERS } from '@/config/mapLayers';
 
 /** Point-rendering mode handed to ExploreMap. */
 export type RenderMode = 'pins' | 'heatmap' | 'combined';
-
-const AREA_LAYERS: LayerType[] = ['cities', 'countries', 'neighbourhoods'];
 
 /** Map a lens to the ExploreMap point render mode. */
 export function lensToRenderMode(lens: MapLens): RenderMode {

@@ -1,16 +1,16 @@
--- Recovered orphan migration (drift repair).
---
--- Applied to prod via Supabase MCP with an apply-time version (20260623232549)
--- but its SQL was never committed, leaving a remote-only history row that made
--- `supabase db push` skip with a drift warning. SQL recovered VERBATIM from
--- schema_migrations.statements for version 20260623232549 (md5
--- a8a7b342e74bb927c169dae3ebbbcd85). File version == remote history version, so
--- committing it de-orphans the row with no history edit and no re-run. All three
--- functions are CREATE OR REPLACE / idempotent.
---
--- Admin growth + conversion analytics RPCs (save -> trip -> booking funnel,
--- affiliate revenue trend, engagement cohort retention).
+-- Growth & Conversion analytics RPCs.
+-- Read-only aggregations over EXISTING event data (favorites, user_activity_events,
+-- affiliate_clicks). No entity-table writes -> safe vs trg_search_documents_* reindex storms.
+-- All admin-gated via has_role_jwt('admin'), STABLE, time-windowed.
 
+-- ---------------------------------------------------------------------------
+-- 1. growth_funnel_summary(p_days) -> jsonb
+--    Funnel lower stages: Save -> Trip add -> Booking click (+ affiliate impressions).
+--    Top-of-funnel "view" is intentionally NOT here (sourced from Umami client-side).
+--    Saves are counted directly from the 6 favorite join tables (the canonical save
+--    records); marketplace.favorite_added activity event mirrors marketplace_favorites
+--    so it is deliberately excluded to avoid double-counting.
+-- ---------------------------------------------------------------------------
 create or replace function public.growth_funnel_summary(p_days integer default 30)
 returns jsonb
 language plpgsql
@@ -66,6 +66,10 @@ begin
 end;
 $$;
 
+-- ---------------------------------------------------------------------------
+-- 2. affiliate_revenue_trend(p_days, p_bucket) -> time-series the /admin/affiliate
+--    page lacks (it only shows totals). clicks + impressions + CTR per bucket.
+-- ---------------------------------------------------------------------------
 create or replace function public.affiliate_revenue_trend(
   p_days integer default 30,
   p_bucket text default 'day'
@@ -109,6 +113,11 @@ begin
 end;
 $$;
 
+-- ---------------------------------------------------------------------------
+-- 3. engagement_cohort_retention(p_weeks) -> weekly retention cohorts.
+--    Cohort = ISO week of a user's first activity event. retained = distinct
+--    cohort users active at week_offset. The genuinely new analytical capability.
+-- ---------------------------------------------------------------------------
 create or replace function public.engagement_cohort_retention(p_weeks integer default 8)
 returns table(cohort_week date, week_offset integer, users bigint, retained bigint)
 language plpgsql
@@ -142,7 +151,7 @@ begin
   activity as (
     select
       c.cohort_week,
-      (extract(epoch from (date_trunc('week', e.created_at)::date - c.cohort_week)) / 604800)::int as week_offset,
+      ((date_trunc('week', e.created_at)::date - c.cohort_week) / 7)::int as week_offset,
       e.user_id
     from cohort c
     join user_activity_events e on e.user_id = c.user_id

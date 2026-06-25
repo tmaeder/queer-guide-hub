@@ -36,114 +36,30 @@ import {
   useCityBoundaries,
   useNeighbourhoodBoundaries,
 } from '@/hooks/useBoundaryData';
-import { useMapBoundaryLayers, type BoundaryLayerConfig } from '@/hooks/useMapBoundaryLayers';
+import { useMapBoundaryLayers } from '@/hooks/useMapBoundaryLayers';
 import { heatmapRenderPlan, type RenderMode } from './mapShellAdapters';
-
-// ── Layer classification ─────────────────────────────────────────────────────
-
-/** Layers rendered as native MapLibre circle + label layers (area feel) */
-// eslint-disable-next-line react-refresh/only-export-components
-export const AREA_LAYERS: LayerType[] = ['cities', 'countries', 'neighbourhoods'];
-
-/** Circle radius interpolation stops per area type: [zoom, radiusPx][] */
-const AREA_RADIUS: Record<string, [number, number][]> = {
-  countries: [
-    [1, 8],
-    [3, 18],
-    [5, 40],
-    [7, 80],
-    [9, 150],
-    [12, 280],
-  ],
-  cities: [
-    [2, 4],
-    [4, 8],
-    [6, 16],
-    [8, 28],
-    [10, 45],
-    [14, 75],
-  ],
-  neighbourhoods: [
-    [2, 3],
-    [4, 6],
-    [6, 12],
-    [8, 22],
-    [10, 38],
-    [14, 60],
-  ],
-};
-
-/**
- * Circle style per area type. Fills are deliberately light so the translucent
- * discs read as gentle density hints, not solid blobs; `opacityHover` deepens
- * the fill on hover for a responsive cue. Thin rings keep them refined.
- */
-const AREA_STYLE: Record<
-  string,
-  { opacity: number; opacityHover: number; strokeOpacity: number; minLabelZoom: number }
-> = {
-  countries: { opacity: 0.12, opacityHover: 0.22, strokeOpacity: 0.5, minLabelZoom: 1 },
-  cities: { opacity: 0.13, opacityHover: 0.24, strokeOpacity: 0.55, minLabelZoom: 3 },
-  neighbourhoods: { opacity: 0.16, opacityHover: 0.28, strokeOpacity: 0.6, minLabelZoom: 6 },
-};
-
-// ── MapLibre layer IDs for point data ────────────────────────────────────────
-
-const POINTS_SOURCE = 'points-source';
-const CLUSTERS_LAYER = 'clusters';
-const CLUSTER_COUNT_LAYER = 'cluster-count';
-const UNCLUSTERED_LAYER = 'unclustered-point';
-const GLYPH_LAYER = 'pin-glyph';
-const FEATURED_RING_LAYER = 'featured-ring';
-const PULSE_LAYER = 'live-pulse';
-const HEATMAP_SOURCE = 'heatmap-source';
-const HEATMAP_LAYER = 'heatmap-layer';
-const FOCUS_SOURCE = 'focus-source';
-const FOCUS_RING_LAYER = 'focus-ring';
-
-// All point render layers, top→bottom paint order excluded; used for bulk
-// visibility toggles between the pins and pure-density lenses.
-const PIN_LAYER_IDS = [
-  PULSE_LAYER,
-  FEATURED_RING_LAYER,
+import {
+  AREA_LAYERS,
+  AREA_RADIUS,
+  AREA_STYLE,
+  POINTS_SOURCE,
   CLUSTERS_LAYER,
   CLUSTER_COUNT_LAYER,
   UNCLUSTERED_LAYER,
   GLYPH_LAYER,
-];
-
-// ── Boundary configs ─────────────────────────────────────────────────────────
-
-const COUNTRY_BOUNDARY_CONFIG: BoundaryLayerConfig = {
-  key: 'countries',
-  entityType: 'countries',
-  matchKey: 'ISO_A2',
-  matchMode: 'code',
-  minLabelZoom: 1,
-};
-
-const CITY_BOUNDARY_CONFIG: BoundaryLayerConfig = {
-  key: 'cities',
-  entityType: 'cities',
-  matchKey: 'entity_id',
-  matchMode: 'entityId',
-  minLabelZoom: 4,
-  minLayerZoom: 4,
-};
-
-const NEIGHBOURHOOD_BOUNDARY_CONFIG: BoundaryLayerConfig = {
-  key: 'neighbourhoods',
-  entityType: 'neighbourhoods',
-  matchKey: 'entity_id',
-  matchMode: 'entityId',
-  minLabelZoom: 8,
-  minLayerZoom: 8,
-};
-
-// ── Default props ──────────────────────────────────────────────────────────────
-
-const DEFAULT_CENTER: [number, number] = [0, 20];
-const DEFAULT_ZOOM = 2.2;
+  FEATURED_RING_LAYER,
+  PULSE_LAYER,
+  HEATMAP_SOURCE,
+  HEATMAP_LAYER,
+  FOCUS_SOURCE,
+  FOCUS_RING_LAYER,
+  PIN_LAYER_IDS,
+  COUNTRY_BOUNDARY_CONFIG,
+  CITY_BOUNDARY_CONFIG,
+  NEIGHBOURHOOD_BOUNDARY_CONFIG,
+  DEFAULT_CENTER,
+  DEFAULT_ZOOM,
+} from '@/config/mapLayers';
 
 // Stable empty favorites set so effects don't churn when none are passed.
 const EMPTY_FAV: ReadonlySet<string> = new Set<string>();

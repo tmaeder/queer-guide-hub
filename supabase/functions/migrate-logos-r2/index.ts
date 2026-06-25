@@ -1,4 +1,4 @@
-import { getServiceClient, jsonResponse, errorResponse, corsResponse, requireAdmin } from '../_shared/supabase-client.ts'
+import { getServiceClient, jsonResponse, errorResponse, corsResponse, requireInternalOrAdmin } from '../_shared/supabase-client.ts'
 import { mirrorLogoToR2, logoMirrorConfigured } from '../_shared/logo-mirror.ts'
 import { delay } from '../_shared/logo-enrichment.ts'
 
@@ -29,7 +29,7 @@ Deno.serve(async (req) => {
 
   const supabase = getServiceClient()
 
-  const authResult = await requireAdmin(req, supabase)
+  const authResult = await requireInternalOrAdmin(req, supabase)
   if (authResult instanceof Response) return authResult
 
   try {
