@@ -30,7 +30,6 @@ import { AdminShell } from '../AdminShell';
 
 describe('AdminShell', () => {
   it('renders sidebar + outlet content', () => {
-    const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     const qc = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } });
     render(
       <QueryClientProvider client={qc}>

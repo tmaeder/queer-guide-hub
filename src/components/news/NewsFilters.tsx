@@ -650,7 +650,7 @@ export const NewsFilters = ({
 
         {/* Author Filter */}
         {authors.length > 0 && (
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-2">
             <span className="text-sm font-medium">Author</span>
             <MultiCombobox
               options={authors}
@@ -664,7 +664,7 @@ export const NewsFilters = ({
         )}
 
         {/* Date Range Filter */}
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-2">
           <div className="flex items-center gap-2">
             <Calendar size={16} />
             <span className="text-sm font-medium">Published Date</span>
