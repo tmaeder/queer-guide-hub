@@ -18,7 +18,7 @@ export function NavBadge({ count, dot, label }: NavBadgeProps) {
       <span
         aria-label={label}
         aria-hidden={label ? undefined : true}
-        className="absolute -end-0.5 -top-0.5 h-2 w-2 rounded-full bg-accent-brand"
+        className="absolute -end-0.5 -top-0.5 h-2 w-2 rounded-full bg-foreground"
       />
     );
   }
@@ -28,7 +28,7 @@ export function NavBadge({ count, dot, label }: NavBadgeProps) {
   return (
     <span
       aria-label={label}
-      className="absolute -end-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-accent-brand px-1 text-2xs font-medium leading-none text-accent-brand-foreground"
+      className="absolute -end-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-foreground px-1 text-2xs font-medium leading-none text-background"
     >
       {count > 99 ? '99+' : count}
     </span>

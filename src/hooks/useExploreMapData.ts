@@ -58,23 +58,6 @@ export const LAYER_COLORS: Record<LayerType, string> = {
   neighbourhoods: 'hsl(0 0% 4%)', // foreground — concrete; MapLibre can't parse CSS var()
 };
 
-// Pride-spectrum palette for the MapShell canvas only (gated by the
-// MAP_SHELL feature flag — legacy/embedded maps keep LAYER_COLORS). Layers
-// are mapped across a rainbow-ordered, visibility-tested set: each reads
-// clearly as a colored dot with its white halo on the light basemap, and no
-// layer-toggle pills (white-text-on-color) render in MapShell, so the WCAG
-// pill-contrast constraint doesn't apply here. Prototype only — NOT yet a
-// locked design-system exception.
-export const PRIDE_LAYER_COLORS: Record<LayerType, string> = {
-  venues: '#e40303', // pride red
-  events: '#ff8c00', // pride orange
-  hotels: '#d97706', // amber-deep (legible stand-in for pride yellow)
-  restrooms: '#008026', // pride green
-  cities: '#004dff', // pride blue
-  countries: '#750787', // pride violet
-  neighbourhoods: '#ec4899', // pink
-};
-
 // ── Hook ───────────────────────────────────────────────────────────────────────
 
 interface UseExploreMapDataOptions {
