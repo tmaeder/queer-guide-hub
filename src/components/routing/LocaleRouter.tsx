@@ -1,7 +1,7 @@
 import { lazy, useEffect } from 'react';
 import { Outlet, useParams, useLocation } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { DEFAULT_LOCALE, RTL_LOCALES, SUPPORTED_LOCALES, isSupportedLocale } from '@/i18n/languages';
+import { DEFAULT_LOCALE, SUPPORTED_LOCALES, isSupportedLocale } from '@/i18n/languages';
 import type { SupportedLocale } from '@/i18n/languages';
 
 const NotFound = lazy(() => import('@/pages/NotFound'));
@@ -25,12 +25,11 @@ export function LocaleRouter() {
   const resolvedLocale = locale && isSupportedLocale(locale) ? locale : DEFAULT_LOCALE;
 
   useEffect(() => {
+    // <html lang>/<dir> are kept in sync by the single `languageChanged`
+    // handler in `@/i18n` — changing the language here triggers it.
     if (i18n.language !== resolvedLocale) {
       i18n.changeLanguage(resolvedLocale);
     }
-
-    document.documentElement.lang = resolvedLocale;
-    document.documentElement.dir = RTL_LOCALES.includes(resolvedLocale) ? 'rtl' : 'ltr';
   }, [resolvedLocale, i18n]);
 
   // Inject hreflang alternate links for SEO

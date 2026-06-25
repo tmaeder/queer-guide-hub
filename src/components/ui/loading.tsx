@@ -1,32 +1,33 @@
+import { useTranslation } from 'react-i18next';
+
 interface LoadingProps {
   size?: 'sm' | 'md' | 'lg';
   text?: string;
+  /** Accessible name announced to screen readers when no visible text is shown. */
+  label?: string;
   className?: string;
 }
 
-const dotPixels = { sm: 6, md: 8, lg: 12 } as const;
-const spinnerPixels = { sm: 16, md: 24, lg: 32 } as const;
+const dotSize = { sm: 'h-1.5 w-1.5', md: 'h-2 w-2', lg: 'h-3 w-3' } as const;
+const spinnerSize = { sm: 'h-4 w-4', md: 'h-6 w-6', lg: 'h-8 w-8' } as const;
 
-export function Loading({ size = 'md', text }: LoadingProps) {
-  const d = dotPixels[size];
+export function Loading({ size = 'md', text, label }: LoadingProps) {
+  const { t } = useTranslation();
+  const announce = text ?? label ?? t('common.loading');
 
   return (
     <div
-      style={{ flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}
-      className="flex gap-4"
+      role="status"
+      aria-live="polite"
+      aria-label={text ? undefined : announce}
+      className="flex flex-col items-center justify-center gap-4"
     >
-      <div style={{ alignItems: 'center' }} className="flex gap-1">
+      <div className="flex items-center gap-1" aria-hidden="true">
         {[0, 1, 2].map((i) => (
           <div
             key={i}
-            style={{
-              width: d,
-              height: d,
-              borderRadius: '50%',
-              backgroundColor: 'currentColor',
-              animation: 'pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-              animationDelay: `${i * 0.2}s`,
-            }}
+            style={{ animationDelay: `${i * 0.2}s` }}
+            className={`${dotSize[size]} rounded-full bg-current animate-pulse motion-reduce:animate-none`}
           />
         ))}
       </div>
@@ -37,22 +38,24 @@ export function Loading({ size = 'md', text }: LoadingProps) {
 
 interface LoadingSpinnerProps {
   size?: 'sm' | 'md' | 'lg';
+  /** Accessible name; set to null when a parent already exposes a status region. */
+  label?: string | null;
   className?: string;
 }
 
-export function LoadingSpinner({ size = 'md' }: LoadingSpinnerProps) {
-  const s = spinnerPixels[size];
+export function LoadingSpinner({ size = 'md', label, className }: LoadingSpinnerProps) {
+  const { t } = useTranslation();
+  // When rendered inside a parent status region, pass label={null} to avoid a
+  // duplicate announcement.
+  const a11y =
+    label === null
+      ? { 'aria-hidden': true as const }
+      : { role: 'status' as const, 'aria-live': 'polite' as const, 'aria-label': label ?? t('common.loading') };
 
   return (
     <div
-      style={{
-        width: s,
-        height: s,
-        borderRadius: '50%',
-        border: '2px solid hsl(var(--border))',
-        borderTopColor: 'currentColor',
-        animation: 'spin 1s linear infinite',
-      }}
+      {...a11y}
+      className={`${spinnerSize[size]} rounded-full border-2 border-border border-t-current animate-spin motion-reduce:animate-none ${className ?? ''}`}
     />
   );
 }
@@ -61,53 +64,34 @@ interface PageLoadingProps {
   text?: string;
 }
 
-export function PageLoading({ text = 'Loading...' }: PageLoadingProps) {
+export function PageLoading({ text }: PageLoadingProps) {
+  const { t } = useTranslation();
+  const label = text ?? t('common.loading');
+
   return (
     <div
-      style={{ minHeight: '100vh', alignItems: 'center', justifyContent: 'center' }}
-      className="flex"
+      role="status"
+      aria-live="polite"
+      className="flex min-h-screen items-center justify-center"
     >
-      <div style={{ flexDirection: 'column' }} className="text-center flex gap-6">
-        {/* Main loading animation */}
-        <div className="relative">
-          <div style={{ alignItems: 'center', justifyContent: 'center' }} className="flex gap-2">
-            {[0, 1, 2, 3, 4].map((i) => (
-              <div
-                key={i}
-                style={{
-                  width: 12,
-                  height: 12,
-                  borderRadius: '50%',
-                  backgroundColor: 'currentColor',
-                  animation: 'bounce 0.8s ease-in-out infinite',
-                  animationDelay: `${i * 0.1}s`,
-                }}
-              />
-            ))}
-          </div>
+      <div className="text-center flex flex-col gap-6">
+        <div className="flex items-center justify-center gap-2" aria-hidden="true">
+          {[0, 1, 2, 3, 4].map((i) => (
+            <div
+              key={i}
+              style={{ animationDelay: `${i * 0.1}s` }}
+              className="h-3 w-3 rounded-full bg-current animate-bounce motion-reduce:animate-none"
+            />
+          ))}
         </div>
-
-        <div style={{ flexDirection: 'column' }} className="flex gap-2">
-          <h2 className="text-lg font-semibold m-0">{text}</h2>
-          <div style={{ alignItems: 'center', justifyContent: 'center' }} className="flex gap-1">
-            <LoadingSpinner size="sm" />
-            <span className="text-sm text-muted-foreground ml-2">Please wait</span>
+        <div className="flex flex-col gap-2">
+          <h2 className="text-lg font-semibold m-0">{label}</h2>
+          <div className="flex items-center justify-center gap-1">
+            <LoadingSpinner size="sm" label={null} />
+            <span className="text-sm text-muted-foreground ml-2">{t('common.pleaseWait', 'Please wait')}</span>
           </div>
         </div>
       </div>
-
-      {/* Keyframes injected via style tag */}
-      <style>{`
-        @keyframes spin { to { transform: rotate(360deg); } }
-        @keyframes bounce {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-8px); }
-        }
-        @keyframes pulse {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.4; }
-        }
-      `}</style>
     </div>
   );
 }
@@ -117,19 +101,14 @@ interface InlineLoadingProps {
   size?: 'sm' | 'md';
 }
 
-export function InlineLoading({ text = 'Loading...', size = 'md' }: InlineLoadingProps) {
+export function InlineLoading({ text, size = 'md' }: InlineLoadingProps) {
+  const { t } = useTranslation();
+  const label = text ?? t('common.loading');
+
   return (
-    <div
-      style={{ alignItems: 'center', justifyContent: 'center', padding: '32px 0' }}
-      className="flex gap-4"
-    >
-      <LoadingSpinner size={size} />
-      <span
-        style={{ fontSize: size === 'sm' ? '0.875rem' : '1rem' }}
-        className="text-muted-foreground"
-      >
-        {text}
-      </span>
+    <div role="status" aria-live="polite" className="flex items-center justify-center gap-4 py-8">
+      <LoadingSpinner size={size} label={null} />
+      <span className={`text-muted-foreground ${size === 'sm' ? 'text-sm' : 'text-base'}`}>{label}</span>
     </div>
   );
 }
