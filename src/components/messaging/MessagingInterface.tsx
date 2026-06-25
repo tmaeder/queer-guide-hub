@@ -23,7 +23,7 @@ import {
   CalendarClock,
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
-import { useMessaging, type Message, type TypingIndicator } from '@/hooks/useMessaging';
+import { useMessaging, type Message } from '@/hooks/useMessaging';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import {
@@ -51,6 +51,7 @@ import { jumboTier } from '@/lib/messageRender';
 import { Sparkles, Sticker as StickerIcon } from 'lucide-react';
 import { useInboxFeed, type InboxFilter, type InboxItem } from '@/hooks/useInboxFeed';
 import { InboxRailItem } from '@/components/messaging/InboxRailItem';
+import { TypingIndicatorRow } from '@/components/messaging/TypingIndicatorRow';
 import { TripRailCard } from '@/components/messaging/TripRailCard';
 import { useUpcomingTrips } from '@/hooks/useUpcomingTrips';
 import { useGlobalPresence, useConversationPresence } from '@/hooks/useConversationPresence';
@@ -332,38 +333,6 @@ const MessageItem = ({
             </TooltipProvider>
           )}
         </div>
-      </div>
-    </div>
-  );
-};
-
-interface TypingIndicatorProps {
-  typingUsers: TypingIndicator[];
-}
-
-const TypingIndicatorComponent = ({ typingUsers }: TypingIndicatorProps) => {
-  if (typingUsers.length === 0) return null;
-
-  const names = typingUsers.map((user) => user.display_name).join(', ');
-  const verb = typingUsers.length === 1 ? 'is' : 'are';
-
-  return (
-    <div
-      style={{ alignItems: 'center' }}
-      className="flex gap-2 pl-4 pr-4 pt-2 pb-2 text-sm text-muted-foreground"
-    >
-      <Avatar style={{ height: 24, width: 24 }}>
-        <AvatarFallback className="text-xs">
-          {typingUsers[0]?.display_name?.charAt(0) || 'U'}
-        </AvatarFallback>
-      </Avatar>
-      <span>
-        {names} {verb} typing
-      </span>
-      <div className="flex gap-1">
-        <div className="w-1 h-1 bg-primary rounded-full" />
-        <div className="w-1 h-1 bg-primary rounded-full" />
-        <div className="w-1 h-1 bg-primary rounded-full" />
       </div>
     </div>
   );
@@ -872,7 +841,7 @@ const ChatView = ({ conversationId, onBack }: ChatViewProps) => {
                 );
               })}
 
-              <TypingIndicatorComponent typingUsers={currentTypingUsers} />
+              <TypingIndicatorRow typingUsers={currentTypingUsers} />
               <div ref={messagesEndRef} />
             </div>
           )}

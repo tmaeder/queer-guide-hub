@@ -434,9 +434,8 @@ export function VenueFilters({
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="relative flex-1">
           <Search
-            style={{ left: 14, top: '50%', transform: 'translateY(-50%)', width: 16, height: 16 }}
             aria-hidden="true"
-            className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground absolute text-muted-foreground"
+            className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground"
           />
           <Input
             placeholder="Search venues & organizations..."
@@ -474,17 +473,11 @@ export function VenueFilters({
             <Filter size={16} />
             {activeFilterCount > 0 && (
               <span
-                className="rounded-full inline-flex items-center justify-center font-semibold"
-                style={{
-                  backgroundColor: showAdvanced
-                    ? 'hsl(var(--primary-foreground))'
-                    : 'hsl(var(--primary))',
-                  color: showAdvanced ? 'hsl(var(--primary))' : 'hsl(var(--primary-foreground))',
-                  minWidth: 20,
-                  height: 20,
-                  fontSize: '0.7rem',
-                  padding: '0 6px',
-                }}
+                className={`rounded-full inline-flex items-center justify-center font-semibold min-w-5 h-5 px-1.5 text-xs2 ${
+                  showAdvanced
+                    ? 'bg-primary-foreground text-primary'
+                    : 'bg-primary text-primary-foreground'
+                }`}
               >
                 {activeFilterCount}
               </span>
@@ -791,10 +784,7 @@ function FilterDropdown({
             <span className="truncate text-sm">
               {selected.length > 0 ? `${selected.length} selected` : placeholder}
             </span>
-            <ChevronDown
-              style={{ width: 14, height: 14, opacity: 0.5 }}
-              className="ml-2 shrink-0"
-            />
+            <ChevronDown className="ml-2 shrink-0 w-3.5 h-3.5 opacity-50" />
           </Button>
         </PopoverTrigger>
         <PopoverContent
@@ -818,18 +808,16 @@ function FilterDropdown({
                       onSelect={() => onToggle(item.label)}
                     >
                       <Check
-                        style={{
-                          width: 16,
-                          height: 16,
-                          opacity: selected.includes(item.label) ? 1 : 0,
-                        }}
-                        className="mr-2"
+                        className={`mr-2 w-4 h-4 ${
+                          selected.includes(item.label) ? 'opacity-100' : 'opacity-0'
+                        }`}
                       />
                       <div className="flex items-center gap-2">
                         {item.color && (
                           <div
-                            className="rounded-full border border-border"
-                            style={{ width: 10, height: 10, backgroundColor: item.color }}
+                            className="rounded-full border border-border w-2.5 h-2.5"
+                            // data-driven category color (allowlisted functional color)
+                            style={{ backgroundColor: item.color }}
                           />
                         )}
                         {item.label}
@@ -919,7 +907,7 @@ function WhatYouNeedDropdown({
             <span className="truncate text-sm">
               {total > 0 ? `${total} selected` : 'Amenities · services · accessibility'}
             </span>
-            <ChevronDown style={{ width: 14, height: 14, opacity: 0.5 }} className="ml-2 shrink-0" />
+            <ChevronDown className="ml-2 shrink-0 w-3.5 h-3.5 opacity-50" />
           </Button>
         </PopoverTrigger>
         <PopoverContent align="start" className="border-border p-0 w-[320px]">
@@ -981,14 +969,7 @@ function WhatYouNeedDropdown({
             <Badge key={v} variant="secondary">
               {label}
               <X
-                style={{
-                  width: 12,
-                  height: 12,
-                  cursor: 'pointer',
-                  padding: 8,
-                  margin: -8,
-                  boxSizing: 'content-box' as const,
-                }}
+                className="w-3 h-3 cursor-pointer p-2 -m-2 box-content"
                 role="button"
                 aria-label="Remove filter"
                 onClick={() => toggle(v)}
@@ -1038,12 +1019,9 @@ function FilterList({
                 onSelect={() => onToggle(valueOf(item))}
               >
                 <Check
-                  style={{
-                    width: 16,
-                    height: 16,
-                    opacity: selected.includes(valueOf(item)) ? 1 : 0,
-                  }}
-                  className="mr-2"
+                  className={`mr-2 w-4 h-4 ${
+                    selected.includes(valueOf(item)) ? 'opacity-100' : 'opacity-0'
+                  }`}
                 />
                 {item.label}
               </CommandItem>
