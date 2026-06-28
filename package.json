@@ -95,7 +95,7 @@
     "@tiptap/react": "^3.27.1",
     "@tiptap/starter-kit": "^3.27.1",
     "@xyflow/react": "^12.11.0",
-    "@zxcvbn-ts/core": "^3.0.4",
+    "@zxcvbn-ts/core": "^4.1.2",
     "@zxcvbn-ts/language-common": "^3.0.4",
     "@zxcvbn-ts/language-en": "^3.0.2",
     "boneyard-js": "^1.8.1",
