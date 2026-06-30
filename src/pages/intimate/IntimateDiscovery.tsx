@@ -14,6 +14,8 @@ import {
   useIncomingLikeListener,
 } from '@/hooks/useIntimateMatches';
 import { Button } from '@/components/ui/button';
+import { SignalChips } from '@/components/people/SignalChips';
+import type { PeopleMatchShared } from '@/hooks/usePeopleDiscovery';
 import { LikePassActions } from '@/components/intimate/LikePassActions';
 import { SwipeDeck, type SwipeableCard } from '@/components/intimate/SwipeDeck';
 import { useToast } from '@/hooks/use-toast';
@@ -79,6 +81,11 @@ export default function IntimateDiscovery() {
   const scoreById = useMemo(() => {
     const m = new Map<string, number>();
     (ranked ?? []).forEach((r) => m.set(r.userId, r.score));
+    return m;
+  }, [ranked]);
+  const sharedById = useMemo(() => {
+    const m = new Map<string, PeopleMatchShared>();
+    (ranked ?? []).forEach((r) => m.set(r.userId, r.shared));
     return m;
   }, [ranked]);
   const rankedCards = useMemo(() => {
@@ -179,6 +186,7 @@ export default function IntimateDiscovery() {
             const liked = likedSet.has(c.user_id);
             const matched = matchedSet.has(c.user_id);
             const score = scoreById.get(c.user_id);
+            const shared = sharedById.get(c.user_id);
             return (
               <li key={c.user_id} className="border-b border-border">
                 <div className="flex items-center gap-4 py-4">
@@ -216,6 +224,7 @@ export default function IntimateDiscovery() {
                           {c.role.join(', ')}
                         </div>
                       ) : null}
+                      <SignalChips shared={shared} className="mt-1.5" max={2} />
                     </div>
                   </Link>
                   <LikePassActions

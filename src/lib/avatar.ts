@@ -3,23 +3,13 @@
  * Generates deterministic initials-based SVG avatars as data URIs.
  */
 
-const COLORS = [
-  '#6366f1',
-  'hsl(var(--foreground))',
-  '#a855f7',
-  '#d946ef',
-  '#ec4899',
-  '#f43f5e',
-  '#ef4444',
-  '#f97316',
-  '#eab308',
-  '#84cc16',
-  '#22c55e',
-  '#14b8a6',
-  '#06b6d4',
-  '#0ea5e9',
-  '#3b82f6',
-];
+// Monochrome dark-gray steps — deterministic variety without hue (the former
+// rainbow palette was removed in the monochrome strip). All steps stay dark
+// enough for the white initials to keep AA contrast. Concrete hex is required
+// here because the value is inlined into a standalone SVG data-URI, where CSS
+// custom properties (hsl(var(--…))) don't resolve — same constraint as
+// Footprint.tsx; this file stays on the ESLint color allowlist.
+const COLORS = ['#0a0a0a', '#1f1f1f', '#2e2e2e', '#404040', '#525252'];
 
 function hashCode(str: string): number {
   let hash = 0;

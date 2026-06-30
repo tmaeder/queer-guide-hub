@@ -264,7 +264,7 @@ export const MapShell = ({
         onViewportChange={handleViewportChange}
         onLayersChange={handleLayersChange}
         renderMode={lensToRenderMode(state.lens)}
-        pridePalette
+        mapShellMode
         onPointsInView={showRail ? setPointsInView : undefined}
         selectedId={selectedId}
         highlightedId={hoveredId}
@@ -278,7 +278,7 @@ export const MapShell = ({
 
       {showRail && (
         <>
-          <MapLegend lens={state.lens} layers={exploreLayers} pridePalette raised />
+          <MapLegend lens={state.lens} layers={exploreLayers} raised />
           <SpotlightRail
             points={pointsInView}
             selectedId={selectedId}

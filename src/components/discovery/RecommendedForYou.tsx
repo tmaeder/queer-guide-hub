@@ -19,9 +19,7 @@ import { decodeHtmlEntities } from "@/lib/decodeHtmlEntities";
 import { isValidImageUrl } from "@/lib/images/resolveEntityImage";
 
 const SEARCH_URL =
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	(import.meta as any).env?.VITE_SEARCH_PROXY_URL ||
-	"https://search.queer.guide";
+	import.meta.env.VITE_SEARCH_PROXY_URL || "https://search.queer.guide";
 
 const TYPE_PATH: Record<string, string> = {
 	venue: "/venues",

@@ -177,11 +177,9 @@ export default tseslint.config(
       // low/moderate/high/critical hex, consumed by TripSafetyBriefing +
       // the country SafetyVerdict so the two surfaces can't drift.
       "src/hooks/useRiskVisual.ts",
-      // Categorical news/topic taxonomy palette (politics, health, sports…).
-      "src/components/news/NewsCard.tsx",
-      // Deterministic avatar gradient palette (12 distinct hues by user id).
+      // Deterministic avatar SVG fallback — monochrome dark-gray steps; concrete
+      // hex is required by the SVG data-URI (CSS vars don't resolve there).
       "src/lib/avatar.ts",
-      "src/components/profile/UserModeBadge.tsx",
       // OG/recap PNG generated via canvas — hex literals are required by the canvas API.
       "src/pages/profile/Footprint.tsx",
       // Map style + security dashboards = data-viz, hardcoded by design.
@@ -213,8 +211,6 @@ export default tseslint.config(
       // Severity rgba banners — pre-multiplied alpha for translucency.
       "src/components/trips/TripDocExpiryBanner.tsx",
       "src/components/trips/TripNudgesBanner.tsx",
-      // Categorical budget category palette (food/transport/lodging/...).
-      "src/components/trips/BudgetTab.tsx",
       // Filter chip dot colors — categorical.
       "src/components/venues/VenueFilters.tsx",
       // Video player chrome — pure black/white overlay regardless of theme.
@@ -367,11 +363,8 @@ export default tseslint.config(
       "src/components/trips/TripCoverBand.tsx",
       "src/components/trips/TripDocExpiryBanner.tsx",
       "src/components/trips/TripNudgesBanner.tsx",
-      "src/components/trips/BudgetTab.tsx",
       "src/components/trips/TripMap.tsx",
       "src/components/trips/create/CityCountryAutocomplete.tsx",
-      "src/components/news/NewsCard.tsx",
-      "src/components/profile/UserModeBadge.tsx",
       "src/components/profile/PhotoGallery.tsx",
       "src/pages/profile/Footprint.tsx",
       "src/components/map/**",

@@ -6,6 +6,12 @@ import { AlertTriangle, RefreshCw, Home, Search, MapPin, CalendarDays, Map, Cloc
 import { fileError } from '@/utils/autoFileError';
 import { getRecentlyViewed, recentlyViewedHref } from '@/lib/recentlyViewed';
 
+declare global {
+  interface Window {
+    umami?: { track?: (event: string, data: Record<string, string>) => void };
+  }
+}
+
 interface Props {
   children: ReactNode;
   /** Optional custom fallback UI */
@@ -44,7 +50,7 @@ export class ErrorBoundary extends Component<Props, State> {
 
     // Report to Umami if available
     try {
-      const umami = (window as unknown as Record<string, unknown>).umami as { track?: (event: string, data: Record<string, string>) => void } | undefined;
+      const umami = window.umami;
       if (umami?.track) {
         umami.track('error_boundary_caught', {
           section,

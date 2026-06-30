@@ -31,7 +31,6 @@ const EVENT_SPAN_CLASS: Record<string, string> = {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
 import { EmptyState, LoadingTimeout, ErrorState } from '@/components/ui/EmptyState';
 import {
   Calendar,
@@ -49,7 +48,6 @@ import { useToast } from '@/hooks/use-toast';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { format } from 'date-fns';
-import { dateFnsLocaleFor } from '@/i18n/dateFnsLocale';
 import { displayCityName } from '@/utils/cityDisplay';
 import { dedupeCitiesByNormalized } from '@/utils/dateRange';
 import { StaggerGrid } from '@/components/animation/StaggerGrid';
@@ -62,6 +60,7 @@ import {
   type EventSort,
 } from '@/utils/eventsQueryString';
 import { ShareFiltersButton } from '@/components/events/ShareFiltersButton';
+import { EventActiveFilters } from '@/components/events/EventActiveFilters';
 
 type Event = Database['public']['Tables']['events']['Row'];
 const EVENT_TYPES = [
@@ -89,7 +88,6 @@ const PRIDE_SUBTYPES: Array<{ tag: string; label: string }> = [
 
 const Events = () => {
   const { t, i18n } = useTranslation();
-  const dfLocale = dateFnsLocaleFor(i18n.language);
   const navigate = useLocalizedNavigate();
   const {
     events,
@@ -853,188 +851,34 @@ const Events = () => {
 
           {/* Active Filters Display */}
           {hasActiveFilters && !showFilters && (
-            <div className="flex flex-wrap gap-2 items-center">
-              <p className="text-sm text-muted-foreground">
-                {t('pages.events.activeFilters', 'Active filters:')}
-              </p>
-              {search && (
-                <Badge variant="secondary" className="inline-flex gap-1">
-                  {t('pages.events.filterSearch', {
-                    value: search,
-                    defaultValue: `Search: ${search}`,
-                  })}
-                  <X
-                    size={12}
-                    style={{ margin: -8, boxSizing: 'content-box' }}
-                    className="cursor-pointer p-2"
-                    role="button"
-                    aria-label={t('pages.events.clearFilterSearch', 'Clear search')}
-                    onClick={() => setSearch('')}
-                  />
-                </Badge>
-              )}
-              {cities.map((c) => (
-                <Badge
-                  key={c}
-                  variant="secondary"
-                  style={{ alignItems: 'center' }}
-                  className="inline-flex gap-1"
-                >
-                  {autoLocationLabel === c && <MapPin size={10} />}
-                  {autoLocationLabel === c
-                    ? t('pages.events.filterNearYou', {
-                        value: displayCityName(c, i18n.language),
-                        defaultValue: `Near you: ${displayCityName(c, i18n.language)}`,
-                      })
-                    : t('pages.events.filterCity', {
-                        value: displayCityName(c, i18n.language),
-                        defaultValue: `City: ${displayCityName(c, i18n.language)}`,
-                      })}
-                  <X
-                    size={12}
-                    style={{ margin: -8, boxSizing: 'content-box' }}
-                    className="cursor-pointer p-2"
-                    role="button"
-                    aria-label={t('pages.events.clearFilterCity', 'Clear city filter')}
-                    onClick={() => {
-                      setCities((prev) => prev.filter((x) => x !== c));
-                      if (autoLocationLabel === c) setAutoLocationLabel(null);
-                    }}
-                  />
-                </Badge>
-              ))}
-              {eventTypes.map((t2) => (
-                <Badge key={t2} variant="secondary" className="inline-flex gap-1">
-                  {t2}
-                  <X
-                    size={12}
-                    style={{ margin: -8, boxSizing: 'content-box' }}
-                    className="cursor-pointer p-2"
-                    role="button"
-                    aria-label={t('pages.events.clearFilterEventType', 'Clear event type filter')}
-                    onClick={() => setEventTypes((prev) => prev.filter((x) => x !== t2))}
-                  />
-                </Badge>
-              ))}
-              {startDate && (
-                <Badge variant="secondary" className="inline-flex gap-1">
-                  {t('pages.events.filterFrom', {
-                    value: format(startDate, 'PP', { locale: dfLocale }),
-                    defaultValue: `From: ${format(startDate, 'PP', { locale: dfLocale })}`,
-                  })}
-                  <X
-                    size={12}
-                    style={{ margin: -8, boxSizing: 'content-box' }}
-                    className="cursor-pointer p-2"
-                    role="button"
-                    aria-label={t('pages.events.clearFilterStartDate', 'Clear start date filter')}
-                    onClick={() => setStartDate(undefined)}
-                  />
-                </Badge>
-              )}
-              {endDate && (
-                <Badge variant="secondary" className="inline-flex gap-1">
-                  {t('pages.events.filterTo', {
-                    value: format(endDate, 'PP', { locale: dfLocale }),
-                    defaultValue: `To: ${format(endDate, 'PP', { locale: dfLocale })}`,
-                  })}
-                  <X
-                    size={12}
-                    style={{ margin: -8, boxSizing: 'content-box' }}
-                    className="cursor-pointer p-2"
-                    role="button"
-                    aria-label={t('pages.events.clearFilterEndDate', 'Clear end date filter')}
-                    onClick={() => setEndDate(undefined)}
-                  />
-                </Badge>
-              )}
-              {nearMe && (
-                <Badge variant="secondary" className="inline-flex gap-1">
-                  {t('pages.events.filterNearMe', 'Near Me')}
-                  <X
-                    size={12}
-                    style={{ margin: -8, boxSizing: 'content-box' }}
-                    className="cursor-pointer p-2"
-                    role="button"
-                    aria-label={t('pages.events.clearFilterNearMe', 'Clear near me filter')}
-                    onClick={() => setNearMe(false)}
-                  />
-                </Badge>
-              )}
-              {showPast && (
-                <Badge variant="secondary" className="inline-flex gap-1">
-                  {t('pages.events.pastEvents', 'Past events')}
-                  <X
-                    size={12}
-                    style={{ margin: -8, boxSizing: 'content-box' }}
-                    className="cursor-pointer p-2"
-                    role="button"
-                    aria-label={t('pages.events.clearFilterPast', 'Clear past events filter')}
-                    onClick={() => setShowPast(false)}
-                  />
-                </Badge>
-              )}
-              {/* D13: pills for boolean filters that previously had no pill.
-                  Clearing flips the matching preset chip back to inactive. */}
-              {isFree && (
-                <Badge variant="secondary" className="inline-flex gap-1">
-                  {t('pages.events.filterFree', 'Free')}
-                  <X
-                    size={12}
-                    style={{ margin: -8, boxSizing: 'content-box' }}
-                    className="cursor-pointer p-2"
-                    role="button"
-                    aria-label={t('pages.events.clearFilterFree', 'Clear free filter')}
-                    onClick={() => {
-                      setIsFree(false);
-                      if (activePreset === 'free') setActivePreset(null);
-                    }}
-                  />
-                </Badge>
-              )}
-              {featuredOnly && (
-                <Badge variant="secondary" className="inline-flex gap-1">
-                  {t('pages.events.filterFeatured', 'Featured')}
-                  <X
-                    size={12}
-                    style={{ margin: -8, boxSizing: 'content-box' }}
-                    className="cursor-pointer p-2"
-                    role="button"
-                    aria-label={t('pages.events.clearFilterFeatured', 'Clear featured filter')}
-                    onClick={() => {
-                      setFeaturedOnly(false);
-                      if (activePreset === 'featured') setActivePreset(null);
-                    }}
-                  />
-                </Badge>
-              )}
-              {ageRestriction && (
-                <Badge variant="secondary" className="inline-flex gap-1">
-                  {t('pages.events.filterAge', { value: ageRestriction, defaultValue: `Age: ${ageRestriction}` })}
-                  <X
-                    size={12}
-                    style={{ margin: -8, boxSizing: 'content-box' }}
-                    className="cursor-pointer p-2"
-                    role="button"
-                    aria-label={t('pages.events.clearFilterAge', 'Clear age filter')}
-                    onClick={() => setAgeRestriction('')}
-                  />
-                </Badge>
-              )}
-              {selectedTags.map((tag) => (
-                <Badge key={tag} variant="secondary" className="inline-flex gap-1">
-                  {tag}
-                  <X
-                    size={12}
-                    style={{ margin: -8, boxSizing: 'content-box' }}
-                    className="cursor-pointer p-2"
-                    role="button"
-                    aria-label={`Remove ${tag} filter`}
-                    onClick={() => setSelectedTags((prev) => prev.filter((t) => t !== tag))}
-                  />
-                </Badge>
-              ))}
-            </div>
+            <EventActiveFilters
+              search={search}
+              cities={cities}
+              eventTypes={eventTypes}
+              startDate={startDate}
+              endDate={endDate}
+              nearMe={nearMe}
+              showPast={showPast}
+              isFree={isFree}
+              featuredOnly={featuredOnly}
+              ageRestriction={ageRestriction}
+              selectedTags={selectedTags}
+              autoLocationLabel={autoLocationLabel}
+              activePreset={activePreset}
+              setSearch={setSearch}
+              setCities={setCities}
+              setAutoLocationLabel={setAutoLocationLabel}
+              setEventTypes={setEventTypes}
+              setStartDate={setStartDate}
+              setEndDate={setEndDate}
+              setNearMe={setNearMe}
+              setShowPast={setShowPast}
+              setIsFree={setIsFree}
+              setFeaturedOnly={setFeaturedOnly}
+              setActivePreset={setActivePreset}
+              setAgeRestriction={setAgeRestriction}
+              setSelectedTags={setSelectedTags}
+            />
           )}
         </div>
 

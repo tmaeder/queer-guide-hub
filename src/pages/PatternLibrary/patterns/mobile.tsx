@@ -25,15 +25,44 @@ function Phone({ children }) {
   );
 }
 
+// Mirrors the live MobileBottomNav: five slots Home · Explore · [+ Add] · Messages · You,
+// with a raised, accent contribute button in the centre.
 function MobileNav({ active = "Home" }) {
   return (
     <div className="tab-bar">
-      {[["Home", "Home"], ["Cities", "Cities"], ["Map", "Map"], ["Groups", "Groups"], ["Me", "Me"]].map(([k, l]) => (
-        <i key={k} className={k === active ? "act" : ""}>
-          <span className="tab-dot" />
-          <span>{l}</span>
-        </i>
-      ))}
+      {[
+        ["Home", "Home"],
+        ["Explore", "Explore"],
+        ["Add", "+"],
+        ["Messages", "Messages"],
+        ["You", "You"],
+      ].map(([k, l]) =>
+        k === "Add" ? (
+          <i key={k} className="tab-add" aria-hidden>
+            <span
+              style={{
+                width: 40,
+                height: 40,
+                marginTop: -16,
+                borderRadius: "var(--radius-element)",
+                background: "var(--accent)",
+                color: "#fff",
+                display: "grid",
+                placeItems: "center",
+                fontSize: 22,
+                lineHeight: 1,
+              }}
+            >
+              {l}
+            </span>
+          </i>
+        ) : (
+          <i key={k} className={k === active ? "act" : ""}>
+            <span className="tab-dot" />
+            <span>{l}</span>
+          </i>
+        ),
+      )}
     </div>
   );
 }
@@ -175,7 +204,7 @@ export function PatternCityMobile() {
             </div>
           ))}
         </div>
-        <MobileNav active="Cities" />
+        <MobileNav active="Explore" />
       </Phone>
     </div>
   );
@@ -213,7 +242,7 @@ export function PatternVenueMobile() {
           <div style={{ fontSize: 13, marginTop: 4 }}>R. Palmeira 38, 1200-313 Lisboa</div>
           <div className="ph" style={{ height: 100, marginTop: 8 }} data-ph="map" />
         </div>
-        <MobileNav active="Cities" />
+        <MobileNav active="Explore" />
       </Phone>
     </div>
   );
@@ -251,7 +280,7 @@ export function PatternEventsMobile() {
             </div>
           ))}
         </div>
-        <MobileNav active="Cities" />
+        <MobileNav active="Explore" />
       </Phone>
     </div>
   );
@@ -278,7 +307,7 @@ export function PatternMapMobile() {
             <span className="pill pill--solid" style={{ fontSize: 11 }}>Open</span>
           </div>
         </div>
-        <MobileNav active="Map" />
+        <MobileNav active="Explore" />
       </Phone>
     </div>
   );

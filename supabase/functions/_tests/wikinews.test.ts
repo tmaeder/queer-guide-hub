@@ -29,6 +29,9 @@ Deno.test('parseWikinewsCategoryUrl rejects host-suffix spoofs', () => {
     }
     assert(threw, url)
   }
+  // lookalike hosts that merely END WITH wikinews.org must NOT match
+  assert(!isWikinewsHost('https://evilwikinews.org/wiki/Category:LGBT'))
+  assert(!isWikinewsHost('https://wikinews.org.attacker.com/wiki/Category:LGBT'))
 })
 
 Deno.test('parseWikinewsCategoryUrl: plain /wiki/Category:LGBT', () => {

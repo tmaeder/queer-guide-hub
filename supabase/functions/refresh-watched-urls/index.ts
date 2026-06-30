@@ -1,5 +1,21 @@
 import { getServiceClient } from '../_shared/supabase-client.ts'
 import { extractContent, type ExtractResult } from '../_shared/extract-client.ts'
+import type { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
+
+type AnalyzeItem = {
+  fields?: Record<string, { value: unknown } | unknown>
+  tag_suggestions?: Array<{ slug: string; preselected: boolean }>
+  detected_type?: string
+  matches?: { duplicates?: Array<{ score?: number }> }
+}
+
+type WatchRow = {
+  id: string
+  url: string
+  user_id: string
+  last_fingerprint: string | null
+  imported_count?: number | null
+}
 
 /**
  * M7.1 cron — picks watched_urls rows that are due (last_checked_at +
@@ -40,8 +56,7 @@ function fingerprintText(e: ExtractResult | null): string | null {
   return s.length >= 20 ? s : null
 }
 
-// deno-lint-ignore no-explicit-any
-function flattenItem(item: any): { content_type: string; data: Record<string, unknown> } | null {
+function flattenItem(item: AnalyzeItem): { content_type: string; data: Record<string, unknown> } | null {
   const fields = (item?.fields ?? {}) as Record<string, { value: unknown } | unknown>
   const data: Record<string, unknown> = {}
   for (const [k, v] of Object.entries(fields)) {
@@ -54,11 +69,10 @@ function flattenItem(item: any): { content_type: string; data: Record<string, un
   const tags = ((item?.tag_suggestions ?? []) as Array<{ slug: string; preselected: boolean }>)
     .filter((t) => t.preselected).map((t) => t.slug)
   if (tags.length) data.tags = tags
-  return { content_type: CONTENT_TYPE[item?.detected_type] ?? 'event', data }
+  return { content_type: CONTENT_TYPE[item.detected_type ?? ''] ?? 'event', data }
 }
 
-// deno-lint-ignore no-explicit-any
-function isNewItem(item: any): boolean {
+function isNewItem(item: AnalyzeItem): boolean {
   const dups = (item?.matches?.duplicates ?? []) as Array<{ score?: number }>
   return !dups.some((d) => (d.score ?? 0) >= 0.9)
 }
@@ -142,8 +156,7 @@ Deno.serve(async (req) => {
   )
 })
 
-// deno-lint-ignore no-explicit-any
-async function stamp(supabase: any, id: string) {
+async function stamp(supabase: SupabaseClient, id: string) {
   await supabase.from('watched_urls').update({ last_checked_at: new Date().toISOString() }).eq('id', id)
 }
 
@@ -152,11 +165,9 @@ async function importNewItems(
   supabaseUrl: string,
   serviceKey: string,
   internalSecret: string,
-  // deno-lint-ignore no-explicit-any
-  supabase: any,
+  supabase: SupabaseClient,
   structuredText: string,
-  // deno-lint-ignore no-explicit-any
-  row: any,
+  row: WatchRow,
 ): Promise<number> {
   // analyze-flyer is verify_jwt=true → pass the service-role key for the gateway,
   // plus X-Internal-Secret + as_user_id so it skips per-user auth/rate-limit and

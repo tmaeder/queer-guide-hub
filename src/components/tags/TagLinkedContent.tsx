@@ -228,7 +228,7 @@ function PersonalityCard({
             className="absolute inset-0 flex items-center justify-center"
             style={{
               background:
-                'linear-gradient(135deg, rgba(219,39,119,0.18) 0%, rgba(245,158,11,0.18) 100%)',
+                'linear-gradient(135deg, rgba(0,0,0,0.06) 0%, rgba(0,0,0,0.12) 100%)',
             }}
           >
             <div

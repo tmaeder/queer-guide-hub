@@ -25,7 +25,6 @@ export const BulkCreatePersonalities = () => {
     wikipedia: true,
     openLibrary: true,
     bandsintown: true,
-    pexelsImages: true,
   });
   const { toast } = useToast();
 
@@ -293,17 +292,6 @@ export const BulkCreatePersonalities = () => {
                     disabled={isLoading}
                   />
                   <Label htmlFor="bandsintown">Bandsintown (concerts)</Label>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Checkbox
-                    id="pexelsImages"
-                    checked={sources.pexelsImages}
-                    onCheckedChange={(checked) =>
-                      setSources((prev) => ({ ...prev, pexelsImages: checked as boolean }))
-                    }
-                    disabled={isLoading}
-                  />
-                  <Label htmlFor="pexelsImages">Pexels (fallback images)</Label>
                 </div>
               </div>
             </div>

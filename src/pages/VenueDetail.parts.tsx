@@ -21,7 +21,6 @@ import { Badge } from '@/components/ui/badge';
 import { EntitySocialLinks } from '@/components/entity/EntitySocialLinks';
 import { ShareMenu } from '@/components/share/ShareMenu';
 import { TagChipRow } from '@/components/tags/TagChipRow';
-import { MoreLikeThisByTag } from '@/components/tags/MoreLikeThisByTag';
 import { Button } from '@/components/ui/button';
 import { Eyebrow } from '@/components/ui/Eyebrow';
 import { Image } from '@/components/ui/Image';
@@ -37,7 +36,8 @@ import { VenueFeaturedInGuides } from '@/components/venues/VenueFeaturedInGuides
 import { AmenityDisplay } from '@/components/venues/AmenityDisplay';
 import { DestinationSafetyCard } from '@/components/safety/DestinationSafetyCard';
 import EqualityScoreBadge from '@/components/country/EqualityScoreBadge';
-import { EntityMap } from '@/components/map/EntityMap';
+import { EntityMap, type EntityMapMarker } from '@/components/map/EntityMap';
+import { NearbyMapLegend } from '@/components/map/NearbyMapLegend';
 import { MarkVisitedButton } from '@/components/marks/MarkVisitedButton';
 import SafetyAlertBanner from '@/components/country/SafetyAlertBanner';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
@@ -487,18 +487,7 @@ export function VenueHero({
             </a>
           </Button>
         )}
-        {typeof venue.latitude === 'number' && typeof venue.longitude === 'number' && (
-          <Button variant="outline" size="sm" asChild>
-            <a
-              href={`https://www.google.com/maps/dir/?api=1&destination=${venue.latitude},${venue.longitude}`}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <Navigation2 size={14} className="mr-1.5" />
-              Directions
-            </a>
-          </Button>
-        )}
+        {/* Directions live once, in the sidebar Location & contact card. */}
         <ShareMenu
           url={typeof window !== 'undefined' ? window.location.href : `https://queer.guide/venues/${venue.slug ?? venue.id}`}
           title={venue.name}
@@ -678,8 +667,6 @@ export function VenueOverview({
           </Editable>
         </section>
       )}
-
-      <MoreLikeThisByTag entityType="venue" entityId={venue.id} />
     </div>
   );
 }
@@ -767,9 +754,16 @@ interface VenueSidebarProps {
   venue: VenueWithRelations;
   checkinRefresh: number;
   onContentUpdated?: () => void;
+  /** Other venues + events around this one, rendered as secondary map markers. */
+  nearbyPoints?: EntityMapMarker[];
 }
 
-export function VenueSidebar({ venue, checkinRefresh, onContentUpdated }: VenueSidebarProps) {
+export function VenueSidebar({
+  venue,
+  checkinRefresh,
+  onContentUpdated,
+  nearbyPoints = [],
+}: VenueSidebarProps) {
   const hasMap = typeof venue.latitude === 'number' && typeof venue.longitude === 'number';
   const openNow = getOpenNow(venue.hours);
   const hasContact = Boolean(
@@ -785,21 +779,25 @@ export function VenueSidebar({ venue, checkinRefresh, onContentUpdated }: VenueS
           </CardHeader>
           <CardContent className="flex flex-col gap-4">
             {hasMap && (
-              <EntityMap
-                center={[Number(venue.longitude), Number(venue.latitude)]}
-                zoom={15}
-                height={180}
-                markers={[
-                  {
-                    id: venue.id,
-                    lat: Number(venue.latitude),
-                    lng: Number(venue.longitude),
-                    name: venue.name ?? 'Venue',
-                    type: 'venues',
-                    primary: true,
-                  },
-                ]}
-              />
+              <div className="flex flex-col gap-2">
+                <EntityMap
+                  center={[Number(venue.longitude), Number(venue.latitude)]}
+                  zoom={15}
+                  height={nearbyPoints.length > 0 ? 220 : 180}
+                  markers={[
+                    {
+                      id: venue.id,
+                      lat: Number(venue.latitude),
+                      lng: Number(venue.longitude),
+                      name: venue.name ?? 'Venue',
+                      type: 'venues',
+                      primary: true,
+                    },
+                    ...nearbyPoints,
+                  ]}
+                />
+                <NearbyMapLegend markers={nearbyPoints} />
+              </div>
             )}
 
             {venue.address && (

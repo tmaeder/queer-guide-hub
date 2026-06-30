@@ -22,7 +22,6 @@ import {
   type ExploreMapFilters,
   type MapMarker,
   LAYER_COLORS,
-  PRIDE_LAYER_COLORS,
 } from '@/hooks/useExploreMapData';
 import { useViewportPoints, POINT_LAYER_TYPES } from '@/hooks/useViewportPoints';
 import { ExploreMapLayers, LAYER_DEFS } from '@/components/map/ExploreMapLayers';
@@ -36,114 +35,30 @@ import {
   useCityBoundaries,
   useNeighbourhoodBoundaries,
 } from '@/hooks/useBoundaryData';
-import { useMapBoundaryLayers, type BoundaryLayerConfig } from '@/hooks/useMapBoundaryLayers';
+import { useMapBoundaryLayers } from '@/hooks/useMapBoundaryLayers';
 import { heatmapRenderPlan, type RenderMode } from './mapShellAdapters';
-
-// ── Layer classification ─────────────────────────────────────────────────────
-
-/** Layers rendered as native MapLibre circle + label layers (area feel) */
-// eslint-disable-next-line react-refresh/only-export-components
-export const AREA_LAYERS: LayerType[] = ['cities', 'countries', 'neighbourhoods'];
-
-/** Circle radius interpolation stops per area type: [zoom, radiusPx][] */
-const AREA_RADIUS: Record<string, [number, number][]> = {
-  countries: [
-    [1, 8],
-    [3, 18],
-    [5, 40],
-    [7, 80],
-    [9, 150],
-    [12, 280],
-  ],
-  cities: [
-    [2, 4],
-    [4, 8],
-    [6, 16],
-    [8, 28],
-    [10, 45],
-    [14, 75],
-  ],
-  neighbourhoods: [
-    [2, 3],
-    [4, 6],
-    [6, 12],
-    [8, 22],
-    [10, 38],
-    [14, 60],
-  ],
-};
-
-/**
- * Circle style per area type. Fills are deliberately light so the translucent
- * discs read as gentle density hints, not solid blobs; `opacityHover` deepens
- * the fill on hover for a responsive cue. Thin rings keep them refined.
- */
-const AREA_STYLE: Record<
-  string,
-  { opacity: number; opacityHover: number; strokeOpacity: number; minLabelZoom: number }
-> = {
-  countries: { opacity: 0.12, opacityHover: 0.22, strokeOpacity: 0.5, minLabelZoom: 1 },
-  cities: { opacity: 0.13, opacityHover: 0.24, strokeOpacity: 0.55, minLabelZoom: 3 },
-  neighbourhoods: { opacity: 0.16, opacityHover: 0.28, strokeOpacity: 0.6, minLabelZoom: 6 },
-};
-
-// ── MapLibre layer IDs for point data ────────────────────────────────────────
-
-const POINTS_SOURCE = 'points-source';
-const CLUSTERS_LAYER = 'clusters';
-const CLUSTER_COUNT_LAYER = 'cluster-count';
-const UNCLUSTERED_LAYER = 'unclustered-point';
-const GLYPH_LAYER = 'pin-glyph';
-const FEATURED_RING_LAYER = 'featured-ring';
-const PULSE_LAYER = 'live-pulse';
-const HEATMAP_SOURCE = 'heatmap-source';
-const HEATMAP_LAYER = 'heatmap-layer';
-const FOCUS_SOURCE = 'focus-source';
-const FOCUS_RING_LAYER = 'focus-ring';
-
-// All point render layers, top→bottom paint order excluded; used for bulk
-// visibility toggles between the pins and pure-density lenses.
-const PIN_LAYER_IDS = [
-  PULSE_LAYER,
-  FEATURED_RING_LAYER,
+import {
+  AREA_LAYERS,
+  AREA_RADIUS,
+  AREA_STYLE,
+  POINTS_SOURCE,
   CLUSTERS_LAYER,
   CLUSTER_COUNT_LAYER,
   UNCLUSTERED_LAYER,
   GLYPH_LAYER,
-];
-
-// ── Boundary configs ─────────────────────────────────────────────────────────
-
-const COUNTRY_BOUNDARY_CONFIG: BoundaryLayerConfig = {
-  key: 'countries',
-  entityType: 'countries',
-  matchKey: 'ISO_A2',
-  matchMode: 'code',
-  minLabelZoom: 1,
-};
-
-const CITY_BOUNDARY_CONFIG: BoundaryLayerConfig = {
-  key: 'cities',
-  entityType: 'cities',
-  matchKey: 'entity_id',
-  matchMode: 'entityId',
-  minLabelZoom: 4,
-  minLayerZoom: 4,
-};
-
-const NEIGHBOURHOOD_BOUNDARY_CONFIG: BoundaryLayerConfig = {
-  key: 'neighbourhoods',
-  entityType: 'neighbourhoods',
-  matchKey: 'entity_id',
-  matchMode: 'entityId',
-  minLabelZoom: 8,
-  minLayerZoom: 8,
-};
-
-// ── Default props ──────────────────────────────────────────────────────────────
-
-const DEFAULT_CENTER: [number, number] = [0, 20];
-const DEFAULT_ZOOM = 2.2;
+  FEATURED_RING_LAYER,
+  PULSE_LAYER,
+  HEATMAP_SOURCE,
+  HEATMAP_LAYER,
+  FOCUS_SOURCE,
+  FOCUS_RING_LAYER,
+  PIN_LAYER_IDS,
+  COUNTRY_BOUNDARY_CONFIG,
+  CITY_BOUNDARY_CONFIG,
+  NEIGHBOURHOOD_BOUNDARY_CONFIG,
+  DEFAULT_CENTER,
+  DEFAULT_ZOOM,
+} from '@/config/mapLayers';
 
 // Stable empty favorites set so effects don't churn when none are passed.
 const EMPTY_FAV: ReadonlySet<string> = new Set<string>();
@@ -187,9 +102,11 @@ export interface ExploreMapProps {
    *  `'heatmap'` swaps clusters/markers for the density layer. `'combined'`
    *  draws the heatmap beneath the pins (both visible). */
   renderMode?: RenderMode;
-  /** Use the pride-spectrum canvas palette (markers, area circles, density
-   *  heat). Gated to MapShell; legacy/embedded maps stay on LAYER_COLORS. */
-  pridePalette?: boolean;
+  /** MapShell-only mode flag — enables the queer-voiced empty state and other
+   *  MapShell-specific UX. (The former pride-spectrum palette was removed in
+   *  the monochrome strip; all maps now use the functional LAYER_COLORS and a
+   *  monochrome density ramp.) */
+  mapShellMode?: boolean;
   /** Fired (debounced, on data/viewport change) with the point summaries
    *  currently inside the visible bounds. Powers the spotlight rail. */
   onPointsInView?: (points: MapPointSummary[]) => void;
@@ -231,7 +148,7 @@ export const ExploreMap = ({
   onViewportChange: onViewportChangeProp,
   onLayersChange: onLayersChangeProp,
   renderMode = 'pins',
-  pridePalette = false,
+  mapShellMode = false,
   onPointsInView,
   selectedId,
   highlightedId,
@@ -353,7 +270,7 @@ export const ExploreMap = ({
   } = useViewportPoints({
     enabledLayers: pointEnabledLayers,
     filters,
-    palette: pridePalette ? PRIDE_LAYER_COLORS : LAYER_COLORS,
+    palette: LAYER_COLORS,
   });
 
   // ── Data: boundary polygons ─────────────────────────────────────────────
@@ -891,8 +808,7 @@ export const ExploreMap = ({
 
       const style = AREA_STYLE[type] ?? AREA_STYLE.cities;
       const radii = AREA_RADIUS[type] ?? AREA_RADIUS.cities;
-      const palette = pridePalette ? PRIDE_LAYER_COLORS : LAYER_COLORS;
-      const color = palette[type as LayerType] ?? '#888';
+      const color = LAYER_COLORS[type as LayerType] ?? '#888';
 
       const radiusExpr: unknown[] = ['interpolate', ['linear'], ['zoom']];
       for (const [z, r] of radii) radiusExpr.push(z, r);
@@ -1013,7 +929,7 @@ export const ExploreMap = ({
         areaLayerIdsRef.current.delete(oldId);
       }
     }
-  }, [areaMarkers, mapReady, showPopupFromMarker, countryBoundaries, pridePalette]);
+  }, [areaMarkers, mapReady, showPopupFromMarker, countryBoundaries]);
 
   // ── Point layers: native MapLibre source with built-in clustering ──────
   useEffect(() => {
@@ -1431,46 +1347,27 @@ export const ExploreMap = ({
       paint: {
         'heatmap-weight': 1,
         'heatmap-intensity': ['interpolate', ['linear'], ['zoom'], 0, 0.5, 9, 1.4],
-        // Pride-spectrum density ramp (MapShell) reads "density of queer
-        // life" as a rainbow heat field; legacy maps keep the monochrome
-        // black-alpha ramp (design system: no hue, no shadow). Both ramps
-        // are kept low-alpha so the field reads as a soft underglow beneath
-        // the pins — never an opaque blanket that buries them.
-        'heatmap-color': pridePalette
-          ? [
-              'interpolate',
-              ['linear'],
-              ['heatmap-density'],
-              0,
-              'rgba(117,7,135,0)', // transparent violet
-              0.2,
-              'rgba(0,77,255,0.30)', // blue
-              0.4,
-              'rgba(0,128,38,0.38)', // green
-              0.6,
-              'rgba(255,237,0,0.45)', // yellow
-              0.8,
-              'rgba(255,140,0,0.52)', // orange
-              1,
-              'rgba(228,3,3,0.60)', // red
-            ]
-          : [
-              'interpolate',
-              ['linear'],
-              ['heatmap-density'],
-              0,
-              'rgba(0,0,0,0)',
-              0.2,
-              'rgba(0,0,0,0.10)',
-              0.4,
-              'rgba(0,0,0,0.20)',
-              0.6,
-              'rgba(0,0,0,0.32)',
-              0.8,
-              'rgba(0,0,0,0.44)',
-              1,
-              'rgba(0,0,0,0.55)',
-            ],
+        // Monochrome black-alpha density ramp (design system: no hue, no
+        // shadow). Kept low-alpha so the field reads as a soft underglow
+        // beneath the pins — never an opaque blanket that buries them. The
+        // former pride-spectrum ramp was removed in the monochrome strip.
+        'heatmap-color': [
+          'interpolate',
+          ['linear'],
+          ['heatmap-density'],
+          0,
+          'rgba(0,0,0,0)',
+          0.2,
+          'rgba(0,0,0,0.10)',
+          0.4,
+          'rgba(0,0,0,0.20)',
+          0.6,
+          'rgba(0,0,0,0.32)',
+          0.8,
+          'rgba(0,0,0,0.44)',
+          1,
+          'rgba(0,0,0,0.55)',
+        ],
         'heatmap-radius': ['interpolate', ['linear'], ['zoom'], 0, 6, 9, 26, 14, 52],
         // Start transparent and cross-fade in when switching into a heat lens.
         'heatmap-opacity': prefersReducedMotion ? heatOpacityExpr : 0,
@@ -1484,7 +1381,7 @@ export const ExploreMap = ({
         if (m?.getLayer(HEATMAP_LAYER)) m.setPaintProperty(HEATMAP_LAYER, 'heatmap-opacity', heatOpacityExpr);
       });
     }
-  }, [renderMode, pointsGeoJSON, pointEnabledLayers, mapReady, pridePalette, prefersReducedMotion]);
+  }, [renderMode, pointsGeoJSON, pointEnabledLayers, mapReady, prefersReducedMotion]);
 
   // ── Focus ring (rail hover / selection) ──────────────────────────────────
   useEffect(() => {
@@ -1635,7 +1532,7 @@ export const ExploreMap = ({
 
       {/* Queer-voiced empty state (MapShell only). Shows when the area has no
           points and we're not mid-fetch — warmer than a hidden zero pill. */}
-      {pridePalette &&
+      {mapShellMode &&
         mapReady &&
         !isFetching &&
         !isCounterStale &&

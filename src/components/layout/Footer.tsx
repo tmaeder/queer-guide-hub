@@ -47,7 +47,7 @@ export function Footer() {
                       className={cn(
                         'text-xs transition-colors',
                         active
-                          ? 'text-accent-brand font-semibold'
+                          ? 'text-foreground font-semibold underline underline-offset-4'
                           : 'text-muted-foreground hover:text-primary',
                       )}
                     >
