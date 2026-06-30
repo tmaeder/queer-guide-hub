@@ -73,11 +73,20 @@ queer-guide-hub/
 
 ## Repo stats
 
-- **Edge functions:** 225
+- **Edge functions:** 228
 - **Edge functions:** 201
-- **Migrations:** 688
+- **Migrations:** 714
+- **Migrations:** 713
+- **Migrations:** 716
+- **Migrations:** 713
+- **Migrations:** 705
+- **Migrations:** 697
+- **Migrations:** 696
+- **Migrations:** 692
+- **Migrations:** 691
 - **Migrations:** 685
 - **Migrations:** 684
+- **Migrations:** 686
 - **Migrations:** 677
 - **Migrations:** 678
 - **Migrations:** 672
@@ -194,7 +203,7 @@ The repo lives in an iCloud-synced folder. `.git` objects get evicted. If git co
 
 LGBTQ+ travelers, locals, activists, researchers, allies. Safety-first, inclusive by default, content is the hero.
 
-- **Color:** monochrome base + one restrained brand accent. Black `--foreground: 0 0% 4%`, white `--background: 0 0% 100%`, plus grayscale steps (`--muted`, `--accent`, `--border`). **Brand accent (2026-06-17):** a single low-saturation berry `--accent-brand` (`330 45% 38%` light / `330 55% 62%` dark; `--accent-brand-foreground` flips per mode for AA) — used **only** for the active-nav indicator (Header dropdown, MobileBottomNav top-bar, Footer current page) and the `accent` Button variant (the one primary CTA per surface, e.g. homepage Join / Add-venue). It is the second permitted hue alongside `--destructive`. Do NOT spray it: default CTAs stay monochrome, `--primary` is unchanged, the legacy `brand` Button variant still renders black. (Supersedes the former "no brand magenta" rule.) ESLint (`no-restricted-syntax`) errors on hex/rgb/hsl literals outside allowlisted files; `accent-brand` utilities are token-based and pass.
+- **Color:** strict monochrome base. Black `--foreground: 0 0% 4%`, white `--background: 0 0% 100%`, plus grayscale steps (`--muted`, `--accent`, `--border`). **Brand accent removed (2026-06-25):** the former berry `--accent-brand` token was deleted in the monochrome-strip refactor — active-nav indicators now use `text-foreground` + weight/underline, and the `accent` Button variant collapses to the monochrome filled look (`bg-foreground text-background`), matching `default`. `--destructive` (muted red) is now the ONLY chromatic identity hue, alongside the locked functional/safety palettes (trip-safety traffic-light, equality-score scale, content warnings). Default CTAs stay monochrome; `--primary` is unchanged. ESLint (`no-restricted-syntax`) errors on hex/rgb/hsl literals outside allowlisted files.
 - **Typography:** Inter for body/UI + **Space Grotesk** display face for large headings (2026-06-17). Both self-hosted woff2 (`public/fonts/inter/`, `public/fonts/space-grotesk/`); Plus Jakarta Sans removed. `--font-display` = Space Grotesk, applied to `h1`/`h2` + `.text-hero(-xl)` + the `.font-display` utility; `h3`/card titles and all body text stay Inter. Editorial size scale in `@theme` — `--text-hero-xl` (88px), `--text-hero` (64px), `--text-display` (40px), `--text-headline-lg` (32px), `--text-headline` (28px), `--text-title` (22px), `--text-body-lg` (17px), `--text-15` (15px), `--text-13` (13px), `--text-xs2` (11px), `--text-2xs` (10px), `--text-3xs` (9px). Always use a token; ESLint guards block arbitrary `text-[NNrem]` / `font-extrabold` in admin tree, warns in public.
 - **Spacing rhythm:** strict 8 pt grid. Use even-step Tailwind utilities only — `p-{0,2,4,6,8,10,12,16,20,24}`, same for `m-`, `gap-`, `space-{x,y}-`. Odd-step utilities (`p-3`, `gap-3`, `p-5`, `space-y-7`, …) were removed 2026-05-21 (UI audit P8); ESLint-warn them in new code. `.5` increments (e.g. `p-1.5`, `gap-2.5`) remain allowed as the only sub-8pt micro-spacing — useful for icon-level offsets. Arbitrary `[NNpx]` values are only acceptable for genuine element-sizing constraints (icon dimensions, dropdown widths, card max-widths); never for spacing that could use the scale.
 - **Shape:** semantic 3-tier radius defined in the Tailwind v4 `@theme` block in `src/index.css` — `--radius-container: 1rem` (16px, cards/sheets/dialogs/hero blocks), `--radius-element: 0.5rem` (8px, buttons/inputs/list rows/nested cards), `--radius-badge: 0.25rem` (4px, tags/chips/status pills). ESLint warns on raw `rounded-(sm|md|lg|xl|2xl|3xl)` literals in new code — pick from the semantic trio. `rounded-full` allowed for avatars/dots only. `rounded-none` allowed for explicit flat override.
@@ -213,7 +222,7 @@ LGBTQ+ travelers, locals, activists, researchers, allies. Safety-first, inclusiv
 - **Inline links underlined.** `p a, li a, td a, span a, label a` get `text-decoration: underline` in `src/index.css`. Without color difference from body text, the underline is the only cue that distinguishes a link (WCAG 1.4.1, axe `link-in-text-block`). Standalone links — nav, buttons, cards — stay un-underlined.
 - **Crisis & safety pages are animation-free.** `src/pages/HelpHotlines.tsx` and any future route under `/help`, `/safety`, `/report-*` must not consume Aceternity components, scroll-reveal effects, or decorative motion. Functional motion only (focus rings, dialog transitions, accordions). Protects users in crisis from cognitive overload and respects `prefers-reduced-motion` (WCAG 2.3.3). The Aceternity Showcase (`/aceternity` → §A11y exemption) documents the canonical static pattern.
 - **Semantic radius tokens.** Always pick from the trio `rounded-container` (16px — cards, sheets, dialogs, hero blocks), `rounded-element` (8px — buttons, inputs, list rows, nested cards, image frames), `rounded-badge` (4px — chips, pills, status tags) over raw `rounded-(sm|md|lg|xl|2xl|3xl)` literals. The trio is a single point of change for the entire visual rhythm. `rounded-full` permitted for avatars/dots only; `rounded-none` for explicit flat overrides.
-- **Pride map canvas.** The `/map` MapShell renders a deliberate pride-spectrum palette **on the map canvas only** — `PRIDE_LAYER_COLORS` (`src/hooks/useExploreMapData.ts`) for markers + area circles, and a rainbow density-heat ramp in `src/components/map/ExploreMap.tsx` (gated by the `pridePalette` prop, passed by MapShell). Chrome (command bar, filter sheet, chips, popovers) stays strictly monochrome; legacy/embedded `ExploreMap` instances keep the neutral `LAYER_COLORS`. This is the one place the product expresses queer identity through color, on the same functional map-color exception already allowlisted for vector tiles. Markers are dots with a white halo (no text-on-color), so the WCAG pill-contrast rule doesn't apply; the layer-toggle pills (which would) are not rendered in MapShell. User-locked 2026-06-04 — live in production. Tune colors in `PRIDE_LAYER_COLORS` + the `pridePalette` heat ramp; do not bleed canvas color into chrome.
+- **Pride map canvas — REMOVED (2026-06-25).** The former pride-spectrum overlay (`PRIDE_LAYER_COLORS` + the rainbow density-heat ramp, gated by the `pridePalette` prop) was stripped in the monochrome refactor. The `/map` canvas now uses only the **functional** categorical `LAYER_COLORS` (`src/hooks/useExploreMapData.ts`) — distinguishing layer types (venue/event/city…), the same functional map-color exception allowlisted for vector tiles — plus a monochrome black-alpha density ramp in `src/components/map/ExploreMap.tsx`. The `pridePalette` prop was renamed `mapShellMode` (it now only gates MapShell-specific UX like the empty state, not color). Chrome stays strictly monochrome.
 
 ### Design System Files
 - Tokens: `src/index.css` (Tailwind v4 `@theme` block — CSS variables; no `tailwind.config.ts`)

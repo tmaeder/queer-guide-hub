@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { memo, useEffect, useRef, useState } from 'react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Star } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -54,7 +54,7 @@ export function PersonalityCardSkeleton() {
   );
 }
 
-export function PersonalityCard({ personality, loading, onClick, optimizedUrl, thumbnailUrl }: PersonalityCardProps) {
+function PersonalityCardImpl({ personality, loading, onClick, optimizedUrl, thumbnailUrl }: PersonalityCardProps) {
   const [imgError, setImgError] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
   const openTimerRef = useRef<number | null>(null);
@@ -273,3 +273,7 @@ export function PersonalityCard({ personality, loading, onClick, optimizedUrl, t
     </Popover>
   );
 }
+
+// Memoized: rendered in personality grids — skip re-render when props are
+// referentially stable.
+export const PersonalityCard = memo(PersonalityCardImpl);

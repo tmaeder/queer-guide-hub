@@ -8,6 +8,8 @@
  * already navigated to.
  */
 
+import { isValidImageUrl } from '@/lib/images/resolveEntityImage';
+
 export type RecentlyViewedType =
   | 'venue'
   | 'event'
@@ -16,7 +18,8 @@ export type RecentlyViewedType =
   | 'personality'
   | 'hotel'
   | 'marketplace'
-  | 'queer_village';
+  | 'queer_village'
+  | 'organization';
 
 export interface RecentlyViewedItem {
   type: RecentlyViewedType;
@@ -43,6 +46,7 @@ const TYPE_PATH: Record<RecentlyViewedType, string> = {
   hotel: '/hotels',
   marketplace: '/marketplace',
   queer_village: '/villages',
+  organization: '/organizations',
 };
 
 export function recentlyViewedHref(item: RecentlyViewedItem): string {
@@ -64,14 +68,23 @@ export function getRecentlyViewed(): RecentlyViewedItem[] {
     if (!raw) return [];
     const parsed = JSON.parse(raw);
     if (!Array.isArray(parsed)) return [];
-    return parsed.filter(
-      (it): it is RecentlyViewedItem =>
-        it &&
-        typeof it.slug === 'string' &&
-        typeof it.title === 'string' &&
-        typeof it.type === 'string' &&
-        it.type in TYPE_PATH,
-    );
+    return parsed
+      .filter(
+        (it): it is RecentlyViewedItem =>
+          it &&
+          typeof it.slug === 'string' &&
+          typeof it.title === 'string' &&
+          typeof it.type === 'string' &&
+          it.type in TYPE_PATH,
+      )
+      // Drop a present-but-invalid stored image (legacy non-https/corrupt/empty
+      // entries written before image guards existed) so the rail renders its
+      // deterministic fallback instead of a broken-image icon.
+      .map((it) =>
+        typeof it.image === 'string' && !isValidImageUrl(it.image)
+          ? { ...it, image: undefined }
+          : it,
+      );
   } catch {
     return [];
   }

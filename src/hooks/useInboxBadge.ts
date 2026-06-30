@@ -15,7 +15,7 @@
  * is cheap (index on user_id + trip_id filter) and never 404s.
  */
 
-import { useEffect } from 'react';
+import { useEffect, useId } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -25,6 +25,7 @@ const KEY = (userId: string | undefined) => ['inbox-orphan-count', userId] as co
 export function useInboxBadge(): number {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const instanceId = useId();
 
   const query = useQuery({
     queryKey: KEY(user?.id),
@@ -56,7 +57,7 @@ export function useInboxBadge(): number {
   useEffect(() => {
     if (!user) return;
     const channel = supabase
-      .channel(`reservations:badge:${user.id}`)
+      .channel(`reservations:badge:${user.id}:${instanceId}`)
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'reservations', filter: `user_id=eq.${user.id}` },
@@ -68,7 +69,7 @@ export function useInboxBadge(): number {
     return () => {
       void supabase.removeChannel(channel);
     };
-  }, [user, queryClient]);
+  }, [user, queryClient, instanceId]);
 
   return query.data ?? 0;
 }

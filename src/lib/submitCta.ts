@@ -1,4 +1,5 @@
 import type { TFunction } from 'i18next';
+import { stripLocale } from '@/lib/locale';
 
 export interface SubmitCta {
   label: string;
@@ -15,7 +16,7 @@ export interface SubmitCta {
  * before comparison so `/de/events` behaves like `/events`.
  */
 export function getSubmitCta(pathname: string, t: TFunction): SubmitCta {
-  const path = pathname.replace(/^\/(?:[a-z]{2}\/)?/, '/');
+  const path = stripLocale(pathname);
   if (path.startsWith('/events'))
     return { label: t('header.submitEvent', 'Submit Event'), route: '/submit/event' };
   if (path.startsWith('/venues'))

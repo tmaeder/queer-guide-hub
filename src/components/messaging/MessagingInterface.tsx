@@ -23,7 +23,7 @@ import {
   CalendarClock,
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
-import { useMessaging, type Message, type TypingIndicator } from '@/hooks/useMessaging';
+import { useMessaging, type Message } from '@/hooks/useMessaging';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import {
@@ -51,6 +51,7 @@ import { jumboTier } from '@/lib/messageRender';
 import { Sparkles, Sticker as StickerIcon } from 'lucide-react';
 import { useInboxFeed, type InboxFilter, type InboxItem } from '@/hooks/useInboxFeed';
 import { InboxRailItem } from '@/components/messaging/InboxRailItem';
+import { TypingIndicatorRow } from '@/components/messaging/TypingIndicatorRow';
 import { TripRailCard } from '@/components/messaging/TripRailCard';
 import { useUpcomingTrips } from '@/hooks/useUpcomingTrips';
 import { useGlobalPresence, useConversationPresence } from '@/hooks/useConversationPresence';
@@ -164,9 +165,9 @@ const MessageItem = ({
             <button
               type="button"
               onClick={() => onScrollToMessage(replyingTo.id)}
-              className="mb-1 flex w-full flex-col items-start gap-0.5 rounded-element border-l-2 border-accent-brand bg-muted/60 px-2 py-1 text-left"
+              className="mb-1 flex w-full flex-col items-start gap-0.5 rounded-element border-l-2 border-foreground bg-muted/60 px-2 py-1 text-left"
             >
-              <span className="text-2xs font-medium text-accent-brand">
+              <span className="text-2xs font-medium text-foreground">
                 {replyingTo.sender?.display_name || t('chat.reply.someone', { defaultValue: 'Someone' })}
               </span>
               <span className="line-clamp-1 text-xs text-muted-foreground">
@@ -185,7 +186,7 @@ const MessageItem = ({
                 textAlign: isOwn ? 'right' : 'left',
                 opacity: message.status === 'sending' ? 0.6 : 1,
                 ...(highlighted
-                  ? { outline: '2px solid var(--accent-brand)', borderRadius: 'var(--radius-element)' }
+                  ? { outline: '2px solid hsl(var(--foreground))', borderRadius: 'var(--radius-element)' }
                   : {}),
               }}
             >
@@ -211,7 +212,7 @@ const MessageItem = ({
                       borderBottomLeftRadius: 'var(--radius-element)',
                     }),
                 ...(message.status === 'sending' ? { opacity: 0.6 } : {}),
-                ...(highlighted ? { boxShadow: '0 0 0 2px var(--accent-brand)' } : {}),
+                ...(highlighted ? { boxShadow: '0 0 0 2px hsl(var(--foreground))' } : {}),
               }}
             >
               {isDeleted ? (
@@ -316,7 +317,7 @@ const MessageItem = ({
                         onClick={() => react(g.emoji)}
                         className={`rounded-badge border px-1.5 py-0.5 text-xs transition-colors ${
                           g.mine
-                            ? 'border-accent-brand bg-accent-brand/10'
+                            ? 'border-foreground bg-muted'
                             : 'border-border bg-muted hover:bg-muted/70'
                         }`}
                       >
@@ -332,38 +333,6 @@ const MessageItem = ({
             </TooltipProvider>
           )}
         </div>
-      </div>
-    </div>
-  );
-};
-
-interface TypingIndicatorProps {
-  typingUsers: TypingIndicator[];
-}
-
-const TypingIndicatorComponent = ({ typingUsers }: TypingIndicatorProps) => {
-  if (typingUsers.length === 0) return null;
-
-  const names = typingUsers.map((user) => user.display_name).join(', ');
-  const verb = typingUsers.length === 1 ? 'is' : 'are';
-
-  return (
-    <div
-      style={{ alignItems: 'center' }}
-      className="flex gap-2 pl-4 pr-4 pt-2 pb-2 text-sm text-muted-foreground"
-    >
-      <Avatar style={{ height: 24, width: 24 }}>
-        <AvatarFallback className="text-xs">
-          {typingUsers[0]?.display_name?.charAt(0) || 'U'}
-        </AvatarFallback>
-      </Avatar>
-      <span>
-        {names} {verb} typing
-      </span>
-      <div className="flex gap-1">
-        <div className="w-1 h-1 bg-primary rounded-full" />
-        <div className="w-1 h-1 bg-primary rounded-full" />
-        <div className="w-1 h-1 bg-primary rounded-full" />
       </div>
     </div>
   );
@@ -751,7 +720,7 @@ const ChatView = ({ conversationId, onBack }: ChatViewProps) => {
               </Avatar>
               {isOtherOnline && (
                 <div
-                  className="rounded-full absolute bg-accent-brand"
+                  className="rounded-full absolute bg-foreground"
                   style={{
                     bottom: -2,
                     right: -2,
@@ -872,7 +841,7 @@ const ChatView = ({ conversationId, onBack }: ChatViewProps) => {
                 );
               })}
 
-              <TypingIndicatorComponent typingUsers={currentTypingUsers} />
+              <TypingIndicatorRow typingUsers={currentTypingUsers} />
               <div ref={messagesEndRef} />
             </div>
           )}
@@ -883,7 +852,7 @@ const ChatView = ({ conversationId, onBack }: ChatViewProps) => {
       {(replyTarget || editing) && (
         <div className="flex items-center justify-between gap-2 border-t border-border bg-muted/50 px-4 py-2">
           <div className="min-w-0">
-            <p className="text-2xs font-medium text-accent-brand">
+            <p className="text-2xs font-medium text-foreground">
               {editing
                 ? t('chat.editing', { defaultValue: 'Editing message' })
                 : t('chat.replyingTo', {

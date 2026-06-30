@@ -105,20 +105,30 @@ export interface FuzzyMember {
 }
 export interface FuzzyCluster {
   score: number;
-  match_type: 'geo_name' | 'city_name';
+  match_type: string;
   dist_m: number | null;
   auto_eligible: boolean;
   count: number;
   members: FuzzyMember[];
 }
 
-export function useFuzzyDuplicateClusters() {
+/** Per-type retroactive fuzzy finder RPC. Personalities have none (namesake risk). */
+const FUZZY_RPC: Partial<Record<DedupContentType, string>> = {
+  venue: 'find_fuzzy_duplicate_clusters',
+  event: 'find_event_fuzzy_duplicate_clusters',
+  marketplace: 'find_marketplace_fuzzy_duplicate_clusters',
+};
+
+/** Content types that expose the fuzzy "same place / same item" review tab. */
+export const FUZZY_CONTENT_TYPES: DedupContentType[] = ['venue', 'event', 'marketplace'];
+
+export function useFuzzyDuplicateClusters(contentType: DedupContentType = 'venue') {
+  const rpc = FUZZY_RPC[contentType];
   const query = useQuery({
-    queryKey: ['fuzzy-dup-clusters', 'venue'],
+    queryKey: ['fuzzy-dup-clusters', contentType],
+    enabled: Boolean(rpc),
     queryFn: async (): Promise<FuzzyCluster[]> => {
-      const { data, error } = await supabase.rpc('find_fuzzy_duplicate_clusters' as never, {
-        p_limit: 300,
-      } as never);
+      const { data, error } = await supabase.rpc(rpc as never, { p_limit: 300 } as never);
       if (error) throw error;
       return (data ?? []) as unknown as FuzzyCluster[];
     },

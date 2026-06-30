@@ -11,6 +11,14 @@ export interface Env {
 	/** Tool-capable Workers AI model, e.g. @cf/meta/llama-3.3-70b-instruct-fp8-fast. */
 	ROUTER_MODEL?: string;
 	ALLOWED_ORIGINS: string;
+	/**
+	 * Optional Supabase JWT secret (HS256). When set, the safety layer verifies
+	 * the caller's access token offline; when unset, it falls back to a GoTrue
+	 * check using SUPABASE_SERVICE_KEY. Used to decide whether a logged-in user
+	 * may see safety-gated (high-risk-country) content in chat. Missing → fail
+	 * closed (treated as anonymous; gated content stays hidden).
+	 */
+	SUPABASE_JWT_SECRET?: string;
 }
 
 // ── Workers AI traditional function-calling shapes ─────────────────────────

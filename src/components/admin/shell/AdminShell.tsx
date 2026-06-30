@@ -33,8 +33,9 @@ import {
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { Menu } from 'lucide-react';
+import { Menu, Search } from 'lucide-react';
 import { AdminSidebar } from './AdminSidebar';
+import { OPEN_COMMAND_PALETTE_EVENT } from '@/components/admin/command-palette/commandPaletteBus';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { getBreadcrumbsForRoute, getRouteMinRole } from '@/config/adminNavigation';
 import { roleAtLeast } from '@/config/adminRoles';
@@ -202,24 +203,6 @@ export function AdminShell() {
         className="flex w-full bg-surface-container-low"
         style={{ minHeight: 'var(--admin-content-min-h)' }}
       >
-        {/* Mobile hamburger with "Admin Console" label */}
-        {isMobile && (
-          <button
-            type="button"
-            aria-label="Open admin navigation"
-            onClick={() => setMobileOpen(true)}
-            className="fixed flex items-center gap-1.5 bg-background pl-2 pr-4 py-1.5 cursor-pointer"
-            style={{ top: 80, left: 8, zIndex: 1200 }}
-          >
-            <Button variant="ghost" size="sm" className="h-7 w-7 p-1">
-              <Menu size={18} />
-            </Button>
-            <span className="font-semibold text-xs text-muted-foreground whitespace-nowrap">
-              Admin Console
-            </span>
-          </button>
-        )}
-
         {/* Sidebar -- drawer on mobile, persistent on desktop */}
         {isMobile ? (
           <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
@@ -233,9 +216,38 @@ export function AdminShell() {
 
         {/* Main content */}
         <div className="flex-1 min-w-0 flex flex-col overflow-hidden">
-          {/* Breadcrumb bar */}
+          {/* Mobile top bar: menu + current page + ⌘K */}
+          {isMobile && (
+            <div className="sticky top-0 z-[1200] flex items-center gap-2 border-b border-border bg-background px-3 py-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 w-8 p-0"
+                aria-label="Open admin navigation"
+                onClick={() => setMobileOpen(true)}
+              >
+                <Menu size={18} />
+              </Button>
+              <span className="flex-1 truncate text-sm font-semibold">
+                {breadcrumbs[breadcrumbs.length - 1]?.label ?? 'Admin'}
+              </span>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 w-8 p-0"
+                aria-label="Open command palette"
+                onClick={() => window.dispatchEvent(new Event(OPEN_COMMAND_PALETTE_EVENT))}
+              >
+                <Search size={16} />
+              </Button>
+            </div>
+          )}
+
+          {/* Breadcrumb bar (hidden under sm on mobile to avoid doubling the top-bar title) */}
           {breadcrumbs.length > 1 && (
-            <div className="px-4 sm:px-6 py-2.5 bg-background border-b border-border flex items-center min-h-11">
+            <div
+              className={`${isMobile ? 'hidden sm:flex' : 'flex'} px-4 sm:px-6 py-2.5 bg-background border-b border-border items-center min-h-11`}
+            >
               <Breadcrumb>
                 <BreadcrumbList className="flex-nowrap text-13">
                   {breadcrumbs.map((crumb, i) => {

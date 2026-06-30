@@ -13,6 +13,9 @@ vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ user: { id: 'u1' } }) }));
 // AmenityDisplay (inside HotelOverview) reads the profile for matched-needs
 // badges; stub it so no QueryClientProvider is needed here.
 vi.mock('@/hooks/useProfile', () => ({ useProfile: () => ({ profile: null }) }));
+// HotelOverview's nearby-map block uses a react-query hook; stub it to an empty
+// marker list so these renders stay provider-free (matches the pattern above).
+vi.mock('@/hooks/useNearbyMapPoints', () => ({ useNearbyMapPoints: () => [] }));
 
 import { HotelHero, HotelOverview, HotelSidebar, HotelPhotos } from '../HotelDetail.parts';
 

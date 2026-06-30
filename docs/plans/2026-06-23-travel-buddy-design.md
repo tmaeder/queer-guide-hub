@@ -22,9 +22,19 @@ over the trip's countries; for criminalizing/death-penalty destinations the surf
 nothing.
 
 **Recommended follow-ups (deferred — architecturally significant, need product sign-off):**
-- Defense-in-depth: suppress criminalizing-country candidates **inside `people_discovery`** so
-  the gate holds server-side across every mode/surface (changes shared multi-surface behavior).
-- Apply the same country-safety gate to the global `/people/travel` page.
+- ~~Defense-in-depth: suppress criminalizing-country candidates **inside `people_discovery`**~~
+  **DONE** (`20260624220000_people_discovery_travel_safety_gate.sql`): the **travel branch** of
+  `people_discovery` now returns an empty set when the resolved destination
+  (`trips.primary_country_id`/`primary_city_id`, or `p_city_id`) is high-risk, via
+  `location_is_high_risk`. So the gate holds server-side even on a direct RPC call. **Scope is
+  travel-mode only** — `locals`/`friends`/`dating` are deliberately untouched, because suppressing
+  *locals* discovery in criminalizing countries would harm the queer residents the app serves
+  (the opposite of the invariant's intent; venue/event gating likewise still serves logged-in
+  locals rather than erasing community).
+- Still deferred: the global `/people/travel` page is not anchored to a single destination
+  (passes no city/trip), so there is no one destination to gate there; **per-candidate**
+  suppression ("hide people whose advertised destination is high-risk") is a distinct product
+  decision (those users opted into directory visibility) and is intentionally **not** done.
 
 ## Why
 

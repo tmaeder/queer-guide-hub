@@ -6,13 +6,15 @@ interface UserModeBadgeProps {
   size?: 'sm' | 'md' | 'lg';
 }
 
+// Monochrome — modes are differentiated by icon + label, not color (the former
+// per-mode hues were removed in the monochrome strip).
 const modeConfig = {
-  dating:      { icon: Heart,     label: USER_MODE_LABELS.dating,      bgcolor: 'rgba(236, 72, 153, 0.1)', color: 'hsl(var(--foreground))' },
-  friends:     { icon: Users,     label: USER_MODE_LABELS.friends,     bgcolor: 'rgba(59, 130, 246, 0.1)', color: '#2563eb' },
-  exploration: { icon: Map,       label: USER_MODE_LABELS.exploration, bgcolor: 'rgba(34, 197, 94, 0.1)',  color: '#16a34a' },
-  fun:         { icon: Smile,     label: USER_MODE_LABELS.fun,         bgcolor: 'rgba(234, 179, 8, 0.1)',  color: '#ca8a04' },
-  networking:  { icon: Handshake, label: USER_MODE_LABELS.networking,  bgcolor: 'hsl(var(--muted))',       color: 'hsl(var(--foreground))' },
-  community:   { icon: Home,      label: USER_MODE_LABELS.community,   bgcolor: 'rgba(99, 102, 241, 0.1)', color: '#4f46e5' },
+  dating:      { icon: Heart,     label: USER_MODE_LABELS.dating },
+  friends:     { icon: Users,     label: USER_MODE_LABELS.friends },
+  exploration: { icon: Map,       label: USER_MODE_LABELS.exploration },
+  fun:         { icon: Smile,     label: USER_MODE_LABELS.fun },
+  networking:  { icon: Handshake, label: USER_MODE_LABELS.networking },
+  community:   { icon: Home,      label: USER_MODE_LABELS.community },
 };
 
 const sizeClasses = {
@@ -27,8 +29,7 @@ export function UserModeBadge({ mode, size = 'md' }: UserModeBadgeProps) {
 
   return (
     <span
-      className={`inline-flex items-center gap-1 font-medium rounded-full ${sizeClasses[size]}`}
-      style={{ backgroundColor: config.bgcolor, color: config.color }}
+      className={`inline-flex items-center gap-1 rounded-full bg-muted font-medium text-foreground ${sizeClasses[size]}`}
     >
       <config.icon style={{ width: 12, height: 12 }} />
       <span>{config.label}</span>

@@ -13,7 +13,6 @@ import {
   Cloud,
   Layers,
   Building,
-  Accessibility,
   Calendar,
   Newspaper,
   Users,
@@ -41,7 +40,6 @@ import {
   Flag,
   Award,
   CopyCheck,
-  ShieldCheck,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import type { AdminRole } from '@/config/adminRoles';
@@ -64,6 +62,10 @@ export interface AdminNavItem {
    *  `adminOnly`. Resolution order: minRole → adminOnly?'admin' → section.minRole
    *  → 'editor'. See resolveItemMinRole / getRouteMinRole. */
   minRole?: AdminRole;
+  /** Optional lightweight subheader label within a section (e.g. "Places",
+   *  "People"). Items sharing a `group` render under one muted subheader, in
+   *  declaration order. Items without a group render above the first group. */
+  group?: string;
 }
 
 export interface AdminNavSection {
@@ -81,7 +83,7 @@ export interface AdminNavSection {
 // ── Navigation Sections ────────────────────────────────────────────────────────
 
 export const adminNavSections: AdminNavSection[] = [
-  // ── Cockpit (unified dashboard) ─────────────────────────────────
+  // ── Cockpit (dashboard + daily work) ────────────────────────────
   {
     id: 'cockpit',
     label: 'Cockpit',
@@ -101,6 +103,19 @@ export const adminNavSections: AdminNavSection[] = [
         route: '/admin/inbox',
       },
       {
+        id: 'review-queue',
+        label: 'Review Queue',
+        icon: ClipboardCheck,
+        route: '/admin/review',
+      },
+      {
+        id: 'feedback',
+        label: 'Feedback',
+        icon: MessageSquarePlus,
+        route: '/admin/feedback',
+        reviewCountKey: 'review_feedback',
+      },
+      {
         id: 'affiliate',
         label: 'Affiliate',
         icon: Handshake,
@@ -110,7 +125,9 @@ export const adminNavSections: AdminNavSection[] = [
     ],
   },
 
-  // ── Content (all content types unified) ─────────────────────────
+  // ── Content (grouped: Places · People · Editorial · Taxonomy & Media)
+  //    Quality lives as a tab on each entity page (?tab=quality), not as a
+  //    sibling row — routes preserved in routes.tsx for deep-links. ──────
   {
     id: 'content',
     label: 'Content',
@@ -125,24 +142,21 @@ export const adminNavSections: AdminNavSection[] = [
         icon: Layers,
         route: '/admin/content',
       },
+      // Places
       {
         id: 'venues',
         label: 'Venues',
         icon: Building,
         route: '/admin/content/venues',
         countTable: 'venues',
-      },
-      {
-        id: 'venue-quality',
-        label: 'Amenity quality',
-        icon: Accessibility,
-        route: '/admin/content/venue-quality',
+        group: 'Places',
       },
       {
         id: 'duplicates',
         label: 'Duplicate venues',
         icon: CopyCheck,
         route: '/admin/duplicates',
+        group: 'Places',
       },
       {
         id: 'events',
@@ -150,26 +164,7 @@ export const adminNavSections: AdminNavSection[] = [
         icon: Calendar,
         route: '/admin/content/events',
         countTable: 'events',
-      },
-      {
-        id: 'news',
-        label: 'News',
-        icon: Newspaper,
-        route: '/admin/content/news_articles',
-        countTable: 'news_articles',
-      },
-      {
-        id: 'personalities',
-        label: 'Personalities',
-        icon: Users,
-        route: '/admin/content/personalities',
-        countTable: 'personalities',
-      },
-      {
-        id: 'personality-quality',
-        label: 'Personality quality',
-        icon: ShieldCheck,
-        route: '/admin/content/personality-quality',
+        group: 'Places',
       },
       {
         id: 'cities',
@@ -177,12 +172,7 @@ export const adminNavSections: AdminNavSection[] = [
         icon: MapPin,
         route: '/admin/content/cities',
         countTable: 'cities',
-      },
-      {
-        id: 'city-quality',
-        label: 'City quality',
-        icon: ShieldCheck,
-        route: '/admin/content/city-quality',
+        group: 'Places',
       },
       {
         id: 'countries',
@@ -190,6 +180,7 @@ export const adminNavSections: AdminNavSection[] = [
         icon: Globe,
         route: '/admin/content/countries',
         countTable: 'countries',
+        group: 'Places',
       },
       {
         id: 'hotels',
@@ -197,6 +188,7 @@ export const adminNavSections: AdminNavSection[] = [
         icon: Hotel,
         route: '/admin/content/hotels',
         countTable: 'hotels',
+        group: 'Places',
       },
       {
         id: 'villages',
@@ -204,39 +196,16 @@ export const adminNavSections: AdminNavSection[] = [
         icon: Home,
         route: '/admin/content/queer_villages',
         countTable: 'queer_villages',
+        group: 'Places',
       },
+      // People
       {
-        id: 'village-quality',
-        label: 'Village quality',
-        icon: ShieldCheck,
-        route: '/admin/content/village-quality',
-      },
-      {
-        id: 'marketplace',
-        label: 'Marketplace',
-        icon: ShoppingBag,
-        route: '/admin/content/marketplace_listings',
-        countTable: 'marketplace_listings',
-      },
-      {
-        id: 'marketplace-quality',
-        label: 'Marketplace tags',
-        icon: Tag,
-        route: '/admin/content/marketplace-quality',
-      },
-      {
-        id: 'marketplace-guides',
-        label: 'Marketplace Guides',
-        icon: BookOpen,
-        route: '/admin/marketplace/guides',
-        countTable: 'marketplace_guides',
-      },
-      {
-        id: 'venue-guides',
-        label: 'Venue Guides',
-        icon: BookOpen,
-        route: '/admin/venue-guides',
-        countTable: 'venue_guides',
+        id: 'personalities',
+        label: 'Personalities',
+        icon: Users,
+        route: '/admin/content/personalities',
+        countTable: 'personalities',
+        group: 'People',
       },
       {
         id: 'groups',
@@ -244,6 +213,32 @@ export const adminNavSections: AdminNavSection[] = [
         icon: UsersRound,
         route: '/admin/content/community_groups',
         countTable: 'community_groups',
+        group: 'People',
+      },
+      // Editorial
+      {
+        id: 'news',
+        label: 'News',
+        icon: Newspaper,
+        route: '/admin/content/news_articles',
+        countTable: 'news_articles',
+        group: 'Editorial',
+      },
+      {
+        id: 'marketplace-guides',
+        label: 'Marketplace Guides',
+        icon: BookOpen,
+        route: '/admin/marketplace/guides',
+        countTable: 'marketplace_guides',
+        group: 'Editorial',
+      },
+      {
+        id: 'venue-guides',
+        label: 'Venue Guides',
+        icon: BookOpen,
+        route: '/admin/venue-guides',
+        countTable: 'venue_guides',
+        group: 'Editorial',
       },
       {
         id: 'quests',
@@ -251,13 +246,7 @@ export const adminNavSections: AdminNavSection[] = [
         icon: Flag,
         route: '/admin/quests',
         countTable: 'quests',
-      },
-      {
-        id: 'tags',
-        label: 'Tags',
-        icon: Tag,
-        route: '/admin/content/unified_tags',
-        countTable: 'unified_tags',
+        group: 'Editorial',
       },
       {
         id: 'pages',
@@ -265,37 +254,49 @@ export const adminNavSections: AdminNavSection[] = [
         icon: FileText,
         route: '/admin/content/cms_pages',
         countTable: 'cms_pages',
+        group: 'Editorial',
+      },
+      // Taxonomy & Media
+      {
+        id: 'marketplace',
+        label: 'Marketplace',
+        icon: ShoppingBag,
+        route: '/admin/content/marketplace_listings',
+        countTable: 'marketplace_listings',
+        group: 'Taxonomy & Media',
+      },
+      {
+        id: 'tags',
+        label: 'Tags',
+        icon: Tag,
+        route: '/admin/content/unified_tags',
+        countTable: 'unified_tags',
+        group: 'Taxonomy & Media',
       },
       {
         id: 'media-library',
         label: 'Media Library',
         icon: Image,
         route: '/admin/media',
+        group: 'Taxonomy & Media',
       },
     ],
   },
 
-  // ── Import & Review (humans-only work) ──────────────────────────
+  // ── Import & Data (ingestion + automation) ──────────────────────
   {
-    id: 'import-review',
-    label: 'Import & Review',
+    id: 'import-data',
+    label: 'Import & Data',
     icon: Download,
     collapsible: true,
     defaultExpanded: true,
     minRole: 'editor',
     items: [
       {
-        id: 'review-queue',
-        label: 'Review Queue',
-        icon: ClipboardCheck,
-        route: '/admin/review',
-      },
-      {
-        id: 'feedback',
-        label: 'Feedback',
-        icon: MessageSquarePlus,
-        route: '/admin/feedback',
-        reviewCountKey: 'review_feedback',
+        id: 'import-data-hub',
+        label: 'Import data',
+        icon: Download,
+        route: '/admin/imports/data',
       },
       {
         id: 'email-ingestions',
@@ -304,23 +305,12 @@ export const adminNavSections: AdminNavSection[] = [
         route: '/admin/imports/email-ingestions',
         countTable: 'email_ingestions',
       },
-    ],
-  },
-
-  // ── Automation (system work) ────────────────────────────────────
-  {
-    id: 'automation',
-    label: 'Automation',
-    icon: Workflow,
-    collapsible: true,
-    defaultExpanded: false,
-    minRole: 'moderator',
-    items: [
       {
         id: 'automation',
         label: 'Automations',
         icon: Workflow,
         route: '/admin/automation',
+        minRole: 'moderator',
       },
       {
         id: 'pipelines',
@@ -516,6 +506,19 @@ export function getBreadcrumbsForRoute(pathname: string): Array<{ label: string;
   }
 
   return crumbs;
+}
+
+/**
+ * Build an uppercase eyebrow string for a route, e.g. "CONTENT · VENUES".
+ * Derived from the breadcrumb resolver (last two labels, minus "Admin Console").
+ * Used as the default `eyebrow` for AdminPageHeader so pages only supply a title.
+ */
+export function getEyebrowForRoute(pathname: string): string | undefined {
+  const crumbs = getBreadcrumbsForRoute(pathname)
+    .filter((c) => c.label !== 'Admin Console')
+    .map((c) => c.label);
+  if (crumbs.length === 0) return undefined;
+  return crumbs.slice(-2).join(' · ').toUpperCase();
 }
 
 /**

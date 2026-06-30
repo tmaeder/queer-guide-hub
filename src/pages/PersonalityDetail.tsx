@@ -46,6 +46,7 @@ export default function PersonalityDetail() {
     type: 'personality',
     slug: personality?.slug,
     title: personality?.name,
+    image: personality?.image_url,
   });
 
   useEffect(() => {

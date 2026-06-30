@@ -1,5 +1,4 @@
-import type { RefObject } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useEffect, useState, type ReactNode, type RefObject } from 'react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { format } from 'date-fns';
 import {
@@ -19,8 +18,9 @@ import {
   Repeat,
   Music,
   ShieldCheck,
+  CircleCheck,
+  Sparkles,
 } from 'lucide-react';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import SafetyAlertBanner from '@/components/country/SafetyAlertBanner';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { EntitySocialLinks } from '@/components/entity/EntitySocialLinks';
@@ -34,10 +34,12 @@ import { ReportButton } from '@/components/moderation/ReportButton';
 import { AdminEditButton } from '@/components/admin/AdminEditButton';
 import { Editable } from '@/components/admin/inline/Editable';
 import { EntityMap } from '@/components/map/EntityMap';
+import { useNearbyMapPoints } from '@/hooks/useNearbyMapPoints';
 import { MarkVisitedButton } from '@/components/marks/MarkVisitedButton';
 import { AmenityDisplay } from '@/components/venues/AmenityDisplay';
 import { DestinationSafetyCard } from '@/components/safety/DestinationSafetyCard';
 import EqualityScoreBadge from '@/components/country/EqualityScoreBadge';
+import { PeopleHereRail } from '@/components/people/PeopleHereRail';
 import type { Database } from '@/integrations/supabase/types';
 import { supabase } from '@/integrations/supabase/client';
 import { fetchEventBySlugOrId } from '@/hooks/usePageFetchers';
@@ -45,6 +47,10 @@ import { formatEventTime } from '@/lib/event-time';
 import { formatCurrency } from '@/lib/currency';
 import { isMeaningfulTag } from '@/utils/eventText';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
+import { useProfile } from '@/hooks/useProfile';
+import { matchNeeds, needLabel } from '@/lib/accessibilityNeeds';
+import { getEventLiveState } from '@/lib/event-countdown';
 
 export type EventWithRelations = Database['public']['Tables']['events']['Row'] & {
   social_links?: Record<string, string> | null;
@@ -67,10 +73,6 @@ export type EventWithRelations = Database['public']['Tables']['events']['Row'] &
     slug?: string;
     name: string;
     country_id?: string | null;
-    // D10: include the city's country so the detail page can prefer it
-    // when the event's denormalised country_id disagrees with the city's
-    // (the upstream feed wins normally — this is a coordinate-anchored
-    // safety net for cases like Salford getting tagged as US).
     countries?: {
       id: string;
       slug?: string;
@@ -154,7 +156,9 @@ export function getPriceDisplay(event: EventWithRelations) {
 }
 
 /** Map liveness/status to a header pill. Returns null for routine "scheduled". */
-function statusPill(event: EventWithRelations): { label: string; variant: 'destructive' | 'outline' | 'soft' } | null {
+function statusPill(
+  event: EventWithRelations,
+): { label: string; variant: 'destructive' | 'outline' | 'soft' } | null {
   const s = (event.liveness_status || event.status || '').toLowerCase();
   if (s.includes('cancel')) return { label: 'Cancelled', variant: 'destructive' };
   if (s.includes('postpon')) return { label: 'Postponed', variant: 'destructive' };
@@ -173,56 +177,74 @@ function humanizeRecurrence(pattern: string | null | undefined): string {
   return 'Recurring event';
 }
 
+/** The user's accessibility needs this event is known to satisfy (auth-only). */
+function useMatchedNeeds(event: EventWithRelations): string[] {
+  const { profile } = useProfile();
+  const prefs = (profile as { travel_preferences?: { accessibility_needs?: string[] } } | null)
+    ?.travel_preferences;
+  const needs = Array.isArray(prefs?.accessibility_needs) ? prefs.accessibility_needs : [];
+  if (needs.length === 0) return [];
+  const { matched } = matchNeeds(event.accessibility_attributes ?? [], needs);
+  return matched.map((m) => needLabel(m.need));
+}
+
+/* ------------------------------------------------------------------ */
+/* Live-state line — ticking countdown / happening-now / ended        */
+/* ------------------------------------------------------------------ */
+
+function LiveStateLine({ event }: { event: EventWithRelations }) {
+  const reduced = useReducedMotion();
+  const [now, setNow] = useState(() => Date.now());
+  const state = getEventLiveState(event.start_date, event.end_date, now);
+  const soon = state.kind === 'upcoming' && state.soon;
+
+  useEffect(() => {
+    if (state.kind === 'ended') return;
+    const ms = reduced ? 60_000 : soon ? 1_000 : 60_000;
+    const id = setInterval(() => setNow(Date.now()), ms);
+    return () => clearInterval(id);
+  }, [state.kind, soon, reduced]);
+
+  if (!state.label) return null;
+
+  if (state.kind === 'live') {
+    return (
+      <span className="inline-flex items-center gap-2 text-15 font-medium">
+        <span className="relative flex h-2.5 w-2.5">
+          {!reduced && (
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-foreground/40" />
+          )}
+          <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-foreground" />
+        </span>
+        {state.label}
+      </span>
+    );
+  }
+
+  if (state.kind === 'ended') {
+    return <span className="text-15 text-muted-foreground">{state.label}</span>;
+  }
+
+  return (
+    <span className="inline-flex items-center gap-1.5 text-15 font-medium text-foreground">
+      <Clock size={15} aria-hidden="true" />
+      {state.label}
+    </span>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Hero — cover, eyebrow, title, location, live state                  */
+/* ------------------------------------------------------------------ */
+
 interface HeroProps {
   event: EventWithRelations;
   cityName: string | null | undefined;
   countryName: string | null | undefined;
   cityLink: string | null;
   countryLink: string | null;
-  isPast: boolean;
-  showEventTz: boolean;
-  setShowEventTz: (fn: (prev: boolean) => boolean) => void;
-  venueRef: RefObject<HTMLDivElement>;
-  tripCount?: number;
-  isInTrip?: boolean;
-  onAddToTrip: () => void;
-  onShare: () => void;
-  onExportToCalendar: () => void;
-  onSendEvent: () => void;
-  showSendButton: boolean;
   heroImage: string | null;
-  locationLabel: string;
   onContentUpdated?: () => void;
-}
-
-function FactCell({
-  icon: Icon,
-  label,
-  value,
-  onClick,
-  title,
-}: {
-  icon: typeof Calendar;
-  label: string;
-  value: string;
-  onClick?: () => void;
-  title?: string;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      title={title}
-      disabled={!onClick}
-      className={`bg-background p-4 text-left ${onClick ? 'cursor-pointer hover:bg-muted/50' : 'cursor-default'}`}
-    >
-      <span className="flex items-center gap-1.5 text-muted-foreground">
-        <Icon size={13} aria-hidden="true" />
-        <Eyebrow as="span">{label}</Eyebrow>
-      </span>
-      <span className="mt-1 block text-15 font-medium">{value}</span>
-    </button>
-  );
 }
 
 export function EventHero({
@@ -231,21 +253,9 @@ export function EventHero({
   countryName,
   cityLink,
   countryLink,
-  isPast,
-  showEventTz,
-  setShowEventTz,
-  venueRef: _venueRef,
-  tripCount,
-  isInTrip,
-  onAddToTrip,
-  onExportToCalendar,
-  onSendEvent,
-  showSendButton,
   heroImage,
-  locationLabel: _locationLabel,
   onContentUpdated,
 }: HeroProps) {
-  const { t } = useTranslation();
   const isMobile = useIsMobile();
   const pill = statusPill(event);
   const eyebrow = event.festivals?.id
@@ -253,17 +263,14 @@ export function EventHero({
     : isMeaningfulTag(event.event_type)
       ? event.event_type
       : null;
-  const ticketHref = event.ticket_url;
-  const ageRestriction = event.age_restriction;
 
   return (
     <>
-      {/* Editorial cover */}
       <div className="group relative mb-6">
         <Image
           src={heroImage}
           alt={event.title}
-          heightPx={isMobile ? 220 : 360}
+          heightPx={isMobile ? 220 : 380}
           imageRole="hero"
           rounded="container"
           scrim={pill || event.is_featured ? 'readable' : 'none'}
@@ -299,55 +306,47 @@ export function EventHero({
         />
       )}
 
-      {isPast && (
-        <Alert className="mb-6">
-          <AlertDescription>
-            {t('pages.eventDetail.pastEvent', 'This event has ended.')}
-          </AlertDescription>
-        </Alert>
-      )}
-
-      {/* Editorial header */}
-      <div className="mb-6">
-        {(eyebrow || event.festivals?.id || event.countries?.equality_score != null) && (
-          <div className="mb-2 flex flex-wrap items-center gap-2">
-            {eyebrow && (
-              <Eyebrow as="span" className="capitalize">
-                {eyebrow}
-              </Eyebrow>
-            )}
-            {event.festivals?.id && (
-              <span className="inline-flex items-center gap-1.5 text-13 text-muted-foreground">
-                <Music size={13} aria-hidden="true" />
-                Part of <span className="font-semibold text-foreground">{event.festivals.name}</span>
-              </span>
-            )}
-            {event.countries?.equality_score != null && (
-              <EqualityScoreBadge score={event.countries.equality_score} size="sm" />
-            )}
-          </div>
+      <div className="mb-2 flex flex-wrap items-center gap-2">
+        {eyebrow && (
+          <Eyebrow as="span" className="capitalize">
+            {eyebrow}
+          </Eyebrow>
         )}
+        {event.festivals?.id && (
+          <span className="inline-flex items-center gap-1.5 text-13 text-muted-foreground">
+            <Music size={13} aria-hidden="true" />
+            Part of <span className="font-semibold text-foreground">{event.festivals.name}</span>
+          </span>
+        )}
+        {event.countries?.equality_score != null && (
+          <EqualityScoreBadge score={event.countries.equality_score} size="sm" />
+        )}
+      </div>
 
-        <h1
-          className="m-0 text-display font-bold leading-[1.05] tracking-tight md:text-headline-lg"
-          style={{ overflowWrap: 'anywhere' }}
+      <h1
+        className="m-0 text-display font-bold leading-[1.05] tracking-tight md:text-headline-lg"
+        style={{ overflowWrap: 'anywhere' }}
+      >
+        <Editable
+          contentType="events"
+          recordId={event.id}
+          field="title"
+          value={event.title}
+          onSaved={onContentUpdated}
         >
-          <Editable
-            contentType="events"
-            recordId={event.id}
-            field="title"
-            value={event.title}
-            onSaved={onContentUpdated}
-          >
-            {event.title}
-          </Editable>
-        </h1>
+          {event.title}
+        </Editable>
+      </h1>
 
-        <div className="mt-4 flex items-center gap-1.5 text-body-lg text-muted-foreground">
+      <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2">
+        <span className="inline-flex items-center gap-1.5 text-body-lg text-muted-foreground">
           <MapPin size={16} className="shrink-0" aria-hidden="true" />
           <span>
             {event.venues?.id ? (
-              <LocalizedLink to={`/venues/${event.venues.slug || event.venues.id}`} className="hover:underline">
+              <LocalizedLink
+                to={`/venues/${event.venues.slug || event.venues.id}`}
+                className="hover:underline"
+              >
                 {event.venues.name}
               </LocalizedLink>
             ) : (
@@ -378,32 +377,163 @@ export function EventHero({
               </>
             )}
           </span>
+        </span>
+        <LiveStateLine event={event} />
+      </div>
+    </>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Fact strip — date / time / price / ages, the canonical glance       */
+/* ------------------------------------------------------------------ */
+
+function FactCell({
+  icon: Icon,
+  label,
+  value,
+  onClick,
+  title,
+}: {
+  icon: typeof Calendar;
+  label: string;
+  value: string;
+  onClick?: () => void;
+  title?: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      title={title}
+      disabled={!onClick}
+      className={`bg-background p-4 text-left ${onClick ? 'cursor-pointer hover:bg-muted/50' : 'cursor-default'}`}
+    >
+      <span className="flex items-center gap-1.5 text-muted-foreground">
+        <Icon size={13} aria-hidden="true" />
+        <Eyebrow as="span">{label}</Eyebrow>
+      </span>
+      <span className="mt-1 block text-15 font-medium">{value}</span>
+    </button>
+  );
+}
+
+export function EventFactStrip({
+  event,
+  showEventTz,
+  setShowEventTz,
+}: {
+  event: EventWithRelations;
+  showEventTz: boolean;
+  setShowEventTz: (fn: (prev: boolean) => boolean) => void;
+}) {
+  const ageRestriction = event.age_restriction;
+  return (
+    <div
+      className={`grid grid-cols-2 gap-px overflow-hidden rounded-element border border-border bg-border ${
+        ageRestriction ? 'sm:grid-cols-4' : 'sm:grid-cols-3'
+      }`}
+    >
+      <FactCell icon={Calendar} label="Date" value={formatEventDate(event.start_date, event.end_date)} />
+      <FactCell
+        icon={Clock}
+        label="Time"
+        value={formatEventTime(event.start_date, event.end_date, showEventTz ? event.timezone : null)}
+        onClick={event.timezone ? () => setShowEventTz((prev) => !prev) : undefined}
+        title={event.timezone ? 'Toggle between event timezone and your local time' : undefined}
+      />
+      <FactCell icon={DollarSign} label="Price" value={getPriceDisplay(event)} />
+      {ageRestriction && <FactCell icon={Users} label="Ages" value={ageRestriction} />}
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* For-you line — auth-aware personalization, only what's true         */
+/* ------------------------------------------------------------------ */
+
+export function EventForYou({
+  event,
+  isInTrip,
+  tripCount,
+}: {
+  event: EventWithRelations;
+  isInTrip?: boolean;
+  tripCount?: number;
+}) {
+  const matchedNeeds = useMatchedNeeds(event);
+  const chips: ReactNode[] = [];
+
+  if (isInTrip && tripCount) {
+    chips.push(
+      <Badge key="trip" variant="soft" className="gap-1.5">
+        <Luggage size={13} aria-hidden="true" />
+        In {tripCount} of your trip{tripCount !== 1 ? 's' : ''}
+      </Badge>,
+    );
+  }
+  for (const need of matchedNeeds) {
+    chips.push(
+      <Badge key={`need-${need}`} variant="secondary" className="gap-1.5 rounded-badge">
+        <CircleCheck size={13} aria-hidden="true" />
+        Matches your needs: {need}
+      </Badge>,
+    );
+  }
+
+  if (chips.length === 0) return null;
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      <span className="inline-flex items-center gap-1.5 text-13 text-muted-foreground">
+        <Sparkles size={13} aria-hidden="true" />
+        For you
+      </span>
+      {chips}
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Decision card — the sticky buy/RSVP/save panel (desktop rail)       */
+/* ------------------------------------------------------------------ */
+
+interface DecisionCardProps {
+  event: EventWithRelations;
+  user: { id: string } | null;
+  isPast: boolean;
+  userAttendance: string | null;
+  onAttendanceUpdate: (status: 'going' | 'interested' | 'not_going') => void;
+  onAddToTrip: () => void;
+  onExportToCalendar: () => void;
+  onSendEvent: () => void;
+}
+
+export function EventDecisionCard({
+  event,
+  user,
+  isPast,
+  userAttendance,
+  onAttendanceUpdate,
+  onAddToTrip,
+  onExportToCalendar,
+  onSendEvent,
+}: DecisionCardProps) {
+  const ticketHref = event.ticket_url;
+  const lat = event.latitude ?? event.venues?.latitude;
+  const lng = event.longitude ?? event.venues?.longitude;
+  const hasCoords = typeof lat === 'number' && typeof lng === 'number';
+  const venueName = event.venues?.name || event.venue_name;
+
+  return (
+    <Card className="md:sticky md:top-24">
+      <CardContent className="flex flex-col gap-4 p-6">
+        <div className="flex items-baseline justify-between gap-2">
+          <span className="text-headline font-display leading-none">{getPriceDisplay(event)}</span>
+          {event.is_free && <Badge variant="soft">No ticket needed</Badge>}
         </div>
-      </div>
 
-      {/* Fact bar — 3 facts, or 4 when an age restriction applies. No padding
-          cell: the location already lives in the header above. */}
-      <div
-        className={`mb-6 grid grid-cols-2 gap-px overflow-hidden rounded-element border border-border bg-border ${
-          ageRestriction ? 'sm:grid-cols-4' : 'sm:grid-cols-3'
-        }`}
-      >
-        <FactCell icon={Calendar} label="Date" value={formatEventDate(event.start_date, event.end_date)} />
-        <FactCell
-          icon={Clock}
-          label="Time"
-          value={formatEventTime(event.start_date, event.end_date, showEventTz ? event.timezone : null)}
-          onClick={event.timezone ? () => setShowEventTz((prev) => !prev) : undefined}
-          title={event.timezone ? 'Toggle between event timezone and your local time' : undefined}
-        />
-        <FactCell icon={DollarSign} label="Price" value={getPriceDisplay(event)} />
-        {ageRestriction && <FactCell icon={Users} label="Ages" value={ageRestriction} />}
-      </div>
-
-      {/* Actions — one primary, the rest quiet */}
-      <div className="mb-6 flex flex-wrap items-center gap-2">
         {ticketHref ? (
-          <Button asChild>
+          <Button asChild className="w-full">
             <a href={ticketHref} target="_blank" rel="noopener noreferrer">
               <Ticket size={16} className="mr-2" />
               Get Tickets
@@ -411,102 +541,139 @@ export function EventHero({
           </Button>
         ) : (
           !isPast && (
-            <Button onClick={onAddToTrip}>
+            <Button className="w-full" onClick={onAddToTrip}>
               <Luggage size={16} className="mr-2" />
               Add to Trip
             </Button>
           )
         )}
 
-        <FavoriteButton itemId={event.id} type="event" size="md" />
+        {user && !isPast && (
+          <div className="flex gap-2">
+            <Button
+              variant={userAttendance === 'going' ? 'default' : 'outline'}
+              onClick={() => onAttendanceUpdate(userAttendance === 'going' ? 'not_going' : 'going')}
+              aria-pressed={userAttendance === 'going'}
+              className="flex-1"
+            >
+              {userAttendance === 'going' && <CircleCheck size={16} className="mr-1.5" />}
+              Going
+            </Button>
+            <Button
+              variant={userAttendance === 'interested' ? 'default' : 'outline'}
+              onClick={() =>
+                onAttendanceUpdate(userAttendance === 'interested' ? 'not_going' : 'interested')
+              }
+              aria-pressed={userAttendance === 'interested'}
+              className="flex-1"
+            >
+              {userAttendance === 'interested' && <CircleCheck size={16} className="mr-1.5" />}
+              Interested
+            </Button>
+          </div>
+        )}
 
         {ticketHref && !isPast && (
-          <Button variant="outline" size="sm" onClick={onAddToTrip}>
-            <Luggage size={14} className="mr-1.5" />
+          <Button variant="outline" className="w-full" onClick={onAddToTrip}>
+            <Luggage size={16} className="mr-2" />
             Add to Trip
           </Button>
         )}
-        {!isPast && isInTrip && (
-          <Badge variant="soft">
-            In {tripCount} trip{tripCount !== 1 ? 's' : ''}
-          </Badge>
-        )}
-        <Button variant="outline" size="sm" onClick={onExportToCalendar}>
-          <Download size={14} className="mr-1.5" />
-          Calendar
-        </Button>
-        <ShareMenu
-          url={typeof window !== 'undefined' ? window.location.href : `https://queer.guide/events/${event.slug ?? event.id}`}
-          title={event.title}
-        />
-        {showSendButton && (
-          <Button variant="outline" size="sm" onClick={onSendEvent}>
-            <Send size={14} className="mr-1.5" />
-            Send
-          </Button>
-        )}
-        <MarkVisitedButton entityType="event" entityId={event.id} kind="visited" />
-        <ReportButton contentType="events" contentId={event.id} contentName={event.title} />
-        <AdminEditButton
-          contentType="events"
-          contentId={event.id}
-          contentName={event.title}
-          currentData={event as Record<string, unknown>}
-          onSaved={() => window.location.reload()}
-        />
-      </div>
 
-      {(() => {
-        const priceUnknown = !event.is_free && !event.price_min;
-        const locationUnknown = !(event.venues?.name || event.venue_name);
-        const sourceUrl = event.website || event.ticket_url;
-        if ((!priceUnknown && !locationUnknown) || !sourceUrl) return null;
-        const missing = [priceUnknown && 'price', locationUnknown && 'location']
-          .filter(Boolean)
-          .join(' and ');
-        return (
-          <div className="mb-6 flex flex-wrap items-center gap-4 rounded-element bg-muted p-4">
-            <p className="text-sm text-muted-foreground">
-              {missing.charAt(0).toUpperCase() + missing.slice(1)} not listed yet — check the source
-              for the latest info.
-            </p>
-            <Button size="sm" variant="outline" asChild>
-              <a href={sourceUrl} target="_blank" rel="noopener noreferrer">
-                <ExternalLink size={14} className="mr-1.5" />
-                Visit source
-              </a>
+        <div className="flex flex-wrap items-center gap-2">
+          <FavoriteButton itemId={event.id} type="event" size="md" />
+          <Button variant="outline" size="sm" onClick={onExportToCalendar}>
+            <Download size={14} className="mr-1.5" />
+            Calendar
+          </Button>
+          <ShareMenu
+            url={
+              typeof window !== 'undefined'
+                ? window.location.href
+                : `https://queer.guide/events/${event.slug ?? event.id}`
+            }
+            title={event.title}
+          />
+          {user && (
+            <Button variant="outline" size="sm" onClick={onSendEvent}>
+              <Send size={14} className="mr-1.5" />
+              Send
             </Button>
+          )}
+        </div>
+
+        <div className="border-t border-border pt-4 text-sm">
+          <div className="flex items-start gap-2">
+            <Calendar size={15} className="mt-0.5 shrink-0 text-muted-foreground" />
+            <div>
+              <p>{formatEventDate(event.start_date, event.end_date)}</p>
+              <p className="text-muted-foreground">
+                {formatEventTime(event.start_date, event.end_date)}
+              </p>
+            </div>
           </div>
-        );
-      })()}
-    </>
+          {venueName && (
+            <div className="mt-4 flex items-start gap-2">
+              <MapPin size={15} className="mt-0.5 shrink-0 text-muted-foreground" />
+              <div className="flex-1">
+                <p className="font-medium">{venueName}</p>
+                {hasCoords && (
+                  <a
+                    href={`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-1 inline-flex items-center gap-1 text-muted-foreground hover:text-foreground"
+                  >
+                    <Navigation2 size={13} />
+                    Directions
+                  </a>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="flex flex-wrap items-center gap-1 border-t border-border pt-4">
+          <MarkVisitedButton entityType="event" entityId={event.id} kind="visited" />
+          <ReportButton contentType="events" contentId={event.id} contentName={event.title} />
+          <AdminEditButton
+            contentType="events"
+            contentId={event.id}
+            contentName={event.title}
+            currentData={event as Record<string, unknown>}
+            onSaved={() => window.location.reload()}
+          />
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 
-interface OverviewProps {
-  event: EventWithRelations;
-  user: { id: string } | null;
-  isPast: boolean;
-  userAttendance: string | null;
-  onAttendanceUpdate: (status: 'going' | 'interested' | 'not_going') => void;
-  onContentUpdated?: () => void;
-}
+/* ------------------------------------------------------------------ */
+/* About — description, recurrence/festival, accessibility, source     */
+/* ------------------------------------------------------------------ */
 
-export function EventOverview({
+export function EventAbout({
   event,
-  user,
-  isPast,
-  userAttendance,
-  onAttendanceUpdate,
   onContentUpdated,
-}: OverviewProps) {
-  const goingCount = event.attendee_counts?.going ?? 0;
-  const interestedCount = event.attendee_counts?.interested ?? 0;
+}: {
+  event: EventWithRelations;
+  onContentUpdated?: () => void;
+}) {
   const hasAccessibility =
     (event.accessibility_attributes?.length ?? 0) > 0 || Boolean(event.accessibility_notes);
+  const priceUnknown = !event.is_free && !event.price_min;
+  const locationUnknown = !(event.venues?.name || event.venue_name);
+  const sourceUrl = event.website || event.ticket_url;
+  const showSource = (priceUnknown || locationUnknown) && Boolean(sourceUrl);
+  const missing = [priceUnknown && 'price', locationUnknown && 'location'].filter(Boolean).join(' and ');
+
+  if (!event.description && !event.is_recurring && !event.festivals?.id && !hasAccessibility && !showSource) {
+    return null;
+  }
 
   return (
-    <div className="flex flex-col gap-10">
+    <div className="flex flex-col gap-8">
       {event.description && (
         <section>
           <Eyebrow as="div" className="mb-2">
@@ -562,74 +729,76 @@ export function EventOverview({
         </section>
       )}
 
-      {user && !isPast && (
-        <section>
-          <Eyebrow as="div" className="mb-2">
-            Are you going?
-          </Eyebrow>
-          <div className="flex gap-2">
-            <Button
-              variant={userAttendance === 'going' ? 'default' : 'outline'}
-              // D4: clicking the active state clears RSVP (writes 'not_going').
-              onClick={() => onAttendanceUpdate(userAttendance === 'going' ? 'not_going' : 'going')}
-              aria-pressed={userAttendance === 'going'}
-              aria-label={
-                userAttendance === 'going'
-                  ? 'Cancel RSVP — currently marked as going'
-                  : 'Mark RSVP as going'
-              }
-              className="flex-1"
-            >
-              <Users size={16} className="mr-2" />
-              Going {userAttendance === 'going' && '✓'}
-            </Button>
-            <Button
-              variant={userAttendance === 'interested' ? 'default' : 'outline'}
-              onClick={() =>
-                onAttendanceUpdate(userAttendance === 'interested' ? 'not_going' : 'interested')
-              }
-              aria-pressed={userAttendance === 'interested'}
-              aria-label={
-                userAttendance === 'interested'
-                  ? 'Cancel RSVP — currently marked as interested'
-                  : 'Mark RSVP as interested'
-              }
-              className="flex-1"
-            >
-              <Users size={16} className="mr-2" />
-              Interested {userAttendance === 'interested' && '✓'}
-            </Button>
-          </div>
-          {(goingCount > 0 || interestedCount > 0) && (
-            <p className="mt-4 text-sm text-muted-foreground">
-              {goingCount} going · {interestedCount} interested · individual profiles are private.
-            </p>
-          )}
-        </section>
-      )}
-
-      {!user && (goingCount > 0 || interestedCount > 0) && (
-        <p className="text-sm text-muted-foreground">
-          {goingCount} going · {interestedCount} interested.
-        </p>
+      {showSource && (
+        <div className="flex flex-wrap items-center gap-4 rounded-element bg-muted p-4">
+          <p className="text-sm text-muted-foreground">
+            {missing.charAt(0).toUpperCase() + missing.slice(1)} not listed yet — check the source for
+            the latest info.
+          </p>
+          <Button size="sm" variant="outline" asChild>
+            <a href={sourceUrl!} target="_blank" rel="noopener noreferrer">
+              <ExternalLink size={14} className="mr-1.5" />
+              Visit source
+            </a>
+          </Button>
+        </div>
       )}
     </div>
   );
 }
 
-interface SidebarProps {
+/* ------------------------------------------------------------------ */
+/* Who's going — counts + people-to-meet                               */
+/* ------------------------------------------------------------------ */
+
+export function EventWhoIsGoing({
+  event,
+  user,
+  isPast,
+}: {
+  event: EventWithRelations;
+  user: { id: string } | null;
+  isPast: boolean;
+}) {
+  const going = event.attendee_counts?.going ?? 0;
+  const interested = event.attendee_counts?.interested ?? 0;
+
+  return (
+    <section className="flex flex-col gap-4">
+      <div className="flex items-baseline justify-between gap-2">
+        <h2 className="text-title font-display">Who's going</h2>
+        {(going > 0 || interested > 0) && (
+          <span className="text-sm text-muted-foreground">
+            {going} going · {interested} interested
+          </span>
+        )}
+      </div>
+
+      {going === 0 && interested === 0 && !isPast && (
+        <p className="text-sm text-muted-foreground">
+          {user ? 'No RSVPs yet. Be the first.' : 'No RSVPs yet — sign in to RSVP and see who else is going.'}
+        </p>
+      )}
+
+      <PeopleHereRail mode="locals" eventId={event.id} title="People you may know" />
+    </section>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Where — map, venue contact, organizer, safety                       */
+/* ------------------------------------------------------------------ */
+
+interface WhereProps {
   event: EventWithRelations;
   venueRef: RefObject<HTMLDivElement>;
   countryId?: string | null;
   onOrganizerClick: (organizer: string) => void;
 }
 
-export function EventSidebar({ event, venueRef, countryId, onOrganizerClick }: SidebarProps) {
+export function EventWhere({ event, venueRef, countryId, onOrganizerClick }: WhereProps) {
   const lat = event.latitude ?? event.venues?.latitude;
   const lng = event.longitude ?? event.venues?.longitude;
-  // Hide the map when no venue / venue_name is set, even if we happen to have
-  // raw coords — leaking a precise pin while showing "Location TBA" in the
-  // header confuses users and can leak the host's address before reveal.
   const hasNamedVenue = Boolean(event.venues?.name || event.venue_name);
   const hasMap = hasNamedVenue && typeof lat === 'number' && typeof lng === 'number';
   const org = event.organizer;
@@ -647,18 +816,28 @@ export function EventSidebar({ event, venueRef, countryId, onOrganizerClick }: S
     if (org.phone) socials.push({ label: 'Call', href: `tel:${org.phone}` });
   }
 
+  const hasOrganizer = Boolean(org || event.organizer_name);
+
+  const nearby = useNearbyMapPoints({
+    lat: typeof lat === 'number' ? lat : null,
+    lng: typeof lng === 'number' ? lng : null,
+    excludeType: 'event',
+    excludeId: event.id,
+    enabled: hasMap,
+  });
+
   return (
     <div className="flex flex-col gap-6">
       <Card ref={venueRef}>
         <CardHeader>
-          <CardTitle>When & where</CardTitle>
+          <CardTitle>Where</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           {hasMap && (
             <EntityMap
               center={[Number(lng), Number(lat)]}
               zoom={15}
-              height={180}
+              height={220}
               markers={[
                 {
                   id: event.id,
@@ -669,19 +848,11 @@ export function EventSidebar({ event, venueRef, countryId, onOrganizerClick }: S
                   type: 'events',
                   primary: true,
                 },
+                ...nearby,
               ]}
             />
           )}
-          <div className="flex items-start gap-2">
-            <Calendar size={16} className="mt-0.5 shrink-0 text-muted-foreground" />
-            <div>
-              <p className="text-sm">{formatEventDate(event.start_date, event.end_date)}</p>
-              <p className="text-sm text-muted-foreground">
-                {formatEventTime(event.start_date, event.end_date)}
-              </p>
-            </div>
-          </div>
-          {event.venues && (
+          {event.venues ? (
             <div className="flex items-start gap-2">
               <MapPin size={16} className="mt-0.5 shrink-0 text-muted-foreground" />
               <div>
@@ -694,6 +865,13 @@ export function EventSidebar({ event, venueRef, countryId, onOrganizerClick }: S
                 </p>
               </div>
             </div>
+          ) : (
+            event.venue_name && (
+              <div className="flex items-start gap-2">
+                <MapPin size={16} className="mt-0.5 shrink-0 text-muted-foreground" />
+                <p className="text-sm font-medium">{event.venue_name}</p>
+              </div>
+            )
           )}
           {event.max_attendees && (
             <div className="flex items-center gap-2">
@@ -742,9 +920,7 @@ export function EventSidebar({ event, venueRef, countryId, onOrganizerClick }: S
         </CardContent>
       </Card>
 
-      <DestinationSafetyCard countryIds={[countryId]} />
-
-      {(org || event.organizer_name) && (
+      {hasOrganizer && (
         <Card>
           <CardHeader>
             <CardTitle>Organizer</CardTitle>
@@ -752,10 +928,7 @@ export function EventSidebar({ event, venueRef, countryId, onOrganizerClick }: S
           <CardContent>
             {org ? (
               <>
-                <LocalizedLink
-                  to={`/venues/${org.slug || org.id}`}
-                  className="font-medium hover:underline"
-                >
+                <LocalizedLink to={`/venues/${org.slug || org.id}`} className="font-medium hover:underline">
                   {org.name}
                 </LocalizedLink>
                 {socials.length > 0 && (
@@ -793,10 +966,61 @@ export function EventSidebar({ event, venueRef, countryId, onOrganizerClick }: S
         </Card>
       )}
 
+      <DestinationSafetyCard countryIds={[countryId]} />
+
       <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
         <ShieldCheck size={13} aria-hidden="true" />
-        Spotted something off? Use the flag in the header to let us know.
+        Spotted something off? Use the flag to let us know.
       </p>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Mobile sticky action bar                                            */
+/* ------------------------------------------------------------------ */
+
+export function EventMobileBar({
+  event,
+  isPast,
+  user,
+  userAttendance,
+  onAddToTrip,
+  onAttendanceUpdate,
+}: {
+  event: EventWithRelations;
+  isPast: boolean;
+  user: { id: string } | null;
+  userAttendance: string | null;
+  onAddToTrip: () => void;
+  onAttendanceUpdate: (status: 'going' | 'interested' | 'not_going') => void;
+}) {
+  if (isPast) return null;
+  return (
+    <div className="fixed inset-x-0 bottom-0 z-[1100] flex items-center gap-2 border-t border-border bg-background/95 p-4 backdrop-blur md:hidden">
+      {event.ticket_url ? (
+        <Button asChild className="flex-1">
+          <a href={event.ticket_url} target="_blank" rel="noopener noreferrer">
+            <Ticket size={16} className="mr-2" />
+            Get Tickets
+          </a>
+        </Button>
+      ) : user ? (
+        <Button
+          className="flex-1"
+          variant={userAttendance === 'going' ? 'default' : 'outline'}
+          onClick={() => onAttendanceUpdate(userAttendance === 'going' ? 'not_going' : 'going')}
+        >
+          {userAttendance === 'going' && <CircleCheck size={16} className="mr-1.5" />}
+          {userAttendance === 'going' ? 'Going' : "I'm going"}
+        </Button>
+      ) : (
+        <Button className="flex-1" onClick={onAddToTrip}>
+          <Luggage size={16} className="mr-2" />
+          Add to Trip
+        </Button>
+      )}
+      <FavoriteButton itemId={event.id} type="event" size="md" />
     </div>
   );
 }

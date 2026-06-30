@@ -10,7 +10,6 @@
 @source inline("rounded-{t,b,l,r,tl,tr,bl,br}-{container,element,badge}");
 @source inline("{,hover:,dark:}{text,bg,border}-text-{primary,secondary,muted}");
 @source inline("{,dark:}border-border-hairline");
-@source inline("{,hover:,dark:}{text,bg,border}-accent-brand");
 
 @theme {
   /* ── Font families ─────────────────────────────────────────────── */
@@ -131,14 +130,6 @@
      `bg-muted` for depth cues. */
   --shadow-none: none;
   --shadow-hairline: 0 1px 0 hsl(var(--border));
-
-  /* ── Restrained brand accent — single low-saturation berry ─────────
-     The ONLY chromatic identity color (alongside the destructive red).
-     Used SPARINGLY: active nav indicator + the primary `brand` CTA.
-     Values in :root / .dark below. Do NOT flip --primary; default CTAs
-     stay monochrome black/white. */
-  --color-accent-brand: hsl(var(--accent-brand));
-  --color-accent-brand-foreground: hsl(var(--accent-brand-foreground));
 }
 
 /* ── Self-hosted fonts (Inter only) ───────────────────────────────────
@@ -253,11 +244,6 @@
   --warning: 0 70% 38%;
   --warning-foreground: 0 0% 100%;
 
-  /* Restrained brand accent — muted berry. Active nav + `brand` CTA only.
-     L 38% on white passes WCAG AA for white text (contrast ~5.0:1). */
-  --accent-brand: 330 45% 38%;
-  --accent-brand-foreground: 0 0% 100%;
-
   /* Success / info collapse to neutral foreground — differentiated by icon + label, not color. */
   --success: 0 0% 4%;
   --success-foreground: 0 0% 100%;
@@ -343,12 +329,6 @@
   --destructive-foreground: 0 0% 100%;
   --warning: 0 84% 62%;
   --warning-foreground: 0 0% 100%;
-
-  /* Brand accent (dark) — lifted berry for contrast on near-black.
-     Foreground flips to near-black: white text on L62% berry would
-     fail AA, near-black passes (~6:1). */
-  --accent-brand: 330 55% 62%;
-  --accent-brand-foreground: 0 0% 4%;
 
   --success: 0 0% 96%;
   --success-foreground: 0 0% 4%;
