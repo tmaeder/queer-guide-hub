@@ -6,7 +6,7 @@ import maplibregl from 'maplibre-gl';
 import type { GeoJSONSource, MapLayerMouseEvent } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { Button } from '@/components/ui/button';
-import { ExternalLink, Loader2, MapPin } from 'lucide-react';
+import { ExternalLink, Loader2 } from 'lucide-react';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { calculateDistanceKm } from '@/utils/calculateDistance';
@@ -26,6 +26,11 @@ import {
 import { useViewportPoints, POINT_LAYER_TYPES } from '@/hooks/useViewportPoints';
 import { ExploreMapLayers, LAYER_DEFS } from '@/components/map/ExploreMapLayers';
 import { ExploreMapFiltersPanel } from '@/components/map/ExploreMapFilters';
+import { MapResultsPill } from '@/components/map/MapResultsPill';
+import { LocationHint } from '@/components/map/LocationHint';
+import { MapEmptyState } from '@/components/map/MapEmptyState';
+import { useLocationHint } from '@/components/map/hooks/useLocationHint';
+import { useMapAutoFly } from '@/components/map/hooks/useMapAutoFly';
 import { useVisitorLocation } from '@/hooks/useVisitorLocation';
 import { hapticTrigger } from '@/hooks/useHaptics';
 import { useToast } from '@/hooks/use-toast';
@@ -163,18 +168,8 @@ export const ExploreMap = ({
   const { toast } = useToast();
   const prefersReducedMotion = useReducedMotion();
 
-  // Ambient "where am I" hint shown as a subtle inline map chip rather than a
-  // global toast — auto-fades, never stacks with action/error toasts.
-  const [locationHint, setLocationHint] = useState<string | null>(null);
-  const locationHintTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const showLocationHint = useCallback((label: string) => {
-    setLocationHint(label);
-    if (locationHintTimer.current) clearTimeout(locationHintTimer.current);
-    locationHintTimer.current = setTimeout(() => setLocationHint(null), 4000);
-  }, []);
-  useEffect(() => () => {
-    if (locationHintTimer.current) clearTimeout(locationHintTimer.current);
-  }, []);
+  // Ambient "where am I" hint chip — auto-fades, never stacks with toasts.
+  const { locationHint, showLocationHint } = useLocationHint();
 
   // ── Map refs ─────────────────────────────────────────────────────────────
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -318,39 +313,14 @@ export const ExploreMap = ({
 
   const { location: visitorGeo } = useVisitorLocation();
 
-  // Berlin — used as a curated fallback when neither URL state, an
-  // explicit prop, nor IP geolocation provides a center within ~2.5 s.
-  // Avoids the cold-load Sahara view (DEFAULT_CENTER = [0, 20] is in the
-  // empty desert and shows no markers, which reads as "the site is broken").
-  const FALLBACK_CENTER: [number, number] = [13.405, 52.52];
-  const FALLBACK_ZOOM = 10;
-  // Berlin fallback fired (cosmetic, prevents repeat toast).
-  const fallbackFiredRef = useRef(false);
-  // True only when we flew to the *user's* real location. Berlin fallback
-  // does NOT set this, so a late-arriving visitorGeo still overrides Berlin.
-  const userGeoFiredRef = useRef(false);
-
-  useEffect(() => {
-    if (skipAutoFly || initialCenter || !visitorGeo) return;
-    if (userGeoFiredRef.current) return;
-    userGeoFiredRef.current = true;
-    setViewport({ center: [visitorGeo.longitude, visitorGeo.latitude], zoom: 10 });
-    flyToLocation(visitorGeo.longitude, visitorGeo.latitude, 10);
-    showLocationHint(visitorGeo.city ? `Showing ${visitorGeo.city}` : 'Showing your area');
-  }, [visitorGeo, flyToLocation, skipAutoFly, initialCenter, showLocationHint]);
-
-  useEffect(() => {
-    if (skipAutoFly || initialCenter || fallbackFiredRef.current) return;
-    const timer = setTimeout(() => {
-      if (visitorGeo || fallbackFiredRef.current || userGeoFiredRef.current) return;
-      fallbackFiredRef.current = true;
-      setViewport({ center: FALLBACK_CENTER, zoom: FALLBACK_ZOOM });
-      flyToLocation(FALLBACK_CENTER[0], FALLBACK_CENTER[1], FALLBACK_ZOOM);
-      showLocationHint('Showing Berlin');
-    }, 2500);
-    return () => clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [skipAutoFly, initialCenter]);
+  useMapAutoFly({
+    skipAutoFly,
+    initialCenter,
+    visitorGeo,
+    flyToLocation,
+    setViewport,
+    showLocationHint,
+  });
 
   // ── Helper: extract bbox from map ────────────────────────────────────────
   const getMapBbox = useCallback((map: maplibregl.Map): Bbox => {
@@ -1494,62 +1464,29 @@ export const ExploreMap = ({
         />
       )}
 
-      {/* Fetching indicator + result count.
-          Sits above MapLibre's bottom-right AttributionControl (~24px tall);
-          bottom: 40 keeps the pill clear of the © Protomaps © OSM text. */}
-      <div
-        className="absolute z-10 flex items-center gap-1.5 rounded-full border border-border bg-background/85 px-4 py-1.5 pointer-events-none transition-opacity duration-200"
-        style={{
-          bottom: 40,
-          right: 8,
-          opacity:
-            (showResultCount && (isFetching || isCounterStale || inBoundsCount > 0)) ||
-            (!showResultCount && (isFetching || isCounterStale))
-              ? 1
-              : 0,
-        }}
-      >
-        {(isFetching || isCounterStale) && (
-          <Loader2 className="h-3 w-3 animate-spin" aria-label="Loading" />
-        )}
-        <span className="text-xs text-muted-foreground">
-          {isFetching || isCounterStale
-            ? 'Loading...'
-            : showResultCount
-              ? `${inBoundsCount.toLocaleString()} results in view`
-              : ''}
-        </span>
-      </div>
+      {/* Fetching indicator + result count */}
+      <MapResultsPill
+        showResultCount={showResultCount}
+        isFetching={isFetching}
+        isCounterStale={isCounterStale}
+        inBoundsCount={inBoundsCount}
+      />
 
-      {/* Ambient location hint — subtle inline chip (was a global toast).
-          Bottom-left, clear of the bottom-right results pill + top-right nav. */}
-      {locationHint && (
-        <div className="absolute bottom-3 left-3 z-10 flex items-center gap-1.5 rounded-full border border-border bg-background/85 px-4 py-1.5 pointer-events-none animate-fade-in">
-          <MapPin className="h-3 w-3 text-muted-foreground" aria-hidden="true" />
-          <span className="text-xs text-muted-foreground">{locationHint}</span>
-        </div>
-      )}
+      {/* Ambient location hint */}
+      <LocationHint hint={locationHint} />
 
-      {/* Queer-voiced empty state (MapShell only). Shows when the area has no
-          points and we're not mid-fetch — warmer than a hidden zero pill. */}
-      {mapShellMode &&
-        mapReady &&
-        !isFetching &&
-        !isCounterStale &&
-        inBoundsCount === 0 &&
-        pointEnabledLayers.length > 0 && (
-          <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 z-10 flex justify-center px-4 pointer-events-none">
-            <p className="max-w-xs text-center text-sm text-muted-foreground bg-background/85 border border-border rounded-element px-4 py-2">
-              {filters.openNow
-                ? 'Nothing open right now in view — turn off Open now or try later.'
-                : filters.dateRange
-                  ? 'No events in this time range here — widen the dates or pan out.'
-                  : filters.search
-                    ? `No matches for "${filters.search}" here — clear search or pan out.`
-                    : 'No spots here yet — pan, zoom out, or put one on the map.'}
-            </p>
-          </div>
-        )}
+      {/* Queer-voiced empty state (MapShell only) */}
+      <MapEmptyState
+        visible={
+          mapShellMode &&
+          mapReady &&
+          !isFetching &&
+          !isCounterStale &&
+          inBoundsCount === 0 &&
+          pointEnabledLayers.length > 0
+        }
+        filters={filters}
+      />
 
       {/* "Open full map" link for embedded previews */}
       {linkToFullMap && (
