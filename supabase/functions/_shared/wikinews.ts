@@ -27,6 +27,10 @@ export interface WikinewsTarget {
   category: string // e.g. Category:LGBT
 }
 
+// True only for the wikinews.org apex or a real subdomain of it. A plain
+// endsWith('wikinews.org') also matches an attacker host like
+// `evilwikinews.org`, so require an exact match or a `.`-delimited suffix.
+function isWikinewsHostname(hostname: string): boolean {
 function hostIsWikinews(hostname: string): boolean {
   const h = hostname.toLowerCase()
   return h === 'wikinews.org' || h.endsWith('.wikinews.org')
@@ -34,6 +38,7 @@ function hostIsWikinews(hostname: string): boolean {
 
 export function isWikinewsHost(rawUrl: string): boolean {
   try {
+    return isWikinewsHostname(new URL(rawUrl).hostname)
     return hostIsWikinews(new URL(rawUrl).hostname)
   } catch {
     return false
@@ -47,6 +52,7 @@ export function isWikinewsHost(rawUrl: string): boolean {
 //   https://en.wikinews.org/w/index.php?title=Category:LGBT
 export function parseWikinewsCategoryUrl(rawUrl: string): WikinewsTarget {
   const u = new URL(rawUrl)
+  if (!isWikinewsHostname(u.hostname)) {
   if (!hostIsWikinews(u.hostname)) {
     throw new Error(`Not a Wikinews URL: ${rawUrl}`)
   }
