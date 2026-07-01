@@ -56,7 +56,7 @@ jobs:
       SUPABASE_PROJECT_REF: xqeacpakadqfxjxjcewc
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Install Supabase CLI
         uses: supabase/setup-cli@v2
