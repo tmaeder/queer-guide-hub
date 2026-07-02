@@ -22,6 +22,7 @@ import {
 import { formatDistanceToNow } from 'date-fns';
 import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
+import { detailHref } from '@/lib/searchRoutes';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -502,11 +503,14 @@ function ForYouNewsRail({
                 <Skeleton key={i} className="h-40 w-56 shrink-0 rounded-element" />
               ))
             : hits.map((h) => {
-                const slug = (h.slug as string) || h.id;
+                const slug = (h.slug as string) || '';
+                // Strict: require a canonical slug — drop UUID-only recommendations.
+                const to = detailHref({ type: 'news', slug: h.slug as string, id: h.id as string });
+                if (!to) return null;
                 return (
                   <LocalizedLink
                     key={h.id}
-                    to={`/news/${slug}`}
+                    to={to}
                     className="w-56 shrink-0"
                     onClick={() =>
                       trackClick({ type: 'news', id: h.id }, 'recommendation', {

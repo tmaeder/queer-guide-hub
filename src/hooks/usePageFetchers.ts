@@ -8,16 +8,10 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAbortableQuery } from '@/hooks/useAbortableQuery';
 import type { Tables } from '@/integrations/supabase/types';
 import { logCmsAudit } from '@/lib/admin-audit';
+import { UUID_RE } from '@/lib/uuid';
 
 const STALE = 5 * 60_000;
 const STALE_LONG = 30 * 60_000;
-
-/** Strict UUID v1–v5 shape. Used to gate slug→id fallbacks for `maybeSingle()`
- * callers — without this, a slug that doesn't resolve becomes a non-UUID
- * `id=eq.<slug>` query against a uuid column, which PostgREST 400s and
- * React Query then retries in a tight loop. */
-const UUID_RE =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /** HotelDetail.tsx fallback when slug is a uuid. */
 export function useHotelByIdFallback<T = unknown>(

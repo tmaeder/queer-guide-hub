@@ -115,6 +115,18 @@ async function resolveBluesky(handle: string): Promise<Partial<SocialCard> | nul
   };
 }
 
+// Strip HTML tags repeatedly so nested/overlapping markup (e.g. "<scr<a>ipt>")
+// can't reassemble into a tag after a single pass.
+function stripHtml(html: string): string {
+  let prev: string
+  let out = html
+  do {
+    prev = out
+    out = out.replace(/<[^>]*>/g, '')
+  } while (out !== prev)
+  return out.replace(/[<>]/g, '').trim()
+}
+
 async function resolveMastodon(handle: string): Promise<Partial<SocialCard> | null> {
   // handle is "user@host"
   const m = handle.match(/^@?([^@]+)@([a-z0-9.-]+)$/i);
@@ -131,6 +143,7 @@ async function resolveMastodon(handle: string): Promise<Partial<SocialCard> | nu
   return {
     display_name: a.display_name || null,
     bio: a.note ? stripHtml(a.note) || null : null,
+    bio: a.note ? stripHtml(a.note) : null,
     bio: a.note ? stripHtml(a.note).trim() : null,
     avatar_url: a.avatar ?? null,
     follower_count: typeof a.followers_count === 'number' ? a.followers_count : null,

@@ -240,7 +240,11 @@ export default function SearchResults() {
       navigate(
         hrefForEntity({
           type: result.type,
-          slug: result.slug || (result.metadata?.slug as string) || result.objectID,
+          // Never send the objectID as a slug — id-keyed types (group/user)
+          // resolve via `id`; slug-keyed types fall back to a fresh search
+          // when no canonical slug exists rather than a /type/<uuid> dead link.
+          slug: result.slug || (result.metadata?.slug as string),
+          id: result.objectID,
           title: result.title,
           isCountry: Boolean(result.metadata?.isCountry),
         }),
@@ -261,7 +265,12 @@ export default function SearchResults() {
     (card: AssistantCard) => {
       setAskOpen(false);
       navigate(
-        hrefForEntity({ type: card.type, slug: (card.slug as string) || card.objectID, title: card.title }),
+        hrefForEntity({
+          type: card.type,
+          slug: card.slug as string,
+          id: card.objectID,
+          title: card.title,
+        }),
       );
     },
     [navigate],
