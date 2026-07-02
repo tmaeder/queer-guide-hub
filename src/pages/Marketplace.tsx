@@ -19,6 +19,7 @@ import { isAdultListing, useAdultAcknowledgement } from '@/hooks/useAdultContent
 import { MarketplaceRow } from '@/components/marketplace/MarketplaceRow';
 import { SavedSearchesButton } from '@/components/marketplace/SavedSearchesButton';
 import { AffiliateDisclosure } from '@/components/marketplace/AffiliateDisclosure';
+import { BrandRail } from '@/components/marketplace/BrandRail';
 import { CuratedIdsProvider } from '@/components/marketplace/CuratedIdsContext';
 import { useCuratedIds } from '@/components/marketplace/useCuratedIds';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
@@ -391,6 +392,7 @@ const Marketplace = () => {
                 title="Queer-owned picks"
                 subtitle="From queer- and trans-owned businesses"
               />
+              <BrandRail />
               <div className="mb-10">
                 <GuidesStream limit={3} showHero={false} />
                 <LocalizedLink

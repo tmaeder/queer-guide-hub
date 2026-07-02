@@ -27,6 +27,7 @@ const MarketplaceItemDetail = lazyRetry(() => import('./pages/MarketplaceItemDet
 const MarketplaceCategory = lazyRetry(() => import('./pages/MarketplaceCategory'));
 const MarketplaceCategories = lazyRetry(() => import('./pages/MarketplaceCategories'));
 const MarketplaceMerchant = lazyRetry(() => import('./pages/MarketplaceMerchant'));
+const MarketplaceBrand = lazyRetry(() => import('./pages/MarketplaceBrand'));
 const Organizations = lazyRetry(() => import('./pages/Organizations'));
 const MarketplaceShare = lazyRetry(() => import('./pages/MarketplaceShare'));
 const MarketplaceCollection = lazyRetry(() => import('./pages/MarketplaceCollection'));
@@ -466,6 +467,7 @@ export const AppRoutes = () => {
                 <Route path="marketplace/guides" element={<MarketplaceGuides />} />
                 <Route path="marketplace/guides/:slug" element={<MarketplaceGuide />} />
                 <Route path="marketplace/merchants/:domain" element={<MarketplaceMerchant />} />
+                <Route path="marketplace/brands/:slug" element={<MarketplaceBrand />} />
                 <Route path="marketplace/:slug" element={<MarketplaceItemDetail />} />
                 <Route path="wishlists" element={<Wishlists />} />
                 <Route path="wishlists/:slug" element={<Wishlist />} />
