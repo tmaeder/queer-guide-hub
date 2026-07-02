@@ -166,6 +166,39 @@ export function useMarketplaceListingsForCity(cityName: string | undefined, limi
   );
 }
 
+/**
+ * SFW listings carrying an occasion tag (occ-pride, occ-drag, occ-wedding)
+ * for contextual rails — e.g. Pride outfits on a Pride event page.
+ */
+export function useMarketplaceListingsForOccasion(occasionSlug: string | undefined, limit = 8) {
+  return useAsync<MarketplaceListing[]>(
+    [occasionSlug, limit],
+    async () => {
+      if (!occasionSlug) return [];
+      const { data: tagRows } = await supabase
+        .from('unified_tag_assignments')
+        .select('entity_id, unified_tags!inner(slug)')
+        .eq('entity_type', 'marketplace_listing')
+        .eq('unified_tags.slug', occasionSlug)
+        .limit(500);
+      const ids = Array.from(new Set((tagRows ?? []).map((r) => r.entity_id as string)));
+      if (ids.length === 0) return [];
+      const { data, error } = await supabase
+        .from('marketplace_listings')
+        .select('*')
+        .eq('status', 'active')
+        .in('id', ids)
+        .in('content_rating', ['sfw', 'suggestive'])
+        .not('images', 'is', null)
+        .order('boutique_score', { ascending: false, nullsFirst: false })
+        .limit(limit);
+      if (error || !data) return [];
+      return data as MarketplaceListing[];
+    },
+    [],
+  );
+}
+
 export function useMarketplaceListingsForCountry(countryId: string | undefined, limit = 4) {
   return useAsync<MarketplaceListing[]>(
     [countryId, limit],

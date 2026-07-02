@@ -22,6 +22,7 @@ import { socialSameAs } from '@/lib/social/registry';
 import { toast } from '@/hooks/use-toast';
 import { upsertEventAttendance } from '@/hooks/usePageFetchers';
 import { resolveEntityImage } from '@/lib/images/resolveEntityImage';
+import { MarketplaceForEvent } from '@/components/marketplace/MarketplaceForEvent';
 import {
   type EventWithRelations,
   EventHero,
@@ -320,6 +321,7 @@ export default function EventDetail() {
 
         <div className="mt-12 flex flex-col gap-12 pb-28 md:pb-12">
           <EventWhoIsGoing event={event} user={user} isPast={isPast} />
+          <MarketplaceForEvent eventType={event.event_type} eventTitle={event.title} />
           <EventMoreEvents eventId={event.id} city={cityName} />
         </div>
       </div>
