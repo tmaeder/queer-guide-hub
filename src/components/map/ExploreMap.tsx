@@ -134,6 +134,22 @@ export interface ExploreMapProps {
    *  ⌘/ctrl+scroll, two fingers on touch). Use when the map is embedded above
    *  page content (e.g. the homepage hero) so it doesn't trap page scroll. */
   cooperativeGestures?: boolean;
+  /** Render MapLibre's native zoom/geolocate buttons (default). MapShell sets
+   *  false and mounts its own design-system MapNavControls cluster instead —
+   *  the native GeolocateControl stays mounted (hidden) because it owns the
+   *  blue tracking dot. */
+  showNativeNav?: boolean;
+  /** Receives an imperative handle (map + geolocate trigger) on load, null on
+   *  teardown. Powers MapShell's custom nav controls. */
+  onMapHandle?: (handle: ExploreMapHandle | null) => void;
+}
+
+/** Imperative handle passed up via `onMapHandle`. */
+export interface ExploreMapHandle {
+  map: maplibregl.Map;
+  geolocateControl: maplibregl.GeolocateControl;
+  /** Fly to the viewer's location (native GeolocateControl trigger). */
+  triggerGeolocate: () => boolean;
 }
 
 // ── Component ──────────────────────────────────────────────────────────────────
@@ -162,6 +178,8 @@ export const ExploreMap = ({
   favoriteIds,
   savedOnly = false,
   cooperativeGestures = false,
+  showNativeNav = true,
+  onMapHandle,
 }: ExploreMapProps) => {
   const navigate = useLocalizedNavigate();
   const { toast } = useToast();
@@ -186,6 +204,8 @@ export const ExploreMap = ({
   onPointsInViewRef.current = onPointsInView;
   const onSelectPointRef = useRef(onSelectPoint);
   onSelectPointRef.current = onSelectPoint;
+  const onMapHandleRef = useRef(onMapHandle);
+  onMapHandleRef.current = onMapHandle;
 
   // ── State ────────────────────────────────────────────────────────────────
   const [mapReady, setMapReady] = useState(false);
@@ -373,15 +393,25 @@ export const ExploreMap = ({
     mapRef.current = map;
 
     map.addControl(new maplibregl.AttributionControl({ compact: true }), 'bottom-right');
-    map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'top-right');
-    map.addControl(
-      new maplibregl.GeolocateControl({
-        positionOptions: { enableHighAccuracy: true },
-        trackUserLocation: true,
-        showUserLocation: true,
-      }),
-      'top-right',
-    );
+    if (showNativeNav) {
+      map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'top-right');
+    }
+    // Always mounted — the GeolocateControl owns the blue tracking dot. When
+    // the native buttons are replaced (showNativeNav=false), the container
+    // class below hides the top-right ctrl corner and MapNavControls drives
+    // this control through the map handle's triggerGeolocate().
+    const geolocateControl = new maplibregl.GeolocateControl({
+      positionOptions: { enableHighAccuracy: true },
+      trackUserLocation: true,
+      showUserLocation: true,
+    });
+    map.addControl(geolocateControl, 'top-right');
+
+    onMapHandleRef.current?.({
+      map,
+      geolocateControl,
+      triggerGeolocate: () => geolocateControl.trigger(),
+    });
 
     if (linkToFullMap) map.scrollZoom.disable();
 
@@ -441,6 +471,7 @@ export const ExploreMap = ({
     });
 
     return () => {
+      onMapHandleRef.current?.(null);
       if (pulseRafRef.current) {
         cancelAnimationFrame(pulseRafRef.current);
         pulseRafRef.current = null;
@@ -846,7 +877,9 @@ export const ExploreMap = ({
   // ── Render ───────────────────────────────────────────────────────────────
   return (
     <div
-      className={`relative rounded-container overflow-hidden border border-border ${className ?? ''}`}
+      className={`relative rounded-container overflow-hidden border border-border ${
+        showNativeNav ? '' : 'qg-hide-native-nav '
+      }${className ?? ''}`}
       style={{ height }}
     >
       <div ref={containerRef} className="absolute inset-0 w-full h-full" />

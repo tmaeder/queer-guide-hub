@@ -1,11 +1,12 @@
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import { tweens } from '@/lib/motion';
 import { distance } from '@/lib/animation';
-import { ExploreMap } from './ExploreMap';
+import { ExploreMap, type ExploreMapHandle } from './ExploreMap';
 import { CommandBar } from './CommandBar';
 import { MobileMapBar } from './chrome/MobileMapBar';
+import { MapNavControls } from './chrome/MapNavControls';
 import { FilterChips } from './FilterChips';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { MapLegend } from './MapLegend';
@@ -198,54 +199,53 @@ export const MapShell = ({
     }
   }, [t, toast]);
 
+  // Imperative map handle from ExploreMap — powers the custom nav controls
+  // and the geolocate trigger (the native GeolocateControl owns the tracking
+  // dot and the fly-to; it stays mounted but hidden inside ExploreMap).
+  const [mapHandle, setMapHandle] = useState<ExploreMapHandle | null>(null);
+
   const handleGeolocate = useCallback(() => {
-    if (!navigator.geolocation) {
+    if (!mapHandle?.triggerGeolocate()) {
       toast({
         title: t('map.geolocate.unsupported', { defaultValue: 'Geolocation unavailable' }),
         variant: 'destructive',
       });
-      return;
     }
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        setViewport({
-          center: [pos.coords.longitude, pos.coords.latitude],
-          zoom: Math.max(state.viewport?.zoom ?? 12, 12),
-        });
-      },
-      (err) => {
-        // Match the PositionError codes so the user knows why we fell back
-        // to the default view instead of getting a silent or generic
-        // "denied" message for what might be a timeout or hardware issue.
-        let title: string;
-        switch (err.code) {
-          case 1: // PERMISSION_DENIED
-            title = t('map.geolocate.denied', {
-              defaultValue: 'Location access is off — showing the default area',
-            });
-            break;
-          case 2: // POSITION_UNAVAILABLE
-            title = t('map.geolocate.unavailable', {
-              defaultValue: "Couldn't get your location — showing the default area",
-            });
-            break;
-          case 3: // TIMEOUT
-            title = t('map.geolocate.timeout', {
-              defaultValue: 'Location lookup timed out — showing the default area',
-            });
-            break;
-          default:
-            title = t('map.geolocate.denied', {
-              defaultValue: 'Location access is off — showing the default area',
-            });
-        }
-        // Informational, not destructive — the map stays usable and we
-        // tell the user what happened.
-        toast({ title });
-      },
-      { enableHighAccuracy: true, timeout: 8000 },
-    );
-  }, [setViewport, state.viewport?.zoom, t, toast]);
+  }, [mapHandle, t, toast]);
+
+  // GeolocateControl errors → the same informational toasts the old
+  // navigator.geolocation path showed. Match the PositionError codes so the
+  // user knows why nothing moved.
+  useEffect(() => {
+    const geo = mapHandle?.geolocateControl;
+    if (!geo) return;
+    const onError = (err: { code?: number }) => {
+      let title: string;
+      switch (err?.code) {
+        case 2: // POSITION_UNAVAILABLE
+          title = t('map.geolocate.unavailable', {
+            defaultValue: "Couldn't get your location — showing the default area",
+          });
+          break;
+        case 3: // TIMEOUT
+          title = t('map.geolocate.timeout', {
+            defaultValue: 'Location lookup timed out — showing the default area',
+          });
+          break;
+        default: // PERMISSION_DENIED (1) or unknown
+          title = t('map.geolocate.denied', {
+            defaultValue: 'Location access is off — showing the default area',
+          });
+      }
+      // Informational, not destructive — the map stays usable and we
+      // tell the user what happened.
+      toast({ title });
+    };
+    geo.on('error', onError);
+    return () => {
+      geo.off('error', onError);
+    };
+  }, [mapHandle, t, toast]);
 
   return (
     <div
@@ -277,7 +277,11 @@ export const MapShell = ({
         favoriteIds={favoriteIds}
         savedOnly={savedActive}
         cooperativeGestures={cooperativeGestures}
+        showNativeNav={false}
+        onMapHandle={setMapHandle}
       />
+
+      <MapNavControls handle={mapHandle} />
 
       {showRail && (
         <>
