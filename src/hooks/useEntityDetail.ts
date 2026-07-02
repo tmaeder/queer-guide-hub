@@ -1,5 +1,5 @@
 import { useQuery, type UseQueryResult } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { untypedFrom } from '@/integrations/supabase/untyped';
 
 export interface UseEntityDetailOptions {
   /** Supabase table name, e.g. 'venues' */
@@ -26,9 +26,7 @@ export function useEntityDetail<T>(opts: UseEntityDetailOptions): UseQueryResult
     staleTime: 60_000,
     queryFn: async () => {
       if (!slug) return null;
-      const { data, error } = await supabase
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .from(table as any)
+      const { data, error } = await untypedFrom(table)
         .select(joinSpec ?? '*')
         .eq('slug', slug)
         .single();

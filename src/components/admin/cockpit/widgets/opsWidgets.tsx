@@ -15,7 +15,7 @@ import {
   CopyCheck,
   RefreshCw,
 } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { untypedRpc } from '@/integrations/supabase/untyped';
 import { Switch } from '@/components/ui/switch';
 import { useReviewSummaryQuery } from '@/hooks/useAdminCockpit';
 import { useAutomationActions } from '@/hooks/useAutomationActions';
@@ -152,14 +152,14 @@ function useRefreshDue() {
     queryKey: ['cockpit', 'refresh-due'],
     queryFn: async () => {
       const [cities, news, venues] = await Promise.all([
-        supabase.rpc('cities_due_for_refresh' as never, { limit: 50 } as never),
-        supabase.rpc('news_due_for_refresh' as never, { limit: 50 } as never),
-        supabase.rpc('venues_due_for_amenity_backfill' as never, { limit: 50 } as never),
+        untypedRpc<DueRow[]>('cities_due_for_refresh', { limit: 50 }),
+        untypedRpc<DueRow[]>('news_due_for_refresh', { limit: 50 }),
+        untypedRpc<DueRow[]>('venues_due_for_amenity_backfill', { limit: 50 }),
       ]);
       return {
-        cities: ((cities.data as DueRow[] | null) ?? []).length,
-        news: ((news.data as DueRow[] | null) ?? []).length,
-        venues: ((venues.data as DueRow[] | null) ?? []).length,
+        cities: (cities.data ?? []).length,
+        news: (news.data ?? []).length,
+        venues: (venues.data ?? []).length,
       };
     },
     staleTime: 5 * 60_000,

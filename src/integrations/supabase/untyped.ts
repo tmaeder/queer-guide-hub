@@ -10,3 +10,21 @@ export const untypedSupabase = supabase as unknown as UntypedClient;
 export function untypedFrom(table: string) {
   return untypedSupabase.from(table);
 }
+
+/**
+ * Call an RPC that isn't in the generated Database type. Centralizes the one
+ * cast here so call sites stay free of ad-hoc `as any` / `as never` on the RPC
+ * name. Pass the expected return shape as `T`; the assertion is the caller's
+ * honest contract with the function, not a blanket `any`.
+ */
+export async function untypedRpc<T = unknown>(
+  fn: string,
+  args?: Record<string, unknown>,
+): Promise<{ data: T | null; error: { message: string } | null }> {
+  const call = supabase.rpc as unknown as (
+    fn: string,
+    args?: Record<string, unknown>,
+  ) => Promise<{ data: unknown; error: { message: string } | null }>;
+  const { data, error } = await call(fn, args);
+  return { data: (data ?? null) as T | null, error };
+}

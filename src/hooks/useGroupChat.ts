@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { untypedFrom } from '@/integrations/supabase/untyped';
 import { useAuth } from '@/hooks/useAuth';
 
 export interface GroupChatMessage {
@@ -47,9 +48,7 @@ export function useGroupChat(groupId: string | null | undefined): UseGroupChatRe
 
     setLoading(true);
     (async () => {
-      const { data } = await supabase
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .from('group_chat_messages' as any)
+      const { data } = await untypedFrom('group_chat_messages')
         .select(
           'id, group_id, sender_id, content, reply_to_id, attachments, edited_at, created_at, sender:profiles!group_chat_messages_sender_id_fkey(display_name, avatar_url)',
         )
@@ -111,9 +110,7 @@ export function useGroupChat(groupId: string | null | undefined): UseGroupChatRe
       if (!user || !groupId) throw new Error('not signed in or no group');
       const trimmed = content.trim();
       if (!trimmed) return;
-      const { error } = await supabase
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .from('group_chat_messages' as any)
+      const { error } = await untypedFrom('group_chat_messages')
         .insert({ group_id: groupId, sender_id: user.id, content: trimmed });
       if (error) throw error;
     },

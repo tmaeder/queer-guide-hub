@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { untypedRpc } from '@/integrations/supabase/untyped';
 import { useToast } from '@/hooks/use-toast';
 
 export interface ResolvedInvite {
@@ -30,13 +30,12 @@ export function useGroupInvites() {
 
   const inviteFriends = useMutation({
     mutationFn: async ({ groupId, userIds }: { groupId: string; userIds: string[] }) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data, error } = await (supabase as any).rpc('invite_friends_to_group', {
+      const { data, error } = await untypedRpc<unknown[]>('invite_friends_to_group', {
         p_group_id: groupId,
         p_friend_ids: userIds,
       });
       if (error) throw error;
-      return (data ?? []) as unknown[];
+      return data ?? [];
     },
     onSuccess: (data) => {
       const n = Array.isArray(data) ? data.length : 0;
@@ -51,22 +50,20 @@ export function useGroupInvites() {
   });
 
   const createInviteLink = async (groupId: string): Promise<string> => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data, error } = await (supabase as any).rpc('create_group_invite', {
+    const { data, error } = await untypedRpc<{ token?: string }>('create_group_invite', {
       p_group_id: groupId,
       p_invited_user_id: null,
       p_email: null,
     });
     if (error) throw error;
-    const token = (data as { token?: string })?.token;
+    const token = data?.token;
     if (!token) throw new Error('No invite token returned');
     return inviteUrl(token);
   };
 
   const acceptInvite = useMutation({
     mutationFn: async (token: string) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data, error } = await (supabase as any).rpc('accept_group_invite', {
+      const { data, error } = await untypedRpc<{ group_id: string }>('accept_group_invite', {
         p_token: token,
       });
       if (error) throw error;
@@ -95,12 +92,11 @@ export function useResolveGroupInvite(token?: string) {
   return useQuery({
     queryKey: ['group-invite', token],
     queryFn: async () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data, error } = await (supabase as any).rpc('resolve_group_invite', {
+      const { data, error } = await untypedRpc<ResolvedInvite>('resolve_group_invite', {
         p_token: token,
       });
       if (error) throw error;
-      return (data ?? null) as ResolvedInvite | null;
+      return data;
     },
     enabled: !!token,
   });

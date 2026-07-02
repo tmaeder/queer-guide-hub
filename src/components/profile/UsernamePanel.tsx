@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { UsernameSelector } from '@/components/auth/UsernameSelector';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import { untypedRpc } from '@/integrations/supabase/untyped';
 import { Loader2 } from 'lucide-react';
 
 interface UsernamePanelProps {
@@ -27,11 +27,12 @@ export function UsernamePanel({ username, autoAssigned, onChanged }: UsernamePan
   const commit = async () => {
     if (!pending) return;
     setSaving(true);
-    const { data, error } = await supabase.rpc('change_username' as never, {
-      new_username: pending,
-    } as never);
+    const { data, error } = await untypedRpc<{ ok?: boolean; error?: string; next_change_at?: string }>(
+      'change_username',
+      { new_username: pending },
+    );
     setSaving(false);
-    const result = data as { ok?: boolean; error?: string; next_change_at?: string } | null;
+    const result = data;
     if (error || !result?.ok) {
       const code = result?.error;
       let description = 'Could not change username. Try again.';

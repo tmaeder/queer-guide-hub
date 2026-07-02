@@ -69,18 +69,18 @@ export function CloudflareDashboard() {
           'Cloudflare Data Refreshed: Latest statistics have been loaded successfully.',
         );
       }
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error fetching Cloudflare data:', error);
 
+      const message = error instanceof Error ? error.message : String(error);
       let errorMessage = 'Failed to fetch Cloudflare data.';
 
-      if (error.message?.includes('API token not configured')) {
+      if (message.includes('API token not configured')) {
         errorMessage =
           'Cloudflare API token is not configured. Please set the CLOUDFLARE_API_TOKEN in your Supabase secrets.';
-      } else if (error.message?.includes('Unauthorized')) {
+      } else if (message.includes('Unauthorized')) {
         errorMessage = 'Invalid Cloudflare API token. Please check your token permissions.';
-      } else if (error.message?.includes('Forbidden')) {
+      } else if (message.includes('Forbidden')) {
         errorMessage = 'Insufficient permissions. Your API token may not have access to this zone.';
       }
 

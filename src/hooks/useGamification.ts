@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { untypedFrom } from '@/integrations/supabase/untyped';
 import { useAuth } from '@/hooks/useAuth';
 
 export interface UserGamification {
@@ -78,20 +78,14 @@ export function useGamification() {
     setLoading(true);
     (async () => {
       const [g, a, c] = await Promise.all([
-        supabase
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          .from('user_gamification' as any)
+        untypedFrom('user_gamification')
           .select('*')
           .eq('user_id', user.id)
           .maybeSingle(),
-        supabase
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          .from('user_achievements' as any)
+        untypedFrom('user_achievements')
           .select('achievement_slug, earned_at')
           .eq('user_id', user.id),
-        supabase
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          .from('achievements' as any)
+        untypedFrom('achievements')
           .select('*')
           .order('sort_order', { ascending: true }),
       ]);

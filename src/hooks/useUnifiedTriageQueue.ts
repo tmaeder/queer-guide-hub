@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { untypedRpc } from '@/integrations/supabase/untyped';
 import { useAuth } from '@/hooks/useAuth';
 
 export interface TriageItem {
@@ -73,7 +74,9 @@ export function useTriageAction() {
       cannedSlug?: string;
       notify?: boolean;
     }) => {
-      const { data, error } = await supabase.rpc('triage_action' as never, {
+      // p_notes / p_canned_slug are passed as `string | null`, but the generated
+      // optional args reject null — route through untypedRpc to keep the null args.
+      const { data, error } = await untypedRpc('triage_action', {
         p_item_id: params.itemId,
         p_queue_type: params.queueType,
         p_action: params.action,
@@ -81,7 +84,7 @@ export function useTriageAction() {
         p_notes: params.notes || null,
         p_canned_slug: params.cannedSlug || null,
         p_notify: params.notify ?? true,
-      } as never);
+      });
       if (error) throw error;
       return data;
     },

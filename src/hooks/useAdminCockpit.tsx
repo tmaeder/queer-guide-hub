@@ -6,6 +6,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { untypedRpc } from '@/integrations/supabase/untyped';
 
 // ── Types ────────────────────────────────────────────────────────────────
 
@@ -176,11 +177,11 @@ async function fetchImportSummary(): Promise<ImportSummary> {
 async function fetchQualityIndex(): Promise<QualityIndex> {
   // Aggregated server-side in SQL (get_admin_quality_index) — avoids pulling
   // every row of venues/events/personalities/news_articles to the client.
-  const { data, error } = await supabase.rpc('get_admin_quality_index' as never);
+  const { data, error } = await untypedRpc<QualityIndex>('get_admin_quality_index');
   if (error || !data) {
     return { overallScore: 0, byContentType: {}, warnings: 0, critical: 0 };
   }
-  return data as unknown as QualityIndex;
+  return data;
 }
 
 async function fetchContentStats(): Promise<ContentStats> {

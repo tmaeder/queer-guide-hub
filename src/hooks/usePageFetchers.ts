@@ -5,6 +5,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { untypedFrom } from '@/integrations/supabase/untyped';
 import { useAbortableQuery } from '@/hooks/useAbortableQuery';
 import type { Tables } from '@/integrations/supabase/types';
 import { logCmsAudit } from '@/lib/admin-audit';
@@ -124,9 +125,7 @@ export async function fetchNewsQualityReviewCount(): Promise<number> {
 /** AdminReview.tsx — count entity_link_review pending rows. */
 export async function fetchEntityLinkReviewCount(): Promise<number> {
   // entity_link_review isn't in the generated supabase types yet.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { count, error } = await (supabase as any)
-    .from('entity_link_review')
+  const { count, error } = await untypedFrom('entity_link_review')
     .select('id', { count: 'exact', head: true })
     .eq('status', 'pending');
   return error ? 0 : (count ?? 0);
@@ -234,9 +233,7 @@ export async function fetchVenueWithReviews<TVenue, TReview>(
   // types yet — cast, per the project's convention for new tables/RPCs.)
   const [primary, redirect] = await Promise.all([
     supabase.from('venues').select(selectFields).eq('slug', slug).single(),
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (supabase as any)
-      .from('venue_slug_redirects')
+    untypedFrom('venue_slug_redirects')
       .select('venue_id')
       .eq('old_slug', slug)
       .maybeSingle(),
