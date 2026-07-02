@@ -84,13 +84,6 @@ const VERIFIED_WINDOW_DAYS = [
   { value: 180, label: 'Within 6 months' },
 ];
 
-// "Type" was previously labelled "Category" but its options are the
-// products/services enum, duplicating the tabs. The real category
-// dimension is the canonical subcategory_slug column populated by the
-// ingestion pipeline (fetish_gear, sex_toys, underwear, …) — wired
-// below via useMarketplaceSubcategoryTiles().
-const types = ['products', 'services'];
-
 function prettifySlug(slug: string): string {
   return slug.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 }
@@ -266,10 +259,6 @@ export function MarketplaceFilters({
     (availability === 'any' ? 1 : 0) +
     (verifiedWithinDays > 0 ? 1 : 0);
 
-  const handleTypeChange = (newType: string) => {
-    setCategory(newType);
-  };
-
   const { data: facets } = useMarketplaceFacets({
     category: category && category !== 'all' ? category : undefined,
     subcategory: subcategory && subcategory !== 'all' ? subcategory : undefined,
@@ -365,23 +354,6 @@ export function MarketplaceFilters({
               <AccordionContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
                   <div className="flex flex-col gap-2">
-                    <Label htmlFor="type">Type</Label>
-                    <Select value={category} onValueChange={handleTypeChange}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All types{fmtCount(facets.total)}</SelectItem>
-                        {types.map((t) => (
-                          <SelectItem key={t} value={t}>
-                            {t.charAt(0).toUpperCase() + t.slice(1)}
-                            {fmtCount(facets.category.get(t))}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="flex flex-col gap-2">
                     <Label htmlFor="department">Department</Label>
                     <Select value={department} onValueChange={handleDepartmentChange}>
                       <SelectTrigger>
@@ -398,23 +370,27 @@ export function MarketplaceFilters({
                       </SelectContent>
                     </Select>
                   </div>
-                  <div className="flex flex-col gap-2">
-                    <Label htmlFor="subcategory">Category</Label>
-                    <Select value={subcategory} onValueChange={setSubcategory}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select category" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All categories</SelectItem>
-                        {visibleSubcategories.map((opt) => (
-                          <SelectItem key={opt.slug} value={opt.slug}>
-                            {prettifySlug(opt.slug)}
-                            {fmtCount(facets.subcategory.get(opt.slug) ?? opt.count)}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
+                  {/* Subcategory is a drill-down within a department — the
+                      flat 550-slug merchant vocabulary was noise. */}
+                  {department && department !== 'all' && (
+                    <div className="flex flex-col gap-2">
+                      <Label htmlFor="subcategory">Category</Label>
+                      <Select value={subcategory} onValueChange={setSubcategory}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select category" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All categories</SelectItem>
+                          {visibleSubcategories.map((opt) => (
+                            <SelectItem key={opt.slug} value={opt.slug}>
+                              {prettifySlug(opt.slug)}
+                              {fmtCount(facets.subcategory.get(opt.slug) ?? opt.count)}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
                 </div>
               </AccordionContent>
             </AccordionItem>
