@@ -34,6 +34,7 @@ import {
 import { Store, Plus, Grid, List, ArrowRight } from 'lucide-react';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { EmptyState, ErrorState, LoadingTimeout } from '@/components/ui/EmptyState';
+import { useDidYouMean } from '@/hooks/useDidYouMean';
 import type { Database } from '@/integrations/supabase/types';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -306,6 +307,12 @@ const Marketplace = () => {
 
   const hasAdultListings = useMemo(() => accumulated.some(isAdultListing), [accumulated]);
 
+  // Zero-result typo recovery for the empty state.
+  const dymHit = useDidYouMean(
+    filters.search ?? '',
+    !loading && !error && accumulated.length === 0 && Boolean(filters.search),
+  );
+
   const handleFiltersChange = (next: Record<string, unknown>) => {
     setFilters(next as MarketplaceFiltersInput);
     const q = (next as MarketplaceFiltersInput).search || '';
@@ -497,6 +504,14 @@ const Marketplace = () => {
                       )
                 }
                 mood="neutral"
+                secondaryAction={
+                  dymHit?.title
+                    ? {
+                        label: `Did you mean “${dymHit.title}”?`,
+                        onClick: () => handleFiltersChange({ ...filters, search: dymHit.title }),
+                      }
+                    : undefined
+                }
                 primaryAction={
                   hasActiveFilters
                     ? { label: 'Clear filters', onClick: () => handleFiltersChange({}) }

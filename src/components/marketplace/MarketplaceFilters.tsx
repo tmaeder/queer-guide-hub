@@ -21,6 +21,7 @@ import {
 } from '@/components/ui/accordion';
 import { Search, Filter, X, Sliders } from 'lucide-react';
 import { TagSelector } from '@/components/tags/TagSelector';
+import { MarketplaceSearchSuggestions } from './MarketplaceSearchSuggestions';
 import {
   useMarketplaceFacets,
   useMarketplaceSubcategoryTiles,
@@ -306,6 +307,13 @@ export function MarketplaceFilters({
             onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
             style={{ paddingLeft: 36 }}
             aria-label="Search products and services"
+          />
+          <MarketplaceSearchSuggestions
+            query={search}
+            onPick={(q) => {
+              setSearch(q);
+              onFiltersChange({ ...buildFilters(), search: q });
+            }}
           />
         </div>
         <Button onClick={handleSearch} size="icon" aria-label="Search">

@@ -2184,6 +2184,148 @@
       "denied": "Location access is off — showing the default area",
       "unavailable": "Couldn't get your location — showing the default area",
       "timeout": "Location lookup timed out — showing the default area"
+    },
+    "share": {
+      "title": "[ZH] Map view",
+      "copied": "[ZH] Link copied",
+      "copiedDescription": "[ZH] Paste to share this view",
+      "failed": "[ZH] Share failed"
+    },
+    "commandBar": {
+      "searchThisMap": "[ZH] Search this map",
+      "searching": "[ZH] Searching",
+      "clearSearch": "[ZH] Clear search",
+      "typeMore": "[ZH] Type at least 2 characters",
+      "filterMapFor": "[ZH] Filter map for “{{query}}”",
+      "jumpToPlace": "[ZH] Jump to a place",
+      "noMatches": "[ZH] No places match — Enter still filters the map.",
+      "filters": "[ZH] Filters",
+      "filtersActive": "[ZH] Filters, {{count}} active",
+      "filtersAndLayers": "[ZH] Filters & layers",
+      "layers": "[ZH] Layers",
+      "more": "[ZH] More map options",
+      "moreShort": "[ZH] More",
+      "mapOptions": "[ZH] Map options",
+      "myLocation": "[ZH] My location",
+      "fitResults": "[ZH] Fit to results",
+      "shareView": "[ZH] Share view",
+      "reset": "[ZH] Reset"
+    },
+    "entityType": {
+      "venue": "[ZH] Venue",
+      "event": "[ZH] Event",
+      "city": "[ZH] City",
+      "country": "[ZH] Country",
+      "marketplace": "[ZH] Listing",
+      "personality": "[ZH] Person",
+      "queer_village": "[ZH] Village",
+      "group": "[ZH] Group",
+      "news": "[ZH] News",
+      "tag": "[ZH] Tag",
+      "user": "[ZH] User"
+    },
+    "quick": {
+      "groupLabel": "[ZH] Quick filters",
+      "openNow": "[ZH] Open now",
+      "tonight": "[ZH] Tonight",
+      "thisWeekend": "[ZH] This weekend",
+      "thisMonth": "[ZH] This month",
+      "saved": "[ZH] Saved"
+    },
+    "lens": {
+      "groupLabel": "[ZH] Map view",
+      "pins": "[ZH] Pins",
+      "density": "[ZH] Density",
+      "routes": "[ZH] Routes",
+      "boundary": "[ZH] Boundary",
+      "combined": "[ZH] Combined"
+    },
+    "sheet": {
+      "title": "[ZH] Map options",
+      "view": "[ZH] View",
+      "filters": "[ZH] Filters",
+      "time": "[ZH] Time",
+      "layers": "[ZH] Layers",
+      "actions": "[ZH] Map actions"
+    },
+    "time": {
+      "label": "[ZH] Time range",
+      "anyTime": "[ZH] Any time",
+      "chooseDates": "[ZH] Choose dates",
+      "pickRange": "[ZH] Pick a start & end",
+      "untilEndDate": "[ZH] {{start}} – end date",
+      "clear": "[ZH] Clear",
+      "apply": "[ZH] Apply dates"
+    },
+    "nav": {
+      "zoomIn": "[ZH] Zoom in",
+      "zoomOut": "[ZH] Zoom out",
+      "resetNorth": "[ZH] Reset bearing to north",
+      "geolocate": "[ZH] Show my location"
+    },
+    "legend": {
+      "label": "[ZH] Legend",
+      "show": "[ZH] Show map legend",
+      "hide": "[ZH] Hide map legend",
+      "title": "[ZH] What you're seeing",
+      "featured": "[ZH] Ringed = featured spot",
+      "live": "[ZH] Pulsing = open now / live",
+      "areas": "[ZH] Areas",
+      "densityTitle": "[ZH] Density of queer life",
+      "fewer": "[ZH] Fewer",
+      "more": "[ZH] More"
+    },
+    "rail": {
+      "inView_one": "[ZH] {{count}} place in view",
+      "inView_other": "[ZH] {{count}} places in view",
+      "hide": "[ZH] Hide nearby places",
+      "listLabel": "[ZH] Places in view",
+      "showOnMap": "[ZH] Show {{name}} on the map"
+    },
+    "firstRun": {
+      "spotsInView_one": "[ZH] {{count}} queer spot in view",
+      "spotsInView_other": "[ZH] {{count}} queer spots in view",
+      "dismiss": "[ZH] Dismiss"
+    },
+    "canvas": {
+      "loading": "[ZH] Loading",
+      "loadingEllipsis": "[ZH] Loading...",
+      "resultsInView_one": "[ZH] {{count}} result in view",
+      "resultsInView_other": "[ZH] {{count}} results in view",
+      "clickToZoom": "[ZH] Click to zoom in",
+      "venueCount_one": "[ZH] {{count}} venue",
+      "venueCount_other": "[ZH] {{count}} venues",
+      "eventCount_one": "[ZH] {{count}} event",
+      "eventCount_other": "[ZH] {{count}} events",
+      "restroomCount_one": "[ZH] {{count}} restroom",
+      "restroomCount_other": "[ZH] {{count}} restrooms",
+      "hotelCount_one": "[ZH] {{count}} hotel",
+      "hotelCount_other": "[ZH] {{count}} hotels",
+      "placeCount_one": "[ZH] {{count}} place",
+      "placeCount_other": "[ZH] {{count}} places",
+      "emptyOpenNow": "[ZH] Nothing open right now in view — turn off Open now or try later.",
+      "emptyTimeRange": "[ZH] No events in this time range here — widen the dates or pan out.",
+      "emptySearch": "[ZH] No matches for \"{{query}}\" here — clear search or pan out.",
+      "emptyDefault": "[ZH] No spots here yet — pan, zoom out, or put one on the map."
+    },
+    "layers": {
+      "venues": "[ZH] Venues",
+      "events": "[ZH] Events",
+      "cities": "[ZH] Cities",
+      "countries": "[ZH] Countries",
+      "restrooms": "[ZH] Restrooms",
+      "hotels": "[ZH] Hotels",
+      "neighbourhoods": "[ZH] Villages"
+    },
+    "filterChips": {
+      "groupLabel": "[ZH] Active filters",
+      "remove": "[ZH] Remove filter: {{label}}",
+      "clearAll": "[ZH] Clear all",
+      "within": "[ZH] Within {{km}} km",
+      "accessible": "[ZH] Accessible",
+      "queerOwned": "[ZH] Queer-owned",
+      "tags_one": "[ZH] {{count}} tag",
+      "tags_other": "[ZH] {{count}} tags"
     }
   },
   "resources": {

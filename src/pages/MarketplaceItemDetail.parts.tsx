@@ -39,6 +39,7 @@ import type { ListingTag } from '@/hooks/usePageFetchers';
 import { AffiliateDisclosure } from '@/components/marketplace/AffiliateDisclosure';
 import { MarketplacePriceHistory } from '@/components/marketplace/MarketplacePriceHistory';
 import { MarketplaceSimilarItems } from '@/components/marketplace/MarketplaceSimilarItems';
+import { BrandMoreFrom } from '@/components/marketplace/BrandMoreFrom';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 
 export type MarketplaceListing = Database['public']['Tables']['marketplace_listings']['Row'];
@@ -532,6 +533,7 @@ export function MarketplaceContent({ listing, reviews, tags }: ContentProps) {
         </CardContent>
       </Card>
 
+      <BrandMoreFrom listing={listing} />
       <MarketplaceSimilarItems listing={listing} />
     </div>
   );
