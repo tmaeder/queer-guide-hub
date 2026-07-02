@@ -13,6 +13,7 @@ import { useCurrency } from '@/hooks/useCurrency';
 import { useFxRates } from '@/hooks/useFxRates';
 import { isAdultListing } from '@/hooks/useAdultContent';
 import { departmentLabel, departmentOf } from '@/lib/marketplaceTaxonomy';
+import type { MarketplaceSurface } from '@/lib/affiliate/marketplace';
 import { formatListingPrice, getOutboundLink, highlightMatches } from './marketplaceHelpers';
 
 type MarketplaceListing = Database['public']['Tables']['marketplace_listings']['Row'];
@@ -31,6 +32,8 @@ interface MarketplaceCardProps {
   imageAsset?: EntityImageAsset;
   /** Eager-load the image (above-the-fold cards). */
   priority?: boolean;
+  /** Attribution surface for the outbound /go link. */
+  surface?: MarketplaceSurface;
 }
 
 function HighlightedText({ text, query }: { text: string; query?: string }) {
@@ -57,6 +60,7 @@ function MarketplaceCardImpl({
   searchQuery,
   imageAsset,
   priority = false,
+  surface = 'marketplace_grid',
 }: MarketplaceCardProps) {
   const { currency } = useCurrency();
   const { data: rates } = useFxRates();
@@ -75,7 +79,7 @@ function MarketplaceCardImpl({
     optimizedUrl: imageAsset?.optimized_url ?? null,
     thumbnailUrl: imageAsset?.thumbnail_url ?? null,
   });
-  const outbound = getOutboundLink(listing);
+  const outbound = getOutboundLink(listing, surface);
   const isAffiliate = outbound?.isAffiliate ?? false;
   const isAdult = isAdultListing(listing);
   const outOfStock = listing.in_stock === false;
