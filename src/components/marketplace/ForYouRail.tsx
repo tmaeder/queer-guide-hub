@@ -70,6 +70,7 @@ export function ForYouRail() {
                 imageAsset={assets.get(l.id)}
                 showFavoriteButton
                 priority={i < 4}
+                surface="for_you"
               />
             </li>
           ))}

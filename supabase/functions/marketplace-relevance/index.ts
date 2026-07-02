@@ -71,6 +71,10 @@ Deno.serve(async (req) => {
     const pipelineRunId = body.pipeline_run_id as string | undefined
     const batchSize = body.batch_size || 25
     const threshold = body.threshold ?? 0.5
+    // Multi-brand resellers get a stricter gate: their mainstream-wholesale
+    // bulk drowns the catalog, while indie single-brand shops keep 0.5.
+    const aggregatorThreshold = body.aggregator_threshold ?? 0.6
+    const aggregatorSources: string[] = body.aggregator_sources ?? ['ohmyfantasy', 'misterb']
     const dryRun = body.dry_run || false
     let query = supabase.from('ingestion_staging').select('id, normalized_data').eq('target_table', 'marketplace_listings').eq('ai_validation_status', 'approved').is('classification_result', null).order('created_at', { ascending: true }).limit(batchSize)
     if (pipelineRunId) query = query.eq('pipeline_run_id', pipelineRunId)
@@ -97,9 +101,11 @@ Deno.serve(async (req) => {
         }
         if (dryRun) continue
         const update: Record<string, unknown> = { classification_result: classification, ai_confidence_score: r.confidence }
-        if (r.confidence < threshold) {
+        const itemSource = String(n.sourceName ?? meta.source_slug ?? '')
+        const effectiveThreshold = aggregatorSources.includes(itemSource) ? aggregatorThreshold : threshold
+        if (r.confidence < effectiveThreshold) {
           update.disposition = 'rejected'
-          update.error_message = `relevance_below_${threshold}: ${r.reasoning.slice(0, 120)}`
+          update.error_message = `relevance_below_${effectiveThreshold}: ${r.reasoning.slice(0, 120)}`
           rejected++
         } else if (r.sensitivity_flags.some(f => f.severity === 'high')) {
           update.review_status = 'pending_review'
