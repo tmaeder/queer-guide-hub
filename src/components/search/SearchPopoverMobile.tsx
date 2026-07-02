@@ -35,10 +35,6 @@ export interface SearchPopoverMobileProps {
   onPrefetch: (s: SearchSuggestion) => void;
   navigate: (path: string) => void;
   onAsk: () => void;
-  onExploreMap: (center?: { lat: number; lng: number }) => void;
-  onNearMe: () => void;
-  nearMeSupported: boolean;
-  nearMeLoading: boolean;
   recentSearches: string[];
   onSelectRecent: (term: string) => void;
   clearRecents: () => void;
@@ -66,10 +62,6 @@ export function SearchPopoverMobile({
   onPrefetch,
   navigate,
   onAsk,
-  onExploreMap,
-  onNearMe,
-  nearMeSupported,
-  nearMeLoading,
   recentSearches,
   onSelectRecent,
   clearRecents,
@@ -77,7 +69,8 @@ export function SearchPopoverMobile({
   const { t } = useTranslation();
 
   return (
-    <>
+    // Flex column so the scrollable content fills the 100dvh sheet.
+    <div className="flex h-full flex-col">
       <div className="flex items-center justify-between border-b border-border px-4 py-2">
         <button
           type="button"
@@ -135,10 +128,6 @@ export function SearchPopoverMobile({
             navigate(path);
           }}
           onAsk={onAsk}
-          onExploreMap={onExploreMap}
-          onNearMe={onNearMe}
-          nearMeSupported={nearMeSupported}
-          nearMeLoading={nearMeLoading}
           recents={recentSearches}
           onSelectRecent={onSelectRecent}
           onClearRecents={clearRecents}
@@ -171,6 +160,6 @@ export function SearchPopoverMobile({
           />
         </>
       )}
-    </>
+    </div>
   );
 }

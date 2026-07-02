@@ -32,17 +32,38 @@ const PERIODS = [
   { value: '90', label: 'Last 90 days' },
 ];
 
+const VERTICALS = [
+  { value: 'all', label: 'All verticals' },
+  { value: 'shopping', label: 'Shopping only' },
+];
+
 export default function AdminAffiliate() {
   const [days, setDays] = useState('30');
+  const [vertical, setVertical] = useState('all');
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ['affiliate-summary', days],
+    queryKey: ['affiliate-summary', days, vertical],
     queryFn: async (): Promise<SummaryRow[]> => {
       const { data, error } = await untypedSupabase.rpc('affiliate_click_summary', {
         p_days: Number(days),
+        p_vertical: vertical === 'all' ? null : vertical,
       });
       if (error) throw error;
       return (data ?? []) as SummaryRow[];
+    },
+  });
+
+  // Shopping activation coverage: how much of the awin catalog carries a real
+  // affiliate_url (the backfill drains this toward 100%).
+  const { data: coverage } = useQuery({
+    queryKey: ['affiliate-awin-coverage'],
+    queryFn: async () => {
+      const base = untypedSupabase.from('marketplace_listings');
+      const [{ count: total }, { count: covered }] = await Promise.all([
+        base.select('id', { count: 'exact', head: true }).eq('status', 'active').eq('source_type', 'awin'),
+        base.select('id', { count: 'exact', head: true }).eq('status', 'active').eq('source_type', 'awin').not('affiliate_url', 'is', null),
+      ]);
+      return { total: total ?? 0, covered: covered ?? 0 };
     },
   });
 
@@ -69,14 +90,24 @@ export default function AdminAffiliate() {
         title="Affiliate performance"
         subtitle="Travelpayouts clicks attributed by surface. Which part of the product earns."
         actions={
-          <Select value={days} onValueChange={setDays}>
-            <SelectTrigger className="w-44"><SelectValue /></SelectTrigger>
-            <SelectContent>
-              {PERIODS.map((p) => (
-                <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="flex gap-2">
+            <Select value={vertical} onValueChange={setVertical}>
+              <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {VERTICALS.map((v) => (
+                  <SelectItem key={v.value} value={v.value}>{v.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={days} onValueChange={setDays}>
+              <SelectTrigger className="w-44"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {PERIODS.map((p) => (
+                  <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         }
       />
 
@@ -85,10 +116,18 @@ export default function AdminAffiliate() {
       )}
 
       {/* Top-line totals */}
-      <div className="mb-8 grid grid-cols-3 gap-4">
+      <div className="mb-8 grid grid-cols-4 gap-4">
         <Stat label="Clicks" value={totals.clicks.toLocaleString()} />
         <Stat label="Impressions" value={totals.impressions.toLocaleString()} />
         <Stat label="CTR" value={totals.ctr == null ? '—' : `${(totals.ctr * 100).toFixed(1)}%`} />
+        <Stat
+          label="Awin affiliate coverage"
+          value={
+            coverage && coverage.total > 0
+              ? `${((coverage.covered / coverage.total) * 100).toFixed(0)}% (${coverage.covered.toLocaleString()}/${coverage.total.toLocaleString()})`
+              : '—'
+          }
+        />
       </div>
 
       {/* Clicks by surface */}
