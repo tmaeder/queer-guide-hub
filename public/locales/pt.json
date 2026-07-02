@@ -2186,6 +2186,148 @@
       "denied": "Location access is off — showing the default area",
       "unavailable": "Couldn't get your location — showing the default area",
       "timeout": "Location lookup timed out — showing the default area"
+    },
+    "share": {
+      "title": "[PT] Map view",
+      "copied": "[PT] Link copied",
+      "copiedDescription": "[PT] Paste to share this view",
+      "failed": "[PT] Share failed"
+    },
+    "commandBar": {
+      "searchThisMap": "[PT] Search this map",
+      "searching": "[PT] Searching",
+      "clearSearch": "[PT] Clear search",
+      "typeMore": "[PT] Type at least 2 characters",
+      "filterMapFor": "[PT] Filter map for “{{query}}”",
+      "jumpToPlace": "[PT] Jump to a place",
+      "noMatches": "[PT] No places match — Enter still filters the map.",
+      "filters": "[PT] Filters",
+      "filtersActive": "[PT] Filters, {{count}} active",
+      "filtersAndLayers": "[PT] Filters & layers",
+      "layers": "[PT] Layers",
+      "more": "[PT] More map options",
+      "moreShort": "[PT] More",
+      "mapOptions": "[PT] Map options",
+      "myLocation": "[PT] My location",
+      "fitResults": "[PT] Fit to results",
+      "shareView": "[PT] Share view",
+      "reset": "[PT] Reset"
+    },
+    "entityType": {
+      "venue": "[PT] Venue",
+      "event": "[PT] Event",
+      "city": "[PT] City",
+      "country": "[PT] Country",
+      "marketplace": "[PT] Listing",
+      "personality": "[PT] Person",
+      "queer_village": "[PT] Village",
+      "group": "[PT] Group",
+      "news": "[PT] News",
+      "tag": "[PT] Tag",
+      "user": "[PT] User"
+    },
+    "quick": {
+      "groupLabel": "[PT] Quick filters",
+      "openNow": "[PT] Open now",
+      "tonight": "[PT] Tonight",
+      "thisWeekend": "[PT] This weekend",
+      "thisMonth": "[PT] This month",
+      "saved": "[PT] Saved"
+    },
+    "lens": {
+      "groupLabel": "[PT] Map view",
+      "pins": "[PT] Pins",
+      "density": "[PT] Density",
+      "routes": "[PT] Routes",
+      "boundary": "[PT] Boundary",
+      "combined": "[PT] Combined"
+    },
+    "sheet": {
+      "title": "[PT] Map options",
+      "view": "[PT] View",
+      "filters": "[PT] Filters",
+      "time": "[PT] Time",
+      "layers": "[PT] Layers",
+      "actions": "[PT] Map actions"
+    },
+    "time": {
+      "label": "[PT] Time range",
+      "anyTime": "[PT] Any time",
+      "chooseDates": "[PT] Choose dates",
+      "pickRange": "[PT] Pick a start & end",
+      "untilEndDate": "[PT] {{start}} – end date",
+      "clear": "[PT] Clear",
+      "apply": "[PT] Apply dates"
+    },
+    "nav": {
+      "zoomIn": "[PT] Zoom in",
+      "zoomOut": "[PT] Zoom out",
+      "resetNorth": "[PT] Reset bearing to north",
+      "geolocate": "[PT] Show my location"
+    },
+    "legend": {
+      "label": "[PT] Legend",
+      "show": "[PT] Show map legend",
+      "hide": "[PT] Hide map legend",
+      "title": "[PT] What you're seeing",
+      "featured": "[PT] Ringed = featured spot",
+      "live": "[PT] Pulsing = open now / live",
+      "areas": "[PT] Areas",
+      "densityTitle": "[PT] Density of queer life",
+      "fewer": "[PT] Fewer",
+      "more": "[PT] More"
+    },
+    "rail": {
+      "inView_one": "[PT] {{count}} place in view",
+      "inView_other": "[PT] {{count}} places in view",
+      "hide": "[PT] Hide nearby places",
+      "listLabel": "[PT] Places in view",
+      "showOnMap": "[PT] Show {{name}} on the map"
+    },
+    "firstRun": {
+      "spotsInView_one": "[PT] {{count}} queer spot in view",
+      "spotsInView_other": "[PT] {{count}} queer spots in view",
+      "dismiss": "[PT] Dismiss"
+    },
+    "canvas": {
+      "loading": "[PT] Loading",
+      "loadingEllipsis": "[PT] Loading...",
+      "resultsInView_one": "[PT] {{count}} result in view",
+      "resultsInView_other": "[PT] {{count}} results in view",
+      "clickToZoom": "[PT] Click to zoom in",
+      "venueCount_one": "[PT] {{count}} venue",
+      "venueCount_other": "[PT] {{count}} venues",
+      "eventCount_one": "[PT] {{count}} event",
+      "eventCount_other": "[PT] {{count}} events",
+      "restroomCount_one": "[PT] {{count}} restroom",
+      "restroomCount_other": "[PT] {{count}} restrooms",
+      "hotelCount_one": "[PT] {{count}} hotel",
+      "hotelCount_other": "[PT] {{count}} hotels",
+      "placeCount_one": "[PT] {{count}} place",
+      "placeCount_other": "[PT] {{count}} places",
+      "emptyOpenNow": "[PT] Nothing open right now in view — turn off Open now or try later.",
+      "emptyTimeRange": "[PT] No events in this time range here — widen the dates or pan out.",
+      "emptySearch": "[PT] No matches for \"{{query}}\" here — clear search or pan out.",
+      "emptyDefault": "[PT] No spots here yet — pan, zoom out, or put one on the map."
+    },
+    "layers": {
+      "venues": "[PT] Venues",
+      "events": "[PT] Events",
+      "cities": "[PT] Cities",
+      "countries": "[PT] Countries",
+      "restrooms": "[PT] Restrooms",
+      "hotels": "[PT] Hotels",
+      "neighbourhoods": "[PT] Villages"
+    },
+    "filterChips": {
+      "groupLabel": "[PT] Active filters",
+      "remove": "[PT] Remove filter: {{label}}",
+      "clearAll": "[PT] Clear all",
+      "within": "[PT] Within {{km}} km",
+      "accessible": "[PT] Accessible",
+      "queerOwned": "[PT] Queer-owned",
+      "tags_one": "[PT] {{count}} tag",
+      "tags_other": "[PT] {{count}} tags"
     }
   },
   "resources": {

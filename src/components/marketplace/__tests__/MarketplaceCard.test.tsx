@@ -50,8 +50,8 @@ describe('MarketplaceCard', () => {
     expect(container).toBeTruthy();
   });
 
-  it('outbound CTA renders with explicit inverted color (label legible)', () => {
-    const { container } = render(
+  it('boutique card: no per-card CTA, monetized listings carry an Ad marker', () => {
+    const { container, getByText } = render(
       wrap(
         <MarketplaceCard
           listing={
@@ -63,18 +63,35 @@ describe('MarketplaceCard', () => {
               currency: 'USD',
               source_type: 'awin',
               external_url: 'https://example.com/aff',
+              affiliate_url: 'https://www.awin1.com/cread.php?ued=x',
             } as never
           }
         />,
       ),
     );
-    const cta = container.querySelector('a[aria-label*="opens in new tab"]') as HTMLAnchorElement | null;
-    expect(cta).toBeTruthy();
-    expect(cta!.textContent?.toLowerCase()).toMatch(/shop|visit/);
-    // Inline style guarantees color won't be clobbered by Tailwind preflight
-    // `a { color: inherit }`. We assert both inline declarations are present.
-    expect(cta!.style.color).toMatch(/var\(--background\)/);
-    expect(cta!.style.backgroundColor).toMatch(/var\(--foreground\)/);
+    // Outbound CTA moved to the detail page — no external link on the card.
+    expect(container.querySelector('a[target="_blank"]')).toBeNull();
+    expect(getByText('Ad')).toBeTruthy();
+  });
+
+  it('shows a Queer-owned badge from community_owned_tags', () => {
+    const { getByText } = render(
+      wrap(
+        <MarketplaceCard
+          listing={
+            {
+              id: 'm4',
+              title: 'Owned Item',
+              slug: 'owned',
+              price: 10,
+              currency: 'USD',
+              community_owned_tags: ['queer_owned'],
+            } as never
+          }
+        />,
+      ),
+    );
+    expect(getByText('Queer-owned')).toBeTruthy();
   });
 
   it('priority={true} sets loading="eager" + fetchpriority="high"', () => {

@@ -1,5 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 import { untypedSupabase } from '@/integrations/supabase/untyped';
+import type { Database } from '@/integrations/supabase/types';
+import { SFW_RATINGS } from '@/hooks/useMarketplace';
+
+type MarketplaceListing = Database['public']['Tables']['marketplace_listings']['Row'];
 
 export interface MarketplaceBrand {
   slug: string;
@@ -30,6 +35,46 @@ export function useMarketplaceBrand(slug: string | undefined) {
       if (error) throw error;
       const rows = (data ?? []) as MarketplaceBrand[];
       return rows[0] ?? null;
+    },
+  });
+}
+
+/** Cached brand vocabulary for search-suggestion prefix matching. */
+export function useBrandVocab() {
+  return useQuery({
+    queryKey: ['marketplace-brand-vocab'],
+    staleTime: 10 * 60 * 1000,
+    queryFn: async (): Promise<Array<{ display_name: string; slug: string }>> => {
+      const { data } = await supabase
+        .from('marketplace_brands')
+        .select('display_name, slug')
+        .eq('status', 'approved')
+        .not('slug', 'is', null)
+        .order('product_count', { ascending: false })
+        .limit(300);
+      return (data ?? []) as Array<{ display_name: string; slug: string }>;
+    },
+  });
+}
+
+/** Top SFW listings sharing a brand, for the detail-page "More from" block. */
+export function useBrandMoreFrom(brand: string | null | undefined, excludeId: string) {
+  return useQuery({
+    queryKey: ['marketplace-brand-more', brand, excludeId],
+    enabled: Boolean(brand),
+    queryFn: async (): Promise<MarketplaceListing[]> => {
+      const key = brand!.trim().toLowerCase().replace(/\s+/g, ' ');
+      const { data } = await supabase
+        .from('marketplace_listings')
+        .select('*')
+        .eq('status', 'active')
+        .eq('brand_key', key)
+        .neq('id', excludeId)
+        .in('content_rating', SFW_RATINGS)
+        .not('images', 'is', null)
+        .order('boutique_score', { ascending: false, nullsFirst: false })
+        .limit(4);
+      return (data ?? []) as MarketplaceListing[];
     },
   });
 }

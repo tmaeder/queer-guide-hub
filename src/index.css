@@ -404,6 +404,64 @@
   background: hsl(var(--muted)) !important;
 }
 
+/* Lightweight hover previews (cluster composition + point name). Token-driven
+   so they inherit Inter and stay correct in dark mode. */
+.qg-map-hover {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 2px 4px;
+  max-width: 220px;
+  font-family: inherit;
+  font-size: var(--text-13);
+  line-height: 1.3;
+  color: hsl(var(--popover-foreground));
+}
+.qg-map-hover__thumb {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-element);
+  object-fit: cover;
+  flex: 0 0 auto;
+}
+.qg-map-hover__body {
+  min-width: 0;
+}
+.qg-map-hover__title {
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.qg-map-hover__meta {
+  color: hsl(var(--muted-foreground));
+  font-size: var(--text-xs2);
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* MapLibre native control group → design-system look (EntityMap, TripMap,
+   PersonalitiesMap and the other legacy maps that keep NavigationControl). */
+.maplibregl-ctrl-group {
+  background: hsl(var(--background));
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius-element);
+  box-shadow: none !important;
+  overflow: hidden;
+}
+.maplibregl-ctrl-group button {
+  background: transparent;
+}
+.maplibregl-ctrl-group button + button {
+  border-top: 1px solid hsl(var(--border));
+}
+.maplibregl-ctrl-group button:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: -2px;
+}
+
 /* ── Base resets ───────────────────────────────────────────────────── */
 /* @layer base — unlayered, this reset outranked every border-* utility
    (which Tailwind v4 emits inside @layer utilities; unlayered beats layered
@@ -890,13 +948,6 @@ h1, h2, .font-display {
   border: 0;
 }
 
-/* Mobile FeedbackButton lift above map chrome (bug #23). */
-@media (max-width: 767px) {
-  button[aria-label="Share feedback"] {
-    bottom: 96px !important;
-  }
-}
-
 /* WCAG 2.2 AA 2.5.8 — MapLibre attribution links must hit ≥24×24 tactile target.
    Pad the anchor without altering its visible text size or the map layout. */
 .maplibregl-ctrl-attrib a {
@@ -905,11 +956,11 @@ h1, h2, .font-display {
   padding-block: 6px;
 }
 
-/* Map command bar (top-3, h-10) lives at z-20 across the full width. Push the
-   top-right MapLibre controls (zoom, geolocate) below it so they don't overlap.
-   Scoped to map-shell surfaces — admin/standalone maps without a bar are untouched. */
-[data-map-surface] .maplibregl-ctrl-top-right {
-  top: 3.5rem;
+/* MapShell replaces the native top-right controls with MapNavControls; the
+   GeolocateControl stays mounted for its tracking dot but its button corner
+   is hidden. Legacy maps (showNativeNav default) are untouched. */
+.qg-hide-native-nav .maplibregl-ctrl-top-right {
+  display: none;
 }
 
 /* WCAG 2.5.5 AAA — icon-only header / map controls expand to 44×44 on touch

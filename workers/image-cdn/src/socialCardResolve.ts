@@ -52,6 +52,22 @@ const EXT: Record<string, string> = {
   'image/avif': 'avif',
 };
 
+/**
+ * Strip HTML to plain text. A single pass of /<[^>]+>/ is not safe — nested or
+ * malformed markup like `<scr<script>ipt>` can leave a live `<script` behind —
+ * so apply it until the string stops changing, then drop any residual angle
+ * brackets so no partial tag can survive into rendered card output.
+ */
+function stripHtml(input: string): string {
+  let prev: string;
+  let out = input;
+  do {
+    prev = out;
+    out = out.replace(/<[^>]*>/g, '');
+  } while (out !== prev);
+  return out.replace(/[<>]/g, '').trim();
+}
+
 async function sha256Hex(input: string): Promise<string> {
   const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(input));
   return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, '0')).join('');
@@ -126,6 +142,7 @@ async function resolveMastodon(handle: string): Promise<Partial<SocialCard> | nu
   };
   return {
     display_name: a.display_name || null,
+    bio: a.note ? stripHtml(a.note) || null : null,
     bio: a.note ? stripHtml(a.note) : null,
     bio: a.note ? stripHtml(a.note).trim() : null,
     avatar_url: a.avatar ?? null,

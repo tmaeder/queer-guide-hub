@@ -2186,6 +2186,148 @@
       "denied": "Location access is off — showing the default area",
       "unavailable": "Couldn't get your location — showing the default area",
       "timeout": "Location lookup timed out — showing the default area"
+    },
+    "share": {
+      "title": "Kartenansicht",
+      "copied": "Link kopiert",
+      "copiedDescription": "Einfügen, um diese Ansicht zu teilen",
+      "failed": "Teilen fehlgeschlagen"
+    },
+    "commandBar": {
+      "searchThisMap": "Karte durchsuchen",
+      "searching": "Suche läuft",
+      "clearSearch": "Suche löschen",
+      "typeMore": "Mindestens 2 Zeichen eingeben",
+      "filterMapFor": "Karte filtern nach „{{query}}“",
+      "noMatches": "Keine Treffer — Enter filtert trotzdem die Karte.",
+      "jumpToPlace": "Zu einem Ort springen",
+      "filters": "Filter",
+      "filtersActive": "Filter, {{count}} aktiv",
+      "filtersAndLayers": "Filter & Ebenen",
+      "layers": "Ebenen",
+      "more": "Weitere Kartenoptionen",
+      "moreShort": "Mehr",
+      "mapOptions": "Kartenoptionen",
+      "myLocation": "Mein Standort",
+      "fitResults": "Auf Ergebnisse zoomen",
+      "shareView": "Ansicht teilen",
+      "reset": "Zurücksetzen"
+    },
+    "entityType": {
+      "venue": "Ort",
+      "event": "Event",
+      "city": "Stadt",
+      "country": "Land",
+      "marketplace": "Angebot",
+      "personality": "Person",
+      "queer_village": "Viertel",
+      "group": "Gruppe",
+      "news": "News",
+      "tag": "Tag",
+      "user": "Profil"
+    },
+    "quick": {
+      "groupLabel": "Schnellfilter",
+      "openNow": "Jetzt geöffnet",
+      "tonight": "Heute Abend",
+      "thisWeekend": "Dieses Wochenende",
+      "thisMonth": "Diesen Monat",
+      "saved": "Gespeichert"
+    },
+    "lens": {
+      "groupLabel": "Kartenansicht",
+      "pins": "Pins",
+      "density": "Dichte",
+      "routes": "Routen",
+      "boundary": "Grenzen",
+      "combined": "Kombiniert"
+    },
+    "sheet": {
+      "title": "Kartenoptionen",
+      "view": "Ansicht",
+      "filters": "Filter",
+      "time": "Zeitraum",
+      "layers": "Ebenen",
+      "actions": "Kartenaktionen"
+    },
+    "time": {
+      "label": "Zeitraum",
+      "anyTime": "Beliebige Zeit",
+      "chooseDates": "Daten wählen",
+      "pickRange": "Start & Ende wählen",
+      "untilEndDate": "{{start}} – Enddatum",
+      "clear": "Löschen",
+      "apply": "Daten anwenden"
+    },
+    "nav": {
+      "zoomIn": "Hineinzoomen",
+      "zoomOut": "Herauszoomen",
+      "resetNorth": "Nach Norden ausrichten",
+      "geolocate": "Meinen Standort anzeigen"
+    },
+    "legend": {
+      "label": "Legende",
+      "show": "Kartenlegende anzeigen",
+      "hide": "Kartenlegende ausblenden",
+      "title": "Was du siehst",
+      "featured": "Ring = empfohlener Ort",
+      "live": "Pulsierend = jetzt geöffnet / live",
+      "areas": "Gebiete",
+      "densityTitle": "Dichte queeren Lebens",
+      "fewer": "Weniger",
+      "more": "Mehr"
+    },
+    "rail": {
+      "inView_one": "{{count}} Ort im Blick",
+      "inView_other": "{{count}} Orte im Blick",
+      "hide": "Orte in der Nähe ausblenden",
+      "listLabel": "Orte im Blick",
+      "showOnMap": "{{name}} auf der Karte zeigen"
+    },
+    "firstRun": {
+      "spotsInView_one": "{{count}} queerer Spot im Blick",
+      "spotsInView_other": "{{count}} queere Spots im Blick",
+      "dismiss": "Schließen"
+    },
+    "canvas": {
+      "loading": "Lädt",
+      "loadingEllipsis": "Lädt...",
+      "resultsInView_one": "{{count}} Ergebnis im Blick",
+      "resultsInView_other": "{{count}} Ergebnisse im Blick",
+      "clickToZoom": "Zum Hineinzoomen klicken",
+      "venueCount_one": "{{count}} Ort",
+      "venueCount_other": "{{count}} Orte",
+      "eventCount_one": "{{count}} Event",
+      "eventCount_other": "{{count}} Events",
+      "restroomCount_one": "{{count}} Toilette",
+      "restroomCount_other": "{{count}} Toiletten",
+      "hotelCount_one": "{{count}} Hotel",
+      "hotelCount_other": "{{count}} Hotels",
+      "placeCount_one": "{{count}} Ort",
+      "placeCount_other": "{{count}} Orte",
+      "emptyOpenNow": "Gerade ist hier nichts geöffnet — „Jetzt geöffnet“ ausschalten oder später versuchen.",
+      "emptyTimeRange": "Keine Events in diesem Zeitraum — Zeitraum erweitern oder Karte bewegen.",
+      "emptySearch": "Keine Treffer für „{{query}}“ hier — Suche löschen oder Karte bewegen.",
+      "emptyDefault": "Hier gibt es noch keine Spots — bewege die Karte oder trag einen ein."
+    },
+    "layers": {
+      "venues": "Orte",
+      "events": "Events",
+      "cities": "Städte",
+      "countries": "Länder",
+      "restrooms": "Toiletten",
+      "hotels": "Hotels",
+      "neighbourhoods": "Viertel"
+    },
+    "filterChips": {
+      "groupLabel": "Aktive Filter",
+      "remove": "Filter entfernen: {{label}}",
+      "clearAll": "Alle löschen",
+      "within": "Im Umkreis von {{km}} km",
+      "accessible": "Barrierefrei",
+      "queerOwned": "Queer-geführt",
+      "tags_one": "{{count}} Tag",
+      "tags_other": "{{count}} Tags"
     }
   },
   "resources": {

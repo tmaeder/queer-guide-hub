@@ -46,6 +46,11 @@ vi.mock('@/hooks/useMarketplaceQueries', () => ({
   }),
 }));
 
+// Suggestions dropdown needs router context + network — not under test here.
+vi.mock('../MarketplaceSearchSuggestions', () => ({
+  MarketplaceSearchSuggestions: () => null,
+}));
+
 import { MarketplaceFilters } from '../MarketplaceFilters';
 
 describe('MarketplaceFilters', () => {

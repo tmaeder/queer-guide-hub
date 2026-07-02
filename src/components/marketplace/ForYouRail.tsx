@@ -20,10 +20,16 @@ import { Info } from 'lucide-react';
  * server-side ranking) instead of computing live. For now the RPC is
  * cheap enough to call on every page load.
  */
+const REASON_LABELS: Record<string, string> = {
+  tag_overlap: 'Because you saved similar items',
+  follows: 'Because you follow this tag',
+  interests: 'From your interests',
+};
+
 export function ForYouRail() {
   const { user } = useAuth();
   const { register } = useCuratedIds();
-  const { listings, loading } = usePersonalizedMarketplaceListings(user?.id, 12);
+  const { listings, reasons, loading } = usePersonalizedMarketplaceListings(user?.id, 12);
 
   // Register these IDs so the main grid doesn't repeat them on page 1.
   useEffect(() => {
@@ -55,8 +61,8 @@ export function ForYouRail() {
           </PopoverTrigger>
           <PopoverContent align="end" className="w-72">
             <p className="text-sm">
-              Based on the items you've saved. As you save more, this row
-              gets closer to your taste.
+              Based on items you've saved, tags you follow, and your profile
+              interests. As you save more, this row gets closer to your taste.
             </p>
           </PopoverContent>
         </Popover>
@@ -72,6 +78,11 @@ export function ForYouRail() {
                 priority={i < 4}
                 surface="for_you"
               />
+              {reasons.get(l.id) && (
+                <p className="mt-1 text-2xs uppercase tracking-wider text-muted-foreground">
+                  {REASON_LABELS[reasons.get(l.id)!]}
+                </p>
+              )}
             </li>
           ))}
         </ul>

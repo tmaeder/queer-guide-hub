@@ -7,6 +7,7 @@ import { useTripPackingSuggestions } from '@/hooks/useTripPackingSuggestions';
 import { usePackingMutations } from '@/hooks/useTripPacking';
 import { useLlmPackingSuggestions } from '@/hooks/useLlmPackingSuggestions';
 import { recordSuggestionImpression, recordSuggestionClick } from '@/utils/tripTracking';
+import { marketplaceGoHref } from '@/lib/affiliate/marketplace';
 import { useToast } from '@/hooks/use-toast';
 
 interface Props {
@@ -119,7 +120,11 @@ export function PackingMarketplaceSuggestions({ tripId }: Props) {
                     listingId: s.listingId,
                     rankPosition: s.rank,
                   });
-                  window.open(s.externalUrl, '_blank', 'noopener,noreferrer');
+                  // Marketplace listings exit through the first-party /go
+                  // redirect (affiliate attribution, surface=trip_packing).
+                  const href =
+                    (s.listingId && marketplaceGoHref(s.listingId, 'trip_packing')) || s.externalUrl;
+                  window.open(href, '_blank', 'noopener,noreferrer');
                 }}
                 secondaryAction={{
                   label: t('trips.packing.addToChecklist'),
