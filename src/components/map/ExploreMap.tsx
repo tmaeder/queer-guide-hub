@@ -2,7 +2,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { type Root } from 'react-dom/client';
 import maplibregl from 'maplibre-gl';
-import type { GeoJSONSource, MapLayerMouseEvent } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { Button } from '@/components/ui/button';
 import { ExternalLink, Loader2 } from 'lucide-react';
@@ -14,6 +13,7 @@ import { DONUT_PREFIX, DONUT_PIXEL_RATIO, donutIconExpression, getDonutImage } f
 import { clusterHoverHtml, pointHoverHtml } from './mapHoverHtml';
 import type { PointFeature } from '@/hooks/useViewportPoints';
 import { mapStyle } from '@/config/mapStyle';
+import { type MapPointSummary } from './mapPoint';
 import {
   useExploreMapData,
   type LayerType,
@@ -37,9 +37,10 @@ import { useAreaLayers } from '@/components/map/hooks/useAreaLayers';
 import { useHeatmapLayer } from '@/components/map/hooks/useHeatmapLayer';
 import { useFocusRing } from '@/components/map/hooks/useFocusRing';
 import { useSelectionFlyer } from '@/components/map/hooks/useSelectionFlyer';
+import { useMapInstance } from '@/components/map/hooks/useMapInstance';
+import { usePointLayers } from '@/components/map/hooks/usePointLayers';
 import { useVisitorLocation } from '@/hooks/useVisitorLocation';
 import { useToast } from '@/hooks/use-toast';
-import { CLUSTER_MAX_ZOOM, CLUSTER_RADIUS, clampBbox, type Bbox } from '@/utils/mapViewport';
 import {
   useCountryBoundaries,
   useCityBoundaries,
@@ -49,39 +50,12 @@ import { useMapBoundaryLayers } from '@/hooks/useMapBoundaryLayers';
 import { type RenderMode } from './mapShellAdapters';
 import {
   AREA_LAYERS,
-  POINTS_SOURCE,
-  CLUSTERS_LAYER,
-  CLUSTER_COUNT_LAYER,
-  UNCLUSTERED_LAYER,
-  GLYPH_LAYER,
-  FEATURED_RING_LAYER,
-  PULSE_LAYER,
-  PIN_LAYER_IDS,
   COUNTRY_BOUNDARY_CONFIG,
   CITY_BOUNDARY_CONFIG,
   NEIGHBOURHOOD_BOUNDARY_CONFIG,
   DEFAULT_CENTER,
   DEFAULT_ZOOM,
 } from '@/config/mapLayers';
-
-// Stable empty favorites set so effects don't churn when none are passed.
-const EMPTY_FAV: ReadonlySet<string> = new Set<string>();
-
-// Gated debug logger — env-flag or localStorage opt-in. Cheap insurance
-// against future regressions in the points-data → markers flow.
-const mapDebug = (...args: unknown[]): void => {
-  try {
-    if (
-      import.meta.env.DEV ||
-      (typeof localStorage !== 'undefined' && localStorage.getItem('qg:debug:map') === '1')
-    ) {
-       
-      console.debug('[venues-map]', ...args);
-    }
-  } catch {
-    /* localStorage may throw in some sandboxed contexts */
-  }
-};
 
 export interface ExploreMapProps {
   height?: number | string;
@@ -193,7 +167,6 @@ export const ExploreMap = ({
   const mapRef = useRef<maplibregl.Map | null>(null);
   const popupRef = useRef<maplibregl.Popup | null>(null);
   const popupRootRef = useRef<Root | null>(null);
-  const hoverPopupRef = useRef<maplibregl.Popup | null>(null);
   const tooltipRef = useRef<HTMLDivElement | null>(null);
   const pointLayersAddedRef = useRef(false);
   const pulseRafRef = useRef<number | null>(null);
@@ -329,17 +302,6 @@ export const ExploreMap = ({
     setViewport,
     showLocationHint,
   });
-
-  // ── Helper: extract bbox from map ────────────────────────────────────────
-  const getMapBbox = useCallback((map: maplibregl.Map): Bbox => {
-    const bounds = map.getBounds();
-    return clampBbox({
-      west: bounds.getWest(),
-      south: bounds.getSouth(),
-      east: bounds.getEast(),
-      north: bounds.getNorth(),
-    });
-  }, []);
 
   // ── In-bounds count + spotlight-rail point set (debounced) ───────────────
   const { inBoundsCount, isCounterStale, setIsCounterStale, recomputeRef } = useInBoundsCount({
@@ -493,6 +455,27 @@ export const ExploreMap = ({
     if (!mapRef.current || !mapReady || initialCenter) return;
     mapRef.current.flyTo({ center: viewport.center, zoom: viewport.zoom, speed: 1.2 });
   }, [viewport, mapReady, initialCenter]);
+  // ── Map lifecycle (construct + controls + handlers + teardown + initial fly)
+  useMapInstance({
+    containerRef,
+    mapRef,
+    initialCenter,
+    initialZoom,
+    viewport,
+    mapReady,
+    cooperativeGestures,
+    linkToFullMap,
+    onViewportChange,
+    onViewportChangeProp,
+    setMapReady,
+    setIsCounterStale,
+    setCurrentZoom,
+    recomputeRef,
+    spiderMarkersRef,
+    pulseRafRef,
+    popupRootRef,
+    pointLayersAddedRef,
+  });
 
   // ── Boundary polygon rendering via shared hook ─────────────────────────
   const countryMarkers = useMemo(
@@ -844,18 +827,23 @@ export const ExploreMap = ({
     startPulse();
     pointLayersAddedRef.current = true;
   }, [
+  usePointLayers({
+    mapRef,
+    mapReady,
     pointsGeoJSON,
     pointEnabledLayers,
-    mapReady,
-    showPopup,
-    startPulse,
     prefersReducedMotion,
     pinOpacityExpr,
     favoriteIds,
     savedOnly,
+    showPopup,
+    startPulse,
     spiderfy,
     clearSpider,
-  ]);
+    onSelectPointRef,
+    pointLayersAddedRef,
+    pulseRafRef,
+  });
 
   // ── Heatmap layer (Density lens): monochrome black-alpha ramp ─────────
   // MUST stay declared after the pins effect (load-bearing `beforeId` z-order).

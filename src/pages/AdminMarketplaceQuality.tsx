@@ -2,6 +2,7 @@ import { Link } from 'react-router';
 import { Button } from '@/components/ui/button';
 import { MarketplaceTagQualityPanel } from '@/components/admin/MarketplaceTagQualityPanel';
 import { MarketplaceReviewQueue } from '@/components/admin/MarketplaceReviewQueue';
+import { MarketplacePruneCard } from '@/components/admin/MarketplacePruneCard';
 import { Table2 } from 'lucide-react';
 
 /**
@@ -22,6 +23,7 @@ export default function AdminMarketplaceQuality() {
           </Link>
         </Button>
       </div>
+      <MarketplacePruneCard />
       <MarketplaceTagQualityPanel />
       <MarketplaceReviewQueue />
     </div>
