@@ -31,6 +31,8 @@ export interface MarketplaceFiltersInput {
   businessType?: string;
   categoryId?: string;
   merchantDomain?: string;
+  /** normalized brand key (generated brand_key column) — brand pages. */
+  brandKey?: string;
   /** snake_case slugs: queer_owned, trans_owned, bipoc_owned, women_owned, … */
   communityOwned?: string[];
   /** ISO-4217 currency code. */
@@ -259,6 +261,10 @@ export function useMarketplace() {
 
       if (filters?.merchantDomain) {
         query = query.eq('merchant_domain', filters.merchantDomain);
+      }
+
+      if (filters?.brandKey) {
+        query = query.eq('brand_key', filters.brandKey);
       }
 
       if (filters?.priceRange) {
