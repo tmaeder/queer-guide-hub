@@ -5,7 +5,9 @@ import { tweens } from '@/lib/motion';
 import { distance } from '@/lib/animation';
 import { ExploreMap } from './ExploreMap';
 import { CommandBar } from './CommandBar';
+import { MobileMapBar } from './chrome/MobileMapBar';
 import { FilterChips } from './FilterChips';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { MapLegend } from './MapLegend';
 import { SpotlightRail } from './SpotlightRail';
 import { MapFirstRunHint } from './MapFirstRunHint';
@@ -66,6 +68,7 @@ export const MapShell = ({
   );
 
   const reducedMotion = useReducedMotion() ?? false;
+  const isMobile = useIsMobile();
   const { state, setLens, setLayers, setFilters, setViewport } = useMapShellState(config);
   const { toast } = useToast();
   const { t } = useTranslation();
@@ -289,55 +292,98 @@ export const MapShell = ({
         </>
       )}
 
-      {config.showCommandBar !== false && (
-        <CommandBar
-          showSearch={config.showSearch}
-          lenses={config.lenses}
-          lens={state.lens}
-          onLensChange={setLens}
-          availableLayers={config.layers}
-          enabledLayers={state.enabledLayers}
-          onLayersChange={setLayers}
-          availableFilters={config.filters}
-          filters={state.filters}
-          onFiltersChange={setFilters}
-          onGeolocate={handleGeolocate}
-          onShare={handleShare}
-          canSave={canSave}
-          savedOnly={savedActive}
-          onToggleSaved={() => setSavedOnly((v) => !v)}
-        />
-      )}
+      {config.showCommandBar !== false &&
+        (isMobile ? (
+          /* Mobile: one top stack — fixed control row, scrollable quick chips,
+             then any active-filter chips flowing below (no absolute overlap). */
+          <div className="absolute inset-x-3 top-3 z-20 flex flex-col gap-1.5">
+            <MobileMapBar
+              showSearch={config.showSearch}
+              lenses={config.lenses}
+              lens={state.lens}
+              onLensChange={setLens}
+              availableLayers={config.layers}
+              enabledLayers={state.enabledLayers}
+              onLayersChange={setLayers}
+              availableFilters={config.filters}
+              filters={state.filters}
+              onFiltersChange={setFilters}
+              onGeolocate={handleGeolocate}
+              onShare={handleShare}
+              canSave={canSave}
+              savedOnly={savedActive}
+              onToggleSaved={() => setSavedOnly((v) => !v)}
+            />
+            <AnimatePresence initial={false}>
+              {(Object.keys(exposedFilters).length > 0 || prefChips.length > 0) && (
+                <motion.div
+                  initial={reducedMotion ? false : { opacity: 0, y: -distance.sm }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={reducedMotion ? { opacity: 0 } : { opacity: 0, y: -distance.sm }}
+                  transition={reducedMotion ? { duration: 0 } : tweens.fast}
+                  className="flex flex-col gap-1.5"
+                >
+                  <PreferenceChips
+                    chips={prefChips}
+                    onToggle={togglePrefChip}
+                    onForget={forgetPrefChip}
+                  />
+                  <FilterChips
+                    filters={exposedFilters}
+                    onRemove={removeFilter}
+                    onClearAll={() => setFilters({})}
+                  />
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        ) : (
+          <>
+            <CommandBar
+              showSearch={config.showSearch}
+              lenses={config.lenses}
+              lens={state.lens}
+              onLensChange={setLens}
+              availableLayers={config.layers}
+              enabledLayers={state.enabledLayers}
+              onLayersChange={setLayers}
+              availableFilters={config.filters}
+              filters={state.filters}
+              onFiltersChange={setFilters}
+              onGeolocate={handleGeolocate}
+              onShare={handleShare}
+              canSave={canSave}
+              savedOnly={savedActive}
+              onToggleSaved={() => setSavedOnly((v) => !v)}
+            />
+            <AnimatePresence initial={false}>
+              {(Object.keys(exposedFilters).length > 0 || prefChips.length > 0) && (
+                <motion.div
+                  initial={reducedMotion ? false : { opacity: 0, y: -distance.sm }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={reducedMotion ? { opacity: 0 } : { opacity: 0, y: -distance.sm }}
+                  transition={reducedMotion ? { duration: 0 } : tweens.fast}
+                  className="absolute top-[3.25rem] left-3 right-3 z-20 flex flex-col gap-1.5"
+                >
+                  <PreferenceChips
+                    chips={prefChips}
+                    onToggle={togglePrefChip}
+                    onForget={forgetPrefChip}
+                  />
+                  <FilterChips
+                    filters={exposedFilters}
+                    onRemove={removeFilter}
+                    onClearAll={() => setFilters({})}
+                  />
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </>
+        ))}
 
       {showRail && (
         <MapFirstRunHint count={pointsInView.length} ready={!fetching} />
       )}
-
-      {/* Quick filters now live inside the command bar; only the active-filter
-          chips render below it, and only when something is applied. */}
-      <AnimatePresence initial={false}>
-        {config.showCommandBar !== false &&
-          (Object.keys(exposedFilters).length > 0 || prefChips.length > 0) && (
-            <motion.div
-              initial={reducedMotion ? false : { opacity: 0, y: -distance.sm }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={reducedMotion ? { opacity: 0 } : { opacity: 0, y: -distance.sm }}
-              transition={reducedMotion ? { duration: 0 } : tweens.fast}
-              className="absolute top-[3.25rem] left-3 right-3 z-20 flex flex-col gap-1.5"
-            >
-              <PreferenceChips
-                chips={prefChips}
-                onToggle={togglePrefChip}
-                onForget={forgetPrefChip}
-              />
-              <FilterChips
-                filters={exposedFilters}
-                onRemove={removeFilter}
-                onClearAll={() => setFilters({})}
-              />
-            </motion.div>
-          )}
-      </AnimatePresence>
     </div>
   );
 };
