@@ -21,7 +21,9 @@ export async function untypedRpc<T = unknown>(
   fn: string,
   args?: Record<string, unknown>,
 ): Promise<{ data: T | null; error: { message: string } | null }> {
-  const call = supabase.rpc as unknown as (
+  // Bind to `supabase` — supabase-js's rpc() reads `this.rest`, so calling an
+  // unbound reference throws "Cannot read properties of undefined (reading 'rest')".
+  const call = supabase.rpc.bind(supabase) as unknown as (
     fn: string,
     args?: Record<string, unknown>,
   ) => Promise<{ data: unknown; error: { message: string } | null }>;
