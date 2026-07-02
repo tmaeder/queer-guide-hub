@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { Plane } from 'lucide-react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
+import { detailHref } from '@/lib/searchRoutes';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useNearbyCities, type NearbyCity } from '@/hooks/useNearbyCities';
 
@@ -46,10 +47,14 @@ export function NextLegFromHere({ cityId, latitude, longitude }: Props) {
             {group.label}
           </h4>
           <ul className="flex flex-col gap-2">
-            {group.rows.map((row) => (
+            {group.rows.map((row) => {
+              // Strict: require a canonical slug — skip a city with only an id.
+              const to = detailHref({ type: 'city', slug: row.slug, id: row.id });
+              if (!to) return null;
+              return (
               <li key={row.id}>
                 <LocalizedLink
-                  to={`/city/${row.slug || row.id}`}
+                  to={to}
                   className="flex items-center justify-between gap-2 rounded-element border px-4 py-2 no-underline transition-colors hover:border-foreground/40"
                 >
                   <span className="flex min-w-0 items-baseline gap-2">
@@ -68,7 +73,8 @@ export function NextLegFromHere({ cityId, latitude, longitude }: Props) {
                   </span>
                 </LocalizedLink>
               </li>
-            ))}
+              );
+            })}
           </ul>
         </div>
       ))}
