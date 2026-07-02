@@ -9,6 +9,7 @@ import { Store } from 'lucide-react';
 import { EmptyState, ErrorState, LoadingTimeout } from '@/components/ui/EmptyState';
 import { StaggerGrid } from '@/components/animation/StaggerGrid';
 import type { Database } from '@/integrations/supabase/types';
+import type { MarketplaceSurface } from '@/lib/affiliate/marketplace';
 
 type MarketplaceListing = Database['public']['Tables']['marketplace_listings']['Row'];
 
@@ -16,6 +17,8 @@ interface MarketplaceFilteredViewProps {
   filters: MarketplaceFiltersInput;
   emptyTitle?: string;
   emptyDescription?: string;
+  /** Attribution surface passed through to the cards' outbound /go links. */
+  surface?: MarketplaceSurface;
 }
 
 const SORT_OPTIONS: Array<{ value: MarketplaceSort; label: string }> = [
@@ -31,6 +34,7 @@ export function MarketplaceFilteredView({
   filters,
   emptyTitle = 'No listings yet.',
   emptyDescription = 'Check back soon.',
+  surface = 'marketplace_grid',
 }: MarketplaceFilteredViewProps) {
   const {
     listings,
@@ -126,7 +130,7 @@ export function MarketplaceFilteredView({
           <StaggerGrid className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4 sm:gap-6">
             {accumulated.map((listing, index) => (
               <div key={listing.id}>
-                <MarketplaceCard listing={listing} imageAsset={assets.get(listing.id)} priority={index < 8} />
+                <MarketplaceCard listing={listing} imageAsset={assets.get(listing.id)} priority={index < 8} surface={surface} />
               </div>
             ))}
           </StaggerGrid>

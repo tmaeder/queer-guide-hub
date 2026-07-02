@@ -53,15 +53,16 @@ export default function AdminAffiliate() {
     },
   });
 
-  // Shopping activation coverage: how much of the awin catalog carries a real
-  // affiliate_url (the backfill drains this toward 100%).
+  // Shopping monetization coverage: active listings carrying a REAL
+  // affiliate_url (the truth backfill clears fake external_url copies, so
+  // post-cleanup non-null means monetized).
   const { data: coverage } = useQuery({
-    queryKey: ['affiliate-awin-coverage'],
+    queryKey: ['affiliate-mkt-coverage'],
     queryFn: async () => {
       const base = untypedSupabase.from('marketplace_listings');
       const [{ count: total }, { count: covered }] = await Promise.all([
-        base.select('id', { count: 'exact', head: true }).eq('status', 'active').eq('source_type', 'awin'),
-        base.select('id', { count: 'exact', head: true }).eq('status', 'active').eq('source_type', 'awin').not('affiliate_url', 'is', null),
+        base.select('id', { count: 'exact', head: true }).eq('status', 'active'),
+        base.select('id', { count: 'exact', head: true }).eq('status', 'active').not('affiliate_url', 'is', null),
       ]);
       return { total: total ?? 0, covered: covered ?? 0 };
     },
@@ -121,7 +122,7 @@ export default function AdminAffiliate() {
         <Stat label="Impressions" value={totals.impressions.toLocaleString()} />
         <Stat label="CTR" value={totals.ctr == null ? '—' : `${(totals.ctr * 100).toFixed(1)}%`} />
         <Stat
-          label="Awin affiliate coverage"
+          label="Shopping affiliate coverage"
           value={
             coverage && coverage.total > 0
               ? `${((coverage.covered / coverage.total) * 100).toFixed(0)}% (${coverage.covered.toLocaleString()}/${coverage.total.toLocaleString()})`
