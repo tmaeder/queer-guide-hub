@@ -33,7 +33,7 @@ import {
   sourceProvenanceLine,
   trustPillsFor,
 } from '@/components/marketplace/marketplaceHelpers';
-import { departmentLabel, ATTRIBUTE_KIND_LABELS } from '@/lib/marketplaceTaxonomy';
+import { brandSlug, departmentLabel, ATTRIBUTE_KIND_LABELS } from '@/lib/marketplaceTaxonomy';
 import { tagHref } from '@/lib/searchRoutes';
 import type { ListingTag } from '@/hooks/usePageFetchers';
 import { AffiliateDisclosure } from '@/components/marketplace/AffiliateDisclosure';
@@ -143,7 +143,14 @@ export function MarketplaceBuyBox({
           <div className="min-w-0">
             {listing.brand && (
               <p className="text-13 font-medium uppercase tracking-[0.14em] text-muted-foreground">
-                {listing.merchant_domain ? (
+                {brandSlug(listing.brand) ? (
+                  <LocalizedLink
+                    to={`/marketplace/brands/${brandSlug(listing.brand)}`}
+                    className="hover:text-foreground"
+                  >
+                    {listing.brand}
+                  </LocalizedLink>
+                ) : listing.merchant_domain ? (
                   <LocalizedLink
                     to={`/marketplace/merchants/${listing.merchant_domain}`}
                     className="hover:text-foreground"
