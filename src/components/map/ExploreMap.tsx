@@ -2,16 +2,12 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { type Root } from 'react-dom/client';
 import maplibregl from 'maplibre-gl';
-import type { GeoJSONSource, MapLayerMouseEvent } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { Button } from '@/components/ui/button';
 import { ExternalLink, Loader2 } from 'lucide-react';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
-import { summaryFromFeature, type MapPointSummary } from './mapPoint';
-import { loadGlyphImages } from './mapGlyphs';
-import type { PointFeature } from '@/hooks/useViewportPoints';
-import { mapStyle } from '@/config/mapStyle';
+import { type MapPointSummary } from './mapPoint';
 import {
   useExploreMapData,
   type LayerType,
@@ -35,9 +31,10 @@ import { useAreaLayers } from '@/components/map/hooks/useAreaLayers';
 import { useHeatmapLayer } from '@/components/map/hooks/useHeatmapLayer';
 import { useFocusRing } from '@/components/map/hooks/useFocusRing';
 import { useSelectionFlyer } from '@/components/map/hooks/useSelectionFlyer';
+import { useMapInstance } from '@/components/map/hooks/useMapInstance';
+import { usePointLayers } from '@/components/map/hooks/usePointLayers';
 import { useVisitorLocation } from '@/hooks/useVisitorLocation';
 import { useToast } from '@/hooks/use-toast';
-import { CLUSTER_MAX_ZOOM, CLUSTER_RADIUS, clampBbox, type Bbox } from '@/utils/mapViewport';
 import {
   useCountryBoundaries,
   useCityBoundaries,
@@ -47,39 +44,12 @@ import { useMapBoundaryLayers } from '@/hooks/useMapBoundaryLayers';
 import { type RenderMode } from './mapShellAdapters';
 import {
   AREA_LAYERS,
-  POINTS_SOURCE,
-  CLUSTERS_LAYER,
-  CLUSTER_COUNT_LAYER,
-  UNCLUSTERED_LAYER,
-  GLYPH_LAYER,
-  FEATURED_RING_LAYER,
-  PULSE_LAYER,
-  PIN_LAYER_IDS,
   COUNTRY_BOUNDARY_CONFIG,
   CITY_BOUNDARY_CONFIG,
   NEIGHBOURHOOD_BOUNDARY_CONFIG,
   DEFAULT_CENTER,
   DEFAULT_ZOOM,
 } from '@/config/mapLayers';
-
-// Stable empty favorites set so effects don't churn when none are passed.
-const EMPTY_FAV: ReadonlySet<string> = new Set<string>();
-
-// Gated debug logger — env-flag or localStorage opt-in. Cheap insurance
-// against future regressions in the points-data → markers flow.
-const mapDebug = (...args: unknown[]): void => {
-  try {
-    if (
-      import.meta.env.DEV ||
-      (typeof localStorage !== 'undefined' && localStorage.getItem('qg:debug:map') === '1')
-    ) {
-       
-      console.debug('[venues-map]', ...args);
-    }
-  } catch {
-    /* localStorage may throw in some sandboxed contexts */
-  }
-};
 
 export interface ExploreMapProps {
   height?: number | string;
@@ -173,7 +143,6 @@ export const ExploreMap = ({
   const mapRef = useRef<maplibregl.Map | null>(null);
   const popupRef = useRef<maplibregl.Popup | null>(null);
   const popupRootRef = useRef<Root | null>(null);
-  const hoverPopupRef = useRef<maplibregl.Popup | null>(null);
   const tooltipRef = useRef<HTMLDivElement | null>(null);
   const pointLayersAddedRef = useRef(false);
   const pulseRafRef = useRef<number | null>(null);
@@ -308,17 +277,6 @@ export const ExploreMap = ({
     showLocationHint,
   });
 
-  // ── Helper: extract bbox from map ────────────────────────────────────────
-  const getMapBbox = useCallback((map: maplibregl.Map): Bbox => {
-    const bounds = map.getBounds();
-    return clampBbox({
-      west: bounds.getWest(),
-      south: bounds.getSouth(),
-      east: bounds.getEast(),
-      north: bounds.getNorth(),
-    });
-  }, []);
-
   // ── In-bounds count + spotlight-rail point set (debounced) ───────────────
   const { inBoundsCount, isCounterStale, setIsCounterStale, recomputeRef } = useInBoundsCount({
     mapRef,
@@ -343,108 +301,27 @@ export const ExploreMap = ({
   // ── Live pulse animation (Phase 4) ────────────────────────────────────────
   const { startPulse } = usePulseAnimation({ mapRef, mapReady, prefersReducedMotion, pulseRafRef });
 
-  // ── Map initialisation ───────────────────────────────────────────────────
-  useEffect(() => {
-    if (!containerRef.current || mapRef.current) return;
-
-    // Graceful WebGL check — avoid hard crash when GPU is unavailable
-    const testCanvas = document.createElement('canvas');
-    const gl = testCanvas.getContext('webgl2') || testCanvas.getContext('webgl');
-    if (!gl) {
-      console.warn('WebGL not available — map disabled');
-      return;
-    }
-
-    const map = new maplibregl.Map({
-      container: containerRef.current,
-      style: mapStyle,
-      center: initialCenter ?? viewport.center,
-      zoom: initialZoom ?? viewport.zoom,
-      attributionControl: false,
-      // Embedded above page content → let the page scroll; zoom needs a modifier.
-      cooperativeGestures,
-    });
-    // Assign immediately so the early-return at the top of this effect
-    // bails on the next render rather than re-initialising the map.
-    // `mapReady` (toggled in `load`) still gates marker / layer
-    // rendering.
-    mapRef.current = map;
-
-    map.addControl(new maplibregl.AttributionControl({ compact: true }), 'bottom-right');
-    map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'top-right');
-    map.addControl(
-      new maplibregl.GeolocateControl({
-        positionOptions: { enableHighAccuracy: true },
-        trackUserLocation: true,
-        showUserLocation: true,
-      }),
-      'top-right',
-    );
-
-    if (linkToFullMap) map.scrollZoom.disable();
-
-    map.on('load', () => {
-      setMapReady(true);
-      // Rasterize category glyphs into map images (safe no-op on failure).
-      void loadGlyphImages(map);
-
-      const tryInitialFetch = () => {
-        const canvas = map.getCanvas();
-        if (!canvas.clientWidth || !canvas.clientHeight) return false;
-        const bbox = getMapBbox(map);
-        onViewportChange(bbox, map.getZoom());
-        return true;
-      };
-
-      if (!tryInitialFetch()) {
-        // Canvas may not be laid out yet — retry after paint
-        requestAnimationFrame(() => tryInitialFetch());
-      }
-    });
-
-    map.on('movestart', () => {
-      setIsCounterStale(true);
-      // Fanned-out spider markers are pixel-anchored; drop them on any move.
-      if (spiderMarkersRef.current.length) {
-        spiderMarkersRef.current.forEach((m) => m.remove());
-        spiderMarkersRef.current = [];
-      }
-    });
-
-    map.on('moveend', () => {
-      const canvas = map.getCanvas();
-      if (!canvas.clientWidth || !canvas.clientHeight) return;
-      const bbox = getMapBbox(map);
-      const z = map.getZoom();
-      onViewportChange(bbox, z);
-      setCurrentZoom(z);
-      const c = map.getCenter();
-      onViewportChangeProp?.({ center: [c.lng, c.lat], zoom: z });
-      recomputeRef.current();
-    });
-
-    return () => {
-      if (pulseRafRef.current) {
-        cancelAnimationFrame(pulseRafRef.current);
-        pulseRafRef.current = null;
-      }
-      const r = popupRootRef.current;
-      popupRootRef.current = null;
-      if (r) setTimeout(() => r.unmount(), 0);
-      spiderMarkersRef.current.forEach((m) => m.remove());
-      spiderMarkersRef.current = [];
-      mapRef.current = null;
-      pointLayersAddedRef.current = false;
-      map.remove();
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // Fly to initial viewport once map is ready (e.g. from IP geo)
-  useEffect(() => {
-    if (!mapRef.current || !mapReady || initialCenter) return;
-    mapRef.current.flyTo({ center: viewport.center, zoom: viewport.zoom, speed: 1.2 });
-  }, [viewport, mapReady, initialCenter]);
+  // ── Map lifecycle (construct + controls + handlers + teardown + initial fly)
+  useMapInstance({
+    containerRef,
+    mapRef,
+    initialCenter,
+    initialZoom,
+    viewport,
+    mapReady,
+    cooperativeGestures,
+    linkToFullMap,
+    onViewportChange,
+    onViewportChangeProp,
+    setMapReady,
+    setIsCounterStale,
+    setCurrentZoom,
+    recomputeRef,
+    spiderMarkersRef,
+    pulseRafRef,
+    popupRootRef,
+    pointLayersAddedRef,
+  });
 
   // ── Boundary polygon rendering via shared hook ─────────────────────────
   const countryMarkers = useMemo(
@@ -500,334 +377,23 @@ export const ExploreMap = ({
   });
 
   // ── Point layers: native MapLibre source with built-in clustering ──────
-  useEffect(() => {
-    const map = mapRef.current;
-    if (!map || !mapReady) return;
-
-    if (pointEnabledLayers.length === 0) {
-      if (pulseRafRef.current) {
-        cancelAnimationFrame(pulseRafRef.current);
-        pulseRafRef.current = null;
-      }
-      clearSpider();
-      for (const id of PIN_LAYER_IDS) {
-        if (map.getLayer(id)) map.removeLayer(id);
-      }
-      if (map.getSource(POINTS_SOURCE)) map.removeSource(POINTS_SOURCE);
-      pointLayersAddedRef.current = false;
-      return;
-    }
-
-    // Tag each feature with `favorited` (saved layer) and, when savedOnly is on,
-    // keep only saved points. Clone properties so the hook's cached features
-    // aren't mutated across map instances.
-    const favSet = favoriteIds ?? EMPTY_FAV;
-    const baseFeatures = pointsGeoJSON.features.filter((f) =>
-      pointEnabledLayers.includes(f.properties.pointType),
-    );
-    const filteredGeoJSON: GeoJSON.FeatureCollection = {
-      type: 'FeatureCollection',
-      features: (savedOnly
-        ? baseFeatures.filter((f) => favSet.has(String(f.properties.id)))
-        : baseFeatures
-      ).map((f) => ({
-        ...f,
-        properties: { ...f.properties, favorited: favSet.has(String(f.properties.id)) },
-      })),
-    };
-
-    const existingSource = map.getSource(POINTS_SOURCE) as GeoJSONSource | undefined;
-    if (existingSource) {
-      mapDebug('setData', { features: filteredGeoJSON.features.length });
-      existingSource.setData(filteredGeoJSON);
-      return;
-    }
-
-    // Defer source + layer creation until we actually have features.
-    // Adding a clustered source with `data: []` and then calling
-    // `setData()` after the map's initial flyTo settle has been observed
-    // to leave the cluster index empty — markers never appear even
-    // though the data arrived. Waiting for non-empty data fixes that.
-    if (filteredGeoJSON.features.length === 0) {
-      mapDebug('skip-empty-source-create');
-      return;
-    }
-
-    mapDebug('addSource', { features: filteredGeoJSON.features.length });
-    map.addSource(POINTS_SOURCE, {
-      type: 'geojson',
-      data: filteredGeoJSON,
-      cluster: true,
-      clusterMaxZoom: CLUSTER_MAX_ZOOM,
-      clusterRadius: CLUSTER_RADIUS,
-      clusterProperties: {
-        venue_count: ['+', ['case', ['==', ['get', 'pointType'], 'venues'], 1, 0]],
-        event_count: ['+', ['case', ['==', ['get', 'pointType'], 'events'], 1, 0]],
-        restroom_count: ['+', ['case', ['==', ['get', 'pointType'], 'restrooms'], 1, 0]],
-      },
-    });
-
-    map.addLayer({
-      id: CLUSTERS_LAYER,
-      type: 'circle',
-      source: POINTS_SOURCE,
-      filter: ['has', 'point_count'],
-      paint: {
-        'circle-radius': ['step', ['get', 'point_count'], 16, 10, 20, 50, 26, 100, 32, 500, 40],
-        // Monochrome cluster ramp. Density encoded by alpha on the
-        // foreground token, not by hue — matches the heatmap ramp and
-        // the rest of the design system's no-color rule.
-        'circle-color': 'hsl(0 0% 4%)',
-        'circle-opacity': [
-          'step',
-          ['get', 'point_count'],
-          0.55,
-          10,
-          0.65,
-          50,
-          0.75,
-          100,
-          0.85,
-          500,
-          0.95,
-        ],
-        'circle-stroke-width': 2,
-        'circle-stroke-color': 'hsl(0 0% 100%)',
-      },
-    });
-
-    map.addLayer({
-      id: CLUSTER_COUNT_LAYER,
-      type: 'symbol',
-      source: POINTS_SOURCE,
-      filter: ['has', 'point_count'],
-      layout: {
-        'text-field': ['get', 'point_count_abbreviated'],
-        'text-font': ['Noto Sans Medium'],
-        'text-size': 13,
-        'text-allow-overlap': true,
-      },
-      paint: { 'text-color': '#ffffff' },
-    });
-
-    // Live pulse — an expanding ring beneath live/open-now pins. Static at
-    // first; the rAF loop below animates radius+opacity when motion is allowed.
-    map.addLayer({
-      id: PULSE_LAYER,
-      type: 'circle',
-      source: POINTS_SOURCE,
-      filter: ['all', ['!', ['has', 'point_count']], ['==', ['get', 'live'], true]],
-      paint: {
-        'circle-radius': 10,
-        'circle-color': ['get', 'color'],
-        'circle-opacity': 0.25,
-        'circle-stroke-width': 0,
-      },
-    });
-
-    // Featured outer ring — makes editorially-chosen spots read first.
-    map.addLayer({
-      id: FEATURED_RING_LAYER,
-      type: 'circle',
-      source: POINTS_SOURCE,
-      filter: ['all', ['!', ['has', 'point_count']], ['==', ['get', 'featured'], true]],
-      paint: {
-        'circle-radius': 12,
-        'circle-color': 'rgba(0,0,0,0)',
-        'circle-stroke-width': 2,
-        'circle-stroke-color': ['get', 'color'],
-        'circle-stroke-opacity': 0.9,
-      },
-    });
-
-    map.addLayer({
-      id: UNCLUSTERED_LAYER,
-      type: 'circle',
-      source: POINTS_SOURCE,
-      filter: ['!', ['has', 'point_count']],
-      paint: {
-        // Larger dots host the category glyph; featured sit a touch larger.
-        'circle-radius': ['case', ['==', ['get', 'featured'], true], 11, 9],
-        'circle-color': ['get', 'color'],
-        // Thicker white halo so pins separate cleanly from the colored
-        // basemap and the (now softened) density heat beneath them.
-        'circle-stroke-width': 2.5,
-        'circle-stroke-color': '#ffffff',
-        // Steady-state opacity = time-of-day expression (dims closed at night).
-        'circle-opacity': pinOpacityExpr,
-        // Entrance fade — opacity transitions in on first paint / data swap.
-        'circle-opacity-transition': { duration: 350, delay: 0 },
-      },
-    });
-
-    // Category glyph on top of the dot. Falls back to the venue glyph, then to
-    // nothing (colored circle still shows) if an image failed to rasterize.
-    map.addLayer({
-      id: GLYPH_LAYER,
-      type: 'symbol',
-      source: POINTS_SOURCE,
-      filter: ['!', ['has', 'point_count']],
-      layout: {
-        'icon-image': ['coalesce', ['image', ['get', 'iconKey']], ['image', 'type:venues']],
-        'icon-size': ['case', ['==', ['get', 'featured'], true], 0.5, 0.42],
-        'icon-allow-overlap': true,
-        'icon-ignore-placement': true,
-      },
-    });
-
-    // Cluster click → zoom to expand, OR spiderfy when zooming won't separate
-    // the points (they share ~identical coordinates).
-    map.on('click', CLUSTERS_LAYER, async (e) => {
-      const feat = e.features?.[0];
-      if (!feat) return;
-      clearSpider();
-      const clusterId = feat.properties.cluster_id;
-      const center = (feat.geometry as GeoJSON.Point).coordinates as [number, number];
-      const src = map.getSource(POINTS_SOURCE) as GeoJSONSource;
-      try {
-        const zoom = await src.getClusterExpansionZoom(clusterId);
-        // If the breakpoint zoom is barely beyond where we are, zooming won't
-        // visually separate the pins — fan them out instead.
-        if (zoom - map.getZoom() <= 0.5 || zoom >= 18) {
-          const leaves = (await src.getClusterLeaves(clusterId, 24, 0)) as PointFeature[];
-          spiderfy(map, center, leaves);
-        } else {
-          map.flyTo({ center, zoom: zoom + 0.5, speed: 1.5 });
-        }
-      } catch {
-        map.flyTo({ center, zoom: map.getZoom() + 2, speed: 1.5 });
-      }
-    });
-
-    // Unclustered point click → rich popup card
-    map.on('click', UNCLUSTERED_LAYER, (e: MapLayerMouseEvent) => {
-      const feat = e.features?.[0];
-      if (!feat || feat.geometry.type !== 'Point') return;
-      const summary = summaryFromFeature(feat as unknown as PointFeature);
-      showPopup(map, e.lngLat, summary);
-      onSelectPointRef.current?.(summary.id);
-    });
-
-    map.on('mouseenter', CLUSTERS_LAYER, () => {
-      map.getCanvas().style.cursor = 'pointer';
-    });
-    map.on('mouseleave', CLUSTERS_LAYER, () => {
-      map.getCanvas().style.cursor = '';
-      hoverPopupRef.current?.remove();
-      hoverPopupRef.current = null;
-    });
-
-    // Cluster preview — break the aggregate down by type from clusterProperties
-    // so a dense blob reads as "12 venues · 3 events" instead of just a number.
-    map.on('mousemove', CLUSTERS_LAYER, (e: MapLayerMouseEvent) => {
-      const feat = e.features?.[0];
-      if (!feat) return;
-      const p = feat.properties as Record<string, number>;
-      const parts: string[] = [];
-      const add = (n: number, one: string, many: string) => {
-        if (n > 0) parts.push(`${n} ${n === 1 ? one : many}`);
-      };
-      add(Number(p.venue_count) || 0, 'venue', 'venues');
-      add(Number(p.event_count) || 0, 'event', 'events');
-      add(Number(p.restroom_count) || 0, 'restroom', 'restrooms');
-      const total = Number(p.point_count) || 0;
-      const label = parts.length ? parts.join(' · ') : `${total} places`;
-      const html = `<div style="font:13px system-ui;padding:2px 4px"><div style="font-weight:600">${label}</div><div style="color:rgba(0,0,0,.6);font-size:11px;margin-top:2px">Click to zoom in</div></div>`;
-      if (!hoverPopupRef.current) {
-        hoverPopupRef.current = new maplibregl.Popup({
-          closeButton: false,
-          closeOnClick: false,
-          offset: 12,
-          maxWidth: '220px',
-          className: 'venue-hover-popup',
-        });
-      }
-      hoverPopupRef.current.setLngLat(e.lngLat).setHTML(html).addTo(map);
-    });
-    map.on('mouseenter', UNCLUSTERED_LAYER, () => {
-      map.getCanvas().style.cursor = 'pointer';
-    });
-    map.on('mouseleave', UNCLUSTERED_LAYER, () => {
-      map.getCanvas().style.cursor = '';
-      hoverPopupRef.current?.remove();
-      hoverPopupRef.current = null;
-    });
-
-    // Lightweight hover preview: name + subtitle, no close button, no action
-    // buttons. Click still opens the full popup with share/navigate.
-    map.on('mousemove', UNCLUSTERED_LAYER, (e: MapLayerMouseEvent) => {
-      const feat = e.features?.[0];
-      if (!feat || feat.geometry.type !== 'Point') return;
-      const props = feat.properties as Record<string, unknown>;
-      const name = String(props.name ?? '');
-      const subtitle = props.subtitle ? String(props.subtitle) : '';
-      const safeName = name.replace(
-        /[&<>"]/g,
-        (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c] ?? c,
-      );
-      const safeSub = subtitle.replace(
-        /[&<>"]/g,
-        (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c] ?? c,
-      );
-      let imageUrl = '';
-      try {
-        const meta = JSON.parse(String(props.meta ?? '{}'));
-        // Prefer the reachable R2-mirrored copy over the raw external hotlink.
-        const best = [meta.thumbImage, meta.optimizedImage, meta.image].find(
-          (u) => typeof u === 'string' && /^https?:\/\//.test(u),
-        );
-        if (best) imageUrl = encodeURI(best as string);
-      } catch {
-        /* ignore */
-      }
-      // referrerpolicy=no-referrer dodges publisher-CDN hotlink walls; onerror
-      // removes the node so a dead URL collapses cleanly (no broken-image glyph).
-      const thumb = imageUrl
-        ? `<img src="${imageUrl}" alt="" referrerpolicy="no-referrer" onerror="this.remove()" style="width:36px;height:36px;border-radius:8px;object-fit:cover;flex:0 0 auto"/>`
-        : '';
-      const html = `<div style="display:flex;gap:8px;align-items:center;font:13px system-ui;line-height:1.3;padding:2px 4px;max-width:220px">${thumb}<div style="min-width:0"><div style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${safeName}</div>${
-        safeSub
-          ? `<div style="color:rgba(0,0,0,.6);font-size:11px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${safeSub}</div>`
-          : ''
-      }</div></div>`;
-      if (!hoverPopupRef.current) {
-        hoverPopupRef.current = new maplibregl.Popup({
-          closeButton: false,
-          closeOnClick: false,
-          offset: 12,
-          maxWidth: '220px',
-          className: 'venue-hover-popup',
-        });
-      }
-      hoverPopupRef.current.setLngLat(e.lngLat).setHTML(html).addTo(map);
-    });
-
-    // Entrance fade — pins ease in on first paint (skipped for reduced motion),
-    // settling on the time-of-day opacity expression.
-    if (!prefersReducedMotion && map.getLayer(UNCLUSTERED_LAYER)) {
-      map.setPaintProperty(UNCLUSTERED_LAYER, 'circle-opacity', 0);
-      requestAnimationFrame(() => {
-        const m = mapRef.current;
-        if (m?.getLayer(UNCLUSTERED_LAYER))
-          m.setPaintProperty(UNCLUSTERED_LAYER, 'circle-opacity', pinOpacityExpr);
-      });
-    }
-
-    startPulse();
-    pointLayersAddedRef.current = true;
-  }, [
+  usePointLayers({
+    mapRef,
+    mapReady,
     pointsGeoJSON,
     pointEnabledLayers,
-    mapReady,
-    showPopup,
-    startPulse,
     prefersReducedMotion,
     pinOpacityExpr,
     favoriteIds,
     savedOnly,
+    showPopup,
+    startPulse,
     spiderfy,
     clearSpider,
-  ]);
+    onSelectPointRef,
+    pointLayersAddedRef,
+    pulseRafRef,
+  });
 
   // ── Heatmap layer (Density lens): monochrome black-alpha ramp ─────────
   // MUST stay declared after the pins effect (load-bearing `beforeId` z-order).
