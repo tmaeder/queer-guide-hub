@@ -13,7 +13,6 @@ import { useSearchSuggestions, type SearchSuggestion } from '@/hooks/useSearchSu
 import { useTrendingSuggestions } from '@/hooks/useTrendingSuggestions';
 import { useSearchRecommendations } from '@/hooks/useSearchRecommendations';
 import { useVoiceSearch } from '@/hooks/useVoiceSearch';
-import { useNearMe } from '@/hooks/useNearMe';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useSearchHotkey } from '@/hooks/useSearchHotkey';
 import { useUserMode } from '@/hooks/useUserMode';
@@ -144,7 +143,6 @@ export const UniversalSearchBar = () => {
   const discoverySource: 'recommended' | 'trending' =
     recommendations.length > 0 ? 'recommended' : 'trending';
   const voice = useVoiceSearch();
-  const nearMe = useNearMe();
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
@@ -270,21 +268,6 @@ export const UniversalSearchBar = () => {
     },
     [navigate],
   );
-
-  const onExploreMap = useCallback(
-    (center?: { lat: number; lng: number }) => {
-      setIsOpen(false);
-      navigate(center ? `/map?lat=${center.lat}&lng=${center.lng}&z=11` : '/map');
-    },
-    [navigate],
-  );
-
-  const onNearMe = useCallback(async () => {
-    const c = await nearMe.request();
-    if (!c) return;
-    setIsOpen(false);
-    navigate(`/search?lat=${c.lat}&lng=${c.lng}&radius=25000`);
-  }, [nearMe, navigate]);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
@@ -599,10 +582,6 @@ export const UniversalSearchBar = () => {
               onPrefetch={prefetchRoute}
               navigate={navigate}
               onAsk={enterAsk}
-              onExploreMap={onExploreMap}
-              onNearMe={onNearMe}
-              nearMeSupported={nearMe.supported}
-              nearMeLoading={nearMe.loading}
               recentSearches={recentSearches}
               onSelectRecent={(term) => {
                 setQuery(term);
@@ -639,10 +618,6 @@ export const UniversalSearchBar = () => {
                 setQuery(term);
                 handleSearch(term);
               }}
-              nearMeSupported={nearMe.supported}
-              nearMeLoading={nearMe.loading}
-              onNearMe={onNearMe}
-              onExploreMap={onExploreMap}
               onSelectTrending={(hit) =>
                 handleSelectSuggestion({
                   id: hit.id,

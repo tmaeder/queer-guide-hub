@@ -32,10 +32,6 @@ export interface SearchPopoverDesktopProps {
   onSearchAll: () => void;
   clearRecents: () => void;
   onSelectRecent: (term: string) => void;
-  nearMeSupported: boolean;
-  nearMeLoading: boolean;
-  onNearMe: () => void;
-  onExploreMap: (center?: { lat: number; lng: number }) => void;
   onSelectTrending: (hit: ReturnType<typeof useTrendingSuggestions>['trending'][number]) => void;
   onBrowse: (path: string) => void;
   onPrefetch: (s: SearchSuggestion) => void;
@@ -65,10 +61,6 @@ export function SearchPopoverDesktop(props: SearchPopoverDesktopProps) {
     onSearchAll,
     clearRecents,
     onSelectRecent,
-    nearMeSupported,
-    nearMeLoading,
-    onNearMe,
-    onExploreMap,
     onSelectTrending,
     onBrowse,
     onPrefetch,
@@ -84,10 +76,6 @@ export function SearchPopoverDesktop(props: SearchPopoverDesktopProps) {
           onSelectTrending={onSelectTrending}
           onBrowse={onBrowse}
           onAsk={onAsk}
-          onExploreMap={onExploreMap}
-          onNearMe={onNearMe}
-          nearMeSupported={nearMeSupported}
-          nearMeLoading={nearMeLoading}
           recents={recentSearches}
           onSelectRecent={onSelectRecent}
           onClearRecents={clearRecents}
