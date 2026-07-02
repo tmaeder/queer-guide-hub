@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import type { Database } from '@/integrations/supabase/types';
+import { SFW_RATINGS } from '@/hooks/useMarketplace';
 
 type MarketplaceListing = Database['public']['Tables']['marketplace_listings']['Row'] & {
   venues?: { name: string; address: string; city: string } | null;
@@ -8,7 +9,7 @@ type MarketplaceListing = Database['public']['Tables']['marketplace_listings']['
 
 const BASE_SELECT = `*, venues(name, address, city)`;
 
-export type CuratedRowKey = 'featured' | 'new' | 'most-relevant' | 'price-drops';
+export type CuratedRowKey = 'featured' | 'new' | 'most-relevant' | 'price-drops' | 'queer-owned';
 
 interface RowState {
   data: MarketplaceListing[];
@@ -24,6 +25,8 @@ async function fetchRow(key: CuratedRowKey, limit = 12): Promise<MarketplaceList
     .select(BASE_SELECT)
     .eq('status', 'active')
     .not('images', 'is', null)
+    // Landing rails render pre-opt-in → unconditionally SFW.
+    .in('content_rating', SFW_RATINGS)
     .limit(limit);
 
   switch (key) {
@@ -47,6 +50,11 @@ async function fetchRow(key: CuratedRowKey, limit = 12): Promise<MarketplaceList
       q = q.in('id', ids).order('updated_at', { ascending: false });
       break;
     }
+    case 'queer-owned':
+      q = q
+        .overlaps('community_owned_tags', ['queer_owned', 'trans_owned'])
+        .order('boutique_score', { ascending: false, nullsFirst: false });
+      break;
   }
 
   const { data, error } = await q;
@@ -123,6 +131,7 @@ export function useMarketplaceSpotlight(): { listing: MarketplaceListing | null;
           .eq('status', 'active')
           .eq('featured', true)
           .not('images', 'is', null)
+          .in('content_rating', SFW_RATINGS)
           .order('updated_at', { ascending: false })
           .limit(1);
         if (error) throw error;
