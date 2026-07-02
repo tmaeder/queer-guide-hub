@@ -11,7 +11,7 @@ import { OCCASION_CHIPS } from '@/lib/marketplaceTaxonomy';
  *  - editor-curated collection chips (marketplace_collections, display 'chip'),
  *    navigating to the collection drilldown.
  */
-export function OccasionChips() {
+export function OccasionChips({ className }: { className?: string }) {
   const { collections } = useMarketplaceCollections('chip');
   const [searchParams, setSearchParams] = useSearchParams();
   const activeOcc = searchParams.get('occ') ?? '';
@@ -32,7 +32,7 @@ export function OccasionChips() {
   return (
     <nav
       aria-label="Marketplace collections"
-      className="-mx-4 mb-12 overflow-x-auto"
+      className={`-mx-4 overflow-x-auto ${className ?? 'mb-12'}`}
     >
       <ul className="flex gap-2 px-4 pb-2 min-w-max">
         {OCCASION_CHIPS.map((c) => {
