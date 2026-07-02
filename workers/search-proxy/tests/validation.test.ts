@@ -83,6 +83,9 @@ describe("validUuid", () => {
 		expect(validUuid("20ccacee-3d9b-4d59-b5db-188c73d41805", "id").ok).toBe(true);
 		expect(validUuid("not-a-uuid", "id").ok).toBe(false);
 	});
+	it("rejects the nil UUID (placeholder tracking pollutes trending)", () => {
+		expect(validUuid("00000000-0000-0000-0000-000000000000", "id").ok).toBe(false);
+	});
 });
 
 describe("rejectUnknown", () => {
