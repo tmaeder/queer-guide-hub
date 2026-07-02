@@ -1,7 +1,8 @@
 import { memo } from 'react';
-import { MotionCard as Card, CardImage } from '@/components/ui/card';
+import { MotionCard as Card } from '@/components/ui/card';
 import { CardHoverEffect } from '@/components/effects/CardHoverEffect';
-import { Store, ExternalLink } from 'lucide-react';
+import { Image } from '@/components/ui/image';
+import { Badge } from '@/components/ui/badge';
 import type { Database } from '@/integrations/supabase/types';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { WishlistPicker } from '@/components/marketplace/WishlistPicker';
@@ -84,17 +85,30 @@ function MarketplaceCardImpl({
   const isAdult = isAdultListing(listing);
   const outOfStock = listing.in_stock === false;
 
+  const queerOwned = (listing.community_owned_tags ?? []).some(
+    (t) => t === 'queer_owned' || t === 'trans_owned',
+  );
+
+  // Boutique card: image-led, quiet meta, no per-card CTA — the whole card
+  // goes to the detail page, where the outbound/affiliate CTA lives.
   return (
     <CardHoverEffect>
       <Card className="group transition-colors duration-300 hover:border-foreground/40">
         <div className="relative">
-          <CardImage
-            src={listingImage}
-            alt={listing.title}
-            fallbackIcon={Store}
-            height={192}
-            priority={priority}
-          />
+          <LocalizedLink
+            to={`/marketplace/${listing.slug}`}
+            className="block"
+            aria-label={listing.title}
+            tabIndex={-1}
+          >
+            <Image
+              src={listingImage ?? undefined}
+              alt={listing.title}
+              aspect="portrait"
+              rounded="top"
+              priority={priority}
+            />
+          </LocalizedLink>
           {showFavoriteButton && (
             <div className="absolute top-2 right-2 z-10">
               <WishlistPicker listingId={listing.id} />
@@ -102,14 +116,11 @@ function MarketplaceCardImpl({
           )}
         </div>
 
-        <div className="p-6 flex flex-col gap-2">
+        <div className="p-4 flex flex-col gap-1.5">
           <p className="text-2xs uppercase tracking-wider text-muted-foreground overflow-hidden text-ellipsis whitespace-nowrap">
-            {/* Department label ("Underwear") beats the type enum ("products") as card context. */}
-            <span>{departmentLabel(listing.department ?? departmentOf(listing.subcategory_slug))}</span>
-            {/* Brand links to its brand page; merchant stays the fallback. */}
+            {/* Brand leads (linked to its brand page); department gives context. */}
             {listing.brand && brandSlug(listing.brand) ? (
               <>
-                <span className="mx-1.5">·</span>
                 <LocalizedLink
                   to={`/marketplace/brands/${brandSlug(listing.brand)}`}
                   onClick={(e) => e.stopPropagation()}
@@ -117,10 +128,10 @@ function MarketplaceCardImpl({
                 >
                   <HighlightedText text={listing.brand} query={searchQuery} />
                 </LocalizedLink>
+                <span className="mx-1.5">·</span>
               </>
             ) : listing.business_name ? (
               <>
-                <span className="mx-1.5">·</span>
                 {listing.merchant_domain ? (
                   <LocalizedLink
                     to={`/marketplace/merchants/${listing.merchant_domain}`}
@@ -132,9 +143,10 @@ function MarketplaceCardImpl({
                 ) : (
                   <HighlightedText text={listing.business_name} query={searchQuery} />
                 )}
+                <span className="mx-1.5">·</span>
               </>
             ) : null}
-            {isAffiliate && <span className="ml-1.5">· Sponsored</span>}
+            <span>{departmentLabel(listing.department ?? departmentOf(listing.subcategory_slug))}</span>
           </p>
 
           <h2 className="text-base font-semibold leading-tight overflow-hidden text-ellipsis whitespace-nowrap">
@@ -148,65 +160,29 @@ function MarketplaceCardImpl({
             </LocalizedLink>
           </h2>
 
-          {listing.description && (
-            <p
-              className="text-sm text-muted-foreground overflow-hidden leading-normal"
-              style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}
-            >
-              <HighlightedText text={listing.description} query={searchQuery} />
-            </p>
-          )}
-
-          <div className="flex items-end justify-between gap-2 pt-4 border-t border-border">
-            <div className="flex flex-col min-w-0">
-              <div className="flex items-baseline gap-1.5">
-                {price.modifier && (
-                  <span className="text-2xs uppercase tracking-wider text-muted-foreground">{price.modifier}</span>
-                )}
-                <p
-                  className={`text-base font-bold leading-none ${outOfStock ? 'line-through text-muted-foreground' : ''}`}
-                >
-                  {price.primary}
-                </p>
-              </div>
-              {price.secondary && (
-                <p className="text-xs text-muted-foreground mt-0.5">{price.secondary}</p>
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-baseline gap-1.5 min-w-0">
+              {price.modifier && (
+                <span className="text-2xs uppercase tracking-wider text-muted-foreground">{price.modifier}</span>
               )}
-              {outOfStock && (
-                <p className="text-2xs uppercase tracking-wider text-muted-foreground mt-1">Out of stock</p>
+              <p
+                className={`text-base font-bold leading-none ${outOfStock ? 'line-through text-muted-foreground' : ''}`}
+              >
+                {price.primary}
+              </p>
+              {price.secondary && (
+                <span className="text-xs text-muted-foreground">{price.secondary}</span>
+              )}
+              {/* FTC-honest without shouting: monetized listings get an Ad marker. */}
+              {isAffiliate && (
+                <span className="text-2xs uppercase tracking-wider text-muted-foreground">Ad</span>
               )}
             </div>
-
-            {outbound ? (
-              <a
-                href={outbound.url}
-                target="_blank"
-                rel={outbound.rel}
-                onClick={(e) => e.stopPropagation()}
-                data-affiliate={outbound.isAffiliate ? 'true' : undefined}
-                className="inline-flex items-center gap-1.5 rounded-element px-4 py-2 text-sm font-medium hover:opacity-90 transition-opacity shrink-0"
-                style={{
-                  backgroundColor: 'hsl(var(--foreground))',
-                  color: 'hsl(var(--background))',
-                }}
-                aria-label={`${outbound.label} (opens in new tab)`}
-              >
-                {outbound.label}
-                <ExternalLink size={14} aria-hidden="true" />
-              </a>
-            ) : (
-              <LocalizedLink
-                to={`/marketplace/${listing.slug}`}
-                className="inline-flex items-center gap-1.5 rounded-element px-4 py-2 text-sm font-medium hover:opacity-90 transition-opacity shrink-0"
-                style={{
-                  backgroundColor: 'hsl(var(--foreground))',
-                  color: 'hsl(var(--background))',
-                }}
-              >
-                View
-              </LocalizedLink>
-            )}
+            {queerOwned && <Badge variant="outline">Queer-owned</Badge>}
           </div>
+          {outOfStock && (
+            <p className="text-2xs uppercase tracking-wider text-muted-foreground">Out of stock</p>
+          )}
         </div>
       </Card>
     </CardHoverEffect>
