@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Sparkles, X } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 const HINT_KEY = 'qg_map_hint_v1';
 
@@ -9,6 +10,7 @@ const HINT_KEY = 'qg_map_hint_v1';
  * and never returns (localStorage flag). Auto-disabled if storage is blocked.
  */
 export function MapFirstRunHint({ count, ready }: { count: number; ready: boolean }) {
+  const { t } = useTranslation();
   const [show, setShow] = useState(false);
   const triggered = useRef(false);
 
@@ -29,17 +31,21 @@ export function MapFirstRunHint({ count, ready }: { count: number; ready: boolea
   if (!show) return null;
 
   return (
-    <div className="pointer-events-none absolute left-1/2 top-16 z-30 -translate-x-1/2 px-4">
-      <div className="pointer-events-auto flex items-center gap-2 rounded-full border border-border bg-background/95 py-1.5 pl-4 pr-1.5 backdrop-blur-md">
+    // top-28 clears the two-row mobile bar; md:top-16 sits under the desktop bar.
+    <div className="pointer-events-none absolute left-1/2 top-28 z-30 -translate-x-1/2 px-4 md:top-16">
+      <div className="pointer-events-auto flex items-center gap-2 rounded-element border border-border bg-background/95 py-1.5 pl-4 pr-1.5 backdrop-blur-md">
         <Sparkles className="h-3.5 w-3.5 text-muted-foreground" aria-hidden />
         <span className="text-13 text-foreground">
-          {count.toLocaleString()} queer spots in view
+          {t('map.firstRun.spotsInView', {
+            defaultValue: '{{count}} queer spots in view',
+            count,
+          })}
         </span>
         <button
           type="button"
-          aria-label="Dismiss"
+          aria-label={t('map.firstRun.dismiss', { defaultValue: 'Dismiss' })}
           onClick={() => setShow(false)}
-          className="inline-flex h-6 w-6 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
+          className="inline-flex h-6 w-6 items-center justify-center rounded-element text-muted-foreground hover:bg-muted hover:text-foreground focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
         >
           <X className="h-3.5 w-3.5" aria-hidden />
         </button>

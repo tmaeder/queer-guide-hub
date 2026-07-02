@@ -1,4 +1,5 @@
 import { Loader2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface MapResultsPillProps {
   showResultCount: boolean;
@@ -18,9 +19,12 @@ export function MapResultsPill({
   isCounterStale,
   inBoundsCount,
 }: MapResultsPillProps) {
+  const { t } = useTranslation();
   return (
     <div
-      className="absolute z-10 flex items-center gap-1.5 rounded-full border border-border bg-background/85 px-4 py-1.5 pointer-events-none transition-opacity duration-200"
+      role="status"
+      aria-live="polite"
+      className="absolute z-10 flex items-center gap-1.5 rounded-element border border-border bg-background/85 px-4 py-1.5 pointer-events-none transition-opacity duration-200"
       style={{
         bottom: 40,
         right: 8,
@@ -32,13 +36,19 @@ export function MapResultsPill({
       }}
     >
       {(isFetching || isCounterStale) && (
-        <Loader2 className="h-3 w-3 animate-spin" aria-label="Loading" />
+        <Loader2
+          className="h-3 w-3 animate-spin"
+          aria-label={t('map.canvas.loading', { defaultValue: 'Loading' })}
+        />
       )}
       <span className="text-xs text-muted-foreground">
         {isFetching || isCounterStale
-          ? 'Loading...'
+          ? t('map.canvas.loadingEllipsis', { defaultValue: 'Loading...' })
           : showResultCount
-            ? `${inBoundsCount.toLocaleString()} results in view`
+            ? t('map.canvas.resultsInView', {
+                defaultValue: '{{count}} results in view',
+                count: inBoundsCount,
+              })
             : ''}
       </span>
     </div>
