@@ -948,13 +948,6 @@ h1, h2, .font-display {
   border: 0;
 }
 
-/* Mobile FeedbackButton lift above map chrome (bug #23). */
-@media (max-width: 767px) {
-  button[aria-label="Share feedback"] {
-    bottom: 96px !important;
-  }
-}
-
 /* WCAG 2.2 AA 2.5.8 — MapLibre attribution links must hit ≥24×24 tactile target.
    Pad the anchor without altering its visible text size or the map layout. */
 .maplibregl-ctrl-attrib a {
