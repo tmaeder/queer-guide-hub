@@ -54,14 +54,17 @@ describe('MarketplaceFilters', () => {
     expect(container).toBeTruthy();
   });
 
-  it('exposes Type + Category labels (not the legacy Category/Subcategory)', () => {
-    const { getByText, getByLabelText, queryByText } = render(
+  it('leads with Department; subcategory + dead Type axis stay hidden until a department is chosen', () => {
+    const { getByLabelText, queryByText } = render(
       wrap(<MarketplaceFilters onFiltersChange={vi.fn()} />),
     );
     // Open the panel.
     fireEvent.click(getByLabelText('Toggle filters'));
-    expect(getByText('Type')).toBeTruthy();
-    expect(getByText('Category')).toBeTruthy();
+    expect(queryByText('Department')).toBeTruthy();
+    // The products/services enum select was removed (99.98% products).
+    expect(queryByText('Type')).toBeNull();
+    // Subcategory renders only as a drill-down inside a department.
+    expect(queryByText('Category')).toBeNull();
     expect(queryByText('Subcategory')).toBeNull();
   });
 
