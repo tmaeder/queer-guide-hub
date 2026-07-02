@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ArrowRight } from 'lucide-react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
+import { detailHref } from '@/lib/searchRoutes';
 import { useRecommendations } from '@/hooks/useRecommendations';
 import { useCitiesByIds } from '@/hooks/useCitiesByIds';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -52,6 +53,9 @@ export function BecauseYouRail({ limit = 8 }: { limit?: number }) {
             if (rec.entity_type !== 'city' || !rec.entity_id) return null;
             const city = cityMap.get(rec.entity_id);
             if (!city) return null;
+            // Strict: require a canonical slug — skip a city that only has an id.
+            const cityHref = detailHref({ type: 'city', slug: city.slug, id: city.id });
+            if (!cityHref) return null;
             const reasons = extractReasons(rec, 2);
             const flag = (city.countries as { flag_emoji?: string } | null)?.flag_emoji;
             const country = (city.countries as { name?: string } | null)?.name;
@@ -62,7 +66,7 @@ export function BecauseYouRail({ limit = 8 }: { limit?: number }) {
                 aria-label={`${city.name} — ${reasons[0] ?? ''}`}
               >
                 <LocalizedLink
-                  to={`/city/${city.slug || city.id}`}
+                  to={cityHref}
                   className="group flex h-full flex-col overflow-hidden rounded-container border bg-background no-underline transition-opacity hover:opacity-90"
                 >
                   <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted">

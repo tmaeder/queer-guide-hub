@@ -22,7 +22,7 @@ import { useAssistant } from '@/hooks/useAssistant';
 import { MODE_SCOPE_BIAS } from '@/config/navigation';
 import type { SearchFilters } from '@/hooks/useSearch';
 import type { AssistantCard } from '@/lib/assistantClient';
-import { ROUTE_HREFS, tagHref } from '@/lib/searchRoutes';
+import { detailHref } from '@/lib/searchRoutes';
 import { SearchPopoverDesktop } from './SearchPopoverDesktop';
 import { SearchPopoverMobile } from './SearchPopoverMobile';
 import { SearchAskPanel } from './SearchAskPanel';
@@ -39,11 +39,14 @@ const SCOPE_IDS = [
 ];
 
 function prefetchRoute(suggestion: SearchSuggestion) {
-  const slug = suggestion.slug || suggestion.id;
-  const href =
-    suggestion.type === 'tag'
-      ? tagHref(suggestion.name || suggestion.title || '')
-      : ROUTE_HREFS[suggestion.type]?.(slug);
+  // Only prefetch a canonical detail route — `detailHref` returns null for
+  // slug-less / UUID-only hits so we never warm a /type/<uuid> dead link.
+  const href = detailHref({
+    type: suggestion.type,
+    slug: suggestion.slug,
+    id: suggestion.id,
+    title: suggestion.name || suggestion.title,
+  });
   if (!href) return;
   try {
     const link = document.createElement('link');
@@ -219,22 +222,19 @@ export const UniversalSearchBar = () => {
           query: displayName,
         });
       }
-      const slug = suggestion.slug || suggestion.id;
-      const href = ROUTE_HREFS[suggestion.type]?.(slug);
-      if (suggestion.type === 'tag') {
-        // Tags route by NAME to the glossary (the /resources lookup is name-keyed).
-        navigate(tagHref(suggestion.name || suggestion.title || ''));
-      } else if (href) {
-        navigate(href);
-      } else if (suggestion.type === 'user') {
-        navigate(`/user/${suggestion.id}`);
-      } else if (suggestion.type === 'group') {
-        navigate(`/groups/${suggestion.id}`);
-      } else {
-        navigate(
+      // `detailHref` handles tags (by name), group/user (by id) and slug-keyed
+      // types (canonical slug only). A slug-less / UUID-only hit returns null,
+      // so we route to a fresh search on the label instead of a dead link.
+      const href = detailHref({
+        type: suggestion.type,
+        slug: suggestion.slug,
+        id: suggestion.id,
+        title: suggestion.name || suggestion.title,
+      });
+      navigate(
+        href ??
           `/search?q=${encodeURIComponent(displayName)}&types=${suggestion.type}&direct=true`,
-        );
-      }
+      );
       setIsOpen(false);
     },
     [navigate, trackClickFromSearch],
@@ -259,12 +259,14 @@ export const UniversalSearchBar = () => {
 
   const navigateToCard = useCallback(
     (card: AssistantCard) => {
-      const slug = (card.slug as string) || card.objectID;
-      const href = ROUTE_HREFS[card.type]?.(slug);
       setIsOpen(false);
-      if (card.type === 'tag') navigate(tagHref(card.title ?? ''));
-      else if (href) navigate(href);
-      else navigate(`/search?q=${encodeURIComponent(card.title ?? '')}`);
+      const href = detailHref({
+        type: card.type,
+        slug: card.slug as string,
+        id: card.objectID,
+        title: card.title,
+      });
+      navigate(href ?? `/search?q=${encodeURIComponent(card.title ?? '')}`);
     },
     [navigate],
   );
