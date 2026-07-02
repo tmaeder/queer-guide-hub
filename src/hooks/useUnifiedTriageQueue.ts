@@ -1,5 +1,4 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 import { untypedRpc } from '@/integrations/supabase/untyped';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -40,19 +39,16 @@ export function useUnifiedTriageQueue(filters: TriageFilters) {
   return useQuery({
     queryKey: ['triage-queue', filters],
     queryFn: async (): Promise<TriageResult> => {
-      const { data, error } = await supabase.rpc(
-        'get_unified_triage_queue' as never,
-        {
-          p_queue_types: filters.queueTypes,
-          p_content_types: filters.contentTypes,
-          p_search: filters.search || null,
-          p_sort: filters.sort,
-          p_page: filters.page,
-          p_per_page: filters.perPage,
-        } as never,
-      );
+      const { data, error } = await untypedRpc<TriageResult>('get_unified_triage_queue', {
+        p_queue_types: filters.queueTypes,
+        p_content_types: filters.contentTypes,
+        p_search: filters.search || null,
+        p_sort: filters.sort,
+        p_page: filters.page,
+        p_per_page: filters.perPage,
+      });
       if (error) throw error;
-      return data as unknown as TriageResult;
+      return data as TriageResult;
     },
     staleTime: 30_000,
     refetchInterval: 60_000,

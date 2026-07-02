@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { untypedRpc } from '@/integrations/supabase/untyped';
+import { untypedFrom, untypedRpc } from '@/integrations/supabase/untyped';
 
 /**
  * Data + mutations for the /admin/duplicates surface (dedup Phase 1).
@@ -73,8 +73,7 @@ export function useDuplicateClusters(contentType: DedupContentType = 'venue') {
     queryKey: ['dup-entity-meta', contentType, memberIds],
     enabled: memberIds.length > 0,
     queryFn: async (): Promise<Map<string, VenueMeta>> => {
-      const { data, error } = await supabase
-        .from(META_TABLE[contentType] as never)
+      const { data, error } = await untypedFrom(META_TABLE[contentType])
         .select(META_COLS[contentType])
         .in('id', memberIds);
       if (error) throw error;

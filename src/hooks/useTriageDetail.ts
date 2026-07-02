@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { untypedFrom } from '@/integrations/supabase/untyped';
 import type { TriageItem } from '@/hooks/useUnifiedTriageQueue';
 
 export function useEntityData(item: TriageItem) {
@@ -12,8 +12,7 @@ export function useEntityData(item: TriageItem) {
       if (!entityId || !entityTable) return null;
       const validTables = ['venues', 'events', 'news_articles', 'personalities', 'cities', 'countries', 'marketplace_listings'];
       if (!validTables.includes(entityTable)) return null;
-      const { data, error } = await supabase
-        .from(entityTable as never)
+      const { data, error } = await untypedFrom(entityTable)
         .select('*')
         .eq('id', entityId)
         .maybeSingle();
@@ -30,8 +29,7 @@ export function useStagingData(item: TriageItem) {
     queryKey: ['staging-detail', item.id],
     queryFn: async () => {
       if (item.queue_type !== 'staging') return null;
-      const { data, error } = await supabase
-        .from('ingestion_staging' as never)
+      const { data, error } = await untypedFrom('ingestion_staging')
         .select('raw_data, normalized_data, enriched_data, dedup_match_id, dedup_match_table')
         .eq('id', item.id)
         .maybeSingle();

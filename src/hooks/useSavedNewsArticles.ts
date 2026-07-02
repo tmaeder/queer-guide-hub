@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { untypedFrom } from '@/integrations/supabase/untyped';
 import { useAuth } from '@/hooks/useAuth';
 import type { Tables } from '@/integrations/supabase/types';
 
@@ -30,8 +30,7 @@ export function useSavedNewsArticles({ limit = 50 }: Options = {}) {
     let cancelled = false;
     setLoading(true);
     (async () => {
-      const favs = await supabase
-        .from('news_favorites' as never)
+      const favs = await untypedFrom('news_favorites')
         .select(
           'created_at, news_articles!inner(id, slug, title, excerpt, image_url, published_at, category, publisher_name)' as never,
         )
@@ -48,8 +47,7 @@ export function useSavedNewsArticles({ limit = 50 }: Options = {}) {
 
       let readSet = new Set<string>();
       if (articleIds.length > 0) {
-        const reads = await supabase
-          .from('user_news_reads' as never)
+        const reads = await untypedFrom('user_news_reads')
           .select('article_id' as never)
           .eq('user_id' as never, user.id as never)
           .in('article_id' as never, articleIds as never);

@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { untypedFrom } from '@/integrations/supabase/untyped';
 import { useAuth } from '@/hooks/useAuth';
 
 // Records a (user, article) read pair. Idempotent — PK on (user_id, article_id)
@@ -12,8 +12,7 @@ export function useUserNewsReads() {
     async (articleId: string) => {
       if (!user) return;
       try {
-        await supabase
-          .from('user_news_reads' as never)
+        await untypedFrom('user_news_reads')
           .upsert(
             { user_id: user.id, article_id: articleId } as never,
             { onConflict: 'user_id,article_id', ignoreDuplicates: true } as never,
