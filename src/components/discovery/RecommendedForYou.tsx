@@ -6,6 +6,7 @@
 
 import { useEffect, useState } from "react";
 import { LocalizedLink } from "@/components/routing/LocalizedLink";
+import { detailHref } from "@/lib/searchRoutes";
 import { useAuth } from "@/hooks/useAuth";
 import { useTrackClick } from "@/hooks/useSearchActions";
 import { Card, CardContent } from "@/components/ui/card";
@@ -20,24 +21,6 @@ import { isValidImageUrl } from "@/lib/images/resolveEntityImage";
 
 const SEARCH_URL =
 	import.meta.env.VITE_SEARCH_PROXY_URL || "https://search.queer.guide";
-
-const TYPE_PATH: Record<string, string> = {
-	venue: "/venues",
-	event: "/events",
-	city: "/city",
-	country: "/country",
-	personality: "/personalities",
-	queer_village: "/villages",
-	news: "/news",
-	marketplace: "/marketplace",
-	hotel: "/hotels",
-};
-
-function hitPath(type: string, slug: string): string | null {
-	if (type === "tag") return `/resources/${slug}`;
-	const base = TYPE_PATH[type];
-	return base ? `${base}/${slug}` : null;
-}
 
 function fallbackTheme(type: string): FallbackTheme {
 	switch (type) {
@@ -129,8 +112,8 @@ export function RecommendedForYou({ className, limit = 10, hideHeader }: { class
 					<div className="flex gap-4 pb-4">
 						{items
 							?.map((it) => {
-								const slug = it.slug || it.id;
-								const to = hitPath(it.type, slug);
+								// Strict: canonical-slug items only — no /type/<uuid> links.
+								const to = detailHref({ type: it.type, slug: it.slug, id: it.id, title: it.title });
 								if (!to) return null;
 								if (!it.title) return null;
 								return (
