@@ -166,6 +166,9 @@ export function useMapInstance({
     });
 
     return () => {
+      // Latest-value ref by design: notify whatever callback the consumer
+      // holds NOW (not a mount-time snapshot) that the handle is gone.
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       onMapHandleRef.current?.(null);
       if (pulseRafRef.current) {
         cancelAnimationFrame(pulseRafRef.current);

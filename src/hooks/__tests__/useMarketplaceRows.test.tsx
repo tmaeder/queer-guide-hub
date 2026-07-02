@@ -112,9 +112,11 @@ describe('useMarketplaceRow', () => {
     await waitFor(() => expect(result.current.loading).toBe(false));
 
     expect(result.current.data.map(l => (l as { id: string }).id)).toEqual(['A']);
-    // Second call should be marketplace_listings .in('id', ['A']).
+    // Second call should be marketplace_listings .in('id', ['A']). The base
+    // query also applies .in('content_rating', SFW_RATINGS), so look up the
+    // id-keyed .in specifically rather than the first .in in the chain.
     const listingsCall = state.calls.find(c => c.table === 'marketplace_listings');
-    const inCall = listingsCall?.chain.find(s => s.method === 'in');
+    const inCall = listingsCall?.chain.find(s => s.method === 'in' && s.args?.[0] === 'id');
     expect(inCall?.args).toEqual(['id', ['A']]);
   });
 
