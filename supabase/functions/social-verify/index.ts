@@ -156,6 +156,10 @@ async function handler(req: Request): Promise<Response> {
   const account = accounts[idx]
   const username = (profile.username as string | null) ?? null
 
+  let tier: Tier
+  if (account.platform === 'Bluesky') tier = await verifyBluesky(account, userId, username)
+  else if (account.platform === 'Mastodon') tier = await verifyMastodon(account, userId, username)
+  else tier = await verifyGeneric(account, userId, username)
   const tier: Tier =
     account.platform === 'Bluesky'
       ? await verifyBluesky(account, userId, username)
