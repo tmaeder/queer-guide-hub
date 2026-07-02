@@ -12,7 +12,7 @@ import type { EntityImageAsset } from '@/hooks/useEntityImageAssets';
 import { useCurrency } from '@/hooks/useCurrency';
 import { useFxRates } from '@/hooks/useFxRates';
 import { isAdultListing } from '@/hooks/useAdultContent';
-import { departmentLabel, departmentOf } from '@/lib/marketplaceTaxonomy';
+import { brandSlug, departmentLabel, departmentOf } from '@/lib/marketplaceTaxonomy';
 import type { MarketplaceSurface } from '@/lib/affiliate/marketplace';
 import { formatListingPrice, getOutboundLink, highlightMatches } from './marketplaceHelpers';
 
@@ -106,7 +106,19 @@ function MarketplaceCardImpl({
           <p className="text-2xs uppercase tracking-wider text-muted-foreground overflow-hidden text-ellipsis whitespace-nowrap">
             {/* Department label ("Underwear") beats the type enum ("products") as card context. */}
             <span>{departmentLabel(listing.department ?? departmentOf(listing.subcategory_slug))}</span>
-            {listing.business_name && (
+            {/* Brand links to its brand page; merchant stays the fallback. */}
+            {listing.brand && brandSlug(listing.brand) ? (
+              <>
+                <span className="mx-1.5">·</span>
+                <LocalizedLink
+                  to={`/marketplace/brands/${brandSlug(listing.brand)}`}
+                  onClick={(e) => e.stopPropagation()}
+                  className="hover:text-foreground"
+                >
+                  <HighlightedText text={listing.brand} query={searchQuery} />
+                </LocalizedLink>
+              </>
+            ) : listing.business_name ? (
               <>
                 <span className="mx-1.5">·</span>
                 {listing.merchant_domain ? (
@@ -121,7 +133,7 @@ function MarketplaceCardImpl({
                   <HighlightedText text={listing.business_name} query={searchQuery} />
                 )}
               </>
-            )}
+            ) : null}
             {isAffiliate && <span className="ml-1.5">· Sponsored</span>}
           </p>
 
