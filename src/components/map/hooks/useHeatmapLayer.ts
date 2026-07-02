@@ -1,6 +1,6 @@
 import { useEffect, type MutableRefObject } from 'react';
 import maplibregl, { type GeoJSONSource } from 'maplibre-gl';
-import type { LayerType } from '@/hooks/useExploreMapData';
+import { MONO_HEAT_STOPS, type LayerType } from '@/hooks/useExploreMapData';
 import {
   CLUSTERS_LAYER,
   HEATMAP_LAYER,
@@ -106,25 +106,14 @@ export function useHeatmapLayer({
         'heatmap-intensity': ['interpolate', ['linear'], ['zoom'], 0, 0.5, 9, 1.4],
         // Monochrome black-alpha density ramp (design system: no hue, no
         // shadow). Kept low-alpha so the field reads as a soft underglow
-        // beneath the pins — never an opaque blanket that buries them. The
-        // former pride-spectrum ramp was removed in the monochrome strip.
+        // beneath the pins — never an opaque blanket that buries them.
+        // Stops shared with the legend via MONO_HEAT_STOPS.
         'heatmap-color': [
           'interpolate',
           ['linear'],
           ['heatmap-density'],
-          0,
-          'rgba(0,0,0,0)',
-          0.2,
-          'rgba(0,0,0,0.10)',
-          0.4,
-          'rgba(0,0,0,0.20)',
-          0.6,
-          'rgba(0,0,0,0.32)',
-          0.8,
-          'rgba(0,0,0,0.44)',
-          1,
-          'rgba(0,0,0,0.55)',
-        ],
+          ...MONO_HEAT_STOPS.flat(),
+        ] as maplibregl.ExpressionSpecification,
         'heatmap-radius': ['interpolate', ['linear'], ['zoom'], 0, 6, 9, 26, 14, 52],
         // Start transparent and cross-fade in when switching into a heat lens.
         'heatmap-opacity': prefersReducedMotion ? heatOpacityExpr : 0,
