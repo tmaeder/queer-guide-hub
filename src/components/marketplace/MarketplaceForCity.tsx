@@ -14,7 +14,7 @@ export function MarketplaceForCity({ cityName, limit = 4 }: { cityName: string; 
       </h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {items.map((it) => (
-          <MarketplaceCard key={it.id} listing={it} imageAsset={assets.get(it.id)} />
+          <MarketplaceCard key={it.id} listing={it} imageAsset={assets.get(it.id)} surface="city_rail" />
         ))}
       </div>
     </section>

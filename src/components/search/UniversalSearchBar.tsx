@@ -13,7 +13,6 @@ import { useSearchSuggestions, type SearchSuggestion } from '@/hooks/useSearchSu
 import { useTrendingSuggestions } from '@/hooks/useTrendingSuggestions';
 import { useSearchRecommendations } from '@/hooks/useSearchRecommendations';
 import { useVoiceSearch } from '@/hooks/useVoiceSearch';
-import { useNearMe } from '@/hooks/useNearMe';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useSearchHotkey } from '@/hooks/useSearchHotkey';
 import { useUserMode } from '@/hooks/useUserMode';
@@ -22,7 +21,7 @@ import { useAssistant } from '@/hooks/useAssistant';
 import { MODE_SCOPE_BIAS } from '@/config/navigation';
 import type { SearchFilters } from '@/hooks/useSearch';
 import type { AssistantCard } from '@/lib/assistantClient';
-import { ROUTE_HREFS, tagHref } from '@/lib/searchRoutes';
+import { detailHref } from '@/lib/searchRoutes';
 import { SearchPopoverDesktop } from './SearchPopoverDesktop';
 import { SearchPopoverMobile } from './SearchPopoverMobile';
 import { SearchAskPanel } from './SearchAskPanel';
@@ -39,11 +38,14 @@ const SCOPE_IDS = [
 ];
 
 function prefetchRoute(suggestion: SearchSuggestion) {
-  const slug = suggestion.slug || suggestion.id;
-  const href =
-    suggestion.type === 'tag'
-      ? tagHref(suggestion.name || suggestion.title || '')
-      : ROUTE_HREFS[suggestion.type]?.(slug);
+  // Only prefetch a canonical detail route — `detailHref` returns null for
+  // slug-less / UUID-only hits so we never warm a /type/<uuid> dead link.
+  const href = detailHref({
+    type: suggestion.type,
+    slug: suggestion.slug,
+    id: suggestion.id,
+    title: suggestion.name || suggestion.title,
+  });
   if (!href) return;
   try {
     const link = document.createElement('link');
@@ -141,7 +143,6 @@ export const UniversalSearchBar = () => {
   const discoverySource: 'recommended' | 'trending' =
     recommendations.length > 0 ? 'recommended' : 'trending';
   const voice = useVoiceSearch();
-  const nearMe = useNearMe();
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
@@ -219,22 +220,19 @@ export const UniversalSearchBar = () => {
           query: displayName,
         });
       }
-      const slug = suggestion.slug || suggestion.id;
-      const href = ROUTE_HREFS[suggestion.type]?.(slug);
-      if (suggestion.type === 'tag') {
-        // Tags route by NAME to the glossary (the /resources lookup is name-keyed).
-        navigate(tagHref(suggestion.name || suggestion.title || ''));
-      } else if (href) {
-        navigate(href);
-      } else if (suggestion.type === 'user') {
-        navigate(`/user/${suggestion.id}`);
-      } else if (suggestion.type === 'group') {
-        navigate(`/groups/${suggestion.id}`);
-      } else {
-        navigate(
+      // `detailHref` handles tags (by name), group/user (by id) and slug-keyed
+      // types (canonical slug only). A slug-less / UUID-only hit returns null,
+      // so we route to a fresh search on the label instead of a dead link.
+      const href = detailHref({
+        type: suggestion.type,
+        slug: suggestion.slug,
+        id: suggestion.id,
+        title: suggestion.name || suggestion.title,
+      });
+      navigate(
+        href ??
           `/search?q=${encodeURIComponent(displayName)}&types=${suggestion.type}&direct=true`,
-        );
-      }
+      );
       setIsOpen(false);
     },
     [navigate, trackClickFromSearch],
@@ -259,30 +257,17 @@ export const UniversalSearchBar = () => {
 
   const navigateToCard = useCallback(
     (card: AssistantCard) => {
-      const slug = (card.slug as string) || card.objectID;
-      const href = ROUTE_HREFS[card.type]?.(slug);
       setIsOpen(false);
-      if (card.type === 'tag') navigate(tagHref(card.title ?? ''));
-      else if (href) navigate(href);
-      else navigate(`/search?q=${encodeURIComponent(card.title ?? '')}`);
+      const href = detailHref({
+        type: card.type,
+        slug: card.slug as string,
+        id: card.objectID,
+        title: card.title,
+      });
+      navigate(href ?? `/search?q=${encodeURIComponent(card.title ?? '')}`);
     },
     [navigate],
   );
-
-  const onExploreMap = useCallback(
-    (center?: { lat: number; lng: number }) => {
-      setIsOpen(false);
-      navigate(center ? `/map?lat=${center.lat}&lng=${center.lng}&z=11` : '/map');
-    },
-    [navigate],
-  );
-
-  const onNearMe = useCallback(async () => {
-    const c = await nearMe.request();
-    if (!c) return;
-    setIsOpen(false);
-    navigate(`/search?lat=${c.lat}&lng=${c.lng}&radius=25000`);
-  }, [nearMe, navigate]);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
@@ -597,10 +582,6 @@ export const UniversalSearchBar = () => {
               onPrefetch={prefetchRoute}
               navigate={navigate}
               onAsk={enterAsk}
-              onExploreMap={onExploreMap}
-              onNearMe={onNearMe}
-              nearMeSupported={nearMe.supported}
-              nearMeLoading={nearMe.loading}
               recentSearches={recentSearches}
               onSelectRecent={(term) => {
                 setQuery(term);
@@ -637,10 +618,6 @@ export const UniversalSearchBar = () => {
                 setQuery(term);
                 handleSearch(term);
               }}
-              nearMeSupported={nearMe.supported}
-              nearMeLoading={nearMe.loading}
-              onNearMe={onNearMe}
-              onExploreMap={onExploreMap}
               onSelectTrending={(hit) =>
                 handleSelectSuggestion({
                   id: hit.id,

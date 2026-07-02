@@ -11,7 +11,7 @@ export function MarketplaceSpotlight() {
   const image = listing.images?.[0];
   if (!image) return null;
   const price = formatListingPrice(listing);
-  const outbound = getOutboundLink(listing);
+  const outbound = getOutboundLink(listing, 'marketplace_grid');
 
   return (
     <section

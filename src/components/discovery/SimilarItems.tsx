@@ -5,6 +5,7 @@
 
 import { useEffect, useState } from "react";
 import { LocalizedLink } from "@/components/routing/LocalizedLink";
+import { detailHref } from "@/lib/searchRoutes";
 import { fetchSimilar } from "@/lib/searchClient";
 import { useTrackClick, type Entity } from "@/hooks/useSearchActions";
 import { Card, CardContent } from "@/components/ui/card";
@@ -30,18 +31,6 @@ interface Props {
 	contentTypes?: string[];
 }
 
-const TYPE_PATH: Record<string, string> = {
-	venue: "/venues",
-	event: "/events",
-	city: "/city",
-	country: "/country",
-	personality: "/personalities",
-	news: "/news",
-	queer_village: "/villages",
-	marketplace: "/marketplace",
-	hotel: "/hotels",
-};
-
 function fallbackTheme(type: string): FallbackTheme {
 	switch (type) {
 		case "venue": return "venue";
@@ -52,12 +41,6 @@ function fallbackTheme(type: string): FallbackTheme {
 		case "personality": case "person": return "person";
 		default: return "place";
 	}
-}
-
-function hitPath(type: string, slug: string): string | null {
-	if (type === "tag") return `/resources/${slug}`;
-	const base = TYPE_PATH[type];
-	return base ? `${base}/${slug}` : null;
 }
 
 interface SimItem {
@@ -132,8 +115,15 @@ export function SimilarItems({ entity, limit = 6, title = "More like this", clas
 				>
 				<div className="flex gap-4 pb-4">
 					{items?.map((it) => {
-									const slug = it.metadata?.slug || it.content_id;
-									const to = hitPath(it.content_type, slug);
+									// Strict: only link items with a canonical slug — a slug-less
+									// (UUID-only) neighbor is dropped, never linked to a
+									// /type/<uuid> URL that 404s.
+									const to = detailHref({
+										type: it.content_type,
+										slug: it.metadata?.slug,
+										id: it.content_id,
+										title: it.metadata?.title,
+									});
 									if (!to) return null;
 									return (
 										<LocalizedLink
