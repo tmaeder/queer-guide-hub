@@ -58,6 +58,18 @@ export const LAYER_COLORS: Record<LayerType, string> = {
   neighbourhoods: 'hsl(0 0% 4%)', // foreground — concrete; MapLibre can't parse CSS var()
 };
 
+/** Monochrome black-alpha density ramp stops `[density, color][]` — the single
+ *  source of truth for BOTH the canvas heatmap expression and the legend's
+ *  gradient swatch, so the two can never drift apart. */
+export const MONO_HEAT_STOPS: [number, string][] = [
+  [0, 'rgba(0,0,0,0)'],
+  [0.2, 'rgba(0,0,0,0.10)'],
+  [0.4, 'rgba(0,0,0,0.20)'],
+  [0.6, 'rgba(0,0,0,0.32)'],
+  [0.8, 'rgba(0,0,0,0.44)'],
+  [1, 'rgba(0,0,0,0.55)'],
+];
+
 // ── Hook ───────────────────────────────────────────────────────────────────────
 
 interface UseExploreMapDataOptions {
