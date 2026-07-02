@@ -73,6 +73,12 @@ export interface Env {
 	 *              (no user-facing change). Used to validate before cutover.
 	 */
 	SEARCH_BACKEND?: string;
+	/** Awin publisher id — enables awinWrap for known-MID merchants (/go?l= mode). */
+	AWIN_AFFILIATE_ID?: string;
+	/** Amazon Associates tag appended to amazon.* destinations. */
+	AMAZON_ASSOCIATES_TAG?: string;
+	/** JSON map of merchant_domain → Awin MID, e.g. {"etsy.com":"12345"}. */
+	AWIN_MERCHANT_MIDS?: string;
 	ADMIN_TOKEN?: string;
 	SENTRY_DSN?: string;
 	SENTRY_ENV?: string;

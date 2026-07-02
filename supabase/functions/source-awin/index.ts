@@ -3,6 +3,7 @@ import { withCircuitBreaker } from '../_shared/circuit-breaker.ts'
 import type { SourceAdapter, RawItem, NormalizedItem, AdapterConfig } from '../_shared/source-adapter.ts'
 import { writeToStaging, MissingCredentialsError, skippedResponse } from '../_shared/source-adapter.ts'
 import { withErrorReporting } from '../_shared/report-api-error.ts'
+import { parseCsv } from '../_shared/csv.ts'
 
 // ============================================================
 // Source: AWIN Affiliate Product Feed
@@ -26,18 +27,10 @@ const awinAdapter: SourceAdapter = {
       return await res.text()
     })
 
-    const lines = csvText.split('\n').filter(l => l.trim())
-    if (lines.length < 2) return []
-
-    const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''))
+    const rows = parseCsv(csvText)
     const items: RawItem[] = []
 
-    for (let i = 1; i < Math.min(lines.length, limit + 1); i++) {
-      const values = lines[i].split(',').map(v => v.trim().replace(/^"|"$/g, ''))
-      const row: Record<string, unknown> = {}
-      for (let j = 0; j < headers.length; j++) {
-        row[headers[j]] = values[j]
-      }
+    for (const row of rows.slice(0, limit)) {
       // Content-addressed fallback: use title+merchant hash instead of row index
       const fallbackId = row.aw_product_id || row.product_id
         || `awin-${String(row.product_name ?? '').slice(0, 50)}-${String(row.merchant_name ?? '')}`
@@ -58,7 +51,9 @@ const awinAdapter: SourceAdapter = {
       sourceName: 'awin',
       name: String(d.product_name || d.title || ''),
       description: String(d.description || d.product_short_description || ''),
-      urls: d.aw_deep_link ? [String(d.aw_deep_link)] : d.merchant_deep_link ? [String(d.merchant_deep_link)] : [],
+      // Prefer the clean merchant URL for external_url; the Awin cread link
+      // reaches affiliate_url via metadata.aw_deep_link (commit RPC mapping).
+      urls: d.merchant_deep_link ? [String(d.merchant_deep_link)] : d.aw_deep_link ? [String(d.aw_deep_link)] : [],
       images: d.aw_image_url ? [String(d.aw_image_url)] : d.merchant_image_url ? [String(d.merchant_image_url)] : [],
       tags: d.category_name ? [String(d.category_name).toLowerCase()] : [],
       metadata: {
@@ -69,6 +64,9 @@ const awinAdapter: SourceAdapter = {
         category: d.category_name,
         brand: d.brand_name,
         in_stock: d.in_stock !== '0',
+        aw_deep_link: d.aw_deep_link || null,
+        merchant_deep_link: d.merchant_deep_link || null,
+        product_url: d.merchant_deep_link || null,
       },
     }
   },

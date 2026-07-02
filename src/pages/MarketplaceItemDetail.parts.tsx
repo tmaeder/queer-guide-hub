@@ -1,4 +1,6 @@
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router';
+import { marketplaceBeacon } from '@/lib/affiliate/marketplace';
 import {
   Star,
   MapPin,
@@ -114,7 +116,13 @@ export function MarketplaceBuyBox({
   onContentUpdated,
 }: BuyBoxProps) {
   const price = formatListingPrice(listing);
-  const outbound = getOutboundLink(listing);
+  const outbound = getOutboundLink(listing, 'marketplace_detail');
+
+  // One CTR impression per detail view (kind=impression pairs with the /go click).
+  useEffect(() => {
+    if (outbound?.isAffiliate) marketplaceBeacon(listing.id, 'marketplace_detail');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [listing.id]);
   // Warmer, seller-forward CTA than the generic "Visit website" — name the
   // shop so the click feels personal (esp. for queer-owned sellers).
   const seller = (listing.brand || listing.business_name || '').trim();
