@@ -12,7 +12,7 @@
  * The Worker passes an already-blended query vector (query ⊕ bias), matching
  * today's architecture where the bias blend is computed Worker-side.
  *
- * Gated behind env.SEARCH_BACKEND ("meili" | "pg" | "shadow"); default "meili"
+ * The only search backend since the Meilisearch decommission (2026-06)
  * means this module is dormant until explicitly enabled.
  */
 

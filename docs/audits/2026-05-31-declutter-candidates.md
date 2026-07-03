@@ -2,7 +2,7 @@
 
 Evidence-backed ledger for the `/codebase-declutter` pass. Each row carries the proof that a
 removal is safe (or why an item is kept). Verification = the check run before/after acting.
-Companion: [`DECLUTTER_PLAN.md`](DECLUTTER_PLAN.md), [`docs/architecture/repo-map.md`](docs/architecture/repo-map.md).
+Companion: [`2026-05-31-declutter-plan.md`](2026-05-31-declutter-plan.md), [`../architecture/repo-map.md`](../architecture/repo-map.md).
 
 Overall finding: the repo is **already well-maintained** — no config drift, no unused
 dependencies (heavy libs are lazy-loaded/chunked), scripts/docs/CI all serve a purpose. The

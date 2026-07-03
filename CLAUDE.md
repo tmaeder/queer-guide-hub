@@ -28,7 +28,7 @@ queer-guide-hub/
 │   └── migrations/       # PostgreSQL migrations
 ├── workers/
 │   ├── ingest/           # CF Worker: search-intelligence ingest pipeline
-│   ├── search-proxy/     # CF Worker: search proxy (Meili|pg|shadow backend), Postgres-driven synonyms
+│   ├── search-proxy/     # CF Worker: search proxy (Postgres backend), Postgres-driven synonyms
 │   ├── snapshot-archiver/ # CF Worker: archives admin/editorial snapshots
 │   └── submit/           # CF Worker: extension submissions → ingestion_staging
 ├── docs/                 # Project-wide docs (a11y-audit, architecture, search-intelligence, …)
@@ -74,88 +74,19 @@ queer-guide-hub/
 ## Repo stats
 
 - **Edge functions:** 229
-- **Edge functions:** 201
-- **Migrations:** 722
-- **Migrations:** 722
-- **Migrations:** 718
-- **Migrations:** 719
-- **Migrations:** 720
-- **Migrations:** 713
-- **Migrations:** 716
-- **Migrations:** 713
-- **Migrations:** 705
-- **Migrations:** 697
-- **Migrations:** 696
-- **Migrations:** 692
-- **Migrations:** 691
-- **Migrations:** 685
-- **Migrations:** 684
-- **Migrations:** 686
-- **Migrations:** 677
-- **Migrations:** 678
-- **Migrations:** 672
-- **Migrations:** 671
-- **Migrations:** 668
-- **Migrations:** 664
-- **Migrations:** 660
-- **Migrations:** 662
-- **Migrations:** 654
-- **Migrations:** 644
-- **Migrations:** 636
-- **Migrations:** 645
-- **Migrations:** 646
-- **Migrations:** 640
-- **Migrations:** 632
-- **Edge functions:** 217
-- **Edge functions:** 201
-- **Migrations:** 624
-- **Migrations:** 630
-- **Edge functions:** 217
-- **Edge functions:** 201
-- **Migrations:** 627
-- **Migrations:** 618
-- **Migrations:** 620
-- **Migrations:** 619
-- **Migrations:** 622
-- **Migrations:** 617
-- **Migrations:** 610
-- **Migrations:** 611
-- **Migrations:** 602
-- **Migrations:** 609
-- **Migrations:** 603
-- **Migrations:** 609
-- **Migrations:** 600
-- **Migrations:** 596
-- **Migrations:** 601
-- **Migrations:** 599
-- **Migrations:** 581
-- **Migrations:** 574
-- **Migrations:** 575
-- **Migrations:** 576
-- **Migrations:** 572
-- **Migrations:** 568
-- **Migrations:** 564
-- **Migrations:** 562
-- **Migrations:** 555
-- **Edge functions:** 204
-- **Migrations:** 553
-- **Edge functions:** 203
-- **Migrations:** 548
-- **Migrations:** 541
-- **Migrations:** 547
+- **Migrations:** 721
 
 ## Infrastructure
 
 - **Supabase:** project `xqeacpakadqfxjxjcewc` (eu-central-2)
 - **Cloudflare Pages:** project `queer-guide` at `queer-guide.pages.dev`
 - **CF Account:** `7aa3765cc5f50f2b681b782eb4a8d296`
-- **Search:** **migrating Meilisearch → Postgres + Cloudflare** (plan: `docs/search-intelligence/meili-to-postgres-migration-plan.md`). Meilisearch (self-hosted, Infomaniak) still serves production by default; the Postgres engine is live and shadow-tested for cutover.
+- **Search:** **Postgres + Cloudflare** (migration plan, historical: `docs/search-intelligence/meili-to-postgres-migration-plan.md`). The Postgres engine serves production; Meilisearch is decommissioned code-side (only the Infomaniak node shutdown remains, external infra).
   - **Postgres engine (live):** denormalized `search_documents` table (weighted tsvector + `vector(1024)` HNSW embedding + PostGIS `geog` + facets/trust/liveness/price/temporal). RPCs: `search_hybrid` (RRF keyword+vector fusion in SQL, with target_groups filter + news-recency decay + vnn top-200 admission), `search_facets`, `search_autocomplete` (prefix + trigram), plus discovery RPCs (`get_recommendations`, `related_entities`, `find_duplicate_clusters`, `events_in_window`, `personalities_on_this_day`). Excludes `duplicate_of_id IS NOT NULL`.
-  - **CF Worker:** `search-proxy` — `SEARCH_BACKEND` flag (`meili` default | `pg` | `shadow`). `pg` serves `/search` + `/autocomplete` from the Postgres RPCs; `shadow` serves Meili but logs a `search_shadow` comparison for cutover validation (analyze with `scripts/search-eval/shadow-analyze.mjs`). Rollout runbook: `docs/deploy/search-rollout.md`.
-  - **Sync:** `meilisearch-sync` edge function (Meili); Postgres `search_documents` stays fresh via entity + `content_embeddings` triggers.
-  - **Indexes (Meili):** venues, events, cities, countries, news, marketplace, personalities, tags, queer_villages
+  - **CF Worker:** `search-proxy` serves `/search` + `/autocomplete` from the Postgres RPCs (the former `SEARCH_BACKEND` meili/pg/shadow selector and the shadow-compare tooling were removed after cutover). Rollout runbook: `docs/deploy/search-rollout.md`.
+  - **Sync:** Postgres `search_documents` stays fresh via entity + `content_embeddings` triggers (the `meilisearch-sync` edge function is gone).
   - **Decommission (code-side complete, 2026-06-07):** the worker serves Postgres directly; the DB sync triggers/crons and the `meilisearch-sync` edge function are gone; `workers/search-proxy/src/meili.ts`, the `meilisearch/` ops dir, and `configure-meili.sh`/`meili-direct-resync.sh` are removed; the admin search-intelligence UI is Meili-free (dead `Index*`/`Consistency*` types dropped). `INDEX_MAP`/`ALL_INDEXES` live in `workers/search-proxy/src/entityIndex.ts` and are **active Postgres-side** entity-type→pg-type normalization (not Meili code, despite the name) — keep. Verified no live Meili cron/trigger/function/env ref remains; residual `meili` strings are only a shared `x-webhook-secret` default (`meilisearch-sync-webhook-2026`) in geocode/backfill functions — cosmetic, leave. **Only remaining task: the Infomaniak Meili node shutdown (external infra).**
-  - **Legacy:** PostgreSQL FTS `universal_search()` and `algolia-sync` are deprecated
+  - **Legacy:** PostgreSQL FTS `universal_search()` and `algolia-sync` are REMOVED (dropped via migration `20260618150000`; `venue_amenities`/`attributes` fell with it)
 - **Dedup:** `find_duplicate_clusters(content_type)` groups near-duplicate live entities (date-aware for events/festivals). Admins review + merge venues at `/admin/duplicates` — a soft, reversible merge via `merge_venues`/`unmerge_venues` (sets `duplicate_of_id`, reparents children, slug redirect via `venue_slug_redirects`, audited in `venue_merge_audit`).
 
 ## Environment
@@ -232,5 +163,5 @@ LGBTQ+ travelers, locals, activists, researchers, allies. Safety-first, inclusiv
 - Tokens: `src/index.css` (Tailwind v4 `@theme` block — CSS variables; no `tailwind.config.ts`)
 - Animation: `src/lib/animation.ts` (durations, easings, distances)
 - Charts: `src/lib/chartPalette.ts` (monochrome recharts palette + stroke patterns; added Phase 3a)
-- Components: shadcn/ui primitives in `src/components/ui/`. For monochrome status semantics use the `Badge` variants (the unused `StatusBadge` primitive was removed in the 2026-05-31 declutter; see `DECLUTTER_CANDIDATES.md`).
+- Components: shadcn/ui primitives in `src/components/ui/`. For monochrome status semantics use the `Badge` variants (the unused `StatusBadge` primitive was removed in the 2026-05-31 declutter; see `docs/audits/2026-05-31-declutter-candidates.md`).
 - Enforcement: `eslint.config.js` (color literals: error in public, warn in admin → error after Phase 3g; semantic radius warn; admin motion ban error)

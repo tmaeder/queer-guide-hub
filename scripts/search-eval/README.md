@@ -54,24 +54,8 @@ workflow stays green where the secret isn't configured).
 `run.mjs` is **keyword-only** (`p_query_vec = null`) so it's deterministic in CI
 and isolates the FTS + trigram + ranking legs (what the title/known-item
 assertions target). The semantic leg is exercised end-to-end by the live
-shadow-mode comparison in the Worker.
+(the shadow-mode Worker comparison was removed with the Meili decommission).
 
-## Shadow-mode cutover gate
-
-`shadow-analyze.mjs` reads the `search_shadow` lines the Worker emits under
-`SEARCH_BACKEND=shadow` (see `docs/deploy/search-rollout.md` Stage A) and prints
-a GO / NO-GO read against the cutover gate (median `overlap_at_10` ≥ 6, near-zero
-`pg_total=0`-vs-Meili-hits divergences, `pg_ms` p95 ≤ 500ms), plus an overlap
-histogram and the worst-overlap queries to eyeball. Exit 0 = GO, 1 = NO-GO,
-2 = no usable input.
-
-```bash
-# from a captured file …
-node scripts/search-eval/shadow-analyze.mjs shadow.log
-# … or straight off the tail
-wrangler tail queer-guide-search-proxy --format json | node scripts/search-eval/shadow-analyze.mjs
-```
-It tolerates raw JSON lines or `wrangler tail` lines that merely contain the JSON.
 
 ## Assertions
 

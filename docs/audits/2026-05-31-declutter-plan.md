@@ -1,8 +1,8 @@
 # Declutter Plan
 
 Working record for the `/codebase-declutter` pass. Companion docs:
-[`docs/architecture/repo-map.md`](docs/architecture/repo-map.md) and
-[`DECLUTTER_CANDIDATES.md`](DECLUTTER_CANDIDATES.md).
+[`../architecture/repo-map.md`](../architecture/repo-map.md) and
+[`2026-05-31-declutter-candidates.md`](2026-05-31-declutter-candidates.md).
 
 ## Project Info
 - Type: monorepo — React 19 + Vite 6 SPA (frontend) + Supabase Deno edge functions + Cloudflare Workers + Node scraper + MV3 extension

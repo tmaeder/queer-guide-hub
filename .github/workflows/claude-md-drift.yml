@@ -24,6 +24,9 @@ jobs:
         run: |
           actual_fns=$(ls supabase/functions/ | grep -v '^_' | wc -l | tr -d ' ')
           actual_mig=$(ls supabase/migrations/ | wc -l | tr -d ' ')
+          # Drop duplicate stat lines first (union-merge conflicts once grew 71 of them),
+          # then sync the single remaining line of each kind.
+          awk '!/^- \*\*(Edge functions|Migrations):\*\* [0-9]+$/ || !seen[$1$2]++' CLAUDE.md > CLAUDE.md.tmp && mv CLAUDE.md.tmp CLAUDE.md
           sed -i -E "0,/^- \*\*Edge functions:\*\* [0-9]+$/s//- **Edge functions:** $actual_fns/" CLAUDE.md
           sed -i -E "0,/^- \*\*Migrations:\*\* [0-9]+$/s//- **Migrations:** $actual_mig/" CLAUDE.md
           if git diff --quiet CLAUDE.md; then

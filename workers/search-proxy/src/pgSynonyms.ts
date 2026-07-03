@@ -78,7 +78,7 @@ export async function loadActiveSynonyms(env: Env): Promise<PgSynonym[]> {
  * or includes the target index, AND its `locale` is '*' or matches.
  *
  * Returns the deduped list of terms to append. Caller decides how to splice
- * them into the Meili query string.
+ * them into the search query string.
  *
  * Bidirectional rows (is_one_way=false) match either direction: query word
  * in terms triggers append of replacements; query word in replacements
