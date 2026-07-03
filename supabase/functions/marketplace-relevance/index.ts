@@ -92,7 +92,13 @@ Deno.serve(async (req) => {
     }
     const effectiveBatch = Math.max(1, Math.min(batchSize, dailyCap - (doneToday ?? 0)))
 
-    let query = supabase.from('ingestion_staging').select('id, normalized_data').eq('target_table', 'marketplace_listings').eq('ai_validation_status', 'approved').is('classification_result', null).order('created_at', { ascending: true }).limit(effectiveBatch)
+    // order='newest' classifies freshly-synced vendor products first so they
+    // reach live listings promptly instead of starving behind the large legacy
+    // approved-but-unclassified backlog (the recurring staging drain runs a
+    // newest-first tick for new products + an oldest-first tick to grind the
+    // backlog). Default stays oldest-first (unchanged behavior).
+    const ascending = String(body.order ?? 'oldest') !== 'newest'
+    let query = supabase.from('ingestion_staging').select('id, normalized_data').eq('target_table', 'marketplace_listings').eq('ai_validation_status', 'approved').is('classification_result', null).order('created_at', { ascending }).limit(effectiveBatch)
     if (pipelineRunId) query = query.eq('pipeline_run_id', pipelineRunId)
     const { data: items, error } = await query
     if (error) return errorResponse(error.message, 500, req)

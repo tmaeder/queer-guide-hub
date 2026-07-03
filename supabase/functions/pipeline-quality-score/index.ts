@@ -25,7 +25,7 @@ Deno.serve(withErrorReporting('pipeline-quality-score', async (req) => {
     const batchSize = body.batch_size || 50
     const dryRun = body.dry_run || false
 
-    const query = supabase
+    let query = supabase
       .from('ingestion_staging')
       .select('id, normalized_data, enriched_data, entity_type, target_table')
       .eq('enrichment_status', 'pending')
@@ -33,6 +33,9 @@ Deno.serve(withErrorReporting('pipeline-quality-score', async (req) => {
       .in('ai_validation_status', ['approved', 'pending'])
       .order('created_at', { ascending: true })
       .limit(batchSize)
+    // Optional scoping (mirrors pipeline-validate / pipeline-deduplicate) so a
+    // domain-specific drain (e.g. marketplace) doesn't advance other domains' rows.
+    if (entityType) query = query.eq('entity_type', entityType)
 
     const { data: items, error } = await query
     if (error) return errorResponse(`Failed to load items: ${error.message}`, 500, req)
