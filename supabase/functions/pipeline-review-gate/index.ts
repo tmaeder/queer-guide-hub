@@ -21,6 +21,7 @@ Deno.serve(withErrorReporting('pipeline-review-gate', async (req) => {
   try {
     const body = await req.json().catch(() => ({}))
     const pipelineRunId = body.pipeline_run_id as string | undefined
+    const entityType = body.entityType as string | undefined
     const minConfidence = body.minConfidence ?? 0.7
     const autoApproveAbove = body.autoApproveAbove ?? 0.9
     const batchSize = body.batch_size || 50
@@ -41,6 +42,9 @@ Deno.serve(withErrorReporting('pipeline-review-gate', async (req) => {
       .limit(batchSize)
 
     if (pipelineRunId) query = query.eq('pipeline_run_id', pipelineRunId)
+    // Optional scoping (mirrors pipeline-validate / pipeline-deduplicate) so a
+    // domain-specific drain (e.g. marketplace) doesn't advance other domains' rows.
+    if (entityType) query = query.eq('entity_type', entityType)
 
     const { data: items, error } = await query
     if (error) return errorResponse(`Failed to load items: ${error.message}`, 500, req)
