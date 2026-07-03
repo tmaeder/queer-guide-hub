@@ -8,7 +8,8 @@
  * the frontend risk tiers (`useTripSafety.ts`, which consume this value).
  */
 
-// deno-lint-ignore no-explicit-any
+// deno-lint-ignore no-explicit-any -- ILGA rows are loosely-shaped JSON blobs
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Row = Record<string, any>;
 
 export function calculateEqualityScore(row: Row): number {

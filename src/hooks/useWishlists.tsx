@@ -32,7 +32,7 @@ export interface WishlistItem {
 // Generates a stable slug from a title. Falls back to a random suffix so
 // two users naming a list "Pride 2026" can both succeed.
 function wishlistSlug(title: string): string {
-  const base = wishlistSlug(title).slice(0, 40) || 'list';
+  const base = slugify(title).slice(0, 40) || 'list';
   const suffix = Math.random().toString(36).slice(2, 8);
   return `${base}-${suffix}`;
 }

@@ -66,7 +66,8 @@ export async function fetchPageText(rawUrl: string, opts: FetchPageOptions = {})
  * How many enrichment_log rows this step completed since UTC midnight — the
  * daily-cap counter shared by the agentic-enrich functions.
  */
-// deno-lint-ignore no-explicit-any
+// deno-lint-ignore no-explicit-any -- accepts any Supabase client shape
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function countDoneToday(supabase: any, step: string): Promise<number> {
   const since = new Date(); since.setUTCHours(0, 0, 0, 0)
   const { count } = await supabase
