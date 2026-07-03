@@ -102,6 +102,7 @@ Deno.serve(withErrorReporting('source-woocommerce-public', async (req) => {
     const adapter = makeAdapter(shopDomain, sourceSlug)
     const maxPages = Number(body.max_pages ?? 40)
     const dryRun = body.dry_run || false
+    const refresh = body.refresh === true
 
     let total = 0, written = 0, page = 0
     for (page = 1; page <= maxPages; page++) {
@@ -111,7 +112,7 @@ Deno.serve(withErrorReporting('source-woocommerce-public', async (req) => {
       if (!dryRun) {
         written += await writeToStaging(supabase, adapter, items, {
           batchSize: PER_PAGE, offset: page, pipelineRunId: body.pipeline_run_id, nodeId: body.node_id,
-          targetTable: 'marketplace_listings',
+          targetTable: 'marketplace_listings', refresh,
         })
       }
       if (items.length < PER_PAGE) break

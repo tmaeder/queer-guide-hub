@@ -76,7 +76,23 @@ Deno.serve(async (req) => {
     const aggregatorThreshold = body.aggregator_threshold ?? 0.6
     const aggregatorSources: string[] = body.aggregator_sources ?? ['ohmyfantasy', 'misterb']
     const dryRun = body.dry_run || false
-    let query = supabase.from('ingestion_staging').select('id, normalized_data').eq('target_table', 'marketplace_listings').eq('ai_validation_status', 'approved').is('classification_result', null).order('created_at', { ascending: true }).limit(batchSize)
+
+    // Daily cap / circuit-breaker: this node has no per-call rate limit beyond
+    // batch_size + a 200ms sleep. With the recurring registry engine now driving
+    // many vendors, bound total LLM spend per UTC day (steady-state stays far
+    // under this because refreshed existing products skip the LLM path — only
+    // genuinely new products are classified). Count today's relevance events.
+    const dailyCap = Number(body.daily_cap ?? 800)
+    const startOfDay = new Date().toISOString().slice(0, 10) + 'T00:00:00Z'
+    const { count: doneToday } = await supabase.from('ingestion_events')
+      .select('id', { count: 'exact', head: true })
+      .eq('stage', 'relevance').gte('created_at', startOfDay)
+    if ((doneToday ?? 0) >= dailyCap) {
+      return jsonResponse({ success: true, items: 0, message: 'daily_cap_reached', daily_cap: dailyCap, done_today: doneToday }, 200, req)
+    }
+    const effectiveBatch = Math.max(1, Math.min(batchSize, dailyCap - (doneToday ?? 0)))
+
+    let query = supabase.from('ingestion_staging').select('id, normalized_data').eq('target_table', 'marketplace_listings').eq('ai_validation_status', 'approved').is('classification_result', null).order('created_at', { ascending: true }).limit(effectiveBatch)
     if (pipelineRunId) query = query.eq('pipeline_run_id', pipelineRunId)
     const { data: items, error } = await query
     if (error) return errorResponse(error.message, 500, req)
