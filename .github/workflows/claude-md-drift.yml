@@ -24,12 +24,21 @@ jobs:
         run: |
           actual_fns=$(ls supabase/functions/ | grep -v '^_' | grep -v '^README' | wc -l | tr -d ' ')
           actual_mig=$(ls supabase/migrations/ | grep -c '\.sql$' | tr -d ' ')
-          if [ "$(grep -cE '^- \*\*Edge functions:\*\* [0-9]+$' CLAUDE.md)" != "1" ] || [ "$(grep -cE '^- \*\*Migrations:\*\* [0-9]+$' CLAUDE.md)" != "1" ]; then
-            echo "::error::CLAUDE.md repo-stats block is corrupted (expected exactly one line per stat); collapse it to one line per stat before syncing."
-            exit 1
-          fi
-          sed -i -E "0,/^- \*\*Edge functions:\*\* [0-9]+$/s//- **Edge functions:** $actual_fns/" CLAUDE.md
-          sed -i -E "0,/^- \*\*Migrations:\*\* [0-9]+$/s//- **Migrations:** $actual_mig/" CLAUDE.md
+          # Rewrite the whole stats block instead of patching the first match:
+          # CLAUDE.md carries `merge=union`, so merges can duplicate the bot-written
+          # stat lines. Deleting every stat line and re-inserting exactly two after
+          # the heading makes this step self-healing against that corruption.
+          awk -v fns="$actual_fns" -v mig="$actual_mig" '
+            /^- \*\*(Edge functions|Migrations):\*\* [0-9]+$/ { next }
+            /^## Repo stats$/ {
+              print; print "";
+              print "- **Edge functions:** " fns;
+              print "- **Migrations:** " mig;
+              print ""; inhdr = 1; next
+            }
+            inhdr && /^$/ { next }
+            { inhdr = 0; print }
+          ' CLAUDE.md > CLAUDE.md.tmp && mv CLAUDE.md.tmp CLAUDE.md
           if git diff --quiet CLAUDE.md; then
             echo "changed=false" >> "$GITHUB_OUTPUT"
           else

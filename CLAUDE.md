@@ -139,7 +139,7 @@ The repo lives in an iCloud-synced folder. `.git` objects get evicted. If git co
 
 ### Frontend
 - Path alias: `@/*` → `src/*`
-- Vite manual chunks configured for: vendor, router, utils, graph, exceljs, maplibre, tiptap, HLS, PDF, mammoth, sentry, i18n
+- Vite manual chunks configured for: vendor, router, utils, graph, exceljs, maplibre, tiptap, PDF, mammoth, sentry, i18n
 
 ## Design
 

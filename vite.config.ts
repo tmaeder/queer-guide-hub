@@ -179,7 +179,6 @@ export default defineConfig(({ mode }) => ({
             { name: 'exceljs', test: /node_modules\/exceljs\// },
             { name: 'maplibre', test: /node_modules\/(maplibre-gl|@protomaps)\// },
             { name: 'tiptap', test: /node_modules\/(@tiptap|lowlight|prosemirror-|highlight\.js)\// },
-            { name: 'hls', test: /node_modules\/hls\.js\// },
             { name: 'pdfjs', test: /node_modules\/pdfjs-dist\// },
             { name: 'mammoth', test: /node_modules\/mammoth\// },
             { name: 'boneyard', test: /node_modules\/boneyard-js\// },
@@ -222,7 +221,7 @@ export default defineConfig(({ mode }) => ({
     modulePreload: {
       resolveDependencies(_filename, deps) {
         const skip =
-          /\b(recharts|graph|exceljs|pdfjs|mammoth|tiptap|maplibre|hls|framer-motion|boneyard|xyflow|dnd-kit)-[A-Za-z0-9_-]+\.js$/;
+          /\b(recharts|graph|exceljs|pdfjs|mammoth|tiptap|maplibre|framer-motion|boneyard|xyflow|dnd-kit)-[A-Za-z0-9_-]+\.js$/;
         return deps.filter((d) => !skip.test(d));
       },
     },
