@@ -74,8 +74,6 @@ queer-guide-hub/
 
 ## Repo stats
 
-- **Edge functions:** 229
-- **Migrations:** 721
 - **Edge functions:** 223
 - **Migrations:** 723
 
@@ -172,6 +170,5 @@ LGBTQ+ travelers, locals, activists, researchers, allies. Safety-first, inclusiv
 - Tokens: `src/index.css` (Tailwind v4 `@theme` block — CSS variables; no `tailwind.config.ts`)
 - Animation: `src/lib/animation.ts` (durations, easings, distances)
 - Charts: `src/lib/chartPalette.ts` (monochrome recharts palette + stroke patterns; added Phase 3a)
-- Components: shadcn/ui primitives in `src/components/ui/`. For monochrome status semantics use the `Badge` variants (the unused `StatusBadge` primitive was removed in the 2026-05-31 declutter; see `docs/audits/2026-05-31-declutter-candidates.md`).
 - Components: shadcn/ui primitives in `src/components/ui/`. For monochrome status semantics use the `Badge` variants (the unused `StatusBadge` primitive was removed in the 2026-05-31 declutter; see git history).
 - Enforcement: `eslint.config.js` (color literals: error in public, warn in admin → error after Phase 3g; semantic radius warn; admin motion ban error)
