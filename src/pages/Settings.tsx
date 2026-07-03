@@ -50,7 +50,7 @@ import { shortLocation } from '@/lib/shortLocation';
 import { initFormData, calculateCompletion } from '@/types/profileForm';
 import type { ProfileFormData, ComingOutStatus } from '@/types/profileForm';
 import type { Profile, ProfileUpdateResult } from '@/hooks/useProfile';
-import type { AvatarConfig } from '@/components/profile/AvatarBuilder';
+import type { AvatarConfig } from '@/components/profile/avatarConfig';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { cn } from '@/lib/utils';
 import type { User as SupabaseUser } from '@supabase/supabase-js';

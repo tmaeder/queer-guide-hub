@@ -1,21 +1,3 @@
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { RefreshCw, Save } from 'lucide-react';
-import { BigHead } from '@bigheads/core';
-
-interface AvatarBuilderProps {
-  onSave: (avatarConfig: AvatarConfig) => void;
-  initialConfig?: AvatarConfig;
-}
-
 export interface AvatarConfig {
   accessory: 'none' | 'roundGlasses' | 'tinyGlasses' | 'shades';
   body: 'chest' | 'breasts';
@@ -67,7 +49,7 @@ const avatarOptions = {
   circleColor: ['blue'],
 };
 
-const generateRandomConfig = (): AvatarConfig => ({
+export const generateRandomConfig = (): AvatarConfig => ({
   accessory: avatarOptions.accessory[
     Math.floor(Math.random() * avatarOptions.accessory.length)
   ] as AvatarConfig['accessory'],
@@ -117,102 +99,3 @@ const generateRandomConfig = (): AvatarConfig => ({
   ] as AvatarConfig['skinTone'],
   circleColor: 'blue',
 });
-
-export const AvatarBuilder = ({ onSave, initialConfig }: AvatarBuilderProps) => {
-  const [config, setConfig] = useState<AvatarConfig>(initialConfig || generateRandomConfig());
-
-  const updateConfig = (key: keyof AvatarConfig, value: AvatarConfig[keyof AvatarConfig]) => {
-    setConfig((prev) => ({ ...prev, [key]: value }));
-  };
-
-  const randomize = () => {
-    setConfig(generateRandomConfig());
-  };
-
-  return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <h6 className="text-lg font-semibold">Avatar Builder</h6>
-          <Button variant="outline" onClick={randomize} size="sm">
-            <RefreshCw size={16} className="mr-2" />
-            Randomize
-          </Button>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <div className="flex flex-col gap-6">
-          <div className="flex justify-center mb-6">
-            <div style={{ width: 128, height: 128 }}>
-              <BigHead
-                accessory={config.accessory}
-                body={config.body}
-                clothing={config.clothing}
-                clothingColor={config.clothingColor}
-                eyebrows={config.eyebrows}
-                eyes={config.eyes}
-                facialHair={config.facialHair}
-                graphic={config.graphic}
-                hair={config.hair}
-                hairColor={config.hairColor}
-                hat={config.hat}
-                hatColor={config.hatColor}
-                lashes={config.lashes}
-                lipColor={config.lipColor}
-                mask={config.mask}
-                mouth={config.mouth}
-                skinTone={config.skinTone}
-                circleColor={config.circleColor}
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4 overflow-y-auto" style={{ maxHeight: 384 }}>
-            {Object.entries(avatarOptions).map(([key, options]) => (
-              <div key={key}>
-                <p className="text-sm font-medium capitalize mb-2 block">
-                  {key.replace(/([A-Z])/g, ' $1').trim()}
-                </p>
-                <Select
-                  value={String(config[key as keyof AvatarConfig])}
-                  onValueChange={(value) => {
-                    const parsedValue =
-                      key === 'lashes' || key === 'mask' ? value === 'true' : value;
-                    updateConfig(key as keyof AvatarConfig, parsedValue);
-                  }}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {options.map((option: string | boolean) => (
-                      <SelectItem key={String(option)} value={String(option)}>
-                        <span className="flex items-center gap-2">
-                          {key.includes('Color') && typeof option === 'string' && (
-                            <span
-                              className="rounded inline-block"
-                              style={{ width: 16, height: 16, backgroundColor: option }}
-                            />
-                          )}
-                          {String(option)}
-                        </span>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            ))}
-          </div>
-
-          <Button onClick={() => onSave(config)} style={{ width: '100%' }}>
-            <Save size={16} className="mr-2" />
-            Save Avatar
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
-  );
-};
-
-// eslint-disable-next-line react-refresh/only-export-components
-export { generateRandomConfig };

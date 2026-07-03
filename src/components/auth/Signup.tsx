@@ -16,7 +16,7 @@ import { PasswordStrengthMeter } from './PasswordStrengthMeter';
 import { EmailVerificationScreen } from './EmailVerificationScreen';
 import { UsernameSelector } from './UsernameSelector';
 import { AvatarQuickPick } from '@/components/profile/AvatarQuickPick';
-import { generateRandomConfig, type AvatarConfig } from '@/components/profile/AvatarBuilder';
+import { generateRandomConfig, type AvatarConfig } from '@/components/profile/avatarConfig';
 
 interface Props {
   onBack: () => void;

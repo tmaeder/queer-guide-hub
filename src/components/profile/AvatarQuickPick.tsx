@@ -3,7 +3,7 @@ import { BigHead } from '@bigheads/core';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { RefreshCw } from 'lucide-react';
-import { generateRandomConfig, type AvatarConfig } from './AvatarBuilder';
+import { generateRandomConfig, type AvatarConfig } from './avatarConfig';
 
 interface Props {
   value: AvatarConfig | null;
