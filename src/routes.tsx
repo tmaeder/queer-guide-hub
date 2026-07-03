@@ -51,6 +51,7 @@ const ClaimUsername = lazyRetry(() => import('./pages/ClaimUsername'));
 const ExtensionInstall = lazyRetry(() => import('./pages/ExtensionInstall'));
 const OnboardingWelcome = lazyRetry(() => import('./pages/onboarding/Welcome'));
 const SearchPersonalization = lazyRetry(() => import('./pages/onboarding/SearchPersonalization'));
+// Dev-only design showcase — not shipped as a public route in production.
 const PatternLibrary = lazyRetry(() => import('./pages/PatternLibrary'));
 
 // Unified Admin Shell (wraps all /admin/* routes)
@@ -134,11 +135,6 @@ const AuditLog = lazyRetry(() =>
 );
 
 // Import Hub components rendered as admin views
-const AffiliatePartnersManager = lazyRetry(() =>
-  import('./components/admin/AffiliatePartnersManager').then((m) => ({
-    default: m.AffiliatePartnersManager,
-  })),
-);
 
 // Dashboard sub-views
 const SecurityMonitoringDashboard = lazyRetry(() =>
@@ -287,7 +283,9 @@ export const AppRoutes = () => {
               <Route path="/auth/callback" element={<AuthCallback />} />
               <Route path="/claim-username" element={<ClaimUsername />} />
               <Route path="/extension" element={<ExtensionInstall />} />
-              <Route path="/pattern-library" element={<PatternLibrary />} />
+              {import.meta.env.DEV && (
+                <Route path="/pattern-library" element={<PatternLibrary />} />
+              )}
               <Route path="/onboarding/welcome" element={<OnboardingWelcome />} />
               <Route path="/onboarding/search" element={<SearchPersonalization />} />
               <Route path="/onboarding/venues" element={<VenuePersonalization />} />
@@ -318,16 +316,14 @@ export const AppRoutes = () => {
                 <Route path="media" element={<MediaLibrary />} />
                 <Route path="media/:id" element={<MediaDetailPage />} />
 
-                {/* Imports & Data section — all redirect to unified /admin/pipelines */}
-                <Route path="imports" element={<Navigate to="/admin/pipelines" replace />} />
-                <Route path="imports/create" element={<Navigate to="/admin/pipelines" replace />} />
-                <Route path="imports/news-sources" element={<Navigate to="/admin/pipelines?tab=sources" replace />} />
-                <Route path="imports/pipeline" element={<Navigate to="/admin/pipelines?tab=monitor" replace />} />
-                <Route path="imports/enrichment" element={<Navigate to="/admin/pipelines?tab=monitor" replace />} />
-                <Route path="imports/venues" element={<Navigate to="/admin/pipelines?tab=sources" replace />} />
+                {/* Imports & Data section — admin-internal aliases for the old
+                    /admin/imports/* surfaces were pruned 2026-07 (migration to
+                    /admin/pipelines completed 2026-04); a catch-all keeps deep
+                    bookmarks landing on the pipelines hub. */}
                 <Route path="imports/email-ingestions" element={<AdminEmailIngestions />} />
                 <Route path="imports/data" element={<AdminImports />} />
-                <Route path="imports/history" element={<Navigate to="/admin/pipelines?tab=monitor" replace />} />
+                <Route path="imports/*" element={<Navigate to="/admin/pipelines" replace />} />
+                <Route path="imports" element={<Navigate to="/admin/pipelines" replace />} />
                 <Route path="workflows" element={<Navigate to="/admin/pipelines" replace />} />
                 <Route path="pipelines" element={<AdminPipelines />} />
                 <Route path="ingestion-rules" element={<AdminIngestionRules />} />
@@ -349,7 +345,7 @@ export const AppRoutes = () => {
                   path="links"
                   element={<Navigate to="/admin/automation" replace />}
                 />
-                <Route path="affiliates" element={<AffiliatePartnersManager />} />
+                <Route path="affiliates" element={<Navigate to="/admin/affiliate?tab=partners" replace />} />
                 <Route
                   path="submissions"
                   element={<Navigate to="/admin/review?tab=submissions" replace />}
