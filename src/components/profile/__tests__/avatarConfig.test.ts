@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { generateRandomConfig } from '../avatarConfig';
+import { generateRandomConfig, type AvatarConfig } from '../avatarConfig';
 
 describe('generateRandomConfig', () => {
   it('returns a complete config', () => {
-    const c = generateRandomConfig();
+    const c: AvatarConfig = generateRandomConfig();
     expect(c).toBeDefined();
     expect(c.circleColor).toBe('blue');
     expect(typeof c.lashes).toBe('boolean');

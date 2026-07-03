@@ -82,7 +82,7 @@ export function useTripPackingSuggestions(tripId: string | undefined) {
         equalityScore,
       });
 
-      // Fan-out Meilisearch-via-Supabase queries; each returns top 1 match.
+      // Fan-out search queries via the search proxy; each returns top 1 match.
       // Each query is isolated so a single failure can't crash the panel.
       const results = await Promise.all(
         queries.map(async (q, idx): Promise<PackingProductSuggestion | null> => {

@@ -1,5 +1,6 @@
 /**
- * Postgres search backend (Phase 2 of the Meili -> Postgres migration).
+ * Postgres search backend — the only search backend (Meilisearch was
+ * decommissioned 2026-06).
  *
  * Calls the `search_hybrid` + `search_facets` RPCs (see
  * supabase/migrations/20260531155744_search_hybrid_and_facets_rpcs.sql) via the
@@ -11,9 +12,6 @@
  *
  * The Worker passes an already-blended query vector (query ⊕ bias), matching
  * today's architecture where the bias blend is computed Worker-side.
- *
- * The only search backend since the Meilisearch decommission (2026-06)
- * means this module is dormant until explicitly enabled.
  */
 
 import type { Env } from "./index";

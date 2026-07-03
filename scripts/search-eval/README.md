@@ -1,9 +1,8 @@
 # Search relevance eval harness
 
-Offline relevance gate for the Postgres `search_hybrid` RPC — part of the
-Meilisearch → Postgres migration (`docs/search-intelligence/meili-to-postgres-migration-plan.md`, §8.2).
-It exists to (1) validate the Postgres path is at least as good as Meili before
-cutover and (2) guard against silent ranking drift afterwards.
+Offline relevance gate for the Postgres `search_hybrid` RPC. Originally built
+as the cutover gate of the Meilisearch → Postgres migration (complete since
+2026-06); it now guards against silent ranking drift.
 
 ## What's here
 
@@ -53,9 +52,7 @@ workflow stays green where the secret isn't configured).
 
 `run.mjs` is **keyword-only** (`p_query_vec = null`) so it's deterministic in CI
 and isolates the FTS + trigram + ranking legs (what the title/known-item
-assertions target). The semantic leg is exercised end-to-end by the live
-(the shadow-mode Worker comparison was removed with the Meili decommission).
-
+assertions target). The semantic leg runs only in the live Worker path.
 
 ## Assertions
 

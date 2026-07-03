@@ -20,10 +20,19 @@ test.describe('Marketplace — discovery surface', () => {
 
   test('/marketplace cards expose affiliate links with rel="sponsored"', async ({ page }) => {
     await page.goto('/marketplace');
+    // Wait for the grid itself first — affiliate CTAs only render on listings
+    // that carry a REAL affiliate_url. The 2026-07-02 affiliate-truth purge
+    // (PR #1898) cleared 6.5k fake copies, so a fully organic result set is a
+    // legitimate production state, not a regression: skip instead of failing.
+    const cards = page.locator('a[href^="/marketplace/"]');
+    await expect(cards.first()).toBeVisible({ timeout: 30_000 });
+    const affiliates = page.locator('a[data-affiliate="true"]');
+    await page.waitForTimeout(5_000); // let curated rows hydrate
+    const count = await affiliates.count();
+    test.skip(count === 0, 'No affiliate-backed listings in the current result set (post affiliate-truth purge)');
     // Auto-retrying assertion instead of waitForSelector + count: the grid
     // re-renders when query data settles, so a matched node can detach
     // between the wait and the count (observed flake 2026-06-12).
-    const affiliates = page.locator('a[data-affiliate="true"]');
     await expect(affiliates.first()).toHaveAttribute('rel', /sponsored/, { timeout: 30_000 });
     const rel = await affiliates.first().getAttribute('rel');
     expect(rel).toContain('nofollow');
@@ -53,8 +62,11 @@ test.describe('Marketplace — discovery surface', () => {
     // Derive two real listing UUIDs by visiting detail pages and reading sku from the Product JSON-LD.
     // Avoids hardcoding API credentials in the spec.
     await page.goto('/marketplace');
+    // Excludes every non-product marketplace route — notably /brands/ (added
+    // by the 2026-07-02 brand rails, PR #1906): a brand page never emits
+    // Product JSON-LD, so picking one hangs the sku wait below.
     const detailLinks = page.locator(
-      'a[href^="/marketplace/"]:not([href*="categor"]):not([href*="collection"]):not([href*="merchants/"]):not([href*="share"]):not([href$="/submit"])',
+      'a[href^="/marketplace/"]:not([href*="categor"]):not([href*="collection"]):not([href*="merchants/"]):not([href*="brands/"]):not([href*="guides"]):not([href*="missions"]):not([href*="share"]):not([href$="/submit"])',
     );
     // Curated rows hydrate progressively — poll until at least two distinct
     // product detail links exist before reading them, so the spec doesn't race

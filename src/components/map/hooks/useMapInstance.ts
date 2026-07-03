@@ -11,7 +11,6 @@ import {
 import type { ExploreMapHandle } from '@/components/map/ExploreMap';
 import type { MapViewport } from '@/hooks/useExploreMapData';
 import { clampBbox, type Bbox } from '@/utils/mapViewport';
-import type { ExploreMapHandle } from '@/components/map/ExploreMap';
 
 interface UseMapInstanceParams {
   containerRef: MutableRefObject<HTMLDivElement | null>;
@@ -39,12 +38,6 @@ interface UseMapInstanceParams {
   pulseRafRef: MutableRefObject<number | null>;
   popupRootRef: MutableRefObject<Root | null>;
   pointLayersAddedRef: MutableRefObject<boolean>;
-  /** Render MapLibre's native zoom buttons. MapShell passes false and drives
-   *  the map through the handle below via its own MapNavControls. */
-  showNativeNav: boolean;
-  /** Latest-value ref for the onMapHandle callback — receives the imperative
-   *  handle on load and null on teardown. */
-  onMapHandleRef: MutableRefObject<((handle: ExploreMapHandle | null) => void) | undefined>;
 }
 
 /**
@@ -76,8 +69,6 @@ export function useMapInstance({
   pulseRafRef,
   popupRootRef,
   pointLayersAddedRef,
-  showNativeNav,
-  onMapHandleRef,
 }: UseMapInstanceParams) {
   // ── Helper: extract bbox from map ────────────────────────────────────────
   const getMapBbox = useCallback((map: maplibregl.Map): Bbox => {
@@ -125,9 +116,6 @@ export function useMapInstance({
     // the native buttons are replaced (showNativeNav=false), the container's
     // qg-hide-native-nav class hides the top-right ctrl corner and
     // MapNavControls drives this control through the handle's triggerGeolocate().
-    // the native buttons are replaced (showNativeNav=false), ExploreMap's
-    // container class hides the top-right ctrl corner and MapNavControls
-    // drives this control through the handle's triggerGeolocate().
     const geolocateControl = new maplibregl.GeolocateControl({
       positionOptions: { enableHighAccuracy: true },
       trackUserLocation: true,

@@ -44,7 +44,7 @@ export interface SearchFilters {
   types?: string[];
   location?: string;
   categories?: string[];
-  /** Topic-cluster UUIDs (#171 / #225). Meili `cluster_ids` filterable. */
+  /** Topic-cluster UUIDs (#171 / #225). Filterable via `cluster_ids`. */
   cluster_ids?: string[];
   /** Audience tags (lesbian, trans, …) — search_hybrid any-of facet match. */
   target_groups?: string[];
@@ -61,7 +61,7 @@ export interface SearchFilters {
   /** Free-entry only (events/marketplace) → worker is_free. */
   free?: boolean;
   verified?: boolean;
-  /** Geo radius — worker turns these into Meili _geoRadius(lat,lng,m). */
+  /** Geo radius — worker turns these into a PostGIS radius filter. */
   lat?: number;
   lng?: number;
   radius?: number;

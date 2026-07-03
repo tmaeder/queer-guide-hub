@@ -386,9 +386,6 @@ verify_jwt = false
 [functions.enrich-logos]
 verify_jwt = false
 
-[functions.migrate-logos-r2]
-verify_jwt = false
-
 [functions.feedback-story-titler]
 verify_jwt = false
 
@@ -467,6 +464,9 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.source-shopify-public]
+verify_jwt = false
+
+[functions.marketplace-sync-merchants]
 verify_jwt = false
 
 [functions.send-username-reminder]

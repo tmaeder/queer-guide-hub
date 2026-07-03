@@ -26,7 +26,7 @@ interface SearchFiltersPanelProps {
   onFiltersChange: (filters: SearchFilters) => void;
   /** P1-7: optional escape hatch so the parent can also clear its own search input. */
   onClearAll?: () => void;
-  /** Meili/PG facet distribution — drives the drill-down lists with counts. */
+  /** search_facets distribution — drives the drill-down lists with counts. */
   facets?: FacetDistribution;
   /** Which filter sections to render (from the active scope's config). */
   filterKeys?: SearchFilterKey[];
