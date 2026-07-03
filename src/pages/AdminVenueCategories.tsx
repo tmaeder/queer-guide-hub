@@ -1,3 +1,4 @@
+import { slugify } from '@/lib/slugify';
 import { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -114,10 +115,7 @@ export default function AdminVenueCategories() {
 
   const generateSlug = () => {
     if (!form.name) return;
-    const slug = form.name
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-|-$/g, '');
+    const slug = slugify(form.name);
     setForm((f) => ({ ...f, slug }));
   };
 

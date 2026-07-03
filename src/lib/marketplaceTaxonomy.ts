@@ -68,8 +68,7 @@ export function departmentLabel(slug: string | null | undefined): string {
 // (migration 20260702150000). Keep the two in sync.
 export function brandSlug(brand: string | null | undefined): string | null {
   if (!brand) return null;
-  const key = brand.trim().toLowerCase().replace(/\s+/g, ' ');
-  const slug = key.replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+  const slug = slugify(brand);
   return slug || null;
 }
 

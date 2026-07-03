@@ -1,3 +1,4 @@
+import { slugify } from '@/lib/slugify';
 import { useCallback, useState } from 'react';
 import {
   useNodesState,
@@ -198,7 +199,7 @@ export function usePipelineBuilder(pipelineId?: string) {
   const saveMutation = useMutation({
     mutationFn: async (overrides?: { name?: string }) => {
       const name = overrides?.name || pipelineName || `pipeline-${Date.now()}`;
-      const slug = pipelineSlug || name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+      const slug = pipelineSlug || slugify(name);
 
       const serializedNodes = nodes.map(n => {
         const d = (n.data || {}) as Record<string, unknown>;
@@ -261,7 +262,7 @@ export function usePipelineBuilder(pipelineId?: string) {
           body: {
             action: 'start',
             pipeline_id: currentPipelineId || pipelineId,
-            pipeline_name: pipelineSlug || pipelineName?.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+            pipeline_name: pipelineSlug || (pipelineName ? slugify(pipelineName) : undefined),
             dry_run: options?.dryRun || false,
             triggered_by: 'admin',
           },

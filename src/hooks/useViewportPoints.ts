@@ -11,6 +11,7 @@
  *  - Returns combined GeoJSON for all enabled point layer types
  */
 
+import { calculateDistanceKm } from '@/utils/calculateDistance';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import * as Sentry from '@sentry/react';
 import { supabase } from '@/integrations/supabase/client';
@@ -76,18 +77,6 @@ interface UseViewportPointsOptions {
 
 const DEBOUNCE_MS = 200;
 const EMPTY_FC: PointCollection = { type: 'FeatureCollection', features: [] };
-
-/** Great-circle distance in km between two [lng,lat] points. */
-function haversineKm(aLng: number, aLat: number, bLng: number, bLat: number): number {
-  const R = 6371;
-  const dLat = ((bLat - aLat) * Math.PI) / 180;
-  const dLng = ((bLng - aLng) * Math.PI) / 180;
-  const lat1 = (aLat * Math.PI) / 180;
-  const lat2 = (bLat * Math.PI) / 180;
-  const h =
-    Math.sin(dLat / 2) ** 2 + Math.sin(dLng / 2) ** 2 * Math.cos(lat1) * Math.cos(lat2);
-  return 2 * R * Math.asin(Math.sqrt(h));
-}
 
 // Gated debug logger — matches ExploreMap's mapDebug. Opt in via
 // `localStorage.setItem('qg:debug:map', '1')` in prod to inspect the
@@ -551,7 +540,7 @@ export function useViewportPoints({
       if (nm) {
         finalFeatures = allFeatures.filter(
           (f) =>
-            haversineKm(nm.lng, nm.lat, f.geometry.coordinates[0], f.geometry.coordinates[1]) <=
+            calculateDistanceKm(nm.lat, nm.lng, f.geometry.coordinates[1], f.geometry.coordinates[0]) <=
             nm.radiusKm,
         );
         for (const k of Object.keys(counts) as LayerType[]) counts[k] = 0;

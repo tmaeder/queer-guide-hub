@@ -128,10 +128,32 @@ export function parseSsuDetails(ssu: string | null | undefined): {
   }
 }
 
-/** Check if a country is criminalized */
+/**
+ * Strict criminalization check: `legal === false` only. Mirrors the DB
+ * predicate `location_is_high_risk` that drives the safety layer — keep the
+ * two in sync.
+ */
 export function isCriminalized(crim: Record<string, unknown> | null | undefined): boolean {
   if (!crim) return false;
   return crim.legal === false;
+}
+
+/**
+ * Broad criminalization check: any recorded signal (illegal, death penalty,
+ * prison term, or a named penalty). Deliberately wider than `isCriminalized`
+ * — use for cautious display copy (legality badges), never for the safety
+ * gate itself.
+ */
+export function hasAnyCriminalizationSignal(input: unknown): boolean {
+  if (!input || typeof input !== 'object') return false;
+  const c = input as Record<string, unknown>;
+  // Schema (countries.lgbti_criminalization): { legal: boolean, penalty: string,
+  // death_penalty: 'Yes'|'No', max_prison: string|null, ... }
+  if (c.legal === false) return true;
+  if (typeof c.death_penalty === 'string' && /^yes$/i.test(c.death_penalty)) return true;
+  if (typeof c.max_prison === 'string' && !/^(no|none|0)$/i.test(c.max_prison)) return true;
+  if (typeof c.penalty === 'string' && c.penalty && !/^no criminali[sz]ation$/i.test(c.penalty)) return true;
+  return false;
 }
 
 /** Check if death penalty applies */

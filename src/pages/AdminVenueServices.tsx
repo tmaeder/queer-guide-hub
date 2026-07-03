@@ -1,3 +1,4 @@
+import { slugify } from '@/lib/slugify';
 import { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -132,10 +133,7 @@ export default function AdminVenueServices() {
     if (!form.name) return;
     setForm((f) => ({
       ...f,
-      slug: f.name
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/^-|-$/g, ''),
+      slug: slugify(f.name),
     }));
   };
 

@@ -6,6 +6,7 @@
  * (gated rows never reach anon callers), so no extra filtering is needed.
  */
 
+import { calculateDistanceKm } from '@/utils/calculateDistance';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { LAYER_COLORS } from '@/hooks/useExploreMapData';
@@ -24,18 +25,6 @@ interface NearbyOpts {
   /** Max total markers returned (default 24). */
   limit?: number;
   enabled?: boolean;
-}
-
-function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number): number {
-  const R = 6371;
-  const dLat = ((lat2 - lat1) * Math.PI) / 180;
-  const dLng = ((lng2 - lng1) * Math.PI) / 180;
-  const a =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos((lat1 * Math.PI) / 180) *
-      Math.cos((lat2 * Math.PI) / 180) *
-      Math.sin(dLng / 2) ** 2;
-  return 2 * R * Math.asin(Math.sqrt(a));
 }
 
 interface Row {
@@ -109,7 +98,7 @@ async function fetchNearby(o: NearbyOpts): Promise<EntityMapMarker[]> {
           type,
           color,
           linkTo: `${path}/${r.slug || r.id}`,
-          _d: haversineKm(lat, lng, mLat, mLng),
+          _d: calculateDistanceKm(lat, lng, mLat, mLng),
         };
       })
       .filter((m) => m.name && m._d <= radiusKm);

@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Eye, EyeOff, Pencil } from 'lucide-react';
 import { AvatarDisplay } from '@/components/profile/AvatarDisplay';
-import type { AvatarConfig } from '@/components/profile/AvatarBuilder';
+import type { AvatarConfig } from '@/components/profile/avatarConfig';
 import { publicDisplayName } from '@/lib/displayName';
 import { cn } from '@/lib/utils';
 

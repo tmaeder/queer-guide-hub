@@ -3,7 +3,7 @@ import { BigHead } from '@bigheads/core';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { RefreshCw } from 'lucide-react';
-import { generateRandomConfig, type AvatarConfig } from './AvatarBuilder';
+import { generateRandomConfig, type AvatarConfig } from './avatarConfig';
 
 interface Props {
   value: AvatarConfig | null;
@@ -16,8 +16,8 @@ const sameConfig = (a: AvatarConfig | null, b: AvatarConfig) =>
 
 /**
  * Minimal one-shot avatar picker: shows N randomized BigHeads, user taps one.
- * Reroll generates a fresh batch. No deep customization — that's
- * AvatarSettings in /profile-settings.
+ * Reroll generates a fresh batch. No deep customization — the simplified
+ * builder in AvatarChooser covers that.
  */
 export function AvatarQuickPick({ value, onChange, count = 6 }: Props) {
   const [seed, setSeed] = useState(0);
