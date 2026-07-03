@@ -2,11 +2,10 @@
 // that were never classified. Self-contained (inline Supabase + native CF /ai/run to
 // dodge the /ai/v1 json-hang). Resumable via classified_at. Personalities intentionally
 // EXCLUDED (auto-labeling real people's LGBTQ+ status = outing risk).
-import { getServiceClient } from '../_shared/supabase-client.ts'
+import { getServiceClient, getCorsHeaders, corsResponse } from '../_shared/supabase-client.ts'
 
-const cors = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': '*' }
-const json = (b: unknown, s = 200) =>
-  new Response(JSON.stringify(b), { status: s, headers: { ...cors, 'Content-Type': 'application/json' } })
+const json = (b: unknown, s = 200, req?: Request) =>
+  new Response(JSON.stringify(b), { status: s, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } })
 
 type Row = Record<string, unknown>
 const arr = (v: unknown) => (Array.isArray(v) ? v.filter(Boolean).join(', ') : '')
@@ -30,7 +29,7 @@ CRITICAL: if the input is only a bare name with no description, tags, or other s
 Reply with ONLY a number 0.00-1.00, or the word UNKNOWN. Nothing else.`
 
 Deno.serve(async (req) => {
-  if (req.method === 'OPTIONS') return new Response('ok', { headers: cors })
+  if (req.method === 'OPTIONS') return corsResponse(req)
   try {
     const { entity_type, batch_size = 25 } = await req.json().catch(() => ({}))
     const cfg = CFG[entity_type as string]

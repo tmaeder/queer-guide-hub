@@ -20,10 +20,6 @@ AI_GATEWAY_ACCOUNT_ID = "7aa3765cc5f50f2b681b782eb4a8d296"
 AI_GATEWAY_NAME = "qg-search"
 EMBED_MODEL = "@cf/baai/bge-m3"
 ENABLE_RERANKER = "1"
-# Search backend. Postgres (search_hybrid / search_autocomplete) is the only
-# backend now; Meilisearch was fully decommissioned. Kept as a var for clarity.
-SEARCH_BACKEND = "pg"
-
 # Secrets (set via: wrangler secret put NAME):
 #   SUPABASE_URL
 #   SUPABASE_SERVICE_KEY

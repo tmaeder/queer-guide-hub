@@ -1,4 +1,4 @@
-import { getServiceClient } from '../_shared/supabase-client.ts'
+import { getServiceClient, getCorsHeaders, corsResponse } from '../_shared/supabase-client.ts'
 
 // ============================================================
 // marketplace-description-enhance — translate + clean poor marketplace
@@ -19,8 +19,7 @@ import { getServiceClient } from '../_shared/supabase-client.ts'
 // Body: { merchant_domain?, batch_size?, dry_run? }
 // ============================================================
 
-const CORS = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type', 'Access-Control-Allow-Methods': 'POST, OPTIONS' }
-const json = (b: unknown, s = 200) => new Response(JSON.stringify(b), { status: s, headers: { ...CORS, 'Content-Type': 'application/json' } })
+const json = (b: unknown, s = 200) => new Response(JSON.stringify(b), { status: s, headers: { ...getCorsHeaders(), 'Content-Type': 'application/json' } })
 const client = () => getServiceClient()
 
 const SYSTEM_PROMPT = `You rewrite e-commerce product descriptions for the queer.guide marketplace. Given a product title and its source description (often German), return ONE concise, factual ENGLISH paragraph (40-480 characters) describing what the product IS and its key real features. RULES: translate to natural English if not English; REMOVE size charts, care/washing instructions, shipping/returns/payment, material composition tables, SKU/article numbers, store policy, and marketing slop (discover, curated, elevate, premium experience, must-have); keep adult/fetish wording factual, plain, neutral; do NOT invent sizes, materials, measurements, brands, or claims not in the source; if already clean English just tighten it. Return ONLY minified JSON, no markdown: {"description":"...","source_lang":"de|en|fr|other"}`
@@ -70,7 +69,7 @@ async function enhance(title: string, source: string): Promise<{ description: st
 }
 
 Deno.serve(async (req) => {
-  if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS })
+  if (req.method === 'OPTIONS') return corsResponse(req)
   const supabase = client()
   try {
     const body = await req.json().catch(() => ({}))
