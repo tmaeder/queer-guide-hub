@@ -62,8 +62,11 @@ test.describe('Marketplace — discovery surface', () => {
     // Derive two real listing UUIDs by visiting detail pages and reading sku from the Product JSON-LD.
     // Avoids hardcoding API credentials in the spec.
     await page.goto('/marketplace');
+    // Excludes every non-product marketplace route — notably /brands/ (added
+    // by the 2026-07-02 brand rails, PR #1906): a brand page never emits
+    // Product JSON-LD, so picking one hangs the sku wait below.
     const detailLinks = page.locator(
-      'a[href^="/marketplace/"]:not([href*="categor"]):not([href*="collection"]):not([href*="merchants/"]):not([href*="share"]):not([href$="/submit"])',
+      'a[href^="/marketplace/"]:not([href*="categor"]):not([href*="collection"]):not([href*="merchants/"]):not([href*="brands/"]):not([href*="guides"]):not([href*="missions"]):not([href*="share"]):not([href$="/submit"])',
     );
     // Curated rows hydrate progressively — poll until at least two distinct
     // product detail links exist before reading them, so the spec doesn't race
