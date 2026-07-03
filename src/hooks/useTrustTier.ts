@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { untypedFrom } from "@/integrations/supabase/untyped";
 import { useAuth } from "./useAuth";
 
 export type TrustTier =
@@ -32,8 +32,7 @@ export function usePublicTier(userId: string | null | undefined) {
     queryKey: ["trustTier", "public", userId],
     enabled: !!userId,
     queryFn: async (): Promise<TrustTier> => {
-      const { data, error } = await supabase
-        .from("user_public_tiers" as never)
+      const { data, error } = await untypedFrom("user_public_tiers")
         .select("tier")
         .eq("user_id", userId!)
         .maybeSingle();
@@ -51,8 +50,7 @@ export function useMyTier() {
     queryKey: ["trustTier", "me", user?.id],
     enabled: !!user?.id,
     queryFn: async (): Promise<TrustTierFull> => {
-      const { data, error } = await supabase
-        .from("user_trust_tiers" as never)
+      const { data, error } = await untypedFrom("user_trust_tiers")
         .select("*")
         .eq("user_id", user!.id)
         .maybeSingle();

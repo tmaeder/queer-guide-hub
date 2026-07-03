@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { untypedRpc } from '@/integrations/supabase/untyped';
 import type { Database } from '@/integrations/supabase/types';
 import { calculateDistanceKm } from '@/utils/calculateDistance';
 import { queryWithRetry } from '@/utils/fetchWithRetry';
@@ -101,9 +102,10 @@ export function useVenues(autoFetch: boolean = true) {
           const offset =
             typeof page === 'number' ? (page - 1) * pageSize : 0;
 
-          const { data, error: rpcErr } = (await queryWithRetry(() =>
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (supabase as any).rpc('rpc_venues_ranked', {
+          const { data, error: rpcErr } = await queryWithRetry(() =>
+            untypedRpc<
+              Array<{ venue: Venue; score: number; distance_m: number | null; total_count: number }>
+            >('rpc_venues_ranked', {
               p_user_id: options.userId ?? null,
               p_lat: filters?.userLocation?.latitude ?? null,
               p_lng: filters?.userLocation?.longitude ?? null,
@@ -112,7 +114,7 @@ export function useVenues(autoFetch: boolean = true) {
               p_limit: pageSize,
               p_offset: offset,
             }),
-          )) as { data: Array<{ venue: Venue; score: number; distance_m: number | null; total_count: number }> | null; error: Error | null };
+          );
 
           if (rpcErr) throw rpcErr;
           const rows = data ?? [];

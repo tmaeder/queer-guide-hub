@@ -1,4 +1,4 @@
-import { supabase } from '@/integrations/supabase/client';
+import { untypedFrom } from '@/integrations/supabase/untyped';
 
 /**
  * DUP-4 hook for the simple admin taxonomy CRUD pattern shared across
@@ -18,20 +18,17 @@ export function useTaxonomyCRUD(table: string) {
       editingId: string | null,
     ): Promise<{ error: Error | null }> {
       if (editingId) {
-        const { error } = await supabase
-          .from(table as never)
+        const { error } = await untypedFrom(table)
           .update(form as never)
           .eq('id' as never, editingId as never);
         return { error: error as Error | null };
       }
-      const { error } = await supabase
-        .from(table as never)
+      const { error } = await untypedFrom(table)
         .insert([form] as never);
       return { error: error as Error | null };
     },
     async remove(id: string): Promise<{ error: Error | null }> {
-      const { error } = await supabase
-        .from(table as never)
+      const { error } = await untypedFrom(table)
         .delete()
         .eq('id' as never, id as never);
       return { error: error as Error | null };

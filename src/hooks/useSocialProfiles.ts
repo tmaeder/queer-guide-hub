@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { untypedFrom } from '@/integrations/supabase/untyped';
 import { normalizeSocialLinks, normalizeHandle, type SocialPlatformKey } from '@/lib/social/registry';
 
 export interface SocialProfile {
@@ -46,8 +46,7 @@ export function useSocialProfiles(links: unknown) {
     enabled: entries.length > 0,
     staleTime: 1000 * 60 * 30,
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('social_profiles' as never)
+      const { data, error } = await untypedFrom('social_profiles')
         .select('platform, handle, profile_url, display_name, bio, avatar_url, follower_count, status')
         .in('platform', platforms)
         .in('handle', handles);

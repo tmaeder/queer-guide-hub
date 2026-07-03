@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { MapPin, AlertTriangle, Heart, Sparkles } from 'lucide-react';
 import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
+import { untypedRpc } from '@/integrations/supabase/untyped';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -127,10 +128,7 @@ function SharedTripPage() {
       // ignore
     }
 
-    void supabase.rpc(
-      'track_share_view' as never,
-      { p_token: token, p_referer_host: refererHost } as never,
-    );
+    void untypedRpc('track_share_view', { p_token: token, p_referer_host: refererHost });
   }, [token, data?.trip]);
 
   useEffect(() => {

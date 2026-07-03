@@ -1,5 +1,6 @@
 import { useEffect, useId, useMemo, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { untypedFrom } from '@/integrations/supabase/untyped';
 import { useAuth } from '@/hooks/useAuth';
 import {
   communityLevel,
@@ -71,9 +72,7 @@ export function useCommunityScore(): {
     }
     setLoading(true);
     (async () => {
-      const { data } = await supabase
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .from('user_community_score' as any)
+      const { data } = await untypedFrom('user_community_score')
         .select('*')
         .eq('user_id', user.id)
         .maybeSingle();

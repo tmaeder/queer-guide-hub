@@ -112,7 +112,7 @@ export function useComputeTagSimilarities() {
 
   return useMutation({
     mutationFn: async () => {
-      const { data, error } = await supabase.rpc('compute_tag_similarities' as 'venues');
+      const { data, error } = await supabase.rpc('compute_tag_similarities');
 
       if (error) throw error;
       return data as unknown as {

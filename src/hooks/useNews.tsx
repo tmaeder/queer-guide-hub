@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { untypedFrom } from '@/integrations/supabase/untyped';
 
 type NewsArticle = Record<string, unknown>;
 type NewsSource = Record<string, unknown>;
@@ -167,8 +168,7 @@ export const useNews = () => {
 
       // Restrict to articles that belong to a multi-article story.
       if (filters?.inStory) {
-        const { data: storyLinks } = await supabase
-          .from('news_story_articles' as never)
+        const { data: storyLinks } = await untypedFrom('news_story_articles')
           .select('article_id, story_id, news_stories!inner(article_count)') as unknown as {
             data: Array<{ article_id: string; news_stories: { article_count: number } }> | null;
           };

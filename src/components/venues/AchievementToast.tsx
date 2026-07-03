@@ -2,6 +2,7 @@
 import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
+import { untypedFrom } from '@/integrations/supabase/untyped';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 
@@ -28,9 +29,7 @@ export function AchievementToast() {
 
     // Seed seen set so we don't re-toast on mount for historical unlocks.
     (async () => {
-      const { data } = await supabase
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .from('user_achievements' as any)
+      const { data } = await untypedFrom('user_achievements')
         .select('achievement_slug')
         .eq('user_id', userId);
       for (const row of (data as Array<{ achievement_slug: string }>) ?? []) {
@@ -52,9 +51,7 @@ export function AchievementToast() {
           const slug = (payload.new as { achievement_slug?: string }).achievement_slug;
           if (!slug || seenRef.current.has(slug)) return;
           seenRef.current.add(slug);
-          const { data: meta } = await supabase
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .from('achievements' as any)
+          const { data: meta } = await untypedFrom('achievements')
             .select('slug, name, description, points_reward')
             .eq('slug', slug)
             .maybeSingle();

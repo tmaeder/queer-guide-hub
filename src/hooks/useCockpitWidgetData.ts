@@ -4,7 +4,7 @@
  */
 
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { untypedFrom } from '@/integrations/supabase/untyped';
 
 export interface AutomationRow {
   slug: string;
@@ -18,8 +18,7 @@ export function useAutomationList() {
   return useQuery({
     queryKey: ['admin-automations'],
     queryFn: async (): Promise<AutomationRow[]> => {
-      const { data, error } = await supabase
-        .from('admin_automations' as never)
+      const { data, error } = await untypedFrom('admin_automations')
         .select('slug, name, enabled, last_run_status, last_run_at')
         .order('name', { ascending: true });
       if (error) throw error;
@@ -42,8 +41,7 @@ export function usePipelineErrors() {
   return useQuery({
     queryKey: ['cockpit', 'pipeline-errors'],
     queryFn: async (): Promise<PipelineErrorRow[]> => {
-      const { data, error } = await supabase
-        .from('pipeline_error_summary' as never)
+      const { data, error } = await untypedFrom('pipeline_error_summary')
         .select('*')
         .limit(100);
       if (error) throw error;

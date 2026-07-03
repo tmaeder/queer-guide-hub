@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from 'react';
-import { useProfile } from '@/hooks/useProfile';
+import { useProfile, type Profile } from '@/hooks/useProfile';
 import {
   DEFAULT_PRESENCE_VISIBILITY,
   type PresenceVisibility,
@@ -125,8 +125,7 @@ export function useStatus(): {
           ...patch.visibility,
         };
       }
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const res = await updateProfile(updates as any);
+      const res = await updateProfile(updates as Partial<Profile>);
       return { error: res.error };
     },
     [status, updateProfile],

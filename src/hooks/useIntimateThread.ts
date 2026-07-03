@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { untypedFrom, untypedRpc } from '@/integrations/supabase/untyped';
 import { useAuth } from '@/hooks/useAuth';
 
 export interface ThreadConsent {
@@ -28,9 +29,7 @@ export function useIntimateThreadConsent(conversationId: string | null) {
     enabled: !!conversationId,
     queryFn: async (): Promise<ThreadConsent | null> => {
       if (!conversationId) return null;
-      const { data } = await supabase
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .from('intimate_thread_consent' as any)
+      const { data } = await untypedFrom('intimate_thread_consent')
         .select('*')
         .eq('conversation_id', conversationId)
         .maybeSingle();
@@ -46,9 +45,7 @@ export function useEndIntimateThread(conversationId: string | null) {
   return useMutation({
     mutationFn: async () => {
       if (!conversationId || !user) throw new Error('not signed in');
-      const { error } = await supabase
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .from('intimate_thread_consent' as any)
+      const { error } = await untypedFrom('intimate_thread_consent')
         .update({ ended_at: new Date().toISOString(), ended_by: user.id })
         .eq('conversation_id', conversationId);
       if (error) throw error;
@@ -67,8 +64,7 @@ export function useMyConsentSide(conversationId: string | null) {
     queryFn: async (): Promise<'a' | 'b' | null> => {
       if (!conversationId) return null;
       const { data, error } = await supabase
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .rpc('intimate_my_consent_side' as any, { p_conversation_id: conversationId });
+        .rpc('intimate_my_consent_side', { p_conversation_id: conversationId });
       if (error) throw error;
       return (data as 'a' | 'b' | null) ?? null;
     },
@@ -82,8 +78,7 @@ export function useSetPhotoUnlock(conversationId: string | null) {
     mutationFn: async (unlocked: boolean) => {
       if (!conversationId) throw new Error('no conversation');
       const { error } = await supabase
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .rpc('intimate_set_my_photo_unlock' as any, {
+        .rpc('intimate_set_my_photo_unlock', {
           p_conversation_id: conversationId,
           p_unlocked: unlocked,
         });
@@ -101,12 +96,10 @@ export function useShareLocation(conversationId: string | null) {
   return useMutation({
     mutationFn: async (minutes: number | null) => {
       if (!conversationId) throw new Error('no conversation');
-      const { error } = await supabase
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .rpc('intimate_share_my_location' as any, {
-          p_conversation_id: conversationId,
-          p_minutes: minutes,
-        });
+      const { error } = await untypedRpc('intimate_share_my_location', {
+        p_conversation_id: conversationId,
+        p_minutes: minutes,
+      });
       if (error) throw error;
     },
     onSuccess: () => {
@@ -120,9 +113,7 @@ export function useOpeningMoves(locale = 'en') {
   return useQuery({
     queryKey: ['intimate-opening-moves', locale],
     queryFn: async (): Promise<OpeningMove[]> => {
-      const { data } = await supabase
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .from('intimate_opening_moves' as any)
+      const { data } = await untypedFrom('intimate_opening_moves')
         .select('slug, prompt, tone, locale, sort_order')
         .eq('locale', locale)
         .order('sort_order', { ascending: true });

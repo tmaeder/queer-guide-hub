@@ -18,6 +18,7 @@ import {
   Loader2,
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { untypedFrom } from '@/integrations/supabase/untyped';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -66,9 +67,7 @@ interface AutomationRun {
 }
 
 async function fetchAutomations(): Promise<Automation[]> {
-  // eslint-disable-next-line queerguide/no-supabase-from-in-pages -- module-level admin fetcher consumed by useQuery; refactor to hook tracked separately
-  const { data, error } = await supabase
-    .from('admin_automations' as never)
+  const { data, error } = await untypedFrom('admin_automations')
     .select('*')
     .order('managed_by', { ascending: false })
     .order('name', { ascending: true });
@@ -77,9 +76,7 @@ async function fetchAutomations(): Promise<Automation[]> {
 }
 
 async function fetchRecentRuns(slugFilter: string | null): Promise<AutomationRun[]> {
-  // eslint-disable-next-line queerguide/no-supabase-from-in-pages -- module-level admin fetcher consumed by useQuery; refactor to hook tracked separately
-  let q = supabase
-    .from('admin_automation_runs' as never)
+  let q = untypedFrom('admin_automation_runs')
     .select('*')
     .order('started_at', { ascending: false })
     .limit(50);

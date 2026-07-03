@@ -6,9 +6,18 @@ import { renderHook } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
 
-vi.mock('@/integrations/supabase/untyped', () => ({
-  untypedSupabase: { rpc: vi.fn().mockResolvedValue({ data: null, error: null }) },
-}));
+vi.mock('@/integrations/supabase/untyped', () => {
+  const builder: Record<string, unknown> = {};
+  builder.select = vi.fn(() => builder);
+  builder.gte = vi.fn(() => builder);
+  builder.order = vi.fn(() => builder);
+  builder.limit = vi.fn().mockResolvedValue({ data: [], error: null });
+  return {
+    untypedSupabase: { rpc: vi.fn().mockResolvedValue({ data: null, error: null }) },
+    untypedFrom: vi.fn(() => builder),
+    untypedRpc: vi.fn().mockResolvedValue({ data: null, error: null }),
+  };
+});
 
 import { useNewsStories } from '../useNewsStories';
 
