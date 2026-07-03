@@ -1,13 +1,8 @@
-/**
- * Decode HTML entities (e.g., &amp; → &, &lt; → <, &quot; → ")
- * Uses a textarea element trick for browser-native decoding.
- */
-export function decodeHtmlEntities(text: string): string {
-  if (!text) return '';
-  const textarea = document.createElement('textarea');
-  textarea.innerHTML = text;
-  return textarea.value;
-}
+// Single shared entity decoder (regex-based, DOM-free) — the former
+// textarea-innerHTML implementation here duplicated it under the same name.
+import { decodeHtmlEntities } from '@/lib/decodeHtmlEntities';
+
+export { decodeHtmlEntities };
 
 /**
  * Strip HTML tags from a string, returning plain text.

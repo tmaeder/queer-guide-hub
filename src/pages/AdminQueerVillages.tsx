@@ -1,3 +1,4 @@
+import { slugify } from '@/lib/slugify';
 import { useState, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -265,10 +266,7 @@ export default function AdminQueerVillages() {
 
   const generateSlug = () => {
     if (!form.name) return;
-    const slug = form.name
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-|-$/g, '');
+    const slug = slugify(form.name);
     setForm((f) => ({ ...f, slug }));
   };
 

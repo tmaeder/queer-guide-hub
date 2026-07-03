@@ -28,6 +28,7 @@ queer-guide-hub/
 │   └── migrations/       # PostgreSQL migrations
 ├── workers/
 │   ├── ingest/           # CF Worker: search-intelligence ingest pipeline
+│   ├── search-proxy/     # CF Worker: search proxy (Postgres backend), Postgres-driven synonyms
 │   ├── search-proxy/     # CF Worker: search proxy (Postgres-backed), Postgres-driven synonyms
 │   ├── snapshot-archiver/ # CF Worker: archives admin/editorial snapshots
 │   └── submit/           # CF Worker: extension submissions → ingestion_staging
@@ -81,6 +82,12 @@ queer-guide-hub/
 - **Supabase:** project `xqeacpakadqfxjxjcewc` (eu-central-2)
 - **Cloudflare Pages:** project `queer-guide` at `queer-guide.pages.dev`
 - **CF Account:** `7aa3765cc5f50f2b681b782eb4a8d296`
+- **Search:** **Postgres + Cloudflare** (migration plan, historical: `docs/search-intelligence/meili-to-postgres-migration-plan.md`). The Postgres engine serves production; Meilisearch is decommissioned code-side (only the Infomaniak node shutdown remains, external infra).
+  - **Postgres engine (live):** denormalized `search_documents` table (weighted tsvector + `vector(1024)` HNSW embedding + PostGIS `geog` + facets/trust/liveness/price/temporal). RPCs: `search_hybrid` (RRF keyword+vector fusion in SQL, with target_groups filter + news-recency decay + vnn top-200 admission), `search_facets`, `search_autocomplete` (prefix + trigram), plus discovery RPCs (`get_recommendations`, `related_entities`, `find_duplicate_clusters`, `events_in_window`, `personalities_on_this_day`). Excludes `duplicate_of_id IS NOT NULL`.
+  - **CF Worker:** `search-proxy` serves `/search` + `/autocomplete` from the Postgres RPCs (the former `SEARCH_BACKEND` meili/pg/shadow selector and the shadow-compare tooling were removed after cutover). Rollout runbook: `docs/deploy/search-rollout.md`.
+  - **Sync:** Postgres `search_documents` stays fresh via entity + `content_embeddings` triggers (the `meilisearch-sync` edge function is gone).
+  - **Decommission (code-side complete, 2026-06-07):** the worker serves Postgres directly; the DB sync triggers/crons and the `meilisearch-sync` edge function are gone; `workers/search-proxy/src/meili.ts`, the `meilisearch/` ops dir, and `configure-meili.sh`/`meili-direct-resync.sh` are removed; the admin search-intelligence UI is Meili-free (dead `Index*`/`Consistency*` types dropped). `INDEX_MAP`/`ALL_INDEXES` live in `workers/search-proxy/src/entityIndex.ts` and are **active Postgres-side** entity-type→pg-type normalization (not Meili code, despite the name) — keep. Verified no live Meili cron/trigger/function/env ref remains; residual `meili` strings are only a shared `x-webhook-secret` default (`meilisearch-sync-webhook-2026`) in geocode/backfill functions — cosmetic, leave. **Only remaining task: the Infomaniak Meili node shutdown (external infra).**
+  - **Legacy:** PostgreSQL FTS `universal_search()` and `algolia-sync` are REMOVED (dropped via migration `20260618150000`; `venue_amenities`/`attributes` fell with it)
 - **Search:** **Postgres + Cloudflare** (Meilisearch fully decommissioned code-side 2026-06; the flag-based cutover scaffolding — `SEARCH_BACKEND`, shadow mode, shadow-analyze — was removed 2026-07).
   - **Postgres engine:** denormalized `search_documents` table (weighted tsvector + `vector(1024)` HNSW embedding + PostGIS `geog` + facets/trust/liveness/price/temporal). RPCs: `search_hybrid` (RRF keyword+vector fusion in SQL, with target_groups filter + news-recency decay + vnn top-200 admission), `search_facets`, `search_autocomplete` (prefix + trigram), plus discovery RPCs (`get_recommendations`, `related_entities`, `find_duplicate_clusters`, `events_in_window`, `personalities_on_this_day`). Excludes `duplicate_of_id IS NOT NULL`.
   - **CF Worker:** `search-proxy` serves `/search` + `/autocomplete` from the Postgres RPCs and layers embedding (bge-m3 via AI Gateway), personalization, optional reranker and safety gating on top. See `workers/search-proxy/README.md`.

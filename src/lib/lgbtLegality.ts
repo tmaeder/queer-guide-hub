@@ -11,18 +11,11 @@ interface CountryLegalityInput {
   lgbti_criminalization?: unknown;
 }
 
-export function hasCriminalizationFlag(input: unknown): boolean {
-  if (!input || typeof input !== 'object') return false;
-  const c = input as Record<string, unknown>;
-  // Schema (countries.lgbti_criminalization): { legal: boolean, penalty: string,
-  // death_penalty: 'Yes'|'No', max_prison: string|null, ... }
-  // Treat as criminalized only when `legal === false` OR a real penalty is recorded.
-  if (c.legal === false) return true;
-  if (typeof c.death_penalty === 'string' && /^yes$/i.test(c.death_penalty)) return true;
-  if (typeof c.max_prison === 'string' && !/^(no|none|0)$/i.test(c.max_prison)) return true;
-  if (typeof c.penalty === 'string' && c.penalty && !/^no criminali[sz]ation$/i.test(c.penalty)) return true;
-  return false;
-}
+// Canonical parsing of countries.lgbti_criminalization lives in
+// utils/equalityScore.ts — this alias keeps existing badge callers stable.
+import { hasAnyCriminalizationSignal as hasCriminalizationFlag } from '@/utils/equalityScore';
+
+export { hasCriminalizationFlag };
 
 export function getLegalityBadge(country: CountryLegalityInput | null | undefined): LegalityBadge | null {
   if (!country) return null;

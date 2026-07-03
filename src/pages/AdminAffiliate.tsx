@@ -8,10 +8,13 @@
  */
 
 import { useState, useMemo } from 'react';
+import { useSearchParams } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { untypedSupabase } from '@/integrations/supabase/untyped';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
+import { AffiliatePartnersManager } from '@/components/admin/AffiliatePartnersManager';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { monoChartPalette, monoChartAxis } from '@/lib/chartPalette';
@@ -38,6 +41,8 @@ const VERTICALS = [
 ];
 
 export default function AdminAffiliate() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tab = searchParams.get('tab') === 'partners' ? 'partners' : 'performance';
   const [days, setDays] = useState('30');
   const [vertical, setVertical] = useState('all');
 
@@ -84,6 +89,35 @@ export default function AdminAffiliate() {
 
   const palette = monoChartPalette(Math.max(bySurface.length, 1));
 
+  const tabsBar = (
+    <Tabs
+      value={tab}
+      onValueChange={(v) =>
+        setSearchParams(v === 'partners' ? { tab: 'partners' } : {}, { replace: true })
+      }
+      className="mb-6"
+    >
+      <TabsList>
+        <TabsTrigger value="performance">Performance</TabsTrigger>
+        <TabsTrigger value="partners">Partners</TabsTrigger>
+      </TabsList>
+    </Tabs>
+  );
+
+  if (tab === 'partners') {
+    return (
+      <div className="p-6">
+        <AdminPageHeader
+          eyebrow="COCKPIT · AFFILIATE"
+          title="Affiliate partners"
+          subtitle="Partner registry: domains, URL patterns and redirect templates."
+        />
+        {tabsBar}
+        <AffiliatePartnersManager />
+      </div>
+    );
+  }
+
   return (
     <div className="p-6">
       <AdminPageHeader
@@ -111,6 +145,8 @@ export default function AdminAffiliate() {
           </div>
         }
       />
+
+      {tabsBar}
 
       {error && (
         <p className="text-13 text-destructive">Failed to load affiliate data: {(error as Error).message}</p>

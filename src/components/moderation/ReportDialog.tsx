@@ -25,6 +25,12 @@ const FLAG_TYPE_OPTIONS = [
   { value: 'OTHER', label: 'Other', description: 'Something else' },
 ] as const;
 
+/**
+ * Editorial data-issue report (wrong info, broken link, duplicate, deletion
+ * request) on entity detail pages — files a moderation *flag* via
+ * useModeration.createFlag. NOT the user-safety flow: reporting user-generated
+ * content (posts/comments/profiles/groups) is ReportContentDialog.
+ */
 export function ReportDialog({ open, onOpenChange, contentType, contentId, contentName }: ReportDialogProps) {
   const { createFlag, loading } = useModeration();
   const [flagType, setFlagType] = useState<CreateFlagParams['flag_type']>('REVIEW');

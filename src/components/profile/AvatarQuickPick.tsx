@@ -16,8 +16,8 @@ const sameConfig = (a: AvatarConfig | null, b: AvatarConfig) =>
 
 /**
  * Minimal one-shot avatar picker: shows N randomized BigHeads, user taps one.
- * Reroll generates a fresh batch. No deep customization — that's
- * AvatarSettings in /profile-settings.
+ * Reroll generates a fresh batch. No deep customization — the simplified
+ * builder in AvatarChooser covers that.
  */
 export function AvatarQuickPick({ value, onChange, count = 6 }: Props) {
   const [seed, setSeed] = useState(0);

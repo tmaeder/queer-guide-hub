@@ -55,4 +55,4 @@ significant duplicate-helper drift.
 - **Hot** (cautious — high blast radius): public page rendering, search, image CDN, the SPA shell/router, the live ingestion pipeline stages (`pipeline-*`, `source-rss-news`, commit RPCs).
 - **Cold** (safer to trim): admin screens, backfill/one-shot edge functions, operator scripts in `scripts/`, disabled scrape sources, deprecated/migration-disabled functions, unused UI primitives.
 
-The declutter targets cold paths only; see [`DECLUTTER_CANDIDATES.md`](../../DECLUTTER_CANDIDATES.md).
+The declutter targets cold paths only; see [`docs/audits/2026-05-31-declutter-candidates.md`](../../DECLUTTER_CANDIDATES.md).

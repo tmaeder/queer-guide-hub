@@ -134,7 +134,7 @@ export async function semanticSearch(
 			},
 		);
 	} catch (e) {
-		// Fail-soft: empty semantic hits → /search degrades to Meilisearch-only
+		// Fail-soft: empty semantic hits → /search degrades to keyword-only
 		// instead of timing out. Bug observed 2026-05-03 when the RPC stalled
 		// indefinitely after a large data update.
 		console.warn("personalized_semantic_search", (e as Error).message);

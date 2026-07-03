@@ -1,3 +1,4 @@
+import { slugify } from '@/lib/slugify';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -89,9 +90,6 @@ export interface TagContentResult {
 }
 
 // Helper: generate the slug form of a tag name (e.g. "Gay Bar" -> "gay-bar")
-function toSlug(name: string): string {
-  return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-}
 
 /**
  * Fetch all linked content for a tag via a single RPC call.
@@ -100,7 +98,7 @@ function toSlug(name: string): string {
  * .contains() / .overlaps() on text[] columns.
  */
 async function fetchTagContent(tagId: string, tagName: string): Promise<TagContentResult> {
-  const slug = toSlug(tagName);
+  const slug = slugify(tagName);
 
   const { data, error } = await supabase.rpc('get_tag_linked_content', {
     p_tag_id: tagId,

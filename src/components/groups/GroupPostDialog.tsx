@@ -42,7 +42,7 @@ interface CreatePostDialogProps {
   canPin?: boolean;
 }
 
-export const CreatePostDialog = ({
+export const GroupPostDialog = ({
   onCreatePost,
   isCreating,
   groupMembers,

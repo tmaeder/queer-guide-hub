@@ -8,6 +8,7 @@
 // Auth: X-Webhook-Secret (cron) or admin/service-role. Body: { batch_limit?, dry_run?, city_ids? }.
 
 import { getCorsHeaders, getServiceClient, requireInternalOrAdmin, jsonResponse } from '../_shared/supabase-client.ts'
+import { hasValidWebhookSecret } from '../_shared/webhook-auth.ts'
 
 const DEFAULT_BATCH_LIMIT = 200
 const GEO_AGREE_M = 25_000        // cities: within 25km counts as same place
@@ -67,9 +68,7 @@ Deno.serve(async (req: Request) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: getCorsHeaders(req) })
 
   const supabase = getServiceClient()
-  const secret = Deno.env.get('CITY_QUALITY_WEBHOOK_SECRET')
-  const provided = req.headers.get('X-Webhook-Secret')
-  if (!(secret && provided && provided === secret)) {
+  if (!hasValidWebhookSecret(req, 'CITY_QUALITY_WEBHOOK_SECRET')) {
     const auth = await requireInternalOrAdmin(req, supabase)
     if (auth instanceof Response) return auth
   }

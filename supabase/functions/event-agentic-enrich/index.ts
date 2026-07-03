@@ -8,7 +8,9 @@
 // Auth: X-Webhook-Secret (cron) or admin/service-role. Body: { batch_limit?, dry_run?, event_ids?, daily_cap? }.
 
 import { getCorsHeaders, getServiceClient, requireInternalOrAdmin, jsonResponse } from '../_shared/supabase-client.ts'
+import { hasValidWebhookSecret } from '../_shared/webhook-auth.ts'
 import { withCircuitBreaker, CircuitOpenError } from '../_shared/circuit-breaker.ts'
+import { fetchPageText } from '../_shared/enrich-harness.ts'
 import { researchEnrichEventFromPage, type EventMoatEnrichment } from '../_shared/ai-enrichment.ts'
 
 const DEFAULT_BATCH_LIMIT = 8
@@ -22,52 +24,12 @@ const MAX_BODY_BYTES = 500_000
 const AUTO_APPLY_CONFIDENCE = 0.8
 const STEP = 'agentic-enrich'
 
-function normalizeUrl(url: string): string {
-  const t = (url ?? '').trim()
-  return t && !/^https?:\/\//i.test(t) ? `https://${t}` : t
-}
-
-async function fetchText(rawUrl: string): Promise<string | null> {
-  const url = normalizeUrl(rawUrl)
-  if (!url) return null
-  const controller = new AbortController()
-  const timer = setTimeout(() => controller.abort(), GET_TIMEOUT)
-  try {
-    const resp = await fetch(url, {
-      method: 'GET', signal: controller.signal, redirect: 'follow',
-      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; QueerGuide-EventEnrich/1.0)', 'Accept': 'text/html,*/*' },
-    })
-    if (!resp.ok || !resp.body) return null
-    const reader = resp.body.getReader()
-    const chunks: Uint8Array[] = []
-    let total = 0
-    while (total < MAX_BODY_BYTES) {
-      const { done, value } = await reader.read()
-      if (done) break
-      chunks.push(value); total += value.length
-    }
-    reader.cancel().catch(() => {})
-    const len = chunks.reduce((n, c) => n + c.length, 0)
-    const buf = new Uint8Array(len); let off = 0
-    for (const c of chunks) { buf.set(c, off); off += c.length }
-    const html = new TextDecoder('utf-8', { fatal: false }).decode(buf)
-    return htmlToText(html)
-  } catch {
-    return null
-  } finally {
-    clearTimeout(timer)
-  }
-}
-
-function htmlToText(html: string): string {
-  return html
-    .replace(/<script\b[^>]*>[\s\S]*?<\/script[^>]*>/gi, ' ')
-    .replace(/<style\b[^>]*>[\s\S]*?<\/style[^>]*>/gi, ' ')
-    .replace(/<[^>]+>/g, ' ')
-    .replace(/&nbsp;/gi, ' ').replace(/&#39;/g, "'").replace(/&quot;/gi, '"').replace(/&amp;/gi, '&')
-    .replace(/\s+/g, ' ')
-    .trim()
-}
+const fetchEventPage = (url: string) =>
+  fetchPageText(url, {
+    userAgent: 'Mozilla/5.0 (compatible; QueerGuide-EventEnrich/1.0)',
+    maxBytes: MAX_BODY_BYTES,
+    timeoutMs: GET_TIMEOUT,
+  })
 
 // Non-empty array helper.
 function arr(v: unknown): string[] | null {
@@ -80,9 +42,7 @@ Deno.serve(async (req: Request) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: getCorsHeaders(req) })
 
   const supabase = getServiceClient()
-  const secret = Deno.env.get('EVENT_QUALITY_WEBHOOK_SECRET')
-  const provided = req.headers.get('X-Webhook-Secret')
-  if (!(secret && provided && provided === secret)) {
+  if (!hasValidWebhookSecret(req, 'EVENT_QUALITY_WEBHOOK_SECRET')) {
     const auth = await requireInternalOrAdmin(req, supabase)
     if (auth instanceof Response) return auth
   }
@@ -134,7 +94,7 @@ Deno.serve(async (req: Request) => {
     const target = ev.website || ev.ticket_url
     let status = 'skipped'
     try {
-      const pageText = target ? await fetchText(target) : null
+      const pageText = target ? await fetchEventPage(target) : null
       if (!pageText) { skipped++; results.push({ id: ev.id, status: 'no_page' }); await logStep(supabase, ev.id, status, started, dryRun); continue }
 
       // Destination safety context. Legality is derived from the canonical

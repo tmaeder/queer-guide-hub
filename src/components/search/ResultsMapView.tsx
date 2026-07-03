@@ -1,4 +1,5 @@
 /* eslint-disable react-hooks/refs -- this component threads map+entity refs through props/hooks during render; MapShell + EntityMap subscribe to .current themselves. */
+import { calculateDistanceMeters } from '@/utils/calculateDistance';
 import { useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { EntityMap, type EntityMapMarker } from '@/components/map/EntityMap';
@@ -124,14 +125,7 @@ export function ResultsMapView({
         scrollZoom
         onMoveEnd={({ center: c, bounds }) => {
           // Radius = half the diagonal of the visible bbox (rough but adequate).
-          const R = 6371000; // m
-          const toRad = (d: number) => (d * Math.PI) / 180;
-          const dLat = toRad(bounds.north - bounds.south);
-          const dLng = toRad(bounds.east - bounds.west);
-          const a =
-            Math.sin(dLat / 2) ** 2 +
-            Math.cos(toRad(bounds.south)) * Math.cos(toRad(bounds.north)) * Math.sin(dLng / 2) ** 2;
-          const diag = 2 * R * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+          const diag = calculateDistanceMeters(bounds.south, bounds.west, bounds.north, bounds.east);
           lastBoundsRef.current = { center: c, radius: Math.round(diag / 2) };
           setShowAreaSearch(true);
         }}

@@ -1,3 +1,4 @@
+import { slugify } from '@/lib/slugify';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { untypedFrom } from '@/integrations/supabase/untyped';
 import { useAuth } from '@/hooks/useAuth';
@@ -60,14 +61,8 @@ export function useCollectionItems(collectionId: string | null | undefined) {
 }
 
 /** Slugify a free-text collection name. */
-function slugify(input: string): string {
-  return input
-    .toLowerCase()
-    .normalize('NFKD')
-    .replace(/[̀-ͯ]/g, '')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .slice(0, 60) || 'untitled';
+function collectionSlug(input: string): string {
+  return slugify(input).slice(0, 60) || 'untitled';
 }
 
 /** Create a collection inside a group. */
@@ -77,7 +72,7 @@ export function useCreateCollection() {
   return useMutation({
     mutationFn: async (args: { groupId: string; name: string; description?: string }) => {
       if (!user) throw new Error('not signed in');
-      const slug = slugify(args.name);
+      const slug = collectionSlug(args.name);
       const { data, error } = await untypedFrom('group_collections')
         .insert({
           group_id: args.groupId,
