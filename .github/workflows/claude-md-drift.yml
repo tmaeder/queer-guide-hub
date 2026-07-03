@@ -22,8 +22,12 @@ jobs:
       - name: sync CLAUDE.md repo stats
         id: sync
         run: |
-          actual_fns=$(ls supabase/functions/ | grep -v '^_' | wc -l | tr -d ' ')
-          actual_mig=$(ls supabase/migrations/ | wc -l | tr -d ' ')
+          actual_fns=$(ls supabase/functions/ | grep -v '^_' | grep -v '^README' | wc -l | tr -d ' ')
+          actual_mig=$(ls supabase/migrations/ | grep -c '\.sql$' | tr -d ' ')
+          if [ "$(grep -c '^- \*\*Edge functions:\*\*' CLAUDE.md)" != "1" ] || [ "$(grep -c '^- \*\*Migrations:\*\*' CLAUDE.md)" != "1" ]; then
+            echo "::error::CLAUDE.md repo-stats block is corrupted (expected exactly one line per stat); collapse it to one line per stat before syncing."
+            exit 1
+          fi
           sed -i -E "0,/^- \*\*Edge functions:\*\* [0-9]+$/s//- **Edge functions:** $actual_fns/" CLAUDE.md
           sed -i -E "0,/^- \*\*Migrations:\*\* [0-9]+$/s//- **Migrations:** $actual_mig/" CLAUDE.md
           if git diff --quiet CLAUDE.md; then

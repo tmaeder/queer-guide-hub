@@ -143,6 +143,8 @@ queer-guide-hub/
 - **Migrations:** 548
 - **Migrations:** 541
 - **Migrations:** 547
+- **Edge functions:** 228
+- **Migrations:** 721
 
 ## Infrastructure
 
@@ -224,7 +226,7 @@ LGBTQ+ travelers, locals, activists, researchers, allies. Safety-first, inclusiv
 - **Trip safety briefing traffic-light.** `src/components/trips/TripSafetyBriefing.tsx` retains low/moderate/high/critical risk colors. Safety > consistency for LGBTQ+ travelers in high-risk destinations. User-locked 2026-05-19.
 - **Functional categorical scales** still allowlisted in `eslint.config.js`: map vector tiles, equality scores, news taxonomy, avatar gradients, submission scan flyers, trip cover gradients, content warnings, password strength meter, OAuth brand SVGs. Each is functional, not decorative.
 - **Inline links underlined.** `p a, li a, td a, span a, label a` get `text-decoration: underline` in `src/index.css`. Without color difference from body text, the underline is the only cue that distinguishes a link (WCAG 1.4.1, axe `link-in-text-block`). Standalone links — nav, buttons, cards — stay un-underlined.
-- **Crisis & safety pages are animation-free.** `src/pages/HelpHotlines.tsx` and any future route under `/help`, `/safety`, `/report-*` must not consume Aceternity components, scroll-reveal effects, or decorative motion. Functional motion only (focus rings, dialog transitions, accordions). Protects users in crisis from cognitive overload and respects `prefers-reduced-motion` (WCAG 2.3.3). The Aceternity Showcase (`/aceternity` → §A11y exemption) documents the canonical static pattern.
+- **Crisis & safety pages are animation-free.** `src/pages/HelpHotlines.tsx` and any future route under `/help`, `/safety`, `/report-*` must not consume Aceternity components, scroll-reveal effects, or decorative motion. Functional motion only (focus rings, dialog transitions, accordions). Protects users in crisis from cognitive overload and respects `prefers-reduced-motion` (WCAG 2.3.3). The Pattern Library (`/pattern-library` → §A11y exemption) documents the canonical static pattern.
 - **Semantic radius tokens.** Always pick from the trio `rounded-container` (16px — cards, sheets, dialogs, hero blocks), `rounded-element` (8px — buttons, inputs, list rows, nested cards, image frames), `rounded-badge` (4px — chips, pills, status tags) over raw `rounded-(sm|md|lg|xl|2xl|3xl)` literals. The trio is a single point of change for the entire visual rhythm. `rounded-full` permitted for avatars/dots only; `rounded-none` for explicit flat overrides.
 - **Pride map canvas — REMOVED (2026-06-25).** The former pride-spectrum overlay (`PRIDE_LAYER_COLORS` + the rainbow density-heat ramp, gated by the `pridePalette` prop) was stripped in the monochrome refactor. The `/map` canvas now uses only the **functional** categorical `LAYER_COLORS` (`src/hooks/useExploreMapData.ts`) — distinguishing layer types (venue/event/city…), the same functional map-color exception allowlisted for vector tiles — plus a monochrome black-alpha density ramp in `src/components/map/ExploreMap.tsx`. The `pridePalette` prop was renamed `mapShellMode` (it now only gates MapShell-specific UX like the empty state, not color). Chrome stays strictly monochrome.
 
@@ -232,5 +234,5 @@ LGBTQ+ travelers, locals, activists, researchers, allies. Safety-first, inclusiv
 - Tokens: `src/index.css` (Tailwind v4 `@theme` block — CSS variables; no `tailwind.config.ts`)
 - Animation: `src/lib/animation.ts` (durations, easings, distances)
 - Charts: `src/lib/chartPalette.ts` (monochrome recharts palette + stroke patterns; added Phase 3a)
-- Components: shadcn/ui primitives in `src/components/ui/`. For monochrome status semantics use the `Badge` variants (the unused `StatusBadge` primitive was removed in the 2026-05-31 declutter; see `DECLUTTER_CANDIDATES.md`).
+- Components: shadcn/ui primitives in `src/components/ui/`. For monochrome status semantics use the `Badge` variants (the unused `StatusBadge` primitive was removed in the 2026-05-31 declutter; see git history).
 - Enforcement: `eslint.config.js` (color literals: error in public, warn in admin → error after Phase 3g; semantic radius warn; admin motion ban error)
