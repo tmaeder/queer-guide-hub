@@ -1,11 +1,11 @@
 name: Update Visual Baselines
 
 # Regenerates the Playwright visual-regression baselines on the SAME platform
-# the nightly suite runs on (ubuntu / amd64-linux). The repo previously only
-# carried *-darwin.png snapshots generated on a Mac, so every visual test
-# failed on CI with a missing -linux.png baseline. Run this whenever the UI
-# changes intentionally; it uploads the regenerated linux baselines as an
-# artifact to download and commit.
+# the nightly suite runs on (ubuntu / amd64-linux), so the committed baselines
+# always match CI's exact browser build. Run this whenever the UI changes
+# intentionally. With commit=true (default) the regenerated *-linux.png
+# baselines are committed straight to the dispatched branch; they are also
+# uploaded as an artifact either way.
 
 on:
   workflow_dispatch:
@@ -14,9 +14,14 @@ on:
         description: 'Base URL to screenshot'
         required: false
         default: 'https://queer.guide'
+      commit:
+        description: 'Commit regenerated baselines to the dispatched branch'
+        required: false
+        default: true
+        type: boolean
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   update-baselines:
@@ -51,3 +56,15 @@ jobs:
             e2e/**/*-linux.png
           if-no-files-found: error
           retention-days: 7
+      - name: Commit baselines to dispatched branch
+        if: inputs.commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add e2e/*-snapshots/*-linux.png
+          if git diff --cached --quiet; then
+            echo "baselines unchanged — nothing to commit"
+          else
+            git commit -m "test(e2e): update linux visual baselines [skip ci]"
+            git push origin "HEAD:${GITHUB_REF_NAME}"
+          fi
