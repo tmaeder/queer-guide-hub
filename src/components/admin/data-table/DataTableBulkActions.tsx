@@ -12,7 +12,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { deleteRowsByIds } from '@/hooks/usePageFetchers';
-import { supabase } from '@/integrations/supabase/client';
+import { untypedFrom } from '@/integrations/supabase/untyped';
 import { toast } from 'sonner';
 import { DataTableBulkEditDialog } from './DataTableBulkEditDialog';
 import type { BulkEditFieldConfig } from './types';
@@ -46,10 +46,7 @@ export function DataTableBulkActions({
   const handleExportCsv = async () => {
     setExporting(true);
     try {
-       
-      // eslint-disable-next-line queerguide/no-supabase-from-in-pages -- bulk action lives in admin shell; refactor to hook tracked separately
-      const { data, error } = await supabase
-        .from(tableName as never)
+      const { data, error } = await untypedFrom(tableName)
         .select('*')
         .in('id', Array.from(selectedIds));
       if (error) throw error;

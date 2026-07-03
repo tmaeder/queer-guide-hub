@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { untypedFrom } from '@/integrations/supabase/untyped';
 import { useAuth } from '@/hooks/useAuth';
 import type { CommunityDomain } from '@/lib/score';
 
@@ -43,9 +44,7 @@ export function useRecentActivity(
     }
     setLoading(true);
     (async () => {
-      const { data } = await supabase
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .from('user_activity_events' as any)
+      const { data } = await untypedFrom('user_activity_events')
         .select('id, user_id, domain, event_type, target_kind, target_id, points_delta, metadata, created_at')
         .eq('user_id', targetId)
         .order('created_at', { ascending: false })

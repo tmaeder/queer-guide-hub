@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/refs -- map components pass MapLibre ref.current (the imperative map handle) into custom hooks during render; this is the documented MapLibre integration pattern. */
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { type Root } from 'react-dom/client';
 import maplibregl from 'maplibre-gl';
@@ -343,6 +342,8 @@ export const ExploreMap = ({
     pulseRafRef,
     popupRootRef,
     pointLayersAddedRef,
+    showNativeNav,
+    onMapHandleRef,
   });
 
   // ── Boundary polygon rendering via shared hook ─────────────────────────

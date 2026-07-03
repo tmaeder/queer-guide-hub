@@ -20,6 +20,7 @@ import type { Tables } from '@/integrations/supabase/types';
 import type { DateRange } from 'react-day-picker';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { untypedRpc } from '@/integrations/supabase/untyped';
 import { useTranslation } from 'react-i18next';
 import type { NewsCategory } from '@/hooks/useNews';
 
@@ -116,13 +117,11 @@ export const NewsFilters = ({
   // {id, name, article_count} so the Select can show counts.
   useEffect(() => {
     const fetchData = async () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const db = supabase as any;
       const [countriesRes, citiesRes, languagesRes, authorsRes] = await Promise.all([
         supabase.rpc('news_countries_with_articles'),
         supabase.rpc('news_cities_with_articles'),
-        db.rpc('news_languages_with_articles'),
-        db.rpc('news_authors_with_articles'),
+        untypedRpc<LanguageOption[]>('news_languages_with_articles'),
+        untypedRpc<Array<{ author: string; article_count: number }>>('news_authors_with_articles'),
       ]);
       if (!countriesRes.error && Array.isArray(countriesRes.data)) {
         setCountries(countriesRes.data as CountryOption[]);
@@ -131,11 +130,11 @@ export const NewsFilters = ({
         setCities(citiesRes.data as CityOption[]);
       }
       if (!languagesRes.error && Array.isArray(languagesRes.data)) {
-        setLanguages(languagesRes.data as LanguageOption[]);
+        setLanguages(languagesRes.data);
       }
       if (!authorsRes.error && Array.isArray(authorsRes.data)) {
         setAuthors(
-          (authorsRes.data as Array<{ author: string; article_count: number }>).map((a) => ({
+          authorsRes.data.map((a) => ({
             value: a.author,
             label: `${a.author} (${a.article_count})`,
           })),

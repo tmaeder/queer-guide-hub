@@ -9,6 +9,7 @@
 import { useEffect, useCallback, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { untypedFrom } from '@/integrations/supabase/untyped';
 import { useToast } from '@/hooks/use-toast';
 
 // ── Types ───────────────────────────────────────────────────────────────────────
@@ -141,8 +142,7 @@ export function useWorkflowMonitor() {
   } = useQuery({
     queryKey: QUERY_KEYS.definitions,
     queryFn: async (): Promise<WorkflowDefinition[]> => {
-      const { data, error } = await supabase
-        .from('workflow_definitions' as never)
+      const { data, error } = await untypedFrom('workflow_definitions')
         .select('*')
         .order('priority', { ascending: true });
       if (error) throw error;
@@ -159,8 +159,7 @@ export function useWorkflowMonitor() {
     queryKey: QUERY_KEYS.runs,
     queryFn: async (): Promise<WorkflowRun[]> => {
       const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-      const { data, error } = await supabase
-        .from('workflow_runs' as never)
+      const { data, error } = await untypedFrom('workflow_runs')
         .select('*')
         .gte('created_at', since)
         .order('created_at', { ascending: false })

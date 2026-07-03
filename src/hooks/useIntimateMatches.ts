@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { untypedFrom } from '@/integrations/supabase/untyped';
 import { useAuth } from '@/hooks/useAuth';
 
 export interface IntimateMatch {
@@ -23,9 +24,7 @@ export function useMyIntimateLikes() {
     enabled: !!user,
     queryFn: async (): Promise<string[]> => {
       if (!user) return [];
-      const { data, error } = await supabase
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .from('intimate_likes' as any)
+      const { data, error } = await untypedFrom('intimate_likes')
         .select('target_id')
         .eq('actor_id', user.id);
       if (error) throw error;
@@ -42,9 +41,7 @@ export function useMyIntimatePasses() {
     enabled: !!user,
     queryFn: async (): Promise<string[]> => {
       if (!user) return [];
-      const { data, error } = await supabase
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .from('intimate_passes' as any)
+      const { data, error } = await untypedFrom('intimate_passes')
         .select('target_id')
         .eq('actor_id', user.id);
       if (error) throw error;
@@ -61,9 +58,7 @@ export function useIntimateMatches() {
     enabled: !!user,
     queryFn: async (): Promise<IntimateMatch[]> => {
       if (!user) return [];
-      const { data, error } = await supabase
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .from('intimate_matches' as any)
+      const { data, error } = await untypedFrom('intimate_matches')
         .select('viewer_id, other_id, matched_at')
         .order('matched_at', { ascending: false });
       if (error) throw error;
@@ -79,9 +74,7 @@ export function useLikeTarget() {
   return useMutation({
     mutationFn: async (targetId: string) => {
       if (!user) throw new Error('not signed in');
-      const { error } = await supabase
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .from('intimate_likes' as any)
+      const { error } = await untypedFrom('intimate_likes')
         .insert({ actor_id: user.id, target_id: targetId });
       if (error) throw error;
     },
@@ -100,9 +93,7 @@ export function usePassTarget() {
   return useMutation({
     mutationFn: async (targetId: string) => {
       if (!user) throw new Error('not signed in');
-      const { error } = await supabase
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .from('intimate_passes' as any)
+      const { error } = await untypedFrom('intimate_passes')
         .insert({ actor_id: user.id, target_id: targetId });
       if (error) throw error;
     },

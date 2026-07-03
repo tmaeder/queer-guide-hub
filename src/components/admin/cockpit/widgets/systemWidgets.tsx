@@ -5,7 +5,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { CheckCircle2, AlertTriangle, AlertCircle, ShieldCheck } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { untypedRpc } from '@/integrations/supabase/untyped';
 import {
   useSystemHealthQuery,
   useImportSummaryQuery,
@@ -130,9 +130,9 @@ export function ReleaseGatesBody({ openDrillDown }: WidgetRenderContext) {
   const q = useQuery({
     queryKey: ['cockpit', 'release-gates'],
     queryFn: async (): Promise<GateRow[]> => {
-      const { data, error } = await supabase.rpc('release_gate_checks' as never);
+      const { data, error } = await untypedRpc<GateRow[]>('release_gate_checks');
       if (error) throw error;
-      if (Array.isArray(data)) return data as GateRow[];
+      if (Array.isArray(data)) return data;
       return [];
     },
     staleTime: 5 * 60_000,

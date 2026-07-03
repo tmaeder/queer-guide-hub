@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { untypedFrom } from '@/integrations/supabase/untyped';
 import {
   DEFAULT_PRESENCE_VISIBILITY,
   type PresenceVisibility,
@@ -68,9 +68,7 @@ export function usePublicStatus(userId: string | null | undefined): {
     }
     setLoading(true);
     (async () => {
-      const { data } = await supabase
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .from('profile_status_v' as any)
+      const { data } = await untypedFrom('profile_status_v')
         .select(
           'user_id, status_emoji, status_text, status_expires_at, availability_tags, dnd_active, travel_mode',
         )

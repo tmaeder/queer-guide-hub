@@ -53,8 +53,7 @@ export function useUserIntent() {
 
   const setLookingFor = useCallback(
     async (next: LookingFor[]) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const res = await updateProfile({ looking_for: next } as any);
+      const res = await updateProfile({ looking_for: next });
       return { error: res.error };
     },
     [updateProfile],

@@ -6,6 +6,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { untypedFrom } from '@/integrations/supabase/untyped';
 
 export interface ReviewCounts {
   staging: number;
@@ -42,8 +43,7 @@ async function fetchReviewCounts(): Promise<ReviewCounts> {
   const moderation = raw.review_moderation ?? 0;
   let automation = raw.review_automation ?? 0;
   if (!automation) {
-    const { count: automationCount } = await supabase
-      .from('content_flags' as never)
+    const { count: automationCount } = await untypedFrom('content_flags')
       .select('id', { count: 'exact', head: true })
       .eq('status', 'pending');
     automation = automationCount ?? 0;
@@ -55,9 +55,7 @@ async function fetchReviewCounts(): Promise<ReviewCounts> {
   // Submissions count — fetch pending community submissions
   let submissions = raw.review_submissions ?? 0;
   if (!submissions) {
-    const { count } = await supabase
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .from('community_submissions' as any)
+    const { count } = await untypedFrom('community_submissions')
       .select('id', { count: 'exact', head: true })
       .eq('status', 'pending');
     submissions = count ?? 0;

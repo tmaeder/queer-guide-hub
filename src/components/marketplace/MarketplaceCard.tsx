@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import { MotionCard as Card } from '@/components/ui/card';
 import { CardHoverEffect } from '@/components/effects/CardHoverEffect';
-import { Image } from '@/components/ui/image';
+import { Image } from '@/components/ui/Image';
 import { Badge } from '@/components/ui/badge';
 import type { Database } from '@/integrations/supabase/types';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';

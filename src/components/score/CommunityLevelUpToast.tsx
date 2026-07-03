@@ -3,6 +3,7 @@ import { useEffect, useRef } from 'react';
 import { Sparkles } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
+import { untypedFrom } from '@/integrations/supabase/untyped';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { communityTierName } from '@/lib/score';
@@ -38,9 +39,7 @@ export function CommunityLevelUpToast() {
     // Seed the baseline so we don't toast on mount for the user's current
     // level (only future bumps should fire).
     (async () => {
-      const { data } = await supabase
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .from('user_community_score' as any)
+      const { data } = await untypedFrom('user_community_score')
         .select('level')
         .eq('user_id', userId)
         .maybeSingle();
