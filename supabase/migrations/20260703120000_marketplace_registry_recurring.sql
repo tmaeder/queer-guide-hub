@@ -94,7 +94,7 @@ INSERT INTO public.marketplace_merchants (provider, slug, display_name, shop_dom
 ON CONFLICT (provider, slug) DO UPDATE SET
   display_name = EXCLUDED.display_name,
   shop_domain  = EXCLUDED.shop_domain,
-  config       = public.marketplace_merchants.config || EXCLUDED.config,
+  config       = marketplace_merchants.config || EXCLUDED.config,
   is_enabled   = EXCLUDED.is_enabled,
   updated_at   = now();
 

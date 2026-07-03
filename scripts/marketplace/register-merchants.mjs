@@ -136,7 +136,7 @@ function buildSql(rows) {
     const cfg = r.currency ? `'{"currency":"${r.currency}"}'::jsonb` : `'{}'::jsonb`
     return `  (${q(r.provider)}, ${q(r.slug)}, ${q(r.display_name)}, ${q(r.domain)}, ${cfg}, ${enabled})`
   }).join(',\n')
-  return `INSERT INTO public.marketplace_merchants (provider, slug, display_name, shop_domain, config, is_enabled) VALUES\n${values}\nON CONFLICT (provider, slug) DO UPDATE SET\n  display_name = EXCLUDED.display_name,\n  shop_domain  = EXCLUDED.shop_domain,\n  config       = public.marketplace_merchants.config || EXCLUDED.config,\n  is_enabled   = EXCLUDED.is_enabled,\n  updated_at   = now();`
+  return `INSERT INTO public.marketplace_merchants (provider, slug, display_name, shop_domain, config, is_enabled) VALUES\n${values}\nON CONFLICT (provider, slug) DO UPDATE SET\n  display_name = EXCLUDED.display_name,\n  shop_domain  = EXCLUDED.shop_domain,\n  config       = marketplace_merchants.config || EXCLUDED.config,\n  is_enabled   = EXCLUDED.is_enabled,\n  updated_at   = now();`
 }
 
 function token() {
