@@ -469,5 +469,8 @@ verify_jwt = false
 [functions.source-shopify-public]
 verify_jwt = false
 
+[functions.marketplace-sync-merchants]
+verify_jwt = false
+
 [functions.send-username-reminder]
 verify_jwt = false
