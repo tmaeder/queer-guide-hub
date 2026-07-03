@@ -10,6 +10,7 @@
  */
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import { sendEmail } from "../_shared/email.ts";
+import { hasValidWebhookSecret } from '../_shared/webhook-auth.ts'
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -18,8 +19,8 @@ const FROM = Deno.env.get("EMAIL_FROM") ?? "alerts@queer.guide";
 Deno.serve(async (req) => {
   const secret = Deno.env.get("NEWS_ALERTS_WEBHOOK_SECRET");
   if (secret) {
-    const auth = req.headers.get("x-webhook-secret") ?? req.headers.get("authorization");
-    if (auth !== secret && auth !== `Bearer ${secret}`) {
+    const bearer = req.headers.get("authorization");
+    if (!hasValidWebhookSecret(req, "NEWS_ALERTS_WEBHOOK_SECRET") && bearer !== `Bearer ${secret}`) {
       return new Response("Unauthorized", { status: 401 });
     }
   }

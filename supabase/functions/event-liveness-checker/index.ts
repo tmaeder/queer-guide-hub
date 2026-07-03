@@ -7,6 +7,8 @@
 // Auth: X-Webhook-Secret (cron) or admin/service-role (manual). Body: { batch_limit?, dry_run?, event_ids? }.
 
 import { getCorsHeaders, getServiceClient, requireInternalOrAdmin, jsonResponse } from '../_shared/supabase-client.ts'
+import { normalizeUrl } from '../_shared/enrich-harness.ts'
+import { hasValidWebhookSecret } from '../_shared/webhook-auth.ts'
 import { assertPublicHttpUrl } from '../_shared/ssrf-guard.ts'
 
 const GET_TIMEOUT = 10_000
@@ -25,12 +27,6 @@ const LIVENESS_VALUE: Record<Liveness, number> = {
 const AUTO_STATUS: Partial<Record<Liveness, string>> = { cancelled: 'cancelled', postponed: 'postponed' }
 // States that warrant a human glance even when auto-applied.
 const FLAG_ATTENTION: Liveness[] = ['cancelled', 'postponed', 'moved_online', 'sold_out', 'dead_link']
-
-function normalizeUrl(url: string): string {
-  const t = (url ?? '').trim()
-  if (!t) return t
-  return /^https?:\/\//i.test(t) ? t : `https://${t}`
-}
 
 async function fetchBody(rawUrl: string): Promise<{ httpStatus: number | null; body: string | null; error: string | null }> {
   const url = normalizeUrl(rawUrl)
@@ -135,9 +131,7 @@ Deno.serve(async (req: Request) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: getCorsHeaders(req) })
 
   const supabase = getServiceClient()
-  const secret = Deno.env.get('EVENT_QUALITY_WEBHOOK_SECRET')
-  const provided = req.headers.get('X-Webhook-Secret')
-  if (!(secret && provided && provided === secret)) {
+  if (!hasValidWebhookSecret(req, 'EVENT_QUALITY_WEBHOOK_SECRET')) {
     const auth = await requireInternalOrAdmin(req, supabase)
     if (auth instanceof Response) return auth
   }

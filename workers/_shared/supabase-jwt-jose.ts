@@ -1,7 +1,10 @@
 /**
- * Shared jose-based verification of Supabase user JWTs for Cloudflare Workers
- * that need asymmetric-signing support (submit, image-cdn). `jose` resolves
- * from the importing worker's own node_modules at bundle time.
+ * Shared verification of Supabase user JWTs for Cloudflare Workers that need
+ * asymmetric-signing support (submit, image-cdn).
+ *
+ * `jose` is injected by the caller (each worker imports its own copy and
+ * passes it in) because node_modules resolution walks up from the importing
+ * file — this shared folder has no node_modules of its own.
  *
  * Verification order:
  *   1. JWKS (ES256/RS256) — modern Supabase asymmetric signing; only needs the
@@ -16,7 +19,6 @@
  * The dependency-free sibling `supabase-jwt.ts` (HS256 + GoTrue, boolean,
  * fail-closed) serves search-proxy and assistant.
  */
-import { createRemoteJWKSet, jwtVerify } from "jose";
 
 export interface AuthedUser {
 	sub: string; // auth.users.id
@@ -34,20 +36,19 @@ export interface JoseVerifyOptions {
 	authApiTimeoutMs?: number;
 }
 
-// JWKS cache lives as long as the worker isolate. createRemoteJWKSet does its
-// own internal caching with a sensible default cooldown.
-let jwksCache: ReturnType<typeof createRemoteJWKSet> | null = null;
-let jwksUrl: string | null = null;
+type JwtPayload = Record<string, unknown>;
 
-function getJwks(supabaseUrl: string): ReturnType<typeof createRemoteJWKSet> {
-	const url = `${supabaseUrl.replace(/\/$/, "")}/auth/v1/.well-known/jwks.json`;
-	if (jwksCache && jwksUrl === url) return jwksCache;
-	jwksUrl = url;
-	jwksCache = createRemoteJWKSet(new URL(url));
-	return jwksCache;
+/** Structural subset of the `jose` module the verifier needs. */
+export interface JoseLike {
+	createRemoteJWKSet(url: URL): unknown;
+	jwtVerify(
+		token: string,
+		keyOrJwks: unknown,
+		opts: { algorithms: string[] },
+	): Promise<{ payload: JwtPayload }>;
 }
 
-function toAuthedUser(payload: Record<string, unknown>): AuthedUser {
+function toAuthedUser(payload: JwtPayload): AuthedUser {
 	if (!payload.sub || typeof payload.sub !== "string") {
 		throw new Error("token missing sub");
 	}
@@ -65,49 +66,69 @@ export function extractBearer(request: Request): string | null {
 	return m ? (m[1] ?? null) : null;
 }
 
-/** Verify a Supabase user JWT. Throws when the token fails every configured path. */
-export async function verifySupabaseJwt(
-	token: string,
-	opts: JoseVerifyOptions,
-): Promise<AuthedUser> {
-	// 1. JWKS (preferred).
-	if (opts.supabaseUrl) {
-		try {
-			const jwks = getJwks(opts.supabaseUrl);
-			const { payload } = await jwtVerify(token, jwks, { algorithms: ["ES256", "RS256"] });
-			return toAuthedUser(payload as Record<string, unknown>);
-		} catch (err) {
-			// JWKS failed — either the project hasn't enabled asymmetric signing
-			// yet, or the token is genuinely invalid. Fall through to find out.
-			if (!opts.jwtSecret && !opts.authApiKey) throw err;
-		}
+/**
+ * Build a verifier bound to the caller's `jose` import. The JWKS cache lives
+ * as long as the returned closure (module scope in practice) —
+ * createRemoteJWKSet does its own internal caching with a sensible cooldown.
+ */
+export function createSupabaseJwtVerifier(jose: JoseLike) {
+	let jwksCache: unknown = null;
+	let jwksUrl: string | null = null;
+
+	function getJwks(supabaseUrl: string): unknown {
+		const url = `${supabaseUrl.replace(/\/$/, "")}/auth/v1/.well-known/jwks.json`;
+		if (jwksCache && jwksUrl === url) return jwksCache;
+		jwksUrl = url;
+		jwksCache = jose.createRemoteJWKSet(new URL(url));
+		return jwksCache;
 	}
 
-	// 2. HS256 fallback.
-	if (opts.jwtSecret) {
-		try {
-			const key = new TextEncoder().encode(opts.jwtSecret);
-			const { payload } = await jwtVerify(token, key, { algorithms: ["HS256"] });
-			return toAuthedUser(payload as Record<string, unknown>);
-		} catch (err) {
-			if (!opts.authApiKey) throw err;
-		}
-	}
-
-	// 3. GoTrue network fallback.
-	if (opts.supabaseUrl && opts.authApiKey) {
-		const res = await fetch(`${opts.supabaseUrl.replace(/\/$/, "")}/auth/v1/user`, {
-			headers: { apikey: opts.authApiKey, Authorization: `Bearer ${token}` },
-			signal: AbortSignal.timeout(opts.authApiTimeoutMs ?? 8000),
-		});
-		if (res.ok) {
-			const user = (await res.json()) as { id?: string; email?: string; role?: string };
-			if (typeof user.id === "string") {
-				return { sub: user.id, email: user.email, role: user.role };
+	/** Verify a Supabase user JWT. Throws when the token fails every configured path. */
+	return async function verifySupabaseJwt(
+		token: string,
+		opts: JoseVerifyOptions,
+	): Promise<AuthedUser> {
+		// 1. JWKS (preferred).
+		if (opts.supabaseUrl) {
+			try {
+				const jwks = getJwks(opts.supabaseUrl);
+				const { payload } = await jose.jwtVerify(token, jwks, {
+					algorithms: ["ES256", "RS256"],
+				});
+				return toAuthedUser(payload);
+			} catch (err) {
+				// JWKS failed — either the project hasn't enabled asymmetric signing
+				// yet, or the token is genuinely invalid. Fall through to find out.
+				if (!opts.jwtSecret && !opts.authApiKey) throw err;
 			}
 		}
-		throw new Error("invalid token");
-	}
 
-	throw new Error("verifier not configured");
+		// 2. HS256 fallback.
+		if (opts.jwtSecret) {
+			try {
+				const key = new TextEncoder().encode(opts.jwtSecret);
+				const { payload } = await jose.jwtVerify(token, key, { algorithms: ["HS256"] });
+				return toAuthedUser(payload);
+			} catch (err) {
+				if (!opts.authApiKey) throw err;
+			}
+		}
+
+		// 3. GoTrue network fallback.
+		if (opts.supabaseUrl && opts.authApiKey) {
+			const res = await fetch(`${opts.supabaseUrl.replace(/\/$/, "")}/auth/v1/user`, {
+				headers: { apikey: opts.authApiKey, Authorization: `Bearer ${token}` },
+				signal: AbortSignal.timeout(opts.authApiTimeoutMs ?? 8000),
+			});
+			if (res.ok) {
+				const user = (await res.json()) as { id?: string; email?: string; role?: string };
+				if (typeof user.id === "string") {
+					return { sub: user.id, email: user.email, role: user.role };
+				}
+			}
+			throw new Error("invalid token");
+		}
+
+		throw new Error("verifier not configured");
+	};
 }

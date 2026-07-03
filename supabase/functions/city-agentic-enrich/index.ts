@@ -9,8 +9,10 @@
 // Auth: X-Webhook-Secret (cron) or admin/service-role. Body: { batch_limit?, dry_run?, city_ids?, daily_cap? }.
 
 import { getCorsHeaders, getServiceClient, requireInternalOrAdmin, jsonResponse } from '../_shared/supabase-client.ts'
+import { hasValidWebhookSecret } from '../_shared/webhook-auth.ts'
 import { withCircuitBreaker, CircuitOpenError } from '../_shared/circuit-breaker.ts'
 import { researchEnrichCityFromSources, type CityMoatEnrichment } from '../_shared/ai-enrichment.ts'
+import { fetchPageText } from '../_shared/enrich-harness.ts'
 
 const DEFAULT_BATCH_LIMIT = 5
 const DEFAULT_DAILY_CAP = 120
@@ -22,30 +24,13 @@ const MAX_BODY_BYTES = 400_000
 const WP_UA = 'QueerGuideBot/1.0 (https://queer.guide; contact@queer.guide)'
 const _GATED_FIELDS = ['lgbt_friendly_rating', 'editorial_hook'] as const
 
-function normalizeUrl(u: string): string { const t = (u ?? '').trim(); return t && !/^https?:\/\//i.test(t) ? `https://${t}` : t }
+const fetchCityPage = (url: string) =>
+  fetchPageText(url, {
+    userAgent: 'Mozilla/5.0 (compatible; QueerGuide-CityEnrich/1.0)',
+    maxBytes: MAX_BODY_BYTES,
+    timeoutMs: GET_TIMEOUT,
+  })
 
-async function fetchText(rawUrl: string): Promise<string | null> {
-  const url = normalizeUrl(rawUrl); if (!url) return null
-  const ctl = new AbortController(); const timer = setTimeout(() => ctl.abort(), GET_TIMEOUT)
-  try {
-    const r = await fetch(url, { method: 'GET', signal: ctl.signal, redirect: 'follow',
-      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; QueerGuide-CityEnrich/1.0)', Accept: 'text/html,*/*' } })
-    if (!r.ok || !r.body) return null
-    const reader = r.body.getReader(); const chunks: Uint8Array[] = []; let total = 0
-    while (total < MAX_BODY_BYTES) { const { done, value } = await reader.read(); if (done) break; chunks.push(value); total += value.length }
-    reader.cancel().catch(() => {})
-    const buf = new Uint8Array(chunks.reduce((n, c) => n + c.length, 0)); let off = 0
-    for (const c of chunks) { buf.set(c, off); off += c.length }
-    return htmlToText(new TextDecoder('utf-8', { fatal: false }).decode(buf))
-  } catch { return null } finally { clearTimeout(timer) }
-}
-function htmlToText(html: string): string {
-  return html.replace(/<script\b[^>]*>[\s\S]*?<\/script[^>]*>/gi, ' ')
-    .replace(/<style\b[^>]*>[\s\S]*?<\/style[^>]*>/gi, ' ')
-    .replace(/<[^>]+>/g, ' ')
-    .replace(/&nbsp;/gi, ' ').replace(/&#39;/g, "'").replace(/&quot;/gi, '"').replace(/&amp;/gi, '&')
-    .replace(/\s+/g, ' ').trim()
-}
 // Full-text plaintext extract (not just the lead paragraph) so the model has
 // real material to ground queer-relevant fields on.
 async function fetchWikipediaExtract(query: string): Promise<string | null> {
@@ -68,9 +53,7 @@ Deno.serve(async (req: Request) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: getCorsHeaders(req) })
 
   const supabase = getServiceClient()
-  const secret = Deno.env.get('CITY_QUALITY_WEBHOOK_SECRET')
-  const provided = req.headers.get('X-Webhook-Secret')
-  if (!(secret && provided && provided === secret)) {
+  if (!hasValidWebhookSecret(req, 'CITY_QUALITY_WEBHOOK_SECRET')) {
     const auth = await requireInternalOrAdmin(req, supabase)
     if (auth instanceof Response) return auth
   }
@@ -120,7 +103,7 @@ Deno.serve(async (req: Request) => {
       let wpExtract = country ? await fetchWikipediaExtract(`${c.name}, ${country}`) : null
       if (!wpExtract) wpExtract = await fetchWikipediaExtract(c.name)
       if (wpExtract) sources.push({ url: `https://en.wikipedia.org/wiki/${encodeURIComponent(c.name)}`, text: wpExtract })
-      if (c.official_website) { const site = await fetchText(c.official_website); if (site) sources.push({ url: c.official_website, text: site }) }
+      if (c.official_website) { const site = await fetchCityPage(c.official_website); if (site) sources.push({ url: c.official_website, text: site }) }
       if (c.description && !wpExtract) sources.push({ url: 'existing', text: c.description })
       if (!sources.length) { skipped++; results.push({ id: c.id, status: 'no_sources' }); await logStep(supabase, c.id, status, started, dryRun); continue }
 

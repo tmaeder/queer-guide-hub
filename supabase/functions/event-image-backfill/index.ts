@@ -1,4 +1,5 @@
 import { getServiceClient, jsonResponse, errorResponse, corsResponse, requireInternalOrAdmin } from '../_shared/supabase-client.ts'
+import { hasValidWebhookSecret } from '../_shared/webhook-auth.ts'
 import { scrapeSocialCardImage } from '../_shared/news-quality/image-replace.ts'
 import { gateImages } from '../_shared/image-gate.ts'
 import { withErrorReporting } from '../_shared/report-api-error.ts'
@@ -16,9 +17,7 @@ Deno.serve(withErrorReporting('event-image-backfill', async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
 
   const supabase = getServiceClient()
-  const secret = Deno.env.get('EVENT_QUALITY_WEBHOOK_SECRET')
-  const provided = req.headers.get('X-Webhook-Secret')
-  if (!(secret && provided && provided === secret)) {
+  if (!hasValidWebhookSecret(req, 'EVENT_QUALITY_WEBHOOK_SECRET')) {
     const auth = await requireInternalOrAdmin(req, supabase)
     if (auth instanceof Response) return auth
   }
