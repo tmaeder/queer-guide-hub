@@ -330,6 +330,8 @@ export const ExploreMap = ({
     mapReady,
     cooperativeGestures,
     linkToFullMap,
+    showNativeNav,
+    onMapHandleRef,
     onViewportChange,
     onViewportChangeProp,
     setMapReady,

@@ -3,6 +3,12 @@ import { type Root } from 'react-dom/client';
 import maplibregl from 'maplibre-gl';
 import { mapStyle } from '@/config/mapStyle';
 import { loadGlyphImages } from '@/components/map/mapGlyphs';
+import {
+  DONUT_PREFIX,
+  DONUT_PIXEL_RATIO,
+  getDonutImage,
+} from '@/components/map/clusterDonut';
+import type { ExploreMapHandle } from '@/components/map/ExploreMap';
 import type { MapViewport } from '@/hooks/useExploreMapData';
 import { clampBbox, type Bbox } from '@/utils/mapViewport';
 import type { ExploreMapHandle } from '@/components/map/ExploreMap';
@@ -16,6 +22,13 @@ interface UseMapInstanceParams {
   mapReady: boolean;
   cooperativeGestures: boolean;
   linkToFullMap?: string;
+  /** Add MapLibre's native NavigationControl. MapShell passes false and mounts
+   *  its own MapNavControls; the GeolocateControl is always added (it owns the
+   *  blue tracking dot) and hidden via CSS on those surfaces. */
+  showNativeNav: boolean;
+  /** Latest-value ref for the onMapHandle prop — fired with the imperative
+   *  handle after construction, null on teardown. */
+  onMapHandleRef: MutableRefObject<((handle: ExploreMapHandle | null) => void) | undefined>;
   onViewportChange: (bbox: Bbox, zoom: number) => void;
   onViewportChangeProp?: (viewport: { center: [number, number]; zoom: number }) => void;
   setMapReady: Dispatch<SetStateAction<boolean>>;
@@ -51,6 +64,8 @@ export function useMapInstance({
   mapReady,
   cooperativeGestures,
   linkToFullMap,
+  showNativeNav,
+  onMapHandleRef,
   onViewportChange,
   onViewportChangeProp,
   setMapReady,
@@ -107,6 +122,9 @@ export function useMapInstance({
       map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'top-right');
     }
     // Always mounted — the GeolocateControl owns the blue tracking dot. When
+    // the native buttons are replaced (showNativeNav=false), the container's
+    // qg-hide-native-nav class hides the top-right ctrl corner and
+    // MapNavControls drives this control through the handle's triggerGeolocate().
     // the native buttons are replaced (showNativeNav=false), ExploreMap's
     // container class hides the top-right ctrl corner and MapNavControls
     // drives this control through the handle's triggerGeolocate().
@@ -121,6 +139,21 @@ export function useMapInstance({
       map,
       geolocateControl,
       triggerGeolocate: () => geolocateControl.trigger(),
+    });
+
+    // Donut cluster icons are generated on demand: the cluster layer's
+    // icon-image expression produces composition-encoded ids; any id the
+    // style doesn't know yet is rasterized synchronously right here.
+    map.on('styleimagemissing', (e: { id: string }) => {
+      if (!e.id.startsWith(`${DONUT_PREFIX}|`) || map.hasImage(e.id)) return;
+      const img = getDonutImage(e.id);
+      if (img && !map.hasImage(e.id)) {
+        try {
+          map.addImage(e.id, img, { pixelRatio: DONUT_PIXEL_RATIO });
+        } catch {
+          /* concurrent add — ignore */
+        }
+      }
     });
 
     if (linkToFullMap) map.scrollZoom.disable();
@@ -166,6 +199,7 @@ export function useMapInstance({
     });
 
     return () => {
+      // eslint-disable-next-line react-hooks/exhaustive-deps -- latest-value ref by design: teardown must notify the CURRENT handle consumer, not the mount-time one.
       // Latest-value ref by design: notify whatever callback the consumer
       // holds NOW (not a mount-time snapshot) that the handle is gone.
       // eslint-disable-next-line react-hooks/exhaustive-deps

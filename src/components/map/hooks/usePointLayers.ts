@@ -15,6 +15,8 @@ import {
 } from '@/config/mapLayers';
 import { CLUSTER_MAX_ZOOM, CLUSTER_RADIUS } from '@/utils/mapViewport';
 import { EMPTY_FAV, mapDebug } from '@/components/map/mapDebug';
+import { donutIconExpression } from '@/components/map/clusterDonut';
+import { clusterHoverHtml, pointHoverHtml } from '@/components/map/mapHoverHtml';
 
 interface UsePointLayersParams {
   mapRef: MutableRefObject<maplibregl.Map | null>;
@@ -130,35 +132,24 @@ export function usePointLayers({
         venue_count: ['+', ['case', ['==', ['get', 'pointType'], 'venues'], 1, 0]],
         event_count: ['+', ['case', ['==', ['get', 'pointType'], 'events'], 1, 0]],
         restroom_count: ['+', ['case', ['==', ['get', 'pointType'], 'restrooms'], 1, 0]],
+        hotel_count: ['+', ['case', ['==', ['get', 'pointType'], 'hotels'], 1, 0]],
       },
     });
 
+    // Segmented donut clusters — ring segments proportional to the cluster's
+    // composition (what's inside, not just how much). Same layer id as the
+    // old circle layer, so PIN_LAYER_IDS, the heatmap beforeId, and every
+    // click/hover handler keep working. Icons come from the map's
+    // `styleimagemissing` handler (registered in useMapInstance).
     map.addLayer({
       id: CLUSTERS_LAYER,
-      type: 'circle',
+      type: 'symbol',
       source: POINTS_SOURCE,
       filter: ['has', 'point_count'],
-      paint: {
-        'circle-radius': ['step', ['get', 'point_count'], 16, 10, 20, 50, 26, 100, 32, 500, 40],
-        // Monochrome cluster ramp. Density encoded by alpha on the
-        // foreground token, not by hue — matches the heatmap ramp and
-        // the rest of the design system's no-color rule.
-        'circle-color': 'hsl(0 0% 4%)',
-        'circle-opacity': [
-          'step',
-          ['get', 'point_count'],
-          0.55,
-          10,
-          0.65,
-          50,
-          0.75,
-          100,
-          0.85,
-          500,
-          0.95,
-        ],
-        'circle-stroke-width': 2,
-        'circle-stroke-color': 'hsl(0 0% 100%)',
+      layout: {
+        'icon-image': donutIconExpression(),
+        'icon-allow-overlap': true,
+        'icon-ignore-placement': true,
       },
     });
 
@@ -172,8 +163,10 @@ export function usePointLayers({
         'text-font': ['Noto Sans Medium'],
         'text-size': 13,
         'text-allow-overlap': true,
+        'text-ignore-placement': true,
       },
-      paint: { 'text-color': '#ffffff' },
+      // Dark ink on the donut's white center disc.
+      paint: { 'text-color': '#18181b' },
     });
 
     // Live pulse — an expanding ring beneath live/open-now pins. Static at
@@ -213,7 +206,17 @@ export function usePointLayers({
       filter: ['!', ['has', 'point_count']],
       paint: {
         // Larger dots host the category glyph; featured sit a touch larger.
-        'circle-radius': ['case', ['==', ['get', 'featured'], true], 11, 9],
+        // Radius grows slightly with zoom so pins don't feel undersized right
+        // after a cluster expands into the (larger) donuts.
+        'circle-radius': [
+          'interpolate',
+          ['linear'],
+          ['zoom'],
+          11,
+          ['case', ['==', ['get', 'featured'], true], 11, 9],
+          16,
+          ['case', ['==', ['get', 'featured'], true], 13, 11],
+        ],
         'circle-color': ['get', 'color'],
         // Thicker white halo so pins separate cleanly from the colored
         // basemap and the (now softened) density heat beneath them.
@@ -289,16 +292,13 @@ export function usePointLayers({
       const feat = e.features?.[0];
       if (!feat) return;
       const p = feat.properties as Record<string, number>;
-      const parts: string[] = [];
-      const add = (n: number, one: string, many: string) => {
-        if (n > 0) parts.push(`${n} ${n === 1 ? one : many}`);
-      };
-      add(Number(p.venue_count) || 0, 'venue', 'venues');
-      add(Number(p.event_count) || 0, 'event', 'events');
-      add(Number(p.restroom_count) || 0, 'restroom', 'restrooms');
-      const total = Number(p.point_count) || 0;
-      const label = parts.length ? parts.join(' · ') : `${total} places`;
-      const html = `<div style="font:13px system-ui;padding:2px 4px"><div style="font-weight:600">${label}</div><div style="color:rgba(0,0,0,.6);font-size:11px;margin-top:2px">Click to zoom in</div></div>`;
+      const html = clusterHoverHtml({
+        venues: Number(p.venue_count) || 0,
+        events: Number(p.event_count) || 0,
+        restrooms: Number(p.restroom_count) || 0,
+        hotels: Number(p.hotel_count) || 0,
+        total: Number(p.point_count) || 0,
+      });
       if (!hoverPopupRef.current) {
         hoverPopupRef.current = new maplibregl.Popup({
           closeButton: false,
@@ -327,14 +327,6 @@ export function usePointLayers({
       const props = feat.properties as Record<string, unknown>;
       const name = String(props.name ?? '');
       const subtitle = props.subtitle ? String(props.subtitle) : '';
-      const safeName = name.replace(
-        /[&<>"]/g,
-        (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c] ?? c,
-      );
-      const safeSub = subtitle.replace(
-        /[&<>"]/g,
-        (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c] ?? c,
-      );
       let imageUrl = '';
       try {
         const meta = JSON.parse(String(props.meta ?? '{}'));
@@ -342,20 +334,11 @@ export function usePointLayers({
         const best = [meta.thumbImage, meta.optimizedImage, meta.image].find(
           (u) => typeof u === 'string' && /^https?:\/\//.test(u),
         );
-        if (best) imageUrl = encodeURI(best as string);
+        if (best) imageUrl = best as string;
       } catch {
         /* ignore */
       }
-      // referrerpolicy=no-referrer dodges publisher-CDN hotlink walls; onerror
-      // removes the node so a dead URL collapses cleanly (no broken-image glyph).
-      const thumb = imageUrl
-        ? `<img src="${imageUrl}" alt="" referrerpolicy="no-referrer" onerror="this.remove()" style="width:36px;height:36px;border-radius:8px;object-fit:cover;flex:0 0 auto"/>`
-        : '';
-      const html = `<div style="display:flex;gap:8px;align-items:center;font:13px system-ui;line-height:1.3;padding:2px 4px;max-width:220px">${thumb}<div style="min-width:0"><div style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${safeName}</div>${
-        safeSub
-          ? `<div style="color:rgba(0,0,0,.6);font-size:11px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${safeSub}</div>`
-          : ''
-      }</div></div>`;
+      const html = pointHoverHtml({ name, subtitle, imageUrl: imageUrl || undefined });
       if (!hoverPopupRef.current) {
         hoverPopupRef.current = new maplibregl.Popup({
           closeButton: false,
