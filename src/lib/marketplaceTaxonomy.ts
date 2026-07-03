@@ -68,7 +68,10 @@ export function departmentLabel(slug: string | null | undefined): string {
 // (migration 20260702150000). Keep the two in sync.
 export function brandSlug(brand: string | null | undefined): string | null {
   if (!brand) return null;
-  const slug = slugify(brand);
+  // Deliberately NOT the shared @/lib/slugify (which folds accents) — this
+  // must stay byte-identical to the SQL slug rule in marketplace_department()
+  // (migration 20260609000000) or brand URLs stop matching their DB slugs.
+  const slug = brand.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
   return slug || null;
 }
 
