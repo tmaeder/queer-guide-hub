@@ -386,9 +386,6 @@ verify_jwt = false
 [functions.enrich-logos]
 verify_jwt = false
 
-[functions.migrate-logos-r2]
-verify_jwt = false
-
 [functions.feedback-story-titler]
 verify_jwt = false
 

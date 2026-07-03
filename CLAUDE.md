@@ -28,7 +28,7 @@ queer-guide-hub/
 │   └── migrations/       # PostgreSQL migrations
 ├── workers/
 │   ├── ingest/           # CF Worker: search-intelligence ingest pipeline
-│   ├── search-proxy/     # CF Worker: search proxy (Meili|pg|shadow backend), Postgres-driven synonyms
+│   ├── search-proxy/     # CF Worker: search proxy (Postgres-backed), Postgres-driven synonyms
 │   ├── snapshot-archiver/ # CF Worker: archives admin/editorial snapshots
 │   └── submit/           # CF Worker: extension submissions → ingestion_staging
 ├── docs/                 # Project-wide docs (a11y-audit, architecture, search-intelligence, …)
@@ -61,7 +61,7 @@ queer-guide-hub/
 
 **Amenity Truth Engine (data quality, 2026-06-08):** Venue amenities were garbage — only 2.9% of venues had any, and the 945 that did held **2,020 distinct uncontrolled values** (TripAdvisor scrape noise: adjectives `casual`/`trendy`, food `eggs`/`bacon`/`salads`, meal types, location words) because `normalizeAmenities` only ran for hotels. `accessibility_attributes` was 100% empty. The fix is a controlled vocabulary + cleanup + self-maintaining engine. **Vocabulary:** `public.amenities` is now the single category-aware vocabulary (was a dead 0-row catalog) — `slug`/`icon_name` (lucide)/`kind` (`amenity`|`accessibility`|`queer`)/`category_scope[]`; 61 seeded terms (migration `20260608100000`). `venue_amenities`/`attributes` deprecated. **Normalizer** `_shared/amenity-normalize.ts` (DB-backed, category-aware, default-reject) classifies each raw term → amenity (`amenities[]`) / accessibility (`accessibility_attributes[]`) / queer (`tags[]`) / noise (dropped); anything not in the vocab/aliases is dropped. `detectLgbtqMarkers` reused for queer markers. **Engine** (`amenity-truth-backfill` edge fn, `verify_jwt=false`, X-Webhook-Secret `amenity_quality_webhook_secret`): three sources per venue — `extract` (free re-classify of existing data, auto-applies), `places` (Google structured booleans → slugs, auto-applies; **deferred — 0 venues have a `platform_ids.google` id**, real fetch is Phase 7 ~$500 to resolve place_ids), `llm` (`extractVenueAmenitiesFromText` in `_shared/ai-enrichment.ts`, constrained to vocab, circuit-broken `llm.openai.amenity-extract`; amenities auto-apply ≥0.8, **accessibility ALWAYS review-gated** — never auto-published, a wrong access claim is real-world harm). Schema (migration `20260608110000`): `venue_quality_signals` ledger, `venue_review_queue` + `approve_venue_review`/`reject_venue_review` RPCs (array-union into the column on approve), `venues_due_for_amenity_backfill(limit)` selector (empty-first); reuses `venue_field_provenance`/`venue_consensus_audit`. Deliberately stores **no** recomputed score on venues — `trg_search_documents_venue` fires on every UPDATE, so a 32k-row nightly write would storm the search sync (disk-constrained DB); the selector ranks by `cardinality(amenities)` and the admin panel counts live. Daily extract+LLM sweep cron `amenity_truth_backfill` (`15 4 * * *`, batch 60) cleans (free) and mines descriptions for amenities (auto ≥0.8) + queues accessibility for review (LLM daily-cap 80 bounds spend); weekly read-only `run_amenity_coverage_summary` health pulse. Consensus: `amenities`/`accessibility_attributes` added to `VENUE_FIELDS` (`_shared/venue-consensus.ts`, array union). Admin at `/admin/content/venue-quality` (`AmenityQualityPanel` + `VenueReviewQueue`). Frontend: `AmenityDisplay` (vocab-driven lucide icons via `src/lib/amenityIcons.ts` + i18n, accessibility in its own prominent block) on venue + hotel detail; `VenueFilters` amenity facet now vocab-driven. **First cleanup pass (2026-06-08): 945 venues, 2,020 → 33 distinct values, 0 non-canonical, 201 pure-noise venues correctly emptied.**
 
-**Profile settings (redesigned, 2026-06-11):** `/profile/settings` is a hub-and-sheets page (no tabs): live `IdentityPreviewCard` (tap-to-edit + public/community/private lens) + ONE gap-driven prompt card (username claim > default avatar > pronouns) + summary cards opening bottom `Sheet` editors + review-only `PreferencesMirrorCard` (prefs are CAPTURED in context — `TravelPrefsPrompt` sheet on /trips, vibes in `/onboarding/search`; settings only clears). Design doc: `docs/plans/2026-06-11-profile-settings-redesign-design.md`. **Username v2** (migration `20260612160000`): mandatory rollout, 3-20 lowercase `a-z 0-9 . _`, `username_key` (separators stripped) blocks lookalike-handle impersonation, `reserved_usernames` (routes/brand/impersonation only — deliberately NO reclaimed-identity terms), `change_username` RPC (claim free; once/12mo + 90-day `username_redirects`; auto-assigned handles get one free change), `admin_change_username(.., p_with_redirect=false)` safety fast-track gives NO redirect (deadname linkability is the threat), `auto_assign_usernames` registered DISABLED in `admin_automations` — enable at T+60. **Avatar mandatory-without-walls**: deterministic neutral builder-config backfill (`20260612160200`, `avatar_auto_assigned` flag → settings nudge), 3-path `AvatarChooser`: upload (react-easy-crop → 512px webp client-side), unavatar import via `workers/image-cdn` `POST /avatar/resolve` (JWT-gated proxy → R2 `avatars/unavatar/`, client NEVER talks to unavatar.io; gravatar/email source behind explicit consent checkbox), simplified 4-choice builder (full 16-control `AvatarBuilder` UI no longer reachable from settings; `AvatarSettings` deleted). **Pronouns**: ordered `pronoun_tags text[]` is the source of truth; `pronouns` text stays the derived display string so render sites are untouched (display rule: join first segments → "she/they"); per-field visibility `privacy_settings.pronouns_visibility`. **Occupation**: `profession-autocomplete` against the shared `professions` vocab; free text stored AS-IS, never auto-normalized (`occupation_freetext_candidates` view, service_role-only, manual promotion only). **Personal documents deprecated**: settings shows removal notice (T+30 = 2026-07-11), `DocumentsList readOnly` blocks new personal uploads; final deletion `scripts/data-quality/delete-personal-documents.mjs` (storage objects FIRST, then rows, verified, supports --dry-run); trip-attached docs unaffected. **Accessibility payoff**: `AmenityDisplay` shows "✓ matches your needs" badges (`travel_preferences.accessibility_needs` ∩ venue `accessibility_attributes`, mapping in `src/lib/accessibilityNeeds.ts`); unlisted needs render as honest absence-of-data; needs are never public.
+**Profile settings (redesigned, 2026-06-11):** `/profile/settings` is a hub-and-sheets page (no tabs): live `IdentityPreviewCard` (tap-to-edit + public/community/private lens) + ONE gap-driven prompt card (username claim > default avatar > pronouns) + summary cards opening bottom `Sheet` editors + review-only `PreferencesMirrorCard` (prefs are CAPTURED in context — `TravelPrefsPrompt` sheet on /trips, vibes in `/onboarding/search`; settings only clears). **Username v2** (migration `20260612160000`): mandatory rollout, 3-20 lowercase `a-z 0-9 . _`, `username_key` (separators stripped) blocks lookalike-handle impersonation, `reserved_usernames` (routes/brand/impersonation only — deliberately NO reclaimed-identity terms), `change_username` RPC (claim free; once/12mo + 90-day `username_redirects`; auto-assigned handles get one free change), `admin_change_username(.., p_with_redirect=false)` safety fast-track gives NO redirect (deadname linkability is the threat), `auto_assign_usernames` registered DISABLED in `admin_automations` — enable at T+60. **Avatar mandatory-without-walls**: deterministic neutral builder-config backfill (`20260612160200`, `avatar_auto_assigned` flag → settings nudge), 3-path `AvatarChooser`: upload (react-easy-crop → 512px webp client-side), unavatar import via `workers/image-cdn` `POST /avatar/resolve` (JWT-gated proxy → R2 `avatars/unavatar/`, client NEVER talks to unavatar.io; gravatar/email source behind explicit consent checkbox), simplified 4-choice builder (full 16-control `AvatarBuilder` UI no longer reachable from settings; `AvatarSettings` deleted). **Pronouns**: ordered `pronoun_tags text[]` is the source of truth; `pronouns` text stays the derived display string so render sites are untouched (display rule: join first segments → "she/they"); per-field visibility `privacy_settings.pronouns_visibility`. **Occupation**: `profession-autocomplete` against the shared `professions` vocab; free text stored AS-IS, never auto-normalized (`occupation_freetext_candidates` view, service_role-only, manual promotion only). **Personal documents deprecated**: settings shows removal notice (T+30 = 2026-07-11), `DocumentsList readOnly` blocks new personal uploads; final deletion `scripts/data-quality/delete-personal-documents.mjs` (storage objects FIRST, then rows, verified, supports --dry-run); trip-attached docs unaffected. **Accessibility payoff**: `AmenityDisplay` shows "✓ matches your needs" badges (`travel_preferences.accessibility_needs` ∩ venue `accessibility_attributes`, mapping in `src/lib/accessibilityNeeds.ts`); unlisted needs render as honest absence-of-data; needs are never public.
 
 **Safety layer (high-risk gating, 2026-06-23):** Venues, events and organizations in **high-risk countries** (criminalizing — `lgbti_criminalization.legal=false` — or death-penalty) are visible **only to logged-in users**; country/city pages stay public. Threshold lives in one pure-SQL predicate `location_is_high_risk(country_id, city_id)` (resolves country via city when `country_id` is null), mirroring `src/hooks/useTripSafety.ts` / `src/lib/lgbtLegality.ts`. Each entity carries a denormalized `safety_gated boolean` (BEFORE-trigger on `country_id`/`city_id` change; `recompute_safety_gated_for_country()` fires from a trigger on `countries.lgbti_criminalization` — re-run by the nightly ILGA cron). **Two enforcement surfaces:** (1) **RLS** on venues/events/organizations — `USING (NOT safety_gated OR (select auth.uid()) IS NOT NULL)` — covers all direct PostgREST reads + the SECURITY-INVOKER `search_events`; the SECURITY-DEFINER `rpc_venues_ranked` gates internally on `auth.uid()`. (2) **Search-proxy worker** (service key + SECURITY DEFINER bypass RLS, and its body `user_id` is spoofable) — so `search_documents` gets its own `safety_gated` (kept in sync by a BEFORE trigger mirroring the entity, indexers untouched) and the discovery RPCs exclude gated rows unless told otherwise: `search_hybrid`/`search_facets` via `p_filters.include_gated`, `search_autocomplete`/`get_recommendations`/`related_entities` via a new `p_include_gated` param, `events_in_window`/`get_trending_entities`/`v_popular_entities` always exclude gated. The worker (`workers/search-proxy/src/jwt.ts`) verifies the caller's Supabase JWT (**fail-closed**) and only then passes `include_gated=true`; `src/lib/searchFetch.ts` attaches the access token. Verification needs **no new secret**: offline HS256 when `SUPABASE_JWT_SECRET` is set (zero-latency, preferred), else a GoTrue `/auth/v1/user` check using the worker's existing `SUPABASE_SERVICE_KEY` (positive results KV-cached 60s). **Anon UX:** `GatedContentNotice` ("Sign in to view N places") on city/country pages via anon-safe count RPC `gated_count_for_location` (counts only); direct links to a gated detail page show `GatedDetailFallback` (sign-in gate vs 404 via `gated_entity_exists`). Gated entities become non-indexable to anon crawlers — intended. Migrations `20260623160000`–`20260623160002`.
 
@@ -73,88 +73,19 @@ queer-guide-hub/
 
 ## Repo stats
 
-- **Edge functions:** 230
-- **Edge functions:** 201
-- **Migrations:** 724
-- **Migrations:** 722
-- **Migrations:** 718
-- **Migrations:** 719
-- **Migrations:** 720
-- **Migrations:** 713
-- **Migrations:** 716
-- **Migrations:** 713
-- **Migrations:** 705
-- **Migrations:** 697
-- **Migrations:** 696
-- **Migrations:** 692
-- **Migrations:** 691
-- **Migrations:** 685
-- **Migrations:** 684
-- **Migrations:** 686
-- **Migrations:** 677
-- **Migrations:** 678
-- **Migrations:** 672
-- **Migrations:** 671
-- **Migrations:** 668
-- **Migrations:** 664
-- **Migrations:** 660
-- **Migrations:** 662
-- **Migrations:** 654
-- **Migrations:** 644
-- **Migrations:** 636
-- **Migrations:** 645
-- **Migrations:** 646
-- **Migrations:** 640
-- **Migrations:** 632
-- **Edge functions:** 217
-- **Edge functions:** 201
-- **Migrations:** 624
-- **Migrations:** 630
-- **Edge functions:** 217
-- **Edge functions:** 201
-- **Migrations:** 627
-- **Migrations:** 618
-- **Migrations:** 620
-- **Migrations:** 619
-- **Migrations:** 622
-- **Migrations:** 617
-- **Migrations:** 610
-- **Migrations:** 611
-- **Migrations:** 602
-- **Migrations:** 609
-- **Migrations:** 603
-- **Migrations:** 609
-- **Migrations:** 600
-- **Migrations:** 596
-- **Migrations:** 601
-- **Migrations:** 599
-- **Migrations:** 581
-- **Migrations:** 574
-- **Migrations:** 575
-- **Migrations:** 576
-- **Migrations:** 572
-- **Migrations:** 568
-- **Migrations:** 564
-- **Migrations:** 562
-- **Migrations:** 555
-- **Edge functions:** 204
-- **Migrations:** 553
-- **Edge functions:** 203
-- **Migrations:** 548
-- **Migrations:** 541
-- **Migrations:** 547
+- **Edge functions:** 223
+- **Migrations:** 723
 
 ## Infrastructure
 
 - **Supabase:** project `xqeacpakadqfxjxjcewc` (eu-central-2)
 - **Cloudflare Pages:** project `queer-guide` at `queer-guide.pages.dev`
 - **CF Account:** `7aa3765cc5f50f2b681b782eb4a8d296`
-- **Search:** **migrating Meilisearch → Postgres + Cloudflare** (plan: `docs/search-intelligence/meili-to-postgres-migration-plan.md`). Meilisearch (self-hosted, Infomaniak) still serves production by default; the Postgres engine is live and shadow-tested for cutover.
-  - **Postgres engine (live):** denormalized `search_documents` table (weighted tsvector + `vector(1024)` HNSW embedding + PostGIS `geog` + facets/trust/liveness/price/temporal). RPCs: `search_hybrid` (RRF keyword+vector fusion in SQL, with target_groups filter + news-recency decay + vnn top-200 admission), `search_facets`, `search_autocomplete` (prefix + trigram), plus discovery RPCs (`get_recommendations`, `related_entities`, `find_duplicate_clusters`, `events_in_window`, `personalities_on_this_day`). Excludes `duplicate_of_id IS NOT NULL`.
-  - **CF Worker:** `search-proxy` — `SEARCH_BACKEND` flag (`meili` default | `pg` | `shadow`). `pg` serves `/search` + `/autocomplete` from the Postgres RPCs; `shadow` serves Meili but logs a `search_shadow` comparison for cutover validation (analyze with `scripts/search-eval/shadow-analyze.mjs`). Rollout runbook: `docs/deploy/search-rollout.md`.
-  - **Sync:** `meilisearch-sync` edge function (Meili); Postgres `search_documents` stays fresh via entity + `content_embeddings` triggers.
-  - **Indexes (Meili):** venues, events, cities, countries, news, marketplace, personalities, tags, queer_villages
-  - **Decommission (code-side complete, 2026-06-07):** the worker serves Postgres directly; the DB sync triggers/crons and the `meilisearch-sync` edge function are gone; `workers/search-proxy/src/meili.ts`, the `meilisearch/` ops dir, and `configure-meili.sh`/`meili-direct-resync.sh` are removed; the admin search-intelligence UI is Meili-free (dead `Index*`/`Consistency*` types dropped). `INDEX_MAP`/`ALL_INDEXES` live in `workers/search-proxy/src/entityIndex.ts` and are **active Postgres-side** entity-type→pg-type normalization (not Meili code, despite the name) — keep. Verified no live Meili cron/trigger/function/env ref remains; residual `meili` strings are only a shared `x-webhook-secret` default (`meilisearch-sync-webhook-2026`) in geocode/backfill functions — cosmetic, leave. **Only remaining task: the Infomaniak Meili node shutdown (external infra).**
+- **Search:** **Postgres + Cloudflare** (Meilisearch fully decommissioned code-side 2026-06; the flag-based cutover scaffolding — `SEARCH_BACKEND`, shadow mode, shadow-analyze — was removed 2026-07).
+  - **Postgres engine:** denormalized `search_documents` table (weighted tsvector + `vector(1024)` HNSW embedding + PostGIS `geog` + facets/trust/liveness/price/temporal). RPCs: `search_hybrid` (RRF keyword+vector fusion in SQL, with target_groups filter + news-recency decay + vnn top-200 admission), `search_facets`, `search_autocomplete` (prefix + trigram), plus discovery RPCs (`get_recommendations`, `related_entities`, `find_duplicate_clusters`, `events_in_window`, `personalities_on_this_day`). Excludes `duplicate_of_id IS NOT NULL`.
+  - **CF Worker:** `search-proxy` serves `/search` + `/autocomplete` from the Postgres RPCs and layers embedding (bge-m3 via AI Gateway), personalization, optional reranker and safety gating on top. See `workers/search-proxy/README.md`.
+  - **Sync:** Postgres `search_documents` stays fresh via entity + `content_embeddings` triggers.
+  - **Meili residue (intentional):** `INDEX_MAP`/`ALL_INDEXES` in `workers/search-proxy/src/entityIndex.ts` are **active Postgres-side** entity-type→pg-type normalization (not Meili code, despite the name) — keep. Residual `meili` strings are only a shared `x-webhook-secret` default (`meilisearch-sync-webhook-2026`) in geocode/backfill functions — cosmetic, leave. **Only remaining task: the Infomaniak Meili node shutdown (external infra).**
   - **Legacy:** PostgreSQL FTS `universal_search()` and `algolia-sync` are deprecated
 - **Dedup:** `find_duplicate_clusters(content_type)` groups near-duplicate live entities (date-aware for events/festivals). Admins review + merge venues at `/admin/duplicates` — a soft, reversible merge via `merge_venues`/`unmerge_venues` (sets `duplicate_of_id`, reparents children, slug redirect via `venue_slug_redirects`, audited in `venue_merge_audit`).
 
@@ -224,7 +155,7 @@ LGBTQ+ travelers, locals, activists, researchers, allies. Safety-first, inclusiv
 - **Trip safety briefing traffic-light.** `src/components/trips/TripSafetyBriefing.tsx` retains low/moderate/high/critical risk colors. Safety > consistency for LGBTQ+ travelers in high-risk destinations. User-locked 2026-05-19.
 - **Functional categorical scales** still allowlisted in `eslint.config.js`: map vector tiles, equality scores, news taxonomy, avatar gradients, submission scan flyers, trip cover gradients, content warnings, password strength meter, OAuth brand SVGs. Each is functional, not decorative.
 - **Inline links underlined.** `p a, li a, td a, span a, label a` get `text-decoration: underline` in `src/index.css`. Without color difference from body text, the underline is the only cue that distinguishes a link (WCAG 1.4.1, axe `link-in-text-block`). Standalone links — nav, buttons, cards — stay un-underlined.
-- **Crisis & safety pages are animation-free.** `src/pages/HelpHotlines.tsx` and any future route under `/help`, `/safety`, `/report-*` must not consume Aceternity components, scroll-reveal effects, or decorative motion. Functional motion only (focus rings, dialog transitions, accordions). Protects users in crisis from cognitive overload and respects `prefers-reduced-motion` (WCAG 2.3.3). The Aceternity Showcase (`/aceternity` → §A11y exemption) documents the canonical static pattern.
+- **Crisis & safety pages are animation-free.** `src/pages/HelpHotlines.tsx` and any future route under `/help`, `/safety`, `/report-*` must not consume Aceternity components, scroll-reveal effects, or decorative motion. Functional motion only (focus rings, dialog transitions, accordions). Protects users in crisis from cognitive overload and respects `prefers-reduced-motion` (WCAG 2.3.3). The Pattern Library (`/pattern-library` → §A11y exemption) documents the canonical static pattern.
 - **Semantic radius tokens.** Always pick from the trio `rounded-container` (16px — cards, sheets, dialogs, hero blocks), `rounded-element` (8px — buttons, inputs, list rows, nested cards, image frames), `rounded-badge` (4px — chips, pills, status tags) over raw `rounded-(sm|md|lg|xl|2xl|3xl)` literals. The trio is a single point of change for the entire visual rhythm. `rounded-full` permitted for avatars/dots only; `rounded-none` for explicit flat overrides.
 - **Pride map canvas — REMOVED (2026-06-25).** The former pride-spectrum overlay (`PRIDE_LAYER_COLORS` + the rainbow density-heat ramp, gated by the `pridePalette` prop) was stripped in the monochrome refactor. The `/map` canvas now uses only the **functional** categorical `LAYER_COLORS` (`src/hooks/useExploreMapData.ts`) — distinguishing layer types (venue/event/city…), the same functional map-color exception allowlisted for vector tiles — plus a monochrome black-alpha density ramp in `src/components/map/ExploreMap.tsx`. The `pridePalette` prop was renamed `mapShellMode` (it now only gates MapShell-specific UX like the empty state, not color). Chrome stays strictly monochrome.
 
@@ -232,5 +163,5 @@ LGBTQ+ travelers, locals, activists, researchers, allies. Safety-first, inclusiv
 - Tokens: `src/index.css` (Tailwind v4 `@theme` block — CSS variables; no `tailwind.config.ts`)
 - Animation: `src/lib/animation.ts` (durations, easings, distances)
 - Charts: `src/lib/chartPalette.ts` (monochrome recharts palette + stroke patterns; added Phase 3a)
-- Components: shadcn/ui primitives in `src/components/ui/`. For monochrome status semantics use the `Badge` variants (the unused `StatusBadge` primitive was removed in the 2026-05-31 declutter; see `DECLUTTER_CANDIDATES.md`).
+- Components: shadcn/ui primitives in `src/components/ui/`. For monochrome status semantics use the `Badge` variants (the unused `StatusBadge` primitive was removed in the 2026-05-31 declutter; see git history).
 - Enforcement: `eslint.config.js` (color literals: error in public, warn in admin → error after Phase 3g; semantic radius warn; admin motion ban error)

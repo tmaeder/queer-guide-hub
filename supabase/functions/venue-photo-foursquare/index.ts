@@ -1,12 +1,11 @@
 // Source REAL venue photos from the Foursquare 2025 Places API, coords-validated (radius=400m
 // → match is the venue at that location). Writes venues.images[]. Resumable: keyset by id via
 // `after` (driver passes back `last`). REQUIRES Foursquare account credits (429 = out of credits).
-import { getServiceClient } from '../_shared/supabase-client.ts'
-const cors = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': '*' }
-const json = (b: unknown, s = 200) => new Response(JSON.stringify(b), { status: s, headers: { ...cors, 'Content-Type': 'application/json' } })
+import { getServiceClient, getCorsHeaders, corsResponse } from '../_shared/supabase-client.ts'
+const json = (b: unknown, s = 200) => new Response(JSON.stringify(b), { status: s, headers: { ...getCorsHeaders(), 'Content-Type': 'application/json' } })
 
 Deno.serve(async (req) => {
-  if (req.method === 'OPTIONS') return new Response('ok', { headers: cors })
+  if (req.method === 'OPTIONS') return corsResponse(req)
   try {
     const { batch_size = 20, after = '00000000-0000-0000-0000-000000000000' } = await req.json().catch(() => ({}))
     const fsq = Deno.env.get('FOURSQUARE_API_KEY')

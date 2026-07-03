@@ -73,3 +73,4 @@ playwright/.auth/
 
 # Drag Race import scrape cache/output (regenerable)
 scripts/data-quality/out-dragrace/
+graphify-out/

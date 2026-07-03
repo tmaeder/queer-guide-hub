@@ -173,7 +173,7 @@ export default defineConfig(({ mode }) => ({
             { name: 'vendor', test: /preload-helper/, priority: 100 },
             // React core MUST be in its own chunk to avoid circular deps
             { name: 'vendor', test: /node_modules\/react(-dom)?\// },
-            { name: 'router', test: /node_modules\/(react-router-dom|react-router|@remix-run)\// },
+            { name: 'router', test: /node_modules\/react-router\// },
             { name: 'utils', test: /node_modules\/date-fns\// },
             { name: 'graph', test: /node_modules\/(react-force-graph|force-graph|d3-)/ },
             { name: 'exceljs', test: /node_modules\/exceljs\// },
@@ -182,11 +182,10 @@ export default defineConfig(({ mode }) => ({
             { name: 'hls', test: /node_modules\/hls\.js\// },
             { name: 'pdfjs', test: /node_modules\/pdfjs-dist\// },
             { name: 'mammoth', test: /node_modules\/mammoth\// },
-            { name: 'gsap', test: /node_modules\/gsap\// },
             { name: 'boneyard', test: /node_modules\/boneyard-js\// },
             { name: 'sentry', test: /node_modules\/@sentry\// },
             { name: 'i18n', test: /node_modules\/(i18next|react-i18next)/ },
-            { name: 'framer-motion', test: /node_modules\/(framer-motion|motion|motion-dom|motion-utils)\// },
+            { name: 'framer-motion', test: /node_modules\/(motion|motion-dom|motion-utils)\// },
             { name: 'radix', test: /node_modules\/@radix-ui\// },
             { name: 'react-query', test: /node_modules\/@tanstack\/(react-query|query-)/ },
             { name: 'lucide', test: /node_modules\/lucide-react\// },
@@ -223,7 +222,7 @@ export default defineConfig(({ mode }) => ({
     modulePreload: {
       resolveDependencies(_filename, deps) {
         const skip =
-          /\b(recharts|graph|exceljs|pdfjs|mammoth|tiptap|maplibre|gsap|hls|framer-motion|boneyard|xyflow|dnd-kit)-[A-Za-z0-9_-]+\.js$/;
+          /\b(recharts|graph|exceljs|pdfjs|mammoth|tiptap|maplibre|hls|framer-motion|boneyard|xyflow|dnd-kit)-[A-Za-z0-9_-]+\.js$/;
         return deps.filter((d) => !skip.test(d));
       },
     },

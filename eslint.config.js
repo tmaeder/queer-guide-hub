@@ -181,7 +181,6 @@ export default tseslint.config(
       // hex is required by the SVG data-URI (CSS vars don't resolve there).
       "src/lib/avatar.ts",
       // OG/recap PNG generated via canvas — hex literals are required by the canvas API.
-      "src/pages/profile/Footprint.tsx",
       // Map style + security dashboards = data-viz, hardcoded by design.
       "src/components/map/**",
       "src/components/hotels/HotelsMap.tsx",
@@ -192,7 +191,6 @@ export default tseslint.config(
       "src/components/trips/TripCoverBand.tsx",
       "src/pages/trips/**",
       // Severity-tagged content warnings.
-      "src/components/ui/ContentWarningBanner.tsx",
       // Categorical tag link palettes + relationship graph.
       "src/components/tags/TagLinkedContent.tsx",
       "src/components/tags/TagRelationshipGraph.tsx",
@@ -201,7 +199,6 @@ export default tseslint.config(
       "src/components/country/WorldBankDataPanel.tsx",
       "src/components/personalities/AddPersonalityDialog.tsx",
       "src/hooks/useExploreMapData.ts",
-      "src/hooks/useReviewBulkActions.ts",
       "src/hooks/useMapBoundaryLayers.ts",
       "src/config/workflowConfig.ts",
       // Map style — vector tile color overrides, intentional.
@@ -214,19 +211,16 @@ export default tseslint.config(
       // Filter chip dot colors — categorical.
       "src/components/venues/VenueFilters.tsx",
       // Video player chrome — pure black/white overlay regardless of theme.
-      "src/components/ui/modern-video-player.tsx",
       // Theme provider — owns the color tokens themselves.
       "src/components/theme/ThemeProvider.tsx",
       // Categorical / functional palettes per file (see commit message
       // for rationale on each).
       "src/components/country/EqualityScoreBadge.tsx",
-      "src/components/country/CountryHeroImages.tsx",
       "src/components/trips/create/CityCountryAutocomplete.tsx",
       "src/components/profile/PhotoGallery.tsx",
       "src/components/analytics/UmamiAnalyticsDashboard.tsx",
       "src/components/resources/TagListRenderer.tsx",
       // Hero / cover overlays — pre-multiplied black gradients on imagery.
-      "src/pages/Ressources.tsx",
       "src/components/location/LocationInfo.tsx",
     ],
     rules: {
@@ -297,7 +291,6 @@ export default tseslint.config(
       "src/pages/Admin*.tsx",
       "src/pages/admin/**/*.{ts,tsx}",
       "src/pages/admin-*/**/*.{ts,tsx}",
-      "src/pages/SecurityDashboard.tsx",
       "src/config/feedbackCategories.ts",
       "src/config/contentTypes/**",
     ],
@@ -366,29 +359,23 @@ export default tseslint.config(
       "src/components/trips/TripMap.tsx",
       "src/components/trips/create/CityCountryAutocomplete.tsx",
       "src/components/profile/PhotoGallery.tsx",
-      "src/pages/profile/Footprint.tsx",
       "src/components/map/**",
       "src/components/hotels/HotelsMap.tsx",
       "src/components/events/EventsMapView.tsx",
       "src/components/submission/**",
       "src/pages/trips/**",
-      "src/components/ui/ContentWarningBanner.tsx",
       "src/components/tags/TagLinkedContent.tsx",
       "src/components/tags/TagRelationshipGraph.tsx",
       "src/components/auth/PasswordStrengthMeter.tsx",
       "src/components/auth/OAuthButtons.tsx",
       "src/components/personalities/AddPersonalityDialog.tsx",
       "src/hooks/useExploreMapData.ts",
-      "src/hooks/useReviewBulkActions.ts",
       "src/hooks/useMapBoundaryLayers.ts",
-      "src/components/ui/modern-video-player.tsx",
       "src/components/theme/ThemeProvider.tsx",
       "src/components/analytics/UmamiAnalyticsDashboard.tsx",
       "src/components/resources/TagListRenderer.tsx",
-      "src/pages/Ressources.tsx",
       "src/components/location/LocationInfo.tsx",
       "src/components/country/EqualityScoreBadge.tsx",
-      "src/components/country/CountryHeroImages.tsx",
     ],
     rules: {
       // NOTE (2026-06-10): flat config replaces no-restricted-syntax WHOLESALE

@@ -2,7 +2,7 @@
  * Rule-based packing suggestion engine.
  *
  * Produces a list of `{ query, category, reason }` tuples — each query
- * is fired against the Meilisearch `marketplace` index by the caller.
+ * is fired against the marketplace search backend by the caller.
  * Deterministic, free, runs client-side.
  *
  * For smarter / activity-aware suggestions, the PackingTab can upgrade

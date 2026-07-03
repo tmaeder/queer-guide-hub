@@ -1,4 +1,4 @@
-import { getServiceClient } from '../_shared/supabase-client.ts'
+import { getServiceClient, corsResponse } from '../_shared/supabase-client.ts'
 import { extractContent, type ExtractResult } from '../_shared/extract-client.ts'
 import type { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
 
@@ -78,7 +78,7 @@ function isNewItem(item: AnalyzeItem): boolean {
 }
 
 Deno.serve(async (req) => {
-  if (req.method === 'OPTIONS') return new Response(null, { headers: { 'Access-Control-Allow-Origin': '*' } })
+  if (req.method === 'OPTIONS') return corsResponse(req)
 
   const supabase = getServiceClient()
   const supabaseUrl = Deno.env.get('SUPABASE_URL')!

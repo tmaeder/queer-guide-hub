@@ -1,7 +1,7 @@
 # Assistant worker — deploy guide
 
 How to deploy `workers/assistant` (the Phase 6 conversational concierge, running on
-**Cloudflare Workers AI**). Companion to `docs/deploy/search-rollout.md`.
+**Cloudflare Workers AI**). The search cutover it accompanied is complete (runbook removed; see git history).
 
 This must run from a **Cloudflare-authenticated environment** (your local machine
 with cached `wrangler` auth, or any shell with a `CLOUDFLARE_API_TOKEN`). The

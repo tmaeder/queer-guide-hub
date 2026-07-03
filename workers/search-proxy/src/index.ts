@@ -65,14 +65,6 @@ export interface Env {
 	EMBED_MODEL?: string;
 	ENABLE_RERANKER?: string; // "1" to enable
 	SESSION_CACHE: KVNamespace; // per-session recent views for decay
-	/**
-	 * Search backend selector (Meili -> Postgres migration, Phase 2).
-	 *   "meili"  (default) — current Meilisearch + pgvector fusion path.
-	 *   "pg"     — serve from the Postgres search_hybrid/search_facets RPCs.
-	 *   "shadow" — serve Meili, run PG in parallel and log a comparison
-	 *              (no user-facing change). Used to validate before cutover.
-	 */
-	SEARCH_BACKEND?: string;
 	/** Awin publisher id — enables awinWrap for known-MID merchants (/go?l= mode). */
 	AWIN_AFFILIATE_ID?: string;
 	/** Amazon Associates tag appended to amazon.* destinations. */

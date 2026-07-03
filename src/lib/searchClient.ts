@@ -26,7 +26,7 @@ export interface SearchHit {
 	objectID?: string;
 	type: string;
 	title?: string;
-	/** Meili-highlighted title (HTML with <em>match</em>). Only set on /autocomplete responses. */
+	/** Server-highlighted title (HTML with <em>match</em>). Only set on /autocomplete responses. */
 	title_formatted?: string | null;
 	name?: string;
 	category?: string;
@@ -208,7 +208,7 @@ export async function fetchRecommendations(
 	return data.recommendations ?? [];
 }
 
-/** Fast lexical autocomplete — typo-tolerant Meili prefix match. */
+/** Fast lexical autocomplete — typo-tolerant prefix + trigram match (search_autocomplete RPC). */
 export async function fetchAutocomplete(
 	query: string,
 	types?: string[],
