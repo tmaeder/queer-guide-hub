@@ -3,11 +3,11 @@ import DOMPurify from 'dompurify';
 import { ArrowUpRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-function sanitizeMeiliHighlight(html: string): string {
+function sanitizeHighlight(html: string): string {
   return DOMPurify.sanitize(html, { ALLOWED_TAGS: ['em'], ALLOWED_ATTR: [] });
 }
 
-/** Renders a result name with the query match emphasized (Meili HTML or client fallback). */
+/** Renders a result name with the query match emphasized (server highlight HTML or client fallback). */
 export function HighlightedText({
   text,
   query,
@@ -21,7 +21,7 @@ export function HighlightedText({
   if (html && /<em>/i.test(html)) {
     return (
       <span
-        dangerouslySetInnerHTML={{ __html: sanitizeMeiliHighlight(html) }}
+        dangerouslySetInnerHTML={{ __html: sanitizeHighlight(html) }}
         className="qg-search-highlight [&_em]:font-bold [&_em]:not-italic"
       />
     );

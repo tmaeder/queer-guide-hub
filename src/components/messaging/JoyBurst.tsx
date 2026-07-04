@@ -9,15 +9,13 @@ interface JoyBurstProps {
 }
 
 const COUNT = 40;
-// The one place rainbow is sanctioned in chat chrome — a queer-joy celebration.
+// Monochrome confetti — grayscale steps keep visual variety without color
+// (the former rainbow was removed in the strict-monochrome strip). The
+// celebration now reads through motion + density, not hue.
 const COLORS = [
-  'var(--accent-brand)',
-  '#e40303',
-  '#ff8c00',
-  '#ffed00',
-  '#008026',
-  '#004dff',
-  '#750787',
+  'hsl(var(--foreground))',
+  'hsl(var(--muted-foreground))',
+  'hsl(var(--border))',
 ];
 
 /**

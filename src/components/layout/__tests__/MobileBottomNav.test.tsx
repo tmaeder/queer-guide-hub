@@ -21,7 +21,12 @@ vi.mock('@/hooks/useScrollDirection', () => ({ useScrollDirection: () => 'up' })
 // Reduced motion → static pills, no motion/react layout animation in jsdom.
 vi.mock('@/lib/motion', () => ({ useMotionTokens: () => ({ reduced: true }) }));
 vi.mock('react-i18next', () => ({
-  useTranslation: () => ({ t: (_k: string, fallback?: string) => fallback ?? _k }),
+  useTranslation: () => ({
+    t: (_k: string, fallback?: string, opts?: { count?: number }) => {
+      const s = fallback ?? _k;
+      return opts?.count != null ? s.replace('{{count}}', String(opts.count)) : s;
+    },
+  }),
 }));
 // The heavy sheet + auth dialog are exercised in their own specs; here we only
 // care that they mount when their open flag flips.
@@ -51,20 +56,32 @@ describe('MobileBottomNav', () => {
     hapticSpy.mockClear();
   });
 
-  it('renders the five slots (Home, Explore, Add, Messages, You)', () => {
+  it('renders the four destination tabs (Home, Explore, Messages, You)', () => {
     renderAt('/');
     expect(screen.getByText('Home')).toBeInTheDocument();
     expect(screen.getByText('Explore')).toBeInTheDocument();
     expect(screen.getByText('Messages')).toBeInTheDocument();
     expect(screen.getByText('You')).toBeInTheDocument();
-    // Home / Messages / You are links; Explore + contribute are buttons.
-    expect(screen.getAllByRole('link')).toHaveLength(3);
+    // All four tabs are links now (Explore deep-links); contribute + the hub
+    // chevron are buttons.
+    expect(screen.getAllByRole('link')).toHaveLength(4);
   });
 
-  it('opens the discovery sheet from Explore', () => {
+  it('Explore deep-links to the discovery surface (/search)', () => {
+    renderAt('/');
+    expect(screen.getByText('Explore').closest('a')).toHaveAttribute('href', '/search');
+  });
+
+  it('lights the Explore tab on any discovery route', () => {
+    renderAt('/venues');
+    expect(screen.getByText('Explore').closest('a')).toHaveAttribute('aria-current', 'page');
+    expect(screen.getByText('Home').closest('a')).not.toHaveAttribute('aria-current');
+  });
+
+  it('opens the destination hub from the Browse-all affordance, not Explore', () => {
     renderAt('/');
     expect(screen.queryByTestId('nav-sheet')).toBeNull();
-    fireEvent.click(screen.getByText('Explore'));
+    fireEvent.click(screen.getByLabelText('Browse all sections'));
     expect(screen.getByTestId('nav-sheet')).toBeInTheDocument();
   });
 

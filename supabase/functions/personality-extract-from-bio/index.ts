@@ -20,6 +20,7 @@
 //   { batch_size?, dry_run?, model? }
 
 import { getServiceClient, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
+import { hasValidWebhookSecret } from '../_shared/webhook-auth.ts'
 import { chatCompletion } from '../_shared/openai-client.ts'
 import { withCircuitBreaker, CircuitOpenError } from '../_shared/circuit-breaker.ts'
 
@@ -71,9 +72,8 @@ Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
   const supabase = getServiceClient()
 
-  const secret = req.headers.get('x-webhook-secret')
-  const expected = Deno.env.get('WEBHOOK_SECRET') || 'meilisearch-sync-webhook-2026'
-  if (secret !== expected) return errorResponse('Unauthorized', 401, req)
+  // Fail-closed: no literal fallback secret — WEBHOOK_SECRET must be set.
+  if (!hasValidWebhookSecret(req, 'WEBHOOK_SECRET')) return errorResponse('Unauthorized', 401, req)
 
   try {
     const body = await req.json().catch(() => ({}))

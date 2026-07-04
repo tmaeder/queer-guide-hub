@@ -13,7 +13,7 @@ import { DEFAULT_LOCALE, isSupportedLocale } from '@/i18n/languages';
 
 const Index = lazyRetry(() => import('./pages/Index'));
 const Venues = lazyRetry(() => import('./pages/Venues'));
-const VenueDetail = lazyRetry(() => import('./pages/VenueDetail'));
+const EntityDetail = lazyRetry(() => import('./pages/EntityDetail'));
 const VenueGuides = lazyRetry(() => import('./pages/VenueGuides'));
 const VenueGuide = lazyRetry(() => import('./pages/VenueGuide'));
 const ProfilePage = lazyRetry(() => import('./pages/profile/ProfilePage'));
@@ -27,7 +27,7 @@ const MarketplaceItemDetail = lazyRetry(() => import('./pages/MarketplaceItemDet
 const MarketplaceCategory = lazyRetry(() => import('./pages/MarketplaceCategory'));
 const MarketplaceCategories = lazyRetry(() => import('./pages/MarketplaceCategories'));
 const MarketplaceMerchant = lazyRetry(() => import('./pages/MarketplaceMerchant'));
-const OrganizationDetail = lazyRetry(() => import('./pages/OrganizationDetail'));
+const MarketplaceBrand = lazyRetry(() => import('./pages/MarketplaceBrand'));
 const Organizations = lazyRetry(() => import('./pages/Organizations'));
 const MarketplaceShare = lazyRetry(() => import('./pages/MarketplaceShare'));
 const MarketplaceCollection = lazyRetry(() => import('./pages/MarketplaceCollection'));
@@ -51,6 +51,7 @@ const ClaimUsername = lazyRetry(() => import('./pages/ClaimUsername'));
 const ExtensionInstall = lazyRetry(() => import('./pages/ExtensionInstall'));
 const OnboardingWelcome = lazyRetry(() => import('./pages/onboarding/Welcome'));
 const SearchPersonalization = lazyRetry(() => import('./pages/onboarding/SearchPersonalization'));
+// Dev-only design showcase — not shipped as a public route in production.
 const PatternLibrary = lazyRetry(() => import('./pages/PatternLibrary'));
 
 // Unified Admin Shell (wraps all /admin/* routes)
@@ -63,9 +64,7 @@ const AdminDashboard = lazyRetry(() => import('./pages/AdminDashboard'));
 const AdminAnalytics = lazyRetry(() => import('./pages/AdminAnalytics'));
 const AdminMaps = lazyRetry(() => import('./pages/AdminMaps'));
 const AdminUsers = lazyRetry(() => import('./pages/AdminUsers'));
-const AdminCountries = lazyRetry(() => import('./pages/AdminCountries'));
 const AdminTags = lazyRetry(() => import('./pages/AdminTags'));
-const AdminGroups = lazyRetry(() => import('./pages/AdminGroups'));
 const Cities = lazyRetry(() => import('./pages/Cities'));
 const CitiesCompare = lazyRetry(() => import('./pages/cities/Compare'));
 const CityDetail = lazyRetry(() => import('./pages/CityDetail'));
@@ -73,7 +72,6 @@ const CountryDetail = lazyRetry(() => import('./pages/CountryDetail'));
 const Travel = lazyRetry(() => import('./pages/Travel'));
 const TravelBook = lazyRetry(() => import('./pages/travel/Book'));
 const MapPage = lazyRetry(() => import('./pages/Map'));
-const AdminVenues = lazyRetry(() => import('./pages/AdminVenues'));
 const AdminDuplicates = lazyRetry(() => import('./pages/AdminDuplicates'));
 const AdminVenueCategories = lazyRetry(() => import('./pages/AdminVenueCategories'));
 const AdminVenueServices = lazyRetry(() => import('./pages/AdminVenueServices'));
@@ -83,7 +81,6 @@ const AdminEventServices = lazyRetry(() => import('./pages/AdminEventServices'))
 const AdminAccessibilityAttributes = lazyRetry(() => import('./pages/AdminAccessibilityAttributes'));
 const AdminTargetGroups = lazyRetry(() => import('./pages/AdminTargetGroups'));
 const AdminProfessions = lazyRetry(() => import('./pages/AdminProfessions'));
-const AdminEvents = lazyRetry(() => import('./pages/AdminEvents'));
 const AdminCityQuality = lazyRetry(() => import('./pages/AdminCityQuality'));
 const AdminPersonalityQuality = lazyRetry(() => import('./pages/AdminPersonalityQuality'));
 const AdminVenueQuality = lazyRetry(() => import('./pages/AdminVenueQuality'));
@@ -93,7 +90,6 @@ const AdminMarketplaceQuality = lazyRetry(() => import('./pages/AdminMarketplace
 const AdminMarketplaceGuides = lazyRetry(() => import('./pages/AdminMarketplaceGuides'));
 const AdminVenueGuides = lazyRetry(() => import('./pages/AdminVenueGuides'));
 const EmailTemplates = lazyRetry(() => import('./pages/admin/EmailTemplates'));
-const AdminPersonalities = lazyRetry(() => import('./pages/AdminPersonalities'));
 const AdminQuests = lazyRetry(() => import('./pages/AdminQuests'));
 const AdminPlacesEditorial = lazyRetry(() => import('./pages/AdminPlacesEditorial'));
 const Quests = lazyRetry(() => import('./pages/Quests'));
@@ -102,6 +98,9 @@ const AdminRedirects = lazyRetry(() => import('./pages/AdminRedirects'));
 const AdminPipelines = lazyRetry(() => import('./pages/AdminPipelines'));
 const AdminIngestionRules = lazyRetry(() => import('./pages/AdminIngestionRules'));
 const AdminEmailIngestions = lazyRetry(() => import('./pages/AdminEmailIngestions'));
+const AdminImports = lazyRetry(() => import('./pages/AdminImports'));
+const AdminEventQuality = lazyRetry(() => import('./pages/AdminEventQuality'));
+const AdminGroupRequests = lazyRetry(() => import('./pages/AdminGroupRequests'));
 const AdminSearchIntelligence = lazyRetry(() => import('./pages/AdminSearchIntelligence'));
 const AdminRecognition = lazyRetry(() => import('./pages/admin/Recognition'));
 const Contributors = lazyRetry(() => import('./pages/Contributors'));
@@ -138,11 +137,6 @@ const AuditLog = lazyRetry(() =>
 );
 
 // Import Hub components rendered as admin views
-const AffiliatePartnersManager = lazyRetry(() =>
-  import('./components/admin/AffiliatePartnersManager').then((m) => ({
-    default: m.AffiliatePartnersManager,
-  })),
-);
 
 // Dashboard sub-views
 const SecurityMonitoringDashboard = lazyRetry(() =>
@@ -200,16 +194,13 @@ function FootprintRedirect() {
 }
 
 /**
- * The legacy /tags/:slug stub is retired — the canonical glossary surface is
- * /resources/:tagName. Redirect through, preserving the locale prefix (the
- * `/:locale?` capture would otherwise be dropped, bouncing non-EN visitors to
- * the default locale).
+ * Legacy /resources/:tagName → /tags/:tagName redirect, preserving locale prefix.
  */
-function TagSlugRedirect() {
-  const { slug, locale } = useParams<{ slug: string; locale?: string }>();
+function ResourcesTagRedirect() {
+  const { tagName, locale } = useParams<{ tagName: string; locale?: string }>();
   const prefix =
     locale && isSupportedLocale(locale) && locale !== DEFAULT_LOCALE ? `/${locale}` : '';
-  return <Navigate to={`${prefix}/resources/${slug ?? ''}`} replace />;
+  return <Navigate to={`${prefix}/tags/${tagName ?? ''}`} replace />;
 }
 
 /**
@@ -291,7 +282,9 @@ export const AppRoutes = () => {
               <Route path="/auth/callback" element={<AuthCallback />} />
               <Route path="/claim-username" element={<ClaimUsername />} />
               <Route path="/extension" element={<ExtensionInstall />} />
-              <Route path="/pattern-library" element={<PatternLibrary />} />
+              {import.meta.env.DEV && (
+                <Route path="/pattern-library" element={<PatternLibrary />} />
+              )}
               <Route path="/onboarding/welcome" element={<OnboardingWelcome />} />
               <Route path="/onboarding/search" element={<SearchPersonalization />} />
               <Route path="/onboarding/venues" element={<VenuePersonalization />} />
@@ -322,15 +315,14 @@ export const AppRoutes = () => {
                 <Route path="media" element={<MediaLibrary />} />
                 <Route path="media/:id" element={<MediaDetailPage />} />
 
-                {/* Imports & Data section — all redirect to unified /admin/pipelines */}
-                <Route path="imports" element={<Navigate to="/admin/pipelines" replace />} />
-                <Route path="imports/create" element={<Navigate to="/admin/pipelines" replace />} />
-                <Route path="imports/news-sources" element={<Navigate to="/admin/pipelines?tab=sources" replace />} />
-                <Route path="imports/pipeline" element={<Navigate to="/admin/pipelines?tab=monitor" replace />} />
-                <Route path="imports/enrichment" element={<Navigate to="/admin/pipelines?tab=monitor" replace />} />
-                <Route path="imports/venues" element={<Navigate to="/admin/pipelines?tab=sources" replace />} />
+                {/* Imports & Data section — admin-internal aliases for the old
+                    /admin/imports/* surfaces were pruned 2026-07 (migration to
+                    /admin/pipelines completed 2026-04); a catch-all keeps deep
+                    bookmarks landing on the pipelines hub. */}
                 <Route path="imports/email-ingestions" element={<AdminEmailIngestions />} />
-                <Route path="imports/history" element={<Navigate to="/admin/pipelines?tab=monitor" replace />} />
+                <Route path="imports/data" element={<AdminImports />} />
+                <Route path="imports/*" element={<Navigate to="/admin/pipelines" replace />} />
+                <Route path="imports" element={<Navigate to="/admin/pipelines" replace />} />
                 <Route path="workflows" element={<Navigate to="/admin/pipelines" replace />} />
                 <Route path="pipelines" element={<AdminPipelines />} />
                 <Route path="ingestion-rules" element={<AdminIngestionRules />} />
@@ -352,7 +344,7 @@ export const AppRoutes = () => {
                   path="links"
                   element={<Navigate to="/admin/automation" replace />}
                 />
-                <Route path="affiliates" element={<AffiliatePartnersManager />} />
+                <Route path="affiliates" element={<Navigate to="/admin/affiliate?tab=partners" replace />} />
                 <Route
                   path="submissions"
                   element={<Navigate to="/admin/review?tab=submissions" replace />}
@@ -361,10 +353,12 @@ export const AppRoutes = () => {
                 {/* Content type admin pages */}
                 <Route path="content/venue-quality" element={<AdminVenueQuality />} />
                 <Route path="content/liveness" element={<AdminLiveness />} />
+                <Route path="content/event-quality" element={<AdminEventQuality />} />
                 <Route path="content/city-quality" element={<AdminCityQuality />} />
                 <Route path="content/personality-quality" element={<AdminPersonalityQuality />} />
                 <Route path="content/marketplace-quality" element={<AdminMarketplaceQuality />} />
                 <Route path="content/village-quality" element={<AdminVillageQuality />} />
+                <Route path="content/group-requests" element={<AdminGroupRequests />} />
                 <Route path="hotels" element={<AdminHotels />} />
                 <Route path="villages" element={<AdminQueerVillages />} />
 
@@ -386,19 +380,19 @@ export const AppRoutes = () => {
                 <Route path="settings/professions" element={<AdminProfessions />} />
 
                 {/* Legacy routes -- redirect to new paths */}
-                <Route path="venues" element={<AdminVenues />} />
+                <Route path="venues" element={<Navigate to="/admin/content/venues" replace />} />
                 <Route path="duplicates" element={<AdminDuplicates />} />
-                <Route path="events" element={<AdminEvents />} />
+                <Route path="events" element={<Navigate to="/admin/content/events" replace />} />
                 <Route path="tags" element={<Navigate to="/admin/content/unified_tags" replace />} />
                 <Route path="cities" element={<Navigate to="/admin/content/city-quality" replace />} />
-                <Route path="countries" element={<AdminCountries />} />
-                <Route path="personalities" element={<AdminPersonalities />} />
+                <Route path="countries" element={<Navigate to="/admin/content/countries" replace />} />
+                <Route path="personalities" element={<Navigate to="/admin/content/personalities" replace />} />
                 <Route path="quests" element={<AdminQuests />} />
                 <Route path="places-editorial" element={<AdminPlacesEditorial />} />
-                <Route path="marketplace" element={<AdminMarketplace />} />
+                <Route path="marketplace" element={<Navigate to="/admin/content/marketplace_listings" replace />} />
                 <Route path="marketplace/guides" element={<AdminMarketplaceGuides />} />
                 <Route path="venue-guides" element={<AdminVenueGuides />} />
-                <Route path="groups" element={<AdminGroups />} />
+                <Route path="groups" element={<Navigate to="/admin/content/community_groups" replace />} />
                 <Route path="news-sources" element={<Navigate to="/admin/pipelines?tab=sources" replace />} />
                 <Route path="cms" element={<Navigate to="/admin/content" replace />} />
                 <Route path="import-hub" element={<Navigate to="/admin/pipelines" replace />} />
@@ -445,15 +439,15 @@ export const AppRoutes = () => {
                 <Route path="venues/marketplace" element={<Navigate to="/marketplace" replace />} />
                 <Route path="venues/travel" element={<Navigate to="/travel" replace />} />
                 <Route path="venues/groups" element={<Navigate to="/groups" replace />} />
-                <Route path="venues/resources" element={<Navigate to="/resources" replace />} />
+                <Route path="venues/resources" element={<Navigate to="/tags" replace />} />
                 {/* Legacy routes — canonical lives under /me/*. Keep one release. */}
                 <Route path="venues/leaderboard" element={<Navigate to="/me/progress" replace />} />
                 <Route path="venues/passport" element={<Navigate to="/me/progress" replace />} />
                 <Route path="venues/guides" element={<VenueGuides />} />
                 <Route path="venues/guides/:slug" element={<VenueGuide />} />
-                <Route path="venues/:slug" element={<VenueDetail />} />
+                <Route path="venues/:slug" element={<EntityDetail source="venue" />} />
                 <Route path="organizations" element={<Organizations />} />
-                <Route path="organizations/:slug" element={<OrganizationDetail />} />
+                <Route path="organizations/:slug" element={<EntityDetail source="organization" />} />
                 <Route path="events" element={<Events />} />
                 <Route path="events/guides" element={<EventGuides />} />
                 <Route path="events/guides/:slug" element={<EventGuide />} />
@@ -469,6 +463,7 @@ export const AppRoutes = () => {
                 <Route path="marketplace/guides" element={<MarketplaceGuides />} />
                 <Route path="marketplace/guides/:slug" element={<MarketplaceGuide />} />
                 <Route path="marketplace/merchants/:domain" element={<MarketplaceMerchant />} />
+                <Route path="marketplace/brands/:slug" element={<MarketplaceBrand />} />
                 <Route path="marketplace/:slug" element={<MarketplaceItemDetail />} />
                 <Route path="wishlists" element={<Wishlists />} />
                 <Route path="wishlists/:slug" element={<Wishlist />} />
@@ -503,15 +498,18 @@ export const AppRoutes = () => {
                 <Route path="personalities/:slug" element={<PersonalityDetail />} />
                 <Route path="quests" element={<Quests />} />
                 <Route path="quests/:slug" element={<QuestDetail />} />
-                <Route path="resources" element={<Resources />} />
-                <Route path="resources/topic/:slug" element={<ResourceTopic />} />
-                <Route path="resources/c/:categorySlug" element={<Resources />} />
-                <Route path="resources/:tagName" element={<Resources />} />
+                <Route path="tags" element={<Resources />} />
+                <Route path="tags/topic/:slug" element={<ResourceTopic />} />
+                <Route path="tags/c/:categorySlug" element={<Resources />} />
+                <Route path="tags/:tagName" element={<Resources />} />
                 <Route path="professions/:professionName" element={<ProfessionDetail />} />
-                <Route path="ressources" element={<Navigate to="/resources" replace />} />
-                <Route path="ressources/:tagName" element={<Navigate to="/resources" replace />} />
-                <Route path="tags" element={<Navigate to="/resources" replace />} />
-                <Route path="tags/:slug" element={<TagSlugRedirect />} />
+                {/* Legacy redirects → /tags */}
+                <Route path="resources" element={<Navigate to="/tags" replace />} />
+                <Route path="resources/topic/:slug" element={<ResourceTopic />} />
+                <Route path="resources/c/:categorySlug" element={<Navigate to="/tags" replace />} />
+                <Route path="resources/:tagName" element={<ResourcesTagRedirect />} />
+                <Route path="ressources" element={<Navigate to="/tags" replace />} />
+                <Route path="ressources/:tagName" element={<Navigate to="/tags" replace />} />
                 <Route path="donate" element={<Donate />} />
                 <Route path="about-hub" element={<CMSRoutePage slug="about-hub" />} />
                 <Route path="about" element={<About />} />
@@ -565,6 +563,7 @@ export const AppRoutes = () => {
                 <Route path="me/saved" element={<ProfilePage tab="saved" />} />
                 <Route path="me/trips" element={<ProfilePage tab="trips" />} />
                 <Route path="me/travel" element={<ProfilePage tab="travel" />} />
+                <Route path="me/groups" element={<ProfilePage tab="groups" />} />
                 <Route path="me/contributions" element={<ProfilePage tab="contributions" />} />
                 <Route path="me/progress" element={<ProfilePage tab="progress" />} />
                 <Route path="me/passport" element={<Navigate to="/me/progress" replace />} />
@@ -586,6 +585,7 @@ export const AppRoutes = () => {
                 {/* Dating folded into the People hub; legacy entry points redirect. */}
                 <Route path="intimate" element={<LocalizedRedirect to="/people/dating" />} />
                 <Route path="discover" element={<LocalizedRedirect to="/people/dating" />} />
+                <Route path="cruising" element={<LocalizedRedirect to="/people/dating" />} />
                 <Route path="intimate/onboard" element={<IntimateOnboard />} />
                 <Route path="intimate/u/:userId" element={<IntimateUserDetail />} />
                 <Route path="profile/tiers" element={<Navigate to="/me/progress" replace />} />

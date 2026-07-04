@@ -170,7 +170,7 @@
     "clear": "Clear",
     "signIn": "Sign in",
     "goHome": "Go Home",
-    "more": "[RU] More"
+    "more": "Ещё"
   },
   "navigation": {
     "home": "Главная",
@@ -1504,7 +1504,7 @@
     },
     "news": {
       "title": "Последние новости",
-      "eyebrow": "[RU] Dispatches"
+      "eyebrow": "Сводки"
     },
     "discover": "Discover",
     "destinationsTitle": "Where the scene lives.",
@@ -1525,39 +1525,45 @@
         "resources": "resources"
       }
     },
-    "eyebrow": "[RU] Queer Guide",
-    "browseDirectory": "[RU] Browse the directory",
-    "planTrip": "[RU] Plan a trip",
-    "allVenues": "[RU] All venues",
+    "eyebrow": "Queer Guide",
+    "browseDirectory": "Открыть каталог",
+    "planTrip": "Спланировать поездку",
+    "allVenues": "Все места",
     "recentlyViewed": {
-      "eyebrow": "[RU] Recently viewed",
-      "title": "[RU] Pick up where you left off."
+      "eyebrow": "Недавно просмотренные",
+      "title": "Продолжите с того места, где остановились."
     },
     "trending": {
-      "eyebrow": "[RU] Trending now",
-      "venues": "[RU] Venues on the rise.",
-      "venuesNear": "[RU] Popular venues in {{city}}.",
-      "venuesDesc": "[RU] What the community is checking out this week."
+      "eyebrow": "Сейчас в тренде",
+      "venues": "Набирающие популярность места.",
+      "venuesNear": "Популярные места в городе {{city}}.",
+      "venuesDesc": "Что сообщество смотрит на этой неделе."
     },
     "cta": {
-      "title": "[RU] Built by the community,",
-      "title2": "[RU] for the community.",
-      "subtitle": "[RU] Verified safe spaces, real reviews, no paywalls.",
-      "submit": "[RU] Add a venue",
-      "about": "[RU] Read the mission",
-      "invite": "[RU] Invite friends",
-      "join": "[RU] Join the community"
+      "title": "Создано сообществом,",
+      "title2": "для сообщества.",
+      "subtitle": "Проверенные безопасные места, настоящие отзывы, без платного доступа.",
+      "submit": "Добавить место",
+      "about": "О нашей миссии",
+      "invite": "Пригласить друзей",
+      "join": "Присоединиться к сообществу"
     },
-    "subtitleShort": "[RU] Verified safe places, real events, and the people behind them.",
+    "subtitleShort": "Проверенные безопасные места, настоящие события и люди за ними.",
     "events": {
-      "eyebrow": "[RU] What's on",
+      "eyebrow": "Афиша",
       "groups": {
-        "today": "[RU] Today",
-        "tomorrow": "[RU] Tomorrow",
-        "thisWeekend": "[RU] This weekend",
-        "thisWeek": "[RU] This week",
-        "later": "[RU] Later"
+        "today": "Сегодня",
+        "tomorrow": "Завтра",
+        "thisWeekend": "В эти выходные",
+        "thisWeek": "На этой неделе",
+        "later": "Позже"
       }
+    },
+    "shop": {
+      "eyebrow": "Маркетплейс",
+      "title": "Квир-бренды",
+      "description": "Товары и услуги от квир- и транс-бизнесов.",
+      "seeAll": "В маркетплейс"
     }
   },
   "header": {
@@ -1592,7 +1598,8 @@
       "travel": "Путешествия",
       "personalities": "Личности",
       "hotels": "Отели",
-      "help": "Помощь"
+      "help": "Помощь",
+      "tags": "Теги"
     },
     "userMenu": {
       "myTrips": "Мои поездки",
@@ -1606,11 +1613,11 @@
       "tripInbox": "Входящие поездок",
       "extension": "Расширение браузера",
       "footprint": "Footprint",
-      "messages": "[RU] Messages",
-      "mailbox": "[RU] Mailbox",
-      "you": "[RU] You",
-      "community": "[RU] Community",
-      "viewProfile": "[RU] View public profile"
+      "messages": "Сообщения",
+      "mailbox": "Почта",
+      "you": "Профиль",
+      "community": "Сообщество",
+      "viewProfile": "Посмотреть публичный профиль"
     },
     "modes": {
       "dating": "Ищу отношения",
@@ -1630,17 +1637,17 @@
     "signUp": "Sign up",
     "navigation": "Navigation",
     "signIn": "Sign in",
-    "modeLabel": "[RU] Mode",
-    "modeActive": "[RU] Mode: {{mode}}",
+    "modeLabel": "Режим",
+    "modeActive": "Режим: {{mode}}",
     "clusters": {
-      "places": "[RU] Places",
-      "community": "[RU] Community",
-      "shop": "[RU] Shop & Read",
-      "support": "[RU] Support"
+      "places": "Места",
+      "community": "Сообщество",
+      "shop": "Покупки и чтение",
+      "support": "Поддержка"
     },
     "notifications": {
-      "label": "[RU] Notifications",
-      "unread": "[RU] Notifications, {{count}} unread"
+      "label": "Уведомления",
+      "unread": "Уведомления, {{count}} непрочит."
     },
     "mobileNav": {
       "home": "Главная",
@@ -1651,7 +1658,10 @@
       "menuTitle": "Обзор Queer Guide",
       "menuDescription": "Перейдите в любой раздел, смените язык или тему.",
       "trips": "Мои поездки",
-      "settingsSection": "Отображение"
+      "settingsSection": "Отображение",
+      "browseAll": "Просмотреть все разделы",
+      "unreadCount": "{{count}} непрочитанных",
+      "tripsBadge": "{{count}} элементов поездки требуют внимания"
     }
   },
   "pages": {
@@ -1701,7 +1711,7 @@
       "noPhotos": "Фото недоступны",
       "noEvents": "Нет предстоящих мероприятий в этом месте",
       "noReviews": "Пока нет отзывов. Будь первым, кто оставит отзыв!",
-      "accessibility": "[RU] Accessibility"
+      "accessibility": "Доступность"
     },
     "events": {
       "title": "Мероприятия",
@@ -2073,7 +2083,7 @@
       "createGroup": "Создать группу",
       "mostPopular": "Самые популярные группы",
       "noPopular": "Популярные группы пока недоступны.",
-      "eyebrow": "[RU] Community"
+      "eyebrow": "Сообщество"
     },
     "groupDetail": {
       "signInRequired": "Войди, чтобы увидеть подробности группы."
@@ -2113,7 +2123,7 @@
       "loadMore": "Load more",
       "errorTitle": "We couldn't load the feed",
       "errorDescription": "Something went wrong while loading community posts. Check your connection and try again.",
-      "eyebrow": "[RU] Community"
+      "eyebrow": "Сообщество"
     },
     "notFound": {
       "title": "Страница не найдена",
@@ -2171,21 +2181,21 @@
       }
     },
     "members": {
-      "eyebrow": "[RU] Community",
-      "title": "[RU] Members",
-      "subtitle": "[RU] People, connections, and networks within the inclusive LGBTQ+ community.",
-      "member": "[RU] member",
-      "members": "[RU] members",
-      "visible": "[RU] visible",
-      "upsellTitle": "[RU] See the full community",
-      "upsellBody": "[RU] Public profiles are listed here. Sign in to see bios, locations, interests, and to start a conversation.",
-      "signInToBrowse": "[RU] Sign in to browse"
+      "eyebrow": "Сообщество",
+      "title": "Участники",
+      "subtitle": "Люди, связи и сообщества внутри инклюзивного ЛГБТК+ комьюнити.",
+      "member": "участник",
+      "members": "участников",
+      "visible": "видимых",
+      "upsellTitle": "Увидеть всё сообщество",
+      "upsellBody": "Здесь показаны публичные профили. Войдите, чтобы увидеть описания, города, интересы и начать разговор.",
+      "signInToBrowse": "Войдите, чтобы просматривать"
     },
     "friends": {
-      "eyebrow": "[RU] Community",
-      "title": "[RU] Friends",
-      "subtitle": "[RU] Manage your connections",
-      "gate": "[RU] Please sign in to view your friends."
+      "eyebrow": "Сообщество",
+      "title": "Друзья",
+      "subtitle": "Управляйте своими связями",
+      "gate": "Войдите, чтобы увидеть своих друзей."
     }
   },
   "settings": {
@@ -2195,8 +2205,8 @@
       "turnOn": "Включить",
       "turnOff": "Выключить",
       "dm": {
-        "title": "[RU] Direct messages",
-        "body": "[RU] Notify me when someone sends me a message."
+        "title": "Личные сообщения",
+        "body": "Уведомлять, когда мне присылают сообщение."
       }
     }
   },
@@ -2213,6 +2223,148 @@
       "denied": "Location access is off — showing the default area",
       "unavailable": "Couldn't get your location — showing the default area",
       "timeout": "Location lookup timed out — showing the default area"
+    },
+    "share": {
+      "title": "[RU] Map view",
+      "copied": "[RU] Link copied",
+      "copiedDescription": "[RU] Paste to share this view",
+      "failed": "[RU] Share failed"
+    },
+    "commandBar": {
+      "searchThisMap": "[RU] Search this map",
+      "searching": "[RU] Searching",
+      "clearSearch": "[RU] Clear search",
+      "typeMore": "[RU] Type at least 2 characters",
+      "filterMapFor": "[RU] Filter map for “{{query}}”",
+      "jumpToPlace": "[RU] Jump to a place",
+      "noMatches": "[RU] No places match — Enter still filters the map.",
+      "filters": "[RU] Filters",
+      "filtersActive": "[RU] Filters, {{count}} active",
+      "filtersAndLayers": "[RU] Filters & layers",
+      "layers": "[RU] Layers",
+      "more": "[RU] More map options",
+      "moreShort": "[RU] More",
+      "mapOptions": "[RU] Map options",
+      "myLocation": "[RU] My location",
+      "fitResults": "[RU] Fit to results",
+      "shareView": "[RU] Share view",
+      "reset": "[RU] Reset"
+    },
+    "entityType": {
+      "venue": "[RU] Venue",
+      "event": "[RU] Event",
+      "city": "[RU] City",
+      "country": "[RU] Country",
+      "marketplace": "[RU] Listing",
+      "personality": "[RU] Person",
+      "queer_village": "[RU] Village",
+      "group": "[RU] Group",
+      "news": "[RU] News",
+      "tag": "[RU] Tag",
+      "user": "[RU] User"
+    },
+    "quick": {
+      "groupLabel": "[RU] Quick filters",
+      "openNow": "[RU] Open now",
+      "tonight": "[RU] Tonight",
+      "thisWeekend": "[RU] This weekend",
+      "thisMonth": "[RU] This month",
+      "saved": "[RU] Saved"
+    },
+    "lens": {
+      "groupLabel": "[RU] Map view",
+      "pins": "[RU] Pins",
+      "density": "[RU] Density",
+      "routes": "[RU] Routes",
+      "boundary": "[RU] Boundary",
+      "combined": "[RU] Combined"
+    },
+    "sheet": {
+      "title": "[RU] Map options",
+      "view": "[RU] View",
+      "filters": "[RU] Filters",
+      "time": "[RU] Time",
+      "layers": "[RU] Layers",
+      "actions": "[RU] Map actions"
+    },
+    "time": {
+      "label": "[RU] Time range",
+      "anyTime": "[RU] Any time",
+      "chooseDates": "[RU] Choose dates",
+      "pickRange": "[RU] Pick a start & end",
+      "untilEndDate": "[RU] {{start}} – end date",
+      "clear": "[RU] Clear",
+      "apply": "[RU] Apply dates"
+    },
+    "nav": {
+      "zoomIn": "[RU] Zoom in",
+      "zoomOut": "[RU] Zoom out",
+      "resetNorth": "[RU] Reset bearing to north",
+      "geolocate": "[RU] Show my location"
+    },
+    "legend": {
+      "label": "[RU] Legend",
+      "show": "[RU] Show map legend",
+      "hide": "[RU] Hide map legend",
+      "title": "[RU] What you're seeing",
+      "featured": "[RU] Ringed = featured spot",
+      "live": "[RU] Pulsing = open now / live",
+      "areas": "[RU] Areas",
+      "densityTitle": "[RU] Density of queer life",
+      "fewer": "[RU] Fewer",
+      "more": "[RU] More"
+    },
+    "rail": {
+      "inView_one": "[RU] {{count}} place in view",
+      "inView_other": "[RU] {{count}} places in view",
+      "hide": "[RU] Hide nearby places",
+      "listLabel": "[RU] Places in view",
+      "showOnMap": "[RU] Show {{name}} on the map"
+    },
+    "firstRun": {
+      "spotsInView_one": "[RU] {{count}} queer spot in view",
+      "spotsInView_other": "[RU] {{count}} queer spots in view",
+      "dismiss": "[RU] Dismiss"
+    },
+    "canvas": {
+      "loading": "[RU] Loading",
+      "loadingEllipsis": "[RU] Loading...",
+      "resultsInView_one": "[RU] {{count}} result in view",
+      "resultsInView_other": "[RU] {{count}} results in view",
+      "clickToZoom": "[RU] Click to zoom in",
+      "venueCount_one": "[RU] {{count}} venue",
+      "venueCount_other": "[RU] {{count}} venues",
+      "eventCount_one": "[RU] {{count}} event",
+      "eventCount_other": "[RU] {{count}} events",
+      "restroomCount_one": "[RU] {{count}} restroom",
+      "restroomCount_other": "[RU] {{count}} restrooms",
+      "hotelCount_one": "[RU] {{count}} hotel",
+      "hotelCount_other": "[RU] {{count}} hotels",
+      "placeCount_one": "[RU] {{count}} place",
+      "placeCount_other": "[RU] {{count}} places",
+      "emptyOpenNow": "[RU] Nothing open right now in view — turn off Open now or try later.",
+      "emptyTimeRange": "[RU] No events in this time range here — widen the dates or pan out.",
+      "emptySearch": "[RU] No matches for \"{{query}}\" here — clear search or pan out.",
+      "emptyDefault": "[RU] No spots here yet — pan, zoom out, or put one on the map."
+    },
+    "layers": {
+      "venues": "[RU] Venues",
+      "events": "[RU] Events",
+      "cities": "[RU] Cities",
+      "countries": "[RU] Countries",
+      "restrooms": "[RU] Restrooms",
+      "hotels": "[RU] Hotels",
+      "neighbourhoods": "[RU] Villages"
+    },
+    "filterChips": {
+      "groupLabel": "[RU] Active filters",
+      "remove": "[RU] Remove filter: {{label}}",
+      "clearAll": "[RU] Clear all",
+      "within": "[RU] Within {{km}} km",
+      "accessible": "[RU] Accessible",
+      "queerOwned": "[RU] Queer-owned",
+      "tags_one": "[RU] {{count}} tag",
+      "tags_other": "[RU] {{count}} tags"
     }
   },
   "resources": {
@@ -2335,7 +2487,15 @@
     },
     "tagDetail": {
       "breadcrumbHome": "Ресурсы",
-      "noDefinition": "Пока нет описания для этого термина."
+      "noDefinition": "Пока нет описания для этого термина.",
+      "alsoKnownAs": "Также известно как",
+      "readOnWikipedia": "Читать в Википедии",
+      "searchTagged": "Искать всё с тегом {{name}}",
+      "seeAlso": "См. также",
+      "sensitiveContentBody": "Эта тема может содержать деликатный контент. Если вам нужна поддержка, посетите нашу страницу с кризисными горячими линиями.",
+      "sensitiveContentTitle": "Деликатная тема",
+      "tableOfContents": "Содержание",
+      "viewAsGraph": "Показать в виде графа"
     },
     "graph": {
       "title": "Граф связей тегов",
@@ -2377,21 +2537,21 @@
     "suggestLede": "Предложите — добавим в каталог после проверки.",
     "suggestCta": "Предложить город",
     "detail": {
-      "seeAll": "[RU] See all",
-      "planTrip": "[RU] Plan a trip to {{city}}",
+      "seeAll": "Смотреть все",
+      "planTrip": "Спланировать поездку в {{city}}",
       "glance": {
-        "safety": "[RU] Safety",
-        "safetyLink": "[RU] Jump to safety & rights",
-        "deathPenalty": "[RU] Death penalty",
-        "criminalized": "[RU] Criminalized",
-        "equalityTier": "[RU] {{tier}} equality",
-        "checkLaws": "[RU] Check local laws",
-        "rating": "[RU] LGBTQ+ rating",
-        "population": "[RU] Population",
-        "language": "[RU] Language",
-        "currency": "[RU] Currency",
-        "bestTime": "[RU] Best time",
-        "airport": "[RU] Airport"
+        "safety": "Безопасность",
+        "safetyLink": "Перейти к безопасности и правам",
+        "deathPenalty": "Смертная казнь",
+        "criminalized": "Криминализировано",
+        "equalityTier": "Равенство: {{tier}}",
+        "checkLaws": "Проверить местные законы",
+        "rating": "ЛГБТК+ рейтинг",
+        "population": "Население",
+        "language": "Язык",
+        "currency": "Валюта",
+        "bestTime": "Лучшее время",
+        "airport": "Аэропорт"
       }
     }
   },
@@ -2488,312 +2648,367 @@
     }
   },
   "country": {
-    "loading": "[RU] Loading country…",
-    "planTrip": "[RU] Plan a trip to {{country}}",
-    "similar": "[RU] More destinations",
+    "loading": "Загрузка страны…",
+    "planTrip": "Спланировать поездку в {{country}}",
+    "similar": "Больше направлений",
     "notFound": {
-      "title": "[RU] Country not found",
-      "body": "[RU] The country you're looking for doesn't exist.",
-      "back": "[RU] Back to Places"
+      "title": "Страна не найдена",
+      "body": "Страна, которую вы ищете, не существует.",
+      "back": "Назад к разделу «Места»"
     },
     "breadcrumb": {
-      "places": "[RU] Places"
+      "places": "Места"
     },
     "hero": {
-      "capital": "[RU] Capital"
+      "capital": "Столица"
     },
     "verdict": {
-      "eyebrow": "[RU] For LGBTQ+ travelers",
-      "welcoming": "[RU] Welcoming",
-      "mixed": "[RU] Mixed",
-      "caution": "[RU] Use caution",
-      "dangerous": "[RU] Dangerous",
-      "equality": "[RU] Equality",
-      "fullBreakdown": "[RU] Full breakdown"
+      "eyebrow": "Для ЛГБТК+ путешественников",
+      "welcoming": "Дружелюбно",
+      "mixed": "Неоднозначно",
+      "caution": "Будьте осторожны",
+      "dangerous": "Опасно",
+      "equality": "Равенство",
+      "fullBreakdown": "Полная информация"
     },
     "facts": {
-      "capital": "[RU] Capital",
-      "population": "[RU] Population",
-      "equality": "[RU] Equality",
-      "languages": "[RU] Languages",
-      "currency": "[RU] Currency",
-      "cities": "[RU] Cities"
+      "capital": "Столица",
+      "population": "Население",
+      "equality": "Равенство",
+      "languages": "Языки",
+      "currency": "Валюта",
+      "cities": "Города"
     },
     "section": {
-      "rights": "[RU] Rights & safety",
-      "cities": "[RU] Cities",
-      "venues": "[RU] Venues",
-      "events": "[RU] Events",
-      "travel": "[RU] Travel",
-      "stats": "[RU] In numbers",
-      "personalities": "[RU] Voices",
-      "nearby": "[RU] Nearby",
-      "news": "[RU] News",
-      "map": "[RU] Map"
+      "rights": "Права и безопасность",
+      "cities": "Города",
+      "venues": "Места",
+      "events": "События",
+      "travel": "Путешествия",
+      "stats": "В цифрах",
+      "personalities": "Голоса",
+      "nearby": "Рядом",
+      "news": "Новости",
+      "map": "Карта"
     },
     "practical": {
-      "languages": "[RU] Languages",
-      "currency": "[RU] Currency",
-      "callingCode": "[RU] Calling code",
-      "tld": "[RU] Internet domain",
-      "driving": "[RU] Driving",
-      "drivesLeft": "[RU] Left-hand side",
-      "drivesRight": "[RU] Right-hand side",
-      "airports": "[RU] Major airports",
-      "government": "[RU] Government",
-      "nationalDay": "[RU] National day"
+      "languages": "Языки",
+      "currency": "Валюта",
+      "callingCode": "Телефонный код",
+      "tld": "Интернет-домен",
+      "driving": "Движение",
+      "drivesLeft": "Левостороннее",
+      "drivesRight": "Правостороннее",
+      "airports": "Основные аэропорты",
+      "government": "Государственное устройство",
+      "nationalDay": "Национальный праздник"
     },
     "stats": {
-      "gdpPerCapita": "[RU] GDP / capita",
-      "hdi": "[RU] HDI",
-      "lifeExpectancy": "[RU] Life expectancy",
-      "literacy": "[RU] Literacy",
-      "income": "[RU] Income level"
+      "gdpPerCapita": "ВВП на душу",
+      "hdi": "ИЧР",
+      "lifeExpectancy": "Продолжительность жизни",
+      "literacy": "Грамотность",
+      "income": "Уровень дохода"
     },
     "cities": {
-      "emptyTitle": "[RU] No cities yet",
-      "emptyBody": "[RU] No cities are listed for this country yet."
+      "emptyTitle": "Пока нет городов",
+      "emptyBody": "Для этой страны пока не указаны города."
     },
     "venues": {
-      "emptyTitle": "[RU] No venues yet",
-      "emptyBody": "[RU] Be the first to add a venue in {{country}}."
+      "emptyTitle": "Пока нет мест",
+      "emptyBody": "Добавьте первое место в стране {{country}}."
     },
     "events": {
-      "emptyTitle": "[RU] No upcoming events",
-      "emptyBody": "[RU] No events are scheduled for this country yet."
+      "emptyTitle": "Нет предстоящих событий",
+      "emptyBody": "Для этой страны пока не запланированы события."
     },
     "travel": {
-      "activities": "[RU] Activities & tours",
-      "activitiesBody": "[RU] Experiences in {{country}}"
+      "activities": "Развлечения и туры",
+      "activitiesBody": "Впечатления в стране {{country}}"
     },
     "news": {
-      "emptyTitle": "[RU] No local news yet",
-      "emptyBody": "[RU] No news articles are available for this country yet."
+      "emptyTitle": "Пока нет местных новостей",
+      "emptyBody": "Для этой страны пока нет новостных статей."
     },
     "rights": {
-      "title": "[RU] LGBTI rights overview",
-      "source": "[RU] ILGA World Database",
-      "updated": "[RU] Updated",
-      "noData": "[RU] No data",
-      "sameSexActivity": "[RU] Same-sex activity",
-      "penalty": "[RU] Penalty",
-      "deathPenalty": "[RU] death penalty possible",
-      "decriminalized": "[RU] Decriminalized",
-      "expression": "[RU] Freedom of expression",
-      "association": "[RU] Freedom of association",
+      "title": "Обзор прав ЛГБТИ",
+      "source": "ILGA World Database",
+      "updated": "Обновлено",
+      "noData": "Нет данных",
+      "sameSexActivity": "Однополые отношения",
+      "penalty": "Наказание",
+      "deathPenalty": "возможна смертная казнь",
+      "decriminalized": "Декриминализировано",
+      "expression": "Свобода выражения",
+      "association": "Свобода объединений",
       "section": {
-        "criminalisation": "[RU] Criminalisation & freedoms",
-        "antiDiscrimination": "[RU] Anti-discrimination protection",
-        "criminalJustice": "[RU] Criminal justice",
-        "family": "[RU] Family & relationships",
-        "identity": "[RU] Identity & health"
+        "criminalisation": "Криминализация и свободы",
+        "antiDiscrimination": "Защита от дискриминации",
+        "criminalJustice": "Уголовное правосудие",
+        "family": "Семья и отношения",
+        "identity": "Идентичность и здоровье"
       },
-      "constitutional": "[RU] Constitutional",
-      "employment": "[RU] Employment",
-      "housing": "[RU] Housing",
-      "education": "[RU] Education",
-      "health": "[RU] Health",
-      "goodsServices": "[RU] Goods & services",
-      "bullying": "[RU] Bullying",
-      "hateCrime": "[RU] Hate crime laws",
-      "incitement": "[RU] Incitement prohibition",
-      "unions": "[RU] Same-sex unions",
-      "marriageSince": "[RU] Marriage since",
-      "civilUnionSince": "[RU] civil union since",
-      "adoption": "[RU] Adoption rights",
-      "genderRecognition": "[RU] Gender recognition",
-      "marker": "[RU] Marker",
-      "selfId": "[RU] Self-ID",
-      "requiresSurgery": "[RU] Requires surgery",
-      "requiresDiagnosis": "[RU] Requires diagnosis",
-      "conversionTherapy": "[RU] Conversion therapy",
-      "intersex": "[RU] Intersex bodily integrity",
-      "ilgaLink": "[RU] ILGA World Database"
+      "constitutional": "Конституционная",
+      "employment": "Трудоустройство",
+      "housing": "Жильё",
+      "education": "Образование",
+      "health": "Здоровье",
+      "goodsServices": "Товары и услуги",
+      "bullying": "Травля",
+      "hateCrime": "Законы о преступлениях на почве ненависти",
+      "incitement": "Запрет подстрекательства",
+      "unions": "Однополые союзы",
+      "marriageSince": "Браки с",
+      "civilUnionSince": "гражданский союз с",
+      "adoption": "Право на усыновление",
+      "genderRecognition": "Признание гендера",
+      "marker": "Гендерный маркер",
+      "selfId": "Самоопределение",
+      "requiresSurgery": "Требуется операция",
+      "requiresDiagnosis": "Требуется диагноз",
+      "conversionTherapy": "Конверсионная терапия",
+      "intersex": "Телесная неприкосновенность интерсекс-людей",
+      "ilgaLink": "ILGA World Database"
     }
   },
   "inbox": {
-    "title": "[RU] Inbox",
+    "title": "Входящие",
     "filter": {
-      "all": "[RU] All",
-      "chats": "[RU] Chats",
-      "mail": "[RU] Mail",
-      "alerts": "[RU] Alerts"
+      "all": "Все",
+      "chats": "Чаты",
+      "mail": "Почта",
+      "alerts": "Оповещения"
     },
     "compose": {
-      "label": "[RU] Compose",
-      "message": "[RU] New message",
-      "email": "[RU] New email"
+      "label": "Написать",
+      "message": "Новое сообщение",
+      "email": "Новое письмо"
     },
     "notification": {
-      "open": "[RU] Open"
+      "open": "Открыть"
     },
-    "openInbox": "[RU] Open inbox",
-    "markAlertsRead": "[RU] Mark alerts read",
-    "unread": "[RU] Unread",
-    "unreadCount": "[RU] {{count}} unread",
+    "openInbox": "Открыть входящие",
+    "markAlertsRead": "Отметить оповещения прочитанными",
+    "unread": "Непрочитанные",
+    "unreadCount": "{{count}} непрочит.",
     "action": {
-      "pin": "[RU] Pin",
-      "unpin": "[RU] Unpin",
-      "mute": "[RU] Mute",
-      "unmute": "[RU] Unmute",
-      "markRead": "[RU] Mark as read",
-      "archive": "[RU] Archive"
+      "pin": "Закрепить",
+      "unpin": "Открепить",
+      "mute": "Без звука",
+      "unmute": "Включить звук",
+      "markRead": "Отметить прочитанным",
+      "archive": "В архив"
     },
-    "search": "[RU] Search",
-    "searchEmpty": "[RU] No matches.",
+    "search": "Поиск",
+    "searchEmpty": "Ничего не найдено.",
     "recipient": {
-      "search": "[RU] Search people",
-      "empty": "[RU] No suggestions yet.",
-      "recent": "[RU] Recently messaged",
-      "active": "[RU] Active recently"
+      "search": "Поиск людей",
+      "empty": "Пока нет предложений.",
+      "recent": "Недавние переписки",
+      "active": "Недавно активны"
     }
   },
   "extension": {
     "signInGate": {
-      "title": "[RU] Sign in to install the extension",
-      "subtitle": "[RU] The queer.guide capture extension lets signed-in members suggest venues, events, hotels and more from any webpage.",
-      "cta": "[RU] Sign in"
+      "title": "Войдите, чтобы установить расширение",
+      "subtitle": "Расширение queer.guide для захвата позволяет авторизованным участникам предлагать места, события, отели и другое с любой веб-страницы.",
+      "cta": "Войти"
     },
     "heading": {
-      "title": "[RU] queer.guide capture",
-      "subtitle": "[RU] Browser extension that turns any webpage into a structured suggestion for our moderators."
+      "title": "queer.guide Capture",
+      "subtitle": "Расширение браузера, превращающее любую веб-страницу в структурированное предложение для наших модераторов."
     },
     "badge": {
-      "installed": "[RU] Installed"
+      "installed": "Установлено"
     },
     "captures": {
-      "label": "[RU] Captures",
-      "venues": "[RU] Venues",
-      "events": "[RU] Events",
-      "hotels": "[RU] Hotels",
-      "marketplace": "[RU] Marketplace",
-      "news": "[RU] News"
+      "label": "Захваты",
+      "venues": "Места",
+      "events": "События",
+      "hotels": "Отели",
+      "marketplace": "Маркетплейс",
+      "news": "Новости"
     },
     "connect": {
-      "title": "[RU] Connect this browser",
-      "detected": "[RU] Extension",
-      "installed": "[RU] is installed in this browser.",
-      "body": "[RU] Sign your queer.guide session into the extension so you can submit content from any webpage.",
-      "signInPrompt": "[RU] Sign in to your queer.guide account to connect this browser and start submitting.",
-      "signedInAs": "[RU] Signed in as",
-      "cta": "[RU] Connect",
-      "connecting": "[RU] Connecting…",
+      "title": "Подключить этот браузер",
+      "detected": "Расширение",
+      "installed": "установлено в этом браузере.",
+      "body": "Войдите в расширение с сессией queer.guide, чтобы отправлять контент с любой веб-страницы.",
+      "signInPrompt": "Войдите в аккаунт queer.guide, чтобы подключить браузер и начать отправлять контент.",
+      "signedInAs": "Вы вошли как",
+      "cta": "Подключить",
+      "connecting": "Подключение…",
       "done": {
-        "title": "[RU] Connected.",
-        "body": "[RU] Open the extension popup on any page to capture content for queer.guide."
+        "title": "Подключено.",
+        "body": "Откройте всплывающее окно расширения на любой странице, чтобы захватить контент для queer.guide."
       }
     },
     "steps": {
-      "title": "[RU] Install in 3 steps",
+      "title": "Установка в 3 шага",
       "s1": {
-        "title": "[RU] Download the latest build",
-        "body": "[RU] We don't have the extension on the Chrome Web Store yet. For now, grab the latest signed build.",
-        "download": "[RU] Download .zip",
-        "note": "[RU] Unzip it somewhere you won't accidentally delete (e.g. ~/Applications/queer-guide-extension)."
+        "title": "Скачать последнюю сборку",
+        "body": "Расширения пока нет в Chrome Web Store. Пока что скачайте последнюю подписанную сборку.",
+        "download": "Скачать .zip",
+        "note": "Распакуйте в папку, которую случайно не удалите (например, ~/Applications/queer-guide-extension)."
       },
       "s2": {
-        "title": "[RU] Load it in Chrome",
-        "l1": "[RU] Open chrome://extensions in a new tab.",
-        "l2": "[RU] Toggle Developer mode on (top right).",
-        "l3": "[RU] Click Load unpacked and pick the unzipped folder.",
-        "l4": "[RU] The queer.guide puzzle icon appears in your toolbar — pin it for one-click access.",
-        "note": "[RU] Other Chromium browsers (Edge, Brave, Arc) work the same way. Firefox / Safari are not supported yet."
+        "title": "Загрузить в Chrome",
+        "l1": "Откройте chrome://extensions в новой вкладке.",
+        "l2": "Включите режим разработчика (вверху справа).",
+        "l3": "Нажмите «Загрузить распакованное расширение» и выберите распакованную папку.",
+        "l4": "В панели инструментов появится значок-пазл queer.guide — закрепите его для доступа в один клик.",
+        "note": "Другие браузеры на Chromium (Edge, Brave, Arc) работают так же. Firefox / Safari пока не поддерживаются."
       },
       "s3": {
-        "title": "[RU] Reload this page and Connect",
-        "body": "[RU] Once Chrome confirms the extension loaded, refresh this page. A “Connect” button will appear and one click signs the extension into your queer.guide account."
+        "title": "Перезагрузите страницу и подключитесь",
+        "body": "Когда Chrome подтвердит загрузку расширения, обновите эту страницу. Появится кнопка «Подключить», и один клик выполнит вход расширения в ваш аккаунт queer.guide."
       },
       "dev": {
-        "label": "[RU] Want to build it yourself or contribute?",
-        "cta": "[RU] Build instructions"
+        "label": "Хотите собрать самостоятельно или внести вклад?",
+        "cta": "Инструкции по сборке"
       }
     },
     "highlights": {
       "smart": {
-        "title": "[RU] Smart capture",
-        "body": "[RU] Reads JSON-LD, OpenGraph, microdata and DOM heuristics — most pages just work."
+        "title": "Умный захват",
+        "body": "Читает JSON-LD, OpenGraph, микроданные и DOM-эвристики — большинство страниц работают сразу."
       },
       "privacy": {
-        "title": "[RU] Privacy-first",
-        "body": "[RU] Only runs when you click. No host permissions, no background tracking."
+        "title": "Конфиденциальность прежде всего",
+        "body": "Работает только по клику. Без разрешений на сайты и фонового отслеживания."
       },
       "review": {
-        "title": "[RU] Always reviewed",
-        "body": "[RU] Submissions land in a moderation queue, never live until approved."
+        "title": "Всегда проверяется",
+        "body": "Заявки попадают в очередь модерации и не публикуются до одобрения."
       }
     },
     "bug": {
-      "label": "[RU] Found a bug?",
-      "cta": "[RU] open an issue"
+      "label": "Нашли ошибку?",
+      "cta": "создать issue"
     }
   },
   "breadcrumb": {
-    "home": "[RU] Home",
-    "venues": "[RU] Venues",
-    "events": "[RU] Events",
-    "hotels": "[RU] Hotels",
-    "villages": "[RU] Queer villages",
-    "marketplace": "[RU] Marketplace",
-    "resources": "[RU] Resources",
-    "personalities": "[RU] People",
-    "news": "[RU] News",
-    "places": "[RU] Places",
-    "cities": "[RU] Cities",
-    "quests": "[RU] Quests",
-    "groups": "[RU] Groups",
-    "trips": "[RU] Trips",
-    "help": "[RU] Help",
-    "pride": "[RU] Pride",
-    "contributors": "[RU] Contributors",
-    "wishlists": "[RU] Wishlists"
+    "home": "Главная",
+    "venues": "Места",
+    "events": "События",
+    "hotels": "Отели",
+    "villages": "Квир-кварталы",
+    "marketplace": "Маркетплейс",
+    "resources": "Ресурсы",
+    "personalities": "Люди",
+    "news": "Новости",
+    "places": "Места",
+    "cities": "Города",
+    "quests": "Задания",
+    "groups": "Группы",
+    "trips": "Поездки",
+    "help": "Помощь",
+    "pride": "Прайд",
+    "contributors": "Участники",
+    "wishlists": "Списки желаний",
+    "tags": "Теги"
   },
   "chat": {
-    "react": "[RU] React",
-    "edited": "[RU] edited",
-    "deleted": "[RU] Message deleted",
-    "editing": "[RU] Editing message",
-    "replyingTo": "[RU] Replying to {{name}}",
+    "react": "Реакция",
+    "edited": "изменено",
+    "deleted": "Сообщение удалено",
+    "editing": "Редактирование сообщения",
+    "replyingTo": "Ответ для {{name}}",
     "reply": {
-      "action": "[RU] Reply",
-      "someone": "[RU] someone"
+      "action": "Ответить",
+      "someone": "кто-то"
     },
     "emoji": {
-      "search": "[RU] Search emoji",
-      "none": "[RU] No emoji found.",
+      "search": "Поиск эмодзи",
+      "none": "Эмодзи не найдены.",
       "cat": {
-        "smileys": "[RU] Smileys",
-        "gestures": "[RU] Gestures",
-        "hearts": "[RU] Hearts",
-        "pride": "[RU] Pride",
-        "animals": "[RU] Animals",
-        "food": "[RU] Food",
-        "activity": "[RU] Activity",
-        "symbols": "[RU] Symbols"
+        "smileys": "Смайлики",
+        "gestures": "Жесты",
+        "hearts": "Сердца",
+        "pride": "Прайд",
+        "animals": "Животные",
+        "food": "Еда",
+        "activity": "Активность",
+        "symbols": "Символы"
       }
     },
-    "activeNow": "[RU] Active now",
+    "activeNow": "Сейчас в сети",
     "preview": {
-      "you": "[RU] You",
-      "photo": "[RU] Photo",
-      "sticker": "[RU] Sticker",
-      "voice": "[RU] Voice message"
+      "you": "Вы",
+      "photo": "Фото",
+      "sticker": "Стикер",
+      "voice": "Голосовое сообщение"
     },
-    "streak": "[RU] You two have been chatting for {{count}} days ✨",
+    "streak": "Вы общаетесь уже {{count}} дн. ✨",
     "vibe": {
-      "set": "[RU] Set a vibe",
-      "title": "[RU] Your vibe",
-      "placeholder": "[RU] What's your vibe?",
-      "for4h": "[RU] 4h"
+      "set": "Задать вайб",
+      "title": "Твой вайб",
+      "placeholder": "Какой у тебя вайб?",
+      "for4h": "4 ч"
     },
     "stickers": {
-      "title": "[RU] Stickers"
+      "title": "Стикеры"
     },
     "freeToMeet": {
-      "title": "[RU] Free to meet",
-      "set": "[RU] Free to meet",
-      "on": "[RU] Free now",
-      "both": "[RU] {{name}} is free to meet right now 🟢",
-      "youOnly": "[RU] You're marked free to meet 🟢"
+      "title": "Готов(а) встретиться",
+      "set": "Готов(а) встретиться",
+      "on": "Свободен сейчас",
+      "both": "{{name}} сейчас готов(а) встретиться 🟢",
+      "youOnly": "Вы отмечены как готовы встретиться 🟢"
+    }
+  },
+  "newsDetail": {
+    "notFound": "Статья не найдена",
+    "notFoundDesc": "Статья, которую вы ищете, не существует.",
+    "backToNews": "Назад к новостям",
+    "share": "Поделиться",
+    "readAtSource": "Читать в источнике",
+    "fresh": "Новое",
+    "reportedByOutlets": "Сообщают {{count}} изданий",
+    "featured": "Рекомендуемое",
+    "byAuthor": "Автор: {{author}}",
+    "minRead": "{{count}} мин чтения",
+    "viewsCount": "{{count}} просмотров",
+    "whyThisMatters": "Почему это важно",
+    "editorialPlaceholder": "Alt-клик, чтобы добавить контекст — 1–3 предложения о том, почему это важно.",
+    "bodyFallback": "Полный текст доступен в оригинальном источнике.",
+    "originallyPublishedBy": "Впервые опубликовано в {{source}}.",
+    "viewOriginal": "Открыть оригинал",
+    "integritySatire": "Помечено как сатира — не буквальный репортаж.",
+    "integrityAdvertorial": "Спонсорский / рекламный материал.",
+    "integritySentimentConflict": "Источники расходятся в тоне — читайте внимательно.",
+    "closeToHome": "Рядом с вашим городом",
+    "seeFullStory": "Смотреть всю историю",
+    "topics": "Темы",
+    "home": "Дом",
+    "whereThisHappens": "Где это происходит",
+    "aboutSource": "Об источнике",
+    "corroboratedAcross": "Подтверждено {{count}} изданиями",
+    "lastVerified": "Проверено {{time}}",
+    "visitSource": "Перейти к {{source}}",
+    "source": "источник",
+    "moreLikeThis": "Похожее",
+    "forYou": "Для вас"
+  },
+  "pwa": {
+    "updateAvailable": {
+      "title": "Доступна новая версия",
+      "description": "Обновите, чтобы получить новые возможности.",
+      "action": "Обновить"
+    },
+    "backOnline": "Снова в сети",
+    "offline": {
+      "title": "Вы офлайн",
+      "description": "Некоторые функции могут быть недоступны."
+    },
+    "install": {
+      "title": "Установить Queer Guide",
+      "description": "Быстрый доступ с главного экрана — работает и офлайн.",
+      "action": "Установить",
+      "iosTitle": "Добавить на экран «Домой»",
+      "iosHint": "Нажмите кнопку «Поделиться» в Safari и выберите «На экран Домой».",
+      "dismiss": "Закрыть",
+      "ariaLabel": "Установить приложение"
     }
   }
 }

@@ -44,10 +44,9 @@ export function parseRssItems(xml: string, isPodcast = false): Record<string, un
 // Decode the XML entities that appear inside URL attributes (feeds encode
 // query-string `&` as `&amp;`). Without this the stored URL is unusable.
 function decodeUrlEntities(url: string): string {
-  return url
-    .replace(/&amp;/g, '&')
-    .replace(/&#38;/g, '&')
-    .replace(/&#x26;/gi, '&')
+  // Single pass so a decoded `&` can't be re-scanned and double-unescaped
+  // (e.g. `&amp;#38;` must stay `&#38;`, not collapse to `&`).
+  return url.replace(/&(?:amp|#38|#x26);/gi, '&')
 }
 
 // Audio enclosure: <enclosure url="..." type="audio/mpeg" .../>. Match the

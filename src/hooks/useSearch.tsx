@@ -44,7 +44,7 @@ export interface SearchFilters {
   types?: string[];
   location?: string;
   categories?: string[];
-  /** Topic-cluster UUIDs (#171 / #225). Meili `cluster_ids` filterable. */
+  /** Topic-cluster UUIDs (#171 / #225). Filterable via `cluster_ids`. */
   cluster_ids?: string[];
   /** Audience tags (lesbian, trans, …) — search_hybrid any-of facet match. */
   target_groups?: string[];
@@ -61,7 +61,7 @@ export interface SearchFilters {
   /** Free-entry only (events/marketplace) → worker is_free. */
   free?: boolean;
   verified?: boolean;
-  /** Geo radius — worker turns these into Meili _geoRadius(lat,lng,m). */
+  /** Geo radius — worker turns these into a PostGIS radius filter. */
   lat?: number;
   lng?: number;
   radius?: number;
@@ -192,6 +192,7 @@ function normaliseHit(h: SearchResult): SearchResult {
     city?: string;
     country?: string;
     slug?: string;
+    price_min?: unknown;
   };
   // Prefer the R2-mirrored optimized/thumbnail copy (always reachable) over the
   // raw external image_url, which often hotlink-fails or gets ORB-blocked.
@@ -207,6 +208,12 @@ function normaliseHit(h: SearchResult): SearchResult {
     location: r.location ?? ([r.city, r.country].filter(Boolean).join(', ') || undefined),
     imageUrl: resolvedImage,
     slug: r.slug,
+    // Marketplace docs carry price_min/max; the result card reads `price`.
+    price:
+      r.price ??
+      (typeof r.price_min === 'number' && r.price_min > 0
+        ? Math.round(r.price_min * 100) / 100
+        : undefined),
   };
 }
 

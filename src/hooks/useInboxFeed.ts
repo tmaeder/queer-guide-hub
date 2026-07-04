@@ -1,6 +1,7 @@
 import { useEffect, useId } from 'react';
 import { useInfiniteQuery, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { untypedRpc } from '@/integrations/supabase/untyped';
 import { useAuth } from '@/hooks/useAuth';
 
 export type InboxKind = 'chat' | 'mail' | 'notification';
@@ -43,15 +44,15 @@ export function useInboxFeed(filter: InboxFilter = 'all') {
     queryFn: async ({ pageParam }) => {
       // 'trips' is a frontend-only filter — surface alerts (trip_nudge notifications)
       const rpcFilter = filter === 'trips' ? 'alerts' : filter;
-      const { data, error } = await supabase.rpc('get_inbox_feed', {
+      const { data, error } = await untypedRpc<InboxItem[]>('get_inbox_feed', {
         p_user: user!.id,
         p_cursor: pageParam?.ts ?? null,
         p_cursor_id: pageParam?.id ?? null,
         p_filter: rpcFilter,
         p_limit: PAGE,
-      } as never);
+      });
       if (error) throw error;
-      return (data ?? []) as InboxItem[];
+      return data ?? [];
     },
     getNextPageParam: (last: InboxItem[]) =>
       last.length === PAGE
@@ -64,14 +65,14 @@ export function useInboxFeed(filter: InboxFilter = 'all') {
     enabled: !!user,
     staleTime: 15_000,
     queryFn: async () => {
-      const { data, error } = await supabase.rpc('get_inbox_unread_count' as never, {
+      const { data, error } = await untypedRpc<number>('get_inbox_unread_count', {
         p_user: user!.id,
-      } as never);
+      });
       if (error) {
         console.error('get_inbox_unread_count failed', error);
         return 0;
       }
-      return (data as number) ?? 0;
+      return data ?? 0;
     },
   });
 

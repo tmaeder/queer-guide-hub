@@ -1,11 +1,13 @@
-import { getServiceClient, jsonResponse, errorResponse, corsResponse, requireInternalOrAdmin } from '../_shared/supabase-client.ts'
+import { getServiceClient, jsonResponse, corsResponse, requireInternalOrAdmin } from '../_shared/supabase-client.ts'
 import { withCircuitBreaker, CircuitOpenError } from '../_shared/circuit-breaker.ts'
 import { withErrorReporting } from '../_shared/report-api-error.ts'
 import { researchEnrichVillageFromSources } from '../_shared/ai-enrichment.ts'
+import { serveEnrichment } from '../_shared/enrichment-driver.ts'
 
 // Pipeline Enrich (Queer Village).
 //  - default (staging) mode: Wikipedia description + Wikidata + image enrichment of
-//    pending queer_villages staging rows (ingestion pipeline).
+//    pending queer_villages staging rows (ingestion pipeline). Batch lifecycle lives
+//    in _shared/enrichment-driver.ts.
 //  - agentic mode (body.mode='agentic'): Village Truth Engine. Grounds an LLM in the
 //    village's own Wikipedia page + the LGBTQ+ venues we list there, rewrites the
 //    generic history into a queer-specific one, and ROUTES every narrative overwrite
@@ -163,129 +165,77 @@ async function fetchPexelsImage(query: string, apiKey: string): Promise<string |
   } catch { return null }
 }
 
-Deno.serve(withErrorReporting('pipeline-enrich-village', async (req) => {
-  if (req.method === 'OPTIONS') return corsResponse(req)
-  const _auth = await requireInternalOrAdmin(req, getServiceClient()); if (_auth instanceof Response) return _auth
-  const supabase = getServiceClient()
-
-  try {
-    const body = await req.json().catch(() => ({}))
-
-    // Village Truth Engine — operates on LIVE villages, review-gated.
-    if (body.mode === 'agentic') {
-      const batchLimit = Math.min(20, Number(body.batch_limit ?? 8))
-      const result = await agenticEnrichVillages(supabase, batchLimit)
-      return jsonResponse({ success: true, ...result }, 200, req)
-    }
-
-    const pipelineRunId = body.pipeline_run_id as string | undefined
-    const batchSize     = Math.min(50, body.batch_size ?? 20)
-    const dryRun        = body.dry_run === true
-
-    let q = supabase
-      .from('ingestion_staging')
-      .select('id, normalized_data, entity_type, target_table')
-      .in('target_table', ['queer_villages'])
-      .eq('enrichment_status', 'pending')
-      .not('normalized_data', 'is', null)
-      .order('created_at', { ascending: true })
-      .limit(batchSize)
-    if (pipelineRunId) q = q.eq('pipeline_run_id', pipelineRunId)
-
-    const { data: items, error } = await q
-    if (error) return errorResponse(`load: ${error.message}`, 500, req)
-    if (!items || items.length === 0) {
-      return jsonResponse({ success: true, items: 0, message: 'nothing to enrich' }, 200, req)
-    }
+// Staging-mode handler (driver-built); agentic requests are intercepted below.
+const stagingHandler = serveEnrichment({
+  fnName: 'pipeline-enrich-village',
+  targetTables: ['queer_villages'],
+  defaultBatchSize: 20,
+  maxBatchSize: 50,
+  async enrichItem(supabase, item, n) {
+    const name = String(n.name ?? '').trim()
+    if (!name) return 'skip'
 
     const pexelsKey = Deno.env.get('PEXELS_API_KEY') ?? ''
-    let enriched = 0, failed = 0, skipped = 0
+    let enrichError: string | null = null
+    let wp: { extract: string; thumbnail?: string } | null = null
+    let wd: { qid: string; description: string } | null = null
+    let imageUrl: string | null = null
 
-    for (const item of items) {
-      const n = (item.normalized_data ?? {}) as Record<string, unknown>
-      const name = String(n.name ?? '').trim()
-      if (!name) { skipped++; continue }
-
-      const startedAt = Date.now()
-      let enrichError: string | null = null
-      let wp: { extract: string; thumbnail?: string } | null = null
-      let wd: { qid: string; description: string } | null = null
-      let imageUrl: string | null = null
-
-      try {
-        const searchQuery = `${name} LGBT neighborhood`
-        ;[wp, wd] = await Promise.all([
-          withCircuitBreaker(supabase, 'wikipedia.api', () => fetchWikipediaSummary(searchQuery)),
-          withCircuitBreaker(supabase, 'wikidata.api', () => searchWikidata(name)),
-        ])
-        if (!wp?.extract) {
-          wp = await fetchWikipediaSummary(name)
-        }
-        if (pexelsKey) {
-          imageUrl = await fetchPexelsImage(`${name} LGBT pride`, pexelsKey)
-        }
-        if (!imageUrl && wp?.thumbnail) {
-          imageUrl = wp.thumbnail
-        }
-      } catch (e) {
-        enrichError = e instanceof CircuitOpenError ? `circuit_open:${e.apiName}` : (e as Error).message
-        console.warn(`enrich-village ${item.id}: ${enrichError}`)
+    try {
+      const searchQuery = `${name} LGBT neighborhood`
+      ;[wp, wd] = await Promise.all([
+        withCircuitBreaker(supabase, 'wikipedia.api', () => fetchWikipediaSummary(searchQuery)),
+        withCircuitBreaker(supabase, 'wikidata.api', () => searchWikidata(name)),
+      ])
+      if (!wp?.extract) {
+        wp = await fetchWikipediaSummary(name)
       }
-
-      if (!dryRun) {
-        const hasData = !!(wp?.extract || wd)
-        const status = hasData ? 'success' : (enrichError ? 'failed' : 'skipped')
-
-        const updates: Record<string, unknown> = { ...n }
-        if (wp?.extract && !n.description) updates.description = wp.extract
-        if (imageUrl && !n.image_url) updates.image_url = imageUrl
-
-        if (Object.keys(updates).length > Object.keys(n).length) {
-          await supabase.from('ingestion_staging')
-            .update({ normalized_data: updates })
-            .eq('id', item.id)
-        }
-
-        const enrichedData = {
-          wikipedia_extract:   wp?.extract ?? null,
-          wikipedia_thumbnail: wp?.thumbnail ?? null,
-          wikidata_qid:        wd?.qid ?? null,
-          wikidata_description: wd?.description ?? null,
-          image_url:           imageUrl,
-          enriched_at:         new Date().toISOString(),
-        }
-
-        const { error: applyErr } = await supabase.rpc('apply_enrichment', {
-          p_staging_id:      item.id,
-          p_pipeline_run_id: pipelineRunId ?? null,
-          p_stage:           'enrich-village',
-          p_new_enriched:    enrichedData,
-          p_actor:           'pipeline-enrich-village',
-          p_status:          status,
-          p_error_message:   enrichError,
-          p_duration_ms:     Date.now() - startedAt,
-        })
-
-        if (applyErr) { failed++; console.error(`apply_enrichment ${item.id}: ${applyErr.message}`); continue }
-
-        if (status === 'success') enriched++
-        else if (status === 'failed') failed++
-        else skipped++
-      } else { enriched++ }
+      if (pexelsKey) {
+        imageUrl = await fetchPexelsImage(`${name} LGBT pride`, pexelsKey)
+      }
+      if (!imageUrl && wp?.thumbnail) {
+        imageUrl = wp.thumbnail
+      }
+    } catch (e) {
+      enrichError = e instanceof CircuitOpenError ? `circuit_open:${e.apiName}` : (e as Error).message
+      console.warn(`enrich-village ${item.id}: ${enrichError}`)
     }
 
-    return jsonResponse({
-      success: true,
-      items: enriched + skipped,
-      items_total: items.length,
-      items_processed: enriched + failed + skipped,
-      items_succeeded: enriched,
-      items_failed: failed,
-      enriched, failed, skipped,
-      dry_run: dryRun,
-    }, 200, req)
-  } catch (error) {
-    console.error('pipeline-enrich-village:', error)
-    return errorResponse((error as Error).message, 500, req)
+    const updates: Record<string, unknown> = { ...n }
+    if (wp?.extract && !n.description) updates.description = wp.extract
+    if (imageUrl && !n.image_url) updates.image_url = imageUrl
+    const hasMerge = Object.keys(updates).length > Object.keys(n).length
+
+    return {
+      succeeded: !!(wp?.extract || wd),
+      error: enrichError,
+      mergedNormalized: hasMerge ? updates : null,
+      enrichedData: {
+        wikipedia_extract: wp?.extract ?? null,
+        wikipedia_thumbnail: wp?.thumbnail ?? null,
+        wikidata_qid: wd?.qid ?? null,
+        wikidata_description: wd?.description ?? null,
+        image_url: imageUrl,
+        enriched_at: new Date().toISOString(),
+      },
+    }
+  },
+})
+
+Deno.serve(withErrorReporting('pipeline-enrich-village', async (req) => {
+  if (req.method === 'OPTIONS') return corsResponse(req)
+
+  // Village Truth Engine — operates on LIVE villages, review-gated. Peek at the
+  // body here; the staging path re-reads it from the clone passed on.
+  const body = await req.clone().json().catch(() => ({}))
+  if (body.mode === 'agentic') {
+    const supabase = getServiceClient()
+    const _auth = await requireInternalOrAdmin(req, supabase)
+    if (_auth instanceof Response) return _auth
+    const batchLimit = Math.min(20, Number(body.batch_limit ?? 8))
+    const result = await agenticEnrichVillages(supabase, batchLimit)
+    return jsonResponse({ success: true, ...result }, 200, req)
   }
+
+  return stagingHandler(req)
 }))

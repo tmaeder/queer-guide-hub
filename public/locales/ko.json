@@ -170,7 +170,7 @@
     "clear": "Clear",
     "signIn": "Sign in",
     "goHome": "Go Home",
-    "more": "[KO] More"
+    "more": "더보기"
   },
   "navigation": {
     "home": "홈",
@@ -1476,7 +1476,7 @@
     },
     "news": {
       "title": "최신 뉴스",
-      "eyebrow": "[KO] Dispatches"
+      "eyebrow": "소식"
     },
     "discover": "Discover",
     "destinationsTitle": "Where the scene lives.",
@@ -1497,39 +1497,45 @@
         "resources": "resources"
       }
     },
-    "eyebrow": "[KO] Queer Guide",
-    "browseDirectory": "[KO] Browse the directory",
-    "planTrip": "[KO] Plan a trip",
-    "allVenues": "[KO] All venues",
+    "eyebrow": "Queer Guide",
+    "browseDirectory": "디렉터리 둘러보기",
+    "planTrip": "여행 계획",
+    "allVenues": "모든 장소",
     "recentlyViewed": {
-      "eyebrow": "[KO] Recently viewed",
-      "title": "[KO] Pick up where you left off."
+      "eyebrow": "최근 본 항목",
+      "title": "이어서 보기."
     },
     "trending": {
-      "eyebrow": "[KO] Trending now",
-      "venues": "[KO] Venues on the rise.",
-      "venuesNear": "[KO] Popular venues in {{city}}.",
-      "venuesDesc": "[KO] What the community is checking out this week."
+      "eyebrow": "지금 인기",
+      "venues": "떠오르는 장소.",
+      "venuesNear": "{{city}}의 인기 장소.",
+      "venuesDesc": "이번 주 커뮤니티가 주목하는 것."
     },
     "cta": {
-      "title": "[KO] Built by the community,",
-      "title2": "[KO] for the community.",
-      "subtitle": "[KO] Verified safe spaces, real reviews, no paywalls.",
-      "submit": "[KO] Add a venue",
-      "about": "[KO] Read the mission",
-      "invite": "[KO] Invite friends",
-      "join": "[KO] Join the community"
+      "title": "커뮤니티가 만들고,",
+      "title2": "커뮤니티를 위해.",
+      "subtitle": "검증된 안전 공간, 진짜 후기, 유료 장벽 없음.",
+      "submit": "장소 추가",
+      "about": "미션 읽기",
+      "invite": "친구 초대",
+      "join": "커뮤니티 가입"
     },
-    "subtitleShort": "[KO] Verified safe places, real events, and the people behind them.",
+    "subtitleShort": "검증된 안전한 장소, 진짜 이벤트, 그리고 그 뒤의 사람들.",
     "events": {
-      "eyebrow": "[KO] What's on",
+      "eyebrow": "진행 중",
       "groups": {
-        "today": "[KO] Today",
-        "tomorrow": "[KO] Tomorrow",
-        "thisWeekend": "[KO] This weekend",
-        "thisWeek": "[KO] This week",
-        "later": "[KO] Later"
+        "today": "오늘",
+        "tomorrow": "내일",
+        "thisWeekend": "이번 주말",
+        "thisWeek": "이번 주",
+        "later": "이후"
       }
+    },
+    "shop": {
+      "eyebrow": "마켓플레이스",
+      "title": "퀴어 브랜드",
+      "description": "퀴어·트랜스 운영 비즈니스의 상품과 서비스.",
+      "seeAll": "마켓플레이스 보기"
     }
   },
   "header": {
@@ -1564,7 +1570,8 @@
       "travel": "여행",
       "personalities": "인물",
       "hotels": "호텔",
-      "help": "도움말"
+      "help": "도움말",
+      "tags": "태그"
     },
     "userMenu": {
       "myTrips": "내 여행",
@@ -1578,11 +1585,11 @@
       "tripInbox": "여행 수신함",
       "extension": "브라우저 확장 프로그램",
       "footprint": "Footprint",
-      "messages": "[KO] Messages",
-      "mailbox": "[KO] Mailbox",
-      "you": "[KO] You",
-      "community": "[KO] Community",
-      "viewProfile": "[KO] View public profile"
+      "messages": "메시지",
+      "mailbox": "메일함",
+      "you": "내 정보",
+      "community": "커뮤니티",
+      "viewProfile": "공개 프로필 보기"
     },
     "modes": {
       "dating": "사랑을 찾아서",
@@ -1602,17 +1609,17 @@
     "signUp": "Sign up",
     "navigation": "Navigation",
     "signIn": "Sign in",
-    "modeLabel": "[KO] Mode",
-    "modeActive": "[KO] Mode: {{mode}}",
+    "modeLabel": "모드",
+    "modeActive": "모드: {{mode}}",
     "clusters": {
-      "places": "[KO] Places",
-      "community": "[KO] Community",
-      "shop": "[KO] Shop & Read",
-      "support": "[KO] Support"
+      "places": "장소",
+      "community": "커뮤니티",
+      "shop": "쇼핑 & 읽기",
+      "support": "지원"
     },
     "notifications": {
-      "label": "[KO] Notifications",
-      "unread": "[KO] Notifications, {{count}} unread"
+      "label": "알림",
+      "unread": "알림, 읽지 않음 {{count}}개"
     },
     "mobileNav": {
       "home": "홈",
@@ -1623,7 +1630,10 @@
       "menuTitle": "Queer Guide 둘러보기",
       "menuDescription": "원하는 섹션으로 이동하고 언어나 테마를 변경하세요.",
       "trips": "내 여행",
-      "settingsSection": "디스플레이"
+      "settingsSection": "디스플레이",
+      "browseAll": "모든 섹션 보기",
+      "unreadCount": "읽지 않음 {{count}}개",
+      "tripsBadge": "확인이 필요한 여행 항목 {{count}}개"
     }
   },
   "pages": {
@@ -1673,7 +1683,7 @@
       "noPhotos": "사진 없음",
       "noEvents": "이 장소에서 예정된 이벤트가 없습니다",
       "noReviews": "아직 리뷰가 없어요. 첫 번째 리뷰를 남겨 보세요!",
-      "accessibility": "[KO] Accessibility"
+      "accessibility": "접근성"
     },
     "events": {
       "title": "이벤트",
@@ -2041,7 +2051,7 @@
       "createGroup": "그룹 만들기",
       "mostPopular": "가장 인기 있는 그룹",
       "noPopular": "아직 인기 그룹이 없습니다.",
-      "eyebrow": "[KO] Community"
+      "eyebrow": "커뮤니티"
     },
     "groupDetail": {
       "signInRequired": "그룹 상세 정보를 보려면 로그인하세요."
@@ -2081,7 +2091,7 @@
       "loadMore": "Load more",
       "errorTitle": "We couldn't load the feed",
       "errorDescription": "Something went wrong while loading community posts. Check your connection and try again.",
-      "eyebrow": "[KO] Community"
+      "eyebrow": "커뮤니티"
     },
     "notFound": {
       "title": "페이지를 찾을 수 없음",
@@ -2139,21 +2149,21 @@
       }
     },
     "members": {
-      "eyebrow": "[KO] Community",
-      "title": "[KO] Members",
-      "subtitle": "[KO] People, connections, and networks within the inclusive LGBTQ+ community.",
-      "member": "[KO] member",
-      "members": "[KO] members",
-      "visible": "[KO] visible",
-      "upsellTitle": "[KO] See the full community",
-      "upsellBody": "[KO] Public profiles are listed here. Sign in to see bios, locations, interests, and to start a conversation.",
-      "signInToBrowse": "[KO] Sign in to browse"
+      "eyebrow": "커뮤니티",
+      "title": "회원",
+      "subtitle": "포용적인 LGBTQ+ 커뮤니티 속 사람들, 관계, 네트워크.",
+      "member": "회원",
+      "members": "회원",
+      "visible": "표시됨",
+      "upsellTitle": "전체 커뮤니티 보기",
+      "upsellBody": "공개 프로필이 여기에 표시됩니다. 로그인하면 소개, 위치, 관심사를 보고 대화를 시작할 수 있습니다.",
+      "signInToBrowse": "로그인하고 둘러보기"
     },
     "friends": {
-      "eyebrow": "[KO] Community",
-      "title": "[KO] Friends",
-      "subtitle": "[KO] Manage your connections",
-      "gate": "[KO] Please sign in to view your friends."
+      "eyebrow": "커뮤니티",
+      "title": "친구",
+      "subtitle": "내 연결 관리",
+      "gate": "친구를 보려면 로그인하세요."
     }
   },
   "settings": {
@@ -2163,8 +2173,8 @@
       "turnOn": "켜기",
       "turnOff": "끄기",
       "dm": {
-        "title": "[KO] Direct messages",
-        "body": "[KO] Notify me when someone sends me a message."
+        "title": "다이렉트 메시지",
+        "body": "누군가 메시지를 보내면 알림."
       }
     }
   },
@@ -2181,6 +2191,148 @@
       "denied": "Location access is off — showing the default area",
       "unavailable": "Couldn't get your location — showing the default area",
       "timeout": "Location lookup timed out — showing the default area"
+    },
+    "share": {
+      "title": "[KO] Map view",
+      "copied": "[KO] Link copied",
+      "copiedDescription": "[KO] Paste to share this view",
+      "failed": "[KO] Share failed"
+    },
+    "commandBar": {
+      "searchThisMap": "[KO] Search this map",
+      "searching": "[KO] Searching",
+      "clearSearch": "[KO] Clear search",
+      "typeMore": "[KO] Type at least 2 characters",
+      "filterMapFor": "[KO] Filter map for “{{query}}”",
+      "jumpToPlace": "[KO] Jump to a place",
+      "noMatches": "[KO] No places match — Enter still filters the map.",
+      "filters": "[KO] Filters",
+      "filtersActive": "[KO] Filters, {{count}} active",
+      "filtersAndLayers": "[KO] Filters & layers",
+      "layers": "[KO] Layers",
+      "more": "[KO] More map options",
+      "moreShort": "[KO] More",
+      "mapOptions": "[KO] Map options",
+      "myLocation": "[KO] My location",
+      "fitResults": "[KO] Fit to results",
+      "shareView": "[KO] Share view",
+      "reset": "[KO] Reset"
+    },
+    "entityType": {
+      "venue": "[KO] Venue",
+      "event": "[KO] Event",
+      "city": "[KO] City",
+      "country": "[KO] Country",
+      "marketplace": "[KO] Listing",
+      "personality": "[KO] Person",
+      "queer_village": "[KO] Village",
+      "group": "[KO] Group",
+      "news": "[KO] News",
+      "tag": "[KO] Tag",
+      "user": "[KO] User"
+    },
+    "quick": {
+      "groupLabel": "[KO] Quick filters",
+      "openNow": "[KO] Open now",
+      "tonight": "[KO] Tonight",
+      "thisWeekend": "[KO] This weekend",
+      "thisMonth": "[KO] This month",
+      "saved": "[KO] Saved"
+    },
+    "lens": {
+      "groupLabel": "[KO] Map view",
+      "pins": "[KO] Pins",
+      "density": "[KO] Density",
+      "routes": "[KO] Routes",
+      "boundary": "[KO] Boundary",
+      "combined": "[KO] Combined"
+    },
+    "sheet": {
+      "title": "[KO] Map options",
+      "view": "[KO] View",
+      "filters": "[KO] Filters",
+      "time": "[KO] Time",
+      "layers": "[KO] Layers",
+      "actions": "[KO] Map actions"
+    },
+    "time": {
+      "label": "[KO] Time range",
+      "anyTime": "[KO] Any time",
+      "chooseDates": "[KO] Choose dates",
+      "pickRange": "[KO] Pick a start & end",
+      "untilEndDate": "[KO] {{start}} – end date",
+      "clear": "[KO] Clear",
+      "apply": "[KO] Apply dates"
+    },
+    "nav": {
+      "zoomIn": "[KO] Zoom in",
+      "zoomOut": "[KO] Zoom out",
+      "resetNorth": "[KO] Reset bearing to north",
+      "geolocate": "[KO] Show my location"
+    },
+    "legend": {
+      "label": "[KO] Legend",
+      "show": "[KO] Show map legend",
+      "hide": "[KO] Hide map legend",
+      "title": "[KO] What you're seeing",
+      "featured": "[KO] Ringed = featured spot",
+      "live": "[KO] Pulsing = open now / live",
+      "areas": "[KO] Areas",
+      "densityTitle": "[KO] Density of queer life",
+      "fewer": "[KO] Fewer",
+      "more": "[KO] More"
+    },
+    "rail": {
+      "inView_one": "[KO] {{count}} place in view",
+      "inView_other": "[KO] {{count}} places in view",
+      "hide": "[KO] Hide nearby places",
+      "listLabel": "[KO] Places in view",
+      "showOnMap": "[KO] Show {{name}} on the map"
+    },
+    "firstRun": {
+      "spotsInView_one": "[KO] {{count}} queer spot in view",
+      "spotsInView_other": "[KO] {{count}} queer spots in view",
+      "dismiss": "[KO] Dismiss"
+    },
+    "canvas": {
+      "loading": "[KO] Loading",
+      "loadingEllipsis": "[KO] Loading...",
+      "resultsInView_one": "[KO] {{count}} result in view",
+      "resultsInView_other": "[KO] {{count}} results in view",
+      "clickToZoom": "[KO] Click to zoom in",
+      "venueCount_one": "[KO] {{count}} venue",
+      "venueCount_other": "[KO] {{count}} venues",
+      "eventCount_one": "[KO] {{count}} event",
+      "eventCount_other": "[KO] {{count}} events",
+      "restroomCount_one": "[KO] {{count}} restroom",
+      "restroomCount_other": "[KO] {{count}} restrooms",
+      "hotelCount_one": "[KO] {{count}} hotel",
+      "hotelCount_other": "[KO] {{count}} hotels",
+      "placeCount_one": "[KO] {{count}} place",
+      "placeCount_other": "[KO] {{count}} places",
+      "emptyOpenNow": "[KO] Nothing open right now in view — turn off Open now or try later.",
+      "emptyTimeRange": "[KO] No events in this time range here — widen the dates or pan out.",
+      "emptySearch": "[KO] No matches for \"{{query}}\" here — clear search or pan out.",
+      "emptyDefault": "[KO] No spots here yet — pan, zoom out, or put one on the map."
+    },
+    "layers": {
+      "venues": "[KO] Venues",
+      "events": "[KO] Events",
+      "cities": "[KO] Cities",
+      "countries": "[KO] Countries",
+      "restrooms": "[KO] Restrooms",
+      "hotels": "[KO] Hotels",
+      "neighbourhoods": "[KO] Villages"
+    },
+    "filterChips": {
+      "groupLabel": "[KO] Active filters",
+      "remove": "[KO] Remove filter: {{label}}",
+      "clearAll": "[KO] Clear all",
+      "within": "[KO] Within {{km}} km",
+      "accessible": "[KO] Accessible",
+      "queerOwned": "[KO] Queer-owned",
+      "tags_one": "[KO] {{count}} tag",
+      "tags_other": "[KO] {{count}} tags"
     }
   },
   "resources": {
@@ -2303,7 +2455,15 @@
     },
     "tagDetail": {
       "breadcrumbHome": "자료",
-      "noDefinition": "이 용어에 대한 정의가 아직 없습니다."
+      "noDefinition": "이 용어에 대한 정의가 아직 없습니다.",
+      "alsoKnownAs": "다른 이름",
+      "readOnWikipedia": "위키백과에서 읽기",
+      "searchTagged": "{{name}} 태그가 붙은 모든 항목 검색",
+      "seeAlso": "같이 보기",
+      "sensitiveContentBody": "이 주제에는 민감한 내용이 포함될 수 있습니다. 도움이 필요하면 위기 상담 전화 페이지를 방문하세요.",
+      "sensitiveContentTitle": "민감한 주제",
+      "tableOfContents": "목차",
+      "viewAsGraph": "그래프로 보기"
     },
     "graph": {
       "title": "태그 관계 그래프",
@@ -2345,21 +2505,21 @@
     "suggestLede": "도시를 제안하세요 — 검토 후 디렉토리에 추가됩니다.",
     "suggestCta": "도시 제안하기",
     "detail": {
-      "seeAll": "[KO] See all",
-      "planTrip": "[KO] Plan a trip to {{city}}",
+      "seeAll": "모두 보기",
+      "planTrip": "{{city}} 여행 계획",
       "glance": {
-        "safety": "[KO] Safety",
-        "safetyLink": "[KO] Jump to safety & rights",
-        "deathPenalty": "[KO] Death penalty",
-        "criminalized": "[KO] Criminalized",
-        "equalityTier": "[KO] {{tier}} equality",
-        "checkLaws": "[KO] Check local laws",
-        "rating": "[KO] LGBTQ+ rating",
-        "population": "[KO] Population",
-        "language": "[KO] Language",
-        "currency": "[KO] Currency",
-        "bestTime": "[KO] Best time",
-        "airport": "[KO] Airport"
+        "safety": "안전",
+        "safetyLink": "안전 및 권리로 이동",
+        "deathPenalty": "사형",
+        "criminalized": "범죄화",
+        "equalityTier": "{{tier}} 평등",
+        "checkLaws": "현지 법률 확인",
+        "rating": "LGBTQ+ 평가",
+        "population": "인구",
+        "language": "언어",
+        "currency": "통화",
+        "bestTime": "가기 좋은 시기",
+        "airport": "공항"
       }
     }
   },
@@ -2456,312 +2616,367 @@
     }
   },
   "country": {
-    "loading": "[KO] Loading country…",
-    "planTrip": "[KO] Plan a trip to {{country}}",
-    "similar": "[KO] More destinations",
+    "loading": "국가 불러오는 중…",
+    "planTrip": "{{country}} 여행 계획",
+    "similar": "더 많은 여행지",
     "notFound": {
-      "title": "[KO] Country not found",
-      "body": "[KO] The country you're looking for doesn't exist.",
-      "back": "[KO] Back to Places"
+      "title": "국가를 찾을 수 없음",
+      "body": "찾으시는 국가가 존재하지 않습니다.",
+      "back": "장소로 돌아가기"
     },
     "breadcrumb": {
-      "places": "[KO] Places"
+      "places": "장소"
     },
     "hero": {
-      "capital": "[KO] Capital"
+      "capital": "수도"
     },
     "verdict": {
-      "eyebrow": "[KO] For LGBTQ+ travelers",
-      "welcoming": "[KO] Welcoming",
-      "mixed": "[KO] Mixed",
-      "caution": "[KO] Use caution",
-      "dangerous": "[KO] Dangerous",
-      "equality": "[KO] Equality",
-      "fullBreakdown": "[KO] Full breakdown"
+      "eyebrow": "LGBTQ+ 여행자를 위해",
+      "welcoming": "환영하는",
+      "mixed": "보통",
+      "caution": "주의 필요",
+      "dangerous": "위험",
+      "equality": "평등",
+      "fullBreakdown": "전체 분석"
     },
     "facts": {
-      "capital": "[KO] Capital",
-      "population": "[KO] Population",
-      "equality": "[KO] Equality",
-      "languages": "[KO] Languages",
-      "currency": "[KO] Currency",
-      "cities": "[KO] Cities"
+      "capital": "수도",
+      "population": "인구",
+      "equality": "평등",
+      "languages": "언어",
+      "currency": "통화",
+      "cities": "도시"
     },
     "section": {
-      "rights": "[KO] Rights & safety",
-      "cities": "[KO] Cities",
-      "venues": "[KO] Venues",
-      "events": "[KO] Events",
-      "travel": "[KO] Travel",
-      "stats": "[KO] In numbers",
-      "personalities": "[KO] Voices",
-      "nearby": "[KO] Nearby",
-      "news": "[KO] News",
-      "map": "[KO] Map"
+      "rights": "권리 및 안전",
+      "cities": "도시",
+      "venues": "장소",
+      "events": "이벤트",
+      "travel": "여행",
+      "stats": "숫자로 보기",
+      "personalities": "목소리",
+      "nearby": "근처",
+      "news": "뉴스",
+      "map": "지도"
     },
     "practical": {
-      "languages": "[KO] Languages",
-      "currency": "[KO] Currency",
-      "callingCode": "[KO] Calling code",
-      "tld": "[KO] Internet domain",
-      "driving": "[KO] Driving",
-      "drivesLeft": "[KO] Left-hand side",
-      "drivesRight": "[KO] Right-hand side",
-      "airports": "[KO] Major airports",
-      "government": "[KO] Government",
-      "nationalDay": "[KO] National day"
+      "languages": "언어",
+      "currency": "통화",
+      "callingCode": "국가 번호",
+      "tld": "인터넷 도메인",
+      "driving": "운전",
+      "drivesLeft": "좌측통행",
+      "drivesRight": "우측통행",
+      "airports": "주요 공항",
+      "government": "정부",
+      "nationalDay": "국경일"
     },
     "stats": {
-      "gdpPerCapita": "[KO] GDP / capita",
-      "hdi": "[KO] HDI",
-      "lifeExpectancy": "[KO] Life expectancy",
-      "literacy": "[KO] Literacy",
-      "income": "[KO] Income level"
+      "gdpPerCapita": "1인당 GDP",
+      "hdi": "HDI",
+      "lifeExpectancy": "기대수명",
+      "literacy": "문해율",
+      "income": "소득 수준"
     },
     "cities": {
-      "emptyTitle": "[KO] No cities yet",
-      "emptyBody": "[KO] No cities are listed for this country yet."
+      "emptyTitle": "아직 도시가 없습니다",
+      "emptyBody": "이 국가에 아직 등록된 도시가 없습니다."
     },
     "venues": {
-      "emptyTitle": "[KO] No venues yet",
-      "emptyBody": "[KO] Be the first to add a venue in {{country}}."
+      "emptyTitle": "아직 장소가 없습니다",
+      "emptyBody": "{{country}}에 처음으로 장소를 추가해 보세요."
     },
     "events": {
-      "emptyTitle": "[KO] No upcoming events",
-      "emptyBody": "[KO] No events are scheduled for this country yet."
+      "emptyTitle": "예정된 이벤트 없음",
+      "emptyBody": "이 국가에 아직 예정된 이벤트가 없습니다."
     },
     "travel": {
-      "activities": "[KO] Activities & tours",
-      "activitiesBody": "[KO] Experiences in {{country}}"
+      "activities": "액티비티 & 투어",
+      "activitiesBody": "{{country}}에서의 경험"
     },
     "news": {
-      "emptyTitle": "[KO] No local news yet",
-      "emptyBody": "[KO] No news articles are available for this country yet."
+      "emptyTitle": "아직 현지 뉴스가 없습니다",
+      "emptyBody": "이 국가의 뉴스 기사가 아직 없습니다."
     },
     "rights": {
-      "title": "[KO] LGBTI rights overview",
-      "source": "[KO] ILGA World Database",
-      "updated": "[KO] Updated",
-      "noData": "[KO] No data",
-      "sameSexActivity": "[KO] Same-sex activity",
-      "penalty": "[KO] Penalty",
-      "deathPenalty": "[KO] death penalty possible",
-      "decriminalized": "[KO] Decriminalized",
-      "expression": "[KO] Freedom of expression",
-      "association": "[KO] Freedom of association",
+      "title": "LGBTI 권리 개요",
+      "source": "ILGA World Database",
+      "updated": "업데이트됨",
+      "noData": "데이터 없음",
+      "sameSexActivity": "동성 간 행위",
+      "penalty": "처벌",
+      "deathPenalty": "사형 가능",
+      "decriminalized": "비범죄화",
+      "expression": "표현의 자유",
+      "association": "결사의 자유",
       "section": {
-        "criminalisation": "[KO] Criminalisation & freedoms",
-        "antiDiscrimination": "[KO] Anti-discrimination protection",
-        "criminalJustice": "[KO] Criminal justice",
-        "family": "[KO] Family & relationships",
-        "identity": "[KO] Identity & health"
+        "criminalisation": "범죄화와 자유",
+        "antiDiscrimination": "차별 금지 보호",
+        "criminalJustice": "형사 사법",
+        "family": "가족과 관계",
+        "identity": "정체성과 건강"
       },
-      "constitutional": "[KO] Constitutional",
-      "employment": "[KO] Employment",
-      "housing": "[KO] Housing",
-      "education": "[KO] Education",
-      "health": "[KO] Health",
-      "goodsServices": "[KO] Goods & services",
-      "bullying": "[KO] Bullying",
-      "hateCrime": "[KO] Hate crime laws",
-      "incitement": "[KO] Incitement prohibition",
-      "unions": "[KO] Same-sex unions",
-      "marriageSince": "[KO] Marriage since",
-      "civilUnionSince": "[KO] civil union since",
-      "adoption": "[KO] Adoption rights",
-      "genderRecognition": "[KO] Gender recognition",
-      "marker": "[KO] Marker",
-      "selfId": "[KO] Self-ID",
-      "requiresSurgery": "[KO] Requires surgery",
-      "requiresDiagnosis": "[KO] Requires diagnosis",
-      "conversionTherapy": "[KO] Conversion therapy",
-      "intersex": "[KO] Intersex bodily integrity",
-      "ilgaLink": "[KO] ILGA World Database"
+      "constitutional": "헌법상",
+      "employment": "고용",
+      "housing": "주거",
+      "education": "교육",
+      "health": "건강",
+      "goodsServices": "상품 및 서비스",
+      "bullying": "괴롭힘",
+      "hateCrime": "증오범죄 법률",
+      "incitement": "선동 금지",
+      "unions": "동성 결합",
+      "marriageSince": "결혼 가능 시작",
+      "civilUnionSince": "시민 결합 시작",
+      "adoption": "입양 권리",
+      "genderRecognition": "성별 인정",
+      "marker": "성별 표기",
+      "selfId": "자기결정",
+      "requiresSurgery": "수술 필요",
+      "requiresDiagnosis": "진단 필요",
+      "conversionTherapy": "전환 치료",
+      "intersex": "인터섹스 신체 온전성",
+      "ilgaLink": "ILGA World Database"
     }
   },
   "inbox": {
-    "title": "[KO] Inbox",
+    "title": "받은편지함",
     "filter": {
-      "all": "[KO] All",
-      "chats": "[KO] Chats",
-      "mail": "[KO] Mail",
-      "alerts": "[KO] Alerts"
+      "all": "전체",
+      "chats": "채팅",
+      "mail": "메일",
+      "alerts": "알림"
     },
     "compose": {
-      "label": "[KO] Compose",
-      "message": "[KO] New message",
-      "email": "[KO] New email"
+      "label": "작성",
+      "message": "새 메시지",
+      "email": "새 메일"
     },
     "notification": {
-      "open": "[KO] Open"
+      "open": "열기"
     },
-    "openInbox": "[KO] Open inbox",
-    "markAlertsRead": "[KO] Mark alerts read",
-    "unread": "[KO] Unread",
-    "unreadCount": "[KO] {{count}} unread",
+    "openInbox": "받은편지함 열기",
+    "markAlertsRead": "알림 읽음 표시",
+    "unread": "읽지 않음",
+    "unreadCount": "읽지 않음 {{count}}개",
     "action": {
-      "pin": "[KO] Pin",
-      "unpin": "[KO] Unpin",
-      "mute": "[KO] Mute",
-      "unmute": "[KO] Unmute",
-      "markRead": "[KO] Mark as read",
-      "archive": "[KO] Archive"
+      "pin": "고정",
+      "unpin": "고정 해제",
+      "mute": "음소거",
+      "unmute": "음소거 해제",
+      "markRead": "읽음 표시",
+      "archive": "보관"
     },
-    "search": "[KO] Search",
-    "searchEmpty": "[KO] No matches.",
+    "search": "검색",
+    "searchEmpty": "일치 항목 없음.",
     "recipient": {
-      "search": "[KO] Search people",
-      "empty": "[KO] No suggestions yet.",
-      "recent": "[KO] Recently messaged",
-      "active": "[KO] Active recently"
+      "search": "사람 검색",
+      "empty": "아직 추천이 없습니다.",
+      "recent": "최근 메시지한 사람",
+      "active": "최근 활동"
     }
   },
   "extension": {
     "signInGate": {
-      "title": "[KO] Sign in to install the extension",
-      "subtitle": "[KO] The queer.guide capture extension lets signed-in members suggest venues, events, hotels and more from any webpage.",
-      "cta": "[KO] Sign in"
+      "title": "확장 프로그램을 설치하려면 로그인",
+      "subtitle": "queer.guide 캡처 확장 프로그램을 사용하면 로그인한 회원이 모든 웹페이지에서 장소, 이벤트, 호텔 등을 제안할 수 있습니다.",
+      "cta": "로그인"
     },
     "heading": {
-      "title": "[KO] queer.guide capture",
-      "subtitle": "[KO] Browser extension that turns any webpage into a structured suggestion for our moderators."
+      "title": "queer.guide 캡처",
+      "subtitle": "모든 웹페이지를 모더레이터를 위한 구조화된 제안으로 바꿔 주는 브라우저 확장 프로그램."
     },
     "badge": {
-      "installed": "[KO] Installed"
+      "installed": "설치됨"
     },
     "captures": {
-      "label": "[KO] Captures",
-      "venues": "[KO] Venues",
-      "events": "[KO] Events",
-      "hotels": "[KO] Hotels",
-      "marketplace": "[KO] Marketplace",
-      "news": "[KO] News"
+      "label": "캡처",
+      "venues": "장소",
+      "events": "이벤트",
+      "hotels": "호텔",
+      "marketplace": "마켓플레이스",
+      "news": "뉴스"
     },
     "connect": {
-      "title": "[KO] Connect this browser",
-      "detected": "[KO] Extension",
-      "installed": "[KO] is installed in this browser.",
-      "body": "[KO] Sign your queer.guide session into the extension so you can submit content from any webpage.",
-      "signInPrompt": "[KO] Sign in to your queer.guide account to connect this browser and start submitting.",
-      "signedInAs": "[KO] Signed in as",
-      "cta": "[KO] Connect",
-      "connecting": "[KO] Connecting…",
+      "title": "이 브라우저 연결",
+      "detected": "확장 프로그램",
+      "installed": "이(가) 이 브라우저에 설치되어 있습니다.",
+      "body": "확장 프로그램에 queer.guide 세션으로 로그인하면 모든 웹페이지에서 콘텐츠를 제출할 수 있습니다.",
+      "signInPrompt": "queer.guide 계정에 로그인하여 이 브라우저를 연결하고 제출을 시작하세요.",
+      "signedInAs": "로그인 계정:",
+      "cta": "연결",
+      "connecting": "연결 중…",
       "done": {
-        "title": "[KO] Connected.",
-        "body": "[KO] Open the extension popup on any page to capture content for queer.guide."
+        "title": "연결됨.",
+        "body": "아무 페이지에서나 확장 프로그램 팝업을 열어 queer.guide용 콘텐츠를 캡처하세요."
       }
     },
     "steps": {
-      "title": "[KO] Install in 3 steps",
+      "title": "3단계로 설치",
       "s1": {
-        "title": "[KO] Download the latest build",
-        "body": "[KO] We don't have the extension on the Chrome Web Store yet. For now, grab the latest signed build.",
-        "download": "[KO] Download .zip",
-        "note": "[KO] Unzip it somewhere you won't accidentally delete (e.g. ~/Applications/queer-guide-extension)."
+        "title": "최신 빌드 다운로드",
+        "body": "아직 Chrome 웹 스토어에 확장 프로그램이 없습니다. 지금은 최신 서명된 빌드를 받으세요.",
+        "download": ".zip 다운로드",
+        "note": "실수로 삭제하지 않을 위치에 압축을 푸세요(예: ~/Applications/queer-guide-extension)."
       },
       "s2": {
-        "title": "[KO] Load it in Chrome",
-        "l1": "[KO] Open chrome://extensions in a new tab.",
-        "l2": "[KO] Toggle Developer mode on (top right).",
-        "l3": "[KO] Click Load unpacked and pick the unzipped folder.",
-        "l4": "[KO] The queer.guide puzzle icon appears in your toolbar — pin it for one-click access.",
-        "note": "[KO] Other Chromium browsers (Edge, Brave, Arc) work the same way. Firefox / Safari are not supported yet."
+        "title": "Chrome에 로드",
+        "l1": "새 탭에서 chrome://extensions 를 엽니다.",
+        "l2": "개발자 모드를 켭니다(오른쪽 위).",
+        "l3": "‘압축해제된 확장 프로그램을 로드합니다’를 클릭하고 압축을 푼 폴더를 선택하세요.",
+        "l4": "도구 모음에 queer.guide 퍼즐 아이콘이 나타납니다 — 한 번에 접근하려면 고정하세요.",
+        "note": "다른 Chromium 브라우저(Edge, Brave, Arc)도 같은 방식입니다. Firefox / Safari는 아직 지원되지 않습니다."
       },
       "s3": {
-        "title": "[KO] Reload this page and Connect",
-        "body": "[KO] Once Chrome confirms the extension loaded, refresh this page. A “Connect” button will appear and one click signs the extension into your queer.guide account."
+        "title": "이 페이지를 새로고침하고 연결",
+        "body": "Chrome가 확장 프로그램 로드를 확인하면 이 페이지를 새로고침하세요. ‘연결’ 버튼이 나타나고, 한 번 클릭하면 확장 프로그램이 queer.guide 계정에 로그인됩니다."
       },
       "dev": {
-        "label": "[KO] Want to build it yourself or contribute?",
-        "cta": "[KO] Build instructions"
+        "label": "직접 빌드하거나 기여하고 싶으신가요?",
+        "cta": "빌드 안내"
       }
     },
     "highlights": {
       "smart": {
-        "title": "[KO] Smart capture",
-        "body": "[KO] Reads JSON-LD, OpenGraph, microdata and DOM heuristics — most pages just work."
+        "title": "스마트 캡처",
+        "body": "JSON-LD, OpenGraph, 마이크로데이터, DOM 휴리스틱을 읽어 대부분의 페이지에서 바로 작동합니다."
       },
       "privacy": {
-        "title": "[KO] Privacy-first",
-        "body": "[KO] Only runs when you click. No host permissions, no background tracking."
+        "title": "개인정보 우선",
+        "body": "클릭할 때만 실행됩니다. 호스트 권한 없음, 백그라운드 추적 없음."
       },
       "review": {
-        "title": "[KO] Always reviewed",
-        "body": "[KO] Submissions land in a moderation queue, never live until approved."
+        "title": "항상 검토됨",
+        "body": "제출물은 모더레이션 대기열로 들어가며 승인 전에는 게시되지 않습니다."
       }
     },
     "bug": {
-      "label": "[KO] Found a bug?",
-      "cta": "[KO] open an issue"
+      "label": "버그를 발견하셨나요?",
+      "cta": "이슈 열기"
     }
   },
   "breadcrumb": {
-    "home": "[KO] Home",
-    "venues": "[KO] Venues",
-    "events": "[KO] Events",
-    "hotels": "[KO] Hotels",
-    "villages": "[KO] Queer villages",
-    "marketplace": "[KO] Marketplace",
-    "resources": "[KO] Resources",
-    "personalities": "[KO] People",
-    "news": "[KO] News",
-    "places": "[KO] Places",
-    "cities": "[KO] Cities",
-    "quests": "[KO] Quests",
-    "groups": "[KO] Groups",
-    "trips": "[KO] Trips",
-    "help": "[KO] Help",
-    "pride": "[KO] Pride",
-    "contributors": "[KO] Contributors",
-    "wishlists": "[KO] Wishlists"
+    "home": "홈",
+    "venues": "장소",
+    "events": "이벤트",
+    "hotels": "호텔",
+    "villages": "퀴어 빌리지",
+    "marketplace": "마켓플레이스",
+    "resources": "자료",
+    "personalities": "인물",
+    "news": "뉴스",
+    "places": "장소",
+    "cities": "도시",
+    "quests": "퀘스트",
+    "groups": "그룹",
+    "trips": "여행",
+    "help": "도움말",
+    "pride": "프라이드",
+    "contributors": "기여자",
+    "wishlists": "위시리스트",
+    "tags": "태그"
   },
   "chat": {
-    "react": "[KO] React",
-    "edited": "[KO] edited",
-    "deleted": "[KO] Message deleted",
-    "editing": "[KO] Editing message",
-    "replyingTo": "[KO] Replying to {{name}}",
+    "react": "반응",
+    "edited": "수정됨",
+    "deleted": "삭제된 메시지",
+    "editing": "메시지 편집 중",
+    "replyingTo": "{{name}}님에게 답장",
     "reply": {
-      "action": "[KO] Reply",
-      "someone": "[KO] someone"
+      "action": "답장",
+      "someone": "누군가"
     },
     "emoji": {
-      "search": "[KO] Search emoji",
-      "none": "[KO] No emoji found.",
+      "search": "이모지 검색",
+      "none": "이모지를 찾을 수 없습니다.",
       "cat": {
-        "smileys": "[KO] Smileys",
-        "gestures": "[KO] Gestures",
-        "hearts": "[KO] Hearts",
-        "pride": "[KO] Pride",
-        "animals": "[KO] Animals",
-        "food": "[KO] Food",
-        "activity": "[KO] Activity",
-        "symbols": "[KO] Symbols"
+        "smileys": "스마일",
+        "gestures": "제스처",
+        "hearts": "하트",
+        "pride": "프라이드",
+        "animals": "동물",
+        "food": "음식",
+        "activity": "활동",
+        "symbols": "기호"
       }
     },
-    "activeNow": "[KO] Active now",
+    "activeNow": "지금 활동 중",
     "preview": {
-      "you": "[KO] You",
-      "photo": "[KO] Photo",
-      "sticker": "[KO] Sticker",
-      "voice": "[KO] Voice message"
+      "you": "나",
+      "photo": "사진",
+      "sticker": "스티커",
+      "voice": "음성 메시지"
     },
-    "streak": "[KO] You two have been chatting for {{count}} days ✨",
+    "streak": "두 분이 {{count}}일째 대화 중이에요 ✨",
     "vibe": {
-      "set": "[KO] Set a vibe",
-      "title": "[KO] Your vibe",
-      "placeholder": "[KO] What's your vibe?",
-      "for4h": "[KO] 4h"
+      "set": "분위기 설정",
+      "title": "내 분위기",
+      "placeholder": "지금 기분은?",
+      "for4h": "4시간"
     },
     "stickers": {
-      "title": "[KO] Stickers"
+      "title": "스티커"
     },
     "freeToMeet": {
-      "title": "[KO] Free to meet",
-      "set": "[KO] Free to meet",
-      "on": "[KO] Free now",
-      "both": "[KO] {{name}} is free to meet right now 🟢",
-      "youOnly": "[KO] You're marked free to meet 🟢"
+      "title": "만날 수 있음",
+      "set": "만날 수 있음",
+      "on": "지금 가능",
+      "both": "{{name}}님은 지금 만날 수 있어요 🟢",
+      "youOnly": "만날 수 있음으로 표시되어 있어요 🟢"
+    }
+  },
+  "newsDetail": {
+    "notFound": "기사를 찾을 수 없습니다",
+    "notFoundDesc": "찾으시는 기사가 존재하지 않습니다.",
+    "backToNews": "뉴스로 돌아가기",
+    "share": "공유",
+    "readAtSource": "출처에서 보기",
+    "fresh": "새 소식",
+    "reportedByOutlets": "{{count}}개 매체 보도",
+    "featured": "추천",
+    "byAuthor": "{{author}}",
+    "minRead": "{{count}}분 분량",
+    "viewsCount": "조회 {{count}}회",
+    "whyThisMatters": "왜 중요한가",
+    "editorialPlaceholder": "Alt+클릭하여 맥락 추가 — 이 소식이 중요한 이유를 1~3문장으로.",
+    "bodyFallback": "전체 내용은 원본 출처에서 확인할 수 있습니다.",
+    "originallyPublishedBy": "원 출처: {{source}}.",
+    "viewOriginal": "원문 보기",
+    "integritySatire": "풍자로 표시됨 — 사실 보도가 아닙니다.",
+    "integrityAdvertorial": "협찬/광고성 콘텐츠.",
+    "integritySentimentConflict": "출처마다 논조가 다릅니다 — 주의해서 읽으세요.",
+    "closeToHome": "내 거점 근처",
+    "seeFullStory": "전체 이야기 보기",
+    "topics": "주제",
+    "home": "홈",
+    "whereThisHappens": "발생 장소",
+    "aboutSource": "출처 정보",
+    "corroboratedAcross": "{{count}}개 매체가 확인",
+    "lastVerified": "최종 확인 {{time}}",
+    "visitSource": "{{source}} 방문",
+    "source": "출처",
+    "moreLikeThis": "비슷한 기사",
+    "forYou": "추천"
+  },
+  "pwa": {
+    "updateAvailable": {
+      "title": "새 버전을 사용할 수 있습니다",
+      "description": "새로고침하여 최신 기능을 받으세요.",
+      "action": "새로고침"
+    },
+    "backOnline": "다시 온라인 상태입니다",
+    "offline": {
+      "title": "오프라인 상태입니다",
+      "description": "일부 기능을 사용하지 못할 수 있습니다."
+    },
+    "install": {
+      "title": "Queer Guide 설치",
+      "description": "홈 화면에서 빠르게 접근하세요. 오프라인에서도 작동합니다.",
+      "action": "설치",
+      "iosTitle": "홈 화면에 추가",
+      "iosHint": "Safari에서 공유 버튼을 누른 다음 '홈 화면에 추가'를 선택하세요.",
+      "dismiss": "닫기",
+      "ariaLabel": "앱 설치"
     }
   }
 }

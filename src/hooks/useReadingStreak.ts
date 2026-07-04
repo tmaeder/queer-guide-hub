@@ -22,9 +22,9 @@ export function useReadingStreak() {
     let cancelled = false;
     setLoading(true);
     (async () => {
-      const { data, error } = await supabase.rpc('news_reading_streak' as never, {
+      const { data, error } = await supabase.rpc('news_reading_streak', {
         p_user: user.id,
-      } as never);
+      });
       if (cancelled) return;
       if (error || !data) {
         setStreak({ current_streak: 0, longest_streak: 0, last_read_date: null });

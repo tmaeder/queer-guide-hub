@@ -5,19 +5,14 @@
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { untypedFrom } from '@/integrations/supabase/untyped';
 import { useAbortableQuery } from '@/hooks/useAbortableQuery';
 import type { Tables } from '@/integrations/supabase/types';
 import { logCmsAudit } from '@/lib/admin-audit';
+import { UUID_RE } from '@/lib/uuid';
 
 const STALE = 5 * 60_000;
 const STALE_LONG = 30 * 60_000;
-
-/** Strict UUID v1–v5 shape. Used to gate slug→id fallbacks for `maybeSingle()`
- * callers — without this, a slug that doesn't resolve becomes a non-UUID
- * `id=eq.<slug>` query against a uuid column, which PostgREST 400s and
- * React Query then retries in a tight loop. */
-const UUID_RE =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /** HotelDetail.tsx fallback when slug is a uuid. */
 export function useHotelByIdFallback<T = unknown>(
@@ -130,9 +125,7 @@ export async function fetchNewsQualityReviewCount(): Promise<number> {
 /** AdminReview.tsx — count entity_link_review pending rows. */
 export async function fetchEntityLinkReviewCount(): Promise<number> {
   // entity_link_review isn't in the generated supabase types yet.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { count, error } = await (supabase as any)
-    .from('entity_link_review')
+  const { count, error } = await untypedFrom('entity_link_review')
     .select('id', { count: 'exact', head: true })
     .eq('status', 'pending');
   return error ? 0 : (count ?? 0);
@@ -240,9 +233,7 @@ export async function fetchVenueWithReviews<TVenue, TReview>(
   // types yet — cast, per the project's convention for new tables/RPCs.)
   const [primary, redirect] = await Promise.all([
     supabase.from('venues').select(selectFields).eq('slug', slug).single(),
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (supabase as any)
-      .from('venue_slug_redirects')
+    untypedFrom('venue_slug_redirects')
       .select('venue_id')
       .eq('old_slug', slug)
       .maybeSingle(),
@@ -408,8 +399,7 @@ export async function insertEntityFromSubmission(
   table: string,
   payload: Record<string, unknown>,
 ): Promise<{ data: { id: string } | null; error: Error | null }> {
-  const { data, error } = await supabase
-    .from(table as never)
+  const { data, error } = await untypedFrom(table)
     .insert(payload as never)
     .select('id')
     .single();
@@ -731,7 +721,7 @@ export async function listFrom<T = unknown>(
   order?: { col: string; ascending?: boolean },
   limit?: number,
 ): Promise<T[]> {
-  let q = supabase.from(table as never).select(select as never);
+  let q = untypedFrom(table).select(select as never);
   if (order) q = (q as unknown as { order: (c: string, opts: { ascending?: boolean }) => typeof q }).order(order.col, { ascending: order.ascending ?? true });
   if (limit) q = (q as unknown as { limit: (n: number) => typeof q }).limit(limit);
   const { data, error } = await q;
@@ -744,7 +734,7 @@ export async function countRows(
   table: string,
   filter?: { col: string; op?: 'eq' | 'neq' | 'gte' | 'lte'; val: unknown },
 ): Promise<number> {
-  let q = supabase.from(table as never).select('*', { count: 'exact', head: true });
+  let q = untypedFrom(table).select('*', { count: 'exact', head: true });
   if (filter) {
     const op = filter.op ?? 'eq';
     q = (q as unknown as Record<string, (c: string, v: unknown) => typeof q>)[op](
@@ -763,7 +753,7 @@ export async function listFromWhere<T = unknown>(
   filters: Array<{ col: string; val: unknown; op?: 'eq' | 'neq' | 'in' | 'gte' | 'lte' | 'ilike' }>,
   opts?: { order?: { col: string; ascending?: boolean }; limit?: number },
 ): Promise<T[]> {
-  let q = supabase.from(table as never).select(select as never);
+  let q = untypedFrom(table).select(select as never);
   for (const f of filters) {
     const op = f.op ?? 'eq';
     q = (
@@ -790,8 +780,7 @@ export async function updateRowsByIds(
   update: Record<string, unknown>,
 ): Promise<{ error: Error | null }> {
   if (ids.length === 0) return { error: null };
-  const { error } = await supabase
-    .from(table as never)
+  const { error } = await untypedFrom(table)
     .update(update as never)
     .in('id', ids);
   if (!error) void logCmsAudit(table, ids, 'bulk_update');
@@ -806,8 +795,7 @@ export async function listFromIn<T = unknown>(
   values: unknown[],
 ): Promise<T[]> {
   if (values.length === 0) return [];
-  const { data } = await supabase
-    .from(table as never)
+  const { data } = await untypedFrom(table)
     .select(select as never)
     .in(col as never, values as never);
   return (data ?? []) as T[];
@@ -817,7 +805,7 @@ export async function insertInto<TPayload extends Record<string, unknown>>(
   table: string,
   payload: TPayload,
 ): Promise<{ data: unknown; error: unknown }> {
-  const { data, error } = await supabase.from(table as never).insert([payload as never]).select().maybeSingle();
+  const { data, error } = await untypedFrom(table).insert([payload as never]).select().maybeSingle();
   return { data, error };
 }
 
@@ -826,12 +814,12 @@ export async function updateRow(
   id: string,
   update: Record<string, unknown>,
 ): Promise<{ error: unknown }> {
-  const { error } = await supabase.from(table as never).update(update as never).eq('id', id);
+  const { error } = await untypedFrom(table).update(update as never).eq('id', id);
   return { error };
 }
 
 export async function deleteRow(table: string, id: string): Promise<{ error: unknown }> {
-  const { error } = await supabase.from(table as never).delete().eq('id', id);
+  const { error } = await untypedFrom(table).delete().eq('id', id);
   return { error };
 }
 
@@ -885,8 +873,7 @@ export async function fetchNamesByIds(
 
 /** AdminPersonalities.tsx — read internal note for a personality. */
 export async function fetchPersonalityInternalNote(personalityId: string): Promise<string | null> {
-  const { data } = await supabase
-    .from('personality_internal_notes' as never)
+  const { data } = await untypedFrom('personality_internal_notes')
     .select('notes')
     .eq('personality_id' as never, personalityId as never)
     .maybeSingle();
@@ -899,8 +886,7 @@ export async function upsertPersonalityInternalNote(payload: {
   notes: string;
   updated_by?: string | null;
 }) {
-  const { error } = await supabase
-    .from('personality_internal_notes' as never)
+  const { error } = await untypedFrom('personality_internal_notes')
     .upsert(payload as never, { onConflict: 'personality_id' });
   return { error };
 }
@@ -986,8 +972,7 @@ export async function insertReturningId(
   table: string,
   payload: Record<string, unknown>,
 ): Promise<{ id: string | null; error: { message: string } | null }> {
-  const { data, error } = await supabase
-    .from(table as never)
+  const { data, error } = await untypedFrom(table)
     .insert(payload as never)
     .select('id')
     .single();
@@ -1015,8 +1000,7 @@ export async function updateRowsBy(
   match: { col: string; val: unknown },
   update: Record<string, unknown>,
 ): Promise<{ error: { message: string } | null }> {
-  const { error } = await supabase
-    .from(table as never)
+  const { error } = await untypedFrom(table)
     .update(update as never)
     .eq(match.col, match.val);
   return { error: error ? { message: error.message } : null };
@@ -1029,7 +1013,7 @@ export async function listWhereNotNull<T = unknown>(
   notNullCol: string,
   orderCol?: string,
 ): Promise<T[]> {
-  let q = supabase.from(table as never).select(select as never).not(notNullCol, 'is', null);
+  let q = untypedFrom(table).select(select as never).not(notNullCol, 'is', null);
   if (orderCol) {
     q = (q as unknown as { order: (c: string) => typeof q }).order(orderCol);
   }
@@ -1044,8 +1028,7 @@ export async function deleteRowsByIds(
   ids: string[],
 ): Promise<{ error: { message: string } | null }> {
   if (ids.length === 0) return { error: null };
-  const { error } = await supabase
-    .from(table as never)
+  const { error } = await untypedFrom(table)
     .delete()
     .in('id', ids);
   if (!error) void logCmsAudit(table, ids, 'bulk_delete');
@@ -1058,7 +1041,7 @@ export async function insertRows(
   rows: Array<Record<string, unknown>>,
 ): Promise<{ error: { message: string } | null }> {
   if (rows.length === 0) return { error: null };
-  const { error } = await supabase.from(table as never).insert(rows as never);
+  const { error } = await untypedFrom(table).insert(rows as never);
   return { error: error ? { message: error.message } : null };
 }
 
@@ -1067,7 +1050,7 @@ export async function insertRow(
   table: string,
   payload: Record<string, unknown>,
 ): Promise<{ error: { message: string } | null }> {
-  const { error } = await supabase.from(table as never).insert(payload as never);
+  const { error } = await untypedFrom(table).insert(payload as never);
   return { error: error ? { message: error.message } : null };
 }
 
@@ -1076,7 +1059,7 @@ export async function countRowsWhere(
   table: string,
   filters: Array<{ col: string; val: unknown }>,
 ): Promise<number> {
-  let q = supabase.from(table as never).select('id', { count: 'exact', head: true });
+  let q = untypedFrom(table).select('id', { count: 'exact', head: true });
   for (const f of filters) {
     q = (q as unknown as { eq: (c: string, v: unknown) => typeof q }).eq(f.col, f.val);
   }
@@ -1090,8 +1073,7 @@ export async function fetchById<T = unknown>(
   id: string,
   select = '*',
 ): Promise<T | null> {
-  const { data } = await supabase
-    .from(table as never)
+  const { data } = await untypedFrom(table)
     .select(select as never)
     .eq('id', id)
     .single();
@@ -1104,8 +1086,7 @@ export async function listWithJoinDesc<T = unknown>(
   selectClause: string,
   orderCol = 'created_at',
 ): Promise<T[]> {
-  const { data, error } = await supabase
-    .from(table as never)
+  const { data, error } = await untypedFrom(table)
     .select(selectClause as never)
     .order(orderCol, { ascending: false });
   if (error) throw error;
@@ -1122,7 +1103,7 @@ export function useReviewCount(table: string, filterCol?: string, filterVal?: st
     setLoading(true);
     (async () => {
       type CountResult = { count: number | null; error: unknown };
-      const base = supabase.from(table as never).select('id', { count: 'exact', head: true });
+      const base = untypedFrom(table).select('id', { count: 'exact', head: true });
       const filtered =
         filterCol && filterVal !== undefined
           ? (base as unknown as { eq: (c: string, v: unknown) => Promise<CountResult> }).eq(

@@ -11,10 +11,20 @@ import { OCCASION_CHIPS } from '@/lib/marketplaceTaxonomy';
  *  - editor-curated collection chips (marketplace_collections, display 'chip'),
  *    navigating to the collection drilldown.
  */
-export function OccasionChips() {
+export function OccasionChips({
+  className,
+  kinds = ['occasion', 'collection'],
+}: {
+  className?: string;
+  /** Which chip kinds to render — the control bar owns occasion toggles now. */
+  kinds?: Array<'occasion' | 'collection'>;
+}) {
   const { collections } = useMarketplaceCollections('chip');
   const [searchParams, setSearchParams] = useSearchParams();
   const activeOcc = searchParams.get('occ') ?? '';
+  const showOccasions = kinds.includes('occasion');
+  const showCollections = kinds.includes('collection');
+  if (!showOccasions && (!showCollections || collections.length === 0)) return null;
 
   const toggleOcc = (slug: string) => {
     setSearchParams(
@@ -32,10 +42,10 @@ export function OccasionChips() {
   return (
     <nav
       aria-label="Marketplace collections"
-      className="-mx-4 mb-12 overflow-x-auto"
+      className={`-mx-4 overflow-x-auto ${className ?? 'mb-12'}`}
     >
       <ul className="flex gap-2 px-4 pb-2 min-w-max">
-        {OCCASION_CHIPS.map((c) => {
+        {showOccasions && OCCASION_CHIPS.map((c) => {
           const active = activeOcc === c.slug;
           return (
             <li key={c.slug} className="shrink-0">
@@ -54,7 +64,7 @@ export function OccasionChips() {
             </li>
           );
         })}
-        {collections.map((c) => (
+        {showCollections && collections.map((c) => (
           <li key={c.id} className="shrink-0">
             <LocalizedLink
               to={`/marketplace/collection/${c.slug}`}

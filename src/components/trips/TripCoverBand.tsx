@@ -19,13 +19,16 @@ interface Props {
  * hash of the id so returning to a trip always shows the same gradient.
  */
 function gradientForTrip(tripId: string): string {
+  // Monochrome grayscale pairs — the former rainbow fallback gradients were
+  // removed in the monochrome strip. Variety per trip now comes from
+  // foreground-opacity combinations, not hue.
   const palettes = [
-    ['#7C3AED', 'hsl(var(--foreground))'],
-    ['#F59E0B', '#EF4444'],
-    ['#06B6D4', '#3B82F6'],
-    ['#10B981', '#6366F1'],
-    ['#EC4899', '#8B5CF6'],
-    ['#0EA5E9', '#22C55E'],
+    ['hsl(var(--foreground))', 'hsl(var(--muted-foreground))'],
+    ['hsl(var(--muted-foreground))', 'hsl(var(--foreground))'],
+    ['hsl(var(--foreground) / 0.9)', 'hsl(var(--foreground) / 0.5)'],
+    ['hsl(var(--foreground) / 0.6)', 'hsl(var(--foreground))'],
+    ['hsl(var(--muted-foreground))', 'hsl(var(--foreground) / 0.7)'],
+    ['hsl(var(--foreground) / 0.8)', 'hsl(var(--muted-foreground))'],
   ];
   let hash = 0;
   for (let i = 0; i < tripId.length; i += 1) {

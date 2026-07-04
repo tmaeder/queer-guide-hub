@@ -29,12 +29,12 @@ function displayFromSlug(slug: string): string {
 }
 
 function tagHref(slug: string): string {
-  return `/resources/${encodeURIComponent(slug.toLowerCase())}`;
+  return `/tags/${encodeURIComponent(slug.toLowerCase())}`;
 }
 
 /**
  * The single canonical tag chip used across every content type. Links to the
- * canonical tag page `/resources/:slug`. Monochrome, `rounded-badge`, never the
+ * canonical tag page `/tags/:slug`. Monochrome, `rounded-badge`, never the
  * reserved brand accent. In `removable` mode it is a filter affordance (button)
  * and never navigates.
  */

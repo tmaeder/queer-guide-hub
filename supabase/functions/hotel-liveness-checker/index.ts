@@ -8,6 +8,7 @@
 // Body: { batch_limit?, dry_run?, hotel_ids? }.
 
 import { getCorsHeaders, getServiceClient, requireInternalOrAdmin, jsonResponse } from '../_shared/supabase-client.ts'
+import { hasValidWebhookSecret } from '../_shared/webhook-auth.ts'
 import { probeLink } from '../_shared/link-health.ts'
 
 const DEFAULT_BATCH = 50
@@ -26,9 +27,7 @@ Deno.serve(async (req: Request) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: getCorsHeaders(req) })
 
   const supabase = getServiceClient()
-  const secret = Deno.env.get('EVENT_QUALITY_WEBHOOK_SECRET')
-  const provided = req.headers.get('X-Webhook-Secret')
-  if (!(secret && provided && provided === secret)) {
+  if (!hasValidWebhookSecret(req, 'EVENT_QUALITY_WEBHOOK_SECRET')) {
     const auth = await requireInternalOrAdmin(req, supabase)
     if (auth instanceof Response) return auth
   }

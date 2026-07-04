@@ -176,8 +176,10 @@ export function FeedbackButton() {
               visibility: capturing ? 'hidden' : 'visible',
               // On mobile, clear the floating bottom-nav island (h-14 bar +
               // mb-2 margin + safe-area) so the FAB doesn't sit on the tabs.
+              // --map-rail-clearance is published by the map's spotlight rail
+              // while one is on screen, so the FAB also clears the rail.
               bottom: isMobile
-                ? 'calc(6rem + env(safe-area-inset-bottom, 0px))'
+                ? 'calc(max(6rem, var(--map-rail-clearance, 0rem) + 1rem) + env(safe-area-inset-bottom, 0px))'
                 : '1.5rem',
             }}
           >

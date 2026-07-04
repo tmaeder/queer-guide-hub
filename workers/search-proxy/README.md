@@ -1,15 +1,27 @@
-# queer-guide-search-proxy v2
+# queer-guide-search-proxy
 
-Personalized hybrid search: Meilisearch (lexical + Meili-hybrid) + Supabase pgvector (semantic + personalization) + Workers AI (bge-base-en-v1.5 embed, bge-reranker-base).
+Personalized hybrid search served entirely from Postgres: the `search_hybrid` /
+`search_facets` / `search_autocomplete` RPCs fuse keyword (FTS + trigram) and
+vector (pgvector) legs with RRF in SQL; the Worker layers query embedding
+(Workers AI `@cf/baai/bge-m3` via AI Gateway), personalization
+(`personalizedRank`), the optional reranker, and safety gating (JWT-verified
+`include_gated`) on top. Meilisearch was decommissioned in 2026-06; there is no
+backend flag — Postgres is the only path.
 
 ## Endpoints
 
 | Method | Path | Purpose |
 |---|---|---|
 | POST | `/search` | Hybrid + personalized results |
+| POST | `/autocomplete` | Prefix + trigram suggestions |
 | POST | `/track` | Record user event (click / save / book / dismiss / view) |
 | POST | `/onboarding` | Persist user prefs at signup |
 | POST | `/similar` | "More like this" via vector |
+| POST | `/recommendations` | Personalized recommendations |
+| POST | `/trending` | Trending entities |
+| POST | `/feedback` | Search feedback |
+| GET | `/go` | Affiliate link redirect (Awin / Amazon wrap) |
+| GET | `/admin/analytics` | Search analytics (ADMIN_TOKEN gated) |
 | GET | `/health` | Ping |
 
 ### `/search` request
@@ -42,11 +54,12 @@ Personalized hybrid search: Meilisearch (lexical + Meili-hybrid) + Supabase pgve
 ## Deploy
 
 ```bash
-cd worker
+cd workers/search-proxy
 npm i
-wrangler secret put MEILISEARCH_SEARCH_KEY
 wrangler secret put SUPABASE_URL
 wrangler secret put SUPABASE_SERVICE_KEY
+wrangler secret put SUPABASE_JWT_SECRET   # optional — offline HS256 JWT verify (else GoTrue check)
+wrangler secret put SESSION_SIGNING_KEY   # optional — signed session-id cookies
 wrangler deploy
 ```
 
@@ -59,22 +72,27 @@ Create a gateway named `qg-search` in the Cloudflare dashboard (AI > AI Gateway)
 | Name | Kind | Source |
 |---|---|---|
 | `AI` | Workers AI | platform |
-| `EMBED_CACHE` | KV | `f54d40f6d0fa4c5680857dbb21971a02` |
-| `MEILISEARCH_URL` | var | wrangler.toml |
-| `MEILISEARCH_SEARCH_KEY` | secret | `wrangler secret put` |
+| `EMBED_CACHE` | KV | wrangler.toml |
+| `SESSION_CACHE` | KV | wrangler.toml |
 | `SUPABASE_URL` | secret | `wrangler secret put` |
 | `SUPABASE_SERVICE_KEY` | secret | `wrangler secret put` |
+| `SUPABASE_JWT_SECRET` | secret | optional, offline JWT verification for safety gating |
+| `SESSION_SIGNING_KEY` | secret | optional, HMAC-signed session ids |
 | `ALLOWED_ORIGINS` | var | wrangler.toml |
 | `AI_GATEWAY_ACCOUNT_ID` | var | wrangler.toml |
 | `AI_GATEWAY_NAME` | var | wrangler.toml |
-| `EMBED_MODEL` | var | default `@cf/baai/bge-base-en-v1.5` |
-| `ENABLE_RERANKER` | var | `"1"` to enable bge-reranker-base on top-20 |
+| `EMBED_MODEL` | var | `@cf/baai/bge-m3` (1024-dim, multilingual) |
+| `ENABLE_RERANKER` | var | `"1"` to enable the reranker on top-20 |
+| `AWIN_AFFILIATE_ID` / `AWIN_MERCHANT_MIDS` / `AMAZON_ASSOCIATES_TAG` | var | affiliate `/go` wrapping |
+| `ADMIN_TOKEN` | secret | gates `/admin/analytics` |
 
-## Caveats / Follow-ups
+## Caveats
 
-1. **Embed model compat.** Existing `content_embeddings` are 768-dim. `@cf/baai/bge-base-en-v1.5` is 768-dim EN. If existing docs were embedded with a different 768-dim model, query/doc drift reduces semantic quality. Verify by spot-check: compare cosine sim between `embed(venue.title)` and row `embedding`. If drift is high, re-embed all docs with bge-base-en-v1.5 (~30min for 13k).
-2. **Multilingual (DE/ES/FR).** bge-base-en is EN only. For real multilingual support migrate to `@cf/baai/bge-m3` (1024-dim). Requires: (a) drop HNSW index; (b) `ALTER COLUMN embedding TYPE vector(1024)`; (c) re-embed all 13k+ docs; (d) recreate HNSW; (e) update `EMBED_MODEL` and function signatures.
-3. **Meili hybrid embedder.** The worker sets `hybrid: { embedder: "default" }`. Meili must have an embedder named `default` configured that matches the 768-dim model. Check via `GET /indexes/venues/settings`. If missing, set `semanticRatio: 0` or configure embedder in Meili.
-4. **Reranker default.** Adds ~80ms. Start with `ENABLE_RERANKER=0`, A/B before enabling permanently.
-5. **Personalization cold start.** New users with no events → bias vector null, falls back to pure query + interests/home_city nudges via `/onboarding`.
-6. **Session id generation.** Client is responsible. Recommend UUID v4 in localStorage, merged into user record on signup.
+1. **Reranker latency.** Adds ~80ms; enabled via `ENABLE_RERANKER=1`.
+2. **Personalization cold start.** New users with no events → bias vector null,
+   falls back to pure query + interests/home_city nudges via `/onboarding`.
+3. **Session id generation.** Client is responsible. UUID v4 in localStorage,
+   merged into the user record on signup.
+4. **Safety gating.** Gated (high-risk-country) rows are excluded unless the
+   caller presents a valid Supabase JWT; verification is fail-closed. See the
+   safety-layer notes in the repo CLAUDE.md.

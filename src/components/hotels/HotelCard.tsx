@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { MapPin, Star, DollarSign } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -61,7 +62,7 @@ const HotelCardFixture = () => (
   </div>
 );
 
-export function HotelCard({ hotel, loading = false }: HotelCardProps) {
+function HotelCardImpl({ hotel, loading = false }: HotelCardProps) {
   if (loading || !hotel) {
     return (
       <Skeleton
@@ -198,3 +199,7 @@ export function HotelCard({ hotel, loading = false }: HotelCardProps) {
     </Skeleton>
   );
 }
+
+// Memoized: rendered in hotel grids/lists — skip re-render when props are
+// referentially stable.
+export const HotelCard = memo(HotelCardImpl);

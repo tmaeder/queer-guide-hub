@@ -71,16 +71,16 @@ export function BudgetTab({ tripId, members, defaultCurrency }: Props) {
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const { user } = useAuth();
 
-  // Brand-aligned palette (magenta first, then amber, plus a handful of
-  // derived hues). No `warning`/`info`/`success` defaults — they clash with
-  // the Queer Guide palette.
+  // Monochrome — categories are distinguished by a foreground opacity ramp
+  // (the former chromatic per-category hues were removed in the monochrome
+  // strip) plus their legend labels.
   const brand = 'hsl(var(--foreground))';
   const categoryColors: Record<string, string> = {
-    food: '#F59E0B',
-    transport: '#06B6D4',
+    food: 'hsl(var(--foreground) / 0.82)',
+    transport: 'hsl(var(--foreground) / 0.64)',
     accommodation: brand,
-    activities: '#10B981',
-    shopping: '#8B5CF6',
+    activities: 'hsl(var(--foreground) / 0.46)',
+    shopping: 'hsl(var(--foreground) / 0.28)',
     other: 'hsl(var(--muted-foreground))',
   };
 

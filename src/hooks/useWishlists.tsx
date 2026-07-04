@@ -1,3 +1,4 @@
+import { slugify } from '@/lib/slugify';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -30,12 +31,8 @@ export interface WishlistItem {
 
 // Generates a stable slug from a title. Falls back to a random suffix so
 // two users naming a list "Pride 2026" can both succeed.
-function slugify(title: string): string {
-  const base = title
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .slice(0, 40) || 'list';
+function wishlistSlug(title: string): string {
+  const base = slugify(title).slice(0, 40) || 'list';
   const suffix = Math.random().toString(36).slice(2, 8);
   return `${base}-${suffix}`;
 }
@@ -130,7 +127,7 @@ export function useWishlists() {
         toast({ title: 'Sign in to create a wishlist', variant: 'default' });
         return null;
       }
-      const slug = slugify(title);
+      const slug = wishlistSlug(title);
       const { data, error } = await supabase
         .from('wishlists')
         .insert({

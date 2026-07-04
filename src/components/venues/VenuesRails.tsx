@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Sparkles } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { untypedRpc } from '@/integrations/supabase/untyped';
 import { Rail, RailItem } from '@/components/ui/Rail';
 import { Button } from '@/components/ui/button';
 import { VenueCard } from '@/components/venues/VenueCard';
@@ -31,8 +31,7 @@ async function fetchRanked(params: {
   sort: string;
   limit?: number;
 }): Promise<Venue[]> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data, error } = await (supabase as any).rpc('rpc_venues_ranked', {
+  const { data, error } = await untypedRpc<Array<{ venue: Venue }>>('rpc_venues_ranked', {
     p_user_id: params.userId,
     p_lat: params.lat,
     p_lng: params.lng,
@@ -42,7 +41,7 @@ async function fetchRanked(params: {
     p_offset: 0,
   });
   if (error || !data) return [];
-  return (data as Array<{ venue: Venue }>).map((r) => r.venue);
+  return data.map((r) => r.venue);
 }
 
 function useRailData(

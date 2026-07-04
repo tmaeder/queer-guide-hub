@@ -1,3 +1,4 @@
+import { calculateDistanceKm } from '@/utils/calculateDistance';
 import { formatDistanceToNow } from 'date-fns';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { untypedFrom } from '@/integrations/supabase/untyped';
@@ -117,7 +118,7 @@ export default function GeoMismatchTab() {
         {rows.map((r) => {
           const distKm =
             r.original_lat != null && r.validated_lat != null
-              ? haversineKm(
+              ? calculateDistanceKm(
                   r.original_lat,
                   r.original_lng ?? 0,
                   r.validated_lat,
@@ -190,13 +191,3 @@ function fmt(n: number | null): string {
   return n == null ? '—' : n.toFixed(5);
 }
 
-function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number): number {
-  const R = 6371;
-  const toRad = (x: number) => (x * Math.PI) / 180;
-  const dLat = toRad(lat2 - lat1);
-  const dLng = toRad(lng2 - lng1);
-  const a =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
-  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-}

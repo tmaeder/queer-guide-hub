@@ -170,7 +170,7 @@
     "clear": "Clear",
     "signIn": "Sign in",
     "goHome": "Go Home",
-    "more": "[AR] More"
+    "more": "المزيد"
   },
   "navigation": {
     "home": "الرئيسية",
@@ -1476,7 +1476,7 @@
     },
     "news": {
       "title": "آخر الأخبار",
-      "eyebrow": "[AR] Dispatches"
+      "eyebrow": "مستجدات"
     },
     "discover": "Discover",
     "destinationsTitle": "Where the scene lives.",
@@ -1497,39 +1497,45 @@
         "resources": "resources"
       }
     },
-    "eyebrow": "[AR] Queer Guide",
-    "browseDirectory": "[AR] Browse the directory",
-    "planTrip": "[AR] Plan a trip",
-    "allVenues": "[AR] All venues",
+    "eyebrow": "Queer Guide",
+    "browseDirectory": "تصفّح الدليل",
+    "planTrip": "خطّط لرحلة",
+    "allVenues": "كل الأماكن",
     "recentlyViewed": {
-      "eyebrow": "[AR] Recently viewed",
-      "title": "[AR] Pick up where you left off."
+      "eyebrow": "شوهدت مؤخرًا",
+      "title": "تابع من حيث توقفت."
     },
     "trending": {
-      "eyebrow": "[AR] Trending now",
-      "venues": "[AR] Venues on the rise.",
-      "venuesNear": "[AR] Popular venues in {{city}}.",
-      "venuesDesc": "[AR] What the community is checking out this week."
+      "eyebrow": "الأكثر رواجًا الآن",
+      "venues": "أماكن في صعود.",
+      "venuesNear": "أماكن شهيرة في {{city}}.",
+      "venuesDesc": "ما الذي يتابعه المجتمع هذا الأسبوع."
     },
     "cta": {
-      "title": "[AR] Built by the community,",
-      "title2": "[AR] for the community.",
-      "subtitle": "[AR] Verified safe spaces, real reviews, no paywalls.",
-      "submit": "[AR] Add a venue",
-      "about": "[AR] Read the mission",
-      "invite": "[AR] Invite friends",
-      "join": "[AR] Join the community"
+      "title": "صُنع بأيدي المجتمع،",
+      "title2": "من أجل المجتمع.",
+      "subtitle": "مساحات آمنة موثّقة، تقييمات حقيقية، بلا حواجز دفع.",
+      "submit": "أضف مكانًا",
+      "about": "اقرأ رسالتنا",
+      "invite": "ادعُ أصدقاءك",
+      "join": "انضم إلى المجتمع"
     },
-    "subtitleShort": "[AR] Verified safe places, real events, and the people behind them.",
+    "subtitleShort": "أماكن آمنة موثّقة، فعاليات حقيقية، والأشخاص خلفها.",
     "events": {
-      "eyebrow": "[AR] What's on",
+      "eyebrow": "ما الجديد",
       "groups": {
-        "today": "[AR] Today",
-        "tomorrow": "[AR] Tomorrow",
-        "thisWeekend": "[AR] This weekend",
-        "thisWeek": "[AR] This week",
-        "later": "[AR] Later"
+        "today": "اليوم",
+        "tomorrow": "غدًا",
+        "thisWeekend": "نهاية هذا الأسبوع",
+        "thisWeek": "هذا الأسبوع",
+        "later": "لاحقًا"
       }
+    },
+    "shop": {
+      "eyebrow": "السوق",
+      "title": "علامات كويرية",
+      "description": "منتجات وخدمات من أعمال يملكها أشخاص كوير وترانس.",
+      "seeAll": "تصفح السوق"
     }
   },
   "header": {
@@ -1564,7 +1570,8 @@
       "travel": "السفر",
       "personalities": "شخصيات",
       "hotels": "الفنادق",
-      "help": "مساعدة"
+      "help": "مساعدة",
+      "tags": "الوسوم"
     },
     "userMenu": {
       "myTrips": "رحلاتي",
@@ -1578,11 +1585,11 @@
       "tripInbox": "بريد الرحلة",
       "extension": "إضافة المتصفح",
       "footprint": "Footprint",
-      "messages": "[AR] Messages",
-      "mailbox": "[AR] Mailbox",
-      "you": "[AR] You",
-      "community": "[AR] Community",
-      "viewProfile": "[AR] View public profile"
+      "messages": "الرسائل",
+      "mailbox": "صندوق البريد",
+      "you": "حسابي",
+      "community": "المجتمع",
+      "viewProfile": "عرض الملف العام"
     },
     "modes": {
       "dating": "أبحث عن الحب",
@@ -1602,17 +1609,17 @@
     "signUp": "Sign up",
     "navigation": "Navigation",
     "signIn": "Sign in",
-    "modeLabel": "[AR] Mode",
-    "modeActive": "[AR] Mode: {{mode}}",
+    "modeLabel": "الوضع",
+    "modeActive": "الوضع: {{mode}}",
     "clusters": {
-      "places": "[AR] Places",
-      "community": "[AR] Community",
-      "shop": "[AR] Shop & Read",
-      "support": "[AR] Support"
+      "places": "أماكن",
+      "community": "المجتمع",
+      "shop": "تسوّق واقرأ",
+      "support": "الدعم"
     },
     "notifications": {
-      "label": "[AR] Notifications",
-      "unread": "[AR] Notifications, {{count}} unread"
+      "label": "الإشعارات",
+      "unread": "الإشعارات، {{count}} غير مقروءة"
     },
     "mobileNav": {
       "home": "الرئيسية",
@@ -1623,7 +1630,10 @@
       "menuTitle": "استكشف Queer Guide",
       "menuDescription": "انتقل إلى أي قسم، وبدّل اللغة أو المظهر.",
       "trips": "رحلاتي",
-      "settingsSection": "العرض"
+      "settingsSection": "العرض",
+      "browseAll": "تصفّح كل الأقسام",
+      "unreadCount": "{{count}} غير مقروء",
+      "tripsBadge": "{{count}} عناصر رحلة تحتاج إلى انتباه"
     }
   },
   "pages": {
@@ -1673,7 +1683,7 @@
       "noPhotos": "لا توجد صور",
       "noEvents": "لا توجد فعاليات قادمة في هذا المكان",
       "noReviews": "لا توجد مراجعات بعد. كن أول من يترك مراجعة!",
-      "accessibility": "[AR] Accessibility"
+      "accessibility": "إمكانية الوصول"
     },
     "events": {
       "title": "الفعاليات",
@@ -2041,7 +2051,7 @@
       "createGroup": "إنشاء مجموعة",
       "mostPopular": "المجموعات الأكثر شعبية",
       "noPopular": "لا توجد مجموعات شائعة متاحة بعد.",
-      "eyebrow": "[AR] Community"
+      "eyebrow": "المجتمع"
     },
     "groupDetail": {
       "signInRequired": "يرجى تسجيل الدخول لعرض تفاصيل المجموعة."
@@ -2081,7 +2091,7 @@
       "loadMore": "Load more",
       "errorTitle": "We couldn't load the feed",
       "errorDescription": "Something went wrong while loading community posts. Check your connection and try again.",
-      "eyebrow": "[AR] Community"
+      "eyebrow": "المجتمع"
     },
     "notFound": {
       "title": "الصفحة غير موجودة",
@@ -2139,21 +2149,21 @@
       }
     },
     "members": {
-      "eyebrow": "[AR] Community",
-      "title": "[AR] Members",
-      "subtitle": "[AR] People, connections, and networks within the inclusive LGBTQ+ community.",
-      "member": "[AR] member",
-      "members": "[AR] members",
-      "visible": "[AR] visible",
-      "upsellTitle": "[AR] See the full community",
-      "upsellBody": "[AR] Public profiles are listed here. Sign in to see bios, locations, interests, and to start a conversation.",
-      "signInToBrowse": "[AR] Sign in to browse"
+      "eyebrow": "المجتمع",
+      "title": "الأعضاء",
+      "subtitle": "أشخاص وعلاقات وشبكات داخل مجتمع LGBTQ+ شامل.",
+      "member": "عضو",
+      "members": "أعضاء",
+      "visible": "ظاهر",
+      "upsellTitle": "شاهد المجتمع كاملًا",
+      "upsellBody": "تُعرض هنا الملفات العامة. سجّل الدخول لرؤية النبذات والمواقع والاهتمامات ولبدء محادثة.",
+      "signInToBrowse": "سجّل الدخول للتصفح"
     },
     "friends": {
-      "eyebrow": "[AR] Community",
-      "title": "[AR] Friends",
-      "subtitle": "[AR] Manage your connections",
-      "gate": "[AR] Please sign in to view your friends."
+      "eyebrow": "المجتمع",
+      "title": "الأصدقاء",
+      "subtitle": "أدر اتصالاتك",
+      "gate": "سجّل الدخول لعرض أصدقائك."
     }
   },
   "settings": {
@@ -2163,8 +2173,8 @@
       "turnOn": "تشغيل",
       "turnOff": "إيقاف",
       "dm": {
-        "title": "[AR] Direct messages",
-        "body": "[AR] Notify me when someone sends me a message."
+        "title": "الرسائل المباشرة",
+        "body": "نبّهني عندما يرسل لي أحدهم رسالة."
       }
     }
   },
@@ -2181,6 +2191,148 @@
       "denied": "Location access is off — showing the default area",
       "unavailable": "Couldn't get your location — showing the default area",
       "timeout": "Location lookup timed out — showing the default area"
+    },
+    "share": {
+      "title": "[AR] Map view",
+      "copied": "[AR] Link copied",
+      "copiedDescription": "[AR] Paste to share this view",
+      "failed": "[AR] Share failed"
+    },
+    "commandBar": {
+      "searchThisMap": "[AR] Search this map",
+      "searching": "[AR] Searching",
+      "clearSearch": "[AR] Clear search",
+      "typeMore": "[AR] Type at least 2 characters",
+      "filterMapFor": "[AR] Filter map for “{{query}}”",
+      "jumpToPlace": "[AR] Jump to a place",
+      "noMatches": "[AR] No places match — Enter still filters the map.",
+      "filters": "[AR] Filters",
+      "filtersActive": "[AR] Filters, {{count}} active",
+      "filtersAndLayers": "[AR] Filters & layers",
+      "layers": "[AR] Layers",
+      "more": "[AR] More map options",
+      "moreShort": "[AR] More",
+      "mapOptions": "[AR] Map options",
+      "myLocation": "[AR] My location",
+      "fitResults": "[AR] Fit to results",
+      "shareView": "[AR] Share view",
+      "reset": "[AR] Reset"
+    },
+    "entityType": {
+      "venue": "[AR] Venue",
+      "event": "[AR] Event",
+      "city": "[AR] City",
+      "country": "[AR] Country",
+      "marketplace": "[AR] Listing",
+      "personality": "[AR] Person",
+      "queer_village": "[AR] Village",
+      "group": "[AR] Group",
+      "news": "[AR] News",
+      "tag": "[AR] Tag",
+      "user": "[AR] User"
+    },
+    "quick": {
+      "groupLabel": "[AR] Quick filters",
+      "openNow": "[AR] Open now",
+      "tonight": "[AR] Tonight",
+      "thisWeekend": "[AR] This weekend",
+      "thisMonth": "[AR] This month",
+      "saved": "[AR] Saved"
+    },
+    "lens": {
+      "groupLabel": "[AR] Map view",
+      "pins": "[AR] Pins",
+      "density": "[AR] Density",
+      "routes": "[AR] Routes",
+      "boundary": "[AR] Boundary",
+      "combined": "[AR] Combined"
+    },
+    "sheet": {
+      "title": "[AR] Map options",
+      "view": "[AR] View",
+      "filters": "[AR] Filters",
+      "time": "[AR] Time",
+      "layers": "[AR] Layers",
+      "actions": "[AR] Map actions"
+    },
+    "time": {
+      "label": "[AR] Time range",
+      "anyTime": "[AR] Any time",
+      "chooseDates": "[AR] Choose dates",
+      "pickRange": "[AR] Pick a start & end",
+      "untilEndDate": "[AR] {{start}} – end date",
+      "clear": "[AR] Clear",
+      "apply": "[AR] Apply dates"
+    },
+    "nav": {
+      "zoomIn": "[AR] Zoom in",
+      "zoomOut": "[AR] Zoom out",
+      "resetNorth": "[AR] Reset bearing to north",
+      "geolocate": "[AR] Show my location"
+    },
+    "legend": {
+      "label": "[AR] Legend",
+      "show": "[AR] Show map legend",
+      "hide": "[AR] Hide map legend",
+      "title": "[AR] What you're seeing",
+      "featured": "[AR] Ringed = featured spot",
+      "live": "[AR] Pulsing = open now / live",
+      "areas": "[AR] Areas",
+      "densityTitle": "[AR] Density of queer life",
+      "fewer": "[AR] Fewer",
+      "more": "[AR] More"
+    },
+    "rail": {
+      "inView_one": "[AR] {{count}} place in view",
+      "inView_other": "[AR] {{count}} places in view",
+      "hide": "[AR] Hide nearby places",
+      "listLabel": "[AR] Places in view",
+      "showOnMap": "[AR] Show {{name}} on the map"
+    },
+    "firstRun": {
+      "spotsInView_one": "[AR] {{count}} queer spot in view",
+      "spotsInView_other": "[AR] {{count}} queer spots in view",
+      "dismiss": "[AR] Dismiss"
+    },
+    "canvas": {
+      "loading": "[AR] Loading",
+      "loadingEllipsis": "[AR] Loading...",
+      "resultsInView_one": "[AR] {{count}} result in view",
+      "resultsInView_other": "[AR] {{count}} results in view",
+      "clickToZoom": "[AR] Click to zoom in",
+      "venueCount_one": "[AR] {{count}} venue",
+      "venueCount_other": "[AR] {{count}} venues",
+      "eventCount_one": "[AR] {{count}} event",
+      "eventCount_other": "[AR] {{count}} events",
+      "restroomCount_one": "[AR] {{count}} restroom",
+      "restroomCount_other": "[AR] {{count}} restrooms",
+      "hotelCount_one": "[AR] {{count}} hotel",
+      "hotelCount_other": "[AR] {{count}} hotels",
+      "placeCount_one": "[AR] {{count}} place",
+      "placeCount_other": "[AR] {{count}} places",
+      "emptyOpenNow": "[AR] Nothing open right now in view — turn off Open now or try later.",
+      "emptyTimeRange": "[AR] No events in this time range here — widen the dates or pan out.",
+      "emptySearch": "[AR] No matches for \"{{query}}\" here — clear search or pan out.",
+      "emptyDefault": "[AR] No spots here yet — pan, zoom out, or put one on the map."
+    },
+    "layers": {
+      "venues": "[AR] Venues",
+      "events": "[AR] Events",
+      "cities": "[AR] Cities",
+      "countries": "[AR] Countries",
+      "restrooms": "[AR] Restrooms",
+      "hotels": "[AR] Hotels",
+      "neighbourhoods": "[AR] Villages"
+    },
+    "filterChips": {
+      "groupLabel": "[AR] Active filters",
+      "remove": "[AR] Remove filter: {{label}}",
+      "clearAll": "[AR] Clear all",
+      "within": "[AR] Within {{km}} km",
+      "accessible": "[AR] Accessible",
+      "queerOwned": "[AR] Queer-owned",
+      "tags_one": "[AR] {{count}} tag",
+      "tags_other": "[AR] {{count}} tags"
     }
   },
   "resources": {
@@ -2303,7 +2455,15 @@
     },
     "tagDetail": {
       "breadcrumbHome": "الموارد",
-      "noDefinition": "لا يوجد تعريف لهذا المصطلح بعد."
+      "noDefinition": "لا يوجد تعريف لهذا المصطلح بعد.",
+      "alsoKnownAs": "يُعرف أيضًا باسم",
+      "readOnWikipedia": "اقرأ على ويكيبيديا",
+      "searchTagged": "ابحث في كل ما يحمل وسم {{name}}",
+      "seeAlso": "انظر أيضًا",
+      "sensitiveContentBody": "قد يحتوي هذا الموضوع على محتوى حساس. إذا كنت بحاجة إلى دعم، تفضل بزيارة صفحة خطوط المساعدة في الأزمات لدينا.",
+      "sensitiveContentTitle": "موضوع حساس",
+      "tableOfContents": "المحتويات",
+      "viewAsGraph": "عرض كرسم بياني"
     },
     "graph": {
       "title": "رسم علاقات الوسوم",
@@ -2345,21 +2505,21 @@
     "suggestLede": "اقترح واحدة — تُضاف إلى الدليل بعد المراجعة.",
     "suggestCta": "اقترح مدينة",
     "detail": {
-      "seeAll": "[AR] See all",
-      "planTrip": "[AR] Plan a trip to {{city}}",
+      "seeAll": "عرض الكل",
+      "planTrip": "خطّط لرحلة إلى {{city}}",
       "glance": {
-        "safety": "[AR] Safety",
-        "safetyLink": "[AR] Jump to safety & rights",
-        "deathPenalty": "[AR] Death penalty",
-        "criminalized": "[AR] Criminalized",
-        "equalityTier": "[AR] {{tier}} equality",
-        "checkLaws": "[AR] Check local laws",
-        "rating": "[AR] LGBTQ+ rating",
-        "population": "[AR] Population",
-        "language": "[AR] Language",
-        "currency": "[AR] Currency",
-        "bestTime": "[AR] Best time",
-        "airport": "[AR] Airport"
+        "safety": "الأمان",
+        "safetyLink": "انتقل إلى الأمان والحقوق",
+        "deathPenalty": "عقوبة الإعدام",
+        "criminalized": "مُجرَّم",
+        "equalityTier": "مساواة {{tier}}",
+        "checkLaws": "تحقّق من القوانين المحلية",
+        "rating": "تقييم LGBTQ+",
+        "population": "عدد السكان",
+        "language": "اللغة",
+        "currency": "العملة",
+        "bestTime": "أفضل وقت",
+        "airport": "المطار"
       }
     }
   },
@@ -2456,312 +2616,367 @@
     }
   },
   "country": {
-    "loading": "[AR] Loading country…",
-    "planTrip": "[AR] Plan a trip to {{country}}",
-    "similar": "[AR] More destinations",
+    "loading": "جارٍ تحميل الدولة…",
+    "planTrip": "خطّط لرحلة إلى {{country}}",
+    "similar": "وجهات أخرى",
     "notFound": {
-      "title": "[AR] Country not found",
-      "body": "[AR] The country you're looking for doesn't exist.",
-      "back": "[AR] Back to Places"
+      "title": "الدولة غير موجودة",
+      "body": "الدولة التي تبحث عنها غير موجودة.",
+      "back": "العودة إلى الأماكن"
     },
     "breadcrumb": {
-      "places": "[AR] Places"
+      "places": "أماكن"
     },
     "hero": {
-      "capital": "[AR] Capital"
+      "capital": "العاصمة"
     },
     "verdict": {
-      "eyebrow": "[AR] For LGBTQ+ travelers",
-      "welcoming": "[AR] Welcoming",
-      "mixed": "[AR] Mixed",
-      "caution": "[AR] Use caution",
-      "dangerous": "[AR] Dangerous",
-      "equality": "[AR] Equality",
-      "fullBreakdown": "[AR] Full breakdown"
+      "eyebrow": "لمسافري LGBTQ+",
+      "welcoming": "مُرحِّب",
+      "mixed": "متفاوت",
+      "caution": "توخَّ الحذر",
+      "dangerous": "خطير",
+      "equality": "المساواة",
+      "fullBreakdown": "التفاصيل الكاملة"
     },
     "facts": {
-      "capital": "[AR] Capital",
-      "population": "[AR] Population",
-      "equality": "[AR] Equality",
-      "languages": "[AR] Languages",
-      "currency": "[AR] Currency",
-      "cities": "[AR] Cities"
+      "capital": "العاصمة",
+      "population": "عدد السكان",
+      "equality": "المساواة",
+      "languages": "اللغات",
+      "currency": "العملة",
+      "cities": "المدن"
     },
     "section": {
-      "rights": "[AR] Rights & safety",
-      "cities": "[AR] Cities",
-      "venues": "[AR] Venues",
-      "events": "[AR] Events",
-      "travel": "[AR] Travel",
-      "stats": "[AR] In numbers",
-      "personalities": "[AR] Voices",
-      "nearby": "[AR] Nearby",
-      "news": "[AR] News",
-      "map": "[AR] Map"
+      "rights": "الحقوق والأمان",
+      "cities": "المدن",
+      "venues": "الأماكن",
+      "events": "الفعاليات",
+      "travel": "السفر",
+      "stats": "بالأرقام",
+      "personalities": "أصوات",
+      "nearby": "القريبة",
+      "news": "الأخبار",
+      "map": "الخريطة"
     },
     "practical": {
-      "languages": "[AR] Languages",
-      "currency": "[AR] Currency",
-      "callingCode": "[AR] Calling code",
-      "tld": "[AR] Internet domain",
-      "driving": "[AR] Driving",
-      "drivesLeft": "[AR] Left-hand side",
-      "drivesRight": "[AR] Right-hand side",
-      "airports": "[AR] Major airports",
-      "government": "[AR] Government",
-      "nationalDay": "[AR] National day"
+      "languages": "اللغات",
+      "currency": "العملة",
+      "callingCode": "رمز الاتصال",
+      "tld": "نطاق الإنترنت",
+      "driving": "القيادة",
+      "drivesLeft": "على اليسار",
+      "drivesRight": "على اليمين",
+      "airports": "المطارات الرئيسية",
+      "government": "الحكومة",
+      "nationalDay": "اليوم الوطني"
     },
     "stats": {
-      "gdpPerCapita": "[AR] GDP / capita",
-      "hdi": "[AR] HDI",
-      "lifeExpectancy": "[AR] Life expectancy",
-      "literacy": "[AR] Literacy",
-      "income": "[AR] Income level"
+      "gdpPerCapita": "الناتج المحلي للفرد",
+      "hdi": "مؤشر التنمية البشرية",
+      "lifeExpectancy": "متوسط العمر المتوقع",
+      "literacy": "معدل الإلمام بالقراءة",
+      "income": "مستوى الدخل"
     },
     "cities": {
-      "emptyTitle": "[AR] No cities yet",
-      "emptyBody": "[AR] No cities are listed for this country yet."
+      "emptyTitle": "لا مدن بعد",
+      "emptyBody": "لا توجد مدن مدرجة لهذه الدولة بعد."
     },
     "venues": {
-      "emptyTitle": "[AR] No venues yet",
-      "emptyBody": "[AR] Be the first to add a venue in {{country}}."
+      "emptyTitle": "لا أماكن بعد",
+      "emptyBody": "كن أول من يضيف مكانًا في {{country}}."
     },
     "events": {
-      "emptyTitle": "[AR] No upcoming events",
-      "emptyBody": "[AR] No events are scheduled for this country yet."
+      "emptyTitle": "لا فعاليات قادمة",
+      "emptyBody": "لا فعاليات مجدولة لهذه الدولة بعد."
     },
     "travel": {
-      "activities": "[AR] Activities & tours",
-      "activitiesBody": "[AR] Experiences in {{country}}"
+      "activities": "أنشطة وجولات",
+      "activitiesBody": "تجارب في {{country}}"
     },
     "news": {
-      "emptyTitle": "[AR] No local news yet",
-      "emptyBody": "[AR] No news articles are available for this country yet."
+      "emptyTitle": "لا أخبار محلية بعد",
+      "emptyBody": "لا توجد مقالات إخبارية لهذه الدولة بعد."
     },
     "rights": {
-      "title": "[AR] LGBTI rights overview",
-      "source": "[AR] ILGA World Database",
-      "updated": "[AR] Updated",
-      "noData": "[AR] No data",
-      "sameSexActivity": "[AR] Same-sex activity",
-      "penalty": "[AR] Penalty",
-      "deathPenalty": "[AR] death penalty possible",
-      "decriminalized": "[AR] Decriminalized",
-      "expression": "[AR] Freedom of expression",
-      "association": "[AR] Freedom of association",
+      "title": "نظرة عامة على حقوق LGBTI",
+      "source": "ILGA World Database",
+      "updated": "محدّث",
+      "noData": "لا بيانات",
+      "sameSexActivity": "العلاقات المثلية",
+      "penalty": "العقوبة",
+      "deathPenalty": "عقوبة الإعدام محتملة",
+      "decriminalized": "أُلغي تجريمه",
+      "expression": "حرية التعبير",
+      "association": "حرية تكوين الجمعيات",
       "section": {
-        "criminalisation": "[AR] Criminalisation & freedoms",
-        "antiDiscrimination": "[AR] Anti-discrimination protection",
-        "criminalJustice": "[AR] Criminal justice",
-        "family": "[AR] Family & relationships",
-        "identity": "[AR] Identity & health"
+        "criminalisation": "التجريم والحريات",
+        "antiDiscrimination": "الحماية من التمييز",
+        "criminalJustice": "العدالة الجنائية",
+        "family": "الأسرة والعلاقات",
+        "identity": "الهوية والصحة"
       },
-      "constitutional": "[AR] Constitutional",
-      "employment": "[AR] Employment",
-      "housing": "[AR] Housing",
-      "education": "[AR] Education",
-      "health": "[AR] Health",
-      "goodsServices": "[AR] Goods & services",
-      "bullying": "[AR] Bullying",
-      "hateCrime": "[AR] Hate crime laws",
-      "incitement": "[AR] Incitement prohibition",
-      "unions": "[AR] Same-sex unions",
-      "marriageSince": "[AR] Marriage since",
-      "civilUnionSince": "[AR] civil union since",
-      "adoption": "[AR] Adoption rights",
-      "genderRecognition": "[AR] Gender recognition",
-      "marker": "[AR] Marker",
-      "selfId": "[AR] Self-ID",
-      "requiresSurgery": "[AR] Requires surgery",
-      "requiresDiagnosis": "[AR] Requires diagnosis",
-      "conversionTherapy": "[AR] Conversion therapy",
-      "intersex": "[AR] Intersex bodily integrity",
-      "ilgaLink": "[AR] ILGA World Database"
+      "constitutional": "دستوري",
+      "employment": "التوظيف",
+      "housing": "السكن",
+      "education": "التعليم",
+      "health": "الصحة",
+      "goodsServices": "السلع والخدمات",
+      "bullying": "التنمّر",
+      "hateCrime": "قوانين جرائم الكراهية",
+      "incitement": "حظر التحريض",
+      "unions": "الزيجات المثلية",
+      "marriageSince": "الزواج منذ",
+      "civilUnionSince": "الاتحاد المدني منذ",
+      "adoption": "حقوق التبنّي",
+      "genderRecognition": "الاعتراف بالنوع الاجتماعي",
+      "marker": "علامة النوع",
+      "selfId": "تحديد الهوية ذاتيًا",
+      "requiresSurgery": "يتطلب جراحة",
+      "requiresDiagnosis": "يتطلب تشخيصًا",
+      "conversionTherapy": "العلاج التحويلي",
+      "intersex": "السلامة الجسدية لحاملي صفات الجنسين",
+      "ilgaLink": "ILGA World Database"
     }
   },
   "inbox": {
-    "title": "[AR] Inbox",
+    "title": "صندوق الوارد",
     "filter": {
-      "all": "[AR] All",
-      "chats": "[AR] Chats",
-      "mail": "[AR] Mail",
-      "alerts": "[AR] Alerts"
+      "all": "الكل",
+      "chats": "المحادثات",
+      "mail": "البريد",
+      "alerts": "التنبيهات"
     },
     "compose": {
-      "label": "[AR] Compose",
-      "message": "[AR] New message",
-      "email": "[AR] New email"
+      "label": "إنشاء",
+      "message": "رسالة جديدة",
+      "email": "بريد جديد"
     },
     "notification": {
-      "open": "[AR] Open"
+      "open": "فتح"
     },
-    "openInbox": "[AR] Open inbox",
-    "markAlertsRead": "[AR] Mark alerts read",
-    "unread": "[AR] Unread",
-    "unreadCount": "[AR] {{count}} unread",
+    "openInbox": "فتح صندوق الوارد",
+    "markAlertsRead": "وضع علامة مقروء على التنبيهات",
+    "unread": "غير مقروء",
+    "unreadCount": "{{count}} غير مقروءة",
     "action": {
-      "pin": "[AR] Pin",
-      "unpin": "[AR] Unpin",
-      "mute": "[AR] Mute",
-      "unmute": "[AR] Unmute",
-      "markRead": "[AR] Mark as read",
-      "archive": "[AR] Archive"
+      "pin": "تثبيت",
+      "unpin": "إلغاء التثبيت",
+      "mute": "كتم",
+      "unmute": "إلغاء الكتم",
+      "markRead": "وضع علامة مقروء",
+      "archive": "أرشفة"
     },
-    "search": "[AR] Search",
-    "searchEmpty": "[AR] No matches.",
+    "search": "بحث",
+    "searchEmpty": "لا نتائج.",
     "recipient": {
-      "search": "[AR] Search people",
-      "empty": "[AR] No suggestions yet.",
-      "recent": "[AR] Recently messaged",
-      "active": "[AR] Active recently"
+      "search": "ابحث عن أشخاص",
+      "empty": "لا اقتراحات بعد.",
+      "recent": "راسلتهم مؤخرًا",
+      "active": "نشطون مؤخرًا"
     }
   },
   "extension": {
     "signInGate": {
-      "title": "[AR] Sign in to install the extension",
-      "subtitle": "[AR] The queer.guide capture extension lets signed-in members suggest venues, events, hotels and more from any webpage.",
-      "cta": "[AR] Sign in"
+      "title": "سجّل الدخول لتثبيت الإضافة",
+      "subtitle": "تتيح إضافة الالتقاط من queer.guide للأعضاء المسجّلين اقتراح أماكن وفعاليات وفنادق والمزيد من أي صفحة ويب.",
+      "cta": "تسجيل الدخول"
     },
     "heading": {
-      "title": "[AR] queer.guide capture",
-      "subtitle": "[AR] Browser extension that turns any webpage into a structured suggestion for our moderators."
+      "title": "التقاط queer.guide",
+      "subtitle": "إضافة متصفح تحوّل أي صفحة ويب إلى اقتراح منظَّم لمشرفينا."
     },
     "badge": {
-      "installed": "[AR] Installed"
+      "installed": "مثبَّتة"
     },
     "captures": {
-      "label": "[AR] Captures",
-      "venues": "[AR] Venues",
-      "events": "[AR] Events",
-      "hotels": "[AR] Hotels",
-      "marketplace": "[AR] Marketplace",
-      "news": "[AR] News"
+      "label": "الالتقاطات",
+      "venues": "الأماكن",
+      "events": "الفعاليات",
+      "hotels": "الفنادق",
+      "marketplace": "المتجر",
+      "news": "الأخبار"
     },
     "connect": {
-      "title": "[AR] Connect this browser",
-      "detected": "[AR] Extension",
-      "installed": "[AR] is installed in this browser.",
-      "body": "[AR] Sign your queer.guide session into the extension so you can submit content from any webpage.",
-      "signInPrompt": "[AR] Sign in to your queer.guide account to connect this browser and start submitting.",
-      "signedInAs": "[AR] Signed in as",
-      "cta": "[AR] Connect",
-      "connecting": "[AR] Connecting…",
+      "title": "اربط هذا المتصفح",
+      "detected": "الإضافة",
+      "installed": "مثبَّتة في هذا المتصفح.",
+      "body": "سجّل دخول جلسة queer.guide في الإضافة لتتمكن من إرسال المحتوى من أي صفحة ويب.",
+      "signInPrompt": "سجّل الدخول إلى حسابك في queer.guide لربط هذا المتصفح والبدء بالإرسال.",
+      "signedInAs": "مسجّل الدخول كـ",
+      "cta": "اربط",
+      "connecting": "جارٍ الربط…",
       "done": {
-        "title": "[AR] Connected.",
-        "body": "[AR] Open the extension popup on any page to capture content for queer.guide."
+        "title": "تم الربط.",
+        "body": "افتح نافذة الإضافة المنبثقة على أي صفحة لالتقاط محتوى لـ queer.guide."
       }
     },
     "steps": {
-      "title": "[AR] Install in 3 steps",
+      "title": "التثبيت في 3 خطوات",
       "s1": {
-        "title": "[AR] Download the latest build",
-        "body": "[AR] We don't have the extension on the Chrome Web Store yet. For now, grab the latest signed build.",
-        "download": "[AR] Download .zip",
-        "note": "[AR] Unzip it somewhere you won't accidentally delete (e.g. ~/Applications/queer-guide-extension)."
+        "title": "نزّل أحدث إصدار",
+        "body": "الإضافة ليست بعد على Chrome Web Store. في الوقت الحالي، احصل على أحدث إصدار موقَّع.",
+        "download": "نزّل ملف .zip",
+        "note": "فك الضغط في مكان لن تحذفه بالخطأ (مثل ~/Applications/queer-guide-extension)."
       },
       "s2": {
-        "title": "[AR] Load it in Chrome",
-        "l1": "[AR] Open chrome://extensions in a new tab.",
-        "l2": "[AR] Toggle Developer mode on (top right).",
-        "l3": "[AR] Click Load unpacked and pick the unzipped folder.",
-        "l4": "[AR] The queer.guide puzzle icon appears in your toolbar — pin it for one-click access.",
-        "note": "[AR] Other Chromium browsers (Edge, Brave, Arc) work the same way. Firefox / Safari are not supported yet."
+        "title": "حمّلها في Chrome",
+        "l1": "افتح chrome://extensions في علامة تبويب جديدة.",
+        "l2": "فعّل وضع المطوّر (أعلى اليمين).",
+        "l3": "انقر على «تحميل غير محزومة» واختر المجلد المفكوك.",
+        "l4": "تظهر أيقونة أحجية queer.guide في شريط الأدوات — ثبّتها للوصول بنقرة واحدة.",
+        "note": "تعمل متصفحات Chromium الأخرى (Edge، Brave، Arc) بالطريقة نفسها. Firefox / Safari غير مدعومة بعد."
       },
       "s3": {
-        "title": "[AR] Reload this page and Connect",
-        "body": "[AR] Once Chrome confirms the extension loaded, refresh this page. A “Connect” button will appear and one click signs the extension into your queer.guide account."
+        "title": "أعد تحميل هذه الصفحة واربط",
+        "body": "بمجرد أن يؤكد Chrome تحميل الإضافة، أعد تحميل هذه الصفحة. سيظهر زر «اربط»، ونقرة واحدة تُسجّل دخول الإضافة إلى حسابك في queer.guide."
       },
       "dev": {
-        "label": "[AR] Want to build it yourself or contribute?",
-        "cta": "[AR] Build instructions"
+        "label": "تريد بناءها بنفسك أو المساهمة؟",
+        "cta": "تعليمات البناء"
       }
     },
     "highlights": {
       "smart": {
-        "title": "[AR] Smart capture",
-        "body": "[AR] Reads JSON-LD, OpenGraph, microdata and DOM heuristics — most pages just work."
+        "title": "التقاط ذكي",
+        "body": "يقرأ JSON-LD وOpenGraph والبيانات الدقيقة واستدلالات DOM — معظم الصفحات تعمل مباشرة."
       },
       "privacy": {
-        "title": "[AR] Privacy-first",
-        "body": "[AR] Only runs when you click. No host permissions, no background tracking."
+        "title": "الخصوصية أولًا",
+        "body": "يعمل فقط عند النقر. لا أذونات مضيف ولا تتبّع في الخلفية."
       },
       "review": {
-        "title": "[AR] Always reviewed",
-        "body": "[AR] Submissions land in a moderation queue, never live until approved."
+        "title": "تتم مراجعته دائمًا",
+        "body": "تدخل المساهمات إلى قائمة مراجعة، ولا تُنشر إلا بعد الموافقة."
       }
     },
     "bug": {
-      "label": "[AR] Found a bug?",
-      "cta": "[AR] open an issue"
+      "label": "وجدت خللًا؟",
+      "cta": "افتح بلاغًا"
     }
   },
   "breadcrumb": {
-    "home": "[AR] Home",
-    "venues": "[AR] Venues",
-    "events": "[AR] Events",
-    "hotels": "[AR] Hotels",
-    "villages": "[AR] Queer villages",
-    "marketplace": "[AR] Marketplace",
-    "resources": "[AR] Resources",
-    "personalities": "[AR] People",
-    "news": "[AR] News",
-    "places": "[AR] Places",
-    "cities": "[AR] Cities",
-    "quests": "[AR] Quests",
-    "groups": "[AR] Groups",
-    "trips": "[AR] Trips",
-    "help": "[AR] Help",
-    "pride": "[AR] Pride",
-    "contributors": "[AR] Contributors",
-    "wishlists": "[AR] Wishlists"
+    "home": "الرئيسية",
+    "venues": "الأماكن",
+    "events": "الفعاليات",
+    "hotels": "الفنادق",
+    "villages": "أحياء كويرية",
+    "marketplace": "المتجر",
+    "resources": "الموارد",
+    "personalities": "أشخاص",
+    "news": "الأخبار",
+    "places": "أماكن",
+    "cities": "المدن",
+    "quests": "المهام",
+    "groups": "المجموعات",
+    "trips": "الرحلات",
+    "help": "المساعدة",
+    "pride": "برايد",
+    "contributors": "المساهمون",
+    "wishlists": "قوائم الرغبات",
+    "tags": "الوسوم"
   },
   "chat": {
-    "react": "[AR] React",
-    "edited": "[AR] edited",
-    "deleted": "[AR] Message deleted",
-    "editing": "[AR] Editing message",
-    "replyingTo": "[AR] Replying to {{name}}",
+    "react": "تفاعل",
+    "edited": "مُعدّل",
+    "deleted": "تم حذف الرسالة",
+    "editing": "تعديل الرسالة",
+    "replyingTo": "ردًّا على {{name}}",
     "reply": {
-      "action": "[AR] Reply",
-      "someone": "[AR] someone"
+      "action": "رد",
+      "someone": "شخص ما"
     },
     "emoji": {
-      "search": "[AR] Search emoji",
-      "none": "[AR] No emoji found.",
+      "search": "ابحث عن إيموجي",
+      "none": "لا توجد إيموجي.",
       "cat": {
-        "smileys": "[AR] Smileys",
-        "gestures": "[AR] Gestures",
-        "hearts": "[AR] Hearts",
-        "pride": "[AR] Pride",
-        "animals": "[AR] Animals",
-        "food": "[AR] Food",
-        "activity": "[AR] Activity",
-        "symbols": "[AR] Symbols"
+        "smileys": "وجوه",
+        "gestures": "إيماءات",
+        "hearts": "قلوب",
+        "pride": "الفخر",
+        "animals": "حيوانات",
+        "food": "طعام",
+        "activity": "نشاط",
+        "symbols": "رموز"
       }
     },
-    "activeNow": "[AR] Active now",
+    "activeNow": "نشط الآن",
     "preview": {
-      "you": "[AR] You",
-      "photo": "[AR] Photo",
-      "sticker": "[AR] Sticker",
-      "voice": "[AR] Voice message"
+      "you": "أنت",
+      "photo": "صورة",
+      "sticker": "ملصق",
+      "voice": "رسالة صوتية"
     },
-    "streak": "[AR] You two have been chatting for {{count}} days ✨",
+    "streak": "تتحادثان منذ {{count}} يومًا ✨",
     "vibe": {
-      "set": "[AR] Set a vibe",
-      "title": "[AR] Your vibe",
-      "placeholder": "[AR] What's your vibe?",
-      "for4h": "[AR] 4h"
+      "set": "حدّد أجواءك",
+      "title": "أجواؤك",
+      "placeholder": "ما أجواؤك؟",
+      "for4h": "4 ساعات"
     },
     "stickers": {
-      "title": "[AR] Stickers"
+      "title": "ملصقات"
     },
     "freeToMeet": {
-      "title": "[AR] Free to meet",
-      "set": "[AR] Free to meet",
-      "on": "[AR] Free now",
-      "both": "[AR] {{name}} is free to meet right now 🟢",
-      "youOnly": "[AR] You're marked free to meet 🟢"
+      "title": "متاح للقاء",
+      "set": "متاح للقاء",
+      "on": "متاح الآن",
+      "both": "{{name}} متاح للقاء الآن 🟢",
+      "youOnly": "أنت مُعلَّم كمتاح للقاء 🟢"
+    }
+  },
+  "newsDetail": {
+    "notFound": "المقال غير موجود",
+    "notFoundDesc": "المقال الذي تبحث عنه غير موجود.",
+    "backToNews": "العودة إلى الأخبار",
+    "share": "مشاركة",
+    "readAtSource": "اقرأ من المصدر",
+    "fresh": "جديد",
+    "reportedByOutlets": "نقلته {{count}} وسائل إعلام",
+    "featured": "مميّز",
+    "byAuthor": "بقلم {{author}}",
+    "minRead": "قراءة {{count}} دقيقة",
+    "viewsCount": "{{count}} مشاهدة",
+    "whyThisMatters": "لماذا هذا مهم",
+    "editorialPlaceholder": "انقر مع مفتاح Alt لإضافة السياق — جملة إلى ثلاث عن أهمية هذا الخبر.",
+    "bodyFallback": "الخبر الكامل متاح في المصدر الأصلي.",
+    "originallyPublishedBy": "نُشر أصلاً في {{source}}.",
+    "viewOriginal": "عرض التقرير الأصلي",
+    "integritySatire": "موسوم كمحتوى ساخر — وليس تقريرًا حرفيًا.",
+    "integrityAdvertorial": "محتوى مموّل / إعلاني.",
+    "integritySentimentConflict": "تختلف المصادر في النبرة — اقرأه بحذر.",
+    "closeToHome": "قريب من مكان إقامتك",
+    "seeFullStory": "عرض القصة كاملة",
+    "topics": "المواضيع",
+    "home": "الرئيسية",
+    "whereThisHappens": "أين يحدث هذا",
+    "aboutSource": "عن المصدر",
+    "corroboratedAcross": "مؤكَّد من {{count}} وسائل إعلام",
+    "lastVerified": "آخر تحقق {{time}}",
+    "visitSource": "زيارة {{source}}",
+    "source": "المصدر",
+    "moreLikeThis": "محتوى مشابه",
+    "forYou": "مختار لك"
+  },
+  "pwa": {
+    "updateAvailable": {
+      "title": "يتوفر إصدار جديد",
+      "description": "حدّث للحصول على أحدث الميزات.",
+      "action": "تحديث"
+    },
+    "backOnline": "عدت إلى الاتصال",
+    "offline": {
+      "title": "أنت غير متصل بالإنترنت",
+      "description": "قد تكون بعض الميزات غير متاحة."
+    },
+    "install": {
+      "title": "تثبيت Queer Guide",
+      "description": "وصول سريع من شاشتك الرئيسية — يعمل دون اتصال أيضًا.",
+      "action": "تثبيت",
+      "iosTitle": "إضافة إلى الشاشة الرئيسية",
+      "iosHint": "اضغط على زر المشاركة في Safari، ثم اختر «إضافة إلى الشاشة الرئيسية».",
+      "dismiss": "إغلاق",
+      "ariaLabel": "تثبيت التطبيق"
     }
   }
 }

@@ -15,17 +15,30 @@ jobs:
       HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
       BASE_REPO: ${{ github.repository }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           ref: ${{ github.head_ref }}
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: sync CLAUDE.md repo stats
         id: sync
         run: |
-          actual_fns=$(ls supabase/functions/ | grep -v '^_' | wc -l | tr -d ' ')
-          actual_mig=$(ls supabase/migrations/ | wc -l | tr -d ' ')
-          sed -i -E "0,/^- \*\*Edge functions:\*\* [0-9]+$/s//- **Edge functions:** $actual_fns/" CLAUDE.md
-          sed -i -E "0,/^- \*\*Migrations:\*\* [0-9]+$/s//- **Migrations:** $actual_mig/" CLAUDE.md
+          actual_fns=$(ls supabase/functions/ | grep -v '^_' | grep -v '^README' | wc -l | tr -d ' ')
+          actual_mig=$(ls supabase/migrations/ | grep -c '\.sql$' | tr -d ' ')
+          # Rewrite the whole stats block instead of patching the first match:
+          # CLAUDE.md carries `merge=union`, so merges can duplicate the bot-written
+          # stat lines. Deleting every stat line and re-inserting exactly two after
+          # the heading makes this step self-healing against that corruption.
+          awk -v fns="$actual_fns" -v mig="$actual_mig" '
+            /^- \*\*(Edge functions|Migrations):\*\* [0-9]+$/ { next }
+            /^## Repo stats$/ {
+              print; print "";
+              print "- **Edge functions:** " fns;
+              print "- **Migrations:** " mig;
+              print ""; inhdr = 1; next
+            }
+            inhdr && /^$/ { next }
+            { inhdr = 0; print }
+          ' CLAUDE.md > CLAUDE.md.tmp && mv CLAUDE.md.tmp CLAUDE.md
           if git diff --quiet CLAUDE.md; then
             echo "changed=false" >> "$GITHUB_OUTPUT"
           else

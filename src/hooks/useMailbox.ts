@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { untypedFrom } from '@/integrations/supabase/untyped';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 
@@ -33,7 +34,7 @@ export interface MailboxEmail {
   deleted_at: string | null;
 }
 
-const mailboxTable = () => supabase.from('mailbox_emails' as never);
+const mailboxTable = () => untypedFrom('mailbox_emails');
 
 export const useMailbox = () => {
   const [emails, setEmails] = useState<MailboxEmail[]>([]);

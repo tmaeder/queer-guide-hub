@@ -86,6 +86,9 @@ BEGIN
     IF NOT p_dry_run THEN PERFORM public.run_venue_closure_decision(false); END IF;
 
     -- REOPEN engine-archived venues that show life again.
+  IF p_entity_type = 'venue' THEN
+    IF NOT p_dry_run THEN PERFORM public.run_venue_closure_decision(false); END IF;
+
     IF NOT p_dry_run THEN
       WITH open_arch AS (
         SELECT DISTINCT ON (a.entity_id) a.id, a.entity_id, a.created_at, a.prev_state
@@ -464,3 +467,4 @@ END; $function$;
 REVOKE ALL ON FUNCTION public.run_existence_decision(text, boolean) FROM public, anon;
 REVOKE ALL ON FUNCTION public.run_event_date_lifecycle() FROM public, anon;
 REVOKE ALL ON FUNCTION public.run_existence_signals_purge() FROM public, anon;
+REVOKE ALL ON FUNCTION public.run_existence_signals_purge() FROM public, anon;;

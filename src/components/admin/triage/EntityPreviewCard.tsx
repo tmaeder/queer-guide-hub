@@ -1,4 +1,4 @@
-import { Suspense, lazy } from 'react';
+import { Suspense, lazy, type ComponentProps } from 'react';
 import { Loader2 } from 'lucide-react';
 import type { TriageItem } from '@/hooks/useUnifiedTriageQueue';
 
@@ -93,32 +93,31 @@ export function EntityPreviewCard({ item, entityData }: EntityPreviewCardProps) 
     </div>
   );
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const data = entityData as any;
-
   switch (table) {
     case 'venues':
       return (
         <Suspense fallback={loading}>
-          <VenueCard venue={data} />
+          <VenueCard venue={entityData as ComponentProps<typeof VenueCard>['venue']} />
         </Suspense>
       );
     case 'events':
       return (
         <Suspense fallback={loading}>
-          <EventCard event={data} />
+          <EventCard event={entityData as ComponentProps<typeof EventCard>['event']} />
         </Suspense>
       );
     case 'news_articles':
       return (
         <Suspense fallback={loading}>
-          <NewsCard article={data} />
+          <NewsCard article={entityData as ComponentProps<typeof NewsCard>['article']} />
         </Suspense>
       );
     case 'personalities':
       return (
         <Suspense fallback={loading}>
-          <PersonalityCard personality={data} />
+          <PersonalityCard
+            personality={entityData as ComponentProps<typeof PersonalityCard>['personality']}
+          />
         </Suspense>
       );
     default:

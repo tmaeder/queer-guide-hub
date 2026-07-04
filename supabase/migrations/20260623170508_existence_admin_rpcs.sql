@@ -6,6 +6,8 @@
 CREATE OR REPLACE FUNCTION public.existence_overview()
  RETURNS jsonb
  LANGUAGE plpgsql STABLE SECURITY DEFINER SET search_path TO 'public','pg_temp'
+CREATE OR REPLACE FUNCTION public.existence_overview()
+ RETURNS jsonb LANGUAGE plpgsql STABLE SECURITY DEFINER SET search_path TO 'public','pg_temp'
 AS $function$
 DECLARE v jsonb;
 BEGIN
@@ -45,6 +47,7 @@ BEGIN
   LEFT JOIN public.marketplace_listings m ON a.entity_type='marketplace' AND m.id=a.entity_id
   WHERE a.action='flag' AND a.reverted_at IS NULL
     AND (p_entity_type IS NULL OR a.entity_type=p_entity_type)
+  WHERE a.action='flag' AND a.reverted_at IS NULL AND (p_entity_type IS NULL OR a.entity_type=p_entity_type)
   ORDER BY a.created_at DESC LIMIT greatest(1, least(p_limit, 200));
 END; $function$;
 
@@ -65,6 +68,7 @@ BEGIN
   LEFT JOIN public.marketplace_listings m ON a.entity_type='marketplace' AND m.id=a.entity_id
   WHERE a.action='archive' AND a.reverted_at IS NULL
     AND (p_entity_type IS NULL OR a.entity_type=p_entity_type)
+  WHERE a.action='archive' AND a.reverted_at IS NULL AND (p_entity_type IS NULL OR a.entity_type=p_entity_type)
   ORDER BY a.created_at DESC LIMIT greatest(1, least(p_limit, 200));
 END; $function$;
 
@@ -97,3 +101,4 @@ GRANT EXECUTE ON FUNCTION public.existence_overview() TO authenticated;
 GRANT EXECUTE ON FUNCTION public.existence_review_queue(text, int) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.existence_recent_archives(text, int) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.existence_blind_spots(text, int) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.existence_blind_spots(text, int) TO authenticated;;

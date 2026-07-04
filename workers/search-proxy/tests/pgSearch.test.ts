@@ -3,8 +3,7 @@ import { pgHybridSearch, pgAutocomplete } from "../src/pgSearch";
 import type { Env } from "../src/index";
 
 /**
- * Unit tests for the Postgres search backend mappers — the code that goes live
- * the moment SEARCH_BACKEND flips to `pg`. They mock the PostgREST fetch and
+ * Unit tests for the Postgres search backend mappers. They mock the PostgREST fetch and
  * assert the search_hybrid / search_autocomplete JSON is mapped into the exact
  * shape the rest of the Worker (fuse/rank/response, /autocomplete) expects.
  */

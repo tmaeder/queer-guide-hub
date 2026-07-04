@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useId, useMemo, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { untypedFrom } from '@/integrations/supabase/untyped';
 import { useAuth } from '@/hooks/useAuth';
 import {
   communityLevel,
@@ -57,6 +58,7 @@ export function useCommunityScore(): {
   loading: boolean;
 } {
   const { user } = useAuth();
+  const instanceId = useId();
   const [row, setRow] = useState<CommunityScoreRow | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -70,9 +72,7 @@ export function useCommunityScore(): {
     }
     setLoading(true);
     (async () => {
-      const { data } = await supabase
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .from('user_community_score' as any)
+      const { data } = await untypedFrom('user_community_score')
         .select('*')
         .eq('user_id', user.id)
         .maybeSingle();
@@ -82,7 +82,7 @@ export function useCommunityScore(): {
     })();
 
     const channel = supabase
-      .channel(`community-score:${user.id}`)
+      .channel(`community-score:${user.id}:${instanceId}`)
       .on(
         'postgres_changes',
         {
@@ -102,7 +102,7 @@ export function useCommunityScore(): {
       cancelled = true;
       supabase.removeChannel(channel);
     };
-  }, [user]);
+  }, [user, instanceId]);
 
   const view = useMemo(() => (row ? enrich(row) : null), [row]);
   return { data: view, loading };

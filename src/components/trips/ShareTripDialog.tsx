@@ -23,7 +23,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { supabase } from '@/integrations/supabase/client';
+import { untypedRpc } from '@/integrations/supabase/untyped';
 import { useAuth } from '@/hooks/useAuth';
 import { fetchTripShares, createTripShare, deleteTripShare } from '@/hooks/useTripShares';
 
@@ -55,18 +55,15 @@ export function ShareTripDialog({ open, onClose, tripId }: Props) {
   const { data: viewStats } = useQuery({
     queryKey: ['trip-share-view-stats', tripId],
     queryFn: async () => {
-      const { data, error } = await supabase.rpc(
-        'get_share_view_stats' as never,
-        { p_trip_id: tripId } as never,
-      );
-      if (error) throw error;
-      const map = new Map<string, { total: number; views7d: number; lastAt: string | null }>();
-      for (const row of (data ?? []) as Array<{
+      const { data, error } = await untypedRpc<Array<{
         share_id: string;
         total_views: number;
         views_7d: number;
         last_viewed_at: string | null;
-      }>) {
+      }>>('get_share_view_stats', { p_trip_id: tripId });
+      if (error) throw error;
+      const map = new Map<string, { total: number; views7d: number; lastAt: string | null }>();
+      for (const row of data ?? []) {
         map.set(row.share_id, {
           total: Number(row.total_views),
           views7d: Number(row.views_7d),

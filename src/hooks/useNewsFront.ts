@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { untypedRpc } from '@/integrations/supabase/untyped';
 import { useAuth } from '@/hooks/useAuth';
 
 /**
@@ -43,11 +43,10 @@ interface FrontParams {
 }
 
 async function callNewsFront(params: FrontParams): Promise<NewsFrontArticle[]> {
-  // get_news_front isn't in the generated types.ts (too large to regen) — bridge untyped.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data, error } = await (supabase as any).rpc('get_news_front', params);
+  // get_news_front isn't in the generated types.ts — bridge via untypedRpc.
+  const { data, error } = await untypedRpc<NewsFrontArticle[]>('get_news_front', params);
   if (error) throw error;
-  return (data ?? []) as NewsFrontArticle[];
+  return data ?? [];
 }
 
 // Keep the front page live without a manual refresh: 1-min stale, 5-min poll,

@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { UmamiAnalyticsDashboard } from "@/components/analytics/UmamiAnalyticsDashboard";
+import { GrowthConversionDashboard } from "@/components/analytics/GrowthConversionDashboard";
 import {
   Users,
   Calendar,
@@ -12,7 +13,8 @@ import {
   Star,
   BarChart3,
   TrendingUp,
-  Activity
+  Activity,
+  Filter
 } from "lucide-react";
 
 export default function AdminAnalytics() {
@@ -69,10 +71,14 @@ export default function AdminAnalytics() {
       </div>
 
       <Tabs defaultValue="platform" className="flex flex-col gap-6">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="platform" className="flex gap-2 items-center">
             <BarChart3 size={16} />
             Platform Analytics
+          </TabsTrigger>
+          <TabsTrigger value="growth" className="flex gap-2 items-center">
+            <Filter size={16} />
+            Growth &amp; Conversion
           </TabsTrigger>
           <TabsTrigger value="umami" className="flex gap-2 items-center">
             <TrendingUp size={16} />
@@ -176,6 +182,10 @@ export default function AdminAnalytics() {
               </div>
             </>
           )}
+        </TabsContent>
+
+        <TabsContent value="growth">
+          <GrowthConversionDashboard />
         </TabsContent>
 
         <TabsContent value="umami">

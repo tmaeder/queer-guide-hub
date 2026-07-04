@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { untypedFrom } from '@/integrations/supabase/untyped';
 import { useAuth } from '@/hooks/useAuth';
 import type { Tables } from '@/integrations/supabase/types';
 
@@ -34,8 +34,7 @@ export function useUserNewsReadsList({ limit = 30 }: Options = {}) {
     setLoading(true);
     (async () => {
       // Recent reads — list view.
-      const recent = await supabase
-        .from('user_news_reads' as never)
+      const recent = await untypedFrom('user_news_reads')
         .select(
           'read_at, news_articles!inner(id, slug, title, excerpt, image_url, published_at, country_ids, category, publisher_name)' as never,
         )
@@ -44,14 +43,12 @@ export function useUserNewsReadsList({ limit = 30 }: Options = {}) {
         .limit(limit);
 
       // Total count.
-      const total = await supabase
-        .from('user_news_reads' as never)
+      const total = await untypedFrom('user_news_reads')
         .select('*', { count: 'exact', head: true } as never)
         .eq('user_id' as never, user.id as never);
 
       // Lifetime country coverage — pull distinct country_ids across all reads.
-      const cov = await supabase
-        .from('user_news_reads' as never)
+      const cov = await untypedFrom('user_news_reads')
         .select('news_articles!inner(country_ids)' as never)
         .eq('user_id' as never, user.id as never);
 

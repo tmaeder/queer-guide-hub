@@ -7,6 +7,7 @@
     "villages": "Queer villages",
     "marketplace": "Marketplace",
     "resources": "Resources",
+    "tags": "Tags",
     "personalities": "People",
     "news": "News",
     "places": "Places",
@@ -1032,7 +1033,9 @@
         "safety": "Safety",
         "lgbtq-specific": "LGBTQ+ specific",
         "other": "Other"
-      }
+      },
+      "scopeAll": "Everyone",
+      "scopeMine": "Mine"
     },
     "collaborate": {
       "chat": "Chat",
@@ -1332,6 +1335,44 @@
       "pin": "Pin",
       "deleteTitle": "Delete Note",
       "deleteConfirm": "Are you sure you want to delete this note? This cannot be undone."
+    },
+    "dayNotes": {
+      "addTitle": "Add a note to this day",
+      "textLabel": "Note",
+      "textPlaceholder": "e.g. Check-out by 11:00",
+      "timeLabel": "Time (optional)",
+      "iconLabel": "Icon",
+      "save": "Add note",
+      "added": "Note added",
+      "delete": "Delete note"
+    },
+    "weather": {
+      "clear": "Clear",
+      "partlyCloudy": "Partly cloudy",
+      "overcast": "Overcast",
+      "fog": "Fog",
+      "drizzle": "Drizzle",
+      "rain": "Rain",
+      "snow": "Snow",
+      "thunderstorm": "Thunderstorm",
+      "typical": "typical"
+    },
+    "conflicts": {
+      "chip_one": "{{count}} conflict",
+      "chip_other": "{{count}} conflicts"
+    },
+    "legs": {
+      "switchMode": "Switch transport mode",
+      "modeAria": "Transport mode: {{mode}} — click to change",
+      "mode": {
+        "walk": "walk",
+        "transit": "transit",
+        "drive": "drive"
+      },
+      "walkingTotal": "{{distance}} walking"
+    },
+    "suggestions": {
+      "accessMatch": "Matches your needs"
     }
   },
   "help": {
@@ -1564,6 +1605,12 @@
         "groups": "groups",
         "resources": "resources"
       }
+    },
+    "shop": {
+      "eyebrow": "Marketplace",
+      "title": "Queer-owned finds",
+      "description": "Products and services from queer- and trans-owned businesses.",
+      "seeAll": "Marketplace"
     }
   },
   "header": {
@@ -1597,6 +1644,7 @@
       "members": "Members",
       "marketplace": "Marketplace",
       "resources": "Resources",
+      "tags": "Tags",
       "news": "News",
       "travel": "Travel",
       "personalities": "Personalities",
@@ -1657,7 +1705,10 @@
       "menuTitle": "Explore Queer Guide",
       "menuDescription": "Jump to any section, switch language or theme.",
       "trips": "My Trips",
-      "settingsSection": "Display"
+      "settingsSection": "Display",
+      "browseAll": "Browse all sections",
+      "unreadCount": "{{count}} unread",
+      "tripsBadge": "{{count}} trip items need attention"
     }
   },
   "pages": {
@@ -2215,6 +2266,148 @@
       "denied": "Location access is off — showing the default area",
       "unavailable": "Couldn't get your location — showing the default area",
       "timeout": "Location lookup timed out — showing the default area"
+    },
+    "share": {
+      "title": "Map view",
+      "copied": "Link copied",
+      "copiedDescription": "Paste to share this view",
+      "failed": "Share failed"
+    },
+    "commandBar": {
+      "searchThisMap": "Search this map",
+      "searching": "Searching",
+      "clearSearch": "Clear search",
+      "typeMore": "Type at least 2 characters",
+      "filterMapFor": "Filter map for “{{query}}”",
+      "jumpToPlace": "Jump to a place",
+      "noMatches": "No places match — Enter still filters the map.",
+      "filters": "Filters",
+      "filtersActive": "Filters, {{count}} active",
+      "filtersAndLayers": "Filters & layers",
+      "layers": "Layers",
+      "more": "More map options",
+      "moreShort": "More",
+      "mapOptions": "Map options",
+      "myLocation": "My location",
+      "fitResults": "Fit to results",
+      "shareView": "Share view",
+      "reset": "Reset"
+    },
+    "entityType": {
+      "venue": "Venue",
+      "event": "Event",
+      "city": "City",
+      "country": "Country",
+      "marketplace": "Listing",
+      "personality": "Person",
+      "queer_village": "Village",
+      "group": "Group",
+      "news": "News",
+      "tag": "Tag",
+      "user": "User"
+    },
+    "quick": {
+      "groupLabel": "Quick filters",
+      "openNow": "Open now",
+      "tonight": "Tonight",
+      "thisWeekend": "This weekend",
+      "thisMonth": "This month",
+      "saved": "Saved"
+    },
+    "lens": {
+      "groupLabel": "Map view",
+      "pins": "Pins",
+      "density": "Density",
+      "routes": "Routes",
+      "boundary": "Boundary",
+      "combined": "Combined"
+    },
+    "sheet": {
+      "title": "Map options",
+      "view": "View",
+      "filters": "Filters",
+      "time": "Time",
+      "layers": "Layers",
+      "actions": "Map actions"
+    },
+    "time": {
+      "label": "Time range",
+      "anyTime": "Any time",
+      "chooseDates": "Choose dates",
+      "pickRange": "Pick a start & end",
+      "untilEndDate": "{{start}} – end date",
+      "clear": "Clear",
+      "apply": "Apply dates"
+    },
+    "nav": {
+      "zoomIn": "Zoom in",
+      "zoomOut": "Zoom out",
+      "resetNorth": "Reset bearing to north",
+      "geolocate": "Show my location"
+    },
+    "legend": {
+      "label": "Legend",
+      "show": "Show map legend",
+      "hide": "Hide map legend",
+      "title": "What you're seeing",
+      "featured": "Ringed = featured spot",
+      "live": "Pulsing = open now / live",
+      "areas": "Areas",
+      "densityTitle": "Density of queer life",
+      "fewer": "Fewer",
+      "more": "More"
+    },
+    "rail": {
+      "inView_one": "{{count}} place in view",
+      "inView_other": "{{count}} places in view",
+      "hide": "Hide nearby places",
+      "listLabel": "Places in view",
+      "showOnMap": "Show {{name}} on the map"
+    },
+    "firstRun": {
+      "spotsInView_one": "{{count}} queer spot in view",
+      "spotsInView_other": "{{count}} queer spots in view",
+      "dismiss": "Dismiss"
+    },
+    "canvas": {
+      "loading": "Loading",
+      "loadingEllipsis": "Loading...",
+      "resultsInView_one": "{{count}} result in view",
+      "resultsInView_other": "{{count}} results in view",
+      "clickToZoom": "Click to zoom in",
+      "venueCount_one": "{{count}} venue",
+      "venueCount_other": "{{count}} venues",
+      "eventCount_one": "{{count}} event",
+      "eventCount_other": "{{count}} events",
+      "restroomCount_one": "{{count}} restroom",
+      "restroomCount_other": "{{count}} restrooms",
+      "hotelCount_one": "{{count}} hotel",
+      "hotelCount_other": "{{count}} hotels",
+      "placeCount_one": "{{count}} place",
+      "placeCount_other": "{{count}} places",
+      "emptyOpenNow": "Nothing open right now in view — turn off Open now or try later.",
+      "emptyTimeRange": "No events in this time range here — widen the dates or pan out.",
+      "emptySearch": "No matches for \"{{query}}\" here — clear search or pan out.",
+      "emptyDefault": "No spots here yet — pan, zoom out, or put one on the map."
+    },
+    "layers": {
+      "venues": "Venues",
+      "events": "Events",
+      "cities": "Cities",
+      "countries": "Countries",
+      "restrooms": "Restrooms",
+      "hotels": "Hotels",
+      "neighbourhoods": "Villages"
+    },
+    "filterChips": {
+      "groupLabel": "Active filters",
+      "remove": "Remove filter: {{label}}",
+      "clearAll": "Clear all",
+      "within": "Within {{km}} km",
+      "accessible": "Accessible",
+      "queerOwned": "Queer-owned",
+      "tags_one": "{{count}} tag",
+      "tags_other": "{{count}} tags"
     }
   },
   "resources": {
@@ -2336,8 +2529,16 @@
       "browse": "Browse all resources"
     },
     "tagDetail": {
-      "breadcrumbHome": "Resources",
-      "noDefinition": "No definition yet for this term."
+      "breadcrumbHome": "Tags",
+      "noDefinition": "No definition yet for this term.",
+      "tableOfContents": "Contents",
+      "seeAlso": "See also",
+      "alsoKnownAs": "Also known as",
+      "sensitiveContentTitle": "Sensitive topic",
+      "sensitiveContentBody": "This topic may contain sensitive content. If you need support, visit our crisis hotlines page.",
+      "readOnWikipedia": "Read on Wikipedia",
+      "viewAsGraph": "View as graph",
+      "searchTagged": "Search everything tagged {{name}}"
     },
     "graph": {
       "title": "Tag Relationship Graph",
@@ -2739,6 +2940,60 @@
       "on": "Free now",
       "both": "{{name}} is free to meet right now 🟢",
       "youOnly": "You're marked free to meet 🟢"
+    }
+  },
+  "newsDetail": {
+    "notFound": "Article Not Found",
+    "notFoundDesc": "The article you're looking for doesn't exist.",
+    "backToNews": "Back to News",
+    "share": "Share",
+    "readAtSource": "Read at source",
+    "fresh": "New",
+    "reportedByOutlets": "Reported by {{count}} outlets",
+    "featured": "Featured",
+    "byAuthor": "By {{author}}",
+    "minRead": "{{count}} min read",
+    "viewsCount": "{{count}} views",
+    "whyThisMatters": "Why this matters",
+    "editorialPlaceholder": "Alt-click to add the stakes — 1–3 sentences on why this story matters.",
+    "bodyFallback": "The full story lives on the original source.",
+    "originallyPublishedBy": "Originally published by {{source}}.",
+    "viewOriginal": "View the original report",
+    "integritySatire": "Flagged as satire — not a literal report.",
+    "integrityAdvertorial": "Sponsored / advertorial content.",
+    "integritySentimentConflict": "Sources disagree on tone — read with care.",
+    "closeToHome": "Close to your home base",
+    "seeFullStory": "See the full story",
+    "topics": "Topics",
+    "home": "Home",
+    "whereThisHappens": "Where this happens",
+    "aboutSource": "About the source",
+    "corroboratedAcross": "Corroborated across {{count}} outlets",
+    "lastVerified": "Last verified {{time}}",
+    "visitSource": "Visit {{source}}",
+    "source": "source",
+    "moreLikeThis": "More like this",
+    "forYou": "For you"
+  },
+  "pwa": {
+    "updateAvailable": {
+      "title": "A new version is available",
+      "description": "Refresh to get the latest features.",
+      "action": "Refresh"
+    },
+    "backOnline": "Back online",
+    "offline": {
+      "title": "You're offline",
+      "description": "Some features may be unavailable."
+    },
+    "install": {
+      "title": "Install Queer Guide",
+      "description": "Quick access from your home screen — works offline too.",
+      "action": "Install",
+      "iosTitle": "Add to Home Screen",
+      "iosHint": "Tap the share button in Safari, then select \"Add to Home Screen\".",
+      "dismiss": "Dismiss",
+      "ariaLabel": "Install app"
     }
   }
 }

@@ -6,7 +6,7 @@
  */
 
 import { useEffect, useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { untypedRpc } from '@/integrations/supabase/untyped';
 
 /** Submission type id → search_documents.entity_type. Types absent here are not indexed
  *  for duplicate detection (place, feedback) and are skipped. */
@@ -55,14 +55,14 @@ export function useDuplicateCheck(submissionTypeId: string, title: string) {
           return;
         }
         setLoading(true);
-        // find_duplicates isn't in the generated types yet — cast name/args.
-        // Call supabase.rpc as a *bound* member (not a detached const), or
-        // `this.rest` is undefined inside supabase-js and the call throws.
-        const { data, error } = (await supabase.rpc('find_duplicates' as never, {
+        // entityType is guaranteed defined at runtime (via `valid`) but TS can't
+        // narrow it, so the generated p_content_type: string arg would type-error —
+        // route through untypedRpc.
+        const { data, error } = await untypedRpc('find_duplicates', {
           p_content_type: entityType,
           p_title: trimmed,
           p_limit: 5,
-        } as never)) as { data: unknown; error: unknown };
+        });
         if (cancelled) return;
         setLoading(false);
         setMatches(!error && Array.isArray(data) ? (data as DuplicateMatch[]) : []);

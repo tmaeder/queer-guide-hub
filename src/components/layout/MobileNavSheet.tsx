@@ -33,7 +33,7 @@ function CountBadge({ count, label }: { count: number; label: string }) {
   return (
     <span
       aria-label={label}
-      className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-accent-brand px-1.5 text-2xs font-medium leading-none text-accent-brand-foreground"
+      className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-foreground px-1.5 text-2xs font-medium leading-none text-background"
     >
       {count > 99 ? '99+' : count}
     </span>

@@ -57,6 +57,7 @@ SELECT cron.schedule('existence_signals_purge', '15 5 * * *',
 
 -- Ensure event_auto_archive cron exists + points at the wrapper, with storm guard.
 DO $$
+DO $outer$
 DECLARE jid bigint;
 BEGIN
   SELECT jobid INTO jid FROM cron.job WHERE jobname='event_auto_archive';
@@ -80,6 +81,8 @@ END $$;
 -- operator creates vault secret `existence_webhook_secret` AND sets the matching
 -- EXISTENCE_WEBHOOK_SECRET env on both functions. These only READ pages + INSERT
 -- signals (no archiving), so they are safe to run as soon as the secret is set.
+END $outer$;
+
 SELECT cron.unschedule('existence_deep_probe') WHERE EXISTS (SELECT 1 FROM cron.job WHERE jobname='existence_deep_probe');
 SELECT cron.unschedule('existence_external_osm') WHERE EXISTS (SELECT 1 FROM cron.job WHERE jobname='existence_external_osm');
 
@@ -98,3 +101,4 @@ SELECT cron.schedule('existence_external_osm', '40 2 * * *', $cron$
       'X-Webhook-Secret', (SELECT decrypted_secret FROM vault.decrypted_secrets WHERE name='existence_webhook_secret')),
     body := '{"batch_limit":30}'::jsonb);
 $cron$);
+$cron$);;

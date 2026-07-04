@@ -170,7 +170,7 @@
     "clear": "Clear",
     "signIn": "Sign in",
     "goHome": "Go Home",
-    "more": "[JA] More"
+    "more": "もっと見る"
   },
   "navigation": {
     "home": "ホーム",
@@ -1476,7 +1476,7 @@
     },
     "news": {
       "title": "最新ニュース",
-      "eyebrow": "[JA] Dispatches"
+      "eyebrow": "ニュース"
     },
     "discover": "Discover",
     "destinationsTitle": "Where the scene lives.",
@@ -1497,39 +1497,45 @@
         "resources": "resources"
       }
     },
-    "eyebrow": "[JA] Queer Guide",
-    "browseDirectory": "[JA] Browse the directory",
-    "planTrip": "[JA] Plan a trip",
-    "allVenues": "[JA] All venues",
+    "eyebrow": "Queer Guide",
+    "browseDirectory": "ディレクトリを見る",
+    "planTrip": "旅行を計画",
+    "allVenues": "すべての施設",
     "recentlyViewed": {
-      "eyebrow": "[JA] Recently viewed",
-      "title": "[JA] Pick up where you left off."
+      "eyebrow": "最近見たもの",
+      "title": "続きから始めましょう。"
     },
     "trending": {
-      "eyebrow": "[JA] Trending now",
-      "venues": "[JA] Venues on the rise.",
-      "venuesNear": "[JA] Popular venues in {{city}}.",
-      "venuesDesc": "[JA] What the community is checking out this week."
+      "eyebrow": "話題の",
+      "venues": "注目の施設。",
+      "venuesNear": "{{city}}の人気施設。",
+      "venuesDesc": "今週コミュニティが注目しているもの。"
     },
     "cta": {
-      "title": "[JA] Built by the community,",
-      "title2": "[JA] for the community.",
-      "subtitle": "[JA] Verified safe spaces, real reviews, no paywalls.",
-      "submit": "[JA] Add a venue",
-      "about": "[JA] Read the mission",
-      "invite": "[JA] Invite friends",
-      "join": "[JA] Join the community"
+      "title": "コミュニティの手でつくり、",
+      "title2": "コミュニティのために。",
+      "subtitle": "認証済みの安全な場所、本物のレビュー、ペイウォールなし。",
+      "submit": "施設を追加",
+      "about": "ミッションを読む",
+      "invite": "友達を招待",
+      "join": "コミュニティに参加"
     },
-    "subtitleShort": "[JA] Verified safe places, real events, and the people behind them.",
+    "subtitleShort": "認証済みの安全な場所、本物のイベント、そしてそれを支える人々。",
     "events": {
-      "eyebrow": "[JA] What's on",
+      "eyebrow": "開催中",
       "groups": {
-        "today": "[JA] Today",
-        "tomorrow": "[JA] Tomorrow",
-        "thisWeekend": "[JA] This weekend",
-        "thisWeek": "[JA] This week",
-        "later": "[JA] Later"
+        "today": "今日",
+        "tomorrow": "明日",
+        "thisWeekend": "今週末",
+        "thisWeek": "今週",
+        "later": "その後"
       }
+    },
+    "shop": {
+      "eyebrow": "マーケットプレイス",
+      "title": "クィアオウンドのアイテム",
+      "description": "クィア・トランス経営のショップの商品とサービス。",
+      "seeAll": "マーケットプレイスへ"
     }
   },
   "header": {
@@ -1564,7 +1570,8 @@
       "travel": "旅行",
       "personalities": "著名人",
       "hotels": "ホテル",
-      "help": "ヘルプ"
+      "help": "ヘルプ",
+      "tags": "タグ"
     },
     "userMenu": {
       "myTrips": "マイトリップ",
@@ -1578,11 +1585,11 @@
       "tripInbox": "旅行の受信箱",
       "extension": "ブラウザ拡張機能",
       "footprint": "Footprint",
-      "messages": "[JA] Messages",
-      "mailbox": "[JA] Mailbox",
-      "you": "[JA] You",
-      "community": "[JA] Community",
-      "viewProfile": "[JA] View public profile"
+      "messages": "メッセージ",
+      "mailbox": "メールボックス",
+      "you": "マイページ",
+      "community": "コミュニティ",
+      "viewProfile": "公開プロフィールを見る"
     },
     "modes": {
       "dating": "恋人を探す",
@@ -1602,17 +1609,17 @@
     "signUp": "Sign up",
     "navigation": "Navigation",
     "signIn": "Sign in",
-    "modeLabel": "[JA] Mode",
-    "modeActive": "[JA] Mode: {{mode}}",
+    "modeLabel": "モード",
+    "modeActive": "モード: {{mode}}",
     "clusters": {
-      "places": "[JA] Places",
-      "community": "[JA] Community",
-      "shop": "[JA] Shop & Read",
-      "support": "[JA] Support"
+      "places": "場所",
+      "community": "コミュニティ",
+      "shop": "ショップ & 読み物",
+      "support": "サポート"
     },
     "notifications": {
-      "label": "[JA] Notifications",
-      "unread": "[JA] Notifications, {{count}} unread"
+      "label": "通知",
+      "unread": "通知、未読 {{count}} 件"
     },
     "mobileNav": {
       "home": "ホーム",
@@ -1623,7 +1630,10 @@
       "menuTitle": "Queer Guide を見る",
       "menuDescription": "任意のセクションに移動し、言語やテーマを切り替えます。",
       "trips": "マイトリップ",
-      "settingsSection": "表示"
+      "settingsSection": "表示",
+      "browseAll": "すべてのセクションを見る",
+      "unreadCount": "未読 {{count}} 件",
+      "tripsBadge": "確認が必要な旅行項目が {{count}} 件"
     }
   },
   "pages": {
@@ -1673,7 +1683,7 @@
       "noPhotos": "写真はありません",
       "noEvents": "このスポットでの今後のイベントはありません",
       "noReviews": "まだレビューがありません。最初のレビューを書いてみましょう！",
-      "accessibility": "[JA] Accessibility"
+      "accessibility": "アクセシビリティ"
     },
     "events": {
       "title": "イベント",
@@ -2041,7 +2051,7 @@
       "createGroup": "グループを作成",
       "mostPopular": "最も人気のグループ",
       "noPopular": "人気のグループはまだありません。",
-      "eyebrow": "[JA] Community"
+      "eyebrow": "コミュニティ"
     },
     "groupDetail": {
       "signInRequired": "グループの詳細を見るにはログインしてください。"
@@ -2081,7 +2091,7 @@
       "loadMore": "Load more",
       "errorTitle": "We couldn't load the feed",
       "errorDescription": "Something went wrong while loading community posts. Check your connection and try again.",
-      "eyebrow": "[JA] Community"
+      "eyebrow": "コミュニティ"
     },
     "notFound": {
       "title": "ページが見つかりません",
@@ -2139,21 +2149,21 @@
       }
     },
     "members": {
-      "eyebrow": "[JA] Community",
-      "title": "[JA] Members",
-      "subtitle": "[JA] People, connections, and networks within the inclusive LGBTQ+ community.",
-      "member": "[JA] member",
-      "members": "[JA] members",
-      "visible": "[JA] visible",
-      "upsellTitle": "[JA] See the full community",
-      "upsellBody": "[JA] Public profiles are listed here. Sign in to see bios, locations, interests, and to start a conversation.",
-      "signInToBrowse": "[JA] Sign in to browse"
+      "eyebrow": "コミュニティ",
+      "title": "メンバー",
+      "subtitle": "インクルーシブなLGBTQ+コミュニティの人々、つながり、ネットワーク。",
+      "member": "メンバー",
+      "members": "メンバー",
+      "visible": "表示中",
+      "upsellTitle": "コミュニティ全体を見る",
+      "upsellBody": "公開プロフィールが一覧表示されます。サインインすると、自己紹介・場所・興味を見たり、会話を始めたりできます。",
+      "signInToBrowse": "サインインして閲覧"
     },
     "friends": {
-      "eyebrow": "[JA] Community",
-      "title": "[JA] Friends",
-      "subtitle": "[JA] Manage your connections",
-      "gate": "[JA] Please sign in to view your friends."
+      "eyebrow": "コミュニティ",
+      "title": "友達",
+      "subtitle": "つながりを管理",
+      "gate": "友達を見るにはサインインしてください。"
     }
   },
   "settings": {
@@ -2163,8 +2173,8 @@
       "turnOn": "オン",
       "turnOff": "オフ",
       "dm": {
-        "title": "[JA] Direct messages",
-        "body": "[JA] Notify me when someone sends me a message."
+        "title": "ダイレクトメッセージ",
+        "body": "誰かがメッセージを送ってきたら通知する。"
       }
     }
   },
@@ -2181,6 +2191,148 @@
       "denied": "Location access is off — showing the default area",
       "unavailable": "Couldn't get your location — showing the default area",
       "timeout": "Location lookup timed out — showing the default area"
+    },
+    "share": {
+      "title": "[JA] Map view",
+      "copied": "[JA] Link copied",
+      "copiedDescription": "[JA] Paste to share this view",
+      "failed": "[JA] Share failed"
+    },
+    "commandBar": {
+      "searchThisMap": "[JA] Search this map",
+      "searching": "[JA] Searching",
+      "clearSearch": "[JA] Clear search",
+      "typeMore": "[JA] Type at least 2 characters",
+      "filterMapFor": "[JA] Filter map for “{{query}}”",
+      "jumpToPlace": "[JA] Jump to a place",
+      "noMatches": "[JA] No places match — Enter still filters the map.",
+      "filters": "[JA] Filters",
+      "filtersActive": "[JA] Filters, {{count}} active",
+      "filtersAndLayers": "[JA] Filters & layers",
+      "layers": "[JA] Layers",
+      "more": "[JA] More map options",
+      "moreShort": "[JA] More",
+      "mapOptions": "[JA] Map options",
+      "myLocation": "[JA] My location",
+      "fitResults": "[JA] Fit to results",
+      "shareView": "[JA] Share view",
+      "reset": "[JA] Reset"
+    },
+    "entityType": {
+      "venue": "[JA] Venue",
+      "event": "[JA] Event",
+      "city": "[JA] City",
+      "country": "[JA] Country",
+      "marketplace": "[JA] Listing",
+      "personality": "[JA] Person",
+      "queer_village": "[JA] Village",
+      "group": "[JA] Group",
+      "news": "[JA] News",
+      "tag": "[JA] Tag",
+      "user": "[JA] User"
+    },
+    "quick": {
+      "groupLabel": "[JA] Quick filters",
+      "openNow": "[JA] Open now",
+      "tonight": "[JA] Tonight",
+      "thisWeekend": "[JA] This weekend",
+      "thisMonth": "[JA] This month",
+      "saved": "[JA] Saved"
+    },
+    "lens": {
+      "groupLabel": "[JA] Map view",
+      "pins": "[JA] Pins",
+      "density": "[JA] Density",
+      "routes": "[JA] Routes",
+      "boundary": "[JA] Boundary",
+      "combined": "[JA] Combined"
+    },
+    "sheet": {
+      "title": "[JA] Map options",
+      "view": "[JA] View",
+      "filters": "[JA] Filters",
+      "time": "[JA] Time",
+      "layers": "[JA] Layers",
+      "actions": "[JA] Map actions"
+    },
+    "time": {
+      "label": "[JA] Time range",
+      "anyTime": "[JA] Any time",
+      "chooseDates": "[JA] Choose dates",
+      "pickRange": "[JA] Pick a start & end",
+      "untilEndDate": "[JA] {{start}} – end date",
+      "clear": "[JA] Clear",
+      "apply": "[JA] Apply dates"
+    },
+    "nav": {
+      "zoomIn": "[JA] Zoom in",
+      "zoomOut": "[JA] Zoom out",
+      "resetNorth": "[JA] Reset bearing to north",
+      "geolocate": "[JA] Show my location"
+    },
+    "legend": {
+      "label": "[JA] Legend",
+      "show": "[JA] Show map legend",
+      "hide": "[JA] Hide map legend",
+      "title": "[JA] What you're seeing",
+      "featured": "[JA] Ringed = featured spot",
+      "live": "[JA] Pulsing = open now / live",
+      "areas": "[JA] Areas",
+      "densityTitle": "[JA] Density of queer life",
+      "fewer": "[JA] Fewer",
+      "more": "[JA] More"
+    },
+    "rail": {
+      "inView_one": "[JA] {{count}} place in view",
+      "inView_other": "[JA] {{count}} places in view",
+      "hide": "[JA] Hide nearby places",
+      "listLabel": "[JA] Places in view",
+      "showOnMap": "[JA] Show {{name}} on the map"
+    },
+    "firstRun": {
+      "spotsInView_one": "[JA] {{count}} queer spot in view",
+      "spotsInView_other": "[JA] {{count}} queer spots in view",
+      "dismiss": "[JA] Dismiss"
+    },
+    "canvas": {
+      "loading": "[JA] Loading",
+      "loadingEllipsis": "[JA] Loading...",
+      "resultsInView_one": "[JA] {{count}} result in view",
+      "resultsInView_other": "[JA] {{count}} results in view",
+      "clickToZoom": "[JA] Click to zoom in",
+      "venueCount_one": "[JA] {{count}} venue",
+      "venueCount_other": "[JA] {{count}} venues",
+      "eventCount_one": "[JA] {{count}} event",
+      "eventCount_other": "[JA] {{count}} events",
+      "restroomCount_one": "[JA] {{count}} restroom",
+      "restroomCount_other": "[JA] {{count}} restrooms",
+      "hotelCount_one": "[JA] {{count}} hotel",
+      "hotelCount_other": "[JA] {{count}} hotels",
+      "placeCount_one": "[JA] {{count}} place",
+      "placeCount_other": "[JA] {{count}} places",
+      "emptyOpenNow": "[JA] Nothing open right now in view — turn off Open now or try later.",
+      "emptyTimeRange": "[JA] No events in this time range here — widen the dates or pan out.",
+      "emptySearch": "[JA] No matches for \"{{query}}\" here — clear search or pan out.",
+      "emptyDefault": "[JA] No spots here yet — pan, zoom out, or put one on the map."
+    },
+    "layers": {
+      "venues": "[JA] Venues",
+      "events": "[JA] Events",
+      "cities": "[JA] Cities",
+      "countries": "[JA] Countries",
+      "restrooms": "[JA] Restrooms",
+      "hotels": "[JA] Hotels",
+      "neighbourhoods": "[JA] Villages"
+    },
+    "filterChips": {
+      "groupLabel": "[JA] Active filters",
+      "remove": "[JA] Remove filter: {{label}}",
+      "clearAll": "[JA] Clear all",
+      "within": "[JA] Within {{km}} km",
+      "accessible": "[JA] Accessible",
+      "queerOwned": "[JA] Queer-owned",
+      "tags_one": "[JA] {{count}} tag",
+      "tags_other": "[JA] {{count}} tags"
     }
   },
   "resources": {
@@ -2303,7 +2455,15 @@
     },
     "tagDetail": {
       "breadcrumbHome": "リソース",
-      "noDefinition": "この用語にはまだ定義がありません。"
+      "noDefinition": "この用語にはまだ定義がありません。",
+      "alsoKnownAs": "別名",
+      "readOnWikipedia": "Wikipediaで読む",
+      "searchTagged": "{{name}}のタグが付いたすべてを検索",
+      "seeAlso": "関連項目",
+      "sensitiveContentBody": "このトピックにはセンシティブな内容が含まれる場合があります。サポートが必要な場合は、危機ホットラインのページをご覧ください。",
+      "sensitiveContentTitle": "センシティブなトピック",
+      "tableOfContents": "目次",
+      "viewAsGraph": "グラフで表示"
     },
     "graph": {
       "title": "タグ関係グラフ",
@@ -2345,21 +2505,21 @@
     "suggestLede": "提案してください — 確認後にディレクトリに追加されます。",
     "suggestCta": "都市を提案する",
     "detail": {
-      "seeAll": "[JA] See all",
-      "planTrip": "[JA] Plan a trip to {{city}}",
+      "seeAll": "すべて見る",
+      "planTrip": "{{city}}への旅行を計画",
       "glance": {
-        "safety": "[JA] Safety",
-        "safetyLink": "[JA] Jump to safety & rights",
-        "deathPenalty": "[JA] Death penalty",
-        "criminalized": "[JA] Criminalized",
-        "equalityTier": "[JA] {{tier}} equality",
-        "checkLaws": "[JA] Check local laws",
-        "rating": "[JA] LGBTQ+ rating",
-        "population": "[JA] Population",
-        "language": "[JA] Language",
-        "currency": "[JA] Currency",
-        "bestTime": "[JA] Best time",
-        "airport": "[JA] Airport"
+        "safety": "安全",
+        "safetyLink": "安全と権利へ移動",
+        "deathPenalty": "死刑",
+        "criminalized": "犯罪化",
+        "equalityTier": "平等度: {{tier}}",
+        "checkLaws": "現地の法律を確認",
+        "rating": "LGBTQ+評価",
+        "population": "人口",
+        "language": "言語",
+        "currency": "通貨",
+        "bestTime": "ベストシーズン",
+        "airport": "空港"
       }
     }
   },
@@ -2456,312 +2616,367 @@
     }
   },
   "country": {
-    "loading": "[JA] Loading country…",
-    "planTrip": "[JA] Plan a trip to {{country}}",
-    "similar": "[JA] More destinations",
+    "loading": "国を読み込み中…",
+    "planTrip": "{{country}}への旅行を計画",
+    "similar": "その他の旅行先",
     "notFound": {
-      "title": "[JA] Country not found",
-      "body": "[JA] The country you're looking for doesn't exist.",
-      "back": "[JA] Back to Places"
+      "title": "国が見つかりません",
+      "body": "お探しの国は存在しません。",
+      "back": "「場所」に戻る"
     },
     "breadcrumb": {
-      "places": "[JA] Places"
+      "places": "場所"
     },
     "hero": {
-      "capital": "[JA] Capital"
+      "capital": "首都"
     },
     "verdict": {
-      "eyebrow": "[JA] For LGBTQ+ travelers",
-      "welcoming": "[JA] Welcoming",
-      "mixed": "[JA] Mixed",
-      "caution": "[JA] Use caution",
-      "dangerous": "[JA] Dangerous",
-      "equality": "[JA] Equality",
-      "fullBreakdown": "[JA] Full breakdown"
+      "eyebrow": "LGBTQ+の旅行者へ",
+      "welcoming": "歓迎的",
+      "mixed": "まちまち",
+      "caution": "要注意",
+      "dangerous": "危険",
+      "equality": "平等",
+      "fullBreakdown": "詳細を見る"
     },
     "facts": {
-      "capital": "[JA] Capital",
-      "population": "[JA] Population",
-      "equality": "[JA] Equality",
-      "languages": "[JA] Languages",
-      "currency": "[JA] Currency",
-      "cities": "[JA] Cities"
+      "capital": "首都",
+      "population": "人口",
+      "equality": "平等",
+      "languages": "言語",
+      "currency": "通貨",
+      "cities": "都市"
     },
     "section": {
-      "rights": "[JA] Rights & safety",
-      "cities": "[JA] Cities",
-      "venues": "[JA] Venues",
-      "events": "[JA] Events",
-      "travel": "[JA] Travel",
-      "stats": "[JA] In numbers",
-      "personalities": "[JA] Voices",
-      "nearby": "[JA] Nearby",
-      "news": "[JA] News",
-      "map": "[JA] Map"
+      "rights": "権利と安全",
+      "cities": "都市",
+      "venues": "施設",
+      "events": "イベント",
+      "travel": "旅行",
+      "stats": "数字で見る",
+      "personalities": "声",
+      "nearby": "近く",
+      "news": "ニュース",
+      "map": "地図"
     },
     "practical": {
-      "languages": "[JA] Languages",
-      "currency": "[JA] Currency",
-      "callingCode": "[JA] Calling code",
-      "tld": "[JA] Internet domain",
-      "driving": "[JA] Driving",
-      "drivesLeft": "[JA] Left-hand side",
-      "drivesRight": "[JA] Right-hand side",
-      "airports": "[JA] Major airports",
-      "government": "[JA] Government",
-      "nationalDay": "[JA] National day"
+      "languages": "言語",
+      "currency": "通貨",
+      "callingCode": "国番号",
+      "tld": "インターネットドメイン",
+      "driving": "走行",
+      "drivesLeft": "左側通行",
+      "drivesRight": "右側通行",
+      "airports": "主要空港",
+      "government": "政治体制",
+      "nationalDay": "建国記念日"
     },
     "stats": {
-      "gdpPerCapita": "[JA] GDP / capita",
-      "hdi": "[JA] HDI",
-      "lifeExpectancy": "[JA] Life expectancy",
-      "literacy": "[JA] Literacy",
-      "income": "[JA] Income level"
+      "gdpPerCapita": "一人当たりGDP",
+      "hdi": "HDI",
+      "lifeExpectancy": "平均寿命",
+      "literacy": "識字率",
+      "income": "所得水準"
     },
     "cities": {
-      "emptyTitle": "[JA] No cities yet",
-      "emptyBody": "[JA] No cities are listed for this country yet."
+      "emptyTitle": "まだ都市がありません",
+      "emptyBody": "この国にはまだ都市が登録されていません。"
     },
     "venues": {
-      "emptyTitle": "[JA] No venues yet",
-      "emptyBody": "[JA] Be the first to add a venue in {{country}}."
+      "emptyTitle": "まだ施設がありません",
+      "emptyBody": "{{country}}で最初に施設を追加しましょう。"
     },
     "events": {
-      "emptyTitle": "[JA] No upcoming events",
-      "emptyBody": "[JA] No events are scheduled for this country yet."
+      "emptyTitle": "今後のイベントはありません",
+      "emptyBody": "この国ではまだイベントが予定されていません。"
     },
     "travel": {
-      "activities": "[JA] Activities & tours",
-      "activitiesBody": "[JA] Experiences in {{country}}"
+      "activities": "アクティビティ＆ツアー",
+      "activitiesBody": "{{country}}での体験"
     },
     "news": {
-      "emptyTitle": "[JA] No local news yet",
-      "emptyBody": "[JA] No news articles are available for this country yet."
+      "emptyTitle": "まだ現地ニュースがありません",
+      "emptyBody": "この国の記事はまだありません。"
     },
     "rights": {
-      "title": "[JA] LGBTI rights overview",
-      "source": "[JA] ILGA World Database",
-      "updated": "[JA] Updated",
-      "noData": "[JA] No data",
-      "sameSexActivity": "[JA] Same-sex activity",
-      "penalty": "[JA] Penalty",
-      "deathPenalty": "[JA] death penalty possible",
-      "decriminalized": "[JA] Decriminalized",
-      "expression": "[JA] Freedom of expression",
-      "association": "[JA] Freedom of association",
+      "title": "LGBTIの権利の概要",
+      "source": "ILGA World Database",
+      "updated": "更新日",
+      "noData": "データなし",
+      "sameSexActivity": "同性間の行為",
+      "penalty": "刑罰",
+      "deathPenalty": "死刑の可能性あり",
+      "decriminalized": "非犯罪化",
+      "expression": "表現の自由",
+      "association": "結社の自由",
       "section": {
-        "criminalisation": "[JA] Criminalisation & freedoms",
-        "antiDiscrimination": "[JA] Anti-discrimination protection",
-        "criminalJustice": "[JA] Criminal justice",
-        "family": "[JA] Family & relationships",
-        "identity": "[JA] Identity & health"
+        "criminalisation": "犯罪化と自由",
+        "antiDiscrimination": "差別禁止の保護",
+        "criminalJustice": "刑事司法",
+        "family": "家族と関係",
+        "identity": "アイデンティティと健康"
       },
-      "constitutional": "[JA] Constitutional",
-      "employment": "[JA] Employment",
-      "housing": "[JA] Housing",
-      "education": "[JA] Education",
-      "health": "[JA] Health",
-      "goodsServices": "[JA] Goods & services",
-      "bullying": "[JA] Bullying",
-      "hateCrime": "[JA] Hate crime laws",
-      "incitement": "[JA] Incitement prohibition",
-      "unions": "[JA] Same-sex unions",
-      "marriageSince": "[JA] Marriage since",
-      "civilUnionSince": "[JA] civil union since",
-      "adoption": "[JA] Adoption rights",
-      "genderRecognition": "[JA] Gender recognition",
-      "marker": "[JA] Marker",
-      "selfId": "[JA] Self-ID",
-      "requiresSurgery": "[JA] Requires surgery",
-      "requiresDiagnosis": "[JA] Requires diagnosis",
-      "conversionTherapy": "[JA] Conversion therapy",
-      "intersex": "[JA] Intersex bodily integrity",
-      "ilgaLink": "[JA] ILGA World Database"
+      "constitutional": "憲法上",
+      "employment": "雇用",
+      "housing": "住居",
+      "education": "教育",
+      "health": "健康",
+      "goodsServices": "商品とサービス",
+      "bullying": "いじめ",
+      "hateCrime": "ヘイトクライム法",
+      "incitement": "扇動の禁止",
+      "unions": "同性間の結合",
+      "marriageSince": "婚姻可（年）",
+      "civilUnionSince": "シビルユニオン可（年）",
+      "adoption": "養子縁組の権利",
+      "genderRecognition": "性別の承認",
+      "marker": "性別記載",
+      "selfId": "自己申告",
+      "requiresSurgery": "手術が必要",
+      "requiresDiagnosis": "診断が必要",
+      "conversionTherapy": "コンバージョンセラピー",
+      "intersex": "インターセックスの身体的尊厳",
+      "ilgaLink": "ILGA World Database"
     }
   },
   "inbox": {
-    "title": "[JA] Inbox",
+    "title": "受信箱",
     "filter": {
-      "all": "[JA] All",
-      "chats": "[JA] Chats",
-      "mail": "[JA] Mail",
-      "alerts": "[JA] Alerts"
+      "all": "すべて",
+      "chats": "チャット",
+      "mail": "メール",
+      "alerts": "アラート"
     },
     "compose": {
-      "label": "[JA] Compose",
-      "message": "[JA] New message",
-      "email": "[JA] New email"
+      "label": "作成",
+      "message": "新規メッセージ",
+      "email": "新規メール"
     },
     "notification": {
-      "open": "[JA] Open"
+      "open": "開く"
     },
-    "openInbox": "[JA] Open inbox",
-    "markAlertsRead": "[JA] Mark alerts read",
-    "unread": "[JA] Unread",
-    "unreadCount": "[JA] {{count}} unread",
+    "openInbox": "受信箱を開く",
+    "markAlertsRead": "アラートを既読にする",
+    "unread": "未読",
+    "unreadCount": "未読 {{count}} 件",
     "action": {
-      "pin": "[JA] Pin",
-      "unpin": "[JA] Unpin",
-      "mute": "[JA] Mute",
-      "unmute": "[JA] Unmute",
-      "markRead": "[JA] Mark as read",
-      "archive": "[JA] Archive"
+      "pin": "ピン留め",
+      "unpin": "ピン留め解除",
+      "mute": "ミュート",
+      "unmute": "ミュート解除",
+      "markRead": "既読にする",
+      "archive": "アーカイブ"
     },
-    "search": "[JA] Search",
-    "searchEmpty": "[JA] No matches.",
+    "search": "検索",
+    "searchEmpty": "一致なし。",
     "recipient": {
-      "search": "[JA] Search people",
-      "empty": "[JA] No suggestions yet.",
-      "recent": "[JA] Recently messaged",
-      "active": "[JA] Active recently"
+      "search": "人を検索",
+      "empty": "まだ候補がありません。",
+      "recent": "最近やり取りした人",
+      "active": "最近アクティブ"
     }
   },
   "extension": {
     "signInGate": {
-      "title": "[JA] Sign in to install the extension",
-      "subtitle": "[JA] The queer.guide capture extension lets signed-in members suggest venues, events, hotels and more from any webpage.",
-      "cta": "[JA] Sign in"
+      "title": "拡張機能をインストールするにはサインイン",
+      "subtitle": "queer.guideのキャプチャ拡張機能を使うと、サインイン済みのメンバーは任意のウェブページから施設・イベント・ホテルなどを提案できます。",
+      "cta": "サインイン"
     },
     "heading": {
-      "title": "[JA] queer.guide capture",
-      "subtitle": "[JA] Browser extension that turns any webpage into a structured suggestion for our moderators."
+      "title": "queer.guide キャプチャ",
+      "subtitle": "どんなウェブページも、モデレーター向けの構造化された提案に変えるブラウザ拡張機能。"
     },
     "badge": {
-      "installed": "[JA] Installed"
+      "installed": "インストール済み"
     },
     "captures": {
-      "label": "[JA] Captures",
-      "venues": "[JA] Venues",
-      "events": "[JA] Events",
-      "hotels": "[JA] Hotels",
-      "marketplace": "[JA] Marketplace",
-      "news": "[JA] News"
+      "label": "キャプチャ",
+      "venues": "施設",
+      "events": "イベント",
+      "hotels": "ホテル",
+      "marketplace": "マーケットプレイス",
+      "news": "ニュース"
     },
     "connect": {
-      "title": "[JA] Connect this browser",
-      "detected": "[JA] Extension",
-      "installed": "[JA] is installed in this browser.",
-      "body": "[JA] Sign your queer.guide session into the extension so you can submit content from any webpage.",
-      "signInPrompt": "[JA] Sign in to your queer.guide account to connect this browser and start submitting.",
-      "signedInAs": "[JA] Signed in as",
-      "cta": "[JA] Connect",
-      "connecting": "[JA] Connecting…",
+      "title": "このブラウザを接続",
+      "detected": "拡張機能",
+      "installed": "はこのブラウザにインストールされています。",
+      "body": "queer.guideのセッションを拡張機能にサインインさせると、任意のウェブページからコンテンツを投稿できます。",
+      "signInPrompt": "queer.guideアカウントにサインインして、このブラウザを接続し投稿を始めましょう。",
+      "signedInAs": "サインイン中:",
+      "cta": "接続",
+      "connecting": "接続中…",
       "done": {
-        "title": "[JA] Connected.",
-        "body": "[JA] Open the extension popup on any page to capture content for queer.guide."
+        "title": "接続しました。",
+        "body": "任意のページで拡張機能のポップアップを開き、queer.guide用にコンテンツをキャプチャしましょう。"
       }
     },
     "steps": {
-      "title": "[JA] Install in 3 steps",
+      "title": "3ステップでインストール",
       "s1": {
-        "title": "[JA] Download the latest build",
-        "body": "[JA] We don't have the extension on the Chrome Web Store yet. For now, grab the latest signed build.",
-        "download": "[JA] Download .zip",
-        "note": "[JA] Unzip it somewhere you won't accidentally delete (e.g. ~/Applications/queer-guide-extension)."
+        "title": "最新ビルドをダウンロード",
+        "body": "この拡張機能はまだ Chrome ウェブストアにありません。今のところは最新の署名済みビルドを入手してください。",
+        "download": ".zip をダウンロード",
+        "note": "誤って削除しない場所に解凍してください（例: ~/Applications/queer-guide-extension）。"
       },
       "s2": {
-        "title": "[JA] Load it in Chrome",
-        "l1": "[JA] Open chrome://extensions in a new tab.",
-        "l2": "[JA] Toggle Developer mode on (top right).",
-        "l3": "[JA] Click Load unpacked and pick the unzipped folder.",
-        "l4": "[JA] The queer.guide puzzle icon appears in your toolbar — pin it for one-click access.",
-        "note": "[JA] Other Chromium browsers (Edge, Brave, Arc) work the same way. Firefox / Safari are not supported yet."
+        "title": "Chrome に読み込む",
+        "l1": "新しいタブで chrome://extensions を開きます。",
+        "l2": "デベロッパーモードをオンにします（右上）。",
+        "l3": "「パッケージ化されていない拡張機能を読み込む」をクリックし、解凍したフォルダーを選びます。",
+        "l4": "queer.guideのパズルアイコンがツールバーに表示されます。ワンクリックでアクセスできるようにピン留めしましょう。",
+        "note": "他の Chromium 系ブラウザ（Edge、Brave、Arc）も同じ手順です。Firefox / Safari はまだ対応していません。"
       },
       "s3": {
-        "title": "[JA] Reload this page and Connect",
-        "body": "[JA] Once Chrome confirms the extension loaded, refresh this page. A “Connect” button will appear and one click signs the extension into your queer.guide account."
+        "title": "このページを再読み込みして接続",
+        "body": "拡張機能の読み込みが Chrome で確認できたら、このページを更新してください。「接続」ボタンが表示され、1クリックで拡張機能があなたの queer.guide アカウントにサインインします。"
       },
       "dev": {
-        "label": "[JA] Want to build it yourself or contribute?",
-        "cta": "[JA] Build instructions"
+        "label": "自分でビルドしたり貢献したいですか？",
+        "cta": "ビルド手順"
       }
     },
     "highlights": {
       "smart": {
-        "title": "[JA] Smart capture",
-        "body": "[JA] Reads JSON-LD, OpenGraph, microdata and DOM heuristics — most pages just work."
+        "title": "スマートキャプチャ",
+        "body": "JSON-LD、OpenGraph、マイクロデータ、DOMヒューリスティックを読み取り、ほとんどのページでそのまま動作します。"
       },
       "privacy": {
-        "title": "[JA] Privacy-first",
-        "body": "[JA] Only runs when you click. No host permissions, no background tracking."
+        "title": "プライバシー優先",
+        "body": "クリックしたときだけ動作します。ホスト権限なし、バックグラウンドの追跡なし。"
       },
       "review": {
-        "title": "[JA] Always reviewed",
-        "body": "[JA] Submissions land in a moderation queue, never live until approved."
+        "title": "必ずレビュー",
+        "body": "投稿はモデレーションキューに入り、承認されるまで公開されません。"
       }
     },
     "bug": {
-      "label": "[JA] Found a bug?",
-      "cta": "[JA] open an issue"
+      "label": "バグを見つけましたか？",
+      "cta": "issue を作成"
     }
   },
   "breadcrumb": {
-    "home": "[JA] Home",
-    "venues": "[JA] Venues",
-    "events": "[JA] Events",
-    "hotels": "[JA] Hotels",
-    "villages": "[JA] Queer villages",
-    "marketplace": "[JA] Marketplace",
-    "resources": "[JA] Resources",
-    "personalities": "[JA] People",
-    "news": "[JA] News",
-    "places": "[JA] Places",
-    "cities": "[JA] Cities",
-    "quests": "[JA] Quests",
-    "groups": "[JA] Groups",
-    "trips": "[JA] Trips",
-    "help": "[JA] Help",
-    "pride": "[JA] Pride",
-    "contributors": "[JA] Contributors",
-    "wishlists": "[JA] Wishlists"
+    "home": "ホーム",
+    "venues": "施設",
+    "events": "イベント",
+    "hotels": "ホテル",
+    "villages": "クィア・ヴィレッジ",
+    "marketplace": "マーケットプレイス",
+    "resources": "リソース",
+    "personalities": "人物",
+    "news": "ニュース",
+    "places": "場所",
+    "cities": "都市",
+    "quests": "クエスト",
+    "groups": "グループ",
+    "trips": "旅行",
+    "help": "ヘルプ",
+    "pride": "プライド",
+    "contributors": "貢献者",
+    "wishlists": "ウィッシュリスト",
+    "tags": "タグ"
   },
   "chat": {
-    "react": "[JA] React",
-    "edited": "[JA] edited",
-    "deleted": "[JA] Message deleted",
-    "editing": "[JA] Editing message",
-    "replyingTo": "[JA] Replying to {{name}}",
+    "react": "リアクション",
+    "edited": "編集済み",
+    "deleted": "メッセージを削除しました",
+    "editing": "メッセージを編集中",
+    "replyingTo": "{{name}} に返信",
     "reply": {
-      "action": "[JA] Reply",
-      "someone": "[JA] someone"
+      "action": "返信",
+      "someone": "誰か"
     },
     "emoji": {
-      "search": "[JA] Search emoji",
-      "none": "[JA] No emoji found.",
+      "search": "絵文字を検索",
+      "none": "絵文字が見つかりません。",
       "cat": {
-        "smileys": "[JA] Smileys",
-        "gestures": "[JA] Gestures",
-        "hearts": "[JA] Hearts",
-        "pride": "[JA] Pride",
-        "animals": "[JA] Animals",
-        "food": "[JA] Food",
-        "activity": "[JA] Activity",
-        "symbols": "[JA] Symbols"
+        "smileys": "スマイリー",
+        "gestures": "ジェスチャー",
+        "hearts": "ハート",
+        "pride": "プライド",
+        "animals": "動物",
+        "food": "食べ物",
+        "activity": "アクティビティ",
+        "symbols": "記号"
       }
     },
-    "activeNow": "[JA] Active now",
+    "activeNow": "アクティブ",
     "preview": {
-      "you": "[JA] You",
-      "photo": "[JA] Photo",
-      "sticker": "[JA] Sticker",
-      "voice": "[JA] Voice message"
+      "you": "あなた",
+      "photo": "写真",
+      "sticker": "スタンプ",
+      "voice": "ボイスメッセージ"
     },
-    "streak": "[JA] You two have been chatting for {{count}} days ✨",
+    "streak": "お二人は {{count}} 日間チャットしています ✨",
     "vibe": {
-      "set": "[JA] Set a vibe",
-      "title": "[JA] Your vibe",
-      "placeholder": "[JA] What's your vibe?",
-      "for4h": "[JA] 4h"
+      "set": "気分を設定",
+      "title": "あなたの気分",
+      "placeholder": "今の気分は？",
+      "for4h": "4時間"
     },
     "stickers": {
-      "title": "[JA] Stickers"
+      "title": "スタンプ"
     },
     "freeToMeet": {
-      "title": "[JA] Free to meet",
-      "set": "[JA] Free to meet",
-      "on": "[JA] Free now",
-      "both": "[JA] {{name}} is free to meet right now 🟢",
-      "youOnly": "[JA] You're marked free to meet 🟢"
+      "title": "会える状態",
+      "set": "会える状態",
+      "on": "いま空いてる",
+      "both": "{{name}} は今すぐ会えます 🟢",
+      "youOnly": "あなたは「会える」と表示されています 🟢"
+    }
+  },
+  "newsDetail": {
+    "notFound": "記事が見つかりません",
+    "notFoundDesc": "お探しの記事は存在しません。",
+    "backToNews": "ニュースに戻る",
+    "share": "共有",
+    "readAtSource": "ソースで読む",
+    "fresh": "新着",
+    "reportedByOutlets": "{{count}}社が報道",
+    "featured": "注目",
+    "byAuthor": "{{author}}",
+    "minRead": "約{{count}}分で読了",
+    "viewsCount": "{{count}} 回表示",
+    "whyThisMatters": "なぜ重要か",
+    "editorialPlaceholder": "Alt＋クリックで背景を追加 — このニュースが重要な理由を1〜3文で。",
+    "bodyFallback": "全文は元のソースでご覧いただけます。",
+    "originallyPublishedBy": "初出: {{source}}。",
+    "viewOriginal": "元の記事を見る",
+    "integritySatire": "風刺としてフラグ付け — 事実の報道ではありません。",
+    "integrityAdvertorial": "広告・タイアップコンテンツ。",
+    "integritySentimentConflict": "トーンについて情報源が一致していません — 注意してお読みください。",
+    "closeToHome": "あなたの拠点の近く",
+    "seeFullStory": "全文を見る",
+    "topics": "トピック",
+    "home": "ホーム",
+    "whereThisHappens": "発生場所",
+    "aboutSource": "情報源について",
+    "corroboratedAcross": "{{count}}社が裏付け",
+    "lastVerified": "最終確認: {{time}}",
+    "visitSource": "{{source}} を開く",
+    "source": "情報源",
+    "moreLikeThis": "関連記事",
+    "forYou": "おすすめ"
+  },
+  "pwa": {
+    "updateAvailable": {
+      "title": "新しいバージョンが利用可能です",
+      "description": "更新して最新の機能を入手してください。",
+      "action": "更新"
+    },
+    "backOnline": "オンラインに戻りました",
+    "offline": {
+      "title": "オフラインです",
+      "description": "一部の機能が利用できない場合があります。"
+    },
+    "install": {
+      "title": "Queer Guide をインストール",
+      "description": "ホーム画面からすぐにアクセス。オフラインでも使えます。",
+      "action": "インストール",
+      "iosTitle": "ホーム画面に追加",
+      "iosHint": "Safari の共有ボタンをタップし、「ホーム画面に追加」を選択してください。",
+      "dismiss": "閉じる",
+      "ariaLabel": "アプリをインストール"
     }
   }
 }

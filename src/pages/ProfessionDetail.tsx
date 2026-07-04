@@ -60,13 +60,13 @@ export default function ProfessionDetail() {
   }, [professionName, personalities, queryError]);
 
   const handleBack = () => {
-    navigate('/resources');
+    navigate('/tags');
   };
 
   useBreadcrumbs(
     professionData
       ? [
-          { label: t('breadcrumb.resources', 'Resources'), href: '/resources' },
+          { label: t('breadcrumb.tags', 'Tags'), href: '/tags' },
           { label: professionData.name },
         ]
       : null,

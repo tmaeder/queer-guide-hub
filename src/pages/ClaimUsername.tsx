@@ -8,7 +8,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useProfile, type Profile } from '@/hooks/useProfile';
 import { UsernameSelector } from '@/components/auth/UsernameSelector';
 import { AvatarQuickPick } from '@/components/profile/AvatarQuickPick';
-import { generateRandomConfig, type AvatarConfig } from '@/components/profile/AvatarBuilder';
+import { generateRandomConfig, type AvatarConfig } from '@/components/profile/avatarConfig';
 
 export default function ClaimUsername() {
   const navigate = useNavigate();

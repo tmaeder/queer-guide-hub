@@ -351,14 +351,14 @@ export default function HelpHotlines() {
       {/* Breadcrumb */}
       <div className="mb-4 flex items-center gap-1">
         <LocalizedLink
-          to="/resources"
+          to="/tags"
           className="text-sm text-muted-foreground no-underline transition-colors hover:text-foreground"
         >
           {t('help.breadcrumb_resources', 'Resources')}
         </LocalizedLink>
         <ChevronRight size={14} style={{ opacity: 0.5 }} />
         <LocalizedLink
-          to="/resources?category=Support+%26+News"
+          to="/tags?category=Support+%26+News"
           className="text-sm text-muted-foreground no-underline transition-colors hover:text-foreground"
         >
           {t('help.breadcrumb_support', 'Support & News')}
@@ -672,7 +672,7 @@ export default function HelpHotlines() {
               ))}
             </div>
             <Button asChild variant="ghost" size="sm">
-              <LocalizedLink to="/resources">
+              <LocalizedLink to="/tags">
                 {t('help.browse_resources', 'Browse all resources')}
                 <ChevronRight size={16} className="ml-1" />
               </LocalizedLink>

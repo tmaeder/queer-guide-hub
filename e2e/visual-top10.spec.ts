@@ -24,14 +24,14 @@ const ROUTES = [
   '/cities',
   '/trips',
   '/personalities',
-  '/resources',
+  '/tags',
   '/help',
 ];
 
 // Live-content pages: looser threshold to avoid flake from rotation.
 // Added 2026-05-20: /, /venues, /resources have rotating heroes /
 // featured rows / recommendation rails and were flaking on the 3% gate.
-const LIVE = new Set(['/', '/news', '/events', '/marketplace', '/venues', '/resources']);
+const LIVE = new Set(['/', '/news', '/events', '/marketplace', '/venues', '/tags']);
 
 test.describe('Top-10 desktop visual baselines', () => {
   test.setTimeout(60_000);

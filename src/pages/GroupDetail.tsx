@@ -32,7 +32,7 @@ import { useGroupEvents } from '@/hooks/useGroupEvents';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { GroupPostCard } from '@/components/groups/GroupPostCard';
-import { CreatePostDialog } from '@/components/groups/CreatePostDialog';
+import { GroupPostDialog } from '@/components/groups/GroupPostDialog';
 import { GroupMembersList } from '@/components/groups/GroupMembersList';
 import { AddMemberDialog } from '@/components/groups/AddMemberDialog';
 import { InviteFriendsDialog } from '@/components/groups/InviteFriendsDialog';
@@ -256,7 +256,7 @@ export default function GroupDetail() {
                         key={tag}
                         variant="outline"
                         className="text-xs cursor-pointer"
-                        onClick={() => navigate(`/resources/${encodeURIComponent(tag)}`)}
+                        onClick={() => navigate(`/tags/${encodeURIComponent(tag)}`)}
                       >
                         {tag}
                       </Badge>
@@ -387,7 +387,7 @@ export default function GroupDetail() {
                           key={tag}
                           variant="outline"
                           className="cursor-pointer"
-                          onClick={() => navigate(`/resources/${encodeURIComponent(tag)}`)}
+                          onClick={() => navigate(`/tags/${encodeURIComponent(tag)}`)}
                         >
                           {tag}
                         </Badge>
@@ -471,7 +471,7 @@ export default function GroupDetail() {
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold">Group Posts</h3>
             {group.is_member && (
-              <CreatePostDialog
+              <GroupPostDialog
                 onCreatePost={createPost}
                 isCreating={isCreatingPost}
                 groupMembers={groupMembers}
@@ -504,7 +504,7 @@ export default function GroupDetail() {
                     : 'Join the group to see and participate in discussions.'}
                 </p>
                 {group.is_member && (
-                  <CreatePostDialog
+                  <GroupPostDialog
                     onCreatePost={createPost}
                     isCreating={isCreatingPost}
                     groupMembers={groupMembers}

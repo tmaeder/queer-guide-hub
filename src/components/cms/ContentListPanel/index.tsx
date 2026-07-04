@@ -5,7 +5,9 @@
  */
 
 import { lazy, Suspense } from 'react';
+import { useParams } from 'react-router';
 import { Plus, Search, RefreshCw, X, Columns3 } from 'lucide-react';
+import { ContentEntityTabs } from '@/components/admin/ContentEntityTabs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -37,12 +39,14 @@ interface ContentListPanelProps {
 
 export function ContentListPanel(props: ContentListPanelProps) {
   const c = useContentListController(props);
+  const { type } = useParams();
 
   const typeColor = c.config?.color || 'hsl(var(--muted-foreground))';
   const Icon = c.config?.icon;
 
   return (
     <div>
+      <ContentEntityTabs type={type ?? props.contentTypeId} />
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-4">
           {Icon && (

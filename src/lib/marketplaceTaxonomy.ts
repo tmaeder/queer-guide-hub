@@ -63,6 +63,18 @@ export function departmentLabel(slug: string | null | undefined): string {
   return DEPARTMENT_LABELS[slug ?? ''] ?? 'Other';
 }
 
+// ── Brand routing ─────────────────────────────────────────────────────────────
+// Mirror of SQL marketplace_brand_slug(marketplace_normalize_brand(brand))
+// (migration 20260702150000). Keep the two in sync.
+export function brandSlug(brand: string | null | undefined): string | null {
+  if (!brand) return null;
+  // Deliberately NOT the shared @/lib/slugify (which folds accents) — this
+  // must stay byte-identical to the SQL slug rule in marketplace_department()
+  // (migration 20260609000000) or brand URLs stop matching their DB slugs.
+  const slug = brand.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+  return slug || null;
+}
+
 // ── Attribute facets (material / occasion / vibe) ────────────────────────────
 // unified_tags slugs are namespaced (mat-cotton, occ-pride, vibe-minimal) so they
 // can't collide with the global tag vocabulary; labels come from unified_tags.name.

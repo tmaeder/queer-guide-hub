@@ -1,4 +1,6 @@
+import { lazy, Suspense, useEffect } from 'react';
 import { useNavigate } from 'react-router';
+import { marketplaceBeacon } from '@/lib/affiliate/marketplace';
 import {
   Star,
   MapPin,
@@ -23,7 +25,6 @@ import { ReportButton } from '@/components/moderation/ReportButton';
 import { AdminEditButton } from '@/components/admin/AdminEditButton';
 import { Editable } from '@/components/admin/inline/Editable';
 import type { Database } from '@/integrations/supabase/types';
-import { formatCurrency } from '@/lib/currency';
 import {
   formatListingPrice,
   getOutboundLink,
@@ -31,36 +32,25 @@ import {
   sourceProvenanceLine,
   trustPillsFor,
 } from '@/components/marketplace/marketplaceHelpers';
-import { departmentLabel, ATTRIBUTE_KIND_LABELS } from '@/lib/marketplaceTaxonomy';
+import { brandSlug, departmentLabel, ATTRIBUTE_KIND_LABELS } from '@/lib/marketplaceTaxonomy';
 import { tagHref } from '@/lib/searchRoutes';
 import type { ListingTag } from '@/hooks/usePageFetchers';
 import { AffiliateDisclosure } from '@/components/marketplace/AffiliateDisclosure';
 import { MarketplacePriceHistory } from '@/components/marketplace/MarketplacePriceHistory';
+// Lazy: keeps the recharts chunk off the item-detail load (chart renders null for <2 price points)
+const MarketplacePriceHistory = lazy(() =>
+  import('@/components/marketplace/MarketplacePriceHistory').then((m) => ({
+    default: m.MarketplacePriceHistory,
+  }))
+);
 import { MarketplaceSimilarItems } from '@/components/marketplace/MarketplaceSimilarItems';
+import { BrandMoreFrom } from '@/components/marketplace/BrandMoreFrom';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 
 export type MarketplaceListing = Database['public']['Tables']['marketplace_listings']['Row'];
 export type MarketplaceReview = Database['public']['Tables']['marketplace_reviews']['Row'] & {
   profiles: { display_name: string; avatar_url: string | null } | null;
 };
-
-export function formatPrice(listing: MarketplaceListing) {
-  if (!listing.price) {
-    if (listing.price_type === 'free') return 'Free';
-    return 'Price varies';
-  }
-  const price = formatCurrency(listing.price, listing.currency || 'USD');
-  switch (listing.price_type) {
-    case 'starting_at':
-      return `Starting at ${price}`;
-    case 'negotiable':
-      return `${price} (negotiable)`;
-    case 'free':
-      return 'Free';
-    default:
-      return price;
-  }
-}
 
 export function getBusinessTypeIcon(type: string | null | undefined) {
   switch (type) {
@@ -114,7 +104,13 @@ export function MarketplaceBuyBox({
   onContentUpdated,
 }: BuyBoxProps) {
   const price = formatListingPrice(listing);
-  const outbound = getOutboundLink(listing);
+  const outbound = getOutboundLink(listing, 'marketplace_detail');
+
+  // One CTR impression per detail view (kind=impression pairs with the /go click).
+  useEffect(() => {
+    if (outbound?.isAffiliate) marketplaceBeacon(listing.id, 'marketplace_detail');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [listing.id]);
   // Warmer, seller-forward CTA than the generic "Visit website" — name the
   // shop so the click feels personal (esp. for queer-owned sellers).
   const seller = (listing.brand || listing.business_name || '').trim();
@@ -135,7 +131,14 @@ export function MarketplaceBuyBox({
           <div className="min-w-0">
             {listing.brand && (
               <p className="text-13 font-medium uppercase tracking-[0.14em] text-muted-foreground">
-                {listing.merchant_domain ? (
+                {brandSlug(listing.brand) ? (
+                  <LocalizedLink
+                    to={`/marketplace/brands/${brandSlug(listing.brand)}`}
+                    className="hover:text-foreground"
+                  >
+                    {listing.brand}
+                  </LocalizedLink>
+                ) : listing.merchant_domain ? (
                   <LocalizedLink
                     to={`/marketplace/merchants/${listing.merchant_domain}`}
                     className="hover:text-foreground"
@@ -459,7 +462,9 @@ export function MarketplaceContent({ listing, reviews, tags }: ContentProps) {
         </Card>
       )}
 
-      <MarketplacePriceHistory listingId={listing.id} />
+      <Suspense fallback={null}>
+        <MarketplacePriceHistory listingId={listing.id} />
+      </Suspense>
 
       <Card>
         <CardHeader>
@@ -517,7 +522,6 @@ export function MarketplaceContent({ listing, reviews, tags }: ContentProps) {
         </CardContent>
       </Card>
 
-      <MarketplaceSimilarItems listing={listing} />
     </div>
   );
 }

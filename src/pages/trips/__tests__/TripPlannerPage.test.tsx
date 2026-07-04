@@ -6,7 +6,11 @@ import { render } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router';
 
 vi.mock('@/hooks/useLocalizedNavigate', () => ({ useLocalizedNavigate: () => vi.fn() }));
-vi.mock('@/hooks/useTrips', () => ({ useTrip: () => ({ data: null, isLoading: false }) }));
+vi.mock('@/hooks/useTrips', () => ({
+  useTrip: () => ({ data: null, isLoading: false }),
+  canEditTrip: () => false,
+}));
+vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ user: null }) }));
 vi.mock('@/hooks/useTripReservations', () => ({ useTripReservations: () => ({ data: [], isLoading: false }) }));
 vi.mock('@/hooks/use-toast', () => ({ useToast: () => ({ toast: vi.fn() }) }));
 

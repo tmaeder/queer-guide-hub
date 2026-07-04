@@ -1,7 +1,7 @@
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { User } from 'lucide-react';
 import { BigHead } from '@bigheads/core';
-import type { AvatarConfig } from './AvatarBuilder';
+import type { AvatarConfig } from './avatarConfig';
 import { generateAvatarUrl } from '@/lib/avatar';
 
 interface AvatarDisplayProps {

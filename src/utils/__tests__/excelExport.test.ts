@@ -1,41 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { formatDate, formatDateTime, formatArray, formatBoolean, generateFilename } from '../excelExport';
+import { formatArray, formatBoolean, generateFilename } from '../excelExport';
 
 // Only test pure formatting helpers — exportToExcel and fetchAllRows need
 // heavy mocking of exceljs and supabase respectively, tested via integration.
-
-describe('formatDate', () => {
-  it('should format ISO date string to yyyy-MM-dd', () => {
-    expect(formatDate('2024-06-15T10:30:00Z')).toBe('2024-06-15');
-  });
-
-  it('should return empty string for null', () => {
-    expect(formatDate(null)).toBe('');
-  });
-
-  it('should return empty string for undefined', () => {
-    expect(formatDate(undefined)).toBe('');
-  });
-
-  it('should return raw string for invalid date', () => {
-    expect(formatDate('not-a-date')).toBe('not-a-date');
-  });
-});
-
-describe('formatDateTime', () => {
-  it('should format to yyyy-MM-dd HH:mm', () => {
-    const result = formatDateTime('2024-06-15T10:30:00Z');
-    expect(result).toMatch(/2024-06-15 \d{2}:\d{2}/);
-  });
-
-  it('should return empty string for null', () => {
-    expect(formatDateTime(null)).toBe('');
-  });
-
-  it('should return raw string for invalid date', () => {
-    expect(formatDateTime('nope')).toBe('nope');
-  });
-});
 
 describe('formatArray', () => {
   it('should join array with semicolons', () => {

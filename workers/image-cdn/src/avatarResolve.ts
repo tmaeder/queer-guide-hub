@@ -9,7 +9,10 @@
  * hot-links externally (served from R2 at img.queer.guide), and resolution
  * is one-shot — no background refresh, re-import to update.
  */
-import { createRemoteJWKSet, jwtVerify } from 'jose';
+import * as jose from 'jose';
+import { createSupabaseJwtVerifier } from '../../_shared/supabase-jwt-jose';
+
+const verifySupabaseJwt = createSupabaseJwtVerifier(jose);
 
 export interface AvatarEnv {
   IMAGES: R2Bucket;
@@ -36,50 +39,6 @@ const SOURCES = new Set([
 ]);
 const MAX_BYTES = 5 * 1024 * 1024;
 const PREFIX = 'avatars/unavatar/';
-
-let jwks: ReturnType<typeof createRemoteJWKSet> | null = null;
-
-async function verifyJwt(token: string, env: AvatarEnv): Promise<string> {
-  // 1. JWKS (asymmetric signing) — free, no secrets in the worker.
-  if (env.SUPABASE_URL) {
-    try {
-      jwks ??= createRemoteJWKSet(
-        new URL(`${env.SUPABASE_URL.replace(/\/$/, '')}/auth/v1/.well-known/jwks.json`),
-      );
-      const { payload } = await jwtVerify(token, jwks, { algorithms: ['ES256', 'RS256'] });
-      if (typeof payload.sub === 'string') return payload.sub;
-    } catch {
-      // fall through — project may still be on HS256
-    }
-  }
-
-  // 2. HS256 secret, if configured.
-  if (env.SUPABASE_JWT_SECRET) {
-    const { payload } = await jwtVerify(
-      token,
-      new TextEncoder().encode(env.SUPABASE_JWT_SECRET),
-      { algorithms: ['HS256'] },
-    );
-    if (typeof payload.sub !== 'string') throw new Error('token missing sub');
-    return payload.sub;
-  }
-
-  // 3. Ask Supabase auth directly (public anon key, no signing secret needed).
-  //    Resolves are rare one-shot actions, so the extra round-trip is fine.
-  if (env.SUPABASE_URL && env.SUPABASE_ANON_KEY) {
-    const res = await fetch(`${env.SUPABASE_URL.replace(/\/$/, '')}/auth/v1/user`, {
-      headers: { apikey: env.SUPABASE_ANON_KEY, Authorization: `Bearer ${token}` },
-      signal: AbortSignal.timeout(8000),
-    });
-    if (res.ok) {
-      const user = (await res.json()) as { id?: string };
-      if (typeof user.id === 'string') return user.id;
-    }
-    throw new Error('invalid token');
-  }
-
-  throw new Error('verifier not configured');
-}
 
 async function sha256Hex(input: string): Promise<string> {
   const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(input));
@@ -109,7 +68,13 @@ export async function handleAvatarResolve(
   if (!token) return json({ error: 'unauthorized' }, 401);
   let sub: string;
   try {
-    sub = await verifyJwt(token, env);
+    sub = (
+      await verifySupabaseJwt(token, {
+        supabaseUrl: env.SUPABASE_URL,
+        jwtSecret: env.SUPABASE_JWT_SECRET,
+        authApiKey: env.SUPABASE_ANON_KEY,
+      })
+    ).sub;
   } catch {
     return json({ error: 'unauthorized' }, 401);
   }

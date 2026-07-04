@@ -56,7 +56,7 @@ export default function ResourceTopic() {
   useMeta({
     title: topic ? `${topic.title} — ${t('resources.topic.metaSuffix')}` : t('resources.topic.metaNotFound'),
     description: topic?.description,
-    canonicalPath: `/resources/topic/${slug}`,
+    canonicalPath: `/tags/topic/${slug}`,
   });
 
   const { data: guides = [], isLoading: guidesLoading } = useTopicGuides(topic?.cms_parent_slug);
@@ -76,7 +76,7 @@ export default function ResourceTopic() {
     return (
       <div className="container mx-auto py-16 px-4 text-center">
         <h1 className="text-2xl font-bold mb-2">{t('resources.topic.notFound')}</h1>
-        <Button onClick={() => navigate('/resources')}>{t('resources.topic.backToResources')}</Button>
+        <Button onClick={() => navigate('/tags')}>{t('resources.topic.backToResources')}</Button>
       </div>
     );
   }
@@ -86,7 +86,7 @@ export default function ResourceTopic() {
   return (
     <div className="container mx-auto py-8 md:py-16 px-4">
       <LocalizedLink
-        to="/resources"
+        to="/tags"
         className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground hover:underline"
       >
         <ChevronLeft aria-hidden size={14} />
@@ -181,7 +181,7 @@ export default function ResourceTopic() {
         </section>
 
         <LocalizedLink
-          to="/resources"
+          to="/tags"
           className="inline-flex items-center gap-1 text-sm font-medium hover:underline"
         >
           {t('resources.topic.moreTopics')}

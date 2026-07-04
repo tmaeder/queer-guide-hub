@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Lock } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
-import { supabase } from '@/integrations/supabase/client';
+import { untypedRpc } from '@/integrations/supabase/untyped';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { PageLoading } from '@/components/ui/loading';
@@ -32,10 +32,10 @@ export function GatedDetailFallback({ entityType, slug, notFound }: GatedDetailF
   const { data: gated, isLoading } = useQuery({
     queryKey: ['gated-entity-exists', entityType, slug ?? null],
     queryFn: async (): Promise<boolean> => {
-      const { data, error } = await supabase.rpc('gated_entity_exists' as never, {
+      const { data, error } = await untypedRpc('gated_entity_exists', {
         p_entity_type: entityType,
         p_slug: slug,
-      } as never);
+      });
       if (error) throw error;
       return Boolean(data);
     },

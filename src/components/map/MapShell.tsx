@@ -1,11 +1,14 @@
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import { tweens } from '@/lib/motion';
 import { distance } from '@/lib/animation';
-import { ExploreMap } from './ExploreMap';
+import { ExploreMap, type ExploreMapHandle } from './ExploreMap';
 import { CommandBar } from './CommandBar';
+import { MobileMapBar } from './chrome/MobileMapBar';
+import { MapNavControls } from './chrome/MapNavControls';
 import { FilterChips } from './FilterChips';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { MapLegend } from './MapLegend';
 import { SpotlightRail } from './SpotlightRail';
 import { MapFirstRunHint } from './MapFirstRunHint';
@@ -66,6 +69,7 @@ export const MapShell = ({
   );
 
   const reducedMotion = useReducedMotion() ?? false;
+  const isMobile = useIsMobile();
   const { state, setLens, setLayers, setFilters, setViewport } = useMapShellState(config);
   const { toast } = useToast();
   const { t } = useTranslation();
@@ -195,54 +199,53 @@ export const MapShell = ({
     }
   }, [t, toast]);
 
+  // Imperative map handle from ExploreMap — powers the custom nav controls
+  // and the geolocate trigger (the native GeolocateControl owns the tracking
+  // dot and the fly-to; it stays mounted but hidden inside ExploreMap).
+  const [mapHandle, setMapHandle] = useState<ExploreMapHandle | null>(null);
+
   const handleGeolocate = useCallback(() => {
-    if (!navigator.geolocation) {
+    if (!mapHandle?.triggerGeolocate()) {
       toast({
         title: t('map.geolocate.unsupported', { defaultValue: 'Geolocation unavailable' }),
         variant: 'destructive',
       });
-      return;
     }
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        setViewport({
-          center: [pos.coords.longitude, pos.coords.latitude],
-          zoom: Math.max(state.viewport?.zoom ?? 12, 12),
-        });
-      },
-      (err) => {
-        // Match the PositionError codes so the user knows why we fell back
-        // to the default view instead of getting a silent or generic
-        // "denied" message for what might be a timeout or hardware issue.
-        let title: string;
-        switch (err.code) {
-          case 1: // PERMISSION_DENIED
-            title = t('map.geolocate.denied', {
-              defaultValue: 'Location access is off — showing the default area',
-            });
-            break;
-          case 2: // POSITION_UNAVAILABLE
-            title = t('map.geolocate.unavailable', {
-              defaultValue: "Couldn't get your location — showing the default area",
-            });
-            break;
-          case 3: // TIMEOUT
-            title = t('map.geolocate.timeout', {
-              defaultValue: 'Location lookup timed out — showing the default area',
-            });
-            break;
-          default:
-            title = t('map.geolocate.denied', {
-              defaultValue: 'Location access is off — showing the default area',
-            });
-        }
-        // Informational, not destructive — the map stays usable and we
-        // tell the user what happened.
-        toast({ title });
-      },
-      { enableHighAccuracy: true, timeout: 8000 },
-    );
-  }, [setViewport, state.viewport?.zoom, t, toast]);
+  }, [mapHandle, t, toast]);
+
+  // GeolocateControl errors → the same informational toasts the old
+  // navigator.geolocation path showed. Match the PositionError codes so the
+  // user knows why nothing moved.
+  useEffect(() => {
+    const geo = mapHandle?.geolocateControl;
+    if (!geo) return;
+    const onError = (err: { code?: number }) => {
+      let title: string;
+      switch (err?.code) {
+        case 2: // POSITION_UNAVAILABLE
+          title = t('map.geolocate.unavailable', {
+            defaultValue: "Couldn't get your location — showing the default area",
+          });
+          break;
+        case 3: // TIMEOUT
+          title = t('map.geolocate.timeout', {
+            defaultValue: 'Location lookup timed out — showing the default area',
+          });
+          break;
+        default: // PERMISSION_DENIED (1) or unknown
+          title = t('map.geolocate.denied', {
+            defaultValue: 'Location access is off — showing the default area',
+          });
+      }
+      // Informational, not destructive — the map stays usable and we
+      // tell the user what happened.
+      toast({ title });
+    };
+    geo.on('error', onError);
+    return () => {
+      geo.off('error', onError);
+    };
+  }, [mapHandle, t, toast]);
 
   return (
     <div
@@ -264,7 +267,7 @@ export const MapShell = ({
         onViewportChange={handleViewportChange}
         onLayersChange={handleLayersChange}
         renderMode={lensToRenderMode(state.lens)}
-        pridePalette
+        mapShellMode
         onPointsInView={showRail ? setPointsInView : undefined}
         selectedId={selectedId}
         highlightedId={hoveredId}
@@ -274,11 +277,15 @@ export const MapShell = ({
         favoriteIds={favoriteIds}
         savedOnly={savedActive}
         cooperativeGestures={cooperativeGestures}
+        showNativeNav={false}
+        onMapHandle={setMapHandle}
       />
+
+      <MapNavControls handle={mapHandle} />
 
       {showRail && (
         <>
-          <MapLegend lens={state.lens} layers={exploreLayers} pridePalette raised />
+          <MapLegend lens={state.lens} layers={exploreLayers} raised />
           <SpotlightRail
             points={pointsInView}
             selectedId={selectedId}
@@ -289,55 +296,98 @@ export const MapShell = ({
         </>
       )}
 
-      {config.showCommandBar !== false && (
-        <CommandBar
-          showSearch={config.showSearch}
-          lenses={config.lenses}
-          lens={state.lens}
-          onLensChange={setLens}
-          availableLayers={config.layers}
-          enabledLayers={state.enabledLayers}
-          onLayersChange={setLayers}
-          availableFilters={config.filters}
-          filters={state.filters}
-          onFiltersChange={setFilters}
-          onGeolocate={handleGeolocate}
-          onShare={handleShare}
-          canSave={canSave}
-          savedOnly={savedActive}
-          onToggleSaved={() => setSavedOnly((v) => !v)}
-        />
-      )}
+      {config.showCommandBar !== false &&
+        (isMobile ? (
+          /* Mobile: one top stack — fixed control row, scrollable quick chips,
+             then any active-filter chips flowing below (no absolute overlap). */
+          <div className="absolute inset-x-3 top-3 z-20 flex flex-col gap-1.5">
+            <MobileMapBar
+              showSearch={config.showSearch}
+              lenses={config.lenses}
+              lens={state.lens}
+              onLensChange={setLens}
+              availableLayers={config.layers}
+              enabledLayers={state.enabledLayers}
+              onLayersChange={setLayers}
+              availableFilters={config.filters}
+              filters={state.filters}
+              onFiltersChange={setFilters}
+              onGeolocate={handleGeolocate}
+              onShare={handleShare}
+              canSave={canSave}
+              savedOnly={savedActive}
+              onToggleSaved={() => setSavedOnly((v) => !v)}
+            />
+            <AnimatePresence initial={false}>
+              {(Object.keys(exposedFilters).length > 0 || prefChips.length > 0) && (
+                <motion.div
+                  initial={reducedMotion ? false : { opacity: 0, y: -distance.sm }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={reducedMotion ? { opacity: 0 } : { opacity: 0, y: -distance.sm }}
+                  transition={reducedMotion ? { duration: 0 } : tweens.fast}
+                  className="flex flex-col gap-1.5"
+                >
+                  <PreferenceChips
+                    chips={prefChips}
+                    onToggle={togglePrefChip}
+                    onForget={forgetPrefChip}
+                  />
+                  <FilterChips
+                    filters={exposedFilters}
+                    onRemove={removeFilter}
+                    onClearAll={() => setFilters({})}
+                  />
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        ) : (
+          <>
+            <CommandBar
+              showSearch={config.showSearch}
+              lenses={config.lenses}
+              lens={state.lens}
+              onLensChange={setLens}
+              availableLayers={config.layers}
+              enabledLayers={state.enabledLayers}
+              onLayersChange={setLayers}
+              availableFilters={config.filters}
+              filters={state.filters}
+              onFiltersChange={setFilters}
+              onGeolocate={handleGeolocate}
+              onShare={handleShare}
+              canSave={canSave}
+              savedOnly={savedActive}
+              onToggleSaved={() => setSavedOnly((v) => !v)}
+            />
+            <AnimatePresence initial={false}>
+              {(Object.keys(exposedFilters).length > 0 || prefChips.length > 0) && (
+                <motion.div
+                  initial={reducedMotion ? false : { opacity: 0, y: -distance.sm }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={reducedMotion ? { opacity: 0 } : { opacity: 0, y: -distance.sm }}
+                  transition={reducedMotion ? { duration: 0 } : tweens.fast}
+                  className="absolute top-[3.25rem] left-3 right-3 z-20 flex flex-col gap-1.5"
+                >
+                  <PreferenceChips
+                    chips={prefChips}
+                    onToggle={togglePrefChip}
+                    onForget={forgetPrefChip}
+                  />
+                  <FilterChips
+                    filters={exposedFilters}
+                    onRemove={removeFilter}
+                    onClearAll={() => setFilters({})}
+                  />
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </>
+        ))}
 
       {showRail && (
         <MapFirstRunHint count={pointsInView.length} ready={!fetching} />
       )}
-
-      {/* Quick filters now live inside the command bar; only the active-filter
-          chips render below it, and only when something is applied. */}
-      <AnimatePresence initial={false}>
-        {config.showCommandBar !== false &&
-          (Object.keys(exposedFilters).length > 0 || prefChips.length > 0) && (
-            <motion.div
-              initial={reducedMotion ? false : { opacity: 0, y: -distance.sm }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={reducedMotion ? { opacity: 0 } : { opacity: 0, y: -distance.sm }}
-              transition={reducedMotion ? { duration: 0 } : tweens.fast}
-              className="absolute top-[3.25rem] left-3 right-3 z-20 flex flex-col gap-1.5"
-            >
-              <PreferenceChips
-                chips={prefChips}
-                onToggle={togglePrefChip}
-                onForget={forgetPrefChip}
-              />
-              <FilterChips
-                filters={exposedFilters}
-                onRemove={removeFilter}
-                onClearAll={() => setFilters({})}
-              />
-            </motion.div>
-          )}
-      </AnimatePresence>
     </div>
   );
 };

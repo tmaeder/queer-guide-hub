@@ -170,7 +170,7 @@
     "clear": "Clear",
     "signIn": "Sign in",
     "goHome": "Go Home",
-    "more": "[IT] More"
+    "more": "Altro"
   },
   "navigation": {
     "home": "Home",
@@ -1476,7 +1476,7 @@
     },
     "news": {
       "title": "Ultime notizie",
-      "eyebrow": "[IT] Dispatches"
+      "eyebrow": "Notizie"
     },
     "discover": "Discover",
     "destinationsTitle": "Where the scene lives.",
@@ -1497,39 +1497,45 @@
         "resources": "resources"
       }
     },
-    "eyebrow": "[IT] Queer Guide",
-    "browseDirectory": "[IT] Browse the directory",
-    "planTrip": "[IT] Plan a trip",
-    "allVenues": "[IT] All venues",
+    "eyebrow": "Queer Guide",
+    "browseDirectory": "Sfoglia la directory",
+    "planTrip": "Pianifica un viaggio",
+    "allVenues": "Tutti i locali",
     "recentlyViewed": {
-      "eyebrow": "[IT] Recently viewed",
-      "title": "[IT] Pick up where you left off."
+      "eyebrow": "Visti di recente",
+      "title": "Riprendi da dove eri rimasto."
     },
     "trending": {
-      "eyebrow": "[IT] Trending now",
-      "venues": "[IT] Venues on the rise.",
-      "venuesNear": "[IT] Popular venues in {{city}}.",
-      "venuesDesc": "[IT] What the community is checking out this week."
+      "eyebrow": "Di tendenza ora",
+      "venues": "Locali in ascesa.",
+      "venuesNear": "Locali popolari a {{city}}.",
+      "venuesDesc": "Ciò che la community sta esplorando questa settimana."
     },
     "cta": {
-      "title": "[IT] Built by the community,",
-      "title2": "[IT] for the community.",
-      "subtitle": "[IT] Verified safe spaces, real reviews, no paywalls.",
-      "submit": "[IT] Add a venue",
-      "about": "[IT] Read the mission",
-      "invite": "[IT] Invite friends",
-      "join": "[IT] Join the community"
+      "title": "Costruito dalla community,",
+      "title2": "per la community.",
+      "subtitle": "Spazi sicuri verificati, recensioni reali, senza paywall.",
+      "submit": "Aggiungi un locale",
+      "about": "Leggi la missione",
+      "invite": "Invita gli amici",
+      "join": "Unisciti alla community"
     },
-    "subtitleShort": "[IT] Verified safe places, real events, and the people behind them.",
+    "subtitleShort": "Luoghi sicuri verificati, eventi reali e le persone dietro di essi.",
     "events": {
-      "eyebrow": "[IT] What's on",
+      "eyebrow": "In programma",
       "groups": {
-        "today": "[IT] Today",
-        "tomorrow": "[IT] Tomorrow",
-        "thisWeekend": "[IT] This weekend",
-        "thisWeek": "[IT] This week",
-        "later": "[IT] Later"
+        "today": "Oggi",
+        "tomorrow": "Domani",
+        "thisWeekend": "Questo weekend",
+        "thisWeek": "Questa settimana",
+        "later": "Più avanti"
       }
+    },
+    "shop": {
+      "eyebrow": "Mercato",
+      "title": "Brand queer",
+      "description": "Prodotti e servizi di attività queer e trans.",
+      "seeAll": "Vai al mercato"
     }
   },
   "header": {
@@ -1564,7 +1570,8 @@
       "travel": "Viaggi",
       "personalities": "Personalità",
       "hotels": "Hotel",
-      "help": "Aiuto"
+      "help": "Aiuto",
+      "tags": "Tag"
     },
     "userMenu": {
       "myTrips": "I miei viaggi",
@@ -1578,11 +1585,11 @@
       "tripInbox": "Posta viaggi",
       "extension": "Estensione Browser",
       "footprint": "Footprint",
-      "messages": "[IT] Messages",
-      "mailbox": "[IT] Mailbox",
-      "you": "[IT] You",
-      "community": "[IT] Community",
-      "viewProfile": "[IT] View public profile"
+      "messages": "Messaggi",
+      "mailbox": "Casella di posta",
+      "you": "Profilo",
+      "community": "Community",
+      "viewProfile": "Vedi profilo pubblico"
     },
     "modes": {
       "dating": "In cerca d'amore",
@@ -1602,17 +1609,17 @@
     "signUp": "Sign up",
     "navigation": "Navigation",
     "signIn": "Sign in",
-    "modeLabel": "[IT] Mode",
-    "modeActive": "[IT] Mode: {{mode}}",
+    "modeLabel": "Modalità",
+    "modeActive": "Modalità: {{mode}}",
     "clusters": {
-      "places": "[IT] Places",
-      "community": "[IT] Community",
-      "shop": "[IT] Shop & Read",
-      "support": "[IT] Support"
+      "places": "Luoghi",
+      "community": "Community",
+      "shop": "Shop e lettura",
+      "support": "Supporto"
     },
     "notifications": {
-      "label": "[IT] Notifications",
-      "unread": "[IT] Notifications, {{count}} unread"
+      "label": "Notifiche",
+      "unread": "Notifiche, {{count}} non lette"
     },
     "mobileNav": {
       "home": "Home",
@@ -1623,7 +1630,10 @@
       "menuTitle": "Esplora Queer Guide",
       "menuDescription": "Vai a qualsiasi sezione, cambia lingua o tema.",
       "trips": "I miei viaggi",
-      "settingsSection": "Visualizzazione"
+      "settingsSection": "Visualizzazione",
+      "browseAll": "Sfoglia tutte le sezioni",
+      "unreadCount": "{{count}} non letti",
+      "tripsBadge": "{{count}} elementi di viaggio richiedono attenzione"
     }
   },
   "pages": {
@@ -1673,7 +1683,7 @@
       "noPhotos": "Nessuna foto disponibile",
       "noEvents": "Nessun evento in programma in questo locale",
       "noReviews": "Ancora nessuna recensione. Lascia tu la prima!",
-      "accessibility": "[IT] Accessibility"
+      "accessibility": "Accessibilità"
     },
     "events": {
       "title": "Eventi",
@@ -2043,7 +2053,7 @@
       "createGroup": "Crea un gruppo",
       "mostPopular": "Gruppi più popolari",
       "noPopular": "Ancora nessun gruppo popolare disponibile.",
-      "eyebrow": "[IT] Community"
+      "eyebrow": "Community"
     },
     "groupDetail": {
       "signInRequired": "Accedi per vedere i dettagli del gruppo."
@@ -2083,7 +2093,7 @@
       "loadMore": "Load more",
       "errorTitle": "We couldn't load the feed",
       "errorDescription": "Something went wrong while loading community posts. Check your connection and try again.",
-      "eyebrow": "[IT] Community"
+      "eyebrow": "Community"
     },
     "notFound": {
       "title": "Pagina non trovata",
@@ -2141,21 +2151,21 @@
       }
     },
     "members": {
-      "eyebrow": "[IT] Community",
-      "title": "[IT] Members",
-      "subtitle": "[IT] People, connections, and networks within the inclusive LGBTQ+ community.",
-      "member": "[IT] member",
-      "members": "[IT] members",
-      "visible": "[IT] visible",
-      "upsellTitle": "[IT] See the full community",
-      "upsellBody": "[IT] Public profiles are listed here. Sign in to see bios, locations, interests, and to start a conversation.",
-      "signInToBrowse": "[IT] Sign in to browse"
+      "eyebrow": "Community",
+      "title": "Membri",
+      "subtitle": "Persone, connessioni e reti nella comunità LGBTQ+ inclusiva.",
+      "member": "membro",
+      "members": "membri",
+      "visible": "visibili",
+      "upsellTitle": "Scopri tutta la community",
+      "upsellBody": "Qui sono elencati i profili pubblici. Accedi per vedere biografie, luoghi, interessi e avviare una conversazione.",
+      "signInToBrowse": "Accedi per esplorare"
     },
     "friends": {
-      "eyebrow": "[IT] Community",
-      "title": "[IT] Friends",
-      "subtitle": "[IT] Manage your connections",
-      "gate": "[IT] Please sign in to view your friends."
+      "eyebrow": "Community",
+      "title": "Amici",
+      "subtitle": "Gestisci le tue connessioni",
+      "gate": "Accedi per vedere i tuoi amici."
     }
   },
   "settings": {
@@ -2165,8 +2175,8 @@
       "turnOn": "Attiva",
       "turnOff": "Disattiva",
       "dm": {
-        "title": "[IT] Direct messages",
-        "body": "[IT] Notify me when someone sends me a message."
+        "title": "Messaggi diretti",
+        "body": "Avvisami quando qualcuno mi invia un messaggio."
       }
     }
   },
@@ -2183,6 +2193,148 @@
       "denied": "Location access is off — showing the default area",
       "unavailable": "Couldn't get your location — showing the default area",
       "timeout": "Location lookup timed out — showing the default area"
+    },
+    "share": {
+      "title": "[IT] Map view",
+      "copied": "[IT] Link copied",
+      "copiedDescription": "[IT] Paste to share this view",
+      "failed": "[IT] Share failed"
+    },
+    "commandBar": {
+      "searchThisMap": "[IT] Search this map",
+      "searching": "[IT] Searching",
+      "clearSearch": "[IT] Clear search",
+      "typeMore": "[IT] Type at least 2 characters",
+      "filterMapFor": "[IT] Filter map for “{{query}}”",
+      "jumpToPlace": "[IT] Jump to a place",
+      "noMatches": "[IT] No places match — Enter still filters the map.",
+      "filters": "[IT] Filters",
+      "filtersActive": "[IT] Filters, {{count}} active",
+      "filtersAndLayers": "[IT] Filters & layers",
+      "layers": "[IT] Layers",
+      "more": "[IT] More map options",
+      "moreShort": "[IT] More",
+      "mapOptions": "[IT] Map options",
+      "myLocation": "[IT] My location",
+      "fitResults": "[IT] Fit to results",
+      "shareView": "[IT] Share view",
+      "reset": "[IT] Reset"
+    },
+    "entityType": {
+      "venue": "[IT] Venue",
+      "event": "[IT] Event",
+      "city": "[IT] City",
+      "country": "[IT] Country",
+      "marketplace": "[IT] Listing",
+      "personality": "[IT] Person",
+      "queer_village": "[IT] Village",
+      "group": "[IT] Group",
+      "news": "[IT] News",
+      "tag": "[IT] Tag",
+      "user": "[IT] User"
+    },
+    "quick": {
+      "groupLabel": "[IT] Quick filters",
+      "openNow": "[IT] Open now",
+      "tonight": "[IT] Tonight",
+      "thisWeekend": "[IT] This weekend",
+      "thisMonth": "[IT] This month",
+      "saved": "[IT] Saved"
+    },
+    "lens": {
+      "groupLabel": "[IT] Map view",
+      "pins": "[IT] Pins",
+      "density": "[IT] Density",
+      "routes": "[IT] Routes",
+      "boundary": "[IT] Boundary",
+      "combined": "[IT] Combined"
+    },
+    "sheet": {
+      "title": "[IT] Map options",
+      "view": "[IT] View",
+      "filters": "[IT] Filters",
+      "time": "[IT] Time",
+      "layers": "[IT] Layers",
+      "actions": "[IT] Map actions"
+    },
+    "time": {
+      "label": "[IT] Time range",
+      "anyTime": "[IT] Any time",
+      "chooseDates": "[IT] Choose dates",
+      "pickRange": "[IT] Pick a start & end",
+      "untilEndDate": "[IT] {{start}} – end date",
+      "clear": "[IT] Clear",
+      "apply": "[IT] Apply dates"
+    },
+    "nav": {
+      "zoomIn": "[IT] Zoom in",
+      "zoomOut": "[IT] Zoom out",
+      "resetNorth": "[IT] Reset bearing to north",
+      "geolocate": "[IT] Show my location"
+    },
+    "legend": {
+      "label": "[IT] Legend",
+      "show": "[IT] Show map legend",
+      "hide": "[IT] Hide map legend",
+      "title": "[IT] What you're seeing",
+      "featured": "[IT] Ringed = featured spot",
+      "live": "[IT] Pulsing = open now / live",
+      "areas": "[IT] Areas",
+      "densityTitle": "[IT] Density of queer life",
+      "fewer": "[IT] Fewer",
+      "more": "[IT] More"
+    },
+    "rail": {
+      "inView_one": "[IT] {{count}} place in view",
+      "inView_other": "[IT] {{count}} places in view",
+      "hide": "[IT] Hide nearby places",
+      "listLabel": "[IT] Places in view",
+      "showOnMap": "[IT] Show {{name}} on the map"
+    },
+    "firstRun": {
+      "spotsInView_one": "[IT] {{count}} queer spot in view",
+      "spotsInView_other": "[IT] {{count}} queer spots in view",
+      "dismiss": "[IT] Dismiss"
+    },
+    "canvas": {
+      "loading": "[IT] Loading",
+      "loadingEllipsis": "[IT] Loading...",
+      "resultsInView_one": "[IT] {{count}} result in view",
+      "resultsInView_other": "[IT] {{count}} results in view",
+      "clickToZoom": "[IT] Click to zoom in",
+      "venueCount_one": "[IT] {{count}} venue",
+      "venueCount_other": "[IT] {{count}} venues",
+      "eventCount_one": "[IT] {{count}} event",
+      "eventCount_other": "[IT] {{count}} events",
+      "restroomCount_one": "[IT] {{count}} restroom",
+      "restroomCount_other": "[IT] {{count}} restrooms",
+      "hotelCount_one": "[IT] {{count}} hotel",
+      "hotelCount_other": "[IT] {{count}} hotels",
+      "placeCount_one": "[IT] {{count}} place",
+      "placeCount_other": "[IT] {{count}} places",
+      "emptyOpenNow": "[IT] Nothing open right now in view — turn off Open now or try later.",
+      "emptyTimeRange": "[IT] No events in this time range here — widen the dates or pan out.",
+      "emptySearch": "[IT] No matches for \"{{query}}\" here — clear search or pan out.",
+      "emptyDefault": "[IT] No spots here yet — pan, zoom out, or put one on the map."
+    },
+    "layers": {
+      "venues": "[IT] Venues",
+      "events": "[IT] Events",
+      "cities": "[IT] Cities",
+      "countries": "[IT] Countries",
+      "restrooms": "[IT] Restrooms",
+      "hotels": "[IT] Hotels",
+      "neighbourhoods": "[IT] Villages"
+    },
+    "filterChips": {
+      "groupLabel": "[IT] Active filters",
+      "remove": "[IT] Remove filter: {{label}}",
+      "clearAll": "[IT] Clear all",
+      "within": "[IT] Within {{km}} km",
+      "accessible": "[IT] Accessible",
+      "queerOwned": "[IT] Queer-owned",
+      "tags_one": "[IT] {{count}} tag",
+      "tags_other": "[IT] {{count}} tags"
     }
   },
   "resources": {
@@ -2305,7 +2457,15 @@
     },
     "tagDetail": {
       "breadcrumbHome": "Risorse",
-      "noDefinition": "Ancora nessuna definizione per questo termine."
+      "noDefinition": "Ancora nessuna definizione per questo termine.",
+      "alsoKnownAs": "Conosciuto anche come",
+      "readOnWikipedia": "Leggi su Wikipedia",
+      "searchTagged": "Cerca tutto ciò che è taggato {{name}}",
+      "seeAlso": "Vedi anche",
+      "sensitiveContentBody": "Questo argomento può contenere contenuti sensibili. Se hai bisogno di supporto, visita la nostra pagina delle linee di assistenza in caso di crisi.",
+      "sensitiveContentTitle": "Argomento sensibile",
+      "tableOfContents": "Indice",
+      "viewAsGraph": "Visualizza come grafo"
     },
     "graph": {
       "title": "Grafo delle relazioni",
@@ -2347,21 +2507,21 @@
     "suggestLede": "Suggeriscine una — aggiunta dopo la revisione.",
     "suggestCta": "Suggerisci una città",
     "detail": {
-      "seeAll": "[IT] See all",
-      "planTrip": "[IT] Plan a trip to {{city}}",
+      "seeAll": "Vedi tutto",
+      "planTrip": "Pianifica un viaggio a {{city}}",
       "glance": {
-        "safety": "[IT] Safety",
-        "safetyLink": "[IT] Jump to safety & rights",
-        "deathPenalty": "[IT] Death penalty",
-        "criminalized": "[IT] Criminalized",
-        "equalityTier": "[IT] {{tier}} equality",
-        "checkLaws": "[IT] Check local laws",
-        "rating": "[IT] LGBTQ+ rating",
-        "population": "[IT] Population",
-        "language": "[IT] Language",
-        "currency": "[IT] Currency",
-        "bestTime": "[IT] Best time",
-        "airport": "[IT] Airport"
+        "safety": "Sicurezza",
+        "safetyLink": "Vai a sicurezza e diritti",
+        "deathPenalty": "Pena di morte",
+        "criminalized": "Criminalizzato",
+        "equalityTier": "Uguaglianza {{tier}}",
+        "checkLaws": "Controlla le leggi locali",
+        "rating": "Valutazione LGBTQ+",
+        "population": "Popolazione",
+        "language": "Lingua",
+        "currency": "Valuta",
+        "bestTime": "Periodo migliore",
+        "airport": "Aeroporto"
       }
     }
   },
@@ -2458,312 +2618,367 @@
     }
   },
   "country": {
-    "loading": "[IT] Loading country…",
-    "planTrip": "[IT] Plan a trip to {{country}}",
-    "similar": "[IT] More destinations",
+    "loading": "Caricamento del paese…",
+    "planTrip": "Pianifica un viaggio in {{country}}",
+    "similar": "Altre destinazioni",
     "notFound": {
-      "title": "[IT] Country not found",
-      "body": "[IT] The country you're looking for doesn't exist.",
-      "back": "[IT] Back to Places"
+      "title": "Paese non trovato",
+      "body": "Il paese che cerchi non esiste.",
+      "back": "Torna a Luoghi"
     },
     "breadcrumb": {
-      "places": "[IT] Places"
+      "places": "Luoghi"
     },
     "hero": {
-      "capital": "[IT] Capital"
+      "capital": "Capitale"
     },
     "verdict": {
-      "eyebrow": "[IT] For LGBTQ+ travelers",
-      "welcoming": "[IT] Welcoming",
-      "mixed": "[IT] Mixed",
-      "caution": "[IT] Use caution",
-      "dangerous": "[IT] Dangerous",
-      "equality": "[IT] Equality",
-      "fullBreakdown": "[IT] Full breakdown"
+      "eyebrow": "Per viaggiatori LGBTQ+",
+      "welcoming": "Accogliente",
+      "mixed": "Variabile",
+      "caution": "Usa cautela",
+      "dangerous": "Pericoloso",
+      "equality": "Uguaglianza",
+      "fullBreakdown": "Dettaglio completo"
     },
     "facts": {
-      "capital": "[IT] Capital",
-      "population": "[IT] Population",
-      "equality": "[IT] Equality",
-      "languages": "[IT] Languages",
-      "currency": "[IT] Currency",
-      "cities": "[IT] Cities"
+      "capital": "Capitale",
+      "population": "Popolazione",
+      "equality": "Uguaglianza",
+      "languages": "Lingue",
+      "currency": "Valuta",
+      "cities": "Città"
     },
     "section": {
-      "rights": "[IT] Rights & safety",
-      "cities": "[IT] Cities",
-      "venues": "[IT] Venues",
-      "events": "[IT] Events",
-      "travel": "[IT] Travel",
-      "stats": "[IT] In numbers",
-      "personalities": "[IT] Voices",
-      "nearby": "[IT] Nearby",
-      "news": "[IT] News",
-      "map": "[IT] Map"
+      "rights": "Diritti e sicurezza",
+      "cities": "Città",
+      "venues": "Locali",
+      "events": "Eventi",
+      "travel": "Viaggi",
+      "stats": "In numeri",
+      "personalities": "Voci",
+      "nearby": "Nelle vicinanze",
+      "news": "Notizie",
+      "map": "Mappa"
     },
     "practical": {
-      "languages": "[IT] Languages",
-      "currency": "[IT] Currency",
-      "callingCode": "[IT] Calling code",
-      "tld": "[IT] Internet domain",
-      "driving": "[IT] Driving",
-      "drivesLeft": "[IT] Left-hand side",
-      "drivesRight": "[IT] Right-hand side",
-      "airports": "[IT] Major airports",
-      "government": "[IT] Government",
-      "nationalDay": "[IT] National day"
+      "languages": "Lingue",
+      "currency": "Valuta",
+      "callingCode": "Prefisso telefonico",
+      "tld": "Dominio internet",
+      "driving": "Guida",
+      "drivesLeft": "A sinistra",
+      "drivesRight": "A destra",
+      "airports": "Aeroporti principali",
+      "government": "Governo",
+      "nationalDay": "Festa nazionale"
     },
     "stats": {
-      "gdpPerCapita": "[IT] GDP / capita",
-      "hdi": "[IT] HDI",
-      "lifeExpectancy": "[IT] Life expectancy",
-      "literacy": "[IT] Literacy",
-      "income": "[IT] Income level"
+      "gdpPerCapita": "PIL pro capite",
+      "hdi": "ISU",
+      "lifeExpectancy": "Aspettativa di vita",
+      "literacy": "Alfabetizzazione",
+      "income": "Livello di reddito"
     },
     "cities": {
-      "emptyTitle": "[IT] No cities yet",
-      "emptyBody": "[IT] No cities are listed for this country yet."
+      "emptyTitle": "Ancora nessuna città",
+      "emptyBody": "Per questo paese non è ancora elencata alcuna città."
     },
     "venues": {
-      "emptyTitle": "[IT] No venues yet",
-      "emptyBody": "[IT] Be the first to add a venue in {{country}}."
+      "emptyTitle": "Ancora nessun locale",
+      "emptyBody": "Sii il primo ad aggiungere un locale in {{country}}."
     },
     "events": {
-      "emptyTitle": "[IT] No upcoming events",
-      "emptyBody": "[IT] No events are scheduled for this country yet."
+      "emptyTitle": "Nessun evento in programma",
+      "emptyBody": "Per questo paese non è ancora previsto alcun evento."
     },
     "travel": {
-      "activities": "[IT] Activities & tours",
-      "activitiesBody": "[IT] Experiences in {{country}}"
+      "activities": "Attività e tour",
+      "activitiesBody": "Esperienze in {{country}}"
     },
     "news": {
-      "emptyTitle": "[IT] No local news yet",
-      "emptyBody": "[IT] No news articles are available for this country yet."
+      "emptyTitle": "Ancora nessuna notizia locale",
+      "emptyBody": "Per questo paese non è ancora disponibile alcun articolo."
     },
     "rights": {
-      "title": "[IT] LGBTI rights overview",
-      "source": "[IT] ILGA World Database",
-      "updated": "[IT] Updated",
-      "noData": "[IT] No data",
-      "sameSexActivity": "[IT] Same-sex activity",
-      "penalty": "[IT] Penalty",
-      "deathPenalty": "[IT] death penalty possible",
-      "decriminalized": "[IT] Decriminalized",
-      "expression": "[IT] Freedom of expression",
-      "association": "[IT] Freedom of association",
+      "title": "Panoramica dei diritti LGBTI",
+      "source": "ILGA World Database",
+      "updated": "Aggiornato",
+      "noData": "Nessun dato",
+      "sameSexActivity": "Attività tra persone dello stesso sesso",
+      "penalty": "Pena",
+      "deathPenalty": "pena di morte possibile",
+      "decriminalized": "Depenalizzato",
+      "expression": "Libertà di espressione",
+      "association": "Libertà di associazione",
       "section": {
-        "criminalisation": "[IT] Criminalisation & freedoms",
-        "antiDiscrimination": "[IT] Anti-discrimination protection",
-        "criminalJustice": "[IT] Criminal justice",
-        "family": "[IT] Family & relationships",
-        "identity": "[IT] Identity & health"
+        "criminalisation": "Criminalizzazione e libertà",
+        "antiDiscrimination": "Tutela antidiscriminazione",
+        "criminalJustice": "Giustizia penale",
+        "family": "Famiglia e relazioni",
+        "identity": "Identità e salute"
       },
-      "constitutional": "[IT] Constitutional",
-      "employment": "[IT] Employment",
-      "housing": "[IT] Housing",
-      "education": "[IT] Education",
-      "health": "[IT] Health",
-      "goodsServices": "[IT] Goods & services",
-      "bullying": "[IT] Bullying",
-      "hateCrime": "[IT] Hate crime laws",
-      "incitement": "[IT] Incitement prohibition",
-      "unions": "[IT] Same-sex unions",
-      "marriageSince": "[IT] Marriage since",
-      "civilUnionSince": "[IT] civil union since",
-      "adoption": "[IT] Adoption rights",
-      "genderRecognition": "[IT] Gender recognition",
-      "marker": "[IT] Marker",
-      "selfId": "[IT] Self-ID",
-      "requiresSurgery": "[IT] Requires surgery",
-      "requiresDiagnosis": "[IT] Requires diagnosis",
-      "conversionTherapy": "[IT] Conversion therapy",
-      "intersex": "[IT] Intersex bodily integrity",
-      "ilgaLink": "[IT] ILGA World Database"
+      "constitutional": "Costituzionale",
+      "employment": "Lavoro",
+      "housing": "Alloggio",
+      "education": "Istruzione",
+      "health": "Salute",
+      "goodsServices": "Beni e servizi",
+      "bullying": "Bullismo",
+      "hateCrime": "Leggi sui crimini d’odio",
+      "incitement": "Divieto di istigazione",
+      "unions": "Unioni tra persone dello stesso sesso",
+      "marriageSince": "Matrimonio dal",
+      "civilUnionSince": "unione civile dal",
+      "adoption": "Diritti di adozione",
+      "genderRecognition": "Riconoscimento di genere",
+      "marker": "Indicatore di genere",
+      "selfId": "Autodeterminazione",
+      "requiresSurgery": "Richiede intervento chirurgico",
+      "requiresDiagnosis": "Richiede diagnosi",
+      "conversionTherapy": "Terapia di conversione",
+      "intersex": "Integrità corporea intersex",
+      "ilgaLink": "ILGA World Database"
     }
   },
   "inbox": {
-    "title": "[IT] Inbox",
+    "title": "Posta in arrivo",
     "filter": {
-      "all": "[IT] All",
-      "chats": "[IT] Chats",
-      "mail": "[IT] Mail",
-      "alerts": "[IT] Alerts"
+      "all": "Tutti",
+      "chats": "Chat",
+      "mail": "Posta",
+      "alerts": "Avvisi"
     },
     "compose": {
-      "label": "[IT] Compose",
-      "message": "[IT] New message",
-      "email": "[IT] New email"
+      "label": "Componi",
+      "message": "Nuovo messaggio",
+      "email": "Nuova email"
     },
     "notification": {
-      "open": "[IT] Open"
+      "open": "Apri"
     },
-    "openInbox": "[IT] Open inbox",
-    "markAlertsRead": "[IT] Mark alerts read",
-    "unread": "[IT] Unread",
-    "unreadCount": "[IT] {{count}} unread",
+    "openInbox": "Apri posta in arrivo",
+    "markAlertsRead": "Segna avvisi come letti",
+    "unread": "Non letti",
+    "unreadCount": "{{count}} non letti",
     "action": {
-      "pin": "[IT] Pin",
-      "unpin": "[IT] Unpin",
-      "mute": "[IT] Mute",
-      "unmute": "[IT] Unmute",
-      "markRead": "[IT] Mark as read",
-      "archive": "[IT] Archive"
+      "pin": "Fissa",
+      "unpin": "Rimuovi",
+      "mute": "Silenzia",
+      "unmute": "Riattiva",
+      "markRead": "Segna come letto",
+      "archive": "Archivia"
     },
-    "search": "[IT] Search",
-    "searchEmpty": "[IT] No matches.",
+    "search": "Cerca",
+    "searchEmpty": "Nessun risultato.",
     "recipient": {
-      "search": "[IT] Search people",
-      "empty": "[IT] No suggestions yet.",
-      "recent": "[IT] Recently messaged",
-      "active": "[IT] Active recently"
+      "search": "Cerca persone",
+      "empty": "Ancora nessun suggerimento.",
+      "recent": "Messaggiati di recente",
+      "active": "Attivi di recente"
     }
   },
   "extension": {
     "signInGate": {
-      "title": "[IT] Sign in to install the extension",
-      "subtitle": "[IT] The queer.guide capture extension lets signed-in members suggest venues, events, hotels and more from any webpage.",
-      "cta": "[IT] Sign in"
+      "title": "Accedi per installare l’estensione",
+      "subtitle": "L’estensione di cattura di queer.guide permette ai membri autenticati di suggerire locali, eventi, hotel e altro da qualsiasi pagina web.",
+      "cta": "Accedi"
     },
     "heading": {
-      "title": "[IT] queer.guide capture",
-      "subtitle": "[IT] Browser extension that turns any webpage into a structured suggestion for our moderators."
+      "title": "queer.guide Capture",
+      "subtitle": "Estensione del browser che trasforma qualsiasi pagina web in un suggerimento strutturato per i nostri moderatori."
     },
     "badge": {
-      "installed": "[IT] Installed"
+      "installed": "Installata"
     },
     "captures": {
-      "label": "[IT] Captures",
-      "venues": "[IT] Venues",
-      "events": "[IT] Events",
-      "hotels": "[IT] Hotels",
-      "marketplace": "[IT] Marketplace",
-      "news": "[IT] News"
+      "label": "Acquisizioni",
+      "venues": "Locali",
+      "events": "Eventi",
+      "hotels": "Hotel",
+      "marketplace": "Marketplace",
+      "news": "Notizie"
     },
     "connect": {
-      "title": "[IT] Connect this browser",
-      "detected": "[IT] Extension",
-      "installed": "[IT] is installed in this browser.",
-      "body": "[IT] Sign your queer.guide session into the extension so you can submit content from any webpage.",
-      "signInPrompt": "[IT] Sign in to your queer.guide account to connect this browser and start submitting.",
-      "signedInAs": "[IT] Signed in as",
-      "cta": "[IT] Connect",
-      "connecting": "[IT] Connecting…",
+      "title": "Collega questo browser",
+      "detected": "Estensione",
+      "installed": "è installata in questo browser.",
+      "body": "Accedi con la tua sessione queer.guide nell’estensione per inviare contenuti da qualsiasi pagina web.",
+      "signInPrompt": "Accedi al tuo account queer.guide per collegare questo browser e iniziare a inviare.",
+      "signedInAs": "Hai effettuato l’accesso come",
+      "cta": "Collega",
+      "connecting": "Collegamento…",
       "done": {
-        "title": "[IT] Connected.",
-        "body": "[IT] Open the extension popup on any page to capture content for queer.guide."
+        "title": "Collegato.",
+        "body": "Apri il popup dell’estensione su qualsiasi pagina per acquisire contenuti per queer.guide."
       }
     },
     "steps": {
-      "title": "[IT] Install in 3 steps",
+      "title": "Installa in 3 passaggi",
       "s1": {
-        "title": "[IT] Download the latest build",
-        "body": "[IT] We don't have the extension on the Chrome Web Store yet. For now, grab the latest signed build.",
-        "download": "[IT] Download .zip",
-        "note": "[IT] Unzip it somewhere you won't accidentally delete (e.g. ~/Applications/queer-guide-extension)."
+        "title": "Scarica l’ultima build",
+        "body": "L’estensione non è ancora sul Chrome Web Store. Per ora, scarica l’ultima build firmata.",
+        "download": "Scarica .zip",
+        "note": "Estrailo in un percorso che non cancellerai per sbaglio (es. ~/Applications/queer-guide-extension)."
       },
       "s2": {
-        "title": "[IT] Load it in Chrome",
-        "l1": "[IT] Open chrome://extensions in a new tab.",
-        "l2": "[IT] Toggle Developer mode on (top right).",
-        "l3": "[IT] Click Load unpacked and pick the unzipped folder.",
-        "l4": "[IT] The queer.guide puzzle icon appears in your toolbar — pin it for one-click access.",
-        "note": "[IT] Other Chromium browsers (Edge, Brave, Arc) work the same way. Firefox / Safari are not supported yet."
+        "title": "Caricala in Chrome",
+        "l1": "Apri chrome://extensions in una nuova scheda.",
+        "l2": "Attiva la modalità sviluppatore (in alto a destra).",
+        "l3": "Fai clic su «Carica estensione non pacchettizzata» e scegli la cartella estratta.",
+        "l4": "L’icona a puzzle di queer.guide compare nella barra degli strumenti: fissala per accedervi con un clic.",
+        "note": "Altri browser Chromium (Edge, Brave, Arc) funzionano allo stesso modo. Firefox / Safari non sono ancora supportati."
       },
       "s3": {
-        "title": "[IT] Reload this page and Connect",
-        "body": "[IT] Once Chrome confirms the extension loaded, refresh this page. A “Connect” button will appear and one click signs the extension into your queer.guide account."
+        "title": "Ricarica questa pagina e collega",
+        "body": "Quando Chrome conferma il caricamento dell’estensione, aggiorna questa pagina. Comparirà un pulsante «Collega» e un clic farà accedere l’estensione al tuo account queer.guide."
       },
       "dev": {
-        "label": "[IT] Want to build it yourself or contribute?",
-        "cta": "[IT] Build instructions"
+        "label": "Vuoi compilarla da solo o contribuire?",
+        "cta": "Istruzioni di build"
       }
     },
     "highlights": {
       "smart": {
-        "title": "[IT] Smart capture",
-        "body": "[IT] Reads JSON-LD, OpenGraph, microdata and DOM heuristics — most pages just work."
+        "title": "Acquisizione intelligente",
+        "body": "Legge JSON-LD, OpenGraph, microdati ed euristiche del DOM: la maggior parte delle pagine funziona subito."
       },
       "privacy": {
-        "title": "[IT] Privacy-first",
-        "body": "[IT] Only runs when you click. No host permissions, no background tracking."
+        "title": "Privacy al primo posto",
+        "body": "Si attiva solo quando fai clic. Nessun permesso host, nessun tracciamento in background."
       },
       "review": {
-        "title": "[IT] Always reviewed",
-        "body": "[IT] Submissions land in a moderation queue, never live until approved."
+        "title": "Sempre verificato",
+        "body": "Gli invii finiscono in una coda di moderazione e non vengono pubblicati finché non sono approvati."
       }
     },
     "bug": {
-      "label": "[IT] Found a bug?",
-      "cta": "[IT] open an issue"
+      "label": "Hai trovato un bug?",
+      "cta": "apri una issue"
     }
   },
   "breadcrumb": {
-    "home": "[IT] Home",
-    "venues": "[IT] Venues",
-    "events": "[IT] Events",
-    "hotels": "[IT] Hotels",
-    "villages": "[IT] Queer villages",
-    "marketplace": "[IT] Marketplace",
-    "resources": "[IT] Resources",
-    "personalities": "[IT] People",
-    "news": "[IT] News",
-    "places": "[IT] Places",
-    "cities": "[IT] Cities",
-    "quests": "[IT] Quests",
-    "groups": "[IT] Groups",
-    "trips": "[IT] Trips",
-    "help": "[IT] Help",
-    "pride": "[IT] Pride",
-    "contributors": "[IT] Contributors",
-    "wishlists": "[IT] Wishlists"
+    "home": "Home",
+    "venues": "Locali",
+    "events": "Eventi",
+    "hotels": "Hotel",
+    "villages": "Quartieri queer",
+    "marketplace": "Marketplace",
+    "resources": "Risorse",
+    "personalities": "Persone",
+    "news": "Notizie",
+    "places": "Luoghi",
+    "cities": "Città",
+    "quests": "Missioni",
+    "groups": "Gruppi",
+    "trips": "Viaggi",
+    "help": "Aiuto",
+    "pride": "Pride",
+    "contributors": "Contributori",
+    "wishlists": "Liste dei desideri",
+    "tags": "Tag"
   },
   "chat": {
-    "react": "[IT] React",
-    "edited": "[IT] edited",
-    "deleted": "[IT] Message deleted",
-    "editing": "[IT] Editing message",
-    "replyingTo": "[IT] Replying to {{name}}",
+    "react": "Reagisci",
+    "edited": "modificato",
+    "deleted": "Messaggio eliminato",
+    "editing": "Modifica messaggio",
+    "replyingTo": "In risposta a {{name}}",
     "reply": {
-      "action": "[IT] Reply",
-      "someone": "[IT] someone"
+      "action": "Rispondi",
+      "someone": "qualcuno"
     },
     "emoji": {
-      "search": "[IT] Search emoji",
-      "none": "[IT] No emoji found.",
+      "search": "Cerca emoji",
+      "none": "Nessun emoji trovato.",
       "cat": {
-        "smileys": "[IT] Smileys",
-        "gestures": "[IT] Gestures",
-        "hearts": "[IT] Hearts",
-        "pride": "[IT] Pride",
-        "animals": "[IT] Animals",
-        "food": "[IT] Food",
-        "activity": "[IT] Activity",
-        "symbols": "[IT] Symbols"
+        "smileys": "Faccine",
+        "gestures": "Gesti",
+        "hearts": "Cuori",
+        "pride": "Pride",
+        "animals": "Animali",
+        "food": "Cibo",
+        "activity": "Attività",
+        "symbols": "Simboli"
       }
     },
-    "activeNow": "[IT] Active now",
+    "activeNow": "Attivo ora",
     "preview": {
-      "you": "[IT] You",
-      "photo": "[IT] Photo",
-      "sticker": "[IT] Sticker",
-      "voice": "[IT] Voice message"
+      "you": "Tu",
+      "photo": "Foto",
+      "sticker": "Adesivo",
+      "voice": "Messaggio vocale"
     },
-    "streak": "[IT] You two have been chatting for {{count}} days ✨",
+    "streak": "Vi scrivete da {{count}} giorni ✨",
     "vibe": {
-      "set": "[IT] Set a vibe",
-      "title": "[IT] Your vibe",
-      "placeholder": "[IT] What's your vibe?",
-      "for4h": "[IT] 4h"
+      "set": "Imposta un vibe",
+      "title": "Il tuo vibe",
+      "placeholder": "Qual è il tuo vibe?",
+      "for4h": "4 h"
     },
     "stickers": {
-      "title": "[IT] Stickers"
+      "title": "Adesivi"
     },
     "freeToMeet": {
-      "title": "[IT] Free to meet",
-      "set": "[IT] Free to meet",
-      "on": "[IT] Free now",
-      "both": "[IT] {{name}} is free to meet right now 🟢",
-      "youOnly": "[IT] You're marked free to meet 🟢"
+      "title": "Liberi per vedersi",
+      "set": "Liberi per vedersi",
+      "on": "Libero ora",
+      "both": "{{name}} è libero/a per vedersi ora 🟢",
+      "youOnly": "Risulti libero/a per vedersi 🟢"
+    }
+  },
+  "newsDetail": {
+    "notFound": "Articolo non trovato",
+    "notFoundDesc": "L'articolo che cerchi non esiste.",
+    "backToNews": "Torna alle notizie",
+    "share": "Condividi",
+    "readAtSource": "Leggi alla fonte",
+    "fresh": "Nuovo",
+    "reportedByOutlets": "Riportato da {{count}} testate",
+    "featured": "In evidenza",
+    "byAuthor": "Di {{author}}",
+    "minRead": "{{count}} min di lettura",
+    "viewsCount": "{{count}} visualizzazioni",
+    "whyThisMatters": "Perché è importante",
+    "editorialPlaceholder": "Alt-clic per aggiungere il contesto: 1–3 frasi sul perché questa notizia conta.",
+    "bodyFallback": "La notizia completa è disponibile sulla fonte originale.",
+    "originallyPublishedBy": "Pubblicato originariamente da {{source}}.",
+    "viewOriginal": "Vedi l'articolo originale",
+    "integritySatire": "Segnalato come satira: non è un resoconto letterale.",
+    "integrityAdvertorial": "Contenuto sponsorizzato / pubbliredazionale.",
+    "integritySentimentConflict": "Le fonti non concordano sul tono: leggi con attenzione.",
+    "closeToHome": "Vicino a casa tua",
+    "seeFullStory": "Vedi la storia completa",
+    "topics": "Argomenti",
+    "home": "Casa",
+    "whereThisHappens": "Dove accade",
+    "aboutSource": "Informazioni sulla fonte",
+    "corroboratedAcross": "Confermato da {{count}} testate",
+    "lastVerified": "Verificato {{time}}",
+    "visitSource": "Visita {{source}}",
+    "source": "la fonte",
+    "moreLikeThis": "Altri simili",
+    "forYou": "Per te"
+  },
+  "pwa": {
+    "updateAvailable": {
+      "title": "È disponibile una nuova versione",
+      "description": "Aggiorna per ottenere le ultime funzionalità.",
+      "action": "Aggiorna"
+    },
+    "backOnline": "Di nuovo online",
+    "offline": {
+      "title": "Sei offline",
+      "description": "Alcune funzionalità potrebbero non essere disponibili."
+    },
+    "install": {
+      "title": "Installa Queer Guide",
+      "description": "Accesso rapido dalla schermata Home — funziona anche offline.",
+      "action": "Installa",
+      "iosTitle": "Aggiungi alla schermata Home",
+      "iosHint": "Tocca il pulsante Condividi in Safari, poi seleziona «Aggiungi a Home».",
+      "dismiss": "Ignora",
+      "ariaLabel": "Installa app"
     }
   }
 }

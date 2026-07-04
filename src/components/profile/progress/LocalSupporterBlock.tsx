@@ -22,7 +22,7 @@ function CityRow({ city }: { city: LocalSupporterCity }) {
         </p>
       </div>
       <div className="flex items-center gap-4 shrink-0">
-        <span className="font-mono text-display tabular-nums">{city.score}</span>
+        <span className="font-mono text-headline tabular-nums">{city.score}</span>
         <LocalizedLink
           to={`/cities/${encodeURIComponent(city.city_name.toLowerCase().replace(/\s+/g, '-'))}`}
           className="inline-flex items-center gap-1 text-13 text-muted-foreground hover:text-foreground"
