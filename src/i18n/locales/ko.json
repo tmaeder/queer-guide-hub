@@ -2977,5 +2977,20 @@
       "dismiss": "닫기",
       "ariaLabel": "앱 설치"
     }
+  },
+  "status": {
+    "lookingFor": "찾고 있는 것",
+    "lookingForHint": "추천 순위에 반영됩니다. 프로필에는 표시되지 않습니다."
+  },
+  "people": {
+    "intent": {
+      "lookingForOptions": {
+        "friends": "친구",
+        "dating": "데이트",
+        "travel_buddies": "여행 친구",
+        "locals": "현지인",
+        "networking": "네트워킹"
+      }
+    }
   }
 }

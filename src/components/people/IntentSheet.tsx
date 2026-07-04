@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { Plane, Check } from 'lucide-react';
+import { Plane } from 'lucide-react';
 import {
   Sheet,
   SheetContent,
@@ -11,12 +11,8 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { USER_MODES } from '@/config/navigation';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
-import {
-  useUserIntent,
-  useDerivedTravelIntent,
-  LOOKING_FOR_OPTIONS,
-  LOOKING_FOR_LABELS,
-} from '@/hooks/useUserIntent';
+import { useUserIntent, useDerivedTravelIntent } from '@/hooks/useUserIntent';
+import { IntentChips } from '@/components/status/IntentChips';
 
 const chip = (active: boolean) =>
   cn(
@@ -41,7 +37,7 @@ export function IntentSheet({
 }) {
   const { t } = useTranslation();
   const navigate = useLocalizedNavigate();
-  const { mode, setMode, lookingFor, toggleLookingFor, travel, setTravel } = useUserIntent();
+  const { mode, setMode, travel, setTravel } = useUserIntent();
   const { data: derived } = useDerivedTravelIntent(open);
 
   const travelCityActive = travel?.city_id ?? travel?.city_name;
@@ -97,25 +93,7 @@ export function IntentSheet({
             <h3 className="mb-2 text-13 font-semibold uppercase tracking-wider text-muted-foreground">
               {t('people.intent.lookingFor', "What you're looking for")}
             </h3>
-            <div className="flex flex-wrap gap-2">
-              {LOOKING_FOR_OPTIONS.map((v) => {
-                const active = lookingFor.includes(v);
-                return (
-                  <button
-                    key={v}
-                    type="button"
-                    aria-pressed={active}
-                    onClick={() => toggleLookingFor(v)}
-                    className={chip(active)}
-                  >
-                    {active && <Check className="h-3.5 w-3.5" aria-hidden />}
-                    <span className="whitespace-nowrap">
-                      {t(`people.intent.lookingForOptions.${v}`, LOOKING_FOR_LABELS[v])}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
+            <IntentChips />
           </section>
 
           <section>

@@ -2994,5 +2994,20 @@
       "dismiss": "Dismiss",
       "ariaLabel": "Install app"
     }
+  },
+  "status": {
+    "lookingFor": "Looking for",
+    "lookingForHint": "Helps rank people for you. Not shown on your profile."
+  },
+  "people": {
+    "intent": {
+      "lookingForOptions": {
+        "friends": "Friends",
+        "dating": "Dating",
+        "travel_buddies": "Travel buddies",
+        "locals": "Locals where I am",
+        "networking": "Networking"
+      }
+    }
   }
 }

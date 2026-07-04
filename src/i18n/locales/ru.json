@@ -3009,5 +3009,20 @@
       "dismiss": "Закрыть",
       "ariaLabel": "Установить приложение"
     }
+  },
+  "status": {
+    "lookingFor": "В поиске",
+    "lookingForHint": "Помогает ранжировать людей для вас. Не отображается в профиле."
+  },
+  "people": {
+    "intent": {
+      "lookingForOptions": {
+        "friends": "Друзья",
+        "dating": "Свидания",
+        "travel_buddies": "Попутчики",
+        "locals": "Местные",
+        "networking": "Нетворкинг"
+      }
+    }
   }
 }

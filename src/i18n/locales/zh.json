@@ -2977,5 +2977,20 @@
       "dismiss": "关闭",
       "ariaLabel": "安装应用"
     }
+  },
+  "status": {
+    "lookingFor": "想找",
+    "lookingForHint": "用于为你排序推荐的人。不会显示在你的个人资料中。"
+  },
+  "people": {
+    "intent": {
+      "lookingForOptions": {
+        "friends": "朋友",
+        "dating": "约会",
+        "travel_buddies": "旅伴",
+        "locals": "当地人",
+        "networking": "拓展人脉"
+      }
+    }
   }
 }

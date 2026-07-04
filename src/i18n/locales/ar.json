@@ -2977,5 +2977,20 @@
       "dismiss": "إغلاق",
       "ariaLabel": "تثبيت التطبيق"
     }
+  },
+  "status": {
+    "lookingFor": "أبحث عن",
+    "lookingForHint": "يساعد في ترتيب الأشخاص لك. لا يظهر في ملفك الشخصي."
+  },
+  "people": {
+    "intent": {
+      "lookingForOptions": {
+        "friends": "أصدقاء",
+        "dating": "مواعدة",
+        "travel_buddies": "رفاق سفر",
+        "locals": "سكان محليون",
+        "networking": "التواصل المهني"
+      }
+    }
   }
 }

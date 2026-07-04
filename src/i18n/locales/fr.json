@@ -2983,5 +2983,20 @@
       "dismiss": "Fermer",
       "ariaLabel": "Installer l'app"
     }
+  },
+  "status": {
+    "lookingFor": "À la recherche de",
+    "lookingForHint": "Aide à classer les personnes pour toi. Pas visible sur ton profil."
+  },
+  "people": {
+    "intent": {
+      "lookingForOptions": {
+        "friends": "Ami·es",
+        "dating": "Rencontres",
+        "travel_buddies": "Compagnons de voyage",
+        "locals": "Personnes locales",
+        "networking": "Réseautage"
+      }
+    }
   }
 }

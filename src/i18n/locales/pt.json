@@ -2979,5 +2979,20 @@
       "dismiss": "Dispensar",
       "ariaLabel": "Instalar app"
     }
+  },
+  "status": {
+    "lookingFor": "Procurando",
+    "lookingForHint": "Ajuda a ordenar pessoas para você. Não aparece no seu perfil."
+  },
+  "people": {
+    "intent": {
+      "lookingForOptions": {
+        "friends": "Amizades",
+        "dating": "Encontros",
+        "travel_buddies": "Companhia de viagem",
+        "locals": "Pessoas locais",
+        "networking": "Networking"
+      }
+    }
   }
 }
