@@ -62,7 +62,7 @@ function TopicCard({ topic }: { topic: TopicHubRow }) {
   });
   return (
     <LocalizedLink
-      to={`/resources/topic/${topic.slug}`}
+      to={`/tags/topic/${topic.slug}`}
       className="group block h-full rounded-container border border-border bg-card p-4 transition-colors hover:bg-foreground/[0.03] no-underline text-inherit focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
       <div className="flex items-start justify-between gap-2 mb-2">

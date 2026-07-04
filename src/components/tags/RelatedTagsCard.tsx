@@ -4,19 +4,14 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { TagChip } from '@/components/tags/TagChip';
 import { useSafeMode } from '@/providers/SafeModeProvider';
 import { isAdultCategoryName } from '@/components/resources/categoryMeta';
+import { useTranslation } from 'react-i18next';
 
 interface RelatedTagsCardProps {
   tagId: string;
-  /** Category of the source tag — used to prefer within-category results. */
   sourceCategory?: string | null;
-  /** Retained for backwards-compat; chips now navigate to the canonical tag page. */
   onTagClick?: (tag: { name: string; id: string }) => void;
 }
 
-/**
- * Sort related tags: within-category first, then by score descending.
- * When safe mode is on, adult-category tags are stripped entirely.
- */
 function rankAndFilter(
   tags: SimilarTag[],
   sourceCategory: string | null | undefined,
@@ -41,6 +36,7 @@ function rankAndFilter(
 export function RelatedTagsCard({ tagId, sourceCategory }: RelatedTagsCardProps) {
   const { data: similarTags, isLoading } = useSimilarTags(tagId, 15);
   const { enabled: safeEnabled } = useSafeMode();
+  const { t } = useTranslation();
 
   const ranked = useMemo(
     () => rankAndFilter(similarTags ?? [], sourceCategory, safeEnabled).slice(0, 10),
@@ -50,10 +46,12 @@ export function RelatedTagsCard({ tagId, sourceCategory }: RelatedTagsCardProps)
   if (isLoading) {
     return (
       <div>
-        <h2 className="font-bold text-lg mb-4">Related</h2>
-        <div className="flex flex-wrap gap-2">
-          {[1, 2, 3, 4, 5, 6].map((i) => (
-            <Skeleton key={i} className="h-8 rounded-full" style={{ width: 70 + i * 12 }} />
+        <h2 className="text-sm font-semibold mb-2 text-muted-foreground uppercase tracking-wide">
+          {t('resources.tagDetail.seeAlso', 'See also')}
+        </h2>
+        <div className="flex flex-col gap-2">
+          {[1, 2, 3, 4].map((i) => (
+            <Skeleton key={i} className="h-8 rounded-element" />
           ))}
         </div>
       </div>
@@ -64,7 +62,9 @@ export function RelatedTagsCard({ tagId, sourceCategory }: RelatedTagsCardProps)
 
   return (
     <div>
-      <h2 className="font-bold text-lg mb-4">Related</h2>
+      <h2 className="text-sm font-semibold mb-2 text-muted-foreground uppercase tracking-wide">
+        {t('resources.tagDetail.seeAlso', 'See also')}
+      </h2>
       <div className="flex flex-wrap gap-2">
         {ranked.map((tag) => (
           <TagChip key={tag.tag_id} tag={tag.slug || tag.name} name={tag.name} />
