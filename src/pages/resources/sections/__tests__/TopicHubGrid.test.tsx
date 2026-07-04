@@ -36,6 +36,6 @@ describe('TopicHubGrid', () => {
 
   it('links each card to its topic route', () => {
     render(<TopicHubGrid />);
-    expect(screen.getByRole('link', { name: /Health/ })).toHaveAttribute('href', '/resources/topic/health');
+    expect(screen.getByRole('link', { name: /Health/ })).toHaveAttribute('href', '/tags/topic/health');
   });
 });

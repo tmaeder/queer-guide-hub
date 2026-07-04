@@ -27,20 +27,20 @@ export const ROUTE_HREFS: Record<string, (slug: string) => string> = {
   news: (s) => `/news/${s}`,
   organization: (s) => `/organizations/${s}`,
   hotel: (s) => `/hotels/${s}`,
-  // NB: `tag` is deliberately NOT here — the glossary route /resources/:tagName
+  // NB: `tag` is deliberately NOT here — the glossary route /tags/:tagName
   // is NAME-keyed (fetchTagWithCategories ilike('name', …)), but ROUTE_HREFS
   // builders only receive the slug. Route tags via `tagHref(name)` / hrefForEntity
-  // instead, which use the tag's name. (The old /tags/:slug redirect fed the slug
-  // into the name lookup and 404'd every multi-word tag.)
-  // Groups/users are id-keyed (no slug) — handled in `detailHref`, not here.
+  // instead, which use the tag's name.
+  // Groups have no slug — `s` is the group id (SearchResults falls back to objectID).
+  group: (s) => `/groups/${s}`,
 };
 
 /**
- * Tags resolve to the glossary by NAME, lowercased (the /resources/:tagName page
+ * Tags resolve to the glossary by NAME, lowercased (the /tags/:tagName page
  * canonicalises case and matches unified_tags.name, not slug).
  */
 export function tagHref(name: string): string {
-  return `/resources/${encodeURIComponent((name || '').toLowerCase())}`;
+  return `/tags/${encodeURIComponent((name || '').toLowerCase())}`;
 }
 
 export interface EntityRef {

@@ -8,10 +8,13 @@
  * `{ trip_id: "..." }` scans a single trip (used after itinerary
  * changes to refresh the banner).
  *
- * Generates two nudge kinds at launch:
+ * Generates:
  *  - event_overlap: featured events in trip country/city that
  *    overlap trip dates
  *  - news_alert: recent (<7d) LGBTQ+-flagged news in trip countries
+ *  - booking_reminder: countdown inside the 14-day window
+ *  - weather_warning: severe Open-Meteo forecast (storm/heavy rain/snow/
+ *    extreme heat) on trip days starting within 7 days
  */
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5';
@@ -196,6 +199,73 @@ async function bookingReminderNudges(admin: any, trip: TripRow): Promise<NudgeRo
   }];
 }
 
+/** WMO codes worth interrupting a traveler for, with a short label. */
+function severeWeatherLabel(code: number, tMax: number): string | null {
+  if (code >= 95) return 'thunderstorms';
+  if (code === 65 || code === 67 || code === 82) return 'heavy rain';
+  if ((code >= 71 && code <= 77) || code === 85 || code === 86) return 'snow';
+  if (tMax >= 35) return 'extreme heat';
+  return null;
+}
+
+// deno-lint-ignore no-explicit-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function weatherWarningNudges(admin: any, trip: TripRow): Promise<NudgeRow[]> {
+  if (!trip.start_date || !trip.end_date) return [];
+  const daysUntilStart = Math.floor(
+    (new Date(trip.start_date).getTime() - Date.now()) / (24 * 60 * 60 * 1000),
+  );
+  // Forecasts are only actionable close to departure (and while traveling).
+  if (daysUntilStart > 7) return [];
+
+  const { data: places } = await admin
+    .from('trip_places')
+    .select('latitude, longitude')
+    .eq('trip_id', trip.id)
+    .not('latitude', 'is', null)
+    .limit(1);
+  const coord = (places ?? [])[0] as { latitude: number; longitude: number } | undefined;
+  if (!coord) return [];
+
+  let daily: {
+    time: string[];
+    weather_code: number[];
+    temperature_2m_max: number[];
+  };
+  try {
+    const res = await fetch(
+      `https://api.open-meteo.com/v1/forecast?latitude=${coord.latitude}&longitude=${coord.longitude}` +
+        `&daily=weather_code,temperature_2m_max&forecast_days=16&timezone=auto`,
+    );
+    if (!res.ok) return [];
+    const json = await res.json();
+    daily = json.daily;
+    if (!daily?.time) return [];
+  } catch {
+    return [];
+  }
+
+  const rows: NudgeRow[] = [];
+  for (let i = 0; i < daily.time.length; i++) {
+    const date = daily.time[i];
+    if (date < trip.start_date || date > trip.end_date) continue;
+    const label = severeWeatherLabel(daily.weather_code[i], daily.temperature_2m_max[i]);
+    if (!label) continue;
+    rows.push({
+      trip_id: trip.id,
+      kind: 'weather_warning',
+      dedupe_key: `${date}:${label.replace(/\s+/g, '_')}`,
+      title: `${label[0].toUpperCase()}${label.slice(1)} forecast for ${new Date(date).toLocaleDateString()}`,
+      body: `Open-Meteo forecasts ${label} on a day of your trip. Consider indoor plans or schedule shifts.`,
+      action_label: 'Open trip',
+      action_url: `/trips/${trip.id}`,
+      severity: 'warning',
+    });
+    if (rows.length >= 3) break; // one banner per day is enough; cap noise
+  }
+  return rows;
+}
+
 // deno-lint-ignore no-explicit-any
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function mirrorNudgesToNotifications(admin: any, trip: TripRow, rows: NudgeRow[]) {
@@ -241,12 +311,13 @@ async function mirrorNudgesToNotifications(admin: any, trip: TripRow, rows: Nudg
 // deno-lint-ignore no-explicit-any
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function scanOne(admin: any, trip: TripRow): Promise<number> {
-  const [evs, news, book] = await Promise.all([
+  const [evs, news, book, weather] = await Promise.all([
     eventOverlapNudges(admin, trip).catch(() => [] as NudgeRow[]),
     newsAlertNudges(admin, trip).catch(() => [] as NudgeRow[]),
     bookingReminderNudges(admin, trip).catch(() => [] as NudgeRow[]),
+    weatherWarningNudges(admin, trip).catch(() => [] as NudgeRow[]),
   ]);
-  const rows = [...evs, ...news, ...book];
+  const rows = [...evs, ...news, ...book, ...weather];
   if (rows.length === 0) return 0;
   // Upsert ignoring conflicts on (trip_id, kind, dedupe_key)
   const { error } = await admin

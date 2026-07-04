@@ -318,7 +318,7 @@ export function TagsCard({ tags }: { tags: string[] }) {
       <CardContent>
         <div className="flex flex-wrap gap-2">
           {tags.map((tag) => (
-            <LocalizedLink key={tag} to={`/resources/${encodeURIComponent(tag)}`} className="no-underline">
+            <LocalizedLink key={tag} to={`/tags/${encodeURIComponent(tag)}`} className="no-underline">
               <Badge variant="outline" className="cursor-pointer px-2.5 py-0.5 text-xs">
                 {formatNewsTag(tag)}
               </Badge>

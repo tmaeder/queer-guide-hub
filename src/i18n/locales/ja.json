@@ -1570,7 +1570,8 @@
       "travel": "旅行",
       "personalities": "著名人",
       "hotels": "ホテル",
-      "help": "ヘルプ"
+      "help": "ヘルプ",
+      "tags": "タグ"
     },
     "userMenu": {
       "myTrips": "マイトリップ",
@@ -2454,7 +2455,15 @@
     },
     "tagDetail": {
       "breadcrumbHome": "リソース",
-      "noDefinition": "この用語にはまだ定義がありません。"
+      "noDefinition": "この用語にはまだ定義がありません。",
+      "alsoKnownAs": "別名",
+      "readOnWikipedia": "Wikipediaで読む",
+      "searchTagged": "{{name}}のタグが付いたすべてを検索",
+      "seeAlso": "関連項目",
+      "sensitiveContentBody": "このトピックにはセンシティブな内容が含まれる場合があります。サポートが必要な場合は、危機ホットラインのページをご覧ください。",
+      "sensitiveContentTitle": "センシティブなトピック",
+      "tableOfContents": "目次",
+      "viewAsGraph": "グラフで表示"
     },
     "graph": {
       "title": "タグ関係グラフ",
@@ -2864,7 +2873,8 @@
     "help": "ヘルプ",
     "pride": "プライド",
     "contributors": "貢献者",
-    "wishlists": "ウィッシュリスト"
+    "wishlists": "ウィッシュリスト",
+    "tags": "タグ"
   },
   "chat": {
     "react": "リアクション",

@@ -1598,7 +1598,8 @@
       "travel": "Путешествия",
       "personalities": "Личности",
       "hotels": "Отели",
-      "help": "Помощь"
+      "help": "Помощь",
+      "tags": "Теги"
     },
     "userMenu": {
       "myTrips": "Мои поездки",
@@ -2486,7 +2487,15 @@
     },
     "tagDetail": {
       "breadcrumbHome": "Ресурсы",
-      "noDefinition": "Пока нет описания для этого термина."
+      "noDefinition": "Пока нет описания для этого термина.",
+      "alsoKnownAs": "Также известно как",
+      "readOnWikipedia": "Читать в Википедии",
+      "searchTagged": "Искать всё с тегом {{name}}",
+      "seeAlso": "См. также",
+      "sensitiveContentBody": "Эта тема может содержать деликатный контент. Если вам нужна поддержка, посетите нашу страницу с кризисными горячими линиями.",
+      "sensitiveContentTitle": "Деликатная тема",
+      "tableOfContents": "Содержание",
+      "viewAsGraph": "Показать в виде графа"
     },
     "graph": {
       "title": "Граф связей тегов",
@@ -2896,7 +2905,8 @@
     "help": "Помощь",
     "pride": "Прайд",
     "contributors": "Участники",
-    "wishlists": "Списки желаний"
+    "wishlists": "Списки желаний",
+    "tags": "Теги"
   },
   "chat": {
     "react": "Реакция",

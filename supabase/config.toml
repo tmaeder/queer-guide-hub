@@ -115,12 +115,6 @@ verify_jwt = false
 [functions.import-awin-products]
 verify_jwt = false
 
-[functions.send-bulk-email]
-verify_jwt = true
-
-[functions.send-templated-email]
-verify_jwt = true
-
 [functions.import-tripadvisor-venues]
 verify_jwt = false
 
@@ -133,35 +127,11 @@ verify_jwt = false
 [functions.enrich-venue]
 verify_jwt = false
 
-[functions.calendar-token]
-verify_jwt = true
-
-[functions.delete-account]
-verify_jwt = true
-
-[functions.export-my-data]
-verify_jwt = true
-
 [functions.mapbox-geocoding]
 verify_jwt = false
 
 [functions.import-ilga-data]
 verify_jwt = false
-
-[functions.import-adult-models-csv]
-verify_jwt = true
-
-[functions.manage-api-keys]
-verify_jwt = true
-
-[functions.get-api-key]
-verify_jwt = true
-
-[functions.cloudflare-api]
-verify_jwt = true
-
-[functions.scrape-spartacus]
-verify_jwt = true
 
 [functions.scrape-web-sources]
 verify_jwt = false
@@ -295,20 +265,11 @@ verify_jwt = false
 verify_jwt = false
 
 # Admin feedback P3/P5/P6 edge functions
-[functions.reply-to-feedback]
-verify_jwt = true
-
-[functions.notify-feedback-status]
-verify_jwt = true
-
 [functions.github-webhook]
 verify_jwt = false
 
 [functions.resend-webhook]
 verify_jwt = false
-
-[functions.sync-supabase-advisors]
-verify_jwt = true
 
 [functions.pipeline-media-process]
 verify_jwt = false
@@ -461,6 +422,13 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.personality-extract-from-bio]
+verify_jwt = false
+
+# Does its own X-Webhook-Secret auth (plus admin fallback); the geocode
+# triggers call it WITHOUT a Bearer, so the platform JWT gate must be off —
+# without this entry CI deploys flipped it to the verify_jwt=true default and
+# silently blocked the trigger -> geocode path.
+[functions.backfill-venue-cities]
 verify_jwt = false
 
 [functions.source-shopify-public]

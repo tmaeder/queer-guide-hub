@@ -9,7 +9,7 @@ import { test, expect } from '@playwright/test';
 // Until the migration applies in the target environment, this spec will fail.
 // Tagged so CI can opt into running it after deploy verification.
 
-test.describe('@p0-1 /resources tag graph', () => {
+test.describe('@p0-1 /tags tag graph', () => {
   test('graph view loads tags + links from get_tag_graph_data (no 403)', async ({ page }) => {
     const rpcResponse = page.waitForResponse(
       (resp) =>
@@ -17,9 +17,7 @@ test.describe('@p0-1 /resources tag graph', () => {
         resp.request().method() === 'POST',
     );
 
-    // The pure overview (Help-first rework) has no filter bar — enter via
-    // ?q= so the bar (and its graph toggle) renders.
-    await page.goto('/resources?q=les');
+    await page.goto('/tags?q=les');
 
     // Switch into the graph view — the toggle lives in ResourcesFilterBar
     // with aria-label "Tag relationship graph" (resources.filter.graph).

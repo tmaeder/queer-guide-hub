@@ -56,12 +56,25 @@ interface SendResult {
   candidates_used: number;
 }
 
+export interface ConciergeSignals {
+  weather_by_date?: Record<
+    string,
+    { label: string; tMaxC: number; tMinC: number; typical?: boolean }
+  >;
+  accessibility_needs?: string[];
+}
+
 /**
  * Sends a user message to the `trip-concierge` edge function. The function
  * persists both the user message and the assistant reply, so we just
- * invalidate after the round-trip to refetch the full thread.
+ * invalidate after the round-trip to refetch the full thread. Optional
+ * `signals` (client-computed weather + saved accessibility needs) ground
+ * the model's scheduling decisions.
  */
-export function useSendConciergeMessage(tripId: string | undefined) {
+export function useSendConciergeMessage(
+  tripId: string | undefined,
+  signals?: ConciergeSignals,
+) {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -70,7 +83,11 @@ export function useSendConciergeMessage(tripId: string | undefined) {
       const trimmed = message.trim();
       if (!trimmed) throw new Error('empty message');
       const { data, error } = await supabase.functions.invoke('trip-concierge', {
-        body: { trip_id: tripId, message: trimmed },
+        body: {
+          trip_id: tripId,
+          message: trimmed,
+          ...(signals && Object.keys(signals).length ? { signals } : {}),
+        },
       });
       if (error) throw error;
       return data as SendResult;

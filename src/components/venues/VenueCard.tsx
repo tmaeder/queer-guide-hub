@@ -211,7 +211,7 @@ function VenueCardImpl({ venue, loading = false, socialSignal }: VenueCardProps)
                   );
                 })()}
                 {topTags.length > 0 && (
-                  <TagChipRow tags={topTags} max={2} size="sm" linkless className="mt-2" />
+                  <TagChipRow tags={topTags} max={2} size="sm" className="mt-2" />
                 )}
                 {socialSignal && (
                   <SocialSignalBar

@@ -1574,7 +1574,8 @@
       "travel": "Voyage",
       "personalities": "Personnalités",
       "hotels": "Hôtels",
-      "help": "Aide"
+      "help": "Aide",
+      "tags": "Tags"
     },
     "userMenu": {
       "myTrips": "Mes voyages",
@@ -2460,7 +2461,15 @@
     },
     "tagDetail": {
       "breadcrumbHome": "Ressources",
-      "noDefinition": "Pas encore de définition pour ce terme."
+      "noDefinition": "Pas encore de définition pour ce terme.",
+      "alsoKnownAs": "Également connu sous le nom de",
+      "readOnWikipedia": "Lire sur Wikipédia",
+      "searchTagged": "Rechercher tout ce qui est tagué {{name}}",
+      "seeAlso": "Voir aussi",
+      "sensitiveContentBody": "Ce sujet peut contenir du contenu sensible. Si vous avez besoin de soutien, consultez notre page des lignes d'écoute de crise.",
+      "sensitiveContentTitle": "Sujet sensible",
+      "tableOfContents": "Sommaire",
+      "viewAsGraph": "Voir comme graphe"
     },
     "graph": {
       "title": "Graphe des relations",
@@ -2870,7 +2879,8 @@
     "help": "Aide",
     "pride": "Fierté",
     "contributors": "Contributeurs",
-    "wishlists": "Listes de souhaits"
+    "wishlists": "Listes de souhaits",
+    "tags": "Tags"
   },
   "chat": {
     "react": "Réagir",
