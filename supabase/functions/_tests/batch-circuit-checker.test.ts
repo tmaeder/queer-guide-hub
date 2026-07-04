@@ -8,6 +8,7 @@ import {
   createBatchCircuitChecker,
   CircuitOpenError,
 } from '../_shared/circuit-breaker.ts'
+import type { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
 
 interface Row {
   api_name: string
@@ -61,8 +62,7 @@ function makeStub(row: Row | null) {
       return Promise.resolve({ data: null, error: null })
     },
   }
-  // deno-lint-ignore no-explicit-any
-  return { client: client as any, calls }
+  return { client: client as unknown as SupabaseClient, calls }
 }
 
 const closedRow: Row = {
