@@ -2994,5 +2994,12 @@
       "dismiss": "Dismiss",
       "ariaLabel": "Install app"
     }
+  },
+  "atlas": {
+    "summary": "{{visited}} countries visited · {{bucket}} on your bucket list",
+    "hint": "Tap a country to mark it",
+    "visited": "Visited",
+    "bucket": "Bucket list",
+    "fromTrips": "Marked visited by a completed trip"
   }
 }
