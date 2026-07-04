@@ -5,6 +5,7 @@ import {
   corsResponse,
   requireInternalOrAdmin,
 } from './supabase-client.ts'
+import { createBatchCircuitChecker, type BatchCircuitChecker } from './circuit-breaker.ts'
 
 // Shared batch driver for the pipeline-enrich-* staging functions.
 //
@@ -49,11 +50,17 @@ export interface EnrichmentDriverConfig {
   defaultConcurrency?: number
   /** Optional wall-clock budget, checked between pool waves. */
   wallClockMs?: number
+  /** Single-breaker adopters set their breaker api name here and call the
+   *  provided `breaker.run(fn)` instead of withCircuitBreaker — the closed
+   *  state is then checked once per batch instead of once per item (N+1
+   *  fix). Multi-breaker adopters leave this unset. */
+  batchBreakerApi?: string
   /** Returns 'skip' when the row lacks the minimum fields (no name/title). */
   enrichItem(
     supabase: ServiceClient,
     item: StagingItem,
-    normalized: Record<string, unknown>
+    normalized: Record<string, unknown>,
+    breaker?: BatchCircuitChecker
   ): Promise<EnrichOutcome | 'skip'>
   /** Test seam — overrides client construction / auth. Not for production use. */
   _deps?: {
@@ -103,11 +110,15 @@ export function serveEnrichment(config: EnrichmentDriverConfig) {
         failed = 0,
         skipped = 0
 
+      const breaker = config.batchBreakerApi
+        ? createBatchCircuitChecker(supabase, config.batchBreakerApi)
+        : undefined
+
       const processItem = async (item: StagingItem) => {
         const n = (item.normalized_data ?? {}) as Record<string, unknown>
         const startedAt = Date.now()
 
-        const outcome = await config.enrichItem(supabase, item, n)
+        const outcome = await config.enrichItem(supabase, item, n, breaker)
         if (outcome === 'skip') {
           skipped++
           return
@@ -159,6 +170,7 @@ export function serveEnrichment(config: EnrichmentDriverConfig) {
         if (deadline && Date.now() > deadline) break
         await Promise.all(items.slice(i, i + concurrency).map(processItem))
       }
+      await breaker?.flush()
 
       return jsonResponse(
         {
