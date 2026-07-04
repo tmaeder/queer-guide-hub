@@ -1605,6 +1605,12 @@
         "groups": "groups",
         "resources": "resources"
       }
+    },
+    "shop": {
+      "eyebrow": "Marketplace",
+      "title": "Queer-owned finds",
+      "description": "Products and services from queer- and trans-owned businesses.",
+      "seeAll": "Marketplace"
     }
   },
   "header": {

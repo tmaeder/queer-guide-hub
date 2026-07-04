@@ -11,9 +11,10 @@ type MarketplaceListing = Database['public']['Tables']['marketplace_listings']['
 interface Props {
   listing: MarketplaceListing;
   limit?: number;
+  title?: string;
 }
 
-export function MarketplaceSimilarItems({ listing, limit = 4 }: Props) {
+export function MarketplaceSimilarItems({ listing, limit = 4, title = 'Similar items' }: Props) {
   const { data: items, loading } = useMarketplaceSimilarListings(listing, limit);
   const { assets } = useEntityImageAssets('marketplace_listing', useMemo(() => items.map((i) => i.id), [items]));
 
@@ -21,8 +22,8 @@ export function MarketplaceSimilarItems({ listing, limit = 4 }: Props) {
 
   return (
     <section aria-labelledby="similar-items" className="mt-10">
-      <h2 id="similar-items" className="text-xl font-bold tracking-tight mb-4">
-        Similar items
+      <h2 id="similar-items" className="font-display text-headline-lg tracking-tight mb-4">
+        {title}
       </h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {loading

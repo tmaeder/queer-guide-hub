@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { SFW_RATINGS } from '@/hooks/useMarketplace';
 import type { Database } from '@/integrations/supabase/types';
 
 type MarketplaceListing = Database['public']['Tables']['marketplace_listings']['Row'] & {
@@ -58,6 +59,36 @@ export function useMarketplaceSubcategoryTiles(limit: number | null = 8) {
   );
 }
 
+/**
+ * Representative cover image per department for the browse bento —
+ * first image of the highest-boutique-score SFW listing in each umbrella.
+ */
+export function useDepartmentCovers() {
+  return useAsync<Map<string, string>>(
+    [],
+    async () => {
+      const { data, error } = await supabase
+        .from('marketplace_listings')
+        .select('department, images')
+        .eq('status', 'active')
+        .in('content_rating', SFW_RATINGS)
+        .not('images', 'is', null)
+        .not('department', 'is', null)
+        .order('boutique_score', { ascending: false, nullsFirst: false })
+        .limit(60);
+      if (error || !data) return new Map();
+      const covers = new Map<string, string>();
+      for (const row of data as Array<{ department: string | null; images: string[] | null }>) {
+        if (!row.department || covers.has(row.department)) continue;
+        const img = row.images?.[0];
+        if (img) covers.set(row.department, img);
+      }
+      return covers;
+    },
+    new Map(),
+  );
+}
+
 export interface MarketplaceAttributeOption {
   slug: string;       // namespaced unified_tags slug (mat-cotton, occ-pride, vibe-minimal)
   name: string;
@@ -90,10 +121,13 @@ export function useMarketplaceListingsRelated(limit = 4) {
   return useAsync<MarketplaceListing[]>(
     [limit],
     async () => {
+      // Cross-site surface: sfw/suggestive only, regardless of the
+      // /marketplace-scoped 18+ opt-in.
       const { data, error } = await supabase
         .from('marketplace_listings')
         .select('*, venues(name, address, city)')
         .eq('status', 'active')
+        .in('content_rating', SFW_RATINGS)
         .order('featured', { ascending: false })
         .order('lgbti_relevance_score', { ascending: false, nullsFirst: false })
         .order('quality_score', { ascending: false, nullsFirst: false })
@@ -155,6 +189,7 @@ export function useMarketplaceListingsForCity(cityName: string | undefined, limi
         .from('marketplace_listings')
         .select('*, venues!inner(name, address, city)')
         .eq('status', 'active')
+        .in('content_rating', SFW_RATINGS)
         .eq('venues.city', cityName)
         .order('featured', { ascending: false })
         .order('updated_at', { ascending: false })
@@ -199,6 +234,38 @@ export function useMarketplaceListingsForOccasion(occasionSlug: string | undefin
   );
 }
 
+/**
+ * First pride/drag/wedding occasion among a city's upcoming events (60d) —
+ * lets the city rail surface online occasion gear, not just venue-hosted
+ * listings.
+ */
+export function useCityUpcomingOccasion(cityId: string | undefined) {
+  return useAsync<string | null>(
+    [cityId],
+    async () => {
+      if (!cityId) return null;
+      const now = new Date();
+      const until = new Date(now.getTime() + 60 * 24 * 60 * 60 * 1000);
+      const { data, error } = await supabase
+        .from('events')
+        .select('title, event_type')
+        .eq('city_id', cityId)
+        .gte('start_date', now.toISOString())
+        .lte('start_date', until.toISOString())
+        .order('start_date', { ascending: true })
+        .limit(50);
+      if (error || !data) return null;
+      const { occasionForEvent } = await import('@/components/marketplace/marketplaceHelpers');
+      for (const e of data as Array<{ title: string; event_type: string | null }>) {
+        const occ = occasionForEvent(e.event_type, e.title);
+        if (occ) return occ;
+      }
+      return null;
+    },
+    null,
+  );
+}
+
 export function useMarketplaceListingsForCountry(countryId: string | undefined, limit = 4) {
   return useAsync<MarketplaceListing[]>(
     [countryId, limit],
@@ -210,6 +277,7 @@ export function useMarketplaceListingsForCountry(countryId: string | undefined, 
         .from('marketplace_listings')
         .select('*, venues!inner(name, address, city)')
         .eq('status', 'active')
+        .in('content_rating', SFW_RATINGS)
         .eq('venues.country_id', countryId)
         .order('featured', { ascending: false })
         .order('updated_at', { ascending: false })
@@ -230,6 +298,7 @@ export function useMarketplaceListingsForVenue(venueId: string | undefined, limi
         .from('marketplace_listings')
         .select('*, venues(name, address, city)')
         .eq('status', 'active')
+        .in('content_rating', SFW_RATINGS)
         .eq('venue_id', venueId)
         .order('featured', { ascending: false })
         .order('updated_at', { ascending: false })
@@ -250,6 +319,7 @@ export function useMarketplaceSimilarListings(listing: MarketplaceListing | null
         .from('marketplace_listings')
         .select('*, venues(name, address, city)')
         .eq('status', 'active')
+        .in('content_rating', SFW_RATINGS)
         .neq('id', listing.id)
         .limit(limit);
       if (listing.category_id) q = q.eq('category_id', listing.category_id);

@@ -1,10 +1,8 @@
-import { useEffect, useMemo, useRef } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { MarketplaceCard } from './MarketplaceCard';
+import { useEffect } from 'react';
+import { MarketplaceRailShell } from './MarketplaceRailShell';
 import { useMarketplaceRow, type CuratedRowKey } from '@/hooks/useMarketplaceRows';
 import { useCuratedIds } from './useCuratedIds';
-import { useEntityImageAssets } from '@/hooks/useEntityImageAssets';
+import type { MarketplaceSurface } from '@/lib/affiliate/marketplace';
 
 interface MarketplaceRowProps {
   rowKey: CuratedRowKey;
@@ -13,6 +11,8 @@ interface MarketplaceRowProps {
   limit?: number;
   showFavoriteButton?: boolean;
   onToggleFavorite?: (id: string) => void;
+  /** Attribution surface for outbound /go links; defaults to the marketplace grid. */
+  surface?: MarketplaceSurface;
 }
 
 export function MarketplaceRow({
@@ -21,12 +21,10 @@ export function MarketplaceRow({
   subtitle,
   limit = 12,
   showFavoriteButton,
+  surface = 'marketplace_grid',
 }: MarketplaceRowProps) {
   const { data, loading, error } = useMarketplaceRow(rowKey, limit);
-  const scrollRef = useRef<HTMLDivElement | null>(null);
   const { register } = useCuratedIds();
-  const listingIds = useMemo(() => data.map((l) => l.id), [data]);
-  const { assets } = useEntityImageAssets('marketplace_listing', listingIds);
 
   useEffect(() => {
     register(rowKey, data.map((l) => l.id));
@@ -34,48 +32,15 @@ export function MarketplaceRow({
 
   if (!loading && (error || data.length === 0)) return null;
 
-  const scroll = (dir: -1 | 1) => {
-    const el = scrollRef.current;
-    if (!el) return;
-    el.scrollBy({ left: dir * Math.max(320, el.clientWidth * 0.8), behavior: 'smooth' });
-  };
-
   return (
-    <section className="mb-12" aria-labelledby={`row-${rowKey}`}>
-      <div className="flex items-end justify-between mb-4 gap-4">
-        <div>
-          <h2 id={`row-${rowKey}`} className="text-2xl font-bold tracking-tight">
-            {title}
-          </h2>
-          {subtitle && <p className="text-sm text-muted-foreground mt-1">{subtitle}</p>}
-        </div>
-        <div className="hidden md:flex gap-1.5">
-          <Button variant="outline" size="icon" onClick={() => scroll(-1)} aria-label={`Scroll ${title} left`}>
-            <ChevronLeft size={16} />
-          </Button>
-          <Button variant="outline" size="icon" onClick={() => scroll(1)} aria-label={`Scroll ${title} right`}>
-            <ChevronRight size={16} />
-          </Button>
-        </div>
-      </div>
-
-      <div
-        ref={scrollRef}
-        className="flex gap-4 overflow-x-auto pb-2 snap-x snap-mandatory scrollbar-thin"
-        style={{ scrollPaddingLeft: '0.25rem' }}
-      >
-        {loading
-          ? Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="snap-start shrink-0 w-[280px] sm:w-[320px]">
-                <MarketplaceCard loading />
-              </div>
-            ))
-          : data.map((listing) => (
-              <div key={listing.id} className="snap-start shrink-0 w-[280px] sm:w-[320px]">
-                <MarketplaceCard listing={listing} imageAsset={assets.get(listing.id)} showFavoriteButton={showFavoriteButton} />
-              </div>
-            ))}
-      </div>
-    </section>
+    <MarketplaceRailShell
+      id={rowKey}
+      title={title}
+      subtitle={subtitle}
+      listings={data}
+      loading={loading}
+      surface={surface}
+      showFavoriteButton={showFavoriteButton}
+    />
   );
 }

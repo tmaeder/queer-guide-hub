@@ -32,6 +32,7 @@ import { TripMap } from '@/components/trips/TripMapLazy';
 import { TripSafetyBriefing } from '@/components/trips/TripSafetyBriefing';
 import { TripNudgesBanner } from '@/components/trips/TripNudgesBanner';
 import { TripTravelBuddiesCTA } from '@/components/trips/TripTravelBuddiesCTA';
+import { MarketplaceForTrip } from '@/components/marketplace/MarketplaceForTrip';
 import { AddPlaceDialog } from '@/components/trips/AddPlaceDialog';
 import { ShareTripDialog } from '@/components/trips/ShareTripDialog';
 import { TripBookingAssistant } from '@/components/trips/TripBookingAssistant';
@@ -474,6 +475,12 @@ export default function TripPlannerPage() {
                 <Suspense fallback={<SuspenseLoader />}>
                   <PackingTab tripId={trip.id} />
                 </Suspense>
+              </ErrorBoundary>
+              <ErrorBoundary section="trip-gear" fallback={null}>
+                <MarketplaceForTrip
+                  cityName={trip.primary_city_name}
+                  places={trip.trip_places}
+                />
               </ErrorBoundary>
             </AccordionContent>
           </AccordionItem>

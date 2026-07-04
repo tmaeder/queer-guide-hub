@@ -197,16 +197,32 @@ test.describe('Marketplace — discovery surface', () => {
   test('public marketplace exposes no LGBTQ+ relevance filter', async ({ page }) => {
     await page.goto('/marketplace');
     await page.waitForLoadState('domcontentloaded');
-    // Open the advanced filter panel, then expand the "Quality & freshness"
+    // Open the "All filters" Sheet, then expand the "Quality & freshness"
     // section — where the (now-removed) relevance slider used to live. Radix
     // unmounts collapsed accordion content, so expanding it is what would
     // surface the slider in the DOM if it still existed.
-    await page.getByRole('button', { name: /toggle filters/i }).click();
+    await page.getByRole('button', { name: /all filters/i }).click();
     const quality = page.getByRole('button', { name: /quality & freshness/i });
     await quality.click();
     await expect(quality).toHaveAttribute('aria-expanded', 'true');
     await expect(page.getByText(/minimum lgbtq\+ relevance/i)).toHaveCount(0);
     await expect(page.locator('[aria-label="Minimum LGBTQ+ relevance"]')).toHaveCount(0);
+  });
+
+  test('facet chips write URL params and the sheet opens', async ({ page }) => {
+    await page.goto('/marketplace');
+    await page.waitForLoadState('domcontentloaded');
+    // One-tap ownership chip → owned= URL param.
+    const chip = page.getByRole('button', { name: 'Queer-owned', exact: true }).first();
+    await chip.click();
+    await expect(page).toHaveURL(/owned=queer_owned/);
+    await expect(chip).toHaveAttribute('aria-pressed', 'true');
+    // Chip off → param gone.
+    await chip.click();
+    await expect(page).not.toHaveURL(/owned=/);
+    // Sheet opens with the long-tail filters.
+    await page.getByRole('button', { name: /all filters/i }).click();
+    await expect(page.getByRole('heading', { name: /all filters/i })).toBeVisible();
   });
 
   test('marketplace detail page shows no "LGBTQ+ relevant" pill', async ({ page }) => {
