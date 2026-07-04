@@ -234,6 +234,38 @@ export function useMarketplaceListingsForOccasion(occasionSlug: string | undefin
   );
 }
 
+/**
+ * First pride/drag/wedding occasion among a city's upcoming events (60d) —
+ * lets the city rail surface online occasion gear, not just venue-hosted
+ * listings.
+ */
+export function useCityUpcomingOccasion(cityId: string | undefined) {
+  return useAsync<string | null>(
+    [cityId],
+    async () => {
+      if (!cityId) return null;
+      const now = new Date();
+      const until = new Date(now.getTime() + 60 * 24 * 60 * 60 * 1000);
+      const { data, error } = await supabase
+        .from('events')
+        .select('title, event_type')
+        .eq('city_id', cityId)
+        .gte('start_date', now.toISOString())
+        .lte('start_date', until.toISOString())
+        .order('start_date', { ascending: true })
+        .limit(50);
+      if (error || !data) return null;
+      const { occasionForEvent } = await import('@/components/marketplace/marketplaceHelpers');
+      for (const e of data as Array<{ title: string; event_type: string | null }>) {
+        const occ = occasionForEvent(e.event_type, e.title);
+        if (occ) return occ;
+      }
+      return null;
+    },
+    null,
+  );
+}
+
 export function useMarketplaceListingsForCountry(countryId: string | undefined, limit = 4) {
   return useAsync<MarketplaceListing[]>(
     [countryId, limit],
