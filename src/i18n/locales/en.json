@@ -1369,7 +1369,9 @@
         "transit": "transit",
         "drive": "drive"
       },
-      "walkingTotal": "{{distance}} walking"
+      "walkingTotal": "{{distance}} walking",
+      "optimize": "Optimize route order",
+      "directions": "Open day in Google Maps"
     },
     "suggestions": {
       "accessMatch": "Matches your needs"
@@ -1406,6 +1408,10 @@
       "confirm": "Import {{count}} places",
       "done": "{{count}} places imported",
       "doneHint": "They land in the unscheduled pool — drag them onto days."
+    },
+    "offline": {
+      "pending_one": "{{count}} change waiting to sync",
+      "pending_other": "{{count}} changes waiting to sync"
     }
   },
   "help": {

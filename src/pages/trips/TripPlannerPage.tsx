@@ -25,6 +25,7 @@ import { format, differenceInDays } from 'date-fns';
 import { useTranslation } from 'react-i18next';
 import { useTrip, canEditTrip, type TripWithDetails } from '@/hooks/useTrips';
 import { useAuth } from '@/hooks/useAuth';
+import { useOfflineTripSync } from '@/hooks/useOfflineTripSync';
 import { useTripReservations } from '@/hooks/useTripReservations';
 import { cacheTripSnapshot } from '@/utils/offlineTripPack';
 import { useToast } from '@/hooks/use-toast';
@@ -130,6 +131,7 @@ export default function TripPlannerPage() {
   const { toast } = useToast();
   const { user } = useAuth();
   const canEdit = trip ? canEditTrip(trip, user?.id) : false;
+  const { pending: pendingOffline } = useOfflineTripSync();
 
   const handleSaveOffline = async () => {
     if (!tripId || !trip) return;
@@ -274,6 +276,18 @@ export default function TripPlannerPage() {
           </Tooltip>
         </TooltipProvider>
       </TripCoverBand>
+
+      {pendingOffline > 0 && (
+        <div
+          className="flex items-center gap-2 border border-border rounded-element px-4 py-2 mb-4 text-sm text-muted-foreground"
+          data-testid="offline-pending-banner"
+        >
+          <Loader2 size={14} className="animate-spin" aria-hidden />
+          {t('trips.offline.pending', '{{count}} changes waiting to sync', {
+            count: pendingOffline,
+          })}
+        </div>
+      )}
 
       {/* Pre-trip: docs, countdown + gaps */}
       <TripDocExpiryBanner trip={trip} />
