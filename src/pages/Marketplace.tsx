@@ -9,16 +9,16 @@ import { useEntityImageAssets } from '@/hooks/useEntityImageAssets';
 import { useMeta } from '@/hooks/useMeta';
 import { MarketplaceCard } from '@/components/marketplace/MarketplaceCard';
 import { MarketplaceControlBar } from '@/components/marketplace/MarketplaceControlBar';
-import { MarketplaceCategoryTiles } from '@/components/marketplace/MarketplaceCategoryTiles';
+import { DepartmentBento } from '@/components/marketplace/DepartmentBento';
 import { OccasionChips } from '@/components/marketplace/OccasionChips';
-import { HeroCollection } from '@/components/marketplace/HeroCollection';
+import { MarketplaceHeroCover } from '@/components/marketplace/MarketplaceHeroCover';
+import { BrandSpotlight } from '@/components/marketplace/BrandSpotlight';
 import { GuidesStream } from '@/components/marketplace/GuidesStream';
 import { ContinueReadingRail } from '@/components/marketplace/ContinueReadingRail';
 import { AdultContentGate } from '@/components/marketplace/AdultContentGate';
 import { isAdultListing, useAdultAcknowledgement } from '@/hooks/useAdultContent';
 import { MarketplaceRow } from '@/components/marketplace/MarketplaceRow';
 import { AffiliateDisclosure } from '@/components/marketplace/AffiliateDisclosure';
-import { BrandRail } from '@/components/marketplace/BrandRail';
 import { CuratedIdsProvider } from '@/components/marketplace/CuratedIdsContext';
 import { useCuratedIds } from '@/components/marketplace/useCuratedIds';
 import { ZeroResultRescue } from '@/components/marketplace/ZeroResultRescue';
@@ -387,24 +387,27 @@ const Marketplace = () => {
           size="md"
         />
         <div className="container mx-auto py-8 md:py-12 px-4 relative">
-          {/* Decluttered boutique landing: one editorial hero, category
-              tiles, one values rail, a guides teaser — then the grid. */}
+          {/* Boutique landing: cover story, asymmetric department bento,
+              one brand feature, two rails, magazine guide teasers — then
+              the grid. Every section registers with CuratedIds so the
+              grid never repeats curated items. */}
           {!hasActiveFilters && (
             <>
+              <MarketplaceHeroCover />
               <ContinueReadingRail />
-              <HeroCollection />
-              <MarketplaceCategoryTiles />
+              <DepartmentBento />
               {/* Editor-curated collection chips; occasion toggles moved
                   into the control bar. */}
-              <OccasionChips kinds={['collection']} />
+              <OccasionChips kinds={['collection']} className="mb-16" />
+              <BrandSpotlight />
+              <MarketplaceRow rowKey="new" title="New this week" />
               <MarketplaceRow
                 rowKey="queer-owned"
                 title="Queer-owned picks"
                 subtitle="From queer- and trans-owned businesses"
               />
-              <BrandRail />
-              <div className="mb-10">
-                <GuidesStream limit={3} showHero={false} />
+              <div className="mb-16 lg:mb-24">
+                <GuidesStream limit={3} showHero />
                 <LocalizedLink
                   to="/marketplace/guides"
                   className="mt-2 inline-flex items-center gap-1 text-13 font-medium hover:underline"

@@ -59,6 +59,36 @@ export function useMarketplaceSubcategoryTiles(limit: number | null = 8) {
   );
 }
 
+/**
+ * Representative cover image per department for the browse bento —
+ * first image of the highest-boutique-score SFW listing in each umbrella.
+ */
+export function useDepartmentCovers() {
+  return useAsync<Map<string, string>>(
+    [],
+    async () => {
+      const { data, error } = await supabase
+        .from('marketplace_listings')
+        .select('department, images')
+        .eq('status', 'active')
+        .in('content_rating', SFW_RATINGS)
+        .not('images', 'is', null)
+        .not('department', 'is', null)
+        .order('boutique_score', { ascending: false, nullsFirst: false })
+        .limit(60);
+      if (error || !data) return new Map();
+      const covers = new Map<string, string>();
+      for (const row of data as Array<{ department: string | null; images: string[] | null }>) {
+        if (!row.department || covers.has(row.department)) continue;
+        const img = row.images?.[0];
+        if (img) covers.set(row.department, img);
+      }
+      return covers;
+    },
+    new Map(),
+  );
+}
+
 export interface MarketplaceAttributeOption {
   slug: string;       // namespaced unified_tags slug (mat-cotton, occ-pride, vibe-minimal)
   name: string;
