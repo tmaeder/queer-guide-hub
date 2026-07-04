@@ -1,6 +1,6 @@
 import { serveEnrichment } from '../_shared/enrichment-driver.ts'
 import { enrichEventWithAI } from '../_shared/ai-enrichment.ts'
-import { withCircuitBreaker, CircuitOpenError } from '../_shared/circuit-breaker.ts'
+import { CircuitOpenError } from '../_shared/circuit-breaker.ts'
 import { withErrorReporting } from '../_shared/report-api-error.ts'
 
 // Pipeline Enrich (Events) — AI description + type + tags + LGBTQ relevance.
@@ -15,7 +15,8 @@ Deno.serve(
       defaultBatchSize: 20,
       maxBatchSize: 200,
       wallClockMs: 90_000,
-      async enrichItem(supabase, item, n) {
+      batchBreakerApi: 'llm.openai.enrich-events',
+      async enrichItem(supabase, item, n, breaker) {
         const loc = (n.location ?? {}) as Record<string, unknown>
         const title = String(n.title ?? n.name ?? '').trim()
         if (!title) return 'skip'
@@ -23,7 +24,7 @@ Deno.serve(
         let ai: Awaited<ReturnType<typeof enrichEventWithAI>> = null
         let aiError: string | null = null
         try {
-          ai = await withCircuitBreaker(supabase, 'llm.openai.enrich-events', () =>
+          ai = await breaker!.run(() =>
             enrichEventWithAI(supabase, {
               title,
               description: String(n.description ?? '').slice(0, 500),

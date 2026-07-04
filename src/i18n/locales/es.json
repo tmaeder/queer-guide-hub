@@ -575,8 +575,8 @@
         "lgbtq-specific": "Específico LGTBI+",
         "other": "Otros"
       },
-      "scopeAll": "[ES] Everyone",
-      "scopeMine": "[ES] Mine"
+      "scopeAll": "Todos",
+      "scopeMine": "Míos"
     },
     "collaborate": {
       "chat": "Chat",
@@ -898,42 +898,42 @@
       "error": "Could not update save"
     },
     "dayNotes": {
-      "addTitle": "[ES] Add a note to this day",
-      "textLabel": "[ES] Note",
-      "textPlaceholder": "[ES] e.g. Check-out by 11:00",
-      "timeLabel": "[ES] Time (optional)",
-      "iconLabel": "[ES] Icon",
-      "save": "[ES] Add note",
-      "added": "[ES] Note added",
-      "delete": "[ES] Delete note"
+      "addTitle": "Añadir una nota a este día",
+      "textLabel": "Nota",
+      "textPlaceholder": "p. ej. Salida antes de las 11:00",
+      "timeLabel": "Hora (opcional)",
+      "iconLabel": "Icono",
+      "save": "Añadir nota",
+      "added": "Nota añadida",
+      "delete": "Eliminar nota"
     },
     "weather": {
-      "clear": "[ES] Clear",
-      "partlyCloudy": "[ES] Partly cloudy",
-      "overcast": "[ES] Overcast",
-      "fog": "[ES] Fog",
-      "drizzle": "[ES] Drizzle",
-      "rain": "[ES] Rain",
-      "snow": "[ES] Snow",
-      "thunderstorm": "[ES] Thunderstorm",
-      "typical": "[ES] typical"
+      "clear": "Despejado",
+      "partlyCloudy": "Parcialmente nublado",
+      "overcast": "Cubierto",
+      "fog": "Niebla",
+      "drizzle": "Llovizna",
+      "rain": "Lluvia",
+      "snow": "Nieve",
+      "thunderstorm": "Tormenta",
+      "typical": "típico"
     },
     "conflicts": {
-      "chip_one": "[ES] {{count}} conflict",
-      "chip_other": "[ES] {{count}} conflicts"
+      "chip_one": "{{count}} conflicto",
+      "chip_other": "{{count}} conflictos"
     },
     "legs": {
-      "switchMode": "[ES] Switch transport mode",
-      "modeAria": "[ES] Transport mode: {{mode}} — click to change",
+      "switchMode": "Cambiar modo de transporte",
+      "modeAria": "Modo de transporte: {{mode}} — haz clic para cambiar",
       "mode": {
-        "walk": "[ES] walk",
-        "transit": "[ES] transit",
-        "drive": "[ES] drive"
+        "walk": "a pie",
+        "transit": "transporte público",
+        "drive": "coche"
       },
-      "walkingTotal": "[ES] {{distance}} walking"
+      "walkingTotal": "{{distance}} a pie"
     },
     "suggestions": {
-      "accessMatch": "[ES] Matches your needs"
+      "accessMatch": "Se ajusta a tus necesidades"
     }
   },
   "auth": {

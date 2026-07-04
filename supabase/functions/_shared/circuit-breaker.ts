@@ -190,6 +190,111 @@ export async function withCircuitBreaker<T>(
 }
 
 /**
+ * Batch-friendly circuit checker for per-item loops (the enrichment driver's
+ * hot path made 2-3 breaker round-trips per item — ~150 extra DB calls per
+ * hourly news invocation purely for bookkeeping).
+ *
+ * Safe subset of withCircuitBreaker semantics:
+ * - the checkCircuit SELECT runs once per batch and is cached ONLY while the
+ *   circuit is closed (or unconfigured); open/half_open degrade to per-call
+ *   checks so the allow-exactly-one-probe half-open semantics are preserved
+ * - success bookkeeping is buffered while cached-closed and flushed once at
+ *   batch end (one state UPDATE + success_count += N); in per-call mode
+ *   recordSuccess runs immediately so a half-open circuit still heals fast
+ * - recordFailure stays strictly per-call (prompt circuit opening); when it
+ *   opens the circuit, the local cache flips to blocked for the rest of the
+ *   batch
+ *
+ * Staleness bound: a circuit opened concurrently by another instance is
+ * honored at the next local failure or the next batch — bounded by batch
+ * size (<=200 items, realistically <=50).
+ */
+export interface BatchCircuitChecker {
+  run<T>(fn: () => Promise<T>): Promise<T>
+  /** Flush buffered success bookkeeping. Call once after the batch loop. */
+  flush(): Promise<void>
+}
+
+export function createBatchCircuitChecker(
+  supabase: SupabaseClient,
+  apiName: string
+): BatchCircuitChecker {
+  let cachedClosed = false
+  let checkedOnce = false
+  let blocked = false
+  let blockedReason = 'circuit_open'
+  let pendingSuccesses = 0
+
+  return {
+    async run<T>(fn: () => Promise<T>): Promise<T> {
+      if (blocked) throw new CircuitOpenError(apiName, blockedReason)
+
+      if (!cachedClosed) {
+        const check = await checkCircuit(supabase, apiName)
+        if (!check.allowed) {
+          blocked = true
+          blockedReason = check.reason ?? 'circuit_open'
+          throw new CircuitOpenError(apiName, blockedReason)
+        }
+        // Cache only the steady state; half_open keeps per-call probing.
+        cachedClosed = check.state === 'closed' || check.state === undefined
+        checkedOnce = true
+      }
+
+      try {
+        const result = await fn()
+        if (cachedClosed) {
+          pendingSuccesses++
+        } else {
+          await recordSuccess(supabase, apiName) // heal half_open immediately
+        }
+        return result
+      } catch (error) {
+        const msg = error instanceof Error ? error.message : String(error)
+        const { circuitOpened } = await recordFailure(supabase, apiName, msg)
+        if (circuitOpened) {
+          blocked = true
+          cachedClosed = false
+          blockedReason = `Circuit opened for ${apiName} during batch`
+        }
+        throw error
+      }
+    },
+
+    async flush(): Promise<void> {
+      if (pendingSuccesses === 0 || !checkedOnce) return
+      const n = pendingSuccesses
+      pendingSuccesses = 0
+      try {
+        await supabase
+          .from('api_circuit_breakers')
+          .update({
+            state: 'closed',
+            failure_count: 0,
+            last_success_at: new Date().toISOString(),
+            open_until: null,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('api_name', apiName)
+        const { data } = await supabase
+          .from('api_circuit_breakers')
+          .select('success_count')
+          .eq('api_name', apiName)
+          .single()
+        if (data) {
+          await supabase
+            .from('api_circuit_breakers')
+            .update({ success_count: (data.success_count || 0) + n })
+            .eq('api_name', apiName)
+        }
+      } catch {
+        /* bookkeeping only — never propagate */
+      }
+    },
+  }
+}
+
+/**
  * Typed circuit-open error so callers can distinguish breaker trips from
  * underlying call failures and degrade gracefully (e.g. skip dedup, re-queue).
  */

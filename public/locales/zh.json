@@ -575,8 +575,8 @@
         "lgbtq-specific": "LGBTQ+ 专用",
         "other": "其他"
       },
-      "scopeAll": "[ZH] Everyone",
-      "scopeMine": "[ZH] Mine"
+      "scopeAll": "所有人",
+      "scopeMine": "我的"
     },
     "collaborate": {
       "chat": "聊天",
@@ -898,42 +898,42 @@
       "error": "Could not update save"
     },
     "dayNotes": {
-      "addTitle": "[ZH] Add a note to this day",
-      "textLabel": "[ZH] Note",
-      "textPlaceholder": "[ZH] e.g. Check-out by 11:00",
-      "timeLabel": "[ZH] Time (optional)",
-      "iconLabel": "[ZH] Icon",
-      "save": "[ZH] Add note",
-      "added": "[ZH] Note added",
-      "delete": "[ZH] Delete note"
+      "addTitle": "为这一天添加备注",
+      "textLabel": "备注",
+      "textPlaceholder": "例如：11:00 前退房",
+      "timeLabel": "时间（可选）",
+      "iconLabel": "图标",
+      "save": "添加备注",
+      "added": "备注已添加",
+      "delete": "删除备注"
     },
     "weather": {
-      "clear": "[ZH] Clear",
-      "partlyCloudy": "[ZH] Partly cloudy",
-      "overcast": "[ZH] Overcast",
-      "fog": "[ZH] Fog",
-      "drizzle": "[ZH] Drizzle",
-      "rain": "[ZH] Rain",
-      "snow": "[ZH] Snow",
-      "thunderstorm": "[ZH] Thunderstorm",
-      "typical": "[ZH] typical"
+      "clear": "晴",
+      "partlyCloudy": "局部多云",
+      "overcast": "阴",
+      "fog": "雾",
+      "drizzle": "毛毛雨",
+      "rain": "雨",
+      "snow": "雪",
+      "thunderstorm": "雷雨",
+      "typical": "常年"
     },
     "conflicts": {
-      "chip_one": "[ZH] {{count}} conflict",
-      "chip_other": "[ZH] {{count}} conflicts"
+      "chip_one": "{{count}} 个冲突",
+      "chip_other": "{{count}} 个冲突"
     },
     "legs": {
-      "switchMode": "[ZH] Switch transport mode",
-      "modeAria": "[ZH] Transport mode: {{mode}} — click to change",
+      "switchMode": "切换交通方式",
+      "modeAria": "交通方式：{{mode}} — 点击更改",
       "mode": {
-        "walk": "[ZH] walk",
-        "transit": "[ZH] transit",
-        "drive": "[ZH] drive"
+        "walk": "步行",
+        "transit": "公共交通",
+        "drive": "驾车"
       },
-      "walkingTotal": "[ZH] {{distance}} walking"
+      "walkingTotal": "步行 {{distance}}"
     },
     "suggestions": {
-      "accessMatch": "[ZH] Matches your needs"
+      "accessMatch": "符合您的需求"
     }
   },
   "auth": {

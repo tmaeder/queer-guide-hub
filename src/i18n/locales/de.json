@@ -575,8 +575,8 @@
         "lgbtq-specific": "LGBTQ+-spezifisch",
         "other": "Sonstiges"
       },
-      "scopeAll": "[DE] Everyone",
-      "scopeMine": "[DE] Mine"
+      "scopeAll": "Alle",
+      "scopeMine": "Meine"
     },
     "collaborate": {
       "chat": "Chat",
@@ -898,42 +898,42 @@
       "error": "Could not update save"
     },
     "dayNotes": {
-      "addTitle": "[DE] Add a note to this day",
-      "textLabel": "[DE] Note",
-      "textPlaceholder": "[DE] e.g. Check-out by 11:00",
-      "timeLabel": "[DE] Time (optional)",
-      "iconLabel": "[DE] Icon",
-      "save": "[DE] Add note",
-      "added": "[DE] Note added",
-      "delete": "[DE] Delete note"
+      "addTitle": "Notiz zu diesem Tag hinzufügen",
+      "textLabel": "Notiz",
+      "textPlaceholder": "z. B. Check-out bis 11:00",
+      "timeLabel": "Uhrzeit (optional)",
+      "iconLabel": "Symbol",
+      "save": "Notiz hinzufügen",
+      "added": "Notiz hinzugefügt",
+      "delete": "Notiz löschen"
     },
     "weather": {
-      "clear": "[DE] Clear",
-      "partlyCloudy": "[DE] Partly cloudy",
-      "overcast": "[DE] Overcast",
-      "fog": "[DE] Fog",
-      "drizzle": "[DE] Drizzle",
-      "rain": "[DE] Rain",
-      "snow": "[DE] Snow",
-      "thunderstorm": "[DE] Thunderstorm",
-      "typical": "[DE] typical"
+      "clear": "Klar",
+      "partlyCloudy": "Teils bewölkt",
+      "overcast": "Bedeckt",
+      "fog": "Nebel",
+      "drizzle": "Nieselregen",
+      "rain": "Regen",
+      "snow": "Schnee",
+      "thunderstorm": "Gewitter",
+      "typical": "typisch"
     },
     "conflicts": {
-      "chip_one": "[DE] {{count}} conflict",
-      "chip_other": "[DE] {{count}} conflicts"
+      "chip_one": "{{count}} Konflikt",
+      "chip_other": "{{count}} Konflikte"
     },
     "legs": {
-      "switchMode": "[DE] Switch transport mode",
-      "modeAria": "[DE] Transport mode: {{mode}} — click to change",
+      "switchMode": "Verkehrsmittel wechseln",
+      "modeAria": "Verkehrsmittel: {{mode}} — klicken zum Ändern",
       "mode": {
-        "walk": "[DE] walk",
-        "transit": "[DE] transit",
-        "drive": "[DE] drive"
+        "walk": "zu Fuß",
+        "transit": "ÖPNV",
+        "drive": "Auto"
       },
-      "walkingTotal": "[DE] {{distance}} walking"
+      "walkingTotal": "{{distance}} zu Fuß"
     },
     "suggestions": {
-      "accessMatch": "[DE] Matches your needs"
+      "accessMatch": "Entspricht deinen Bedürfnissen"
     }
   },
   "help": {

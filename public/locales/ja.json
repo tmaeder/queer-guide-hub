@@ -575,8 +575,8 @@
         "lgbtq-specific": "LGBTQ+ 向け",
         "other": "その他"
       },
-      "scopeAll": "[JA] Everyone",
-      "scopeMine": "[JA] Mine"
+      "scopeAll": "全員",
+      "scopeMine": "自分"
     },
     "collaborate": {
       "chat": "チャット",
@@ -898,42 +898,42 @@
       "error": "Could not update save"
     },
     "dayNotes": {
-      "addTitle": "[JA] Add a note to this day",
-      "textLabel": "[JA] Note",
-      "textPlaceholder": "[JA] e.g. Check-out by 11:00",
-      "timeLabel": "[JA] Time (optional)",
-      "iconLabel": "[JA] Icon",
-      "save": "[JA] Add note",
-      "added": "[JA] Note added",
-      "delete": "[JA] Delete note"
+      "addTitle": "この日にメモを追加",
+      "textLabel": "メモ",
+      "textPlaceholder": "例: 11:00までにチェックアウト",
+      "timeLabel": "時刻（任意）",
+      "iconLabel": "アイコン",
+      "save": "メモを追加",
+      "added": "メモを追加しました",
+      "delete": "メモを削除"
     },
     "weather": {
-      "clear": "[JA] Clear",
-      "partlyCloudy": "[JA] Partly cloudy",
-      "overcast": "[JA] Overcast",
-      "fog": "[JA] Fog",
-      "drizzle": "[JA] Drizzle",
-      "rain": "[JA] Rain",
-      "snow": "[JA] Snow",
-      "thunderstorm": "[JA] Thunderstorm",
-      "typical": "[JA] typical"
+      "clear": "快晴",
+      "partlyCloudy": "晴れ時々曇り",
+      "overcast": "曇り",
+      "fog": "霧",
+      "drizzle": "霧雨",
+      "rain": "雨",
+      "snow": "雪",
+      "thunderstorm": "雷雨",
+      "typical": "例年"
     },
     "conflicts": {
-      "chip_one": "[JA] {{count}} conflict",
-      "chip_other": "[JA] {{count}} conflicts"
+      "chip_one": "{{count}}件の競合",
+      "chip_other": "{{count}}件の競合"
     },
     "legs": {
-      "switchMode": "[JA] Switch transport mode",
-      "modeAria": "[JA] Transport mode: {{mode}} — click to change",
+      "switchMode": "移動手段を切り替える",
+      "modeAria": "移動手段: {{mode}} — クリックして変更",
       "mode": {
-        "walk": "[JA] walk",
-        "transit": "[JA] transit",
-        "drive": "[JA] drive"
+        "walk": "徒歩",
+        "transit": "公共交通機関",
+        "drive": "車"
       },
-      "walkingTotal": "[JA] {{distance}} walking"
+      "walkingTotal": "徒歩{{distance}}"
     },
     "suggestions": {
-      "accessMatch": "[JA] Matches your needs"
+      "accessMatch": "ニーズに一致"
     }
   },
   "auth": {

@@ -579,8 +579,8 @@
         "lgbtq-specific": "Spécifique LGBTQ+",
         "other": "Autre"
       },
-      "scopeAll": "[FR] Everyone",
-      "scopeMine": "[FR] Mine"
+      "scopeAll": "Tout le monde",
+      "scopeMine": "Les miens"
     },
     "collaborate": {
       "chat": "Discussion",
@@ -902,42 +902,42 @@
       "error": "Could not update save"
     },
     "dayNotes": {
-      "addTitle": "[FR] Add a note to this day",
-      "textLabel": "[FR] Note",
-      "textPlaceholder": "[FR] e.g. Check-out by 11:00",
-      "timeLabel": "[FR] Time (optional)",
-      "iconLabel": "[FR] Icon",
-      "save": "[FR] Add note",
-      "added": "[FR] Note added",
-      "delete": "[FR] Delete note"
+      "addTitle": "Ajouter une note à cette journée",
+      "textLabel": "Note",
+      "textPlaceholder": "p. ex. Départ avant 11h00",
+      "timeLabel": "Heure (facultatif)",
+      "iconLabel": "Icône",
+      "save": "Ajouter la note",
+      "added": "Note ajoutée",
+      "delete": "Supprimer la note"
     },
     "weather": {
-      "clear": "[FR] Clear",
-      "partlyCloudy": "[FR] Partly cloudy",
-      "overcast": "[FR] Overcast",
-      "fog": "[FR] Fog",
-      "drizzle": "[FR] Drizzle",
-      "rain": "[FR] Rain",
-      "snow": "[FR] Snow",
-      "thunderstorm": "[FR] Thunderstorm",
-      "typical": "[FR] typical"
+      "clear": "Dégagé",
+      "partlyCloudy": "Partiellement nuageux",
+      "overcast": "Couvert",
+      "fog": "Brouillard",
+      "drizzle": "Bruine",
+      "rain": "Pluie",
+      "snow": "Neige",
+      "thunderstorm": "Orage",
+      "typical": "typique"
     },
     "conflicts": {
-      "chip_one": "[FR] {{count}} conflict",
-      "chip_other": "[FR] {{count}} conflicts"
+      "chip_one": "{{count}} conflit",
+      "chip_other": "{{count}} conflits"
     },
     "legs": {
-      "switchMode": "[FR] Switch transport mode",
-      "modeAria": "[FR] Transport mode: {{mode}} — click to change",
+      "switchMode": "Changer de mode de transport",
+      "modeAria": "Mode de transport : {{mode}} — cliquez pour changer",
       "mode": {
-        "walk": "[FR] walk",
-        "transit": "[FR] transit",
-        "drive": "[FR] drive"
+        "walk": "à pied",
+        "transit": "transports en commun",
+        "drive": "voiture"
       },
-      "walkingTotal": "[FR] {{distance}} walking"
+      "walkingTotal": "{{distance}} à pied"
     },
     "suggestions": {
-      "accessMatch": "[FR] Matches your needs"
+      "accessMatch": "Correspond à vos besoins"
     }
   },
   "auth": {

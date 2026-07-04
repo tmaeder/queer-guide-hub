@@ -575,8 +575,8 @@
         "lgbtq-specific": "خاص بمجتمع الميم",
         "other": "أخرى"
       },
-      "scopeAll": "[AR] Everyone",
-      "scopeMine": "[AR] Mine"
+      "scopeAll": "الجميع",
+      "scopeMine": "أغراضي"
     },
     "collaborate": {
       "chat": "الدردشة",
@@ -898,42 +898,42 @@
       "error": "Could not update save"
     },
     "dayNotes": {
-      "addTitle": "[AR] Add a note to this day",
-      "textLabel": "[AR] Note",
-      "textPlaceholder": "[AR] e.g. Check-out by 11:00",
-      "timeLabel": "[AR] Time (optional)",
-      "iconLabel": "[AR] Icon",
-      "save": "[AR] Add note",
-      "added": "[AR] Note added",
-      "delete": "[AR] Delete note"
+      "addTitle": "أضف ملاحظة إلى هذا اليوم",
+      "textLabel": "ملاحظة",
+      "textPlaceholder": "مثال: تسجيل المغادرة قبل 11:00",
+      "timeLabel": "الوقت (اختياري)",
+      "iconLabel": "أيقونة",
+      "save": "أضف ملاحظة",
+      "added": "تمت إضافة الملاحظة",
+      "delete": "حذف الملاحظة"
     },
     "weather": {
-      "clear": "[AR] Clear",
-      "partlyCloudy": "[AR] Partly cloudy",
-      "overcast": "[AR] Overcast",
-      "fog": "[AR] Fog",
-      "drizzle": "[AR] Drizzle",
-      "rain": "[AR] Rain",
-      "snow": "[AR] Snow",
-      "thunderstorm": "[AR] Thunderstorm",
-      "typical": "[AR] typical"
+      "clear": "صافٍ",
+      "partlyCloudy": "غائم جزئيًا",
+      "overcast": "غائم",
+      "fog": "ضباب",
+      "drizzle": "رذاذ",
+      "rain": "مطر",
+      "snow": "ثلج",
+      "thunderstorm": "عاصفة رعدية",
+      "typical": "معتاد"
     },
     "conflicts": {
-      "chip_one": "[AR] {{count}} conflict",
-      "chip_other": "[AR] {{count}} conflicts"
+      "chip_one": "تعارض واحد",
+      "chip_other": "{{count}} تعارضات"
     },
     "legs": {
-      "switchMode": "[AR] Switch transport mode",
-      "modeAria": "[AR] Transport mode: {{mode}} — click to change",
+      "switchMode": "تغيير وسيلة التنقل",
+      "modeAria": "وسيلة التنقل: {{mode}} — انقر للتغيير",
       "mode": {
-        "walk": "[AR] walk",
-        "transit": "[AR] transit",
-        "drive": "[AR] drive"
+        "walk": "مشيًا",
+        "transit": "المواصلات العامة",
+        "drive": "بالسيارة"
       },
-      "walkingTotal": "[AR] {{distance}} walking"
+      "walkingTotal": "{{distance}} مشيًا"
     },
     "suggestions": {
-      "accessMatch": "[AR] Matches your needs"
+      "accessMatch": "يلبي احتياجاتك"
     }
   },
   "auth": {

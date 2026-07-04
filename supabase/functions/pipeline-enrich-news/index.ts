@@ -1,6 +1,6 @@
 import { serveEnrichment } from '../_shared/enrichment-driver.ts'
 import { enrichNewsWithAI } from '../_shared/ai-enrichment.ts'
-import { withCircuitBreaker, CircuitOpenError } from '../_shared/circuit-breaker.ts'
+import { CircuitOpenError } from '../_shared/circuit-breaker.ts'
 import { withErrorReporting } from '../_shared/report-api-error.ts'
 
 // Pipeline Enrich (News) — AI summary + tags + LGBTQ relevance + sentiment.
@@ -15,14 +15,15 @@ Deno.serve(
       defaultBatchSize: 50,
       maxBatchSize: 200,
       defaultConcurrency: 6,
-      async enrichItem(supabase, item, n) {
+      batchBreakerApi: 'llm.openai.enrich-news',
+      async enrichItem(supabase, item, n, breaker) {
         const title = String(n.title ?? n.name ?? '').trim()
         if (!title) return 'skip'
 
         let ai: Awaited<ReturnType<typeof enrichNewsWithAI>> = null
         let aiError: string | null = null
         try {
-          ai = await withCircuitBreaker(supabase, 'llm.openai.enrich-news', () =>
+          ai = await breaker!.run(() =>
             enrichNewsWithAI(supabase, {
               title,
               content: String(n.content ?? n.body ?? '').slice(0, 800),

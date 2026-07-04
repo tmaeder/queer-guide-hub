@@ -575,8 +575,8 @@
         "lgbtq-specific": "LGBTQ+ 전용",
         "other": "기타"
       },
-      "scopeAll": "[KO] Everyone",
-      "scopeMine": "[KO] Mine"
+      "scopeAll": "모두",
+      "scopeMine": "내 것"
     },
     "collaborate": {
       "chat": "채팅",
@@ -898,42 +898,42 @@
       "error": "Could not update save"
     },
     "dayNotes": {
-      "addTitle": "[KO] Add a note to this day",
-      "textLabel": "[KO] Note",
-      "textPlaceholder": "[KO] e.g. Check-out by 11:00",
-      "timeLabel": "[KO] Time (optional)",
-      "iconLabel": "[KO] Icon",
-      "save": "[KO] Add note",
-      "added": "[KO] Note added",
-      "delete": "[KO] Delete note"
+      "addTitle": "이 날에 메모 추가",
+      "textLabel": "메모",
+      "textPlaceholder": "예: 11:00까지 체크아웃",
+      "timeLabel": "시간(선택)",
+      "iconLabel": "아이콘",
+      "save": "메모 추가",
+      "added": "메모가 추가되었습니다",
+      "delete": "메모 삭제"
     },
     "weather": {
-      "clear": "[KO] Clear",
-      "partlyCloudy": "[KO] Partly cloudy",
-      "overcast": "[KO] Overcast",
-      "fog": "[KO] Fog",
-      "drizzle": "[KO] Drizzle",
-      "rain": "[KO] Rain",
-      "snow": "[KO] Snow",
-      "thunderstorm": "[KO] Thunderstorm",
-      "typical": "[KO] typical"
+      "clear": "맑음",
+      "partlyCloudy": "구름 조금",
+      "overcast": "흐림",
+      "fog": "안개",
+      "drizzle": "이슬비",
+      "rain": "비",
+      "snow": "눈",
+      "thunderstorm": "뇌우",
+      "typical": "평년"
     },
     "conflicts": {
-      "chip_one": "[KO] {{count}} conflict",
-      "chip_other": "[KO] {{count}} conflicts"
+      "chip_one": "{{count}}개의 충돌",
+      "chip_other": "{{count}}개의 충돌"
     },
     "legs": {
-      "switchMode": "[KO] Switch transport mode",
-      "modeAria": "[KO] Transport mode: {{mode}} — click to change",
+      "switchMode": "이동 수단 전환",
+      "modeAria": "이동 수단: {{mode}} — 클릭하여 변경",
       "mode": {
-        "walk": "[KO] walk",
-        "transit": "[KO] transit",
-        "drive": "[KO] drive"
+        "walk": "도보",
+        "transit": "대중교통",
+        "drive": "자동차"
       },
-      "walkingTotal": "[KO] {{distance}} walking"
+      "walkingTotal": "도보 {{distance}}"
     },
     "suggestions": {
-      "accessMatch": "[KO] Matches your needs"
+      "accessMatch": "필요 사항과 일치"
     }
   },
   "auth": {

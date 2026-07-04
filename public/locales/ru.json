@@ -603,8 +603,8 @@
         "lgbtq-specific": "Для ЛГБТ+",
         "other": "Другое"
       },
-      "scopeAll": "[RU] Everyone",
-      "scopeMine": "[RU] Mine"
+      "scopeAll": "Все",
+      "scopeMine": "Мои"
     },
     "collaborate": {
       "chat": "Чат",
@@ -926,42 +926,44 @@
       "error": "Could not update save"
     },
     "dayNotes": {
-      "addTitle": "[RU] Add a note to this day",
-      "textLabel": "[RU] Note",
-      "textPlaceholder": "[RU] e.g. Check-out by 11:00",
-      "timeLabel": "[RU] Time (optional)",
-      "iconLabel": "[RU] Icon",
-      "save": "[RU] Add note",
-      "added": "[RU] Note added",
-      "delete": "[RU] Delete note"
+      "addTitle": "Добавить заметку к этому дню",
+      "textLabel": "Заметка",
+      "textPlaceholder": "напр. Выезд до 11:00",
+      "timeLabel": "Время (необязательно)",
+      "iconLabel": "Иконка",
+      "save": "Добавить заметку",
+      "added": "Заметка добавлена",
+      "delete": "Удалить заметку"
     },
     "weather": {
-      "clear": "[RU] Clear",
-      "partlyCloudy": "[RU] Partly cloudy",
-      "overcast": "[RU] Overcast",
-      "fog": "[RU] Fog",
-      "drizzle": "[RU] Drizzle",
-      "rain": "[RU] Rain",
-      "snow": "[RU] Snow",
-      "thunderstorm": "[RU] Thunderstorm",
-      "typical": "[RU] typical"
+      "clear": "Ясно",
+      "partlyCloudy": "Переменная облачность",
+      "overcast": "Пасмурно",
+      "fog": "Туман",
+      "drizzle": "Морось",
+      "rain": "Дождь",
+      "snow": "Снег",
+      "thunderstorm": "Гроза",
+      "typical": "обычно"
     },
     "conflicts": {
-      "chip_one": "[RU] {{count}} conflict",
-      "chip_other": "[RU] {{count}} conflicts"
+      "chip_one": "{{count}} конфликт",
+      "chip_few": "{{count}} конфликта",
+      "chip_many": "{{count}} конфликтов",
+      "chip_other": "{{count}} конфликта"
     },
     "legs": {
-      "switchMode": "[RU] Switch transport mode",
-      "modeAria": "[RU] Transport mode: {{mode}} — click to change",
+      "switchMode": "Сменить способ передвижения",
+      "modeAria": "Способ передвижения: {{mode}} — нажмите, чтобы изменить",
       "mode": {
-        "walk": "[RU] walk",
-        "transit": "[RU] transit",
-        "drive": "[RU] drive"
+        "walk": "пешком",
+        "transit": "транспорт",
+        "drive": "на машине"
       },
-      "walkingTotal": "[RU] {{distance}} walking"
+      "walkingTotal": "{{distance}} пешком"
     },
     "suggestions": {
-      "accessMatch": "[RU] Matches your needs"
+      "accessMatch": "Соответствует вашим потребностям"
     }
   },
   "auth": {
