@@ -1530,6 +1530,12 @@
         "thisWeek": "Diese Woche",
         "later": "Später"
       }
+    },
+    "shop": {
+      "eyebrow": "Marktplatz",
+      "title": "Queere Marken & Produkte",
+      "description": "Produkte und Services von queeren und trans Unternehmen.",
+      "seeAll": "Zum Marktplatz"
     }
   },
   "header": {

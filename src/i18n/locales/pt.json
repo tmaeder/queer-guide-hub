@@ -1530,6 +1530,12 @@
         "thisWeek": "Esta semana",
         "later": "Mais tarde"
       }
+    },
+    "shop": {
+      "eyebrow": "Mercado",
+      "title": "Marcas queer",
+      "description": "Produtos e serviços de negócios queer e trans.",
+      "seeAll": "Ver mercado"
     }
   },
   "header": {
