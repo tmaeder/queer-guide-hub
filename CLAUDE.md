@@ -77,6 +77,7 @@ queer-guide-hub/
 - **Migrations:** 729
 - **Migrations:** 733
 - **Migrations:** 736
+- **Migrations:** 734
 
 ## Infrastructure
 
