@@ -8,7 +8,7 @@ import {
 import { useEntityImageAssets } from '@/hooks/useEntityImageAssets';
 import { useMeta } from '@/hooks/useMeta';
 import { MarketplaceCard } from '@/components/marketplace/MarketplaceCard';
-import { MarketplaceFilters } from '@/components/marketplace/MarketplaceFilters';
+import { MarketplaceControlBar } from '@/components/marketplace/MarketplaceControlBar';
 import { MarketplaceCategoryTiles } from '@/components/marketplace/MarketplaceCategoryTiles';
 import { OccasionChips } from '@/components/marketplace/OccasionChips';
 import { HeroCollection } from '@/components/marketplace/HeroCollection';
@@ -17,23 +17,16 @@ import { ContinueReadingRail } from '@/components/marketplace/ContinueReadingRai
 import { AdultContentGate } from '@/components/marketplace/AdultContentGate';
 import { isAdultListing, useAdultAcknowledgement } from '@/hooks/useAdultContent';
 import { MarketplaceRow } from '@/components/marketplace/MarketplaceRow';
-import { SavedSearchesButton } from '@/components/marketplace/SavedSearchesButton';
 import { AffiliateDisclosure } from '@/components/marketplace/AffiliateDisclosure';
 import { BrandRail } from '@/components/marketplace/BrandRail';
 import { CuratedIdsProvider } from '@/components/marketplace/CuratedIdsContext';
 import { useCuratedIds } from '@/components/marketplace/useCuratedIds';
+import { ZeroResultRescue } from '@/components/marketplace/ZeroResultRescue';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Button } from '@/components/ui/button';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Store, Plus, Grid, List, ArrowRight } from 'lucide-react';
+import { Plus, ArrowRight } from 'lucide-react';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
-import { EmptyState, ErrorState, LoadingTimeout } from '@/components/ui/EmptyState';
+import { ErrorState, LoadingTimeout } from '@/components/ui/EmptyState';
 import { useDidYouMean } from '@/hooks/useDidYouMean';
 import type { Database } from '@/integrations/supabase/types';
 import { useAuth } from '@/hooks/useAuth';
@@ -41,7 +34,12 @@ import { useToast } from '@/hooks/use-toast';
 import { PageHero } from '@/components/discovery';
 import { StaggerGrid } from '@/components/animation/StaggerGrid';
 import { useTranslation } from 'react-i18next';
-import { buildEmptyTitle, buildLooseningSuggestion } from '@/components/marketplace/marketplaceEmptyState';
+import {
+  FILTER_PARAM_KEYS,
+  filtersToParams,
+  hasActiveFilters as hasActiveFiltersFn,
+  parseFiltersFromParams,
+} from '@/lib/marketplaceFilterParams';
 
 type MarketplaceListing = Database['public']['Tables']['marketplace_listings']['Row'];
 
@@ -189,13 +187,10 @@ const Marketplace = () => {
     ? (coerced as MarketplaceSort)
     : 'boutique';
   const page = Math.max(0, parseInt(searchParams.get('page') || '0', 10) || 0);
-  const qParam = searchParams.get('q') || '';
 
-  const [filters, setFilters] = useState<MarketplaceFiltersInput>(() => {
-    const init: MarketplaceFiltersInput = {};
-    if (qParam) init.search = qParam;
-    return init;
-  });
+  // The URL is the single source of truth for filters — shareable,
+  // bookmarkable, and saved searches capture the full set.
+  const filters = useMemo(() => parseFiltersFromParams(searchParams), [searchParams]);
 
   // Default-SFW browse: adult/explicit hidden until an explicit 18+ opt-in.
   // Persisted per-device; turning it on also records the age acknowledgement
@@ -263,25 +258,7 @@ const Marketplace = () => {
     return merged;
   }, [filters, includeAdult, occParam]);
 
-  const hasActiveFilters = useMemo(() => {
-    const f = combinedFilters;
-    return Boolean(
-      f.search ||
-      f.category ||
-      f.department ||
-      f.subcategory ||
-      f.location ||
-      f.businessType ||
-      f.priceRange ||
-      (f.tags && f.tags.length > 0) ||
-      (f.communityOwned && f.communityOwned.length > 0) ||
-      f.currency ||
-      // `availability: 'in_stock'` is the default — don't count it as an
-      // active narrowing. Only the explicit opt-in to sold-out counts.
-      f.availability === 'any' ||
-      (f.verifiedWithinDays && f.verifiedWithinDays > 0),
-    );
-  }, [combinedFilters]);
+  const hasActiveFilters = useMemo(() => hasActiveFiltersFn(combinedFilters), [combinedFilters]);
 
   useEffect(() => {
     fetchListings(combinedFilters, page, sortBy);
@@ -313,10 +290,32 @@ const Marketplace = () => {
     !loading && !error && accumulated.length === 0 && Boolean(filters.search),
   );
 
-  const handleFiltersChange = (next: Record<string, unknown>) => {
-    setFilters(next as MarketplaceFiltersInput);
-    const q = (next as MarketplaceFiltersInput).search || '';
-    setUrlParams({ q: q || undefined, page: undefined });
+  const handleFiltersChange = (next: MarketplaceFiltersInput) => {
+    setSearchParams(
+      (prev) => {
+        const sp = new URLSearchParams(prev);
+        for (const k of FILTER_PARAM_KEYS) sp.delete(k);
+        for (const [k, v] of Object.entries(filtersToParams(next))) {
+          if (v) sp.set(k, v);
+        }
+        sp.delete('page');
+        return sp;
+      },
+      { replace: true },
+    );
+  };
+
+  const handleClearAll = () => {
+    setSearchParams(
+      (prev) => {
+        const sp = new URLSearchParams(prev);
+        for (const k of FILTER_PARAM_KEYS) sp.delete(k);
+        sp.delete('occ');
+        sp.delete('page');
+        return sp;
+      },
+      { replace: true },
+    );
   };
 
   const handleSortChange = (s: string) => {
@@ -394,6 +393,9 @@ const Marketplace = () => {
               <ContinueReadingRail />
               <HeroCollection />
               <MarketplaceCategoryTiles />
+              {/* Editor-curated collection chips; occasion toggles moved
+                  into the control bar. */}
+              <OccasionChips kinds={['collection']} />
               <MarketplaceRow
                 rowKey="queer-owned"
                 title="Queer-owned picks"
@@ -415,55 +417,18 @@ const Marketplace = () => {
 
           <div className="mb-6">
             <div className="sticky top-0 z-20 border border-border rounded-element p-4 mb-6 bg-surface-container-low/95 backdrop-blur supports-[backdrop-filter]:bg-surface-container-low/80">
-              <div className="mb-4">
-                <MarketplaceFilters
-                  initialSearch={qParam}
-                  onFiltersChange={handleFiltersChange}
-                  includeAdult={includeAdult}
-                  onIncludeAdultChange={handleIncludeAdultChange}
-                />
-              </div>
-
-              <div className="flex flex-wrap items-center justify-between gap-4">
-                {/* Occasion chips are a filter — they live with the other
-                    filter controls, not as a content section. */}
-                {(!hasActiveFilters || occParam) && <OccasionChips className="mb-0" />}
-
-                <div className="ml-auto flex flex-wrap items-center gap-2 sm:gap-4">
-                  <SavedSearchesButton />
-                  <Select value={sortBy} onValueChange={handleSortChange}>
-                    <SelectTrigger
-                      className="w-[160px] sm:w-[200px]"
-                      aria-label="Sort listings"
-                    >
-                      <SelectValue placeholder="Sort by" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {sortOptions.map((opt) => (
-                        <SelectItem key={opt.value} value={opt.value}>
-                          {opt.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <Button
-                    variant={viewMode === 'grid' ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => setViewMode('grid')}
-                    aria-label="Grid view"
-                  >
-                    <Grid size={16} />
-                  </Button>
-                  <Button
-                    variant={viewMode === 'list' ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => setViewMode('list')}
-                    aria-label="List view"
-                  >
-                    <List size={16} />
-                  </Button>
-                </div>
-              </div>
+              <MarketplaceControlBar
+                filters={filters}
+                onFiltersChange={handleFiltersChange}
+                sortBy={sortBy}
+                sortOptions={sortOptions}
+                onSortChange={handleSortChange}
+                viewMode={viewMode}
+                onViewModeChange={setViewMode}
+                includeAdult={includeAdult}
+                onIncludeAdultChange={handleIncludeAdultChange}
+                resultCount={total}
+              />
             </div>
 
             {error && (
@@ -488,49 +453,23 @@ const Marketplace = () => {
             )}
 
             {!error && !loading && accumulated.length === 0 && (
-              <EmptyState
-                icon={Store}
-                title={
-                  hasActiveFilters
-                    ? buildEmptyTitle(combinedFilters)
-                    : t('pages.marketplace.emptyTitle', 'No listings yet.')
-                }
-                description={
-                  hasActiveFilters
-                    ? buildLooseningSuggestion(combinedFilters)
-                    : t(
-                        'pages.marketplace.emptyDescription',
-                        'Check back soon or list your business.',
-                      )
-                }
-                mood="neutral"
-                secondaryAction={
-                  dymHit?.title
-                    ? {
-                        label: `Did you mean “${dymHit.title}”?`,
-                        onClick: () => handleFiltersChange({ ...filters, search: dymHit.title }),
-                      }
-                    : undefined
-                }
-                primaryAction={
-                  hasActiveFilters
-                    ? { label: 'Clear filters', onClick: () => handleFiltersChange({}) }
-                    : {
-                        label: 'List Your Business',
-                        onClick: () => {
-                          if (!user) {
-                            toast({
-                              title: 'Sign in required',
-                              description: 'Create a free account to list your business.',
-                              variant: 'default',
-                            });
-                            navigate('/auth');
-                            return;
-                          }
-                          navigate('/marketplace/submit');
-                        },
-                      }
-                }
+              <ZeroResultRescue
+                filters={filters}
+                onFiltersChange={handleFiltersChange}
+                didYouMean={dymHit?.title}
+                onClear={handleClearAll}
+                onListBusiness={() => {
+                  if (!user) {
+                    toast({
+                      title: 'Sign in required',
+                      description: 'Create a free account to list your business.',
+                      variant: 'default',
+                    });
+                    navigate('/auth');
+                    return;
+                  }
+                  navigate('/marketplace/submit');
+                }}
               />
             )}
 

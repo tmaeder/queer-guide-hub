@@ -51,10 +51,10 @@ export function MarketplaceRailShell({
   };
 
   return (
-    <section className={className ?? 'mb-12'} aria-labelledby={`rail-${id}`}>
+    <section className={className ?? 'mb-12'} aria-labelledby={`row-${id}`}>
       <div className="flex items-end justify-between mb-4 gap-4">
         <div>
-          <h2 id={`rail-${id}`} className="text-2xl font-bold tracking-tight">
+          <h2 id={`row-${id}`} className="text-2xl font-bold tracking-tight">
             {title}
           </h2>
           {subtitle && <p className="text-sm text-muted-foreground mt-1">{subtitle}</p>}
