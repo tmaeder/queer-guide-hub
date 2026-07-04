@@ -58,9 +58,9 @@ export function useBrandVocab() {
 }
 
 /** Top SFW listings sharing a brand, for the detail-page "More from" block. */
-export function useBrandMoreFrom(brand: string | null | undefined, excludeId: string) {
+export function useBrandMoreFrom(brand: string | null | undefined, excludeId: string, limit = 4) {
   return useQuery({
-    queryKey: ['marketplace-brand-more', brand, excludeId],
+    queryKey: ['marketplace-brand-more', brand, excludeId, limit],
     enabled: Boolean(brand),
     queryFn: async (): Promise<MarketplaceListing[]> => {
       const key = brand!.trim().toLowerCase().replace(/\s+/g, ' ');
@@ -73,7 +73,7 @@ export function useBrandMoreFrom(brand: string | null | undefined, excludeId: st
         .in('content_rating', SFW_RATINGS)
         .not('images', 'is', null)
         .order('boutique_score', { ascending: false, nullsFirst: false })
-        .limit(4);
+        .limit(limit);
       return (data ?? []) as MarketplaceListing[];
     },
   });
