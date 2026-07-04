@@ -18,8 +18,7 @@ import {
 // Adopters supply only `enrichItem`: fetch/AI logic, their own circuit
 // breakers, and the entity-specific enriched/merged payloads.
 
-// deno-lint-ignore no-explicit-any
-type ServiceClient = any
+type ServiceClient = ReturnType<typeof getServiceClient>
 
 export interface EnrichOutcome {
   /** Did enrichment produce usable data? Drives apply_enrichment status. */

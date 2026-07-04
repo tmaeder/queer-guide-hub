@@ -10,12 +10,14 @@ import {
   type StagingItem,
 } from '../_shared/enrichment-driver.ts'
 
+type Client = Parameters<EnrichmentDriverConfig['enrichItem']>[0]
+
 interface StubCalls {
   normalizedUpdates: Array<{ id: string; data: Record<string, unknown> }>
   rpcCalls: Array<Record<string, unknown>>
 }
 
-function makeStubClient(rows: StagingItem[]): { client: unknown; calls: StubCalls } {
+function makeStubClient(rows: StagingItem[]): { client: Client; calls: StubCalls } {
   const calls: StubCalls = { normalizedUpdates: [], rpcCalls: [] }
 
   const client = {
@@ -58,7 +60,7 @@ function makeStubClient(rows: StagingItem[]): { client: unknown; calls: StubCall
       return Promise.resolve({ error: null })
     },
   }
-  return { client, calls }
+  return { client: client as unknown as Client, calls }
 }
 
 function makeConfig(
