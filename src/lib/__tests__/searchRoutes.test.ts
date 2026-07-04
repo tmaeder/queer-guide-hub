@@ -34,8 +34,8 @@ describe('searchRoutes.detailHref', () => {
   });
 
   it('routes tags to the name-keyed glossary', () => {
-    expect(detailHref({ type: 'tag', title: 'Trans Rights' })).toBe('/resources/trans%20rights');
-    expect(detailHref({ type: 'tag', slug: 'nightlife' })).toBe('/resources/nightlife');
+    expect(detailHref({ type: 'tag', title: 'Trans Rights' })).toBe('/tags/trans%20rights');
+    expect(detailHref({ type: 'tag', slug: 'nightlife' })).toBe('/tags/nightlife');
     expect(detailHref({ type: 'tag' })).toBeNull();
   });
 
