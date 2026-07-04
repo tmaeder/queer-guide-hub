@@ -107,6 +107,7 @@ function MainGridSection({
               searchQuery={searchQuery}
               imageAsset={listingAssets.get(listing.id)}
               priority={index < 8}
+              variant={viewMode === 'list' ? 'row' : 'grid'}
             />
           </div>
         ))}
