@@ -53,6 +53,14 @@ export interface PublishOptions {
   pipelineRunId?: string;
 }
 
+/**
+ * Entities may carry a pre-computed, commit-ready normalized payload. When
+ * set, pipeline-normalize skips the row (it only claims rows with NULL
+ * normalized_data), letting adapters supply fields the generic normalizer
+ * doesn't emit (venue_name, ticket_url, event_type, timezone, …).
+ */
+export type PublishableEntity = SourceRawEntity & { normalized_data?: unknown };
+
 export interface PublishResult {
   inserted: number;
   duplicates: number;
@@ -77,7 +85,7 @@ function stableStringify(value: unknown): string {
 }
 
 export async function publishToStaging(
-  entities: SourceRawEntity[],
+  entities: PublishableEntity[],
   opts: PublishOptions,
 ): Promise<PublishResult> {
   if (entities.length === 0) return { inserted: 0, duplicates: 0, failed: 0 };
@@ -89,10 +97,11 @@ export async function publishToStaging(
   // Build parallel arrays for a single INSERT ... SELECT FROM unnest(...).
   // One network round-trip for the whole batch instead of N per-row inserts.
   const raws: unknown[] = [];
+  const normalizeds: (string | null)[] = [];
   const sourceEntityIds: (string | null)[] = [];
   const hashes: string[] = [];
   const entityTypes: string[] = [];
-  const keptEntities: SourceRawEntity[] = [];
+  const keptEntities: PublishableEntity[] = [];
 
   for (const e of entities) {
     const raw = e.raw_data;
@@ -101,6 +110,7 @@ export async function publishToStaging(
       continue;
     }
     raws.push(JSON.stringify(raw));
+    normalizeds.push(e.normalized_data == null ? null : JSON.stringify(e.normalized_data));
     sourceEntityIds.push(e.source_id ?? null);
     hashes.push(sha256(stableStringify(raw)));
     entityTypes.push(
@@ -114,13 +124,13 @@ export async function publishToStaging(
   try {
     const res = await client.query(
       `INSERT INTO public.ingestion_staging
-         (raw_data, source_type, source_name, source_entity_id, payload_hash,
+         (raw_data, normalized_data, source_type, source_name, source_entity_id, payload_hash,
           target_table, entity_type, pipeline_run_id, disposition, ai_validation_status,
           dedup_status, created_at, updated_at)
-       SELECT r.raw::jsonb, $1, $2, r.sid, r.hash, $3, r.etype, $4,
+       SELECT r.raw::jsonb, r.norm::jsonb, $1, $2, r.sid, r.hash, $3, r.etype, $4,
               'pending', 'pending', 'pending', now(), now()
-       FROM unnest($5::text[], $6::text[], $7::text[], $8::text[])
-            AS r(raw, sid, hash, etype)
+       FROM unnest($5::text[], $6::text[], $7::text[], $8::text[], $9::text[])
+            AS r(raw, norm, sid, hash, etype)
        ON CONFLICT DO NOTHING
        RETURNING id`,
       [
@@ -129,6 +139,7 @@ export async function publishToStaging(
         targetTable,
         opts.pipelineRunId ?? null,
         raws,
+        normalizeds,
         sourceEntityIds,
         hashes,
         entityTypes,
