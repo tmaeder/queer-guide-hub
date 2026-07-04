@@ -1,0 +1,2792 @@
+[
+  {
+    "metroId": "1",
+    "label": "San Francisco",
+    "subdomain": "sanfrancisco",
+    "city": "San Francisco",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": "America/Los_Angeles"
+  },
+  {
+    "metroId": "3",
+    "label": "Atlanta",
+    "subdomain": "atlanta",
+    "city": "Atlanta",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": "America/New_York"
+  },
+  {
+    "metroId": "4",
+    "label": "Austin",
+    "subdomain": "austin",
+    "city": "Austin",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": "America/Chicago"
+  },
+  {
+    "metroId": "5",
+    "label": "Baltimore",
+    "subdomain": "baltimore",
+    "city": "Baltimore",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": "America/New_York"
+  },
+  {
+    "metroId": "6",
+    "label": "Boston",
+    "subdomain": "boston",
+    "city": "Boston",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": "America/New_York"
+  },
+  {
+    "metroId": "8",
+    "label": "Chicago",
+    "subdomain": "chicago",
+    "city": "Chicago",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": "America/Chicago"
+  },
+  {
+    "metroId": "9",
+    "label": "Cincinnati",
+    "subdomain": "cincinnati",
+    "city": "Cincinnati",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": "America/New_York"
+  },
+  {
+    "metroId": "10",
+    "label": "Cleveland",
+    "subdomain": "cleveland",
+    "city": "Cleveland",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": "America/New_York"
+  },
+  {
+    "metroId": "11",
+    "label": "Columbus",
+    "subdomain": "columbus",
+    "city": "Columbus",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": "America/New_York"
+  },
+  {
+    "metroId": "12",
+    "label": "Dallas",
+    "subdomain": "dallas",
+    "city": "Dallas",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": "America/Chicago"
+  },
+  {
+    "metroId": "13",
+    "label": "Denver",
+    "subdomain": "denver",
+    "city": "Denver",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": "America/Denver"
+  },
+  {
+    "metroId": "14",
+    "label": "Detroit",
+    "subdomain": "detroit",
+    "city": "Detroit",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": "America/Detroit"
+  },
+  {
+    "metroId": "15",
+    "label": "Fire Island",
+    "subdomain": "fireisland",
+    "city": "Fire Island",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": "America/New_York"
+  },
+  {
+    "metroId": "16",
+    "label": "Fort Lauderdale",
+    "subdomain": "fortlauderdale",
+    "city": "Fort Lauderdale",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": "America/New_York"
+  },
+  {
+    "metroId": "17",
+    "label": "Hawaii",
+    "subdomain": "hawaii",
+    "city": "Honolulu",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": "Pacific/Honolulu"
+  },
+  {
+    "metroId": "18",
+    "label": "Houston",
+    "subdomain": "houston",
+    "city": "Houston",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": "America/Chicago"
+  },
+  {
+    "metroId": "19",
+    "label": "Indianapolis",
+    "subdomain": "indianapolis",
+    "city": "Indianapolis",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": "America/Indiana/Indianapolis"
+  },
+  {
+    "metroId": "20",
+    "label": "Key West",
+    "subdomain": "keywest",
+    "city": "Key West",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": "America/New_York"
+  },
+  {
+    "metroId": "22",
+    "label": "Las Vegas",
+    "subdomain": "lasvegas",
+    "city": "Las Vegas",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": "America/Los_Angeles"
+  },
+  {
+    "metroId": "23",
+    "label": "Los Angeles",
+    "subdomain": "losangeles",
+    "city": "Los Angeles",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": "America/Los_Angeles"
+  },
+  {
+    "metroId": "24",
+    "label": "Miami",
+    "subdomain": "miami",
+    "city": "Miami",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": "America/New_York"
+  },
+  {
+    "metroId": "25",
+    "label": "Minneapolis",
+    "subdomain": "minneapolis",
+    "city": "Minneapolis",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": "America/Chicago"
+  },
+  {
+    "metroId": "28",
+    "label": "New Orleans",
+    "subdomain": "neworleans",
+    "city": "New Orleans",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": "America/Chicago"
+  },
+  {
+    "metroId": "29",
+    "label": "New York City",
+    "subdomain": "newyork",
+    "city": "New York City",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": "America/New_York"
+  },
+  {
+    "metroId": "30",
+    "label": "Orlando",
+    "subdomain": "orlando",
+    "city": "Orlando",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": "America/New_York"
+  },
+  {
+    "metroId": "31",
+    "label": "Palm Springs",
+    "subdomain": "palmsprings",
+    "city": "Palm Springs",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": "America/Los_Angeles"
+  },
+  {
+    "metroId": "32",
+    "label": "Philadelphia",
+    "subdomain": "philadelphia",
+    "city": "Philadelphia",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": "America/New_York"
+  },
+  {
+    "metroId": "33",
+    "label": "Phoenix",
+    "subdomain": "phoenix",
+    "city": "Phoenix",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": "America/Phoenix"
+  },
+  {
+    "metroId": "34",
+    "label": "Pittsburgh",
+    "subdomain": "pittsburgh",
+    "city": "Pittsburgh",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": "America/New_York"
+  },
+  {
+    "metroId": "35",
+    "label": "Portland",
+    "subdomain": "portland",
+    "city": "Portland",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": "America/Los_Angeles"
+  },
+  {
+    "metroId": "36",
+    "label": "Provincetown",
+    "subdomain": "ptown",
+    "city": "Provincetown",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": "America/New_York"
+  },
+  {
+    "metroId": "37",
+    "label": "Rehoboth Beach",
+    "subdomain": "rehoboth",
+    "city": "Rehoboth Beach",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": "America/New_York"
+  },
+  {
+    "metroId": "38",
+    "label": "Russian River",
+    "subdomain": "russianriver",
+    "city": "Guerneville",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": "America/Los_Angeles"
+  },
+  {
+    "metroId": "39",
+    "label": "San Antonio",
+    "subdomain": "sanantonio",
+    "city": "San Antonio",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": "America/Chicago"
+  },
+  {
+    "metroId": "40",
+    "label": "San Diego",
+    "subdomain": "sandiego",
+    "city": "San Diego",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": "America/Los_Angeles"
+  },
+  {
+    "metroId": "41",
+    "label": "Santa Fe",
+    "subdomain": "santafe",
+    "city": "Santa Fe",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": "America/Denver"
+  },
+  {
+    "metroId": "42",
+    "label": "Seattle",
+    "subdomain": "seattle",
+    "city": "Seattle",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": "America/Los_Angeles"
+  },
+  {
+    "metroId": "43",
+    "label": "St. Louis",
+    "subdomain": "stlouis",
+    "city": "St. Louis",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": "America/Chicago"
+  },
+  {
+    "metroId": "45",
+    "label": "Washington, DC",
+    "subdomain": "washingtondc",
+    "city": "Washington",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": "America/New_York"
+  },
+  {
+    "metroId": "47",
+    "label": "Montreal",
+    "subdomain": "montreal",
+    "city": "Montreal",
+    "country": "Canada",
+    "countryCode": "CA",
+    "timezone": "America/Toronto"
+  },
+  {
+    "metroId": "50",
+    "label": "Toronto",
+    "subdomain": "toronto",
+    "city": "Toronto",
+    "country": "Canada",
+    "countryCode": "CA",
+    "timezone": "America/Toronto"
+  },
+  {
+    "metroId": "51",
+    "label": "Salt Lake City",
+    "subdomain": "saltlake",
+    "city": "Salt Lake City",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": "America/Denver"
+  },
+  {
+    "metroId": "52",
+    "label": "Vancouver",
+    "subdomain": "vancouver",
+    "city": "Vancouver",
+    "country": "Canada",
+    "countryCode": "CA",
+    "timezone": "America/Vancouver"
+  },
+  {
+    "metroId": "57",
+    "label": "Albuquerque",
+    "subdomain": "albuquerque",
+    "city": "Albuquerque",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": "America/Denver"
+  },
+  {
+    "metroId": "61",
+    "label": "Hartford",
+    "subdomain": "hartford",
+    "city": "Hartford",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": "America/New_York"
+  },
+  {
+    "metroId": "62",
+    "label": "Kansas City",
+    "subdomain": "kansascity",
+    "city": "Kansas City",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": "America/Chicago"
+  },
+  {
+    "metroId": "66",
+    "label": "Memphis",
+    "subdomain": "memphis",
+    "city": "Memphis",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": "America/Chicago"
+  },
+  {
+    "metroId": "68",
+    "label": "Puerto Rico",
+    "subdomain": "puertorico",
+    "city": "San Juan",
+    "country": "Puerto Rico",
+    "countryCode": "PR",
+    "timezone": "America/Puerto_Rico"
+  },
+  {
+    "metroId": "69",
+    "label": "Puerto Vallarta",
+    "subdomain": "vallarta",
+    "city": "Puerto Vallarta",
+    "country": "Mexico",
+    "countryCode": "MX",
+    "timezone": "America/Bahia_Banderas"
+  },
+  {
+    "metroId": "71",
+    "label": "Asheville",
+    "subdomain": "asheville",
+    "city": "Asheville",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": "America/New_York"
+  },
+  {
+    "metroId": "72",
+    "label": "Oklahoma City",
+    "subdomain": "oklahomacity",
+    "city": "Oklahoma City",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": "America/Chicago"
+  },
+  {
+    "metroId": "75",
+    "label": "Cancun",
+    "subdomain": "cancun",
+    "city": "Cancun",
+    "country": "Mexico",
+    "countryCode": "MX",
+    "timezone": "America/Cancun"
+  },
+  {
+    "metroId": "76",
+    "label": "Asbury Park",
+    "subdomain": "asbury",
+    "city": "Asbury Park",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": "America/New_York"
+  },
+  {
+    "metroId": "81",
+    "label": "Long Island",
+    "subdomain": "longisland",
+    "city": "Long Island",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": "America/New_York"
+  },
+  {
+    "metroId": "87",
+    "label": "Barcelona",
+    "subdomain": "barcelona",
+    "city": "Barcelona",
+    "country": "Spain",
+    "countryCode": "ES",
+    "timezone": "Europe/Madrid"
+  },
+  {
+    "metroId": "88",
+    "label": "Madrid",
+    "subdomain": "madrid",
+    "city": "Madrid",
+    "country": "Spain",
+    "countryCode": "ES",
+    "timezone": "Europe/Madrid"
+  },
+  {
+    "metroId": "89",
+    "label": "Paris",
+    "subdomain": "paris",
+    "city": "Paris",
+    "country": "France",
+    "countryCode": "FR",
+    "timezone": "Europe/Paris"
+  },
+  {
+    "metroId": "90",
+    "label": "London",
+    "subdomain": "london",
+    "city": "London",
+    "country": "United Kingdom",
+    "countryCode": "GB",
+    "timezone": "Europe/London"
+  },
+  {
+    "metroId": "91",
+    "label": "Berlin",
+    "subdomain": "berlin",
+    "city": "Berlin",
+    "country": "Germany",
+    "countryCode": "DE",
+    "timezone": "Europe/Berlin"
+  },
+  {
+    "metroId": "95",
+    "label": "Rome",
+    "subdomain": "rome",
+    "city": "Rome",
+    "country": "Italy",
+    "countryCode": "IT",
+    "timezone": "Europe/Rome"
+  },
+  {
+    "metroId": "96",
+    "label": "Buenos Aires",
+    "subdomain": "buenosaires",
+    "city": "Buenos Aires",
+    "country": "Argentina",
+    "countryCode": "AR",
+    "timezone": "America/Argentina/Buenos_Aires"
+  },
+  {
+    "metroId": "97",
+    "label": "Manchester",
+    "subdomain": "manchester",
+    "city": "Manchester",
+    "country": "United Kingdom",
+    "countryCode": "GB",
+    "timezone": "Europe/London"
+  },
+  {
+    "metroId": "98",
+    "label": "Prague",
+    "subdomain": "prague",
+    "city": "Prague",
+    "country": "Czech Republic",
+    "countryCode": "CZ",
+    "timezone": "Europe/Prague"
+  },
+  {
+    "metroId": "99",
+    "label": "Rio de Janeiro",
+    "subdomain": "rio",
+    "city": "Rio de Janeiro",
+    "country": "Brazil",
+    "countryCode": "BR",
+    "timezone": "America/Sao_Paulo"
+  },
+  {
+    "metroId": "100",
+    "label": "Lisbon",
+    "subdomain": "lisbon",
+    "city": "Lisbon",
+    "country": "Portugal",
+    "countryCode": "PT",
+    "timezone": "Europe/Lisbon"
+  },
+  {
+    "metroId": "101",
+    "label": "Copenhagen",
+    "subdomain": "copenhagen",
+    "city": "Copenhagen",
+    "country": "Denmark",
+    "countryCode": "DK",
+    "timezone": "Europe/Copenhagen"
+  },
+  {
+    "metroId": "102",
+    "label": "Amsterdam",
+    "subdomain": "amsterdam",
+    "city": "Amsterdam",
+    "country": "Netherlands",
+    "countryCode": "NL",
+    "timezone": "Europe/Amsterdam"
+  },
+  {
+    "metroId": "104",
+    "label": "Helsinki",
+    "subdomain": "helsinki",
+    "city": "Helsinki",
+    "country": "Finland",
+    "countryCode": "FI",
+    "timezone": "Europe/Helsinki"
+  },
+  {
+    "metroId": "112",
+    "label": "Glasgow",
+    "subdomain": "glasgow",
+    "city": "Glasgow",
+    "country": "United Kingdom",
+    "countryCode": "GB",
+    "timezone": "Europe/London"
+  },
+  {
+    "metroId": "114",
+    "label": "São Paulo",
+    "subdomain": "saopaulo",
+    "city": "São Paulo",
+    "country": "Brazil",
+    "countryCode": "BR",
+    "timezone": "America/Sao_Paulo"
+  },
+  {
+    "metroId": "117",
+    "label": "Dublin",
+    "subdomain": "dublin",
+    "city": "Dublin",
+    "country": "Ireland",
+    "countryCode": "IE",
+    "timezone": "Europe/Dublin"
+  },
+  {
+    "metroId": "122",
+    "label": "Reykjavik",
+    "subdomain": "reykjavik",
+    "city": "Reykjavik",
+    "country": "Iceland",
+    "countryCode": "IS",
+    "timezone": "Atlantic/Reykjavik"
+  },
+  {
+    "metroId": "124",
+    "label": "Portland, ME",
+    "subdomain": "portland-maine",
+    "city": "Portland",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": "America/New_York"
+  },
+  {
+    "metroId": "125",
+    "label": "Mexico City",
+    "subdomain": "mexicocity",
+    "city": "Mexico City",
+    "country": "Mexico",
+    "countryCode": "MX",
+    "timezone": "America/Mexico_City"
+  },
+  {
+    "metroId": "126",
+    "label": "Nice",
+    "subdomain": "nice",
+    "city": "Nice",
+    "country": "France",
+    "countryCode": "FR",
+    "timezone": "Europe/Paris"
+  },
+  {
+    "metroId": "127",
+    "label": "Reno",
+    "subdomain": "reno",
+    "city": "Reno",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": "America/Los_Angeles"
+  },
+  {
+    "metroId": "128",
+    "label": "Stockholm",
+    "subdomain": "stockholm",
+    "city": "Stockholm",
+    "country": "Sweden",
+    "countryCode": "SE",
+    "timezone": "Europe/Stockholm"
+  },
+  {
+    "metroId": "135",
+    "label": "Sitges",
+    "subdomain": "sitges",
+    "city": "Sitges",
+    "country": "Spain",
+    "countryCode": "ES",
+    "timezone": "Europe/Madrid"
+  },
+  {
+    "metroId": "143",
+    "label": "Tel Aviv",
+    "subdomain": "telaviv",
+    "city": "Tel Aviv",
+    "country": "Israel",
+    "countryCode": "IL",
+    "timezone": "Asia/Jerusalem"
+  },
+  {
+    "metroId": "148",
+    "label": "Louisville",
+    "subdomain": "louisville",
+    "city": "Louisville",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": "America/Kentucky/Louisville"
+  },
+  {
+    "metroId": "163",
+    "label": "Ottawa",
+    "subdomain": "ottawa",
+    "city": "Ottawa",
+    "country": "Canada",
+    "countryCode": "CA",
+    "timezone": "America/Toronto"
+  },
+  {
+    "metroId": "166",
+    "label": "Taipei",
+    "subdomain": "taipei",
+    "city": "Taipei",
+    "country": "Taiwan",
+    "countryCode": "TW",
+    "timezone": "Asia/Taipei"
+  },
+  {
+    "metroId": "168",
+    "label": "Brussels",
+    "subdomain": "brussels",
+    "city": "Brussels",
+    "country": "Belgium",
+    "countryCode": "BE",
+    "timezone": "Europe/Brussels"
+  },
+  {
+    "metroId": "200",
+    "label": "Anchorage",
+    "subdomain": "anchorage",
+    "city": "Anchorage",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": "America/Anchorage"
+  },
+  {
+    "metroId": "219",
+    "label": "St. Petersburg",
+    "subdomain": "stpetersburg",
+    "city": "St. Petersburg",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": "America/New_York"
+  },
+  {
+    "metroId": "238",
+    "label": "Edinburgh",
+    "subdomain": "edinburgh",
+    "city": "Edinburgh",
+    "country": "United Kingdom",
+    "countryCode": "GB",
+    "timezone": "Europe/London"
+  },
+  {
+    "metroId": "263",
+    "label": "Hamburg",
+    "subdomain": "hamburg",
+    "city": "Hamburg",
+    "country": "Germany",
+    "countryCode": "DE",
+    "timezone": "Europe/Berlin"
+  },
+  {
+    "metroId": "264",
+    "label": "Vienna",
+    "subdomain": "vienna",
+    "city": "Vienna",
+    "country": "Austria",
+    "countryCode": "AT",
+    "timezone": "Europe/Vienna"
+  },
+  {
+    "metroId": "274",
+    "label": "Gran Canaria",
+    "subdomain": "grancanaria",
+    "city": "Las Palmas de Gran Canaria",
+    "country": "Spain",
+    "countryCode": "ES",
+    "timezone": "Atlantic/Canary"
+  },
+  {
+    "metroId": "285",
+    "label": "Munich",
+    "subdomain": "munich",
+    "city": "Munich",
+    "country": "Germany",
+    "countryCode": "DE",
+    "timezone": "Europe/Berlin"
+  },
+  {
+    "metroId": "290",
+    "label": "Marseille",
+    "subdomain": "marseille",
+    "city": "Marseille",
+    "country": "France",
+    "countryCode": "FR",
+    "timezone": "Europe/Paris"
+  },
+  {
+    "metroId": "291",
+    "label": "Athens",
+    "subdomain": "athens",
+    "city": "Athens",
+    "country": "Greece",
+    "countryCode": "GR",
+    "timezone": "Europe/Athens"
+  },
+  {
+    "metroId": "352",
+    "label": "Mykonos",
+    "subdomain": "mykonos",
+    "city": "Mykonos",
+    "country": "Greece",
+    "countryCode": "GR",
+    "timezone": "Europe/Athens"
+  },
+  {
+    "metroId": "386",
+    "label": "Medellín",
+    "subdomain": "medellin",
+    "city": "Medellín",
+    "country": "Colombia",
+    "countryCode": "CO",
+    "timezone": "America/Bogota"
+  },
+  {
+    "metroId": "409",
+    "label": "Pine City",
+    "subdomain": "pinecity",
+    "city": "Pine City",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": "America/Chicago"
+  },
+  {
+    "metroId": "r-sydney",
+    "label": "Sydney (retired)",
+    "subdomain": "sydney",
+    "city": "Sydney",
+    "country": "Australia",
+    "countryCode": "AU",
+    "timezone": null
+  },
+  {
+    "metroId": "r-melbourne",
+    "label": "Melbourne (retired)",
+    "subdomain": "melbourne",
+    "city": "Melbourne",
+    "country": "Australia",
+    "countryCode": "AU",
+    "timezone": null
+  },
+  {
+    "metroId": "r-brisbane",
+    "label": "Brisbane (retired)",
+    "subdomain": "brisbane",
+    "city": "Brisbane",
+    "country": "Australia",
+    "countryCode": "AU",
+    "timezone": null
+  },
+  {
+    "metroId": "r-perth",
+    "label": "Perth (retired)",
+    "subdomain": "perth",
+    "city": "Perth",
+    "country": "Australia",
+    "countryCode": "AU",
+    "timezone": null
+  },
+  {
+    "metroId": "r-auckland",
+    "label": "Auckland (retired)",
+    "subdomain": "auckland",
+    "city": "Auckland",
+    "country": "New Zealand",
+    "countryCode": "NZ",
+    "timezone": null
+  },
+  {
+    "metroId": "r-wellington",
+    "label": "Wellington (retired)",
+    "subdomain": "wellington",
+    "city": "Wellington",
+    "country": "New Zealand",
+    "countryCode": "NZ",
+    "timezone": null
+  },
+  {
+    "metroId": "r-christchurch",
+    "label": "Christchurch (retired)",
+    "subdomain": "christchurch",
+    "city": "Christchurch",
+    "country": "New Zealand",
+    "countryCode": "NZ",
+    "timezone": null
+  },
+  {
+    "metroId": "r-queenstown",
+    "label": "Queenstown (retired)",
+    "subdomain": "queenstown",
+    "city": "Queenstown",
+    "country": "New Zealand",
+    "countryCode": "NZ",
+    "timezone": null
+  },
+  {
+    "metroId": "r-capetown",
+    "label": "Cape Town (retired)",
+    "subdomain": "capetown",
+    "city": "Cape Town",
+    "country": "South Africa",
+    "countryCode": "ZA",
+    "timezone": null
+  },
+  {
+    "metroId": "r-johannesburg",
+    "label": "Johannesburg (retired)",
+    "subdomain": "johannesburg",
+    "city": "Johannesburg",
+    "country": "South Africa",
+    "countryCode": "ZA",
+    "timezone": null
+  },
+  {
+    "metroId": "r-durban",
+    "label": "Durban (retired)",
+    "subdomain": "durban",
+    "city": "Durban",
+    "country": "South Africa",
+    "countryCode": "ZA",
+    "timezone": null
+  },
+  {
+    "metroId": "r-santiago",
+    "label": "Santiago (retired)",
+    "subdomain": "santiago",
+    "city": "Santiago",
+    "country": "Chile",
+    "countryCode": "CL",
+    "timezone": null
+  },
+  {
+    "metroId": "r-lima",
+    "label": "Lima (retired)",
+    "subdomain": "lima",
+    "city": "Lima",
+    "country": "Peru",
+    "countryCode": "PE",
+    "timezone": null
+  },
+  {
+    "metroId": "r-cusco",
+    "label": "Cusco (retired)",
+    "subdomain": "cusco",
+    "city": "Cusco",
+    "country": "Peru",
+    "countryCode": "PE",
+    "timezone": null
+  },
+  {
+    "metroId": "r-bogota",
+    "label": "Bogotá (retired)",
+    "subdomain": "bogota",
+    "city": "Bogotá",
+    "country": "Colombia",
+    "countryCode": "CO",
+    "timezone": null
+  },
+  {
+    "metroId": "r-caracas",
+    "label": "Caracas (retired)",
+    "subdomain": "caracas",
+    "city": "Caracas",
+    "country": "Venezuela",
+    "countryCode": "VE",
+    "timezone": null
+  },
+  {
+    "metroId": "r-brasilia",
+    "label": "Brasília (retired)",
+    "subdomain": "brasilia",
+    "city": "Brasília",
+    "country": "Brazil",
+    "countryCode": "BR",
+    "timezone": null
+  },
+  {
+    "metroId": "r-florianopolis",
+    "label": "Florianópolis (retired)",
+    "subdomain": "florianopolis",
+    "city": "Florianópolis",
+    "country": "Brazil",
+    "countryCode": "BR",
+    "timezone": null
+  },
+  {
+    "metroId": "r-guadalajara",
+    "label": "Guadalajara (retired)",
+    "subdomain": "guadalajara",
+    "city": "Guadalajara",
+    "country": "Mexico",
+    "countryCode": "MX",
+    "timezone": null
+  },
+  {
+    "metroId": "r-tulum",
+    "label": "Tulum (retired)",
+    "subdomain": "tulum",
+    "city": "Tulum",
+    "country": "Mexico",
+    "countryCode": "MX",
+    "timezone": null
+  },
+  {
+    "metroId": "r-sanjosecr",
+    "label": "San José (retired)",
+    "subdomain": "sanjosecr",
+    "city": "San José",
+    "country": "Costa Rica",
+    "countryCode": "CR",
+    "timezone": null
+  },
+  {
+    "metroId": "r-manuelantonio",
+    "label": "Manuel Antonio (retired)",
+    "subdomain": "manuelantonio",
+    "city": "Manuel Antonio",
+    "country": "Costa Rica",
+    "countryCode": "CR",
+    "timezone": null
+  },
+  {
+    "metroId": "r-curacao",
+    "label": "Willemstad (retired)",
+    "subdomain": "curacao",
+    "city": "Willemstad",
+    "country": "Curaçao",
+    "countryCode": "CW",
+    "timezone": null
+  },
+  {
+    "metroId": "r-bangkok",
+    "label": "Bangkok (retired)",
+    "subdomain": "bangkok",
+    "city": "Bangkok",
+    "country": "Thailand",
+    "countryCode": "TH",
+    "timezone": null
+  },
+  {
+    "metroId": "r-manila",
+    "label": "Manila (retired)",
+    "subdomain": "manila",
+    "city": "Manila",
+    "country": "Philippines",
+    "countryCode": "PH",
+    "timezone": null
+  },
+  {
+    "metroId": "r-singapore",
+    "label": "Singapore (retired)",
+    "subdomain": "singapore",
+    "city": "Singapore",
+    "country": "Singapore",
+    "countryCode": "SG",
+    "timezone": null
+  },
+  {
+    "metroId": "r-kualalumpur",
+    "label": "Kuala Lumpur (retired)",
+    "subdomain": "kualalumpur",
+    "city": "Kuala Lumpur",
+    "country": "Malaysia",
+    "countryCode": "MY",
+    "timezone": null
+  },
+  {
+    "metroId": "r-hongkong",
+    "label": "Hong Kong (retired)",
+    "subdomain": "hongkong",
+    "city": "Hong Kong",
+    "country": "Hong Kong",
+    "countryCode": "HK",
+    "timezone": null
+  },
+  {
+    "metroId": "r-tokyo",
+    "label": "Tokyo (retired)",
+    "subdomain": "tokyo",
+    "city": "Tokyo",
+    "country": "Japan",
+    "countryCode": "JP",
+    "timezone": null
+  },
+  {
+    "metroId": "r-osaka",
+    "label": "Osaka (retired)",
+    "subdomain": "osaka",
+    "city": "Osaka",
+    "country": "Japan",
+    "countryCode": "JP",
+    "timezone": null
+  },
+  {
+    "metroId": "r-seoul",
+    "label": "Seoul (retired)",
+    "subdomain": "seoul",
+    "city": "Seoul",
+    "country": "South Korea",
+    "countryCode": "KR",
+    "timezone": null
+  },
+  {
+    "metroId": "r-shanghai",
+    "label": "Shanghai (retired)",
+    "subdomain": "shanghai",
+    "city": "Shanghai",
+    "country": "China",
+    "countryCode": "CN",
+    "timezone": null
+  },
+  {
+    "metroId": "r-beijing",
+    "label": "Beijing (retired)",
+    "subdomain": "beijing",
+    "city": "Beijing",
+    "country": "China",
+    "countryCode": "CN",
+    "timezone": null
+  },
+  {
+    "metroId": "r-hanoi",
+    "label": "Hanoi (retired)",
+    "subdomain": "hanoi",
+    "city": "Hanoi",
+    "country": "Vietnam",
+    "countryCode": "VN",
+    "timezone": null
+  },
+  {
+    "metroId": "r-delhi",
+    "label": "Delhi (retired)",
+    "subdomain": "delhi",
+    "city": "Delhi",
+    "country": "India",
+    "countryCode": "IN",
+    "timezone": null
+  },
+  {
+    "metroId": "r-mumbai",
+    "label": "Mumbai (retired)",
+    "subdomain": "mumbai",
+    "city": "Mumbai",
+    "country": "India",
+    "countryCode": "IN",
+    "timezone": null
+  },
+  {
+    "metroId": "r-pune",
+    "label": "Pune (retired)",
+    "subdomain": "pune",
+    "city": "Pune",
+    "country": "India",
+    "countryCode": "IN",
+    "timezone": null
+  },
+  {
+    "metroId": "r-calcutta",
+    "label": "Kolkata (retired)",
+    "subdomain": "calcutta",
+    "city": "Kolkata",
+    "country": "India",
+    "countryCode": "IN",
+    "timezone": null
+  },
+  {
+    "metroId": "r-karachi",
+    "label": "Karachi (retired)",
+    "subdomain": "karachi",
+    "city": "Karachi",
+    "country": "Pakistan",
+    "countryCode": "PK",
+    "timezone": null
+  },
+  {
+    "metroId": "r-jerusalem",
+    "label": "Jerusalem (retired)",
+    "subdomain": "jerusalem",
+    "city": "Jerusalem",
+    "country": "Israel",
+    "countryCode": "IL",
+    "timezone": null
+  },
+  {
+    "metroId": "r-istanbul",
+    "label": "Istanbul (retired)",
+    "subdomain": "istanbul",
+    "city": "Istanbul",
+    "country": "Turkey",
+    "countryCode": "TR",
+    "timezone": null
+  },
+  {
+    "metroId": "r-dubai",
+    "label": "Dubai (retired)",
+    "subdomain": "dubai",
+    "city": "Dubai",
+    "country": "United Arab Emirates",
+    "countryCode": "AE",
+    "timezone": null
+  },
+  {
+    "metroId": "r-doha",
+    "label": "Doha (retired)",
+    "subdomain": "doha",
+    "city": "Doha",
+    "country": "Qatar",
+    "countryCode": "QA",
+    "timezone": null
+  },
+  {
+    "metroId": "r-tehran",
+    "label": "Tehran (retired)",
+    "subdomain": "tehran",
+    "city": "Tehran",
+    "country": "Iran",
+    "countryCode": "IR",
+    "timezone": null
+  },
+  {
+    "metroId": "r-moscow",
+    "label": "Moscow (retired)",
+    "subdomain": "moscow",
+    "city": "Moscow",
+    "country": "Russia",
+    "countryCode": "RU",
+    "timezone": null
+  },
+  {
+    "metroId": "r-saintpetersburgru",
+    "label": "Saint Petersburg (retired)",
+    "subdomain": "saintpetersburgru",
+    "city": "Saint Petersburg",
+    "country": "Russia",
+    "countryCode": "RU",
+    "timezone": null
+  },
+  {
+    "metroId": "r-warsaw",
+    "label": "Warsaw (retired)",
+    "subdomain": "warsaw",
+    "city": "Warsaw",
+    "country": "Poland",
+    "countryCode": "PL",
+    "timezone": null
+  },
+  {
+    "metroId": "r-lodz",
+    "label": "Łódź (retired)",
+    "subdomain": "lodz",
+    "city": "Łódź",
+    "country": "Poland",
+    "countryCode": "PL",
+    "timezone": null
+  },
+  {
+    "metroId": "r-krakow",
+    "label": "Kraków (retired)",
+    "subdomain": "krakow",
+    "city": "Kraków",
+    "country": "Poland",
+    "countryCode": "PL",
+    "timezone": null
+  },
+  {
+    "metroId": "r-budapest",
+    "label": "Budapest (retired)",
+    "subdomain": "budapest",
+    "city": "Budapest",
+    "country": "Hungary",
+    "countryCode": "HU",
+    "timezone": null
+  },
+  {
+    "metroId": "r-bucharest",
+    "label": "Bucharest (retired)",
+    "subdomain": "bucharest",
+    "city": "Bucharest",
+    "country": "Romania",
+    "countryCode": "RO",
+    "timezone": null
+  },
+  {
+    "metroId": "r-sofia",
+    "label": "Sofia (retired)",
+    "subdomain": "sofia",
+    "city": "Sofia",
+    "country": "Bulgaria",
+    "countryCode": "BG",
+    "timezone": null
+  },
+  {
+    "metroId": "r-belgrade",
+    "label": "Belgrade (retired)",
+    "subdomain": "belgrade",
+    "city": "Belgrade",
+    "country": "Serbia",
+    "countryCode": "RS",
+    "timezone": null
+  },
+  {
+    "metroId": "r-riga",
+    "label": "Riga (retired)",
+    "subdomain": "riga",
+    "city": "Riga",
+    "country": "Latvia",
+    "countryCode": "LV",
+    "timezone": null
+  },
+  {
+    "metroId": "r-tallinn",
+    "label": "Tallinn (retired)",
+    "subdomain": "tallinn",
+    "city": "Tallinn",
+    "country": "Estonia",
+    "countryCode": "EE",
+    "timezone": null
+  },
+  {
+    "metroId": "r-oslo",
+    "label": "Oslo (retired)",
+    "subdomain": "oslo",
+    "city": "Oslo",
+    "country": "Norway",
+    "countryCode": "NO",
+    "timezone": null
+  },
+  {
+    "metroId": "r-gothenburg",
+    "label": "Gothenburg (retired)",
+    "subdomain": "gothenburg",
+    "city": "Gothenburg",
+    "country": "Sweden",
+    "countryCode": "SE",
+    "timezone": null
+  },
+  {
+    "metroId": "r-zurich",
+    "label": "Zurich (retired)",
+    "subdomain": "zurich",
+    "city": "Zurich",
+    "country": "Switzerland",
+    "countryCode": "CH",
+    "timezone": null
+  },
+  {
+    "metroId": "r-cologne",
+    "label": "Cologne (retired)",
+    "subdomain": "cologne",
+    "city": "Cologne",
+    "country": "Germany",
+    "countryCode": "DE",
+    "timezone": null
+  },
+  {
+    "metroId": "r-frankfurt",
+    "label": "Frankfurt (retired)",
+    "subdomain": "frankfurt",
+    "city": "Frankfurt",
+    "country": "Germany",
+    "countryCode": "DE",
+    "timezone": null
+  },
+  {
+    "metroId": "r-stuttgart",
+    "label": "Stuttgart (retired)",
+    "subdomain": "stuttgart",
+    "city": "Stuttgart",
+    "country": "Germany",
+    "countryCode": "DE",
+    "timezone": null
+  },
+  {
+    "metroId": "r-dusseldorf",
+    "label": "Düsseldorf (retired)",
+    "subdomain": "dusseldorf",
+    "city": "Düsseldorf",
+    "country": "Germany",
+    "countryCode": "DE",
+    "timezone": null
+  },
+  {
+    "metroId": "r-dortmund",
+    "label": "Dortmund (retired)",
+    "subdomain": "dortmund",
+    "city": "Dortmund",
+    "country": "Germany",
+    "countryCode": "DE",
+    "timezone": null
+  },
+  {
+    "metroId": "r-essen",
+    "label": "Essen (retired)",
+    "subdomain": "essen",
+    "city": "Essen",
+    "country": "Germany",
+    "countryCode": "DE",
+    "timezone": null
+  },
+  {
+    "metroId": "r-bremen",
+    "label": "Bremen (retired)",
+    "subdomain": "bremen",
+    "city": "Bremen",
+    "country": "Germany",
+    "countryCode": "DE",
+    "timezone": null
+  },
+  {
+    "metroId": "r-mannheim",
+    "label": "Mannheim (retired)",
+    "subdomain": "mannheim",
+    "city": "Mannheim",
+    "country": "Germany",
+    "countryCode": "DE",
+    "timezone": null
+  },
+  {
+    "metroId": "r-rostock",
+    "label": "Rostock (retired)",
+    "subdomain": "rostock",
+    "city": "Rostock",
+    "country": "Germany",
+    "countryCode": "DE",
+    "timezone": null
+  },
+  {
+    "metroId": "r-salzburg",
+    "label": "Salzburg (retired)",
+    "subdomain": "salzburg",
+    "city": "Salzburg",
+    "country": "Austria",
+    "countryCode": "AT",
+    "timezone": null
+  },
+  {
+    "metroId": "r-antwerp",
+    "label": "Antwerp (retired)",
+    "subdomain": "antwerp",
+    "city": "Antwerp",
+    "country": "Belgium",
+    "countryCode": "BE",
+    "timezone": null
+  },
+  {
+    "metroId": "r-rotterdam",
+    "label": "Rotterdam (retired)",
+    "subdomain": "rotterdam",
+    "city": "Rotterdam",
+    "country": "Netherlands",
+    "countryCode": "NL",
+    "timezone": null
+  },
+  {
+    "metroId": "r-tilburg",
+    "label": "Tilburg (retired)",
+    "subdomain": "tilburg",
+    "city": "Tilburg",
+    "country": "Netherlands",
+    "countryCode": "NL",
+    "timezone": null
+  },
+  {
+    "metroId": "r-cardiff",
+    "label": "Cardiff (retired)",
+    "subdomain": "cardiff",
+    "city": "Cardiff",
+    "country": "United Kingdom",
+    "countryCode": "GB",
+    "timezone": null
+  },
+  {
+    "metroId": "r-liverpool",
+    "label": "Liverpool (retired)",
+    "subdomain": "liverpool",
+    "city": "Liverpool",
+    "country": "United Kingdom",
+    "countryCode": "GB",
+    "timezone": null
+  },
+  {
+    "metroId": "r-blackpool",
+    "label": "Blackpool (retired)",
+    "subdomain": "blackpool",
+    "city": "Blackpool",
+    "country": "United Kingdom",
+    "countryCode": "GB",
+    "timezone": null
+  },
+  {
+    "metroId": "r-belfast",
+    "label": "Belfast (retired)",
+    "subdomain": "belfast",
+    "city": "Belfast",
+    "country": "United Kingdom",
+    "countryCode": "GB",
+    "timezone": null
+  },
+  {
+    "metroId": "r-brighton",
+    "label": "Brighton (retired)",
+    "subdomain": "brighton",
+    "city": "Brighton",
+    "country": "United Kingdom",
+    "countryCode": "GB",
+    "timezone": null
+  },
+  {
+    "metroId": "r-bristol",
+    "label": "Bristol (retired)",
+    "subdomain": "bristol",
+    "city": "Bristol",
+    "country": "United Kingdom",
+    "countryCode": "GB",
+    "timezone": null
+  },
+  {
+    "metroId": "r-edinborough",
+    "label": "Edinburgh (retired)",
+    "subdomain": "edinborough",
+    "city": "Edinburgh",
+    "country": "United Kingdom",
+    "countryCode": "GB",
+    "timezone": null
+  },
+  {
+    "metroId": "r-cork",
+    "label": "Cork (retired)",
+    "subdomain": "cork",
+    "city": "Cork",
+    "country": "Ireland",
+    "countryCode": "IE",
+    "timezone": null
+  },
+  {
+    "metroId": "r-milan",
+    "label": "Milan (retired)",
+    "subdomain": "milan",
+    "city": "Milan",
+    "country": "Italy",
+    "countryCode": "IT",
+    "timezone": null
+  },
+  {
+    "metroId": "r-torino",
+    "label": "Turin (retired)",
+    "subdomain": "torino",
+    "city": "Turin",
+    "country": "Italy",
+    "countryCode": "IT",
+    "timezone": null
+  },
+  {
+    "metroId": "r-palermo",
+    "label": "Palermo (retired)",
+    "subdomain": "palermo",
+    "city": "Palermo",
+    "country": "Italy",
+    "countryCode": "IT",
+    "timezone": null
+  },
+  {
+    "metroId": "r-venice",
+    "label": "Venice (retired)",
+    "subdomain": "venice",
+    "city": "Venice",
+    "country": "Italy",
+    "countryCode": "IT",
+    "timezone": null
+  },
+  {
+    "metroId": "r-florence",
+    "label": "Florence (retired)",
+    "subdomain": "florence",
+    "city": "Florence",
+    "country": "Italy",
+    "countryCode": "IT",
+    "timezone": null
+  },
+  {
+    "metroId": "r-seville",
+    "label": "Seville (retired)",
+    "subdomain": "seville",
+    "city": "Seville",
+    "country": "Spain",
+    "countryCode": "ES",
+    "timezone": null
+  },
+  {
+    "metroId": "r-mallorca",
+    "label": "Palma (retired)",
+    "subdomain": "mallorca",
+    "city": "Palma",
+    "country": "Spain",
+    "countryCode": "ES",
+    "timezone": null
+  },
+  {
+    "metroId": "r-granada",
+    "label": "Granada (retired)",
+    "subdomain": "granada",
+    "city": "Granada",
+    "country": "Spain",
+    "countryCode": "ES",
+    "timezone": null
+  },
+  {
+    "metroId": "r-valencia",
+    "label": "Valencia (retired)",
+    "subdomain": "valencia",
+    "city": "Valencia",
+    "country": "Spain",
+    "countryCode": "ES",
+    "timezone": null
+  },
+  {
+    "metroId": "r-quebeccity",
+    "label": "Quebec City (retired)",
+    "subdomain": "quebeccity",
+    "city": "Quebec City",
+    "country": "Canada",
+    "countryCode": "CA",
+    "timezone": null
+  },
+  {
+    "metroId": "r-saskatoon",
+    "label": "Saskatoon (retired)",
+    "subdomain": "saskatoon",
+    "city": "Saskatoon",
+    "country": "Canada",
+    "countryCode": "CA",
+    "timezone": null
+  },
+  {
+    "metroId": "r-winnipeg",
+    "label": "Winnipeg (retired)",
+    "subdomain": "winnipeg",
+    "city": "Winnipeg",
+    "country": "Canada",
+    "countryCode": "CA",
+    "timezone": null
+  },
+  {
+    "metroId": "r-edmonton",
+    "label": "Edmonton (retired)",
+    "subdomain": "edmonton",
+    "city": "Edmonton",
+    "country": "Canada",
+    "countryCode": "CA",
+    "timezone": null
+  },
+  {
+    "metroId": "r-calgary",
+    "label": "Calgary (retired)",
+    "subdomain": "calgary",
+    "city": "Calgary",
+    "country": "Canada",
+    "countryCode": "CA",
+    "timezone": null
+  },
+  {
+    "metroId": "r-halifax",
+    "label": "Halifax (retired)",
+    "subdomain": "halifax",
+    "city": "Halifax",
+    "country": "Canada",
+    "countryCode": "CA",
+    "timezone": null
+  },
+  {
+    "metroId": "r-whistler",
+    "label": "Whistler (retired)",
+    "subdomain": "whistler",
+    "city": "Whistler",
+    "country": "Canada",
+    "countryCode": "CA",
+    "timezone": null
+  },
+  {
+    "metroId": "r-victoria",
+    "label": "Victoria (retired)",
+    "subdomain": "victoria",
+    "city": "Victoria",
+    "country": "Canada",
+    "countryCode": "CA",
+    "timezone": null
+  },
+  {
+    "metroId": "r-tampa",
+    "label": "Tampa (retired)",
+    "subdomain": "tampa",
+    "city": "Tampa",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-longbeach",
+    "label": "Long Beach (retired)",
+    "subdomain": "longbeach",
+    "city": "Long Beach",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-eastbay",
+    "label": "Oakland (retired)",
+    "subdomain": "eastbay",
+    "city": "Oakland",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-charlotte",
+    "label": "Charlotte (retired)",
+    "subdomain": "charlotte",
+    "city": "Charlotte",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-sacramento",
+    "label": "Sacramento (retired)",
+    "subdomain": "sacramento",
+    "city": "Sacramento",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-nashville",
+    "label": "Nashville (retired)",
+    "subdomain": "nashville",
+    "city": "Nashville",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-sanjose",
+    "label": "San Jose (retired)",
+    "subdomain": "sanjose",
+    "city": "San Jose",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-providence",
+    "label": "Providence (retired)",
+    "subdomain": "providence",
+    "city": "Providence",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-milwaukee",
+    "label": "Milwaukee (retired)",
+    "subdomain": "milwaukee",
+    "city": "Milwaukee",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-laguna",
+    "label": "Laguna Beach (retired)",
+    "subdomain": "laguna",
+    "city": "Laguna Beach",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-raleigh",
+    "label": "Raleigh (retired)",
+    "subdomain": "raleigh",
+    "city": "Raleigh",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-richmond",
+    "label": "Richmond (retired)",
+    "subdomain": "richmond",
+    "city": "Richmond",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-tucson",
+    "label": "Tucson (retired)",
+    "subdomain": "tucson",
+    "city": "Tucson",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-augusta",
+    "label": "Augusta (retired)",
+    "subdomain": "augusta",
+    "city": "Augusta",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-fresno",
+    "label": "Fresno (retired)",
+    "subdomain": "fresno",
+    "city": "Fresno",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-jacksonville",
+    "label": "Jacksonville (retired)",
+    "subdomain": "jacksonville",
+    "city": "Jacksonville",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-desmoines",
+    "label": "Des Moines (retired)",
+    "subdomain": "desmoines",
+    "city": "Des Moines",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-albany",
+    "label": "Albany (retired)",
+    "subdomain": "albany",
+    "city": "Albany",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-okc",
+    "label": "Oklahoma City (retired)",
+    "subdomain": "okc",
+    "city": "Oklahoma City",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-lexington",
+    "label": "Lexington (retired)",
+    "subdomain": "lexington",
+    "city": "Lexington",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-buffalo",
+    "label": "Buffalo (retired)",
+    "subdomain": "buffalo",
+    "city": "Buffalo",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-fortworth",
+    "label": "Fort Worth (retired)",
+    "subdomain": "fortworth",
+    "city": "Fort Worth",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-tulsa",
+    "label": "Tulsa (retired)",
+    "subdomain": "tulsa",
+    "city": "Tulsa",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-elpaso",
+    "label": "El Paso (retired)",
+    "subdomain": "elpaso",
+    "city": "El Paso",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-omaha",
+    "label": "Omaha (retired)",
+    "subdomain": "omaha",
+    "city": "Omaha",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-knoxville",
+    "label": "Knoxville (retired)",
+    "subdomain": "knoxville",
+    "city": "Knoxville",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-madison",
+    "label": "Madison (retired)",
+    "subdomain": "madison",
+    "city": "Madison",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-littlerock",
+    "label": "Little Rock (retired)",
+    "subdomain": "littlerock",
+    "city": "Little Rock",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-norfolk",
+    "label": "Norfolk (retired)",
+    "subdomain": "norfolk",
+    "city": "Norfolk",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-atlanticcity",
+    "label": "Atlantic City (retired)",
+    "subdomain": "atlanticcity",
+    "city": "Atlantic City",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-grandrapids",
+    "label": "Grand Rapids (retired)",
+    "subdomain": "grandrapids",
+    "city": "Grand Rapids",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-burlington",
+    "label": "Burlington (retired)",
+    "subdomain": "burlington",
+    "city": "Burlington",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-westpalmbeach",
+    "label": "West Palm Beach (retired)",
+    "subdomain": "westpalmbeach",
+    "city": "West Palm Beach",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-worcester",
+    "label": "Worcester (retired)",
+    "subdomain": "worcester",
+    "city": "Worcester",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-binghamton",
+    "label": "Binghamton (retired)",
+    "subdomain": "binghamton",
+    "city": "Binghamton",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-tacoma",
+    "label": "Tacoma (retired)",
+    "subdomain": "tacoma",
+    "city": "Tacoma",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-mobile",
+    "label": "Mobile (retired)",
+    "subdomain": "mobile",
+    "city": "Mobile",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-southbend",
+    "label": "South Bend (retired)",
+    "subdomain": "southbend",
+    "city": "South Bend",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-newhaven",
+    "label": "New Haven (retired)",
+    "subdomain": "newhaven",
+    "city": "New Haven",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-harrisburg",
+    "label": "Harrisburg (retired)",
+    "subdomain": "harrisburg",
+    "city": "Harrisburg",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-poughkeepsie",
+    "label": "Poughkeepsie (retired)",
+    "subdomain": "poughkeepsie",
+    "city": "Poughkeepsie",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-fortmyers",
+    "label": "Fort Myers (retired)",
+    "subdomain": "fortmyers",
+    "city": "Fort Myers",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-batonrouge",
+    "label": "Baton Rouge (retired)",
+    "subdomain": "batonrouge",
+    "city": "Baton Rouge",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-lansing",
+    "label": "Lansing (retired)",
+    "subdomain": "lansing",
+    "city": "Lansing",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-toledo",
+    "label": "Toledo (retired)",
+    "subdomain": "toledo",
+    "city": "Toledo",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-ogunquit",
+    "label": "Ogunquit (retired)",
+    "subdomain": "ogunquit",
+    "city": "Ogunquit",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-dayton",
+    "label": "Dayton (retired)",
+    "subdomain": "dayton",
+    "city": "Dayton",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-scottsdale",
+    "label": "Scottsdale (retired)",
+    "subdomain": "scottsdale",
+    "city": "Scottsdale",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-savannah",
+    "label": "Savannah (retired)",
+    "subdomain": "savannah",
+    "city": "Savannah",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-akron",
+    "label": "Akron (retired)",
+    "subdomain": "akron",
+    "city": "Akron",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-wichita",
+    "label": "Wichita (retired)",
+    "subdomain": "wichita",
+    "city": "Wichita",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-greensboro",
+    "label": "Greensboro (retired)",
+    "subdomain": "greensboro",
+    "city": "Greensboro",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-naples",
+    "label": "Naples (retired)",
+    "subdomain": "naples",
+    "city": "Naples",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-springfieldmo",
+    "label": "Springfield (retired)",
+    "subdomain": "springfieldmo",
+    "city": "Springfield",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-springfieldma",
+    "label": "Springfield (retired)",
+    "subdomain": "springfieldma",
+    "city": "Springfield",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-galveston",
+    "label": "Galveston (retired)",
+    "subdomain": "galveston",
+    "city": "Galveston",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-lawrence",
+    "label": "Lawrence (retired)",
+    "subdomain": "lawrence",
+    "city": "Lawrence",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-modesto",
+    "label": "Modesto (retired)",
+    "subdomain": "modesto",
+    "city": "Modesto",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-newhope",
+    "label": "New Hope (retired)",
+    "subdomain": "newhope",
+    "city": "New Hope",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-kalamazoo",
+    "label": "Kalamazoo (retired)",
+    "subdomain": "kalamazoo",
+    "city": "Kalamazoo",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-syracuse",
+    "label": "Syracuse (retired)",
+    "subdomain": "syracuse",
+    "city": "Syracuse",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-bloomington",
+    "label": "Bloomington (retired)",
+    "subdomain": "bloomington",
+    "city": "Bloomington",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-chattanooga",
+    "label": "Chattanooga (retired)",
+    "subdomain": "chattanooga",
+    "city": "Chattanooga",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-coloradosprings",
+    "label": "Colorado Springs (retired)",
+    "subdomain": "coloradosprings",
+    "city": "Colorado Springs",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-newark",
+    "label": "Newark (retired)",
+    "subdomain": "newark",
+    "city": "Newark",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-napasonoma",
+    "label": "Napa (retired)",
+    "subdomain": "napasonoma",
+    "city": "Napa",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-santacruz",
+    "label": "Santa Cruz (retired)",
+    "subdomain": "santacruz",
+    "city": "Santa Cruz",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-youngstown",
+    "label": "Youngstown (retired)",
+    "subdomain": "youngstown",
+    "city": "Youngstown",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-boise",
+    "label": "Boise (retired)",
+    "subdomain": "boise",
+    "city": "Boise",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-pensacola",
+    "label": "Pensacola (retired)",
+    "subdomain": "pensacola",
+    "city": "Pensacola",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-greenbay",
+    "label": "Green Bay (retired)",
+    "subdomain": "greenbay",
+    "city": "Green Bay",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-myrtlebeach",
+    "label": "Myrtle Beach (retired)",
+    "subdomain": "myrtlebeach",
+    "city": "Myrtle Beach",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-spokane",
+    "label": "Spokane (retired)",
+    "subdomain": "spokane",
+    "city": "Spokane",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-portcharlotte",
+    "label": "Port Charlotte (retired)",
+    "subdomain": "portcharlotte",
+    "city": "Port Charlotte",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-saugatuck",
+    "label": "Saugatuck (retired)",
+    "subdomain": "saugatuck",
+    "city": "Saugatuck",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-allentown",
+    "label": "Allentown (retired)",
+    "subdomain": "allentown",
+    "city": "Allentown",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-stamford",
+    "label": "Stamford (retired)",
+    "subdomain": "stamford",
+    "city": "Stamford",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-santabarbara",
+    "label": "Santa Barbara (retired)",
+    "subdomain": "santabarbara",
+    "city": "Santa Barbara",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-aspen",
+    "label": "Aspen (retired)",
+    "subdomain": "aspen",
+    "city": "Aspen",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-siouxfalls",
+    "label": "Sioux Falls (retired)",
+    "subdomain": "siouxfalls",
+    "city": "Sioux Falls",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-fortwayne",
+    "label": "Fort Wayne (retired)",
+    "subdomain": "fortwayne",
+    "city": "Fort Wayne",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-corpuschristi",
+    "label": "Corpus Christi (retired)",
+    "subdomain": "corpuschristi",
+    "city": "Corpus Christi",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-iowacity",
+    "label": "Iowa City (retired)",
+    "subdomain": "iowacity",
+    "city": "Iowa City",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-olympia",
+    "label": "Olympia (retired)",
+    "subdomain": "olympia",
+    "city": "Olympia",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-bakersfield",
+    "label": "Bakersfield (retired)",
+    "subdomain": "bakersfield",
+    "city": "Bakersfield",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-duluth",
+    "label": "Duluth (retired)",
+    "subdomain": "duluth",
+    "city": "Duluth",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-fayettevillear",
+    "label": "Fayetteville (retired)",
+    "subdomain": "fayettevillear",
+    "city": "Fayetteville",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-fayettevillenc",
+    "label": "Fayetteville (retired)",
+    "subdomain": "fayettevillenc",
+    "city": "Fayetteville",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-jackson",
+    "label": "Jackson (retired)",
+    "subdomain": "jackson",
+    "city": "Jackson",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-lafayette",
+    "label": "Lafayette (retired)",
+    "subdomain": "lafayette",
+    "city": "Lafayette",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-hammond",
+    "label": "Hammond (retired)",
+    "subdomain": "hammond",
+    "city": "Hammond",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-columbiamo",
+    "label": "Columbia (retired)",
+    "subdomain": "columbiamo",
+    "city": "Columbia",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-columbiasc",
+    "label": "Columbia (retired)",
+    "subdomain": "columbiasc",
+    "city": "Columbia",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-greenvillesc",
+    "label": "Greenville (retired)",
+    "subdomain": "greenvillesc",
+    "city": "Greenville",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-greenvillenc",
+    "label": "Greenville (retired)",
+    "subdomain": "greenvillenc",
+    "city": "Greenville",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-charlestonsc",
+    "label": "Charleston (retired)",
+    "subdomain": "charlestonsc",
+    "city": "Charleston",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-charlestonwv",
+    "label": "Charleston (retired)",
+    "subdomain": "charlestonwv",
+    "city": "Charleston",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-wilmingtonnc",
+    "label": "Wilmington (retired)",
+    "subdomain": "wilmingtonnc",
+    "city": "Wilmington",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-wilmingtonde",
+    "label": "Wilmington (retired)",
+    "subdomain": "wilmingtonde",
+    "city": "Wilmington",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-tallahassee",
+    "label": "Tallahassee (retired)",
+    "subdomain": "tallahassee",
+    "city": "Tallahassee",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-bocaraton",
+    "label": "Boca Raton (retired)",
+    "subdomain": "bocaraton",
+    "city": "Boca Raton",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-longview",
+    "label": "Longview (retired)",
+    "subdomain": "longview",
+    "city": "Longview",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-lubbock",
+    "label": "Lubbock (retired)",
+    "subdomain": "lubbock",
+    "city": "Lubbock",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-bethlehem",
+    "label": "Bethlehem (retired)",
+    "subdomain": "bethlehem",
+    "city": "Bethlehem",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-santarosa",
+    "label": "Santa Rosa (retired)",
+    "subdomain": "santarosa",
+    "city": "Santa Rosa",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-sarasota",
+    "label": "Sarasota (retired)",
+    "subdomain": "sarasota",
+    "city": "Sarasota",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-brattleboro",
+    "label": "Brattleboro (retired)",
+    "subdomain": "brattleboro",
+    "city": "Brattleboro",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-carbondale",
+    "label": "Carbondale (retired)",
+    "subdomain": "carbondale",
+    "city": "Carbondale",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-montpelier",
+    "label": "Montpelier (retired)",
+    "subdomain": "montpelier",
+    "city": "Montpelier",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-waco",
+    "label": "Waco (retired)",
+    "subdomain": "waco",
+    "city": "Waco",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-muncie",
+    "label": "Muncie (retired)",
+    "subdomain": "muncie",
+    "city": "Muncie",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-montgomery",
+    "label": "Montgomery (retired)",
+    "subdomain": "montgomery",
+    "city": "Montgomery",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-amarillo",
+    "label": "Amarillo (retired)",
+    "subdomain": "amarillo",
+    "city": "Amarillo",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-rapidcity",
+    "label": "Rapid City (retired)",
+    "subdomain": "rapidcity",
+    "city": "Rapid City",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-telluride",
+    "label": "Telluride (retired)",
+    "subdomain": "telluride",
+    "city": "Telluride",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-mammothlakes",
+    "label": "Mammoth Lakes (retired)",
+    "subdomain": "mammothlakes",
+    "city": "Mammoth Lakes",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-eurekasprings",
+    "label": "Eureka Springs (retired)",
+    "subdomain": "eurekasprings",
+    "city": "Eureka Springs",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-northampton",
+    "label": "Northampton (retired)",
+    "subdomain": "northampton",
+    "city": "Northampton",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  },
+  {
+    "metroId": "r-tahoe",
+    "label": "South Lake Tahoe (retired)",
+    "subdomain": "tahoe",
+    "city": "South Lake Tahoe",
+    "country": "United States",
+    "countryCode": "US",
+    "timezone": null
+  }
+]
