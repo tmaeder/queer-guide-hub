@@ -2,6 +2,8 @@
 // Used by source-rss-news/index.ts; kept out of index.ts so tests can import
 // without triggering its Deno.serve() entrypoint.
 
+import { stripHtmlTags, decodeHtmlEntities } from '../_shared/news-quality/sanitize.ts'
+
 export function parseRssItems(xml: string, isPodcast = false): Record<string, unknown>[] {
   const items: Record<string, unknown>[] = []
   const itemRegex = /<item>([\s\S]*?)<\/item>/gi
@@ -101,39 +103,28 @@ export function extractMediaUrl(block: string): string | null {
 }
 
 export function cleanText(s: string): string {
-  // Phase 1: strip HTML entity references for angle brackets BEFORE any
-  // other decoding. `&lt;` / `&gt;` are stripped (not decoded) so they can
-  // never reintroduce raw `<` or `>` characters. Single-character regex,
-  // no multi-char sanitization concern.
-  let out = s.replace(/&lt;/g, '').replace(/&gt;/g, '')
+  if (!s) return ''
+  // Iteratively decode entities → strip WHOLE tags (name + attributes) →
+  // decode again, until stable. Uses the shared single-pass state-machine
+  // stripHtmlTags: a `<` opens tag mode, `>` closes it, so an entire
+  // `<figure class="…">` is removed — NOT just its angle brackets. The old
+  // implementation stripped only `<`/`>` (and `&lt;`/`&gt;`), which left tag
+  // guts as visible text (`figure class="…"`, `pThe headline/p`) and fused
+  // tag names to adjacent words — the root cause of "broken HTML" in stored
+  // articles. The state machine is equally CodeQL-safe (no regex tag match,
+  // nothing for js/incomplete-multi-character-sanitization to flag).
+  let out = s
+  for (let i = 0; i < 4; i++) {
+    const before = out
+    out = stripHtmlTags(decodeHtmlEntities(out))
+    if (out === before) break
+  }
+  out = decodeHtmlEntities(out)
 
-  // Phase 2: strip angle brackets. This is the terminal sanitizer for
-  // HTML-injection risk — every subsequent transformation in this function
-  // is text-only (entity decoding for non-bracket entities + cosmetic
-  // regexes) and cannot reintroduce `<` or `>`.
-  out = out.replace(/</g, '').replace(/>/g, '')
-
-  // Phase 3: decode the remaining entities. None of these can produce an
-  // angle bracket directly, but a doubly-encoded payload like
-  // `&amp;lt;script&amp;gt;` is unchanged by Phases 1+2 (no literal `&lt;`,
-  // no literal `<`) and gets decoded here to `&lt;script&gt;`. That output is
-  // XSS-safe in any React text context, but Phase 3b below re-strips brackets
-  // and bracket entities after decode to close the loop and silence CodeQL
-  // `js/incomplete-multi-character-sanitization`.
-  const AMP_SENTINEL = '__AMP_SENTINEL__'
-  out = out
-    .replace(/&amp;/g, AMP_SENTINEL)
-    .replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&#8217;/g, "'") // smart apostrophe
-    .replace(/&#8220;/g, '\u201c').replace(/&#8221;/g, '\u201d').replace(/&#8211;/g, '\u2013')
-    .replace(new RegExp(AMP_SENTINEL, 'g'), '&')
-    .replace(/&nbsp;/g, ' ').replace(/\u00a0/g, ' ')
-
-  // Phase 3b: defensive re-strip after entity decode.
-  out = out.replace(/&lt;/g, '').replace(/&gt;/g, '').replace(/</g, '').replace(/>/g, '')
-
-  // Phase 4: cosmetic RSS-junk removal.
+  // Cosmetic RSS-junk removal.
   return out
     .replace(/The post .* appeared first on .*\./g, '')
     .replace(/Continue reading.*/g, '')
+    .replace(/[ \t]{2,}/g, ' ')
     .trim()
 }
