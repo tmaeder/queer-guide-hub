@@ -1530,6 +1530,12 @@
         "thisWeek": "이번 주",
         "later": "이후"
       }
+    },
+    "shop": {
+      "eyebrow": "마켓플레이스",
+      "title": "퀴어 브랜드",
+      "description": "퀴어·트랜스 운영 비즈니스의 상품과 서비스.",
+      "seeAll": "마켓플레이스 보기"
     }
   },
   "header": {

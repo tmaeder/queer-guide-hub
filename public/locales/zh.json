@@ -1530,6 +1530,12 @@
         "thisWeek": "本周",
         "later": "稍后"
       }
+    },
+    "shop": {
+      "eyebrow": "市集",
+      "title": "酷儿品牌精选",
+      "description": "来自酷儿及跨性别经营商家的商品与服务。",
+      "seeAll": "前往市集"
     }
   },
   "header": {
