@@ -242,8 +242,12 @@ export async function classifyPageLlm(
   args: { entityType: EntityType; entityId: string; url: string; html: string },
 ): Promise<ExistenceSignal | null> {
   const { entityType, entityId, url, html } = args
-  const text = html.replace(/<script[\s\S]*?<\/script>/gi, ' ').replace(/<style[\s\S]*?<\/style>/gi, ' ')
-    .replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().substring(0, 4000)
+  const doc = new DOMParser().parseFromString(html, 'text/html')
+  if (doc) {
+    doc.querySelectorAll('script, style').forEach((el) => el.remove())
+  }
+  const extracted = doc?.body?.textContent ?? html.replace(/<[^>]+>/g, ' ')
+  const text = extracted.replace(/\s+/g, ' ').trim().substring(0, 4000)
   if (text.length < 60) return null
   const ud = (s: string) => `<user_data>${s.replace(/<\/?user_data>/gi, '')}</user_data>`
   try {
