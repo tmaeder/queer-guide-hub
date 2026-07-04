@@ -90,8 +90,8 @@ async function sql(query, attempt = 0) {
     if (attempt < 4) { await new Promise((r) => setTimeout(r, 1000 * 2 ** attempt)); return sql(query, attempt + 1) }
     throw e
   }
-  // Retry transient Management-API failures (502/503/504/429) with backoff.
-  if ([429, 502, 503, 504].includes(res.status) && attempt < 4) {
+  // Retry transient Management-API failures (429 + any 5xx incl. 544 conn-timeout) with backoff.
+  if ((res.status === 429 || res.status >= 500) && attempt < 4) {
     await new Promise((r) => setTimeout(r, 1000 * 2 ** attempt))
     return sql(query, attempt + 1)
   }
