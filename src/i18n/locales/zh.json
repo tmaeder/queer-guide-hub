@@ -574,7 +574,9 @@
         "safety": "安全用品",
         "lgbtq-specific": "LGBTQ+ 专用",
         "other": "其他"
-      }
+      },
+      "scopeAll": "[ZH] Everyone",
+      "scopeMine": "[ZH] Mine"
     },
     "collaborate": {
       "chat": "聊天",
@@ -894,6 +896,44 @@
       "saveAria": "Save trip",
       "unsaveAria": "Unsave trip",
       "error": "Could not update save"
+    },
+    "dayNotes": {
+      "addTitle": "[ZH] Add a note to this day",
+      "textLabel": "[ZH] Note",
+      "textPlaceholder": "[ZH] e.g. Check-out by 11:00",
+      "timeLabel": "[ZH] Time (optional)",
+      "iconLabel": "[ZH] Icon",
+      "save": "[ZH] Add note",
+      "added": "[ZH] Note added",
+      "delete": "[ZH] Delete note"
+    },
+    "weather": {
+      "clear": "[ZH] Clear",
+      "partlyCloudy": "[ZH] Partly cloudy",
+      "overcast": "[ZH] Overcast",
+      "fog": "[ZH] Fog",
+      "drizzle": "[ZH] Drizzle",
+      "rain": "[ZH] Rain",
+      "snow": "[ZH] Snow",
+      "thunderstorm": "[ZH] Thunderstorm",
+      "typical": "[ZH] typical"
+    },
+    "conflicts": {
+      "chip_one": "[ZH] {{count}} conflict",
+      "chip_other": "[ZH] {{count}} conflicts"
+    },
+    "legs": {
+      "switchMode": "[ZH] Switch transport mode",
+      "modeAria": "[ZH] Transport mode: {{mode}} — click to change",
+      "mode": {
+        "walk": "[ZH] walk",
+        "transit": "[ZH] transit",
+        "drive": "[ZH] drive"
+      },
+      "walkingTotal": "[ZH] {{distance}} walking"
+    },
+    "suggestions": {
+      "accessMatch": "[ZH] Matches your needs"
     }
   },
   "auth": {

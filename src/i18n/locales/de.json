@@ -574,7 +574,9 @@
         "safety": "Sicherheit",
         "lgbtq-specific": "LGBTQ+-spezifisch",
         "other": "Sonstiges"
-      }
+      },
+      "scopeAll": "[DE] Everyone",
+      "scopeMine": "[DE] Mine"
     },
     "collaborate": {
       "chat": "Chat",
@@ -894,6 +896,44 @@
       "saveAria": "Save trip",
       "unsaveAria": "Unsave trip",
       "error": "Could not update save"
+    },
+    "dayNotes": {
+      "addTitle": "[DE] Add a note to this day",
+      "textLabel": "[DE] Note",
+      "textPlaceholder": "[DE] e.g. Check-out by 11:00",
+      "timeLabel": "[DE] Time (optional)",
+      "iconLabel": "[DE] Icon",
+      "save": "[DE] Add note",
+      "added": "[DE] Note added",
+      "delete": "[DE] Delete note"
+    },
+    "weather": {
+      "clear": "[DE] Clear",
+      "partlyCloudy": "[DE] Partly cloudy",
+      "overcast": "[DE] Overcast",
+      "fog": "[DE] Fog",
+      "drizzle": "[DE] Drizzle",
+      "rain": "[DE] Rain",
+      "snow": "[DE] Snow",
+      "thunderstorm": "[DE] Thunderstorm",
+      "typical": "[DE] typical"
+    },
+    "conflicts": {
+      "chip_one": "[DE] {{count}} conflict",
+      "chip_other": "[DE] {{count}} conflicts"
+    },
+    "legs": {
+      "switchMode": "[DE] Switch transport mode",
+      "modeAria": "[DE] Transport mode: {{mode}} — click to change",
+      "mode": {
+        "walk": "[DE] walk",
+        "transit": "[DE] transit",
+        "drive": "[DE] drive"
+      },
+      "walkingTotal": "[DE] {{distance}} walking"
+    },
+    "suggestions": {
+      "accessMatch": "[DE] Matches your needs"
     }
   },
   "help": {

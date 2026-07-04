@@ -574,7 +574,9 @@
         "safety": "السلامة",
         "lgbtq-specific": "خاص بمجتمع الميم",
         "other": "أخرى"
-      }
+      },
+      "scopeAll": "[AR] Everyone",
+      "scopeMine": "[AR] Mine"
     },
     "collaborate": {
       "chat": "الدردشة",
@@ -894,6 +896,44 @@
       "saveAria": "Save trip",
       "unsaveAria": "Unsave trip",
       "error": "Could not update save"
+    },
+    "dayNotes": {
+      "addTitle": "[AR] Add a note to this day",
+      "textLabel": "[AR] Note",
+      "textPlaceholder": "[AR] e.g. Check-out by 11:00",
+      "timeLabel": "[AR] Time (optional)",
+      "iconLabel": "[AR] Icon",
+      "save": "[AR] Add note",
+      "added": "[AR] Note added",
+      "delete": "[AR] Delete note"
+    },
+    "weather": {
+      "clear": "[AR] Clear",
+      "partlyCloudy": "[AR] Partly cloudy",
+      "overcast": "[AR] Overcast",
+      "fog": "[AR] Fog",
+      "drizzle": "[AR] Drizzle",
+      "rain": "[AR] Rain",
+      "snow": "[AR] Snow",
+      "thunderstorm": "[AR] Thunderstorm",
+      "typical": "[AR] typical"
+    },
+    "conflicts": {
+      "chip_one": "[AR] {{count}} conflict",
+      "chip_other": "[AR] {{count}} conflicts"
+    },
+    "legs": {
+      "switchMode": "[AR] Switch transport mode",
+      "modeAria": "[AR] Transport mode: {{mode}} — click to change",
+      "mode": {
+        "walk": "[AR] walk",
+        "transit": "[AR] transit",
+        "drive": "[AR] drive"
+      },
+      "walkingTotal": "[AR] {{distance}} walking"
+    },
+    "suggestions": {
+      "accessMatch": "[AR] Matches your needs"
     }
   },
   "auth": {

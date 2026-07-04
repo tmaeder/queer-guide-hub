@@ -602,7 +602,9 @@
         "safety": "Безопасность",
         "lgbtq-specific": "Для ЛГБТ+",
         "other": "Другое"
-      }
+      },
+      "scopeAll": "[RU] Everyone",
+      "scopeMine": "[RU] Mine"
     },
     "collaborate": {
       "chat": "Чат",
@@ -922,6 +924,44 @@
       "saveAria": "Save trip",
       "unsaveAria": "Unsave trip",
       "error": "Could not update save"
+    },
+    "dayNotes": {
+      "addTitle": "[RU] Add a note to this day",
+      "textLabel": "[RU] Note",
+      "textPlaceholder": "[RU] e.g. Check-out by 11:00",
+      "timeLabel": "[RU] Time (optional)",
+      "iconLabel": "[RU] Icon",
+      "save": "[RU] Add note",
+      "added": "[RU] Note added",
+      "delete": "[RU] Delete note"
+    },
+    "weather": {
+      "clear": "[RU] Clear",
+      "partlyCloudy": "[RU] Partly cloudy",
+      "overcast": "[RU] Overcast",
+      "fog": "[RU] Fog",
+      "drizzle": "[RU] Drizzle",
+      "rain": "[RU] Rain",
+      "snow": "[RU] Snow",
+      "thunderstorm": "[RU] Thunderstorm",
+      "typical": "[RU] typical"
+    },
+    "conflicts": {
+      "chip_one": "[RU] {{count}} conflict",
+      "chip_other": "[RU] {{count}} conflicts"
+    },
+    "legs": {
+      "switchMode": "[RU] Switch transport mode",
+      "modeAria": "[RU] Transport mode: {{mode}} — click to change",
+      "mode": {
+        "walk": "[RU] walk",
+        "transit": "[RU] transit",
+        "drive": "[RU] drive"
+      },
+      "walkingTotal": "[RU] {{distance}} walking"
+    },
+    "suggestions": {
+      "accessMatch": "[RU] Matches your needs"
     }
   },
   "auth": {

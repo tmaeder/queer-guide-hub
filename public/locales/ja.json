@@ -574,7 +574,9 @@
         "safety": "安全用品",
         "lgbtq-specific": "LGBTQ+ 向け",
         "other": "その他"
-      }
+      },
+      "scopeAll": "[JA] Everyone",
+      "scopeMine": "[JA] Mine"
     },
     "collaborate": {
       "chat": "チャット",
@@ -894,6 +896,44 @@
       "saveAria": "Save trip",
       "unsaveAria": "Unsave trip",
       "error": "Could not update save"
+    },
+    "dayNotes": {
+      "addTitle": "[JA] Add a note to this day",
+      "textLabel": "[JA] Note",
+      "textPlaceholder": "[JA] e.g. Check-out by 11:00",
+      "timeLabel": "[JA] Time (optional)",
+      "iconLabel": "[JA] Icon",
+      "save": "[JA] Add note",
+      "added": "[JA] Note added",
+      "delete": "[JA] Delete note"
+    },
+    "weather": {
+      "clear": "[JA] Clear",
+      "partlyCloudy": "[JA] Partly cloudy",
+      "overcast": "[JA] Overcast",
+      "fog": "[JA] Fog",
+      "drizzle": "[JA] Drizzle",
+      "rain": "[JA] Rain",
+      "snow": "[JA] Snow",
+      "thunderstorm": "[JA] Thunderstorm",
+      "typical": "[JA] typical"
+    },
+    "conflicts": {
+      "chip_one": "[JA] {{count}} conflict",
+      "chip_other": "[JA] {{count}} conflicts"
+    },
+    "legs": {
+      "switchMode": "[JA] Switch transport mode",
+      "modeAria": "[JA] Transport mode: {{mode}} — click to change",
+      "mode": {
+        "walk": "[JA] walk",
+        "transit": "[JA] transit",
+        "drive": "[JA] drive"
+      },
+      "walkingTotal": "[JA] {{distance}} walking"
+    },
+    "suggestions": {
+      "accessMatch": "[JA] Matches your needs"
     }
   },
   "auth": {
