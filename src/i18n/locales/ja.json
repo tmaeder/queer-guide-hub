@@ -615,7 +615,8 @@
       "budget": "予算",
       "reservations": "予約",
       "packing": "荷造り",
-      "collaborate": "コラボ"
+      "collaborate": "コラボ",
+      "journal": "日記"
     },
     "today": {
       "offlineBanner": "オフラインです — 最後に保存した旅程を表示しています。",
@@ -930,10 +931,49 @@
         "transit": "公共交通機関",
         "drive": "車"
       },
-      "walkingTotal": "徒歩{{distance}}"
+      "walkingTotal": "徒歩{{distance}}",
+      "optimize": "ルート順を最適化",
+      "directions": "この日をGoogle マップで開く"
     },
     "suggestions": {
       "accessMatch": "ニーズに一致"
+    },
+    "journal": {
+      "placeholder": "今日は何がありましたか？小さな出来事も大切に。",
+      "moodLabel": "気分",
+      "mood": {
+        "joy": "最高",
+        "good": "良い",
+        "mixed": "複雑",
+        "tough": "大変"
+      },
+      "addPhotos": "写真",
+      "save": "記録を保存",
+      "saved": "日記を保存しました",
+      "empty": "まだ日記がありません。",
+      "delete": "記録を削除",
+      "removePhoto": "写真を削除",
+      "member": "旅行者"
+    },
+    "import": {
+      "button": "インポート",
+      "title": "場所をインポート",
+      "pickFile": "ファイルを選択",
+      "formats": "GPX、KML、GeoJSON、Google Takeout（保存済みスポットJSON / リストCSV）",
+      "noPlaces": "このファイルに場所が見つかりません。",
+      "matching": "スポットを照合中…",
+      "matchCount": "{{count}}件がqueer.guideのスポットと一致",
+      "changeFile": "ファイルを変更",
+      "matched": "既存スポット",
+      "customPin": "カスタムピン",
+      "noCoords": "座標なし — 名前のみ",
+      "confirm": "{{count}}件の場所をインポート",
+      "done": "{{count}}件の場所をインポートしました",
+      "doneHint": "未予定のプールに入ります — 日程にドラッグしてください。"
+    },
+    "offline": {
+      "pending_one": "{{count}}件の変更が同期待ち",
+      "pending_other": "{{count}}件の変更が同期待ち"
     }
   },
   "auth": {
@@ -3017,5 +3057,12 @@
       "dismiss": "閉じる",
       "ariaLabel": "アプリをインストール"
     }
+  },
+  "atlas": {
+    "summary": "訪問済み{{visited}}か国 · バケットリスト{{bucket}}か国",
+    "hint": "国をタップしてマーク",
+    "visited": "訪問済み",
+    "bucket": "バケットリスト",
+    "fromTrips": "完了した旅行により訪問済みになりました"
   }
 }

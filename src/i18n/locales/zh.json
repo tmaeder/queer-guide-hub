@@ -615,7 +615,8 @@
       "budget": "预算",
       "reservations": "预订",
       "packing": "行李",
-      "collaborate": "协作"
+      "collaborate": "协作",
+      "journal": "日记"
     },
     "today": {
       "offlineBanner": "您处于离线状态 — 显示上次保存的行程。",
@@ -930,10 +931,49 @@
         "transit": "公共交通",
         "drive": "驾车"
       },
-      "walkingTotal": "步行 {{distance}}"
+      "walkingTotal": "步行 {{distance}}",
+      "optimize": "优化路线顺序",
+      "directions": "在 Google 地图中打开这一天"
     },
     "suggestions": {
       "accessMatch": "符合您的需求"
+    },
+    "journal": {
+      "placeholder": "今天发生了什么？小小的瞬间也值得记录。",
+      "moodLabel": "心情",
+      "mood": {
+        "joy": "开心",
+        "good": "不错",
+        "mixed": "复杂",
+        "tough": "艰难"
+      },
+      "addPhotos": "照片",
+      "save": "保存记录",
+      "saved": "日记已保存",
+      "empty": "还没有日记。",
+      "delete": "删除记录",
+      "removePhoto": "移除照片",
+      "member": "旅行者"
+    },
+    "import": {
+      "button": "导入",
+      "title": "导入地点",
+      "pickFile": "选择文件",
+      "formats": "GPX、KML、GeoJSON 或 Google Takeout（已保存地点 JSON / 列表 CSV）",
+      "noPlaces": "未在此文件中找到地点。",
+      "matching": "正在匹配场所…",
+      "matchCount": "{{count}} 个已匹配到 queer.guide 场所",
+      "changeFile": "更换文件",
+      "matched": "现有场所",
+      "customPin": "自定义图钉",
+      "noCoords": "无坐标 — 仅名称",
+      "confirm": "导入 {{count}} 个地点",
+      "done": "已导入 {{count}} 个地点",
+      "doneHint": "它们会进入未安排列表 — 拖到具体日期即可。"
+    },
+    "offline": {
+      "pending_one": "{{count}} 项更改待同步",
+      "pending_other": "{{count}} 项更改待同步"
     }
   },
   "auth": {
@@ -3017,5 +3057,12 @@
       "dismiss": "关闭",
       "ariaLabel": "安装应用"
     }
+  },
+  "atlas": {
+    "summary": "已访问 {{visited}} 个国家 · 愿望清单 {{bucket}} 个",
+    "hint": "点按国家进行标记",
+    "visited": "已访问",
+    "bucket": "愿望清单",
+    "fromTrips": "因已完成的旅行标记为已访问"
   }
 }

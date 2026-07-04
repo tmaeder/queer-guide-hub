@@ -615,7 +615,8 @@
       "budget": "الميزانية",
       "reservations": "الحجوزات",
       "packing": "التعبئة",
-      "collaborate": "التعاون"
+      "collaborate": "التعاون",
+      "journal": "اليوميات"
     },
     "today": {
       "offlineBanner": "أنت غير متصل — نعرض آخر خط سير محفوظ.",
@@ -930,10 +931,49 @@
         "transit": "المواصلات العامة",
         "drive": "بالسيارة"
       },
-      "walkingTotal": "{{distance}} مشيًا"
+      "walkingTotal": "{{distance}} مشيًا",
+      "optimize": "تحسين ترتيب المسار",
+      "directions": "فتح اليوم في خرائط Google"
     },
     "suggestions": {
       "accessMatch": "يلبي احتياجاتك"
+    },
+    "journal": {
+      "placeholder": "ماذا حدث اليوم؟ اللحظات الصغيرة مهمة أيضًا.",
+      "moodLabel": "المزاج",
+      "mood": {
+        "joy": "سعيد",
+        "good": "جيد",
+        "mixed": "متقلب",
+        "tough": "صعب"
+      },
+      "addPhotos": "صور",
+      "save": "حفظ المدخلة",
+      "saved": "تم حفظ مدخلة اليوميات",
+      "empty": "لا توجد مدخلات في اليوميات بعد.",
+      "delete": "حذف المدخلة",
+      "removePhoto": "إزالة الصورة",
+      "member": "مسافر/ة"
+    },
+    "import": {
+      "button": "استيراد",
+      "title": "استيراد أماكن",
+      "pickFile": "اختر ملفًا",
+      "formats": "GPX أو KML أو GeoJSON أو Google Takeout (JSON للأماكن المحفوظة / CSV للقوائم)",
+      "noPlaces": "لم يتم العثور على أماكن في هذا الملف.",
+      "matching": "جارٍ مطابقة الأماكن…",
+      "matchCount": "تمت مطابقة {{count}} مع أماكن queer.guide",
+      "changeFile": "تغيير الملف",
+      "matched": "مكان موجود",
+      "customPin": "دبوس مخصص",
+      "noCoords": "بدون إحداثيات — الاسم فقط",
+      "confirm": "استيراد {{count}} من الأماكن",
+      "done": "تم استيراد {{count}} من الأماكن",
+      "doneHint": "ستوضع في قائمة غير المجدولة — اسحبها إلى الأيام."
+    },
+    "offline": {
+      "pending_one": "تغيير واحد بانتظار المزامنة",
+      "pending_other": "{{count}} تغييرات بانتظار المزامنة"
     }
   },
   "auth": {
@@ -3017,5 +3057,12 @@
       "dismiss": "إغلاق",
       "ariaLabel": "تثبيت التطبيق"
     }
+  },
+  "atlas": {
+    "summary": "زرت {{visited}} دولة · {{bucket}} في قائمة أمنياتك",
+    "hint": "انقر على دولة لتمييزها",
+    "visited": "تمت زيارتها",
+    "bucket": "قائمة الأمنيات",
+    "fromTrips": "وُسمت كمزارة بعد رحلة مكتملة"
   }
 }
