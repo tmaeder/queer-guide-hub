@@ -1032,7 +1032,9 @@
         "safety": "Safety",
         "lgbtq-specific": "LGBTQ+ specific",
         "other": "Other"
-      }
+      },
+      "scopeAll": "Everyone",
+      "scopeMine": "Mine"
     },
     "collaborate": {
       "chat": "Chat",
