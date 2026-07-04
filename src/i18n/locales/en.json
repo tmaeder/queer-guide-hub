@@ -1390,6 +1390,22 @@
       "delete": "Delete entry",
       "removePhoto": "Remove photo",
       "member": "Traveler"
+    },
+    "import": {
+      "button": "Import",
+      "title": "Import places",
+      "pickFile": "Choose a file",
+      "formats": "GPX, KML, GeoJSON or Google Takeout (Saved Places JSON / list CSV)",
+      "noPlaces": "No places found in this file.",
+      "matching": "Matching venues…",
+      "matchCount": "{{count}} matched to queer.guide venues",
+      "changeFile": "Change file",
+      "matched": "Existing venue",
+      "customPin": "Custom pin",
+      "noCoords": "No coordinates — name only",
+      "confirm": "Import {{count}} places",
+      "done": "{{count}} places imported",
+      "doneHint": "They land in the unscheduled pool — drag them onto days."
     }
   },
   "help": {

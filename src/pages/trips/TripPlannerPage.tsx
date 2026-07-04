@@ -35,6 +35,7 @@ import { TripNudgesBanner } from '@/components/trips/TripNudgesBanner';
 import { TripTravelBuddiesCTA } from '@/components/trips/TripTravelBuddiesCTA';
 import { MarketplaceForTrip } from '@/components/marketplace/MarketplaceForTrip';
 import { AddPlaceDialog } from '@/components/trips/AddPlaceDialog';
+import { ImportPlacesDialog } from '@/components/trips/ImportPlacesDialog';
 import { ShareTripDialog } from '@/components/trips/ShareTripDialog';
 import { TripBookingAssistant } from '@/components/trips/TripBookingAssistant';
 import { TripSuggestions } from '@/components/trips/TripSuggestions';
@@ -121,6 +122,7 @@ export default function TripPlannerPage() {
   const { data: trip, isLoading, error } = useTrip(tripId);
   const [addPlaceDay, setAddPlaceDay] = useState<string | undefined>();
   const [addPlaceOpen, setAddPlaceOpen] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
   const [mobileBookingOpen, setMobileBookingOpen] = useState(false);
   const [offlineSaved, setOfflineSaved] = useState(false);
@@ -298,18 +300,29 @@ export default function TripPlannerPage() {
           )}
         </span>
         {canEdit && (
-          <Button
-            variant="brand"
-            size="sm"
-            onClick={() => {
-              setAddPlaceDay(undefined);
-              setAddPlaceOpen(true);
-            }}
-            className="rounded-full"
-          >
-            <Plus size={16} className="mr-1.5" />
-            {t('trips.itinerary.addPlace')}
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setImportOpen(true)}
+              className="rounded-full"
+            >
+              <Download size={14} className="mr-1.5" />
+              {t('trips.import.button', 'Import')}
+            </Button>
+            <Button
+              variant="brand"
+              size="sm"
+              onClick={() => {
+                setAddPlaceDay(undefined);
+                setAddPlaceOpen(true);
+              }}
+              className="rounded-full"
+            >
+              <Plus size={16} className="mr-1.5" />
+              {t('trips.itinerary.addPlace')}
+            </Button>
+          </div>
         )}
       </div>
 
@@ -577,6 +590,13 @@ export default function TripPlannerPage() {
         days={trip.trip_days}
         places={trip.trip_places}
         preselectedDayId={addPlaceDay}
+      />
+
+      <ImportPlacesDialog
+        open={importOpen}
+        onClose={() => setImportOpen(false)}
+        tripId={trip.id}
+        nextSortOrder={trip.trip_places.length}
       />
 
       <ShareTripDialog
