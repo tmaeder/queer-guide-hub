@@ -120,7 +120,6 @@
   },
   "search": {
     "placeholder": "Search places worldwide...",
-    "nearMe": "Near Me",
     "filters": "Filters",
     "continent": "Continent",
     "all": "All",
