@@ -127,13 +127,9 @@ export function serveEnrichment(config: EnrichmentDriverConfig) {
         if (!outcome.succeeded && !itemError) itemError = 'no_enrichment_data_produced'
         const status = outcome.succeeded ? 'success' : 'failed'
 
-        if (outcome.mergedNormalized) {
-          await supabase
-            .from('ingestion_staging')
-            .update({ normalized_data: outcome.mergedNormalized })
-            .eq('id', item.id)
-        }
-
+        // The normalized_data merge rides along inside the RPC — one round-trip
+        // instead of a separate per-row UPDATE (the double-write folded per the
+        // #1923 follow-up; requires migration 20260704150000).
         const { error: applyErr } = await supabase.rpc('apply_enrichment', {
           p_staging_id: item.id,
           p_pipeline_run_id: pipelineRunId ?? null,
@@ -143,6 +139,7 @@ export function serveEnrichment(config: EnrichmentDriverConfig) {
           p_status: status,
           p_error_message: itemError,
           p_duration_ms: Date.now() - startedAt,
+          p_merged_normalized: outcome.mergedNormalized ?? null,
         })
 
         if (applyErr) {
