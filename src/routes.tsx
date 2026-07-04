@@ -156,6 +156,8 @@ const NewsStoryDetail = lazyRetry(() => import('./pages/NewsStoryDetail'));
 const Settings = lazyRetry(() => import('./pages/Settings'));
 const IntimateOnboard = lazyRetry(() => import('./pages/intimate/IntimateOnboard'));
 const IntimateUserDetail = lazyRetry(() => import('./pages/intimate/IntimateUserDetail'));
+const KinkChecklist = lazyRetry(() => import('./pages/tools/KinkChecklist'));
+const KinkShareView = lazyRetry(() => import('./pages/tools/KinkShareView'));
 
 const People = lazyRetry(() => import('./pages/people/People'));
 const Community = lazyRetry(() => import('./pages/Community'));
@@ -585,6 +587,9 @@ export const AppRoutes = () => {
                 <Route path="cruising" element={<LocalizedRedirect to="/people/dating" />} />
                 <Route path="intimate/onboard" element={<IntimateOnboard />} />
                 <Route path="intimate/u/:userId" element={<IntimateUserDetail />} />
+                {/* Kink checklist tool — static paths (see people/* locale note). */}
+                <Route path="tools/checklist" element={<KinkChecklist />} />
+                <Route path="tools/checklist/s/:code" element={<KinkShareView />} />
                 <Route path="profile/tiers" element={<Navigate to="/me/progress" replace />} />
                 <Route path="profile/footprint" element={<Navigate to="/me/travel" replace />} />
                 <Route path="profile/footprint/:userId/public" element={<FootprintRedirect />} />

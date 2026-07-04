@@ -60,6 +60,13 @@ export function IntimateTab() {
             </Button>
             <Button
               variant="outline"
+              onClick={() => navigate('/tools/checklist')}
+              className="rounded-element"
+            >
+              Interests & boundaries checklist
+            </Button>
+            <Button
+              variant="outline"
               onClick={() => navigate('/intimate')}
               className="rounded-element"
             >

@@ -19,7 +19,31 @@ import {
   useSetPhotoUnlock,
   useShareLocation,
 } from '@/hooks/useIntimateThread';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
+import { KinkPeerActions } from '@/components/kinks/KinkPeerActions';
 import { cn } from '@/lib/utils';
+
+/** The other participant of a two-person match thread. */
+function useOtherParticipant(conversationId: string) {
+  const { user } = useAuth();
+  return useQuery({
+    queryKey: ['conversation-other', conversationId, user?.id],
+    enabled: !!user,
+    queryFn: async (): Promise<string | null> => {
+      if (!user) return null;
+      const { data, error } = await supabase
+        .from('conversation_participants')
+        .select('user_id')
+        .eq('conversation_id', conversationId)
+        .neq('user_id', user.id)
+        .limit(1);
+      if (error) throw error;
+      return data?.[0]?.user_id ?? null;
+    },
+  });
+}
 
 interface IntimateMatchThreadProps {
   conversationId: string;
@@ -79,6 +103,7 @@ export function IntimateMatchThread({
   const endMutation = useEndIntimateThread(conversationId);
   const photoMutation = useSetPhotoUnlock(conversationId);
   const locationMutation = useShareLocation(conversationId);
+  const { data: otherId } = useOtherParticipant(conversationId);
   const [confirmEnd, setConfirmEnd] = useState(false);
 
   if (!consent) return null;
@@ -203,6 +228,21 @@ export function IntimateMatchThread({
           )}
         </div>
       </div>
+
+      {/* Interests compare — double-opt-in intersection reveal */}
+      {otherId && (
+        <div className="flex flex-col gap-2 rounded-element border border-border p-4">
+          <p className="text-sm font-medium">Interests & boundaries</p>
+          <p className="text-13 text-muted-foreground">
+            Compare checklists — you'll each only see what you both marked positively.
+          </p>
+          <KinkPeerActions
+            otherId={otherId}
+            conversationId={conversationId}
+            onOpeningLine={onPickOpeningMove}
+          />
+        </div>
+      )}
 
       {!hasMessages && moves.length > 0 && (
         <div className="rounded-element border border-dashed border-border p-4">
