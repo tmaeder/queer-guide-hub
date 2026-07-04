@@ -23,7 +23,7 @@ vi.mock('@/components/routing/LocalizedLink', () => ({
 }));
 
 describe('TopicHubGrid', () => {
-  it('renders one link per non-adult topic to /resources/topic/:slug', () => {
+  it('renders one link per non-adult topic to /tags/topic/:slug', () => {
     const { container } = render(
       <MemoryRouter>
         <TopicHubGrid />
@@ -31,7 +31,7 @@ describe('TopicHubGrid', () => {
     );
     const nonAdult = TOPIC_HUBS.filter((t) => !t.adult);
     for (const t of nonAdult) {
-      const link = container.querySelector(`a[href="/resources/topic/${t.slug}"]`);
+      const link = container.querySelector(`a[href="/tags/topic/${t.slug}"]`);
       expect(link, `expected link for topic ${t.slug}`).not.toBeNull();
     }
   });
@@ -44,7 +44,7 @@ describe('TopicHubGrid', () => {
     );
     const adult = TOPIC_HUBS.filter((t) => t.adult);
     for (const t of adult) {
-      const link = container.querySelector(`a[href="/resources/topic/${t.slug}"]`);
+      const link = container.querySelector(`a[href="/tags/topic/${t.slug}"]`);
       expect(link, `did not expect adult topic ${t.slug}`).toBeNull();
     }
   });
