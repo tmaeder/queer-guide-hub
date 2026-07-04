@@ -22,15 +22,17 @@ import {
 } from 'lucide-react';
 import { format, differenceInDays } from 'date-fns';
 import { useTranslation } from 'react-i18next';
-import { useTrip, type TripWithDetails } from '@/hooks/useTrips';
+import { useTrip, canEditTrip, type TripWithDetails } from '@/hooks/useTrips';
+import { useAuth } from '@/hooks/useAuth';
 import { useTripReservations } from '@/hooks/useTripReservations';
 import { cacheTripSnapshot } from '@/utils/offlineTripPack';
 import { useToast } from '@/hooks/use-toast';
 import { DraggableItinerary } from '@/components/trips/DraggableItinerary';
-import { TripMap } from '@/components/trips/TripMap';
+import { TripMap } from '@/components/trips/TripMapLazy';
 import { TripSafetyBriefing } from '@/components/trips/TripSafetyBriefing';
 import { TripNudgesBanner } from '@/components/trips/TripNudgesBanner';
 import { TripTravelBuddiesCTA } from '@/components/trips/TripTravelBuddiesCTA';
+import { MarketplaceForTrip } from '@/components/marketplace/MarketplaceForTrip';
 import { AddPlaceDialog } from '@/components/trips/AddPlaceDialog';
 import { ShareTripDialog } from '@/components/trips/ShareTripDialog';
 import { TripBookingAssistant } from '@/components/trips/TripBookingAssistant';
@@ -118,6 +120,8 @@ export default function TripPlannerPage() {
   const [offlineSaved, setOfflineSaved] = useState(false);
   const { data: reservations } = useTripReservations(tripId);
   const { toast } = useToast();
+  const { user } = useAuth();
+  const canEdit = trip ? canEditTrip(trip, user?.id) : false;
 
   const handleSaveOffline = async () => {
     if (!tripId || !trip) return;
@@ -287,18 +291,20 @@ export default function TripPlannerPage() {
             </>
           )}
         </span>
-        <Button
-          variant="brand"
-          size="sm"
-          onClick={() => {
-            setAddPlaceDay(undefined);
-            setAddPlaceOpen(true);
-          }}
-          className="rounded-full"
-        >
-          <Plus size={16} className="mr-1.5" />
-          {t('trips.itinerary.addPlace')}
-        </Button>
+        {canEdit && (
+          <Button
+            variant="brand"
+            size="sm"
+            onClick={() => {
+              setAddPlaceDay(undefined);
+              setAddPlaceOpen(true);
+            }}
+            className="rounded-full"
+          >
+            <Plus size={16} className="mr-1.5" />
+            {t('trips.itinerary.addPlace')}
+          </Button>
+        )}
       </div>
 
       {/* === TIMELINE SPINE === */}
@@ -310,6 +316,7 @@ export default function TripPlannerPage() {
               setAddPlaceDay(dayId);
               setAddPlaceOpen(true);
             }}
+            readOnly={!canEdit}
           />
         </div>
         <aside className="hidden lg:block w-72 flex-shrink-0">
@@ -468,6 +475,12 @@ export default function TripPlannerPage() {
                 <Suspense fallback={<SuspenseLoader />}>
                   <PackingTab tripId={trip.id} />
                 </Suspense>
+              </ErrorBoundary>
+              <ErrorBoundary section="trip-gear" fallback={null}>
+                <MarketplaceForTrip
+                  cityName={trip.primary_city_name}
+                  places={trip.trip_places}
+                />
               </ErrorBoundary>
             </AccordionContent>
           </AccordionItem>

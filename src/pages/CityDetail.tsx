@@ -338,7 +338,7 @@ export default function CityDetail() {
           <div className="flex flex-col gap-12">
             <TrendingStrip city={city.name} />
             <CityVenueGuidesRail cityId={city.id} />
-            <MarketplaceForCity cityName={city.name} />
+            <MarketplaceForCity cityName={city.name} cityId={city.id} />
             <CityLocalSupporterCaption cityId={city.id} />
             <SimilarItems
               entity={{ type: 'city', id: city.id }}

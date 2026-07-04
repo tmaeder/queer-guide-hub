@@ -1,10 +1,8 @@
-# Redirect old /ressources to /resources
-/ressources  /resources  301
-/ressources/*  /resources/:splat  301
-
-# Redirect old /tags to /resources
-/tags  /resources  301
-/tags/*  /resources/:splat  301
+# Redirect old paths to /tags (canonical)
+/ressources  /tags  301
+/ressources/*  /tags/:splat  301
+/resources  /tags  301
+/resources/*  /tags/:splat  301
 
 # /news/:slug is a first-class SPA detail page again (the P1.2 410 Gone
 # handler at functions/news/[slug].ts was removed). The SPA renders it and

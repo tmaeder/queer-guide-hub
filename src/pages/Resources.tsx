@@ -175,7 +175,7 @@ export default function Resources() {
     // canonical form. Crawlers that don't execute JS won't see a 301
     // status — accepted SPA trade-off.
     if (decoded !== decoded.toLowerCase()) {
-      navigate(`/resources/${encodeURIComponent(decoded.toLowerCase())}`, {
+      navigate(`/tags/${encodeURIComponent(decoded.toLowerCase())}`, {
         replace: true,
       });
       return;
@@ -328,7 +328,7 @@ export default function Resources() {
   const handleTagClick = (tag: CentralizedTag) => {
     setSelectedTag(tag);
     setViewMode('tag-detail');
-    navigate(`/resources/${encodeURIComponent(tag.name)}`);
+    navigate(`/tags/${encodeURIComponent(tag.name)}`);
   };
 
   const handleBack = () => {
@@ -336,7 +336,7 @@ export default function Resources() {
       if (selectedSubcategory) setViewMode('subcategory');
       else if (selectedCategory) setViewMode('category');
       else setViewMode('overview');
-      navigate('/resources');
+      navigate('/tags');
     } else if (viewMode === 'subcategory') {
       setViewMode('category');
       setSelectedSubcategory('');
@@ -388,7 +388,7 @@ export default function Resources() {
             setTagNotFound(false);
             setSelectedTag(null);
             setViewMode('overview');
-            navigate('/resources');
+            navigate('/tags');
           }}
         >
           {t('resources.tagNotFound.browse')}

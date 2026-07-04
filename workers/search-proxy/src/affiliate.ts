@@ -41,7 +41,8 @@ const SURFACES = new Set([
 	"insurance", "transfer",
 	// shopping (marketplace listing) surfaces — /go?l= mode
 	"marketplace_grid", "marketplace_detail", "brand_page", "city_rail",
-	"trip_packing", "event_rail", "for_you", "wishlist",
+	"trip_packing", "trip_gear", "event_rail", "home_rail", "home_spotlight",
+	"for_you", "wishlist",
 ]);
 
 const BOOKING_LABEL_BASE = "queerguide-452012";

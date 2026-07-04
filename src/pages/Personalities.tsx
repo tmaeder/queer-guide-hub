@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { Users, X } from 'lucide-react';
 
@@ -32,7 +32,10 @@ import { StickyLetterBar } from '@/components/personalities/StickyLetterBar';
 import { FeaturedPersonalityRail } from '@/components/personalities/FeaturedPersonalityRail';
 import { EditorialEntries } from '@/components/personalities/EditorialEntries';
 import { PersonalitiesTimeline } from '@/components/personalities/PersonalitiesTimeline';
-import { PersonalitiesMap } from '@/components/map/PersonalitiesMap';
+// Lazy: keeps the maplibre chunk off the default grid/timeline views
+const PersonalitiesMap = lazy(() =>
+  import('@/components/map/PersonalitiesMap').then((m) => ({ default: m.PersonalitiesMap }))
+);
 import { AddPersonalityDialog } from '@/components/personalities/AddPersonalityDialog';
 import { LayoutGrid, Rows3, Map as MapIcon } from 'lucide-react';
 import { GrainOverlay } from '@/components/effects/GrainOverlay';
@@ -567,7 +570,13 @@ export default function Personalities() {
             {view === 'timeline' ? (
               <PersonalitiesTimeline personalities={personalities} />
             ) : view === 'map' ? (
-              <PersonalitiesMap personalities={personalities} />
+              <Suspense
+                fallback={
+                  <div className="h-[600px] w-full rounded-container bg-muted animate-pulse" />
+                }
+              >
+                <PersonalitiesMap personalities={personalities} />
+              </Suspense>
             ) : (
               <StaggerGrid className={GRID_CLASS}>
                 {personalities.map((p) => {

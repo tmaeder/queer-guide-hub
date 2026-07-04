@@ -1529,6 +1529,12 @@
         "thisWeek": "Esta semana",
         "later": "Más adelante"
       }
+    },
+    "shop": {
+      "eyebrow": "Mercado",
+      "title": "De negocios queer",
+      "description": "Productos y servicios de negocios queer y trans.",
+      "seeAll": "Ver mercado"
     }
   },
   "header": {
@@ -1563,7 +1569,8 @@
       "travel": "Viajes",
       "personalities": "Personalidades",
       "hotels": "Hoteles",
-      "help": "Ayuda"
+      "help": "Ayuda",
+      "tags": "Etiquetas"
     },
     "userMenu": {
       "myTrips": "Mis viajes",
@@ -2449,7 +2456,15 @@
     },
     "tagDetail": {
       "breadcrumbHome": "Recursos",
-      "noDefinition": "Aún no hay definición para este término."
+      "noDefinition": "Aún no hay definición para este término.",
+      "alsoKnownAs": "También conocido como",
+      "readOnWikipedia": "Leer en Wikipedia",
+      "searchTagged": "Buscar todo lo etiquetado con {{name}}",
+      "seeAlso": "Véase también",
+      "sensitiveContentBody": "Este tema puede contener contenido sensible. Si necesitas apoyo, visita nuestra página de líneas de ayuda en crisis.",
+      "sensitiveContentTitle": "Tema sensible",
+      "tableOfContents": "Contenido",
+      "viewAsGraph": "Ver como grafo"
     },
     "graph": {
       "title": "Gráfico de relaciones",
@@ -2859,7 +2874,8 @@
     "help": "Ayuda",
     "pride": "Orgullo",
     "contributors": "Colaboradores",
-    "wishlists": "Listas de deseos"
+    "wishlists": "Listas de deseos",
+    "tags": "Etiquetas"
   },
   "chat": {
     "react": "Reaccionar",

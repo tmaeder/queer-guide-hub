@@ -38,6 +38,7 @@ function isTabActive(tab: BottomNavTab, path: string): boolean {
   );
 }
 
+
 /**
  * Mobile-only floating-island bottom nav. Four destination tabs —
  * Home · Explore · Messages · You — plus a raised, context-aware contribute

@@ -35,7 +35,7 @@ export function ResourceOverview({
           return (
             <LocalizedLink
               key={cat.id}
-              to={`/resources/c/${encodeURIComponent(cat.slug)}`}
+              to={`/tags/c/${encodeURIComponent(cat.slug)}`}
               className={`${hoverCardCls} flex-col items-stretch gap-1.5 no-underline text-inherit`}
               style={{ minHeight: 96 }}
             >
