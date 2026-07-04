@@ -256,7 +256,7 @@ export default function GroupDetail() {
                         key={tag}
                         variant="outline"
                         className="text-xs cursor-pointer"
-                        onClick={() => navigate(`/resources/${encodeURIComponent(tag)}`)}
+                        onClick={() => navigate(`/tags/${encodeURIComponent(tag)}`)}
                       >
                         {tag}
                       </Badge>
@@ -387,7 +387,7 @@ export default function GroupDetail() {
                           key={tag}
                           variant="outline"
                           className="cursor-pointer"
-                          onClick={() => navigate(`/resources/${encodeURIComponent(tag)}`)}
+                          onClick={() => navigate(`/tags/${encodeURIComponent(tag)}`)}
                         >
                           {tag}
                         </Badge>
