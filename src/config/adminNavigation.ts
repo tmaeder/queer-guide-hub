@@ -145,6 +145,12 @@ export const adminNavSections: AdminNavSection[] = [
         route: '/admin/duplicates',
       },
       {
+        id: 'liveness',
+        label: 'Liveness & closure',
+        icon: Flag,
+        route: '/admin/content/liveness',
+      },
+      {
         id: 'events',
         label: 'Events',
         icon: Calendar,

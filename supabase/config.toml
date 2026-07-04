@@ -407,6 +407,17 @@ verify_jwt = false
 [functions.marketplace-link-checker]
 verify_jwt = false
 
+# Existence Truth Engine collectors — self-gate via X-Webhook-Secret (cron) / admin.
+[functions.existence-deep-probe]
+verify_jwt = false
+
+[functions.existence-external-osm]
+verify_jwt = false
+
+# Community "report as closed" — requires a real user JWT.
+[functions.report-existence]
+verify_jwt = true
+
 # Workflow/pipeline functions (invoked by dispatcher with service-role bearer)
 [functions.marketplace-image-mirror]
 verify_jwt = false

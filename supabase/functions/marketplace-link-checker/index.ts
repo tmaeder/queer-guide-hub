@@ -1,6 +1,7 @@
 import { getServiceClient, jsonResponse, errorResponse, corsResponse, requireInternalOrAdmin } from '../_shared/supabase-client.ts'
 import { logPipelineError } from '../_shared/pipeline-error-log.ts'
 import { probeLink, isDeadLink } from '../_shared/link-health.ts'
+import { httpStatusSignal, insertSignals, type ExistenceSignal } from '../_shared/existence-probe.ts'
 
 // ============================================================
 // Marketplace Link Checker (M-2, audit 2026-06-05)
@@ -42,6 +43,7 @@ Deno.serve(async (req) => {
     }
 
     let ok = 0, broken = 0, redirect = 0, timeout = 0, skipped = 0
+    const sigs: ExistenceSignal[] = []
 
     for (const listing of listings) {
       const raw = (listing.external_url as string | null)?.trim()
@@ -60,6 +62,9 @@ Deno.serve(async (req) => {
       else if (health === 'broken') broken++
       else if (health === 'timeout') timeout++
 
+      const sig = httpStatusSignal('marketplace', listing.id as string, health)
+      if (sig) sigs.push(sig)
+
       if (!dryRun) {
         const update: Record<string, unknown> = {
           link_health:     health,
@@ -69,6 +74,8 @@ Deno.serve(async (req) => {
         await supabase.from('marketplace_listings').update(update).eq('id', listing.id)
       }
     }
+
+    if (!dryRun) await insertSignals(supabase, sigs)
 
     return jsonResponse({
       success: true,
