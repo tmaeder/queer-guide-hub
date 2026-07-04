@@ -152,8 +152,23 @@ const CLOSED_PATTERNS: Array<{ re: RegExp; verdict: Verdict }> = [
 export function detectClosedPhrase(text: string):
   { verdict: Verdict; phrase: string; snippet: string } | null {
   if (!text) return null
-  // strip tags cheaply for phrase matching
-  const plain = text.replace(/<script[\s\S]*?<\/script>/gi, ' ').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ')
+  // Prefer tolerant HTML parsing over regex for tag/script stripping.
+  let plain = ''
+  try {
+    const doc = new DOMParser().parseFromString(text, 'text/html')
+    if (doc) {
+      for (const el of doc.querySelectorAll('script, style, noscript')) el.remove()
+      plain = (doc.body?.textContent ?? doc.documentElement?.textContent ?? '')
+    }
+  } catch {
+    // fall through to regex fallback
+  }
+  if (!plain) {
+    plain = text
+      .replace(/<script\b[^>]*>[\s\S]*?<\/script\b[^>]*>/gi, ' ')
+      .replace(/<[^>]+>/g, ' ')
+  }
+  plain = plain.replace(/\s+/g, ' ')
   for (const p of CLOSED_PATTERNS) {
     const m = p.re.exec(plain)
     if (m) {
