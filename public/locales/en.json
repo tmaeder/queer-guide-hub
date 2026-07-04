@@ -1032,7 +1032,9 @@
         "safety": "Safety",
         "lgbtq-specific": "LGBTQ+ specific",
         "other": "Other"
-      }
+      },
+      "scopeAll": "Everyone",
+      "scopeMine": "Mine"
     },
     "collaborate": {
       "chat": "Chat",
@@ -1332,6 +1334,44 @@
       "pin": "Pin",
       "deleteTitle": "Delete Note",
       "deleteConfirm": "Are you sure you want to delete this note? This cannot be undone."
+    },
+    "dayNotes": {
+      "addTitle": "Add a note to this day",
+      "textLabel": "Note",
+      "textPlaceholder": "e.g. Check-out by 11:00",
+      "timeLabel": "Time (optional)",
+      "iconLabel": "Icon",
+      "save": "Add note",
+      "added": "Note added",
+      "delete": "Delete note"
+    },
+    "weather": {
+      "clear": "Clear",
+      "partlyCloudy": "Partly cloudy",
+      "overcast": "Overcast",
+      "fog": "Fog",
+      "drizzle": "Drizzle",
+      "rain": "Rain",
+      "snow": "Snow",
+      "thunderstorm": "Thunderstorm",
+      "typical": "typical"
+    },
+    "conflicts": {
+      "chip_one": "{{count}} conflict",
+      "chip_other": "{{count}} conflicts"
+    },
+    "legs": {
+      "switchMode": "Switch transport mode",
+      "modeAria": "Transport mode: {{mode}} — click to change",
+      "mode": {
+        "walk": "walk",
+        "transit": "transit",
+        "drive": "drive"
+      },
+      "walkingTotal": "{{distance}} walking"
+    },
+    "suggestions": {
+      "accessMatch": "Matches your needs"
     }
   },
   "help": {

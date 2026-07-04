@@ -43,8 +43,6 @@ const MarketplacePriceHistory = lazy(() =>
     default: m.MarketplacePriceHistory,
   }))
 );
-import { MarketplaceSimilarItems } from '@/components/marketplace/MarketplaceSimilarItems';
-import { BrandMoreFrom } from '@/components/marketplace/BrandMoreFrom';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 
 export type MarketplaceListing = Database['public']['Tables']['marketplace_listings']['Row'];
