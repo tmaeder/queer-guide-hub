@@ -100,10 +100,19 @@ test.describe('Marketplace — discovery surface', () => {
   });
 
   test('/marketplace/merchants/:domain shows merchant listings + visit button', async ({ page }) => {
-    await page.goto('/marketplace/merchants/supergayunderwear.com');
+    // marekrichard.com has 2.5k+ active listings and NO organizations row —
+    // org-backed domains (e.g. supergayunderwear.com) redirect to their
+    // /organizations profile by design (organizations spine, PR #1721).
+    await page.goto('/marketplace/merchants/marekrichard.com');
     await page.waitForLoadState('domcontentloaded');
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible({ timeout: 30_000 });
     await expect(page.getByRole('link', { name: /visit merchant site/i })).toBeVisible({ timeout: 30_000 });
+  });
+
+  test('/marketplace/merchants/:domain redirects to the org profile when one exists', async ({ page }) => {
+    await page.goto('/marketplace/merchants/supergayunderwear.com');
+    await page.waitForURL(/\/organizations\/supergayunderwear/, { timeout: 30_000 });
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible({ timeout: 30_000 });
   });
 
   test('/marketplace/share renders listings from ids param', async ({ page }) => {

@@ -94,12 +94,10 @@ test.describe('Marketplace — editorial guides', () => {
     await expect(guideLink).toBeVisible({ timeout: 30_000 });
   });
 
-  test('/marketplace/missions signed-out shows sign-in prompt', async ({ page }) => {
+  test('/marketplace/missions redirects to /me/progress (personal-layer IA)', async ({ page }) => {
     await page.goto('/marketplace/missions');
-    await page.waitForLoadState('domcontentloaded');
-    // Anon path renders the sign-in EmptyState.
-    await expect(page.getByText(/sign in to track your progress/i)).toBeVisible({
-      timeout: 30_000,
-    });
+    // Missions moved into the personal hub — the marketplace route is a
+    // permanent redirect now (routes.tsx: Navigate to /me/progress).
+    await page.waitForURL(/\/me\/progress/, { timeout: 30_000 });
   });
 });
