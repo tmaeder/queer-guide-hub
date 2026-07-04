@@ -31,6 +31,10 @@ vi.mock('@/hooks/use-toast', () => ({
   useToast: () => ({ toast: vi.fn() }),
 }));
 
+vi.mock('@/hooks/useAuth', () => ({
+  useAuth: () => ({ user: { id: 'u1' } }),
+}));
+
 import { PackingTab } from '../PackingTab';
 
 describe('PackingTab empty-trip state', () => {

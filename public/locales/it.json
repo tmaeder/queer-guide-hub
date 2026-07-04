@@ -63,7 +63,6 @@
   },
   "search": {
     "placeholder": "Cerca paesi e città...",
-    "nearMe": "Vicino a Me",
     "filters": "Filtri",
     "continent": "Continente",
     "all": "Tutti",
@@ -1530,6 +1529,12 @@
         "thisWeek": "Questa settimana",
         "later": "Più avanti"
       }
+    },
+    "shop": {
+      "eyebrow": "Mercato",
+      "title": "Brand queer",
+      "description": "Prodotti e servizi di attività queer e trans.",
+      "seeAll": "Vai al mercato"
     }
   },
   "header": {
@@ -1564,7 +1569,8 @@
       "travel": "Viaggi",
       "personalities": "Personalità",
       "hotels": "Hotel",
-      "help": "Aiuto"
+      "help": "Aiuto",
+      "tags": "Tag"
     },
     "userMenu": {
       "myTrips": "I miei viaggi",
@@ -2450,7 +2456,15 @@
     },
     "tagDetail": {
       "breadcrumbHome": "Risorse",
-      "noDefinition": "Ancora nessuna definizione per questo termine."
+      "noDefinition": "Ancora nessuna definizione per questo termine.",
+      "alsoKnownAs": "Conosciuto anche come",
+      "readOnWikipedia": "Leggi su Wikipedia",
+      "searchTagged": "Cerca tutto ciò che è taggato {{name}}",
+      "seeAlso": "Vedi anche",
+      "sensitiveContentBody": "Questo argomento può contenere contenuti sensibili. Se hai bisogno di supporto, visita la nostra pagina delle linee di assistenza in caso di crisi.",
+      "sensitiveContentTitle": "Argomento sensibile",
+      "tableOfContents": "Indice",
+      "viewAsGraph": "Visualizza come grafo"
     },
     "graph": {
       "title": "Grafo delle relazioni",
@@ -2860,7 +2874,8 @@
     "help": "Aiuto",
     "pride": "Pride",
     "contributors": "Contributori",
-    "wishlists": "Liste dei desideri"
+    "wishlists": "Liste dei desideri",
+    "tags": "Tag"
   },
   "chat": {
     "react": "Reagisci",

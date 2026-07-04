@@ -63,7 +63,6 @@
   },
   "search": {
     "placeholder": "Länder und Städte suchen...",
-    "nearMe": "In meiner Nähe",
     "filters": "Filter",
     "continent": "Kontinent",
     "all": "Alle",
@@ -1530,6 +1529,12 @@
         "thisWeek": "Diese Woche",
         "later": "Später"
       }
+    },
+    "shop": {
+      "eyebrow": "Marktplatz",
+      "title": "Queere Marken & Produkte",
+      "description": "Produkte und Services von queeren und trans Unternehmen.",
+      "seeAll": "Zum Marktplatz"
     }
   },
   "header": {
@@ -1564,7 +1569,8 @@
       "travel": "Reisen",
       "personalities": "Persönlichkeiten",
       "hotels": "Hotels",
-      "help": "Krisenhilfe"
+      "help": "Krisenhilfe",
+      "tags": "Tags"
     },
     "userMenu": {
       "myTrips": "Meine Reisen",
@@ -2450,7 +2456,15 @@
     },
     "tagDetail": {
       "breadcrumbHome": "Ressourcen",
-      "noDefinition": "Noch keine Definition für diesen Begriff."
+      "noDefinition": "Noch keine Definition für diesen Begriff.",
+      "alsoKnownAs": "Auch bekannt als",
+      "readOnWikipedia": "Auf Wikipedia lesen",
+      "searchTagged": "Alles mit dem Tag {{name}} durchsuchen",
+      "seeAlso": "Siehe auch",
+      "sensitiveContentBody": "Dieses Thema kann sensible Inhalte enthalten. Wenn du Unterstützung brauchst, besuche unsere Seite mit Krisen-Hotlines.",
+      "sensitiveContentTitle": "Sensibles Thema",
+      "tableOfContents": "Inhalt",
+      "viewAsGraph": "Als Graph anzeigen"
     },
     "graph": {
       "title": "Tag-Beziehungsgraph",
@@ -2860,7 +2874,8 @@
     "help": "Hilfe",
     "pride": "Pride",
     "contributors": "Mitwirkende",
-    "wishlists": "Wunschlisten"
+    "wishlists": "Wunschlisten",
+    "tags": "Tags"
   },
   "chat": {
     "react": "Reagieren",

@@ -192,6 +192,7 @@ function normaliseHit(h: SearchResult): SearchResult {
     city?: string;
     country?: string;
     slug?: string;
+    price_min?: unknown;
   };
   // Prefer the R2-mirrored optimized/thumbnail copy (always reachable) over the
   // raw external image_url, which often hotlink-fails or gets ORB-blocked.
@@ -207,6 +208,12 @@ function normaliseHit(h: SearchResult): SearchResult {
     location: r.location ?? ([r.city, r.country].filter(Boolean).join(', ') || undefined),
     imageUrl: resolvedImage,
     slug: r.slug,
+    // Marketplace docs carry price_min/max; the result card reads `price`.
+    price:
+      r.price ??
+      (typeof r.price_min === 'number' && r.price_min > 0
+        ? Math.round(r.price_min * 100) / 100
+        : undefined),
   };
 }
 

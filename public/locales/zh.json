@@ -63,7 +63,6 @@
   },
   "search": {
     "placeholder": "搜索国家和城市...",
-    "nearMe": "附近",
     "filters": "筛选",
     "continent": "大洲",
     "all": "全部",
@@ -1530,6 +1529,12 @@
         "thisWeek": "本周",
         "later": "稍后"
       }
+    },
+    "shop": {
+      "eyebrow": "市集",
+      "title": "酷儿品牌精选",
+      "description": "来自酷儿及跨性别经营商家的商品与服务。",
+      "seeAll": "前往市集"
     }
   },
   "header": {
@@ -1564,7 +1569,8 @@
       "travel": "旅行",
       "personalities": "名人",
       "hotels": "酒店",
-      "help": "帮助"
+      "help": "帮助",
+      "tags": "标签"
     },
     "userMenu": {
       "myTrips": "我的行程",
@@ -2448,7 +2454,15 @@
     },
     "tagDetail": {
       "breadcrumbHome": "资源",
-      "noDefinition": "此条目暂无定义。"
+      "noDefinition": "此条目暂无定义。",
+      "alsoKnownAs": "又称",
+      "readOnWikipedia": "在维基百科上阅读",
+      "searchTagged": "搜索所有带有 {{name}} 标签的内容",
+      "seeAlso": "参见",
+      "sensitiveContentBody": "该主题可能包含敏感内容。如果你需要支持，请访问我们的危机热线页面。",
+      "sensitiveContentTitle": "敏感主题",
+      "tableOfContents": "目录",
+      "viewAsGraph": "以图谱形式查看"
     },
     "graph": {
       "title": "标签关系图",
@@ -2858,7 +2872,8 @@
     "help": "帮助",
     "pride": "骄傲节",
     "contributors": "贡献者",
-    "wishlists": "心愿单"
+    "wishlists": "心愿单",
+    "tags": "标签"
   },
   "chat": {
     "react": "回应",

@@ -1,3 +1,18 @@
+-- Existence Truth Engine — events search-index status filter (2026-06-23)
+--
+-- search_documents_index_events had NO status filter, so cancelled / completed /
+-- de-indexed events stayed in search_documents and were only rank-penalized. The
+-- existence engine now sets status='cancelled' + seo_indexable=false on dead events
+-- and run_event_date_lifecycle marks past events 'completed' / de-indexes long-past
+-- ones — but none of that removed them from search until now.
+--
+-- Add `status NOT IN ('cancelled','completed') AND seo_indexable` to the index WHERE.
+-- The search_documents_sync trigger always DELETEs then re-INSERTs on every row
+-- change, so when an event no longer matches this predicate the upsert selects 0
+-- rows and the stale search_documents row is cleanly evicted — no trigger change
+-- needed (trigger already fires AFTER INSERT OR UPDATE OR DELETE on events).
+-- Postponed events are intentionally KEPT (still upcoming).
+
 CREATE OR REPLACE FUNCTION public.search_documents_index_events(p_id uuid DEFAULT NULL::uuid)
  RETURNS void
  LANGUAGE sql
@@ -47,6 +62,8 @@ AS $function$
     country=excluded.country, content_language=excluded.content_language, updated_at=now();
 $function$;
 
+-- One-time eviction of already-cancelled/completed/de-indexed events sitting in the
+-- index (batched to avoid a search-sync storm). Re-runs are no-ops.
 DO $$
 DECLARE v_batch int;
 BEGIN
@@ -66,4 +83,5 @@ BEGIN
     SELECT count(*) INTO v_batch FROM del;
     EXIT WHEN v_batch = 0;
   END LOOP;
+END $$;
 END $$;;

@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
 import { useTripPacking, usePackingMutations, type PackingGroup } from '@/hooks/useTripPacking';
 import { PackingMarketplaceSuggestions } from './packing/PackingMarketplaceSuggestions';
 import { cn } from '@/lib/utils';
@@ -32,22 +33,36 @@ interface Props {
 export function PackingTab({ tripId }: Props) {
   const { t } = useTranslation();
   const { toast } = useToast();
+  const { user } = useAuth();
   const packing = useTripPacking(tripId);
   const grouped = packing.grouped ?? [];
-  const checkedCount = packing.checkedCount ?? 0;
-  const totalCount = packing.totalCount ?? 0;
   const isLoading = packing.isLoading;
   const { addPackingItem, toggleChecked, deletePackingItem, addPackingTemplate } =
     usePackingMutations(tripId);
 
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
   const [newItemText, setNewItemText] = useState<Record<string, string>>({});
+  const [scope, setScope] = useState<'all' | 'mine'>('all');
 
   if (isLoading) return <PageLoadingState count={3} variant="list" />;
 
+  // "Mine" = items I added (or unowned shared items from templates).
+  const inScope = (item: { user_id: string | null }) =>
+    scope === 'all' || item.user_id === user?.id || item.user_id == null;
+
+  const scopedGroups = (grouped || [])
+    .map((g) => ({ ...g, items: g.items.filter(inScope) }))
+    .filter((g) => g.items.length > 0 || scope === 'all');
+  const allItems = scopedGroups.flatMap((g) => g.items);
+  const checkedCount = allItems.filter((i) => i.is_checked).length;
+  const totalCount = allItems.length;
+  const anyForeignItems = (grouped || []).some(
+    (g) => g.items.some((i) => i.user_id != null && i.user_id !== user?.id),
+  );
+
   const percentage = totalCount > 0 ? Math.round((checkedCount / totalCount) * 100) : 0;
 
-  const sortedGroups = [...(grouped || [])].sort(
+  const sortedGroups = [...scopedGroups].sort(
     (a, b) => CATEGORY_ORDER.indexOf(a.category) - CATEGORY_ORDER.indexOf(b.category),
   );
 
@@ -115,7 +130,7 @@ export function PackingTab({ tripId }: Props) {
     });
   };
 
-  if (totalCount === 0) {
+  if ((packing.totalCount ?? 0) === 0) {
     return (
       <div className="text-center py-12 md:py-20 px-6 border-[1.5px] border-dashed border-border rounded-container">
         <div
@@ -146,6 +161,24 @@ export function PackingTab({ tripId }: Props) {
 
   return (
     <div>
+      {/* Scope toggle — only worth showing when others added items too */}
+      {anyForeignItems && (
+        <div className="flex gap-1.5 mb-2 px-4 md:px-6">
+          {(['all', 'mine'] as const).map((s) => (
+            <Badge
+              key={s}
+              variant={scope === s ? 'default' : 'outline'}
+              onClick={() => setScope(s)}
+              className="cursor-pointer"
+            >
+              {s === 'all'
+                ? t('trips.packing.scopeAll', 'Everyone')
+                : t('trips.packing.scopeMine', 'Mine')}
+            </Badge>
+          ))}
+        </div>
+      )}
+
       {/* Progress card */}
       <div className="p-4 md:p-6 mb-6">
         <div className="flex items-baseline justify-between mb-2 gap-2">

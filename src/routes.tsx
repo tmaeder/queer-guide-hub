@@ -84,6 +84,8 @@ const AdminProfessions = lazyRetry(() => import('./pages/AdminProfessions'));
 const AdminCityQuality = lazyRetry(() => import('./pages/AdminCityQuality'));
 const AdminPersonalityQuality = lazyRetry(() => import('./pages/AdminPersonalityQuality'));
 const AdminVenueQuality = lazyRetry(() => import('./pages/AdminVenueQuality'));
+const AdminLiveness = lazyRetry(() => import('./pages/AdminLiveness'));
+const AdminMarketplace = lazyRetry(() => import('./pages/AdminMarketplace'));
 const AdminMarketplaceQuality = lazyRetry(() => import('./pages/AdminMarketplaceQuality'));
 const AdminMarketplaceGuides = lazyRetry(() => import('./pages/AdminMarketplaceGuides'));
 const AdminVenueGuides = lazyRetry(() => import('./pages/AdminVenueGuides'));
@@ -192,16 +194,13 @@ function FootprintRedirect() {
 }
 
 /**
- * The legacy /tags/:slug stub is retired — the canonical glossary surface is
- * /resources/:tagName. Redirect through, preserving the locale prefix (the
- * `/:locale?` capture would otherwise be dropped, bouncing non-EN visitors to
- * the default locale).
+ * Legacy /resources/:tagName → /tags/:tagName redirect, preserving locale prefix.
  */
-function TagSlugRedirect() {
-  const { slug, locale } = useParams<{ slug: string; locale?: string }>();
+function ResourcesTagRedirect() {
+  const { tagName, locale } = useParams<{ tagName: string; locale?: string }>();
   const prefix =
     locale && isSupportedLocale(locale) && locale !== DEFAULT_LOCALE ? `/${locale}` : '';
-  return <Navigate to={`${prefix}/resources/${slug ?? ''}`} replace />;
+  return <Navigate to={`${prefix}/tags/${tagName ?? ''}`} replace />;
 }
 
 /**
@@ -353,6 +352,7 @@ export const AppRoutes = () => {
 
                 {/* Content type admin pages */}
                 <Route path="content/venue-quality" element={<AdminVenueQuality />} />
+                <Route path="content/liveness" element={<AdminLiveness />} />
                 <Route path="content/event-quality" element={<AdminEventQuality />} />
                 <Route path="content/city-quality" element={<AdminCityQuality />} />
                 <Route path="content/personality-quality" element={<AdminPersonalityQuality />} />
@@ -439,7 +439,7 @@ export const AppRoutes = () => {
                 <Route path="venues/marketplace" element={<Navigate to="/marketplace" replace />} />
                 <Route path="venues/travel" element={<Navigate to="/travel" replace />} />
                 <Route path="venues/groups" element={<Navigate to="/groups" replace />} />
-                <Route path="venues/resources" element={<Navigate to="/resources" replace />} />
+                <Route path="venues/resources" element={<Navigate to="/tags" replace />} />
                 {/* Legacy routes — canonical lives under /me/*. Keep one release. */}
                 <Route path="venues/leaderboard" element={<Navigate to="/me/progress" replace />} />
                 <Route path="venues/passport" element={<Navigate to="/me/progress" replace />} />
@@ -498,15 +498,18 @@ export const AppRoutes = () => {
                 <Route path="personalities/:slug" element={<PersonalityDetail />} />
                 <Route path="quests" element={<Quests />} />
                 <Route path="quests/:slug" element={<QuestDetail />} />
-                <Route path="resources" element={<Resources />} />
-                <Route path="resources/topic/:slug" element={<ResourceTopic />} />
-                <Route path="resources/c/:categorySlug" element={<Resources />} />
-                <Route path="resources/:tagName" element={<Resources />} />
+                <Route path="tags" element={<Resources />} />
+                <Route path="tags/topic/:slug" element={<ResourceTopic />} />
+                <Route path="tags/c/:categorySlug" element={<Resources />} />
+                <Route path="tags/:tagName" element={<Resources />} />
                 <Route path="professions/:professionName" element={<ProfessionDetail />} />
-                <Route path="ressources" element={<Navigate to="/resources" replace />} />
-                <Route path="ressources/:tagName" element={<Navigate to="/resources" replace />} />
-                <Route path="tags" element={<Navigate to="/resources" replace />} />
-                <Route path="tags/:slug" element={<TagSlugRedirect />} />
+                {/* Legacy redirects → /tags */}
+                <Route path="resources" element={<Navigate to="/tags" replace />} />
+                <Route path="resources/topic/:slug" element={<ResourceTopic />} />
+                <Route path="resources/c/:categorySlug" element={<Navigate to="/tags" replace />} />
+                <Route path="resources/:tagName" element={<ResourcesTagRedirect />} />
+                <Route path="ressources" element={<Navigate to="/tags" replace />} />
+                <Route path="ressources/:tagName" element={<Navigate to="/tags" replace />} />
                 <Route path="donate" element={<Donate />} />
                 <Route path="about-hub" element={<CMSRoutePage slug="about-hub" />} />
                 <Route path="about" element={<About />} />

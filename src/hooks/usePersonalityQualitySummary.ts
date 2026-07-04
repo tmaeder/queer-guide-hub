@@ -1,5 +1,5 @@
-import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { createQualitySummaryHook } from '@/hooks/quality/createQualitySummaryHook';
 
 export interface PersonalityCoverageGap {
   personality_id: string;
@@ -27,42 +27,70 @@ const db = supabase as unknown as {
 };
 
 /** Health summary for the Personality Truth Engine (coverage gaps + queue + counts). */
-export function usePersonalityQualitySummary() {
-  return useQuery<PersonalityQualitySummary>({
-    queryKey: ['personality-quality-summary'],
-    queryFn: async () => {
-      const [gaps, publicCount, needsAttention, reviewOpen, lowCompleteness, promotable, adultConsent] =
-        await Promise.all([
-          db
-            .from('personality_coverage_gaps')
-            .select('personality_id, personality_name, gap_score, missing_fields, resolution')
-            .eq('status', 'open')
-            .eq('resolution', 'enrich')
-            .order('gap_score', { ascending: false })
-            .limit(10),
-          db.from('personalities').select('id', { count: 'exact', head: true }).eq('visibility', 'public').is('duplicate_of_id', null),
-          db.from('personalities').select('id', { count: 'exact', head: true }).eq('needs_attention', true).is('duplicate_of_id', null),
-          db.from('personality_review_queue').select('id', { count: 'exact', head: true }).eq('status', 'open'),
-          db
-            .from('personalities')
-            .select('id', { count: 'exact', head: true })
-            .lt('completeness_score', 40)
-            .eq('visibility', 'draft')
-            .neq('review_status', 'archived')
-            .is('duplicate_of_id', null),
-          db.rpc('personalities_promotable', { p_limit: 2000 }),
-          db.rpc('personalities_adult_consent_candidates', { p_limit: 1000 }),
-        ]);
-      return {
-        gaps: (gaps.data ?? []) as PersonalityCoverageGap[],
-        publicCount: publicCount.count ?? 0,
-        needsAttention: needsAttention.count ?? 0,
-        reviewOpen: reviewOpen.count ?? 0,
-        lowCompleteness: lowCompleteness.count ?? 0,
-        promotable: ((promotable.data as unknown[]) ?? []).length,
-        adultConsentCandidates: ((adultConsent.data as unknown[]) ?? []).length,
-      };
+export const usePersonalityQualitySummary = createQualitySummaryHook({
+  queryKey: 'personality-quality-summary',
+  metrics: {
+    gaps: {
+      kind: 'rows',
+      build: () =>
+        db
+          .from('personality_coverage_gaps')
+          .select('personality_id, personality_name, gap_score, missing_fields, resolution')
+          .eq('status', 'open')
+          .eq('resolution', 'enrich')
+          .order('gap_score', { ascending: false })
+          .limit(10),
     },
-    staleTime: 60_000,
-  });
-}
+    publicCount: {
+      kind: 'count',
+      build: () =>
+        db
+          .from('personalities')
+          .select('id', { count: 'exact', head: true })
+          .eq('visibility', 'public')
+          .is('duplicate_of_id', null),
+    },
+    needsAttention: {
+      kind: 'count',
+      build: () =>
+        db
+          .from('personalities')
+          .select('id', { count: 'exact', head: true })
+          .eq('needs_attention', true)
+          .is('duplicate_of_id', null),
+    },
+    reviewOpen: {
+      kind: 'count',
+      build: () =>
+        db.from('personality_review_queue').select('id', { count: 'exact', head: true }).eq('status', 'open'),
+    },
+    lowCompleteness: {
+      kind: 'count',
+      build: () =>
+        db
+          .from('personalities')
+          .select('id', { count: 'exact', head: true })
+          .lt('completeness_score', 40)
+          .eq('visibility', 'draft')
+          .neq('review_status', 'archived')
+          .is('duplicate_of_id', null),
+    },
+    promotable: {
+      kind: 'rows',
+      build: () => db.rpc('personalities_promotable', { p_limit: 2000 }),
+    },
+    adultConsentCandidates: {
+      kind: 'rows',
+      build: () => db.rpc('personalities_adult_consent_candidates', { p_limit: 1000 }),
+    },
+  },
+  reshape: (r): PersonalityQualitySummary => ({
+    gaps: r.gaps as PersonalityCoverageGap[],
+    publicCount: r.publicCount,
+    needsAttention: r.needsAttention,
+    reviewOpen: r.reviewOpen,
+    lowCompleteness: r.lowCompleteness,
+    promotable: r.promotable.length,
+    adultConsentCandidates: r.adultConsentCandidates.length,
+  }),
+});

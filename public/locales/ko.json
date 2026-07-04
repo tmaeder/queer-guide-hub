@@ -63,7 +63,6 @@
   },
   "search": {
     "placeholder": "국가와 도시 검색...",
-    "nearMe": "내 주변",
     "filters": "필터",
     "continent": "대륙",
     "all": "전체",
@@ -1530,6 +1529,12 @@
         "thisWeek": "이번 주",
         "later": "이후"
       }
+    },
+    "shop": {
+      "eyebrow": "마켓플레이스",
+      "title": "퀴어 브랜드",
+      "description": "퀴어·트랜스 운영 비즈니스의 상품과 서비스.",
+      "seeAll": "마켓플레이스 보기"
     }
   },
   "header": {
@@ -1564,7 +1569,8 @@
       "travel": "여행",
       "personalities": "인물",
       "hotels": "호텔",
-      "help": "도움말"
+      "help": "도움말",
+      "tags": "태그"
     },
     "userMenu": {
       "myTrips": "내 여행",
@@ -2448,7 +2454,15 @@
     },
     "tagDetail": {
       "breadcrumbHome": "자료",
-      "noDefinition": "이 용어에 대한 정의가 아직 없습니다."
+      "noDefinition": "이 용어에 대한 정의가 아직 없습니다.",
+      "alsoKnownAs": "다른 이름",
+      "readOnWikipedia": "위키백과에서 읽기",
+      "searchTagged": "{{name}} 태그가 붙은 모든 항목 검색",
+      "seeAlso": "같이 보기",
+      "sensitiveContentBody": "이 주제에는 민감한 내용이 포함될 수 있습니다. 도움이 필요하면 위기 상담 전화 페이지를 방문하세요.",
+      "sensitiveContentTitle": "민감한 주제",
+      "tableOfContents": "목차",
+      "viewAsGraph": "그래프로 보기"
     },
     "graph": {
       "title": "태그 관계 그래프",
@@ -2858,7 +2872,8 @@
     "help": "도움말",
     "pride": "프라이드",
     "contributors": "기여자",
-    "wishlists": "위시리스트"
+    "wishlists": "위시리스트",
+    "tags": "태그"
   },
   "chat": {
     "react": "반응",

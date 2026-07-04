@@ -63,7 +63,6 @@
   },
   "search": {
     "placeholder": "البحث في البلدان والمدن...",
-    "nearMe": "بالقرب مني",
     "filters": "المرشحات",
     "continent": "القارة",
     "all": "الكل",
@@ -1530,6 +1529,12 @@
         "thisWeek": "هذا الأسبوع",
         "later": "لاحقًا"
       }
+    },
+    "shop": {
+      "eyebrow": "السوق",
+      "title": "علامات كويرية",
+      "description": "منتجات وخدمات من أعمال يملكها أشخاص كوير وترانس.",
+      "seeAll": "تصفح السوق"
     }
   },
   "header": {
@@ -1564,7 +1569,8 @@
       "travel": "السفر",
       "personalities": "شخصيات",
       "hotels": "الفنادق",
-      "help": "مساعدة"
+      "help": "مساعدة",
+      "tags": "الوسوم"
     },
     "userMenu": {
       "myTrips": "رحلاتي",
@@ -2448,7 +2454,15 @@
     },
     "tagDetail": {
       "breadcrumbHome": "الموارد",
-      "noDefinition": "لا يوجد تعريف لهذا المصطلح بعد."
+      "noDefinition": "لا يوجد تعريف لهذا المصطلح بعد.",
+      "alsoKnownAs": "يُعرف أيضًا باسم",
+      "readOnWikipedia": "اقرأ على ويكيبيديا",
+      "searchTagged": "ابحث في كل ما يحمل وسم {{name}}",
+      "seeAlso": "انظر أيضًا",
+      "sensitiveContentBody": "قد يحتوي هذا الموضوع على محتوى حساس. إذا كنت بحاجة إلى دعم، تفضل بزيارة صفحة خطوط المساعدة في الأزمات لدينا.",
+      "sensitiveContentTitle": "موضوع حساس",
+      "tableOfContents": "المحتويات",
+      "viewAsGraph": "عرض كرسم بياني"
     },
     "graph": {
       "title": "رسم علاقات الوسوم",
@@ -2858,7 +2872,8 @@
     "help": "المساعدة",
     "pride": "برايد",
     "contributors": "المساهمون",
-    "wishlists": "قوائم الرغبات"
+    "wishlists": "قوائم الرغبات",
+    "tags": "الوسوم"
   },
   "chat": {
     "react": "تفاعل",
