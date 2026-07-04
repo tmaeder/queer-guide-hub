@@ -72,8 +72,10 @@ export interface PublishResult {
  * recursively so identical payloads always produce identical strings —
  * and identical SHA-256 hashes, preserving the uniqueness constraint
  * on (source_type, source_entity_id, payload_hash).
+ * Exported for out-of-band publishers (Management-API stager) that must
+ * produce hashes identical to this module's.
  */
-function stableStringify(value: unknown): string {
+export function stableStringify(value: unknown): string {
   if (value === null || value === undefined) return JSON.stringify(value);
   if (typeof value !== 'object') return JSON.stringify(value);
   if (Array.isArray(value)) {
@@ -166,7 +168,7 @@ function guessTargetTable(e: SourceRawEntity): 'venues' | 'events' {
   return e.entity_type === 'event' ? 'events' : 'venues';
 }
 
-function sha256(s: string): string {
+export function sha256(s: string): string {
   return createHash('sha256').update(s).digest('hex');
 }
 
