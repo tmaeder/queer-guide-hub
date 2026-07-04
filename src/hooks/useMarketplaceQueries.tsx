@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { SFW_RATINGS } from '@/hooks/useMarketplace';
 import type { Database } from '@/integrations/supabase/types';
 
 type MarketplaceListing = Database['public']['Tables']['marketplace_listings']['Row'] & {
@@ -90,10 +91,13 @@ export function useMarketplaceListingsRelated(limit = 4) {
   return useAsync<MarketplaceListing[]>(
     [limit],
     async () => {
+      // Cross-site surface: sfw/suggestive only, regardless of the
+      // /marketplace-scoped 18+ opt-in.
       const { data, error } = await supabase
         .from('marketplace_listings')
         .select('*, venues(name, address, city)')
         .eq('status', 'active')
+        .in('content_rating', SFW_RATINGS)
         .order('featured', { ascending: false })
         .order('lgbti_relevance_score', { ascending: false, nullsFirst: false })
         .order('quality_score', { ascending: false, nullsFirst: false })
@@ -155,6 +159,7 @@ export function useMarketplaceListingsForCity(cityName: string | undefined, limi
         .from('marketplace_listings')
         .select('*, venues!inner(name, address, city)')
         .eq('status', 'active')
+        .in('content_rating', SFW_RATINGS)
         .eq('venues.city', cityName)
         .order('featured', { ascending: false })
         .order('updated_at', { ascending: false })
@@ -210,6 +215,7 @@ export function useMarketplaceListingsForCountry(countryId: string | undefined, 
         .from('marketplace_listings')
         .select('*, venues!inner(name, address, city)')
         .eq('status', 'active')
+        .in('content_rating', SFW_RATINGS)
         .eq('venues.country_id', countryId)
         .order('featured', { ascending: false })
         .order('updated_at', { ascending: false })
@@ -230,6 +236,7 @@ export function useMarketplaceListingsForVenue(venueId: string | undefined, limi
         .from('marketplace_listings')
         .select('*, venues(name, address, city)')
         .eq('status', 'active')
+        .in('content_rating', SFW_RATINGS)
         .eq('venue_id', venueId)
         .order('featured', { ascending: false })
         .order('updated_at', { ascending: false })
@@ -250,6 +257,7 @@ export function useMarketplaceSimilarListings(listing: MarketplaceListing | null
         .from('marketplace_listings')
         .select('*, venues(name, address, city)')
         .eq('status', 'active')
+        .in('content_rating', SFW_RATINGS)
         .neq('id', listing.id)
         .limit(limit);
       if (listing.category_id) q = q.eq('category_id', listing.category_id);
