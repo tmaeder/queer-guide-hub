@@ -1,6 +1,7 @@
 import { getServiceClient, jsonResponse, errorResponse, corsResponse, requireInternalOrAdmin } from '../_shared/supabase-client.ts'
 import { logPipelineError } from '../_shared/pipeline-error-log.ts'
 import { probeLink, isDeadLink } from '../_shared/link-health.ts'
+import { httpStatusSignal, insertSignals, type ExistenceSignal } from '../_shared/existence-probe.ts'
 
 // ============================================================
 // Venue URL Checker
@@ -43,6 +44,7 @@ Deno.serve(async (req) => {
     }
 
     let ok = 0, broken = 0, redirect = 0, timeout = 0, skipped = 0
+    const sigs: ExistenceSignal[] = []
 
     // Probe in concurrent chunks. Sequential probing (1 venue at a time, up to an
     // 8s timeout each) only cleared 200/day — 94% of the catalog was never checked.
@@ -67,6 +69,11 @@ Deno.serve(async (req) => {
         else if (status === 'broken') broken++
         else if (status === 'timeout') timeout++
 
+        // Feed the Existence Truth Engine ledger (http_status signal; decision is
+        // made later by run_existence_decision, never here).
+        const sig = httpStatusSignal('venue', venue.id as string, status)
+        if (sig) sigs.push(sig)
+
         if (!dryRun) {
           const update: Record<string, unknown> = {
             url_status:     status,
@@ -83,6 +90,8 @@ Deno.serve(async (req) => {
         }
       }))
     }
+
+    if (!dryRun) await insertSignals(supabase, sigs)
 
     return jsonResponse({
       success:    true,

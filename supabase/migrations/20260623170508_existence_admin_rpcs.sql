@@ -1,3 +1,11 @@
+-- Existence Truth Engine — M5 admin reader RPCs (2026-06-23)
+-- Powers the /admin "Liveness & Closure" panel: overview counts, the single-signal
+-- review queue, recent auto-archives (with reopen), and the un-probeable blind-spot
+-- list. All admin-gated, SECURITY DEFINER.
+
+CREATE OR REPLACE FUNCTION public.existence_overview()
+ RETURNS jsonb
+ LANGUAGE plpgsql STABLE SECURITY DEFINER SET search_path TO 'public','pg_temp'
 CREATE OR REPLACE FUNCTION public.existence_overview()
  RETURNS jsonb LANGUAGE plpgsql STABLE SECURITY DEFINER SET search_path TO 'public','pg_temp'
 AS $function$
@@ -37,6 +45,8 @@ BEGIN
   LEFT JOIN public.venues v ON a.entity_type='venue' AND v.id=a.entity_id
   LEFT JOIN public.events e ON a.entity_type='event' AND e.id=a.entity_id
   LEFT JOIN public.marketplace_listings m ON a.entity_type='marketplace' AND m.id=a.entity_id
+  WHERE a.action='flag' AND a.reverted_at IS NULL
+    AND (p_entity_type IS NULL OR a.entity_type=p_entity_type)
   WHERE a.action='flag' AND a.reverted_at IS NULL AND (p_entity_type IS NULL OR a.entity_type=p_entity_type)
   ORDER BY a.created_at DESC LIMIT greatest(1, least(p_limit, 200));
 END; $function$;
@@ -56,6 +66,8 @@ BEGIN
   LEFT JOIN public.venues v ON a.entity_type='venue' AND v.id=a.entity_id
   LEFT JOIN public.events e ON a.entity_type='event' AND e.id=a.entity_id
   LEFT JOIN public.marketplace_listings m ON a.entity_type='marketplace' AND m.id=a.entity_id
+  WHERE a.action='archive' AND a.reverted_at IS NULL
+    AND (p_entity_type IS NULL OR a.entity_type=p_entity_type)
   WHERE a.action='archive' AND a.reverted_at IS NULL AND (p_entity_type IS NULL OR a.entity_type=p_entity_type)
   ORDER BY a.created_at DESC LIMIT greatest(1, least(p_limit, 200));
 END; $function$;
@@ -88,4 +100,5 @@ END; $function$;
 GRANT EXECUTE ON FUNCTION public.existence_overview() TO authenticated;
 GRANT EXECUTE ON FUNCTION public.existence_review_queue(text, int) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.existence_recent_archives(text, int) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.existence_blind_spots(text, int) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.existence_blind_spots(text, int) TO authenticated;;

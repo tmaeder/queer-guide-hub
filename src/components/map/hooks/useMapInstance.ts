@@ -187,7 +187,6 @@ export function useMapInstance({
     });
 
     return () => {
-      // eslint-disable-next-line react-hooks/exhaustive-deps -- latest-value ref by design: teardown must notify the CURRENT handle consumer, not the mount-time one.
       // Latest-value ref by design: notify whatever callback the consumer
       // holds NOW (not a mount-time snapshot) that the handle is gone.
       // eslint-disable-next-line react-hooks/exhaustive-deps

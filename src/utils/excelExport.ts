@@ -91,25 +91,8 @@ export async function fetchAllRows<T>(
   return allRows;
 }
 
-// ---------- Formatting helpers ----------
-
-export function formatDate(dateStr: string | null | undefined): string {
-  if (!dateStr) return '';
-  try {
-    return format(new Date(dateStr), 'yyyy-MM-dd');
-  } catch {
-    return dateStr;
-  }
-}
-
-export function formatDateTime(dateStr: string | null | undefined): string {
-  if (!dateStr) return '';
-  try {
-    return format(new Date(dateStr), 'yyyy-MM-dd HH:mm');
-  } catch {
-    return dateStr;
-  }
-}
+// ---------- Formatting helpers (excel-cell-specific; generic date
+// formatters live in @/lib/format) ----------
 
 export function formatArray(arr: string[] | null | undefined): string {
   if (!arr || !Array.isArray(arr) || arr.length === 0) return '';

@@ -1,7 +1,19 @@
+-- Existence Truth Engine — M4 automations + cron (2026-06-23)
+--
+-- All pure-SQL internal crons (no webhook secret). The three decision jobs are
+-- registered enabled=false: their cron fires nightly but run_existence_decision
+-- self-skips ("paused") until an operator flips the row on AFTER reviewing a
+-- dry-run. event_auto_archive is repointed to the new date-lifecycle fn; the
+-- event trust recompute is nudged later so liveness is written first.
+
+-- Circuit breaker for the existence LLM page-read (so it can't trip the enrichment
+-- breaker and vice-versa). Auto-allows until seeded; seed it explicitly.
 INSERT INTO public.api_circuit_breakers (api_name, threshold, reset_timeout_seconds)
 VALUES ('llm.existence.pageread', 5, 300)
 ON CONFLICT (api_name) DO NOTHING;
 
+-- Decision automations (paused). Cron command prepends SET statement_timeout=0 so
+-- the per-row search reindex is never capped (SET LOCAL can't re-arm in-flight).
 INSERT INTO public.admin_automations (slug, name, description, managed_by, enabled, trigger, action, schedule)
 VALUES
  ('existence_decision_venue','Existence decision — venues',
@@ -20,12 +32,15 @@ ON CONFLICT (slug) DO UPDATE
   SET name=excluded.name, description=excluded.description, trigger=excluded.trigger,
       action=excluded.action, schedule=excluded.schedule;
 
+-- Repoint the existing event_auto_archive automation to the new date-lifecycle fn
+-- (run_event_auto_archive now wraps run_event_date_lifecycle).
 UPDATE public.admin_automations
   SET action='{"type":"rpc","fn":"run_event_date_lifecycle"}'::jsonb,
       description='Marks past active events completed and de-indexes long-past (>180d) events; emits date_lifecycle signals for the existence engine.',
       schedule='30 3 * * *'
   WHERE slug='event_auto_archive';
 
+-- cron wiring
 SELECT cron.unschedule('existence_decision_venue') WHERE EXISTS (SELECT 1 FROM cron.job WHERE jobname='existence_decision_venue');
 SELECT cron.unschedule('existence_decision_event') WHERE EXISTS (SELECT 1 FROM cron.job WHERE jobname='existence_decision_event');
 SELECT cron.unschedule('existence_decision_marketplace') WHERE EXISTS (SELECT 1 FROM cron.job WHERE jobname='existence_decision_marketplace');
@@ -40,6 +55,8 @@ SELECT cron.schedule('existence_decision_marketplace', '55 4 * * *',
 SELECT cron.schedule('existence_signals_purge', '15 5 * * *',
   'SELECT public.run_existence_signals_purge();');
 
+-- Ensure event_auto_archive cron exists + points at the wrapper, with storm guard.
+DO $$
 DO $outer$
 DECLARE jid bigint;
 BEGIN
@@ -51,10 +68,19 @@ BEGIN
     PERFORM cron.alter_job(jid, schedule := '30 3 * * *',
       command := 'SET statement_timeout = 0; SELECT public.run_event_auto_archive();');
   END IF;
+
+  -- Nudge event trust recompute to 05:10 so liveness is written first.
   SELECT jobid INTO jid FROM cron.job WHERE jobname='event_trust_recompute';
   IF jid IS NOT NULL THEN
     PERFORM cron.alter_job(jid, schedule := '10 5 * * *');
   END IF;
+END $$;
+
+-- Edge-function collectors (deep body-read probe + OSM corroborator). Gated by the
+-- shared X-Webhook-Secret: the POST is unauthorized (effectively paused) until the
+-- operator creates vault secret `existence_webhook_secret` AND sets the matching
+-- EXISTENCE_WEBHOOK_SECRET env on both functions. These only READ pages + INSERT
+-- signals (no archiving), so they are safe to run as soon as the secret is set.
 END $outer$;
 
 SELECT cron.unschedule('existence_deep_probe') WHERE EXISTS (SELECT 1 FROM cron.job WHERE jobname='existence_deep_probe');
@@ -74,4 +100,5 @@ SELECT cron.schedule('existence_external_osm', '40 2 * * *', $cron$
     headers := jsonb_build_object('Content-Type','application/json',
       'X-Webhook-Secret', (SELECT decrypted_secret FROM vault.decrypted_secrets WHERE name='existence_webhook_secret')),
     body := '{"batch_limit":30}'::jsonb);
+$cron$);
 $cron$);;

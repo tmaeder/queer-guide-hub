@@ -63,7 +63,6 @@
   },
   "search": {
     "placeholder": "Rechercher pays et villes...",
-    "nearMe": "Près de Moi",
     "filters": "Filtres",
     "continent": "Continent",
     "all": "Tous",
@@ -579,7 +578,9 @@
         "safety": "Sécurité",
         "lgbtq-specific": "Spécifique LGBTQ+",
         "other": "Autre"
-      }
+      },
+      "scopeAll": "Tout le monde",
+      "scopeMine": "Les miens"
     },
     "collaborate": {
       "chat": "Discussion",
@@ -899,6 +900,44 @@
       "saveAria": "Save trip",
       "unsaveAria": "Unsave trip",
       "error": "Could not update save"
+    },
+    "dayNotes": {
+      "addTitle": "Ajouter une note à cette journée",
+      "textLabel": "Note",
+      "textPlaceholder": "p. ex. Départ avant 11h00",
+      "timeLabel": "Heure (facultatif)",
+      "iconLabel": "Icône",
+      "save": "Ajouter la note",
+      "added": "Note ajoutée",
+      "delete": "Supprimer la note"
+    },
+    "weather": {
+      "clear": "Dégagé",
+      "partlyCloudy": "Partiellement nuageux",
+      "overcast": "Couvert",
+      "fog": "Brouillard",
+      "drizzle": "Bruine",
+      "rain": "Pluie",
+      "snow": "Neige",
+      "thunderstorm": "Orage",
+      "typical": "typique"
+    },
+    "conflicts": {
+      "chip_one": "{{count}} conflit",
+      "chip_other": "{{count}} conflits"
+    },
+    "legs": {
+      "switchMode": "Changer de mode de transport",
+      "modeAria": "Mode de transport : {{mode}} — cliquez pour changer",
+      "mode": {
+        "walk": "à pied",
+        "transit": "transports en commun",
+        "drive": "voiture"
+      },
+      "walkingTotal": "{{distance}} à pied"
+    },
+    "suggestions": {
+      "accessMatch": "Correspond à vos besoins"
     }
   },
   "auth": {
@@ -1534,6 +1573,12 @@
         "thisWeek": "Cette semaine",
         "later": "Plus tard"
       }
+    },
+    "shop": {
+      "eyebrow": "Marché",
+      "title": "Marques queer",
+      "description": "Produits et services d'entreprises queer et trans.",
+      "seeAll": "Voir le marché"
     }
   },
   "header": {
@@ -1568,7 +1613,8 @@
       "travel": "Voyage",
       "personalities": "Personnalités",
       "hotels": "Hôtels",
-      "help": "Aide"
+      "help": "Aide",
+      "tags": "Tags"
     },
     "userMenu": {
       "myTrips": "Mes voyages",
@@ -2454,7 +2500,15 @@
     },
     "tagDetail": {
       "breadcrumbHome": "Ressources",
-      "noDefinition": "Pas encore de définition pour ce terme."
+      "noDefinition": "Pas encore de définition pour ce terme.",
+      "alsoKnownAs": "Également connu sous le nom de",
+      "readOnWikipedia": "Lire sur Wikipédia",
+      "searchTagged": "Rechercher tout ce qui est tagué {{name}}",
+      "seeAlso": "Voir aussi",
+      "sensitiveContentBody": "Ce sujet peut contenir du contenu sensible. Si vous avez besoin de soutien, consultez notre page des lignes d'écoute de crise.",
+      "sensitiveContentTitle": "Sujet sensible",
+      "tableOfContents": "Sommaire",
+      "viewAsGraph": "Voir comme graphe"
     },
     "graph": {
       "title": "Graphe des relations",
@@ -2864,7 +2918,8 @@
     "help": "Aide",
     "pride": "Fierté",
     "contributors": "Contributeurs",
-    "wishlists": "Listes de souhaits"
+    "wishlists": "Listes de souhaits",
+    "tags": "Tags"
   },
   "chat": {
     "react": "Réagir",

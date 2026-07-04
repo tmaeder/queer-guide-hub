@@ -1,3 +1,21 @@
+-- Existence Truth Engine — M2 decision functions (2026-06-23)
+--
+-- run_existence_decision(p_entity_type, p_dry_run) reads the entity_existence_signals
+-- ledger and conservatively archives venues / events / marketplace_listings that no
+-- longer exist. House rule (generalized from run_venue_closure_decision):
+--   * AUTO-ARCHIVE only when >= 2 INDEPENDENT strong-dead signal_kinds agree AND no
+--     fresh 'alive' signal is newer than the deciding dead signal.
+--   * GUARDS (never auto-archive): featured, or community-alive (reviews/checkins/
+--     saves) -> route to needs_attention + a review flag instead.
+--   * SINGLE strong-dead signal -> needs_attention + review flag (human decides).
+--   * REOPEN runs FIRST: an archived entity that shows a fresh 'alive' signal is
+--     restored from prev_state.
+-- Storm-safe: the candidate set is driven off the partial strong-signal index (tiny),
+-- terminal writes carry an IS DISTINCT FROM guard so unchanged rows are not rewritten
+-- (and therefore not reindexed), and SET LOCAL statement_timeout=0 lets the per-row
+-- search reindex finish. Venues additionally delegate the legacy url+stale closure to
+-- run_venue_closure_decision (its own venue_closed_audit + reopen logic, untouched).
+
 CREATE OR REPLACE FUNCTION public.run_existence_decision(
   p_entity_type text,
   p_dry_run boolean DEFAULT false
@@ -24,6 +42,7 @@ BEGIN
   END IF;
   SET LOCAL statement_timeout = 0;
 
+  -- bookkeeping (only on real cron runs, never dry-run)
   IF NOT p_dry_run THEN
     SELECT id, enabled INTO v_automation_id, v_enabled
       FROM public.admin_automations WHERE slug = v_slug;
@@ -41,6 +60,8 @@ BEGIN
     END IF;
   END IF;
 
+  -- Latest observation per (entity, signal_kind) within the freshness window; a newer
+  -- 'alive' of the same kind naturally cancels an older 'dead'.
   DROP TABLE IF EXISTS _agg;
   CREATE TEMP TABLE _agg ON COMMIT DROP AS
   WITH latest_per_kind AS (
@@ -59,6 +80,12 @@ BEGIN
   GROUP BY entity_id;
   CREATE INDEX ON _agg (entity_id);
 
+  -- =======================================================================
+  IF p_entity_type = 'venue' THEN
+    -- legacy url+stale path keeps its own audit + reopen (untouched)
+    IF NOT p_dry_run THEN PERFORM public.run_venue_closure_decision(false); END IF;
+
+    -- REOPEN engine-archived venues that show life again.
   IF p_entity_type = 'venue' THEN
     IF NOT p_dry_run THEN PERFORM public.run_venue_closure_decision(false); END IF;
 
@@ -121,6 +148,7 @@ BEGIN
       FROM arch a;
       GET DIAGNOSTICS v_archived = ROW_COUNT;
 
+      -- FLAG single-signal / guarded-with-dead for human review (no open audit yet)
       WITH cand AS (
         SELECT v.id, g.strong_dead, g.newest_dead_at, g.fresh_alive_at,
           coalesce(v.is_featured,false)
@@ -148,6 +176,7 @@ BEGIN
       GET DIAGNOSTICS v_flagged = ROW_COUNT;
     END IF;
 
+  -- =======================================================================
   ELSIF p_entity_type = 'event' THEN
     IF NOT p_dry_run THEN
       WITH open_arch AS (
@@ -227,6 +256,7 @@ BEGIN
       GET DIAGNOSTICS v_flagged = ROW_COUNT;
     END IF;
 
+  -- =======================================================================
   ELSIF p_entity_type = 'marketplace' THEN
     IF NOT p_dry_run THEN
       WITH open_arch AS (
@@ -256,6 +286,7 @@ BEGIN
       AND NOT EXISTS (SELECT 1 FROM public.saved_items s WHERE s.entity_type='marketplace' AND s.entity_id=m.id);
 
     IF NOT p_dry_run THEN
+      -- step 1: active/sold_out -> inactive (reopenable)
       WITH arch AS (
         SELECT m.id, m.status, m.deprecated_at, g.strong_dead, g.newest_dead_at
         FROM _agg g JOIN public.marketplace_listings m ON m.id=g.entity_id
@@ -274,6 +305,7 @@ BEGIN
       FROM arch a;
       GET DIAGNOSTICS v_archived = ROW_COUNT;
 
+      -- step 2: escalate long-dead inactive (open archive > 60d, still dead) -> archived
       UPDATE public.marketplace_listings m
         SET status='archived', deprecated_at=now(), updated_at=now()
       FROM (
@@ -285,6 +317,7 @@ BEGIN
       ) esc
       WHERE m.id=esc.entity_id AND m.status='inactive';
 
+      -- FLAG single-signal
       WITH cand AS (
         SELECT m.id, g.strong_dead, g.newest_dead_at, g.fresh_alive_at,
           EXISTS (SELECT 1 FROM public.saved_items s WHERE s.entity_type='marketplace' AND s.entity_id=m.id) AS guarded
@@ -327,6 +360,7 @@ EXCEPTION WHEN OTHERS THEN
   RAISE;
 END; $function$;
 
+-- Zero-arg wrappers so the data-driven dispatcher (^run_[a-z0-9_]+$) resolves them.
 CREATE OR REPLACE FUNCTION public.run_existence_decision_venue() RETURNS jsonb
  LANGUAGE sql SECURITY DEFINER SET search_path TO 'public','pg_temp'
 AS $$ SELECT public.run_existence_decision('venue', false); $$;
@@ -337,6 +371,10 @@ CREATE OR REPLACE FUNCTION public.run_existence_decision_marketplace() RETURNS j
  LANGUAGE sql SECURITY DEFINER SET search_path TO 'public','pg_temp'
 AS $$ SELECT public.run_existence_decision('marketplace', false); $$;
 
+
+-- Event date-lifecycle: the past-event gap fix. Past active events -> completed;
+-- long-past (>180d) events lose search indexability and emit a date_lifecycle dead
+-- signal (the decision engine makes any terminal call). Storm-safe keyset batches.
 CREATE OR REPLACE FUNCTION public.run_event_date_lifecycle()
  RETURNS jsonb
  LANGUAGE plpgsql
@@ -349,6 +387,7 @@ BEGIN
   PERFORM public.assert_admin_or_internal();
   SET LOCAL statement_timeout = 0;
 
+  -- past active -> completed (soft, reversible)
   LOOP
     WITH c AS (
       SELECT id FROM public.events
@@ -365,6 +404,7 @@ BEGIN
     EXIT WHEN v_batch < 300;
   END LOOP;
 
+  -- long-past -> de-index + emit date_lifecycle:dead signal (idempotent: only newly indexable)
   LOOP
     WITH c AS (
       SELECT id FROM public.events
@@ -390,10 +430,13 @@ BEGIN
   RETURN jsonb_build_object('completed', v_total_c, 'deindexed', v_total_d);
 END; $function$;
 
+-- Back-compat wrapper: the existing event_auto_archive automation calls run_event_auto_archive().
 CREATE OR REPLACE FUNCTION public.run_event_auto_archive() RETURNS jsonb
  LANGUAGE sql SECURITY DEFINER SET search_path TO 'public','pg_temp'
 AS $$ SELECT public.run_event_date_lifecycle(); $$;
 
+
+-- Ledger pruning: keep the latest ~20 signals per entity and anything < 180 days.
 CREATE OR REPLACE FUNCTION public.run_existence_signals_purge()
  RETURNS jsonb
  LANGUAGE plpgsql
@@ -423,4 +466,5 @@ END; $function$;
 
 REVOKE ALL ON FUNCTION public.run_existence_decision(text, boolean) FROM public, anon;
 REVOKE ALL ON FUNCTION public.run_event_date_lifecycle() FROM public, anon;
+REVOKE ALL ON FUNCTION public.run_existence_signals_purge() FROM public, anon;
 REVOKE ALL ON FUNCTION public.run_existence_signals_purge() FROM public, anon;;

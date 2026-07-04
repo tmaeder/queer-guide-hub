@@ -29,6 +29,12 @@ vi.mock('@/hooks/useTripConcierge', () => ({
   useTripConcierge: useConciergeMock,
   useSendConciergeMessage: useSendConciergeMock,
 }));
+vi.mock('@/hooks/useDayWeather', () => ({
+  useTripWeatherSignals: () => ({}),
+}));
+vi.mock('@/hooks/useAccessibilityMatches', () => ({
+  useAccessibilityNeeds: () => ({ data: [] }),
+}));
 
 import { AiPlanTab } from '../AiPlanTab';
 

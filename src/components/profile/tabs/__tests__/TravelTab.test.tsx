@@ -12,6 +12,9 @@ vi.mock('@/hooks/use-toast', () => ({ useToast: () => ({ toast: vi.fn() }) }));
 vi.mock('@/components/map/EntityMap', () => ({
   EntityMap: () => <div data-testid="entity-map" />,
 }));
+vi.mock('@/components/footprint/AtlasMap', () => ({
+  AtlasMap: () => <div data-testid="atlas-map" />,
+}));
 
 vi.mock('@/hooks/usePlaceMarks', () => ({
   useMyPlaceMarks: () => ({

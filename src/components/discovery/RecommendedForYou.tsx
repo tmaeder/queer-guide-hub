@@ -24,24 +24,6 @@ const SEARCH_URL =
 	(import.meta as any).env?.VITE_SEARCH_PROXY_URL ||
 	"https://search.queer.guide";
 
-const TYPE_PATH: Record<string, string> = {
-	venue: "/venues",
-	event: "/events",
-	city: "/city",
-	country: "/country",
-	personality: "/personalities",
-	queer_village: "/villages",
-	news: "/news",
-	marketplace: "/marketplace",
-	hotel: "/hotels",
-};
-
-function hitPath(type: string, slug: string): string | null {
-	if (type === "tag") return `/tags/${slug}`;
-	const base = TYPE_PATH[type];
-	return base ? `${base}/${slug}` : null;
-}
-
 function fallbackTheme(type: string): FallbackTheme {
 	switch (type) {
 		case "venue": return "venue";

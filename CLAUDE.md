@@ -28,7 +28,6 @@ queer-guide-hub/
 │   └── migrations/       # PostgreSQL migrations
 ├── workers/
 │   ├── ingest/           # CF Worker: search-intelligence ingest pipeline
-│   ├── search-proxy/     # CF Worker: search proxy (Postgres backend), Postgres-driven synonyms
 │   ├── search-proxy/     # CF Worker: search proxy (Postgres-backed), Postgres-driven synonyms
 │   ├── snapshot-archiver/ # CF Worker: archives admin/editorial snapshots
 │   └── submit/           # CF Worker: extension submissions → ingestion_staging
@@ -74,8 +73,8 @@ queer-guide-hub/
 
 ## Repo stats
 
-- **Edge functions:** 223
-- **Migrations:** 724
+- **Edge functions:** 226
+- **Migrations:** 738
 
 ## Infrastructure
 

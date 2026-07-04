@@ -80,6 +80,8 @@ interface SortablePlaceCardProps {
   onDelete: (placeId: string) => void;
   tripStartDate?: string | null;
   tripEndDate?: string | null;
+  /** Viewer role: hide edit affordances. RLS enforces server-side. */
+  readOnly?: boolean;
 }
 
 export function SortablePlaceCard({
@@ -87,6 +89,7 @@ export function SortablePlaceCard({
   onDelete,
   tripStartDate,
   tripEndDate,
+  readOnly = false,
 }: SortablePlaceCardProps) {
   const { t } = useTranslation();
   const [bookOpen, setBookOpen] = useState(false);
@@ -127,15 +130,17 @@ export function SortablePlaceCard({
       <div
         className={`group flex items-center gap-2 bg-background border ${borderClass} rounded-container px-4 py-2 mb-1.5 min-h-11 transition-all hover:bg-muted/60 ${isDragging ? 'cursor-grabbing' : 'cursor-default'}`}
       >
-        <div
-          {...attributes}
-          {...listeners}
-          aria-label={t('trips.itinerary.dragHandleAria')}
-          className="flex items-center shrink-0 cursor-grab active:cursor-grabbing text-muted-foreground/45 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity"
-          style={{ touchAction: 'none' }}
-        >
-          <GripVertical className="w-3.5 h-3.5" />
-        </div>
+        {!readOnly && (
+          <div
+            {...attributes}
+            {...listeners}
+            aria-label={t('trips.itinerary.dragHandleAria')}
+            className="flex items-center shrink-0 cursor-grab active:cursor-grabbing text-muted-foreground/45 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity"
+            style={{ touchAction: 'none' }}
+          >
+            <GripVertical className="w-3.5 h-3.5" />
+          </div>
+        )}
 
         <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center shrink-0">
           <Icon className="w-3 h-3" />
@@ -169,7 +174,7 @@ export function SortablePlaceCard({
           )}
         </div>
 
-        {isIntent && (
+        {isIntent && !readOnly && (
           <Button
             variant="outline"
             size="sm"
@@ -193,14 +198,16 @@ export function SortablePlaceCard({
           onBookingPrompt={() => setBookOpen(true)}
         />
 
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => onDelete(place.id)}
-          className="opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity p-0.5 min-h-11 min-w-11 flex items-center justify-center"
-        >
-          <X className="w-3.5 h-3.5" />
-        </Button>
+        {!readOnly && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => onDelete(place.id)}
+            className="opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity p-0.5 min-h-11 min-w-11 flex items-center justify-center"
+          >
+            <X className="w-3.5 h-3.5" />
+          </Button>
+        )}
       </div>
 
       {bookOpen && (

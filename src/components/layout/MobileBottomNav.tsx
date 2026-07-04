@@ -38,28 +38,7 @@ function isTabActive(tab: BottomNavTab, path: string): boolean {
   );
 }
 
-function matches(path: string, prefixes: string[]): boolean {
-  return prefixes.some((p) => path === p || path.startsWith(`${p}/`));
-}
 
-const EXPLORE_PREFIXES = [
-  '/venues',
-  '/events',
-  '/places',
-  '/marketplace',
-  '/news',
-  '/map',
-  '/people',
-  '/hotels',
-  '/travel',
-  '/tags',
-  '/personalities',
-  '/community',
-  '/feed',
-  '/groups',
-  '/users',
-  '/friends',
-];
 /**
  * Mobile-only floating-island bottom nav. Four destination tabs —
  * Home · Explore · Messages · You — plus a raised, context-aware contribute

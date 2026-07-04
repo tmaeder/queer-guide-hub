@@ -25,18 +25,22 @@ import type { TripWithDetails, TripPlace, TripDay } from '@/hooks/useTrips';
 import { useTripMutations } from '@/hooks/useTrips';
 import { SortablePlaceCard, PlaceCardOverlay } from './SortablePlaceCard';
 import { DayCard, type DaySlot } from './DayCard';
+import { detectTripConflicts } from './tripConflicts';
 
 interface Props {
   trip: TripWithDetails;
   onAddPlace: (dayId?: string, slot?: DaySlot) => void;
   /** Auto-scroll the today card into view on mount. Default true. */
   autoScrollToToday?: boolean;
+  /** Viewer role: hide edit affordances and disable drag. RLS enforces server-side. */
+  readOnly?: boolean;
 }
 
 export function DraggableItinerary({
   trip,
   onAddPlace,
   autoScrollToToday = true,
+  readOnly = false,
 }: Props) {
   const { t } = useTranslation();
   const { updatePlace, removePlace, updateDay } = useTripMutations();
@@ -47,11 +51,10 @@ export function DraggableItinerary({
   const rootRef = useRef<HTMLDivElement>(null);
   const didScrollRef = useRef(false);
 
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: { distance: 5 },
-    }),
-  );
+  const pointerSensor = useSensor(PointerSensor, {
+    activationConstraint: { distance: 5 },
+  });
+  const sensors = useSensors(...(readOnly ? [] : [pointerSensor]));
 
   const placesByContainer = useMemo(() => {
     const map: Record<string, TripPlace[]> = { unassigned: [] };
@@ -73,6 +76,23 @@ export function DraggableItinerary({
     () => (activeDragId ? trip.trip_places.find((p) => p.id === activeDragId) : null),
     [activeDragId, trip.trip_places],
   );
+
+  const conflictsByDay = useMemo(() => {
+    const all = detectTripConflicts(trip.trip_days, trip.trip_places);
+    const map: Record<string, typeof all> = {};
+    for (const c of all) {
+      if (!c.dayId) continue;
+      (map[c.dayId] ||= []).push(c);
+    }
+    return map;
+  }, [trip.trip_days, trip.trip_places]);
+
+  // Weather fallback for days without their own coordinates: the first
+  // coordinate anywhere in the trip.
+  const tripCoord = useMemo(() => {
+    const p = trip.trip_places.find((pl) => pl.latitude != null && pl.longitude != null);
+    return p ? { lat: p.latitude!, lng: p.longitude! } : null;
+  }, [trip.trip_places]);
 
   const sortedDays = useMemo(() => {
     const sorted = [...trip.trip_days].sort((a, b) =>
@@ -157,7 +177,7 @@ export function DraggableItinerary({
       const reordered = arrayMove(items, oldIndex, overItem);
       reordered.forEach((place, idx) => {
         if (place.sort_order !== idx) {
-          updatePlace.mutate({ id: place.id, sort_order: idx });
+          updatePlace.mutate({ id: place.id, trip_id: trip.id, sort_order: idx });
         }
       });
       toast({ title: t('trips.itinerary.reordered') });
@@ -169,6 +189,7 @@ export function DraggableItinerary({
 
       updatePlace.mutate({
         id: activeId,
+        trip_id: trip.id,
         day_id: newDayId,
         sort_order: insertIndex,
       });
@@ -176,7 +197,7 @@ export function DraggableItinerary({
       destItems.forEach((place, idx) => {
         const newOrder = idx >= insertIndex ? idx + 1 : idx;
         if (place.sort_order !== newOrder) {
-          updatePlace.mutate({ id: place.id, sort_order: newOrder });
+          updatePlace.mutate({ id: place.id, trip_id: trip.id, sort_order: newOrder });
         }
       });
       toast({ title: t('trips.itinerary.moved') });
@@ -245,10 +266,12 @@ export function DraggableItinerary({
                 </span>
                 <Badge variant="outline" className="rounded-full">{unassigned.length}</Badge>
               </div>
-              <Button variant="ghost" size="sm" onClick={() => onAddPlace()} className="rounded-full">
-                <Plus size={14} className="mr-1" />
-                {t('trips.itinerary.add')}
-              </Button>
+              {!readOnly && (
+                <Button variant="ghost" size="sm" onClick={() => onAddPlace()} className="rounded-full">
+                  <Plus size={14} className="mr-1" />
+                  {t('trips.itinerary.add')}
+                </Button>
+              )}
             </div>
             <p className="text-xs text-muted-foreground block mb-4">
               {t('trips.itinerary.unassignedHint')}
@@ -264,6 +287,7 @@ export function DraggableItinerary({
                   onDelete={handleDelete}
                   tripStartDate={trip.start_date}
                   tripEndDate={trip.end_date}
+                  readOnly={readOnly}
                 />
               ))}
             </SortableContext>
@@ -321,11 +345,14 @@ export function DraggableItinerary({
               onCancelEditTitle={() => setEditingDayId(null)}
               onAddPlace={(slot) => onAddPlace(meta.day.id, slot)}
               onDeletePlace={handleDelete}
+              conflicts={conflictsByDay[meta.day.id]}
+              fallbackCoord={tripCoord}
+              readOnly={readOnly}
             />
           );
         })}
 
-        {!itineraryIsEmpty && (
+        {!itineraryIsEmpty && !readOnly && (
           <Button variant="outline" onClick={() => onAddPlace()} className="w-full mt-4 rounded-element border-dashed h-12">
             <Plus size={16} className="mr-1.5" />
             {t('trips.itinerary.addPlace')}

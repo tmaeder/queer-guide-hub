@@ -63,7 +63,6 @@
   },
   "search": {
     "placeholder": "Pesquisar países e cidades...",
-    "nearMe": "Perto de Mim",
     "filters": "Filtros",
     "continent": "Continente",
     "all": "Todos",
@@ -575,7 +574,9 @@
         "safety": "Segurança",
         "lgbtq-specific": "Específico LGBTQIA+",
         "other": "Outros"
-      }
+      },
+      "scopeAll": "Todos",
+      "scopeMine": "Meus"
     },
     "collaborate": {
       "chat": "Chat",
@@ -895,6 +896,44 @@
       "saveAria": "Save trip",
       "unsaveAria": "Unsave trip",
       "error": "Could not update save"
+    },
+    "dayNotes": {
+      "addTitle": "Adicionar uma nota a este dia",
+      "textLabel": "Nota",
+      "textPlaceholder": "ex.: Check-out até às 11:00",
+      "timeLabel": "Hora (opcional)",
+      "iconLabel": "Ícone",
+      "save": "Adicionar nota",
+      "added": "Nota adicionada",
+      "delete": "Excluir nota"
+    },
+    "weather": {
+      "clear": "Céu limpo",
+      "partlyCloudy": "Parcialmente nublado",
+      "overcast": "Encoberto",
+      "fog": "Nevoeiro",
+      "drizzle": "Chuvisco",
+      "rain": "Chuva",
+      "snow": "Neve",
+      "thunderstorm": "Trovoada",
+      "typical": "típico"
+    },
+    "conflicts": {
+      "chip_one": "{{count}} conflito",
+      "chip_other": "{{count}} conflitos"
+    },
+    "legs": {
+      "switchMode": "Mudar meio de transporte",
+      "modeAria": "Meio de transporte: {{mode}} — clique para mudar",
+      "mode": {
+        "walk": "a pé",
+        "transit": "transporte público",
+        "drive": "carro"
+      },
+      "walkingTotal": "{{distance}} a pé"
+    },
+    "suggestions": {
+      "accessMatch": "Atende às suas necessidades"
     }
   },
   "auth": {
@@ -1530,6 +1569,12 @@
         "thisWeek": "Esta semana",
         "later": "Mais tarde"
       }
+    },
+    "shop": {
+      "eyebrow": "Mercado",
+      "title": "Marcas queer",
+      "description": "Produtos e serviços de negócios queer e trans.",
+      "seeAll": "Ver mercado"
     }
   },
   "header": {
@@ -1564,7 +1609,8 @@
       "travel": "Viagens",
       "personalities": "Personalidades",
       "hotels": "Hotéis",
-      "help": "Ajuda"
+      "help": "Ajuda",
+      "tags": "Tags"
     },
     "userMenu": {
       "myTrips": "Minhas Viagens",
@@ -2450,7 +2496,15 @@
     },
     "tagDetail": {
       "breadcrumbHome": "Recursos",
-      "noDefinition": "Ainda sem definição para este termo."
+      "noDefinition": "Ainda sem definição para este termo.",
+      "alsoKnownAs": "Também conhecido como",
+      "readOnWikipedia": "Ler na Wikipédia",
+      "searchTagged": "Pesquisar tudo com a tag {{name}}",
+      "seeAlso": "Ver também",
+      "sensitiveContentBody": "Este tópico pode conter conteúdo sensível. Se precisar de apoio, visite a nossa página de linhas de apoio em crise.",
+      "sensitiveContentTitle": "Tópico sensível",
+      "tableOfContents": "Conteúdo",
+      "viewAsGraph": "Ver como grafo"
     },
     "graph": {
       "title": "Grafo de relações",
@@ -2860,7 +2914,8 @@
     "help": "Ajuda",
     "pride": "Orgulho",
     "contributors": "Colaboradores",
-    "wishlists": "Listas de desejos"
+    "wishlists": "Listas de desejos",
+    "tags": "Tags"
   },
   "chat": {
     "react": "Reagir",

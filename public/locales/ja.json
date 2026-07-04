@@ -63,7 +63,6 @@
   },
   "search": {
     "placeholder": "国や都市を検索...",
-    "nearMe": "近くの場所",
     "filters": "フィルター",
     "continent": "大陸",
     "all": "すべて",
@@ -575,7 +574,9 @@
         "safety": "安全用品",
         "lgbtq-specific": "LGBTQ+ 向け",
         "other": "その他"
-      }
+      },
+      "scopeAll": "全員",
+      "scopeMine": "自分"
     },
     "collaborate": {
       "chat": "チャット",
@@ -895,6 +896,44 @@
       "saveAria": "Save trip",
       "unsaveAria": "Unsave trip",
       "error": "Could not update save"
+    },
+    "dayNotes": {
+      "addTitle": "この日にメモを追加",
+      "textLabel": "メモ",
+      "textPlaceholder": "例: 11:00までにチェックアウト",
+      "timeLabel": "時刻（任意）",
+      "iconLabel": "アイコン",
+      "save": "メモを追加",
+      "added": "メモを追加しました",
+      "delete": "メモを削除"
+    },
+    "weather": {
+      "clear": "快晴",
+      "partlyCloudy": "晴れ時々曇り",
+      "overcast": "曇り",
+      "fog": "霧",
+      "drizzle": "霧雨",
+      "rain": "雨",
+      "snow": "雪",
+      "thunderstorm": "雷雨",
+      "typical": "例年"
+    },
+    "conflicts": {
+      "chip_one": "{{count}}件の競合",
+      "chip_other": "{{count}}件の競合"
+    },
+    "legs": {
+      "switchMode": "移動手段を切り替える",
+      "modeAria": "移動手段: {{mode}} — クリックして変更",
+      "mode": {
+        "walk": "徒歩",
+        "transit": "公共交通機関",
+        "drive": "車"
+      },
+      "walkingTotal": "徒歩{{distance}}"
+    },
+    "suggestions": {
+      "accessMatch": "ニーズに一致"
     }
   },
   "auth": {
@@ -1530,6 +1569,12 @@
         "thisWeek": "今週",
         "later": "その後"
       }
+    },
+    "shop": {
+      "eyebrow": "マーケットプレイス",
+      "title": "クィアオウンドのアイテム",
+      "description": "クィア・トランス経営のショップの商品とサービス。",
+      "seeAll": "マーケットプレイスへ"
     }
   },
   "header": {
@@ -1564,7 +1609,8 @@
       "travel": "旅行",
       "personalities": "著名人",
       "hotels": "ホテル",
-      "help": "ヘルプ"
+      "help": "ヘルプ",
+      "tags": "タグ"
     },
     "userMenu": {
       "myTrips": "マイトリップ",
@@ -2448,7 +2494,15 @@
     },
     "tagDetail": {
       "breadcrumbHome": "リソース",
-      "noDefinition": "この用語にはまだ定義がありません。"
+      "noDefinition": "この用語にはまだ定義がありません。",
+      "alsoKnownAs": "別名",
+      "readOnWikipedia": "Wikipediaで読む",
+      "searchTagged": "{{name}}のタグが付いたすべてを検索",
+      "seeAlso": "関連項目",
+      "sensitiveContentBody": "このトピックにはセンシティブな内容が含まれる場合があります。サポートが必要な場合は、危機ホットラインのページをご覧ください。",
+      "sensitiveContentTitle": "センシティブなトピック",
+      "tableOfContents": "目次",
+      "viewAsGraph": "グラフで表示"
     },
     "graph": {
       "title": "タグ関係グラフ",
@@ -2858,7 +2912,8 @@
     "help": "ヘルプ",
     "pride": "プライド",
     "contributors": "貢献者",
-    "wishlists": "ウィッシュリスト"
+    "wishlists": "ウィッシュリスト",
+    "tags": "タグ"
   },
   "chat": {
     "react": "リアクション",

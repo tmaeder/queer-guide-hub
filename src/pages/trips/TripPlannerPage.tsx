@@ -19,19 +19,24 @@ import {
   Check,
   Loader2,
   Lightbulb,
+  NotebookPen,
 } from 'lucide-react';
 import { format, differenceInDays } from 'date-fns';
 import { useTranslation } from 'react-i18next';
-import { useTrip, type TripWithDetails } from '@/hooks/useTrips';
+import { useTrip, canEditTrip, type TripWithDetails } from '@/hooks/useTrips';
+import { useAuth } from '@/hooks/useAuth';
+import { useOfflineTripSync } from '@/hooks/useOfflineTripSync';
 import { useTripReservations } from '@/hooks/useTripReservations';
 import { cacheTripSnapshot } from '@/utils/offlineTripPack';
 import { useToast } from '@/hooks/use-toast';
 import { DraggableItinerary } from '@/components/trips/DraggableItinerary';
-import { TripMap } from '@/components/trips/TripMap';
+import { TripMap } from '@/components/trips/TripMapLazy';
 import { TripSafetyBriefing } from '@/components/trips/TripSafetyBriefing';
 import { TripNudgesBanner } from '@/components/trips/TripNudgesBanner';
 import { TripTravelBuddiesCTA } from '@/components/trips/TripTravelBuddiesCTA';
+import { MarketplaceForTrip } from '@/components/marketplace/MarketplaceForTrip';
 import { AddPlaceDialog } from '@/components/trips/AddPlaceDialog';
+import { ImportPlacesDialog } from '@/components/trips/ImportPlacesDialog';
 import { ShareTripDialog } from '@/components/trips/ShareTripDialog';
 import { TripBookingAssistant } from '@/components/trips/TripBookingAssistant';
 import { TripSuggestions } from '@/components/trips/TripSuggestions';
@@ -76,6 +81,11 @@ const PackingTab = lazy(() =>
     default: m.PackingTab,
   })),
 );
+const JournalTab = lazy(() =>
+  import('@/components/trips/journal/JournalTab').then((m) => ({
+    default: m.JournalTab,
+  })),
+);
 const CollaborationTab = lazy(() =>
   import('@/components/trips/CollaborationTab').then((m) => ({
     default: m.CollaborationTab,
@@ -113,11 +123,15 @@ export default function TripPlannerPage() {
   const { data: trip, isLoading, error } = useTrip(tripId);
   const [addPlaceDay, setAddPlaceDay] = useState<string | undefined>();
   const [addPlaceOpen, setAddPlaceOpen] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
   const [mobileBookingOpen, setMobileBookingOpen] = useState(false);
   const [offlineSaved, setOfflineSaved] = useState(false);
   const { data: reservations } = useTripReservations(tripId);
   const { toast } = useToast();
+  const { user } = useAuth();
+  const canEdit = trip ? canEditTrip(trip, user?.id) : false;
+  const { pending: pendingOffline } = useOfflineTripSync();
 
   const handleSaveOffline = async () => {
     if (!tripId || !trip) return;
@@ -263,6 +277,18 @@ export default function TripPlannerPage() {
         </TooltipProvider>
       </TripCoverBand>
 
+      {pendingOffline > 0 && (
+        <div
+          className="flex items-center gap-2 border border-border rounded-element px-4 py-2 mb-4 text-sm text-muted-foreground"
+          data-testid="offline-pending-banner"
+        >
+          <Loader2 size={14} className="animate-spin" aria-hidden />
+          {t('trips.offline.pending', '{{count}} changes waiting to sync', {
+            count: pendingOffline,
+          })}
+        </div>
+      )}
+
       {/* Pre-trip: docs, countdown + gaps */}
       <TripDocExpiryBanner trip={trip} />
       <TripPreTripBlock trip={trip} />
@@ -287,18 +313,31 @@ export default function TripPlannerPage() {
             </>
           )}
         </span>
-        <Button
-          variant="brand"
-          size="sm"
-          onClick={() => {
-            setAddPlaceDay(undefined);
-            setAddPlaceOpen(true);
-          }}
-          className="rounded-full"
-        >
-          <Plus size={16} className="mr-1.5" />
-          {t('trips.itinerary.addPlace')}
-        </Button>
+        {canEdit && (
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setImportOpen(true)}
+              className="rounded-full"
+            >
+              <Download size={14} className="mr-1.5" />
+              {t('trips.import.button', 'Import')}
+            </Button>
+            <Button
+              variant="brand"
+              size="sm"
+              onClick={() => {
+                setAddPlaceDay(undefined);
+                setAddPlaceOpen(true);
+              }}
+              className="rounded-full"
+            >
+              <Plus size={16} className="mr-1.5" />
+              {t('trips.itinerary.addPlace')}
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* === TIMELINE SPINE === */}
@@ -310,6 +349,7 @@ export default function TripPlannerPage() {
               setAddPlaceDay(dayId);
               setAddPlaceOpen(true);
             }}
+            readOnly={!canEdit}
           />
         </div>
         <aside className="hidden lg:block w-72 flex-shrink-0">
@@ -469,6 +509,12 @@ export default function TripPlannerPage() {
                   <PackingTab tripId={trip.id} />
                 </Suspense>
               </ErrorBoundary>
+              <ErrorBoundary section="trip-gear" fallback={null}>
+                <MarketplaceForTrip
+                  cityName={trip.primary_city_name}
+                  places={trip.trip_places}
+                />
+              </ErrorBoundary>
             </AccordionContent>
           </AccordionItem>
 
@@ -523,6 +569,19 @@ export default function TripPlannerPage() {
               </Suspense>
             </AccordionContent>
           </AccordionItem>
+
+          <AccordionItem value="journal">
+            <AccordionTrigger>
+              <span className="inline-flex items-center gap-2">
+                <NotebookPen size={16} /> {t('trips.tabs.journal', 'Journal')}
+              </span>
+            </AccordionTrigger>
+            <AccordionContent>
+              <Suspense fallback={<SuspenseLoader />}>
+                <JournalTab tripId={trip.id} members={trip.trip_members} />
+              </Suspense>
+            </AccordionContent>
+          </AccordionItem>
         </Accordion>
       </section>
 
@@ -545,6 +604,13 @@ export default function TripPlannerPage() {
         days={trip.trip_days}
         places={trip.trip_places}
         preselectedDayId={addPlaceDay}
+      />
+
+      <ImportPlacesDialog
+        open={importOpen}
+        onClose={() => setImportOpen(false)}
+        tripId={trip.id}
+        nextSortOrder={trip.trip_places.length}
       />
 
       <ShareTripDialog

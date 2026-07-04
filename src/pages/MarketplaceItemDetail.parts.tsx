@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { marketplaceBeacon } from '@/lib/affiliate/marketplace';
 import {
@@ -25,7 +25,6 @@ import { ReportButton } from '@/components/moderation/ReportButton';
 import { AdminEditButton } from '@/components/admin/AdminEditButton';
 import { Editable } from '@/components/admin/inline/Editable';
 import type { Database } from '@/integrations/supabase/types';
-import { formatCurrency } from '@/lib/currency';
 import {
   formatListingPrice,
   getOutboundLink,
@@ -38,32 +37,18 @@ import { tagHref } from '@/lib/searchRoutes';
 import type { ListingTag } from '@/hooks/usePageFetchers';
 import { AffiliateDisclosure } from '@/components/marketplace/AffiliateDisclosure';
 import { MarketplacePriceHistory } from '@/components/marketplace/MarketplacePriceHistory';
-import { MarketplaceSimilarItems } from '@/components/marketplace/MarketplaceSimilarItems';
-import { BrandMoreFrom } from '@/components/marketplace/BrandMoreFrom';
+// Lazy: keeps the recharts chunk off the item-detail load (chart renders null for <2 price points)
+const MarketplacePriceHistory = lazy(() =>
+  import('@/components/marketplace/MarketplacePriceHistory').then((m) => ({
+    default: m.MarketplacePriceHistory,
+  }))
+);
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 
 export type MarketplaceListing = Database['public']['Tables']['marketplace_listings']['Row'];
 export type MarketplaceReview = Database['public']['Tables']['marketplace_reviews']['Row'] & {
   profiles: { display_name: string; avatar_url: string | null } | null;
 };
-
-export function formatPrice(listing: MarketplaceListing) {
-  if (!listing.price) {
-    if (listing.price_type === 'free') return 'Free';
-    return 'Price varies';
-  }
-  const price = formatCurrency(listing.price, listing.currency || 'USD');
-  switch (listing.price_type) {
-    case 'starting_at':
-      return `Starting at ${price}`;
-    case 'negotiable':
-      return `${price} (negotiable)`;
-    case 'free':
-      return 'Free';
-    default:
-      return price;
-  }
-}
 
 export function getBusinessTypeIcon(type: string | null | undefined) {
   switch (type) {
@@ -475,7 +460,9 @@ export function MarketplaceContent({ listing, reviews, tags }: ContentProps) {
         </Card>
       )}
 
-      <MarketplacePriceHistory listingId={listing.id} />
+      <Suspense fallback={null}>
+        <MarketplacePriceHistory listingId={listing.id} />
+      </Suspense>
 
       <Card>
         <CardHeader>
@@ -533,8 +520,6 @@ export function MarketplaceContent({ listing, reviews, tags }: ContentProps) {
         </CardContent>
       </Card>
 
-      <BrandMoreFrom listing={listing} />
-      <MarketplaceSimilarItems listing={listing} />
     </div>
   );
 }

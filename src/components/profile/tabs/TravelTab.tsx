@@ -29,6 +29,7 @@ import { ReturnNudge } from '@/components/footprint/ReturnNudge';
 import { ShareControls } from '@/components/footprint/ShareControls';
 import { TripsSummaryCard } from '@/components/profile/travel/TripsSummaryCard';
 import { FavoritesSummaryCard } from '@/components/profile/travel/FavoritesSummaryCard';
+import { AtlasMap } from '@/components/footprint/AtlasMap';
 
 interface TravelTabProps {
   userId: string;
@@ -135,7 +136,10 @@ function OwnTravel() {
 
   const ids = useMemo(() => {
     const out = { venue: [] as string[], event: [] as string[], village: [] as string[] };
-    marks.forEach((m) => out[m.entity_type].push(m.entity_id));
+    // country/city marks belong to the Atlas, not the entity fetcher.
+    marks.forEach((m) => {
+      if (m.entity_type in out) out[m.entity_type as keyof typeof out].push(m.entity_id);
+    });
     return out;
   }, [marks]);
   const cityIds = useMemo(() => {
@@ -280,6 +284,11 @@ function OwnTravel() {
   };
   const badges = deriveBadges(effectiveStats, trips.length);
 
+  // Save → trip nudge: places saved but no trip yet is the drop-off the growth
+  // funnel watches. Uses data already loaded (marks + trips) — no extra query.
+  const savedCount = marks.filter((m) => m.mark_type === 'saved').length;
+  const showSaveToTripNudge = savedCount > 0 && trips.length === 0;
+
   return (
     <div className="flex flex-col gap-6">
       <div className="grid gap-4 md:grid-cols-2">
@@ -287,7 +296,32 @@ function OwnTravel() {
         <FavoritesSummaryCard />
       </div>
 
+      {showSaveToTripNudge && (
+        <Card>
+          <CardContent className="flex flex-col gap-4 py-4 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-sm">
+              You've saved {savedCount} {savedCount === 1 ? 'place' : 'places'}. Turn them into a trip.
+            </p>
+            <LocalizedLink
+              to="/me/trips"
+              className="inline-flex shrink-0 items-center justify-center rounded-element bg-foreground px-4 py-2 text-sm font-medium text-background no-underline"
+            >
+              Plan a trip
+            </LocalizedLink>
+          </CardContent>
+        </Card>
+      )}
+
       <StatsPanel stats={effectiveStats} />
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Atlas</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <AtlasMap />
+        </CardContent>
+      </Card>
 
       {badges.length > 0 && (
         <Card>

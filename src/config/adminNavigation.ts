@@ -160,6 +160,12 @@ export const adminNavSections: AdminNavSection[] = [
         group: 'Places',
       },
       {
+        id: 'liveness',
+        label: 'Liveness & closure',
+        icon: Flag,
+        route: '/admin/content/liveness',
+      },
+      {
         id: 'events',
         label: 'Events',
         icon: Calendar,

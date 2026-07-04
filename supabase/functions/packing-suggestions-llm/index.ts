@@ -1,7 +1,10 @@
 /**
  * packing-suggestions-llm — smarter packing queries via Claude Haiku.
  *
- * Input (POST JSON): { trip_id: string }
+ * Input (POST JSON): { trip_id: string, weather?: string }
+ *   `weather` is a compact client-computed Open-Meteo summary
+ *   ("Forecast: 12–22°C, precipitation on 2 of 5 days") — it joins the
+ *   snapshot (and cache hash) so suggestions react to real conditions.
  * Output: { categories: [{ name, items: [{ query, reason, priority }] }], cached: boolean }
  *
  * Cache hits: packing_suggestion_cache keyed by (trip_id, snapshot_hash),
@@ -120,6 +123,7 @@ Rules:
   { "categories": [ { "name": "clothing" | "toiletries" | "electronics" | "documents" | "safety" | "other", "items": [ { "query": "...", "reason": "...", "priority": "must" | "nice" | "optional" } ] } ] }
 - Max 6 categories, max 4 items per category (24 total ceiling).
 - Each query is 2-5 words suitable for a product search (e.g., "merino base layer", "reef-safe sunscreen SPF 50").
+- If the snapshot has a "weather" line, tailor clothing/gear to it (rain gear for wet days, layers for cold nights, sun protection for heat) — it beats the generic "climate" field.
 - Skip anything already on the user's existing checklist.
 - For low-equality-score countries (< 5), add discreet safety items with clear rationale.
 - Reasons ≤ 12 words. No emojis. No preamble outside the JSON block.`;
@@ -148,7 +152,7 @@ Deno.serve(async (req) => {
     global: { headers: { Authorization: auth } },
   });
 
-  let payload: { trip_id?: string };
+  let payload: { trip_id?: string; weather?: string };
   try {
     payload = await req.json();
   } catch {
@@ -182,12 +186,19 @@ Deno.serve(async (req) => {
     });
   }
 
+  const weather =
+    typeof payload.weather === 'string' && payload.weather.length <= 200
+      ? payload.weather
+      : null;
+  if (weather) (snapshot as Record<string, unknown>).weather = weather;
+
   const hashInput = JSON.stringify({
     city: snapshot.city,
     cc: snapshot.country_code,
     s: snapshot.start_date,
     e: snapshot.end_date,
     climate: snapshot.climate,
+    weather,
     activities: snapshot.activities.slice().sort(),
     existing_count: snapshot.existing_items.length,
   });

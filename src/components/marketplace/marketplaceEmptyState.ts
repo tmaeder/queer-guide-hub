@@ -47,3 +47,63 @@ export function buildLooseningSuggestion(f: MarketplaceFiltersInput): string {
   if (suggestions.length === 0) return 'Try broadening your search.';
   return suggestions.slice(0, 2).join(' ');
 }
+
+export interface RelaxationStep {
+  label: string;
+  next: MarketplaceFiltersInput;
+}
+
+/**
+ * One actionable "Remove {facet}" chip per active dimension, most
+ * restrictive first — each applies the filter set minus that dimension.
+ */
+export function buildRelaxationSteps(f: MarketplaceFiltersInput): RelaxationStep[] {
+  const steps: RelaxationStep[] = [];
+  if (f.priceRange) {
+    const label =
+      f.priceRange.max < 100000
+        ? `Remove price limit ($${f.priceRange.min} – ${f.priceRange.max})`
+        : `Remove price limit ($${f.priceRange.min}+)`;
+    steps.push({ label, next: { ...f, priceRange: undefined } });
+  }
+  for (const tag of f.tags ?? []) {
+    steps.push({
+      label: `Remove tag "${tag.replace(/^(mat|occ|vibe)-/, '').replace(/-/g, ' ')}"`,
+      next: { ...f, tags: f.tags!.filter((t) => t !== tag) },
+    });
+  }
+  if (f.communityOwned && f.communityOwned.length > 0) {
+    steps.push({
+      label: 'Remove ownership filter',
+      next: { ...f, communityOwned: undefined },
+    });
+  }
+  if (f.subcategory) {
+    steps.push({
+      label: `Show all ${f.subcategory.replace(/_/g, ' ')} alternatives`,
+      next: { ...f, subcategory: undefined },
+    });
+  }
+  if (f.location) {
+    steps.push({ label: `Remove location (${f.location})`, next: { ...f, location: undefined } });
+  }
+  if (f.verifiedWithinDays) {
+    steps.push({
+      label: 'Include older listings',
+      next: { ...f, verifiedWithinDays: undefined },
+    });
+  }
+  if (f.currency) {
+    steps.push({ label: `Remove currency (${f.currency})`, next: { ...f, currency: undefined } });
+  }
+  if (f.availability === 'any') {
+    // Widening, not narrowing — no step.
+  }
+  if (f.department) {
+    steps.push({
+      label: 'Search all departments',
+      next: { ...f, department: undefined, subcategory: undefined },
+    });
+  }
+  return steps.slice(0, 5);
+}

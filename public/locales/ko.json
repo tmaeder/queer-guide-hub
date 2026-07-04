@@ -63,7 +63,6 @@
   },
   "search": {
     "placeholder": "국가와 도시 검색...",
-    "nearMe": "내 주변",
     "filters": "필터",
     "continent": "대륙",
     "all": "전체",
@@ -575,7 +574,9 @@
         "safety": "안전 용품",
         "lgbtq-specific": "LGBTQ+ 전용",
         "other": "기타"
-      }
+      },
+      "scopeAll": "모두",
+      "scopeMine": "내 것"
     },
     "collaborate": {
       "chat": "채팅",
@@ -895,6 +896,44 @@
       "saveAria": "Save trip",
       "unsaveAria": "Unsave trip",
       "error": "Could not update save"
+    },
+    "dayNotes": {
+      "addTitle": "이 날에 메모 추가",
+      "textLabel": "메모",
+      "textPlaceholder": "예: 11:00까지 체크아웃",
+      "timeLabel": "시간(선택)",
+      "iconLabel": "아이콘",
+      "save": "메모 추가",
+      "added": "메모가 추가되었습니다",
+      "delete": "메모 삭제"
+    },
+    "weather": {
+      "clear": "맑음",
+      "partlyCloudy": "구름 조금",
+      "overcast": "흐림",
+      "fog": "안개",
+      "drizzle": "이슬비",
+      "rain": "비",
+      "snow": "눈",
+      "thunderstorm": "뇌우",
+      "typical": "평년"
+    },
+    "conflicts": {
+      "chip_one": "{{count}}개의 충돌",
+      "chip_other": "{{count}}개의 충돌"
+    },
+    "legs": {
+      "switchMode": "이동 수단 전환",
+      "modeAria": "이동 수단: {{mode}} — 클릭하여 변경",
+      "mode": {
+        "walk": "도보",
+        "transit": "대중교통",
+        "drive": "자동차"
+      },
+      "walkingTotal": "도보 {{distance}}"
+    },
+    "suggestions": {
+      "accessMatch": "필요 사항과 일치"
     }
   },
   "auth": {
@@ -1530,6 +1569,12 @@
         "thisWeek": "이번 주",
         "later": "이후"
       }
+    },
+    "shop": {
+      "eyebrow": "마켓플레이스",
+      "title": "퀴어 브랜드",
+      "description": "퀴어·트랜스 운영 비즈니스의 상품과 서비스.",
+      "seeAll": "마켓플레이스 보기"
     }
   },
   "header": {
@@ -1564,7 +1609,8 @@
       "travel": "여행",
       "personalities": "인물",
       "hotels": "호텔",
-      "help": "도움말"
+      "help": "도움말",
+      "tags": "태그"
     },
     "userMenu": {
       "myTrips": "내 여행",
@@ -2448,7 +2494,15 @@
     },
     "tagDetail": {
       "breadcrumbHome": "자료",
-      "noDefinition": "이 용어에 대한 정의가 아직 없습니다."
+      "noDefinition": "이 용어에 대한 정의가 아직 없습니다.",
+      "alsoKnownAs": "다른 이름",
+      "readOnWikipedia": "위키백과에서 읽기",
+      "searchTagged": "{{name}} 태그가 붙은 모든 항목 검색",
+      "seeAlso": "같이 보기",
+      "sensitiveContentBody": "이 주제에는 민감한 내용이 포함될 수 있습니다. 도움이 필요하면 위기 상담 전화 페이지를 방문하세요.",
+      "sensitiveContentTitle": "민감한 주제",
+      "tableOfContents": "목차",
+      "viewAsGraph": "그래프로 보기"
     },
     "graph": {
       "title": "태그 관계 그래프",
@@ -2858,7 +2912,8 @@
     "help": "도움말",
     "pride": "프라이드",
     "contributors": "기여자",
-    "wishlists": "위시리스트"
+    "wishlists": "위시리스트",
+    "tags": "태그"
   },
   "chat": {
     "react": "반응",

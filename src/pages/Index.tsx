@@ -10,6 +10,7 @@ import { RecentlyViewedRail } from '@/components/home/RecentlyViewedRail';
 const MapShell = React.lazy(() => import('@/components/map/MapShell'));
 const NewsMagazine = React.lazy(() => import('@/components/home/NewsMagazine'));
 const EventsAgenda = React.lazy(() => import('@/components/home/EventsAgenda'));
+const HomeShoppingSection = React.lazy(() => import('@/components/home/HomeShoppingSection'));
 
 // Hide the on-map search (the top-bar search is the single search) and keep the
 // landing URL clean (no ?lat&lng&z written as the visitor pans).
@@ -88,6 +89,26 @@ const Index = React.memo(() => {
           }
         >
           <EventsAgenda />
+        </React.Suspense>
+      </ErrorBoundary>
+
+      {/* ── Marketplace — spotlight + queer-owned rail (self-hides) ──── */}
+      <ErrorBoundary section="home-shopping" fallback={null}>
+        <React.Suspense
+          fallback={
+            <div className="px-4 sm:px-6 md:px-8 py-12 md:py-16">
+              <div className="max-w-7xl mx-auto">
+                <Skeleton className="mb-8 h-9 w-64" />
+                <div className="grid grid-cols-2 gap-6 md:grid-cols-4">
+                  {Array.from({ length: 4 }).map((_, i) => (
+                    <Skeleton key={i} className="aspect-[3/4] w-full rounded-container" />
+                  ))}
+                </div>
+              </div>
+            </div>
+          }
+        >
+          <HomeShoppingSection />
         </React.Suspense>
       </ErrorBoundary>
 
