@@ -124,58 +124,56 @@ function loadMetros(): MetroInfo[] {
   return JSON.parse(fs.readFileSync(CURATED_METROS, 'utf8')) as MetroInfo[];
 }
 
+/**
+ * GLOBAL windowed sweep (no metro filter). The WAF rate-caps selectTime
+ * filter queries at roughly one per minute per IP — a per-metro × quarterly
+ * matrix (96 × 18) is unrunnable, but global windows paginate the whole
+ * site's events for a date range, so ~18 windows × page depth stays within
+ * budget. Cards carry their own metro subdomains for attribution. On a 403
+ * the session is recycled with a long cooldown and the same page retried.
+ */
 async function phaseSweep(): Promise<void> {
-  const metros = liveMetros(loadMetros());
   const windows = quarterWindows(new Date(Date.UTC(2022, 0, 1)), new Date(Date.now() + 548 * 86_400_000));
   const cursorFile = f('sweep-cursor.json');
   const cursor: SweepCursor = fs.existsSync(cursorFile)
     ? (JSON.parse(fs.readFileSync(cursorFile, 'utf8')) as SweepCursor)
     : { metroIdx: 0, windowIdx: 0 };
   const seen = new Set(readJsonl<EventStub>(f('ajax-index.jsonl')).map((s) => s.numericId));
-  log(`sweep: ${metros.length} metros × ${windows.length} windows; resuming at metro ${cursor.metroIdx}, window ${cursor.windowIdx}; ${seen.size} stubs known`);
+  log(`sweep: ${windows.length} global windows; resuming at window ${cursor.windowIdx}; ${seen.size} stubs known`);
 
   let session = await openGaycitiesSession();
-  let requestsThisSession = 0;
   try {
-    for (let mi = cursor.metroIdx; mi < metros.length; mi++) {
-      const metro = metros[mi];
-      for (let wi = mi === cursor.metroIdx ? cursor.windowIdx : 0; wi < windows.length; wi++) {
-        const w = windows[wi];
-        for (let pageNo = 1; pageNo <= 50; pageNo++) {
-          let html: string;
-          try {
-            html = await fetchListing(session.page, { metroId: metro.metroId, from: w.from, to: w.to, page: pageNo });
-          } catch (err) {
-            log(`listing error metro=${metro.metroId} ${w.from}: ${(err as Error).message} — recycling session`);
-            await session.close();
-            await jitterDelay(10_000, 10_000);
-            session = await openGaycitiesSession();
-            requestsThisSession = 0;
-            pageNo--;
-            continue;
-          }
-          requestsThisSession++;
-          const cards = parseListingCards(html);
-          if (cards.length === 0) break;
-          let fresh = 0;
-          for (const card of cards) {
-            if (seen.has(card.numericId)) continue;
-            seen.add(card.numericId);
-            appendJsonl(f('ajax-index.jsonl'), { ...card, metroId: metro.metroId });
-            fresh++;
-          }
-          if (fresh === 0 && pageNo > 1) break; // page repeats near the end
-          await jitterDelay();
-          if (requestsThisSession >= 300) {
-            await session.close();
-            session = await openGaycitiesSession();
-            requestsThisSession = 0;
-          }
+    for (let wi = cursor.windowIdx; wi < windows.length; wi++) {
+      const w = windows[wi];
+      let empty = 0;
+      for (let pageNo = 1; pageNo <= 200; pageNo++) {
+        let html: string;
+        try {
+          html = await fetchListing(session.page, { from: w.from, to: w.to, page: pageNo });
+        } catch (err) {
+          log(`listing error ${w.from} p${pageNo}: ${(err as Error).message} — recycling session`);
+          await session.close();
+          await jitterDelay(45_000, 45_000);
+          session = await openGaycitiesSession();
+          pageNo--;
+          continue;
         }
-        fs.writeFileSync(cursorFile, JSON.stringify({ metroIdx: mi, windowIdx: wi + 1 }));
+        const cards = parseListingCards(html);
+        if (cards.length === 0) break;
+        let fresh = 0;
+        for (const card of cards) {
+          if (seen.has(card.numericId)) continue;
+          seen.add(card.numericId);
+          appendJsonl(f('ajax-index.jsonl'), { ...card, metroId: undefined });
+          fresh++;
+        }
+        log(`window ${w.from} p${pageNo}: ${cards.length} cards, ${fresh} new (total ${seen.size})`);
+        if (fresh === 0) { empty++; if (empty >= 2) break; } else empty = 0;
+        // Stay under the filter-query rate cap.
+        await jitterDelay(55_000, 25_000);
       }
-      fs.writeFileSync(cursorFile, JSON.stringify({ metroIdx: mi + 1, windowIdx: 0 }));
-      log(`metro ${metro.metroId} ${metro.label} done — ${seen.size} stubs total`);
+      fs.writeFileSync(cursorFile, JSON.stringify({ metroIdx: 0, windowIdx: wi + 1 }));
+      log(`window ${w.from} done — ${seen.size} stubs total`);
     }
   } finally {
     await session.close();
@@ -336,7 +334,7 @@ async function phaseWayback(sampleOnly: boolean): Promise<void> {
   for (const d of readJsonl<{ numericId: string }>(f('dead.jsonl'))) done.add(d.numericId);
   const targets = cdx.filter((c) => c.snapshotTs && !ajaxIds.has(c.numericId) && !done.has(c.numericId));
   const batch = sampleOnly ? targets.slice(0, 200) : targets;
-  const workers = Math.max(1, Math.min(6, Number(process.argv[process.argv.indexOf('--workers') + 1]) || 4));
+  const workers = Math.max(1, Math.min(8, Number(process.argv[process.argv.indexOf('--workers') + 1]) || 4));
   log(`wayback: ${batch.length} of ${targets.length} ids (sample=${sampleOnly}, workers=${workers})`);
 
   let ok = 0, miss = 0, doneCount = 0;
@@ -381,7 +379,7 @@ async function phaseWayback(sampleOnly: boolean): Promise<void> {
       }
       doneCount++;
       if (doneCount % 500 === 0) log(`wayback progress: ${doneCount}/${batch.length} (ok=${ok} miss=${miss})`);
-      await jitterDelay(300, 500);
+      await jitterDelay(100, 200);
     }
   };
   await Promise.all(Array.from({ length: workers }, () => worker()));
