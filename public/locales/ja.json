@@ -574,7 +574,9 @@
         "safety": "安全用品",
         "lgbtq-specific": "LGBTQ+ 向け",
         "other": "その他"
-      }
+      },
+      "scopeAll": "全員",
+      "scopeMine": "自分"
     },
     "collaborate": {
       "chat": "チャット",
@@ -894,6 +896,44 @@
       "saveAria": "Save trip",
       "unsaveAria": "Unsave trip",
       "error": "Could not update save"
+    },
+    "dayNotes": {
+      "addTitle": "この日にメモを追加",
+      "textLabel": "メモ",
+      "textPlaceholder": "例: 11:00までにチェックアウト",
+      "timeLabel": "時刻（任意）",
+      "iconLabel": "アイコン",
+      "save": "メモを追加",
+      "added": "メモを追加しました",
+      "delete": "メモを削除"
+    },
+    "weather": {
+      "clear": "快晴",
+      "partlyCloudy": "晴れ時々曇り",
+      "overcast": "曇り",
+      "fog": "霧",
+      "drizzle": "霧雨",
+      "rain": "雨",
+      "snow": "雪",
+      "thunderstorm": "雷雨",
+      "typical": "例年"
+    },
+    "conflicts": {
+      "chip_one": "{{count}}件の競合",
+      "chip_other": "{{count}}件の競合"
+    },
+    "legs": {
+      "switchMode": "移動手段を切り替える",
+      "modeAria": "移動手段: {{mode}} — クリックして変更",
+      "mode": {
+        "walk": "徒歩",
+        "transit": "公共交通機関",
+        "drive": "車"
+      },
+      "walkingTotal": "徒歩{{distance}}"
+    },
+    "suggestions": {
+      "accessMatch": "ニーズに一致"
     }
   },
   "auth": {

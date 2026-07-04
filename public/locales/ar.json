@@ -574,7 +574,9 @@
         "safety": "السلامة",
         "lgbtq-specific": "خاص بمجتمع الميم",
         "other": "أخرى"
-      }
+      },
+      "scopeAll": "الجميع",
+      "scopeMine": "أغراضي"
     },
     "collaborate": {
       "chat": "الدردشة",
@@ -894,6 +896,44 @@
       "saveAria": "Save trip",
       "unsaveAria": "Unsave trip",
       "error": "Could not update save"
+    },
+    "dayNotes": {
+      "addTitle": "أضف ملاحظة إلى هذا اليوم",
+      "textLabel": "ملاحظة",
+      "textPlaceholder": "مثال: تسجيل المغادرة قبل 11:00",
+      "timeLabel": "الوقت (اختياري)",
+      "iconLabel": "أيقونة",
+      "save": "أضف ملاحظة",
+      "added": "تمت إضافة الملاحظة",
+      "delete": "حذف الملاحظة"
+    },
+    "weather": {
+      "clear": "صافٍ",
+      "partlyCloudy": "غائم جزئيًا",
+      "overcast": "غائم",
+      "fog": "ضباب",
+      "drizzle": "رذاذ",
+      "rain": "مطر",
+      "snow": "ثلج",
+      "thunderstorm": "عاصفة رعدية",
+      "typical": "معتاد"
+    },
+    "conflicts": {
+      "chip_one": "تعارض واحد",
+      "chip_other": "{{count}} تعارضات"
+    },
+    "legs": {
+      "switchMode": "تغيير وسيلة التنقل",
+      "modeAria": "وسيلة التنقل: {{mode}} — انقر للتغيير",
+      "mode": {
+        "walk": "مشيًا",
+        "transit": "المواصلات العامة",
+        "drive": "بالسيارة"
+      },
+      "walkingTotal": "{{distance}} مشيًا"
+    },
+    "suggestions": {
+      "accessMatch": "يلبي احتياجاتك"
     }
   },
   "auth": {

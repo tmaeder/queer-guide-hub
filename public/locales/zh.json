@@ -574,7 +574,9 @@
         "safety": "安全用品",
         "lgbtq-specific": "LGBTQ+ 专用",
         "other": "其他"
-      }
+      },
+      "scopeAll": "所有人",
+      "scopeMine": "我的"
     },
     "collaborate": {
       "chat": "聊天",
@@ -894,6 +896,44 @@
       "saveAria": "Save trip",
       "unsaveAria": "Unsave trip",
       "error": "Could not update save"
+    },
+    "dayNotes": {
+      "addTitle": "为这一天添加备注",
+      "textLabel": "备注",
+      "textPlaceholder": "例如：11:00 前退房",
+      "timeLabel": "时间（可选）",
+      "iconLabel": "图标",
+      "save": "添加备注",
+      "added": "备注已添加",
+      "delete": "删除备注"
+    },
+    "weather": {
+      "clear": "晴",
+      "partlyCloudy": "局部多云",
+      "overcast": "阴",
+      "fog": "雾",
+      "drizzle": "毛毛雨",
+      "rain": "雨",
+      "snow": "雪",
+      "thunderstorm": "雷雨",
+      "typical": "常年"
+    },
+    "conflicts": {
+      "chip_one": "{{count}} 个冲突",
+      "chip_other": "{{count}} 个冲突"
+    },
+    "legs": {
+      "switchMode": "切换交通方式",
+      "modeAria": "交通方式：{{mode}} — 点击更改",
+      "mode": {
+        "walk": "步行",
+        "transit": "公共交通",
+        "drive": "驾车"
+      },
+      "walkingTotal": "步行 {{distance}}"
+    },
+    "suggestions": {
+      "accessMatch": "符合您的需求"
     }
   },
   "auth": {
