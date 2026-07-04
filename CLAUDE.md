@@ -130,6 +130,9 @@ The repo lives in an iCloud-synced folder. `.git` objects get evicted. If git co
 - Table is `unified_tags` (NOT `tags`), has NO `is_active` column
 - `personalities` has NO `known_for` column — use `profession` + `lgbti_connection`
 
+### Squash merges & `[skip ci]`
+GitHub squash merges concatenate every branch commit message into the merge commit. If ANY squashed commit contains `[skip ci]` (e.g. the CLAUDE.md stats-sync bot commit), the resulting push to `main` skips ALL push-triggered workflows (CI, `deploy-supabase-functions`) AND the Cloudflare Pages build — nothing deploys, silently (bit us on PR #1952). If a bot commit with `[skip ci]` lands on your branch, drop/reword it before merge, or after merging recover with `workflow_dispatch` on `deploy-supabase-functions.yml` plus a follow-up commit to `main` for the Pages build.
+
 ### Migrations
 - Cannot use `CONCURRENTLY` (migrations run inside transactions)
 - `supabase/migrations/` is large — check for conflicts before adding new ones (see Repo stats for current count)
