@@ -19,6 +19,7 @@ import {
   Check,
   Loader2,
   Lightbulb,
+  NotebookPen,
 } from 'lucide-react';
 import { format, differenceInDays } from 'date-fns';
 import { useTranslation } from 'react-i18next';
@@ -76,6 +77,11 @@ const ReservationsTab = lazy(() =>
 const PackingTab = lazy(() =>
   import('@/components/trips/PackingTab').then((m) => ({
     default: m.PackingTab,
+  })),
+);
+const JournalTab = lazy(() =>
+  import('@/components/trips/journal/JournalTab').then((m) => ({
+    default: m.JournalTab,
   })),
 );
 const CollaborationTab = lazy(() =>
@@ -533,6 +539,19 @@ export default function TripPlannerPage() {
             <AccordionContent>
               <Suspense fallback={<SuspenseLoader />}>
                 <DocumentsList tripId={trip.id} />
+              </Suspense>
+            </AccordionContent>
+          </AccordionItem>
+
+          <AccordionItem value="journal">
+            <AccordionTrigger>
+              <span className="inline-flex items-center gap-2">
+                <NotebookPen size={16} /> {t('trips.tabs.journal', 'Journal')}
+              </span>
+            </AccordionTrigger>
+            <AccordionContent>
+              <Suspense fallback={<SuspenseLoader />}>
+                <JournalTab tripId={trip.id} members={trip.trip_members} />
               </Suspense>
             </AccordionContent>
           </AccordionItem>

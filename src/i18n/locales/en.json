@@ -1073,7 +1073,8 @@
       "budget": "Budget",
       "reservations": "Reservations",
       "packing": "Packing",
-      "collaborate": "Collaborate"
+      "collaborate": "Collaborate",
+      "journal": "Journal"
     },
     "today": {
       "offlineBanner": "You're offline — showing your last-saved itinerary.",
@@ -1372,6 +1373,23 @@
     },
     "suggestions": {
       "accessMatch": "Matches your needs"
+    },
+    "journal": {
+      "placeholder": "What happened today? Small moments count.",
+      "moodLabel": "Mood",
+      "mood": {
+        "joy": "Joyful",
+        "good": "Good",
+        "mixed": "Mixed",
+        "tough": "Tough"
+      },
+      "addPhotos": "Photos",
+      "save": "Save entry",
+      "saved": "Journal entry saved",
+      "empty": "No journal entries yet.",
+      "delete": "Delete entry",
+      "removePhoto": "Remove photo",
+      "member": "Traveler"
     }
   },
   "help": {
