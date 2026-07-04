@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { AddReservationDialog } from './AddReservationDialog';
 import { TripBookingInbox } from './TripBookingInbox';
 import { detectTripGaps } from './tripGaps';
+import { detectTripConflicts } from './tripConflicts';
 
 interface Props {
   trip: TripWithDetails;
@@ -24,10 +25,23 @@ export function TripPreTripBlock({ trip }: Props) {
 
   const { data: reservations } = useTripReservations(trip.id);
 
-  const gaps = useMemo(
-    () => detectTripGaps(trip.trip_days, trip.trip_places),
-    [trip.trip_days, trip.trip_places],
-  );
+  const gaps = useMemo(() => {
+    const conflictItems = detectTripConflicts(
+      trip.trip_days,
+      trip.trip_places,
+      reservations ?? [],
+    ).map((c) => ({ kind: c.kind, severity: c.severity, dayId: c.dayId ?? 'trip', message: c.message }));
+    const gapItems = detectTripGaps(trip.trip_days, trip.trip_places).map((g) => ({
+      kind: g.kind as string,
+      severity: g.severity,
+      dayId: g.dayId,
+      message: g.message,
+    }));
+    // Conflicts first (double-booked > missing), warnings before infos.
+    return [...conflictItems, ...gapItems].sort(
+      (a, b) => (a.severity === 'warning' ? 0 : 1) - (b.severity === 'warning' ? 0 : 1),
+    );
+  }, [trip.trip_days, trip.trip_places, reservations]);
 
   const bookingStats = useMemo(() => {
     const res = reservations ?? [];

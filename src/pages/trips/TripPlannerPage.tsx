@@ -22,7 +22,8 @@ import {
 } from 'lucide-react';
 import { format, differenceInDays } from 'date-fns';
 import { useTranslation } from 'react-i18next';
-import { useTrip, type TripWithDetails } from '@/hooks/useTrips';
+import { useTrip, canEditTrip, type TripWithDetails } from '@/hooks/useTrips';
+import { useAuth } from '@/hooks/useAuth';
 import { useTripReservations } from '@/hooks/useTripReservations';
 import { cacheTripSnapshot } from '@/utils/offlineTripPack';
 import { useToast } from '@/hooks/use-toast';
@@ -118,6 +119,8 @@ export default function TripPlannerPage() {
   const [offlineSaved, setOfflineSaved] = useState(false);
   const { data: reservations } = useTripReservations(tripId);
   const { toast } = useToast();
+  const { user } = useAuth();
+  const canEdit = trip ? canEditTrip(trip, user?.id) : false;
 
   const handleSaveOffline = async () => {
     if (!tripId || !trip) return;
@@ -287,18 +290,20 @@ export default function TripPlannerPage() {
             </>
           )}
         </span>
-        <Button
-          variant="brand"
-          size="sm"
-          onClick={() => {
-            setAddPlaceDay(undefined);
-            setAddPlaceOpen(true);
-          }}
-          className="rounded-full"
-        >
-          <Plus size={16} className="mr-1.5" />
-          {t('trips.itinerary.addPlace')}
-        </Button>
+        {canEdit && (
+          <Button
+            variant="brand"
+            size="sm"
+            onClick={() => {
+              setAddPlaceDay(undefined);
+              setAddPlaceOpen(true);
+            }}
+            className="rounded-full"
+          >
+            <Plus size={16} className="mr-1.5" />
+            {t('trips.itinerary.addPlace')}
+          </Button>
+        )}
       </div>
 
       {/* === TIMELINE SPINE === */}
@@ -310,6 +315,7 @@ export default function TripPlannerPage() {
               setAddPlaceDay(dayId);
               setAddPlaceOpen(true);
             }}
+            readOnly={!canEdit}
           />
         </div>
         <aside className="hidden lg:block w-72 flex-shrink-0">

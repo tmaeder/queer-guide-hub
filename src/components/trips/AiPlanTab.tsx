@@ -15,6 +15,8 @@ import {
   type ConciergeDraft,
   type ConciergeMessage,
 } from '@/hooks/useTripConcierge';
+import { useTripWeatherSignals } from '@/hooks/useDayWeather';
+import { useAccessibilityNeeds } from '@/hooks/useAccessibilityMatches';
 
 interface Props {
   trip: TripWithDetails;
@@ -37,7 +39,12 @@ export function AiPlanTab({ trip }: Props) {
   const { addPlace } = useTripMutations();
 
   const { data: messages, isLoading } = useTripConcierge(trip.id);
-  const send = useSendConciergeMessage(trip.id);
+  const weatherByDate = useTripWeatherSignals(trip);
+  const { data: accessibilityNeeds } = useAccessibilityNeeds();
+  const send = useSendConciergeMessage(trip.id, {
+    ...(Object.keys(weatherByDate).length ? { weather_by_date: weatherByDate } : {}),
+    ...(accessibilityNeeds?.length ? { accessibility_needs: accessibilityNeeds } : {}),
+  });
 
   const [input, setInput] = useState('');
   const [applyingId, setApplyingId] = useState<string | null>(null);
