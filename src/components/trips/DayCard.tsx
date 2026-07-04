@@ -22,7 +22,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import type { TripDay, TripPlace } from '@/hooks/useTrips';
 import { SortablePlaceCard } from './SortablePlaceCard';
-import { TripMap } from './TripMap';
+import { TripMap } from './TripMapLazy';
 
 export type DaySlot = 'morning' | 'afternoon' | 'evening' | 'night' | 'unscheduled';
 

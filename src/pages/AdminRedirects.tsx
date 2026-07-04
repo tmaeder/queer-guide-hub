@@ -32,11 +32,11 @@ import { ExportExcelButton } from '@/components/admin/ExportExcelButton';
 import {
   exportToExcel,
   fetchAllRows,
-  formatDateTime,
   formatBoolean,
   generateFilename,
   type ExportColumnDef,
 } from '@/utils/excelExport';
+import { formatDateTime } from '@/lib/format';
 import { useRedirects, type Redirect, type RedirectEvent } from '@/hooks/useRedirects';
 import { toast } from 'sonner';
 import { fetchRedirectById } from '@/hooks/usePageFetchers';

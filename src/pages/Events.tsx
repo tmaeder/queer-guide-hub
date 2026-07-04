@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { EventsHeroSpotlight } from '@/components/events/EventsHeroSpotlight';
 import { SmartEmptyState } from '@/components/events/SmartEmptyState';
@@ -8,7 +8,10 @@ import { useEventFilters } from '@/hooks/useEventFilters';
 import { useMeta } from '@/hooks/useMeta';
 import { EventCard } from '@/components/events/EventCard';
 import { EventsTimelineView } from '@/components/events/EventsTimelineView';
-import { EventsMapView } from '@/components/events/EventsMapView';
+// Lazy: keeps the maplibre chunk off the default grid/timeline views
+const EventsMapView = lazy(() =>
+  import('@/components/events/EventsMapView').then((m) => ({ default: m.EventsMapView }))
+);
 import { Button } from '@/components/ui/button';
 import { PageHero } from '@/components/discovery';
 import { EventGuidesStream } from '@/components/events/EventGuidesStream';
@@ -325,7 +328,11 @@ const Events = () => {
           />
         )}
         {!loading && events.length > 0 && f.viewMode === 'map' && (
-          <EventsMapView events={events} height={640} />
+          <Suspense
+            fallback={<div className="h-[640px] w-full rounded-container bg-muted animate-pulse" />}
+          >
+            <EventsMapView events={events} height={640} />
+          </Suspense>
         )}
 
         {/* Load More */}
