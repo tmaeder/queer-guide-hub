@@ -63,7 +63,6 @@
   },
   "search": {
     "placeholder": "Länder und Städte suchen...",
-    "nearMe": "In meiner Nähe",
     "filters": "Filter",
     "continent": "Kontinent",
     "all": "Alle",

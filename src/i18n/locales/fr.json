@@ -63,7 +63,6 @@
   },
   "search": {
     "placeholder": "Rechercher pays et villes...",
-    "nearMe": "Près de Moi",
     "filters": "Filtres",
     "continent": "Continent",
     "all": "Tous",

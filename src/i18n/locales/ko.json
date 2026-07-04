@@ -63,7 +63,6 @@
   },
   "search": {
     "placeholder": "국가와 도시 검색...",
-    "nearMe": "내 주변",
     "filters": "필터",
     "continent": "대륙",
     "all": "전체",

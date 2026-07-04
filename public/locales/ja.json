@@ -63,7 +63,6 @@
   },
   "search": {
     "placeholder": "国や都市を検索...",
-    "nearMe": "近くの場所",
     "filters": "フィルター",
     "continent": "大陸",
     "all": "すべて",
