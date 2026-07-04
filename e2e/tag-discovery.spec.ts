@@ -30,7 +30,7 @@ test.describe('tag discovery', () => {
 
     // Clicking resolves the tag page (the slug-resolver fix) — not a 404.
     await bearBar.click();
-    await expect(page).toHaveURL(/\/resources\/bear-bar/);
+    await expect(page).toHaveURL(/\/tags\/bear-bar/);
     await expect(page.getByRole('heading', { name: /^Bear Bar$/ })).toBeVisible();
     await expect(page.getByText(/tag not found/i)).toHaveCount(0);
   });

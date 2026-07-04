@@ -4,6 +4,19 @@ import { marketplaceGoHref, type MarketplaceSurface } from '@/lib/affiliate/mark
 
 export type MarketplaceListing = Database['public']['Tables']['marketplace_listings']['Row'];
 
+/**
+ * Map an event's type/title onto an occasion tag the tag engine mines onto
+ * products. Deliberately narrow: only pride/drag/wedding shapes get a rail;
+ * everything else renders nothing (no venue-type/weather/sentiment rails).
+ */
+export function occasionForEvent(eventType: string | null | undefined, title: string): string | null {
+  const hay = `${eventType ?? ''} ${title}`.toLowerCase();
+  if (/\bpride\b|\bcsd\b/.test(hay)) return 'occ-pride';
+  if (/\bdrag\b|\bball(room)?\b/.test(hay)) return 'occ-drag';
+  if (/\bwedding\b/.test(hay)) return 'occ-wedding';
+  return null;
+}
+
 export type FxRates = Record<string, number>;
 
 /**

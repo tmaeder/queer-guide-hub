@@ -47,6 +47,21 @@ interface Candidate {
   city?: string;
   country?: string;
   category?: string;
+  /** Short opening-hours string (venues only, when known). */
+  hours?: string;
+  /** Controlled accessibility vocab slugs (venues only). */
+  access?: string[];
+  lat?: number;
+  lng?: number;
+}
+
+/** Client-computed planning signals (weather from Open-Meteo, saved needs). */
+interface Signals {
+  weather_by_date?: Record<
+    string,
+    { label: string; tMaxC: number; tMinC: number; typical?: boolean }
+  >;
+  accessibility_needs?: string[];
 }
 
 interface DraftPlace {
@@ -155,6 +170,43 @@ async function searchCandidates(
     .filter((c) => c.id);
 }
 
+/**
+ * Venue-only enrichment: opening hours, accessibility vocab, coordinates.
+ * One batch select; failures degrade to unenriched candidates.
+ */
+async function enrichVenueCandidates(
+  supabase: ReturnType<typeof createClient>,
+  candidates: Candidate[],
+): Promise<Candidate[]> {
+  const venueIds = candidates.filter((c) => c.kind === 'venue').map((c) => c.id);
+  if (venueIds.length === 0) return candidates;
+  const { data, error } = await supabase
+    .from('venues')
+    .select('id, opening_hours, accessibility_attributes, latitude, longitude')
+    .in('id', venueIds);
+  if (error || !data) return candidates;
+  const byId = new Map(
+    (data as Array<{
+      id: string;
+      opening_hours: string | null;
+      accessibility_attributes: string[] | null;
+      latitude: number | null;
+      longitude: number | null;
+    }>).map((v) => [v.id, v]),
+  );
+  return candidates.map((c) => {
+    const v = c.kind === 'venue' ? byId.get(c.id) : undefined;
+    if (!v) return c;
+    return {
+      ...c,
+      hours: v.opening_hours?.slice(0, 80) ?? undefined,
+      access: v.accessibility_attributes?.length ? v.accessibility_attributes : undefined,
+      lat: v.latitude ?? undefined,
+      lng: v.longitude ?? undefined,
+    };
+  });
+}
+
 interface ClaudeResponse {
   reply: string;
   draft: AiDraft | null;
@@ -165,6 +217,7 @@ async function callClaude(
   history: HistoryMessage[],
   message: string,
   candidates: Candidate[],
+  signals: Signals | undefined,
 ): Promise<ClaudeResponse> {
   const dates: string[] = [];
   if (ctx.start_date && ctx.end_date) {
@@ -184,6 +237,10 @@ Behavior rules:
 - Only suggest items from the candidates list — never invent venue/event IDs. Use \`custom_name\` only when no candidate fits.
 - Refer to existing places in the itinerary by name when relevant; never duplicate them in a draft.
 - Be specific to LGBTQ+ travelers (safety, scene, queer history, gay-owned, drag, etc.).
+- Cluster each day geographically — pick places near each other (candidates carry lat/lng) so days don't zigzag across the city.
+- Respect opening hours when scheduling ("hours" field). Don't send people to a closed venue; if hours are unknown, note the uncertainty.
+- If a day's forecast says rain, storms, or snow, prefer indoor candidates that day and say why.
+- If the user has accessibility needs, prefer candidates whose "access" list satisfies them, and mention it. NEVER claim a venue is accessible unless its access list says so — missing data is unknown, not a yes.
 
 Trip context:
 - Dates: ${dates.length ? dates.join(', ') : 'not set'}
@@ -194,8 +251,29 @@ Trip context:
       : 'nothing yet'
   }
 
-Candidate venues + events you may pick from (id | kind | name | city | category):
-${candidates.map((c) => `${c.id} | ${c.kind} | ${c.name} | ${c.city ?? '?'} | ${c.category ?? '?'}`).join('\n') || '(none — apologize and ask for more context)'}
+${
+    signals?.weather_by_date && Object.keys(signals.weather_by_date).length
+      ? `Weather by date${
+          Object.values(signals.weather_by_date).some((w) => w.typical)
+            ? ' (dates marked "typical" are climate history, not a forecast)'
+            : ''
+        }:
+${Object.entries(signals.weather_by_date)
+  .map(
+    ([d, w]) =>
+      `- ${d}: ${w.label}, ${Math.round(w.tMinC)}–${Math.round(w.tMaxC)}°C${w.typical ? ' (typical)' : ''}`,
+  )
+  .join('\n')}
+`
+      : ''
+  }${
+    signals?.accessibility_needs?.length
+      ? `User accessibility needs: ${signals.accessibility_needs.join(', ')}
+`
+      : ''
+  }
+Candidate venues + events you may pick from (id | kind | name | city | category | hours | access | lat,lng):
+${candidates.map((c) => `${c.id} | ${c.kind} | ${c.name} | ${c.city ?? '?'} | ${c.category ?? '?'} | ${c.hours ?? '?'} | ${c.access?.join(',') ?? '-'} | ${c.lat != null && c.lng != null ? `${c.lat.toFixed(3)},${c.lng.toFixed(3)}` : '?'}`).join('\n') || '(none — apologize and ask for more context)'}
 
 Draft schema (only when proposing places):
 \`\`\`draft
@@ -261,7 +339,7 @@ Deno.serve(async (req) => {
     global: { headers: { Authorization: auth } },
   });
 
-  let payload: { trip_id?: string; message?: string };
+  let payload: { trip_id?: string; message?: string; signals?: Signals };
   try {
     payload = await req.json();
   } catch {
@@ -271,7 +349,7 @@ Deno.serve(async (req) => {
     });
   }
 
-  const { trip_id, message } = payload;
+  const { trip_id, message, signals } = payload;
   if (!trip_id || !message || message.length > 2000) {
     return new Response(
       JSON.stringify({ error: 'trip_id and message (<2000 chars) required' }),
@@ -292,7 +370,10 @@ Deno.serve(async (req) => {
   const searchQuery = [message, ...ctx.cities, ...ctx.countries]
     .filter(Boolean)
     .join(' ');
-  const candidates = await searchCandidates(supabase, searchQuery);
+  const candidates = await enrichVenueCandidates(
+    supabase,
+    await searchCandidates(supabase, searchQuery),
+  );
 
   // Persist the user's message before calling Claude so a Claude failure
   // still leaves the user's input on the thread for retry.
@@ -304,7 +385,7 @@ Deno.serve(async (req) => {
 
   let result: ClaudeResponse;
   try {
-    result = await callClaude(ctx, history, message, candidates);
+    result = await callClaude(ctx, history, message, candidates, signals);
   } catch (err) {
     console.error('trip-concierge: generation failed', err);
     return new Response(

@@ -16,7 +16,10 @@ export const MARKETPLACE_SURFACES = [
   'brand_page',
   'city_rail',
   'trip_packing',
+  'trip_gear',
   'event_rail',
+  'home_rail',
+  'home_spotlight',
   'for_you',
   'wishlist',
 ] as const;

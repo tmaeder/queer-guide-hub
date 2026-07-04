@@ -9,10 +9,10 @@ import { ExportExcelButton } from '@/components/admin/ExportExcelButton';
 import {
   exportToExcel,
   fetchAllRows,
-  formatDateTime,
   generateFilename,
   type ExportColumnDef,
 } from '@/utils/excelExport';
+import { formatDateTime } from '@/lib/format';
 import { AdminEntityTable } from '@/components/admin/data-table/AdminEntityTable';
 import type { AdminTableConfig, AdminColumnMeta } from '@/components/admin/data-table/types';
 import { createColumnHelper } from '@tanstack/react-table';

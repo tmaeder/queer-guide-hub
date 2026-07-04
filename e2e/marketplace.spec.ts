@@ -1,7 +1,55 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 
 // Smoke spec for the marketplace discovery surface shipped in PR #935.
 // Runs against E2E_BASE_URL (defaults to https://queer.guide).
+
+// Exclude every non-listing route under /marketplace — notably guides
+// (editorial pages emit no Product JSON-LD; picking one stalls the JSON-LD
+// wait until timeout, the CI failure of 2026-06-12).
+const LISTING_LINK_SELECTOR =
+  'a[href^="/marketplace/"]:not([href*="categor"]):not([href*="collection"]):not([href*="merchants/"]):not([href*="guide"]):not([href*="share"]):not([href$="/submit"])';
+
+// Open a listing detail page that actually hydrates Product JSON-LD.
+// Two hardening measures born from the CI failures of 2026-07-04:
+// - navigate with `domcontentloaded` — the default `load` wait hangs when a
+//   merchant-CDN product image stalls on the runner, eating the whole test
+//   budget before the JSON-LD wait even starts
+// - try the first few grid links instead of blindly taking the first: grid
+//   order comes from live search ranking, and a single slow/broken listing
+//   at the top made this whole test family flaky
+async function openListingWithProductLd(page: Page): Promise<void> {
+  await page.goto('/marketplace');
+  await page.waitForSelector(LISTING_LINK_SELECTOR, { timeout: 30_000 });
+  const links = page.locator(LISTING_LINK_SELECTOR);
+  const candidates = Math.min(await links.count(), 3);
+  const hrefs: string[] = [];
+  for (let i = 0; i < candidates; i++) {
+    const href = await links.nth(i).getAttribute('href');
+    if (href && !hrefs.includes(href)) hrefs.push(href);
+  }
+  expect(hrefs.length).toBeGreaterThan(0);
+
+  for (let i = 0; i < hrefs.length; i++) {
+    await page.goto(hrefs[i], { waitUntil: 'domcontentloaded' });
+    try {
+      // useMeta injects JSON-LD client-side after data loads.
+      await page.waitForFunction(
+        () =>
+          Array.from(document.querySelectorAll('script[type="application/ld+json"]')).some((s) => {
+            try {
+              return JSON.parse(s.textContent || '')['@type'] === 'Product';
+            } catch {
+              return false;
+            }
+          }),
+        { timeout: 20_000 },
+      );
+      return;
+    } catch (err) {
+      if (i === hrefs.length - 1) throw err;
+    }
+  }
+}
 
 test.describe('Marketplace — discovery surface', () => {
   test.setTimeout(120_000);
@@ -97,7 +145,9 @@ test.describe('Marketplace — discovery surface', () => {
     expect(slugs.length).toBeGreaterThanOrEqual(2);
     const ids: string[] = [];
     for (const slug of slugs) {
-      await page.goto(slug);
+      // domcontentloaded: don't let a stalling merchant-CDN image block the
+      // default `load` wait (see openListingWithProductLd).
+      await page.goto(slug, { waitUntil: 'domcontentloaded' });
       await page.waitForFunction(
         () =>
           Array.from(document.querySelectorAll('script[type="application/ld+json"]')).some((s) => {
@@ -129,28 +179,7 @@ test.describe('Marketplace — discovery surface', () => {
   });
 
   test('marketplace detail page emits Product JSON-LD with offers', async ({ page }) => {
-    await page.goto('/marketplace');
-    await page.waitForSelector('a[href^="/marketplace/"]', { timeout: 30_000 });
-    // Exclude every non-listing route under /marketplace — notably guides
-    // (editorial pages emit no Product JSON-LD; picking one stalls the
-    // waitForFunction below until timeout, the CI failure of 2026-06-12).
-    const detailLink = page.locator('a[href^="/marketplace/"]:not([href*="categor"]):not([href*="collection"]):not([href*="merchants/"]):not([href*="guide"]):not([href*="share"]):not([href$="/submit"])').first();
-    const href = await detailLink.getAttribute('href');
-    expect(href).toBeTruthy();
-    await page.goto(href!);
-    await page.waitForLoadState('domcontentloaded');
-    // useMeta injects JSON-LD client-side after data loads; wait for the Product schema to appear.
-    await page.waitForFunction(
-      () =>
-        Array.from(document.querySelectorAll('script[type="application/ld+json"]')).some((s) => {
-          try {
-            return JSON.parse(s.textContent || '')['@type'] === 'Product';
-          } catch {
-            return false;
-          }
-        }),
-      { timeout: 30_000 },
-    );
+    await openListingWithProductLd(page);
     const productLd = await page.evaluate(() => {
       for (const s of Array.from(document.querySelectorAll('script[type="application/ld+json"]'))) {
         try {
@@ -177,11 +206,11 @@ test.describe('Marketplace — discovery surface', () => {
   test('public marketplace exposes no LGBTQ+ relevance filter', async ({ page }) => {
     await page.goto('/marketplace');
     await page.waitForLoadState('domcontentloaded');
-    // Open the advanced filter panel, then expand the "Quality & freshness"
+    // Open the "All filters" Sheet, then expand the "Quality & freshness"
     // section — where the (now-removed) relevance slider used to live. Radix
     // unmounts collapsed accordion content, so expanding it is what would
     // surface the slider in the DOM if it still existed.
-    await page.getByRole('button', { name: /toggle filters/i }).click();
+    await page.getByRole('button', { name: /all filters/i }).click();
     const quality = page.getByRole('button', { name: /quality & freshness/i });
     await quality.click();
     await expect(quality).toHaveAttribute('aria-expanded', 'true');
@@ -189,28 +218,26 @@ test.describe('Marketplace — discovery surface', () => {
     await expect(page.locator('[aria-label="Minimum LGBTQ+ relevance"]')).toHaveCount(0);
   });
 
-  test('marketplace detail page shows no "LGBTQ+ relevant" pill', async ({ page }) => {
+  test('facet chips write URL params and the sheet opens', async ({ page }) => {
     await page.goto('/marketplace');
-    await page.waitForSelector('a[href^="/marketplace/"]', { timeout: 30_000 });
-    const detailLink = page
-      .locator('a[href^="/marketplace/"]:not([href*="categor"]):not([href*="collection"]):not([href*="merchants/"]):not([href*="guide"]):not([href*="share"]):not([href$="/submit"])')
-      .first();
-    const href = await detailLink.getAttribute('href');
-    expect(href).toBeTruthy();
-    await page.goto(href!);
     await page.waitForLoadState('domcontentloaded');
-    // Wait for the buy box to hydrate (price is part of the same card as the pills).
-    await page.waitForFunction(
-      () =>
-        Array.from(document.querySelectorAll('script[type="application/ld+json"]')).some((s) => {
-          try {
-            return JSON.parse(s.textContent || '')['@type'] === 'Product';
-          } catch {
-            return false;
-          }
-        }),
-      { timeout: 30_000 },
-    );
+    // One-tap ownership chip → owned= URL param.
+    const chip = page.getByRole('button', { name: 'Queer-owned', exact: true }).first();
+    await chip.click();
+    await expect(page).toHaveURL(/owned=queer_owned/);
+    await expect(chip).toHaveAttribute('aria-pressed', 'true');
+    // Chip off → param gone.
+    await chip.click();
+    await expect(page).not.toHaveURL(/owned=/);
+    // Sheet opens with the long-tail filters.
+    await page.getByRole('button', { name: /all filters/i }).click();
+    await expect(page.getByRole('heading', { name: /all filters/i })).toBeVisible();
+  });
+
+  test('marketplace detail page shows no "LGBTQ+ relevant" pill', async ({ page }) => {
+    // JSON-LD presence doubles as the buy-box-hydrated signal (price is part
+    // of the same card as the pills).
+    await openListingWithProductLd(page);
     await expect(page.getByText(/lgbtq\+ relevant/i)).toHaveCount(0);
   });
 });

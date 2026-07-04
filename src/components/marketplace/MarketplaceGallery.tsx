@@ -51,22 +51,26 @@ export function MarketplaceGallery({ listingId, images, title }: MarketplaceGall
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="overflow-hidden rounded-container bg-muted">
-        {current && !failed.has(safeActive) ? (
-          // onError is a standard non-interactive image fallback handler, not a
-          // mouse/keyboard interaction.
-          // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions
-          <img
-            src={current.full}
-            alt={current.alt || title}
-            className="aspect-square w-full object-cover md:aspect-[4/5]"
-            onError={() => setFailed((prev) => new Set(prev).add(safeActive))}
-          />
-        ) : (
-          <div className="flex aspect-square w-full items-center justify-center text-muted-foreground md:aspect-[4/5]">
-            <ImageOff size={48} aria-hidden="true" />
-          </div>
-        )}
+      {/* Nested tray — the image plate sits in a muted frame, depth from
+          borders, never shadows. */}
+      <div className="rounded-container border border-border bg-muted p-2">
+        <div className="overflow-hidden rounded-element bg-muted">
+          {current && !failed.has(safeActive) ? (
+            // onError is a standard non-interactive image fallback handler, not a
+            // mouse/keyboard interaction.
+            // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions
+            <img
+              src={current.full}
+              alt={current.alt || title}
+              className="aspect-square w-full object-cover md:aspect-[4/5]"
+              onError={() => setFailed((prev) => new Set(prev).add(safeActive))}
+            />
+          ) : (
+            <div className="flex aspect-square w-full items-center justify-center text-muted-foreground md:aspect-[4/5]">
+              <ImageOff size={48} aria-hidden="true" />
+            </div>
+          )}
+        </div>
       </div>
 
       {showStrip && (

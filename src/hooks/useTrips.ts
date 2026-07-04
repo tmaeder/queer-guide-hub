@@ -87,6 +87,10 @@ export interface TripPlace {
   created_at: string;
   booking_status: 'intent' | 'booked' | 'completed';
   reservation_id: string | null;
+  /** Lucide icon slug for `category='note'` rows (see noteIcons.ts). */
+  icon?: string | null;
+  /** User override for the heuristic route-leg transport mode. */
+  arrive_mode?: 'walk' | 'transit' | 'drive' | null;
   // Joined relations
   venues?: { id: string; name: string; category: string | null; images: string[] | null; address: string | null } | null;
   events?: { id: string; title: string; event_type: string | null; start_date: string | null; end_date: string | null; images: string[] | null } | null;
@@ -99,6 +103,22 @@ export interface TripWithDetails extends Trip {
   trip_members: TripMember[];
   trip_days: TripDay[];
   trip_places: TripPlace[];
+}
+
+/**
+ * Client-side mirror of the RLS write rule: owners and accepted editors can
+ * change a trip; viewers get a read-only UI. RLS stays the source of truth —
+ * this only decides which affordances render.
+ */
+export function canEditTrip(
+  trip: Pick<TripWithDetails, 'owner_id' | 'trip_members'>,
+  userId: string | null | undefined,
+): boolean {
+  if (!userId) return false;
+  if (trip.owner_id === userId) return true;
+  return trip.trip_members.some(
+    (m) => m.user_id === userId && (m.role === 'owner' || m.role === 'editor'),
+  );
 }
 
 /**

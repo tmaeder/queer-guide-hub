@@ -1,7 +1,5 @@
-import { useMemo } from 'react';
-import { MarketplaceCard } from './MarketplaceCard';
+import { MarketplaceRailShell } from './MarketplaceRailShell';
 import { useMarketplaceListingsForCountry } from '@/hooks/useMarketplaceQueries';
-import { useEntityImageAssets } from '@/hooks/useEntityImageAssets';
 
 /**
  * Editorial marketplace strip for CountryDetail. Mirrors MarketplaceForCity
@@ -12,25 +10,22 @@ import { useEntityImageAssets } from '@/hooks/useEntityImageAssets';
 export function MarketplaceForCountry({
   countryId,
   countryName,
-  limit = 4,
+  limit = 10,
 }: {
   countryId: string;
   countryName: string;
   limit?: number;
 }) {
   const { data: items, loading } = useMarketplaceListingsForCountry(countryId, limit);
-  const { assets } = useEntityImageAssets('marketplace_listing', useMemo(() => items.map((i) => i.id), [items]));
   if (loading || items.length === 0) return null;
   return (
-    <section aria-labelledby="country-marketplace" className="mt-8">
-      <h2 id="country-marketplace" className="mb-4 text-xl font-bold tracking-tight">
-        From the marketplace in {countryName}
-      </h2>
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {items.map((it) => (
-          <MarketplaceCard key={it.id} listing={it} imageAsset={assets.get(it.id)} surface="city_rail" />
-        ))}
-      </div>
-    </section>
+    <MarketplaceRailShell
+      id="country-marketplace"
+      title={`From the marketplace in ${countryName}`}
+      listings={items}
+      loading={false}
+      surface="city_rail"
+      className="mt-8 mb-0"
+    />
   );
 }
