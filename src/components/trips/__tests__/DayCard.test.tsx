@@ -35,6 +35,14 @@ vi.mock('../TripMap', () => ({
   TripMap: () => <div data-testid="trip-map-stub" />,
 }));
 
+vi.mock('@/hooks/useDayWeather', () => ({
+  useDayWeather: () => null,
+}));
+
+vi.mock('../AddDayNoteDialog', () => ({
+  AddDayNoteDialog: () => null,
+}));
+
 vi.mock('../PlaceBookableLinks', () => ({
   PlaceBookableLinks: () => null,
 }));

@@ -1,7 +1,7 @@
 /* eslint-disable react-refresh/only-export-components -- intentionally co-locates helpers/constants with the primary component */
 
 import { useMemo, useState } from 'react';
-import { format, differenceInCalendarDays, isSameDay } from 'date-fns';
+import { format, isSameDay } from 'date-fns';
 import { useTranslation } from 'react-i18next';
 import {
   Plus,
@@ -14,6 +14,9 @@ import {
   Sunrise,
   Sunset,
   Moon,
+  StickyNote,
+  AlertTriangle,
+  Footprints,
 } from 'lucide-react';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { Card, CardContent } from '@/components/ui/card';
@@ -21,7 +24,14 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import type { TripDay, TripPlace } from '@/hooks/useTrips';
+import { useDayWeather, type Coord } from '@/hooks/useDayWeather';
+import { weatherIconFor, weatherLabelKeyFor } from '@/lib/weather/openMeteo';
+import type { TripConflict } from './tripConflicts';
+import { buildLegs, totalWalkingKm, formatLegDistance } from './tripLegs';
+import { LegRow } from './LegRow';
 import { SortablePlaceCard } from './SortablePlaceCard';
+import { DayNoteRow } from './DayNoteRow';
+import { AddDayNoteDialog } from './AddDayNoteDialog';
 import { TripMap } from './TripMap';
 
 export type DaySlot = 'morning' | 'afternoon' | 'evening' | 'night' | 'unscheduled';
@@ -47,6 +57,12 @@ export interface DayCardProps {
   onCancelEditTitle: () => void;
   onAddPlace: (slot?: DaySlot) => void;
   onDeletePlace: (placeId: string) => void;
+  /** Conflicts detected for this day (time overlaps, double lodging). */
+  conflicts?: TripConflict[];
+  /** Coordinate to use for weather when no place on this day has one. */
+  fallbackCoord?: Coord | null;
+  /** Viewer role: hide edit affordances. RLS enforces server-side. */
+  readOnly?: boolean;
 }
 
 /**
@@ -98,15 +114,10 @@ export function autoTheme(args: {
   return null;
 }
 
-interface WeatherPlaceholder {
-  inWindow: boolean;
-}
-
-function useWeatherStub(date: string): WeatherPlaceholder {
-  // TODO: wire to a weather provider. Show placeholder when date is within 14d.
-  const target = new Date(date);
-  const diff = differenceInCalendarDays(target, new Date());
-  return { inWindow: diff >= 0 && diff <= 14 };
+function coordForDay(places: TripPlace[], fallback?: Coord | null): Coord | null {
+  const withCoords = places.find((p) => p.latitude != null && p.longitude != null);
+  if (withCoords) return { lat: withCoords.latitude!, lng: withCoords.longitude! };
+  return fallback ?? null;
 }
 
 export function DayCard({
@@ -128,10 +139,15 @@ export function DayCard({
   onCancelEditTitle,
   onAddPlace,
   onDeletePlace,
+  conflicts = [],
+  fallbackCoord,
+  readOnly = false,
 }: DayCardProps) {
   const { t } = useTranslation();
   const [mapOpen, setMapOpen] = useState(false);
-  const weather = useWeatherStub(day.date);
+  const [noteOpen, setNoteOpen] = useState(false);
+  const coord = useMemo(() => coordForDay(places, fallbackCoord), [places, fallbackCoord]);
+  const weather = useDayWeather(day.date, coord);
 
   const placesBySlot = useMemo(() => {
     const map: Record<DaySlot, TripPlace[]> = {
@@ -146,6 +162,17 @@ export function DayCard({
   }, [places]);
 
   const theme = useMemo(() => autoTheme({ isFirst, isLast, places }), [isFirst, isLast, places]);
+
+  // Route legs between consecutive places, following visual (slot) order.
+  const legs = useMemo(() => {
+    const visualOrder = SLOT_ORDER.flatMap((slot) => placesBySlot[slot]);
+    return buildLegs(visualOrder);
+  }, [placesBySlot]);
+  const legByFromId = useMemo(
+    () => Object.fromEntries(legs.map((l) => [l.fromId, l])),
+    [legs],
+  );
+  const walkingKm = useMemo(() => totalWalkingKm(legs), [legs]);
 
   const dimClass = isPast ? 'opacity-60' : '';
   const cardBorder = isToday ? 'border-foreground' : 'border-border/70';
@@ -189,9 +216,24 @@ export function DayCard({
                     {t('trips.timeline.today', 'Today')}
                   </Badge>
                 )}
-                {weather.inWindow && (
-                  <span className="text-xs text-muted-foreground">
-                    {t('trips.timeline.weatherTbd', 'Weather —')}
+                {weather && (
+                  <WeatherChip
+                    code={weather.code}
+                    tMinC={weather.tMinC}
+                    tMaxC={weather.tMaxC}
+                    typical={weather.source === 'typical'}
+                  />
+                )}
+                {conflicts.length > 0 && (
+                  <span
+                    className="inline-flex items-center gap-1 px-1.5 py-0.5 text-2xs rounded-badge border border-foreground/40 text-foreground"
+                    title={conflicts.map((c) => c.message).join('\n')}
+                    data-testid="day-conflict-chip"
+                  >
+                    <AlertTriangle className="w-3 h-3" aria-hidden />
+                    {t('trips.conflicts.chip', '{{count}} conflicts', {
+                      count: conflicts.length,
+                    })}
                   </span>
                 )}
               </div>
@@ -226,15 +268,17 @@ export function DayCard({
                       {day.title || theme}
                     </p>
                   )}
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-7 w-7 p-0 opacity-40 hover:opacity-100"
-                    onClick={onStartEditTitle}
-                    aria-label={t('trips.itinerary.editDayTitle')}
-                  >
-                    <Pencil size={12} />
-                  </Button>
+                  {!readOnly && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 w-7 p-0 opacity-40 hover:opacity-100"
+                      onClick={onStartEditTitle}
+                      aria-label={t('trips.itinerary.editDayTitle')}
+                    >
+                      <Pencil size={12} />
+                    </Button>
+                  )}
                 </div>
               )}
             </div>
@@ -256,10 +300,23 @@ export function DayCard({
               <MapPin size={14} className="mr-1" />
               {mapOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
             </Button>
-            <Button variant="ghost" size="sm" onClick={() => onAddPlace()} className="rounded-full">
-              <Plus size={14} className="mr-1" />
-              {t('trips.itinerary.add')}
-            </Button>
+            {!readOnly && (
+              <>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setNoteOpen(true)}
+                  className="rounded-full"
+                  aria-label={t('trips.dayNotes.addTitle', 'Add a note to this day')}
+                >
+                  <StickyNote size={14} />
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => onAddPlace()} className="rounded-full">
+                  <Plus size={14} className="mr-1" />
+                  {t('trips.itinerary.add')}
+                </Button>
+              </>
+            )}
           </div>
         </div>
 
@@ -298,34 +355,104 @@ export function DayCard({
                       <Icon style={{ width: 11, height: 11 }} aria-hidden />
                       {t(`trips.timeline.slot.${slot}`, defaultSlotLabel(slot))}
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => onAddPlace(slot)}
-                      className="h-6 px-2 text-xs2 opacity-60 hover:opacity-100"
-                      aria-label={t('trips.timeline.addToSlot', 'Add to {{slot}}', {
-                        slot,
-                      })}
-                    >
-                      <Plus size={11} />
-                    </Button>
+                    {!readOnly && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => onAddPlace(slot)}
+                        className="h-6 px-2 text-xs2 opacity-60 hover:opacity-100"
+                        aria-label={t('trips.timeline.addToSlot', 'Add to {{slot}}', {
+                          slot,
+                        })}
+                      >
+                        <Plus size={11} />
+                      </Button>
+                    )}
                   </div>
-                  {slotPlaces.map((place) => (
-                    <SortablePlaceCard
-                      key={place.id}
-                      place={place}
-                      onDelete={onDeletePlace}
-                      tripStartDate={tripStartDate}
-                      tripEndDate={tripEndDate}
-                    />
-                  ))}
+                  {slotPlaces.map((place) => {
+                    const leg = legByFromId[place.id];
+                    return place.category === 'note' ? (
+                      <DayNoteRow
+                        key={place.id}
+                        place={place}
+                        onDelete={onDeletePlace}
+                        readOnly={readOnly}
+                      />
+                    ) : (
+                      <div key={place.id}>
+                        <SortablePlaceCard
+                          place={place}
+                          onDelete={onDeletePlace}
+                          tripStartDate={tripStartDate}
+                          tripEndDate={tripEndDate}
+                          readOnly={readOnly}
+                        />
+                        {leg && <LegRow leg={leg} readOnly={readOnly} />}
+                      </div>
+                    );
+                  })}
                 </div>
               );
             })
           )}
         </SortableContext>
+
+        {walkingKm >= 0.5 && (
+          <p
+            className="mt-2 inline-flex items-center gap-1.5 text-xs2 text-muted-foreground"
+            data-testid="day-walking-total"
+          >
+            <Footprints className="w-3 h-3" aria-hidden />
+            {t('trips.legs.walkingTotal', '{{distance}} walking', {
+              distance: formatLegDistance(walkingKm),
+            })}
+          </p>
+        )}
       </CardContent>
+
+      {noteOpen && (
+        <AddDayNoteDialog
+          open={noteOpen}
+          onClose={() => setNoteOpen(false)}
+          tripId={day.trip_id}
+          dayId={day.id}
+          nextSortOrder={places.length}
+        />
+      )}
     </Card>
+  );
+}
+
+function WeatherChip({
+  code,
+  tMinC,
+  tMaxC,
+  typical,
+}: {
+  code: number;
+  tMinC: number;
+  tMaxC: number;
+  typical: boolean;
+}) {
+  const { t } = useTranslation();
+  const Icon = weatherIconFor(code);
+  const label = weatherLabelKeyFor(code);
+  return (
+    <span
+      className="inline-flex items-center gap-1 text-xs text-muted-foreground"
+      title={t(label.key, label.defaultLabel)}
+      data-testid="day-weather"
+    >
+      <Icon className="w-3.5 h-3.5" aria-hidden />
+      <span className="tabular-nums">
+        {Math.round(tMinC)}–{Math.round(tMaxC)}°
+      </span>
+      {typical && (
+        <span className="text-2xs uppercase tracking-wide">
+          {t('trips.weather.typical', 'typical')}
+        </span>
+      )}
+    </span>
   );
 }
 
