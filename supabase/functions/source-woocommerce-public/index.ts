@@ -32,8 +32,9 @@ interface WooProduct {
 }
 
 function decodeEntities(s: string): string {
-  return s.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+  return s.replace(/&lt;/g, '<').replace(/&gt;/g, '>')
     .replace(/&#0?39;/g, "'").replace(/&quot;/g, '"').replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
 }
 
 function stripHtml(s: string): string {
