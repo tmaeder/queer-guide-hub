@@ -29,6 +29,7 @@ import { ReturnNudge } from '@/components/footprint/ReturnNudge';
 import { ShareControls } from '@/components/footprint/ShareControls';
 import { TripsSummaryCard } from '@/components/profile/travel/TripsSummaryCard';
 import { FavoritesSummaryCard } from '@/components/profile/travel/FavoritesSummaryCard';
+import { AtlasMap } from '@/components/footprint/AtlasMap';
 
 interface TravelTabProps {
   userId: string;
@@ -135,7 +136,10 @@ function OwnTravel() {
 
   const ids = useMemo(() => {
     const out = { venue: [] as string[], event: [] as string[], village: [] as string[] };
-    marks.forEach((m) => out[m.entity_type].push(m.entity_id));
+    // country/city marks belong to the Atlas, not the entity fetcher.
+    marks.forEach((m) => {
+      if (m.entity_type in out) out[m.entity_type as keyof typeof out].push(m.entity_id);
+    });
     return out;
   }, [marks]);
   const cityIds = useMemo(() => {
@@ -288,6 +292,15 @@ function OwnTravel() {
       </div>
 
       <StatsPanel stats={effectiveStats} />
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Atlas</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <AtlasMap />
+        </CardContent>
+      </Card>
 
       {badges.length > 0 && (
         <Card>
