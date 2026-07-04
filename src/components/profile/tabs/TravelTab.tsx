@@ -280,12 +280,33 @@ function OwnTravel() {
   };
   const badges = deriveBadges(effectiveStats, trips.length);
 
+  // Save → trip nudge: places saved but no trip yet is the drop-off the growth
+  // funnel watches. Uses data already loaded (marks + trips) — no extra query.
+  const savedCount = marks.filter((m) => m.mark_type === 'saved').length;
+  const showSaveToTripNudge = savedCount > 0 && trips.length === 0;
+
   return (
     <div className="flex flex-col gap-6">
       <div className="grid gap-4 md:grid-cols-2">
         <TripsSummaryCard />
         <FavoritesSummaryCard />
       </div>
+
+      {showSaveToTripNudge && (
+        <Card>
+          <CardContent className="flex flex-col gap-4 py-4 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-sm">
+              You've saved {savedCount} {savedCount === 1 ? 'place' : 'places'}. Turn them into a trip.
+            </p>
+            <LocalizedLink
+              to="/me/trips"
+              className="inline-flex shrink-0 items-center justify-center rounded-element bg-foreground px-4 py-2 text-sm font-medium text-background no-underline"
+            >
+              Plan a trip
+            </LocalizedLink>
+          </CardContent>
+        </Card>
+      )}
 
       <StatsPanel stats={effectiveStats} />
 
