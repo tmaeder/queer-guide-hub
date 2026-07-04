@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Lock, Users, Heart, Unlock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
@@ -22,9 +23,15 @@ const TIER_META: { value: KinkTier; label: string; hint: string; icon: typeof Lo
   { value: 'members', label: 'Members', hint: 'Signed-in 18+ members who also opted in', icon: Users },
 ];
 
+interface VisRow {
+  tier: KinkTier;
+  include_in_share: boolean;
+}
+
 /**
  * Per-category visibility tiers (default: private) + per-category opt-in to
- * the shareable link page.
+ * the shareable link page. Draft = overrides on top of saved state (no
+ * effect-synced copy).
  */
 export function KinkVisibilityStep({ onDone }: { onDone?: () => void }) {
   const { i18n } = useTranslation();
@@ -34,40 +41,45 @@ export function KinkVisibilityStep({ onDone }: { onDone?: () => void }) {
   const { data: visibility } = useMyKinkVisibility();
   const save = useSetKinkVisibility();
 
-  const [draft, setDraft] = useState<Map<string, { tier: KinkTier; include_in_share: boolean }>>(
-    new Map(),
-  );
-
-  useEffect(() => {
-    if (!taxonomy) return;
-    const next = new Map<string, { tier: KinkTier; include_in_share: boolean }>();
-    for (const cat of taxonomy.categories) {
-      const existing = visibility?.get(cat.id);
-      next.set(cat.id, {
-        tier: existing?.tier ?? 'private',
-        include_in_share: existing?.include_in_share ?? false,
-      });
-    }
-    setDraft(next);
-  }, [taxonomy, visibility]);
+  const [overrides, setOverrides] = useState<Map<string, Partial<VisRow>>>(new Map());
 
   if (!taxonomy) return null;
+
+  const effective = (categoryId: string): VisRow => {
+    const saved = visibility?.get(categoryId);
+    const override = overrides.get(categoryId);
+    return {
+      tier: override?.tier ?? saved?.tier ?? 'private',
+      include_in_share: override?.include_in_share ?? saved?.include_in_share ?? false,
+    };
+  };
+
+  const setOverride = (categoryId: string, patch: Partial<VisRow>) => {
+    setOverrides((prev) => {
+      const next = new Map(prev);
+      next.set(categoryId, { ...next.get(categoryId), ...patch });
+      return next;
+    });
+  };
 
   const handleSave = async () => {
     await save.mutateAsync(
       taxonomy.categories.map((cat) => {
-        const d = draft.get(cat.id) ?? { tier: 'private' as KinkTier, include_in_share: false };
-        return { category_id: cat.id, tier: d.tier, include_in_share: d.include_in_share };
+        const row = effective(cat.id);
+        return { category_id: cat.id, tier: row.tier, include_in_share: row.include_in_share };
       }),
     );
+    setOverrides(new Map());
     toast({ title: 'Visibility saved.' });
     onDone?.();
   };
 
   const setAll = (tier: KinkTier) => {
-    setDraft((prev) => {
+    setOverrides((prev) => {
       const next = new Map(prev);
-      for (const [k, v] of next) next.set(k, { ...v, tier });
+      for (const cat of taxonomy.categories) {
+        next.set(cat.id, { ...next.get(cat.id), tier });
+      }
       return next;
     });
   };
@@ -82,7 +94,7 @@ export function KinkVisibilityStep({ onDone }: { onDone?: () => void }) {
         </p>
       </div>
 
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         <span className="text-13 text-muted-foreground">Set all:</span>
         {TIER_META.map((t) => (
           <Button
@@ -99,21 +111,15 @@ export function KinkVisibilityStep({ onDone }: { onDone?: () => void }) {
 
       <ul className="divide-y divide-border">
         {taxonomy.categories.map((cat) => {
-          const d = draft.get(cat.id) ?? { tier: 'private' as KinkTier, include_in_share: false };
+          const row = effective(cat.id);
           return (
             <li key={cat.id} className="flex flex-wrap items-center gap-2 py-2">
               <span className="min-w-40 flex-1 text-sm">{kinkLabel(cat, lang)}</span>
               <Select
-                value={d.tier}
-                onValueChange={(tier) =>
-                  setDraft((prev) => {
-                    const next = new Map(prev);
-                    next.set(cat.id, { ...d, tier: tier as KinkTier });
-                    return next;
-                  })
-                }
+                value={row.tier}
+                onValueChange={(tier) => setOverride(cat.id, { tier: tier as KinkTier })}
               >
-                <SelectTrigger className="w-44 rounded-element">
+                <SelectTrigger className="w-44 rounded-element" aria-label={`Visibility for ${kinkLabel(cat, lang)}`}>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -127,19 +133,21 @@ export function KinkVisibilityStep({ onDone }: { onDone?: () => void }) {
                   ))}
                 </SelectContent>
               </Select>
-              <label className="flex items-center gap-1.5 text-13 text-muted-foreground">
+              <div className="flex items-center gap-1.5">
                 <Checkbox
-                  checked={d.include_in_share}
+                  id={`kink-share-${cat.id}`}
+                  checked={row.include_in_share}
                   onCheckedChange={(checked) =>
-                    setDraft((prev) => {
-                      const next = new Map(prev);
-                      next.set(cat.id, { ...d, include_in_share: checked === true });
-                      return next;
-                    })
+                    setOverride(cat.id, { include_in_share: checked === true })
                   }
                 />
-                Share link
-              </label>
+                <Label
+                  htmlFor={`kink-share-${cat.id}`}
+                  className="text-13 font-normal text-muted-foreground"
+                >
+                  Share link
+                </Label>
+              </div>
             </li>
           );
         })}

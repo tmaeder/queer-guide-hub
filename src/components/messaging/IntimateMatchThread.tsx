@@ -19,31 +19,9 @@ import {
   useSetPhotoUnlock,
   useShareLocation,
 } from '@/hooks/useIntimateThread';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/hooks/useAuth';
+import { useConversationOther } from '@/hooks/useConversationOther';
 import { KinkPeerActions } from '@/components/kinks/KinkPeerActions';
 import { cn } from '@/lib/utils';
-
-/** The other participant of a two-person match thread. */
-function useOtherParticipant(conversationId: string) {
-  const { user } = useAuth();
-  return useQuery({
-    queryKey: ['conversation-other', conversationId, user?.id],
-    enabled: !!user,
-    queryFn: async (): Promise<string | null> => {
-      if (!user) return null;
-      const { data, error } = await supabase
-        .from('conversation_participants')
-        .select('user_id')
-        .eq('conversation_id', conversationId)
-        .neq('user_id', user.id)
-        .limit(1);
-      if (error) throw error;
-      return data?.[0]?.user_id ?? null;
-    },
-  });
-}
 
 interface IntimateMatchThreadProps {
   conversationId: string;
@@ -103,7 +81,7 @@ export function IntimateMatchThread({
   const endMutation = useEndIntimateThread(conversationId);
   const photoMutation = useSetPhotoUnlock(conversationId);
   const locationMutation = useShareLocation(conversationId);
-  const { data: otherId } = useOtherParticipant(conversationId);
+  const { data: otherId } = useConversationOther(conversationId);
   const [confirmEnd, setConfirmEnd] = useState(false);
 
   if (!consent) return null;
