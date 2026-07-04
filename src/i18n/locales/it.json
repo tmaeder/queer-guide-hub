@@ -574,7 +574,9 @@
         "safety": "Sicurezza",
         "lgbtq-specific": "Specifico LGBTQ+",
         "other": "Altro"
-      }
+      },
+      "scopeAll": "Tutti",
+      "scopeMine": "Miei"
     },
     "collaborate": {
       "chat": "Chat",
@@ -894,6 +896,44 @@
       "saveAria": "Save trip",
       "unsaveAria": "Unsave trip",
       "error": "Could not update save"
+    },
+    "dayNotes": {
+      "addTitle": "Aggiungi una nota a questo giorno",
+      "textLabel": "Nota",
+      "textPlaceholder": "es. Check-out entro le 11:00",
+      "timeLabel": "Ora (facoltativa)",
+      "iconLabel": "Icona",
+      "save": "Aggiungi nota",
+      "added": "Nota aggiunta",
+      "delete": "Elimina nota"
+    },
+    "weather": {
+      "clear": "Sereno",
+      "partlyCloudy": "Parzialmente nuvoloso",
+      "overcast": "Coperto",
+      "fog": "Nebbia",
+      "drizzle": "Pioggerella",
+      "rain": "Pioggia",
+      "snow": "Neve",
+      "thunderstorm": "Temporale",
+      "typical": "tipico"
+    },
+    "conflicts": {
+      "chip_one": "{{count}} conflitto",
+      "chip_other": "{{count}} conflitti"
+    },
+    "legs": {
+      "switchMode": "Cambia mezzo di trasporto",
+      "modeAria": "Mezzo di trasporto: {{mode}} — clicca per cambiare",
+      "mode": {
+        "walk": "a piedi",
+        "transit": "mezzi pubblici",
+        "drive": "auto"
+      },
+      "walkingTotal": "{{distance}} a piedi"
+    },
+    "suggestions": {
+      "accessMatch": "Adatto alle tue esigenze"
     }
   },
   "auth": {
