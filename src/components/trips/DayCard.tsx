@@ -32,7 +32,6 @@ import { LegRow } from './LegRow';
 import { SortablePlaceCard } from './SortablePlaceCard';
 import { DayNoteRow } from './DayNoteRow';
 import { AddDayNoteDialog } from './AddDayNoteDialog';
-import { TripMap } from './TripMap';
 import { TripMap } from './TripMapLazy';
 
 export type DaySlot = 'morning' | 'afternoon' | 'evening' | 'night' | 'unscheduled';
