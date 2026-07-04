@@ -43,6 +43,11 @@ function fallbackTheme(type: string): FallbackTheme {
 	}
 }
 
+function hitPath(type: string, slug: string): string | null {
+	if (type === "tag") return `/tags/${slug}`;
+	const base = TYPE_PATH[type];
+	return base ? `${base}/${slug}` : null;
+}
 interface SimItem {
 	content_type: string;
 	content_id: string;

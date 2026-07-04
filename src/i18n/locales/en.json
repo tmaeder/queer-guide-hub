@@ -7,6 +7,7 @@
     "villages": "Queer villages",
     "marketplace": "Marketplace",
     "resources": "Resources",
+    "tags": "Tags",
     "personalities": "People",
     "news": "News",
     "places": "Places",
@@ -1637,6 +1638,7 @@
       "members": "Members",
       "marketplace": "Marketplace",
       "resources": "Resources",
+      "tags": "Tags",
       "news": "News",
       "travel": "Travel",
       "personalities": "Personalities",
@@ -2521,8 +2523,16 @@
       "browse": "Browse all resources"
     },
     "tagDetail": {
-      "breadcrumbHome": "Resources",
-      "noDefinition": "No definition yet for this term."
+      "breadcrumbHome": "Tags",
+      "noDefinition": "No definition yet for this term.",
+      "tableOfContents": "Contents",
+      "seeAlso": "See also",
+      "alsoKnownAs": "Also known as",
+      "sensitiveContentTitle": "Sensitive topic",
+      "sensitiveContentBody": "This topic may contain sensitive content. If you need support, visit our crisis hotlines page.",
+      "readOnWikipedia": "Read on Wikipedia",
+      "viewAsGraph": "View as graph",
+      "searchTagged": "Search everything tagged {{name}}"
     },
     "graph": {
       "title": "Tag Relationship Graph",

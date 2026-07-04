@@ -1,9 +1,13 @@
-import React, { lazy, Suspense } from 'react';
+import React, { lazy, Suspense, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { type CentralizedTag } from '@/hooks/useCentralizedTags';
 import { RelatedTagsCard } from '@/components/tags/RelatedTagsCard';
 import { TagLinkedContent } from '@/components/tags/TagLinkedContent';
 import { FollowTagButton } from '@/components/tags/FollowTagButton';
+import { TagWikiContent } from '@/components/tags/TagWikiContent';
+import { TagTableOfContents, type TocHeading } from '@/components/tags/TagTableOfContents';
+import { TagAliasesDisplay } from '@/components/tags/TagAliasesDisplay';
+import { TagSafetyCallout } from '@/components/tags/TagSafetyCallout';
 import {
   getCategoryShortName,
 } from '@/components/resources/categoryMeta';
@@ -17,12 +21,6 @@ import { Button } from '@/components/ui/button';
 
 const TagRelationshipGraph = lazy(() => import('@/components/tags/TagRelationshipGraph'));
 
-/**
- * Pull a small set of human-readable key/value facts out of `scientific_data`
- * (Wolfram/Wikidata enrichment). We only surface flat primitive entries — the
- * blob can hold nested objects we don't want to dump raw. Restrained on purpose
- * (wiki-dense was explicitly not the chosen direction).
- */
 function extractFacts(data: Record<string, unknown> | null | undefined): [string, string][] {
   if (!data || typeof data !== 'object') return [];
   const out: [string, string][] = [];
@@ -34,6 +32,10 @@ function extractFacts(data: Record<string, unknown> | null | undefined): [string
     if (out.length >= 6) break;
   }
   return out;
+}
+
+function isHtmlContent(text: string): boolean {
+  return /<[a-z][\s\S]*>/i.test(text);
 }
 
 interface ResourceTagDetailProps {
@@ -57,10 +59,6 @@ export function ResourceTagDetail({
   const safeMode = useSafeMode();
   const ageAffirmation = useAgeAffirmation();
 
-  // Honour the SEO sensitivity gate: sensitive/adult tags not yet human-reviewed
-  // carry seo_indexable=false (enforce_tag_seo_sensitivity_gate). Keep the page
-  // reachable but inject noindex so unreviewed sensitive terms never enter search
-  // results (outing/mislabel-risk protection). Mirrors CityDetail's pattern.
   const noIndex = selectedTag.seo_indexable === false;
   React.useEffect(() => {
     if (!noIndex) return;
@@ -90,14 +88,22 @@ export function ResourceTagDetail({
   const isAdult = tagCategoryNames.some((n) => safeMode.isAdultCategory(n));
 
   const facts = extractFacts(selectedTag.scientific_data);
-  const [graphOpen, setGraphOpen] = React.useState(false);
+  const [graphOpen, setGraphOpen] = useState(false);
+  const [tocHeadings, setTocHeadings] = useState<TocHeading[]>([]);
+
+  const handleHeadingsExtracted = useCallback((headings: TocHeading[]) => {
+    setTocHeadings(headings);
+  }, []);
+
+  const hasWikiContent = !!selectedTag.long_description;
+  const longDescIsHtml = hasWikiContent && isHtmlContent(selectedTag.long_description!);
 
   return (
     <TagDetailWithGate
       isAdult={isAdult}
       affirmed={ageAffirmation.affirmed}
       onDecline={() => {
-        onNavigate('/resources');
+        onNavigate('/tags');
         onSetViewMode('overview');
       }}
     >
@@ -106,7 +112,7 @@ export function ResourceTagDetail({
       <div className="flex items-center gap-1 mb-4 flex-wrap">
         <button
           onClick={() => {
-            onNavigate('/resources');
+            onNavigate('/tags');
             onSetViewMode('overview');
           }}
           className="inline-flex items-center gap-1 bg-transparent border-0 cursor-pointer p-0 text-muted-foreground hover:text-primary"
@@ -122,7 +128,7 @@ export function ResourceTagDetail({
                 onSetSelectedCategory(parentName);
                 onSetSelectedSubcategory('');
                 onSetViewMode('category');
-                onNavigate('/resources');
+                onNavigate('/tags');
               }}
               className="bg-transparent border-0 cursor-pointer p-0 text-muted-foreground hover:text-primary"
             >
@@ -138,7 +144,7 @@ export function ResourceTagDetail({
                 onSetSelectedCategory(parentName || childName);
                 onSetSelectedSubcategory(childName);
                 onSetViewMode('subcategory');
-                onNavigate('/resources');
+                onNavigate('/tags');
               }}
               className="bg-transparent border-0 cursor-pointer p-0 text-muted-foreground hover:text-primary"
             >
@@ -150,7 +156,7 @@ export function ResourceTagDetail({
         <span className="text-sm font-medium">{selectedTag.name}</span>
       </div>
 
-      {/* Hero — only show image box when tag has an image */}
+      {/* Hero */}
       {selectedTag.image_url ? (
         <div
           className="w-full rounded-container overflow-hidden mb-6 relative bg-muted"
@@ -198,91 +204,127 @@ export function ResourceTagDetail({
         </p>
       )}
 
-      <div className="mb-6">
-        <FollowTagButton
-          tagId={selectedTag.id}
-          tagName={selectedTag.name}
-          tagSlug={selectedTag.slug}
-        />
-      </div>
+      {/* Article body + sidebar */}
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_240px] gap-8 min-w-0">
+        {/* Main content column */}
+        <div className="min-w-0">
+          {/* Follow button */}
+          <div className="mb-6">
+            <FollowTagButton
+              tagId={selectedTag.id}
+              tagName={selectedTag.name}
+              tagSlug={selectedTag.slug}
+            />
+          </div>
 
-      {/* Definition lede + long-form explanation */}
-      {selectedTag.description && (
-        <p className="mb-4" style={{ lineHeight: 1.7, maxWidth: 680, fontSize: '0.95rem' }}>
-          {selectedTag.description}
-        </p>
-      )}
+          {/* Aliases */}
+          <TagAliasesDisplay tagId={selectedTag.id} />
 
-      {!selectedTag.description && !selectedTag.long_description && (
-        <p className="text-muted-foreground mb-4 italic" style={{ fontSize: '0.85rem', opacity: 0.6 }}>
-          {t('resources.tagDetail.noDefinition')}
-        </p>
-      )}
+          {/* Definition */}
+          {selectedTag.description && (
+            <p className="mb-4" style={{ lineHeight: 1.7, maxWidth: 680, fontSize: '0.95rem' }}>
+              {selectedTag.description}
+            </p>
+          )}
 
-      {selectedTag.long_description && (
-        <div
-          className="text-muted-foreground mb-6 flex flex-col gap-4"
-          style={{ lineHeight: 1.7, maxWidth: 680, fontSize: '0.9rem' }}
-        >
-          {selectedTag.long_description
-            .split(/\n{2,}/)
-            .map((para, i) => para.trim() && <p key={i}>{para.trim()}</p>)}
-        </div>
-      )}
+          {!selectedTag.description && !selectedTag.long_description && (
+            <p className="text-muted-foreground mb-4 italic" style={{ fontSize: '0.85rem', opacity: 0.6 }}>
+              {t('resources.tagDetail.noDefinition')}
+            </p>
+          )}
 
-      {/* Facts (Wikidata / Wolfram) — restrained key/value list */}
-      {facts.length > 0 && (
-        <dl
-          className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2 mb-6 border-t pt-4"
-          style={{ maxWidth: 680 }}
-        >
-          {facts.map(([label, value]) => (
-            <div key={label} className="flex justify-between gap-4 border-b py-1">
-              <dt className="text-sm text-muted-foreground">{label}</dt>
-              <dd className="text-sm font-medium text-right">{value}</dd>
+          {/* Safety callout */}
+          <TagSafetyCallout isSensitive={selectedTag.is_sensitive} />
+
+          {/* Wiki content */}
+          {hasWikiContent && longDescIsHtml ? (
+            <div className="mb-6">
+              <TagWikiContent
+                html={selectedTag.long_description!}
+                onHeadingsExtracted={handleHeadingsExtracted}
+              />
             </div>
-          ))}
-        </dl>
-      )}
+          ) : hasWikiContent ? (
+            <div
+              className="text-muted-foreground mb-6 flex flex-col gap-4"
+              style={{ lineHeight: 1.7, maxWidth: 680, fontSize: '0.9rem' }}
+            >
+              {selectedTag.long_description!
+                .split(/\n{2,}/)
+                .map((para, i) => para.trim() && <p key={i}>{para.trim()}</p>)}
+            </div>
+          ) : null}
 
-      {/* Learn more */}
-      {selectedTag.wikipedia_url && (
-        <a
-          href={selectedTag.wikipedia_url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-1.5 text-sm font-medium mb-8 no-underline hover:text-primary"
-        >
-          {t('resources.tagDetail.readOnWikipedia', 'Read on Wikipedia')}
-          <ExternalLink size={14} />
-        </a>
-      )}
+          {/* Facts */}
+          {facts.length > 0 && (
+            <dl
+              className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2 mb-6 border-t pt-4"
+              style={{ maxWidth: 680 }}
+            >
+              {facts.map(([label, value]) => (
+                <div key={label} className="flex justify-between gap-4 border-b py-1">
+                  <dt className="text-sm text-muted-foreground">{label}</dt>
+                  <dd className="text-sm font-medium text-right">{value}</dd>
+                </div>
+              ))}
+            </dl>
+          )}
 
-      {/* Bridge into search — everything across the site tagged with this term. */}
-      {selectedTag.slug && (
-        <div className="mb-8">
-          <Button
-            variant="accent"
-            onClick={() => onNavigate(`/search?tags=${encodeURIComponent(selectedTag.slug)}`)}
-          >
-            <Search size={16} />
-            {t('resources.tagDetail.searchTagged', 'Search everything tagged {{name}}', {
-              name: selectedTag.name,
-            })}
-          </Button>
+          {/* External links */}
+          <div className="flex flex-wrap items-center gap-4 mb-8">
+            {selectedTag.wikipedia_url && (
+              <a
+                href={selectedTag.wikipedia_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 text-sm font-medium no-underline hover:text-primary"
+              >
+                {t('resources.tagDetail.readOnWikipedia', 'Read on Wikipedia')}
+                <ExternalLink size={14} />
+              </a>
+            )}
+            {selectedTag.wikidata_id && (
+              <a
+                href={`https://www.wikidata.org/wiki/${selectedTag.wikidata_id}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 text-sm text-muted-foreground no-underline hover:text-primary"
+              >
+                Wikidata
+                <ExternalLink size={14} />
+              </a>
+            )}
+          </div>
+
+          {/* Search bridge */}
+          {selectedTag.slug && (
+            <div className="mb-8">
+              <Button
+                variant="accent"
+                onClick={() => onNavigate(`/search?tags=${encodeURIComponent(selectedTag.slug)}`)}
+              >
+                <Search size={16} />
+                {t('resources.tagDetail.searchTagged', 'Search everything tagged {{name}}', {
+                  name: selectedTag.name,
+                })}
+              </Button>
+            </div>
+          )}
         </div>
-      )}
 
-      {/* Content grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-6 min-w-0">
-        <TagLinkedContent tagId={selectedTag.id} tagName={selectedTag.name} />
+        {/* Sidebar */}
         <div className="flex flex-col gap-6 lg:sticky self-start" style={{ top: 80 }}>
+          {/* TOC */}
+          <TagTableOfContents headings={tocHeadings} />
+
+          {/* Related tags */}
           <RelatedTagsCard
             tagId={selectedTag.id}
             sourceCategory={primary?.name}
             onTagClick={(t) => onTagClick({ name: t.name, id: t.id } as CentralizedTag)}
           />
 
+          {/* Graph */}
           <Collapsible open={graphOpen} onOpenChange={setGraphOpen}>
             <CollapsibleTrigger className="flex items-center gap-2 text-sm font-medium bg-transparent border-0 cursor-pointer p-0 text-muted-foreground hover:text-primary">
               <Network size={14} />
@@ -309,6 +351,11 @@ export function ResourceTagDetail({
             </CollapsibleContent>
           </Collapsible>
         </div>
+      </div>
+
+      {/* Linked content — full width below */}
+      <div className="mt-10">
+        <TagLinkedContent tagId={selectedTag.id} tagName={selectedTag.name} />
       </div>
     </div>
     </TagDetailWithGate>
