@@ -6,6 +6,8 @@ import {
   totalWalkingKm,
   formatLegDistance,
   formatLegDuration,
+  optimizeDayOrder,
+  googleMapsDayUrl,
 } from '../tripLegs';
 import type { TripPlace } from '@/hooks/useTrips';
 
@@ -101,6 +103,38 @@ describe('totalWalkingKm', () => {
     const walkSum = totalWalkingKm(legs);
     expect(walkSum).toBeGreaterThan(0);
     expect(walkSum).toBeLessThan(legs.reduce((s, l) => s + l.distanceKm, 0));
+  });
+});
+
+describe('optimizeDayOrder', () => {
+  it('returns input untouched below 3 located places', () => {
+    const input = [A, B];
+    expect(optimizeDayOrder(input)).toBe(input);
+  });
+
+  it('greedily orders by proximity from the first place', () => {
+    // A → C (~8km) → B (~1.2km from A): optimal from A is B then C.
+    const out = optimizeDayOrder([A, C, B]);
+    expect(out.map((p) => p.id)).toEqual(['a', 'b', 'c']);
+  });
+
+  it('keeps unlocated places and notes at the end', () => {
+    const note = place({ id: 'n', category: 'note', latitude: 52.53, longitude: 13.41 });
+    const bare = place({ id: 'x' });
+    const out = optimizeDayOrder([A, note, C, bare, B]);
+    expect(out.map((p) => p.id)).toEqual(['a', 'b', 'c', 'n', 'x']);
+  });
+});
+
+describe('googleMapsDayUrl', () => {
+  it('builds a directions link through located stops', () => {
+    expect(googleMapsDayUrl([A, B])).toBe(
+      'https://www.google.com/maps/dir/52.52,13.405/52.53,13.41',
+    );
+  });
+  it('returns null with fewer than 2 located stops', () => {
+    expect(googleMapsDayUrl([A])).toBeNull();
+    expect(googleMapsDayUrl([A, place({ id: 'x' })])).toBeNull();
   });
 });
 

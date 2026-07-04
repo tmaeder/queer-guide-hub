@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { trackSearchEvent } from '@/lib/searchClient';
+import { enqueueMutation } from '@/lib/offline/mutationQueue';
 
 /**
  * Adding a place to a trip is a strong intent signal — feed it to the
@@ -359,7 +360,21 @@ export function useTripMutations() {
   });
 
   const updatePlace = useMutation({
-    mutationFn: async ({ id, ...input }: { id: string; [key: string]: unknown }) => {
+    // `trip_id` (optional) routes the offline queue + optimistic cache patch;
+    // it is stripped before the UPDATE (never rewrites the column).
+    mutationFn: async ({
+      id,
+      trip_id,
+      ...input
+    }: {
+      id: string;
+      trip_id?: string;
+      [key: string]: unknown;
+    }) => {
+      if (typeof navigator !== 'undefined' && !navigator.onLine) {
+        await enqueueMutation('trip_places', id, trip_id ?? null, input);
+        return { trip_id: trip_id ?? null };
+      }
       const { data, error } = await supabase
         .from('trip_places')
         .update(input)
@@ -369,8 +384,29 @@ export function useTripMutations() {
       if (error) throw error;
       return data;
     },
+    onMutate: async ({ id, trip_id, ...input }) => {
+      if (!trip_id) return {};
+      await queryClient.cancelQueries({ queryKey: ['trip', trip_id] });
+      const prev = queryClient.getQueryData<TripWithDetails>(['trip', trip_id]);
+      queryClient.setQueryData<TripWithDetails>(['trip', trip_id], (old) =>
+        old
+          ? {
+              ...old,
+              trip_places: old.trip_places.map((p) =>
+                p.id === id ? { ...p, ...input } : p,
+              ),
+            }
+          : old,
+      );
+      return { prev, trip_id };
+    },
+    onError: (_err, _vars, ctx) => {
+      if (ctx?.prev && ctx.trip_id) queryClient.setQueryData(['trip', ctx.trip_id], ctx.prev);
+    },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['trip', data.trip_id] });
+      if (data.trip_id && (typeof navigator === 'undefined' || navigator.onLine)) {
+        queryClient.invalidateQueries({ queryKey: ['trip', data.trip_id] });
+      }
     },
   });
 

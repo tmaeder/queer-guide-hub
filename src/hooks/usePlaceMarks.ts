@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { untypedFrom, untypedSupabase } from '@/integrations/supabase/untyped';
 import { useAuth } from '@/hooks/useAuth';
 
-export type PlaceMarkEntity = 'venue' | 'event' | 'village';
+export type PlaceMarkEntity = 'venue' | 'event' | 'village' | 'country' | 'city';
 export type PlaceMarkKind = 'visited' | 'saved' | 'contributed';
 
 export interface PlaceMark {

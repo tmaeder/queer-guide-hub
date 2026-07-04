@@ -177,7 +177,7 @@ export function DraggableItinerary({
       const reordered = arrayMove(items, oldIndex, overItem);
       reordered.forEach((place, idx) => {
         if (place.sort_order !== idx) {
-          updatePlace.mutate({ id: place.id, sort_order: idx });
+          updatePlace.mutate({ id: place.id, trip_id: trip.id, sort_order: idx });
         }
       });
       toast({ title: t('trips.itinerary.reordered') });
@@ -189,6 +189,7 @@ export function DraggableItinerary({
 
       updatePlace.mutate({
         id: activeId,
+        trip_id: trip.id,
         day_id: newDayId,
         sort_order: insertIndex,
       });
@@ -196,7 +197,7 @@ export function DraggableItinerary({
       destItems.forEach((place, idx) => {
         const newOrder = idx >= insertIndex ? idx + 1 : idx;
         if (place.sort_order !== newOrder) {
-          updatePlace.mutate({ id: place.id, sort_order: newOrder });
+          updatePlace.mutate({ id: place.id, trip_id: trip.id, sort_order: newOrder });
         }
       });
       toast({ title: t('trips.itinerary.moved') });
