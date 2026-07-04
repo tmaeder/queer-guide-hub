@@ -424,6 +424,13 @@ verify_jwt = false
 [functions.personality-extract-from-bio]
 verify_jwt = false
 
+# Does its own X-Webhook-Secret auth (plus admin fallback); the geocode
+# triggers call it WITHOUT a Bearer, so the platform JWT gate must be off —
+# without this entry CI deploys flipped it to the verify_jwt=true default and
+# silently blocked the trigger -> geocode path.
+[functions.backfill-venue-cities]
+verify_jwt = false
+
 [functions.source-shopify-public]
 verify_jwt = false
 
