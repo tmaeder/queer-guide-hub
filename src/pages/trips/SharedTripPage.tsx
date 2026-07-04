@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
-import { TripMap } from '@/components/trips/TripMap';
+import { TripMap } from '@/components/trips/TripMapLazy';
 import { AuthDialog } from '@/components/auth/AuthDialog';
 import { PlaceReactionBar } from '@/components/trips/PlaceReactionBar';
 import { useTripReactions } from '@/hooks/useTripReactions';

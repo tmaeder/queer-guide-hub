@@ -1564,7 +1564,8 @@
       "travel": "旅行",
       "personalities": "名人",
       "hotels": "酒店",
-      "help": "帮助"
+      "help": "帮助",
+      "tags": "标签"
     },
     "userMenu": {
       "myTrips": "我的行程",
@@ -2448,7 +2449,15 @@
     },
     "tagDetail": {
       "breadcrumbHome": "资源",
-      "noDefinition": "此条目暂无定义。"
+      "noDefinition": "此条目暂无定义。",
+      "alsoKnownAs": "又称",
+      "readOnWikipedia": "在维基百科上阅读",
+      "searchTagged": "搜索所有带有 {{name}} 标签的内容",
+      "seeAlso": "参见",
+      "sensitiveContentBody": "该主题可能包含敏感内容。如果你需要支持，请访问我们的危机热线页面。",
+      "sensitiveContentTitle": "敏感主题",
+      "tableOfContents": "目录",
+      "viewAsGraph": "以图谱形式查看"
     },
     "graph": {
       "title": "标签关系图",
@@ -2858,7 +2867,8 @@
     "help": "帮助",
     "pride": "骄傲节",
     "contributors": "贡献者",
-    "wishlists": "心愿单"
+    "wishlists": "心愿单",
+    "tags": "标签"
   },
   "chat": {
     "react": "回应",

@@ -16,7 +16,6 @@ export function TagWikiContent({ html, onHeadingsExtracted }: TagWikiContentProp
   const processed = useMemo(() => {
     let idx = 0;
     return html.replace(/<(h[23])[^>]*>(.*?)<\/\1>/gi, (_match, tag, inner) => {
-      const text = inner.replace(/<[^>]+>/g, '').trim();
       const id = `section-${idx++}`;
       return `<${tag} id="${id}">${inner}</${tag}>`;
     });

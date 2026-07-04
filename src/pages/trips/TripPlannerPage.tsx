@@ -28,7 +28,7 @@ import { useTripReservations } from '@/hooks/useTripReservations';
 import { cacheTripSnapshot } from '@/utils/offlineTripPack';
 import { useToast } from '@/hooks/use-toast';
 import { DraggableItinerary } from '@/components/trips/DraggableItinerary';
-import { TripMap } from '@/components/trips/TripMap';
+import { TripMap } from '@/components/trips/TripMapLazy';
 import { TripSafetyBriefing } from '@/components/trips/TripSafetyBriefing';
 import { TripNudgesBanner } from '@/components/trips/TripNudgesBanner';
 import { TripTravelBuddiesCTA } from '@/components/trips/TripTravelBuddiesCTA';
