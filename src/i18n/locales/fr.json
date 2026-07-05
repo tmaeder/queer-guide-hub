@@ -169,7 +169,10 @@
     "clear": "Effacer",
     "signIn": "Sign in",
     "goHome": "Go Home",
-    "more": "Plus"
+    "more": "Plus",
+    "remove": "Retirer",
+    "accept": "Accepter",
+    "decline": "Refuser"
   },
   "navigation": {
     "home": "Accueil",
@@ -2172,7 +2175,9 @@
       "eyebrow": "Communauté",
       "title": "Amis",
       "subtitle": "Gérez vos connexions",
-      "gate": "Connectez-vous pour voir vos amis."
+      "gate": "Connectez-vous pour voir vos amis.",
+      "requests": "Demandes",
+      "sentRequest": "T’a envoyé une demande d’ami"
     }
   },
   "settings": {
@@ -3053,6 +3058,16 @@
         "going": "J’y vais",
         "saved": "Enregistré"
       }
+    },
+    "contacts": {
+      "title": "Contacts",
+      "search": "Rechercher des contacts…",
+      "recent": "Discussions récentes",
+      "friends": "Ami·es",
+      "groups": "Groupes",
+      "dating": "Rencontres",
+      "datingTitle": "Ton deck de rencontres",
+      "datingBody": "Parcours tes matchs et conversations."
     }
   }
 }

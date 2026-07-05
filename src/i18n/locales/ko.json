@@ -169,7 +169,10 @@
     "clear": "Clear",
     "signIn": "Sign in",
     "goHome": "Go Home",
-    "more": "더보기"
+    "more": "더보기",
+    "remove": "삭제",
+    "accept": "수락",
+    "decline": "거절"
   },
   "navigation": {
     "home": "홈",
@@ -2166,7 +2169,9 @@
       "eyebrow": "커뮤니티",
       "title": "친구",
       "subtitle": "내 연결 관리",
-      "gate": "친구를 보려면 로그인하세요."
+      "gate": "친구를 보려면 로그인하세요.",
+      "requests": "요청",
+      "sentRequest": "친구 요청을 보냈습니다"
     }
   },
   "settings": {
@@ -3047,6 +3052,16 @@
         "going": "참석",
         "saved": "저장됨"
       }
+    },
+    "contacts": {
+      "title": "연락처",
+      "search": "연락처 검색…",
+      "recent": "최근 채팅",
+      "friends": "친구",
+      "groups": "그룹",
+      "dating": "데이트",
+      "datingTitle": "내 데이트 덱",
+      "datingBody": "매치와 대화를 살펴보세요."
     }
   }
 }

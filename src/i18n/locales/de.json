@@ -169,7 +169,10 @@
     "clear": "Löschen",
     "signIn": "Sign in",
     "goHome": "Go Home",
-    "more": "Mehr"
+    "more": "Mehr",
+    "remove": "Entfernen",
+    "accept": "Annehmen",
+    "decline": "Ablehnen"
   },
   "navigation": {
     "home": "Startseite",
@@ -2168,7 +2171,9 @@
       "eyebrow": "Community",
       "title": "Freunde",
       "subtitle": "Verwalte deine Kontakte",
-      "gate": "Bitte melde dich an, um deine Freunde zu sehen."
+      "gate": "Bitte melde dich an, um deine Freunde zu sehen.",
+      "requests": "Anfragen",
+      "sentRequest": "Hat dir eine Freundschaftsanfrage geschickt"
     }
   },
   "settings": {
@@ -3049,6 +3054,16 @@
         "going": "Zugesagt",
         "saved": "Gespeichert"
       }
+    },
+    "contacts": {
+      "title": "Kontakte",
+      "search": "Kontakte suchen…",
+      "recent": "Letzte Chats",
+      "friends": "Freund*innen",
+      "groups": "Gruppen",
+      "dating": "Dating",
+      "datingTitle": "Dein Dating-Deck",
+      "datingBody": "Matches und Gespräche durchsehen."
     }
   }
 }

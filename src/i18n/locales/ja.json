@@ -169,7 +169,10 @@
     "clear": "Clear",
     "signIn": "Sign in",
     "goHome": "Go Home",
-    "more": "もっと見る"
+    "more": "もっと見る",
+    "remove": "削除",
+    "accept": "承認",
+    "decline": "辞退"
   },
   "navigation": {
     "home": "ホーム",
@@ -2166,7 +2169,9 @@
       "eyebrow": "コミュニティ",
       "title": "友達",
       "subtitle": "つながりを管理",
-      "gate": "友達を見るにはサインインしてください。"
+      "gate": "友達を見るにはサインインしてください。",
+      "requests": "リクエスト",
+      "sentRequest": "友達リクエストを送信しました"
     }
   },
   "settings": {
@@ -3047,6 +3052,16 @@
         "going": "参加",
         "saved": "保存"
       }
+    },
+    "contacts": {
+      "title": "連絡先",
+      "search": "連絡先を検索…",
+      "recent": "最近のチャット",
+      "friends": "友達",
+      "groups": "グループ",
+      "dating": "デート",
+      "datingTitle": "あなたのデートデッキ",
+      "datingBody": "マッチと会話を見る。"
     }
   }
 }

@@ -169,7 +169,10 @@
     "clear": "Clear",
     "signIn": "Sign in",
     "goHome": "Go Home",
-    "more": "更多"
+    "more": "更多",
+    "remove": "移除",
+    "accept": "接受",
+    "decline": "拒绝"
   },
   "navigation": {
     "home": "首页",
@@ -2166,7 +2169,9 @@
       "eyebrow": "社区",
       "title": "好友",
       "subtitle": "管理你的联系人",
-      "gate": "请登录以查看你的好友。"
+      "gate": "请登录以查看你的好友。",
+      "requests": "请求",
+      "sentRequest": "向你发送了好友请求"
     }
   },
   "settings": {
@@ -3047,6 +3052,16 @@
         "going": "参加",
         "saved": "已收藏"
       }
+    },
+    "contacts": {
+      "title": "联系人",
+      "search": "搜索联系人…",
+      "recent": "最近聊天",
+      "friends": "朋友",
+      "groups": "群组",
+      "dating": "约会",
+      "datingTitle": "你的约会卡组",
+      "datingBody": "浏览匹配和对话。"
     }
   }
 }

@@ -587,6 +587,7 @@ export const AppRoutes = () => {
                   the /community hub above. */}
                 <Route path="hub" element={<HubPage module="inbox" />} />
                 <Route path="hub/calendar" element={<HubPage module="calendar" />} />
+                <Route path="hub/contacts" element={<HubPage module="contacts" />} />
                 <Route path="hub/saved" element={<HubPage module="saved" />} />
                 <Route path="hub/trips" element={<HubPage module="trips" />} />
                 {/* /me folded into /hub; identity tabs live on the unified
@@ -595,7 +596,7 @@ export const AppRoutes = () => {
                 <Route path="me/saved" element={<LocalizedRedirect to="/hub/saved" />} />
                 <Route path="me/trips" element={<LocalizedRedirect to="/hub/trips" />} />
                 <Route path="me/travel" element={<MeRedirect tab="travel" />} />
-                <Route path="me/groups" element={<MeRedirect tab="groups" />} />
+                <Route path="me/groups" element={<LocalizedRedirect to="/hub/contacts" />} />
                 <Route path="me/contributions" element={<MeRedirect tab="contributions" />} />
                 <Route path="me/progress" element={<MeRedirect tab="progress" />} />
                 <Route path="me/passport" element={<MeRedirect tab="progress" />} />

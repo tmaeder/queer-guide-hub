@@ -169,7 +169,10 @@
     "clear": "Clear",
     "signIn": "Sign in",
     "goHome": "Go Home",
-    "more": "Altro"
+    "more": "Altro",
+    "remove": "Rimuovi",
+    "accept": "Accetta",
+    "decline": "Rifiuta"
   },
   "navigation": {
     "home": "Home",
@@ -2168,7 +2171,9 @@
       "eyebrow": "Community",
       "title": "Amici",
       "subtitle": "Gestisci le tue connessioni",
-      "gate": "Accedi per vedere i tuoi amici."
+      "gate": "Accedi per vedere i tuoi amici.",
+      "requests": "Richieste",
+      "sentRequest": "Ti ha inviato una richiesta di amicizia"
     }
   },
   "settings": {
@@ -3049,6 +3054,16 @@
         "going": "Ci vado",
         "saved": "Salvato"
       }
+    },
+    "contacts": {
+      "title": "Contatti",
+      "search": "Cerca contatti…",
+      "recent": "Chat recenti",
+      "friends": "Amicizie",
+      "groups": "Gruppi",
+      "dating": "Appuntamenti",
+      "datingTitle": "Il tuo mazzo di incontri",
+      "datingBody": "Sfoglia match e conversazioni."
     }
   }
 }

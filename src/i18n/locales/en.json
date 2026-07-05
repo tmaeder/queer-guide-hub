@@ -242,7 +242,10 @@
     "signIn": "Sign in",
     "goHome": "Go Home",
     "edit": "Edit",
-    "more": "More"
+    "more": "More",
+    "remove": "Remove",
+    "accept": "Accept",
+    "decline": "Decline"
   },
   "navigation": {
     "home": "Home",
@@ -2186,7 +2189,9 @@
       "eyebrow": "Community",
       "title": "Friends",
       "subtitle": "Manage your connections",
-      "gate": "Please sign in to view your friends."
+      "gate": "Please sign in to view your friends.",
+      "requests": "Requests",
+      "sentRequest": "Sent you a friend request"
     },
     "feed": {
       "eyebrow": "Community",
@@ -3064,6 +3069,16 @@
         "going": "Going",
         "saved": "Saved"
       }
+    },
+    "contacts": {
+      "title": "Contacts",
+      "search": "Search contacts…",
+      "recent": "Recent chats",
+      "friends": "Friends",
+      "groups": "Groups",
+      "dating": "Dating",
+      "datingTitle": "Your dating deck",
+      "datingBody": "Browse matches and conversations."
     }
   }
 }
