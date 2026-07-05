@@ -93,6 +93,14 @@ jobs:
   # workers as they bootstrap vitest setup).
   worker-tests:
     runs-on: ubuntu-latest
+    # Each worker's package.json is installed standalone from its own dir, so it
+    # does NOT inherit the repo-root .npmrc (npm reads only $PWD/.npmrc, never a
+    # parent's). That root file sets legacy-peer-deps=true to tolerate wrangler's
+    # peerOptional @cloudflare/workers-types being a major behind the standalone
+    # workers-types the workers depend on. Mirror it here as an env so every
+    # per-worker `npm install` applies the same policy (else ERESOLVE).
+    env:
+      NPM_CONFIG_LEGACY_PEER_DEPS: "true"
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v6
