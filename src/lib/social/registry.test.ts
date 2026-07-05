@@ -7,6 +7,7 @@ import {
   normalizeSocialLinks,
   canonicalizeUrl,
   isAdultPlatform,
+  displayHandle,
   isShareOrWidgetUrl,
 } from './registry';
 
@@ -129,6 +130,25 @@ describe('share-intent / widget / post-permalink exclusion', () => {
     expect(out.facebook).toBeUndefined();
     expect(out.telegram).toBeUndefined();
     expect(out.twitter).toBe('https://x.com/realhandle');
+  });
+});
+
+describe('displayHandle', () => {
+  it('returns clean handles and strips path prefixes', () => {
+    expect(displayHandle('instagram', 'ilgaeurope')).toBe('ilgaeurope');
+    expect(displayHandle('instagram', '@ilgaeurope')).toBe('ilgaeurope');
+    expect(displayHandle('linkedin', 'company/ilga-europe')).toBe('ilga-europe');
+    expect(displayHandle('linkedin', 'in/some-person')).toBe('some-person');
+    expect(displayHandle('reddit', 'user/spez')).toBe('spez');
+    expect(displayHandle('youtube', 'c/SomeName')).toBe('SomeName');
+  });
+  it('returns null for opaque YouTube channel ids', () => {
+    expect(displayHandle('youtube', 'channel/UC-3gHlKwV6HsK9-3ZRF4hPg')).toBeNull();
+    expect(displayHandle('youtube', 'UC-3gHlKwV6HsK9-3ZRF4hPg')).toBeNull();
+  });
+  it('returns null for empty / still-path-shaped', () => {
+    expect(displayHandle('instagram', '')).toBeNull();
+    expect(displayHandle('youtube', 'a/b/c')).toBeNull();
   });
 });
 
