@@ -124,6 +124,20 @@ export async function openGaycitiesSession(): Promise<GcSession> {
   };
 }
 
+/** openGaycitiesSession with retries — recycling must never kill a phase. */
+export async function openSessionWithRetry(maxAttempts = 5): Promise<GcSession> {
+  let lastErr: Error | null = null;
+  for (let i = 0; i < maxAttempts; i++) {
+    try {
+      return await openGaycitiesSession();
+    } catch (err) {
+      lastErr = err as Error;
+      await jitterDelay(15_000 * (i + 1), 15_000);
+    }
+  }
+  throw lastErr ?? new Error('gaycities_session_failed');
+}
+
 // ─── Metro discovery ────────────────────────────────────────────
 
 export async function listMetros(page: Page): Promise<MetroOption[]> {

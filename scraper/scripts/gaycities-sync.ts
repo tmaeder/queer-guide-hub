@@ -17,7 +17,7 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { Pool } from 'pg';
 import {
-  openGaycitiesSession,
+  openSessionWithRetry,
   fetchListing,
   parseListingCards,
   fetchDetail,
@@ -64,7 +64,7 @@ async function main(): Promise<void> {
   const to = fmtUs(new Date(Date.now() + 365 * 86_400_000));
   log(`sync window ${from} → ${to}, ${metros.length} metros`);
 
-  let session = await openGaycitiesSession();
+  let session = await openSessionWithRetry();
   const stubs = new Map<string, EventStub & { metroId: string }>();
   let requests = 0;
   try {
@@ -91,7 +91,7 @@ async function main(): Promise<void> {
         await jitterDelay(1_200, 800);
         if (requests % 300 === 0) {
           await session.close();
-          session = await openGaycitiesSession();
+          session = await openSessionWithRetry();
         }
       }
     }
@@ -139,7 +139,7 @@ async function main(): Promise<void> {
       if (n % 50 === 0) log(`details ${n}/${fresh.length}`);
       if (n % 300 === 0) {
         await session.close();
-        session = await openGaycitiesSession();
+        session = await openSessionWithRetry();
       }
       await jitterDelay();
     }
