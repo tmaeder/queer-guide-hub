@@ -102,8 +102,8 @@ async function main(): Promise<void> {
       log('queue fully drained');
       break;
     }
-    if (c.pending_validate > 0) await fireStage('pipeline-validate', { entityType: 'event', batch_size: 1000, warn_review_threshold: 6 });
-    if (c.awaiting_dedup > 0) await fireStage('pipeline-deduplicate', { entityType: 'event', batch_size: 200 });
+    if (c.pending_validate > 0) await fireStage('pipeline-validate', { entityType: 'event', batch_size: 1500, warn_review_threshold: 6 });
+    if (c.awaiting_dedup > 0) await fireStage('pipeline-deduplicate', { entityType: 'event', batch_size: 1000 });
     // Backfill of already-public event listings: bypass the human review queue.
     // review-gate scores combinedScore = confidence*0.6 + quality_score/100*0.4
     // and floors at minConfidence(0.7); without a quality-score stage that caps
@@ -114,7 +114,7 @@ async function main(): Promise<void> {
     if (c.awaiting_review > 0)
       await fireStage('pipeline-review-gate', {
         entityType: 'event',
-        batch_size: 500,
+        batch_size: 1500,
         autoApproveAbove: 0,
         minConfidence: 0,
       });
