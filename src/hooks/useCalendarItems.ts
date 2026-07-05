@@ -41,7 +41,9 @@ export function useCalendarItems(rangeStart: Date, rangeEnd: Date) {
     enabled: !!user,
     staleTime: 5 * 60 * 1000,
     queryFn: async (): Promise<CalendarItem[]> => {
-      const [tripsRes, eventsRes] = await Promise.all([
+      // event_favorites has no FK to events in the schema cache, so we can't
+      // embed events!inner(...). Fetch favorite ids first, then the events.
+      const [tripsRes, favRes] = await Promise.all([
         supabase
           .from('trips')
           .select('id, title, start_date, end_date, primary_city_name, primary_country_code, cover_image_url')
@@ -52,13 +54,28 @@ export function useCalendarItems(rangeStart: Date, rangeEnd: Date) {
           .order('start_date', { ascending: true }),
         supabase
           .from('event_favorites')
-          .select('event_id, events!inner(id, title, slug, start_date, end_date, city, venue_name, status)')
-          .eq('user_id', user!.id)
-          .gte('events.start_date', rangeStart.toISOString())
-          .lte('events.start_date', rangeEnd.toISOString()),
+          .select('event_id')
+          .eq('user_id', user!.id),
       ]);
       if (tripsRes.error) throw tripsRes.error;
-      if (eventsRes.error) throw eventsRes.error;
+      if (favRes.error) throw favRes.error;
+
+      const favIds = (favRes.data ?? []).map((f) => f.event_id).filter(Boolean);
+      let eventsData: {
+        id: string; title: string; slug: string | null;
+        start_date: string; end_date: string | null;
+        city: string | null; venue_name: string | null; status: string | null;
+      }[] = [];
+      if (favIds.length > 0) {
+        const eventsRes = await supabase
+          .from('events')
+          .select('id, title, slug, start_date, end_date, city, venue_name, status')
+          .in('id', favIds)
+          .gte('start_date', rangeStart.toISOString())
+          .lte('start_date', rangeEnd.toISOString());
+        if (eventsRes.error) throw eventsRes.error;
+        eventsData = (eventsRes.data ?? []) as typeof eventsData;
+      }
 
       const trips: CalendarItem[] = (tripsRes.data ?? []).map((t) => ({
         kind: 'trip' as const,
@@ -72,27 +89,19 @@ export function useCalendarItems(rangeStart: Date, rangeEnd: Date) {
         path: `/me/trips/${t.id}`,
       }));
 
-      const events: CalendarItem[] = (eventsRes.data ?? [])
-        .map((row) => {
-          const e = row.events as unknown as {
-            id: string; title: string; slug: string | null;
-            start_date: string; end_date: string | null;
-            city: string | null; venue_name: string | null; status: string | null;
-          } | null;
-          if (!e || e.status === 'cancelled') return null;
-          return {
-            kind: 'event' as const,
-            id: e.id,
-            title: e.title,
-            start_date: e.start_date,
-            end_date: e.end_date,
-            city: e.city,
-            venue_name: e.venue_name,
-            slug: e.slug,
-            path: e.slug ? `/events/${e.slug}` : '#',
-          };
-        })
-        .filter((e): e is CalendarEventItem => e !== null);
+      const events: CalendarItem[] = eventsData
+        .filter((e) => e.status !== 'cancelled')
+        .map((e) => ({
+          kind: 'event' as const,
+          id: e.id,
+          title: e.title,
+          start_date: e.start_date,
+          end_date: e.end_date,
+          city: e.city,
+          venue_name: e.venue_name,
+          slug: e.slug,
+          path: e.slug ? `/events/${e.slug}` : '#',
+        }));
 
       return [...trips, ...events].sort((a, b) =>
         a.start_date.localeCompare(b.start_date),
