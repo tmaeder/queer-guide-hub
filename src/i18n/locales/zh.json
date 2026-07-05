@@ -2832,7 +2832,11 @@
       "email": "新邮件"
     },
     "notification": {
-      "open": "打开"
+      "open": "打开",
+      "view": "查看",
+      "reviewerNotes": "审核备注",
+      "allSubmissions": "我的全部提交",
+      "shareToChat": "分享到聊天"
     },
     "openInbox": "打开收件箱",
     "markAlertsRead": "将提醒标为已读",
@@ -2853,7 +2857,9 @@
       "empty": "暂无建议。",
       "recent": "最近联系",
       "active": "最近活跃"
-    }
+    },
+    "upcoming": "即将开始",
+    "openCalendar": "日历"
   },
   "extension": {
     "signInGate": {
@@ -3002,6 +3008,19 @@
       "on": "现在有空",
       "both": "{{name}} 现在有空见面 🟢",
       "youOnly": "你已标记为有空见面 🟢"
+    },
+    "share": {
+      "gated": "在 Queer Guide 查看详情",
+      "view": "在 Queer Guide 查看"
+    },
+    "submission": {
+      "header": "已添加到 Queer Guide（{{count}}）",
+      "messageOne": "添加了“{{title}}”待审核",
+      "messageMany": "添加了 {{count}} 个条目待审核：{{title}}…",
+      "submitted": "已提交 {{count}} 个待审核",
+      "failed": "提交失败",
+      "title": "添加到 Queer Guide",
+      "subtitle": "上传传单或粘贴链接。提取的条目将提交审核并在此聊天中分享。"
     }
   },
   "newsDetail": {
@@ -3064,5 +3083,18 @@
     "visited": "已访问",
     "bucket": "愿望清单",
     "fromTrips": "因已完成的旅行标记为已访问"
+  },
+  "calendar": {
+    "title": "我的日历",
+    "subtitle": "你的行程和收藏的活动集中一处",
+    "signInDesc": "登录后即可查看你的行程和收藏的活动。",
+    "trip": "行程",
+    "empty": "本月没有行程或收藏的活动。",
+    "planTrip": "规划行程",
+    "browseEvents": "浏览活动",
+    "copyFeed": "复制订阅链接",
+    "download": "下载 .ics",
+    "open": "日历",
+    "openAria": "打开我的日历"
   }
 }

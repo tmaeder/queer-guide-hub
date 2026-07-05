@@ -2832,7 +2832,11 @@
       "email": "بريد جديد"
     },
     "notification": {
-      "open": "فتح"
+      "open": "فتح",
+      "view": "عرض",
+      "reviewerNotes": "ملاحظات المراجع",
+      "allSubmissions": "كل مساهماتي",
+      "shareToChat": "مشاركة في المحادثة"
     },
     "openInbox": "فتح صندوق الوارد",
     "markAlertsRead": "وضع علامة مقروء على التنبيهات",
@@ -2853,7 +2857,9 @@
       "empty": "لا اقتراحات بعد.",
       "recent": "راسلتهم مؤخرًا",
       "active": "نشطون مؤخرًا"
-    }
+    },
+    "upcoming": "قريبًا",
+    "openCalendar": "التقويم"
   },
   "extension": {
     "signInGate": {
@@ -3002,6 +3008,19 @@
       "on": "متاح الآن",
       "both": "{{name}} متاح للقاء الآن 🟢",
       "youOnly": "أنت مُعلَّم كمتاح للقاء 🟢"
+    },
+    "share": {
+      "gated": "التفاصيل على Queer Guide",
+      "view": "العرض على Queer Guide"
+    },
+    "submission": {
+      "header": "تمت الإضافة إلى Queer Guide ({{count}})",
+      "messageOne": "أضاف «{{title}}» للمراجعة",
+      "messageMany": "أضاف {{count}} عناصر للمراجعة: {{title}}…",
+      "submitted": "تم إرسال {{count}} للمراجعة",
+      "failed": "فشل الإرسال",
+      "title": "إضافة إلى Queer Guide",
+      "subtitle": "ارفع منشورًا أو الصق رابطًا. تُرسَل العناصر المستخرجة للمراجعة وتُشارَك في هذه المحادثة."
     }
   },
   "newsDetail": {
@@ -3064,5 +3083,18 @@
     "visited": "تمت زيارتها",
     "bucket": "قائمة الأمنيات",
     "fromTrips": "وُسمت كمزارة بعد رحلة مكتملة"
+  },
+  "calendar": {
+    "title": "تقويمي",
+    "subtitle": "رحلاتك وفعالياتك المحفوظة في مكان واحد",
+    "signInDesc": "سجّل الدخول لعرض رحلاتك وفعالياتك المحفوظة.",
+    "trip": "رحلة",
+    "empty": "لا توجد رحلات أو فعاليات محفوظة هذا الشهر.",
+    "planTrip": "خطّط لرحلة",
+    "browseEvents": "تصفّح الفعاليات",
+    "copyFeed": "نسخ رابط الاشتراك",
+    "download": "تنزيل .ics",
+    "open": "التقويم",
+    "openAria": "فتح تقويمي"
   }
 }

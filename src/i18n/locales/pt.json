@@ -2834,7 +2834,11 @@
       "email": "Novo e-mail"
     },
     "notification": {
-      "open": "Abrir"
+      "open": "Abrir",
+      "view": "Ver",
+      "reviewerNotes": "Notas do revisor",
+      "allSubmissions": "Todos os meus envios",
+      "shareToChat": "Compartilhar no chat"
     },
     "openInbox": "Abrir caixa de entrada",
     "markAlertsRead": "Marcar alertas como lidos",
@@ -2855,7 +2859,9 @@
       "empty": "Ainda sem sugestões.",
       "recent": "Mensagens recentes",
       "active": "Ativos recentemente"
-    }
+    },
+    "upcoming": "Em breve",
+    "openCalendar": "Calendário"
   },
   "extension": {
     "signInGate": {
@@ -3004,6 +3010,19 @@
       "on": "Livre agora",
       "both": "{{name}} está livre para encontrar agora 🟢",
       "youOnly": "Estás marcado como livre para encontrar 🟢"
+    },
+    "share": {
+      "gated": "Detalhes no Queer Guide",
+      "view": "Ver no Queer Guide"
+    },
+    "submission": {
+      "header": "Adicionado ao Queer Guide ({{count}})",
+      "messageOne": "adicionou \"{{title}}\" para revisão",
+      "messageMany": "adicionou {{count}} itens para revisão: {{title}}…",
+      "submitted": "{{count}} enviados para revisão",
+      "failed": "Falha no envio",
+      "title": "Adicionar ao Queer Guide",
+      "subtitle": "Envie um panfleto ou cole um link. Os itens extraídos são enviados para revisão e compartilhados neste chat."
     }
   },
   "newsDetail": {
@@ -3066,5 +3085,18 @@
     "visited": "Visitado",
     "bucket": "Lista de desejos",
     "fromTrips": "Marcado como visitado por uma viagem concluída"
+  },
+  "calendar": {
+    "title": "Meu calendário",
+    "subtitle": "Suas viagens e eventos salvos em um só lugar",
+    "signInDesc": "Entre para ver suas viagens e eventos salvos.",
+    "trip": "Viagem",
+    "empty": "Nenhuma viagem ou evento salvo neste mês.",
+    "planTrip": "Planejar uma viagem",
+    "browseEvents": "Explorar eventos",
+    "copyFeed": "Copiar URL de assinatura",
+    "download": "Baixar .ics",
+    "open": "Calendário",
+    "openAria": "Abrir meu calendário"
   }
 }
