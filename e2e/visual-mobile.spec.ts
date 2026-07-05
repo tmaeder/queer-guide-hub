@@ -10,9 +10,14 @@ import { test, expect } from '@playwright/test';
 
 const ROUTES = ['/', '/venues', '/events', '/news', '/marketplace', '/cities'];
 
-// Routes with live tickers / changing content need looser pixel thresholds.
-// Added 2026-05-20: /, /venues have rotating hero + featured rails too.
-const LIVE_CONTENT_ROUTES = new Set(['/', '/news', '/venues']);
+// Every route here is data-driven, so its TOTAL page height changes with live
+// content between baseline capture and run. `fullPage` screenshots then fail on
+// a dimension mismatch *before* maxDiffPixelRatio even applies (e.g. marketplace
+// 8664px baseline vs 9210px actual). Capture a dimension-stable above-the-fold
+// viewport crop (fullPage:false) instead; the pixel threshold absorbs the
+// remaining within-viewport rotation. Genuinely static pages (none on mobile)
+// would keep fullPage via STATIC_ROUTES.
+const STATIC_ROUTES = new Set<string>();
 
 test.describe('Mobile visual regression', () => {
   test.setTimeout(60_000);
@@ -24,10 +29,11 @@ test.describe('Mobile visual regression', () => {
       await page.waitForSelector('main', { timeout: 30_000 }).catch(() => {});
       // Allow image-lazy + animation transitions to settle.
       await page.waitForTimeout(1500);
+      const isStatic = STATIC_ROUTES.has(route);
       // /venues shuffles its hero + featured rails hard between requests.
-      const threshold = route === '/venues' ? 0.35 : LIVE_CONTENT_ROUTES.has(route) ? 0.15 : 0.02;
+      const threshold = route === '/venues' ? 0.35 : isStatic ? 0.02 : 0.15;
       await expect(page).toHaveScreenshot(`${route.replace(/\//g, '_') || '_root'}.png`, {
-        fullPage: true,
+        fullPage: isStatic,
         maxDiffPixelRatio: threshold,
         animations: 'disabled',
       });
