@@ -45,6 +45,8 @@ const CONNECT_SRC = [
   'https://*.ingest.sentry.io',
   'https://*.ingest.de.sentry.io',
   'https://*.ingest.us.sentry.io',
+  'https://api.open-meteo.com',
+  'https://archive-api.open-meteo.com',
   'wss://*.supabase.co',
 ];
 
