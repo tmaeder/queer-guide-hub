@@ -615,7 +615,8 @@
       "budget": "الميزانية",
       "reservations": "الحجوزات",
       "packing": "التعبئة",
-      "collaborate": "التعاون"
+      "collaborate": "التعاون",
+      "journal": "اليوميات"
     },
     "today": {
       "offlineBanner": "أنت غير متصل — نعرض آخر خط سير محفوظ.",
@@ -930,10 +931,49 @@
         "transit": "المواصلات العامة",
         "drive": "بالسيارة"
       },
-      "walkingTotal": "{{distance}} مشيًا"
+      "walkingTotal": "{{distance}} مشيًا",
+      "optimize": "تحسين ترتيب المسار",
+      "directions": "فتح اليوم في خرائط Google"
     },
     "suggestions": {
       "accessMatch": "يلبي احتياجاتك"
+    },
+    "journal": {
+      "placeholder": "ماذا حدث اليوم؟ اللحظات الصغيرة مهمة أيضًا.",
+      "moodLabel": "المزاج",
+      "mood": {
+        "joy": "سعيد",
+        "good": "جيد",
+        "mixed": "متقلب",
+        "tough": "صعب"
+      },
+      "addPhotos": "صور",
+      "save": "حفظ المدخلة",
+      "saved": "تم حفظ مدخلة اليوميات",
+      "empty": "لا توجد مدخلات في اليوميات بعد.",
+      "delete": "حذف المدخلة",
+      "removePhoto": "إزالة الصورة",
+      "member": "مسافر/ة"
+    },
+    "import": {
+      "button": "استيراد",
+      "title": "استيراد أماكن",
+      "pickFile": "اختر ملفًا",
+      "formats": "GPX أو KML أو GeoJSON أو Google Takeout (JSON للأماكن المحفوظة / CSV للقوائم)",
+      "noPlaces": "لم يتم العثور على أماكن في هذا الملف.",
+      "matching": "جارٍ مطابقة الأماكن…",
+      "matchCount": "تمت مطابقة {{count}} مع أماكن queer.guide",
+      "changeFile": "تغيير الملف",
+      "matched": "مكان موجود",
+      "customPin": "دبوس مخصص",
+      "noCoords": "بدون إحداثيات — الاسم فقط",
+      "confirm": "استيراد {{count}} من الأماكن",
+      "done": "تم استيراد {{count}} من الأماكن",
+      "doneHint": "ستوضع في قائمة غير المجدولة — اسحبها إلى الأيام."
+    },
+    "offline": {
+      "pending_one": "تغيير واحد بانتظار المزامنة",
+      "pending_other": "{{count}} تغييرات بانتظار المزامنة"
     }
   },
   "auth": {
@@ -2792,7 +2832,11 @@
       "email": "بريد جديد"
     },
     "notification": {
-      "open": "فتح"
+      "open": "فتح",
+      "view": "عرض",
+      "reviewerNotes": "ملاحظات المراجع",
+      "allSubmissions": "كل مساهماتي",
+      "shareToChat": "مشاركة في المحادثة"
     },
     "openInbox": "فتح صندوق الوارد",
     "markAlertsRead": "وضع علامة مقروء على التنبيهات",
@@ -2813,7 +2857,9 @@
       "empty": "لا اقتراحات بعد.",
       "recent": "راسلتهم مؤخرًا",
       "active": "نشطون مؤخرًا"
-    }
+    },
+    "upcoming": "قادم",
+    "openCalendar": "التقويم"
   },
   "extension": {
     "signInGate": {
@@ -2962,6 +3008,19 @@
       "on": "متاح الآن",
       "both": "{{name}} متاح للقاء الآن 🟢",
       "youOnly": "أنت مُعلَّم كمتاح للقاء 🟢"
+    },
+    "share": {
+      "gated": "التفاصيل على Queer Guide",
+      "view": "عرض على Queer Guide"
+    },
+    "submission": {
+      "header": "تمت الإضافة إلى Queer Guide ({{count}})",
+      "messageOne": "أضاف «{{title}}» للمراجعة",
+      "messageMany": "أضاف {{count}} عنصرًا للمراجعة: {{title}}…",
+      "submitted": "تم إرسال {{count}} للمراجعة",
+      "failed": "فشل الإرسال",
+      "title": "إضافة إلى Queer Guide",
+      "subtitle": "أفلت منشورًا أو الصق رابطًا. تُرسل العناصر المكتشفة للمراجعة وتُشارك في هذه المحادثة."
     }
   },
   "newsDetail": {
@@ -3017,5 +3076,25 @@
       "dismiss": "إغلاق",
       "ariaLabel": "تثبيت التطبيق"
     }
+  },
+  "atlas": {
+    "summary": "زرت {{visited}} دولة · {{bucket}} في قائمة أمنياتك",
+    "hint": "انقر على دولة لتمييزها",
+    "visited": "تمت زيارتها",
+    "bucket": "قائمة الأمنيات",
+    "fromTrips": "وُسمت كمزارة بعد رحلة مكتملة"
+  },
+  "calendar": {
+    "title": "تقويمي",
+    "subtitle": "رحلاتك وفعالياتك المحفوظة في مكان واحد",
+    "signInDesc": "سجّل الدخول لرؤية رحلاتك وفعالياتك المحفوظة.",
+    "trip": "رحلة",
+    "empty": "لا توجد رحلات أو فعاليات محفوظة هذا الشهر.",
+    "planTrip": "خطّط لرحلة",
+    "browseEvents": "تصفّح الفعاليات",
+    "copyFeed": "نسخ رابط الاشتراك",
+    "download": "تنزيل .ics",
+    "open": "التقويم",
+    "openAria": "افتح تقويمي"
   }
 }

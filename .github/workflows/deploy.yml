@@ -7,6 +7,8 @@ on:
       - "workers/search-proxy/**"
       - "workers/ingest/**"
       - "workers/assistant/**"
+      - "workers/submit/**"
+      - "workers/image-cdn/**"
       - ".github/workflows/deploy.yml"
   workflow_dispatch: {}
 
@@ -19,7 +21,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v6
-        with: { node-version: "20" }
+        with: { node-version: "22" }
       - run: npm ci
         working-directory: workers/search-proxy
       - run: npx tsc --noEmit
@@ -36,7 +38,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v6
-        with: { node-version: "20" }
+        with: { node-version: "22" }
       - run: npm ci
         working-directory: workers/ingest
       - run: npx tsc --noEmit
@@ -53,7 +55,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v6
-        with: { node-version: "20" }
+        with: { node-version: "22" }
       - run: npm ci
         working-directory: workers/assistant
       - run: npx tsc --noEmit
@@ -63,6 +65,40 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           workingDirectory: workers/assistant
+          command: deploy
+
+  deploy-submit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
+        with: { node-version: "22" }
+      - run: npm ci
+        working-directory: workers/submit
+      - run: npx tsc --noEmit
+        working-directory: workers/submit
+      - uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: workers/submit
+          command: deploy
+
+  deploy-image-cdn:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
+        with: { node-version: "22" }
+      - run: npm ci
+        working-directory: workers/image-cdn
+      - run: npx tsc --noEmit
+        working-directory: workers/image-cdn
+      - uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: workers/image-cdn
           command: deploy
 
   smoke:

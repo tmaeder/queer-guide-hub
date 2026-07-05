@@ -23,24 +23,19 @@ import {
 import { useMessaging } from '@/hooks/useMessaging';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import type { EntityShareMeta } from '@/components/messaging/chat/entityShare';
 
-interface SendEventDialogProps {
+interface ShareEntityDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  eventTitle: string;
-  eventDate: string;
-  eventVenue?: string;
-  eventPath: string;
+  entity: Omit<EntityShareMeta, 'kind'>;
 }
 
-export function SendEventDialog({
-  open,
-  onOpenChange,
-  eventTitle,
-  eventDate,
-  eventVenue,
-  eventPath,
-}: SendEventDialogProps) {
+/**
+ * Share a live entity (event, venue, …) to a member (as an entity_share chat
+ * card) or a group (as a text post — group_posts has no metadata).
+ */
+export function ShareEntityDialog({ open, onOpenChange, entity }: ShareEntityDialogProps) {
   const { user } = useAuth();
   const { startConversation, sendMessage } = useMessaging();
   const { toast } = useToast();
@@ -98,12 +93,23 @@ export function SendEventDialog({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search, open]);
 
-  const buildEventMessage = () => {
-    const eventUrl = `${window.location.origin}${eventPath}`;
+  const shareMeta = (): EntityShareMeta => ({
+    kind: 'entity_share',
+    entity_table: entity.entity_table ?? null,
+    entity_id: entity.entity_id ?? null,
+    title: entity.title,
+    subtitle: entity.gated ? null : (entity.subtitle ?? null),
+    image_url: entity.gated ? null : (entity.image_url ?? null),
+    path: entity.path,
+    gated: !!entity.gated,
+  });
+
+  const buildTextMessage = () => {
+    const url = `${window.location.origin}${entity.path}`;
     const parts = [
-      `📅 ${eventTitle}`,
-      [eventDate, eventVenue].filter(Boolean).join(' · '),
-      eventUrl,
+      `📅 ${entity.title}`,
+      ...(entity.gated ? [] : [entity.subtitle].filter(Boolean) as string[]),
+      url,
     ];
     if (note.trim()) parts.push('', note.trim());
     return parts.join('\n');
@@ -115,14 +121,20 @@ export function SendEventDialog({
     try {
       const conversationId = await startConversation(selectedMember.id);
       if (!conversationId) throw new Error('Failed to create conversation');
-      await sendMessage(conversationId, buildEventMessage());
+      await sendMessage(
+        conversationId,
+        note.trim() || entity.title,
+        undefined,
+        'entity_share',
+        shareMeta() as unknown as Record<string, unknown>,
+      );
       toast({
         title: 'Sent',
-        description: `Event sent to ${selectedMember.display_name || 'member'}`,
+        description: `Sent to ${selectedMember.display_name || 'member'}`,
       });
       onOpenChange(false);
     } catch {
-      toast({ title: 'Error', description: 'Failed to send event', variant: 'destructive' });
+      toast({ title: 'Error', description: 'Failed to send', variant: 'destructive' });
     } finally {
       setSending(false);
     }
@@ -132,11 +144,11 @@ export function SendEventDialog({
     if (!selectedGroup || !user) return;
     setSending(true);
     try {
-      await postEventToGroup(selectedGroup.id, user.id, buildEventMessage());
-      toast({ title: 'Posted', description: `Event shared to ${selectedGroup.name}` });
+      await postEventToGroup(selectedGroup.id, user.id, buildTextMessage());
+      toast({ title: 'Posted', description: `Shared to ${selectedGroup.name}` });
       onOpenChange(false);
     } catch {
-      toast({ title: 'Error', description: 'Failed to share event', variant: 'destructive' });
+      toast({ title: 'Error', description: 'Failed to share', variant: 'destructive' });
     } finally {
       setSending(false);
     }
@@ -186,8 +198,8 @@ export function SendEventDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Share Event</DialogTitle>
-          <DialogDescription>Send this event to a member or post it to a group</DialogDescription>
+          <DialogTitle>Share</DialogTitle>
+          <DialogDescription>Send this to a member or post it to a group</DialogDescription>
         </DialogHeader>
 
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'member' | 'group')}>

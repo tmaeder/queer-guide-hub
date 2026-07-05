@@ -33,7 +33,10 @@ test.describe('Event detail — automated a11y + SEO landmarks', () => {
     test.skip(!slug, 'No events visible to drive a detail-page test');
 
     await page.goto(`/events/${slug}`);
-    await page.waitForLoadState('domcontentloaded');
+    // Wait for real content + network/style settle so axe analyses the rendered
+    // page, not the empty loading skeleton (which passes vacuously).
+    await page.waitForSelector('h1', { timeout: 30_000 }).catch(() => {});
+    await page.waitForLoadState('networkidle');
 
     const results = await new AxeBuilder({ page })
       .exclude('footer')
@@ -52,7 +55,10 @@ test.describe('Event detail — automated a11y + SEO landmarks', () => {
     test.skip(!slug, 'No events visible to drive a detail-page test');
 
     await page.goto(`/events/${slug}`);
-    await page.waitForLoadState('domcontentloaded');
+    // The SPA fills #root asynchronously; `domcontentloaded` fires on the empty
+    // shell (0 h1 in the loading skeleton). Wait for the real content to render
+    // before counting.
+    await page.waitForSelector('h1', { timeout: 30_000 });
 
     const h1Count = await page.locator('h1').count();
     expect(h1Count, 'event detail page should have exactly one <h1>').toBe(1);

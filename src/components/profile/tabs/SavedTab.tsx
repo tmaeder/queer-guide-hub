@@ -389,6 +389,10 @@ export function SavedTab() {
         </p>
         {!loading && getTotalCount() > 0 && (
           <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={() => navigate('/me/calendar')}>
+              <CalendarDays size={16} className="mr-1.5" />
+              My calendar
+            </Button>
             {getEventCount() > 0 && (
               <Button
                 variant="outline"

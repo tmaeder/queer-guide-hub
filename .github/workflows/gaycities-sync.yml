@@ -1,0 +1,32 @@
+name: gaycities-sync
+
+# Weekly upcoming-events sweep of gaycities.com. Runs scraper-side because
+# Cloudflare 403s all non-browser clients (edge functions can't fetch the
+# site); a headless Playwright session passes clean. Staged rows are walked
+# to events by the ev-drain-* pg_cron jobs (20260704090000).
+on:
+  schedule:
+    - cron: '17 4 * * 1' # Mondays 04:17 UTC, off the 03:00 cron herd
+  workflow_dispatch: {}
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    defaults:
+      run:
+        working-directory: scraper
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: scraper/package-lock.json
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      # xvfb: Cloudflare blocks headless Chromium; the scraper runs a headed
+      # browser against a virtual display.
+      - run: xvfb-run --auto-servernum npx tsx scripts/gaycities-sync.ts
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}

@@ -16,22 +16,7 @@ test('visual: /trips hero prod', async ({ page }) => {
   });
 });
 
-test('visual: /trips auth dialog opens on prod', async ({ page }) => {
-  await page.goto('/trips');
-  await page.waitForLoadState('networkidle');
-  await page
-    .getByRole('button', { name: /accept all|necessary only/i })
-    .first()
-    .click({ timeout: 3000 })
-    .catch(() => {});
-  await page.waitForTimeout(300);
-  await page
-    .getByRole('button', { name: /sign in to plan a trip/i })
-    .first()
-    .click();
-  await page.waitForTimeout(1500);
-  await page.screenshot({
-    path: 'test-results/prod-trips-auth-dialog.png',
-    fullPage: false,
-  });
-});
+// The old "visual: /trips auth dialog opens on prod" test was removed: the
+// in-page "sign in to plan a trip" dialog no longer exists. `/trips` now
+// redirects to `/me/trips`, which for a signed-out visitor navigates straight
+// to `/auth` (src/pages/profile/ProfilePage.tsx). There is no dialog to open.

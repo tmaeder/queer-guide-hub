@@ -615,7 +615,8 @@
       "budget": "Budget",
       "reservations": "Reservierungen",
       "packing": "Packliste",
-      "collaborate": "Zusammenarbeit"
+      "collaborate": "Zusammenarbeit",
+      "journal": "Tagebuch"
     },
     "today": {
       "offlineBanner": "Offline — zeigt deinen zuletzt gespeicherten Reiseplan.",
@@ -930,10 +931,49 @@
         "transit": "ÖPNV",
         "drive": "Auto"
       },
-      "walkingTotal": "{{distance}} zu Fuß"
+      "walkingTotal": "{{distance}} zu Fuß",
+      "optimize": "Routenreihenfolge optimieren",
+      "directions": "Tag in Google Maps öffnen"
     },
     "suggestions": {
       "accessMatch": "Entspricht deinen Bedürfnissen"
+    },
+    "journal": {
+      "placeholder": "Was ist heute passiert? Auch kleine Momente zählen.",
+      "moodLabel": "Stimmung",
+      "mood": {
+        "joy": "Voller Freude",
+        "good": "Gut",
+        "mixed": "Gemischt",
+        "tough": "Schwierig"
+      },
+      "addPhotos": "Fotos",
+      "save": "Eintrag speichern",
+      "saved": "Tagebucheintrag gespeichert",
+      "empty": "Noch keine Tagebucheinträge.",
+      "delete": "Eintrag löschen",
+      "removePhoto": "Foto entfernen",
+      "member": "Reisende*r"
+    },
+    "import": {
+      "button": "Importieren",
+      "title": "Orte importieren",
+      "pickFile": "Datei auswählen",
+      "formats": "GPX, KML, GeoJSON oder Google Takeout (Saved-Places-JSON / Listen-CSV)",
+      "noPlaces": "Keine Orte in dieser Datei gefunden.",
+      "matching": "Venues werden abgeglichen…",
+      "matchCount": "{{count}} mit queer.guide-Venues abgeglichen",
+      "changeFile": "Datei ändern",
+      "matched": "Vorhandenes Venue",
+      "customPin": "Eigener Pin",
+      "noCoords": "Keine Koordinaten — nur Name",
+      "confirm": "{{count}} Orte importieren",
+      "done": "{{count}} Orte importiert",
+      "doneHint": "Sie landen im ungeplanten Pool — zieh sie auf Tage."
+    },
+    "offline": {
+      "pending_one": "{{count}} Änderung wartet auf Synchronisierung",
+      "pending_other": "{{count}} Änderungen warten auf Synchronisierung"
     }
   },
   "help": {
@@ -2794,7 +2834,11 @@
       "email": "Neue E-Mail"
     },
     "notification": {
-      "open": "Öffnen"
+      "open": "Öffnen",
+      "view": "Ansehen",
+      "reviewerNotes": "Prüfhinweise",
+      "allSubmissions": "Alle meine Beiträge",
+      "shareToChat": "Im Chat teilen"
     },
     "openInbox": "Posteingang öffnen",
     "markAlertsRead": "Hinweise als gelesen markieren",
@@ -2815,7 +2859,9 @@
       "empty": "Noch keine Vorschläge.",
       "recent": "Kürzlich geschrieben",
       "active": "Kürzlich aktiv"
-    }
+    },
+    "upcoming": "Demnächst",
+    "openCalendar": "Kalender"
   },
   "extension": {
     "signInGate": {
@@ -2964,6 +3010,19 @@
       "on": "Jetzt frei",
       "both": "{{name}} hat gerade Zeit für ein Treffen 🟢",
       "youOnly": "Du bist als „bereit für ein Treffen“ markiert 🟢"
+    },
+    "share": {
+      "gated": "Details auf Queer Guide",
+      "view": "Auf Queer Guide ansehen"
+    },
+    "submission": {
+      "header": "Zu Queer Guide hinzugefügt ({{count}})",
+      "messageOne": "„{{title}}“ zur Prüfung hinzugefügt",
+      "messageMany": "{{count}} Einträge zur Prüfung hinzugefügt: {{title}}…",
+      "submitted": "{{count}} zur Prüfung eingereicht",
+      "failed": "Einreichung fehlgeschlagen",
+      "title": "Zu Queer Guide hinzufügen",
+      "subtitle": "Lege einen Flyer ab oder füge einen Link ein. Erkannte Einträge werden zur Prüfung eingereicht und in diesem Chat geteilt."
     }
   },
   "newsDetail": {
@@ -3019,5 +3078,25 @@
       "dismiss": "Schließen",
       "ariaLabel": "App installieren"
     }
+  },
+  "atlas": {
+    "summary": "{{visited}} Länder besucht · {{bucket}} auf deiner Bucket List",
+    "hint": "Tippe auf ein Land, um es zu markieren",
+    "visited": "Besucht",
+    "bucket": "Bucket List",
+    "fromTrips": "Durch eine abgeschlossene Reise als besucht markiert"
+  },
+  "calendar": {
+    "title": "Mein Kalender",
+    "subtitle": "Deine Reisen und gespeicherten Events an einem Ort",
+    "signInDesc": "Melde dich an, um deine Reisen und gespeicherten Events zu sehen.",
+    "trip": "Reise",
+    "empty": "Diesen Monat keine Reisen oder gespeicherten Events.",
+    "planTrip": "Reise planen",
+    "browseEvents": "Events durchsuchen",
+    "copyFeed": "Abo-URL kopieren",
+    "download": ".ics herunterladen",
+    "open": "Kalender",
+    "openAria": "Meinen Kalender öffnen"
   }
 }

@@ -17,6 +17,7 @@ const EntityDetail = lazyRetry(() => import('./pages/EntityDetail'));
 const VenueGuides = lazyRetry(() => import('./pages/VenueGuides'));
 const VenueGuide = lazyRetry(() => import('./pages/VenueGuide'));
 const ProfilePage = lazyRetry(() => import('./pages/profile/ProfilePage'));
+const MyCalendarPage = lazyRetry(() => import('./pages/MyCalendarPage'));
 const VenuePersonalization = lazyRetry(() => import('./pages/onboarding/VenuePersonalization'));
 const Events = lazyRetry(() => import('./pages/Events'));
 const EventDetail = lazyRetry(() => import('./pages/EventDetail'));
@@ -157,6 +158,8 @@ const NewsStoryDetail = lazyRetry(() => import('./pages/NewsStoryDetail'));
 const Settings = lazyRetry(() => import('./pages/Settings'));
 const IntimateOnboard = lazyRetry(() => import('./pages/intimate/IntimateOnboard'));
 const IntimateUserDetail = lazyRetry(() => import('./pages/intimate/IntimateUserDetail'));
+const KinkChecklist = lazyRetry(() => import('./pages/tools/KinkChecklist'));
+const KinkShareView = lazyRetry(() => import('./pages/tools/KinkShareView'));
 
 const People = lazyRetry(() => import('./pages/people/People'));
 const Community = lazyRetry(() => import('./pages/Community'));
@@ -561,6 +564,7 @@ export const AppRoutes = () => {
                 <Route path="me" element={<ProfilePage />} />
                 <Route path="me/saved" element={<ProfilePage tab="saved" />} />
                 <Route path="me/trips" element={<ProfilePage tab="trips" />} />
+                <Route path="me/calendar" element={<MyCalendarPage />} />
                 <Route path="me/travel" element={<ProfilePage tab="travel" />} />
                 <Route path="me/groups" element={<ProfilePage tab="groups" />} />
                 <Route path="me/contributions" element={<ProfilePage tab="contributions" />} />
@@ -587,6 +591,9 @@ export const AppRoutes = () => {
                 <Route path="cruising" element={<LocalizedRedirect to="/people/dating" />} />
                 <Route path="intimate/onboard" element={<IntimateOnboard />} />
                 <Route path="intimate/u/:userId" element={<IntimateUserDetail />} />
+                {/* Kink checklist tool — static paths (see people/* locale note). */}
+                <Route path="tools/checklist" element={<KinkChecklist />} />
+                <Route path="tools/checklist/s/:code" element={<KinkShareView />} />
                 <Route path="profile/tiers" element={<Navigate to="/me/progress" replace />} />
                 <Route path="profile/footprint" element={<Navigate to="/me/travel" replace />} />
                 <Route path="profile/footprint/:userId/public" element={<FootprintRedirect />} />

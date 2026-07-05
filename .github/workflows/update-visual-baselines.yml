@@ -65,6 +65,8 @@ jobs:
           if git diff --cached --quiet; then
             echo "baselines unchanged — nothing to commit"
           else
-            git commit -m "test(e2e): update linux visual baselines [skip ci]"
+            # skip-checks trailer, not "[skip ci]" — a bracket marker anywhere in a
+            # squashed merge message skips ALL deploys (see the CLAUDE.md gotcha).
+            git commit -m "test(e2e): update linux visual baselines" -m "skip-checks: true"
             git push origin "HEAD:${GITHUB_REF_NAME}"
           fi

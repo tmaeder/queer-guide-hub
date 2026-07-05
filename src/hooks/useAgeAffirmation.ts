@@ -3,6 +3,10 @@ import { supabase } from '@/integrations/supabase/client';
 
 const STORAGE_KEY = 'qg_age_affirmation';
 const TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
+// Same-tab broadcast: the `storage` event only fires in OTHER tabs, so without
+// this the gate (one useAgeAffirmation instance) never notices the modal's
+// affirm() (a different instance) until a reload.
+const SYNC_EVENT = 'qg-age-affirmation-sync';
 
 type Stored = { affirmedAt: number };
 
@@ -41,6 +45,9 @@ export function useAgeAffirmation() {
       // is acceptable — user can re-affirm on next page load.
     }
     setAffirmed(true);
+    // Notify sibling instances in THIS tab (e.g. the gate) so gated content
+    // reveals in place instead of only after a reload.
+    window.dispatchEvent(new Event(SYNC_EVENT));
   }, []);
 
   const revoke = useCallback(() => {
@@ -50,16 +57,22 @@ export function useAgeAffirmation() {
       // Same as above — best-effort.
     }
     setAffirmed(false);
+    window.dispatchEvent(new Event(SYNC_EVENT));
   }, []);
 
-  // Keep state in sync with storage events from other tabs.
+  // Keep state in sync with storage events from other tabs + same-tab siblings.
   useEffect(() => {
+    const resync = () => setAffirmed(isFresh(readStored()));
     const onStorage = (e: StorageEvent) => {
       if (e.key !== STORAGE_KEY) return;
-      setAffirmed(isFresh(readStored()));
+      resync();
     };
     window.addEventListener('storage', onStorage);
-    return () => window.removeEventListener('storage', onStorage);
+    window.addEventListener(SYNC_EVENT, resync);
+    return () => {
+      window.removeEventListener('storage', onStorage);
+      window.removeEventListener(SYNC_EVENT, resync);
+    };
   }, []);
 
   // Clear on sign-out so subsequent visitors re-affirm.
