@@ -32,8 +32,10 @@ test.describe('Personalities — discovery + views', () => {
 
     await page.getByRole('tab', { name: /Map/i }).click();
     await expect(page).toHaveURL(/[?&]view=map/);
+    // The map view lazy-loads MapLibre; on a cold CI load the region can take
+    // longer than 10s to mount its WebGL canvas. Give it a generous window.
     await expect(page.getByRole('region', { name: /Map of personalities/i })).toBeVisible({
-      timeout: 10_000,
+      timeout: 25_000,
     });
 
     await page.getByRole('tab', { name: /Grid/i }).click();
