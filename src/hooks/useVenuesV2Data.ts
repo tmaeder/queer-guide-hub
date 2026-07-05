@@ -5,6 +5,7 @@
  */
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { untypedFrom, untypedRpc } from '@/integrations/supabase/untyped';
 import { useAuth } from '@/hooks/useAuth';
 import type { Database } from '@/integrations/supabase/types';
 
@@ -98,12 +99,11 @@ export function useCityLeaderboard(cityId: string | null, limit = 5) {
     (async () => {
       // The venue_leaderboard_* mat views are not API-exposed (linter 0016);
       // rpc_venue_leaderboard is the SECURITY DEFINER gateway.
-      const { data } = await supabase.rpc(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        'rpc_venue_leaderboard' as any,
+      const { data } = await untypedRpc<Array<Omit<LeaderboardRow, 'display_name' | 'avatar_url'>>>(
+        'rpc_venue_leaderboard',
         { p_city_id: cityId, p_limit: limit },
       );
-      const lb = (data as Array<Omit<LeaderboardRow, 'display_name' | 'avatar_url'>>) ?? [];
+      const lb = data ?? [];
       const map = await hydrateProfiles(lb);
       if (cancelled) return;
       setRows(
@@ -147,8 +147,7 @@ export function useDiscoveryProfile() {
     (async () => {
       const { data: row } = await supabase
         .from('profiles')
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .select('discovery_profile' as any)
+        .select('discovery_profile')
         .eq('user_id', user.id)
         .maybeSingle();
       if (cancelled) return;
@@ -163,10 +162,8 @@ export function useDiscoveryProfile() {
 }
 
 export async function saveDiscoveryProfile(userId: string, dp: Record<string, unknown>) {
-  return supabase
-    .from('profiles')
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    .update({ discovery_profile: dp } as any)
+  return untypedFrom('profiles')
+    .update({ discovery_profile: dp })
     .eq('user_id', userId);
 }
 

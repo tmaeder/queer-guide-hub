@@ -122,5 +122,5 @@ drop the alias view. Phase B is just code — `git revert`. Phase C
 
 ## Out of scope
 
-- The 109 unindexed FKs and 259 unused indexes flagged by the performance advisor (see [index-cleanup-batches.md](../index-cleanup-batches.md)) — separate effort, different cadence requirements.
+- The 109 unindexed FKs and 259 unused indexes flagged by the performance advisor (tracked in the removed index-cleanup-batches.md — see git history) — separate effort, different cadence requirements.
 - The `_archive/` migration squash (Phase 4 baseline) — separate ADR if pursued.

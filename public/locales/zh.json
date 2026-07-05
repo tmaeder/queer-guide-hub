@@ -63,7 +63,6 @@
   },
   "search": {
     "placeholder": "搜索国家和城市...",
-    "nearMe": "附近",
     "filters": "筛选",
     "continent": "大洲",
     "all": "全部",
@@ -170,7 +169,10 @@
     "clear": "Clear",
     "signIn": "Sign in",
     "goHome": "Go Home",
-    "more": "更多"
+    "more": "更多",
+    "remove": "移除",
+    "accept": "接受",
+    "decline": "拒绝"
   },
   "navigation": {
     "home": "首页",
@@ -575,7 +577,9 @@
         "safety": "安全用品",
         "lgbtq-specific": "LGBTQ+ 专用",
         "other": "其他"
-      }
+      },
+      "scopeAll": "所有人",
+      "scopeMine": "我的"
     },
     "collaborate": {
       "chat": "聊天",
@@ -614,7 +618,8 @@
       "budget": "预算",
       "reservations": "预订",
       "packing": "行李",
-      "collaborate": "协作"
+      "collaborate": "协作",
+      "journal": "日记"
     },
     "today": {
       "offlineBanner": "您处于离线状态 — 显示上次保存的行程。",
@@ -895,6 +900,86 @@
       "saveAria": "Save trip",
       "unsaveAria": "Unsave trip",
       "error": "Could not update save"
+    },
+    "dayNotes": {
+      "addTitle": "为这一天添加备注",
+      "textLabel": "备注",
+      "textPlaceholder": "例如：11:00 前退房",
+      "timeLabel": "时间（可选）",
+      "iconLabel": "图标",
+      "save": "添加备注",
+      "added": "备注已添加",
+      "delete": "删除备注"
+    },
+    "weather": {
+      "clear": "晴",
+      "partlyCloudy": "局部多云",
+      "overcast": "阴",
+      "fog": "雾",
+      "drizzle": "毛毛雨",
+      "rain": "雨",
+      "snow": "雪",
+      "thunderstorm": "雷雨",
+      "typical": "常年"
+    },
+    "conflicts": {
+      "chip_one": "{{count}} 个冲突",
+      "chip_other": "{{count}} 个冲突"
+    },
+    "legs": {
+      "switchMode": "切换交通方式",
+      "modeAria": "交通方式：{{mode}} — 点击更改",
+      "mode": {
+        "walk": "步行",
+        "transit": "公共交通",
+        "drive": "驾车"
+      },
+      "walkingTotal": "步行 {{distance}}",
+      "optimize": "优化路线顺序",
+      "directions": "在 Google 地图中打开这一天"
+    },
+    "suggestions": {
+      "accessMatch": "符合您的需求"
+    },
+    "journal": {
+      "placeholder": "今天发生了什么？小小的瞬间也值得记录。",
+      "moodLabel": "心情",
+      "mood": {
+        "joy": "开心",
+        "good": "不错",
+        "mixed": "复杂",
+        "tough": "艰难"
+      },
+      "addPhotos": "照片",
+      "save": "保存记录",
+      "saved": "日记已保存",
+      "empty": "还没有日记。",
+      "delete": "删除记录",
+      "removePhoto": "移除照片",
+      "member": "旅行者"
+    },
+    "import": {
+      "button": "导入",
+      "title": "导入地点",
+      "pickFile": "选择文件",
+      "formats": "GPX、KML、GeoJSON 或 Google Takeout（已保存地点 JSON / 列表 CSV）",
+      "noPlaces": "未在此文件中找到地点。",
+      "matching": "正在匹配场所…",
+      "matchCount": "{{count}} 个已匹配到 queer.guide 场所",
+      "changeFile": "更换文件",
+      "matched": "现有场所",
+      "customPin": "自定义图钉",
+      "noCoords": "无坐标 — 仅名称",
+      "confirm": "导入 {{count}} 个地点",
+      "done": "已导入 {{count}} 个地点",
+      "doneHint": "它们会进入未安排列表 — 拖到具体日期即可。"
+    },
+    "offline": {
+      "pending_one": "{{count}} 项更改待同步",
+      "pending_other": "{{count}} 项更改待同步"
+    },
+    "inbox": {
+      "openThread": "在聊天中核对"
     }
   },
   "auth": {
@@ -1530,6 +1615,12 @@
         "thisWeek": "本周",
         "later": "稍后"
       }
+    },
+    "shop": {
+      "eyebrow": "市集",
+      "title": "酷儿品牌精选",
+      "description": "来自酷儿及跨性别经营商家的商品与服务。",
+      "seeAll": "前往市集"
     }
   },
   "header": {
@@ -1564,7 +1655,8 @@
       "travel": "旅行",
       "personalities": "名人",
       "hotels": "酒店",
-      "help": "帮助"
+      "help": "帮助",
+      "tags": "标签"
     },
     "userMenu": {
       "myTrips": "我的行程",
@@ -1626,7 +1718,8 @@
       "settingsSection": "显示",
       "browseAll": "浏览所有板块",
       "unreadCount": "{{count}} 条未读",
-      "tripsBadge": "{{count}} 个行程项目需要关注"
+      "tripsBadge": "{{count}} 个行程项目需要关注",
+      "hub": "中心"
     }
   },
   "pages": {
@@ -2156,7 +2249,9 @@
       "eyebrow": "社区",
       "title": "好友",
       "subtitle": "管理你的联系人",
-      "gate": "请登录以查看你的好友。"
+      "gate": "请登录以查看你的好友。",
+      "requests": "请求",
+      "sentRequest": "向你发送了好友请求"
     }
   },
   "settings": {
@@ -2184,6 +2279,148 @@
       "denied": "Location access is off — showing the default area",
       "unavailable": "Couldn't get your location — showing the default area",
       "timeout": "Location lookup timed out — showing the default area"
+    },
+    "share": {
+      "title": "[ZH] Map view",
+      "copied": "[ZH] Link copied",
+      "copiedDescription": "[ZH] Paste to share this view",
+      "failed": "[ZH] Share failed"
+    },
+    "commandBar": {
+      "searchThisMap": "[ZH] Search this map",
+      "searching": "[ZH] Searching",
+      "clearSearch": "[ZH] Clear search",
+      "typeMore": "[ZH] Type at least 2 characters",
+      "filterMapFor": "[ZH] Filter map for “{{query}}”",
+      "jumpToPlace": "[ZH] Jump to a place",
+      "noMatches": "[ZH] No places match — Enter still filters the map.",
+      "filters": "[ZH] Filters",
+      "filtersActive": "[ZH] Filters, {{count}} active",
+      "filtersAndLayers": "[ZH] Filters & layers",
+      "layers": "[ZH] Layers",
+      "more": "[ZH] More map options",
+      "moreShort": "[ZH] More",
+      "mapOptions": "[ZH] Map options",
+      "myLocation": "[ZH] My location",
+      "fitResults": "[ZH] Fit to results",
+      "shareView": "[ZH] Share view",
+      "reset": "[ZH] Reset"
+    },
+    "entityType": {
+      "venue": "[ZH] Venue",
+      "event": "[ZH] Event",
+      "city": "[ZH] City",
+      "country": "[ZH] Country",
+      "marketplace": "[ZH] Listing",
+      "personality": "[ZH] Person",
+      "queer_village": "[ZH] Village",
+      "group": "[ZH] Group",
+      "news": "[ZH] News",
+      "tag": "[ZH] Tag",
+      "user": "[ZH] User"
+    },
+    "quick": {
+      "groupLabel": "[ZH] Quick filters",
+      "openNow": "[ZH] Open now",
+      "tonight": "[ZH] Tonight",
+      "thisWeekend": "[ZH] This weekend",
+      "thisMonth": "[ZH] This month",
+      "saved": "[ZH] Saved"
+    },
+    "lens": {
+      "groupLabel": "[ZH] Map view",
+      "pins": "[ZH] Pins",
+      "density": "[ZH] Density",
+      "routes": "[ZH] Routes",
+      "boundary": "[ZH] Boundary",
+      "combined": "[ZH] Combined"
+    },
+    "sheet": {
+      "title": "[ZH] Map options",
+      "view": "[ZH] View",
+      "filters": "[ZH] Filters",
+      "time": "[ZH] Time",
+      "layers": "[ZH] Layers",
+      "actions": "[ZH] Map actions"
+    },
+    "time": {
+      "label": "[ZH] Time range",
+      "anyTime": "[ZH] Any time",
+      "chooseDates": "[ZH] Choose dates",
+      "pickRange": "[ZH] Pick a start & end",
+      "untilEndDate": "[ZH] {{start}} – end date",
+      "clear": "[ZH] Clear",
+      "apply": "[ZH] Apply dates"
+    },
+    "nav": {
+      "zoomIn": "[ZH] Zoom in",
+      "zoomOut": "[ZH] Zoom out",
+      "resetNorth": "[ZH] Reset bearing to north",
+      "geolocate": "[ZH] Show my location"
+    },
+    "legend": {
+      "label": "[ZH] Legend",
+      "show": "[ZH] Show map legend",
+      "hide": "[ZH] Hide map legend",
+      "title": "[ZH] What you're seeing",
+      "featured": "[ZH] Ringed = featured spot",
+      "live": "[ZH] Pulsing = open now / live",
+      "areas": "[ZH] Areas",
+      "densityTitle": "[ZH] Density of queer life",
+      "fewer": "[ZH] Fewer",
+      "more": "[ZH] More"
+    },
+    "rail": {
+      "inView_one": "[ZH] {{count}} place in view",
+      "inView_other": "[ZH] {{count}} places in view",
+      "hide": "[ZH] Hide nearby places",
+      "listLabel": "[ZH] Places in view",
+      "showOnMap": "[ZH] Show {{name}} on the map"
+    },
+    "firstRun": {
+      "spotsInView_one": "[ZH] {{count}} queer spot in view",
+      "spotsInView_other": "[ZH] {{count}} queer spots in view",
+      "dismiss": "[ZH] Dismiss"
+    },
+    "canvas": {
+      "loading": "[ZH] Loading",
+      "loadingEllipsis": "[ZH] Loading...",
+      "resultsInView_one": "[ZH] {{count}} result in view",
+      "resultsInView_other": "[ZH] {{count}} results in view",
+      "clickToZoom": "[ZH] Click to zoom in",
+      "venueCount_one": "[ZH] {{count}} venue",
+      "venueCount_other": "[ZH] {{count}} venues",
+      "eventCount_one": "[ZH] {{count}} event",
+      "eventCount_other": "[ZH] {{count}} events",
+      "restroomCount_one": "[ZH] {{count}} restroom",
+      "restroomCount_other": "[ZH] {{count}} restrooms",
+      "hotelCount_one": "[ZH] {{count}} hotel",
+      "hotelCount_other": "[ZH] {{count}} hotels",
+      "placeCount_one": "[ZH] {{count}} place",
+      "placeCount_other": "[ZH] {{count}} places",
+      "emptyOpenNow": "[ZH] Nothing open right now in view — turn off Open now or try later.",
+      "emptyTimeRange": "[ZH] No events in this time range here — widen the dates or pan out.",
+      "emptySearch": "[ZH] No matches for \"{{query}}\" here — clear search or pan out.",
+      "emptyDefault": "[ZH] No spots here yet — pan, zoom out, or put one on the map."
+    },
+    "layers": {
+      "venues": "[ZH] Venues",
+      "events": "[ZH] Events",
+      "cities": "[ZH] Cities",
+      "countries": "[ZH] Countries",
+      "restrooms": "[ZH] Restrooms",
+      "hotels": "[ZH] Hotels",
+      "neighbourhoods": "[ZH] Villages"
+    },
+    "filterChips": {
+      "groupLabel": "[ZH] Active filters",
+      "remove": "[ZH] Remove filter: {{label}}",
+      "clearAll": "[ZH] Clear all",
+      "within": "[ZH] Within {{km}} km",
+      "accessible": "[ZH] Accessible",
+      "queerOwned": "[ZH] Queer-owned",
+      "tags_one": "[ZH] {{count}} tag",
+      "tags_other": "[ZH] {{count}} tags"
     }
   },
   "resources": {
@@ -2306,7 +2543,15 @@
     },
     "tagDetail": {
       "breadcrumbHome": "资源",
-      "noDefinition": "此条目暂无定义。"
+      "noDefinition": "此条目暂无定义。",
+      "alsoKnownAs": "又称",
+      "readOnWikipedia": "在维基百科上阅读",
+      "searchTagged": "搜索所有带有 {{name}} 标签的内容",
+      "seeAlso": "参见",
+      "sensitiveContentBody": "该主题可能包含敏感内容。如果你需要支持，请访问我们的危机热线页面。",
+      "sensitiveContentTitle": "敏感主题",
+      "tableOfContents": "目录",
+      "viewAsGraph": "以图谱形式查看"
     },
     "graph": {
       "title": "标签关系图",
@@ -2596,7 +2841,11 @@
       "email": "新邮件"
     },
     "notification": {
-      "open": "打开"
+      "open": "打开",
+      "view": "查看",
+      "reviewerNotes": "审核备注",
+      "allSubmissions": "我的所有提交",
+      "shareToChat": "分享到聊天"
     },
     "openInbox": "打开收件箱",
     "markAlertsRead": "将提醒标为已读",
@@ -2617,6 +2866,34 @@
       "empty": "暂无建议。",
       "recent": "最近联系",
       "active": "最近活跃"
+    },
+    "upcoming": "即将开始",
+    "openCalendar": "日历",
+    "tripmail": {
+      "gone": "此邮件项已不可用。",
+      "type": "类型",
+      "vendor": "商家",
+      "title": "标题",
+      "dates": "日期",
+      "location": "地点",
+      "price": "价格",
+      "confirmation": "确认号",
+      "extracted": "提取的预订",
+      "filed": "已归档",
+      "confirm": "添加到行程",
+      "dismiss": "忽略",
+      "openTrip": "打开行程",
+      "fallbackTitle": "转发的邮件",
+      "intro": "提取的信息有误？告诉我，我来修正——例如“入住其实是12号”。",
+      "thinking": "正在核对邮件…",
+      "placeholder": "修正信息或询问此预订…",
+      "send": "发送",
+      "sendFailed": "发送失败",
+      "foundEntities": "在此邮件中发现",
+      "addToGuide": "添加到 queer.guide",
+      "stagedNote": "已提交审核 — 会经过我们的质量流程。",
+      "anEvent": "活动",
+      "aVenue": "场所"
     }
   },
   "extension": {
@@ -2716,7 +2993,8 @@
     "help": "帮助",
     "pride": "骄傲节",
     "contributors": "贡献者",
-    "wishlists": "心愿单"
+    "wishlists": "心愿单",
+    "tags": "标签"
   },
   "chat": {
     "react": "回应",
@@ -2765,6 +3043,158 @@
       "on": "现在有空",
       "both": "{{name}} 现在有空见面 🟢",
       "youOnly": "你已标记为有空见面 🟢"
+    },
+    "share": {
+      "gated": "在 Queer Guide 上查看详情",
+      "view": "在 Queer Guide 上查看"
+    },
+    "submission": {
+      "header": "已添加到 Queer Guide（{{count}}）",
+      "messageOne": "已添加“{{title}}”以供审核",
+      "messageMany": "已添加 {{count}} 个条目以供审核：{{title}}…",
+      "submitted": "已提交 {{count}} 个以供审核",
+      "failed": "提交失败",
+      "title": "添加到 Queer Guide",
+      "subtitle": "拖入宣传单或粘贴链接。提取的条目将提交审核并在此聊天中分享。"
+    }
+  },
+  "newsDetail": {
+    "notFound": "未找到文章",
+    "notFoundDesc": "您查找的文章不存在。",
+    "backToNews": "返回新闻",
+    "share": "分享",
+    "readAtSource": "查看原文",
+    "fresh": "最新",
+    "reportedByOutlets": "{{count}} 家媒体报道",
+    "featured": "精选",
+    "byAuthor": "作者：{{author}}",
+    "minRead": "阅读约 {{count}} 分钟",
+    "viewsCount": "{{count}} 次浏览",
+    "whyThisMatters": "为何重要",
+    "editorialPlaceholder": "Alt+点击添加背景——用 1–3 句说明这条新闻为何重要。",
+    "bodyFallback": "完整报道请见原始来源。",
+    "originallyPublishedBy": "最初由 {{source}} 发布。",
+    "viewOriginal": "查看原始报道",
+    "integritySatire": "已标记为讽刺——并非字面报道。",
+    "integrityAdvertorial": "赞助/软文内容。",
+    "integritySentimentConflict": "各来源对语气存在分歧——请谨慎阅读。",
+    "closeToHome": "靠近你的所在地",
+    "seeFullStory": "查看完整报道",
+    "topics": "话题",
+    "home": "主页",
+    "whereThisHappens": "发生地点",
+    "aboutSource": "关于来源",
+    "corroboratedAcross": "{{count}} 家媒体证实",
+    "lastVerified": "最近核实 {{time}}",
+    "visitSource": "访问 {{source}}",
+    "source": "来源",
+    "moreLikeThis": "相关推荐",
+    "forYou": "为你推荐"
+  },
+  "pwa": {
+    "updateAvailable": {
+      "title": "有新版本可用",
+      "description": "刷新以获取最新功能。",
+      "action": "刷新"
+    },
+    "backOnline": "已恢复在线",
+    "offline": {
+      "title": "您已离线",
+      "description": "部分功能可能无法使用。"
+    },
+    "install": {
+      "title": "安装 Queer Guide",
+      "description": "从主屏幕快速访问，也支持离线使用。",
+      "action": "安装",
+      "iosTitle": "添加到主屏幕",
+      "iosHint": "在 Safari 中点按分享按钮，然后选择“添加到主屏幕”。",
+      "dismiss": "关闭",
+      "ariaLabel": "安装应用"
+    }
+  },
+  "atlas": {
+    "summary": "已访问 {{visited}} 个国家 · 愿望清单 {{bucket}} 个",
+    "hint": "点按国家进行标记",
+    "visited": "已访问",
+    "bucket": "愿望清单",
+    "fromTrips": "因已完成的旅行标记为已访问"
+  },
+  "calendar": {
+    "title": "我的日历",
+    "subtitle": "在一处查看你的行程和已保存的活动",
+    "signInDesc": "登录后即可查看你的行程和已保存的活动。",
+    "trip": "行程",
+    "empty": "本月没有行程或已保存的活动。",
+    "planTrip": "规划行程",
+    "browseEvents": "浏览活动",
+    "copyFeed": "复制订阅链接",
+    "download": "下载 .ics",
+    "open": "日历",
+    "openAria": "打开我的日历"
+  },
+  "status": {
+    "lookingFor": "想找",
+    "lookingForHint": "用于为你排序推荐的人。不会显示在你的个人资料中。"
+  },
+  "people": {
+    "intent": {
+      "lookingForOptions": {
+        "friends": "朋友",
+        "dating": "约会",
+        "travel_buddies": "旅伴",
+        "locals": "当地人",
+        "networking": "拓展人脉"
+      }
+    }
+  },
+  "hub": {
+    "title": "我的中心",
+    "nav": "中心模块",
+    "signInDesc": "登录后查看收件箱、行程和收藏的地点。",
+    "identity": {
+      "viewProfile": "查看资料"
+    },
+    "modules": {
+      "inbox": "收件箱",
+      "calendar": "日历",
+      "contacts": "联系人",
+      "saved": "已收藏",
+      "news": "新闻",
+      "trips": "行程"
+    },
+    "calendar": {
+      "title": "即将到来",
+      "empty": "暂无日程。",
+      "today": "今天",
+      "tomorrow": "明天",
+      "allDay": "全天",
+      "subscribe": "订阅",
+      "showMore": "查看更远",
+      "kinds": {
+        "trip": "行程",
+        "reservation": "预订",
+        "going": "参加",
+        "saved": "已收藏"
+      }
+    },
+    "contacts": {
+      "title": "联系人",
+      "search": "搜索联系人…",
+      "recent": "最近聊天",
+      "friends": "朋友",
+      "groups": "群组",
+      "dating": "约会",
+      "datingTitle": "你的约会卡组",
+      "datingBody": "浏览匹配和对话。"
+    },
+    "news": {
+      "title": "新闻",
+      "savedStories": "已收藏的文章",
+      "savedEmpty": "还没有收藏的文章。",
+      "fromTags": "来自你关注的标签",
+      "tagsEmpty": "关注标签即可在此看到相关文章。",
+      "tagsNoArticles": "你关注的标签暂无新内容。",
+      "savedSearches": "已保存的搜索"
     }
   }
 }

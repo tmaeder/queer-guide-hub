@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { supabase } from "@/integrations/supabase/client"
+import { untypedFrom } from "@/integrations/supabase/untyped"
 
 export function useProfessions() {
     const [professions, setProfessions] = useState<string[]>([])
@@ -9,8 +9,7 @@ export function useProfessions() {
         const fetchProfessions = async () => {
                 setLoading(true)
                 try {
-                          const { data, error } = await supabase
-                            .from("professions" as never)
+                          const { data, error } = await untypedFrom("professions")
                             .select("name" as never)
                             .eq("is_active" as never, true as never)
                             .order("sort_order" as never, { ascending: true })

@@ -1,3 +1,4 @@
+import { slugify } from '@/lib/slugify';
 import { useEffect, useMemo, useState } from 'react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Search, Link2, Hash } from 'lucide-react';
@@ -26,13 +27,6 @@ function setCanonical(href: string) {
   link.href = href;
 }
 
-function slugify(input: string) {
-  return input
-    .toLowerCase()
-    .replace(/&/g, 'and')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/(^-|-$)+/g, '');
-}
 
 export default function Sitemap() {
   const [query, setQuery] = useState('');

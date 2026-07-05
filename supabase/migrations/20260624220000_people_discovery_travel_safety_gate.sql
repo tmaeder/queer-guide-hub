@@ -1,30 +1,24 @@
--- Outing-safety gate for travel-mode people discovery (defense-in-depth).
+-- Outing-safety gate for travel-mode people discovery (defense-in-depth), CORRECTED.
 --
--- The trip-planner travel rail is already hidden for criminalizing/death-penalty
--- destinations client-side (TravelBuddiesSection). This hardens the source: the
--- people_discovery RPC must itself never reveal who else is traveling to such a
--- destination, even on a direct call or a future city-scoped travel surface.
+-- This replaces the original (stale) version of this migration, which targeted an
+-- outdated 6-arg people_discovery signature. The live function on prod is the 7-arg
+-- variant (adds p_radius_m + a PostGIS 'nearby' mode). Applying the old 6-arg body
+-- would have created a spurious overload and regressed the function. This version
+-- CREATE OR REPLACEs the real 7-arg function with the travel-branch gate, and
+-- defensively drops the stale 6-arg overload if a prior apply created it.
 --
--- ONLY the 'travel' branch changes. 'dating'/'friends'/'locals' are intentionally
--- left untouched — suppressing locals discovery in criminalizing countries would
--- harm the queer residents the app serves, the opposite of the invariant's intent.
--- Reuses public.location_is_high_risk (20260623160000); body is otherwise verbatim
--- from 20260624100000_people_discovery_friends_travel.sql.
+-- Gate scope: 'travel' mode only. dating/friends/nearby/locals are unchanged —
+-- suppressing locals discovery in criminalizing countries would harm the queer
+-- residents the app serves. Reuses public.location_is_high_risk (20260623160000).
 
-create or replace function public.people_discovery(
-  p_viewer   uuid,
-  p_mode     text,
-  p_city_id  uuid default null,
-  p_event_id uuid default null,
-  p_trip_id  uuid default null,
-  p_limit    int  default 60
-)
-returns table(user_id uuid, score int, shared jsonb)
-language plpgsql
-stable
-security definer
-set search_path = public, pg_temp
-as $$
+drop function if exists public.people_discovery(uuid, text, uuid, uuid, uuid, integer);
+
+create or replace function public.people_discovery(p_viewer uuid, p_mode text, p_city_id uuid DEFAULT NULL::uuid, p_event_id uuid DEFAULT NULL::uuid, p_trip_id uuid DEFAULT NULL::uuid, p_limit integer DEFAULT 60, p_radius_m integer DEFAULT 5000)
+ RETURNS TABLE(user_id uuid, score integer, shared jsonb)
+ LANGUAGE plpgsql
+ STABLE SECURITY DEFINER
+ SET search_path TO 'public', 'extensions', 'pg_temp'
+AS $function$
 #variable_conflict use_column
 declare
   v_is_place boolean := (p_city_id is not null or p_event_id is not null);
@@ -179,8 +173,45 @@ begin
     end;
   end if;
 
-  -- 'locals' (and default): public/community profiles, optionally scoped to a
-  -- city (locals + travelers) or an event (attendees).
+  if p_mode = 'nearby' then
+    return query
+    with me as (
+      select geog as origin
+      from user_presence_location
+      where user_id = p_viewer and expires_at > now() and visibility <> 'off'
+    ),
+    pool as (
+      select upl.user_id as cand, upl.refreshed_at, upl.precision_m,
+             st_distance(upl.geog, me.origin) as dist_m
+      from user_presence_location upl, me
+      where upl.user_id <> p_viewer
+        and upl.expires_at > now()
+        and upl.visibility <> 'off'
+        and (not upl.is_high_risk or upl.visibility = 'discovery')
+        and (upl.visibility <> 'friends_only' or exists (
+              select 1 from user_relationships r
+              where r.relationship_type='friend' and r.status='accepted'
+                and ((r.user_id=p_viewer and r.target_user_id=upl.user_id)
+                  or (r.user_id=upl.user_id and r.target_user_id=p_viewer))))
+        and not public.intimate_is_blocked(p_viewer, upl.user_id)
+        and st_dwithin(upl.geog, me.origin, coalesce(p_radius_m, 5000) + upl.precision_m)
+      order by dist_m asc
+      limit 300
+    )
+    select
+      pool.cand,
+      public.compute_compatibility(p_viewer, pool.cand) as score,
+      jsonb_build_object(
+        'distance_m',  round(pool.dist_m)::int,
+        'precision_m', pool.precision_m,
+        'last_seen',   pool.refreshed_at
+      )
+    from pool
+    order by score desc, pool.dist_m asc, pool.cand
+    limit greatest(p_limit, 1);
+    return;
+  end if;
+
   return query
   with pool as (
     select p.user_id as cand, p.last_active_at
@@ -235,7 +266,7 @@ begin
   order by score desc, pool.last_active_at desc nulls last, pool.cand
   limit greatest(p_limit, 1);
 end;
-$$;
+$function$;
 
-revoke all on function public.people_discovery(uuid, text, uuid, uuid, uuid, int) from public, anon;
-grant execute on function public.people_discovery(uuid, text, uuid, uuid, uuid, int) to authenticated;
+revoke all on function public.people_discovery(uuid, text, uuid, uuid, uuid, integer, integer) from public, anon;
+grant execute on function public.people_discovery(uuid, text, uuid, uuid, uuid, integer, integer) to authenticated;

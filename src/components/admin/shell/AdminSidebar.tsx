@@ -157,7 +157,7 @@ export function AdminSidebar() {
         className={cn(
           'group/navrow rounded-element mx-1.5 mb-px py-1.5 inline-flex items-center gap-2 transition-all hover:translate-x-0.5 w-[calc(100%-12px)]',
           active
-            ? 'bg-muted font-semibold border-l-2 border-accent-brand pl-4'
+            ? 'bg-muted font-semibold border-l-2 border-foreground pl-4'
             : 'pl-4.5 border-l-2 border-transparent',
         )}
       >

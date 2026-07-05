@@ -21,24 +21,31 @@ test.describe('Venues — map view', () => {
   // MapLibre reports at least one point feature in the rendered cluster
   // or unclustered layer within a reasonable settle window.
   test('map view renders at least one venue feature (D1)', async ({ page }) => {
+    // The cluster-source load (venue GeoJSON fetch + MapLibre source load) can
+    // take a while on a cold prod load through CI, so give this test extra
+    // headroom over the 30s default — the sibling "canvas + counter" test
+    // proves the base map renders; this one only guards the feature count.
+    test.setTimeout(75_000);
     await page.goto('/venues?view=map');
     await page.waitForLoadState('domcontentloaded');
     const canvas = page.locator('canvas.maplibregl-canvas');
     await expect(canvas).toBeVisible({ timeout: 15_000 });
 
-    // Poll the MapLibre instance for rendered point-source features.
-    // The map instance isn't exposed globally, so we query the DOM for
-    // the canvas and pull the map from a known WeakMap MapLibre keeps
-    // on the canvas via its `__map__` convention. Fall back to polling
-    // the in-view counter badge text.
+    // The in-view counter starts as "Loading…" and only switches to
+    // "N results in view" once the cluster source has loaded. Wait for it to
+    // leave the loading state first (generous window for a cold source load),
+    // then poll for a non-zero feature count. A bare 20s poll on the numeric
+    // text raced the source load and stayed at 0 when prod was slow.
+    const counter = page.locator('text=/\\d+ results in view/');
+    await expect(counter).toBeVisible({ timeout: 45_000 });
     await expect
       .poll(
         async () => {
-          const count = await page.locator('text=/\\d+ results in view/').textContent().catch(() => '');
+          const count = await counter.textContent().catch(() => '');
           const m = count?.match(/(\d+)/);
           return m ? Number(m[1]) : 0;
         },
-        { timeout: 20_000, intervals: [500, 1000, 2000] },
+        { timeout: 15_000, intervals: [500, 1000, 2000] },
       )
       .toBeGreaterThan(0);
   });

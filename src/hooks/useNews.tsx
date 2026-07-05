@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { untypedFrom } from '@/integrations/supabase/untyped';
 
 type NewsArticle = Record<string, unknown>;
 type NewsSource = Record<string, unknown>;
@@ -32,9 +33,13 @@ interface NewsFilters {
   countryIds?: string[];
   cityIds?: string[];
   sourceId?: string;
+  sourceIds?: string[];
   category?: string;
   language?: string;
   mediaType?: 'podcast' | 'article';
+  sentiment?: string;
+  trustScoreMin?: number;
+  authorNames?: string[];
   sortField?: string;
   sortOrder?: 'asc' | 'desc';
 }
@@ -118,8 +123,19 @@ export const useNews = () => {
           `title.ilike.%${escaped}%,content.ilike.%${escaped}%`,
         );
       }
-      if (filters?.sourceId) {
+      if (filters?.sourceIds && filters.sourceIds.length > 0) {
+        queryBuilder = (queryBuilder as typeof queryBuilder).in('source_id', filters.sourceIds);
+      } else if (filters?.sourceId) {
         queryBuilder = (queryBuilder as typeof queryBuilder).eq('source_id', filters.sourceId);
+      }
+      if (filters?.sentiment) {
+        queryBuilder = (queryBuilder as typeof queryBuilder).eq('sentiment', filters.sentiment);
+      }
+      if (typeof filters?.trustScoreMin === 'number' && filters.trustScoreMin > 0) {
+        queryBuilder = (queryBuilder as typeof queryBuilder).gte('trust_score', filters.trustScoreMin);
+      }
+      if (filters?.authorNames && filters.authorNames.length > 0) {
+        queryBuilder = (queryBuilder as typeof queryBuilder).in('author', filters.authorNames);
       }
       if (filters?.language) {
         queryBuilder = (queryBuilder as typeof queryBuilder).eq('content_language', filters.language);
@@ -152,8 +168,7 @@ export const useNews = () => {
 
       // Restrict to articles that belong to a multi-article story.
       if (filters?.inStory) {
-        const { data: storyLinks } = await supabase
-          .from('news_story_articles' as never)
+        const { data: storyLinks } = await untypedFrom('news_story_articles')
           .select('article_id, story_id, news_stories!inner(article_count)') as unknown as {
             data: Array<{ article_id: string; news_stories: { article_count: number } }> | null;
           };

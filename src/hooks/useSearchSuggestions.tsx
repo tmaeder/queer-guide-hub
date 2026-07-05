@@ -20,7 +20,7 @@ export interface SearchSuggestion {
   icon: React.ComponentType;
   subtitle?: string;
   title?: string;
-  /** Meili-highlighted HTML, e.g. "Ber<em>lin</em>". When present, prefer over client-side highlighting. */
+  /** Server-highlighted HTML, e.g. "Ber<em>lin</em>". When present, prefer over client-side highlighting. */
   nameHtml?: string;
   slug?: string;
   city?: string;

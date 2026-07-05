@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { untypedFrom } from '@/integrations/supabase/untyped';
 
 export interface CannedResponse {
   id: string;
@@ -14,8 +14,7 @@ export function useCannedResponses() {
   return useQuery({
     queryKey: ['canned-responses'],
     queryFn: async (): Promise<CannedResponse[]> => {
-      const { data, error } = await supabase
-        .from('canned_responses' as never)
+      const { data, error } = await untypedFrom('canned_responses')
         .select('*')
         .eq('active', true)
         .order('sort_order');

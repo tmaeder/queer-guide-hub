@@ -21,6 +21,7 @@
 // OR service-role OR admin. Mirrors the Phase 4 i18n cron parking pattern.
 // ============================================================================
 import { chatCompletion } from '../_shared/openai-client.ts'
+import { hasValidWebhookSecret } from '../_shared/webhook-auth.ts'
 import {
   getCorsHeaders,
   getServiceClient,
@@ -294,9 +295,7 @@ Deno.serve(async (req) => {
   }
 
   // Auth: dedicated webhook secret (parks cron until set) OR internal/admin.
-  const webhookSecret = Deno.env.get('TAG_ENRICHMENT_WEBHOOK_SECRET')
-  const webhookOk = !!webhookSecret && req.headers.get('x-webhook-secret') === webhookSecret
-  if (!webhookOk) {
+  if (!hasValidWebhookSecret(req, 'TAG_ENRICHMENT_WEBHOOK_SECRET')) {
     const gate = await requireInternalOrAdmin(req, supabase)
     if (gate instanceof Response) return gate
   }

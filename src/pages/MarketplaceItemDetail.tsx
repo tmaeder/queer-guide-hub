@@ -7,7 +7,9 @@ import { ArrowLeft } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { EntityDetailLayout, type EntityDetailTab } from '@/components/entity/EntityDetailLayout';
-import { MoreLikeThisByTag } from '@/components/tags/MoreLikeThisByTag';
+import { BrandStoryBlock } from '@/components/marketplace/BrandStoryBlock';
+import { BrandMoreFrom } from '@/components/marketplace/BrandMoreFrom';
+import { PairsWithRail } from '@/components/marketplace/PairsWithRail';
 import { useAuth } from '@/hooks/useAuth';
 import { useMarketplace } from '@/hooks/useMarketplace';
 import { useMeta } from '@/hooks/useMeta';
@@ -255,7 +257,7 @@ export default function MarketplaceItemDetail() {
         breadcrumbs={breadcrumbs}
         hero={
           listing ? (
-            <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1.2fr)_minmax(320px,1fr)]">
+            <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1.6fr)_minmax(360px,1fr)] lg:gap-12">
               <MarketplaceGallery listingId={listing.id} images={listing.images} title={listing.title} />
               <MarketplaceBuyBox
                 listing={listing}
@@ -274,13 +276,10 @@ export default function MarketplaceItemDetail() {
         entityId={listing?.id}
       />
       {listing && (
-        <div className="container mx-auto px-4 pb-12">
-          <MoreLikeThisByTag
-            entityType="marketplace"
-            entityId={listing.id}
-            title="Related by tag"
-            className="mt-8"
-          />
+        <div className="container mx-auto flex flex-col gap-16 px-4 pb-16 pt-8">
+          <BrandStoryBlock listing={listing} />
+          <BrandMoreFrom listing={listing} />
+          <PairsWithRail listing={listing} />
         </div>
       )}
     </>

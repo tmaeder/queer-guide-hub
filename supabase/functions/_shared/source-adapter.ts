@@ -91,18 +91,40 @@ export interface SourceAdapter {
 }
 
 /**
+ * Deterministic stringify with recursively sorted keys, so two normalized
+ * payloads compare equal regardless of key ordering (Postgres jsonb reorders
+ * keys on round-trip). Used only for refresh change-detection.
+ */
+function stableStringify(value: unknown): string {
+  if (value === null || typeof value !== 'object') return JSON.stringify(value) ?? 'null'
+  if (Array.isArray(value)) return `[${value.map(stableStringify).join(',')}]`
+  const obj = value as Record<string, unknown>
+  const keys = Object.keys(obj).sort()
+  return `{${keys.map(k => `${JSON.stringify(k)}:${stableStringify(obj[k])}`).join(',')}}`
+}
+
+/**
  * Write fetched items to ingestion_staging in batch.
- * Returns the number of rows inserted.
+ * Returns the number of rows inserted (or, in refresh mode, inserted + re-opened).
  *
  * `config.entityType` overrides `adapter.entityType` for this batch — used
  * by source-csv-upload to write per-row classified groups to staging
  * without spawning a separate adapter per group. (Issue #113)
+ *
+ * `config.refresh` (opt-in; used by the recurring marketplace sources) changes
+ * the idempotency behavior from INSERT-skip to UPSERT-on-change: an already-seen
+ * product whose normalized payload CHANGED has its staging row refreshed, and if
+ * it was already committed it is re-opened to disposition='pending' — preserving
+ * ai_validation_status/classification_result so validate/relevance SKIP it and
+ * only the commit RPC re-runs (updating price/stock + writing price_history).
+ * Unchanged products are still skipped. Non-refresh callers (news/venue/event
+ * pipelines) are completely unaffected.
  */
 export async function writeToStaging(
   supabase: SupabaseClient,
   adapter: SourceAdapter,
   rawItems: RawItem[],
-  config: AdapterConfig & { targetTable: string; entityType?: string }
+  config: AdapterConfig & { targetTable: string; entityType?: string; refresh?: boolean }
 ): Promise<number> {
   if (rawItems.length === 0) return 0
 
@@ -131,12 +153,56 @@ export async function writeToStaging(
 
   if (rows.length === 0) return 0
 
-  // Try bulk insert first (fast path). If any row hits a uniqueness constraint
-  // (idempotency_key partial index), fall back to per-row inserts so individual
-  // duplicates are skipped without killing the entire batch.
   const isDuplicate = (e: { code?: string; message?: string }) =>
     e.code === '23505' || !!e.message?.includes('duplicate key')
 
+  // Refresh mode (opt-in): per-row upsert-on-change so recurring re-syncs update
+  // prices/stock on existing listings, not just add new products.
+  if (config.refresh) {
+    let touched = 0
+    for (const row of rows) {
+      const { data: existing } = await supabase
+        .from('ingestion_staging')
+        .select('id, normalized_data, disposition')
+        .eq('source_name', row.source_name)
+        .eq('source_entity_id', row.source_entity_id)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+
+      if (!existing) {
+        const { error } = await supabase.from('ingestion_staging').insert(row)
+        if (!error) touched++
+        else if (!isDuplicate(error)) throw new Error(`Staging write failed for ${adapter.name}: ${error.message}`)
+        continue
+      }
+
+      const changed = stableStringify(existing.normalized_data) !== stableStringify(row.normalized_data)
+      if (!changed) continue
+
+      const update: Record<string, unknown> = {
+        raw_data: row.raw_data,
+        normalized_data: row.normalized_data,
+        updated_at: new Date().toISOString(),
+      }
+      // Re-open committed rows so the commit RPC reprocesses the changed payload.
+      // Preserve ai_validation_status / classification_result (not touched here)
+      // so the LLM relevance gate is NOT re-run for price/stock deltas.
+      if (existing.disposition === 'committed') {
+        update.disposition = 'pending'
+        update.processed_at = null
+        update.error_message = null
+      }
+      const { error } = await supabase.from('ingestion_staging').update(update).eq('id', existing.id)
+      if (error) throw new Error(`Staging refresh failed for ${adapter.name}: ${error.message}`)
+      touched++
+    }
+    return touched
+  }
+
+  // Try bulk insert first (fast path). If any row hits a uniqueness constraint
+  // (idempotency_key partial index), fall back to per-row inserts so individual
+  // duplicates are skipped without killing the entire batch.
   const { error: bulkErr } = await supabase.from('ingestion_staging').insert(rows)
   if (!bulkErr) return rows.length
   if (!isDuplicate(bulkErr)) {

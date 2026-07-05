@@ -86,6 +86,28 @@ test.describe('MapShell — discover surface (/map)', () => {
   });
 });
 
+test.describe('MapShell — mobile chrome (390px)', () => {
+  test.use({ viewport: { width: 390, height: 844 } });
+
+  test('lens picker + filters entry are visible without scrolling', async ({ page }) => {
+    await page.goto('/en/map');
+    const bar = page.locator('[data-testid=map-command-bar]');
+    if (!(await bar.isVisible({ timeout: 10000 }).catch(() => false))) {
+      test.skip(true, 'VITE_MAP_SHELL not enabled in this build');
+    }
+    // Row 1 is fixed — every critical control must be inside the viewport
+    // (the old bar hid these behind an undiscoverable horizontal scroll).
+    await expect(bar.locator('button[aria-label="Search this map"]')).toBeInViewport();
+    await expect(bar.locator('[role=radiogroup][aria-label="Map view"]')).toBeInViewport();
+    const filtersEntry = bar.locator('button[aria-label^="Filters"]');
+    await expect(filtersEntry).toBeInViewport();
+
+    // The single filters entry opens the consolidated controls sheet.
+    await filtersEntry.click();
+    await expect(page.getByRole('dialog').getByText('Map options')).toBeVisible();
+  });
+});
+
 test.describe('MapShell — search surface', () => {
   test('search results map hides lens picker (single-lens surface)', async ({ page }) => {
     await page.goto('/en/search?q=berlin');

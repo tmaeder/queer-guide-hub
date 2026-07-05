@@ -29,8 +29,7 @@ export function useMissions() {
     staleTime: 60_000,
     queryFn: async (): Promise<MissionStatus[]> => {
       if (!user) return [];
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data, error } = await supabase.rpc('my_missions' as any);
+      const { data, error } = await supabase.rpc('my_missions');
       if (error) throw error;
       return (data as MissionStatus[]) ?? [];
     },

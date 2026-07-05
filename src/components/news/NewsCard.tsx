@@ -7,7 +7,7 @@ import type { Tables } from '@/integrations/supabase/types';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { FavoriteButton } from '@/components/ui/favorite-button';
-import { useState, useMemo } from 'react';
+import { memo, useState, useMemo } from 'react';
 import { cleanTitle, cleanAuthor, cleanExcerpt } from '@/utils/htmlDecode';
 import { getFallbackImage } from '@/utils/fallbackImages';
 import { resolveImageUrl } from '@/utils/resolveImageUrl';
@@ -91,7 +91,7 @@ const HIDDEN_CATEGORY_VALUES = new Set(['general', 'rss-news', 'rss_news']);
 const isHiddenCategory = (v?: string | null) =>
   !v || HIDDEN_CATEGORY_VALUES.has(String(v).toLowerCase());
 
-export const NewsCard = ({
+const NewsCardImpl = ({
   article,
   loading = false,
   onViewArticle: _onViewArticle,
@@ -571,3 +571,7 @@ export const NewsCard = ({
     </CardHoverEffect>
   );
 };
+
+// Memoized: rendered in long news grids/lists — skip re-render when props are
+// referentially stable (parents should pass stable handlers).
+export const NewsCard = memo(NewsCardImpl);

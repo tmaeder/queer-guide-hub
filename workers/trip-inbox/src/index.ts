@@ -139,8 +139,12 @@ export default {
       return;
     }
 
+    // Auto-slot only personal bookings — never event/venue announcements
+    // (those are staged into the review pipeline on explicit user confirm).
     const threshold = Number(env.AUTO_SLOT_CONFIDENCE || '0.85');
-    if (parsed && parsed.confidence >= threshold && parsed.type !== 'unknown') {
+    const isBooking = parsed && parsed.type !== 'unknown'
+      && parsed.type !== 'event' && parsed.type !== 'venue';
+    if (isBooking && parsed!.confidence >= threshold) {
       try {
         await sb.invokeSlot(inserted.id);
       } catch (err) {

@@ -2,7 +2,7 @@ import { CheckCheck } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { supabase } from '@/integrations/supabase/client';
+import { untypedRpc } from '@/integrations/supabase/untyped';
 import { useInboxFeed } from '@/hooks/useInboxFeed';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { InboxRailItem } from '@/components/messaging/InboxRailItem';
@@ -21,7 +21,7 @@ export const NotificationList = () => {
   const peek = items.slice(0, 8);
 
   const markAlertsRead = async () => {
-    await supabase.rpc('mark_all_alerts_read' as never);
+    await untypedRpc('mark_all_alerts_read');
     void queryClient.invalidateQueries({ queryKey: ['inbox-feed'] });
     void queryClient.invalidateQueries({ queryKey: ['inbox-unread'] });
   };
@@ -56,7 +56,7 @@ export const NotificationList = () => {
           variant="ghost"
           size="sm"
           className="w-full justify-center text-13"
-          onClick={() => navigate('/messages')}
+          onClick={() => navigate('/hub')}
         >
           {t('inbox.openInbox', { defaultValue: 'Open inbox' })}
         </Button>

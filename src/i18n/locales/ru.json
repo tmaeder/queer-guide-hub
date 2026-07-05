@@ -63,7 +63,6 @@
   },
   "search": {
     "placeholder": "Поиск стран и городов...",
-    "nearMe": "Рядом со Мной",
     "filters": "Фильтры",
     "continent": "Континент",
     "all": "Все",
@@ -170,7 +169,10 @@
     "clear": "Clear",
     "signIn": "Sign in",
     "goHome": "Go Home",
-    "more": "Ещё"
+    "more": "Ещё",
+    "remove": "Удалить",
+    "accept": "Принять",
+    "decline": "Отклонить"
   },
   "navigation": {
     "home": "Главная",
@@ -603,7 +605,9 @@
         "safety": "Безопасность",
         "lgbtq-specific": "Для ЛГБТ+",
         "other": "Другое"
-      }
+      },
+      "scopeAll": "Все",
+      "scopeMine": "Мои"
     },
     "collaborate": {
       "chat": "Чат",
@@ -642,7 +646,8 @@
       "budget": "Бюджет",
       "reservations": "Бронирования",
       "packing": "Сборы",
-      "collaborate": "Совместная работа"
+      "collaborate": "Совместная работа",
+      "journal": "Дневник"
     },
     "today": {
       "offlineBanner": "Вы не в сети — показан последний сохранённый маршрут.",
@@ -923,6 +928,90 @@
       "saveAria": "Save trip",
       "unsaveAria": "Unsave trip",
       "error": "Could not update save"
+    },
+    "dayNotes": {
+      "addTitle": "Добавить заметку к этому дню",
+      "textLabel": "Заметка",
+      "textPlaceholder": "напр. Выезд до 11:00",
+      "timeLabel": "Время (необязательно)",
+      "iconLabel": "Иконка",
+      "save": "Добавить заметку",
+      "added": "Заметка добавлена",
+      "delete": "Удалить заметку"
+    },
+    "weather": {
+      "clear": "Ясно",
+      "partlyCloudy": "Переменная облачность",
+      "overcast": "Пасмурно",
+      "fog": "Туман",
+      "drizzle": "Морось",
+      "rain": "Дождь",
+      "snow": "Снег",
+      "thunderstorm": "Гроза",
+      "typical": "обычно"
+    },
+    "conflicts": {
+      "chip_one": "{{count}} конфликт",
+      "chip_few": "{{count}} конфликта",
+      "chip_many": "{{count}} конфликтов",
+      "chip_other": "{{count}} конфликта"
+    },
+    "legs": {
+      "switchMode": "Сменить способ передвижения",
+      "modeAria": "Способ передвижения: {{mode}} — нажмите, чтобы изменить",
+      "mode": {
+        "walk": "пешком",
+        "transit": "транспорт",
+        "drive": "на машине"
+      },
+      "walkingTotal": "{{distance}} пешком",
+      "optimize": "Оптимизировать порядок маршрута",
+      "directions": "Открыть день в Google Картах"
+    },
+    "suggestions": {
+      "accessMatch": "Соответствует вашим потребностям"
+    },
+    "journal": {
+      "placeholder": "Что произошло сегодня? Маленькие моменты тоже важны.",
+      "moodLabel": "Настроение",
+      "mood": {
+        "joy": "Радостно",
+        "good": "Хорошо",
+        "mixed": "Смешанно",
+        "tough": "Тяжело"
+      },
+      "addPhotos": "Фото",
+      "save": "Сохранить запись",
+      "saved": "Запись дневника сохранена",
+      "empty": "Записей в дневнике пока нет.",
+      "delete": "Удалить запись",
+      "removePhoto": "Убрать фото",
+      "member": "Путешественник"
+    },
+    "import": {
+      "button": "Импорт",
+      "title": "Импорт мест",
+      "pickFile": "Выбрать файл",
+      "formats": "GPX, KML, GeoJSON или Google Takeout (JSON сохранённых мест / CSV списков)",
+      "noPlaces": "В этом файле не найдено мест.",
+      "matching": "Сопоставление заведений…",
+      "matchCount": "{{count}} сопоставлено с заведениями queer.guide",
+      "changeFile": "Сменить файл",
+      "matched": "Существующее заведение",
+      "customPin": "Свой пин",
+      "noCoords": "Без координат — только название",
+      "confirm": "Импортировать {{count}} мест",
+      "done": "Импортировано мест: {{count}}",
+      "doneHint": "Они попадут в незапланированный список — перетащите их на дни."
+    },
+    "offline": {
+      "pending_one": "{{count}} изменение ожидает синхронизации",
+      "pending_few": "{{count}} изменения ожидают синхронизации",
+      "pending_many": "{{count}} изменений ожидают синхронизации",
+      "pending_other": "{{count}} изменения ожидают синхронизации"
+    },
+    "inbox": {
+      "openThread": "Проверить в чате"
     }
   },
   "auth": {
@@ -1558,6 +1647,12 @@
         "thisWeek": "На этой неделе",
         "later": "Позже"
       }
+    },
+    "shop": {
+      "eyebrow": "Маркетплейс",
+      "title": "Квир-бренды",
+      "description": "Товары и услуги от квир- и транс-бизнесов.",
+      "seeAll": "В маркетплейс"
     }
   },
   "header": {
@@ -1592,7 +1687,8 @@
       "travel": "Путешествия",
       "personalities": "Личности",
       "hotels": "Отели",
-      "help": "Помощь"
+      "help": "Помощь",
+      "tags": "Теги"
     },
     "userMenu": {
       "myTrips": "Мои поездки",
@@ -1654,7 +1750,8 @@
       "settingsSection": "Отображение",
       "browseAll": "Просмотреть все разделы",
       "unreadCount": "{{count}} непрочитанных",
-      "tripsBadge": "{{count}} элементов поездки требуют внимания"
+      "tripsBadge": "{{count}} элементов поездки требуют внимания",
+      "hub": "Хаб"
     }
   },
   "pages": {
@@ -2188,7 +2285,9 @@
       "eyebrow": "Сообщество",
       "title": "Друзья",
       "subtitle": "Управляйте своими связями",
-      "gate": "Войдите, чтобы увидеть своих друзей."
+      "gate": "Войдите, чтобы увидеть своих друзей.",
+      "requests": "Запросы",
+      "sentRequest": "Отправил(а) вам запрос в друзья"
     }
   },
   "settings": {
@@ -2216,6 +2315,148 @@
       "denied": "Location access is off — showing the default area",
       "unavailable": "Couldn't get your location — showing the default area",
       "timeout": "Location lookup timed out — showing the default area"
+    },
+    "share": {
+      "title": "[RU] Map view",
+      "copied": "[RU] Link copied",
+      "copiedDescription": "[RU] Paste to share this view",
+      "failed": "[RU] Share failed"
+    },
+    "commandBar": {
+      "searchThisMap": "[RU] Search this map",
+      "searching": "[RU] Searching",
+      "clearSearch": "[RU] Clear search",
+      "typeMore": "[RU] Type at least 2 characters",
+      "filterMapFor": "[RU] Filter map for “{{query}}”",
+      "jumpToPlace": "[RU] Jump to a place",
+      "noMatches": "[RU] No places match — Enter still filters the map.",
+      "filters": "[RU] Filters",
+      "filtersActive": "[RU] Filters, {{count}} active",
+      "filtersAndLayers": "[RU] Filters & layers",
+      "layers": "[RU] Layers",
+      "more": "[RU] More map options",
+      "moreShort": "[RU] More",
+      "mapOptions": "[RU] Map options",
+      "myLocation": "[RU] My location",
+      "fitResults": "[RU] Fit to results",
+      "shareView": "[RU] Share view",
+      "reset": "[RU] Reset"
+    },
+    "entityType": {
+      "venue": "[RU] Venue",
+      "event": "[RU] Event",
+      "city": "[RU] City",
+      "country": "[RU] Country",
+      "marketplace": "[RU] Listing",
+      "personality": "[RU] Person",
+      "queer_village": "[RU] Village",
+      "group": "[RU] Group",
+      "news": "[RU] News",
+      "tag": "[RU] Tag",
+      "user": "[RU] User"
+    },
+    "quick": {
+      "groupLabel": "[RU] Quick filters",
+      "openNow": "[RU] Open now",
+      "tonight": "[RU] Tonight",
+      "thisWeekend": "[RU] This weekend",
+      "thisMonth": "[RU] This month",
+      "saved": "[RU] Saved"
+    },
+    "lens": {
+      "groupLabel": "[RU] Map view",
+      "pins": "[RU] Pins",
+      "density": "[RU] Density",
+      "routes": "[RU] Routes",
+      "boundary": "[RU] Boundary",
+      "combined": "[RU] Combined"
+    },
+    "sheet": {
+      "title": "[RU] Map options",
+      "view": "[RU] View",
+      "filters": "[RU] Filters",
+      "time": "[RU] Time",
+      "layers": "[RU] Layers",
+      "actions": "[RU] Map actions"
+    },
+    "time": {
+      "label": "[RU] Time range",
+      "anyTime": "[RU] Any time",
+      "chooseDates": "[RU] Choose dates",
+      "pickRange": "[RU] Pick a start & end",
+      "untilEndDate": "[RU] {{start}} – end date",
+      "clear": "[RU] Clear",
+      "apply": "[RU] Apply dates"
+    },
+    "nav": {
+      "zoomIn": "[RU] Zoom in",
+      "zoomOut": "[RU] Zoom out",
+      "resetNorth": "[RU] Reset bearing to north",
+      "geolocate": "[RU] Show my location"
+    },
+    "legend": {
+      "label": "[RU] Legend",
+      "show": "[RU] Show map legend",
+      "hide": "[RU] Hide map legend",
+      "title": "[RU] What you're seeing",
+      "featured": "[RU] Ringed = featured spot",
+      "live": "[RU] Pulsing = open now / live",
+      "areas": "[RU] Areas",
+      "densityTitle": "[RU] Density of queer life",
+      "fewer": "[RU] Fewer",
+      "more": "[RU] More"
+    },
+    "rail": {
+      "inView_one": "[RU] {{count}} place in view",
+      "inView_other": "[RU] {{count}} places in view",
+      "hide": "[RU] Hide nearby places",
+      "listLabel": "[RU] Places in view",
+      "showOnMap": "[RU] Show {{name}} on the map"
+    },
+    "firstRun": {
+      "spotsInView_one": "[RU] {{count}} queer spot in view",
+      "spotsInView_other": "[RU] {{count}} queer spots in view",
+      "dismiss": "[RU] Dismiss"
+    },
+    "canvas": {
+      "loading": "[RU] Loading",
+      "loadingEllipsis": "[RU] Loading...",
+      "resultsInView_one": "[RU] {{count}} result in view",
+      "resultsInView_other": "[RU] {{count}} results in view",
+      "clickToZoom": "[RU] Click to zoom in",
+      "venueCount_one": "[RU] {{count}} venue",
+      "venueCount_other": "[RU] {{count}} venues",
+      "eventCount_one": "[RU] {{count}} event",
+      "eventCount_other": "[RU] {{count}} events",
+      "restroomCount_one": "[RU] {{count}} restroom",
+      "restroomCount_other": "[RU] {{count}} restrooms",
+      "hotelCount_one": "[RU] {{count}} hotel",
+      "hotelCount_other": "[RU] {{count}} hotels",
+      "placeCount_one": "[RU] {{count}} place",
+      "placeCount_other": "[RU] {{count}} places",
+      "emptyOpenNow": "[RU] Nothing open right now in view — turn off Open now or try later.",
+      "emptyTimeRange": "[RU] No events in this time range here — widen the dates or pan out.",
+      "emptySearch": "[RU] No matches for \"{{query}}\" here — clear search or pan out.",
+      "emptyDefault": "[RU] No spots here yet — pan, zoom out, or put one on the map."
+    },
+    "layers": {
+      "venues": "[RU] Venues",
+      "events": "[RU] Events",
+      "cities": "[RU] Cities",
+      "countries": "[RU] Countries",
+      "restrooms": "[RU] Restrooms",
+      "hotels": "[RU] Hotels",
+      "neighbourhoods": "[RU] Villages"
+    },
+    "filterChips": {
+      "groupLabel": "[RU] Active filters",
+      "remove": "[RU] Remove filter: {{label}}",
+      "clearAll": "[RU] Clear all",
+      "within": "[RU] Within {{km}} km",
+      "accessible": "[RU] Accessible",
+      "queerOwned": "[RU] Queer-owned",
+      "tags_one": "[RU] {{count}} tag",
+      "tags_other": "[RU] {{count}} tags"
     }
   },
   "resources": {
@@ -2338,7 +2579,15 @@
     },
     "tagDetail": {
       "breadcrumbHome": "Ресурсы",
-      "noDefinition": "Пока нет описания для этого термина."
+      "noDefinition": "Пока нет описания для этого термина.",
+      "alsoKnownAs": "Также известно как",
+      "readOnWikipedia": "Читать в Википедии",
+      "searchTagged": "Искать всё с тегом {{name}}",
+      "seeAlso": "См. также",
+      "sensitiveContentBody": "Эта тема может содержать деликатный контент. Если вам нужна поддержка, посетите нашу страницу с кризисными горячими линиями.",
+      "sensitiveContentTitle": "Деликатная тема",
+      "tableOfContents": "Содержание",
+      "viewAsGraph": "Показать в виде графа"
     },
     "graph": {
       "title": "Граф связей тегов",
@@ -2628,7 +2877,11 @@
       "email": "Новое письмо"
     },
     "notification": {
-      "open": "Открыть"
+      "open": "Открыть",
+      "view": "Просмотр",
+      "reviewerNotes": "Заметки модератора",
+      "allSubmissions": "Все мои материалы",
+      "shareToChat": "Поделиться в чате"
     },
     "openInbox": "Открыть входящие",
     "markAlertsRead": "Отметить оповещения прочитанными",
@@ -2649,6 +2902,34 @@
       "empty": "Пока нет предложений.",
       "recent": "Недавние переписки",
       "active": "Недавно активны"
+    },
+    "upcoming": "Скоро",
+    "openCalendar": "Календарь",
+    "tripmail": {
+      "gone": "Это письмо больше недоступно.",
+      "type": "Тип",
+      "vendor": "Поставщик",
+      "title": "Название",
+      "dates": "Даты",
+      "location": "Место",
+      "price": "Цена",
+      "confirmation": "Подтверждение",
+      "extracted": "Извлечённое бронирование",
+      "filed": "Сохранено",
+      "confirm": "Добавить в поездку",
+      "dismiss": "Отклонить",
+      "openTrip": "Открыть поездку",
+      "fallbackTitle": "Пересланное письмо",
+      "intro": "Что-то не так в извлечённых данных? Напишите — исправлю. Например: «заезд на самом деле 12-го».",
+      "thinking": "Проверяю письмо…",
+      "placeholder": "Исправьте деталь или спросите о бронировании…",
+      "send": "Отправить",
+      "sendFailed": "Не удалось отправить",
+      "foundEntities": "Найдено в этом письме",
+      "addToGuide": "Добавить в queer.guide",
+      "stagedNote": "Отправлено на проверку — проходит через наш конвейер качества.",
+      "anEvent": "Событие",
+      "aVenue": "Место"
     }
   },
   "extension": {
@@ -2748,7 +3029,8 @@
     "help": "Помощь",
     "pride": "Прайд",
     "contributors": "Участники",
-    "wishlists": "Списки желаний"
+    "wishlists": "Списки желаний",
+    "tags": "Теги"
   },
   "chat": {
     "react": "Реакция",
@@ -2797,6 +3079,158 @@
       "on": "Свободен сейчас",
       "both": "{{name}} сейчас готов(а) встретиться 🟢",
       "youOnly": "Вы отмечены как готовы встретиться 🟢"
+    },
+    "share": {
+      "gated": "Подробности в Queer Guide",
+      "view": "Смотреть в Queer Guide"
+    },
+    "submission": {
+      "header": "Добавлено в Queer Guide ({{count}})",
+      "messageOne": "добавил(а) «{{title}}» на проверку",
+      "messageMany": "добавил(а) {{count}} элементов на проверку: {{title}}…",
+      "submitted": "{{count}} отправлено на проверку",
+      "failed": "Не удалось отправить",
+      "title": "Добавить в Queer Guide",
+      "subtitle": "Перетащите флаер или вставьте ссылку. Найденные элементы отправляются на проверку и публикуются в этом чате."
+    }
+  },
+  "newsDetail": {
+    "notFound": "Статья не найдена",
+    "notFoundDesc": "Статья, которую вы ищете, не существует.",
+    "backToNews": "Назад к новостям",
+    "share": "Поделиться",
+    "readAtSource": "Читать в источнике",
+    "fresh": "Новое",
+    "reportedByOutlets": "Сообщают {{count}} изданий",
+    "featured": "Рекомендуемое",
+    "byAuthor": "Автор: {{author}}",
+    "minRead": "{{count}} мин чтения",
+    "viewsCount": "{{count}} просмотров",
+    "whyThisMatters": "Почему это важно",
+    "editorialPlaceholder": "Alt-клик, чтобы добавить контекст — 1–3 предложения о том, почему это важно.",
+    "bodyFallback": "Полный текст доступен в оригинальном источнике.",
+    "originallyPublishedBy": "Впервые опубликовано в {{source}}.",
+    "viewOriginal": "Открыть оригинал",
+    "integritySatire": "Помечено как сатира — не буквальный репортаж.",
+    "integrityAdvertorial": "Спонсорский / рекламный материал.",
+    "integritySentimentConflict": "Источники расходятся в тоне — читайте внимательно.",
+    "closeToHome": "Рядом с вашим городом",
+    "seeFullStory": "Смотреть всю историю",
+    "topics": "Темы",
+    "home": "Дом",
+    "whereThisHappens": "Где это происходит",
+    "aboutSource": "Об источнике",
+    "corroboratedAcross": "Подтверждено {{count}} изданиями",
+    "lastVerified": "Проверено {{time}}",
+    "visitSource": "Перейти к {{source}}",
+    "source": "источник",
+    "moreLikeThis": "Похожее",
+    "forYou": "Для вас"
+  },
+  "pwa": {
+    "updateAvailable": {
+      "title": "Доступна новая версия",
+      "description": "Обновите, чтобы получить новые возможности.",
+      "action": "Обновить"
+    },
+    "backOnline": "Снова в сети",
+    "offline": {
+      "title": "Вы офлайн",
+      "description": "Некоторые функции могут быть недоступны."
+    },
+    "install": {
+      "title": "Установить Queer Guide",
+      "description": "Быстрый доступ с главного экрана — работает и офлайн.",
+      "action": "Установить",
+      "iosTitle": "Добавить на экран «Домой»",
+      "iosHint": "Нажмите кнопку «Поделиться» в Safari и выберите «На экран Домой».",
+      "dismiss": "Закрыть",
+      "ariaLabel": "Установить приложение"
+    }
+  },
+  "atlas": {
+    "summary": "Посещено стран: {{visited}} · В списке желаний: {{bucket}}",
+    "hint": "Нажмите на страну, чтобы отметить её",
+    "visited": "Посещено",
+    "bucket": "Список желаний",
+    "fromTrips": "Отмечено как посещённое по завершённой поездке"
+  },
+  "calendar": {
+    "title": "Мой календарь",
+    "subtitle": "Ваши поездки и сохранённые события в одном месте",
+    "signInDesc": "Войдите, чтобы увидеть свои поездки и сохранённые события.",
+    "trip": "Поездка",
+    "empty": "В этом месяце нет поездок или сохранённых событий.",
+    "planTrip": "Спланировать поездку",
+    "browseEvents": "Смотреть события",
+    "copyFeed": "Скопировать URL подписки",
+    "download": "Скачать .ics",
+    "open": "Календарь",
+    "openAria": "Открыть мой календарь"
+  },
+  "status": {
+    "lookingFor": "В поиске",
+    "lookingForHint": "Помогает ранжировать людей для вас. Не отображается в профиле."
+  },
+  "people": {
+    "intent": {
+      "lookingForOptions": {
+        "friends": "Друзья",
+        "dating": "Свидания",
+        "travel_buddies": "Попутчики",
+        "locals": "Местные",
+        "networking": "Нетворкинг"
+      }
+    }
+  },
+  "hub": {
+    "title": "Ваш хаб",
+    "nav": "Модули хаба",
+    "signInDesc": "Войдите, чтобы увидеть входящие, поездки и сохранённые места.",
+    "identity": {
+      "viewProfile": "Профиль"
+    },
+    "modules": {
+      "inbox": "Входящие",
+      "calendar": "Календарь",
+      "contacts": "Контакты",
+      "saved": "Сохранённое",
+      "news": "Новости",
+      "trips": "Поездки"
+    },
+    "calendar": {
+      "title": "Предстоящее",
+      "empty": "Пока ничего не запланировано.",
+      "today": "Сегодня",
+      "tomorrow": "Завтра",
+      "allDay": "Весь день",
+      "subscribe": "Подписаться",
+      "showMore": "Заглянуть дальше",
+      "kinds": {
+        "trip": "Поездка",
+        "reservation": "Бронь",
+        "going": "Иду",
+        "saved": "Сохранено"
+      }
+    },
+    "contacts": {
+      "title": "Контакты",
+      "search": "Поиск контактов…",
+      "recent": "Недавние чаты",
+      "friends": "Друзья",
+      "groups": "Группы",
+      "dating": "Знакомства",
+      "datingTitle": "Ваша колода знакомств",
+      "datingBody": "Смотрите совпадения и переписки."
+    },
+    "news": {
+      "title": "Новости",
+      "savedStories": "Сохранённые статьи",
+      "savedEmpty": "Пока нет сохранённых статей.",
+      "fromTags": "По вашим тегам",
+      "tagsEmpty": "Подпишитесь на теги, чтобы видеть статьи здесь.",
+      "tagsNoArticles": "Пока ничего нового по вашим тегам.",
+      "savedSearches": "Сохранённые запросы"
     }
   }
 }

@@ -1,7 +1,21 @@
 import type { Database } from '@/integrations/supabase/types';
 import { formatCurrency } from '@/lib/currency';
+import { marketplaceGoHref, type MarketplaceSurface } from '@/lib/affiliate/marketplace';
 
 export type MarketplaceListing = Database['public']['Tables']['marketplace_listings']['Row'];
+
+/**
+ * Map an event's type/title onto an occasion tag the tag engine mines onto
+ * products. Deliberately narrow: only pride/drag/wedding shapes get a rail;
+ * everything else renders nothing (no venue-type/weather/sentiment rails).
+ */
+export function occasionForEvent(eventType: string | null | undefined, title: string): string | null {
+  const hay = `${eventType ?? ''} ${title}`.toLowerCase();
+  if (/\bpride\b|\bcsd\b/.test(hay)) return 'occ-pride';
+  if (/\bdrag\b|\bball(room)?\b/.test(hay)) return 'occ-drag';
+  if (/\bwedding\b/.test(hay)) return 'occ-wedding';
+  return null;
+}
 
 export type FxRates = Record<string, number>;
 
@@ -30,11 +44,16 @@ export interface OutboundLink {
 /**
  * Resolve the best outbound link for a listing.
  * Preference: affiliate_url → external_url → website → null.
+ *
+ * With a `surface`, monetizable listings route through the first-party
+ * /go?l= redirect (worker resolves the destination from the DB row and logs
+ * the click); direct links stay untouched.
  */
-export function getOutboundLink(listing: MarketplaceListing): OutboundLink | null {
-  const url = listing.affiliate_url ?? listing.external_url ?? listing.website;
-  if (!url) return null;
+export function getOutboundLink(listing: MarketplaceListing, surface?: MarketplaceSurface): OutboundLink | null {
+  const direct = listing.affiliate_url ?? listing.external_url ?? listing.website;
+  if (!direct) return null;
   const isAffiliate = Boolean(listing.affiliate_url) || AFFILIATE_SOURCES.has(listing.source_type ?? '');
+  const url = (isAffiliate && surface && marketplaceGoHref(listing.id, surface)) || direct;
   const sourceLabel = sourceDisplayLabel(listing.source_type);
   const label = isAffiliate && sourceLabel
     ? `Shop on ${sourceLabel}`

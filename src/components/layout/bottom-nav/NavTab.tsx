@@ -32,8 +32,11 @@ interface NavTabProps {
   accessory?: ReactNode;
 }
 
+// `no-underline` is load-bearing, not cosmetic: the global inline-link rule
+// (`li a:not(.no-underline)` in index.css) forces `display:inline`, which would
+// override the `flex` utility and left-align the icon under the centred label.
 const linkBase =
-  'flex h-14 flex-col items-center justify-center gap-0.5 select-none text-2xs transition-colors rounded-element focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary';
+  'flex h-14 flex-col items-center justify-center gap-0.5 no-underline select-none text-2xs transition-colors rounded-element focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary';
 const iconWrap = 'relative flex h-8 w-12 items-center justify-center rounded-element';
 
 /**
@@ -74,7 +77,7 @@ export function NavTab({
         }}
         className={cn(
           linkBase,
-          active ? 'text-accent-brand' : 'text-muted-foreground hover:text-foreground',
+          active ? 'text-foreground' : 'text-muted-foreground hover:text-foreground',
         )}
       >
         <span className={iconWrap}>
@@ -87,7 +90,7 @@ export function NavTab({
                     layoutId: 'mobilenav-active-pill',
                     transition: { duration: duration.fast, ease: [0.22, 1, 0.36, 1] },
                   })}
-              className="absolute inset-0 rounded-element bg-accent-brand/12"
+              className="absolute inset-0 rounded-element bg-muted"
             />
           )}
           {avatar ? (

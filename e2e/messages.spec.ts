@@ -46,9 +46,12 @@ async function dismissConsent(page: Page) {
   }
 }
 
-/** Wait for the authed inbox shell (rail + filter tabs) to render. */
+/** Wait for the authed inbox shell (rail + filter tabs) to render.
+ *  Enters via the legacy /messages URL on purpose — asserting the
+ *  locale/query-preserving redirect into /hub on every run. */
 async function gotoInbox(page: Page, query = '') {
   await page.goto(`/messages${query}`, { waitUntil: 'domcontentloaded' });
+  await expect(page).toHaveURL(/\/hub/, { timeout: 20_000 });
   await expect(page.getByRole('tab', { name: /^all$/i })).toBeVisible({ timeout: 20_000 });
   await dismissConsent(page);
 }
@@ -76,7 +79,7 @@ test.describe('/messages — auth gate (anonymous)', () => {
     try {
       await page.goto(`${BASE}/messages`, { waitUntil: 'domcontentloaded' });
       await expect(
-        page.getByText(/please sign in to access your messages/i),
+        page.getByText(/sign in to see your inbox, trips and saved places/i),
       ).toBeVisible({ timeout: 20_000 });
       const signIn = page.getByRole('link', { name: /sign in/i });
       await expect(signIn).toBeVisible();
@@ -119,7 +122,10 @@ test.describe('/messages — unified inbox (signed in)', () => {
 
   test('renders the two-pane shell: header, rail, compose, search, filter tabs', async ({ page }) => {
     await gotoInbox(page);
-    await expect(page.getByRole('heading', { name: 'Messages' })).toBeVisible();
+    // Hub shell renders the module nav around the inbox workspace.
+    await expect(
+      page.getByRole('navigation', { name: /hub modules/i }).first(),
+    ).toBeVisible();
     // Rail header now carries a vibe chip + compose + a search box (the old
     // static "Inbox" label was replaced by the vibe editor).
     await expect(page.getByRole('button', { name: /compose/i })).toBeVisible();

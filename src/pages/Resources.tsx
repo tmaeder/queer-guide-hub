@@ -9,7 +9,7 @@ import {
   type CentralizedTag,
 } from '@/hooks/useCentralizedTags';
 import { ResourcesFilterBar } from '@/components/resources/ResourcesFilterBar';
-import { parentOrder } from '@/components/resources/categoryMeta';
+import { parentOrder, isAdultCategoryName } from '@/components/resources/categoryMeta';
 import { fetchAllProfessions, fetchTagWithCategories } from '@/hooks/usePageFetchers';
 import { useMeta } from '@/hooks/useMeta';
 import { Button } from '@/components/ui/button';
@@ -34,6 +34,18 @@ import {
 } from '@/pages/resources/resourceHelpers';
 
 const TagRelationshipGraph = lazy(() => import('@/components/tags/TagRelationshipGraph'));
+
+// Default head for the /tags overview (and its category/search sub-views). The
+// tag-detail view overrides this via tagDetailMeta; without a fallback the
+// overview inherited the generic homepage <title>, which failed the SEO
+// regression check (duplicate title + canonical pointing at the old /resources
+// redirect). canonicalPath is /tags — the live glossary route.
+const OVERVIEW_META = {
+  title: 'LGBTQ+ Resource Hub & Tag Glossary',
+  description:
+    'Browse LGBTQ+ topics, identities, and support resources by tag. Find venues, events, people, and crisis help across the Queer Guide glossary.',
+  canonicalPath: '/tags',
+};
 
 export default function Resources() {
   const { t } = useTranslation();
@@ -76,6 +88,32 @@ export default function Resources() {
   const setDisplayMode = (next: DisplayMode) => updateParam('view', next === 'grid' ? null : next);
   const setUsageFilter = (next: string) => updateParam('usage', next === 'all' ? null : next);
   const setHasImageFilter = (next: boolean) => updateParam('hasImage', next ? '1' : null);
+
+  // P1-1 — canonicalize the URL: strip any filter param already at its default
+  // so a shared/opened link like `/tags?sort=usage&dir=desc&view=grid&usage=all&hasImage=0&cat=all`
+  // collapses to a clean `/tags`. The setters above already omit defaults on
+  // write; this handles defaults arriving via a direct link. Only the known
+  // filter keys are touched — real (non-default) filters are left intact.
+  useEffect(() => {
+    const isDefault: Record<string, (v: string) => boolean> = {
+      sort: (v) => v === 'usage',
+      dir: (v) => v !== 'asc', // absent or 'desc' is the default direction
+      cat: (v) => v === 'all',
+      view: (v) => v === 'grid',
+      usage: (v) => v === 'all',
+      hasImage: (v) => v !== '1', // absent or '0' is the default
+    };
+    const cleaned = new URLSearchParams(searchParams);
+    let changed = false;
+    for (const [key, atDefault] of Object.entries(isDefault)) {
+      const val = cleaned.get(key);
+      if (val !== null && atDefault(val)) {
+        cleaned.delete(key);
+        changed = true;
+      }
+    }
+    if (changed) setSearchParams(cleaned, { replace: true });
+  }, [searchParams, setSearchParams]);
 
   const [viewMode, setViewMode] = useState<ViewMode>('overview');
   const [selectedCategory, setSelectedCategory] = useState<string>('');
@@ -175,7 +213,7 @@ export default function Resources() {
     // canonical form. Crawlers that don't execute JS won't see a 301
     // status — accepted SPA trade-off.
     if (decoded !== decoded.toLowerCase()) {
-      navigate(`/resources/${encodeURIComponent(decoded.toLowerCase())}`, {
+      navigate(`/tags/${encodeURIComponent(decoded.toLowerCase())}`, {
         replace: true,
       });
       return;
@@ -288,6 +326,14 @@ export default function Resources() {
     };
     if (selectedTag.image_url) jsonLd.image = selectedTag.image_url;
     if (selectedTag.wikipedia_url) jsonLd.sameAs = selectedTag.wikipedia_url;
+    // Adult (age-gated) tags and tags flagged non-indexable must be noindex.
+    // Set it here on the page-level useMeta too: this effect runs AFTER the
+    // gate's own useMeta, so without it the parent would strip the gate's
+    // robots tag (leaving adult pages indexable).
+    const isAdult =
+      selectedTag.categories?.some(
+        (c) => isAdultCategoryName(c.name) || isAdultCategoryName(c.parent_name ?? undefined),
+      ) ?? false;
     return {
       title: selectedTag.name,
       description: desc,
@@ -295,9 +341,10 @@ export default function Resources() {
       ogType: 'article' as const,
       canonicalPath: `/resources/${slug}`,
       jsonLd,
+      noIndex: selectedTag.seo_indexable === false || isAdult,
     };
   }, [viewMode, selectedTag]);
-  useMeta(tagDetailMeta ?? {});
+  useMeta(tagDetailMeta ?? OVERVIEW_META);
 
   const handleSearch = useCallback(
     (query: string) => {
@@ -328,7 +375,7 @@ export default function Resources() {
   const handleTagClick = (tag: CentralizedTag) => {
     setSelectedTag(tag);
     setViewMode('tag-detail');
-    navigate(`/resources/${encodeURIComponent(tag.name)}`);
+    navigate(`/tags/${encodeURIComponent(tag.name)}`);
   };
 
   const handleBack = () => {
@@ -336,7 +383,7 @@ export default function Resources() {
       if (selectedSubcategory) setViewMode('subcategory');
       else if (selectedCategory) setViewMode('category');
       else setViewMode('overview');
-      navigate('/resources');
+      navigate('/tags');
     } else if (viewMode === 'subcategory') {
       setViewMode('category');
       setSelectedSubcategory('');
@@ -388,7 +435,7 @@ export default function Resources() {
             setTagNotFound(false);
             setSelectedTag(null);
             setViewMode('overview');
-            navigate('/resources');
+            navigate('/tags');
           }}
         >
           {t('resources.tagNotFound.browse')}

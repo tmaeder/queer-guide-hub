@@ -1,10 +1,10 @@
 import { test, expect } from '@playwright/test';
 
 /**
- * Tags as a first-class discovery axis (anonymous flows).
+ * Tags as a first-class discovery axis (anonymous flows). Live on prod.
  *
- * Run against a local server (the feature ships on a branch not yet on prod):
- *   E2E_BASE_URL=http://127.0.0.1:8080 npx playwright test tag-discovery --project=chromium
+ * Note: tag slugs + their page <h1> are hyphenated (e.g. "Bear-Bar", not
+ * "Bear Bar"), so heading matchers allow a hyphen or space.
  */
 
 // Seed the cookie-consent key so the banner doesn't intercept clicks.
@@ -24,22 +24,26 @@ test.describe('tag discovery', () => {
     await expect(page.getByRole('heading', { name: 'The Long Island Eagle Tavern' })).toBeVisible();
 
     // Tag chips render as links to the canonical tag page using the slug.
-    const bearBar = page.locator('a[href*="/resources/bear-bar"]').first();
+    const bearBar = page.locator('a[href*="/tags/bear-bar"]').first();
     await expect(bearBar).toBeVisible();
-    await expect(bearBar).toContainText(/bear bar/i);
+    await expect(bearBar).toContainText(/bear[- ]bar/i);
 
     // Clicking resolves the tag page (the slug-resolver fix) — not a 404.
     await bearBar.click();
-    await expect(page).toHaveURL(/\/resources\/bear-bar/);
-    await expect(page.getByRole('heading', { name: /^Bear Bar$/ })).toBeVisible();
+    await expect(page).toHaveURL(/\/tags\/bear-bar/);
+    await expect(page.getByRole('heading', { name: /^Bear[- ]Bar$/i })).toBeVisible({
+      timeout: 15_000,
+    });
     await expect(page.getByText(/tag not found/i)).toHaveCount(0);
   });
 
   test('canonical tag page aggregates linked content + has a Follow affordance', async ({
     page,
   }) => {
-    await page.goto('/resources/bear-bar');
-    await expect(page.getByRole('heading', { name: /^Bear Bar$/ })).toBeVisible();
+    await page.goto('/tags/bear-bar');
+    await expect(page.getByRole('heading', { name: /^Bear[- ]Bar$/i })).toBeVisible({
+      timeout: 15_000,
+    });
 
     // Cross-content aggregation: a venue-vocabulary tag surfaces a Venues section.
     await expect(page.getByRole('heading', { name: 'Venues' })).toBeVisible();
@@ -49,8 +53,10 @@ test.describe('tag discovery', () => {
   });
 
   test('marketplace-tagged term shows a Shop section on the tag page', async ({ page }) => {
-    await page.goto('/resources/occ-everyday');
-    await expect(page.getByRole('heading', { name: 'Everyday' })).toBeVisible();
+    await page.goto('/tags/occ-everyday');
+    await expect(page.getByRole('heading', { name: /^Everyday$/i })).toBeVisible({
+      timeout: 15_000,
+    });
     await expect(page.getByRole('heading', { name: 'Shop' })).toBeVisible();
   });
 
@@ -66,10 +72,11 @@ test.describe('tag discovery', () => {
 
   test('search tag filter narrows results via the ?tags= URL', async ({ page }) => {
     await page.goto('/search?q=eagle&types=venue&tags=leather-bar');
-    // Results come back (worker filters facets->tags); at least one venue card.
-    const firstResult = page.locator('a[href*="/venues/"]').first();
-    await expect(firstResult).toBeVisible({ timeout: 15000 });
-    // The active tag filter chip is shown and is removable.
-    await expect(page.getByText(/leather bar/i).first()).toBeVisible();
+    // The active tag filter chip is shown (proves ?tags= was applied).
+    await expect(page.getByText(/leather[- ]bar/i).first()).toBeVisible({ timeout: 15_000 });
+    // Results come back (worker filters facets->tags). Result cards are
+    // role="button" divs (not <a>) that navigate to a venue on click, so assert
+    // the result-count summary rather than a /venues/ anchor.
+    await expect(page.getByText(/\d+\s+results?/i).first()).toBeVisible({ timeout: 15_000 });
   });
 });

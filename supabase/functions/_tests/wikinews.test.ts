@@ -14,6 +14,21 @@ Deno.test('isWikinewsHost matches only wikinews.org hosts', () => {
   assert(!isWikinewsHost('https://en.wikipedia.org/wiki/LGBT'))
   assert(!isWikinewsHost('https://www.advocate.com/feeds/feed.rss'))
   assert(!isWikinewsHost('not a url'))
+  // Host-suffix spoofing: a plain endsWith() would accept these.
+  assert(!isWikinewsHost('https://evilwikinews.org/wiki/Category:LGBT'))
+  assert(!isWikinewsHost('https://wikinews.org.attacker.com/x'))
+})
+
+Deno.test('parseWikinewsCategoryUrl rejects host-suffix spoofs', () => {
+  for (const url of ['https://evilwikinews.org/wiki/Category:LGBT', 'https://wikinews.org.attacker.com/x']) {
+    let threw = false
+    try {
+      parseWikinewsCategoryUrl(url)
+    } catch {
+      threw = true
+    }
+    assert(threw, url)
+  }
 })
 
 Deno.test('parseWikinewsCategoryUrl: plain /wiki/Category:LGBT', () => {

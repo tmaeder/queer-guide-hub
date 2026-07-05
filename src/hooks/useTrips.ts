@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { trackSearchEvent } from '@/lib/searchClient';
+import { enqueueMutation } from '@/lib/offline/mutationQueue';
 
 /**
  * Adding a place to a trip is a strong intent signal — feed it to the
@@ -87,6 +88,10 @@ export interface TripPlace {
   created_at: string;
   booking_status: 'intent' | 'booked' | 'completed';
   reservation_id: string | null;
+  /** Lucide icon slug for `category='note'` rows (see noteIcons.ts). */
+  icon?: string | null;
+  /** User override for the heuristic route-leg transport mode. */
+  arrive_mode?: 'walk' | 'transit' | 'drive' | null;
   // Joined relations
   venues?: { id: string; name: string; category: string | null; images: string[] | null; address: string | null } | null;
   events?: { id: string; title: string; event_type: string | null; start_date: string | null; end_date: string | null; images: string[] | null } | null;
@@ -99,6 +104,22 @@ export interface TripWithDetails extends Trip {
   trip_members: TripMember[];
   trip_days: TripDay[];
   trip_places: TripPlace[];
+}
+
+/**
+ * Client-side mirror of the RLS write rule: owners and accepted editors can
+ * change a trip; viewers get a read-only UI. RLS stays the source of truth —
+ * this only decides which affordances render.
+ */
+export function canEditTrip(
+  trip: Pick<TripWithDetails, 'owner_id' | 'trip_members'>,
+  userId: string | null | undefined,
+): boolean {
+  if (!userId) return false;
+  if (trip.owner_id === userId) return true;
+  return trip.trip_members.some(
+    (m) => m.user_id === userId && (m.role === 'owner' || m.role === 'editor'),
+  );
 }
 
 /**
@@ -339,7 +360,21 @@ export function useTripMutations() {
   });
 
   const updatePlace = useMutation({
-    mutationFn: async ({ id, ...input }: { id: string; [key: string]: unknown }) => {
+    // `trip_id` (optional) routes the offline queue + optimistic cache patch;
+    // it is stripped before the UPDATE (never rewrites the column).
+    mutationFn: async ({
+      id,
+      trip_id,
+      ...input
+    }: {
+      id: string;
+      trip_id?: string;
+      [key: string]: unknown;
+    }) => {
+      if (typeof navigator !== 'undefined' && !navigator.onLine) {
+        await enqueueMutation('trip_places', id, trip_id ?? null, input);
+        return { trip_id: trip_id ?? null };
+      }
       const { data, error } = await supabase
         .from('trip_places')
         .update(input)
@@ -349,8 +384,29 @@ export function useTripMutations() {
       if (error) throw error;
       return data;
     },
+    onMutate: async ({ id, trip_id, ...input }) => {
+      if (!trip_id) return {};
+      await queryClient.cancelQueries({ queryKey: ['trip', trip_id] });
+      const prev = queryClient.getQueryData<TripWithDetails>(['trip', trip_id]);
+      queryClient.setQueryData<TripWithDetails>(['trip', trip_id], (old) =>
+        old
+          ? {
+              ...old,
+              trip_places: old.trip_places.map((p) =>
+                p.id === id ? { ...p, ...input } : p,
+              ),
+            }
+          : old,
+      );
+      return { prev, trip_id };
+    },
+    onError: (_err, _vars, ctx) => {
+      if (ctx?.prev && ctx.trip_id) queryClient.setQueryData(['trip', ctx.trip_id], ctx.prev);
+    },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['trip', data.trip_id] });
+      if (data.trip_id && (typeof navigator === 'undefined' || navigator.onLine)) {
+        queryClient.invalidateQueries({ queryKey: ['trip', data.trip_id] });
+      }
     },
   });
 

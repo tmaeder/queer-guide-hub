@@ -115,12 +115,6 @@ verify_jwt = false
 [functions.import-awin-products]
 verify_jwt = false
 
-[functions.send-bulk-email]
-verify_jwt = true
-
-[functions.send-templated-email]
-verify_jwt = true
-
 [functions.import-tripadvisor-venues]
 verify_jwt = false
 
@@ -133,35 +127,11 @@ verify_jwt = false
 [functions.enrich-venue]
 verify_jwt = false
 
-[functions.calendar-token]
-verify_jwt = true
-
-[functions.delete-account]
-verify_jwt = true
-
-[functions.export-my-data]
-verify_jwt = true
-
 [functions.mapbox-geocoding]
 verify_jwt = false
 
 [functions.import-ilga-data]
 verify_jwt = false
-
-[functions.import-adult-models-csv]
-verify_jwt = true
-
-[functions.manage-api-keys]
-verify_jwt = true
-
-[functions.get-api-key]
-verify_jwt = true
-
-[functions.cloudflare-api]
-verify_jwt = true
-
-[functions.scrape-spartacus]
-verify_jwt = true
 
 [functions.scrape-web-sources]
 verify_jwt = false
@@ -295,20 +265,11 @@ verify_jwt = false
 verify_jwt = false
 
 # Admin feedback P3/P5/P6 edge functions
-[functions.reply-to-feedback]
-verify_jwt = true
-
-[functions.notify-feedback-status]
-verify_jwt = true
-
 [functions.github-webhook]
 verify_jwt = false
 
 [functions.resend-webhook]
 verify_jwt = false
-
-[functions.sync-supabase-advisors]
-verify_jwt = true
 
 [functions.pipeline-media-process]
 verify_jwt = false
@@ -386,9 +347,6 @@ verify_jwt = false
 [functions.enrich-logos]
 verify_jwt = false
 
-[functions.migrate-logos-r2]
-verify_jwt = false
-
 [functions.feedback-story-titler]
 verify_jwt = false
 
@@ -409,6 +367,17 @@ verify_jwt = false
 
 [functions.marketplace-link-checker]
 verify_jwt = false
+
+# Existence Truth Engine collectors — self-gate via X-Webhook-Secret (cron) / admin.
+[functions.existence-deep-probe]
+verify_jwt = false
+
+[functions.existence-external-osm]
+verify_jwt = false
+
+# Community "report as closed" — requires a real user JWT.
+[functions.report-existence]
+verify_jwt = true
 
 # Workflow/pipeline functions (invoked by dispatcher with service-role bearer)
 [functions.marketplace-image-mirror]
@@ -466,8 +435,29 @@ verify_jwt = false
 [functions.personality-extract-from-bio]
 verify_jwt = false
 
+# Does its own X-Webhook-Secret auth (plus admin fallback); the geocode
+# triggers call it WITHOUT a Bearer, so the platform JWT gate must be off —
+# without this entry CI deploys flipped it to the verify_jwt=true default and
+# silently blocked the trigger -> geocode path.
+[functions.backfill-venue-cities]
+verify_jwt = false
+
 [functions.source-shopify-public]
 verify_jwt = false
 
+[functions.marketplace-sync-merchants]
+verify_jwt = false
+
 [functions.send-username-reminder]
+verify_jwt = false
+
+# Internal cron target — self-gates via requireInternalOrAdmin (x-internal-secret).
+# Was missing here, so it deployed verify_jwt=true and the gateway 401'd the cron,
+# silently killing the news full-text backfill. Keep false so the cron reaches it.
+[functions.news-fulltext-backfill]
+verify_jwt = false
+
+# Cron target — self-gates on webhook/internal secret. Same 401 trap: was missing
+# here, so a redeploy would flip it to verify_jwt=true and 401 the translate cron.
+[functions.translate-i18n-batch]
 verify_jwt = false

@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { untypedRpc } from '@/integrations/supabase/untyped';
 import { useAuth } from '@/hooks/useAuth';
 
 export interface TriageItem {
@@ -39,19 +39,16 @@ export function useUnifiedTriageQueue(filters: TriageFilters) {
   return useQuery({
     queryKey: ['triage-queue', filters],
     queryFn: async (): Promise<TriageResult> => {
-      const { data, error } = await supabase.rpc(
-        'get_unified_triage_queue' as never,
-        {
-          p_queue_types: filters.queueTypes,
-          p_content_types: filters.contentTypes,
-          p_search: filters.search || null,
-          p_sort: filters.sort,
-          p_page: filters.page,
-          p_per_page: filters.perPage,
-        } as never,
-      );
+      const { data, error } = await untypedRpc<TriageResult>('get_unified_triage_queue', {
+        p_queue_types: filters.queueTypes,
+        p_content_types: filters.contentTypes,
+        p_search: filters.search || null,
+        p_sort: filters.sort,
+        p_page: filters.page,
+        p_per_page: filters.perPage,
+      });
       if (error) throw error;
-      return data as unknown as TriageResult;
+      return data as TriageResult;
     },
     staleTime: 30_000,
     refetchInterval: 60_000,
@@ -73,7 +70,9 @@ export function useTriageAction() {
       cannedSlug?: string;
       notify?: boolean;
     }) => {
-      const { data, error } = await supabase.rpc('triage_action' as never, {
+      // p_notes / p_canned_slug are passed as `string | null`, but the generated
+      // optional args reject null — route through untypedRpc to keep the null args.
+      const { data, error } = await untypedRpc('triage_action', {
         p_item_id: params.itemId,
         p_queue_type: params.queueType,
         p_action: params.action,
@@ -81,7 +80,7 @@ export function useTriageAction() {
         p_notes: params.notes || null,
         p_canned_slug: params.cannedSlug || null,
         p_notify: params.notify ?? true,
-      } as never);
+      });
       if (error) throw error;
       return data;
     },

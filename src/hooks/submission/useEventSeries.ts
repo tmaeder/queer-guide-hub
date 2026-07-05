@@ -6,7 +6,7 @@
  */
 
 import { useEffect, useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { untypedRpc } from '@/integrations/supabase/untyped';
 
 export interface PreviousEdition {
   id: string;
@@ -76,14 +76,13 @@ export function useEventSeries(enabled: boolean, title: string, city: string) {
           if (!cancelled) setEditions([]);
           return;
         }
-        // event_previous_editions isn't in the generated types yet — cast name/args.
-        // Call supabase.rpc as a *bound* member (not a detached const), or
-        // `this.rest` is undefined inside supabase-js and the call throws.
-        const { data, error } = (await supabase.rpc('event_previous_editions' as never, {
+        // p_city is passed as `string | null`, but the generated p_city?: string arg
+        // rejects null — route through untypedRpc to preserve the null passthrough.
+        const { data, error } = await untypedRpc('event_previous_editions', {
           p_title: trimmed,
           p_city: city.trim() || null,
           p_limit: 3,
-        } as never)) as { data: unknown; error: unknown };
+        });
         if (cancelled) return;
         setEditions(!error && Array.isArray(data) ? (data as PreviousEdition[]) : []);
       },

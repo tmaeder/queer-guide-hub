@@ -15,6 +15,7 @@ import {
   ChevronDown,
   Luggage,
   FileText,
+  Sparkles,
   X,
 } from 'lucide-react';
 import {
@@ -40,6 +41,7 @@ import { PrivacyTab } from '@/components/profile/settings/PrivacyTab';
 import { DangerZone } from '@/components/profile/settings/DangerZone';
 import { IntimateTab } from '@/components/profile/IntimateTab';
 import { TravelPreferencesEditor } from '@/components/profile/TravelPreferencesEditor';
+import { StatusEditor } from '@/components/status/StatusEditor';
 import { IdentityPreviewCard } from '@/components/profile/IdentityPreviewCard';
 import { AvatarChooser, type AvatarSaveData } from '@/components/profile/AvatarChooser';
 import { UsernamePanel } from '@/components/profile/UsernamePanel';
@@ -50,7 +52,7 @@ import { shortLocation } from '@/lib/shortLocation';
 import { initFormData, calculateCompletion } from '@/types/profileForm';
 import type { ProfileFormData, ComingOutStatus } from '@/types/profileForm';
 import type { Profile, ProfileUpdateResult } from '@/hooks/useProfile';
-import type { AvatarConfig } from '@/components/profile/AvatarBuilder';
+import type { AvatarConfig } from '@/components/profile/avatarConfig';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { cn } from '@/lib/utils';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
@@ -61,9 +63,20 @@ type ProfileX = Profile & {
   pronoun_tags?: string[] | null;
   avatar_auto_assigned?: boolean | null;
   username_auto_assigned?: boolean | null;
+  vibe_emoji?: string | null;
+  vibe_text?: string | null;
+  looking_for?: string[] | null;
 };
 
-type SectionKind = 'profile' | 'dating' | 'privacy' | 'travel' | 'account' | 'avatar' | null;
+type SectionKind =
+  | 'profile'
+  | 'status'
+  | 'dating'
+  | 'privacy'
+  | 'travel'
+  | 'account'
+  | 'avatar'
+  | null;
 
 /** Personal documents are removed after this date (T+30 export window). */
 const DOCS_REMOVAL_DATE = 'July 11, 2026';
@@ -274,6 +287,9 @@ function ProfileSettingsContent({
   const SECTION_TO_KEY: Record<string, SectionKind> = {
     profile: 'profile',
     basic: 'profile',
+    status: 'status',
+    vibe: 'status',
+    intent: 'status',
     identity: 'dating',
     account: 'account',
     notifications: 'account',
@@ -488,6 +504,26 @@ function ProfileSettingsContent({
             onPronounTagsChange={handlePronounTagsChange}
             onPrivacyChange={handlePrivacyChange}
           />
+        </AccordionSection>
+
+        <AccordionSection
+          id="status"
+          icon={Sparkles}
+          title="Vibe & looking for"
+          summary={
+            [
+              px?.vibe_text && `${px.vibe_emoji ?? '✨'} ${px.vibe_text}`,
+              px?.looking_for?.length
+                ? `${px.looking_for.length} looking-for ${px.looking_for.length === 1 ? 'tag' : 'tags'}`
+                : null,
+            ]
+              .filter(Boolean)
+              .join(' · ') || "Set a vibe, tell people what you're looking for"
+          }
+          active={activeSection === 'status'}
+          onToggle={toggleSection}
+        >
+          <StatusEditor />
         </AccordionSection>
 
         <AccordionSection

@@ -33,7 +33,7 @@ function CountBadge({ count, label }: { count: number; label: string }) {
   return (
     <span
       aria-label={label}
-      className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-accent-brand px-1.5 text-2xs font-medium leading-none text-accent-brand-foreground"
+      className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-foreground px-1.5 text-2xs font-medium leading-none text-background"
     >
       {count > 99 ? '99+' : count}
     </span>
@@ -88,7 +88,7 @@ export function MobileNavSheet({ open, onOpenChange }: MobileNavSheetProps) {
             {user ? (
               <div className="flex items-center gap-4">
                 <LocalizedLink
-                  to="/me"
+                  to="/hub"
                   onClick={close}
                   className="flex min-w-0 flex-1 items-center gap-2 rounded-element p-2 no-underline hover:bg-muted"
                 >
@@ -134,7 +134,7 @@ export function MobileNavSheet({ open, onOpenChange }: MobileNavSheetProps) {
             {/* Personal shortcut: Trips with orphan badge */}
             {user && (
               <LocalizedLink
-                to="/me/trips"
+                to="/hub/trips"
                 onClick={close}
                 className="flex items-center gap-2 rounded-element border border-border p-4 no-underline hover:bg-muted"
               >

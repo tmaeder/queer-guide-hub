@@ -10,8 +10,19 @@ export interface ParseInput {
   body: string;
 }
 
+/** Event/venue candidates from a forwarded announcement (not a booking). */
+export interface ExtractedEntity {
+  title?: string;
+  name?: string;
+  [key: string]: unknown;
+}
+export interface ExtractedEntities {
+  events: ExtractedEntity[];
+  venues: ExtractedEntity[];
+}
+
 export interface ParsedBooking {
-  type: 'lodging' | 'flight' | 'rail' | 'restaurant' | 'activity' | 'unknown';
+  type: 'lodging' | 'flight' | 'rail' | 'restaurant' | 'activity' | 'event' | 'venue' | 'unknown';
   vendor: string | null;
   title: string | null;
   start: string | null; // ISO 8601 or null
@@ -21,12 +32,14 @@ export interface ParsedBooking {
   currency: string | null;
   confirmation: string | null;
   confidence: number; // 0..1
+  /** Present only for event/venue announcements — candidates to stage. */
+  entities?: ExtractedEntities | null;
 }
 
 export const SYSTEM_PROMPT = [
-  'You are a strict JSON extractor for travel booking confirmation emails.',
+  'You are a strict JSON extractor for forwarded travel emails.',
   'Read the email and emit ONE JSON object with these fields:',
-  '  type:          one of "lodging" | "flight" | "rail" | "restaurant" | "activity" | "unknown"',
+  '  type:          one of "lodging" | "flight" | "rail" | "restaurant" | "activity" | "event" | "venue" | "unknown"',
   '  vendor:        the brand fulfilling the booking (e.g. "Booking.com", "Airbnb", "Lufthansa", "OpenTable") or null',
   '  title:         short human label (e.g. "Hotel Lutetia, Paris" or "LH441 FRA → JFK") or null',
   '  start:         ISO 8601 timestamp with timezone if known, else null',
@@ -35,9 +48,14 @@ export const SYSTEM_PROMPT = [
   '  price:         number (no currency symbol), else null',
   '  currency:      ISO 4217 code (USD, EUR, ...), else null',
   '  confirmation:  the confirmation/booking/PNR number, else null',
-  '  confidence:    number 0..1, your confidence the email actually is a booking',
+  '  confidence:    number 0..1, your confidence in the classification',
+  '  entities:      ONLY for newsletters/announcements listing LGBTQ+ events or venues (not a personal booking):',
+  '                 { "events": [ { "title", "start", "end", "location", "description", "url" } ],',
+  '                   "venues": [ { "name", "location", "description", "url" } ] }',
+  '                 Omit or null when the email is a personal booking confirmation.',
   'Return JSON only — no prose, no markdown fences.',
-  'If the email is not a booking confirmation, return type="unknown" with confidence < 0.3.',
+  'Set type="event" or "venue" (not a booking type) when the email announces events/venues rather than confirming a reservation.',
+  'If the email is neither a booking nor an announcement, return type="unknown" with confidence < 0.3.',
 ].join('\n');
 
 export function buildUserMessage(input: ParseInput): string {
@@ -78,7 +96,7 @@ export function parseLLMResponse(raw: string): ParsedBooking {
   }
 
   const allowedTypes = new Set([
-    'lodging', 'flight', 'rail', 'restaurant', 'activity', 'unknown',
+    'lodging', 'flight', 'rail', 'restaurant', 'activity', 'event', 'venue', 'unknown',
   ]);
   const t = typeof obj.type === 'string' && allowedTypes.has(obj.type)
     ? (obj.type as ParsedBooking['type'])
@@ -93,6 +111,17 @@ export function parseLLMResponse(raw: string): ParsedBooking {
   };
   const conf = numOrNull(obj.confidence);
 
+  // Only accept entities for event/venue announcements; keep arrays of objects.
+  let entities: ExtractedEntities | null = null;
+  if ((t === 'event' || t === 'venue') && obj.entities && typeof obj.entities === 'object') {
+    const raw = obj.entities as Record<string, unknown>;
+    const asArr = (v: unknown): ExtractedEntity[] =>
+      Array.isArray(v) ? v.filter((x): x is ExtractedEntity => !!x && typeof x === 'object') : [];
+    const events = asArr(raw.events).slice(0, 20);
+    const venues = asArr(raw.venues).slice(0, 20);
+    if (events.length || venues.length) entities = { events, venues };
+  }
+
   return {
     type: t,
     vendor: strOrNull(obj.vendor),
@@ -104,5 +133,6 @@ export function parseLLMResponse(raw: string): ParsedBooking {
     currency: strOrNull(obj.currency),
     confirmation: strOrNull(obj.confirmation),
     confidence: conf === null ? 0 : Math.min(1, Math.max(0, conf)),
+    entities,
   };
 }

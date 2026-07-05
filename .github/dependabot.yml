@@ -12,6 +12,18 @@ updates:
       npm:
         patterns: ['*']
         update-types: [minor, patch]
+    ignore:
+      # zxcvbn-ts 4.x is a breaking major: PasswordStrengthMeter uses the v3
+      # API (zxcvbnOptions.setOptions + plain dictionary exports); under 4.x
+      # every password scores "Very weak" (meter shipped broken once — the
+      # 2026-07-02 bump reverted in PR #1913). Majors here require a
+      # deliberate migration of src/components/auth/PasswordStrengthMeter.tsx.
+      - dependency-name: '@zxcvbn-ts/core'
+        update-types: ['version-update:semver-major']
+      - dependency-name: '@zxcvbn-ts/language-common'
+        update-types: ['version-update:semver-major']
+      - dependency-name: '@zxcvbn-ts/language-en'
+        update-types: ['version-update:semver-major']
 
   - package-ecosystem: npm
     directory: /scraper

@@ -16,6 +16,10 @@ test.describe('extension submission flow', () => {
     await page.goto('/extension');
     // Title is "Queer Guide — …" (brand spells it with a space).
     await expect(page).toHaveTitle(/queer[\s.]?guide/i);
+    // Wait for React to hydrate the page heading before reading body text —
+    // reading document.body.textContent right after goto can catch a pre-hydration
+    // shell (the PWA service worker can serve a blank shell in a warm context).
+    await page.getByRole('heading', { name: /queer\.guide capture/i }).waitFor({ timeout: 30_000 });
     // Page should mention either Chrome or Firefox / install
     const body = await page.locator('body').textContent();
     expect(body).toMatch(/chrome|firefox|install|extension/i);

@@ -28,6 +28,7 @@ vi.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (_k: string, d?: string) => d ?? _k }),
 }));
 
+vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ user: null }) }));
 vi.mock('@/hooks/useMeta', () => ({ useMeta: () => {} }));
 vi.mock('@/hooks/useLocalizedNavigate', () => ({ useLocalizedNavigate: () => vi.fn() }));
 vi.mock('@/hooks/useEntityImageAssets', () => ({ useEntityImageAssets: () => ({ assets: new Map() }) }));
@@ -59,7 +60,7 @@ describe('NewsArchive page', () => {
   it('renders without crashing and shows search input', () => {
     renderWithProviders(<NewsArchive />);
     expect(
-      screen.getByPlaceholderText('Quick search articles...'),
+      screen.getByPlaceholderText('Semantic search articles…'),
     ).toBeInTheDocument();
   });
 
@@ -68,7 +69,7 @@ describe('NewsArchive page', () => {
     expect(screen.getByText('The newsroom is quiet')).toBeInTheDocument();
   });
 
-  it('shows "Clear all filters" button when search param is active and articles are present', () => {
+  it('shows "Clear all filters" button when a filter is active and articles are present', () => {
     useNewsMock.mockReturnValue(
       makeNewsReturn({
         articles: [
@@ -95,7 +96,10 @@ describe('NewsArchive page', () => {
         totalArticles: 1,
       }),
     );
-    renderWithProviders(<NewsArchive />, { route: '/news/archive?q=test' });
+    // A query >= 2 chars switches to semantic-search mode (its own result list);
+    // a category filter keeps the keyword article list visible, which is what
+    // the active-filters bar + "Clear all filters" button render against.
+    renderWithProviders(<NewsArchive />, { route: '/news/archive?category=culture' });
     expect(
       screen.getByRole('button', { name: /clear all filters/i }),
     ).toBeInTheDocument();

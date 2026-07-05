@@ -1,4 +1,5 @@
 import { getServiceClient, requireAdmin, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
+import { hasValidWebhookSecret } from '../_shared/webhook-auth.ts'
 
 // Batch geocode venues missing city data.
 // Two modes controlled by `mode` param:
@@ -543,9 +544,8 @@ Deno.serve(async (req) => {
   try {
     const supabase = getServiceClient()
     const isAdmin = await requireAdmin(req, supabase).catch(() => false)
-    const webhookSecret = req.headers.get('x-webhook-secret')
-    const expectedSecret = Deno.env.get('WEBHOOK_SECRET') || 'meilisearch-sync-webhook-2026'
-    const isWebhook = webhookSecret === expectedSecret
+    // Fail-closed: no literal fallback secret — WEBHOOK_SECRET must be set.
+    const isWebhook = hasValidWebhookSecret(req, 'WEBHOOK_SECRET')
 
     if (!isAdmin && !isWebhook) {
       return errorResponse('Unauthorized', 401, req)

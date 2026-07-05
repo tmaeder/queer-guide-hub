@@ -125,7 +125,7 @@ export default function IntimateDiscovery() {
         <h1 className="text-2xl">Intimate</h1>
         <div className="flex items-center gap-4">
           {matches.length > 0 && (
-            <Link to="/messages" className="text-sm underline">
+            <Link to="/hub" className="text-sm underline">
               {matches.length} match{matches.length === 1 ? '' : 'es'}
             </Link>
           )}

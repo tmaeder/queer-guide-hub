@@ -1,4 +1,4 @@
-import { Users, Calendar, Hash, type LucideIcon } from 'lucide-react';
+import { Users, Calendar, Hash, Flame, type LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { PeopleMatchShared } from '@/hooks/usePeopleDiscovery';
 
@@ -18,6 +18,8 @@ export function SignalChips({
 }) {
   if (!shared) return null;
   const chips: { icon: LucideIcon; label: string }[] = [];
+  if (shared.chemistry_band === 'high') chips.push({ icon: Flame, label: 'High chemistry' });
+  else if (shared.chemistry_band === 'medium') chips.push({ icon: Flame, label: 'Chemistry' });
   if (shared.mutual_friends)
     chips.push({ icon: Users, label: `${shared.mutual_friends} mutual` });
   if (shared.shared_events)

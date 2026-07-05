@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router';
-import { Plus, Map, Compass } from 'lucide-react';
+import { Plus, Map, Compass, CalendarDays } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useTrips } from '@/hooks/useTrips';
@@ -94,6 +94,16 @@ export function TripsTab() {
           {hasAnyTrips && <span className="ml-2 tabular-nums">· {trips?.length}</span>}
         </p>
         <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="lg"
+            onClick={() => navigate('/hub/calendar')}
+            style={{ paddingLeft: 16, paddingRight: 16 }}
+            aria-label={t('calendar.openAria', 'Open my calendar')}
+          >
+            <CalendarDays size={18} className="mr-1.5" />
+            {t('calendar.open', 'Calendar')}
+          </Button>
           <Button
             variant="outline"
             size="lg"

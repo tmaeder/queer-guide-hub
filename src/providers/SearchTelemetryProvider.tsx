@@ -9,7 +9,7 @@
 
 import { useEffect, useRef } from "react";
 import { useLocation } from "react-router";
-import { supabase } from "@/integrations/supabase/client";
+import { untypedFrom } from "@/integrations/supabase/untyped";
 import { trackSearchEvent } from "@/lib/searchClient";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -42,9 +42,7 @@ async function resolveSlug(table: string, slug: string): Promise<string | null> 
 	const cached = slugCache.get(key);
 	if (cached && Date.now() - cached.ts < CACHE_TTL_MS) return cached.id;
 
-	const { data, error } = await supabase
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		.from(table as any)
+	const { data, error } = await untypedFrom(table)
 		.select("id")
 		.eq("slug", slug)
 		.maybeSingle();

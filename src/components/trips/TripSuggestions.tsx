@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Plus, MapPin, CalendarDays, Shield, Loader2 } from 'lucide-react';
+import { Plus, MapPin, CalendarDays, Shield, Loader2, Accessibility } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -8,6 +9,10 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { useTripMutations, type TripPlace, type TripDay } from '@/hooks/useTrips';
 import { fetchTripSuggestionCities } from '@/hooks/useTripSuggestions';
+import {
+  useAccessibilityNeeds,
+  useVenueAccessibilityMatches,
+} from '@/hooks/useAccessibilityMatches';
 import { fetchRecommendations } from '@/lib/searchClient';
 import { resolveEntityGeo, tripPlaceRowFromGeo, type EntityGeo } from '@/lib/trips/resolveEntityGeo';
 
@@ -37,6 +42,7 @@ interface Props {
  * places still get map pins and per-country safety scoring.
  */
 export function TripSuggestions({ tripId, places }: Props) {
+  const { t } = useTranslation();
   const { toast } = useToast();
   const { user } = useAuth();
   const { addPlacesBulk } = useTripMutations();
@@ -113,6 +119,17 @@ export function TripSuggestions({ tripId, places }: Props) {
     },
   });
 
+  // Accessibility boost: venues satisfying the user's saved needs float to
+  // the top of each city group and get a badge. Unlisted attributes are
+  // honest absence of data, never a "no" — so non-matches aren't demoted
+  // below their engine order, matches are just promoted.
+  const { data: accessibilityNeeds } = useAccessibilityNeeds();
+  const venueIds = useMemo(
+    () => (suggestions ?? []).filter((s) => s.type === 'venue').map((s) => s.id),
+    [suggestions],
+  );
+  const { data: accessMatches } = useVenueAccessibilityMatches(accessibilityNeeds, venueIds);
+
   const handleAdd = async (item: SuggestionItem) => {
     if (!item.geo) {
       toast({ title: 'Could not add', description: 'Missing place data.', variant: 'destructive' });
@@ -143,7 +160,12 @@ export function TripSuggestions({ tripId, places }: Props) {
     (c) => c.countries?.equality_score != null && (c.countries?.equality_score ?? 100) < 40,
   );
   const citiesMap = new Map((cities || []).map((c) => [c.id, c]));
-  const filtered = (suggestions || []).filter((s) => filter === 'all' || s.type === filter);
+  const filtered = (suggestions || [])
+    .filter((s) => filter === 'all' || s.type === filter)
+    .sort(
+      (a, b) =>
+        (accessMatches?.has(b.id) ? 1 : 0) - (accessMatches?.has(a.id) ? 1 : 0),
+    );
 
   return (
     <div>
@@ -204,9 +226,15 @@ export function TripSuggestions({ tripId, places }: Props) {
                     <Icon size={13} className="text-muted-foreground shrink-0" />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium truncate">{item.name}</p>
-                      {item.category && (
+                      {(item.category || accessMatches?.has(item.id)) && (
                         <div className="flex items-center gap-1.5">
-                          <Badge variant="outline">{item.category}</Badge>
+                          {item.category && <Badge variant="outline">{item.category}</Badge>}
+                          {accessMatches?.has(item.id) && (
+                            <Badge variant="outline" className="inline-flex items-center gap-1">
+                              <Accessibility className="w-3 h-3" aria-hidden />
+                              {t('trips.suggestions.accessMatch', 'Matches your needs')}
+                            </Badge>
+                          )}
                         </div>
                       )}
                     </div>

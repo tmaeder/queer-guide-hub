@@ -71,8 +71,34 @@ Deno.serve(async (req) => {
     const pipelineRunId = body.pipeline_run_id as string | undefined
     const batchSize = body.batch_size || 25
     const threshold = body.threshold ?? 0.5
+    // Multi-brand resellers get a stricter gate: their mainstream-wholesale
+    // bulk drowns the catalog, while indie single-brand shops keep 0.5.
+    const aggregatorThreshold = body.aggregator_threshold ?? 0.6
+    const aggregatorSources: string[] = body.aggregator_sources ?? ['ohmyfantasy', 'misterb']
     const dryRun = body.dry_run || false
-    let query = supabase.from('ingestion_staging').select('id, normalized_data').eq('target_table', 'marketplace_listings').eq('ai_validation_status', 'approved').is('classification_result', null).order('created_at', { ascending: true }).limit(batchSize)
+
+    // Daily cap / circuit-breaker: this node has no per-call rate limit beyond
+    // batch_size + a 200ms sleep. With the recurring registry engine now driving
+    // many vendors, bound total LLM spend per UTC day (steady-state stays far
+    // under this because refreshed existing products skip the LLM path — only
+    // genuinely new products are classified). Count today's relevance events.
+    const dailyCap = Number(body.daily_cap ?? 800)
+    const startOfDay = new Date().toISOString().slice(0, 10) + 'T00:00:00Z'
+    const { count: doneToday } = await supabase.from('ingestion_events')
+      .select('id', { count: 'exact', head: true })
+      .eq('stage', 'relevance').gte('created_at', startOfDay)
+    if ((doneToday ?? 0) >= dailyCap) {
+      return jsonResponse({ success: true, items: 0, message: 'daily_cap_reached', daily_cap: dailyCap, done_today: doneToday }, 200, req)
+    }
+    const effectiveBatch = Math.max(1, Math.min(batchSize, dailyCap - (doneToday ?? 0)))
+
+    // order='newest' classifies freshly-synced vendor products first so they
+    // reach live listings promptly instead of starving behind the large legacy
+    // approved-but-unclassified backlog (the recurring staging drain runs a
+    // newest-first tick for new products + an oldest-first tick to grind the
+    // backlog). Default stays oldest-first (unchanged behavior).
+    const ascending = String(body.order ?? 'oldest') !== 'newest'
+    let query = supabase.from('ingestion_staging').select('id, normalized_data').eq('target_table', 'marketplace_listings').eq('ai_validation_status', 'approved').is('classification_result', null).order('created_at', { ascending }).limit(effectiveBatch)
     if (pipelineRunId) query = query.eq('pipeline_run_id', pipelineRunId)
     const { data: items, error } = await query
     if (error) return errorResponse(error.message, 500, req)
@@ -97,9 +123,11 @@ Deno.serve(async (req) => {
         }
         if (dryRun) continue
         const update: Record<string, unknown> = { classification_result: classification, ai_confidence_score: r.confidence }
-        if (r.confidence < threshold) {
+        const itemSource = String(n.sourceName ?? meta.source_slug ?? '')
+        const effectiveThreshold = aggregatorSources.includes(itemSource) ? aggregatorThreshold : threshold
+        if (r.confidence < effectiveThreshold) {
           update.disposition = 'rejected'
-          update.error_message = `relevance_below_${threshold}: ${r.reasoning.slice(0, 120)}`
+          update.error_message = `relevance_below_${effectiveThreshold}: ${r.reasoning.slice(0, 120)}`
           rejected++
         } else if (r.sensitivity_flags.some(f => f.severity === 'high')) {
           update.review_status = 'pending_review'

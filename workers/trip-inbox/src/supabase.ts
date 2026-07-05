@@ -65,6 +65,7 @@ export class SupabaseClient {
       body.parsed_price = row.parsed.price;
       body.parsed_currency = row.parsed.currency;
       body.parsed_confirmation = row.parsed.confirmation;
+      if (row.parsed.entities) body.extracted_entities = row.parsed.entities;
     }
     const r = await fetch(`${this.url}/rest/v1/trip_inbox_items`, {
       method: 'POST',

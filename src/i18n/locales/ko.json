@@ -63,7 +63,6 @@
   },
   "search": {
     "placeholder": "국가와 도시 검색...",
-    "nearMe": "내 주변",
     "filters": "필터",
     "continent": "대륙",
     "all": "전체",
@@ -170,7 +169,10 @@
     "clear": "Clear",
     "signIn": "Sign in",
     "goHome": "Go Home",
-    "more": "더보기"
+    "more": "더보기",
+    "remove": "삭제",
+    "accept": "수락",
+    "decline": "거절"
   },
   "navigation": {
     "home": "홈",
@@ -575,7 +577,9 @@
         "safety": "안전 용품",
         "lgbtq-specific": "LGBTQ+ 전용",
         "other": "기타"
-      }
+      },
+      "scopeAll": "모두",
+      "scopeMine": "내 것"
     },
     "collaborate": {
       "chat": "채팅",
@@ -614,7 +618,8 @@
       "budget": "예산",
       "reservations": "예약",
       "packing": "짐싸기",
-      "collaborate": "협업"
+      "collaborate": "협업",
+      "journal": "일기"
     },
     "today": {
       "offlineBanner": "오프라인 상태 — 마지막으로 저장된 일정을 표시합니다.",
@@ -895,6 +900,86 @@
       "saveAria": "Save trip",
       "unsaveAria": "Unsave trip",
       "error": "Could not update save"
+    },
+    "dayNotes": {
+      "addTitle": "이 날에 메모 추가",
+      "textLabel": "메모",
+      "textPlaceholder": "예: 11:00까지 체크아웃",
+      "timeLabel": "시간(선택)",
+      "iconLabel": "아이콘",
+      "save": "메모 추가",
+      "added": "메모가 추가되었습니다",
+      "delete": "메모 삭제"
+    },
+    "weather": {
+      "clear": "맑음",
+      "partlyCloudy": "구름 조금",
+      "overcast": "흐림",
+      "fog": "안개",
+      "drizzle": "이슬비",
+      "rain": "비",
+      "snow": "눈",
+      "thunderstorm": "뇌우",
+      "typical": "평년"
+    },
+    "conflicts": {
+      "chip_one": "{{count}}개의 충돌",
+      "chip_other": "{{count}}개의 충돌"
+    },
+    "legs": {
+      "switchMode": "이동 수단 전환",
+      "modeAria": "이동 수단: {{mode}} — 클릭하여 변경",
+      "mode": {
+        "walk": "도보",
+        "transit": "대중교통",
+        "drive": "자동차"
+      },
+      "walkingTotal": "도보 {{distance}}",
+      "optimize": "경로 순서 최적화",
+      "directions": "이 날을 Google 지도에서 열기"
+    },
+    "suggestions": {
+      "accessMatch": "필요 사항과 일치"
+    },
+    "journal": {
+      "placeholder": "오늘 무슨 일이 있었나요? 작은 순간도 소중해요.",
+      "moodLabel": "기분",
+      "mood": {
+        "joy": "기쁨",
+        "good": "좋음",
+        "mixed": "복잡함",
+        "tough": "힘듦"
+      },
+      "addPhotos": "사진",
+      "save": "기록 저장",
+      "saved": "일기가 저장되었습니다",
+      "empty": "아직 일기가 없습니다.",
+      "delete": "기록 삭제",
+      "removePhoto": "사진 제거",
+      "member": "여행자"
+    },
+    "import": {
+      "button": "가져오기",
+      "title": "장소 가져오기",
+      "pickFile": "파일 선택",
+      "formats": "GPX, KML, GeoJSON 또는 Google Takeout(저장된 장소 JSON / 목록 CSV)",
+      "noPlaces": "이 파일에서 장소를 찾을 수 없습니다.",
+      "matching": "장소 대조 중…",
+      "matchCount": "{{count}}개가 queer.guide 장소와 일치",
+      "changeFile": "파일 변경",
+      "matched": "기존 장소",
+      "customPin": "사용자 지정 핀",
+      "noCoords": "좌표 없음 — 이름만",
+      "confirm": "장소 {{count}}개 가져오기",
+      "done": "장소 {{count}}개를 가져왔습니다",
+      "doneHint": "미정 목록에 추가됩니다 — 원하는 날짜로 끌어다 놓으세요."
+    },
+    "offline": {
+      "pending_one": "동기화 대기 중인 변경 {{count}}건",
+      "pending_other": "동기화 대기 중인 변경 {{count}}건"
+    },
+    "inbox": {
+      "openThread": "채팅에서 검토"
     }
   },
   "auth": {
@@ -1530,6 +1615,12 @@
         "thisWeek": "이번 주",
         "later": "이후"
       }
+    },
+    "shop": {
+      "eyebrow": "마켓플레이스",
+      "title": "퀴어 브랜드",
+      "description": "퀴어·트랜스 운영 비즈니스의 상품과 서비스.",
+      "seeAll": "마켓플레이스 보기"
     }
   },
   "header": {
@@ -1564,7 +1655,8 @@
       "travel": "여행",
       "personalities": "인물",
       "hotels": "호텔",
-      "help": "도움말"
+      "help": "도움말",
+      "tags": "태그"
     },
     "userMenu": {
       "myTrips": "내 여행",
@@ -1626,7 +1718,8 @@
       "settingsSection": "디스플레이",
       "browseAll": "모든 섹션 보기",
       "unreadCount": "읽지 않음 {{count}}개",
-      "tripsBadge": "확인이 필요한 여행 항목 {{count}}개"
+      "tripsBadge": "확인이 필요한 여행 항목 {{count}}개",
+      "hub": "허브"
     }
   },
   "pages": {
@@ -2156,7 +2249,9 @@
       "eyebrow": "커뮤니티",
       "title": "친구",
       "subtitle": "내 연결 관리",
-      "gate": "친구를 보려면 로그인하세요."
+      "gate": "친구를 보려면 로그인하세요.",
+      "requests": "요청",
+      "sentRequest": "친구 요청을 보냈습니다"
     }
   },
   "settings": {
@@ -2184,6 +2279,148 @@
       "denied": "Location access is off — showing the default area",
       "unavailable": "Couldn't get your location — showing the default area",
       "timeout": "Location lookup timed out — showing the default area"
+    },
+    "share": {
+      "title": "[KO] Map view",
+      "copied": "[KO] Link copied",
+      "copiedDescription": "[KO] Paste to share this view",
+      "failed": "[KO] Share failed"
+    },
+    "commandBar": {
+      "searchThisMap": "[KO] Search this map",
+      "searching": "[KO] Searching",
+      "clearSearch": "[KO] Clear search",
+      "typeMore": "[KO] Type at least 2 characters",
+      "filterMapFor": "[KO] Filter map for “{{query}}”",
+      "jumpToPlace": "[KO] Jump to a place",
+      "noMatches": "[KO] No places match — Enter still filters the map.",
+      "filters": "[KO] Filters",
+      "filtersActive": "[KO] Filters, {{count}} active",
+      "filtersAndLayers": "[KO] Filters & layers",
+      "layers": "[KO] Layers",
+      "more": "[KO] More map options",
+      "moreShort": "[KO] More",
+      "mapOptions": "[KO] Map options",
+      "myLocation": "[KO] My location",
+      "fitResults": "[KO] Fit to results",
+      "shareView": "[KO] Share view",
+      "reset": "[KO] Reset"
+    },
+    "entityType": {
+      "venue": "[KO] Venue",
+      "event": "[KO] Event",
+      "city": "[KO] City",
+      "country": "[KO] Country",
+      "marketplace": "[KO] Listing",
+      "personality": "[KO] Person",
+      "queer_village": "[KO] Village",
+      "group": "[KO] Group",
+      "news": "[KO] News",
+      "tag": "[KO] Tag",
+      "user": "[KO] User"
+    },
+    "quick": {
+      "groupLabel": "[KO] Quick filters",
+      "openNow": "[KO] Open now",
+      "tonight": "[KO] Tonight",
+      "thisWeekend": "[KO] This weekend",
+      "thisMonth": "[KO] This month",
+      "saved": "[KO] Saved"
+    },
+    "lens": {
+      "groupLabel": "[KO] Map view",
+      "pins": "[KO] Pins",
+      "density": "[KO] Density",
+      "routes": "[KO] Routes",
+      "boundary": "[KO] Boundary",
+      "combined": "[KO] Combined"
+    },
+    "sheet": {
+      "title": "[KO] Map options",
+      "view": "[KO] View",
+      "filters": "[KO] Filters",
+      "time": "[KO] Time",
+      "layers": "[KO] Layers",
+      "actions": "[KO] Map actions"
+    },
+    "time": {
+      "label": "[KO] Time range",
+      "anyTime": "[KO] Any time",
+      "chooseDates": "[KO] Choose dates",
+      "pickRange": "[KO] Pick a start & end",
+      "untilEndDate": "[KO] {{start}} – end date",
+      "clear": "[KO] Clear",
+      "apply": "[KO] Apply dates"
+    },
+    "nav": {
+      "zoomIn": "[KO] Zoom in",
+      "zoomOut": "[KO] Zoom out",
+      "resetNorth": "[KO] Reset bearing to north",
+      "geolocate": "[KO] Show my location"
+    },
+    "legend": {
+      "label": "[KO] Legend",
+      "show": "[KO] Show map legend",
+      "hide": "[KO] Hide map legend",
+      "title": "[KO] What you're seeing",
+      "featured": "[KO] Ringed = featured spot",
+      "live": "[KO] Pulsing = open now / live",
+      "areas": "[KO] Areas",
+      "densityTitle": "[KO] Density of queer life",
+      "fewer": "[KO] Fewer",
+      "more": "[KO] More"
+    },
+    "rail": {
+      "inView_one": "[KO] {{count}} place in view",
+      "inView_other": "[KO] {{count}} places in view",
+      "hide": "[KO] Hide nearby places",
+      "listLabel": "[KO] Places in view",
+      "showOnMap": "[KO] Show {{name}} on the map"
+    },
+    "firstRun": {
+      "spotsInView_one": "[KO] {{count}} queer spot in view",
+      "spotsInView_other": "[KO] {{count}} queer spots in view",
+      "dismiss": "[KO] Dismiss"
+    },
+    "canvas": {
+      "loading": "[KO] Loading",
+      "loadingEllipsis": "[KO] Loading...",
+      "resultsInView_one": "[KO] {{count}} result in view",
+      "resultsInView_other": "[KO] {{count}} results in view",
+      "clickToZoom": "[KO] Click to zoom in",
+      "venueCount_one": "[KO] {{count}} venue",
+      "venueCount_other": "[KO] {{count}} venues",
+      "eventCount_one": "[KO] {{count}} event",
+      "eventCount_other": "[KO] {{count}} events",
+      "restroomCount_one": "[KO] {{count}} restroom",
+      "restroomCount_other": "[KO] {{count}} restrooms",
+      "hotelCount_one": "[KO] {{count}} hotel",
+      "hotelCount_other": "[KO] {{count}} hotels",
+      "placeCount_one": "[KO] {{count}} place",
+      "placeCount_other": "[KO] {{count}} places",
+      "emptyOpenNow": "[KO] Nothing open right now in view — turn off Open now or try later.",
+      "emptyTimeRange": "[KO] No events in this time range here — widen the dates or pan out.",
+      "emptySearch": "[KO] No matches for \"{{query}}\" here — clear search or pan out.",
+      "emptyDefault": "[KO] No spots here yet — pan, zoom out, or put one on the map."
+    },
+    "layers": {
+      "venues": "[KO] Venues",
+      "events": "[KO] Events",
+      "cities": "[KO] Cities",
+      "countries": "[KO] Countries",
+      "restrooms": "[KO] Restrooms",
+      "hotels": "[KO] Hotels",
+      "neighbourhoods": "[KO] Villages"
+    },
+    "filterChips": {
+      "groupLabel": "[KO] Active filters",
+      "remove": "[KO] Remove filter: {{label}}",
+      "clearAll": "[KO] Clear all",
+      "within": "[KO] Within {{km}} km",
+      "accessible": "[KO] Accessible",
+      "queerOwned": "[KO] Queer-owned",
+      "tags_one": "[KO] {{count}} tag",
+      "tags_other": "[KO] {{count}} tags"
     }
   },
   "resources": {
@@ -2306,7 +2543,15 @@
     },
     "tagDetail": {
       "breadcrumbHome": "자료",
-      "noDefinition": "이 용어에 대한 정의가 아직 없습니다."
+      "noDefinition": "이 용어에 대한 정의가 아직 없습니다.",
+      "alsoKnownAs": "다른 이름",
+      "readOnWikipedia": "위키백과에서 읽기",
+      "searchTagged": "{{name}} 태그가 붙은 모든 항목 검색",
+      "seeAlso": "같이 보기",
+      "sensitiveContentBody": "이 주제에는 민감한 내용이 포함될 수 있습니다. 도움이 필요하면 위기 상담 전화 페이지를 방문하세요.",
+      "sensitiveContentTitle": "민감한 주제",
+      "tableOfContents": "목차",
+      "viewAsGraph": "그래프로 보기"
     },
     "graph": {
       "title": "태그 관계 그래프",
@@ -2596,7 +2841,11 @@
       "email": "새 메일"
     },
     "notification": {
-      "open": "열기"
+      "open": "열기",
+      "view": "보기",
+      "reviewerNotes": "검토자 메모",
+      "allSubmissions": "내 모든 제출",
+      "shareToChat": "채팅으로 공유"
     },
     "openInbox": "받은편지함 열기",
     "markAlertsRead": "알림 읽음 표시",
@@ -2617,6 +2866,34 @@
       "empty": "아직 추천이 없습니다.",
       "recent": "최근 메시지한 사람",
       "active": "최근 활동"
+    },
+    "upcoming": "예정",
+    "openCalendar": "캘린더",
+    "tripmail": {
+      "gone": "이 이메일 항목은 더 이상 사용할 수 없습니다.",
+      "type": "유형",
+      "vendor": "업체",
+      "title": "제목",
+      "dates": "날짜",
+      "location": "위치",
+      "price": "가격",
+      "confirmation": "확인번호",
+      "extracted": "추출된 예약",
+      "filed": "등록됨",
+      "confirm": "여행에 추가",
+      "dismiss": "무시",
+      "openTrip": "여행 열기",
+      "fallbackTitle": "전달된 이메일",
+      "intro": "추출된 정보가 잘못되었나요? 알려주시면 고칠게요 — 예: “체크인은 사실 12일이에요”.",
+      "thinking": "이메일 확인 중…",
+      "placeholder": "정보를 수정하거나 예약에 대해 물어보세요…",
+      "send": "보내기",
+      "sendFailed": "전송하지 못했습니다",
+      "foundEntities": "이 이메일에서 발견됨",
+      "addToGuide": "queer.guide에 추가",
+      "stagedNote": "검토를 위해 제출됨 — 품질 파이프라인을 거칩니다.",
+      "anEvent": "이벤트",
+      "aVenue": "장소"
     }
   },
   "extension": {
@@ -2716,7 +2993,8 @@
     "help": "도움말",
     "pride": "프라이드",
     "contributors": "기여자",
-    "wishlists": "위시리스트"
+    "wishlists": "위시리스트",
+    "tags": "태그"
   },
   "chat": {
     "react": "반응",
@@ -2765,6 +3043,158 @@
       "on": "지금 가능",
       "both": "{{name}}님은 지금 만날 수 있어요 🟢",
       "youOnly": "만날 수 있음으로 표시되어 있어요 🟢"
+    },
+    "share": {
+      "gated": "Queer Guide에서 자세히 보기",
+      "view": "Queer Guide에서 보기"
+    },
+    "submission": {
+      "header": "Queer Guide에 추가됨 ({{count}})",
+      "messageOne": "검토를 위해 “{{title}}”을(를) 추가했습니다",
+      "messageMany": "검토를 위해 {{count}}개 항목을 추가했습니다: {{title}}…",
+      "submitted": "{{count}}개를 검토용으로 제출했습니다",
+      "failed": "제출 실패",
+      "title": "Queer Guide에 추가",
+      "subtitle": "전단지를 끌어다 놓거나 링크를 붙여넣으세요. 추출된 항목은 검토용으로 제출되고 이 채팅에 공유됩니다."
+    }
+  },
+  "newsDetail": {
+    "notFound": "기사를 찾을 수 없습니다",
+    "notFoundDesc": "찾으시는 기사가 존재하지 않습니다.",
+    "backToNews": "뉴스로 돌아가기",
+    "share": "공유",
+    "readAtSource": "출처에서 보기",
+    "fresh": "새 소식",
+    "reportedByOutlets": "{{count}}개 매체 보도",
+    "featured": "추천",
+    "byAuthor": "{{author}}",
+    "minRead": "{{count}}분 분량",
+    "viewsCount": "조회 {{count}}회",
+    "whyThisMatters": "왜 중요한가",
+    "editorialPlaceholder": "Alt+클릭하여 맥락 추가 — 이 소식이 중요한 이유를 1~3문장으로.",
+    "bodyFallback": "전체 내용은 원본 출처에서 확인할 수 있습니다.",
+    "originallyPublishedBy": "원 출처: {{source}}.",
+    "viewOriginal": "원문 보기",
+    "integritySatire": "풍자로 표시됨 — 사실 보도가 아닙니다.",
+    "integrityAdvertorial": "협찬/광고성 콘텐츠.",
+    "integritySentimentConflict": "출처마다 논조가 다릅니다 — 주의해서 읽으세요.",
+    "closeToHome": "내 거점 근처",
+    "seeFullStory": "전체 이야기 보기",
+    "topics": "주제",
+    "home": "홈",
+    "whereThisHappens": "발생 장소",
+    "aboutSource": "출처 정보",
+    "corroboratedAcross": "{{count}}개 매체가 확인",
+    "lastVerified": "최종 확인 {{time}}",
+    "visitSource": "{{source}} 방문",
+    "source": "출처",
+    "moreLikeThis": "비슷한 기사",
+    "forYou": "추천"
+  },
+  "pwa": {
+    "updateAvailable": {
+      "title": "새 버전을 사용할 수 있습니다",
+      "description": "새로고침하여 최신 기능을 받으세요.",
+      "action": "새로고침"
+    },
+    "backOnline": "다시 온라인 상태입니다",
+    "offline": {
+      "title": "오프라인 상태입니다",
+      "description": "일부 기능을 사용하지 못할 수 있습니다."
+    },
+    "install": {
+      "title": "Queer Guide 설치",
+      "description": "홈 화면에서 빠르게 접근하세요. 오프라인에서도 작동합니다.",
+      "action": "설치",
+      "iosTitle": "홈 화면에 추가",
+      "iosHint": "Safari에서 공유 버튼을 누른 다음 '홈 화면에 추가'를 선택하세요.",
+      "dismiss": "닫기",
+      "ariaLabel": "앱 설치"
+    }
+  },
+  "atlas": {
+    "summary": "방문한 나라 {{visited}}곳 · 버킷리스트 {{bucket}}곳",
+    "hint": "나라를 탭하여 표시하세요",
+    "visited": "방문함",
+    "bucket": "버킷리스트",
+    "fromTrips": "완료된 여행으로 방문 표시됨"
+  },
+  "calendar": {
+    "title": "내 캘린더",
+    "subtitle": "여행과 저장한 이벤트를 한곳에서",
+    "signInDesc": "로그인하면 여행과 저장한 이벤트를 볼 수 있습니다.",
+    "trip": "여행",
+    "empty": "이번 달에는 여행이나 저장한 이벤트가 없습니다.",
+    "planTrip": "여행 계획하기",
+    "browseEvents": "이벤트 둘러보기",
+    "copyFeed": "구독 URL 복사",
+    "download": ".ics 다운로드",
+    "open": "캘린더",
+    "openAria": "내 캘린더 열기"
+  },
+  "status": {
+    "lookingFor": "찾고 있는 것",
+    "lookingForHint": "추천 순위에 반영됩니다. 프로필에는 표시되지 않습니다."
+  },
+  "people": {
+    "intent": {
+      "lookingForOptions": {
+        "friends": "친구",
+        "dating": "데이트",
+        "travel_buddies": "여행 친구",
+        "locals": "현지인",
+        "networking": "네트워킹"
+      }
+    }
+  },
+  "hub": {
+    "title": "내 허브",
+    "nav": "허브 모듈",
+    "signInDesc": "받은편지함, 여행, 저장한 장소를 보려면 로그인하세요.",
+    "identity": {
+      "viewProfile": "프로필 보기"
+    },
+    "modules": {
+      "inbox": "받은편지함",
+      "calendar": "캘린더",
+      "contacts": "연락처",
+      "saved": "저장됨",
+      "news": "뉴스",
+      "trips": "여행"
+    },
+    "calendar": {
+      "title": "다가오는 일정",
+      "empty": "아직 예정된 일정이 없습니다.",
+      "today": "오늘",
+      "tomorrow": "내일",
+      "allDay": "하루 종일",
+      "subscribe": "구독",
+      "showMore": "더 먼 일정 보기",
+      "kinds": {
+        "trip": "여행",
+        "reservation": "예약",
+        "going": "참석",
+        "saved": "저장됨"
+      }
+    },
+    "contacts": {
+      "title": "연락처",
+      "search": "연락처 검색…",
+      "recent": "최근 채팅",
+      "friends": "친구",
+      "groups": "그룹",
+      "dating": "데이트",
+      "datingTitle": "내 데이트 덱",
+      "datingBody": "매치와 대화를 살펴보세요."
+    },
+    "news": {
+      "title": "뉴스",
+      "savedStories": "저장한 기사",
+      "savedEmpty": "저장한 기사가 아직 없습니다.",
+      "fromTags": "팔로우한 태그에서",
+      "tagsEmpty": "태그를 팔로우하면 관련 기사가 표시됩니다.",
+      "tagsNoArticles": "팔로우한 태그에 새 기사가 없습니다.",
+      "savedSearches": "저장한 검색"
     }
   }
 }

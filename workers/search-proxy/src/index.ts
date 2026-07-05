@@ -65,14 +65,12 @@ export interface Env {
 	EMBED_MODEL?: string;
 	ENABLE_RERANKER?: string; // "1" to enable
 	SESSION_CACHE: KVNamespace; // per-session recent views for decay
-	/**
-	 * Search backend selector (Meili -> Postgres migration, Phase 2).
-	 *   "meili"  (default) — current Meilisearch + pgvector fusion path.
-	 *   "pg"     — serve from the Postgres search_hybrid/search_facets RPCs.
-	 *   "shadow" — serve Meili, run PG in parallel and log a comparison
-	 *              (no user-facing change). Used to validate before cutover.
-	 */
-	SEARCH_BACKEND?: string;
+	/** Awin publisher id — enables awinWrap for known-MID merchants (/go?l= mode). */
+	AWIN_AFFILIATE_ID?: string;
+	/** Amazon Associates tag appended to amazon.* destinations. */
+	AMAZON_ASSOCIATES_TAG?: string;
+	/** JSON map of merchant_domain → Awin MID, e.g. {"etsy.com":"12345"}. */
+	AWIN_MERCHANT_MIDS?: string;
 	ADMIN_TOKEN?: string;
 	SENTRY_DSN?: string;
 	SENTRY_ENV?: string;
@@ -262,7 +260,7 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 	// Non-Latin script (CJK/Cyrillic/…) flows through the normal Postgres
 	// pipeline: search_hybrid's trigram leg matches non-Latin titles directly
 	// (search_documents stores native-script city/venue titles), so the old
-	// Meili city-alias special-case is no longer needed.
+	// The old city-alias special-case is no longer needed.
 
 	const filtersR = validFilters(body.filters);
 	if (!filtersR.ok) return errorResponse(filtersR, cors);
@@ -297,7 +295,7 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 		// Fallback: if the popular view returns nothing, browse featured docs
 		// from Postgres (search_hybrid with an empty query + is_featured filter
 		// returns the featured set ranked). Without this, "trans"/"queer"/"gay"
-		// returned []. Bug #9 follow-up (was a Meili empty-query browse).
+		// returned []. Bug #9 follow-up (was an empty-query browse).
 		if (hits.length === 0) {
 			const browse = await pgHybridSearch(env, {
 				query: "",
@@ -340,7 +338,7 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 	// Normalise type/types: collapse `type` into `types` for downstream code.
 	// Note: rewrite.type_hint is intentionally NOT used to narrow indexes.
 	// Doing so previously caused single-word city queries ("berlin") to be
-	// restricted to the cities index, where Meilisearch's typo tolerance
+	// restricted to cities, where typo tolerance
 	// pushed Berlin out of the top 75 hits and yielded irrelevant results.
 	// We rely on the exact-title boost in personalizedRank instead.
 	const allTypes: string[] = [
@@ -407,7 +405,7 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 	};
 
 	// search_hybrid fuses keyword (FTS+trigram) + vector via RRF in SQL, so it
-	// replaces both the old Meili multi-search and personalized_semantic_search.
+	// replaces both the old multi-search and personalized_semantic_search.
 	const pg = await pgHybridSearch(env, pgArgs).catch((e) => {
 		console.warn("pgHybridSearch", (e as Error).message);
 		return null;
@@ -424,7 +422,7 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 	const explicitSort = !!mergedFilters.sort && mergedFilters.sort !== "relevance";
 
 	// Personalization nudges (boost/decay) + worker-side exact-title boost
-	// for bug #4 (until the Meilisearch index ranking rules are reconfigured).
+	// for bug #4.
 	let ranked = explicitSort ? fused : personalizedRank(fused, signal, recent, q);
 
 	// Cold-start fallback if starved (relevance order only). v_popular_entities
@@ -915,7 +913,7 @@ type HydratableHit = {
 };
 
 async function hydrateTitles(_env: Env, list: HydratableHit[]): Promise<HydratableHit[]> {
-	// Meili hits already have title. pgvector hits may not — batch fetch missing.
+	// Keyword hits already have title. pgvector hits may not — batch fetch missing.
 	return list.map((h) => ({
 		...h,
 		_snippet: `${h.title ?? ""}. ${h.description ?? h.content_text ?? ""}`.slice(0, 400),
@@ -923,7 +921,7 @@ async function hydrateTitles(_env: Env, list: HydratableHit[]): Promise<Hydratab
 }
 
 // ─────────────────────────────────────────────
-// /autocomplete — fast prefix/typo suggestions from Meili across indexes
+// /autocomplete — fast prefix/typo suggestions across entity types
 // ─────────────────────────────────────────────
 async function handleAutocomplete(request: Request, env: Env, cors: HeadersInit): Promise<Response> {
 	if (request.method !== "POST") return json({ error: "method", code: "method_not_allowed" }, 405, cors);
@@ -947,7 +945,7 @@ async function handleAutocomplete(request: Request, env: Env, cors: HeadersInit)
 		if (!r.ok) return errorResponse(r, cors);
 		indexes = [...new Set(r.value.map((t) => INDEX_MAP[t]).filter((t) => ALL_INDEXES.includes(t)))];
 		if (indexes.length === 0) {
-			// All requested types had no Meilisearch index — return empty rather than
+			// All requested types were unknown — return empty rather than
 			// silently widening (which would mask the caller's bug).
 			return json({ suggestions: [] }, 200, cors);
 		}

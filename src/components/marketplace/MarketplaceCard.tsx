@@ -1,7 +1,8 @@
-import { memo } from 'react';
-import { MotionCard as Card, CardImage } from '@/components/ui/card';
+import { memo, useState } from 'react';
+import { MotionCard as Card } from '@/components/ui/card';
 import { CardHoverEffect } from '@/components/effects/CardHoverEffect';
-import { Store, ExternalLink } from 'lucide-react';
+import { Image } from '@/components/ui/Image';
+import { Badge } from '@/components/ui/badge';
 import type { Database } from '@/integrations/supabase/types';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { WishlistPicker } from '@/components/marketplace/WishlistPicker';
@@ -12,7 +13,8 @@ import type { EntityImageAsset } from '@/hooks/useEntityImageAssets';
 import { useCurrency } from '@/hooks/useCurrency';
 import { useFxRates } from '@/hooks/useFxRates';
 import { isAdultListing } from '@/hooks/useAdultContent';
-import { departmentLabel, departmentOf } from '@/lib/marketplaceTaxonomy';
+import { brandSlug, departmentLabel, departmentOf } from '@/lib/marketplaceTaxonomy';
+import type { MarketplaceSurface } from '@/lib/affiliate/marketplace';
 import { formatListingPrice, getOutboundLink, highlightMatches } from './marketplaceHelpers';
 
 type MarketplaceListing = Database['public']['Tables']['marketplace_listings']['Row'];
@@ -31,6 +33,10 @@ interface MarketplaceCardProps {
   imageAsset?: EntityImageAsset;
   /** Eager-load the image (above-the-fold cards). */
   priority?: boolean;
+  /** Attribution surface for the outbound /go link. */
+  surface?: MarketplaceSurface;
+  /** `row` renders a horizontal layout for list mode. */
+  variant?: 'grid' | 'row';
 }
 
 function HighlightedText({ text, query }: { text: string; query?: string }) {
@@ -57,9 +63,14 @@ function MarketplaceCardImpl({
   searchQuery,
   imageAsset,
   priority = false,
+  surface = 'marketplace_grid',
+  variant = 'grid',
 }: MarketplaceCardProps) {
   const { currency } = useCurrency();
   const { data: rates } = useFxRates();
+  // Second image mounts only after first hover — 24 cards per page must
+  // not double their image fetches for a hover flourish nobody triggers.
+  const [hovered, setHovered] = useState(false);
 
   if (loading || !listing) {
     return (
@@ -75,36 +86,126 @@ function MarketplaceCardImpl({
     optimizedUrl: imageAsset?.optimized_url ?? null,
     thumbnailUrl: imageAsset?.thumbnail_url ?? null,
   });
-  const outbound = getOutboundLink(listing);
+  const secondImage = listing.images?.[1] ?? null;
+  const outbound = getOutboundLink(listing, surface);
   const isAffiliate = outbound?.isAffiliate ?? false;
   const isAdult = isAdultListing(listing);
   const outOfStock = listing.in_stock === false;
 
+  const queerOwned = (listing.community_owned_tags ?? []).some(
+    (t) => t === 'queer_owned' || t === 'trans_owned',
+  );
+
+  const metaFacts = [
+    listing.last_verified_at ? 'Verified' : null,
+    listing.venues?.city ? listing.venues.city : null,
+  ].filter(Boolean);
+
+  const imageBlock = (
+    <div className="relative">
+      {/* Nested tray: image plate sits in a muted frame — depth from
+          borders and surfaces, never shadows. */}
+      <div className="bg-muted p-1.5 rounded-t-container">
+        <LocalizedLink
+          to={`/marketplace/${listing.slug}`}
+          className="block"
+          aria-label={listing.title}
+          tabIndex={-1}
+        >
+          <div className="relative">
+            <Image
+              src={listingImage ?? undefined}
+              alt={listing.title}
+              aspect="portrait"
+              rounded="element"
+              priority={priority}
+            />
+            {secondImage && hovered && (
+              <img
+                src={secondImage}
+                alt=""
+                loading="lazy"
+                className="absolute inset-0 h-full w-full rounded-element object-cover opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+              />
+            )}
+          </div>
+        </LocalizedLink>
+      </div>
+      {showFavoriteButton && (
+        <div className="absolute top-2 right-2 z-10">
+          <WishlistPicker listingId={listing.id} />
+        </div>
+      )}
+    </div>
+  );
+
+  // Boutique card: image-led, quiet meta, no per-card CTA — the whole card
+  // goes to the detail page, where the outbound/affiliate CTA lives.
+  if (variant === 'row') {
+    return (
+      <CardHoverEffect>
+        <Card
+          className="group flex flex-row items-stretch gap-4 p-2 transition-colors duration-300 hover:border-foreground/40"
+          onMouseEnter={() => setHovered(true)}
+        >
+          <div className="relative w-28 shrink-0 overflow-hidden rounded-element sm:w-32">
+            <LocalizedLink
+              to={`/marketplace/${listing.slug}`}
+              className="block"
+              aria-label={listing.title}
+              tabIndex={-1}
+            >
+              <Image
+                src={listingImage ?? undefined}
+                alt={listing.title}
+                aspect="square"
+                rounded="element"
+              />
+            </LocalizedLink>
+            {showFavoriteButton && (
+              <div className="absolute top-1.5 right-1.5 z-10">
+                <WishlistPicker listingId={listing.id} />
+              </div>
+            )}
+          </div>
+          <RowBody
+            listing={listing}
+            price={price}
+            searchQuery={searchQuery}
+            isAdult={isAdult}
+            isAffiliate={isAffiliate}
+            outOfStock={outOfStock}
+            queerOwned={queerOwned}
+          />
+        </Card>
+      </CardHoverEffect>
+    );
+  }
+
   return (
     <CardHoverEffect>
-      <Card className="group transition-colors duration-300 hover:border-foreground/40">
-        <div className="relative">
-          <CardImage
-            src={listingImage}
-            alt={listing.title}
-            fallbackIcon={Store}
-            height={192}
-            priority={priority}
-          />
-          {showFavoriteButton && (
-            <div className="absolute top-2 right-2 z-10">
-              <WishlistPicker listingId={listing.id} />
-            </div>
-          )}
-        </div>
+      <Card
+        className="group transition-colors duration-300 hover:border-foreground/40"
+        onMouseEnter={() => setHovered(true)}
+      >
+        {imageBlock}
 
-        <div className="p-6 flex flex-col gap-2">
+        <div className="p-4 flex flex-col gap-1.5">
           <p className="text-2xs uppercase tracking-wider text-muted-foreground overflow-hidden text-ellipsis whitespace-nowrap">
-            {/* Department label ("Underwear") beats the type enum ("products") as card context. */}
-            <span>{departmentLabel(listing.department ?? departmentOf(listing.subcategory_slug))}</span>
-            {listing.business_name && (
+            {/* Brand leads (linked to its brand page); department gives context. */}
+            {listing.brand && brandSlug(listing.brand) ? (
               <>
+                <LocalizedLink
+                  to={`/marketplace/brands/${brandSlug(listing.brand)}`}
+                  onClick={(e) => e.stopPropagation()}
+                  className="hover:text-foreground"
+                >
+                  <HighlightedText text={listing.brand} query={searchQuery} />
+                </LocalizedLink>
                 <span className="mx-1.5">·</span>
+              </>
+            ) : listing.business_name ? (
+              <>
                 {listing.merchant_domain ? (
                   <LocalizedLink
                     to={`/marketplace/merchants/${listing.merchant_domain}`}
@@ -116,12 +217,13 @@ function MarketplaceCardImpl({
                 ) : (
                   <HighlightedText text={listing.business_name} query={searchQuery} />
                 )}
+                <span className="mx-1.5">·</span>
               </>
-            )}
-            {isAffiliate && <span className="ml-1.5">· Sponsored</span>}
+            ) : null}
+            <span>{departmentLabel(listing.department ?? departmentOf(listing.subcategory_slug))}</span>
           </p>
 
-          <h2 className="text-base font-semibold leading-tight overflow-hidden text-ellipsis whitespace-nowrap">
+          <h2 className="text-15 font-medium leading-snug line-clamp-2 text-balance">
             {isAdult && <span className="mr-1.5 text-2xs uppercase tracking-wider text-muted-foreground">18+</span>}
             <LocalizedLink
               to={`/marketplace/${listing.slug}`}
@@ -132,68 +234,108 @@ function MarketplaceCardImpl({
             </LocalizedLink>
           </h2>
 
-          {listing.description && (
-            <p
-              className="text-sm text-muted-foreground overflow-hidden leading-normal"
-              style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}
-            >
-              <HighlightedText text={listing.description} query={searchQuery} />
-            </p>
-          )}
-
-          <div className="flex items-end justify-between gap-2 pt-4 border-t border-border">
-            <div className="flex flex-col min-w-0">
-              <div className="flex items-baseline gap-1.5">
-                {price.modifier && (
-                  <span className="text-2xs uppercase tracking-wider text-muted-foreground">{price.modifier}</span>
-                )}
-                <p
-                  className={`text-base font-bold leading-none ${outOfStock ? 'line-through text-muted-foreground' : ''}`}
-                >
-                  {price.primary}
-                </p>
-              </div>
-              {price.secondary && (
-                <p className="text-xs text-muted-foreground mt-0.5">{price.secondary}</p>
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-baseline gap-1.5 min-w-0">
+              {price.modifier && (
+                <span className="text-2xs uppercase tracking-wider text-muted-foreground">{price.modifier}</span>
               )}
-              {outOfStock && (
-                <p className="text-2xs uppercase tracking-wider text-muted-foreground mt-1">Out of stock</p>
+              <p
+                className={`text-15 font-semibold leading-none tabular-nums ${outOfStock ? 'line-through text-muted-foreground' : ''}`}
+              >
+                {price.primary}
+              </p>
+              {price.secondary && (
+                <span className="text-xs text-muted-foreground">{price.secondary}</span>
+              )}
+              {/* FTC-honest without shouting: monetized listings get an Ad marker. */}
+              {isAffiliate && (
+                <span className="text-2xs uppercase tracking-wider text-muted-foreground">Ad</span>
               )}
             </div>
-
-            {outbound ? (
-              <a
-                href={outbound.url}
-                target="_blank"
-                rel={outbound.rel}
-                onClick={(e) => e.stopPropagation()}
-                data-affiliate={outbound.isAffiliate ? 'true' : undefined}
-                className="inline-flex items-center gap-1.5 rounded-element px-4 py-2 text-sm font-medium hover:opacity-90 transition-opacity shrink-0"
-                style={{
-                  backgroundColor: 'hsl(var(--foreground))',
-                  color: 'hsl(var(--background))',
-                }}
-                aria-label={`${outbound.label} (opens in new tab)`}
-              >
-                {outbound.label}
-                <ExternalLink size={14} aria-hidden="true" />
-              </a>
-            ) : (
-              <LocalizedLink
-                to={`/marketplace/${listing.slug}`}
-                className="inline-flex items-center gap-1.5 rounded-element px-4 py-2 text-sm font-medium hover:opacity-90 transition-opacity shrink-0"
-                style={{
-                  backgroundColor: 'hsl(var(--foreground))',
-                  color: 'hsl(var(--background))',
-                }}
-              >
-                View
-              </LocalizedLink>
-            )}
+            {queerOwned && <Badge variant="outline">Queer-owned</Badge>}
           </div>
+          {outOfStock && (
+            <p className="text-2xs uppercase tracking-wider text-muted-foreground">Out of stock</p>
+          )}
+          {/* Quiet trust line, revealed on hover where hover exists. */}
+          {metaFacts.length > 0 && (
+            <p className="hidden text-2xs uppercase tracking-wider text-muted-foreground sm:block sm:opacity-0 sm:transition-opacity sm:duration-300 sm:group-hover:opacity-100">
+              {metaFacts.join(' · ')}
+            </p>
+          )}
         </div>
       </Card>
     </CardHoverEffect>
+  );
+}
+
+function RowBody({
+  listing,
+  price,
+  searchQuery,
+  isAdult,
+  isAffiliate,
+  outOfStock,
+  queerOwned,
+}: {
+  listing: NonNullable<MarketplaceCardProps['listing']>;
+  price: ReturnType<typeof formatListingPrice>;
+  searchQuery?: string;
+  isAdult: boolean;
+  isAffiliate: boolean;
+  outOfStock: boolean;
+  queerOwned: boolean;
+}) {
+  return (
+    <div className="flex min-w-0 flex-1 flex-col justify-center gap-1.5 py-2 pr-2">
+      <p className="text-2xs uppercase tracking-wider text-muted-foreground overflow-hidden text-ellipsis whitespace-nowrap">
+        {listing.brand && brandSlug(listing.brand) ? (
+          <>
+            <LocalizedLink
+              to={`/marketplace/brands/${brandSlug(listing.brand)}`}
+              onClick={(e) => e.stopPropagation()}
+              className="hover:text-foreground"
+            >
+              <HighlightedText text={listing.brand} query={searchQuery} />
+            </LocalizedLink>
+            <span className="mx-1.5">·</span>
+          </>
+        ) : listing.business_name ? (
+          <>
+            <HighlightedText text={listing.business_name} query={searchQuery} />
+            <span className="mx-1.5">·</span>
+          </>
+        ) : null}
+        <span>{departmentLabel(listing.department ?? departmentOf(listing.subcategory_slug))}</span>
+      </p>
+      <h2 className="text-15 font-medium leading-snug line-clamp-2">
+        {isAdult && (
+          <span className="mr-1.5 text-2xs uppercase tracking-wider text-muted-foreground">18+</span>
+        )}
+        <LocalizedLink
+          to={`/marketplace/${listing.slug}`}
+          onClick={(e) => e.stopPropagation()}
+          className="hover:underline underline-offset-2"
+        >
+          <HighlightedText text={listing.title} query={searchQuery} />
+        </LocalizedLink>
+      </h2>
+      <div className="flex items-center gap-2">
+        <p
+          className={`text-15 font-semibold leading-none tabular-nums ${outOfStock ? 'line-through text-muted-foreground' : ''}`}
+        >
+          {price.primary}
+        </p>
+        {price.secondary && <span className="text-xs text-muted-foreground">{price.secondary}</span>}
+        {isAffiliate && (
+          <span className="text-2xs uppercase tracking-wider text-muted-foreground">Ad</span>
+        )}
+        {outOfStock && (
+          <span className="text-2xs uppercase tracking-wider text-muted-foreground">Out of stock</span>
+        )}
+        {queerOwned && <Badge variant="outline">Queer-owned</Badge>}
+      </div>
+    </div>
   );
 }
 

@@ -18,7 +18,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { AvatarDisplay } from '@/components/profile/AvatarDisplay';
-import type { AvatarConfig } from '@/components/profile/AvatarBuilder';
+import type { AvatarConfig } from '@/components/profile/avatarConfig';
 import { cropToAvatarBlob, MAX_SOURCE_BYTES, type PixelCrop } from '@/lib/imageCrop';
 import { cn } from '@/lib/utils';
 

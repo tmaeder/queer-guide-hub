@@ -10,6 +10,7 @@ type MarketplaceListingInsert = Database['public']['Tables']['marketplace_listin
 export const PAGE_SIZE = 24;
 
 export type MarketplaceSort =
+  | 'boutique'
   | 'for_you'
   | 'most_loved'
   | 'best_value'
@@ -30,6 +31,8 @@ export interface MarketplaceFiltersInput {
   businessType?: string;
   categoryId?: string;
   merchantDomain?: string;
+  /** normalized brand key (generated brand_key column) — brand pages. */
+  brandKey?: string;
   /** snake_case slugs: queer_owned, trans_owned, bipoc_owned, women_owned, … */
   communityOwned?: string[];
   /** ISO-4217 currency code. */
@@ -48,7 +51,7 @@ export interface MarketplaceFiltersInput {
 
 // Browse-safe ratings shown without the adult opt-in. Mirrors the
 // content_rating tiers derived in migration 20260608210000.
-const SFW_RATINGS = ['sfw', 'suggestive'];
+export const SFW_RATINGS = ['sfw', 'suggestive'];
 
 export function useMarketplace() {
   const [listings, setListings] = useState<MarketplaceListing[]>([]);
@@ -70,7 +73,7 @@ export function useMarketplace() {
   const fetchListings = async (
     filters?: MarketplaceFiltersInput,
     page = 0,
-    sort: MarketplaceSort = 'for_you',
+    sort: MarketplaceSort = 'boutique',
   ) => {
     try {
       setLoading(true);
@@ -175,9 +178,9 @@ export function useMarketplace() {
         )
         .eq('status', 'active');
 
-      // 'for_you' falls back to 'most_loved' until the marketplace-rank
-      // edge function lands (Phase D). Both feature-pin first so editorially
-      // chosen items always lead.
+      // Default 'boutique' ranks by the boutique_score generated column
+      // (relevance + quality + queer-ownership + non-aggregator + brand).
+      // Every sort feature-pins first so editorially chosen items lead.
       switch (sort) {
         case 'price_asc':
           query = query
@@ -212,12 +215,17 @@ export function useMarketplace() {
           break;
         case 'most_loved':
         case 'for_you':
-        default:
           query = query
             .order('featured', { ascending: false })
             .order('views_count', { ascending: false, nullsFirst: false })
             .order('quality_score', { ascending: false, nullsFirst: false })
             .order('lgbti_relevance_score', { ascending: false, nullsFirst: false });
+          break;
+        case 'boutique':
+        default:
+          query = query
+            .order('featured', { ascending: false })
+            .order('boutique_score', { ascending: false, nullsFirst: false });
           break;
       }
 
@@ -253,6 +261,10 @@ export function useMarketplace() {
 
       if (filters?.merchantDomain) {
         query = query.eq('merchant_domain', filters.merchantDomain);
+      }
+
+      if (filters?.brandKey) {
+        query = query.eq('brand_key', filters.brandKey);
       }
 
       if (filters?.priceRange) {

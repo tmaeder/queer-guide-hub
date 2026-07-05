@@ -41,7 +41,10 @@ interface ForceLink extends LinkObject {
   type: string;
 }
 
-const NODE_COLOR = '#6366f1';
+// Monochrome neutral node — the former indigo was removed in the monochrome
+// strip. Concrete hex is required by the canvas 2D API (react-force-graph),
+// which can't read CSS custom properties; this file stays on the allowlist.
+const NODE_COLOR = '#737373';
 
 export default function TagRelationshipGraph({
   onTagClick,
@@ -182,7 +185,7 @@ export default function TagRelationshipGraph({
   const linkColor = useCallback((link: LinkObject) => {
     const l = link as ForceLink;
     const alpha = Math.min(0.8, (l.score || 0.3) * 1.2);
-    return `rgba(150, 150, 200, ${alpha})`;
+    return `rgba(150, 150, 150, ${alpha})`;
   }, []);
 
   const linkWidth = useCallback((link: LinkObject) => {

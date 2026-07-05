@@ -63,7 +63,6 @@
   },
   "search": {
     "placeholder": "国や都市を検索...",
-    "nearMe": "近くの場所",
     "filters": "フィルター",
     "continent": "大陸",
     "all": "すべて",
@@ -170,7 +169,10 @@
     "clear": "Clear",
     "signIn": "Sign in",
     "goHome": "Go Home",
-    "more": "もっと見る"
+    "more": "もっと見る",
+    "remove": "削除",
+    "accept": "承認",
+    "decline": "辞退"
   },
   "navigation": {
     "home": "ホーム",
@@ -575,7 +577,9 @@
         "safety": "安全用品",
         "lgbtq-specific": "LGBTQ+ 向け",
         "other": "その他"
-      }
+      },
+      "scopeAll": "全員",
+      "scopeMine": "自分"
     },
     "collaborate": {
       "chat": "チャット",
@@ -614,7 +618,8 @@
       "budget": "予算",
       "reservations": "予約",
       "packing": "荷造り",
-      "collaborate": "コラボ"
+      "collaborate": "コラボ",
+      "journal": "日記"
     },
     "today": {
       "offlineBanner": "オフラインです — 最後に保存した旅程を表示しています。",
@@ -895,6 +900,86 @@
       "saveAria": "Save trip",
       "unsaveAria": "Unsave trip",
       "error": "Could not update save"
+    },
+    "dayNotes": {
+      "addTitle": "この日にメモを追加",
+      "textLabel": "メモ",
+      "textPlaceholder": "例: 11:00までにチェックアウト",
+      "timeLabel": "時刻（任意）",
+      "iconLabel": "アイコン",
+      "save": "メモを追加",
+      "added": "メモを追加しました",
+      "delete": "メモを削除"
+    },
+    "weather": {
+      "clear": "快晴",
+      "partlyCloudy": "晴れ時々曇り",
+      "overcast": "曇り",
+      "fog": "霧",
+      "drizzle": "霧雨",
+      "rain": "雨",
+      "snow": "雪",
+      "thunderstorm": "雷雨",
+      "typical": "例年"
+    },
+    "conflicts": {
+      "chip_one": "{{count}}件の競合",
+      "chip_other": "{{count}}件の競合"
+    },
+    "legs": {
+      "switchMode": "移動手段を切り替える",
+      "modeAria": "移動手段: {{mode}} — クリックして変更",
+      "mode": {
+        "walk": "徒歩",
+        "transit": "公共交通機関",
+        "drive": "車"
+      },
+      "walkingTotal": "徒歩{{distance}}",
+      "optimize": "ルート順を最適化",
+      "directions": "この日をGoogle マップで開く"
+    },
+    "suggestions": {
+      "accessMatch": "ニーズに一致"
+    },
+    "journal": {
+      "placeholder": "今日は何がありましたか？小さな出来事も大切に。",
+      "moodLabel": "気分",
+      "mood": {
+        "joy": "最高",
+        "good": "良い",
+        "mixed": "複雑",
+        "tough": "大変"
+      },
+      "addPhotos": "写真",
+      "save": "記録を保存",
+      "saved": "日記を保存しました",
+      "empty": "まだ日記がありません。",
+      "delete": "記録を削除",
+      "removePhoto": "写真を削除",
+      "member": "旅行者"
+    },
+    "import": {
+      "button": "インポート",
+      "title": "場所をインポート",
+      "pickFile": "ファイルを選択",
+      "formats": "GPX、KML、GeoJSON、Google Takeout（保存済みスポットJSON / リストCSV）",
+      "noPlaces": "このファイルに場所が見つかりません。",
+      "matching": "スポットを照合中…",
+      "matchCount": "{{count}}件がqueer.guideのスポットと一致",
+      "changeFile": "ファイルを変更",
+      "matched": "既存スポット",
+      "customPin": "カスタムピン",
+      "noCoords": "座標なし — 名前のみ",
+      "confirm": "{{count}}件の場所をインポート",
+      "done": "{{count}}件の場所をインポートしました",
+      "doneHint": "未予定のプールに入ります — 日程にドラッグしてください。"
+    },
+    "offline": {
+      "pending_one": "{{count}}件の変更が同期待ち",
+      "pending_other": "{{count}}件の変更が同期待ち"
+    },
+    "inbox": {
+      "openThread": "チャットで確認"
     }
   },
   "auth": {
@@ -1530,6 +1615,12 @@
         "thisWeek": "今週",
         "later": "その後"
       }
+    },
+    "shop": {
+      "eyebrow": "マーケットプレイス",
+      "title": "クィアオウンドのアイテム",
+      "description": "クィア・トランス経営のショップの商品とサービス。",
+      "seeAll": "マーケットプレイスへ"
     }
   },
   "header": {
@@ -1564,7 +1655,8 @@
       "travel": "旅行",
       "personalities": "著名人",
       "hotels": "ホテル",
-      "help": "ヘルプ"
+      "help": "ヘルプ",
+      "tags": "タグ"
     },
     "userMenu": {
       "myTrips": "マイトリップ",
@@ -1626,7 +1718,8 @@
       "settingsSection": "表示",
       "browseAll": "すべてのセクションを見る",
       "unreadCount": "未読 {{count}} 件",
-      "tripsBadge": "確認が必要な旅行項目が {{count}} 件"
+      "tripsBadge": "確認が必要な旅行項目が {{count}} 件",
+      "hub": "ハブ"
     }
   },
   "pages": {
@@ -2156,7 +2249,9 @@
       "eyebrow": "コミュニティ",
       "title": "友達",
       "subtitle": "つながりを管理",
-      "gate": "友達を見るにはサインインしてください。"
+      "gate": "友達を見るにはサインインしてください。",
+      "requests": "リクエスト",
+      "sentRequest": "友達リクエストを送信しました"
     }
   },
   "settings": {
@@ -2184,6 +2279,148 @@
       "denied": "Location access is off — showing the default area",
       "unavailable": "Couldn't get your location — showing the default area",
       "timeout": "Location lookup timed out — showing the default area"
+    },
+    "share": {
+      "title": "[JA] Map view",
+      "copied": "[JA] Link copied",
+      "copiedDescription": "[JA] Paste to share this view",
+      "failed": "[JA] Share failed"
+    },
+    "commandBar": {
+      "searchThisMap": "[JA] Search this map",
+      "searching": "[JA] Searching",
+      "clearSearch": "[JA] Clear search",
+      "typeMore": "[JA] Type at least 2 characters",
+      "filterMapFor": "[JA] Filter map for “{{query}}”",
+      "jumpToPlace": "[JA] Jump to a place",
+      "noMatches": "[JA] No places match — Enter still filters the map.",
+      "filters": "[JA] Filters",
+      "filtersActive": "[JA] Filters, {{count}} active",
+      "filtersAndLayers": "[JA] Filters & layers",
+      "layers": "[JA] Layers",
+      "more": "[JA] More map options",
+      "moreShort": "[JA] More",
+      "mapOptions": "[JA] Map options",
+      "myLocation": "[JA] My location",
+      "fitResults": "[JA] Fit to results",
+      "shareView": "[JA] Share view",
+      "reset": "[JA] Reset"
+    },
+    "entityType": {
+      "venue": "[JA] Venue",
+      "event": "[JA] Event",
+      "city": "[JA] City",
+      "country": "[JA] Country",
+      "marketplace": "[JA] Listing",
+      "personality": "[JA] Person",
+      "queer_village": "[JA] Village",
+      "group": "[JA] Group",
+      "news": "[JA] News",
+      "tag": "[JA] Tag",
+      "user": "[JA] User"
+    },
+    "quick": {
+      "groupLabel": "[JA] Quick filters",
+      "openNow": "[JA] Open now",
+      "tonight": "[JA] Tonight",
+      "thisWeekend": "[JA] This weekend",
+      "thisMonth": "[JA] This month",
+      "saved": "[JA] Saved"
+    },
+    "lens": {
+      "groupLabel": "[JA] Map view",
+      "pins": "[JA] Pins",
+      "density": "[JA] Density",
+      "routes": "[JA] Routes",
+      "boundary": "[JA] Boundary",
+      "combined": "[JA] Combined"
+    },
+    "sheet": {
+      "title": "[JA] Map options",
+      "view": "[JA] View",
+      "filters": "[JA] Filters",
+      "time": "[JA] Time",
+      "layers": "[JA] Layers",
+      "actions": "[JA] Map actions"
+    },
+    "time": {
+      "label": "[JA] Time range",
+      "anyTime": "[JA] Any time",
+      "chooseDates": "[JA] Choose dates",
+      "pickRange": "[JA] Pick a start & end",
+      "untilEndDate": "[JA] {{start}} – end date",
+      "clear": "[JA] Clear",
+      "apply": "[JA] Apply dates"
+    },
+    "nav": {
+      "zoomIn": "[JA] Zoom in",
+      "zoomOut": "[JA] Zoom out",
+      "resetNorth": "[JA] Reset bearing to north",
+      "geolocate": "[JA] Show my location"
+    },
+    "legend": {
+      "label": "[JA] Legend",
+      "show": "[JA] Show map legend",
+      "hide": "[JA] Hide map legend",
+      "title": "[JA] What you're seeing",
+      "featured": "[JA] Ringed = featured spot",
+      "live": "[JA] Pulsing = open now / live",
+      "areas": "[JA] Areas",
+      "densityTitle": "[JA] Density of queer life",
+      "fewer": "[JA] Fewer",
+      "more": "[JA] More"
+    },
+    "rail": {
+      "inView_one": "[JA] {{count}} place in view",
+      "inView_other": "[JA] {{count}} places in view",
+      "hide": "[JA] Hide nearby places",
+      "listLabel": "[JA] Places in view",
+      "showOnMap": "[JA] Show {{name}} on the map"
+    },
+    "firstRun": {
+      "spotsInView_one": "[JA] {{count}} queer spot in view",
+      "spotsInView_other": "[JA] {{count}} queer spots in view",
+      "dismiss": "[JA] Dismiss"
+    },
+    "canvas": {
+      "loading": "[JA] Loading",
+      "loadingEllipsis": "[JA] Loading...",
+      "resultsInView_one": "[JA] {{count}} result in view",
+      "resultsInView_other": "[JA] {{count}} results in view",
+      "clickToZoom": "[JA] Click to zoom in",
+      "venueCount_one": "[JA] {{count}} venue",
+      "venueCount_other": "[JA] {{count}} venues",
+      "eventCount_one": "[JA] {{count}} event",
+      "eventCount_other": "[JA] {{count}} events",
+      "restroomCount_one": "[JA] {{count}} restroom",
+      "restroomCount_other": "[JA] {{count}} restrooms",
+      "hotelCount_one": "[JA] {{count}} hotel",
+      "hotelCount_other": "[JA] {{count}} hotels",
+      "placeCount_one": "[JA] {{count}} place",
+      "placeCount_other": "[JA] {{count}} places",
+      "emptyOpenNow": "[JA] Nothing open right now in view — turn off Open now or try later.",
+      "emptyTimeRange": "[JA] No events in this time range here — widen the dates or pan out.",
+      "emptySearch": "[JA] No matches for \"{{query}}\" here — clear search or pan out.",
+      "emptyDefault": "[JA] No spots here yet — pan, zoom out, or put one on the map."
+    },
+    "layers": {
+      "venues": "[JA] Venues",
+      "events": "[JA] Events",
+      "cities": "[JA] Cities",
+      "countries": "[JA] Countries",
+      "restrooms": "[JA] Restrooms",
+      "hotels": "[JA] Hotels",
+      "neighbourhoods": "[JA] Villages"
+    },
+    "filterChips": {
+      "groupLabel": "[JA] Active filters",
+      "remove": "[JA] Remove filter: {{label}}",
+      "clearAll": "[JA] Clear all",
+      "within": "[JA] Within {{km}} km",
+      "accessible": "[JA] Accessible",
+      "queerOwned": "[JA] Queer-owned",
+      "tags_one": "[JA] {{count}} tag",
+      "tags_other": "[JA] {{count}} tags"
     }
   },
   "resources": {
@@ -2306,7 +2543,15 @@
     },
     "tagDetail": {
       "breadcrumbHome": "リソース",
-      "noDefinition": "この用語にはまだ定義がありません。"
+      "noDefinition": "この用語にはまだ定義がありません。",
+      "alsoKnownAs": "別名",
+      "readOnWikipedia": "Wikipediaで読む",
+      "searchTagged": "{{name}}のタグが付いたすべてを検索",
+      "seeAlso": "関連項目",
+      "sensitiveContentBody": "このトピックにはセンシティブな内容が含まれる場合があります。サポートが必要な場合は、危機ホットラインのページをご覧ください。",
+      "sensitiveContentTitle": "センシティブなトピック",
+      "tableOfContents": "目次",
+      "viewAsGraph": "グラフで表示"
     },
     "graph": {
       "title": "タグ関係グラフ",
@@ -2596,7 +2841,11 @@
       "email": "新規メール"
     },
     "notification": {
-      "open": "開く"
+      "open": "開く",
+      "view": "表示",
+      "reviewerNotes": "レビュー担当者のメモ",
+      "allSubmissions": "自分の投稿すべて",
+      "shareToChat": "チャットに共有"
     },
     "openInbox": "受信箱を開く",
     "markAlertsRead": "アラートを既読にする",
@@ -2617,6 +2866,34 @@
       "empty": "まだ候補がありません。",
       "recent": "最近やり取りした人",
       "active": "最近アクティブ"
+    },
+    "upcoming": "近日",
+    "openCalendar": "カレンダー",
+    "tripmail": {
+      "gone": "このメールはもう利用できません。",
+      "type": "種類",
+      "vendor": "事業者",
+      "title": "タイトル",
+      "dates": "日付",
+      "location": "場所",
+      "price": "価格",
+      "confirmation": "確認番号",
+      "extracted": "抽出された予約",
+      "filed": "登録済み",
+      "confirm": "旅行に追加",
+      "dismiss": "破棄",
+      "openTrip": "旅行を開く",
+      "fallbackTitle": "転送されたメール",
+      "intro": "抽出内容に間違いがあれば教えてください。例:「チェックインは実際には12日」",
+      "thinking": "メールを確認中…",
+      "placeholder": "内容の修正や予約についての質問をどうぞ…",
+      "send": "送信",
+      "sendFailed": "送信できませんでした",
+      "foundEntities": "このメールで見つかりました",
+      "addToGuide": "queer.guideに追加",
+      "stagedNote": "レビューに送信しました — 品質パイプラインを通過します。",
+      "anEvent": "イベント",
+      "aVenue": "会場"
     }
   },
   "extension": {
@@ -2716,7 +2993,8 @@
     "help": "ヘルプ",
     "pride": "プライド",
     "contributors": "貢献者",
-    "wishlists": "ウィッシュリスト"
+    "wishlists": "ウィッシュリスト",
+    "tags": "タグ"
   },
   "chat": {
     "react": "リアクション",
@@ -2765,6 +3043,158 @@
       "on": "いま空いてる",
       "both": "{{name}} は今すぐ会えます 🟢",
       "youOnly": "あなたは「会える」と表示されています 🟢"
+    },
+    "share": {
+      "gated": "Queer Guide で詳細を見る",
+      "view": "Queer Guide で表示"
+    },
+    "submission": {
+      "header": "Queer Guide に追加しました（{{count}}）",
+      "messageOne": "「{{title}}」をレビュー用に追加しました",
+      "messageMany": "レビュー用に{{count}}件を追加しました: {{title}}…",
+      "submitted": "{{count}}件をレビュー用に送信しました",
+      "failed": "送信に失敗しました",
+      "title": "Queer Guide に追加",
+      "subtitle": "フライヤーをアップロードするかリンクを貼り付けてください。抽出された項目はレビュー用に送信され、このチャットで共有されます。"
+    }
+  },
+  "newsDetail": {
+    "notFound": "記事が見つかりません",
+    "notFoundDesc": "お探しの記事は存在しません。",
+    "backToNews": "ニュースに戻る",
+    "share": "共有",
+    "readAtSource": "ソースで読む",
+    "fresh": "新着",
+    "reportedByOutlets": "{{count}}社が報道",
+    "featured": "注目",
+    "byAuthor": "{{author}}",
+    "minRead": "約{{count}}分で読了",
+    "viewsCount": "{{count}} 回表示",
+    "whyThisMatters": "なぜ重要か",
+    "editorialPlaceholder": "Alt＋クリックで背景を追加 — このニュースが重要な理由を1〜3文で。",
+    "bodyFallback": "全文は元のソースでご覧いただけます。",
+    "originallyPublishedBy": "初出: {{source}}。",
+    "viewOriginal": "元の記事を見る",
+    "integritySatire": "風刺としてフラグ付け — 事実の報道ではありません。",
+    "integrityAdvertorial": "広告・タイアップコンテンツ。",
+    "integritySentimentConflict": "トーンについて情報源が一致していません — 注意してお読みください。",
+    "closeToHome": "あなたの拠点の近く",
+    "seeFullStory": "全文を見る",
+    "topics": "トピック",
+    "home": "ホーム",
+    "whereThisHappens": "発生場所",
+    "aboutSource": "情報源について",
+    "corroboratedAcross": "{{count}}社が裏付け",
+    "lastVerified": "最終確認: {{time}}",
+    "visitSource": "{{source}} を開く",
+    "source": "情報源",
+    "moreLikeThis": "関連記事",
+    "forYou": "おすすめ"
+  },
+  "pwa": {
+    "updateAvailable": {
+      "title": "新しいバージョンが利用可能です",
+      "description": "更新して最新の機能を入手してください。",
+      "action": "更新"
+    },
+    "backOnline": "オンラインに戻りました",
+    "offline": {
+      "title": "オフラインです",
+      "description": "一部の機能が利用できない場合があります。"
+    },
+    "install": {
+      "title": "Queer Guide をインストール",
+      "description": "ホーム画面からすぐにアクセス。オフラインでも使えます。",
+      "action": "インストール",
+      "iosTitle": "ホーム画面に追加",
+      "iosHint": "Safari の共有ボタンをタップし、「ホーム画面に追加」を選択してください。",
+      "dismiss": "閉じる",
+      "ariaLabel": "アプリをインストール"
+    }
+  },
+  "atlas": {
+    "summary": "訪問済み{{visited}}か国 · バケットリスト{{bucket}}か国",
+    "hint": "国をタップしてマーク",
+    "visited": "訪問済み",
+    "bucket": "バケットリスト",
+    "fromTrips": "完了した旅行により訪問済みになりました"
+  },
+  "calendar": {
+    "title": "マイカレンダー",
+    "subtitle": "旅行と保存したイベントを一か所に",
+    "signInDesc": "ログインすると旅行と保存したイベントが表示されます。",
+    "trip": "旅行",
+    "empty": "今月の旅行や保存したイベントはありません。",
+    "planTrip": "旅行を計画",
+    "browseEvents": "イベントを見る",
+    "copyFeed": "購読URLをコピー",
+    "download": ".ics をダウンロード",
+    "open": "カレンダー",
+    "openAria": "マイカレンダーを開く"
+  },
+  "status": {
+    "lookingFor": "探しているもの",
+    "lookingForHint": "あなたへのおすすめ順に反映されます。プロフィールには表示されません。"
+  },
+  "people": {
+    "intent": {
+      "lookingForOptions": {
+        "friends": "友達",
+        "dating": "デート",
+        "travel_buddies": "旅の仲間",
+        "locals": "現地の人",
+        "networking": "ネットワーキング"
+      }
+    }
+  },
+  "hub": {
+    "title": "マイハブ",
+    "nav": "ハブのモジュール",
+    "signInDesc": "受信箱・旅行・保存した場所を見るにはサインインしてください。",
+    "identity": {
+      "viewProfile": "プロフィールを見る"
+    },
+    "modules": {
+      "inbox": "受信箱",
+      "calendar": "カレンダー",
+      "contacts": "連絡先",
+      "saved": "保存済み",
+      "news": "ニュース",
+      "trips": "旅行"
+    },
+    "calendar": {
+      "title": "今後の予定",
+      "empty": "予定はまだありません。",
+      "today": "今日",
+      "tomorrow": "明日",
+      "allDay": "終日",
+      "subscribe": "購読",
+      "showMore": "さらに先を見る",
+      "kinds": {
+        "trip": "旅行",
+        "reservation": "予約",
+        "going": "参加",
+        "saved": "保存"
+      }
+    },
+    "contacts": {
+      "title": "連絡先",
+      "search": "連絡先を検索…",
+      "recent": "最近のチャット",
+      "friends": "友達",
+      "groups": "グループ",
+      "dating": "デート",
+      "datingTitle": "あなたのデートデッキ",
+      "datingBody": "マッチと会話を見る。"
+    },
+    "news": {
+      "title": "ニュース",
+      "savedStories": "保存した記事",
+      "savedEmpty": "保存した記事はまだありません。",
+      "fromTags": "フォロー中のタグから",
+      "tagsEmpty": "タグをフォローすると関連記事が表示されます。",
+      "tagsNoArticles": "フォロー中のタグに新着はまだありません。",
+      "savedSearches": "保存した検索"
     }
   }
 }

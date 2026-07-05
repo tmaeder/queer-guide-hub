@@ -16,9 +16,12 @@ import { test, expect } from '@playwright/test';
 // anon (sensitive + unreviewed) and is categorised "Slang & Terminology",
 // so it no longer gates.
 
-const ADULT_TAG_PATH = '/resources/age play';
+// Tag slugs are hyphenated: "/tags/age play" (space) 404s at the CF edge; the
+// real slug is "age-play". "Age Play" is anon-visible + categorised adult
+// (DB "Fetish Practices"), so it reliably fires the gate for signed-out visitors.
+const ADULT_TAG_PATH = '/tags/age-play';
 
-test.describe('@p0-3 /resources age gate', () => {
+test.describe('@p0-3 /tags age gate', () => {
   test('Sexuality & Kink tag URL shows the gate before any content', async ({
     page,
     context,

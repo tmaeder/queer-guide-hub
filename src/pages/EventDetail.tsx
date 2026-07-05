@@ -10,7 +10,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
 import { GatedDetailFallback } from '@/components/safety/GatedDetailFallback';
 import { AddToTripDialog } from '@/components/trips/AddToTripDialog';
-import { SendEventDialog } from '@/components/messaging/SendEventDialog';
+import { ShareEntityDialog } from '@/components/messaging/ShareEntityDialog';
 import { EventMoreEvents } from '@/components/events/EventMoreEvents';
 import { useBreadcrumbs } from '@/contexts/BreadcrumbContext';
 import { useAuth } from '@/hooks/useAuth';
@@ -22,6 +22,7 @@ import { socialSameAs } from '@/lib/social/registry';
 import { toast } from '@/hooks/use-toast';
 import { upsertEventAttendance } from '@/hooks/usePageFetchers';
 import { resolveEntityImage } from '@/lib/images/resolveEntityImage';
+import { MarketplaceForEvent } from '@/components/marketplace/MarketplaceForEvent';
 import {
   type EventWithRelations,
   EventHero,
@@ -320,6 +321,7 @@ export default function EventDetail() {
 
         <div className="mt-12 flex flex-col gap-12 pb-28 md:pb-12">
           <EventWhoIsGoing event={event} user={user} isPast={isPast} />
+          <MarketplaceForEvent eventType={event.event_type} eventTitle={event.title} />
           <EventMoreEvents eventId={event.id} city={cityName} />
         </div>
       </div>
@@ -339,13 +341,20 @@ export default function EventDetail() {
         }}
       />
 
-      <SendEventDialog
+      <ShareEntityDialog
         open={sendEventOpen}
         onOpenChange={setSendEventOpen}
-        eventTitle={event.title}
-        eventDate={formatEventDate(event.start_date, event.end_date)}
-        eventVenue={event.venues?.name}
-        eventPath={`/events/${event.slug || event.id}`}
+        entity={{
+          entity_table: 'events',
+          entity_id: event.id,
+          title: event.title,
+          subtitle: [formatEventDate(event.start_date, event.end_date), event.venues?.name]
+            .filter(Boolean)
+            .join(' · '),
+          image_url: resolveEntityImage('event', event).url ?? null,
+          path: `/events/${event.slug || event.id}`,
+          gated: Boolean((event as { safety_gated?: boolean }).safety_gated),
+        }}
       />
 
       <EventMobileBar

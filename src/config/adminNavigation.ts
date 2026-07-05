@@ -126,8 +126,9 @@ export const adminNavSections: AdminNavSection[] = [
   },
 
   // ── Content (grouped: Places · People · Editorial · Taxonomy & Media)
-  //    Quality lives as a tab on each entity page (?tab=quality), not as a
-  //    sibling row — routes preserved in routes.tsx for deep-links. ──────
+  //    Entity quality dashboards live at /admin/content/<entity>-quality
+  //    (deep-link only, no sibling nav rows — /admin/cities etc. redirect
+  //    there). ──────
   {
     id: 'content',
     label: 'Content',
@@ -157,6 +158,12 @@ export const adminNavSections: AdminNavSection[] = [
         icon: CopyCheck,
         route: '/admin/duplicates',
         group: 'Places',
+      },
+      {
+        id: 'liveness',
+        label: 'Liveness & closure',
+        icon: Flag,
+        route: '/admin/content/liveness',
       },
       {
         id: 'events',
@@ -293,6 +300,12 @@ export const adminNavSections: AdminNavSection[] = [
     minRole: 'editor',
     items: [
       {
+        id: 'import-data-hub',
+        label: 'Import data',
+        icon: Download,
+        route: '/admin/imports/data',
+      },
+      {
         id: 'email-ingestions',
         label: 'Email Ingestions',
         icon: Mail,
@@ -372,13 +385,6 @@ export const adminNavSections: AdminNavSection[] = [
         label: 'Cloudflare',
         icon: Cloud,
         route: '/admin/cloudflare',
-        adminOnly: true,
-      },
-      {
-        id: 'affiliates',
-        label: 'Affiliates',
-        icon: Handshake,
-        route: '/admin/affiliates',
         adminOnly: true,
       },
       {

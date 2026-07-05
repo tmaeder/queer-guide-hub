@@ -36,10 +36,12 @@ test('visual: /events card grid — mobile', async ({ page }) => {
 // (src/components/layout/MobileBottomNav.tsx) — assert its tap targets.
 test('visual: mobile bottom-nav hit targets at 375px', async ({ page }) => {
   await page.setViewportSize({ width: 375, height: 812 });
-  await page.goto('/');
-  await page.waitForLoadState('networkidle');
+  await page.goto('/', { waitUntil: 'domcontentloaded' });
+  await page.waitForSelector('main', { timeout: 30_000 }).catch(() => {});
   await dismissCookieBanner(page);
-  const nav = page.getByRole('navigation', { name: /primary mobile navigation/i });
+  // MobileBottomNav renders <nav aria-label="Navigation"> (see
+  // src/components/layout/MobileBottomNav.tsx); matches e2e/mobile-bottom-nav.spec.ts.
+  const nav = page.locator('nav[aria-label="Navigation"]');
   await expect(nav).toBeVisible();
   const links = await nav.getByRole('link').all();
   expect(links.length).toBeGreaterThanOrEqual(2);

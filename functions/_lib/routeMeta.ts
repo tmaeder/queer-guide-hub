@@ -71,10 +71,13 @@ export const STATIC_ROUTE_META: Record<string, RouteMeta> = {
     description:
       'Notable LGBTQ+ figures past and present — activists, artists, writers, scientists, and athletes.',
   },
-  '/resources': {
-    title: 'Queer Knowledge Hub — Resources & Guides | Queer Guide',
+  // The tag glossary lives at /tags; /resources is a legacy redirect to it, so
+  // the canonical page — and the route the SEO check samples — is /tags. Copy
+  // mirrors the client-side OVERVIEW_META in src/pages/Resources.tsx.
+  '/tags': {
+    title: 'LGBTQ+ Resource Hub & Tag Glossary | Queer Guide',
     description:
-      'Articles, guides and references on queer history, health, identity and rights — by and for the community.',
+      'Browse LGBTQ+ topics, identities, and support resources by tag — venues, events, people, and crisis help across the glossary.',
   },
   '/news': {
     title: 'LGBTQ+ News — Curated Daily | Queer Guide',

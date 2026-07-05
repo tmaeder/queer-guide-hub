@@ -33,7 +33,7 @@ function defaultSlug(shopDomain: string): string {
   return shopDomain.replace(/^www\./, '').split('.')[0]
 }
 
-function makeAdapter(shopDomain: string, sourceSlug: string): SourceAdapter {
+function makeAdapter(shopDomain: string, sourceSlug: string, currency = 'EUR'): SourceAdapter {
   return {
     name: sourceSlug, entityType: 'marketplace',
     // Single page (config.offset = page number). The handler streams page-by-page
@@ -72,7 +72,7 @@ function makeAdapter(shopDomain: string, sourceSlug: string): SourceAdapter {
           source_slug: sourceSlug, shop_domain: shopDomain, product_id: String(p.id),
           merchant_deep_link: externalUrl, merchant_domain: extractMerchantDomain(externalUrl),
           price: Number.isFinite(price) && price != null && price > 0 ? price : null,
-          currency: normalizeCurrency('EUR'), category: p.product_type, brand: p.vendor, brand_name: p.vendor,
+          currency: normalizeCurrency(currency), category: p.product_type, brand: p.vendor, brand_name: p.vendor,
           business_name: p.vendor || shopDomain, in_stock: inStock, sku: variant?.sku, handle: p.handle,
         },
       }
@@ -89,9 +89,11 @@ Deno.serve(withErrorReporting('source-shopify-public', async (req) => {
     const shopDomain = (body.shop_domain || body.shopDomain || '').replace(/^https?:\/\//, '').replace(/\/$/, '')
     if (!shopDomain) return jsonResponse(skippedResponse('missing_config', ['shop_domain']), 200, req)
     const sourceSlug = body.source_slug || defaultSlug(shopDomain)
-    const adapter = makeAdapter(shopDomain, sourceSlug)
+    const currency = typeof body.currency === 'string' && body.currency ? body.currency : 'EUR'
+    const adapter = makeAdapter(shopDomain, sourceSlug, currency)
     const maxPages = Number(body.max_pages ?? 40)
     const dryRun = body.dry_run || false
+    const refresh = body.refresh === true
 
     // Stream page-by-page: fetch one page, stage it, release it. Bounds memory so
     // a 7k+ catalog doesn't OOM the worker. writeToStaging is idempotent on
@@ -104,7 +106,7 @@ Deno.serve(withErrorReporting('source-shopify-public', async (req) => {
       if (!dryRun) {
         written += await writeToStaging(supabase, adapter, items, {
           batchSize: PER_PAGE, offset: page, pipelineRunId: body.pipeline_run_id, nodeId: body.node_id,
-          targetTable: 'marketplace_listings',
+          targetTable: 'marketplace_listings', refresh,
         })
       }
       if (items.length < PER_PAGE) break // last page

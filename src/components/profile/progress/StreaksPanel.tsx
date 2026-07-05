@@ -112,7 +112,7 @@ export function StreaksPanel() {
       )}
 
       <LocalizedLink
-        to="/me/saved"
+        to="/hub/saved"
         className="inline-flex items-center gap-2 text-13 text-muted-foreground hover:text-foreground"
       >
         <Bookmark size={14} aria-hidden />

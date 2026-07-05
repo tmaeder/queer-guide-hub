@@ -15,6 +15,7 @@ import { Badge } from '@/components/ui/badge';
 import { WorkflowPanel } from './WorkflowPanel';
 import { SEOPanel } from './SEOPanel';
 import { QualityPanel } from './QualityPanel';
+import { PersonalityNotesPanel } from './PersonalityNotesPanel';
 import { useCMSRevisions } from '@/hooks/useCMSRevisions';
 import { useCMSMedia } from '@/hooks/useCMSMedia';
 import { getContentType } from '@/config/contentTypeRegistry';
@@ -94,6 +95,7 @@ export function EditorSidebar({
     seo: false,
     media: false,
     revisions: false,
+    notes: false,
   });
 
   // Revisions hook
@@ -148,6 +150,13 @@ export function EditorSidebar({
       <Panel title="Workflow" open={expandedPanels.workflow} onOpenChange={setPanel('workflow')}>
         <WorkflowPanel contentType={contentType} itemId={itemId} />
       </Panel>
+
+      {/* Internal notes (personalities only) */}
+      {contentType === 'personality' && (
+        <Panel title="Internal notes" open={expandedPanels.notes} onOpenChange={setPanel('notes')}>
+          <PersonalityNotesPanel personalityId={itemId} />
+        </Panel>
+      )}
 
       {/* SEO Panel */}
       <Panel title="SEO" open={expandedPanels.seo} onOpenChange={setPanel('seo')}>

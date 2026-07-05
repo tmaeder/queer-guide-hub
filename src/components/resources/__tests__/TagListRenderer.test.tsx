@@ -34,7 +34,7 @@ const wrap = ({ children }: { children: ReactNode }) => (
 );
 
 describe('TagListRenderer chips (P1-3)', () => {
-  it('renders chips as anchors with /resources/<slug> hrefs (single click navigates)', () => {
+  it('renders chips as anchors with /tags/<slug> hrefs (single click navigates)', () => {
     const { getByText } = render(
       <TagListRenderer
         tags={tags}
@@ -47,10 +47,10 @@ describe('TagListRenderer chips (P1-3)', () => {
 
     const zucchiniLink = getByText('Zucchini').closest('a');
     expect(zucchiniLink).not.toBeNull();
-    expect(zucchiniLink?.getAttribute('href')).toBe('/resources/zucchini');
+    expect(zucchiniLink?.getAttribute('href')).toBe('/tags/zucchini');
 
     const bdsmLink = getByText('BDSM').closest('a');
-    expect(bdsmLink?.getAttribute('href')).toBe('/resources/bdsm');
+    expect(bdsmLink?.getAttribute('href')).toBe('/tags/bdsm');
   });
 
   it('chips are anchors, not buttons', () => {

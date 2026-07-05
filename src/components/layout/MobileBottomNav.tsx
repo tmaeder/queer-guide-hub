@@ -28,7 +28,7 @@ const SCROLL_TOP_OFFSET = 80;
 const FALLBACK_LABEL: Record<BottomNavTab['id'], string> = {
   home: 'Home',
   explore: 'Explore',
-  messages: 'Messages',
+  hub: 'Hub',
   you: 'You',
 };
 
@@ -38,13 +38,14 @@ function isTabActive(tab: BottomNavTab, path: string): boolean {
   );
 }
 
+
 /**
  * Mobile-only floating-island bottom nav. Four destination tabs —
- * Home · Explore · Messages · You — plus a raised, context-aware contribute
- * button between Explore and Messages. Every tab deep-links: Explore goes to
+ * Home · Explore · Hub · You — plus a raised, context-aware contribute
+ * button between Explore and Hub. Every tab deep-links: Explore goes to
  * the discovery surface (`/search`); the full destination hub is one
  * long-press away on Explore (with a chevron affordance as the keyboard /
- * screen-reader equivalent). Messages carries the unread badge; You shows the
+ * screen-reader equivalent). Hub carries the unread badge; You shows the
  * signed-in avatar. Auth-only destinations gate on tap (anon → sign-in). The
  * bar slides away on scroll-down and returns on scroll-up (disabled under
  * reduced motion), honours safe-area-inset-bottom, hides on md+ and on the
@@ -135,10 +136,13 @@ export function MobileBottomNav() {
             const isExplore = tab.id === 'explore';
             const anonGated = tab.authGated && !user;
             const showUnread = tab.badge === 'unread' && !!user;
+            // The "You" tab points at the own public profile, which needs the
+            // signed-in user's id (config can't hold it).
+            const to = tab.id === 'you' && user ? `/user/${user.id}` : tab.to;
             const navTab = (
               <NavTab
                 key={tab.id}
-                to={tab.to}
+                to={to}
                 icon={tab.icon}
                 label={t(tab.labelKey, FALLBACK_LABEL[tab.id])}
                 active={isTabActive(tab, path)}

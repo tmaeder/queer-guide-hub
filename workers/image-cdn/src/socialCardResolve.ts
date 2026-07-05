@@ -15,6 +15,9 @@
 export interface SocialEnv {
   IMAGES: R2Bucket;
   ADMIN_SECRET?: string;
+  /** Dedicated secret for /social/resolve so this route never needs ADMIN_SECRET
+   *  (which is shared with /upload). Either secret authorizes the call. */
+  SOCIAL_RESOLVE_SECRET?: string;
 }
 
 export interface SocialCard {
@@ -38,6 +41,22 @@ const EXT: Record<string, string> = {
   'image/gif': 'gif',
   'image/avif': 'avif',
 };
+
+/**
+ * Strip HTML to plain text. A single pass of /<[^>]+>/ is not safe — nested or
+ * malformed markup like `<scr<script>ipt>` can leave a live `<script` behind —
+ * so apply it until the string stops changing, then drop any residual angle
+ * brackets so no partial tag can survive into rendered card output.
+ */
+function stripHtml(input: string): string {
+  let prev: string;
+  let out = input;
+  do {
+    prev = out;
+    out = out.replace(/<[^>]*>/g, '');
+  } while (out !== prev);
+  return out.replace(/[<>]/g, '').trim();
+}
 
 async function sha256Hex(input: string): Promise<string> {
   const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(input));
@@ -101,7 +120,7 @@ async function resolveMastodon(handle: string): Promise<Partial<SocialCard> | nu
   };
   return {
     display_name: a.display_name || null,
-    bio: a.note ? a.note.replace(/<[^>]+>/g, '').trim() : null,
+    bio: a.note ? stripHtml(a.note) || null : null,
     avatar_url: a.avatar ?? null,
     follower_count: typeof a.followers_count === 'number' ? a.followers_count : null,
   };
@@ -149,9 +168,11 @@ export async function handleSocialResolve(
   const json = (body: unknown, status = 200) =>
     new Response(JSON.stringify(body), { status, headers: { ...cors, 'Content-Type': 'application/json' } });
 
-  const secret = env.ADMIN_SECRET;
   const provided = req.headers.get('X-Admin-Secret') || req.headers.get('Authorization')?.replace(/^Bearer\s+/i, '');
-  if (!secret || provided !== secret) return json({ error: 'unauthorized' }, 401);
+  const accepted = [env.SOCIAL_RESOLVE_SECRET, env.ADMIN_SECRET].filter(Boolean) as string[];
+  if (!provided || accepted.length === 0 || !accepted.includes(provided)) {
+    return json({ error: 'unauthorized' }, 401);
+  }
 
   let body: { platform?: string; handle?: string; profile_url?: string };
   try {

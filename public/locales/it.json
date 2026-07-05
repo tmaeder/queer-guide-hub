@@ -63,7 +63,6 @@
   },
   "search": {
     "placeholder": "Cerca paesi e città...",
-    "nearMe": "Vicino a Me",
     "filters": "Filtri",
     "continent": "Continente",
     "all": "Tutti",
@@ -170,7 +169,10 @@
     "clear": "Clear",
     "signIn": "Sign in",
     "goHome": "Go Home",
-    "more": "Altro"
+    "more": "Altro",
+    "remove": "Rimuovi",
+    "accept": "Accetta",
+    "decline": "Rifiuta"
   },
   "navigation": {
     "home": "Home",
@@ -575,7 +577,9 @@
         "safety": "Sicurezza",
         "lgbtq-specific": "Specifico LGBTQ+",
         "other": "Altro"
-      }
+      },
+      "scopeAll": "Tutti",
+      "scopeMine": "Miei"
     },
     "collaborate": {
       "chat": "Chat",
@@ -614,7 +618,8 @@
       "budget": "Budget",
       "reservations": "Prenotazioni",
       "packing": "Valigia",
-      "collaborate": "Collabora"
+      "collaborate": "Collabora",
+      "journal": "Diario"
     },
     "today": {
       "offlineBanner": "Offline — mostro l’ultimo itinerario salvato.",
@@ -895,6 +900,86 @@
       "saveAria": "Save trip",
       "unsaveAria": "Unsave trip",
       "error": "Could not update save"
+    },
+    "dayNotes": {
+      "addTitle": "Aggiungi una nota a questo giorno",
+      "textLabel": "Nota",
+      "textPlaceholder": "es. Check-out entro le 11:00",
+      "timeLabel": "Ora (facoltativa)",
+      "iconLabel": "Icona",
+      "save": "Aggiungi nota",
+      "added": "Nota aggiunta",
+      "delete": "Elimina nota"
+    },
+    "weather": {
+      "clear": "Sereno",
+      "partlyCloudy": "Parzialmente nuvoloso",
+      "overcast": "Coperto",
+      "fog": "Nebbia",
+      "drizzle": "Pioggerella",
+      "rain": "Pioggia",
+      "snow": "Neve",
+      "thunderstorm": "Temporale",
+      "typical": "tipico"
+    },
+    "conflicts": {
+      "chip_one": "{{count}} conflitto",
+      "chip_other": "{{count}} conflitti"
+    },
+    "legs": {
+      "switchMode": "Cambia mezzo di trasporto",
+      "modeAria": "Mezzo di trasporto: {{mode}} — clicca per cambiare",
+      "mode": {
+        "walk": "a piedi",
+        "transit": "mezzi pubblici",
+        "drive": "auto"
+      },
+      "walkingTotal": "{{distance}} a piedi",
+      "optimize": "Ottimizza l'ordine del percorso",
+      "directions": "Apri la giornata in Google Maps"
+    },
+    "suggestions": {
+      "accessMatch": "Adatto alle tue esigenze"
+    },
+    "journal": {
+      "placeholder": "Cosa è successo oggi? Anche i piccoli momenti contano.",
+      "moodLabel": "Umore",
+      "mood": {
+        "joy": "Felice",
+        "good": "Bene",
+        "mixed": "Così così",
+        "tough": "Difficile"
+      },
+      "addPhotos": "Foto",
+      "save": "Salva voce",
+      "saved": "Voce del diario salvata",
+      "empty": "Ancora nessuna voce nel diario.",
+      "delete": "Elimina voce",
+      "removePhoto": "Rimuovi foto",
+      "member": "Viaggiatore/trice"
+    },
+    "import": {
+      "button": "Importa",
+      "title": "Importa luoghi",
+      "pickFile": "Scegli un file",
+      "formats": "GPX, KML, GeoJSON o Google Takeout (JSON dei luoghi salvati / CSV delle liste)",
+      "noPlaces": "Nessun luogo trovato in questo file.",
+      "matching": "Abbinamento dei locali…",
+      "matchCount": "{{count}} abbinati a locali di queer.guide",
+      "changeFile": "Cambia file",
+      "matched": "Locale esistente",
+      "customPin": "Pin personalizzato",
+      "noCoords": "Senza coordinate — solo nome",
+      "confirm": "Importa {{count}} luoghi",
+      "done": "{{count}} luoghi importati",
+      "doneHint": "Finiscono nel gruppo non pianificato — trascinali sui giorni."
+    },
+    "offline": {
+      "pending_one": "{{count}} modifica in attesa di sincronizzazione",
+      "pending_other": "{{count}} modifiche in attesa di sincronizzazione"
+    },
+    "inbox": {
+      "openThread": "Rivedi in chat"
     }
   },
   "auth": {
@@ -1530,6 +1615,12 @@
         "thisWeek": "Questa settimana",
         "later": "Più avanti"
       }
+    },
+    "shop": {
+      "eyebrow": "Mercato",
+      "title": "Brand queer",
+      "description": "Prodotti e servizi di attività queer e trans.",
+      "seeAll": "Vai al mercato"
     }
   },
   "header": {
@@ -1564,7 +1655,8 @@
       "travel": "Viaggi",
       "personalities": "Personalità",
       "hotels": "Hotel",
-      "help": "Aiuto"
+      "help": "Aiuto",
+      "tags": "Tag"
     },
     "userMenu": {
       "myTrips": "I miei viaggi",
@@ -1626,7 +1718,8 @@
       "settingsSection": "Visualizzazione",
       "browseAll": "Sfoglia tutte le sezioni",
       "unreadCount": "{{count}} non letti",
-      "tripsBadge": "{{count}} elementi di viaggio richiedono attenzione"
+      "tripsBadge": "{{count}} elementi di viaggio richiedono attenzione",
+      "hub": "Hub"
     }
   },
   "pages": {
@@ -2158,7 +2251,9 @@
       "eyebrow": "Community",
       "title": "Amici",
       "subtitle": "Gestisci le tue connessioni",
-      "gate": "Accedi per vedere i tuoi amici."
+      "gate": "Accedi per vedere i tuoi amici.",
+      "requests": "Richieste",
+      "sentRequest": "Ti ha inviato una richiesta di amicizia"
     }
   },
   "settings": {
@@ -2186,6 +2281,148 @@
       "denied": "Location access is off — showing the default area",
       "unavailable": "Couldn't get your location — showing the default area",
       "timeout": "Location lookup timed out — showing the default area"
+    },
+    "share": {
+      "title": "[IT] Map view",
+      "copied": "[IT] Link copied",
+      "copiedDescription": "[IT] Paste to share this view",
+      "failed": "[IT] Share failed"
+    },
+    "commandBar": {
+      "searchThisMap": "[IT] Search this map",
+      "searching": "[IT] Searching",
+      "clearSearch": "[IT] Clear search",
+      "typeMore": "[IT] Type at least 2 characters",
+      "filterMapFor": "[IT] Filter map for “{{query}}”",
+      "jumpToPlace": "[IT] Jump to a place",
+      "noMatches": "[IT] No places match — Enter still filters the map.",
+      "filters": "[IT] Filters",
+      "filtersActive": "[IT] Filters, {{count}} active",
+      "filtersAndLayers": "[IT] Filters & layers",
+      "layers": "[IT] Layers",
+      "more": "[IT] More map options",
+      "moreShort": "[IT] More",
+      "mapOptions": "[IT] Map options",
+      "myLocation": "[IT] My location",
+      "fitResults": "[IT] Fit to results",
+      "shareView": "[IT] Share view",
+      "reset": "[IT] Reset"
+    },
+    "entityType": {
+      "venue": "[IT] Venue",
+      "event": "[IT] Event",
+      "city": "[IT] City",
+      "country": "[IT] Country",
+      "marketplace": "[IT] Listing",
+      "personality": "[IT] Person",
+      "queer_village": "[IT] Village",
+      "group": "[IT] Group",
+      "news": "[IT] News",
+      "tag": "[IT] Tag",
+      "user": "[IT] User"
+    },
+    "quick": {
+      "groupLabel": "[IT] Quick filters",
+      "openNow": "[IT] Open now",
+      "tonight": "[IT] Tonight",
+      "thisWeekend": "[IT] This weekend",
+      "thisMonth": "[IT] This month",
+      "saved": "[IT] Saved"
+    },
+    "lens": {
+      "groupLabel": "[IT] Map view",
+      "pins": "[IT] Pins",
+      "density": "[IT] Density",
+      "routes": "[IT] Routes",
+      "boundary": "[IT] Boundary",
+      "combined": "[IT] Combined"
+    },
+    "sheet": {
+      "title": "[IT] Map options",
+      "view": "[IT] View",
+      "filters": "[IT] Filters",
+      "time": "[IT] Time",
+      "layers": "[IT] Layers",
+      "actions": "[IT] Map actions"
+    },
+    "time": {
+      "label": "[IT] Time range",
+      "anyTime": "[IT] Any time",
+      "chooseDates": "[IT] Choose dates",
+      "pickRange": "[IT] Pick a start & end",
+      "untilEndDate": "[IT] {{start}} – end date",
+      "clear": "[IT] Clear",
+      "apply": "[IT] Apply dates"
+    },
+    "nav": {
+      "zoomIn": "[IT] Zoom in",
+      "zoomOut": "[IT] Zoom out",
+      "resetNorth": "[IT] Reset bearing to north",
+      "geolocate": "[IT] Show my location"
+    },
+    "legend": {
+      "label": "[IT] Legend",
+      "show": "[IT] Show map legend",
+      "hide": "[IT] Hide map legend",
+      "title": "[IT] What you're seeing",
+      "featured": "[IT] Ringed = featured spot",
+      "live": "[IT] Pulsing = open now / live",
+      "areas": "[IT] Areas",
+      "densityTitle": "[IT] Density of queer life",
+      "fewer": "[IT] Fewer",
+      "more": "[IT] More"
+    },
+    "rail": {
+      "inView_one": "[IT] {{count}} place in view",
+      "inView_other": "[IT] {{count}} places in view",
+      "hide": "[IT] Hide nearby places",
+      "listLabel": "[IT] Places in view",
+      "showOnMap": "[IT] Show {{name}} on the map"
+    },
+    "firstRun": {
+      "spotsInView_one": "[IT] {{count}} queer spot in view",
+      "spotsInView_other": "[IT] {{count}} queer spots in view",
+      "dismiss": "[IT] Dismiss"
+    },
+    "canvas": {
+      "loading": "[IT] Loading",
+      "loadingEllipsis": "[IT] Loading...",
+      "resultsInView_one": "[IT] {{count}} result in view",
+      "resultsInView_other": "[IT] {{count}} results in view",
+      "clickToZoom": "[IT] Click to zoom in",
+      "venueCount_one": "[IT] {{count}} venue",
+      "venueCount_other": "[IT] {{count}} venues",
+      "eventCount_one": "[IT] {{count}} event",
+      "eventCount_other": "[IT] {{count}} events",
+      "restroomCount_one": "[IT] {{count}} restroom",
+      "restroomCount_other": "[IT] {{count}} restrooms",
+      "hotelCount_one": "[IT] {{count}} hotel",
+      "hotelCount_other": "[IT] {{count}} hotels",
+      "placeCount_one": "[IT] {{count}} place",
+      "placeCount_other": "[IT] {{count}} places",
+      "emptyOpenNow": "[IT] Nothing open right now in view — turn off Open now or try later.",
+      "emptyTimeRange": "[IT] No events in this time range here — widen the dates or pan out.",
+      "emptySearch": "[IT] No matches for \"{{query}}\" here — clear search or pan out.",
+      "emptyDefault": "[IT] No spots here yet — pan, zoom out, or put one on the map."
+    },
+    "layers": {
+      "venues": "[IT] Venues",
+      "events": "[IT] Events",
+      "cities": "[IT] Cities",
+      "countries": "[IT] Countries",
+      "restrooms": "[IT] Restrooms",
+      "hotels": "[IT] Hotels",
+      "neighbourhoods": "[IT] Villages"
+    },
+    "filterChips": {
+      "groupLabel": "[IT] Active filters",
+      "remove": "[IT] Remove filter: {{label}}",
+      "clearAll": "[IT] Clear all",
+      "within": "[IT] Within {{km}} km",
+      "accessible": "[IT] Accessible",
+      "queerOwned": "[IT] Queer-owned",
+      "tags_one": "[IT] {{count}} tag",
+      "tags_other": "[IT] {{count}} tags"
     }
   },
   "resources": {
@@ -2308,7 +2545,15 @@
     },
     "tagDetail": {
       "breadcrumbHome": "Risorse",
-      "noDefinition": "Ancora nessuna definizione per questo termine."
+      "noDefinition": "Ancora nessuna definizione per questo termine.",
+      "alsoKnownAs": "Conosciuto anche come",
+      "readOnWikipedia": "Leggi su Wikipedia",
+      "searchTagged": "Cerca tutto ciò che è taggato {{name}}",
+      "seeAlso": "Vedi anche",
+      "sensitiveContentBody": "Questo argomento può contenere contenuti sensibili. Se hai bisogno di supporto, visita la nostra pagina delle linee di assistenza in caso di crisi.",
+      "sensitiveContentTitle": "Argomento sensibile",
+      "tableOfContents": "Indice",
+      "viewAsGraph": "Visualizza come grafo"
     },
     "graph": {
       "title": "Grafo delle relazioni",
@@ -2598,7 +2843,11 @@
       "email": "Nuova email"
     },
     "notification": {
-      "open": "Apri"
+      "open": "Apri",
+      "view": "Vedi",
+      "reviewerNotes": "Note del revisore",
+      "allSubmissions": "Tutti i miei invii",
+      "shareToChat": "Condividi nella chat"
     },
     "openInbox": "Apri posta in arrivo",
     "markAlertsRead": "Segna avvisi come letti",
@@ -2619,6 +2868,34 @@
       "empty": "Ancora nessun suggerimento.",
       "recent": "Messaggiati di recente",
       "active": "Attivi di recente"
+    },
+    "upcoming": "Prossimamente",
+    "openCalendar": "Calendario",
+    "tripmail": {
+      "gone": "Questa email non è più disponibile.",
+      "type": "Tipo",
+      "vendor": "Fornitore",
+      "title": "Titolo",
+      "dates": "Date",
+      "location": "Luogo",
+      "price": "Prezzo",
+      "confirmation": "Conferma",
+      "extracted": "Prenotazione estratta",
+      "filed": "Archiviata",
+      "confirm": "Aggiungi al viaggio",
+      "dismiss": "Scarta",
+      "openTrip": "Apri viaggio",
+      "fallbackTitle": "Email inoltrata",
+      "intro": "Qualcosa non torna nei dati estratti? Dimmelo e lo correggo — es. «il check-in è il 12».",
+      "thinking": "Controllo l’email…",
+      "placeholder": "Correggi un dettaglio o chiedi della prenotazione…",
+      "send": "Invia",
+      "sendFailed": "Invio non riuscito",
+      "foundEntities": "Trovato in questa email",
+      "addToGuide": "Aggiungi a queer.guide",
+      "stagedNote": "Inviato per revisione — passa dalla nostra pipeline di qualità.",
+      "anEvent": "Evento",
+      "aVenue": "Luogo"
     }
   },
   "extension": {
@@ -2718,7 +2995,8 @@
     "help": "Aiuto",
     "pride": "Pride",
     "contributors": "Contributori",
-    "wishlists": "Liste dei desideri"
+    "wishlists": "Liste dei desideri",
+    "tags": "Tag"
   },
   "chat": {
     "react": "Reagisci",
@@ -2767,6 +3045,158 @@
       "on": "Libero ora",
       "both": "{{name}} è libero/a per vedersi ora 🟢",
       "youOnly": "Risulti libero/a per vedersi 🟢"
+    },
+    "share": {
+      "gated": "Dettagli su Queer Guide",
+      "view": "Vedi su Queer Guide"
+    },
+    "submission": {
+      "header": "Aggiunto a Queer Guide ({{count}})",
+      "messageOne": "ha aggiunto «{{title}}» per revisione",
+      "messageMany": "ha aggiunto {{count}} elementi per revisione: {{title}}…",
+      "submitted": "{{count}} inviati per revisione",
+      "failed": "Invio non riuscito",
+      "title": "Aggiungi a Queer Guide",
+      "subtitle": "Carica un volantino o incolla un link. Gli elementi estratti vengono inviati per revisione e condivisi in questa chat."
+    }
+  },
+  "newsDetail": {
+    "notFound": "Articolo non trovato",
+    "notFoundDesc": "L'articolo che cerchi non esiste.",
+    "backToNews": "Torna alle notizie",
+    "share": "Condividi",
+    "readAtSource": "Leggi alla fonte",
+    "fresh": "Nuovo",
+    "reportedByOutlets": "Riportato da {{count}} testate",
+    "featured": "In evidenza",
+    "byAuthor": "Di {{author}}",
+    "minRead": "{{count}} min di lettura",
+    "viewsCount": "{{count}} visualizzazioni",
+    "whyThisMatters": "Perché è importante",
+    "editorialPlaceholder": "Alt-clic per aggiungere il contesto: 1–3 frasi sul perché questa notizia conta.",
+    "bodyFallback": "La notizia completa è disponibile sulla fonte originale.",
+    "originallyPublishedBy": "Pubblicato originariamente da {{source}}.",
+    "viewOriginal": "Vedi l'articolo originale",
+    "integritySatire": "Segnalato come satira: non è un resoconto letterale.",
+    "integrityAdvertorial": "Contenuto sponsorizzato / pubbliredazionale.",
+    "integritySentimentConflict": "Le fonti non concordano sul tono: leggi con attenzione.",
+    "closeToHome": "Vicino a casa tua",
+    "seeFullStory": "Vedi la storia completa",
+    "topics": "Argomenti",
+    "home": "Casa",
+    "whereThisHappens": "Dove accade",
+    "aboutSource": "Informazioni sulla fonte",
+    "corroboratedAcross": "Confermato da {{count}} testate",
+    "lastVerified": "Verificato {{time}}",
+    "visitSource": "Visita {{source}}",
+    "source": "la fonte",
+    "moreLikeThis": "Altri simili",
+    "forYou": "Per te"
+  },
+  "pwa": {
+    "updateAvailable": {
+      "title": "È disponibile una nuova versione",
+      "description": "Aggiorna per ottenere le ultime funzionalità.",
+      "action": "Aggiorna"
+    },
+    "backOnline": "Di nuovo online",
+    "offline": {
+      "title": "Sei offline",
+      "description": "Alcune funzionalità potrebbero non essere disponibili."
+    },
+    "install": {
+      "title": "Installa Queer Guide",
+      "description": "Accesso rapido dalla schermata Home — funziona anche offline.",
+      "action": "Installa",
+      "iosTitle": "Aggiungi alla schermata Home",
+      "iosHint": "Tocca il pulsante Condividi in Safari, poi seleziona «Aggiungi a Home».",
+      "dismiss": "Ignora",
+      "ariaLabel": "Installa app"
+    }
+  },
+  "atlas": {
+    "summary": "{{visited}} paesi visitati · {{bucket}} nella tua lista dei desideri",
+    "hint": "Tocca un paese per contrassegnarlo",
+    "visited": "Visitato",
+    "bucket": "Lista dei desideri",
+    "fromTrips": "Contrassegnato come visitato da un viaggio completato"
+  },
+  "calendar": {
+    "title": "Il mio calendario",
+    "subtitle": "I tuoi viaggi ed eventi salvati in un unico posto",
+    "signInDesc": "Accedi per vedere i tuoi viaggi ed eventi salvati.",
+    "trip": "Viaggio",
+    "empty": "Nessun viaggio o evento salvato questo mese.",
+    "planTrip": "Pianifica un viaggio",
+    "browseEvents": "Esplora gli eventi",
+    "copyFeed": "Copia URL di iscrizione",
+    "download": "Scarica .ics",
+    "open": "Calendario",
+    "openAria": "Apri il mio calendario"
+  },
+  "status": {
+    "lookingFor": "In cerca di",
+    "lookingForHint": "Aiuta a ordinare le persone per te. Non visibile sul tuo profilo."
+  },
+  "people": {
+    "intent": {
+      "lookingForOptions": {
+        "friends": "Amicizie",
+        "dating": "Appuntamenti",
+        "travel_buddies": "Compagni di viaggio",
+        "locals": "Persone del posto",
+        "networking": "Networking"
+      }
+    }
+  },
+  "hub": {
+    "title": "Il tuo hub",
+    "nav": "Moduli hub",
+    "signInDesc": "Accedi per vedere posta, viaggi e luoghi salvati.",
+    "identity": {
+      "viewProfile": "Vedi profilo"
+    },
+    "modules": {
+      "inbox": "Posta",
+      "calendar": "Calendario",
+      "contacts": "Contatti",
+      "saved": "Salvati",
+      "news": "Notizie",
+      "trips": "Viaggi"
+    },
+    "calendar": {
+      "title": "In programma",
+      "empty": "Niente in programma per ora.",
+      "today": "Oggi",
+      "tomorrow": "Domani",
+      "allDay": "Tutto il giorno",
+      "subscribe": "Iscriviti",
+      "showMore": "Guarda più avanti",
+      "kinds": {
+        "trip": "Viaggio",
+        "reservation": "Prenotazione",
+        "going": "Ci vado",
+        "saved": "Salvato"
+      }
+    },
+    "contacts": {
+      "title": "Contatti",
+      "search": "Cerca contatti…",
+      "recent": "Chat recenti",
+      "friends": "Amicizie",
+      "groups": "Gruppi",
+      "dating": "Appuntamenti",
+      "datingTitle": "Il tuo mazzo di incontri",
+      "datingBody": "Sfoglia match e conversazioni."
+    },
+    "news": {
+      "title": "Notizie",
+      "savedStories": "Articoli salvati",
+      "savedEmpty": "Ancora nessun articolo salvato.",
+      "fromTags": "Dai tuoi tag",
+      "tagsEmpty": "Segui dei tag per vedere articoli qui.",
+      "tagsNoArticles": "Ancora niente di nuovo dai tuoi tag.",
+      "savedSearches": "Ricerche salvate"
     }
   }
 }

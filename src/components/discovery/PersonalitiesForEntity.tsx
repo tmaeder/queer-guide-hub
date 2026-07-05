@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { ArrowRight } from 'lucide-react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
+import { detailHref } from '@/lib/searchRoutes';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useEntityPersonalities } from '@/hooks/useEntityPersonalities';
@@ -39,11 +40,16 @@ export function PersonalitiesForEntity({ cityId, countryId, cityName, limit = 8 
   return (
     <ScrollArea aria-label={heading} className="-mx-4 px-4">
       <ul className="flex gap-4 pb-4">
-        {data.map((p) => (
-          <li key={p.id} className="w-44 shrink-0 snap-start">
-            <PersonalityRailCard personality={p} />
-          </li>
-        ))}
+        {data.map((p) => {
+          // Strict: require a canonical slug — skip a personality with only an id.
+          const href = detailHref({ type: 'personality', slug: p.slug, id: p.id });
+          if (!href) return null;
+          return (
+            <li key={p.id} className="w-44 shrink-0 snap-start">
+              <PersonalityRailCard personality={p} href={href} />
+            </li>
+          );
+        })}
         <li className="flex w-44 shrink-0 items-center justify-center">
           <LocalizedLink
             to={seeAllHref}
@@ -59,8 +65,7 @@ export function PersonalitiesForEntity({ cityId, countryId, cityName, limit = 8 
   );
 }
 
-function PersonalityRailCard({ personality }: { personality: Personality }) {
-  const href = `/personalities/${personality.slug ?? personality.id}`;
+function PersonalityRailCard({ personality, href }: { personality: Personality; href: string }) {
   const src = resolveImageUrl({ imageUrl: personality.image_url, preferThumb: true });
   const era = formatEra(personality);
   return (

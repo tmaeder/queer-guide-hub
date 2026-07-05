@@ -1,29 +1,11 @@
-import { useState, useEffect, useCallback, useRef, type ReactNode } from 'react';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from '@/components/ui/command';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Search, Filter, X, Check, ChevronDown, Navigation, Loader2 } from 'lucide-react';
-import { useUnifiedTags } from '@/hooks/useUnifiedTags';
-import { useAmenityVocabulary } from '@/hooks/useAmenityVocabulary';
-import { useTargetGroups } from '@/hooks/useTargetGroups';
-import {
-  usePreferenceChips,
-  useDefaultPromptGate,
-  saveTravelPreference,
-} from '@/hooks/usePreferenceChips';
+import { type ReactNode } from 'react';
 import { SaveDefaultPrompt } from '@/components/preferences/SaveDefaultPrompt';
+import { useVenueFilters } from './filters/useVenueFilters';
+import { SearchFilterBar } from './filters/SearchFilterBar';
+import { CategoryChips } from './filters/CategoryChips';
+import { ActiveFilterBadges } from './filters/ActiveFilterBadges';
+import { AdvancedFiltersPanel } from './filters/AdvancedFiltersPanel';
+import type { VenueFilterValues } from './filters/constants';
 
 interface VenueFiltersProps {
   /** Seed initial search input. Used for URL hydration on mount. */
@@ -38,87 +20,8 @@ interface VenueFiltersProps {
   initialTargetGroups?: string[];
   /** Traveling preference chips rendered by the host page (Venues). */
   preferenceChips?: ReactNode;
-  onFiltersChange: (filters: {
-    search?: string;
-    city?: string;
-    category?: string;
-    tags?: string[];
-    amenities?: string[];
-    services?: string[];
-    accessibilityAttributes?: string[];
-    targetGroups?: string[];
-    userLocation?: { latitude: number; longitude: number };
-    nearMe?: boolean;
-  }) => void;
+  onFiltersChange: (filters: VenueFilterValues) => void;
 }
-
-const categories = [
-  'bar',
-  'restaurant',
-  'club',
-  'hotel',
-  'sauna',
-  'community_center',
-  'theater',
-  'gallery',
-  'gym',
-  'salon',
-  'organization',
-  'event-venue',
-  'other',
-] as const;
-
-const categoryLabels: Record<string, string> = {
-  bar: 'Bar',
-  restaurant: 'Restaurant',
-  club: 'Club',
-  hotel: 'Hotel',
-  sauna: 'Sauna',
-  community_center: 'Community',
-  theater: 'Theater',
-  gallery: 'Gallery',
-  gym: 'Gym',
-  salon: 'Salon',
-  organization: 'Organization',
-  'event-venue': 'Event Venue',
-  other: 'Other',
-};
-
-const commonAmenities = [
-  'wifi',
-  'parking',
-  'wheelchair-accessible',
-  'outdoor-seating',
-  'pet-friendly',
-  'live-music',
-  'happy-hour',
-  'food-service',
-  'full-bar',
-  'cocktails',
-  'beer-garden',
-  'private-rooms',
-  'dance-floor',
-  'pool-table',
-  'trivia-nights',
-];
-
-const commonServices = [
-  'event-hosting',
-  'private-parties',
-  'catering',
-  'drag-shows',
-  'karaoke-nights',
-  'live-entertainment',
-  'dj-services',
-  'theme-nights',
-  'workshops',
-  'community-events',
-  'support-groups',
-  'dating-events',
-  'trivia-hosting',
-  'comedy-shows',
-  'art-exhibitions',
-];
 
 export function VenueFilters({
   initialSearch = '',
@@ -132,925 +35,104 @@ export function VenueFilters({
   preferenceChips,
   onFiltersChange,
 }: VenueFiltersProps) {
-  const [search, setSearch] = useState(initialSearch);
-  const [city, setCity] = useState(initialCity);
-  const [category, setCategory] = useState(initialCategory);
-  const [selectedTags, setSelectedTags] = useState<string[]>(initialTags ?? []);
-  const [selectedAmenities, setSelectedAmenities] = useState<string[]>(initialAmenities ?? []);
-  const [selectedServices, setSelectedServices] = useState<string[]>(initialServices ?? []);
-  const [selectedAccessibilityAttributes, setSelectedAccessibilityAttributes] = useState<string[]>(
-    initialAccessibilityAttributes ?? [],
-  );
-  const [selectedTargetGroups, setSelectedTargetGroups] = useState<string[]>(
-    initialTargetGroups ?? [],
-  );
-  const [tagsOpen, setTagsOpen] = useState(false);
-  const [targetGroupsOpen, setTargetGroupsOpen] = useState(false);
-  const [showAdvanced, setShowAdvanced] = useState(false);
-  const [isDetectingLocation, setIsDetectingLocation] = useState(false);
-  const [nearMe, setNearMe] = useState(false);
-  const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(
-    null,
-  );
-
-  const { tags: unifiedTags, loading: tagsLoading, fetchTags } = useUnifiedTags();
-  const { vocab: amenityVocab, loading: vocabLoading } = useAmenityVocabulary();
-  const amenityOptions = Array.from(amenityVocab?.values() ?? [])
-    .filter((a) => a.kind === 'amenity')
-    .map((a) => ({ key: a.slug, label: a.name }));
-  // Accessibility options come from the controlled vocabulary (kind=
-  // 'accessibility'), keyed by SLUG — venues.accessibility_attributes stores
-  // vocab slugs, so the legacy accessibility_attributes-table IDs/names never
-  // matched the column. Selections (and the URL param) are slugs.
-  const accessibilityOptions = Array.from(amenityVocab?.values() ?? [])
-    .filter((a) => a.kind === 'accessibility')
-    .map((a) => ({ key: a.slug, label: a.name }));
-  const accessibilityLabel = (slug: string) =>
-    accessibilityOptions.find((o) => o.key === slug)?.label ?? slug.replace(/[-_]/g, ' ');
-  const { targetGroups, loading: targetGroupsLoading } = useTargetGroups();
-
-  // "Save as my accessibility needs" — first-use affordance, max one
-  // save-default prompt per session across all surfaces.
-  const { chips: savedAccessibilityChips, loading: prefsLoading, signedIn } =
-    usePreferenceChips(['accessibility']);
-  const { show: showAccessibilityPrompt, dismiss: dismissAccessibilityPrompt } =
-    useDefaultPromptGate(
-      signedIn &&
-        !prefsLoading &&
-        savedAccessibilityChips.length === 0 &&
-        selectedAccessibilityAttributes.length > 0,
-    );
-
-  useEffect(() => {
-    fetchTags();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // Sync array filters when URL-driven props change (e.g. back/forward
-  // navigation). Compares joined keys so we don't fight user typing.
-  const initialTagsKey = (initialTags ?? []).join(',');
-  const initialAmenitiesKey = (initialAmenities ?? []).join(',');
-  const initialServicesKey = (initialServices ?? []).join(',');
-  const initialAccessibilityKey = (initialAccessibilityAttributes ?? []).join(',');
-  const initialTargetGroupsKey = (initialTargetGroups ?? []).join(',');
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
-    setSelectedTags(initialTags ?? []);
-  }, [initialTagsKey]); // eslint-disable-line react-hooks/exhaustive-deps
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
-    setSelectedAmenities(initialAmenities ?? []);
-  }, [initialAmenitiesKey]); // eslint-disable-line react-hooks/exhaustive-deps
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
-    setSelectedServices(initialServices ?? []);
-  }, [initialServicesKey]); // eslint-disable-line react-hooks/exhaustive-deps
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
-    setSelectedAccessibilityAttributes(initialAccessibilityAttributes ?? []);
-  }, [initialAccessibilityKey]); // eslint-disable-line react-hooks/exhaustive-deps
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
-    setSelectedTargetGroups(initialTargetGroups ?? []);
-  }, [initialTargetGroupsKey]); // eslint-disable-line react-hooks/exhaustive-deps
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
-    setCity(initialCity);
-  }, [initialCity]);
-
-  // Build current filters object
-  const buildFilters = useCallback(
-    (
-      overrides?: Partial<{
-        search: string;
-        city: string;
-        category: string;
-        tags: string[];
-        amenities: string[];
-        services: string[];
-        accessibilityAttributes: string[];
-        targetGroups: string[];
-        nearMe: boolean;
-        userLocation: { latitude: number; longitude: number } | null;
-      }>,
-    ) => {
-      const s = overrides?.search ?? search;
-      const c = overrides?.city ?? city;
-      const cat = overrides?.category ?? category;
-      const t = overrides?.tags ?? selectedTags;
-      const a = overrides?.amenities ?? selectedAmenities;
-      const sv = overrides?.services ?? selectedServices;
-      const acc = overrides?.accessibilityAttributes ?? selectedAccessibilityAttributes;
-      const tg = overrides?.targetGroups ?? selectedTargetGroups;
-      const nm = overrides?.nearMe ?? nearMe;
-      const ul = overrides?.userLocation !== undefined ? overrides.userLocation : userLocation;
-
-      return {
-        search: s || undefined,
-        city: c || undefined,
-        category: cat === 'all' ? undefined : cat || undefined,
-        tags: t.length > 0 ? t : undefined,
-        amenities: a.length > 0 ? a : undefined,
-        services: sv.length > 0 ? sv : undefined,
-        accessibilityAttributes: acc.length > 0 ? acc : undefined,
-        targetGroups: tg.length > 0 ? tg : undefined,
-        userLocation: ul || undefined,
-        nearMe: nm || undefined,
-      };
-    },
-    [
-      search,
-      city,
-      category,
-      selectedTags,
-      selectedAmenities,
-      selectedServices,
-      selectedAccessibilityAttributes,
-      selectedTargetGroups,
-      nearMe,
-      userLocation,
-    ],
-  );
-
-  // Auto-apply debounce for advanced filter changes
-  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
-  const autoApply = useCallback(
-    (overrides?: Parameters<typeof buildFilters>[0]) => {
-      clearTimeout(debounceRef.current);
-      debounceRef.current = setTimeout(() => {
-        onFiltersChange(buildFilters(overrides));
-      }, 300);
-    },
-    [buildFilters, onFiltersChange],
-  );
-
-  const handleSearch = () => {
-    clearTimeout(debounceRef.current);
-    clearTimeout(searchDebounceRef.current);
-    onFiltersChange(buildFilters());
-  };
-
-  // Debounced search-as-you-type (250ms after last keystroke).
-  const searchDebounceRef = useRef<ReturnType<typeof setTimeout>>();
-  const handleSearchInput = (value: string) => {
-    setSearch(value);
-    clearTimeout(searchDebounceRef.current);
-    searchDebounceRef.current = setTimeout(() => {
-      onFiltersChange(buildFilters({ search: value }));
-    }, 250);
-  };
-
-  const handleCategoryClick = (cat: string) => {
-    const newCat = category === cat ? '' : cat;
-    setCategory(newCat);
-    clearTimeout(debounceRef.current);
-    onFiltersChange(buildFilters({ category: newCat }));
-  };
-
-  const detectLocation = async () => {
-    if (!navigator.geolocation) return;
-    setIsDetectingLocation(true);
-    try {
-      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
-        navigator.geolocation.getCurrentPosition(resolve, reject, {
-          enableHighAccuracy: true,
-          timeout: 10000,
-          maximumAge: 300000,
-        });
-      });
-      const { latitude, longitude } = position.coords;
-      setUserLocation({ latitude, longitude });
-      setNearMe(true);
-      onFiltersChange(buildFilters({ userLocation: { latitude, longitude }, nearMe: true }));
-    } catch {
-      setNearMe(false);
-      setUserLocation(null);
-    } finally {
-      setIsDetectingLocation(false);
-    }
-  };
-
-  const handleNearMeToggle = () => {
-    if (nearMe) {
-      setNearMe(false);
-      setUserLocation(null);
-      onFiltersChange(buildFilters({ nearMe: false, userLocation: null }));
-    } else {
-      detectLocation();
-    }
-  };
-
-  const handleTagToggle = (tag: string) => {
-    const newTags = selectedTags.includes(tag)
-      ? selectedTags.filter((t) => t !== tag)
-      : [...selectedTags, tag];
-    setSelectedTags(newTags);
-    autoApply({ tags: newTags });
-  };
-
-  const handleAmenityToggle = (amenity: string) => {
-    const next = selectedAmenities.includes(amenity)
-      ? selectedAmenities.filter((a) => a !== amenity)
-      : [...selectedAmenities, amenity];
-    setSelectedAmenities(next);
-    autoApply({ amenities: next });
-  };
-
-  const handleServiceToggle = (service: string) => {
-    const next = selectedServices.includes(service)
-      ? selectedServices.filter((s) => s !== service)
-      : [...selectedServices, service];
-    setSelectedServices(next);
-    autoApply({ services: next });
-  };
-
-  const handleAccessibilityToggle = (attr: string) => {
-    const next = selectedAccessibilityAttributes.includes(attr)
-      ? selectedAccessibilityAttributes.filter((a) => a !== attr)
-      : [...selectedAccessibilityAttributes, attr];
-    setSelectedAccessibilityAttributes(next);
-    autoApply({ accessibilityAttributes: next });
-  };
-
-  const handleTargetGroupToggle = (group: string) => {
-    const next = selectedTargetGroups.includes(group)
-      ? selectedTargetGroups.filter((g) => g !== group)
-      : [...selectedTargetGroups, group];
-    setSelectedTargetGroups(next);
-    autoApply({ targetGroups: next });
-  };
-
-  const clearFilters = () => {
-    setSearch('');
-    setCity('');
-    setCategory('');
-    setSelectedTags([]);
-    setSelectedAmenities([]);
-    setSelectedServices([]);
-    setSelectedAccessibilityAttributes([]);
-    setSelectedTargetGroups([]);
-    setNearMe(false);
-    setUserLocation(null);
-    clearTimeout(debounceRef.current);
-    onFiltersChange({});
-  };
-
-  const hasActiveFilters =
-    search ||
-    city ||
-    (category && category !== 'all') ||
-    selectedTags.length > 0 ||
-    selectedAmenities.length > 0 ||
-    selectedServices.length > 0 ||
-    selectedAccessibilityAttributes.length > 0 ||
-    selectedTargetGroups.length > 0 ||
-    nearMe;
-
-  const activeFilterCount = [
-    search,
-    city,
-    category && category !== 'all' ? category : '',
-    ...selectedTags,
-    ...selectedAmenities,
-    ...selectedServices,
-    ...selectedAccessibilityAttributes,
-    ...selectedTargetGroups,
-    nearMe ? 'nearMe' : '',
-  ].filter(Boolean).length;
-
-  // Shared remove-badge X style
-  const xStyle = {
-    width: 12,
-    height: 12,
-    cursor: 'pointer',
-    padding: 8,
-    margin: -8,
-    boxSizing: 'content-box' as const,
-  };
+  const f = useVenueFilters({
+    initialSearch,
+    initialCategory,
+    initialCity,
+    initialTags,
+    initialAmenities,
+    initialServices,
+    initialAccessibilityAttributes,
+    initialTargetGroups,
+    onFiltersChange,
+  });
 
   return (
     <div className="flex flex-col gap-4 w-full min-w-0 overflow-hidden p-4 rounded-container border border-border bg-card/60">
       {/* Search Row */}
-      <div className="flex flex-col sm:flex-row gap-4">
-        <div className="relative flex-1">
-          <Search
-            style={{ left: 14, top: '50%', transform: 'translateY(-50%)', width: 16, height: 16 }}
-            aria-hidden="true"
-            className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground absolute text-muted-foreground"
-          />
-          <Input
-            placeholder="Search venues & organizations..."
-            value={search}
-            onChange={(e) => handleSearchInput(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-            className="pl-12 h-11 rounded-element"
-          />
-        </div>
-        <div className="flex gap-2">
-          <Button
-            variant={nearMe ? 'default' : 'outline'}
-            onClick={handleNearMeToggle}
-            disabled={isDetectingLocation}
-            size="icon"
-            className="h-11 w-11 rounded-element"
-            aria-label="Find near me"
-          >
-            {isDetectingLocation ? <Loader2 size={16} /> : <Navigation size={16} />}
-          </Button>
-          <Button
-            onClick={handleSearch}
-            size="icon"
-            className="h-11 w-11 rounded-element"
-            aria-label="Search"
-          >
-            <Search size={16} />
-          </Button>
-          <Button
-            variant={showAdvanced ? 'default' : 'outline'}
-            onClick={() => setShowAdvanced(!showAdvanced)}
-            className="h-11 rounded-element gap-2"
-            aria-label="Toggle filters"
-          >
-            <Filter size={16} />
-            {activeFilterCount > 0 && (
-              <span
-                className="rounded-full inline-flex items-center justify-center font-semibold"
-                style={{
-                  backgroundColor: showAdvanced
-                    ? 'hsl(var(--primary-foreground))'
-                    : 'hsl(var(--primary))',
-                  color: showAdvanced ? 'hsl(var(--primary))' : 'hsl(var(--primary-foreground))',
-                  minWidth: 20,
-                  height: 20,
-                  fontSize: '0.7rem',
-                  padding: '0 6px',
-                }}
-              >
-                {activeFilterCount}
-              </span>
-            )}
-          </Button>
-        </div>
-      </div>
+      <SearchFilterBar
+        search={f.search}
+        onSearchInput={f.handleSearchInput}
+        onSearch={f.handleSearch}
+        nearMe={f.nearMe}
+        isDetectingLocation={f.isDetectingLocation}
+        onNearMeToggle={f.handleNearMeToggle}
+        showAdvanced={f.showAdvanced}
+        onToggleAdvanced={() => f.setShowAdvanced(!f.showAdvanced)}
+        activeFilterCount={f.activeFilterCount}
+      />
 
-      {/* Category Chips — horizontally scroll on narrow screens (Airbnb-style),
-          wrap on wider screens. -mx + px keeps the scroll edge flush with card. */}
-      <div className="flex gap-1.5 overflow-x-auto sm:flex-wrap max-w-full -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-thin">
-        {categories.map((cat) => (
-          <Button
-            key={cat}
-            variant={category === cat ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => handleCategoryClick(cat)}
-            className="rounded-full h-8 px-4.5 text-xs font-medium transition-all whitespace-nowrap flex-shrink-0"
-          >
-            {categoryLabels[cat] ?? cat}
-          </Button>
-        ))}
-      </div>
+      {/* Category Chips */}
+      <CategoryChips category={f.category} onCategoryClick={f.handleCategoryClick} />
 
       {/* Traveling preference chips (host-provided) + first-use save prompt */}
       {preferenceChips}
-      {showAccessibilityPrompt && (
+      {f.showAccessibilityPrompt && (
         <SaveDefaultPrompt
           message="Save these as your accessibility needs? They'll apply everywhere. Only you see this."
-          onSave={() =>
-            saveTravelPreference({ accessibility_needs: selectedAccessibilityAttributes })
-          }
-          onDismiss={dismissAccessibilityPrompt}
+          onSave={f.onSaveAccessibilityDefault}
+          onDismiss={f.dismissAccessibilityPrompt}
         />
       )}
 
       {/* Active Filter Chips — always visible when any filter is on */}
-      {hasActiveFilters && (
-        <div className="flex flex-wrap gap-1.5 items-center pt-1 px-1">
-          {search && (
-            <Badge variant="secondary">
-              &ldquo;{search}&rdquo;
-              <X
-                style={xStyle}
-                role="button"
-                aria-label="Remove filter"
-                onClick={() => {
-                  setSearch('');
-                  autoApply({ search: '' });
-                }}
-              />
-            </Badge>
-          )}
-          {city && (
-            <Badge variant="secondary">
-              {city}
-              <X
-                style={xStyle}
-                role="button"
-                aria-label="Remove filter"
-                onClick={() => {
-                  setCity('');
-                  autoApply({ city: '' });
-                }}
-              />
-            </Badge>
-          )}
-          {selectedTags.map((tag) => (
-            <Badge key={tag} variant="secondary">
-              {tag}
-              <X
-                style={xStyle}
-                role="button"
-                aria-label="Remove filter"
-                onClick={() => handleTagToggle(tag)}
-              />
-            </Badge>
-          ))}
-          {selectedAmenities.map((a) => (
-            <Badge key={a} variant="secondary">
-              {a}
-              <X
-                style={xStyle}
-                role="button"
-                aria-label="Remove filter"
-                onClick={() => handleAmenityToggle(a)}
-              />
-            </Badge>
-          ))}
-          {selectedServices.map((s) => (
-            <Badge key={s} variant="secondary">
-              {s}
-              <X
-                style={xStyle}
-                role="button"
-                aria-label="Remove filter"
-                onClick={() => handleServiceToggle(s)}
-              />
-            </Badge>
-          ))}
-          {selectedAccessibilityAttributes.map((a) => (
-            <Badge key={a} variant="secondary">
-              {accessibilityLabel(a)}
-              <X
-                style={xStyle}
-                role="button"
-                aria-label="Remove filter"
-                onClick={() => handleAccessibilityToggle(a)}
-              />
-            </Badge>
-          ))}
-          {selectedTargetGroups.map((g) => (
-            <Badge key={g} variant="secondary">
-              {g}
-              <X
-                style={xStyle}
-                role="button"
-                aria-label="Remove filter"
-                onClick={() => handleTargetGroupToggle(g)}
-              />
-            </Badge>
-          ))}
-          {nearMe && (
-            <Badge variant="secondary">
-              Near Me
-              <X
-                style={xStyle}
-                role="button"
-                aria-label="Remove filter"
-                onClick={handleNearMeToggle}
-              />
-            </Badge>
-          )}
-          <Button variant="ghost" size="sm" onClick={clearFilters}>
-            Clear all
-          </Button>
-        </div>
+      {f.hasActiveFilters && (
+        <ActiveFilterBadges
+          search={f.search}
+          city={f.city}
+          selectedTags={f.selectedTags}
+          selectedAmenities={f.selectedAmenities}
+          selectedServices={f.selectedServices}
+          selectedAccessibilityAttributes={f.selectedAccessibilityAttributes}
+          selectedTargetGroups={f.selectedTargetGroups}
+          nearMe={f.nearMe}
+          accessibilityLabel={f.accessibilityLabel}
+          onRemoveSearch={f.removeSearch}
+          onRemoveCity={f.removeCity}
+          onToggleTag={f.handleTagToggle}
+          onToggleAmenity={f.handleAmenityToggle}
+          onToggleService={f.handleServiceToggle}
+          onToggleAccessibility={f.handleAccessibilityToggle}
+          onToggleTargetGroup={f.handleTargetGroupToggle}
+          onNearMeToggle={f.handleNearMeToggle}
+          onClearAll={f.clearFilters}
+        />
       )}
 
       {/* Advanced Filters Panel — inline on desktop, bottom-sheet on mobile */}
-      {showAdvanced && (
-        <>
-          {/* Mobile: bottom sheet */}
-          <Sheet open={showAdvanced} onOpenChange={(o) => !o && setShowAdvanced(false)}>
-            <SheetContent side="bottom" className="md:hidden max-h-[85dvh] overflow-y-auto p-4">
-              <SheetHeader>
-                <SheetTitle>Refine</SheetTitle>
-              </SheetHeader>
-              {renderAdvancedPanel()}
-            </SheetContent>
-          </Sheet>
-
-          {/* Desktop: inline */}
-          <nav
-            aria-label="Venue filters"
-            className="hidden md:flex flex-col gap-6 pt-6 mt-1 border-t border-border"
-          >
-            {renderAdvancedPanel()}
-          </nav>
-        </>
+      {f.showAdvanced && (
+        <AdvancedFiltersPanel
+          open={f.showAdvanced}
+          onOpenChange={f.setShowAdvanced}
+          city={f.city}
+          onCityChange={f.setCity}
+          onSearch={f.handleSearch}
+          tagsOpen={f.tagsOpen}
+          onTagsOpenChange={f.setTagsOpen}
+          selectedTags={f.selectedTags}
+          tagsLoading={f.tagsLoading}
+          tagItems={f.unifiedTags.map((t) => ({ key: t.id, label: t.name }))}
+          onToggleTag={f.handleTagToggle}
+          selectedAmenities={f.selectedAmenities}
+          selectedServices={f.selectedServices}
+          selectedAccessibilityAttributes={f.selectedAccessibilityAttributes}
+          amenityOptions={f.amenityOptions}
+          accessibilityOptions={f.accessibilityOptions}
+          vocabLoading={f.vocabLoading}
+          accessibilityLabel={f.accessibilityLabel}
+          onToggleAmenity={f.handleAmenityToggle}
+          onToggleService={f.handleServiceToggle}
+          onToggleAccessibility={f.handleAccessibilityToggle}
+          targetGroupsOpen={f.targetGroupsOpen}
+          onTargetGroupsOpenChange={f.setTargetGroupsOpen}
+          selectedTargetGroups={f.selectedTargetGroups}
+          targetGroupsLoading={f.targetGroupsLoading}
+          targetGroupItems={f.targetGroups.map((g) => ({ key: g.id, label: g.name, color: g.color }))}
+          onToggleTargetGroup={f.handleTargetGroupToggle}
+          hasActiveFilters={f.hasActiveFilters}
+          onClearFilters={f.clearFilters}
+        />
       )}
     </div>
-  );
-
-  function renderAdvancedPanel() {
-    return (
-      <div className="flex flex-col gap-6">
-        <div>
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background/60 px-4 py-1 text-xs2 font-semibold uppercase tracking-[0.18em] text-muted-foreground mb-4">
-            <span className="w-1.5 h-1.5 rounded-full bg-foreground" aria-hidden="true" />
-            Refine
-          </span>
-        </div>
-
-        {/* City input */}
-        <div className="max-w-[400px] flex flex-col gap-1.5">
-          <Label htmlFor="city" className="text-xs2 uppercase tracking-wider text-muted-foreground">
-            City
-          </Label>
-          <Input
-            id="city"
-            placeholder="Enter city..."
-            value={city}
-            onChange={(e) => setCity(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-            className="h-11 rounded-element"
-          />
-        </div>
-
-        {/* Filter dropdowns */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {/* Tags */}
-          <FilterDropdown
-            label="Tags"
-            open={tagsOpen}
-            onOpenChange={setTagsOpen}
-            selected={selectedTags}
-            loading={tagsLoading}
-            items={unifiedTags.map((t) => ({ key: t.id, label: t.name }))}
-            onToggle={handleTagToggle}
-            placeholder="Select tags..."
-            searchPlaceholder="Search tags..."
-            emptyMessage="No tags found."
-          />
-
-          {/* What you need — consolidated amenities + services + accessibility */}
-          <WhatYouNeedDropdown
-            amenitiesSelected={selectedAmenities}
-            servicesSelected={selectedServices}
-            accessibilitySelected={selectedAccessibilityAttributes}
-            amenities={amenityOptions.length ? amenityOptions : commonAmenities.map((a) => ({ key: a, label: a }))}
-            services={commonServices.map((s) => ({ key: s, label: s }))}
-            accessibility={accessibilityOptions}
-            accessibilityLoading={vocabLoading}
-            accessibilityLabel={accessibilityLabel}
-            onToggleAmenity={handleAmenityToggle}
-            onToggleService={handleServiceToggle}
-            onToggleAccessibility={handleAccessibilityToggle}
-          />
-
-          {/* Target Groups */}
-          <FilterDropdown
-            label="Target Groups"
-            open={targetGroupsOpen}
-            onOpenChange={setTargetGroupsOpen}
-            selected={selectedTargetGroups}
-            loading={targetGroupsLoading}
-            items={targetGroups.map((g) => ({ key: g.id, label: g.name, color: g.color }))}
-            onToggle={handleTargetGroupToggle}
-            placeholder="Select target groups..."
-            searchPlaceholder="Search target groups..."
-            emptyMessage="No target groups found."
-          />
-        </div>
-
-        {/* Clear button */}
-        {hasActiveFilters && (
-          <div className="flex gap-4">
-            <Button variant="outline" onClick={clearFilters} size="sm">
-              <X size={14} />
-              Clear All
-            </Button>
-          </div>
-        )}
-      </div>
-    );
-  }
-}
-
-// Extracted filter dropdown component to reduce repetition
-function FilterDropdown({
-  label,
-  open,
-  onOpenChange,
-  selected,
-  loading,
-  items,
-  onToggle,
-  placeholder,
-  searchPlaceholder,
-  emptyMessage,
-}: {
-  label: string;
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  selected: string[];
-  loading?: boolean;
-  items: { key: string; label: string; color?: string }[];
-  onToggle: (value: string) => void;
-  placeholder: string;
-  searchPlaceholder: string;
-  emptyMessage: string;
-}) {
-  const xStyle = {
-    width: 12,
-    height: 12,
-    cursor: 'pointer',
-    padding: 8,
-    margin: -8,
-    boxSizing: 'content-box' as const,
-  };
-
-  return (
-    <div className="flex flex-col gap-2">
-      <Label className="text-xs2 uppercase tracking-wider text-muted-foreground">
-        <div className="flex items-center gap-1.5">
-          <span className="w-1.5 h-1.5 rounded-full bg-foreground" aria-hidden="true" />
-          {label}
-          {selected.length > 0 && (
-            <span className="ml-1 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1.5 rounded-full bg-foreground text-background text-2xs font-semibold normal-case tracking-normal">
-              {selected.length}
-            </span>
-          )}
-        </div>
-      </Label>
-      <Popover open={open} onOpenChange={onOpenChange}>
-        <PopoverTrigger asChild>
-          <Button
-            variant="outline"
-            role="combobox"
-            aria-expanded={open}
-            className="h-11 w-full justify-between rounded-element font-normal"
-          >
-            <span className="truncate text-sm">
-              {selected.length > 0 ? `${selected.length} selected` : placeholder}
-            </span>
-            <ChevronDown
-              style={{ width: 14, height: 14, opacity: 0.5 }}
-              className="ml-2 shrink-0"
-            />
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent
-          align="start"
-          className="border-border p-0"
-        >
-          <Command>
-            <CommandInput placeholder={searchPlaceholder} />
-            <CommandList>
-              <CommandEmpty>{emptyMessage}</CommandEmpty>
-              <CommandGroup>
-                {loading ? (
-                  <div className="flex items-center justify-center p-4">
-                    <Loader2 size={16} />
-                  </div>
-                ) : (
-                  items.map((item) => (
-                    <CommandItem
-                      key={item.key}
-                      value={item.label}
-                      onSelect={() => onToggle(item.label)}
-                    >
-                      <Check
-                        style={{
-                          width: 16,
-                          height: 16,
-                          opacity: selected.includes(item.label) ? 1 : 0,
-                        }}
-                        className="mr-2"
-                      />
-                      <div className="flex items-center gap-2">
-                        {item.color && (
-                          <div
-                            className="rounded-full border border-border"
-                            style={{ width: 10, height: 10, backgroundColor: item.color }}
-                          />
-                        )}
-                        {item.label}
-                      </div>
-                    </CommandItem>
-                  ))
-                )}
-              </CommandGroup>
-            </CommandList>
-          </Command>
-        </PopoverContent>
-      </Popover>
-      {selected.length > 0 && (
-        <div className="flex flex-wrap gap-1">
-          {selected.map((val) => (
-            <Badge key={val} variant="secondary">
-              {val}
-              <X
-                style={xStyle}
-                role="button"
-                aria-label="Remove filter"
-                onClick={() => onToggle(val)}
-              />
-            </Badge>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-interface WhatYouNeedProps {
-  amenitiesSelected: string[];
-  servicesSelected: string[];
-  accessibilitySelected: string[];
-  amenities: { key: string; label: string }[];
-  services: { key: string; label: string }[];
-  accessibility: { key: string; label: string }[];
-  accessibilityLoading?: boolean;
-  /** slug → display name for selected accessibility values. */
-  accessibilityLabel?: (v: string) => string;
-  onToggleAmenity: (v: string) => void;
-  onToggleService: (v: string) => void;
-  onToggleAccessibility: (v: string) => void;
-}
-
-// Combined "What you need" dropdown: tabs amenities / services / accessibility
-// under one trigger to reduce the filter row from 3 dropdowns down to 1.
-function WhatYouNeedDropdown({
-  amenitiesSelected,
-  servicesSelected,
-  accessibilitySelected,
-  amenities,
-  services,
-  accessibility,
-  accessibilityLoading,
-  accessibilityLabel,
-  onToggleAmenity,
-  onToggleService,
-  onToggleAccessibility,
-}: WhatYouNeedProps) {
-  const [open, setOpen] = useState(false);
-  const total =
-    amenitiesSelected.length + servicesSelected.length + accessibilitySelected.length;
-
-  return (
-    <div className="flex flex-col gap-2">
-      <Label className="text-xs2 uppercase tracking-wider text-muted-foreground">
-        <div className="flex items-center gap-1.5">
-          <span className="w-1.5 h-1.5 rounded-full bg-foreground" aria-hidden="true" />
-          What you need
-          {total > 0 && (
-            <span className="ml-1 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1.5 rounded-full bg-foreground text-background text-2xs font-semibold normal-case tracking-normal">
-              {total}
-            </span>
-          )}
-        </div>
-      </Label>
-      <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
-          <Button
-            variant="outline"
-            role="combobox"
-            aria-expanded={open}
-            className="h-11 w-full justify-between rounded-element font-normal"
-          >
-            <span className="truncate text-sm">
-              {total > 0 ? `${total} selected` : 'Amenities · services · accessibility'}
-            </span>
-            <ChevronDown style={{ width: 14, height: 14, opacity: 0.5 }} className="ml-2 shrink-0" />
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent align="start" className="border-border p-0 w-[320px]">
-          <Tabs defaultValue="amenities">
-            <TabsList className="w-full grid grid-cols-3 rounded-none border-b">
-              <TabsTrigger value="amenities">
-                Amenities{amenitiesSelected.length > 0 ? ` · ${amenitiesSelected.length}` : ''}
-              </TabsTrigger>
-              <TabsTrigger value="services">
-                Services{servicesSelected.length > 0 ? ` · ${servicesSelected.length}` : ''}
-              </TabsTrigger>
-              <TabsTrigger value="accessibility">
-                A11y{accessibilitySelected.length > 0 ? ` · ${accessibilitySelected.length}` : ''}
-              </TabsTrigger>
-            </TabsList>
-            <TabsContent value="amenities">
-              <FilterList
-                items={amenities}
-                selected={amenitiesSelected}
-                onToggle={onToggleAmenity}
-                searchPlaceholder="Search amenities…"
-                emptyMessage="No amenities found."
-              />
-            </TabsContent>
-            <TabsContent value="services">
-              <FilterList
-                items={services}
-                selected={servicesSelected}
-                onToggle={onToggleService}
-                searchPlaceholder="Search services…"
-                emptyMessage="No services found."
-              />
-            </TabsContent>
-            <TabsContent value="accessibility">
-              <FilterList
-                items={accessibility}
-                selected={accessibilitySelected}
-                onToggle={onToggleAccessibility}
-                searchPlaceholder="Search accessibility…"
-                emptyMessage="No accessibility features found."
-                loading={accessibilityLoading}
-                byKey
-              />
-            </TabsContent>
-          </Tabs>
-        </PopoverContent>
-      </Popover>
-      {total > 0 && (
-        <div className="flex flex-wrap gap-1">
-          {[
-            ...amenitiesSelected.map((v) => ({ v, label: v, toggle: onToggleAmenity })),
-            ...servicesSelected.map((v) => ({ v, label: v, toggle: onToggleService })),
-            ...accessibilitySelected.map((v) => ({
-              v,
-              label: accessibilityLabel ? accessibilityLabel(v) : v,
-              toggle: onToggleAccessibility,
-            })),
-          ].map(({ v, label, toggle }) => (
-            <Badge key={v} variant="secondary">
-              {label}
-              <X
-                style={{
-                  width: 12,
-                  height: 12,
-                  cursor: 'pointer',
-                  padding: 8,
-                  margin: -8,
-                  boxSizing: 'content-box' as const,
-                }}
-                role="button"
-                aria-label="Remove filter"
-                onClick={() => toggle(v)}
-              />
-            </Badge>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-function FilterList({
-  items,
-  selected,
-  onToggle,
-  searchPlaceholder,
-  emptyMessage,
-  loading,
-  byKey,
-}: {
-  items: { key: string; label: string }[];
-  selected: string[];
-  onToggle: (v: string) => void;
-  searchPlaceholder: string;
-  emptyMessage: string;
-  loading?: boolean;
-  /** Toggle/select by item.key (vocab slug) instead of the display label. */
-  byKey?: boolean;
-}) {
-  const valueOf = (item: { key: string; label: string }) => (byKey ? item.key : item.label);
-  return (
-    <Command>
-      <CommandInput placeholder={searchPlaceholder} />
-      <CommandList>
-        <CommandEmpty>{emptyMessage}</CommandEmpty>
-        <CommandGroup>
-          {loading ? (
-            <div className="flex items-center justify-center p-4">
-              <Loader2 size={16} />
-            </div>
-          ) : (
-            items.map((item) => (
-              <CommandItem
-                key={item.key}
-                value={item.label}
-                onSelect={() => onToggle(valueOf(item))}
-              >
-                <Check
-                  style={{
-                    width: 16,
-                    height: 16,
-                    opacity: selected.includes(valueOf(item)) ? 1 : 0,
-                  }}
-                  className="mr-2"
-                />
-                {item.label}
-              </CommandItem>
-            ))
-          )}
-        </CommandGroup>
-      </CommandList>
-    </Command>
   );
 }

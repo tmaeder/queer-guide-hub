@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Lock } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
-import { supabase } from '@/integrations/supabase/client';
+import { untypedRpc } from '@/integrations/supabase/untyped';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 
@@ -34,12 +34,12 @@ export function GatedContentNotice({ cityId, countryId }: GatedContentNoticeProp
   const { data } = useQuery({
     queryKey: ['gated-content-count', cityId ?? null, countryId ?? null],
     queryFn: async (): Promise<GatedCount> => {
-      const { data, error } = await supabase.rpc('gated_count_for_location' as never, {
+      const { data, error } = await untypedRpc<GatedCount>('gated_count_for_location', {
         p_country_id: countryId ?? null,
         p_city_id: cityId ?? null,
-      } as never);
+      });
       if (error) throw error;
-      return (data ?? { venues: 0, events: 0, organizations: 0 }) as GatedCount;
+      return data ?? { venues: 0, events: 0, organizations: 0 };
     },
     enabled: !user && (!!cityId || !!countryId),
     staleTime: 5 * 60 * 1000,

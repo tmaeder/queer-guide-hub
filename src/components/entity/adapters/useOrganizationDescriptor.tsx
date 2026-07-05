@@ -6,6 +6,7 @@ import { buildOrgMeta } from '@/pages/OrganizationDetail.meta';
 import {
   OrgHero,
   OrgAbout,
+  OrgSocial,
   OrgWhatTheyDo,
   OrgTags,
   OrgVisit,
@@ -35,6 +36,7 @@ export function useOrganizationDescriptor(slug: string | undefined): EntityDescr
       sections: [
         { id: 'about', when: Boolean(org.editorial_long || org.description), render: () => <OrgAbout org={org} /> },
         { id: 'what-they-do', render: () => <OrgWhatTheyDo org={org} /> },
+        { id: 'on-social', when: Boolean(org.social && Object.keys(org.social).length > 0), render: () => <OrgSocial org={org} /> },
         { id: 'tags', when: (org.tags?.length ?? 0) > 0, render: () => <OrgTags org={org} /> },
         { id: 'visit', when: org.venue_count > 0, render: () => <OrgVisit org={org} /> },
         {
@@ -69,7 +71,12 @@ export function useOrganizationDescriptor(slug: string | undefined): EntityDescr
         countryName: null,
         criminalization: null,
       },
-      trackView: { type: 'organization', slug: org.slug, title: org.name },
+      trackView: {
+        type: 'organization',
+        slug: org.slug,
+        title: org.name,
+        image: org.cover_image_url ?? org.images?.[0] ?? org.logo_url ?? undefined,
+      },
     };
   }, [org, t]);
 

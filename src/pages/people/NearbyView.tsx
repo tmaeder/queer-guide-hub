@@ -63,7 +63,7 @@ export function NearbyView() {
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-center justify-between gap-4 rounded-element border border-border px-4 py-2.5">
         <span className="flex items-center gap-2 text-sm">
-          <span className="h-2 w-2 rounded-full bg-accent-brand" aria-hidden />
+          <span className="h-2 w-2 rounded-full bg-foreground" aria-hidden />
           {t('people.nearby.live', 'You’re visible nearby')}
           {liveStatus?.isHighRisk && (
             <span className="inline-flex items-center gap-1 text-muted-foreground">

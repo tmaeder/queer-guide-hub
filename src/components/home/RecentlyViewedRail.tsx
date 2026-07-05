@@ -5,6 +5,7 @@ import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Image } from '@/components/ui/Image';
 import { HomeSection } from './HomeSection';
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
+import { useRecentlyViewedImages } from '@/hooks/useRecentlyViewedImages';
 import { recentlyViewedHref, type RecentlyViewedType } from '@/lib/recentlyViewed';
 import { type FallbackTheme } from '@/utils/fallbackImages';
 
@@ -20,6 +21,8 @@ function fallbackTheme(type: RecentlyViewedType): FallbackTheme {
       return 'marketplace';
     case 'personality':
       return 'person';
+    case 'organization':
+      return 'default';
     default:
       return 'place';
   }
@@ -32,6 +35,9 @@ function fallbackTheme(type: RecentlyViewedType): FallbackTheme {
 export function RecentlyViewedRail() {
   const { t } = useTranslation();
   const items = useRecentlyViewed();
+  // Backfill a real image for entries that were stored without one (pre-capture
+  // history); resolves the entity's current image from its source table.
+  const resolvedImages = useRecentlyViewedImages(items);
 
   if (items.length === 0) return null;
 
@@ -50,7 +56,7 @@ export function RecentlyViewedRail() {
             >
               <Card className="h-40 overflow-hidden transition">
                 <Image
-                  imageUrl={it.image}
+                  imageUrl={it.image ?? resolvedImages[`${it.type}:${it.slug}`]}
                   fallbackEntityType={fallbackTheme(it.type)}
                   fallbackKey={it.slug}
                   imageRole="thumb"

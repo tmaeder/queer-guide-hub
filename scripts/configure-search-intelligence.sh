@@ -35,7 +35,6 @@ SEARCH_PROXY_URL="${SEARCH_PROXY_URL:-https://queer-guide-search-proxy.maeder-to
 # Edge functions touched by the Search Intelligence rollup.
 SI_FUNCTIONS=(
   search-intelligence
-  meilisearch-sync
   translate-i18n-batch
   fetch-venue-images
   fetch-event-images
@@ -116,11 +115,7 @@ smoke() {
   local si_health
   si_health=$(curl -fsS "${SUPABASE_BASE_URL}/functions/v1/search-intelligence/health" 2>/dev/null || true)
   if [[ -n "$si_health" ]] && echo "$si_health" | grep -q '"ok":true'; then
-    if echo "$si_health" | grep -q '"meili_configured":true'; then
-      ok "search-intelligence/health → ok, meili configured"
-    else
-      warn "search-intelligence/health → ok BUT meili_configured=false (set MEILISEARCH_URL + MEILISEARCH_ADMIN_KEY env vars)"
-    fi
+    ok "search-intelligence/health → ok"
   else
     warn "search-intelligence/health failed: ${si_health:-no response}"
   fi
