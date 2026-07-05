@@ -25,8 +25,11 @@ test.describe('@p3-9 /help language switcher round-trip', () => {
     await switcher.scrollIntoViewIfNeeded();
     await switcher.click();
     await page.getByRole('option', { name: /english/i }).first().click();
-    await expect(page).toHaveURL(/\/help(?:[?#]|$)/, { timeout: 10_000 });
-    await expect(page).not.toHaveURL(/\/de\//);
+    // English is unprefixed: the URL must become /help with no /de/ segment.
+    // Anchor to the host so /de/help can't spuriously satisfy a substring
+    // /help match, and give the SPA navigation time to settle (the bare
+    // not-/de/ check raced the redirect).
+    await expect(page).toHaveURL(/\/\/[^/]+\/help(?:[?#]|$)/, { timeout: 10_000 });
 
     // Switch back to DE.
     const switcher2 = page.getByRole('combobox', { name: /select language/i }).first();
