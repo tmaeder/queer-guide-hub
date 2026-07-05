@@ -17,6 +17,8 @@ export interface PeopleMatchShared {
   shared_events?: number;
   mutual_groups?: number;
   mutual_friends?: number;
+  /** Kink-list overlap band (dating mode only). Never raw counts. */
+  chemistry_band?: 'none' | 'low' | 'medium' | 'high';
 }
 
 export interface PeopleMatch {
