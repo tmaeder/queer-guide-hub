@@ -5,7 +5,7 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { EntitySocialLinks } from '@/components/entity/EntitySocialLinks';
+import { SocialCards } from '@/components/social/SocialCard';
 import { EntityMap } from '@/components/map/EntityMap';
 import { NearbyMapLegend } from '@/components/map/NearbyMapLegend';
 import { NewsCard } from '@/components/news/NewsCard';
@@ -79,6 +79,18 @@ export function OrgAbout({ org }: { org: Organization }) {
     <section>
       <h2 className="mb-4 font-display text-headline">{t('pages.entityDetail.about', 'About')}</h2>
       <p className="whitespace-pre-line text-body-lg leading-relaxed text-foreground/90">{about}</p>
+    </section>
+  );
+}
+
+export function OrgSocial({ org }: { org: Organization }) {
+  const { t } = useTranslation();
+  const hasSocial = org.social && Object.keys(org.social).length > 0;
+  if (!hasSocial) return null;
+  return (
+    <section>
+      <h2 className="mb-4 font-display text-headline">{t('pages.entityDetail.onSocial', 'On social')}</h2>
+      <SocialCards links={org.social} />
     </section>
   );
 }
@@ -248,8 +260,7 @@ export function OrgArticles({ orgId }: { orgId: string }) {
 
 export function OrgSidebar({ org }: { org: Organization }) {
   const { t } = useTranslation();
-  const socials = Object.entries(org.social || {}).filter(([, v]) => Boolean(v));
-  const hasContact = org.website || org.email || org.phone || socials.length > 0;
+  const hasContact = org.website || org.email || org.phone;
   if (!hasContact) return null;
   return (
     <Card>
@@ -280,7 +291,6 @@ export function OrgSidebar({ org }: { org: Organization }) {
             <span>{org.phone}</span>
           </a>
         )}
-        {socials.length > 0 && <EntitySocialLinks links={org.social} size="sm" />}
       </CardContent>
     </Card>
   );
