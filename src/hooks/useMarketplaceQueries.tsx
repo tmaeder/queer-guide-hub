@@ -37,23 +37,99 @@ function useAsync<T>(deps: React.DependencyList, run: () => Promise<T>, initial:
   return { data, loading };
 }
 
-export function useMarketplaceSubcategoryTiles(limit: number | null = 8) {
+const toCount = (v: number | string | null | undefined) =>
+  typeof v === 'string' ? parseInt(v, 10) : (v ?? 0);
+
+export function useMarketplaceSubcategoryTiles(limit: number | null = 8, includeAdult = false) {
   return useAsync<SubcategoryTile[]>(
-    [limit],
+    [limit, includeAdult],
     async () => {
-      // Server-side aggregation. The legacy client-side aggregator silently
-      // truncated to the first ~1000 rows (Supabase db.max_rows default),
-      // skewing tile counts. The RPC GROUP BYs server-side, no row cap.
-      const { data, error } = await supabase.rpc('get_marketplace_subcategory_counts');
+      // Server-side aggregation, gated to the same content_rating tier the browse
+      // grid shows (unless the visitor opted into 18+) so counts never exceed results.
+      const { data, error } = await supabase.rpc('get_marketplace_subcategory_counts', {
+        p_include_adult: includeAdult,
+      });
       if (error || !data) return [];
       type Row = { slug: string | null; count: number | string | null };
       const rows = (data as Row[])
         .filter((r): r is { slug: string; count: number | string } => !!r.slug && r.count != null)
-        .map((r) => ({
-          slug: r.slug,
-          count: typeof r.count === 'string' ? parseInt(r.count, 10) : r.count,
-        }));
+        .map((r) => ({ slug: r.slug, count: toCount(r.count) }));
       return limit == null ? rows : rows.slice(0, limit);
+    },
+    [],
+  );
+}
+
+interface DepartmentCount {
+  slug: string;
+  count: number;
+}
+
+/** Department umbrella counts, content-rating gated. Tile + dropdown source of truth. */
+export function useMarketplaceDepartmentCounts(includeAdult = false) {
+  return useAsync<DepartmentCount[]>(
+    [includeAdult],
+    async () => {
+      const { data, error } = await supabase.rpc('get_marketplace_department_counts', {
+        p_include_adult: includeAdult,
+      });
+      if (error || !data) return [];
+      type Row = { department: string | null; count: number | string | null };
+      return (data as Row[])
+        .filter((r): r is { department: string; count: number | string } => !!r.department && r.count != null)
+        .map((r) => ({ slug: r.department, count: toCount(r.count) }));
+    },
+    [],
+  );
+}
+
+/** Finer sub-tile counts within a department (canonical groups), content-rating gated. */
+export function useMarketplaceSubcategoryGroupCounts(department: string | null | undefined, includeAdult = false) {
+  return useAsync<DepartmentCount[]>(
+    [department, includeAdult],
+    async () => {
+      if (!department) return [];
+      const { data, error } = await supabase.rpc('get_marketplace_subcategory_group_counts', {
+        p_department: department,
+        p_include_adult: includeAdult,
+      });
+      if (error || !data) return [];
+      type Row = { grp: string | null; count: number | string | null };
+      return (data as Row[])
+        .filter((r): r is { grp: string; count: number | string } => !!r.grp && r.count != null)
+        .map((r) => ({ slug: r.grp, count: toCount(r.count) }));
+    },
+    [],
+  );
+}
+
+export interface MarketplaceTagFacet {
+  slug: string;
+  name: string;
+  kind: 'material' | 'occasion' | 'vibe';
+  count: number;
+}
+
+/** Namespaced attribute-tag counts scoped to a department / group, content-rating gated. */
+export function useMarketplaceTagFacets(
+  department: string | null | undefined,
+  group: string | null | undefined,
+  includeAdult = false,
+) {
+  return useAsync<MarketplaceTagFacet[]>(
+    [department, group, includeAdult],
+    async () => {
+      const { data, error } = await supabase.rpc('get_marketplace_tag_facets', {
+        p_department: department ?? null,
+        p_subcategory_group: group ?? null,
+        p_include_adult: includeAdult,
+      });
+      if (error || !data) return [];
+      type Row = { slug: string | null; name: string | null; kind: string | null; count: number | string | null };
+      return (data as Row[])
+        .filter((r): r is { slug: string; name: string; kind: string; count: number | string } =>
+          !!r.slug && !!r.name && r.count != null)
+        .map((r) => ({ slug: r.slug, name: r.name, kind: r.kind as MarketplaceTagFacet['kind'], count: toCount(r.count) }));
     },
     [],
   );
@@ -366,15 +442,17 @@ export function useMarketplaceFacets(opts: {
   subcategory?: string;
   businessType?: string;
   categoryId?: string;
+  includeAdult?: boolean;
 }) {
   return useAsync<FacetCounts>(
-    [opts.category, opts.subcategory, opts.businessType, opts.categoryId],
+    [opts.category, opts.subcategory, opts.businessType, opts.categoryId, opts.includeAdult],
     async () => {
       const { data, error } = await supabase.rpc('get_marketplace_facets', {
         p_category: opts.category ?? null,
         p_subcategory: opts.subcategory ?? null,
         p_business_type: opts.businessType ?? null,
         p_category_id: opts.categoryId ?? null,
+        p_include_adult: opts.includeAdult ?? false,
       });
       if (error || !data) return EMPTY_FACETS;
       const payload = data as {

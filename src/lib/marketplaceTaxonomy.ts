@@ -63,6 +63,39 @@ export function departmentLabel(slug: string | null | undefined): string {
   return DEPARTMENT_LABELS[slug ?? ''] ?? 'Other';
 }
 
+// ── Fine buckets (subcategory_group) — mirror public.marketplace_subcategory_group()
+// (migration 20260704120000). Each department's canonical groups, in display order,
+// drive the finer sub-tiles on a department page. Keep in sync with the SQL classifier.
+export const DEPARTMENT_GROUPS: Record<string, string[]> = {
+  apparel: ['tops', 'bottoms', 'outerwear', 'bodywear', 'footwear', 'headwear', 'socks', 'accessories'],
+  underwear: ['underwear', 'jockstraps', 'thongs', 'lingerie'],
+  swimwear: ['swimwear'],
+  jewelry: ['jewelry'],
+  books_art: ['books', 'art'],
+  hygiene: ['grooming'],
+  intimacy: ['sex_toys', 'dildos', 'anal_toys', 'masturbators', 'vibrators', 'cock_rings', 'chastity', 'pumps', 'lubes', 'poppers', 'safer_sex'],
+  bdsm_fetish: ['fetish_gear', 'bondage', 'impact_play', 'harnesses', 'collars', 'gags', 'hoods_masks', 'pup_play'],
+  services: ['services'],
+};
+
+export const GROUP_LABELS: Record<string, string> = {
+  tops: 'Tops', bottoms: 'Bottoms', outerwear: 'Outerwear', bodywear: 'Bodywear',
+  footwear: 'Footwear', headwear: 'Headwear', socks: 'Socks', accessories: 'Accessories',
+  underwear: 'Underwear', jockstraps: 'Jockstraps', thongs: 'Thongs', lingerie: 'Lingerie',
+  swimwear: 'Swimwear', jewelry: 'Jewelry', books: 'Books', art: 'Art', grooming: 'Grooming',
+  sex_toys: 'Sex toys', dildos: 'Dildos', anal_toys: 'Anal toys', masturbators: 'Masturbators',
+  vibrators: 'Vibrators', cock_rings: 'Cock rings', chastity: 'Chastity', pumps: 'Pumps',
+  lubes: 'Lubes', poppers: 'Poppers', safer_sex: 'Safer sex',
+  fetish_gear: 'Fetish gear', bondage: 'Bondage', impact_play: 'Impact play',
+  harnesses: 'Harnesses', collars: 'Collars', gags: 'Gags', hoods_masks: 'Hoods & masks',
+  pup_play: 'Pup & pet play', services: 'Services',
+};
+
+export function groupLabel(slug: string | null | undefined): string {
+  if (!slug) return 'Other';
+  return GROUP_LABELS[slug] ?? slug.replace(/[_-]+/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
 // ── Brand routing ─────────────────────────────────────────────────────────────
 // Mirror of SQL marketplace_brand_slug(marketplace_normalize_brand(brand))
 // (migration 20260702150000). Keep the two in sync.

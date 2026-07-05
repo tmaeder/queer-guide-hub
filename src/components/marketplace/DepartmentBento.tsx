@@ -14,8 +14,9 @@ import {
 } from 'lucide-react';
 import { Image } from '@/components/ui/Image';
 import { SectionHeader } from './SectionHeader';
-import { useDepartmentCovers, useMarketplaceSubcategoryTiles } from '@/hooks/useMarketplaceQueries';
-import { DEPARTMENT_ORDER, departmentLabel, departmentOf } from '@/lib/marketplaceTaxonomy';
+import { useDepartmentCovers, useMarketplaceDepartmentCounts } from '@/hooks/useMarketplaceQueries';
+import { useAdultAcknowledgement } from '@/hooks/useAdultContent';
+import { ADULT_DEPARTMENTS, DEPARTMENT_ORDER, departmentLabel } from '@/lib/marketplaceTaxonomy';
 
 // Umbrella departments, SFW-first (intimacy/bdsm_fetish sit last in
 // DEPARTMENT_ORDER) — same ordering contract as the old uniform tiles.
@@ -41,17 +42,18 @@ function iconFor(slug: string): LucideIcon {
  * uniform 8-tile grid without leaving the 8pt rhythm.
  */
 export function DepartmentBento() {
-  const { data: subcats, loading } = useMarketplaceSubcategoryTiles(null);
+  // Count what the visitor will actually see: gated to their 18+ state, so a tile's
+  // number always matches the grid it opens. Adult-only departments stay hidden until
+  // the visitor has opted in (their category pages are age-gated anyway).
+  const { acknowledged } = useAdultAcknowledgement();
+  const { data: departments, loading } = useMarketplaceDepartmentCounts(acknowledged);
   const { data: covers } = useDepartmentCovers();
 
-  const counts = new Map<string, number>();
-  for (const t of subcats) {
-    const d = departmentOf(t.slug);
-    counts.set(d, (counts.get(d) ?? 0) + t.count);
-  }
-  const tiles = DEPARTMENT_ORDER.filter((d) => d !== 'other' && (counts.get(d) ?? 0) > 0).map(
-    (d) => ({ slug: d, count: counts.get(d) ?? 0 }),
-  );
+  const counts = new Map(departments.map((d) => [d.slug, d.count]));
+  const tiles = DEPARTMENT_ORDER
+    .filter((d) => d !== 'other' && (counts.get(d) ?? 0) > 0)
+    .filter((d) => acknowledged || !ADULT_DEPARTMENTS.has(d))
+    .map((d) => ({ slug: d, count: counts.get(d) ?? 0 }));
 
   if (!loading && tiles.length === 0) return null;
 

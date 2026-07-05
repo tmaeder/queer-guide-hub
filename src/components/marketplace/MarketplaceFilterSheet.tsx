@@ -31,6 +31,7 @@ import type { MarketplaceFiltersInput } from '@/hooks/useMarketplace';
 import {
   useMarketplaceFacets,
   useMarketplaceSubcategoryTiles,
+  useMarketplaceDepartmentCounts,
   useMarketplaceAttributeVocab,
 } from '@/hooks/useMarketplaceQueries';
 import {
@@ -100,8 +101,10 @@ export function MarketplaceFilterSheet({
     category: filters.category,
     subcategory: filters.subcategory,
     businessType: filters.businessType,
+    includeAdult,
   });
-  const { data: subcategoryOptions } = useMarketplaceSubcategoryTiles(null);
+  const { data: subcategoryOptions } = useMarketplaceSubcategoryTiles(null, includeAdult);
+  const { data: departmentCountData } = useMarketplaceDepartmentCounts(includeAdult);
   const { data: attributeVocab } = useMarketplaceAttributeVocab();
   const fmtCount = (n: number | undefined) => (n != null && n > 0 ? ` (${n.toLocaleString()})` : '');
 
@@ -150,12 +153,9 @@ export function MarketplaceFilterSheet({
         : Math.min(filters.priceRange.max, PRICE_MAX);
   const priceTouched = filters.priceRange != null;
 
-  // Department counts: group the fine subcategory tiles into umbrellas.
-  const departmentCounts = new Map<string, number>();
-  for (const opt of subcategoryOptions) {
-    const d = departmentOf(opt.slug);
-    departmentCounts.set(d, (departmentCounts.get(d) ?? 0) + opt.count);
-  }
+  // Department counts come straight from the gated RPC — matches the grid the
+  // visitor will actually see (no more count/grid mismatch on adult umbrellas).
+  const departmentCounts = new Map(departmentCountData.map((d) => [d.slug, d.count]));
   const departmentOptions = DEPARTMENT_ORDER.filter((d) => (departmentCounts.get(d) ?? 0) > 0);
   const visibleSubcategories = filters.department
     ? subcategoryOptions.filter((o) => departmentOf(o.slug) === filters.department)
