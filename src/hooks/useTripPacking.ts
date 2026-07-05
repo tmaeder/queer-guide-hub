@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { enqueueMutation } from '@/lib/offline/mutationQueue';
 
 export interface PackingItem {
   id: string;
@@ -177,13 +178,32 @@ export function usePackingMutations(tripId: string) {
 
   const toggleChecked = useMutation({
     mutationFn: async ({ id, is_checked }: { id: string; is_checked: boolean }) => {
+      // Offline: queue the patch — the optimistic cache write below keeps
+      // the checkbox responsive; useOfflineTripSync replays on reconnect.
+      if (typeof navigator !== 'undefined' && !navigator.onLine) {
+        await enqueueMutation('trip_packing_items', id, tripId, { is_checked });
+        return;
+      }
       const { error } = await supabase
         .from('trip_packing_items')
         .update({ is_checked })
         .eq('id', id);
       if (error) throw error;
     },
-    onSuccess: invalidate,
+    onMutate: async ({ id, is_checked }) => {
+      await queryClient.cancelQueries({ queryKey: ['trip-packing', tripId] });
+      const prev = queryClient.getQueryData<PackingItem[]>(['trip-packing', tripId]);
+      queryClient.setQueryData<PackingItem[]>(['trip-packing', tripId], (old) =>
+        (old ?? []).map((i) => (i.id === id ? { ...i, is_checked } : i)),
+      );
+      return { prev };
+    },
+    onError: (_err, _vars, ctx) => {
+      if (ctx?.prev) queryClient.setQueryData(['trip-packing', tripId], ctx.prev);
+    },
+    onSuccess: () => {
+      if (typeof navigator === 'undefined' || navigator.onLine) invalidate();
+    },
   });
 
   const deletePackingItem = useMutation({

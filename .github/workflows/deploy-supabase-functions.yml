@@ -77,7 +77,7 @@ jobs:
         # also clears the deploy gate. The other 6 tests under
         # _tests/ need per-file triage before they can be added here.
         working-directory: supabase/functions/_tests
-        run: deno test --allow-net --allow-env --allow-read source-adapter.test.ts pipeline-nodes.test.ts wikinews.test.ts enrichment-driver.test.ts
+        run: deno test --allow-net --allow-env --allow-read source-adapter.test.ts pipeline-nodes.test.ts wikinews.test.ts enrichment-driver.test.ts batch-circuit-checker.test.ts
 
       - name: Install Supabase CLI
         uses: supabase/setup-cli@v2

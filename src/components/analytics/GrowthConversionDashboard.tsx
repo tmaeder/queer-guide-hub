@@ -53,6 +53,13 @@ interface TrendRow {
   ctr: number | null;
 }
 
+interface CohortRow {
+  cohort_week: string;
+  week_offset: number;
+  users: number;
+  retained: number;
+}
+
 const PERIODS = [
   { value: '7', label: 'Last 7 days' },
   { value: '30', label: 'Last 30 days' },
@@ -107,6 +114,18 @@ export function GrowthConversionDashboard() {
       return res.success ? res.data : null;
     },
   });
+
+  // Weekly retention cohorts — independent of the day window (cohorts are weekly).
+  const cohorts = useQuery({
+    queryKey: ['growth-cohorts'],
+    queryFn: async (): Promise<CohortRow[]> => {
+      const { data, error } = await untypedSupabase.rpc('engagement_cohort_retention', { p_weeks: 8 });
+      if (error) throw error;
+      return (data ?? []) as CohortRow[];
+    },
+  });
+
+  const cohortGrid = useMemo(() => buildCohortGrid(cohorts.data ?? []), [cohorts.data]);
 
   const f = funnel.data;
 
@@ -211,6 +230,62 @@ export function GrowthConversionDashboard() {
         )}
       </section>
 
+      {/* Engagement retention cohorts */}
+      <section className="flex flex-col gap-4">
+        <div>
+          <h2 className="text-15 font-semibold">Weekly retention cohorts</h2>
+          <p className="text-13 text-muted-foreground">
+            Of users whose first activity fell in a given week, the share still active N weeks later.
+          </p>
+        </div>
+        {cohorts.isLoading ? (
+          <p className="text-13 text-muted-foreground">Loading…</p>
+        ) : cohortGrid.rows.length === 0 ? (
+          <p className="text-13 text-muted-foreground">Not enough activity history yet.</p>
+        ) : (
+          <div className="w-full overflow-x-auto">
+            <table className="border-collapse text-13">
+              <thead>
+                <tr>
+                  <th className="p-2 text-left font-medium text-muted-foreground">Cohort week</th>
+                  <th className="p-2 text-right font-medium text-muted-foreground">Users</th>
+                  {cohortGrid.offsets.map((o) => (
+                    <th key={o} className="p-2 text-center font-medium text-muted-foreground tabular-nums">
+                      W{o}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {cohortGrid.rows.map((r) => (
+                  <tr key={r.cohortWeek}>
+                    <td className="p-2 whitespace-nowrap tabular-nums">{r.cohortWeek}</td>
+                    <td className="p-2 text-right tabular-nums text-muted-foreground">{r.users}</td>
+                    {cohortGrid.offsets.map((o) => {
+                      const cell = r.cells[o];
+                      if (cell == null) return <td key={o} className="p-2" />;
+                      return (
+                        <td key={o} className="p-1 text-center">
+                          <span
+                            className="inline-block min-w-[3rem] rounded-badge px-2 py-1 tabular-nums"
+                            style={{
+                              backgroundColor: `hsl(var(--foreground) / ${(0.08 + 0.8 * cell).toFixed(3)})`,
+                              color: cell > 0.5 ? 'hsl(var(--background))' : 'hsl(var(--foreground))',
+                            }}
+                          >
+                            {Math.round(cell * 100)}%
+                          </span>
+                        </td>
+                      );
+                    })}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
+
       {/* Search conversion KPI → links to existing dashboard */}
       <section className="flex flex-col gap-4">
         <h2 className="text-15 font-semibold">Search conversion</h2>
@@ -232,6 +307,31 @@ export function GrowthConversionDashboard() {
 
 function round1(n: number): number {
   return Math.round(n * 10) / 10;
+}
+
+interface CohortGridRow {
+  cohortWeek: string;
+  users: number;
+  cells: Record<number, number>; // week_offset -> retention fraction 0..1
+}
+
+/** Pivot flat cohort rows into a matrix: cohort week × week-offset retention fraction. */
+function buildCohortGrid(rows: CohortRow[]): { offsets: number[]; rows: CohortGridRow[] } {
+  const byWeek = new Map<string, CohortGridRow>();
+  const offsetSet = new Set<number>();
+  for (const r of rows) {
+    offsetSet.add(r.week_offset);
+    let row = byWeek.get(r.cohort_week);
+    if (!row) {
+      row = { cohortWeek: r.cohort_week, users: r.users, cells: {} };
+      byWeek.set(r.cohort_week, row);
+    }
+    row.users = Math.max(row.users, r.users);
+    row.cells[r.week_offset] = r.users > 0 ? r.retained / r.users : 0;
+  }
+  const offsets = [...offsetSet].sort((a, b) => a - b);
+  const grid = [...byWeek.values()].sort((a, b) => (a.cohortWeek < b.cohortWeek ? 1 : -1));
+  return { offsets, rows: grid };
 }
 
 function pct(v: number | null): string {

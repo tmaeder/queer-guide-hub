@@ -120,7 +120,7 @@ Deno.test('hard-fails no-data-no-error outcomes (anti-starvation rule)', async (
   assertEquals(calls.rpcCalls[0].p_error_message, 'no_enrichment_data_produced')
 })
 
-Deno.test('writes normalized merge when provided and calls apply_enrichment', async () => {
+Deno.test('passes normalized merge through the RPC (no separate UPDATE)', async () => {
   const { handler, calls } = makeConfig([row('1', { name: 'a', tags: [] })], {
     enrichItem: async (_c, _i, n) => ({
       succeeded: true,
@@ -129,11 +129,20 @@ Deno.test('writes normalized merge when provided and calls apply_enrichment', as
     }),
   })
   await handler(post({}))
-  assertEquals(calls.normalizedUpdates.length, 1)
-  assertEquals(calls.normalizedUpdates[0].data.description, 'd')
+  assertEquals(calls.normalizedUpdates.length, 0)
+  const merged = calls.rpcCalls[0].p_merged_normalized as Record<string, unknown>
+  assertEquals(merged.description, 'd')
   assertEquals(calls.rpcCalls[0].p_status, 'success')
   assertEquals(calls.rpcCalls[0].p_stage, 'enrich-test')
   assertEquals(calls.rpcCalls[0].p_actor, 'pipeline-enrich-test')
+})
+
+Deno.test('sends p_merged_normalized: null when no merge produced', async () => {
+  const { handler, calls } = makeConfig([row('1')], {
+    enrichItem: async () => ({ succeeded: true, enrichedData: { ai: true } }),
+  })
+  await handler(post({}))
+  assertEquals(calls.rpcCalls[0].p_merged_normalized, null)
 })
 
 Deno.test('dry_run skips all writes and counts enriched', async () => {

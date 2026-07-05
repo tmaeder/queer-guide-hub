@@ -39,6 +39,13 @@ vi.mock('@/hooks/useDayWeather', () => ({
   useDayWeather: () => null,
 }));
 
+vi.mock('@/hooks/useTrips', () => ({
+  useTripMutations: () => ({
+    updatePlace: { mutate: vi.fn(), isPending: false },
+    addPlace: { mutate: vi.fn(), isPending: false },
+  }),
+}));
+
 vi.mock('../AddDayNoteDialog', () => ({
   AddDayNoteDialog: () => null,
 }));

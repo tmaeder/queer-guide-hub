@@ -10,7 +10,7 @@
 // the conservative >=2-signal decision lives in run_existence_decision. Dead signals
 // from the LLM/regex are deliberately low-weight so they can never archive alone.
 
-import { probeLink, classifyHttpStatus, type LinkStatus } from './link-health.ts'
+import { probeLink, type LinkStatus } from './link-health.ts'
 import { assertPublicHttpUrl } from './ssrf-guard.ts'
 import { chatCompletion } from './openai-client.ts'
 import { withCircuitBreaker, CircuitOpenError } from './circuit-breaker.ts'

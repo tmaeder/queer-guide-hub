@@ -5,6 +5,7 @@ import {
   corsResponse,
   requireInternalOrAdmin,
 } from './supabase-client.ts'
+import { createBatchCircuitChecker, type BatchCircuitChecker } from './circuit-breaker.ts'
 
 // Shared batch driver for the pipeline-enrich-* staging functions.
 //
@@ -49,11 +50,17 @@ export interface EnrichmentDriverConfig {
   defaultConcurrency?: number
   /** Optional wall-clock budget, checked between pool waves. */
   wallClockMs?: number
+  /** Single-breaker adopters set their breaker api name here and call the
+   *  provided `breaker.run(fn)` instead of withCircuitBreaker — the closed
+   *  state is then checked once per batch instead of once per item (N+1
+   *  fix). Multi-breaker adopters leave this unset. */
+  batchBreakerApi?: string
   /** Returns 'skip' when the row lacks the minimum fields (no name/title). */
   enrichItem(
     supabase: ServiceClient,
     item: StagingItem,
-    normalized: Record<string, unknown>
+    normalized: Record<string, unknown>,
+    breaker?: BatchCircuitChecker
   ): Promise<EnrichOutcome | 'skip'>
   /** Test seam — overrides client construction / auth. Not for production use. */
   _deps?: {
@@ -103,11 +110,15 @@ export function serveEnrichment(config: EnrichmentDriverConfig) {
         failed = 0,
         skipped = 0
 
+      const breaker = config.batchBreakerApi
+        ? createBatchCircuitChecker(supabase, config.batchBreakerApi)
+        : undefined
+
       const processItem = async (item: StagingItem) => {
         const n = (item.normalized_data ?? {}) as Record<string, unknown>
         const startedAt = Date.now()
 
-        const outcome = await config.enrichItem(supabase, item, n)
+        const outcome = await config.enrichItem(supabase, item, n, breaker)
         if (outcome === 'skip') {
           skipped++
           return
@@ -127,13 +138,9 @@ export function serveEnrichment(config: EnrichmentDriverConfig) {
         if (!outcome.succeeded && !itemError) itemError = 'no_enrichment_data_produced'
         const status = outcome.succeeded ? 'success' : 'failed'
 
-        if (outcome.mergedNormalized) {
-          await supabase
-            .from('ingestion_staging')
-            .update({ normalized_data: outcome.mergedNormalized })
-            .eq('id', item.id)
-        }
-
+        // The normalized_data merge rides along inside the RPC — one round-trip
+        // instead of a separate per-row UPDATE (the double-write folded per the
+        // #1923 follow-up; requires migration 20260704150000).
         const { error: applyErr } = await supabase.rpc('apply_enrichment', {
           p_staging_id: item.id,
           p_pipeline_run_id: pipelineRunId ?? null,
@@ -143,6 +150,7 @@ export function serveEnrichment(config: EnrichmentDriverConfig) {
           p_status: status,
           p_error_message: itemError,
           p_duration_ms: Date.now() - startedAt,
+          p_merged_normalized: outcome.mergedNormalized ?? null,
         })
 
         if (applyErr) {
@@ -162,6 +170,7 @@ export function serveEnrichment(config: EnrichmentDriverConfig) {
         if (deadline && Date.now() > deadline) break
         await Promise.all(items.slice(i, i + concurrency).map(processItem))
       }
+      await breaker?.flush()
 
       return jsonResponse(
         {

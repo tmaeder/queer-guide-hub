@@ -6,6 +6,15 @@ import { withErrorReporting } from '../_shared/report-api-error.ts'
 // ============================================================
 // Source: GayCities/gaytravel4u.com (web scraper)
 // Replaces: scrape-gaycities-events
+//
+// DEPRECATED NAMING: despite the name, this function scrapes
+// gaytravel4u.com — NOT gaycities.com (Cloudflare blocks all
+// non-browser clients there, so edge functions can't fetch it).
+// The real gaycities.com import lives scraper-side:
+// scraper/scripts/gaycities-{backfill,sync}.ts (Playwright), which
+// also stages with source_name='gaycities' but numeric source ids.
+// This adapter's synthetic ids are 'gc-*' so the two can't collide.
+// Follow-up: rename this adapter's slug to 'gaytravel4u'.
 // ============================================================
 
 const BASE_URL = 'https://www.gaytravel4u.com/gay-{city}-events/'

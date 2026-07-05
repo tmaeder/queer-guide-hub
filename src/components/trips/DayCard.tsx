@@ -17,6 +17,8 @@ import {
   StickyNote,
   AlertTriangle,
   Footprints,
+  Route,
+  ExternalLink,
 } from 'lucide-react';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { Card, CardContent } from '@/components/ui/card';
@@ -27,12 +29,18 @@ import type { TripDay, TripPlace } from '@/hooks/useTrips';
 import { useDayWeather, type Coord } from '@/hooks/useDayWeather';
 import { weatherIconFor, weatherLabelKeyFor } from '@/lib/weather/openMeteo';
 import type { TripConflict } from './tripConflicts';
-import { buildLegs, totalWalkingKm, formatLegDistance } from './tripLegs';
+import {
+  buildLegs,
+  totalWalkingKm,
+  formatLegDistance,
+  optimizeDayOrder,
+  googleMapsDayUrl,
+} from './tripLegs';
+import { useTripMutations } from '@/hooks/useTrips';
 import { LegRow } from './LegRow';
 import { SortablePlaceCard } from './SortablePlaceCard';
 import { DayNoteRow } from './DayNoteRow';
 import { AddDayNoteDialog } from './AddDayNoteDialog';
-import { TripMap } from './TripMap';
 import { TripMap } from './TripMapLazy';
 
 export type DaySlot = 'morning' | 'afternoon' | 'evening' | 'night' | 'unscheduled';
@@ -147,8 +155,26 @@ export function DayCard({
   const { t } = useTranslation();
   const [mapOpen, setMapOpen] = useState(false);
   const [noteOpen, setNoteOpen] = useState(false);
+  const { updatePlace } = useTripMutations();
   const coord = useMemo(() => coordForDay(places, fallbackCoord), [places, fallbackCoord]);
   const weather = useDayWeather(day.date, coord);
+
+  const locatedCount = useMemo(
+    () =>
+      places.filter((p) => p.latitude != null && p.longitude != null && p.category !== 'note')
+        .length,
+    [places],
+  );
+  const directionsUrl = useMemo(() => googleMapsDayUrl(places), [places]);
+
+  const optimizeRoute = () => {
+    const optimized = optimizeDayOrder([...places].sort((a, b) => a.sort_order - b.sort_order));
+    optimized.forEach((place, idx) => {
+      if (place.sort_order !== idx) {
+        updatePlace.mutate({ id: place.id, trip_id: day.trip_id, sort_order: idx });
+      }
+    });
+  };
 
   const placesBySlot = useMemo(() => {
     const map: Record<DaySlot, TripPlace[]> = {
@@ -290,6 +316,36 @@ export function DayCard({
           </div>
 
           <div className="flex items-center gap-1">
+            {!readOnly && locatedCount >= 3 && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={optimizeRoute}
+                className="rounded-full"
+                aria-label={t('trips.legs.optimize', 'Optimize route order')}
+                title={t('trips.legs.optimize', 'Optimize route order')}
+              >
+                <Route size={14} />
+              </Button>
+            )}
+            {directionsUrl && (
+              <Button
+                variant="ghost"
+                size="sm"
+                asChild
+                className="rounded-full"
+              >
+                <a
+                  href={directionsUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={t('trips.legs.directions', 'Open day in Google Maps')}
+                  title={t('trips.legs.directions', 'Open day in Google Maps')}
+                >
+                  <ExternalLink size={14} />
+                </a>
+              </Button>
+            )}
             <Button
               variant="ghost"
               size="sm"
