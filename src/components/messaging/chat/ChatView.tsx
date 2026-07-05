@@ -14,6 +14,7 @@ import { useConversationAvailability } from '@/hooks/useConversationAvailability
 import { usePublicStatus } from '@/hooks/usePublicStatus';
 import { MessageItem } from './MessageItem';
 import { MessageInput } from './MessageInput';
+import { InChatSubmitSheet } from './InChatSubmitSheet';
 import { useMessageListScroll } from './useMessageListScroll';
 import { useJoyBurstTrigger } from './useJoyBurstTrigger';
 
@@ -50,6 +51,7 @@ export const ChatView = ({ conversationId, onBack }: ChatViewProps) => {
   const [replyTarget, setReplyTarget] = useState<Message | null>(null);
   const [editing, setEditing] = useState<Message | null>(null);
   const [composerKey, setComposerKey] = useState(0);
+  const [submitSheetOpen, setSubmitSheetOpen] = useState(false);
 
   const currentMessages = messages[conversationId] || [];
   const currentTypingUsers = typingUsers[conversationId] || [];
@@ -347,6 +349,13 @@ export const ChatView = ({ conversationId, onBack }: ChatViewProps) => {
           void sendMessage(conversationId, emoji, undefined, 'sticker');
           void stopTypingIndicator(conversationId);
         }}
+        onOpenSubmit={() => setSubmitSheetOpen(true)}
+      />
+
+      <InChatSubmitSheet
+        open={submitSheetOpen}
+        onOpenChange={setSubmitSheetOpen}
+        conversationId={conversationId}
       />
     </div>
   );

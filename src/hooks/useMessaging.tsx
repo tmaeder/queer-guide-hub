@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useId } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import type { Json } from '@/integrations/supabase/types';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 
@@ -181,6 +182,7 @@ export const useMessaging = () => {
       content: string,
       replyToId?: string,
       messageType: string = 'text',
+      metadata?: Record<string, unknown>,
     ) => {
       if (!user || !content.trim()) return;
 
@@ -197,7 +199,7 @@ export const useMessaging = () => {
         deleted_at: null,
         reply_to_id: replyToId || null,
         attachments: null,
-        metadata: null,
+        metadata: metadata ?? null,
         status: 'sending',
         sender: {
           display_name: user.user_metadata?.display_name || user.email || 'You',
@@ -221,6 +223,7 @@ export const useMessaging = () => {
             content: content.trim(),
             reply_to_id: replyToId || null,
             message_type: messageType,
+            metadata: (metadata ?? null) as Json,
           })
           .select('*')
           .single();

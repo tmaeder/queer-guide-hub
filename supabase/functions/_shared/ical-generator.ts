@@ -17,6 +17,14 @@ export const formatICalDateTime = (dateString: string): string => {
 };
 
 /**
+ * Convert a YYYY-MM-DD date string to iCal DATE format: YYYYMMDD.
+ * For all-day events (VALUE=DATE) — sidesteps timezone handling entirely.
+ */
+export const formatICalDate = (dateString: string): string => {
+  return dateString.slice(0, 10).replace(/-/g, '');
+};
+
+/**
  * Escape special characters in text values per RFC 5545 Section 3.3.11.
  *
  * Backslashes, commas, and semicolons are escaped with a leading backslash.
@@ -44,6 +52,9 @@ export interface VEventParams {
   organizer?: string;         // raw text for ORGANIZER;CN=...
   /** Extra iCal property lines to include (e.g. "STATUS:CONFIRMED"). */
   extraLines?: string[];
+  /** All-day event: dtstart/dtend are YYYYMMDD, emitted with VALUE=DATE.
+      Per RFC 5545 the DTEND of an all-day event is exclusive. */
+  dateOnly?: boolean;
 }
 
 /**
@@ -55,14 +66,15 @@ export interface VEventParams {
 export const generateVEvent = (params: VEventParams): string => {
   const now = formatICalDateTime(new Date().toISOString());
 
+  const dateParam = params.dateOnly ? ';VALUE=DATE' : '';
   const lines: string[] = [
     'BEGIN:VEVENT',
     `UID:${params.uid}`,
-    `DTSTART:${params.dtstart}`,
+    `DTSTART${dateParam}:${params.dtstart}`,
   ];
 
   if (params.dtend) {
-    lines.push(`DTEND:${params.dtend}`);
+    lines.push(`DTEND${dateParam}:${params.dtend}`);
   }
 
   lines.push(`DTSTAMP:${now}`);

@@ -31,6 +31,10 @@ import { EmojiPicker } from '@/components/messaging/EmojiPicker';
 import { ReactionBurst } from '@/components/messaging/ReactionBurst';
 import { QUICK_REACTIONS } from '@/lib/emojiData';
 import { jumboTier } from '@/lib/messageRender';
+import { EntityShareCard } from '@/components/messaging/chat/EntityShareCard';
+import { isEntityShareMeta } from '@/components/messaging/chat/entityShare';
+import { SubmissionChatCard } from '@/components/messaging/chat/SubmissionChatCard';
+import { isSubmissionMeta } from '@/components/messaging/chat/submissionShare';
 
 interface MessageItemProps {
   message: Message;
@@ -143,7 +147,11 @@ export const MessageItem = ({
             </button>
           )}
 
-          {jumbo > 0 && !isDeleted ? (
+          {!isDeleted && message.message_type === 'entity_share' && isEntityShareMeta(message.metadata) ? (
+            <EntityShareCard meta={message.metadata} note={message.content} />
+          ) : !isDeleted && message.message_type === 'submission' && isSubmissionMeta(message.metadata) ? (
+            <SubmissionChatCard messageId={message.id} meta={message.metadata} />
+          ) : jumbo > 0 && !isDeleted ? (
             <div
               className="leading-none"
               style={{
