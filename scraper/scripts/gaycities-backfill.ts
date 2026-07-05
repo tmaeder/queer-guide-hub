@@ -18,7 +18,7 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import type { Page } from 'playwright';
 import {
-  openGaycitiesSession,
+  openSessionWithRetry,
   listMetros,
   fetchListing,
   parseListingCards,
@@ -61,7 +61,7 @@ function log(msg: string): void {
 // ─── Phase: metros ──────────────────────────────────────────────
 
 async function phaseMetros(): Promise<void> {
-  let session = await openGaycitiesSession();
+  let session = await openSessionWithRetry();
   try {
     const metros = await listMetros(session.page);
     log(`discovered ${metros.length} metros`);
@@ -93,7 +93,7 @@ async function phaseMetros(): Promise<void> {
             // WAF hit poisons the session — recycle + cooldown, then retry.
             await session.close();
             await jitterDelay(25_000, 15_000);
-            session = await openGaycitiesSession();
+            session = await openSessionWithRetry();
           } else {
             break;
           }
@@ -141,7 +141,7 @@ async function phaseSweep(): Promise<void> {
   const seen = new Set(readJsonl<EventStub>(f('ajax-index.jsonl')).map((s) => s.numericId));
   log(`sweep: ${windows.length} global windows; resuming at window ${cursor.windowIdx}; ${seen.size} stubs known`);
 
-  let session = await openGaycitiesSession();
+  let session = await openSessionWithRetry();
   try {
     for (let wi = cursor.windowIdx; wi < windows.length; wi++) {
       const w = windows[wi];
@@ -154,7 +154,7 @@ async function phaseSweep(): Promise<void> {
           log(`listing error ${w.from} p${pageNo}: ${(err as Error).message} — recycling session`);
           await session.close();
           await jitterDelay(45_000, 45_000);
-          session = await openGaycitiesSession();
+          session = await openSessionWithRetry();
           pageNo--;
           continue;
         }
@@ -269,7 +269,7 @@ async function phaseDetails(): Promise<void> {
   let done = 0;
 
   const runWorker = async (mine: typeof targets, wid: number): Promise<void> => {
-    let session = await openGaycitiesSession();
+    let session = await openSessionWithRetry();
     let consecutiveErrors = 0;
     let sinceRecycle = 0;
     try {
@@ -291,7 +291,7 @@ async function phaseDetails(): Promise<void> {
             log(`w${wid} recycling session + cooldown`);
             await session.close();
             await jitterDelay(20_000, 20_000);
-            session = await openGaycitiesSession();
+            session = await openSessionWithRetry();
             consecutiveErrors = 0;
             sinceRecycle = 0;
           }
@@ -302,7 +302,7 @@ async function phaseDetails(): Promise<void> {
         if (done % 100 === 0) log(`details progress: ${done}/${targets.length}`);
         if (sinceRecycle >= 300) {
           await session.close();
-          session = await openGaycitiesSession();
+          session = await openSessionWithRetry();
           sinceRecycle = 0;
         }
         await jitterDelay(800, 700);
