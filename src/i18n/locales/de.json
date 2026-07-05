@@ -2804,7 +2804,12 @@
       "thinking": "Prüfe die E-Mail…",
       "placeholder": "Detail korrigieren oder zur Buchung fragen…",
       "send": "Senden",
-      "sendFailed": "Senden fehlgeschlagen"
+      "sendFailed": "Senden fehlgeschlagen",
+      "foundEntities": "In dieser E-Mail gefunden",
+      "addToGuide": "Zu queer.guide hinzufügen",
+      "stagedNote": "Zur Prüfung eingereicht — läuft durch unsere Qualitätspipeline.",
+      "anEvent": "Event",
+      "aVenue": "Ort"
     }
   },
   "extension": {

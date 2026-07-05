@@ -75,7 +75,12 @@
       "thinking": "Checking the email…",
       "placeholder": "Correct a detail or ask about this booking…",
       "send": "Send",
-      "sendFailed": "Couldn't send that"
+      "sendFailed": "Couldn't send that",
+      "foundEntities": "Found in this email",
+      "addToGuide": "Add to queer.guide",
+      "stagedNote": "Submitted for review — these go through our quality pipeline.",
+      "anEvent": "Event",
+      "aVenue": "Venue"
     }
   },
   "eventTypes": {

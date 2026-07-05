@@ -2802,7 +2802,12 @@
       "thinking": "メールを確認中…",
       "placeholder": "内容の修正や予約についての質問をどうぞ…",
       "send": "送信",
-      "sendFailed": "送信できませんでした"
+      "sendFailed": "送信できませんでした",
+      "foundEntities": "このメールで見つかりました",
+      "addToGuide": "queer.guideに追加",
+      "stagedNote": "レビューに送信しました — 品質パイプラインを通過します。",
+      "anEvent": "イベント",
+      "aVenue": "会場"
     }
   },
   "extension": {

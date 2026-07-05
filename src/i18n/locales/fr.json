@@ -2808,7 +2808,12 @@
       "thinking": "Vérification de l’e-mail…",
       "placeholder": "Corrige un détail ou pose une question…",
       "send": "Envoyer",
-      "sendFailed": "Échec de l’envoi"
+      "sendFailed": "Échec de l’envoi",
+      "foundEntities": "Trouvé dans cet e-mail",
+      "addToGuide": "Ajouter à queer.guide",
+      "stagedNote": "Soumis pour examen — passe par notre pipeline qualité.",
+      "anEvent": "Événement",
+      "aVenue": "Lieu"
     }
   },
   "extension": {

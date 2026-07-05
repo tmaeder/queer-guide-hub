@@ -2802,7 +2802,12 @@
       "thinking": "이메일 확인 중…",
       "placeholder": "정보를 수정하거나 예약에 대해 물어보세요…",
       "send": "보내기",
-      "sendFailed": "전송하지 못했습니다"
+      "sendFailed": "전송하지 못했습니다",
+      "foundEntities": "이 이메일에서 발견됨",
+      "addToGuide": "queer.guide에 추가",
+      "stagedNote": "검토를 위해 제출됨 — 품질 파이프라인을 거칩니다.",
+      "anEvent": "이벤트",
+      "aVenue": "장소"
     }
   },
   "extension": {

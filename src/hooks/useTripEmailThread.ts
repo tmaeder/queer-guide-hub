@@ -21,6 +21,20 @@ export interface TripEmailTurn {
   created_at: string;
 }
 
+export interface ExtractedEntity {
+  title?: string;
+  name?: string;
+  [key: string]: unknown;
+}
+export interface ExtractedEntities {
+  events?: ExtractedEntity[];
+  venues?: ExtractedEntity[];
+}
+export type TripEmailItem = TripInboxItem & {
+  read_at: string | null;
+  extracted_entities: ExtractedEntities | null;
+};
+
 const itemKey = (id: string) => ['trip-email-item', id] as const;
 const turnsKey = (id: string) => ['trip-email-turns', id] as const;
 
@@ -43,7 +57,7 @@ export function useTripEmailThread(itemId: string) {
         .eq('id', itemId)
         .maybeSingle();
       if (error) throw error;
-      return (data as unknown as TripInboxItem & { read_at: string | null }) ?? null;
+      return (data as unknown as TripEmailItem) ?? null;
     },
   });
 
@@ -67,6 +81,17 @@ export function useTripEmailThread(itemId: string) {
       });
       if (error) throw error;
       return data as { reply: string; fields?: Record<string, unknown>; item: TripInboxItem };
+    },
+    onSuccess: invalidate,
+  });
+
+  const stage = useMutation({
+    mutationFn: async (entityIndexes?: number[]) => {
+      const { data, error } = await supabase.functions.invoke('trip-inbox-chat', {
+        body: { item_id: itemId, action: 'stage', entity_indexes: entityIndexes },
+      });
+      if (error) throw error;
+      return data as { success: boolean; staged: number };
     },
     onSuccess: invalidate,
   });
@@ -117,6 +142,7 @@ export function useTripEmailThread(itemId: string) {
     turns: turnsQuery.data ?? [],
     turnsLoading: turnsQuery.isLoading,
     send,
+    stage,
     confirm,
     dismiss,
     markRead,

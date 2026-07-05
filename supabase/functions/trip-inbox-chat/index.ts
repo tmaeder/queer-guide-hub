@@ -134,12 +134,19 @@ Deno.serve(async (req) => {
     return errorResponse('rate_limited', 429, req)
   }
 
-  const body = (await req.json().catch(() => null)) as { item_id?: string; message?: string } | null
-  if (!body?.item_id || !body.message || typeof body.message !== 'string') {
-    return errorResponse('invalid_body', 400, req)
+  const body = (await req.json().catch(() => null)) as {
+    item_id?: string
+    message?: string
+    action?: 'stage'
+    entity_indexes?: number[]
+  } | null
+  if (!body?.item_id) return errorResponse('invalid_body', 400, req)
+
+  const isStage = body.action === 'stage'
+  const message = (body.message ?? '').trim()
+  if (!isStage && (!message || message.length > 2000)) {
+    return errorResponse('invalid_message', 400, req)
   }
-  const message = body.message.trim()
-  if (!message || message.length > 2000) return errorResponse('invalid_message', 400, req)
 
   // Membership proof: RLS-scoped read of the item with the caller's JWT.
   const userClient = createClient(
@@ -160,6 +167,49 @@ Deno.serve(async (req) => {
     .eq('id', body.item_id)
     .maybeSingle()
   if (itemErr || !item) return errorResponse('item_not_found', 404, req)
+
+  // Branch: stage extracted event/venue entities into the ingestion pipeline.
+  // No LLM — the user is confirming candidates the worker already extracted.
+  if (isStage) {
+    const extracted = (item.extracted_entities ?? {}) as {
+      events?: Record<string, unknown>[]
+      venues?: Record<string, unknown>[]
+    }
+    const candidates: Array<{ table: 'events' | 'venues'; data: Record<string, unknown> }> = [
+      ...(extracted.events ?? []).map((e) => ({ table: 'events' as const, data: e })),
+      ...(extracted.venues ?? []).map((v) => ({ table: 'venues' as const, data: v })),
+    ]
+    if (candidates.length === 0) return errorResponse('no_entities', 400, req)
+
+    const pick = Array.isArray(body.entity_indexes) && body.entity_indexes.length
+      ? candidates.filter((_, i) => body.entity_indexes!.includes(i))
+      : candidates
+    if (pick.length === 0) return errorResponse('no_entities_selected', 400, req)
+
+    const stagingRows = pick.map((c) => ({
+      source_type: 'email-ingest',
+      target_table: c.table,
+      raw_data: {
+        ...c.data,
+        _trip_inbox_item_id: item.id,
+        _user_id: userId,
+        _from: item.raw_from,
+        _subject: item.raw_subject,
+      },
+      job_id: '00000000-0000-0000-0000-000000000000',
+    }))
+    const { error: stageErr } = await service.from('ingestion_staging').insert(stagingRows)
+    if (stageErr && !stageErr.message?.includes('duplicate key')) {
+      return errorResponse(`staging_failed: ${stageErr.message}`, 500, req)
+    }
+    const { data: after } = await service
+      .from('trip_inbox_items')
+      .update({ parse_status: 'staged' })
+      .eq('id', item.id)
+      .select('*')
+      .single()
+    return jsonResponse({ success: true, staged: pick.length, item: after ?? item }, 200, req)
+  }
 
   const { count: turnCount } = await service
     .from('trip_inbox_messages')

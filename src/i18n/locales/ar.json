@@ -2802,7 +2802,12 @@
       "thinking": "أتحقق من البريد…",
       "placeholder": "صحّح تفصيلة أو اسأل عن هذا الحجز…",
       "send": "إرسال",
-      "sendFailed": "تعذّر الإرسال"
+      "sendFailed": "تعذّر الإرسال",
+      "foundEntities": "تم العثور عليه في هذا البريد",
+      "addToGuide": "أضِف إلى queer.guide",
+      "stagedNote": "تم الإرسال للمراجعة — يمر عبر خط الجودة لدينا.",
+      "anEvent": "فعالية",
+      "aVenue": "مكان"
     }
   },
   "extension": {

@@ -2804,7 +2804,12 @@
       "thinking": "Verificando o e-mail…",
       "placeholder": "Corrija um detalhe ou pergunte sobre a reserva…",
       "send": "Enviar",
-      "sendFailed": "Não foi possível enviar"
+      "sendFailed": "Não foi possível enviar",
+      "foundEntities": "Encontrado neste e-mail",
+      "addToGuide": "Adicionar ao queer.guide",
+      "stagedNote": "Enviado para revisão — passa pela nossa pipeline de qualidade.",
+      "anEvent": "Evento",
+      "aVenue": "Local"
     }
   },
   "extension": {

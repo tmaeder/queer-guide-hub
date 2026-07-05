@@ -2804,7 +2804,12 @@
       "thinking": "Controllo l’email…",
       "placeholder": "Correggi un dettaglio o chiedi della prenotazione…",
       "send": "Invia",
-      "sendFailed": "Invio non riuscito"
+      "sendFailed": "Invio non riuscito",
+      "foundEntities": "Trovato in questa email",
+      "addToGuide": "Aggiungi a queer.guide",
+      "stagedNote": "Inviato per revisione — passa dalla nostra pipeline di qualità.",
+      "anEvent": "Evento",
+      "aVenue": "Luogo"
     }
   },
   "extension": {

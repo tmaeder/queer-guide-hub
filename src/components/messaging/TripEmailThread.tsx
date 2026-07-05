@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Ticket, Check, X, Send, ExternalLink, Loader2 } from 'lucide-react';
+import { Ticket, Check, X, Send, ExternalLink, Loader2, Calendar, MapPin, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -18,7 +18,7 @@ import { cn } from '@/lib/utils';
 export function TripEmailThread({ itemId }: { itemId: string }) {
   const { t } = useTranslation();
   const { toast } = useToast();
-  const { item, itemLoading, turns, send, confirm, dismiss, markRead } =
+  const { item, itemLoading, turns, send, stage, confirm, dismiss, markRead } =
     useTripEmailThread(itemId);
   const [draft, setDraft] = useState('');
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -52,6 +52,17 @@ export function TripEmailThread({ itemId }: { itemId: string }) {
   }
 
   const slotted = item.parse_status === 'slotted';
+  const staged = item.parse_status === 'staged';
+  const entities = [
+    ...(item.extracted_entities?.events ?? []).map((e) => ({
+      kind: 'event' as const,
+      label: e.title || e.name || t('inbox.tripmail.anEvent', { defaultValue: 'Event' }),
+    })),
+    ...(item.extracted_entities?.venues ?? []).map((v) => ({
+      kind: 'venue' as const,
+      label: v.name || v.title || t('inbox.tripmail.aVenue', { defaultValue: 'Venue' }),
+    })),
+  ];
   const fieldRows: Array<[string, string | null]> = [
     [t('inbox.tripmail.type', { defaultValue: 'Type' }), item.parsed_type],
     [t('inbox.tripmail.vendor', { defaultValue: 'Vendor' }), item.parsed_vendor],
@@ -157,6 +168,46 @@ export function TripEmailThread({ itemId }: { itemId: string }) {
               </LocalizedLink>
             )}
           </div>
+
+          {/* Extracted event/venue candidates — stage into the pipeline. */}
+          {entities.length > 0 && (
+            <div className="rounded-element border border-border p-4">
+              <p className="mb-2 text-13 font-semibold uppercase tracking-wider text-muted-foreground">
+                {t('inbox.tripmail.foundEntities', { defaultValue: 'Found in this email' })}
+              </p>
+              <ul className="flex flex-col gap-2">
+                {entities.map((e, i) => (
+                  <li key={i} className="flex items-center gap-2 text-sm">
+                    {e.kind === 'event' ? (
+                      <Calendar className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
+                    ) : (
+                      <MapPin className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
+                    )}
+                    <span className="min-w-0 flex-1 truncate">{e.label}</span>
+                  </li>
+                ))}
+              </ul>
+              {staged ? (
+                <p className="mt-4 text-13 text-muted-foreground">
+                  {t('inbox.tripmail.stagedNote', {
+                    defaultValue: 'Submitted for review — these go through our quality pipeline.',
+                  })}
+                </p>
+              ) : (
+                <Button
+                  size="sm"
+                  className="mt-4"
+                  onClick={() => stage.mutate(undefined)}
+                  disabled={stage.isPending}
+                >
+                  <Plus className="mr-1 h-3.5 w-3.5" aria-hidden />
+                  {t('inbox.tripmail.addToGuide', {
+                    defaultValue: 'Add to queer.guide',
+                  })}
+                </Button>
+              )}
+            </div>
+          )}
 
           {/* Chat turns */}
           {turns.length === 0 && (

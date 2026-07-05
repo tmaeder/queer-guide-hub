@@ -7,8 +7,8 @@ import {
 import { extractShortId } from '../src/index';
 
 describe('SYSTEM_PROMPT', () => {
-  it('enumerates the six allowed types', () => {
-    for (const t of ['lodging', 'flight', 'rail', 'restaurant', 'activity', 'unknown']) {
+  it('enumerates all allowed types incl. event/venue', () => {
+    for (const t of ['lodging', 'flight', 'rail', 'restaurant', 'activity', 'event', 'venue', 'unknown']) {
       expect(SYSTEM_PROMPT).toContain(`"${t}"`);
     }
   });
@@ -77,6 +77,38 @@ describe('parseLLMResponse', () => {
   it('rejects unknown type values', () => {
     const out = parseLLMResponse('{"type":"spaceship","confidence":0.9}');
     expect(out.type).toBe('unknown');
+  });
+
+  it('keeps event/venue entities for announcements', () => {
+    const out = parseLLMResponse(
+      JSON.stringify({
+        type: 'event',
+        confidence: 0.8,
+        entities: {
+          events: [{ title: 'Pride Picnic', start: '2026-07-01' }],
+          venues: [{ name: 'Rainbow Bar' }],
+        },
+      }),
+    );
+    expect(out.type).toBe('event');
+    expect(out.entities?.events).toHaveLength(1);
+    expect(out.entities?.venues[0]?.name).toBe('Rainbow Bar');
+  });
+
+  it('drops entities on booking types (never staged from a booking)', () => {
+    const out = parseLLMResponse(
+      JSON.stringify({
+        type: 'lodging',
+        confidence: 0.9,
+        entities: { events: [{ title: 'x' }], venues: [] },
+      }),
+    );
+    expect(out.entities).toBeNull();
+  });
+
+  it('null entities when the arrays are empty', () => {
+    const out = parseLLMResponse('{"type":"venue","confidence":0.7,"entities":{"events":[],"venues":[]}}');
+    expect(out.entities).toBeNull();
   });
 });
 

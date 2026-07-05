@@ -2802,7 +2802,12 @@
       "thinking": "正在核对邮件…",
       "placeholder": "修正信息或询问此预订…",
       "send": "发送",
-      "sendFailed": "发送失败"
+      "sendFailed": "发送失败",
+      "foundEntities": "在此邮件中发现",
+      "addToGuide": "添加到 queer.guide",
+      "stagedNote": "已提交审核 — 会经过我们的质量流程。",
+      "anEvent": "活动",
+      "aVenue": "场所"
     }
   },
   "extension": {
