@@ -3,7 +3,10 @@
 -- Deliberate exclusions: non-consent ("aggressor/target") category, incest,
 -- bestiality, necrophilia, age play, blood play, scat. CNC appears only as
 -- pre-negotiated roleplay with discussion_recommended.
+<<<<<<< HEAD
 -- English labels only; label_i18n backfilled later (UI falls back to label).
+=======
+>>>>>>> origin/main
 
 insert into public.kink_categories (slug, label, description, axis, sort_order) values
   ('affection-romance',  'Affection & romance',        'Warmth, closeness and connection.', 'general', 10),
@@ -37,7 +40,10 @@ insert into public.kink_items
   (category_id, slug, label, description, axis_override, discussion_recommended, sort_order, unified_tag_slug)
 select c.id, v.slug, v.label, v.description, v.axis_override, v.discussion_recommended, v.sort_order, v.unified_tag_slug
 from (values
+<<<<<<< HEAD
   -- Affection & romance (general)
+=======
+>>>>>>> origin/main
   ('affection-romance', 'kissing',              'Kissing & making out', null, null, false, 10, 'intimate-kissing'),
   ('affection-romance', 'cuddling',             'Cuddling & spooning', null, null, false, 20, 'intimate-cuddling'),
   ('affection-romance', 'sensual-massage',      'Sensual massage', null, 'give_receive', false, 30, 'intimate-massage'),
@@ -45,7 +51,10 @@ from (values
   ('affection-romance', 'tantra-slow-sex',      'Tantra & slow sex', null, null, false, 50, 'intimate-tantra'),
   ('affection-romance', 'aftercare',            'Aftercare', 'Checking in and caring for each other after a scene.', 'give_receive', false, 60, null),
 
+<<<<<<< HEAD
   -- Bodies & attraction (general)
+=======
+>>>>>>> origin/main
   ('bodies-attraction', 'body-hair',            'Body hair', null, null, false, 10, null),
   ('bodies-attraction', 'beards',               'Beards & scruff', null, null, false, 20, null),
   ('bodies-attraction', 'muscular',             'Muscular bodies', null, null, false, 30, null),
@@ -56,7 +65,10 @@ from (values
   ('bodies-attraction', 'androgyny',            'Androgyny', null, null, false, 80, null),
   ('bodies-attraction', 'height-difference',    'Height difference', null, null, false, 90, null),
 
+<<<<<<< HEAD
   -- Clothing (self_partner)
+=======
+>>>>>>> origin/main
   ('clothing-gear', 'lingerie',                 'Lingerie', null, null, false, 10, null),
   ('clothing-gear', 'underwear',                'Underwear, jocks & briefs', null, null, false, 20, null),
   ('clothing-gear', 'stockings',                'Stockings & hosiery', null, null, false, 30, null),
@@ -66,21 +78,30 @@ from (values
   ('clothing-gear', 'drag',                     'Drag', null, null, false, 70, null),
   ('clothing-gear', 'clothed-sex',              'Partially clothed sex', null, null, false, 80, null),
 
+<<<<<<< HEAD
   -- Oral & hands (give_receive)
+=======
+>>>>>>> origin/main
   ('oral-hands', 'hands-stroking-fingering',    'Hands (stroking & fingering)', null, null, false, 10, null),
   ('oral-hands', 'oral-sex',                    'Oral sex', null, null, false, 20, 'intimate-oral'),
   ('oral-hands', 'deep-throating',              'Deep throating', 'Gag reflex and breathing limits differ — agree on signals first.', null, true, 30, null),
   ('oral-hands', 'face-sitting',                'Face-sitting', null, null, false, 40, null),
   ('oral-hands', 'sixty-nine',                  '69', null, 'general', false, 50, null),
 
+<<<<<<< HEAD
   -- Penetrative play (give_receive)
+=======
+>>>>>>> origin/main
   ('penetration', 'frontal-vaginal-sex',        'Vaginal / frontal sex', null, null, false, 10, null),
   ('penetration', 'strap-on',                   'Strap-on play', null, null, false, 20, null),
   ('penetration', 'mutual-masturbation',        'Mutual masturbation', null, 'general', false, 30, null),
   ('penetration', 'outercourse-grinding',       'Grinding & outercourse', null, 'general', false, 40, null),
   ('penetration', 'frontal-fisting',            'Frontal fisting', 'High-intensity play — go slow, use plenty of lube, agree on signals.', null, true, 50, null),
 
+<<<<<<< HEAD
   -- Anal play (give_receive)
+=======
+>>>>>>> origin/main
   ('anal-play', 'anal-fingering',               'Anal fingering', null, null, false, 10, null),
   ('anal-play', 'anal-sex-pegging',             'Anal sex / pegging', null, null, false, 20, 'intimate-anal'),
   ('anal-play', 'rimming',                      'Rimming', null, null, false, 30, 'intimate-rimming'),
@@ -88,7 +109,10 @@ from (values
   ('anal-play', 'double-penetration',           'Double penetration', null, null, true, 50, null),
   ('anal-play', 'anal-fisting',                 'Anal fisting', 'High-intensity play — go slow, use plenty of lube, agree on signals.', null, true, 60, 'intimate-fisting'),
 
+<<<<<<< HEAD
   -- Bondage & restraints (give_receive)
+=======
+>>>>>>> origin/main
   ('bondage-restraints', 'cuffs',               'Cuffs', null, null, false, 10, null),
   ('bondage-restraints', 'light-bondage',       'Light bondage', null, null, false, 20, 'intimate-bondage'),
   ('bondage-restraints', 'rope-shibari',        'Rope bondage / shibari', null, null, false, 30, null),
@@ -100,7 +124,10 @@ from (values
   ('bondage-restraints', 'mummification',       'Encasement & mummification', 'Restricts movement and sometimes breathing — plan release and signals.', null, true, 90, null),
   ('bondage-restraints', 'suspension',          'Suspension', 'Advanced rope skill required — real injury risk without training.', null, true, 100, null),
 
+<<<<<<< HEAD
   -- Impact play (give_receive)
+=======
+>>>>>>> origin/main
   ('impact-play', 'spanking',                   'Spanking', null, null, false, 10, 'intimate-spanking'),
   ('impact-play', 'paddling',                   'Paddling', null, null, false, 20, null),
   ('impact-play', 'flogging',                   'Flogging', null, null, false, 30, null),
@@ -109,7 +136,10 @@ from (values
   ('impact-play', 'whipping',                   'Whipping', 'High skill and intensity — agree on limits first.', null, true, 60, null),
   ('impact-play', 'face-slapping',              'Face slapping', null, null, true, 70, null),
 
+<<<<<<< HEAD
   -- Pain & intensity (give_receive)
+=======
+>>>>>>> origin/main
   ('pain-intensity', 'light-pain',              'Light pain', null, null, false, 10, null),
   ('pain-intensity', 'rough-sex',               'Rough sex', null, null, false, 20, 'intimate-rough'),
   ('pain-intensity', 'nipple-clamps',           'Nipple clamps', null, null, false, 30, null),
@@ -123,7 +153,10 @@ from (values
   ('pain-intensity', 'breath-play',             'Breath play', 'Genuinely dangerous — many practitioners rule it out entirely. Talk in depth first.', null, true, 110, null),
   ('pain-intensity', 'needle-play',             'Needle play', 'Sterile technique required — real health risk without training.', null, true, 120, null),
 
+<<<<<<< HEAD
   -- Sensation & tease (give_receive)
+=======
+>>>>>>> origin/main
   ('sensation-tease', 'tickling',               'Tickling', null, null, false, 10, 'intimate-tickling'),
   ('sensation-tease', 'sensation-play',         'Sensation play (soft & sharp)', null, null, false, 20, 'intimate-sensual'),
   ('sensation-tease', 'temperature-play',       'Temperature play (ice & warmth)', null, null, false, 30, null),
@@ -132,7 +165,10 @@ from (values
   ('sensation-tease', 'armpit-play',            'Armpit play', null, null, false, 60, null),
   ('sensation-tease', 'sensory-deprivation',    'Sensory deprivation', 'Can be disorienting — agree on signals and check in.', null, true, 70, null),
 
+<<<<<<< HEAD
   -- Power dynamics (dom_sub)
+=======
+>>>>>>> origin/main
   ('power-dynamics', 'ds-play',                 'Dominant / submissive play', null, null, false, 10, null),
   ('power-dynamics', 'power-exchange-scenes',   'Power exchange (scenes)', null, null, false, 20, null),
   ('power-dynamics', 'rules-discipline',        'Rules & discipline', null, null, false, 30, null),
@@ -142,14 +178,20 @@ from (values
   ('power-dynamics', 'primal-play',             'Primal play (chase & wrestle)', null, null, true, 70, null),
   ('power-dynamics', 'tpe-247',                 '24/7 dynamics', 'Ongoing power exchange outside scenes — needs deep, ongoing negotiation.', null, true, 80, null),
 
+<<<<<<< HEAD
   -- Verbal play (give_receive)
+=======
+>>>>>>> origin/main
   ('verbal-play', 'dirty-talk',                 'Dirty talk', null, null, false, 10, null),
   ('verbal-play', 'praise',                     'Praise', null, null, false, 20, null),
   ('verbal-play', 'sexting',                    'Sexting & phone sex', null, 'general', false, 30, null),
   ('verbal-play', 'degradation',                'Degradation & humiliation', 'Words land differently for everyone — agree on themes that are off-limits.', null, true, 40, null),
   ('verbal-play', 'name-calling',               'Name calling', 'Agree beforehand which words are hot and which are off-limits.', null, true, 50, null),
 
+<<<<<<< HEAD
   -- Watching & being watched (self_partner)
+=======
+>>>>>>> origin/main
   ('voyeur-exhib', 'being-watched',             'Being watched (consenting audience)', null, null, false, 10, null),
   ('voyeur-exhib', 'watching-others',           'Watching others (with consent)', null, null, false, 20, null),
   ('voyeur-exhib', 'mirror-play',               'Mirror play', null, null, false, 30, null),
@@ -157,7 +199,10 @@ from (values
   ('voyeur-exhib', 'naturism',                  'Nude beaches & naturism', null, null, false, 50, null),
   ('voyeur-exhib', 'public-teasing',            'Discreet teasing in appropriate venues', null, null, true, 60, 'intimate-public'),
 
+<<<<<<< HEAD
   -- Group & social (general)
+=======
+>>>>>>> origin/main
   ('group-social', 'threesomes',                'Threesomes', null, null, false, 10, null),
   ('group-social', 'group-sex',                 'Group sex', null, null, false, 20, 'intimate-group'),
   ('group-social', 'partner-swapping',          'Partner swapping', null, null, false, 30, null),
@@ -169,7 +214,10 @@ from (values
   ('group-social', 'gangbang',                  'Gangbangs', null, null, true, 90, null),
   ('group-social', 'glory-hole',                'Glory holes', null, null, true, 100, null),
 
+<<<<<<< HEAD
   -- Fluids & mess (general)
+=======
+>>>>>>> origin/main
   ('fluids-mess', 'cum-play',                   'Cum play', null, null, false, 10, null),
   ('fluids-mess', 'facials',                    'Facials', null, 'give_receive', false, 20, null),
   ('fluids-mess', 'swallowing',                 'Swallowing', null, 'give_receive', false, 30, null),
@@ -179,7 +227,10 @@ from (values
   ('fluids-mess', 'lactation',                  'Lactation play', null, null, true, 70, null),
   ('fluids-mess', 'sploshing',                  'Food & messy play (sploshing)', null, null, false, 80, null),
 
+<<<<<<< HEAD
   -- Toys & tech (give_receive)
+=======
+>>>>>>> origin/main
   ('toys-tech', 'dildos',                       'Dildos', null, 'self_partner', false, 10, 'intimate-toys'),
   ('toys-tech', 'vibrators',                    'Vibrators', null, 'self_partner', false, 20, null),
   ('toys-tech', 'butt-plugs',                   'Butt plugs', null, 'self_partner', false, 30, null),
@@ -189,14 +240,20 @@ from (values
   ('toys-tech', 'cam-remote-play',              'Cam & remote play', null, 'general', false, 70, null),
   ('toys-tech', 'sounding',                     'Sounding', 'Sterile technique required — real injury risk without care.', null, true, 80, null),
 
+<<<<<<< HEAD
   -- Orgasm control (give_receive)
+=======
+>>>>>>> origin/main
   ('orgasm-control', 'edging',                  'Edging', null, null, false, 10, 'intimate-edging'),
   ('orgasm-control', 'orgasm-denial',           'Orgasm denial', null, null, false, 20, null),
   ('orgasm-control', 'controlled-orgasms',      'Controlled orgasms', null, null, true, 30, null),
   ('orgasm-control', 'ruined-orgasms',          'Ruined orgasms', null, null, false, 40, null),
   ('orgasm-control', 'instruction-joi',         'Instruction (JOI)', null, null, false, 50, null),
 
+<<<<<<< HEAD
   -- Roleplay & fantasy (general)
+=======
+>>>>>>> origin/main
   ('roleplay-fantasy', 'roleplay-scenarios',    'Roleplay (scenarios & characters)', null, null, false, 10, 'intimate-roleplay'),
   ('roleplay-fantasy', 'strangers-roleplay',    'Strangers-meeting roleplay', null, null, false, 20, null),
   ('roleplay-fantasy', 'gender-play',           'Gender play', null, null, false, 30, null),
@@ -205,7 +262,10 @@ from (values
   ('roleplay-fantasy', 'erotic-hypnosis',       'Erotic hypnosis', 'Altered-state play — discuss boundaries and grounding beforehand.', null, true, 60, null),
   ('roleplay-fantasy', 'cnc-roleplay',          'CNC — consensual non-consent roleplay', 'Pre-negotiated roleplay only: the scene is agreed in detail beforehand, consent stays active throughout, and any safeword ends it immediately.', null, true, 70, null),
 
+<<<<<<< HEAD
   -- Materials & fetish gear (general)
+=======
+>>>>>>> origin/main
   ('materials-fetish', 'leather',               'Leather', null, null, false, 10, 'intimate-leather'),
   ('materials-fetish', 'latex-rubber',          'Latex & rubber', null, null, false, 20, 'intimate-rubber'),
   ('materials-fetish', 'sportswear-gear',       'Sportswear & gear', null, null, false, 30, null),

@@ -615,7 +615,8 @@
       "budget": "Budget",
       "reservations": "Prenotazioni",
       "packing": "Valigia",
-      "collaborate": "Collabora"
+      "collaborate": "Collabora",
+      "journal": "Diario"
     },
     "today": {
       "offlineBanner": "Offline — mostro l’ultimo itinerario salvato.",
@@ -930,10 +931,49 @@
         "transit": "mezzi pubblici",
         "drive": "auto"
       },
-      "walkingTotal": "{{distance}} a piedi"
+      "walkingTotal": "{{distance}} a piedi",
+      "optimize": "Ottimizza l'ordine del percorso",
+      "directions": "Apri la giornata in Google Maps"
     },
     "suggestions": {
       "accessMatch": "Adatto alle tue esigenze"
+    },
+    "journal": {
+      "placeholder": "Cosa è successo oggi? Anche i piccoli momenti contano.",
+      "moodLabel": "Umore",
+      "mood": {
+        "joy": "Felice",
+        "good": "Bene",
+        "mixed": "Così così",
+        "tough": "Difficile"
+      },
+      "addPhotos": "Foto",
+      "save": "Salva voce",
+      "saved": "Voce del diario salvata",
+      "empty": "Ancora nessuna voce nel diario.",
+      "delete": "Elimina voce",
+      "removePhoto": "Rimuovi foto",
+      "member": "Viaggiatore/trice"
+    },
+    "import": {
+      "button": "Importa",
+      "title": "Importa luoghi",
+      "pickFile": "Scegli un file",
+      "formats": "GPX, KML, GeoJSON o Google Takeout (JSON dei luoghi salvati / CSV delle liste)",
+      "noPlaces": "Nessun luogo trovato in questo file.",
+      "matching": "Abbinamento dei locali…",
+      "matchCount": "{{count}} abbinati a locali di queer.guide",
+      "changeFile": "Cambia file",
+      "matched": "Locale esistente",
+      "customPin": "Pin personalizzato",
+      "noCoords": "Senza coordinate — solo nome",
+      "confirm": "Importa {{count}} luoghi",
+      "done": "{{count}} luoghi importati",
+      "doneHint": "Finiscono nel gruppo non pianificato — trascinali sui giorni."
+    },
+    "offline": {
+      "pending_one": "{{count}} modifica in attesa di sincronizzazione",
+      "pending_other": "{{count}} modifiche in attesa di sincronizzazione"
     }
   },
   "auth": {
@@ -3019,5 +3059,12 @@
       "dismiss": "Ignora",
       "ariaLabel": "Installa app"
     }
+  },
+  "atlas": {
+    "summary": "{{visited}} paesi visitati · {{bucket}} nella tua lista dei desideri",
+    "hint": "Tocca un paese per contrassegnarlo",
+    "visited": "Visitato",
+    "bucket": "Lista dei desideri",
+    "fromTrips": "Contrassegnato come visitato da un viaggio completato"
   }
 }

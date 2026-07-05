@@ -64,6 +64,18 @@ export interface EventDetail {
   tagSlugs: string[];
   fetchedAt: string;
   fromWayback?: boolean;
+  /** City scraped from page chrome (title/og:title) — last-resort geography. */
+  metaCity?: string | null;
+}
+
+/** "X (Event in Los Angeles) on GayCities" / "… - GayCities Key West" → city. */
+export function extractMetaCity(html: string): string | null {
+  const $ = cheerio.load(html);
+  const og = $('meta[property="og:title"]').attr('content') ?? '';
+  const title = $('title').first().text() ?? '';
+  return (
+    (og.match(/\(Event in ([^)]+)\)/i)?.[1] ?? title.match(/GayCities ([A-Za-zÀ-ſ .'-]+?)\s*$/)?.[1])?.trim() || null
+  );
 }
 
 // ─── Session ────────────────────────────────────────────────────
@@ -387,13 +399,15 @@ export function parseLegacySubinfo(input: unknown): LegacySubinfo | null {
  */
 export function extractLegacyEvent(html: string): Record<string, unknown> | null {
   const $ = cheerio.load(html);
-  const ogTitle = ($('meta[property="og:title"]').attr('content') ?? '')
-    .replace(/\s*\(Event in [^)]*\) on GayCities\s*$/i, '')
-    .trim();
+  const ogTitleRaw = $('meta[property="og:title"]').attr('content') ?? '';
+  const ogTitle = ogTitleRaw.replace(/\s*\(Event in [^)]*\) on GayCities\s*$/i, '').trim();
   const titleTag = ($('title').first().text() ?? '')
     .replace(/^Event:\s*/i, '')
     .replace(/\s*-\s*Details and who's attending.*$/i, '')
+    .replace(/\s*-\s*dates, times, map.*$/i, '')
     .trim();
+  // City hides in the chrome when the body omits it.
+  const metaCity = extractMetaCity(html);
   const ogDescription =
     $('meta[property="og:description"]').attr('content')?.trim() ||
     $('meta[name="description"]').attr('content')?.trim() ||
@@ -413,6 +427,7 @@ export function extractLegacyEvent(html: string): Record<string, unknown> | null
     const sub = parseLegacySubinfo(header.find('.subinfo').text());
     if (name && sub) {
       const bodyDesc = $('.pp-mid-LEFT').first().text().replace(/\s+/g, ' ').trim();
+      const city = sub.city ?? metaCity;
       return {
         '@type': 'Event',
         name,
@@ -420,12 +435,12 @@ export function extractLegacyEvent(html: string): Record<string, unknown> | null
         endDate: sub.end,
         description: bodyDesc || ogDescription,
         image: ogImage ? [ogImage] : undefined,
-        location: sub.city
+        location: city
           ? {
               '@type': 'Place',
               name: null,
               address: {
-                addressLocality: sub.city,
+                addressLocality: city,
                 addressRegion: sub.region,
                 addressCountry: sub.country,
               },
@@ -452,7 +467,9 @@ export function extractLegacyEvent(html: string): Record<string, unknown> | null
     endDate: range.end,
     description: ogDescription,
     image: ogImage ? [ogImage] : undefined,
-    location: null,
+    location: metaCity
+      ? { '@type': 'Place', name: null, address: { addressLocality: metaCity, addressCountry: null } }
+      : null,
     _legacyTemplate: true,
   };
 }
@@ -473,6 +490,7 @@ export function parseDetailHtml(
     tagSlugs: extractTagSlugs(html),
     fetchedAt: new Date().toISOString(),
     fromWayback: opts?.fromWayback ?? false,
+    metaCity: extractMetaCity(html),
   };
 }
 
@@ -642,12 +660,12 @@ export function normalizeGcEvent(
   const streetAddress = asString(addressLd['streetAddress']);
   const localityLd = asString(addressLd['addressLocality']);
 
-  // Metro (curated) is the primary geography truth; JSON-LD locality only
-  // fills in when no metro is known (Wayback-era orphans). A missing country
-  // is tolerated — commit defaults to US, which matches the legacy
-  // www.gaycities.com pages that omit it (US-only era); flagged in metadata
-  // for auditability.
-  const city = metro?.city ?? localityLd;
+  // Metro (curated) is the primary geography truth; JSON-LD locality fills
+  // in when no metro is known (Wayback-era orphans), then the page-chrome
+  // city as last resort. A missing country is tolerated — commit defaults to
+  // US, which matches the legacy www.gaycities.com pages that omit it
+  // (US-only era); flagged in metadata for auditability.
+  const city = metro?.city ?? localityLd ?? detail.metaCity ?? null;
   const country = metro?.country ?? asString(addressLd['addressCountry']);
   if (!city) return { reject: 'no_city' };
 

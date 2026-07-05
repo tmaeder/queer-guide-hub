@@ -2,7 +2,10 @@
 -- Deliberately NOT unified_tags: needs axis/versioning metadata and must stay
 -- out of search indexing, admin tag tooling and SEO surfaces. Vocabulary itself
 -- is 18+ content — readable only by intimate-eligible members.
+<<<<<<< HEAD
 -- Plan: ~/.claude/plans/analyse-theses-tools-https-goctionni-git-polymorphic-volcano.md
+=======
+>>>>>>> origin/main
 
 create table if not exists public.kink_categories (
   id uuid primary key default gen_random_uuid(),

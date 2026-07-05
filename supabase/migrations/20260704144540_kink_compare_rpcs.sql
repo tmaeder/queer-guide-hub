@@ -1,20 +1,9 @@
--- Kink compare: double-opt-in intersection reveal (the differentiator none of
--- KinkList / bdsmtools / ddirt implement).
---
--- Consent = two active 'compare' grants (A->B and B->A). Output is strictly
--- the intersection of positives with axis complements matched. Items that are
--- 'no' or 'hard_limit' for EITHER user are silently excluded — never returned,
--- never attributed (returning a union of limits would leak by set
--- subtraction). Each owner's per-category tier is the ceiling: 'private'
--- categories never enter compare even with an active handshake.
---
--- Axis complements: general<->general, giving<->receiving,
--- dominant<->submissive, self<->partner (my "on my partner" matches their
--- "on myself" — same complement logic as give/receive).
+-- Kink compare: double-opt-in intersection reveal.
+-- Consent = two active 'compare' grants. Output strictly the intersection of
+-- positives with axis complements; 'no'/'hard_limit' items silently excluded
+-- (never returned, never attributed). Owner tier is the ceiling: 'private'
+-- categories never enter compare.
 
--- ---------------------------------------------------------------------------
--- Handshake status.
--- ---------------------------------------------------------------------------
 create or replace function public.kink_compare_status(p_other uuid)
 returns text
 language plpgsql
@@ -55,9 +44,6 @@ $$;
 revoke all on function public.kink_compare_status(uuid) from public, anon;
 grant execute on function public.kink_compare_status(uuid) to authenticated;
 
--- ---------------------------------------------------------------------------
--- The intersection itself.
--- ---------------------------------------------------------------------------
 create or replace function public.kink_compare(p_other uuid)
 returns table(
   category_slug text,
@@ -82,9 +68,6 @@ begin
 
   return query
   with
-  -- Each side's positives, capped by that owner's own category tier
-  -- (anything 'private' — including categories with no visibility row —
-  -- never enters compare).
   mine as (
     select kr.item_id, kr.side, kr.rating, kr.needs_discussion
     from public.kink_ratings kr
@@ -105,7 +88,6 @@ begin
       and kr.rating in ('favorite','like','curious','maybe')
       and public.kink_tier_rank(kv.tier) <= 3
   ),
-  -- Any 'no' / 'hard_limit' by either user kills the item silently.
   vetoed as (
     select distinct kr.item_id
     from public.kink_ratings kr
@@ -143,9 +125,6 @@ $$;
 revoke all on function public.kink_compare(uuid) from public, anon;
 grant execute on function public.kink_compare(uuid) to authenticated;
 
--- ---------------------------------------------------------------------------
--- Aggregate summary (counts only; excluded_count is deliberately unattributed).
--- ---------------------------------------------------------------------------
 create or replace function public.kink_compare_summary(p_other uuid)
 returns jsonb
 language plpgsql
@@ -171,8 +150,6 @@ begin
   into v_overlaps, v_favorites, v_discuss
   from public.kink_compare(p_other) c;
 
-  -- Complementary-positive pairs that were vetoed by either side's
-  -- no/hard_limit — counted, never itemized.
   with
   mine as (
     select kr.item_id, kr.side

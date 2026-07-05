@@ -1,5 +1,4 @@
 -- Kink share links: revocable, optionally expiring capability codes.
--- Fixes the bdsmtools anti-pattern (undeletable, unauthenticated, forever).
 -- Viewers must be authenticated AND intimate-eligible; the page shows only
 -- categories the owner explicitly flagged include_in_share.
 
@@ -19,14 +18,10 @@ create index if not exists kink_share_links_owner_idx
 alter table public.kink_share_links enable row level security;
 alter table public.kink_share_links force row level security;
 
--- Owner-only table access; viewing is RPC-only.
 drop policy if exists kink_share_links_owner_select on public.kink_share_links;
 create policy kink_share_links_owner_select on public.kink_share_links
   for select to authenticated using (owner_id = auth.uid());
 
--- ---------------------------------------------------------------------------
--- Create a share link (optional TTL). Returns the code.
--- ---------------------------------------------------------------------------
 create or replace function public.kink_share_create(p_ttl interval default null)
 returns text
 language plpgsql
@@ -44,7 +39,6 @@ begin
     raise exception 'not eligible' using errcode = '42501';
   end if;
 
-  -- ~64 bits of entropy, base32-ish lowercase alphanumeric (no confusing chars).
   v_code := lower(
     translate(encode(gen_random_bytes(8), 'base64'), '+/=OIl01', 'abcdefgh')
   );
@@ -60,9 +54,6 @@ $$;
 revoke all on function public.kink_share_create(interval) from public, anon;
 grant execute on function public.kink_share_create(interval) to authenticated;
 
--- ---------------------------------------------------------------------------
--- Revoke.
--- ---------------------------------------------------------------------------
 create or replace function public.kink_share_revoke(p_id uuid)
 returns void
 language plpgsql
@@ -79,9 +70,6 @@ $$;
 revoke all on function public.kink_share_revoke(uuid) from public, anon;
 grant execute on function public.kink_share_revoke(uuid) to authenticated;
 
--- ---------------------------------------------------------------------------
--- View by code. Positives only, include_in_share categories only.
--- ---------------------------------------------------------------------------
 create or replace function public.kink_share_view(p_code text)
 returns table(
   owner_display_name text,
@@ -115,7 +103,7 @@ begin
     and (l.expires_at is null or l.expires_at > now());
 
   if v_owner is null then
-    return; -- unknown, revoked or expired: indistinguishable, empty result
+    return;
   end if;
   if v_uid <> v_owner and public.intimate_is_blocked(v_uid, v_owner) then
     return;

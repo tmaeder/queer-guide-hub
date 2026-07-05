@@ -1,10 +1,6 @@
 -- Kink checklist: cross-user view RPC + grant set/revoke RPC.
 -- All cross-user reads flow through here (ratings tables are self-only RLS).
 
--- ---------------------------------------------------------------------------
--- What p_owner shows the caller, given the caller's rank.
--- POSITIVES ONLY: 'no' and 'hard_limit' rows are never shown to others.
--- ---------------------------------------------------------------------------
 create or replace function public.kink_get_visible(p_owner uuid)
 returns table(
   category_slug text,
@@ -53,13 +49,6 @@ $$;
 revoke all on function public.kink_get_visible(uuid) from public, anon;
 grant execute on function public.kink_get_visible(uuid) to authenticated;
 
--- ---------------------------------------------------------------------------
--- Create/revoke a grant ('view' unlock or 'compare' handshake half).
--- Re-activating a revoked grant reuses the row. When p_conversation_id is a
--- conversation the caller participates in, it's stored as the receipt anchor
--- and the row update fires the realtime receipt in-thread (mirrors
--- intimate_set_my_photo_unlock).
--- ---------------------------------------------------------------------------
 create or replace function public.kink_grant_set(
   p_other uuid,
   p_kind text,
