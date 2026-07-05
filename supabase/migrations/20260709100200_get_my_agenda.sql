@@ -1,5 +1,10 @@
 -- Unified personal agenda for the /hub Calendar module (workstream C2).
 --
+-- RENAMED from 20260705120000 -> 20260709100200: the original version sat below
+-- future-dated MCP-applied migrations (20260706/0707/0708100000), so plain
+-- `db push` treated it as out-of-order and demanded --include-all, blocking every
+-- deploy. Idempotent (CREATE OR REPLACE FUNCTION), so re-applying is safe.
+--
 -- One SECURITY DEFINER RPC that UNIONs the viewer's dated commitments —
 -- trips + reservations + event RSVPs + dated saved events — into a single
 -- ordered list. No new tables (the DB is disk-constrained); auth.uid()-gated

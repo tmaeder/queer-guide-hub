@@ -1,5 +1,10 @@
 -- Event/venue extraction from forwarded emails (workstream B phase 2).
 --
+-- RENAMED from 20260705120200 -> 20260709100400: original version sat below
+-- future-dated MCP migrations, out-of-order for plain `db push`. Idempotent
+-- (ALTER ... DROP CONSTRAINT IF EXISTS / ADD COLUMN IF NOT EXISTS), safe to
+-- re-apply under a newest version.
+--
 -- A forwarded newsletter / event announcement (not a personal booking) can now
 -- carry extracted event/venue candidates. The conversational thread proposes
 -- "Add to queer.guide" cards; on confirm they stage into ingestion_staging
