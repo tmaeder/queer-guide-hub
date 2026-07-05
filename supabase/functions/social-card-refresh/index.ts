@@ -1,27 +1,15 @@
 import { getServiceClient, jsonResponse, errorResponse, corsResponse, requireInternalOrAdmin } from '../_shared/supabase-client.ts'
-import { normalizeSocialLinks, normalizeHandle, canonicalizeUrl, type SocialPlatformKey } from '../_shared/social.ts'
 
 // ============================================================
 // Social Card Refresh (Pillar B)
-// Seeds social_profiles from entity social links (enrichable platforms only),
-// then resolves pending/stale rows via the image-cdn worker's /social/resolve
-// endpoint (which mirrors avatars to R2 — clients never hit the platform).
+// Seeds social_profiles from entity social links (enrichable platforms only,
+// via the seed_social_profiles() SQL RPC), then resolves pending/stale rows via
+// the image-cdn worker's /social/resolve endpoint (which mirrors avatars to R2
+// — clients never hit the platform).
 // Cron: daily. Manual: POST { mode: 'seed' | 'resolve' | 'both' }.
+// Enrichable platforms (cached): bluesky, mastodon, spotify, soundcloud;
+// everything else renders the client-side fallback card.
 // ============================================================
-
-// Only platforms our resolver can actually enrich are cached; everything else
-// renders the client-side fallback card, so social_profiles stays small.
-const ENRICHABLE: SocialPlatformKey[] = ['bluesky', 'mastodon', 'spotify', 'soundcloud']
-
-const ENTITY_SOURCES: Array<{ table: string; col: string }> = [
-  { table: 'venues', col: 'social_links' },
-  { table: 'events', col: 'social_links' },
-  { table: 'cities', col: 'social_links' },
-  { table: 'queer_villages', col: 'social_links' },
-  { table: 'personalities', col: 'social_links' },
-  { table: 'organizations', col: 'social' },
-  { table: 'marketplace_listings', col: 'social_media' },
-]
 
 const REFRESH_DAYS = 7
 const WORKER_URL = (Deno.env.get('IMAGE_CDN_URL') || 'https://img.queer.guide').replace(/\/$/, '')
@@ -29,36 +17,15 @@ const WORKER_SECRET = Deno.env.get('IMAGE_CDN_ADMIN_SECRET') || ''
 
 type Supa = ReturnType<typeof getServiceClient>
 
-async function seed(supabase: Supa, perTable: number): Promise<number> {
-  const candidates = new Map<string, { platform: string; handle: string; profile_url: string }>()
-  for (const { table, col } of ENTITY_SOURCES) {
-    const { data } = await supabase
-      .from(table)
-      .select(`${col}`)
-      .neq(col, {})
-      .limit(perTable)
-    for (const row of (data ?? []) as Array<Record<string, unknown>>) {
-      const normalized = normalizeSocialLinks(row[col] as Record<string, unknown> | null)
-      for (const [platform, url] of Object.entries(normalized)) {
-        if (!ENRICHABLE.includes(platform as SocialPlatformKey)) continue
-        const handle = normalizeHandle(platform as SocialPlatformKey, url)
-        if (!handle) continue
-        candidates.set(`${platform}:${handle}`, {
-          platform,
-          handle,
-          profile_url: canonicalizeUrl(platform as SocialPlatformKey, url),
-        })
-      }
-    }
-  }
-  if (candidates.size === 0) return 0
-  // Insert missing rows as pending; existing (platform,handle) left untouched.
-  const rows = [...candidates.values()].map((c) => ({ ...c, status: 'pending' }))
-  const { error } = await supabase
-    .from('social_profiles')
-    .upsert(rows, { onConflict: 'platform,handle', ignoreDuplicates: true })
-  if (error) throw new Error(`seed upsert: ${error.message}`)
-  return rows.length
+async function seed(supabase: Supa): Promise<number> {
+  // Extraction + pending-insert is a pure-SQL RPC — the PostgREST jsonb
+  // `.neq(col,{})` filter never matched, so JS scanning seeded nothing.
+  // seed_social_profiles() extracts enrichable (bluesky/mastodon/spotify/
+  // soundcloud) handles across all entity social columns and inserts the
+  // missing ones as pending; returns the count newly seeded.
+  const { data, error } = await supabase.rpc('seed_social_profiles')
+  if (error) throw new Error(`seed rpc: ${error.message}`)
+  return typeof data === 'number' ? data : 0
 }
 
 async function resolveBatch(supabase: Supa, batch: number): Promise<{ resolved: number; failed: number }> {
@@ -116,12 +83,11 @@ Deno.serve(async (req) => {
   try {
     const body = await req.json().catch(() => ({}))
     const mode = (body.mode as string) || 'both'
-    const perTable = Number(body.per_table) || 500
     const batch = Number(body.batch) || 40
 
     let seeded = 0
     let resolveResult = { resolved: 0, failed: 0 }
-    if (mode === 'seed' || mode === 'both') seeded = await seed(supabase, perTable)
+    if (mode === 'seed' || mode === 'both') seeded = await seed(supabase)
     if (mode === 'resolve' || mode === 'both') resolveResult = await resolveBatch(supabase, batch)
 
     return jsonResponse({ success: true, seeded, ...resolveResult }, 200, req)

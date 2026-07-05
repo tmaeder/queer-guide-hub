@@ -19,6 +19,7 @@ interface Env {
   THUMB_WIDTH: string;
   THUMB_QUALITY: string;
   ADMIN_SECRET?: string;
+  SOCIAL_RESOLVE_SECRET?: string;
   SUPABASE_URL?: string;
   SUPABASE_JWT_SECRET?: string;
 }
