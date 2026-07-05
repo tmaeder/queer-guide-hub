@@ -22,7 +22,7 @@ const ROUTES = [
   '/travel',
   '/map',
   '/personalities',
-  '/resources',
+  '/tags',
   '/news',
   '/about',
   '/blog',
