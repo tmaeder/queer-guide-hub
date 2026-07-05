@@ -27,9 +27,15 @@ RETURNS TABLE (
 LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public, pg_temp
 AS $$
   -- trips (owner's planning/active trips overlapping the window)
-  SELECT 'trip_' || t.id::text, 'trip', t.title, t.primary_city_name,
-         t.start_date::timestamptz, t.end_date::timestamptz, true,
-         t.status, '/trips/' || t.id::text
+  -- Postgres names a UNION's output columns after the FIRST branch, so this
+  -- branch must alias every column to the RETURNS TABLE names for `ORDER BY
+  -- starts_at` below to resolve (bare SELECT lists on later branches don't
+  -- matter). Prod bug: unaliased original raised 42703 "column starts_at
+  -- does not exist" on every db push, blocking deploy-supabase-functions.
+  SELECT 'trip_' || t.id::text AS id, 'trip'::text AS kind, t.title AS title,
+         t.primary_city_name AS subtitle, t.start_date::timestamptz AS starts_at,
+         t.end_date::timestamptz AS ends_at, true AS all_day,
+         t.status AS status, '/trips/' || t.id::text AS open_target
     FROM public.trips t
    WHERE t.owner_id = auth.uid()
      AND t.status IN ('planning','active')
