@@ -99,6 +99,9 @@ export const MessagingInterface = ({ filter }: MessagingInterfaceProps = {}) => 
           </div>
         </div>
         <ScrollArea style={{ flex: 1 }}>
+          {/* Upcoming trips + saved events — shown above the inbox regardless of
+              whether the inbox itself has items (returns null when empty). */}
+          {showTripCards && !search.trim() && <CalendarRailStrip />}
           {loading ? (
             <div className="flex items-center justify-center py-16">
               <div className="text-center">
@@ -119,7 +122,6 @@ export const MessagingInterface = ({ filter }: MessagingInterfaceProps = {}) => 
             </div>
           ) : (
             <div>
-              {showTripCards && <CalendarRailStrip />}
               {visibleItems.map((item) => (
                 <InboxRailItem
                   key={item.id}
