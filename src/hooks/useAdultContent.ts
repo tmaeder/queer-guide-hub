@@ -47,6 +47,13 @@ export function isAdultCategorySlug(slug: string | null | undefined): boolean {
   return ADULT_CATEGORY_SLUGS.has(slug.toLowerCase().replace(/[\s-]+/g, '_'));
 }
 
+// Storage events only fire in OTHER tabs/windows, never the tab that made the
+// change — so two same-tab instances of this hook (e.g. AdultContentGate
+// calling acknowledge() and a sibling component reading `acknowledged`) never
+// see each other's update without this same-tab broadcast, leaving the
+// sibling stuck showing stale (SFW-only) data until a full reload.
+const SAME_TAB_EVENT = 'qg:adult-ack-changed';
+
 /**
  * Returns whether the visitor has confirmed they are 18+ for this device.
  * `acknowledge` flips it on; `reset` (test-only) clears it.
@@ -57,26 +64,33 @@ export function useAdultAcknowledgement() {
     return !!localStorage.getItem(STORAGE_KEY);
   });
 
-  // Pick up changes made in other tabs/windows.
   useEffect(() => {
     if (typeof window === 'undefined') return;
+    const sync = () => setAcknowledged(!!localStorage.getItem(STORAGE_KEY));
+    // Cross-tab (storage event) and same-tab (custom event) sync.
     const onStorage = (e: StorageEvent) => {
-      if (e.key === STORAGE_KEY) setAcknowledged(!!e.newValue);
+      if (e.key === STORAGE_KEY) sync();
     };
     window.addEventListener('storage', onStorage);
-    return () => window.removeEventListener('storage', onStorage);
+    window.addEventListener(SAME_TAB_EVENT, sync);
+    return () => {
+      window.removeEventListener('storage', onStorage);
+      window.removeEventListener(SAME_TAB_EVENT, sync);
+    };
   }, []);
 
   const acknowledge = useCallback(() => {
     if (typeof window === 'undefined') return;
     localStorage.setItem(STORAGE_KEY, new Date().toISOString());
     setAcknowledged(true);
+    window.dispatchEvent(new Event(SAME_TAB_EVENT));
   }, []);
 
   const reset = useCallback(() => {
     if (typeof window === 'undefined') return;
     localStorage.removeItem(STORAGE_KEY);
     setAcknowledged(false);
+    window.dispatchEvent(new Event(SAME_TAB_EVENT));
   }, []);
 
   return { acknowledged, acknowledge, reset };
