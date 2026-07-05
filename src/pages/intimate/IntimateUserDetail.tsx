@@ -7,6 +7,8 @@ import { FlatFieldGroup } from '@/components/ui/FlatFieldGroup';
 import { useToast } from '@/hooks/use-toast';
 import { getGenitalPictogramSet, bodyPictograms, angleOptions } from '@/assets/intimate/pictograms';
 import { useState } from 'react';
+import { KinkVisibleList } from '@/components/kinks/KinkVisibleList';
+import { KinkPeerActions } from '@/components/kinks/KinkPeerActions';
 
 function Row({ k, v }: { k: string; v: string }) {
   return (
@@ -128,6 +130,13 @@ export default function IntimateUserDetail() {
           {profile.limits?.length ? <Row k="Limits" v={profile.limits.join(', ')} /> : null}
           {profile.safer_sex_prefs?.length ? <Row k="Safer sex" v={profile.safer_sex_prefs.join(', ')} /> : null}
         </dl>
+      </FlatFieldGroup>
+
+      <FlatFieldGroup title="Interests & boundaries">
+        {userId && <KinkVisibleList ownerId={userId} />}
+        {userId && (
+          <KinkPeerActions otherId={userId} otherName={displayProfile?.display_name} />
+        )}
       </FlatFieldGroup>
 
       <div className="border-t border-border pt-6 flex flex-wrap gap-2">

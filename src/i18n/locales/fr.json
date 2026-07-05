@@ -581,7 +581,9 @@
         "safety": "Sécurité",
         "lgbtq-specific": "Spécifique LGBTQ+",
         "other": "Autre"
-      }
+      },
+      "scopeAll": "Tout le monde",
+      "scopeMine": "Les miens"
     },
     "collaborate": {
       "chat": "Discussion",
@@ -620,7 +622,8 @@
       "budget": "Budget",
       "reservations": "Réservations",
       "packing": "Bagages",
-      "collaborate": "Collaborer"
+      "collaborate": "Collaborer",
+      "journal": "Journal"
     },
     "today": {
       "offlineBanner": "Hors ligne — itinéraire enregistré affiché.",
@@ -901,6 +904,83 @@
       "saveAria": "Save trip",
       "unsaveAria": "Unsave trip",
       "error": "Could not update save"
+    },
+    "dayNotes": {
+      "addTitle": "Ajouter une note à cette journée",
+      "textLabel": "Note",
+      "textPlaceholder": "p. ex. Départ avant 11h00",
+      "timeLabel": "Heure (facultatif)",
+      "iconLabel": "Icône",
+      "save": "Ajouter la note",
+      "added": "Note ajoutée",
+      "delete": "Supprimer la note"
+    },
+    "weather": {
+      "clear": "Dégagé",
+      "partlyCloudy": "Partiellement nuageux",
+      "overcast": "Couvert",
+      "fog": "Brouillard",
+      "drizzle": "Bruine",
+      "rain": "Pluie",
+      "snow": "Neige",
+      "thunderstorm": "Orage",
+      "typical": "typique"
+    },
+    "conflicts": {
+      "chip_one": "{{count}} conflit",
+      "chip_other": "{{count}} conflits"
+    },
+    "legs": {
+      "switchMode": "Changer de mode de transport",
+      "modeAria": "Mode de transport : {{mode}} — cliquez pour changer",
+      "mode": {
+        "walk": "à pied",
+        "transit": "transports en commun",
+        "drive": "voiture"
+      },
+      "walkingTotal": "{{distance}} à pied",
+      "optimize": "Optimiser l'ordre de l'itinéraire",
+      "directions": "Ouvrir la journée dans Google Maps"
+    },
+    "suggestions": {
+      "accessMatch": "Correspond à vos besoins"
+    },
+    "journal": {
+      "placeholder": "Que s'est-il passé aujourd'hui ? Les petits moments comptent aussi.",
+      "moodLabel": "Humeur",
+      "mood": {
+        "joy": "Joyeux·se",
+        "good": "Bien",
+        "mixed": "Mitigé",
+        "tough": "Difficile"
+      },
+      "addPhotos": "Photos",
+      "save": "Enregistrer l'entrée",
+      "saved": "Entrée de journal enregistrée",
+      "empty": "Pas encore d'entrées de journal.",
+      "delete": "Supprimer l'entrée",
+      "removePhoto": "Retirer la photo",
+      "member": "Voyageur·se"
+    },
+    "import": {
+      "button": "Importer",
+      "title": "Importer des lieux",
+      "pickFile": "Choisir un fichier",
+      "formats": "GPX, KML, GeoJSON ou Google Takeout (JSON de lieux enregistrés / CSV de listes)",
+      "noPlaces": "Aucun lieu trouvé dans ce fichier.",
+      "matching": "Correspondance des lieux…",
+      "matchCount": "{{count}} associés à des lieux queer.guide",
+      "changeFile": "Changer de fichier",
+      "matched": "Lieu existant",
+      "customPin": "Épingle personnalisée",
+      "noCoords": "Pas de coordonnées — nom seulement",
+      "confirm": "Importer {{count}} lieux",
+      "done": "{{count}} lieux importés",
+      "doneHint": "Ils arrivent dans la liste non planifiée — glissez-les sur des journées."
+    },
+    "offline": {
+      "pending_one": "{{count}} modification en attente de synchronisation",
+      "pending_other": "{{count}} modifications en attente de synchronisation"
     },
     "inbox": {
       "openThread": "Vérifier dans le chat"
@@ -2767,7 +2847,11 @@
       "email": "Nouvel e-mail"
     },
     "notification": {
-      "open": "Ouvrir"
+      "open": "Ouvrir",
+      "view": "Voir",
+      "reviewerNotes": "Notes du relecteur",
+      "allSubmissions": "Toutes mes contributions",
+      "shareToChat": "Partager dans le chat"
     },
     "openInbox": "Ouvrir la boîte de réception",
     "markAlertsRead": "Marquer les alertes comme lues",
@@ -2789,6 +2873,8 @@
       "recent": "Contacts récents",
       "active": "Actifs récemment"
     },
+    "upcoming": "À venir",
+    "openCalendar": "Calendrier",
     "tripmail": {
       "gone": "Cet e-mail n’est plus disponible.",
       "type": "Type",
@@ -2963,6 +3049,19 @@
       "on": "Dispo maintenant",
       "both": "{{name}} est dispo pour se voir maintenant 🟢",
       "youOnly": "Vous êtes indiqué comme dispo pour se voir 🟢"
+    },
+    "share": {
+      "gated": "Détails sur Queer Guide",
+      "view": "Voir sur Queer Guide"
+    },
+    "submission": {
+      "header": "Ajouté à Queer Guide ({{count}})",
+      "messageOne": "a ajouté « {{title}} » pour relecture",
+      "messageMany": "a ajouté {{count}} éléments pour relecture : {{title}}…",
+      "submitted": "{{count}} envoyés pour relecture",
+      "failed": "Échec de l’envoi",
+      "title": "Ajouter à Queer Guide",
+      "subtitle": "Déposez un flyer ou collez un lien. Les éléments extraits sont envoyés pour relecture et partagés dans ce chat."
     }
   },
   "newsDetail": {
@@ -3018,6 +3117,26 @@
       "dismiss": "Fermer",
       "ariaLabel": "Installer l'app"
     }
+  },
+  "atlas": {
+    "summary": "{{visited}} pays visités · {{bucket}} sur votre liste d’envies",
+    "hint": "Touchez un pays pour le marquer",
+    "visited": "Visité",
+    "bucket": "Liste d’envies",
+    "fromTrips": "Marqué comme visité via un voyage terminé"
+  },
+  "calendar": {
+    "title": "Mon calendrier",
+    "subtitle": "Vos voyages et événements enregistrés au même endroit",
+    "signInDesc": "Connectez-vous pour voir vos voyages et événements enregistrés.",
+    "trip": "Voyage",
+    "empty": "Aucun voyage ni événement enregistré ce mois-ci.",
+    "planTrip": "Planifier un voyage",
+    "browseEvents": "Parcourir les événements",
+    "copyFeed": "Copier l’URL d’abonnement",
+    "download": "Télécharger .ics",
+    "open": "Calendrier",
+    "openAria": "Ouvrir mon calendrier"
   },
   "status": {
     "lookingFor": "À la recherche de",

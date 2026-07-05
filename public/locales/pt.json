@@ -574,7 +574,9 @@
         "safety": "Segurança",
         "lgbtq-specific": "Específico LGBTQIA+",
         "other": "Outros"
-      }
+      },
+      "scopeAll": "Todos",
+      "scopeMine": "Meus"
     },
     "collaborate": {
       "chat": "Chat",
@@ -613,7 +615,8 @@
       "budget": "Orçamento",
       "reservations": "Reservas",
       "packing": "Mala",
-      "collaborate": "Colaborar"
+      "collaborate": "Colaborar",
+      "journal": "Diário"
     },
     "today": {
       "offlineBanner": "Sem conexão — mostrando o último itinerário salvo.",
@@ -894,6 +897,83 @@
       "saveAria": "Save trip",
       "unsaveAria": "Unsave trip",
       "error": "Could not update save"
+    },
+    "dayNotes": {
+      "addTitle": "Adicionar uma nota a este dia",
+      "textLabel": "Nota",
+      "textPlaceholder": "ex.: Check-out até às 11:00",
+      "timeLabel": "Hora (opcional)",
+      "iconLabel": "Ícone",
+      "save": "Adicionar nota",
+      "added": "Nota adicionada",
+      "delete": "Excluir nota"
+    },
+    "weather": {
+      "clear": "Céu limpo",
+      "partlyCloudy": "Parcialmente nublado",
+      "overcast": "Encoberto",
+      "fog": "Nevoeiro",
+      "drizzle": "Chuvisco",
+      "rain": "Chuva",
+      "snow": "Neve",
+      "thunderstorm": "Trovoada",
+      "typical": "típico"
+    },
+    "conflicts": {
+      "chip_one": "{{count}} conflito",
+      "chip_other": "{{count}} conflitos"
+    },
+    "legs": {
+      "switchMode": "Mudar meio de transporte",
+      "modeAria": "Meio de transporte: {{mode}} — clique para mudar",
+      "mode": {
+        "walk": "a pé",
+        "transit": "transporte público",
+        "drive": "carro"
+      },
+      "walkingTotal": "{{distance}} a pé",
+      "optimize": "Otimizar a ordem do trajeto",
+      "directions": "Abrir o dia no Google Maps"
+    },
+    "suggestions": {
+      "accessMatch": "Atende às suas necessidades"
+    },
+    "journal": {
+      "placeholder": "O que aconteceu hoje? Pequenos momentos também contam.",
+      "moodLabel": "Humor",
+      "mood": {
+        "joy": "Alegre",
+        "good": "Bem",
+        "mixed": "Misto",
+        "tough": "Difícil"
+      },
+      "addPhotos": "Fotos",
+      "save": "Salvar registro",
+      "saved": "Registro do diário salvo",
+      "empty": "Ainda não há registros no diário.",
+      "delete": "Excluir registro",
+      "removePhoto": "Remover foto",
+      "member": "Viajante"
+    },
+    "import": {
+      "button": "Importar",
+      "title": "Importar lugares",
+      "pickFile": "Escolher um arquivo",
+      "formats": "GPX, KML, GeoJSON ou Google Takeout (JSON de lugares salvos / CSV de listas)",
+      "noPlaces": "Nenhum lugar encontrado neste arquivo.",
+      "matching": "Comparando locais…",
+      "matchCount": "{{count}} correspondem a locais do queer.guide",
+      "changeFile": "Trocar arquivo",
+      "matched": "Local existente",
+      "customPin": "Pin personalizado",
+      "noCoords": "Sem coordenadas — apenas o nome",
+      "confirm": "Importar {{count}} lugares",
+      "done": "{{count}} lugares importados",
+      "doneHint": "Eles ficam no grupo não agendado — arraste-os para os dias."
+    },
+    "offline": {
+      "pending_one": "{{count}} alteração aguardando sincronização",
+      "pending_other": "{{count}} alterações aguardando sincronização"
     }
   },
   "auth": {
@@ -2754,7 +2834,11 @@
       "email": "Novo e-mail"
     },
     "notification": {
-      "open": "Abrir"
+      "open": "Abrir",
+      "view": "Ver",
+      "reviewerNotes": "Notas do revisor",
+      "allSubmissions": "Todos os meus envios",
+      "shareToChat": "Compartilhar no chat"
     },
     "openInbox": "Abrir caixa de entrada",
     "markAlertsRead": "Marcar alertas como lidos",
@@ -2775,7 +2859,9 @@
       "empty": "Ainda sem sugestões.",
       "recent": "Mensagens recentes",
       "active": "Ativos recentemente"
-    }
+    },
+    "upcoming": "Em breve",
+    "openCalendar": "Calendário"
   },
   "extension": {
     "signInGate": {
@@ -2924,6 +3010,19 @@
       "on": "Livre agora",
       "both": "{{name}} está livre para encontrar agora 🟢",
       "youOnly": "Estás marcado como livre para encontrar 🟢"
+    },
+    "share": {
+      "gated": "Detalhes no Queer Guide",
+      "view": "Ver no Queer Guide"
+    },
+    "submission": {
+      "header": "Adicionado ao Queer Guide ({{count}})",
+      "messageOne": "adicionou \"{{title}}\" para revisão",
+      "messageMany": "adicionou {{count}} itens para revisão: {{title}}…",
+      "submitted": "{{count}} enviados para revisão",
+      "failed": "Falha no envio",
+      "title": "Adicionar ao Queer Guide",
+      "subtitle": "Envie um panfleto ou cole um link. Os itens extraídos são enviados para revisão e compartilhados neste chat."
     }
   },
   "newsDetail": {
@@ -2979,5 +3078,25 @@
       "dismiss": "Dispensar",
       "ariaLabel": "Instalar app"
     }
+  },
+  "atlas": {
+    "summary": "{{visited}} países visitados · {{bucket}} na sua lista de desejos",
+    "hint": "Toque em um país para marcá-lo",
+    "visited": "Visitado",
+    "bucket": "Lista de desejos",
+    "fromTrips": "Marcado como visitado por uma viagem concluída"
+  },
+  "calendar": {
+    "title": "Meu calendário",
+    "subtitle": "Suas viagens e eventos salvos em um só lugar",
+    "signInDesc": "Entre para ver suas viagens e eventos salvos.",
+    "trip": "Viagem",
+    "empty": "Nenhuma viagem ou evento salvo neste mês.",
+    "planTrip": "Planejar uma viagem",
+    "browseEvents": "Explorar eventos",
+    "copyFeed": "Copiar URL de assinatura",
+    "download": "Baixar .ics",
+    "open": "Calendário",
+    "openAria": "Abrir meu calendário"
   }
 }

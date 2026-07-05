@@ -19,17 +19,22 @@ export function UserSubmissionsList() {
       {submissions.map((s) => (
         <li
           key={s.id}
-          className="flex items-center justify-between gap-4 rounded-element border border-border bg-card px-4 py-2"
+          className="flex flex-col gap-1 rounded-element border border-border bg-card px-4 py-2"
         >
-          <div className="min-w-0">
-            <p className="text-sm font-medium truncate">{s.name ?? s.content_type}</p>
-            <p className="text-2xs uppercase tracking-wider text-muted-foreground">
-              {s.content_type} · {new Date(s.submitted_at).toLocaleDateString()}
-            </p>
+          <div className="flex items-center justify-between gap-4">
+            <div className="min-w-0">
+              <p className="text-sm font-medium truncate">{s.name ?? s.content_type}</p>
+              <p className="text-2xs uppercase tracking-wider text-muted-foreground">
+                {s.content_type} · {new Date(s.submitted_at).toLocaleDateString()}
+              </p>
+            </div>
+            <Badge variant={s.promoted ? 'default' : 'outline'} className="rounded-badge shrink-0">
+              {s.promoted ? 'published' : s.status}
+            </Badge>
           </div>
-          <Badge variant={s.promoted ? 'default' : 'outline'} className="rounded-badge shrink-0">
-            {s.promoted ? 'published' : s.status}
-          </Badge>
+          {!s.promoted && s.reviewer_notes && ['rejected', 'duplicate', 'needs_info'].includes(s.status) && (
+            <p className="text-sm text-muted-foreground">{s.reviewer_notes}</p>
+          )}
         </li>
       ))}
     </ul>

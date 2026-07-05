@@ -34,7 +34,11 @@
       "email": "New email"
     },
     "notification": {
-      "open": "Open"
+      "open": "Open",
+      "view": "View",
+      "reviewerNotes": "Reviewer notes",
+      "allSubmissions": "All my submissions",
+      "shareToChat": "Share to chat"
     },
     "openInbox": "Open inbox",
     "markAlertsRead": "Mark alerts read",
@@ -55,7 +59,9 @@
       "empty": "No suggestions yet.",
       "recent": "Recently messaged",
       "active": "Active recently"
-    }
+    },
+    "upcoming": "Upcoming",
+    "openCalendar": "Calendar"
   },
   "eventTypes": {
     "party": "Party",
@@ -1032,7 +1038,9 @@
         "safety": "Safety",
         "lgbtq-specific": "LGBTQ+ specific",
         "other": "Other"
-      }
+      },
+      "scopeAll": "Everyone",
+      "scopeMine": "Mine"
     },
     "collaborate": {
       "chat": "Chat",
@@ -1071,7 +1079,8 @@
       "budget": "Budget",
       "reservations": "Reservations",
       "packing": "Packing",
-      "collaborate": "Collaborate"
+      "collaborate": "Collaborate",
+      "journal": "Journal"
     },
     "today": {
       "offlineBanner": "You're offline — showing your last-saved itinerary.",
@@ -1332,6 +1341,83 @@
       "pin": "Pin",
       "deleteTitle": "Delete Note",
       "deleteConfirm": "Are you sure you want to delete this note? This cannot be undone."
+    },
+    "dayNotes": {
+      "addTitle": "Add a note to this day",
+      "textLabel": "Note",
+      "textPlaceholder": "e.g. Check-out by 11:00",
+      "timeLabel": "Time (optional)",
+      "iconLabel": "Icon",
+      "save": "Add note",
+      "added": "Note added",
+      "delete": "Delete note"
+    },
+    "weather": {
+      "clear": "Clear",
+      "partlyCloudy": "Partly cloudy",
+      "overcast": "Overcast",
+      "fog": "Fog",
+      "drizzle": "Drizzle",
+      "rain": "Rain",
+      "snow": "Snow",
+      "thunderstorm": "Thunderstorm",
+      "typical": "typical"
+    },
+    "conflicts": {
+      "chip_one": "{{count}} conflict",
+      "chip_other": "{{count}} conflicts"
+    },
+    "legs": {
+      "switchMode": "Switch transport mode",
+      "modeAria": "Transport mode: {{mode}} — click to change",
+      "mode": {
+        "walk": "walk",
+        "transit": "transit",
+        "drive": "drive"
+      },
+      "walkingTotal": "{{distance}} walking",
+      "optimize": "Optimize route order",
+      "directions": "Open day in Google Maps"
+    },
+    "suggestions": {
+      "accessMatch": "Matches your needs"
+    },
+    "journal": {
+      "placeholder": "What happened today? Small moments count.",
+      "moodLabel": "Mood",
+      "mood": {
+        "joy": "Joyful",
+        "good": "Good",
+        "mixed": "Mixed",
+        "tough": "Tough"
+      },
+      "addPhotos": "Photos",
+      "save": "Save entry",
+      "saved": "Journal entry saved",
+      "empty": "No journal entries yet.",
+      "delete": "Delete entry",
+      "removePhoto": "Remove photo",
+      "member": "Traveler"
+    },
+    "import": {
+      "button": "Import",
+      "title": "Import places",
+      "pickFile": "Choose a file",
+      "formats": "GPX, KML, GeoJSON or Google Takeout (Saved Places JSON / list CSV)",
+      "noPlaces": "No places found in this file.",
+      "matching": "Matching venues…",
+      "matchCount": "{{count}} matched to queer.guide venues",
+      "changeFile": "Change file",
+      "matched": "Existing venue",
+      "customPin": "Custom pin",
+      "noCoords": "No coordinates — name only",
+      "confirm": "Import {{count}} places",
+      "done": "{{count}} places imported",
+      "doneHint": "They land in the unscheduled pool — drag them onto days."
+    },
+    "offline": {
+      "pending_one": "{{count}} change waiting to sync",
+      "pending_other": "{{count}} changes waiting to sync"
     }
   },
   "help": {
@@ -2899,6 +2985,19 @@
       "on": "Free now",
       "both": "{{name}} is free to meet right now 🟢",
       "youOnly": "You're marked free to meet 🟢"
+    },
+    "share": {
+      "gated": "Details on Queer Guide",
+      "view": "View on Queer Guide"
+    },
+    "submission": {
+      "header": "Added to Queer Guide ({{count}})",
+      "messageOne": "added \"{{title}}\" for review",
+      "messageMany": "added {{count}} items for review: {{title}}…",
+      "submitted": "{{count}} submitted for review",
+      "failed": "Submission failed",
+      "title": "Add to Queer Guide",
+      "subtitle": "Drop a flyer or paste a link. Extracted items are submitted for review and shared in this chat."
     }
   },
   "newsDetail": {
@@ -2954,5 +3053,25 @@
       "dismiss": "Dismiss",
       "ariaLabel": "Install app"
     }
+  },
+  "atlas": {
+    "summary": "{{visited}} countries visited · {{bucket}} on your bucket list",
+    "hint": "Tap a country to mark it",
+    "visited": "Visited",
+    "bucket": "Bucket list",
+    "fromTrips": "Marked visited by a completed trip"
+  },
+  "calendar": {
+    "title": "My calendar",
+    "subtitle": "Your trips and saved events in one place",
+    "signInDesc": "Sign in to see your trips and saved events.",
+    "trip": "Trip",
+    "empty": "No trips or saved events this month.",
+    "planTrip": "Plan a trip",
+    "browseEvents": "Browse events",
+    "copyFeed": "Copy subscribe URL",
+    "download": "Download .ics",
+    "open": "Calendar",
+    "openAria": "Open my calendar"
   }
 }

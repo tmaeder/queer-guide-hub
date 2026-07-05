@@ -257,22 +257,28 @@ const Venues = () => {
     setAutoLoadedCount(0);
     const list = (v: unknown) =>
       Array.isArray(v) && v.length > 0 ? (v as string[]).join(',') : undefined;
-    updateParams(
-      {
-        q: typeof filters.search === 'string' ? filters.search : undefined,
-        category: typeof filters.category === 'string' ? filters.category : undefined,
-        city: typeof filters.city === 'string' && filters.city ? filters.city : undefined,
-        tags: list(filters.tags),
-        amenities: list(filters.amenities),
-        services: list(filters.services),
-        accessibility: list(filters.accessibilityAttributes),
-        groups: list(filters.targetGroups),
-        openNow: filters.openNow ? '1' : undefined,
-        price: typeof filters.priceLevel === 'number' ? String(filters.priceLevel) : undefined,
-        radius: typeof filters.radiusKm === 'number' ? String(filters.radiusKm) : undefined,
-      },
-      { replace: true },
-    );
+    const nextParams = {
+      q: typeof filters.search === 'string' ? filters.search : undefined,
+      category: typeof filters.category === 'string' ? filters.category : undefined,
+      city: typeof filters.city === 'string' && filters.city ? filters.city : undefined,
+      tags: list(filters.tags),
+      amenities: list(filters.amenities),
+      services: list(filters.services),
+      accessibility: list(filters.accessibilityAttributes),
+      groups: list(filters.targetGroups),
+      openNow: filters.openNow ? '1' : undefined,
+      price: typeof filters.priceLevel === 'number' ? String(filters.priceLevel) : undefined,
+      radius: typeof filters.radiusKm === 'number' ? String(filters.radiusKm) : undefined,
+    };
+    // Discrete filter toggles (category/city/tags/…) PUSH a history entry so
+    // Back reverts the last change; debounced search-as-you-type REPLACES to
+    // avoid flooding history with a keystroke per entry. Decide by whether any
+    // non-`q` param actually changed vs the current URL.
+    const nonSearchChanged = Object.entries(nextParams).some(([k, v]) => {
+      if (k === 'q') return false;
+      return (searchParams.get(k) ?? undefined) !== (v ?? undefined);
+    });
+    updateParams(nextParams, { replace: !nonSearchChanged });
     await fetchVenues(
       mergeChipFilters({ ...filters, userLocation: userLocation ?? undefined }) as Parameters<
         typeof fetchVenues

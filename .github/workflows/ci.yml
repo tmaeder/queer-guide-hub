@@ -159,4 +159,4 @@ jobs:
           deno-version: v2.x
       - name: Run deno unit tests
         working-directory: supabase/functions/_tests
-        run: deno test --allow-net --allow-env --allow-read source-adapter.test.ts pipeline-nodes.test.ts wikinews.test.ts enrichment-driver.test.ts trip-inbox-fields.test.ts
+        run: deno test --allow-net --allow-env --allow-read source-adapter.test.ts pipeline-nodes.test.ts wikinews.test.ts enrichment-driver.test.ts batch-circuit-checker.test.ts trip-inbox-fields.test.ts

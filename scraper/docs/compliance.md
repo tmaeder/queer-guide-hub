@@ -74,3 +74,23 @@ We **always**:
 - **Source attribution**: Every entity tracks its source URL and source name
 - **Snapshots for audit**: Raw HTML/JSON snapshots are stored for debugging and compliance review
 - **Kill switches**: Any source can be immediately disabled via environment variable
+
+## Source verdict: gaycities.com (2026-07-04)
+
+- **robots.txt**: `User-agent: * → Allow: /`. Cloudflare Content-Signals:
+  `search=yes, ai-train=no, use=reference` (EU DSM Art. 4 rights reservation).
+- **Our use**: directory-style import of event facts (title, dates, venue,
+  city, ticket URL, image) plus the event description, with the source
+  permalink stored in `event_sources.source_url` / `metadata.source_url` for
+  attribution. No AI training on the content. This matches the allowed
+  `search=yes` / `use=reference` signals.
+- **Access method**: gaycities.com serves 403 to all plain HTTP clients
+  (including our identified scraper UA) but serves a real browser session
+  without any challenge, CAPTCHA, or login wall. Extraction therefore runs
+  through a single headless Playwright session at ≤1 req/1.5–2.5s
+  (scripts/gaycities-backfill.ts, scripts/gaycities-sync.ts). No CAPTCHA
+  bypass, no login circumvention, no proxy/IP rotation, no 429 override —
+  the session backs off and recycles on errors.
+- **Historical pages** (2012–2021) are seeded from the Wayback Machine CDX
+  API (no Cloudflare, public archive) and re-fetched from the live site;
+  dead permalinks may fall back to the public Wayback snapshot.

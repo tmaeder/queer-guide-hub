@@ -577,7 +577,9 @@
         "safety": "안전 용품",
         "lgbtq-specific": "LGBTQ+ 전용",
         "other": "기타"
-      }
+      },
+      "scopeAll": "모두",
+      "scopeMine": "내 것"
     },
     "collaborate": {
       "chat": "채팅",
@@ -616,7 +618,8 @@
       "budget": "예산",
       "reservations": "예약",
       "packing": "짐싸기",
-      "collaborate": "협업"
+      "collaborate": "협업",
+      "journal": "일기"
     },
     "today": {
       "offlineBanner": "오프라인 상태 — 마지막으로 저장된 일정을 표시합니다.",
@@ -897,6 +900,83 @@
       "saveAria": "Save trip",
       "unsaveAria": "Unsave trip",
       "error": "Could not update save"
+    },
+    "dayNotes": {
+      "addTitle": "이 날에 메모 추가",
+      "textLabel": "메모",
+      "textPlaceholder": "예: 11:00까지 체크아웃",
+      "timeLabel": "시간(선택)",
+      "iconLabel": "아이콘",
+      "save": "메모 추가",
+      "added": "메모가 추가되었습니다",
+      "delete": "메모 삭제"
+    },
+    "weather": {
+      "clear": "맑음",
+      "partlyCloudy": "구름 조금",
+      "overcast": "흐림",
+      "fog": "안개",
+      "drizzle": "이슬비",
+      "rain": "비",
+      "snow": "눈",
+      "thunderstorm": "뇌우",
+      "typical": "평년"
+    },
+    "conflicts": {
+      "chip_one": "{{count}}개의 충돌",
+      "chip_other": "{{count}}개의 충돌"
+    },
+    "legs": {
+      "switchMode": "이동 수단 전환",
+      "modeAria": "이동 수단: {{mode}} — 클릭하여 변경",
+      "mode": {
+        "walk": "도보",
+        "transit": "대중교통",
+        "drive": "자동차"
+      },
+      "walkingTotal": "도보 {{distance}}",
+      "optimize": "경로 순서 최적화",
+      "directions": "이 날을 Google 지도에서 열기"
+    },
+    "suggestions": {
+      "accessMatch": "필요 사항과 일치"
+    },
+    "journal": {
+      "placeholder": "오늘 무슨 일이 있었나요? 작은 순간도 소중해요.",
+      "moodLabel": "기분",
+      "mood": {
+        "joy": "기쁨",
+        "good": "좋음",
+        "mixed": "복잡함",
+        "tough": "힘듦"
+      },
+      "addPhotos": "사진",
+      "save": "기록 저장",
+      "saved": "일기가 저장되었습니다",
+      "empty": "아직 일기가 없습니다.",
+      "delete": "기록 삭제",
+      "removePhoto": "사진 제거",
+      "member": "여행자"
+    },
+    "import": {
+      "button": "가져오기",
+      "title": "장소 가져오기",
+      "pickFile": "파일 선택",
+      "formats": "GPX, KML, GeoJSON 또는 Google Takeout(저장된 장소 JSON / 목록 CSV)",
+      "noPlaces": "이 파일에서 장소를 찾을 수 없습니다.",
+      "matching": "장소 대조 중…",
+      "matchCount": "{{count}}개가 queer.guide 장소와 일치",
+      "changeFile": "파일 변경",
+      "matched": "기존 장소",
+      "customPin": "사용자 지정 핀",
+      "noCoords": "좌표 없음 — 이름만",
+      "confirm": "장소 {{count}}개 가져오기",
+      "done": "장소 {{count}}개를 가져왔습니다",
+      "doneHint": "미정 목록에 추가됩니다 — 원하는 날짜로 끌어다 놓으세요."
+    },
+    "offline": {
+      "pending_one": "동기화 대기 중인 변경 {{count}}건",
+      "pending_other": "동기화 대기 중인 변경 {{count}}건"
     },
     "inbox": {
       "openThread": "채팅에서 검토"
@@ -2761,7 +2841,11 @@
       "email": "새 메일"
     },
     "notification": {
-      "open": "열기"
+      "open": "열기",
+      "view": "보기",
+      "reviewerNotes": "검토자 메모",
+      "allSubmissions": "내 제출 전체",
+      "shareToChat": "채팅에 공유"
     },
     "openInbox": "받은편지함 열기",
     "markAlertsRead": "알림 읽음 표시",
@@ -2783,6 +2867,8 @@
       "recent": "최근 메시지한 사람",
       "active": "최근 활동"
     },
+    "upcoming": "예정",
+    "openCalendar": "캘린더",
     "tripmail": {
       "gone": "이 이메일 항목은 더 이상 사용할 수 없습니다.",
       "type": "유형",
@@ -2957,6 +3043,19 @@
       "on": "지금 가능",
       "both": "{{name}}님은 지금 만날 수 있어요 🟢",
       "youOnly": "만날 수 있음으로 표시되어 있어요 🟢"
+    },
+    "share": {
+      "gated": "Queer Guide에서 자세히 보기",
+      "view": "Queer Guide에서 보기"
+    },
+    "submission": {
+      "header": "Queer Guide에 추가됨 ({{count}})",
+      "messageOne": "“{{title}}”을(를) 검토용으로 추가했습니다",
+      "messageMany": "검토용으로 {{count}}개 항목을 추가했습니다: {{title}}…",
+      "submitted": "{{count}}개를 검토용으로 제출했습니다",
+      "failed": "제출 실패",
+      "title": "Queer Guide에 추가",
+      "subtitle": "전단지를 올리거나 링크를 붙여넣으세요. 추출된 항목은 검토용으로 제출되어 이 채팅에 공유됩니다."
     }
   },
   "newsDetail": {
@@ -3012,6 +3111,26 @@
       "dismiss": "닫기",
       "ariaLabel": "앱 설치"
     }
+  },
+  "atlas": {
+    "summary": "방문한 나라 {{visited}}곳 · 버킷리스트 {{bucket}}곳",
+    "hint": "나라를 탭하여 표시하세요",
+    "visited": "방문함",
+    "bucket": "버킷리스트",
+    "fromTrips": "완료된 여행으로 방문 표시됨"
+  },
+  "calendar": {
+    "title": "내 캘린더",
+    "subtitle": "여행과 저장한 이벤트를 한곳에서",
+    "signInDesc": "로그인하면 여행과 저장한 이벤트를 볼 수 있습니다.",
+    "trip": "여행",
+    "empty": "이번 달에 여행이나 저장한 이벤트가 없습니다.",
+    "planTrip": "여행 계획하기",
+    "browseEvents": "이벤트 둘러보기",
+    "copyFeed": "구독 URL 복사",
+    "download": ".ics 다운로드",
+    "open": "캘린더",
+    "openAria": "내 캘린더 열기"
   },
   "status": {
     "lookingFor": "찾고 있는 것",

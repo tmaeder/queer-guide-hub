@@ -39,7 +39,7 @@ describe('RelatedTagsCard', () => {
   it('shows loading skeleton when loading', () => {
     mockLoading = true;
     render(<RelatedTagsCard tagId="t-1" onTagClick={vi.fn()} />, { wrapper: w });
-    expect(screen.getByText('Related')).toBeInTheDocument();
+    expect(screen.getByText('See also')).toBeInTheDocument();
   });
 
   it('renders nothing when no similar tags', () => {

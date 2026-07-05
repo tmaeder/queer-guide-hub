@@ -574,7 +574,9 @@
         "safety": "السلامة",
         "lgbtq-specific": "خاص بمجتمع الميم",
         "other": "أخرى"
-      }
+      },
+      "scopeAll": "الجميع",
+      "scopeMine": "أغراضي"
     },
     "collaborate": {
       "chat": "الدردشة",
@@ -613,7 +615,8 @@
       "budget": "الميزانية",
       "reservations": "الحجوزات",
       "packing": "التعبئة",
-      "collaborate": "التعاون"
+      "collaborate": "التعاون",
+      "journal": "اليوميات"
     },
     "today": {
       "offlineBanner": "أنت غير متصل — نعرض آخر خط سير محفوظ.",
@@ -894,6 +897,89 @@
       "saveAria": "Save trip",
       "unsaveAria": "Unsave trip",
       "error": "Could not update save"
+    },
+    "dayNotes": {
+      "addTitle": "أضف ملاحظة إلى هذا اليوم",
+      "textLabel": "ملاحظة",
+      "textPlaceholder": "مثال: تسجيل المغادرة قبل 11:00",
+      "timeLabel": "الوقت (اختياري)",
+      "iconLabel": "أيقونة",
+      "save": "أضف ملاحظة",
+      "added": "تمت إضافة الملاحظة",
+      "delete": "حذف الملاحظة"
+    },
+    "weather": {
+      "clear": "صافٍ",
+      "partlyCloudy": "غائم جزئيًا",
+      "overcast": "غائم",
+      "fog": "ضباب",
+      "drizzle": "رذاذ",
+      "rain": "مطر",
+      "snow": "ثلج",
+      "thunderstorm": "عاصفة رعدية",
+      "typical": "معتاد"
+    },
+    "conflicts": {
+      "chip_one": "تعارض واحد",
+      "chip_other": "{{count}} تعارضات",
+      "chip_two": "تعارضان",
+      "chip_few": "{{count}} تعارضات",
+      "chip_many": "{{count}} تعارضًا"
+    },
+    "legs": {
+      "switchMode": "تغيير وسيلة التنقل",
+      "modeAria": "وسيلة التنقل: {{mode}} — انقر للتغيير",
+      "mode": {
+        "walk": "مشيًا",
+        "transit": "المواصلات العامة",
+        "drive": "بالسيارة"
+      },
+      "walkingTotal": "{{distance}} مشيًا",
+      "optimize": "تحسين ترتيب المسار",
+      "directions": "فتح اليوم في خرائط Google"
+    },
+    "suggestions": {
+      "accessMatch": "يلبي احتياجاتك"
+    },
+    "journal": {
+      "placeholder": "ماذا حدث اليوم؟ اللحظات الصغيرة مهمة أيضًا.",
+      "moodLabel": "المزاج",
+      "mood": {
+        "joy": "سعيد",
+        "good": "جيد",
+        "mixed": "متقلب",
+        "tough": "صعب"
+      },
+      "addPhotos": "صور",
+      "save": "حفظ المدخلة",
+      "saved": "تم حفظ مدخلة اليوميات",
+      "empty": "لا توجد مدخلات في اليوميات بعد.",
+      "delete": "حذف المدخلة",
+      "removePhoto": "إزالة الصورة",
+      "member": "مسافر/ة"
+    },
+    "import": {
+      "button": "استيراد",
+      "title": "استيراد أماكن",
+      "pickFile": "اختر ملفًا",
+      "formats": "GPX أو KML أو GeoJSON أو Google Takeout (JSON للأماكن المحفوظة / CSV للقوائم)",
+      "noPlaces": "لم يتم العثور على أماكن في هذا الملف.",
+      "matching": "جارٍ مطابقة الأماكن…",
+      "matchCount": "تمت مطابقة {{count}} مع أماكن queer.guide",
+      "changeFile": "تغيير الملف",
+      "matched": "مكان موجود",
+      "customPin": "دبوس مخصص",
+      "noCoords": "بدون إحداثيات — الاسم فقط",
+      "confirm": "استيراد {{count}} من الأماكن",
+      "done": "تم استيراد {{count}} من الأماكن",
+      "doneHint": "ستوضع في قائمة غير المجدولة — اسحبها إلى الأيام."
+    },
+    "offline": {
+      "pending_one": "تغيير واحد بانتظار المزامنة",
+      "pending_other": "{{count}} تغييرات بانتظار المزامنة",
+      "pending_two": "تغييران بانتظار المزامنة",
+      "pending_few": "{{count}} تغييرات بانتظار المزامنة",
+      "pending_many": "{{count}} تغييرًا بانتظار المزامنة"
     }
   },
   "auth": {
@@ -2752,7 +2838,11 @@
       "email": "بريد جديد"
     },
     "notification": {
-      "open": "فتح"
+      "open": "فتح",
+      "view": "عرض",
+      "reviewerNotes": "ملاحظات المراجع",
+      "allSubmissions": "كل مساهماتي",
+      "shareToChat": "مشاركة في المحادثة"
     },
     "openInbox": "فتح صندوق الوارد",
     "markAlertsRead": "وضع علامة مقروء على التنبيهات",
@@ -2773,7 +2863,9 @@
       "empty": "لا اقتراحات بعد.",
       "recent": "راسلتهم مؤخرًا",
       "active": "نشطون مؤخرًا"
-    }
+    },
+    "upcoming": "قريبًا",
+    "openCalendar": "التقويم"
   },
   "extension": {
     "signInGate": {
@@ -2922,6 +3014,19 @@
       "on": "متاح الآن",
       "both": "{{name}} متاح للقاء الآن 🟢",
       "youOnly": "أنت مُعلَّم كمتاح للقاء 🟢"
+    },
+    "share": {
+      "gated": "التفاصيل على Queer Guide",
+      "view": "العرض على Queer Guide"
+    },
+    "submission": {
+      "header": "تمت الإضافة إلى Queer Guide ({{count}})",
+      "messageOne": "أضاف «{{title}}» للمراجعة",
+      "messageMany": "أضاف {{count}} عناصر للمراجعة: {{title}}…",
+      "submitted": "تم إرسال {{count}} للمراجعة",
+      "failed": "فشل الإرسال",
+      "title": "إضافة إلى Queer Guide",
+      "subtitle": "ارفع منشورًا أو الصق رابطًا. تُرسَل العناصر المستخرجة للمراجعة وتُشارَك في هذه المحادثة."
     }
   },
   "newsDetail": {
@@ -2977,5 +3082,25 @@
       "dismiss": "إغلاق",
       "ariaLabel": "تثبيت التطبيق"
     }
+  },
+  "atlas": {
+    "summary": "زرت {{visited}} دولة · {{bucket}} في قائمة أمنياتك",
+    "hint": "انقر على دولة لتمييزها",
+    "visited": "تمت زيارتها",
+    "bucket": "قائمة الأمنيات",
+    "fromTrips": "وُسمت كمزارة بعد رحلة مكتملة"
+  },
+  "calendar": {
+    "title": "تقويمي",
+    "subtitle": "رحلاتك وفعالياتك المحفوظة في مكان واحد",
+    "signInDesc": "سجّل الدخول لعرض رحلاتك وفعالياتك المحفوظة.",
+    "trip": "رحلة",
+    "empty": "لا توجد رحلات أو فعاليات محفوظة هذا الشهر.",
+    "planTrip": "خطّط لرحلة",
+    "browseEvents": "تصفّح الفعاليات",
+    "copyFeed": "نسخ رابط الاشتراك",
+    "download": "تنزيل .ics",
+    "open": "التقويم",
+    "openAria": "فتح تقويمي"
   }
 }

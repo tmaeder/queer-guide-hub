@@ -12,13 +12,24 @@ test.describe('@p3-9 /help language switcher round-trip', () => {
   test('DE → EN → DE on /help', async ({ page }) => {
     await page.goto('/de/help');
     await page.waitForSelector('h1', { timeout: 15_000 });
+    // The cookie-consent banner is a fixed bottom bar (z-sticky) that overlays
+    // the footer language combobox and intercepts the click. Dismiss it first
+    // (as the visual-prod specs do) so the combobox is actually clickable.
+    await page
+      .getByRole('button', { name: /accept all|necessary only/i })
+      .first()
+      .click({ timeout: 3000 })
+      .catch(() => {});
 
     const switcher = page.getByRole('combobox', { name: /select language/i }).first();
     await switcher.scrollIntoViewIfNeeded();
     await switcher.click();
     await page.getByRole('option', { name: /english/i }).first().click();
-    await expect(page).toHaveURL(/\/help(?:[?#]|$)/, { timeout: 10_000 });
-    await expect(page).not.toHaveURL(/\/de\//);
+    // English is unprefixed: the URL must become /help with no /de/ segment.
+    // Anchor to the host so /de/help can't spuriously satisfy a substring
+    // /help match, and give the SPA navigation time to settle (the bare
+    // not-/de/ check raced the redirect).
+    await expect(page).toHaveURL(/\/\/[^/]+\/help(?:[?#]|$)/, { timeout: 10_000 });
 
     // Switch back to DE.
     const switcher2 = page.getByRole('combobox', { name: /select language/i }).first();
