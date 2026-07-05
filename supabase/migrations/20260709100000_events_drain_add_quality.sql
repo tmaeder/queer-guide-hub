@@ -12,6 +12,12 @@
 -- This inserts an ev-drain-quality tick between dedup(:22) and review(:37) so
 -- rows carry a real quality_score before review-gate scores them. Same two-header
 -- auth pattern as the sibling ticks.
+--
+-- RENAMED from 20260705100000 -> 20260709100000: that version collided with
+-- 20260705100000_kink_chemistry_discovery, which won the single history row, so
+-- this migration was silently skipped by `db push` and the cron never existed on
+-- prod. Idempotent (unschedule-then-schedule), so re-applying under a unique
+-- version is safe.
 -- ============================================================================
 
 DO $$ BEGIN
