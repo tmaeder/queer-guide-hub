@@ -33,6 +33,9 @@ test.describe('@p0-3 /tags age gate', () => {
     });
 
     await page.goto(ADULT_TAG_PATH);
+    // The gate only mounts once the tag resolves and its adult category is
+    // known — let the tag fetch settle before asserting on a cold prod load.
+    await page.waitForLoadState('networkidle').catch(() => {});
 
     await expect(page.getByTestId('age-affirmation-modal')).toBeVisible({ timeout: 15_000 });
     // Placeholder MUST be present and the original page content (e.g. tag
@@ -55,6 +58,7 @@ test.describe('@p0-3 /tags age gate', () => {
     });
 
     await page.goto(ADULT_TAG_PATH);
+    await page.waitForLoadState('networkidle').catch(() => {});
     await page.getByTestId('age-affirmation-confirm').click({ timeout: 15_000 });
 
     await expect(page.getByTestId('age-gate-placeholder')).toHaveCount(0);

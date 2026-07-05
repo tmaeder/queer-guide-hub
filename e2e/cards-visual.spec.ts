@@ -39,7 +39,9 @@ test('visual: mobile bottom-nav hit targets at 375px', async ({ page }) => {
   await page.goto('/');
   await page.waitForLoadState('networkidle');
   await dismissCookieBanner(page);
-  const nav = page.getByRole('navigation', { name: /primary mobile navigation/i });
+  // The bottom nav's accessible name is "Navigation" (t('header.navigation'));
+  // exact match keeps it distinct from the footer's "Footer navigation" landmark.
+  const nav = page.getByRole('navigation', { name: 'Navigation', exact: true });
   await expect(nav).toBeVisible();
   const links = await nav.getByRole('link').all();
   expect(links.length).toBeGreaterThanOrEqual(2);

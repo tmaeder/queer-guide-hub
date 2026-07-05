@@ -19,10 +19,13 @@ test.describe('Cities directory', () => {
 
     await expect(page.getByRole('region', { name: /cities map/i })).toBeVisible();
     await expect(page.getByRole('list', { name: /^cities$/i })).toBeVisible();
-    // Two role=status nodes exist (an sr-only live region + the visible
-    // count) — target the one that carries the count text.
-    await expect(page.getByRole('status').filter({ hasText: /cities/i })).toContainText(
-      /cities/i,
+    // Multiple role=status nodes exist (the sr-only route announcer
+    // "Navigated to Cities | Queer Guide" plus the visible "N of M cities"
+    // count). Match only the count node — the announcer also contains the word
+    // "cities", so a bare /cities/i filter resolves to 2 elements (strict-mode
+    // violation).
+    await expect(page.getByRole('status').filter({ hasText: /of \d+ cities/i })).toContainText(
+      /\d+ cities/i,
     );
   });
 

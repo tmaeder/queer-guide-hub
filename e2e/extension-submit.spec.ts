@@ -16,6 +16,11 @@ test.describe('extension submission flow', () => {
     await page.goto('/extension');
     // Title is "Queer Guide — …" (brand spells it with a space).
     await expect(page).toHaveTitle(/queer[\s.]?guide/i);
+    // ExtensionInstall is a lazy route: wait for its content to render before
+    // reading the body, otherwise textContent() captures only the app shell +
+    // noscript fallback and the assertion races the chunk load.
+    await page.getByRole('heading', { level: 1 }).first().waitFor({ timeout: 15_000 });
+    await page.waitForLoadState('networkidle').catch(() => {});
     // Page should mention either Chrome or Firefox / install
     const body = await page.locator('body').textContent();
     expect(body).toMatch(/chrome|firefox|install|extension/i);

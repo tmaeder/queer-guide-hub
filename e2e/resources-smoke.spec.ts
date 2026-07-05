@@ -33,7 +33,10 @@ test.describe('@smoke /tags campaign happy path', () => {
 
   test('unknown slug renders the 404 component', async ({ page }) => {
     await page.goto('/tags/asdfgibberish-not-real');
-    await expect(page.getByTestId('tag-not-found')).toBeVisible({ timeout: 10_000 });
+    // Not-found resolves after the tag list loads + the per-slug lookup returns
+    // null; let the network settle so a cold prod load doesn't race the timeout.
+    await page.waitForLoadState('networkidle').catch(() => {});
+    await expect(page.getByTestId('tag-not-found')).toBeVisible({ timeout: 15_000 });
   });
 
   test('overview renders topic hubs', async ({ page }) => {

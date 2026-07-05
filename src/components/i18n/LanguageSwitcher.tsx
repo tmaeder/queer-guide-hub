@@ -1,6 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { useLocation, useParams } from 'react-router';
-import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
+import { useLocation, useNavigate, useParams } from 'react-router';
 import { Globe } from 'lucide-react';
 import {
   Select,
@@ -19,7 +18,12 @@ import type { SupportedLocale } from '@/i18n/languages';
 
 export function LanguageSwitcher() {
   const { i18n } = useTranslation();
-  const navigate = useLocalizedNavigate();
+  // Plain navigate, NOT useLocalizedNavigate: this handler already builds the
+  // fully-qualified target path (with or without a locale prefix). Routing it
+  // through the localized navigate would re-prefix with the *current* locale
+  // still present in the URL params, so switching de→en on /de/help would land
+  // back on /de/help instead of the unprefixed /help.
+  const navigate = useNavigate();
   const location = useLocation();
   const { locale } = useParams<{ locale?: string }>();
 
