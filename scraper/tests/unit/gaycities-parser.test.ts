@@ -171,13 +171,39 @@ describe('normalizeGcEvent', () => {
     expect(norm.end_date).toBe('2026-05-26T00:00:00');
     expect(norm.timezone).toBe('America/Chicago');
     expect(norm.location.city).toBe('Chicago');
-    expect(norm.location.country).toBe('United States');
+    expect(norm.location.country).toBe('US');
     expect(norm.venue_name).toBe('Congress Plaza Hotel');
     expect(norm.ticket_url).toBe('https://www.imrl.com');
     expect(norm.images).toEqual(['https://s3.amazonaws.com/gc/iml.jpg']);
     expect(norm.metadata.source_url).toContain('/events/1031136-');
     expect(norm.description).toContain('full weekend of programming');
     expect(EVENT_TYPE_VOCAB).toContain(norm.event_type);
+    expect(norm.location.country_code).toBe('US');
+    expect(norm.metadata.country_name).toBe('United States');
+  });
+
+  it('drops a date-only end that lands before a timed same-day start', () => {
+    const ld = {
+      '@type': 'Event',
+      name: 'Overnight Party',
+      startDate: '2024-06-22 00:00:00T21:00:00',
+      endDate: '2024-06-22',
+    };
+    const norm = normalizeGcEvent(detailFixture({ jsonLd: ld }), METRO);
+    if ('reject' in norm) throw new Error('unexpected reject: ' + norm.reject);
+    expect(norm.start_date).toBe('2024-06-22T21:00:00');
+    expect(norm.end_date).toBeNull();
+  });
+
+  it('maps a non-metro JSON-LD country name to ISO2', () => {
+    const ld = {
+      '@type': 'Event', name: 'Berlin Thing', startDate: '2024-06-01T12:00:00',
+      location: { '@type': 'Place', address: { addressLocality: 'Berlin', addressCountry: 'Germany' } },
+    };
+    const norm = normalizeGcEvent(detailFixture({ jsonLd: ld }), null);
+    if ('reject' in norm) throw new Error('unexpected reject: ' + norm.reject);
+    expect(norm.location.city).toBe('Berlin');
+    expect(norm.location.country).toBe('DE');
   });
 
   it('rejects when title or start date is missing', () => {
@@ -312,7 +338,7 @@ describe('gen-2012 template', () => {
     const norm = normalizeGcEvent(detail, null);
     if ('reject' in norm) throw new Error('unexpected reject: ' + norm.reject);
     expect(norm.location.city).toBe('Boulder');
-    expect(norm.location.country).toBe('United States');
+    expect(norm.location.country).toBe('US');
     expect(norm.metadata.legacy_template).toBe(true);
   });
 });

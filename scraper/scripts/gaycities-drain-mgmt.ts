@@ -104,7 +104,20 @@ async function main(): Promise<void> {
     }
     if (c.pending_validate > 0) await fireStage('pipeline-validate', { entityType: 'event', batch_size: 1000, warn_review_threshold: 6 });
     if (c.awaiting_dedup > 0) await fireStage('pipeline-deduplicate', { entityType: 'event', batch_size: 200 });
-    if (c.awaiting_review > 0) await fireStage('pipeline-review-gate', { entityType: 'event', batch_size: 500 });
+    // Backfill of already-public event listings: bypass the human review queue.
+    // review-gate scores combinedScore = confidence*0.6 + quality_score/100*0.4
+    // and floors at minConfidence(0.7); without a quality-score stage that caps
+    // at 0.6, so every row would land in pending_review. autoApproveAbove:0 makes
+    // every non-force-reviewed row auto-approve (gaycities has no source_reliability
+    // row, so lowReliability never fires). Ongoing weekly rows get real scoring via
+    // the ev-drain-quality cron.
+    if (c.awaiting_review > 0)
+      await fireStage('pipeline-review-gate', {
+        entityType: 'event',
+        batch_size: 500,
+        autoApproveAbove: 0,
+        minConfidence: 0,
+      });
     if (c.committable > 0) {
       const limit = Math.min(COMMIT_BATCH, MAX_COMMITS - committed);
       const res = await runSql<Array<{ action: string; n: number }>>(

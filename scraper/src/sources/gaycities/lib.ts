@@ -633,6 +633,31 @@ function asString(v: unknown): string | null {
   return null;
 }
 
+/**
+ * Map a JSON-LD country string to ISO2 (events.country check: ^[A-Z]{2}$).
+ * Already-ISO2 strings pass through; a small name map covers the common
+ * gaycities cases; anything unknown returns null (commit defaults to US only
+ * for a truly absent country — a wrong non-US guess would be worse).
+ */
+const COUNTRY_NAME_TO_ISO2: Record<string, string> = {
+  'united states': 'US', usa: 'US', 'united states of america': 'US', us: 'US',
+  canada: 'CA', 'united kingdom': 'GB', uk: 'GB', 'great britain': 'GB', england: 'GB',
+  australia: 'AU', 'new zealand': 'NZ', germany: 'DE', france: 'FR', spain: 'ES',
+  italy: 'IT', netherlands: 'NL', belgium: 'BE', portugal: 'PT', ireland: 'IE',
+  mexico: 'MX', brazil: 'BR', argentina: 'AR', chile: 'CL', colombia: 'CO', peru: 'PE',
+  japan: 'JP', 'south korea': 'KR', china: 'CN', thailand: 'TH', singapore: 'SG',
+  israel: 'IL', 'south africa': 'ZA', sweden: 'SE', norway: 'NO', denmark: 'DK',
+  finland: 'FI', iceland: 'IS', switzerland: 'CH', austria: 'AT', greece: 'GR',
+  'czech republic': 'CZ', poland: 'PL', hungary: 'HU', romania: 'RO', turkey: 'TR',
+};
+
+export function isoFromCountryName(name: string | null): string | null {
+  if (!name) return null;
+  const s = name.trim();
+  if (/^[A-Za-z]{2}$/.test(s)) return s.toUpperCase();
+  return COUNTRY_NAME_TO_ISO2[s.toLowerCase()] ?? null;
+}
+
 function firstString(v: unknown): string | null {
   if (Array.isArray(v)) {
     for (const item of v) {
@@ -666,7 +691,11 @@ export function normalizeGcEvent(
   if (!title) return { reject: 'no_title' };
   const start = parseGcDate(ld['startDate']);
   if (!start) return { reject: 'no_start_date' };
-  const end = parseGcDate(ld['endDate']);
+  let end = parseGcDate(ld['endDate']);
+  // gaycities frequently gives a timed start but a date-only (midnight) end,
+  // so a same-day evening event computes end < start. Drop such an end rather
+  // than emit an end-before-start row (validate hard-rejects those).
+  if (end && end <= start) end = null;
 
   const locationLd = (ld['location'] ?? {}) as Record<string, unknown>;
   const addressLd = (locationLd['address'] ?? {}) as Record<string, unknown>;
@@ -710,8 +739,11 @@ export function normalizeGcEvent(
     location: {
       address: streetAddress,
       city,
-      country,
-      country_code: metro?.countryCode ?? null,
+      // events.country has an ISO2 check constraint (^[A-Z]{2}$), so the
+      // column the commit reads (location.country) must be the code, not the
+      // display name. Full name is preserved in metadata.country_name.
+      country: metro?.countryCode ?? isoFromCountryName(country),
+      country_code: metro?.countryCode ?? isoFromCountryName(country),
       lat: null,
       lng: null,
     },
@@ -723,6 +755,7 @@ export function normalizeGcEvent(
     metadata: {
       url: detail.url,
       source_url: detail.url,
+      country_name: country,
       gaycities_metro_id: metro?.metroId ?? null,
       gaycities_subdomain: detail.subdomain,
       gaycities_tags: rawTags,
