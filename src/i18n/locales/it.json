@@ -2837,8 +2837,8 @@
       "open": "Apri",
       "view": "Vedi",
       "reviewerNotes": "Note del revisore",
-      "allSubmissions": "Tutti i miei invii",
-      "shareToChat": "Condividi nella chat"
+      "allSubmissions": "Tutti i miei contributi",
+      "shareToChat": "Condividi in chat"
     },
     "openInbox": "Apri posta in arrivo",
     "markAlertsRead": "Segna avvisi come letti",
@@ -2860,7 +2860,7 @@
       "recent": "Messaggiati di recente",
       "active": "Attivi di recente"
     },
-    "upcoming": "Prossimamente",
+    "upcoming": "In arrivo",
     "openCalendar": "Calendario"
   },
   "extension": {
@@ -3017,12 +3017,12 @@
     },
     "submission": {
       "header": "Aggiunto a Queer Guide ({{count}})",
-      "messageOne": "ha aggiunto «{{title}}» per revisione",
-      "messageMany": "ha aggiunto {{count}} elementi per revisione: {{title}}…",
-      "submitted": "{{count}} inviati per revisione",
+      "messageOne": "ha aggiunto «{{title}}» per la revisione",
+      "messageMany": "ha aggiunto {{count}} elementi per la revisione: {{title}}…",
+      "submitted": "{{count}} inviati per la revisione",
       "failed": "Invio non riuscito",
       "title": "Aggiungi a Queer Guide",
-      "subtitle": "Carica un volantino o incolla un link. Gli elementi estratti vengono inviati per revisione e condivisi in questa chat."
+      "subtitle": "Trascina un volantino o incolla un link. Gli elementi rilevati vengono inviati per la revisione e condivisi in questa chat."
     }
   },
   "newsDetail": {
