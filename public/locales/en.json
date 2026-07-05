@@ -1369,6 +1369,10 @@
         "transit": "transit",
         "drive": "drive"
       },
+      "walkingTotal": "{{distance}} walking"
+    },
+    "suggestions": {
+      "accessMatch": "Matches your needs"
       "walkingTotal": "{{distance}} walking",
       "optimize": "Optimize route order",
       "directions": "Open day in Google Maps"
