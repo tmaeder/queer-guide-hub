@@ -7,6 +7,12 @@
 -- ones as `pending`, returning the count newly seeded. The edge function calls
 -- it for the `seed` step; the resolver then enriches pending rows via the
 -- image-cdn worker (avatars mirrored to R2).
+--
+-- RENAMED from 20260704160000 -> 20260709100100: that version collided with
+-- 20260704160000_fk_covering_indexes_hot_paths, which won the single
+-- schema_migrations row, so `db push` saw an unmatched duplicate and demanded
+-- --include-all (blocking every deploy). This fn's content is already live
+-- (create-or-replace, idempotent), so re-applying under a unique version is safe.
 
 create or replace function public.seed_social_profiles()
 returns integer
