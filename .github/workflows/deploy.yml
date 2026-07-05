@@ -21,7 +21,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v6
-        with: { node-version: "20" }
+        with: { node-version: "22" }
       - run: npm ci
         working-directory: workers/search-proxy
       - run: npx tsc --noEmit
@@ -38,7 +38,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v6
-        with: { node-version: "20" }
+        with: { node-version: "22" }
       - run: npm ci
         working-directory: workers/ingest
       - run: npx tsc --noEmit
@@ -55,7 +55,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v6
-        with: { node-version: "20" }
+        with: { node-version: "22" }
       - run: npm ci
         working-directory: workers/assistant
       - run: npx tsc --noEmit
@@ -72,7 +72,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v6
-        with: { node-version: "20" }
+        with: { node-version: "22" }
       - run: npm ci
         working-directory: workers/submit
       - run: npx tsc --noEmit
@@ -89,7 +89,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v6
-        with: { node-version: "20" }
+        with: { node-version: "22" }
       - run: npm ci
         working-directory: workers/image-cdn
       - run: npx tsc --noEmit
