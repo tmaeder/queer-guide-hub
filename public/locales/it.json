@@ -2834,7 +2834,11 @@
       "email": "Nuova email"
     },
     "notification": {
-      "open": "Apri"
+      "open": "Apri",
+      "view": "Vedi",
+      "reviewerNotes": "Note del revisore",
+      "allSubmissions": "Tutti i miei contributi",
+      "shareToChat": "Condividi in chat"
     },
     "openInbox": "Apri posta in arrivo",
     "markAlertsRead": "Segna avvisi come letti",
@@ -2855,7 +2859,9 @@
       "empty": "Ancora nessun suggerimento.",
       "recent": "Messaggiati di recente",
       "active": "Attivi di recente"
-    }
+    },
+    "upcoming": "In arrivo",
+    "openCalendar": "Calendario"
   },
   "extension": {
     "signInGate": {
@@ -3004,6 +3010,19 @@
       "on": "Libero ora",
       "both": "{{name}} è libero/a per vedersi ora 🟢",
       "youOnly": "Risulti libero/a per vedersi 🟢"
+    },
+    "share": {
+      "gated": "Dettagli su Queer Guide",
+      "view": "Vedi su Queer Guide"
+    },
+    "submission": {
+      "header": "Aggiunto a Queer Guide ({{count}})",
+      "messageOne": "ha aggiunto «{{title}}» per la revisione",
+      "messageMany": "ha aggiunto {{count}} elementi per la revisione: {{title}}…",
+      "submitted": "{{count}} inviati per la revisione",
+      "failed": "Invio non riuscito",
+      "title": "Aggiungi a Queer Guide",
+      "subtitle": "Trascina un volantino o incolla un link. Gli elementi rilevati vengono inviati per la revisione e condivisi in questa chat."
     }
   },
   "newsDetail": {
@@ -3066,5 +3085,18 @@
     "visited": "Visitato",
     "bucket": "Lista dei desideri",
     "fromTrips": "Contrassegnato come visitato da un viaggio completato"
+  },
+  "calendar": {
+    "title": "Il mio calendario",
+    "subtitle": "I tuoi viaggi ed eventi salvati in un unico posto",
+    "signInDesc": "Accedi per vedere i tuoi viaggi ed eventi salvati.",
+    "trip": "Viaggio",
+    "empty": "Nessun viaggio o evento salvato questo mese.",
+    "planTrip": "Pianifica un viaggio",
+    "browseEvents": "Esplora gli eventi",
+    "copyFeed": "Copia URL di iscrizione",
+    "download": "Scarica .ics",
+    "open": "Calendario",
+    "openAria": "Apri il mio calendario"
   }
 }

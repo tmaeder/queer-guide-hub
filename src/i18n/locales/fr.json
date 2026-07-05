@@ -2838,7 +2838,11 @@
       "email": "Nouvel e-mail"
     },
     "notification": {
-      "open": "Ouvrir"
+      "open": "Ouvrir",
+      "view": "Voir",
+      "reviewerNotes": "Notes du modérateur",
+      "allSubmissions": "Toutes mes contributions",
+      "shareToChat": "Partager dans le chat"
     },
     "openInbox": "Ouvrir la boîte de réception",
     "markAlertsRead": "Marquer les alertes comme lues",
@@ -2859,7 +2863,9 @@
       "empty": "Aucune suggestion pour l’instant.",
       "recent": "Contacts récents",
       "active": "Actifs récemment"
-    }
+    },
+    "upcoming": "À venir",
+    "openCalendar": "Calendrier"
   },
   "extension": {
     "signInGate": {
@@ -3008,6 +3014,19 @@
       "on": "Dispo maintenant",
       "both": "{{name}} est dispo pour se voir maintenant 🟢",
       "youOnly": "Vous êtes indiqué comme dispo pour se voir 🟢"
+    },
+    "share": {
+      "gated": "Détails sur Queer Guide",
+      "view": "Voir sur Queer Guide"
+    },
+    "submission": {
+      "header": "Ajouté à Queer Guide ({{count}})",
+      "messageOne": "a ajouté « {{title}} » pour examen",
+      "messageMany": "a ajouté {{count}} éléments pour examen : {{title}}…",
+      "submitted": "{{count}} soumis pour examen",
+      "failed": "Échec de l'envoi",
+      "title": "Ajouter à Queer Guide",
+      "subtitle": "Déposez un flyer ou collez un lien. Les éléments détectés sont soumis pour examen et partagés dans ce chat."
     }
   },
   "newsDetail": {
@@ -3070,5 +3089,18 @@
     "visited": "Visité",
     "bucket": "Liste d’envies",
     "fromTrips": "Marqué comme visité via un voyage terminé"
+  },
+  "calendar": {
+    "title": "Mon calendrier",
+    "subtitle": "Vos voyages et événements enregistrés au même endroit",
+    "signInDesc": "Connectez-vous pour voir vos voyages et événements enregistrés.",
+    "trip": "Voyage",
+    "empty": "Aucun voyage ni événement enregistré ce mois-ci.",
+    "planTrip": "Planifier un voyage",
+    "browseEvents": "Parcourir les événements",
+    "copyFeed": "Copier l'URL d'abonnement",
+    "download": "Télécharger .ics",
+    "open": "Calendrier",
+    "openAria": "Ouvrir mon calendrier"
   }
 }

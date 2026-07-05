@@ -2832,7 +2832,11 @@
       "email": "新規メール"
     },
     "notification": {
-      "open": "開く"
+      "open": "開く",
+      "view": "表示",
+      "reviewerNotes": "レビュー担当者のメモ",
+      "allSubmissions": "自分の投稿すべて",
+      "shareToChat": "チャットで共有"
     },
     "openInbox": "受信箱を開く",
     "markAlertsRead": "アラートを既読にする",
@@ -2853,7 +2857,9 @@
       "empty": "まだ候補がありません。",
       "recent": "最近やり取りした人",
       "active": "最近アクティブ"
-    }
+    },
+    "upcoming": "今後の予定",
+    "openCalendar": "カレンダー"
   },
   "extension": {
     "signInGate": {
@@ -3002,6 +3008,19 @@
       "on": "いま空いてる",
       "both": "{{name}} は今すぐ会えます 🟢",
       "youOnly": "あなたは「会える」と表示されています 🟢"
+    },
+    "share": {
+      "gated": "Queer Guide で詳細を見る",
+      "view": "Queer Guide で見る"
+    },
+    "submission": {
+      "header": "Queer Guide に追加しました（{{count}}）",
+      "messageOne": "「{{title}}」をレビュー用に追加しました",
+      "messageMany": "{{count}} 件をレビュー用に追加しました：{{title}}…",
+      "submitted": "{{count}} 件をレビュー用に送信しました",
+      "failed": "送信に失敗しました",
+      "title": "Queer Guide に追加",
+      "subtitle": "チラシをドロップするかリンクを貼り付けてください。抽出された項目はレビュー用に送信され、このチャットで共有されます。"
     }
   },
   "newsDetail": {
@@ -3064,5 +3083,18 @@
     "visited": "訪問済み",
     "bucket": "バケットリスト",
     "fromTrips": "完了した旅行により訪問済みになりました"
+  },
+  "calendar": {
+    "title": "マイカレンダー",
+    "subtitle": "旅行と保存したイベントを一か所に",
+    "signInDesc": "ログインすると旅行と保存したイベントが表示されます。",
+    "trip": "旅行",
+    "empty": "今月の旅行や保存したイベントはありません。",
+    "planTrip": "旅行を計画する",
+    "browseEvents": "イベントを見る",
+    "copyFeed": "購読URLをコピー",
+    "download": ".ics をダウンロード",
+    "open": "カレンダー",
+    "openAria": "マイカレンダーを開く"
   }
 }
