@@ -2832,7 +2832,11 @@
       "email": "새 메일"
     },
     "notification": {
-      "open": "열기"
+      "open": "열기",
+      "view": "보기",
+      "reviewerNotes": "검토자 메모",
+      "allSubmissions": "내 제출 전체",
+      "shareToChat": "채팅에 공유"
     },
     "openInbox": "받은편지함 열기",
     "markAlertsRead": "알림 읽음 표시",
@@ -2853,7 +2857,9 @@
       "empty": "아직 추천이 없습니다.",
       "recent": "최근 메시지한 사람",
       "active": "최근 활동"
-    }
+    },
+    "upcoming": "예정",
+    "openCalendar": "캘린더"
   },
   "extension": {
     "signInGate": {
@@ -3002,6 +3008,19 @@
       "on": "지금 가능",
       "both": "{{name}}님은 지금 만날 수 있어요 🟢",
       "youOnly": "만날 수 있음으로 표시되어 있어요 🟢"
+    },
+    "share": {
+      "gated": "Queer Guide에서 자세히 보기",
+      "view": "Queer Guide에서 보기"
+    },
+    "submission": {
+      "header": "Queer Guide에 추가됨 ({{count}})",
+      "messageOne": "“{{title}}”을(를) 검토용으로 추가했습니다",
+      "messageMany": "검토용으로 {{count}}개 항목을 추가했습니다: {{title}}…",
+      "submitted": "{{count}}개를 검토용으로 제출했습니다",
+      "failed": "제출 실패",
+      "title": "Queer Guide에 추가",
+      "subtitle": "전단지를 올리거나 링크를 붙여넣으세요. 추출된 항목은 검토용으로 제출되어 이 채팅에 공유됩니다."
     }
   },
   "newsDetail": {
@@ -3064,5 +3083,18 @@
     "visited": "방문함",
     "bucket": "버킷리스트",
     "fromTrips": "완료된 여행으로 방문 표시됨"
+  },
+  "calendar": {
+    "title": "내 캘린더",
+    "subtitle": "여행과 저장한 이벤트를 한곳에서",
+    "signInDesc": "로그인하면 여행과 저장한 이벤트를 볼 수 있습니다.",
+    "trip": "여행",
+    "empty": "이번 달에 여행이나 저장한 이벤트가 없습니다.",
+    "planTrip": "여행 계획하기",
+    "browseEvents": "이벤트 둘러보기",
+    "copyFeed": "구독 URL 복사",
+    "download": ".ics 다운로드",
+    "open": "캘린더",
+    "openAria": "내 캘린더 열기"
   }
 }

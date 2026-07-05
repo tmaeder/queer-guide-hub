@@ -160,8 +160,11 @@ test.describe('search UX — results page', () => {
   test('Back to top button appears after scrolling and scrolls back', async ({ page }) => {
     await page.route(SEARCH_HOST_RE, mockSearch({ 1: page1Venues }, 20));
     await page.goto('/search?q=berlin');
-    // Scroll past the 600px threshold.
-    await page.evaluate(() => window.scrollTo(0, 1200));
+    // Wait for the mocked results to render so the document is tall enough to
+    // scroll; otherwise scrollTo clamps to 0 and the button never appears.
+    await expect(page.getByText('Venue 1', { exact: true })).toBeVisible();
+    // Scroll to the bottom (deterministically past the 600px threshold).
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
     const btn = page.getByRole('button', { name: /Back to top/i });
     await expect(btn).toBeVisible();
     // The "Share feedback" floating button can overlap; force the click

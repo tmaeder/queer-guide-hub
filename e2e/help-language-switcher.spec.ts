@@ -12,6 +12,14 @@ test.describe('@p3-9 /help language switcher round-trip', () => {
   test('DE → EN → DE on /help', async ({ page }) => {
     await page.goto('/de/help');
     await page.waitForSelector('h1', { timeout: 15_000 });
+    // The cookie-consent banner is a fixed bottom bar (z-sticky) that overlays
+    // the footer language combobox and intercepts the click. Dismiss it first
+    // (as the visual-prod specs do) so the combobox is actually clickable.
+    await page
+      .getByRole('button', { name: /accept all|necessary only/i })
+      .first()
+      .click({ timeout: 3000 })
+      .catch(() => {});
 
     const switcher = page.getByRole('combobox', { name: /select language/i }).first();
     await switcher.scrollIntoViewIfNeeded();

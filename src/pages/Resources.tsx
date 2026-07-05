@@ -77,6 +77,32 @@ export default function Resources() {
   const setUsageFilter = (next: string) => updateParam('usage', next === 'all' ? null : next);
   const setHasImageFilter = (next: boolean) => updateParam('hasImage', next ? '1' : null);
 
+  // P1-1 — canonicalize the URL: strip any filter param already at its default
+  // so a shared/opened link like `/tags?sort=usage&dir=desc&view=grid&usage=all&hasImage=0&cat=all`
+  // collapses to a clean `/tags`. The setters above already omit defaults on
+  // write; this handles defaults arriving via a direct link. Only the known
+  // filter keys are touched — real (non-default) filters are left intact.
+  useEffect(() => {
+    const isDefault: Record<string, (v: string) => boolean> = {
+      sort: (v) => v === 'usage',
+      dir: (v) => v !== 'asc', // absent or 'desc' is the default direction
+      cat: (v) => v === 'all',
+      view: (v) => v === 'grid',
+      usage: (v) => v === 'all',
+      hasImage: (v) => v !== '1', // absent or '0' is the default
+    };
+    const cleaned = new URLSearchParams(searchParams);
+    let changed = false;
+    for (const [key, atDefault] of Object.entries(isDefault)) {
+      const val = cleaned.get(key);
+      if (val !== null && atDefault(val)) {
+        cleaned.delete(key);
+        changed = true;
+      }
+    }
+    if (changed) setSearchParams(cleaned, { replace: true });
+  }, [searchParams, setSearchParams]);
+
   const [viewMode, setViewMode] = useState<ViewMode>('overview');
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [selectedSubcategory, setSelectedSubcategory] = useState<string>('');

@@ -2834,7 +2834,11 @@
       "email": "Nuevo correo"
     },
     "notification": {
-      "open": "Abrir"
+      "open": "Abrir",
+      "view": "Ver",
+      "reviewerNotes": "Notas del revisor",
+      "allSubmissions": "Todos mis envíos",
+      "shareToChat": "Compartir en el chat"
     },
     "openInbox": "Abrir bandeja de entrada",
     "markAlertsRead": "Marcar alertas como leídas",
@@ -2855,7 +2859,9 @@
       "empty": "Aún no hay sugerencias.",
       "recent": "Mensajes recientes",
       "active": "Activos recientemente"
-    }
+    },
+    "upcoming": "Próximamente",
+    "openCalendar": "Calendario"
   },
   "extension": {
     "signInGate": {
@@ -3004,6 +3010,19 @@
       "on": "Libre ahora",
       "both": "{{name}} está libre para quedar ahora mismo 🟢",
       "youOnly": "Apareces como libre para quedar 🟢"
+    },
+    "share": {
+      "gated": "Detalles en Queer Guide",
+      "view": "Ver en Queer Guide"
+    },
+    "submission": {
+      "header": "Añadido a Queer Guide ({{count}})",
+      "messageOne": "añadió «{{title}}» para revisión",
+      "messageMany": "añadió {{count}} elementos para revisión: {{title}}…",
+      "submitted": "{{count}} enviados para revisión",
+      "failed": "Error en el envío",
+      "title": "Añadir a Queer Guide",
+      "subtitle": "Sube un cartel o pega un enlace. Los elementos extraídos se envían para revisión y se comparten en este chat."
     }
   },
   "newsDetail": {
@@ -3066,5 +3085,18 @@
     "visited": "Visitado",
     "bucket": "Lista de deseos",
     "fromTrips": "Marcado como visitado por un viaje completado"
+  },
+  "calendar": {
+    "title": "Mi calendario",
+    "subtitle": "Tus viajes y eventos guardados en un solo lugar",
+    "signInDesc": "Inicia sesión para ver tus viajes y eventos guardados.",
+    "trip": "Viaje",
+    "empty": "No hay viajes ni eventos guardados este mes.",
+    "planTrip": "Planificar un viaje",
+    "browseEvents": "Explorar eventos",
+    "copyFeed": "Copiar URL de suscripción",
+    "download": "Descargar .ics",
+    "open": "Calendario",
+    "openAria": "Abrir mi calendario"
   }
 }
