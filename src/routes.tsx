@@ -17,6 +17,7 @@ const EntityDetail = lazyRetry(() => import('./pages/EntityDetail'));
 const VenueGuides = lazyRetry(() => import('./pages/VenueGuides'));
 const VenueGuide = lazyRetry(() => import('./pages/VenueGuide'));
 const ProfilePage = lazyRetry(() => import('./pages/profile/ProfilePage'));
+const MyCalendarPage = lazyRetry(() => import('./pages/MyCalendarPage'));
 const VenuePersonalization = lazyRetry(() => import('./pages/onboarding/VenuePersonalization'));
 const Events = lazyRetry(() => import('./pages/Events'));
 const EventDetail = lazyRetry(() => import('./pages/EventDetail'));
@@ -563,6 +564,7 @@ export const AppRoutes = () => {
                 <Route path="me" element={<ProfilePage />} />
                 <Route path="me/saved" element={<ProfilePage tab="saved" />} />
                 <Route path="me/trips" element={<ProfilePage tab="trips" />} />
+                <Route path="me/calendar" element={<MyCalendarPage />} />
                 <Route path="me/travel" element={<ProfilePage tab="travel" />} />
                 <Route path="me/groups" element={<ProfilePage tab="groups" />} />
                 <Route path="me/contributions" element={<ProfilePage tab="contributions" />} />

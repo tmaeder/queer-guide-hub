@@ -342,9 +342,15 @@ export function useFlyerScan() {
 
   /** Batch-insert selected items as community_submissions (one DB round-trip). */
   const submitBatch = useCallback(
-    async (rows: BuiltSubmission[]): Promise<{ inserted: number; enriched: number }> => {
+    async (
+      rows: BuiltSubmission[],
+    ): Promise<{
+      inserted: number;
+      enriched: number;
+      rows: { id: string; content_type: string; title: string }[];
+    }> => {
       if (!user) throw new Error('sign in required');
-      if (rows.length === 0) return { inserted: 0, enriched: 0 };
+      if (rows.length === 0) return { inserted: 0, enriched: 0, rows: [] };
       const payload = rows.map((r) => ({
         content_type: r.content_type,
         data: r.data,
@@ -357,11 +363,25 @@ export function useFlyerScan() {
       }));
       // `as 'venues'` mirrors useSubmission — community_submissions isn't in the
       // generated table types yet.
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('community_submissions' as 'venues')
-        .insert(payload as never);
+        .insert(payload as never)
+        .select('id, content_type, data');
       if (error) throw error;
-      return { inserted: rows.length, enriched: rows.filter((r) => r.submission_intent === 'enrich').length };
+      const insertedRows = ((data ?? []) as unknown as {
+        id: string;
+        content_type: string;
+        data: Record<string, unknown> | null;
+      }[]).map((r) => ({
+        id: r.id,
+        content_type: r.content_type,
+        title: ((r.data?.title ?? r.data?.name) as string | undefined) ?? r.content_type,
+      }));
+      return {
+        inserted: rows.length,
+        enriched: rows.filter((r) => r.submission_intent === 'enrich').length,
+        rows: insertedRows,
+      };
     },
     [user],
   );

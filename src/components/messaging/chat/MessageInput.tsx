@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import DOMPurify from 'dompurify';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Send, Smile, Sparkles, Sticker as StickerIcon } from 'lucide-react';
+import { ScanLine, Send, Smile, Sparkles, Sticker as StickerIcon } from 'lucide-react';
 import { EmojiPicker } from '@/components/messaging/EmojiPicker';
 import { StickerPicker } from '@/components/messaging/StickerPicker';
 import { pickIcebreaker } from '@/lib/icebreakers';
@@ -17,6 +17,8 @@ interface MessageInputProps {
   prefilledMessage?: string | null;
   /** Send a sticker (standalone large emoji) immediately. */
   onSticker?: (emoji: string) => void;
+  /** Open the in-chat submit sheet (scan a link/flyer into Queer Guide). */
+  onOpenSubmit?: () => void;
 }
 
 export const MessageInput = ({
@@ -27,6 +29,7 @@ export const MessageInput = ({
   inputRef,
   prefilledMessage,
   onSticker,
+  onOpenSubmit,
 }: MessageInputProps) => {
   const [message, setMessage] = useState('');
 
@@ -137,6 +140,22 @@ export const MessageInput = ({
       >
         <Sparkles size={20} />
       </Button>
+
+      {/* In-chat submit: scan a link/flyer into Queer Guide */}
+      {onOpenSubmit && (
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="rounded-element p-0"
+          style={{ height: 44, width: 44 }}
+          disabled={disabled}
+          aria-label="Add to Queer Guide"
+          onClick={onOpenSubmit}
+        >
+          <ScanLine size={20} />
+        </Button>
+      )}
 
       {/* Sticker Picker */}
       {onSticker && (

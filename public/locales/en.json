@@ -34,7 +34,11 @@
       "email": "New email"
     },
     "notification": {
-      "open": "Open"
+      "open": "Open",
+      "view": "View",
+      "reviewerNotes": "Reviewer notes",
+      "allSubmissions": "All my submissions",
+      "shareToChat": "Share to chat"
     },
     "openInbox": "Open inbox",
     "markAlertsRead": "Mark alerts read",
@@ -55,7 +59,9 @@
       "empty": "No suggestions yet.",
       "recent": "Recently messaged",
       "active": "Active recently"
-    }
+    },
+    "upcoming": "Upcoming",
+    "openCalendar": "Calendar"
   },
   "eventTypes": {
     "party": "Party",
@@ -2979,6 +2985,19 @@
       "on": "Free now",
       "both": "{{name}} is free to meet right now 🟢",
       "youOnly": "You're marked free to meet 🟢"
+    },
+    "share": {
+      "gated": "Details on Queer Guide",
+      "view": "View on Queer Guide"
+    },
+    "submission": {
+      "header": "Added to Queer Guide ({{count}})",
+      "messageOne": "added \"{{title}}\" for review",
+      "messageMany": "added {{count}} items for review: {{title}}…",
+      "submitted": "{{count}} submitted for review",
+      "failed": "Submission failed",
+      "title": "Add to Queer Guide",
+      "subtitle": "Drop a flyer or paste a link. Extracted items are submitted for review and shared in this chat."
     }
   },
   "newsDetail": {
@@ -3041,5 +3060,18 @@
     "visited": "Visited",
     "bucket": "Bucket list",
     "fromTrips": "Marked visited by a completed trip"
+  },
+  "calendar": {
+    "title": "My calendar",
+    "subtitle": "Your trips and saved events in one place",
+    "signInDesc": "Sign in to see your trips and saved events.",
+    "trip": "Trip",
+    "empty": "No trips or saved events this month.",
+    "planTrip": "Plan a trip",
+    "browseEvents": "Browse events",
+    "copyFeed": "Copy subscribe URL",
+    "download": "Download .ics",
+    "open": "Calendar",
+    "openAria": "Open my calendar"
   }
 }

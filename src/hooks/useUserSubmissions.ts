@@ -8,6 +8,7 @@ export interface UserSubmission {
   submitted_at: string;
   name: string | null;
   promoted: boolean;
+  reviewer_notes: string | null;
 }
 
 /** A user's own community submissions with review status. Own-profile only (RLS-enforced). */
@@ -19,7 +20,7 @@ export function useUserSubmissions(userId: string | null | undefined, enabled: b
     queryFn: async (): Promise<UserSubmission[]> => {
       const { data, error } = await supabase
         .from('community_submissions')
-        .select('id, content_type, status, submitted_at, data, promoted_to_id')
+        .select('id, content_type, status, submitted_at, data, promoted_to_id, reviewer_notes')
         .eq('submitted_by', userId!)
         .order('submitted_at', { ascending: false })
         .limit(50);
@@ -34,6 +35,7 @@ export function useUserSubmissions(userId: string | null | undefined, enabled: b
           name:
             ((payload?.name ?? payload?.title) as string | undefined) ?? null,
           promoted: !!s.promoted_to_id,
+          reviewer_notes: s.reviewer_notes ?? null,
         };
       });
     },

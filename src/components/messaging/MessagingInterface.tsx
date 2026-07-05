@@ -8,8 +8,7 @@ import { useSearchParams } from 'react-router';
 import { VibeEditor } from '@/components/messaging/VibeEditor';
 import { useInboxFeed, type InboxFilter } from '@/hooks/useInboxFeed';
 import { InboxRailItem } from '@/components/messaging/InboxRailItem';
-import { TripRailCard } from '@/components/messaging/TripRailCard';
-import { useUpcomingTrips } from '@/hooks/useUpcomingTrips';
+import { CalendarRailStrip } from '@/components/messaging/CalendarRailStrip';
 import { useGlobalPresence } from '@/hooks/useConversationPresence';
 import { useRailActions } from '@/hooks/useRailActions';
 import { MailDetail } from '@/components/messaging/MailDetail';
@@ -34,7 +33,6 @@ export const MessagingInterface = ({ filter }: MessagingInterfaceProps = {}) => 
   const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const { items, loading } = useInboxFeed(filter ?? 'all');
-  const { data: upcomingTrips } = useUpcomingTrips();
   const showTripCards = filter === 'all' || filter === 'trips';
   const onlineUsers = useGlobalPresence();
   const railActions = useRailActions();
@@ -121,13 +119,7 @@ export const MessagingInterface = ({ filter }: MessagingInterfaceProps = {}) => 
             </div>
           ) : (
             <div>
-              {showTripCards && upcomingTrips && upcomingTrips.length > 0 && (
-                <div className="border-b">
-                  {upcomingTrips.map((trip) => (
-                    <TripRailCard key={trip.id} trip={trip} />
-                  ))}
-                </div>
-              )}
+              {showTripCards && <CalendarRailStrip />}
               {visibleItems.map((item) => (
                 <InboxRailItem
                   key={item.id}

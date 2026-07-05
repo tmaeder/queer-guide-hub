@@ -1,6 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.50.5";
 import { getCorsHeaders } from '../_shared/supabase-client.ts'
-import { formatICalDateTime, generateVEvent, wrapICalendar } from '../_shared/ical-generator.ts'
+import { formatICalDate, formatICalDateTime, generateVEvent, wrapICalendar } from '../_shared/ical-generator.ts'
 
 interface Event {
   id: string;
@@ -54,13 +54,42 @@ const generateICalEvent = (event: Event): string => {
   });
 };
 
-const generateICalendar = (events: Event[]): string => {
-  const eventBlocks = events.map(event => generateICalEvent(event));
+interface Trip {
+  id: string;
+  title: string;
+  start_date: string;      // DATE
+  end_date: string | null; // DATE
+  primary_city_name: string | null;
+}
 
-  return wrapICalendar(eventBlocks, {
-    prodId: '-//Queer Guide//Favorites Calendar//EN',
-    calendarName: 'My Favorite Events',
-    calendarDescription: 'Events from your favorites list',
+/** All-day VEVENT per trip. RFC 5545: DTEND of a date-only event is exclusive. */
+const generateICalTrip = (trip: Trip): string => {
+  const end = trip.end_date ?? trip.start_date;
+  const endExclusive = new Date(new Date(end + 'T00:00:00Z').getTime() + 24 * 60 * 60 * 1000)
+    .toISOString();
+
+  return generateVEvent({
+    uid: `trip-${trip.id}@queer.guide`,
+    summary: trip.title,
+    dtstart: formatICalDate(trip.start_date),
+    dtend: formatICalDate(endExclusive),
+    location: trip.primary_city_name ?? undefined,
+    url: `https://queer.guide/me/trips/${trip.id}`,
+    dateOnly: true,
+    extraLines: ['STATUS:CONFIRMED', 'TRANSP:TRANSPARENT'],
+  });
+};
+
+const generateICalendar = (events: Event[], trips: Trip[] = []): string => {
+  const blocks = [
+    ...trips.map(trip => generateICalTrip(trip)),
+    ...events.map(event => generateICalEvent(event)),
+  ];
+
+  return wrapICalendar(blocks, {
+    prodId: '-//Queer Guide//Personal Calendar//EN',
+    calendarName: 'Queer Guide — Trips & Saved Events',
+    calendarDescription: 'Your trips and saved events on Queer Guide',
     timezone: 'UTC',
   });
 };
@@ -118,6 +147,21 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log(`Fetching calendar for user: ${userId}`);
 
+    // Fetch user's upcoming/ongoing trips (all-day blocks)
+    const today = new Date().toISOString().slice(0, 10);
+    const { data: trips, error: tripsError } = await supabase
+      .from('trips')
+      .select('id, title, start_date, end_date, primary_city_name')
+      .eq('owner_id', userId)
+      .in('status', ['planning', 'active'])
+      .or(`end_date.gte.${today},and(end_date.is.null,start_date.gte.${today})`)
+      .order('start_date', { ascending: true });
+
+    if (tripsError) {
+      console.error('Error fetching trips:', tripsError);
+      // Trips are additive — keep serving events if the trip query fails
+    }
+
     // Fetch user's favorite events
     const { data: favoriteEvents, error: favError } = await supabase
       .from('event_favorites')
@@ -131,13 +175,12 @@ const handler = async (req: Request): Promise<Response> => {
 
     if (!favoriteEvents || favoriteEvents.length === 0) {
       console.log('No favorite events found for user');
-      // Return empty calendar
-      const emptyCalendar = generateICalendar([]);
-      return new Response(emptyCalendar, {
+      const calendar = generateICalendar([], (trips ?? []) as Trip[]);
+      return new Response(calendar, {
         status: 200,
         headers: {
           'Content-Type': 'text/calendar; charset=utf-8',
-          'Content-Disposition': 'attachment; filename="favorites-calendar.ics"',
+          'Content-Disposition': 'attachment; filename="queer-guide-calendar.ics"',
           'Cache-Control': 'public, max-age=3600', // Cache for 1 hour
           ...corsHeaders,
         },
@@ -175,13 +218,13 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log(`Found ${events?.length || 0} events for calendar`);
 
-    const calendarData = generateICalendar(events || []);
+    const calendarData = generateICalendar(events || [], (trips ?? []) as Trip[]);
 
     return new Response(calendarData, {
       status: 200,
       headers: {
         'Content-Type': 'text/calendar; charset=utf-8',
-        'Content-Disposition': 'attachment; filename="favorites-calendar.ics"',
+        'Content-Disposition': 'attachment; filename="queer-guide-calendar.ics"',
         'Cache-Control': 'public, max-age=3600', // Cache for 1 hour
         ...corsHeaders,
       },
