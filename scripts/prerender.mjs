@@ -29,7 +29,7 @@ const ROUTES = [
   '/map',
   '/users',
   '/personalities',
-  '/resources',
+  '/tags',
   '/news',
   '/donate',
   '/sitemap',
