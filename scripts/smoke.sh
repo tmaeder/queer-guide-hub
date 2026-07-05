@@ -40,14 +40,17 @@ tr=$(curl -sS -X POST "$SEARCH_URL/trending" -H 'content-type: application/json'
 	-d '{"types":["venue","event"],"limit":5}')
 check "trending field"       "$tr" '"trending":'
 
+# entity_id is a fixed, valid v4 dummy UUID — the worker rejects the nil UUID
+# since the validation hardening, and a constant id keeps smoke writes
+# idempotent/recognizable (session_id stays "smoke-test").
 echo "== /track =="
 tk=$(curl -sS -X POST "$SEARCH_URL/track" -H 'content-type: application/json' \
-	-d '{"session_id":"smoke-test","event_type":"click","entity_type":"venue","entity_id":"00000000-0000-0000-0000-000000000000","metadata":{"source":"smoke"}}')
+	-d '{"session_id":"smoke-test","event_type":"click","entity_type":"venue","entity_id":"00000000-0000-4000-8000-00000000dead","metadata":{"source":"smoke"}}')
 check "track ok"             "$tk" '"ok":true'
 
 echo "== /feedback =="
 fb=$(curl -sS -X POST "$SEARCH_URL/feedback" -H 'content-type: application/json' \
-	-d '{"session_id":"smoke-test","vote":"up","entity_type":"venue","entity_id":"00000000-0000-0000-0000-000000000000","query":"bar"}')
+	-d '{"session_id":"smoke-test","vote":"up","entity_type":"venue","entity_id":"00000000-0000-4000-8000-00000000dead","query":"bar"}')
 check "feedback ok"          "$fb" '"ok":true'
 
 echo
