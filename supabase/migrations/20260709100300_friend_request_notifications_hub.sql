@@ -4,6 +4,10 @@
 -- action_url from the old /community/friends to /hub/contacts so the alert
 -- opens the address book where requests are now managed. Body otherwise
 -- unchanged.
+--
+-- RENAMED from 20260705120100 -> 20260709100300: original version sat below
+-- future-dated MCP migrations, out-of-order for plain `db push`. Idempotent
+-- (CREATE OR REPLACE FUNCTION), safe to re-apply under a newest version.
 
 CREATE OR REPLACE FUNCTION public.on_user_relationship_changed()
 RETURNS trigger
