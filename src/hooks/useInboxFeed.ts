@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { untypedRpc } from '@/integrations/supabase/untyped';
 import { useAuth } from '@/hooks/useAuth';
 
-export type InboxKind = 'chat' | 'mail' | 'notification';
+export type InboxKind = 'chat' | 'mail' | 'notification' | 'trip_email';
 export type InboxFilter = 'all' | 'chats' | 'mail' | 'alerts' | 'trips';
 
 export interface InboxItem {
@@ -42,13 +42,13 @@ export function useInboxFeed(filter: InboxFilter = 'all') {
     enabled: !!user,
     initialPageParam: null as { ts: string; id: string } | null,
     queryFn: async ({ pageParam }) => {
-      // 'trips' is a frontend-only filter — surface alerts (trip_nudge notifications)
-      const rpcFilter = filter === 'trips' ? 'alerts' : filter;
+      // 'trips' is a real RPC filter since 20260704130000: trip-email threads
+      // + trip_nudge alerts.
       const { data, error } = await untypedRpc<InboxItem[]>('get_inbox_feed', {
         p_user: user!.id,
         p_cursor: pageParam?.ts ?? null,
         p_cursor_id: pageParam?.id ?? null,
-        p_filter: rpcFilter,
+        p_filter: filter,
         p_limit: PAGE,
       });
       if (error) throw error;
@@ -124,6 +124,14 @@ export function useInboxFeed(filter: InboxFilter = 'all') {
       // subscribe broadly and let the per-user query refetch reconcile.
       .on('postgres_changes', { event: '*', schema: 'public', table: 'post_likes' }, invalidate)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'post_comments' }, invalidate)
+      // trip-email threads: items key on trip_id (no user column) — subscribe
+      // broadly, per-user refetch reconciles (same rationale as messages).
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'trip_inbox_items' }, invalidate)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'trip_inbox_messages' },
+        invalidate,
+      )
       .subscribe();
     return () => {
       void supabase.removeChannel(channel);

@@ -19,8 +19,6 @@ import { ContributionsTab } from '@/components/profile/tabs/ContributionsTab';
 import { GroupsTab } from '@/components/profile/tabs/GroupsTab';
 import { TravelTab } from '@/components/profile/tabs/TravelTab';
 import { ProgressTab } from '@/components/profile/tabs/ProgressTab';
-import { SavedTab } from '@/components/profile/tabs/SavedTab';
-import { TripsTab } from '@/components/profile/tabs/TripsTab';
 import { StatusPicker } from '@/components/status/StatusPicker';
 import { ViewAsToggle } from '@/components/profile/ViewAsToggle';
 import type { ProfileLens } from '@/lib/profileLens';
@@ -35,10 +33,12 @@ import { useMeta } from '@/hooks/useMeta';
 import { useTranslation } from 'react-i18next';
 import { publicDisplayName } from '@/lib/displayName';
 
-const TABS = ['overview', 'saved', 'trips', 'travel', 'groups', 'contributions', 'progress'] as const;
+// Saved + Trips moved to the /hub office modules (stale /user/:id/saved links
+// fall back to overview via the TABS.includes guard below).
+const TABS = ['overview', 'travel', 'groups', 'contributions', 'progress'] as const;
 type ProfileTab = (typeof TABS)[number];
 /** Tabs that expose private personal data — only the owner viewing as themselves. */
-const OWN_ONLY_TABS: readonly ProfileTab[] = ['saved', 'trips', 'progress'];
+const OWN_ONLY_TABS: readonly ProfileTab[] = ['progress'];
 
 /** Lens options for the mobile "view as" sheet. */
 const LENS_OPTIONS: Array<{ value: ProfileLens; label: string; hint: string }> = [
@@ -48,8 +48,9 @@ const LENS_OPTIONS: Array<{ value: ProfileLens; label: string; hint: string }> =
 ];
 
 /**
- * Unified profile page. /me/:tab? renders the signed-in user; /user/:userId/:tab?
- * renders anyone (own mode when it's you). Progress is own-only.
+ * Unified profile page at /user/:userId/:tab? — renders anyone (own mode when
+ * it's you). Progress is own-only. The private personal surfaces (inbox,
+ * saved, trips) live in /hub; legacy /me/* routes redirect there or here.
  */
 export default function ProfilePage({ tab: tabProp }: { tab?: string } = {}) {
   const { t } = useTranslation();
@@ -276,12 +277,6 @@ export default function ProfilePage({ tab: tabProp }: { tab?: string } = {}) {
             {(
               [
                 ['overview', t('profile.tabs.overview', 'Overview')],
-                ...(ownView
-                  ? ([
-                      ['saved', t('profile.tabs.saved', 'Saved')],
-                      ['trips', t('profile.tabs.trips', 'Trips')],
-                    ] as const)
-                  : []),
                 ['travel', t('profile.tabs.travel', 'Travel')],
                 ['groups', t('profile.tabs.groups', 'Groups')],
                 ['contributions', t('profile.tabs.contributions', 'Contributions')],
@@ -307,18 +302,6 @@ export default function ProfilePage({ tab: tabProp }: { tab?: string } = {}) {
               onPostsClick={() => setTab('contributions')}
             />
           </TabsContent>
-
-          {ownView && (
-            <TabsContent value="saved">
-              <SavedTab />
-            </TabsContent>
-          )}
-
-          {ownView && (
-            <TabsContent value="trips">
-              <TripsTab />
-            </TabsContent>
-          )}
 
           <TabsContent value="travel">
             <TravelTab userId={profile.user_id} isOwnProfile={ownView} />

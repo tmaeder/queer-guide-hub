@@ -169,7 +169,10 @@
     "clear": "Clear",
     "signIn": "Sign in",
     "goHome": "Go Home",
-    "more": "もっと見る"
+    "more": "もっと見る",
+    "remove": "削除",
+    "accept": "承認",
+    "decline": "辞退"
   },
   "navigation": {
     "home": "ホーム",
@@ -974,6 +977,9 @@
     "offline": {
       "pending_one": "{{count}}件の変更が同期待ち",
       "pending_other": "{{count}}件の変更が同期待ち"
+    },
+    "inbox": {
+      "openThread": "チャットで確認"
     }
   },
   "auth": {
@@ -1712,7 +1718,8 @@
       "settingsSection": "表示",
       "browseAll": "すべてのセクションを見る",
       "unreadCount": "未読 {{count}} 件",
-      "tripsBadge": "確認が必要な旅行項目が {{count}} 件"
+      "tripsBadge": "確認が必要な旅行項目が {{count}} 件",
+      "hub": "ハブ"
     }
   },
   "pages": {
@@ -2242,7 +2249,9 @@
       "eyebrow": "コミュニティ",
       "title": "友達",
       "subtitle": "つながりを管理",
-      "gate": "友達を見るにはサインインしてください。"
+      "gate": "友達を見るにはサインインしてください。",
+      "requests": "リクエスト",
+      "sentRequest": "友達リクエストを送信しました"
     }
   },
   "settings": {
@@ -2836,7 +2845,7 @@
       "view": "表示",
       "reviewerNotes": "レビュー担当者のメモ",
       "allSubmissions": "自分の投稿すべて",
-      "shareToChat": "チャットで共有"
+      "shareToChat": "チャットに共有"
     },
     "openInbox": "受信箱を開く",
     "markAlertsRead": "アラートを既読にする",
@@ -2858,8 +2867,34 @@
       "recent": "最近やり取りした人",
       "active": "最近アクティブ"
     },
-    "upcoming": "今後の予定",
-    "openCalendar": "カレンダー"
+    "upcoming": "近日",
+    "openCalendar": "カレンダー",
+    "tripmail": {
+      "gone": "このメールはもう利用できません。",
+      "type": "種類",
+      "vendor": "事業者",
+      "title": "タイトル",
+      "dates": "日付",
+      "location": "場所",
+      "price": "価格",
+      "confirmation": "確認番号",
+      "extracted": "抽出された予約",
+      "filed": "登録済み",
+      "confirm": "旅行に追加",
+      "dismiss": "破棄",
+      "openTrip": "旅行を開く",
+      "fallbackTitle": "転送されたメール",
+      "intro": "抽出内容に間違いがあれば教えてください。例:「チェックインは実際には12日」",
+      "thinking": "メールを確認中…",
+      "placeholder": "内容の修正や予約についての質問をどうぞ…",
+      "send": "送信",
+      "sendFailed": "送信できませんでした",
+      "foundEntities": "このメールで見つかりました",
+      "addToGuide": "queer.guideに追加",
+      "stagedNote": "レビューに送信しました — 品質パイプラインを通過します。",
+      "anEvent": "イベント",
+      "aVenue": "会場"
+    }
   },
   "extension": {
     "signInGate": {
@@ -3011,16 +3046,16 @@
     },
     "share": {
       "gated": "Queer Guide で詳細を見る",
-      "view": "Queer Guide で見る"
+      "view": "Queer Guide で表示"
     },
     "submission": {
       "header": "Queer Guide に追加しました（{{count}}）",
       "messageOne": "「{{title}}」をレビュー用に追加しました",
-      "messageMany": "{{count}} 件をレビュー用に追加しました：{{title}}…",
-      "submitted": "{{count}} 件をレビュー用に送信しました",
+      "messageMany": "レビュー用に{{count}}件を追加しました: {{title}}…",
+      "submitted": "{{count}}件をレビュー用に送信しました",
       "failed": "送信に失敗しました",
       "title": "Queer Guide に追加",
-      "subtitle": "チラシをドロップするかリンクを貼り付けてください。抽出された項目はレビュー用に送信され、このチャットで共有されます。"
+      "subtitle": "フライヤーをアップロードするかリンクを貼り付けてください。抽出された項目はレビュー用に送信され、このチャットで共有されます。"
     }
   },
   "newsDetail": {
@@ -3090,11 +3125,76 @@
     "signInDesc": "ログインすると旅行と保存したイベントが表示されます。",
     "trip": "旅行",
     "empty": "今月の旅行や保存したイベントはありません。",
-    "planTrip": "旅行を計画する",
+    "planTrip": "旅行を計画",
     "browseEvents": "イベントを見る",
     "copyFeed": "購読URLをコピー",
     "download": ".ics をダウンロード",
     "open": "カレンダー",
     "openAria": "マイカレンダーを開く"
+  },
+  "status": {
+    "lookingFor": "探しているもの",
+    "lookingForHint": "あなたへのおすすめ順に反映されます。プロフィールには表示されません。"
+  },
+  "people": {
+    "intent": {
+      "lookingForOptions": {
+        "friends": "友達",
+        "dating": "デート",
+        "travel_buddies": "旅の仲間",
+        "locals": "現地の人",
+        "networking": "ネットワーキング"
+      }
+    }
+  },
+  "hub": {
+    "title": "マイハブ",
+    "nav": "ハブのモジュール",
+    "signInDesc": "受信箱・旅行・保存した場所を見るにはサインインしてください。",
+    "identity": {
+      "viewProfile": "プロフィールを見る"
+    },
+    "modules": {
+      "inbox": "受信箱",
+      "calendar": "カレンダー",
+      "contacts": "連絡先",
+      "saved": "保存済み",
+      "news": "ニュース",
+      "trips": "旅行"
+    },
+    "calendar": {
+      "title": "今後の予定",
+      "empty": "予定はまだありません。",
+      "today": "今日",
+      "tomorrow": "明日",
+      "allDay": "終日",
+      "subscribe": "購読",
+      "showMore": "さらに先を見る",
+      "kinds": {
+        "trip": "旅行",
+        "reservation": "予約",
+        "going": "参加",
+        "saved": "保存"
+      }
+    },
+    "contacts": {
+      "title": "連絡先",
+      "search": "連絡先を検索…",
+      "recent": "最近のチャット",
+      "friends": "友達",
+      "groups": "グループ",
+      "dating": "デート",
+      "datingTitle": "あなたのデートデッキ",
+      "datingBody": "マッチと会話を見る。"
+    },
+    "news": {
+      "title": "ニュース",
+      "savedStories": "保存した記事",
+      "savedEmpty": "保存した記事はまだありません。",
+      "fromTags": "フォロー中のタグから",
+      "tagsEmpty": "タグをフォローすると関連記事が表示されます。",
+      "tagsNoArticles": "フォロー中のタグに新着はまだありません。",
+      "savedSearches": "保存した検索"
+    }
   }
 }

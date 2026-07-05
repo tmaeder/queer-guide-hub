@@ -86,7 +86,7 @@ export const MORE_NAV = DESTINATIONS.filter((d) => !d.primary);
  * reached by long-pressing Explore (or its chevron affordance), not a slot.
  */
 export interface BottomNavTab {
-  id: 'home' | 'explore' | 'messages' | 'you';
+  id: 'home' | 'explore' | 'hub' | 'you';
   to: string;
   icon: LucideIcon;
   labelKey: string;
@@ -129,20 +129,23 @@ export const BOTTOM_NAV_TABS: BottomNavTab[] = [
     ],
   },
   {
-    id: 'messages',
-    to: '/messages',
+    id: 'hub',
+    to: '/hub',
     icon: MessageCircle,
-    labelKey: 'header.mobileNav.messages',
-    activePrefixes: ['/messages'],
+    labelKey: 'header.mobileNav.hub',
+    // Old /messages and /me both redirect into /hub — keep them lighting this tab.
+    activePrefixes: ['/hub', '/messages', '/me'],
     authGated: true,
     badge: 'unread',
   },
   {
+    // Own public profile — MobileBottomNav swaps the destination to
+    // /user/<id> for signed-in users ('/me' is the anon gate fallback).
     id: 'you',
     to: '/me',
     icon: User,
     labelKey: 'header.mobileNav.you',
-    activePrefixes: ['/me', '/profile', '/user'],
+    activePrefixes: ['/profile', '/user'],
     authGated: true,
     avatar: true,
   },

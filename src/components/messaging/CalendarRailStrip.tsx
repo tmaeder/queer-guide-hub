@@ -49,7 +49,7 @@ export function CalendarRailStrip() {
           {t('inbox.upcoming', { defaultValue: 'Upcoming' })}
         </span>
         <Link
-          to="/me/calendar"
+          to="/hub/calendar"
           className="flex items-center gap-1 text-2xs text-muted-foreground hover:text-foreground transition-colors"
         >
           <CalendarDays size={12} />

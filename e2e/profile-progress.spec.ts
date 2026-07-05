@@ -1,9 +1,10 @@
 import { test, expect } from '@playwright/test';
 
-// Signed-in /me + /me/progress coverage. The Progress tab is own-only and the
-// whole /me hub is auth-walled (anon → /auth), so this uses the admin
-// storageState from auth.setup and skips when E2E_ADMIN_EMAIL /
-// E2E_ADMIN_PASSWORD are unset. Non-mutating: only navigation + reads.
+// Signed-in legacy /me + /me/progress coverage. /me now redirects into the
+// /hub office and /me/progress lands on the unified profile's own-only
+// Progress tab (/user/:id/progress) via MeRedirect — both auth-walled
+// (anon → /auth). Uses the admin storageState from auth.setup and skips when
+// E2E_ADMIN_EMAIL / E2E_ADMIN_PASSWORD are unset. Non-mutating.
 //
 // This locks the crash-regression contract against a real session: /me/progress
 // must render its tab shell (sub-tabs + footer) and never blank. Each sub-panel
@@ -34,11 +35,15 @@ test.describe('/me/progress — signed-in', () => {
     });
   });
 
-  test('the hub renders signed-in (no /auth redirect) with the Progress tab', async ({ page }) => {
+  test('legacy /me lands signed-in users in the /hub office', async ({ page }) => {
     await page.goto('/me');
-    // Signed-in own view → not bounced to the auth gate.
     await expect(page).not.toHaveURL(/\/auth(\b|\/)/);
-    // Progress is own-only; it appears in the primary tab strip for the owner.
+    await expect(page).toHaveURL(/\/hub$/);
+  });
+
+  test('/me/progress resolves to the own profile with the Progress tab', async ({ page }) => {
+    await page.goto('/me/progress');
+    await expect(page).toHaveURL(/\/user\/[0-9a-f-]+\/progress/);
     await expect(page.getByRole('tab', { name: 'Progress' })).toBeVisible();
   });
 

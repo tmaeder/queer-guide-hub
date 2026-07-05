@@ -61,7 +61,33 @@
       "active": "Active recently"
     },
     "upcoming": "Upcoming",
-    "openCalendar": "Calendar"
+    "openCalendar": "Calendar",
+    "tripmail": {
+      "gone": "This email item is no longer available.",
+      "type": "Type",
+      "vendor": "Vendor",
+      "title": "Title",
+      "dates": "Dates",
+      "location": "Location",
+      "price": "Price",
+      "confirmation": "Confirmation",
+      "extracted": "Extracted booking",
+      "filed": "Filed",
+      "confirm": "Add to trip",
+      "dismiss": "Dismiss",
+      "openTrip": "Open trip",
+      "fallbackTitle": "Forwarded email",
+      "intro": "Something off in the extracted details? Tell me and I’ll fix it — e.g. “check-in is actually the 12th”.",
+      "thinking": "Checking the email…",
+      "placeholder": "Correct a detail or ask about this booking…",
+      "send": "Send",
+      "sendFailed": "Couldn't send that",
+      "foundEntities": "Found in this email",
+      "addToGuide": "Add to queer.guide",
+      "stagedNote": "Submitted for review — these go through our quality pipeline.",
+      "anEvent": "Event",
+      "aVenue": "Venue"
+    }
   },
   "eventTypes": {
     "party": "Party",
@@ -227,7 +253,10 @@
     "signIn": "Sign in",
     "goHome": "Go Home",
     "edit": "Edit",
-    "more": "More"
+    "more": "More",
+    "remove": "Remove",
+    "accept": "Accept",
+    "decline": "Decline"
   },
   "navigation": {
     "home": "Home",
@@ -1418,6 +1447,9 @@
     "offline": {
       "pending_one": "{{count}} change waiting to sync",
       "pending_other": "{{count}} changes waiting to sync"
+    },
+    "inbox": {
+      "openThread": "Review in chat"
     }
   },
   "help": {
@@ -1753,7 +1785,8 @@
       "settingsSection": "Display",
       "browseAll": "Browse all sections",
       "unreadCount": "{{count}} unread",
-      "tripsBadge": "{{count}} trip items need attention"
+      "tripsBadge": "{{count}} trip items need attention",
+      "hub": "Hub"
     }
   },
   "pages": {
@@ -2207,7 +2240,9 @@
       "eyebrow": "Community",
       "title": "Friends",
       "subtitle": "Manage your connections",
-      "gate": "Please sign in to view your friends."
+      "gate": "Please sign in to view your friends.",
+      "requests": "Requests",
+      "sentRequest": "Sent you a friend request"
     },
     "feed": {
       "eyebrow": "Community",
@@ -3073,5 +3108,70 @@
     "download": "Download .ics",
     "open": "Calendar",
     "openAria": "Open my calendar"
+  },
+  "status": {
+    "lookingFor": "Looking for",
+    "lookingForHint": "Helps rank people for you. Not shown on your profile."
+  },
+  "people": {
+    "intent": {
+      "lookingForOptions": {
+        "friends": "Friends",
+        "dating": "Dating",
+        "travel_buddies": "Travel buddies",
+        "locals": "Locals where I am",
+        "networking": "Networking"
+      }
+    }
+  },
+  "hub": {
+    "title": "Your hub",
+    "nav": "Hub modules",
+    "signInDesc": "Sign in to see your inbox, trips and saved places.",
+    "identity": {
+      "viewProfile": "View profile"
+    },
+    "modules": {
+      "inbox": "Inbox",
+      "calendar": "Calendar",
+      "contacts": "Contacts",
+      "saved": "Saved",
+      "news": "News",
+      "trips": "Trips"
+    },
+    "calendar": {
+      "title": "Upcoming",
+      "empty": "Nothing upcoming yet.",
+      "today": "Today",
+      "tomorrow": "Tomorrow",
+      "allDay": "All day",
+      "subscribe": "Subscribe",
+      "showMore": "Look further ahead",
+      "kinds": {
+        "trip": "Trip",
+        "reservation": "Booking",
+        "going": "Going",
+        "saved": "Saved"
+      }
+    },
+    "contacts": {
+      "title": "Contacts",
+      "search": "Search contacts…",
+      "recent": "Recent chats",
+      "friends": "Friends",
+      "groups": "Groups",
+      "dating": "Dating",
+      "datingTitle": "Your dating deck",
+      "datingBody": "Browse matches and conversations."
+    },
+    "news": {
+      "title": "News",
+      "savedStories": "Saved stories",
+      "savedEmpty": "No saved stories yet.",
+      "fromTags": "From your tags",
+      "tagsEmpty": "Follow tags to see matching stories here.",
+      "tagsNoArticles": "Nothing new from your tags yet.",
+      "savedSearches": "Saved searches"
+    }
   }
 }

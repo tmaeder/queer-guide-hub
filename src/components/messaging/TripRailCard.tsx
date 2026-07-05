@@ -27,7 +27,7 @@ export function TripRailCard({ trip, nudgeCount = 0 }: TripRailCardProps) {
   return (
     <button
       type="button"
-      onClick={() => navigate(`/me/trips/${trip.id}`)}
+      onClick={() => navigate(`/trips/${trip.id}`)}
       className="w-full text-left border-b px-4 py-2 hover:bg-muted/50 transition-colors flex items-center gap-2"
     >
       {trip.cover_image_url ? (

@@ -32,6 +32,12 @@ export function useInboxSelection(
     if (emailId) {
       const match = items.find((i) => i.id === `mail_${emailId}`);
       if (match) setSelected(match);
+      return;
+    }
+    const tripmailId = searchParams.get('tripmail');
+    if (tripmailId) {
+      const match = items.find((i) => i.id === `tripmail_${tripmailId}`);
+      if (match) setSelected(match);
     }
   }, [searchParams, items, selected]);
 
@@ -47,10 +53,15 @@ export function useInboxSelection(
       return;
     }
     setSelected(null);
-    if (searchParams.has('conversation') || searchParams.has('email')) {
+    if (
+      searchParams.has('conversation') ||
+      searchParams.has('email') ||
+      searchParams.has('tripmail')
+    ) {
       const next = new URLSearchParams(searchParams);
       next.delete('conversation');
       next.delete('email');
+      next.delete('tripmail');
       setSearchParams(next, { replace: true });
     }
     // searchParams intentionally omitted — we only want to react to filter changes,
@@ -61,26 +72,31 @@ export function useInboxSelection(
   const handleSelect = (item: InboxItem) => {
     setSelected(item);
     const next = new URLSearchParams(searchParams);
+    next.delete('conversation');
+    next.delete('email');
+    next.delete('tripmail');
     if (item.kind === 'chat') {
       next.set('conversation', item.id.replace('conv_', ''));
-      next.delete('email');
     } else if (item.kind === 'mail') {
       next.set('email', item.id.replace('mail_', ''));
-      next.delete('conversation');
-    } else {
-      // notification (or anything else) carries no deep-link param
-      next.delete('conversation');
-      next.delete('email');
+    } else if (item.kind === 'trip_email') {
+      next.set('tripmail', item.id.replace('tripmail_', ''));
     }
+    // notifications carry no deep-link param
     setSearchParams(next, { replace: true });
   };
 
   const handleBack = () => {
     setSelected(null);
-    if (searchParams.has('conversation') || searchParams.has('email')) {
+    if (
+      searchParams.has('conversation') ||
+      searchParams.has('email') ||
+      searchParams.has('tripmail')
+    ) {
       const next = new URLSearchParams(searchParams);
       next.delete('conversation');
       next.delete('email');
+      next.delete('tripmail');
       setSearchParams(next, { replace: true });
     }
   };

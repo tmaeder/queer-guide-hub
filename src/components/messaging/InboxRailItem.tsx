@@ -1,4 +1,4 @@
-import { MessageCircle, Mail, Bell, Pin, PinOff, BellOff, Bell as BellOn, Archive, CheckCheck, MoreVertical } from 'lucide-react';
+import { MessageCircle, Mail, Bell, Ticket, Pin, PinOff, BellOff, Bell as BellOn, Archive, CheckCheck, MoreVertical } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -10,7 +10,12 @@ import {
 } from '@/components/ui/dropdown-menu';
 import type { InboxItem } from '@/hooks/useInboxFeed';
 
-const KIND_ICON = { chat: MessageCircle, mail: Mail, notification: Bell } as const;
+const KIND_ICON = {
+  chat: MessageCircle,
+  mail: Mail,
+  notification: Bell,
+  trip_email: Ticket,
+} as const;
 
 export interface RailActions {
   togglePin: (conversationId: string, next: boolean) => void;

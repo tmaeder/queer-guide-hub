@@ -169,7 +169,10 @@
     "clear": "Clear",
     "signIn": "Sign in",
     "goHome": "Go Home",
-    "more": "المزيد"
+    "more": "المزيد",
+    "remove": "إزالة",
+    "accept": "قبول",
+    "decline": "رفض"
   },
   "navigation": {
     "home": "الرئيسية",
@@ -921,7 +924,10 @@
     },
     "conflicts": {
       "chip_one": "تعارض واحد",
-      "chip_other": "{{count}} تعارضات"
+      "chip_other": "{{count}} تعارضات",
+      "chip_two": "تعارضان",
+      "chip_few": "{{count}} تعارضات",
+      "chip_many": "{{count}} تعارضًا"
     },
     "legs": {
       "switchMode": "تغيير وسيلة التنقل",
@@ -973,7 +979,13 @@
     },
     "offline": {
       "pending_one": "تغيير واحد بانتظار المزامنة",
-      "pending_other": "{{count}} تغييرات بانتظار المزامنة"
+      "pending_other": "{{count}} تغييرات بانتظار المزامنة",
+      "pending_two": "تغييران بانتظار المزامنة",
+      "pending_few": "{{count}} تغييرات بانتظار المزامنة",
+      "pending_many": "{{count}} تغييرًا بانتظار المزامنة"
+    },
+    "inbox": {
+      "openThread": "راجع في الدردشة"
     }
   },
   "auth": {
@@ -1712,7 +1724,8 @@
       "settingsSection": "العرض",
       "browseAll": "تصفّح كل الأقسام",
       "unreadCount": "{{count}} غير مقروء",
-      "tripsBadge": "{{count}} عناصر رحلة تحتاج إلى انتباه"
+      "tripsBadge": "{{count}} عناصر رحلة تحتاج إلى انتباه",
+      "hub": "المركز"
     }
   },
   "pages": {
@@ -2242,7 +2255,9 @@
       "eyebrow": "المجتمع",
       "title": "الأصدقاء",
       "subtitle": "أدر اتصالاتك",
-      "gate": "سجّل الدخول لعرض أصدقائك."
+      "gate": "سجّل الدخول لعرض أصدقائك.",
+      "requests": "الطلبات",
+      "sentRequest": "أرسل إليك طلب صداقة"
     }
   },
   "settings": {
@@ -2858,8 +2873,34 @@
       "recent": "راسلتهم مؤخرًا",
       "active": "نشطون مؤخرًا"
     },
-    "upcoming": "قادم",
-    "openCalendar": "التقويم"
+    "upcoming": "قريبًا",
+    "openCalendar": "التقويم",
+    "tripmail": {
+      "gone": "لم يعد عنصر البريد هذا متاحًا.",
+      "type": "النوع",
+      "vendor": "المزوّد",
+      "title": "العنوان",
+      "dates": "التواريخ",
+      "location": "الموقع",
+      "price": "السعر",
+      "confirmation": "رقم التأكيد",
+      "extracted": "الحجز المستخرج",
+      "filed": "تم الحفظ",
+      "confirm": "أضِف إلى الرحلة",
+      "dismiss": "تجاهل",
+      "openTrip": "افتح الرحلة",
+      "fallbackTitle": "بريد معاد توجيهه",
+      "intro": "هل هناك خطأ في التفاصيل المستخرجة؟ أخبرني وسأصححه — مثلًا: «تسجيل الوصول فعليًا يوم 12».",
+      "thinking": "أتحقق من البريد…",
+      "placeholder": "صحّح تفصيلة أو اسأل عن هذا الحجز…",
+      "send": "إرسال",
+      "sendFailed": "تعذّر الإرسال",
+      "foundEntities": "تم العثور عليه في هذا البريد",
+      "addToGuide": "أضِف إلى queer.guide",
+      "stagedNote": "تم الإرسال للمراجعة — يمر عبر خط الجودة لدينا.",
+      "anEvent": "فعالية",
+      "aVenue": "مكان"
+    }
   },
   "extension": {
     "signInGate": {
@@ -3011,16 +3052,16 @@
     },
     "share": {
       "gated": "التفاصيل على Queer Guide",
-      "view": "عرض على Queer Guide"
+      "view": "العرض على Queer Guide"
     },
     "submission": {
       "header": "تمت الإضافة إلى Queer Guide ({{count}})",
       "messageOne": "أضاف «{{title}}» للمراجعة",
-      "messageMany": "أضاف {{count}} عنصرًا للمراجعة: {{title}}…",
+      "messageMany": "أضاف {{count}} عناصر للمراجعة: {{title}}…",
       "submitted": "تم إرسال {{count}} للمراجعة",
       "failed": "فشل الإرسال",
       "title": "إضافة إلى Queer Guide",
-      "subtitle": "أفلت منشورًا أو الصق رابطًا. تُرسل العناصر المكتشفة للمراجعة وتُشارك في هذه المحادثة."
+      "subtitle": "ارفع منشورًا أو الصق رابطًا. تُرسَل العناصر المستخرجة للمراجعة وتُشارَك في هذه المحادثة."
     }
   },
   "newsDetail": {
@@ -3087,7 +3128,7 @@
   "calendar": {
     "title": "تقويمي",
     "subtitle": "رحلاتك وفعالياتك المحفوظة في مكان واحد",
-    "signInDesc": "سجّل الدخول لرؤية رحلاتك وفعالياتك المحفوظة.",
+    "signInDesc": "سجّل الدخول لعرض رحلاتك وفعالياتك المحفوظة.",
     "trip": "رحلة",
     "empty": "لا توجد رحلات أو فعاليات محفوظة هذا الشهر.",
     "planTrip": "خطّط لرحلة",
@@ -3095,6 +3136,71 @@
     "copyFeed": "نسخ رابط الاشتراك",
     "download": "تنزيل .ics",
     "open": "التقويم",
-    "openAria": "افتح تقويمي"
+    "openAria": "فتح تقويمي"
+  },
+  "status": {
+    "lookingFor": "أبحث عن",
+    "lookingForHint": "يساعد في ترتيب الأشخاص لك. لا يظهر في ملفك الشخصي."
+  },
+  "people": {
+    "intent": {
+      "lookingForOptions": {
+        "friends": "أصدقاء",
+        "dating": "مواعدة",
+        "travel_buddies": "رفاق سفر",
+        "locals": "سكان محليون",
+        "networking": "التواصل المهني"
+      }
+    }
+  },
+  "hub": {
+    "title": "مركزك",
+    "nav": "وحدات المركز",
+    "signInDesc": "سجّل الدخول لرؤية بريدك ورحلاتك وأماكنك المحفوظة.",
+    "identity": {
+      "viewProfile": "عرض الملف الشخصي"
+    },
+    "modules": {
+      "inbox": "البريد الوارد",
+      "calendar": "التقويم",
+      "contacts": "جهات الاتصال",
+      "saved": "المحفوظات",
+      "news": "الأخبار",
+      "trips": "الرحلات"
+    },
+    "calendar": {
+      "title": "القادم",
+      "empty": "لا يوجد شيء قادم بعد.",
+      "today": "اليوم",
+      "tomorrow": "غدًا",
+      "allDay": "طوال اليوم",
+      "subscribe": "اشتراك",
+      "showMore": "انظر أبعد",
+      "kinds": {
+        "trip": "رحلة",
+        "reservation": "حجز",
+        "going": "سأحضر",
+        "saved": "محفوظ"
+      }
+    },
+    "contacts": {
+      "title": "جهات الاتصال",
+      "search": "ابحث في جهات الاتصال…",
+      "recent": "الدردشات الأخيرة",
+      "friends": "الأصدقاء",
+      "groups": "المجموعات",
+      "dating": "المواعدة",
+      "datingTitle": "مجموعة المواعدة الخاصة بك",
+      "datingBody": "تصفّح التطابقات والمحادثات."
+    },
+    "news": {
+      "title": "الأخبار",
+      "savedStories": "المقالات المحفوظة",
+      "savedEmpty": "لا توجد مقالات محفوظة بعد.",
+      "fromTags": "من وسومك",
+      "tagsEmpty": "تابِع الوسوم لرؤية مقالات ذات صلة هنا.",
+      "tagsNoArticles": "لا جديد من وسومك بعد.",
+      "savedSearches": "عمليات البحث المحفوظة"
+    }
   }
 }

@@ -56,11 +56,11 @@ describe('MobileBottomNav', () => {
     hapticSpy.mockClear();
   });
 
-  it('renders the four destination tabs (Home, Explore, Messages, You)', () => {
+  it('renders the four destination tabs (Home, Explore, Hub, You)', () => {
     renderAt('/');
     expect(screen.getByText('Home')).toBeInTheDocument();
     expect(screen.getByText('Explore')).toBeInTheDocument();
-    expect(screen.getByText('Messages')).toBeInTheDocument();
+    expect(screen.getByText('Hub')).toBeInTheDocument();
     expect(screen.getByText('You')).toBeInTheDocument();
     // All four tabs are links now (Explore deep-links); contribute + the hub
     // chevron are buttons.
@@ -107,17 +107,17 @@ describe('MobileBottomNav', () => {
     expect(navigateSpy).not.toHaveBeenCalled();
   });
 
-  it('gates Messages for anon: routes to /auth with return-to', () => {
+  it('gates Hub for anon: routes to /auth with return-to', () => {
     mockUser = null;
     renderAt('/');
-    fireEvent.click(screen.getByText('Messages'));
-    expect(navigateSpy).toHaveBeenCalledWith('/auth', { state: { from: '/messages' } });
+    fireEvent.click(screen.getByText('Hub'));
+    expect(navigateSpy).toHaveBeenCalledWith('/auth', { state: { from: '/hub' } });
   });
 
-  it('does not gate Messages when signed in', () => {
+  it('does not gate Hub when signed in', () => {
     mockUser = { id: 'u-1' };
     renderAt('/');
-    fireEvent.click(screen.getByText('Messages'));
+    fireEvent.click(screen.getByText('Hub'));
     expect(navigateSpy).not.toHaveBeenCalled();
   });
 
@@ -149,9 +149,9 @@ describe('MobileBottomNav', () => {
   });
 
   it('marks the active destination with aria-current=page', () => {
-    renderAt('/messages');
-    const messages = screen.getByText('Messages').closest('a');
-    expect(messages).toHaveAttribute('aria-current', 'page');
+    renderAt('/hub');
+    const hub = screen.getByText('Hub').closest('a');
+    expect(hub).toHaveAttribute('aria-current', 'page');
     const home = screen.getByText('Home').closest('a');
     expect(home).not.toHaveAttribute('aria-current');
   });
