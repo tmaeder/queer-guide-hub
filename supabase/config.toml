@@ -456,3 +456,8 @@ verify_jwt = false
 # silently killing the news full-text backfill. Keep false so the cron reaches it.
 [functions.news-fulltext-backfill]
 verify_jwt = false
+
+# Cron target — self-gates on webhook/internal secret. Same 401 trap: was missing
+# here, so a redeploy would flip it to verify_jwt=true and 401 the translate cron.
+[functions.translate-i18n-batch]
+verify_jwt = false
