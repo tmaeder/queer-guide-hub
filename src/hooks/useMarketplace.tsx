@@ -24,6 +24,8 @@ export interface MarketplaceFiltersInput {
   /** browse umbrella (apparel, underwear, intimacy, …) — generated `department` column. */
   department?: string;
   subcategory?: string;
+  /** canonical fine bucket (tops, dildos, harnesses, …) — generated `subcategory_group` column. */
+  subcategoryGroup?: string;
   location?: string;
   priceRange?: { min: number; max: number };
   tags?: string[];
@@ -235,6 +237,10 @@ export function useMarketplace() {
 
       if (filters?.department) {
         query = query.eq('department', filters.department);
+      }
+
+      if (filters?.subcategoryGroup) {
+        query = query.eq('subcategory_group', filters.subcategoryGroup);
       }
 
       if (filters?.subcategory) {
