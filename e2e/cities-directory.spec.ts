@@ -19,9 +19,10 @@ test.describe('Cities directory', () => {
 
     await expect(page.getByRole('region', { name: /cities map/i })).toBeVisible();
     await expect(page.getByRole('list', { name: /^cities$/i })).toBeVisible();
-    // Two role=status nodes exist (an sr-only live region + the visible
-    // count) — target the one that carries the count text.
-    await expect(page.getByRole('status').filter({ hasText: /cities/i })).toContainText(
+    // Two role=status nodes exist: the global sr-only route announcer (a <div>,
+    // routes.tsx) and the visible count (a <p>, CitiesFilterBar.tsx). Target the
+    // visible count node specifically.
+    await expect(page.locator('p[role="status"]').filter({ hasText: /cities/i })).toContainText(
       /cities/i,
     );
   });

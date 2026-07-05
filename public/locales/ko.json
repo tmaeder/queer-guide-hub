@@ -169,7 +169,10 @@
     "clear": "Clear",
     "signIn": "Sign in",
     "goHome": "Go Home",
-    "more": "더보기"
+    "more": "더보기",
+    "remove": "삭제",
+    "accept": "수락",
+    "decline": "거절"
   },
   "navigation": {
     "home": "홈",
@@ -974,6 +977,9 @@
     "offline": {
       "pending_one": "동기화 대기 중인 변경 {{count}}건",
       "pending_other": "동기화 대기 중인 변경 {{count}}건"
+    },
+    "inbox": {
+      "openThread": "채팅에서 검토"
     }
   },
   "auth": {
@@ -1712,7 +1718,8 @@
       "settingsSection": "디스플레이",
       "browseAll": "모든 섹션 보기",
       "unreadCount": "읽지 않음 {{count}}개",
-      "tripsBadge": "확인이 필요한 여행 항목 {{count}}개"
+      "tripsBadge": "확인이 필요한 여행 항목 {{count}}개",
+      "hub": "허브"
     }
   },
   "pages": {
@@ -2242,7 +2249,9 @@
       "eyebrow": "커뮤니티",
       "title": "친구",
       "subtitle": "내 연결 관리",
-      "gate": "친구를 보려면 로그인하세요."
+      "gate": "친구를 보려면 로그인하세요.",
+      "requests": "요청",
+      "sentRequest": "친구 요청을 보냈습니다"
     }
   },
   "settings": {
@@ -2835,8 +2844,8 @@
       "open": "열기",
       "view": "보기",
       "reviewerNotes": "검토자 메모",
-      "allSubmissions": "내 제출 전체",
-      "shareToChat": "채팅에 공유"
+      "allSubmissions": "내 모든 제출",
+      "shareToChat": "채팅으로 공유"
     },
     "openInbox": "받은편지함 열기",
     "markAlertsRead": "알림 읽음 표시",
@@ -2859,7 +2868,33 @@
       "active": "최근 활동"
     },
     "upcoming": "예정",
-    "openCalendar": "캘린더"
+    "openCalendar": "캘린더",
+    "tripmail": {
+      "gone": "이 이메일 항목은 더 이상 사용할 수 없습니다.",
+      "type": "유형",
+      "vendor": "업체",
+      "title": "제목",
+      "dates": "날짜",
+      "location": "위치",
+      "price": "가격",
+      "confirmation": "확인번호",
+      "extracted": "추출된 예약",
+      "filed": "등록됨",
+      "confirm": "여행에 추가",
+      "dismiss": "무시",
+      "openTrip": "여행 열기",
+      "fallbackTitle": "전달된 이메일",
+      "intro": "추출된 정보가 잘못되었나요? 알려주시면 고칠게요 — 예: “체크인은 사실 12일이에요”.",
+      "thinking": "이메일 확인 중…",
+      "placeholder": "정보를 수정하거나 예약에 대해 물어보세요…",
+      "send": "보내기",
+      "sendFailed": "전송하지 못했습니다",
+      "foundEntities": "이 이메일에서 발견됨",
+      "addToGuide": "queer.guide에 추가",
+      "stagedNote": "검토를 위해 제출됨 — 품질 파이프라인을 거칩니다.",
+      "anEvent": "이벤트",
+      "aVenue": "장소"
+    }
   },
   "extension": {
     "signInGate": {
@@ -3015,12 +3050,12 @@
     },
     "submission": {
       "header": "Queer Guide에 추가됨 ({{count}})",
-      "messageOne": "“{{title}}”을(를) 검토용으로 추가했습니다",
-      "messageMany": "검토용으로 {{count}}개 항목을 추가했습니다: {{title}}…",
+      "messageOne": "검토를 위해 “{{title}}”을(를) 추가했습니다",
+      "messageMany": "검토를 위해 {{count}}개 항목을 추가했습니다: {{title}}…",
       "submitted": "{{count}}개를 검토용으로 제출했습니다",
       "failed": "제출 실패",
       "title": "Queer Guide에 추가",
-      "subtitle": "전단지를 올리거나 링크를 붙여넣으세요. 추출된 항목은 검토용으로 제출되어 이 채팅에 공유됩니다."
+      "subtitle": "전단지를 끌어다 놓거나 링크를 붙여넣으세요. 추출된 항목은 검토용으로 제출되고 이 채팅에 공유됩니다."
     }
   },
   "newsDetail": {
@@ -3089,12 +3124,77 @@
     "subtitle": "여행과 저장한 이벤트를 한곳에서",
     "signInDesc": "로그인하면 여행과 저장한 이벤트를 볼 수 있습니다.",
     "trip": "여행",
-    "empty": "이번 달에 여행이나 저장한 이벤트가 없습니다.",
+    "empty": "이번 달에는 여행이나 저장한 이벤트가 없습니다.",
     "planTrip": "여행 계획하기",
     "browseEvents": "이벤트 둘러보기",
     "copyFeed": "구독 URL 복사",
     "download": ".ics 다운로드",
     "open": "캘린더",
     "openAria": "내 캘린더 열기"
+  },
+  "status": {
+    "lookingFor": "찾고 있는 것",
+    "lookingForHint": "추천 순위에 반영됩니다. 프로필에는 표시되지 않습니다."
+  },
+  "people": {
+    "intent": {
+      "lookingForOptions": {
+        "friends": "친구",
+        "dating": "데이트",
+        "travel_buddies": "여행 친구",
+        "locals": "현지인",
+        "networking": "네트워킹"
+      }
+    }
+  },
+  "hub": {
+    "title": "내 허브",
+    "nav": "허브 모듈",
+    "signInDesc": "받은편지함, 여행, 저장한 장소를 보려면 로그인하세요.",
+    "identity": {
+      "viewProfile": "프로필 보기"
+    },
+    "modules": {
+      "inbox": "받은편지함",
+      "calendar": "캘린더",
+      "contacts": "연락처",
+      "saved": "저장됨",
+      "news": "뉴스",
+      "trips": "여행"
+    },
+    "calendar": {
+      "title": "다가오는 일정",
+      "empty": "아직 예정된 일정이 없습니다.",
+      "today": "오늘",
+      "tomorrow": "내일",
+      "allDay": "하루 종일",
+      "subscribe": "구독",
+      "showMore": "더 먼 일정 보기",
+      "kinds": {
+        "trip": "여행",
+        "reservation": "예약",
+        "going": "참석",
+        "saved": "저장됨"
+      }
+    },
+    "contacts": {
+      "title": "연락처",
+      "search": "연락처 검색…",
+      "recent": "최근 채팅",
+      "friends": "친구",
+      "groups": "그룹",
+      "dating": "데이트",
+      "datingTitle": "내 데이트 덱",
+      "datingBody": "매치와 대화를 살펴보세요."
+    },
+    "news": {
+      "title": "뉴스",
+      "savedStories": "저장한 기사",
+      "savedEmpty": "저장한 기사가 아직 없습니다.",
+      "fromTags": "팔로우한 태그에서",
+      "tagsEmpty": "태그를 팔로우하면 관련 기사가 표시됩니다.",
+      "tagsNoArticles": "팔로우한 태그에 새 기사가 없습니다.",
+      "savedSearches": "저장한 검색"
+    }
   }
 }

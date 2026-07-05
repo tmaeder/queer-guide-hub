@@ -169,7 +169,10 @@
     "clear": "Clear",
     "signIn": "Sign in",
     "goHome": "Go Home",
-    "more": "Mais"
+    "more": "Mais",
+    "remove": "Remover",
+    "accept": "Aceitar",
+    "decline": "Recusar"
   },
   "navigation": {
     "home": "Início",
@@ -974,6 +977,9 @@
     "offline": {
       "pending_one": "{{count}} alteração aguardando sincronização",
       "pending_other": "{{count}} alterações aguardando sincronização"
+    },
+    "inbox": {
+      "openThread": "Revisar no chat"
     }
   },
   "auth": {
@@ -1712,7 +1718,8 @@
       "settingsSection": "Exibição",
       "browseAll": "Ver todas as seções",
       "unreadCount": "{{count}} não lidas",
-      "tripsBadge": "{{count}} itens de viagem precisam de atenção"
+      "tripsBadge": "{{count}} itens de viagem precisam de atenção",
+      "hub": "Hub"
     }
   },
   "pages": {
@@ -2244,7 +2251,9 @@
       "eyebrow": "Comunidade",
       "title": "Amigos",
       "subtitle": "Faça a gestão das suas conexões",
-      "gate": "Inicie sessão para ver os seus amigos."
+      "gate": "Inicie sessão para ver os seus amigos.",
+      "requests": "Solicitações",
+      "sentRequest": "Enviou um pedido de amizade"
     }
   },
   "settings": {
@@ -2861,7 +2870,33 @@
       "active": "Ativos recentemente"
     },
     "upcoming": "Em breve",
-    "openCalendar": "Calendário"
+    "openCalendar": "Calendário",
+    "tripmail": {
+      "gone": "Este e-mail não está mais disponível.",
+      "type": "Tipo",
+      "vendor": "Fornecedor",
+      "title": "Título",
+      "dates": "Datas",
+      "location": "Local",
+      "price": "Preço",
+      "confirmation": "Confirmação",
+      "extracted": "Reserva extraída",
+      "filed": "Arquivada",
+      "confirm": "Adicionar à viagem",
+      "dismiss": "Descartar",
+      "openTrip": "Abrir viagem",
+      "fallbackTitle": "E-mail encaminhado",
+      "intro": "Algo errado nos dados extraídos? Me diga e eu corrijo — ex.: “o check-in é dia 12”.",
+      "thinking": "Verificando o e-mail…",
+      "placeholder": "Corrija um detalhe ou pergunte sobre a reserva…",
+      "send": "Enviar",
+      "sendFailed": "Não foi possível enviar",
+      "foundEntities": "Encontrado neste e-mail",
+      "addToGuide": "Adicionar ao queer.guide",
+      "stagedNote": "Enviado para revisão — passa pela nossa pipeline de qualidade.",
+      "anEvent": "Evento",
+      "aVenue": "Local"
+    }
   },
   "extension": {
     "signInGate": {
@@ -3017,12 +3052,12 @@
     },
     "submission": {
       "header": "Adicionado ao Queer Guide ({{count}})",
-      "messageOne": "adicionou \"{{title}}\" para revisão",
+      "messageOne": "adicionou «{{title}}» para revisão",
       "messageMany": "adicionou {{count}} itens para revisão: {{title}}…",
       "submitted": "{{count}} enviados para revisão",
       "failed": "Falha no envio",
       "title": "Adicionar ao Queer Guide",
-      "subtitle": "Envie um panfleto ou cole um link. Os itens extraídos são enviados para revisão e compartilhados neste chat."
+      "subtitle": "Solte um panfleto ou cole um link. Os itens detectados são enviados para revisão e compartilhados neste chat."
     }
   },
   "newsDetail": {
@@ -3091,12 +3126,77 @@
     "subtitle": "Suas viagens e eventos salvos em um só lugar",
     "signInDesc": "Entre para ver suas viagens e eventos salvos.",
     "trip": "Viagem",
-    "empty": "Nenhuma viagem ou evento salvo neste mês.",
+    "empty": "Nenhuma viagem ou evento salvo este mês.",
     "planTrip": "Planejar uma viagem",
     "browseEvents": "Explorar eventos",
     "copyFeed": "Copiar URL de assinatura",
     "download": "Baixar .ics",
     "open": "Calendário",
     "openAria": "Abrir meu calendário"
+  },
+  "status": {
+    "lookingFor": "Procurando",
+    "lookingForHint": "Ajuda a ordenar pessoas para você. Não aparece no seu perfil."
+  },
+  "people": {
+    "intent": {
+      "lookingForOptions": {
+        "friends": "Amizades",
+        "dating": "Encontros",
+        "travel_buddies": "Companhia de viagem",
+        "locals": "Pessoas locais",
+        "networking": "Networking"
+      }
+    }
+  },
+  "hub": {
+    "title": "Seu hub",
+    "nav": "Módulos do hub",
+    "signInDesc": "Entre para ver sua caixa de entrada, viagens e lugares salvos.",
+    "identity": {
+      "viewProfile": "Ver perfil"
+    },
+    "modules": {
+      "inbox": "Caixa de entrada",
+      "calendar": "Calendário",
+      "contacts": "Contatos",
+      "saved": "Salvos",
+      "news": "Notícias",
+      "trips": "Viagens"
+    },
+    "calendar": {
+      "title": "Em breve",
+      "empty": "Nada agendado ainda.",
+      "today": "Hoje",
+      "tomorrow": "Amanhã",
+      "allDay": "O dia todo",
+      "subscribe": "Assinar",
+      "showMore": "Ver mais adiante",
+      "kinds": {
+        "trip": "Viagem",
+        "reservation": "Reserva",
+        "going": "Vou",
+        "saved": "Salvo"
+      }
+    },
+    "contacts": {
+      "title": "Contatos",
+      "search": "Buscar contatos…",
+      "recent": "Conversas recentes",
+      "friends": "Amizades",
+      "groups": "Grupos",
+      "dating": "Encontros",
+      "datingTitle": "Seu baralho de encontros",
+      "datingBody": "Veja matches e conversas."
+    },
+    "news": {
+      "title": "Notícias",
+      "savedStories": "Artigos salvos",
+      "savedEmpty": "Nenhum artigo salvo ainda.",
+      "fromTags": "Das suas tags",
+      "tagsEmpty": "Siga tags para ver artigos aqui.",
+      "tagsNoArticles": "Nada novo das suas tags ainda.",
+      "savedSearches": "Buscas salvas"
+    }
   }
 }

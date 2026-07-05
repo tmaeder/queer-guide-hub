@@ -32,8 +32,12 @@ test.describe('@smoke /tags campaign happy path', () => {
   });
 
   test('unknown slug renders the 404 component', async ({ page }) => {
-    await page.goto('/tags/asdfgibberish-not-real');
-    await expect(page.getByTestId('tag-not-found')).toBeVisible({ timeout: 10_000 });
+    // Detail-route slugs hard-404 at the CF edge (see resources-not-found spec).
+    const res = await page.goto('/tags/asdfgibberish-not-real');
+    expect(res?.status()).toBe(404);
+    await expect(
+      page.getByRole('heading', { name: /doesn'?t exist|page not found/i }),
+    ).toBeVisible({ timeout: 10_000 });
   });
 
   test('overview renders topic hubs', async ({ page }) => {

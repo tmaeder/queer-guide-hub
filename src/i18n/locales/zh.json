@@ -2844,7 +2844,7 @@
       "open": "打开",
       "view": "查看",
       "reviewerNotes": "审核备注",
-      "allSubmissions": "我的全部提交",
+      "allSubmissions": "我的所有提交",
       "shareToChat": "分享到聊天"
     },
     "openInbox": "打开收件箱",
@@ -3045,17 +3045,17 @@
       "youOnly": "你已标记为有空见面 🟢"
     },
     "share": {
-      "gated": "在 Queer Guide 查看详情",
-      "view": "在 Queer Guide 查看"
+      "gated": "在 Queer Guide 上查看详情",
+      "view": "在 Queer Guide 上查看"
     },
     "submission": {
       "header": "已添加到 Queer Guide（{{count}}）",
-      "messageOne": "添加了“{{title}}”待审核",
-      "messageMany": "添加了 {{count}} 个条目待审核：{{title}}…",
-      "submitted": "已提交 {{count}} 个待审核",
+      "messageOne": "已添加“{{title}}”以供审核",
+      "messageMany": "已添加 {{count}} 个条目以供审核：{{title}}…",
+      "submitted": "已提交 {{count}} 个以供审核",
       "failed": "提交失败",
       "title": "添加到 Queer Guide",
-      "subtitle": "上传传单或粘贴链接。提取的条目将提交审核并在此聊天中分享。"
+      "subtitle": "拖入宣传单或粘贴链接。提取的条目将提交审核并在此聊天中分享。"
     }
   },
   "newsDetail": {
@@ -3121,10 +3121,10 @@
   },
   "calendar": {
     "title": "我的日历",
-    "subtitle": "你的行程和收藏的活动集中一处",
-    "signInDesc": "登录后即可查看你的行程和收藏的活动。",
+    "subtitle": "在一处查看你的行程和已保存的活动",
+    "signInDesc": "登录后即可查看你的行程和已保存的活动。",
     "trip": "行程",
-    "empty": "本月没有行程或收藏的活动。",
+    "empty": "本月没有行程或已保存的活动。",
     "planTrip": "规划行程",
     "browseEvents": "浏览活动",
     "copyFeed": "复制订阅链接",

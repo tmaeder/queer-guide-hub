@@ -169,7 +169,10 @@
     "clear": "Borrar",
     "signIn": "Sign in",
     "goHome": "Go Home",
-    "more": "Más"
+    "more": "Más",
+    "remove": "Eliminar",
+    "accept": "Aceptar",
+    "decline": "Rechazar"
   },
   "navigation": {
     "home": "Inicio",
@@ -974,6 +977,9 @@
     "offline": {
       "pending_one": "{{count}} cambio pendiente de sincronizar",
       "pending_other": "{{count}} cambios pendientes de sincronizar"
+    },
+    "inbox": {
+      "openThread": "Revisar en el chat"
     }
   },
   "auth": {
@@ -1712,7 +1718,8 @@
       "settingsSection": "Pantalla",
       "browseAll": "Ver todas las secciones",
       "unreadCount": "{{count}} sin leer",
-      "tripsBadge": "{{count}} elementos de viaje necesitan atención"
+      "tripsBadge": "{{count}} elementos de viaje necesitan atención",
+      "hub": "Hub"
     }
   },
   "pages": {
@@ -2244,7 +2251,9 @@
       "eyebrow": "Comunidad",
       "title": "Amigos",
       "subtitle": "Gestiona tus conexiones",
-      "gate": "Inicia sesión para ver tus amigos."
+      "gate": "Inicia sesión para ver tus amigos.",
+      "requests": "Solicitudes",
+      "sentRequest": "Te envió una solicitud de amistad"
     }
   },
   "settings": {
@@ -2861,7 +2870,33 @@
       "active": "Activos recientemente"
     },
     "upcoming": "Próximamente",
-    "openCalendar": "Calendario"
+    "openCalendar": "Calendario",
+    "tripmail": {
+      "gone": "Este correo ya no está disponible.",
+      "type": "Tipo",
+      "vendor": "Proveedor",
+      "title": "Título",
+      "dates": "Fechas",
+      "location": "Ubicación",
+      "price": "Precio",
+      "confirmation": "Confirmación",
+      "extracted": "Reserva extraída",
+      "filed": "Archivada",
+      "confirm": "Añadir al viaje",
+      "dismiss": "Descartar",
+      "openTrip": "Abrir viaje",
+      "fallbackTitle": "Correo reenviado",
+      "intro": "¿Algo no cuadra en los datos extraídos? Dímelo y lo corrijo — p. ej. «el check-in es el 12».",
+      "thinking": "Revisando el correo…",
+      "placeholder": "Corrige un dato o pregunta sobre esta reserva…",
+      "send": "Enviar",
+      "sendFailed": "No se pudo enviar",
+      "foundEntities": "Encontrado en este correo",
+      "addToGuide": "Añadir a queer.guide",
+      "stagedNote": "Enviado para revisión — pasa por nuestra tubería de calidad.",
+      "anEvent": "Evento",
+      "aVenue": "Lugar"
+    }
   },
   "extension": {
     "signInGate": {
@@ -3098,5 +3133,70 @@
     "download": "Descargar .ics",
     "open": "Calendario",
     "openAria": "Abrir mi calendario"
+  },
+  "status": {
+    "lookingFor": "Buscando",
+    "lookingForHint": "Ayuda a ordenar personas para ti. No se muestra en tu perfil."
+  },
+  "people": {
+    "intent": {
+      "lookingForOptions": {
+        "friends": "Amistades",
+        "dating": "Citas",
+        "travel_buddies": "Compañerxs de viaje",
+        "locals": "Gente local",
+        "networking": "Networking"
+      }
+    }
+  },
+  "hub": {
+    "title": "Tu hub",
+    "nav": "Módulos del hub",
+    "signInDesc": "Inicia sesión para ver tu bandeja, viajes y lugares guardados.",
+    "identity": {
+      "viewProfile": "Ver perfil"
+    },
+    "modules": {
+      "inbox": "Bandeja",
+      "calendar": "Calendario",
+      "contacts": "Contactos",
+      "saved": "Guardado",
+      "news": "Noticias",
+      "trips": "Viajes"
+    },
+    "calendar": {
+      "title": "Próximo",
+      "empty": "Nada próximo aún.",
+      "today": "Hoy",
+      "tomorrow": "Mañana",
+      "allDay": "Todo el día",
+      "subscribe": "Suscribirse",
+      "showMore": "Ver más adelante",
+      "kinds": {
+        "trip": "Viaje",
+        "reservation": "Reserva",
+        "going": "Asisto",
+        "saved": "Guardado"
+      }
+    },
+    "contacts": {
+      "title": "Contactos",
+      "search": "Buscar contactos…",
+      "recent": "Chats recientes",
+      "friends": "Amistades",
+      "groups": "Grupos",
+      "dating": "Citas",
+      "datingTitle": "Tu mazo de citas",
+      "datingBody": "Explora matches y conversaciones."
+    },
+    "news": {
+      "title": "Noticias",
+      "savedStories": "Artículos guardados",
+      "savedEmpty": "Aún no hay artículos guardados.",
+      "fromTags": "De tus etiquetas",
+      "tagsEmpty": "Sigue etiquetas para ver artículos aquí.",
+      "tagsNoArticles": "Nada nuevo de tus etiquetas aún.",
+      "savedSearches": "Búsquedas guardadas"
+    }
   }
 }

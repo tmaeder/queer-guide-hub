@@ -169,7 +169,10 @@
     "clear": "Clear",
     "signIn": "Sign in",
     "goHome": "Go Home",
-    "more": "更多"
+    "more": "更多",
+    "remove": "移除",
+    "accept": "接受",
+    "decline": "拒绝"
   },
   "navigation": {
     "home": "首页",
@@ -974,6 +977,9 @@
     "offline": {
       "pending_one": "{{count}} 项更改待同步",
       "pending_other": "{{count}} 项更改待同步"
+    },
+    "inbox": {
+      "openThread": "在聊天中核对"
     }
   },
   "auth": {
@@ -1712,7 +1718,8 @@
       "settingsSection": "显示",
       "browseAll": "浏览所有板块",
       "unreadCount": "{{count}} 条未读",
-      "tripsBadge": "{{count}} 个行程项目需要关注"
+      "tripsBadge": "{{count}} 个行程项目需要关注",
+      "hub": "中心"
     }
   },
   "pages": {
@@ -2242,7 +2249,9 @@
       "eyebrow": "社区",
       "title": "好友",
       "subtitle": "管理你的联系人",
-      "gate": "请登录以查看你的好友。"
+      "gate": "请登录以查看你的好友。",
+      "requests": "请求",
+      "sentRequest": "向你发送了好友请求"
     }
   },
   "settings": {
@@ -2835,7 +2844,7 @@
       "open": "打开",
       "view": "查看",
       "reviewerNotes": "审核备注",
-      "allSubmissions": "我的全部提交",
+      "allSubmissions": "我的所有提交",
       "shareToChat": "分享到聊天"
     },
     "openInbox": "打开收件箱",
@@ -2859,7 +2868,33 @@
       "active": "最近活跃"
     },
     "upcoming": "即将开始",
-    "openCalendar": "日历"
+    "openCalendar": "日历",
+    "tripmail": {
+      "gone": "此邮件项已不可用。",
+      "type": "类型",
+      "vendor": "商家",
+      "title": "标题",
+      "dates": "日期",
+      "location": "地点",
+      "price": "价格",
+      "confirmation": "确认号",
+      "extracted": "提取的预订",
+      "filed": "已归档",
+      "confirm": "添加到行程",
+      "dismiss": "忽略",
+      "openTrip": "打开行程",
+      "fallbackTitle": "转发的邮件",
+      "intro": "提取的信息有误？告诉我，我来修正——例如“入住其实是12号”。",
+      "thinking": "正在核对邮件…",
+      "placeholder": "修正信息或询问此预订…",
+      "send": "发送",
+      "sendFailed": "发送失败",
+      "foundEntities": "在此邮件中发现",
+      "addToGuide": "添加到 queer.guide",
+      "stagedNote": "已提交审核 — 会经过我们的质量流程。",
+      "anEvent": "活动",
+      "aVenue": "场所"
+    }
   },
   "extension": {
     "signInGate": {
@@ -3010,17 +3045,17 @@
       "youOnly": "你已标记为有空见面 🟢"
     },
     "share": {
-      "gated": "在 Queer Guide 查看详情",
-      "view": "在 Queer Guide 查看"
+      "gated": "在 Queer Guide 上查看详情",
+      "view": "在 Queer Guide 上查看"
     },
     "submission": {
       "header": "已添加到 Queer Guide（{{count}}）",
-      "messageOne": "添加了“{{title}}”待审核",
-      "messageMany": "添加了 {{count}} 个条目待审核：{{title}}…",
-      "submitted": "已提交 {{count}} 个待审核",
+      "messageOne": "已添加“{{title}}”以供审核",
+      "messageMany": "已添加 {{count}} 个条目以供审核：{{title}}…",
+      "submitted": "已提交 {{count}} 个以供审核",
       "failed": "提交失败",
       "title": "添加到 Queer Guide",
-      "subtitle": "上传传单或粘贴链接。提取的条目将提交审核并在此聊天中分享。"
+      "subtitle": "拖入宣传单或粘贴链接。提取的条目将提交审核并在此聊天中分享。"
     }
   },
   "newsDetail": {
@@ -3086,15 +3121,80 @@
   },
   "calendar": {
     "title": "我的日历",
-    "subtitle": "你的行程和收藏的活动集中一处",
-    "signInDesc": "登录后即可查看你的行程和收藏的活动。",
+    "subtitle": "在一处查看你的行程和已保存的活动",
+    "signInDesc": "登录后即可查看你的行程和已保存的活动。",
     "trip": "行程",
-    "empty": "本月没有行程或收藏的活动。",
+    "empty": "本月没有行程或已保存的活动。",
     "planTrip": "规划行程",
     "browseEvents": "浏览活动",
     "copyFeed": "复制订阅链接",
     "download": "下载 .ics",
     "open": "日历",
     "openAria": "打开我的日历"
+  },
+  "status": {
+    "lookingFor": "想找",
+    "lookingForHint": "用于为你排序推荐的人。不会显示在你的个人资料中。"
+  },
+  "people": {
+    "intent": {
+      "lookingForOptions": {
+        "friends": "朋友",
+        "dating": "约会",
+        "travel_buddies": "旅伴",
+        "locals": "当地人",
+        "networking": "拓展人脉"
+      }
+    }
+  },
+  "hub": {
+    "title": "我的中心",
+    "nav": "中心模块",
+    "signInDesc": "登录后查看收件箱、行程和收藏的地点。",
+    "identity": {
+      "viewProfile": "查看资料"
+    },
+    "modules": {
+      "inbox": "收件箱",
+      "calendar": "日历",
+      "contacts": "联系人",
+      "saved": "已收藏",
+      "news": "新闻",
+      "trips": "行程"
+    },
+    "calendar": {
+      "title": "即将到来",
+      "empty": "暂无日程。",
+      "today": "今天",
+      "tomorrow": "明天",
+      "allDay": "全天",
+      "subscribe": "订阅",
+      "showMore": "查看更远",
+      "kinds": {
+        "trip": "行程",
+        "reservation": "预订",
+        "going": "参加",
+        "saved": "已收藏"
+      }
+    },
+    "contacts": {
+      "title": "联系人",
+      "search": "搜索联系人…",
+      "recent": "最近聊天",
+      "friends": "朋友",
+      "groups": "群组",
+      "dating": "约会",
+      "datingTitle": "你的约会卡组",
+      "datingBody": "浏览匹配和对话。"
+    },
+    "news": {
+      "title": "新闻",
+      "savedStories": "已收藏的文章",
+      "savedEmpty": "还没有收藏的文章。",
+      "fromTags": "来自你关注的标签",
+      "tagsEmpty": "关注标签即可在此看到相关文章。",
+      "tagsNoArticles": "你关注的标签暂无新内容。",
+      "savedSearches": "已保存的搜索"
+    }
   }
 }
