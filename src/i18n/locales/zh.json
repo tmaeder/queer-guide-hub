@@ -3032,6 +3032,21 @@
       "saved": "已收藏",
       "news": "新闻",
       "trips": "行程"
+    },
+    "calendar": {
+      "title": "即将到来",
+      "empty": "暂无日程。",
+      "today": "今天",
+      "tomorrow": "明天",
+      "allDay": "全天",
+      "subscribe": "订阅",
+      "showMore": "查看更远",
+      "kinds": {
+        "trip": "行程",
+        "reservation": "预订",
+        "going": "参加",
+        "saved": "已收藏"
+      }
     }
   }
 }

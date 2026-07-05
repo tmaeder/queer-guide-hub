@@ -3034,6 +3034,21 @@
       "saved": "Salvati",
       "news": "Notizie",
       "trips": "Viaggi"
+    },
+    "calendar": {
+      "title": "In programma",
+      "empty": "Niente in programma per ora.",
+      "today": "Oggi",
+      "tomorrow": "Domani",
+      "allDay": "Tutto il giorno",
+      "subscribe": "Iscriviti",
+      "showMore": "Guarda più avanti",
+      "kinds": {
+        "trip": "Viaggio",
+        "reservation": "Prenotazione",
+        "going": "Ci vado",
+        "saved": "Salvato"
+      }
     }
   }
 }

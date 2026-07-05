@@ -4,6 +4,7 @@ import { HubShell } from '@/components/hub/HubShell';
 import { InboxModule } from '@/components/hub/modules/InboxModule';
 import { SavedModule } from '@/components/hub/modules/SavedModule';
 import { TripsModule } from '@/components/hub/modules/TripsModule';
+import { CalendarModule } from '@/components/hub/modules/CalendarModule';
 import { useMeta } from '@/hooks/useMeta';
 import type { HubModuleId } from '@/config/hubModules';
 
@@ -30,6 +31,8 @@ export default function HubPage({ module = 'inbox' }: { module?: HubModuleId }) 
       <SavedModule />
     ) : module === 'trips' ? (
       <TripsModule />
+    ) : module === 'calendar' ? (
+      <CalendarModule />
     ) : (
       <InboxModule />
     );

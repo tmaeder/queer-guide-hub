@@ -3034,6 +3034,21 @@
       "saved": "Gespeichert",
       "news": "News",
       "trips": "Reisen"
+    },
+    "calendar": {
+      "title": "Anstehend",
+      "empty": "Noch nichts geplant.",
+      "today": "Heute",
+      "tomorrow": "Morgen",
+      "allDay": "Ganztägig",
+      "subscribe": "Abonnieren",
+      "showMore": "Weiter voraus schauen",
+      "kinds": {
+        "trip": "Reise",
+        "reservation": "Buchung",
+        "going": "Zugesagt",
+        "saved": "Gespeichert"
+      }
     }
   }
 }

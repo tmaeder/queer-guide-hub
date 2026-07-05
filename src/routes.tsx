@@ -586,6 +586,7 @@ export const AppRoutes = () => {
                   parent can't capture "hub" as an unknown locale — same fix as
                   the /community hub above. */}
                 <Route path="hub" element={<HubPage module="inbox" />} />
+                <Route path="hub/calendar" element={<HubPage module="calendar" />} />
                 <Route path="hub/saved" element={<HubPage module="saved" />} />
                 <Route path="hub/trips" element={<HubPage module="trips" />} />
                 {/* /me folded into /hub; identity tabs live on the unified

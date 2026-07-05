@@ -3034,6 +3034,21 @@
       "saved": "Guardado",
       "news": "Noticias",
       "trips": "Viajes"
+    },
+    "calendar": {
+      "title": "Próximo",
+      "empty": "Nada próximo aún.",
+      "today": "Hoy",
+      "tomorrow": "Mañana",
+      "allDay": "Todo el día",
+      "subscribe": "Suscribirse",
+      "showMore": "Ver más adelante",
+      "kinds": {
+        "trip": "Viaje",
+        "reservation": "Reserva",
+        "going": "Asisto",
+        "saved": "Guardado"
+      }
     }
   }
 }

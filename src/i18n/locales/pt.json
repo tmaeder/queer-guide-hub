@@ -3034,6 +3034,21 @@
       "saved": "Salvos",
       "news": "Notícias",
       "trips": "Viagens"
+    },
+    "calendar": {
+      "title": "Em breve",
+      "empty": "Nada agendado ainda.",
+      "today": "Hoje",
+      "tomorrow": "Amanhã",
+      "allDay": "O dia todo",
+      "subscribe": "Assinar",
+      "showMore": "Ver mais adiante",
+      "kinds": {
+        "trip": "Viagem",
+        "reservation": "Reserva",
+        "going": "Vou",
+        "saved": "Salvo"
+      }
     }
   }
 }

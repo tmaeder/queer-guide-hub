@@ -3032,6 +3032,21 @@
       "saved": "保存済み",
       "news": "ニュース",
       "trips": "旅行"
+    },
+    "calendar": {
+      "title": "今後の予定",
+      "empty": "予定はまだありません。",
+      "today": "今日",
+      "tomorrow": "明日",
+      "allDay": "終日",
+      "subscribe": "購読",
+      "showMore": "さらに先を見る",
+      "kinds": {
+        "trip": "旅行",
+        "reservation": "予約",
+        "going": "参加",
+        "saved": "保存"
+      }
     }
   }
 }

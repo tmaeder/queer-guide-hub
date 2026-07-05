@@ -3049,6 +3049,21 @@
       "saved": "Saved",
       "news": "News",
       "trips": "Trips"
+    },
+    "calendar": {
+      "title": "Upcoming",
+      "empty": "Nothing upcoming yet.",
+      "today": "Today",
+      "tomorrow": "Tomorrow",
+      "allDay": "All day",
+      "subscribe": "Subscribe",
+      "showMore": "Look further ahead",
+      "kinds": {
+        "trip": "Trip",
+        "reservation": "Booking",
+        "going": "Going",
+        "saved": "Saved"
+      }
     }
   }
 }

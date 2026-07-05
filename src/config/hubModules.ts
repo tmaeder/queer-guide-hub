@@ -1,4 +1,4 @@
-import { Inbox, Bookmark, Luggage, type LucideIcon } from 'lucide-react';
+import { Inbox, Bookmark, Luggage, Calendar, type LucideIcon } from 'lucide-react';
 
 /**
  * Registry for the /hub personal office modules. Single source of truth for
@@ -30,6 +30,13 @@ export const HUB_MODULES: HubModule[] = [
     labelKey: 'hub.modules.inbox',
     defaultLabel: 'Inbox',
     badge: 'unread',
+  },
+  {
+    id: 'calendar',
+    path: '/hub/calendar',
+    icon: Calendar,
+    labelKey: 'hub.modules.calendar',
+    defaultLabel: 'Calendar',
   },
   {
     id: 'trips',

@@ -3032,6 +3032,21 @@
       "saved": "저장됨",
       "news": "뉴스",
       "trips": "여행"
+    },
+    "calendar": {
+      "title": "다가오는 일정",
+      "empty": "아직 예정된 일정이 없습니다.",
+      "today": "오늘",
+      "tomorrow": "내일",
+      "allDay": "하루 종일",
+      "subscribe": "구독",
+      "showMore": "더 먼 일정 보기",
+      "kinds": {
+        "trip": "여행",
+        "reservation": "예약",
+        "going": "참석",
+        "saved": "저장됨"
+      }
     }
   }
 }

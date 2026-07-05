@@ -3032,6 +3032,21 @@
       "saved": "المحفوظات",
       "news": "الأخبار",
       "trips": "الرحلات"
+    },
+    "calendar": {
+      "title": "القادم",
+      "empty": "لا يوجد شيء قادم بعد.",
+      "today": "اليوم",
+      "tomorrow": "غدًا",
+      "allDay": "طوال اليوم",
+      "subscribe": "اشتراك",
+      "showMore": "انظر أبعد",
+      "kinds": {
+        "trip": "رحلة",
+        "reservation": "حجز",
+        "going": "سأحضر",
+        "saved": "محفوظ"
+      }
     }
   }
 }
