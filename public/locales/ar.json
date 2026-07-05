@@ -921,7 +921,10 @@
     },
     "conflicts": {
       "chip_one": "تعارض واحد",
-      "chip_other": "{{count}} تعارضات"
+      "chip_other": "{{count}} تعارضات",
+      "chip_two": "تعارضان",
+      "chip_few": "{{count}} تعارضات",
+      "chip_many": "{{count}} تعارضًا"
     },
     "legs": {
       "switchMode": "تغيير وسيلة التنقل",
@@ -973,7 +976,10 @@
     },
     "offline": {
       "pending_one": "تغيير واحد بانتظار المزامنة",
-      "pending_other": "{{count}} تغييرات بانتظار المزامنة"
+      "pending_other": "{{count}} تغييرات بانتظار المزامنة",
+      "pending_two": "تغييران بانتظار المزامنة",
+      "pending_few": "{{count}} تغييرات بانتظار المزامنة",
+      "pending_many": "{{count}} تغييرًا بانتظار المزامنة"
     }
   },
   "auth": {
