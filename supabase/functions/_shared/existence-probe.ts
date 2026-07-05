@@ -10,7 +10,7 @@
 // the conservative >=2-signal decision lives in run_existence_decision. Dead signals
 // from the LLM/regex are deliberately low-weight so they can never archive alone.
 
-import { probeLink, classifyHttpStatus, type LinkStatus } from './link-health.ts'
+import { probeLink, type LinkStatus } from './link-health.ts'
 import { assertPublicHttpUrl } from './ssrf-guard.ts'
 import { chatCompletion } from './openai-client.ts'
 import { withCircuitBreaker, CircuitOpenError } from './circuit-breaker.ts'
@@ -152,23 +152,12 @@ const CLOSED_PATTERNS: Array<{ re: RegExp; verdict: Verdict }> = [
 export function detectClosedPhrase(text: string):
   { verdict: Verdict; phrase: string; snippet: string } | null {
   if (!text) return null
-  // Prefer tolerant HTML parsing over regex for tag/script stripping.
-  let plain = ''
-  try {
-    const doc = new DOMParser().parseFromString(text, 'text/html')
-    if (doc) {
-      for (const el of doc.querySelectorAll('script, style, noscript')) el.remove()
-      plain = (doc.body?.textContent ?? doc.documentElement?.textContent ?? '')
-    }
-  } catch {
-    // fall through to regex fallback
-  }
-  if (!plain) {
-    plain = text
-      .replace(/<script\b[^>]*>[\s\S]*?<\/script\b[^>]*>/gi, ' ')
-      .replace(/<[^>]+>/g, ' ')
-  }
-  plain = plain.replace(/\s+/g, ' ')
+  // Regex tag/script strip — the Deno edge runtime has no DOMParser global.
+  const plain = text
+    .replace(/<script\b[^>]*>[\s\S]*?<\/script\b[^>]*>/gi, ' ')
+    .replace(/<style\b[^>]*>[\s\S]*?<\/style\b[^>]*>/gi, ' ')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/\s+/g, ' ')
   for (const p of CLOSED_PATTERNS) {
     const m = p.re.exec(plain)
     if (m) {
@@ -257,12 +246,11 @@ export async function classifyPageLlm(
   args: { entityType: EntityType; entityId: string; url: string; html: string },
 ): Promise<ExistenceSignal | null> {
   const { entityType, entityId, url, html } = args
-  const doc = new DOMParser().parseFromString(html, 'text/html')
-  if (doc) {
-    doc.querySelectorAll('script, style').forEach((el) => el.remove())
-  }
-  const extracted = doc?.body?.textContent ?? html.replace(/<[^>]+>/g, ' ')
-  const text = extracted.replace(/\s+/g, ' ').trim().substring(0, 4000)
+  // Regex tag/script strip — the Deno edge runtime has no DOMParser global.
+  const text = html
+    .replace(/<script\b[^>]*>[\s\S]*?<\/script\b[^>]*>/gi, ' ')
+    .replace(/<style\b[^>]*>[\s\S]*?<\/style\b[^>]*>/gi, ' ')
+    .replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().substring(0, 4000)
   if (text.length < 60) return null
   const ud = (s: string) => `<user_data>${s.replace(/<\/?user_data>/gi, '')}</user_data>`
   try {

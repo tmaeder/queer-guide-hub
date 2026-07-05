@@ -7,8 +7,12 @@ import { TravelGayConnector } from './travelgay.js';
 import { PatrocConnector } from './patroc.js';
 import { MisterBnBConnector } from './misterbnb.js';
 
-/** Registry of all source connectors */
-const connectorRegistry: Record<SourceName, () => SourceConnector> = {
+/**
+ * Registry of all source connectors.
+ * Partial: gaycities has no BaseConnector — its Cloudflare-gated,
+ * Playwright-only flow lives in scripts/gaycities-{backfill,sync}.ts.
+ */
+const connectorRegistry: Partial<Record<SourceName, () => SourceConnector>> = {
   wikipedia: () => new WikipediaConnector(),
   iglta: () => new IgltaConnector(),
   outsavvy: () => new OutsavvyConnector(),

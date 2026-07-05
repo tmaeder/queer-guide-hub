@@ -1079,7 +1079,8 @@
       "budget": "Budget",
       "reservations": "Reservations",
       "packing": "Packing",
-      "collaborate": "Collaborate"
+      "collaborate": "Collaborate",
+      "journal": "Journal"
     },
     "today": {
       "offlineBanner": "You're offline — showing your last-saved itinerary.",
@@ -1374,10 +1375,49 @@
         "transit": "transit",
         "drive": "drive"
       },
-      "walkingTotal": "{{distance}} walking"
+      "walkingTotal": "{{distance}} walking",
+      "optimize": "Optimize route order",
+      "directions": "Open day in Google Maps"
     },
     "suggestions": {
       "accessMatch": "Matches your needs"
+    },
+    "journal": {
+      "placeholder": "What happened today? Small moments count.",
+      "moodLabel": "Mood",
+      "mood": {
+        "joy": "Joyful",
+        "good": "Good",
+        "mixed": "Mixed",
+        "tough": "Tough"
+      },
+      "addPhotos": "Photos",
+      "save": "Save entry",
+      "saved": "Journal entry saved",
+      "empty": "No journal entries yet.",
+      "delete": "Delete entry",
+      "removePhoto": "Remove photo",
+      "member": "Traveler"
+    },
+    "import": {
+      "button": "Import",
+      "title": "Import places",
+      "pickFile": "Choose a file",
+      "formats": "GPX, KML, GeoJSON or Google Takeout (Saved Places JSON / list CSV)",
+      "noPlaces": "No places found in this file.",
+      "matching": "Matching venues…",
+      "matchCount": "{{count}} matched to queer.guide venues",
+      "changeFile": "Change file",
+      "matched": "Existing venue",
+      "customPin": "Custom pin",
+      "noCoords": "No coordinates — name only",
+      "confirm": "Import {{count}} places",
+      "done": "{{count}} places imported",
+      "doneHint": "They land in the unscheduled pool — drag them onto days."
+    },
+    "offline": {
+      "pending_one": "{{count}} change waiting to sync",
+      "pending_other": "{{count}} changes waiting to sync"
     }
   },
   "help": {
@@ -3013,6 +3053,13 @@
       "dismiss": "Dismiss",
       "ariaLabel": "Install app"
     }
+  },
+  "atlas": {
+    "summary": "{{visited}} countries visited · {{bucket}} on your bucket list",
+    "hint": "Tap a country to mark it",
+    "visited": "Visited",
+    "bucket": "Bucket list",
+    "fromTrips": "Marked visited by a completed trip"
   },
   "calendar": {
     "title": "My calendar",

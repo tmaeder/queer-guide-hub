@@ -9,7 +9,7 @@ describe('TagChip', () => {
   it('links to the canonical tag page using the slug', () => {
     render(wrap(<TagChip tag="bear-bar" name="Bear Bar" />));
     const link = screen.getByRole('link');
-    expect(link).toHaveAttribute('href', '/resources/bear-bar');
+    expect(link).toHaveAttribute('href', '/tags/bear-bar');
     expect(link).toHaveTextContent('Bear Bar');
   });
 

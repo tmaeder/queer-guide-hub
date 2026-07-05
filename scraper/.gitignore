@@ -5,3 +5,4 @@ dist/
 snapshots/
 coverage/
 .playwright/
+.gaycities-state/

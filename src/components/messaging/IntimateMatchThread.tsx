@@ -19,6 +19,8 @@ import {
   useSetPhotoUnlock,
   useShareLocation,
 } from '@/hooks/useIntimateThread';
+import { useConversationOther } from '@/hooks/useConversationOther';
+import { KinkPeerActions } from '@/components/kinks/KinkPeerActions';
 import { cn } from '@/lib/utils';
 
 interface IntimateMatchThreadProps {
@@ -79,6 +81,7 @@ export function IntimateMatchThread({
   const endMutation = useEndIntimateThread(conversationId);
   const photoMutation = useSetPhotoUnlock(conversationId);
   const locationMutation = useShareLocation(conversationId);
+  const { data: otherId } = useConversationOther(conversationId);
   const [confirmEnd, setConfirmEnd] = useState(false);
 
   if (!consent) return null;
@@ -203,6 +206,21 @@ export function IntimateMatchThread({
           )}
         </div>
       </div>
+
+      {/* Interests compare — double-opt-in intersection reveal */}
+      {otherId && (
+        <div className="flex flex-col gap-2 rounded-element border border-border p-4">
+          <p className="text-sm font-medium">Interests & boundaries</p>
+          <p className="text-13 text-muted-foreground">
+            Compare checklists — you'll each only see what you both marked positively.
+          </p>
+          <KinkPeerActions
+            otherId={otherId}
+            conversationId={conversationId}
+            onOpeningLine={onPickOpeningMove}
+          />
+        </div>
+      )}
 
       {!hasMessages && moves.length > 0 && (
         <div className="rounded-element border border-dashed border-border p-4">
