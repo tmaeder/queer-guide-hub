@@ -9,7 +9,7 @@ import {
   type CentralizedTag,
 } from '@/hooks/useCentralizedTags';
 import { ResourcesFilterBar } from '@/components/resources/ResourcesFilterBar';
-import { parentOrder } from '@/components/resources/categoryMeta';
+import { parentOrder, isAdultCategoryName } from '@/components/resources/categoryMeta';
 import { fetchAllProfessions, fetchTagWithCategories } from '@/hooks/usePageFetchers';
 import { useMeta } from '@/hooks/useMeta';
 import { Button } from '@/components/ui/button';
@@ -314,6 +314,14 @@ export default function Resources() {
     };
     if (selectedTag.image_url) jsonLd.image = selectedTag.image_url;
     if (selectedTag.wikipedia_url) jsonLd.sameAs = selectedTag.wikipedia_url;
+    // Adult (age-gated) tags and tags flagged non-indexable must be noindex.
+    // Set it here on the page-level useMeta too: this effect runs AFTER the
+    // gate's own useMeta, so without it the parent would strip the gate's
+    // robots tag (leaving adult pages indexable).
+    const isAdult =
+      selectedTag.categories?.some(
+        (c) => isAdultCategoryName(c.name) || isAdultCategoryName(c.parent_name ?? undefined),
+      ) ?? false;
     return {
       title: selectedTag.name,
       description: desc,
@@ -321,6 +329,7 @@ export default function Resources() {
       ogType: 'article' as const,
       canonicalPath: `/resources/${slug}`,
       jsonLd,
+      noIndex: selectedTag.seo_indexable === false || isAdult,
     };
   }, [viewMode, selectedTag]);
   useMeta(tagDetailMeta ?? {});
