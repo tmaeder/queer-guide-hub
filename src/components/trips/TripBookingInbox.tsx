@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { format } from 'date-fns';
-import { Copy, Inbox, Mail, Trash2, RefreshCw, Check, X } from 'lucide-react';
+import { Copy, Inbox, Mail, Trash2, RefreshCw, Check, X, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { useTripInbox, type TripInboxItem } from '@/hooks/useTripInbox';
@@ -284,6 +285,12 @@ function InboxItemRow({
           <Button size="sm" onClick={onSlot} disabled={slotting}>
             <Check className="h-3.5 w-3.5 mr-1" aria-hidden />
             {t('trips.inbox.slot', 'Slot it')}
+          </Button>
+          <Button size="sm" variant="outline" asChild>
+            <LocalizedLink to={`/hub?tripmail=${item.id}`} className="no-underline">
+              <MessageCircle className="h-3.5 w-3.5 mr-1" aria-hidden />
+              {t('trips.inbox.openThread', 'Review in chat')}
+            </LocalizedLink>
           </Button>
           <Button size="sm" variant="ghost" onClick={onDismiss} disabled={dismissing}>
             <X className="h-3.5 w-3.5" aria-hidden />

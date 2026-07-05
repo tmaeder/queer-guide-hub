@@ -27,12 +27,12 @@ export function useDynamicSitemap() {
         { label: "Groups", to: "/community/groups" },
         { label: "My Groups", to: "/community/groups?tab=mine" },
         { label: "Feed", to: "/community/feed" },
-        { label: "Saved", to: "/me/saved" },
+        { label: "Saved", to: "/hub/saved" },
         { label: "Search", to: "/search" },
         { label: "Personalities", to: "/personalities" },
         { label: "Places", to: "/places" },
         { label: "Tags", to: "/tags" },
-        { label: "Messages", to: "/messages" },
+        { label: "Hub", to: "/hub" },
         { label: "Friends", to: "/community/friends" },
       ];
 

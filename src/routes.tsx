@@ -10,6 +10,7 @@ import { MotionPage } from '@/components/motion';
 import { lazyRetry } from '@/utils/lazyRetry';
 import { submissionRegistry } from '@/config/submissionRegistry';
 import { DEFAULT_LOCALE, isSupportedLocale } from '@/i18n/languages';
+import { useAuth } from '@/hooks/useAuth';
 
 const Index = lazyRetry(() => import('./pages/Index'));
 const Venues = lazyRetry(() => import('./pages/Venues'));
@@ -162,7 +163,7 @@ const IntimateUserDetail = lazyRetry(() => import('./pages/intimate/IntimateUser
 const People = lazyRetry(() => import('./pages/people/People'));
 const Community = lazyRetry(() => import('./pages/Community'));
 
-const Messages = lazyRetry(() => import('./pages/Messages'));
+const HubPage = lazyRetry(() => import('./pages/hub/HubPage'));
 const GroupDetail = lazyRetry(() => import('./pages/GroupDetail'));
 const GroupInviteAccept = lazyRetry(() => import('./pages/GroupInviteAccept'));
 const NotFound = lazyRetry(() => import('./pages/NotFound'));
@@ -191,6 +192,27 @@ function SettingsRedirect() {
 function FootprintRedirect() {
   const { userId } = useParams<{ userId: string }>();
   return <Navigate to={`/user/${userId}/travel`} replace />;
+}
+
+/**
+ * Identity tabs formerly under /me/* need the signed-in user's id to land on
+ * the unified public-profile route (/user/:id/:tab). Locale-preserving,
+ * search-preserving; anonymous visitors go to /auth.
+ */
+function MeRedirect({ tab }: { tab?: string }) {
+  const { user, loading } = useAuth();
+  const { locale } = useParams<{ locale?: string }>();
+  const location = useLocation();
+  const prefix =
+    locale && isSupportedLocale(locale) && locale !== DEFAULT_LOCALE ? `/${locale}` : '';
+  if (loading) return null;
+  if (!user) return <Navigate to={`${prefix}/auth`} replace />;
+  return (
+    <Navigate
+      to={`${prefix}/user/${user.id}${tab ? `/${tab}` : ''}${location.search}`}
+      replace
+    />
+  );
 }
 
 /**
@@ -476,16 +498,16 @@ export const AppRoutes = () => {
                 <Route path="places" element={<Places />} />
                 <Route path="travel" element={<Travel />} />
                 <Route path="travel/book" element={<TravelBook />} />
-                {/* /trips list folded into the /me hub (Trips tab). The
+                {/* /trips list folded into the /hub office (Trips module). The
                   /trips/:id workspace + discover/shared stay top-level. */}
-                <Route path="trips" element={<LocalizedRedirect to="/me/trips" />} />
-                <Route path="trips/inbox" element={<LocalizedRedirect to="/me/trips" />} />
+                <Route path="trips" element={<LocalizedRedirect to="/hub/trips" />} />
+                <Route path="trips/inbox" element={<LocalizedRedirect to="/hub/trips" />} />
                 <Route path="trips/discover" element={<TripsDiscoverPage />} />
                 <Route path="trips/shared/:token" element={<SharedTripPage />} />
                 <Route path="trips/:tripId/today" element={<TripSubrouteRedirect view="today" />} />
                 <Route path="trips/:tripId/booklet" element={<TripSubrouteRedirect view="booklet" />} />
                 <Route path="trips/:tripId" element={<TripWorkspace />} />
-                <Route path="bookings" element={<LocalizedRedirect to="/me/trips" />} />
+                <Route path="bookings" element={<LocalizedRedirect to="/hub/trips" />} />
                 <Route path="map" element={<MapPage />} />
                 <Route path="flights" element={<Navigate to="/travel" replace />} />
                 <Route path="cities" element={<Cities />} />
@@ -539,11 +561,15 @@ export const AppRoutes = () => {
                 {/* "Inbox" was email + notifications, never messages. Notifications now
                   live in the header menu; the @queer.guide mailbox moved to /mailbox.
                   /inbox now resolves to the real conversation hub. */}
-                <Route path="inbox" element={<LocalizedRedirect to="/messages" />} />
-                <Route path="mailbox" element={<LocalizedRedirect to="/messages" />} />
-                <Route path="messages" element={<Messages />} />
-                {/* /favorites folded into the /me hub (Saved tab). */}
-                <Route path="favorites" element={<LocalizedRedirect to="/me/saved" />} />
+                <Route path="inbox" element={<LocalizedRedirect to="/hub" />} />
+                <Route path="mailbox" element={<LocalizedRedirect to="/hub" />} />
+                {/* /messages folded into /hub (Inbox module). LocalizedRedirect
+                  carries the query string, so DB-stored open_target strings
+                  ('/messages?conversation=…') and ?tripmail= deep links keep
+                  resolving without any data rewrite. */}
+                <Route path="messages" element={<LocalizedRedirect to="/hub" />} />
+                {/* /favorites folded into /hub (Saved module). */}
+                <Route path="favorites" element={<LocalizedRedirect to="/hub/saved" />} />
                 {/* Feed, Members, Friends, Groups now live under the /community hub. */}
                 <Route path="feed" element={<LocalizedRedirect to="/community/feed" />} />
                 <Route path="friends" element={<LocalizedRedirect to="/community/friends" />} />
@@ -555,22 +581,27 @@ export const AppRoutes = () => {
                 <Route path="community/members" element={<Community tab="members" />} />
                 <Route path="community/friends" element={<Community tab="friends" />} />
                 <Route path="community/groups" element={<Community tab="groups" />} />
-                {/* Static per-tab routes (not me/:tab?) so the optional /:locale?
-                  parent can't capture "me" as an unknown locale and let a tab name
-                  that's also a top-level route (trips, travel) win the match → 404.
-                  Same fix as the /community hub above. */}
-                <Route path="me" element={<ProfilePage />} />
-                <Route path="me/saved" element={<ProfilePage tab="saved" />} />
-                <Route path="me/trips" element={<ProfilePage tab="trips" />} />
-                <Route path="me/travel" element={<ProfilePage tab="travel" />} />
-                <Route path="me/groups" element={<ProfilePage tab="groups" />} />
-                <Route path="me/contributions" element={<ProfilePage tab="contributions" />} />
-                <Route path="me/progress" element={<ProfilePage tab="progress" />} />
-                <Route path="me/passport" element={<Navigate to="/me/progress" replace />} />
-                <Route path="me/missions" element={<Navigate to="/me/progress" replace />} />
-                <Route path="me/leaderboard" element={<Navigate to="/me/progress" replace />} />
+                {/* /hub — the personal office (replaces /messages + the private
+                  /me hub). Static per-module routes so the optional /:locale?
+                  parent can't capture "hub" as an unknown locale — same fix as
+                  the /community hub above. */}
+                <Route path="hub" element={<HubPage module="inbox" />} />
+                <Route path="hub/saved" element={<HubPage module="saved" />} />
+                <Route path="hub/trips" element={<HubPage module="trips" />} />
+                {/* /me folded into /hub; identity tabs live on the unified
+                  public profile (/user/:id/:tab) via MeRedirect. */}
+                <Route path="me" element={<LocalizedRedirect to="/hub" />} />
+                <Route path="me/saved" element={<LocalizedRedirect to="/hub/saved" />} />
+                <Route path="me/trips" element={<LocalizedRedirect to="/hub/trips" />} />
+                <Route path="me/travel" element={<MeRedirect tab="travel" />} />
+                <Route path="me/groups" element={<MeRedirect tab="groups" />} />
+                <Route path="me/contributions" element={<MeRedirect tab="contributions" />} />
+                <Route path="me/progress" element={<MeRedirect tab="progress" />} />
+                <Route path="me/passport" element={<MeRedirect tab="progress" />} />
+                <Route path="me/missions" element={<MeRedirect tab="progress" />} />
+                <Route path="me/leaderboard" element={<MeRedirect tab="progress" />} />
                 <Route path="me/settings" element={<Navigate to="/settings" replace />} />
-                <Route path="me/tiers" element={<Navigate to="/me/progress" replace />} />
+                <Route path="me/tiers" element={<MeRedirect tab="progress" />} />
                 <Route path="settings" element={<Settings />} />
                 <Route path="settings/privacy" element={<Navigate to="/settings?section=privacy" replace />} />
                 <Route path="profile/settings" element={<SettingsRedirect />} />

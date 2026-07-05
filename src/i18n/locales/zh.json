@@ -894,6 +894,9 @@
       "saveAria": "Save trip",
       "unsaveAria": "Unsave trip",
       "error": "Could not update save"
+    },
+    "inbox": {
+      "openThread": "在聊天中核对"
     }
   },
   "auth": {
@@ -1632,7 +1635,8 @@
       "settingsSection": "显示",
       "browseAll": "浏览所有板块",
       "unreadCount": "{{count}} 条未读",
-      "tripsBadge": "{{count}} 个行程项目需要关注"
+      "tripsBadge": "{{count}} 个行程项目需要关注",
+      "hub": "中心"
     }
   },
   "pages": {
@@ -2773,6 +2777,27 @@
       "empty": "暂无建议。",
       "recent": "最近联系",
       "active": "最近活跃"
+    },
+    "tripmail": {
+      "gone": "此邮件项已不可用。",
+      "type": "类型",
+      "vendor": "商家",
+      "title": "标题",
+      "dates": "日期",
+      "location": "地点",
+      "price": "价格",
+      "confirmation": "确认号",
+      "extracted": "提取的预订",
+      "filed": "已归档",
+      "confirm": "添加到行程",
+      "dismiss": "忽略",
+      "openTrip": "打开行程",
+      "fallbackTitle": "转发的邮件",
+      "intro": "提取的信息有误？告诉我，我来修正——例如“入住其实是12号”。",
+      "thinking": "正在核对邮件…",
+      "placeholder": "修正信息或询问此预订…",
+      "send": "发送",
+      "sendFailed": "发送失败"
     }
   },
   "extension": {
@@ -2991,6 +3016,22 @@
         "locals": "当地人",
         "networking": "拓展人脉"
       }
+    }
+  },
+  "hub": {
+    "title": "我的中心",
+    "nav": "中心模块",
+    "signInDesc": "登录后查看收件箱、行程和收藏的地点。",
+    "identity": {
+      "viewProfile": "查看资料"
+    },
+    "modules": {
+      "inbox": "收件箱",
+      "calendar": "日历",
+      "contacts": "联系人",
+      "saved": "已收藏",
+      "news": "新闻",
+      "trips": "行程"
     }
   }
 }

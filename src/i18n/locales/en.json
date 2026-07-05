@@ -55,6 +55,27 @@
       "empty": "No suggestions yet.",
       "recent": "Recently messaged",
       "active": "Active recently"
+    },
+    "tripmail": {
+      "gone": "This email item is no longer available.",
+      "type": "Type",
+      "vendor": "Vendor",
+      "title": "Title",
+      "dates": "Dates",
+      "location": "Location",
+      "price": "Price",
+      "confirmation": "Confirmation",
+      "extracted": "Extracted booking",
+      "filed": "Filed",
+      "confirm": "Add to trip",
+      "dismiss": "Dismiss",
+      "openTrip": "Open trip",
+      "fallbackTitle": "Forwarded email",
+      "intro": "Something off in the extracted details? Tell me and I’ll fix it — e.g. “check-in is actually the 12th”.",
+      "thinking": "Checking the email…",
+      "placeholder": "Correct a detail or ask about this booking…",
+      "send": "Send",
+      "sendFailed": "Couldn't send that"
     }
   },
   "eventTypes": {
@@ -1372,6 +1393,9 @@
     },
     "suggestions": {
       "accessMatch": "Matches your needs"
+    },
+    "inbox": {
+      "openThread": "Review in chat"
     }
   },
   "help": {
@@ -1707,7 +1731,8 @@
       "settingsSection": "Display",
       "browseAll": "Browse all sections",
       "unreadCount": "{{count}} unread",
-      "tripsBadge": "{{count}} trip items need attention"
+      "tripsBadge": "{{count}} trip items need attention",
+      "hub": "Hub"
     }
   },
   "pages": {
@@ -3008,6 +3033,22 @@
         "locals": "Locals where I am",
         "networking": "Networking"
       }
+    }
+  },
+  "hub": {
+    "title": "Your hub",
+    "nav": "Hub modules",
+    "signInDesc": "Sign in to see your inbox, trips and saved places.",
+    "identity": {
+      "viewProfile": "View profile"
+    },
+    "modules": {
+      "inbox": "Inbox",
+      "calendar": "Calendar",
+      "contacts": "Contacts",
+      "saved": "Saved",
+      "news": "News",
+      "trips": "Trips"
     }
   }
 }

@@ -894,6 +894,9 @@
       "saveAria": "Save trip",
       "unsaveAria": "Unsave trip",
       "error": "Could not update save"
+    },
+    "inbox": {
+      "openThread": "チャットで確認"
     }
   },
   "auth": {
@@ -1632,7 +1635,8 @@
       "settingsSection": "表示",
       "browseAll": "すべてのセクションを見る",
       "unreadCount": "未読 {{count}} 件",
-      "tripsBadge": "確認が必要な旅行項目が {{count}} 件"
+      "tripsBadge": "確認が必要な旅行項目が {{count}} 件",
+      "hub": "ハブ"
     }
   },
   "pages": {
@@ -2773,6 +2777,27 @@
       "empty": "まだ候補がありません。",
       "recent": "最近やり取りした人",
       "active": "最近アクティブ"
+    },
+    "tripmail": {
+      "gone": "このメールはもう利用できません。",
+      "type": "種類",
+      "vendor": "事業者",
+      "title": "タイトル",
+      "dates": "日付",
+      "location": "場所",
+      "price": "価格",
+      "confirmation": "確認番号",
+      "extracted": "抽出された予約",
+      "filed": "登録済み",
+      "confirm": "旅行に追加",
+      "dismiss": "破棄",
+      "openTrip": "旅行を開く",
+      "fallbackTitle": "転送されたメール",
+      "intro": "抽出内容に間違いがあれば教えてください。例:「チェックインは実際には12日」",
+      "thinking": "メールを確認中…",
+      "placeholder": "内容の修正や予約についての質問をどうぞ…",
+      "send": "送信",
+      "sendFailed": "送信できませんでした"
     }
   },
   "extension": {
@@ -2991,6 +3016,22 @@
         "locals": "現地の人",
         "networking": "ネットワーキング"
       }
+    }
+  },
+  "hub": {
+    "title": "マイハブ",
+    "nav": "ハブのモジュール",
+    "signInDesc": "受信箱・旅行・保存した場所を見るにはサインインしてください。",
+    "identity": {
+      "viewProfile": "プロフィールを見る"
+    },
+    "modules": {
+      "inbox": "受信箱",
+      "calendar": "カレンダー",
+      "contacts": "連絡先",
+      "saved": "保存済み",
+      "news": "ニュース",
+      "trips": "旅行"
     }
   }
 }

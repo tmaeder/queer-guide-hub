@@ -17,7 +17,7 @@ export function FavoritesSummaryCard() {
           Saved
         </CardTitle>
         <LocalizedLink
-          to="/me/saved"
+          to="/hub/saved"
           className="text-sm text-muted-foreground inline-flex items-center gap-1 hover:text-foreground"
         >
           All saved

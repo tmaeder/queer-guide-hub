@@ -2,7 +2,12 @@
  * @vitest-environment jsdom
  */
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render as rtlRender, screen, fireEvent } from '@testing-library/react';
+import { MemoryRouter } from 'react-router';
+import type { ReactElement } from 'react';
+
+// TripBookingInbox now renders a LocalizedLink ("Review in chat") — needs a router.
+const render = (ui: ReactElement) => rtlRender(<MemoryRouter>{ui}</MemoryRouter>);
 
 const {
   useTripInboxMock,

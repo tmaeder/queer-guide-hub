@@ -54,7 +54,7 @@ export function ForYouSection({ sourcesMap, categoriesMap, excludeIds = [] }: Fo
           </p>
         </div>
         <LocalizedLink
-          to="/me"
+          to="/hub/saved"
           className="text-13 uppercase tracking-wider whitespace-nowrap hover:underline no-underline text-foreground shrink-0"
         >
           Tune interests →

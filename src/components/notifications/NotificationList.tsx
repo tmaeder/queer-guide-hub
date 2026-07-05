@@ -56,7 +56,7 @@ export const NotificationList = () => {
           variant="ghost"
           size="sm"
           className="w-full justify-center text-13"
-          onClick={() => navigate('/messages')}
+          onClick={() => navigate('/hub')}
         >
           {t('inbox.openInbox', { defaultValue: 'Open inbox' })}
         </Button>

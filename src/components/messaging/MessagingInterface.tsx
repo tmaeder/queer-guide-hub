@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { MessageCircle, ChevronLeft, Search } from 'lucide-react';
@@ -13,6 +14,7 @@ import { useUpcomingTrips } from '@/hooks/useUpcomingTrips';
 import { useGlobalPresence } from '@/hooks/useConversationPresence';
 import { useRailActions } from '@/hooks/useRailActions';
 import { MailDetail } from '@/components/messaging/MailDetail';
+import { TripEmailThread } from '@/components/messaging/TripEmailThread';
 import { NotificationDetailCard } from '@/components/messaging/NotificationDetailCard';
 import { ComposeChooser } from '@/components/messaging/ComposeChooser';
 import { RecipientPicker } from '@/components/messaging/RecipientPicker';
@@ -28,9 +30,11 @@ export interface MessagingInterfaceProps {
    * Defaults to 'all'.
    */
   filter?: InboxFilter;
+  /** Extra classes for the root split container (e.g. a taller hub workspace height). */
+  className?: string;
 }
 
-export const MessagingInterface = ({ filter }: MessagingInterfaceProps = {}) => {
+export const MessagingInterface = ({ filter, className }: MessagingInterfaceProps = {}) => {
   const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const { items, loading } = useInboxFeed(filter ?? 'all');
@@ -51,7 +55,12 @@ export const MessagingInterface = ({ filter }: MessagingInterfaceProps = {}) => 
   );
 
   return (
-    <div className="flex flex-col md:flex-row h-[calc(100vh-200px)] md:h-[600px] overflow-hidden bg-background">
+    <div
+      className={cn(
+        'flex flex-col md:flex-row h-[calc(100vh-200px)] md:h-[600px] overflow-hidden bg-background',
+        className,
+      )}
+    >
       {/* Email compose sheet */}
       <Sheet open={composeEmailOpen} onOpenChange={setComposeEmailOpen}>
         <SheetContent side="bottom">
@@ -167,6 +176,8 @@ export const MessagingInterface = ({ filter }: MessagingInterfaceProps = {}) => 
           />
         ) : selected?.kind === 'mail' ? (
           <MailDetail key={selected.id} emailId={selected.id.replace('mail_', '')} />
+        ) : selected?.kind === 'trip_email' ? (
+          <TripEmailThread key={selected.id} itemId={selected.id.replace('tripmail_', '')} />
         ) : selected?.kind === 'notification' ? (
           <NotificationDetailCard item={selected} />
         ) : (

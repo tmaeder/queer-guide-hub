@@ -894,6 +894,9 @@
       "saveAria": "Save trip",
       "unsaveAria": "Unsave trip",
       "error": "Could not update save"
+    },
+    "inbox": {
+      "openThread": "Rivedi in chat"
     }
   },
   "auth": {
@@ -1632,7 +1635,8 @@
       "settingsSection": "Visualizzazione",
       "browseAll": "Sfoglia tutte le sezioni",
       "unreadCount": "{{count}} non letti",
-      "tripsBadge": "{{count}} elementi di viaggio richiedono attenzione"
+      "tripsBadge": "{{count}} elementi di viaggio richiedono attenzione",
+      "hub": "Hub"
     }
   },
   "pages": {
@@ -2775,6 +2779,27 @@
       "empty": "Ancora nessun suggerimento.",
       "recent": "Messaggiati di recente",
       "active": "Attivi di recente"
+    },
+    "tripmail": {
+      "gone": "Questa email non è più disponibile.",
+      "type": "Tipo",
+      "vendor": "Fornitore",
+      "title": "Titolo",
+      "dates": "Date",
+      "location": "Luogo",
+      "price": "Prezzo",
+      "confirmation": "Conferma",
+      "extracted": "Prenotazione estratta",
+      "filed": "Archiviata",
+      "confirm": "Aggiungi al viaggio",
+      "dismiss": "Scarta",
+      "openTrip": "Apri viaggio",
+      "fallbackTitle": "Email inoltrata",
+      "intro": "Qualcosa non torna nei dati estratti? Dimmelo e lo correggo — es. «il check-in è il 12».",
+      "thinking": "Controllo l’email…",
+      "placeholder": "Correggi un dettaglio o chiedi della prenotazione…",
+      "send": "Invia",
+      "sendFailed": "Invio non riuscito"
     }
   },
   "extension": {
@@ -2993,6 +3018,22 @@
         "locals": "Persone del posto",
         "networking": "Networking"
       }
+    }
+  },
+  "hub": {
+    "title": "Il tuo hub",
+    "nav": "Moduli hub",
+    "signInDesc": "Accedi per vedere posta, viaggi e luoghi salvati.",
+    "identity": {
+      "viewProfile": "Vedi profilo"
+    },
+    "modules": {
+      "inbox": "Posta",
+      "calendar": "Calendario",
+      "contacts": "Contatti",
+      "saved": "Salvati",
+      "news": "Notizie",
+      "trips": "Viaggi"
     }
   }
 }

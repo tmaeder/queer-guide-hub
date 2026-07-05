@@ -894,6 +894,9 @@
       "saveAria": "Save trip",
       "unsaveAria": "Unsave trip",
       "error": "Could not update save"
+    },
+    "inbox": {
+      "openThread": "채팅에서 검토"
     }
   },
   "auth": {
@@ -1632,7 +1635,8 @@
       "settingsSection": "디스플레이",
       "browseAll": "모든 섹션 보기",
       "unreadCount": "읽지 않음 {{count}}개",
-      "tripsBadge": "확인이 필요한 여행 항목 {{count}}개"
+      "tripsBadge": "확인이 필요한 여행 항목 {{count}}개",
+      "hub": "허브"
     }
   },
   "pages": {
@@ -2773,6 +2777,27 @@
       "empty": "아직 추천이 없습니다.",
       "recent": "최근 메시지한 사람",
       "active": "최근 활동"
+    },
+    "tripmail": {
+      "gone": "이 이메일 항목은 더 이상 사용할 수 없습니다.",
+      "type": "유형",
+      "vendor": "업체",
+      "title": "제목",
+      "dates": "날짜",
+      "location": "위치",
+      "price": "가격",
+      "confirmation": "확인번호",
+      "extracted": "추출된 예약",
+      "filed": "등록됨",
+      "confirm": "여행에 추가",
+      "dismiss": "무시",
+      "openTrip": "여행 열기",
+      "fallbackTitle": "전달된 이메일",
+      "intro": "추출된 정보가 잘못되었나요? 알려주시면 고칠게요 — 예: “체크인은 사실 12일이에요”.",
+      "thinking": "이메일 확인 중…",
+      "placeholder": "정보를 수정하거나 예약에 대해 물어보세요…",
+      "send": "보내기",
+      "sendFailed": "전송하지 못했습니다"
     }
   },
   "extension": {
@@ -2991,6 +3016,22 @@
         "locals": "현지인",
         "networking": "네트워킹"
       }
+    }
+  },
+  "hub": {
+    "title": "내 허브",
+    "nav": "허브 모듈",
+    "signInDesc": "받은편지함, 여행, 저장한 장소를 보려면 로그인하세요.",
+    "identity": {
+      "viewProfile": "프로필 보기"
+    },
+    "modules": {
+      "inbox": "받은편지함",
+      "calendar": "캘린더",
+      "contacts": "연락처",
+      "saved": "저장됨",
+      "news": "뉴스",
+      "trips": "여행"
     }
   }
 }

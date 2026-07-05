@@ -120,10 +120,10 @@ export function Header() {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" style={{ width: 280, zIndex: 50 }}>
-            {/* Identity — leads the menu, links to the private /me hub */}
+            {/* Identity — leads the menu, links to the personal /hub office */}
             <DropdownMenuLabel className="p-0 font-normal">
               <LocalizedLink
-                to="/me"
+                to="/hub"
                 className="flex items-center gap-2 rounded-element p-2 no-underline"
               >
                 <Avatar style={{ height: 36, width: 36 }}>

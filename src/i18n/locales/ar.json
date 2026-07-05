@@ -894,6 +894,9 @@
       "saveAria": "Save trip",
       "unsaveAria": "Unsave trip",
       "error": "Could not update save"
+    },
+    "inbox": {
+      "openThread": "راجع في الدردشة"
     }
   },
   "auth": {
@@ -1632,7 +1635,8 @@
       "settingsSection": "العرض",
       "browseAll": "تصفّح كل الأقسام",
       "unreadCount": "{{count}} غير مقروء",
-      "tripsBadge": "{{count}} عناصر رحلة تحتاج إلى انتباه"
+      "tripsBadge": "{{count}} عناصر رحلة تحتاج إلى انتباه",
+      "hub": "المركز"
     }
   },
   "pages": {
@@ -2773,6 +2777,27 @@
       "empty": "لا اقتراحات بعد.",
       "recent": "راسلتهم مؤخرًا",
       "active": "نشطون مؤخرًا"
+    },
+    "tripmail": {
+      "gone": "لم يعد عنصر البريد هذا متاحًا.",
+      "type": "النوع",
+      "vendor": "المزوّد",
+      "title": "العنوان",
+      "dates": "التواريخ",
+      "location": "الموقع",
+      "price": "السعر",
+      "confirmation": "رقم التأكيد",
+      "extracted": "الحجز المستخرج",
+      "filed": "تم الحفظ",
+      "confirm": "أضِف إلى الرحلة",
+      "dismiss": "تجاهل",
+      "openTrip": "افتح الرحلة",
+      "fallbackTitle": "بريد معاد توجيهه",
+      "intro": "هل هناك خطأ في التفاصيل المستخرجة؟ أخبرني وسأصححه — مثلًا: «تسجيل الوصول فعليًا يوم 12».",
+      "thinking": "أتحقق من البريد…",
+      "placeholder": "صحّح تفصيلة أو اسأل عن هذا الحجز…",
+      "send": "إرسال",
+      "sendFailed": "تعذّر الإرسال"
     }
   },
   "extension": {
@@ -2991,6 +3016,22 @@
         "locals": "سكان محليون",
         "networking": "التواصل المهني"
       }
+    }
+  },
+  "hub": {
+    "title": "مركزك",
+    "nav": "وحدات المركز",
+    "signInDesc": "سجّل الدخول لرؤية بريدك ورحلاتك وأماكنك المحفوظة.",
+    "identity": {
+      "viewProfile": "عرض الملف الشخصي"
+    },
+    "modules": {
+      "inbox": "البريد الوارد",
+      "calendar": "التقويم",
+      "contacts": "جهات الاتصال",
+      "saved": "المحفوظات",
+      "news": "الأخبار",
+      "trips": "الرحلات"
     }
   }
 }

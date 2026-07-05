@@ -898,6 +898,9 @@
       "saveAria": "Save trip",
       "unsaveAria": "Unsave trip",
       "error": "Could not update save"
+    },
+    "inbox": {
+      "openThread": "Vérifier dans le chat"
     }
   },
   "auth": {
@@ -1636,7 +1639,8 @@
       "settingsSection": "Affichage",
       "browseAll": "Parcourir toutes les sections",
       "unreadCount": "{{count}} non lus",
-      "tripsBadge": "{{count}} éléments de voyage à vérifier"
+      "tripsBadge": "{{count}} éléments de voyage à vérifier",
+      "hub": "Hub"
     }
   },
   "pages": {
@@ -2779,6 +2783,27 @@
       "empty": "Aucune suggestion pour l’instant.",
       "recent": "Contacts récents",
       "active": "Actifs récemment"
+    },
+    "tripmail": {
+      "gone": "Cet e-mail n’est plus disponible.",
+      "type": "Type",
+      "vendor": "Prestataire",
+      "title": "Titre",
+      "dates": "Dates",
+      "location": "Lieu",
+      "price": "Prix",
+      "confirmation": "Confirmation",
+      "extracted": "Réservation extraite",
+      "filed": "Classée",
+      "confirm": "Ajouter au voyage",
+      "dismiss": "Ignorer",
+      "openTrip": "Ouvrir le voyage",
+      "fallbackTitle": "E-mail transféré",
+      "intro": "Un détail est faux ? Dis-le-moi et je corrige — p. ex. « le check-in est le 12 ».",
+      "thinking": "Vérification de l’e-mail…",
+      "placeholder": "Corrige un détail ou pose une question…",
+      "send": "Envoyer",
+      "sendFailed": "Échec de l’envoi"
     }
   },
   "extension": {
@@ -2997,6 +3022,22 @@
         "locals": "Personnes locales",
         "networking": "Réseautage"
       }
+    }
+  },
+  "hub": {
+    "title": "Ton hub",
+    "nav": "Modules du hub",
+    "signInDesc": "Connecte-toi pour voir ta boîte de réception, tes voyages et tes lieux enregistrés.",
+    "identity": {
+      "viewProfile": "Voir le profil"
+    },
+    "modules": {
+      "inbox": "Boîte de réception",
+      "calendar": "Calendrier",
+      "contacts": "Contacts",
+      "saved": "Enregistrés",
+      "news": "Actus",
+      "trips": "Voyages"
     }
   }
 }
