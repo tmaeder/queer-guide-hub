@@ -52,6 +52,38 @@ function gatedDetailResult(): DetailResult {
 }
 
 /**
+ * Distinguish a genuinely-missing slug from a safety-gated row the PostgREST key
+ * can't see. On prod the Pages function reads with the anon key, so RLS hides a
+ * gated venue/event → fetchOne returns null and the middleware would hard-404
+ * (wrong: the place exists, the user just needs to sign in). The anon-callable
+ * boolean RPC `gated_entity_exists` reports existence without leaking any row
+ * data, so we can return a non-null gated placeholder instead — which lets the
+ * middleware serve the SPA shell (humans get the GatedDetailFallback sign-in
+ * gate) while bots still receive noindex + no real content.
+ */
+async function isGatedEntity(env: Env, entityType: 'venue' | 'event', slug: string): Promise<boolean> {
+  if (!env.SUPABASE_URL) return false;
+  const key = env.SUPABASE_SERVICE_ROLE_KEY ?? env.SUPABASE_ANON_KEY;
+  if (!key) return false;
+  try {
+    const res = await fetch(`${env.SUPABASE_URL.replace(/\/$/, '')}/rest/v1/rpc/gated_entity_exists`, {
+      method: 'POST',
+      headers: {
+        apikey: key,
+        Authorization: `Bearer ${key}`,
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+      body: JSON.stringify({ p_entity_type: entityType, p_slug: slug }),
+    });
+    if (!res.ok) return false;
+    return (await res.json()) === true;
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Cuts a string to max chars. Prefers a sentence boundary inside the last
  * 30 chars before the limit so descriptions don't end mid-thought; falls
  * back to a word boundary + ellipsis when no sentence end is found.
@@ -122,7 +154,7 @@ async function venueDetail(env: Env, slug: string, pathname: string): Promise<De
     slug,
     'name,slug,description,address,city,country,postal_code,latitude,longitude,phone,website,images,category,venue_subtype,foursquare_rating,tripadvisor_rating,tomtom_rating,hours,updated_at,safety_gated',
   );
-  if (!row) return null;
+  if (!row) return (await isGatedEntity(env, 'venue', slug)) ? gatedDetailResult() : null;
   if (row.safety_gated === true) return gatedDetailResult();
 
   const name = stringField(row, 'name') ?? slug;
@@ -246,7 +278,7 @@ async function eventDetail(env: Env, slug: string, pathname: string): Promise<De
     slug,
     'title,slug,description,address,city,country,start_date,end_date,latitude,longitude,images,ticket_url,organizer_name,venue_name,price_min,price_max,is_free,event_type,timezone,updated_at,safety_gated',
   );
-  if (!row) return null;
+  if (!row) return (await isGatedEntity(env, 'event', slug)) ? gatedDetailResult() : null;
   if (row.safety_gated === true) return gatedDetailResult();
 
   const title = stringField(row, 'title') ?? slug;
