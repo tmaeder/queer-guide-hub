@@ -6,6 +6,7 @@ import { SavedModule } from '@/components/hub/modules/SavedModule';
 import { TripsModule } from '@/components/hub/modules/TripsModule';
 import { CalendarModule } from '@/components/hub/modules/CalendarModule';
 import { ContactsModule } from '@/components/hub/modules/ContactsModule';
+import { NewsModule } from '@/components/hub/modules/NewsModule';
 import { useMeta } from '@/hooks/useMeta';
 import type { HubModuleId } from '@/config/hubModules';
 
@@ -36,6 +37,8 @@ export default function HubPage({ module = 'inbox' }: { module?: HubModuleId }) 
       <CalendarModule />
     ) : module === 'contacts' ? (
       <ContactsModule />
+    ) : module === 'news' ? (
+      <NewsModule />
     ) : (
       <InboxModule />
     );

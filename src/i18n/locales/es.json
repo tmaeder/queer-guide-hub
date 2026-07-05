@@ -3064,6 +3064,15 @@
       "dating": "Citas",
       "datingTitle": "Tu mazo de citas",
       "datingBody": "Explora matches y conversaciones."
+    },
+    "news": {
+      "title": "Noticias",
+      "savedStories": "Artículos guardados",
+      "savedEmpty": "Aún no hay artículos guardados.",
+      "fromTags": "De tus etiquetas",
+      "tagsEmpty": "Sigue etiquetas para ver artículos aquí.",
+      "tagsNoArticles": "Nada nuevo de tus etiquetas aún.",
+      "savedSearches": "Búsquedas guardadas"
     }
   }
 }

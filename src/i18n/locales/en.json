@@ -3079,6 +3079,15 @@
       "dating": "Dating",
       "datingTitle": "Your dating deck",
       "datingBody": "Browse matches and conversations."
+    },
+    "news": {
+      "title": "News",
+      "savedStories": "Saved stories",
+      "savedEmpty": "No saved stories yet.",
+      "fromTags": "From your tags",
+      "tagsEmpty": "Follow tags to see matching stories here.",
+      "tagsNoArticles": "Nothing new from your tags yet.",
+      "savedSearches": "Saved searches"
     }
   }
 }

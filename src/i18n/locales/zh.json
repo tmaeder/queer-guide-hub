@@ -3062,6 +3062,15 @@
       "dating": "约会",
       "datingTitle": "你的约会卡组",
       "datingBody": "浏览匹配和对话。"
+    },
+    "news": {
+      "title": "新闻",
+      "savedStories": "已收藏的文章",
+      "savedEmpty": "还没有收藏的文章。",
+      "fromTags": "来自你关注的标签",
+      "tagsEmpty": "关注标签即可在此看到相关文章。",
+      "tagsNoArticles": "你关注的标签暂无新内容。",
+      "savedSearches": "已保存的搜索"
     }
   }
 }

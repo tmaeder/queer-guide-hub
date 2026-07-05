@@ -589,6 +589,7 @@ export const AppRoutes = () => {
                 <Route path="hub/calendar" element={<HubPage module="calendar" />} />
                 <Route path="hub/contacts" element={<HubPage module="contacts" />} />
                 <Route path="hub/saved" element={<HubPage module="saved" />} />
+                <Route path="hub/news" element={<HubPage module="news" />} />
                 <Route path="hub/trips" element={<HubPage module="trips" />} />
                 {/* /me folded into /hub; identity tabs live on the unified
                   public profile (/user/:id/:tab) via MeRedirect. */}

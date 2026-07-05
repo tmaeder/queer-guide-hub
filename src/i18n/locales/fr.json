@@ -3068,6 +3068,15 @@
       "dating": "Rencontres",
       "datingTitle": "Ton deck de rencontres",
       "datingBody": "Parcours tes matchs et conversations."
+    },
+    "news": {
+      "title": "Actus",
+      "savedStories": "Articles enregistrés",
+      "savedEmpty": "Aucun article enregistré.",
+      "fromTags": "De tes tags",
+      "tagsEmpty": "Suis des tags pour voir des articles ici.",
+      "tagsNoArticles": "Rien de neuf de tes tags pour l’instant.",
+      "savedSearches": "Recherches enregistrées"
     }
   }
 }

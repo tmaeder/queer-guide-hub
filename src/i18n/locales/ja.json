@@ -3062,6 +3062,15 @@
       "dating": "デート",
       "datingTitle": "あなたのデートデッキ",
       "datingBody": "マッチと会話を見る。"
+    },
+    "news": {
+      "title": "ニュース",
+      "savedStories": "保存した記事",
+      "savedEmpty": "保存した記事はまだありません。",
+      "fromTags": "フォロー中のタグから",
+      "tagsEmpty": "タグをフォローすると関連記事が表示されます。",
+      "tagsNoArticles": "フォロー中のタグに新着はまだありません。",
+      "savedSearches": "保存した検索"
     }
   }
 }

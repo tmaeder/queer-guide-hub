@@ -3064,6 +3064,15 @@
       "dating": "Appuntamenti",
       "datingTitle": "Il tuo mazzo di incontri",
       "datingBody": "Sfoglia match e conversazioni."
+    },
+    "news": {
+      "title": "Notizie",
+      "savedStories": "Articoli salvati",
+      "savedEmpty": "Ancora nessun articolo salvato.",
+      "fromTags": "Dai tuoi tag",
+      "tagsEmpty": "Segui dei tag per vedere articoli qui.",
+      "tagsNoArticles": "Ancora niente di nuovo dai tuoi tag.",
+      "savedSearches": "Ricerche salvate"
     }
   }
 }

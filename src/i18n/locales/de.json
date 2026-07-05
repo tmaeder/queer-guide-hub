@@ -3064,6 +3064,15 @@
       "dating": "Dating",
       "datingTitle": "Dein Dating-Deck",
       "datingBody": "Matches und Gespräche durchsehen."
+    },
+    "news": {
+      "title": "News",
+      "savedStories": "Gespeicherte Artikel",
+      "savedEmpty": "Noch keine gespeicherten Artikel.",
+      "fromTags": "Aus deinen Tags",
+      "tagsEmpty": "Folge Tags, um hier passende Artikel zu sehen.",
+      "tagsNoArticles": "Noch nichts Neues aus deinen Tags.",
+      "savedSearches": "Gespeicherte Suchen"
     }
   }
 }

@@ -3064,6 +3064,15 @@
       "dating": "Encontros",
       "datingTitle": "Seu baralho de encontros",
       "datingBody": "Veja matches e conversas."
+    },
+    "news": {
+      "title": "Notícias",
+      "savedStories": "Artigos salvos",
+      "savedEmpty": "Nenhum artigo salvo ainda.",
+      "fromTags": "Das suas tags",
+      "tagsEmpty": "Siga tags para ver artigos aqui.",
+      "tagsNoArticles": "Nada novo das suas tags ainda.",
+      "savedSearches": "Buscas salvas"
     }
   }
 }

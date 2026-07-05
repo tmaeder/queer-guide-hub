@@ -3062,6 +3062,15 @@
       "dating": "데이트",
       "datingTitle": "내 데이트 덱",
       "datingBody": "매치와 대화를 살펴보세요."
+    },
+    "news": {
+      "title": "뉴스",
+      "savedStories": "저장한 기사",
+      "savedEmpty": "저장한 기사가 아직 없습니다.",
+      "fromTags": "팔로우한 태그에서",
+      "tagsEmpty": "태그를 팔로우하면 관련 기사가 표시됩니다.",
+      "tagsNoArticles": "팔로우한 태그에 새 기사가 없습니다.",
+      "savedSearches": "저장한 검색"
     }
   }
 }
