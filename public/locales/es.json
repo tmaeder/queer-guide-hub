@@ -2860,7 +2860,7 @@
       "recent": "Mensajes recientes",
       "active": "Activos recientemente"
     },
-    "upcoming": "Próximamente",
+    "upcoming": "Próximos",
     "openCalendar": "Calendario"
   },
   "extension": {
@@ -3020,9 +3020,9 @@
       "messageOne": "añadió «{{title}}» para revisión",
       "messageMany": "añadió {{count}} elementos para revisión: {{title}}…",
       "submitted": "{{count}} enviados para revisión",
-      "failed": "Error en el envío",
+      "failed": "Error al enviar",
       "title": "Añadir a Queer Guide",
-      "subtitle": "Sube un cartel o pega un enlace. Los elementos extraídos se envían para revisión y se comparten en este chat."
+      "subtitle": "Suelta un folleto o pega un enlace. Los elementos detectados se envían para revisión y se comparten en este chat."
     }
   },
   "newsDetail": {
@@ -3092,7 +3092,7 @@
     "signInDesc": "Inicia sesión para ver tus viajes y eventos guardados.",
     "trip": "Viaje",
     "empty": "No hay viajes ni eventos guardados este mes.",
-    "planTrip": "Planificar un viaje",
+    "planTrip": "Planear un viaje",
     "browseEvents": "Explorar eventos",
     "copyFeed": "Copiar URL de suscripción",
     "download": "Descargar .ics",

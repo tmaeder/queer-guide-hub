@@ -921,10 +921,7 @@
     },
     "conflicts": {
       "chip_one": "تعارض واحد",
-      "chip_other": "{{count}} تعارضات",
-      "chip_two": "تعارضان",
-      "chip_few": "{{count}} تعارضات",
-      "chip_many": "{{count}} تعارضًا"
+      "chip_other": "{{count}} تعارضات"
     },
     "legs": {
       "switchMode": "تغيير وسيلة التنقل",
@@ -976,10 +973,7 @@
     },
     "offline": {
       "pending_one": "تغيير واحد بانتظار المزامنة",
-      "pending_other": "{{count}} تغييرات بانتظار المزامنة",
-      "pending_two": "تغييران بانتظار المزامنة",
-      "pending_few": "{{count}} تغييرات بانتظار المزامنة",
-      "pending_many": "{{count}} تغييرًا بانتظار المزامنة"
+      "pending_other": "{{count}} تغييرات بانتظار المزامنة"
     }
   },
   "auth": {
@@ -2864,7 +2858,7 @@
       "recent": "راسلتهم مؤخرًا",
       "active": "نشطون مؤخرًا"
     },
-    "upcoming": "قريبًا",
+    "upcoming": "قادم",
     "openCalendar": "التقويم"
   },
   "extension": {
@@ -3017,16 +3011,16 @@
     },
     "share": {
       "gated": "التفاصيل على Queer Guide",
-      "view": "العرض على Queer Guide"
+      "view": "عرض على Queer Guide"
     },
     "submission": {
       "header": "تمت الإضافة إلى Queer Guide ({{count}})",
       "messageOne": "أضاف «{{title}}» للمراجعة",
-      "messageMany": "أضاف {{count}} عناصر للمراجعة: {{title}}…",
+      "messageMany": "أضاف {{count}} عنصرًا للمراجعة: {{title}}…",
       "submitted": "تم إرسال {{count}} للمراجعة",
       "failed": "فشل الإرسال",
       "title": "إضافة إلى Queer Guide",
-      "subtitle": "ارفع منشورًا أو الصق رابطًا. تُرسَل العناصر المستخرجة للمراجعة وتُشارَك في هذه المحادثة."
+      "subtitle": "أفلت منشورًا أو الصق رابطًا. تُرسل العناصر المكتشفة للمراجعة وتُشارك في هذه المحادثة."
     }
   },
   "newsDetail": {
@@ -3093,7 +3087,7 @@
   "calendar": {
     "title": "تقويمي",
     "subtitle": "رحلاتك وفعالياتك المحفوظة في مكان واحد",
-    "signInDesc": "سجّل الدخول لعرض رحلاتك وفعالياتك المحفوظة.",
+    "signInDesc": "سجّل الدخول لرؤية رحلاتك وفعالياتك المحفوظة.",
     "trip": "رحلة",
     "empty": "لا توجد رحلات أو فعاليات محفوظة هذا الشهر.",
     "planTrip": "خطّط لرحلة",
@@ -3101,6 +3095,6 @@
     "copyFeed": "نسخ رابط الاشتراك",
     "download": "تنزيل .ics",
     "open": "التقويم",
-    "openAria": "فتح تقويمي"
+    "openAria": "افتح تقويمي"
   }
 }

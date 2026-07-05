@@ -2840,7 +2840,7 @@
     "notification": {
       "open": "Ouvrir",
       "view": "Voir",
-      "reviewerNotes": "Notes du relecteur",
+      "reviewerNotes": "Notes du modérateur",
       "allSubmissions": "Toutes mes contributions",
       "shareToChat": "Partager dans le chat"
     },
@@ -3021,12 +3021,12 @@
     },
     "submission": {
       "header": "Ajouté à Queer Guide ({{count}})",
-      "messageOne": "a ajouté « {{title}} » pour relecture",
-      "messageMany": "a ajouté {{count}} éléments pour relecture : {{title}}…",
-      "submitted": "{{count}} envoyés pour relecture",
-      "failed": "Échec de l’envoi",
+      "messageOne": "a ajouté « {{title}} » pour examen",
+      "messageMany": "a ajouté {{count}} éléments pour examen : {{title}}…",
+      "submitted": "{{count}} soumis pour examen",
+      "failed": "Échec de l'envoi",
       "title": "Ajouter à Queer Guide",
-      "subtitle": "Déposez un flyer ou collez un lien. Les éléments extraits sont envoyés pour relecture et partagés dans ce chat."
+      "subtitle": "Déposez un flyer ou collez un lien. Les éléments détectés sont soumis pour examen et partagés dans ce chat."
     }
   },
   "newsDetail": {
@@ -3098,7 +3098,7 @@
     "empty": "Aucun voyage ni événement enregistré ce mois-ci.",
     "planTrip": "Planifier un voyage",
     "browseEvents": "Parcourir les événements",
-    "copyFeed": "Copier l’URL d’abonnement",
+    "copyFeed": "Copier l'URL d'abonnement",
     "download": "Télécharger .ics",
     "open": "Calendrier",
     "openAria": "Ouvrir mon calendrier"
