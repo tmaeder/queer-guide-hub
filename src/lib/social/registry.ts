@@ -377,6 +377,25 @@ export function platformLabel(platform: string): string {
 }
 
 /**
+ * A human-friendly handle for display (e.g. "@name"), or null when the
+ * identifier is opaque and shouldn't be shown — a YouTube channel id
+ * (`channel/UC…`) or any residual path. Strips readable path prefixes like
+ * `in/`, `company/`, `c/`, `user/`, `profile/` so cards don't show
+ * "@company/acme" or "@channel/UC-3gHl…".
+ */
+export function displayHandle(platform: SocialPlatformKey, handle: string): string | null {
+  if (!handle) return null;
+  let h = handle.replace(/^@/, '');
+  const m = h.match(/^(?:channel|c|user|company|in|profile)\/(.+)$/i);
+  if (m) h = m[1];
+  // Opaque YouTube channel id — no readable handle.
+  if (/^UC[\w-]{20,}$/.test(h)) return null;
+  // Anything still path-shaped is too complex to show cleanly.
+  if (h.includes('/')) return null;
+  return h || null;
+}
+
+/**
  * Scans free text / HTML for social profile URLs and returns a
  * platformKey -> url map (first URL wins per platform). Used by the
  * ingestion pipeline and backfill. `website` matches are ignored here to

@@ -1,6 +1,6 @@
 import { ExternalLink } from 'lucide-react';
 import { useSocialProfiles } from '@/hooks/useSocialProfiles';
-import { platformLabel, buildProfileUrl, isAdultPlatform, type SocialPlatformKey } from '@/lib/social/registry';
+import { platformLabel, buildProfileUrl, isAdultPlatform, displayHandle, type SocialPlatformKey } from '@/lib/social/registry';
 import { platformIcon } from '@/lib/social/icons';
 import { resolveImageUrl } from '@/utils/resolveImageUrl';
 
@@ -34,6 +34,7 @@ export function SocialCards({ links, className }: SocialCardsProps) {
         const adult = isAdultPlatform(platform);
         const label = platformLabel(platform);
         const href = url || buildProfileUrl(platform as SocialPlatformKey, handle);
+        const shownHandle = displayHandle(platform as SocialPlatformKey, handle);
         const avatar = profile?.avatar_url
           ? resolveImageUrl({ optimizedUrl: profile.avatar_url, imageUrl: profile.avatar_url })
           : null;
@@ -66,7 +67,9 @@ export function SocialCards({ links, className }: SocialCardsProps) {
               <span className="block truncate text-13 text-muted-foreground">
                 {profile?.follower_count != null
                   ? `${formatCount(profile.follower_count)} followers · ${label}`
-                  : `@${handle} · ${label}`}
+                  : shownHandle
+                    ? `@${shownHandle} · ${label}`
+                    : label}
               </span>
             </span>
             <ExternalLink size={14} className="shrink-0 text-muted-foreground" aria-hidden="true" />
