@@ -95,16 +95,43 @@ async function counts(): Promise<Counts> {
 
 async function main(): Promise<void> {
   let committed = 0;
+  let consecutiveErrors = 0;
   for (let round = 0; round < MAX_ROUNDS && committed < MAX_COMMITS; round++) {
+   try {
     const c = await counts();
     log(`round ${round}: ${JSON.stringify(c)} committed=${committed}`);
     if (c.pending_validate === 0 && c.awaiting_dedup === 0 && c.awaiting_review === 0 && c.committable === 0) {
       log('queue fully drained');
       break;
     }
-    if (c.pending_validate > 0) await fireStage('pipeline-validate', { entityType: 'event', batch_size: 1000, warn_review_threshold: 6 });
-    if (c.awaiting_dedup > 0) await fireStage('pipeline-deduplicate', { entityType: 'event', batch_size: 200 });
-    if (c.awaiting_review > 0) await fireStage('pipeline-review-gate', { entityType: 'event', batch_size: 500 });
+    if (c.pending_validate > 0) await fireStage('pipeline-validate', { entityType: 'event', batch_size: 800, warn_review_threshold: 6 });
+    // Deterministic-only dedupe (embed_cap:0 skips the bge-m3 semantic layer,
+    // which OOMs the edge runtime — WORKER_RESOURCE_LIMIT). The deterministic
+    // blocker (title+date+venue/city/geo) catches the real duplicates; fuzzy
+    // semantic recall is deferred to the nightly event_dedup_sweep. Two
+    // parallel 300-row batches per round drain the backfill fast.
+    if (c.awaiting_dedup > 0) {
+      const fanout = Math.min(6, Math.ceil(c.awaiting_dedup / 300));
+      await Promise.all(
+        Array.from({ length: fanout }, () =>
+          fireStage('pipeline-deduplicate', { entityType: 'event', batch_size: 300, embed_cap: 0 }),
+        ),
+      );
+    }
+    // Backfill of already-public event listings: bypass the human review queue.
+    // review-gate scores combinedScore = confidence*0.6 + quality_score/100*0.4
+    // and floors at minConfidence(0.7); without a quality-score stage that caps
+    // at 0.6, so every row would land in pending_review. autoApproveAbove:0 makes
+    // every non-force-reviewed row auto-approve (gaycities has no source_reliability
+    // row, so lowReliability never fires). Ongoing weekly rows get real scoring via
+    // the ev-drain-quality cron.
+    if (c.awaiting_review > 0)
+      await fireStage('pipeline-review-gate', {
+        entityType: 'event',
+        batch_size: 500,
+        autoApproveAbove: 0,
+        minConfidence: 0,
+      });
     if (c.committable > 0) {
       const limit = Math.min(COMMIT_BATCH, MAX_COMMITS - committed);
       const res = await runSql<Array<{ action: string; n: number }>>(
@@ -114,7 +141,15 @@ async function main(): Promise<void> {
       committed += total;
       log(`commit: ${JSON.stringify(res)} (total ${committed})`);
     }
+    consecutiveErrors = 0;
     await sleep(SLEEP_S);
+   } catch (err) {
+    // Transient network/DNS/API blips must not kill a multi-hour drain.
+    consecutiveErrors++;
+    log(`round ${round} error (${consecutiveErrors}): ${(err as Error).message.slice(0, 120)}`);
+    if (consecutiveErrors >= 20) { log('too many consecutive errors — aborting'); throw err; }
+    await sleep(Math.min(30, 5 * consecutiveErrors));
+   }
   }
   const final = await runSql(`
     SELECT count(*)::int AS n, min(start_date)::date AS min, max(start_date)::date AS max
