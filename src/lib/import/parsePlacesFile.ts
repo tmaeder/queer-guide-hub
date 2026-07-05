@@ -14,6 +14,14 @@ export interface ParsedPlace {
 
 export const MAX_IMPORT_PLACES = 200;
 
+function rejectUnsafeXml(content: string, ext: string): string {
+  const normalized = content.replace(/^\uFEFF/, '').trimStart();
+  if (/<!(DOCTYPE|ENTITY)\b/i.test(normalized)) {
+    throw new Error(`invalid ${ext} file`);
+  }
+  return normalized;
+}
+
 function num(v: string | null | undefined): number | null {
   if (v == null) return null;
   const n = Number(v);
@@ -133,7 +141,8 @@ function parseCsv(text: string): ParsedPlace[] {
 export function parsePlacesFile(filename: string, content: string): ParsedPlace[] {
   const ext = filename.toLowerCase().split('.').pop() ?? '';
   if (ext === 'gpx' || ext === 'kml') {
-    const doc = new DOMParser().parseFromString(content, 'text/xml');
+    const safeXml = rejectUnsafeXml(content, ext);
+    const doc = new DOMParser().parseFromString(safeXml, 'text/xml');
     if (doc.querySelector('parsererror')) throw new Error(`invalid ${ext} file`);
     return clean(ext === 'gpx' ? parseGpx(doc) : parseKml(doc));
   }
