@@ -15,6 +15,9 @@
 export interface SocialEnv {
   IMAGES: R2Bucket;
   ADMIN_SECRET?: string;
+  /** Dedicated secret for /social/resolve so this route never needs ADMIN_SECRET
+   *  (which is shared with /upload). Either secret authorizes the call. */
+  SOCIAL_RESOLVE_SECRET?: string;
 }
 
 export interface SocialCard {
@@ -165,9 +168,11 @@ export async function handleSocialResolve(
   const json = (body: unknown, status = 200) =>
     new Response(JSON.stringify(body), { status, headers: { ...cors, 'Content-Type': 'application/json' } });
 
-  const secret = env.ADMIN_SECRET;
   const provided = req.headers.get('X-Admin-Secret') || req.headers.get('Authorization')?.replace(/^Bearer\s+/i, '');
-  if (!secret || provided !== secret) return json({ error: 'unauthorized' }, 401);
+  const accepted = [env.SOCIAL_RESOLVE_SECRET, env.ADMIN_SECRET].filter(Boolean) as string[];
+  if (!provided || accepted.length === 0 || !accepted.includes(provided)) {
+    return json({ error: 'unauthorized' }, 401);
+  }
 
   let body: { platform?: string; handle?: string; profile_url?: string };
   try {
