@@ -36,7 +36,8 @@ import { brandSlug, departmentLabel, ATTRIBUTE_KIND_LABELS } from '@/lib/marketp
 import { tagHref } from '@/lib/searchRoutes';
 import type { ListingTag } from '@/hooks/usePageFetchers';
 import { AffiliateDisclosure } from '@/components/marketplace/AffiliateDisclosure';
-import { MarketplacePriceHistory } from '@/components/marketplace/MarketplacePriceHistory';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
+
 // Lazy: keeps the recharts chunk off the item-detail load (chart renders null for <2 price points)
 const MarketplacePriceHistory = lazy(() =>
   import('@/components/marketplace/MarketplacePriceHistory').then((m) => ({
