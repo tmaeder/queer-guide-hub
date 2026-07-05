@@ -633,6 +633,22 @@ function asString(v: unknown): string | null {
   return null;
 }
 
+/** Strip HTML tags + collapse whitespace — some JSON-LD descriptions embed markup. */
+export function stripHtml(s: string | null): string | null {
+  if (!s) return null;
+  const text = s
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/&amp;/gi, '&')
+    .replace(/&lt;/gi, '<')
+    .replace(/&gt;/gi, '>')
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;/gi, "'")
+    .replace(/\s+/g, ' ')
+    .trim();
+  return text || null;
+}
+
 /**
  * Map a JSON-LD country string to ISO2 (events.country check: ^[A-Z]{2}$).
  * Already-ISO2 strings pass through; a small name map covers the common
@@ -723,10 +739,11 @@ export function normalizeGcEvent(
       : [];
   const rawTags = [...new Set([...detail.tagSlugs, ...ldKeywords.map((k) => k.toLowerCase())])];
 
-  const description =
+  const description = stripHtml(
     detail.bodyDescription && detail.bodyDescription.length > (asString(ld['description'])?.length ?? 0)
       ? detail.bodyDescription
-      : asString(ld['description']);
+      : asString(ld['description']),
+  );
 
   return {
     title,

@@ -182,6 +182,16 @@ describe('normalizeGcEvent', () => {
     expect(norm.metadata.country_name).toBe('United States');
   });
 
+  it('strips HTML tags from JSON-LD descriptions', () => {
+    const ld = {
+      '@type': 'Event', name: 'HTML Event', startDate: '2024-06-01T12:00:00',
+      description: '<p>Set sail with <strong>3,000</strong> gays.</p>&amp; more',
+    };
+    const norm = normalizeGcEvent(detailFixture({ jsonLd: ld, bodyDescription: null }), METRO);
+    if ('reject' in norm) throw new Error('unexpected reject');
+    expect(norm.description).toBe('Set sail with 3,000 gays. & more');
+  });
+
   it('drops a date-only end that lands before a timed same-day start', () => {
     const ld = {
       '@type': 'Event',
