@@ -1,4 +1,11 @@
 -- Existence Truth Engine — M1 schema (2026-06-23)
+--
+-- One shared, polymorphic, append-only signal ledger + a reversible audit table
+-- for auto-detecting and archiving venues / events / marketplace_listings that no
+-- longer exist. No FK (polymorphic, matches search_documents). The ledger has no
+-- search_documents trigger, so writing signals never storms the disk-constrained DB
+-- — the whole point is to keep per-signal history OFF the hot entity tables.
+
 CREATE TABLE IF NOT EXISTS public.entity_existence_signals (
   id           uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   entity_type  text NOT NULL CHECK (entity_type IN ('venue','event','marketplace')),
@@ -13,6 +20,16 @@ CREATE TABLE IF NOT EXISTS public.entity_existence_signals (
   details      jsonb NOT NULL DEFAULT '{}'::jsonb,
   observed_at  timestamptz NOT NULL DEFAULT now()
 );
+
+CREATE INDEX IF NOT EXISTS entity_existence_signals_lookup_idx
+  ON public.entity_existence_signals (entity_type, entity_id, observed_at DESC);
+-- Decision pass only ever scans strong dead/dying rows; keep it off full scans.
+CREATE INDEX IF NOT EXISTS entity_existence_signals_strong_idx
+  ON public.entity_existence_signals (entity_type, entity_id, signal_kind, verdict)
+  WHERE verdict IN ('dead','dying');
+
+ALTER TABLE public.entity_existence_signals ENABLE ROW LEVEL SECURITY;
+
 CREATE INDEX IF NOT EXISTS entity_existence_signals_lookup_idx
   ON public.entity_existence_signals (entity_type, entity_id, observed_at DESC);
 CREATE INDEX IF NOT EXISTS entity_existence_signals_strong_idx
@@ -23,11 +40,20 @@ DROP POLICY IF EXISTS ees_read ON public.entity_existence_signals;
 CREATE POLICY ees_read ON public.entity_existence_signals
   FOR SELECT TO authenticated
   USING (public.has_any_role_jwt(ARRAY['admin','moderator']::app_role[]));
+
 DROP POLICY IF EXISTS ees_admin_write ON public.entity_existence_signals;
 CREATE POLICY ees_admin_write ON public.entity_existence_signals
   FOR ALL TO authenticated
   USING (public.has_role(auth.uid(),'admin'::app_role))
   WITH CHECK (public.has_role(auth.uid(),'admin'::app_role));
+
+GRANT INSERT, SELECT ON public.entity_existence_signals TO service_role;
+
+
+-- Reversible audit. prev_state snapshots the multi-valued entity state (status,
+-- liveness_status, seo_indexable, closed_at…) so reopen restores it exactly.
+-- Venues additionally keep their existing venue_closed_audit (the url+stale path
+-- in run_venue_closure_decision is untouched); events + marketplace use this table.
 GRANT INSERT, SELECT ON public.entity_existence_signals TO service_role;
 
 CREATE TABLE IF NOT EXISTS public.entity_existence_audit (
@@ -43,6 +69,10 @@ CREATE TABLE IF NOT EXISTS public.entity_existence_audit (
   created_by    uuid REFERENCES auth.users(id) ON DELETE SET NULL,
   created_at    timestamptz NOT NULL DEFAULT now()
 );
+
+CREATE INDEX IF NOT EXISTS entity_existence_audit_lookup_idx
+  ON public.entity_existence_audit (entity_type, entity_id, created_at DESC);
+-- Open archive rows = the reopen worklist; open flag rows = the review queue.
 CREATE INDEX IF NOT EXISTS entity_existence_audit_lookup_idx
   ON public.entity_existence_audit (entity_type, entity_id, created_at DESC);
 CREATE INDEX IF NOT EXISTS entity_existence_audit_open_archive_idx
@@ -51,10 +81,20 @@ CREATE INDEX IF NOT EXISTS entity_existence_audit_open_archive_idx
 CREATE INDEX IF NOT EXISTS entity_existence_audit_open_flag_idx
   ON public.entity_existence_audit (entity_type, created_at DESC)
   WHERE reverted_at IS NULL AND action = 'flag';
+
+ALTER TABLE public.entity_existence_audit ENABLE ROW LEVEL SECURITY;
+
 ALTER TABLE public.entity_existence_audit ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS eea_admin_all ON public.entity_existence_audit;
 CREATE POLICY eea_admin_all ON public.entity_existence_audit
   FOR ALL TO authenticated
   USING (public.has_role(auth.uid(),'admin'::app_role))
   WITH CHECK (public.has_role(auth.uid(),'admin'::app_role));
+
+GRANT INSERT, SELECT, UPDATE ON public.entity_existence_audit TO service_role;
+
+COMMENT ON TABLE public.entity_existence_signals IS
+  'Append-only existence/liveness signal ledger for venues/events/marketplace. Fed by collectors; read by run_existence_decision. No search trigger (storm-safe).';
+COMMENT ON TABLE public.entity_existence_audit IS
+  'Reversible archive/flag/reopen audit for the Existence Truth Engine. prev_state enables exact reopen. Venues also use venue_closed_audit for the legacy url+stale path.';
 GRANT INSERT, SELECT, UPDATE ON public.entity_existence_audit TO service_role;;

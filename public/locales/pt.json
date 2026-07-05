@@ -63,7 +63,6 @@
   },
   "search": {
     "placeholder": "Pesquisar países e cidades...",
-    "nearMe": "Perto de Mim",
     "filters": "Filtros",
     "continent": "Continente",
     "all": "Todos",
@@ -575,7 +574,9 @@
         "safety": "Segurança",
         "lgbtq-specific": "Específico LGBTQIA+",
         "other": "Outros"
-      }
+      },
+      "scopeAll": "Todos",
+      "scopeMine": "Meus"
     },
     "collaborate": {
       "chat": "Chat",
@@ -614,7 +615,8 @@
       "budget": "Orçamento",
       "reservations": "Reservas",
       "packing": "Mala",
-      "collaborate": "Colaborar"
+      "collaborate": "Colaborar",
+      "journal": "Diário"
     },
     "today": {
       "offlineBanner": "Sem conexão — mostrando o último itinerário salvo.",
@@ -895,6 +897,83 @@
       "saveAria": "Save trip",
       "unsaveAria": "Unsave trip",
       "error": "Could not update save"
+    },
+    "dayNotes": {
+      "addTitle": "Adicionar uma nota a este dia",
+      "textLabel": "Nota",
+      "textPlaceholder": "ex.: Check-out até às 11:00",
+      "timeLabel": "Hora (opcional)",
+      "iconLabel": "Ícone",
+      "save": "Adicionar nota",
+      "added": "Nota adicionada",
+      "delete": "Excluir nota"
+    },
+    "weather": {
+      "clear": "Céu limpo",
+      "partlyCloudy": "Parcialmente nublado",
+      "overcast": "Encoberto",
+      "fog": "Nevoeiro",
+      "drizzle": "Chuvisco",
+      "rain": "Chuva",
+      "snow": "Neve",
+      "thunderstorm": "Trovoada",
+      "typical": "típico"
+    },
+    "conflicts": {
+      "chip_one": "{{count}} conflito",
+      "chip_other": "{{count}} conflitos"
+    },
+    "legs": {
+      "switchMode": "Mudar meio de transporte",
+      "modeAria": "Meio de transporte: {{mode}} — clique para mudar",
+      "mode": {
+        "walk": "a pé",
+        "transit": "transporte público",
+        "drive": "carro"
+      },
+      "walkingTotal": "{{distance}} a pé",
+      "optimize": "Otimizar a ordem do trajeto",
+      "directions": "Abrir o dia no Google Maps"
+    },
+    "suggestions": {
+      "accessMatch": "Atende às suas necessidades"
+    },
+    "journal": {
+      "placeholder": "O que aconteceu hoje? Pequenos momentos também contam.",
+      "moodLabel": "Humor",
+      "mood": {
+        "joy": "Alegre",
+        "good": "Bem",
+        "mixed": "Misto",
+        "tough": "Difícil"
+      },
+      "addPhotos": "Fotos",
+      "save": "Salvar registro",
+      "saved": "Registro do diário salvo",
+      "empty": "Ainda não há registros no diário.",
+      "delete": "Excluir registro",
+      "removePhoto": "Remover foto",
+      "member": "Viajante"
+    },
+    "import": {
+      "button": "Importar",
+      "title": "Importar lugares",
+      "pickFile": "Escolher um arquivo",
+      "formats": "GPX, KML, GeoJSON ou Google Takeout (JSON de lugares salvos / CSV de listas)",
+      "noPlaces": "Nenhum lugar encontrado neste arquivo.",
+      "matching": "Comparando locais…",
+      "matchCount": "{{count}} correspondem a locais do queer.guide",
+      "changeFile": "Trocar arquivo",
+      "matched": "Local existente",
+      "customPin": "Pin personalizado",
+      "noCoords": "Sem coordenadas — apenas o nome",
+      "confirm": "Importar {{count}} lugares",
+      "done": "{{count}} lugares importados",
+      "doneHint": "Eles ficam no grupo não agendado — arraste-os para os dias."
+    },
+    "offline": {
+      "pending_one": "{{count}} alteração aguardando sincronização",
+      "pending_other": "{{count}} alterações aguardando sincronização"
     }
   },
   "auth": {
@@ -2980,5 +3059,12 @@
       "dismiss": "Dispensar",
       "ariaLabel": "Instalar app"
     }
+  },
+  "atlas": {
+    "summary": "{{visited}} países visitados · {{bucket}} na sua lista de desejos",
+    "hint": "Toque em um país para marcá-lo",
+    "visited": "Visitado",
+    "bucket": "Lista de desejos",
+    "fromTrips": "Marcado como visitado por uma viagem concluída"
   }
 }

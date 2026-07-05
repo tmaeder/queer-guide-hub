@@ -92,6 +92,48 @@ export function totalWalkingKm(legs: TripLeg[]): number {
   return legs.filter((l) => l.mode === 'walk').reduce((sum, l) => sum + l.distanceKm, 0);
 }
 
+/**
+ * Nearest-neighbor route optimization for one day: starts at the first
+ * located place and greedily hops to the closest remaining one. Notes and
+ * unlocated places keep their relative order, appended at the end. Good
+ * enough at day granularity — real TSP is overkill for ≤15 stops.
+ */
+export function optimizeDayOrder(places: TripPlace[]): TripPlace[] {
+  const locatable = places.filter(hasCoords);
+  const rest = places.filter((p) => !hasCoords(p));
+  if (locatable.length < 3) return places;
+
+  const route: TripPlace[] = [locatable[0]];
+  const remaining = locatable.slice(1);
+  while (remaining.length > 0) {
+    const last = route[route.length - 1];
+    let bestIdx = 0;
+    let bestDist = Infinity;
+    for (let i = 0; i < remaining.length; i++) {
+      const d = calculateDistanceKm(
+        last.latitude!,
+        last.longitude!,
+        remaining[i].latitude!,
+        remaining[i].longitude!,
+      );
+      if (d < bestDist) {
+        bestDist = d;
+        bestIdx = i;
+      }
+    }
+    route.push(remaining.splice(bestIdx, 1)[0]);
+  }
+  return [...route, ...rest];
+}
+
+/** Google Maps directions deep link through the day's located stops. */
+export function googleMapsDayUrl(places: TripPlace[]): string | null {
+  const stops = places.filter(hasCoords).slice(0, 10);
+  if (stops.length < 2) return null;
+  const path = stops.map((p) => `${p.latitude},${p.longitude}`).join('/');
+  return `https://www.google.com/maps/dir/${path}`;
+}
+
 export function formatLegDistance(km: number): string {
   if (km < 1) return `~${Math.round(km * 100) * 10} m`;
   return `~${km < 10 ? km.toFixed(1) : Math.round(km)} km`;

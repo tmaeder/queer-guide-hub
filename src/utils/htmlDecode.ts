@@ -104,8 +104,9 @@ export function cleanExcerpt(raw: string): string {
   text = decodeHtmlEntities(text);
   // Remove leftover URLs that might remain after stripping tags
   text = text.replace(/https?:\/\/\S+/g, '').trim();
-  // Remove trailing RSS junk
+  // Remove trailing RSS junk + paywall/widget junk
   text = removeTrailingJunk(text);
+  text = removePaywallJunk(text);
   // Collapse multiple whitespace/newlines into single space
   text = text.replace(/\s+/g, ' ').trim();
   return text;
@@ -147,8 +148,9 @@ export function cleanContent(raw: string): string {
   // Replace &nbsp; / non-breaking spaces with regular spaces
   text = text.replace(/\u00A0/g, ' ');
 
-  // Remove trailing RSS/CMS junk
+  // Remove trailing RSS/CMS junk + paywall/widget junk
   text = removeTrailingJunk(text);
+  text = removePaywallJunk(text);
 
   // Trim whitespace from each line
   text = text
@@ -193,4 +195,19 @@ function removeTrailingJunk(text: string): string {
   text = text.replace(/\n*The rest of this article can be read on.+$/i, '');
 
   return text.trim();
+}
+
+/**
+ * Remove paywall + link-widget junk phrases anywhere in the text. Mirrors the
+ * DB `news_strip_junk()` used at ingestion, so any residue that slips past the
+ * server (e.g. a stale SPA cache) is still hidden from the reader.
+ */
+function removePaywallJunk(text: string): string {
+  return text
+    .replace(
+      /only available in paid plans|this (?:article|content) is for subscribers only|subscribe to (?:read|continue)[^.\n]*|nur für abonnenten|réservé aux abonnés|solo para suscriptores|solo per abbonati|\(opens? in (?:a )?new (?:window|tab)\)/gi,
+      ' ',
+    )
+    .replace(/[ \t]{2,}/g, ' ')
+    .trim();
 }

@@ -63,7 +63,6 @@
   },
   "search": {
     "placeholder": "国や都市を検索...",
-    "nearMe": "近くの場所",
     "filters": "フィルター",
     "continent": "大陸",
     "all": "すべて",
@@ -575,7 +574,9 @@
         "safety": "安全用品",
         "lgbtq-specific": "LGBTQ+ 向け",
         "other": "その他"
-      }
+      },
+      "scopeAll": "全員",
+      "scopeMine": "自分"
     },
     "collaborate": {
       "chat": "チャット",
@@ -614,7 +615,8 @@
       "budget": "予算",
       "reservations": "予約",
       "packing": "荷造り",
-      "collaborate": "コラボ"
+      "collaborate": "コラボ",
+      "journal": "日記"
     },
     "today": {
       "offlineBanner": "オフラインです — 最後に保存した旅程を表示しています。",
@@ -895,6 +897,83 @@
       "saveAria": "Save trip",
       "unsaveAria": "Unsave trip",
       "error": "Could not update save"
+    },
+    "dayNotes": {
+      "addTitle": "この日にメモを追加",
+      "textLabel": "メモ",
+      "textPlaceholder": "例: 11:00までにチェックアウト",
+      "timeLabel": "時刻（任意）",
+      "iconLabel": "アイコン",
+      "save": "メモを追加",
+      "added": "メモを追加しました",
+      "delete": "メモを削除"
+    },
+    "weather": {
+      "clear": "快晴",
+      "partlyCloudy": "晴れ時々曇り",
+      "overcast": "曇り",
+      "fog": "霧",
+      "drizzle": "霧雨",
+      "rain": "雨",
+      "snow": "雪",
+      "thunderstorm": "雷雨",
+      "typical": "例年"
+    },
+    "conflicts": {
+      "chip_one": "{{count}}件の競合",
+      "chip_other": "{{count}}件の競合"
+    },
+    "legs": {
+      "switchMode": "移動手段を切り替える",
+      "modeAria": "移動手段: {{mode}} — クリックして変更",
+      "mode": {
+        "walk": "徒歩",
+        "transit": "公共交通機関",
+        "drive": "車"
+      },
+      "walkingTotal": "徒歩{{distance}}",
+      "optimize": "ルート順を最適化",
+      "directions": "この日をGoogle マップで開く"
+    },
+    "suggestions": {
+      "accessMatch": "ニーズに一致"
+    },
+    "journal": {
+      "placeholder": "今日は何がありましたか？小さな出来事も大切に。",
+      "moodLabel": "気分",
+      "mood": {
+        "joy": "最高",
+        "good": "良い",
+        "mixed": "複雑",
+        "tough": "大変"
+      },
+      "addPhotos": "写真",
+      "save": "記録を保存",
+      "saved": "日記を保存しました",
+      "empty": "まだ日記がありません。",
+      "delete": "記録を削除",
+      "removePhoto": "写真を削除",
+      "member": "旅行者"
+    },
+    "import": {
+      "button": "インポート",
+      "title": "場所をインポート",
+      "pickFile": "ファイルを選択",
+      "formats": "GPX、KML、GeoJSON、Google Takeout（保存済みスポットJSON / リストCSV）",
+      "noPlaces": "このファイルに場所が見つかりません。",
+      "matching": "スポットを照合中…",
+      "matchCount": "{{count}}件がqueer.guideのスポットと一致",
+      "changeFile": "ファイルを変更",
+      "matched": "既存スポット",
+      "customPin": "カスタムピン",
+      "noCoords": "座標なし — 名前のみ",
+      "confirm": "{{count}}件の場所をインポート",
+      "done": "{{count}}件の場所をインポートしました",
+      "doneHint": "未予定のプールに入ります — 日程にドラッグしてください。"
+    },
+    "offline": {
+      "pending_one": "{{count}}件の変更が同期待ち",
+      "pending_other": "{{count}}件の変更が同期待ち"
     }
   },
   "auth": {
@@ -2978,5 +3057,12 @@
       "dismiss": "閉じる",
       "ariaLabel": "アプリをインストール"
     }
+  },
+  "atlas": {
+    "summary": "訪問済み{{visited}}か国 · バケットリスト{{bucket}}か国",
+    "hint": "国をタップしてマーク",
+    "visited": "訪問済み",
+    "bucket": "バケットリスト",
+    "fromTrips": "完了した旅行により訪問済みになりました"
   }
 }

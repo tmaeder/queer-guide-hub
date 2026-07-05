@@ -44,6 +44,7 @@ const MarketplacePriceHistory = lazy(() =>
     default: m.MarketplacePriceHistory,
   }))
 );
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
 
 export type MarketplaceListing = Database['public']['Tables']['marketplace_listings']['Row'];
 export type MarketplaceReview = Database['public']['Tables']['marketplace_reviews']['Row'] & {

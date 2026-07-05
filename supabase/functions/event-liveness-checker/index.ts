@@ -10,6 +10,23 @@ import { getCorsHeaders, getServiceClient, requireInternalOrAdmin, jsonResponse 
 import { normalizeUrl } from '../_shared/enrich-harness.ts'
 import { hasValidWebhookSecret } from '../_shared/webhook-auth.ts'
 import { assertPublicHttpUrl } from '../_shared/ssrf-guard.ts'
+import { insertSignals, type ExistenceSignal, type Verdict } from '../_shared/existence-probe.ts'
+
+// Map a liveness verdict to an existence-engine signal (kind + verdict + weight).
+function existenceSignalFor(eventId: string, liveness: Liveness, detail: { http_status: number | null; event_status: string | null }): ExistenceSignal | null {
+  const base = { entity_type: 'event' as const, entity_id: eventId, source: 'event-liveness-checker', details: detail }
+  const fromLd = !!detail.event_status
+  const mk = (signal_kind: string, verdict: Verdict, weight: number): ExistenceSignal => ({ ...base, signal_kind, verdict, weight })
+  switch (liveness) {
+    case 'cancelled': return fromLd ? mk('jsonld_status', 'dead', 0.85) : mk('http_status', 'dead', 0.95)
+    case 'dead_link': return mk('http_status', 'dead', 0.95)
+    case 'sold_out':
+    case 'postponed':
+    case 'moved_online': return mk('jsonld_status', 'dying', 0.5)
+    case 'live': return mk('http_status', 'alive', 0.6)
+    default: return null // unknown — inconclusive
+  }
+}
 
 const GET_TIMEOUT = 10_000
 const MAX_BODY_BYTES = 600_000
@@ -164,6 +181,7 @@ Deno.serve(async (req: Request) => {
 
   const counts: Record<string, number> = {}
   const results: Array<Record<string, unknown>> = []
+  const existenceSigs: ExistenceSignal[] = []
 
   for (let i = 0; i < events.length; i++) {
     const ev = events[i]
@@ -185,6 +203,8 @@ Deno.serve(async (req: Request) => {
         if (AUTO_STATUS[liveness]) update.status = AUTO_STATUS[liveness]
         if (FLAG_ATTENTION.includes(liveness)) update.needs_attention = true
         await supabase.from('events').update(update).eq('id', ev.id)
+        const esig = existenceSignalFor(ev.id, liveness, { http_status: httpStatus, event_status: ld.eventStatus })
+        if (esig) existenceSigs.push(esig)
       }
       results.push({ id: ev.id, liveness, http_status: httpStatus, ...(ld.eventStatus ? { event_status: ld.eventStatus } : {}) })
     } catch (e) {
@@ -192,6 +212,8 @@ Deno.serve(async (req: Request) => {
     }
     if (i < events.length - 1) await new Promise(r => setTimeout(r, BETWEEN_CHECK_DELAY))
   }
+
+  if (!dryRun) await insertSignals(supabase, existenceSigs)
 
   return jsonResponse({ checked: results.length, dry_run: dryRun, counts, results }, 200, req)
 })

@@ -63,7 +63,6 @@
   },
   "search": {
     "placeholder": "البحث في البلدان والمدن...",
-    "nearMe": "بالقرب مني",
     "filters": "المرشحات",
     "continent": "القارة",
     "all": "الكل",
@@ -575,7 +574,9 @@
         "safety": "السلامة",
         "lgbtq-specific": "خاص بمجتمع الميم",
         "other": "أخرى"
-      }
+      },
+      "scopeAll": "الجميع",
+      "scopeMine": "أغراضي"
     },
     "collaborate": {
       "chat": "الدردشة",
@@ -614,7 +615,8 @@
       "budget": "الميزانية",
       "reservations": "الحجوزات",
       "packing": "التعبئة",
-      "collaborate": "التعاون"
+      "collaborate": "التعاون",
+      "journal": "اليوميات"
     },
     "today": {
       "offlineBanner": "أنت غير متصل — نعرض آخر خط سير محفوظ.",
@@ -895,6 +897,83 @@
       "saveAria": "Save trip",
       "unsaveAria": "Unsave trip",
       "error": "Could not update save"
+    },
+    "dayNotes": {
+      "addTitle": "أضف ملاحظة إلى هذا اليوم",
+      "textLabel": "ملاحظة",
+      "textPlaceholder": "مثال: تسجيل المغادرة قبل 11:00",
+      "timeLabel": "الوقت (اختياري)",
+      "iconLabel": "أيقونة",
+      "save": "أضف ملاحظة",
+      "added": "تمت إضافة الملاحظة",
+      "delete": "حذف الملاحظة"
+    },
+    "weather": {
+      "clear": "صافٍ",
+      "partlyCloudy": "غائم جزئيًا",
+      "overcast": "غائم",
+      "fog": "ضباب",
+      "drizzle": "رذاذ",
+      "rain": "مطر",
+      "snow": "ثلج",
+      "thunderstorm": "عاصفة رعدية",
+      "typical": "معتاد"
+    },
+    "conflicts": {
+      "chip_one": "تعارض واحد",
+      "chip_other": "{{count}} تعارضات"
+    },
+    "legs": {
+      "switchMode": "تغيير وسيلة التنقل",
+      "modeAria": "وسيلة التنقل: {{mode}} — انقر للتغيير",
+      "mode": {
+        "walk": "مشيًا",
+        "transit": "المواصلات العامة",
+        "drive": "بالسيارة"
+      },
+      "walkingTotal": "{{distance}} مشيًا",
+      "optimize": "تحسين ترتيب المسار",
+      "directions": "فتح اليوم في خرائط Google"
+    },
+    "suggestions": {
+      "accessMatch": "يلبي احتياجاتك"
+    },
+    "journal": {
+      "placeholder": "ماذا حدث اليوم؟ اللحظات الصغيرة مهمة أيضًا.",
+      "moodLabel": "المزاج",
+      "mood": {
+        "joy": "سعيد",
+        "good": "جيد",
+        "mixed": "متقلب",
+        "tough": "صعب"
+      },
+      "addPhotos": "صور",
+      "save": "حفظ المدخلة",
+      "saved": "تم حفظ مدخلة اليوميات",
+      "empty": "لا توجد مدخلات في اليوميات بعد.",
+      "delete": "حذف المدخلة",
+      "removePhoto": "إزالة الصورة",
+      "member": "مسافر/ة"
+    },
+    "import": {
+      "button": "استيراد",
+      "title": "استيراد أماكن",
+      "pickFile": "اختر ملفًا",
+      "formats": "GPX أو KML أو GeoJSON أو Google Takeout (JSON للأماكن المحفوظة / CSV للقوائم)",
+      "noPlaces": "لم يتم العثور على أماكن في هذا الملف.",
+      "matching": "جارٍ مطابقة الأماكن…",
+      "matchCount": "تمت مطابقة {{count}} مع أماكن queer.guide",
+      "changeFile": "تغيير الملف",
+      "matched": "مكان موجود",
+      "customPin": "دبوس مخصص",
+      "noCoords": "بدون إحداثيات — الاسم فقط",
+      "confirm": "استيراد {{count}} من الأماكن",
+      "done": "تم استيراد {{count}} من الأماكن",
+      "doneHint": "ستوضع في قائمة غير المجدولة — اسحبها إلى الأيام."
+    },
+    "offline": {
+      "pending_one": "تغيير واحد بانتظار المزامنة",
+      "pending_other": "{{count}} تغييرات بانتظار المزامنة"
     }
   },
   "auth": {
@@ -2978,5 +3057,12 @@
       "dismiss": "إغلاق",
       "ariaLabel": "تثبيت التطبيق"
     }
+  },
+  "atlas": {
+    "summary": "زرت {{visited}} دولة · {{bucket}} في قائمة أمنياتك",
+    "hint": "انقر على دولة لتمييزها",
+    "visited": "تمت زيارتها",
+    "bucket": "قائمة الأمنيات",
+    "fromTrips": "وُسمت كمزارة بعد رحلة مكتملة"
   }
 }
