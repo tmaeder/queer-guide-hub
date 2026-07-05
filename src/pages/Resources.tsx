@@ -35,6 +35,18 @@ import {
 
 const TagRelationshipGraph = lazy(() => import('@/components/tags/TagRelationshipGraph'));
 
+// Default head for the /tags overview (and its category/search sub-views). The
+// tag-detail view overrides this via tagDetailMeta; without a fallback the
+// overview inherited the generic homepage <title>, which failed the SEO
+// regression check (duplicate title + canonical pointing at the old /resources
+// redirect). canonicalPath is /tags — the live glossary route.
+const OVERVIEW_META = {
+  title: 'LGBTQ+ Resource Hub & Tag Glossary',
+  description:
+    'Browse LGBTQ+ topics, identities, and support resources by tag. Find venues, events, people, and crisis help across the Queer Guide glossary.',
+  canonicalPath: '/tags',
+};
+
 export default function Resources() {
   const { t } = useTranslation();
   const { tagName, categorySlug } = useParams<{ tagName: string; categorySlug: string }>();
@@ -332,7 +344,7 @@ export default function Resources() {
       noIndex: selectedTag.seo_indexable === false || isAdult,
     };
   }, [viewMode, selectedTag]);
-  useMeta(tagDetailMeta ?? {});
+  useMeta(tagDetailMeta ?? OVERVIEW_META);
 
   const handleSearch = useCallback(
     (query: string) => {
