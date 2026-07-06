@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
+import { ArrowRight, Bookmark, CalendarClock, Heart, Loader2, MessageCircle } from 'lucide-react';
 import { ArrowRight, Bookmark, CalendarClock, Loader2, MessageCircle } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
@@ -10,6 +11,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { useMyAgenda } from '@/hooks/useMyAgenda';
 import { useInboxFeed } from '@/hooks/useInboxFeed';
 import { fetchAllUserFavorites } from '@/hooks/usePageFetchers';
+import { useMyIntimateProfile } from '@/hooks/useIntimateProfile';
+import { useIntimateMatches } from '@/hooks/useIntimateMatches';
 
 /** Section wrapper: heading + "see all" link into the owning module. */
 function OverviewSection({
@@ -55,6 +58,11 @@ function OverviewSection({
 export function OverviewModule() {
   const { t } = useTranslation();
   const { user } = useAuth();
+  // Dating peek is self-gated: only opted-in users see it (privacy parity with
+  // DatingSection). Matches are conversations, so it deep-links into Messages.
+  const { data: intimateProfile } = useMyIntimateProfile();
+  const { data: matches } = useIntimateMatches();
+  const matchCount = matches?.length ?? 0;
 
   // Next 14 days of agenda, flattened to the first few items.
   const { from, to } = useMemo(() => {
@@ -158,6 +166,22 @@ export function OverviewModule() {
           </div>
         )}
       </OverviewSection>
+
+      {/* Dating matches — opted-in only */}
+      {intimateProfile && (
+        <OverviewSection
+          icon={Heart}
+          title={t('hub.contacts.dating', { defaultValue: 'Dating' })}
+          to="/hub/messages?filter=matches"
+          seeAllLabel={t('hub.overview.openMatches', { defaultValue: 'Open matches' })}
+        >
+          <p className="text-sm text-muted-foreground">
+            {matchCount > 0
+              ? t('hub.overview.matchCount', { defaultValue: '{{count}} matches', count: matchCount })
+              : t('hub.overview.noMatches', { defaultValue: 'No matches yet.' })}
+          </p>
+        </OverviewSection>
+      )}
 
       {/* Saved */}
       <OverviewSection
