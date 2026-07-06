@@ -79,6 +79,7 @@ async function decryptBody(encryptedHex: string | null): Promise<string | null> 
 }
 
 // deno-lint-ignore no-explicit-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- item is a loosely-typed trip_inbox_items DB row; only parsed_* fields are read
 function buildSystemPrompt(item: any, emailBody: string | null): string {
   const current = {
     type: item.parsed_type,
@@ -237,7 +238,7 @@ Deno.serve(async (req) => {
 
   const emailBody = await decryptBody(item.raw_body_encrypted as string | null)
 
-  let text = ''
+  let text: string
   try {
     const llm = await anthropicMessages({
       model: 'claude-haiku-4-5',
