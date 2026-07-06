@@ -14,8 +14,7 @@ import { probeLink, type LinkStatus } from './link-health.ts'
 import { assertPublicHttpUrl } from './ssrf-guard.ts'
 import { chatCompletion } from './openai-client.ts'
 import { withCircuitBreaker, CircuitOpenError } from './circuit-breaker.ts'
-// deno-lint-ignore no-explicit-any
-type SupabaseClient = any
+import type { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
 
 export type Verdict = 'alive' | 'dying' | 'dead' | 'ambiguous'
 export type EntityType = 'venue' | 'event' | 'marketplace'

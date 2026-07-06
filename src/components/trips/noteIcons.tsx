@@ -21,6 +21,7 @@ import {
   MapPin,
   Phone,
   type LucideIcon,
+  type LucideProps,
 } from 'lucide-react';
 
 /**
@@ -56,4 +57,14 @@ export const NOTE_ICON_SLUGS = Object.keys(NOTE_ICONS);
 
 export function noteIconFor(slug: string | null | undefined): LucideIcon {
   return (slug && NOTE_ICONS[slug]) || StickyNote;
+}
+
+/**
+ * Render the resolved note icon as an element. Prefer this over `noteIconFor`
+ * at call sites so no capitalized component variable is created during render
+ * (react-hooks/static-components).
+ */
+export function renderNoteIcon(slug: string | null | undefined, props?: LucideProps) {
+  const Icon = noteIconFor(slug);
+  return <Icon {...props} />;
 }

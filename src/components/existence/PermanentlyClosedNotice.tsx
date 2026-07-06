@@ -7,7 +7,7 @@ import { AlertCircle } from 'lucide-react';
  */
 export function PermanentlyClosedNotice({ lastVerifiedAt, kind = 'place' }: { lastVerifiedAt?: string | null; kind?: string }) {
   return (
-    <div className="flex items-start gap-3 rounded-container border border-border bg-muted/40 p-4">
+    <div className="flex items-start gap-2 rounded-container border border-border bg-muted/40 p-4">
       <AlertCircle size={18} className="mt-0.5 shrink-0 text-muted-foreground" />
       <div className="flex flex-col gap-0.5">
         <span className="font-medium">This {kind} appears to be permanently closed.</span>

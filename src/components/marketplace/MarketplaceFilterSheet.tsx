@@ -42,19 +42,11 @@ import {
   type MarketplaceAttributeKind,
 } from '@/lib/marketplaceTaxonomy';
 import { PRICE_CEILING, isAttributeTag, hasActiveFilters } from '@/lib/marketplaceFilterParams';
+import { COMMUNITY_OWNED_OPTIONS } from './marketplaceFilterOptions';
 
 const PRICE_MIN = 0;
 const PRICE_MAX = 500;
 const PRICE_STEP = 5;
-
-export const COMMUNITY_OWNED_OPTIONS: Array<{ value: string; label: string }> = [
-  { value: 'queer_owned', label: 'Queer-owned' },
-  { value: 'trans_owned', label: 'Trans-owned' },
-  { value: 'bipoc_owned', label: 'BIPOC-owned' },
-  { value: 'women_owned', label: 'Women-owned' },
-  { value: 'disabled_owned', label: 'Disabled-owned' },
-  { value: 'nonprofit', label: 'Non-profit' },
-];
 
 const CURRENCY_OPTIONS = ['USD', 'EUR', 'GBP', 'CAD', 'AUD', 'CHF', 'JPY', 'BRL', 'MXN'];
 
@@ -115,7 +107,6 @@ export function MarketplaceFilterSheet({
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
     setLocation(filters.location ?? '');
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters.location]);
   const locDebounce = useRef<ReturnType<typeof setTimeout>>(undefined);
   const handleLocation = (v: string) => {

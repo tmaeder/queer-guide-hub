@@ -19,9 +19,18 @@ type MarketplaceListing = Database['public']['Tables']['marketplace_listings']['
 export function PairsWithRail({ listing }: { listing: MarketplaceListing }) {
   const [ids, setIds] = useState<string[] | null>(null);
 
+  // Reset to the loading state during render when the listing changes, so the
+  // fetch effect below never has to setState synchronously (which would
+  // trigger a cascading render). This is React's "adjust state on prop change
+  // during render" pattern. See react-hooks/set-state-in-effect.
+  const [loadedFor, setLoadedFor] = useState<string | null>(null);
+  if (loadedFor !== listing.id) {
+    setLoadedFor(listing.id);
+    setIds(null);
+  }
+
   useEffect(() => {
     let cancelled = false;
-    setIds(null);
     fetchSimilar({ type: 'marketplace', id: listing.id }, 8, ['marketplace'])
       .then((hits) => {
         if (cancelled) return;
