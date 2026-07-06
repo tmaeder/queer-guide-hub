@@ -5,6 +5,13 @@ import { Card } from '@/components/ui/card';
 import { Send, Loader2 } from 'lucide-react';
 import { useMailbox } from '@/hooks/useMailbox';
 import { useMailboxAddress } from '@/hooks/useMailboxAddress';
+import { RichTextEditor } from '@/components/cms/editor/RichTextEditor';
+
+/** Strip an HTML fragment to plain text for the multipart text/plain part. */
+function htmlToText(html: string): string {
+  if (typeof window === 'undefined') return html;
+  return new DOMParser().parseFromString(html, 'text/html').body.textContent?.trim() ?? '';
+}
 
 interface ComposeEmailProps {
   replyTo?: { id: string; from_address: string; subject: string };
@@ -20,7 +27,7 @@ export const ComposeEmail = ({ replyTo, onSent, onCancel }: ComposeEmailProps) =
   const [subject, setSubject] = useState(
     replyTo ? `Re: ${replyTo.subject.replace(/^Re:\s*/i, '')}` : '',
   );
-  const [body, setBody] = useState('');
+  const [bodyHtml, setBodyHtml] = useState('');
   const [error, setError] = useState<string | null>(null);
 
   const handleSend = async () => {
@@ -34,11 +41,14 @@ export const ComposeEmail = ({ replyTo, onSent, onCancel }: ComposeEmailProps) =
       return;
     }
 
+    const bodyText = htmlToText(bodyHtml);
+
     try {
       await sendEmail({
         to: to.trim(),
         subject: subject.trim(),
-        body_text: body,
+        body_html: bodyText ? bodyHtml : undefined,
+        body_text: bodyText,
         in_reply_to_email_id: replyTo?.id,
       });
       onSent?.();
@@ -81,12 +91,11 @@ export const ComposeEmail = ({ replyTo, onSent, onCancel }: ComposeEmailProps) =
 
         <div>
           <span className="text-xs font-semibold">Message</span>
-          <textarea
-            className="flex min-h-[200px] w-full rounded-element border border-input bg-background px-4 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+          <RichTextEditor
             placeholder="Write your message..."
-            value={body}
-            onChange={(e) => setBody(e.target.value)}
-            disabled={sending}
+            editable={!sending}
+            minHeight="200px"
+            onChange={(_json, html) => setBodyHtml(html)}
           />
         </div>
 
