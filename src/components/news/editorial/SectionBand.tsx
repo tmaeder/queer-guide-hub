@@ -31,8 +31,8 @@ export function SectionBand({
   return (
     <section aria-labelledby={`section-${category.slug}-heading`} className="mb-16">
       <Separator className="mb-6" />
-      <div className="flex items-end justify-between gap-4 mb-8">
-        <div>
+      <div className="flex flex-wrap items-end justify-between gap-4 mb-8">
+        <div className="min-w-0">
           <p className="text-2xs uppercase tracking-[0.2em] text-muted-foreground mb-2">
             Section
           </p>

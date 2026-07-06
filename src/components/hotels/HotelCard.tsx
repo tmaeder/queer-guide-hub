@@ -123,7 +123,9 @@ function HotelCardImpl({ hotel, loading = false }: HotelCardProps) {
                       top: 8,
                       right: 8,
                       backgroundColor: 'hsl(var(--primary))',
-                      color: 'white',
+                      // Paired token, not literal white — --primary is near-white
+                      // in dark mode, which made white text invisible.
+                      color: 'hsl(var(--primary-foreground))',
                     }}
                     className="absolute"
                   >

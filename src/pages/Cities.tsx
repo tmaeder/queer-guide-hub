@@ -6,7 +6,7 @@ import { useCitiesUrlState } from '@/hooks/useCitiesUrlState';
 import { usePrideCalendar } from '@/hooks/usePrideCalendar';
 import { buildPrideByCity } from '@/utils/prideForCity';
 import { ErrorState } from '@/components/ui/EmptyState';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
 import { PageHero } from '@/components/discovery';
 import { cn } from '@/lib/utils';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
@@ -146,17 +146,35 @@ export default function Cities() {
           </div>
         ) : (
           <>
-            {/* Mobile-only tabs */}
+            {/* Mobile-only list/map toggle. A segmented button group (not Tabs)
+              because there are no tab panels — the list/map content renders
+              below via showList/showMap. Tabs here left aria-controls dangling
+              (axe aria-valid-attr-value). */}
             <div className="lg:hidden pt-4">
-              <Tabs
-                value={url.view}
-                onValueChange={(v) => url.setView(v === 'map' ? 'map' : 'list')}
+              <div
+                role="group"
+                aria-label={t('cities.viewToggleAriaLabel', 'Toggle list and map')}
+                className="flex items-center gap-1 rounded-element bg-muted p-1"
               >
-                <TabsList aria-label={t('cities.viewToggleAriaLabel', 'Toggle list and map')}>
-                  <TabsTrigger value="list">{t('cities.viewList', 'List')}</TabsTrigger>
-                  <TabsTrigger value="map">{t('cities.viewMap', 'Map')}</TabsTrigger>
-                </TabsList>
-              </Tabs>
+                <Button
+                  variant={showList ? 'default' : 'ghost'}
+                  size="sm"
+                  className="flex-1"
+                  aria-pressed={showList}
+                  onClick={() => url.setView('list')}
+                >
+                  {t('cities.viewList', 'List')}
+                </Button>
+                <Button
+                  variant={showMap ? 'default' : 'ghost'}
+                  size="sm"
+                  className="flex-1"
+                  aria-pressed={showMap}
+                  onClick={() => url.setView('map')}
+                >
+                  {t('cities.viewMap', 'Map')}
+                </Button>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-[440px_minmax(0,1fr)] lg:gap-6 py-6">

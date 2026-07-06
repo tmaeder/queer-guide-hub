@@ -85,6 +85,7 @@ export function NewsSearchInput({
             onChange={(e) => onChange(e.target.value)}
             style={{ paddingLeft: 40, paddingRight: value ? 40 : 12 }}
             aria-label="Search articles"
+            role="combobox"
             aria-expanded={open}
             aria-haspopup="listbox"
             autoComplete="off"

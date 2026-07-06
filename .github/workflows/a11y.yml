@@ -10,6 +10,7 @@ on:
       - 'eslint.config.js'
       - 'playwright.config.ts'
       - 'scripts/a11y-axe-scan.mjs'
+      - 'scripts/a11y-routes.mjs'
       - '.github/workflows/a11y.yml'
   pull_request:
     paths:
@@ -19,6 +20,7 @@ on:
       - 'eslint.config.js'
       - 'playwright.config.ts'
       - 'scripts/a11y-axe-scan.mjs'
+      - 'scripts/a11y-routes.mjs'
       - '.github/workflows/a11y.yml'
   schedule:
     - cron: '30 6 * * *'
@@ -147,9 +149,16 @@ jobs:
     needs: [build]
     if: always() && (needs.build.result == 'success' || needs.build.result == 'skipped')
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     env:
       BASE_URL: ${{ inputs.base_url != '' && inputs.base_url || (github.event_name == 'schedule' && 'https://queer.guide') || 'http://localhost:4173' }}
+      # Whole public manifest × desktop+mobile × light+dark, with the 320px
+      # reflow gate folded into the mobile pass. OUT_NAME must match the file the
+      # gate step below reads.
+      SCAN_SCOPE: public
+      SCAN_VIEWPORTS: desktop,mobile
+      SCAN_THEMES: light,dark
+      OUT_NAME: axe-postdeploy
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v6
@@ -202,7 +211,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        route: ['/', '/events', '/venues', '/places', '/news', '/marketplace', '/trips', '/submit']
+        route: ['/', '/events', '/venues', '/places', '/news', '/marketplace', '/trips/discover', '/submit', '/cities', '/hotels', '/personalities', '/help', '/pride']
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v6

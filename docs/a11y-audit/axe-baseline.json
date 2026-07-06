@@ -1,19 +1,80 @@
 {
-  "baseUrl": "https://queer.guide",
-  "generatedAt": "2026-05-20T18:57:58.452Z",
+  "baseUrl": "http://localhost:4173",
+  "scope": "public",
+  "viewports": [
+    "desktop",
+    "mobile"
+  ],
+  "themes": [
+    "light",
+    "dark"
+  ],
+  "generatedAt": "2026-07-06T20:22:08.908Z",
   "results": [
     {
       "route": "/",
       "name": "home",
-      "url": "https://queer.guide/",
+      "variant": "desktop/light",
+      "viewport": "desktop",
+      "theme": "light",
+      "auth": null,
+      "url": "http://localhost:4173/",
       "status": 200,
       "error": null,
       "violations": []
     },
     {
-      "route": "/events",
-      "name": "events-list",
-      "url": "https://queer.guide/events",
+      "route": "/",
+      "name": "home",
+      "variant": "desktop/dark",
+      "viewport": "desktop",
+      "theme": "dark",
+      "auth": null,
+      "url": "http://localhost:4173/",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/",
+      "name": "home",
+      "variant": "mobile/light",
+      "viewport": "mobile",
+      "theme": "light",
+      "auth": null,
+      "url": "http://localhost:4173/",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/",
+      "name": "home",
+      "variant": "mobile/dark",
+      "viewport": "mobile",
+      "theme": "dark",
+      "auth": null,
+      "url": "http://localhost:4173/",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/venues",
+      "name": "venues-list",
+      "variant": "desktop/light",
+      "viewport": "desktop",
+      "theme": "light",
+      "auth": null,
+      "url": "http://localhost:4173/venues",
       "status": 200,
       "error": null,
       "violations": []
@@ -21,7 +82,391 @@
     {
       "route": "/venues",
       "name": "venues-list",
-      "url": "https://queer.guide/venues",
+      "variant": "desktop/dark",
+      "viewport": "desktop",
+      "theme": "dark",
+      "auth": null,
+      "url": "http://localhost:4173/venues",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/venues",
+      "name": "venues-list",
+      "variant": "mobile/light",
+      "viewport": "mobile",
+      "theme": "light",
+      "auth": null,
+      "url": "http://localhost:4173/venues",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/venues",
+      "name": "venues-list",
+      "variant": "mobile/dark",
+      "viewport": "mobile",
+      "theme": "dark",
+      "auth": null,
+      "url": "http://localhost:4173/venues",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/venues/le-mistral",
+      "name": "venue-detail",
+      "variant": "desktop/light",
+      "viewport": "desktop",
+      "theme": "light",
+      "auth": null,
+      "url": "http://localhost:4173/venues/le-mistral",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/venues/le-mistral",
+      "name": "venue-detail",
+      "variant": "desktop/dark",
+      "viewport": "desktop",
+      "theme": "dark",
+      "auth": null,
+      "url": "http://localhost:4173/venues/le-mistral",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/venues/le-mistral",
+      "name": "venue-detail",
+      "variant": "mobile/light",
+      "viewport": "mobile",
+      "theme": "light",
+      "auth": null,
+      "url": "http://localhost:4173/venues/le-mistral",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/venues/le-mistral",
+      "name": "venue-detail",
+      "variant": "mobile/dark",
+      "viewport": "mobile",
+      "theme": "dark",
+      "auth": null,
+      "url": "http://localhost:4173/venues/le-mistral",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/venues/guides",
+      "name": "venue-guides",
+      "variant": "desktop/light",
+      "viewport": "desktop",
+      "theme": "light",
+      "auth": null,
+      "url": "http://localhost:4173/venues/guides",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/venues/guides",
+      "name": "venue-guides",
+      "variant": "desktop/dark",
+      "viewport": "desktop",
+      "theme": "dark",
+      "auth": null,
+      "url": "http://localhost:4173/venues/guides",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/venues/guides",
+      "name": "venue-guides",
+      "variant": "mobile/light",
+      "viewport": "mobile",
+      "theme": "light",
+      "auth": null,
+      "url": "http://localhost:4173/venues/guides",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/venues/guides",
+      "name": "venue-guides",
+      "variant": "mobile/dark",
+      "viewport": "mobile",
+      "theme": "dark",
+      "auth": null,
+      "url": "http://localhost:4173/venues/guides",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/events",
+      "name": "events-list",
+      "variant": "desktop/light",
+      "viewport": "desktop",
+      "theme": "light",
+      "auth": null,
+      "url": "http://localhost:4173/events",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/events",
+      "name": "events-list",
+      "variant": "desktop/dark",
+      "viewport": "desktop",
+      "theme": "dark",
+      "auth": null,
+      "url": "http://localhost:4173/events",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/events",
+      "name": "events-list",
+      "variant": "mobile/light",
+      "viewport": "mobile",
+      "theme": "light",
+      "auth": null,
+      "url": "http://localhost:4173/events",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/events",
+      "name": "events-list",
+      "variant": "mobile/dark",
+      "viewport": "mobile",
+      "theme": "dark",
+      "auth": null,
+      "url": "http://localhost:4173/events",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/events/kaohsiung-pride-2027",
+      "name": "event-detail",
+      "variant": "desktop/light",
+      "viewport": "desktop",
+      "theme": "light",
+      "auth": null,
+      "url": "http://localhost:4173/events/kaohsiung-pride-2027",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/events/kaohsiung-pride-2027",
+      "name": "event-detail",
+      "variant": "desktop/dark",
+      "viewport": "desktop",
+      "theme": "dark",
+      "auth": null,
+      "url": "http://localhost:4173/events/kaohsiung-pride-2027",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/events/kaohsiung-pride-2027",
+      "name": "event-detail",
+      "variant": "mobile/light",
+      "viewport": "mobile",
+      "theme": "light",
+      "auth": null,
+      "url": "http://localhost:4173/events/kaohsiung-pride-2027",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/events/kaohsiung-pride-2027",
+      "name": "event-detail",
+      "variant": "mobile/dark",
+      "viewport": "mobile",
+      "theme": "dark",
+      "auth": null,
+      "url": "http://localhost:4173/events/kaohsiung-pride-2027",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/events/guides",
+      "name": "event-guides",
+      "variant": "desktop/light",
+      "viewport": "desktop",
+      "theme": "light",
+      "auth": null,
+      "url": "http://localhost:4173/events/guides",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/events/guides",
+      "name": "event-guides",
+      "variant": "desktop/dark",
+      "viewport": "desktop",
+      "theme": "dark",
+      "auth": null,
+      "url": "http://localhost:4173/events/guides",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/events/guides",
+      "name": "event-guides",
+      "variant": "mobile/light",
+      "viewport": "mobile",
+      "theme": "light",
+      "auth": null,
+      "url": "http://localhost:4173/events/guides",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/events/guides",
+      "name": "event-guides",
+      "variant": "mobile/dark",
+      "viewport": "mobile",
+      "theme": "dark",
+      "auth": null,
+      "url": "http://localhost:4173/events/guides",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/pride",
+      "name": "pride",
+      "variant": "desktop/light",
+      "viewport": "desktop",
+      "theme": "light",
+      "auth": null,
+      "url": "http://localhost:4173/pride",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/pride",
+      "name": "pride",
+      "variant": "desktop/dark",
+      "viewport": "desktop",
+      "theme": "dark",
+      "auth": null,
+      "url": "http://localhost:4173/pride",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/pride",
+      "name": "pride",
+      "variant": "mobile/light",
+      "viewport": "mobile",
+      "theme": "light",
+      "auth": null,
+      "url": "http://localhost:4173/pride",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/pride",
+      "name": "pride",
+      "variant": "mobile/dark",
+      "viewport": "mobile",
+      "theme": "dark",
+      "auth": null,
+      "url": "http://localhost:4173/pride",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/hotels",
+      "name": "hotels-list",
+      "variant": "desktop/light",
+      "viewport": "desktop",
+      "theme": "light",
+      "auth": null,
+      "url": "http://localhost:4173/hotels",
       "status": 200,
       "error": null,
       "violations": []
@@ -29,7 +474,111 @@
     {
       "route": "/hotels",
       "name": "hotels-list",
-      "url": "https://queer.guide/hotels",
+      "variant": "desktop/dark",
+      "viewport": "desktop",
+      "theme": "dark",
+      "auth": null,
+      "url": "http://localhost:4173/hotels",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/hotels",
+      "name": "hotels-list",
+      "variant": "mobile/light",
+      "viewport": "mobile",
+      "theme": "light",
+      "auth": null,
+      "url": "http://localhost:4173/hotels",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/hotels",
+      "name": "hotels-list",
+      "variant": "mobile/dark",
+      "viewport": "mobile",
+      "theme": "dark",
+      "auth": null,
+      "url": "http://localhost:4173/hotels",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/hotels/large-private-room-with-balcony-in-central-paris-683525",
+      "name": "hotel-detail",
+      "variant": "desktop/light",
+      "viewport": "desktop",
+      "theme": "light",
+      "auth": null,
+      "url": "http://localhost:4173/hotels/large-private-room-with-balcony-in-central-paris-683525",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/hotels/large-private-room-with-balcony-in-central-paris-683525",
+      "name": "hotel-detail",
+      "variant": "desktop/dark",
+      "viewport": "desktop",
+      "theme": "dark",
+      "auth": null,
+      "url": "http://localhost:4173/hotels/large-private-room-with-balcony-in-central-paris-683525",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/hotels/large-private-room-with-balcony-in-central-paris-683525",
+      "name": "hotel-detail",
+      "variant": "mobile/light",
+      "viewport": "mobile",
+      "theme": "light",
+      "auth": null,
+      "url": "http://localhost:4173/hotels/large-private-room-with-balcony-in-central-paris-683525",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/hotels/large-private-room-with-balcony-in-central-paris-683525",
+      "name": "hotel-detail",
+      "variant": "mobile/dark",
+      "viewport": "mobile",
+      "theme": "dark",
+      "auth": null,
+      "url": "http://localhost:4173/hotels/large-private-room-with-balcony-in-central-paris-683525",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/marketplace",
+      "name": "marketplace",
+      "variant": "desktop/light",
+      "viewport": "desktop",
+      "theme": "light",
+      "auth": null,
+      "url": "http://localhost:4173/marketplace",
       "status": 200,
       "error": null,
       "violations": []
@@ -37,7 +586,447 @@
     {
       "route": "/marketplace",
       "name": "marketplace",
-      "url": "https://queer.guide/marketplace",
+      "variant": "desktop/dark",
+      "viewport": "desktop",
+      "theme": "dark",
+      "auth": null,
+      "url": "http://localhost:4173/marketplace",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/marketplace",
+      "name": "marketplace",
+      "variant": "mobile/light",
+      "viewport": "mobile",
+      "theme": "light",
+      "auth": null,
+      "url": "http://localhost:4173/marketplace",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/marketplace",
+      "name": "marketplace",
+      "variant": "mobile/dark",
+      "viewport": "mobile",
+      "theme": "dark",
+      "auth": null,
+      "url": "http://localhost:4173/marketplace",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/marketplace/hankey-s-toys-big-pop-4-sizes-2ab51478",
+      "name": "marketplace-item",
+      "variant": "desktop/light",
+      "viewport": "desktop",
+      "theme": "light",
+      "auth": null,
+      "url": "http://localhost:4173/marketplace/hankey-s-toys-big-pop-4-sizes-2ab51478",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/marketplace/hankey-s-toys-big-pop-4-sizes-2ab51478",
+      "name": "marketplace-item",
+      "variant": "desktop/dark",
+      "viewport": "desktop",
+      "theme": "dark",
+      "auth": null,
+      "url": "http://localhost:4173/marketplace/hankey-s-toys-big-pop-4-sizes-2ab51478",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/marketplace/hankey-s-toys-big-pop-4-sizes-2ab51478",
+      "name": "marketplace-item",
+      "variant": "mobile/light",
+      "viewport": "mobile",
+      "theme": "light",
+      "auth": null,
+      "url": "http://localhost:4173/marketplace/hankey-s-toys-big-pop-4-sizes-2ab51478",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/marketplace/hankey-s-toys-big-pop-4-sizes-2ab51478",
+      "name": "marketplace-item",
+      "variant": "mobile/dark",
+      "viewport": "mobile",
+      "theme": "dark",
+      "auth": null,
+      "url": "http://localhost:4173/marketplace/hankey-s-toys-big-pop-4-sizes-2ab51478",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/marketplace/categories",
+      "name": "marketplace-categories",
+      "variant": "desktop/light",
+      "viewport": "desktop",
+      "theme": "light",
+      "auth": null,
+      "url": "http://localhost:4173/marketplace/categories",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/marketplace/categories",
+      "name": "marketplace-categories",
+      "variant": "desktop/dark",
+      "viewport": "desktop",
+      "theme": "dark",
+      "auth": null,
+      "url": "http://localhost:4173/marketplace/categories",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/marketplace/categories",
+      "name": "marketplace-categories",
+      "variant": "mobile/light",
+      "viewport": "mobile",
+      "theme": "light",
+      "auth": null,
+      "url": "http://localhost:4173/marketplace/categories",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/marketplace/categories",
+      "name": "marketplace-categories",
+      "variant": "mobile/dark",
+      "viewport": "mobile",
+      "theme": "dark",
+      "auth": null,
+      "url": "http://localhost:4173/marketplace/categories",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/marketplace/guides",
+      "name": "marketplace-guides",
+      "variant": "desktop/light",
+      "viewport": "desktop",
+      "theme": "light",
+      "auth": null,
+      "url": "http://localhost:4173/marketplace/guides",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/marketplace/guides",
+      "name": "marketplace-guides",
+      "variant": "desktop/dark",
+      "viewport": "desktop",
+      "theme": "dark",
+      "auth": null,
+      "url": "http://localhost:4173/marketplace/guides",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/marketplace/guides",
+      "name": "marketplace-guides",
+      "variant": "mobile/light",
+      "viewport": "mobile",
+      "theme": "light",
+      "auth": null,
+      "url": "http://localhost:4173/marketplace/guides",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/marketplace/guides",
+      "name": "marketplace-guides",
+      "variant": "mobile/dark",
+      "viewport": "mobile",
+      "theme": "dark",
+      "auth": null,
+      "url": "http://localhost:4173/marketplace/guides",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/marketplace/brands/12807-203758186",
+      "name": "marketplace-brand",
+      "variant": "desktop/light",
+      "viewport": "desktop",
+      "theme": "light",
+      "auth": null,
+      "url": "http://localhost:4173/marketplace/brands/12807-203758186",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/marketplace/brands/12807-203758186",
+      "name": "marketplace-brand",
+      "variant": "desktop/dark",
+      "viewport": "desktop",
+      "theme": "dark",
+      "auth": null,
+      "url": "http://localhost:4173/marketplace/brands/12807-203758186",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/marketplace/brands/12807-203758186",
+      "name": "marketplace-brand",
+      "variant": "mobile/light",
+      "viewport": "mobile",
+      "theme": "light",
+      "auth": null,
+      "url": "http://localhost:4173/marketplace/brands/12807-203758186",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/marketplace/brands/12807-203758186",
+      "name": "marketplace-brand",
+      "variant": "mobile/dark",
+      "viewport": "mobile",
+      "theme": "dark",
+      "auth": null,
+      "url": "http://localhost:4173/marketplace/brands/12807-203758186",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/organizations",
+      "name": "organizations",
+      "variant": "desktop/light",
+      "viewport": "desktop",
+      "theme": "light",
+      "auth": null,
+      "url": "http://localhost:4173/organizations",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/organizations",
+      "name": "organizations",
+      "variant": "desktop/dark",
+      "viewport": "desktop",
+      "theme": "dark",
+      "auth": null,
+      "url": "http://localhost:4173/organizations",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/organizations",
+      "name": "organizations",
+      "variant": "mobile/light",
+      "viewport": "mobile",
+      "theme": "light",
+      "auth": null,
+      "url": "http://localhost:4173/organizations",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/organizations",
+      "name": "organizations",
+      "variant": "mobile/dark",
+      "viewport": "mobile",
+      "theme": "dark",
+      "auth": null,
+      "url": "http://localhost:4173/organizations",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/organizations/lgl-office",
+      "name": "organization-detail",
+      "variant": "desktop/light",
+      "viewport": "desktop",
+      "theme": "light",
+      "auth": null,
+      "url": "http://localhost:4173/organizations/lgl-office",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/organizations/lgl-office",
+      "name": "organization-detail",
+      "variant": "desktop/dark",
+      "viewport": "desktop",
+      "theme": "dark",
+      "auth": null,
+      "url": "http://localhost:4173/organizations/lgl-office",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/organizations/lgl-office",
+      "name": "organization-detail",
+      "variant": "mobile/light",
+      "viewport": "mobile",
+      "theme": "light",
+      "auth": null,
+      "url": "http://localhost:4173/organizations/lgl-office",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/organizations/lgl-office",
+      "name": "organization-detail",
+      "variant": "mobile/dark",
+      "viewport": "mobile",
+      "theme": "dark",
+      "auth": null,
+      "url": "http://localhost:4173/organizations/lgl-office",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/villages/adams-point",
+      "name": "village-detail",
+      "variant": "desktop/light",
+      "viewport": "desktop",
+      "theme": "light",
+      "auth": null,
+      "url": "http://localhost:4173/villages/adams-point",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/villages/adams-point",
+      "name": "village-detail",
+      "variant": "desktop/dark",
+      "viewport": "desktop",
+      "theme": "dark",
+      "auth": null,
+      "url": "http://localhost:4173/villages/adams-point",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/villages/adams-point",
+      "name": "village-detail",
+      "variant": "mobile/light",
+      "viewport": "mobile",
+      "theme": "light",
+      "auth": null,
+      "url": "http://localhost:4173/villages/adams-point",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/villages/adams-point",
+      "name": "village-detail",
+      "variant": "mobile/dark",
+      "viewport": "mobile",
+      "theme": "dark",
+      "auth": null,
+      "url": "http://localhost:4173/villages/adams-point",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/news",
+      "name": "news",
+      "variant": "desktop/light",
+      "viewport": "desktop",
+      "theme": "light",
+      "auth": null,
+      "url": "http://localhost:4173/news",
       "status": 200,
       "error": null,
       "violations": []
@@ -45,23 +1034,111 @@
     {
       "route": "/news",
       "name": "news",
-      "url": "https://queer.guide/news",
+      "variant": "desktop/dark",
+      "viewport": "desktop",
+      "theme": "dark",
+      "auth": null,
+      "url": "http://localhost:4173/news",
       "status": 200,
       "error": null,
       "violations": []
     },
     {
-      "route": "/groups",
-      "name": "groups",
-      "url": "https://queer.guide/groups",
+      "route": "/news",
+      "name": "news",
+      "variant": "mobile/light",
+      "viewport": "mobile",
+      "theme": "light",
+      "auth": null,
+      "url": "http://localhost:4173/news",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/news",
+      "name": "news",
+      "variant": "mobile/dark",
+      "viewport": "mobile",
+      "theme": "dark",
+      "auth": null,
+      "url": "http://localhost:4173/news",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/news/all",
+      "name": "news-archive",
+      "variant": "desktop/light",
+      "viewport": "desktop",
+      "theme": "light",
+      "auth": null,
+      "url": "http://localhost:4173/news/all",
       "status": 200,
       "error": null,
       "violations": []
     },
     {
-      "route": "/personalities",
-      "name": "personalities",
-      "url": "https://queer.guide/personalities",
+      "route": "/news/all",
+      "name": "news-archive",
+      "variant": "desktop/dark",
+      "viewport": "desktop",
+      "theme": "dark",
+      "auth": null,
+      "url": "http://localhost:4173/news/all",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/news/all",
+      "name": "news-archive",
+      "variant": "mobile/light",
+      "viewport": "mobile",
+      "theme": "light",
+      "auth": null,
+      "url": "http://localhost:4173/news/all",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/news/all",
+      "name": "news-archive",
+      "variant": "mobile/dark",
+      "viewport": "mobile",
+      "theme": "dark",
+      "auth": null,
+      "url": "http://localhost:4173/news/all",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/places",
+      "name": "places",
+      "variant": "desktop/light",
+      "viewport": "desktop",
+      "theme": "light",
+      "auth": null,
+      "url": "http://localhost:4173/places",
       "status": 200,
       "error": null,
       "violations": []
@@ -69,31 +1146,551 @@
     {
       "route": "/places",
       "name": "places",
-      "url": "https://queer.guide/places",
+      "variant": "desktop/dark",
+      "viewport": "desktop",
+      "theme": "dark",
+      "auth": null,
+      "url": "http://localhost:4173/places",
       "status": 200,
       "error": null,
       "violations": []
     },
     {
-      "route": "/resources",
-      "name": "resources",
-      "url": "https://queer.guide/resources",
+      "route": "/places",
+      "name": "places",
+      "variant": "mobile/light",
+      "viewport": "mobile",
+      "theme": "light",
+      "auth": null,
+      "url": "http://localhost:4173/places",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/places",
+      "name": "places",
+      "variant": "mobile/dark",
+      "viewport": "mobile",
+      "theme": "dark",
+      "auth": null,
+      "url": "http://localhost:4173/places",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/map",
+      "name": "map",
+      "variant": "desktop/light",
+      "viewport": "desktop",
+      "theme": "light",
+      "auth": null,
+      "url": "http://localhost:4173/map",
       "status": 200,
       "error": null,
       "violations": []
     },
     {
-      "route": "/search",
-      "name": "search",
-      "url": "https://queer.guide/search",
+      "route": "/map",
+      "name": "map",
+      "variant": "desktop/dark",
+      "viewport": "desktop",
+      "theme": "dark",
+      "auth": null,
+      "url": "http://localhost:4173/map",
       "status": 200,
       "error": null,
       "violations": []
     },
     {
-      "route": "/trips",
-      "name": "trips",
-      "url": "https://queer.guide/trips",
+      "route": "/map",
+      "name": "map",
+      "variant": "mobile/light",
+      "viewport": "mobile",
+      "theme": "light",
+      "auth": null,
+      "url": "http://localhost:4173/map",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/map",
+      "name": "map",
+      "variant": "mobile/dark",
+      "viewport": "mobile",
+      "theme": "dark",
+      "auth": null,
+      "url": "http://localhost:4173/map",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/cities",
+      "name": "cities",
+      "variant": "desktop/light",
+      "viewport": "desktop",
+      "theme": "light",
+      "auth": null,
+      "url": "http://localhost:4173/cities",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/cities",
+      "name": "cities",
+      "variant": "desktop/dark",
+      "viewport": "desktop",
+      "theme": "dark",
+      "auth": null,
+      "url": "http://localhost:4173/cities",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/cities",
+      "name": "cities",
+      "variant": "mobile/light",
+      "viewport": "mobile",
+      "theme": "light",
+      "auth": null,
+      "url": "http://localhost:4173/cities",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/cities",
+      "name": "cities",
+      "variant": "mobile/dark",
+      "viewport": "mobile",
+      "theme": "dark",
+      "auth": null,
+      "url": "http://localhost:4173/cities",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/city/s-o-paulo",
+      "name": "city-detail",
+      "variant": "desktop/light",
+      "viewport": "desktop",
+      "theme": "light",
+      "auth": null,
+      "url": "http://localhost:4173/city/s-o-paulo",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/city/s-o-paulo",
+      "name": "city-detail",
+      "variant": "desktop/dark",
+      "viewport": "desktop",
+      "theme": "dark",
+      "auth": null,
+      "url": "http://localhost:4173/city/s-o-paulo",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/city/s-o-paulo",
+      "name": "city-detail",
+      "variant": "mobile/light",
+      "viewport": "mobile",
+      "theme": "light",
+      "auth": null,
+      "url": "http://localhost:4173/city/s-o-paulo",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/city/s-o-paulo",
+      "name": "city-detail",
+      "variant": "mobile/dark",
+      "viewport": "mobile",
+      "theme": "dark",
+      "auth": null,
+      "url": "http://localhost:4173/city/s-o-paulo",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/country/united-kingdom",
+      "name": "country-detail",
+      "variant": "desktop/light",
+      "viewport": "desktop",
+      "theme": "light",
+      "auth": null,
+      "url": "http://localhost:4173/country/united-kingdom",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/country/united-kingdom",
+      "name": "country-detail",
+      "variant": "desktop/dark",
+      "viewport": "desktop",
+      "theme": "dark",
+      "auth": null,
+      "url": "http://localhost:4173/country/united-kingdom",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/country/united-kingdom",
+      "name": "country-detail",
+      "variant": "mobile/light",
+      "viewport": "mobile",
+      "theme": "light",
+      "auth": null,
+      "url": "http://localhost:4173/country/united-kingdom",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/country/united-kingdom",
+      "name": "country-detail",
+      "variant": "mobile/dark",
+      "viewport": "mobile",
+      "theme": "dark",
+      "auth": null,
+      "url": "http://localhost:4173/country/united-kingdom",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/personalities",
+      "name": "personalities",
+      "variant": "desktop/light",
+      "viewport": "desktop",
+      "theme": "light",
+      "auth": null,
+      "url": "http://localhost:4173/personalities",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/personalities",
+      "name": "personalities",
+      "variant": "desktop/dark",
+      "viewport": "desktop",
+      "theme": "dark",
+      "auth": null,
+      "url": "http://localhost:4173/personalities",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/personalities",
+      "name": "personalities",
+      "variant": "mobile/light",
+      "viewport": "mobile",
+      "theme": "light",
+      "auth": null,
+      "url": "http://localhost:4173/personalities",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/personalities",
+      "name": "personalities",
+      "variant": "mobile/dark",
+      "viewport": "mobile",
+      "theme": "dark",
+      "auth": null,
+      "url": "http://localhost:4173/personalities",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/personalities/derek-jacobi",
+      "name": "personality-detail",
+      "variant": "desktop/light",
+      "viewport": "desktop",
+      "theme": "light",
+      "auth": null,
+      "url": "http://localhost:4173/personalities/derek-jacobi",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/personalities/derek-jacobi",
+      "name": "personality-detail",
+      "variant": "desktop/dark",
+      "viewport": "desktop",
+      "theme": "dark",
+      "auth": null,
+      "url": "http://localhost:4173/personalities/derek-jacobi",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/personalities/derek-jacobi",
+      "name": "personality-detail",
+      "variant": "mobile/light",
+      "viewport": "mobile",
+      "theme": "light",
+      "auth": null,
+      "url": "http://localhost:4173/personalities/derek-jacobi",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/personalities/derek-jacobi",
+      "name": "personality-detail",
+      "variant": "mobile/dark",
+      "viewport": "mobile",
+      "theme": "dark",
+      "auth": null,
+      "url": "http://localhost:4173/personalities/derek-jacobi",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/tags",
+      "name": "tags",
+      "variant": "desktop/light",
+      "viewport": "desktop",
+      "theme": "light",
+      "auth": null,
+      "url": "http://localhost:4173/tags",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/tags",
+      "name": "tags",
+      "variant": "desktop/dark",
+      "viewport": "desktop",
+      "theme": "dark",
+      "auth": null,
+      "url": "http://localhost:4173/tags",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/tags",
+      "name": "tags",
+      "variant": "mobile/light",
+      "viewport": "mobile",
+      "theme": "light",
+      "auth": null,
+      "url": "http://localhost:4173/tags",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/tags",
+      "name": "tags",
+      "variant": "mobile/dark",
+      "viewport": "mobile",
+      "theme": "dark",
+      "auth": null,
+      "url": "http://localhost:4173/tags",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/tags/community-resource",
+      "name": "tag-detail",
+      "variant": "desktop/light",
+      "viewport": "desktop",
+      "theme": "light",
+      "auth": null,
+      "url": "http://localhost:4173/tags/community-resource",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/tags/community-resource",
+      "name": "tag-detail",
+      "variant": "desktop/dark",
+      "viewport": "desktop",
+      "theme": "dark",
+      "auth": null,
+      "url": "http://localhost:4173/tags/community-resource",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/tags/community-resource",
+      "name": "tag-detail",
+      "variant": "mobile/light",
+      "viewport": "mobile",
+      "theme": "light",
+      "auth": null,
+      "url": "http://localhost:4173/tags/community-resource",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/tags/community-resource",
+      "name": "tag-detail",
+      "variant": "mobile/dark",
+      "viewport": "mobile",
+      "theme": "dark",
+      "auth": null,
+      "url": "http://localhost:4173/tags/community-resource",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/travel",
+      "name": "travel",
+      "variant": "desktop/light",
+      "viewport": "desktop",
+      "theme": "light",
+      "auth": null,
+      "url": "http://localhost:4173/travel",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/travel",
+      "name": "travel",
+      "variant": "desktop/dark",
+      "viewport": "desktop",
+      "theme": "dark",
+      "auth": null,
+      "url": "http://localhost:4173/travel",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/travel",
+      "name": "travel",
+      "variant": "mobile/light",
+      "viewport": "mobile",
+      "theme": "light",
+      "auth": null,
+      "url": "http://localhost:4173/travel",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/travel",
+      "name": "travel",
+      "variant": "mobile/dark",
+      "viewport": "mobile",
+      "theme": "dark",
+      "auth": null,
+      "url": "http://localhost:4173/travel",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/trips/discover",
+      "name": "trips-discover",
+      "variant": "desktop/light",
+      "viewport": "desktop",
+      "theme": "light",
+      "auth": null,
+      "url": "http://localhost:4173/trips/discover",
       "status": 200,
       "error": null,
       "violations": []
@@ -101,7 +1698,111 @@
     {
       "route": "/trips/discover",
       "name": "trips-discover",
-      "url": "https://queer.guide/trips/discover",
+      "variant": "desktop/dark",
+      "viewport": "desktop",
+      "theme": "dark",
+      "auth": null,
+      "url": "http://localhost:4173/trips/discover",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/trips/discover",
+      "name": "trips-discover",
+      "variant": "mobile/light",
+      "viewport": "mobile",
+      "theme": "light",
+      "auth": null,
+      "url": "http://localhost:4173/trips/discover",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/trips/discover",
+      "name": "trips-discover",
+      "variant": "mobile/dark",
+      "viewport": "mobile",
+      "theme": "dark",
+      "auth": null,
+      "url": "http://localhost:4173/trips/discover",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/search",
+      "name": "search",
+      "variant": "desktop/light",
+      "viewport": "desktop",
+      "theme": "light",
+      "auth": null,
+      "url": "http://localhost:4173/search",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/search",
+      "name": "search",
+      "variant": "desktop/dark",
+      "viewport": "desktop",
+      "theme": "dark",
+      "auth": null,
+      "url": "http://localhost:4173/search",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/search",
+      "name": "search",
+      "variant": "mobile/light",
+      "viewport": "mobile",
+      "theme": "light",
+      "auth": null,
+      "url": "http://localhost:4173/search",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/search",
+      "name": "search",
+      "variant": "mobile/dark",
+      "viewport": "mobile",
+      "theme": "dark",
+      "auth": null,
+      "url": "http://localhost:4173/search",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/submit",
+      "name": "submit-hub",
+      "variant": "desktop/light",
+      "viewport": "desktop",
+      "theme": "light",
+      "auth": null,
+      "url": "http://localhost:4173/submit",
       "status": 200,
       "error": null,
       "violations": []
@@ -109,7 +1810,111 @@
     {
       "route": "/submit",
       "name": "submit-hub",
-      "url": "https://queer.guide/submit",
+      "variant": "desktop/dark",
+      "viewport": "desktop",
+      "theme": "dark",
+      "auth": null,
+      "url": "http://localhost:4173/submit",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/submit",
+      "name": "submit-hub",
+      "variant": "mobile/light",
+      "viewport": "mobile",
+      "theme": "light",
+      "auth": null,
+      "url": "http://localhost:4173/submit",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/submit",
+      "name": "submit-hub",
+      "variant": "mobile/dark",
+      "viewport": "mobile",
+      "theme": "dark",
+      "auth": null,
+      "url": "http://localhost:4173/submit",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/donate",
+      "name": "donate",
+      "variant": "desktop/light",
+      "viewport": "desktop",
+      "theme": "light",
+      "auth": null,
+      "url": "http://localhost:4173/donate",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/donate",
+      "name": "donate",
+      "variant": "desktop/dark",
+      "viewport": "desktop",
+      "theme": "dark",
+      "auth": null,
+      "url": "http://localhost:4173/donate",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/donate",
+      "name": "donate",
+      "variant": "mobile/light",
+      "viewport": "mobile",
+      "theme": "light",
+      "auth": null,
+      "url": "http://localhost:4173/donate",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/donate",
+      "name": "donate",
+      "variant": "mobile/dark",
+      "viewport": "mobile",
+      "theme": "dark",
+      "auth": null,
+      "url": "http://localhost:4173/donate",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/about",
+      "name": "about",
+      "variant": "desktop/light",
+      "viewport": "desktop",
+      "theme": "light",
+      "auth": null,
+      "url": "http://localhost:4173/about",
       "status": 200,
       "error": null,
       "violations": []
@@ -117,7 +1922,55 @@
     {
       "route": "/about",
       "name": "about",
-      "url": "https://queer.guide/about",
+      "variant": "desktop/dark",
+      "viewport": "desktop",
+      "theme": "dark",
+      "auth": null,
+      "url": "http://localhost:4173/about",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/about",
+      "name": "about",
+      "variant": "mobile/light",
+      "viewport": "mobile",
+      "theme": "light",
+      "auth": null,
+      "url": "http://localhost:4173/about",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/about",
+      "name": "about",
+      "variant": "mobile/dark",
+      "viewport": "mobile",
+      "theme": "dark",
+      "auth": null,
+      "url": "http://localhost:4173/about",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/contact",
+      "name": "contact",
+      "variant": "desktop/light",
+      "viewport": "desktop",
+      "theme": "light",
+      "auth": null,
+      "url": "http://localhost:4173/contact",
       "status": 200,
       "error": null,
       "violations": []
@@ -125,7 +1978,167 @@
     {
       "route": "/contact",
       "name": "contact",
-      "url": "https://queer.guide/contact",
+      "variant": "desktop/dark",
+      "viewport": "desktop",
+      "theme": "dark",
+      "auth": null,
+      "url": "http://localhost:4173/contact",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/contact",
+      "name": "contact",
+      "variant": "mobile/light",
+      "viewport": "mobile",
+      "theme": "light",
+      "auth": null,
+      "url": "http://localhost:4173/contact",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/contact",
+      "name": "contact",
+      "variant": "mobile/dark",
+      "viewport": "mobile",
+      "theme": "dark",
+      "auth": null,
+      "url": "http://localhost:4173/contact",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/help",
+      "name": "help",
+      "variant": "desktop/light",
+      "viewport": "desktop",
+      "theme": "light",
+      "auth": null,
+      "url": "http://localhost:4173/help",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/help",
+      "name": "help",
+      "variant": "desktop/dark",
+      "viewport": "desktop",
+      "theme": "dark",
+      "auth": null,
+      "url": "http://localhost:4173/help",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/help",
+      "name": "help",
+      "variant": "mobile/light",
+      "viewport": "mobile",
+      "theme": "light",
+      "auth": null,
+      "url": "http://localhost:4173/help",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/help",
+      "name": "help",
+      "variant": "mobile/dark",
+      "viewport": "mobile",
+      "theme": "dark",
+      "auth": null,
+      "url": "http://localhost:4173/help",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/feedback",
+      "name": "feedback",
+      "variant": "desktop/light",
+      "viewport": "desktop",
+      "theme": "light",
+      "auth": null,
+      "url": "http://localhost:4173/feedback",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/feedback",
+      "name": "feedback",
+      "variant": "desktop/dark",
+      "viewport": "desktop",
+      "theme": "dark",
+      "auth": null,
+      "url": "http://localhost:4173/feedback",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/feedback",
+      "name": "feedback",
+      "variant": "mobile/light",
+      "viewport": "mobile",
+      "theme": "light",
+      "auth": null,
+      "url": "http://localhost:4173/feedback",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/feedback",
+      "name": "feedback",
+      "variant": "mobile/dark",
+      "viewport": "mobile",
+      "theme": "dark",
+      "auth": null,
+      "url": "http://localhost:4173/feedback",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/accessibility",
+      "name": "accessibility",
+      "variant": "desktop/light",
+      "viewport": "desktop",
+      "theme": "light",
+      "auth": null,
+      "url": "http://localhost:4173/accessibility",
       "status": 200,
       "error": null,
       "violations": []
@@ -133,10 +2146,102 @@
     {
       "route": "/accessibility",
       "name": "accessibility",
-      "url": "https://queer.guide/accessibility",
+      "variant": "desktop/dark",
+      "viewport": "desktop",
+      "theme": "dark",
+      "auth": null,
+      "url": "http://localhost:4173/accessibility",
       "status": 200,
       "error": null,
       "violations": []
+    },
+    {
+      "route": "/accessibility",
+      "name": "accessibility",
+      "variant": "mobile/light",
+      "viewport": "mobile",
+      "theme": "light",
+      "auth": null,
+      "url": "http://localhost:4173/accessibility",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/accessibility",
+      "name": "accessibility",
+      "variant": "mobile/dark",
+      "viewport": "mobile",
+      "theme": "dark",
+      "auth": null,
+      "url": "http://localhost:4173/accessibility",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/sitemap",
+      "name": "sitemap",
+      "variant": "desktop/light",
+      "viewport": "desktop",
+      "theme": "light",
+      "auth": null,
+      "url": "http://localhost:4173/sitemap",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/sitemap",
+      "name": "sitemap",
+      "variant": "desktop/dark",
+      "viewport": "desktop",
+      "theme": "dark",
+      "auth": null,
+      "url": "http://localhost:4173/sitemap",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/sitemap",
+      "name": "sitemap",
+      "variant": "mobile/light",
+      "viewport": "mobile",
+      "theme": "light",
+      "auth": null,
+      "url": "http://localhost:4173/sitemap",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/sitemap",
+      "name": "sitemap",
+      "variant": "mobile/dark",
+      "viewport": "mobile",
+      "theme": "dark",
+      "auth": null,
+      "url": "http://localhost:4173/sitemap",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
     }
   ]
 }

@@ -27,15 +27,19 @@ export function QuickExit() {
 
   return (
     <div className="pointer-events-none fixed right-4 top-20 z-50 sm:right-6">
+      {/* text-xl + bold makes this WCAG large text (>=14pt bold): the
+        dark-mode destructive red only reaches 3.59:1 with white, which clears
+        the 3:1 large-text bar but not the 4.5:1 normal-text bar. Larger, bolder
+        is also better crisis UX for a quick-exit affordance. */}
       <Button
         type="button"
         variant="destructive"
         size="lg"
         onClick={performQuickExit}
-        className="pointer-events-auto"
+        className="pointer-events-auto text-xl font-bold"
         aria-label={t('help.quick_exit_aria', 'Leave this page immediately (ESC)')}
       >
-        <LogOut size={18} className="mr-2" />
+        <LogOut size={20} className="mr-2" aria-hidden="true" />
         {t('help.quick_exit', 'Quick exit')}
       </Button>
     </div>

@@ -126,7 +126,7 @@ export function PrideFilterRail({ filters, setFilters, events }: PrideFilterRail
     >
       <div className="flex flex-wrap items-center gap-4">
         <div className="relative flex-1 min-w-[220px] max-w-md">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-foreground/50 pointer-events-none" />
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground pointer-events-none" />
           <input
             id="pride-search"
             type="search"

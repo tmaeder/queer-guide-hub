@@ -379,13 +379,12 @@ export const UmamiAnalyticsDashboard = () => {
         <CardContent>
           <div className="flex flex-wrap items-center gap-4">
             <div className="flex items-center gap-2">
-              {/* eslint-disable-next-line jsx-a11y/label-has-associated-control -- pre-existing from MUI batch migration */}
-              <label className="text-sm font-medium">Date Range:</label>
+              <label htmlFor="umami-date-range" className="text-sm font-medium">Date Range:</label>
               <Select
                 value={dateRange}
                 onValueChange={(value: '7d' | '30d' | '90d' | 'custom') => setDateRange(value)}
               >
-                <SelectTrigger>
+                <SelectTrigger id="umami-date-range">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -398,15 +397,14 @@ export const UmamiAnalyticsDashboard = () => {
             </div>
 
             <div className="flex items-center gap-2">
-              {/* eslint-disable-next-line jsx-a11y/label-has-associated-control -- pre-existing from MUI batch migration */}
-              <label className="text-sm font-medium">Device:</label>
+              <label htmlFor="umami-device" className="text-sm font-medium">Device:</label>
               <Select
                 value={deviceFilter}
                 onValueChange={(value: 'all' | 'desktop' | 'mobile' | 'tablet') =>
                   setDeviceFilter(value)
                 }
               >
-                <SelectTrigger>
+                <SelectTrigger id="umami-device">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -419,11 +417,12 @@ export const UmamiAnalyticsDashboard = () => {
             </div>
 
             <div className="flex items-center gap-2">
-              {/* eslint-disable-next-line jsx-a11y/label-has-associated-control -- pre-existing from MUI batch migration */}
-              <label className="text-sm font-medium">Auto Refresh:</label>
+              <span id="umami-autorefresh-label" className="text-sm font-medium">Auto Refresh:</span>
               <Button
                 variant={autoRefresh ? 'default' : 'outline'}
                 size="sm"
+                aria-labelledby="umami-autorefresh-label"
+                aria-pressed={autoRefresh}
                 onClick={() => setAutoRefresh(!autoRefresh)}
               >
                 {autoRefresh ? 'ON' : 'OFF'}
