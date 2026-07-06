@@ -38,9 +38,12 @@ export function ProfileHeader({
   onEditStatus,
 }: ProfileHeaderProps) {
   const navigate = useLocalizedNavigate();
-  // Never expose an email as the name — older rows had display_name = email.
-  const displayName = publicDisplayName(profile.display_name as string) || 'Anonymous User';
   const username = profile.username as string | undefined;
+  // The @username handle is the single visible identity. display_name mirrors it;
+  // publicDisplayName stays as an email-strip guard for any un-mirrored legacy row.
+  const displayName = username
+    ? `@${username}`
+    : publicDisplayName(profile.display_name as string) || 'Anonymous User';
   const socialLinks = profile.social_links as Record<string, unknown> | undefined;
   const socialAccounts = readAccounts(profile.social_accounts, socialLinks);
   const hasStatus =
@@ -58,7 +61,7 @@ export function ProfileHeader({
                 alt={displayName}
               />
               <AvatarFallback className="text-headline-lg">
-                {displayName.charAt(0).toUpperCase()}
+                {(username || 'A').charAt(0).toUpperCase()}
               </AvatarFallback>
             </Avatar>
             {!!profile.verified_identity && (
@@ -91,28 +94,14 @@ export function ProfileHeader({
                 </div>
               </div>
 
-              <div className="flex flex-wrap items-center justify-center gap-2 text-muted-foreground mb-4 text-13 md:justify-start">
-                {username && <span>@{username}</span>}
-                {!!profile.pronouns && (
-                  <>
-                    {username && <span aria-hidden>&#8226;</span>}
-                    <span>{profile.pronouns as string}</span>
-                  </>
-                )}
-                {!!profile.age_range && (
-                  <>
-                    <span aria-hidden>&#8226;</span>
-                    <span>{profile.age_range as string}</span>
-                  </>
-                )}
+              <div className="flex flex-wrap items-center justify-center gap-2 text-muted-foreground mb-4 text-13 md:justify-start [&>*+*]:before:content-['•'] [&>*+*]:before:mr-2">
+                {!!profile.pronouns && <span>{profile.pronouns as string}</span>}
+                {!!profile.age_range && <span>{profile.age_range as string}</span>}
                 {!!profile.location && (
-                  <>
-                    <span aria-hidden>&#8226;</span>
-                    <span className="inline-flex items-center gap-1">
-                      <MapPin size={14} aria-hidden />
-                      {profile.location as string}
-                    </span>
-                  </>
+                  <span className="inline-flex items-center gap-1">
+                    <MapPin size={14} aria-hidden />
+                    {profile.location as string}
+                  </span>
                 )}
               </div>
 
