@@ -27,7 +27,8 @@
       "chats": "Chats",
       "mail": "Mail",
       "alerts": "Alerts",
-      "matches": "Matches"
+      "matches": "Matches",
+      "matchesUnread": "{{count}} new matches"
     },
     "compose": {
       "label": "Compose",
@@ -88,7 +89,8 @@
       "stagedNote": "Submitted for review — these go through our quality pipeline.",
       "anEvent": "Event",
       "aVenue": "Venue"
-    }
+    },
+    "matchTag": "Match"
   },
   "eventTypes": {
     "party": "Party",

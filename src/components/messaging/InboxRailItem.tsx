@@ -63,8 +63,8 @@ export function InboxRailItem({
 }) {
   const { t } = useTranslation();
   const isChat = item.kind === 'chat';
-  // Dating match threads get a heart so they read as matches, not plain chats.
-  const Icon = isChat && item.subtype === 'match' ? Heart : KIND_ICON[item.kind];
+  const isMatch = isChat && item.subtype === 'match';
+  const Icon = KIND_ICON[item.kind];
   const conversationId = isChat ? item.id.replace('conv_', '') : '';
   const preview = usePreview(item);
 
@@ -85,6 +85,14 @@ export function InboxRailItem({
               <AvatarImage src={item.avatar_url || ''} />
               <AvatarFallback>{item.title?.charAt(0)?.toUpperCase() || 'C'}</AvatarFallback>
             </Avatar>
+            {isMatch && (
+              <span
+                className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full border-2 border-background bg-foreground"
+                aria-hidden
+              >
+                <Heart className="h-2.5 w-2.5 fill-background text-background" />
+              </span>
+            )}
             {online && (
               <span
                 className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-background bg-foreground"
@@ -102,6 +110,11 @@ export function InboxRailItem({
               {item.is_pinned && <Pin className="h-3 w-3 shrink-0 text-muted-foreground" aria-hidden />}
               {item.is_muted && <BellOff className="h-3 w-3 shrink-0 text-muted-foreground" aria-hidden />}
               <span className="truncate">{item.title}</span>
+              {isMatch && (
+                <span className="shrink-0 rounded-badge bg-muted px-1.5 py-0.5 text-2xs font-medium text-muted-foreground">
+                  {t('inbox.matchTag', { defaultValue: 'Match' })}
+                </span>
+              )}
             </span>
             {item.unread &&
               (item.unread_count > 0 ? (
