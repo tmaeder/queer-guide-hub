@@ -43,19 +43,6 @@ const handler = async (req: Request): Promise<Response> => {
 
     const userId = authData.user.id;
 
-    // Rate limit: 50 emails/hour per user
-    const { data: allowed, error: rlError } = await supabase.rpc("check_rate_limit", {
-      identifier: userId,
-      max_attempts: 50,
-      time_window_minutes: 60,
-    });
-    if (rlError || !allowed) {
-      return new Response(
-        JSON.stringify({ error: "Rate limit exceeded. Max 50 emails per hour." }),
-        { status: 429, headers: { "Content-Type": "application/json", ...corsHeaders } },
-      );
-    }
-
     // Get user's mailbox address and display name
     const { data: profile, error: profileError } = await supabase
       .from("profiles")
