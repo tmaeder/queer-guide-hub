@@ -36,6 +36,7 @@ export interface ProfileGap {
 export function getProfileGap(profile: Record<string, unknown>): ProfileGap | null {
   const username = (profile.username as string | null) ?? null;
   const pronounTags = (profile.pronoun_tags as string[] | null) ?? [];
+  const travelPrefs = (profile.travel_preferences as Record<string, unknown> | null) ?? {};
 
   if (!username) {
     return {
@@ -62,6 +63,15 @@ export function getProfileGap(profile: Record<string, unknown>): ProfileGap | nu
       body: 'Optional, takes 30 seconds. You decide who sees them.',
       cta: 'Add pronouns',
       section: 'profile',
+    };
+  }
+  if (Object.keys(travelPrefs).length === 0 && !promptDismissed('travel')) {
+    return {
+      kind: 'travel',
+      title: 'Personalize your travel',
+      body: 'Set budget, safety and interests so trips and places rank for you.',
+      cta: 'Set preferences',
+      section: 'travel',
     };
   }
   return null;
