@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
-import type { InboxFilter } from '@/hooks/useInboxFeed';
+import { useInboxFeed, type InboxFilter } from '@/hooks/useInboxFeed';
 import { useUpcomingTrips } from '@/hooks/useUpcomingTrips';
 import { useMyIntimateProfile } from '@/hooks/useIntimateProfile';
 
@@ -10,6 +10,56 @@ const BASE_FILTERS: { key: InboxFilter; labelKey: string; defaultLabel: string }
   { key: 'mail', labelKey: 'inbox.filter.mail', defaultLabel: 'Mail' },
   { key: 'alerts', labelKey: 'inbox.filter.alerts', defaultLabel: 'Alerts' },
 ];
+
+const chipClass = (active: boolean) =>
+  cn(
+    'flex min-h-0 items-center whitespace-nowrap rounded-badge border px-4 py-2 text-13',
+    active ? 'bg-foreground text-background' : 'bg-background text-foreground',
+  );
+
+/**
+ * Matches lens chip with a new-match signal: an unread badge counting match
+ * conversations you haven't opened yet. Isolated into its own component so the
+ * extra matches-feed query only runs for opted-in users (the chip is only
+ * rendered when useMyIntimateProfile resolves).
+ */
+function MatchesFilterChip({
+  value,
+  onChange,
+}: {
+  value: InboxFilter;
+  onChange: (f: InboxFilter) => void;
+}) {
+  const { t } = useTranslation();
+  const { items } = useInboxFeed('matches');
+  const unread = items.filter((i) => i.unread).length;
+  const active = value === 'matches';
+
+  return (
+    <button
+      role="tab"
+      aria-selected={active}
+      onClick={() => onChange('matches')}
+      className={chipClass(active)}
+    >
+      {t('inbox.filter.matches', { defaultValue: 'Matches' })}
+      {unread > 0 && (
+        <span
+          className={cn(
+            'ml-1.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-2xs font-semibold',
+            active ? 'bg-background text-foreground' : 'bg-foreground text-background',
+          )}
+          aria-label={t('inbox.filter.matchesUnread', {
+            defaultValue: '{{count}} new matches',
+            count: unread,
+          })}
+        >
+          {unread > 99 ? '99+' : unread}
+        </span>
+      )}
+    </button>
+  );
+}
 
 export function InboxFilterChips({
   value,
@@ -25,30 +75,30 @@ export function InboxFilterChips({
   // viewer has opted into the intimate profile (mirrors DatingSection's gate).
   const { data: intimateProfile } = useMyIntimateProfile();
 
-  const filters: { key: InboxFilter; labelKey: string; defaultLabel: string }[] = [...BASE_FILTERS];
-  if (intimateProfile) {
-    filters.push({ key: 'matches', labelKey: 'inbox.filter.matches', defaultLabel: 'Matches' });
-  }
-  if (hasUpcomingTrips) {
-    filters.push({ key: 'trips', labelKey: 'inbox.filter.trips', defaultLabel: 'Trips' });
-  }
-
   return (
     <div className="flex gap-2 overflow-x-auto p-2" role="tablist">
-      {filters.map((f) => (
+      {BASE_FILTERS.map((f) => (
         <button
           key={f.key}
           role="tab"
           aria-selected={value === f.key}
           onClick={() => onChange(f.key)}
-          className={cn(
-            'min-h-0 whitespace-nowrap rounded-badge border px-4 py-2 text-13',
-            value === f.key ? 'bg-foreground text-background' : 'bg-background text-foreground',
-          )}
+          className={chipClass(value === f.key)}
         >
           {t(f.labelKey, { defaultValue: f.defaultLabel })}
         </button>
       ))}
+      {intimateProfile && <MatchesFilterChip value={value} onChange={onChange} />}
+      {hasUpcomingTrips && (
+        <button
+          role="tab"
+          aria-selected={value === 'trips'}
+          onClick={() => onChange('trips')}
+          className={chipClass(value === 'trips')}
+        >
+          {t('inbox.filter.trips', { defaultValue: 'Trips' })}
+        </button>
+      )}
     </div>
   );
 }

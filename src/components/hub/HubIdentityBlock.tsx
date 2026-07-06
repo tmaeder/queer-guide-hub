@@ -26,7 +26,7 @@ export function HubIdentityBlock() {
 
   const avatarSrc =
     px?.avatar_url || (user.email ? generateAvatarUrl(user.email, 96) || undefined : undefined);
-  const initial = (px?.display_name || user.email || 'U').charAt(0).toUpperCase();
+  const initial = (px?.username || user.email || 'U').charAt(0).toUpperCase();
 
   return (
     <LocalizedLink
@@ -38,14 +38,11 @@ export function HubIdentityBlock() {
         <AvatarFallback>{initial}</AvatarFallback>
       </Avatar>
       <span className="flex min-w-0 flex-col">
-        <span className="truncate text-sm font-semibold">
-          {px?.display_name || t('header.userMenu.you', 'You')}
-        </span>
         {px?.username ? (
-          <span className="truncate font-mono text-2xs text-muted-foreground">@{px.username}</span>
+          <span className="truncate font-mono text-sm font-semibold">@{px.username}</span>
         ) : (
-          <span className="truncate text-2xs text-muted-foreground">
-            {t('hub.identity.viewProfile', 'View profile')}
+          <span className="truncate text-sm font-semibold">
+            {t('header.userMenu.you', 'You')}
           </span>
         )}
       </span>

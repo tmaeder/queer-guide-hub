@@ -2,19 +2,19 @@
  * @vitest-environment jsdom
  */
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter } from 'react-router';
 import type { ReactNode } from 'react';
 
-const { useAuthMock, fetchPrefsMock } = vi.hoisted(() => ({
+const { useAuthMock } = vi.hoisted(() => ({
   useAuthMock: vi.fn(),
-  fetchPrefsMock: vi.fn(),
 }));
 
 vi.mock('@/hooks/useAuth', () => ({ useAuth: useAuthMock }));
-vi.mock('@/hooks/useTravelPreferencesEditor', () => ({
-  fetchProfileTravelPreferences: fetchPrefsMock,
+// The editor is heavy (loads other hooks); stub it — we only assert the entry point.
+vi.mock('@/components/profile/TravelPreferencesEditor', () => ({
+  TravelPreferencesEditor: () => <div data-testid="travel-prefs-editor" />,
 }));
 
 import { TravelPrefsPrompt } from '../TravelPrefsPrompt';
@@ -30,8 +30,6 @@ function wrapper({ children }: { children: ReactNode }) {
 
 beforeEach(() => {
   useAuthMock.mockReset();
-  fetchPrefsMock.mockReset();
-  sessionStorage.clear();
 });
 
 describe('TravelPrefsPrompt', () => {
@@ -41,33 +39,19 @@ describe('TravelPrefsPrompt', () => {
     expect(container.firstChild).toBeNull();
   });
 
-  it('shows the quiet edit entry when user already has prefs', async () => {
+  it('always shows a persistent Travel preferences entry, with no dismiss', () => {
     useAuthMock.mockReturnValue({ user: { id: 'u1' } });
-    fetchPrefsMock.mockResolvedValue({ budget: 'mid' });
     render(<TravelPrefsPrompt />, { wrapper });
-    await waitFor(() => expect(fetchPrefsMock).toHaveBeenCalled());
     expect(screen.getByRole('button', { name: /Travel preferences/i })).toBeInTheDocument();
+    // standard, not optional: no dismiss control, no "Set up" banner
+    expect(screen.queryByRole('button', { name: /Dismiss/i })).not.toBeInTheDocument();
     expect(screen.queryByText(/Personalize your travel/i)).not.toBeInTheDocument();
   });
 
-  it('shows the full banner when user has no prefs, with an in-context Set up button', async () => {
+  it('opens the canonical editor in a sheet when clicked', () => {
     useAuthMock.mockReturnValue({ user: { id: 'u1' } });
-    fetchPrefsMock.mockResolvedValue({});
     render(<TravelPrefsPrompt />, { wrapper });
-    await waitFor(() => expect(screen.getByText(/Personalize your travel/i)).toBeInTheDocument());
-    // in-context capture: a sheet trigger, not a link to settings
-    expect(screen.queryByRole('link')).not.toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Set up/i })).toBeInTheDocument();
-  });
-
-  it('Dismiss persists to sessionStorage and collapses to the quiet entry', async () => {
-    useAuthMock.mockReturnValue({ user: { id: 'u1' } });
-    fetchPrefsMock.mockResolvedValue({});
-    render(<TravelPrefsPrompt />, { wrapper });
-    await waitFor(() => expect(screen.getByText(/Personalize your travel/i)).toBeInTheDocument());
-    fireEvent.click(screen.getByRole('button', { name: /Dismiss/i }));
-    expect(sessionStorage.getItem('qg_travel_prefs_dismissed')).toBe('1');
-    expect(screen.queryByText(/Personalize your travel/i)).not.toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Travel preferences/i })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /Travel preferences/i }));
+    expect(screen.getByTestId('travel-prefs-editor')).toBeInTheDocument();
   });
 });

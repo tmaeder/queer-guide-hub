@@ -2833,7 +2833,8 @@
       "all": "전체",
       "chats": "채팅",
       "mail": "메일",
-      "alerts": "알림"
+      "alerts": "알림",
+      "matches": "매치"
     },
     "compose": {
       "label": "작성",
@@ -3160,7 +3161,10 @@
       "contacts": "연락처",
       "saved": "저장됨",
       "news": "뉴스",
-      "trips": "여행"
+      "trips": "여행",
+      "overview": "개요",
+      "messages": "메시지",
+      "plans": "플랜"
     },
     "calendar": {
       "title": "다가오는 일정",
@@ -3185,7 +3189,13 @@
       "groups": "그룹",
       "dating": "데이트",
       "datingTitle": "내 데이트 덱",
-      "datingBody": "매치와 대화를 살펴보세요."
+      "datingBody": "매치와 대화를 살펴보세요.",
+      "datingMatches": "매치 {{count}}개",
+      "browseDeck": "덱 둘러보기",
+      "browseDeckBody": "매치할 새로운 사람을 찾아보세요.",
+      "yourMatches": "내 매치",
+      "yourMatchesBody": "매치 대화 {{count}}개",
+      "yourMatchesEmpty": "아직 매치가 없습니다."
     },
     "news": {
       "title": "뉴스",
@@ -3195,6 +3205,31 @@
       "tagsEmpty": "태그를 팔로우하면 관련 기사가 표시됩니다.",
       "tagsNoArticles": "팔로우한 태그에 새 기사가 없습니다.",
       "savedSearches": "저장한 검색"
+    },
+    "overview": {
+      "title": "개요",
+      "seePlans": "모든 플랜",
+      "unread": "읽지 않음 {{count}}개",
+      "openMessages": "받은편지함 열기",
+      "noChats": "아직 대화가 없습니다.",
+      "openSaved": "저장됨 열기",
+      "savedCount": "저장됨 {{count}}개",
+      "noSaved": "아직 저장한 것이 없습니다.",
+      "openMatches": "매치 열기",
+      "matchCount": "매치 {{count}}개",
+      "noMatches": "아직 매치가 없습니다.",
+      "people": "사람들",
+      "friendCount": "친구 {{count}}명",
+      "findPeople": "사람 찾기",
+      "noFriends": "아직 친구가 없습니다.",
+      "wantsToConnect": "연결을 원해요"
+    },
+    "messages": {
+      "chats": "채팅",
+      "people": "사람들"
+    },
+    "plans": {
+      "trips": "내 여행"
     }
   }
 }
