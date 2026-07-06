@@ -9,6 +9,10 @@ describe('hubModules registry', () => {
     expect(new Set(paths).size).toBe(paths.length);
   });
 
+  it('exposes exactly the four consolidated modules', () => {
+    expect(HUB_MODULES.map((m) => m.id)).toEqual(['overview', 'messages', 'plans', 'saved']);
+  });
+
   it('paths are static /hub routes (locale-collision-safe)', () => {
     for (const m of HUB_MODULES) {
       expect(m.path.startsWith('/hub')).toBe(true);
@@ -17,9 +21,14 @@ describe('hubModules registry', () => {
     }
   });
 
-  it('inbox is the default module at /hub and carries the unread badge', () => {
-    const inbox = HUB_MODULES.find((m) => m.id === 'inbox');
-    expect(inbox?.path).toBe('/hub');
-    expect(inbox?.badge).toBe('unread');
+  it('overview is the default module at /hub', () => {
+    const overview = HUB_MODULES.find((m) => m.id === 'overview');
+    expect(overview?.path).toBe('/hub');
+  });
+
+  it('messages carries the unread badge', () => {
+    const messages = HUB_MODULES.find((m) => m.id === 'messages');
+    expect(messages?.path).toBe('/hub/messages');
+    expect(messages?.badge).toBe('unread');
   });
 });
