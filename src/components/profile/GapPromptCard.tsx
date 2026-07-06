@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { AtSign, Sparkles } from 'lucide-react';
+import { AtSign, Sparkles, Luggage } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
@@ -33,6 +33,8 @@ export function GapPromptCard({ profile }: GapPromptCardProps) {
         <div className="w-10 h-10 rounded-element bg-muted flex items-center justify-center shrink-0">
           {prompt.kind === 'username' ? (
             <AtSign size={18} aria-hidden="true" />
+          ) : prompt.kind === 'travel' ? (
+            <Luggage size={18} aria-hidden="true" />
           ) : (
             <Sparkles size={18} aria-hidden="true" />
           )}

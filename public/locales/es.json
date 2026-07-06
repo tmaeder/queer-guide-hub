@@ -2835,7 +2835,8 @@
       "all": "Todo",
       "chats": "Chats",
       "mail": "Correo",
-      "alerts": "Alertas"
+      "alerts": "Alertas",
+      "matches": "[ES] Matches"
     },
     "compose": {
       "label": "Redactar",
@@ -3162,7 +3163,10 @@
       "contacts": "Contactos",
       "saved": "Guardado",
       "news": "Noticias",
-      "trips": "Viajes"
+      "trips": "Viajes",
+      "overview": "[ES] Overview",
+      "messages": "[ES] Messages",
+      "plans": "[ES] Plans"
     },
     "calendar": {
       "title": "Próximo",
@@ -3187,7 +3191,13 @@
       "groups": "Grupos",
       "dating": "Citas",
       "datingTitle": "Tu mazo de citas",
-      "datingBody": "Explora matches y conversaciones."
+      "datingBody": "Explora matches y conversaciones.",
+      "datingMatches": "[ES] {{count}} matches",
+      "browseDeck": "[ES] Browse deck",
+      "browseDeckBody": "[ES] Find new people to match with.",
+      "yourMatches": "[ES] Your matches",
+      "yourMatchesBody": "[ES] {{count}} match conversations",
+      "yourMatchesEmpty": "[ES] No matches yet."
     },
     "news": {
       "title": "Noticias",
@@ -3197,6 +3207,31 @@
       "tagsEmpty": "Sigue etiquetas para ver artículos aquí.",
       "tagsNoArticles": "Nada nuevo de tus etiquetas aún.",
       "savedSearches": "Búsquedas guardadas"
+    },
+    "overview": {
+      "title": "[ES] Overview",
+      "seePlans": "[ES] All plans",
+      "unread": "[ES] {{count}} unread",
+      "openMessages": "[ES] Open inbox",
+      "noChats": "[ES] No conversations yet.",
+      "openSaved": "[ES] Open saved",
+      "savedCount": "[ES] {{count}} saved",
+      "noSaved": "[ES] Nothing saved yet.",
+      "openMatches": "[ES] Open matches",
+      "matchCount": "[ES] {{count}} matches",
+      "noMatches": "[ES] No matches yet.",
+      "people": "[ES] People",
+      "friendCount": "[ES] {{count}} friends",
+      "findPeople": "[ES] Find people",
+      "noFriends": "[ES] No friends yet.",
+      "wantsToConnect": "[ES] Wants to connect"
+    },
+    "messages": {
+      "chats": "[ES] Chats",
+      "people": "[ES] People"
+    },
+    "plans": {
+      "trips": "[ES] Your trips"
     }
   }
 }

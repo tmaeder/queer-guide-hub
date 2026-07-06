@@ -2869,7 +2869,8 @@
       "all": "Все",
       "chats": "Чаты",
       "mail": "Почта",
-      "alerts": "Оповещения"
+      "alerts": "Оповещения",
+      "matches": "[RU] Matches"
     },
     "compose": {
       "label": "Написать",
@@ -3196,7 +3197,10 @@
       "contacts": "Контакты",
       "saved": "Сохранённое",
       "news": "Новости",
-      "trips": "Поездки"
+      "trips": "Поездки",
+      "overview": "[RU] Overview",
+      "messages": "[RU] Messages",
+      "plans": "[RU] Plans"
     },
     "calendar": {
       "title": "Предстоящее",
@@ -3221,7 +3225,13 @@
       "groups": "Группы",
       "dating": "Знакомства",
       "datingTitle": "Ваша колода знакомств",
-      "datingBody": "Смотрите совпадения и переписки."
+      "datingBody": "Смотрите совпадения и переписки.",
+      "datingMatches": "[RU] {{count}} matches",
+      "browseDeck": "[RU] Browse deck",
+      "browseDeckBody": "[RU] Find new people to match with.",
+      "yourMatches": "[RU] Your matches",
+      "yourMatchesBody": "[RU] {{count}} match conversations",
+      "yourMatchesEmpty": "[RU] No matches yet."
     },
     "news": {
       "title": "Новости",
@@ -3231,6 +3241,31 @@
       "tagsEmpty": "Подпишитесь на теги, чтобы видеть статьи здесь.",
       "tagsNoArticles": "Пока ничего нового по вашим тегам.",
       "savedSearches": "Сохранённые запросы"
+    },
+    "overview": {
+      "title": "[RU] Overview",
+      "seePlans": "[RU] All plans",
+      "unread": "[RU] {{count}} unread",
+      "openMessages": "[RU] Open inbox",
+      "noChats": "[RU] No conversations yet.",
+      "openSaved": "[RU] Open saved",
+      "savedCount": "[RU] {{count}} saved",
+      "noSaved": "[RU] Nothing saved yet.",
+      "openMatches": "[RU] Open matches",
+      "matchCount": "[RU] {{count}} matches",
+      "noMatches": "[RU] No matches yet.",
+      "people": "[RU] People",
+      "friendCount": "[RU] {{count}} friends",
+      "findPeople": "[RU] Find people",
+      "noFriends": "[RU] No friends yet.",
+      "wantsToConnect": "[RU] Wants to connect"
+    },
+    "messages": {
+      "chats": "[RU] Chats",
+      "people": "[RU] People"
+    },
+    "plans": {
+      "trips": "[RU] Your trips"
     }
   }
 }
