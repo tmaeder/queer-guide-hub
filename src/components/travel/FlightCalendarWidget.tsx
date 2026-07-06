@@ -69,7 +69,12 @@ export function FlightCalendarWidget({
             Best Time to Fly to {destinationCity}
           </span>
         </div>
-        <div className="flex gap-2 overflow-x-auto pb-2">
+        <div
+          className="flex gap-2 overflow-x-auto pb-2"
+          tabIndex={0}
+          role="region"
+          aria-label={`Monthly flight prices to ${destinationCity}`}
+        >
           {months.slice(0, 12).map((m) => {
             const isCheapest = m.date === cheapest.date;
             return (
@@ -114,7 +119,12 @@ export function FlightCalendarWidget({
           Cheapest Days to Fly
         </span>
       </div>
-      <div className="flex gap-1 overflow-x-auto pb-2">
+      <div
+        className="flex gap-1 overflow-x-auto pb-2"
+        tabIndex={0}
+        role="region"
+        aria-label="Cheapest days to fly"
+      >
         {prices.slice(0, 14).map((p) => {
           const d = new Date(p.date);
           const isCheapest = p.date === cheapest.date;
