@@ -2839,7 +2839,8 @@
       "all": "Tout",
       "chats": "Discussions",
       "mail": "Courrier",
-      "alerts": "Alertes"
+      "alerts": "Alertes",
+      "matches": "[FR] Matches"
     },
     "compose": {
       "label": "Rédiger",
@@ -3166,7 +3167,10 @@
       "contacts": "Contacts",
       "saved": "Enregistrés",
       "news": "Actus",
-      "trips": "Voyages"
+      "trips": "Voyages",
+      "overview": "[FR] Overview",
+      "messages": "[FR] Messages",
+      "plans": "[FR] Plans"
     },
     "calendar": {
       "title": "À venir",
@@ -3191,7 +3195,13 @@
       "groups": "Groupes",
       "dating": "Rencontres",
       "datingTitle": "Ton deck de rencontres",
-      "datingBody": "Parcours tes matchs et conversations."
+      "datingBody": "Parcours tes matchs et conversations.",
+      "datingMatches": "[FR] {{count}} matches",
+      "browseDeck": "[FR] Browse deck",
+      "browseDeckBody": "[FR] Find new people to match with.",
+      "yourMatches": "[FR] Your matches",
+      "yourMatchesBody": "[FR] {{count}} match conversations",
+      "yourMatchesEmpty": "[FR] No matches yet."
     },
     "news": {
       "title": "Actus",
@@ -3201,6 +3211,31 @@
       "tagsEmpty": "Suis des tags pour voir des articles ici.",
       "tagsNoArticles": "Rien de neuf de tes tags pour l’instant.",
       "savedSearches": "Recherches enregistrées"
+    },
+    "overview": {
+      "title": "[FR] Overview",
+      "seePlans": "[FR] All plans",
+      "unread": "[FR] {{count}} unread",
+      "openMessages": "[FR] Open inbox",
+      "noChats": "[FR] No conversations yet.",
+      "openSaved": "[FR] Open saved",
+      "savedCount": "[FR] {{count}} saved",
+      "noSaved": "[FR] Nothing saved yet.",
+      "openMatches": "[FR] Open matches",
+      "matchCount": "[FR] {{count}} matches",
+      "noMatches": "[FR] No matches yet.",
+      "people": "[FR] People",
+      "friendCount": "[FR] {{count}} friends",
+      "findPeople": "[FR] Find people",
+      "noFriends": "[FR] No friends yet.",
+      "wantsToConnect": "[FR] Wants to connect"
+    },
+    "messages": {
+      "chats": "[FR] Chats",
+      "people": "[FR] People"
+    },
+    "plans": {
+      "trips": "[FR] Your trips"
     }
   }
 }

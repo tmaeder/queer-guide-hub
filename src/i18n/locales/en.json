@@ -3189,7 +3189,12 @@
       "noSaved": "Nothing saved yet.",
       "openMatches": "Open matches",
       "matchCount": "{{count}} matches",
-      "noMatches": "No matches yet."
+      "noMatches": "No matches yet.",
+      "people": "People",
+      "friendCount": "{{count}} friends",
+      "findPeople": "Find people",
+      "noFriends": "No friends yet.",
+      "wantsToConnect": "Wants to connect"
     },
     "messages": {
       "chats": "Chats",
