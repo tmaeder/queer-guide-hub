@@ -9,6 +9,10 @@ on:
     - cron: '17 4 * * 1' # Mondays 04:17 UTC, off the 03:00 cron herd
   workflow_dispatch: {}
 
+# Job only checks out the repo and writes to Supabase — no repo write access needed.
+permissions:
+  contents: read
+
 jobs:
   sync:
     runs-on: ubuntu-latest
