@@ -36,7 +36,7 @@ async function runType(
   llmBudget: { left: number },
   dryRun: boolean,
 ): Promise<{ checked: number; signals: number; llm: number }> {
-  let checked = 0, signalCount = 0, llm = 0
+  let checked = 0, llm = 0
   const all: ExistenceSignal[] = []
   for (let i = 0; i < rows.length; i++) {
     const { id, url } = rows[i]
@@ -55,9 +55,8 @@ async function runType(
     } catch (_e) { /* skip this row */ }
     if (i < rows.length - 1) await new Promise((r) => setTimeout(r, BETWEEN_MS))
   }
-  signalCount = all.length
   if (!dryRun) await insertSignals(supabase, all)
-  return { checked, signals: signalCount, llm }
+  return { checked, signals: all.length, llm }
 }
 
 Deno.serve(async (req) => {

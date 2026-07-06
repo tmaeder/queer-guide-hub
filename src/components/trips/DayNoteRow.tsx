@@ -4,7 +4,7 @@ import { GripVertical, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import type { TripPlace } from '@/hooks/useTrips';
-import { noteIconFor } from './noteIcons';
+import { renderNoteIcon } from './noteIcons';
 
 interface Props {
   place: TripPlace;
@@ -19,8 +19,6 @@ export function DayNoteRow({ place, onDelete, readOnly = false }: Props) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: place.id,
   });
-  const Icon = noteIconFor(place.icon);
-
   return (
     <div
       ref={setNodeRef}
@@ -43,7 +41,10 @@ export function DayNoteRow({ place, onDelete, readOnly = false }: Props) {
           <GripVertical className="w-3.5 h-3.5" />
         </div>
       )}
-      <Icon className="w-3.5 h-3.5 shrink-0 text-muted-foreground" aria-hidden />
+      {renderNoteIcon(place.icon, {
+        className: 'w-3.5 h-3.5 shrink-0 text-muted-foreground',
+        'aria-hidden': true,
+      })}
       {place.start_time && (
         <span className="text-xs2 text-muted-foreground tabular-nums shrink-0">
           {place.start_time.slice(0, 5)}

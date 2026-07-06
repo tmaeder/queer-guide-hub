@@ -19,6 +19,7 @@ import {
   Footprints,
   Route,
   ExternalLink,
+  type LucideProps,
 } from 'lucide-react';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { Card, CardContent } from '@/components/ui/card';
@@ -480,6 +481,15 @@ export function DayCard({
   );
 }
 
+/**
+ * Render the resolved weather icon as an element so no capitalized component
+ * variable is created during render (react-hooks/static-components).
+ */
+function renderWeatherIcon(code: number, props?: LucideProps) {
+  const Icon = weatherIconFor(code);
+  return <Icon {...props} />;
+}
+
 function WeatherChip({
   code,
   tMinC,
@@ -492,7 +502,6 @@ function WeatherChip({
   typical: boolean;
 }) {
   const { t } = useTranslation();
-  const Icon = weatherIconFor(code);
   const label = weatherLabelKeyFor(code);
   return (
     <span
@@ -500,7 +509,7 @@ function WeatherChip({
       title={t(label.key, label.defaultLabel)}
       data-testid="day-weather"
     >
-      <Icon className="w-3.5 h-3.5" aria-hidden />
+      {renderWeatherIcon(code, { className: 'w-3.5 h-3.5', 'aria-hidden': true })}
       <span className="tabular-nums">
         {Math.round(tMinC)}–{Math.round(tMaxC)}°
       </span>

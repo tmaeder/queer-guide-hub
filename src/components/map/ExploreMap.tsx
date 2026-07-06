@@ -166,12 +166,16 @@ export const ExploreMap = ({
   // DOM markers for the spiderfied (fanned-out) leaves of a co-located cluster.
   const spiderMarkersRef = useRef<maplibregl.Marker[]>([]);
   // Latest-value refs read inside imperative map callbacks / rAF loops.
+  // Assignments live in an effect (runs after every render, no deps) so the
+  // ref always tracks the latest prop without touching refs during render.
   const onPointsInViewRef = useRef(onPointsInView);
-  onPointsInViewRef.current = onPointsInView;
   const onSelectPointRef = useRef(onSelectPoint);
-  onSelectPointRef.current = onSelectPoint;
   const onMapHandleRef = useRef(onMapHandle);
-  onMapHandleRef.current = onMapHandle;
+  useEffect(() => {
+    onPointsInViewRef.current = onPointsInView;
+    onSelectPointRef.current = onSelectPoint;
+    onMapHandleRef.current = onMapHandle;
+  });
 
   // ── State ────────────────────────────────────────────────────────────────
   const [mapReady, setMapReady] = useState(false);
@@ -263,7 +267,9 @@ export const ExploreMap = ({
 
   // Surface loading state to the parent (spotlight rail skeleton).
   const onFetchingChangeRef = useRef(onFetchingChange);
-  onFetchingChangeRef.current = onFetchingChange;
+  useEffect(() => {
+    onFetchingChangeRef.current = onFetchingChange;
+  });
   useEffect(() => {
     onFetchingChangeRef.current?.(isFetching);
   }, [isFetching]);
@@ -358,35 +364,35 @@ export const ExploreMap = ({
   );
 
   useMapBoundaryLayers({
-    map: mapRef.current,
+    mapRef,
     mapReady,
     config: COUNTRY_BOUNDARY_CONFIG,
     boundaries: countryBoundaries,
     markers: countryMarkers,
     enabled: countriesEnabled,
-    tooltipEl: tooltipRef.current,
+    tooltipRef,
     onPopup: showPopupFromMarker,
   });
 
   useMapBoundaryLayers({
-    map: mapRef.current,
+    mapRef,
     mapReady,
     config: CITY_BOUNDARY_CONFIG,
     boundaries: cityBoundaries,
     markers: cityMarkers,
     enabled: citiesEnabled,
-    tooltipEl: tooltipRef.current,
+    tooltipRef,
     onPopup: showPopupFromMarker,
   });
 
   useMapBoundaryLayers({
-    map: mapRef.current,
+    mapRef,
     mapReady,
     config: NEIGHBOURHOOD_BOUNDARY_CONFIG,
     boundaries: neighbourhoodBoundaries,
     markers: villageMarkers,
     enabled: neighbourhoodsEnabled,
-    tooltipEl: tooltipRef.current,
+    tooltipRef,
     onPopup: showPopupFromMarker,
   });
 
