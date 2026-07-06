@@ -9,7 +9,7 @@ import { useMyIntimateProfile } from '@/hooks/useIntimateProfile';
 import { useKinkShareView, type KinkShareViewRow } from '@/hooks/useKinkShare';
 import { useKinkTaxonomy } from '@/hooks/useKinkTaxonomy';
 import { kinkLabel } from '@/lib/kinks/types';
-import { SIDE_LABEL } from '@/components/kinks/KinkRatingControl';
+import { SIDE_LABEL } from '@/components/kinks/kinkRatingMeta';
 
 /**
  * Share-code landing: shows the owner's opted-in categories to signed-in,
