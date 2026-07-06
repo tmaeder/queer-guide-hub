@@ -2834,7 +2834,8 @@
       "chats": "チャット",
       "mail": "メール",
       "alerts": "アラート",
-      "matches": "マッチ"
+      "matches": "マッチ",
+      "matchesUnread": "[JA] {{count}} new matches"
     },
     "compose": {
       "label": "作成",
@@ -2895,7 +2896,8 @@
       "stagedNote": "レビューに送信しました — 品質パイプラインを通過します。",
       "anEvent": "イベント",
       "aVenue": "会場"
-    }
+    },
+    "matchTag": "[JA] Match"
   },
   "extension": {
     "signInGate": {
