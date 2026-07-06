@@ -1,17 +1,36 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
-import { ArrowRight, Bookmark, CalendarClock, Heart, Loader2, MessageCircle } from 'lucide-react';
+import {
+  ArrowRight,
+  Bookmark,
+  CalendarClock,
+  Check,
+  Heart,
+  Loader2,
+  MessageCircle,
+  Users,
+  X,
+} from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
 import { AgendaRow } from '@/components/hub/AgendaRow';
 import { useAuth } from '@/hooks/useAuth';
 import { useMyAgenda } from '@/hooks/useMyAgenda';
 import { useInboxFeed } from '@/hooks/useInboxFeed';
-import { fetchAllUserFavorites } from '@/hooks/usePageFetchers';
+import { useUserRelationships } from '@/hooks/useUserRelationships';
+import { fetchAllUserFavorites, fetchProfilesByUserIds } from '@/hooks/usePageFetchers';
 import { useMyIntimateProfile } from '@/hooks/useIntimateProfile';
 import { useIntimateMatches } from '@/hooks/useIntimateMatches';
+
+interface ProfileRow {
+  user_id: string;
+  display_name: string | null;
+  avatar_url: string | null;
+  location: string | null;
+}
 
 /** Section wrapper: heading + "see all" link into the owning module. */
 function OverviewSection({
@@ -49,10 +68,10 @@ function OverviewSection({
 
 /**
  * Hub Overview — the personal office's front door (2026-07). An at-a-glance
- * peek at each surface: the next few upcoming commitments (→ Plans), recent
- * conversations + unread count (→ Messages), and how much is saved (→ Saved).
- * Read-only aggregation over existing hooks; every block drills into its
- * dedicated module.
+ * peek at each surface: the next few upcoming commitments grouped by day
+ * (→ Plans), pending friend requests + friends (→ Messages/People), recent
+ * conversations (→ Messages) and how much is saved (→ Saved). Read-only
+ * aggregation over existing hooks; every block drills into its module.
  */
 export function OverviewModule() {
   const { t } = useTranslation();
@@ -63,7 +82,7 @@ export function OverviewModule() {
   const { data: matches } = useIntimateMatches();
   const matchCount = matches?.length ?? 0;
 
-  // Next 14 days of agenda, flattened to the first few items.
+  // Next 14 days of agenda, kept grouped by day so the peek reads as a calendar.
   const { from, to } = useMemo(() => {
     const start = new Date();
     start.setHours(0, 0, 0, 0);
@@ -72,10 +91,50 @@ export function OverviewModule() {
     return { from: start, to: end };
   }, []);
   const { days, loading: agendaLoading } = useMyAgenda(from, to);
-  const nextItems = useMemo(
-    () => days.flatMap((d) => d.items).slice(0, 4),
-    [days],
-  );
+  // First ~5 commitments, but keep their day grouping (Today / Tomorrow / date).
+  const previewDays = useMemo(() => {
+    const out: { date: string; items: (typeof days)[number]['items'] }[] = [];
+    let budget = 5;
+    for (const day of days) {
+      if (budget <= 0) break;
+      const items = day.items.slice(0, budget);
+      budget -= items.length;
+      if (items.length > 0) out.push({ date: day.date, items });
+    }
+    return out;
+  }, [days]);
+
+  const dayLabel = (key: string) => {
+    const d = new Date(`${key}T00:00:00`);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const diff = Math.round((d.getTime() - today.getTime()) / 86_400_000);
+    if (diff === 0) return t('hub.calendar.today', { defaultValue: 'Today' });
+    if (diff === 1) return t('hub.calendar.tomorrow', { defaultValue: 'Tomorrow' });
+    return d.toLocaleDateString([], { weekday: 'long', month: 'short', day: 'numeric' });
+  };
+
+  // People: pending friend requests (actionable inline) + a friends preview.
+  const {
+    getPendingRequests,
+    getFriends,
+    acceptFriendRequest,
+    rejectFriendRequest,
+    loading: relLoading,
+  } = useUserRelationships();
+  const requests = getPendingRequests();
+  const friends = getFriends();
+  const requesterIds = requests.map((r) => r.user_id);
+  const friendIds = user
+    ? friends.map((f) => (f.user_id === user.id ? f.target_user_id : f.user_id))
+    : [];
+  const { data: peopleProfiles } = useQuery({
+    queryKey: ['hub-overview', 'people', requesterIds, friendIds],
+    enabled: !!user && requesterIds.length + friendIds.length > 0,
+    queryFn: () => fetchProfilesByUserIds<ProfileRow>([...requesterIds, ...friendIds]),
+  });
+  const profileOf = (id: string) => peopleProfiles?.find((p) => p.user_id === id);
+  const friendPreview = friendIds.slice(0, 6);
 
   const { items, unreadCount, loading: inboxLoading } = useInboxFeed('all');
   const recentChats = useMemo(
@@ -103,7 +162,7 @@ export function OverviewModule() {
         {t('hub.overview.title', { defaultValue: 'Overview' })}
       </h1>
 
-      {/* Upcoming plans */}
+      {/* Upcoming plans — grouped by day so it reads as a calendar. */}
       <OverviewSection
         icon={CalendarClock}
         title={t('hub.calendar.title', { defaultValue: 'Upcoming' })}
@@ -112,15 +171,117 @@ export function OverviewModule() {
       >
         {agendaLoading ? (
           <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" aria-hidden />
-        ) : nextItems.length === 0 ? (
+        ) : previewDays.length === 0 ? (
           <p className="text-sm text-muted-foreground">
             {t('hub.calendar.empty', { defaultValue: 'Nothing upcoming yet.' })}
           </p>
         ) : (
-          <div className="flex flex-col gap-2">
-            {nextItems.map((item) => (
-              <AgendaRow key={item.id} item={item} />
+          <div className="flex flex-col gap-4">
+            {previewDays.map((day) => (
+              <div key={day.date} className="flex flex-col gap-2">
+                <h3 className="text-13 font-semibold uppercase tracking-wider text-muted-foreground">
+                  {dayLabel(day.date)}
+                </h3>
+                {day.items.map((item) => (
+                  <AgendaRow key={item.id} item={item} />
+                ))}
+              </div>
             ))}
+          </div>
+        )}
+      </OverviewSection>
+
+      {/* People — pending friend requests + friends preview. */}
+      <OverviewSection
+        icon={Users}
+        title={t('hub.overview.people', { defaultValue: 'People' })}
+        to="/hub/messages?tab=people"
+        seeAllLabel={
+          friends.length > 0
+            ? t('hub.overview.friendCount', {
+                defaultValue: '{{count}} friends',
+                count: friends.length,
+              })
+            : t('hub.overview.findPeople', { defaultValue: 'Find people' })
+        }
+      >
+        {relLoading && !peopleProfiles ? (
+          <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" aria-hidden />
+        ) : requests.length === 0 && friendIds.length === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            {t('hub.overview.noFriends', { defaultValue: 'No friends yet.' })}
+          </p>
+        ) : (
+          <div className="flex flex-col gap-4">
+            {requests.length > 0 && (
+              <div className="flex flex-col gap-2">
+                {requests.map((req) => {
+                  const profile = profileOf(req.user_id);
+                  const name = profile?.display_name || t('common.unknownUser', 'Someone');
+                  return (
+                    <div
+                      key={req.id}
+                      className="flex items-center gap-2 rounded-element border border-border px-4 py-2"
+                    >
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage src={profile?.avatar_url || undefined} alt="" />
+                        <AvatarFallback>{name.charAt(0).toUpperCase()}</AvatarFallback>
+                      </Avatar>
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-medium">{name}</p>
+                        <p className="truncate text-2xs text-muted-foreground">
+                          {t('hub.overview.wantsToConnect', { defaultValue: 'Wants to connect' })}
+                        </p>
+                      </div>
+                      <Button
+                        variant="default"
+                        size="icon"
+                        className="h-8 w-8"
+                        aria-label={t('common.accept', 'Accept')}
+                        disabled={relLoading}
+                        onClick={() => acceptFriendRequest(req.id)}
+                      >
+                        <Check className="h-4 w-4" aria-hidden />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        className="h-8 w-8"
+                        aria-label={t('common.decline', 'Decline')}
+                        disabled={relLoading}
+                        onClick={() => rejectFriendRequest(req.id)}
+                      >
+                        <X className="h-4 w-4" aria-hidden />
+                      </Button>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {friendPreview.length > 0 && (
+              <div className="flex items-center gap-2">
+                <div className="flex -space-x-2">
+                  {friendPreview.map((id) => {
+                    const profile = profileOf(id);
+                    const name = profile?.display_name || 'U';
+                    return (
+                      <LocalizedLink key={id} to={`/users/${id}`} className="no-underline">
+                        <Avatar className="h-8 w-8 border-2 border-background">
+                          <AvatarImage src={profile?.avatar_url || undefined} alt={name} />
+                          <AvatarFallback>{name.charAt(0).toUpperCase()}</AvatarFallback>
+                        </Avatar>
+                      </LocalizedLink>
+                    );
+                  })}
+                </div>
+                {friends.length > friendPreview.length && (
+                  <span className="text-13 text-muted-foreground">
+                    +{friends.length - friendPreview.length}
+                  </span>
+                )}
+              </div>
+            )}
           </div>
         )}
       </OverviewSection>
