@@ -27,7 +27,8 @@
       "chats": "Chats",
       "mail": "Mail",
       "alerts": "Alerts",
-      "matches": "Matches"
+      "matches": "Matches",
+      "matchesUnread": "{{count}} new matches"
     },
     "compose": {
       "label": "Compose",

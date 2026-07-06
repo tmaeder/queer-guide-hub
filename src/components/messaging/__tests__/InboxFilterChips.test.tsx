@@ -2,7 +2,10 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 
 // Toggleable intimate-profile mock (opted-in gate for the Matches chip).
-const h = vi.hoisted(() => ({ profile: { data: null as { id: string } | null } }));
+const h = vi.hoisted(() => ({
+  profile: { data: null as { id: string } | null },
+  inbox: { items: [] as { id: string; unread: boolean }[] },
+}));
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
@@ -22,6 +25,9 @@ vi.mock('@/hooks/useUpcomingTrips', () => ({
 }));
 vi.mock('@/hooks/useIntimateProfile', () => ({
   useMyIntimateProfile: () => h.profile,
+}));
+vi.mock('@/hooks/useInboxFeed', () => ({
+  useInboxFeed: () => ({ items: h.inbox.items, unreadCount: 0, loading: false }),
 }));
 
 import { InboxFilterChips } from '../InboxFilterChips';
@@ -52,7 +58,23 @@ describe('InboxFilterChips', () => {
 
   it('shows the Matches chip once the viewer has an intimate profile', () => {
     h.profile = { data: { id: 'p1' } };
+    h.inbox = { items: [] };
     render(<InboxFilterChips value="all" onChange={() => {}} />);
     expect(screen.getByRole('tab', { name: /matches/i })).toBeTruthy();
+  });
+
+  it('badges the Matches chip with the unread-match count', () => {
+    h.profile = { data: { id: 'p1' } };
+    h.inbox = {
+      items: [
+        { id: 'conv_1', unread: true },
+        { id: 'conv_2', unread: true },
+        { id: 'conv_3', unread: false },
+      ],
+    };
+    render(<InboxFilterChips value="all" onChange={() => {}} />);
+    // the Matches chip renders and shows the unread badge (2 of 3 unread)
+    expect(screen.getByRole('tab', { name: /matches/i })).toBeTruthy();
+    expect(screen.getByText('2')).toBeTruthy();
   });
 });
