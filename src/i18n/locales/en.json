@@ -89,7 +89,8 @@
       "stagedNote": "Submitted for review — these go through our quality pipeline.",
       "anEvent": "Event",
       "aVenue": "Venue"
-    }
+    },
+    "matchTag": "Match"
   },
   "eventTypes": {
     "party": "Party",
