@@ -2839,7 +2839,8 @@
       "all": "الكل",
       "chats": "المحادثات",
       "mail": "البريد",
-      "alerts": "التنبيهات"
+      "alerts": "التنبيهات",
+      "matches": "[AR] Matches"
     },
     "compose": {
       "label": "إنشاء",
@@ -3166,7 +3167,10 @@
       "contacts": "جهات الاتصال",
       "saved": "المحفوظات",
       "news": "الأخبار",
-      "trips": "الرحلات"
+      "trips": "الرحلات",
+      "overview": "[AR] Overview",
+      "messages": "[AR] Messages",
+      "plans": "[AR] Plans"
     },
     "calendar": {
       "title": "القادم",
@@ -3191,7 +3195,13 @@
       "groups": "المجموعات",
       "dating": "المواعدة",
       "datingTitle": "مجموعة المواعدة الخاصة بك",
-      "datingBody": "تصفّح التطابقات والمحادثات."
+      "datingBody": "تصفّح التطابقات والمحادثات.",
+      "datingMatches": "[AR] {{count}} matches",
+      "browseDeck": "[AR] Browse deck",
+      "browseDeckBody": "[AR] Find new people to match with.",
+      "yourMatches": "[AR] Your matches",
+      "yourMatchesBody": "[AR] {{count}} match conversations",
+      "yourMatchesEmpty": "[AR] No matches yet."
     },
     "news": {
       "title": "الأخبار",
@@ -3201,6 +3211,31 @@
       "tagsEmpty": "تابِع الوسوم لرؤية مقالات ذات صلة هنا.",
       "tagsNoArticles": "لا جديد من وسومك بعد.",
       "savedSearches": "عمليات البحث المحفوظة"
+    },
+    "overview": {
+      "title": "[AR] Overview",
+      "seePlans": "[AR] All plans",
+      "unread": "[AR] {{count}} unread",
+      "openMessages": "[AR] Open inbox",
+      "noChats": "[AR] No conversations yet.",
+      "openSaved": "[AR] Open saved",
+      "savedCount": "[AR] {{count}} saved",
+      "noSaved": "[AR] Nothing saved yet.",
+      "openMatches": "[AR] Open matches",
+      "matchCount": "[AR] {{count}} matches",
+      "noMatches": "[AR] No matches yet.",
+      "people": "[AR] People",
+      "friendCount": "[AR] {{count}} friends",
+      "findPeople": "[AR] Find people",
+      "noFriends": "[AR] No friends yet.",
+      "wantsToConnect": "[AR] Wants to connect"
+    },
+    "messages": {
+      "chats": "[AR] Chats",
+      "people": "[AR] People"
+    },
+    "plans": {
+      "trips": "[AR] Your trips"
     }
   }
 }

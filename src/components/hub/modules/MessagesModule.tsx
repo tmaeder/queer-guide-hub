@@ -32,9 +32,11 @@ export function MessagesModule() {
     return valid.includes(f as InboxFilter) ? (f as InboxFilter) : 'all';
   }, [searchParams]);
   const [filter, setFilter] = useState<InboxFilter>(initialFilter);
+  // ?tab=people (from Overview's "All people" link) opens the People sub-view.
+  const [tab, setTab] = useState(searchParams.get('tab') === 'people' ? 'people' : 'chats');
 
   return (
-    <Tabs defaultValue="chats" className="flex h-full flex-col gap-4">
+    <Tabs value={tab} onValueChange={setTab} className="flex h-full flex-col gap-4">
       <TabsList className="self-start">
         <TabsTrigger value="chats">
           {t('hub.messages.chats', { defaultValue: 'Chats' })}

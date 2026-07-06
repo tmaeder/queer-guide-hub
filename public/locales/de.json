@@ -2835,7 +2835,8 @@
       "all": "Alle",
       "chats": "Chats",
       "mail": "E-Mail",
-      "alerts": "Hinweise"
+      "alerts": "Hinweise",
+      "matches": "[DE] Matches"
     },
     "compose": {
       "label": "Verfassen",
@@ -3162,7 +3163,10 @@
       "contacts": "Kontakte",
       "saved": "Gespeichert",
       "news": "News",
-      "trips": "Reisen"
+      "trips": "Reisen",
+      "overview": "[DE] Overview",
+      "messages": "[DE] Messages",
+      "plans": "[DE] Plans"
     },
     "calendar": {
       "title": "Anstehend",
@@ -3187,7 +3191,13 @@
       "groups": "Gruppen",
       "dating": "Dating",
       "datingTitle": "Dein Dating-Deck",
-      "datingBody": "Matches und Gespräche durchsehen."
+      "datingBody": "Matches und Gespräche durchsehen.",
+      "datingMatches": "[DE] {{count}} matches",
+      "browseDeck": "[DE] Browse deck",
+      "browseDeckBody": "[DE] Find new people to match with.",
+      "yourMatches": "[DE] Your matches",
+      "yourMatchesBody": "[DE] {{count}} match conversations",
+      "yourMatchesEmpty": "[DE] No matches yet."
     },
     "news": {
       "title": "News",
@@ -3197,6 +3207,31 @@
       "tagsEmpty": "Folge Tags, um hier passende Artikel zu sehen.",
       "tagsNoArticles": "Noch nichts Neues aus deinen Tags.",
       "savedSearches": "Gespeicherte Suchen"
+    },
+    "overview": {
+      "title": "[DE] Overview",
+      "seePlans": "[DE] All plans",
+      "unread": "[DE] {{count}} unread",
+      "openMessages": "[DE] Open inbox",
+      "noChats": "[DE] No conversations yet.",
+      "openSaved": "[DE] Open saved",
+      "savedCount": "[DE] {{count}} saved",
+      "noSaved": "[DE] Nothing saved yet.",
+      "openMatches": "[DE] Open matches",
+      "matchCount": "[DE] {{count}} matches",
+      "noMatches": "[DE] No matches yet.",
+      "people": "[DE] People",
+      "friendCount": "[DE] {{count}} friends",
+      "findPeople": "[DE] Find people",
+      "noFriends": "[DE] No friends yet.",
+      "wantsToConnect": "[DE] Wants to connect"
+    },
+    "messages": {
+      "chats": "[DE] Chats",
+      "people": "[DE] People"
+    },
+    "plans": {
+      "trips": "[DE] Your trips"
     }
   }
 }
