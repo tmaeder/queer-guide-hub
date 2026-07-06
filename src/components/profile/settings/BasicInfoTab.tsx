@@ -77,16 +77,9 @@ export function BasicInfoTab({
               />
             </div>
 
-            {/* Display name + pronouns + pronunciation */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <FormField
-                id="display_name"
-                label="Display Name"
-                value={formData.display_name}
-                onChange={(v) => onChange('display_name', v)}
-                placeholder="How you appear to others"
-                description="Shown on your profile and in conversations"
-              />
+            {/* Pronouns + pronunciation. Public identity is the @username handle
+                (edited on the Account tab) — there is no separate display name. */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="flex flex-col gap-1">
                 <Label htmlFor="pronouns">Pronouns</Label>
                 <PronounCombobox
