@@ -97,7 +97,7 @@ export function TripsTab() {
           <Button
             variant="outline"
             size="lg"
-            onClick={() => navigate('/hub/calendar')}
+            onClick={() => navigate('/hub/plans')}
             style={{ paddingLeft: 16, paddingRight: 16 }}
             aria-label={t('calendar.openAria', 'Open my calendar')}
           >

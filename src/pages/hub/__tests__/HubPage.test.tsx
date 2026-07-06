@@ -17,19 +17,22 @@ vi.mock('@/hooks/useInboxFeed', () => ({
   useInboxFeed: () => ({ items: [], loading: false, unreadCount: 3 }),
 }));
 vi.mock('@/hooks/useMeta', () => ({ useMeta: () => {} }));
-vi.mock('@/components/hub/modules/InboxModule', () => ({
-  InboxModule: () => <div data-testid="module-inbox" />,
+vi.mock('@/components/hub/modules/OverviewModule', () => ({
+  OverviewModule: () => <div data-testid="module-overview" />,
+}));
+vi.mock('@/components/hub/modules/MessagesModule', () => ({
+  MessagesModule: () => <div data-testid="module-messages" />,
+}));
+vi.mock('@/components/hub/modules/PlansModule', () => ({
+  PlansModule: () => <div data-testid="module-plans" />,
 }));
 vi.mock('@/components/hub/modules/SavedModule', () => ({
   SavedModule: () => <div data-testid="module-saved" />,
 }));
-vi.mock('@/components/hub/modules/TripsModule', () => ({
-  TripsModule: () => <div data-testid="module-trips" />,
-}));
 
 import HubPage from '../HubPage';
 
-const renderPage = (module?: 'inbox' | 'saved' | 'trips') =>
+const renderPage = (module?: 'overview' | 'messages' | 'plans' | 'saved') =>
   render(
     <MemoryRouter>
       <HubPage module={module} />
@@ -37,33 +40,39 @@ const renderPage = (module?: 'inbox' | 'saved' | 'trips') =>
   );
 
 describe('HubPage', () => {
-  it('renders the shell nav from the registry with inbox as default', () => {
+  it('renders the shell nav from the registry with overview as default', () => {
     renderPage();
-    expect(screen.getByTestId('module-inbox')).toBeTruthy();
-    // Desktop + mobile nav both render each module link.
-    expect(screen.getAllByRole('link', { name: /Inbox/ }).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByTestId('module-overview')).toBeTruthy();
+    // Desktop + mobile nav both render each of the four module links.
+    expect(screen.getAllByRole('link', { name: /Overview/ }).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByRole('link', { name: /Messages/ }).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByRole('link', { name: /Plans/ }).length).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByRole('link', { name: /Saved/ }).length).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByRole('link', { name: /Trips/ }).length).toBeGreaterThanOrEqual(1);
     // Active module carries aria-current.
     const active = screen
       .getAllByRole('link')
       .filter((a) => a.getAttribute('aria-current') === 'page');
     expect(active.length).toBeGreaterThanOrEqual(1);
-    expect(active[0].textContent).toContain('Inbox');
+    expect(active[0].textContent).toContain('Overview');
+  });
+
+  it('renders the messages module when module="messages"', () => {
+    renderPage('messages');
+    expect(screen.getByTestId('module-messages')).toBeTruthy();
+    expect(screen.queryByTestId('module-overview')).toBeNull();
+  });
+
+  it('renders the plans module when module="plans"', () => {
+    renderPage('plans');
+    expect(screen.getByTestId('module-plans')).toBeTruthy();
   });
 
   it('renders the saved module when module="saved"', () => {
     renderPage('saved');
     expect(screen.getByTestId('module-saved')).toBeTruthy();
-    expect(screen.queryByTestId('module-inbox')).toBeNull();
   });
 
-  it('renders the trips module when module="trips"', () => {
-    renderPage('trips');
-    expect(screen.getByTestId('module-trips')).toBeTruthy();
-  });
-
-  it('shows the unread badge on the inbox nav entry', () => {
+  it('shows the unread badge on the messages nav entry', () => {
     renderPage();
     expect(screen.getAllByText('3').length).toBeGreaterThanOrEqual(1);
   });

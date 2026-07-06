@@ -134,7 +134,7 @@ export function MobileNavSheet({ open, onOpenChange }: MobileNavSheetProps) {
             {/* Personal shortcut: Trips with orphan badge */}
             {user && (
               <LocalizedLink
-                to="/hub/trips"
+                to="/hub/plans"
                 onClick={close}
                 className="flex items-center gap-2 rounded-element border border-border p-4 no-underline hover:bg-muted"
               >
