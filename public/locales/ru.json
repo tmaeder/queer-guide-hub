@@ -2870,7 +2870,8 @@
       "chats": "Чаты",
       "mail": "Почта",
       "alerts": "Оповещения",
-      "matches": "Совпадения"
+      "matches": "Совпадения",
+      "matchesUnread": "[RU] {{count}} new matches"
     },
     "compose": {
       "label": "Написать",
@@ -2931,7 +2932,8 @@
       "stagedNote": "Отправлено на проверку — проходит через наш конвейер качества.",
       "anEvent": "Событие",
       "aVenue": "Место"
-    }
+    },
+    "matchTag": "[RU] Match"
   },
   "extension": {
     "signInGate": {

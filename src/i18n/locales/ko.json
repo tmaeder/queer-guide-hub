@@ -2834,7 +2834,8 @@
       "chats": "채팅",
       "mail": "메일",
       "alerts": "알림",
-      "matches": "매치"
+      "matches": "매치",
+      "matchesUnread": "[KO] {{count}} new matches"
     },
     "compose": {
       "label": "작성",
@@ -2895,7 +2896,8 @@
       "stagedNote": "검토를 위해 제출됨 — 품질 파이프라인을 거칩니다.",
       "anEvent": "이벤트",
       "aVenue": "장소"
-    }
+    },
+    "matchTag": "[KO] Match"
   },
   "extension": {
     "signInGate": {
