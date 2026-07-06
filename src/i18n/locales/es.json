@@ -2836,7 +2836,7 @@
       "chats": "Chats",
       "mail": "Correo",
       "alerts": "Alertas",
-      "matches": "[ES] Matches"
+      "matches": "Coincidencias"
     },
     "compose": {
       "label": "Redactar",
@@ -3164,9 +3164,9 @@
       "saved": "Guardado",
       "news": "Noticias",
       "trips": "Viajes",
-      "overview": "[ES] Overview",
-      "messages": "[ES] Messages",
-      "plans": "[ES] Plans"
+      "overview": "Resumen",
+      "messages": "Mensajes",
+      "plans": "Planes"
     },
     "calendar": {
       "title": "Próximo",
@@ -3192,12 +3192,12 @@
       "dating": "Citas",
       "datingTitle": "Tu mazo de citas",
       "datingBody": "Explora matches y conversaciones.",
-      "datingMatches": "[ES] {{count}} matches",
-      "browseDeck": "[ES] Browse deck",
-      "browseDeckBody": "[ES] Find new people to match with.",
-      "yourMatches": "[ES] Your matches",
-      "yourMatchesBody": "[ES] {{count}} match conversations",
-      "yourMatchesEmpty": "[ES] No matches yet."
+      "datingMatches": "{{count}} coincidencias",
+      "browseDeck": "Ver perfiles",
+      "browseDeckBody": "Encuentra gente nueva con quien coincidir.",
+      "yourMatches": "Tus coincidencias",
+      "yourMatchesBody": "{{count}} conversaciones de coincidencias",
+      "yourMatchesEmpty": "Aún no tienes coincidencias."
     },
     "news": {
       "title": "Noticias",
@@ -3209,29 +3209,29 @@
       "savedSearches": "Búsquedas guardadas"
     },
     "overview": {
-      "title": "[ES] Overview",
-      "seePlans": "[ES] All plans",
-      "unread": "[ES] {{count}} unread",
-      "openMessages": "[ES] Open inbox",
-      "noChats": "[ES] No conversations yet.",
-      "openSaved": "[ES] Open saved",
-      "savedCount": "[ES] {{count}} saved",
-      "noSaved": "[ES] Nothing saved yet.",
-      "openMatches": "[ES] Open matches",
-      "matchCount": "[ES] {{count}} matches",
-      "noMatches": "[ES] No matches yet.",
-      "people": "[ES] People",
-      "friendCount": "[ES] {{count}} friends",
-      "findPeople": "[ES] Find people",
-      "noFriends": "[ES] No friends yet.",
-      "wantsToConnect": "[ES] Wants to connect"
+      "title": "Resumen",
+      "seePlans": "Todos los planes",
+      "unread": "{{count}} sin leer",
+      "openMessages": "Abrir bandeja",
+      "noChats": "Aún no hay conversaciones.",
+      "openSaved": "Abrir guardados",
+      "savedCount": "{{count}} guardado",
+      "noSaved": "Aún no has guardado nada.",
+      "openMatches": "Abrir coincidencias",
+      "matchCount": "{{count}} coincidencias",
+      "noMatches": "Aún no tienes coincidencias.",
+      "people": "Personas",
+      "friendCount": "{{count}} amistades",
+      "findPeople": "Buscar personas",
+      "noFriends": "Aún no tienes amistades.",
+      "wantsToConnect": "Quiere conectar"
     },
     "messages": {
-      "chats": "[ES] Chats",
-      "people": "[ES] People"
+      "chats": "Chats",
+      "people": "Personas"
     },
     "plans": {
-      "trips": "[ES] Your trips"
+      "trips": "Tus viajes"
     }
   }
 }

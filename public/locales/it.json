@@ -2836,7 +2836,7 @@
       "chats": "Chat",
       "mail": "Posta",
       "alerts": "Avvisi",
-      "matches": "[IT] Matches"
+      "matches": "Match"
     },
     "compose": {
       "label": "Componi",
@@ -3164,9 +3164,9 @@
       "saved": "Salvati",
       "news": "Notizie",
       "trips": "Viaggi",
-      "overview": "[IT] Overview",
-      "messages": "[IT] Messages",
-      "plans": "[IT] Plans"
+      "overview": "Panoramica",
+      "messages": "Messaggi",
+      "plans": "Piani"
     },
     "calendar": {
       "title": "In programma",
@@ -3192,12 +3192,12 @@
       "dating": "Appuntamenti",
       "datingTitle": "Il tuo mazzo di incontri",
       "datingBody": "Sfoglia match e conversazioni.",
-      "datingMatches": "[IT] {{count}} matches",
-      "browseDeck": "[IT] Browse deck",
-      "browseDeckBody": "[IT] Find new people to match with.",
-      "yourMatches": "[IT] Your matches",
-      "yourMatchesBody": "[IT] {{count}} match conversations",
-      "yourMatchesEmpty": "[IT] No matches yet."
+      "datingMatches": "{{count}} match",
+      "browseDeck": "Sfoglia i profili",
+      "browseDeckBody": "Trova nuove persone con cui fare match.",
+      "yourMatches": "I tuoi match",
+      "yourMatchesBody": "{{count}} conversazioni di match",
+      "yourMatchesEmpty": "Ancora nessun match."
     },
     "news": {
       "title": "Notizie",
@@ -3209,29 +3209,29 @@
       "savedSearches": "Ricerche salvate"
     },
     "overview": {
-      "title": "[IT] Overview",
-      "seePlans": "[IT] All plans",
-      "unread": "[IT] {{count}} unread",
-      "openMessages": "[IT] Open inbox",
-      "noChats": "[IT] No conversations yet.",
-      "openSaved": "[IT] Open saved",
-      "savedCount": "[IT] {{count}} saved",
-      "noSaved": "[IT] Nothing saved yet.",
-      "openMatches": "[IT] Open matches",
-      "matchCount": "[IT] {{count}} matches",
-      "noMatches": "[IT] No matches yet.",
-      "people": "[IT] People",
-      "friendCount": "[IT] {{count}} friends",
-      "findPeople": "[IT] Find people",
-      "noFriends": "[IT] No friends yet.",
-      "wantsToConnect": "[IT] Wants to connect"
+      "title": "Panoramica",
+      "seePlans": "Tutti i piani",
+      "unread": "{{count}} non letti",
+      "openMessages": "Apri la posta in arrivo",
+      "noChats": "Ancora nessuna conversazione.",
+      "openSaved": "Apri i salvati",
+      "savedCount": "{{count}} salvati",
+      "noSaved": "Ancora niente salvato.",
+      "openMatches": "Apri i match",
+      "matchCount": "{{count}} match",
+      "noMatches": "Ancora nessun match.",
+      "people": "Persone",
+      "friendCount": "{{count}} amicizie",
+      "findPeople": "Trova persone",
+      "noFriends": "Ancora nessuna amicizia.",
+      "wantsToConnect": "Vuole connettersi"
     },
     "messages": {
-      "chats": "[IT] Chats",
-      "people": "[IT] People"
+      "chats": "Chat",
+      "people": "Persone"
     },
     "plans": {
-      "trips": "[IT] Your trips"
+      "trips": "I tuoi viaggi"
     }
   }
 }

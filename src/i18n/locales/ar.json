@@ -2840,7 +2840,7 @@
       "chats": "المحادثات",
       "mail": "البريد",
       "alerts": "التنبيهات",
-      "matches": "[AR] Matches"
+      "matches": "التوافقات"
     },
     "compose": {
       "label": "إنشاء",
@@ -3168,9 +3168,9 @@
       "saved": "المحفوظات",
       "news": "الأخبار",
       "trips": "الرحلات",
-      "overview": "[AR] Overview",
-      "messages": "[AR] Messages",
-      "plans": "[AR] Plans"
+      "overview": "نظرة عامة",
+      "messages": "الرسائل",
+      "plans": "الخطط"
     },
     "calendar": {
       "title": "القادم",
@@ -3196,12 +3196,12 @@
       "dating": "المواعدة",
       "datingTitle": "مجموعة المواعدة الخاصة بك",
       "datingBody": "تصفّح التطابقات والمحادثات.",
-      "datingMatches": "[AR] {{count}} matches",
-      "browseDeck": "[AR] Browse deck",
-      "browseDeckBody": "[AR] Find new people to match with.",
-      "yourMatches": "[AR] Your matches",
-      "yourMatchesBody": "[AR] {{count}} match conversations",
-      "yourMatchesEmpty": "[AR] No matches yet."
+      "datingMatches": "{{count}} توافقات",
+      "browseDeck": "تصفح البطاقات",
+      "browseDeckBody": "اعثر على أشخاص جدد للتوافق معهم.",
+      "yourMatches": "توافقاتك",
+      "yourMatchesBody": "{{count}} محادثة توافق",
+      "yourMatchesEmpty": "لا توافقات بعد."
     },
     "news": {
       "title": "الأخبار",
@@ -3213,29 +3213,29 @@
       "savedSearches": "عمليات البحث المحفوظة"
     },
     "overview": {
-      "title": "[AR] Overview",
-      "seePlans": "[AR] All plans",
-      "unread": "[AR] {{count}} unread",
-      "openMessages": "[AR] Open inbox",
-      "noChats": "[AR] No conversations yet.",
-      "openSaved": "[AR] Open saved",
-      "savedCount": "[AR] {{count}} saved",
-      "noSaved": "[AR] Nothing saved yet.",
-      "openMatches": "[AR] Open matches",
-      "matchCount": "[AR] {{count}} matches",
-      "noMatches": "[AR] No matches yet.",
-      "people": "[AR] People",
-      "friendCount": "[AR] {{count}} friends",
-      "findPeople": "[AR] Find people",
-      "noFriends": "[AR] No friends yet.",
-      "wantsToConnect": "[AR] Wants to connect"
+      "title": "نظرة عامة",
+      "seePlans": "كل الخطط",
+      "unread": "{{count}} غير مقروءة",
+      "openMessages": "افتح البريد الوارد",
+      "noChats": "لا محادثات بعد.",
+      "openSaved": "افتح المحفوظات",
+      "savedCount": "{{count}} محفوظ",
+      "noSaved": "لا شيء محفوظ بعد.",
+      "openMatches": "افتح التوافقات",
+      "matchCount": "{{count}} توافق",
+      "noMatches": "لا توافقات بعد.",
+      "people": "الأشخاص",
+      "friendCount": "{{count}} صديق",
+      "findPeople": "ابحث عن أشخاص",
+      "noFriends": "لا أصدقاء بعد.",
+      "wantsToConnect": "طلب تواصل"
     },
     "messages": {
-      "chats": "[AR] Chats",
-      "people": "[AR] People"
+      "chats": "المحادثات",
+      "people": "الأشخاص"
     },
     "plans": {
-      "trips": "[AR] Your trips"
+      "trips": "رحلاتك"
     }
   }
 }
