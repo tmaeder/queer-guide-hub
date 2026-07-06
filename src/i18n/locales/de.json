@@ -2835,7 +2835,8 @@
       "all": "Alle",
       "chats": "Chats",
       "mail": "E-Mail",
-      "alerts": "Hinweise"
+      "alerts": "Hinweise",
+      "matches": "Matches"
     },
     "compose": {
       "label": "Verfassen",
@@ -3162,7 +3163,10 @@
       "contacts": "Kontakte",
       "saved": "Gespeichert",
       "news": "News",
-      "trips": "Reisen"
+      "trips": "Reisen",
+      "overview": "Übersicht",
+      "messages": "Nachrichten",
+      "plans": "Pläne"
     },
     "calendar": {
       "title": "Anstehend",
@@ -3187,7 +3191,13 @@
       "groups": "Gruppen",
       "dating": "Dating",
       "datingTitle": "Dein Dating-Deck",
-      "datingBody": "Matches und Gespräche durchsehen."
+      "datingBody": "Matches und Gespräche durchsehen.",
+      "datingMatches": "{{count}} Matches",
+      "browseDeck": "Stapel durchsehen",
+      "browseDeckBody": "Neue Leute zum Matchen finden.",
+      "yourMatches": "Deine Matches",
+      "yourMatchesBody": "{{count}} Match-Unterhaltungen",
+      "yourMatchesEmpty": "Noch keine Matches."
     },
     "news": {
       "title": "News",
@@ -3197,6 +3207,31 @@
       "tagsEmpty": "Folge Tags, um hier passende Artikel zu sehen.",
       "tagsNoArticles": "Noch nichts Neues aus deinen Tags.",
       "savedSearches": "Gespeicherte Suchen"
+    },
+    "overview": {
+      "title": "Übersicht",
+      "seePlans": "Alle Pläne",
+      "unread": "{{count}} ungelesen",
+      "openMessages": "Posteingang öffnen",
+      "noChats": "Noch keine Unterhaltungen.",
+      "openSaved": "Gespeichertes öffnen",
+      "savedCount": "{{count}} gespeichert",
+      "noSaved": "Noch nichts gespeichert.",
+      "openMatches": "Matches öffnen",
+      "matchCount": "{{count}} Matches",
+      "noMatches": "Noch keine Matches.",
+      "people": "Leute",
+      "friendCount": "{{count}} Freund*innen",
+      "findPeople": "Leute finden",
+      "noFriends": "Noch keine Freund*innen.",
+      "wantsToConnect": "Möchte sich vernetzen"
+    },
+    "messages": {
+      "chats": "Chats",
+      "people": "Leute"
+    },
+    "plans": {
+      "trips": "Deine Reisen"
     }
   }
 }

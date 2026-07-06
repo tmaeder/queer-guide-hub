@@ -2839,7 +2839,8 @@
       "all": "الكل",
       "chats": "المحادثات",
       "mail": "البريد",
-      "alerts": "التنبيهات"
+      "alerts": "التنبيهات",
+      "matches": "التوافقات"
     },
     "compose": {
       "label": "إنشاء",
@@ -3166,7 +3167,10 @@
       "contacts": "جهات الاتصال",
       "saved": "المحفوظات",
       "news": "الأخبار",
-      "trips": "الرحلات"
+      "trips": "الرحلات",
+      "overview": "نظرة عامة",
+      "messages": "الرسائل",
+      "plans": "الخطط"
     },
     "calendar": {
       "title": "القادم",
@@ -3191,7 +3195,13 @@
       "groups": "المجموعات",
       "dating": "المواعدة",
       "datingTitle": "مجموعة المواعدة الخاصة بك",
-      "datingBody": "تصفّح التطابقات والمحادثات."
+      "datingBody": "تصفّح التطابقات والمحادثات.",
+      "datingMatches": "{{count}} توافقات",
+      "browseDeck": "تصفح البطاقات",
+      "browseDeckBody": "اعثر على أشخاص جدد للتوافق معهم.",
+      "yourMatches": "توافقاتك",
+      "yourMatchesBody": "{{count}} محادثة توافق",
+      "yourMatchesEmpty": "لا توافقات بعد."
     },
     "news": {
       "title": "الأخبار",
@@ -3201,6 +3211,31 @@
       "tagsEmpty": "تابِع الوسوم لرؤية مقالات ذات صلة هنا.",
       "tagsNoArticles": "لا جديد من وسومك بعد.",
       "savedSearches": "عمليات البحث المحفوظة"
+    },
+    "overview": {
+      "title": "نظرة عامة",
+      "seePlans": "كل الخطط",
+      "unread": "{{count}} غير مقروءة",
+      "openMessages": "افتح البريد الوارد",
+      "noChats": "لا محادثات بعد.",
+      "openSaved": "افتح المحفوظات",
+      "savedCount": "{{count}} محفوظ",
+      "noSaved": "لا شيء محفوظ بعد.",
+      "openMatches": "افتح التوافقات",
+      "matchCount": "{{count}} توافق",
+      "noMatches": "لا توافقات بعد.",
+      "people": "الأشخاص",
+      "friendCount": "{{count}} صديق",
+      "findPeople": "ابحث عن أشخاص",
+      "noFriends": "لا أصدقاء بعد.",
+      "wantsToConnect": "طلب تواصل"
+    },
+    "messages": {
+      "chats": "المحادثات",
+      "people": "الأشخاص"
+    },
+    "plans": {
+      "trips": "رحلاتك"
     }
   }
 }

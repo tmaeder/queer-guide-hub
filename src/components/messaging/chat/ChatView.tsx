@@ -13,6 +13,7 @@ import { useConversationPresence } from '@/hooks/useConversationPresence';
 import { useConversationAvailability } from '@/hooks/useConversationAvailability';
 import { usePublicStatus } from '@/hooks/usePublicStatus';
 import { MessageItem } from './MessageItem';
+import { TravelInboxAddressBanner } from './TravelInboxAddressBanner';
 import { MessageInput } from './MessageInput';
 import { InChatSubmitSheet } from './InChatSubmitSheet';
 import { useMessageListScroll } from './useMessageListScroll';
@@ -107,6 +108,7 @@ export const ChatView = ({ conversationId, onBack }: ChatViewProps) => {
   };
 
   const conv = conversations.find((c) => c.id === conversationId);
+  const isTravelInbox = conv?.system_kind === 'travel_inbox';
   const otherParticipant = conv?.participants?.find((p) => p.user_id !== user?.id);
   const onlineInThread = useConversationPresence(conversationId);
   const { status: otherStatus } = usePublicStatus(otherParticipant?.user_id);
@@ -177,7 +179,7 @@ export const ChatView = ({ conversationId, onBack }: ChatViewProps) => {
               <Avatar style={{ height: 40, width: 40 }}>
                 <AvatarImage src={otherParticipant?.profile?.avatar_url || ''} />
                 <AvatarFallback>
-                  {otherParticipant?.profile?.display_name?.charAt(0) || 'C'}
+                  {otherParticipant?.profile?.display_name?.charAt(0) || (isTravelInbox ? '✈' : 'C')}
                 </AvatarFallback>
               </Avatar>
               {isOtherOnline && (
@@ -195,7 +197,7 @@ export const ChatView = ({ conversationId, onBack }: ChatViewProps) => {
             </div>
             <div className="min-w-0 flex-1">
               <p className="font-medium overflow-hidden text-ellipsis whitespace-nowrap">
-                {otherParticipant?.profile?.display_name || 'Unknown User'}
+                {otherParticipant?.profile?.display_name || conv?.title || 'Unknown User'}
               </p>
               {presenceLabel && (
                 <p className="text-sm text-muted-foreground truncate">{presenceLabel}</p>
@@ -253,11 +255,14 @@ export const ChatView = ({ conversationId, onBack }: ChatViewProps) => {
         }}
       >
         <div className="p-4 md:p-4">
+          {isTravelInbox && <TravelInboxAddressBanner />}
           {currentMessages.length === 0 ? (
-            <div className="text-center py-8">
-              <MessageCircle size={48} style={{ margin: '0 auto 16px' }} className="text-muted-foreground" />
-              <p className="text-muted-foreground">No messages yet. Start the conversation!</p>
-            </div>
+            isTravelInbox ? null : (
+              <div className="text-center py-8">
+                <MessageCircle size={48} style={{ margin: '0 auto 16px' }} className="text-muted-foreground" />
+                <p className="text-muted-foreground">No messages yet. Start the conversation!</p>
+              </div>
+            )
           ) : (
             <div>
               {streakDays >= 2 && (

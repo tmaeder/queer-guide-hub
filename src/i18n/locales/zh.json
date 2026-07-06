@@ -2833,7 +2833,8 @@
       "all": "全部",
       "chats": "聊天",
       "mail": "邮件",
-      "alerts": "提醒"
+      "alerts": "提醒",
+      "matches": "匹配"
     },
     "compose": {
       "label": "撰写",
@@ -3160,7 +3161,10 @@
       "contacts": "联系人",
       "saved": "已收藏",
       "news": "新闻",
-      "trips": "行程"
+      "trips": "行程",
+      "overview": "概览",
+      "messages": "消息",
+      "plans": "计划"
     },
     "calendar": {
       "title": "即将到来",
@@ -3185,7 +3189,13 @@
       "groups": "群组",
       "dating": "约会",
       "datingTitle": "你的约会卡组",
-      "datingBody": "浏览匹配和对话。"
+      "datingBody": "浏览匹配和对话。",
+      "datingMatches": "{{count}} 个匹配",
+      "browseDeck": "浏览卡片",
+      "browseDeckBody": "寻找可以匹配的新朋友。",
+      "yourMatches": "你的匹配",
+      "yourMatchesBody": "{{count}} 条匹配对话",
+      "yourMatchesEmpty": "还没有匹配。"
     },
     "news": {
       "title": "新闻",
@@ -3195,6 +3205,31 @@
       "tagsEmpty": "关注标签即可在此看到相关文章。",
       "tagsNoArticles": "你关注的标签暂无新内容。",
       "savedSearches": "已保存的搜索"
+    },
+    "overview": {
+      "title": "概览",
+      "seePlans": "所有计划",
+      "unread": "{{count}} 条未读",
+      "openMessages": "打开收件箱",
+      "noChats": "还没有对话。",
+      "openSaved": "打开收藏",
+      "savedCount": "{{count}} 项收藏",
+      "noSaved": "还没有收藏任何内容。",
+      "openMatches": "打开匹配",
+      "matchCount": "{{count}} 个匹配",
+      "noMatches": "还没有匹配。",
+      "people": "用户",
+      "friendCount": "{{count}} 位朋友",
+      "findPeople": "查找用户",
+      "noFriends": "还没有朋友。",
+      "wantsToConnect": "想要建立联系"
+    },
+    "messages": {
+      "chats": "聊天",
+      "people": "用户"
+    },
+    "plans": {
+      "trips": "你的行程"
     }
   }
 }

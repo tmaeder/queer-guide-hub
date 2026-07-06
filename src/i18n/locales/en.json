@@ -27,7 +27,8 @@
       "chats": "Chats",
       "mail": "Mail",
       "alerts": "Alerts",
-      "matches": "Matches"
+      "matches": "Matches",
+      "matchesUnread": "{{count}} new matches"
     },
     "compose": {
       "label": "Compose",
@@ -88,7 +89,8 @@
       "stagedNote": "Submitted for review — these go through our quality pipeline.",
       "anEvent": "Event",
       "aVenue": "Venue"
-    }
+    },
+    "matchTag": "Match"
   },
   "eventTypes": {
     "party": "Party",
@@ -3189,7 +3191,12 @@
       "noSaved": "Nothing saved yet.",
       "openMatches": "Open matches",
       "matchCount": "{{count}} matches",
-      "noMatches": "No matches yet."
+      "noMatches": "No matches yet.",
+      "people": "People",
+      "friendCount": "{{count}} friends",
+      "findPeople": "Find people",
+      "noFriends": "No friends yet.",
+      "wantsToConnect": "Wants to connect"
     },
     "messages": {
       "chats": "Chats",

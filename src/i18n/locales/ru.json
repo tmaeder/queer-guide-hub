@@ -2869,7 +2869,8 @@
       "all": "Все",
       "chats": "Чаты",
       "mail": "Почта",
-      "alerts": "Оповещения"
+      "alerts": "Оповещения",
+      "matches": "Совпадения"
     },
     "compose": {
       "label": "Написать",
@@ -3196,7 +3197,10 @@
       "contacts": "Контакты",
       "saved": "Сохранённое",
       "news": "Новости",
-      "trips": "Поездки"
+      "trips": "Поездки",
+      "overview": "Обзор",
+      "messages": "Сообщения",
+      "plans": "Планы"
     },
     "calendar": {
       "title": "Предстоящее",
@@ -3221,7 +3225,13 @@
       "groups": "Группы",
       "dating": "Знакомства",
       "datingTitle": "Ваша колода знакомств",
-      "datingBody": "Смотрите совпадения и переписки."
+      "datingBody": "Смотрите совпадения и переписки.",
+      "datingMatches": "{{count}} совпадений",
+      "browseDeck": "Смотреть анкеты",
+      "browseDeckBody": "Найдите новых людей для совпадений.",
+      "yourMatches": "Ваши совпадения",
+      "yourMatchesBody": "{{count}} бесед по совпадениям",
+      "yourMatchesEmpty": "Пока нет совпадений."
     },
     "news": {
       "title": "Новости",
@@ -3231,6 +3241,31 @@
       "tagsEmpty": "Подпишитесь на теги, чтобы видеть статьи здесь.",
       "tagsNoArticles": "Пока ничего нового по вашим тегам.",
       "savedSearches": "Сохранённые запросы"
+    },
+    "overview": {
+      "title": "Обзор",
+      "seePlans": "Все планы",
+      "unread": "{{count}} непрочит.",
+      "openMessages": "Открыть входящие",
+      "noChats": "Пока нет бесед.",
+      "openSaved": "Открыть сохранённое",
+      "savedCount": "{{count}} сохранено",
+      "noSaved": "Пока ничего не сохранено.",
+      "openMatches": "Открыть совпадения",
+      "matchCount": "{{count}} совпадений",
+      "noMatches": "Пока нет совпадений.",
+      "people": "Люди",
+      "friendCount": "{{count}} друзей",
+      "findPeople": "Найти людей",
+      "noFriends": "Пока нет друзей.",
+      "wantsToConnect": "Хочет подключиться"
+    },
+    "messages": {
+      "chats": "Чаты",
+      "people": "Люди"
+    },
+    "plans": {
+      "trips": "Ваши поездки"
     }
   }
 }

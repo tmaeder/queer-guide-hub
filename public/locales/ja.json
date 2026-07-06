@@ -2833,7 +2833,8 @@
       "all": "すべて",
       "chats": "チャット",
       "mail": "メール",
-      "alerts": "アラート"
+      "alerts": "アラート",
+      "matches": "マッチ"
     },
     "compose": {
       "label": "作成",
@@ -3160,7 +3161,10 @@
       "contacts": "連絡先",
       "saved": "保存済み",
       "news": "ニュース",
-      "trips": "旅行"
+      "trips": "旅行",
+      "overview": "概要",
+      "messages": "メッセージ",
+      "plans": "プラン"
     },
     "calendar": {
       "title": "今後の予定",
@@ -3185,7 +3189,13 @@
       "groups": "グループ",
       "dating": "デート",
       "datingTitle": "あなたのデートデッキ",
-      "datingBody": "マッチと会話を見る。"
+      "datingBody": "マッチと会話を見る。",
+      "datingMatches": "マッチ{{count}}件",
+      "browseDeck": "デッキを見る",
+      "browseDeckBody": "マッチする新しい人を見つけよう。",
+      "yourMatches": "あなたのマッチ",
+      "yourMatchesBody": "マッチのやり取り{{count}}件",
+      "yourMatchesEmpty": "まだマッチがありません。"
     },
     "news": {
       "title": "ニュース",
@@ -3195,6 +3205,31 @@
       "tagsEmpty": "タグをフォローすると関連記事が表示されます。",
       "tagsNoArticles": "フォロー中のタグに新着はまだありません。",
       "savedSearches": "保存した検索"
+    },
+    "overview": {
+      "title": "概要",
+      "seePlans": "すべてのプラン",
+      "unread": "未読 {{count}} 件",
+      "openMessages": "受信箱を開く",
+      "noChats": "まだ会話がありません。",
+      "openSaved": "保存済みを開く",
+      "savedCount": "保存済み{{count}}件",
+      "noSaved": "まだ何も保存されていません。",
+      "openMatches": "マッチを開く",
+      "matchCount": "マッチ{{count}}件",
+      "noMatches": "まだマッチがありません。",
+      "people": "ユーザー",
+      "friendCount": "友達{{count}}人",
+      "findPeople": "ユーザーを探す",
+      "noFriends": "まだ友達がいません。",
+      "wantsToConnect": "つながりを希望"
+    },
+    "messages": {
+      "chats": "チャット",
+      "people": "ユーザー"
+    },
+    "plans": {
+      "trips": "あなたの旅行"
     }
   }
 }

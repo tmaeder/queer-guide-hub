@@ -2839,7 +2839,8 @@
       "all": "Tout",
       "chats": "Discussions",
       "mail": "Courrier",
-      "alerts": "Alertes"
+      "alerts": "Alertes",
+      "matches": "Matchs"
     },
     "compose": {
       "label": "Rédiger",
@@ -3166,7 +3167,10 @@
       "contacts": "Contacts",
       "saved": "Enregistrés",
       "news": "Actus",
-      "trips": "Voyages"
+      "trips": "Voyages",
+      "overview": "Aperçu",
+      "messages": "Messages",
+      "plans": "Plans"
     },
     "calendar": {
       "title": "À venir",
@@ -3191,7 +3195,13 @@
       "groups": "Groupes",
       "dating": "Rencontres",
       "datingTitle": "Ton deck de rencontres",
-      "datingBody": "Parcours tes matchs et conversations."
+      "datingBody": "Parcours tes matchs et conversations.",
+      "datingMatches": "{{count}} matchs",
+      "browseDeck": "Parcourir les profils",
+      "browseDeckBody": "Trouve de nouvelles personnes avec qui matcher.",
+      "yourMatches": "Tes matchs",
+      "yourMatchesBody": "{{count}} conversations de matchs",
+      "yourMatchesEmpty": "Pas encore de matchs."
     },
     "news": {
       "title": "Actus",
@@ -3201,6 +3211,31 @@
       "tagsEmpty": "Suis des tags pour voir des articles ici.",
       "tagsNoArticles": "Rien de neuf de tes tags pour l’instant.",
       "savedSearches": "Recherches enregistrées"
+    },
+    "overview": {
+      "title": "Aperçu",
+      "seePlans": "Tous les plans",
+      "unread": "{{count}} non lus",
+      "openMessages": "Ouvrir la boîte de réception",
+      "noChats": "Pas encore de discussions.",
+      "openSaved": "Ouvrir les enregistrés",
+      "savedCount": "{{count}} enregistrés",
+      "noSaved": "Rien d’enregistré pour l’instant.",
+      "openMatches": "Ouvrir les matchs",
+      "matchCount": "{{count}} matchs",
+      "noMatches": "Pas encore de matchs.",
+      "people": "Personnes",
+      "friendCount": "{{count}} ami·es",
+      "findPeople": "Trouver des personnes",
+      "noFriends": "Pas encore d’ami·es.",
+      "wantsToConnect": "Veut se connecter"
+    },
+    "messages": {
+      "chats": "Discussions",
+      "people": "Personnes"
+    },
+    "plans": {
+      "trips": "Tes voyages"
     }
   }
 }
