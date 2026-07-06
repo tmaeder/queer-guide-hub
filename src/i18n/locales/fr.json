@@ -2840,7 +2840,8 @@
       "chats": "Discussions",
       "mail": "Courrier",
       "alerts": "Alertes",
-      "matches": "Matchs"
+      "matches": "Matchs",
+      "matchesUnread": "{{count}} nouveaux matchs"
     },
     "compose": {
       "label": "Rédiger",
@@ -2901,7 +2902,8 @@
       "stagedNote": "Soumis pour examen — passe par notre pipeline qualité.",
       "anEvent": "Événement",
       "aVenue": "Lieu"
-    }
+    },
+    "matchTag": "Match"
   },
   "extension": {
     "signInGate": {

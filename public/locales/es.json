@@ -2836,7 +2836,8 @@
       "chats": "Chats",
       "mail": "Correo",
       "alerts": "Alertas",
-      "matches": "Coincidencias"
+      "matches": "Coincidencias",
+      "matchesUnread": "{{count}} coincidencias nuevas"
     },
     "compose": {
       "label": "Redactar",
@@ -2897,7 +2898,8 @@
       "stagedNote": "Enviado para revisión — pasa por nuestra tubería de calidad.",
       "anEvent": "Evento",
       "aVenue": "Lugar"
-    }
+    },
+    "matchTag": "Coincidencia"
   },
   "extension": {
     "signInGate": {

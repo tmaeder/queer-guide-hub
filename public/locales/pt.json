@@ -2836,7 +2836,8 @@
       "chats": "Conversas",
       "mail": "Correio",
       "alerts": "Alertas",
-      "matches": "Matches"
+      "matches": "Matches",
+      "matchesUnread": "{{count}} novos matches"
     },
     "compose": {
       "label": "Compor",
@@ -2897,7 +2898,8 @@
       "stagedNote": "Enviado para revisão — passa pela nossa pipeline de qualidade.",
       "anEvent": "Evento",
       "aVenue": "Local"
-    }
+    },
+    "matchTag": "Match"
   },
   "extension": {
     "signInGate": {

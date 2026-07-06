@@ -2840,7 +2840,8 @@
       "chats": "المحادثات",
       "mail": "البريد",
       "alerts": "التنبيهات",
-      "matches": "التوافقات"
+      "matches": "التوافقات",
+      "matchesUnread": "{{count}} تطابقات جديدة"
     },
     "compose": {
       "label": "إنشاء",
@@ -2901,7 +2902,8 @@
       "stagedNote": "تم الإرسال للمراجعة — يمر عبر خط الجودة لدينا.",
       "anEvent": "فعالية",
       "aVenue": "مكان"
-    }
+    },
+    "matchTag": "تطابق"
   },
   "extension": {
     "signInGate": {

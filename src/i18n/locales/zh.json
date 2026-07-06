@@ -2834,7 +2834,8 @@
       "chats": "聊天",
       "mail": "邮件",
       "alerts": "提醒",
-      "matches": "匹配"
+      "matches": "匹配",
+      "matchesUnread": "{{count}} 个新配对"
     },
     "compose": {
       "label": "撰写",
@@ -2895,7 +2896,8 @@
       "stagedNote": "已提交审核 — 会经过我们的质量流程。",
       "anEvent": "活动",
       "aVenue": "场所"
-    }
+    },
+    "matchTag": "配对"
   },
   "extension": {
     "signInGate": {
