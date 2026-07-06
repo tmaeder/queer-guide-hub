@@ -471,7 +471,7 @@ function notFoundHtml(pathname: string): string {
   h1 { font-size: 1.5rem; margin: 0 0 0.5rem; }
   p { color: #a1a1aa; margin: 0 0 1.5rem; }
   a { color: #fafafa; }
-  footer { padding: 1rem; text-align: center; color: #71717a; font-size: 0.875rem; }
+  footer { padding: 1rem; text-align: center; color: #a1a1aa; font-size: 0.875rem; }
 </style>
 </head>
 <body>

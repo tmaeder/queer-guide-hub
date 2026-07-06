@@ -1,0 +1,2452 @@
+{
+  "baseUrl": "https://queer.guide",
+  "scope": "public",
+  "viewports": [
+    "desktop",
+    "mobile"
+  ],
+  "themes": [
+    "light",
+    "dark"
+  ],
+  "generatedAt": "2026-07-06T21:29:58.184Z",
+  "results": [
+    {
+      "route": "/",
+      "name": "home",
+      "variant": "desktop/light",
+      "viewport": "desktop",
+      "theme": "light",
+      "auth": null,
+      "url": "https://queer.guide/",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/",
+      "name": "home",
+      "variant": "desktop/dark",
+      "viewport": "desktop",
+      "theme": "dark",
+      "auth": null,
+      "url": "https://queer.guide/",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/",
+      "name": "home",
+      "variant": "mobile/light",
+      "viewport": "mobile",
+      "theme": "light",
+      "auth": null,
+      "url": "https://queer.guide/",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/",
+      "name": "home",
+      "variant": "mobile/dark",
+      "viewport": "mobile",
+      "theme": "dark",
+      "auth": null,
+      "url": "https://queer.guide/",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/venues",
+      "name": "venues-list",
+      "variant": "desktop/light",
+      "viewport": "desktop",
+      "theme": "light",
+      "auth": null,
+      "url": "https://queer.guide/venues",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/venues",
+      "name": "venues-list",
+      "variant": "desktop/dark",
+      "viewport": "desktop",
+      "theme": "dark",
+      "auth": null,
+      "url": "https://queer.guide/venues",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/venues",
+      "name": "venues-list",
+      "variant": "mobile/light",
+      "viewport": "mobile",
+      "theme": "light",
+      "auth": null,
+      "url": "https://queer.guide/venues",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/venues",
+      "name": "venues-list",
+      "variant": "mobile/dark",
+      "viewport": "mobile",
+      "theme": "dark",
+      "auth": null,
+      "url": "https://queer.guide/venues",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/venues/le-mistral",
+      "name": "venue-detail",
+      "variant": "desktop/light",
+      "viewport": "desktop",
+      "theme": "light",
+      "auth": null,
+      "url": "https://queer.guide/venues/le-mistral",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/venues/le-mistral",
+      "name": "venue-detail",
+      "variant": "desktop/dark",
+      "viewport": "desktop",
+      "theme": "dark",
+      "auth": null,
+      "url": "https://queer.guide/venues/le-mistral",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/venues/le-mistral",
+      "name": "venue-detail",
+      "variant": "mobile/light",
+      "viewport": "mobile",
+      "theme": "light",
+      "auth": null,
+      "url": "https://queer.guide/venues/le-mistral",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/venues/le-mistral",
+      "name": "venue-detail",
+      "variant": "mobile/dark",
+      "viewport": "mobile",
+      "theme": "dark",
+      "auth": null,
+      "url": "https://queer.guide/venues/le-mistral",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/venues/guides",
+      "name": "venue-guides",
+      "variant": "desktop/light",
+      "viewport": "desktop",
+      "theme": "light",
+      "auth": null,
+      "url": "https://queer.guide/venues/guides",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/venues/guides",
+      "name": "venue-guides",
+      "variant": "desktop/dark",
+      "viewport": "desktop",
+      "theme": "dark",
+      "auth": null,
+      "url": "https://queer.guide/venues/guides",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/venues/guides",
+      "name": "venue-guides",
+      "variant": "mobile/light",
+      "viewport": "mobile",
+      "theme": "light",
+      "auth": null,
+      "url": "https://queer.guide/venues/guides",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/venues/guides",
+      "name": "venue-guides",
+      "variant": "mobile/dark",
+      "viewport": "mobile",
+      "theme": "dark",
+      "auth": null,
+      "url": "https://queer.guide/venues/guides",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/events",
+      "name": "events-list",
+      "variant": "desktop/light",
+      "viewport": "desktop",
+      "theme": "light",
+      "auth": null,
+      "url": "https://queer.guide/events",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/events",
+      "name": "events-list",
+      "variant": "desktop/dark",
+      "viewport": "desktop",
+      "theme": "dark",
+      "auth": null,
+      "url": "https://queer.guide/events",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/events",
+      "name": "events-list",
+      "variant": "mobile/light",
+      "viewport": "mobile",
+      "theme": "light",
+      "auth": null,
+      "url": "https://queer.guide/events",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/events",
+      "name": "events-list",
+      "variant": "mobile/dark",
+      "viewport": "mobile",
+      "theme": "dark",
+      "auth": null,
+      "url": "https://queer.guide/events",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/events/kaohsiung-pride-2027",
+      "name": "event-detail",
+      "variant": "desktop/light",
+      "viewport": "desktop",
+      "theme": "light",
+      "auth": null,
+      "url": "https://queer.guide/events/kaohsiung-pride-2027",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/events/kaohsiung-pride-2027",
+      "name": "event-detail",
+      "variant": "desktop/dark",
+      "viewport": "desktop",
+      "theme": "dark",
+      "auth": null,
+      "url": "https://queer.guide/events/kaohsiung-pride-2027",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/events/kaohsiung-pride-2027",
+      "name": "event-detail",
+      "variant": "mobile/light",
+      "viewport": "mobile",
+      "theme": "light",
+      "auth": null,
+      "url": "https://queer.guide/events/kaohsiung-pride-2027",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/events/kaohsiung-pride-2027",
+      "name": "event-detail",
+      "variant": "mobile/dark",
+      "viewport": "mobile",
+      "theme": "dark",
+      "auth": null,
+      "url": "https://queer.guide/events/kaohsiung-pride-2027",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/events/guides",
+      "name": "event-guides",
+      "variant": "desktop/light",
+      "viewport": "desktop",
+      "theme": "light",
+      "auth": null,
+      "url": "https://queer.guide/events/guides",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/events/guides",
+      "name": "event-guides",
+      "variant": "desktop/dark",
+      "viewport": "desktop",
+      "theme": "dark",
+      "auth": null,
+      "url": "https://queer.guide/events/guides",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/events/guides",
+      "name": "event-guides",
+      "variant": "mobile/light",
+      "viewport": "mobile",
+      "theme": "light",
+      "auth": null,
+      "url": "https://queer.guide/events/guides",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/events/guides",
+      "name": "event-guides",
+      "variant": "mobile/dark",
+      "viewport": "mobile",
+      "theme": "dark",
+      "auth": null,
+      "url": "https://queer.guide/events/guides",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/pride",
+      "name": "pride",
+      "variant": "desktop/light",
+      "viewport": "desktop",
+      "theme": "light",
+      "auth": null,
+      "url": "https://queer.guide/pride",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/pride",
+      "name": "pride",
+      "variant": "desktop/dark",
+      "viewport": "desktop",
+      "theme": "dark",
+      "auth": null,
+      "url": "https://queer.guide/pride",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/pride",
+      "name": "pride",
+      "variant": "mobile/light",
+      "viewport": "mobile",
+      "theme": "light",
+      "auth": null,
+      "url": "https://queer.guide/pride",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/pride",
+      "name": "pride",
+      "variant": "mobile/dark",
+      "viewport": "mobile",
+      "theme": "dark",
+      "auth": null,
+      "url": "https://queer.guide/pride",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/hotels",
+      "name": "hotels-list",
+      "variant": "desktop/light",
+      "viewport": "desktop",
+      "theme": "light",
+      "auth": null,
+      "url": "https://queer.guide/hotels",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/hotels",
+      "name": "hotels-list",
+      "variant": "desktop/dark",
+      "viewport": "desktop",
+      "theme": "dark",
+      "auth": null,
+      "url": "https://queer.guide/hotels",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/hotels",
+      "name": "hotels-list",
+      "variant": "mobile/light",
+      "viewport": "mobile",
+      "theme": "light",
+      "auth": null,
+      "url": "https://queer.guide/hotels",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/hotels",
+      "name": "hotels-list",
+      "variant": "mobile/dark",
+      "viewport": "mobile",
+      "theme": "dark",
+      "auth": null,
+      "url": "https://queer.guide/hotels",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/hotels/large-private-room-with-balcony-in-central-paris-683525",
+      "name": "hotel-detail",
+      "variant": "desktop/light",
+      "viewport": "desktop",
+      "theme": "light",
+      "auth": null,
+      "url": "https://queer.guide/hotels/large-private-room-with-balcony-in-central-paris-683525",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/hotels/large-private-room-with-balcony-in-central-paris-683525",
+      "name": "hotel-detail",
+      "variant": "desktop/dark",
+      "viewport": "desktop",
+      "theme": "dark",
+      "auth": null,
+      "url": "https://queer.guide/hotels/large-private-room-with-balcony-in-central-paris-683525",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/hotels/large-private-room-with-balcony-in-central-paris-683525",
+      "name": "hotel-detail",
+      "variant": "mobile/light",
+      "viewport": "mobile",
+      "theme": "light",
+      "auth": null,
+      "url": "https://queer.guide/hotels/large-private-room-with-balcony-in-central-paris-683525",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/hotels/large-private-room-with-balcony-in-central-paris-683525",
+      "name": "hotel-detail",
+      "variant": "mobile/dark",
+      "viewport": "mobile",
+      "theme": "dark",
+      "auth": null,
+      "url": "https://queer.guide/hotels/large-private-room-with-balcony-in-central-paris-683525",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/marketplace",
+      "name": "marketplace",
+      "variant": "desktop/light",
+      "viewport": "desktop",
+      "theme": "light",
+      "auth": null,
+      "url": "https://queer.guide/marketplace",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/marketplace",
+      "name": "marketplace",
+      "variant": "desktop/dark",
+      "viewport": "desktop",
+      "theme": "dark",
+      "auth": null,
+      "url": "https://queer.guide/marketplace",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/marketplace",
+      "name": "marketplace",
+      "variant": "mobile/light",
+      "viewport": "mobile",
+      "theme": "light",
+      "auth": null,
+      "url": "https://queer.guide/marketplace",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/marketplace",
+      "name": "marketplace",
+      "variant": "mobile/dark",
+      "viewport": "mobile",
+      "theme": "dark",
+      "auth": null,
+      "url": "https://queer.guide/marketplace",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/marketplace/hankey-s-toys-big-pop-4-sizes-2ab51478",
+      "name": "marketplace-item",
+      "variant": "desktop/light",
+      "viewport": "desktop",
+      "theme": "light",
+      "auth": null,
+      "url": "https://queer.guide/marketplace/hankey-s-toys-big-pop-4-sizes-2ab51478",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/marketplace/hankey-s-toys-big-pop-4-sizes-2ab51478",
+      "name": "marketplace-item",
+      "variant": "desktop/dark",
+      "viewport": "desktop",
+      "theme": "dark",
+      "auth": null,
+      "url": "https://queer.guide/marketplace/hankey-s-toys-big-pop-4-sizes-2ab51478",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/marketplace/hankey-s-toys-big-pop-4-sizes-2ab51478",
+      "name": "marketplace-item",
+      "variant": "mobile/light",
+      "viewport": "mobile",
+      "theme": "light",
+      "auth": null,
+      "url": "https://queer.guide/marketplace/hankey-s-toys-big-pop-4-sizes-2ab51478",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/marketplace/hankey-s-toys-big-pop-4-sizes-2ab51478",
+      "name": "marketplace-item",
+      "variant": "mobile/dark",
+      "viewport": "mobile",
+      "theme": "dark",
+      "auth": null,
+      "url": "https://queer.guide/marketplace/hankey-s-toys-big-pop-4-sizes-2ab51478",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/marketplace/categories",
+      "name": "marketplace-categories",
+      "variant": "desktop/light",
+      "viewport": "desktop",
+      "theme": "light",
+      "auth": null,
+      "url": "https://queer.guide/marketplace/categories",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/marketplace/categories",
+      "name": "marketplace-categories",
+      "variant": "desktop/dark",
+      "viewport": "desktop",
+      "theme": "dark",
+      "auth": null,
+      "url": "https://queer.guide/marketplace/categories",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/marketplace/categories",
+      "name": "marketplace-categories",
+      "variant": "mobile/light",
+      "viewport": "mobile",
+      "theme": "light",
+      "auth": null,
+      "url": "https://queer.guide/marketplace/categories",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/marketplace/categories",
+      "name": "marketplace-categories",
+      "variant": "mobile/dark",
+      "viewport": "mobile",
+      "theme": "dark",
+      "auth": null,
+      "url": "https://queer.guide/marketplace/categories",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/marketplace/guides",
+      "name": "marketplace-guides",
+      "variant": "desktop/light",
+      "viewport": "desktop",
+      "theme": "light",
+      "auth": null,
+      "url": "https://queer.guide/marketplace/guides",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/marketplace/guides",
+      "name": "marketplace-guides",
+      "variant": "desktop/dark",
+      "viewport": "desktop",
+      "theme": "dark",
+      "auth": null,
+      "url": "https://queer.guide/marketplace/guides",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/marketplace/guides",
+      "name": "marketplace-guides",
+      "variant": "mobile/light",
+      "viewport": "mobile",
+      "theme": "light",
+      "auth": null,
+      "url": "https://queer.guide/marketplace/guides",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/marketplace/guides",
+      "name": "marketplace-guides",
+      "variant": "mobile/dark",
+      "viewport": "mobile",
+      "theme": "dark",
+      "auth": null,
+      "url": "https://queer.guide/marketplace/guides",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/marketplace/brands/12807-203758186",
+      "name": "marketplace-brand",
+      "variant": "desktop/light",
+      "viewport": "desktop",
+      "theme": "light",
+      "auth": null,
+      "url": "https://queer.guide/marketplace/brands/12807-203758186",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/marketplace/brands/12807-203758186",
+      "name": "marketplace-brand",
+      "variant": "desktop/dark",
+      "viewport": "desktop",
+      "theme": "dark",
+      "auth": null,
+      "url": "https://queer.guide/marketplace/brands/12807-203758186",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/marketplace/brands/12807-203758186",
+      "name": "marketplace-brand",
+      "variant": "mobile/light",
+      "viewport": "mobile",
+      "theme": "light",
+      "auth": null,
+      "url": "https://queer.guide/marketplace/brands/12807-203758186",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/marketplace/brands/12807-203758186",
+      "name": "marketplace-brand",
+      "variant": "mobile/dark",
+      "viewport": "mobile",
+      "theme": "dark",
+      "auth": null,
+      "url": "https://queer.guide/marketplace/brands/12807-203758186",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/organizations",
+      "name": "organizations",
+      "variant": "desktop/light",
+      "viewport": "desktop",
+      "theme": "light",
+      "auth": null,
+      "url": "https://queer.guide/organizations",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/organizations",
+      "name": "organizations",
+      "variant": "desktop/dark",
+      "viewport": "desktop",
+      "theme": "dark",
+      "auth": null,
+      "url": "https://queer.guide/organizations",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/organizations",
+      "name": "organizations",
+      "variant": "mobile/light",
+      "viewport": "mobile",
+      "theme": "light",
+      "auth": null,
+      "url": "https://queer.guide/organizations",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/organizations",
+      "name": "organizations",
+      "variant": "mobile/dark",
+      "viewport": "mobile",
+      "theme": "dark",
+      "auth": null,
+      "url": "https://queer.guide/organizations",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/organizations/lgl-office",
+      "name": "organization-detail",
+      "variant": "desktop/light",
+      "viewport": "desktop",
+      "theme": "light",
+      "auth": null,
+      "url": "https://queer.guide/organizations/lgl-office",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/organizations/lgl-office",
+      "name": "organization-detail",
+      "variant": "desktop/dark",
+      "viewport": "desktop",
+      "theme": "dark",
+      "auth": null,
+      "url": "https://queer.guide/organizations/lgl-office",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/organizations/lgl-office",
+      "name": "organization-detail",
+      "variant": "mobile/light",
+      "viewport": "mobile",
+      "theme": "light",
+      "auth": null,
+      "url": "https://queer.guide/organizations/lgl-office",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/organizations/lgl-office",
+      "name": "organization-detail",
+      "variant": "mobile/dark",
+      "viewport": "mobile",
+      "theme": "dark",
+      "auth": null,
+      "url": "https://queer.guide/organizations/lgl-office",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/villages/adams-point",
+      "name": "village-detail",
+      "variant": "desktop/light",
+      "viewport": "desktop",
+      "theme": "light",
+      "auth": null,
+      "url": "https://queer.guide/villages/adams-point",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/villages/adams-point",
+      "name": "village-detail",
+      "variant": "desktop/dark",
+      "viewport": "desktop",
+      "theme": "dark",
+      "auth": null,
+      "url": "https://queer.guide/villages/adams-point",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/villages/adams-point",
+      "name": "village-detail",
+      "variant": "mobile/light",
+      "viewport": "mobile",
+      "theme": "light",
+      "auth": null,
+      "url": "https://queer.guide/villages/adams-point",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/villages/adams-point",
+      "name": "village-detail",
+      "variant": "mobile/dark",
+      "viewport": "mobile",
+      "theme": "dark",
+      "auth": null,
+      "url": "https://queer.guide/villages/adams-point",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/news",
+      "name": "news",
+      "variant": "desktop/light",
+      "viewport": "desktop",
+      "theme": "light",
+      "auth": null,
+      "url": "https://queer.guide/news",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/news",
+      "name": "news",
+      "variant": "desktop/dark",
+      "viewport": "desktop",
+      "theme": "dark",
+      "auth": null,
+      "url": "https://queer.guide/news",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/news",
+      "name": "news",
+      "variant": "mobile/light",
+      "viewport": "mobile",
+      "theme": "light",
+      "auth": null,
+      "url": "https://queer.guide/news",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/news",
+      "name": "news",
+      "variant": "mobile/dark",
+      "viewport": "mobile",
+      "theme": "dark",
+      "auth": null,
+      "url": "https://queer.guide/news",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/news/all",
+      "name": "news-archive",
+      "variant": "desktop/light",
+      "viewport": "desktop",
+      "theme": "light",
+      "auth": null,
+      "url": "https://queer.guide/news/all",
+      "status": 404,
+      "error": null,
+      "violations": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.12/color-contrast?application=playwright",
+          "tags": [
+            "cat.color",
+            "wcag2aa",
+            "wcag143",
+            "TTv5",
+            "TT13.c",
+            "EN-301-549",
+            "EN-9.1.4.3",
+            "ACT",
+            "RGAAv4",
+            "RGAA-3.2.1"
+          ],
+          "nodes": 1,
+          "sample": [
+            {
+              "target": [
+                "footer"
+              ],
+              "html": "<footer>Queer Guide</footer>",
+              "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 4.09 (foreground color: #71717a, background color: #0a0a0a, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "route": "/news/all",
+      "name": "news-archive",
+      "variant": "desktop/dark",
+      "viewport": "desktop",
+      "theme": "dark",
+      "auth": null,
+      "url": "https://queer.guide/news/all",
+      "status": 404,
+      "error": null,
+      "violations": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.12/color-contrast?application=playwright",
+          "tags": [
+            "cat.color",
+            "wcag2aa",
+            "wcag143",
+            "TTv5",
+            "TT13.c",
+            "EN-301-549",
+            "EN-9.1.4.3",
+            "ACT",
+            "RGAAv4",
+            "RGAA-3.2.1"
+          ],
+          "nodes": 1,
+          "sample": [
+            {
+              "target": [
+                "footer"
+              ],
+              "html": "<footer>Queer Guide</footer>",
+              "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 4.09 (foreground color: #71717a, background color: #0a0a0a, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "route": "/news/all",
+      "name": "news-archive",
+      "variant": "mobile/light",
+      "viewport": "mobile",
+      "theme": "light",
+      "auth": null,
+      "url": "https://queer.guide/news/all",
+      "status": 404,
+      "error": null,
+      "violations": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.12/color-contrast?application=playwright",
+          "tags": [
+            "cat.color",
+            "wcag2aa",
+            "wcag143",
+            "TTv5",
+            "TT13.c",
+            "EN-301-549",
+            "EN-9.1.4.3",
+            "ACT",
+            "RGAAv4",
+            "RGAA-3.2.1"
+          ],
+          "nodes": 1,
+          "sample": [
+            {
+              "target": [
+                "footer"
+              ],
+              "html": "<footer>Queer Guide</footer>",
+              "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 4.09 (foreground color: #71717a, background color: #0a0a0a, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1"
+            }
+          ]
+        }
+      ],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/news/all",
+      "name": "news-archive",
+      "variant": "mobile/dark",
+      "viewport": "mobile",
+      "theme": "dark",
+      "auth": null,
+      "url": "https://queer.guide/news/all",
+      "status": 404,
+      "error": null,
+      "violations": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.12/color-contrast?application=playwright",
+          "tags": [
+            "cat.color",
+            "wcag2aa",
+            "wcag143",
+            "TTv5",
+            "TT13.c",
+            "EN-301-549",
+            "EN-9.1.4.3",
+            "ACT",
+            "RGAAv4",
+            "RGAA-3.2.1"
+          ],
+          "nodes": 1,
+          "sample": [
+            {
+              "target": [
+                "footer"
+              ],
+              "html": "<footer>Queer Guide</footer>",
+              "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 4.09 (foreground color: #71717a, background color: #0a0a0a, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1"
+            }
+          ]
+        }
+      ],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/places",
+      "name": "places",
+      "variant": "desktop/light",
+      "viewport": "desktop",
+      "theme": "light",
+      "auth": null,
+      "url": "https://queer.guide/places",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/places",
+      "name": "places",
+      "variant": "desktop/dark",
+      "viewport": "desktop",
+      "theme": "dark",
+      "auth": null,
+      "url": "https://queer.guide/places",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/places",
+      "name": "places",
+      "variant": "mobile/light",
+      "viewport": "mobile",
+      "theme": "light",
+      "auth": null,
+      "url": "https://queer.guide/places",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/places",
+      "name": "places",
+      "variant": "mobile/dark",
+      "viewport": "mobile",
+      "theme": "dark",
+      "auth": null,
+      "url": "https://queer.guide/places",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/map",
+      "name": "map",
+      "variant": "desktop/light",
+      "viewport": "desktop",
+      "theme": "light",
+      "auth": null,
+      "url": "https://queer.guide/map",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/map",
+      "name": "map",
+      "variant": "desktop/dark",
+      "viewport": "desktop",
+      "theme": "dark",
+      "auth": null,
+      "url": "https://queer.guide/map",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/map",
+      "name": "map",
+      "variant": "mobile/light",
+      "viewport": "mobile",
+      "theme": "light",
+      "auth": null,
+      "url": "https://queer.guide/map",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/map",
+      "name": "map",
+      "variant": "mobile/dark",
+      "viewport": "mobile",
+      "theme": "dark",
+      "auth": null,
+      "url": "https://queer.guide/map",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/cities",
+      "name": "cities",
+      "variant": "desktop/light",
+      "viewport": "desktop",
+      "theme": "light",
+      "auth": null,
+      "url": "https://queer.guide/cities",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/cities",
+      "name": "cities",
+      "variant": "desktop/dark",
+      "viewport": "desktop",
+      "theme": "dark",
+      "auth": null,
+      "url": "https://queer.guide/cities",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/cities",
+      "name": "cities",
+      "variant": "mobile/light",
+      "viewport": "mobile",
+      "theme": "light",
+      "auth": null,
+      "url": "https://queer.guide/cities",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/cities",
+      "name": "cities",
+      "variant": "mobile/dark",
+      "viewport": "mobile",
+      "theme": "dark",
+      "auth": null,
+      "url": "https://queer.guide/cities",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/city/s-o-paulo",
+      "name": "city-detail",
+      "variant": "desktop/light",
+      "viewport": "desktop",
+      "theme": "light",
+      "auth": null,
+      "url": "https://queer.guide/city/s-o-paulo",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/city/s-o-paulo",
+      "name": "city-detail",
+      "variant": "desktop/dark",
+      "viewport": "desktop",
+      "theme": "dark",
+      "auth": null,
+      "url": "https://queer.guide/city/s-o-paulo",
+      "status": 200,
+      "error": null,
+      "violations": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.12/color-contrast?application=playwright",
+          "tags": [
+            "cat.color",
+            "wcag2aa",
+            "wcag143",
+            "TTv5",
+            "TT13.c",
+            "EN-301-549",
+            "EN-9.1.4.3",
+            "ACT",
+            "RGAAv4",
+            "RGAA-3.2.1"
+          ],
+          "nodes": 1,
+          "sample": [
+            {
+              "target": [
+                "h6"
+              ],
+              "html": "<h6 class=\"text-lg font-semibold mb-2\" style=\"opacity: 0; transform: translateY(4.36576px);\">No upcoming events</h6>",
+              "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 1.11 (foreground color: #181818, background color: #0a0a0a, font size: 13.5pt (18px), font weight: bold). Expected contrast ratio of 4.5:1"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "route": "/city/s-o-paulo",
+      "name": "city-detail",
+      "variant": "mobile/light",
+      "viewport": "mobile",
+      "theme": "light",
+      "auth": null,
+      "url": "https://queer.guide/city/s-o-paulo",
+      "status": 200,
+      "error": null,
+      "violations": [
+        {
+          "id": "scrollable-region-focusable",
+          "impact": "serious",
+          "help": "Scrollable region must have keyboard access",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.12/scrollable-region-focusable?application=playwright",
+          "tags": [
+            "cat.keyboard",
+            "wcag2a",
+            "wcag211",
+            "wcag213",
+            "TTv5",
+            "TT4.a",
+            "EN-301-549",
+            "EN-9.2.1.1",
+            "EN-9.2.1.3",
+            "RGAAv4",
+            "RGAA-7.3.2"
+          ],
+          "nodes": 1,
+          "sample": [
+            {
+              "target": [
+                ".pb-2"
+              ],
+              "html": "<div class=\"flex gap-2 overflow-x-auto pb-2\">",
+              "failureSummary": "Fix any of the following:\n  Element should have focusable content\n  Element should be focusable"
+            }
+          ]
+        }
+      ],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/city/s-o-paulo",
+      "name": "city-detail",
+      "variant": "mobile/dark",
+      "viewport": "mobile",
+      "theme": "dark",
+      "auth": null,
+      "url": "https://queer.guide/city/s-o-paulo",
+      "status": 200,
+      "error": null,
+      "violations": [
+        {
+          "id": "scrollable-region-focusable",
+          "impact": "serious",
+          "help": "Scrollable region must have keyboard access",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.12/scrollable-region-focusable?application=playwright",
+          "tags": [
+            "cat.keyboard",
+            "wcag2a",
+            "wcag211",
+            "wcag213",
+            "TTv5",
+            "TT4.a",
+            "EN-301-549",
+            "EN-9.2.1.1",
+            "EN-9.2.1.3",
+            "RGAAv4",
+            "RGAA-7.3.2"
+          ],
+          "nodes": 1,
+          "sample": [
+            {
+              "target": [
+                ".pb-2"
+              ],
+              "html": "<div class=\"flex gap-2 overflow-x-auto pb-2\">",
+              "failureSummary": "Fix any of the following:\n  Element should have focusable content\n  Element should be focusable"
+            }
+          ]
+        }
+      ],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/country/united-kingdom",
+      "name": "country-detail",
+      "variant": "desktop/light",
+      "viewport": "desktop",
+      "theme": "light",
+      "auth": null,
+      "url": "https://queer.guide/country/united-kingdom",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/country/united-kingdom",
+      "name": "country-detail",
+      "variant": "desktop/dark",
+      "viewport": "desktop",
+      "theme": "dark",
+      "auth": null,
+      "url": "https://queer.guide/country/united-kingdom",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/country/united-kingdom",
+      "name": "country-detail",
+      "variant": "mobile/light",
+      "viewport": "mobile",
+      "theme": "light",
+      "auth": null,
+      "url": "https://queer.guide/country/united-kingdom",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/country/united-kingdom",
+      "name": "country-detail",
+      "variant": "mobile/dark",
+      "viewport": "mobile",
+      "theme": "dark",
+      "auth": null,
+      "url": "https://queer.guide/country/united-kingdom",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/personalities",
+      "name": "personalities",
+      "variant": "desktop/light",
+      "viewport": "desktop",
+      "theme": "light",
+      "auth": null,
+      "url": "https://queer.guide/personalities",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/personalities",
+      "name": "personalities",
+      "variant": "desktop/dark",
+      "viewport": "desktop",
+      "theme": "dark",
+      "auth": null,
+      "url": "https://queer.guide/personalities",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/personalities",
+      "name": "personalities",
+      "variant": "mobile/light",
+      "viewport": "mobile",
+      "theme": "light",
+      "auth": null,
+      "url": "https://queer.guide/personalities",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/personalities",
+      "name": "personalities",
+      "variant": "mobile/dark",
+      "viewport": "mobile",
+      "theme": "dark",
+      "auth": null,
+      "url": "https://queer.guide/personalities",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/personalities/derek-jacobi",
+      "name": "personality-detail",
+      "variant": "desktop/light",
+      "viewport": "desktop",
+      "theme": "light",
+      "auth": null,
+      "url": "https://queer.guide/personalities/derek-jacobi",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/personalities/derek-jacobi",
+      "name": "personality-detail",
+      "variant": "desktop/dark",
+      "viewport": "desktop",
+      "theme": "dark",
+      "auth": null,
+      "url": "https://queer.guide/personalities/derek-jacobi",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/personalities/derek-jacobi",
+      "name": "personality-detail",
+      "variant": "mobile/light",
+      "viewport": "mobile",
+      "theme": "light",
+      "auth": null,
+      "url": "https://queer.guide/personalities/derek-jacobi",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/personalities/derek-jacobi",
+      "name": "personality-detail",
+      "variant": "mobile/dark",
+      "viewport": "mobile",
+      "theme": "dark",
+      "auth": null,
+      "url": "https://queer.guide/personalities/derek-jacobi",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/tags",
+      "name": "tags",
+      "variant": "desktop/light",
+      "viewport": "desktop",
+      "theme": "light",
+      "auth": null,
+      "url": "https://queer.guide/tags",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/tags",
+      "name": "tags",
+      "variant": "desktop/dark",
+      "viewport": "desktop",
+      "theme": "dark",
+      "auth": null,
+      "url": "https://queer.guide/tags",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/tags",
+      "name": "tags",
+      "variant": "mobile/light",
+      "viewport": "mobile",
+      "theme": "light",
+      "auth": null,
+      "url": "https://queer.guide/tags",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/tags",
+      "name": "tags",
+      "variant": "mobile/dark",
+      "viewport": "mobile",
+      "theme": "dark",
+      "auth": null,
+      "url": "https://queer.guide/tags",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/tags/community-resource",
+      "name": "tag-detail",
+      "variant": "desktop/light",
+      "viewport": "desktop",
+      "theme": "light",
+      "auth": null,
+      "url": "https://queer.guide/tags/community-resource",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/tags/community-resource",
+      "name": "tag-detail",
+      "variant": "desktop/dark",
+      "viewport": "desktop",
+      "theme": "dark",
+      "auth": null,
+      "url": "https://queer.guide/tags/community-resource",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/tags/community-resource",
+      "name": "tag-detail",
+      "variant": "mobile/light",
+      "viewport": "mobile",
+      "theme": "light",
+      "auth": null,
+      "url": "https://queer.guide/tags/community-resource",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/tags/community-resource",
+      "name": "tag-detail",
+      "variant": "mobile/dark",
+      "viewport": "mobile",
+      "theme": "dark",
+      "auth": null,
+      "url": "https://queer.guide/tags/community-resource",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/travel",
+      "name": "travel",
+      "variant": "desktop/light",
+      "viewport": "desktop",
+      "theme": "light",
+      "auth": null,
+      "url": "https://queer.guide/travel",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/travel",
+      "name": "travel",
+      "variant": "desktop/dark",
+      "viewport": "desktop",
+      "theme": "dark",
+      "auth": null,
+      "url": "https://queer.guide/travel",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/travel",
+      "name": "travel",
+      "variant": "mobile/light",
+      "viewport": "mobile",
+      "theme": "light",
+      "auth": null,
+      "url": "https://queer.guide/travel",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/travel",
+      "name": "travel",
+      "variant": "mobile/dark",
+      "viewport": "mobile",
+      "theme": "dark",
+      "auth": null,
+      "url": "https://queer.guide/travel",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/trips/discover",
+      "name": "trips-discover",
+      "variant": "desktop/light",
+      "viewport": "desktop",
+      "theme": "light",
+      "auth": null,
+      "url": "https://queer.guide/trips/discover",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/trips/discover",
+      "name": "trips-discover",
+      "variant": "desktop/dark",
+      "viewport": "desktop",
+      "theme": "dark",
+      "auth": null,
+      "url": "https://queer.guide/trips/discover",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/trips/discover",
+      "name": "trips-discover",
+      "variant": "mobile/light",
+      "viewport": "mobile",
+      "theme": "light",
+      "auth": null,
+      "url": "https://queer.guide/trips/discover",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/trips/discover",
+      "name": "trips-discover",
+      "variant": "mobile/dark",
+      "viewport": "mobile",
+      "theme": "dark",
+      "auth": null,
+      "url": "https://queer.guide/trips/discover",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/search",
+      "name": "search",
+      "variant": "desktop/light",
+      "viewport": "desktop",
+      "theme": "light",
+      "auth": null,
+      "url": "https://queer.guide/search",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/search",
+      "name": "search",
+      "variant": "desktop/dark",
+      "viewport": "desktop",
+      "theme": "dark",
+      "auth": null,
+      "url": "https://queer.guide/search",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/search",
+      "name": "search",
+      "variant": "mobile/light",
+      "viewport": "mobile",
+      "theme": "light",
+      "auth": null,
+      "url": "https://queer.guide/search",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/search",
+      "name": "search",
+      "variant": "mobile/dark",
+      "viewport": "mobile",
+      "theme": "dark",
+      "auth": null,
+      "url": "https://queer.guide/search",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/submit",
+      "name": "submit-hub",
+      "variant": "desktop/light",
+      "viewport": "desktop",
+      "theme": "light",
+      "auth": null,
+      "url": "https://queer.guide/submit",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/submit",
+      "name": "submit-hub",
+      "variant": "desktop/dark",
+      "viewport": "desktop",
+      "theme": "dark",
+      "auth": null,
+      "url": "https://queer.guide/submit",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/submit",
+      "name": "submit-hub",
+      "variant": "mobile/light",
+      "viewport": "mobile",
+      "theme": "light",
+      "auth": null,
+      "url": "https://queer.guide/submit",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/submit",
+      "name": "submit-hub",
+      "variant": "mobile/dark",
+      "viewport": "mobile",
+      "theme": "dark",
+      "auth": null,
+      "url": "https://queer.guide/submit",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/donate",
+      "name": "donate",
+      "variant": "desktop/light",
+      "viewport": "desktop",
+      "theme": "light",
+      "auth": null,
+      "url": "https://queer.guide/donate",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/donate",
+      "name": "donate",
+      "variant": "desktop/dark",
+      "viewport": "desktop",
+      "theme": "dark",
+      "auth": null,
+      "url": "https://queer.guide/donate",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/donate",
+      "name": "donate",
+      "variant": "mobile/light",
+      "viewport": "mobile",
+      "theme": "light",
+      "auth": null,
+      "url": "https://queer.guide/donate",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/donate",
+      "name": "donate",
+      "variant": "mobile/dark",
+      "viewport": "mobile",
+      "theme": "dark",
+      "auth": null,
+      "url": "https://queer.guide/donate",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/about",
+      "name": "about",
+      "variant": "desktop/light",
+      "viewport": "desktop",
+      "theme": "light",
+      "auth": null,
+      "url": "https://queer.guide/about",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/about",
+      "name": "about",
+      "variant": "desktop/dark",
+      "viewport": "desktop",
+      "theme": "dark",
+      "auth": null,
+      "url": "https://queer.guide/about",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/about",
+      "name": "about",
+      "variant": "mobile/light",
+      "viewport": "mobile",
+      "theme": "light",
+      "auth": null,
+      "url": "https://queer.guide/about",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/about",
+      "name": "about",
+      "variant": "mobile/dark",
+      "viewport": "mobile",
+      "theme": "dark",
+      "auth": null,
+      "url": "https://queer.guide/about",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/contact",
+      "name": "contact",
+      "variant": "desktop/light",
+      "viewport": "desktop",
+      "theme": "light",
+      "auth": null,
+      "url": "https://queer.guide/contact",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/contact",
+      "name": "contact",
+      "variant": "desktop/dark",
+      "viewport": "desktop",
+      "theme": "dark",
+      "auth": null,
+      "url": "https://queer.guide/contact",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/contact",
+      "name": "contact",
+      "variant": "mobile/light",
+      "viewport": "mobile",
+      "theme": "light",
+      "auth": null,
+      "url": "https://queer.guide/contact",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/contact",
+      "name": "contact",
+      "variant": "mobile/dark",
+      "viewport": "mobile",
+      "theme": "dark",
+      "auth": null,
+      "url": "https://queer.guide/contact",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/help",
+      "name": "help",
+      "variant": "desktop/light",
+      "viewport": "desktop",
+      "theme": "light",
+      "auth": null,
+      "url": "https://queer.guide/help",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/help",
+      "name": "help",
+      "variant": "desktop/dark",
+      "viewport": "desktop",
+      "theme": "dark",
+      "auth": null,
+      "url": "https://queer.guide/help",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/help",
+      "name": "help",
+      "variant": "mobile/light",
+      "viewport": "mobile",
+      "theme": "light",
+      "auth": null,
+      "url": "https://queer.guide/help",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/help",
+      "name": "help",
+      "variant": "mobile/dark",
+      "viewport": "mobile",
+      "theme": "dark",
+      "auth": null,
+      "url": "https://queer.guide/help",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/feedback",
+      "name": "feedback",
+      "variant": "desktop/light",
+      "viewport": "desktop",
+      "theme": "light",
+      "auth": null,
+      "url": "https://queer.guide/feedback",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/feedback",
+      "name": "feedback",
+      "variant": "desktop/dark",
+      "viewport": "desktop",
+      "theme": "dark",
+      "auth": null,
+      "url": "https://queer.guide/feedback",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/feedback",
+      "name": "feedback",
+      "variant": "mobile/light",
+      "viewport": "mobile",
+      "theme": "light",
+      "auth": null,
+      "url": "https://queer.guide/feedback",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/feedback",
+      "name": "feedback",
+      "variant": "mobile/dark",
+      "viewport": "mobile",
+      "theme": "dark",
+      "auth": null,
+      "url": "https://queer.guide/feedback",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/accessibility",
+      "name": "accessibility",
+      "variant": "desktop/light",
+      "viewport": "desktop",
+      "theme": "light",
+      "auth": null,
+      "url": "https://queer.guide/accessibility",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/accessibility",
+      "name": "accessibility",
+      "variant": "desktop/dark",
+      "viewport": "desktop",
+      "theme": "dark",
+      "auth": null,
+      "url": "https://queer.guide/accessibility",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/accessibility",
+      "name": "accessibility",
+      "variant": "mobile/light",
+      "viewport": "mobile",
+      "theme": "light",
+      "auth": null,
+      "url": "https://queer.guide/accessibility",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/accessibility",
+      "name": "accessibility",
+      "variant": "mobile/dark",
+      "viewport": "mobile",
+      "theme": "dark",
+      "auth": null,
+      "url": "https://queer.guide/accessibility",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/sitemap",
+      "name": "sitemap",
+      "variant": "desktop/light",
+      "viewport": "desktop",
+      "theme": "light",
+      "auth": null,
+      "url": "https://queer.guide/sitemap",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/sitemap",
+      "name": "sitemap",
+      "variant": "desktop/dark",
+      "viewport": "desktop",
+      "theme": "dark",
+      "auth": null,
+      "url": "https://queer.guide/sitemap",
+      "status": 200,
+      "error": null,
+      "violations": []
+    },
+    {
+      "route": "/sitemap",
+      "name": "sitemap",
+      "variant": "mobile/light",
+      "viewport": "mobile",
+      "theme": "light",
+      "auth": null,
+      "url": "https://queer.guide/sitemap",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "route": "/sitemap",
+      "name": "sitemap",
+      "variant": "mobile/dark",
+      "viewport": "mobile",
+      "theme": "dark",
+      "auth": null,
+      "url": "https://queer.guide/sitemap",
+      "status": 200,
+      "error": null,
+      "violations": [],
+      "reflow": {
+        "scrollWidth": 320,
+        "clientWidth": 320
+      }
+    }
+  ]
+}
