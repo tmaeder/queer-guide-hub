@@ -499,16 +499,16 @@ export const AppRoutes = () => {
                 <Route path="places" element={<Places />} />
                 <Route path="travel" element={<Travel />} />
                 <Route path="travel/book" element={<TravelBook />} />
-                {/* /trips list folded into the /hub office (Trips module). The
+                {/* /trips list folded into the /hub office (Plans module). The
                   /trips/:id workspace + discover/shared stay top-level. */}
-                <Route path="trips" element={<LocalizedRedirect to="/hub/trips" />} />
-                <Route path="trips/inbox" element={<LocalizedRedirect to="/hub/trips" />} />
+                <Route path="trips" element={<LocalizedRedirect to="/hub/plans" />} />
+                <Route path="trips/inbox" element={<LocalizedRedirect to="/hub/plans" />} />
                 <Route path="trips/discover" element={<TripsDiscoverPage />} />
                 <Route path="trips/shared/:token" element={<SharedTripPage />} />
                 <Route path="trips/:tripId/today" element={<TripSubrouteRedirect view="today" />} />
                 <Route path="trips/:tripId/booklet" element={<TripSubrouteRedirect view="booklet" />} />
                 <Route path="trips/:tripId" element={<TripWorkspace />} />
-                <Route path="bookings" element={<LocalizedRedirect to="/hub/trips" />} />
+                <Route path="bookings" element={<LocalizedRedirect to="/hub/plans" />} />
                 <Route path="map" element={<MapPage />} />
                 <Route path="flights" element={<Navigate to="/travel" replace />} />
                 <Route path="cities" element={<Cities />} />
@@ -561,14 +561,14 @@ export const AppRoutes = () => {
                 <Route path="accessibility" element={<CMSRoutePage slug="accessibility" />} />
                 {/* "Inbox" was email + notifications, never messages. Notifications now
                   live in the header menu; the @queer.guide mailbox moved to /mailbox.
-                  /inbox now resolves to the real conversation hub. */}
-                <Route path="inbox" element={<LocalizedRedirect to="/hub" />} />
-                <Route path="mailbox" element={<LocalizedRedirect to="/hub" />} />
-                {/* /messages folded into /hub (Inbox module). LocalizedRedirect
+                  /inbox now resolves to the hub Messages surface (Chats sub-view). */}
+                <Route path="inbox" element={<LocalizedRedirect to="/hub/messages" />} />
+                <Route path="mailbox" element={<LocalizedRedirect to="/hub/messages" />} />
+                {/* /messages folded into the hub Messages module. LocalizedRedirect
                   carries the query string, so DB-stored open_target strings
                   ('/messages?conversation=…') and ?tripmail= deep links keep
                   resolving without any data rewrite. */}
-                <Route path="messages" element={<LocalizedRedirect to="/hub" />} />
+                <Route path="messages" element={<LocalizedRedirect to="/hub/messages" />} />
                 {/* /favorites folded into /hub (Saved module). */}
                 <Route path="favorites" element={<LocalizedRedirect to="/hub/saved" />} />
                 {/* Feed, Members, Friends, Groups now live under the /community hub. */}
@@ -583,24 +583,30 @@ export const AppRoutes = () => {
                 <Route path="community/friends" element={<Community tab="friends" />} />
                 <Route path="community/groups" element={<Community tab="groups" />} />
                 {/* /hub — the personal office (replaces /messages + the private
-                  /me hub). Static per-module routes so the optional /:locale?
-                  parent can't capture "hub" as an unknown locale — same fix as
-                  the /community hub above. */}
-                <Route path="hub" element={<HubPage module="inbox" />} />
-                <Route path="hub/calendar" element={<HubPage module="calendar" />} />
-                <Route path="hub/contacts" element={<HubPage module="contacts" />} />
+                  /me hub). Consolidated 2026-07 to four surfaces: Overview
+                  (landing), Messages (inbox + people), Plans (calendar agenda +
+                  trips) and Saved. Static per-module routes so the optional
+                  /:locale? parent can't capture "hub" as an unknown locale —
+                  same fix as the /community hub above. */}
+                <Route path="hub" element={<HubPage module="overview" />} />
+                <Route path="hub/messages" element={<HubPage module="messages" />} />
+                <Route path="hub/plans" element={<HubPage module="plans" />} />
                 <Route path="hub/saved" element={<HubPage module="saved" />} />
-                <Route path="hub/news" element={<HubPage module="news" />} />
-                <Route path="hub/trips" element={<HubPage module="trips" />} />
+                {/* Retired module paths → their consolidated home. LocalizedRedirect
+                  preserves the query string (e.g. ?conversation=). */}
+                <Route path="hub/calendar" element={<LocalizedRedirect to="/hub/plans" />} />
+                <Route path="hub/trips" element={<LocalizedRedirect to="/hub/plans" />} />
+                <Route path="hub/contacts" element={<LocalizedRedirect to="/hub/messages" />} />
+                <Route path="hub/news" element={<LocalizedRedirect to="/hub/saved" />} />
                 {/* /me folded into /hub; identity tabs live on the unified
                   public profile (/user/:id/:tab) via MeRedirect. */}
                 <Route path="me" element={<LocalizedRedirect to="/hub" />} />
                 <Route path="me/saved" element={<LocalizedRedirect to="/hub/saved" />} />
-                <Route path="me/trips" element={<LocalizedRedirect to="/hub/trips" />} />
-                {/* #1974's /me/calendar folds into the hub Calendar module. */}
-                <Route path="me/calendar" element={<LocalizedRedirect to="/hub/calendar" />} />
+                <Route path="me/trips" element={<LocalizedRedirect to="/hub/plans" />} />
+                {/* #1974's /me/calendar folds into the hub Plans module. */}
+                <Route path="me/calendar" element={<LocalizedRedirect to="/hub/plans" />} />
                 <Route path="me/travel" element={<MeRedirect tab="travel" />} />
-                <Route path="me/groups" element={<LocalizedRedirect to="/hub/contacts" />} />
+                <Route path="me/groups" element={<LocalizedRedirect to="/hub/messages" />} />
                 <Route path="me/contributions" element={<MeRedirect tab="contributions" />} />
                 <Route path="me/progress" element={<MeRedirect tab="progress" />} />
                 <Route path="me/passport" element={<MeRedirect tab="progress" />} />

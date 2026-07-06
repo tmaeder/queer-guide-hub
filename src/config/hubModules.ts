@@ -1,4 +1,10 @@
-import { Inbox, Bookmark, Luggage, Calendar, Users, Newspaper, type LucideIcon } from 'lucide-react';
+import {
+  LayoutDashboard,
+  MessageCircle,
+  CalendarClock,
+  Bookmark,
+  type LucideIcon,
+} from 'lucide-react';
 
 /**
  * Registry for the /hub personal office modules. Single source of truth for
@@ -7,9 +13,15 @@ import { Inbox, Bookmark, Luggage, Calendar, Users, Newspaper, type LucideIcon }
  * HubPage. Paths must be static (no params) so the optional /:locale? parent
  * can't mis-capture a segment (see the /me and /community comments in
  * routes.tsx).
+ *
+ * Consolidated 2026-07 from six modules to four: Overview (new landing),
+ * Messages (former Inbox + Contacts), Plans (former Calendar + Trips) and
+ * Saved (favorites + former News's saved searches). The News discovery feed
+ * moved to the public /news "For You" section; the retired module paths
+ * redirect in routes.tsx.
  */
 
-export type HubModuleId = 'inbox' | 'calendar' | 'contacts' | 'saved' | 'news' | 'trips';
+export type HubModuleId = 'overview' | 'messages' | 'plans' | 'saved';
 
 export interface HubModule {
   id: HubModuleId;
@@ -24,33 +36,26 @@ export interface HubModule {
 
 export const HUB_MODULES: HubModule[] = [
   {
-    id: 'inbox',
+    id: 'overview',
     path: '/hub',
-    icon: Inbox,
-    labelKey: 'hub.modules.inbox',
-    defaultLabel: 'Inbox',
+    icon: LayoutDashboard,
+    labelKey: 'hub.modules.overview',
+    defaultLabel: 'Overview',
+  },
+  {
+    id: 'messages',
+    path: '/hub/messages',
+    icon: MessageCircle,
+    labelKey: 'hub.modules.messages',
+    defaultLabel: 'Messages',
     badge: 'unread',
   },
   {
-    id: 'calendar',
-    path: '/hub/calendar',
-    icon: Calendar,
-    labelKey: 'hub.modules.calendar',
-    defaultLabel: 'Calendar',
-  },
-  {
-    id: 'trips',
-    path: '/hub/trips',
-    icon: Luggage,
-    labelKey: 'hub.modules.trips',
-    defaultLabel: 'Trips',
-  },
-  {
-    id: 'contacts',
-    path: '/hub/contacts',
-    icon: Users,
-    labelKey: 'hub.modules.contacts',
-    defaultLabel: 'Contacts',
+    id: 'plans',
+    path: '/hub/plans',
+    icon: CalendarClock,
+    labelKey: 'hub.modules.plans',
+    defaultLabel: 'Plans',
   },
   {
     id: 'saved',
@@ -58,12 +63,5 @@ export const HUB_MODULES: HubModule[] = [
     icon: Bookmark,
     labelKey: 'hub.modules.saved',
     defaultLabel: 'Saved',
-  },
-  {
-    id: 'news',
-    path: '/hub/news',
-    icon: Newspaper,
-    labelKey: 'hub.modules.news',
-    defaultLabel: 'News',
   },
 ];

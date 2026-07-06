@@ -3127,17 +3127,15 @@
   "hub": {
     "title": "Your hub",
     "nav": "Hub modules",
-    "signInDesc": "Sign in to see your inbox, trips and saved places.",
+    "signInDesc": "Sign in to see your messages, plans and saved places.",
     "identity": {
       "viewProfile": "View profile"
     },
     "modules": {
-      "inbox": "Inbox",
-      "calendar": "Calendar",
-      "contacts": "Contacts",
-      "saved": "Saved",
-      "news": "News",
-      "trips": "Trips"
+      "overview": "Overview",
+      "messages": "Messages",
+      "plans": "Plans",
+      "saved": "Saved"
     },
     "calendar": {
       "title": "Upcoming",
@@ -3172,6 +3170,23 @@
       "tagsEmpty": "Follow tags to see matching stories here.",
       "tagsNoArticles": "Nothing new from your tags yet.",
       "savedSearches": "Saved searches"
+    },
+    "overview": {
+      "title": "Overview",
+      "seePlans": "All plans",
+      "unread": "{{count}} unread",
+      "openMessages": "Open inbox",
+      "noChats": "No conversations yet.",
+      "openSaved": "Open saved",
+      "savedCount": "{{count}} saved",
+      "noSaved": "Nothing saved yet."
+    },
+    "messages": {
+      "chats": "Chats",
+      "people": "People"
+    },
+    "plans": {
+      "trips": "Your trips"
     }
   }
 }
