@@ -2,7 +2,6 @@ import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { ArrowRight, Bookmark, CalendarClock, Heart, Loader2, MessageCircle } from 'lucide-react';
-import { ArrowRight, Bookmark, CalendarClock, Loader2, MessageCircle } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
