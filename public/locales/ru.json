@@ -2872,6 +2872,7 @@
       "alerts": "Оповещения",
       "matches": "Совпадения",
       "matchesUnread": "{{count}} новых совпадений"
+      "matchesUnread": "[RU] {{count}} new matches"
     },
     "compose": {
       "label": "Написать",
@@ -2934,6 +2935,7 @@
       "aVenue": "Место"
     },
     "matchTag": "Совпадение"
+    "matchTag": "[RU] Match"
   },
   "extension": {
     "signInGate": {

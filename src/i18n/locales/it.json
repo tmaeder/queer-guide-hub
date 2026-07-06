@@ -2838,6 +2838,7 @@
       "alerts": "Avvisi",
       "matches": "Match",
       "matchesUnread": "{{count}} nuovi match"
+      "matchesUnread": "[IT] {{count}} new matches"
     },
     "compose": {
       "label": "Componi",
@@ -2900,6 +2901,7 @@
       "aVenue": "Luogo"
     },
     "matchTag": "Match"
+    "matchTag": "[IT] Match"
   },
   "extension": {
     "signInGate": {

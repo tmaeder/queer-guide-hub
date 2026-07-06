@@ -2838,6 +2838,7 @@
       "alerts": "Alertas",
       "matches": "Coincidencias",
       "matchesUnread": "{{count}} coincidencias nuevas"
+      "matchesUnread": "[ES] {{count}} new matches"
     },
     "compose": {
       "label": "Redactar",
@@ -2900,6 +2901,7 @@
       "aVenue": "Lugar"
     },
     "matchTag": "Coincidencia"
+    "matchTag": "[ES] Match"
   },
   "extension": {
     "signInGate": {

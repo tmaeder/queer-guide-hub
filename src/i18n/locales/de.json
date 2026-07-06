@@ -2838,6 +2838,7 @@
       "alerts": "Hinweise",
       "matches": "Matches",
       "matchesUnread": "{{count}} neue Matches"
+      "matchesUnread": "[DE] {{count}} new matches"
     },
     "compose": {
       "label": "Verfassen",
@@ -2900,6 +2901,7 @@
       "aVenue": "Ort"
     },
     "matchTag": "Match"
+    "matchTag": "[DE] Match"
   },
   "extension": {
     "signInGate": {
