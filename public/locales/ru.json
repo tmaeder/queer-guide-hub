@@ -2870,7 +2870,7 @@
       "chats": "Чаты",
       "mail": "Почта",
       "alerts": "Оповещения",
-      "matches": "[RU] Matches"
+      "matches": "Совпадения"
     },
     "compose": {
       "label": "Написать",
@@ -3198,9 +3198,9 @@
       "saved": "Сохранённое",
       "news": "Новости",
       "trips": "Поездки",
-      "overview": "[RU] Overview",
-      "messages": "[RU] Messages",
-      "plans": "[RU] Plans"
+      "overview": "Обзор",
+      "messages": "Сообщения",
+      "plans": "Планы"
     },
     "calendar": {
       "title": "Предстоящее",
@@ -3226,12 +3226,12 @@
       "dating": "Знакомства",
       "datingTitle": "Ваша колода знакомств",
       "datingBody": "Смотрите совпадения и переписки.",
-      "datingMatches": "[RU] {{count}} matches",
-      "browseDeck": "[RU] Browse deck",
-      "browseDeckBody": "[RU] Find new people to match with.",
-      "yourMatches": "[RU] Your matches",
-      "yourMatchesBody": "[RU] {{count}} match conversations",
-      "yourMatchesEmpty": "[RU] No matches yet."
+      "datingMatches": "{{count}} совпадений",
+      "browseDeck": "Смотреть анкеты",
+      "browseDeckBody": "Найдите новых людей для совпадений.",
+      "yourMatches": "Ваши совпадения",
+      "yourMatchesBody": "{{count}} бесед по совпадениям",
+      "yourMatchesEmpty": "Пока нет совпадений."
     },
     "news": {
       "title": "Новости",
@@ -3243,29 +3243,29 @@
       "savedSearches": "Сохранённые запросы"
     },
     "overview": {
-      "title": "[RU] Overview",
-      "seePlans": "[RU] All plans",
-      "unread": "[RU] {{count}} unread",
-      "openMessages": "[RU] Open inbox",
-      "noChats": "[RU] No conversations yet.",
-      "openSaved": "[RU] Open saved",
-      "savedCount": "[RU] {{count}} saved",
-      "noSaved": "[RU] Nothing saved yet.",
-      "openMatches": "[RU] Open matches",
-      "matchCount": "[RU] {{count}} matches",
-      "noMatches": "[RU] No matches yet.",
-      "people": "[RU] People",
-      "friendCount": "[RU] {{count}} friends",
-      "findPeople": "[RU] Find people",
-      "noFriends": "[RU] No friends yet.",
-      "wantsToConnect": "[RU] Wants to connect"
+      "title": "Обзор",
+      "seePlans": "Все планы",
+      "unread": "{{count}} непрочит.",
+      "openMessages": "Открыть входящие",
+      "noChats": "Пока нет бесед.",
+      "openSaved": "Открыть сохранённое",
+      "savedCount": "{{count}} сохранено",
+      "noSaved": "Пока ничего не сохранено.",
+      "openMatches": "Открыть совпадения",
+      "matchCount": "{{count}} совпадений",
+      "noMatches": "Пока нет совпадений.",
+      "people": "Люди",
+      "friendCount": "{{count}} друзей",
+      "findPeople": "Найти людей",
+      "noFriends": "Пока нет друзей.",
+      "wantsToConnect": "Хочет подключиться"
     },
     "messages": {
-      "chats": "[RU] Chats",
-      "people": "[RU] People"
+      "chats": "Чаты",
+      "people": "Люди"
     },
     "plans": {
-      "trips": "[RU] Your trips"
+      "trips": "Ваши поездки"
     }
   }
 }

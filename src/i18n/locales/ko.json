@@ -2834,7 +2834,7 @@
       "chats": "채팅",
       "mail": "메일",
       "alerts": "알림",
-      "matches": "[KO] Matches"
+      "matches": "매치"
     },
     "compose": {
       "label": "작성",
@@ -3162,9 +3162,9 @@
       "saved": "저장됨",
       "news": "뉴스",
       "trips": "여행",
-      "overview": "[KO] Overview",
-      "messages": "[KO] Messages",
-      "plans": "[KO] Plans"
+      "overview": "개요",
+      "messages": "메시지",
+      "plans": "플랜"
     },
     "calendar": {
       "title": "다가오는 일정",
@@ -3190,12 +3190,12 @@
       "dating": "데이트",
       "datingTitle": "내 데이트 덱",
       "datingBody": "매치와 대화를 살펴보세요.",
-      "datingMatches": "[KO] {{count}} matches",
-      "browseDeck": "[KO] Browse deck",
-      "browseDeckBody": "[KO] Find new people to match with.",
-      "yourMatches": "[KO] Your matches",
-      "yourMatchesBody": "[KO] {{count}} match conversations",
-      "yourMatchesEmpty": "[KO] No matches yet."
+      "datingMatches": "매치 {{count}}개",
+      "browseDeck": "덱 둘러보기",
+      "browseDeckBody": "매치할 새로운 사람을 찾아보세요.",
+      "yourMatches": "내 매치",
+      "yourMatchesBody": "매치 대화 {{count}}개",
+      "yourMatchesEmpty": "아직 매치가 없습니다."
     },
     "news": {
       "title": "뉴스",
@@ -3207,29 +3207,29 @@
       "savedSearches": "저장한 검색"
     },
     "overview": {
-      "title": "[KO] Overview",
-      "seePlans": "[KO] All plans",
-      "unread": "[KO] {{count}} unread",
-      "openMessages": "[KO] Open inbox",
-      "noChats": "[KO] No conversations yet.",
-      "openSaved": "[KO] Open saved",
-      "savedCount": "[KO] {{count}} saved",
-      "noSaved": "[KO] Nothing saved yet.",
-      "openMatches": "[KO] Open matches",
-      "matchCount": "[KO] {{count}} matches",
-      "noMatches": "[KO] No matches yet.",
-      "people": "[KO] People",
-      "friendCount": "[KO] {{count}} friends",
-      "findPeople": "[KO] Find people",
-      "noFriends": "[KO] No friends yet.",
-      "wantsToConnect": "[KO] Wants to connect"
+      "title": "개요",
+      "seePlans": "모든 플랜",
+      "unread": "읽지 않음 {{count}}개",
+      "openMessages": "받은편지함 열기",
+      "noChats": "아직 대화가 없습니다.",
+      "openSaved": "저장됨 열기",
+      "savedCount": "저장됨 {{count}}개",
+      "noSaved": "아직 저장한 것이 없습니다.",
+      "openMatches": "매치 열기",
+      "matchCount": "매치 {{count}}개",
+      "noMatches": "아직 매치가 없습니다.",
+      "people": "사람들",
+      "friendCount": "친구 {{count}}명",
+      "findPeople": "사람 찾기",
+      "noFriends": "아직 친구가 없습니다.",
+      "wantsToConnect": "연결을 원해요"
     },
     "messages": {
-      "chats": "[KO] Chats",
-      "people": "[KO] People"
+      "chats": "채팅",
+      "people": "사람들"
     },
     "plans": {
-      "trips": "[KO] Your trips"
+      "trips": "내 여행"
     }
   }
 }

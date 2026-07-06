@@ -2834,7 +2834,7 @@
       "chats": "聊天",
       "mail": "邮件",
       "alerts": "提醒",
-      "matches": "[ZH] Matches"
+      "matches": "匹配"
     },
     "compose": {
       "label": "撰写",
@@ -3162,9 +3162,9 @@
       "saved": "已收藏",
       "news": "新闻",
       "trips": "行程",
-      "overview": "[ZH] Overview",
-      "messages": "[ZH] Messages",
-      "plans": "[ZH] Plans"
+      "overview": "概览",
+      "messages": "消息",
+      "plans": "计划"
     },
     "calendar": {
       "title": "即将到来",
@@ -3190,12 +3190,12 @@
       "dating": "约会",
       "datingTitle": "你的约会卡组",
       "datingBody": "浏览匹配和对话。",
-      "datingMatches": "[ZH] {{count}} matches",
-      "browseDeck": "[ZH] Browse deck",
-      "browseDeckBody": "[ZH] Find new people to match with.",
-      "yourMatches": "[ZH] Your matches",
-      "yourMatchesBody": "[ZH] {{count}} match conversations",
-      "yourMatchesEmpty": "[ZH] No matches yet."
+      "datingMatches": "{{count}} 个匹配",
+      "browseDeck": "浏览卡片",
+      "browseDeckBody": "寻找可以匹配的新朋友。",
+      "yourMatches": "你的匹配",
+      "yourMatchesBody": "{{count}} 条匹配对话",
+      "yourMatchesEmpty": "还没有匹配。"
     },
     "news": {
       "title": "新闻",
@@ -3207,29 +3207,29 @@
       "savedSearches": "已保存的搜索"
     },
     "overview": {
-      "title": "[ZH] Overview",
-      "seePlans": "[ZH] All plans",
-      "unread": "[ZH] {{count}} unread",
-      "openMessages": "[ZH] Open inbox",
-      "noChats": "[ZH] No conversations yet.",
-      "openSaved": "[ZH] Open saved",
-      "savedCount": "[ZH] {{count}} saved",
-      "noSaved": "[ZH] Nothing saved yet.",
-      "openMatches": "[ZH] Open matches",
-      "matchCount": "[ZH] {{count}} matches",
-      "noMatches": "[ZH] No matches yet.",
-      "people": "[ZH] People",
-      "friendCount": "[ZH] {{count}} friends",
-      "findPeople": "[ZH] Find people",
-      "noFriends": "[ZH] No friends yet.",
-      "wantsToConnect": "[ZH] Wants to connect"
+      "title": "概览",
+      "seePlans": "所有计划",
+      "unread": "{{count}} 条未读",
+      "openMessages": "打开收件箱",
+      "noChats": "还没有对话。",
+      "openSaved": "打开收藏",
+      "savedCount": "{{count}} 项收藏",
+      "noSaved": "还没有收藏任何内容。",
+      "openMatches": "打开匹配",
+      "matchCount": "{{count}} 个匹配",
+      "noMatches": "还没有匹配。",
+      "people": "用户",
+      "friendCount": "{{count}} 位朋友",
+      "findPeople": "查找用户",
+      "noFriends": "还没有朋友。",
+      "wantsToConnect": "想要建立联系"
     },
     "messages": {
-      "chats": "[ZH] Chats",
-      "people": "[ZH] People"
+      "chats": "聊天",
+      "people": "用户"
     },
     "plans": {
-      "trips": "[ZH] Your trips"
+      "trips": "你的行程"
     }
   }
 }

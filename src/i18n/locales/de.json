@@ -2836,7 +2836,7 @@
       "chats": "Chats",
       "mail": "E-Mail",
       "alerts": "Hinweise",
-      "matches": "[DE] Matches"
+      "matches": "Matches"
     },
     "compose": {
       "label": "Verfassen",
@@ -3164,9 +3164,9 @@
       "saved": "Gespeichert",
       "news": "News",
       "trips": "Reisen",
-      "overview": "[DE] Overview",
-      "messages": "[DE] Messages",
-      "plans": "[DE] Plans"
+      "overview": "Übersicht",
+      "messages": "Nachrichten",
+      "plans": "Pläne"
     },
     "calendar": {
       "title": "Anstehend",
@@ -3192,12 +3192,12 @@
       "dating": "Dating",
       "datingTitle": "Dein Dating-Deck",
       "datingBody": "Matches und Gespräche durchsehen.",
-      "datingMatches": "[DE] {{count}} matches",
-      "browseDeck": "[DE] Browse deck",
-      "browseDeckBody": "[DE] Find new people to match with.",
-      "yourMatches": "[DE] Your matches",
-      "yourMatchesBody": "[DE] {{count}} match conversations",
-      "yourMatchesEmpty": "[DE] No matches yet."
+      "datingMatches": "{{count}} Matches",
+      "browseDeck": "Stapel durchsehen",
+      "browseDeckBody": "Neue Leute zum Matchen finden.",
+      "yourMatches": "Deine Matches",
+      "yourMatchesBody": "{{count}} Match-Unterhaltungen",
+      "yourMatchesEmpty": "Noch keine Matches."
     },
     "news": {
       "title": "News",
@@ -3209,29 +3209,29 @@
       "savedSearches": "Gespeicherte Suchen"
     },
     "overview": {
-      "title": "[DE] Overview",
-      "seePlans": "[DE] All plans",
-      "unread": "[DE] {{count}} unread",
-      "openMessages": "[DE] Open inbox",
-      "noChats": "[DE] No conversations yet.",
-      "openSaved": "[DE] Open saved",
-      "savedCount": "[DE] {{count}} saved",
-      "noSaved": "[DE] Nothing saved yet.",
-      "openMatches": "[DE] Open matches",
-      "matchCount": "[DE] {{count}} matches",
-      "noMatches": "[DE] No matches yet.",
-      "people": "[DE] People",
-      "friendCount": "[DE] {{count}} friends",
-      "findPeople": "[DE] Find people",
-      "noFriends": "[DE] No friends yet.",
-      "wantsToConnect": "[DE] Wants to connect"
+      "title": "Übersicht",
+      "seePlans": "Alle Pläne",
+      "unread": "{{count}} ungelesen",
+      "openMessages": "Posteingang öffnen",
+      "noChats": "Noch keine Unterhaltungen.",
+      "openSaved": "Gespeichertes öffnen",
+      "savedCount": "{{count}} gespeichert",
+      "noSaved": "Noch nichts gespeichert.",
+      "openMatches": "Matches öffnen",
+      "matchCount": "{{count}} Matches",
+      "noMatches": "Noch keine Matches.",
+      "people": "Leute",
+      "friendCount": "{{count}} Freund*innen",
+      "findPeople": "Leute finden",
+      "noFriends": "Noch keine Freund*innen.",
+      "wantsToConnect": "Möchte sich vernetzen"
     },
     "messages": {
-      "chats": "[DE] Chats",
-      "people": "[DE] People"
+      "chats": "Chats",
+      "people": "Leute"
     },
     "plans": {
-      "trips": "[DE] Your trips"
+      "trips": "Deine Reisen"
     }
   }
 }

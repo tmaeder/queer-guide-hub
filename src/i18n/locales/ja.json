@@ -2834,7 +2834,7 @@
       "chats": "チャット",
       "mail": "メール",
       "alerts": "アラート",
-      "matches": "[JA] Matches"
+      "matches": "マッチ"
     },
     "compose": {
       "label": "作成",
@@ -3162,9 +3162,9 @@
       "saved": "保存済み",
       "news": "ニュース",
       "trips": "旅行",
-      "overview": "[JA] Overview",
-      "messages": "[JA] Messages",
-      "plans": "[JA] Plans"
+      "overview": "概要",
+      "messages": "メッセージ",
+      "plans": "プラン"
     },
     "calendar": {
       "title": "今後の予定",
@@ -3190,12 +3190,12 @@
       "dating": "デート",
       "datingTitle": "あなたのデートデッキ",
       "datingBody": "マッチと会話を見る。",
-      "datingMatches": "[JA] {{count}} matches",
-      "browseDeck": "[JA] Browse deck",
-      "browseDeckBody": "[JA] Find new people to match with.",
-      "yourMatches": "[JA] Your matches",
-      "yourMatchesBody": "[JA] {{count}} match conversations",
-      "yourMatchesEmpty": "[JA] No matches yet."
+      "datingMatches": "マッチ{{count}}件",
+      "browseDeck": "デッキを見る",
+      "browseDeckBody": "マッチする新しい人を見つけよう。",
+      "yourMatches": "あなたのマッチ",
+      "yourMatchesBody": "マッチのやり取り{{count}}件",
+      "yourMatchesEmpty": "まだマッチがありません。"
     },
     "news": {
       "title": "ニュース",
@@ -3207,29 +3207,29 @@
       "savedSearches": "保存した検索"
     },
     "overview": {
-      "title": "[JA] Overview",
-      "seePlans": "[JA] All plans",
-      "unread": "[JA] {{count}} unread",
-      "openMessages": "[JA] Open inbox",
-      "noChats": "[JA] No conversations yet.",
-      "openSaved": "[JA] Open saved",
-      "savedCount": "[JA] {{count}} saved",
-      "noSaved": "[JA] Nothing saved yet.",
-      "openMatches": "[JA] Open matches",
-      "matchCount": "[JA] {{count}} matches",
-      "noMatches": "[JA] No matches yet.",
-      "people": "[JA] People",
-      "friendCount": "[JA] {{count}} friends",
-      "findPeople": "[JA] Find people",
-      "noFriends": "[JA] No friends yet.",
-      "wantsToConnect": "[JA] Wants to connect"
+      "title": "概要",
+      "seePlans": "すべてのプラン",
+      "unread": "未読 {{count}} 件",
+      "openMessages": "受信箱を開く",
+      "noChats": "まだ会話がありません。",
+      "openSaved": "保存済みを開く",
+      "savedCount": "保存済み{{count}}件",
+      "noSaved": "まだ何も保存されていません。",
+      "openMatches": "マッチを開く",
+      "matchCount": "マッチ{{count}}件",
+      "noMatches": "まだマッチがありません。",
+      "people": "ユーザー",
+      "friendCount": "友達{{count}}人",
+      "findPeople": "ユーザーを探す",
+      "noFriends": "まだ友達がいません。",
+      "wantsToConnect": "つながりを希望"
     },
     "messages": {
-      "chats": "[JA] Chats",
-      "people": "[JA] People"
+      "chats": "チャット",
+      "people": "ユーザー"
     },
     "plans": {
-      "trips": "[JA] Your trips"
+      "trips": "あなたの旅行"
     }
   }
 }
