@@ -2837,6 +2837,7 @@
       "mail": "Posta",
       "alerts": "Avvisi",
       "matches": "Match",
+      "matchesUnread": "{{count}} nuovi match"
       "matchesUnread": "[IT] {{count}} new matches"
     },
     "compose": {
@@ -2899,6 +2900,7 @@
       "anEvent": "Evento",
       "aVenue": "Luogo"
     },
+    "matchTag": "Match"
     "matchTag": "[IT] Match"
   },
   "extension": {

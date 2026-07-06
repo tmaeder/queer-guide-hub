@@ -2837,6 +2837,7 @@
       "mail": "Correo",
       "alerts": "Alertas",
       "matches": "Coincidencias",
+      "matchesUnread": "{{count}} coincidencias nuevas"
       "matchesUnread": "[ES] {{count}} new matches"
     },
     "compose": {
@@ -2899,6 +2900,7 @@
       "anEvent": "Evento",
       "aVenue": "Lugar"
     },
+    "matchTag": "Coincidencia"
     "matchTag": "[ES] Match"
   },
   "extension": {

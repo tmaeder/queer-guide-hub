@@ -2837,6 +2837,7 @@
       "mail": "E-Mail",
       "alerts": "Hinweise",
       "matches": "Matches",
+      "matchesUnread": "{{count}} neue Matches"
       "matchesUnread": "[DE] {{count}} new matches"
     },
     "compose": {
@@ -2899,6 +2900,7 @@
       "anEvent": "Event",
       "aVenue": "Ort"
     },
+    "matchTag": "Match"
     "matchTag": "[DE] Match"
   },
   "extension": {

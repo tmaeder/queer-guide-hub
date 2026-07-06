@@ -2871,6 +2871,7 @@
       "mail": "Почта",
       "alerts": "Оповещения",
       "matches": "Совпадения",
+      "matchesUnread": "{{count}} новых совпадений"
       "matchesUnread": "[RU] {{count}} new matches"
     },
     "compose": {
@@ -2933,6 +2934,7 @@
       "anEvent": "Событие",
       "aVenue": "Место"
     },
+    "matchTag": "Совпадение"
     "matchTag": "[RU] Match"
   },
   "extension": {

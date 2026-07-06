@@ -2835,6 +2835,7 @@
       "mail": "メール",
       "alerts": "アラート",
       "matches": "マッチ",
+      "matchesUnread": "新しいマッチ{{count}}件"
       "matchesUnread": "[JA] {{count}} new matches"
     },
     "compose": {
@@ -2897,6 +2898,7 @@
       "anEvent": "イベント",
       "aVenue": "会場"
     },
+    "matchTag": "マッチ"
     "matchTag": "[JA] Match"
   },
   "extension": {

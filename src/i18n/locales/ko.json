@@ -2835,6 +2835,7 @@
       "mail": "메일",
       "alerts": "알림",
       "matches": "매치",
+      "matchesUnread": "새 매치 {{count}}개"
       "matchesUnread": "[KO] {{count}} new matches"
     },
     "compose": {
@@ -2897,6 +2898,7 @@
       "anEvent": "이벤트",
       "aVenue": "장소"
     },
+    "matchTag": "매치"
     "matchTag": "[KO] Match"
   },
   "extension": {

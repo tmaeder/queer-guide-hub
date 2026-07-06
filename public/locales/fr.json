@@ -2841,6 +2841,7 @@
       "mail": "Courrier",
       "alerts": "Alertes",
       "matches": "Matchs",
+      "matchesUnread": "{{count}} nouveaux matchs"
       "matchesUnread": "[FR] {{count}} new matches"
     },
     "compose": {
@@ -2903,6 +2904,7 @@
       "anEvent": "Événement",
       "aVenue": "Lieu"
     },
+    "matchTag": "Match"
     "matchTag": "[FR] Match"
   },
   "extension": {

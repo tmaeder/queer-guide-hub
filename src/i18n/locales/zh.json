@@ -2835,6 +2835,7 @@
       "mail": "邮件",
       "alerts": "提醒",
       "matches": "匹配",
+      "matchesUnread": "{{count}} 个新配对"
       "matchesUnread": "[ZH] {{count}} new matches"
     },
     "compose": {
@@ -2897,6 +2898,7 @@
       "anEvent": "活动",
       "aVenue": "场所"
     },
+    "matchTag": "配对"
     "matchTag": "[ZH] Match"
   },
   "extension": {
