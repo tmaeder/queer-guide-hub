@@ -35,6 +35,8 @@ import { EntityShareCard } from '@/components/messaging/chat/EntityShareCard';
 import { isEntityShareMeta } from '@/components/messaging/chat/entityShare';
 import { SubmissionChatCard } from '@/components/messaging/chat/SubmissionChatCard';
 import { isSubmissionMeta } from '@/components/messaging/chat/submissionShare';
+import { ItineraryChatCard } from '@/components/messaging/chat/ItineraryChatCard';
+import { isItineraryMeta } from '@/components/messaging/chat/itineraryShare';
 
 interface MessageItemProps {
   message: Message;
@@ -149,6 +151,8 @@ export const MessageItem = ({
 
           {!isDeleted && message.message_type === 'entity_share' && isEntityShareMeta(message.metadata) ? (
             <EntityShareCard meta={message.metadata} note={message.content} />
+          ) : !isDeleted && message.message_type === 'itinerary' && isItineraryMeta(message.metadata) ? (
+            <ItineraryChatCard meta={message.metadata} />
           ) : !isDeleted && message.message_type === 'submission' && isSubmissionMeta(message.metadata) ? (
             <SubmissionChatCard messageId={message.id} meta={message.metadata} />
           ) : jumbo > 0 && !isDeleted ? (
