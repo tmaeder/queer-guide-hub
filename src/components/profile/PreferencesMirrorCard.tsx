@@ -19,9 +19,9 @@ interface PreferencesMirrorCardProps {
 }
 
 /**
- * Review-only mirror of preferences captured in context. Settings can CLEAR a
- * preference but never set one — adding happens where you search, filter and
- * plan trips, so the payoff is visible at the moment of capture.
+ * Read-only summary of the preferences that power search, trips and recs. Edit
+ * travel prefs in the Travel preferences section above; vibes are picked in
+ * onboarding. Each row can also be cleared (X) from here.
  */
 export function PreferencesMirrorCard({ profile, onUpdate }: PreferencesMirrorCardProps) {
   const p = (profile ?? {}) as Record<string, unknown>;
@@ -51,8 +51,8 @@ export function PreferencesMirrorCard({ profile, onUpdate }: PreferencesMirrorCa
       <CardHeader>
         <CardTitle>Your preferences</CardTitle>
         <p className="text-sm text-muted-foreground">
-          Saved from your searches, filters and trips. Remove anything here — to add or change,
-          use the filters where you search.
+          What we use to rank places, stays and trips for you. Edit travel prefs in
+          Travel preferences above; remove anything here.
         </p>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
@@ -95,8 +95,8 @@ export function PreferencesMirrorCard({ profile, onUpdate }: PreferencesMirrorCa
           <div className="flex flex-col gap-2">
             <div className="flex items-baseline justify-between">
               <p className="text-sm font-medium">Budget</p>
-              <LocalizedLink to="/trips" className="text-xs underline underline-offset-4">
-                Set in trip planner
+              <LocalizedLink to="/settings?section=travel" className="text-xs underline underline-offset-4">
+                Edit in Travel preferences
               </LocalizedLink>
             </div>
             <div className="flex flex-wrap gap-2">
@@ -121,8 +121,8 @@ export function PreferencesMirrorCard({ profile, onUpdate }: PreferencesMirrorCa
               <p className="text-sm font-medium flex items-center gap-2">
                 <Accessibility size={14} aria-hidden="true" /> Accessibility needs
               </p>
-              <LocalizedLink to="/venues" className="text-xs underline underline-offset-4">
-                Edit in venue filters
+              <LocalizedLink to="/settings?section=travel" className="text-xs underline underline-offset-4">
+                Edit in Travel preferences
               </LocalizedLink>
             </div>
             <div className="flex flex-wrap gap-2">
@@ -152,10 +152,7 @@ export function PreferencesMirrorCard({ profile, onUpdate }: PreferencesMirrorCa
               <LocalizedLink to="/onboarding/search">Vibes & languages</LocalizedLink>
             </Button>
             <Button asChild variant="outline" size="sm" className="rounded-element">
-              <LocalizedLink to="/venues">Accessibility filters</LocalizedLink>
-            </Button>
-            <Button asChild variant="outline" size="sm" className="rounded-element">
-              <LocalizedLink to="/trips">Trip preferences</LocalizedLink>
+              <LocalizedLink to="/settings?section=travel">Travel preferences</LocalizedLink>
             </Button>
           </div>
         )}
