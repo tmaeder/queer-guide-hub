@@ -2833,7 +2833,8 @@
       "all": "전체",
       "chats": "채팅",
       "mail": "메일",
-      "alerts": "알림"
+      "alerts": "알림",
+      "matches": "[KO] Matches"
     },
     "compose": {
       "label": "작성",
@@ -3160,7 +3161,10 @@
       "contacts": "연락처",
       "saved": "저장됨",
       "news": "뉴스",
-      "trips": "여행"
+      "trips": "여행",
+      "overview": "[KO] Overview",
+      "messages": "[KO] Messages",
+      "plans": "[KO] Plans"
     },
     "calendar": {
       "title": "다가오는 일정",
@@ -3185,7 +3189,13 @@
       "groups": "그룹",
       "dating": "데이트",
       "datingTitle": "내 데이트 덱",
-      "datingBody": "매치와 대화를 살펴보세요."
+      "datingBody": "매치와 대화를 살펴보세요.",
+      "datingMatches": "[KO] {{count}} matches",
+      "browseDeck": "[KO] Browse deck",
+      "browseDeckBody": "[KO] Find new people to match with.",
+      "yourMatches": "[KO] Your matches",
+      "yourMatchesBody": "[KO] {{count}} match conversations",
+      "yourMatchesEmpty": "[KO] No matches yet."
     },
     "news": {
       "title": "뉴스",
@@ -3195,6 +3205,31 @@
       "tagsEmpty": "태그를 팔로우하면 관련 기사가 표시됩니다.",
       "tagsNoArticles": "팔로우한 태그에 새 기사가 없습니다.",
       "savedSearches": "저장한 검색"
+    },
+    "overview": {
+      "title": "[KO] Overview",
+      "seePlans": "[KO] All plans",
+      "unread": "[KO] {{count}} unread",
+      "openMessages": "[KO] Open inbox",
+      "noChats": "[KO] No conversations yet.",
+      "openSaved": "[KO] Open saved",
+      "savedCount": "[KO] {{count}} saved",
+      "noSaved": "[KO] Nothing saved yet.",
+      "openMatches": "[KO] Open matches",
+      "matchCount": "[KO] {{count}} matches",
+      "noMatches": "[KO] No matches yet.",
+      "people": "[KO] People",
+      "friendCount": "[KO] {{count}} friends",
+      "findPeople": "[KO] Find people",
+      "noFriends": "[KO] No friends yet.",
+      "wantsToConnect": "[KO] Wants to connect"
+    },
+    "messages": {
+      "chats": "[KO] Chats",
+      "people": "[KO] People"
+    },
+    "plans": {
+      "trips": "[KO] Your trips"
     }
   }
 }

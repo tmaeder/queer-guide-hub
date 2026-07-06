@@ -2833,7 +2833,8 @@
       "all": "全部",
       "chats": "聊天",
       "mail": "邮件",
-      "alerts": "提醒"
+      "alerts": "提醒",
+      "matches": "[ZH] Matches"
     },
     "compose": {
       "label": "撰写",
@@ -3160,7 +3161,10 @@
       "contacts": "联系人",
       "saved": "已收藏",
       "news": "新闻",
-      "trips": "行程"
+      "trips": "行程",
+      "overview": "[ZH] Overview",
+      "messages": "[ZH] Messages",
+      "plans": "[ZH] Plans"
     },
     "calendar": {
       "title": "即将到来",
@@ -3185,7 +3189,13 @@
       "groups": "群组",
       "dating": "约会",
       "datingTitle": "你的约会卡组",
-      "datingBody": "浏览匹配和对话。"
+      "datingBody": "浏览匹配和对话。",
+      "datingMatches": "[ZH] {{count}} matches",
+      "browseDeck": "[ZH] Browse deck",
+      "browseDeckBody": "[ZH] Find new people to match with.",
+      "yourMatches": "[ZH] Your matches",
+      "yourMatchesBody": "[ZH] {{count}} match conversations",
+      "yourMatchesEmpty": "[ZH] No matches yet."
     },
     "news": {
       "title": "新闻",
@@ -3195,6 +3205,31 @@
       "tagsEmpty": "关注标签即可在此看到相关文章。",
       "tagsNoArticles": "你关注的标签暂无新内容。",
       "savedSearches": "已保存的搜索"
+    },
+    "overview": {
+      "title": "[ZH] Overview",
+      "seePlans": "[ZH] All plans",
+      "unread": "[ZH] {{count}} unread",
+      "openMessages": "[ZH] Open inbox",
+      "noChats": "[ZH] No conversations yet.",
+      "openSaved": "[ZH] Open saved",
+      "savedCount": "[ZH] {{count}} saved",
+      "noSaved": "[ZH] Nothing saved yet.",
+      "openMatches": "[ZH] Open matches",
+      "matchCount": "[ZH] {{count}} matches",
+      "noMatches": "[ZH] No matches yet.",
+      "people": "[ZH] People",
+      "friendCount": "[ZH] {{count}} friends",
+      "findPeople": "[ZH] Find people",
+      "noFriends": "[ZH] No friends yet.",
+      "wantsToConnect": "[ZH] Wants to connect"
+    },
+    "messages": {
+      "chats": "[ZH] Chats",
+      "people": "[ZH] People"
+    },
+    "plans": {
+      "trips": "[ZH] Your trips"
     }
   }
 }

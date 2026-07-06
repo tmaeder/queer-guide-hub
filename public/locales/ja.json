@@ -2833,7 +2833,8 @@
       "all": "すべて",
       "chats": "チャット",
       "mail": "メール",
-      "alerts": "アラート"
+      "alerts": "アラート",
+      "matches": "[JA] Matches"
     },
     "compose": {
       "label": "作成",
@@ -3160,7 +3161,10 @@
       "contacts": "連絡先",
       "saved": "保存済み",
       "news": "ニュース",
-      "trips": "旅行"
+      "trips": "旅行",
+      "overview": "[JA] Overview",
+      "messages": "[JA] Messages",
+      "plans": "[JA] Plans"
     },
     "calendar": {
       "title": "今後の予定",
@@ -3185,7 +3189,13 @@
       "groups": "グループ",
       "dating": "デート",
       "datingTitle": "あなたのデートデッキ",
-      "datingBody": "マッチと会話を見る。"
+      "datingBody": "マッチと会話を見る。",
+      "datingMatches": "[JA] {{count}} matches",
+      "browseDeck": "[JA] Browse deck",
+      "browseDeckBody": "[JA] Find new people to match with.",
+      "yourMatches": "[JA] Your matches",
+      "yourMatchesBody": "[JA] {{count}} match conversations",
+      "yourMatchesEmpty": "[JA] No matches yet."
     },
     "news": {
       "title": "ニュース",
@@ -3195,6 +3205,31 @@
       "tagsEmpty": "タグをフォローすると関連記事が表示されます。",
       "tagsNoArticles": "フォロー中のタグに新着はまだありません。",
       "savedSearches": "保存した検索"
+    },
+    "overview": {
+      "title": "[JA] Overview",
+      "seePlans": "[JA] All plans",
+      "unread": "[JA] {{count}} unread",
+      "openMessages": "[JA] Open inbox",
+      "noChats": "[JA] No conversations yet.",
+      "openSaved": "[JA] Open saved",
+      "savedCount": "[JA] {{count}} saved",
+      "noSaved": "[JA] Nothing saved yet.",
+      "openMatches": "[JA] Open matches",
+      "matchCount": "[JA] {{count}} matches",
+      "noMatches": "[JA] No matches yet.",
+      "people": "[JA] People",
+      "friendCount": "[JA] {{count}} friends",
+      "findPeople": "[JA] Find people",
+      "noFriends": "[JA] No friends yet.",
+      "wantsToConnect": "[JA] Wants to connect"
+    },
+    "messages": {
+      "chats": "[JA] Chats",
+      "people": "[JA] People"
+    },
+    "plans": {
+      "trips": "[JA] Your trips"
     }
   }
 }
