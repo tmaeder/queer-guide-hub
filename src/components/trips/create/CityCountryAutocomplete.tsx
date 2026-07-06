@@ -196,7 +196,9 @@ export function CityCountryAutocomplete({
             setOpen(true);
           }}
           onKeyDown={handleKeyDown}
+          role="combobox"
           aria-autocomplete="list"
+          aria-haspopup="listbox"
           aria-expanded={open}
           aria-controls={`${id}-listbox`}
           className="pl-10 pr-10"

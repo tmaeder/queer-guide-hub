@@ -1,0 +1,26 @@
+name = "queer-guide-worker-travel-inbox"
+main = "src/index.ts"
+compatibility_date = "2026-04-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Email Worker binding — the CATCH-ALL address on the apex `queer.guide` zone is
+# pointed at this worker in the Cloudflare dashboard under Email Routing → Email
+# Workers. The existing specific role-address rules (submit@, tip@, press@, bug@,
+# feedback@) keep their own routes and take priority, so they never reach here.
+
+[vars]
+INBOX_DOMAIN = "queer.guide"
+# Cloudflare Workers AI model — Llama 3.1 8B Instruct (fast + cheap).
+WORKERS_AI_MODEL = "@cf/meta/llama-3.1-8b-instruct"
+
+# Workers AI binding — no API key needed, billed via the CF account.
+[ai]
+binding = "AI"
+
+# Secrets (set via `wrangler secret put NAME`):
+#   SUPABASE_URL              - https://<project>.supabase.co
+#   SUPABASE_SERVICE_ROLE_KEY - service-role key (bypasses RLS, server-only)
+#   INBOX_ENCRYPTION_KEY      - 32-byte base64 AES-GCM key (shared with trip-inbox)
+
+[observability]
+enabled = true

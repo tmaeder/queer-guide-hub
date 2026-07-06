@@ -102,8 +102,8 @@ export function PrideTrips({ events, selectedId, onSelect }: PrideTripsProps) {
         <h2 id="trips-heading" className="text-title font-medium">
           {t('pride.trips.title')}
         </h2>
-        <span className="text-xs2 text-foreground/50">Up to 4 prides · within 21 days · &lt;4000&nbsp;km</span>
-        <span className="text-xs2 text-foreground/50">{t('pride.trips.subtitle')}</span>
+        <span className="text-xs2 text-muted-foreground">Up to 4 prides · within 21 days · &lt;4000&nbsp;km</span>
+        <span className="text-xs2 text-muted-foreground">{t('pride.trips.subtitle')}</span>
       </div>
 
       <div className="grid lg:grid-cols-2 gap-4">

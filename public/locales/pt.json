@@ -2835,7 +2835,8 @@
       "all": "Tudo",
       "chats": "Conversas",
       "mail": "Correio",
-      "alerts": "Alertas"
+      "alerts": "Alertas",
+      "matches": "Matches"
     },
     "compose": {
       "label": "Compor",
@@ -3162,7 +3163,10 @@
       "contacts": "Contatos",
       "saved": "Salvos",
       "news": "Notícias",
-      "trips": "Viagens"
+      "trips": "Viagens",
+      "overview": "Visão geral",
+      "messages": "Mensagens",
+      "plans": "Planos"
     },
     "calendar": {
       "title": "Em breve",
@@ -3187,7 +3191,13 @@
       "groups": "Grupos",
       "dating": "Encontros",
       "datingTitle": "Seu baralho de encontros",
-      "datingBody": "Veja matches e conversas."
+      "datingBody": "Veja matches e conversas.",
+      "datingMatches": "{{count}} matches",
+      "browseDeck": "Ver perfis",
+      "browseDeckBody": "Encontre pessoas novas para dar match.",
+      "yourMatches": "Seus matches",
+      "yourMatchesBody": "{{count}} conversas de match",
+      "yourMatchesEmpty": "Ainda sem matches."
     },
     "news": {
       "title": "Notícias",
@@ -3197,6 +3207,31 @@
       "tagsEmpty": "Siga tags para ver artigos aqui.",
       "tagsNoArticles": "Nada novo das suas tags ainda.",
       "savedSearches": "Buscas salvas"
+    },
+    "overview": {
+      "title": "Visão geral",
+      "seePlans": "Todos os planos",
+      "unread": "{{count}} por ler",
+      "openMessages": "Abrir caixa de entrada",
+      "noChats": "Ainda sem conversas.",
+      "openSaved": "Abrir salvos",
+      "savedCount": "{{count}} salvos",
+      "noSaved": "Nada salvo ainda.",
+      "openMatches": "Abrir matches",
+      "matchCount": "{{count}} matches",
+      "noMatches": "Ainda sem matches.",
+      "people": "Pessoas",
+      "friendCount": "{{count}} amizades",
+      "findPeople": "Encontrar pessoas",
+      "noFriends": "Ainda sem amizades.",
+      "wantsToConnect": "Quer se conectar"
+    },
+    "messages": {
+      "chats": "Conversas",
+      "people": "Pessoas"
+    },
+    "plans": {
+      "trips": "Suas viagens"
     }
   }
 }

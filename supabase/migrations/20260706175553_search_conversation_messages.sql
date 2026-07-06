@@ -1,7 +1,8 @@
--- In-thread message search for /hub/messages.
--- SECURITY INVOKER so the existing messages RLS ("Enhanced message privacy")
--- applies: a caller only ever sees hits in conversations they participate in.
--- We also short-circuit on membership to avoid probing foreign conversations.
+-- Recovery shim: this migration was applied to the remote DB (via MCP apply_migration
+-- by a concurrent session) but its file was never committed, causing db-push drift that
+-- blocked all subsequent migrations. Content recovered verbatim from
+-- supabase_migrations.schema_migrations(version='20260706175553'). Idempotent — already
+-- present in remote history, so db push records the version match without re-running.
 
 CREATE OR REPLACE FUNCTION public.search_conversation_messages(
   p_conversation_id uuid,

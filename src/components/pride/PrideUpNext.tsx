@@ -1,5 +1,4 @@
 import { useMemo, useState } from 'react';
-import { Link } from 'react-router';
 import { useTranslation, type TFunction } from 'react-i18next';
 import { Calendar, MapPin, Star } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -62,7 +61,7 @@ export function PrideUpNext({ events, selectedId, onSelect, limit = 8 }: PrideUp
         <h2 id="upnext-heading" className="text-title font-medium">
           {t('pride.upNext.title')}
         </h2>
-        <span className="text-xs2 text-foreground/50">{t('pride.upNext.subtitle')}</span>
+        <span className="text-xs2 text-muted-foreground">{t('pride.upNext.subtitle')}</span>
       </div>
       <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-thin -mx-2 px-2 snap-x">
         {upcoming.map((e) => {
@@ -81,29 +80,25 @@ export function PrideUpNext({ events, selectedId, onSelect, limit = 8 }: PrideUp
                 isSelected ? 'border-foreground' : 'border-foreground/15 hover:border-foreground',
               )}
             >
-              <div className="flex items-center justify-between text-xs2 uppercase tracking-label text-foreground/60 mb-2">
+              <div className="flex items-center justify-between text-xs2 uppercase tracking-label text-muted-foreground mb-2">
                 <span>{relativeDateLabel(e.start_date, now, t)}</span>
                 {e.is_featured && <Star className="size-3 fill-foreground text-foreground" aria-label={t('pride.featured')} />}
               </div>
               <div className="flex items-baseline gap-2 mb-2">
                 <span className="text-display leading-none font-medium tabular-nums">{day}</span>
-                <span className="text-title text-foreground/60 leading-none">{monthShort}</span>
+                <span className="text-title text-muted-foreground leading-none">{monthShort}</span>
               </div>
-              <p className="text-sm font-medium leading-tight mb-1 line-clamp-2">
-                <Link
-                  to={`/events/${e.slug}`}
-                  onClick={(ev) => ev.stopPropagation()}
-                  className="hover:underline"
-                >
-                  {e.title}
-                </Link>
-              </p>
-              <p className="flex items-center gap-1 text-xs2 text-foreground/60">
+              {/* Title is plain text: the card is a select-toggle that opens the
+                inline detail panel — a nested <Link> here made the button contain
+                a focusable descendant (axe nested-interactive) and the tiny link
+                failed target-size. Navigation lives in the detail panel. */}
+              <p className="text-sm font-medium leading-tight mb-1 line-clamp-2">{e.title}</p>
+              <p className="flex items-center gap-1 text-xs2 text-muted-foreground">
                 <MapPin className="size-3" />
                 {[e.city, e.country].filter(Boolean).join(', ')}
               </p>
               {e.verification_status !== 'verified' && (
-                <p className="mt-2 inline-flex items-center gap-1 text-2xs text-foreground/50">
+                <p className="mt-2 inline-flex items-center gap-1 text-2xs text-muted-foreground">
                   <Calendar className="size-3" /> {t('pride.estimated')}
                 </p>
               )}

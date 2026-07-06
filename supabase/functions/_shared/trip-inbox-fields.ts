@@ -58,7 +58,7 @@ export function parseProposedFields(text: string): {
   const fence = text.match(/```fields\s*([\s\S]*?)```/)
   if (!fence) return { fields: null, reply: text.trim() }
   const reply = text.replace(fence[0], '').trim()
-  let obj: Record<string, unknown> = {}
+  let obj: Record<string, unknown>
   try {
     obj = JSON.parse(fence[1].trim()) as Record<string, unknown>
   } catch {

@@ -160,7 +160,7 @@ function ProtectionRow({
                   ? 'bg-foreground text-background'
                   : isNo
                     ? 'border border-border text-muted-foreground'
-                    : 'bg-muted text-muted-foreground/50')
+                    : 'bg-muted text-muted-foreground')
               }
             >
               {dim}

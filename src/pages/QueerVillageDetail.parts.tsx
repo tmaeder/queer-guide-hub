@@ -100,7 +100,7 @@ export function VillageHero({ village, isFavorited, onFavoriteToggle, onContentU
           />
           {village.featured && (
             <Badge
-              style={{ top: 12, right: 12, backgroundColor: 'hsl(var(--primary))', color: 'white' }}
+              style={{ top: 12, right: 12, backgroundColor: 'hsl(var(--primary))', color: 'hsl(var(--primary-foreground))' }}
               className="absolute"
             >
               Featured
@@ -454,8 +454,10 @@ export function VillageMapTab({
 export function VillageTabLabel({ icon: Icon, label }: { icon: typeof Landmark; label: string }) {
   return (
     <span className="inline-flex items-center gap-1.5">
-      <Icon style={{ height: 16, width: 16 }} />
-      <span className="hidden sm:inline">{label}</span>
+      <Icon aria-hidden="true" style={{ height: 16, width: 16 }} />
+      {/* sr-only (not hidden) on mobile so the tab keeps an accessible name
+        when the label is visually collapsed to the icon — WCAG 4.1.2. */}
+      <span className="sr-only sm:not-sr-only">{label}</span>
     </span>
   );
 }

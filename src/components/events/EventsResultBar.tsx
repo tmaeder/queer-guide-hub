@@ -123,6 +123,7 @@ export function EventsResultBar({
             size="sm"
             onClick={() => onViewModeChange('grid')}
             aria-pressed={viewMode === 'grid'}
+            aria-label={t('pages.events.gridView', 'Grid')}
             style={{ display: 'inline-flex', gap: 6 }}
           >
             <Grid size={16} />
@@ -133,6 +134,7 @@ export function EventsResultBar({
             size="sm"
             onClick={() => onViewModeChange('timeline')}
             aria-pressed={viewMode === 'timeline'}
+            aria-label={t('pages.events.timelineView', 'Timeline')}
             style={{ display: 'inline-flex', gap: 6 }}
           >
             <GanttChart size={16} />
@@ -143,6 +145,7 @@ export function EventsResultBar({
             size="sm"
             onClick={() => onViewModeChange('map')}
             aria-pressed={viewMode === 'map'}
+            aria-label={t('pages.events.mapView', 'Map')}
             style={{ display: 'inline-flex', gap: 6 }}
           >
             <MapPin size={16} />

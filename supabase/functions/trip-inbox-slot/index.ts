@@ -4,8 +4,9 @@
  * user pastes raw confirmation text instead of forwarding the email.
  *
  * Request shapes:
- *   { item_id: uuid }                 → slot existing parsed inbox item
- *   { trip_id: uuid, raw_text: text } → parse + create inbox item + (auto-slot if confident)
+ *   { item_id: uuid }                        → slot existing parsed trip inbox item
+ *   { trip_id: uuid, raw_text: text }        → parse + create inbox item + (auto-slot if confident)
+ *   { trip_id: uuid, travel_item_id: uuid }  → slot a per-user travel_inbox_items row into a trip
  *
  * Auth:
  *   - User JWT: scoped by RLS (must be trip member).
@@ -23,6 +24,7 @@ import { anthropicMessages } from '../_shared/anthropic-shim.ts'
 
 interface SlotByItem { item_id: string }
 interface SlotByPaste { trip_id: string; raw_text: string; subject?: string }
+interface SlotByTravelItem { trip_id: string; travel_item_id: string }
 
 const SYSTEM_PROMPT = [
   'You are a strict JSON extractor for travel booking confirmation emails.',
@@ -132,6 +134,74 @@ async function slotItem(
   return { reservation_id: created.id }
 }
 
+/**
+ * Slot a per-user `travel_inbox_items` row (from the /hub Travel Inbox) into a
+ * trip as a reservation. Owned by the user who forwarded the email; on success
+ * the linked itinerary card's metadata.status flips to 'slotted'.
+ */
+async function slotTravelItem(
+  service: ReturnType<typeof getServiceClient>,
+  travelItemId: string,
+  tripId: string,
+  ownerUserId: string,
+): Promise<{ reservation_id: string } | { error: string; status: number }> {
+  const { data: item, error: itemErr } = await service
+    .from('travel_inbox_items')
+    .select('*')
+    .eq('id', travelItemId)
+    .maybeSingle()
+  if (itemErr) return { error: itemErr.message, status: 500 }
+  if (!item) return { error: 'item_not_found', status: 404 }
+  if (item.user_id !== ownerUserId) return { error: 'forbidden', status: 403 }
+  if (item.status === 'slotted' && item.slotted_reservation_id) {
+    return { reservation_id: item.slotted_reservation_id }
+  }
+
+  const resInsert = {
+    user_id: ownerUserId,
+    trip_id: tripId,
+    source: 'inbox',
+    type: TYPE_TO_RES_TYPE[(item.parsed_type ?? 'unknown') as ParsedBooking['type']] ?? 'other',
+    title: item.parsed_title || item.raw_subject || 'Forwarded booking',
+    status: 'confirmed',
+    start_at: item.parsed_start_at,
+    end_at: item.parsed_end_at,
+    provider: item.parsed_vendor,
+    confirmation_code: item.parsed_confirmation,
+    total_amount: item.parsed_price,
+    currency: item.parsed_currency,
+    notes: item.parsed_location ? `Location: ${item.parsed_location}` : null,
+  }
+
+  const { data: created, error: insErr } = await service
+    .from('reservations')
+    .insert(resInsert)
+    .select('id')
+    .single()
+  if (insErr || !created) return { error: insErr?.message ?? 'insert_failed', status: 500 }
+
+  await service
+    .from('travel_inbox_items')
+    .update({ status: 'slotted', slotted_reservation_id: created.id })
+    .eq('id', travelItemId)
+
+  // Reflect the new state on the itinerary card in /hub/messages.
+  if (item.message_id) {
+    const { data: msg } = await service
+      .from('messages')
+      .select('metadata')
+      .eq('id', item.message_id)
+      .maybeSingle()
+    const meta = (msg?.metadata ?? {}) as Record<string, unknown>
+    await service
+      .from('messages')
+      .update({ metadata: { ...meta, status: 'slotted' } })
+      .eq('id', item.message_id)
+  }
+
+  return { reservation_id: created.id }
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
   if (req.method !== 'POST') return errorResponse('method_not_allowed', 405, req)
@@ -153,8 +223,43 @@ Deno.serve(async (req) => {
     userId = data.user.id
   }
 
-  const body = await req.json().catch(() => null) as SlotByItem | SlotByPaste | null
+  const body = await req.json().catch(() => null) as SlotByItem | SlotByPaste | SlotByTravelItem | null
   if (!body) return errorResponse('invalid_body', 400, req)
+
+  // Branch C: slot a per-user travel_inbox_items row into a trip.
+  if ('travel_item_id' in body && body.travel_item_id && body.trip_id) {
+    if (!isServiceRole) {
+      // Must be a member of the target trip — confirm via RLS-scoped read.
+      const userClient = createClient(
+        Deno.env.get('SUPABASE_URL')!,
+        Deno.env.get('SUPABASE_ANON_KEY')!,
+        { global: { headers: { Authorization: `Bearer ${token}` } } },
+      )
+      const { data: trip } = await userClient
+        .from('trips')
+        .select('id')
+        .eq('id', body.trip_id)
+        .maybeSingle()
+      if (!trip) return errorResponse('forbidden', 403, req)
+    }
+
+    // Owner of the travel item = the user who forwarded it. Service-role calls
+    // fall back to the item's own user_id.
+    let ownerUserId = userId
+    if (isServiceRole) {
+      const { data: ti } = await service
+        .from('travel_inbox_items')
+        .select('user_id')
+        .eq('id', body.travel_item_id)
+        .maybeSingle()
+      ownerUserId = ti?.user_id ?? null
+    }
+    if (!ownerUserId) return errorResponse('item_not_found', 404, req)
+
+    const result = await slotTravelItem(service, body.travel_item_id, body.trip_id, ownerUserId)
+    if ('error' in result) return errorResponse(result.error, result.status, req)
+    return jsonResponse({ success: true, ...result }, 200, req)
+  }
 
   // Branch A: slot existing item.
   if ('item_id' in body && body.item_id) {

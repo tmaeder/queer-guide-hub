@@ -61,6 +61,8 @@ export interface Conversation {
   conversation_type: string;
   title: string | null;
   description: string | null;
+  /** Marks a system thread, e.g. 'travel_inbox' for the email-forwarding inbox. */
+  system_kind?: string | null;
   participants?: ConversationParticipant[];
   last_message?: Message;
 }

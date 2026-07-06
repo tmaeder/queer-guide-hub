@@ -463,11 +463,11 @@ export default function HelpHotlines() {
 
             <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap">
               <div className="min-w-[180px] flex-[1_1_180px]">
-                <Label className="mb-1 block text-xs font-semibold">
+                <Label htmlFor="help-filter-country" className="mb-1 block text-xs font-semibold">
                   {t('help.filter_country', 'Country')}
                 </Label>
                 <Select value={countryFilter} onValueChange={setCountryFilter}>
-                  <SelectTrigger>
+                  <SelectTrigger id="help-filter-country">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -484,11 +484,11 @@ export default function HelpHotlines() {
               </div>
 
               <div className="min-w-[180px] flex-[1_1_180px]">
-                <Label className="mb-1 block text-xs font-semibold">
+                <Label htmlFor="help-filter-topic" className="mb-1 block text-xs font-semibold">
                   {t('help.filter_topic', 'Topic')}
                 </Label>
                 <Select value={topicFilter} onValueChange={setTopicFilter}>
-                  <SelectTrigger>
+                  <SelectTrigger id="help-filter-topic">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -504,11 +504,11 @@ export default function HelpHotlines() {
 
               {availableIntersections.length > 0 && (
                 <div className="min-w-[180px] flex-[1_1_180px]">
-                  <Label className="mb-1 block text-xs font-semibold">
+                  <Label htmlFor="help-filter-intersection" className="mb-1 block text-xs font-semibold">
                     {t('help.filter_intersection', 'Population')}
                   </Label>
                   <Select value={intersectionFilter} onValueChange={setIntersectionFilter}>
-                    <SelectTrigger>
+                    <SelectTrigger id="help-filter-intersection">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>

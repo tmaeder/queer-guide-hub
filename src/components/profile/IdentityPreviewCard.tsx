@@ -5,7 +5,6 @@ import { Progress } from '@/components/ui/progress';
 import { Eye, EyeOff, Pencil } from 'lucide-react';
 import { AvatarDisplay } from '@/components/profile/AvatarDisplay';
 import type { AvatarConfig } from '@/components/profile/avatarConfig';
-import { publicDisplayName } from '@/lib/displayName';
 import { cn } from '@/lib/utils';
 
 export type VisibilityLens = 'public' | 'friends' | 'private';
@@ -28,7 +27,6 @@ function visibleAt(vis: string | undefined, lens: VisibilityLens): boolean {
 }
 
 interface IdentityPreviewCardProps {
-  displayName: string;
   username: string | null;
   pronouns: string;
   pronounsVisibility?: string;
@@ -56,7 +54,6 @@ export function IdentityPreviewCard(props: IdentityPreviewCardProps) {
 
   const profileVisible = visibleAt(props.profileVisibility, lens);
   const pronounsVisible = profileVisible && visibleAt(props.pronounsVisibility, lens);
-  const safeName = publicDisplayName(props.displayName);
   const hasPronouns = props.pronouns.trim().length > 0;
   const hasOccupation = props.occupation.trim().length > 0;
 
@@ -101,31 +98,22 @@ export function IdentityPreviewCard(props: IdentityPreviewCardProps) {
         </div>
 
         <div className="flex flex-col gap-1">
+          {/* The @username handle is the single visible identity. */}
           <button
             type="button"
-            onClick={props.onEditProfile}
-            className={cn(
-              'text-left font-semibold text-lg hover:underline underline-offset-4',
-              hiddenCls,
-            )}
+            onClick={props.onEditAccount}
+            className="text-left font-mono font-semibold text-lg hover:underline underline-offset-4"
           >
-            {safeName || (
-              <span className="text-muted-foreground font-normal">Add your name</span>
-            )}
-            {!profileVisible && (
-              <EyeOff size={12} className="ml-2 inline" aria-label="Hidden in this view" />
+            {props.username ? (
+              `@${props.username}`
+            ) : (
+              <span className="text-muted-foreground font-sans font-normal">
+                Claim your @username
+              </span>
             )}
           </button>
 
-          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
-            <button
-              type="button"
-              onClick={props.onEditAccount}
-              className="hover:underline underline-offset-4 font-mono"
-            >
-              {props.username ? `@${props.username}` : 'Claim your @username'}
-            </button>
-
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground [&>*+*]:before:content-['•'] [&>*+*]:before:mr-2">
             {hasPronouns ? (
               <button
                 type="button"
@@ -135,7 +123,7 @@ export function IdentityPreviewCard(props: IdentityPreviewCardProps) {
                   !pronounsVisible && 'opacity-50',
                 )}
               >
-                · {props.pronouns}
+                {props.pronouns}
                 {!pronounsVisible && <EyeOff size={12} aria-label="Hidden in this view" />}
               </button>
             ) : (
@@ -145,7 +133,7 @@ export function IdentityPreviewCard(props: IdentityPreviewCardProps) {
                   onClick={props.onEditProfile}
                   className="hover:underline underline-offset-4"
                 >
-                  · Add pronouns
+                  Add pronouns
                 </button>
               )
             )}
@@ -159,7 +147,7 @@ export function IdentityPreviewCard(props: IdentityPreviewCardProps) {
                   hiddenCls,
                 )}
               >
-                · {props.occupation}
+                {props.occupation}
                 {!profileVisible && <EyeOff size={12} aria-label="Hidden in this view" />}
               </button>
             )}
