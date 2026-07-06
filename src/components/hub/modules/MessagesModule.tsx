@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router';
-import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { MessagingInterface } from '@/components/messaging/MessagingInterface';
@@ -33,7 +32,6 @@ export function MessagesModule() {
     return valid.includes(f as InboxFilter) ? (f as InboxFilter) : 'all';
   }, [searchParams]);
   const [filter, setFilter] = useState<InboxFilter>(initialFilter);
-  const [filter, setFilter] = useState<InboxFilter>('all');
 
   return (
     <Tabs defaultValue="chats" className="flex h-full flex-col gap-4">

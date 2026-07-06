@@ -5,10 +5,9 @@ import { untypedRpc } from '@/integrations/supabase/untyped';
 import { useAuth } from '@/hooks/useAuth';
 
 export type InboxKind = 'chat' | 'mail' | 'notification' | 'trip_email';
-// 'matches' is a client-side lens over chats: it reuses the RPC's 'chats'
-// branch and keeps only conversation_type='match' rows (see `items` below).
-// A server-side p_filter='matches' branch is a documented follow-up for full
-// pagination beyond the loaded window.
+// 'matches' is a dating lens over chats: get_inbox_feed returns only
+// conversation_type='match' rows for this filter (see the inbox-matches
+// migration), so it paginates like any other server-side filter.
 export type InboxFilter = 'all' | 'chats' | 'mail' | 'alerts' | 'trips' | 'matches';
 
 export interface InboxItem {
@@ -52,7 +51,7 @@ export function useInboxFeed(filter: InboxFilter = 'all') {
         p_user: user!.id,
         p_cursor: pageParam?.ts ?? null,
         p_cursor_id: pageParam?.id ?? null,
-        p_filter: filter === 'matches' ? 'chats' : filter,
+        p_filter: filter,
         p_limit: PAGE,
       });
       if (error) throw error;
@@ -145,10 +144,7 @@ export function useInboxFeed(filter: InboxFilter = 'all') {
   // Pins float to the top of the already-loaded feed (client-side pass so the
   // RPC's (ts,id) cursor pagination stays simple). A pinned chat older than the
   // loaded window is an accepted edge case.
-  const rawFlat = (feed.data?.pages.flat() ?? []) as InboxItem[];
-  // 'matches' lens: keep only match-type chats from the loaded 'chats' feed.
-  const flat =
-    filter === 'matches' ? rawFlat.filter((i) => i.subtype === 'match') : rawFlat;
+  const flat = (feed.data?.pages.flat() ?? []) as InboxItem[];
   const items = flat.some((i) => i.is_pinned)
     ? [...flat].sort((a, b) => Number(b.is_pinned) - Number(a.is_pinned))
     : flat;
