@@ -365,8 +365,8 @@ function ProfileSettingsContent({
     async (silent = false) => {
       setSaveStatus('saving');
 
+      // display_name is a derived mirror of username (DB trigger) — never written here.
       const { error, errorKind } = await updateProfile({
-        display_name: formData.display_name,
         first_name: formData.first_name,
         last_name: formData.last_name,
         bio: formData.bio,
@@ -440,7 +440,6 @@ function ProfileSettingsContent({
 
       {/* Identity hero — live preview, tap to edit */}
       <IdentityPreviewCard
-        displayName={formData.display_name}
         username={username}
         pronouns={formData.pronouns}
         pronounsVisibility={formData.privacy_settings.pronouns_visibility}

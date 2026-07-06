@@ -395,104 +395,102 @@ export const UniversalSearchBar = () => {
               >
                 <Search style={{ height: iconSize, width: iconSize }} />
               </span>
-              <div className="relative flex-1">
-                <Input
-                  ref={inputRef}
-                  type="text"
-                  aria-label={t('search.ariaLabel', 'Search Queer Guide')}
-                  role="combobox"
-                  aria-autocomplete="list"
-                  aria-expanded={isOpen}
-                  aria-controls="qg-search-listbox"
-                  aria-haspopup="listbox"
-                  aria-activedescendant={resultsFocused !== null ? `result-${resultsFocused}` : undefined}
-                  placeholder={placeholder}
-                  value={query}
-                  onChange={(e) => {
-                    setQuery(e.target.value);
-                    if (mode === 'ask') setMode('search');
-                    if (!isOpen && !justSelectedRef.current) setIsOpen(true);
-                    justSelectedRef.current = false;
-                  }}
-                  onKeyDown={handleKeyDown}
-                  onFocus={() => {
-                    if (suppressReopenRef.current) {
-                      suppressReopenRef.current = false;
-                      return;
+              <Input
+                ref={inputRef}
+                type="text"
+                aria-label={t('search.ariaLabel', 'Search Queer Guide')}
+                role="combobox"
+                aria-autocomplete="list"
+                aria-expanded={isOpen}
+                aria-controls="qg-search-listbox"
+                aria-haspopup="listbox"
+                aria-activedescendant={resultsFocused !== null ? `result-${resultsFocused}` : undefined}
+                placeholder={placeholder}
+                value={query}
+                onChange={(e) => {
+                  setQuery(e.target.value);
+                  if (mode === 'ask') setMode('search');
+                  if (!isOpen && !justSelectedRef.current) setIsOpen(true);
+                  justSelectedRef.current = false;
+                }}
+                onKeyDown={handleKeyDown}
+                onFocus={() => {
+                  if (suppressReopenRef.current) {
+                    suppressReopenRef.current = false;
+                    return;
+                  }
+                  setIsOpen(true);
+                }}
+                autoComplete="off"
+                className="min-w-0 flex-1 border-0 bg-transparent text-sm shadow-none outline-none focus-visible:ring-0 focus-visible:ring-offset-0 md:text-sm"
+                style={{
+                  fontSize: isMobile ? '1rem' : '0.875rem',
+                  height: inputHeight,
+                }}
+              />
+              {/* Trailing controls sit in a flex sibling cell (not absolutely
+                positioned over the input) so their tap targets don't overlap
+                the input — WCAG 2.5.8 target-size was failing the voice/clear
+                buttons on every page (safe clickable space ~15px). */}
+              <span className="flex shrink-0 items-center gap-1.5 pe-2">
+                {!query && voice.supported && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    aria-label={
+                      voice.listening
+                        ? t('search.stopVoice', 'Stop voice search')
+                        : t('search.voice', 'Voice search')
                     }
-                    setIsOpen(true);
-                  }}
-                  autoComplete="off"
-                  className="w-full border-0 bg-transparent pr-20 text-sm shadow-none outline-none focus-visible:ring-0 focus-visible:ring-offset-0 md:text-sm"
-                  style={{
-                    fontSize: isMobile ? '1rem' : '0.875rem',
-                    height: inputHeight,
-                  }}
-                />
-                {!query && (
-                  <span className="absolute right-2 top-1/2 flex -translate-y-1/2 items-center gap-1.5">
-                    {voice.supported && (
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        aria-label={
-                          voice.listening
-                            ? t('search.stopVoice', 'Stop voice search')
-                            : t('search.voice', 'Voice search')
-                        }
-                        aria-pressed={voice.listening}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (voice.listening) voice.stop();
-                          else voice.start();
-                        }}
-                        className={cn(
-                          'p-0',
-                          voice.listening ? 'text-destructive' : 'text-muted-foreground',
-                        )}
-                        style={{
-                          height: isMobile ? 32 : 24,
-                          width: isMobile ? 32 : 24,
-                        }}
-                      >
-                        <Mic style={{ height: isMobile ? 16 : 14, width: isMobile ? 16 : 14 }} />
-                      </Button>
+                    aria-pressed={voice.listening}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (voice.listening) voice.stop();
+                      else voice.start();
+                    }}
+                    className={cn(
+                      'p-0',
+                      voice.listening ? 'text-destructive' : 'text-muted-foreground',
                     )}
-                    {!isMobile && (
-                      <kbd
-                        aria-hidden="true"
-                        className="pointer-events-none border border-border px-1.5 py-0.5 text-xs2 leading-none text-muted-foreground font-[inherit]"
-                      >
-                        {isMac ? '⌘K' : 'Ctrl+K'}
-                      </kbd>
-                    )}
-                  </span>
+                    style={{
+                      height: isMobile ? 32 : 28,
+                      width: isMobile ? 32 : 28,
+                    }}
+                  >
+                    <Mic style={{ height: isMobile ? 16 : 14, width: isMobile ? 16 : 14 }} />
+                  </Button>
+                )}
+                {!query && !isMobile && (
+                  <kbd
+                    aria-hidden="true"
+                    className="pointer-events-none border border-border px-1.5 py-0.5 text-xs2 leading-none text-muted-foreground font-[inherit]"
+                  >
+                    {isMac ? '⌘K' : 'Ctrl+K'}
+                  </kbd>
+                )}
+                {query && suggestionsLoading && (
+                  <Loader2
+                    className="animate-spin text-muted-foreground"
+                    style={{ height: isMobile ? 14 : 12, width: isMobile ? 14 : 12 }}
+                  />
                 )}
                 {query && (
-                  <span className="absolute right-2 top-1/2 flex -translate-y-1/2 items-center gap-1">
-                    {suggestionsLoading && (
-                      <Loader2
-                        className="animate-spin text-muted-foreground"
-                        style={{ height: isMobile ? 14 : 12, width: isMobile ? 14 : 12 }}
-                      />
-                    )}
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      aria-label="Clear search"
-                      className="p-0 text-muted-foreground hover:text-foreground"
-                      style={{ height: isMobile ? 32 : 24, width: isMobile ? 32 : 24 }}
-                      onClick={() => {
-                        setQuery('');
-                        focusInput();
-                      }}
-                    >
-                      <X style={{ height: isMobile ? 16 : 12, width: isMobile ? 16 : 12 }} />
-                    </Button>
-                  </span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    aria-label="Clear search"
+                    className="p-0 text-muted-foreground hover:text-foreground"
+                    style={{ height: isMobile ? 32 : 28, width: isMobile ? 32 : 28 }}
+                    onClick={() => {
+                      setQuery('');
+                      focusInput();
+                    }}
+                  >
+                    <X style={{ height: isMobile ? 16 : 12, width: isMobile ? 16 : 12 }} />
+                  </Button>
                 )}
-              </div>
+              </span>
             </div>
           </div>
         </PopoverAnchor>

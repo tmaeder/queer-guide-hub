@@ -112,9 +112,9 @@ export function FlightSearchForm({
 
             <div className="grid grid-cols-1 sm:grid-cols-[1fr_1fr_auto] gap-4 items-end">
               <div>
-                {/* eslint-disable-next-line jsx-a11y/label-has-associated-control -- shadcn Input forwards id; htmlFor pattern not yet wired */}
-                <label className="text-sm font-medium mb-1 block">Departure</label>
+                <label htmlFor="flight-departure-date" className="text-sm font-medium mb-1 block">Departure</label>
                 <Input
+                  id="flight-departure-date"
                   type="date"
                   value={departureDate}
                   onChange={(e) => setDepartureDate(e.target.value)}
@@ -122,9 +122,9 @@ export function FlightSearchForm({
                 />
               </div>
               <div>
-                {/* eslint-disable-next-line jsx-a11y/label-has-associated-control -- shadcn Input forwards id; htmlFor pattern not yet wired */}
-                <label className="text-sm font-medium mb-1 block">Return (optional)</label>
+                <label htmlFor="flight-return-date" className="text-sm font-medium mb-1 block">Return (optional)</label>
                 <Input
+                  id="flight-return-date"
                   type="date"
                   value={returnDate}
                   onChange={(e) => setReturnDate(e.target.value)}

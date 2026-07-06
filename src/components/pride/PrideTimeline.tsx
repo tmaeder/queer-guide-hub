@@ -87,7 +87,7 @@ export function PrideTimeline({ events, year, selectedId, onSelect: _onSelect }:
           const count = placed.filter((p) => p.monthIndex === i).length;
           if (count === 0) {
             return (
-              <span key={m} className="px-2 py-1 text-xs2 text-foreground/40 rounded-badge border border-foreground/10">
+              <span key={m} className="px-2 py-1 text-xs2 text-muted-foreground rounded-badge border border-foreground/10">
                 {m}
               </span>
             );
@@ -102,7 +102,7 @@ export function PrideTimeline({ events, year, selectedId, onSelect: _onSelect }:
               }}
               className="px-2 py-1 text-xs2 rounded-badge border border-foreground/20 hover:bg-muted transition-colors min-h-0"
             >
-              {m} <span className="text-foreground/50">{count}</span>
+              {m} <span className="text-muted-foreground">{count}</span>
             </button>
           );
         })}
@@ -229,7 +229,7 @@ export function PrideTimeline({ events, year, selectedId, onSelect: _onSelect }:
                       <p className="mt-2 text-xs2 text-foreground/80 line-clamp-3">{p.event.description}</p>
                     )}
                     {p.event.verification_status !== 'verified' && (
-                      <p className="mt-2 text-2xs text-foreground/50">Date estimated</p>
+                      <p className="mt-2 text-2xs text-muted-foreground">Date estimated</p>
                     )}
                   </TooltipContent>
                 </Tooltip>
@@ -238,7 +238,7 @@ export function PrideTimeline({ events, year, selectedId, onSelect: _onSelect }:
           </TooltipProvider>
         </div>
       </div>
-      <p className="text-xs2 text-foreground/50 mt-2">
+      <p className="text-xs2 text-muted-foreground mt-2">
         {t('pride.timeline.helper', { count: placed.length, year })}
       </p>
     </div>

@@ -284,7 +284,11 @@ export const AppRoutes = () => {
         id="main-content"
         ref={mainRef}
         tabIndex={-1}
-        className="flex-1 relative z-[1] outline-none"
+        // overflow-x-clip: a viewport-level guard against horizontal page scroll
+        // at 320px (WCAG 1.4.10). `clip` (not hidden/auto) doesn't establish a
+        // scroll container, so position:sticky inside pages and the -mx-4
+        // edge-bleed scroll strips keep working; it only trims stray X overflow.
+        className="flex-1 relative z-[1] outline-none overflow-x-clip"
       >
         {/* key={location.pathname} resets ErrorBoundary on every route change */}
         <ErrorBoundary key={location.pathname}>

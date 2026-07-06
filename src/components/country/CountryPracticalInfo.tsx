@@ -72,15 +72,18 @@ export function CountryPracticalInfo({ country }: CountryPracticalInfoProps) {
 
   if (items.length === 0) return null;
 
+  // Each grid cell is a <div> containing only <dt> + <dd> (valid dl>div
+  // grouping); the decorative icon lives inside the <dt> so the <dl> never
+  // holds non-term/description children — fixes axe definition-list/dlitem.
   return (
     <dl className="grid grid-cols-1 gap-px overflow-hidden rounded-container border bg-border sm:grid-cols-2 lg:grid-cols-3">
       {items.map((item) => (
-        <div key={item.label} className="flex items-start gap-4 bg-background p-6">
-          <item.icon size={18} className="mt-0.5 shrink-0 text-muted-foreground" aria-hidden="true" />
-          <div className="min-w-0">
-            <dt className="text-2xs uppercase tracking-[0.12em] text-muted-foreground">{item.label}</dt>
-            <dd className="mt-1 text-15 font-semibold text-foreground">{item.value}</dd>
-          </div>
+        <div key={item.label} className="min-w-0 bg-background p-6">
+          <dt className="flex items-center gap-2 text-2xs uppercase tracking-[0.12em] text-muted-foreground">
+            <item.icon size={16} className="shrink-0" aria-hidden="true" />
+            {item.label}
+          </dt>
+          <dd className="mt-1 text-15 font-semibold text-foreground">{item.value}</dd>
         </div>
       ))}
     </dl>

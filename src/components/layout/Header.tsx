@@ -131,16 +131,13 @@ export function Header() {
                   <AvatarFallback>{avatarInitial}</AvatarFallback>
                 </Avatar>
                 <span className="flex min-w-0 flex-col">
-                  <span className="truncate text-sm font-semibold">
-                    {displayName || t('header.userMenu.you', 'You')}
-                  </span>
                   {username ? (
-                    <span className="truncate font-mono text-2xs text-muted-foreground">
-                      @{username}
+                    <span className="truncate font-mono text-sm font-semibold">@{username}</span>
+                  ) : (
+                    <span className="truncate text-sm font-semibold">
+                      {user.email || t('header.userMenu.you', 'You')}
                     </span>
-                  ) : user.email ? (
-                    <span className="truncate text-2xs text-muted-foreground">{user.email}</span>
-                  ) : null}
+                  )}
                 </span>
               </LocalizedLink>
             </DropdownMenuLabel>

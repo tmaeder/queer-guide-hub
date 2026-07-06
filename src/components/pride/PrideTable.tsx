@@ -71,7 +71,7 @@ export function PrideTable({ events, selectedId, onSelect }: PrideTableProps) {
         <h2 id="alltable-heading" className="text-title font-medium">
           {t('pride.table.title')}
         </h2>
-        <span className="text-xs2 text-foreground/50">
+        <span className="text-xs2 text-muted-foreground">
           {t('pride.table.count', { count: events.length })}
         </span>
       </div>
@@ -125,7 +125,7 @@ export function PrideTable({ events, selectedId, onSelect }: PrideTableProps) {
                   <td className="py-2 px-4 align-top whitespace-nowrap tabular-nums">
                     <span className="text-sm">{fmtDate(e.start_date, e.end_date)}</span>
                     {e.verification_status !== 'verified' && (
-                      <span className="block text-2xs text-foreground/50">{t('pride.table.estimated')}</span>
+                      <span className="block text-2xs text-muted-foreground">{t('pride.table.estimated')}</span>
                     )}
                   </td>
                   <td className="py-2 px-4 align-top">

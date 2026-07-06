@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { useKinkVisibleList } from '@/hooks/useKinkVisibleList';
 import { useKinkTaxonomy } from '@/hooks/useKinkTaxonomy';
 import { kinkLabel, type KinkVisibleRow } from '@/lib/kinks/types';
-import { SIDE_LABEL } from '@/components/kinks/KinkRatingControl';
+import { SIDE_LABEL } from '@/components/kinks/kinkRatingMeta';
 
 /**
  * Read-only view of what another user shows me (their tier ladder applies

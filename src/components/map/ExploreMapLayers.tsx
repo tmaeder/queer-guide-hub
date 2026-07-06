@@ -79,10 +79,13 @@ export const ExploreMapLayers = ({
                   className="inline-flex items-center gap-1 h-7 px-2 text-xs rounded-full border transition-all focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
                   style={{
                     fontWeight: enabled ? 600 : 400,
-                    // Active: opaque brand pill with white text — meets WCAG AA
-                    // (≥4.5:1) against panel bg for all 7 layer colors,
-                    // including amber Hotels which fails the prior tint approach.
-                    backgroundColor: enabled ? color : 'transparent',
+                    // Active: monochrome fill (foreground/background) so the label
+                    // always clears WCAG AA regardless of the layer hue — pairing
+                    // white/dark text with an arbitrary functional LAYER_COLOR
+                    // failed contrast for several layers per theme. The layer hue
+                    // stays as the border accent (and on the map pins themselves),
+                    // keeping the chrome monochrome per the design system.
+                    backgroundColor: enabled ? 'hsl(var(--foreground))' : 'transparent',
                     color: enabled ? 'hsl(var(--background))' : 'hsl(var(--muted-foreground))',
                     borderColor: enabled ? color : 'hsl(var(--border))',
                     outlineColor: color,

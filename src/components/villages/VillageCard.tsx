@@ -23,7 +23,14 @@ export const VillageCard = memo(function VillageCard({ village }: VillageCardPro
         <CardImage src={imageUrl} alt={village.name} fallbackIcon={Landmark} height={180}>
           {village.featured && (
             <Badge
-              style={{ top: 8, right: 8, backgroundColor: 'hsl(var(--primary))', color: 'white' }}
+              style={{
+                top: 8,
+                right: 8,
+                backgroundColor: 'hsl(var(--primary))',
+                // Paired foreground token, not literal white: --primary flips to
+                // near-white in dark mode, so `white` text vanished (1.09:1).
+                color: 'hsl(var(--primary-foreground))',
+              }}
               className="absolute"
             >
               Featured

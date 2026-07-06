@@ -1,6 +1,6 @@
-# axe-core baseline — https://queer.guide
+# axe-core sweep — http://localhost:4173
 
-Scanned 17 routes on 2026-05-20T18:57:58.458Z.
+Scope: **public** · Viewports: desktop+mobile · Themes: light+dark · 160 scans on 2026-07-06T20:22:08.916Z.
 
 ## Summary
 
@@ -15,106 +15,6 @@ Scanned 17 routes on 2026-05-20T18:57:58.458Z.
 
 _No violations._
 
-## Per-route results
+## Scans with violations
 
-### / — home
-
-Status: 200 · Violations: 0
-
-No violations.
-
-### /events — events-list
-
-Status: 200 · Violations: 0
-
-No violations.
-
-### /venues — venues-list
-
-Status: 200 · Violations: 0
-
-No violations.
-
-### /hotels — hotels-list
-
-Status: 200 · Violations: 0
-
-No violations.
-
-### /marketplace — marketplace
-
-Status: 200 · Violations: 0
-
-No violations.
-
-### /news — news
-
-Status: 200 · Violations: 0
-
-No violations.
-
-### /groups — groups
-
-Status: 200 · Violations: 0
-
-No violations.
-
-### /personalities — personalities
-
-Status: 200 · Violations: 0
-
-No violations.
-
-### /places — places
-
-Status: 200 · Violations: 0
-
-No violations.
-
-### /resources — resources
-
-Status: 200 · Violations: 0
-
-No violations.
-
-### /search — search
-
-Status: 200 · Violations: 0
-
-No violations.
-
-### /trips — trips
-
-Status: 200 · Violations: 0
-
-No violations.
-
-### /trips/discover — trips-discover
-
-Status: 200 · Violations: 0
-
-No violations.
-
-### /submit — submit-hub
-
-Status: 200 · Violations: 0
-
-No violations.
-
-### /about — about
-
-Status: 200 · Violations: 0
-
-No violations.
-
-### /contact — contact
-
-Status: 200 · Violations: 0
-
-No violations.
-
-### /accessibility — accessibility
-
-Status: 200 · Violations: 0
-
-No violations.
+_All scans clean._

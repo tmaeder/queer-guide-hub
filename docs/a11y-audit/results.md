@@ -151,3 +151,94 @@ Two leftover follow-ups from the 2026-04-26 closeout addressed:
 Carousel autoplay reduced-motion wiring is still **N/A** — only
 `embla-carousel-react` is in `package.json`; no autoplay plugin adopted.
 Wire it at the call site if/when the plugin is introduced.
+
+## Whole-app re-baseline + mobile-first pass — 2026-07-06
+
+The 2026-04 baseline drifted after ~2,981 commits (MUI→shadcn migration, the
+monochrome redesign, and dozens of new surfaces — `/hub`, marketplace boutique,
+kinks, people, villages, pride, all detail pages — that were never in the axe
+route list). This pass re-based the whole public app against the **current** UI
+across **desktop + 320px mobile × light + dark** and folded a **320px reflow
+gate** (WCAG 1.4.10) into the scanner.
+
+### Tooling
+- `scripts/a11y-routes.mjs` — single whole-app route manifest (40 public + 13
+  auth + 25 admin, dynamic families sampled with real prod slugs), shared by the
+  scanner and CI.
+- `scripts/a11y-axe-scan.mjs` — rewritten to sweep every route ×
+  {desktop 1280, mobile 320} × {light, dark} with `reducedMotion` emulation
+  (kills transient fade-frame contrast false-positives), the 320px horizontal-
+  overflow reflow check, and admin `storageState`. Output name is
+  `OUT_NAME`-configurable — this also fixes a latent CI bug where the gate read
+  `axe-postdeploy.json` while the script wrote `axe-baseline.json`.
+
+### Production baseline (queer.guide, before fixes)
+160 scans → **119 serious/critical**: `target-size` 79, `color-contrast` 15,
+`button-name` 7, `nested-interactive` 4, `definition-list`/`dlitem` 8,
+`aria-allowed-attr` 4, `aria-valid-attr-value` 2.
+
+### Fixes (shared components first, so one change cascades)
+- **`target-size` (79 → 0).** The `UniversalSearchBar` voice/clear buttons were
+  absolutely positioned *over* the input, so axe saw them "partially obscured"
+  (~15px safe clickable space) on **every page**. Restructured the trailing
+  controls into a flex sibling of the input (no overlap).
+  [src/components/search/UniversalSearchBar.tsx](../../src/components/search/UniversalSearchBar.tsx).
+  Pride "up next" event-title links (17px tall) were the rest — see below.
+- **`button-name`.** Events view-mode toggles hid their label (`hidden sm:inline`)
+  → icon-only on mobile: added `aria-label`
+  ([EventsResultBar.tsx](../../src/components/events/EventsResultBar.tsx)). `/help`
+  filter Selects had unassociated `<Label>`s → wired `htmlFor`/`id`
+  ([HelpHotlines.tsx](../../src/pages/HelpHotlines.tsx)). Village detail tab
+  labels used `hidden sm:inline` → switched to `sr-only sm:not-sr-only` so the
+  name survives in the a11y tree on mobile
+  ([QueerVillageDetail.parts.tsx](../../src/pages/QueerVillageDetail.parts.tsx)).
+- **`nested-interactive` + `target-size` (pride).** `PrideUpNext` cards were a
+  `<button>` (calendar-select) wrapping a `<Link>` (nav). Dropped the nested link
+  (title is plain text; the card's inline detail panel carries navigation).
+  [src/components/pride/PrideUpNext.tsx](../../src/components/pride/PrideUpNext.tsx).
+- **`definition-list`/`dlitem`.** `CountryPracticalInfo` wrapped `<dt>/<dd>` in a
+  `<div>` that also held the icon. Restructured so each `<dl> > <div>` holds only
+  `<dt>` (icon moved inside) + `<dd>`.
+  [src/components/country/CountryPracticalInfo.tsx](../../src/components/country/CountryPracticalInfo.tsx).
+- **`aria-allowed-attr` + `aria-valid-attr-value`.** `CityCountryAutocomplete`
+  had `aria-expanded`/`aria-controls` without `role="combobox"` — added it
+  ([CityCountryAutocomplete.tsx](../../src/components/trips/create/CityCountryAutocomplete.tsx)).
+  `/cities` misused shadcn `Tabs` as a list/map toggle with no `TabsContent`
+  (dangling `aria-controls`) → replaced with a `role="group"` segmented button
+  set ([Cities.tsx](../../src/pages/Cities.tsx)).
+- **`color-contrast` (light + dark).** Dark-mode invisibility bugs where
+  `bg-foreground`/`bg-primary` flips light but text stayed literal `white`
+  (1.09:1) — fixed the "Featured" badges on VillageCard / HotelCard / village
+  detail to the paired `--primary-foreground` token. Low-contrast utilities
+  `text-foreground/50` and `/40` on small text across the pride module →
+  `text-muted-foreground`. Country `/100` (`opacity-70`) and the jurisdiction
+  "Varies" chip (`text-muted-foreground/50`) darkened. The `/help` **QuickExit**
+  safety button (white on dark-mode destructive red = 3.59:1) made WCAG large
+  text (bold + `text-xl`, clears the 3:1 large-text bar) — also better crisis UX.
+- **P2 debt.** Resolved 5 real `jsx-a11y` suppressions — `label-has-associated-
+  control` in `FlightSearchForm` (×2) and `UmamiAnalyticsDashboard` (×3) — by
+  wiring `htmlFor`/`id` (the other 22 suppressions are legitimate `onError` media
+  handlers). Confirmed the `AccessibilityControls` panel is reachable at
+  `/accessibility` and linked from the footer.
+
+### CI (regression prevention)
+`.github/workflows/a11y.yml` axe sweep now runs the shared manifest ×
+desktop+mobile × light+dark (`SCAN_VIEWPORTS`/`SCAN_THEMES`/`OUT_NAME`) with the
+320px reflow gate; Lighthouse matrix extended to `/cities /hotels /personalities
+/help /pride /trips/discover`; `jsx-a11y` rules stay at `error`.
+
+### Verification
+Fresh production build, served locally, re-swept (160 scans = 40 public routes ×
+{desktop 1280, mobile 320} × {light, dark}): **0 violations of any impact**
+(critical/serious/moderate/minor), reflow gate green — see `axe-baseline.md`.
+`npm run lint` 0 errors, `tsc --noEmit` clean, `npm run build` green.
+
+| Gate | Prod baseline (pre-fix) | After fixes (local prod build) |
+|---|---|---|
+| axe serious/critical | 119 | **0** |
+| axe total (all impacts) | — | **0** |
+| 320px reflow overflow | (not measured before) | **0** |
+| jsx-a11y lint | 0 | 0 |
+
+Prod re-verification after deploy per project rule (`BASE_URL=https://queer.guide
+node scripts/a11y-axe-scan.mjs`).

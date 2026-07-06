@@ -116,7 +116,7 @@ export function SafetyVerdict({
           </p>
           <p className="text-headline font-bold leading-none" style={{ color: visual.fg }}>
             {equalityScore != null ? equalityScore : '—'}
-            <span className="text-13 font-semibold opacity-70">/100</span>
+            <span className="text-13 font-semibold">/100</span>
           </p>
           <p className="text-2xs" style={{ color: visual.fg }}>
             {tierLabel}

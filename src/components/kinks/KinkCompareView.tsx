@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { useKinkCompare, useKinkCompareSummary } from '@/hooks/useKinkCompare';
 import { useKinkTaxonomy } from '@/hooks/useKinkTaxonomy';
 import { kinkLabel, type KinkCompareRow } from '@/lib/kinks/types';
-import { SIDE_LABEL } from '@/components/kinks/KinkRatingControl';
+import { SIDE_LABEL } from '@/components/kinks/kinkRatingMeta';
 
 interface KinkCompareViewProps {
   otherId: string;
@@ -136,7 +136,7 @@ export function KinkCompareView({ otherId, otherName, onOpeningLine }: KinkCompa
             You both marked these — one of you asked to discuss them before anything else.
           </p>
           {onOpeningLine && (
-            <div className="mt-3 flex flex-wrap gap-2">
+            <div className="mt-4 flex flex-wrap gap-2">
               {discuss.slice(0, 4).map((row) => {
                 const label = bySlug.get(`i:${row.item_slug}`)?.label ?? row.item_slug;
                 return (

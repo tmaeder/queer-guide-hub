@@ -2835,7 +2835,8 @@
       "all": "Tudo",
       "chats": "Conversas",
       "mail": "Correio",
-      "alerts": "Alertas"
+      "alerts": "Alertas",
+      "matches": "[PT] Matches"
     },
     "compose": {
       "label": "Compor",
@@ -3162,7 +3163,10 @@
       "contacts": "Contatos",
       "saved": "Salvos",
       "news": "Notícias",
-      "trips": "Viagens"
+      "trips": "Viagens",
+      "overview": "[PT] Overview",
+      "messages": "[PT] Messages",
+      "plans": "[PT] Plans"
     },
     "calendar": {
       "title": "Em breve",
@@ -3187,7 +3191,13 @@
       "groups": "Grupos",
       "dating": "Encontros",
       "datingTitle": "Seu baralho de encontros",
-      "datingBody": "Veja matches e conversas."
+      "datingBody": "Veja matches e conversas.",
+      "datingMatches": "[PT] {{count}} matches",
+      "browseDeck": "[PT] Browse deck",
+      "browseDeckBody": "[PT] Find new people to match with.",
+      "yourMatches": "[PT] Your matches",
+      "yourMatchesBody": "[PT] {{count}} match conversations",
+      "yourMatchesEmpty": "[PT] No matches yet."
     },
     "news": {
       "title": "Notícias",
@@ -3197,6 +3207,31 @@
       "tagsEmpty": "Siga tags para ver artigos aqui.",
       "tagsNoArticles": "Nada novo das suas tags ainda.",
       "savedSearches": "Buscas salvas"
+    },
+    "overview": {
+      "title": "[PT] Overview",
+      "seePlans": "[PT] All plans",
+      "unread": "[PT] {{count}} unread",
+      "openMessages": "[PT] Open inbox",
+      "noChats": "[PT] No conversations yet.",
+      "openSaved": "[PT] Open saved",
+      "savedCount": "[PT] {{count}} saved",
+      "noSaved": "[PT] Nothing saved yet.",
+      "openMatches": "[PT] Open matches",
+      "matchCount": "[PT] {{count}} matches",
+      "noMatches": "[PT] No matches yet.",
+      "people": "[PT] People",
+      "friendCount": "[PT] {{count}} friends",
+      "findPeople": "[PT] Find people",
+      "noFriends": "[PT] No friends yet.",
+      "wantsToConnect": "[PT] Wants to connect"
+    },
+    "messages": {
+      "chats": "[PT] Chats",
+      "people": "[PT] People"
+    },
+    "plans": {
+      "trips": "[PT] Your trips"
     }
   }
 }
