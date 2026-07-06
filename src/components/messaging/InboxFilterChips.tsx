@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import type { InboxFilter } from '@/hooks/useInboxFeed';
 import { useUpcomingTrips } from '@/hooks/useUpcomingTrips';
+import { useMyIntimateProfile } from '@/hooks/useIntimateProfile';
 
 const BASE_FILTERS: { key: InboxFilter; labelKey: string; defaultLabel: string }[] = [
   { key: 'all', labelKey: 'inbox.filter.all', defaultLabel: 'All' },
@@ -20,10 +21,17 @@ export function InboxFilterChips({
   const { t } = useTranslation();
   const { data: upcomingTrips } = useUpcomingTrips();
   const hasUpcomingTrips = (upcomingTrips?.length ?? 0) > 0;
+  // Dating matches are a self-gated lens — only surface the chip once the
+  // viewer has opted into the intimate profile (mirrors DatingSection's gate).
+  const { data: intimateProfile } = useMyIntimateProfile();
 
-  const filters = hasUpcomingTrips
-    ? [...BASE_FILTERS, { key: 'trips' as InboxFilter, labelKey: 'inbox.filter.trips', defaultLabel: 'Trips' }]
-    : BASE_FILTERS;
+  const filters: { key: InboxFilter; labelKey: string; defaultLabel: string }[] = [...BASE_FILTERS];
+  if (intimateProfile) {
+    filters.push({ key: 'matches', labelKey: 'inbox.filter.matches', defaultLabel: 'Matches' });
+  }
+  if (hasUpcomingTrips) {
+    filters.push({ key: 'trips', labelKey: 'inbox.filter.trips', defaultLabel: 'Trips' });
+  }
 
   return (
     <div className="flex gap-2 overflow-x-auto p-2" role="tablist">

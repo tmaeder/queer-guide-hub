@@ -1,4 +1,4 @@
-import { MessageCircle, Mail, Bell, Ticket, Pin, PinOff, BellOff, Bell as BellOn, Archive, CheckCheck, MoreVertical } from 'lucide-react';
+import { MessageCircle, Heart, Mail, Bell, Ticket, Pin, PinOff, BellOff, Bell as BellOn, Archive, CheckCheck, MoreVertical } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -62,8 +62,9 @@ export function InboxRailItem({
   actions?: RailActions;
 }) {
   const { t } = useTranslation();
-  const Icon = KIND_ICON[item.kind];
   const isChat = item.kind === 'chat';
+  // Dating match threads get a heart so they read as matches, not plain chats.
+  const Icon = isChat && item.subtype === 'match' ? Heart : KIND_ICON[item.kind];
   const conversationId = isChat ? item.id.replace('conv_', '') : '';
   const preview = usePreview(item);
 

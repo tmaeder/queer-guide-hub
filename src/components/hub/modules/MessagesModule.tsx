@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { MessagingInterface } from '@/components/messaging/MessagingInterface';
@@ -21,7 +22,16 @@ import type { InboxFilter } from '@/hooks/useInboxFeed';
 export function MessagesModule() {
   const { t } = useTranslation();
   const { user } = useAuth();
-  const [filter, setFilter] = useState<InboxFilter>('all');
+  // Deep-link support: /hub/messages?filter=matches (from DatingSection /
+  // Overview) opens the Chats sub-view pre-filtered to the Matches lens. The
+  // ?conversation= param is read by MessagingInterface itself.
+  const [searchParams] = useSearchParams();
+  const initialFilter = useMemo<InboxFilter>(() => {
+    const f = searchParams.get('filter');
+    const valid: InboxFilter[] = ['all', 'chats', 'mail', 'alerts', 'trips', 'matches'];
+    return valid.includes(f as InboxFilter) ? (f as InboxFilter) : 'all';
+  }, [searchParams]);
+  const [filter, setFilter] = useState<InboxFilter>(initialFilter);
 
   return (
     <Tabs defaultValue="chats" className="flex h-full flex-col gap-4">

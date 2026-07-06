@@ -1,6 +1,9 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 
+// Toggleable intimate-profile mock (opted-in gate for the Matches chip).
+const h = vi.hoisted(() => ({ profile: { data: null as { id: string } | null } }));
+
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (key: string, defaultOrVars?: string | Record<string, unknown>) => {
@@ -17,11 +20,15 @@ const mockUpcoming = vi.fn(() => ({ data: [] as unknown[] }));
 vi.mock('@/hooks/useUpcomingTrips', () => ({
   useUpcomingTrips: () => mockUpcoming(),
 }));
+vi.mock('@/hooks/useIntimateProfile', () => ({
+  useMyIntimateProfile: () => h.profile,
+}));
 
 import { InboxFilterChips } from '../InboxFilterChips';
 
 describe('InboxFilterChips', () => {
   it('renders four chips and fires onChange', () => {
+    h.profile = { data: null };
     const onChange = vi.fn();
     render(<InboxFilterChips value="all" onChange={onChange} />);
     expect(screen.getByRole('tab', { name: /all/i })).toBeTruthy();
@@ -31,8 +38,21 @@ describe('InboxFilterChips', () => {
   });
 
   it('shows the trips chip when upcoming trips exist', () => {
+    h.profile = { data: null };
     mockUpcoming.mockReturnValueOnce({ data: [{ id: 't1' }] });
     render(<InboxFilterChips value="all" onChange={vi.fn()} />);
     expect(screen.getByRole('tab', { name: /trips/i })).toBeTruthy();
+  });
+
+  it('hides the Matches chip when the viewer has not opted into dating', () => {
+    h.profile = { data: null };
+    render(<InboxFilterChips value="all" onChange={() => {}} />);
+    expect(screen.queryByRole('tab', { name: /matches/i })).toBeNull();
+  });
+
+  it('shows the Matches chip once the viewer has an intimate profile', () => {
+    h.profile = { data: { id: 'p1' } };
+    render(<InboxFilterChips value="all" onChange={() => {}} />);
+    expect(screen.getByRole('tab', { name: /matches/i })).toBeTruthy();
   });
 });

@@ -26,7 +26,8 @@
       "all": "All",
       "chats": "Chats",
       "mail": "Mail",
-      "alerts": "Alerts"
+      "alerts": "Alerts",
+      "matches": "Matches"
     },
     "compose": {
       "label": "Compose",
@@ -3160,7 +3161,13 @@
       "groups": "Groups",
       "dating": "Dating",
       "datingTitle": "Your dating deck",
-      "datingBody": "Browse matches and conversations."
+      "datingBody": "Browse matches and conversations.",
+      "datingMatches": "{{count}} matches",
+      "browseDeck": "Browse deck",
+      "browseDeckBody": "Find new people to match with.",
+      "yourMatches": "Your matches",
+      "yourMatchesBody": "{{count}} match conversations",
+      "yourMatchesEmpty": "No matches yet."
     },
     "news": {
       "title": "News",
@@ -3179,7 +3186,10 @@
       "noChats": "No conversations yet.",
       "openSaved": "Open saved",
       "savedCount": "{{count}} saved",
-      "noSaved": "Nothing saved yet."
+      "noSaved": "Nothing saved yet.",
+      "openMatches": "Open matches",
+      "matchCount": "{{count}} matches",
+      "noMatches": "No matches yet."
     },
     "messages": {
       "chats": "Chats",
