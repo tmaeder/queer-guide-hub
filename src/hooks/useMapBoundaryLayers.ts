@@ -6,7 +6,7 @@
  * Extracted from ExploreMap.tsx to DRY up ~300 lines of triplicated code.
  */
 
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, type MutableRefObject } from 'react';
 import maplibregl from 'maplibre-gl';
 import type { GeoJSONSource, MapLayerMouseEvent } from 'maplibre-gl';
 import type { LayerType, MapMarker } from '@/hooks/useExploreMapData';
@@ -72,13 +72,13 @@ export interface BoundaryLayerConfig {
 }
 
 interface UseMapBoundaryLayersOptions {
-  map: maplibregl.Map | null;
+  mapRef: MutableRefObject<maplibregl.Map | null>;
   mapReady: boolean;
   config: BoundaryLayerConfig;
   boundaries: GeoJSON.FeatureCollection | undefined;
   markers: MapMarker[];
   enabled: boolean;
-  tooltipEl: HTMLDivElement | null;
+  tooltipRef: MutableRefObject<HTMLDivElement | null>;
   onPopup: (map: maplibregl.Map, lngLat: maplibregl.LngLat, marker: MapMarker) => void;
 }
 
@@ -88,13 +88,13 @@ function strokeId(key: string) { return `boundary-${key}-stroke`; }
 function labelId(key: string) { return `boundary-${key}-label`; }
 
 export function useMapBoundaryLayers({
-  map,
+  mapRef,
   mapReady,
   config,
   boundaries,
   markers,
   enabled,
-  tooltipEl,
+  tooltipRef,
   onPopup,
 }: UseMapBoundaryLayersOptions) {
   const hoveredIdRef = useRef<number | null>(null);
@@ -117,6 +117,8 @@ export function useMapBoundaryLayers({
   }, [src, fill, stroke, label]);
 
   useEffect(() => {
+    const map = mapRef.current;
+    const tooltipEl = tooltipRef.current;
     if (!map || !mapReady) return;
     // Guard against destroyed map (e.g. ErrorBoundary remount)
     try { map.getContainer(); } catch { return; }
@@ -276,7 +278,7 @@ export function useMapBoundaryLayers({
     });
 
     addedRef.current = true;
-  }, [map, mapReady, boundaries, markers, enabled, config, tooltipEl, onPopup, removeLayers,
+  }, [mapRef, mapReady, boundaries, markers, enabled, config, tooltipRef, onPopup, removeLayers,
       src, fill, stroke, label, key, entityType, matchKey, matchMode, minLabelZoom, minLayerZoom]);
 
   return { removeLayers };
