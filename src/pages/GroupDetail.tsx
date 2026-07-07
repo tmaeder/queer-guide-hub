@@ -41,7 +41,6 @@ import { CreateGroupEventDialog } from '@/components/groups/CreateGroupEventDial
 import { GroupEventCard } from '@/components/groups/GroupEventCard';
 import { useTranslation } from 'react-i18next';
 import { Editable } from '@/components/admin/inline/Editable';
-import { GroupChat } from '@/components/groups/GroupChat';
 import { GroupCollections } from '@/components/groups/GroupCollections';
 
 export default function GroupDetail() {
@@ -461,16 +460,32 @@ export default function GroupDetail() {
           style={{ flexDirection: 'column', gap: '24px' }}
           className="flex"
         >
-          {group.chat_conversation_id && (
-            <LocalizedLink
-              to={`/hub/messages?filter=groups&conversation=${group.chat_conversation_id}`}
-              className="flex items-center gap-1 self-end text-13 text-muted-foreground no-underline hover:text-foreground"
+          <Card>
+            <CardContent
+              style={{ padding: '32px' }}
+              className="flex flex-col items-center gap-4 text-center"
             >
-              {t('pages.groupDetail.openInMessages', { defaultValue: 'Open in Messages' })}
-              <ArrowRight className="h-3.5 w-3.5" aria-hidden />
-            </LocalizedLink>
-          )}
-          <GroupChat groupId={groupId!} canPost={Boolean(group.is_member)} />
+              <MessageSquare size={48} className="text-muted-foreground" />
+              <div className="flex flex-col gap-2">
+                <h3 className="text-lg font-semibold">Group chat lives in Messages</h3>
+                <p className="text-muted-foreground">
+                  {group.is_member
+                    ? 'This group has a shared conversation in your inbox.'
+                    : 'Join the group to read and post in its chat.'}
+                </p>
+              </div>
+              {group.is_member && group.chat_conversation_id && (
+                <Button asChild>
+                  <LocalizedLink
+                    to={`/hub/messages?filter=groups&conversation=${group.chat_conversation_id}`}
+                  >
+                    Open group chat
+                    <ArrowRight size={16} className="ml-2" aria-hidden />
+                  </LocalizedLink>
+                </Button>
+              )}
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent
