@@ -260,7 +260,7 @@ export function AdminSidebar() {
         )}
       >
         {/* Header */}
-        <div className={cn('border-b border-border', collapsed ? 'px-3 py-4' : 'px-6 py-6')}>
+        <div className={cn('border-b border-border', collapsed ? 'px-2 py-4' : 'px-6 py-6')}>
           <div className="flex items-center gap-4">
             <div className="w-8 h-8 flex items-center justify-center flex-shrink-0 bg-foreground text-background">
               <Layers size={16} />
@@ -286,14 +286,14 @@ export function AdminSidebar() {
 
         {/* Search */}
         {!collapsed && (
-          <div className="px-3 py-2 border-b border-border">
+          <div className="px-4 py-2 border-b border-border">
             <div className="relative">
               <SearchIcon size={13} className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground" aria-hidden />
               <Input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search nav — or ⌘K for everything"
-                className="h-8 pl-7 text-13 rounded-element"
+                className="h-8 pl-8 text-13 rounded-element"
                 aria-label="Search navigation"
               />
             </div>
@@ -305,7 +305,7 @@ export function AdminSidebar() {
           {searching ? (
             <div className="flex flex-col">
               {searchResults.length === 0 ? (
-                <p className="px-4 py-3 text-2xs text-muted-foreground">No matches.</p>
+                <p className="px-4 py-2 text-2xs text-muted-foreground">No matches.</p>
               ) : (
                 searchResults.map(({ item }) => <NavRow key={item.id} item={item} />)
               )}
@@ -379,7 +379,7 @@ export function AdminSidebar() {
         </button>
 
         {/* User info footer */}
-        <div className={cn('border-t border-border flex items-center gap-4 bg-muted/40', collapsed ? 'px-3 py-3 justify-center' : 'px-4 py-4')}>
+        <div className={cn('border-t border-border flex items-center gap-4 bg-muted/40', collapsed ? 'px-2 py-4 justify-center' : 'px-4 py-4')}>
           <Avatar className="h-8 w-8">
             <AvatarImage src={user?.user_metadata?.avatar_url as string | undefined} />
             <AvatarFallback className="bg-foreground text-background text-13 font-semibold">

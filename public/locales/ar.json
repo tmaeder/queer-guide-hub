@@ -2146,7 +2146,8 @@
       "eyebrow": "المجتمع"
     },
     "groupDetail": {
-      "signInRequired": "يرجى تسجيل الدخول لعرض تفاصيل المجموعة."
+      "signInRequired": "يرجى تسجيل الدخول لعرض تفاصيل المجموعة.",
+      "openInMessages": "[AR] Open in Messages"
     },
     "myGroups": {
       "title": "مجموعاتي",
@@ -2841,7 +2842,9 @@
       "mail": "البريد",
       "alerts": "التنبيهات",
       "matches": "التوافقات",
-      "matchesUnread": "[AR] {{count}} new matches"
+      "matchesUnread": "{{count}} تطابقات جديدة",
+      "groups": "[AR] Groups",
+      "groupsUnread": "[AR] {{count}} unread group messages"
     },
     "compose": {
       "label": "إنشاء",
@@ -2903,7 +2906,7 @@
       "anEvent": "فعالية",
       "aVenue": "مكان"
     },
-    "matchTag": "[AR] Match"
+    "matchTag": "تطابق"
   },
   "extension": {
     "signInGate": {
@@ -3065,7 +3068,9 @@
       "failed": "فشل الإرسال",
       "title": "إضافة إلى Queer Guide",
       "subtitle": "ارفع منشورًا أو الصق رابطًا. تُرسَل العناصر المستخرجة للمراجعة وتُشارَك في هذه المحادثة."
-    }
+    },
+    "group": "[AR] Group",
+    "groupMemberCount": "[AR] {{count}} members"
   },
   "newsDetail": {
     "notFound": "المقال غير موجود",
@@ -3186,7 +3191,13 @@
         "trip": "رحلة",
         "reservation": "حجز",
         "going": "سأحضر",
-        "saved": "محفوظ"
+        "saved": "محفوظ",
+        "groupEvent": "[AR] Group event"
+      },
+      "scope": {
+        "all": "[AR] All",
+        "trips": "[AR] Trips",
+        "groups": "[AR] Groups"
       }
     },
     "contacts": {
@@ -3203,7 +3214,11 @@
       "browseDeckBody": "اعثر على أشخاص جدد للتوافق معهم.",
       "yourMatches": "توافقاتك",
       "yourMatchesBody": "{{count}} محادثة توافق",
-      "yourMatchesEmpty": "لا توافقات بعد."
+      "yourMatchesEmpty": "لا توافقات بعد.",
+      "groupsEmptyTitle": "[AR] No groups yet.",
+      "groupsEmptyBody": "[AR] Join a group to find people and events near you.",
+      "groupMembers": "[AR] {{count}} members",
+      "browseMoreGroups": "[AR] Browse more groups"
     },
     "news": {
       "title": "الأخبار",

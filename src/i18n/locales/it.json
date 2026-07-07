@@ -2142,7 +2142,8 @@
       "eyebrow": "Community"
     },
     "groupDetail": {
-      "signInRequired": "Accedi per vedere i dettagli del gruppo."
+      "signInRequired": "Accedi per vedere i dettagli del gruppo.",
+      "openInMessages": "[IT] Open in Messages"
     },
     "myGroups": {
       "title": "I miei gruppi",
@@ -2837,7 +2838,9 @@
       "mail": "Posta",
       "alerts": "Avvisi",
       "matches": "Match",
-      "matchesUnread": "[IT] {{count}} new matches"
+      "matchesUnread": "{{count}} nuovi match",
+      "groups": "[IT] Groups",
+      "groupsUnread": "[IT] {{count}} unread group messages"
     },
     "compose": {
       "label": "Componi",
@@ -2899,7 +2902,7 @@
       "anEvent": "Evento",
       "aVenue": "Luogo"
     },
-    "matchTag": "[IT] Match"
+    "matchTag": "Match"
   },
   "extension": {
     "signInGate": {
@@ -3061,7 +3064,9 @@
       "failed": "Invio non riuscito",
       "title": "Aggiungi a Queer Guide",
       "subtitle": "Carica un volantino o incolla un link. Gli elementi estratti vengono inviati per revisione e condivisi in questa chat."
-    }
+    },
+    "group": "[IT] Group",
+    "groupMemberCount": "[IT] {{count}} members"
   },
   "newsDetail": {
     "notFound": "Articolo non trovato",
@@ -3182,7 +3187,13 @@
         "trip": "Viaggio",
         "reservation": "Prenotazione",
         "going": "Ci vado",
-        "saved": "Salvato"
+        "saved": "Salvato",
+        "groupEvent": "[IT] Group event"
+      },
+      "scope": {
+        "all": "[IT] All",
+        "trips": "[IT] Trips",
+        "groups": "[IT] Groups"
       }
     },
     "contacts": {
@@ -3199,7 +3210,11 @@
       "browseDeckBody": "Trova nuove persone con cui fare match.",
       "yourMatches": "I tuoi match",
       "yourMatchesBody": "{{count}} conversazioni di match",
-      "yourMatchesEmpty": "Ancora nessun match."
+      "yourMatchesEmpty": "Ancora nessun match.",
+      "groupsEmptyTitle": "[IT] No groups yet.",
+      "groupsEmptyBody": "[IT] Join a group to find people and events near you.",
+      "groupMembers": "[IT] {{count}} members",
+      "browseMoreGroups": "[IT] Browse more groups"
     },
     "news": {
       "title": "Notizie",

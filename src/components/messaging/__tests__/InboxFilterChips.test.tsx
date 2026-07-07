@@ -29,6 +29,10 @@ vi.mock('@/hooks/useIntimateProfile', () => ({
 vi.mock('@/hooks/useInboxFeed', () => ({
   useInboxFeed: () => ({ items: h.inbox.items, unreadCount: 0, loading: false }),
 }));
+const mockUserGroups = vi.fn(() => ({ userGroups: [] as { id: string }[] }));
+vi.mock('@/hooks/useGroups', () => ({
+  useGroups: () => mockUserGroups(),
+}));
 
 import { InboxFilterChips } from '../InboxFilterChips';
 
@@ -76,5 +80,30 @@ describe('InboxFilterChips', () => {
     // the Matches chip renders and shows the unread badge (2 of 3 unread)
     expect(screen.getByRole('tab', { name: /matches/i })).toBeTruthy();
     expect(screen.getByText('2')).toBeTruthy();
+  });
+
+  it('hides the Groups chip when the viewer belongs to no groups', () => {
+    h.profile = { data: null };
+    mockUserGroups.mockReturnValueOnce({ userGroups: [] });
+    render(<InboxFilterChips value="all" onChange={() => {}} />);
+    expect(screen.queryByRole('tab', { name: /groups/i })).toBeNull();
+  });
+
+  it('shows the Groups chip once the viewer belongs to a group', () => {
+    h.profile = { data: null };
+    h.inbox = { items: [] };
+    mockUserGroups.mockReturnValueOnce({ userGroups: [{ id: 'g1' }] });
+    render(<InboxFilterChips value="all" onChange={() => {}} />);
+    expect(screen.getByRole('tab', { name: /groups/i })).toBeTruthy();
+  });
+
+  it('fires onChange("groups") when the Groups chip is clicked', () => {
+    h.profile = { data: null };
+    h.inbox = { items: [] };
+    mockUserGroups.mockReturnValueOnce({ userGroups: [{ id: 'g1' }] });
+    const onChange = vi.fn();
+    render(<InboxFilterChips value="all" onChange={onChange} />);
+    fireEvent.click(screen.getByRole('tab', { name: /groups/i }));
+    expect(onChange).toHaveBeenCalledWith('groups');
   });
 });

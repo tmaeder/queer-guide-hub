@@ -35,4 +35,10 @@ describe('useInboxFeed', () => {
     expect(typeof result.current.loading).toBe('boolean');
     expect(typeof result.current.fetchNextPage).toBe('function');
   });
+
+  it("accepts the 'groups' filter (group chat lens over get_inbox_feed)", () => {
+    const { result } = renderHook(() => useInboxFeed('groups'), { wrapper });
+    expect(result.current).toHaveProperty('items');
+    expect(Array.isArray(result.current.items)).toBe(true);
+  });
 });

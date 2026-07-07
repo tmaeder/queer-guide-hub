@@ -2176,7 +2176,8 @@
       "eyebrow": "Сообщество"
     },
     "groupDetail": {
-      "signInRequired": "Войди, чтобы увидеть подробности группы."
+      "signInRequired": "Войди, чтобы увидеть подробности группы.",
+      "openInMessages": "[RU] Open in Messages"
     },
     "myGroups": {
       "title": "Мои группы",
@@ -2871,7 +2872,9 @@
       "mail": "Почта",
       "alerts": "Оповещения",
       "matches": "Совпадения",
-      "matchesUnread": "[RU] {{count}} new matches"
+      "matchesUnread": "{{count}} новых совпадений",
+      "groups": "[RU] Groups",
+      "groupsUnread": "[RU] {{count}} unread group messages"
     },
     "compose": {
       "label": "Написать",
@@ -2933,7 +2936,7 @@
       "anEvent": "Событие",
       "aVenue": "Место"
     },
-    "matchTag": "[RU] Match"
+    "matchTag": "Совпадение"
   },
   "extension": {
     "signInGate": {
@@ -3095,7 +3098,9 @@
       "failed": "Не удалось отправить",
       "title": "Добавить в Queer Guide",
       "subtitle": "Перетащите флаер или вставьте ссылку. Найденные элементы отправляются на проверку и публикуются в этом чате."
-    }
+    },
+    "group": "[RU] Group",
+    "groupMemberCount": "[RU] {{count}} members"
   },
   "newsDetail": {
     "notFound": "Статья не найдена",
@@ -3216,7 +3221,13 @@
         "trip": "Поездка",
         "reservation": "Бронь",
         "going": "Иду",
-        "saved": "Сохранено"
+        "saved": "Сохранено",
+        "groupEvent": "[RU] Group event"
+      },
+      "scope": {
+        "all": "[RU] All",
+        "trips": "[RU] Trips",
+        "groups": "[RU] Groups"
       }
     },
     "contacts": {
@@ -3233,7 +3244,11 @@
       "browseDeckBody": "Найдите новых людей для совпадений.",
       "yourMatches": "Ваши совпадения",
       "yourMatchesBody": "{{count}} бесед по совпадениям",
-      "yourMatchesEmpty": "Пока нет совпадений."
+      "yourMatchesEmpty": "Пока нет совпадений.",
+      "groupsEmptyTitle": "[RU] No groups yet.",
+      "groupsEmptyBody": "[RU] Join a group to find people and events near you.",
+      "groupMembers": "[RU] {{count}} members",
+      "browseMoreGroups": "[RU] Browse more groups"
     },
     "news": {
       "title": "Новости",

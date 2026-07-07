@@ -29039,6 +29039,16 @@ export type Database = {
           timezone: string
         }[]
       }
+      search_conversation_messages: {
+        Args: { p_conversation_id: string; p_limit?: number; p_query: string }
+        Returns: {
+          content: string
+          created_at: string
+          id: string
+          sender_display_name: string
+          sender_id: string
+        }[]
+      }
       search_documents_index_cities: {
         Args: { p_id?: string }
         Returns: undefined

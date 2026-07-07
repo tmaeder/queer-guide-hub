@@ -2142,7 +2142,8 @@
       "eyebrow": "Comunidade"
     },
     "groupDetail": {
-      "signInRequired": "Faça login para ver os detalhes do grupo."
+      "signInRequired": "Faça login para ver os detalhes do grupo.",
+      "openInMessages": "[PT] Open in Messages"
     },
     "myGroups": {
       "title": "Meus grupos",
@@ -2837,7 +2838,9 @@
       "mail": "Correio",
       "alerts": "Alertas",
       "matches": "Matches",
-      "matchesUnread": "[PT] {{count}} new matches"
+      "matchesUnread": "{{count}} novos matches",
+      "groups": "[PT] Groups",
+      "groupsUnread": "[PT] {{count}} unread group messages"
     },
     "compose": {
       "label": "Compor",
@@ -2899,7 +2902,7 @@
       "anEvent": "Evento",
       "aVenue": "Local"
     },
-    "matchTag": "[PT] Match"
+    "matchTag": "Match"
   },
   "extension": {
     "signInGate": {
@@ -3061,7 +3064,9 @@
       "failed": "Falha no envio",
       "title": "Adicionar ao Queer Guide",
       "subtitle": "Solte um panfleto ou cole um link. Os itens detectados são enviados para revisão e compartilhados neste chat."
-    }
+    },
+    "group": "[PT] Group",
+    "groupMemberCount": "[PT] {{count}} members"
   },
   "newsDetail": {
     "notFound": "Artigo não encontrado",
@@ -3182,7 +3187,13 @@
         "trip": "Viagem",
         "reservation": "Reserva",
         "going": "Vou",
-        "saved": "Salvo"
+        "saved": "Salvo",
+        "groupEvent": "[PT] Group event"
+      },
+      "scope": {
+        "all": "[PT] All",
+        "trips": "[PT] Trips",
+        "groups": "[PT] Groups"
       }
     },
     "contacts": {
@@ -3199,7 +3210,11 @@
       "browseDeckBody": "Encontre pessoas novas para dar match.",
       "yourMatches": "Seus matches",
       "yourMatchesBody": "{{count}} conversas de match",
-      "yourMatchesEmpty": "Ainda sem matches."
+      "yourMatchesEmpty": "Ainda sem matches.",
+      "groupsEmptyTitle": "[PT] No groups yet.",
+      "groupsEmptyBody": "[PT] Join a group to find people and events near you.",
+      "groupMembers": "[PT] {{count}} members",
+      "browseMoreGroups": "[PT] Browse more groups"
     },
     "news": {
       "title": "Notícias",

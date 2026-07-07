@@ -2142,7 +2142,8 @@
       "eyebrow": "Comunidad"
     },
     "groupDetail": {
-      "signInRequired": "Inicia sesión para ver los detalles del grupo."
+      "signInRequired": "Inicia sesión para ver los detalles del grupo.",
+      "openInMessages": "[ES] Open in Messages"
     },
     "myGroups": {
       "title": "Mis grupos",
@@ -2837,7 +2838,9 @@
       "mail": "Correo",
       "alerts": "Alertas",
       "matches": "Coincidencias",
-      "matchesUnread": "[ES] {{count}} new matches"
+      "matchesUnread": "{{count}} coincidencias nuevas",
+      "groups": "[ES] Groups",
+      "groupsUnread": "[ES] {{count}} unread group messages"
     },
     "compose": {
       "label": "Redactar",
@@ -2899,7 +2902,7 @@
       "anEvent": "Evento",
       "aVenue": "Lugar"
     },
-    "matchTag": "[ES] Match"
+    "matchTag": "Coincidencia"
   },
   "extension": {
     "signInGate": {
@@ -3061,7 +3064,9 @@
       "failed": "Error en el envío",
       "title": "Añadir a Queer Guide",
       "subtitle": "Sube un cartel o pega un enlace. Los elementos extraídos se envían para revisión y se comparten en este chat."
-    }
+    },
+    "group": "[ES] Group",
+    "groupMemberCount": "[ES] {{count}} members"
   },
   "newsDetail": {
     "notFound": "Artículo no encontrado",
@@ -3182,7 +3187,13 @@
         "trip": "Viaje",
         "reservation": "Reserva",
         "going": "Asisto",
-        "saved": "Guardado"
+        "saved": "Guardado",
+        "groupEvent": "[ES] Group event"
+      },
+      "scope": {
+        "all": "[ES] All",
+        "trips": "[ES] Trips",
+        "groups": "[ES] Groups"
       }
     },
     "contacts": {
@@ -3199,7 +3210,11 @@
       "browseDeckBody": "Encuentra gente nueva con quien coincidir.",
       "yourMatches": "Tus coincidencias",
       "yourMatchesBody": "{{count}} conversaciones de coincidencias",
-      "yourMatchesEmpty": "Aún no tienes coincidencias."
+      "yourMatchesEmpty": "Aún no tienes coincidencias.",
+      "groupsEmptyTitle": "[ES] No groups yet.",
+      "groupsEmptyBody": "[ES] Join a group to find people and events near you.",
+      "groupMembers": "[ES] {{count}} members",
+      "browseMoreGroups": "[ES] Browse more groups"
     },
     "news": {
       "title": "Noticias",

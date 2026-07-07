@@ -2140,7 +2140,8 @@
       "eyebrow": "コミュニティ"
     },
     "groupDetail": {
-      "signInRequired": "グループの詳細を見るにはログインしてください。"
+      "signInRequired": "グループの詳細を見るにはログインしてください。",
+      "openInMessages": "[JA] Open in Messages"
     },
     "myGroups": {
       "title": "マイグループ",
@@ -2835,7 +2836,9 @@
       "mail": "メール",
       "alerts": "アラート",
       "matches": "マッチ",
-      "matchesUnread": "[JA] {{count}} new matches"
+      "matchesUnread": "新しいマッチ{{count}}件",
+      "groups": "[JA] Groups",
+      "groupsUnread": "[JA] {{count}} unread group messages"
     },
     "compose": {
       "label": "作成",
@@ -2897,7 +2900,7 @@
       "anEvent": "イベント",
       "aVenue": "会場"
     },
-    "matchTag": "[JA] Match"
+    "matchTag": "マッチ"
   },
   "extension": {
     "signInGate": {
@@ -3059,7 +3062,9 @@
       "failed": "送信に失敗しました",
       "title": "Queer Guide に追加",
       "subtitle": "フライヤーをアップロードするかリンクを貼り付けてください。抽出された項目はレビュー用に送信され、このチャットで共有されます。"
-    }
+    },
+    "group": "[JA] Group",
+    "groupMemberCount": "[JA] {{count}} members"
   },
   "newsDetail": {
     "notFound": "記事が見つかりません",
@@ -3180,7 +3185,13 @@
         "trip": "旅行",
         "reservation": "予約",
         "going": "参加",
-        "saved": "保存"
+        "saved": "保存",
+        "groupEvent": "[JA] Group event"
+      },
+      "scope": {
+        "all": "[JA] All",
+        "trips": "[JA] Trips",
+        "groups": "[JA] Groups"
       }
     },
     "contacts": {
@@ -3197,7 +3208,11 @@
       "browseDeckBody": "マッチする新しい人を見つけよう。",
       "yourMatches": "あなたのマッチ",
       "yourMatchesBody": "マッチのやり取り{{count}}件",
-      "yourMatchesEmpty": "まだマッチがありません。"
+      "yourMatchesEmpty": "まだマッチがありません。",
+      "groupsEmptyTitle": "[JA] No groups yet.",
+      "groupsEmptyBody": "[JA] Join a group to find people and events near you.",
+      "groupMembers": "[JA] {{count}} members",
+      "browseMoreGroups": "[JA] Browse more groups"
     },
     "news": {
       "title": "ニュース",

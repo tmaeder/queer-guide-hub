@@ -32,7 +32,7 @@ export function NewsQualityPanel() {
         <ShieldCheck className="h-3.5 w-3.5" />
         News content quality
         <Badge variant="outline" className="text-2xs px-1.5 py-0">{total.toLocaleString()} live</Badge>
-        <span className="ml-auto flex items-center gap-3 font-normal normal-case tracking-normal">
+        <span className="ml-auto flex items-center gap-2 font-normal normal-case tracking-normal">
           <span className="flex items-center gap-1">
             <Gauge className="h-3 w-3" />
             avg completeness <strong className="tabular-nums">{data.avg_quality ?? '–'}</strong>/100
@@ -43,7 +43,7 @@ export function NewsQualityPanel() {
       </div>
       <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-px bg-border">
         {gaps.map((g) => (
-          <div key={g.label} className="bg-background p-3">
+          <div key={g.label} className="bg-background p-4">
             <div className="text-2xl font-bold tabular-nums">{pct(g.missing)}%</div>
             <div className="text-xs2 text-muted-foreground mt-0.5">{g.label}</div>
             <div className="text-3xs text-muted-foreground/70 tabular-nums">{g.missing.toLocaleString()}</div>

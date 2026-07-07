@@ -74,6 +74,12 @@ export interface TypingIndicator {
   timestamp: number;
 }
 
+/** Messages loaded per page (initial window + each "load older" fetch). */
+const MESSAGE_PAGE_SIZE = 30;
+
+const MESSAGE_SELECT =
+  '*, sender:profiles!messages_sender_id_profiles_user_id_fkey(display_name, avatar_url), reactions:message_reactions(*)';
+
 export const useMessaging = () => {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -92,6 +98,9 @@ export const useMessaging = () => {
   const [sendingMessage, setSendingMessage] = useState(false);
   const [typingUsers, setTypingUsers] = useState<Record<string, TypingIndicator[]>>({});
   const [isTyping, setIsTyping] = useState<Record<string, boolean>>({});
+  // Whether an older page may still exist for a conversation (got a full page).
+  const [hasMore, setHasMore] = useState<Record<string, boolean>>({});
+  const [loadingOlder, setLoadingOlder] = useState<Record<string, boolean>>({});
 
   // Fetch user's conversations
   const fetchConversations = useCallback(async () => {
@@ -137,31 +146,36 @@ export const useMessaging = () => {
     }
   }, [user, toast]);
 
-  // Fetch messages for a conversation
+  const withStatus = useCallback(
+    (rows: Message[]): Message[] =>
+      rows.map((msg) => ({
+        ...msg,
+        sender: msg.sender || undefined,
+        status: msg.sender_id === user?.id ? 'sent' : 'delivered',
+      })),
+    [user?.id],
+  );
+
+  // Fetch the newest page of messages for a conversation. Older messages load
+  // on demand via fetchOlderMessages (scroll-up in ChatView).
   const fetchMessages = useCallback(
     async (conversationId: string) => {
       try {
         const { data, error } = await supabase
           .from('messages')
-          .select(
-            '*, sender:profiles!messages_sender_id_profiles_user_id_fkey(display_name, avatar_url), reactions:message_reactions(*)',
-          )
+          .select(MESSAGE_SELECT)
           .eq('conversation_id', conversationId)
-          .order('created_at', { ascending: true });
+          .order('created_at', { ascending: false })
+          .limit(MESSAGE_PAGE_SIZE);
 
         if (error) throw error;
 
-        const messagesWithStatus =
-          (data as Message[])?.map((msg: Message) => ({
-            ...msg,
-            sender: msg.sender || null,
-            status: msg.sender_id === user?.id ? 'sent' : 'delivered',
-          })) || [];
+        const page = (data as Message[]) ?? [];
+        // Query is newest-first for the LIMIT window; reverse to chronological.
+        const messagesWithStatus = withStatus([...page].reverse());
 
-        setMessages((prev) => ({
-          ...prev,
-          [conversationId]: messagesWithStatus,
-        }));
+        setMessages((prev) => ({ ...prev, [conversationId]: messagesWithStatus }));
+        setHasMore((prev) => ({ ...prev, [conversationId]: page.length === MESSAGE_PAGE_SIZE }));
 
         return messagesWithStatus;
       } catch (error) {
@@ -174,7 +188,72 @@ export const useMessaging = () => {
         return [];
       }
     },
-    [toast, user?.id],
+    [toast, withStatus],
+  );
+
+  // Load the previous page of messages (older than the oldest in memory) and
+  // prepend them. ChatView preserves scroll position across the prepend.
+  const fetchOlderMessages = useCallback(
+    async (conversationId: string) => {
+      const current = messages[conversationId];
+      const oldest = current?.[0];
+      if (!oldest || loadingOlder[conversationId] || hasMore[conversationId] === false) return;
+
+      setLoadingOlder((prev) => ({ ...prev, [conversationId]: true }));
+      try {
+        const { data, error } = await supabase
+          .from('messages')
+          .select(MESSAGE_SELECT)
+          .eq('conversation_id', conversationId)
+          .lt('created_at', oldest.created_at)
+          .order('created_at', { ascending: false })
+          .limit(MESSAGE_PAGE_SIZE);
+
+        if (error) throw error;
+
+        const page = (data as Message[]) ?? [];
+        const older = withStatus([...page].reverse());
+
+        setMessages((prev) => {
+          const existing = prev[conversationId] ?? [];
+          const seen = new Set(existing.map((m) => m.id));
+          const deduped = older.filter((m) => !seen.has(m.id));
+          return { ...prev, [conversationId]: [...deduped, ...existing] };
+        });
+        setHasMore((prev) => ({ ...prev, [conversationId]: page.length === MESSAGE_PAGE_SIZE }));
+      } catch (error) {
+        console.error('Error fetching older messages:', error);
+      } finally {
+        setLoadingOlder((prev) => ({ ...prev, [conversationId]: false }));
+      }
+    },
+    [messages, loadingOlder, hasMore, withStatus],
+  );
+
+  // Load a contiguous window from `sinceIso` forward to the newest message —
+  // used to jump to an in-thread search hit that isn't in the current window.
+  // Replaces the loaded set so the list stays contiguous (older still exist).
+  const loadFromTimestamp = useCallback(
+    async (conversationId: string, sinceIso: string) => {
+      try {
+        const { data, error } = await supabase
+          .from('messages')
+          .select(MESSAGE_SELECT)
+          .eq('conversation_id', conversationId)
+          .gte('created_at', sinceIso)
+          .order('created_at', { ascending: true })
+          .limit(200);
+        if (error) throw error;
+        const rows = withStatus((data as Message[]) ?? []);
+        setMessages((prev) => ({ ...prev, [conversationId]: rows }));
+        setHasMore((prev) => ({ ...prev, [conversationId]: true }));
+        return rows;
+      } catch (error) {
+        console.error('Error loading message context:', error);
+        return [];
+      }
+    },
+    [withStatus],
   );
 
   // Send a message
@@ -185,22 +264,26 @@ export const useMessaging = () => {
       replyToId?: string,
       messageType: string = 'text',
       metadata?: Record<string, unknown>,
+      attachments?: Record<string, unknown>[],
     ) => {
-      if (!user || !content.trim()) return;
+      const trimmed = content.trim();
+      // Image/file messages may carry an empty caption, so allow send when
+      // attachments are present even without text.
+      if (!user || (!trimmed && !(attachments && attachments.length))) return;
 
       const tempId = `temp-${Date.now()}`;
       const tempMessage: Message = {
         id: tempId,
         conversation_id: conversationId,
         sender_id: user.id,
-        content: content.trim(),
+        content: trimmed,
         message_type: messageType,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
         edited_at: null,
         deleted_at: null,
         reply_to_id: replyToId || null,
-        attachments: null,
+        attachments: attachments ?? null,
         metadata: metadata ?? null,
         status: 'sending',
         sender: {
@@ -222,10 +305,11 @@ export const useMessaging = () => {
           .insert({
             conversation_id: conversationId,
             sender_id: user.id,
-            content: content.trim(),
+            content: trimmed,
             reply_to_id: replyToId || null,
             message_type: messageType,
             metadata: (metadata ?? null) as Json,
+            attachments: (attachments ?? null) as Json,
           })
           .select('*')
           .single();
@@ -656,7 +740,11 @@ export const useMessaging = () => {
     loading,
     sendingMessage,
     typingUsers,
+    hasMore,
+    loadingOlder,
     fetchMessages,
+    fetchOlderMessages,
+    loadFromTimestamp,
     sendMessage,
     startConversation,
     addReaction,

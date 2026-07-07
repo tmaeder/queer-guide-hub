@@ -90,7 +90,7 @@ export default function AdminDashboard() {
     <div>
       <AdminPageHeader
         title={
-          <span className="inline-flex items-center gap-3">
+          <span className="inline-flex items-center gap-2">
             <LayoutDashboard size={26} className="text-muted-foreground" aria-hidden />
             Cockpit
           </span>

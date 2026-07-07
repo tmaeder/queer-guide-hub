@@ -5,7 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { MessagingInterface } from '@/components/messaging/MessagingInterface';
 import { InboxFilterChips } from '@/components/messaging/InboxFilterChips';
 import { FriendsPanel } from '@/components/community/FriendsPanel';
-import { GroupsTab } from '@/components/profile/tabs/GroupsTab';
+import { GroupsPanel } from '@/components/hub/messages/GroupsPanel';
 import { DatingSection } from '@/components/hub/contacts/DatingSection';
 import { useAuth } from '@/hooks/useAuth';
 import type { InboxFilter } from '@/hooks/useInboxFeed';
@@ -28,7 +28,7 @@ export function MessagesModule() {
   const [searchParams] = useSearchParams();
   const initialFilter = useMemo<InboxFilter>(() => {
     const f = searchParams.get('filter');
-    const valid: InboxFilter[] = ['all', 'chats', 'mail', 'alerts', 'trips', 'matches'];
+    const valid: InboxFilter[] = ['all', 'chats', 'mail', 'alerts', 'trips', 'matches', 'groups'];
     return valid.includes(f as InboxFilter) ? (f as InboxFilter) : 'all';
   }, [searchParams]);
   const [filter, setFilter] = useState<InboxFilter>(initialFilter);
@@ -67,7 +67,7 @@ export function MessagesModule() {
             <h2 className="text-title font-display">
               {t('hub.contacts.groups', { defaultValue: 'Groups' })}
             </h2>
-            <GroupsTab userId={user.id} isOwnProfile lens="you" />
+            <GroupsPanel />
           </section>
         )}
 

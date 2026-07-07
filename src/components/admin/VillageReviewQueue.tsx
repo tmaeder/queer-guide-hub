@@ -66,7 +66,7 @@ export function VillageReviewQueue() {
           <p className="text-13 text-muted-foreground">No items awaiting review.</p>
         )}
         {rows?.map((r) => (
-          <div key={r.id} className="flex flex-col gap-3 rounded-element border p-4">
+          <div key={r.id} className="flex flex-col gap-2 rounded-element border p-4">
             <div className="flex items-center justify-between gap-4">
               <div className="flex items-center gap-2">
                 <span className="font-medium">{r.queer_villages?.name ?? 'Unknown village'}</span>
@@ -88,7 +88,7 @@ export function VillageReviewQueue() {
             <div>{renderValue(r.field, r.proposed_value?.value)}</div>
 
             {(r.citations ?? []).length > 0 && (
-              <div className="flex flex-col gap-1.5 rounded-element bg-muted/40 p-3">
+              <div className="flex flex-col gap-1.5 rounded-element bg-muted/40 p-2">
                 <span className="text-13 font-medium">Citations</span>
                 {(r.citations ?? []).map((c, i) => (
                   <div key={i} className="text-13 text-muted-foreground">

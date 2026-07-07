@@ -2142,7 +2142,8 @@
       "eyebrow": "Community"
     },
     "groupDetail": {
-      "signInRequired": "Bitte melde dich an, um Gruppendetails zu sehen."
+      "signInRequired": "Bitte melde dich an, um Gruppendetails zu sehen.",
+      "openInMessages": "[DE] Open in Messages"
     },
     "myGroups": {
       "title": "Meine Gruppen",
@@ -2837,7 +2838,9 @@
       "mail": "E-Mail",
       "alerts": "Hinweise",
       "matches": "Matches",
-      "matchesUnread": "[DE] {{count}} new matches"
+      "matchesUnread": "{{count}} neue Matches",
+      "groups": "[DE] Groups",
+      "groupsUnread": "[DE] {{count}} unread group messages"
     },
     "compose": {
       "label": "Verfassen",
@@ -2899,7 +2902,7 @@
       "anEvent": "Event",
       "aVenue": "Ort"
     },
-    "matchTag": "[DE] Match"
+    "matchTag": "Match"
   },
   "extension": {
     "signInGate": {
@@ -3061,7 +3064,9 @@
       "failed": "Einreichung fehlgeschlagen",
       "title": "Zu Queer Guide hinzufügen",
       "subtitle": "Lege einen Flyer ab oder füge einen Link ein. Erkannte Einträge werden zur Prüfung eingereicht und in diesem Chat geteilt."
-    }
+    },
+    "group": "[DE] Group",
+    "groupMemberCount": "[DE] {{count}} members"
   },
   "newsDetail": {
     "notFound": "Artikel nicht gefunden",
@@ -3182,7 +3187,13 @@
         "trip": "Reise",
         "reservation": "Buchung",
         "going": "Zugesagt",
-        "saved": "Gespeichert"
+        "saved": "Gespeichert",
+        "groupEvent": "[DE] Group event"
+      },
+      "scope": {
+        "all": "[DE] All",
+        "trips": "[DE] Trips",
+        "groups": "[DE] Groups"
       }
     },
     "contacts": {
@@ -3199,7 +3210,11 @@
       "browseDeckBody": "Neue Leute zum Matchen finden.",
       "yourMatches": "Deine Matches",
       "yourMatchesBody": "{{count}} Match-Unterhaltungen",
-      "yourMatchesEmpty": "Noch keine Matches."
+      "yourMatchesEmpty": "Noch keine Matches.",
+      "groupsEmptyTitle": "[DE] No groups yet.",
+      "groupsEmptyBody": "[DE] Join a group to find people and events near you.",
+      "groupMembers": "[DE] {{count}} members",
+      "browseMoreGroups": "[DE] Browse more groups"
     },
     "news": {
       "title": "News",

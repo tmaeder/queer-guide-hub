@@ -2146,7 +2146,8 @@
       "eyebrow": "Communauté"
     },
     "groupDetail": {
-      "signInRequired": "Connecte-toi pour voir les détails du groupe."
+      "signInRequired": "Connecte-toi pour voir les détails du groupe.",
+      "openInMessages": "[FR] Open in Messages"
     },
     "myGroups": {
       "title": "Mes groupes",
@@ -2841,7 +2842,9 @@
       "mail": "Courrier",
       "alerts": "Alertes",
       "matches": "Matchs",
-      "matchesUnread": "[FR] {{count}} new matches"
+      "matchesUnread": "{{count}} nouveaux matchs",
+      "groups": "[FR] Groups",
+      "groupsUnread": "[FR] {{count}} unread group messages"
     },
     "compose": {
       "label": "Rédiger",
@@ -2903,7 +2906,7 @@
       "anEvent": "Événement",
       "aVenue": "Lieu"
     },
-    "matchTag": "[FR] Match"
+    "matchTag": "Match"
   },
   "extension": {
     "signInGate": {
@@ -3065,7 +3068,9 @@
       "failed": "Échec de l'envoi",
       "title": "Ajouter à Queer Guide",
       "subtitle": "Déposez un flyer ou collez un lien. Les éléments détectés sont soumis pour examen et partagés dans ce chat."
-    }
+    },
+    "group": "[FR] Group",
+    "groupMemberCount": "[FR] {{count}} members"
   },
   "newsDetail": {
     "notFound": "Article introuvable",
@@ -3186,7 +3191,13 @@
         "trip": "Voyage",
         "reservation": "Réservation",
         "going": "J’y vais",
-        "saved": "Enregistré"
+        "saved": "Enregistré",
+        "groupEvent": "[FR] Group event"
+      },
+      "scope": {
+        "all": "[FR] All",
+        "trips": "[FR] Trips",
+        "groups": "[FR] Groups"
       }
     },
     "contacts": {
@@ -3203,7 +3214,11 @@
       "browseDeckBody": "Trouve de nouvelles personnes avec qui matcher.",
       "yourMatches": "Tes matchs",
       "yourMatchesBody": "{{count}} conversations de matchs",
-      "yourMatchesEmpty": "Pas encore de matchs."
+      "yourMatchesEmpty": "Pas encore de matchs.",
+      "groupsEmptyTitle": "[FR] No groups yet.",
+      "groupsEmptyBody": "[FR] Join a group to find people and events near you.",
+      "groupMembers": "[FR] {{count}} members",
+      "browseMoreGroups": "[FR] Browse more groups"
     },
     "news": {
       "title": "Actus",

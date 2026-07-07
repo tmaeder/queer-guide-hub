@@ -276,7 +276,7 @@ export function EditorHeader({
                     Request changes
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent align="end" className="w-80 p-3 flex flex-col gap-2">
+                <PopoverContent align="end" className="w-80 p-4 flex flex-col gap-2">
                   <p className="text-sm font-semibold">Send back to draft</p>
                   <CannedResponsePicker
                     value=""

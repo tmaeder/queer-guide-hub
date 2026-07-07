@@ -5,10 +5,11 @@ import { untypedRpc } from '@/integrations/supabase/untyped';
 import { useAuth } from '@/hooks/useAuth';
 
 export type InboxKind = 'chat' | 'mail' | 'notification' | 'trip_email';
-// 'matches' is a dating lens over chats: get_inbox_feed returns only
-// conversation_type='match' rows for this filter (see the inbox-matches
-// migration), so it paginates like any other server-side filter.
-export type InboxFilter = 'all' | 'chats' | 'mail' | 'alerts' | 'trips' | 'matches';
+// 'matches' and 'groups' are lenses over chats: get_inbox_feed returns only
+// conversation_type='match'/'group' rows for those filters respectively (see
+// the inbox-matches and inbox-feed-group-chat migrations), so they paginate
+// like any other server-side filter.
+export type InboxFilter = 'all' | 'chats' | 'mail' | 'alerts' | 'trips' | 'matches' | 'groups';
 
 export interface InboxItem {
   id: string;

@@ -7,6 +7,8 @@ import { Users, Lock, Globe, UserPlus, UserMinus, Settings, ExternalLink } from 
 import { Group } from '@/hooks/useGroups';
 import { Skeleton } from 'boneyard-js/react';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
+import { JoyBurst } from '@/components/messaging/JoyBurst';
+import { useGroupJoinBurstTrigger } from '@/components/groups/useGroupJoinBurstTrigger';
 
 const GroupCardFixture = () => (
   <Card>
@@ -65,6 +67,12 @@ export const GroupCard = ({
   isLeaving,
   isRequesting,
 }: GroupCardProps) => {
+  // Queer-joy burst on a successful join — same monochrome confetti toolkit
+  // as /messages' match celebration, extended to Groups (2026-07 hub
+  // redesign; see CLAUDE.md's motion-zone exception). Called unconditionally
+  // (before the loading/skeleton early return) to satisfy rules-of-hooks.
+  const { joy, setJoy } = useGroupJoinBurstTrigger(group?.is_member);
+
   if (loading || !group) {
     return (
       <Skeleton name="group-card" loading={true} fixture={<GroupCardFixture />} fallback={<PageLoadingState count={1} />}>
@@ -76,7 +84,8 @@ export const GroupCard = ({
   const canManage = group.user_role === 'admin' || group.user_role === 'moderator';
 
   return (
-    <Card>
+    <Card className="relative overflow-hidden">
+      {joy && <JoyBurst onDone={() => setJoy(false)} />}
       <CardHeader>
         <div className="pb-4">
           <div className="flex items-start gap-4">
@@ -110,7 +119,7 @@ export const GroupCard = ({
                 </div>
                 {group.member_count > 0 && (
                   <div className="flex items-center gap-1">
-                    <div className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: 'var(--success, #16a34a)' }} />
+                    <div className="w-2 h-2 rounded-full bg-foreground animate-pulse" />
                     <p className="text-xs text-muted-foreground">
                       {Math.floor(group.member_count * 0.3)} active
                     </p>

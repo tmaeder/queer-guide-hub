@@ -31,7 +31,7 @@ export function ImageArrayEditor({ field, initialValue, onSave, onCancel, saving
   };
 
   return (
-    <div className="block p-3 border border-border rounded-element bg-background max-w-2xl">
+    <div className="block p-4 border border-border rounded-element bg-background max-w-2xl">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
         {items.map((src, idx) => (
           <div key={`${src}-${idx}`} className="relative aspect-square overflow-hidden rounded-element border border-border">
@@ -74,7 +74,7 @@ export function ImageArrayEditor({ field, initialValue, onSave, onCancel, saving
           </div>
         ))}
       </div>
-      <div className="mt-3">
+      <div className="mt-4">
         <ImageUpload
           value={adding}
           onValueChange={(url) => {
@@ -86,7 +86,7 @@ export function ImageArrayEditor({ field, initialValue, onSave, onCancel, saving
           label={`Add to ${field.label}`}
         />
       </div>
-      <div className="flex items-center justify-between mt-3">
+      <div className="flex items-center justify-between mt-4">
         <span className="text-xs text-muted-foreground">Drag-reorder coming later · Esc to cancel</span>
         <EditorActions onConfirm={() => onSave(items)} onCancel={onCancel} saving={saving} />
       </div>

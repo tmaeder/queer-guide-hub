@@ -1,0 +1,33 @@
+# ntfy server config — https://docs.ntfy.sh/config/
+# Verify these keys against the pinned image tag's docs before first boot;
+# ntfy's config surface has shifted across versions.
+
+base-url: "https://ntfy.queer.guide"
+listen-http: ":80"
+
+# Persisted on the ntfy-data volume (survives container recreation).
+auth-file: "/var/lib/ntfy/user.db"
+cache-file: "/var/lib/ntfy/cache.db"
+
+# Deny by default; every user/topic needs an explicit ACL grant. This is
+# the load-bearing setting for per-user notification privacy — without
+# it, any topic name is world-readable.
+auth-default-access: "deny-all"
+
+# Lets the ntfy-provision edge function create one ntfy account per
+# Supabase user via POST /v1/account, and reserve a topic for it via
+# POST /v1/account/reservation, entirely over HTTP (no shell/SSH access
+# needed from Supabase). Caddy restricts /v1/account* to Supabase's
+# egress IPs (see Caddyfile.snippet) so public self-signup isn't
+# actually reachable from the open internet.
+enable-signup: true
+enable-reservations: true
+enable-login: false
+
+# No attachment use case here; reduces disk + attack surface.
+attachment-cache-dir: ""
+
+# Cloudflare DNS for this subdomain is DNS-only / grey-cloud (see
+# README) so this isn't strictly needed to survive a CF proxy timeout,
+# but keeps connections tidy either way.
+keepalive-interval: "45s"

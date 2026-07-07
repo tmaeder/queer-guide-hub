@@ -194,7 +194,7 @@ function DraftRow({ draft }: { draft: EditorialDraft }) {
   };
 
   return (
-    <Card className="p-4 flex flex-col gap-3">
+    <Card className="p-4 flex flex-col gap-4">
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-2">
           <p className="text-title font-semibold">{entityName.data ?? '…'}</p>
@@ -293,7 +293,7 @@ function RailsEditor() {
       ) : (rails.data ?? []).length === 0 ? (
         <p className="text-muted-foreground">No rails yet. Create one.</p>
       ) : (
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-4">
           {(rails.data ?? []).map((r) => (
             <Card key={r.id} className="p-4 flex items-center justify-between gap-4">
               <div className="flex flex-col gap-1">
@@ -362,7 +362,7 @@ function NewRailForm({
   const posId = useId();
 
   return (
-    <Card className="p-4 flex flex-wrap items-end gap-3">
+    <Card className="p-4 flex flex-wrap items-end gap-4">
       <div className="flex flex-col gap-1">
         <label
           htmlFor={titleId}
@@ -463,7 +463,7 @@ function CoversEditor() {
       ) : (covers.data ?? []).length === 0 ? (
         <p className="text-muted-foreground">No covers yet.</p>
       ) : (
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-4">
           {(covers.data ?? []).map((c: EditorialCoverRow) => (
             <Card key={c.id} className="p-4 flex items-center justify-between gap-4">
               <div className="flex flex-col gap-1">

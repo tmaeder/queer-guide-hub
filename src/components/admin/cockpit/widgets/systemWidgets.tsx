@@ -27,7 +27,7 @@ export function SystemHealthBody() {
     s.status === 'healthy' ? 'Operational' : s.status === 'degraded' ? 'Degraded' : 'Issues';
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-2">
       <div className="flex items-center justify-between">
         <span className="flex items-center gap-2 text-sm font-semibold">
           <StatusIcon size={16} className={s.status === 'error' ? 'text-destructive' : 'text-muted-foreground'} aria-hidden />
@@ -50,7 +50,7 @@ export function ImportStatusBody() {
   const i = q.data;
   if (!i) return <WidgetLoading rows={2} />;
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-2">
       <MetricTiles
         metrics={[
           { label: 'Active', value: i.activeJobs },
@@ -72,7 +72,7 @@ export function PipelineErrorsBody({ openDrillDown }: WidgetRenderContext) {
   const top = [...rows].sort((a, b) => (b.errors_24h ?? 0) - (a.errors_24h ?? 0)).slice(0, 3);
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-2">
       <div className="flex items-end justify-between">
         <BigStat value={total24h.toLocaleString()} caption="pipeline errors · 24h" alert={total24h > 0} />
         <FreshnessIndicator dataUpdatedAt={q.dataUpdatedAt} isFetching={q.isFetching} intervalMs={60_000} />
@@ -145,7 +145,7 @@ export function ReleaseGatesBody({ openDrillDown }: WidgetRenderContext) {
   const clear = failing.length === 0;
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-2">
       <div className="flex items-center justify-between">
         <span className="flex items-center gap-2 text-sm font-semibold">
           <ShieldCheck size={16} className={clear ? 'text-muted-foreground' : 'text-destructive'} aria-hidden />

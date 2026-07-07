@@ -20,11 +20,16 @@ import { LikePassActions } from '@/components/intimate/LikePassActions';
 import { SwipeDeck, type SwipeableCard } from '@/components/intimate/SwipeDeck';
 import { useToast } from '@/hooks/use-toast';
 import { AGE_BANDS, BODY_TYPES, INTO_TAGS, ROLES } from '@/assets/intimate/options';
+import { JoyBurst } from '@/components/messaging/JoyBurst';
 
 export default function IntimateDiscovery() {
   const { data: me, isLoading } = useMyIntimateProfile();
   const navigate = useNavigate();
   const { toast } = useToast();
+  // Queer-joy burst on the mutual-match reveal itself — the same monochrome
+  // confetti toolkit /messages uses for a match's first message, one step
+  // earlier (2026-07 hub redesign; see CLAUDE.md's motion-zone exception).
+  const [matchJoy, setMatchJoy] = useState(false);
   const [roles, setRoles] = useState<string[]>([]);
   const [into, setInto] = useState<string[]>([]);
   const [ages, setAges] = useState<string[]>([]);
@@ -98,6 +103,7 @@ export default function IntimateDiscovery() {
     // If the receiver has already liked the sender, the trigger creates a
     // conversation and this row indicates the moment of mutual match.
     if (likedSet.has(row.actor_id)) {
+      setMatchJoy(true);
       toast({
         title: "It's a match",
         description: 'Open Messages to say hi.',
@@ -120,7 +126,8 @@ export default function IntimateDiscovery() {
   }
 
   return (
-    <div className="mx-auto max-w-5xl p-6">
+    <div className="relative mx-auto max-w-5xl p-6">
+      {matchJoy && <JoyBurst onDone={() => setMatchJoy(false)} />}
       <header className="mb-6 flex items-baseline justify-between">
         <h1 className="text-2xl">Intimate</h1>
         <div className="flex items-center gap-4">
