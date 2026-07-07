@@ -66,7 +66,7 @@ export default function AdminLiveness() {
         <CardHeader className="pb-2">
           <CardTitle className="flex items-center gap-2 text-title"><Flag size={16} /> Review queue</CardTitle>
         </CardHeader>
-        <CardContent className="flex flex-col gap-3">
+        <CardContent className="flex flex-col gap-4">
           <p className="text-13 text-muted-foreground">
             Single dead signal, or a strong-dead match on a featured / saved entity. Approve to archive (reversible),
             or dismiss as still-alive.
@@ -105,7 +105,7 @@ export default function AdminLiveness() {
         <CardHeader className="pb-2">
           <CardTitle className="flex items-center gap-2 text-title"><Archive size={16} /> Recently archived</CardTitle>
         </CardHeader>
-        <CardContent className="flex flex-col gap-3">
+        <CardContent className="flex flex-col gap-4">
           {!recentArchives.isLoading && (recentArchives.data ?? []).length === 0 && (
             <p className="text-13 text-muted-foreground">No archived entities.</p>
           )}

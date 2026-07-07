@@ -36,7 +36,7 @@ interface NavTabProps {
 // (`li a:not(.no-underline)` in index.css) forces `display:inline`, which would
 // override the `flex` utility and left-align the icon under the centred label.
 const linkBase =
-  'flex h-14 flex-col items-center justify-center gap-0.5 no-underline select-none text-2xs transition-colors rounded-element focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary';
+  'flex h-14 flex-col items-center justify-center gap-1 no-underline select-none text-2xs transition-colors rounded-element focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary';
 const iconWrap = 'relative flex h-8 w-12 items-center justify-center rounded-element';
 
 /**

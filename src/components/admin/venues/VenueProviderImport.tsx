@@ -51,7 +51,7 @@ export function VenueProviderImport({ onImportComplete }: { onImportComplete?: (
   };
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-4">
       <p className="text-sm text-muted-foreground">
         Pull LGBTQ+ venues from a location provider into the review pipeline.
       </p>

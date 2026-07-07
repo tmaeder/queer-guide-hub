@@ -59,7 +59,7 @@ export default function AdminInbox() {
 
   return (
     <div className="flex flex-col h-full">
-      <header className="px-4 py-3 border-b border-border bg-background">
+      <header className="px-4 py-4 border-b border-border bg-background">
         <h1 className="text-headline font-bold leading-tight">Inbox</h1>
         <p className="text-13 text-muted-foreground mt-1">
           Everything that needs you, across queues. Sorted by priority. Press{' '}

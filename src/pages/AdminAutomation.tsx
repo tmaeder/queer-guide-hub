@@ -306,7 +306,7 @@ export default function AdminAutomation() {
 
       {/* Registry */}
       <section>
-        <h2 className="text-title font-semibold mb-3">Registered automations</h2>
+        <h2 className="text-title font-semibold mb-2">Registered automations</h2>
         {automationsQ.isLoading ? (
           <Skeleton className="h-24 w-full" />
         ) : automationsQ.data?.length === 0 ? (
@@ -450,7 +450,7 @@ export default function AdminAutomation() {
 
       {/* Recent runs */}
       <section>
-        <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center justify-between mb-2">
           <h2 className="text-title font-semibold flex items-center gap-2">
             <Play size={16} />
             Recent runs
@@ -569,17 +569,17 @@ export default function AdminAutomation() {
               </dl>
 
               <h3 className="text-title font-semibold mb-2">Trigger</h3>
-              <pre className="p-3 bg-muted border border-border text-2xs font-mono mb-4 overflow-auto">
+              <pre className="p-4 bg-muted border border-border text-2xs font-mono mb-4 overflow-auto">
                 {JSON.stringify(detailRow.trigger, null, 2)}
               </pre>
 
               <h3 className="text-title font-semibold mb-2">Conditions</h3>
-              <pre className="p-3 bg-muted border border-border text-2xs font-mono mb-4 overflow-auto">
+              <pre className="p-4 bg-muted border border-border text-2xs font-mono mb-4 overflow-auto">
                 {JSON.stringify(detailRow.conditions, null, 2)}
               </pre>
 
               <h3 className="text-title font-semibold mb-2">Action</h3>
-              <pre className="p-3 bg-muted border border-border text-2xs font-mono mb-4 overflow-auto">
+              <pre className="p-4 bg-muted border border-border text-2xs font-mono mb-4 overflow-auto">
                 {JSON.stringify(detailRow.action, null, 2)}
               </pre>
 

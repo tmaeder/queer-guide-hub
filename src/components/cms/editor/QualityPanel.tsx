@@ -120,9 +120,9 @@ export function QualityPanel({
   const hasSuggestions = (result?.suggestions?.length ?? 0) > 0;
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-2">
       {/* Score + run control */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2">
         {typeof score === 'number' ? (
           <div className="flex items-center gap-2 flex-1">
             <span className="text-2xl font-bold tabular-nums">{score}</span>

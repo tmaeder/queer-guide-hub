@@ -322,6 +322,12 @@ export default tseslint.config(
           message:
             "Weight scale is 400/500/600/700. Use font-bold (700); Inter at 700 with the heading's -0.02em tracking already reads as strong as 800.",
         },
+        {
+          selector:
+            "Literal[value=/\\b(p|m|mx|my|mt|mb|ml|mr|px|py|pl|pr|pt|pb|gap|gap-x|gap-y|space-x|space-y)-(3|5|7|9|11|13|15)\\b/]",
+          message:
+            "Strict 8 pt grid (UI audit P8). Use even-step Tailwind utility (-4, -6, -8, -10, -12, -14, -16) or the explicit .5 micro-spacing (-0.5, -1.5, -2.5, -3.5) for icon-level offsets. Admin was previously exempt from this rule (no-restricted-syntax overrides wholesale per file) — closed 2026-07-07.",
+        },
       ],
     },
   },
