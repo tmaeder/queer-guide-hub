@@ -242,7 +242,7 @@ export default function Signup({ onBack }: Props) {
                 id="signup-consent"
                 checked={consent}
                 onCheckedChange={(v) => setConsent(v === true)}
-                aria-label={t('auth.consent.combinedAria', 'Accept terms, privacy and confirm 18+')}
+                aria-label={t('auth.consent.combinedAria', 'Accept terms, privacy, confirm 18 or older, and acknowledge the 18+ dating platform')}
                 className="mt-0.5"
                 disabled={isLoading}
               />
@@ -250,7 +250,7 @@ export default function Signup({ onBack }: Props) {
                 {/* components map (not JSX children) — child-index inference broke when a formatter split " and " into two text nodes, dropping the <3> link */}
                 <Trans
                   i18nKey="auth.consent.combined"
-                  defaults="I agree to the <1>Terms</1> and <3>Privacy Policy</3>, and confirm I am 18 or older."
+                  defaults="I agree to the <1>Terms</1> and <3>Privacy Policy</3>, confirm I am 18 or older, and understand Queer Guide is an 18+ platform that includes dating and intimate features."
                   components={{
                     1: <LocalizedLink to="/terms">Terms</LocalizedLink>,
                     3: <LocalizedLink to="/privacy">Privacy Policy</LocalizedLink>,
