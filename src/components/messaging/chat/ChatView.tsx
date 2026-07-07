@@ -4,7 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Loader2, MessageCircle, Search, X, CalendarClock } from 'lucide-react';
+import { Loader2, MessageCircle, Search, X, CalendarClock, Users } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useMessaging, type Message } from '@/hooks/useMessaging';
 import { useChatImageUpload, type ChatImage } from '@/hooks/useChatImageUpload';
@@ -40,6 +40,13 @@ interface SearchHit {
  * typing indicator, reactions, and composer. Owns its own useMessaging instance
  * (per-instance realtime channel topics), so it can be mounted on demand from
  * the unified inbox switch without disturbing the rail.
+ *
+ * Also renders group threads (conversation_type='group') — the message list,
+ * composer, search and reactions machinery is already conversation_id-generic
+ * (MessageItem shows each message's actual sender, not a fixed "other
+ * participant"), so only the header needed a group-aware branch: group name +
+ * member count instead of a single arbitrary member's identity, no
+ * presence/vibe/streak/free-to-meet UI (all 1:1 concepts).
  */
 export const ChatView = ({ conversationId, onBack }: ChatViewProps) => {
   const { t } = useTranslation();
@@ -180,7 +187,13 @@ export const ChatView = ({ conversationId, onBack }: ChatViewProps) => {
 
   const conv = conversations.find((c) => c.id === conversationId);
   const isTravelInbox = conv?.system_kind === 'travel_inbox';
-  const otherParticipant = conv?.participants?.find((p) => p.user_id !== user?.id);
+  const isGroup = conv?.conversation_type === 'group';
+  // A group thread has N participants, not a single "other" party — presence,
+  // vibe, streak and free-to-meet are all 1:1 concepts and stay gated off for
+  // groups below rather than picking one arbitrary member to represent them.
+  const otherParticipant = isGroup
+    ? undefined
+    : conv?.participants?.find((p) => p.user_id !== user?.id);
   const onlineInThread = useConversationPresence(conversationId);
   const { status: otherStatus } = usePublicStatus(otherParticipant?.user_id);
   const isOtherOnline = otherParticipant ? onlineInThread.has(otherParticipant.user_id) : false;
@@ -202,15 +215,21 @@ export const ChatView = ({ conversationId, onBack }: ChatViewProps) => {
     return { vibeActive: active, streakDays: days };
   }, [vibeText, vibeExpiresAt, firstMessageAt]);
   /* eslint-enable react-hooks/purity, react-hooks/preserve-manual-memoization */
-  const presenceLabel = isOtherOnline
-    ? t('chat.activeNow', { defaultValue: 'Active now' })
-    : vibeActive
-      ? `${vibeEmoji ?? '✨'} ${vibeText}`
-      : otherStatus?.text
-        ? otherStatus.text
-        : null;
+  const presenceLabel = isGroup
+    ? t('chat.groupMemberCount', {
+        defaultValue: '{{count}} members',
+        count: conv?.participants_count ?? conv?.participants?.length ?? 0,
+      })
+    : isOtherOnline
+      ? t('chat.activeNow', { defaultValue: 'Active now' })
+      : vibeActive
+        ? `${vibeEmoji ?? '✨'} ${vibeText}`
+        : otherStatus?.text
+          ? otherStatus.text
+          : null;
 
-  // Free-to-meet availability for this thread (self + other).
+  // Free-to-meet availability for this thread (self + other) — a 1:1 concept,
+  // not offered for groups.
   const {
     selfAvailable,
     otherAvailable,
@@ -248,10 +267,18 @@ export const ChatView = ({ conversationId, onBack }: ChatViewProps) => {
 
             <div className="relative">
               <Avatar style={{ height: 40, width: 40 }}>
-                <AvatarImage src={otherParticipant?.profile?.avatar_url || ''} />
-                <AvatarFallback>
-                  {otherParticipant?.profile?.display_name?.charAt(0) || (isTravelInbox ? '✈' : 'C')}
-                </AvatarFallback>
+                {isGroup ? (
+                  <AvatarFallback>
+                    <Users size={18} aria-hidden />
+                  </AvatarFallback>
+                ) : (
+                  <>
+                    <AvatarImage src={otherParticipant?.profile?.avatar_url || ''} />
+                    <AvatarFallback>
+                      {otherParticipant?.profile?.display_name?.charAt(0) || (isTravelInbox ? '✈' : 'C')}
+                    </AvatarFallback>
+                  </>
+                )}
               </Avatar>
               {isOtherOnline && (
                 <div
@@ -268,7 +295,9 @@ export const ChatView = ({ conversationId, onBack }: ChatViewProps) => {
             </div>
             <div className="min-w-0 flex-1">
               <p className="font-medium overflow-hidden text-ellipsis whitespace-nowrap">
-                {otherParticipant?.profile?.display_name || conv?.title || 'Unknown User'}
+                {isGroup
+                  ? conv?.title || t('chat.group', { defaultValue: 'Group' })
+                  : otherParticipant?.profile?.display_name || conv?.title || 'Unknown User'}
               </p>
               {presenceLabel && (
                 <p className="text-sm text-muted-foreground truncate">{presenceLabel}</p>
@@ -289,21 +318,23 @@ export const ChatView = ({ conversationId, onBack }: ChatViewProps) => {
               <Search size={16} />
             </Button>
 
-            <Button
-              variant={selfAvailable ? 'accent' : 'ghost'}
-              size="sm"
-              className="rounded-element gap-1 px-2"
-              style={{ height: 36 }}
-              onClick={toggleAvailability}
-              title={t('chat.freeToMeet.title', { defaultValue: 'Free to meet' })}
-            >
-              <CalendarClock size={16} />
-              <span className="hidden text-13 sm:inline">
-                {selfAvailable
-                  ? t('chat.freeToMeet.on', { defaultValue: 'Free now' })
-                  : t('chat.freeToMeet.set', { defaultValue: 'Free to meet' })}
-              </span>
-            </Button>
+            {!isGroup && (
+              <Button
+                variant={selfAvailable ? 'accent' : 'ghost'}
+                size="sm"
+                className="rounded-element gap-1 px-2"
+                style={{ height: 36 }}
+                onClick={toggleAvailability}
+                title={t('chat.freeToMeet.title', { defaultValue: 'Free to meet' })}
+              >
+                <CalendarClock size={16} />
+                <span className="hidden text-13 sm:inline">
+                  {selfAvailable
+                    ? t('chat.freeToMeet.on', { defaultValue: 'Free now' })
+                    : t('chat.freeToMeet.set', { defaultValue: 'Free to meet' })}
+                </span>
+              </Button>
+            )}
           </div>
         </div>
 
@@ -353,8 +384,8 @@ export const ChatView = ({ conversationId, onBack }: ChatViewProps) => {
         )}
       </div>
 
-      {/* Free-to-meet ribbon */}
-      {(otherAvailable || selfAvailable) && (
+      {/* Free-to-meet ribbon — 1:1 concept, not shown for groups */}
+      {!isGroup && (otherAvailable || selfAvailable) && (
         <div className="border-b border-border bg-muted/50 px-4 py-1.5 text-center text-13 text-muted-foreground">
           {otherAvailable
             ? t('chat.freeToMeet.both', {

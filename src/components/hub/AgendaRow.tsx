@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { Plane, Ticket, Calendar as CalendarIcon, Star } from 'lucide-react';
+import { Plane, Ticket, Calendar as CalendarIcon, Star, Users } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import type { AgendaItem, AgendaKind } from '@/hooks/useMyAgenda';
@@ -9,6 +9,7 @@ const KIND_ICON: Record<AgendaKind, LucideIcon> = {
   reservation: Ticket,
   event_rsvp: CalendarIcon,
   event_saved: Star,
+  group_event: Users,
 };
 
 const KIND_LABEL_KEY: Record<AgendaKind, string> = {
@@ -16,6 +17,7 @@ const KIND_LABEL_KEY: Record<AgendaKind, string> = {
   reservation: 'hub.calendar.kinds.reservation',
   event_rsvp: 'hub.calendar.kinds.going',
   event_saved: 'hub.calendar.kinds.saved',
+  group_event: 'hub.calendar.kinds.groupEvent',
 };
 
 const KIND_LABEL_DEFAULT: Record<AgendaKind, string> = {
@@ -23,6 +25,7 @@ const KIND_LABEL_DEFAULT: Record<AgendaKind, string> = {
   reservation: 'Booking',
   event_rsvp: 'Going',
   event_saved: 'Saved',
+  group_event: 'Group event',
 };
 
 /**

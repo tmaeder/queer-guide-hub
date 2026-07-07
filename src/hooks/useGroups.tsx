@@ -21,6 +21,8 @@ export interface Group {
   user_role?: string;
   is_member?: boolean;
   has_pending_request?: boolean;
+  /** The group's unified-inbox chat thread (conversations.id, conversation_type='group'). */
+  chat_conversation_id?: string | null;
 }
 
 export interface GroupMembership {
