@@ -2842,7 +2842,6 @@
       "alerts": "Alertes",
       "matches": "Matchs",
       "matchesUnread": "{{count}} nouveaux matchs"
-      "matchesUnread": "[FR] {{count}} new matches"
     },
     "compose": {
       "label": "Rédiger",
@@ -2905,7 +2904,6 @@
       "aVenue": "Lieu"
     },
     "matchTag": "Match"
-    "matchTag": "[FR] Match"
   },
   "extension": {
     "signInGate": {

@@ -2836,7 +2836,6 @@
       "alerts": "アラート",
       "matches": "マッチ",
       "matchesUnread": "新しいマッチ{{count}}件"
-      "matchesUnread": "[JA] {{count}} new matches"
     },
     "compose": {
       "label": "作成",
@@ -2899,7 +2898,6 @@
       "aVenue": "会場"
     },
     "matchTag": "マッチ"
-    "matchTag": "[JA] Match"
   },
   "extension": {
     "signInGate": {

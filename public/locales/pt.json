@@ -2838,7 +2838,6 @@
       "alerts": "Alertas",
       "matches": "Matches",
       "matchesUnread": "{{count}} novos matches"
-      "matchesUnread": "[PT] {{count}} new matches"
     },
     "compose": {
       "label": "Compor",
@@ -2901,7 +2900,6 @@
       "aVenue": "Local"
     },
     "matchTag": "Match"
-    "matchTag": "[PT] Match"
   },
   "extension": {
     "signInGate": {
