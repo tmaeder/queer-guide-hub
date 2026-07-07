@@ -355,8 +355,8 @@
       "termsAria": "Accept terms of service",
       "privacyAria": "Accept privacy policy",
       "ageAria": "Confirm age 18 or older",
-      "combined": "I agree to the <1>Terms</1> and <3>Privacy Policy</3>, and confirm I am 18 or older.",
-      "combinedAria": "Accept terms, privacy and confirm 18 or older"
+      "combined": "I agree to the <1>Terms</1> and <3>Privacy Policy</3>, confirm I am 18 or older, and understand Queer Guide is an 18+ platform that includes dating and intimate features.",
+      "combinedAria": "Accept terms, privacy, confirm 18 or older, and acknowledge the 18+ dating platform"
     },
     "required": {
       "title": "Sign in required",
