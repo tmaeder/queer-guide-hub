@@ -7129,61 +7129,6 @@ export type Database = {
         }
         Relationships: []
       }
-      group_chat_messages: {
-        Row: {
-          attachments: Json
-          content: string
-          created_at: string
-          edited_at: string | null
-          group_id: string
-          id: number
-          reply_to_id: number | null
-          sender_id: string
-        }
-        Insert: {
-          attachments?: Json
-          content: string
-          created_at?: string
-          edited_at?: string | null
-          group_id: string
-          id?: number
-          reply_to_id?: number | null
-          sender_id: string
-        }
-        Update: {
-          attachments?: Json
-          content?: string
-          created_at?: string
-          edited_at?: string | null
-          group_id?: string
-          id?: number
-          reply_to_id?: number | null
-          sender_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "group_chat_messages_group_id_fkey"
-            columns: ["group_id"]
-            isOneToOne: false
-            referencedRelation: "community_groups"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "group_chat_messages_reply_to_id_fkey"
-            columns: ["reply_to_id"]
-            isOneToOne: false
-            referencedRelation: "group_chat_messages"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "group_chat_messages_sender_id_fkey"
-            columns: ["sender_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       group_collection_items: {
         Row: {
           added_at: string
