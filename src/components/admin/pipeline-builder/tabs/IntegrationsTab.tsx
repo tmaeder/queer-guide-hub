@@ -16,8 +16,9 @@ import { toast } from 'sonner';
 interface Integration {
   id: string;
   name: string;
-  kind: 'slack' | 'discord' | 'generic_webhook';
+  kind: 'slack' | 'discord' | 'generic_webhook' | 'ntfy';
   webhook_url: string;
+  auth_token: string | null;
   min_severity: 'info' | 'warn' | 'error';
   enabled: boolean;
   created_at: string;
@@ -30,13 +31,23 @@ const KIND_LABEL: Record<string, string> = {
   slack: 'Slack',
   discord: 'Discord',
   generic_webhook: 'Generic webhook',
+  ntfy: 'ntfy',
 };
+
+/** ntfy's publish API wants JSON posted to the server root with a `topic`
+ * field, not the topic path itself — split "https://host/topic" so both
+ * the test-send button and a future server-side caller build the same
+ * request shape as the notify_alert_webhooks() trigger. */
+function splitNtfyUrl(webhookUrl: string): { origin: string; topic: string } {
+  const match = webhookUrl.match(/^(https?:\/\/[^/]+)\/?(.*)$/);
+  return { origin: match?.[1] ?? webhookUrl, topic: match?.[2] ?? '' };
+}
 
 export default function IntegrationsTab() {
   const qc = useQueryClient();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [form, setForm] = useState<Partial<Integration>>({
-    name: '', kind: 'slack', webhook_url: '', min_severity: 'warn', enabled: true,
+    name: '', kind: 'slack', webhook_url: '', auth_token: null, min_severity: 'warn', enabled: true,
   });
 
   const { data: integrations = [], isLoading } = useQuery<Integration[]>({
@@ -57,6 +68,7 @@ export default function IntegrationsTab() {
         name: form.name,
         kind: form.kind,
         webhook_url: form.webhook_url,
+        auth_token: form.kind === 'ntfy' ? (form.auth_token || null) : null,
         min_severity: form.min_severity,
         enabled: form.enabled,
         created_by: u.user?.id ?? null,
@@ -67,7 +79,7 @@ export default function IntegrationsTab() {
       toast.success('Integration added');
       qc.invalidateQueries({ queryKey: ['alert-integrations'] });
       setDialogOpen(false);
-      setForm({ name: '', kind: 'slack', webhook_url: '', min_severity: 'warn', enabled: true });
+      setForm({ name: '', kind: 'slack', webhook_url: '', auth_token: null, min_severity: 'warn', enabled: true });
     },
     onError: (e: Error) => toast.error(`Create failed: ${e.message}`),
   });
@@ -95,12 +107,19 @@ export default function IntegrationsTab() {
 
   const sendTest = useMutation({
     mutationFn: async (i: Integration) => {
-      const res = await fetch(i.webhook_url, {
+      const isNtfy = i.kind === 'ntfy';
+      const { origin, topic } = isNtfy ? splitNtfyUrl(i.webhook_url) : { origin: i.webhook_url, topic: '' };
+      const res = await fetch(origin, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          text: `[TEST] ${i.name} — data ops alert integration test`,
-        }),
+        headers: {
+          'Content-Type': 'application/json',
+          ...(isNtfy && i.auth_token ? { Authorization: `Bearer ${i.auth_token}` } : {}),
+        },
+        body: JSON.stringify(
+          isNtfy
+            ? { topic, title: `[TEST] ${i.name}`, message: 'Data ops alert integration test', priority: 3, tags: ['information_source'] }
+            : { text: `[TEST] ${i.name} — data ops alert integration test` },
+        ),
       });
       if (!res.ok) throw new Error(`Webhook returned ${res.status}`);
     },
@@ -129,7 +148,7 @@ export default function IntegrationsTab() {
               <DialogHeader>
                 <DialogTitle>New webhook integration</DialogTitle>
                 <DialogDescription>
-                  Forward data ops alerts to Slack, Discord, or a custom endpoint.
+                  Forward data ops alerts to Slack, Discord, ntfy, or a custom endpoint.
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-4">
@@ -151,19 +170,35 @@ export default function IntegrationsTab() {
                       <SelectItem value="slack">Slack</SelectItem>
                       <SelectItem value="discord">Discord</SelectItem>
                       <SelectItem value="generic_webhook">Generic webhook</SelectItem>
+                      <SelectItem value="ntfy">ntfy</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div>
-                  <label htmlFor="integration-url" className="text-xs font-medium">Webhook URL</label>
+                  <label htmlFor="integration-url" className="text-xs font-medium">
+                    {form.kind === 'ntfy' ? 'Topic URL' : 'Webhook URL'}
+                  </label>
                   <Input
                     id="integration-url"
                     value={form.webhook_url || ''}
                     onChange={(e) => setForm({ ...form, webhook_url: e.target.value })}
-                    placeholder="https://hooks.slack.com/services/..."
+                    placeholder={form.kind === 'ntfy' ? 'https://ntfy.queer.guide/qg-ops' : 'https://hooks.slack.com/services/...'}
                     className="h-8 text-xs mt-1 font-mono"
                   />
                 </div>
+                {form.kind === 'ntfy' && (
+                  <div>
+                    <label htmlFor="integration-auth-token" className="text-xs font-medium">Auth token (optional)</label>
+                    <Input
+                      id="integration-auth-token"
+                      type="password"
+                      value={form.auth_token || ''}
+                      onChange={(e) => setForm({ ...form, auth_token: e.target.value })}
+                      placeholder="Bearer token, if the topic is ACL-protected"
+                      className="h-8 text-xs mt-1 font-mono"
+                    />
+                  </div>
+                )}
                 <div>
                   <label htmlFor="integration-severity" className="text-xs font-medium">Minimum severity</label>
                   <Select
@@ -197,7 +232,7 @@ export default function IntegrationsTab() {
             <div className="p-8 text-center text-sm text-muted-foreground">
               <Webhook className="h-5 w-5 mx-auto mb-2 opacity-40" />
               <p>No integrations configured</p>
-              <p className="text-xs mt-1">Forward alerts to Slack, Discord, or any webhook endpoint.</p>
+              <p className="text-xs mt-1">Forward alerts to Slack, Discord, ntfy, or any webhook endpoint.</p>
             </div>
           ) : (
             <table className="w-full text-sm">
