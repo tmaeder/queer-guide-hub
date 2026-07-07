@@ -2842,7 +2842,6 @@
       "alerts": "التنبيهات",
       "matches": "التوافقات",
       "matchesUnread": "{{count}} تطابقات جديدة"
-      "matchesUnread": "[AR] {{count}} new matches"
     },
     "compose": {
       "label": "إنشاء",
@@ -2905,7 +2904,6 @@
       "aVenue": "مكان"
     },
     "matchTag": "تطابق"
-    "matchTag": "[AR] Match"
   },
   "extension": {
     "signInGate": {
