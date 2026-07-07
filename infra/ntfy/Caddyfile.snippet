@@ -1,0 +1,34 @@
+# Append to the existing Caddyfile on the VPS
+# (Dev/web/meilisearch/Caddyfile, alongside the search.queer.guide,
+# nominatim.queer.guide, and plane.queer.guide blocks). Reload with:
+#   docker compose -f Dev/web/meilisearch/docker-compose.yml \
+#     exec caddy caddy reload --config /etc/caddy/Caddyfile
+#
+# Mirrors the nominatim.queer.guide block's IP-allowlist + basic-auth
+# pattern, but scoped to only the account-provisioning paths — publish/
+# subscribe/WebSocket traffic must stay open to the world (that's the
+# whole point of a push service), so only /v1/account*, /v1/users*, and
+# /v1/tiers* get the restriction. Access control for everything else
+# lives in ntfy's own auth-default-access: deny-all + per-user topic
+# ACLs (see server.yml / README), not at the edge.
+
+ntfy.queer.guide {
+  # Same Supabase eu-central-2 egress ranges as the nominatim block.
+  # Source: https://api.supabase.com/api/v1/projects/{ref}/network-restrictions
+  @provisioning path /v1/account* /v1/users* /v1/tiers*
+
+  # Optional fallback: HTTP basic-auth for ad-hoc curl from a laptop.
+  # Set NTFY_ADMIN_BASIC_AUTH_HASH in .env (run `caddy hash-password`).
+  basic_auth @provisioning {
+    {$NTFY_ADMIN_BASIC_AUTH_USER} {$NTFY_ADMIN_BASIC_AUTH_HASH}
+  }
+
+  handle @provisioning {
+    reverse_proxy ntfy:80
+  }
+  handle {
+    reverse_proxy ntfy:80
+  }
+
+  encode zstd gzip
+}

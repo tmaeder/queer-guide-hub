@@ -1,0 +1,27 @@
+services:
+  ntfy:
+    image: binwiederhier/ntfy:latest
+    container_name: ntfy
+    restart: unless-stopped
+    command: serve
+    volumes:
+      - ./server.yml:/etc/ntfy/server.yml:ro
+      - ntfy-data:/var/lib/ntfy
+    networks: [default, web]
+    # No host port published — only Caddy on the shared `web` network
+    # reaches port 80. Public-facing (unlike nominatim), but everything
+    # behind ntfy's own auth-default-access: deny-all + per-topic ACLs.
+    expose: ["80"]
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O-", "http://localhost:80/v1/health"]
+      interval: 60s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  ntfy-data:
+
+networks:
+  default:
+  web:
+    external: true
