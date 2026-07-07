@@ -82,7 +82,7 @@ export function AutomationControlBody({ openDrillDown }: WidgetRenderContext) {
   const failing = list.filter((a) => a.last_run_status === 'error').length;
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-2">
       <div className="flex items-end justify-between">
         <div className="flex gap-6">
           <BigStat value={enabled} caption="enabled" />
@@ -120,7 +120,7 @@ export function ModerationFlagsBody() {
   const q = useReviewSummaryQuery();
   if (!q.data) return <WidgetLoading rows={1} />;
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-2">
       <BigStat value={q.data.moderation.toLocaleString()} caption="open moderation flags" alert={q.data.moderation > 0} />
       <DrillButton label="Resolve flags" onClick={() => navigate(adminLink.review('moderation'))} />
     </div>
@@ -130,7 +130,7 @@ export function ModerationFlagsBody() {
 export function DuplicateClustersBody() {
   const navigate = useNavigate();
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-2">
       <div className="flex items-center gap-2 text-sm text-muted-foreground">
         <CopyCheck size={16} aria-hidden />
         Reversible merge review for near-duplicate entities.
@@ -174,7 +174,7 @@ export function RefreshDueBody() {
   if (!due) return <WidgetLoading />;
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-2">
       <div className="flex items-center justify-between">
         <span className="text-2xs font-medium uppercase tracking-label text-muted-foreground">
           Due for refresh

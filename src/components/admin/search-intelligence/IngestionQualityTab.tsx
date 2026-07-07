@@ -257,7 +257,7 @@ export function IngestionQualityTab() {
                   key={`${w.entity_type}:${w.entity_id}`}
                   type="button"
                   onClick={() => inspectEntity(w.entity_type, w.entity_id)}
-                  className="flex items-center gap-3 py-2 text-left hover:bg-muted/50 rounded-element px-2 -mx-2"
+                  className="flex items-center gap-2 py-2 text-left hover:bg-muted/50 rounded-element px-2 -mx-2"
                 >
                   <span className="flex-1 truncate text-sm font-medium">{w.title}</span>
                   <Badge variant="outline">{w.entity_type}</Badge>

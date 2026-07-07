@@ -50,7 +50,7 @@ export function TriageInboxBody({ openDrillDown }: WidgetRenderContext) {
   if (!r) return <WidgetLoading />;
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-2">
       <div className="flex items-end justify-between">
         <BigStat value={r.total.toLocaleString()} caption="items awaiting review" alert={r.total > 50} />
         <FreshnessIndicator dataUpdatedAt={q.dataUpdatedAt} isFetching={q.isFetching} intervalMs={30_000} />
@@ -138,7 +138,7 @@ export function SubmissionsBody() {
   const q = useReviewSummaryQuery();
   if (!q.data) return <WidgetLoading rows={1} />;
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-2">
       <BigStat value={q.data.submissions.toLocaleString()} caption="community submissions" />
       <DrillButton label="Review submissions" onClick={() => navigate(adminLink.review('submissions'))} />
     </div>
@@ -150,7 +150,7 @@ export function TagSuggestionsBody() {
   const q = useReviewSummaryQuery();
   if (!q.data) return <WidgetLoading rows={1} />;
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-2">
       <BigStat value={q.data.tagSuggestions.toLocaleString()} caption="pending tag suggestions" />
       <DrillButton label="Review tags" onClick={() => navigate(adminLink.review('tags'))} />
     </div>
@@ -165,7 +165,7 @@ export function QualityIndexBody({ openDrillDown }: WidgetRenderContext) {
   const byType = Object.entries(quality.byContentType ?? {});
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-2">
       <div className="flex items-end justify-between">
         <BigStat value={`${quality.overallScore}%`} caption="overall quality" alert={quality.overallScore < 60} />
         <FreshnessIndicator dataUpdatedAt={q.dataUpdatedAt} isFetching={q.isFetching} intervalMs={300_000} />

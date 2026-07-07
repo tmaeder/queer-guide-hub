@@ -131,7 +131,7 @@ export function MobileBottomNav() {
             : `transform ${duration.normal}s cubic-bezier(0.22,1,0.36,1)`,
         }}
       >
-        <ul className="mx-4 mb-2 flex items-stretch gap-0.5 rounded-container border border-border bg-background/90 px-2 backdrop-blur-md">
+        <ul className="mx-4 mb-2 flex items-stretch gap-1 rounded-container border border-border bg-background/90 px-2 backdrop-blur-md">
           {BOTTOM_NAV_TABS.map((tab) => {
             const isExplore = tab.id === 'explore';
             const anonGated = tab.authGated && !user;

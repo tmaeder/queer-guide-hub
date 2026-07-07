@@ -160,7 +160,7 @@ const SheetContent = React.forwardRef<HTMLDivElement, SheetContentProps>(
             type="button"
             aria-label="Close"
             onClick={() => onOpenChange(false)}
-            className="absolute right-3 top-3 inline-flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            className="absolute right-3 top-3 inline-flex h-8 w-8 items-center justify-center rounded-element text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
           >
             <X className="h-4 w-4" />
           </button>

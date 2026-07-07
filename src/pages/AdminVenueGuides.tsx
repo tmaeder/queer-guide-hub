@@ -132,9 +132,9 @@ function PickEditor({
     <div
       ref={setNodeRef}
       style={dragStyle}
-      className="rounded-container border border-border p-4 space-y-3 bg-card"
+      className="rounded-container border border-border p-4 space-y-4 bg-card"
     >
-      <div className="flex items-start justify-between gap-3">
+      <div className="flex items-start justify-between gap-2">
         <div className="flex items-start gap-2 min-w-0">
           <button
             type="button"
@@ -156,7 +156,7 @@ function PickEditor({
           <Trash2 size={16} />
         </Button>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div>
           <Label className="text-13">Tier</Label>
           <Select value={tier} onValueChange={(v) => setTier(v as PickTier)}>
@@ -186,7 +186,7 @@ function PickEditor({
           placeholder="Why we picked it — one or two sentences."
         />
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <Label className="text-13">Pros (one per line)</Label>
           <Textarea rows={4} value={prosText} onChange={(e) => setProsText(e.target.value)} />
@@ -226,7 +226,7 @@ function PickAdder({ guideId, existingIds }: { guideId: string; existingIds: Set
   };
 
   return (
-    <div className="rounded-container border border-dashed border-border p-4 space-y-3">
+    <div className="rounded-container border border-dashed border-border p-4 space-y-4">
       <Label className="text-13 uppercase tracking-[0.1em] text-muted-foreground">
         Add a pick
       </Label>
@@ -236,7 +236,7 @@ function PickAdder({ guideId, existingIds }: { guideId: string; existingIds: Set
           value={q}
           onChange={(e) => setQ(e.target.value)}
           placeholder="Search venues by name…"
-          className="pl-9"
+          className="pl-10"
         />
       </div>
       {q.trim().length >= 2 && candidates.length === 0 && (
@@ -245,7 +245,7 @@ function PickAdder({ guideId, existingIds }: { guideId: string; existingIds: Set
       {candidates.length > 0 && (
         <ul className="divide-y divide-border max-h-72 overflow-y-auto rounded-element border border-border">
           {candidates.map((r) => (
-            <li key={r.id} className="flex items-center justify-between gap-3 p-3 hover:bg-muted/40">
+            <li key={r.id} className="flex items-center justify-between gap-2 p-2 hover:bg-muted/40">
               <div className="min-w-0">
                 <p className="text-15 truncate">{r.name}</p>
                 <p className="text-13 text-muted-foreground truncate">
@@ -491,7 +491,7 @@ function GuideEditor({ id, onClose }: { id: string; onClose: () => void }) {
             </section>
 
             <section className="rounded-container border border-border p-4">
-              <div className="flex items-center gap-2 mb-3">
+              <div className="flex items-center gap-2 mb-2">
                 {canPublish ? (
                   <>
                     <Check size={16} className="text-foreground" aria-hidden />
@@ -572,7 +572,7 @@ function NewGuideDialog({ onClose, onCreated }: { onClose: () => void; onCreated
     <Dialog open onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="max-w-xl">
         <DialogHeader><DialogTitle>New venue guide</DialogTitle></DialogHeader>
-        <div className="space-y-3">
+        <div className="space-y-4">
           <div>
             <Label>Title</Label>
             <Input value={g.title} onChange={(e) => setG({ ...g, title: e.target.value })} />
@@ -614,7 +614,7 @@ function GuideRowItem({ g, onEdit }: { g: GuideRow; onEdit: (id: string) => void
       : 'bg-foreground/20';
   return (
     <tr className="border-b border-border hover:bg-muted/40">
-      <td className="p-3 align-top">
+      <td className="p-2 align-top">
         <div className="flex items-start gap-2">
           <span aria-hidden className={`mt-2 size-2 rounded-full ${dot}`} />
           <button
@@ -627,13 +627,13 @@ function GuideRowItem({ g, onEdit }: { g: GuideRow; onEdit: (id: string) => void
         </div>
         <p className="text-13 text-muted-foreground mt-1">/{g.slug}</p>
       </td>
-      <td className="p-3 align-top text-13 uppercase tracking-[0.1em] text-muted-foreground">
+      <td className="p-2 align-top text-13 uppercase tracking-[0.1em] text-muted-foreground">
         {status}
         {g.is_featured && <Badge variant="outline" className="ml-2 rounded-badge text-2xs">featured</Badge>}
       </td>
-      <td className="p-3 align-top text-13">{g.category ?? '—'}</td>
-      <td className="p-3 align-top text-13 text-right">{g.pick_count}</td>
-      <td className="p-3 align-top text-13 text-muted-foreground text-right">
+      <td className="p-2 align-top text-13">{g.category ?? '—'}</td>
+      <td className="p-2 align-top text-13 text-right">{g.pick_count}</td>
+      <td className="p-2 align-top text-13 text-muted-foreground text-right">
         {new Date(g.updated_at).toLocaleDateString()}
       </td>
     </tr>
@@ -698,11 +698,11 @@ const AdminVenueGuides = () => {
           <table className="w-full">
             <thead className="bg-muted">
               <tr>
-                <th className="text-left p-3 text-13 uppercase tracking-[0.1em] text-muted-foreground">Title</th>
-                <th className="text-left p-3 text-13 uppercase tracking-[0.1em] text-muted-foreground">Status</th>
-                <th className="text-left p-3 text-13 uppercase tracking-[0.1em] text-muted-foreground">Category</th>
-                <th className="text-right p-3 text-13 uppercase tracking-[0.1em] text-muted-foreground">Picks</th>
-                <th className="text-right p-3 text-13 uppercase tracking-[0.1em] text-muted-foreground">Updated</th>
+                <th className="text-left p-2 text-13 uppercase tracking-[0.1em] text-muted-foreground">Title</th>
+                <th className="text-left p-2 text-13 uppercase tracking-[0.1em] text-muted-foreground">Status</th>
+                <th className="text-left p-2 text-13 uppercase tracking-[0.1em] text-muted-foreground">Category</th>
+                <th className="text-right p-2 text-13 uppercase tracking-[0.1em] text-muted-foreground">Picks</th>
+                <th className="text-right p-2 text-13 uppercase tracking-[0.1em] text-muted-foreground">Updated</th>
               </tr>
             </thead>
             <tbody>

@@ -55,7 +55,7 @@ export function ContentEntityTabs({ type }: { type: string | undefined }) {
             role="tab"
             aria-selected={active}
             className={cn(
-              '-mb-px border-b-2 px-3 py-1.5 text-sm font-medium no-underline transition-colors',
+              '-mb-px border-b-2 px-2 py-1.5 text-sm font-medium no-underline transition-colors',
               active
                 ? 'border-foreground text-foreground'
                 : 'border-transparent text-muted-foreground hover:text-foreground',

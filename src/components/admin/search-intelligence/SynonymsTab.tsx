@@ -277,7 +277,7 @@ export function SynonymsTab({ prefillTerm }: { prefillTerm?: string | null }) {
           ) : (
             <div className="flex flex-col divide-y" style={{ borderColor: 'hsl(var(--border))' }}>
               {rows.map((s) => (
-                <div key={s.id} className="flex flex-col md:flex-row md:items-center gap-3 py-3">
+                <div key={s.id} className="flex flex-col md:flex-row md:items-center gap-4 py-4">
                   <div className="flex-1 min-w-0">
                     <div className="flex flex-wrap items-center gap-1.5 text-sm">
                       <span className="font-medium">{s.terms.join(', ')}</span>

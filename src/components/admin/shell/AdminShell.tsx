@@ -218,7 +218,7 @@ export function AdminShell() {
         <div className="flex-1 min-w-0 flex flex-col overflow-hidden">
           {/* Mobile top bar: menu + current page + ⌘K */}
           {isMobile && (
-            <div className="sticky top-0 z-[1200] flex items-center gap-2 border-b border-border bg-background px-3 py-2">
+            <div className="sticky top-0 z-[1200] flex items-center gap-2 border-b border-border bg-background px-4 py-2">
               <Button
                 variant="ghost"
                 size="sm"
