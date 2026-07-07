@@ -14,6 +14,7 @@ import {
   Lock,
   Globe,
   ArrowLeft,
+  ArrowRight,
   UserPlus,
   UserMinus,
   Settings,
@@ -460,6 +461,15 @@ export default function GroupDetail() {
           style={{ flexDirection: 'column', gap: '24px' }}
           className="flex"
         >
+          {group.chat_conversation_id && (
+            <LocalizedLink
+              to={`/hub/messages?filter=groups&conversation=${group.chat_conversation_id}`}
+              className="flex items-center gap-1 self-end text-13 text-muted-foreground no-underline hover:text-foreground"
+            >
+              {t('pages.groupDetail.openInMessages', { defaultValue: 'Open in Messages' })}
+              <ArrowRight className="h-3.5 w-3.5" aria-hidden />
+            </LocalizedLink>
+          )}
           <GroupChat groupId={groupId!} canPost={Boolean(group.is_member)} />
         </TabsContent>
 

@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { untypedRpc } from '@/integrations/supabase/untyped';
 import { useAuth } from '@/hooks/useAuth';
 
-export type AgendaKind = 'trip' | 'reservation' | 'event_rsvp' | 'event_saved';
+export type AgendaKind = 'trip' | 'reservation' | 'event_rsvp' | 'event_saved' | 'group_event';
 
 export interface AgendaItem {
   id: string;
@@ -33,8 +33,8 @@ function localDayKey(iso: string): string {
 
 /**
  * The viewer's upcoming commitments (trips, reservations, event RSVPs, dated
- * saved events) for a rolling window, grouped by day. Backed by the
- * get_my_agenda RPC (one UNION, no new tables).
+ * saved events, and events from groups they belong to) for a rolling window,
+ * grouped by day. Backed by the get_my_agenda RPC (one UNION, no new tables).
  */
 export function useMyAgenda(from: Date, to: Date) {
   const { user } = useAuth();

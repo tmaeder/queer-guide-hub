@@ -3,6 +3,7 @@ import { cn } from '@/lib/utils';
 import { useInboxFeed, type InboxFilter } from '@/hooks/useInboxFeed';
 import { useUpcomingTrips } from '@/hooks/useUpcomingTrips';
 import { useMyIntimateProfile } from '@/hooks/useIntimateProfile';
+import { useGroups } from '@/hooks/useGroups';
 
 const BASE_FILTERS: { key: InboxFilter; labelKey: string; defaultLabel: string }[] = [
   { key: 'all', labelKey: 'inbox.filter.all', defaultLabel: 'All' },
@@ -61,6 +62,50 @@ function MatchesFilterChip({
   );
 }
 
+/**
+ * Groups lens chip, mirroring MatchesFilterChip: an unread badge counting
+ * group threads you haven't opened yet. Only rendered once the viewer
+ * belongs to at least one group (empty-affordance discipline matches Matches
+ * and Trips below).
+ */
+function GroupsFilterChip({
+  value,
+  onChange,
+}: {
+  value: InboxFilter;
+  onChange: (f: InboxFilter) => void;
+}) {
+  const { t } = useTranslation();
+  const { items } = useInboxFeed('groups');
+  const unread = items.filter((i) => i.unread).length;
+  const active = value === 'groups';
+
+  return (
+    <button
+      role="tab"
+      aria-selected={active}
+      onClick={() => onChange('groups')}
+      className={chipClass(active)}
+    >
+      {t('inbox.filter.groups', { defaultValue: 'Groups' })}
+      {unread > 0 && (
+        <span
+          className={cn(
+            'ml-1.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-2xs font-semibold',
+            active ? 'bg-background text-foreground' : 'bg-foreground text-background',
+          )}
+          aria-label={t('inbox.filter.groupsUnread', {
+            defaultValue: '{{count}} unread group messages',
+            count: unread,
+          })}
+        >
+          {unread > 99 ? '99+' : unread}
+        </span>
+      )}
+    </button>
+  );
+}
+
 export function InboxFilterChips({
   value,
   onChange,
@@ -74,6 +119,8 @@ export function InboxFilterChips({
   // Dating matches are a self-gated lens — only surface the chip once the
   // viewer has opted into the intimate profile (mirrors DatingSection's gate).
   const { data: intimateProfile } = useMyIntimateProfile();
+  const { userGroups } = useGroups();
+  const hasGroups = (userGroups?.length ?? 0) > 0;
 
   return (
     <div className="flex gap-2 overflow-x-auto p-2" role="tablist">
@@ -89,6 +136,7 @@ export function InboxFilterChips({
         </button>
       ))}
       {intimateProfile && <MatchesFilterChip value={value} onChange={onChange} />}
+      {hasGroups && <GroupsFilterChip value={value} onChange={onChange} />}
       {hasUpcomingTrips && (
         <button
           role="tab"

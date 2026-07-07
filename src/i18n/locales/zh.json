@@ -2140,7 +2140,8 @@
       "eyebrow": "社区"
     },
     "groupDetail": {
-      "signInRequired": "请登录以查看小组详情。"
+      "signInRequired": "请登录以查看小组详情。",
+      "openInMessages": "[ZH] Open in Messages"
     },
     "myGroups": {
       "title": "我的小组",
@@ -2835,7 +2836,9 @@
       "mail": "邮件",
       "alerts": "提醒",
       "matches": "匹配",
-      "matchesUnread": "{{count}} 个新配对"
+      "matchesUnread": "{{count}} 个新配对",
+      "groups": "[ZH] Groups",
+      "groupsUnread": "[ZH] {{count}} unread group messages"
     },
     "compose": {
       "label": "撰写",
@@ -3059,7 +3062,9 @@
       "failed": "提交失败",
       "title": "添加到 Queer Guide",
       "subtitle": "拖入宣传单或粘贴链接。提取的条目将提交审核并在此聊天中分享。"
-    }
+    },
+    "group": "[ZH] Group",
+    "groupMemberCount": "[ZH] {{count}} members"
   },
   "newsDetail": {
     "notFound": "未找到文章",
@@ -3180,7 +3185,13 @@
         "trip": "行程",
         "reservation": "预订",
         "going": "参加",
-        "saved": "已收藏"
+        "saved": "已收藏",
+        "groupEvent": "[ZH] Group event"
+      },
+      "scope": {
+        "all": "[ZH] All",
+        "trips": "[ZH] Trips",
+        "groups": "[ZH] Groups"
       }
     },
     "contacts": {
@@ -3197,7 +3208,11 @@
       "browseDeckBody": "寻找可以匹配的新朋友。",
       "yourMatches": "你的匹配",
       "yourMatchesBody": "{{count}} 条匹配对话",
-      "yourMatchesEmpty": "还没有匹配。"
+      "yourMatchesEmpty": "还没有匹配。",
+      "groupsEmptyTitle": "[ZH] No groups yet.",
+      "groupsEmptyBody": "[ZH] Join a group to find people and events near you.",
+      "groupMembers": "[ZH] {{count}} members",
+      "browseMoreGroups": "[ZH] Browse more groups"
     },
     "news": {
       "title": "新闻",

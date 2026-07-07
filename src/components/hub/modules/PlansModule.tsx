@@ -1,18 +1,30 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CalendarPlus, Loader2 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { AgendaRow } from '@/components/hub/AgendaRow';
 import { TripsTab } from '@/components/profile/tabs/TripsTab';
-import { useMyAgenda } from '@/hooks/useMyAgenda';
+import { useMyAgenda, type AgendaKind } from '@/hooks/useMyAgenda';
 import { useCalendarFeed } from '@/hooks/useCalendarFeed';
+
+type AgendaScope = 'all' | 'trips' | 'groups';
+
+const TRIP_KINDS: AgendaKind[] = ['trip', 'reservation'];
+
+const chipClass = (active: boolean) =>
+  cn(
+    'flex min-h-0 items-center whitespace-nowrap rounded-badge border px-4 py-2 text-13',
+    active ? 'bg-foreground text-background' : 'bg-background text-foreground',
+  );
 
 /**
  * Hub Plans module — the merged Calendar + Trips surface (2026-07). The
- * agenda (the viewer's upcoming trips, bookings, RSVPs and dated saved events,
- * grouped by day, with an ICS subscribe affordance) sits on top; the trip
- * manager + travel inbox (TripsTab) sits below. This removes the old
- * double-listing where a trip appeared in both /hub/calendar and /hub/trips.
+ * agenda (the viewer's upcoming trips, bookings, RSVPs, dated saved events,
+ * and events from groups they belong to, grouped by day, with an ICS
+ * subscribe affordance) sits on top; the trip manager + travel inbox
+ * (TripsTab) sits below. This removes the old double-listing where a trip
+ * appeared in both /hub/calendar and /hub/trips.
  */
 export function PlansModule() {
   const { t } = useTranslation();
@@ -28,7 +40,23 @@ export function PlansModule() {
     return { from: start, to: end };
   }, [horizonDays]);
 
-  const { days, loading } = useMyAgenda(from, to);
+  const { days: allDays, loading } = useMyAgenda(from, to);
+
+  // Only offer the Groups chip when the current window actually has a group
+  // event — same empty-affordance discipline as the inbox's filter chips.
+  const [scope, setScope] = useState<AgendaScope>('all');
+  const hasGroupEvents = useMemo(
+    () => allDays.some((day) => day.items.some((item) => item.kind === 'group_event')),
+    [allDays],
+  );
+
+  const days = useMemo(() => {
+    if (scope === 'all') return allDays;
+    const kinds = scope === 'trips' ? TRIP_KINDS : (['group_event'] as AgendaKind[]);
+    return allDays
+      .map((day) => ({ ...day, items: day.items.filter((item) => kinds.includes(item.kind)) }))
+      .filter((day) => day.items.length > 0);
+  }, [allDays, scope]);
 
   const dayLabel = (key: string) => {
     const d = new Date(`${key}T00:00:00`);
@@ -52,6 +80,37 @@ export function PlansModule() {
             {t('hub.calendar.subscribe', { defaultValue: 'Subscribe' })}
           </Button>
         </div>
+
+        {!loading && allDays.length > 0 && (
+          <div className="flex gap-2 overflow-x-auto" role="tablist">
+            <button
+              role="tab"
+              aria-selected={scope === 'all'}
+              onClick={() => setScope('all')}
+              className={chipClass(scope === 'all')}
+            >
+              {t('hub.calendar.scope.all', { defaultValue: 'All' })}
+            </button>
+            <button
+              role="tab"
+              aria-selected={scope === 'trips'}
+              onClick={() => setScope('trips')}
+              className={chipClass(scope === 'trips')}
+            >
+              {t('hub.calendar.scope.trips', { defaultValue: 'Trips' })}
+            </button>
+            {hasGroupEvents && (
+              <button
+                role="tab"
+                aria-selected={scope === 'groups'}
+                onClick={() => setScope('groups')}
+                className={chipClass(scope === 'groups')}
+              >
+                {t('hub.calendar.scope.groups', { defaultValue: 'Groups' })}
+              </button>
+            )}
+          </div>
+        )}
 
         {loading ? (
           <div className="flex items-center justify-center py-16">

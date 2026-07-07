@@ -28,7 +28,9 @@
       "mail": "Mail",
       "alerts": "Alerts",
       "matches": "Matches",
-      "matchesUnread": "{{count}} new matches"
+      "matchesUnread": "{{count}} new matches",
+      "groups": "Groups",
+      "groupsUnread": "{{count}} unread group messages"
     },
     "compose": {
       "label": "Compose",
@@ -2210,7 +2212,8 @@
       "noPopular": "No popular groups available yet."
     },
     "groupDetail": {
-      "signInRequired": "Please sign in to view group details."
+      "signInRequired": "Please sign in to view group details.",
+      "openInMessages": "Open in Messages"
     },
     "myGroups": {
       "title": "My Groups",
@@ -3036,7 +3039,9 @@
       "failed": "Submission failed",
       "title": "Add to Queer Guide",
       "subtitle": "Drop a flyer or paste a link. Extracted items are submitted for review and shared in this chat."
-    }
+    },
+    "group": "Group",
+    "groupMemberCount": "{{count}} members"
   },
   "newsDetail": {
     "notFound": "Article Not Found",
@@ -3152,7 +3157,13 @@
         "trip": "Trip",
         "reservation": "Booking",
         "going": "Going",
-        "saved": "Saved"
+        "saved": "Saved",
+        "groupEvent": "Group event"
+      },
+      "scope": {
+        "all": "All",
+        "trips": "Trips",
+        "groups": "Groups"
       }
     },
     "contacts": {
@@ -3169,7 +3180,11 @@
       "browseDeckBody": "Find new people to match with.",
       "yourMatches": "Your matches",
       "yourMatchesBody": "{{count}} match conversations",
-      "yourMatchesEmpty": "No matches yet."
+      "yourMatchesEmpty": "No matches yet.",
+      "groupsEmptyTitle": "No groups yet.",
+      "groupsEmptyBody": "Join a group to find people and events near you.",
+      "groupMembers": "{{count}} members",
+      "browseMoreGroups": "Browse more groups"
     },
     "news": {
       "title": "News",

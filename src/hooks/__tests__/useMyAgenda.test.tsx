@@ -75,4 +75,27 @@ describe('useMyAgenda', () => {
     expect(result.current.days[0].items.map((i) => i.id)).toEqual(['a', 'b']);
     expect(result.current.days[1].items.map((i) => i.id)).toEqual(['c']);
   });
+
+  it('accepts group_event items (5th get_my_agenda UNION branch)', async () => {
+    state.result = {
+      data: [
+        item({
+          id: 'grpevt_1',
+          kind: 'group_event',
+          title: 'Queer Hikers meetup',
+          subtitle: 'Queer Hikers',
+          starts_at: '2026-08-15T17:00:00Z',
+          status: 'active',
+          open_target: '/events/queer-hikers-meetup',
+        }),
+      ],
+      error: null,
+    };
+    const { result } = renderHook(
+      () => useMyAgenda(new Date('2026-08-01'), new Date('2026-09-01')),
+      { wrapper },
+    );
+    await waitFor(() => expect(result.current.days.length).toBe(1));
+    expect(result.current.items[0]).toMatchObject({ kind: 'group_event', subtitle: 'Queer Hikers' });
+  });
 });

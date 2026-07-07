@@ -2140,7 +2140,8 @@
       "eyebrow": "커뮤니티"
     },
     "groupDetail": {
-      "signInRequired": "그룹 상세 정보를 보려면 로그인하세요."
+      "signInRequired": "그룹 상세 정보를 보려면 로그인하세요.",
+      "openInMessages": "[KO] Open in Messages"
     },
     "myGroups": {
       "title": "내 그룹",
@@ -2835,7 +2836,9 @@
       "mail": "메일",
       "alerts": "알림",
       "matches": "매치",
-      "matchesUnread": "새 매치 {{count}}개"
+      "matchesUnread": "새 매치 {{count}}개",
+      "groups": "[KO] Groups",
+      "groupsUnread": "[KO] {{count}} unread group messages"
     },
     "compose": {
       "label": "작성",
@@ -3059,7 +3062,9 @@
       "failed": "제출 실패",
       "title": "Queer Guide에 추가",
       "subtitle": "전단지를 끌어다 놓거나 링크를 붙여넣으세요. 추출된 항목은 검토용으로 제출되고 이 채팅에 공유됩니다."
-    }
+    },
+    "group": "[KO] Group",
+    "groupMemberCount": "[KO] {{count}} members"
   },
   "newsDetail": {
     "notFound": "기사를 찾을 수 없습니다",
@@ -3180,7 +3185,13 @@
         "trip": "여행",
         "reservation": "예약",
         "going": "참석",
-        "saved": "저장됨"
+        "saved": "저장됨",
+        "groupEvent": "[KO] Group event"
+      },
+      "scope": {
+        "all": "[KO] All",
+        "trips": "[KO] Trips",
+        "groups": "[KO] Groups"
       }
     },
     "contacts": {
@@ -3197,7 +3208,11 @@
       "browseDeckBody": "매치할 새로운 사람을 찾아보세요.",
       "yourMatches": "내 매치",
       "yourMatchesBody": "매치 대화 {{count}}개",
-      "yourMatchesEmpty": "아직 매치가 없습니다."
+      "yourMatchesEmpty": "아직 매치가 없습니다.",
+      "groupsEmptyTitle": "[KO] No groups yet.",
+      "groupsEmptyBody": "[KO] Join a group to find people and events near you.",
+      "groupMembers": "[KO] {{count}} members",
+      "browseMoreGroups": "[KO] Browse more groups"
     },
     "news": {
       "title": "뉴스",
