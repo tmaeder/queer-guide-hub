@@ -533,7 +533,7 @@ body {
 /* ── Touch target minimum (WCAG 2.5.5) ─────────────────────────────── */
 
 @layer base {
-  a, button, [role="button"], input, select, textarea {
+  a, button, [role="button"], input, select, textarea, summary {
     min-height: 44px;
   }
 
