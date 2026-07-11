@@ -141,7 +141,7 @@ export function FeedbackDetailDrawer({
             <div
               className="mb-4 flex items-center gap-2 p-2.5"
               style={{
-                borderLeft: '3px solid hsl(var(--muted-foreground))',
+                border: '1px solid hsl(var(--muted-foreground) / 0.4)',
                 backgroundColor: 'hsl(var(--muted-foreground) / 0.08)',
                 borderRadius: 'var(--radius-badge)',
               }}
@@ -164,7 +164,7 @@ export function FeedbackDetailDrawer({
             <div
               className="mb-4 flex items-center gap-2 p-2.5"
               style={{
-                borderLeft: '3px solid hsl(var(--destructive))',
+                border: '1px solid hsl(var(--destructive) / 0.5)',
                 backgroundColor: 'hsl(var(--destructive) / 0.08)',
                 borderRadius: 'var(--radius-badge)',
               }}
@@ -211,7 +211,7 @@ export function FeedbackDetailDrawer({
             <div
               className="mb-4 flex items-center p-2.5 gap-2"
               style={{
-                borderLeft: '3px solid hsl(var(--foreground) / 0.55)',
+                border: '1px solid hsl(var(--foreground) / 0.3)',
                 backgroundColor: 'hsl(var(--foreground) / 0.55)',
                 borderRadius: 'var(--radius-badge)',
               }}

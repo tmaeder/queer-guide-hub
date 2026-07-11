@@ -35,7 +35,8 @@ export function DuplicateBanner({
     <div
       className="mb-4 p-4"
       style={{
-        borderLeft: '3px solid hsl(var(--foreground) / 0.55)',
+        border: '1px solid hsl(var(--foreground) / 0.3)',
+        borderRadius: 'var(--radius-element)',
         backgroundColor: 'hsl(var(--foreground) / 0.08)',
       }}
     >
