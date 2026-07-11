@@ -177,7 +177,8 @@
     "loadingTimeout": "[DE] This is taking longer than expected. Please check your connection or try again.",
     "errorLoadingData": "[DE] Something went wrong while loading data. Please try again.",
     "retry": "[DE] Retry",
-    "featured": "[DE] Featured"
+    "featured": "[DE] Featured",
+    "unsave": "[DE] Remove from saved"
   },
   "navigation": {
     "home": "Startseite",
@@ -1576,7 +1577,8 @@
     },
     "news": {
       "title": "Aktuelle Nachrichten",
-      "eyebrow": "Aktuelles"
+      "eyebrow": "Aktuelles",
+      "editorsPick": "[DE] Editors' pick"
     },
     "discover": "Discover",
     "destinationsTitle": "Where the scene lives.",
@@ -1629,13 +1631,33 @@
         "thisWeekend": "Dieses Wochenende",
         "thisWeek": "Diese Woche",
         "later": "Später"
+      },
+      "onNow": "[DE] On now",
+      "prideFallback": {
+        "title": "[DE] Pride season ahead"
       }
     },
     "shop": {
       "eyebrow": "Marktplatz",
       "title": "Queere Marken & Produkte",
       "description": "Produkte und Services von queeren und trans Unternehmen.",
-      "seeAll": "Zum Marktplatz"
+      "seeAll": "Zum Marktplatz",
+      "fallbackTitle": "[DE] Community picks"
+    },
+    "hero": {
+      "stats": {
+        "places": "[DE] {{n}} places",
+        "events": "[DE] {{n}} events",
+        "cities": "[DE] {{n}} cities",
+        "inView": "[DE] {{n}} places in view"
+      },
+      "invite": "[DE] Open the map"
+    },
+    "bornThisWeek": {
+      "eyebrow": "[DE] Community history",
+      "title": "[DE] Born this week",
+      "seeAll": "[DE] All personalities",
+      "celebrate": "[DE] Celebrate {{name}}"
     }
   },
   "header": {

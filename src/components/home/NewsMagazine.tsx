@@ -4,7 +4,9 @@ import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Eyebrow } from '@/components/ui/Eyebrow';
 import { HomeSection } from './HomeSection';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useLatestNews } from '@/hooks/useLatestNews';
+import { useEditorsPick } from '@/hooks/useEditorsPick';
 import { useEntityImageAssets } from '@/hooks/useEntityImageAssets';
 import { resolveImageUrl } from '@/utils/resolveImageUrl';
 import { getFallbackImage } from '@/utils/fallbackImages';
@@ -33,14 +35,40 @@ function meta(a: Article, dateFmt: string): string {
  * different from the date-grouped Events agenda above it.
  */
 const NewsMagazine = React.memo(() => {
-  const { articles, loading, error } = useLatestNews(5);
+  const { articles, loading, error } = useLatestNews(6);
+  const editorsPick = useEditorsPick();
   const { t } = useTranslation();
 
-  const latest = useMemo<Article[]>(() => articles.slice(0, 5) as unknown as Article[], [articles]);
+  // Editors' pick takes the lead slot when one is flagged; latest fill the rest.
+  const latest = useMemo<Article[]>(() => {
+    const pick = editorsPick as Article | null;
+    const rest = (articles as unknown as Article[]).filter((a) => a.id !== pick?.id);
+    return [...(pick ? [pick] : []), ...rest].slice(0, 5);
+  }, [articles, editorsPick]);
   const ids = useMemo(() => latest.map((a) => a.id), [latest]);
   const { assets } = useEntityImageAssets('news_article', ids);
 
-  if (loading || error || latest.length === 0) return null;
+  if (error || (!loading && latest.length === 0)) return null;
+
+  if (loading && latest.length === 0) {
+    return (
+      <HomeSection
+        eyebrow={t('home.news.eyebrow', 'Dispatches')}
+        title={t('home.news.title', 'Latest News')}
+        seeAllHref="/news"
+        seeAllLabel={t('common.allStories', 'All stories')}
+      >
+        <div className="grid grid-cols-1 gap-10 md:grid-cols-[1.1fr_1fr]">
+          <Skeleton className="aspect-[16/10] w-full rounded-container" />
+          <div className="grid grid-cols-2 gap-x-6 gap-y-8">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Skeleton key={i} className="aspect-[3/2] w-full rounded-element" />
+            ))}
+          </div>
+        </div>
+      </HomeSection>
+    );
+  }
 
   const imgFor = (a: Article) =>
     resolveImageUrl({
@@ -78,7 +106,9 @@ const NewsMagazine = React.memo(() => {
             />
           </div>
           <Eyebrow as="div" className="mb-4">
-            {meta(lead, 'MMM d, yyyy')}
+            {editorsPick?.id === lead.id
+              ? `${t('home.news.editorsPick', "Editors' pick")} · ${meta(lead, 'MMM d, yyyy')}`
+              : meta(lead, 'MMM d, yyyy')}
           </Eyebrow>
           <h3 className="text-headline-lg md:text-display font-bold leading-[1.05] tracking-tight line-clamp-3 transition-opacity group-hover:opacity-80">
             {decodeHtmlEntities(lead.title)}

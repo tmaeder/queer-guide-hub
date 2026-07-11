@@ -3,6 +3,8 @@ import { supabase } from '@/integrations/supabase/client';
 export interface PersonalizedCityRow {
   id: string;
   name: string;
+  slug: string | null;
+  image_url: string | null;
   population: number | null;
   countries: { name: string; equality_score: number | null } | null;
 }
@@ -13,7 +15,7 @@ export async function fetchPersonalizedCitiesByIds(
   if (cityIds.length === 0) return [];
   const { data } = await supabase
     .from('cities')
-    .select('id, name, population, countries:country_id(name, equality_score)')
+    .select('id, name, slug, image_url, population, countries:country_id(name, equality_score)')
     .in('id', cityIds);
   return ((data ?? []) as unknown) as PersonalizedCityRow[];
 }
@@ -37,13 +39,16 @@ export async function fetchTrendingCities(
   // 1. Editorial whitelist by name, preserving curated order.
   const { data: whitelisted } = await supabase
     .from('cities')
-    .select('id, name, population, countries:country_id(name, equality_score)')
+    .select('id, name, slug, image_url, population, countries:country_id(name, equality_score)')
     .in('name', FEATURED_CITY_WHITELIST)
     .not('slug', 'like', 'tmp-%');
 
+  // Several DB cities can share a whitelist name (Berlin DE vs Berlin US) —
+  // keep the most populous match so the famous one wins.
   const byName = new Map<string, PersonalizedCityRow>();
   for (const row of (whitelisted ?? []) as unknown as PersonalizedCityRow[]) {
-    if (!byName.has(row.name)) byName.set(row.name, row);
+    const cur = byName.get(row.name);
+    if (!cur || (row.population ?? 0) > (cur.population ?? 0)) byName.set(row.name, row);
   }
   const ordered: PersonalizedCityRow[] = [];
   for (const name of FEATURED_CITY_WHITELIST) {
@@ -56,7 +61,7 @@ export async function fetchTrendingCities(
   // 2. Fallback — large cities in equality-friendly countries (>= 60).
   const { data: filtered } = await supabase
     .from('cities')
-    .select('id, name, population, countries:country_id!inner(name, equality_score)')
+    .select('id, name, slug, image_url, population, countries:country_id!inner(name, equality_score)')
     .not('slug', 'like', 'tmp-%')
     .gte('population', minPopulation)
     .gte('countries.equality_score', 60)

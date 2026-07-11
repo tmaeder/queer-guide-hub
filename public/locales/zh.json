@@ -177,7 +177,8 @@
     "loadingTimeout": "[ZH] This is taking longer than expected. Please check your connection or try again.",
     "errorLoadingData": "[ZH] Something went wrong while loading data. Please try again.",
     "retry": "[ZH] Retry",
-    "featured": "[ZH] Featured"
+    "featured": "[ZH] Featured",
+    "unsave": "[ZH] Remove from saved"
   },
   "navigation": {
     "home": "首页",
@@ -1576,7 +1577,8 @@
     },
     "news": {
       "title": "最新资讯",
-      "eyebrow": "快讯"
+      "eyebrow": "快讯",
+      "editorsPick": "[ZH] Editors' pick"
     },
     "discover": "Discover",
     "destinationsTitle": "Where the scene lives.",
@@ -1629,13 +1631,33 @@
         "thisWeekend": "本周末",
         "thisWeek": "本周",
         "later": "稍后"
+      },
+      "onNow": "[ZH] On now",
+      "prideFallback": {
+        "title": "[ZH] Pride season ahead"
       }
     },
     "shop": {
       "eyebrow": "市集",
       "title": "酷儿品牌精选",
       "description": "来自酷儿及跨性别经营商家的商品与服务。",
-      "seeAll": "前往市集"
+      "seeAll": "前往市集",
+      "fallbackTitle": "[ZH] Community picks"
+    },
+    "hero": {
+      "stats": {
+        "places": "[ZH] {{n}} places",
+        "events": "[ZH] {{n}} events",
+        "cities": "[ZH] {{n}} cities",
+        "inView": "[ZH] {{n}} places in view"
+      },
+      "invite": "[ZH] Open the map"
+    },
+    "bornThisWeek": {
+      "eyebrow": "[ZH] Community history",
+      "title": "[ZH] Born this week",
+      "seeAll": "[ZH] All personalities",
+      "celebrate": "[ZH] Celebrate {{name}}"
     }
   },
   "header": {

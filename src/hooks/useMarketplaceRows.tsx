@@ -11,6 +11,10 @@ const BASE_SELECT = `*, venues(name, address, city)`;
 
 export type CuratedRowKey = 'featured' | 'new' | 'most-relevant' | 'price-drops' | 'queer-owned';
 
+/** Departments safe as a first impression on pre-opt-in surfaces (homepage).
+ *  Excludes underwear/swimwear/intimacy/bdsm_fetish/other. */
+export const BRAND_SAFE_DEPARTMENTS = ['apparel', 'jewelry', 'books_art', 'hygiene', 'services'];
+
 interface RowState {
   data: MarketplaceListing[];
   loading: boolean;
@@ -92,6 +96,68 @@ async function fetchPriceDropIds(targetCount: number): Promise<string[]> {
     .map(([id]) => id);
 }
 
+function brandSafeQuery(limit: number, ownedOnly: boolean) {
+  let q = supabase
+    .from('marketplace_listings')
+    .select(BASE_SELECT)
+    .eq('status', 'active')
+    .not('images', 'is', null)
+    // Homepage renders pre-opt-in to first-time visitors: strictly 'sfw'
+    // (no 'suggestive') and only brand-safe departments.
+    .eq('content_rating', 'sfw')
+    .in('department', BRAND_SAFE_DEPARTMENTS)
+    .order('boutique_score', { ascending: false, nullsFirst: false })
+    .order('quality_score', { ascending: false, nullsFirst: false })
+    .limit(limit);
+  if (ownedOnly) q = q.overlaps('community_owned_tags', ['queer_owned', 'trans_owned']);
+  return q;
+}
+
+interface BrandSafeRowState extends RowState {
+  /** False when the queer-owned filter returned too few items and the rail
+   *  fell back to the wider community pool (callers retitle accordingly). */
+  ownedOnly: boolean;
+}
+
+/**
+ * Homepage marketplace rail: strictly-SFW, brand-safe departments, queer- or
+ * trans-owned first; falls back to the unfiltered-ownership pool when the
+ * owned set is too thin (< 4 items).
+ */
+export function useBrandSafeRow(limit = 12): BrandSafeRowState {
+  const [state, setState] = useState<BrandSafeRowState>({ ...initial, ownedOnly: true });
+  useEffect(() => {
+    let cancelled = false;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
+    setState({ data: [], loading: true, error: null, ownedOnly: true });
+    (async () => {
+      const owned = await brandSafeQuery(limit, true);
+      if (owned.error) throw owned.error;
+      let rows = (owned.data ?? []) as MarketplaceListing[];
+      let ownedOnly = true;
+      if (rows.length < 4) {
+        const wide = await brandSafeQuery(limit, false);
+        if (wide.error) throw wide.error;
+        rows = (wide.data ?? []) as MarketplaceListing[];
+        ownedOnly = false;
+      }
+      if (!cancelled) setState({ data: rows, loading: false, error: null, ownedOnly });
+    })().catch((err: unknown) => {
+      if (cancelled) return;
+      setState({
+        data: [],
+        loading: false,
+        error: err instanceof Error ? err.message : 'Failed to load',
+        ownedOnly: true,
+      });
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [limit]);
+  return state;
+}
+
 export function useMarketplaceRow(key: CuratedRowKey, limit = 12): RowState {
   const [state, setState] = useState<RowState>(initial);
   useEffect(() => {
@@ -131,7 +197,9 @@ export function useMarketplaceSpotlight(): { listing: MarketplaceListing | null;
           .eq('status', 'active')
           .eq('featured', true)
           .not('images', 'is', null)
-          .in('content_rating', SFW_RATINGS)
+          // Homepage-only surface: strictly sfw + brand-safe departments.
+          .eq('content_rating', 'sfw')
+          .in('department', BRAND_SAFE_DEPARTMENTS)
           .order('updated_at', { ascending: false })
           .limit(1);
         if (error) throw error;

@@ -177,7 +177,8 @@
     "loadingTimeout": "[JA] This is taking longer than expected. Please check your connection or try again.",
     "errorLoadingData": "[JA] Something went wrong while loading data. Please try again.",
     "retry": "[JA] Retry",
-    "featured": "[JA] Featured"
+    "featured": "[JA] Featured",
+    "unsave": "[JA] Remove from saved"
   },
   "navigation": {
     "home": "ホーム",
@@ -1576,7 +1577,8 @@
     },
     "news": {
       "title": "最新ニュース",
-      "eyebrow": "ニュース"
+      "eyebrow": "ニュース",
+      "editorsPick": "[JA] Editors' pick"
     },
     "discover": "Discover",
     "destinationsTitle": "Where the scene lives.",
@@ -1629,13 +1631,33 @@
         "thisWeekend": "今週末",
         "thisWeek": "今週",
         "later": "その後"
+      },
+      "onNow": "[JA] On now",
+      "prideFallback": {
+        "title": "[JA] Pride season ahead"
       }
     },
     "shop": {
       "eyebrow": "マーケットプレイス",
       "title": "クィアオウンドのアイテム",
       "description": "クィア・トランス経営のショップの商品とサービス。",
-      "seeAll": "マーケットプレイスへ"
+      "seeAll": "マーケットプレイスへ",
+      "fallbackTitle": "[JA] Community picks"
+    },
+    "hero": {
+      "stats": {
+        "places": "[JA] {{n}} places",
+        "events": "[JA] {{n}} events",
+        "cities": "[JA] {{n}} cities",
+        "inView": "[JA] {{n}} places in view"
+      },
+      "invite": "[JA] Open the map"
+    },
+    "bornThisWeek": {
+      "eyebrow": "[JA] Community history",
+      "title": "[JA] Born this week",
+      "seeAll": "[JA] All personalities",
+      "celebrate": "[JA] Celebrate {{name}}"
     }
   },
   "header": {

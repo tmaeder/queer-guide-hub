@@ -177,7 +177,8 @@
     "loadingTimeout": "[ES] This is taking longer than expected. Please check your connection or try again.",
     "errorLoadingData": "[ES] Something went wrong while loading data. Please try again.",
     "retry": "[ES] Retry",
-    "featured": "[ES] Featured"
+    "featured": "[ES] Featured",
+    "unsave": "[ES] Remove from saved"
   },
   "navigation": {
     "home": "Inicio",
@@ -1576,7 +1577,8 @@
     },
     "news": {
       "title": "Últimas noticias",
-      "eyebrow": "Crónicas"
+      "eyebrow": "Crónicas",
+      "editorsPick": "[ES] Editors' pick"
     },
     "discover": "Discover",
     "destinationsTitle": "Where the scene lives.",
@@ -1629,13 +1631,33 @@
         "thisWeekend": "Este fin de semana",
         "thisWeek": "Esta semana",
         "later": "Más adelante"
+      },
+      "onNow": "[ES] On now",
+      "prideFallback": {
+        "title": "[ES] Pride season ahead"
       }
     },
     "shop": {
       "eyebrow": "Mercado",
       "title": "De negocios queer",
       "description": "Productos y servicios de negocios queer y trans.",
-      "seeAll": "Ver mercado"
+      "seeAll": "Ver mercado",
+      "fallbackTitle": "[ES] Community picks"
+    },
+    "hero": {
+      "stats": {
+        "places": "[ES] {{n}} places",
+        "events": "[ES] {{n}} events",
+        "cities": "[ES] {{n}} cities",
+        "inView": "[ES] {{n}} places in view"
+      },
+      "invite": "[ES] Open the map"
+    },
+    "bornThisWeek": {
+      "eyebrow": "[ES] Community history",
+      "title": "[ES] Born this week",
+      "seeAll": "[ES] All personalities",
+      "celebrate": "[ES] Celebrate {{name}}"
     }
   },
   "header": {

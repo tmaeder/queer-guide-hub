@@ -9,9 +9,23 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 vi.mock('@/hooks/useLocalizedNavigate', () => ({ useLocalizedNavigate: () => vi.fn() }));
 vi.mock('@/hooks/useConsolidatedStats', () => ({
   useConsolidatedStats: () => ({
-    stats: { venues: 0, cities: 0, countries: 0, events: 0, news: 0, users: 0 },
+    stats: {
+      venues: 3214,
+      profiles: 900,
+      cities: 56,
+      countries: 120,
+      events: 182,
+      posts: null,
+      personalities: null,
+      groups: null,
+      tags: null,
+      marketplace: null,
+      news: null,
+      cms: null,
+    },
     loading: false,
     error: null,
+    refetch: vi.fn(),
   }),
 }));
 vi.mock('@/hooks/use-mobile', () => ({ useIsMobile: () => false }));
@@ -32,7 +46,7 @@ vi.mock('@/components/home/RecentlyViewedRail', () => ({
 import Index from '../Index';
 
 describe('Index', () => {
-  it('renders without crashing', () => {
+  it('renders a visible h1 masthead with live stats', () => {
     const queryClient = new QueryClient({
       defaultOptions: { queries: { retry: false } },
     });
@@ -43,6 +57,10 @@ describe('Index', () => {
         </MemoryRouter>
       </QueryClientProvider>,
     );
-    expect(container).toBeTruthy();
+    const h1 = container.querySelector('h1');
+    expect(h1).toBeTruthy();
+    // The masthead h1 is visible (identity overlay), not sr-only.
+    expect(h1?.className).not.toContain('sr-only');
+    expect(h1?.textContent).toContain('Queer venues,');
   });
 });
