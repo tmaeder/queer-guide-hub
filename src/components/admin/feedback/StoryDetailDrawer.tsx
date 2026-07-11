@@ -222,7 +222,7 @@ export function StoryDetailDrawer({
           {onSaveNarrative && (
             <div
               className="p-4 bg-muted flex flex-col gap-2"
-              style={{ borderLeft: '3px solid hsl(var(--foreground))' }}
+              style={{ border: '1px solid hsl(var(--foreground) / 0.4)', borderRadius: 'var(--radius-element)' }}
             >
               <div
                 className="flex items-center gap-2 text-2xs font-bold uppercase text-foreground"
@@ -288,7 +288,7 @@ export function StoryDetailDrawer({
                 className="p-2.5 flex items-start gap-2"
                 style={{
                   backgroundColor: 'color-mix(in srgb, hsl(var(--foreground)) 10%, transparent)',
-                  borderLeft: '3px solid hsl(var(--foreground) / 0.55)',
+                  border: '1px solid hsl(var(--foreground) / 0.3)',
                 }}
               >
                 <AlertCircle
