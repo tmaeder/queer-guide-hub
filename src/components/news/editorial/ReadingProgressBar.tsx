@@ -30,8 +30,8 @@ export function ReadingProgressBar() {
       className="fixed top-0 left-0 right-0 h-[2px] bg-transparent z-50 pointer-events-none motion-reduce:hidden"
     >
       <div
-        className="h-full bg-foreground origin-left"
-        style={{ width: `${pct}%`, transition: 'width 80ms linear' }}
+        className="h-full w-full bg-foreground origin-left"
+        style={{ transform: `scaleX(${pct / 100})`, transition: 'transform 80ms linear' }}
       />
     </div>
   );

@@ -1470,7 +1470,7 @@ export function PatternAdmin() {
             ["Events live", "412", "+7", "var(--c2)"],
             ["Reports queue", "8", "−2", "var(--c1)"],
           ].map(([l, big, delta, c]) => (
-            <div key={l} className="card" style={{ padding: 16, borderLeft: `3px solid ${c}` }}>
+            <div key={l} className="card" style={{ padding: 16, borderTop: `2px solid ${c}` }}>
               <div className="lbl">{l}</div>
               <div style={{ fontFamily: "var(--font-display)", fontSize: 38, marginTop: 4 }}>{big}</div>
               <div className="mono" style={{ color: "var(--muted)" }}>{delta} vs last week</div>
@@ -1610,7 +1610,7 @@ export function PatternSecurity() {
             ["Incidents (30d)", "0", "last: 84 days", "var(--accent)"],
             ["Reports auto-cleared", "82%", "of 1,402", "var(--c6)"],
           ].map(([l, big, sub, c]) => (
-            <div key={l} className="card" style={{ padding: 16, borderLeft: `3px solid ${c}` }}>
+            <div key={l} className="card" style={{ padding: 16, borderTop: `2px solid ${c}` }}>
               <div className="lbl">{l}</div>
               <div style={{ fontFamily: "var(--font-display)", fontSize: 38, marginTop: 4 }}>{big}</div>
               <div className="mono" style={{ color: "var(--muted)" }}>{sub}</div>

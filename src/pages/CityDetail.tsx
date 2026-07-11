@@ -16,7 +16,6 @@ import { useQueerVillages } from '@/hooks/useQueerVillages';
 import { useNearestAirport } from '@/hooks/useNearestAirport';
 import { useAuth } from '@/hooks/useAuth';
 import { useTrackEvent } from '@/hooks/useTrackEvent';
-import { PageLoading } from '@/components/ui/loading';
 import { SimilarItems } from '@/components/discovery/SimilarItems';
 import { MarketplaceForCity } from '@/components/marketplace/MarketplaceForCity';
 import { CityLocalSupporterCaption } from '@/components/marketplace/CityLocalSupporterCaption';
@@ -195,7 +194,34 @@ export default function CityDetail() {
     }
   };
 
-  if (loading) return <PageLoading text={t('city.loadingDetails', 'Loading city details...')} />;
+  if (loading) {
+    // Content-shaped skeleton mirroring the loaded layout (hero → facts row →
+    // section stubs) so there's no full-screen spinner and no layout shift.
+    return (
+      <div
+        role="status"
+        aria-live="polite"
+        aria-label={t('city.loadingDetails', 'Loading city details...')}
+        className="mx-auto max-w-7xl px-4 sm:px-6 md:px-8 py-6"
+      >
+        <div className="h-[58vh] min-h-[380px] max-h-[600px] w-full rounded-container bg-muted animate-pulse" />
+        <div className="mt-6 h-11 w-48 rounded-element bg-muted animate-pulse" />
+        <div className="mt-8 grid grid-cols-2 gap-6 sm:grid-cols-3 rounded-container border border-border/60 p-6">
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="flex flex-col gap-2">
+              <div className="h-3 w-16 rounded-badge bg-muted animate-pulse" />
+              <div className="h-6 w-24 rounded-badge bg-muted animate-pulse" />
+            </div>
+          ))}
+        </div>
+        <div className="mt-10 flex flex-col gap-6">
+          {[0, 1].map((i) => (
+            <div key={i} className="h-40 w-full rounded-container bg-muted animate-pulse" />
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   if (!city) {
     return (
