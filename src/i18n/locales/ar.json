@@ -3193,12 +3193,48 @@
         "reservation": "حجز",
         "going": "سأحضر",
         "saved": "محفوظ",
-        "groupEvent": "[AR] Group event"
+        "groupEvent": "[AR] Group event",
+        "birthday": "[AR] Birthday",
+        "history": "[AR] Queer history",
+        "news": "[AR] Saved news"
       },
       "scope": {
         "all": "[AR] All",
         "trips": "[AR] Trips",
         "groups": "[AR] Groups"
+      },
+      "views": {
+        "month": "[AR] Month",
+        "week": "[AR] Week",
+        "day": "[AR] Day"
+      },
+      "nav": {
+        "prev": "[AR] Previous",
+        "next": "[AR] Next",
+        "today": "[AR] Today"
+      },
+      "layers": {
+        "button": "[AR] Layers",
+        "title": "[AR] Show on calendar",
+        "trips": "[AR] Trips & bookings",
+        "events": "[AR] Events",
+        "birthdays": "[AR] Friends' birthdays",
+        "history": "[AR] Queer history",
+        "news": "[AR] Saved news"
+      },
+      "tripsButton": "[AR] Trips",
+      "gridLabel": "[AR] Calendar",
+      "cellItems_one": "[AR] {{count}} item",
+      "cellItems_other": "[AR] {{count}} items",
+      "historyCount": "[AR] Queer history · {{count}}",
+      "more": "[AR] +{{count}} more",
+      "dayEmpty": "[AR] Nothing on this day.",
+      "weekEmpty": "[AR] Nothing this week.",
+      "onThisDay": "[AR] On this day in queer history",
+      "bornYearsAgo": "[AR] born {{count}} years ago",
+      "diedYearsAgo": "[AR] died {{count}} years ago",
+      "tripsDrawer": {
+        "title": "[AR] Your trips"
       }
     },
     "contacts": {

@@ -143,6 +143,13 @@ export function PrivacyTab({ formData, hasPasskey, onPrivacyChange }: PrivacyTab
               Your email and phone number are never shown on your public profile.
             </p>
             <SwitchField
+              id="birthday_visibility"
+              label="Share birthday with friends"
+              description="Friends see the month and day on their hub calendar. Your birth year and age are never shown."
+              checked={ps.birthday_visibility === 'friends'}
+              onChange={(v) => onPrivacyChange('birthday_visibility', v ? 'friends' : 'private')}
+            />
+            <SwitchField
               id="appear_in_recognition"
               label="Appear in annual recognition page"
               description="If selected by the editorial team, your name may appear on the /contributors/:year page. Default off."

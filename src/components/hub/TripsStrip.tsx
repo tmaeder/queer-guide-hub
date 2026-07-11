@@ -21,7 +21,7 @@ import { Skeleton } from '@/components/ui/skeleton';
  * (itinerary, bookings, travel inbox) lives in the /trips/:id workspace;
  * trip email is single-homed in Messages' Trips filter.
  */
-export function TripsStrip() {
+export function TripsStrip({ hideTitle = false }: { hideTitle?: boolean } = {}) {
   const { t } = useTranslation();
   const { user } = useAuth();
   const navigate = useLocalizedNavigate();
@@ -63,14 +63,18 @@ export function TripsStrip() {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between gap-2">
-        <h2 className="text-title font-display">
-          {t('hub.plans.trips', { defaultValue: 'Your trips' })}
-          {hasAnyTrips && (
-            <span className="ml-2 text-sm font-normal text-muted-foreground tabular-nums">
-              {trips?.length}
-            </span>
-          )}
-        </h2>
+        {hideTitle ? (
+          <span aria-hidden />
+        ) : (
+          <h2 className="text-title font-display">
+            {t('hub.plans.trips', { defaultValue: 'Your trips' })}
+            {hasAnyTrips && (
+              <span className="ml-2 text-sm font-normal text-muted-foreground tabular-nums">
+                {trips?.length}
+              </span>
+            )}
+          </h2>
+        )}
         <div className="flex gap-2">
           <Button
             variant="outline"

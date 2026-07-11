@@ -3187,12 +3187,48 @@
         "reservation": "予約",
         "going": "参加",
         "saved": "保存",
-        "groupEvent": "[JA] Group event"
+        "groupEvent": "[JA] Group event",
+        "birthday": "[JA] Birthday",
+        "history": "[JA] Queer history",
+        "news": "[JA] Saved news"
       },
       "scope": {
         "all": "[JA] All",
         "trips": "[JA] Trips",
         "groups": "[JA] Groups"
+      },
+      "views": {
+        "month": "[JA] Month",
+        "week": "[JA] Week",
+        "day": "[JA] Day"
+      },
+      "nav": {
+        "prev": "[JA] Previous",
+        "next": "[JA] Next",
+        "today": "[JA] Today"
+      },
+      "layers": {
+        "button": "[JA] Layers",
+        "title": "[JA] Show on calendar",
+        "trips": "[JA] Trips & bookings",
+        "events": "[JA] Events",
+        "birthdays": "[JA] Friends' birthdays",
+        "history": "[JA] Queer history",
+        "news": "[JA] Saved news"
+      },
+      "tripsButton": "[JA] Trips",
+      "gridLabel": "[JA] Calendar",
+      "cellItems_one": "[JA] {{count}} item",
+      "cellItems_other": "[JA] {{count}} items",
+      "historyCount": "[JA] Queer history · {{count}}",
+      "more": "[JA] +{{count}} more",
+      "dayEmpty": "[JA] Nothing on this day.",
+      "weekEmpty": "[JA] Nothing this week.",
+      "onThisDay": "[JA] On this day in queer history",
+      "bornYearsAgo": "[JA] born {{count}} years ago",
+      "diedYearsAgo": "[JA] died {{count}} years ago",
+      "tripsDrawer": {
+        "title": "[JA] Your trips"
       }
     },
     "contacts": {

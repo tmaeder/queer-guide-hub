@@ -3187,12 +3187,48 @@
         "reservation": "预订",
         "going": "参加",
         "saved": "已收藏",
-        "groupEvent": "[ZH] Group event"
+        "groupEvent": "[ZH] Group event",
+        "birthday": "[ZH] Birthday",
+        "history": "[ZH] Queer history",
+        "news": "[ZH] Saved news"
       },
       "scope": {
         "all": "[ZH] All",
         "trips": "[ZH] Trips",
         "groups": "[ZH] Groups"
+      },
+      "views": {
+        "month": "[ZH] Month",
+        "week": "[ZH] Week",
+        "day": "[ZH] Day"
+      },
+      "nav": {
+        "prev": "[ZH] Previous",
+        "next": "[ZH] Next",
+        "today": "[ZH] Today"
+      },
+      "layers": {
+        "button": "[ZH] Layers",
+        "title": "[ZH] Show on calendar",
+        "trips": "[ZH] Trips & bookings",
+        "events": "[ZH] Events",
+        "birthdays": "[ZH] Friends' birthdays",
+        "history": "[ZH] Queer history",
+        "news": "[ZH] Saved news"
+      },
+      "tripsButton": "[ZH] Trips",
+      "gridLabel": "[ZH] Calendar",
+      "cellItems_one": "[ZH] {{count}} item",
+      "cellItems_other": "[ZH] {{count}} items",
+      "historyCount": "[ZH] Queer history · {{count}}",
+      "more": "[ZH] +{{count}} more",
+      "dayEmpty": "[ZH] Nothing on this day.",
+      "weekEmpty": "[ZH] Nothing this week.",
+      "onThisDay": "[ZH] On this day in queer history",
+      "bornYearsAgo": "[ZH] born {{count}} years ago",
+      "diedYearsAgo": "[ZH] died {{count}} years ago",
+      "tripsDrawer": {
+        "title": "[ZH] Your trips"
       }
     },
     "contacts": {
