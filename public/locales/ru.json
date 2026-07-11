@@ -176,7 +176,8 @@
     "resetFilters": "[RU] Reset filters",
     "loadingTimeout": "[RU] This is taking longer than expected. Please check your connection or try again.",
     "errorLoadingData": "[RU] Something went wrong while loading data. Please try again.",
-    "retry": "[RU] Retry"
+    "retry": "[RU] Retry",
+    "featured": "[RU] Featured"
   },
   "navigation": {
     "home": "Главная",

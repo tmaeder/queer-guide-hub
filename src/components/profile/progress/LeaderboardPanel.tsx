@@ -10,7 +10,7 @@ import {
 } from '@/hooks/useVenuesV2Data';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ProfileSectionHeader } from '@/components/profile/ProfileSectionHeader';
+import { SectionHeader } from '@/components/ui/SectionHeader';
 
 const COLLAPSED_LIMIT = 10;
 const EXPANDED_LIMIT = 100;
@@ -35,7 +35,7 @@ export function LeaderboardPanel() {
 
   return (
     <section aria-label="Leaderboard" className="flex flex-col gap-4">
-      <ProfileSectionHeader title={t('venues.leaderboard.title', 'Leaderboard')} />
+      <SectionHeader size="section" title={t('venues.leaderboard.title', 'Leaderboard')} />
       <Tabs defaultValue="global">
         <TabsList>
           <TabsTrigger value="global">{t('venues.leaderboard.tabs.global', 'Global')}</TabsTrigger>

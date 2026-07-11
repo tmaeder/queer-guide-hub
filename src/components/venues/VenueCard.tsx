@@ -167,7 +167,7 @@ function VenueCardImpl({ venue, loading = false, socialSignal }: VenueCardProps)
 
               <div className="p-4">
                 <div className="flex items-baseline gap-2 min-w-0">
-                  <p className="text-body-lg font-semibold leading-tight truncate flex-1 min-w-0">
+                  <h3 className="text-body-lg font-semibold leading-tight truncate flex-1 min-w-0">
                     {venue.name}
                     {isVerified && (
                       <BadgeCheck
@@ -176,7 +176,7 @@ function VenueCardImpl({ venue, loading = false, socialSignal }: VenueCardProps)
                         className="inline ml-1 text-foreground/60 align-middle"
                       />
                     )}
-                  </p>
+                  </h3>
                   {priceTier && (
                     <span
                       aria-label={`Price tier ${priceTier}`}

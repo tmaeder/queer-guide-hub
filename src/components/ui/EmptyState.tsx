@@ -66,7 +66,7 @@ export const EmptyState = ({
             className="text-foreground"
           />
         </div>
-        <h6 className="text-lg font-semibold mb-2">{title}</h6>
+        <h2 className="text-lg font-semibold mb-2">{title}</h2>
         <p className="text-sm text-muted-foreground mb-6 max-w-md mx-auto">{description}</p>
         {variant === 'filtered' && activeFilters && activeFilters.length > 0 && (
           <div

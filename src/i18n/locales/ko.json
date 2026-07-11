@@ -176,7 +176,8 @@
     "resetFilters": "[KO] Reset filters",
     "loadingTimeout": "[KO] This is taking longer than expected. Please check your connection or try again.",
     "errorLoadingData": "[KO] Something went wrong while loading data. Please try again.",
-    "retry": "[KO] Retry"
+    "retry": "[KO] Retry",
+    "featured": "[KO] Featured"
   },
   "navigation": {
     "home": "홈",

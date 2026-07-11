@@ -176,7 +176,8 @@
     "resetFilters": "[JA] Reset filters",
     "loadingTimeout": "[JA] This is taking longer than expected. Please check your connection or try again.",
     "errorLoadingData": "[JA] Something went wrong while loading data. Please try again.",
-    "retry": "[JA] Retry"
+    "retry": "[JA] Retry",
+    "featured": "[JA] Featured"
   },
   "navigation": {
     "home": "ホーム",

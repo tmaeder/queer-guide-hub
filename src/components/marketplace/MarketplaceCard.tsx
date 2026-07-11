@@ -225,7 +225,7 @@ function MarketplaceCardImpl({
             <span>{departmentLabel(listing.department ?? departmentOf(listing.subcategory_slug))}</span>
           </p>
 
-          <h2 className="text-15 font-medium leading-snug line-clamp-2 text-balance">
+          <h3 className="text-15 font-medium leading-snug line-clamp-2 text-balance">
             {isAdult && <span className="mr-1.5 text-2xs uppercase tracking-wider text-muted-foreground">{t('marketplace.adultBadge', '18+')}</span>}
             <LocalizedLink
               to={`/marketplace/${listing.slug}`}
@@ -234,7 +234,7 @@ function MarketplaceCardImpl({
             >
               <HighlightedText text={listing.title} query={searchQuery} />
             </LocalizedLink>
-          </h2>
+          </h3>
 
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-baseline gap-1.5 min-w-0">
@@ -311,7 +311,7 @@ function RowBody({
         ) : null}
         <span>{departmentLabel(listing.department ?? departmentOf(listing.subcategory_slug))}</span>
       </p>
-      <h2 className="text-15 font-medium leading-snug line-clamp-2">
+      <h3 className="text-15 font-medium leading-snug line-clamp-2">
         {isAdult && (
           <span className="mr-1.5 text-2xs uppercase tracking-wider text-muted-foreground">{t('marketplace.adultBadge', '18+')}</span>
         )}
@@ -322,7 +322,7 @@ function RowBody({
         >
           <HighlightedText text={listing.title} query={searchQuery} />
         </LocalizedLink>
-      </h2>
+      </h3>
       <div className="flex items-center gap-2">
         <p
           className={`text-15 font-semibold leading-none tabular-nums ${outOfStock ? 'line-through text-muted-foreground' : ''}`}

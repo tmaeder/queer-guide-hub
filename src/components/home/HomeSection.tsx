@@ -1,6 +1,5 @@
 import * as React from 'react';
-import { LocalizedLink } from '@/components/routing/LocalizedLink';
-import { Eyebrow } from '@/components/ui/Eyebrow';
+import { SectionHeader, SeeAllLink } from '@/components/ui/SectionHeader';
 import { cn } from '@/lib/utils';
 
 interface HomeSectionProps {
@@ -33,21 +32,6 @@ export function HomeSection({
   children,
 }: HomeSectionProps) {
   const headingId = React.useId();
-  const seeAll = (extraClass: string) =>
-    seeAllHref ? (
-      <LocalizedLink
-        to={seeAllHref}
-        className={cn(
-          'group items-center gap-1 text-13 font-medium text-muted-foreground transition-colors hover:text-foreground no-underline',
-          extraClass,
-        )}
-      >
-        {seeAllLabel}
-        <span className="transition-transform group-hover:translate-x-1" aria-hidden="true">
-          →
-        </span>
-      </LocalizedLink>
-    ) : null;
 
   return (
     <section
@@ -59,32 +43,22 @@ export function HomeSection({
       )}
     >
       <div className="max-w-7xl mx-auto">
-        <div className="flex items-end justify-between gap-4 mb-6 md:mb-8">
-          <div className="min-w-0">
-            {eyebrow && (
-              <Eyebrow as="div" className="mb-2">
-                {eyebrow}
-              </Eyebrow>
-            )}
-            <h2
-              id={headingId}
-              className="text-headline md:text-headline-lg font-bold tracking-tight"
-              style={{ letterSpacing: '-0.02em' }}
-            >
-              {title}
-            </h2>
-            {description && (
-              <p className="mt-2 text-sm md:text-base text-muted-foreground max-w-md">
-                {description}
-              </p>
-            )}
-          </div>
-          {seeAll('hidden sm:inline-flex shrink-0')}
-        </div>
+        <SectionHeader
+          id={headingId}
+          eyebrow={eyebrow}
+          title={title}
+          subtitle={description}
+          seeAllHref={seeAllHref}
+          seeAllLabel={seeAllLabel}
+        />
 
         {children}
 
-        {seeAllHref && <div className="mt-6 sm:hidden">{seeAll('inline-flex')}</div>}
+        {seeAllHref && (
+          <div className="mt-6 sm:hidden">
+            <SeeAllLink to={seeAllHref} label={seeAllLabel} />
+          </div>
+        )}
       </div>
     </section>
   );

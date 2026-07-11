@@ -176,7 +176,8 @@
     "resetFilters": "[PT] Reset filters",
     "loadingTimeout": "[PT] This is taking longer than expected. Please check your connection or try again.",
     "errorLoadingData": "[PT] Something went wrong while loading data. Please try again.",
-    "retry": "[PT] Retry"
+    "retry": "[PT] Retry",
+    "featured": "[PT] Featured"
   },
   "navigation": {
     "home": "Início",

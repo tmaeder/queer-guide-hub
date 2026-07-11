@@ -266,7 +266,8 @@
     "resetFilters": "Reset filters",
     "loadingTimeout": "This is taking longer than expected. Please check your connection or try again.",
     "errorLoadingData": "Something went wrong while loading data. Please try again.",
-    "retry": "Retry"
+    "retry": "Retry",
+    "featured": "Featured"
   },
   "navigation": {
     "home": "Home",

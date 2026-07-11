@@ -176,7 +176,8 @@
     "resetFilters": "[AR] Reset filters",
     "loadingTimeout": "[AR] This is taking longer than expected. Please check your connection or try again.",
     "errorLoadingData": "[AR] Something went wrong while loading data. Please try again.",
-    "retry": "[AR] Retry"
+    "retry": "[AR] Retry",
+    "featured": "[AR] Featured"
   },
   "navigation": {
     "home": "الرئيسية",

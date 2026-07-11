@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
+import { SeeAllLink } from '@/components/ui/SectionHeader';
 import { useParams } from 'react-router';
 import { useTrackView } from '@/hooks/useTrackView';
 import { resolveEntityImage } from '@/lib/images/resolveEntityImage';
@@ -256,15 +257,7 @@ export default function CityDetail() {
     typeof city.latitude === 'number' && typeof city.longitude === 'number';
 
   const seeAll = (href: string) => (
-    <LocalizedLink
-      to={href}
-      className="group inline-flex items-center gap-1 text-13 font-medium text-muted-foreground transition-colors hover:text-foreground no-underline"
-    >
-      {t('cities.detail.seeAll', 'See all')}
-      <span className="transition-transform group-hover:translate-x-1" aria-hidden="true">
-        →
-      </span>
-    </LocalizedLink>
+    <SeeAllLink to={href} label={t('cities.detail.seeAll', 'See all')} />
   );
 
   const sectionContent: Record<string, React.ReactNode> = {

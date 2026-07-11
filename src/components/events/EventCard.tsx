@@ -188,9 +188,9 @@ export const EventCard = memo(function EventCard({ event, loading = false, socia
 
               <div className="p-4">
                 <div className="flex items-baseline gap-2 min-w-0">
-                  <p className="text-body-lg font-semibold leading-tight truncate flex-1 min-w-0">
+                  <h3 className="text-body-lg font-semibold leading-tight truncate flex-1 min-w-0">
                     {event.title}
-                  </p>
+                  </h3>
                   {priceDisplay && (
                     <span className="text-xs font-medium text-muted-foreground tabular-nums shrink-0">
                       {priceDisplay}
