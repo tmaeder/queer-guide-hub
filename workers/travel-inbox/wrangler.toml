@@ -10,8 +10,9 @@ compatibility_flags = ["nodejs_compat"]
 
 [vars]
 INBOX_DOMAIN = "queer.guide"
-# Cloudflare Workers AI model — Llama 3.1 8B Instruct (fast + cheap).
-WORKERS_AI_MODEL = "@cf/meta/llama-3.1-8b-instruct"
+# Cloudflare Workers AI model. (llama-3.1-8b was deprecated 2026-05-30 —
+# AiError 5028 — which silently broke all email parsing until 2026-07-11.)
+WORKERS_AI_MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast"
 # Mailbox delivery guards: drop raw messages over 5 MB, truncate stored bodies
 # at 256k chars, accept at most 60 inbound mails per user per hour.
 MAILBOX_MAX_RAW_BYTES = "5242880"
