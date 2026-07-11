@@ -20,7 +20,7 @@ describe('CityCountryAutocomplete', () => {
   it('renders label and input', () => {
     render(<CityCountryAutocomplete value={null} onChange={vi.fn()} label="City" />);
     expect(screen.getByText('City')).toBeInTheDocument();
-    expect(screen.getByRole('textbox')).toBeInTheDocument();
+    expect(screen.getByRole('combobox')).toBeInTheDocument();
   });
 
   it('shows current selection when value provided', () => {
@@ -35,7 +35,7 @@ describe('CityCountryAutocomplete', () => {
 
   it('updates query when user types', () => {
     render(<CityCountryAutocomplete value={null} onChange={vi.fn()} />);
-    const input = screen.getByRole('textbox');
+    const input = screen.getByRole('combobox');
     fireEvent.change(input, { target: { value: 'Ber' } });
     expect(input).toHaveValue('Ber');
   });
