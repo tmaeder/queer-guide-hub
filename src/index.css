@@ -622,6 +622,19 @@ h1, h2, .font-display {
   to { opacity: 1; }
 }
 
+/* Route transition (RouteFade). CSS-only replacement for the framer-motion
+   MotionPage: the incoming route paints immediately (no exit-animation wait)
+   and fades in. No fill-mode — if the animation never runs, content is
+   simply visible. */
+.route-fade {
+  animation: fade-in 150ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .route-fade {
+    animation: none;
+  }
+}
+
 @keyframes spin {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
