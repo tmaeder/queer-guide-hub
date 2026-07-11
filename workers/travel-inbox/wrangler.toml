@@ -12,6 +12,11 @@ compatibility_flags = ["nodejs_compat"]
 INBOX_DOMAIN = "queer.guide"
 # Cloudflare Workers AI model — Llama 3.1 8B Instruct (fast + cheap).
 WORKERS_AI_MODEL = "@cf/meta/llama-3.1-8b-instruct"
+# Mailbox delivery guards: drop raw messages over 5 MB, truncate stored bodies
+# at 256k chars, accept at most 60 inbound mails per user per hour.
+MAILBOX_MAX_RAW_BYTES = "5242880"
+MAILBOX_MAX_BODY_CHARS = "262144"
+MAILBOX_HOURLY_LIMIT = "60"
 
 # Workers AI binding — no API key needed, billed via the CF account.
 [ai]
