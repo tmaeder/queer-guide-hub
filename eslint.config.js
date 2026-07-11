@@ -324,6 +324,18 @@ export default tseslint.config(
         },
         {
           selector:
+            "Literal[value=/\\bshadow-(md|lg|xl|2xl)\\b/]",
+          message:
+            "Shadows are disabled (CLAUDE.md § Design). Use border or bg-muted for depth.",
+        },
+        {
+          selector:
+            "Literal[value=/^(?!.*\\bfrom-black\\b).*\\bbg-gradient-to-/]",
+          message:
+            "Gradients are not allowed (CLAUDE.md § Design). Only black readability scrims over images (from-black/NN) are exempt.",
+        },
+        {
+          selector:
             "Literal[value=/\\b(p|m|mx|my|mt|mb|ml|mr|px|py|pl|pr|pt|pb|gap|gap-x|gap-y|space-x|space-y)-(3|5|7|9|11|13|15)\\b/]",
           message:
             "Strict 8 pt grid (UI audit P8). Use even-step Tailwind utility (-4, -6, -8, -10, -12, -14, -16) or the explicit .5 micro-spacing (-0.5, -1.5, -2.5, -3.5) for icon-level offsets. Admin was previously exempt from this rule (no-restricted-syntax overrides wholesale per file) — closed 2026-07-07.",
@@ -382,6 +394,21 @@ export default tseslint.config(
       "src/components/resources/TagListRenderer.tsx",
       "src/components/location/LocationInfo.tsx",
       "src/components/country/EqualityScoreBadge.tsx",
+      // Hex-rule allowlist entries the P2-1 block carries but this block was
+      // missing — without them, re-adding the hex selector here would flag
+      // sanctioned functional palettes.
+      "src/hooks/useRiskVisual.ts",
+      "src/pages/cities/EqualityChip.tsx",
+      "src/pages/cities/CitiesMapPane.tsx",
+      "src/components/venues/VenueFilters.tsx",
+      // Trip cover gradient palette (sanctioned exception, same as
+      // TripCoverBand/pages/trips) — the palette source itself.
+      "src/hooks/useTripTemplates.ts",
+      // MapLibre paint config — hex required by the map API (same rationale
+      // as src/components/map/**).
+      "src/components/pride/PrideMap.tsx",
+      // Design-system showcase — renders literal color values on purpose.
+      "src/pages/PatternLibrary/**",
     ],
     rules: {
       // NOTE (2026-06-10): flat config replaces no-restricted-syntax WHOLESALE
@@ -389,8 +416,39 @@ export default tseslint.config(
       // so it must carry EVERY public selector (the radius/spacing block above
       // only covers files this block ignores). Dropping a selector here
       // silently disables it for all public files.
+      //
+      // 2026-07-11: the hex/rgb/hsl selector HAD been dropped here, silently
+      // disabling the public color ban (the P2-1 block above is shadowed by
+      // this one). Re-added, plus the shadow/gradient selectors CLAUDE.md
+      // documents. Promoted warn → error: every selector below is at zero
+      // occurrences in the public tree, so error is free and matches the
+      // "promote to error once flushed" intent.
       "no-restricted-syntax": [
-        "warn",
+        "error",
+        {
+          selector:
+            "Literal[value=/^#[0-9a-fA-F]{3,8}$|^rgba?\\(\\s*\\d|^hsla?\\(\\s*\\d/]",
+          message:
+            "Hardcoded color literal — use design tokens (hsl(var(--foreground)), hsl(var(--muted)), etc.).",
+        },
+        {
+          selector:
+            "Literal[value=/(gradient\\(|var\\([^)]*,\\s*)[^)]*#[0-9a-fA-F]{3,8}/]",
+          message:
+            "Hex color embedded in a gradient()/var() fallback — use design tokens; token-less fallbacks drift from the theme.",
+        },
+        {
+          selector:
+            "Literal[value=/\\bshadow-(md|lg|xl|2xl)\\b/]",
+          message:
+            "Shadows are disabled (CLAUDE.md § Design). Use border or bg-muted for depth.",
+        },
+        {
+          selector:
+            "Literal[value=/^(?!.*\\bfrom-black\\b).*\\bbg-gradient-to-/]",
+          message:
+            "Gradients are not allowed in public UI (CLAUDE.md § Design). Only black readability scrims over images (from-black/NN) are exempt.",
+        },
         {
           selector:
             "Literal[value=/\\b(text|bg|border|ring|from|via|to|decoration|divide)-(red|green|emerald|amber|yellow|orange|blue|purple|pink|cyan|indigo|violet|fuchsia|rose|sky|teal|lime|slate|gray|neutral|zinc|stone)-(50|100|200|300|400|500|600|700|800|900|950)\\b/]",

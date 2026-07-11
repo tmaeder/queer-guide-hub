@@ -34,7 +34,7 @@ function Chip({
       type="button"
       onClick={onClick}
       aria-pressed={active}
-      className={`rounded-badge border px-3 py-1.5 text-13 transition-colors ${
+      className={`rounded-badge border px-2.5 py-1.5 text-13 transition-colors ${
         active
           ? 'border-foreground bg-foreground text-background'
           : 'border-border bg-card text-foreground hover:bg-muted'
