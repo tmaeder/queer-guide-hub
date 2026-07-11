@@ -39,12 +39,28 @@ const Index = React.memo(() => {
     return () => window.clearTimeout(id);
   }, []);
 
-  const mapHeight = isMobile ? '70vh' : 'calc(100dvh - 64px)';
+  // Text hero above the map: the map shrinks just enough that headline + map
+  // still share the first viewport on desktop.
+  const mapHeight = isMobile ? '62vh' : 'calc(100dvh - 64px - 176px)';
 
   return (
     <div className="min-h-screen">
-      {/* ── Hero = the live map (same MapShell as /map), search-free ──── */}
-      <section className="relative isolate overflow-hidden" style={{ height: mapHeight }}>
+      {/* ── Text hero — visible headline + one factual line (was sr-only). ── */}
+      <section className="px-4 sm:px-6 md:px-8 pt-10 pb-8 md:pt-14 md:pb-10">
+        <div className="max-w-7xl mx-auto">
+          <h1 className="text-display md:text-hero font-bold tracking-tight text-balance max-w-4xl">
+            {t('home.heroLine1', 'Queer venues,')}{' '}
+            {t('home.heroLine2', 'events, and people.')}{' '}
+            <span className="text-muted-foreground">{t('home.heroLine3', 'Worldwide.')}</span>
+          </h1>
+          <p className="mt-4 text-body-lg text-muted-foreground max-w-2xl">
+            {t('home.subtitleShort', 'Verified safe places, real events, and the people behind them.')}
+          </p>
+        </div>
+      </section>
+
+      {/* ── The live map (same MapShell as /map), search-free ──── */}
+      <section className="relative isolate overflow-hidden" style={{ height: mapHeight, minHeight: '420px' }}>
         <ErrorBoundary section="map" fallback={<div className="h-full w-full bg-muted" />}>
           {mapReady ? (
             <React.Suspense fallback={<div className="h-full w-full animate-pulse bg-muted" />}>
@@ -60,13 +76,6 @@ const Index = React.memo(() => {
           )}
         </ErrorBoundary>
 
-        {/* Headline kept for SEO + a11y only — visually hidden so the live map
-            is the unobstructed hero (no overlay card blocking the centre). */}
-        <h1 className="sr-only">
-          {t('home.heroLine1', 'Queer venues,')} {t('home.heroLine2', 'events, and people.')}{' '}
-          {t('home.heroLine3', 'Worldwide.')} —{' '}
-          {t('home.subtitleShort', 'Verified safe places, real events, and the people behind them.')}
-        </h1>
       </section>
 
       {/* ── Returning visitors: one light personalized rail (self-hides) ─ */}
