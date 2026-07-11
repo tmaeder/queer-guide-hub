@@ -4,7 +4,7 @@ import { CalendarPlus, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { AgendaRow } from '@/components/hub/AgendaRow';
-import { TripsTab } from '@/components/profile/tabs/TripsTab';
+import { TripsStrip } from '@/components/hub/TripsStrip';
 import { useMyAgenda, type AgendaKind } from '@/hooks/useMyAgenda';
 import { useCalendarFeed } from '@/hooks/useCalendarFeed';
 
@@ -22,9 +22,9 @@ const chipClass = (active: boolean) =>
  * Hub Plans module — the merged Calendar + Trips surface (2026-07). The
  * agenda (the viewer's upcoming trips, bookings, RSVPs, dated saved events,
  * and events from groups they belong to, grouped by day, with an ICS
- * subscribe affordance) sits on top; the trip manager + travel inbox
- * (TripsTab) sits below. This removes the old double-listing where a trip
- * appeared in both /hub/calendar and /hub/trips.
+ * subscribe affordance) sits on top; a compact trip manager (TripsStrip)
+ * sits below. Trip email is single-homed in Messages' Trips filter; heavy
+ * trip tooling lives in the /trips/:id workspace.
  */
 export function PlansModule() {
   const { t } = useTranslation();
@@ -143,12 +143,9 @@ export function PlansModule() {
         )}
       </section>
 
-      {/* Trip manager + travel inbox (the former /hub/trips body). */}
-      <section className="flex flex-col gap-2">
-        <h2 className="text-title font-display">
-          {t('hub.plans.trips', { defaultValue: 'Your trips' })}
-        </h2>
-        <TripsTab />
+      {/* Compact trip manager (heavy tooling lives in /trips/:id). */}
+      <section>
+        <TripsStrip />
       </section>
     </div>
   );

@@ -2900,7 +2900,8 @@
       "anEvent": "イベント",
       "aVenue": "会場"
     },
-    "matchTag": "マッチ"
+    "matchTag": "マッチ",
+    "openAlerts": "[JA] All notifications"
   },
   "extension": {
     "signInGate": {
@@ -3239,7 +3240,11 @@
       "friendCount": "友達{{count}}人",
       "findPeople": "ユーザーを探す",
       "noFriends": "まだ友達がいません。",
-      "wantsToConnect": "つながりを希望"
+      "wantsToConnect": "つながりを希望",
+      "allCaughtUp": "[JA] All caught up.",
+      "next48h": "[JA] Next two days",
+      "requests": "[JA] Friend requests",
+      "allPeople": "[JA] All people"
     },
     "messages": {
       "chats": "チャット",

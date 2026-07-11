@@ -1,5 +1,8 @@
-import type { TripListItem } from '@/hooks/useTrips';
-import type { TripSortKey, TripStatusFilter } from './TripsToolbar';
+import type { Trip, TripListItem } from '@/hooks/useTrips';
+
+// Formerly exported by TripsToolbar (removed in the 2026-07 hub declutter).
+export type TripStatusFilter = 'all' | Trip['status'] | 'saved';
+export type TripSortKey = 'recent' | 'start_date' | 'alphabetical';
 
 const DEFAULT_TITLE_KEY = 'trips.dialog.create.defaultTitle';
 

@@ -2936,7 +2936,8 @@
       "anEvent": "Событие",
       "aVenue": "Место"
     },
-    "matchTag": "Совпадение"
+    "matchTag": "Совпадение",
+    "openAlerts": "[RU] All notifications"
   },
   "extension": {
     "signInGate": {
@@ -3275,7 +3276,11 @@
       "friendCount": "{{count}} друзей",
       "findPeople": "Найти людей",
       "noFriends": "Пока нет друзей.",
-      "wantsToConnect": "Хочет подключиться"
+      "wantsToConnect": "Хочет подключиться",
+      "allCaughtUp": "[RU] All caught up.",
+      "next48h": "[RU] Next two days",
+      "requests": "[RU] Friend requests",
+      "allPeople": "[RU] All people"
     },
     "messages": {
       "chats": "Чаты",

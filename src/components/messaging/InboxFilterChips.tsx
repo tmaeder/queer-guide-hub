@@ -117,7 +117,7 @@ export function InboxFilterChips({
   const { data: upcomingTrips } = useUpcomingTrips();
   const hasUpcomingTrips = (upcomingTrips?.length ?? 0) > 0;
   // Dating matches are a self-gated lens — only surface the chip once the
-  // viewer has opted into the intimate profile (mirrors DatingSection's gate).
+  // viewer has opted into the intimate profile (mirrors /people/dating's gate).
   const { data: intimateProfile } = useMyIntimateProfile();
   const { userGroups } = useGroups();
   const hasGroups = (userGroups?.length ?? 0) > 0;

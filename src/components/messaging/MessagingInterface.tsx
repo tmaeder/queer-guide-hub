@@ -9,7 +9,6 @@ import { useSearchParams } from 'react-router';
 import { VibeEditor } from '@/components/messaging/VibeEditor';
 import { useInboxFeed, type InboxFilter } from '@/hooks/useInboxFeed';
 import { InboxRailItem } from '@/components/messaging/InboxRailItem';
-import { CalendarRailStrip } from '@/components/messaging/CalendarRailStrip';
 import { useGlobalPresence } from '@/hooks/useConversationPresence';
 import { useRailActions } from '@/hooks/useRailActions';
 import { MailDetail } from '@/components/messaging/MailDetail';
@@ -37,7 +36,6 @@ export const MessagingInterface = ({ filter, className }: MessagingInterfaceProp
   const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const { items, loading } = useInboxFeed(filter ?? 'all');
-  const showTripCards = filter === 'all' || filter === 'trips';
   const onlineUsers = useGlobalPresence();
   const railActions = useRailActions();
   const [composeEmailOpen, setComposeEmailOpen] = useState(false);
@@ -108,9 +106,6 @@ export const MessagingInterface = ({ filter, className }: MessagingInterfaceProp
           </div>
         </div>
         <ScrollArea style={{ flex: 1 }}>
-          {/* Upcoming trips + saved events — shown above the inbox regardless of
-              whether the inbox itself has items (returns null when empty). */}
-          {showTripCards && !search.trim() && <CalendarRailStrip />}
           {loading ? (
             <div className="flex items-center justify-center py-16">
               <div className="text-center">
