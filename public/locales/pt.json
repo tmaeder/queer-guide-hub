@@ -172,7 +172,12 @@
     "more": "Mais",
     "remove": "Remover",
     "accept": "Aceitar",
-    "decline": "Recusar"
+    "decline": "Recusar",
+    "resetFilters": "[PT] Reset filters",
+    "removeFilter": "[PT] Remove {{label}}",
+    "loadingTimeout": "[PT] This is taking longer than expected. Please check your connection or try again.",
+    "errorLoadingData": "[PT] Something went wrong while loading data. Please try again.",
+    "retry": "[PT] Retry"
   },
   "navigation": {
     "home": "Início",
@@ -1150,7 +1155,10 @@
     "free": "Gratuito",
     "ticketsRequired": "Ingressos Necessários",
     "soldOut": "Esgotado",
-    "cancelled": "Cancelado"
+    "cancelled": "Cancelado",
+    "inTrip": "[PT] In trip",
+    "duringYourTrip": "[PT] During your trip",
+    "featured": "[PT] Featured"
   },
   "venues": {
     "title": "Locais",
@@ -1274,7 +1282,10 @@
     "achievementToast": {
       "unlocked": "Desbloqueado: {{name}}",
       "fallback": "Nova conquista obtida"
-    }
+    },
+    "closed": "[PT] Closed",
+    "openNow": "[PT] Open now",
+    "locationUnknown": "[PT] Location unknown"
   },
   "marketplace": {
     "title": "Mercado",
@@ -1287,7 +1298,11 @@
     "onSale": "Em Promoção",
     "newArrival": "Novidade",
     "featured": "Destaque",
-    "reviews": "Avaliações"
+    "reviews": "Avaliações",
+    "adultBadge": "[PT] 18+",
+    "adBadge": "[PT] Ad",
+    "outOfStock": "[PT] Out of stock",
+    "queerOwnedBadge": "[PT] Queer-owned"
   },
   "profile": {
     "editProfile": "Editar Perfil",
@@ -3255,5 +3270,32 @@
     "plans": {
       "trips": "Suas viagens"
     }
+  },
+  "city": {
+    "rights": {
+      "safetyNotesTitle": "[PT] Safety notes for {{name}}",
+      "nationalDisclaimer": "[PT] The rights status below applies to <countryLink>{{country}}</countryLink> at the national level. Local laws and enforcement in {{city}} may vary.",
+      "nationalDisclaimerNoCountry": "[PT] The rights status below applies to this country at the national level. Local laws and enforcement in {{city}} may vary.",
+      "loading": "[PT] Loading rights data...",
+      "noData": "[PT] Rights data is not available for this location."
+    },
+    "loadingDetails": "[PT] Loading city details...",
+    "notFoundTitle": "[PT] City not found",
+    "notFoundDescription": "[PT] The city you're looking for doesn't exist.",
+    "backToPlaces": "[PT] ← Back to Places",
+    "similarCities": "[PT] Similar cities"
+  },
+  "favorites": {
+    "removedTitle": "[PT] Removed from favorites",
+    "addedTitle": "[PT] Added to favorites",
+    "removedDescription": "[PT] {{name}} removed from your favorites",
+    "addedDescription": "[PT] {{name}} added to your favorites",
+    "updateFailed": "[PT] Failed to update favorites"
+  },
+  "social": {
+    "friendsGoing": "[PT] friends going",
+    "going": "[PT] going",
+    "friendsSaved": "[PT] friends saved",
+    "inTrips": "[PT] in trips"
   }
 }

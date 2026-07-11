@@ -172,7 +172,12 @@
     "more": "Altro",
     "remove": "Rimuovi",
     "accept": "Accetta",
-    "decline": "Rifiuta"
+    "decline": "Rifiuta",
+    "resetFilters": "[IT] Reset filters",
+    "removeFilter": "[IT] Remove {{label}}",
+    "loadingTimeout": "[IT] This is taking longer than expected. Please check your connection or try again.",
+    "errorLoadingData": "[IT] Something went wrong while loading data. Please try again.",
+    "retry": "[IT] Retry"
   },
   "navigation": {
     "home": "Home",
@@ -1150,7 +1155,10 @@
     "free": "Gratuito",
     "ticketsRequired": "Biglietto richiesto",
     "soldOut": "Esaurito",
-    "cancelled": "Annullato"
+    "cancelled": "Annullato",
+    "inTrip": "[IT] In trip",
+    "duringYourTrip": "[IT] During your trip",
+    "featured": "[IT] Featured"
   },
   "venues": {
     "title": "Luoghi",
@@ -1274,7 +1282,10 @@
     "achievementToast": {
       "unlocked": "Sbloccato: {{name}}",
       "fallback": "Nuovo obiettivo raggiunto"
-    }
+    },
+    "closed": "[IT] Closed",
+    "openNow": "[IT] Open now",
+    "locationUnknown": "[IT] Location unknown"
   },
   "marketplace": {
     "title": "Mercato",
@@ -1287,7 +1298,11 @@
     "onSale": "In offerta",
     "newArrival": "Novità",
     "featured": "In evidenza",
-    "reviews": "Recensioni"
+    "reviews": "Recensioni",
+    "adultBadge": "[IT] 18+",
+    "adBadge": "[IT] Ad",
+    "outOfStock": "[IT] Out of stock",
+    "queerOwnedBadge": "[IT] Queer-owned"
   },
   "profile": {
     "editProfile": "Modifica profilo",
@@ -3255,5 +3270,32 @@
     "plans": {
       "trips": "I tuoi viaggi"
     }
+  },
+  "city": {
+    "rights": {
+      "safetyNotesTitle": "[IT] Safety notes for {{name}}",
+      "nationalDisclaimer": "[IT] The rights status below applies to <countryLink>{{country}}</countryLink> at the national level. Local laws and enforcement in {{city}} may vary.",
+      "nationalDisclaimerNoCountry": "[IT] The rights status below applies to this country at the national level. Local laws and enforcement in {{city}} may vary.",
+      "loading": "[IT] Loading rights data...",
+      "noData": "[IT] Rights data is not available for this location."
+    },
+    "loadingDetails": "[IT] Loading city details...",
+    "notFoundTitle": "[IT] City not found",
+    "notFoundDescription": "[IT] The city you're looking for doesn't exist.",
+    "backToPlaces": "[IT] ← Back to Places",
+    "similarCities": "[IT] Similar cities"
+  },
+  "favorites": {
+    "removedTitle": "[IT] Removed from favorites",
+    "addedTitle": "[IT] Added to favorites",
+    "removedDescription": "[IT] {{name}} removed from your favorites",
+    "addedDescription": "[IT] {{name}} added to your favorites",
+    "updateFailed": "[IT] Failed to update favorites"
+  },
+  "social": {
+    "friendsGoing": "[IT] friends going",
+    "going": "[IT] going",
+    "friendsSaved": "[IT] friends saved",
+    "inTrips": "[IT] in trips"
   }
 }

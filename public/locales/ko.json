@@ -172,7 +172,12 @@
     "more": "더보기",
     "remove": "삭제",
     "accept": "수락",
-    "decline": "거절"
+    "decline": "거절",
+    "resetFilters": "[KO] Reset filters",
+    "removeFilter": "[KO] Remove {{label}}",
+    "loadingTimeout": "[KO] This is taking longer than expected. Please check your connection or try again.",
+    "errorLoadingData": "[KO] Something went wrong while loading data. Please try again.",
+    "retry": "[KO] Retry"
   },
   "navigation": {
     "home": "홈",
@@ -1150,7 +1155,10 @@
     "free": "무료",
     "ticketsRequired": "티켓 필요",
     "soldOut": "매진",
-    "cancelled": "취소됨"
+    "cancelled": "취소됨",
+    "inTrip": "[KO] In trip",
+    "duringYourTrip": "[KO] During your trip",
+    "featured": "[KO] Featured"
   },
   "venues": {
     "title": "장소",
@@ -1274,7 +1282,10 @@
     "achievementToast": {
       "unlocked": "잠금 해제: {{name}}",
       "fallback": "새 업적 획득"
-    }
+    },
+    "closed": "[KO] Closed",
+    "openNow": "[KO] Open now",
+    "locationUnknown": "[KO] Location unknown"
   },
   "marketplace": {
     "title": "마켓플레이스",
@@ -1287,7 +1298,11 @@
     "onSale": "할인 중",
     "newArrival": "신상품",
     "featured": "추천",
-    "reviews": "리뷰"
+    "reviews": "리뷰",
+    "adultBadge": "[KO] 18+",
+    "adBadge": "[KO] Ad",
+    "outOfStock": "[KO] Out of stock",
+    "queerOwnedBadge": "[KO] Queer-owned"
   },
   "profile": {
     "editProfile": "프로필 수정",
@@ -3253,5 +3268,32 @@
     "plans": {
       "trips": "내 여행"
     }
+  },
+  "city": {
+    "rights": {
+      "safetyNotesTitle": "[KO] Safety notes for {{name}}",
+      "nationalDisclaimer": "[KO] The rights status below applies to <countryLink>{{country}}</countryLink> at the national level. Local laws and enforcement in {{city}} may vary.",
+      "nationalDisclaimerNoCountry": "[KO] The rights status below applies to this country at the national level. Local laws and enforcement in {{city}} may vary.",
+      "loading": "[KO] Loading rights data...",
+      "noData": "[KO] Rights data is not available for this location."
+    },
+    "loadingDetails": "[KO] Loading city details...",
+    "notFoundTitle": "[KO] City not found",
+    "notFoundDescription": "[KO] The city you're looking for doesn't exist.",
+    "backToPlaces": "[KO] ← Back to Places",
+    "similarCities": "[KO] Similar cities"
+  },
+  "favorites": {
+    "removedTitle": "[KO] Removed from favorites",
+    "addedTitle": "[KO] Added to favorites",
+    "removedDescription": "[KO] {{name}} removed from your favorites",
+    "addedDescription": "[KO] {{name}} added to your favorites",
+    "updateFailed": "[KO] Failed to update favorites"
+  },
+  "social": {
+    "friendsGoing": "[KO] friends going",
+    "going": "[KO] going",
+    "friendsSaved": "[KO] friends saved",
+    "inTrips": "[KO] in trips"
   }
 }

@@ -172,7 +172,12 @@
     "more": "もっと見る",
     "remove": "削除",
     "accept": "承認",
-    "decline": "辞退"
+    "decline": "辞退",
+    "resetFilters": "[JA] Reset filters",
+    "removeFilter": "[JA] Remove {{label}}",
+    "loadingTimeout": "[JA] This is taking longer than expected. Please check your connection or try again.",
+    "errorLoadingData": "[JA] Something went wrong while loading data. Please try again.",
+    "retry": "[JA] Retry"
   },
   "navigation": {
     "home": "ホーム",
@@ -1150,7 +1155,10 @@
     "free": "無料",
     "ticketsRequired": "チケットが必要",
     "soldOut": "完売",
-    "cancelled": "中止"
+    "cancelled": "中止",
+    "inTrip": "[JA] In trip",
+    "duringYourTrip": "[JA] During your trip",
+    "featured": "[JA] Featured"
   },
   "venues": {
     "title": "スポット",
@@ -1274,7 +1282,10 @@
     "achievementToast": {
       "unlocked": "達成: {{name}}",
       "fallback": "新しい実績を獲得"
-    }
+    },
+    "closed": "[JA] Closed",
+    "openNow": "[JA] Open now",
+    "locationUnknown": "[JA] Location unknown"
   },
   "marketplace": {
     "title": "マーケットプレイス",
@@ -1287,7 +1298,11 @@
     "onSale": "セール中",
     "newArrival": "新着",
     "featured": "注目",
-    "reviews": "レビュー"
+    "reviews": "レビュー",
+    "adultBadge": "[JA] 18+",
+    "adBadge": "[JA] Ad",
+    "outOfStock": "[JA] Out of stock",
+    "queerOwnedBadge": "[JA] Queer-owned"
   },
   "profile": {
     "editProfile": "プロフィールを編集",
@@ -3253,5 +3268,32 @@
     "plans": {
       "trips": "あなたの旅行"
     }
+  },
+  "city": {
+    "rights": {
+      "safetyNotesTitle": "[JA] Safety notes for {{name}}",
+      "nationalDisclaimer": "[JA] The rights status below applies to <countryLink>{{country}}</countryLink> at the national level. Local laws and enforcement in {{city}} may vary.",
+      "nationalDisclaimerNoCountry": "[JA] The rights status below applies to this country at the national level. Local laws and enforcement in {{city}} may vary.",
+      "loading": "[JA] Loading rights data...",
+      "noData": "[JA] Rights data is not available for this location."
+    },
+    "loadingDetails": "[JA] Loading city details...",
+    "notFoundTitle": "[JA] City not found",
+    "notFoundDescription": "[JA] The city you're looking for doesn't exist.",
+    "backToPlaces": "[JA] ← Back to Places",
+    "similarCities": "[JA] Similar cities"
+  },
+  "favorites": {
+    "removedTitle": "[JA] Removed from favorites",
+    "addedTitle": "[JA] Added to favorites",
+    "removedDescription": "[JA] {{name}} removed from your favorites",
+    "addedDescription": "[JA] {{name}} added to your favorites",
+    "updateFailed": "[JA] Failed to update favorites"
+  },
+  "social": {
+    "friendsGoing": "[JA] friends going",
+    "going": "[JA] going",
+    "friendsSaved": "[JA] friends saved",
+    "inTrips": "[JA] in trips"
   }
 }

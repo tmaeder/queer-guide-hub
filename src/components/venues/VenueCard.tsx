@@ -1,4 +1,5 @@
 import { memo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card } from '@/components/ui/card';
 import { Image } from '@/components/ui/Image';
 import { MapPin, BadgeCheck } from 'lucide-react';
@@ -80,6 +81,7 @@ const VenueCardFixture = () => (
 );
 
 function VenueCardImpl({ venue, loading = false, socialSignal }: VenueCardProps) {
+  const { t } = useTranslation();
   const visual = getVenueVisual(venue);
   const openNow = venue ? isOpenNow(venue.hours) : null;
   const priceTier =
@@ -95,9 +97,9 @@ function VenueCardImpl({ venue, loading = false, socialSignal }: VenueCardProps)
 
   // Single overlay slot — priority order
   const overlay: { label: string; variant: 'closed' | 'open' } | null = isClosed
-    ? { label: 'Closed', variant: 'closed' }
+    ? { label: t('venues.closed', 'Closed'), variant: 'closed' }
     : openNow === true
-      ? { label: 'Open now', variant: 'open' }
+      ? { label: t('venues.openNow', 'Open now'), variant: 'open' }
       : null;
 
   return (
@@ -169,7 +171,7 @@ function VenueCardImpl({ venue, loading = false, socialSignal }: VenueCardProps)
                     {venue.name}
                     {isVerified && (
                       <BadgeCheck
-                        aria-label="Verified"
+                        aria-label={t('venues.verified', 'Verified')}
                         size={14}
                         className="inline ml-1 text-foreground/60 align-middle"
                       />
@@ -188,7 +190,7 @@ function VenueCardImpl({ venue, loading = false, socialSignal }: VenueCardProps)
                   {locationLabel || (
                     <span className="inline-flex items-center gap-1">
                       <MapPin size={12} />
-                      Location unknown
+                      {t('venues.locationUnknown', 'Location unknown')}
                     </span>
                   )}
                 </p>
@@ -211,12 +213,12 @@ function VenueCardImpl({ venue, loading = false, socialSignal }: VenueCardProps)
                       {
                         icon: SignalIcons.friends,
                         count: socialSignal.friends_saved,
-                        label: 'friends saved',
+                        label: t('social.friendsSaved', 'friends saved'),
                       },
                       {
                         icon: SignalIcons.trip,
                         count: socialSignal.trip_usage,
-                        label: 'in trips',
+                        label: t('social.inTrips', 'in trips'),
                       },
                     ]}
                   />
