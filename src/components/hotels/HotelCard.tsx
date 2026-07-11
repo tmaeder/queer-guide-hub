@@ -2,6 +2,8 @@ import { memo } from 'react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { MapPin, Star, DollarSign } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { Image } from '@/components/ui/Image';
+import { FeaturedBadge } from '@/components/ui/FeaturedBadge';
 import { CardHoverEffect } from '@/components/effects/CardHoverEffect';
 import type { Hotel } from '@/hooks/useHotels';
 import { Skeleton } from 'boneyard-js/react';
@@ -97,18 +99,15 @@ function HotelCardImpl({ hotel, loading = false }: HotelCardProps) {
         <CardHoverEffect>
           <div className="group overflow-hidden rounded-container border border-border bg-card transition-colors duration-300 hover:border-foreground/40 h-full flex flex-col">
             {/* Image */}
-            <div className="relative overflow-hidden bg-accent" style={{ height: 180 }}>
-              {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- onError is a media-error handler, not a user-input listener. */}
-              <img
-                src={imageUrl || hotelFallback}
-                alt={hotelName}
-                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                loading="lazy"
-                decoding="async"
-                referrerPolicy="no-referrer"
-                onError={(e) => { if (e.currentTarget.src !== hotelFallback) e.currentTarget.src = hotelFallback; }}
-                className="transition-transform duration-500 ease-out group-hover:scale-[1.04]"
-              />
+            <Image
+              src={imageUrl || hotelFallback}
+              alt={hotelName}
+              aspect="card"
+              imageRole="cover"
+              rounded="none"
+              fallbackEntityType="hotel"
+              fallbackKey={hotel.slug ?? hotel.id}
+            >
               {/*
             Featured badge is now driven by the curated `featured_priority`
             column added in 20260504114754_hotels_featured_priority.sql.
@@ -117,21 +116,7 @@ function HotelCardImpl({ hotel, loading = false }: HotelCardProps) {
           */}
               {(() => {
                 const fp = (hotel as { featured_priority?: number | null }).featured_priority;
-                return typeof fp === 'number' ? (
-                  <Badge
-                    style={{
-                      top: 8,
-                      right: 8,
-                      backgroundColor: 'hsl(var(--primary))',
-                      // Paired token, not literal white — --primary is near-white
-                      // in dark mode, which made white text invisible.
-                      color: 'hsl(var(--primary-foreground))',
-                    }}
-                    className="absolute"
-                  >
-                    Featured
-                  </Badge>
-                ) : null;
+                return typeof fp === 'number' ? <FeaturedBadge /> : null;
               })()}
               {typeLabel && (
                 <Badge
@@ -142,14 +127,14 @@ function HotelCardImpl({ hotel, loading = false }: HotelCardProps) {
                   {typeLabel}
                 </Badge>
               )}
-            </div>
+            </Image>
 
             {/* Content */}
             <div className="p-4 flex-1 flex flex-col gap-1">
               {hotelName && (
-                <p className="font-semibold truncate" style={{ lineHeight: 1.3 }} title={hotelName}>
+                <h3 className="font-semibold truncate text-base" style={{ lineHeight: 1.3 }} title={hotelName}>
                   {hotelName}
-                </p>
+                </h3>
               )}
 
               {location && (

@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useGamification } from '@/hooks/useGamification';
-import { ProfileSectionHeader } from '@/components/profile/ProfileSectionHeader';
+import { SectionHeader } from '@/components/ui/SectionHeader';
 
 // Explicit registry so Rollup tree-shakes lucide-react. Add new icons here
 // when the achievements_catalog gains new icon strings.
@@ -35,7 +35,7 @@ export function AchievementsGrid() {
 
   return (
     <section aria-labelledby="achievements-h">
-      <ProfileSectionHeader
+      <SectionHeader size="section"
         id="achievements-h"
         title={t('venues.passport.achievements', 'Achievements')}
         className="mb-4"

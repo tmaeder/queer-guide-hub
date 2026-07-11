@@ -176,7 +176,8 @@
     "resetFilters": "[FR] Reset filters",
     "loadingTimeout": "[FR] This is taking longer than expected. Please check your connection or try again.",
     "errorLoadingData": "[FR] Something went wrong while loading data. Please try again.",
-    "retry": "[FR] Retry"
+    "retry": "[FR] Retry",
+    "featured": "[FR] Featured"
   },
   "navigation": {
     "home": "Accueil",

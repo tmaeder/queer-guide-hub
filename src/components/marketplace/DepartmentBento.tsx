@@ -13,7 +13,7 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { Image } from '@/components/ui/Image';
-import { SectionHeader } from './SectionHeader';
+import { SectionHeader } from '@/components/ui/SectionHeader';
 import { useDepartmentCovers, useMarketplaceDepartmentCounts } from '@/hooks/useMarketplaceQueries';
 import { useAdultAcknowledgement } from '@/hooks/useAdultContent';
 import { ADULT_DEPARTMENTS, DEPARTMENT_ORDER, departmentLabel } from '@/lib/marketplaceTaxonomy';
@@ -71,7 +71,8 @@ export function DepartmentBento() {
         id="category-tiles"
         eyebrow="Browse"
         title="Departments"
-        action={{ label: 'See all categories', to: '/marketplace/categories' }}
+        seeAllHref="/marketplace/categories"
+        seeAllLabel="See all categories"
       />
       {loading ? (
         <div className="grid grid-cols-2 gap-4 md:grid-cols-6">

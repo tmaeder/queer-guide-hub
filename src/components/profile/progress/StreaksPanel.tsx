@@ -1,6 +1,6 @@
 import { ArrowRight, BookOpen, Bookmark, Flame, Globe } from 'lucide-react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
-import { ProfileSectionHeader } from '@/components/profile/ProfileSectionHeader';
+import { SectionHeader } from '@/components/ui/SectionHeader';
 import { useReadingStreak as useGuideStreak, useContinueReadingGuides } from '@/hooks/useGuideReadingProgress';
 import { useReadingStreak as useNewsStreak } from '@/hooks/useReadingStreak';
 import { useUserNewsReadsList } from '@/hooks/useUserNewsReadsList';
@@ -42,7 +42,7 @@ export function StreaksPanel() {
 
   return (
     <section aria-label="Reading" className="flex flex-col gap-4">
-      <ProfileSectionHeader title="Reading" />
+      <SectionHeader size="section" title="Reading" />
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <StatTile
