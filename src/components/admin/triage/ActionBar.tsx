@@ -42,7 +42,7 @@ export function ActionBar({ onAction, isLoading }: ActionBarProps) {
           variant="outline"
           onClick={() => handleAction('reject')}
           disabled={isLoading}
-          className="h-7 text-xs border-l-2 border-l-foreground bg-background text-foreground hover:bg-foreground hover:text-background rounded-element"
+          className="h-7 text-xs border-foreground bg-background text-foreground hover:bg-foreground hover:text-background rounded-element"
         >
           <X className="h-3.5 w-3.5 mr-1" />
           Reject
