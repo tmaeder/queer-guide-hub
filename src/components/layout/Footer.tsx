@@ -40,7 +40,7 @@ export function Footer() {
                   <Link
                     to={link.href}
                     aria-current={active ? 'page' : undefined}
-                    style={{ alignItems: 'center', minHeight: 24, padding: '4px 6px' }}
+                    style={{ alignItems: 'center', minHeight: 44, padding: '4px 8px' }}
                     className="no-underline inline-flex"
                   >
                     <span

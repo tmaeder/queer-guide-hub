@@ -43,7 +43,7 @@ const TableFooter = React.forwardRef<
   <tfoot
     ref={ref}
     className={className}
-    style={{ borderTop: '1px solid var(--border, #e4e4e7)', fontWeight: 500, ...style }}
+    style={{ borderTop: '1px solid hsl(var(--border))', fontWeight: 500, ...style }}
     {...props}
   />
 ));

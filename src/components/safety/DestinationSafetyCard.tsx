@@ -1,25 +1,8 @@
 import { useMemo } from 'react';
-import { ShieldCheck, ShieldAlert, AlertTriangle, Skull, ChevronRight } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
-import { useTripSafety, type TripSafetyReport } from '@/hooks/useTripSafety';
-
-type OverallRisk = TripSafetyReport['overallRisk'];
-
-/**
- * Tier → traffic-light palette + icon. This is the one allowed chromatic
- * exception in the product (safety > monochrome consistency for LGBTQ+ travel),
- * mirroring TripSafetyBriefing's useRiskVisual so the two surfaces match.
- */
-function riskVisual(risk: OverallRisk) {
-  const isDark =
-    typeof document !== 'undefined' && document.documentElement.classList.contains('dark');
-  return {
-    bg: { low: isDark ? '#052e1a' : '#ecfdf5', moderate: isDark ? '#3a2a06' : '#fffbeb', high: isDark ? '#3f1515' : '#fef2f2', critical: isDark ? '#2a0606' : '#fef2f2' }[risk],
-    fg: { low: isDark ? '#34d399' : '#047857', moderate: isDark ? '#fbbf24' : '#b45309', high: isDark ? '#f87171' : '#b91c1c', critical: isDark ? '#fca5a5' : '#7f1d1d' }[risk],
-    border: { low: isDark ? '#064e3b' : '#a7f3d0', moderate: isDark ? '#78350f' : '#fcd34d', high: isDark ? '#7f1d1d' : '#fca5a5', critical: isDark ? '#450a0a' : '#dc2626' }[risk],
-    Icon: { low: ShieldCheck, moderate: AlertTriangle, high: ShieldAlert, critical: Skull }[risk],
-  };
-}
+import { useTripSafety } from '@/hooks/useTripSafety';
+import { useRiskVisual, type OverallRisk } from '@/hooks/useRiskVisual';
 
 const HEADLINE: Record<OverallRisk, string> = {
   low: 'Welcoming destination',
@@ -45,11 +28,11 @@ export function DestinationSafetyCard({ countryIds, className }: Props) {
     [countryIds],
   );
   const report = useTripSafety(ids);
+  const visual = useRiskVisual(report.overallRisk);
 
   if (report.countries.length === 0) return null;
   if (report.overallRisk === 'low' && !report.hasCriminalizedDestination) return null;
 
-  const visual = riskVisual(report.overallRisk);
   const Icon = visual.Icon;
 
   const worst = [...report.countries].sort(

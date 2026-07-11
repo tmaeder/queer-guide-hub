@@ -1,10 +1,11 @@
 /**
  * travel-inbox — Cloudflare Email Worker.
  *
- * Receives forwarded booking-confirmation emails at `{username}@queer.guide`.
- * The local-part is a Queer Guide username → resolved to a user_id → the email
- * body is parsed via Workers AI → a `travel_inbox_items` row (status='pending')
- * is inserted → `travel_inbox_post_item` drops a rich itinerary card into the
+ * Receives email at `{username}@queer.guide`. The local-part is a Queer Guide
+ * username → resolved to a user_id → the message is delivered to the user's
+ * mail inbox (`mailbox_emails`, direction='inbound') → the email body is
+ * parsed via Workers AI → a `travel_inbox_items` row (status='pending') is
+ * inserted → `travel_inbox_post_item` drops a rich itinerary card into the
  * user's "Travel Inbox" conversation, shown natively in /hub/messages.
  *
  * Because the address is guessable, NOTHING auto-commits: every booking lands
@@ -20,10 +21,14 @@ import PostalMime from 'postal-mime';
 import { callWorkersAi, type AiBinding } from './workersai';
 import { bytesToPgHex, encryptBody } from './crypto';
 import { SupabaseClient } from './supabase';
+import { buildMailboxRow } from './mailbox';
 
 export interface Env {
   INBOX_DOMAIN: string; // "queer.guide"
   WORKERS_AI_MODEL: string;
+  MAILBOX_MAX_RAW_BYTES: string;
+  MAILBOX_MAX_BODY_CHARS: string;
+  MAILBOX_HOURLY_LIMIT: string;
   SUPABASE_URL: string;
   SUPABASE_SERVICE_ROLE_KEY: string;
   INBOX_ENCRYPTION_KEY: string;
@@ -88,6 +93,7 @@ export default {
       to: string;
       from: string;
       raw: ReadableStream<Uint8Array>;
+      rawSize?: number;
       setReject?: (reason: string) => void;
     },
     env: Env,
@@ -95,6 +101,9 @@ export default {
   ): Promise<void> {
     const username = extractLocalPart(message.to, env.INBOX_DOMAIN);
     if (!username) return; // drop silently
+
+    const maxRaw = Number(env.MAILBOX_MAX_RAW_BYTES || '5242880');
+    if (typeof message.rawSize === 'number' && message.rawSize > maxRaw) return;
 
     const sb = new SupabaseClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY);
 
@@ -107,20 +116,68 @@ export default {
     }
     if (!userId) return; // no such user — drop silently
 
+    // The address is guessable, so bound per-user inbound volume.
+    try {
+      const recent = await sb.countRecentInbound(userId);
+      if (recent >= Number(env.MAILBOX_HOURLY_LIMIT || '60')) {
+        console.warn(`inbound rate limit hit for ${username}`);
+        return;
+      }
+    } catch (err) {
+      console.error('rate-limit check failed', err);
+      return;
+    }
+
     const rawBytes = await readStream(message.raw);
+    if (rawBytes.byteLength > maxRaw) return;
 
     let subject = '';
     let text = '';
     let html = '';
+    let mime: Awaited<ReturnType<typeof PostalMime.parse>> | null = null;
     try {
-      const parsed = await PostalMime.parse(rawBytes);
-      subject = parsed.subject ?? '';
-      text = parsed.text ?? '';
-      html = parsed.html ?? '';
+      mime = await PostalMime.parse(rawBytes);
+      subject = mime.subject ?? '';
+      text = mime.text ?? '';
+      html = mime.html ?? '';
     } catch (err) {
       console.warn('postal-mime parse failed', err);
     }
     const body = text.trim() || stripHtml(html);
+
+    // Deliver to the user's mail inbox first — the booking pipeline below is
+    // best-effort on top of a delivered email, mirroring real mail semantics.
+    if (mime) {
+      try {
+        const row = buildMailboxRow(mime, {
+          ownerId: userId,
+          toAddress: message.to.toLowerCase(),
+          envelopeFrom: message.from,
+          maxBodyChars: Number(env.MAILBOX_MAX_BODY_CHARS || '262144'),
+          nowIso: new Date().toISOString(),
+        });
+        // Inherit the parent thread when this replies to a known message.
+        let threadId: string | null = null;
+        let inReplyToEmailId: string | null = null;
+        if (row.references_header?.length) {
+          const parent = await sb
+            .findParentByMessageId(userId, row.references_header)
+            .catch(() => null);
+          if (parent) {
+            threadId = parent.thread_id ?? parent.id;
+            inReplyToEmailId = parent.id;
+          }
+        }
+        await sb.insertMailboxEmail({
+          ...row,
+          thread_id: threadId,
+          in_reply_to_email_id: inReplyToEmailId,
+        });
+      } catch (err) {
+        // Mailbox delivery failing must not block the booking pipeline.
+        console.error('mailbox delivery failed', err);
+      }
+    }
 
     const encrypted = await encryptBody(
       env.INBOX_ENCRYPTION_KEY,
@@ -141,6 +198,10 @@ export default {
       status = 'failed';
     }
 
+    // Ordinary mail stops at the mailbox — the travel pipeline only kicks in
+    // for booking-shaped parses (or LLM failures, kept for forensic replay).
+    if (!isBookingParse(parsed) && status !== 'failed') return;
+
     let inserted;
     try {
       inserted = await sb.insertItem({
@@ -157,7 +218,9 @@ export default {
     }
 
     // Surface the card in the user's Travel Inbox thread. Never auto-slot —
-    // approval is required.
+    // approval is required. No card for failed parses — the mail itself is
+    // already in the inbox.
+    if (status === 'failed') return;
     try {
       await sb.postItem(inserted.id);
     } catch (err) {
@@ -165,6 +228,15 @@ export default {
     }
   },
 };
+
+/** Booking-shaped: a personal reservation type with plausible confidence. */
+export function isBookingParse(
+  parsed: { type: string; confidence: number } | undefined,
+): boolean {
+  if (!parsed) return false;
+  if (parsed.type === 'unknown' || parsed.type === 'event' || parsed.type === 'venue') return false;
+  return parsed.confidence >= 0.5;
+}
 
 function stripHtml(html: string): string {
   return html
