@@ -11,9 +11,11 @@ import { NotificationList } from './NotificationList';
 
 export const NotificationBell = () => {
   const { t } = useTranslation();
-  // Same source as the unified inbox so the bell count never desyncs from
-  // /messages or the NotificationList feed it opens.
-  const { unreadCount } = useInboxFeed('all');
+  // Alerts lens only (2026-07 declutter): the badge counts unread alerts in
+  // the same feed the NotificationList popover renders, so they never desync.
+  // Chat/mail unread stays on the hub nav + mobile bottom-nav badges.
+  const { items } = useInboxFeed('alerts');
+  const unreadCount = items.filter((i) => i.unread).length;
 
   return (
     <DropdownMenu>

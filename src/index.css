@@ -273,7 +273,6 @@
   --text-muted:      0 0% 56%;
   --border-hairline: 0 0% 88%;
   --transition-smooth: all 0.18s cubic-bezier(0.22, 1, 0.36, 1);
-  --transition-spring: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
 
   /* Surface tonal layering (light) — five neutral steps. */
   --surface: 0 0% 100%;
@@ -620,6 +619,19 @@ h1, h2, .font-display {
 @keyframes fade-in {
   from { opacity: 0; }
   to { opacity: 1; }
+}
+
+/* Route transition (RouteFade). CSS-only replacement for the framer-motion
+   MotionPage: the incoming route paints immediately (no exit-animation wait)
+   and fades in. No fill-mode — if the animation never runs, content is
+   simply visible. */
+.route-fade {
+  animation: fade-in 150ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .route-fade {
+    animation: none;
+  }
 }
 
 @keyframes spin {

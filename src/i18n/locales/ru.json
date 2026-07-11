@@ -173,6 +173,11 @@
     "remove": "Удалить",
     "accept": "Принять",
     "decline": "Отклонить",
+    "resetFilters": "[RU] Reset filters",
+    "loadingTimeout": "[RU] This is taking longer than expected. Please check your connection or try again.",
+    "errorLoadingData": "[RU] Something went wrong while loading data. Please try again.",
+    "retry": "[RU] Retry",
+    "featured": "[RU] Featured",
     "unsave": "[RU] Remove from saved"
   },
   "navigation": {
@@ -1183,7 +1188,10 @@
     "free": "Бесплатно",
     "ticketsRequired": "Нужны билеты",
     "soldOut": "Распродано",
-    "cancelled": "Отменено"
+    "cancelled": "Отменено",
+    "inTrip": "[RU] In trip",
+    "duringYourTrip": "[RU] During your trip",
+    "featured": "[RU] Featured"
   },
   "venues": {
     "title": "Места",
@@ -1307,7 +1315,10 @@
     "achievementToast": {
       "unlocked": "Открыто: {{name}}",
       "fallback": "Новое достижение"
-    }
+    },
+    "closed": "[RU] Closed",
+    "openNow": "[RU] Open now",
+    "locationUnknown": "[RU] Location unknown"
   },
   "marketplace": {
     "title": "Маркетплейс",
@@ -1320,7 +1331,11 @@
     "onSale": "Скидка",
     "newArrival": "Новинка",
     "featured": "Рекомендуемое",
-    "reviews": "Отзывы"
+    "reviews": "Отзывы",
+    "adultBadge": "[RU] 18+",
+    "adBadge": "[RU] Ad",
+    "outOfStock": "[RU] Out of stock",
+    "queerOwnedBadge": "[RU] Queer-owned"
   },
   "profile": {
     "editProfile": "Редактировать профиль",
@@ -2958,7 +2973,8 @@
       "anEvent": "Событие",
       "aVenue": "Место"
     },
-    "matchTag": "Совпадение"
+    "matchTag": "Совпадение",
+    "openAlerts": "[RU] All notifications"
   },
   "extension": {
     "signInGate": {
@@ -3244,12 +3260,48 @@
         "reservation": "Бронь",
         "going": "Иду",
         "saved": "Сохранено",
-        "groupEvent": "[RU] Group event"
+        "groupEvent": "[RU] Group event",
+        "birthday": "[RU] Birthday",
+        "history": "[RU] Queer history",
+        "news": "[RU] Saved news"
       },
       "scope": {
         "all": "[RU] All",
         "trips": "[RU] Trips",
         "groups": "[RU] Groups"
+      },
+      "views": {
+        "month": "[RU] Month",
+        "week": "[RU] Week",
+        "day": "[RU] Day"
+      },
+      "nav": {
+        "prev": "[RU] Previous",
+        "next": "[RU] Next",
+        "today": "[RU] Today"
+      },
+      "layers": {
+        "button": "[RU] Layers",
+        "title": "[RU] Show on calendar",
+        "trips": "[RU] Trips & bookings",
+        "events": "[RU] Events",
+        "birthdays": "[RU] Friends' birthdays",
+        "history": "[RU] Queer history",
+        "news": "[RU] Saved news"
+      },
+      "tripsButton": "[RU] Trips",
+      "gridLabel": "[RU] Calendar",
+      "cellItems_one": "[RU] {{count}} item",
+      "cellItems_other": "[RU] {{count}} items",
+      "historyCount": "[RU] Queer history · {{count}}",
+      "more": "[RU] +{{count}} more",
+      "dayEmpty": "[RU] Nothing on this day.",
+      "weekEmpty": "[RU] Nothing this week.",
+      "onThisDay": "[RU] On this day in queer history",
+      "bornYearsAgo": "[RU] born {{count}} years ago",
+      "diedYearsAgo": "[RU] died {{count}} years ago",
+      "tripsDrawer": {
+        "title": "[RU] Your trips"
       }
     },
     "contacts": {
@@ -3297,7 +3349,11 @@
       "friendCount": "{{count}} друзей",
       "findPeople": "Найти людей",
       "noFriends": "Пока нет друзей.",
-      "wantsToConnect": "Хочет подключиться"
+      "wantsToConnect": "Хочет подключиться",
+      "allCaughtUp": "[RU] All caught up.",
+      "next48h": "[RU] Next two days",
+      "requests": "[RU] Friend requests",
+      "allPeople": "[RU] All people"
     },
     "messages": {
       "chats": "Чаты",
@@ -3306,5 +3362,32 @@
     "plans": {
       "trips": "Ваши поездки"
     }
+  },
+  "city": {
+    "rights": {
+      "safetyNotesTitle": "[RU] Safety notes for {{name}}",
+      "nationalDisclaimer": "[RU] The rights status below applies to <countryLink>{{country}}</countryLink> at the national level. Local laws and enforcement in {{city}} may vary.",
+      "nationalDisclaimerNoCountry": "[RU] The rights status below applies to this country at the national level. Local laws and enforcement in {{city}} may vary.",
+      "loading": "[RU] Loading rights data...",
+      "noData": "[RU] Rights data is not available for this location."
+    },
+    "loadingDetails": "[RU] Loading city details...",
+    "notFoundTitle": "[RU] City not found",
+    "notFoundDescription": "[RU] The city you're looking for doesn't exist.",
+    "backToPlaces": "[RU] ← Back to Places",
+    "similarCities": "[RU] Similar cities"
+  },
+  "favorites": {
+    "removedTitle": "[RU] Removed from favorites",
+    "addedTitle": "[RU] Added to favorites",
+    "removedDescription": "[RU] {{name}} removed from your favorites",
+    "addedDescription": "[RU] {{name}} added to your favorites",
+    "updateFailed": "[RU] Failed to update favorites"
+  },
+  "social": {
+    "friendsGoing": "[RU] friends going",
+    "going": "[RU] going",
+    "friendsSaved": "[RU] friends saved",
+    "inTrips": "[RU] in trips"
   }
 }

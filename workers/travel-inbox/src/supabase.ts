@@ -38,7 +38,7 @@ export class SupabaseClient {
     user_id: string;
     raw_subject: string;
     raw_from: string;
-    raw_body_encrypted: string; // \x... hex literal
+    raw_body_encrypted: string | null; // \x... hex literal (null when encryption is unavailable)
     status: 'pending' | 'failed';
     parsed?: ParsedBooking;
   }): Promise<{ id: string }> {
@@ -67,6 +67,52 @@ export class SupabaseClient {
       body: JSON.stringify(body),
     });
     if (!r.ok) throw new Error(`insertItem: ${r.status} ${await r.text()}`);
+    const rows = (await r.json()) as Array<{ id: string }>;
+    return rows[0]!;
+  }
+
+  /** Inbound emails for this owner in the last hour (rate-limit input). */
+  async countRecentInbound(ownerId: string): Promise<number> {
+    const since = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+    const u = new URL(`${this.url}/rest/v1/mailbox_emails`);
+    u.searchParams.set('select', 'id');
+    u.searchParams.set('owner_id', `eq.${ownerId}`);
+    u.searchParams.set('direction', 'eq.inbound');
+    u.searchParams.set('created_at', `gte.${since}`);
+    const r = await fetch(u, {
+      method: 'HEAD',
+      headers: this.headers({ prefer: 'count=exact' }),
+    });
+    if (!r.ok) throw new Error(`countRecentInbound: ${r.status}`);
+    const total = Number((r.headers.get('content-range') ?? '').split('/')[1]);
+    return Number.isFinite(total) ? total : 0;
+  }
+
+  /** First existing email of this owner matching any of the Message-IDs. */
+  async findParentByMessageId(
+    ownerId: string,
+    messageIds: string[],
+  ): Promise<{ id: string; thread_id: string | null } | null> {
+    if (!messageIds.length) return null;
+    const list = messageIds.map((id) => `"${id.replace(/"/g, '')}"`).join(',');
+    const u = new URL(`${this.url}/rest/v1/mailbox_emails`);
+    u.searchParams.set('select', 'id,thread_id');
+    u.searchParams.set('owner_id', `eq.${ownerId}`);
+    u.searchParams.set('message_id_header', `in.(${list})`);
+    u.searchParams.set('limit', '1');
+    const r = await fetch(u, { headers: this.headers() });
+    if (!r.ok) throw new Error(`findParentByMessageId: ${r.status} ${await r.text()}`);
+    const rows = (await r.json()) as Array<{ id: string; thread_id: string | null }>;
+    return rows[0] ?? null;
+  }
+
+  async insertMailboxEmail(row: Record<string, unknown>): Promise<{ id: string }> {
+    const r = await fetch(`${this.url}/rest/v1/mailbox_emails`, {
+      method: 'POST',
+      headers: this.headers({ prefer: 'return=representation' }),
+      body: JSON.stringify(row),
+    });
+    if (!r.ok) throw new Error(`insertMailboxEmail: ${r.status} ${await r.text()}`);
     const rows = (await r.json()) as Array<{ id: string }>;
     return rows[0]!;
   }

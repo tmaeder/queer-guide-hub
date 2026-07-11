@@ -12,9 +12,9 @@ compatibility_flags = ["nodejs_compat"]
 INBOX_DOMAIN = "inbox.queer.guide"
 # Threshold above which a parsed item auto-slots into reservations.
 AUTO_SLOT_CONFIDENCE = "0.85"
-# Cloudflare Workers AI model — Llama 3.1 8B Instruct (fast + cheap).
-# Other options: @cf/meta/llama-3.3-70b-instruct-fp8-fast
-WORKERS_AI_MODEL = "@cf/meta/llama-3.1-8b-instruct"
+# Cloudflare Workers AI model. (llama-3.1-8b was deprecated 2026-05-30 —
+# AiError 5028 — which silently broke all email parsing until 2026-07-11.)
+WORKERS_AI_MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast"
 
 # Workers AI binding — no API key needed, billed via the CF account.
 [ai]

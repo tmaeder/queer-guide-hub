@@ -173,6 +173,11 @@
     "remove": "Retirer",
     "accept": "Accepter",
     "decline": "Refuser",
+    "resetFilters": "[FR] Reset filters",
+    "loadingTimeout": "[FR] This is taking longer than expected. Please check your connection or try again.",
+    "errorLoadingData": "[FR] Something went wrong while loading data. Please try again.",
+    "retry": "[FR] Retry",
+    "featured": "[FR] Featured",
     "unsave": "[FR] Remove from saved"
   },
   "navigation": {
@@ -1155,7 +1160,10 @@
     "free": "Gratuit",
     "ticketsRequired": "Billets requis",
     "soldOut": "Complet",
-    "cancelled": "Annulé"
+    "cancelled": "Annulé",
+    "inTrip": "[FR] In trip",
+    "duringYourTrip": "[FR] During your trip",
+    "featured": "[FR] Featured"
   },
   "venues": {
     "title": "Lieux",
@@ -1279,7 +1287,10 @@
     "achievementToast": {
       "unlocked": "Débloqué : {{name}}",
       "fallback": "Nouveau succès obtenu"
-    }
+    },
+    "closed": "[FR] Closed",
+    "openNow": "[FR] Open now",
+    "locationUnknown": "[FR] Location unknown"
   },
   "marketplace": {
     "title": "Marketplace",
@@ -1292,7 +1303,11 @@
     "onSale": "En promo",
     "newArrival": "Nouveauté",
     "featured": "À la une",
-    "reviews": "Avis"
+    "reviews": "Avis",
+    "adultBadge": "[FR] 18+",
+    "adBadge": "[FR] Ad",
+    "outOfStock": "[FR] Out of stock",
+    "queerOwnedBadge": "[FR] Queer-owned"
   },
   "profile": {
     "editProfile": "Modifier le profil",
@@ -2928,7 +2943,8 @@
       "anEvent": "Événement",
       "aVenue": "Lieu"
     },
-    "matchTag": "Match"
+    "matchTag": "Match",
+    "openAlerts": "[FR] All notifications"
   },
   "extension": {
     "signInGate": {
@@ -3214,12 +3230,48 @@
         "reservation": "Réservation",
         "going": "J’y vais",
         "saved": "Enregistré",
-        "groupEvent": "[FR] Group event"
+        "groupEvent": "[FR] Group event",
+        "birthday": "[FR] Birthday",
+        "history": "[FR] Queer history",
+        "news": "[FR] Saved news"
       },
       "scope": {
         "all": "[FR] All",
         "trips": "[FR] Trips",
         "groups": "[FR] Groups"
+      },
+      "views": {
+        "month": "[FR] Month",
+        "week": "[FR] Week",
+        "day": "[FR] Day"
+      },
+      "nav": {
+        "prev": "[FR] Previous",
+        "next": "[FR] Next",
+        "today": "[FR] Today"
+      },
+      "layers": {
+        "button": "[FR] Layers",
+        "title": "[FR] Show on calendar",
+        "trips": "[FR] Trips & bookings",
+        "events": "[FR] Events",
+        "birthdays": "[FR] Friends' birthdays",
+        "history": "[FR] Queer history",
+        "news": "[FR] Saved news"
+      },
+      "tripsButton": "[FR] Trips",
+      "gridLabel": "[FR] Calendar",
+      "cellItems_one": "[FR] {{count}} item",
+      "cellItems_other": "[FR] {{count}} items",
+      "historyCount": "[FR] Queer history · {{count}}",
+      "more": "[FR] +{{count}} more",
+      "dayEmpty": "[FR] Nothing on this day.",
+      "weekEmpty": "[FR] Nothing this week.",
+      "onThisDay": "[FR] On this day in queer history",
+      "bornYearsAgo": "[FR] born {{count}} years ago",
+      "diedYearsAgo": "[FR] died {{count}} years ago",
+      "tripsDrawer": {
+        "title": "[FR] Your trips"
       }
     },
     "contacts": {
@@ -3267,7 +3319,11 @@
       "friendCount": "{{count}} ami·es",
       "findPeople": "Trouver des personnes",
       "noFriends": "Pas encore d’ami·es.",
-      "wantsToConnect": "Veut se connecter"
+      "wantsToConnect": "Veut se connecter",
+      "allCaughtUp": "[FR] All caught up.",
+      "next48h": "[FR] Next two days",
+      "requests": "[FR] Friend requests",
+      "allPeople": "[FR] All people"
     },
     "messages": {
       "chats": "Discussions",
@@ -3276,5 +3332,32 @@
     "plans": {
       "trips": "Tes voyages"
     }
+  },
+  "city": {
+    "rights": {
+      "safetyNotesTitle": "[FR] Safety notes for {{name}}",
+      "nationalDisclaimer": "[FR] The rights status below applies to <countryLink>{{country}}</countryLink> at the national level. Local laws and enforcement in {{city}} may vary.",
+      "nationalDisclaimerNoCountry": "[FR] The rights status below applies to this country at the national level. Local laws and enforcement in {{city}} may vary.",
+      "loading": "[FR] Loading rights data...",
+      "noData": "[FR] Rights data is not available for this location."
+    },
+    "loadingDetails": "[FR] Loading city details...",
+    "notFoundTitle": "[FR] City not found",
+    "notFoundDescription": "[FR] The city you're looking for doesn't exist.",
+    "backToPlaces": "[FR] ← Back to Places",
+    "similarCities": "[FR] Similar cities"
+  },
+  "favorites": {
+    "removedTitle": "[FR] Removed from favorites",
+    "addedTitle": "[FR] Added to favorites",
+    "removedDescription": "[FR] {{name}} removed from your favorites",
+    "addedDescription": "[FR] {{name}} added to your favorites",
+    "updateFailed": "[FR] Failed to update favorites"
+  },
+  "social": {
+    "friendsGoing": "[FR] friends going",
+    "going": "[FR] going",
+    "friendsSaved": "[FR] friends saved",
+    "inTrips": "[FR] in trips"
   }
 }

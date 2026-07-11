@@ -6,6 +6,7 @@ import { Editable } from '@/components/admin/inline/Editable';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { getFallbackImage } from '@/utils/fallbackImages';
 import { isValidImageUrl } from '@/lib/images/resolveEntityImage';
+import { buildCfSrcSet } from '@/utils/cloudflareOptimizations';
 import { EntitySocialLinks } from '@/components/entity/EntitySocialLinks';
 import type { CityRelation } from './types';
 
@@ -34,13 +35,22 @@ export function CityHero({
     ? `/country/${city.countries.slug || city.countries.id}`
     : null;
   const fallback = getFallbackImage('place', city.id);
+  const heroSrc = isValidImageUrl(imageUrl) ? imageUrl : fallback;
+  // LCP element: responsive CF srcset (no-op for external hosts) + explicit
+  // high fetch priority so the browser starts it with the first paint.
+  const heroSrcSet = buildCfSrcSet(heroSrc, [800, 1280, 1920]);
 
   return (
     <div className="group relative h-[58vh] min-h-[380px] max-h-[600px] w-full overflow-hidden rounded-container ring-1 ring-border/60">
       {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- onError is a media-error handler, not a user-input listener. */}
       <img
-        src={isValidImageUrl(imageUrl) ? imageUrl : fallback}
+        src={heroSrc}
+        srcSet={heroSrcSet}
+        sizes={heroSrcSet ? '100vw' : undefined}
         alt={city.name}
+        loading="eager"
+        decoding="sync"
+        fetchPriority="high"
         referrerPolicy="no-referrer"
         onError={(e) => { if (e.currentTarget.src !== fallback) e.currentTarget.src = fallback; }}
         className="absolute inset-0 h-full w-full object-cover transition-transform duration-[1200ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-105"

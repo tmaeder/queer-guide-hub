@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -46,9 +47,10 @@ export const EmptyState = ({
   variant = 'empty',
   activeFilters,
   onResetFilters,
-  resetFiltersLabel = 'Reset filters',
+  resetFiltersLabel,
   children,
 }: EmptyStateProps) => {
+  const { t } = useTranslation();
   const iconOpacity = mood === 'playful' ? 0.7 : mood === 'encouraging' ? 0.55 : 0.4;
   const bgOpacity = mood === 'playful' ? 0.09 : mood === 'encouraging' ? 0.07 : 0.04;
 
@@ -64,7 +66,7 @@ export const EmptyState = ({
             className="text-foreground"
           />
         </div>
-        <h6 className="text-lg font-semibold mb-2">{title}</h6>
+        <h2 className="text-lg font-semibold mb-2">{title}</h2>
         <p className="text-sm text-muted-foreground mb-6 max-w-md mx-auto">{description}</p>
         {variant === 'filtered' && activeFilters && activeFilters.length > 0 && (
           <div
@@ -77,7 +79,7 @@ export const EmptyState = ({
                 <button
                   type="button"
                   onClick={chip.onRemove}
-                  aria-label={`Remove ${chip.label}`}
+                  aria-label={`${t('common.remove', 'Remove')} ${chip.label}`}
                   className="inline-flex h-4 w-4 items-center justify-center rounded-full hover:bg-muted"
                 >
                   <X className="h-3 w-3" />
@@ -107,7 +109,7 @@ export const EmptyState = ({
             variant === 'filtered' &&
             onResetFilters && (
               <Button variant="outline" onClick={onResetFilters}>
-                {resetFiltersLabel}
+                {resetFiltersLabel ?? t('common.resetFilters', 'Reset filters')}
               </Button>
             )
           )}
@@ -126,16 +128,20 @@ interface LoadingTimeoutProps {
   onRetry: () => void;
 }
 
-export const LoadingTimeout = ({
-  message = 'This is taking longer than expected. Please check your connection or try again.',
-  onRetry,
-}: LoadingTimeoutProps) => {
+export const LoadingTimeout = ({ message, onRetry }: LoadingTimeoutProps) => {
+  const { t } = useTranslation();
+  const text =
+    message ??
+    t(
+      'common.loadingTimeout',
+      'This is taking longer than expected. Please check your connection or try again.',
+    );
   return (
     <Card>
       <CardContent>
-        <p className="text-base text-muted-foreground mb-4">{message}</p>
+        <p className="text-base text-muted-foreground mb-4">{text}</p>
         <Button variant="outline" onClick={onRetry}>
-          Try Again
+          {t('common.tryAgain', 'Try Again')}
         </Button>
       </CardContent>
     </Card>
@@ -166,11 +172,15 @@ export const ErrorState = ({
   title,
   description,
   onRetry,
-  retryLabel = 'Retry',
+  retryLabel,
   primaryAction,
   secondaryAction,
 }: ErrorStateProps) => {
-  const headline = title ?? message ?? 'Something went wrong while loading data. Please try again.';
+  const { t } = useTranslation();
+  const headline =
+    title ??
+    message ??
+    t('common.errorLoadingData', 'Something went wrong while loading data. Please try again.');
   return (
     <Card>
       <CardContent>
@@ -197,7 +207,7 @@ export const ErrorState = ({
             )}
             {onRetry && !primaryAction && (
               <Button variant="outline" onClick={onRetry}>
-                {retryLabel}
+                {retryLabel ?? t('common.retry', 'Retry')}
               </Button>
             )}
           </div>

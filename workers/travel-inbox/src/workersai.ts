@@ -15,7 +15,7 @@ export interface AiBinding {
       temperature?: number;
       max_tokens?: number;
     },
-  ): Promise<{ response?: string } | { result?: { response?: string } }>;
+  ): Promise<{ response?: unknown } | { result?: { response?: unknown } }>;
 }
 
 export async function callWorkersAi(
@@ -34,9 +34,12 @@ export async function callWorkersAi(
 
   // Workers AI returns `{ response }` directly when using the binding's
   // shorthand, or `{ result: { response } }` for the raw REST shape. Accept both.
-  const text =
+  // Some models (llama-3.3-70b) return `response` as an already-parsed OBJECT
+  // rather than a JSON string — coerce before parsing.
+  const raw =
     ('response' in out && out.response) ||
     ('result' in out && out.result?.response) ||
     '';
-  return parseLLMResponse(text as string);
+  const text = typeof raw === 'string' ? raw : JSON.stringify(raw ?? '');
+  return parseLLMResponse(text);
 }

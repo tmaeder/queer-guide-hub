@@ -14,7 +14,9 @@ const Empty = ({ label }: { label: string }) => (
 
 export const NotificationList = () => {
   const { t } = useTranslation();
-  const { items, loading } = useInboxFeed('all');
+  // Alerts lens only (2026-07 declutter): the bell is for notifications;
+  // chats/mail live in /hub/messages, not duplicated in a popover.
+  const { items, loading } = useInboxFeed('alerts');
   const navigate = useLocalizedNavigate();
   const queryClient = useQueryClient();
 
@@ -56,9 +58,9 @@ export const NotificationList = () => {
           variant="ghost"
           size="sm"
           className="w-full justify-center text-13"
-          onClick={() => navigate('/hub')}
+          onClick={() => navigate('/hub/messages?filter=alerts')}
         >
-          {t('inbox.openInbox', { defaultValue: 'Open inbox' })}
+          {t('inbox.openAlerts', { defaultValue: 'All notifications' })}
         </Button>
       </div>
     </div>

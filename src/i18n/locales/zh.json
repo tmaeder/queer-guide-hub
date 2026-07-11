@@ -173,6 +173,11 @@
     "remove": "移除",
     "accept": "接受",
     "decline": "拒绝",
+    "resetFilters": "[ZH] Reset filters",
+    "loadingTimeout": "[ZH] This is taking longer than expected. Please check your connection or try again.",
+    "errorLoadingData": "[ZH] Something went wrong while loading data. Please try again.",
+    "retry": "[ZH] Retry",
+    "featured": "[ZH] Featured",
     "unsave": "[ZH] Remove from saved"
   },
   "navigation": {
@@ -1151,7 +1156,10 @@
     "free": "免费",
     "ticketsRequired": "需要购票",
     "soldOut": "已售罄",
-    "cancelled": "已取消"
+    "cancelled": "已取消",
+    "inTrip": "[ZH] In trip",
+    "duringYourTrip": "[ZH] During your trip",
+    "featured": "[ZH] Featured"
   },
   "venues": {
     "title": "场所",
@@ -1275,7 +1283,10 @@
     "achievementToast": {
       "unlocked": "已解锁：{{name}}",
       "fallback": "获得新成就"
-    }
+    },
+    "closed": "[ZH] Closed",
+    "openNow": "[ZH] Open now",
+    "locationUnknown": "[ZH] Location unknown"
   },
   "marketplace": {
     "title": "市场",
@@ -1288,7 +1299,11 @@
     "onSale": "促销中",
     "newArrival": "新品",
     "featured": "精选",
-    "reviews": "评价"
+    "reviews": "评价",
+    "adultBadge": "[ZH] 18+",
+    "adBadge": "[ZH] Ad",
+    "outOfStock": "[ZH] Out of stock",
+    "queerOwnedBadge": "[ZH] Queer-owned"
   },
   "profile": {
     "editProfile": "编辑资料",
@@ -2922,7 +2937,8 @@
       "anEvent": "活动",
       "aVenue": "场所"
     },
-    "matchTag": "配对"
+    "matchTag": "配对",
+    "openAlerts": "[ZH] All notifications"
   },
   "extension": {
     "signInGate": {
@@ -3208,12 +3224,48 @@
         "reservation": "预订",
         "going": "参加",
         "saved": "已收藏",
-        "groupEvent": "[ZH] Group event"
+        "groupEvent": "[ZH] Group event",
+        "birthday": "[ZH] Birthday",
+        "history": "[ZH] Queer history",
+        "news": "[ZH] Saved news"
       },
       "scope": {
         "all": "[ZH] All",
         "trips": "[ZH] Trips",
         "groups": "[ZH] Groups"
+      },
+      "views": {
+        "month": "[ZH] Month",
+        "week": "[ZH] Week",
+        "day": "[ZH] Day"
+      },
+      "nav": {
+        "prev": "[ZH] Previous",
+        "next": "[ZH] Next",
+        "today": "[ZH] Today"
+      },
+      "layers": {
+        "button": "[ZH] Layers",
+        "title": "[ZH] Show on calendar",
+        "trips": "[ZH] Trips & bookings",
+        "events": "[ZH] Events",
+        "birthdays": "[ZH] Friends' birthdays",
+        "history": "[ZH] Queer history",
+        "news": "[ZH] Saved news"
+      },
+      "tripsButton": "[ZH] Trips",
+      "gridLabel": "[ZH] Calendar",
+      "cellItems_one": "[ZH] {{count}} item",
+      "cellItems_other": "[ZH] {{count}} items",
+      "historyCount": "[ZH] Queer history · {{count}}",
+      "more": "[ZH] +{{count}} more",
+      "dayEmpty": "[ZH] Nothing on this day.",
+      "weekEmpty": "[ZH] Nothing this week.",
+      "onThisDay": "[ZH] On this day in queer history",
+      "bornYearsAgo": "[ZH] born {{count}} years ago",
+      "diedYearsAgo": "[ZH] died {{count}} years ago",
+      "tripsDrawer": {
+        "title": "[ZH] Your trips"
       }
     },
     "contacts": {
@@ -3261,7 +3313,11 @@
       "friendCount": "{{count}} 位朋友",
       "findPeople": "查找用户",
       "noFriends": "还没有朋友。",
-      "wantsToConnect": "想要建立联系"
+      "wantsToConnect": "想要建立联系",
+      "allCaughtUp": "[ZH] All caught up.",
+      "next48h": "[ZH] Next two days",
+      "requests": "[ZH] Friend requests",
+      "allPeople": "[ZH] All people"
     },
     "messages": {
       "chats": "聊天",
@@ -3270,5 +3326,32 @@
     "plans": {
       "trips": "你的行程"
     }
+  },
+  "city": {
+    "rights": {
+      "safetyNotesTitle": "[ZH] Safety notes for {{name}}",
+      "nationalDisclaimer": "[ZH] The rights status below applies to <countryLink>{{country}}</countryLink> at the national level. Local laws and enforcement in {{city}} may vary.",
+      "nationalDisclaimerNoCountry": "[ZH] The rights status below applies to this country at the national level. Local laws and enforcement in {{city}} may vary.",
+      "loading": "[ZH] Loading rights data...",
+      "noData": "[ZH] Rights data is not available for this location."
+    },
+    "loadingDetails": "[ZH] Loading city details...",
+    "notFoundTitle": "[ZH] City not found",
+    "notFoundDescription": "[ZH] The city you're looking for doesn't exist.",
+    "backToPlaces": "[ZH] ← Back to Places",
+    "similarCities": "[ZH] Similar cities"
+  },
+  "favorites": {
+    "removedTitle": "[ZH] Removed from favorites",
+    "addedTitle": "[ZH] Added to favorites",
+    "removedDescription": "[ZH] {{name}} removed from your favorites",
+    "addedDescription": "[ZH] {{name}} added to your favorites",
+    "updateFailed": "[ZH] Failed to update favorites"
+  },
+  "social": {
+    "friendsGoing": "[ZH] friends going",
+    "going": "[ZH] going",
+    "friendsSaved": "[ZH] friends saved",
+    "inTrips": "[ZH] in trips"
   }
 }

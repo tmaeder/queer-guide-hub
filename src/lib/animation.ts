@@ -12,7 +12,8 @@ export const duration = {
 
 export const ease = {
   smooth: 'cubic-bezier(0.22, 1, 0.36, 1)',
-  spring: 'cubic-bezier(0.34, 1.56, 0.64, 1)',
+  // spring (overshoot 1.56) removed 2026-07-11 — bounce/elastic easing is
+  // banned outside the /messages joy zone (framer springs live in lib/motion).
   decel: 'cubic-bezier(0, 0, 0.2, 1)',
   accel: 'cubic-bezier(0.4, 0, 1, 1)',
 } as const;

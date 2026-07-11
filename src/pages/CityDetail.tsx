@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
+import { SeeAllLink } from '@/components/ui/SectionHeader';
 import { useParams } from 'react-router';
 import { useTrackView } from '@/hooks/useTrackView';
 import { resolveEntityImage } from '@/lib/images/resolveEntityImage';
@@ -16,7 +17,6 @@ import { useQueerVillages } from '@/hooks/useQueerVillages';
 import { useNearestAirport } from '@/hooks/useNearestAirport';
 import { useAuth } from '@/hooks/useAuth';
 import { useTrackEvent } from '@/hooks/useTrackEvent';
-import { PageLoading } from '@/components/ui/loading';
 import { SimilarItems } from '@/components/discovery/SimilarItems';
 import { MarketplaceForCity } from '@/components/marketplace/MarketplaceForCity';
 import { CityLocalSupporterCaption } from '@/components/marketplace/CityLocalSupporterCaption';
@@ -60,7 +60,15 @@ export default function CityDetail() {
     image: resolveEntityImage('city', city).url ?? undefined,
     country: city?.countries?.name,
   });
-  const [imageUrl, setImageUrl] = useState<string>('');
+  // Sync fast path mirroring fetchCityImage's short-circuit (curated wins,
+  // then unflagged image_url) so the LCP hero exists in the FIRST render for
+  // every backfilled city instead of waiting on a JS round-trip. The async
+  // edge/Pexels path below only runs on a true miss.
+  const syncImageUrl = city
+    ? city.curated_image_url || (!city.image_flagged && city.image_url) || ''
+    : '';
+  const [fetchedImageUrl, setFetchedImageUrl] = useState<string>('');
+  const imageUrl = syncImageUrl || fetchedImageUrl;
   const [createTripOpen, setCreateTripOpen] = useState(false);
   const { user } = useAuth();
   const { track } = useTrackEvent();
@@ -129,34 +137,38 @@ export default function CityDetail() {
 
   useEffect(() => {
     if (!city) return;
-    (async () => {
-      try {
-        const result = await fetchCityImage(city.id, city.name, city.countries?.name || '', {
-          existing: {
-            image_url: city.image_url,
-            curated_image_url: city.curated_image_url,
-            image_flagged: city.image_flagged,
-          },
-        });
-        if (result?.image_url) {
-          setImageUrl(result.image_url);
-          return;
+    // Only hit the network for the hero image on a true miss — the sync fast
+    // path above already covers curated/unflagged images.
+    if (!syncImageUrl) {
+      (async () => {
+        try {
+          const result = await fetchCityImage(city.id, city.name, city.countries?.name || '', {
+            existing: {
+              image_url: city.image_url,
+              curated_image_url: city.curated_image_url,
+              image_flagged: city.image_flagged,
+            },
+          });
+          if (result?.image_url) {
+            setFetchedImageUrl(result.image_url);
+            return;
+          }
+          // Miss: prefer a real gallery photo over the abstract texture fallback
+          const { data } = await supabase.functions.invoke('get-pexels-images', {
+            body: { query: city.name, type: 'city' },
+          });
+          const first = data?.images?.[0];
+          setFetchedImageUrl(first?.url || first?.thumbnail || '');
+        } catch {
+          // Image loading failure is non-critical, fallback to no image
         }
-        // Miss: prefer a real gallery photo over the abstract texture fallback
-        const { data } = await supabase.functions.invoke('get-pexels-images', {
-          body: { query: city.name, type: 'city' },
-        });
-        const first = data?.images?.[0];
-        setImageUrl(first?.url || first?.thumbnail || '');
-      } catch {
-        // Image loading failure is non-critical, fallback to no image
-      }
-    })();
+      })();
+    }
     fetchArticles({
       cityIds: [city.id],
       countryIds: city.countries?.id ? [city.countries.id] : undefined,
     });
-  }, [city, fetchCityImage, fetchArticles]);
+  }, [city, syncImageUrl, fetchCityImage, fetchArticles]);
 
   useEffect(() => {
     if (city?.id) fetchVillages({ cityId: city.id });
@@ -167,26 +179,61 @@ export default function CityDetail() {
     try {
       await toggleFavorite(city.id);
       toast({
-        title: isFavorited(city.id) ? 'Removed from favorites' : 'Added to favorites',
-        description: `${city.name} ${isFavorited(city.id) ? 'removed from' : 'added to'} your favorites`,
+        title: isFavorited(city.id)
+          ? t('favorites.removedTitle', 'Removed from favorites')
+          : t('favorites.addedTitle', 'Added to favorites'),
+        description: isFavorited(city.id)
+          ? t('favorites.removedDescription', '{{name}} removed from your favorites', { name: city.name })
+          : t('favorites.addedDescription', '{{name}} added to your favorites', { name: city.name }),
       });
     } catch (_error) {
-      toast({ title: 'Error', description: 'Failed to update favorites', variant: 'destructive' });
+      toast({
+        title: t('common.error', 'Error'),
+        description: t('favorites.updateFailed', 'Failed to update favorites'),
+        variant: 'destructive',
+      });
     }
   };
 
-  if (loading) return <PageLoading text="Loading city details..." />;
+  if (loading) {
+    // Content-shaped skeleton mirroring the loaded layout (hero → facts row →
+    // section stubs) so there's no full-screen spinner and no layout shift.
+    return (
+      <div
+        role="status"
+        aria-live="polite"
+        aria-label={t('city.loadingDetails', 'Loading city details...')}
+        className="mx-auto max-w-7xl px-4 sm:px-6 md:px-8 py-6"
+      >
+        <div className="h-[58vh] min-h-[380px] max-h-[600px] w-full rounded-container bg-muted animate-pulse" />
+        <div className="mt-6 h-11 w-48 rounded-element bg-muted animate-pulse" />
+        <div className="mt-8 grid grid-cols-2 gap-6 sm:grid-cols-3 rounded-container border border-border/60 p-6">
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="flex flex-col gap-2">
+              <div className="h-3 w-16 rounded-badge bg-muted animate-pulse" />
+              <div className="h-6 w-24 rounded-badge bg-muted animate-pulse" />
+            </div>
+          ))}
+        </div>
+        <div className="mt-10 flex flex-col gap-6">
+          {[0, 1].map((i) => (
+            <div key={i} className="h-40 w-full rounded-container bg-muted animate-pulse" />
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   if (!city) {
     return (
       <div className="min-h-screen bg-background">
         <div className="mx-auto px-4 py-8 text-center">
-          <h5 className="text-xl font-bold mb-4">City Not Found</h5>
+          <h5 className="text-xl font-bold mb-4">{t('city.notFoundTitle', 'City not found')}</h5>
           <p className="text-muted-foreground mb-6">
-            The city you're looking for doesn't exist.
+            {t('city.notFoundDescription', "The city you're looking for doesn't exist.")}
           </p>
           <LocalizedLink to="/places" className="font-medium" style={{ color: 'inherit' }}>
-            ← Back to Places
+            {t('city.backToPlaces', '← Back to Places')}
           </LocalizedLink>
         </div>
       </div>
@@ -210,15 +257,7 @@ export default function CityDetail() {
     typeof city.latitude === 'number' && typeof city.longitude === 'number';
 
   const seeAll = (href: string) => (
-    <LocalizedLink
-      to={href}
-      className="group inline-flex items-center gap-1 text-13 font-medium text-muted-foreground transition-colors hover:text-foreground no-underline"
-    >
-      {t('cities.detail.seeAll', 'See all')}
-      <span className="transition-transform group-hover:translate-x-1" aria-hidden="true">
-        →
-      </span>
-    </LocalizedLink>
+    <SeeAllLink to={href} label={t('cities.detail.seeAll', 'See all')} />
   );
 
   const sectionContent: Record<string, React.ReactNode> = {
@@ -342,7 +381,7 @@ export default function CityDetail() {
             <CityLocalSupporterCaption cityId={city.id} />
             <SimilarItems
               entity={{ type: 'city', id: city.id }}
-              title="Similar cities"
+              title={t('city.similarCities', 'Similar cities')}
               contentTypes={['city']}
             />
           </div>

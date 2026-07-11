@@ -105,11 +105,11 @@ export const EventCard = memo(function EventCard({ event, loading = false, socia
   const overlay: Overlay | null = isPast
     ? { label: t('events.past', 'Past'), variant: 'past' }
     : tripStatus?.isInTrip
-      ? { label: 'In trip', variant: 'trip' }
+      ? { label: t('events.inTrip', 'In trip'), variant: 'trip' }
       : overlapsActiveTrip
-        ? { label: 'During your trip', variant: 'overlap' }
+        ? { label: t('events.duringYourTrip', 'During your trip'), variant: 'overlap' }
         : event?.is_featured
-          ? { label: 'Featured', variant: 'featured' }
+          ? { label: t('events.featured', 'Featured'), variant: 'featured' }
           : null;
 
   const overlayClass =
@@ -188,9 +188,9 @@ export const EventCard = memo(function EventCard({ event, loading = false, socia
 
               <div className="p-4">
                 <div className="flex items-baseline gap-2 min-w-0">
-                  <p className="text-body-lg font-semibold leading-tight truncate flex-1 min-w-0">
+                  <h3 className="text-body-lg font-semibold leading-tight truncate flex-1 min-w-0">
                     {event.title}
-                  </p>
+                  </h3>
                   {priceDisplay && (
                     <span className="text-xs font-medium text-muted-foreground tabular-nums shrink-0">
                       {priceDisplay}
@@ -218,12 +218,12 @@ export const EventCard = memo(function EventCard({ event, loading = false, socia
                     {
                       icon: SignalIcons.friends,
                       count: socialSignal?.friends_going ?? 0,
-                      label: 'friends going',
+                      label: t('social.friendsGoing', 'friends going'),
                     },
                     {
                       icon: SignalIcons.going,
                       count: socialSignal?.attending_count ?? event.attendee_count ?? 0,
-                      label: 'going',
+                      label: t('social.going', 'going'),
                     },
                   ]}
                 />

@@ -254,7 +254,7 @@ export function EmailIngestionsManager() {
             <Collapsible key={ing.id}>
               <Card
                 style={{
-                  borderLeft: `4px solid ${STATUS_BORDER_COLOR[ing.status] || 'hsl(var(--muted-foreground))'}`,
+                  border: `1px solid ${STATUS_BORDER_COLOR[ing.status] || 'hsl(var(--border))'}`,
                   transition: 'border-color 0.2s',
                 }}
               >

@@ -174,6 +174,15 @@ export default defineConfig(({ mode }) => ({
             // React core MUST be in its own chunk to avoid circular deps
             { name: 'vendor', test: /node_modules\/react(-dom)?\// },
             { name: 'router', test: /node_modules\/react-router\// },
+            // Styling micro-deps (clsx + tailwind-merge + cva) → utils, which
+            // is already on every page's preload list. Without this rolldown
+            // homes the canonical clsx inside the RECHARTS chunk (its biggest
+            // sharer), so the entry statically imports recharts — which chains
+            // to graph (d3) and tiptap — on every public page (~1.2 MB raw).
+            // See docs/perf/recharts-cross-route-leak.md. NOTE: this is the
+            // ordered-group variant, NOT the priority-100 group that failed in
+            // #1122 — measured entry sizes below before merging.
+            { name: 'utils', test: /node_modules\/(clsx|tailwind-merge|class-variance-authority|use-sync-external-store)\// },
             { name: 'utils', test: /node_modules\/date-fns\// },
             { name: 'graph', test: /node_modules\/(react-force-graph|force-graph|d3-)/ },
             { name: 'exceljs', test: /node_modules\/exceljs\// },

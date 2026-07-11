@@ -1,4 +1,5 @@
 import { memo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card } from '@/components/ui/card';
 import { Image } from '@/components/ui/Image';
 import { MapPin, BadgeCheck } from 'lucide-react';
@@ -80,6 +81,7 @@ const VenueCardFixture = () => (
 );
 
 function VenueCardImpl({ venue, loading = false, socialSignal }: VenueCardProps) {
+  const { t } = useTranslation();
   const visual = getVenueVisual(venue);
   const openNow = venue ? isOpenNow(venue.hours) : null;
   const priceTier =
@@ -95,9 +97,9 @@ function VenueCardImpl({ venue, loading = false, socialSignal }: VenueCardProps)
 
   // Single overlay slot — priority order
   const overlay: { label: string; variant: 'closed' | 'open' } | null = isClosed
-    ? { label: 'Closed', variant: 'closed' }
+    ? { label: t('venues.closed', 'Closed'), variant: 'closed' }
     : openNow === true
-      ? { label: 'Open now', variant: 'open' }
+      ? { label: t('venues.openNow', 'Open now'), variant: 'open' }
       : null;
 
   return (
@@ -165,16 +167,16 @@ function VenueCardImpl({ venue, loading = false, socialSignal }: VenueCardProps)
 
               <div className="p-4">
                 <div className="flex items-baseline gap-2 min-w-0">
-                  <p className="text-body-lg font-semibold leading-tight truncate flex-1 min-w-0">
+                  <h3 className="text-body-lg font-semibold leading-tight truncate flex-1 min-w-0">
                     {venue.name}
                     {isVerified && (
                       <BadgeCheck
-                        aria-label="Verified"
+                        aria-label={t('venues.verified', 'Verified')}
                         size={14}
                         className="inline ml-1 text-foreground/60 align-middle"
                       />
                     )}
-                  </p>
+                  </h3>
                   {priceTier && (
                     <span
                       aria-label={`Price tier ${priceTier}`}
@@ -188,19 +190,10 @@ function VenueCardImpl({ venue, loading = false, socialSignal }: VenueCardProps)
                   {locationLabel || (
                     <span className="inline-flex items-center gap-1">
                       <MapPin size={12} />
-                      Location unknown
+                      {t('venues.locationUnknown', 'Location unknown')}
                     </span>
                   )}
                 </p>
-                {(() => {
-                  const blurb = (venue.description ?? '').split(/(?<=[.!?])\s+/)[0]?.trim();
-                  if (!blurb || blurb.length < 12) return null;
-                  return (
-                    <p className="mt-2 text-13 text-muted-foreground line-clamp-2">
-                      {blurb}
-                    </p>
-                  );
-                })()}
                 {(() => {
                   const blurb = (venue.description ?? '').split(/(?<=[.!?])\s+/)[0]?.trim();
                   if (!blurb || blurb.length < 12) return null;
@@ -220,12 +213,12 @@ function VenueCardImpl({ venue, loading = false, socialSignal }: VenueCardProps)
                       {
                         icon: SignalIcons.friends,
                         count: socialSignal.friends_saved,
-                        label: 'friends saved',
+                        label: t('social.friendsSaved', 'friends saved'),
                       },
                       {
                         icon: SignalIcons.trip,
                         count: socialSignal.trip_usage,
-                        label: 'in trips',
+                        label: t('social.inTrips', 'in trips'),
                       },
                     ]}
                   />

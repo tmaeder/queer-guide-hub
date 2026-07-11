@@ -173,6 +173,11 @@
     "remove": "삭제",
     "accept": "수락",
     "decline": "거절",
+    "resetFilters": "[KO] Reset filters",
+    "loadingTimeout": "[KO] This is taking longer than expected. Please check your connection or try again.",
+    "errorLoadingData": "[KO] Something went wrong while loading data. Please try again.",
+    "retry": "[KO] Retry",
+    "featured": "[KO] Featured",
     "unsave": "[KO] Remove from saved"
   },
   "navigation": {
@@ -1151,7 +1156,10 @@
     "free": "무료",
     "ticketsRequired": "티켓 필요",
     "soldOut": "매진",
-    "cancelled": "취소됨"
+    "cancelled": "취소됨",
+    "inTrip": "[KO] In trip",
+    "duringYourTrip": "[KO] During your trip",
+    "featured": "[KO] Featured"
   },
   "venues": {
     "title": "장소",
@@ -1275,7 +1283,10 @@
     "achievementToast": {
       "unlocked": "잠금 해제: {{name}}",
       "fallback": "새 업적 획득"
-    }
+    },
+    "closed": "[KO] Closed",
+    "openNow": "[KO] Open now",
+    "locationUnknown": "[KO] Location unknown"
   },
   "marketplace": {
     "title": "마켓플레이스",
@@ -1288,7 +1299,11 @@
     "onSale": "할인 중",
     "newArrival": "신상품",
     "featured": "추천",
-    "reviews": "리뷰"
+    "reviews": "리뷰",
+    "adultBadge": "[KO] 18+",
+    "adBadge": "[KO] Ad",
+    "outOfStock": "[KO] Out of stock",
+    "queerOwnedBadge": "[KO] Queer-owned"
   },
   "profile": {
     "editProfile": "프로필 수정",
@@ -2922,7 +2937,8 @@
       "anEvent": "이벤트",
       "aVenue": "장소"
     },
-    "matchTag": "매치"
+    "matchTag": "매치",
+    "openAlerts": "[KO] All notifications"
   },
   "extension": {
     "signInGate": {
@@ -3208,12 +3224,48 @@
         "reservation": "예약",
         "going": "참석",
         "saved": "저장됨",
-        "groupEvent": "[KO] Group event"
+        "groupEvent": "[KO] Group event",
+        "birthday": "[KO] Birthday",
+        "history": "[KO] Queer history",
+        "news": "[KO] Saved news"
       },
       "scope": {
         "all": "[KO] All",
         "trips": "[KO] Trips",
         "groups": "[KO] Groups"
+      },
+      "views": {
+        "month": "[KO] Month",
+        "week": "[KO] Week",
+        "day": "[KO] Day"
+      },
+      "nav": {
+        "prev": "[KO] Previous",
+        "next": "[KO] Next",
+        "today": "[KO] Today"
+      },
+      "layers": {
+        "button": "[KO] Layers",
+        "title": "[KO] Show on calendar",
+        "trips": "[KO] Trips & bookings",
+        "events": "[KO] Events",
+        "birthdays": "[KO] Friends' birthdays",
+        "history": "[KO] Queer history",
+        "news": "[KO] Saved news"
+      },
+      "tripsButton": "[KO] Trips",
+      "gridLabel": "[KO] Calendar",
+      "cellItems_one": "[KO] {{count}} item",
+      "cellItems_other": "[KO] {{count}} items",
+      "historyCount": "[KO] Queer history · {{count}}",
+      "more": "[KO] +{{count}} more",
+      "dayEmpty": "[KO] Nothing on this day.",
+      "weekEmpty": "[KO] Nothing this week.",
+      "onThisDay": "[KO] On this day in queer history",
+      "bornYearsAgo": "[KO] born {{count}} years ago",
+      "diedYearsAgo": "[KO] died {{count}} years ago",
+      "tripsDrawer": {
+        "title": "[KO] Your trips"
       }
     },
     "contacts": {
@@ -3261,7 +3313,11 @@
       "friendCount": "친구 {{count}}명",
       "findPeople": "사람 찾기",
       "noFriends": "아직 친구가 없습니다.",
-      "wantsToConnect": "연결을 원해요"
+      "wantsToConnect": "연결을 원해요",
+      "allCaughtUp": "[KO] All caught up.",
+      "next48h": "[KO] Next two days",
+      "requests": "[KO] Friend requests",
+      "allPeople": "[KO] All people"
     },
     "messages": {
       "chats": "채팅",
@@ -3270,5 +3326,32 @@
     "plans": {
       "trips": "내 여행"
     }
+  },
+  "city": {
+    "rights": {
+      "safetyNotesTitle": "[KO] Safety notes for {{name}}",
+      "nationalDisclaimer": "[KO] The rights status below applies to <countryLink>{{country}}</countryLink> at the national level. Local laws and enforcement in {{city}} may vary.",
+      "nationalDisclaimerNoCountry": "[KO] The rights status below applies to this country at the national level. Local laws and enforcement in {{city}} may vary.",
+      "loading": "[KO] Loading rights data...",
+      "noData": "[KO] Rights data is not available for this location."
+    },
+    "loadingDetails": "[KO] Loading city details...",
+    "notFoundTitle": "[KO] City not found",
+    "notFoundDescription": "[KO] The city you're looking for doesn't exist.",
+    "backToPlaces": "[KO] ← Back to Places",
+    "similarCities": "[KO] Similar cities"
+  },
+  "favorites": {
+    "removedTitle": "[KO] Removed from favorites",
+    "addedTitle": "[KO] Added to favorites",
+    "removedDescription": "[KO] {{name}} removed from your favorites",
+    "addedDescription": "[KO] {{name}} added to your favorites",
+    "updateFailed": "[KO] Failed to update favorites"
+  },
+  "social": {
+    "friendsGoing": "[KO] friends going",
+    "going": "[KO] going",
+    "friendsSaved": "[KO] friends saved",
+    "inTrips": "[KO] in trips"
   }
 }

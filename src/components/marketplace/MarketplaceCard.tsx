@@ -1,4 +1,5 @@
 import { memo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { MotionCard as Card } from '@/components/ui/card';
 import { CardHoverEffect } from '@/components/effects/CardHoverEffect';
 import { Image } from '@/components/ui/Image';
@@ -66,6 +67,7 @@ function MarketplaceCardImpl({
   surface = 'marketplace_grid',
   variant = 'grid',
 }: MarketplaceCardProps) {
+  const { t } = useTranslation();
   const { currency } = useCurrency();
   const { data: rates } = useFxRates();
   // Second image mounts only after first hover — 24 cards per page must
@@ -223,8 +225,8 @@ function MarketplaceCardImpl({
             <span>{departmentLabel(listing.department ?? departmentOf(listing.subcategory_slug))}</span>
           </p>
 
-          <h2 className="text-15 font-medium leading-snug line-clamp-2 text-balance">
-            {isAdult && <span className="mr-1.5 text-2xs uppercase tracking-wider text-muted-foreground">18+</span>}
+          <h3 className="text-15 font-medium leading-snug line-clamp-2 text-balance">
+            {isAdult && <span className="mr-1.5 text-2xs uppercase tracking-wider text-muted-foreground">{t('marketplace.adultBadge', '18+')}</span>}
             <LocalizedLink
               to={`/marketplace/${listing.slug}`}
               onClick={(e) => e.stopPropagation()}
@@ -232,7 +234,7 @@ function MarketplaceCardImpl({
             >
               <HighlightedText text={listing.title} query={searchQuery} />
             </LocalizedLink>
-          </h2>
+          </h3>
 
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-baseline gap-1.5 min-w-0">
@@ -249,13 +251,13 @@ function MarketplaceCardImpl({
               )}
               {/* FTC-honest without shouting: monetized listings get an Ad marker. */}
               {isAffiliate && (
-                <span className="text-2xs uppercase tracking-wider text-muted-foreground">Ad</span>
+                <span className="text-2xs uppercase tracking-wider text-muted-foreground">{t('marketplace.adBadge', 'Ad')}</span>
               )}
             </div>
-            {queerOwned && <Badge variant="outline">Queer-owned</Badge>}
+            {queerOwned && <Badge variant="outline">{t('marketplace.queerOwnedBadge', 'Queer-owned')}</Badge>}
           </div>
           {outOfStock && (
-            <p className="text-2xs uppercase tracking-wider text-muted-foreground">Out of stock</p>
+            <p className="text-2xs uppercase tracking-wider text-muted-foreground">{t('marketplace.outOfStock', 'Out of stock')}</p>
           )}
           {/* Quiet trust line, revealed on hover where hover exists. */}
           {metaFacts.length > 0 && (
@@ -286,6 +288,7 @@ function RowBody({
   outOfStock: boolean;
   queerOwned: boolean;
 }) {
+  const { t } = useTranslation();
   return (
     <div className="flex min-w-0 flex-1 flex-col justify-center gap-1.5 py-2 pr-2">
       <p className="text-2xs uppercase tracking-wider text-muted-foreground overflow-hidden text-ellipsis whitespace-nowrap">
@@ -308,9 +311,9 @@ function RowBody({
         ) : null}
         <span>{departmentLabel(listing.department ?? departmentOf(listing.subcategory_slug))}</span>
       </p>
-      <h2 className="text-15 font-medium leading-snug line-clamp-2">
+      <h3 className="text-15 font-medium leading-snug line-clamp-2">
         {isAdult && (
-          <span className="mr-1.5 text-2xs uppercase tracking-wider text-muted-foreground">18+</span>
+          <span className="mr-1.5 text-2xs uppercase tracking-wider text-muted-foreground">{t('marketplace.adultBadge', '18+')}</span>
         )}
         <LocalizedLink
           to={`/marketplace/${listing.slug}`}
@@ -319,7 +322,7 @@ function RowBody({
         >
           <HighlightedText text={listing.title} query={searchQuery} />
         </LocalizedLink>
-      </h2>
+      </h3>
       <div className="flex items-center gap-2">
         <p
           className={`text-15 font-semibold leading-none tabular-nums ${outOfStock ? 'line-through text-muted-foreground' : ''}`}
@@ -328,12 +331,12 @@ function RowBody({
         </p>
         {price.secondary && <span className="text-xs text-muted-foreground">{price.secondary}</span>}
         {isAffiliate && (
-          <span className="text-2xs uppercase tracking-wider text-muted-foreground">Ad</span>
+          <span className="text-2xs uppercase tracking-wider text-muted-foreground">{t('marketplace.adBadge', 'Ad')}</span>
         )}
         {outOfStock && (
-          <span className="text-2xs uppercase tracking-wider text-muted-foreground">Out of stock</span>
+          <span className="text-2xs uppercase tracking-wider text-muted-foreground">{t('marketplace.outOfStock', 'Out of stock')}</span>
         )}
-        {queerOwned && <Badge variant="outline">Queer-owned</Badge>}
+        {queerOwned && <Badge variant="outline">{t('marketplace.queerOwnedBadge', 'Queer-owned')}</Badge>}
       </div>
     </div>
   );

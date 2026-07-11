@@ -153,7 +153,7 @@ export const IngestionSourcesManager = () => {
               key={source.id}
               style={{
                 backgroundColor: 'var(--card)',
-                borderLeft: `4px solid ${hasError ? 'hsl(var(--destructive))' : source.is_enabled ? 'hsl(var(--foreground))' : 'hsl(var(--muted-foreground))'}`,
+                border: `1px solid ${hasError ? 'hsl(var(--destructive) / 0.5)' : source.is_enabled ? 'hsl(var(--foreground) / 0.35)' : 'hsl(var(--border))'}`,
               }}
             >
               <CardContent>

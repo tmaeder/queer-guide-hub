@@ -12,7 +12,9 @@ describe('animation tokens', () => {
 
   it('should export ease values as cubic-bezier strings', () => {
     expect(ease.smooth).toContain('cubic-bezier');
-    expect(ease.spring).toContain('cubic-bezier');
+    // ease.spring (overshoot) was removed 2026-07-11 — bounce easing is banned
+    // outside the /messages joy zone.
+    expect('spring' in ease).toBe(false);
     expect(ease.decel).toContain('cubic-bezier');
     expect(ease.accel).toContain('cubic-bezier');
   });

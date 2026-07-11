@@ -92,7 +92,8 @@
       "anEvent": "Event",
       "aVenue": "Venue"
     },
-    "matchTag": "Match"
+    "matchTag": "Match",
+    "openAlerts": "All notifications"
   },
   "eventTypes": {
     "party": "Party",
@@ -262,6 +263,11 @@
     "remove": "Remove",
     "accept": "Accept",
     "decline": "Decline",
+    "resetFilters": "Reset filters",
+    "loadingTimeout": "This is taking longer than expected. Please check your connection or try again.",
+    "errorLoadingData": "Something went wrong while loading data. Please try again.",
+    "retry": "Retry",
+    "featured": "Featured",
     "unsave": "Remove from saved"
   },
   "navigation": {
@@ -452,7 +458,10 @@
     "free": "Free",
     "ticketsRequired": "Tickets Required",
     "soldOut": "Sold Out",
-    "cancelled": "Cancelled"
+    "cancelled": "Cancelled",
+    "inTrip": "In trip",
+    "duringYourTrip": "During your trip",
+    "featured": "Featured"
   },
   "venues": {
     "title": "Venues",
@@ -569,7 +578,10 @@
     "achievementToast": {
       "unlocked": "Unlocked: {{name}}",
       "fallback": "New achievement earned"
-    }
+    },
+    "closed": "Closed",
+    "openNow": "Open now",
+    "locationUnknown": "Location unknown"
   },
   "marketplace": {
     "title": "Marketplace",
@@ -582,7 +594,11 @@
     "onSale": "On Sale",
     "newArrival": "New Arrival",
     "featured": "Featured",
-    "reviews": "Reviews"
+    "reviews": "Reviews",
+    "adultBadge": "18+",
+    "adBadge": "Ad",
+    "outOfStock": "Out of stock",
+    "queerOwnedBadge": "Queer-owned"
   },
   "profile": {
     "editProfile": "Edit Profile",
@@ -3180,12 +3196,48 @@
         "reservation": "Booking",
         "going": "Going",
         "saved": "Saved",
-        "groupEvent": "Group event"
+        "groupEvent": "Group event",
+        "birthday": "Birthday",
+        "history": "Queer history",
+        "news": "Saved news"
       },
       "scope": {
         "all": "All",
         "trips": "Trips",
         "groups": "Groups"
+      },
+      "views": {
+        "month": "Month",
+        "week": "Week",
+        "day": "Day"
+      },
+      "nav": {
+        "prev": "Previous",
+        "next": "Next",
+        "today": "Today"
+      },
+      "layers": {
+        "button": "Layers",
+        "title": "Show on calendar",
+        "trips": "Trips & bookings",
+        "events": "Events",
+        "birthdays": "Friends' birthdays",
+        "history": "Queer history",
+        "news": "Saved news"
+      },
+      "tripsButton": "Trips",
+      "gridLabel": "Calendar",
+      "cellItems_one": "{{count}} item",
+      "cellItems_other": "{{count}} items",
+      "historyCount": "Queer history · {{count}}",
+      "more": "+{{count}} more",
+      "dayEmpty": "Nothing on this day.",
+      "weekEmpty": "Nothing this week.",
+      "onThisDay": "On this day in queer history",
+      "bornYearsAgo": "born {{count}} years ago",
+      "diedYearsAgo": "died {{count}} years ago",
+      "tripsDrawer": {
+        "title": "Your trips"
       }
     },
     "contacts": {
@@ -3233,7 +3285,11 @@
       "friendCount": "{{count}} friends",
       "findPeople": "Find people",
       "noFriends": "No friends yet.",
-      "wantsToConnect": "Wants to connect"
+      "wantsToConnect": "Wants to connect",
+      "allCaughtUp": "All caught up.",
+      "next48h": "Next two days",
+      "requests": "Friend requests",
+      "allPeople": "All people"
     },
     "messages": {
       "chats": "Chats",
@@ -3242,5 +3298,32 @@
     "plans": {
       "trips": "Your trips"
     }
+  },
+  "city": {
+    "rights": {
+      "safetyNotesTitle": "Safety notes for {{name}}",
+      "nationalDisclaimer": "The rights status below applies to <countryLink>{{country}}</countryLink> at the national level. Local laws and enforcement in {{city}} may vary.",
+      "nationalDisclaimerNoCountry": "The rights status below applies to this country at the national level. Local laws and enforcement in {{city}} may vary.",
+      "loading": "Loading rights data...",
+      "noData": "Rights data is not available for this location."
+    },
+    "loadingDetails": "Loading city details...",
+    "notFoundTitle": "City not found",
+    "notFoundDescription": "The city you're looking for doesn't exist.",
+    "backToPlaces": "← Back to Places",
+    "similarCities": "Similar cities"
+  },
+  "favorites": {
+    "removedTitle": "Removed from favorites",
+    "addedTitle": "Added to favorites",
+    "removedDescription": "{{name}} removed from your favorites",
+    "addedDescription": "{{name}} added to your favorites",
+    "updateFailed": "Failed to update favorites"
+  },
+  "social": {
+    "friendsGoing": "friends going",
+    "going": "going",
+    "friendsSaved": "friends saved",
+    "inTrips": "in trips"
   }
 }

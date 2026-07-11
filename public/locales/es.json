@@ -173,6 +173,11 @@
     "remove": "Eliminar",
     "accept": "Aceptar",
     "decline": "Rechazar",
+    "resetFilters": "[ES] Reset filters",
+    "loadingTimeout": "[ES] This is taking longer than expected. Please check your connection or try again.",
+    "errorLoadingData": "[ES] Something went wrong while loading data. Please try again.",
+    "retry": "[ES] Retry",
+    "featured": "[ES] Featured",
     "unsave": "[ES] Remove from saved"
   },
   "navigation": {
@@ -1151,7 +1156,10 @@
     "free": "Gratis",
     "ticketsRequired": "Requiere entrada",
     "soldOut": "Agotado",
-    "cancelled": "Cancelado"
+    "cancelled": "Cancelado",
+    "inTrip": "[ES] In trip",
+    "duringYourTrip": "[ES] During your trip",
+    "featured": "[ES] Featured"
   },
   "venues": {
     "title": "Lugares",
@@ -1275,7 +1283,10 @@
     "achievementToast": {
       "unlocked": "Desbloqueado: {{name}}",
       "fallback": "Nuevo logro obtenido"
-    }
+    },
+    "closed": "[ES] Closed",
+    "openNow": "[ES] Open now",
+    "locationUnknown": "[ES] Location unknown"
   },
   "marketplace": {
     "title": "Mercado",
@@ -1288,7 +1299,11 @@
     "onSale": "En oferta",
     "newArrival": "Novedad",
     "featured": "Destacado",
-    "reviews": "Reseñas"
+    "reviews": "Reseñas",
+    "adultBadge": "[ES] 18+",
+    "adBadge": "[ES] Ad",
+    "outOfStock": "[ES] Out of stock",
+    "queerOwnedBadge": "[ES] Queer-owned"
   },
   "profile": {
     "editProfile": "Editar perfil",
@@ -2924,7 +2939,8 @@
       "anEvent": "Evento",
       "aVenue": "Lugar"
     },
-    "matchTag": "Coincidencia"
+    "matchTag": "Coincidencia",
+    "openAlerts": "[ES] All notifications"
   },
   "extension": {
     "signInGate": {
@@ -3210,12 +3226,48 @@
         "reservation": "Reserva",
         "going": "Asisto",
         "saved": "Guardado",
-        "groupEvent": "[ES] Group event"
+        "groupEvent": "[ES] Group event",
+        "birthday": "[ES] Birthday",
+        "history": "[ES] Queer history",
+        "news": "[ES] Saved news"
       },
       "scope": {
         "all": "[ES] All",
         "trips": "[ES] Trips",
         "groups": "[ES] Groups"
+      },
+      "views": {
+        "month": "[ES] Month",
+        "week": "[ES] Week",
+        "day": "[ES] Day"
+      },
+      "nav": {
+        "prev": "[ES] Previous",
+        "next": "[ES] Next",
+        "today": "[ES] Today"
+      },
+      "layers": {
+        "button": "[ES] Layers",
+        "title": "[ES] Show on calendar",
+        "trips": "[ES] Trips & bookings",
+        "events": "[ES] Events",
+        "birthdays": "[ES] Friends' birthdays",
+        "history": "[ES] Queer history",
+        "news": "[ES] Saved news"
+      },
+      "tripsButton": "[ES] Trips",
+      "gridLabel": "[ES] Calendar",
+      "cellItems_one": "[ES] {{count}} item",
+      "cellItems_other": "[ES] {{count}} items",
+      "historyCount": "[ES] Queer history · {{count}}",
+      "more": "[ES] +{{count}} more",
+      "dayEmpty": "[ES] Nothing on this day.",
+      "weekEmpty": "[ES] Nothing this week.",
+      "onThisDay": "[ES] On this day in queer history",
+      "bornYearsAgo": "[ES] born {{count}} years ago",
+      "diedYearsAgo": "[ES] died {{count}} years ago",
+      "tripsDrawer": {
+        "title": "[ES] Your trips"
       }
     },
     "contacts": {
@@ -3263,7 +3315,11 @@
       "friendCount": "{{count}} amistades",
       "findPeople": "Buscar personas",
       "noFriends": "Aún no tienes amistades.",
-      "wantsToConnect": "Quiere conectar"
+      "wantsToConnect": "Quiere conectar",
+      "allCaughtUp": "[ES] All caught up.",
+      "next48h": "[ES] Next two days",
+      "requests": "[ES] Friend requests",
+      "allPeople": "[ES] All people"
     },
     "messages": {
       "chats": "Chats",
@@ -3272,5 +3328,32 @@
     "plans": {
       "trips": "Tus viajes"
     }
+  },
+  "city": {
+    "rights": {
+      "safetyNotesTitle": "[ES] Safety notes for {{name}}",
+      "nationalDisclaimer": "[ES] The rights status below applies to <countryLink>{{country}}</countryLink> at the national level. Local laws and enforcement in {{city}} may vary.",
+      "nationalDisclaimerNoCountry": "[ES] The rights status below applies to this country at the national level. Local laws and enforcement in {{city}} may vary.",
+      "loading": "[ES] Loading rights data...",
+      "noData": "[ES] Rights data is not available for this location."
+    },
+    "loadingDetails": "[ES] Loading city details...",
+    "notFoundTitle": "[ES] City not found",
+    "notFoundDescription": "[ES] The city you're looking for doesn't exist.",
+    "backToPlaces": "[ES] ← Back to Places",
+    "similarCities": "[ES] Similar cities"
+  },
+  "favorites": {
+    "removedTitle": "[ES] Removed from favorites",
+    "addedTitle": "[ES] Added to favorites",
+    "removedDescription": "[ES] {{name}} removed from your favorites",
+    "addedDescription": "[ES] {{name}} added to your favorites",
+    "updateFailed": "[ES] Failed to update favorites"
+  },
+  "social": {
+    "friendsGoing": "[ES] friends going",
+    "going": "[ES] going",
+    "friendsSaved": "[ES] friends saved",
+    "inTrips": "[ES] in trips"
   }
 }
