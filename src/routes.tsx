@@ -6,7 +6,7 @@ import { AdminRouteGuard } from '@/components/security/AdminRouteGuard';
 import { LocaleRouter } from '@/components/routing/LocaleRouter';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
-import { MotionPage } from '@/components/motion';
+import { RouteFade } from '@/components/layout/RouteFade';
 import { lazyRetry } from '@/utils/lazyRetry';
 import { submissionRegistry } from '@/config/submissionRegistry';
 import { DEFAULT_LOCALE, isSupportedLocale } from '@/i18n/languages';
@@ -242,7 +242,7 @@ function LocalizedRedirect({ to }: { to: string }) {
   return <Navigate to={`${prefix}${to}${search}`} replace />;
 }
 
-/** Routes table + per-route ErrorBoundary/Suspense/MotionPage and a11y main element */
+/** Routes table + per-route ErrorBoundary/Suspense/RouteFade and a11y main element */
 export const AppRoutes = () => {
   const location = useLocation();
 
@@ -302,7 +302,7 @@ export const AppRoutes = () => {
               </div>
             }
           >
-            <MotionPage>
+            <RouteFade>
             <Routes>
               {/* Auth routes — no locale prefix */}
               <Route path="/auth" element={<Auth />} />
@@ -672,7 +672,7 @@ export const AppRoutes = () => {
 
               <Route path="*" element={<NotFound />} />
             </Routes>
-            </MotionPage>
+            </RouteFade>
           </Suspense>
         </ErrorBoundary>
       </main>

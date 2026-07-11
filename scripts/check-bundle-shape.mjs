@@ -73,9 +73,65 @@ for (const f of indexChunks) {
   }
 }
 
+// ── Entry static-import closure ─────────────────────────────────────────
+// Walk the STATIC import edges (import ... from "./chunk-hash.js") from the
+// entry chunk(s). Everything in this closure is fetched by every page load —
+// modulePreload filtering does NOT help here, these are real ESM imports.
+// Heavy route-only chunks must never become reachable (the clsx-in-recharts
+// homing bug made entry → utils → recharts → graph + tiptap; see
+// docs/perf/recharts-cross-route-leak.md).
+const HEAVY_UNREACHABLE = /^(recharts|tiptap|graph|exceljs|pdfjs|mammoth|maplibre|xyflow|dnd-kit)-/;
+
+const importRe = /from\s*"\.\/([A-Za-z0-9._-]+\.js)"|import\s*"\.\/([A-Za-z0-9._-]+\.js)"/g;
+const closure = new Set();
+const queue = [...indexChunks];
+while (queue.length) {
+  const f = queue.pop();
+  if (closure.has(f)) continue;
+  closure.add(f);
+  let contents;
+  try {
+    contents = readFileSync(join(dist, f), 'utf8');
+  } catch {
+    continue;
+  }
+  for (const m of contents.matchAll(importRe)) {
+    const dep = m[1] || m[2];
+    if (dep && !closure.has(dep)) queue.push(dep);
+  }
+}
+
+let closureKb = 0;
+for (const f of closure) {
+  try {
+    closureKb += statSync(join(dist, f)).size / 1024;
+  } catch {
+    /* removed between listing and stat — ignore */
+  }
+  if (HEAVY_UNREACHABLE.test(f)) {
+    console.error(
+      `::error::Heavy route-only chunk ${f} is statically reachable from the entry — every page fetches it. A shared module is being homed in a heavy chunk again (see docs/perf/recharts-cross-route-leak.md).`,
+    );
+    failed = true;
+  }
+}
+
+// Raw-size budget for the whole entry closure (everything every page fetches).
+// Baseline 2026-07-11: ~2.1 MB raw after the clsx re-homing fix. Headroom for
+// normal growth; a jump past this means a heavy import leaked into the shell.
+const ENTRY_CLOSURE_LIMIT_KB = 2600;
+if (closureKb > ENTRY_CLOSURE_LIMIT_KB) {
+  console.error(
+    `::error::Entry static-import closure is ${closureKb.toFixed(0)}KB raw (limit ${ENTRY_CLOSURE_LIMIT_KB}KB). Something heavy joined the every-page graph.`,
+  );
+  failed = true;
+}
+
 if (failed) {
   console.error('Bundle shape check FAILED.');
   process.exit(1);
 }
 
-console.log(`Bundle shape OK (${files.filter((f) => f.endsWith('.js')).length} JS chunks scanned).`);
+console.log(
+  `Bundle shape OK (${files.filter((f) => f.endsWith('.js')).length} JS chunks scanned; entry closure ${closure.size} chunks / ${closureKb.toFixed(0)}KB raw).`,
+);
