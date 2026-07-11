@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { UniversalSearchBar } from '@/components/search/UniversalSearchBar';
+import { stripLocale } from '@/lib/locale';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { generateAvatarUrl } from '@/lib/avatar';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -196,6 +197,38 @@ export function Header() {
     </div>
   );
 
+  // ── Desktop primary nav — mirrors the mobile Explore IA. Mobile keeps the
+  // bottom tab bar; desktop finally gets browse paths beyond the search box.
+  const path = stripLocale(location.pathname);
+  const primaryNav = [
+    { to: '/map', labelKey: 'header.nav.map', fallback: 'Map' },
+    { to: '/places', labelKey: 'header.nav.places', fallback: 'Places' },
+    { to: '/events', labelKey: 'header.nav.events', fallback: 'Events' },
+    { to: '/marketplace', labelKey: 'header.nav.marketplace', fallback: 'Marketplace' },
+    { to: '/news', labelKey: 'header.nav.news', fallback: 'News' },
+  ] as const;
+  const desktopNav = (
+    <nav aria-label={t('header.navigation', 'Navigation')} className="hidden lg:flex items-center gap-1">
+      {primaryNav.map(({ to, labelKey, fallback }) => {
+        const active = path === to || path.startsWith(`${to}/`);
+        return (
+          <LocalizedLink
+            key={to}
+            to={to}
+            aria-current={active ? 'page' : undefined}
+            className={
+              active
+                ? 'px-2 py-2 text-sm font-semibold text-foreground underline decoration-2 underline-offset-8'
+                : 'px-2 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground no-underline'
+            }
+          >
+            {t(labelKey, fallback)}
+          </LocalizedLink>
+        );
+      })}
+    </nav>
+  );
+
   // ── Render ──────────────────────────────────────────────────────────────
 
   return (
@@ -214,16 +247,18 @@ export function Header() {
             {rightCluster}
           </div>
         ) : (
-          /* ── Desktop: brand left · centered search hero · actions right ── */
-          <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-4" style={{ height: 64 }}>
-            <div className="justify-self-start">{brand}</div>
-            <div
-              className="min-w-0 justify-self-center"
-              style={{ width: 'clamp(320px, 40vw, 672px)' }}
-            >
-              <UniversalSearchBar />
+          /* ── Desktop: brand + nav left · search center · actions right ── */
+          <div className="flex items-center gap-4" style={{ height: 64 }}>
+            <div className="flex items-center gap-6 shrink-0">
+              {brand}
+              {desktopNav}
             </div>
-            <div className="justify-self-end">{rightCluster}</div>
+            <div className="min-w-0 flex-1 flex justify-center">
+              <div className="w-full" style={{ maxWidth: 'clamp(280px, 36vw, 672px)' }}>
+                <UniversalSearchBar />
+              </div>
+            </div>
+            <div className="shrink-0">{rightCluster}</div>
           </div>
         )}
       </div>
