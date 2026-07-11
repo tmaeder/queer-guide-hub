@@ -172,7 +172,8 @@
     "more": "Plus",
     "remove": "Retirer",
     "accept": "Accepter",
-    "decline": "Refuser"
+    "decline": "Refuser",
+    "unsave": "[FR] Remove from saved"
   },
   "navigation": {
     "home": "Accueil",
@@ -1565,7 +1566,8 @@
     },
     "news": {
       "title": "Actualités",
-      "eyebrow": "Dépêches"
+      "eyebrow": "Dépêches",
+      "editorsPick": "[FR] Editors' pick"
     },
     "discover": "Discover",
     "destinationsTitle": "Where the scene lives.",
@@ -1618,13 +1620,33 @@
         "thisWeekend": "Ce week-end",
         "thisWeek": "Cette semaine",
         "later": "Plus tard"
+      },
+      "onNow": "[FR] On now",
+      "prideFallback": {
+        "title": "[FR] Pride season ahead"
       }
     },
     "shop": {
       "eyebrow": "Marché",
       "title": "Marques queer",
       "description": "Produits et services d'entreprises queer et trans.",
-      "seeAll": "Voir le marché"
+      "seeAll": "Voir le marché",
+      "fallbackTitle": "[FR] Community picks"
+    },
+    "hero": {
+      "stats": {
+        "places": "[FR] {{n}} places",
+        "events": "[FR] {{n}} events",
+        "cities": "[FR] {{n}} cities",
+        "inView": "[FR] {{n}} places in view"
+      },
+      "invite": "[FR] Open the map"
+    },
+    "bornThisWeek": {
+      "eyebrow": "[FR] Community history",
+      "title": "[FR] Born this week",
+      "seeAll": "[FR] All personalities",
+      "celebrate": "[FR] Celebrate {{name}}"
     }
   },
   "header": {

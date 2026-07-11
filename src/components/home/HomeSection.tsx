@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { ArrowRight } from 'lucide-react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Eyebrow } from '@/components/ui/Eyebrow';
 import { cn } from '@/lib/utils';
@@ -43,9 +44,10 @@ export function HomeSection({
         )}
       >
         {seeAllLabel}
-        <span className="transition-transform group-hover:translate-x-1" aria-hidden="true">
-          →
-        </span>
+        <ArrowRight
+          className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1 rtl:rotate-180 rtl:group-hover:-translate-x-1"
+          aria-hidden="true"
+        />
       </LocalizedLink>
     ) : null;
 

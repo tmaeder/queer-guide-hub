@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { HomeSection } from './HomeSection';
 import { MarketplaceCard } from '@/components/marketplace/MarketplaceCard';
-import { useMarketplaceRow, useMarketplaceSpotlight } from '@/hooks/useMarketplaceRows';
+import { useBrandSafeRow, useMarketplaceSpotlight } from '@/hooks/useMarketplaceRows';
 import { useEntityImageAssets } from '@/hooks/useEntityImageAssets';
 
 /**
@@ -15,7 +15,7 @@ import { useEntityImageAssets } from '@/hooks/useEntityImageAssets';
 export default function HomeShoppingSection() {
   const { t } = useTranslation();
   const { listing: spotlight, loading: spotlightLoading } = useMarketplaceSpotlight();
-  const { data: rowItems, loading: rowLoading } = useMarketplaceRow('queer-owned', 9);
+  const { data: rowItems, loading: rowLoading, ownedOnly } = useBrandSafeRow(9);
 
   const items = useMemo(
     () => rowItems.filter((l) => l.id !== spotlight?.id).slice(0, 8),
@@ -33,11 +33,18 @@ export default function HomeShoppingSection() {
   return (
     <HomeSection
       eyebrow={t('home.shop.eyebrow', 'Marketplace')}
-      title={t('home.shop.title', 'Queer-owned finds')}
-      description={t('home.shop.description', 'Products and services from queer- and trans-owned businesses.')}
+      title={
+        ownedOnly
+          ? t('home.shop.title', 'Queer-owned finds')
+          : t('home.shop.fallbackTitle', 'Community picks')
+      }
+      description={
+        ownedOnly
+          ? t('home.shop.description', 'Products and services from queer- and trans-owned businesses.')
+          : undefined
+      }
       seeAllHref="/marketplace"
       seeAllLabel={t('home.shop.seeAll', 'Marketplace')}
-      tinted
     >
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 lg:gap-8">
         {spotlight && (

@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 export interface UpcomingPrideEvent {
   id: string;
   title: string;
+  slug: string | null;
   event_type: string | null;
   start_date: string | null;
   end_date: string | null;
@@ -33,7 +34,7 @@ export function useUpcomingPrideEvents({
       const { data, error } = await supabase
         .from('events')
         .select(
-          `id, title, event_type, start_date, end_date, images,
+          `id, title, slug, event_type, start_date, end_date, images,
            city:city_id(id, name),
            country:country_id(id, name, code, equality_score)`,
         )

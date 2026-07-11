@@ -172,7 +172,8 @@
     "more": "Ещё",
     "remove": "Удалить",
     "accept": "Принять",
-    "decline": "Отклонить"
+    "decline": "Отклонить",
+    "unsave": "[RU] Remove from saved"
   },
   "navigation": {
     "home": "Главная",
@@ -1593,7 +1594,8 @@
     },
     "news": {
       "title": "Последние новости",
-      "eyebrow": "Сводки"
+      "eyebrow": "Сводки",
+      "editorsPick": "[RU] Editors' pick"
     },
     "discover": "Discover",
     "destinationsTitle": "Where the scene lives.",
@@ -1646,13 +1648,33 @@
         "thisWeekend": "В эти выходные",
         "thisWeek": "На этой неделе",
         "later": "Позже"
+      },
+      "onNow": "[RU] On now",
+      "prideFallback": {
+        "title": "[RU] Pride season ahead"
       }
     },
     "shop": {
       "eyebrow": "Маркетплейс",
       "title": "Квир-бренды",
       "description": "Товары и услуги от квир- и транс-бизнесов.",
-      "seeAll": "В маркетплейс"
+      "seeAll": "В маркетплейс",
+      "fallbackTitle": "[RU] Community picks"
+    },
+    "hero": {
+      "stats": {
+        "places": "[RU] {{n}} places",
+        "events": "[RU] {{n}} events",
+        "cities": "[RU] {{n}} cities",
+        "inView": "[RU] {{n}} places in view"
+      },
+      "invite": "[RU] Open the map"
+    },
+    "bornThisWeek": {
+      "eyebrow": "[RU] Community history",
+      "title": "[RU] Born this week",
+      "seeAll": "[RU] All personalities",
+      "celebrate": "[RU] Celebrate {{name}}"
     }
   },
   "header": {

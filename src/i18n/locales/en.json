@@ -261,7 +261,8 @@
     "more": "More",
     "remove": "Remove",
     "accept": "Accept",
-    "decline": "Decline"
+    "decline": "Decline",
+    "unsave": "Remove from saved"
   },
   "navigation": {
     "home": "Home",
@@ -1640,11 +1641,16 @@
         "thisWeekend": "This weekend",
         "thisWeek": "This week",
         "later": "Later"
+      },
+      "onNow": "On now",
+      "prideFallback": {
+        "title": "Pride season ahead"
       }
     },
     "news": {
       "title": "Latest News",
-      "eyebrow": "Dispatches"
+      "eyebrow": "Dispatches",
+      "editorsPick": "Editors' pick"
     },
     "eyebrow": "Queer Guide",
     "browseDirectory": "Browse the directory",
@@ -1692,7 +1698,23 @@
       "eyebrow": "Marketplace",
       "title": "Queer-owned finds",
       "description": "Products and services from queer- and trans-owned businesses.",
-      "seeAll": "Marketplace"
+      "seeAll": "Marketplace",
+      "fallbackTitle": "Community picks"
+    },
+    "hero": {
+      "stats": {
+        "places": "{{n}} places",
+        "events": "{{n}} events",
+        "cities": "{{n}} cities",
+        "inView": "{{n}} places in view"
+      },
+      "invite": "Open the map"
+    },
+    "bornThisWeek": {
+      "eyebrow": "Community history",
+      "title": "Born this week",
+      "seeAll": "All personalities",
+      "celebrate": "Celebrate {{name}}"
     }
   },
   "header": {

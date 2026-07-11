@@ -172,7 +172,8 @@
     "more": "더보기",
     "remove": "삭제",
     "accept": "수락",
-    "decline": "거절"
+    "decline": "거절",
+    "unsave": "[KO] Remove from saved"
   },
   "navigation": {
     "home": "홈",
@@ -1561,7 +1562,8 @@
     },
     "news": {
       "title": "최신 뉴스",
-      "eyebrow": "소식"
+      "eyebrow": "소식",
+      "editorsPick": "[KO] Editors' pick"
     },
     "discover": "Discover",
     "destinationsTitle": "Where the scene lives.",
@@ -1614,13 +1616,33 @@
         "thisWeekend": "이번 주말",
         "thisWeek": "이번 주",
         "later": "이후"
+      },
+      "onNow": "[KO] On now",
+      "prideFallback": {
+        "title": "[KO] Pride season ahead"
       }
     },
     "shop": {
       "eyebrow": "마켓플레이스",
       "title": "퀴어 브랜드",
       "description": "퀴어·트랜스 운영 비즈니스의 상품과 서비스.",
-      "seeAll": "마켓플레이스 보기"
+      "seeAll": "마켓플레이스 보기",
+      "fallbackTitle": "[KO] Community picks"
+    },
+    "hero": {
+      "stats": {
+        "places": "[KO] {{n}} places",
+        "events": "[KO] {{n}} events",
+        "cities": "[KO] {{n}} cities",
+        "inView": "[KO] {{n}} places in view"
+      },
+      "invite": "[KO] Open the map"
+    },
+    "bornThisWeek": {
+      "eyebrow": "[KO] Community history",
+      "title": "[KO] Born this week",
+      "seeAll": "[KO] All personalities",
+      "celebrate": "[KO] Celebrate {{name}}"
     }
   },
   "header": {

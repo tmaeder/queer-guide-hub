@@ -172,7 +172,8 @@
     "more": "Altro",
     "remove": "Rimuovi",
     "accept": "Accetta",
-    "decline": "Rifiuta"
+    "decline": "Rifiuta",
+    "unsave": "[IT] Remove from saved"
   },
   "navigation": {
     "home": "Home",
@@ -1561,7 +1562,8 @@
     },
     "news": {
       "title": "Ultime notizie",
-      "eyebrow": "Notizie"
+      "eyebrow": "Notizie",
+      "editorsPick": "[IT] Editors' pick"
     },
     "discover": "Discover",
     "destinationsTitle": "Where the scene lives.",
@@ -1614,13 +1616,33 @@
         "thisWeekend": "Questo weekend",
         "thisWeek": "Questa settimana",
         "later": "Più avanti"
+      },
+      "onNow": "[IT] On now",
+      "prideFallback": {
+        "title": "[IT] Pride season ahead"
       }
     },
     "shop": {
       "eyebrow": "Mercato",
       "title": "Brand queer",
       "description": "Prodotti e servizi di attività queer e trans.",
-      "seeAll": "Vai al mercato"
+      "seeAll": "Vai al mercato",
+      "fallbackTitle": "[IT] Community picks"
+    },
+    "hero": {
+      "stats": {
+        "places": "[IT] {{n}} places",
+        "events": "[IT] {{n}} events",
+        "cities": "[IT] {{n}} cities",
+        "inView": "[IT] {{n}} places in view"
+      },
+      "invite": "[IT] Open the map"
+    },
+    "bornThisWeek": {
+      "eyebrow": "[IT] Community history",
+      "title": "[IT] Born this week",
+      "seeAll": "[IT] All personalities",
+      "celebrate": "[IT] Celebrate {{name}}"
     }
   },
   "header": {

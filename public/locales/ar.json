@@ -172,7 +172,8 @@
     "more": "المزيد",
     "remove": "إزالة",
     "accept": "قبول",
-    "decline": "رفض"
+    "decline": "رفض",
+    "unsave": "[AR] Remove from saved"
   },
   "navigation": {
     "home": "الرئيسية",
@@ -1567,7 +1568,8 @@
     },
     "news": {
       "title": "آخر الأخبار",
-      "eyebrow": "مستجدات"
+      "eyebrow": "مستجدات",
+      "editorsPick": "[AR] Editors' pick"
     },
     "discover": "Discover",
     "destinationsTitle": "Where the scene lives.",
@@ -1620,13 +1622,33 @@
         "thisWeekend": "نهاية هذا الأسبوع",
         "thisWeek": "هذا الأسبوع",
         "later": "لاحقًا"
+      },
+      "onNow": "[AR] On now",
+      "prideFallback": {
+        "title": "[AR] Pride season ahead"
       }
     },
     "shop": {
       "eyebrow": "السوق",
       "title": "علامات كويرية",
       "description": "منتجات وخدمات من أعمال يملكها أشخاص كوير وترانس.",
-      "seeAll": "تصفح السوق"
+      "seeAll": "تصفح السوق",
+      "fallbackTitle": "[AR] Community picks"
+    },
+    "hero": {
+      "stats": {
+        "places": "[AR] {{n}} places",
+        "events": "[AR] {{n}} events",
+        "cities": "[AR] {{n}} cities",
+        "inView": "[AR] {{n}} places in view"
+      },
+      "invite": "[AR] Open the map"
+    },
+    "bornThisWeek": {
+      "eyebrow": "[AR] Community history",
+      "title": "[AR] Born this week",
+      "seeAll": "[AR] All personalities",
+      "celebrate": "[AR] Celebrate {{name}}"
     }
   },
   "header": {

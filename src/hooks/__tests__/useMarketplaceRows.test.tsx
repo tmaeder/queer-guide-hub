@@ -38,7 +38,12 @@ vi.mock('@/integrations/supabase/client', () => ({
   },
 }));
 
-import { useMarketplaceRow, useMarketplaceSpotlight } from '../useMarketplaceRows';
+import {
+  useMarketplaceRow,
+  useMarketplaceSpotlight,
+  useBrandSafeRow,
+  BRAND_SAFE_DEPARTMENTS,
+} from '../useMarketplaceRows';
 
 function withResults(...r: MockResult[]) { state.results.push(...r); }
 
@@ -125,6 +130,49 @@ describe('useMarketplaceRow', () => {
     const { result } = renderHook(() => useMarketplaceRow('featured'));
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(result.current.error).toBeTruthy();
+  });
+});
+
+describe('useBrandSafeRow', () => {
+  const rows = (n: number) => Array.from({ length: n }, (_, i) => ({ id: `l${i}` }));
+
+  it('filters strictly sfw + brand-safe departments + community ownership', async () => {
+    withResults({ data: rows(6), error: null });
+    const { result } = renderHook(() => useBrandSafeRow(9));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    expect(result.current.data).toHaveLength(6);
+    expect(result.current.ownedOnly).toBe(true);
+    expect(state.calls).toHaveLength(1);
+
+    const chain = state.calls[0].chain;
+    const eqRating = chain.find(s => s.method === 'eq' && s.args[0] === 'content_rating');
+    expect(eqRating?.args).toEqual(['content_rating', 'sfw']); // no 'suggestive'
+    const inDept = chain.find(s => s.method === 'in' && s.args[0] === 'department');
+    expect(inDept?.args).toEqual(['department', BRAND_SAFE_DEPARTMENTS]);
+    expect(BRAND_SAFE_DEPARTMENTS).not.toContain('underwear');
+    expect(BRAND_SAFE_DEPARTMENTS).not.toContain('swimwear');
+    expect(BRAND_SAFE_DEPARTMENTS).not.toContain('intimacy');
+    expect(BRAND_SAFE_DEPARTMENTS).not.toContain('bdsm_fetish');
+    const overlaps = chain.find(s => s.method === 'overlaps');
+    expect(overlaps?.args).toEqual(['community_owned_tags', ['queer_owned', 'trans_owned']]);
+  });
+
+  it('falls back to the ownership-unfiltered pool when < 4 owned items', async () => {
+    withResults({ data: rows(2), error: null }, { data: rows(7), error: null });
+    const { result } = renderHook(() => useBrandSafeRow(9));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    expect(result.current.data).toHaveLength(7);
+    expect(result.current.ownedOnly).toBe(false);
+    expect(state.calls).toHaveLength(2);
+    // The fallback query keeps sfw + department filters but drops ownership.
+    const chain = state.calls[1].chain;
+    expect(chain.find(s => s.method === 'overlaps')).toBeUndefined();
+    expect(chain.find(s => s.method === 'eq' && s.args[0] === 'content_rating')?.args).toEqual([
+      'content_rating',
+      'sfw',
+    ]);
   });
 });
 
