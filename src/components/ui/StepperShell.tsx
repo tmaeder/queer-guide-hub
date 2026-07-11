@@ -1,5 +1,4 @@
 import * as React from 'react';
-import { motion, AnimatePresence } from 'motion/react';
 import { Check, ArrowLeft, ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -31,7 +30,7 @@ interface StepperShellProps {
 
 /**
  * Multi-step layout shell. Two visual modes:
- * - "celebrate" (default): vertical sidebar with animated beam connectors, full motion
+ * - "celebrate" (default): vertical sidebar with animated beam connectors, CSS motion
  * - "discreet": dense line counter + thin progress bar, no decorative motion (Intimate)
  */
 export function StepperShell({
@@ -78,12 +77,9 @@ export function StepperShell({
             )}
           </div>
           <div className="h-px bg-border relative">
-            <motion.div
-              className="absolute inset-y-0 left-0 bg-foreground"
-              initial={false}
-              animate={{ width: `${progressPct}%` }}
-              transition={{ duration: 0.4, ease: [0.32, 0.72, 0, 1] }}
-              style={{ height: '1px' }}
+            <div
+              className="absolute inset-y-0 left-0 bg-foreground transition-[width] duration-300 ease-out motion-reduce:transition-none"
+              style={{ width: `${progressPct}%`, height: '1px' }}
             />
           </div>
         </div>
@@ -186,14 +182,12 @@ export function StepperShell({
           <div className="lg:hidden">
             <div className="flex gap-1.5 mb-2">
               {steps.map((_, i) => (
-                <motion.div
+                <div
                   key={i}
                   className={cn(
-                    'h-1 flex-1 rounded-full',
-                    i <= current ? 'bg-foreground' : 'bg-border',
+                    'h-1 flex-1 rounded-full transition-opacity motion-reduce:transition-none',
+                    i <= current ? 'bg-foreground opacity-100' : 'bg-border opacity-50',
                   )}
-                  initial={false}
-                  animate={{ opacity: i <= current ? 1 : 0.5 }}
                 />
               ))}
             </div>
@@ -205,17 +199,13 @@ export function StepperShell({
 
           {/* Body */}
           <main className="min-w-0">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={active?.id ?? current}
-                initial={{ opacity: 0, x: 40 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -40 }}
-                transition={{ type: 'spring', stiffness: 260, damping: 28 }}
-              >
-                {children}
-              </motion.div>
-            </AnimatePresence>
+            {/* Enter-only CSS slide (no exit): a stalled AnimatePresence exit
+                left the previous step's content frozen on screen (see the
+                discreet-mode note above) and framer here dragged ~97 KB into
+                the bundle. Keyed remount replays the enter animation. */}
+            <div key={active?.id ?? current} className="step-enter">
+              {children}
+            </div>
 
             <div className="mt-12 pt-6 border-t border-border flex items-center justify-between gap-4">
               <div className="flex items-center gap-2">

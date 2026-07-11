@@ -80,7 +80,7 @@ for (const f of indexChunks) {
 // Heavy route-only chunks must never become reachable (the clsx-in-recharts
 // homing bug made entry → utils → recharts → graph + tiptap; see
 // docs/perf/recharts-cross-route-leak.md).
-const HEAVY_UNREACHABLE = /^(recharts|tiptap|graph|exceljs|pdfjs|mammoth|maplibre|xyflow|dnd-kit)-/;
+const HEAVY_UNREACHABLE = /^(recharts|tiptap|graph|exceljs|pdfjs|mammoth|maplibre|xyflow|dnd-kit|framer-motion)-/;
 
 const importRe = /from\s*"\.\/([A-Za-z0-9._-]+\.js)"|import\s*"\.\/([A-Za-z0-9._-]+\.js)"/g;
 const closure = new Set();

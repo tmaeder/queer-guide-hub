@@ -2,8 +2,8 @@
 // Shared springs, easings, variants, and reduced-motion tokens for the app.
 // Built on `motion/react` (motion.dev). Import from here, not framer-motion.
 
-import { useReducedMotion } from 'motion/react';
 import type { Transition, Variants } from 'motion/react';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { duration, stagger, distance } from './animation';
 
 // ── Easings (cubic-bezier tuples for motion) ─────────────────────────────────
@@ -121,7 +121,7 @@ const flatVariant: Variants = {
 const flatTransition: Transition = { duration: 0 };
 
 export function useMotionTokens() {
-  const reduced = useReducedMotion() ?? false;
+  const reduced = useReducedMotion();
 
   if (reduced) {
     return {

@@ -1,4 +1,3 @@
-import { motion } from 'motion/react';
 import { cn } from '@/lib/utils';
 
 interface AnimatedBeamConnectorProps {
@@ -12,6 +11,7 @@ interface AnimatedBeamConnectorProps {
 /**
  * Thin animated connector for step indicators. Inactive: muted hairline.
  * Active: foreground fill that draws in over 600ms with a faint shimmer.
+ * CSS-only (`.beam-fill` / `.beam-glint` in index.css) — no framer.
  */
 export function AnimatedBeamConnector({
   active = false,
@@ -28,23 +28,17 @@ export function AnimatedBeamConnector({
         className,
       )}
     >
-      <motion.span
-        className="block bg-foreground"
-        initial={false}
-        animate={
+      <span
+        className="beam-fill block bg-foreground"
+        style={
           isV
-            ? { height: active ? '100%' : '0%' }
-            : { width: active ? '100%' : '0%' }
+            ? { width: '1px', height: active ? '100%' : '0%' }
+            : { height: '1px', width: active ? '100%' : '0%' }
         }
-        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-        style={isV ? { width: '1px' } : { height: '1px' }}
       />
       {active && (
-        <motion.span
-          className="block bg-foreground/40"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: [0, 0.6, 0] }}
-          transition={{ duration: 1.6, repeat: Infinity, ease: 'easeInOut' }}
+        <span
+          className="beam-glint block bg-foreground/40"
           style={
             isV
               ? { width: '1px', height: '20%', marginTop: '-100%' }

@@ -1,11 +1,9 @@
 import type { ReactNode } from 'react';
-import { motion } from 'motion/react';
 import type { LucideIcon } from 'lucide-react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { NavBadge } from './NavBadge';
 import type { LongPressHandlers } from '@/hooks/useLongPress';
-import { duration } from '@/lib/animation';
 import { cn } from '@/lib/utils';
 
 interface NavTabProps {
@@ -13,7 +11,7 @@ interface NavTabProps {
   icon: LucideIcon;
   label: string;
   active: boolean;
-  /** prefers-reduced-motion → static pill (no shared-layout animation). */
+  /** prefers-reduced-motion → static pill (no scale-in animation). */
   reduced: boolean;
   /** Haptic / analytics nudge on tap. */
   onTap: () => void;
@@ -60,8 +58,6 @@ export function NavTab({
   longPress,
   accessory,
 }: NavTabProps) {
-  const Pill = reduced ? 'span' : motion.span;
-
   return (
     <li className="relative flex-1">
       <LocalizedLink
@@ -81,16 +77,14 @@ export function NavTab({
         )}
       >
         <span className={iconWrap}>
+          {/* CSS scale-in replaces the framer layoutId shared-layout slide:
+              the pill sits inside a non-uniform flex row (contribute button,
+              accessory), so a single translated pill would need JS measurement
+              — not worth ~97 KB of framer on the entry chunk. */}
           {active && (
-            <Pill
+            <span
               aria-hidden
-              {...(reduced
-                ? {}
-                : {
-                    layoutId: 'mobilenav-active-pill',
-                    transition: { duration: duration.fast, ease: [0.22, 1, 0.36, 1] },
-                  })}
-              className="absolute inset-0 rounded-element bg-muted"
+              className={cn('absolute inset-0 rounded-element bg-muted', !reduced && 'scale-in')}
             />
           )}
           {avatar ? (
