@@ -149,6 +149,13 @@ export default {
     // best-effort on top of a delivered email, mirroring real mail semantics.
     if (mime) {
       try {
+        // Idempotency: SMTP retries redeliver the same Message-ID — skip.
+        if (mime.messageId) {
+          const existing = await sb
+            .findParentByMessageId(userId, [mime.messageId])
+            .catch(() => null);
+          if (existing) return;
+        }
         const row = buildMailboxRow(mime, {
           ownerId: userId,
           toAddress: message.to.toLowerCase(),
@@ -179,11 +186,19 @@ export default {
       }
     }
 
-    const encrypted = await encryptBody(
-      env.INBOX_ENCRYPTION_KEY,
-      new TextDecoder().decode(rawBytes),
-    );
-    const encryptedHex = bytesToPgHex(encrypted);
+    // The mail is delivered at this point — nothing below may throw out of
+    // the handler, or Cloudflare answers 421 and the sender redelivers.
+    let encryptedHex: string;
+    try {
+      const encrypted = await encryptBody(
+        env.INBOX_ENCRYPTION_KEY,
+        new TextDecoder().decode(rawBytes),
+      );
+      encryptedHex = bytesToPgHex(encrypted);
+    } catch (err) {
+      console.error('encryptBody failed (check INBOX_ENCRYPTION_KEY)', err);
+      return;
+    }
 
     let parsed;
     let status: 'pending' | 'failed' = 'pending';
