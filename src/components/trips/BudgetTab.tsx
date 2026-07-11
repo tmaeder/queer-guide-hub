@@ -12,7 +12,6 @@ import {
   Wallet,
   Sparkles,
 } from 'lucide-react';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -36,6 +35,53 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
+
+
+/** Inline SVG donut — replaces the recharts PieChart (the legend badges below
+ * it already carry the exact values; slices keep a native <title> readout). */
+function DonutChart({
+  data,
+  format,
+}: {
+  data: Array<{ name: string; value: number; color: string }>;
+  format: (v: number) => string;
+}) {
+  const total = data.reduce((sum, d) => sum + d.value, 0);
+  if (total <= 0) return null;
+  const OUTER = 80;
+  const INNER = 50;
+  const PAD_DEG = 2;
+  const pt = (r: number, deg: number): [number, number] => [
+    100 + r * Math.cos((deg * Math.PI) / 180),
+    100 + r * Math.sin((deg * Math.PI) / 180),
+  ];
+  let cursor = -90;
+  const slices = data.map((d) => {
+    const sweep = (d.value / total) * 360;
+    // Cap just under a full turn so a single-category donut still draws.
+    const a0 = cursor + PAD_DEG / 2;
+    const a1 = cursor + Math.min(sweep - PAD_DEG / 2, 359.98 - PAD_DEG);
+    cursor += sweep;
+    const large = a1 - a0 > 180 ? 1 : 0;
+    const [x0, y0] = pt(OUTER, a0);
+    const [x1, y1] = pt(OUTER, a1);
+    const [x2, y2] = pt(INNER, a1);
+    const [x3, y3] = pt(INNER, a0);
+    return {
+      ...d,
+      path: `M${x0.toFixed(2)},${y0.toFixed(2)} A${OUTER},${OUTER} 0 ${large} 1 ${x1.toFixed(2)},${y1.toFixed(2)} L${x2.toFixed(2)},${y2.toFixed(2)} A${INNER},${INNER} 0 ${large} 0 ${x3.toFixed(2)},${y3.toFixed(2)} Z`,
+    };
+  });
+  return (
+    <svg viewBox="0 0 200 200" className="mx-auto block h-full" role="img" aria-label="Spending by category">
+      {slices.map((sl) => (
+        <path key={sl.name} d={sl.path} fill={sl.color}>
+          <title>{`${sl.name}: ${format(sl.value)}`}</title>
+        </path>
+      ))}
+    </svg>
+  );
+}
 
 const CATEGORY_ICONS: Record<string, typeof Utensils> = {
   food: Utensils,
@@ -224,24 +270,7 @@ export function BudgetTab({ tripId, members, defaultCurrency }: Props) {
               {t('trips.budget.spendingByCategory')}
             </span>
             <div style={{ height: 200 }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={chartData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={50}
-                    outerRadius={80}
-                    paddingAngle={2}
-                    dataKey="value"
-                  >
-                    {chartData.map((entry, idx) => (
-                      <Cell key={idx} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip formatter={(value: number) => formatAmount(value, primaryCurrency)} />
-                </PieChart>
-              </ResponsiveContainer>
+              <DonutChart data={chartData} format={(v) => formatAmount(v, primaryCurrency)} />
             </div>
             <div className="flex flex-wrap gap-[0.375rem] justify-center mt-2">
               {chartData.map((d) => (
