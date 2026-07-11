@@ -38,7 +38,7 @@ export class SupabaseClient {
     user_id: string;
     raw_subject: string;
     raw_from: string;
-    raw_body_encrypted: string; // \x... hex literal
+    raw_body_encrypted: string | null; // \x... hex literal (null when encryption is unavailable)
     status: 'pending' | 'failed';
     parsed?: ParsedBooking;
   }): Promise<{ id: string }> {

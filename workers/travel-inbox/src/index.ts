@@ -188,7 +188,9 @@ export default {
 
     // The mail is delivered at this point — nothing below may throw out of
     // the handler, or Cloudflare answers 421 and the sender redelivers.
-    let encryptedHex: string;
+    // A broken INBOX_ENCRYPTION_KEY only costs the forensic raw copy; the
+    // booking pipeline still runs.
+    let encryptedHex: string | null = null;
     try {
       const encrypted = await encryptBody(
         env.INBOX_ENCRYPTION_KEY,
@@ -197,7 +199,6 @@ export default {
       encryptedHex = bytesToPgHex(encrypted);
     } catch (err) {
       console.error('encryptBody failed (check INBOX_ENCRYPTION_KEY)', err);
-      return;
     }
 
     let parsed;
