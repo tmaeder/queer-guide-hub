@@ -16,17 +16,17 @@ import { test, expect } from '@playwright/test';
  *   E2E_BASE_URL=https://queer.guide npx playwright test e2e/trips-inbox.spec.ts
  */
 
-test.describe('/bookings → /trips redirect', () => {
-  test('redirects to the trips page', async ({ page }) => {
+test.describe('/bookings → /hub/plans redirect', () => {
+  test('redirects to the plans page', async ({ page }) => {
     await page.goto('/bookings');
     await page.waitForLoadState('domcontentloaded');
-    await expect(page).toHaveURL(/\/trips(\/|$|\?)/);
+    await expect(page).toHaveURL(/\/hub\/plans(\/|$|\?)/);
   });
 
   test('preserves the redirect for locale-prefixed URLs', async ({ page }) => {
     await page.goto('/de/bookings');
     await page.waitForLoadState('domcontentloaded');
-    await expect(page).toHaveURL(/\/trips(\/|$|\?)/);
+    await expect(page).toHaveURL(/\/de\/hub\/plans(\/|$|\?)/);
   });
 });
 

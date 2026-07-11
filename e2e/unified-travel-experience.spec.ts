@@ -29,9 +29,11 @@ test.describe('unified travel experience', () => {
     await expect(page).toHaveURL(/\/hotels/);
   });
 
-  test('/trips signed-out hero renders', async ({ page }) => {
+  test('/trips redirects to /hub/plans and renders the anon gate', async ({ page }) => {
     await page.goto('/trips');
-    await expect(page.locator('h1, h2, h3').first()).toBeVisible();
+    await expect(page).toHaveURL(/\/hub\/plans/);
+    // Anonymous users hit the AuthGate (its title is an <h4>).
+    await expect(page.locator('h1, h2, h3, h4').first()).toBeVisible();
   });
 
   test('/profile/footprint requires auth (no crash on unauthenticated load)', async ({

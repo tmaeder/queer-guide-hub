@@ -18,9 +18,9 @@ const gotoAnon = async (page: Page, path: string) => {
 test.describe('/hub — redirect map (anonymous)', () => {
   test.use({ storageState: { cookies: [], origins: [] } });
 
-  test('/messages redirects to /hub preserving the query string', async ({ page }) => {
+  test('/messages redirects to /hub/messages preserving the query string', async ({ page }) => {
     await gotoAnon(page, '/messages?conversation=abc123');
-    await expect(page).toHaveURL(/\/hub\?conversation=abc123/);
+    await expect(page).toHaveURL(/\/hub\/messages\?conversation=abc123/);
   });
 
   test('/me redirects to /hub', async ({ page }) => {
@@ -35,16 +35,16 @@ test.describe('/hub — redirect map (anonymous)', () => {
     await expect(page).toHaveURL(/\/hub\/saved$/);
   });
 
-  test('/trips and /me/trips land on /hub/trips (query preserved)', async ({ page }) => {
+  test('/trips and /me/trips land on /hub/plans (query preserved)', async ({ page }) => {
     await gotoAnon(page, '/me/trips?cityId=xyz');
-    await expect(page).toHaveURL(/\/hub\/trips\?cityId=xyz/);
+    await expect(page).toHaveURL(/\/hub\/plans\?cityId=xyz/);
     await gotoAnon(page, '/trips');
-    await expect(page).toHaveURL(/\/hub\/trips$/);
+    await expect(page).toHaveURL(/\/hub\/plans$/);
   });
 
-  test('locale-prefixed redirect keeps the locale (/de/messages → /de/hub)', async ({ page }) => {
+  test('locale-prefixed redirect keeps the locale (/de/messages → /de/hub/messages)', async ({ page }) => {
     await gotoAnon(page, '/de/messages');
-    await expect(page).toHaveURL(/\/de\/hub$/);
+    await expect(page).toHaveURL(/\/de\/hub\/messages$/);
   });
 
   test('/me/travel (identity tab) sends anon to /auth', async ({ page }) => {
@@ -54,7 +54,9 @@ test.describe('/hub — redirect map (anonymous)', () => {
 
   test('anonymous /hub shows the auth gate, not the shell', async ({ page }) => {
     await gotoAnon(page, '/hub');
-    await expect(page.getByText(/sign in to see your inbox/i)).toBeVisible({ timeout: 20_000 });
+    await expect(
+      page.getByText(/sign in to see your messages, plans and saved places/i),
+    ).toBeVisible({ timeout: 20_000 });
     await expect(page.getByRole('tab', { name: /^all$/i })).toHaveCount(0);
   });
 });

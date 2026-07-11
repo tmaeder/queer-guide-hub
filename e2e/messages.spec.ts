@@ -79,7 +79,7 @@ test.describe('/messages — auth gate (anonymous)', () => {
     try {
       await page.goto(`${BASE}/messages`, { waitUntil: 'domcontentloaded' });
       await expect(
-        page.getByText(/sign in to see your inbox, trips and saved places/i),
+        page.getByText(/sign in to see your messages, plans and saved places/i),
       ).toBeVisible({ timeout: 20_000 });
       const signIn = page.getByRole('link', { name: /sign in/i });
       await expect(signIn).toBeVisible();

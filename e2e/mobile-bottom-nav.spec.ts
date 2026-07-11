@@ -14,7 +14,10 @@ import { test, expect, type Page } from '@playwright/test';
 test.use({ reducedMotion: 'reduce' });
 
 const MOBILE = { width: 390, height: 844 };
-const bottomNav = (page: Page) => page.locator('nav[aria-label="Navigation"]');
+// The desktop header carries its own nav[aria-label="Navigation"] landmark
+// (only one of the two is exposed per viewport — the other is display:none),
+// so scope to the fixed bottom bar to keep the locator strict-mode safe.
+const bottomNav = (page: Page) => page.locator('nav.fixed.bottom-0[aria-label="Navigation"]');
 
 /**
  * The cookie-consent banner is fixed to the bottom (z-sticky) and overlaps the
@@ -30,8 +33,12 @@ async function dismissCookieBanner(page: Page) {
 
 async function gotoMobile(page: Page, path: string) {
   await page.setViewportSize(MOBILE);
-  await page.goto(path);
-  await page.waitForLoadState('networkidle');
+  // networkidle never settles on routes with a live MapLibre canvas — wait
+  // for the bar itself instead.
+  await page.goto(path, { waitUntil: 'domcontentloaded' });
+  await bottomNav(page)
+    .waitFor({ state: 'attached', timeout: 15_000 })
+    .catch(() => {}); // absent on full-bleed routes — asserted per-test
   await dismissCookieBanner(page);
   await page.waitForTimeout(300); // hydration / handler binding
 }
@@ -39,11 +46,31 @@ async function gotoMobile(page: Page, path: string) {
 test.describe('Mobile bottom navigation', () => {
   test.setTimeout(60_000);
 
+  // Pre-seed cookie consent so the fixed bottom banner never mounts — it
+  // otherwise races page load and intercepts taps on the bottom bar
+  // (dismissCookieBanner stays as a fallback for storage-blocked contexts).
+  test.beforeEach(async ({ page }) => {
+    await page.addInitScript(() => {
+      try {
+        localStorage.setItem(
+          'queer-guide-cookie-consent',
+          JSON.stringify({
+            preferences: { necessary: true, functional: false, analytics: false, marketing: false },
+            version: '1.0',
+            timestamp: new Date(0).toISOString(),
+          }),
+        );
+      } catch {
+        /* storage unavailable — fall back to dismissCookieBanner */
+      }
+    });
+  });
+
   test('renders the four destination tabs at mobile viewport', async ({ page }) => {
     await gotoMobile(page, '/');
     const nav = bottomNav(page);
     await expect(nav).toBeVisible();
-    for (const label of ['Home', 'Explore', 'Messages', 'You']) {
+    for (const label of ['Home', 'Explore', 'Hub', 'You']) {
       await expect(nav.getByText(label, { exact: true })).toBeVisible();
     }
     // The raised contribute button is icon-only — identified by aria-label.
@@ -53,7 +80,7 @@ test.describe('Mobile bottom navigation', () => {
   test('tabs meet the minimum tap-target size', async ({ page }) => {
     await gotoMobile(page, '/');
     const nav = bottomNav(page);
-    for (const label of ['Home', 'Explore', 'Messages', 'You']) {
+    for (const label of ['Home', 'Explore', 'Hub', 'You']) {
       const box = await nav.getByText(label, { exact: true }).locator('..').boundingBox();
       expect(box, `${label} tab has a bounding box`).not.toBeNull();
       expect(box!.height).toBeGreaterThanOrEqual(44);
@@ -70,8 +97,8 @@ test.describe('Mobile bottom navigation', () => {
 
   test('is hidden on desktop viewport', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 900 });
-    await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await bottomNav(page).waitFor({ state: 'attached', timeout: 15_000 });
     await expect(bottomNav(page)).toBeHidden();
   });
 
@@ -106,9 +133,9 @@ test.describe('Mobile bottom navigation', () => {
     expect(new URL(page.url()).pathname).not.toContain('/submit');
   });
 
-  test('Messages gates anonymous users to /auth', async ({ page }) => {
+  test('Hub gates anonymous users to /auth', async ({ page }) => {
     await gotoMobile(page, '/');
-    await bottomNav(page).getByText('Messages', { exact: true }).click();
+    await bottomNav(page).getByText('Hub', { exact: true }).click();
     await expect(page).toHaveURL(/\/auth\b/);
   });
 
