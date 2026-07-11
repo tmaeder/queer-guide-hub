@@ -148,7 +148,7 @@ describe('Cities page', () => {
     expect(input.value).toBe('ber');
   });
 
-  it('renders mobile view tabs for switching list and map', () => {
+  it('renders mobile view toggle for switching list and map', () => {
     useDirectoryMock.mockReturnValue({
       cities: [berlin, madrid],
       filtered: [berlin, madrid],
@@ -158,11 +158,11 @@ describe('Cities page', () => {
       error: null,
     });
     renderWithProviders(<Cities />, { route: '/cities' });
-    expect(screen.getByRole('tab', { name: 'List' })).toBeInTheDocument();
-    expect(screen.getByRole('tab', { name: 'Map' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'List' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Map' })).toBeInTheDocument();
   });
 
-  it('the active tab matches ?view= in the URL on first render', () => {
+  it('the pressed toggle matches ?view= in the URL on first render', () => {
     useDirectoryMock.mockReturnValue({
       cities: [berlin, madrid],
       filtered: [berlin, madrid],
@@ -172,7 +172,7 @@ describe('Cities page', () => {
       error: null,
     });
     renderWithProviders(<Cities />, { route: '/cities?view=map' });
-    expect(screen.getByRole('tab', { name: 'Map' })).toHaveAttribute('data-state', 'active');
-    expect(screen.getByRole('tab', { name: 'List' })).toHaveAttribute('data-state', 'inactive');
+    expect(screen.getByRole('button', { name: 'Map' })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('button', { name: 'List' })).toHaveAttribute('aria-pressed', 'false');
   });
 });
