@@ -3223,12 +3223,48 @@
         "reservation": "Бронь",
         "going": "Иду",
         "saved": "Сохранено",
-        "groupEvent": "[RU] Group event"
+        "groupEvent": "[RU] Group event",
+        "birthday": "[RU] Birthday",
+        "history": "[RU] Queer history",
+        "news": "[RU] Saved news"
       },
       "scope": {
         "all": "[RU] All",
         "trips": "[RU] Trips",
         "groups": "[RU] Groups"
+      },
+      "views": {
+        "month": "[RU] Month",
+        "week": "[RU] Week",
+        "day": "[RU] Day"
+      },
+      "nav": {
+        "prev": "[RU] Previous",
+        "next": "[RU] Next",
+        "today": "[RU] Today"
+      },
+      "layers": {
+        "button": "[RU] Layers",
+        "title": "[RU] Show on calendar",
+        "trips": "[RU] Trips & bookings",
+        "events": "[RU] Events",
+        "birthdays": "[RU] Friends' birthdays",
+        "history": "[RU] Queer history",
+        "news": "[RU] Saved news"
+      },
+      "tripsButton": "[RU] Trips",
+      "gridLabel": "[RU] Calendar",
+      "cellItems_one": "[RU] {{count}} item",
+      "cellItems_other": "[RU] {{count}} items",
+      "historyCount": "[RU] Queer history · {{count}}",
+      "more": "[RU] +{{count}} more",
+      "dayEmpty": "[RU] Nothing on this day.",
+      "weekEmpty": "[RU] Nothing this week.",
+      "onThisDay": "[RU] On this day in queer history",
+      "bornYearsAgo": "[RU] born {{count}} years ago",
+      "diedYearsAgo": "[RU] died {{count}} years ago",
+      "tripsDrawer": {
+        "title": "[RU] Your trips"
       }
     },
     "contacts": {

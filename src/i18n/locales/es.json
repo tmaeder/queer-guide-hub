@@ -3189,12 +3189,48 @@
         "reservation": "Reserva",
         "going": "Asisto",
         "saved": "Guardado",
-        "groupEvent": "[ES] Group event"
+        "groupEvent": "[ES] Group event",
+        "birthday": "[ES] Birthday",
+        "history": "[ES] Queer history",
+        "news": "[ES] Saved news"
       },
       "scope": {
         "all": "[ES] All",
         "trips": "[ES] Trips",
         "groups": "[ES] Groups"
+      },
+      "views": {
+        "month": "[ES] Month",
+        "week": "[ES] Week",
+        "day": "[ES] Day"
+      },
+      "nav": {
+        "prev": "[ES] Previous",
+        "next": "[ES] Next",
+        "today": "[ES] Today"
+      },
+      "layers": {
+        "button": "[ES] Layers",
+        "title": "[ES] Show on calendar",
+        "trips": "[ES] Trips & bookings",
+        "events": "[ES] Events",
+        "birthdays": "[ES] Friends' birthdays",
+        "history": "[ES] Queer history",
+        "news": "[ES] Saved news"
+      },
+      "tripsButton": "[ES] Trips",
+      "gridLabel": "[ES] Calendar",
+      "cellItems_one": "[ES] {{count}} item",
+      "cellItems_other": "[ES] {{count}} items",
+      "historyCount": "[ES] Queer history · {{count}}",
+      "more": "[ES] +{{count}} more",
+      "dayEmpty": "[ES] Nothing on this day.",
+      "weekEmpty": "[ES] Nothing this week.",
+      "onThisDay": "[ES] On this day in queer history",
+      "bornYearsAgo": "[ES] born {{count}} years ago",
+      "diedYearsAgo": "[ES] died {{count}} years ago",
+      "tripsDrawer": {
+        "title": "[ES] Your trips"
       }
     },
     "contacts": {

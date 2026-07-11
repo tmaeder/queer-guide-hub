@@ -3187,12 +3187,48 @@
         "reservation": "예약",
         "going": "참석",
         "saved": "저장됨",
-        "groupEvent": "[KO] Group event"
+        "groupEvent": "[KO] Group event",
+        "birthday": "[KO] Birthday",
+        "history": "[KO] Queer history",
+        "news": "[KO] Saved news"
       },
       "scope": {
         "all": "[KO] All",
         "trips": "[KO] Trips",
         "groups": "[KO] Groups"
+      },
+      "views": {
+        "month": "[KO] Month",
+        "week": "[KO] Week",
+        "day": "[KO] Day"
+      },
+      "nav": {
+        "prev": "[KO] Previous",
+        "next": "[KO] Next",
+        "today": "[KO] Today"
+      },
+      "layers": {
+        "button": "[KO] Layers",
+        "title": "[KO] Show on calendar",
+        "trips": "[KO] Trips & bookings",
+        "events": "[KO] Events",
+        "birthdays": "[KO] Friends' birthdays",
+        "history": "[KO] Queer history",
+        "news": "[KO] Saved news"
+      },
+      "tripsButton": "[KO] Trips",
+      "gridLabel": "[KO] Calendar",
+      "cellItems_one": "[KO] {{count}} item",
+      "cellItems_other": "[KO] {{count}} items",
+      "historyCount": "[KO] Queer history · {{count}}",
+      "more": "[KO] +{{count}} more",
+      "dayEmpty": "[KO] Nothing on this day.",
+      "weekEmpty": "[KO] Nothing this week.",
+      "onThisDay": "[KO] On this day in queer history",
+      "bornYearsAgo": "[KO] born {{count}} years ago",
+      "diedYearsAgo": "[KO] died {{count}} years ago",
+      "tripsDrawer": {
+        "title": "[KO] Your trips"
       }
     },
     "contacts": {

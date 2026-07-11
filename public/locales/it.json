@@ -3189,12 +3189,48 @@
         "reservation": "Prenotazione",
         "going": "Ci vado",
         "saved": "Salvato",
-        "groupEvent": "[IT] Group event"
+        "groupEvent": "[IT] Group event",
+        "birthday": "[IT] Birthday",
+        "history": "[IT] Queer history",
+        "news": "[IT] Saved news"
       },
       "scope": {
         "all": "[IT] All",
         "trips": "[IT] Trips",
         "groups": "[IT] Groups"
+      },
+      "views": {
+        "month": "[IT] Month",
+        "week": "[IT] Week",
+        "day": "[IT] Day"
+      },
+      "nav": {
+        "prev": "[IT] Previous",
+        "next": "[IT] Next",
+        "today": "[IT] Today"
+      },
+      "layers": {
+        "button": "[IT] Layers",
+        "title": "[IT] Show on calendar",
+        "trips": "[IT] Trips & bookings",
+        "events": "[IT] Events",
+        "birthdays": "[IT] Friends' birthdays",
+        "history": "[IT] Queer history",
+        "news": "[IT] Saved news"
+      },
+      "tripsButton": "[IT] Trips",
+      "gridLabel": "[IT] Calendar",
+      "cellItems_one": "[IT] {{count}} item",
+      "cellItems_other": "[IT] {{count}} items",
+      "historyCount": "[IT] Queer history · {{count}}",
+      "more": "[IT] +{{count}} more",
+      "dayEmpty": "[IT] Nothing on this day.",
+      "weekEmpty": "[IT] Nothing this week.",
+      "onThisDay": "[IT] On this day in queer history",
+      "bornYearsAgo": "[IT] born {{count}} years ago",
+      "diedYearsAgo": "[IT] died {{count}} years ago",
+      "tripsDrawer": {
+        "title": "[IT] Your trips"
       }
     },
     "contacts": {

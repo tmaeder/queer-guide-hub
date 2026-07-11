@@ -32,6 +32,12 @@ export interface PrivacySettings {
   contact_visibility?: string;
   /** Who sees interests, occupation, education (default community). */
   interests_visibility?: string;
+  /**
+   * Whether accepted friends see your birthday (month + day ONLY — the year
+   * and age are never exposed) on their hub calendar. 'friends' | 'private',
+   * default private; consumed server-side by the friends_birthdays RPC.
+   */
+  birthday_visibility?: string;
 }
 
 export interface ProfileFormData {
@@ -96,6 +102,7 @@ const DEFAULT_PRIVACY: PrivacySettings = {
   location_visibility: 'public',
   contact_visibility: 'friends',
   interests_visibility: 'community',
+  birthday_visibility: 'private',
 };
 
 function str(val: unknown): string {

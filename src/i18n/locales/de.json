@@ -3189,12 +3189,48 @@
         "reservation": "Buchung",
         "going": "Zugesagt",
         "saved": "Gespeichert",
-        "groupEvent": "[DE] Group event"
+        "groupEvent": "[DE] Group event",
+        "birthday": "[DE] Birthday",
+        "history": "[DE] Queer history",
+        "news": "[DE] Saved news"
       },
       "scope": {
         "all": "[DE] All",
         "trips": "[DE] Trips",
         "groups": "[DE] Groups"
+      },
+      "views": {
+        "month": "[DE] Month",
+        "week": "[DE] Week",
+        "day": "[DE] Day"
+      },
+      "nav": {
+        "prev": "[DE] Previous",
+        "next": "[DE] Next",
+        "today": "[DE] Today"
+      },
+      "layers": {
+        "button": "[DE] Layers",
+        "title": "[DE] Show on calendar",
+        "trips": "[DE] Trips & bookings",
+        "events": "[DE] Events",
+        "birthdays": "[DE] Friends' birthdays",
+        "history": "[DE] Queer history",
+        "news": "[DE] Saved news"
+      },
+      "tripsButton": "[DE] Trips",
+      "gridLabel": "[DE] Calendar",
+      "cellItems_one": "[DE] {{count}} item",
+      "cellItems_other": "[DE] {{count}} items",
+      "historyCount": "[DE] Queer history · {{count}}",
+      "more": "[DE] +{{count}} more",
+      "dayEmpty": "[DE] Nothing on this day.",
+      "weekEmpty": "[DE] Nothing this week.",
+      "onThisDay": "[DE] On this day in queer history",
+      "bornYearsAgo": "[DE] born {{count}} years ago",
+      "diedYearsAgo": "[DE] died {{count}} years ago",
+      "tripsDrawer": {
+        "title": "[DE] Your trips"
       }
     },
     "contacts": {

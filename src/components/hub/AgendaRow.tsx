@@ -1,39 +1,59 @@
 import { useTranslation } from 'react-i18next';
-import { Plane, Ticket, Calendar as CalendarIcon, Star, Users } from 'lucide-react';
+import {
+  Plane,
+  Ticket,
+  Calendar as CalendarIcon,
+  Star,
+  Users,
+  Cake,
+  Sparkles,
+  Newspaper,
+} from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
-import type { AgendaItem, AgendaKind } from '@/hooks/useMyAgenda';
+import type { AgendaItem } from '@/hooks/useMyAgenda';
+import type { CalendarItem, CalendarKind } from '@/components/hub/calendar/types';
 
-const KIND_ICON: Record<AgendaKind, LucideIcon> = {
+const KIND_ICON: Record<CalendarKind, LucideIcon> = {
   trip: Plane,
   reservation: Ticket,
   event_rsvp: CalendarIcon,
   event_saved: Star,
   group_event: Users,
+  birthday: Cake,
+  history: Sparkles,
+  news: Newspaper,
 };
 
-const KIND_LABEL_KEY: Record<AgendaKind, string> = {
+const KIND_LABEL_KEY: Record<CalendarKind, string> = {
   trip: 'hub.calendar.kinds.trip',
   reservation: 'hub.calendar.kinds.reservation',
   event_rsvp: 'hub.calendar.kinds.going',
   event_saved: 'hub.calendar.kinds.saved',
   group_event: 'hub.calendar.kinds.groupEvent',
+  birthday: 'hub.calendar.kinds.birthday',
+  history: 'hub.calendar.kinds.history',
+  news: 'hub.calendar.kinds.news',
 };
 
-const KIND_LABEL_DEFAULT: Record<AgendaKind, string> = {
+const KIND_LABEL_DEFAULT: Record<CalendarKind, string> = {
   trip: 'Trip',
   reservation: 'Booking',
   event_rsvp: 'Going',
   event_saved: 'Saved',
   group_event: 'Group event',
+  birthday: 'Birthday',
+  history: 'Queer history',
+  news: 'Saved news',
 };
 
 /**
- * A single agenda commitment row (trip / booking / RSVP / saved event), shared
- * by the Plans module's day-grouped agenda and the Overview module's "next up"
- * peek. Extracted from the former CalendarModule when Calendar folded into Plans.
+ * A single calendar/agenda row, shared by the unified calendar's day/week
+ * views and the Overview module's "next up" peek. Accepts the calendar
+ * superset (AgendaItem rows pass through unchanged — CalendarItem only adds
+ * kinds + a layer tag).
  */
-export function AgendaRow({ item }: { item: AgendaItem }) {
+export function AgendaRow({ item }: { item: AgendaItem | CalendarItem }) {
   const { t } = useTranslation();
   const Icon = KIND_ICON[item.kind];
   const time = item.all_day
