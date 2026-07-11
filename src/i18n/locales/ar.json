@@ -1763,7 +1763,8 @@
       "unreadCount": "{{count}} غير مقروء",
       "tripsBadge": "{{count}} عناصر رحلة تحتاج إلى انتباه",
       "hub": "المركز"
-    }
+    },
+    "primaryNavigation": "[AR] Primary"
   },
   "pages": {
     "venues": {

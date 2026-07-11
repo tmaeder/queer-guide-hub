@@ -14,7 +14,9 @@ import { test, expect, type Page } from '@playwright/test';
 test.use({ reducedMotion: 'reduce' });
 
 const MOBILE = { width: 390, height: 844 };
-const bottomNav = (page: Page) => page.locator('nav[aria-label="Navigation"]');
+// Scoped to the fixed bottom bar — the desktop header renders its own nav
+// landmark ("Primary"), and a bare aria-label match would be ambiguous.
+const bottomNav = (page: Page) => page.locator('nav.fixed[aria-label="Navigation"]');
 
 /**
  * The cookie-consent banner is fixed to the bottom (z-sticky) and overlaps the
@@ -23,15 +25,34 @@ const bottomNav = (page: Page) => page.locator('nav[aria-label="Navigation"]');
  */
 async function dismissCookieBanner(page: Page) {
   const banner = page.getByRole('region', { name: /cookie settings/i });
-  if (!(await banner.isVisible().catch(() => false))) return;
+  // The banner animates in after consent state loads — a bare isVisible()
+  // check races it and leaves it covering the bottom bar. Give it a moment.
+  const appeared = await banner
+    .waitFor({ state: 'visible', timeout: 3_000 })
+    .then(() => true)
+    .catch(() => false);
+  if (!appeared) return;
   await banner.getByRole('button', { name: /necessary only|accept all/i }).first().click();
   await expect(banner).toBeHidden().catch(() => {});
 }
 
+/**
+ * Wait for the React app to mount. `networkidle` never settles against prod
+ * (analytics/realtime connections keep the network busy indefinitely), so we
+ * key on the root element getting children instead.
+ */
+async function waitForAppMount(page: Page) {
+  await page.waitForFunction(
+    () => (document.getElementById('root')?.children.length ?? 0) > 0,
+    undefined,
+    { timeout: 30_000 },
+  );
+}
+
 async function gotoMobile(page: Page, path: string) {
   await page.setViewportSize(MOBILE);
-  await page.goto(path);
-  await page.waitForLoadState('networkidle');
+  await page.goto(path, { waitUntil: 'domcontentloaded' });
+  await waitForAppMount(page);
   await dismissCookieBanner(page);
   await page.waitForTimeout(300); // hydration / handler binding
 }
@@ -43,7 +64,7 @@ test.describe('Mobile bottom navigation', () => {
     await gotoMobile(page, '/');
     const nav = bottomNav(page);
     await expect(nav).toBeVisible();
-    for (const label of ['Home', 'Explore', 'Messages', 'You']) {
+    for (const label of ['Home', 'Explore', 'Hub', 'You']) {
       await expect(nav.getByText(label, { exact: true })).toBeVisible();
     }
     // The raised contribute button is icon-only — identified by aria-label.
@@ -53,7 +74,7 @@ test.describe('Mobile bottom navigation', () => {
   test('tabs meet the minimum tap-target size', async ({ page }) => {
     await gotoMobile(page, '/');
     const nav = bottomNav(page);
-    for (const label of ['Home', 'Explore', 'Messages', 'You']) {
+    for (const label of ['Home', 'Explore', 'Hub', 'You']) {
       const box = await nav.getByText(label, { exact: true }).locator('..').boundingBox();
       expect(box, `${label} tab has a bounding box`).not.toBeNull();
       expect(box!.height).toBeGreaterThanOrEqual(44);
@@ -70,8 +91,8 @@ test.describe('Mobile bottom navigation', () => {
 
   test('is hidden on desktop viewport', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 900 });
-    await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await waitForAppMount(page);
     await expect(bottomNav(page)).toBeHidden();
   });
 
@@ -106,9 +127,9 @@ test.describe('Mobile bottom navigation', () => {
     expect(new URL(page.url()).pathname).not.toContain('/submit');
   });
 
-  test('Messages gates anonymous users to /auth', async ({ page }) => {
+  test('Hub gates anonymous users to /auth', async ({ page }) => {
     await gotoMobile(page, '/');
-    await bottomNav(page).getByText('Messages', { exact: true }).click();
+    await bottomNav(page).getByText('Hub', { exact: true }).click();
     await expect(page).toHaveURL(/\/auth\b/);
   });
 

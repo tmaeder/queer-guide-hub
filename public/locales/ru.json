@@ -1789,7 +1789,8 @@
       "unreadCount": "{{count}} непрочитанных",
       "tripsBadge": "{{count}} элементов поездки требуют внимания",
       "hub": "Хаб"
-    }
+    },
+    "primaryNavigation": "[RU] Primary"
   },
   "pages": {
     "venues": {
