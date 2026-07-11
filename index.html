@@ -7,13 +7,16 @@
     <meta name="description" content="The global guide to LGBTQ+ venues, events, travel and community. Find safe spaces near you and around the world." />
     <meta name="author" content="Queer Guide" />
     
-    <!-- Fonts: self-hosted (no external CDN) — see src/index.css @font-face -->
+    <!-- Fonts: self-hosted (no external CDN) — see src/index.css @font-face.
+         Preload the two latin variable files (body + display) so headings
+         don't late-swap; latin-ext/italic variants stay lazy. -->
+    <link rel="preload" href="/fonts/inter/inter-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/fonts/space-grotesk/space-grotesk-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
 
-    <!-- Resource Hints: Mapbox -->
-    <link rel="dns-prefetch" href="https://api.mapbox.com">
-    <link rel="preconnect" href="https://api.mapbox.com" crossorigin>
-    <link rel="dns-prefetch" href="https://events.mapbox.com">
-    <link rel="preconnect" href="https://events.mapbox.com" crossorigin>
+    <!-- Resource Hints: image CDN (entity photos are served/resized here).
+         The former Mapbox preconnects were stale — maps use maplibre + protomaps. -->
+    <link rel="dns-prefetch" href="https://img.queer.guide">
+    <link rel="preconnect" href="https://img.queer.guide" crossorigin>
 
     <!-- PWA Manifest & Meta -->
     <link rel="manifest" href="/manifest.json">
