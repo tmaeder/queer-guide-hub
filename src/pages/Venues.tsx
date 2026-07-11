@@ -35,7 +35,7 @@ import {
 import { EmptyState, LoadingTimeout, ErrorState } from '@/components/ui/EmptyState';
 import { MapPin, Grid, Map } from 'lucide-react';
 import type { Database } from '@/integrations/supabase/types';
-import { StaggerGrid } from '@/components/animation/StaggerGrid';
+import { VirtualizedGrid, useGridColumns } from '@/components/ui/VirtualizedGrid';
 import { cn } from '@/lib/utils';
 import { getVenueVisual } from '@/lib/venueVisual';
 import { useTranslation } from 'react-i18next';
@@ -369,7 +369,9 @@ const Venues = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, loading, hasMore, currentFilters, autoLoadedCount]);
 
-  const gridClass = 'grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4';
+  // pb-6 preserves the inter-row gap between absolutely-positioned virtual rows.
+  const gridClass = 'grid gap-6 pb-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4';
+  const gridColumns = useGridColumns(VENUES_GRID_BREAKPOINTS);
 
   return (
     <div className="min-h-screen overflow-x-hidden">
@@ -611,16 +613,18 @@ const Venues = () => {
               )}
 
               {!loading && venues.length > 0 && (
-                <StaggerGrid className={gridClass}>
-                  {venues.map((venue, index) => (
-                    <div
-                      key={venue.id}
-                      className={index >= PAGE_SIZE ? 'content-enter' : undefined}
-                    >
+                <VirtualizedGrid
+                  items={venues}
+                  columns={gridColumns}
+                  rowClassName={gridClass}
+                  estimateRowHeight={420}
+                  itemKey={(venue) => venue.id}
+                  renderItem={(venue, index) => (
+                    <div className={index >= PAGE_SIZE ? 'content-enter' : undefined}>
                       <VenueCard venue={venue} events={events} onViewDetails={handleViewDetails} />
                     </div>
-                  ))}
-                </StaggerGrid>
+                  )}
+                />
               )}
 
               {!loading && venues.length > 0 && (
@@ -695,4 +699,12 @@ const Venues = () => {
   );
 };
 
-export default Venues;
+export default Venues;// Must mirror gridClass's breakpoint column counts (sm/md/lg).
+const VENUES_GRID_BREAKPOINTS = [
+  { minWidth: 0, columns: 1 },
+  { minWidth: 640, columns: 2 },
+  { minWidth: 768, columns: 3 },
+  { minWidth: 1024, columns: 4 },
+];
+
+

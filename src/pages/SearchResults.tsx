@@ -24,6 +24,7 @@ import { usePreferenceChips, priceRangeFromChips } from '@/hooks/usePreferenceCh
 import { SavedSearchesMenu } from '@/components/search/SavedSearchesMenu';
 import { BackToTopButton } from '@/components/search/BackToTopButton';
 import { LoadMoreSentinel } from '@/components/search/LoadMoreSentinel';
+import { VirtualizedGrid, useGridColumns } from '@/components/ui/VirtualizedGrid';
 import { ResultsMapView } from '@/components/search/ResultsMapView';
 import { SearchScopeChips } from '@/components/search/SearchScopeChips';
 import { SearchResultCard } from '@/components/search/SearchResultCard';
@@ -48,6 +49,13 @@ import type { AssistantCard } from '@/lib/assistantClient';
 import { cn } from '@/lib/utils';
 
 const MAX_HEADING_QUERY_LEN = 80;
+// Must mirror gridClass's breakpoint column counts (md/lg/xl).
+const GRID_BREAKPOINTS = [
+  { minWidth: 0, columns: 1 },
+  { minWidth: 768, columns: 2 },
+  { minWidth: 1024, columns: 3 },
+  { minWidth: 1280, columns: 4 },
+];
 const SUGGESTED_SEARCHES = [
   'Berlin venues',
   'Pride events',
@@ -314,8 +322,11 @@ export default function SearchResults() {
     query.trim().length >= 2 && !loading && !tooShort && totalHits === 0 && !errorKind,
   );
 
-  const gridClass = 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4';
-  const listClass = 'flex flex-col gap-4';
+  // pb-4 on virtual rows preserves the inter-row gap (absolute rows don't
+  // share a parent grid, so gap-y alone can't reach between them).
+  const gridClass = 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 pb-4';
+  const listClass = 'flex flex-col gap-4 pb-4';
+  const gridColumns = useGridColumns(GRID_BREAKPOINTS);
 
   return (
     <div className="relative">
@@ -520,10 +531,14 @@ export default function SearchResults() {
           </div>
         ) : (
           <div className={cn(loading && 'opacity-60 transition-opacity')} aria-busy={loading}>
-            <div className={effectiveView === 'grid' ? gridClass : listClass}>
-              {accumulated.map((r) => (
+            <VirtualizedGrid
+              items={accumulated}
+              columns={effectiveView === 'grid' ? gridColumns : 1}
+              rowClassName={effectiveView === 'grid' ? gridClass : listClass}
+              estimateRowHeight={effectiveView === 'grid' ? 380 : 130}
+              itemKey={(r) => `${r.type}-${r.objectID}`}
+              renderItem={(r) => (
                 <SearchResultCard
-                  key={`${r.type}-${r.objectID}`}
                   result={r}
                   view={effectiveView === 'grid' ? 'grid' : 'list'}
                   query={query}
@@ -531,8 +546,8 @@ export default function SearchResults() {
                   onTagClick={handleTagRefine}
                   activeTags={filters.tags}
                 />
-              ))}
-            </div>
+              )}
+            />
             <LoadMoreSentinel
               hasMore={hasMore}
               loading={loading}

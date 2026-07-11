@@ -32,7 +32,7 @@ import type { Database } from '@/integrations/supabase/types';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { PageHero } from '@/components/discovery';
-import { StaggerGrid } from '@/components/animation/StaggerGrid';
+import { VirtualizedGrid, useGridColumns } from '@/components/ui/VirtualizedGrid';
 import { useTranslation } from 'react-i18next';
 import {
   FILTER_PARAM_KEYS,
@@ -40,6 +40,14 @@ import {
   hasActiveFilters as hasActiveFiltersFn,
   parseFiltersFromParams,
 } from '@/lib/marketplaceFilterParams';
+
+// Must mirror the grid classes' breakpoint column counts (sm/lg/2xl).
+const MARKETPLACE_GRID_BREAKPOINTS = [
+  { minWidth: 0, columns: 1 },
+  { minWidth: 640, columns: 2 },
+  { minWidth: 1024, columns: 3 },
+  { minWidth: 1536, columns: 4 },
+];
 
 type MarketplaceListing = Database['public']['Tables']['marketplace_listings']['Row'];
 
@@ -79,6 +87,7 @@ function MainGridSection({
     if (page > 0 || hasActiveFilters || curatedIds.size === 0) return accumulated;
     return accumulated.filter((l) => !curatedIds.has(l.id));
   }, [accumulated, page, hasActiveFilters, curatedIds]);
+  const gridColumns = useGridColumns(MARKETPLACE_GRID_BREAKPOINTS);
 
   return (
     <>
@@ -89,29 +98,31 @@ function MainGridSection({
         </p>
       </div>
 
-      {/* Calm uniform grid — editorial rhythm beats the old mosaic jigsaw. */}
-      <StaggerGrid
-        className={
+      {/* Calm uniform grid — editorial rhythm beats the old mosaic jigsaw.
+          pb-* on virtual rows preserves the inter-row gap. */}
+      <VirtualizedGrid
+        items={visible}
+        columns={viewMode === 'grid' ? gridColumns : 1}
+        rowClassName={
           viewMode === 'grid'
-            ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-6 lg:gap-8'
-            : 'flex flex-col gap-4'
+            ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-6 lg:gap-8 pb-6 lg:pb-8'
+            : 'flex flex-col gap-4 pb-4'
         }
-      >
-        {visible.map((listing, index) => (
-          <div key={listing.id}>
-            <MarketplaceCard
-              listing={listing}
-              onViewDetails={onViewDetails}
-              onToggleFavorite={userPresent ? onToggleFavorite : undefined}
-              showFavoriteButton={userPresent}
-              searchQuery={searchQuery}
-              imageAsset={listingAssets.get(listing.id)}
-              priority={index < 8}
-              variant={viewMode === 'list' ? 'row' : 'grid'}
-            />
-          </div>
-        ))}
-      </StaggerGrid>
+        estimateRowHeight={viewMode === 'grid' ? 520 : 180}
+        itemKey={(listing) => listing.id}
+        renderItem={(listing, index) => (
+          <MarketplaceCard
+            listing={listing}
+            onViewDetails={onViewDetails}
+            onToggleFavorite={userPresent ? onToggleFavorite : undefined}
+            showFavoriteButton={userPresent}
+            searchQuery={searchQuery}
+            imageAsset={listingAssets.get(listing.id)}
+            priority={index < 8}
+            variant={viewMode === 'list' ? 'row' : 'grid'}
+          />
+        )}
+      />
 
       {canLoadMore && (
         <div className="flex items-center justify-center mt-10">
