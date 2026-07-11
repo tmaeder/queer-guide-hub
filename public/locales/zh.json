@@ -174,7 +174,6 @@
     "accept": "接受",
     "decline": "拒绝",
     "resetFilters": "[ZH] Reset filters",
-    "removeFilter": "[ZH] Remove {{label}}",
     "loadingTimeout": "[ZH] This is taking longer than expected. Please check your connection or try again.",
     "errorLoadingData": "[ZH] Something went wrong while loading data. Please try again.",
     "retry": "[ZH] Retry"

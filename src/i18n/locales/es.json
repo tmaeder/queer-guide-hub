@@ -174,7 +174,6 @@
     "accept": "Aceptar",
     "decline": "Rechazar",
     "resetFilters": "[ES] Reset filters",
-    "removeFilter": "[ES] Remove {{label}}",
     "loadingTimeout": "[ES] This is taking longer than expected. Please check your connection or try again.",
     "errorLoadingData": "[ES] Something went wrong while loading data. Please try again.",
     "retry": "[ES] Retry"

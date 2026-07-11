@@ -174,7 +174,6 @@
     "accept": "Aceitar",
     "decline": "Recusar",
     "resetFilters": "[PT] Reset filters",
-    "removeFilter": "[PT] Remove {{label}}",
     "loadingTimeout": "[PT] This is taking longer than expected. Please check your connection or try again.",
     "errorLoadingData": "[PT] Something went wrong while loading data. Please try again.",
     "retry": "[PT] Retry"

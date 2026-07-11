@@ -174,7 +174,6 @@
     "accept": "Принять",
     "decline": "Отклонить",
     "resetFilters": "[RU] Reset filters",
-    "removeFilter": "[RU] Remove {{label}}",
     "loadingTimeout": "[RU] This is taking longer than expected. Please check your connection or try again.",
     "errorLoadingData": "[RU] Something went wrong while loading data. Please try again.",
     "retry": "[RU] Retry"

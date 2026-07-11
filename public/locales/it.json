@@ -174,7 +174,6 @@
     "accept": "Accetta",
     "decline": "Rifiuta",
     "resetFilters": "[IT] Reset filters",
-    "removeFilter": "[IT] Remove {{label}}",
     "loadingTimeout": "[IT] This is taking longer than expected. Please check your connection or try again.",
     "errorLoadingData": "[IT] Something went wrong while loading data. Please try again.",
     "retry": "[IT] Retry"

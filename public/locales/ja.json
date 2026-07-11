@@ -174,7 +174,6 @@
     "accept": "承認",
     "decline": "辞退",
     "resetFilters": "[JA] Reset filters",
-    "removeFilter": "[JA] Remove {{label}}",
     "loadingTimeout": "[JA] This is taking longer than expected. Please check your connection or try again.",
     "errorLoadingData": "[JA] Something went wrong while loading data. Please try again.",
     "retry": "[JA] Retry"

@@ -79,7 +79,7 @@ export const EmptyState = ({
                 <button
                   type="button"
                   onClick={chip.onRemove}
-                  aria-label={t('common.removeFilter', 'Remove {{label}}', { label: chip.label })}
+                  aria-label={`${t('common.remove', 'Remove')} ${chip.label}`}
                   className="inline-flex h-4 w-4 items-center justify-center rounded-full hover:bg-muted"
                 >
                   <X className="h-3 w-3" />
