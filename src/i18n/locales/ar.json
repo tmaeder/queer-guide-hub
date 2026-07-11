@@ -172,7 +172,11 @@
     "more": "المزيد",
     "remove": "إزالة",
     "accept": "قبول",
-    "decline": "رفض"
+    "decline": "رفض",
+    "resetFilters": "[AR] Reset filters",
+    "loadingTimeout": "[AR] This is taking longer than expected. Please check your connection or try again.",
+    "errorLoadingData": "[AR] Something went wrong while loading data. Please try again.",
+    "retry": "[AR] Retry"
   },
   "navigation": {
     "home": "الرئيسية",
@@ -1156,7 +1160,10 @@
     "free": "مجاني",
     "ticketsRequired": "تذاكر مطلوبة",
     "soldOut": "نفدت الكمية",
-    "cancelled": "ملغاة"
+    "cancelled": "ملغاة",
+    "inTrip": "[AR] In trip",
+    "duringYourTrip": "[AR] During your trip",
+    "featured": "[AR] Featured"
   },
   "venues": {
     "title": "الأماكن",
@@ -1280,7 +1287,10 @@
     "achievementToast": {
       "unlocked": "تم فتح: {{name}}",
       "fallback": "إنجاز جديد"
-    }
+    },
+    "closed": "[AR] Closed",
+    "openNow": "[AR] Open now",
+    "locationUnknown": "[AR] Location unknown"
   },
   "marketplace": {
     "title": "السوق",
@@ -1293,7 +1303,11 @@
     "onSale": "تخفيضات",
     "newArrival": "وصل حديثاً",
     "featured": "مميز",
-    "reviews": "المراجعات"
+    "reviews": "المراجعات",
+    "adultBadge": "[AR] 18+",
+    "adBadge": "[AR] Ad",
+    "outOfStock": "[AR] Out of stock",
+    "queerOwnedBadge": "[AR] Queer-owned"
   },
   "profile": {
     "editProfile": "تعديل الملف الشخصي",
@@ -3295,5 +3309,32 @@
     "plans": {
       "trips": "رحلاتك"
     }
+  },
+  "city": {
+    "rights": {
+      "safetyNotesTitle": "[AR] Safety notes for {{name}}",
+      "nationalDisclaimer": "[AR] The rights status below applies to <countryLink>{{country}}</countryLink> at the national level. Local laws and enforcement in {{city}} may vary.",
+      "nationalDisclaimerNoCountry": "[AR] The rights status below applies to this country at the national level. Local laws and enforcement in {{city}} may vary.",
+      "loading": "[AR] Loading rights data...",
+      "noData": "[AR] Rights data is not available for this location."
+    },
+    "loadingDetails": "[AR] Loading city details...",
+    "notFoundTitle": "[AR] City not found",
+    "notFoundDescription": "[AR] The city you're looking for doesn't exist.",
+    "backToPlaces": "[AR] ← Back to Places",
+    "similarCities": "[AR] Similar cities"
+  },
+  "favorites": {
+    "removedTitle": "[AR] Removed from favorites",
+    "addedTitle": "[AR] Added to favorites",
+    "removedDescription": "[AR] {{name}} removed from your favorites",
+    "addedDescription": "[AR] {{name}} added to your favorites",
+    "updateFailed": "[AR] Failed to update favorites"
+  },
+  "social": {
+    "friendsGoing": "[AR] friends going",
+    "going": "[AR] going",
+    "friendsSaved": "[AR] friends saved",
+    "inTrips": "[AR] in trips"
   }
 }

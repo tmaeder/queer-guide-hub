@@ -172,7 +172,11 @@
     "more": "Ещё",
     "remove": "Удалить",
     "accept": "Принять",
-    "decline": "Отклонить"
+    "decline": "Отклонить",
+    "resetFilters": "[RU] Reset filters",
+    "loadingTimeout": "[RU] This is taking longer than expected. Please check your connection or try again.",
+    "errorLoadingData": "[RU] Something went wrong while loading data. Please try again.",
+    "retry": "[RU] Retry"
   },
   "navigation": {
     "home": "Главная",
@@ -1182,7 +1186,10 @@
     "free": "Бесплатно",
     "ticketsRequired": "Нужны билеты",
     "soldOut": "Распродано",
-    "cancelled": "Отменено"
+    "cancelled": "Отменено",
+    "inTrip": "[RU] In trip",
+    "duringYourTrip": "[RU] During your trip",
+    "featured": "[RU] Featured"
   },
   "venues": {
     "title": "Места",
@@ -1306,7 +1313,10 @@
     "achievementToast": {
       "unlocked": "Открыто: {{name}}",
       "fallback": "Новое достижение"
-    }
+    },
+    "closed": "[RU] Closed",
+    "openNow": "[RU] Open now",
+    "locationUnknown": "[RU] Location unknown"
   },
   "marketplace": {
     "title": "Маркетплейс",
@@ -1319,7 +1329,11 @@
     "onSale": "Скидка",
     "newArrival": "Новинка",
     "featured": "Рекомендуемое",
-    "reviews": "Отзывы"
+    "reviews": "Отзывы",
+    "adultBadge": "[RU] 18+",
+    "adBadge": "[RU] Ad",
+    "outOfStock": "[RU] Out of stock",
+    "queerOwnedBadge": "[RU] Queer-owned"
   },
   "profile": {
     "editProfile": "Редактировать профиль",
@@ -3325,5 +3339,32 @@
     "plans": {
       "trips": "Ваши поездки"
     }
+  },
+  "city": {
+    "rights": {
+      "safetyNotesTitle": "[RU] Safety notes for {{name}}",
+      "nationalDisclaimer": "[RU] The rights status below applies to <countryLink>{{country}}</countryLink> at the national level. Local laws and enforcement in {{city}} may vary.",
+      "nationalDisclaimerNoCountry": "[RU] The rights status below applies to this country at the national level. Local laws and enforcement in {{city}} may vary.",
+      "loading": "[RU] Loading rights data...",
+      "noData": "[RU] Rights data is not available for this location."
+    },
+    "loadingDetails": "[RU] Loading city details...",
+    "notFoundTitle": "[RU] City not found",
+    "notFoundDescription": "[RU] The city you're looking for doesn't exist.",
+    "backToPlaces": "[RU] ← Back to Places",
+    "similarCities": "[RU] Similar cities"
+  },
+  "favorites": {
+    "removedTitle": "[RU] Removed from favorites",
+    "addedTitle": "[RU] Added to favorites",
+    "removedDescription": "[RU] {{name}} removed from your favorites",
+    "addedDescription": "[RU] {{name}} added to your favorites",
+    "updateFailed": "[RU] Failed to update favorites"
+  },
+  "social": {
+    "friendsGoing": "[RU] friends going",
+    "going": "[RU] going",
+    "friendsSaved": "[RU] friends saved",
+    "inTrips": "[RU] in trips"
   }
 }

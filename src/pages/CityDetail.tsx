@@ -179,26 +179,34 @@ export default function CityDetail() {
     try {
       await toggleFavorite(city.id);
       toast({
-        title: isFavorited(city.id) ? 'Removed from favorites' : 'Added to favorites',
-        description: `${city.name} ${isFavorited(city.id) ? 'removed from' : 'added to'} your favorites`,
+        title: isFavorited(city.id)
+          ? t('favorites.removedTitle', 'Removed from favorites')
+          : t('favorites.addedTitle', 'Added to favorites'),
+        description: isFavorited(city.id)
+          ? t('favorites.removedDescription', '{{name}} removed from your favorites', { name: city.name })
+          : t('favorites.addedDescription', '{{name}} added to your favorites', { name: city.name }),
       });
     } catch (_error) {
-      toast({ title: 'Error', description: 'Failed to update favorites', variant: 'destructive' });
+      toast({
+        title: t('common.error', 'Error'),
+        description: t('favorites.updateFailed', 'Failed to update favorites'),
+        variant: 'destructive',
+      });
     }
   };
 
-  if (loading) return <PageLoading text="Loading city details..." />;
+  if (loading) return <PageLoading text={t('city.loadingDetails', 'Loading city details...')} />;
 
   if (!city) {
     return (
       <div className="min-h-screen bg-background">
         <div className="mx-auto px-4 py-8 text-center">
-          <h5 className="text-xl font-bold mb-4">City Not Found</h5>
+          <h5 className="text-xl font-bold mb-4">{t('city.notFoundTitle', 'City not found')}</h5>
           <p className="text-muted-foreground mb-6">
-            The city you're looking for doesn't exist.
+            {t('city.notFoundDescription', "The city you're looking for doesn't exist.")}
           </p>
           <LocalizedLink to="/places" className="font-medium" style={{ color: 'inherit' }}>
-            ← Back to Places
+            {t('city.backToPlaces', '← Back to Places')}
           </LocalizedLink>
         </div>
       </div>
@@ -354,7 +362,7 @@ export default function CityDetail() {
             <CityLocalSupporterCaption cityId={city.id} />
             <SimilarItems
               entity={{ type: 'city', id: city.id }}
-              title="Similar cities"
+              title={t('city.similarCities', 'Similar cities')}
               contentTypes={['city']}
             />
           </div>
