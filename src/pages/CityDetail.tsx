@@ -60,7 +60,15 @@ export default function CityDetail() {
     image: resolveEntityImage('city', city).url ?? undefined,
     country: city?.countries?.name,
   });
-  const [imageUrl, setImageUrl] = useState<string>('');
+  // Sync fast path mirroring fetchCityImage's short-circuit (curated wins,
+  // then unflagged image_url) so the LCP hero exists in the FIRST render for
+  // every backfilled city instead of waiting on a JS round-trip. The async
+  // edge/Pexels path below only runs on a true miss.
+  const syncImageUrl = city
+    ? city.curated_image_url || (!city.image_flagged && city.image_url) || ''
+    : '';
+  const [fetchedImageUrl, setFetchedImageUrl] = useState<string>('');
+  const imageUrl = syncImageUrl || fetchedImageUrl;
   const [createTripOpen, setCreateTripOpen] = useState(false);
   const { user } = useAuth();
   const { track } = useTrackEvent();
@@ -129,34 +137,38 @@ export default function CityDetail() {
 
   useEffect(() => {
     if (!city) return;
-    (async () => {
-      try {
-        const result = await fetchCityImage(city.id, city.name, city.countries?.name || '', {
-          existing: {
-            image_url: city.image_url,
-            curated_image_url: city.curated_image_url,
-            image_flagged: city.image_flagged,
-          },
-        });
-        if (result?.image_url) {
-          setImageUrl(result.image_url);
-          return;
+    // Only hit the network for the hero image on a true miss — the sync fast
+    // path above already covers curated/unflagged images.
+    if (!syncImageUrl) {
+      (async () => {
+        try {
+          const result = await fetchCityImage(city.id, city.name, city.countries?.name || '', {
+            existing: {
+              image_url: city.image_url,
+              curated_image_url: city.curated_image_url,
+              image_flagged: city.image_flagged,
+            },
+          });
+          if (result?.image_url) {
+            setFetchedImageUrl(result.image_url);
+            return;
+          }
+          // Miss: prefer a real gallery photo over the abstract texture fallback
+          const { data } = await supabase.functions.invoke('get-pexels-images', {
+            body: { query: city.name, type: 'city' },
+          });
+          const first = data?.images?.[0];
+          setFetchedImageUrl(first?.url || first?.thumbnail || '');
+        } catch {
+          // Image loading failure is non-critical, fallback to no image
         }
-        // Miss: prefer a real gallery photo over the abstract texture fallback
-        const { data } = await supabase.functions.invoke('get-pexels-images', {
-          body: { query: city.name, type: 'city' },
-        });
-        const first = data?.images?.[0];
-        setImageUrl(first?.url || first?.thumbnail || '');
-      } catch {
-        // Image loading failure is non-critical, fallback to no image
-      }
-    })();
+      })();
+    }
     fetchArticles({
       cityIds: [city.id],
       countryIds: city.countries?.id ? [city.countries.id] : undefined,
     });
-  }, [city, fetchCityImage, fetchArticles]);
+  }, [city, syncImageUrl, fetchCityImage, fetchArticles]);
 
   useEffect(() => {
     if (city?.id) fetchVillages({ cityId: city.id });
