@@ -56,11 +56,11 @@ export function TripDocExpiryBanner({ trip }: Props) {
   return (
     <div
       role="alert"
-      className="flex items-start gap-4 px-4 py-4 mb-4"
+      className="flex items-start gap-4 px-4 py-4 mb-4 rounded-element"
       style={{
         backgroundColor: isSevere ? 'rgba(244, 67, 54, 0.08)' : 'rgba(255, 152, 0, 0.08)',
-        borderLeft: '4px solid',
-        borderLeftColor: isSevere ? 'hsl(var(--destructive))' : 'hsl(var(--warning))',
+        border: '1px solid',
+        borderColor: isSevere ? 'hsl(var(--destructive) / 0.4)' : 'hsl(var(--warning) / 0.4)',
       }}
     >
       {isSevere ? (

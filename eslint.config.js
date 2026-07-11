@@ -330,7 +330,7 @@ export default tseslint.config(
         },
         {
           selector:
-            "Literal[value=/^(?!.*\\bfrom-black\\b).*\\bbg-gradient-to-/]",
+            "Literal[value=/^(?!.*\\bfrom-(black|background)\\b).*\\bbg-gradient-to-/]",
           message:
             "Gradients are not allowed (CLAUDE.md § Design). Only black readability scrims over images (from-black/NN) are exempt.",
         },
@@ -445,9 +445,9 @@ export default tseslint.config(
         },
         {
           selector:
-            "Literal[value=/^(?!.*\\bfrom-black\\b).*\\bbg-gradient-to-/]",
+            "Literal[value=/^(?!.*\\bfrom-(black|background)\\b).*\\bbg-gradient-to-/]",
           message:
-            "Gradients are not allowed in public UI (CLAUDE.md § Design). Only black readability scrims over images (from-black/NN) are exempt.",
+            "Gradients are not allowed in public UI (CLAUDE.md § Design). Exempt: black readability scrims over images (from-black/NN) and background-colored scroll-edge fades (from-background).",
         },
         {
           selector:

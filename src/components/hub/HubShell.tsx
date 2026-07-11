@@ -58,12 +58,13 @@ export function HubShell({ active, children }: { active: HubModuleId; children: 
         </nav>
       </aside>
 
-      {/* Mobile module scroller */}
-      <div
-        role="navigation"
-        aria-label={t('hub.nav', 'Hub modules')}
-        className="-mx-4 mb-4 flex gap-1 overflow-x-auto border-b border-border px-4 md:hidden"
-      >
+      {/* Mobile module scroller — right-edge fade signals more modules off-screen. */}
+      <div className="relative -mx-4 mb-4 md:hidden">
+        <div
+          role="navigation"
+          aria-label={t('hub.nav', 'Hub modules')}
+          className="flex gap-1 overflow-x-auto border-b border-border px-4"
+        >
         {HUB_MODULES.map((m) => {
           const Icon = m.icon;
           const isActive = m.id === active;
@@ -85,6 +86,11 @@ export function HubShell({ active, children }: { active: HubModuleId; children: 
             </LocalizedLink>
           );
         })}
+        </div>
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-background to-transparent"
+        />
       </div>
 
       {/* Workspace */}

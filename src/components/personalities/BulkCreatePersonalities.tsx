@@ -371,10 +371,10 @@ export const BulkCreatePersonalities = () => {
                   {results.created.map((personality, index: number) => (
                     <div
                       key={index}
-                      className="text-sm p-2 rounded border-l-4"
+                      className="text-sm p-2 rounded-element border"
                       style={{
                         backgroundColor: 'hsl(var(--success) / 0.1)',
-                        borderLeftColor: 'hsl(var(--success))',
+                        borderColor: 'hsl(var(--success) / 0.35)',
                       }}
                     >
                       <div className="flex items-start gap-4">
@@ -422,10 +422,10 @@ export const BulkCreatePersonalities = () => {
                   {results.errors.map((error, index: number) => (
                     <div
                       key={index}
-                      className="text-sm p-2 rounded border-l-4"
+                      className="text-sm p-2 rounded-element border"
                       style={{
                         backgroundColor: 'hsl(var(--destructive) / 0.1)',
-                        borderLeftColor: 'hsl(var(--destructive))',
+                        borderColor: 'hsl(var(--destructive) / 0.35)',
                       }}
                     >
                       <div className="flex items-start justify-between">

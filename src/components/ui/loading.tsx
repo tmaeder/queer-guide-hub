@@ -74,23 +74,18 @@ export function PageLoading({ text }: PageLoadingProps) {
       aria-live="polite"
       className="flex min-h-screen items-center justify-center"
     >
-      <div className="text-center flex flex-col gap-6">
+      <div className="text-center flex flex-col gap-4">
+        {/* One indicator, not dots + spinner + "please wait" stacked. */}
         <div className="flex items-center justify-center gap-2" aria-hidden="true">
           {[0, 1, 2, 3, 4].map((i) => (
             <div
               key={i}
               style={{ animationDelay: `${i * 0.1}s` }}
-              className="h-3 w-3 rounded-full bg-current animate-bounce motion-reduce:animate-none"
+              className="h-3 w-3 rounded-full bg-current animate-pulse motion-reduce:animate-none"
             />
           ))}
         </div>
-        <div className="flex flex-col gap-2">
-          <h2 className="text-lg font-semibold m-0">{label}</h2>
-          <div className="flex items-center justify-center gap-1">
-            <LoadingSpinner size="sm" label={null} />
-            <span className="text-sm text-muted-foreground ml-2">{t('common.pleaseWait', 'Please wait')}</span>
-          </div>
-        </div>
+        <h2 className="text-lg font-semibold m-0 text-muted-foreground">{label}</h2>
       </div>
     </div>
   );
