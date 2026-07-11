@@ -32,7 +32,7 @@ import { OptimizedLoader } from '@/components/loading/OptimizedLoader';
 import OptimizedErrorBoundary, {
   DataErrorFallback,
 } from '@/components/error/OptimizedErrorBoundary';
-import { EmailForwardingSettings } from '@/components/profile/EmailForwardingSettings';
+import { TravelForwardingSettings } from '@/components/profile/TravelForwardingSettings';
 import { PushNotificationSettings } from '@/components/profile/PushNotificationSettings';
 import { DocumentsList } from '@/components/trips/DocumentsList';
 import { BasicInfoTab } from '@/components/profile/settings/BasicInfoTab';
@@ -593,7 +593,7 @@ function ProfileSettingsContent({
                 />
               </CardContent>
             </Card>
-            <EmailForwardingSettings />
+            <TravelForwardingSettings username={username} />
             <PushNotificationSettings />
             <DangerZone username={username} />
           </div>

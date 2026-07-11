@@ -31,7 +31,9 @@ export type ReservationSource =
   | 'manual'
   | 'imported_email'
   | 'provider_api'
-  | 'scraper';
+  | 'scraper'
+  | 'inbox'
+  | 'paste';
 
 export interface Reservation {
   /** Stable composite id used as a React key. */
@@ -102,6 +104,8 @@ const normalizeSource = (s: string | null | undefined): ReservationSource => {
     case 'imported_email':
     case 'provider_api':
     case 'scraper':
+    case 'inbox':
+    case 'paste':
       return s;
     default:
       return 'manual';
