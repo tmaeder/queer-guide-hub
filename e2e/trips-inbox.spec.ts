@@ -1,11 +1,11 @@
 import { test, expect } from '@playwright/test';
 
 /**
- * Smoke tests for /trips/inbox and the /bookings → /trips redirect.
+ * Smoke tests for /trips/inbox and the /bookings → /hub/plans redirect.
  *
- * The /bookings route was consolidated into /trips (App.tsx:491 — Navigate
- * to="/trips"), not /trips/inbox; the test asserts the consolidation, which
- * is what users actually experience.
+ * The /bookings route was consolidated into /trips, which the 2026-07 hub
+ * declutter folded into /hub/plans (routes.tsx LocalizedRedirect map); the
+ * tests assert the consolidation, which is what users actually experience.
  *
  * Signed-out only — same rationale as trips.spec.ts. Authenticated flows
  * (orphans rendering, attach-to-trip, suggestion → create trip) need
@@ -16,17 +16,17 @@ import { test, expect } from '@playwright/test';
  *   E2E_BASE_URL=https://queer.guide npx playwright test e2e/trips-inbox.spec.ts
  */
 
-test.describe('/bookings → /trips redirect', () => {
-  test('redirects to the trips page', async ({ page }) => {
+test.describe('/bookings → /hub/plans redirect', () => {
+  test('redirects to the plans module', async ({ page }) => {
     await page.goto('/bookings');
     await page.waitForLoadState('domcontentloaded');
-    await expect(page).toHaveURL(/\/trips(\/|$|\?)/);
+    await expect(page).toHaveURL(/\/hub\/plans(\/|$|\?)/);
   });
 
   test('preserves the redirect for locale-prefixed URLs', async ({ page }) => {
     await page.goto('/de/bookings');
     await page.waitForLoadState('domcontentloaded');
-    await expect(page).toHaveURL(/\/trips(\/|$|\?)/);
+    await expect(page).toHaveURL(/\/de\/hub\/plans(\/|$|\?)/);
   });
 });
 
@@ -71,8 +71,11 @@ test.describe('header user menu', () => {
     // the JS. We can't open the user menu without an account, so instead
     // we assert no anchor in the entire page points at /bookings — that
     // would only happen if we forgot to remove the nav entry.
-    await page.goto('/trips');
-    await page.waitForLoadState('networkidle');
+    await page.goto('/trips', { waitUntil: 'domcontentloaded' });
+    // /trips redirects anon to the /hub/plans auth gate; its Sign In link is
+    // the app-mounted signal (networkidle never settles on prod).
+    await expect(page).toHaveURL(/\/hub\/plans/, { timeout: 15_000 });
+    await page.getByRole('link', { name: /sign in/i }).first().waitFor({ timeout: 15_000 });
     const directLinks = page.locator('a[href$="/bookings"], a[href*="/bookings?"]');
     expect(await directLinks.count()).toBe(0);
   });

@@ -1757,7 +1757,8 @@
       "unreadCount": "{{count}} ungelesen",
       "tripsBadge": "{{count}} Reise-Elemente erfordern Aufmerksamkeit",
       "hub": "Hub"
-    }
+    },
+    "primaryNavigation": "[DE] Primary"
   },
   "pages": {
     "venues": {

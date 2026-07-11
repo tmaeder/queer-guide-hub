@@ -1757,7 +1757,8 @@
       "unreadCount": "읽지 않음 {{count}}개",
       "tripsBadge": "확인이 필요한 여행 항목 {{count}}개",
       "hub": "허브"
-    }
+    },
+    "primaryNavigation": "[KO] Primary"
   },
   "pages": {
     "venues": {

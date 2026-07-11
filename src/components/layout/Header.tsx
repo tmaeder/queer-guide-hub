@@ -208,7 +208,9 @@ export function Header() {
     { to: '/news', labelKey: 'header.nav.news', fallback: 'News' },
   ] as const;
   const desktopNav = (
-    <nav aria-label={t('header.navigation', 'Navigation')} className="hidden lg:flex items-center gap-1">
+    // Distinct landmark name — the mobile bottom bar owns "Navigation";
+    // duplicate nav landmark names break rotor navigation (landmark-unique).
+    <nav aria-label={t('header.primaryNavigation', 'Primary')} className="hidden lg:flex items-center gap-1">
       {primaryNav.map(({ to, labelKey, fallback }) => {
         const active = path === to || path.startsWith(`${to}/`);
         return (

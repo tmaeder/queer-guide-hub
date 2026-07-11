@@ -1757,7 +1757,8 @@
       "unreadCount": "{{count}} sin leer",
       "tripsBadge": "{{count}} elementos de viaje necesitan atención",
       "hub": "Hub"
-    }
+    },
+    "primaryNavigation": "[ES] Primary"
   },
   "pages": {
     "venues": {

@@ -29,9 +29,12 @@ test.describe('unified travel experience', () => {
     await expect(page).toHaveURL(/\/hotels/);
   });
 
-  test('/trips signed-out hero renders', async ({ page }) => {
+  test('/trips redirects signed-out visitors to the /hub/plans auth gate', async ({ page }) => {
     await page.goto('/trips');
-    await expect(page.locator('h1, h2, h3').first()).toBeVisible();
+    // Hub declutter (2026-07): /trips folds into /hub/plans, which shows the
+    // AuthGate sign-in card for anonymous visitors.
+    await expect(page).toHaveURL(/\/hub\/plans/, { timeout: 15_000 });
+    await expect(page.getByRole('link', { name: /sign in/i })).toBeVisible({ timeout: 15_000 });
   });
 
   test('/profile/footprint requires auth (no crash on unauthenticated load)', async ({
