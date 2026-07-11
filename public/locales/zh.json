@@ -2900,7 +2900,8 @@
       "anEvent": "活动",
       "aVenue": "场所"
     },
-    "matchTag": "配对"
+    "matchTag": "配对",
+    "openAlerts": "[ZH] All notifications"
   },
   "extension": {
     "signInGate": {
@@ -3239,7 +3240,11 @@
       "friendCount": "{{count}} 位朋友",
       "findPeople": "查找用户",
       "noFriends": "还没有朋友。",
-      "wantsToConnect": "想要建立联系"
+      "wantsToConnect": "想要建立联系",
+      "allCaughtUp": "[ZH] All caught up.",
+      "next48h": "[ZH] Next two days",
+      "requests": "[ZH] Friend requests",
+      "allPeople": "[ZH] All people"
     },
     "messages": {
       "chats": "聊天",

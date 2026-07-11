@@ -2900,7 +2900,8 @@
       "anEvent": "이벤트",
       "aVenue": "장소"
     },
-    "matchTag": "매치"
+    "matchTag": "매치",
+    "openAlerts": "[KO] All notifications"
   },
   "extension": {
     "signInGate": {
@@ -3239,7 +3240,11 @@
       "friendCount": "친구 {{count}}명",
       "findPeople": "사람 찾기",
       "noFriends": "아직 친구가 없습니다.",
-      "wantsToConnect": "연결을 원해요"
+      "wantsToConnect": "연결을 원해요",
+      "allCaughtUp": "[KO] All caught up.",
+      "next48h": "[KO] Next two days",
+      "requests": "[KO] Friend requests",
+      "allPeople": "[KO] All people"
     },
     "messages": {
       "chats": "채팅",

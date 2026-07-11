@@ -92,7 +92,8 @@
       "anEvent": "Event",
       "aVenue": "Venue"
     },
-    "matchTag": "Match"
+    "matchTag": "Match",
+    "openAlerts": "All notifications"
   },
   "eventTypes": {
     "party": "Party",
@@ -3211,7 +3212,11 @@
       "friendCount": "{{count}} friends",
       "findPeople": "Find people",
       "noFriends": "No friends yet.",
-      "wantsToConnect": "Wants to connect"
+      "wantsToConnect": "Wants to connect",
+      "allCaughtUp": "All caught up.",
+      "next48h": "Next two days",
+      "requests": "Friend requests",
+      "allPeople": "All people"
     },
     "messages": {
       "chats": "Chats",

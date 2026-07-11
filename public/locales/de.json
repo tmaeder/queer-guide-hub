@@ -2902,7 +2902,8 @@
       "anEvent": "Event",
       "aVenue": "Ort"
     },
-    "matchTag": "Match"
+    "matchTag": "Match",
+    "openAlerts": "[DE] All notifications"
   },
   "extension": {
     "signInGate": {
@@ -3241,7 +3242,11 @@
       "friendCount": "{{count}} Freund*innen",
       "findPeople": "Leute finden",
       "noFriends": "Noch keine Freund*innen.",
-      "wantsToConnect": "Möchte sich vernetzen"
+      "wantsToConnect": "Möchte sich vernetzen",
+      "allCaughtUp": "[DE] All caught up.",
+      "next48h": "[DE] Next two days",
+      "requests": "[DE] Friend requests",
+      "allPeople": "[DE] All people"
     },
     "messages": {
       "chats": "Chats",
