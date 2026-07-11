@@ -23,6 +23,7 @@ import { PageHeader } from '@/components/layout/PageHeader';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { useTranslation } from 'react-i18next';
+import { VirtualizedGrid } from '@/components/ui/VirtualizedGrid';
 
 export default function Feed() {
   const { t } = useTranslation();
@@ -238,16 +239,22 @@ export default function Feed() {
               )
             ) : (
               <>
-                {sortedPosts.map((post) => (
-                  <PostCard
-                    key={post.id}
-                    post={post}
-                    onLike={likePost}
-                    onUnlike={unlikePost}
-                    onDelete={deletePost}
-                    isLiking={isLikingPost || isDeletingPost}
-                  />
-                ))}
+                <VirtualizedGrid
+                  items={sortedPosts}
+                  columns={1}
+                  rowClassName="flex flex-col gap-6 pb-6"
+                  estimateRowHeight={280}
+                  itemKey={(post) => post.id}
+                  renderItem={(post) => (
+                    <PostCard
+                      post={post}
+                      onLike={likePost}
+                      onUnlike={unlikePost}
+                      onDelete={deletePost}
+                      isLiking={isLikingPost || isDeletingPost}
+                    />
+                  )}
+                />
 
                 {/* Load more — only shown when not actively filtering, since
                     search/sort are client-side over already-fetched pages. */}
