@@ -1,6 +1,5 @@
 import React, { Suspense } from 'react';
 import { useLocation } from 'react-router';
-import { motion, AnimatePresence, useReducedMotion } from 'motion/react';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { MobileBottomNav } from '@/components/layout/MobileBottomNav';
@@ -11,7 +10,7 @@ import { AnalyticsTracker } from '@/components/analytics/AnalyticsTracker';
 import { useGlobalPresence } from '@/hooks/useConversationPresence';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { lazyOptional } from '@/utils/lazyRetry';
-import { stripLocale, isMapRoute } from '@/lib/locale';
+import { isMapRoute } from '@/lib/locale';
 
 // Peripheral chrome — banners and the feedback FAB. None of these are
 // above-the-fold or interaction-critical on first paint, so defer their
@@ -42,14 +41,12 @@ export const LayoutShell = ({ children }: { children: React.ReactNode }) => {
   const { pathname } = useLocation();
   // Match /map and /:locale/map (locale prefix is optional in the router).
   const isFullBleedMap = isMapRoute(pathname);
-  const reduced = useReducedMotion();
   // Broadcast the current user's global presence (only if they opted into the
   // global dot) so inbox/discovery surfaces can show "active now".
   useGlobalPresence();
 
   // Key route transitions by the first non-locale segment so detail-page
   // tab switches don't trigger a full fade (only true route changes do).
-  const transitionKey = stripLocale(pathname).split('/').slice(0, 3).join('/');
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -89,18 +86,11 @@ export const LayoutShell = ({ children }: { children: React.ReactNode }) => {
           </ErrorBoundary>
         )}
       </div>
-      <AnimatePresence mode="wait" initial={false}>
-        <motion.div
-          key={transitionKey}
-          initial={reduced ? false : { opacity: 0, y: 6 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={reduced ? undefined : { opacity: 0, y: -4 }}
-          transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
-          className="relative z-10 flex-1 flex flex-col"
-        >
-          {children}
-        </motion.div>
-      </AnimatePresence>
+      {/* Route transitions live in RouteFade (routes.tsx) — the former
+          AnimatePresence mode="wait" wrapper here both duplicated that fade
+          and held every incoming route's paint hostage to the exit animation,
+          while chaining framer-motion onto the entry bundle. */}
+      <div className="relative z-10 flex-1 flex flex-col">{children}</div>
       {!isFullBleedMap && (
         <div className="relative z-10 pb-24 md:pb-0">
           <ErrorBoundary section="footer" fallback={null}>

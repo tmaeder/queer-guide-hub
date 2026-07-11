@@ -23,7 +23,7 @@ import { SpotlightV2 } from '@/components/effects/SpotlightV2';
 import { EmptyState, ErrorState } from '@/components/ui/EmptyState';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { StaggerGrid } from '@/components/animation/StaggerGrid';
+import { VirtualizedGrid, useGridColumns } from '@/components/ui/VirtualizedGrid';
 
 import { PersonalityCard, PersonalityCardSkeleton } from '@/components/personalities/PersonalityCard';
 import { useEntityImageAssets } from '@/hooks/useEntityImageAssets';
@@ -45,8 +45,16 @@ import { useTranslation } from 'react-i18next';
 const PAGE_SIZE = 24;
 const AUTO_LOAD_CAP = 48;
 
+// pb-* preserves the inter-row gap between virtual rows.
 const GRID_CLASS =
-  'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-4 md:gap-6 [&>*]:min-w-0';
+  'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-4 md:gap-6 pb-4 md:pb-6 [&>*]:min-w-0';
+// Must mirror GRID_CLASS's breakpoint column counts (sm/md/lg).
+const GRID_BREAKPOINTS = [
+  { minWidth: 0, columns: 2 },
+  { minWidth: 640, columns: 3 },
+  { minWidth: 768, columns: 4 },
+  { minWidth: 1024, columns: 5 },
+];
 
 const MAX_DEEP_LINK_PAGE = 50;
 
@@ -73,6 +81,7 @@ function activeFilterCount(f: PersonalityFilters): number {
 }
 
 export default function Personalities() {
+  const gridColumns = useGridColumns(GRID_BREAKPOINTS);
   const { user } = useAuth();
   const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -578,19 +587,23 @@ export default function Personalities() {
                 <PersonalitiesMap personalities={personalities} />
               </Suspense>
             ) : (
-              <StaggerGrid className={GRID_CLASS}>
-                {personalities.map((p) => {
+              <VirtualizedGrid
+                items={personalities}
+                columns={gridColumns}
+                rowClassName={GRID_CLASS}
+                estimateRowHeight={320}
+                itemKey={(p) => p.id}
+                renderItem={(p) => {
                   const asset = imageAssets.get(p.id);
                   return (
                     <PersonalityCard
-                      key={p.id}
                       personality={p}
                       optimizedUrl={asset?.optimized_url}
                       thumbnailUrl={asset?.thumbnail_url}
                     />
                   );
-                })}
-              </StaggerGrid>
+                }}
+              />
             )}
 
             {/* Sentinel for auto-load */}
