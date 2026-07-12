@@ -33,11 +33,27 @@ test.describe('Venues — map view', () => {
 
     // The in-view counter starts as "Loading…" and only switches to
     // "N results in view" once the cluster source has loaded. Wait for it to
-    // leave the loading state first (generous window for a cold source load),
-    // then poll for a non-zero feature count. A bare 20s poll on the numeric
-    // text raced the source load and stayed at 0 when prod was slow.
+    // leave the loading state first (generous window for a cold source load).
     const counter = page.locator('text=/\\d+ results in view/');
     await expect(counter).toBeVisible({ timeout: 45_000 });
+
+    // The map auto-flies to the visitor's IP geolocation at zoom 10
+    // (useMapAutoFly), so the default viewport is CI-runner-dependent and may
+    // legitimately contain zero venues in bounds — the counter then reads
+    // "0 results in view" even though the source is healthy. That made this
+    // guard flaky by runner region. Zoom out to a world view, where the full
+    // venue cluster set is always in bounds, before asserting the source
+    // actually plotted features (the real D1 regression this guards).
+    const zoomOut = page.locator('.maplibregl-ctrl-zoom-out');
+    if (await zoomOut.isVisible().catch(() => false)) {
+      for (let i = 0; i < 7; i++) {
+        // force + short timeout: never let a transiently-obscured button (a
+        // "Loading" overlay repaints on each moveend) stall the 75s budget.
+        await zoomOut.click({ force: true, timeout: 2_000 }).catch(() => {});
+        await page.waitForTimeout(150); // let the debounced moveend recount
+      }
+    }
+
     await expect
       .poll(
         async () => {
