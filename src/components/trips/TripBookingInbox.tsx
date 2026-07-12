@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { format } from 'date-fns';
-import { Copy, Inbox, Mail, Trash2, RefreshCw, Check, X, MessageCircle } from 'lucide-react';
+import { Inbox, Mail, Check, X, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
+import { useProfile } from '@/hooks/useProfile';
 import { useTripInbox, type TripInboxItem } from '@/hooks/useTripInbox';
 
 interface Props {
@@ -15,15 +16,12 @@ interface Props {
 export function TripBookingInbox({ tripId }: Props) {
   const { t } = useTranslation();
   const { toast } = useToast();
+  const { profile } = useProfile();
   const {
-    address,
     inbox,
     inboxLoading,
     items,
     itemsLoading,
-    enable,
-    revoke,
-    regenerate,
     slotItem,
     dismissItem,
     pasteConfirmation,
@@ -32,10 +30,25 @@ export function TripBookingInbox({ tripId }: Props) {
   const [pasteText, setPasteText] = useState('');
   const [pasteOpen, setPasteOpen] = useState(false);
 
+  const mailboxAddress = profile?.username ? `${profile.username}@queer.guide` : null;
   const parsedItems = items.filter((i) => i.parse_status === 'parsed');
   const failedItems = items.filter((i) => i.parse_status === 'failed');
 
-  // Pre-enable CTA. Only render the heavy UI once the user opts in.
+  // Bookings forwarded to the user's own queer.guide address land in their
+  // Travel Inbox (see MailboxForwardingSettings) — no separate per-trip
+  // address. Here we offer the direct-to-this-trip paste path plus a pointer.
+  const forwardHint = mailboxAddress
+    ? t('trips.inbox.forwardHint', {
+        defaultValue:
+          'Forward Booking.com, Airbnb or airline confirmations to {{address}} — they appear in your Travel Inbox, ready to add to a trip. Or paste one here to add it straight to this trip.',
+        address: mailboxAddress,
+      })
+    : t('trips.inbox.forwardHintNoAddress', {
+        defaultValue:
+          'Forward booking confirmations to your queer.guide address and they appear in your Travel Inbox. Or paste one here to add it straight to this trip.',
+      });
+
+  // Empty state — no forwarded/pasted items yet.
   if (!inboxLoading && !inbox && parsedItems.length === 0 && failedItems.length === 0) {
     return (
       <section
@@ -48,20 +61,8 @@ export function TripBookingInbox({ tripId }: Props) {
             <h3 className="text-sm font-bold uppercase tracking-wide">
               {t('trips.inbox.cta.title', 'Forward booking emails')}
             </h3>
-            <p className="text-sm text-muted-foreground mt-1">
-              {t(
-                'trips.inbox.cta.body',
-                'Get a private address for this trip. Forward Booking.com, Airbnb, airlines — we parse and slot automatically.',
-              )}
-            </p>
+            <p className="text-sm text-muted-foreground mt-1">{forwardHint}</p>
             <div className="flex gap-2 mt-4 flex-wrap">
-              <Button
-                size="sm"
-                onClick={() => enable.mutate()}
-                disabled={enable.isPending}
-              >
-                {t('trips.inbox.cta.enable', 'Enable email forwarding')}
-              </Button>
               <Button
                 size="sm"
                 variant="outline"
@@ -102,45 +103,7 @@ export function TripBookingInbox({ tripId }: Props) {
         </h3>
       </div>
 
-      {address && (
-        <div className="border border-border p-4 mb-4 bg-muted/30">
-          <div className="text-xs uppercase tracking-wide text-muted-foreground mb-1">
-            {t('trips.inbox.address.label', 'Forwarding address')}
-          </div>
-          <div className="flex items-center gap-2 flex-wrap">
-            <code className="text-sm font-mono break-all">{address}</code>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={async () => {
-                await navigator.clipboard.writeText(address);
-                toast({ title: t('trips.inbox.copied', 'Copied') });
-              }}
-            >
-              <Copy className="h-3.5 w-3.5 mr-1" aria-hidden />
-              {t('common.copy', 'Copy')}
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => regenerate()}
-              disabled={enable.isPending || revoke.isPending}
-            >
-              <RefreshCw className="h-3.5 w-3.5 mr-1" aria-hidden />
-              {t('trips.inbox.regenerate', 'Regenerate')}
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => revoke.mutate()}
-              disabled={revoke.isPending}
-            >
-              <Trash2 className="h-3.5 w-3.5 mr-1" aria-hidden />
-              {t('trips.inbox.revoke', 'Revoke address')}
-            </Button>
-          </div>
-        </div>
-      )}
+      <p className="text-sm text-muted-foreground mb-4">{forwardHint}</p>
 
       <div className="mb-4">
         <Button

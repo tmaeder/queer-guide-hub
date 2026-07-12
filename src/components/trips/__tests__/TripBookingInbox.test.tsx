@@ -6,22 +6,20 @@ import { render as rtlRender, screen, fireEvent } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 import type { ReactElement } from 'react';
 
-// TripBookingInbox now renders a LocalizedLink ("Review in chat") — needs a router.
+// TripBookingInbox renders a LocalizedLink ("Review in chat") — needs a router.
 const render = (ui: ReactElement) => rtlRender(<MemoryRouter>{ui}</MemoryRouter>);
 
 const {
   useTripInboxMock,
   useToastMock,
-  enableMutate,
-  revokeMutate,
+  useProfileMock,
   slotMutate,
   dismissMutate,
   pasteMutate,
 } = vi.hoisted(() => ({
   useTripInboxMock: vi.fn(),
   useToastMock: vi.fn(),
-  enableMutate: vi.fn(),
-  revokeMutate: vi.fn(),
+  useProfileMock: vi.fn(),
   slotMutate: vi.fn(),
   dismissMutate: vi.fn(),
   pasteMutate: vi.fn(),
@@ -29,58 +27,67 @@ const {
 
 vi.mock('@/hooks/useTripInbox', () => ({ useTripInbox: useTripInboxMock }));
 vi.mock('@/hooks/use-toast', () => ({ useToast: useToastMock }));
+vi.mock('@/hooks/useProfile', () => ({ useProfile: useProfileMock }));
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
-    t: (_k: string, fallback?: string | Record<string, unknown>) =>
-      typeof fallback === 'string' ? fallback : _k,
+    t: (_k: string, fallback?: string | Record<string, unknown>) => {
+      if (typeof fallback === 'string') return fallback;
+      if (fallback && typeof fallback === 'object' && 'defaultValue' in fallback) {
+        let s = String((fallback as { defaultValue: string }).defaultValue);
+        for (const [key, val] of Object.entries(fallback)) {
+          if (key === 'defaultValue') continue;
+          s = s.replace(new RegExp(`{{\\s*${key}\\s*}}`, 'g'), String(val));
+        }
+        return s;
+      }
+      return _k;
+    },
   }),
 }));
 
 import { TripBookingInbox } from '../TripBookingInbox';
 
 const baseHook = () => ({
-  address: null as string | null,
   inbox: null as null | { id: string; short_id: string; revoked_at: string | null; created_at: string },
   inboxLoading: false,
   items: [] as Array<Record<string, unknown>>,
   itemsLoading: false,
-  enable: { mutate: enableMutate, isPending: false },
-  revoke: { mutate: revokeMutate, isPending: false },
-  regenerate: vi.fn(),
   slotItem: { mutate: slotMutate, isPending: false },
   dismissItem: { mutate: dismissMutate, isPending: false },
   pasteConfirmation: { mutate: pasteMutate, mutateAsync: pasteMutate, isPending: false },
 });
 
 beforeEach(() => {
-  enableMutate.mockReset();
-  revokeMutate.mockReset();
   slotMutate.mockReset();
   dismissMutate.mockReset();
   pasteMutate.mockReset();
   useToastMock.mockReset();
   useToastMock.mockReturnValue({ toast: vi.fn() });
+  useProfileMock.mockReset();
+  useProfileMock.mockReturnValue({ profile: { username: 'tobias' } });
 });
 
 describe('TripBookingInbox', () => {
-  it('renders opt-in CTA when no inbox is enabled', () => {
+  it('points to the user queer.guide address (no separate per-trip address)', () => {
     useTripInboxMock.mockReturnValue(baseHook());
     render(<TripBookingInbox tripId="t1" />);
     expect(screen.getByText(/Forward booking emails/i)).toBeTruthy();
-    expect(screen.getByRole('button', { name: /Enable email forwarding/i })).toBeTruthy();
+    // The forward hint interpolates the user's own address.
+    expect(screen.getByText(/tobias@queer\.guide/i)).toBeTruthy();
+    // The retired dead-address controls are gone.
+    expect(screen.queryByRole('button', { name: /Enable email forwarding/i })).toBeNull();
+    expect(screen.queryByText(/inbox\.queer\.guide/i)).toBeNull();
   });
 
-  it('calls enable.mutate when CTA is clicked', () => {
+  it('offers the paste-confirmation path', () => {
     useTripInboxMock.mockReturnValue(baseHook());
     render(<TripBookingInbox tripId="t1" />);
-    fireEvent.click(screen.getByRole('button', { name: /Enable email forwarding/i }));
-    expect(enableMutate).toHaveBeenCalledTimes(1);
+    expect(screen.getByRole('button', { name: /Paste confirmation instead/i })).toBeTruthy();
   });
 
-  it('shows the address and parsed items once enabled', () => {
+  it('renders parsed items without advertising a per-trip address', () => {
     useTripInboxMock.mockReturnValue({
       ...baseHook(),
-      address: 'trip-abc123@inbox.queer.guide',
       inbox: { id: 'i1', short_id: 'abc123', revoked_at: null, created_at: '2026-05-01' },
       items: [
         {
@@ -105,15 +112,15 @@ describe('TripBookingInbox', () => {
       ],
     });
     render(<TripBookingInbox tripId="t1" />);
-    expect(screen.getByText('trip-abc123@inbox.queer.guide')).toBeTruthy();
+    // Item title is unique; vendor appears both in the item and the hint copy.
     expect(screen.getByText(/Hotel Lutetia/i)).toBeTruthy();
-    expect(screen.getByText(/Booking.com/i)).toBeTruthy();
+    expect(screen.getAllByText(/Booking\.com/i).length).toBeGreaterThan(0);
+    expect(screen.queryByText(/inbox\.queer\.guide/i)).toBeNull();
   });
 
   it('slots when "Slot it" button is clicked', () => {
     useTripInboxMock.mockReturnValue({
       ...baseHook(),
-      address: 'trip-abc@inbox.queer.guide',
       inbox: { id: 'i1', short_id: 'abc', revoked_at: null, created_at: '2026-05-01' },
       items: [
         {

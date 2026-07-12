@@ -985,7 +985,9 @@
       "pending_other": "{{count}} Änderungen warten auf Synchronisierung"
     },
     "inbox": {
-      "openThread": "Im Chat prüfen"
+      "openThread": "Im Chat prüfen",
+      "forwardHint": "[DE] Forward Booking.com, Airbnb or airline confirmations to {{address}} — they appear in your Travel Inbox, ready to add to a trip. Or paste one here to add it straight to this trip.",
+      "forwardHintNoAddress": "[DE] Forward booking confirmations to your queer.guide address and they appear in your Travel Inbox. Or paste one here to add it straight to this trip."
     }
   },
   "help": {
@@ -2305,6 +2307,13 @@
         "title": "Direktnachrichten",
         "body": "Benachrichtige mich, wenn mir jemand eine Nachricht sendet."
       }
+    },
+    "forwarding": {
+      "title": "[DE] Your queer.guide email",
+      "description": "[DE] Mail sent to your address appears in your inbox. Forward booking confirmations (Booking.com, Airbnb, Lufthansa and more) and they also show up as trip cards awaiting your approval.",
+      "copy": "[DE] Copy address",
+      "openInbox": "[DE] Open inbox",
+      "claimFirst": "[DE] Choose a username above to activate your address."
     }
   },
   "map": {
