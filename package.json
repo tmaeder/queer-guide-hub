@@ -119,7 +119,7 @@
     "react": "^19.2.7",
     "react-day-picker": "^10.0.1",
     "react-dom": "^19.2.7",
-    "react-dropzone": "^15.0.0",
+    "react-dropzone": "^16.0.0",
     "react-easy-crop": "^6.1.0",
     "react-force-graph-2d": "^1.29.1",
     "react-hook-form": "^7.81.0",
