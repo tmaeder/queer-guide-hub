@@ -985,7 +985,9 @@
       "pending_other": "{{count}} 项更改待同步"
     },
     "inbox": {
-      "openThread": "在聊天中核对"
+      "openThread": "在聊天中核对",
+      "forwardHint": "[ZH] Forward Booking.com, Airbnb or airline confirmations to {{address}} — they appear in your Travel Inbox, ready to add to a trip. Or paste one here to add it straight to this trip.",
+      "forwardHintNoAddress": "[ZH] Forward booking confirmations to your queer.guide address and they appear in your Travel Inbox. Or paste one here to add it straight to this trip."
     }
   },
   "auth": {
@@ -2303,6 +2305,13 @@
         "title": "私信",
         "body": "有人给我发消息时通知我。"
       }
+    },
+    "forwarding": {
+      "title": "[ZH] Your queer.guide email",
+      "description": "[ZH] Mail sent to your address appears in your inbox. Forward booking confirmations (Booking.com, Airbnb, Lufthansa and more) and they also show up as trip cards awaiting your approval.",
+      "copy": "[ZH] Copy address",
+      "openInbox": "[ZH] Open inbox",
+      "claimFirst": "[ZH] Choose a username above to activate your address."
     }
   },
   "map": {

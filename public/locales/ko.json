@@ -985,7 +985,9 @@
       "pending_other": "동기화 대기 중인 변경 {{count}}건"
     },
     "inbox": {
-      "openThread": "채팅에서 검토"
+      "openThread": "채팅에서 검토",
+      "forwardHint": "[KO] Forward Booking.com, Airbnb or airline confirmations to {{address}} — they appear in your Travel Inbox, ready to add to a trip. Or paste one here to add it straight to this trip.",
+      "forwardHintNoAddress": "[KO] Forward booking confirmations to your queer.guide address and they appear in your Travel Inbox. Or paste one here to add it straight to this trip."
     }
   },
   "auth": {
@@ -2303,6 +2305,13 @@
         "title": "다이렉트 메시지",
         "body": "누군가 메시지를 보내면 알림."
       }
+    },
+    "forwarding": {
+      "title": "[KO] Your queer.guide email",
+      "description": "[KO] Mail sent to your address appears in your inbox. Forward booking confirmations (Booking.com, Airbnb, Lufthansa and more) and they also show up as trip cards awaiting your approval.",
+      "copy": "[KO] Copy address",
+      "openInbox": "[KO] Open inbox",
+      "claimFirst": "[KO] Choose a username above to activate your address."
     }
   },
   "map": {
