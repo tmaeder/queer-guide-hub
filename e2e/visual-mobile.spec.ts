@@ -32,9 +32,11 @@ test.describe('Mobile visual regression', () => {
       const isStatic = STATIC_ROUTES.has(route);
       // The homepage hero + / and /venues featured rails rotate hard between
       // requests (observed ~0.35 above-the-fold diff on / within 15 min of
-      // baseline capture), so those two need a loose gate that still catches a
-      // gross layout break.
-      const HIGH_ROTATION = new Set(['/', '/venues']);
+      // baseline capture), so those need a loose gate that still catches a gross
+      // layout break. /news is the live news feed — the hourly pipeline rotates
+      // its cards past the 0.15 gate within hours of a baseline regen — so it
+      // belongs in the same bucket.
+      const HIGH_ROTATION = new Set(['/', '/venues', '/news']);
       const threshold = HIGH_ROTATION.has(route) ? 0.5 : isStatic ? 0.02 : 0.15;
       await expect(page).toHaveScreenshot(`${route.replace(/\//g, '_') || '_root'}.png`, {
         fullPage: isStatic,
