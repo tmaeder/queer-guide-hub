@@ -76,6 +76,7 @@ export function SearchResultRow({
       id={id}
       role="option"
       aria-selected={focused}
+      aria-label={subtitle ? `${name}, ${subtitle}` : name}
       tabIndex={-1}
       onClick={onClick}
       onMouseEnter={onMouseEnter}

@@ -1,4 +1,3 @@
-import type { DragEvent } from '@xyflow/react';
 import { Search } from 'lucide-react';
 import { resolvePipelineIcon } from './icon-registry';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -19,7 +18,7 @@ interface Props {
   paletteSearch: string;
   setPaletteSearch: (s: string) => void;
   nodeTypesByCategory: Record<string, PipelineNodeType[]>;
-  onDragStart: (event: DragEvent<HTMLDivElement>, nodeType: PipelineNodeType) => void;
+  onDragStart: (event: React.DragEvent<HTMLDivElement>, nodeType: PipelineNodeType) => void;
   onQuickAdd: (nt: PipelineNodeType) => void;
 }
 
@@ -80,7 +79,7 @@ export default function PipelineNodePalette({
                             aria-label={`Add ${nt.display_name} node`}
                             className="flex items-center gap-2 px-2 py-1.5 rounded-element cursor-grab text-sm hover:bg-accent focus:bg-accent focus:outline-none focus:ring-1 focus:ring-ring transition-colors active:cursor-grabbing"
                             draggable
-                            onDragStart={(e) => onDragStart(e as unknown as DragEvent<HTMLDivElement>, nt)}
+                            onDragStart={(e) => onDragStart(e, nt)}
                             onKeyDown={(e) => {
                               if (e.key === 'Enter' || e.key === ' ') {
                                 e.preventDefault();

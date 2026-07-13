@@ -137,18 +137,27 @@ async function fetchOptimizedAssets(
   const map = new Map<string, OptimizedAsset>();
   if (!ids.length) return map;
   try {
-    const { data, error } = await untypedFrom('image_asset_links')
-      .select('entity_id, role, image_assets!inner(optimized_url, thumbnail_url, optimization_status, status)')
-      .eq('entity_type', entityType)
-      .in('entity_id', ids)
-      .eq('image_assets.status', 'active');
-    if (error || !data) return map;
+    // Chunk ids: a zoomed-out viewport can hold 600+ venues, and one giant
+    // in.() filter exceeds PostgREST's URL length limit (400).
+    const CHUNK = 100;
+    const chunks: string[][] = [];
+    for (let i = 0; i < ids.length; i += CHUNK) chunks.push(ids.slice(i, i + CHUNK));
+    const results = await Promise.all(
+      chunks.map((chunk) =>
+        untypedFrom('image_asset_links')
+          .select('entity_id, role, image_assets!inner(optimized_url, thumbnail_url, optimization_status, status)')
+          .eq('entity_type', entityType)
+          .in('entity_id', chunk)
+          .eq('image_assets.status', 'active'),
+      ),
+    );
     type Row = {
       entity_id: string;
       role: string;
       image_assets: { optimized_url: string | null; thumbnail_url: string | null; optimization_status: string | null };
     };
-    for (const row of data as unknown as Row[]) {
+    const data = results.flatMap((r) => (r.error || !r.data ? [] : (r.data as unknown as Row[])));
+    for (const row of data) {
       const ia = row.image_assets;
       if (!ia) continue;
       if (ia.optimization_status !== 'optimized' && ia.optimization_status !== 'cdn_optimized') continue;

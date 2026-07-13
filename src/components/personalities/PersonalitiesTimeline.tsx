@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import type { Personality } from '@/hooks/usePersonalities';
+import { formatProfession } from '@/lib/professionDisplay';
 
 interface PersonalitiesTimelineProps {
   personalities: Personality[];
@@ -102,7 +103,7 @@ export function PersonalitiesTimeline({ personalities }: PersonalitiesTimelinePr
                         <div className="text-xs font-medium truncate">{p.name}</div>
                         <div className="text-xs2 text-muted-foreground truncate">
                           {year ?? ''}
-                          {p.profession ? `${year ? ' · ' : ''}${p.profession}` : ''}
+                          {p.profession ? `${year ? ' · ' : ''}${formatProfession(p.profession)}` : ''}
                         </div>
                       </div>
                     </LocalizedLink>

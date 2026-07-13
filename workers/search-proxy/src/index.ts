@@ -334,7 +334,18 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 
 	const effectiveQ = rewrite?.q_en || q;
 	const mergedFilters: ValidatedFilters = { ...filters };
-	if (rewrite?.city && !mergedFilters.city && !mergedFilters.location) mergedFilters.city = rewrite.city;
+	// Only trust an LLM-extracted city when the user actually typed it (in the
+	// original or translated query). The model hallucinates associations —
+	// "rock hudson" → city "new york" — and a hallucinated city becomes a HARD
+	// SQL filter that excludes the real result entirely (and the bad rewrite is
+	// KV-cached for 30 days). Substring check is deterministic and keeps the
+	// legit "bars in new york" extraction working.
+	const rewriteCity = rewrite?.city ?? undefined;
+	const rewriteCityTyped =
+		!!rewriteCity &&
+		(q.toLowerCase().includes(rewriteCity.toLowerCase()) ||
+			effectiveQ.toLowerCase().includes(rewriteCity.toLowerCase()));
+	if (rewriteCityTyped && !mergedFilters.city && !mergedFilters.location) mergedFilters.city = rewriteCity;
 	// Normalise type/types: collapse `type` into `types` for downstream code.
 	// Note: rewrite.type_hint is intentionally NOT used to narrow indexes.
 	// Doing so previously caused single-word city queries ("berlin") to be

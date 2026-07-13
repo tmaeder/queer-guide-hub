@@ -2875,7 +2875,8 @@
       "conversionTherapy": "Terapia de conversión",
       "intersex": "Integridad corporal intersexual",
       "ilgaLink": "ILGA World Database"
-    }
+    },
+    "planTripHighRisk": "[ES] Plan carefully — safety briefing included"
   },
   "inbox": {
     "title": "Bandeja de entrada",
@@ -3365,5 +3366,30 @@
     "going": "[ES] going",
     "friendsSaved": "[ES] friends saved",
     "inTrips": "[ES] in trips"
+  },
+  "discovery": {
+    "nextLeg": {
+      "risk": "[ES] Legal risk"
+    }
+  },
+  "safety": {
+    "gated": {
+      "privacy": "[ES] An account is free and private: your profile is never shown to other visitors unless you choose, and we never share what you view."
+    }
+  },
+  "connections": {
+    "title": "[ES] Connections",
+    "subtitle": "[ES] Explore how places, events and people on queer.guide relate to each other.",
+    "hint": "[ES] Click a card to expand its connections. Drag to rearrange, scroll to zoom. The arrow opens the detail page.",
+    "mobileHint": "[ES] Closest connections first. Re-center to explore from another entity.",
+    "stats": "[ES] {{nodes}} entities, {{links}} links",
+    "open": "[ES] Open {{title}}",
+    "openShort": "[ES] Open",
+    "recenter": "[ES] Connections",
+    "error": "[ES] Could not load connections. Please try again later.",
+    "emptyTitle": "[ES] Pick a starting point",
+    "emptyDescription": "[ES] Open any venue, event, city or person and use its Connections button to explore from there.",
+    "emptyCta": "[ES] Search the guide",
+    "explore": "[ES] Explore connections"
   }
 }

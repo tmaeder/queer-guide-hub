@@ -106,10 +106,9 @@ const Events = () => {
   return (
     <div className="min-h-screen">
       <PageHero
-        eyebrow={t('pages.events.eyebrow', 'Happening')}
         title={t('pages.events.title', 'Events.')}
         lede={t('pages.events.subtitle', 'Community events in your area')}
-        primaryCta={{ label: t('pages.events.planTrip', 'Plan a trip'), href: '/travel' }}
+        primaryCta={{ label: t('pages.events.submitEvent', 'Add an event'), href: '/submit' }}
         size="md"
       />
       <div className="container mx-auto px-4 py-8 md:py-12">

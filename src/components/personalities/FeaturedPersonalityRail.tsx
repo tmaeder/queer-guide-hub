@@ -4,6 +4,7 @@ import { useFeaturedPersonalities, type Personality } from '@/hooks/usePersonali
 import { useEntityImageAssets } from '@/hooks/useEntityImageAssets';
 import { resolveImageUrl } from '@/utils/resolveImageUrl';
 import { buildCfSrcSet } from '@/utils/cloudflareOptimizations';
+import { formatProfession } from '@/lib/professionDisplay';
 
 function getInitials(name: string) {
   return name
@@ -41,7 +42,7 @@ function FeaturedItem({
   return (
     <LocalizedLink
       to={href}
-      aria-label={`${p.name}${p.profession ? ', ' + p.profession : ''}`}
+      aria-label={`${p.name}${p.profession ? ', ' + formatProfession(p.profession) : ''}`}
       className="flex-none w-40 block transition-opacity hover:opacity-80 group no-underline"
       style={{ scrollSnapAlign: 'start', color: 'inherit' }}
     >
@@ -79,7 +80,7 @@ function FeaturedItem({
         {p.name}
       </p>
       {p.profession && (
-        <p className="text-xs text-muted-foreground text-center truncate">{p.profession}</p>
+        <p className="text-xs text-muted-foreground text-center truncate">{formatProfession(p.profession)}</p>
       )}
     </LocalizedLink>
   );

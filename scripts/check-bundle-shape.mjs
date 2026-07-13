@@ -43,8 +43,11 @@ const PUBLIC_ROUTE_LIMITS = {
 };
 
 // Strings that must never appear in the eagerly-loaded `index-*` chunks.
-// xyflow and PipelineBuilder are admin-only; if they leak, an import path
-// regression is dragging the workflow builder into every page load.
+// xyflow must never be in the entry shell — it ships only in its own
+// route-level lazy chunk (admin pipeline builder + the public
+// /explore/connections explorer). PipelineBuilder itself stays admin-only;
+// if either leaks here, an import-path regression is dragging the flow
+// canvas into every page load.
 const FORBIDDEN_IN_PUBLIC = ['xyflow', 'PipelineBuilder', 'WorkflowDashboard'];
 
 let failed = false;
@@ -64,7 +67,14 @@ for (const f of files) {
 
 const indexChunks = files.filter((f) => f.startsWith('index-') && f.endsWith('.js'));
 for (const f of indexChunks) {
-  const contents = readFileSync(join(dist, f), 'utf8');
+  // Strip asset-URL references first: the entry legitimately holds the lazy
+  // dependency map ("assets/css/xyflow-*.css" etc.) for route-level dynamic
+  // imports. Those strings are metadata, not code — actual code leakage is
+  // still caught here (module source mentions) and by the closure walk below.
+  const contents = readFileSync(join(dist, f), 'utf8').replace(
+    /assets\/(?:js|css)\/[\w.-]+/g,
+    '',
+  );
   for (const banned of FORBIDDEN_IN_PUBLIC) {
     if (contents.includes(banned)) {
       console.error(`::error::Public chunk ${f} contains forbidden string "${banned}"`);

@@ -17,8 +17,9 @@
 //   REPORT_DIR (default: "reports")
 //   LOOKBACK_DAYS (default: 7)
 //
-// Exits 0 on success; 78 (EX_CONFIG) when credentials are missing so cron runs
-// don't page on first deploy; non-zero on any other failure.
+// Exits 0 on success AND when credentials are missing (a skip is not a
+// failure — GitHub treats any non-zero exit as red, which kept the weekly
+// workflow permanently failing); non-zero on any other failure.
 
 import { writeFile, mkdir } from 'node:fs/promises';
 import { createSign } from 'node:crypto';
@@ -31,7 +32,7 @@ const LOOKBACK_DAYS = Number(process.env.LOOKBACK_DAYS ?? 7);
 if (!KEY || !PROPERTY) {
   console.error('Search Console reporting skipped: GOOGLE_SERVICE_ACCOUNT_KEY or SEARCH_CONSOLE_PROPERTY not set.');
   console.error('To enable: provision a service-account key, grant it Full access on the GSC property, and set both secrets.');
-  process.exit(78);
+  process.exit(0);
 }
 
 const TODAY = new Date();

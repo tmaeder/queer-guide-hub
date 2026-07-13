@@ -4,6 +4,8 @@
  */
 
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { Waypoints } from "lucide-react";
 import { LocalizedLink } from "@/components/routing/LocalizedLink";
 import { detailHref } from "@/lib/searchRoutes";
 import { fetchSimilar } from "@/lib/searchClient";
@@ -21,6 +23,8 @@ interface Props {
 	entity: Entity;
 	limit?: number;
 	title?: string;
+	/** Display name of the source entity — labels the center node in /explore/connections. */
+	entityTitle?: string;
 	className?: string;
 	/**
 	 * Restrict results to specific content types. Default behavior keeps the
@@ -50,7 +54,8 @@ interface SimItem {
 	metadata: { title?: string; city?: string; country?: string; category?: string; slug?: string; image_url?: string; optimized_url?: string | null; thumbnail_url?: string | null; tags?: string[] };
 }
 
-export function SimilarItems({ entity, limit = 6, title = "More like this", className, contentTypes }: Props) {
+export function SimilarItems({ entity, limit = 6, title = "More like this", entityTitle, className, contentTypes }: Props) {
+	const { t } = useTranslation();
 	const [items, setItems] = useState<SimItem[] | null>(null);
 	const [error, setError] = useState(false);
 	const trackClick = useTrackClick();
@@ -101,7 +106,16 @@ export function SimilarItems({ entity, limit = 6, title = "More like this", clas
 	return (
 		<ScrollReveal direction="up">
 		<section className={className} aria-label={title}>
-			<h2 className="text-title font-semibold mb-4">{title}</h2>
+			<div className="flex items-baseline justify-between gap-4 mb-4">
+				<h2 className="text-title font-semibold">{title}</h2>
+				<LocalizedLink
+					to={`/explore/connections?type=${encodeURIComponent(entity.type)}&id=${encodeURIComponent(entity.id)}${entityTitle ? `&title=${encodeURIComponent(entityTitle)}` : ''}`}
+					className="text-13 text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-1 shrink-0"
+				>
+					<Waypoints className="h-3.5 w-3.5" aria-hidden="true" />
+					{t("connections.explore")}
+				</LocalizedLink>
+			</div>
 			<ScrollArea className="w-full whitespace-nowrap">
 				<SkeletonCrossfade
 					loading={!items}

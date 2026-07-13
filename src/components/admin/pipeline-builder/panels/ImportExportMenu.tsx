@@ -10,7 +10,7 @@ import {
   DropdownMenuLabel,
 } from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
-import type { Node, Edge } from '@xyflow/react';
+import { isBaseNode, type AppNode, type AppEdge } from '../types';
 
 export interface PipelineExport {
   version: 1;
@@ -28,28 +28,28 @@ export interface PipelineExport {
 }
 
 interface ImportExportMenuProps {
-  nodes: Node[];
-  edges: Edge[];
+  nodes: AppNode[];
+  edges: AppEdge[];
   pipelineName: string;
   pipelineDescription?: string;
   onImport: (data: PipelineExport) => void;
 }
 
-function serialize(nodes: Node[], edges: Edge[], name: string, description?: string): PipelineExport {
+function serialize(nodes: AppNode[], edges: AppEdge[], name: string, description?: string): PipelineExport {
   return {
     version: 1,
     name,
     description,
     nodes: nodes.map(n => {
-      const d = (n.data || {}) as Record<string, unknown>;
+      const d = isBaseNode(n) ? n.data : undefined;
       return {
         id: n.id,
-        type: (d.nodeTypeSlug as string) || n.type || '',
+        type: d?.nodeTypeSlug || n.type || '',
         position: n.position,
         data: {
-          label: d.label as string,
-          config: (d.config as Record<string, unknown>) || {},
-          nodeTypeSlug: d.nodeTypeSlug as string,
+          label: d?.label,
+          config: d?.config || {},
+          nodeTypeSlug: d?.nodeTypeSlug,
         },
       };
     }),
@@ -59,7 +59,7 @@ function serialize(nodes: Node[], edges: Edge[], name: string, description?: str
       target: e.target,
       sourceHandle: e.sourceHandle || undefined,
       targetHandle: e.targetHandle || undefined,
-      condition: (e.data as { condition?: string })?.condition,
+      condition: e.data?.condition,
     })),
     exported_at: new Date().toISOString(),
   };

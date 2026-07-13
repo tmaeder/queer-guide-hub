@@ -18,8 +18,8 @@ vi.mock('../../icon-registry', () => ({ resolvePipelineIcon: () => Box }));
 import FindNodePalette from '../FindNodePalette';
 
 const nodes = [
-  { id: 'n1', data: { label: 'First Node', nodeTypeSlug: 'rss' }, position: { x: 0, y: 0 }, width: 200, height: 80 },
-  { id: 'n2', data: { label: 'Second Node', nodeTypeSlug: 'wand', status: 'completed' } },
+  { id: 'n1', type: 'baseNode', data: { label: 'First Node', nodeTypeSlug: 'rss' }, position: { x: 0, y: 0 }, width: 200, height: 80 },
+  { id: 'n2', type: 'baseNode', data: { label: 'Second Node', nodeTypeSlug: 'wand', status: 'completed' } },
 ] as never;
 
 describe('FindNodePalette', () => {

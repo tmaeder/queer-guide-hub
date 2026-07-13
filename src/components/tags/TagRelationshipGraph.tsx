@@ -41,10 +41,47 @@ interface ForceLink extends LinkObject {
   type: string;
 }
 
-// Monochrome neutral node — the former indigo was removed in the monochrome
-// strip. Concrete hex is required by the canvas 2D API (react-force-graph),
-// which can't read CSS custom properties; this file stays on the allowlist.
-const NODE_COLOR = '#737373';
+// The canvas 2D API can't read CSS custom properties directly, so we resolve
+// the design tokens to concrete colors once per theme change (documentElement
+// class flips light/dark) and hand the canvas painters plain color strings.
+interface CanvasPalette {
+  node: string;
+  nodeHover: string;
+  nodeStroke: string;
+  hoverStroke: string;
+  labelBg: string;
+  labelText: string;
+  /** raw hsl triplet for links — alpha is applied per-link by score */
+  linkTriplet: string;
+}
+
+function readCanvasPalette(): CanvasPalette {
+  const styles = typeof window !== 'undefined' ? getComputedStyle(document.documentElement) : null;
+  const raw = (name: string, fallback: string) => styles?.getPropertyValue(name).trim() || fallback;
+  const mutedFg = raw('--muted-foreground', '0 0% 45%');
+  const background = raw('--background', '0 0% 100%');
+  const foreground = raw('--foreground', '0 0% 4%');
+  return {
+    node: `hsl(${mutedFg})`,
+    nodeHover: `hsl(${background})`,
+    nodeStroke: `hsl(${background} / 0.3)`,
+    hoverStroke: `hsl(${mutedFg})`,
+    labelBg: `hsl(${foreground} / 0.7)`,
+    labelText: `hsl(${background})`,
+    linkTriplet: mutedFg,
+  };
+}
+
+/** Re-resolve token colors whenever the theme class on <html> changes. */
+function useCanvasPalette(): CanvasPalette {
+  const [palette, setPalette] = useState(readCanvasPalette);
+  useEffect(() => {
+    const observer = new MutationObserver(() => setPalette(readCanvasPalette()));
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    return () => observer.disconnect();
+  }, []);
+  return palette;
+}
 
 export default function TagRelationshipGraph({
   onTagClick,
@@ -52,6 +89,7 @@ export default function TagRelationshipGraph({
   categories = [],
 }: TagRelationshipGraphProps) {
   const isMobile = useIsMobile();
+  const palette = useCanvasPalette();
   const graphRef = useRef<ForceGraphMethods | undefined>();
   const observerRef = useRef<ResizeObserver | null>(null);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
@@ -108,18 +146,24 @@ export default function TagRelationshipGraph({
   const forceData = useMemo(() => {
     if (!graphData) return { nodes: [], links: [] };
 
+    // Category filtering can leave edges pointing at tags that were filtered
+    // out of `nodes`; react-force-graph throws "node not found: <id>" on those.
+    const nodeIds = new Set(graphData.nodes.map((n) => n.id));
+
     return {
       nodes: graphData.nodes.map((n) => ({
         ...n,
         id: n.id,
         val: Math.log((n.usage_count || 0) + 2) * 2,
       })),
-      links: graphData.edges.map((e) => ({
-        source: e.source,
-        target: e.target,
-        score: e.score,
-        type: e.type,
-      })),
+      links: graphData.edges
+        .filter((e) => nodeIds.has(e.source) && nodeIds.has(e.target))
+        .map((e) => ({
+          source: e.source,
+          target: e.target,
+          score: e.score,
+          type: e.type,
+        })),
     };
   }, [graphData]);
 
@@ -151,9 +195,9 @@ export default function TagRelationshipGraph({
 
       ctx.beginPath();
       ctx.arc(n.x, n.y, size, 0, 2 * Math.PI);
-      ctx.fillStyle = isHovered ? '#ffffff' : NODE_COLOR;
+      ctx.fillStyle = isHovered ? palette.nodeHover : palette.node;
       ctx.fill();
-      ctx.strokeStyle = isHovered ? NODE_COLOR : 'rgba(255,255,255,0.3)';
+      ctx.strokeStyle = isHovered ? palette.hoverStroke : palette.nodeStroke;
       ctx.lineWidth = isHovered ? 2 : 0.5;
       ctx.stroke();
 
@@ -167,7 +211,7 @@ export default function TagRelationshipGraph({
         const textWidth = ctx.measureText(text).width;
         const padding = 2 / globalScale;
 
-        ctx.fillStyle = 'rgba(0,0,0,0.7)';
+        ctx.fillStyle = palette.labelBg;
         ctx.fillRect(
           n.x - textWidth / 2 - padding,
           n.y + size + 2 / globalScale,
@@ -175,18 +219,18 @@ export default function TagRelationshipGraph({
           fontSize + padding * 2,
         );
 
-        ctx.fillStyle = '#ffffff';
+        ctx.fillStyle = palette.labelText;
         ctx.fillText(text, n.x, n.y + size + 2 / globalScale + padding);
       }
     },
-    [hoveredNode],
+    [hoveredNode, palette],
   );
 
   const linkColor = useCallback((link: LinkObject) => {
     const l = link as ForceLink;
     const alpha = Math.min(0.8, (l.score || 0.3) * 1.2);
-    return `rgba(150, 150, 150, ${alpha})`;
-  }, []);
+    return `hsl(${palette.linkTriplet} / ${alpha})`;
+  }, [palette]);
 
   const linkWidth = useCallback((link: LinkObject) => {
     const l = link as ForceLink;

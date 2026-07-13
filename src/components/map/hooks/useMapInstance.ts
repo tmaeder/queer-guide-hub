@@ -1,7 +1,8 @@
-import { useCallback, useEffect, type MutableRefObject, type Dispatch, type SetStateAction } from 'react';
+import { useCallback, useEffect, useRef, type MutableRefObject, type Dispatch, type SetStateAction } from 'react';
 import { type Root } from 'react-dom/client';
 import maplibregl from 'maplibre-gl';
-import { mapStyle } from '@/config/mapStyle';
+import { getMapStyle, type BasemapMode } from '@/config/mapStyle';
+import { isWebglSupported } from '@/lib/webglSupport';
 import { loadGlyphImages } from '@/components/map/mapGlyphs';
 import {
   DONUT_PREFIX,
@@ -19,6 +20,8 @@ interface UseMapInstanceParams {
   initialZoom?: number;
   viewport: MapViewport;
   mapReady: boolean;
+  /** Resolved app theme — the basemap follows it (light/dark Protomaps flavor). */
+  basemapMode: BasemapMode;
   cooperativeGestures: boolean;
   linkToFullMap?: string;
   /** Add MapLibre's native NavigationControl. MapShell passes false and mounts
@@ -45,8 +48,9 @@ interface UseMapInstanceParams {
  * load/movestart/moveend handlers, flies to the initial viewport, and tears the
  * whole thing down (cancelling rAF, unmounting the popup root, clearing spider
  * markers, resetting coordination refs). Extracted verbatim from ExploreMap —
- * behavior-preserving. The init effect keeps its run-once `[]` deps; the shared
- * coordination refs stay component-owned and are threaded in.
+ * behavior-preserving. The init effect re-runs only on `basemapMode` changes
+ * (theme toggle → recreate with the matching Protomaps flavor, camera kept);
+ * the shared coordination refs stay component-owned and are threaded in.
  */
 export function useMapInstance({
   containerRef,
@@ -55,6 +59,7 @@ export function useMapInstance({
   initialZoom,
   viewport,
   mapReady,
+  basemapMode,
   cooperativeGestures,
   linkToFullMap,
   showNativeNav,
@@ -81,32 +86,32 @@ export function useMapInstance({
     });
   }, []);
 
+  // Camera of the previous map instance — captured on teardown so a
+  // basemap-mode recreate (theme toggle) resumes exactly where the user was.
+  const lastCameraRef = useRef<{ center: [number, number]; zoom: number } | null>(null);
+
   // ── Map initialisation ───────────────────────────────────────────────────
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
 
     // Graceful WebGL check — avoid hard crash when GPU is unavailable
-    const testCanvas = document.createElement('canvas');
-    const gl = testCanvas.getContext('webgl2') || testCanvas.getContext('webgl');
-    if (!gl) {
-      console.warn('WebGL not available — map disabled');
-      return;
-    }
+    if (!isWebglSupported()) return;
 
     const map = new maplibregl.Map({
       container: containerRef.current,
-      style: mapStyle,
-      center: initialCenter ?? viewport.center,
-      zoom: initialZoom ?? viewport.zoom,
+      style: getMapStyle(basemapMode),
+      center: lastCameraRef.current?.center ?? initialCenter ?? viewport.center,
+      zoom: lastCameraRef.current?.zoom ?? initialZoom ?? viewport.zoom,
       attributionControl: false,
       // Embedded above page content → let the page scroll; zoom needs a modifier.
       cooperativeGestures,
     });
-    // Assign immediately so the early-return at the top of this effect
-    // bails on the next render rather than re-initialising the map.
-    // `mapReady` (toggled in `load`) still gates marker / layer
-    // rendering.
-    mapRef.current = map;
+    // mapRef is published inside `load` (below), NOT here. On a basemap-mode
+    // recreate (theme toggle) the commit that constructs the replacement map
+    // still renders with the previous `mapReady=true`, so layer effects with
+    // unchanged-but-truthy guards would call addSource/addLayer against a
+    // style that is still loading and throw. Keeping mapRef null until `load`
+    // makes every `!mapRef.current` guard hold through that window.
 
     map.addControl(new maplibregl.AttributionControl({ compact: true }), 'bottom-right');
     if (showNativeNav) {
@@ -147,6 +152,7 @@ export function useMapInstance({
     if (linkToFullMap) map.scrollZoom.disable();
 
     map.on('load', () => {
+      mapRef.current = map;
       setMapReady(true);
       // Rasterize category glyphs into map images (safe no-op on failure).
       void loadGlyphImages(map);
@@ -191,6 +197,9 @@ export function useMapInstance({
       // holds NOW (not a mount-time snapshot) that the handle is gone.
       // eslint-disable-next-line react-hooks/exhaustive-deps
       onMapHandleRef.current?.(null);
+      // Remember the camera so a basemap-mode recreate resumes in place.
+      const c = map.getCenter();
+      lastCameraRef.current = { center: [c.lng, c.lat], zoom: map.getZoom() };
       if (pulseRafRef.current) {
         cancelAnimationFrame(pulseRafRef.current);
         pulseRafRef.current = null;
@@ -202,10 +211,15 @@ export function useMapInstance({
       spiderMarkersRef.current = [];
       mapRef.current = null;
       pointLayersAddedRef.current = false;
+      // Gate layer/marker effects until the replacement map fires `load` —
+      // they all key on `mapReady`, which re-flips true and re-adds everything.
+      setMapReady(false);
       map.remove();
     };
+    // Re-runs only when the basemap mode flips (theme toggle) — full teardown +
+    // re-init is the safe way to swap styles without losing custom layers/images.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [basemapMode]);
 
   // Fly to initial viewport once map is ready (e.g. from IP geo)
   useEffect(() => {

@@ -3,7 +3,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Trash2, GitBranch, X } from 'lucide-react';
-import type { Edge } from '@xyflow/react';
+import type { AppEdge } from '../types';
 
 const EXAMPLES = [
   'items_count > 0',
@@ -13,7 +13,7 @@ const EXAMPLES = [
 ];
 
 interface Props {
-  edge: Edge | null;
+  edge: AppEdge | null;
   onClose: () => void;
   onUpdate: (edgeId: string, condition: string) => void;
   onDelete: (edgeId: string) => void;
@@ -26,8 +26,9 @@ export default function EdgeConditionPopover({ edge, onClose, onUpdate, onDelete
 
   useEffect(() => {
     if (edge) {
-      const existing = (edge.data as { condition?: string })?.condition
-        || (edge as unknown as { condition?: string }).condition
+      // Legacy edges loaded from the DB may carry condition at the top level instead of data
+      const existing = edge.data?.condition
+        || (edge as AppEdge & { condition?: string }).condition
         || '';
       // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
       setCondition(existing);
