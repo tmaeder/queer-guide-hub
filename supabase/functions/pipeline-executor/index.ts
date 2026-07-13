@@ -217,7 +217,9 @@ async function handleContinue(
   }
   for (const edge of incomingEdges) {
     const upstreamState = nodeStates[edge.source]
-    if (upstreamState && upstreamState.status !== 'completed' && upstreamState.status !== 'skipped') {
+    // 'failed' counts as done: an untolerated failure fails the whole run (early
+    // exit above), so only tolerated failures (continue_on_error) reach here.
+    if (upstreamState && upstreamState.status !== 'completed' && upstreamState.status !== 'skipped' && upstreamState.status !== 'failed') {
       // Upstream not ready — re-enqueue with delay
       await enqueueStep(supabase, body as PipelineMessage, 10)
       return jsonResponse({ success: true, message: 'Waiting for upstream', waiting_on: edge.source }, 200, req)
@@ -342,56 +344,78 @@ async function handleContinue(
       }, 200, req)
     } else {
       const errorMsg = (result.error as string) || `HTTP ${response.status}`
-      nodeStates[currentNodeId] = {
-        ...nodeStates[currentNodeId],
-        status: 'failed',
-        completed_at: new Date().toISOString(),
-        error: errorMsg,
-        duration_ms: (() => { const s = new Date(nodeStates[currentNodeId].started_at!).getTime(); return Number.isFinite(s) ? Date.now() - s : 0; })(),
-      }
-      await updateNodeStates(supabase, runId, { [currentNodeId]: nodeStates[currentNodeId] })
-
-      // Mark the entire run as failed
-      await supabase
-        .from('pipeline_runs')
-        .update({
-          status: 'failed',
-          error_message: `Node ${currentNodeId} (${edgeFunction}) failed: ${errorMsg}`,
-        })
-        .eq('id', runId)
-
-      // Skip all downstream nodes so they don't hang as 'pending'
-      skipDescendants(nodes, edges, currentNodeId, nodeStates)
-      await updateNodeStates(supabase, runId, nodeStates)
-
-      return jsonResponse({
-        success: false,
-        node: currentNodeId,
-        edge_function: edgeFunction,
-        error: errorMsg,
-      }, 200, req) // 200 so dispatcher doesn't retry the pipeline-executor itself
+      return await handleNodeFailure(supabase, run, nodes, edges, currentNode, nodeStates, errorMsg, edgeFunction, req)
     }
   } catch (error) {
     const errorMsg = (error as Error).name === 'AbortError'
       ? `Timeout after ${pipeline.timeout_seconds || 150}s`
       : (error as Error).message
-
-    nodeStates[currentNodeId] = {
-      ...nodeStates[currentNodeId],
-      status: 'failed',
-      error: errorMsg,
-      completed_at: new Date().toISOString(),
-    }
-    skipDescendants(nodes, edges, currentNodeId, nodeStates)
-    await updateNodeStates(supabase, runId, nodeStates)
-
-    await supabase
-      .from('pipeline_runs')
-      .update({ status: 'failed', error_message: `Node ${currentNodeId} error: ${errorMsg}` })
-      .eq('id', runId)
-
-    return jsonResponse({ success: false, node: currentNodeId, error: errorMsg }, 200, req)
+    return await handleNodeFailure(supabase, run, nodes, edges, currentNode, nodeStates, errorMsg, edgeFunction, req)
   }
+}
+
+/**
+ * Node failure disposition. Nodes with config.continue_on_error (e.g. one
+ * merchant source in a multi-source fan-in) mark themselves failed+tolerated
+ * and let the DAG keep going; everything else fails the whole run.
+ */
+async function handleNodeFailure(
+  supabase: SupabaseClient,
+  run: Record<string, unknown>,
+  nodes: PipelineNode[],
+  edges: PipelineEdge[],
+  currentNode: PipelineNode,
+  nodeStates: Record<string, NodeState>,
+  errorMsg: string,
+  edgeFunction: string,
+  req: Request
+): Promise<Response> {
+  const runId = run.id as string
+  const nodeId = currentNode.id
+  const tolerate = currentNode.data?.config?.continue_on_error === true
+
+  nodeStates[nodeId] = {
+    ...nodeStates[nodeId],
+    status: 'failed',
+    completed_at: new Date().toISOString(),
+    error: errorMsg,
+    ...(tolerate ? { tolerated: true } : {}),
+    duration_ms: (() => { const s = new Date(nodeStates[nodeId].started_at!).getTime(); return Number.isFinite(s) ? Date.now() - s : 0; })(),
+  }
+
+  if (tolerate) {
+    await updateNodeStates(supabase, runId, { [nodeId]: nodeStates[nodeId] })
+    // Keep the run alive — downstream nodes see this node as done (0 items).
+    await advanceToNextNodes(supabase, run, nodes, edges, nodeId, nodeStates)
+    return jsonResponse({
+      success: true,
+      node: nodeId,
+      edge_function: edgeFunction,
+      status: 'failed',
+      tolerated: true,
+      error: errorMsg,
+    }, 200, req)
+  }
+
+  // Mark the entire run as failed
+  await supabase
+    .from('pipeline_runs')
+    .update({
+      status: 'failed',
+      error_message: `Node ${nodeId} (${edgeFunction}) failed: ${errorMsg}`,
+    })
+    .eq('id', runId)
+
+  // Skip all downstream nodes so they don't hang as 'pending'
+  skipDescendants(nodes, edges, nodeId, nodeStates)
+  await updateNodeStates(supabase, runId, nodeStates)
+
+  return jsonResponse({
+    success: false,
+    node: nodeId,
+    edge_function: edgeFunction,
+    error: errorMsg,
+  }, 200, req) // 200 so dispatcher doesn't retry the pipeline-executor itself
 }
 
 // ─── HELPERS ────────────────────────────────────────────────────────────────
@@ -491,10 +515,17 @@ async function advanceToNextNodes(
     })
 
     if (allDone) {
-      const hasFailed = nodes.some(n => nodeStates[n.id]?.status === 'failed')
+      const hasFailed = nodes.some(n => nodeStates[n.id]?.status === 'failed' && !nodeStates[n.id]?.tolerated)
+      const toleratedFailures = nodes.filter(n => nodeStates[n.id]?.status === 'failed' && nodeStates[n.id]?.tolerated)
       await supabase
         .from('pipeline_runs')
-        .update({ status: hasFailed ? 'failed' : 'completed', completed_at: new Date().toISOString() })
+        .update({
+          status: hasFailed ? 'failed' : 'completed',
+          completed_at: new Date().toISOString(),
+          ...(!hasFailed && toleratedFailures.length > 0
+            ? { error_message: `Completed with tolerated failures: ${toleratedFailures.map(n => `${n.id} (${nodeStates[n.id]?.error || 'unknown'})`).join('; ')}` }
+            : {}),
+        })
         .eq('id', run.id as string)
     }
     return

@@ -42,7 +42,19 @@ function makeAdapter(shopDomain: string, sourceSlug: string, currency = 'EUR'): 
     async fetch(config: AdapterConfig): Promise<RawItem[]> {
       const page = Number(config.offset ?? 1)
       const url = `https://${shopDomain}/products.json?limit=${PER_PAGE}&page=${page}`
-      const res = await fetch(url, { headers: { 'User-Agent': UA, Accept: 'application/json' } })
+      // Per-page timeout: merchants that tarpit datacenter egress (e.g.
+      // ohmyfantasy.com) otherwise hang the fetch until the function hits its
+      // wall-clock limit (HTTP 546) — fail fast with a clear error instead.
+      const ctrl = new AbortController()
+      const timer = setTimeout(() => ctrl.abort(), 20_000)
+      let res: Response
+      try {
+        res = await fetch(url, { headers: { 'User-Agent': UA, Accept: 'application/json' }, signal: ctrl.signal })
+      } catch (err) {
+        throw new Error((err as Error).name === 'AbortError'
+          ? `products.json timeout after 20s for ${shopDomain} (page ${page}) — likely blocking datacenter egress`
+          : (err as Error).message)
+      } finally { clearTimeout(timer) }
       if (!res.ok) {
         if (page === 1) throw new Error(`products.json ${res.status} for ${shopDomain}`)
         return []
@@ -89,6 +101,18 @@ Deno.serve(withErrorReporting('source-shopify-public', async (req) => {
     const shopDomain = (body.shop_domain || body.shopDomain || '').replace(/^https?:\/\//, '').replace(/\/$/, '')
     if (!shopDomain) return jsonResponse(skippedResponse('missing_config', ['shop_domain']), 200, req)
     const sourceSlug = body.source_slug || defaultSlug(shopDomain)
+
+    // Respect the merchant registry: a merchant disabled there (blocked egress,
+    // wiped catalog, …) is skipped no matter who invokes this function.
+    const { data: merchant } = await supabase
+      .from('marketplace_merchants')
+      .select('is_enabled')
+      .eq('shop_domain', shopDomain)
+      .maybeSingle()
+    if (merchant && merchant.is_enabled === false) {
+      return jsonResponse(skippedResponse('merchant_disabled', [shopDomain]), 200, req)
+    }
+
     const currency = typeof body.currency === 'string' && body.currency ? body.currency : 'EUR'
     const adapter = makeAdapter(shopDomain, sourceSlug, currency)
     const maxPages = Number(body.max_pages ?? 40)
