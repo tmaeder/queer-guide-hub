@@ -127,6 +127,15 @@ Deno.serve(async (req) => {
     // Decide fast path: if all work is for venues, use the SQL batch fn.
     const resolvedTarget = targetTable ?? await detectTarget(supabase, pipelineRunId)
 
+    // No target resolvable (e.g. a DAG commit node whose run has no pending
+    // staging rows left). Bail out instead of falling through to the legacy
+    // path — an unfiltered legacy query would grab the GLOBAL oldest pending
+    // rows of ANY entity type and feed them to buildRecord, which rejected
+    // thousands of marketplace backlog rows with schema errors (2026-07).
+    if (!resolvedTarget) {
+      return jsonResponse({ success: true, items: 0, message: 'nothing to commit' }, 200, req)
+    }
+
     if (resolvedTarget === 'venues' && !dryRun) {
       // Run the standard simple commit, then post-process for organizer flagging.
       const cfg = SIMPLE_COMMIT_TARGETS.venues
@@ -249,15 +258,19 @@ Deno.serve(async (req) => {
     // Idempotency: select target_record_id + idempotency_key so we can SKIP
     // items that were already committed in a prior partial run. Without this,
     // a retry after a mid-batch failure can re-insert the same record.
+    // Always scope the legacy path: to the resolved target table (never let it
+    // pick up rows belonging to tables that have dedicated commit RPCs above)
+    // and to the pipeline run when one is given.
     let query = supabase
       .from('ingestion_staging')
       .select('id, normalized_data, enriched_data, target_table, entity_type, source_type, raw_data, target_record_id, idempotency_key, source_name')
       .in('disposition', ['pending'])
       .in('dedup_status', ['unique', 'pending'])
+      .eq('target_table', resolvedTarget)
       .order('created_at', { ascending: true })
       .limit(batchSize)
 
-    if (targetTable)   query = query.eq('target_table', targetTable)
+    if (pipelineRunId) query = query.eq('pipeline_run_id', pipelineRunId)
 
     const { data: items, error } = await query
     if (error) return errorResponse(`load: ${error.message}`, 500, req)
