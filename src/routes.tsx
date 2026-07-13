@@ -554,6 +554,15 @@ export const AppRoutes = () => {
                 <Route path="profession/:slug" element={<ProfessionRedirect />} />
                 <Route path="shop/*" element={<LocalizedRedirect to="/marketplace" />} />
                 <Route path="produkt/:slug" element={<LocalizedRedirect to="/marketplace" />} />
+                <Route path="home" element={<LocalizedRedirect to="/" />} />
+                <Route path="login" element={<Navigate to="/auth" replace />} />
+                <Route path="signin" element={<Navigate to="/auth" replace />} />
+                <Route path="dashboard" element={<LocalizedRedirect to="/hub" />} />
+                <Route path="directory" element={<LocalizedRedirect to="/community" />} />
+                <Route path="users/:slug" element={<SlugAliasRedirect toBase="user" />} />
+                <Route path="wiki/:slug" element={<SlugAliasRedirect toBase="tags" />} />
+                <Route path="europe" element={<LocalizedRedirect to="/cities" />} />
+                <Route path="africa" element={<LocalizedRedirect to="/cities" />} />
                 <Route path="quests" element={<Quests />} />
                 <Route path="quests/:slug" element={<QuestDetail />} />
                 <Route path="tags" element={<Resources />} />
