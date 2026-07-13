@@ -8,7 +8,8 @@ import { useQuery } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { fetchTripMapVenues, fetchTripMapEvents } from '@/hooks/useTripSuggestions';
 import { Button } from '@/components/ui/button';
-import { mapStyle } from '@/config/mapStyle';
+import { getMapStyle } from '@/config/mapStyle';
+import { useTheme } from '@/components/theme/ThemeProvider';
 import { cn } from '@/lib/utils';
 import type { TripPlace, TripDay } from '@/hooks/useTrips';
 import { useVisitedPlaceLookup } from '@/hooks/useVisitedPlaceLookup';
@@ -71,6 +72,7 @@ export function TripMap({ places, days, startDate, endDate }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const markersRef = useRef<maplibregl.Marker[]>([]);
+  const { resolvedTheme } = useTheme();
   const [dayFilter, setDayFilter] = useState<string | null>(null);
   const [showAttractions, setShowAttractions] = useState(true);
   const [showEvents, setShowEvents] = useState(true);
@@ -168,12 +170,13 @@ export function TripMap({ places, days, startDate, endDate }: Props) {
     if (any) mapRef.current.fitBounds(bounds, { padding: 60, maxZoom: 14 });
   };
 
+  // Recreated when the theme flips so the basemap flavor follows it.
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
 
     const map = new maplibregl.Map({
       container: containerRef.current,
-      style: mapStyle,
+      style: getMapStyle(resolvedTheme),
       center: [10, 48],
       zoom: 3,
     });
@@ -185,7 +188,7 @@ export function TripMap({ places, days, startDate, endDate }: Props) {
       map.remove();
       mapRef.current = null;
     };
-  }, []);
+  }, [resolvedTheme]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -361,7 +364,7 @@ export function TripMap({ places, days, startDate, endDate }: Props) {
       setTimeout(fitBounds, 200);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [geoPlaces, dayIndexMap, days, t, visibleVenues, visibleEvents, visitedLookup]);
+  }, [geoPlaces, dayIndexMap, days, t, visibleVenues, visibleEvents, visitedLookup, resolvedTheme]);
 
   if (places.length === 0 && cityIds.length === 0) {
     return (

@@ -17,29 +17,43 @@ const TILE_URL = 'https://protomaps-tiles.maeder-tobiassimon.workers.dev/planet/
 const ASSETS_BASE =
   import.meta.env.VITE_BASEMAP_ASSETS_URL ?? 'https://protomaps.github.io/basemaps-assets';
 const GLYPHS_URL = `${ASSETS_BASE}/fonts/{fontstack}/{range}.pbf`;
-const SPRITE_URL = `${ASSETS_BASE}/sprites/v4/light`;
+
+/** Basemap flavor — follows the app's resolved theme. */
+export type BasemapMode = 'light' | 'dark';
+
+const styleCache: Partial<Record<BasemapMode, StyleSpecification>> = {};
 
 /**
- * Shared MapLibre style for all map components.
- * Uses Protomaps basemap tiles served from Cloudflare R2.
+ * Shared MapLibre style for all map components, in the given theme flavor.
+ * Uses Protomaps basemap tiles served from Cloudflare R2. Cached per mode —
+ * `layers()` builds a large spec, so don't rebuild it per map instance.
  */
-export const mapStyle: StyleSpecification = {
-  version: 8,
-  glyphs: GLYPHS_URL,
-  sprite: SPRITE_URL,
-  sources: {
-    protomaps: {
-      type: 'vector',
-      tiles: [TILE_URL],
-      maxzoom: 15, // Full planet z0-15 (20260301 build)
-      // Protomaps license requires attribution alongside OpenStreetMap.
-      attribution:
-        '&copy; <a href="https://protomaps.com">Protomaps</a> ' +
-        '&copy; <a href="https://openstreetmap.org">OpenStreetMap</a>',
+export function getMapStyle(mode: BasemapMode = 'light'): StyleSpecification {
+  const cached = styleCache[mode];
+  if (cached) return cached;
+  const style: StyleSpecification = {
+    version: 8,
+    glyphs: GLYPHS_URL,
+    sprite: `${ASSETS_BASE}/sprites/v4/${mode}`,
+    sources: {
+      protomaps: {
+        type: 'vector',
+        tiles: [TILE_URL],
+        maxzoom: 15, // Full planet z0-15 (20260301 build)
+        // Protomaps license requires attribution alongside OpenStreetMap.
+        attribution:
+          '&copy; <a href="https://protomaps.com">Protomaps</a> ' +
+          '&copy; <a href="https://openstreetmap.org">OpenStreetMap</a>',
+      },
     },
-  },
-  layers: layers('protomaps', namedFlavor('light'), { lang: 'en' }),
-};
+    layers: layers('protomaps', namedFlavor(mode), { lang: 'en' }),
+  };
+  styleCache[mode] = style;
+  return style;
+}
+
+/** Light-flavor style — legacy alias; theme-aware surfaces use getMapStyle(). */
+export const mapStyle: StyleSpecification = getMapStyle('light');
 
 /**
  * Fog/atmosphere settings for globe projection maps.
