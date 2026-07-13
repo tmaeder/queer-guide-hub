@@ -10,6 +10,7 @@ import { fetchTripMapVenues, fetchTripMapEvents } from '@/hooks/useTripSuggestio
 import { Button } from '@/components/ui/button';
 import { getMapStyle } from '@/config/mapStyle';
 import { useTheme } from '@/components/theme/ThemeProvider';
+import { isWebglSupported } from '@/lib/webglSupport';
 import { cn } from '@/lib/utils';
 import type { TripPlace, TripDay } from '@/hooks/useTrips';
 import { useVisitedPlaceLookup } from '@/hooks/useVisitedPlaceLookup';
@@ -173,6 +174,7 @@ export function TripMap({ places, days, startDate, endDate }: Props) {
   // Recreated when the theme flips so the basemap flavor follows it.
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
+    if (!isWebglSupported()) return;
 
     const map = new maplibregl.Map({
       container: containerRef.current,

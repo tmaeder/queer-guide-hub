@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, type MutableRefObject, type Dispatch, t
 import { type Root } from 'react-dom/client';
 import maplibregl from 'maplibre-gl';
 import { getMapStyle, type BasemapMode } from '@/config/mapStyle';
+import { isWebglSupported } from '@/lib/webglSupport';
 import { loadGlyphImages } from '@/components/map/mapGlyphs';
 import {
   DONUT_PREFIX,
@@ -94,12 +95,7 @@ export function useMapInstance({
     if (!containerRef.current || mapRef.current) return;
 
     // Graceful WebGL check — avoid hard crash when GPU is unavailable
-    const testCanvas = document.createElement('canvas');
-    const gl = testCanvas.getContext('webgl2') || testCanvas.getContext('webgl');
-    if (!gl) {
-      console.warn('WebGL not available — map disabled');
-      return;
-    }
+    if (!isWebglSupported()) return;
 
     const map = new maplibregl.Map({
       container: containerRef.current,

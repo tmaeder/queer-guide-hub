@@ -13,6 +13,7 @@ import { Loader2 } from 'lucide-react';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useTheme } from '@/components/theme/ThemeProvider';
 import { getMapStyle } from '@/config/mapStyle';
+import { isWebglSupported } from '@/lib/webglSupport';
 import { LAYER_COLORS, type MapMarker } from '@/hooks/useExploreMapData';
 import { renderPopupHTML } from '@/components/map/ExploreMapPopup';
 import { useMapBoundaryLayers, type BoundaryLayerConfig } from '@/hooks/useMapBoundaryLayers';
@@ -190,6 +191,7 @@ export const EntityMap = ({
   // Init map
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
+    if (!isWebglSupported()) return;
 
     const map = new maplibregl.Map({
       container: containerRef.current,

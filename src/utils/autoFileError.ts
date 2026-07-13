@@ -72,12 +72,28 @@ interface FileErrorArgs {
   extra?: Record<string, unknown>;
 }
 
+// Our own e2e/CI browsers and crawlers file the bulk of board noise; their
+// crashes are either self-inflicted (no WebGL/canvas in headless) or stale-chunk
+// bot re-reports. Real-user environments never match these.
+const NON_HUMAN_UA_RE = /HeadlessChrome|Playwright|Lighthouse|PhantomJS|Electron|bot|spider|crawl|slurp|bingpreview|facebookexternalhit/i;
+
+// Stale-chunk failures self-heal via lazyRetry's one-time reload for real
+// users; only bots (no sessionStorage persistence) keep re-reporting them.
+const BENIGN_MESSAGE_RE = /stale\/partial chunk|Importing a module script failed|Failed to fetch dynamically imported module|error loading dynamically imported module|'text\/html' is not a valid JavaScript MIME type/i;
+
 /** Fire-and-forget. Safe to call from any error path — never throws. */
 export function fileError({ kind, error, routePath, extra }: FileErrorArgs): void {
   try {
     // Don't pollute the board from local dev / preview builds.
     if (import.meta.env.DEV) return;
     if (typeof window === 'undefined') return;
+    // Skip non-production origins (vite preview, e2e webServer, tunnels).
+    const host = window.location.hostname;
+    if (host === 'localhost' || host === '127.0.0.1' || host.endsWith('.local')) return;
+    // Skip automated browsers/crawlers — they dominate board noise.
+    if (NON_HUMAN_UA_RE.test(navigator.userAgent) || navigator.webdriver) return;
+    // Skip known-benign, self-healing chunk-staleness errors (Sentry still sees them).
+    if (kind !== 'not_found' && BENIGN_MESSAGE_RE.test(error?.message || '')) return;
 
     const template = routeTemplate(routePath || '/');
     const errName = error?.name || (kind === 'not_found' ? 'NotFound' : 'Error');

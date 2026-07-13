@@ -5,6 +5,7 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useTheme } from '@/components/theme/ThemeProvider';
 import { getMapStyle } from '@/config/mapStyle';
+import { isWebglSupported } from '@/lib/webglSupport';
 import { useCountryCentroids, type CountryCentroid } from '@/hooks/useCountryCentroids';
 import type { Personality } from '@/hooks/usePersonalities';
 
@@ -117,6 +118,7 @@ export function PersonalitiesMap({ personalities, height = 600 }: PersonalitiesM
   // Initialize map — recreated when the theme flips so the basemap follows it.
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
+    if (!isWebglSupported()) return;
     const map = new maplibregl.Map({
       container: containerRef.current,
       style: getMapStyle(resolvedTheme),

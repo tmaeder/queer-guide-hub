@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { MapPin } from "lucide-react";
 import { getMapStyle } from '@/config/mapStyle';
 import { useTheme } from '@/components/theme/ThemeProvider';
+import { isWebglSupported } from '@/lib/webglSupport';
 
 interface CountryData {
   country: string;
@@ -85,6 +86,7 @@ export const UmamiMap = ({ countryData, loading = false }: UmamiMapProps) => {
   // Initialize map — recreated when the theme flips so the basemap follows it.
   useEffect(() => {
     if (!mapContainer.current || map.current) return;
+    if (!isWebglSupported()) return;
 
     const mapInstance = new maplibregl.Map({
       container: mapContainer.current,

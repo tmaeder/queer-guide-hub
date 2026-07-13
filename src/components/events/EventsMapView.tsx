@@ -6,6 +6,7 @@ import { Loader2 } from 'lucide-react';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useTheme } from '@/components/theme/ThemeProvider';
 import { getMapStyle } from '@/config/mapStyle';
+import { isWebglSupported } from '@/lib/webglSupport';
 import type { Database } from '@/integrations/supabase/types';
 import { format } from 'date-fns';
 
@@ -36,6 +37,10 @@ export function EventsMapView({ events, height = 600, className }: EventsMapView
   // Init map — recreated when the theme flips so the basemap flavor follows it.
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
+    if (!isWebglSupported()) {
+      setMapError(true);
+      return;
+    }
 
     const map = new maplibregl.Map({
       container: containerRef.current,

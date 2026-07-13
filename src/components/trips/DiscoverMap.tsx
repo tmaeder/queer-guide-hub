@@ -3,6 +3,7 @@ import maplibregl, { type Map as MaplibreMap } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { getMapStyle } from '@/config/mapStyle';
 import { useTheme } from '@/components/theme/ThemeProvider';
+import { isWebglSupported } from '@/lib/webglSupport';
 import type { DiscoverableTrip } from '@/hooks/useDiscoverableTrips';
 import { PublicTripCard } from '@/components/trips/PublicTripCard';
 
@@ -50,6 +51,7 @@ export function DiscoverMap({ trips, height = 480 }: Props) {
   // Mount map — recreated when the theme flips so the basemap flavor follows it.
   useEffect(() => {
     if (!mapContainer.current || mapRef.current) return;
+    if (!isWebglSupported()) return;
     const map = new maplibregl.Map({
       container: mapContainer.current,
       style: getMapStyle(resolvedTheme),

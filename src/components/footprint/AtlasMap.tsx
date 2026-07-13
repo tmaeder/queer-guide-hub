@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { getMapStyle } from '@/config/mapStyle';
 import { useTheme } from '@/components/theme/ThemeProvider';
+import { isWebglSupported } from '@/lib/webglSupport';
 import { useCountryBoundaries } from '@/hooks/useBoundaryData';
 import { useAtlas, useToggleCountryMark } from '@/hooks/useAtlas';
 
@@ -57,6 +58,7 @@ export function AtlasMap() {
   // (and the token-resolved layer colors re-read the new theme's values).
   useEffect(() => {
     if (!mapContainer.current || mapRef.current) return;
+    if (!isWebglSupported()) return;
     const map = new maplibregl.Map({
       container: mapContainer.current,
       style: getMapStyle(resolvedTheme),

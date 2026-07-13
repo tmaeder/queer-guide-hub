@@ -108,18 +108,24 @@ export default function TagRelationshipGraph({
   const forceData = useMemo(() => {
     if (!graphData) return { nodes: [], links: [] };
 
+    // Category filtering can leave edges pointing at tags that were filtered
+    // out of `nodes`; react-force-graph throws "node not found: <id>" on those.
+    const nodeIds = new Set(graphData.nodes.map((n) => n.id));
+
     return {
       nodes: graphData.nodes.map((n) => ({
         ...n,
         id: n.id,
         val: Math.log((n.usage_count || 0) + 2) * 2,
       })),
-      links: graphData.edges.map((e) => ({
-        source: e.source,
-        target: e.target,
-        score: e.score,
-        type: e.type,
-      })),
+      links: graphData.edges
+        .filter((e) => nodeIds.has(e.source) && nodeIds.has(e.target))
+        .map((e) => ({
+          source: e.source,
+          target: e.target,
+          score: e.score,
+          type: e.type,
+        })),
     };
   }, [graphData]);
 

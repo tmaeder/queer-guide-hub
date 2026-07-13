@@ -242,6 +242,26 @@ function LocalizedRedirect({ to }: { to: string }) {
   return <Navigate to={`${prefix}${to}${search}`} replace />;
 }
 
+/**
+ * Locale-preserving slug alias: legacy/misspelled URL schemes still indexed by
+ * crawlers (/personality/x, /geography/x) redirect to the canonical detail
+ * route instead of 404ing.
+ */
+function SlugAliasRedirect({ toBase }: { toBase: string }) {
+  const { locale, slug } = useParams<{ locale?: string; slug?: string }>();
+  const prefix =
+    locale && isSupportedLocale(locale) && locale !== DEFAULT_LOCALE ? `/${locale}` : '';
+  return <Navigate to={`${prefix}/${toBase}/${slug ?? ''}`} replace />;
+}
+
+/** /profession/:slug (legacy) → personalities directory filtered by profession. */
+function ProfessionRedirect() {
+  const { locale, slug } = useParams<{ locale?: string; slug?: string }>();
+  const prefix =
+    locale && isSupportedLocale(locale) && locale !== DEFAULT_LOCALE ? `/${locale}` : '';
+  return <Navigate to={`${prefix}/personalities?profession=${encodeURIComponent(slug ?? '')}`} replace />;
+}
+
 /** Routes table + per-route ErrorBoundary/Suspense/RouteFade and a11y main element */
 export const AppRoutes = () => {
   const location = useLocation();
@@ -512,6 +532,9 @@ export const AppRoutes = () => {
                 <Route path="trips/:tripId/today" element={<TripSubrouteRedirect view="today" />} />
                 <Route path="trips/:tripId/booklet" element={<TripSubrouteRedirect view="booklet" />} />
                 <Route path="trips/:tripId" element={<TripWorkspace />} />
+                {/* Legacy trip sub-tabs (e.g. /trips/:id/packing from old
+                    notification links) fold into the workspace. */}
+                <Route path="trips/:tripId/*" element={<TripSubrouteRedirect view="plan" />} />
                 <Route path="bookings" element={<LocalizedRedirect to="/hub/plans" />} />
                 <Route path="map" element={<MapPage />} />
                 <Route path="flights" element={<Navigate to="/travel" replace />} />
@@ -523,6 +546,14 @@ export const AppRoutes = () => {
                 <Route path="users" element={<LocalizedRedirect to="/community/members" />} />
                 <Route path="personalities" element={<Personalities />} />
                 <Route path="personalities/:slug" element={<PersonalityDetail />} />
+                {/* Legacy URL schemes still crawled — alias to canonical routes. */}
+                <Route path="personality/:slug" element={<SlugAliasRedirect toBase="personalities" />} />
+                <Route path="geography/:slug" element={<SlugAliasRedirect toBase="city" />} />
+                <Route path="organizer/:slug" element={<SlugAliasRedirect toBase="organizations" />} />
+                <Route path="tag/:slug" element={<SlugAliasRedirect toBase="tags" />} />
+                <Route path="profession/:slug" element={<ProfessionRedirect />} />
+                <Route path="shop/*" element={<LocalizedRedirect to="/marketplace" />} />
+                <Route path="produkt/:slug" element={<LocalizedRedirect to="/marketplace" />} />
                 <Route path="quests" element={<Quests />} />
                 <Route path="quests/:slug" element={<QuestDetail />} />
                 <Route path="tags" element={<Resources />} />

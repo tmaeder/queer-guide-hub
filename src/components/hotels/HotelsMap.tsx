@@ -4,6 +4,7 @@ import type { GeoJSONSource } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { getMapStyle } from '@/config/mapStyle';
 import { useTheme } from '@/components/theme/ThemeProvider';
+import { isWebglSupported } from '@/lib/webglSupport';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import type { Hotel } from '@/hooks/useHotels';
 
@@ -28,6 +29,7 @@ export function HotelsMap({ hotels, height = 560 }: HotelsMapProps) {
   // Init — recreated when the theme flips so the basemap flavor follows it.
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
+    if (!isWebglSupported()) return;
     const map = new maplibregl.Map({
       container: containerRef.current,
       style: getMapStyle(resolvedTheme),
