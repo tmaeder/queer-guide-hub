@@ -40,6 +40,7 @@ import {
   Flag,
   Award,
   CopyCheck,
+  ListTodo,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import type { AdminRole } from '@/config/adminRoles';
@@ -114,6 +115,18 @@ export const adminNavSections: AdminNavSection[] = [
         icon: MessageSquarePlus,
         route: '/admin/feedback',
         reviewCountKey: 'review_feedback',
+      },
+      {
+        id: 'merkliste',
+        label: 'Merkliste',
+        icon: ListTodo,
+        route: '/admin/merkliste',
+      },
+      {
+        id: 'postfach',
+        label: 'Postfach',
+        icon: Mail,
+        route: '/admin/postfach',
       },
       {
         id: 'affiliate',
@@ -212,6 +225,13 @@ export const adminNavSections: AdminNavSection[] = [
         icon: Users,
         route: '/admin/content/personalities',
         countTable: 'personalities',
+        group: 'People',
+      },
+      {
+        id: 'personality-milestones',
+        label: 'Milestones',
+        icon: Award,
+        route: '/admin/personalities/milestones',
         group: 'People',
       },
       {

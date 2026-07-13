@@ -75,7 +75,8 @@ Deno.serve(withErrorReporting('source-community-submissions', async (req) => {
       // Both branches must set dedup_status/review_status explicitly: PostgREST
       // bulk inserts unify keys across rows, so a batch mixing enrich and
       // non-enrich rows sends explicit NULLs for the missing keys — bypassing
-      // the column defaults and violating NOT NULL.
+      // the column defaults and violating NOT NULL. The dedup_match_* columns
+      // are nullable, so leaving them off the non-enrich branch is fine.
       const enrichFields = isEnrich
         ? {
             dedup_status:     'merge_candidate',

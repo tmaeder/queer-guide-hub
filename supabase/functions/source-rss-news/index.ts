@@ -42,8 +42,11 @@ const rssNewsAdapter: SourceAdapter = {
     // Only pull sources eligible to run right now (respects auto_paused,
     // backoff_until, fetch_frequency). The RPC encapsulates the
     // circuit-breaker policy at the source level — see news_sources_eligible().
+    // Cap 50/run: at ~90+ eligible sources a single invocation hit the edge
+    // worker resource limit (HTTP 546) on alternating hourly runs (2026-07).
+    // last_fetched_at ASC ordering rotates the remainder into the next run.
     const { data: sources, error } = await supabase.rpc('news_sources_eligible', {
-      p_limit: 100,
+      p_limit: 50,
     })
 
     if (error || !sources || sources.length === 0) {

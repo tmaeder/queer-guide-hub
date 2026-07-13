@@ -16,6 +16,7 @@ import { WorkflowPanel } from './WorkflowPanel';
 import { SEOPanel } from './SEOPanel';
 import { QualityPanel } from './QualityPanel';
 import { PersonalityNotesPanel } from './PersonalityNotesPanel';
+import { PersonalityAttachmentsPanel } from './PersonalityAttachmentsPanel';
 import { useCMSRevisions } from '@/hooks/useCMSRevisions';
 import { useCMSMedia } from '@/hooks/useCMSMedia';
 import { getContentType } from '@/config/contentTypeRegistry';
@@ -96,6 +97,7 @@ export function EditorSidebar({
     media: false,
     revisions: false,
     notes: false,
+    attachments: false,
   });
 
   // Revisions hook
@@ -151,11 +153,24 @@ export function EditorSidebar({
         <WorkflowPanel contentType={contentType} itemId={itemId} />
       </Panel>
 
-      {/* Internal notes (personalities only) */}
-      {contentType === 'personality' && (
-        <Panel title="Internal notes" open={expandedPanels.notes} onOpenChange={setPanel('notes')}>
-          <PersonalityNotesPanel personalityId={itemId} />
-        </Panel>
+      {/* Internal notes + evidence attachments (personalities only) */}
+      {(contentType === 'personalities' || contentType === 'personality') && (
+        <>
+          <Panel
+            title="Internal notes"
+            open={expandedPanels.notes}
+            onOpenChange={setPanel('notes')}
+          >
+            <PersonalityNotesPanel personalityId={itemId} />
+          </Panel>
+          <Panel
+            title="Attachments"
+            open={expandedPanels.attachments}
+            onOpenChange={setPanel('attachments')}
+          >
+            <PersonalityAttachmentsPanel personalityId={itemId} />
+          </Panel>
+        </>
       )}
 
       {/* SEO Panel */}
