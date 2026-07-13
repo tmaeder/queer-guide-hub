@@ -14,6 +14,8 @@ import { withErrorReporting } from '../_shared/report-api-error.ts'
 // mledoze/countries is the upstream dataset restcountries was built on — same
 // field shapes for everything we consume except population/timezones/car,
 // which commit_country_staging_item coalesces (existing values are kept).
+// population is refreshed weekly by enrich-worldbank-population (keyless);
+// timezones/driving_side are effectively immutable — accepted staleness.
 // Flag URLs are rebuilt against flagcdn.com, the same CDN v3.1 served.
 const RC_DATA_URL = 'https://raw.githubusercontent.com/mledoze/countries/master/countries.json'
 

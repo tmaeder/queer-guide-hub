@@ -190,6 +190,9 @@ verify_jwt = false
 [functions.pipeline-enrich-country]
 verify_jwt = false
 
+[functions.enrich-worldbank-population]
+verify_jwt = false
+
 [functions.pipeline-enrich-events]
 verify_jwt = false
 
