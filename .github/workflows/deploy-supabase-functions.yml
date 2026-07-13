@@ -153,7 +153,9 @@ jobs:
             echo "Redeploying every function (manual trigger, shared code, or config.toml changed)."
             CHANGED=$(ls -1 supabase/functions | grep -v '^_')
           else
-            CHANGED=$(git diff --name-only HEAD~1 HEAD | awk -F/ '/^supabase\/functions\// && $3 != "_shared" {print $3}' | sort -u)
+            # Skip every underscore-prefixed dir (_shared, _tests, …) — they are
+            # not deployable functions and `functions deploy _tests` hard-fails.
+            CHANGED=$(git diff --name-only HEAD~1 HEAD | awk -F/ '/^supabase\/functions\// && $3 !~ /^_/ {print $3}' | sort -u)
           fi
 
           if [ -z "$CHANGED" ]; then
