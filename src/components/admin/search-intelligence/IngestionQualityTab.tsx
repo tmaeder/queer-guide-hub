@@ -48,8 +48,8 @@ function ScoreBar({ score }: { score: number }) {
   return (
     <div className="min-w-[80px]">
       <div className="flex items-center gap-2">
-        <div className="flex-1 h-1.5 rounded" style={{ backgroundColor: 'hsl(var(--foreground) / 0.06)' }}>
-          <div className="h-full rounded" style={{ width: `${pct}%`, backgroundColor: color }} />
+        <div className="flex-1 h-1.5 rounded-badge" style={{ backgroundColor: 'hsl(var(--foreground) / 0.06)' }}>
+          <div className="h-full rounded-badge" style={{ width: `${pct}%`, backgroundColor: color }} />
         </div>
         <span className="text-xs min-w-[36px] text-right">{pct}%</span>
       </div>
@@ -364,21 +364,23 @@ export function IngestionQualityTab() {
                 {VISIBILITY_AXES.map((axis) => {
                   const a = result.breakdown[axis];
                   return (
-                    <div key={axis}>
-                      <div className="flex items-center gap-4">
-                        <span className="text-sm font-medium min-w-[100px]">
-                          {AXIS_LABEL[axis]}
-                        </span>
-                        <ScoreBar score={a.score} />
-                        <span className="text-xs text-muted-foreground min-w-[70px]">
-                          weight {(a.weight * 100).toFixed(0)}%
-                        </span>
+                    <div key={axis} className="flex gap-4">
+                      <span className="text-sm font-medium min-w-[100px]">
+                        {AXIS_LABEL[axis]}
+                      </span>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-4">
+                          <ScoreBar score={a.score} />
+                          <span className="text-xs text-muted-foreground min-w-[70px]">
+                            weight {(a.weight * 100).toFixed(0)}%
+                          </span>
+                        </div>
+                        {a.notes.length > 0 && (
+                          <span className="text-xs text-muted-foreground block mt-1">
+                            {a.notes.join(' · ')}
+                          </span>
+                        )}
                       </div>
-                      {a.notes.length > 0 && (
-                        <span className="text-xs text-muted-foreground block ml-[104px]">
-                          {a.notes.join(' · ')}
-                        </span>
-                      )}
                     </div>
                   );
                 })}

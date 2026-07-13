@@ -558,7 +558,7 @@ export default function EmailTemplates() {
                     <Label className="text-sm font-medium">Available Variables</Label>
                     <div className="flex flex-col gap-2">
                       {selectedTemplate.variables.map((variable, index) => (
-                        <div key={index} className="rounded bg-muted p-2">
+                        <div key={index} className="rounded-element bg-muted p-2">
                           <span className="text-sm">
                             <code
                               style={{ fontFamily: 'monospace' }}

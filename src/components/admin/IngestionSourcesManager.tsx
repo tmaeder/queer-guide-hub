@@ -159,7 +159,7 @@ export const IngestionSourcesManager = () => {
               <CardContent>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4 flex-1">
-                    <div className="p-2 bg-muted rounded">
+                    <div className="p-2 bg-muted rounded-element">
                       {SOURCE_TYPE_ICONS[source.source_type] || <Database size={16} />}
                     </div>
                     <div className="flex-1">

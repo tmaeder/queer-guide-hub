@@ -103,7 +103,7 @@ export function ImagesField({ field, value, onChange, error, disabled }: FieldPr
                     <button
                       type="button"
                       onClick={() => moveImage(index, index - 1)}
-                      className="p-1 rounded bg-background/90 hover:bg-background text-foreground text-xs"
+                      className="p-1 rounded-element bg-background/90 hover:bg-background text-foreground text-xs"
                       title="Move left"
                     >
                       <GripVertical className="w-3 h-3 rotate-90" />
@@ -113,7 +113,7 @@ export function ImagesField({ field, value, onChange, error, disabled }: FieldPr
                   <button
                     type="button"
                     onClick={() => removeImage(index)}
-                    className="p-1 rounded bg-white/90 hover:bg-white text-destructive"
+                    className="p-1 rounded-element bg-white/90 hover:bg-white text-destructive"
                     title="Remove"
                   >
                     <X className="w-3 h-3" />
@@ -123,7 +123,7 @@ export function ImagesField({ field, value, onChange, error, disabled }: FieldPr
                     <button
                       type="button"
                       onClick={() => moveImage(index, index + 1)}
-                      className="p-1 rounded bg-background/90 hover:bg-background text-foreground text-xs"
+                      className="p-1 rounded-element bg-background/90 hover:bg-background text-foreground text-xs"
                       title="Move right"
                     >
                       <GripVertical className="w-3 h-3 -rotate-90" />
@@ -133,7 +133,7 @@ export function ImagesField({ field, value, onChange, error, disabled }: FieldPr
               )}
 
               {/* Index badge */}
-              <span className="absolute top-1 left-1 text-2xs font-mono bg-black/50 text-white rounded px-1">
+              <span className="absolute top-1 left-1 text-2xs font-mono bg-black/50 text-white rounded-badge px-1">
                 {index + 1}
               </span>
             </div>

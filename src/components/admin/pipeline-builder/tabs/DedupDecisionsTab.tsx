@@ -56,7 +56,7 @@ export default function DedupDecisionsTab() {
   const FilterButton = ({ value, label }: { value: EntityFilter; label: string }) => (
     <button
       onClick={() => setEntityFilter(value)}
-      className={`text-xs2 px-2.5 py-1 rounded border transition-colors capitalize ${
+      className={`text-xs2 px-2.5 py-1 rounded-badge border transition-colors capitalize ${
         entityFilter === value
           ? 'bg-primary text-primary-foreground border-primary'
           : 'bg-background text-muted-foreground border-border hover:bg-accent'
@@ -139,7 +139,7 @@ export default function DedupDecisionsTab() {
                       <td className="px-4 py-2" title={r.entity_a_id ?? undefined}>
                         {r.entity_a_name
                           ? <span className="text-xs truncate max-w-[180px] inline-block align-bottom">{r.entity_a_name}</span>
-                          : <code className="text-2xs bg-muted/60 px-1 rounded">{r.entity_a_id?.slice(0, 8) ?? '—'}</code>}
+                          : <code className="text-2xs bg-muted/60 px-1 rounded-badge">{r.entity_a_id?.slice(0, 8) ?? '—'}</code>}
                       </td>
                       <td className="px-4 py-2" title={r.entity_b_id ?? undefined}>
                         {r.entity_b_name

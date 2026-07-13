@@ -173,7 +173,7 @@ export function PhotoGallery({ userId, isOwnProfile }: PhotoGalleryProps) {
                           <img
                             src={previewUrl}
                             alt="Preview"
-                            className="w-full h-48 object-cover rounded"
+                            className="w-full h-48 object-cover rounded-element"
                           />
                         )}
                       </div>

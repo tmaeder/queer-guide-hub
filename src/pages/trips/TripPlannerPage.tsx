@@ -376,7 +376,7 @@ export default function TripPlannerPage() {
       </div>
       <Sheet open={mobileBookingOpen} onOpenChange={setMobileBookingOpen}>
         <SheetContent side="bottom" className="max-h-[70vh] rounded-t-container p-4">
-          <div className="w-10 h-1 bg-border rounded mx-auto mb-4" />
+          <div className="w-10 h-1 bg-border rounded-badge mx-auto mb-4" />
           <TripBookingAssistant
             tripId={trip.id}
             places={trip.trip_places}

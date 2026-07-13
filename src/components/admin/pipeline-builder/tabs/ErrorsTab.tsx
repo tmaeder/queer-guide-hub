@@ -142,7 +142,7 @@ export default function ErrorsTab() {
               <button
                 key={s}
                 onClick={() => setMinSeverity(s)}
-                className={`text-xs2 px-2.5 py-1 rounded border transition-colors ${
+                className={`text-xs2 px-2.5 py-1 rounded-badge border transition-colors ${
                   minSeverity === s
                     ? 'bg-primary text-primary-foreground border-primary'
                     : 'bg-background text-muted-foreground border-border hover:bg-accent'
@@ -234,12 +234,12 @@ export default function ErrorsTab() {
                   <div className="border-t border-border pt-2 space-y-1 text-xs2 text-muted-foreground">
                     {selected.pipeline_run_id && (
                       <div>
-                        pipeline_run: <code className="bg-muted/60 px-1 rounded">{selected.pipeline_run_id}</code>
+                        pipeline_run: <code className="bg-muted/60 px-1 rounded-badge">{selected.pipeline_run_id}</code>
                       </div>
                     )}
                     {selected.staging_id && (
                       <div>
-                        staging: <code className="bg-muted/60 px-1 rounded">{selected.staging_id}</code>
+                        staging: <code className="bg-muted/60 px-1 rounded-badge">{selected.staging_id}</code>
                       </div>
                     )}
                   </div>

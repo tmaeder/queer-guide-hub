@@ -342,7 +342,7 @@ function DetailRow({
     <div className="flex items-start gap-1">
       {Icon && (
         <Icon
-          className="w-3.5 h-3.5 mt-[3px] flex-shrink-0"
+          className="w-3.5 h-3.5 mt-0.5 flex-shrink-0"
           color={tone === 'destructive' ? '#dc2626' : undefined}
           aria-hidden="true"
         />

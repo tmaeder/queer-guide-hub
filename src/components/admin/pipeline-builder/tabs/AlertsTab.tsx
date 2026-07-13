@@ -67,7 +67,7 @@ export default function AlertsTab() {
   const FilterButton = ({ value, label }: { value: Filter; label: string }) => (
     <button
       onClick={() => setFilter(value)}
-      className={`text-xs2 px-2.5 py-1 rounded border transition-colors ${
+      className={`text-xs2 px-2.5 py-1 rounded-badge border transition-colors ${
         filter === value
           ? 'bg-primary text-primary-foreground border-primary'
           : 'bg-background text-muted-foreground border-border hover:bg-accent'

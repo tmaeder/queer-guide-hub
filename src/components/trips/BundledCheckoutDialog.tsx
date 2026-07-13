@@ -209,9 +209,9 @@ export function BundledCheckoutDialog({
             </p>
 
             {/* Current card */}
-            <div className="p-6 bg-muted flex items-start gap-4 rounded">
+            <div className="p-6 bg-muted flex items-start gap-4 rounded-element">
               <div
-                className="shrink-0 w-10 h-10 flex items-center justify-center bg-background rounded text-foreground"
+                className="shrink-0 w-10 h-10 flex items-center justify-center bg-background rounded-element text-foreground"
               >
                 {current?.kind === 'hotel' ? <Hotel size={20} /> : <Ticket size={20} />}
               </div>

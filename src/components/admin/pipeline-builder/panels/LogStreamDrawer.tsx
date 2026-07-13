@@ -122,13 +122,13 @@ export default function LogStreamDrawer({ pipelineRunId, onClose }: LogStreamDra
         <div className="flex gap-1">
           <button
             onClick={() => setFilter('all')}
-            className={`text-2xs px-2 py-0.5 rounded border transition-colors ${
+            className={`text-2xs px-2 py-0.5 rounded-badge border transition-colors ${
               filter === 'all' ? 'bg-primary text-primary-foreground border-primary' : 'bg-background text-muted-foreground border-border hover:bg-accent'
             }`}
           >All</button>
           <button
             onClick={() => setFilter('errors')}
-            className={`text-2xs px-2 py-0.5 rounded border transition-colors ${
+            className={`text-2xs px-2 py-0.5 rounded-badge border transition-colors ${
               filter === 'errors' ? 'bg-primary text-primary-foreground border-primary' : 'bg-background text-muted-foreground border-border hover:bg-accent'
             }`}
           >Errors</button>
@@ -177,7 +177,7 @@ export default function LogStreamDrawer({ pipelineRunId, onClose }: LogStreamDra
               const errorMsg = (e.payload as Record<string, unknown>)?.error
                 || (e.payload as Record<string, unknown>)?.crash;
               return (
-                <div key={e.id} className={`flex items-start gap-2 py-0.5 px-2 rounded hover:bg-muted/30 ${isError ? 'bg-destructive/10/30 dark:bg-destructive/20' : ''}`}>
+                <div key={e.id} className={`flex items-start gap-2 py-0.5 px-2 rounded-element hover:bg-muted/30 ${isError ? 'bg-destructive/10/30 dark:bg-destructive/20' : ''}`}>
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <span className="text-muted-foreground text-2xs whitespace-nowrap cursor-help">

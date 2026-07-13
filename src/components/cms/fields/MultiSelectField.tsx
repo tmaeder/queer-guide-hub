@@ -75,7 +75,7 @@ export function MultiSelectField({ field, value, onChange, error, disabled }: Fi
             <label
               key={opt.value}
               className={`
-                flex items-center gap-2 px-2 py-1.5 rounded cursor-pointer text-sm
+                flex items-center gap-2 px-2 py-1.5 rounded-element cursor-pointer text-sm
                 hover:bg-muted/60 transition-colors
                 ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
               `}

@@ -59,7 +59,7 @@ function CommentNode({ data: d, selected, id }: NodeProps<CommentNodeType>) {
           <Popover>
             <PopoverTrigger asChild>
               <button
-                className="p-0.5 rounded hover:bg-black/5 transition-colors"
+                className="p-0.5 rounded-badge hover:bg-black/5 transition-colors"
                 title="Change color"
                 onClick={(e) => e.stopPropagation()}
               >
@@ -71,7 +71,7 @@ function CommentNode({ data: d, selected, id }: NodeProps<CommentNodeType>) {
                 {COLORS.map(c => (
                   <button
                     key={c.name}
-                    className={`w-5 h-5 rounded border-2 transition-transform hover:scale-110 ${color === c.name ? 'ring-2 ring-ring' : ''}`}
+                    className={`w-5 h-5 rounded-badge border-2 transition-transform hover:scale-110 ${color === c.name ? 'ring-2 ring-ring' : ''}`}
                     style={{ backgroundColor: c.bg, borderColor: c.border }}
                     onClick={() => {
                       setColor(c.name);

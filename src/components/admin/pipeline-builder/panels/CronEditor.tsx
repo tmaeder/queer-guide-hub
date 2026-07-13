@@ -100,7 +100,7 @@ export default function CronEditor({ value, onChange }: CronEditorProps) {
         <div className="flex gap-1">
           <button
             onClick={() => setMode('preset')}
-            className={`text-2xs px-2 py-0.5 rounded border transition-colors ${
+            className={`text-2xs px-2 py-0.5 rounded-badge border transition-colors ${
               mode === 'preset'
                 ? 'bg-primary text-primary-foreground border-primary'
                 : 'bg-background text-muted-foreground border-border hover:bg-accent'
@@ -108,7 +108,7 @@ export default function CronEditor({ value, onChange }: CronEditorProps) {
           >Preset</button>
           <button
             onClick={() => setMode('raw')}
-            className={`text-2xs px-2 py-0.5 rounded border transition-colors ${
+            className={`text-2xs px-2 py-0.5 rounded-badge border transition-colors ${
               mode === 'raw'
                 ? 'bg-primary text-primary-foreground border-primary'
                 : 'bg-background text-muted-foreground border-border hover:bg-accent'

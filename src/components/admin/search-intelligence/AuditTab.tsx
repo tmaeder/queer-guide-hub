@@ -78,7 +78,7 @@ export function AuditTab() {
                   </span>
                 </div>
                 {e.metadata && Object.keys(e.metadata).length > 0 && (
-                  <pre className="text-xs2 mt-2 bg-muted p-2 overflow-auto rounded">
+                  <pre className="text-xs2 mt-2 bg-muted p-2 overflow-auto rounded-element">
                     {JSON.stringify(e.metadata, null, 2)}
                   </pre>
                 )}

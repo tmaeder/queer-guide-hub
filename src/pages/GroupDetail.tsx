@@ -124,9 +124,9 @@ export default function GroupDetail() {
     return (
       <div className="mx-auto py-8">
         <div className="animate-pulse flex flex-col gap-6">
-          <div className="h-8 bg-muted rounded w-1/3" />
-          <div className="h-32 bg-muted rounded" />
-          <div className="h-64 bg-muted rounded" />
+          <div className="h-8 bg-muted rounded-element w-1/3" />
+          <div className="h-32 bg-muted rounded-element" />
+          <div className="h-64 bg-muted rounded-element" />
         </div>
       </div>
     );

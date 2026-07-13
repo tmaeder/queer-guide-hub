@@ -113,7 +113,7 @@ export function HandoffSection({ handoffs, prompt, onRecord, onUpdateStatus, isR
 
         {/* Timeline */}
         {sorted.length === 0 ? (
-          <span className="block py-2 px-4 bg-muted rounded text-xs2 text-muted-foreground">
+          <span className="block py-2 px-4 bg-muted rounded-element text-xs2 text-muted-foreground">
             No handoffs yet. Click <strong>Copy prompt for Claude</strong> to send this ticket to
             Claude Code.
           </span>

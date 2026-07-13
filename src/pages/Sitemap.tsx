@@ -183,7 +183,7 @@ export default function Sitemap() {
                     <li key={section.title}>
                       <a
                         href={`#${id}`}
-                        className="flex items-center justify-between rounded px-2 py-1 text-sm hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                        className="flex items-center justify-between rounded-element px-2 py-1 text-sm hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                       >
                         <span>{section.title}</span>
                         <span className="text-muted-foreground">{section.links.length}</span>

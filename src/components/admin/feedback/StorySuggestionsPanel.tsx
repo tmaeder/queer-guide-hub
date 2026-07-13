@@ -39,7 +39,7 @@ export function StorySuggestionsPanel({ suggestions, onAccept, onDismiss }: Prop
         {suggestions.map((s) => (
           <div
             key={s.id}
-            className="min-w-[260px] p-4 border border-border rounded flex flex-col gap-2"
+            className="min-w-[260px] p-4 border border-border rounded-element flex flex-col gap-2"
           >
             <p className="text-sm font-semibold leading-tight">
               {s.proposed_title}

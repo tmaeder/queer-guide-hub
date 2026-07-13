@@ -22,7 +22,7 @@ export function EventSearchBar({
   const { t } = useTranslation();
   return (
     <div className="flex flex-wrap gap-2 items-center">
-      <div className="flex-1 basis-full sm:basis-auto min-w-0 flex items-center gap-2 rounded px-4 py-2 bg-background">
+      <div className="flex-1 basis-full sm:basis-auto min-w-0 flex items-center gap-2 rounded-element px-4 py-2 bg-background">
         <Search className="w-4 h-4 text-muted-foreground shrink-0" />
         <Input
           aria-label={t('pages.events.searchLabel', 'Search events')}

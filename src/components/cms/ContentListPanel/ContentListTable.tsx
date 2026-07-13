@@ -58,7 +58,7 @@ function TableSkeleton({ columns }: { columns: number }) {
           </TableCell>
           {columns >= 4 && (
             <TableCell>
-              <Skeleton className="rounded" style={{ width: 70, height: 20 }} />
+              <Skeleton style={{ width: 70, height: 20 }} />
             </TableCell>
           )}
           <TableCell>

@@ -98,7 +98,7 @@ export function PlaceCommentThread({ tripId, placeId, comments, disabled, isOwne
               {comments.map((c) => (
                 <div
                   key={c.id}
-                  className="flex items-start gap-1 p-1 bg-muted rounded"
+                  className="flex items-start gap-1 p-1 bg-muted rounded-element"
                 >
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1 mb-0.5">

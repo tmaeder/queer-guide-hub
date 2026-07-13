@@ -145,7 +145,7 @@ export default function AISuggestDialog({ nodeTypes, onApply }: AISuggestDialogP
               <button
                 key={ex}
                 onClick={() => setDescription(ex)}
-                className="text-2xs px-2 py-0.5 rounded border border-border bg-background hover:bg-accent transition-colors"
+                className="text-2xs px-2 py-0.5 rounded-badge border border-border bg-background hover:bg-accent transition-colors"
               >
                 {ex.slice(0, 40)}…
               </button>

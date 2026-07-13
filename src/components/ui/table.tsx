@@ -1,5 +1,7 @@
 import * as React from 'react';
 
+import { cn } from '@/lib/utils';
+
 const Table = React.forwardRef<HTMLTableElement, React.HTMLAttributes<HTMLTableElement>>(
   ({ className, style, ...props }, ref) => (
     <div style={{ width: '100%' }} className="relative overflow-auto">
@@ -32,7 +34,7 @@ const TableBody = React.forwardRef<
   HTMLTableSectionElement,
   React.HTMLAttributes<HTMLTableSectionElement>
 >(({ className, style, ...props }, ref) => (
-  <tbody ref={ref} className={className} style={style} {...props} />
+  <tbody ref={ref} className={cn('[&_tr:last-child]:border-0', className)} style={style} {...props} />
 ));
 TableBody.displayName = 'TableBody';
 
@@ -53,9 +55,8 @@ const TableRow = React.forwardRef<HTMLTableRowElement, React.HTMLAttributes<HTML
   ({ className, style, ...props }, ref) => (
     <tr
       ref={ref}
-      className={className}
+      className={cn('border-b border-border', className)}
       style={{
-        borderBottom: '1px solid hsl(var(--border))',
         transition: 'background-color 0.15s',
         ...style,
       }}

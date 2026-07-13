@@ -367,7 +367,7 @@ export default function MediaPickerDialog({
                         role="button"
                         tabIndex={0}
                         aria-pressed={isSelected}
-                        className={`cursor-pointer rounded overflow-hidden border-2 relative bg-muted hover:border-muted ${
+                        className={`cursor-pointer rounded-element overflow-hidden border-2 relative bg-muted hover:border-muted ${
                           isSelected ? 'border-primary hover:border-primary' : 'border-transparent'
                         }`}
                       >
@@ -396,7 +396,7 @@ export default function MediaPickerDialog({
 
                         {/* External source badge */}
                         {item.external_source && (
-                          <span className="absolute top-1.5 left-1.5 h-5 px-1.5 text-2xs capitalize bg-black/60 text-white rounded flex items-center">
+                          <span className="absolute top-1.5 left-1.5 h-5 px-1.5 text-2xs capitalize bg-black/60 text-white rounded-badge flex items-center">
                             {item.external_source}
                           </span>
                         )}

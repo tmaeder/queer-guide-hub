@@ -31,7 +31,7 @@ export default function CanvasEmptyState({ onOpenCommandPalette, onOpenTemplateL
               <div className="text-sm font-medium">Quick-add a node</div>
               <div className="text-xs2 text-muted-foreground">Search and insert any node type</div>
             </div>
-            <kbd className="text-2xs font-mono bg-muted px-1.5 py-0.5 rounded">{MOD}K</kbd>
+            <kbd className="text-2xs font-mono bg-muted px-1.5 py-0.5 rounded-badge">{MOD}K</kbd>
           </button>
 
           <button

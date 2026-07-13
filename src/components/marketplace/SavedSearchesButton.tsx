@@ -72,7 +72,7 @@ export function SavedSearchesButton() {
                         navigate({ search: s.query });
                         setOpen(false);
                       }}
-                      className="flex-1 text-left text-sm px-2 py-1.5 rounded hover:bg-muted truncate"
+                      className="flex-1 text-left text-sm px-2 py-1.5 rounded-element hover:bg-muted truncate"
                       title={s.query}
                     >
                       {s.name}
@@ -81,7 +81,7 @@ export function SavedSearchesButton() {
                       type="button"
                       onClick={() => remove(s.id)}
                       aria-label={`Delete saved search ${s.name}`}
-                      className="p-1 rounded hover:bg-muted text-muted-foreground opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity"
+                      className="p-1 rounded-element hover:bg-muted text-muted-foreground opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity"
                     >
                       <X size={12} aria-hidden="true" />
                     </button>

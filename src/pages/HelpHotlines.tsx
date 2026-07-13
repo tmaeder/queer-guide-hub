@@ -726,7 +726,7 @@ function HotlineCard({
                   ? t('help.unsave', 'Remove from saved')
                   : t('help.save', 'Save hotline')
               }
-              className="rounded p-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="rounded-badge p-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               style={{ background: 'none', border: 'none', cursor: 'pointer' }}
             >
               <Heart

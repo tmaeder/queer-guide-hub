@@ -182,7 +182,7 @@ function MultiSelectFilter({ config, value, onChange }: MultiSelectFilterProps) 
                 role="option"
                 tabIndex={0}
                 aria-selected={selected.has(opt.value)}
-                className="flex items-center gap-2 px-2 py-1.5 cursor-pointer rounded hover:bg-muted"
+                className="flex items-center gap-2 px-2 py-1.5 cursor-pointer rounded-element hover:bg-muted"
               >
                 <Checkbox checked={selected.has(opt.value)} />
                 <span style={{ fontSize: 13 }}>{opt.label}</span>
