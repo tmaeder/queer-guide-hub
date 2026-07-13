@@ -28,7 +28,7 @@ async function loadCandidatePools(supabase: ReturnType<typeof getServiceClient>)
     supabase.from('countries').select('name').limit(300),
     supabase.from('cities').select('name').order('population', { ascending: false, nullsFirst: false }).limit(500),
     supabase.from('personalities').select('name').limit(500),
-    supabase.from('organisations').select('name').limit(300).then(
+    supabase.from('organizations').select('name').limit(300).then(
       (r) => r.error ? { data: [] as Array<{ name: string }>, error: null } : r,
     ),
     supabase.from('unified_tags').select('slug').limit(200),
@@ -180,7 +180,7 @@ Deno.serve(withErrorReporting('pipeline-quality-enhance', async (req) => {
           resolveEntities(supabase, 'countries', 'country', decision.linkedCountries, sani.content),
           resolveEntities(supabase, 'cities', 'city', decision.linkedCities, sani.content),
           resolveEntities(supabase, 'personalities', 'personality', decision.linkedPersonalities, sani.content),
-          resolveEntities(supabase, 'organisations', 'organisation', decision.linkedOrganisations, sani.content),
+          resolveEntities(supabase, 'organizations', 'organisation', decision.linkedOrganisations, sani.content),
         ])
         const allReviewItems = [
           ...countryRes.needsReview.map((r) => ({ ...r, type: 'country' as const })),
