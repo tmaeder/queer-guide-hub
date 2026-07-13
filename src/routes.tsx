@@ -86,6 +86,7 @@ const AdminProfessions = lazyRetry(() => import('./pages/AdminProfessions'));
 const AdminCityQuality = lazyRetry(() => import('./pages/AdminCityQuality'));
 const AdminPersonalityQuality = lazyRetry(() => import('./pages/AdminPersonalityQuality'));
 const PersonalityDataSheet = lazyRetry(() => import('./pages/admin/PersonalityDataSheet'));
+const PersonalitiesAdmin = lazyRetry(() => import('./pages/admin/PersonalitiesAdmin'));
 const PersonalityMilestones = lazyRetry(() => import('./pages/admin/PersonalityMilestones'));
 const EditorialTasks = lazyRetry(() => import('./pages/admin/EditorialTasks'));
 const AdminMailbox = lazyRetry(() => import('./pages/admin/AdminMailbox'));
@@ -362,6 +363,9 @@ export const AppRoutes = () => {
 
                 {/* Content section -- unified list + per-type views */}
                 <Route path="content" element={<ContentListPanel />} />
+                {/* Personalities gets a Personencheck dashboard header above the
+                    generic list; static path wins over content/:type. */}
+                <Route path="content/personalities" element={<PersonalitiesAdmin />} />
                 <Route path="content/:type" element={<ContentListPanel />} />
                 <Route path="pages" element={<ContentListPanel contentTypeId="cms_pages" />} />
                 <Route path="media" element={<MediaLibrary />} />

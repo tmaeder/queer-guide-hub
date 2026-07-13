@@ -72,14 +72,11 @@ Deno.serve(withErrorReporting('source-community-submissions', async (req) => {
       // dedup match + force review so the commit_*_staging_batch merge path
       // updates that entity on admin approval (never auto-commits a new record).
       const isEnrich = row.submission_intent === 'enrich' && !!row.proposed_link_id
-      // Both branches must set the SAME keys: PostgREST bulk inserts unify
-      // columns across rows and fill missing keys with explicit NULL, which
-      // bypasses column defaults and violates NOT NULL on dedup_status when a
-      // batch mixes enrich and non-enrich rows.
       // Both branches must set dedup_status/review_status explicitly: PostgREST
       // bulk inserts unify keys across rows, so a batch mixing enrich and
       // non-enrich rows sends explicit NULLs for the missing keys — bypassing
-      // the column defaults and violating NOT NULL.
+      // the column defaults and violating NOT NULL. The dedup_match_* columns
+      // are nullable, so leaving them off the non-enrich branch is fine.
       const enrichFields = isEnrich
         ? {
             dedup_status:     'merge_candidate',
@@ -89,11 +86,6 @@ Deno.serve(withErrorReporting('source-community-submissions', async (req) => {
             review_status:    'pending_review',
           }
         : {
-            dedup_status:     'pending',
-            dedup_match_id:   null,
-            dedup_match_table: null,
-            dedup_match_score: null,
-            review_status:    'auto',
             dedup_status:  'pending',
             review_status: 'auto',
           }
