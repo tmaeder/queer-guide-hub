@@ -73,8 +73,8 @@ queer-guide-hub/
 
 ## Repo stats
 
-- **Edge functions:** 228
-- **Migrations:** 791
+- **Edge functions:** 229
+- **Migrations:** 792
 
 ## Infrastructure
 
