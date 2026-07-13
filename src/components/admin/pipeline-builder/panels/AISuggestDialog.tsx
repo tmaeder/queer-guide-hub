@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { autoLayout } from '../utils/autoLayout';
-import type { Node, Edge } from '@xyflow/react';
+import type { AppNode, AppEdge, BaseNodeType } from '../types';
 import type { PipelineNodeType } from '../hooks/usePipelineBuilder';
 
 interface SuggestionNode {
@@ -30,7 +30,7 @@ interface Suggestion {
 
 interface AISuggestDialogProps {
   nodeTypes: PipelineNodeType[];
-  onApply: (nodes: Node[], edges: Edge[]) => void;
+  onApply: (nodes: AppNode[], edges: AppEdge[]) => void;
 }
 
 const EXAMPLES = [
@@ -72,12 +72,12 @@ export default function AISuggestDialog({ nodeTypes, onApply }: AISuggestDialogP
 
     const now = Date.now();
     // Map LLM-returned slugs to React Flow baseNode shape
-    const nodes: Node[] = suggestion.nodes.map((s, i) => {
+    const nodes: BaseNodeType[] = suggestion.nodes.map((s, i) => {
       const nt = nodeTypes.find(t => t.slug === s.slug);
       const rfId = `${s.slug}-${now}-${i}`;
       return {
         id: rfId,
-        type: 'baseNode',
+        type: 'baseNode' as const,
         position: { x: 50 + i * 250, y: 100 },
         data: {
           label: s.label || nt?.display_name || s.slug,
@@ -90,14 +90,14 @@ export default function AISuggestDialog({ nodeTypes, onApply }: AISuggestDialogP
           inputPorts: nt?.input_ports || [],
           outputPorts: nt?.output_ports || [],
         },
-      } as Node;
+      };
     });
 
     // LLM-returned edge source/target ids → React Flow node ids
     const idMap = new Map<string, string>();
     suggestion.nodes.forEach((s, i) => idMap.set(s.id, nodes[i].id));
 
-    const edges: Edge[] = suggestion.edges.map((e, i) => ({
+    const edges: AppEdge[] = suggestion.edges.map((e, i) => ({
       id: `ai-edge-${now}-${i}`,
       source: idMap.get(e.source) || e.source,
       target: idMap.get(e.target) || e.target,

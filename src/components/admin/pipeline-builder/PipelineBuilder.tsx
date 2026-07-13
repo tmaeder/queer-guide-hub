@@ -1,6 +1,6 @@
 import { useCallback, useRef, useState, useEffect } from 'react';
 import { TooltipProvider } from '@/components/ui/tooltip';
-import type { Edge } from '@xyflow/react';
+import type { NodeTypes } from '@xyflow/react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { toast } from 'sonner';
 
@@ -23,12 +23,13 @@ import PipelineCanvas from './PipelineCanvas';
 
 import { useUndoRedo } from './hooks/useUndoRedo';
 import { useDraftAutosave } from './hooks/useDraftAutosave';
-import { usePipelineBuilder, usePipelineNodeTypes, usePipelineDefinitions, type PipelineNodeType } from './hooks/usePipelineBuilder';
+import { usePipelineBuilder, usePipelineNodeTypes, usePipelineDefinitions } from './hooks/usePipelineBuilder';
 import { usePipelineExecution } from './hooks/usePipelineExecution';
 import { useLatestPipelineRun, usePipelineRun } from './hooks/usePipelineHistory';
 import { usePipelineActions, usePipelineDerived } from './hooks/usePipelineActions';
+import { isBaseNode, type AppEdge } from './types';
 
-const nodeTypes = { baseNode: BaseNode, commentNode: CommentNode, groupNode: GroupNode };
+const nodeTypes = { baseNode: BaseNode, commentNode: CommentNode, groupNode: GroupNode } satisfies NodeTypes;
 
 function PipelineBuilderInner() {
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
@@ -43,9 +44,10 @@ function PipelineBuilderInner() {
   const [isDirty, setIsDirty] = useState(false);
   const [lastSavedAt, setLastSavedAt] = useState<number | null>(null);
   const [paletteSearch, setPaletteSearch] = useState('');
-  const [editingEdge, setEditingEdge] = useState<{ edge: Edge; x: number; y: number } | null>(null);
+  const [editingEdge, setEditingEdge] = useState<{ edge: AppEdge; x: number; y: number } | null>(null);
   const [contextMenu, setContextMenu] = useState<{ nodeId: string; x: number; y: number } | null>(null);
   const [quickAddOpen, setQuickAddOpen] = useState(false);
+  const [templateLibrary, setTemplateLibrary] = useState<{ open: boolean; mode: 'browse' | 'save' }>({ open: false, mode: 'browse' });
   const [logDrawerOpen, setLogDrawerOpen] = useState(false);
   const configClipboardRef = useRef<Record<string, unknown> | null>(null);
 
@@ -122,15 +124,12 @@ function PipelineBuilderInner() {
         toast.success('Pipeline saved', { description: `${nodes.length} nodes, ${edges.length} edges` });
       },
       onError: (e: Error) => toast.error(`Save failed: ${e.message}`),
-    } as Record<string, unknown>);
+    });
   }, [isSaving, save, nodes.length, edges.length, draftAutosave, pipelineName, pipelineList, selectedPipelineId]);
 
   const handleRun = useCallback((opts?: { dryRun?: boolean }) => {
     if (!opts?.dryRun) {
-      const hasCommitNode = nodes.some(n => {
-        const slug = (n.data as { nodeTypeSlug?: string })?.nodeTypeSlug || '';
-        return slug.includes('commit');
-      });
+      const hasCommitNode = nodes.some(n => isBaseNode(n) && (n.data.nodeTypeSlug || '').includes('commit'));
       const def = pipelineList?.find(p => p.id === selectedPipelineId);
       const nameLooksProd = /\b(prod|production|hotels?|events?|marketplace|news|personalities|cities|countries|venues?)\b/i.test(
         `${def?.name || ''} ${pipelineName}`
@@ -145,17 +144,17 @@ function PipelineBuilderInner() {
       }
     }
     run(opts, {
-      onSuccess: (data: Record<string, unknown>) => {
+      onSuccess: (data) => {
         if (data?.pipeline_run_id) {
-          setActiveRunId(data.pipeline_run_id as string);
+          setActiveRunId(data.pipeline_run_id);
           setViewingRunId(null);
           setLogDrawerOpen(true);
         }
       },
-    } as Record<string, unknown>);
+    });
   }, [run, nodes, pipelineList, selectedPipelineId, pipelineName]);
 
-  const onEdgeClick = useCallback((event: React.MouseEvent, edge: Edge) => {
+  const onEdgeClick = useCallback((event: React.MouseEvent, edge: AppEdge) => {
     event.stopPropagation();
     setEditingEdge({ edge, x: event.clientX, y: event.clientY });
   }, []);
@@ -171,6 +170,7 @@ function PipelineBuilderInner() {
       if (mod && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) { e.preventDefault(); undoRedo.redo(); setIsDirty(true); return; }
       if (mod && e.key === 'd' && !inInput) { e.preventDefault(); actions.handleDuplicate(); return; }
       if (mod && e.key === 'l' && !inInput) { e.preventDefault(); actions.handleAutoLayout(); return; }
+      if (mod && e.key === 'k' && !inInput) { e.preventDefault(); setQuickAddOpen(o => !o); return; }
       if (e.key === 'Escape' && selectedNodeId) { setSelectedNodeId(null); return; }
       if ((e.key === 'Delete' || e.key === 'Backspace') && selectedNodeId && !inInput) {
         e.preventDefault();
@@ -231,18 +231,17 @@ function PipelineBuilderInner() {
     setNodes((current) => {
       let changed = false;
       const next = current.map((node) => {
+        if (!isBaseNode(node)) return node; // only base nodes carry run state
         const s = states[node.id];
         if (!s) {
-          const d = node.data as Record<string, unknown>;
-          if (d.status || d.itemsOut !== undefined) {
+          if (node.data.status || node.data.itemsOut !== undefined) {
             changed = true;
             return { ...node, data: { ...node.data, status: undefined, itemsOut: undefined, itemsIn: undefined, durationMs: undefined, errorMessage: undefined } };
           }
           return node;
         }
-        const d = node.data as Record<string, unknown>;
-        if (d.status === s.status && d.itemsOut === s.items_out && d.itemsIn === s.items_in &&
-            d.durationMs === s.duration_ms && d.errorMessage === s.error) return node;
+        if (node.data.status === s.status && node.data.itemsOut === s.items_out && node.data.itemsIn === s.items_in &&
+            node.data.durationMs === s.duration_ms && node.data.errorMessage === s.error) return node;
         changed = true;
         return { ...node, data: {
           ...node.data,
@@ -281,7 +280,7 @@ function PipelineBuilderInner() {
           paletteSearch={paletteSearch}
           setPaletteSearch={setPaletteSearch}
           nodeTypesByCategory={nodeTypesByCategory}
-          onDragStart={actions.onDragStart as unknown as (e: import('@xyflow/react').DragEvent<HTMLDivElement>, nt: PipelineNodeType) => void}
+          onDragStart={actions.onDragStart}
           onQuickAdd={actions.handleQuickAdd}
         />
 
@@ -313,11 +312,15 @@ function PipelineBuilderInner() {
             handleAutoLayout={actions.handleAutoLayout}
             handleAddComment={actions.handleAddComment}
             handleAddGroup={actions.handleAddGroup}
+            onOpenQuickAdd={() => setQuickAddOpen(true)}
             nodes={nodes}
             edges={edges}
             selectedForTemplateNodes={selectedForTemplate.nodes}
             selectedForTemplateEdges={selectedForTemplate.edges}
             handleTemplateApply={actions.handleTemplateApply}
+            templateLibraryOpen={templateLibrary.open}
+            templateLibraryMode={templateLibrary.mode}
+            onTemplateLibraryOpenChange={(open) => setTemplateLibrary(t => ({ ...t, open, ...(open ? {} : { mode: 'browse' as const }) }))}
             applyAISuggestion={(suggestedNodes, suggestedEdges) => {
               if (isDirty && !window.confirm('Unsaved changes will be lost. Apply AI suggestion?')) return;
               undoRedo.commitNow();
@@ -333,7 +336,7 @@ function PipelineBuilderInner() {
                 id: v.pipeline_id, name: v.name, display_name: v.display_name,
                 description: v.description, nodes: v.nodes, edges: v.edges,
                 schedule: v.schedule, is_enabled: true, is_template: false, version: v.version,
-              } as Parameters<typeof loadPipeline>[0], nodeTypeList);
+              }, nodeTypeList);
               setIsDirty(true);
               toast.success(`Reverted to v${v.version}`, { description: 'Click Save to persist' });
             }}
@@ -342,7 +345,7 @@ function PipelineBuilderInner() {
             setActiveRunId={setActiveRunId}
             clearOverlay={clearOverlay}
             logDrawerOpen={logDrawerOpen}
-            setLogDrawerOpen={setLogDrawerOpen as (fn: (o: boolean) => boolean) => void}
+            setLogDrawerOpen={setLogDrawerOpen}
             viewingRunId={viewingRunId}
             latestRun={latestRun}
             validationCount={validationIssues.count}
@@ -363,8 +366,8 @@ function PipelineBuilderInner() {
             onNodesChange={nodesChangeWithHistory}
             onEdgesChange={edgesChangeWithHistory}
             onConnect={(c) => { undoRedo.commitNow(); onConnect(c); setIsDirty(true); }}
-            onDrop={actions.onDrop as React.DragEventHandler}
-            onDragOver={actions.onDragOver as React.DragEventHandler}
+            onDrop={actions.onDrop}
+            onDragOver={actions.onDragOver}
             onNodeClick={actions.onNodeClick}
             onEdgeClick={onEdgeClick}
             onPaneClick={() => { setSelectedNodeId(null); setEditingEdge(null); setContextMenu(null); }}
@@ -376,15 +379,9 @@ function PipelineBuilderInner() {
             onBulkDelete={actions.handleBulkDelete}
             onBulkDuplicate={actions.handleBulkDuplicate}
             onLayoutSelected={actions.handleLayoutSelection}
-            onSaveAsTemplate={() => {
-              const btn = document.querySelector('button[aria-haspopup="dialog"]') as HTMLButtonElement | null;
-              btn?.click();
-            }}
+            onSaveAsTemplate={() => setTemplateLibrary({ open: true, mode: 'save' })}
             onOpenCommandPalette={() => setQuickAddOpen(true)}
-            onOpenTemplateLibrary={() => {
-              const btn = document.querySelector('[aria-haspopup="dialog"]') as HTMLButtonElement | null;
-              btn?.click();
-            }}
+            onOpenTemplateLibrary={() => setTemplateLibrary({ open: true, mode: 'browse' })}
             onImport={actions.handleImport}
             onImportError={(msg) => toast.error(`Import failed: ${msg}`)}
           />
@@ -434,11 +431,10 @@ function PipelineBuilderInner() {
           />
         )}
 
-        {nodeTypeList && <QuickAddPalette nodeTypes={nodeTypeList} onAdd={actions.handleQuickAdd} />}
-        {nodes.length > 0 && <FindNodePalette nodes={nodes} onSelect={setSelectedNodeId} />}
-        {quickAddOpen && nodeTypeList && (
-          <QuickAddPaletteController onClose={() => setQuickAddOpen(false)} />
+        {nodeTypeList && (
+          <QuickAddPalette nodeTypes={nodeTypeList} onAdd={actions.handleQuickAdd} open={quickAddOpen} onOpenChange={setQuickAddOpen} />
         )}
+        {nodes.length > 0 && <FindNodePalette nodes={nodes} onSelect={setSelectedNodeId} />}
 
         <OnboardingTour />
 
@@ -448,16 +444,6 @@ function PipelineBuilderInner() {
       </div>
     </TooltipProvider>
   );
-}
-
-function QuickAddPaletteController({ onClose }: { onClose: () => void }) {
-  useEffect(() => {
-    const evt = new KeyboardEvent('keydown', { key: 'k', metaKey: true, bubbles: true });
-    window.dispatchEvent(evt);
-    onClose();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-  return null;
 }
 
 export default function PipelineBuilder() {

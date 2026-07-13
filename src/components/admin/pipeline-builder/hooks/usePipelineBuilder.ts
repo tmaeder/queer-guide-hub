@@ -4,14 +4,13 @@ import {
   useNodesState,
   useEdgesState,
   addEdge,
-  type Node,
-  type Edge,
   type Connection,
 } from '@xyflow/react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { untypedFrom } from '@/integrations/supabase/untyped';
 import { toast } from 'sonner';
+import type { AppNode, AppEdge, BaseNodeType, Port } from '../types';
 
 export interface PipelineNodeType {
   id: string;
@@ -23,9 +22,21 @@ export interface PipelineNodeType {
   color: string;
   edge_function: string | null;
   config_schema: Record<string, unknown>;
-  input_ports: Array<{ id: string; label: string; type: string }>;
-  output_ports: Array<{ id: string; label: string; type: string }>;
+  input_ports: Port[];
+  output_ports: Port[];
   is_enabled: boolean;
+}
+
+/**
+ * Persisted node shape in pipeline_definitions.nodes — NOT the canvas shape.
+ * `type` holds the node-type slug the executor dispatches on; loadPipeline
+ * expands it to the canvas shape and save() reverses the transform.
+ */
+export interface StoredPipelineNode {
+  id: string;
+  type?: string;
+  position?: { x: number; y: number };
+  data?: Record<string, unknown>;
 }
 
 export interface PipelineDefinition {
@@ -33,8 +44,8 @@ export interface PipelineDefinition {
   name: string;
   display_name: string;
   description: string;
-  nodes: Node[];
-  edges: Edge[];
+  nodes: StoredPipelineNode[];
+  edges: AppEdge[];
   default_context: Record<string, unknown>;
   max_concurrency: number;
   timeout_seconds: number;
@@ -42,6 +53,25 @@ export interface PipelineDefinition {
   is_template: boolean;
   is_enabled: boolean;
   version: number;
+}
+
+export interface RunResult {
+  pipeline_run_id?: string;
+  dry_run?: boolean;
+}
+
+/** Minimal shape loadPipeline needs — full definitions and version-revert rows both satisfy it. */
+export interface LoadablePipeline {
+  id: string;
+  name: string;
+  display_name?: string | null;
+  description?: string | null;
+  nodes: StoredPipelineNode[];
+  edges: AppEdge[];
+  schedule?: string | null;
+  is_enabled?: boolean;
+  is_template?: boolean;
+  version?: number;
 }
 
 /** Fetch all node types from pipeline_node_types table */
@@ -108,10 +138,43 @@ export function usePipelineDefinitionByName(name: string | undefined) {
   });
 }
 
+/**
+ * Expand persisted nodes (type=<slug>) into the canvas shape (type='baseNode',
+ * data enriched from node types). Shared by the builder's loadPipeline and the
+ * read-only run-snapshot view.
+ */
+export function storedNodesToCanvas(nodes: StoredPipelineNode[], nodeTypes?: PipelineNodeType[]): AppNode[] {
+  const typeBySlug = new Map<string, PipelineNodeType>();
+  for (const nt of nodeTypes || []) typeBySlug.set(nt.slug, nt);
+
+  return (nodes || []).map((n, i) => {
+    const storedData = n.data || {};
+    const slug = (storedData.nodeTypeSlug as string) || n.type || '';
+    const nt = typeBySlug.get(slug);
+    const position = n.position || { x: 50 + i * 240, y: 200 };
+    return {
+      ...n,
+      type: 'baseNode' as const,
+      position,
+      data: {
+        label: (storedData.label as string) || nt?.display_name || slug,
+        config: (storedData.config as Record<string, unknown>) || {},
+        icon: (storedData.icon as string) || nt?.icon || 'Box',
+        color: (storedData.color as string) || nt?.color || 'hsl(var(--muted-foreground))',
+        category: (storedData.category as string) || nt?.category,
+        description: (storedData.description as string) || nt?.description,
+        nodeTypeSlug: slug,
+        inputPorts: (storedData.inputPorts as Port[]) || nt?.input_ports || [],
+        outputPorts: (storedData.outputPorts as Port[]) || nt?.output_ports || [],
+      },
+    };
+  });
+}
+
 /** Main pipeline builder hook — manages React Flow state + save/load */
 export function usePipelineBuilder(pipelineId?: string) {
-  const [nodes, setNodes, onNodesChange] = useNodesState([]);
-  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+  const [nodes, setNodes, onNodesChange] = useNodesState<AppNode>([]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState<AppEdge>([]);
   const [pipelineName, setPipelineName] = useState('');
   const [pipelineSlug, setPipelineSlug] = useState<string | null>(null);
   const [currentPipelineId, setCurrentPipelineId] = useState<string | null>(pipelineId ?? null);
@@ -129,7 +192,7 @@ export function usePipelineBuilder(pipelineId?: string) {
   const addNode = useCallback(
     (nodeType: PipelineNodeType, position: { x: number; y: number }) => {
       const id = `${nodeType.slug}-${Date.now()}`;
-      const newNode: Node = {
+      const newNode: BaseNodeType = {
         id,
         type: 'baseNode',
         position,
@@ -158,34 +221,8 @@ export function usePipelineBuilder(pipelineId?: string) {
    * and remembers the original slug so save() can reverse the transform.
    */
   const loadPipeline = useCallback(
-    (pipeline: PipelineDefinition, nodeTypes?: PipelineNodeType[]) => {
-      const typeBySlug = new Map<string, PipelineNodeType>();
-      for (const nt of nodeTypes || []) typeBySlug.set(nt.slug, nt);
-
-      const transformed = (pipeline.nodes || []).map((n: Node, i: number) => {
-        const storedType = (n as Node & { type?: string }).type || '';
-        const storedData = (n.data || {}) as Record<string, unknown>;
-        const slug = (storedData.nodeTypeSlug as string) || storedType;
-        const nt = typeBySlug.get(slug);
-        const position = n.position || { x: 50 + i * 240, y: 200 };
-        return {
-          ...n,
-          type: 'baseNode',
-          position,
-          data: {
-            label: (storedData.label as string) || nt?.display_name || slug,
-            config: storedData.config || {},
-            icon: (storedData.icon as string) || nt?.icon || 'Box',
-            color: (storedData.color as string) || nt?.color || 'hsl(var(--muted-foreground))',
-            category: (storedData.category as string) || nt?.category,
-            description: (storedData.description as string) || nt?.description,
-            nodeTypeSlug: slug,
-            inputPorts: (storedData.inputPorts as unknown) || nt?.input_ports || [],
-            outputPorts: (storedData.outputPorts as unknown) || nt?.output_ports || [],
-          },
-        } as Node;
-      });
-      setNodes(transformed);
+    (pipeline: LoadablePipeline, nodeTypes?: PipelineNodeType[]) => {
+      setNodes(storedNodesToCanvas(pipeline.nodes, nodeTypes));
       setEdges((pipeline.edges || []).map(e => ({ ...e, animated: true })));
       setPipelineName(pipeline.display_name || pipeline.name);
       setPipelineSlug(pipeline.name);
@@ -196,14 +233,14 @@ export function usePipelineBuilder(pipelineId?: string) {
   );
 
   /** Save mutation — converts type='baseNode' back to node type slug for executor */
-  const saveMutation = useMutation({
+  const saveMutation = useMutation<void, Error, { name?: string } | undefined>({
     mutationFn: async (overrides?: { name?: string }) => {
       const name = overrides?.name || pipelineName || `pipeline-${Date.now()}`;
       const slug = pipelineSlug || slugify(name);
 
       const serializedNodes = nodes.map(n => {
         const d = (n.data || {}) as Record<string, unknown>;
-        const nodeTypeSlug = (d.nodeTypeSlug as string) || (n as Node & { type?: string }).type || '';
+        const nodeTypeSlug = (d.nodeTypeSlug as string) || n.type || '';
         return {
           id: n.id,
           type: nodeTypeSlug,
@@ -252,7 +289,7 @@ export function usePipelineBuilder(pipelineId?: string) {
   });
 
   /** Run mutation — starts pipeline execution (30s timeout, 1 retry) */
-  const runMutation = useMutation({
+  const runMutation = useMutation<RunResult, Error, { dryRun?: boolean } | undefined>({
     retry: 1,
     mutationFn: async (options?: { dryRun?: boolean }) => {
       const controller = new AbortController();
@@ -268,7 +305,7 @@ export function usePipelineBuilder(pipelineId?: string) {
           },
         });
         if (error) throw error;
-        return data;
+        return data as RunResult;
       } catch (e) {
         if ((e as Error).name === 'AbortError') throw new Error('Pipeline executor timed out after 30s', { cause: e });
         throw e;

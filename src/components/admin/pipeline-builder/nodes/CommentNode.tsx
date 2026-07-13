@@ -2,11 +2,7 @@ import { memo, useState, useRef, useEffect } from 'react';
 import { NodeResizer, type NodeProps } from '@xyflow/react';
 import { StickyNote, Palette } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-
-interface CommentNodeData {
-  text?: string;
-  color?: string;
-}
+import type { CommentNodeData, CommentNodeType } from '../types';
 
 const COLORS = [
   { name: 'yellow', bg: 'hsl(var(--muted))', border: 'hsl(var(--foreground) / 0.55)', text: 'hsl(var(--foreground) / 0.7)' },
@@ -16,8 +12,7 @@ const COLORS = [
   { name: 'gray', bg: 'hsl(var(--muted))', border: 'hsl(var(--muted-foreground))', text: 'hsl(var(--foreground))' },
 ];
 
-function CommentNode({ data, selected, id }: NodeProps) {
-  const d = data as CommentNodeData;
+function CommentNode({ data: d, selected, id }: NodeProps<CommentNodeType>) {
   const [editing, setEditing] = useState(false);
   const [text, setText] = useState(d.text || '');
   const [color, setColor] = useState(d.color || 'yellow');

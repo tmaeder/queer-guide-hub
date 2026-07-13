@@ -4,11 +4,10 @@ import {
   Background,
   MiniMap,
   ConnectionLineType,
-  type Node,
-  type Edge,
   type Connection,
   type NodeChange,
   type EdgeChange,
+  type NodeTypes,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 
@@ -16,26 +15,25 @@ import CanvasControls from './panels/CanvasControls';
 import CanvasEmptyState from './panels/CanvasEmptyState';
 import MultiSelectActionBar from './panels/MultiSelectActionBar';
 import type { PipelineExport } from './panels/ImportExportMenu';
-
-type NodeTypeMap = Record<string, React.ComponentType<unknown>>;
+import { isBaseNode, type AppNode, type AppEdge } from './types';
 
 interface Props {
-  nodes: Node[];
-  edges: Edge[];
+  nodes: AppNode[];
+  edges: AppEdge[];
   validationNodeIds: Set<string>;
   hasNodeTypeList: boolean;
   pipelineName: string;
   selectedCount: number;
-  nodeTypes: NodeTypeMap;
-  onNodesChange: (changes: NodeChange[]) => void;
-  onEdgesChange: (changes: EdgeChange[]) => void;
+  nodeTypes: NodeTypes;
+  onNodesChange: (changes: NodeChange<AppNode>[]) => void;
+  onEdgesChange: (changes: EdgeChange<AppEdge>[]) => void;
   onConnect: (c: Connection) => void;
   onDrop: React.DragEventHandler;
   onDragOver: React.DragEventHandler;
-  onNodeClick: (event: React.MouseEvent, node: Node) => void;
-  onEdgeClick: (event: React.MouseEvent, edge: Edge) => void;
+  onNodeClick: (event: React.MouseEvent, node: AppNode) => void;
+  onEdgeClick: (event: React.MouseEvent, edge: AppEdge) => void;
   onPaneClick: () => void;
-  onNodeContextMenu: (event: React.MouseEvent, node: Node) => void;
+  onNodeContextMenu: (event: React.MouseEvent, node: AppNode) => void;
   onDeselectAll: () => void;
   onBulkDelete: () => void;
   onBulkDuplicate: () => void;
@@ -59,8 +57,8 @@ const PipelineCanvas = forwardRef<HTMLDivElement, Props>(function PipelineCanvas
 
   return (
     <div ref={ref} className="flex-1 min-h-0 relative">
-      <ReactFlow
-        nodes={nodes.map(n => validationNodeIds.has(n.id) ? {
+      <ReactFlow<AppNode, AppEdge>
+        nodes={nodes.map(n => validationNodeIds.has(n.id) && isBaseNode(n) ? {
           ...n,
           data: { ...n.data, hasValidationIssue: true },
         } : n)}
@@ -70,11 +68,11 @@ const PipelineCanvas = forwardRef<HTMLDivElement, Props>(function PipelineCanvas
         onConnect={onConnect}
         onDrop={onDrop}
         onDragOver={onDragOver}
-        onNodeClick={onNodeClick as (event: React.MouseEvent, node: unknown) => void}
-        onEdgeClick={onEdgeClick as (event: React.MouseEvent, edge: unknown) => void}
+        onNodeClick={onNodeClick}
+        onEdgeClick={onEdgeClick}
         onPaneClick={onPaneClick}
-        onNodeContextMenu={onNodeContextMenu as (event: React.MouseEvent, node: unknown) => void}
-        nodeTypes={nodeTypes as Record<string, React.ComponentType<unknown>>}
+        onNodeContextMenu={onNodeContextMenu}
+        nodeTypes={nodeTypes}
         fitView
         deleteKeyCode={null}
         multiSelectionKeyCode="Shift"
@@ -88,9 +86,9 @@ const PipelineCanvas = forwardRef<HTMLDivElement, Props>(function PipelineCanvas
         className="bg-muted/10"
       >
         <Background gap={16} size={1} />
-        <MiniMap
+        <MiniMap<AppNode>
           nodeStrokeWidth={2}
-          nodeColor={(node) => (node.data as Record<string, string>)?.color || 'hsl(var(--muted-foreground))'}
+          nodeColor={(node) => node.data.color || 'hsl(var(--muted-foreground))'}
           className="!bg-background !border"
           position="bottom-left"
         />

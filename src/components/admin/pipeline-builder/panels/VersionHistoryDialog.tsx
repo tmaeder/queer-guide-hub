@@ -7,7 +7,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { untypedFrom } from '@/integrations/supabase/untyped';
-import type { Node, Edge } from '@xyflow/react';
+import type { StoredPipelineNode } from '../hooks/usePipelineBuilder';
+import type { AppEdge } from '../types';
 
 interface VersionRow {
   id: string;
@@ -16,8 +17,8 @@ interface VersionRow {
   name: string;
   display_name: string | null;
   description: string | null;
-  nodes: Node[];
-  edges: Edge[];
+  nodes: StoredPipelineNode[];
+  edges: AppEdge[];
   schedule: string | null;
   saved_by: string | null;
   saved_at: string;

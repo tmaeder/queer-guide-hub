@@ -36,8 +36,10 @@ describe('PipelineToolbar', () => {
         toastChangesDiscarded={vi.fn()} resetUndo={vi.fn()}
         undo={vi.fn()} redo={vi.fn()} canUndo={false} canRedo={false}
         handleAutoLayout={vi.fn()} handleAddComment={vi.fn()} handleAddGroup={vi.fn()}
+        onOpenQuickAdd={vi.fn()}
         nodes={[]} edges={[]} selectedForTemplateNodes={[]} selectedForTemplateEdges={[]}
         handleTemplateApply={vi.fn()} applyAISuggestion={vi.fn()} handleImport={vi.fn()}
+        templateLibraryOpen={false} templateLibraryMode="browse" onTemplateLibraryOpenChange={vi.fn()}
         loadVersionRevert={vi.fn()}
         activeRunId={null} runStatus={null} setActiveRunId={vi.fn()} clearOverlay={vi.fn()}
         logDrawerOpen={false} setLogDrawerOpen={vi.fn()}

@@ -3380,5 +3380,20 @@
     "gated": {
       "privacy": "[AR] An account is free and private: your profile is never shown to other visitors unless you choose, and we never share what you view."
     }
+  },
+  "connections": {
+    "title": "[AR] Connections",
+    "subtitle": "[AR] Explore how places, events and people on queer.guide relate to each other.",
+    "hint": "[AR] Click a card to expand its connections. Drag to rearrange, scroll to zoom. The arrow opens the detail page.",
+    "mobileHint": "[AR] Closest connections first. Re-center to explore from another entity.",
+    "stats": "[AR] {{nodes}} entities, {{links}} links",
+    "open": "[AR] Open {{title}}",
+    "openShort": "[AR] Open",
+    "recenter": "[AR] Connections",
+    "error": "[AR] Could not load connections. Please try again later.",
+    "emptyTitle": "[AR] Pick a starting point",
+    "emptyDescription": "[AR] Open any venue, event, city or person and use its Connections button to explore from there.",
+    "emptyCta": "[AR] Search the guide",
+    "explore": "[AR] Explore connections"
   }
 }

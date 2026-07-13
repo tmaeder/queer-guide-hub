@@ -29,7 +29,18 @@ function wrapper({ children }: { children: ReactNode }) {
 
 describe('TemplateLibrary', () => {
   it('renders trigger button', () => {
-    render(<TemplateLibrary selectedNodes={[]} selectedEdges={[]} onApply={vi.fn()} />, { wrapper });
+    render(
+      <TemplateLibrary selectedNodes={[]} selectedEdges={[]} onApply={vi.fn()} open={false} onOpenChange={vi.fn()} />,
+      { wrapper },
+    );
     expect(screen.getAllByRole('button').length).toBeGreaterThan(0);
+  });
+
+  it('opens in save mode when initialMode="save"', () => {
+    render(
+      <TemplateLibrary selectedNodes={[]} selectedEdges={[]} onApply={vi.fn()} open onOpenChange={vi.fn()} initialMode="save" />,
+      { wrapper },
+    );
+    expect(screen.getByText(/Select one or more nodes on the canvas first/i)).toBeInTheDocument();
   });
 });

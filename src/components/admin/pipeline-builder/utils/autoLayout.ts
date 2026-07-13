@@ -2,8 +2,9 @@ import type { Node, Edge } from '@xyflow/react';
 
 // Tuned for readable flows: wider horizontal spacing for clean edge curves,
 // generous vertical spacing so labels don't overlap crossing edges.
-const NODE_WIDTH = 220;
-const NODE_HEIGHT = 100;
+// NODE_WIDTH/NODE_HEIGHT mirror BaseNode's rendered box (min-w-[200px] max-w-[280px]).
+export const NODE_WIDTH = 220;
+export const NODE_HEIGHT = 100;
 const H_GAP = 180;   // column-to-column spacing (horizontal)
 const V_GAP = 70;    // row-to-row spacing within a column
 const ROOT_X = 80;
@@ -23,6 +24,11 @@ export interface LayoutOptions {
  * Topological level-based auto-layout with multi-pass barycenter crossing
  * minimization and vertical centering.
  *
+ * Deliberately hand-rolled instead of dagre/elkjs: pipelines are ~5-30 nodes,
+ * this stays pure/deterministic/dependency-free, and phases 4-5 below
+ * (density-aware gap inflation, column midline centering) aren't free in either
+ * library. Revisit only if pipelines grow past a few hundred nodes.
+ *
  * Phases:
  *  1. Level assignment (longest path from a source)
  *  2. Initial ordering by insertion / parent-avg
@@ -32,7 +38,7 @@ export interface LayoutOptions {
  *  4. Gap inflation for dense columns (columns with many fan-in/fan-out get extra V_GAP)
  *  5. Vertical centering so all columns align around a common midline
  */
-export function autoLayout(nodes: Node[], edges: Edge[], opts: LayoutOptions = {}): Node[] {
+export function autoLayout<N extends Node>(nodes: N[], edges: Edge[], opts: LayoutOptions = {}): N[] {
   if (nodes.length === 0) return nodes;
 
   const nodeWidth  = opts.nodeWidth  ?? NODE_WIDTH;
@@ -157,6 +163,6 @@ export function autoLayout(nodes: Node[], edges: Edge[], opts: LayoutOptions = {
         x: ROOT_X + lvl * (nodeWidth + hGap),
         y: ROOT_Y + yOffset + idx * (nodeHeight + g),
       },
-    };
+    } as N;
   });
 }
