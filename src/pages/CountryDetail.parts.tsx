@@ -1,4 +1,5 @@
-import { MapPin, Building2, Calendar, Newspaper, Activity, Loader2 } from 'lucide-react';
+import { MapPin, Building2, Calendar, Newspaper, Activity, Loader2, ShieldAlert } from 'lucide-react';
+import { hasAnyCriminalizationSignal } from '@/utils/equalityScore';
 import { MapShell } from '@/components/map/MapShell';
 import { MAP_SHELL_ENABLED } from '@/lib/featureFlags';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -172,6 +173,27 @@ export function CountryTravelTab({
   activitiesTitle: string;
   activitiesDescription: string;
 }) {
+  // High-stakes composition rule: where LGBTQ+ people face criminal penalties,
+  // a page must not read like a holiday pitch. Deals and activity upsells are
+  // suppressed in favor of a sober pointer to the rights section.
+  if (hasAnyCriminalizationSignal(country.lgbti_criminalization)) {
+    return (
+      <div className="flex gap-4 rounded-container border border-destructive/40 p-6">
+        <ShieldAlert size={18} aria-hidden="true" className="mt-0.5 shrink-0 text-destructive" />
+        <div className="flex flex-col gap-2">
+          <p className="text-body-lg font-medium">
+            We don't promote travel deals for destinations where LGBTQ+ people face criminal
+            penalties.
+          </p>
+          <p className="text-15 text-muted-foreground">
+            If you need to travel to {country.name}, read the rights section on this page first and
+            use the trip planner — it includes a safety briefing for high-risk destinations.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-6">
       <TravelDealsSection

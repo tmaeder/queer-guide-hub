@@ -70,10 +70,18 @@ export function CityTravelHub({
   const { data: flightDeals, isLoading: flightsLoading } = useTravelDeals({
     origin: originIata || undefined,
     destination: destinationIata || undefined,
-    type: destinationIata ? 'flights' : 'popular_routes',
+    type: 'flights',
     limit: 3,
-    enabled: !!originIata,
+    // Without a destination IATA there is nothing truthful to show — a
+    // popular_routes fallback gets mislabeled with this city's name.
+    enabled: !!originIata && !!destinationIata,
   });
+
+  // Only deals that actually fly to this city, with a real price.
+  const matchedDeals = (flightDeals ?? []).filter(
+    (deal) =>
+      deal.destination === destinationIata && Number.isFinite(deal.price) && deal.price > 0,
+  );
 
   const { data: hotelResults, isLoading: hotelsLoading } = useHotelSearch({
     city: destinationCity,
@@ -98,9 +106,9 @@ export function CityTravelHub({
         />
         {originLoading || flightsLoading ? (
           <LoadingRow />
-        ) : flightDeals && flightDeals.length > 0 ? (
+        ) : matchedDeals.length > 0 ? (
           <ResultsRow>
-            {flightDeals.slice(0, 3).map((deal, i) => (
+            {matchedDeals.slice(0, 3).map((deal, i) => (
               <TravelDealCard
                 key={`${deal.origin}-${deal.destination}-${i}`}
                 deal={deal}

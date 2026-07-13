@@ -97,7 +97,7 @@ export function EntityDetailLayout({
 
   if (error) {
     return (
-      <div className="container mx-auto py-8" data-testid="entity-detail-error">
+      <div className="container mx-auto px-4 py-8" data-testid="entity-detail-error">
         <Alert variant="destructive">
           <AlertTitle>Failed to load</AlertTitle>
           <AlertDescription>{error.message || 'Something went wrong.'}</AlertDescription>
@@ -108,7 +108,7 @@ export function EntityDetailLayout({
 
   if (loading) {
     return (
-      <div className="container mx-auto py-8" data-testid="entity-detail-loading">
+      <div className="container mx-auto px-4 py-8" data-testid="entity-detail-loading">
         <Skeleton variant="rectangular" height={32} style={{ width: '40%' }} className="mb-4" />
         <Skeleton variant="rectangular" height={192} className="mb-6 rounded-container" />
         <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr] gap-6">
@@ -125,7 +125,7 @@ export function EntityDetailLayout({
         style={{ scaleX, transformOrigin: '0%' }}
         className="fixed top-0 left-0 right-0 h-[2px] bg-foreground z-[1200]"
       />
-      <div className="container mx-auto py-8" data-testid="entity-detail-layout">
+      <div className="container mx-auto px-4 py-8" data-testid="entity-detail-layout">
         <div className="mb-6">{hero}</div>
 
         <div className={`grid grid-cols-1 ${sidebar ? 'md:grid-cols-[2fr_1fr]' : ''} gap-6`}>

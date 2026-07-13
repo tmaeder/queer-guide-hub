@@ -2946,7 +2946,8 @@
       "conversionTherapy": "Conversion therapy",
       "intersex": "Intersex bodily integrity",
       "ilgaLink": "ILGA World Database"
-    }
+    },
+    "planTripHighRisk": "Plan carefully — safety briefing included"
   },
   "extension": {
     "signInGate": {
@@ -3335,5 +3336,15 @@
     "going": "going",
     "friendsSaved": "friends saved",
     "inTrips": "in trips"
+  },
+  "discovery": {
+    "nextLeg": {
+      "risk": "Legal risk"
+    }
+  },
+  "safety": {
+    "gated": {
+      "privacy": "An account is free and private: your profile is never shown to other visitors unless you choose, and we never share what you view."
+    }
   }
 }

@@ -22,17 +22,20 @@ export interface CitySectionDef {
   label: string;
   /** Editorial section heading — fuller voice. */
   heading: string;
-  kicker: string;
+  /** Optional eyebrow. Only where it adds information the heading doesn't
+   *  carry — a kicker on every section is scaffolding, not voice
+   *  (2026-07 critique: eyebrow saturation was the site's top AI tell). */
+  kicker?: string;
 }
 
 export const CITY_SECTION_DEFS: CitySectionDef[] = [
   { id: 'rights', label: 'Safety', heading: 'Safety & rights', kicker: 'Know before you go' },
   { id: 'venues', label: 'Venues', heading: 'Where to go', kicker: 'Bars, clubs & spaces' },
-  { id: 'events', label: 'Events', heading: "What's on", kicker: 'Upcoming' },
-  { id: 'map', label: 'Map', heading: 'On the map', kicker: 'Explore' },
+  { id: 'events', label: 'Events', heading: "What's on" },
+  { id: 'map', label: 'Map', heading: 'On the map' },
   { id: 'personalities', label: 'Voices', heading: 'Voices', kicker: 'People & history' },
-  { id: 'overview', label: 'About', heading: 'About the city', kicker: 'Context' },
-  { id: 'travel', label: 'Travel', heading: 'Getting there', kicker: 'Plan the trip' },
-  { id: 'news', label: 'News', heading: 'In the news', kicker: 'Latest' },
-  { id: 'nearby', label: 'Nearby', heading: 'Nearby', kicker: 'Keep exploring' },
+  { id: 'overview', label: 'About', heading: 'About the city' },
+  { id: 'travel', label: 'Travel', heading: 'Getting there' },
+  { id: 'news', label: 'News', heading: 'In the news' },
+  { id: 'nearby', label: 'Nearby', heading: 'Nearby' },
 ];

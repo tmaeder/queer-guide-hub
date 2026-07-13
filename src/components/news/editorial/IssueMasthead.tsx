@@ -22,7 +22,7 @@ export function IssueMasthead({ totalArticles, sourceCount }: IssueMastheadProps
       </h1>
       {(totalArticles !== undefined || sourceCount !== undefined) && (
         <p className="mt-4 text-13 text-muted-foreground uppercase tracking-wider">
-          {totalArticles !== undefined && <>{totalArticles} stories</>}
+          {totalArticles !== undefined && <>{totalArticles.toLocaleString()} stories</>}
           {totalArticles !== undefined && sourceCount !== undefined && <> · </>}
           {sourceCount !== undefined && <>{sourceCount} sources worldwide</>}
         </p>

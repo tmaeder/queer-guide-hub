@@ -523,6 +523,13 @@ export const UniversalSearchBar = () => {
             e.preventDefault();
             suppressReopenRef.current = true;
             inputRef.current?.focus();
+            // If the input was already focused, no focus event fires to consume
+            // the flag — a stale flag then swallows the NEXT genuine focus and
+            // the popover refuses to reopen until the user retypes. Clear it as
+            // soon as this dismissal settles.
+            setTimeout(() => {
+              suppressReopenRef.current = false;
+            }, 0);
           }}
           onEscapeKeyDown={(e) => {
             if (mode === 'ask') {
