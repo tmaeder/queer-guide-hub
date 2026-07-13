@@ -1,12 +1,24 @@
 import { useQuery } from '@tanstack/react-query';
 import { untypedFrom } from '@/integrations/supabase/untyped';
+import type { NodeRunStatus, AppEdge } from '../types';
+import type { StoredPipelineNode } from './usePipelineBuilder';
 
-interface PipelineRun {
+export interface PipelineRunNodeState {
+  status: NodeRunStatus;
+  started_at?: string;
+  completed_at?: string;
+  items_in: number;
+  items_out: number;
+  error?: string;
+  duration_ms?: number;
+}
+
+export interface PipelineRun {
   id: string;
   pipeline_id: string;
   pipeline_name: string;
   status: string;
-  node_states: Record<string, { status: string; started_at?: string; completed_at?: string; items_in: number; items_out: number; error?: string; duration_ms?: number }>;
+  node_states: Record<string, PipelineRunNodeState>;
   items_total: number;
   items_processed: number;
   items_succeeded: number;
@@ -18,7 +30,7 @@ interface PipelineRun {
   triggered_by: string;
   created_at: string;
   pipeline_version: number | null;
-  pipeline_snapshot: Record<string, unknown> | null;
+  pipeline_snapshot: { nodes?: StoredPipelineNode[]; edges?: AppEdge[] } | null;
 }
 
 interface CircuitBreaker {

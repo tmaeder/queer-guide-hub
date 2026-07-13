@@ -1,15 +1,15 @@
 import { useCallback, useEffect, useMemo } from 'react';
 import { toast } from 'sonner';
-import type { Node, Edge } from '@xyflow/react';
-import { autoLayout } from '../utils/autoLayout';
+import { autoLayout, NODE_WIDTH, NODE_HEIGHT } from '../utils/autoLayout';
 import type { PipelineExport } from '../panels/ImportExportMenu';
 import type { PipelineNodeType } from './usePipelineBuilder';
+import { isBaseNode, type AppNode, type AppEdge, type CommentNodeType, type GroupNodeType, type CommentNodeData, type GroupNodeData } from '../types';
 
 interface Args {
-  nodes: Node[];
-  edges: Edge[];
-  setNodes: (updater: Node[] | ((nds: Node[]) => Node[])) => void;
-  setEdges: (updater: Edge[] | ((eds: Edge[]) => Edge[])) => void;
+  nodes: AppNode[];
+  edges: AppEdge[];
+  setNodes: (updater: AppNode[] | ((nds: AppNode[]) => AppNode[])) => void;
+  setEdges: (updater: AppEdge[] | ((eds: AppEdge[]) => AppEdge[])) => void;
   setIsDirty: (v: boolean) => void;
   setSelectedNodeId: (id: string | null) => void;
   selectedNodeId: string | null;
@@ -31,6 +31,8 @@ interface Args {
   configClipboardRef: React.MutableRefObject<Record<string, unknown> | null>;
 }
 
+const slugOf = (n: AppNode) => (isBaseNode(n) ? n.data.nodeTypeSlug : undefined) || 'node';
+
 export function usePipelineActions(a: Args) {
   const {
     nodes, edges, setNodes, setEdges, setIsDirty,
@@ -51,8 +53,8 @@ export function usePipelineActions(a: Args) {
     const src = nodes.find(n => n.id === nodeId);
     if (!src) return;
     undoRedo.commitNow();
-    const newId = `${(src.data as { nodeTypeSlug?: string })?.nodeTypeSlug || 'node'}-${Date.now()}`;
-    const clone: Node = {
+    const newId = `${slugOf(src)}-${Date.now()}`;
+    const clone: AppNode = {
       ...src,
       id: newId,
       position: { x: (src.position?.x || 0) + 40, y: (src.position?.y || 0) + 40 },
@@ -78,7 +80,7 @@ export function usePipelineActions(a: Args) {
 
   const copyNodeConfig = useCallback((nodeId: string) => {
     const n = nodes.find(x => x.id === nodeId);
-    const cfg = (n?.data as { config?: Record<string, unknown> } | undefined)?.config;
+    const cfg = n && isBaseNode(n) ? n.data.config : undefined;
     if (cfg && Object.keys(cfg).length > 0) {
       configClipboardRef.current = JSON.parse(JSON.stringify(cfg));
       toast.success('Config copied', { description: `${Object.keys(cfg).length} fields` });
@@ -92,9 +94,8 @@ export function usePipelineActions(a: Args) {
     if (!cfg) return;
     undoRedo.commitNow();
     setNodes(nds => nds.map(n => {
-      if (n.id !== nodeId) return n;
-      const d = n.data as Record<string, unknown>;
-      return { ...n, data: { ...d, config: { ...(d.config as Record<string, unknown> || {}), ...cfg } } };
+      if (n.id !== nodeId || !isBaseNode(n)) return n;
+      return { ...n, data: { ...n.data, config: { ...(n.data.config || {}), ...cfg } } };
     }));
     setIsDirty(true);
     toast.success('Config pasted');
@@ -117,17 +118,15 @@ export function usePipelineActions(a: Args) {
       : { x: 300, y: 200 };
     undoRedo.commitNow();
     const id = `comment-${Date.now()}`;
-    setNodes(nds => [
-      ...nds,
-      {
-        id,
-        type: 'commentNode',
-        position,
-        data: { text: '', color: 'yellow' },
-        width: 220,
-        height: 120,
-      } as Node,
-    ]);
+    const commentNode: CommentNodeType = {
+      id,
+      type: 'commentNode',
+      position,
+      data: { text: '', color: 'yellow' },
+      width: 220,
+      height: 120,
+    };
+    setNodes(nds => [...nds, commentNode]);
     setIsDirty(true);
     setSelectedNodeId(id);
   }, [setNodes, setSelectedNodeId, setIsDirty, undoRedo, reactFlowWrapperRef]);
@@ -141,8 +140,8 @@ export function usePipelineActions(a: Args) {
     const PADDING = 40;
     const xs = selected.map(n => n.position?.x || 0);
     const ys = selected.map(n => n.position?.y || 0);
-    const maxXs = selected.map(n => (n.position?.x || 0) + (n.width || 220));
-    const maxYs = selected.map(n => (n.position?.y || 0) + (n.height || 100));
+    const maxXs = selected.map(n => (n.position?.x || 0) + (n.width || NODE_WIDTH));
+    const maxYs = selected.map(n => (n.position?.y || 0) + (n.height || NODE_HEIGHT));
     const minX = Math.min(...xs) - PADDING;
     const minY = Math.min(...ys) - PADDING * 1.5;
     const maxX = Math.max(...maxXs) + PADDING;
@@ -150,7 +149,7 @@ export function usePipelineActions(a: Args) {
 
     undoRedo.commitNow();
     const id = `group-${Date.now()}`;
-    const groupNode: Node = {
+    const groupNode: GroupNodeType = {
       id,
       type: 'groupNode',
       position: { x: minX, y: minY },
@@ -160,7 +159,7 @@ export function usePipelineActions(a: Args) {
       selectable: true,
       draggable: true,
       zIndex: -1,
-    } as Node;
+    };
     setNodes(nds => [groupNode, ...nds.map(n => ({ ...n, selected: false }))]);
     setIsDirty(true);
   }, [nodes, setNodes, setIsDirty, undoRedo]);
@@ -168,9 +167,9 @@ export function usePipelineActions(a: Args) {
   // Comment/group inline edit listener
   useEffect(() => {
     const onCommentUpdate = (e: Event) => {
-      const detail = (e as CustomEvent).detail as { nodeId: string; updates: Record<string, unknown> };
+      const detail = (e as CustomEvent).detail as { nodeId: string; updates: Partial<CommentNodeData & GroupNodeData> };
       setNodes(nds => nds.map(n => n.id === detail.nodeId
-        ? { ...n, data: { ...n.data, ...detail.updates } }
+        ? { ...n, data: { ...n.data, ...detail.updates } } as AppNode
         : n
       ));
       setIsDirty(true);
@@ -201,8 +200,8 @@ export function usePipelineActions(a: Args) {
     undoRedo.commitNow();
     const idMap = new Map<string, string>();
     const now = Date.now();
-    const clones: Node[] = selected.map((src, i) => {
-      const newId = `${(src.data as { nodeTypeSlug?: string })?.nodeTypeSlug || 'node'}-${now}-${i}`;
+    const clones: AppNode[] = selected.map((src, i) => {
+      const newId = `${slugOf(src)}-${now}-${i}`;
       idMap.set(src.id, newId);
       return {
         ...src,
@@ -213,7 +212,7 @@ export function usePipelineActions(a: Args) {
       };
     });
     const selectedIds = new Set(selected.map(n => n.id));
-    const cloneEdges: Edge[] = edges
+    const cloneEdges: AppEdge[] = edges
       .filter(e => selectedIds.has(e.source) && selectedIds.has(e.target))
       .map((e, i) => ({
         ...e,
@@ -260,7 +259,7 @@ export function usePipelineActions(a: Args) {
       label: condition ? condition.slice(0, 30) + (condition.length > 30 ? '…' : '') : undefined,
       labelStyle: { fontSize: 10, fill: 'hsl(var(--muted-foreground))' },
       labelBgStyle: { fill: 'hsl(var(--background))' },
-      labelBgPadding: [4, 2],
+      labelBgPadding: [4, 2] as [number, number],
       labelBgBorderRadius: 4,
     } : e));
     setIsDirty(true);
@@ -274,11 +273,11 @@ export function usePipelineActions(a: Args) {
 
   const handleImport = useCallback((data: PipelineExport) => {
     if (isDirty && !window.confirm('Unsaved changes will be lost. Continue with import?')) return;
-    const imported: Node[] = data.nodes.map(n => {
+    const imported: AppNode[] = data.nodes.map(n => {
       const nt = nodeTypeList?.find(t => t.slug === (n.data?.nodeTypeSlug || n.type));
       return {
         id: n.id,
-        type: 'baseNode',
+        type: 'baseNode' as const,
         position: n.position,
         data: {
           label: n.data?.label,
@@ -294,35 +293,44 @@ export function usePipelineActions(a: Args) {
       };
     });
     setNodes(imported);
-    setEdges(data.edges.map(e => ({ ...e, animated: true })) as Edge[]);
+    setEdges(data.edges.map(e => ({
+      id: e.id,
+      source: e.source,
+      target: e.target,
+      sourceHandle: e.sourceHandle,
+      targetHandle: e.targetHandle,
+      data: e.condition ? { condition: e.condition } : undefined,
+      animated: true,
+    })));
     setPipelineName(data.display_name || data.name);
     setIsDirty(true);
   }, [isDirty, nodeTypeList, setNodes, setEdges, setPipelineName, setIsDirty]);
 
-  const handleTemplateApply = useCallback((template: { nodes: Node[]; edges: Edge[] }) => {
+  const handleTemplateApply = useCallback((template: { nodes: AppNode[]; edges: AppEdge[] }) => {
     const offset = { x: 50, y: 50 };
     const idMap = new Map<string, string>();
     const now = Date.now();
-    const newNodes: Node[] = template.nodes.map((n, i) => {
-      const newId = `${(n.data as { nodeTypeSlug?: string })?.nodeTypeSlug || 'node'}-${now}-${i}`;
+    const newNodes: AppNode[] = template.nodes.map((n, i) => {
+      const newId = `${slugOf(n)}-${now}-${i}`;
       idMap.set(n.id, newId);
-      const nt = nodeTypeList?.find(t => t.slug === ((n.data as { nodeTypeSlug?: string })?.nodeTypeSlug));
+      const nt = nodeTypeList?.find(t => t.slug === (isBaseNode(n) ? n.data.nodeTypeSlug : undefined));
+      const d = n.data as Record<string, unknown>;
       return {
         ...n,
         id: newId,
-        type: 'baseNode',
+        type: 'baseNode' as const,
         position: { x: (n.position?.x || 0) + offset.x, y: (n.position?.y || 0) + offset.y },
         data: {
-          ...n.data,
-          icon: nt?.icon || (n.data as { icon?: string })?.icon || 'Box',
-          color: nt?.color || (n.data as { color?: string })?.color || 'hsl(var(--muted-foreground))',
+          ...d,
+          icon: nt?.icon || (d.icon as string) || 'Box',
+          color: nt?.color || (d.color as string) || 'hsl(var(--muted-foreground))',
           inputPorts: nt?.input_ports || [],
           outputPorts: nt?.output_ports || [],
         },
         selected: true,
       };
     });
-    const newEdges: Edge[] = template.edges.map((e, i) => ({
+    const newEdges: AppEdge[] = template.edges.map((e, i) => ({
       ...e,
       id: `${e.id}-${now}-${i}`,
       source: idMap.get(e.source) || e.source,
@@ -335,7 +343,8 @@ export function usePipelineActions(a: Args) {
   }, [nodeTypeList, setNodes, setEdges, setIsDirty]);
 
   const handleUpdateNode = useCallback((nodeId: string, data: Record<string, unknown>) => {
-    setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data } : n));
+    // Config panel edits schema-driven fields; it hands back the node's own data shape.
+    setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data } as AppNode : n));
     setIsDirty(true);
   }, [setNodes, setIsDirty]);
 
@@ -360,7 +369,7 @@ export function usePipelineActions(a: Args) {
     setIsDirty(true);
   }, [addNode, setIsDirty, reactFlowWrapperRef]);
 
-  const onNodeClick = useCallback((_: unknown, node: Node) => {
+  const onNodeClick = useCallback((_: React.MouseEvent, node: AppNode) => {
     setSelectedNodeId(node.id);
   }, [setSelectedNodeId]);
 
@@ -374,8 +383,8 @@ export function usePipelineActions(a: Args) {
 }
 
 export function usePipelineDerived(
-  nodes: Node[],
-  edges: Edge[],
+  nodes: AppNode[],
+  edges: AppEdge[],
   nodeTypeList: PipelineNodeType[] | undefined,
   paletteSearch: string,
   selectedNodeId: string | null,
@@ -410,11 +419,11 @@ export function usePipelineDerived(
     if (!nodeTypeList) return { count: 0, nodeIds: new Set<string>() };
     const nodeIds = new Set<string>();
     for (const n of nodes) {
-      const d = n.data as { nodeTypeSlug?: string; config?: Record<string, unknown> };
-      const nt = nodeTypeList.find(t => t.slug === d.nodeTypeSlug);
+      if (!isBaseNode(n)) continue;
+      const nt = nodeTypeList.find(t => t.slug === n.data.nodeTypeSlug);
       const schema = nt?.config_schema as { required?: string[] } | undefined;
       const required = schema?.required || [];
-      const config = d.config || {};
+      const config = n.data.config || {};
       const missing = required.some(k => config[k] === undefined || config[k] === null || config[k] === '');
       if (missing) nodeIds.add(n.id);
     }
@@ -423,4 +432,3 @@ export function usePipelineDerived(
 
   return { selectedNode, selectedForTemplate, nodeTypesByCategory, validationIssues };
 }
-

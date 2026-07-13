@@ -39,6 +39,7 @@ const Wishlists = lazyRetry(() => import('./pages/Wishlists'));
 
 const Places = lazyRetry(() => import('./pages/Places'));
 const Resources = lazyRetry(() => import('./pages/Resources'));
+const ConnectionsExplorer = lazyRetry(() => import('./pages/explore/ConnectionsExplorer'));
 const ResourceTopic = lazyRetry(() => import('./pages/resources/ResourceTopic'));
 const Personalities = lazyRetry(() => import('./pages/Personalities'));
 const PersonalityDetail = lazyRetry(() => import('./pages/PersonalityDetail'));
@@ -514,6 +515,7 @@ export const AppRoutes = () => {
                 <Route path="trips/:tripId" element={<TripWorkspace />} />
                 <Route path="bookings" element={<LocalizedRedirect to="/hub/plans" />} />
                 <Route path="map" element={<MapPage />} />
+                <Route path="explore/connections" element={<ConnectionsExplorer />} />
                 <Route path="flights" element={<Navigate to="/travel" replace />} />
                 <Route path="cities" element={<Cities />} />
                 <Route path="cities/compare" element={<CitiesCompare />} />

@@ -3363,5 +3363,20 @@
     "going": "[ZH] going",
     "friendsSaved": "[ZH] friends saved",
     "inTrips": "[ZH] in trips"
+  },
+  "connections": {
+    "title": "[ZH] Connections",
+    "subtitle": "[ZH] Explore how places, events and people on queer.guide relate to each other.",
+    "hint": "[ZH] Click a card to expand its connections. Drag to rearrange, scroll to zoom. The arrow opens the detail page.",
+    "mobileHint": "[ZH] Closest connections first. Re-center to explore from another entity.",
+    "stats": "[ZH] {{nodes}} entities, {{links}} links",
+    "open": "[ZH] Open {{title}}",
+    "openShort": "[ZH] Open",
+    "recenter": "[ZH] Connections",
+    "error": "[ZH] Could not load connections. Please try again later.",
+    "emptyTitle": "[ZH] Pick a starting point",
+    "emptyDescription": "[ZH] Open any venue, event, city or person and use its Connections button to explore from there.",
+    "emptyCta": "[ZH] Search the guide",
+    "explore": "[ZH] Explore connections"
   }
 }

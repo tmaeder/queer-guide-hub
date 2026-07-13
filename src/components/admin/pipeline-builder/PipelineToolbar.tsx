@@ -1,4 +1,4 @@
-import type { Node, Edge } from '@xyflow/react';
+import type { Node } from '@xyflow/react';
 import { formatDistanceToNow } from 'date-fns';
 import {
   Save, Play, PlayCircle, BarChart3, Upload, Plus, Clock, Loader2, Check,
@@ -21,19 +21,8 @@ import PresenceIndicator from './panels/PresenceIndicator';
 import AISuggestDialog from './panels/AISuggestDialog';
 import TemplateLibrary from './panels/TemplateLibrary';
 import ImportExportMenu, { type PipelineExport } from './panels/ImportExportMenu';
-import type { PipelineNodeType } from './hooks/usePipelineBuilder';
-
-interface PipelineDef {
-  id: string;
-  name: string;
-  display_name?: string;
-  is_enabled?: boolean;
-  is_template?: boolean;
-  schedule?: unknown;
-  version?: number;
-  nodes?: unknown;
-  edges?: unknown;
-}
+import type { PipelineNodeType, PipelineDefinition, LoadablePipeline, StoredPipelineNode } from './hooks/usePipelineBuilder';
+import type { AppNode, AppEdge } from './types';
 
 interface LatestRun {
   id: string;
@@ -50,11 +39,11 @@ interface Props {
   // pipeline selection
   selectedPipelineId: string | undefined;
   setSelectedPipelineId: (id: string | undefined) => void;
-  pipelineList: PipelineDef[] | undefined;
+  pipelineList: PipelineDefinition[] | undefined;
   isDirty: boolean;
   setViewingRunId: (id: string | null) => void;
   setParams: (updater: (prev: URLSearchParams) => URLSearchParams) => void;
-  setNodes: (updater: Node[] | ((nds: Node[]) => Node[])) => void;
+  setNodes: (updater: AppNode[] | ((nds: AppNode[]) => AppNode[])) => void;
   setIsDirty: (b: boolean) => void;
   setPipelineName: (n: string) => void;
   pipelineName: string;
@@ -65,8 +54,7 @@ interface Props {
   handleSave: () => void;
   handleRun: (opts?: { dryRun?: boolean }) => void;
   // discard
-  selectedPipelineId_forDiscard?: string | undefined;
-  loadPipeline: (def: unknown, nodeTypeList: unknown) => void;
+  loadPipeline: (def: LoadablePipeline, nodeTypeList: PipelineNodeType[] | undefined) => void;
   nodeTypeList: PipelineNodeType[] | undefined;
   toastChangesDiscarded: () => void;
   resetUndo: () => void;
@@ -79,17 +67,21 @@ interface Props {
   handleAutoLayout: () => void;
   handleAddComment: () => void;
   handleAddGroup: () => void;
+  onOpenQuickAdd: () => void;
   // dialogs / panels data
-  nodes: Node[];
-  edges: Edge[];
-  selectedForTemplateNodes: Node[];
-  selectedForTemplateEdges: Edge[];
-  handleTemplateApply: (template: { nodes: Node[]; edges: Edge[] }) => void;
-  applyAISuggestion: (n: Node[], e: Edge[]) => void;
+  nodes: AppNode[];
+  edges: AppEdge[];
+  selectedForTemplateNodes: AppNode[];
+  selectedForTemplateEdges: AppEdge[];
+  handleTemplateApply: (template: { nodes: AppNode[]; edges: AppEdge[] }) => void;
+  templateLibraryOpen: boolean;
+  templateLibraryMode: 'browse' | 'save';
+  onTemplateLibraryOpenChange: (open: boolean) => void;
+  applyAISuggestion: (n: AppNode[], e: AppEdge[]) => void;
   handleImport: (data: PipelineExport) => void;
   loadVersionRevert: (v: {
-    pipeline_id: string; name: string; display_name?: string; description?: string;
-    nodes: unknown; edges: unknown; schedule?: unknown; version: number;
+    pipeline_id: string; name: string; display_name?: string | null; description?: string | null;
+    nodes: StoredPipelineNode[]; edges: AppEdge[]; schedule?: string | null; version: number;
   }) => void;
   // run state
   activeRunId: string | null;
@@ -97,7 +89,7 @@ interface Props {
   setActiveRunId: (id: string | null) => void;
   clearOverlay: () => void;
   logDrawerOpen: boolean;
-  setLogDrawerOpen: (fn: (o: boolean) => boolean) => void;
+  setLogDrawerOpen: React.Dispatch<React.SetStateAction<boolean>>;
   // metrics
   viewingRunId: string | null;
   latestRun: LatestRun | undefined;
@@ -251,10 +243,7 @@ export default function PipelineToolbar(p: Props) {
             size="sm"
             variant="ghost"
             className="h-8 w-8 p-0"
-            onClick={() => {
-              const evt = new KeyboardEvent('keydown', { key: 'k', metaKey: true, ctrlKey: true, bubbles: true });
-              window.dispatchEvent(evt);
-            }}
+            onClick={p.onOpenQuickAdd}
           >
             <Command className="h-3.5 w-3.5" />
           </Button>
@@ -283,7 +272,8 @@ export default function PipelineToolbar(p: Props) {
         savedDef={(() => {
           const def = p.pipelineList?.find(pp => pp.id === p.selectedPipelineId);
           if (!def) return null;
-          return { nodes: (def.nodes as Node[]) || [], edges: (def.edges as Edge[]) || [] };
+          // Persisted shape (type=slug, optional position) diffed against canvas nodes — id/data/position only.
+          return { nodes: (def.nodes as unknown as Node[]) || [], edges: def.edges || [] };
         })()}
       />
       <ScheduleDialog
@@ -303,6 +293,9 @@ export default function PipelineToolbar(p: Props) {
         selectedNodes={p.selectedForTemplateNodes}
         selectedEdges={p.selectedForTemplateEdges}
         onApply={p.handleTemplateApply}
+        open={p.templateLibraryOpen}
+        onOpenChange={p.onTemplateLibraryOpenChange}
+        initialMode={p.templateLibraryMode}
       />
       {p.nodeTypeList && (
         <AISuggestDialog

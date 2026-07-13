@@ -2,11 +2,7 @@ import { memo, useState, useRef, useEffect } from 'react';
 import { NodeResizer, type NodeProps } from '@xyflow/react';
 import { Folder, Palette } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-
-interface GroupNodeData {
-  label?: string;
-  color?: string;
-}
+import type { GroupNodeData, GroupNodeType } from '../types';
 
 const COLORS = [
   { name: 'indigo', bg: 'hsl(var(--muted-foreground) / 0.08)', border: 'hsl(var(--muted-foreground) / 0.4)', accent: 'hsl(var(--muted-foreground))' },
@@ -16,8 +12,7 @@ const COLORS = [
   { name: 'slate', bg: 'hsl(var(--muted-foreground) / 0.08)', border: 'hsl(var(--muted-foreground) / 0.4)', accent: 'hsl(var(--muted-foreground))' },
 ];
 
-function GroupNode({ data, selected, id }: NodeProps) {
-  const d = data as GroupNodeData;
+function GroupNode({ data: d, selected, id }: NodeProps<GroupNodeType>) {
   const [editing, setEditing] = useState(false);
   const [label, setLabel] = useState(d.label || 'Group');
   const [color, setColor] = useState(d.color || 'indigo');

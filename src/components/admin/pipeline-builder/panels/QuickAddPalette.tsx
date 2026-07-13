@@ -1,4 +1,3 @@
-import { useState, useEffect } from 'react';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { resolvePipelineIcon } from '../icon-registry';
@@ -7,6 +6,8 @@ import type { PipelineNodeType } from '../hooks/usePipelineBuilder';
 interface QuickAddPaletteProps {
   nodeTypes: PipelineNodeType[];
   onAdd: (nodeType: PipelineNodeType) => void;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }
 
 const categoryLabels: Record<string, string> = {
@@ -18,25 +19,10 @@ const categoryLabels: Record<string, string> = {
   control: 'Control',
 };
 
-export default function QuickAddPalette({ nodeTypes, onAdd }: QuickAddPaletteProps) {
-  const [open, setOpen] = useState(false);
-
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      const mod = e.metaKey || e.ctrlKey;
-      const inInput = ['INPUT', 'TEXTAREA'].includes(document.activeElement?.tagName || '');
-      if (mod && e.key === 'k' && !inInput) {
-        e.preventDefault();
-        setOpen(o => !o);
-      }
-    };
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
-  }, []);
-
+export default function QuickAddPalette({ nodeTypes, onAdd, open, onOpenChange }: QuickAddPaletteProps) {
   const handleSelect = (nt: PipelineNodeType) => {
     onAdd(nt);
-    setOpen(false);
+    onOpenChange(false);
   };
 
   // Group by category, preserve category order
@@ -49,7 +35,7 @@ export default function QuickAddPalette({ nodeTypes, onAdd }: QuickAddPalettePro
   const orderedCategories = categoryOrder.filter(c => grouped[c]?.length > 0);
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="p-0 max-w-xl gap-0">
         <Command className="rounded-element">
           <CommandInput placeholder="Type to search nodes... (Esc to close)" autoFocus />

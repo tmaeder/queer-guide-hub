@@ -1,11 +1,11 @@
 import { useEffect, useRef } from 'react';
-import type { Node, Edge } from '@xyflow/react';
+import type { AppNode, AppEdge } from '../types';
 
 export interface DraftSnapshot {
   pipelineId?: string;
   pipelineName: string;
-  nodes: Node[];
-  edges: Edge[];
+  nodes: AppNode[];
+  edges: AppEdge[];
   savedAt: number;
 }
 
@@ -21,8 +21,8 @@ const MAX_AGE_MS = 24 * 60 * 60 * 1000; // 24h
 export function useDraftAutosave(
   pipelineId: string | undefined,
   pipelineName: string,
-  nodes: Node[],
-  edges: Edge[],
+  nodes: AppNode[],
+  edges: AppEdge[],
   isDirty: boolean,
 ) {
   const timerRef = useRef<number | null>(null);

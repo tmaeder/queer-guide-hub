@@ -3363,5 +3363,20 @@
     "going": "[KO] going",
     "friendsSaved": "[KO] friends saved",
     "inTrips": "[KO] in trips"
+  },
+  "connections": {
+    "title": "[KO] Connections",
+    "subtitle": "[KO] Explore how places, events and people on queer.guide relate to each other.",
+    "hint": "[KO] Click a card to expand its connections. Drag to rearrange, scroll to zoom. The arrow opens the detail page.",
+    "mobileHint": "[KO] Closest connections first. Re-center to explore from another entity.",
+    "stats": "[KO] {{nodes}} entities, {{links}} links",
+    "open": "[KO] Open {{title}}",
+    "openShort": "[KO] Open",
+    "recenter": "[KO] Connections",
+    "error": "[KO] Could not load connections. Please try again later.",
+    "emptyTitle": "[KO] Pick a starting point",
+    "emptyDescription": "[KO] Open any venue, event, city or person and use its Connections button to explore from there.",
+    "emptyCta": "[KO] Search the guide",
+    "explore": "[KO] Explore connections"
   }
 }

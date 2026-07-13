@@ -3399,5 +3399,20 @@
     "going": "[RU] going",
     "friendsSaved": "[RU] friends saved",
     "inTrips": "[RU] in trips"
+  },
+  "connections": {
+    "title": "[RU] Connections",
+    "subtitle": "[RU] Explore how places, events and people on queer.guide relate to each other.",
+    "hint": "[RU] Click a card to expand its connections. Drag to rearrange, scroll to zoom. The arrow opens the detail page.",
+    "mobileHint": "[RU] Closest connections first. Re-center to explore from another entity.",
+    "stats": "[RU] {{nodes}} entities, {{links}} links",
+    "open": "[RU] Open {{title}}",
+    "openShort": "[RU] Open",
+    "recenter": "[RU] Connections",
+    "error": "[RU] Could not load connections. Please try again later.",
+    "emptyTitle": "[RU] Pick a starting point",
+    "emptyDescription": "[RU] Open any venue, event, city or person and use its Connections button to explore from there.",
+    "emptyCta": "[RU] Search the guide",
+    "explore": "[RU] Explore connections"
   }
 }

@@ -1,9 +1,9 @@
 import { useCallback, useRef, useState } from 'react';
-import type { Node, Edge } from '@xyflow/react';
+import type { AppNode, AppEdge } from '../types';
 
 interface Snapshot {
-  nodes: Node[];
-  edges: Edge[];
+  nodes: AppNode[];
+  edges: AppEdge[];
 }
 
 interface UndoRedoOpts {
@@ -17,10 +17,10 @@ interface UndoRedoOpts {
  * connect, node add/remove, config edit.
  */
 export function useUndoRedo(
-  nodes: Node[],
-  edges: Edge[],
-  setNodes: (n: Node[]) => void,
-  setEdges: (e: Edge[]) => void,
+  nodes: AppNode[],
+  edges: AppEdge[],
+  setNodes: (n: AppNode[]) => void,
+  setEdges: (e: AppEdge[]) => void,
   { maxHistory = 50, debounceMs = 300 }: UndoRedoOpts = {},
 ) {
   const pastRef = useRef<Snapshot[]>([]);
