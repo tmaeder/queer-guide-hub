@@ -37,19 +37,30 @@ export function useEntityImageAssets(
 
     (async () => {
       const ids = key.split(',');
-      const { data, error } = await untypedFrom('image_asset_links')
-        .select('entity_id, role, image_assets!inner(optimized_url, thumbnail_url, optimization_status, status)')
-        .eq('entity_type', entityType)
-        .in('entity_id', ids)
-        .eq('image_assets.status', 'active');
+      // Chunk ids — one giant in.() filter exceeds PostgREST's URL length
+      // limit (400) once callers pass a few hundred entities.
+      const CHUNK = 100;
+      const chunks: string[][] = [];
+      for (let i = 0; i < ids.length; i += CHUNK) chunks.push(ids.slice(i, i + CHUNK));
+      const results = await Promise.all(
+        chunks.map((chunk) =>
+          untypedFrom('image_asset_links')
+            .select('entity_id, role, image_assets!inner(optimized_url, thumbnail_url, optimization_status, status)')
+            .eq('entity_type', entityType)
+            .in('entity_id', chunk)
+            .eq('image_assets.status', 'active'),
+        ),
+      );
 
       if (cancelled) return;
-      if (error) {
-        console.warn('useEntityImageAssets:', error.message);
+      const firstError = results.find((r) => r.error)?.error;
+      if (firstError) {
+        console.warn('useEntityImageAssets:', firstError.message);
         setAssets(new Map());
         setLoading(false);
         return;
       }
+      const data = results.flatMap((r) => r.data ?? []);
 
       const map = new Map<string, EntityImageAsset>();
       type Row = {
