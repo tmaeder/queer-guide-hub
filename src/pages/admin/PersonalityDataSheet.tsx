@@ -2,6 +2,7 @@ import { useEffect, useMemo } from 'react';
 import { useParams, useSearchParams } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
 import { fetchAdminPersonalityById } from '@/hooks/usePageFetchers';
+import { personalityStatus } from '@/lib/personalityStatus';
 
 /**
  * Admin-only person data sheet ("Datenblatt"), ported from the standalone PHP
@@ -59,16 +60,6 @@ interface AdminPersonality {
   birth_city?: BirthCity;
 }
 
-/** Traffic-light status, mirroring the PHP tool's `ampel_status`. */
-function statusOf(p: AdminPersonality): { tone: string; label: string } {
-  if (p.review_status === 'rejected' || p.verification_status === 'rejected')
-    return { tone: 'red', label: 'Gesperrt / abgelehnt' };
-  if (p.needs_attention || p.verification_status === 'pending' || p.review_status === 'pending')
-    return { tone: 'yellow', label: 'Zu prüfen' };
-  if (p.verification_status === 'verified') return { tone: 'green', label: 'Freigegeben' };
-  return { tone: 'gray', label: 'Ohne Status' };
-}
-
 const toList = (v: unknown): string[] => {
   if (Array.isArray(v)) return v.map((x) => (typeof x === 'string' ? x : JSON.stringify(x)));
   if (v && typeof v === 'object') return Object.values(v as Record<string, unknown>).map(String);
@@ -113,7 +104,7 @@ export default function PersonalityDataSheet() {
   if (error || !data) return <div className="p-8">Person nicht gefunden.</div>;
 
   const p = data;
-  const st = statusOf(p);
+  const st = personalityStatus(p);
   const social = (p.social_links && typeof p.social_links === 'object' ? p.social_links : {}) as Record<string, string>;
   const external = (p.external_ids && typeof p.external_ids === 'object' ? p.external_ids : {}) as Record<string, string>;
   const fields = toList(p.fields);
