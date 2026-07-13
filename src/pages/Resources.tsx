@@ -428,7 +428,7 @@ export default function Resources() {
         <h1 className="text-3xl font-bold mb-2">{t('resources.tagNotFound.title')}</h1>
         <p className="text-muted-foreground mb-6">
           <Trans i18nKey="resources.tagNotFound.bodyPrefix" values={{ tag: tagName ?? '' }} />
-          <code className="px-1 py-0.5 rounded bg-muted">/{tagName ?? ''}</code>.
+          <code className="px-1 py-0.5 rounded-badge bg-muted">/{tagName ?? ''}</code>.
         </p>
         <Button
           onClick={() => {

@@ -67,7 +67,7 @@ function CountBadge({ count, overdue }: { count: number | undefined; overdue?: n
       )}
       <span
         className={cn(
-          'inline-flex items-center justify-center rounded h-5 min-w-7 px-1.5 text-2xs font-semibold',
+          'inline-flex items-center justify-center rounded-badge h-5 min-w-7 px-1.5 text-2xs font-semibold',
           hasOverdue ? 'bg-destructive/10 text-foreground' : 'bg-muted text-muted-foreground',
         )}
       >
@@ -193,7 +193,7 @@ export function AdminSidebar() {
             )}
             {hasCount &&
               (countsLoading ? (
-                <Skeleton className="w-7 h-[18px] rounded-[9px]" />
+                <Skeleton className="w-7 h-[18px] rounded-full" />
               ) : (
                 <CountBadge count={count} overdue={overdue} />
               ))}

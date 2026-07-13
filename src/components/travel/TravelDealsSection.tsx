@@ -39,7 +39,7 @@ export function TravelDealsSection({ destinationIata, destinationCity }: TravelD
         <Skeleton className="h-7 w-[200px]" />
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           {[1, 2, 3].map((i) => (
-            <Skeleton key={i} className="h-[140px] rounded" />
+            <Skeleton key={i} className="h-[140px]" />
           ))}
         </div>
       </div>
@@ -84,7 +84,7 @@ export function TravelDealsSection({ destinationIata, destinationCity }: TravelD
       {loading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           {[1, 2, 3].map((i) => (
-            <Skeleton key={i} className="h-[140px] rounded" />
+            <Skeleton key={i} className="h-[140px]" />
           ))}
         </div>
       ) : matchedDeals.length > 0 ? (

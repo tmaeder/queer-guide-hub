@@ -358,7 +358,7 @@ export function EmailIngestionsManager() {
                       {ing.error_message && (
                         <div className="md:col-span-2">
                           <div
-                            className="flex items-start gap-2 p-4 rounded"
+                            className="flex items-start gap-2 p-4 rounded-element"
                             style={{
                               backgroundColor: 'hsl(var(--destructive) / 0.08)',
                               border: '1px solid hsl(var(--destructive) / 0.2)',
@@ -426,7 +426,7 @@ export function EmailIngestionsManager() {
                         <div className="md:col-span-2">
                           <span className="font-medium">Body Preview:</span>
                           <p
-                            className="text-sm text-muted-foreground mt-1 p-2 rounded overflow-auto whitespace-pre-wrap"
+                            className="text-sm text-muted-foreground mt-1 p-2 rounded-element overflow-auto whitespace-pre-wrap"
                             style={{
                               maxHeight: 200,
                               fontSize: '0.8rem',
@@ -456,7 +456,7 @@ export function EmailIngestionsManager() {
                           </Button>
                           {expandedJson.has(ing.id) && (
                             <pre
-                              className="mt-2 p-4 rounded overflow-auto text-xs"
+                              className="mt-2 p-4 rounded-element overflow-auto text-xs"
                               style={{
                                 backgroundColor: 'hsl(var(--foreground) / 0.05)',
                                 maxHeight: 400,

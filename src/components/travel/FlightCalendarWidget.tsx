@@ -82,7 +82,7 @@ export function FlightCalendarWidget({
             return (
               <div
                 key={m.date}
-                className={`text-center rounded flex-shrink-0 ${
+                className={`text-center rounded-element flex-shrink-0 ${
                   isCheapest ? 'bg-primary text-primary-foreground' : 'bg-accent text-foreground'
                 }`}
                 style={{ minWidth: 72, padding: 8 }}
@@ -135,7 +135,7 @@ export function FlightCalendarWidget({
           return (
             <div
               key={p.date}
-              className={`text-center rounded flex-shrink-0 ${
+              className={`text-center rounded-element flex-shrink-0 ${
                 isCheapest ? 'bg-primary text-primary-foreground' : 'bg-accent text-foreground'
               }`}
               style={{ minWidth: 56, padding: 6 }}

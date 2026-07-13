@@ -93,7 +93,7 @@ function GroupNode({ data: d, selected, id }: NodeProps<GroupNodeType>) {
         <Popover>
           <PopoverTrigger asChild>
             <button
-              className="p-0.5 rounded hover:bg-black/5 transition-colors"
+              className="p-0.5 rounded-badge hover:bg-black/5 transition-colors"
               title="Change color"
               onClick={(e) => e.stopPropagation()}
             >

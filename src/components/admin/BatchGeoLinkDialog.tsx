@@ -197,7 +197,7 @@ export default function BatchGeoLinkDialog({ onComplete }: BatchGeoLinkDialogPro
           </div>
 
           {/* Info box */}
-          <div className="bg-muted rounded p-4">
+          <div className="bg-muted rounded-element p-4">
             <span className="text-xs text-muted-foreground">
               <strong>No AI cost</strong> — Uses deterministic alias normalization and
               exact matching against 351 cities and 199 countries in the database.
@@ -211,7 +211,7 @@ export default function BatchGeoLinkDialog({ onComplete }: BatchGeoLinkDialogPro
                 <Loader2 size={16} className="animate-spin" />
                 <span className="text-sm">Processing...</span>
               </div>
-              <div className="h-1 w-full overflow-hidden rounded bg-secondary">
+              <div className="h-1 w-full overflow-hidden rounded-badge bg-secondary">
                 <div className="h-full w-1/3 animate-pulse bg-primary" />
               </div>
             </div>

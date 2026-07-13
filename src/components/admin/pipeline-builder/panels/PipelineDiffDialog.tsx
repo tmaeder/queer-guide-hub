@@ -124,7 +124,7 @@ export default function PipelineDiffDialog({ currentNodes, currentEdges, savedDe
                 </div>
                 <div className="space-y-1">
                   {diff.nodes.added.map(n => (
-                    <div key={n.id} className="text-xs font-mono bg-muted dark:bg-foreground/30 border border-foreground/40 dark:border-foreground/40 rounded px-2 py-1 flex gap-2">
+                    <div key={n.id} className="text-xs font-mono bg-muted dark:bg-foreground/30 border border-foreground/40 dark:border-foreground/40 rounded-element px-2 py-1 flex gap-2">
                       <span className="text-foreground dark:text-foreground">+</span>
                       <span>{labelFor(n)}</span>
                       <span className="text-muted-foreground ml-auto text-2xs">{n.id.slice(0, 16)}</span>
@@ -142,7 +142,7 @@ export default function PipelineDiffDialog({ currentNodes, currentEdges, savedDe
                 </div>
                 <div className="space-y-1">
                   {diff.nodes.removed.map(n => (
-                    <div key={n.id} className="text-xs font-mono bg-destructive/10 dark:bg-destructive/30 border border-destructive dark:border-destructive rounded px-2 py-1 flex gap-2">
+                    <div key={n.id} className="text-xs font-mono bg-destructive/10 dark:bg-destructive/30 border border-destructive dark:border-destructive rounded-element px-2 py-1 flex gap-2">
                       <span className="text-destructive">−</span>
                       <span>{labelFor(n)}</span>
                       <span className="text-muted-foreground ml-auto text-2xs">{n.id.slice(0, 16)}</span>
@@ -160,7 +160,7 @@ export default function PipelineDiffDialog({ currentNodes, currentEdges, savedDe
                 </div>
                 <div className="space-y-1">
                   {diff.nodes.modified.map(m => (
-                    <div key={m.current.id} className="text-xs font-mono bg-muted dark:bg-foreground/30 border border-border dark:border-border rounded px-2 py-1 flex gap-2 items-center">
+                    <div key={m.current.id} className="text-xs font-mono bg-muted dark:bg-foreground/30 border border-border dark:border-border rounded-element px-2 py-1 flex gap-2 items-center">
                       <span className="text-foreground dark:text-foreground">~</span>
                       <span>{labelFor(m.current)}</span>
                       <div className="flex gap-1">
@@ -183,7 +183,7 @@ export default function PipelineDiffDialog({ currentNodes, currentEdges, savedDe
                 </div>
                 <div className="space-y-1">
                   {diff.edges.added.map(e => (
-                    <div key={e.id} className="text-xs font-mono bg-muted dark:bg-foreground/30 border border-foreground/40 dark:border-foreground/40 rounded px-2 py-1 flex gap-2 truncate">
+                    <div key={e.id} className="text-xs font-mono bg-muted dark:bg-foreground/30 border border-foreground/40 dark:border-foreground/40 rounded-element px-2 py-1 flex gap-2 truncate">
                       <span className="text-foreground dark:text-foreground">+</span>
                       <span className="truncate">
                         {e.source.slice(0, 20)} <span className="text-muted-foreground mx-1">→</span> {e.target.slice(0, 20)}
@@ -202,7 +202,7 @@ export default function PipelineDiffDialog({ currentNodes, currentEdges, savedDe
                 </div>
                 <div className="space-y-1">
                   {diff.edges.removed.map(e => (
-                    <div key={e.id} className="text-xs font-mono bg-destructive/10 dark:bg-destructive/30 border border-destructive dark:border-destructive rounded px-2 py-1 flex gap-2 truncate">
+                    <div key={e.id} className="text-xs font-mono bg-destructive/10 dark:bg-destructive/30 border border-destructive dark:border-destructive rounded-element px-2 py-1 flex gap-2 truncate">
                       <span className="text-destructive">−</span>
                       <span className="truncate">
                         {e.source.slice(0, 20)} <span className="text-muted-foreground mx-1">→</span> {e.target.slice(0, 20)}

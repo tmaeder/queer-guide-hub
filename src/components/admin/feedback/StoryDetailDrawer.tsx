@@ -420,7 +420,7 @@ export function StoryDetailDrawer({
               {feedbackMembers.map((item) => (
                 <div
                   key={item.id}
-                  className="p-2.5 border border-border flex items-start gap-2 rounded"
+                  className="p-2.5 border border-border flex items-start gap-2 rounded-element"
                 >
                   <MessageSquare size={14} className="mt-0.5" />
                   <div className="flex-1 min-w-0">
@@ -455,7 +455,7 @@ export function StoryDetailDrawer({
               {errorMembers.map((item) => (
                 <div
                   key={item.id}
-                  className="p-2.5 border border-border flex items-start gap-2 rounded"
+                  className="p-2.5 border border-border flex items-start gap-2 rounded-element"
                 >
                   <AlertTriangle size={14} className="mt-0.5" />
                   <div className="flex-1 min-w-0">

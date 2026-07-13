@@ -190,7 +190,7 @@ export function NewsSavedSearchesPanel({
                           <button
                             type="button"
                             onClick={() => void handleToggleAlert(s)}
-                            className="p-1 rounded hover:bg-background"
+                            className="p-1 rounded-element hover:bg-background"
                             aria-label={s.alert_enabled ? 'Disable alert' : 'Enable alert'}
                             title={s.alert_enabled ? 'Disable alert' : 'Enable alert'}
                           >
@@ -201,7 +201,7 @@ export function NewsSavedSearchesPanel({
                           <button
                             type="button"
                             onClick={() => void handleDelete(s.id)}
-                            className="p-1 rounded hover:bg-background"
+                            className="p-1 rounded-element hover:bg-background"
                             aria-label="Delete"
                           >
                             <Trash2 size={13} className="text-muted-foreground hover:text-destructive" />

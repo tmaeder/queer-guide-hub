@@ -331,7 +331,7 @@ export function FeedbackButton() {
                 </div>
                 {includeScreenshot && screenshotUrlRef.current && (
                   <div
-                    className="mt-2 border border-border rounded overflow-hidden ml-8"
+                    className="mt-2 border border-border rounded-element overflow-hidden ml-8"
                     style={{ maxWidth: 220 }}
                   >
                     <img
@@ -345,7 +345,7 @@ export function FeedbackButton() {
               </div>
 
               {/* Context preview */}
-              <div className="mb-4 rounded bg-muted p-2.5" style={{ fontSize: '0.7rem' }}>
+              <div className="mb-4 rounded-element bg-muted p-2.5" style={{ fontSize: '0.7rem' }}>
                 <p className="block text-xs text-muted-foreground">
                   Automatically included: current page URL, browser info, recent errors
                 </p>

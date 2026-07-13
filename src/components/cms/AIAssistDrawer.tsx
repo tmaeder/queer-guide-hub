@@ -192,7 +192,7 @@ export function AIAssistDrawer({
                 </div>
                 <p className="block text-xs text-muted-foreground mb-2">{meta.description}</p>
                 {result && (
-                  <pre className="m-0 mb-2 p-2 bg-muted border border-border rounded text-xs whitespace-pre-wrap break-words max-h-40 overflow-auto">
+                  <pre className="m-0 mb-2 p-2 bg-muted border border-border rounded-element text-xs whitespace-pre-wrap break-words max-h-40 overflow-auto">
                     {typeof result.output === 'string'
                       ? result.output
                       : JSON.stringify(result.output, null, 2)}

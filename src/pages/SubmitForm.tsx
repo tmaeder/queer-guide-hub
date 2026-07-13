@@ -321,7 +321,7 @@ function SubmitFormInner({ config }: SubmitFormInnerProps) {
               {/* Connector line */}
               {i < config.steps.length - 1 && (
                 <div
-                  className="flex-1 h-0.5 rounded mx-1 min-w-4"
+                  className="flex-1 h-0.5 rounded-badge mx-1 min-w-4"
                   style={{
                     backgroundColor: i < currentStep
                       ? 'hsl(var(--foreground))'
@@ -501,7 +501,7 @@ function SubmitFormInner({ config }: SubmitFormInnerProps) {
                 <div
                   role="alert"
                   aria-live="polite"
-                  className="mb-4 p-4 rounded"
+                  className="mb-4 p-4 rounded-element"
                   style={{
                     backgroundColor: 'hsl(var(--destructive) / 0.08)',
                     border: '1px solid hsl(var(--destructive) / 0.35)',

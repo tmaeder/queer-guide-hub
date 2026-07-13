@@ -40,7 +40,7 @@ export function ReplyThread({ replies, contactEmail, onSend, isSending }: Props)
             return (
               <div
                 key={`${r.at}-${i}`}
-                className="p-2 border-l-[3px] bg-muted rounded"
+                className="p-2 border-l-[3px] bg-muted rounded-element"
                 style={{
                   borderColor: isGithub ? 'hsl(var(--muted-foreground))' : 'hsl(var(--foreground))',
                 }}

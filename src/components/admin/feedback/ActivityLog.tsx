@@ -74,7 +74,7 @@ export function ActivityLog({ entries, adminById }: Props) {
           </span>
         </button>
         <CollapsibleContent>
-          <div className="mt-1 p-2 bg-muted rounded max-h-[220px] overflow-y-auto">
+          <div className="mt-1 p-2 bg-muted rounded-element max-h-[220px] overflow-y-auto">
             {grouped.map((e) => (
               <div key={e.id} className="mb-1">
                 <p className="block text-xs2">

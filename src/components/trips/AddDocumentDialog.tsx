@@ -306,7 +306,7 @@ export function AddDocumentDialog({ open, onClose, tripId, defaultType }: Props)
           </div>
 
           {upload.isPending && (
-            <div className="h-1 bg-muted overflow-hidden rounded">
+            <div className="h-1 bg-muted overflow-hidden rounded-badge">
               <div className="h-full bg-primary animate-pulse" style={{ width: '100%' }} />
             </div>
           )}

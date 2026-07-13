@@ -53,7 +53,7 @@ export default function QuickAddPalette({ nodeTypes, onAdd, open, onOpenChange }
                       className="gap-2.5 cursor-pointer"
                     >
                       <div
-                        className="w-5 h-5 rounded flex items-center justify-center shrink-0"
+                        className="w-5 h-5 rounded-badge flex items-center justify-center shrink-0"
                         style={{ backgroundColor: `${nt.color}20`, color: nt.color }}
                       >
                         <Icon className="h-3 w-3" />

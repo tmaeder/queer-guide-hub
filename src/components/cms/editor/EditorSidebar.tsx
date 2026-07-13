@@ -208,10 +208,10 @@ export function EditorSidebar({
                   <img
                     src={att.media.storage_path}
                     alt={att.media.original_filename}
-                    className="w-10 h-10 rounded object-cover flex-shrink-0"
+                    className="w-10 h-10 rounded-element object-cover flex-shrink-0"
                   />
                 ) : (
-                  <div className="flex items-center justify-center flex-shrink-0 bg-muted rounded w-10 h-10">
+                  <div className="flex items-center justify-center flex-shrink-0 bg-muted rounded-element w-10 h-10">
                     <FileText className="text-muted-foreground" size={16} />
                   </div>
                 )}

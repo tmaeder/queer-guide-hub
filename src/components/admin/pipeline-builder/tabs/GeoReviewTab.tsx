@@ -105,7 +105,7 @@ export default function GeoReviewTab() {
                     <div className="text-xs2 text-muted-foreground">
                       match → <span className="font-mono">{matchType}</span>
                       {row.dedup_match_id && (
-                        <span> · <code className="bg-muted px-1 rounded text-2xs">{String(row.dedup_match_id).slice(0, 8)}</code></span>
+                        <span> · <code className="bg-muted px-1 rounded-badge text-2xs">{String(row.dedup_match_id).slice(0, 8)}</code></span>
                       )}
                     </div>
                   </div>

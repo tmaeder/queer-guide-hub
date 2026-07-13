@@ -117,7 +117,7 @@ export function FeedbackCard({
         tabIndex={0}
         style={cardStyle}
         className={cn(
-          'group relative rounded border cursor-pointer transition-all',
+          'group relative rounded-element border cursor-pointer transition-all',
           focused
             ? 'border-primary ring-1 ring-ring'
             : selected

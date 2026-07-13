@@ -80,7 +80,7 @@ export function StoryActivityLog({ storyId, adminById }: Props) {
         </button>
         <CollapsibleContent>
           <div
-            className="mt-1 p-2 bg-muted rounded max-h-[280px] overflow-y-auto"
+            className="mt-1 p-2 bg-muted rounded-element max-h-[280px] overflow-y-auto"
             data-testid="story-timeline"
           >
             {events.map((e) => (

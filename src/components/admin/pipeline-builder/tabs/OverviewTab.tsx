@@ -45,7 +45,7 @@ function humanSchedule(cron: string | null): string {
 function StatusDots({ statuses }: { statuses: string[] }) {
   const cells = Array.from({ length: 10 }, (_, i) => statuses[i]);
   return (
-    <div className="flex gap-[2px]">
+    <div className="flex gap-0.5">
       {cells.map((s, i) => {
         const bg = s === 'completed' ? 'bg-foreground'
                  : s === 'failed' ? 'bg-destructive'
@@ -144,7 +144,7 @@ export default function OverviewTab() {
   const FilterButton = ({ value, label, count }: { value: Filter; label: string; count?: number }) => (
     <button
       onClick={() => setFilter(value)}
-      className={`text-xs px-4 py-1 rounded border transition-colors capitalize ${
+      className={`text-xs px-4 py-1 rounded-badge border transition-colors capitalize ${
         filter === value
           ? 'bg-primary text-primary-foreground border-primary'
           : 'bg-background text-muted-foreground border-border hover:bg-accent'

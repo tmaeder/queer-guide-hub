@@ -97,7 +97,7 @@ export function VenueCheckInButton({
           </DialogTitle>
         </DialogHeader>
         <div className="flex flex-col gap-6">
-          <div className="p-4 bg-accent border border-border rounded">
+          <div className="p-4 bg-accent border border-border rounded-element">
             <div className="flex items-start gap-4">
               <Shield size={20} className="mt-0.5" />
               <div className="flex flex-col gap-1">

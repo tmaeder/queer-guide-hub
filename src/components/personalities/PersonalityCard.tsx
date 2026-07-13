@@ -166,7 +166,7 @@ function PersonalityCardImpl({ personality, loading, onClick, optimizedUrl, thum
 
           {personality.is_featured && (
             <div
-              className="absolute top-2 right-2 flex items-center gap-1 px-2 py-[3px] rounded-full bg-background text-foreground border border-border pointer-events-none select-none text-xs font-semibold"
+              className="absolute top-2 right-2 flex items-center gap-1 px-2 py-1 rounded-full bg-background text-foreground border border-border pointer-events-none select-none text-xs font-semibold"
               style={{ backdropFilter: 'blur(4px)' }}
             >
               <Star

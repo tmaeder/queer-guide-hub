@@ -211,7 +211,7 @@ export function BookNowAccordion({ defaultOpen = false }: Props) {
       hotelSearch.lgbtqFriendlyOnly === true);
 
   return (
-    <section className="border border-border bg-background mb-8 rounded" data-testid="book-now-section">
+    <section className="border border-border bg-background mb-8 rounded-element" data-testid="book-now-section">
       <button
         type="button"
         className="w-full flex items-center justify-between p-6 text-left"
@@ -304,7 +304,7 @@ export function BookNowAccordion({ defaultOpen = false }: Props) {
               {originLoading || flightsLoading ? (
                 <ResultsGrid>
                   {[1, 2, 3, 4, 5, 6].map((i) => (
-                    <Skeleton key={i} className="h-[140px] rounded" />
+                    <Skeleton key={i} className="h-[140px]" />
                   ))}
                 </ResultsGrid>
               ) : popularDeals && popularDeals.length > 0 ? (
@@ -379,7 +379,7 @@ export function BookNowAccordion({ defaultOpen = false }: Props) {
               {hotelsLoading ? (
                 <ResultsGrid>
                   {[1, 2, 3, 4, 5, 6].map((i) => (
-                    <Skeleton key={i} className="h-[240px] rounded" />
+                    <Skeleton key={i} className="h-[240px]" />
                   ))}
                 </ResultsGrid>
               ) : hotelResults && hotelResults.length > 0 ? (
@@ -420,7 +420,7 @@ export function BookNowAccordion({ defaultOpen = false }: Props) {
               {activitiesLoading ? (
                 <ResultsGrid>
                   {[1, 2, 3, 4, 5, 6].map((i) => (
-                    <Skeleton key={i} className="h-[200px] rounded" />
+                    <Skeleton key={i} className="h-[200px]" />
                   ))}
                 </ResultsGrid>
               ) : activityResults && activityResults.length > 0 ? (

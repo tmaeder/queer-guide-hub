@@ -54,7 +54,7 @@ export function ReportHotline({ hotlineId }: { hotlineId: string }) {
       <DialogTrigger asChild>
         <button
           type="button"
-          className="inline-flex items-center gap-1 text-xs text-muted-foreground underline-offset-2 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
+          className="inline-flex items-center gap-1 text-xs text-muted-foreground underline-offset-2 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-badge"
           aria-label={t('help.report_aria', 'Report a problem with this hotline')}
         >
           <Flag size={12} aria-hidden />
