@@ -24,7 +24,8 @@ import { usePreferenceChips, priceRangeFromChips } from '@/hooks/usePreferenceCh
 import { SavedSearchesMenu } from '@/components/search/SavedSearchesMenu';
 import { BackToTopButton } from '@/components/search/BackToTopButton';
 import { LoadMoreSentinel } from '@/components/search/LoadMoreSentinel';
-import { VirtualizedGrid, useGridColumns } from '@/components/ui/VirtualizedGrid';
+import { VirtualizedGrid } from '@/components/ui/VirtualizedGrid';
+import { useGridColumns } from '@/components/ui/useGridColumns';
 import { ResultsMapView } from '@/components/search/ResultsMapView';
 import { SearchScopeChips } from '@/components/search/SearchScopeChips';
 import { SearchResultCard } from '@/components/search/SearchResultCard';

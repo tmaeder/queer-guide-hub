@@ -35,7 +35,8 @@ import {
 import { EmptyState, LoadingTimeout, ErrorState } from '@/components/ui/EmptyState';
 import { MapPin, Grid, Map } from 'lucide-react';
 import type { Database } from '@/integrations/supabase/types';
-import { VirtualizedGrid, useGridColumns } from '@/components/ui/VirtualizedGrid';
+import { VirtualizedGrid } from '@/components/ui/VirtualizedGrid';
+import { useGridColumns } from '@/components/ui/useGridColumns';
 import { cn } from '@/lib/utils';
 import { getVenueVisual } from '@/lib/venueVisual';
 import { useTranslation } from 'react-i18next';

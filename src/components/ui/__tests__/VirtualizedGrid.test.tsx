@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import { VirtualizedGrid, useGridColumns } from '../VirtualizedGrid';
+import { VirtualizedGrid } from '../VirtualizedGrid';
+import { useGridColumns } from '../useGridColumns';
 
 const items = Array.from({ length: 100 }, (_, i) => ({ id: `item-${i}`, label: `Item ${i}` }));
 
