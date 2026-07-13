@@ -2,6 +2,7 @@ import { useEffect, useMemo } from 'react';
 import { useParams, useSearchParams } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
 import { fetchAdminPersonalityById } from '@/hooks/usePageFetchers';
+import { personalityStatus } from '@/lib/personalityStatus';
 
 /**
  * Admin-only person data sheet ("Datenblatt"), ported from the standalone PHP
@@ -113,6 +114,7 @@ export default function PersonalityDataSheet() {
   if (error || !data) return <div className="p-8">Person nicht gefunden.</div>;
 
   const p = data;
+  const st = personalityStatus(p);
   const st = statusOf(p);
   const social = (p.social_links && typeof p.social_links === 'object' ? p.social_links : {}) as Record<string, string>;
   const external = (p.external_ids && typeof p.external_ids === 'object' ? p.external_ids : {}) as Record<string, string>;
