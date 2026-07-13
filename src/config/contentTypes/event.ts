@@ -147,7 +147,18 @@ export const eventFields: FieldConfig[] = [
   { name: 'is_free', label: 'Free Event', type: 'boolean', group: 'details' },
   { name: 'age_restriction', label: 'Age Restriction', type: 'text', group: 'details' },
   { name: 'max_attendees', label: 'Max Attendees', type: 'number', group: 'details', min: 0 },
-  { name: 'organizer_name', label: 'Organizer', type: 'text', group: 'details' },
+  {
+    name: 'organizer_name',
+    label: 'Organizer',
+    type: 'venue_autocomplete',
+    group: 'details',
+    placeholder: 'Search organizers/venues or enter a name…',
+    // Selecting an existing venue links it as the event's organizer entity
+    // (rendered on the event page); free text stays an unlinked label.
+    relatedFields: { venue_id: 'organizer_id' },
+    helpText: 'Pick an existing organizer so its website/socials stay maintained in one place.',
+  },
+  { name: 'organizer_id', label: 'Organizer Reference', type: 'text', group: 'external', hidden: true },
   { name: 'organizer_contact', label: 'Organizer Contact', type: 'text', group: 'details' },
   { name: 'is_recurring', label: 'Recurring', type: 'boolean', group: 'details' },
   { name: 'recurrence_pattern', label: 'Recurrence Pattern', type: 'text', group: 'details' },

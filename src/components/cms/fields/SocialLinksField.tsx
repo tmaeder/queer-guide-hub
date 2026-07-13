@@ -3,6 +3,7 @@ import {
   Globe,
   Music,
   Plus,
+  ShoppingBag,
   X,
 } from 'lucide-react';
 import { Twitter, Instagram, Linkedin, Github, Facebook, Youtube } from '@/components/icons/brand';
@@ -40,6 +41,7 @@ const PLATFORMS: PlatformDef[] = [
   { key: 'spotify', label: 'Spotify', icon: Music, detect: /spotify\.com\//i, placeholder: 'https://open.spotify.com/artist/...' },
   { key: 'soundcloud', label: 'SoundCloud', icon: Music, detect: /soundcloud\.com\//i, placeholder: 'https://soundcloud.com/username' },
   { key: 'patreon', label: 'Patreon', icon: Globe, detect: /patreon\.com\//i, placeholder: 'https://patreon.com/username' },
+  { key: 'shop', label: 'Shop / Merch', icon: ShoppingBag, placeholder: 'https://shop.example.com' },
   { key: 'website', label: 'Website', icon: Globe, placeholder: 'https://example.com' },
 ];
 
