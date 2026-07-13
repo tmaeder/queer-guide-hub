@@ -71,12 +71,13 @@ export default function EqualityScoreBadge({ score, size = 'md' }: EqualityScore
         </div>
       </div>
       {/* The bare number confused first-time visitors (2026-07 critique) —
-          every size now carries its meaning. */}
+          every size now carries its meaning. Neutral ink, not the ring color:
+          the functional score palette is fine for the ring but fails WCAG
+          contrast as tiny text (axe: 2.27:1 for green-on-white at 8px). */}
       <span
-        className="font-semibold uppercase"
+        className="font-semibold uppercase text-muted-foreground"
         style={{
           fontSize: dims.labelSize,
-          color: score != null ? ringColor : '#9ca3af',
           letterSpacing: '0.05em',
         }}
       >
