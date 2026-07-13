@@ -3,7 +3,8 @@ import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { MapPin } from "lucide-react";
-import { mapStyle } from '@/config/mapStyle';
+import { getMapStyle } from '@/config/mapStyle';
+import { useTheme } from '@/components/theme/ThemeProvider';
 
 interface CountryData {
   country: string;
@@ -78,35 +79,40 @@ export const UmamiMap = ({ countryData, loading = false }: UmamiMapProps) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<maplibregl.Map | null>(null);
   const markers = useRef<maplibregl.Marker[]>([]);
+  const { resolvedTheme } = useTheme();
   const [mapReady, setMapReady] = useState(false);
 
-  // Initialize map once
+  // Initialize map — recreated when the theme flips so the basemap follows it.
   useEffect(() => {
-    if (!mapContainer.current) return;
+    if (!mapContainer.current || map.current) return;
 
-    map.current = new maplibregl.Map({
+    const mapInstance = new maplibregl.Map({
       container: mapContainer.current,
-      style: mapStyle,
+      style: getMapStyle(resolvedTheme),
       zoom: 1.5,
       center: [0, 20],
     });
 
-    map.current.addControl(
+    mapInstance.addControl(
       new maplibregl.NavigationControl({
         visualizePitch: true,
       }),
       'top-right'
     );
 
-    map.current.on('load', () => {
+    // Ref publishes on `load` so the marker effect never touches a style
+    // that is still loading (theme-toggle recreate window).
+    mapInstance.on('load', () => {
+      map.current = mapInstance;
       setMapReady(true);
     });
 
     return () => {
-      map.current?.remove();
       map.current = null;
+      setMapReady(false);
+      mapInstance.remove();
     };
-  }, []);
+  }, [resolvedTheme]);
 
   // Update markers when data changes
   useEffect(() => {

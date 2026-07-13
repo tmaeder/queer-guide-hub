@@ -4,7 +4,8 @@ import type { GeoJSONSource } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { Loader2 } from 'lucide-react';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
-import { mapStyle } from '@/config/mapStyle';
+import { useTheme } from '@/components/theme/ThemeProvider';
+import { getMapStyle } from '@/config/mapStyle';
 import type { Database } from '@/integrations/supabase/types';
 import { format } from 'date-fns';
 
@@ -28,27 +29,30 @@ export function EventsMapView({ events, height = 600, className }: EventsMapView
   const [mapReady, setMapReady] = useState(false);
   const [mapError, setMapError] = useState(false);
   const navigate = useLocalizedNavigate();
+  const { resolvedTheme } = useTheme();
 
   const geolocated = events.filter((e) => typeof e.latitude === 'number' && typeof e.longitude === 'number');
 
-  // Init map once
+  // Init map — recreated when the theme flips so the basemap flavor follows it.
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
 
     const map = new maplibregl.Map({
       container: containerRef.current,
-      style: mapStyle,
+      style: getMapStyle(resolvedTheme),
       center: [10, 30],
       zoom: 1.5,
       attributionControl: false,
     });
-    // D1: assign immediately so cleanup runs even if 'load' never fires
-    // (otherwise a slow tile fetch leaks the instance on unmount).
-    mapRef.current = map;
+    // mapRef publishes inside `load` — cleanup removes via the local `map`
+    // binding, so nothing leaks if 'load' never fires; a null ref through the
+    // style-loading window keeps the marker effect from touching an unloaded
+    // style during a theme-toggle recreate.
     map.addControl(new maplibregl.AttributionControl({ compact: true }), 'bottom-right');
     map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
 
     map.on('load', () => {
+      mapRef.current = map;
       setMapReady(true);
       // After mount, the container may have been sized 0 (motion scale, transitions);
       // force a resize so MapLibre picks up the real dimensions.
@@ -80,10 +84,11 @@ export function EventsMapView({ events, height = 600, className }: EventsMapView
       resizeObserver.disconnect();
       popupRef.current?.remove();
       mapRef.current = null;
+      setMapReady(false);
       map.remove();
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [resolvedTheme]);
 
   // Update markers when events change
   useEffect(() => {

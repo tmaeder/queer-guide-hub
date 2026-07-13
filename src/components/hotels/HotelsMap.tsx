@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import maplibregl from 'maplibre-gl';
 import type { GeoJSONSource } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
-import { mapStyle } from '@/config/mapStyle';
+import { getMapStyle } from '@/config/mapStyle';
+import { useTheme } from '@/components/theme/ThemeProvider';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import type { Hotel } from '@/hooks/useHotels';
 
@@ -21,14 +22,15 @@ export function HotelsMap({ hotels, height = 560 }: HotelsMapProps) {
   const mapRef = useRef<maplibregl.Map | null>(null);
   const popupRef = useRef<maplibregl.Popup | null>(null);
   const navigate = useLocalizedNavigate();
+  const { resolvedTheme } = useTheme();
   const [ready, setReady] = useState(false);
 
-  // Init
+  // Init — recreated when the theme flips so the basemap flavor follows it.
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
     const map = new maplibregl.Map({
       container: containerRef.current,
-      style: mapStyle,
+      style: getMapStyle(resolvedTheme),
       center: [10, 20],
       zoom: 1.5,
       attributionControl: false,
@@ -44,9 +46,10 @@ export function HotelsMap({ hotels, height = 560 }: HotelsMapProps) {
     return () => {
       popupRef.current?.remove();
       mapRef.current = null;
+      setReady(false);
       map.remove();
     };
-  }, []);
+  }, [resolvedTheme]);
 
   // Build/update source + layers
   useEffect(() => {

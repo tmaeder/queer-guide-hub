@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import maplibregl, { type Map as MaplibreMap } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
-import { mapStyle } from '@/config/mapStyle';
+import { getMapStyle } from '@/config/mapStyle';
+import { useTheme } from '@/components/theme/ThemeProvider';
 import type { DiscoverableTrip } from '@/hooks/useDiscoverableTrips';
 import { PublicTripCard } from '@/components/trips/PublicTripCard';
 
@@ -27,6 +28,7 @@ interface Geo {
 export function DiscoverMap({ trips, height = 480 }: Props) {
   const mapContainer = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<MaplibreMap | null>(null);
+  const { resolvedTheme } = useTheme();
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const geocoded = useMemo<Geo[]>(
@@ -45,12 +47,12 @@ export function DiscoverMap({ trips, height = 480 }: Props) {
     [geocoded, selectedId],
   );
 
-  // Mount map once.
+  // Mount map — recreated when the theme flips so the basemap flavor follows it.
   useEffect(() => {
     if (!mapContainer.current || mapRef.current) return;
     const map = new maplibregl.Map({
       container: mapContainer.current,
-      style: mapStyle,
+      style: getMapStyle(resolvedTheme),
       center: [10, 40],
       zoom: 1.5,
       attributionControl: { compact: true },
@@ -61,7 +63,7 @@ export function DiscoverMap({ trips, height = 480 }: Props) {
       map.remove();
       mapRef.current = null;
     };
-  }, []);
+  }, [resolvedTheme]);
 
   // Update markers when data changes.
   useEffect(() => {
@@ -142,7 +144,9 @@ export function DiscoverMap({ trips, height = 480 }: Props) {
     };
     if (map.isStyleLoaded()) apply();
     else map.once('load', apply);
-  }, [geocoded]);
+    // resolvedTheme: re-wire markers (and re-resolve token colors) onto the
+    // recreated map after a theme flip.
+  }, [geocoded, resolvedTheme]);
 
   return (
     <div className="relative" style={{ height }}>
