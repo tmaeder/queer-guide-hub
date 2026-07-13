@@ -56,7 +56,16 @@ const rssNewsAdapter: SourceAdapter = {
 
     const allItems: RawItem[] = []
 
+    // Hard wall-clock budget. Feeds are fetched sequentially and each may take
+    // up to 20s (fetchFromRss timeout), so a run of many slow feeds can blow
+    // past the 150s edge-function limit → HTTP 546 (WORKER_LIMIT), failing the
+    // whole pipeline. Stop admitting new feeds at 120s; unprocessed sources
+    // keep their old last_fetched_at and are prioritised next run (ASC order).
+    const deadlineAt = Date.now() + 120_000
+    let skippedForTime = 0
+
     for (const source of sources as NewsSource[]) {
+      if (Date.now() > deadlineAt) { skippedForTime++; continue }
       try {
         await supabase.from('news_sources').update({ status: 'processing' }).eq('id', source.id)
 
@@ -146,6 +155,10 @@ const rssNewsAdapter: SourceAdapter = {
         console.error(`Error fetching from source ${source.name} (attempt ${failures}):`, (e as Error).message)
         await supabase.from('news_sources').update(update).eq('id', source.id)
       }
+    }
+
+    if (skippedForTime > 0) {
+      console.log(`source-rss-news: hit 120s budget, skipped ${skippedForTime} feed(s) — they rotate to next run`)
     }
 
     return allItems
