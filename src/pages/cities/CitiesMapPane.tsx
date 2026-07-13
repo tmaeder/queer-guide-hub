@@ -3,6 +3,7 @@ import maplibregl from 'maplibre-gl';
 import type { GeoJSONSource, MapLayerMouseEvent } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { mapStyle } from '@/config/mapStyle';
+import { isWebglSupported } from '@/lib/webglSupport';
 import { getScoreRingColor } from '@/utils/equalityScore';
 import type { DirectoryCity } from '@/hooks/useCitiesDirectory';
 
@@ -86,6 +87,7 @@ export function CitiesMapPane({
   // Init map once.
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
+    if (!isWebglSupported()) return;
     const map = new maplibregl.Map({
       container: containerRef.current,
       style: mapStyle,

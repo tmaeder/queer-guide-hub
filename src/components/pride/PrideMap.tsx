@@ -4,6 +4,7 @@ import maplibregl from 'maplibre-gl';
 import type { GeoJSONSource } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { mapStyle } from '@/config/mapStyle';
+import { isWebglSupported } from '@/lib/webglSupport';
 import type { PrideCalendarEvent } from '@/hooks/usePrideCalendar';
 
 interface PrideMapProps {
@@ -28,6 +29,7 @@ export function PrideMap({ events, selectedId, onSelect, height = 480 }: PrideMa
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
+    if (!isWebglSupported()) return;
     const map = new maplibregl.Map({
       container: containerRef.current,
       style: mapStyle,

@@ -242,6 +242,18 @@ function LocalizedRedirect({ to }: { to: string }) {
   return <Navigate to={`${prefix}${to}${search}`} replace />;
 }
 
+/**
+ * Locale-preserving slug alias: legacy/misspelled URL schemes still indexed by
+ * crawlers (/personality/x, /geography/x) redirect to the canonical detail
+ * route instead of 404ing.
+ */
+function SlugAliasRedirect({ toBase }: { toBase: string }) {
+  const { locale, slug } = useParams<{ locale?: string; slug?: string }>();
+  const prefix =
+    locale && isSupportedLocale(locale) && locale !== DEFAULT_LOCALE ? `/${locale}` : '';
+  return <Navigate to={`${prefix}/${toBase}/${slug ?? ''}`} replace />;
+}
+
 /** Routes table + per-route ErrorBoundary/Suspense/RouteFade and a11y main element */
 export const AppRoutes = () => {
   const location = useLocation();
@@ -523,6 +535,9 @@ export const AppRoutes = () => {
                 <Route path="users" element={<LocalizedRedirect to="/community/members" />} />
                 <Route path="personalities" element={<Personalities />} />
                 <Route path="personalities/:slug" element={<PersonalityDetail />} />
+                {/* Legacy URL schemes still crawled — alias to canonical routes. */}
+                <Route path="personality/:slug" element={<SlugAliasRedirect toBase="personalities" />} />
+                <Route path="geography/:slug" element={<SlugAliasRedirect toBase="city" />} />
                 <Route path="quests" element={<Quests />} />
                 <Route path="quests/:slug" element={<QuestDetail />} />
                 <Route path="tags" element={<Resources />} />

@@ -9,6 +9,7 @@ import { format } from 'date-fns';
 import { fetchTripMapVenues, fetchTripMapEvents } from '@/hooks/useTripSuggestions';
 import { Button } from '@/components/ui/button';
 import { mapStyle } from '@/config/mapStyle';
+import { isWebglSupported } from '@/lib/webglSupport';
 import { cn } from '@/lib/utils';
 import type { TripPlace, TripDay } from '@/hooks/useTrips';
 import { useVisitedPlaceLookup } from '@/hooks/useVisitedPlaceLookup';
@@ -170,6 +171,7 @@ export function TripMap({ places, days, startDate, endDate }: Props) {
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
+    if (!isWebglSupported()) return;
 
     const map = new maplibregl.Map({
       container: containerRef.current,

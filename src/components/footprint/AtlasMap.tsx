@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { mapStyle } from '@/config/mapStyle';
+import { isWebglSupported } from '@/lib/webglSupport';
 import { useCountryBoundaries } from '@/hooks/useBoundaryData';
 import { useAtlas, useToggleCountryMark } from '@/hooks/useAtlas';
 
@@ -54,6 +55,7 @@ export function AtlasMap() {
   // Init map once.
   useEffect(() => {
     if (!mapContainer.current || mapRef.current) return;
+    if (!isWebglSupported()) return;
     const map = new maplibregl.Map({
       container: mapContainer.current,
       style: mapStyle,

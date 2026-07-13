@@ -4,6 +4,7 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { MapPin } from "lucide-react";
 import { mapStyle } from '@/config/mapStyle';
+import { isWebglSupported } from '@/lib/webglSupport';
 
 interface CountryData {
   country: string;
@@ -83,6 +84,7 @@ export const UmamiMap = ({ countryData, loading = false }: UmamiMapProps) => {
   // Initialize map once
   useEffect(() => {
     if (!mapContainer.current) return;
+    if (!isWebglSupported()) return;
 
     map.current = new maplibregl.Map({
       container: mapContainer.current,
