@@ -47,19 +47,22 @@ function makeAdapter(shopDomain: string, sourceSlug: string, currency = 'EUR'): 
       // wall-clock limit (HTTP 546) — fail fast with a clear error instead.
       const ctrl = new AbortController()
       const timer = setTimeout(() => ctrl.abort(), 20_000)
-      let res: Response
+      let data: { products?: PublicProduct[] }
       try {
-        res = await fetch(url, { headers: { 'User-Agent': UA, Accept: 'application/json' }, signal: ctrl.signal })
+        // Signal must cover the BODY read too — tarpitting merchants drip
+        // bytes after sending headers, which otherwise hangs res.json() until
+        // the worker wall-clock limit (HTTP 546).
+        const res = await fetch(url, { headers: { 'User-Agent': UA, Accept: 'application/json' }, signal: ctrl.signal })
+        if (!res.ok) {
+          if (page === 1) throw new Error(`products.json ${res.status} for ${shopDomain}`)
+          return []
+        }
+        data = await res.json() as { products?: PublicProduct[] }
       } catch (err) {
         throw new Error((err as Error).name === 'AbortError'
           ? `products.json timeout after 20s for ${shopDomain} (page ${page}) — likely blocking datacenter egress`
           : (err as Error).message)
       } finally { clearTimeout(timer) }
-      if (!res.ok) {
-        if (page === 1) throw new Error(`products.json ${res.status} for ${shopDomain}`)
-        return []
-      }
-      const data = await res.json() as { products?: PublicProduct[] }
       const products = data.products || []
       return products
         .filter(p => p.handle)
