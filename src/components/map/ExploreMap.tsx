@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { ExternalLink, Loader2 } from 'lucide-react';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
+import { useTheme } from '@/components/theme/ThemeProvider';
 import { type MapPointSummary } from './mapPoint';
 import {
   useExploreMapData,
@@ -151,6 +152,7 @@ export const ExploreMap = ({
   const navigate = useLocalizedNavigate();
   const { toast } = useToast();
   const prefersReducedMotion = useReducedMotion();
+  const { resolvedTheme } = useTheme();
 
   // Ambient "where am I" hint chip — auto-fades, never stacks with toasts.
   const { locationHint, showLocationHint } = useLocationHint();
@@ -334,6 +336,7 @@ export const ExploreMap = ({
     initialZoom,
     viewport,
     mapReady,
+    basemapMode: resolvedTheme,
     cooperativeGestures,
     linkToFullMap,
     showNativeNav,
@@ -348,8 +351,6 @@ export const ExploreMap = ({
     pulseRafRef,
     popupRootRef,
     pointLayersAddedRef,
-    showNativeNav,
-    onMapHandleRef,
   });
 
   // ── Boundary polygon rendering via shared hook ─────────────────────────

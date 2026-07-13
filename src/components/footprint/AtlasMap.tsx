@@ -5,7 +5,9 @@ import { Loader2, Check, Bookmark } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { mapStyle } from '@/config/mapStyle';
+import { getMapStyle } from '@/config/mapStyle';
+import { useTheme } from '@/components/theme/ThemeProvider';
+import { isWebglSupported } from '@/lib/webglSupport';
 import { useCountryBoundaries } from '@/hooks/useBoundaryData';
 import { useAtlas, useToggleCountryMark } from '@/hooks/useAtlas';
 
@@ -24,6 +26,7 @@ const SRC = 'atlas-countries';
  */
 export function AtlasMap() {
   const { t } = useTranslation();
+  const { resolvedTheme } = useTheme();
   const mapContainer = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const [mapReady, setMapReady] = useState(false);
@@ -51,26 +54,32 @@ export function AtlasMap() {
     return m;
   }, [lookup]);
 
-  // Init map once.
+  // Init map — recreated when the theme flips so the basemap flavor follows it
+  // (and the token-resolved layer colors re-read the new theme's values).
   useEffect(() => {
     if (!mapContainer.current || mapRef.current) return;
+    if (!isWebglSupported()) return;
     const map = new maplibregl.Map({
       container: mapContainer.current,
-      style: mapStyle,
+      style: getMapStyle(resolvedTheme),
       center: [10, 25],
       zoom: 0.9,
       attributionControl: false,
       dragRotate: false,
     });
     map.touchZoomRotate.disableRotation();
-    map.on('load', () => setMapReady(true));
-    mapRef.current = map;
+    // Ref publishes on `load` so the boundary effect never touches a style
+    // that is still loading (theme-toggle recreate window).
+    map.on('load', () => {
+      mapRef.current = map;
+      setMapReady(true);
+    });
     return () => {
       map.remove();
       mapRef.current = null;
       setMapReady(false);
     };
-  }, []);
+  }, [resolvedTheme]);
 
   // (Re)wire boundary source + layers whenever data changes.
   useEffect(() => {

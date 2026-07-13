@@ -242,6 +242,38 @@ export function validateEvent(data: Record<string, unknown>): ValidationResult {
 }
 
 /**
+ * Validate personality data
+ */
+export function validatePersonality(data: Record<string, unknown>): ValidationResult {
+  const errors: ValidationError[] = [];
+
+  errors.push(...validateField('name', data.name, [
+    { required: true, label: 'Name', maxLength: FIELD_LIMITS.name },
+  ]));
+
+  if (data.birth_date && data.death_date) {
+    const birth = new Date(data.birth_date as string);
+    const death = new Date(data.death_date as string);
+    if (!isNaN(birth.getTime()) && !isNaN(death.getTime()) && death <= birth) {
+      errors.push({ field: 'death_date', message: 'Death date must be after birth date', severity: 'error' });
+    }
+  }
+
+  if (data.death_date && data.is_living === true) {
+    errors.push({ field: 'is_living', message: 'Marked as living but has a death date', severity: 'warning' });
+  }
+
+  const warnings = errors.filter(e => e.severity === 'warning');
+  const realErrors = errors.filter(e => e.severity === 'error');
+
+  return {
+    isValid: realErrors.length === 0,
+    errors: realErrors,
+    warnings,
+  };
+}
+
+/**
  * Validate news article data
  */
 export function validateNewsArticle(data: Record<string, unknown>): ValidationResult {

@@ -2,7 +2,9 @@ import { useEffect, useRef } from 'react';
 import maplibregl from 'maplibre-gl';
 import type { GeoJSONSource, MapLayerMouseEvent } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
-import { mapStyle } from '@/config/mapStyle';
+import { getMapStyle } from '@/config/mapStyle';
+import { useTheme } from '@/components/theme/ThemeProvider';
+import { isWebglSupported } from '@/lib/webglSupport';
 import { getScoreRingColor } from '@/utils/equalityScore';
 import type { DirectoryCity } from '@/hooks/useCitiesDirectory';
 
@@ -77,18 +79,20 @@ export function CitiesMapPane({
 }: CitiesMapPaneProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
+  const { resolvedTheme } = useTheme();
   const lastFitKeyRef = useRef<string>('');
   const fitTimerRef = useRef<number | null>(null);
   const reducedMotion =
     typeof window !== 'undefined' &&
     window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  // Init map once.
+  // Init map — recreated when the theme flips so the basemap flavor follows it.
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
+    if (!isWebglSupported()) return;
     const map = new maplibregl.Map({
       container: containerRef.current,
-      style: mapStyle,
+      style: getMapStyle(resolvedTheme),
       center: [0, 20],
       zoom: 1.5,
     });
@@ -97,8 +101,10 @@ export function CitiesMapPane({
     return () => {
       map.remove();
       mapRef.current = null;
+      // Let the fit effect re-fit the recreated map to the current city set.
+      lastFitKeyRef.current = '';
     };
-  }, []);
+  }, [resolvedTheme]);
 
   // Build / update features and layers whenever filtered cities change.
   useEffect(() => {
@@ -257,7 +263,8 @@ export function CitiesMapPane({
 
     if (map.isStyleLoaded()) apply();
     else map.once('load', apply);
-  }, [cities, onSelectCity, onHoverCity, reducedMotion]);
+    // resolvedTheme: re-wire sources/layers onto the recreated map after a theme flip.
+  }, [cities, onSelectCity, onHoverCity, reducedMotion, resolvedTheme]);
 
   // Fit bounds when the filtered city set changes (debounced + de-duped).
   useEffect(() => {
@@ -283,7 +290,7 @@ export function CitiesMapPane({
         fitTimerRef.current = null;
       }
     };
-  }, [cities, reducedMotion]);
+  }, [cities, reducedMotion, resolvedTheme]);
 
   // Sync external hover (list → map): set the new id, clear the previous
   // on cleanup. Wrapped in try/catch since the feature may not be in

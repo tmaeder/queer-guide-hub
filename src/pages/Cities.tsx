@@ -114,7 +114,6 @@ export default function Cities() {
   return (
     <div className="relative">
       <PageHero
-        eyebrow={t('cities.eyebrow', 'Destinations')}
         title={t('cities.title', 'Cities.')}
         lede={t('cities.subtitle', 'LGBTQ+ friendly cities around the world.')}
         primaryCta={{ label: t('cities.planTrip', 'Plan a trip'), href: '/travel' }}

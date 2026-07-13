@@ -85,7 +85,9 @@ export function useOptimizedCities(filters?: PlacesFilters & { countryId?: strin
   const fetchCities = async (): Promise<City[]> => {
     // Exclude placeholder ("tmp-") cities — auto-created ingest stubs that must not
     // surface on the explore map, listings, or search (see find_nearest_city migration).
-    let query = supabase.from('cities').select('*').is('duplicate_of_id', null).not('slug', 'like', 'tmp-%').order('population', { ascending: false });
+    // nullsFirst:false is load-bearing — Postgres puts NULLs first on DESC, which
+    // floated population-less ingest stubs above Berlin/Munich on country pages.
+    let query = supabase.from('cities').select('*').is('duplicate_of_id', null).not('slug', 'like', 'tmp-%').order('population', { ascending: false, nullsFirst: false });
 
     if (filters?.countryId) {
       query = query.eq('country_id', filters.countryId);
@@ -185,11 +187,13 @@ export function useOptimizedCountry(countrySlug: string) {
 }
 
 export function useOptimizedCity(citySlug: string) {
+  // The countries embed is load-bearing: CityRightsTab + useOptimizedCountry
+  // resolve national rights data through city.countries.
   const fetchCity = async (): Promise<City | null> => {
     // Try slug first, fall back to ID for backwards compatibility
     const { data, error } = await supabase
       .from('cities')
-      .select('*')
+      .select('*, countries(id, name, slug, code, currency, equality_score, flag_emoji, lgbti_criminalization)')
       .eq('slug', citySlug)
       .maybeSingle();
 
@@ -199,7 +203,7 @@ export function useOptimizedCity(citySlug: string) {
     // Fallback: try as ID (UUID or numeric)
     const { data: byId, error: idError } = await supabase
       .from('cities')
-      .select('*')
+      .select('*, countries(id, name, slug, code, currency, equality_score, flag_emoji, lgbti_criminalization)')
       .eq('id', citySlug)
       .maybeSingle();
 
@@ -214,7 +218,7 @@ export function useOptimizedCity(citySlug: string) {
     if (!city || !canonicalId) return city;
     const { data: canonical, error } = await supabase
       .from('cities')
-      .select('*')
+      .select('*, countries(id, name, slug, code, currency, equality_score, flag_emoji, lgbti_criminalization)')
       .eq('id', canonicalId)
       .maybeSingle();
     if (error) throw error;

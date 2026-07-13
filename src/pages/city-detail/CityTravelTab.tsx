@@ -1,4 +1,5 @@
-import { Plane, Bus } from 'lucide-react';
+import { Plane, Bus, ShieldAlert } from 'lucide-react';
+import { hasAnyCriminalizationSignal } from '@/utils/equalityScore';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { CityTravelHub } from '@/components/travel/CityTravelHub';
@@ -18,14 +19,33 @@ export function CityTravelTab({
   hasAirport,
   nearestAirport,
 }: CityTravelTabProps) {
+  // High-stakes composition rule (mirrors CountryTravelTab): no deal/upsell
+  // modules where LGBTQ+ people face criminal penalties.
+  const highRisk = hasAnyCriminalizationSignal(city.countries?.lgbti_criminalization);
   return (
     <div className="flex flex-col gap-6">
+        {highRisk ? (
+          <div className="flex gap-4 rounded-container border border-destructive/40 p-6">
+            <ShieldAlert size={18} aria-hidden="true" className="mt-0.5 shrink-0 text-destructive" />
+            <div className="flex flex-col gap-2">
+              <p className="text-body-lg font-medium">
+                We don't promote travel deals for destinations where LGBTQ+ people face criminal
+                penalties.
+              </p>
+              <p className="text-15 text-muted-foreground">
+                If you need to travel to {city.name}, read the safety &amp; rights section first and
+                use the trip planner — it includes a safety briefing for high-risk destinations.
+              </p>
+            </div>
+          </div>
+        ) : (
         <CityTravelHub
           destinationIata={effectiveIata}
           destinationCity={city.name}
           destinationCountryCode={city.countries?.code}
           equalityScore={city.countries?.equality_score}
         />
+        )}
 
         <SimilarCities
           cityId={city.id}

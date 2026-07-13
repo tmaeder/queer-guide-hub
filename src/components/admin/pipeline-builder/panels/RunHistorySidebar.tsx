@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
-import { ChevronLeft, ChevronRight, CheckCircle2, XCircle, Loader2, Clock, SkipForward, Filter, History } from 'lucide-react';
+import { ChevronLeft, ChevronRight, CheckCircle2, XCircle, Loader2, Clock, SkipForward, Filter, History, Workflow } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { usePipelineRunsForPipeline } from '../hooks/usePipelineHistory';
+import RunSnapshotDialog from './RunSnapshotDialog';
 
 interface RunHistorySidebarProps {
   pipelineId: string | undefined;
@@ -41,6 +42,7 @@ function formatDuration(ms: number | null): string {
 export default function RunHistorySidebar({ pipelineId, activeRunId, onSelectRun }: RunHistorySidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
   const [filter, setFilter] = useState<StatusFilter>('all');
+  const [snapshotRunId, setSnapshotRunId] = useState<string | null>(null);
   const { data: runs = [], isLoading } = usePipelineRunsForPipeline(pipelineId, 25);
 
   const filtered = filter === 'all' ? runs : runs.filter(r => r.status === filter);
@@ -116,10 +118,10 @@ export default function RunHistorySidebar({ pipelineId, activeRunId, onSelectRun
           const total = run.items_total ?? 0;
 
           return (
+            <div key={run.id} className="relative">
             <button
-              key={run.id}
               onClick={() => onSelectRun(isActive ? null : run.id)}
-              className={`w-full text-left px-4 py-2 border-b border-border/50 transition-colors ${
+              className={`w-full text-left px-4 py-2 pr-10 border-b border-border/50 transition-colors ${
                 isActive ? 'bg-primary/10 hover:bg-primary/15' : 'hover:bg-accent'
               }`}
             >
@@ -157,6 +159,21 @@ export default function RunHistorySidebar({ pipelineId, activeRunId, onSelectRun
                 </div>
               )}
             </button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label="View run on canvas"
+                  className="absolute top-1.5 right-2 h-6 w-6 min-h-0 text-muted-foreground hover:text-foreground"
+                  onClick={() => setSnapshotRunId(run.id)}
+                >
+                  <Workflow className="h-3 w-3" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="left" className="text-xs">View run on canvas</TooltipContent>
+            </Tooltip>
+            </div>
           );
         })}
       </div>
@@ -166,6 +183,10 @@ export default function RunHistorySidebar({ pipelineId, activeRunId, onSelectRun
         <div className="px-4 py-1.5 border-t border-border text-2xs text-muted-foreground text-center">
           Showing {filtered.length} of {runs.length} runs
         </div>
+      )}
+
+      {snapshotRunId && (
+        <RunSnapshotDialog runId={snapshotRunId} onClose={() => setSnapshotRunId(null)} />
       )}
     </div>
   );

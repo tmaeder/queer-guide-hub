@@ -46,6 +46,7 @@ export type SocialPlatformKey =
   | 'pornhub'
   | 'xhamster'
   | 'xtube'
+  | 'shop'
   | 'website';
 
 export interface PlatformDef {
@@ -273,6 +274,14 @@ export const PLATFORMS: PlatformDef[] = [
       const m = h.match(/^@?([a-z0-9_.]+)@([a-z0-9.-]+)$/i);
       return m ? `https://${m[2]}/@${m[1]}` : `https://${h}`;
     },
+  },
+  {
+    // Merch/shop link (e.g. an artist's store). No URL shape identifies a
+    // shop, so it is never auto-detected — admins add it explicitly.
+    key: 'shop',
+    label: 'Shop',
+    detect: /^$/,
+    build: (h) => (/^https?:\/\//i.test(h) ? h : `https://${h}`),
   },
   {
     key: 'website',

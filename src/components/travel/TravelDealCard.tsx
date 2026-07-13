@@ -112,9 +112,11 @@ export function TravelDealCard({
               <span className="font-bold text-sm">{deal.destination}</span>
             </div>
           </div>
-          <Badge className="font-bold text-sm">
-            {`${deal.currency === 'eur' ? '€' : deal.currency} ${deal.price}`}
-          </Badge>
+          {Number.isFinite(deal.price) && deal.price > 0 && (
+            <Badge className="font-bold text-sm">
+              {`${deal.currency === 'eur' ? '€' : deal.currency} ${deal.price}`}
+            </Badge>
+          )}
         </div>
 
         {(originCity || destinationCity) && (
