@@ -71,7 +71,7 @@ const REVIEW_MIN = 0.6
 
 export async function resolveEntities(
   supabase: SupabaseClient,
-  table: 'countries' | 'cities' | 'personalities' | 'organisations',
+  table: 'countries' | 'cities' | 'personalities' | 'organizations',
   entityType: EntityType,
   names: string[],
   body: string,
@@ -93,15 +93,13 @@ export async function resolveEntities(
       .limit(8)
 
     if (error) {
-      needsReview.push({ name, score: 0, reason: `query_error:${error.message}` })
+      // Unresolvable, not reviewable — a human can't act on a failed lookup.
+      console.warn(`entity-link query_error (${table}/${name}): ${error.message}`)
       continue
     }
 
     const rows = (data ?? []) as unknown as Array<Record<string, unknown>>
-    if (!rows.length) {
-      needsReview.push({ name, score: 0, reason: 'no_match' })
-      continue
-    }
+    if (!rows.length) continue // no candidate in DB — nothing to review
 
     let best: EntityCandidate | null = null
     for (const row of rows) {
@@ -123,9 +121,8 @@ export async function resolveEntities(
       linked.push(best)
     } else if (best.score >= REVIEW_MIN) {
       needsReview.push({ name: best.name, score: best.score, reason: 'low_confidence' })
-    } else {
-      needsReview.push({ name, score: best.score, reason: 'no_close_match' })
     }
+    // below REVIEW_MIN: too weak to be actionable — dropped, not queued
   }
 
   return { linked, needsReview }

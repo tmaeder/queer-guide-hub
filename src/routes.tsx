@@ -85,6 +85,10 @@ const AdminTargetGroups = lazyRetry(() => import('./pages/AdminTargetGroups'));
 const AdminProfessions = lazyRetry(() => import('./pages/AdminProfessions'));
 const AdminCityQuality = lazyRetry(() => import('./pages/AdminCityQuality'));
 const AdminPersonalityQuality = lazyRetry(() => import('./pages/AdminPersonalityQuality'));
+const PersonalityDataSheet = lazyRetry(() => import('./pages/admin/PersonalityDataSheet'));
+const PersonalityMilestones = lazyRetry(() => import('./pages/admin/PersonalityMilestones'));
+const EditorialTasks = lazyRetry(() => import('./pages/admin/EditorialTasks'));
+const AdminMailbox = lazyRetry(() => import('./pages/admin/AdminMailbox'));
 const AdminVenueQuality = lazyRetry(() => import('./pages/AdminVenueQuality'));
 const AdminLiveness = lazyRetry(() => import('./pages/AdminLiveness'));
 const AdminMarketplaceQuality = lazyRetry(() => import('./pages/AdminMarketplaceQuality'));
@@ -404,6 +408,10 @@ export const AppRoutes = () => {
                 <Route path="content/event-quality" element={<AdminEventQuality />} />
                 <Route path="content/city-quality" element={<AdminCityQuality />} />
                 <Route path="content/personality-quality" element={<AdminPersonalityQuality />} />
+                <Route path="content/personalities/:id/datasheet" element={<PersonalityDataSheet />} />
+                <Route path="personalities/milestones" element={<PersonalityMilestones />} />
+                <Route path="merkliste" element={<EditorialTasks />} />
+                <Route path="postfach" element={<AdminMailbox />} />
                 <Route path="content/marketplace-quality" element={<AdminMarketplaceQuality />} />
                 <Route path="content/village-quality" element={<AdminVillageQuality />} />
                 <Route path="content/group-requests" element={<AdminGroupRequests />} />

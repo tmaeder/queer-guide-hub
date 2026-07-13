@@ -76,6 +76,10 @@ Deno.serve(withErrorReporting('source-community-submissions', async (req) => {
       // columns across rows and fill missing keys with explicit NULL, which
       // bypasses column defaults and violates NOT NULL on dedup_status when a
       // batch mixes enrich and non-enrich rows.
+      // Both branches must set dedup_status/review_status explicitly: PostgREST
+      // bulk inserts unify keys across rows, so a batch mixing enrich and
+      // non-enrich rows sends explicit NULLs for the missing keys — bypassing
+      // the column defaults and violating NOT NULL.
       const enrichFields = isEnrich
         ? {
             dedup_status:     'merge_candidate',
@@ -90,6 +94,8 @@ Deno.serve(withErrorReporting('source-community-submissions', async (req) => {
             dedup_match_table: null,
             dedup_match_score: null,
             review_status:    'auto',
+            dedup_status:  'pending',
+            review_status: 'auto',
           }
       stagingRows.push({
         source_type:     row.platform ? `community-${row.platform}` : 'community-submission',

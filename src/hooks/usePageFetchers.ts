@@ -216,6 +216,20 @@ export async function fetchPublicPersonalityBySlugOrId<T = unknown>(
   return (data ?? null) as T | null;
 }
 
+/** Admin data-sheet — personality by id WITHOUT the public visibility filter,
+ * so editors can print draft/private/restricted records. Reuses the detail
+ * select (joined birth_city + country) for a consistent shape. Staff-only in
+ * practice: the route sits behind AdminRouteGuard and RLS still applies. */
+export async function fetchAdminPersonalityById<T = unknown>(id: string): Promise<T | null> {
+  const { data, error } = await supabase
+    .from('personalities')
+    .select(PERSONALITY_DETAIL_SELECT)
+    .eq('id', id)
+    .maybeSingle();
+  if (error) throw error;
+  return (data ?? null) as T | null;
+}
+
 /** VenueDetail.parts.tsx — venue by slug + uuid + website domain fallback,
  * plus reviews. Returns redirectTo when website-domain match succeeds. */
 export async function fetchVenueWithReviews<TVenue, TReview>(
