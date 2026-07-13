@@ -53,7 +53,6 @@ const NewsMagazine = React.memo(() => {
   if (loading && latest.length === 0) {
     return (
       <HomeSection
-        eyebrow={t('home.news.eyebrow', 'Dispatches')}
         title={t('home.news.title', 'Latest News')}
         seeAllHref="/news"
         seeAllLabel={t('common.allStories', 'All stories')}
@@ -82,7 +81,6 @@ const NewsMagazine = React.memo(() => {
 
   return (
     <HomeSection
-      eyebrow={t('home.news.eyebrow', 'Dispatches')}
       title={t('home.news.title', 'Latest News')}
       seeAllHref="/news"
       seeAllLabel={t('common.allStories', 'All stories')}

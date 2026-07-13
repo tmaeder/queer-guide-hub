@@ -3,7 +3,8 @@ import { useTranslation } from 'react-i18next';
 import maplibregl from 'maplibre-gl';
 import type { GeoJSONSource } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
-import { mapStyle } from '@/config/mapStyle';
+import { getMapStyle } from '@/config/mapStyle';
+import { useTheme } from '@/components/theme/ThemeProvider';
 import { isWebglSupported } from '@/lib/webglSupport';
 import type { PrideCalendarEvent } from '@/hooks/usePrideCalendar';
 
@@ -26,13 +27,15 @@ export function PrideMap({ events, selectedId, onSelect, height = 480 }: PrideMa
   const mapRef = useRef<maplibregl.Map | null>(null);
   const popupRef = useRef<maplibregl.Popup | null>(null);
   const [ready, setReady] = useState(false);
+  const { resolvedTheme } = useTheme();
 
+  // Recreated when the theme flips so the basemap flavor follows it.
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
     if (!isWebglSupported()) return;
     const map = new maplibregl.Map({
       container: containerRef.current,
-      style: mapStyle,
+      style: getMapStyle(resolvedTheme),
       center: [10, 20],
       zoom: 1.2,
       attributionControl: false,
@@ -50,9 +53,10 @@ export function PrideMap({ events, selectedId, onSelect, height = 480 }: PrideMa
       ro.disconnect();
       popupRef.current?.remove();
       mapRef.current = null;
+      setReady(false);
       map.remove();
     };
-  }, []);
+  }, [resolvedTheme]);
 
   useEffect(() => {
     const map = mapRef.current;

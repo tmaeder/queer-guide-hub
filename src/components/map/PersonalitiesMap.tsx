@@ -3,7 +3,8 @@ import maplibregl from 'maplibre-gl';
 import type { GeoJSONSource, MapLayerMouseEvent } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
-import { mapStyle } from '@/config/mapStyle';
+import { useTheme } from '@/components/theme/ThemeProvider';
+import { getMapStyle } from '@/config/mapStyle';
 import { isWebglSupported } from '@/lib/webglSupport';
 import { useCountryCentroids, type CountryCentroid } from '@/hooks/useCountryCentroids';
 import type { Personality } from '@/hooks/usePersonalities';
@@ -109,17 +110,18 @@ export function PersonalitiesMap({ personalities, height = 600 }: PersonalitiesM
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const navigate = useLocalizedNavigate();
+  const { resolvedTheme } = useTheme();
   const { centroids, loading: countriesLoading } = useCountryCentroids();
   const [unmappedCount, setUnmappedCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
-  // Initialize map once.
+  // Initialize map — recreated when the theme flips so the basemap follows it.
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
     if (!isWebglSupported()) return;
     const map = new maplibregl.Map({
       container: containerRef.current,
-      style: mapStyle,
+      style: getMapStyle(resolvedTheme),
       center: [0, 30],
       zoom: 1.5,
     });
@@ -129,7 +131,7 @@ export function PersonalitiesMap({ personalities, height = 600 }: PersonalitiesM
       map.remove();
       mapRef.current = null;
     };
-  }, []);
+  }, [resolvedTheme]);
 
   // Build features whenever the input list or country centroids change.
   useEffect(() => {
@@ -294,7 +296,8 @@ export function PersonalitiesMap({ personalities, height = 600 }: PersonalitiesM
       if (map.isStyleLoaded()) apply();
       else map.once('load', apply);
     }
-  }, [personalities, navigate, centroids, countriesLoading]);
+    // resolvedTheme: re-wire sources/layers onto the recreated map after a theme flip.
+  }, [personalities, navigate, centroids, countriesLoading, resolvedTheme]);
 
   return (
     <div>

@@ -35,22 +35,33 @@ export function TierUpgradeOverlay({
     return () => clearTimeout(id);
   }, [open, autoDismissMs, onDismiss]);
 
+  React.useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onDismiss?.();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [open, onDismiss]);
+
   if (!open) return null;
 
   return (
     <div
       className="tier-overlay fixed inset-0 z-[1300] flex items-center justify-center bg-background/85"
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onDismiss?.();
-      }}
-      onKeyDown={(e) => {
-        if (e.key === 'Escape') onDismiss?.();
-      }}
       role="dialog"
       aria-modal="true"
       aria-label={`Tier upgrade: ${tierName}`}
-      tabIndex={-1}
     >
+      {/* Backdrop dismiss target — a real button so the click handler lives on
+          an interactive element (a11y) rather than the dialog container. */}
+      <button
+        type="button"
+        aria-label="Dismiss"
+        className="absolute inset-0 cursor-default"
+        onClick={onDismiss}
+      />
+
       {/* Sparkle particles */}
       {Array.from({ length: SPARKLE_COUNT }).map((_, i) => {
         const angle = (i / SPARKLE_COUNT) * Math.PI * 2;
@@ -61,7 +72,7 @@ export function TierUpgradeOverlay({
           <span
             key={i}
             aria-hidden
-            className="tier-sparkle absolute text-foreground"
+            className="tier-sparkle pointer-events-none absolute text-foreground"
             style={
               {
                 '--dx': `${dx}px`,

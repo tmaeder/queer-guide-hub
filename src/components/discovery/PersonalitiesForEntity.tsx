@@ -7,6 +7,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useEntityPersonalities } from '@/hooks/useEntityPersonalities';
 import type { Personality } from '@/hooks/usePersonalities';
 import { resolveImageUrl } from '@/utils/resolveImageUrl';
+import { formatProfession } from '@/lib/professionDisplay';
 
 interface Props {
   cityId?: string | null;
@@ -94,7 +95,7 @@ function PersonalityRailCard({ personality, href }: { personality: Personality; 
         </p>
         {personality.profession ? (
           <p className="truncate text-2xs uppercase tracking-[0.1em] text-muted-foreground">
-            {personality.profession}
+            {formatProfession(personality.profession)}
           </p>
         ) : null}
         {era ? (

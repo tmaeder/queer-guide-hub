@@ -43,7 +43,6 @@ export function RecentlyViewedRail() {
 
   return (
     <HomeSection
-      eyebrow={t('home.recentlyViewed.eyebrow', 'Recently viewed')}
       title={t('home.recentlyViewed.title', 'Pick up where you left off.')}
     >
       <ScrollArea className="w-full whitespace-nowrap">

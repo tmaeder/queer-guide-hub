@@ -11,7 +11,8 @@ import type { GeoJSONSource } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { Loader2 } from 'lucide-react';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
-import { mapStyle } from '@/config/mapStyle';
+import { useTheme } from '@/components/theme/ThemeProvider';
+import { getMapStyle } from '@/config/mapStyle';
 import { isWebglSupported } from '@/lib/webglSupport';
 import { LAYER_COLORS, type MapMarker } from '@/hooks/useExploreMapData';
 import { renderPopupHTML } from '@/components/map/ExploreMapPopup';
@@ -98,6 +99,7 @@ export const EntityMap = ({
   onMoveEnd,
 }: EntityMapProps) => {
   const navigate = useLocalizedNavigate();
+  const { resolvedTheme } = useTheme();
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const popupRef = useRef<maplibregl.Popup | null>(null);
@@ -193,15 +195,15 @@ export const EntityMap = ({
 
     const map = new maplibregl.Map({
       container: containerRef.current,
-      style: mapStyle,
+      style: getMapStyle(resolvedTheme),
       center,
       zoom,
       attributionControl: false,
     });
-    // Set ref immediately so re-renders bail at the early-return above
-    // and so the long-tail load timeout below doesn't race construction
-    // on slow networks / heavy detail pages.
-    mapRef.current = map;
+    // mapRef is published inside `load` (below): the markers effect re-runs
+    // on every render, so during a theme-toggle recreate it would otherwise
+    // hit the replacement map while its style is still loading (stale
+    // mapReady=true in the same commit) and addSource would throw.
 
     map.addControl(new maplibregl.AttributionControl({ compact: true }), 'bottom-right');
     map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
@@ -211,6 +213,7 @@ export const EntityMap = ({
     let loaded = false;
     map.on('load', () => {
       loaded = true;
+      mapRef.current = map;
       setMapReady(true);
     });
     // Only treat an error as fatal before the map has loaded. MapLibre emits
@@ -249,10 +252,14 @@ export const EntityMap = ({
     return () => {
       window.clearTimeout(timeoutId);
       mapRef.current = null;
+      // Recreate path (theme toggle): gate the marker effect until the new
+      // map's `load` flips this back — it re-adds all sources/layers.
+      setMapReady(false);
       map.remove();
     };
+    // Theme toggle recreates the map with the matching basemap flavor.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [resolvedTheme]);
 
   // Render markers
   useEffect(() => {

@@ -56,7 +56,9 @@ export function FlightCalendarWidget({
   if (!data) return null;
 
   if (type === 'monthly') {
-    const months = (data.months || []) as MonthlyPrice[];
+    const months = ((data.months || []) as MonthlyPrice[]).filter(
+      (m) => Number.isFinite(m.price) && m.price > 0,
+    );
     if (months.length === 0) return null;
 
     const cheapest = months.reduce((min, m) => (m.price < min.price ? m : min), months[0]);
@@ -106,7 +108,9 @@ export function FlightCalendarWidget({
   }
 
   // Calendar view (daily prices)
-  const prices = (data.prices || []) as CalendarPrice[];
+  const prices = ((data.prices || []) as CalendarPrice[]).filter(
+    (p) => Number.isFinite(p.price) && p.price > 0,
+  );
   if (prices.length === 0) return null;
 
   const cheapest = prices.reduce((min, p) => (p.price < min.price ? p : min), prices[0]);

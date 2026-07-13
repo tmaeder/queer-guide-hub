@@ -14,7 +14,7 @@ export interface NearbyCity {
   is_capital: boolean | null;
   population: number | null;
   country_id: string | null;
-  countries: { name: string | null; flag_emoji: string | null; equality_score: number | null } | null;
+  countries: { name: string | null; flag_emoji: string | null; equality_score: number | null; lgbti_criminalization?: unknown } | null;
   /** Great-circle distance from the anchor city in km. */
   distance_km: number;
   /** Bucketed flight-time estimate. */
@@ -53,7 +53,7 @@ export function useNearbyCities({ origin, limit = 9 }: { origin: Origin | null; 
       const { data, error } = await supabase
         .from('cities')
         .select(
-          'id, name, slug, latitude, longitude, image_url, major_airport_code, is_major_city, is_capital, population, country_id, countries(name, flag_emoji, equality_score)',
+          'id, name, slug, latitude, longitude, image_url, major_airport_code, is_major_city, is_capital, population, country_id, countries(name, flag_emoji, equality_score, lgbti_criminalization)',
         )
         .or('is_major_city.eq.true,is_capital.eq.true')
         .not('latitude', 'is', null)

@@ -1,7 +1,11 @@
--- Similar-personalities adult gate (feedback: adult performers surfaced as
--- "similar" on mainstream personality pages, e.g. next to Rock Hudson).
--- Adult-tagged results are only returned when the SOURCE personality is
--- itself adult-tagged; embedding similarity alone must not cross that line.
+-- Repair shim: this migration was applied live (via MCP apply_migration) by a
+-- concurrent session on 2026-07-13 but its file never landed in the repo,
+-- which breaks CI `db push` ("Remote migration versions not found in local
+-- migrations directory"). Content reconstructed from the live function
+-- definition; CREATE OR REPLACE is idempotent, so re-running is safe.
+--
+-- Change: get_similar_personalities gains an adult gate — recommendations
+-- from a non-adult source personality never surface is_adult profiles.
 
 CREATE OR REPLACE FUNCTION public.get_similar_personalities(personality_uuid uuid, result_limit integer DEFAULT 6, min_similarity double precision DEFAULT 0.3)
  RETURNS TABLE(id uuid, name text, profession text, nationality text, image_url text, is_living boolean, birth_date date, death_date date, description text, similarity double precision)

@@ -10,6 +10,7 @@ import { useMotionTokens } from '@/lib/motion';
 import { isLowEndDevice } from '@/lib/animation';
 import { resolveImageUrl } from '@/utils/resolveImageUrl';
 import { getFallbackImage } from '@/utils/fallbackImages';
+import { formatProfession } from '@/lib/professionDisplay';
 import { isValidImageUrl } from '@/lib/images/resolveEntityImage';
 
 type Person = {
@@ -54,7 +55,7 @@ function PersonChip({ person, img }: { person: Person; img: string }) {
         <span className="min-w-0">
           <span className="block truncate text-13 font-semibold tracking-tight">{person.name}</span>
           <span className="block truncate text-xs2 text-muted-foreground">
-            {[person.profession, birthYear(person.birth_date)].filter(Boolean).join(' · ')}
+            {[formatProfession(person.profession), birthYear(person.birth_date)].filter(Boolean).join(' · ')}
           </span>
         </span>
       </LocalizedLink>
