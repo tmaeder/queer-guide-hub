@@ -9,10 +9,15 @@ import { withErrorReporting } from '../_shared/report-api-error.ts'
 // Replaces: import-rest-countries
 // ============================================================
 
-const RC_BASE = 'https://restcountries.com/v3.1/all'
-// REST Countries has 10-field limit per request, so split into 2 calls
-const FIELDS_1 = 'name,cca2,cca3,capital,region,subregion,population,area,latlng,flags'
-const FIELDS_2 = 'name,cca2,languages,currencies,timezones,borders,landlocked,unMember,car,idd'
+// restcountries.com v3.1 was deprecated 2026-06 (301 → legacy.json returning an
+// HTTP-200 deprecation error object; the new API requires a paid API key).
+// mledoze/countries is the upstream dataset restcountries was built on — same
+// field shapes for everything we consume except population/timezones/car,
+// which commit_country_staging_item coalesces (existing values are kept).
+// population is refreshed weekly by enrich-worldbank-population (keyless);
+// timezones/driving_side are effectively immutable — accepted staleness.
+// Flag URLs are rebuilt against flagcdn.com, the same CDN v3.1 served.
+const RC_DATA_URL = 'https://raw.githubusercontent.com/mledoze/countries/master/countries.json'
 
 const restCountriesAdapter: SourceAdapter = {
   name: 'rest-countries',
@@ -21,28 +26,23 @@ const restCountriesAdapter: SourceAdapter = {
   async fetch(_config: AdapterConfig): Promise<RawItem[]> {
     const supabase = getServiceClient()
 
-    const [data1, data2] = await withCircuitBreaker(supabase, 'rest_countries', async () => {
-      const [res1, res2] = await Promise.all([
-        fetch(`${RC_BASE}?fields=${FIELDS_1}`),
-        fetch(`${RC_BASE}?fields=${FIELDS_2}`),
-      ])
-      if (!res1.ok) throw new Error(`REST Countries call 1: ${res1.status}`)
-      if (!res2.ok) throw new Error(`REST Countries call 2: ${res2.status}`)
-      return [await res1.json(), await res2.json()]
+    const data = await withCircuitBreaker(supabase, 'rest_countries', async () => {
+      const res = await fetch(RC_DATA_URL)
+      if (!res.ok) throw new Error(`countries dataset fetch: ${res.status}`)
+      const json = await res.json()
+      if (!Array.isArray(json)) throw new Error('countries dataset: expected array')
+      return json as Array<Record<string, unknown>>
     })
 
-    // Merge by cca2
-    const map2 = new Map<string, Record<string, unknown>>()
-    for (const c of data2 as Array<Record<string, unknown>>) {
-      map2.set(String(c.cca2), c)
-    }
-
-    return (data1 as Array<Record<string, unknown>>).map(c => {
+    return data.filter(c => c.cca2).map(c => {
       const code = String(c.cca2)
-      const extra = map2.get(code) || {}
+      const cc = code.toLowerCase()
       return {
         sourceId: code,
-        data: { ...c, ...extra },
+        data: {
+          ...c,
+          flags: { svg: `https://flagcdn.com/${cc}.svg`, png: `https://flagcdn.com/w320/${cc}.png` },
+        },
       }
     })
   },
