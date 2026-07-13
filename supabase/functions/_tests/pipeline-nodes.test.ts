@@ -14,7 +14,19 @@ async function invoke(fn: string, body: Record<string, unknown>): Promise<Record
     headers: { 'Authorization': `Bearer ${KEY}`, 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   })
-  return res.json()
+  const json = await res.json()
+  // A 401/403 means the probe credential is broken, not the function under
+  // test. Fail loudly with the real cause — an auth-failed body is
+  // `{success:false}`, which silently satisfies `typeof res.success ===
+  // 'boolean'` assertions and misdirects debugging to the function.
+  if (res.status === 401 || res.status === 403) {
+    throw new Error(
+      `${fn}: HTTP ${res.status} ${JSON.stringify(json)} — the SUPABASE_SERVICE_ROLE_KEY ` +
+      `repo secret is invalid/stale (rotate it in GitHub repo settings), or the function's auth gate changed.`,
+    )
+  }
+  if (!res.ok) console.error(`${fn}: HTTP ${res.status} ${JSON.stringify(json).slice(0, 300)}`)
+  return json
 }
 
 const skip = !BASE || !KEY

@@ -10,11 +10,14 @@ type ThemeProviderProps = {
 
 type ThemeProviderState = {
   theme: Theme;
+  /** `theme` with "system" resolved to the actual light/dark mode. */
+  resolvedTheme: "light" | "dark";
   setTheme: (theme: Theme) => void;
 };
 
 const initialState: ThemeProviderState = {
   theme: "system",
+  resolvedTheme: "light",
   setTheme: () => null,
 };
 
@@ -67,13 +70,14 @@ export function ThemeProvider({
 
   const value = React.useMemo(() => ({
     theme,
+    resolvedTheme: resolvedMode,
     setTheme: (newTheme: Theme) => {
       if (typeof window !== 'undefined') {
         localStorage.setItem(storageKey, newTheme);
       }
       setThemeState(newTheme);
     },
-  }), [theme, storageKey]);
+  }), [theme, resolvedMode, storageKey]);
 
   return (
     <ThemeProviderContext.Provider {...props} value={value}>

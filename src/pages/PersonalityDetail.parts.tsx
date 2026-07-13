@@ -1,5 +1,6 @@
 import { ScrollReveal } from '@/components/animation/ScrollReveal';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
+import { formatProfession } from '@/lib/professionDisplay';
 import {
   ExternalLink,
   Calendar,
@@ -107,6 +108,24 @@ export function calculateAge(birthDate: string, deathDate?: string) {
   return age;
 }
 
+// Admin-curated cause-of-death slugs (see config/contentTypes/personality.ts)
+// → public display labels. Unknown/other stay hidden — no speculation.
+const CAUSE_OF_DEATH_LABELS: Record<string, string> = {
+  natural: 'Natural causes',
+  illness: 'Illness',
+  hiv_aids: 'HIV/AIDS-related illness',
+  suicide: 'Suicide',
+  homicide: 'Homicide',
+  accident: 'Accident',
+  overdose: 'Overdose',
+  execution: 'Execution',
+};
+
+export function causeOfDeathLabel(cause?: string | null): string | null {
+  if (!cause) return null;
+  return CAUSE_OF_DEATH_LABELS[cause] ?? null;
+}
+
 export function getInitials(name: string) {
   return name
     .split(' ')
@@ -210,7 +229,7 @@ export function PersonalityHero({
                 className="flex items-center gap-1 cursor-pointer text-primary no-underline hover:underline"
               >
                 <Briefcase size={16} />
-                <span>{personality.profession}</span>
+                <span>{formatProfession(personality.profession)}</span>
               </a>
             )}
             {personality.nationality &&
@@ -520,6 +539,11 @@ export function PersonalitySidebar({
                             {range.death ?? personality.death_date}
                           </time>
                         </p>
+                        {causeOfDeathLabel(personality.cause_of_death) && (
+                          <p className="text-xs text-muted-foreground">
+                            {causeOfDeathLabel(personality.cause_of_death)}
+                          </p>
+                        )}
                       </div>
                     </div>
                   )}

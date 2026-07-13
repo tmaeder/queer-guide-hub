@@ -2873,7 +2873,8 @@
       "conversionTherapy": "전환 치료",
       "intersex": "인터섹스 신체 온전성",
       "ilgaLink": "ILGA World Database"
-    }
+    },
+    "planTripHighRisk": "[KO] Plan carefully — safety briefing included"
   },
   "inbox": {
     "title": "받은편지함",
@@ -3363,6 +3364,16 @@
     "going": "[KO] going",
     "friendsSaved": "[KO] friends saved",
     "inTrips": "[KO] in trips"
+  },
+  "discovery": {
+    "nextLeg": {
+      "risk": "[KO] Legal risk"
+    }
+  },
+  "safety": {
+    "gated": {
+      "privacy": "[KO] An account is free and private: your profile is never shown to other visitors unless you choose, and we never share what you view."
+    }
   },
   "connections": {
     "title": "[KO] Connections",

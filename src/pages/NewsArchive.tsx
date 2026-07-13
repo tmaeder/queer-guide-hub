@@ -542,7 +542,6 @@ export default function NewsArchive() {
   return (
     <div className="min-h-screen relative">
       <PageHero
-        eyebrow={t('pages.news.eyebrow', 'Latest')}
         title={t('pages.news.title', 'News.')}
         lede={t(
           'pages.news.subtitle',

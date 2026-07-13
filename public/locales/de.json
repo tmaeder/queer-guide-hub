@@ -2875,7 +2875,8 @@
       "conversionTherapy": "Konversionstherapie",
       "intersex": "Körperliche Unversehrtheit intergeschlechtlicher Menschen",
       "ilgaLink": "ILGA World Database"
-    }
+    },
+    "planTripHighRisk": "[DE] Plan carefully — safety briefing included"
   },
   "inbox": {
     "title": "Posteingang",
@@ -3365,6 +3366,16 @@
     "going": "[DE] going",
     "friendsSaved": "[DE] friends saved",
     "inTrips": "[DE] in trips"
+  },
+  "discovery": {
+    "nextLeg": {
+      "risk": "[DE] Legal risk"
+    }
+  },
+  "safety": {
+    "gated": {
+      "privacy": "[DE] An account is free and private: your profile is never shown to other visitors unless you choose, and we never share what you view."
+    }
   },
   "connections": {
     "title": "[DE] Connections",

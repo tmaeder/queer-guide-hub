@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
-import { Plane } from 'lucide-react';
+import { Plane, ShieldAlert } from 'lucide-react';
+import { hasCriminalizationFlag } from '@/lib/lgbtLegality';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { detailHref } from '@/lib/searchRoutes';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -51,6 +52,9 @@ export function NextLegFromHere({ cityId, latitude, longitude }: Props) {
               // Strict: require a canonical slug — skip a city with only an id.
               const to = detailHref({ type: 'city', slug: row.slug, id: row.id });
               if (!to) return null;
+              // A cheerful flag emoji next to a criminalizing destination is a
+              // trap for the very traveler this rail serves — surface the risk.
+              const criminalized = hasCriminalizationFlag(row.countries?.lgbti_criminalization);
               return (
               <li key={row.id}>
                 <LocalizedLink
@@ -66,6 +70,12 @@ export function NextLegFromHere({ cityId, latitude, longitude }: Props) {
                     <span className="truncate text-13 font-semibold text-foreground">
                       {row.name}
                     </span>
+                    {criminalized && (
+                      <span className="inline-flex shrink-0 items-center gap-1 rounded-badge border border-destructive/40 px-1.5 text-3xs font-semibold uppercase tracking-[0.1em] text-destructive">
+                        <ShieldAlert size={10} aria-hidden />
+                        {t('discovery.nextLeg.risk', 'Legal risk')}
+                      </span>
+                    )}
                   </span>
                   <span className="inline-flex shrink-0 items-center gap-1 text-2xs uppercase tracking-[0.1em] text-muted-foreground tabular-nums">
                     <Plane size={12} aria-hidden />

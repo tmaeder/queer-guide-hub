@@ -2879,7 +2879,8 @@
       "conversionTherapy": "العلاج التحويلي",
       "intersex": "السلامة الجسدية لحاملي صفات الجنسين",
       "ilgaLink": "ILGA World Database"
-    }
+    },
+    "planTripHighRisk": "[AR] Plan carefully — safety briefing included"
   },
   "inbox": {
     "title": "صندوق الوارد",
@@ -3369,6 +3370,16 @@
     "going": "[AR] going",
     "friendsSaved": "[AR] friends saved",
     "inTrips": "[AR] in trips"
+  },
+  "discovery": {
+    "nextLeg": {
+      "risk": "[AR] Legal risk"
+    }
+  },
+  "safety": {
+    "gated": {
+      "privacy": "[AR] An account is free and private: your profile is never shown to other visitors unless you choose, and we never share what you view."
+    }
   },
   "connections": {
     "title": "[AR] Connections",

@@ -2879,7 +2879,8 @@
       "conversionTherapy": "Thérapie de conversion",
       "intersex": "Intégrité corporelle intersexe",
       "ilgaLink": "ILGA World Database"
-    }
+    },
+    "planTripHighRisk": "[FR] Plan carefully — safety briefing included"
   },
   "inbox": {
     "title": "Boîte de réception",
@@ -3369,6 +3370,16 @@
     "going": "[FR] going",
     "friendsSaved": "[FR] friends saved",
     "inTrips": "[FR] in trips"
+  },
+  "discovery": {
+    "nextLeg": {
+      "risk": "[FR] Legal risk"
+    }
+  },
+  "safety": {
+    "gated": {
+      "privacy": "[FR] An account is free and private: your profile is never shown to other visitors unless you choose, and we never share what you view."
+    }
   },
   "connections": {
     "title": "[FR] Connections",

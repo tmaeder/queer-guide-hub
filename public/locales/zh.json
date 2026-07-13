@@ -2873,7 +2873,8 @@
       "conversionTherapy": "扭转治疗",
       "intersex": "间性人身体完整权",
       "ilgaLink": "ILGA World Database"
-    }
+    },
+    "planTripHighRisk": "[ZH] Plan carefully — safety briefing included"
   },
   "inbox": {
     "title": "收件箱",
@@ -3363,6 +3364,16 @@
     "going": "[ZH] going",
     "friendsSaved": "[ZH] friends saved",
     "inTrips": "[ZH] in trips"
+  },
+  "discovery": {
+    "nextLeg": {
+      "risk": "[ZH] Legal risk"
+    }
+  },
+  "safety": {
+    "gated": {
+      "privacy": "[ZH] An account is free and private: your profile is never shown to other visitors unless you choose, and we never share what you view."
+    }
   },
   "connections": {
     "title": "[ZH] Connections",

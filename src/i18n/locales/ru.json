@@ -2909,7 +2909,8 @@
       "conversionTherapy": "Конверсионная терапия",
       "intersex": "Телесная неприкосновенность интерсекс-людей",
       "ilgaLink": "ILGA World Database"
-    }
+    },
+    "planTripHighRisk": "[RU] Plan carefully — safety briefing included"
   },
   "inbox": {
     "title": "Входящие",
@@ -3399,6 +3400,16 @@
     "going": "[RU] going",
     "friendsSaved": "[RU] friends saved",
     "inTrips": "[RU] in trips"
+  },
+  "discovery": {
+    "nextLeg": {
+      "risk": "[RU] Legal risk"
+    }
+  },
+  "safety": {
+    "gated": {
+      "privacy": "[RU] An account is free and private: your profile is never shown to other visitors unless you choose, and we never share what you view."
+    }
   },
   "connections": {
     "title": "[RU] Connections",

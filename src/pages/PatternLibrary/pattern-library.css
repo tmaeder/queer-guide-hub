@@ -1,8 +1,11 @@
 /*
  * Pattern Library — scoped under .qg-pl so it doesn't leak into the main app.
  * Mirrors the inline <style> block from Pattern Library.html (design handoff).
+ *
+ * NOTE: the original handoff imported Google Fonts here, but the production
+ * CSP (style-src/font-src 'self') silently blocks the request — the page has
+ * always rendered with local fallbacks, so the import was dead weight.
  */
-@import url("https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter+Tight:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap");
 
 .qg-pl {
   --paper: #f6f3ec; --paper-2: #ece7db; --paper-3: #ffffff;

@@ -21,7 +21,7 @@ export function SelectField({ field, value, onChange, error, disabled }: FieldPr
         aria-describedby={error ? `${field.name}-error` : field.helpText ? `${field.name}-help` : undefined}
         className={`
           w-full h-10 px-4 py-2 rounded-element text-sm
-          bg-muted/50 border-0
+          border border-input bg-background
           focus:outline-none focus:ring-2 focus:ring-ring
           disabled:cursor-not-allowed disabled:opacity-50
           appearance-none

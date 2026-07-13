@@ -245,13 +245,13 @@ const NewsCardImpl = ({
             className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/15 to-transparent"
           />
         </div>
-        <div className="absolute inset-x-0 bottom-0 p-6 md:p-10 text-background">
+        <div className="absolute inset-x-0 bottom-0 p-6 md:p-10 text-white">
           {eyebrowParts.length > 0 && (
             <p className="text-2xs uppercase tracking-wider opacity-90 flex items-center gap-2">
               {fresh && (
                 <span
                   aria-hidden="true"
-                  className="inline-block w-1.5 h-1.5 rounded-full bg-background animate-pulse motion-reduce:animate-none"
+                  className="inline-block w-1.5 h-1.5 rounded-full bg-white animate-pulse motion-reduce:animate-none"
                 />
               )}
               {eyebrowParts.join(' · ')}

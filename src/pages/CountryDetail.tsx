@@ -31,6 +31,7 @@ import { COUNTRY_SECTION_DEFS } from './country-detail/CountrySectionDefs';
 import { PersonalitiesForEntity } from '@/components/discovery/PersonalitiesForEntity';
 import { NearbyTriptych } from '@/components/discovery/NearbyTriptych';
 import { SimilarItems } from '@/components/discovery/SimilarItems';
+import { hasAnyCriminalizationSignal } from '@/utils/equalityScore';
 import { MarketplaceForCountry } from '@/components/marketplace/MarketplaceForCountry';
 import {
   CountryRightsTab,
@@ -89,7 +90,7 @@ export default function CountryDetail() {
   }, [country?.id, country?.name, track]);
 
   useEffect(() => {
-    if (country?.id) fetchVenuesRef.current({ countryId: country.id, limit: 12 });
+    if (country?.id) fetchVenuesRef.current({ countryId: country.id, limit: 12, railQuality: true });
   }, [country?.id]);
 
   useEffect(() => {
@@ -180,13 +181,8 @@ export default function CountryDetail() {
       label: t('country.facts.equality', 'Equality'),
       value: country.equality_score != null ? `${country.equality_score}/100` : null,
     },
-    {
-      label: t('country.facts.languages', 'Languages'),
-      value: Array.isArray(country.languages)
-        ? country.languages.slice(0, 3).join(', ')
-        : country.languages || null,
-    },
-    { label: t('country.facts.currency', 'Currency'), value: country.currency || null },
+    // Languages + Currency live in CountryPracticalInfo directly above this
+    // strip — repeating them here read as a data bug (2026-07 critique).
     { label: t('country.facts.cities', 'Cities'), value: cities.length || null },
   ];
 
@@ -286,10 +282,16 @@ export default function CountryDetail() {
             <div className="flex flex-wrap gap-2">
               <PlanTripFromHereButton
                 initialGeo={null}
-                label={t('country.planTrip', {
-                  defaultValue: 'Plan a trip to {{country}}',
-                  country: country.name,
-                })}
+                label={
+                  hasAnyCriminalizationSignal(country.lgbti_criminalization)
+                    ? t('country.planTripHighRisk', {
+                        defaultValue: 'Plan carefully — safety briefing included',
+                      })
+                    : t('country.planTrip', {
+                        defaultValue: 'Plan a trip to {{country}}',
+                        country: country.name,
+                      })
+                }
               />
             </div>
             <IntroEssay text={country.editorial_long || country.description} />

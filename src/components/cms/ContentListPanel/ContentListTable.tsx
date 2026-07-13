@@ -391,14 +391,24 @@ export function ContentListTable({
                 const isSelected = selected.has(itemKey);
                 const rowColor = item.contentTypeColor;
                 const statusColor = getStatusColor(item.status);
+                // Rows the public can't see are visually set apart so editors
+                // spot hidden/draft entries at a glance (feedback request).
+                const rawVisibility = (item.raw as Record<string, unknown> | undefined)?.visibility as
+                  | string
+                  | undefined;
+                const isHidden =
+                  (rawVisibility !== undefined && rawVisibility !== 'public') ||
+                  (item.raw as Record<string, unknown> | undefined)?.is_public === false;
 
                 return (
                   <TableRow
                     key={itemKey}
                     data-state={isSelected ? 'selected' : undefined}
-                    className="cursor-pointer transition-colors hover:bg-muted/50"
+                    className={`cursor-pointer transition-colors hover:bg-muted/50 ${isHidden ? 'bg-muted/40' : ''}`}
                     style={{
-                      borderLeft: '3px solid transparent',
+                      borderLeft: isHidden
+                        ? '3px solid hsl(var(--muted-foreground))'
+                        : '3px solid transparent',
                       ...(isSelected ? { backgroundColor: `${rowColor}0A` } : {}),
                     }}
                     onClick={() => onEdit(item.contentType, item.id)}
@@ -411,7 +421,14 @@ export function ContentListTable({
                     </TableCell>
 
                     <TableCell>
-                      <p className="text-sm font-medium leading-tight">{item.title}</p>
+                      <p className={`text-sm font-medium leading-tight ${isHidden ? 'text-muted-foreground' : ''}`}>
+                        {item.title}
+                        {isHidden && (
+                          <span className="ml-2 inline-block rounded-badge bg-muted px-1.5 align-middle text-2xs uppercase tracking-wide text-muted-foreground">
+                            {rawVisibility && rawVisibility !== 'public' ? rawVisibility : 'hidden'}
+                          </span>
+                        )}
+                      </p>
                       {item.description && (
                         <span className="text-xs text-muted-foreground truncate block max-w-[360px] mt-0.5">
                           {item.description}

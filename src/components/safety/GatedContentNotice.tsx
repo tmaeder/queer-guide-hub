@@ -66,6 +66,12 @@ export function GatedContentNotice({ cityId, countryId }: GatedContentNoticeProp
                 'This destination has heightened legal risk for LGBTQ+ people, so venues, events and organizations are not shown publicly. Sign in to view them.',
             })}
           </p>
+          <p className="text-13 text-muted-foreground">
+            {t('safety.gated.privacy', {
+              defaultValue:
+                'An account is free and private: your profile is never shown to other visitors unless you choose, and we never share what you view.',
+            })}
+          </p>
         </div>
       </div>
       <LocalizedLink to="/auth" className="shrink-0">

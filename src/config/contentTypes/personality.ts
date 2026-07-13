@@ -1,5 +1,6 @@
 import { Users } from 'lucide-react';
 import type { ContentTypeConfig, FieldConfig } from '@/types/cms';
+import { validatePersonality } from '@/utils/contentValidation';
 
 export const personalityFields: FieldConfig[] = [
   {
@@ -12,7 +13,13 @@ export const personalityFields: FieldConfig[] = [
     sortable: true,
     maxLength: 255,
   },
-  { name: 'slug', label: 'Slug', type: 'text', group: 'basic' },
+  {
+    name: 'slug',
+    label: 'Slug',
+    type: 'text',
+    group: 'basic',
+    helpText: 'URL path segment (/personalities/<slug>). Auto-generated from the name on create; only change to fix a wrong or misleading URL.',
+  },
   { name: 'pronouns', label: 'Pronouns', type: 'text', group: 'basic' },
   { name: 'profession', label: 'Profession', type: 'profession_autocomplete', group: 'basic', searchable: true },
   { name: 'description', label: 'Short Description', type: 'textarea', group: 'basic', colSpan: 2 },
@@ -128,6 +135,7 @@ export const personalityContentType: ContentTypeConfig = {
   color: 'hsl(var(--foreground))',
   fields: personalityFields,
   defaults: { is_living: true, visibility: 'public', verification_status: 'pending', is_adult: false },
+  validate: validatePersonality,
   fieldGroupOrder: ['basic', 'details', 'lgbtq', 'media', 'settings', 'external'],
   translatableFields: ['name', 'profession', 'description', 'bio'],
   commentable: true,
