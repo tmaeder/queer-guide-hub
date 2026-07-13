@@ -199,7 +199,6 @@ export default function Hotels() {
   return (
     <div className="relative">
       <PageHero
-        eyebrow={t('pages.hotels.eyebrow', 'Where to sleep')}
         title={t('pages.hotels.title', 'Stays.')}
         lede={t('pages.hotels.subtitle', 'LGBTQ+ friendly accommodations worldwide')}
         primaryCta={{ label: t('pages.hotels.planTrip', 'Plan a trip'), href: '/travel' }}

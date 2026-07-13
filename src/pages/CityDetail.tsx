@@ -123,7 +123,7 @@ export default function CityDetail() {
   fetchVenuesRef.current = fetchVenues;
 
   useEffect(() => {
-    fetchVenuesRef.current({ cityId: city?.id, city: city?.name, limit: 12 });
+    fetchVenuesRef.current({ cityId: city?.id, city: city?.name, limit: 12, railQuality: true });
   }, [city?.id, city?.name]);
 
   useEffect(() => {
@@ -131,7 +131,8 @@ export default function CityDetail() {
   }, [city?.name, fetchEvents]);
 
   const { country: fullCountry, loading: countryLoading } = useOptimizedCountry(
-    city?.countries?.slug || city?.countries?.id || '',
+    // Fall back to the raw FK so rights still resolve when the embed is absent.
+    city?.countries?.slug || city?.countries?.id || city?.country_id || '',
   );
   const { villages, loading: villagesLoading, fetchVillages } = useQueerVillages(false);
 

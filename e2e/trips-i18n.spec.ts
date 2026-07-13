@@ -40,8 +40,17 @@ for (const locale of LOCALES) {
       await page.goto(`/${locale}/trips`);
       await page.waitForLoadState('networkidle');
 
+      // /trips redirects to /hub/plans through lazy chunks + auth boot;
+      // networkidle can fire inside a Suspense gap where the body is
+      // momentarily text-free on slow runners. Poll instead of sampling once —
+      // a real crash still fails (body stays empty).
+      await expect
+        .poll(async () => (await bodyText(page)).length, {
+          message: `[${locale}] page rendered empty — likely crashed`,
+          timeout: 15_000,
+        })
+        .toBeGreaterThan(0);
       const text = await bodyText(page);
-      expect(text.length, `[${locale}] page rendered empty — likely crashed`).toBeGreaterThan(0);
 
       const rawKey = text.match(RAW_KEY_RE);
       expect(rawKey, `[${locale}] raw i18n key leaked: ${rawKey?.[0]}`).toBeNull();

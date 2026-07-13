@@ -31,4 +31,12 @@ describe('ThemeProvider', () => {
     act(() => { result.current.setTheme('dark'); });
     expect(document.documentElement.classList.contains('dark')).toBe(true);
   });
+
+  it('should expose resolvedTheme following explicit theme changes', () => {
+    localStorage.clear();
+    const { result } = renderHook(() => useTheme(), { wrapper });
+    expect(result.current.resolvedTheme).toBe('light');
+    act(() => { result.current.setTheme('dark'); });
+    expect(result.current.resolvedTheme).toBe('dark');
+  });
 });

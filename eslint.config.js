@@ -191,9 +191,8 @@ export default tseslint.config(
       "src/components/trips/TripCoverBand.tsx",
       "src/pages/trips/**",
       // Severity-tagged content warnings.
-      // Categorical tag link palettes + relationship graph.
+      // Categorical tag link palettes.
       "src/components/tags/TagLinkedContent.tsx",
-      "src/components/tags/TagRelationshipGraph.tsx",
       // Functional gradients / scales / state colors that are intentional.
       "src/components/auth/PasswordStrengthMeter.tsx",
       "src/components/country/WorldBankDataPanel.tsx",
@@ -383,7 +382,6 @@ export default tseslint.config(
       "src/components/submission/**",
       "src/pages/trips/**",
       "src/components/tags/TagLinkedContent.tsx",
-      "src/components/tags/TagRelationshipGraph.tsx",
       "src/components/auth/PasswordStrengthMeter.tsx",
       "src/components/auth/OAuthButtons.tsx",
       "src/components/personalities/AddPersonalityDialog.tsx",

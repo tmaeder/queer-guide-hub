@@ -18,12 +18,20 @@ export function TravelDealsSection({ destinationIata, destinationCity }: TravelD
   const { data: deals, isLoading: dealsLoading } = useTravelDeals({
     origin: originIata || undefined,
     destination: destinationIata || undefined,
-    type: destinationIata ? 'flights' : 'popular_routes',
+    type: 'flights',
     limit: 6,
-    enabled: !!originIata,
+    // Without a destination IATA there is nothing truthful to show here —
+    // popular_routes deals would get mislabeled with this page's city name.
+    enabled: !!originIata && !!destinationIata,
   });
 
   const loading = originLoading || dealsLoading;
+
+  // Only deals that actually fly to this page's destination, with a real price.
+  const matchedDeals = (deals ?? []).filter(
+    (deal) =>
+      deal.destination === destinationIata && Number.isFinite(deal.price) && deal.price > 0,
+  );
 
   if (originLoading) {
     return (
@@ -38,11 +46,13 @@ export function TravelDealsSection({ destinationIata, destinationCity }: TravelD
     );
   }
 
-  if (!originIata) {
+  if (!originIata || !destinationIata) {
     return (
       <div className="text-center py-6">
         <p className="text-muted-foreground mb-2">
-          Enable location to see personalized flight deals to {destinationCity}
+          {originIata
+            ? `Flight deals to ${destinationCity} aren't available yet`
+            : `Enable location to see personalized flight deals to ${destinationCity}`}
         </p>
         <LocalizedLink to="/travel">
           <Button variant="outline" size="sm">
@@ -77,9 +87,9 @@ export function TravelDealsSection({ destinationIata, destinationCity }: TravelD
             <Skeleton key={i} className="h-[140px] rounded" />
           ))}
         </div>
-      ) : deals && deals.length > 0 ? (
+      ) : matchedDeals.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-          {deals.map((deal, i) => (
+          {matchedDeals.map((deal, i) => (
             <TravelDealCard
               key={`${deal.origin}-${deal.destination}-${deal.departure_date}-${i}`}
               deal={deal}

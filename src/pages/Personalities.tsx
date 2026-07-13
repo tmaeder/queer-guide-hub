@@ -23,7 +23,8 @@ import { SpotlightV2 } from '@/components/effects/SpotlightV2';
 import { EmptyState, ErrorState } from '@/components/ui/EmptyState';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { VirtualizedGrid, useGridColumns } from '@/components/ui/VirtualizedGrid';
+import { VirtualizedGrid } from '@/components/ui/VirtualizedGrid';
+import { useGridColumns } from '@/components/ui/useGridColumns';
 
 import { PersonalityCard, PersonalityCardSkeleton } from '@/components/personalities/PersonalityCard';
 import { useEntityImageAssets } from '@/hooks/useEntityImageAssets';

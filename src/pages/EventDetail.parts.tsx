@@ -527,10 +527,14 @@ export function EventDecisionCard({
   return (
     <Card className="md:sticky md:top-24">
       <CardContent className="flex flex-col gap-4 p-6">
-        <div className="flex items-baseline justify-between gap-2">
-          <span className="text-headline font-display leading-none">{getPriceDisplay(event)}</span>
-          {event.is_free && <Badge variant="soft">No ticket needed</Badge>}
-        </div>
+        {/* Unknown price stays in the fact strip; a headline-sized "Price TBA"
+            here duplicated it and read like a price. */}
+        {getPriceDisplay(event) !== 'Price TBA' && (
+          <div className="flex items-baseline justify-between gap-2">
+            <span className="text-headline font-display leading-none">{getPriceDisplay(event)}</span>
+            {event.is_free && <Badge variant="soft">No ticket needed</Badge>}
+          </div>
+        )}
 
         {ticketHref ? (
           <Button asChild className="w-full">

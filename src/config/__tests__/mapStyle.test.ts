@@ -9,7 +9,7 @@ vi.mock('@protomaps/basemaps', () => ({
   namedFlavor: (name: string) => ({ name }),
 }));
 
-import { mapStyle, globeFog } from '../mapStyle';
+import { mapStyle, getMapStyle, globeFog } from '../mapStyle';
 
 describe('mapStyle', () => {
   it('uses MapLibre style spec v8', () => {
@@ -33,6 +33,25 @@ describe('mapStyle', () => {
   it('forwards namedFlavor("light") + lang to the layers builder', () => {
     expect(Array.isArray(mapStyle.layers)).toBe(true);
     expect(mapStyle.layers.length).toBeGreaterThan(0);
+  });
+});
+
+describe('getMapStyle', () => {
+  it('defaults to the light flavor and matches the legacy mapStyle export', () => {
+    expect(getMapStyle()).toBe(getMapStyle('light'));
+    expect(mapStyle).toBe(getMapStyle('light'));
+  });
+
+  it('builds a dark flavor with the dark sprite + flavor', () => {
+    const dark = getMapStyle('dark');
+    expect(dark.sprite).toMatch(/basemaps-assets\/sprites\/v4\/dark$/);
+    const layer = (dark.layers as Array<{ flavor?: { name: string } }>)[0];
+    expect(layer.flavor).toEqual({ name: 'dark' });
+  });
+
+  it('caches per mode (same reference on repeat calls)', () => {
+    expect(getMapStyle('dark')).toBe(getMapStyle('dark'));
+    expect(getMapStyle('dark')).not.toBe(getMapStyle('light'));
   });
 });
 

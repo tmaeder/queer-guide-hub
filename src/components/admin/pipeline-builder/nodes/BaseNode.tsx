@@ -3,24 +3,7 @@ import { Handle, Position, type NodeProps } from '@xyflow/react';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import { resolvePipelineIcon, AlertCircle, ArrowDownToLine, ArrowUpFromLine, Timer } from '../icon-registry';
-
-interface BaseNodeData {
-  label?: string;
-  config?: Record<string, unknown>;
-  icon?: string;
-  color?: string;
-  category?: string;
-  description?: string;
-  nodeTypeSlug?: string;
-  inputPorts?: Array<{ id: string; label: string; type: string }>;
-  outputPorts?: Array<{ id: string; label: string; type: string }>;
-  status?: 'pending' | 'running' | 'completed' | 'failed' | 'skipped';
-  itemsOut?: number;
-  itemsIn?: number;
-  durationMs?: number;
-  errorMessage?: string;
-  hasValidationIssue?: boolean;
-}
+import type { BaseNodeType } from '../types';
 
 const statusConfig: Record<string, { className: string; icon: string }> = {
   pending:   { className: 'bg-muted text-muted-foreground', icon: 'Clock' },
@@ -41,8 +24,7 @@ function formatDuration(ms: number): string {
   return `${(ms / 60000).toFixed(1)}m`;
 }
 
-function BaseNode({ data, selected }: NodeProps) {
-  const d = data as BaseNodeData;
+function BaseNode({ data: d, selected }: NodeProps<BaseNodeType>) {
   const IconComponent = resolvePipelineIcon(d.icon);
   const color = d.color || 'hsl(var(--muted-foreground))';
   const status = d.status;

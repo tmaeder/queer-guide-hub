@@ -32,7 +32,8 @@ import type { Database } from '@/integrations/supabase/types';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { PageHero } from '@/components/discovery';
-import { VirtualizedGrid, useGridColumns } from '@/components/ui/VirtualizedGrid';
+import { VirtualizedGrid } from '@/components/ui/VirtualizedGrid';
+import { useGridColumns } from '@/components/ui/useGridColumns';
 import { useTranslation } from 'react-i18next';
 import {
   FILTER_PARAM_KEYS,
@@ -373,7 +374,6 @@ const Marketplace = () => {
     <CuratedIdsProvider>
       <div className="min-h-screen relative">
         <PageHero
-          eyebrow={t('pages.marketplace.eyebrow', 'Shop')}
           title={t('pages.marketplace.title', 'Marketplace.')}
           lede={t('pages.marketplace.subtitle', 'Queer-friendly products and services.')}
           primaryCta={{

@@ -7,6 +7,7 @@ import { CardHoverEffect } from '@/components/effects/CardHoverEffect';
 import type { Personality } from '@/hooks/usePersonalities';
 import { resolveImageUrl } from '@/utils/resolveImageUrl';
 import { buildCfSrcSet } from '@/utils/cloudflareOptimizations';
+import { formatProfession } from '@/lib/professionDisplay';
 
 const HOVER_OPEN_MS = 350;
 const HOVER_CLOSE_MS = 120;
@@ -90,7 +91,7 @@ function PersonalityCardImpl({ personality, loading, onClick, optimizedUrl, thum
   const showImage = Boolean(resolvedImageUrl) && !imgError;
   const metaParts = [era, personality.nationality].filter(Boolean) as string[];
   const ariaLabel = personality.profession
-    ? `${personality.name}, ${personality.profession}`
+    ? `${personality.name}, ${formatProfession(personality.profession)}`
     : personality.name;
   const href = `/personalities/${personality.slug ?? personality.id}`;
 
@@ -189,7 +190,7 @@ function PersonalityCardImpl({ personality, loading, onClick, optimizedUrl, thum
           </h3>
           {personality.profession && (
             <p className="text-muted-foreground mt-0.5 overflow-hidden text-ellipsis whitespace-nowrap text-13">
-              {personality.profession}
+              {formatProfession(personality.profession)}
             </p>
           )}
           {metaParts.length > 0 && (
@@ -255,7 +256,7 @@ function PersonalityCardImpl({ personality, loading, onClick, optimizedUrl, thum
         <div className="p-4 space-y-1.5">
           <div className="text-sm font-semibold leading-snug">{personality.name}</div>
           {personality.profession && (
-            <div className="text-xs text-muted-foreground">{personality.profession}</div>
+            <div className="text-xs text-muted-foreground">{formatProfession(personality.profession)}</div>
           )}
           {metaParts.length > 0 && (
             <div className="text-xs2 text-muted-foreground/80">{metaParts.join(' · ')}</div>

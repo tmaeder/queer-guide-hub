@@ -7,6 +7,7 @@ import { ArrowLeft } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { Skeleton } from '@/components/ui/skeleton';
 import { GatedDetailFallback } from '@/components/safety/GatedDetailFallback';
 import { AddToTripDialog } from '@/components/trips/AddToTripDialog';
@@ -228,7 +229,7 @@ export default function EventDetail() {
 
   if (error) {
     return (
-      <div className="container mx-auto py-8" data-testid="event-detail-error">
+      <div className="container mx-auto px-4 py-8" data-testid="event-detail-error">
         <Alert variant="destructive">
           <AlertTitle>Failed to load</AlertTitle>
           <AlertDescription>{(error as Error).message || 'Something went wrong.'}</AlertDescription>
@@ -239,7 +240,7 @@ export default function EventDetail() {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto py-8" data-testid="event-detail-loading">
+      <div className="container mx-auto px-4 py-8" data-testid="event-detail-loading">
         <Skeleton variant="rectangular" height={380} className="mb-6 rounded-container" />
         <Skeleton variant="rectangular" height={28} style={{ width: '50%' }} className="mb-6" />
         <div className="grid grid-cols-1 gap-8 md:grid-cols-[2fr_1fr]">
@@ -252,7 +253,7 @@ export default function EventDetail() {
 
   if (!event) {
     const eventNotFound = (
-      <div className="container mx-auto py-8 text-center">
+      <div className="container mx-auto px-4 py-8 text-center">
         <h2 className="mb-4 text-2xl font-bold">Event Not Found</h2>
         <p className="mb-6 text-muted-foreground">The event you're looking for doesn't exist.</p>
         <LocalizedLink to="/events">
@@ -284,45 +285,73 @@ export default function EventDetail() {
 
   return (
     <>
-      <div className="container mx-auto py-8" data-testid="event-detail-layout">
-        <EventHero
-          event={event}
-          cityName={cityName}
-          countryName={countryName}
-          cityLink={cityLink}
-          countryLink={countryLink}
-          heroImage={heroImage}
-          onContentUpdated={refetch}
-        />
+      <div className="container mx-auto px-4 py-8" data-testid="event-detail-layout">
+        {/* Per-section guards: one bad field degrades a module, never the route. */}
+        <ErrorBoundary
+          section="event-hero"
+          fallback={<h1 className="text-display font-display font-bold">{event.title}</h1>}
+        >
+          <EventHero
+            event={event}
+            cityName={cityName}
+            countryName={countryName}
+            cityLink={cityLink}
+            countryLink={countryLink}
+            heroImage={heroImage}
+            onContentUpdated={refetch}
+          />
+        </ErrorBoundary>
 
         <div className="mt-8 grid grid-cols-1 gap-8 md:grid-cols-[2fr_1fr]">
           {/* Main column */}
           <div className="flex flex-col gap-8">
-            <EventFactStrip event={event} showEventTz={showEventTz} setShowEventTz={setShowEventTz} />
-            <EventForYou event={event} isInTrip={tripStatus?.isInTrip} tripCount={tripStatus?.count} />
+            <ErrorBoundary section="event-fact-strip" fallback={null}>
+              <EventFactStrip event={event} showEventTz={showEventTz} setShowEventTz={setShowEventTz} />
+            </ErrorBoundary>
+            <ErrorBoundary section="event-for-you" fallback={null}>
+              <EventForYou event={event} isInTrip={tripStatus?.isInTrip} tripCount={tripStatus?.count} />
+            </ErrorBoundary>
 
             {/* Decision card inline on mobile (rail hides it on md+) */}
-            <div className="md:hidden">{decisionCard}</div>
+            <div className="md:hidden">
+              <ErrorBoundary section="event-decision-card" fallback={null}>
+                {decisionCard}
+              </ErrorBoundary>
+            </div>
 
-            <EventAbout event={event} onContentUpdated={refetch} />
-            <EventWhere
-              event={event}
-              venueRef={venueRef}
-              countryId={effectiveCountry?.id ?? event.country_id}
-              onOrganizerClick={(organizer) =>
-                navigate(`/events?organizer=${encodeURIComponent(organizer)}`)
-              }
-            />
+            <ErrorBoundary section="event-about" fallback={null}>
+              <EventAbout event={event} onContentUpdated={refetch} />
+            </ErrorBoundary>
+            <ErrorBoundary section="event-where" fallback={null}>
+              <EventWhere
+                event={event}
+                venueRef={venueRef}
+                countryId={effectiveCountry?.id ?? event.country_id}
+                onOrganizerClick={(organizer) =>
+                  navigate(`/events?organizer=${encodeURIComponent(organizer)}`)
+                }
+              />
+            </ErrorBoundary>
           </div>
 
           {/* Sticky decision rail (desktop) */}
-          <div className="hidden md:block">{decisionCard}</div>
+          <div className="hidden md:block">
+            <ErrorBoundary section="event-decision-card" fallback={null}>
+              {decisionCard}
+            </ErrorBoundary>
+          </div>
         </div>
 
         <div className="mt-12 flex flex-col gap-12 pb-28 md:pb-12">
-          <EventWhoIsGoing event={event} user={user} isPast={isPast} />
-          <MarketplaceForEvent eventType={event.event_type} eventTitle={event.title} />
-          <EventMoreEvents eventId={event.id} city={cityName} />
+          <ErrorBoundary section="event-who-is-going" fallback={null}>
+            <EventWhoIsGoing event={event} user={user} isPast={isPast} />
+          </ErrorBoundary>
+          <ErrorBoundary section="event-marketplace" fallback={null}>
+            <MarketplaceForEvent eventType={event.event_type} eventTitle={event.title} />
+          </ErrorBoundary>
+          <ErrorBoundary section="event-more-events" fallback={null}>
+            <EventMoreEvents eventId={event.id} city={cityName} />
+          </ErrorBoundary>
         </div>
       </div>
 

@@ -3,10 +3,10 @@ import { useReactFlow } from '@xyflow/react';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { resolvePipelineIcon } from '../icon-registry';
-import type { Node } from '@xyflow/react';
+import { isBaseNode, type AppNode } from '../types';
 
 interface FindNodePaletteProps {
-  nodes: Node[];
+  nodes: AppNode[];
   onSelect: (nodeId: string) => void;
 }
 
@@ -50,7 +50,7 @@ export default function FindNodePalette({ nodes, onSelect }: FindNodePaletteProp
             <CommandEmpty>No nodes match</CommandEmpty>
             <CommandGroup heading={`${nodes.length} nodes on canvas`}>
               {nodes.map(n => {
-                const d = n.data as { label?: string; icon?: string; color?: string; nodeTypeSlug?: string; status?: string };
+                const d = isBaseNode(n) ? n.data : { label: undefined, icon: undefined, color: undefined, nodeTypeSlug: undefined, status: undefined };
                 const Icon = resolvePipelineIcon(d.icon);
                 const color = d.color || 'hsl(var(--muted-foreground))';
                 return (

@@ -55,13 +55,19 @@ function DonutChart({
     100 + r * Math.cos((deg * Math.PI) / 180),
     100 + r * Math.sin((deg * Math.PI) / 180),
   ];
-  let cursor = -90;
-  const slices = data.map((d) => {
+  // Precompute each slice's start angle (scan) so nothing is reassigned after
+  // render — a running `let` here trips react-hooks/immutability.
+  const starts: number[] = [];
+  data.reduce((angle, d) => {
+    starts.push(angle);
+    return angle + (d.value / total) * 360;
+  }, -90);
+  const slices = data.map((d, i) => {
     const sweep = (d.value / total) * 360;
+    const cursor = starts[i];
     // Cap just under a full turn so a single-category donut still draws.
     const a0 = cursor + PAD_DEG / 2;
     const a1 = cursor + Math.min(sweep - PAD_DEG / 2, 359.98 - PAD_DEG);
-    cursor += sweep;
     const large = a1 - a0 > 180 ? 1 : 0;
     const [x0, y0] = pt(OUTER, a0);
     const [x1, y1] = pt(OUTER, a1);

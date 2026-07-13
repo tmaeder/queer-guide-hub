@@ -14,32 +14,10 @@ import { useWindowVirtualizer } from '@tanstack/react-virtual';
  *
  * Below `virtualizeAfter` items it renders the plain grid (no virtualization
  * overhead for a page-one result set, and SEO/a11y snapshots stay identical).
+ *
+ * The responsive column resolver lives in ./useGridColumns (re-exported here
+ * for existing import sites; this file only *exports* the component itself).
  */
-
-export interface GridBreakpoint {
-  /** min-width media query in px; use 0 for the base column count. */
-  minWidth: number;
-  columns: number;
-}
-
-export function useGridColumns(breakpoints: GridBreakpoint[]): number {
-  const resolve = React.useCallback(() => {
-    if (typeof window === 'undefined') return breakpoints[0]?.columns ?? 1;
-    let cols = 1;
-    for (const bp of breakpoints) {
-      if (window.matchMedia(`(min-width: ${bp.minWidth}px)`).matches) cols = bp.columns;
-    }
-    return cols;
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- breakpoints are static per call site
-  }, []);
-  const [columns, setColumns] = React.useState(resolve);
-  React.useEffect(() => {
-    const handler = () => setColumns(resolve());
-    window.addEventListener('resize', handler);
-    return () => window.removeEventListener('resize', handler);
-  }, [resolve]);
-  return columns;
-}
 
 interface VirtualizedGridProps<T> {
   items: T[];

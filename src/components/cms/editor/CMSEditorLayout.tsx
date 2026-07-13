@@ -7,7 +7,7 @@
  * Features: Ctrl/Cmd+S save shortcut, required-field progress bar, dark-mode aware.
  */
 
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   FileText,
   List,
@@ -96,14 +96,23 @@ export function CMSEditorLayout({
   const { transition, isTransitioning } = useCMSWorkflow(workflowState);
 
   const titleValue = (config ? (state.data[config.titleField] as string) : '') ?? '';
+  // Capture the pre-editor title ONCE and restore it only on unmount.
+  // Capturing per-effect-run made `prev` hold a previously edited entity's
+  // title (e.g. "Ellen DeGeneres") which then got restored onto the next
+  // item's edit view. While a different item is (re)loading, keep hands off
+  // the title — state.data still holds the previous entity.
+  const initialTitleRef = useRef<string | null>(null);
   useEffect(() => {
-    const prev = document.title;
+    initialTitleRef.current = document.title;
+    return () => {
+      if (initialTitleRef.current !== null) document.title = initialTitleRef.current;
+    };
+  }, []);
+  useEffect(() => {
+    if (state.isLoading) return;
     const label = config?.label.singular ?? contentType;
     document.title = titleValue ? `${titleValue} | Queer Guide` : `New ${label} | Queer Guide`;
-    return () => {
-      document.title = prev;
-    };
-  }, [titleValue, config, contentType]);
+  }, [titleValue, config, contentType, state.isLoading]);
 
   // Field groups for tab navigation
   const fieldGroups = useMemo(() => getFieldGroups(contentType), [contentType]);

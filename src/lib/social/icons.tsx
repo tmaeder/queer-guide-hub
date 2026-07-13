@@ -1,4 +1,4 @@
-import { Globe, Music, Send, MessageCircle, Tv, Coffee, Heart, Flame, Video } from 'lucide-react';
+import { Globe, Music, Send, MessageCircle, Tv, Coffee, Heart, Flame, Video, ShoppingBag } from 'lucide-react';
 import {
   Instagram,
   Facebook,
@@ -50,6 +50,7 @@ export const PLATFORM_ICONS: Record<SocialPlatformKey, IconComponent> = {
   pornhub: Video,
   xhamster: Video,
   xtube: Video,
+  shop: ShoppingBag,
   website: Globe,
 };
 

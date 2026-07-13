@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Boxes, Save, Trash2, Plus } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
@@ -12,30 +12,39 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import type { Node, Edge } from '@xyflow/react';
+import type { AppNode, AppEdge } from '../types';
 
 interface Template {
   id: string;
   name: string;
   description: string | null;
   category: string;
-  nodes: Node[];
-  edges: Edge[];
+  nodes: AppNode[];
+  edges: AppEdge[];
   created_at: string;
   use_count: number;
 }
 
 interface TemplateLibraryProps {
-  selectedNodes: Node[];
-  selectedEdges: Edge[];
+  selectedNodes: AppNode[];
+  selectedEdges: AppEdge[];
   onApply: (template: Template, origin?: { x: number; y: number }) => void;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  /** Tab to show when the dialog is opened externally */
+  initialMode?: 'browse' | 'save';
 }
 
 const CATEGORIES = ['common', 'source', 'processing', 'commit', 'error-handling', 'custom'] as const;
 
-export default function TemplateLibrary({ selectedNodes, selectedEdges, onApply }: TemplateLibraryProps) {
-  const [open, setOpen] = useState(false);
-  const [mode, setMode] = useState<'browse' | 'save'>('browse');
+export default function TemplateLibrary({ selectedNodes, selectedEdges, onApply, open, onOpenChange, initialMode }: TemplateLibraryProps) {
+  const [mode, setMode] = useState<'browse' | 'save'>(initialMode ?? 'browse');
+
+  // Sync tab with the caller's intent each time the dialog opens
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
+    if (open) setMode(initialMode ?? 'browse');
+  }, [open, initialMode]);
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState<string>('all');
   const [saveName, setSaveName] = useState('');
@@ -96,7 +105,7 @@ export default function TemplateLibrary({ selectedNodes, selectedEdges, onApply 
     await untypedSupabase.rpc('increment_template_use_count', { p_template_id: t.id });
     qc.invalidateQueries({ queryKey: ['pipeline-node-templates'] });
     toast.success(`Applied: ${t.name}`, { description: `${t.nodes.length} nodes added` });
-    setOpen(false);
+    onOpenChange(false);
   };
 
   const filtered = templates.filter(t => {
@@ -109,7 +118,7 @@ export default function TemplateLibrary({ selectedNodes, selectedEdges, onApply 
   const canSave = selectedNodes.length > 0 && saveName.trim().length >= 2;
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <Tooltip>
         <TooltipTrigger asChild>
           <DialogTrigger asChild>

@@ -66,7 +66,7 @@ export default function QueerVillageDetail() {
   fetchVenuesRef.current = fetchVenues;
 
   useEffect(() => {
-    fetchVenuesRef.current({ city: cityName, limit: 8 });
+    fetchVenuesRef.current({ city: cityName, limit: 8, railQuality: true });
   }, [cityName]);
 
   useEffect(() => {

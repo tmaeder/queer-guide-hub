@@ -1,10 +1,10 @@
 import { useEffect, useCallback, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import type { Node } from '@xyflow/react';
+import { isBaseNode, type AppNode, type NodeRunStatus } from '../types';
 
 interface NodeState {
-  status: 'pending' | 'running' | 'completed' | 'failed' | 'skipped';
+  status: NodeRunStatus;
   started_at?: string;
   completed_at?: string;
   items_in: number;
@@ -29,7 +29,7 @@ interface PipelineRunUpdate {
  */
 export function usePipelineExecution(
   activeRunId: string | null,
-  setNodes: (updater: (nodes: Node[]) => Node[]) => void
+  setNodes: (updater: (nodes: AppNode[]) => AppNode[]) => void
 ) {
   const queryClient = useQueryClient();
   const [runStatus, setRunStatus] = useState<string | null>(null);
@@ -38,6 +38,7 @@ export function usePipelineExecution(
   const applyNodeStates = useCallback((nodeStates: Record<string, NodeState>) => {
     setNodes((currentNodes) =>
       currentNodes.map((node) => {
+        if (!isBaseNode(node)) return node; // only base nodes carry run state
         const state = nodeStates[node.id];
         if (!state) return node;
 
@@ -58,7 +59,7 @@ export function usePipelineExecution(
 
   const clearOverlay = useCallback(() => {
     setNodes((currentNodes) =>
-      currentNodes.map((node) => ({
+      currentNodes.map((node) => isBaseNode(node) ? {
         ...node,
         data: {
           ...node.data,
@@ -68,7 +69,7 @@ export function usePipelineExecution(
           durationMs: undefined,
           errorMessage: undefined,
         },
-      }))
+      } : node)
     );
     setRunStatus(null);
   }, [setNodes]);
