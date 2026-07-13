@@ -15,6 +15,12 @@ import { withErrorReporting } from '../_shared/report-api-error.ts'
 // all enabled merchants through within a day without blowing the function
 // timeout on large catalogs. 'crawl' merchants are skipped (no public feed).
 //
+// Wall-clock budget: the Supabase gateway 504s responses at ~150s, and the
+// workflow-dispatcher dead-letters on that 504 even though merchants were
+// synced (236 dead letters 07-03→07-13). So the run stops picking up new
+// merchants once the budget is spent and returns 200 with `remaining` —
+// merchants_due_for_sync is LRU-ordered, the next hourly run continues.
+//
 // Body: { limit?, provider?, dry_run?, pipeline_run_id?, max_pages? }
 // ============================================================
 
@@ -22,6 +28,9 @@ const PROVIDER_FN: Record<string, string> = {
   'shopify-public': 'source-shopify-public',
   'woocommerce-public': 'source-woocommerce-public',
 }
+
+const RUN_BUDGET_MS = 120_000 // respond well before the ~150s gateway 504
+const MIN_MERCHANT_MS = 20_000 // don't start a merchant with less than this left
 
 interface DueMerchant {
   provider: string
@@ -57,8 +66,13 @@ Deno.serve(withErrorReporting('marketplace-sync-merchants', async (req) => {
     let merchants = (due ?? []) as DueMerchant[]
     if (provider) merchants = merchants.filter(m => m.provider === provider)
 
+    const runStarted = Date.now()
     const results: Array<Record<string, unknown>> = []
+    let remaining = 0
     for (const m of merchants) {
+      const budgetLeft = RUN_BUDGET_MS - (Date.now() - runStarted)
+      if (budgetLeft < MIN_MERCHANT_MS) { remaining++; continue }
+
       const fn = PROVIDER_FN[m.provider]
       if (!fn) { results.push({ slug: m.slug, provider: m.provider, status: 'skipped', reason: 'no_public_feed' }); continue }
 
@@ -66,7 +80,7 @@ Deno.serve(withErrorReporting('marketplace-sync-merchants', async (req) => {
       const started = Date.now()
       try {
         const ctrl = new AbortController()
-        const timer = setTimeout(() => ctrl.abort(), 150_000)
+        const timer = setTimeout(() => ctrl.abort(), budgetLeft)
         let payload: Record<string, unknown>
         try {
           const res = await fetch(`${supabaseUrl}/functions/v1/${fn}`, {
@@ -114,7 +128,8 @@ Deno.serve(withErrorReporting('marketplace-sync-merchants', async (req) => {
     const staged = results.reduce((n, r) => n + (Number(r.items) || 0), 0)
     return jsonResponse({
       success: true, dry_run: dryRun,
-      merchants: results.length, synced,
+      merchants: results.length, synced, remaining,
+      budget_ms_used: Date.now() - runStarted,
       items: staged, items_processed: staged, items_succeeded: staged,
       items_failed: results.filter(r => r.status === 'error').length,
       results,
