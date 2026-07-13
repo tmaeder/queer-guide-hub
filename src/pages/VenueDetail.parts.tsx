@@ -7,7 +7,6 @@ import {
   Clock,
   Luggage,
   Navigation2,
-  ShieldCheck,
   Tag as TagIcon,
   DollarSign,
   Sparkles,
@@ -28,6 +27,7 @@ import { FavoriteButton } from '@/components/ui/favorite-button';
 import { ReportButton } from '@/components/moderation/ReportButton';
 import { AdminEditButton } from '@/components/admin/AdminEditButton';
 import { Editable } from '@/components/admin/inline/Editable';
+import { formatPhoneDisplay } from '@/lib/formatPhone';
 import { VenueEvents } from '@/components/venues/VenueEvents';
 import { VenueCheckInButton } from '@/components/venues/VenueCheckInButton';
 import { VenueRecentCheckins } from '@/components/venues/VenueRecentCheckins';
@@ -619,11 +619,8 @@ export function VenueOverview({
         </section>
       )}
 
+      {/* No eyebrow: the card renders its own "Visitor signals" title. */}
       <section>
-        <Eyebrow as="div" className="mb-2 flex items-center gap-1.5">
-          <ShieldCheck size={13} aria-hidden="true" />
-          Visitor signals
-        </Eyebrow>
         <VenueSafetySignalDisplay venueId={venue.id} />
       </section>
 
@@ -833,7 +830,7 @@ export function VenueSidebar({
                     onSaved={onContentUpdated}
                   >
                     <a href={`tel:${venue.phone}`} className="text-primary hover:underline">
-                      {venue.phone}
+                      {formatPhoneDisplay(venue.phone)}
                     </a>
                   </Editable>
                 </span>

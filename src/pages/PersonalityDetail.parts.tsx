@@ -1,5 +1,6 @@
 import { ScrollReveal } from '@/components/animation/ScrollReveal';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
+import { formatProfession } from '@/lib/professionDisplay';
 import {
   ExternalLink,
   Calendar,
@@ -210,7 +211,7 @@ export function PersonalityHero({
                 className="flex items-center gap-1 cursor-pointer text-primary no-underline hover:underline"
               >
                 <Briefcase size={16} />
-                <span>{personality.profession}</span>
+                <span>{formatProfession(personality.profession)}</span>
               </a>
             )}
             {personality.nationality &&

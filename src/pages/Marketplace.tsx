@@ -374,7 +374,6 @@ const Marketplace = () => {
     <CuratedIdsProvider>
       <div className="min-h-screen relative">
         <PageHero
-          eyebrow={t('pages.marketplace.eyebrow', 'Shop')}
           title={t('pages.marketplace.title', 'Marketplace.')}
           lede={t('pages.marketplace.subtitle', 'Queer-friendly products and services.')}
           primaryCta={{

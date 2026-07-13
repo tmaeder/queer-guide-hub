@@ -2873,7 +2873,8 @@
       "conversionTherapy": "コンバージョンセラピー",
       "intersex": "インターセックスの身体的尊厳",
       "ilgaLink": "ILGA World Database"
-    }
+    },
+    "planTripHighRisk": "[JA] Plan carefully — safety briefing included"
   },
   "inbox": {
     "title": "受信箱",
@@ -3363,5 +3364,15 @@
     "going": "[JA] going",
     "friendsSaved": "[JA] friends saved",
     "inTrips": "[JA] in trips"
+  },
+  "discovery": {
+    "nextLeg": {
+      "risk": "[JA] Legal risk"
+    }
+  },
+  "safety": {
+    "gated": {
+      "privacy": "[JA] An account is free and private: your profile is never shown to other visitors unless you choose, and we never share what you view."
+    }
   }
 }

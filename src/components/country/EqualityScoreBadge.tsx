@@ -20,8 +20,18 @@ export default function EqualityScoreBadge({ score, size = 'md' }: EqualityScore
   const circumference = 2 * Math.PI * radius;
   const progress = score != null ? (displayScore / 100) * circumference : 0;
 
+  const explainer =
+    score != null
+      ? `Equality score ${displayScore}/100 — ${label}. National LGBTQ+ legal climate.`
+      : 'Equality score unavailable';
+
   return (
-    <div className="inline-flex flex-col items-center gap-1">
+    <div
+      className="inline-flex flex-col items-center gap-1"
+      role="img"
+      aria-label={explainer}
+      title={explainer}
+    >
       <div className="relative" style={{ width: dims.outer, height: dims.outer }}>
         <svg width={dims.outer} height={dims.outer} style={{ transform: 'rotate(-90deg)' }}>
           <circle
@@ -60,18 +70,18 @@ export default function EqualityScoreBadge({ score, size = 'md' }: EqualityScore
           </span>
         </div>
       </div>
-      {size !== 'sm' && (
-        <span
-          className="font-semibold uppercase"
-          style={{
-            fontSize: dims.labelSize,
-            color: score != null ? ringColor : '#9ca3af',
-            letterSpacing: '0.05em',
-          }}
-        >
-          {label}
-        </span>
-      )}
+      {/* The bare number confused first-time visitors (2026-07 critique) —
+          every size now carries its meaning. */}
+      <span
+        className="font-semibold uppercase"
+        style={{
+          fontSize: dims.labelSize,
+          color: score != null ? ringColor : '#9ca3af',
+          letterSpacing: '0.05em',
+        }}
+      >
+        {label}
+      </span>
     </div>
   );
 }

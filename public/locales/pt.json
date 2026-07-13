@@ -2875,7 +2875,8 @@
       "conversionTherapy": "Terapia de conversão",
       "intersex": "Integridade corporal intersexo",
       "ilgaLink": "ILGA World Database"
-    }
+    },
+    "planTripHighRisk": "[PT] Plan carefully — safety briefing included"
   },
   "inbox": {
     "title": "Caixa de entrada",
@@ -3365,5 +3366,15 @@
     "going": "[PT] going",
     "friendsSaved": "[PT] friends saved",
     "inTrips": "[PT] in trips"
+  },
+  "discovery": {
+    "nextLeg": {
+      "risk": "[PT] Legal risk"
+    }
+  },
+  "safety": {
+    "gated": {
+      "privacy": "[PT] An account is free and private: your profile is never shown to other visitors unless you choose, and we never share what you view."
+    }
   }
 }

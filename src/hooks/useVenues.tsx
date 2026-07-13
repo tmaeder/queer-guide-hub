@@ -63,6 +63,15 @@ export function useVenues(autoFetch: boolean = true) {
       radiusKm?: number;
       openNow?: boolean;
       priceLevel?: number;
+      /**
+       * Quality gate for public teaser rails (city/country/village pages):
+       * drops uncategorized scrape noise (category='other' with no LGBTQ+
+       * relevance signal) without touching the full browse catalog.
+       * NOTE: relevance alone is not a safe gate — the classifier has false
+       * negatives on iconic venues (e.g. Tom's Bar at 0.00), so category
+       * membership keeps those in.
+       */
+      railQuality?: boolean;
     },
     options?: {
       page?: number;
@@ -173,6 +182,10 @@ export function useVenues(autoFetch: boolean = true) {
             .order('is_featured', { ascending: false })
             .order('created_at', { ascending: false });
           break;
+      }
+
+      if (filters?.railQuality) {
+        query = query.or('category.neq.other,lgbti_relevance_score.gte.0.5');
       }
 
       if (filters?.countryId) {
