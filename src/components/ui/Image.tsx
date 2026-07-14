@@ -181,12 +181,19 @@ export const Image = ({
   const srcSet = cfSrcSet ?? externalSrcSet;
   const referrerPolicy = effectiveSrc ? imageReferrerPolicy(effectiveSrc) : undefined;
 
-  // Person/portrait photos are framed head-and-shoulders; center-cropping crops
-  // the head. Default them to top so faces survive `object-cover`. Landscape
-  // venue/event/city photos keep center (heads aren't the subject there).
+  // Person photos are framed head-and-shoulders; the face sits in the upper
+  // third. Default to a face-safe crop so `object-cover` keeps the face:
+  //  - a tall `portrait` frame barely crops vertically → `top` keeps the head.
+  //  - a short landscape card (16/10) crops heavily → `top` would show only the
+  //    scalp/forehead, so anchor ~35% down to land on the face.
+  // Landscape venue/event/city photos keep center (heads aren't the subject).
   const effectiveObjectPosition =
     objectPosition ??
-    (aspect === 'portrait' || fallbackEntityType === 'person' ? 'top' : undefined);
+    (aspect === 'portrait'
+      ? 'top'
+      : fallbackEntityType === 'person'
+        ? '50% 35%'
+        : undefined);
 
   const scrimClass = SCRIM_CLASS[scrim];
 
