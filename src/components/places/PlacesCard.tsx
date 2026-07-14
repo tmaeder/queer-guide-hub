@@ -246,7 +246,7 @@ export const PlacesCard = memo(function PlacesCard({ type, name, data, onClick }
   };
 
   const cardContent = (
-    <Card>
+    <Card className="overflow-hidden">
       {type === 'country' && (
         <CardImage src={countryImage} alt={`${name} landscape`} fallbackIcon={Globe} height={200} />
       )}
