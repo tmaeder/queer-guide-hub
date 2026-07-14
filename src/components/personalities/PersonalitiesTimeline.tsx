@@ -93,7 +93,7 @@ export function PersonalitiesTimeline({ personalities }: PersonalitiesTimelinePr
                             src={p.image_url}
                             alt=""
                             loading="lazy"
-                            className="w-full h-full object-cover"
+                            className="w-full h-full object-cover object-top"
                           />
                         ) : (
                           p.name.slice(0, 1).toUpperCase()

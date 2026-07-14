@@ -27,7 +27,7 @@ export function PersonCard({ person, fullWidth = false }: { person: PersonCardDa
         <img
           src={person.avatarUrl}
           alt=""
-          className="h-16 w-16 rounded-full object-cover"
+          className="h-16 w-16 rounded-full object-cover object-top"
         />
       ) : (
         <div className="h-16 w-16 rounded-full bg-muted" aria-hidden />

@@ -104,7 +104,7 @@ const DEFAULT_WIDTHS: Record<ImageRole, number[]> = {
 };
 
 const DEFAULT_SIZES: Record<ImageRole, string> = {
-  cover: '(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 400px',
+  cover: '(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 500px',
   hero: '100vw',
   thumb: '(max-width: 640px) 160px, 250px',
   avatar: '(max-width: 640px) 160px, 250px',
@@ -167,15 +167,26 @@ export const Image = ({
   const useContain = fit === 'contain' && !showingFallback && !showIconTile;
 
   const widthSet = widths ?? DEFAULT_WIDTHS[imageRole];
-  const cfSrcSet = effectiveSrc ? buildCfSrcSet(effectiveSrc, widthSet) : undefined;
+  // Build the responsive srcset from the LARGEST on-CDN source, not `effectiveSrc`
+  // — `preferThumb` collapses `effectiveSrc` to the 400px thumbnail, and CF would
+  // then upscale that to 800/1200w (blurry). The thumb stays as the fast LQIP base.
+  const cfBase = showingFallback ? effectiveSrc : (optimizedUrl ?? src ?? imageUrl ?? effectiveSrc);
+  const cfSrcSet = cfBase ? buildCfSrcSet(cfBase, widthSet) : undefined;
   // External hosts can't use CF resizing; fall back to a two-stop set when we
   // have both a small and a large URL for the same asset.
   const externalSrcSet =
-    !cfSrcSet && effectiveSrc === optimizedUrl && optimizedUrl && thumbnailUrl
+    !cfSrcSet && optimizedUrl && thumbnailUrl
       ? `${thumbnailUrl} 400w, ${optimizedUrl} 1600w`
       : undefined;
   const srcSet = cfSrcSet ?? externalSrcSet;
   const referrerPolicy = effectiveSrc ? imageReferrerPolicy(effectiveSrc) : undefined;
+
+  // Person/portrait photos are framed head-and-shoulders; center-cropping crops
+  // the head. Default them to top so faces survive `object-cover`. Landscape
+  // venue/event/city photos keep center (heads aren't the subject there).
+  const effectiveObjectPosition =
+    objectPosition ??
+    (aspect === 'portrait' || fallbackEntityType === 'person' ? 'top' : undefined);
 
   const scrimClass = SCRIM_CLASS[scrim];
 
@@ -201,7 +212,7 @@ export const Image = ({
           referrerPolicy={referrerPolicy}
           onLoad={() => { loadedRef.current = true; setLoaded(true); }}
           onError={() => { if (!error) setError(true); }}
-          style={objectPosition ? { objectPosition } : undefined}
+          style={effectiveObjectPosition ? { objectPosition: effectiveObjectPosition } : undefined}
           className={cn(
             'img-lazy-fade h-full w-full transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]',
             useContain ? 'object-contain p-4' : 'object-cover group-hover:scale-[1.04]',
