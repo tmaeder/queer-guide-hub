@@ -20,7 +20,7 @@ export const VillageCard = memo(function VillageCard({ village }: VillageCardPro
 
   return (
     <LocalizedLink to={`/villages/${village.slug}`} className="no-underline">
-      <Card hoverable>
+      <Card hoverable className="overflow-hidden">
         <Image
           src={imageUrl}
           alt={village.name}
