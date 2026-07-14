@@ -26,6 +26,7 @@ import { useAddressResolver } from '@/hooks/useAddressResolver';
 import { CountryAutocomplete } from '@/components/ui/country-autocomplete';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { uploadImageToR2 } from '@/lib/uploadImageToR2';
 import { PersonalitySelectionDialog } from './PersonalitySelectionDialog';
 
 interface AddPersonalityDialogProps {
@@ -232,18 +233,8 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
     setUploading(true);
 
     try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from('personalities')
-        .upload(fileName, file);
-
-      if (uploadError) throw uploadError;
-
-      const {
-        data: { publicUrl },
-      } = supabase.storage.from('personalities').getPublicUrl(fileName);
+      // Upload to Cloudflare R2 (img.queer.guide) — no Supabase image hosting.
+      const publicUrl = await uploadImageToR2(file, 'personalities');
 
       setFormData((prev) => ({ ...prev, image_url: publicUrl }));
 

@@ -8,6 +8,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { isAcceptedFile } from '@/lib/fileExtractors';
 import { extractFileContent } from '@/lib/extractFileContent';
+import { uploadImageToR2 } from '@/lib/uploadImageToR2';
 import {
   validateFile,
   toUploadError,
@@ -205,20 +206,12 @@ export function useFlyerScan() {
           let fileImageUrl: string | null = null;
 
           if (content.mode === 'image' && content.imageBlob) {
-            const fileName = `${user.id}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.jpg`;
-            const { error: uploadError } = await supabase.storage
-              .from('flyer-scans')
-              .upload(fileName, content.imageBlob, {
-                cacheControl: '3600',
-                contentType: 'image/jpeg',
-              });
-
-            if (uploadError) {
+            // Upload to Cloudflare R2 (img.queer.guide) — no Supabase image hosting.
+            try {
+              fileImageUrl = await uploadImageToR2(content.imageBlob, 'flyer-scans');
+            } catch (uploadError) {
               throw toUploadError(uploadError, { phase: 'upload' });
             }
-
-            const { data: urlData } = supabase.storage.from('flyer-scans').getPublicUrl(fileName);
-            fileImageUrl = urlData.publicUrl;
             body = { image_url: fileImageUrl };
           } else {
             body = { text: content.text };

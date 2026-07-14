@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/dialog';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import { uploadImageToR2 } from '@/lib/uploadImageToR2';
 import { insertRow } from '@/hooks/usePageFetchers';
 import { useAuth } from '@/hooks/useAuth';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -124,15 +124,13 @@ export function FeedbackButton() {
       // so the feedback window doesn't end up in the image.
       const blob = includeScreenshot ? screenshotBlobRef.current : null;
       if (blob) {
-        const fileName = `${crypto.randomUUID()}.jpg`;
-        const { data: uploadData, error: uploadError } = await supabase.storage
-          .from('feedback-screenshots')
-          .upload(fileName, blob, { contentType: 'image/jpeg', upsert: false });
-        if (!uploadError && uploadData) {
-          const { data: publicUrl } = supabase.storage
-            .from('feedback-screenshots')
-            .getPublicUrl(uploadData.path);
-          screenshotUrl = publicUrl.publicUrl;
+        // Upload to Cloudflare R2 (img.queer.guide) — no Supabase image hosting.
+        // Best-effort: the endpoint needs a signed-in user, so anon feedback
+        // still submits, just without the screenshot.
+        try {
+          screenshotUrl = await uploadImageToR2(blob, 'feedback-screenshots');
+        } catch {
+          screenshotUrl = null;
         }
       }
 

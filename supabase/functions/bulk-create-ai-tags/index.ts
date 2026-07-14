@@ -1,6 +1,7 @@
 import { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5';
 import { chatCompletion } from '../_shared/openai-client.ts';
 import { requireAdmin, getCorsHeaders, getServiceClient } from '../_shared/supabase-client.ts';
+import { mirrorImageToR2 } from '../_shared/logo-mirror.ts';
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -352,7 +353,7 @@ async function getUnsplashImage(term: string): Promise<string | null> {
   return null;
 }
 
-async function downloadAndStoreImage(imageUrl: string, term: string, supabaseClient: unknown): Promise<string | null> {
+async function downloadAndStoreImage(imageUrl: string, _term: string, _supabaseClient: unknown): Promise<string | null> {
   try {
     console.log(`Downloading image from: ${imageUrl}`);
     
@@ -364,32 +365,20 @@ async function downloadAndStoreImage(imageUrl: string, term: string, supabaseCli
     
     const imageBlob = await response.blob();
     const arrayBuffer = await imageBlob.arrayBuffer();
-    
-    // Generate filename
-    const fileExtension = imageUrl.includes('.jpg') || imageUrl.includes('jpeg') ? 'jpg' : 'png';
-    const fileName = `${term.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${Date.now()}.${fileExtension}`;
-    
-    // Upload to Supabase storage
-    const { _data, error } = await supabaseClient.storage
-      .from('tag-images')
-      .upload(fileName, arrayBuffer, {
-        contentType: imageBlob.type || 'image/jpeg',
-        cacheControl: '3600'
-      });
-    
-    if (error) {
-      console.error('Error uploading to storage:', error);
+
+    // Mirror to Cloudflare R2 (img.queer.guide) — no image hosting on Supabase.
+    const r2Url = await mirrorImageToR2(
+      new Uint8Array(arrayBuffer),
+      imageBlob.type || 'image/jpeg',
+      'tag-images',
+    );
+    if (!r2Url) {
+      console.error('R2 upload failed (IMAGE_CDN_ADMIN_SECRET unset?)');
       return null;
     }
-    
-    // Get public URL
-    const { data: publicUrlData } = supabaseClient.storage
-      .from('tag-images')
-      .getPublicUrl(fileName);
-    
-    console.log(`Image stored successfully: ${publicUrlData.publicUrl}`);
-    return publicUrlData.publicUrl;
-    
+    console.log(`Image stored successfully: ${r2Url}`);
+    return r2Url;
+
   } catch (error) {
     console.error('Error downloading and storing image:', error);
     return null;
