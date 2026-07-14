@@ -6,9 +6,22 @@ const isHostOrSubdomain = (hostname: string, baseDomain: string): boolean =>
   hostname === baseDomain || hostname.endsWith(`.${baseDomain}`);
 
 /**
- * Build a Cloudflare Image Resizing URL for img.queer.guide assets.
- * Uses the /cdn-cgi/image/ zone-level endpoint (requires paid Images plan).
- * Falls back to the original URL for external images.
+ * Supabase Storage public objects are openly fetchable, so CF Image Resizing
+ * can pull them cross-origin and resize through the img.queer.guide zone —
+ * turning multi-MB originals into right-sized webp for free (paid Images plan,
+ * no Supabase transform quota). Merchant CDNs are deliberately NOT included:
+ * some block server-side fetchers and would break. Only `/object/` is wrapped —
+ * `/render/image/` URLs are already transformed.
+ */
+const isCfResizableSource = (u: URL): boolean =>
+  isHostOrSubdomain(u.hostname.toLowerCase(), IMG_CDN_HOST) ||
+  (u.hostname.toLowerCase().endsWith('.supabase.co') && u.pathname.includes('/storage/v1/object/'));
+
+/**
+ * Build a Cloudflare Image Resizing URL for CF-resizable sources
+ * (img.queer.guide assets + Supabase Storage public objects). Uses the
+ * /cdn-cgi/image/ zone-level endpoint (requires paid Images plan). Falls back
+ * to the original URL for hosts CF can't safely fetch (merchant CDNs, etc.).
  */
 export function buildCfImageUrl(
   url: string,
@@ -21,8 +34,7 @@ export function buildCfImageUrl(
     return url;
   }
 
-  const hostname = parsed.hostname.toLowerCase();
-  if (!isHostOrSubdomain(hostname, IMG_CDN_HOST) || parsed.pathname.includes('/cdn-cgi/image/')) return url;
+  if (!isCfResizableSource(parsed) || parsed.pathname.includes('/cdn-cgi/image/')) return url;
   const { width, height, quality = 80, format = 'webp' } = opts;
   const params = [
     width ? `width=${width}` : null,
@@ -37,7 +49,7 @@ export function buildCfImageUrl(
 
 /**
  * Build a srcset string using CF Image Resizing at multiple widths.
- * Returns undefined if the URL is not on img.queer.guide.
+ * Returns undefined for hosts CF can't resize (see isCfResizableSource).
  */
 export function buildCfSrcSet(
   url: string,
@@ -51,8 +63,7 @@ export function buildCfSrcSet(
     return undefined;
   }
 
-  const hostname = parsed.hostname.toLowerCase();
-  if (!isHostOrSubdomain(hostname, IMG_CDN_HOST) || parsed.pathname.includes('/cdn-cgi/image/')) return undefined;
+  if (!isCfResizableSource(parsed) || parsed.pathname.includes('/cdn-cgi/image/')) return undefined;
   return widths
     .map((w) => `${buildCfImageUrl(url, { width: w, quality })} ${w}w`)
     .join(', ');
