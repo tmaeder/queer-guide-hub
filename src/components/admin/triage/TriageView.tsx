@@ -21,6 +21,8 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import {
   useUnifiedTriageQueue,
   useTriageAction,
+  useHighConfCount,
+  useBulkApproveHighConf,
   type TriageFilters,
 } from '@/hooks/useUnifiedTriageQueue';
 import { useReviewCounts } from '@/hooks/useReviewCounts';
@@ -188,11 +190,28 @@ export function TriageView({ initialQueueType }: TriageViewProps) {
     [items, selectedIds, runBulk],
   );
 
-  // High-confidence bulk approve: everything on the current page at ≥90%.
-  const highConfidenceItems = useMemo(
-    () => items.filter((i) => (i.confidence_score ?? 0) >= 0.9),
-    [items],
+  // High-confidence bulk approve: server-side, ALL eligible staging rows at
+  // ≥90% (not just the current page). Count comes from the RPC's dry-run.
+  const stagingSelected = !filters.queueTypes || filters.queueTypes.includes('staging');
+  const { data: highConfCount, refetch: refetchHighConf } = useHighConfCount(
+    stagingSelected ? filters.contentTypes : null,
+    stagingSelected,
   );
+  const bulkHighConf = useBulkApproveHighConf();
+
+  const runHighConfApprove = useCallback(() => {
+    bulkHighConf.mutate(
+      { contentTypes: filters.contentTypes },
+      {
+        onSuccess: (res) => {
+          toast.success(`Approved ${res.approved} high-confidence item${res.approved !== 1 ? 's' : ''}`);
+          setActiveId(null);
+          refetchHighConf();
+        },
+        onError: (err) => toast.error(`Bulk approve failed: ${(err as Error).message}`),
+      },
+    );
+  }, [bulkHighConf, filters.contentTypes, refetchHighConf]);
 
   const openFocusMode = useCallback(() => {
     if (!activeId && items.length > 0) setActiveId(items[0].id);
@@ -282,15 +301,15 @@ export function TriageView({ initialQueueType }: TriageViewProps) {
               {selectedIds.size} selected
             </span>
           )}
-          {highConfidenceItems.length > 0 && (
+          {(highConfCount ?? 0) > 0 && (
             <Button
               size="sm"
               variant="outline"
               onClick={() => setConfirmHighConf(true)}
-              disabled={bulkLoading}
+              disabled={bulkLoading || bulkHighConf.isPending}
             >
               <CheckCheck className="h-3.5 w-3.5 mr-1" />
-              Approve ≥90% ({highConfidenceItems.length})
+              Approve ≥90% ({highConfCount})
             </Button>
           )}
           {items.length > 0 && (
@@ -357,10 +376,11 @@ export function TriageView({ initialQueueType }: TriageViewProps) {
       <AlertDialog open={confirmHighConf} onOpenChange={setConfirmHighConf}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Approve {highConfidenceItems.length} high-confidence items?</AlertDialogTitle>
+            <AlertDialogTitle>Approve {highConfCount ?? 0} high-confidence items?</AlertDialogTitle>
             <AlertDialogDescription>
-              This approves every item on the current page with a confidence score of 90% or
-              higher. Approved items move on to commit and can be reopened individually with undo.
+              This approves every pending staging item with a confidence score of 90% or higher
+              — across all pages, not just the visible ones. Items the quality check rejected are
+              excluded. Approved items move on to commit and can be reopened individually.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -368,10 +388,10 @@ export function TriageView({ initialQueueType }: TriageViewProps) {
             <AlertDialogAction
               onClick={() => {
                 setConfirmHighConf(false);
-                runBulk(highConfidenceItems, 'approve');
+                runHighConfApprove();
               }}
             >
-              Approve {highConfidenceItems.length}
+              Approve {highConfCount ?? 0}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
