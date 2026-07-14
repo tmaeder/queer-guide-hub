@@ -1,6 +1,7 @@
 import { Badge } from '@/components/ui/badge';
 import { Loader2, Clock, User, Zap } from 'lucide-react';
 import { EntityPreviewCard } from './EntityPreviewCard';
+import { StagingPreview } from './StagingPreview';
 import { FieldDiffView, computeFieldDiffs } from './FieldDiffView';
 import { ActionBar } from './ActionBar';
 import type { TriageItem } from '@/hooks/useUnifiedTriageQueue';
@@ -136,7 +137,11 @@ export function TriageDetailPanel({ item, onAction, isActionLoading }: TriageDet
           </div>
         ) : (
           <>
-            <EntityPreviewCard item={item} entityData={entityData ?? null} />
+            {item.queue_type === 'staging' && stagingData ? (
+              <StagingPreview item={item} staging={stagingData as Record<string, unknown>} />
+            ) : (
+              <EntityPreviewCard item={item} entityData={entityData ?? null} />
+            )}
 
             {diffs.length > 0 && (
               <div className="border-t">

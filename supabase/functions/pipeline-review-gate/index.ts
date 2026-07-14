@@ -24,7 +24,11 @@ Deno.serve(withErrorReporting('pipeline-review-gate', async (req) => {
     const entityType = body.entityType as string | undefined
     const minConfidence = body.minConfidence ?? 0.7
     const autoApproveAbove = body.autoApproveAbove ?? 0.9
-    const batchSize = body.batch_size || 50
+    // Sweep mode (cron): re-gate rows already stuck in pending_review across
+    // all runs, so items that gained an LLM verdict after being queued drain
+    // without a human. Bigger default batch, never scoped to a pipeline run.
+    const sweep = body.sweep === true
+    const batchSize = body.batch_size || (sweep ? 200 : 50)
     const dryRun = body.dry_run || false
     // Social pipeline forces every row through human review. Set via the
     // node config { "force_review": true } in pipeline_definitions.
@@ -36,12 +40,12 @@ Deno.serve(withErrorReporting('pipeline-review-gate', async (req) => {
       .from('ingestion_staging')
       .select('id, ai_confidence_score, ai_validation_status, review_status, enriched_data, target_table, source_name, entity_type')
       .eq('ai_validation_status', 'approved')
-      .in('review_status', ['auto', 'pending_review'])
+      .in('review_status', sweep ? ['pending_review'] : ['auto', 'pending_review'])
       .eq('disposition', 'pending')
       .order('created_at', { ascending: true })
       .limit(batchSize)
 
-    if (pipelineRunId) query = query.eq('pipeline_run_id', pipelineRunId)
+    if (pipelineRunId && !sweep) query = query.eq('pipeline_run_id', pipelineRunId)
     // Optional scoping (mirrors pipeline-validate / pipeline-deduplicate) so a
     // domain-specific drain (e.g. marketplace) doesn't advance other domains' rows.
     if (entityType) query = query.eq('entity_type', entityType)
@@ -127,15 +131,65 @@ Deno.serve(withErrorReporting('pipeline-review-gate', async (req) => {
 
     let approved = 0
     let sentToReview = 0
+    let rejected = 0
     let failed = 0
     let trustAutoApproved = 0
+
+    /** Route an item to human review. Inserts the review_queue row only on the
+     * first transition (auto → pending_review); re-gated rows already have one.
+     * Stamps enriched_data.review_reason so the admin UI can show WHY. */
+    async function sendToReview(
+      item: { id: string; review_status: string; target_table: string | null },
+      enriched: Record<string, unknown>,
+      reason: string,
+      details: Record<string, unknown>,
+    ): Promise<boolean> {
+      if (dryRun) return true
+      if (item.review_status !== 'pending_review') {
+        const { error: rqErr } = await supabase.from('review_queue').insert({
+          entity_type: 'ingestion_staging',
+          entity_id:   item.id,
+          review_type: reason,
+          status:      'pending',
+          details: { ...details, target_table: item.target_table, source: 'pipeline-review-gate' },
+        })
+        if (rqErr) {
+          console.error(`review_queue insert ${item.id}: ${rqErr.message}`)
+          await supabase.from('ingestion_staging').update({
+            error_message: `review_gate: review_queue insert failed: ${rqErr.message}`,
+          }).eq('id', item.id)
+          return false
+        }
+      }
+      if (item.review_status === 'pending_review' && enriched.review_reason === reason) {
+        return true // already routed with the same reason — nothing to write
+      }
+      const { error: updErr } = await supabase
+        .from('ingestion_staging')
+        .update({
+          review_status: 'pending_review',
+          enriched_data: { ...enriched, review_reason: reason },
+        })
+        .eq('id', item.id)
+      if (updErr) {
+        console.error(`staging update ${item.id}: ${updErr.message}`)
+        return false
+      }
+      return true
+    }
 
     for (const item of items) {
       const confidence = item.ai_confidence_score || 0
       const enriched = (item.enriched_data || {}) as Record<string, unknown>
-      const qualityScore = (enriched.quality_score as number) ?? 0
+      const qualityScore = enriched.quality_score as number | undefined
 
-      const combinedScore = (confidence * 0.6) + (qualityScore / 100 * 0.4)
+      // Graceful fallback: when no completeness score exists (the scorer node
+      // didn't run for this row's class), gate on confidence alone instead of
+      // silently zeroing the 40% quality weight — that zeroing used to dump
+      // entire pipelines (all news) into human review at confidence 1.0.
+      const combinedScore = typeof qualityScore === 'number'
+        ? (confidence * 0.6) + (qualityScore / 100 * 0.4)
+        : confidence
 
       const relWeight = reliabilityMap.get(`${item.source_name ?? ''}|${item.entity_type ?? ''}`)
       const lowReliability = typeof relWeight === 'number' && relWeight < UNRELIABLE_THRESHOLD
@@ -161,6 +215,59 @@ Deno.serve(withErrorReporting('pipeline-review-gate', async (req) => {
         }
       }
 
+      // LLM verdict path: pipeline-quality-enhance already judged this row
+      // (relevance + quality + publish gate). Consume its verdict instead of
+      // re-deriving from completeness — this IS the LLM relevance gate.
+      const qualityStatus = enriched.quality_status as string | undefined
+      const relevance = enriched.relevance_score as number | undefined
+      if (qualityStatus === 'rejected') {
+        if (!dryRun) {
+          const { error: e } = await supabase
+            .from('ingestion_staging')
+            .update({
+              review_status: 'rejected',
+              disposition: 'rejected',
+              review_notes: `auto: LLM relevance/quality rejected (relevance ${relevance ?? 'n/a'})`,
+            })
+            .eq('id', item.id)
+          if (e) { failed++; console.error(`reject ${item.id}: ${e.message}`); continue }
+        }
+        rejected++
+        continue
+      }
+      if (qualityStatus && enriched.auto_publish === true && !lowReliability && !forceReview) {
+        if (!dryRun) {
+          const { error: e } = await supabase
+            .from('ingestion_staging')
+            .update({ review_status: 'approved' })
+            .eq('id', item.id)
+          if (e) { failed++; console.error(`approve ${item.id}: ${e.message}`); continue }
+        }
+        approved++
+        continue
+      }
+      if (qualityStatus) {
+        // 'review', or 'passed' with the publish gate blocked — a human call.
+        const blocked = enriched.auto_publish_blocked_reasons
+        const reason = qualityStatus === 'review' ? 'llm_needs_review' : 'auto_publish_blocked'
+        const ok = await sendToReview(item, enriched, reason, {
+          combined_score: combinedScore, confidence, relevance_score: relevance ?? null,
+          blocked_reasons: blocked ?? null,
+        })
+        ok ? sentToReview++ : failed++
+        continue
+      }
+      if (item.target_table === 'news_articles') {
+        // No LLM verdict yet (quality-enhance pending/failed for this row).
+        // Hold for the verdict rather than confidence-approving past the
+        // relevance gate; the sweep re-gates it once the verdict lands.
+        const ok = await sendToReview(item, enriched, 'awaiting_llm_verdict', {
+          combined_score: combinedScore, confidence,
+        })
+        ok ? sentToReview++ : failed++
+        continue
+      }
+
       if (combinedScore >= autoApproveAbove && !lowReliability && !forceReview) {
         if (!dryRun) {
           const { error: e } = await supabase
@@ -171,45 +278,16 @@ Deno.serve(withErrorReporting('pipeline-review-gate', async (req) => {
         }
         approved++
       } else if (forceReview || combinedScore < minConfidence || lowReliability) {
-        if (!dryRun) {
-          // Hard-fail review_queue insert: no swallowed errors. If the insert
-          // fails, leave the row in 'auto' so the next run retries.
-          const { error: rqErr } = await supabase.from('review_queue').insert({
-            entity_type: 'ingestion_staging',
-            entity_id:   item.id,
-            review_type: lowReliability ? 'low_source_reliability' : 'low_confidence',
-            status:      'pending',
-            details: {
-              combined_score: combinedScore,
-              confidence,
-              quality_score: qualityScore,
-              source_reliability_weight: relWeight ?? null,
-              target_table: item.target_table,
-              source: 'pipeline-review-gate',
-            },
-          })
-          if (rqErr) {
-            console.error(`review_queue insert ${item.id}: ${rqErr.message}`)
-            await supabase.from('ingestion_staging').update({
-              error_message: `review_gate: review_queue insert failed: ${rqErr.message}`,
-            }).eq('id', item.id)
-            failed++
-            continue
-          }
-
-          const { error: updErr } = await supabase
-            .from('ingestion_staging')
-            .update({ review_status: 'pending_review' })
-            .eq('id', item.id)
-          if (updErr) {
-            // review_queue row exists but staging update failed — log loudly.
-            // Next run will see the orphan and resolve.
-            console.error(`staging update ${item.id}: ${updErr.message}`)
-            failed++
-            continue
-          }
-        }
-        sentToReview++
+        const reason = forceReview ? 'force_review'
+          : lowReliability ? 'low_source_reliability'
+          : 'low_confidence'
+        const ok = await sendToReview(item, enriched, reason, {
+          combined_score: combinedScore,
+          confidence,
+          quality_score: qualityScore ?? null,
+          source_reliability_weight: relWeight ?? null,
+        })
+        ok ? sentToReview++ : failed++
       } else {
         if (!dryRun) {
           const { error: e } = await supabase
@@ -232,6 +310,8 @@ Deno.serve(withErrorReporting('pipeline-review-gate', async (req) => {
       approved,
       trust_auto_approved: trustAutoApproved,
       sent_to_review: sentToReview,
+      rejected,
+      sweep,
       dry_run: dryRun,
     }, 200, req)
   } catch (error) {
