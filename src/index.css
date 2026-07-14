@@ -546,6 +546,18 @@ body {
     display: inline-flex;
     align-items: center;
   }
+
+  /* Chips, tags and status pills (rounded-badge) are compact by design. As
+     links/buttons they inherited the 44px minimum above, which stretched a
+     ~20px pill into a tall empty-looking box (venue tags, filter chips, tag
+     pages, etc.). They meet WCAG 2.5.8 (AA, 24px) rather than 2.5.5 (AAA,
+     44px) — axe target-size passes at 24px. `min-h-0` on a specific chip
+     still wins (utilities layer beats base). */
+  a.rounded-badge,
+  button.rounded-badge,
+  [role="button"].rounded-badge {
+    min-height: 24px;
+  }
 }
 
 /* Inline links inside body text are underlined. In a strict B&W system,
