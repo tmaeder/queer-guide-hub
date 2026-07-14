@@ -1,7 +1,18 @@
 import { useState, useCallback, useMemo } from 'react';
 import { toast } from 'sonner';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Maximize2, CheckCheck } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import {
   Sheet,
   SheetContent,
@@ -17,6 +28,7 @@ import { ReviewBulkBar } from '@/components/admin/review/ReviewBulkBar';
 import { TriageFilterBar } from './TriageFilterBar';
 import { TriageList } from './TriageList';
 import { TriageDetailPanel } from './TriageDetailPanel';
+import { TriageFocusMode } from './TriageFocusMode';
 import { useTriageKeyboard } from './useTriageKeyboard';
 
 interface TriageViewProps {
@@ -142,15 +154,16 @@ export function TriageView({ initialQueueType }: TriageViewProps) {
   }, [lastActed, triageAction]);
 
   const [bulkLoading, setBulkLoading] = useState(false);
+  const [focusOpen, setFocusOpen] = useState(false);
+  const [confirmHighConf, setConfirmHighConf] = useState(false);
 
-  const handleBulkAction = useCallback(
-    async (action: 'approve' | 'reject') => {
-      const selected = items.filter((i) => selectedIds.has(i.id));
-      if (selected.length === 0) return;
+  const runBulk = useCallback(
+    async (targets: typeof items, action: 'approve' | 'reject') => {
+      if (targets.length === 0) return;
       setBulkLoading(true);
       let ok = 0;
       let fail = 0;
-      for (const item of selected) {
+      for (const item of targets) {
         try {
           await triageAction.mutateAsync({
             itemId: item.id,
@@ -167,8 +180,24 @@ export function TriageView({ initialQueueType }: TriageViewProps) {
       setActiveId(null);
       toast.success(`${action}d ${ok} item${ok !== 1 ? 's' : ''}${fail ? `, ${fail} failed` : ''}`);
     },
-    [items, selectedIds, triageAction],
+    [triageAction],
   );
+
+  const handleBulkAction = useCallback(
+    (action: 'approve' | 'reject') => runBulk(items.filter((i) => selectedIds.has(i.id)), action),
+    [items, selectedIds, runBulk],
+  );
+
+  // High-confidence bulk approve: everything on the current page at ≥90%.
+  const highConfidenceItems = useMemo(
+    () => items.filter((i) => (i.confidence_score ?? 0) >= 0.9),
+    [items],
+  );
+
+  const openFocusMode = useCallback(() => {
+    if (!activeId && items.length > 0) setActiveId(items[0].id);
+    setFocusOpen(true);
+  }, [activeId, items]);
 
   useTriageKeyboard({
     items,
@@ -247,11 +276,30 @@ export function TriageView({ initialQueueType }: TriageViewProps) {
           )}
           {isLoading && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
         </div>
-        {selectedIds.size > 0 && (
-          <span className="text-xs text-muted-foreground">
-            {selectedIds.size} selected
-          </span>
-        )}
+        <div className="flex items-center gap-2">
+          {selectedIds.size > 0 && (
+            <span className="text-xs text-muted-foreground">
+              {selectedIds.size} selected
+            </span>
+          )}
+          {highConfidenceItems.length > 0 && (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setConfirmHighConf(true)}
+              disabled={bulkLoading}
+            >
+              <CheckCheck className="h-3.5 w-3.5 mr-1" />
+              Approve ≥90% ({highConfidenceItems.length})
+            </Button>
+          )}
+          {items.length > 0 && (
+            <Button size="sm" variant="outline" onClick={openFocusMode}>
+              <Maximize2 className="h-3.5 w-3.5 mr-1" />
+              Focus mode
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Filters */}
@@ -262,7 +310,7 @@ export function TriageView({ initialQueueType }: TriageViewProps) {
         <>
           <div className="flex-1 overflow-hidden">{listPanel}</div>
           <Sheet
-            open={!!activeItem}
+            open={!!activeItem && !focusOpen}
             onOpenChange={(open) => {
               if (!open) setActiveId(null);
             }}
@@ -292,6 +340,42 @@ export function TriageView({ initialQueueType }: TriageViewProps) {
         onBulkReject={() => handleBulkAction('reject')}
         loading={bulkLoading}
       />
+
+      <TriageFocusMode
+        open={focusOpen}
+        onOpenChange={setFocusOpen}
+        items={items}
+        activeItem={activeItem}
+        total={total}
+        page={filters.page}
+        perPage={filters.perPage}
+        onNavigate={handleSelect}
+        onAction={handleAction}
+        isActionLoading={triageAction.isPending}
+      />
+
+      <AlertDialog open={confirmHighConf} onOpenChange={setConfirmHighConf}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Approve {highConfidenceItems.length} high-confidence items?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This approves every item on the current page with a confidence score of 90% or
+              higher. Approved items move on to commit and can be reopened individually with undo.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                setConfirmHighConf(false);
+                runBulk(highConfidenceItems, 'approve');
+              }}
+            >
+              Approve {highConfidenceItems.length}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
