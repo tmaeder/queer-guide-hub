@@ -9,6 +9,8 @@ vi.mock('@/hooks/use-mobile', () => ({ useIsMobile: () => false }));
 vi.mock('@/hooks/useUnifiedTriageQueue', () => ({
   useUnifiedTriageQueue: () => ({ data: { items: [], total: 0 }, isLoading: false, error: null }),
   useTriageAction: () => ({ mutate: vi.fn(), isPending: false }),
+  useHighConfCount: () => ({ data: 0, refetch: vi.fn() }),
+  useBulkApproveHighConf: () => ({ mutate: vi.fn(), isPending: false }),
 }));
 vi.mock('@/hooks/useReviewCounts', () => ({ useReviewCounts: () => ({ data: {} }) }));
 vi.mock('@/components/admin/review/ReviewBulkBar', () => ({ ReviewBulkBar: () => null }));
