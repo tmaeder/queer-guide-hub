@@ -133,9 +133,9 @@ Deno.serve(withErrorReporting('twenty-sync', async (req) => {
   let succeeded = 0
   let failed = 0
 
-  // Small pacing delay between writes — a rapid burst of ~300 upserts makes Twenty
-  // silently drop records (throttle race), so stay comfortably under its rate.
-  const PACE_MS = 70
+  // Light pacing between writes to stay under Twenty's rate limit (raised to 20k/min
+  // on the NAS). Retry handles any residual 429. Small so the 147k backfill is feasible.
+  const PACE_MS = 12
   const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
 
   const push = async (externalId: string, objectPath: string, fields: Record<string, unknown>) => {
@@ -293,6 +293,53 @@ Deno.serve(withErrorReporting('twenty-sync', async (req) => {
           qgIndustry: u.industry ?? undefined,
           qgJobTitle: u.job_title ?? undefined,
         })
+      }
+    }
+
+    // ── content entities → Twenty custom objects (large; id-ordered for stable
+    //    offset backfill). All qg* fields are TEXT, so numbers/dates are stringified.
+    type Row = Record<string, unknown>
+    const s = (v: unknown) => (v == null || v === '' ? undefined : String(v))
+    const nm = (v: unknown) => (v as { name?: string | null } | null)?.name ?? undefined
+
+    const content: Array<{
+      only: string; table: string; obj: string; prefix: string; sel: string;
+      map: (r: Row) => Record<string, unknown>;
+    }> = [
+      { only: 'venues', table: 'venues', obj: 'venues', prefix: 'venue',
+        sel: 'id, name, website, city, country, category, address, slug',
+        map: (r) => ({ name: r.name, qgWebsite: s(r.website), qgCity: s(r.city), qgCountry: s(r.country), qgCategory: s(r.category), qgAddress: s(r.address), qgSlug: s(r.slug) }) },
+      { only: 'events', table: 'events', obj: 'qgEvents', prefix: 'event',
+        sel: 'id, title, city, country, start_date, venue_name, website, slug',
+        map: (r) => ({ name: r.title, qgCity: s(r.city), qgCountry: s(r.country), qgStartDate: s(r.start_date), qgVenue: s(r.venue_name), qgWebsite: s(r.website), qgSlug: s(r.slug) }) },
+      { only: 'cities', table: 'cities', obj: 'qgCities', prefix: 'city',
+        sel: 'id, name, description, slug, country:countries(name)',
+        map: (r) => ({ name: r.name, qgCountry: nm(r.country), qgDescription: s(r.description), qgSlug: s(r.slug) }) },
+      { only: 'countries', table: 'countries', obj: 'qgCountries', prefix: 'country',
+        sel: 'id, name, code, equality_score, description, slug',
+        map: (r) => ({ name: r.name, qgCode: s(r.code), qgEqualityScore: s(r.equality_score), qgDescription: s(r.description), qgSlug: s(r.slug) }) },
+      { only: 'hotels', table: 'hotels', obj: 'hotels', prefix: 'hotel',
+        sel: 'id, name, city, country, website, address, slug',
+        map: (r) => ({ name: r.name, qgCity: s(r.city), qgCountry: s(r.country), qgWebsite: s(r.website), qgAddress: s(r.address), qgSlug: s(r.slug) }) },
+      { only: 'villages', table: 'queer_villages', obj: 'villages', prefix: 'village',
+        sel: 'id, name, description, website, slug, city:cities(name), country:countries(name)',
+        map: (r) => ({ name: r.name, qgCity: nm(r.city), qgCountry: nm(r.country), qgDescription: s(r.description), qgWebsite: s(r.website), qgSlug: s(r.slug) }) },
+      { only: 'news', table: 'news_articles', obj: 'newsArticles', prefix: 'news',
+        sel: 'id, title, url, published_at, category, slug, publisher_name',
+        map: (r) => ({ name: r.title, qgPublisher: s(r.publisher_name), qgUrl: s(r.url), qgPublishedAt: s(r.published_at), qgCategory: s(r.category), qgSlug: s(r.slug) }) },
+      { only: 'products', table: 'marketplace_listings', obj: 'products', prefix: 'product',
+        sel: 'id, title, brand, price_usd, external_url, website, merchant_domain, category, slug',
+        map: (r) => ({ name: r.title, qgBrand: s(r.brand), qgPrice: s(r.price_usd), qgUrl: s(r.external_url ?? r.website), qgMerchant: s(r.merchant_domain), qgCategory: s(r.category), qgSlug: s(r.slug) }) },
+    ]
+
+    for (const c of content) {
+      if (!budgetLeft() || !wants(c.only)) continue
+      const { data, error } = await supabase
+        .from(c.table).select(c.sel).order('id', { ascending: true }).range(lo, hi)
+      if (error) throw new Error(`${c.only}: ${error.message}`)
+      for (const r of (data ?? []) as Row[]) {
+        if (!budgetLeft()) break
+        await push(`${c.prefix}:${r.id}`, c.obj, c.map(r))
       }
     }
 
