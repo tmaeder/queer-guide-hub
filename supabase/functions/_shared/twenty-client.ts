@@ -120,8 +120,8 @@ export async function upsertByExternalId(
 export async function listExternalIdMap(objectPath: string): Promise<Map<string, string>> {
   const m = new Map<string, string>()
   let cursor: string | null = null
-  for (let guard = 0; guard < 2000; guard++) {
-    const q = `/${objectPath}?limit=60${cursor ? `&starting_after=${cursor}` : ''}`
+  for (let guard = 0; guard < 4000; guard++) {
+    const q = `/${objectPath}?limit=200${cursor ? `&starting_after=${cursor}` : ''}`
     const json = await twentyFetch(q) as Json
     const data = json?.data as Json | undefined
     const rows = (data?.[objectPath] as Array<Json>) ?? []
