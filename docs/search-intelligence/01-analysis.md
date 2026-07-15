@@ -1,5 +1,7 @@
 # Phase 0 — Analysis
 
+> **HISTORICAL (pre-migration design doc).** This describes the Meilisearch-era search design. Search was migrated to **Postgres + Cloudflare** and Meilisearch decommissioned code-side in 2026-06. For the current architecture see `SEARCH_SYSTEM.md`, `workers/search-proxy/README.md`, and the `CLAUDE.md` search section. Retained as a historical record.
+
 Snapshot of the queer.guide search and content foundations as of 2026-04-28, taken before the Search Intelligence system is layered on top. Every claim in this document references existing code so future work can verify drift.
 
 ## A. Tagging system
