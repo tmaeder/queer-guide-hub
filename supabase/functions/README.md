@@ -7,6 +7,6 @@ What lives here:
 - Functions are wired into pipelines via `pipeline_definitions.nodes` and scheduled via `cron.job` — **the live DB is authoritative**, repo migrations only seed it.
 
 Conventions:
-- New function = new dir with `index.ts`; register in `function-monitor` and add a `[functions.<name>]` block in `supabase/config.toml` if it needs `verify_jwt = false`.
+- New function = new dir with `index.ts`; add a `[functions.<name>]` block in `supabase/config.toml` if it needs `verify_jwt = false`.
 - Before deleting a function, confirm zero live references in `cron.job` + `pipeline_definitions` + `workflow_definitions`, then `supabase functions delete <name>` (repo deletion does not undeploy).
 - Put reusable logic in `_shared/`, not copied across functions.
