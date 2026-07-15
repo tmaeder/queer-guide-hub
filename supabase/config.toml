@@ -334,6 +334,9 @@ verify_jwt = false
 [functions.marketplace-fx-sync]
 verify_jwt = false
 
+[functions.twenty-sync]
+verify_jwt = false
+
 [functions.populate-embeddings]
 verify_jwt = false
 
