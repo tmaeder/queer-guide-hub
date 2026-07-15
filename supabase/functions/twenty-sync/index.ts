@@ -29,6 +29,15 @@ import { twentyConfigured, upsertByExternalId, splitName } from '../_shared/twen
 const BUDGET_MS = 110_000
 const DEFAULT_LIMIT = 200
 
+/** Twenty's `domainName` is a LINKS composite, not a string. Build one from a URL
+ *  or bare domain; return undefined when there's nothing usable. */
+function webLink(urlOrDomain?: string | null): { primaryLinkUrl: string } | undefined {
+  const v = (urlOrDomain ?? '').trim()
+  if (!v) return undefined
+  const url = /^https?:\/\//i.test(v) ? v : `https://${v}`
+  return { primaryLinkUrl: url }
+}
+
 interface RowResult { externalId: string; action?: string; error?: string }
 
 Deno.serve(withErrorReporting('twenty-sync', async (req) => {
@@ -88,7 +97,7 @@ Deno.serve(withErrorReporting('twenty-sync', async (req) => {
         if (!budgetLeft()) break
         await push(`org:${o.id}`, 'companies', {
           name: o.legal_name || o.name,
-          domainName: o.website_domain || undefined,
+          domainName: webLink(o.website || o.website_domain),
         })
       }
     }
@@ -106,7 +115,7 @@ Deno.serve(withErrorReporting('twenty-sync', async (req) => {
         if (!budgetLeft()) break
         await push(`merchant:${m.id}`, 'companies', {
           name: m.display_name,
-          domainName: m.shop_domain || undefined,
+          domainName: webLink(m.shop_domain),
         })
       }
     }
