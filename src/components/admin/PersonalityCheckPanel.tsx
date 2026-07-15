@@ -2,7 +2,6 @@ import { useMemo } from 'react';
 import { Link } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
 import { Cake, Flame, Award, ImageOff, FileQuestion } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
 import { untypedFrom } from '@/integrations/supabase/untyped';
 import { usePersonalityAnniversaries } from '@/hooks/usePersonalityAnniversaries';
 import { useRiskVisual } from '@/hooks/useRiskVisual';
@@ -22,7 +21,7 @@ async function headCount(build: (q: ReturnType<typeof baseQuery>) => unknown): P
   return count ?? 0;
 }
 const baseQuery = () =>
-  supabase.from('personalities').select('*', { count: 'exact', head: true });
+  untypedFrom('personalities').select('*', { count: 'exact', head: true });
 
 function useCounts() {
   return useQuery({
