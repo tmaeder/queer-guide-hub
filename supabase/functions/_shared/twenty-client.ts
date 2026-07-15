@@ -29,29 +29,48 @@ export function twentyConfigured(): boolean {
 
 type Json = Record<string, unknown>
 
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
+
 async function twentyFetch(
   path: string,
   init: RequestInit & { timeoutMs?: number } = {},
 ): Promise<unknown> {
-  const ctrl = new AbortController()
-  const t = setTimeout(() => ctrl.abort(), init.timeoutMs ?? 15_000)
-  try {
-    const res = await fetch(`${API_URL}/rest${path}`, {
-      ...init,
-      signal: ctrl.signal,
-      headers: {
-        Authorization: `Bearer ${API_KEY}`,
-        'Content-Type': 'application/json',
-        ...(init.headers ?? {}),
-      },
-    })
-    if (!res.ok) {
-      const body = await res.text().catch(() => '')
-      throw new Error(`Twenty ${init.method ?? 'GET'} ${path} → ${res.status} ${body.slice(0, 300)}`)
+  // Retry on 429 (throttle) / 5xx / network blip — Twenty rate-limits per window.
+  const MAX = 4
+  for (let attempt = 0; ; attempt++) {
+    const ctrl = new AbortController()
+    const t = setTimeout(() => ctrl.abort(), init.timeoutMs ?? 15_000)
+    try {
+      const res = await fetch(`${API_URL}/rest${path}`, {
+        ...init,
+        signal: ctrl.signal,
+        headers: {
+          Authorization: `Bearer ${API_KEY}`,
+          'Content-Type': 'application/json',
+          ...(init.headers ?? {}),
+        },
+      })
+      if (res.status === 429 || res.status >= 500) {
+        if (attempt < MAX) {
+          const retryAfter = Number(res.headers.get('retry-after')) * 1000
+          await sleep(retryAfter > 0 ? retryAfter : 500 * 2 ** attempt)
+          continue
+        }
+      }
+      if (!res.ok) {
+        const body = await res.text().catch(() => '')
+        throw new Error(`Twenty ${init.method ?? 'GET'} ${path} → ${res.status} ${body.slice(0, 200)}`)
+      }
+      return res.status === 204 ? null : await res.json()
+    } catch (e) {
+      if (attempt < MAX && (e as Error).name === 'AbortError') {
+        await sleep(500 * 2 ** attempt)
+        continue
+      }
+      throw e
+    } finally {
+      clearTimeout(t)
     }
-    return res.status === 204 ? null : await res.json()
-  } finally {
-    clearTimeout(t)
   }
 }
 
@@ -72,22 +91,16 @@ function unwrapRecord(json: unknown): Json | null {
   return null
 }
 
-async function findByExternalId(objectPath: string, externalId: string): Promise<Json | null> {
-  const filter = encodeURIComponent(`externalId[eq]:${externalId}`)
-  const json = await twentyFetch(`/${objectPath}?filter=${filter}&limit=1`)
-  const list = ((json as Json)?.data as Json)?.[objectPath]
-  if (Array.isArray(list)) return (list[0] as Json) ?? null
-  return unwrapRecord(json)
-}
-
 export interface UpsertResult {
   id: string | null
-  action: 'created' | 'updated'
+  action: 'upserted'
 }
 
 /**
- * Create or update a Twenty record identified by its `externalId`. `fields` is
- * the object-specific body (built-in + custom fields); `externalId` is injected.
+ * Upsert a Twenty record on its `externalId` (a UNIQUE custom field). Uses Twenty's
+ * native `?upsert=true` so it matches on externalId — one call per record, no
+ * find+patch, and it bypasses Twenty's name-based duplicate detection (our key is
+ * externalId, not name). `fields` is the object body (built-in + custom fields).
  */
 export async function upsertByExternalId(
   objectPath: string,
@@ -95,19 +108,11 @@ export async function upsertByExternalId(
   fields: Json,
 ): Promise<UpsertResult> {
   const payload = { ...fields, externalId }
-  const existing = await findByExternalId(objectPath, externalId)
-  if (existing?.id) {
-    await twentyFetch(`/${objectPath}/${existing.id}`, {
-      method: 'PATCH',
-      body: JSON.stringify(payload),
-    })
-    return { id: existing.id as string, action: 'updated' }
-  }
-  const created = await twentyFetch(`/${objectPath}`, {
+  const res = await twentyFetch(`/${objectPath}?upsert=true`, {
     method: 'POST',
     body: JSON.stringify(payload),
   })
-  return { id: unwrapRecord(created)?.id as string ?? null, action: 'created' }
+  return { id: unwrapRecord(res)?.id as string ?? null, action: 'upserted' }
 }
 
 /** Split a single display name into Twenty's FULL_NAME composite. */

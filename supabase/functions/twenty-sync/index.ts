@@ -29,14 +29,10 @@ import { twentyConfigured, upsertByExternalId, splitName } from '../_shared/twen
 const BUDGET_MS = 110_000
 const DEFAULT_LIMIT = 200
 
-/** Twenty's `domainName` is a LINKS composite, not a string. Build one from a URL
- *  or bare domain; return undefined when there's nothing usable. */
-function webLink(urlOrDomain?: string | null): { primaryLinkUrl: string } | undefined {
-  const v = (urlOrDomain ?? '').trim()
-  if (!v) return undefined
-  const url = /^https?:\/\//i.test(v) ? v : `https://${v}`
-  return { primaryLinkUrl: url }
-}
+// NOTE: we deliberately do NOT populate Twenty's built-in `domainName` — Twenty's
+// upsert/duplicate-detection merges records sharing a domainName, which would collapse
+// distinct entities and overwrite our `externalId` key. The website goes to the custom
+// `qgWebsite` field instead, so `externalId` (unique) is the ONLY merge key.
 
 interface RowResult { externalId: string; action?: string; error?: string }
 
@@ -72,7 +68,13 @@ Deno.serve(withErrorReporting('twenty-sync', async (req) => {
   let succeeded = 0
   let failed = 0
 
+  // Small pacing delay between writes — a rapid burst of ~300 upserts makes Twenty
+  // silently drop records (throttle race), so stay comfortably under its rate.
+  const PACE_MS = 70
+  const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
+
   const push = async (externalId: string, objectPath: string, fields: Record<string, unknown>) => {
+    await sleep(PACE_MS)
     try {
       const r = await upsertByExternalId(objectPath, externalId, fields)
       results.push({ externalId, action: r.action })
@@ -83,56 +85,89 @@ Deno.serve(withErrorReporting('twenty-sync', async (req) => {
     }
   }
 
+  const arr = (a?: unknown): string | undefined =>
+    Array.isArray(a) && a.length ? a.join(', ') : undefined
+
   try {
-    // ── organizations → Company ──────────────────────────────────────────────
+    // ── organizations → Company (all attributes) ─────────────────────────────
     if (budgetLeft()) {
       const { data, error } = await supabase
         .from('organizations')
-        .select('id, name, legal_name, website, website_domain, email, phone')
+        .select('id, slug, name, legal_name, description, editorial_hook, editorial_long, ' +
+          'logo_url, roles, website, website_domain, email, phone, tags, target_groups, ' +
+          'status, claim_status, trust_score, completeness_score, safety_gated, needs_attention, ' +
+          'city:cities(name), country:countries(name)')
         .eq('status', 'active')
         .order('updated_at', { ascending: false })
         .limit(limit)
       if (error) throw new Error(`organizations: ${error.message}`)
-      for (const o of data ?? []) {
+      for (const o of (data ?? []) as Record<string, any>[]) {
         if (!budgetLeft()) break
         await push(`org:${o.id}`, 'companies', {
           name: o.legal_name || o.name,
-          domainName: webLink(o.website || o.website_domain),
+          qgWebsite: o.website || o.website_domain || undefined,
+          qgSource: 'organization',
+          qgSlug: o.slug ?? undefined,
+          qgDescription: o.description ?? undefined,
+          qgEditorialHook: o.editorial_hook ?? undefined,
+          qgEditorialLong: o.editorial_long ?? undefined,
+          qgLogoUrl: o.logo_url ?? undefined,
+          qgRoles: arr(o.roles),
+          qgEmail: o.email ?? undefined,
+          qgPhone: o.phone ?? undefined,
+          qgTags: arr(o.tags),
+          qgTargetGroups: arr(o.target_groups),
+          qgCity: o.city?.name ?? undefined,
+          qgCountry: o.country?.name ?? undefined,
+          qgStatus: o.status ?? undefined,
+          qgClaimStatus: o.claim_status ?? undefined,
+          qgTrustScore: o.trust_score ?? undefined,
+          qgCompletenessScore: o.completeness_score ?? undefined,
+          qgSafetyGated: o.safety_gated ?? undefined,
+          qgNeedsAttention: o.needs_attention ?? undefined,
         })
       }
     }
 
-    // ── marketplace_merchants → Company ──────────────────────────────────────
+    // ── marketplace_merchants → Company (all attributes) ─────────────────────
     if (budgetLeft()) {
       const { data, error } = await supabase
         .from('marketplace_merchants')
-        .select('id, display_name, shop_domain, provider')
+        .select('id, slug, display_name, shop_domain, provider, is_enabled, last_sync_status')
         .eq('is_enabled', true)
         .order('updated_at', { ascending: false })
         .limit(limit)
       if (error) throw new Error(`marketplace_merchants: ${error.message}`)
-      for (const m of data ?? []) {
+      for (const m of (data ?? []) as Record<string, any>[]) {
         if (!budgetLeft()) break
         await push(`merchant:${m.id}`, 'companies', {
           name: m.display_name,
-          domainName: webLink(m.shop_domain),
+          qgWebsite: m.shop_domain || undefined,
+          qgSource: 'merchant',
+          qgSlug: m.slug ?? undefined,
+          qgProvider: m.provider ?? undefined,
+          qgIsEnabled: m.is_enabled ?? undefined,
+          qgLastSyncStatus: m.last_sync_status ?? undefined,
         })
       }
     }
 
-    // ── contact_submissions → Person ─────────────────────────────────────────
+    // ── contact_submissions → Person (all attributes) ────────────────────────
     if (budgetLeft()) {
       const { data, error } = await supabase
         .from('contact_submissions')
-        .select('id, name, email, created_at')
+        .select('id, name, email, category, message, created_at')
         .order('created_at', { ascending: false })
         .limit(limit)
       if (error) throw new Error(`contact_submissions: ${error.message}`)
-      for (const c of data ?? []) {
+      for (const c of (data ?? []) as Record<string, any>[]) {
         if (!budgetLeft()) break
         await push(`contact:${c.id}`, 'people', {
           name: splitName(c.name),
           emails: c.email ? { primaryEmail: c.email } : undefined,
+          qgSource: 'contact',
+          qgCategory: c.category ?? undefined,
+          qgMessage: c.message ?? undefined,
         })
       }
     }
@@ -144,6 +179,7 @@ Deno.serve(withErrorReporting('twenty-sync', async (req) => {
       items_succeeded: succeeded,
       items_failed: failed,
       truncated: !budgetLeft(),
+      sample_errors: results.filter((r) => r.error).slice(0, 8),
       results: results.slice(0, 50),
     }, 200, req)
   } catch (error) {
