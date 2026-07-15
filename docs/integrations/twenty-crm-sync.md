@@ -117,6 +117,18 @@ disabled (empty whitelist) — a user's handle/identity is not CRM-editable.
 `{"only":"personalities","limit":400,"offset":N}` looping N; the hourly cron (unfiltered,
 limit 500, updated_at desc) keeps recently-changed rows fresh.
 
+## Content entities → Twenty custom objects (outbound-only)
+
+The full content platform (~147k rows) syncs to purpose-made Twenty **custom objects**
+(not Company/Person): `venue`, `qgEvent`, `qgCity`, `qgCountry`, `hotel`, `village`,
+`newsArticle`, `product`. Each has a UNIQUE `externalId` (`venue:<id>`, `event:<id>`,
+`city:<id>`, `country:<id>`, `hotel:<id>`, `village:<id>`, `news:<id>`, `product:<id>`) and
+qg* TEXT fields. Driven by the same `{only, offset}` params, id-ordered for a stable
+offset backfill (`scratchpad/backfill.sh` loops all 8). **Outbound-only** — the inbound
+webhook covers Company/Person only, so content edits in Twenty don't write back (editing
+40k events / 33k news in a CRM isn't a real workflow). Volumes: products 45k, events 40k,
+news 33k, venues 24k, cities 5k, hotels/countries/villages small.
+
 Twenty built-in composites (`Person.name` = {firstName,lastName}, `Person.emails` =
 {primaryEmail}) are handled in `twenty-client.ts`. If a workspace customizes these, adjust
 the mapping in `twenty-sync/index.ts`; per-row failures are reported in `results` and never
