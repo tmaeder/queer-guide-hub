@@ -116,7 +116,7 @@ export async function upsertByExternalId(
 }
 
 /** Split a single display name into Twenty's FULL_NAME composite. */
-export function splitName(full: string): { firstName: string; lastName: string } {
+export function splitName(full: string | null | undefined): { firstName: string; lastName: string } {
   const parts = (full ?? '').trim().split(/\s+/).filter(Boolean)
   if (parts.length === 0) return { firstName: '', lastName: '' }
   if (parts.length === 1) return { firstName: parts[0], lastName: '' }

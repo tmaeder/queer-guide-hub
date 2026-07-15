@@ -63,11 +63,12 @@ Deno.serve(withErrorReporting('twenty-inbound', async (req) => {
   }
 
   const supabase = getServiceClient()
-  const payload = await req.json().catch(() => ({})) as Record<string, any>
+  const payload = await req.json().catch(() => ({})) as Record<string, unknown>
   // Twenty sends { eventName, record, ... }. record holds the object incl. externalId.
-  const record = payload.record ?? payload.data?.record ?? payload
-  const externalId: string | undefined = record?.externalId
-  const twentyId: string | undefined = record?.id
+  const data = payload.data as Record<string, unknown> | undefined
+  const record = (payload.record ?? data?.record ?? payload) as Record<string, unknown>
+  const externalId = record?.externalId as string | undefined
+  const twentyId = record?.id as string | undefined
   if (!externalId || !externalId.includes(':')) {
     return jsonResponse({ success: true, skipped: 'no-externalId' }, 200, req)
   }

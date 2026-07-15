@@ -41,6 +41,30 @@ const DEFAULT_LIMIT = 200
 
 interface RowResult { externalId: string; action?: string; error?: string }
 
+type Named = { name: string | null } | null
+interface OrgRow {
+  id: string; slug: string | null; name: string | null; legal_name: string | null
+  description: string | null; editorial_hook: string | null; editorial_long: string | null
+  logo_url: string | null; roles: string[] | null; website: string | null; website_domain: string | null
+  email: string | null; phone: string | null; tags: string[] | null; target_groups: string[] | null
+  status: string | null; claim_status: string | null; trust_score: number | null
+  completeness_score: number | null; safety_gated: boolean | null; needs_attention: boolean | null
+  city: Named; country: Named
+}
+interface MerchantRow {
+  id: string; slug: string | null; display_name: string | null; shop_domain: string | null
+  provider: string | null; is_enabled: boolean | null; last_sync_status: string | null
+}
+interface ContactRow { id: string; name: string | null; email: string | null; category: string | null; message: string | null }
+interface PersonalityRow {
+  id: string; name: string | null; slug: string | null; description: string | null; bio: string | null
+  profession: string | null; nationality: string | null; website_url: string | null
+}
+interface ProfileRow {
+  id: string; display_name: string | null; username: string | null; location: string | null
+  company: string | null; industry: string | null; job_title: string | null
+}
+
 // Per-prefix { Twenty payload key → source column } for the review-whitelisted fields.
 // Used to SKIP pushing a field that currently has a pending inbound review, so a human's
 // Twenty edit isn't clobbered by the next outbound run before it's approved/rejected.
@@ -152,7 +176,7 @@ Deno.serve(withErrorReporting('twenty-sync', async (req) => {
         .order('updated_at', { ascending: false })
         .range(lo, hi)
       if (error) throw new Error(`organizations: ${error.message}`)
-      for (const o of (data ?? []) as Record<string, any>[]) {
+      for (const o of (data ?? []) as unknown as OrgRow[]) {
         if (!budgetLeft()) break
         await push(`org:${o.id}`, 'companies', {
           name: o.legal_name || o.name,
@@ -189,7 +213,7 @@ Deno.serve(withErrorReporting('twenty-sync', async (req) => {
         .order('updated_at', { ascending: false })
         .range(lo, hi)
       if (error) throw new Error(`marketplace_merchants: ${error.message}`)
-      for (const m of (data ?? []) as Record<string, any>[]) {
+      for (const m of (data ?? []) as unknown as MerchantRow[]) {
         if (!budgetLeft()) break
         await push(`merchant:${m.id}`, 'companies', {
           name: m.display_name,
@@ -211,7 +235,7 @@ Deno.serve(withErrorReporting('twenty-sync', async (req) => {
         .order('created_at', { ascending: false })
         .range(lo, hi)
       if (error) throw new Error(`contact_submissions: ${error.message}`)
-      for (const c of (data ?? []) as Record<string, any>[]) {
+      for (const c of (data ?? []) as unknown as ContactRow[]) {
         if (!budgetLeft()) break
         await push(`contact:${c.id}`, 'people', {
           name: splitName(c.name),
@@ -232,7 +256,7 @@ Deno.serve(withErrorReporting('twenty-sync', async (req) => {
         .order('updated_at', { ascending: false })
         .range(lo, hi)
       if (error) throw new Error(`personalities: ${error.message}`)
-      for (const p of (data ?? []) as Record<string, any>[]) {
+      for (const p of (data ?? []) as unknown as PersonalityRow[]) {
         if (!budgetLeft()) break
         await push(`personality:${p.id}`, 'people', {
           name: splitName(p.name),
@@ -256,7 +280,7 @@ Deno.serve(withErrorReporting('twenty-sync', async (req) => {
         .order('updated_at', { ascending: false })
         .range(lo, hi)
       if (error) throw new Error(`profiles: ${error.message}`)
-      for (const u of (data ?? []) as Record<string, any>[]) {
+      for (const u of (data ?? []) as unknown as ProfileRow[]) {
         if (!budgetLeft()) break
         const display = u.display_name || u.username
         if (!display) continue
