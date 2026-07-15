@@ -43,6 +43,8 @@ jobs:
       - name: Run critical-path specs
         env:
           E2E_BASE_URL: http://localhost:4173
+          E2E_ADMIN_EMAIL: ${{ secrets.E2E_ADMIN_EMAIL }}
+          E2E_ADMIN_PASSWORD: ${{ secrets.E2E_ADMIN_PASSWORD }}
         run: |
           npx vite preview --port 4173 &
           sleep 5
@@ -52,6 +54,9 @@ jobs:
             e2e/trip-creation.spec.ts \
             e2e/marketplace.spec.ts \
             e2e/admin-pipelines.spec.ts \
+            e2e/venues/detail-content.spec.ts \
+            e2e/help-locale.spec.ts \
+            e2e/hotels-filters.spec.ts \
             --reporter=line
       - name: Upload report
         if: failure()
