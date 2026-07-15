@@ -183,6 +183,12 @@ export default function AdminMailbox() {
                   'rounded-element border border-border p-2 ' + (isUnread ? 'bg-muted' : '')
                 }
                 onClick={() => isUnread && markRead.mutate(m.id)}
+                onKeyDown={(e) => {
+                  if (isUnread && (e.key === 'Enter' || e.key === ' ')) {
+                    e.preventDefault();
+                    markRead.mutate(m.id);
+                  }
+                }}
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
