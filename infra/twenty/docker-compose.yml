@@ -1,9 +1,13 @@
 # Self-hosted Twenty CRM (twentyhq/twenty) — internal ops/partnerships tool.
 #
 # Run UNMODIFIED (AGPL-3.0): we only talk to it over its REST API, never fork it
-# into the queer.guide stack. This compose is a convenience starting point mirroring
-# Twenty's official self-host guide (https://twenty.com/developers/section/self-hosting).
-# Pin IMAGE_TAG to a released version and check upstream before bumping.
+# into the queer.guide stack.
+#
+# ⚠ Twenty's OFFICIAL upstream compose is the source of truth and is what the
+# working local install actually runs (docs/integrations/twenty-crm-sync.md,
+# go-live step 1 — fetch it via curl). This simplified copy is a reference only;
+# prefer the upstream file. Current Twenty uses ENCRYPTION_KEY (not APP_SECRET)
+# and postgres/postgres@db defaults.
 #
 # Bring up:   cp .env.example .env && edit secrets && docker compose up -d
 # App:        http://localhost:3000  (put behind a reverse proxy at crm.queer.guide)
@@ -32,7 +36,7 @@ services:
       SERVER_URL: ${SERVER_URL}
       PG_DATABASE_URL: postgres://${PG_DATABASE_USER}:${PG_DATABASE_PASSWORD}@db:5432/default
       REDIS_URL: redis://redis:6379
-      APP_SECRET: ${APP_SECRET}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY}
       STORAGE_TYPE: local
     volumes:
       - twenty_storage:/app/packages/twenty-server/.local-storage
@@ -45,7 +49,7 @@ services:
     environment:
       PG_DATABASE_URL: postgres://${PG_DATABASE_USER}:${PG_DATABASE_PASSWORD}@db:5432/default
       REDIS_URL: redis://redis:6379
-      APP_SECRET: ${APP_SECRET}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY}
       STORAGE_TYPE: local
     volumes:
       - twenty_storage:/app/packages/twenty-server/.local-storage

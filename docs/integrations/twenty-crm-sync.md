@@ -34,13 +34,22 @@ Code:
 
 ## Go-live runbook
 
-1. **Deploy Twenty** (unmodified — keeps AGPL clean). Behind a reverse proxy at
-   `crm.queer.guide`:
+1. **Deploy Twenty** (unmodified — keeps AGPL clean). Use Twenty's **official upstream
+   compose** (this is what the working local install runs; `infra/twenty/` is only a
+   simplified reference):
    ```bash
-   cd infra/twenty && cp .env.example .env   # fill secrets
+   mkdir -p ~/twenty-crm && cd ~/twenty-crm
+   curl -fsSL -o docker-compose.yml https://raw.githubusercontent.com/twentyhq/twenty/main/packages/twenty-docker/docker-compose.yml
+   curl -fsSL -o .env             https://raw.githubusercontent.com/twentyhq/twenty/main/packages/twenty-docker/.env.example
+   # set a secret (current Twenty uses ENCRYPTION_KEY, not APP_SECRET):
+   printf '\nENCRYPTION_KEY=%s\n' "$(openssl rand -base64 32)" >> .env
    docker compose up -d
    ```
-   Open the app, complete the workspace wizard.
+   First boot runs ~180 metadata/migration steps before the server binds :3000
+   (`curl -s localhost:3000/healthz` → `{"status":"ok"}` when ready; ~5–8 min). If the
+   `worker` container bailed while the server was still booting, `docker compose up -d worker`
+   once the server is healthy. Behind a reverse proxy, set `SERVER_URL=https://crm.queer.guide`.
+   Open the app and complete the workspace wizard (create the admin account yourself).
 
 2. **Add the idempotency field.** Settings → Data Model → for **Company** and **Person**,
    add a custom field named `externalId`, type **Text**. (The API field name must serialize
