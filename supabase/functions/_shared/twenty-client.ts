@@ -115,6 +115,26 @@ export async function upsertByExternalId(
   return { id: unwrapRecord(res)?.id as string ?? null, action: 'upserted' }
 }
 
+/** Paginate an object and return a Map of externalId → Twenty record id, for
+ *  resolving relation targets. Only records with an externalId are included. */
+export async function listExternalIdMap(objectPath: string): Promise<Map<string, string>> {
+  const m = new Map<string, string>()
+  let cursor: string | null = null
+  for (let guard = 0; guard < 2000; guard++) {
+    const q = `/${objectPath}?limit=60${cursor ? `&starting_after=${cursor}` : ''}`
+    const json = await twentyFetch(q) as Json
+    const data = json?.data as Json | undefined
+    const rows = (data?.[objectPath] as Array<Json>) ?? []
+    for (const r of rows) {
+      if (typeof r.externalId === 'string' && typeof r.id === 'string') m.set(r.externalId, r.id)
+    }
+    const pi = json?.pageInfo as { hasNextPage?: boolean; endCursor?: string } | undefined
+    if (pi?.hasNextPage && rows.length) cursor = pi.endCursor ?? null
+    else break
+  }
+  return m
+}
+
 /** Split a single display name into Twenty's FULL_NAME composite. */
 export function splitName(full: string | null | undefined): { firstName: string; lastName: string } {
   const parts = (full ?? '').trim().split(/\s+/).filter(Boolean)
