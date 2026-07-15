@@ -112,9 +112,26 @@ Twenty built-in composites (`Person.name` = {firstName,lastName}, `Person.emails
 the mapping in `twenty-sync/index.ts`; per-row failures are reported in `results` and never
 abort the run.
 
+## Two-way (inbound, review-gated)
+
+Edits made **in Twenty** flow back through review — they never touch public content
+directly. Twenty `company.updated` / `person.updated` webhooks hit `twenty-inbound`
+(gated by `?token=` = env `TWENTY_WEBHOOK_SECRET`), which diffs a **whitelist** of safe
+editorial fields against the source row and writes a PENDING proposal to
+`twenty_inbound_review`. An admin reviews at **/admin/content/twenty-crm** and
+approves — `approve_twenty_inbound_change(id)` applies only whitelisted columns to the
+source table and stamps `field_provenance.source='twenty+human'` (organizations).
+`reject_twenty_inbound_change(id)` discards. Approvals are manual (not bulk), so
+safety-gating, the review model, and batched search-sync are all preserved.
+
+Whitelist (`twenty_inbound_allowed_columns`): organization = name, description,
+editorial_hook, editorial_long, email, phone, website, logo_url · merchant =
+display_name · contact = name, category. Scores / safety flags / ids are **never**
+writable from Twenty. Migration `20260715183310_twenty_inbound_review.sql`; webhook
+registered via `POST /rest/webhooks`.
+
 ## Scope / future
 
-- One-way only for now. A later `twenty webhook → edge function` reflection (e.g. "merchant
-  approved as partner" flips a flag) should stay tiny and explicit if added.
-- Deliberately no schema changes to queer.guide and no writes back — protects the
-  disk-constrained prod DB and keeps a single source of truth for public content.
+- Deliberately minimal schema footprint on queer.guide (one review table); no direct
+  writes to public content from Twenty — protects the disk-constrained prod DB and keeps
+  the review model as the single gate for public data.
