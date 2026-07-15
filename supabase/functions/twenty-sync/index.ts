@@ -27,7 +27,11 @@ import {
   requireInternalOrAdmin,
 } from '../_shared/supabase-client.ts'
 import { withErrorReporting } from '../_shared/report-api-error.ts'
-import { twentyConfigured, upsertByExternalId, splitName } from '../_shared/twenty-client.ts'
+import { twentyConfigured, upsertByExternalId, splitName, listExternalIdMap } from '../_shared/twenty-client.ts'
+
+// externalId → Twenty-id maps for resolving relations. Module scope so a warm isolate
+// reuses them across a rapid backfill loop instead of rebuilding every batch.
+const idMapCache = new Map<string, Map<string, string>>()
 
 // Wall-clock budget — the Supabase gateway 504s at ~150s and the dispatcher
 // dead-letters on that. Stop admitting new rows well before then.
@@ -50,6 +54,7 @@ interface OrgRow {
   status: string | null; claim_status: string | null; trust_score: number | null
   completeness_score: number | null; safety_gated: boolean | null; needs_attention: boolean | null
   city: Named; country: Named
+  city_id: string | null; country_id: string | null; primary_venue_id: string | null
 }
 interface MerchantRow {
   id: string; slug: string | null; display_name: string | null; shop_domain: string | null
@@ -59,6 +64,8 @@ interface ContactRow { id: string; name: string | null; email: string | null; ca
 interface PersonalityRow {
   id: string; name: string | null; slug: string | null; description: string | null; bio: string | null
   profession: string | null; nationality: string | null; website_url: string | null
+  birth_date: string | null; death_date: string | null; image_url: string | null
+  city_id: string | null; country_id: string | null
 }
 interface ProfileRow {
   id: string; display_name: string | null; username: string | null; location: string | null
@@ -162,6 +169,29 @@ Deno.serve(withErrorReporting('twenty-sync', async (req) => {
 
   const arr = (a?: unknown): string | undefined =>
     Array.isArray(a) && a.length ? a.join(', ') : undefined
+  const s = (v: unknown) => (v == null || v === '' ? undefined : String(v))
+  const n = (v: unknown) => { const x = Number(v); return (v == null || v === '' || Number.isNaN(x)) ? undefined : x }
+
+  // Relation resolution: look up the target Twenty id by its externalId.
+  const getMap = async (plural: string): Promise<Map<string, string>> => {
+    let m = idMapCache.get(plural)
+    if (!m) { m = await listExternalIdMap(plural); idMapCache.set(plural, m) }
+    return m
+  }
+  interface Rel { field: string; target: string; fk: string; prefix: string }
+  const relIds = async (rels: Rel[], r: Record<string, unknown>): Promise<Record<string, unknown>> => {
+    const out: Record<string, unknown> = {}
+    for (const rl of rels) {
+      const v = r[rl.fk]
+      if (!v) continue
+      const id = (await getMap(rl.target)).get(`${rl.prefix}:${v}`)
+      if (id) out[`${rl.field}Id`] = id
+    }
+    return out
+  }
+  const REL_CITY: Rel = { field: 'city', target: 'qgCities', fk: 'city_id', prefix: 'city' }
+  const REL_COUNTRY: Rel = { field: 'country', target: 'qgCountries', fk: 'country_id', prefix: 'country' }
+  const REL_VILLAGE: Rel = { field: 'village', target: 'villages', fk: 'queer_village_id', prefix: 'village' }
 
   try {
     // ── organizations → Company (all attributes) ─────────────────────────────
@@ -171,14 +201,20 @@ Deno.serve(withErrorReporting('twenty-sync', async (req) => {
         .select('id, slug, name, legal_name, description, editorial_hook, editorial_long, ' +
           'logo_url, roles, website, website_domain, email, phone, tags, target_groups, ' +
           'status, claim_status, trust_score, completeness_score, safety_gated, needs_attention, ' +
-          'city:cities(name), country:countries(name)')
+          'city_id, country_id, primary_venue_id, city:cities(name), country:countries(name)')
         .eq('status', 'active')
         .order('updated_at', { ascending: false })
         .range(lo, hi)
       if (error) throw new Error(`organizations: ${error.message}`)
       for (const o of (data ?? []) as unknown as OrgRow[]) {
         if (!budgetLeft()) break
+        const orgRels = await relIds([
+          { field: 'cityRef', target: 'qgCities', fk: 'city_id', prefix: 'city' },
+          { field: 'countryRef', target: 'qgCountries', fk: 'country_id', prefix: 'country' },
+          { field: 'qgPrimaryVenue', target: 'venues', fk: 'primary_venue_id', prefix: 'venue' },
+        ], o as unknown as Record<string, unknown>)
         await push(`org:${o.id}`, 'companies', {
+          ...orgRels,
           name: o.legal_name || o.name,
           qgWebsite: o.website || o.website_domain || undefined,
           qgSource: 'organization',
@@ -251,14 +287,20 @@ Deno.serve(withErrorReporting('twenty-sync', async (req) => {
     if (budgetLeft() && wants('personalities')) {
       const { data, error } = await supabase
         .from('personalities')
-        .select('id, name, slug, description, bio, profession, nationality, website_url')
+        .select('id, name, slug, description, bio, profession, nationality, website_url, ' +
+          'birth_date, death_date, image_url, city_id, country_id')
         .eq('visibility', 'public')
         .order('updated_at', { ascending: false })
         .range(lo, hi)
       if (error) throw new Error(`personalities: ${error.message}`)
       for (const p of (data ?? []) as unknown as PersonalityRow[]) {
         if (!budgetLeft()) break
+        const pRels = await relIds([
+          { field: 'qgCity', target: 'qgCities', fk: 'city_id', prefix: 'city' },
+          { field: 'qgCountry', target: 'qgCountries', fk: 'country_id', prefix: 'country' },
+        ], p as unknown as Record<string, unknown>)
         await push(`personality:${p.id}`, 'people', {
+          ...pRels,
           name: splitName(p.name),
           qgSource: 'personality',
           qgSlug: p.slug ?? undefined,
@@ -266,6 +308,9 @@ Deno.serve(withErrorReporting('twenty-sync', async (req) => {
           qgNationality: p.nationality ?? undefined,
           qgBio: p.description || p.bio || undefined,
           qgWebsite: p.website_url ?? undefined,
+          qgBirthDate: s(p.birth_date),
+          qgDeathDate: s(p.death_date),
+          qgImageUrl: s(p.image_url),
         })
       }
     }
@@ -296,40 +341,44 @@ Deno.serve(withErrorReporting('twenty-sync', async (req) => {
       }
     }
 
-    // ── content entities → Twenty custom objects (large; id-ordered for stable
-    //    offset backfill). All qg* fields are TEXT, so numbers/dates are stringified.
+    // ── content entities → Twenty custom objects (ALL meaningful attributes + FK
+    //    relations). id-ordered for a stable offset backfill; qg* TEXT so nums/dates
+    //    are stringified. Relations set via `<field>Id` resolved through id-maps.
     type Row = Record<string, unknown>
-    const s = (v: unknown) => (v == null || v === '' ? undefined : String(v))
-    const nm = (v: unknown) => (v as { name?: string | null } | null)?.name ?? undefined
-
     const content: Array<{
       only: string; table: string; obj: string; prefix: string; sel: string;
-      map: (r: Row) => Record<string, unknown>;
+      map: (r: Row) => Record<string, unknown>; rels?: Rel[];
     }> = [
       { only: 'venues', table: 'venues', obj: 'venues', prefix: 'venue',
-        sel: 'id, name, website, city, country, category, address, slug',
-        map: (r) => ({ name: r.name, qgWebsite: s(r.website), qgCity: s(r.city), qgCountry: s(r.country), qgCategory: s(r.category), qgAddress: s(r.address), qgSlug: s(r.slug) }) },
+        sel: 'id, name, description, website, city, country, category, address, slug, phone, email, instagram, tags, amenities, services, price_range, star_rating, latitude, longitude, state, postal_code, verified, venue_subtype, booking_url, accessibility_notes, closed_at, vibe_tags, city_id, country_id, organization_id, queer_village_id',
+        map: (r) => ({ name: r.name, qgDescription: s(r.description), qgWebsite: s(r.website), qgCity: s(r.city), qgCountry: s(r.country), qgCategory: s(r.category), qgAddress: s(r.address), qgSlug: s(r.slug), qgPhone: s(r.phone), qgEmail: s(r.email), qgInstagram: s(r.instagram), qgTags: arr(r.tags), qgAmenities: arr(r.amenities), qgServices: arr(r.services), qgPriceRange: n(r.price_range), qgStarRating: n(r.star_rating), qgLat: n(r.latitude), qgLng: n(r.longitude), qgState: s(r.state), qgPostalCode: s(r.postal_code), qgVerified: r.verified ?? undefined, qgSubtype: s(r.venue_subtype), qgBookingUrl: s(r.booking_url), qgAccessibility: s(r.accessibility_notes), qgClosedAt: s(r.closed_at), qgVibeTags: arr(r.vibe_tags) }),
+        rels: [REL_CITY, REL_COUNTRY, REL_VILLAGE, { field: 'org', target: 'companies', fk: 'organization_id', prefix: 'org' }] },
       { only: 'events', table: 'events', obj: 'qgEvents', prefix: 'event',
-        sel: 'id, title, city, country, start_date, venue_name, website, slug',
-        map: (r) => ({ name: r.title, qgCity: s(r.city), qgCountry: s(r.country), qgStartDate: s(r.start_date), qgVenue: s(r.venue_name), qgWebsite: s(r.website), qgSlug: s(r.slug) }) },
+        sel: 'id, title, description, event_type, start_date, end_date, ticket_url, price_min, price_max, is_free, age_restriction, address, state, city, country, latitude, longitude, venue_name, organizer_name, website, status, target_groups, tags, currency, liveness_status, slug, city_id, country_id, venue_id, organizer_id, queer_village_id',
+        map: (r) => ({ name: r.title, qgDescription: s(r.description), qgType: s(r.event_type), qgStartDate: s(r.start_date), qgEndDate: s(r.end_date), qgTicketUrl: s(r.ticket_url), qgPriceMin: n(r.price_min), qgPriceMax: n(r.price_max), qgIsFree: r.is_free ?? undefined, qgAgeRestriction: s(r.age_restriction), qgAddress: s(r.address), qgState: s(r.state), qgCity: s(r.city), qgCountry: s(r.country), qgLat: n(r.latitude), qgLng: n(r.longitude), qgVenue: s(r.venue_name), qgOrganizerName: s(r.organizer_name), qgWebsite: s(r.website), qgStatus: s(r.status), qgTargetGroups: arr(r.target_groups), qgTags: arr(r.tags), qgCurrency: s(r.currency), qgLiveness: s(r.liveness_status), qgSlug: s(r.slug) }),
+        rels: [REL_CITY, REL_COUNTRY, REL_VILLAGE, { field: 'venue', target: 'venues', fk: 'venue_id', prefix: 'venue' }, { field: 'organizer', target: 'venues', fk: 'organizer_id', prefix: 'venue' }] },
       { only: 'cities', table: 'cities', obj: 'qgCities', prefix: 'city',
-        sel: 'id, name, description, slug, country:countries(name)',
-        map: (r) => ({ name: r.name, qgCountry: nm(r.country), qgDescription: s(r.description), qgSlug: s(r.slug) }) },
+        sel: 'id, name, description, slug, region_name, population, is_capital, latitude, longitude, timezone, climate_type, founded_year, area_km2, local_language, official_website, lgbt_friendly_rating, best_time_to_visit, local_customs, editorial_hook, image_url, safety_notes, major_airport_code, country_id',
+        map: (r) => ({ name: r.name, qgDescription: s(r.description), qgSlug: s(r.slug), qgRegion: s(r.region_name), qgPopulation: n(r.population), qgIsCapital: r.is_capital ?? undefined, qgLat: n(r.latitude), qgLng: n(r.longitude), qgTimezone: s(r.timezone), qgClimate: s(r.climate_type), qgFounded: n(r.founded_year), qgAreaKm2: n(r.area_km2), qgLocalLanguage: s(r.local_language), qgOfficialWebsite: s(r.official_website), qgLgbtRating: n(r.lgbt_friendly_rating), qgBestTime: s(r.best_time_to_visit), qgLocalCustoms: s(r.local_customs), qgEditorialHook: s(r.editorial_hook), qgImageUrl: s(r.image_url), qgSafetyNotes: s(r.safety_notes), qgAirportCode: s(r.major_airport_code) }),
+        rels: [REL_COUNTRY] },
       { only: 'countries', table: 'countries', obj: 'qgCountries', prefix: 'country',
-        sel: 'id, name, code, equality_score, description, slug',
-        map: (r) => ({ name: r.name, qgCode: s(r.code), qgEqualityScore: s(r.equality_score), qgDescription: s(r.description), qgSlug: s(r.slug) }) },
+        sel: 'id, name, code, equality_score, description, slug, capital, population, area_km2, currency, languages, timezone, calling_code, internet_tld, driving_side, gdp_usd, gdp_per_capita_usd, human_development_index, life_expectancy, literacy_rate, flag_emoji, editorial_hook, editorial_long, image_url, lgbti_same_sex_unions, lgbti_adoption_rights, lgbti_gender_recognition, lgbti_conversion_therapy_regulation',
+        map: (r) => ({ name: r.name, qgCode: s(r.code), qgEqualityScore: s(r.equality_score), qgDescription: s(r.description), qgSlug: s(r.slug), qgCapital: s(r.capital), qgPopulation: n(r.population), qgAreaKm2: n(r.area_km2), qgCurrency: s(r.currency), qgLanguages: arr(r.languages), qgTimezone: s(r.timezone), qgCallingCode: s(r.calling_code), qgTld: s(r.internet_tld), qgDrivingSide: s(r.driving_side), qgGdpUsd: n(r.gdp_usd), qgGdpPerCapita: n(r.gdp_per_capita_usd), qgHdi: n(r.human_development_index), qgLifeExpectancy: n(r.life_expectancy), qgLiteracyRate: n(r.literacy_rate), qgFlagEmoji: s(r.flag_emoji), qgEditorialHook: s(r.editorial_hook), qgEditorialLong: s(r.editorial_long), qgImageUrl: s(r.image_url), qgSameSexUnions: s(r.lgbti_same_sex_unions), qgAdoptionRights: s(r.lgbti_adoption_rights), qgGenderRecognition: s(r.lgbti_gender_recognition), qgConversionTherapy: s(r.lgbti_conversion_therapy_regulation) }) },
       { only: 'hotels', table: 'hotels', obj: 'hotels', prefix: 'hotel',
-        sel: 'id, name, city, country, website, address, slug',
-        map: (r) => ({ name: r.name, qgCity: s(r.city), qgCountry: s(r.country), qgWebsite: s(r.website), qgAddress: s(r.address), qgSlug: s(r.slug) }) },
+        sel: 'id, name, description, hotel_type, city, country, website, address, slug, phone, email, booking_url, price_range, star_rating, amenities, tags, queer_safety_notes, lgbtq_friendly, latitude, longitude, verified, city_id, country_id, queer_village_id',
+        map: (r) => ({ name: r.name, qgDescription: s(r.description), qgType: s(r.hotel_type), qgCity: s(r.city), qgCountry: s(r.country), qgWebsite: s(r.website), qgAddress: s(r.address), qgSlug: s(r.slug), qgPhone: s(r.phone), qgEmail: s(r.email), qgBookingUrl: s(r.booking_url), qgPriceRange: n(r.price_range), qgStarRating: n(r.star_rating), qgAmenities: arr(r.amenities), qgTags: arr(r.tags), qgSafetyNotes: s(r.queer_safety_notes), qgLgbtqFriendly: r.lgbtq_friendly ?? undefined, qgLat: n(r.latitude), qgLng: n(r.longitude), qgVerified: r.verified ?? undefined }),
+        rels: [REL_CITY, REL_COUNTRY, REL_VILLAGE] },
       { only: 'villages', table: 'queer_villages', obj: 'villages', prefix: 'village',
-        sel: 'id, name, description, website, slug, city:cities(name), country:countries(name)',
-        map: (r) => ({ name: r.name, qgCity: nm(r.city), qgCountry: nm(r.country), qgDescription: s(r.description), qgWebsite: s(r.website), qgSlug: s(r.slug) }) },
+        sel: 'id, name, description, website, slug, history, latitude, longitude, notable_landmarks, tags, editorial_hook, image_url, city_id, country_id',
+        map: (r) => ({ name: r.name, qgDescription: s(r.description), qgWebsite: s(r.website), qgSlug: s(r.slug), qgHistory: s(r.history), qgLat: n(r.latitude), qgLng: n(r.longitude), qgLandmarks: arr(r.notable_landmarks), qgTags: arr(r.tags), qgEditorialHook: s(r.editorial_hook), qgImageUrl: s(r.image_url) }),
+        rels: [REL_CITY, REL_COUNTRY] },
       { only: 'news', table: 'news_articles', obj: 'newsArticles', prefix: 'news',
-        sel: 'id, title, url, published_at, category, slug, publisher_name',
-        map: (r) => ({ name: r.title, qgPublisher: s(r.publisher_name), qgUrl: s(r.url), qgPublishedAt: s(r.published_at), qgCategory: s(r.category), qgSlug: s(r.slug) }) },
+        sel: 'id, title, url, published_at, category, slug, publisher_name, excerpt, author, sentiment, tags, media_type, canonical_url, image_url, content_language',
+        map: (r) => ({ name: r.title, qgPublisher: s(r.publisher_name), qgUrl: s(r.url), qgPublishedAt: s(r.published_at), qgCategory: s(r.category), qgSlug: s(r.slug), qgExcerpt: s(r.excerpt), qgAuthor: s(r.author), qgSentiment: s(r.sentiment), qgTags: arr(r.tags), qgMediaType: s(r.media_type), qgCanonicalUrl: s(r.canonical_url), qgImageUrl: s(r.image_url), qgLanguage: s(r.content_language) }) },
       { only: 'products', table: 'marketplace_listings', obj: 'products', prefix: 'product',
-        sel: 'id, title, brand, price_usd, external_url, website, merchant_domain, category, slug',
-        map: (r) => ({ name: r.title, qgBrand: s(r.brand), qgPrice: s(r.price_usd), qgUrl: s(r.external_url ?? r.website), qgMerchant: s(r.merchant_domain), qgCategory: s(r.category), qgSlug: s(r.slug) }) },
+        sel: 'id, title, brand, price_usd, external_url, website, merchant_domain, category, slug, description, subcategory, price_type, currency, business_name, availability, in_stock, department, boutique_score, content_rating, community_owned_tags, venue_id',
+        map: (r) => ({ name: r.title, qgBrand: s(r.brand), qgPrice: s(r.price_usd), qgUrl: s(r.external_url ?? r.website), qgMerchant: s(r.merchant_domain), qgCategory: s(r.category), qgSlug: s(r.slug), qgDescription: s(r.description), qgSubcategory: s(r.subcategory), qgPriceType: s(r.price_type), qgCurrency: s(r.currency), qgBusinessName: s(r.business_name), qgAvailability: s(r.availability), qgInStock: r.in_stock ?? undefined, qgDepartment: s(r.department), qgBoutiqueScore: n(r.boutique_score), qgContentRating: s(r.content_rating), qgOwnershipTags: arr(r.community_owned_tags) }),
+        rels: [{ field: 'venue', target: 'venues', fk: 'venue_id', prefix: 'venue' }] },
     ]
 
     for (const c of content) {
@@ -339,7 +388,9 @@ Deno.serve(withErrorReporting('twenty-sync', async (req) => {
       if (error) throw new Error(`${c.only}: ${error.message}`)
       for (const r of (data ?? []) as Row[]) {
         if (!budgetLeft()) break
-        await push(`${c.prefix}:${r.id}`, c.obj, c.map(r))
+        const fields = c.map(r)
+        if (c.rels) Object.assign(fields, await relIds(c.rels, r))
+        await push(`${c.prefix}:${r.id}`, c.obj, fields)
       }
     }
 
