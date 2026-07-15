@@ -10,6 +10,8 @@ const ENTITY_LABEL: Record<TwentyInboundRow['entity_type'], string> = {
   organization: 'Organization',
   merchant: 'Merchant',
   contact: 'Contact',
+  personality: 'Personality',
+  user: 'User',
 };
 
 function ChangeRow({ field, from, to }: { field: string; from: unknown; to: string | null }) {

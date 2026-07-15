@@ -6,6 +6,11 @@
  *   organizations         → Company   externalId `org:<id>`
  *   marketplace_merchants → Company   externalId `merchant:<id>`
  *   contact_submissions   → Person    externalId `contact:<id>`
+ *   personalities (public)→ Person    externalId `personality:<id>`  (public fields only)
+ *   profiles (approved)   → Person    externalId `profile:<id>`      (NON-sensitive fields only)
+ *
+ * Body params: { limit, offset, only } — `only` targets one entity, `offset` pages a
+ * large table (personalities ~2k) for the one-time backfill; the cron runs unfiltered.
  *
  * Twenty is a downstream consumer only. This function holds no cursor and stores
  * nothing back on queer.guide rows — safe to re-run. It NO-OPS cleanly (200) when
@@ -59,10 +64,17 @@ Deno.serve(withErrorReporting('twenty-sync', async (req) => {
   const budgetLeft = () => Date.now() - started < BUDGET_MS
 
   let limit = DEFAULT_LIMIT
+  let offset = 0
+  let only: string | null = null
   try {
-    const body = await req.json().catch(() => ({})) as { limit?: number }
+    const body = await req.json().catch(() => ({})) as { limit?: number; offset?: number; only?: string }
     if (typeof body.limit === 'number' && body.limit > 0) limit = Math.min(body.limit, 2000)
+    if (typeof body.offset === 'number' && body.offset >= 0) offset = body.offset
+    if (typeof body.only === 'string') only = body.only
   } catch { /* no body */ }
+  // `only` restricts to one entity; `offset` pages a large table (e.g. personalities).
+  const wants = (name: string) => !only || only === name
+  const lo = offset, hi = offset + limit - 1
 
   const results: RowResult[] = []
   let succeeded = 0
@@ -90,7 +102,7 @@ Deno.serve(withErrorReporting('twenty-sync', async (req) => {
 
   try {
     // ── organizations → Company (all attributes) ─────────────────────────────
-    if (budgetLeft()) {
+    if (budgetLeft() && wants('organizations')) {
       const { data, error } = await supabase
         .from('organizations')
         .select('id, slug, name, legal_name, description, editorial_hook, editorial_long, ' +
@@ -99,7 +111,7 @@ Deno.serve(withErrorReporting('twenty-sync', async (req) => {
           'city:cities(name), country:countries(name)')
         .eq('status', 'active')
         .order('updated_at', { ascending: false })
-        .limit(limit)
+        .range(lo, hi)
       if (error) throw new Error(`organizations: ${error.message}`)
       for (const o of (data ?? []) as Record<string, any>[]) {
         if (!budgetLeft()) break
@@ -130,13 +142,13 @@ Deno.serve(withErrorReporting('twenty-sync', async (req) => {
     }
 
     // ── marketplace_merchants → Company (all attributes) ─────────────────────
-    if (budgetLeft()) {
+    if (budgetLeft() && wants('merchants')) {
       const { data, error } = await supabase
         .from('marketplace_merchants')
         .select('id, slug, display_name, shop_domain, provider, is_enabled, last_sync_status')
         .eq('is_enabled', true)
         .order('updated_at', { ascending: false })
-        .limit(limit)
+        .range(lo, hi)
       if (error) throw new Error(`marketplace_merchants: ${error.message}`)
       for (const m of (data ?? []) as Record<string, any>[]) {
         if (!budgetLeft()) break
@@ -153,12 +165,12 @@ Deno.serve(withErrorReporting('twenty-sync', async (req) => {
     }
 
     // ── contact_submissions → Person (all attributes) ────────────────────────
-    if (budgetLeft()) {
+    if (budgetLeft() && wants('contacts')) {
       const { data, error } = await supabase
         .from('contact_submissions')
         .select('id, name, email, category, message, created_at')
         .order('created_at', { ascending: false })
-        .limit(limit)
+        .range(lo, hi)
       if (error) throw new Error(`contact_submissions: ${error.message}`)
       for (const c of (data ?? []) as Record<string, any>[]) {
         if (!budgetLeft()) break
@@ -168,6 +180,55 @@ Deno.serve(withErrorReporting('twenty-sync', async (req) => {
           qgSource: 'contact',
           qgCategory: c.category ?? undefined,
           qgMessage: c.message ?? undefined,
+        })
+      }
+    }
+
+    // ── personalities → Person (public figures; public fields only) ──────────
+    if (budgetLeft() && wants('personalities')) {
+      const { data, error } = await supabase
+        .from('personalities')
+        .select('id, name, slug, description, bio, profession, nationality, website_url')
+        .eq('visibility', 'public')
+        .order('updated_at', { ascending: false })
+        .range(lo, hi)
+      if (error) throw new Error(`personalities: ${error.message}`)
+      for (const p of (data ?? []) as Record<string, any>[]) {
+        if (!budgetLeft()) break
+        await push(`personality:${p.id}`, 'people', {
+          name: splitName(p.name),
+          qgSource: 'personality',
+          qgSlug: p.slug ?? undefined,
+          qgProfession: p.profession ?? undefined,
+          qgNationality: p.nationality ?? undefined,
+          qgBio: p.description || p.bio || undefined,
+          qgWebsite: p.website_url ?? undefined,
+        })
+      }
+    }
+
+    // ── profiles → Person (users; NON-SENSITIVE fields only — no identity/dating/
+    //    contact/encrypted; those are deliberately never sent to a CRM) ─────────
+    if (budgetLeft() && wants('profiles')) {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id, display_name, username, location, company, industry, job_title, moderation_status')
+        .eq('moderation_status', 'approved')
+        .order('updated_at', { ascending: false })
+        .range(lo, hi)
+      if (error) throw new Error(`profiles: ${error.message}`)
+      for (const u of (data ?? []) as Record<string, any>[]) {
+        if (!budgetLeft()) break
+        const display = u.display_name || u.username
+        if (!display) continue
+        await push(`profile:${u.id}`, 'people', {
+          name: splitName(display),
+          qgSource: 'user',
+          qgUsername: u.username ?? undefined,
+          qgLocation: u.location ?? undefined,
+          qgCompany: u.company ?? undefined,
+          qgIndustry: u.industry ?? undefined,
+          qgJobTitle: u.job_title ?? undefined,
         })
       }
     }

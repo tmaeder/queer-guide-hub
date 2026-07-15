@@ -10,7 +10,9 @@
 import { getServiceClient, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
 import { withErrorReporting } from '../_shared/report-api-error.ts'
 
-// Twenty field → source column, per entity. ONLY these are ever proposed.
+// Twenty field → source column, per entity. ONLY these are ever proposed, and the
+// approve RPC re-checks its own whitelist. `user` is intentionally empty — a user's
+// display name / handle is self-owned identity and must never be rewritten from a CRM.
 const MAP = {
   organization: {
     name: 'name', qgDescription: 'description', qgEditorialHook: 'editorial_hook',
@@ -19,12 +21,19 @@ const MAP = {
   },
   merchant: { name: 'display_name' },
   contact: { name: 'name', qgCategory: 'category' },
+  personality: {
+    name: 'name', qgBio: 'description', qgProfession: 'profession',
+    qgNationality: 'nationality', qgWebsite: 'website_url',
+  },
+  user: {} as Record<string, string>,
 } as const
 
 const TABLE = {
   organization: 'organizations',
   merchant: 'marketplace_merchants',
   contact: 'contact_submissions',
+  personality: 'personalities',
+  user: 'profiles',
 } as const
 
 type Entity = keyof typeof MAP
@@ -64,13 +73,18 @@ Deno.serve(withErrorReporting('twenty-inbound', async (req) => {
   }
 
   const [prefix, entityId] = externalId.split(':', 2)
-  const entity = ({ org: 'organization', merchant: 'merchant', contact: 'contact' } as const)[
-    prefix as 'org' | 'merchant' | 'contact'
-  ]
+  const entity = ({
+    org: 'organization', merchant: 'merchant', contact: 'contact',
+    personality: 'personality', profile: 'user',
+  } as const)[prefix as 'org' | 'merchant' | 'contact' | 'personality' | 'profile']
   if (!entity) return jsonResponse({ success: true, skipped: 'unknown-prefix' }, 200, req)
 
   const map = MAP[entity as Entity]
   const cols = Object.values(map)
+  // user (and any empty-whitelist entity) is capture-free: nothing writes back.
+  if (cols.length === 0) {
+    return jsonResponse({ success: true, skipped: 'no-writable-fields', entity }, 200, req)
+  }
 
   // current source values
   const { data: cur, error } = await supabase

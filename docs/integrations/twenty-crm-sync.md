@@ -103,9 +103,19 @@ Code:
 
 | Source | Twenty object | Key fields | externalId |
 |---|---|---|---|
-| `organizations` (status=active) | Company | `name`←legal_name/name, `domainName`←website_domain | `org:<id>` |
-| `marketplace_merchants` (is_enabled) | Company | `name`←display_name, `domainName`←shop_domain | `merchant:<id>` |
-| `contact_submissions` | Person | `name`←split(name), `emails.primaryEmail`←email | `contact:<id>` |
+| `organizations` (status=active) | Company | all attrs; website→`qgWebsite` (NOT domainName) | `org:<id>` |
+| `marketplace_merchants` (is_enabled) | Company | display_name, provider, slug, sync status | `merchant:<id>` |
+| `contact_submissions` | Person | name, email, category, message | `contact:<id>` |
+| `personalities` (visibility=public) | Person | name, bio, profession, nationality, website — **no `lgbti_connection`** (outing-sensitive) | `personality:<id>` |
+| `profiles` (moderation=approved) | Person | display_name, username, location, company, industry, job_title — **NO identity/dating/contact/encrypted fields** (GDPR special-category) | `profile:<id>` |
+
+**Privacy:** users sync only non-sensitive professional fields; sexual orientation / gender
+identity / dating / encrypted columns are never sent to the CRM. `profiles` write-back is
+disabled (empty whitelist) — a user's handle/identity is not CRM-editable.
+
+**Big-table backfill:** personalities (~2k) exceed one run's budget. Backfill once with
+`{"only":"personalities","limit":400,"offset":N}` looping N; the hourly cron (unfiltered,
+limit 500, updated_at desc) keeps recently-changed rows fresh.
 
 Twenty built-in composites (`Person.name` = {firstName,lastName}, `Person.emails` =
 {primaryEmail}) are handled in `twenty-client.ts`. If a workspace customizes these, adjust

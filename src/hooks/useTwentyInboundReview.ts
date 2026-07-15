@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 
 export interface TwentyInboundRow {
   id: string;
-  entity_type: 'organization' | 'merchant' | 'contact';
+  entity_type: 'organization' | 'merchant' | 'contact' | 'personality' | 'user';
   entity_id: string;
   external_id: string;
   twenty_record_id: string | null;
