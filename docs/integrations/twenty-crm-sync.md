@@ -134,6 +134,10 @@ source table and stamps `field_provenance.source='twenty+human'` (organizations)
 `reject_twenty_inbound_change(id)` discards. Approvals are manual (not bulk), so
 safety-gating, the review model, and batched search-sync are all preserved.
 
+The outbound sync **skips any field that has a pending inbound review** (checked per
+`externalId` at the top of each run), so a human's Twenty edit survives until it's
+approved or rejected — it isn't clobbered by the hourly push.
+
 Whitelist (`twenty_inbound_allowed_columns`): organization = name, description,
 editorial_hook, editorial_long, email, phone, website, logo_url · merchant =
 display_name · contact = name, category. Scores / safety flags / ids are **never**

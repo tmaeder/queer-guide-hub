@@ -41,6 +41,23 @@ const DEFAULT_LIMIT = 200
 
 interface RowResult { externalId: string; action?: string; error?: string }
 
+// Per-prefix { Twenty payload key → source column } for the review-whitelisted fields.
+// Used to SKIP pushing a field that currently has a pending inbound review, so a human's
+// Twenty edit isn't clobbered by the next outbound run before it's approved/rejected.
+const PROTECT: Record<string, Record<string, string>> = {
+  org: {
+    name: 'name', qgDescription: 'description', qgEditorialHook: 'editorial_hook',
+    qgEditorialLong: 'editorial_long', qgEmail: 'email', qgPhone: 'phone',
+    qgWebsite: 'website', qgLogoUrl: 'logo_url',
+  },
+  merchant: { name: 'display_name' },
+  contact: { name: 'name', qgCategory: 'category' },
+  personality: {
+    name: 'name', qgBio: 'description', qgProfession: 'profession',
+    qgNationality: 'nationality', qgWebsite: 'website_url',
+  },
+}
+
 Deno.serve(withErrorReporting('twenty-sync', async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
 
@@ -76,6 +93,18 @@ Deno.serve(withErrorReporting('twenty-sync', async (req) => {
   const wants = (name: string) => !only || only === name
   const lo = offset, hi = offset + limit - 1
 
+  // Fields with a pending inbound review (per externalId) — never overwrite these.
+  const pendingByExt = new Map<string, Set<string>>()
+  {
+    const { data: pend } = await supabase
+      .from('twenty_inbound_review')
+      .select('external_id, changes')
+      .eq('status', 'pending')
+    for (const r of (pend ?? []) as Array<{ external_id: string; changes: Record<string, unknown> }>) {
+      pendingByExt.set(r.external_id, new Set(Object.keys(r.changes ?? {})))
+    }
+  }
+
   const results: RowResult[] = []
   let succeeded = 0
   let failed = 0
@@ -86,6 +115,16 @@ Deno.serve(withErrorReporting('twenty-sync', async (req) => {
   const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
 
   const push = async (externalId: string, objectPath: string, fields: Record<string, unknown>) => {
+    // Don't overwrite a field that has a pending Twenty edit awaiting review.
+    const pending = pendingByExt.get(externalId)
+    if (pending) {
+      const protect = PROTECT[externalId.split(':', 1)[0]]
+      if (protect) {
+        for (const [key, col] of Object.entries(protect)) {
+          if (pending.has(col)) delete fields[key]
+        }
+      }
+    }
     await sleep(PACE_MS)
     try {
       const r = await upsertByExternalId(objectPath, externalId, fields)
