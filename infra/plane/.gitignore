@@ -1,4 +1,0 @@
-.env
-*.sql
-*.sql.gz
-cloudflared/credentials.json
