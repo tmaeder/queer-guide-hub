@@ -30,8 +30,9 @@ import { withErrorReporting } from '../_shared/report-api-error.ts'
 import { twentyConfigured, upsertByExternalId, splitName, listExternalIdMap } from '../_shared/twenty-client.ts'
 
 // externalId → Twenty-id maps for resolving relations. Module scope so a warm isolate
-// reuses them across a rapid backfill loop instead of rebuilding every batch.
-const idMapCache = new Map<string, Map<string, string>>()
+// reuses them across a rapid backfill loop. Cache the PROMISE so concurrent callers on a
+// cold entry share one build instead of racing.
+const idMapCache = new Map<string, Promise<Map<string, string>>>()
 
 // Wall-clock budget — the Supabase gateway 504s at ~150s and the dispatcher
 // dead-letters on that. Stop admitting new rows well before then.
@@ -116,7 +117,7 @@ Deno.serve(withErrorReporting('twenty-sync', async (req) => {
   let only: string | null = null
   try {
     const body = await req.json().catch(() => ({})) as { limit?: number; offset?: number; only?: string }
-    if (typeof body.limit === 'number' && body.limit > 0) limit = Math.min(body.limit, 2000)
+    if (typeof body.limit === 'number' && body.limit > 0) limit = Math.min(body.limit, 200_000)
     if (typeof body.offset === 'number' && body.offset >= 0) offset = body.offset
     if (typeof body.only === 'string') only = body.only
   } catch { /* no body */ }
@@ -140,10 +141,16 @@ Deno.serve(withErrorReporting('twenty-sync', async (req) => {
   let succeeded = 0
   let failed = 0
 
-  // Light pacing between writes to stay under Twenty's rate limit (raised to 20k/min
-  // on the NAS). Retry handles any residual 429. Small so the 147k backfill is feasible.
-  const PACE_MS = 12
-  const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
+  // Concurrency pool — upserts run in parallel (Twenty's limit is 20k/min, retry
+  // handles 429s). `push` awaits a free slot (backpressure) then fires the write in the
+  // background; all in-flight writes are awaited before the response is returned.
+  const CONC = 16
+  let active = 0
+  const waiters: Array<() => void> = []
+  const acquire = (): Promise<void> =>
+    active < CONC ? (active++, Promise.resolve()) : new Promise<void>((r) => waiters.push(() => { active++; r() }))
+  const release = () => { active--; const w = waiters.shift(); if (w) w() }
+  const inflight: Promise<void>[] = []
 
   const push = async (externalId: string, objectPath: string, fields: Record<string, unknown>) => {
     // Don't overwrite a field that has a pending Twenty edit awaiting review.
@@ -156,15 +163,20 @@ Deno.serve(withErrorReporting('twenty-sync', async (req) => {
         }
       }
     }
-    await sleep(PACE_MS)
-    try {
-      const r = await upsertByExternalId(objectPath, externalId, fields)
-      results.push({ externalId, action: r.action })
-      succeeded++
-    } catch (e) {
-      results.push({ externalId, error: (e as Error).message })
-      failed++
-    }
+    await acquire()
+    const task = (async () => {
+      try {
+        const r = await upsertByExternalId(objectPath, externalId, fields)
+        results.push({ externalId, action: r.action })
+        succeeded++
+      } catch (e) {
+        results.push({ externalId, error: (e as Error).message })
+        failed++
+      } finally {
+        release()
+      }
+    })()
+    inflight.push(task)
   }
 
   const arr = (a?: unknown): string | undefined =>
@@ -173,10 +185,10 @@ Deno.serve(withErrorReporting('twenty-sync', async (req) => {
   const n = (v: unknown) => { const x = Number(v); return (v == null || v === '' || Number.isNaN(x)) ? undefined : x }
 
   // Relation resolution: look up the target Twenty id by its externalId.
-  const getMap = async (plural: string): Promise<Map<string, string>> => {
-    let m = idMapCache.get(plural)
-    if (!m) { m = await listExternalIdMap(plural); idMapCache.set(plural, m) }
-    return m
+  const getMap = (plural: string): Promise<Map<string, string>> => {
+    let p = idMapCache.get(plural)
+    if (!p) { p = listExternalIdMap(plural); idMapCache.set(plural, p) }
+    return p
   }
   interface Rel { field: string; target: string; fk: string; prefix: string }
   const relIds = async (rels: Rel[], r: Record<string, unknown>): Promise<Record<string, unknown>> => {
@@ -381,18 +393,30 @@ Deno.serve(withErrorReporting('twenty-sync', async (req) => {
         rels: [{ field: 'venue', target: 'venues', fk: 'venue_id', prefix: 'venue' }] },
     ]
 
+    // Page internally in 1000-row chunks (PostgREST's cap) up to `limit`/budget, so the
+    // relation id-maps are built ONCE per call and reused across many pages.
     for (const c of content) {
       if (!budgetLeft() || !wants(c.only)) continue
-      const { data, error } = await supabase
-        .from(c.table).select(c.sel).order('id', { ascending: true }).range(lo, hi)
-      if (error) throw new Error(`${c.only}: ${error.message}`)
-      for (const r of (data ?? []) as Row[]) {
-        if (!budgetLeft()) break
-        const fields = c.map(r)
-        if (c.rels) Object.assign(fields, await relIds(c.rels, r))
-        await push(`${c.prefix}:${r.id}`, c.obj, fields)
+      let off = lo
+      while (budgetLeft() && off <= hi) {
+        const pageHi = Math.min(off + 999, hi)
+        const { data, error } = await supabase
+          .from(c.table).select(c.sel).order('id', { ascending: true }).range(off, pageHi)
+        if (error) throw new Error(`${c.only}: ${error.message}`)
+        const rows = (data ?? []) as Row[]
+        if (!rows.length) break
+        for (const r of rows) {
+          if (!budgetLeft()) break
+          const fields = c.map(r)
+          if (c.rels) Object.assign(fields, await relIds(c.rels, r))
+          await push(`${c.prefix}:${r.id}`, c.obj, fields)
+        }
+        off += rows.length
+        if (rows.length < 1000) break
       }
     }
+
+    await Promise.all(inflight)
 
     return jsonResponse({
       success: true,
