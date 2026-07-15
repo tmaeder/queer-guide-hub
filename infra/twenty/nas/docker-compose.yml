@@ -34,6 +34,10 @@ services:
       ENCRYPTION_KEY: ${ENCRYPTION_KEY}
       # Lock down public sign-up after the admin account exists (open door otherwise).
       IS_SIGN_UP_ENABLED: ${IS_SIGN_UP_ENABLED:-true}
+      # Raise the REST/GraphQL throttle (default 100/window) — this is a single
+      # trusted internal consumer (the twenty-sync bulk pass fires ~600 calls).
+      API_RATE_LIMITING_SHORT_LIMIT: ${API_RATE_LIMITING_SHORT_LIMIT:-100}
+      API_RATE_LIMITING_LONG_LIMIT: ${API_RATE_LIMITING_LONG_LIMIT:-100}
     depends_on:
       db: { condition: service_healthy }
       redis: { condition: service_healthy }

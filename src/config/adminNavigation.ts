@@ -156,6 +156,12 @@ export const adminNavSections: AdminNavSection[] = [
         icon: Layers,
         route: '/admin/content',
       },
+      {
+        id: 'twenty-crm',
+        label: 'Twenty CRM',
+        icon: Link2,
+        route: '/admin/content/twenty-crm',
+      },
       // Places
       {
         id: 'venues',

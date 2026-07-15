@@ -93,6 +93,7 @@ const AdminMailbox = lazyRetry(() => import('./pages/admin/AdminMailbox'));
 const AdminVenueQuality = lazyRetry(() => import('./pages/AdminVenueQuality'));
 const AdminLiveness = lazyRetry(() => import('./pages/AdminLiveness'));
 const AdminMarketplaceQuality = lazyRetry(() => import('./pages/AdminMarketplaceQuality'));
+const AdminTwentyCrm = lazyRetry(() => import('./pages/AdminTwentyCrm'));
 const AdminMarketplaceGuides = lazyRetry(() => import('./pages/AdminMarketplaceGuides'));
 const AdminVenueGuides = lazyRetry(() => import('./pages/AdminVenueGuides'));
 const EmailTemplates = lazyRetry(() => import('./pages/admin/EmailTemplates'));
@@ -417,6 +418,7 @@ export const AppRoutes = () => {
                 <Route path="merkliste" element={<EditorialTasks />} />
                 <Route path="postfach" element={<AdminMailbox />} />
                 <Route path="content/marketplace-quality" element={<AdminMarketplaceQuality />} />
+                <Route path="content/twenty-crm" element={<AdminTwentyCrm />} />
                 <Route path="content/village-quality" element={<AdminVillageQuality />} />
                 <Route path="content/group-requests" element={<AdminGroupRequests />} />
                 <Route path="hotels" element={<AdminHotels />} />
