@@ -3,6 +3,8 @@
  * Consolidates duplicated Pexels/Unsplash/Wikimedia/Wikipedia fetch logic.
  */
 
+import { mirrorImageToR2 } from './logo-mirror.ts'
+
 export interface ImageResult {
   url: string
   thumbnail: string
@@ -142,28 +144,29 @@ export async function fetchFirstUnsplashUrl(key: string, query: string): Promise
   } catch { return null }
 }
 
+/**
+ * Mirror an external image into our own Cloudflare R2 bucket (served from
+ * img.queer.guide) and return the token-free public URL. We host NO images on
+ * Supabase Storage — the `bucket` arg is kept for call-site compatibility and
+ * used as the R2 key prefix. Falls back to the original URL if R2 isn't
+ * configured or the fetch/upload fails (caller stores what it can).
+ *
+ * `supabase`/`entityId` are unused now (content-addressed keys), kept so the
+ * many call sites don't churn.
+ */
 export async function storeImageToStorage(
-  supabase: unknown,
+  _supabase: unknown,
   imageUrl: string,
   bucket: string,
-  pathPrefix: string,
-  entityId: string,
+  _pathPrefix: string,
+  _entityId: string,
 ): Promise<string> {
   try {
     const imageRes = await fetch(imageUrl)
     if (!imageRes.ok) return imageUrl
-    const buffer = await imageRes.arrayBuffer()
-    const ext = imageUrl.includes('.png') ? 'png' : 'jpg'
-    const filePath = `${pathPrefix}/${entityId}-${Date.now()}.${ext}`
-
-    const sb = supabase as { storage: { from: (b: string) => { upload: (p: string, b: ArrayBuffer, o: Record<string, unknown>) => Promise<{ data: unknown; error: { message: string } | null }>; getPublicUrl: (p: string) => { data: { publicUrl: string } } } } }
-    const { data, error } = await sb.storage.from(bucket).upload(filePath, buffer, {
-      contentType: ext === 'png' ? 'image/png' : 'image/jpeg',
-      cacheControl: '86400',
-      upsert: true,
-    })
-    if (error) { console.error('Storage upload error:', error); return imageUrl }
-    const { data: pubUrl } = sb.storage.from(bucket).getPublicUrl(data.path)
-    return pubUrl.publicUrl
+    const buffer = new Uint8Array(await imageRes.arrayBuffer())
+    const contentType = imageRes.headers.get('content-type') || (imageUrl.includes('.png') ? 'image/png' : 'image/jpeg')
+    const r2Url = await mirrorImageToR2(buffer, contentType, bucket)
+    return r2Url ?? imageUrl
   } catch (e) { console.error('storeImage error:', e); return imageUrl }
 }

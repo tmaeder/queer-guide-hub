@@ -1,4 +1,5 @@
 import { getCorsHeaders, getServiceClient, requireAdmin } from '../_shared/supabase-client.ts';
+import { mirrorImageToR2 } from '../_shared/logo-mirror.ts';
 
 interface AdultModelRow {
   'pornhub-profile': string;
@@ -151,27 +152,19 @@ Deno.serve(async (req) => {
             
             if (imageResponse.ok) {
               const imageBlob = await imageResponse.blob();
-              const fileExtension = imageResponse.headers.get('content-type')?.split('/')[1] || 'jpg';
-              const fileName = `${row.name.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase()}_${Date.now()}_${Math.random().toString(36).substr(2, 5)}.${fileExtension}`;
-              
-              // Upload to Supabase storage
-              const { data: _uploadData, error: uploadError } = await supabase.storage
-                .from('adult-model-images')
-                .upload(fileName, imageBlob, {
-                  contentType: imageResponse.headers.get('content-type') || 'image/jpeg',
-                  upsert: false
-                });
-              
-              if (uploadError) {
-                console.error(`Failed to upload image for ${row.name}:`, uploadError);
-                errors.push(`Row ${rowIndex + 2}: Failed to upload image - ${uploadError.message}`);
+              const ct = imageResponse.headers.get('content-type') || 'image/jpeg';
+
+              // Mirror to Cloudflare R2 (img.queer.guide) — no Supabase image hosting.
+              const r2Url = await mirrorImageToR2(
+                new Uint8Array(await imageBlob.arrayBuffer()),
+                ct,
+                'adult-model-images',
+              );
+              if (!r2Url) {
+                console.error(`Failed to mirror image for ${row.name} to R2`);
+                errors.push(`Row ${rowIndex + 2}: R2 upload failed (IMAGE_CDN_ADMIN_SECRET unset?)`);
               } else {
-                // Get public URL
-                const { data: { publicUrl } } = supabase.storage
-                  .from('adult-model-images')
-                  .getPublicUrl(fileName);
-                
-                imageUrl = publicUrl;
+                imageUrl = r2Url;
                 console.log(`Successfully uploaded image for ${row.name}: ${imageUrl}`);
               }
             } else {

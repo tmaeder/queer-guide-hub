@@ -1,5 +1,6 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { getCorsHeaders, requireAdmin, getServiceClient } from '../_shared/supabase-client.ts';
+import { mirrorImageToR2 } from '../_shared/logo-mirror.ts';
 
 Deno.serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
@@ -103,30 +104,16 @@ Deno.serve(async (req) => {
     imageBlob = await imageResponse.blob();
     const imageBuffer = await imageBlob.arrayBuffer();
 
-    // Generate filename
-    const sanitizedTagName = tagName.toLowerCase().replace(/[^a-z0-9]/g, '-');
-    const fileExtension = imageUrl.includes('.jpg') || imageUrl.includes('.jpeg') ? 'jpg' : 'png';
-    const fileName = `${sanitizedTagName}-${Date.now()}.${fileExtension}`;
-
-    // Upload to Supabase storage
-    console.log('Uploading to storage:', fileName);
-    const { error: uploadError } = await supabase.storage
-      .from('tag-images')
-      .upload(fileName, imageBuffer, {
-        contentType: imageBlob.type || 'image/jpeg',
-        upsert: false
-      });
-
-    if (uploadError) {
-      throw new Error(`Storage upload failed: ${uploadError.message}`);
+    // Mirror to Cloudflare R2 (img.queer.guide) — no image hosting on Supabase.
+    console.log('Mirroring tag image to R2');
+    const storedImageUrl = await mirrorImageToR2(
+      new Uint8Array(imageBuffer),
+      imageBlob.type || 'image/jpeg',
+      'tag-images',
+    );
+    if (!storedImageUrl) {
+      throw new Error('R2 upload failed (IMAGE_CDN_ADMIN_SECRET unset?)');
     }
-
-    // Get public URL
-    const { data: publicUrlData } = supabase.storage
-      .from('tag-images')
-      .getPublicUrl(fileName);
-
-    const storedImageUrl = publicUrlData.publicUrl;
 
     // Update tag with image URL
     const { error: updateError } = await supabase
