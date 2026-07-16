@@ -54,12 +54,18 @@ export async function uploadBlob(
   return body.blobId;
 }
 
+/** One entry of a JMAP response: [methodName, arguments, callId]. */
+type JmapMethodResponse = [name: string, args: Record<string, unknown>, callId: string];
+interface JmapResponse {
+  methodResponses: JmapMethodResponse[];
+}
+
 async function jmapCall(
   session: JmapSession,
   user: string,
   pass: string,
   methodCalls: unknown[],
-): Promise<any> {
+): Promise<JmapResponse> {
   const res = await fetch(session.apiUrl, {
     method: 'POST',
     headers: { Authorization: basicAuth(user, pass), 'Content-Type': 'application/json' },
@@ -69,7 +75,7 @@ async function jmapCall(
     }),
   });
   if (!res.ok) throw new Error(`jmap api ${res.status}`);
-  return res.json();
+  return (await res.json()) as JmapResponse;
 }
 
 /** The INBOX mailbox id for the authenticated account. */
@@ -77,9 +83,10 @@ export async function getInboxId(session: JmapSession, user: string, pass: strin
   const body = await jmapCall(session, user, pass, [
     ['Mailbox/query', { accountId: session.accountId, filter: { role: 'inbox' } }, '0'],
   ]);
-  const id = body?.methodResponses?.[0]?.[1]?.ids?.[0];
+  const args = body.methodResponses[0]?.[1] as { ids?: string[] } | undefined;
+  const id = args?.ids?.[0];
   if (!id) throw new Error('jmap: no inbox');
-  return id as string;
+  return id;
 }
 
 /**
@@ -100,7 +107,8 @@ export async function messageExists(
         '0',
       ],
     ]);
-    return (body?.methodResponses?.[0]?.[1]?.ids?.length ?? 0) > 0;
+    const args = body.methodResponses[0]?.[1] as { ids?: string[] } | undefined;
+    return (args?.ids?.length ?? 0) > 0;
   } catch {
     return false;
   }
@@ -126,8 +134,8 @@ export async function importEmail(
       '0',
     ],
   ]);
-  const resp = body?.methodResponses?.[0];
+  const resp = body.methodResponses[0];
   if (resp?.[0] === 'error') throw new Error(`jmap import error: ${JSON.stringify(resp[1])}`);
-  const notCreated = resp?.[1]?.notCreated?.in;
+  const notCreated = (resp?.[1] as { notCreated?: Record<string, unknown> } | undefined)?.notCreated?.in;
   if (notCreated) throw new Error(`jmap import notCreated: ${JSON.stringify(notCreated)}`);
 }
