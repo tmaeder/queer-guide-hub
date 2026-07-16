@@ -115,6 +115,11 @@ export async function upsertByExternalId(
   return { id: unwrapRecord(res)?.id as string ?? null, action: 'upserted' }
 }
 
+/** Delete a Twenty record by id (used to prune source-duplicate rows). */
+export async function deleteRecord(objectPath: string, id: string): Promise<void> {
+  await twentyFetch(`/${objectPath}/${id}`, { method: 'DELETE' })
+}
+
 /** Paginate an object and return a Map of externalId → Twenty record id, for
  *  resolving relation targets. Only records with an externalId are included. */
 export async function listExternalIdMap(objectPath: string): Promise<Map<string, string>> {
