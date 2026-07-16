@@ -27,7 +27,18 @@ import {
   requireInternalOrAdmin,
 } from '../_shared/supabase-client.ts'
 import { withErrorReporting } from '../_shared/report-api-error.ts'
-import { twentyConfigured, upsertByExternalId, splitName, listExternalIdMap } from '../_shared/twenty-client.ts'
+import { twentyConfigured, upsertByExternalId, splitName, listExternalIdMap, deleteRecord } from '../_shared/twenty-client.ts'
+
+// entity → { source table, Twenty object plural, externalId prefix } for prune mode.
+const PRUNE: Record<string, { table: string; obj: string; prefix: string }> = {
+  venues: { table: 'venues', obj: 'venues', prefix: 'venue' },
+  events: { table: 'events', obj: 'qgEvents', prefix: 'event' },
+  cities: { table: 'cities', obj: 'qgCities', prefix: 'city' },
+  countries: { table: 'countries', obj: 'qgCountries', prefix: 'country' },
+  news: { table: 'news_articles', obj: 'newsArticles', prefix: 'news' },
+  products: { table: 'marketplace_listings', obj: 'products', prefix: 'product' },
+  personalities: { table: 'personalities', obj: 'people', prefix: 'personality' },
+}
 
 // externalId → Twenty-id maps for resolving relations. Module scope so a warm isolate
 // reuses them across a rapid backfill loop. Cache the PROMISE so concurrent callers on a
@@ -115,11 +126,13 @@ Deno.serve(withErrorReporting('twenty-sync', async (req) => {
   let limit = DEFAULT_LIMIT
   let offset = 0
   let only: string | null = null
+  let mode: string | null = null
   try {
-    const body = await req.json().catch(() => ({})) as { limit?: number; offset?: number; only?: string }
+    const body = await req.json().catch(() => ({})) as { limit?: number; offset?: number; only?: string; mode?: string }
     if (typeof body.limit === 'number' && body.limit > 0) limit = Math.min(body.limit, 200_000)
     if (typeof body.offset === 'number' && body.offset >= 0) offset = body.offset
     if (typeof body.only === 'string') only = body.only
+    if (typeof body.mode === 'string') mode = body.mode
   } catch { /* no body */ }
   // `only` restricts to one entity; `offset` pages a large table (e.g. personalities).
   const wants = (name: string) => !only || only === name
@@ -204,6 +217,37 @@ Deno.serve(withErrorReporting('twenty-sync', async (req) => {
   const REL_CITY: Rel = { field: 'city', target: 'qgCities', fk: 'city_id', prefix: 'city' }
   const REL_COUNTRY: Rel = { field: 'country', target: 'qgCountries', fk: 'country_id', prefix: 'country' }
   const REL_VILLAGE: Rel = { field: 'village', target: 'villages', fk: 'queer_village_id', prefix: 'village' }
+
+  // ── prune mode: delete Twenty records whose SOURCE row is a soft-duplicate
+  //    (duplicate_of_id NOT NULL) — those should never have been synced. ──────────
+  if (mode === 'prune' && only && PRUNE[only]) {
+    const e = PRUNE[only]
+    const map = await getMap(e.obj) // externalId → Twenty id
+    let deleted = 0, scanned = 0, off = lo
+    while (budgetLeft() && off <= hi) {
+      const { data, error } = await supabase
+        .from(e.table).select('id').not('duplicate_of_id', 'is', null)
+        .order('id', { ascending: true }).range(off, Math.min(off + 999, hi))
+      if (error) throw new Error(`prune ${only}: ${error.message}`)
+      const rows = (data ?? []) as Array<{ id: string }>
+      if (!rows.length) break
+      for (const r of rows) {
+        if (!budgetLeft()) break
+        scanned++
+        const tid = map.get(`${e.prefix}:${r.id}`)
+        if (!tid) continue
+        await acquire()
+        const t = (async () => {
+          try { await deleteRecord(e.obj, tid); deleted++ } catch { /* gone already */ } finally { release() }
+        })()
+        inflight.push(t)
+      }
+      off += rows.length
+      if (rows.length < 1000) break
+    }
+    await Promise.all(inflight)
+    return jsonResponse({ success: true, mode: 'prune', only, deleted, scanned, items_processed: scanned, truncated: !budgetLeft() }, 200, req)
+  }
 
   try {
     // ── organizations → Company (all attributes) ─────────────────────────────
@@ -302,6 +346,7 @@ Deno.serve(withErrorReporting('twenty-sync', async (req) => {
         .select('id, name, slug, description, bio, profession, nationality, website_url, ' +
           'birth_date, death_date, image_url, city_id, country_id')
         .eq('visibility', 'public')
+        .is('duplicate_of_id', null)
         .order('updated_at', { ascending: false })
         .range(lo, hi)
       if (error) throw new Error(`personalities: ${error.message}`)
@@ -359,21 +404,21 @@ Deno.serve(withErrorReporting('twenty-sync', async (req) => {
     type Row = Record<string, unknown>
     const content: Array<{
       only: string; table: string; obj: string; prefix: string; sel: string;
-      map: (r: Row) => Record<string, unknown>; rels?: Rel[];
+      map: (r: Row) => Record<string, unknown>; rels?: Rel[]; dedup?: boolean;
     }> = [
-      { only: 'venues', table: 'venues', obj: 'venues', prefix: 'venue',
+      { only: 'venues', dedup: true, table: 'venues', obj: 'venues', prefix: 'venue',
         sel: 'id, name, description, website, city, country, category, address, slug, phone, email, instagram, tags, amenities, services, price_range, star_rating, latitude, longitude, state, postal_code, verified, venue_subtype, booking_url, accessibility_notes, closed_at, vibe_tags, city_id, country_id, organization_id, queer_village_id',
         map: (r) => ({ name: r.name, qgDescription: s(r.description), qgWebsite: s(r.website), qgCity: s(r.city), qgCountry: s(r.country), qgCategory: s(r.category), qgAddress: s(r.address), qgSlug: s(r.slug), qgPhone: s(r.phone), qgEmail: s(r.email), qgInstagram: s(r.instagram), qgTags: arr(r.tags), qgAmenities: arr(r.amenities), qgServices: arr(r.services), qgPriceRange: n(r.price_range), qgStarRating: n(r.star_rating), qgLat: n(r.latitude), qgLng: n(r.longitude), qgState: s(r.state), qgPostalCode: s(r.postal_code), qgVerified: r.verified ?? undefined, qgSubtype: s(r.venue_subtype), qgBookingUrl: s(r.booking_url), qgAccessibility: s(r.accessibility_notes), qgClosedAt: s(r.closed_at), qgVibeTags: arr(r.vibe_tags) }),
         rels: [REL_CITY, REL_COUNTRY, REL_VILLAGE, { field: 'org', target: 'companies', fk: 'organization_id', prefix: 'org' }] },
-      { only: 'events', table: 'events', obj: 'qgEvents', prefix: 'event',
+      { only: 'events', dedup: true, table: 'events', obj: 'qgEvents', prefix: 'event',
         sel: 'id, title, description, event_type, start_date, end_date, ticket_url, price_min, price_max, is_free, age_restriction, address, state, city, country, latitude, longitude, venue_name, organizer_name, website, status, target_groups, tags, currency, liveness_status, slug, city_id, country_id, venue_id, organizer_id, queer_village_id',
         map: (r) => ({ name: r.title, qgDescription: s(r.description), qgType: s(r.event_type), qgStartDate: s(r.start_date), qgEndDate: s(r.end_date), qgTicketUrl: s(r.ticket_url), qgPriceMin: n(r.price_min), qgPriceMax: n(r.price_max), qgIsFree: r.is_free ?? undefined, qgAgeRestriction: s(r.age_restriction), qgAddress: s(r.address), qgState: s(r.state), qgCity: s(r.city), qgCountry: s(r.country), qgLat: n(r.latitude), qgLng: n(r.longitude), qgVenue: s(r.venue_name), qgOrganizerName: s(r.organizer_name), qgWebsite: s(r.website), qgStatus: s(r.status), qgTargetGroups: arr(r.target_groups), qgTags: arr(r.tags), qgCurrency: s(r.currency), qgLiveness: s(r.liveness_status), qgSlug: s(r.slug) }),
         rels: [REL_CITY, REL_COUNTRY, REL_VILLAGE, { field: 'venue', target: 'venues', fk: 'venue_id', prefix: 'venue' }, { field: 'organizer', target: 'venues', fk: 'organizer_id', prefix: 'venue' }] },
-      { only: 'cities', table: 'cities', obj: 'qgCities', prefix: 'city',
+      { only: 'cities', dedup: true, table: 'cities', obj: 'qgCities', prefix: 'city',
         sel: 'id, name, description, slug, region_name, population, is_capital, latitude, longitude, timezone, climate_type, founded_year, area_km2, local_language, official_website, lgbt_friendly_rating, best_time_to_visit, local_customs, editorial_hook, image_url, safety_notes, major_airport_code, country_id',
         map: (r) => ({ name: r.name, qgDescription: s(r.description), qgSlug: s(r.slug), qgRegion: s(r.region_name), qgPopulation: n(r.population), qgIsCapital: r.is_capital ?? undefined, qgLat: n(r.latitude), qgLng: n(r.longitude), qgTimezone: s(r.timezone), qgClimate: s(r.climate_type), qgFounded: n(r.founded_year), qgAreaKm2: n(r.area_km2), qgLocalLanguage: s(r.local_language), qgOfficialWebsite: s(r.official_website), qgLgbtRating: n(r.lgbt_friendly_rating), qgBestTime: s(r.best_time_to_visit), qgLocalCustoms: s(r.local_customs), qgEditorialHook: s(r.editorial_hook), qgImageUrl: s(r.image_url), qgSafetyNotes: s(r.safety_notes), qgAirportCode: s(r.major_airport_code) }),
         rels: [REL_COUNTRY] },
-      { only: 'countries', table: 'countries', obj: 'qgCountries', prefix: 'country',
+      { only: 'countries', dedup: true, table: 'countries', obj: 'qgCountries', prefix: 'country',
         sel: 'id, name, code, equality_score, description, slug, capital, population, area_km2, currency, languages, timezone, calling_code, internet_tld, driving_side, gdp_usd, gdp_per_capita_usd, human_development_index, life_expectancy, literacy_rate, flag_emoji, editorial_hook, editorial_long, image_url, lgbti_same_sex_unions, lgbti_adoption_rights, lgbti_gender_recognition, lgbti_conversion_therapy_regulation',
         map: (r) => ({ name: r.name, qgCode: s(r.code), qgEqualityScore: s(r.equality_score), qgDescription: s(r.description), qgSlug: s(r.slug), qgCapital: s(r.capital), qgPopulation: n(r.population), qgAreaKm2: n(r.area_km2), qgCurrency: s(r.currency), qgLanguages: arr(r.languages), qgTimezone: s(r.timezone), qgCallingCode: s(r.calling_code), qgTld: s(r.internet_tld), qgDrivingSide: s(r.driving_side), qgGdpUsd: n(r.gdp_usd), qgGdpPerCapita: n(r.gdp_per_capita_usd), qgHdi: n(r.human_development_index), qgLifeExpectancy: n(r.life_expectancy), qgLiteracyRate: n(r.literacy_rate), qgFlagEmoji: s(r.flag_emoji), qgEditorialHook: s(r.editorial_hook), qgEditorialLong: s(r.editorial_long), qgImageUrl: s(r.image_url), qgSameSexUnions: s(r.lgbti_same_sex_unions), qgAdoptionRights: s(r.lgbti_adoption_rights), qgGenderRecognition: s(r.lgbti_gender_recognition), qgConversionTherapy: s(r.lgbti_conversion_therapy_regulation) }) },
       { only: 'hotels', table: 'hotels', obj: 'hotels', prefix: 'hotel',
@@ -384,10 +429,10 @@ Deno.serve(withErrorReporting('twenty-sync', async (req) => {
         sel: 'id, name, description, website, slug, history, latitude, longitude, notable_landmarks, tags, editorial_hook, image_url, city_id, country_id',
         map: (r) => ({ name: r.name, qgDescription: s(r.description), qgWebsite: s(r.website), qgSlug: s(r.slug), qgHistory: s(r.history), qgLat: n(r.latitude), qgLng: n(r.longitude), qgLandmarks: arr(r.notable_landmarks), qgTags: arr(r.tags), qgEditorialHook: s(r.editorial_hook), qgImageUrl: s(r.image_url) }),
         rels: [REL_CITY, REL_COUNTRY] },
-      { only: 'news', table: 'news_articles', obj: 'newsArticles', prefix: 'news',
+      { only: 'news', dedup: true, table: 'news_articles', obj: 'newsArticles', prefix: 'news',
         sel: 'id, title, url, published_at, category, slug, publisher_name, excerpt, author, sentiment, tags, media_type, canonical_url, image_url, content_language',
         map: (r) => ({ name: r.title, qgPublisher: s(r.publisher_name), qgUrl: s(r.url), qgPublishedAt: s(r.published_at), qgCategory: s(r.category), qgSlug: s(r.slug), qgExcerpt: s(r.excerpt), qgAuthor: s(r.author), qgSentiment: s(r.sentiment), qgTags: arr(r.tags), qgMediaType: s(r.media_type), qgCanonicalUrl: s(r.canonical_url), qgImageUrl: s(r.image_url), qgLanguage: s(r.content_language) }) },
-      { only: 'products', table: 'marketplace_listings', obj: 'products', prefix: 'product',
+      { only: 'products', dedup: true, table: 'marketplace_listings', obj: 'products', prefix: 'product',
         sel: 'id, title, brand, price_usd, external_url, website, merchant_domain, category, slug, description, subcategory, price_type, currency, business_name, availability, in_stock, department, boutique_score, content_rating, community_owned_tags, venue_id',
         map: (r) => ({ name: r.title, qgBrand: s(r.brand), qgPrice: s(r.price_usd), qgUrl: s(r.external_url ?? r.website), qgMerchant: s(r.merchant_domain), qgCategory: s(r.category), qgSlug: s(r.slug), qgDescription: s(r.description), qgSubcategory: s(r.subcategory), qgPriceType: s(r.price_type), qgCurrency: s(r.currency), qgBusinessName: s(r.business_name), qgAvailability: s(r.availability), qgInStock: r.in_stock ?? undefined, qgDepartment: s(r.department), qgBoutiqueScore: n(r.boutique_score), qgContentRating: s(r.content_rating), qgOwnershipTags: arr(r.community_owned_tags) }),
         rels: [{ field: 'venue', target: 'venues', fk: 'venue_id', prefix: 'venue' }] },
@@ -400,8 +445,9 @@ Deno.serve(withErrorReporting('twenty-sync', async (req) => {
       let off = lo
       while (budgetLeft() && off <= hi) {
         const pageHi = Math.min(off + 999, hi)
-        const { data, error } = await supabase
-          .from(c.table).select(c.sel).order('id', { ascending: true }).range(off, pageHi)
+        let q = supabase.from(c.table).select(c.sel)
+        if (c.dedup) q = q.is('duplicate_of_id', null)
+        const { data, error } = await q.order('id', { ascending: true }).range(off, pageHi)
         if (error) throw new Error(`${c.only}: ${error.message}`)
         const rows = (data ?? []) as Row[]
         if (!rows.length) break
