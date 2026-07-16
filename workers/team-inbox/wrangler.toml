@@ -1,0 +1,28 @@
+name = "queer-guide-worker-team-inbox"
+main = "src/index.ts"
+compatibility_date = "2026-04-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Email Worker. Bind the team addresses to this worker in the Cloudflare
+# dashboard under Email Routing → Routing rules: one custom-address rule per
+# address (contact@, support@, legal@, press@ on queer.guide) → "Send to a
+# Worker" → team-inbox. Specific address rules take priority over the apex
+# catch-all, so the per-user travel-inbox worker (`{username}@queer.guide`) and
+# its catch-all are untouched.
+
+[vars]
+INBOX_DOMAIN = "queer.guide"
+# Stalwart JMAP endpoint, reached over the existing Cloudflare Tunnel
+# (mail.queer.guide → stalwart:8080 on the NAS). No mail port is ever exposed.
+STALWART_JMAP_URL = "https://mail.queer.guide"
+# Drop raw messages over 10 MB before importing.
+MAILBOX_MAX_RAW_BYTES = "10485760"
+
+# Secrets (set via `wrangler secret put NAME`):
+#   STALWART_MAILBOX_PASSWORDS - JSON map of local-part → mailbox password, e.g.
+#     {"contact":"…","support":"…","legal":"…","press":"…"}
+#     The worker authenticates to JMAP AS the target mailbox and imports into its
+#     own INBOX.
+
+[observability]
+enabled = true

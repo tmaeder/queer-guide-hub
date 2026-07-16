@@ -38,6 +38,23 @@ services:
       # trusted internal consumer (the twenty-sync bulk pass fires ~600 calls).
       API_RATE_LIMITING_SHORT_LIMIT: ${API_RATE_LIMITING_SHORT_LIMIT:-100}
       API_RATE_LIMITING_LONG_LIMIT: ${API_RATE_LIMITING_LONG_LIMIT:-100}
+      # --- Team-inbox mail (IMAP/SMTP into the self-hosted Stalwart) ---
+      # Enable the IMAP/SMTP/CalDAV connected-account feature (also flip it on in
+      # Settings → Lab). Stalwart runs on this same compose network; Twenty's
+      # default SSRF guard blocks connections to private IPs, so it must be
+      # relaxed or the sync jobs can never reach the mailserver. Safe here: a
+      # single-admin workspace on an isolated stack. See README "Mail" section.
+      IS_IMAP_SMTP_CALDAV_ENABLED: ${IS_IMAP_SMTP_CALDAV_ENABLED:-true}
+      OUTBOUND_HTTP_SAFE_MODE_ENABLED: ${OUTBOUND_HTTP_SAFE_MODE_ENABLED:-false}
+      # Twenty's own system email (invites, password resets) → Resend SMTP
+      # (reuse the platform's existing Resend key; free tier).
+      EMAIL_DRIVER: ${EMAIL_DRIVER:-SMTP}
+      EMAIL_SMTP_HOST: ${EMAIL_SMTP_HOST:-smtp.resend.com}
+      EMAIL_SMTP_PORT: ${EMAIL_SMTP_PORT:-465}
+      EMAIL_SMTP_USER: ${EMAIL_SMTP_USER:-resend}
+      EMAIL_SMTP_PASSWORD: ${RESEND_API_KEY}
+      EMAIL_FROM_ADDRESS: ${EMAIL_FROM_ADDRESS:-noreply@queer.guide}
+      EMAIL_FROM_NAME: ${EMAIL_FROM_NAME:-Queer Guide}
     depends_on:
       db: { condition: service_healthy }
       redis: { condition: service_healthy }
@@ -58,7 +75,10 @@ services:
       SERVER_URL: ${SERVER_URL}
       REDIS_URL: redis://redis:6379
       DISABLE_DB_MIGRATIONS: "true"
-      DISABLE_CRON_JOBS_REGISTRATION: "true"
+      # Was "true": with cron registration off, the messaging sync jobs
+      # (cron:messaging:*) never run and connected inboxes silently never sync.
+      # Must be "false" for team-inbox mail to import from Stalwart.
+      DISABLE_CRON_JOBS_REGISTRATION: "false"
       STORAGE_TYPE: ${STORAGE_TYPE:-local}
       STORAGE_S3_REGION: ${STORAGE_S3_REGION}
       STORAGE_S3_NAME: ${STORAGE_S3_NAME}
@@ -66,6 +86,17 @@ services:
       STORAGE_S3_ACCESS_KEY_ID: ${STORAGE_S3_ACCESS_KEY_ID}
       STORAGE_S3_SECRET_ACCESS_KEY: ${STORAGE_S3_SECRET_ACCESS_KEY}
       ENCRYPTION_KEY: ${ENCRYPTION_KEY}
+      # The worker runs the IMAP sync jobs → it needs the same mail feature flag
+      # and the relaxed SSRF guard to reach Stalwart on the private network.
+      IS_IMAP_SMTP_CALDAV_ENABLED: ${IS_IMAP_SMTP_CALDAV_ENABLED:-true}
+      OUTBOUND_HTTP_SAFE_MODE_ENABLED: ${OUTBOUND_HTTP_SAFE_MODE_ENABLED:-false}
+      EMAIL_DRIVER: ${EMAIL_DRIVER:-SMTP}
+      EMAIL_SMTP_HOST: ${EMAIL_SMTP_HOST:-smtp.resend.com}
+      EMAIL_SMTP_PORT: ${EMAIL_SMTP_PORT:-465}
+      EMAIL_SMTP_USER: ${EMAIL_SMTP_USER:-resend}
+      EMAIL_SMTP_PASSWORD: ${RESEND_API_KEY}
+      EMAIL_FROM_ADDRESS: ${EMAIL_FROM_ADDRESS:-noreply@queer.guide}
+      EMAIL_FROM_NAME: ${EMAIL_FROM_NAME:-Queer Guide}
     depends_on:
       db: { condition: service_healthy }
       server: { condition: service_healthy }
@@ -96,8 +127,32 @@ services:
       retries: 10
     restart: always
 
+  # Self-hosted mail server for the team inboxes (contact@/support@/legal@/press@).
+  # Reached by Twenty over the INTERNAL docker network (IMAP/submission) and by
+  # the team-inbox Cloudflare Email Worker over the tunnel (JMAP on 8080). NO host
+  # ports → nothing public except the tunnel's mail.queer.guide → stalwart:8080
+  # route (JMAP ingest only). Accounts, ACME cert and the Resend smarthost are
+  # created on first boot via the web-admin — see README "Mail" + stalwart/README.md.
+  stalwart:
+    image: stalwartlabs/stalwart:latest
+    volumes:
+      - stalwart-data:/opt/stalwart
+    environment:
+      # First-boot fallback admin. Change/rotate after logging in; the account
+      # passwords and the Resend smarthost are configured in the web-admin.
+      FALLBACK_ADMIN: "admin:${STALWART_ADMIN_SECRET:?set STALWART_ADMIN_SECRET in .env}"
+    networks:
+      default:
+        aliases:
+          # Twenty connects IMAP/SMTP to this name so the ACME cert for
+          # mail.queer.guide validates while resolving to the container internally
+          # (the public mail.queer.guide resolves to Cloudflare for JMAP ingest).
+          - mail.queer.guide
+    restart: always
+
   # Outbound-only tunnel. Token + the crm.queer.guide → http://server:3000 route
-  # are configured in Cloudflare Zero Trust → Networks → Tunnels (see README).
+  # (and mail.queer.guide → http://stalwart:8080 for JMAP ingest) are configured
+  # in Cloudflare Zero Trust → Networks → Tunnels (see README).
   cloudflared:
     image: cloudflare/cloudflared:latest
     command: ["tunnel", "--no-autoupdate", "run", "--token", "${TUNNEL_TOKEN}"]
@@ -108,3 +163,4 @@ services:
 volumes:
   db-data:
   server-local-data:
+  stalwart-data:
