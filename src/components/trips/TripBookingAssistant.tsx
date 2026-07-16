@@ -236,7 +236,7 @@ export function TripBookingAssistant({ tripId, places, _days, startDate, endDate
         <Card key={city.id} className="mb-2">
           <CardContent>
             <div
-              className="flex items-start gap-2 -mx-4 -mt-2 -mb-2 p-4 rounded"
+              className="flex items-start gap-2 -mx-4 -mt-2 -mb-2 p-4 rounded-element"
               style={{ backgroundColor: 'hsl(var(--warning) / 0.2)' }}
             >
               <Shield
@@ -363,7 +363,7 @@ export function TripBookingAssistant({ tripId, places, _days, startDate, endDate
           </span>
 
           {!hasFlightBooked && (
-            <div className="flex items-center gap-2 p-4 bg-muted rounded">
+            <div className="flex items-center gap-2 p-4 bg-muted rounded-element">
               <Plane size={16} className="text-muted-foreground" />
               <p className="text-sm flex-1">{t('trips.bookingAssistant.flights', 'Flights')}</p>
               <LocalizedLink to="/travel?tab=flights">
@@ -383,7 +383,7 @@ export function TripBookingAssistant({ tripId, places, _days, startDate, endDate
           )}
 
           {!hasHotelBooked && (
-            <div className="flex items-center gap-2 p-4 bg-muted rounded">
+            <div className="flex items-center gap-2 p-4 bg-muted rounded-element">
               <Hotel size={16} className="text-muted-foreground" />
               <p className="text-sm flex-1">
                 {firstCity
@@ -419,7 +419,7 @@ export function TripBookingAssistant({ tripId, places, _days, startDate, endDate
               {hotelsLoading ? (
                 <div className="flex flex-col gap-2">
                   {[1, 2].map((i) => (
-                    <Skeleton key={i} className="h-20 rounded" />
+                    <Skeleton key={i} className="h-20" />
                   ))}
                 </div>
               ) : hotelResults && hotelResults.length > 0 ? (
@@ -427,7 +427,7 @@ export function TripBookingAssistant({ tripId, places, _days, startDate, endDate
                   {hotelResults.slice(0, 2).map((hotel) => (
                     <div
                       key={hotel.id}
-                      className="flex items-center gap-4 p-4 bg-muted rounded cursor-pointer"
+                      className="flex items-center gap-4 p-4 bg-muted rounded-element cursor-pointer"
                       onClick={() => openHotelBooking(hotel)}
                       onKeyDown={(e) => {
                         if (e.key === 'Enter' || e.key === ' ') {
@@ -442,7 +442,7 @@ export function TripBookingAssistant({ tripId, places, _days, startDate, endDate
                         <img
                           src={hotel.imageUrl}
                           alt={hotel.title}
-                          className="w-14 h-14 object-cover rounded"
+                          className="w-14 h-14 object-cover rounded-element"
                         />
                       )}
                       <div className="flex-1 min-w-0">

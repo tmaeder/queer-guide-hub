@@ -272,7 +272,7 @@ export function PackingTab({ tripId }: Props) {
                       {group.items.map((item) => (
                         <div
                           key={item.id}
-                          className="group/item flex items-center gap-1 pl-2 min-h-10 rounded hover:bg-muted/40"
+                          className="group/item flex items-center gap-1 pl-2 min-h-10 rounded-element hover:bg-muted/40"
                         >
                           <Checkbox
                             checked={item.is_checked}

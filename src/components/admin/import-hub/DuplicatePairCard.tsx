@@ -18,7 +18,7 @@ function ConfidenceBadge({ confidence }: { confidence: number }) {
   const label = confidence >= 0.9 ? 'High' : confidence >= 0.7 ? 'Medium' : 'Low';
   return (
     <span
-      className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-semibold"
+      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-badge text-xs font-semibold"
       style={{ backgroundColor: `${color}15`, color }}
     >
       {pct}% ({label})

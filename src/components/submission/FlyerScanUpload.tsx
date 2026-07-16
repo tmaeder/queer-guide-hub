@@ -167,7 +167,7 @@ export function FlyerScanUpload({
             <Loader2 className="animate-spin h-8 w-8 text-foreground" aria-label="Loading" />
             <p className="text-sm font-medium">{progressText}</p>
             {totalFiles > 1 && (
-              <div className="w-full h-1 bg-muted rounded overflow-hidden">
+              <div className="w-full h-1 bg-muted rounded-badge overflow-hidden">
                 <div
                   className="h-full bg-foreground transition-[width]"
                   style={{ width: `${pct}%` }}

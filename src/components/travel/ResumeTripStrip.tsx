@@ -32,7 +32,7 @@ export function ResumeTripStrip() {
   );
 
   return (
-    <section className="border border-border bg-background p-6 sm:p-6 mb-6 rounded">
+    <section className="border border-border bg-background p-6 sm:p-6 mb-6 rounded-element">
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div className="min-w-0 flex-1">
           <div className="text-xs text-muted-foreground uppercase tracking-wide mb-1">

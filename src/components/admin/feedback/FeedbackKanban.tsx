@@ -171,7 +171,7 @@ function Column({
   return (
     <div ref={setNodeRef} data-col-id={col.id}>
       <div
-        className="flex items-center gap-2 mb-4 px-2 py-[6px] rounded-b"
+        className="flex items-center gap-2 mb-4 px-2 py-1.5 rounded-b-element"
         style={{
           borderTop: `3px solid ${col.color}`,
           backgroundColor: `color-mix(in srgb, ${col.color} 9%, transparent)`,
@@ -186,7 +186,7 @@ function Column({
       </div>
 
       <div
-        className="flex flex-col gap-2 overflow-y-auto pr-1 p-1 rounded transition-colors md:max-h-[calc(100vh-300px)]"
+        className="flex flex-col gap-2 overflow-y-auto pr-1 p-1 rounded-element transition-colors md:max-h-[calc(100vh-300px)]"
         style={{
           minHeight: 120,
           backgroundColor:
@@ -199,7 +199,7 @@ function Column({
           {items.length === 0 && (() => {
             const { icon: EmptyIcon, copy } = COLUMN_EMPTY[col.id];
             return (
-              <div className="flex flex-col items-center gap-[6px] py-8 opacity-55">
+              <div className="flex flex-col items-center gap-1.5 py-8 opacity-55">
                 <EmptyIcon size={22} color={col.color} strokeWidth={1.5} />
                 <span className="text-xs text-muted-foreground" style={{ fontSize: '0.7rem' }}>
                   {copy}

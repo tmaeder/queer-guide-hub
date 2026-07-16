@@ -229,7 +229,7 @@ export function SavedTab() {
     };
     if (viewMode === 'grid') {
       return (
-        <Card key={`${item.type}-${item.id}`}>
+        <Card key={`${item.type}-${item.id}`} className="overflow-hidden">
           <div className="relative">
             {item.image_url ? (
               <div className="aspect-video relative overflow-hidden rounded-t-container">

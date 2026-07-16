@@ -163,7 +163,7 @@ export function PublicTripCard({ trip }: Props) {
       }}
       role="button"
       tabIndex={0}
-      className="cursor-pointer transition-[transform,opacity] duration-150 hover:opacity-90 focus-visible:outline-2 focus-visible:outline-brand focus-visible:outline-offset-2"
+      className="overflow-hidden cursor-pointer transition-[transform,opacity] duration-150 hover:opacity-90 focus-visible:outline-2 focus-visible:outline-brand focus-visible:outline-offset-2"
     >
       {trip.cover_image_url && (
         <CardImage src={trip.cover_image_url} alt={title} height={160}>

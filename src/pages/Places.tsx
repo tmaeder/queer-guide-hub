@@ -287,7 +287,7 @@ export default function Places() {
               <button
                 type="button"
                 onClick={() => setViewMode('overview')}
-                className="text-muted-foreground hover:text-foreground hover:bg-muted transition-colors px-2 py-1 rounded border-0 bg-background cursor-pointer"
+                className="text-muted-foreground hover:text-foreground hover:bg-muted transition-colors px-2 py-1 rounded-element border-0 bg-background cursor-pointer"
               >
                 Places
               </button>
@@ -297,7 +297,7 @@ export default function Places() {
                   <button
                     type="button"
                     onClick={() => setViewMode('country')}
-                    className="text-muted-foreground hover:text-foreground hover:bg-muted transition-colors px-2 py-1 rounded border-0 bg-background cursor-pointer"
+                    className="text-muted-foreground hover:text-foreground hover:bg-muted transition-colors px-2 py-1 rounded-element border-0 bg-background cursor-pointer"
                   >
                     {selectedCountry.name}
                   </button>

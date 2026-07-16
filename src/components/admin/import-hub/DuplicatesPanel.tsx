@@ -224,7 +224,7 @@ function ExistingDedupSection() {
           </div>
 
           {scanMutation.data && (
-            <div className="mt-4 p-4 bg-muted rounded">
+            <div className="mt-4 p-4 bg-muted rounded-element">
               <p className="text-sm">
                 Scanned {scanMutation.data.scanned} {scanMutation.data.entity_type} records, found{' '}
                 {scanMutation.data.duplicates_found} duplicate pairs (threshold:{' '}
@@ -372,7 +372,7 @@ function MergeHistorySection() {
                 return (
                   <div
                     key={entry.id}
-                    className="flex items-center gap-4 p-4 rounded bg-muted"
+                    className="flex items-center gap-4 p-4 rounded-element bg-muted"
                     style={{ fontSize: '0.85rem' }}
                   >
                     <Merge size={14} className="text-muted-foreground shrink-0" />
@@ -404,7 +404,7 @@ function MergeHistorySection() {
 function ResultCard({ label, value, color }: { label: string; value: number; color: string }) {
   return (
     <div
-      className="p-4 rounded text-center"
+      className="p-4 rounded-element text-center"
       style={{ backgroundColor: `${color}08`, border: `1px solid ${color}20` }}
     >
       <p className="text-xl font-bold" style={{ color }}>

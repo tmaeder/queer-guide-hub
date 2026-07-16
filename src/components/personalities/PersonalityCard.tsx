@@ -129,7 +129,7 @@ function PersonalityCardImpl({ personality, loading, onClick, optimizedUrl, thum
       onFocus={isFinePointer ? scheduleOpen : undefined}
       onBlur={isFinePointer ? scheduleClose : undefined}
       aria-label={ariaLabel}
-      className="personality-card group relative flex flex-col h-full cursor-pointer no-underline text-inherit bg-background overflow-hidden touch-manipulation transition-colors duration-200 hover:bg-muted/40 active:opacity-85 focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2"
+      className="personality-card group relative flex flex-col h-full cursor-pointer no-underline text-inherit bg-background rounded-container border border-border overflow-hidden touch-manipulation transition-colors duration-200 hover:border-foreground/40 hover:bg-muted/40 active:opacity-85 focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2"
       style={{ WebkitTapHighlightColor: 'transparent' }}
     >
       <CardHoverEffect>
@@ -166,7 +166,7 @@ function PersonalityCardImpl({ personality, loading, onClick, optimizedUrl, thum
 
           {personality.is_featured && (
             <div
-              className="absolute top-2 right-2 flex items-center gap-1 px-2 py-[3px] rounded-full bg-background text-foreground border border-border pointer-events-none select-none text-xs font-semibold"
+              className="absolute top-2 right-2 flex items-center gap-1 px-2 py-1 rounded-full bg-background text-foreground border border-border pointer-events-none select-none text-xs font-semibold"
               style={{ backdropFilter: 'blur(4px)' }}
             >
               <Star

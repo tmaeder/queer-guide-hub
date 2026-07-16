@@ -61,7 +61,7 @@ export default function FindNodePalette({ nodes, onSelect }: FindNodePaletteProp
                     className="gap-2.5 cursor-pointer"
                   >
                     <div
-                      className="w-5 h-5 rounded flex items-center justify-center shrink-0"
+                      className="w-5 h-5 rounded-badge flex items-center justify-center shrink-0"
                       style={{ backgroundColor: `${color}20`, color }}
                     >
                       <Icon className="h-3 w-3" />
@@ -71,7 +71,7 @@ export default function FindNodePalette({ nodes, onSelect }: FindNodePaletteProp
                       <div className="text-2xs text-muted-foreground font-mono truncate">{d.nodeTypeSlug || n.id.slice(0, 12)}</div>
                     </div>
                     {d.status && (
-                      <span className={`text-2xs px-1.5 py-0 rounded ${
+                      <span className={`text-2xs px-1.5 py-0 rounded-badge ${
                         d.status === 'completed' ? 'bg-muted dark:bg-foreground/40 text-foreground dark:text-foreground'
                         : d.status === 'failed' ? 'bg-destructive/10 dark:bg-destructive/40 text-destructive dark:text-destructive'
                         : d.status === 'running' ? 'bg-muted dark:bg-foreground/40 text-foreground dark:text-foreground'

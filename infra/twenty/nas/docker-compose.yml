@@ -1,0 +1,183 @@
+# Twenty CRM on a NAS (UGREEN UGOS / any Docker host) + Cloudflare Tunnel.
+#
+# Everything runs on the NAS; cloudflared exposes it at crm.queer.guide with NO
+# open ports (outbound-only tunnel, Cloudflare-terminated TLS). Twenty stays bound
+# to the internal docker network — the host port 3000 is optional (LAN-only).
+#
+# Run UNMODIFIED (AGPL-3.0). Based on Twenty's official self-host compose.
+#
+#   cp .env.example .env   # fill ENCRYPTION_KEY, PG_DATABASE_PASSWORD, TUNNEL_TOKEN
+#   docker compose up -d
+name: twenty
+
+services:
+  server:
+    image: twentycrm/twenty:${TAG:-latest}
+    volumes:
+      - server-local-data:/app/packages/twenty-server/.local-storage
+    # Host port is LAN-only convenience (health checks); the public path is via
+    # cloudflared → server:3000 on the internal network. 3000 often clashes on a
+    # NAS (Supabase Studio, inbox-zero, etc.), so map a high host port.
+    ports:
+      - "127.0.0.1:3010:3000"
+    environment:
+      NODE_PORT: 3000
+      PG_DATABASE_URL: postgres://${PG_DATABASE_USER:-postgres}:${PG_DATABASE_PASSWORD:?set PG_DATABASE_PASSWORD in .env}@db:5432/default
+      SERVER_URL: ${SERVER_URL}
+      REDIS_URL: redis://redis:6379
+      STORAGE_TYPE: ${STORAGE_TYPE:-local}
+      STORAGE_S3_REGION: ${STORAGE_S3_REGION}
+      STORAGE_S3_NAME: ${STORAGE_S3_NAME}
+      STORAGE_S3_ENDPOINT: ${STORAGE_S3_ENDPOINT}
+      STORAGE_S3_ACCESS_KEY_ID: ${STORAGE_S3_ACCESS_KEY_ID}
+      STORAGE_S3_SECRET_ACCESS_KEY: ${STORAGE_S3_SECRET_ACCESS_KEY}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY}
+      # Lock down public sign-up after the admin account exists (open door otherwise).
+      IS_SIGN_UP_ENABLED: ${IS_SIGN_UP_ENABLED:-true}
+      # Raise the REST/GraphQL throttle (default 100/window) — this is a single
+      # trusted internal consumer (the twenty-sync bulk pass fires ~600 calls).
+      API_RATE_LIMITING_SHORT_LIMIT: ${API_RATE_LIMITING_SHORT_LIMIT:-100}
+      API_RATE_LIMITING_LONG_LIMIT: ${API_RATE_LIMITING_LONG_LIMIT:-100}
+      # --- Team-inbox mail (IMAP/SMTP into the self-hosted Stalwart) ---
+      # Enable the IMAP/SMTP/CalDAV connected-account feature (also flip it on in
+      # Settings → Lab). Stalwart runs on this same compose network; Twenty's
+      # default SSRF guard blocks connections to private IPs, so it must be
+      # relaxed or the sync jobs can never reach the mailserver. Safe here: a
+      # single-admin workspace on an isolated stack. See README "Mail" section.
+      IS_IMAP_SMTP_CALDAV_ENABLED: ${IS_IMAP_SMTP_CALDAV_ENABLED:-true}
+      OUTBOUND_HTTP_SAFE_MODE_ENABLED: ${OUTBOUND_HTTP_SAFE_MODE_ENABLED:-false}
+      # Twenty's own system email (invites, password resets). Twenty only speaks
+      # SMTP; Cloudflare Email Sending is HTTP-only — so it points at the internal
+      # smtp-relay bridge, which forwards to Cloudflare Email Sending. No Resend.
+      EMAIL_DRIVER: ${EMAIL_DRIVER:-SMTP}
+      EMAIL_SMTP_HOST: ${EMAIL_SMTP_HOST:-smtp-relay}
+      EMAIL_SMTP_PORT: ${EMAIL_SMTP_PORT:-2525}
+      EMAIL_SMTP_NO_TLS: ${EMAIL_SMTP_NO_TLS:-true}
+      EMAIL_SMTP_USER: ${RELAY_SMTP_USER}
+      EMAIL_SMTP_PASSWORD: ${RELAY_SMTP_PASS}
+      EMAIL_FROM_ADDRESS: ${EMAIL_FROM_ADDRESS:-noreply@queer.guide}
+      EMAIL_FROM_NAME: ${EMAIL_FROM_NAME:-Queer Guide}
+    depends_on:
+      db: { condition: service_healthy }
+      redis: { condition: service_healthy }
+    healthcheck:
+      test: curl --fail http://localhost:3000/healthz
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    restart: always
+
+  worker:
+    image: twentycrm/twenty:${TAG:-latest}
+    volumes:
+      - server-local-data:/app/packages/twenty-server/.local-storage
+    command: ["yarn", "worker:prod"]
+    environment:
+      PG_DATABASE_URL: postgres://${PG_DATABASE_USER:-postgres}:${PG_DATABASE_PASSWORD:?set PG_DATABASE_PASSWORD in .env}@db:5432/default
+      SERVER_URL: ${SERVER_URL}
+      REDIS_URL: redis://redis:6379
+      DISABLE_DB_MIGRATIONS: "true"
+      # Was "true": with cron registration off, the messaging sync jobs
+      # (cron:messaging:*) never run and connected inboxes silently never sync.
+      # Must be "false" for team-inbox mail to import from Stalwart.
+      DISABLE_CRON_JOBS_REGISTRATION: "false"
+      STORAGE_TYPE: ${STORAGE_TYPE:-local}
+      STORAGE_S3_REGION: ${STORAGE_S3_REGION}
+      STORAGE_S3_NAME: ${STORAGE_S3_NAME}
+      STORAGE_S3_ENDPOINT: ${STORAGE_S3_ENDPOINT}
+      STORAGE_S3_ACCESS_KEY_ID: ${STORAGE_S3_ACCESS_KEY_ID}
+      STORAGE_S3_SECRET_ACCESS_KEY: ${STORAGE_S3_SECRET_ACCESS_KEY}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY}
+      # The worker runs the IMAP sync jobs → it needs the same mail feature flag
+      # and the relaxed SSRF guard to reach Stalwart on the private network.
+      IS_IMAP_SMTP_CALDAV_ENABLED: ${IS_IMAP_SMTP_CALDAV_ENABLED:-true}
+      OUTBOUND_HTTP_SAFE_MODE_ENABLED: ${OUTBOUND_HTTP_SAFE_MODE_ENABLED:-false}
+      EMAIL_DRIVER: ${EMAIL_DRIVER:-SMTP}
+      EMAIL_SMTP_HOST: ${EMAIL_SMTP_HOST:-smtp-relay}
+      EMAIL_SMTP_PORT: ${EMAIL_SMTP_PORT:-2525}
+      EMAIL_SMTP_NO_TLS: ${EMAIL_SMTP_NO_TLS:-true}
+      EMAIL_SMTP_USER: ${RELAY_SMTP_USER}
+      EMAIL_SMTP_PASSWORD: ${RELAY_SMTP_PASS}
+      EMAIL_FROM_ADDRESS: ${EMAIL_FROM_ADDRESS:-noreply@queer.guide}
+      EMAIL_FROM_NAME: ${EMAIL_FROM_NAME:-Queer Guide}
+    depends_on:
+      db: { condition: service_healthy }
+      server: { condition: service_healthy }
+    restart: always
+
+  db:
+    image: postgres:16
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: default
+      POSTGRES_USER: ${PG_DATABASE_USER:-postgres}
+      POSTGRES_PASSWORD: ${PG_DATABASE_PASSWORD:?set PG_DATABASE_PASSWORD in .env}
+    healthcheck:
+      test: pg_isready -U ${PG_DATABASE_USER:-postgres} -h localhost -d postgres
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: always
+
+  redis:
+    image: redis
+    command: ["--maxmemory-policy", "noeviction"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: always
+
+  # SMTP → Cloudflare Email Sending bridge. Cloudflare Email Sending is HTTP-only
+  # (no SMTP endpoint), but Twenty and Stalwart send over SMTP — this internal-only
+  # relay accepts their mail and forwards it to Cloudflare. No host ports; reachable
+  # on the compose network as smtp-relay:2525.
+  smtp-relay:
+    build: ./smtp-relay
+    environment:
+      CF_ACCOUNT_ID: ${CF_ACCOUNT_ID:?set CF_ACCOUNT_ID in .env}
+      CF_EMAIL_TOKEN: ${CF_EMAIL_TOKEN:?set CF_EMAIL_TOKEN in .env}
+      ALLOWED_FROM_DOMAIN: ${ALLOWED_FROM_DOMAIN:-queer.guide}
+      RELAY_SMTP_USER: ${RELAY_SMTP_USER}
+      RELAY_SMTP_PASS: ${RELAY_SMTP_PASS}
+    restart: always
+
+  # Self-hosted mail server for the team inboxes (contact@/support@/legal@/press@).
+  # Reached by Twenty over the INTERNAL docker network (IMAP/submission) and by
+  # the team-inbox Cloudflare Email Worker over the tunnel (JMAP on 8080). NO host
+  # ports → nothing public except the tunnel's mail.queer.guide → stalwart:8080
+  # route (JMAP ingest only). Accounts, ACME cert and the smtp-relay smarthost are
+  # created on first boot via the web-admin — see README "Mail" + stalwart/README.md.
+  stalwart:
+    image: stalwartlabs/stalwart:latest
+    volumes:
+      - stalwart-data:/opt/stalwart
+    environment:
+      # First-boot fallback admin. Change/rotate after logging in; the account
+      # passwords and the smtp-relay smarthost are configured in the web-admin.
+      FALLBACK_ADMIN: "admin:${STALWART_ADMIN_SECRET:?set STALWART_ADMIN_SECRET in .env}"
+    networks:
+      default:
+        aliases:
+          # Twenty connects IMAP/SMTP to this name so the ACME cert for
+          # mail.queer.guide validates while resolving to the container internally
+          # (the public mail.queer.guide resolves to Cloudflare for JMAP ingest).
+          - mail.queer.guide
+    restart: always
+
+  # Outbound-only tunnel. Token + the crm.queer.guide → http://server:3000 route
+  # (and mail.queer.guide → http://stalwart:8080 for JMAP ingest) are configured
+  # in Cloudflare Zero Trust → Networks → Tunnels (see README).
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    command: ["tunnel", "--no-autoupdate", "run", "--token", "${TUNNEL_TOKEN}"]
+    depends_on:
+      server: { condition: service_healthy }
+    restart: always
+
+volumes:
+  db-data:
+  server-local-data:
+  stalwart-data:

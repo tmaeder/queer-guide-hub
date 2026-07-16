@@ -85,9 +85,15 @@ const AdminTargetGroups = lazyRetry(() => import('./pages/AdminTargetGroups'));
 const AdminProfessions = lazyRetry(() => import('./pages/AdminProfessions'));
 const AdminCityQuality = lazyRetry(() => import('./pages/AdminCityQuality'));
 const AdminPersonalityQuality = lazyRetry(() => import('./pages/AdminPersonalityQuality'));
+const PersonalityDataSheet = lazyRetry(() => import('./pages/admin/PersonalityDataSheet'));
+const PersonalitiesAdmin = lazyRetry(() => import('./pages/admin/PersonalitiesAdmin'));
+const PersonalityMilestones = lazyRetry(() => import('./pages/admin/PersonalityMilestones'));
+const EditorialTasks = lazyRetry(() => import('./pages/admin/EditorialTasks'));
+const AdminMailbox = lazyRetry(() => import('./pages/admin/AdminMailbox'));
 const AdminVenueQuality = lazyRetry(() => import('./pages/AdminVenueQuality'));
 const AdminLiveness = lazyRetry(() => import('./pages/AdminLiveness'));
 const AdminMarketplaceQuality = lazyRetry(() => import('./pages/AdminMarketplaceQuality'));
+const AdminTwentyCrm = lazyRetry(() => import('./pages/AdminTwentyCrm'));
 const AdminMarketplaceGuides = lazyRetry(() => import('./pages/AdminMarketplaceGuides'));
 const AdminVenueGuides = lazyRetry(() => import('./pages/AdminVenueGuides'));
 const EmailTemplates = lazyRetry(() => import('./pages/admin/EmailTemplates'));
@@ -358,6 +364,9 @@ export const AppRoutes = () => {
 
                 {/* Content section -- unified list + per-type views */}
                 <Route path="content" element={<ContentListPanel />} />
+                {/* Personalities gets a Personencheck dashboard header above the
+                    generic list; static path wins over content/:type. */}
+                <Route path="content/personalities" element={<PersonalitiesAdmin />} />
                 <Route path="content/:type" element={<ContentListPanel />} />
                 <Route path="pages" element={<ContentListPanel contentTypeId="cms_pages" />} />
                 <Route path="media" element={<MediaLibrary />} />
@@ -404,7 +413,12 @@ export const AppRoutes = () => {
                 <Route path="content/event-quality" element={<AdminEventQuality />} />
                 <Route path="content/city-quality" element={<AdminCityQuality />} />
                 <Route path="content/personality-quality" element={<AdminPersonalityQuality />} />
+                <Route path="content/personalities/:id/datasheet" element={<PersonalityDataSheet />} />
+                <Route path="personalities/milestones" element={<PersonalityMilestones />} />
+                <Route path="merkliste" element={<EditorialTasks />} />
+                <Route path="postfach" element={<AdminMailbox />} />
                 <Route path="content/marketplace-quality" element={<AdminMarketplaceQuality />} />
+                <Route path="content/twenty-crm" element={<AdminTwentyCrm />} />
                 <Route path="content/village-quality" element={<AdminVillageQuality />} />
                 <Route path="content/group-requests" element={<AdminGroupRequests />} />
                 <Route path="hotels" element={<AdminHotels />} />

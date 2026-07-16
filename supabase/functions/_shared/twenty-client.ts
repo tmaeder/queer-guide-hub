@@ -1,0 +1,149 @@
+/**
+ * Thin client for the Twenty CRM REST Core API.
+ *
+ * Twenty (twentyhq/twenty) is run as a SEPARATE self-hosted service. queer.guide
+ * is a one-way upstream: we push a subset of `organizations`, `marketplace_merchants`
+ * and `contact_submissions` into Twenty as Company / Person records. Twenty is the
+ * downstream consumer — it never backs the public site.
+ *
+ * Idempotency is keyed on a Twenty-side custom TEXT field `externalId` (namespaced,
+ * e.g. `org:<uuid>`, `merchant:<uuid>`, `contact:<uuid>`), so this side stores no
+ * cursor and holds no Twenty ids — the sync is stateless and safe to re-run.
+ *
+ * Required Twenty setup (once, in Settings → Data Model): add a custom TEXT field
+ * `externalId` to both the Company and Person objects. See
+ * docs/integrations/twenty-crm-sync.md.
+ *
+ * Env (set via `supabase secrets set`):
+ *   TWENTY_API_URL  — base origin, e.g. https://crm.queer.guide (no trailing slash)
+ *   TWENTY_API_KEY  — Bearer key from Settings → API & Webhooks
+ */
+
+const API_URL = (Deno.env.get('TWENTY_API_URL') ?? '').replace(/\/+$/, '')
+const API_KEY = Deno.env.get('TWENTY_API_KEY') ?? ''
+
+/** True only when both Twenty secrets are present. The sync no-ops otherwise. */
+export function twentyConfigured(): boolean {
+  return API_URL.length > 0 && API_KEY.length > 0
+}
+
+type Json = Record<string, unknown>
+
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
+
+async function twentyFetch(
+  path: string,
+  init: RequestInit & { timeoutMs?: number } = {},
+): Promise<unknown> {
+  // Retry on 429 (throttle) / 5xx / network blip — Twenty rate-limits per window.
+  const MAX = 4
+  for (let attempt = 0; ; attempt++) {
+    const ctrl = new AbortController()
+    const t = setTimeout(() => ctrl.abort(), init.timeoutMs ?? 15_000)
+    try {
+      const res = await fetch(`${API_URL}/rest${path}`, {
+        ...init,
+        signal: ctrl.signal,
+        headers: {
+          Authorization: `Bearer ${API_KEY}`,
+          'Content-Type': 'application/json',
+          ...(init.headers ?? {}),
+        },
+      })
+      if (res.status === 429 || res.status >= 500) {
+        if (attempt < MAX) {
+          const retryAfter = Number(res.headers.get('retry-after')) * 1000
+          await sleep(retryAfter > 0 ? retryAfter : 500 * 2 ** attempt)
+          continue
+        }
+      }
+      if (!res.ok) {
+        const body = await res.text().catch(() => '')
+        throw new Error(`Twenty ${init.method ?? 'GET'} ${path} → ${res.status} ${body.slice(0, 200)}`)
+      }
+      return res.status === 204 ? null : await res.json()
+    } catch (e) {
+      if (attempt < MAX && (e as Error).name === 'AbortError') {
+        await sleep(500 * 2 ** attempt)
+        continue
+      }
+      throw e
+    } finally {
+      clearTimeout(t)
+    }
+  }
+}
+
+/**
+ * Twenty REST envelopes vary by operation (`{data:{<plural>:[...]}}` for lists,
+ * `{data:{<verb>:{...}}}` for mutations). Pull the first record-like object out
+ * defensively rather than hard-coding a key we can't verify per-workspace.
+ */
+function unwrapRecord(json: unknown): Json | null {
+  const root = (json as Json)?.data ?? json
+  if (!root || typeof root !== 'object') return null
+  const r = root as Json
+  if (typeof r.id === 'string') return r
+  for (const v of Object.values(r)) {
+    if (Array.isArray(v)) return (v[0] as Json) ?? null
+    if (v && typeof v === 'object' && typeof (v as Json).id === 'string') return v as Json
+  }
+  return null
+}
+
+export interface UpsertResult {
+  id: string | null
+  action: 'upserted'
+}
+
+/**
+ * Upsert a Twenty record on its `externalId` (a UNIQUE custom field). Uses Twenty's
+ * native `?upsert=true` so it matches on externalId — one call per record, no
+ * find+patch, and it bypasses Twenty's name-based duplicate detection (our key is
+ * externalId, not name). `fields` is the object body (built-in + custom fields).
+ */
+export async function upsertByExternalId(
+  objectPath: string,
+  externalId: string,
+  fields: Json,
+): Promise<UpsertResult> {
+  const payload = { ...fields, externalId }
+  const res = await twentyFetch(`/${objectPath}?upsert=true`, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  })
+  return { id: unwrapRecord(res)?.id as string ?? null, action: 'upserted' }
+}
+
+/** Delete a Twenty record by id (used to prune source-duplicate rows). */
+export async function deleteRecord(objectPath: string, id: string): Promise<void> {
+  await twentyFetch(`/${objectPath}/${id}`, { method: 'DELETE' })
+}
+
+/** Paginate an object and return a Map of externalId → Twenty record id, for
+ *  resolving relation targets. Only records with an externalId are included. */
+export async function listExternalIdMap(objectPath: string): Promise<Map<string, string>> {
+  const m = new Map<string, string>()
+  let cursor: string | null = null
+  for (let guard = 0; guard < 4000; guard++) {
+    const q = `/${objectPath}?limit=200${cursor ? `&starting_after=${cursor}` : ''}`
+    const json = await twentyFetch(q) as Json
+    const data = json?.data as Json | undefined
+    const rows = (data?.[objectPath] as Array<Json>) ?? []
+    for (const r of rows) {
+      if (typeof r.externalId === 'string' && typeof r.id === 'string') m.set(r.externalId, r.id)
+    }
+    const pi = json?.pageInfo as { hasNextPage?: boolean; endCursor?: string } | undefined
+    if (pi?.hasNextPage && rows.length) cursor = pi.endCursor ?? null
+    else break
+  }
+  return m
+}
+
+/** Split a single display name into Twenty's FULL_NAME composite. */
+export function splitName(full: string | null | undefined): { firstName: string; lastName: string } {
+  const parts = (full ?? '').trim().split(/\s+/).filter(Boolean)
+  if (parts.length === 0) return { firstName: '', lastName: '' }
+  if (parts.length === 1) return { firstName: parts[0], lastName: '' }
+  return { firstName: parts[0], lastName: parts.slice(1).join(' ') }
+}

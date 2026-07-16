@@ -1,0 +1,52 @@
+# Stalwart config REFERENCE — documents the target settings for the team-inbox
+# mail server. NOT mounted by docker-compose: Stalwart persists runtime config in
+# its data volume and the web-admin is the source of truth after first boot. Use
+# this as a guide when configuring via the web-admin (or adapt to your Stalwart
+# version's schema if you prefer file config). See README.md.
+
+[server]
+hostname = "mail.queer.guide"
+
+# Listeners — internal only (Twenty on the docker network) + JMAP for the worker.
+# No public SMTP :25 listener: inbound is delivered by JMAP import, not SMTP.
+[server.listener.imaptls]
+bind = ["0.0.0.0:993"]
+protocol = "imap"
+tls.implicit = true
+
+[server.listener.submission]
+bind = ["0.0.0.0:587"]
+protocol = "smtp"
+# STARTTLS available; used by Twenty's SMTP account for sending replies.
+
+[server.listener.http]
+bind = ["0.0.0.0:8080"]
+protocol = "http"   # JMAP + web-admin (exposed via the tunnel, TLS at the edge)
+
+# TLS via ACME (Let's Encrypt) using Cloudflare DNS-01 so the cert for
+# mail.queer.guide validates when Twenty connects over the internal alias.
+[acme."letsencrypt"]
+directory = "https://acme-v02.api.letsencrypt.org/directory"
+challenge = "dns-01"
+provider = "cloudflare"
+# secret = "<Cloudflare API token: Zone→DNS→Edit on queer.guide>"
+domains = ["mail.queer.guide"]
+
+# Outbound relay — send everything through the internal smtp-relay bridge, which
+# forwards to Cloudflare Email Sending. Stalwart never delivers to the internet
+# directly (no port 25 outbound, no reputation/PTR concerns). No Resend.
+[queue.outbound]
+next-hop = "cf-relay"
+
+[remote."cf-relay"]
+address = "smtp-relay"
+port = 2525
+protocol = "smtp"
+tls.implicit = false        # internal compose network; TLS terminates at Cloudflare
+# auth.username = "twenty"  # = RELAY_SMTP_USER
+# auth.secret = "…"         # = RELAY_SMTP_PASS
+
+# Accounts (principals) are created in the web-admin / CLI, not here:
+#   contact@queer.guide  support@queer.guide  legal@queer.guide  press@queer.guide
+# Their passwords go into the team-inbox worker secret STALWART_MAILBOX_PASSWORDS
+# and Twenty's per-account IMAP/SMTP settings.

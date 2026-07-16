@@ -278,7 +278,7 @@ export default function AdminQueerVillages() {
         cell: ({ row }) => {
           const v = row.original;
           return (
-            <div className="h-10 w-10 flex-shrink-0 overflow-hidden rounded bg-accent">
+            <div className="h-10 w-10 flex-shrink-0 overflow-hidden rounded-element bg-accent">
               {v.image_url ? (
                 <img
                   src={v.image_url}

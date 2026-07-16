@@ -15,6 +15,7 @@ import {
   ChevronRight,
   ThumbsUp,
   ThumbsDown,
+  FileText,
 } from 'lucide-react';
 import type { ContentTypeConfig, EditorState } from '@/types/cms';
 import { Button } from '@/components/ui/button';
@@ -334,6 +335,29 @@ export function EditorHeader({
                 </Button>
               </TooltipTrigger>
               <TooltipContent>Enrich content with AI suggestions</TooltipContent>
+            </Tooltip>
+          )}
+
+          {contentType.id === 'personalities' && state.itemId && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() =>
+                    window.open(
+                      `/admin/content/personalities/${state.itemId}/datasheet?print=1`,
+                      '_blank',
+                      'noopener',
+                    )
+                  }
+                  className="hidden sm:inline-flex font-medium normal-case text-muted-foreground"
+                >
+                  <FileText className="h-4 w-4 mr-1" />
+                  Datenblatt
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Druckfertiges Datenblatt (PDF)</TooltipContent>
             </Tooltip>
           )}
 

@@ -89,7 +89,7 @@ export default function EdgeConditionPopover({ edge, onClose, onUpdate, onDelete
                 <button
                   key={ex}
                   onClick={() => setCondition(ex)}
-                  className="text-left font-mono hover:bg-accent px-1 py-0.5 rounded transition-colors"
+                  className="text-left font-mono hover:bg-accent px-1 py-0.5 rounded-element transition-colors"
                 >
                   {ex}
                 </button>

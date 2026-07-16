@@ -69,7 +69,7 @@ export function SimilarCities({
         <Skeleton className="h-6 w-[200px] mb-2" />
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           {[1, 2, 3].map((i) => (
-            <Skeleton key={i} className="h-[70px] rounded" />
+            <Skeleton key={i} className="h-[70px]" />
           ))}
         </div>
       </div>

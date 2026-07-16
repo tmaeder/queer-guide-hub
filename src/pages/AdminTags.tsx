@@ -164,7 +164,7 @@ export default function AdminTags() {
               src={url}
               alt=""
               role="presentation"
-              className="h-8 w-8 rounded object-cover"
+              className="h-8 w-8 rounded-element object-cover"
               onError={(e) => {
                 (e.target as HTMLImageElement).style.display = 'none';
               }}

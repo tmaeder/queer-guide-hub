@@ -92,8 +92,8 @@ export default function AdminAnalytics() {
               {[...Array(4)].map((_, i) => (
                 <Card key={i}>
                   <CardHeader>
-                    <div className="h-4 bg-muted rounded w-3/4" />
-                    <div className="h-8 bg-muted rounded w-1/2" />
+                    <div className="h-4 bg-muted rounded-element w-3/4" />
+                    <div className="h-8 bg-muted rounded-element w-1/2" />
                   </CardHeader>
                 </Card>
               ))}

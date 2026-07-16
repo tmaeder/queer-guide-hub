@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { supabase } from '@/integrations/supabase/client';
+import { uploadImageToR2 } from '@/lib/uploadImageToR2';
 import { Upload, X, Image } from 'lucide-react';
 import { toast } from 'sonner';
 import { MAX_UPLOAD_BYTES, MAX_UPLOAD_MB } from '@/lib/uploadErrors';
@@ -39,22 +39,8 @@ export const TagImageUpload = ({
     setUploading(true);
 
     try {
-      // Create a unique filename
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
-
-      // Upload to Supabase storage
-      const { data, error } = await supabase.storage.from('tag-images').upload(fileName, file, {
-        cacheControl: '3600',
-        upsert: false,
-      });
-
-      if (error) throw error;
-
-      // Get public URL
-      const { data: urlData } = supabase.storage.from('tag-images').getPublicUrl(data.path);
-
-      const imageUrl = urlData.publicUrl;
+      // Upload to Cloudflare R2 (img.queer.guide) — no Supabase image hosting.
+      const imageUrl = await uploadImageToR2(file, 'tag-images');
       setPreviewUrl(imageUrl);
       onImageChange(imageUrl);
 
@@ -67,23 +53,10 @@ export const TagImageUpload = ({
     }
   };
 
-  const handleDeleteImage = async () => {
-    if (currentImageUrl) {
-      try {
-        // Extract filename from URL
-        const urlParts = currentImageUrl.split('/');
-        const fileName = urlParts[urlParts.length - 1];
-
-        // Delete from storage
-        await supabase.storage.from('tag-images').remove([fileName]);
-      } catch (error) {
-        console.error('Delete error:', error);
-      }
-    }
-
+  const handleDeleteImage = () => {
+    // R2 objects are content-addressed and shared; just detach the reference.
     setPreviewUrl(null);
     onImageChange(null);
-
     toast.success('Success: Image deleted successfully');
   };
 

@@ -21,7 +21,7 @@ export function PrideScroller() {
   const { data, isLoading } = useUpcomingPrideEvents({ months: 4, limit: 12 });
 
   return (
-    <section className="border border-border bg-background p-6 mb-8 rounded">
+    <section className="border border-border bg-background p-6 mb-8 rounded-element">
       <div className="flex items-baseline justify-between mb-4">
         <h2 className="text-xl font-bold tracking-tight">
           {t('pages.travel.pride.title', 'Pride this season')}
@@ -39,7 +39,7 @@ export function PrideScroller() {
           className="flex gap-4 overflow-x-auto pb-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           {[0, 1, 2, 3, 4].map((i) => (
-            <Skeleton key={i} className="h-[140px] rounded shrink-0" style={{ width: 240 }} />
+            <Skeleton key={i} className="h-[140px] shrink-0" style={{ width: 240 }} />
           ))}
         </div>
       ) : !data || data.length === 0 ? (

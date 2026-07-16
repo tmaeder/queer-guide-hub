@@ -100,7 +100,7 @@ function ShellSkeleton() {
     <div className="flex w-full" style={{ minHeight: 'var(--admin-content-min-h)' }}>
       {/* Skeleton sidebar */}
       <div className="hidden md:block w-[260px] flex-shrink-0 border-r border-border bg-background p-4">
-        <Skeleton className="rounded w-40 h-6 mb-2" />
+        <Skeleton className="w-40 h-6 mb-2" />
         <Skeleton className="w-24 h-4 mb-6" />
         {Array.from({ length: 8 }).map((_, i) => (
           <div key={i} className="flex items-center gap-4 mb-2">

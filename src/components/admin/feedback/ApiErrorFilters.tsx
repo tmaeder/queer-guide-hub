@@ -56,7 +56,7 @@ export function ApiErrorFilters({ state, update, counts }: Props) {
     <div className="flex items-center gap-4 mb-4 flex-wrap">
       {/* Search */}
       <div
-        className="inline-flex items-center gap-1 flex-[1_1_220px] min-w-[180px] max-w-[320px] py-[1px] border-b transition-colors focus-within:border-primary"
+        className="inline-flex items-center gap-1 flex-[1_1_220px] min-w-[180px] max-w-[320px] py-0.5 border-b transition-colors focus-within:border-primary"
         style={{ borderColor: state.q ? 'hsl(var(--primary))' : 'hsl(var(--border))' }}
       >
         <Search size={14} className="text-muted-foreground" />
@@ -94,7 +94,7 @@ export function ApiErrorFilters({ state, update, counts }: Props) {
       </div>
 
       {/* Source chips */}
-      <div className="inline-flex items-center gap-[6px]">
+      <div className="inline-flex items-center gap-1.5">
         <span
           className="text-muted-foreground uppercase"
           style={{ fontSize: '0.65rem', letterSpacing: 0.5 }}
@@ -117,7 +117,7 @@ export function ApiErrorFilters({ state, update, counts }: Props) {
       </div>
 
       {/* Severity chips */}
-      <div className="inline-flex items-center gap-[6px]">
+      <div className="inline-flex items-center gap-1.5">
         <span
           className="text-muted-foreground uppercase"
           style={{ fontSize: '0.65rem', letterSpacing: 0.5 }}

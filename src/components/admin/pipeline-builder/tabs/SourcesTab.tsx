@@ -134,7 +134,7 @@ export default function SourcesTab() {
                 <button
                   key={f}
                   onClick={() => setFilter(f)}
-                  className={`text-2xs px-2 py-0.5 rounded border transition-colors ${
+                  className={`text-2xs px-2 py-0.5 rounded-badge border transition-colors ${
                     filter === f
                       ? 'bg-primary text-primary-foreground border-primary'
                       : 'bg-background text-muted-foreground border-border hover:bg-accent'

@@ -506,7 +506,7 @@ function SharedPackingList({ items }: { items: SharedTripData['packing_items'] }
             {catItems.map((item, i) => (
               <div key={i} className="flex items-center gap-2 py-0.5">
                 <div
-                  className="w-4 h-4 rounded border-2"
+                  className="w-4 h-4 rounded-badge border-2"
                   style={{
                     borderColor: item.is_checked ? 'hsl(var(--foreground))' : 'hsl(var(--border))',
                     backgroundColor: item.is_checked ? 'hsl(var(--foreground))' : 'transparent',

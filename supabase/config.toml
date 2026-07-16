@@ -190,6 +190,9 @@ verify_jwt = false
 [functions.pipeline-enrich-country]
 verify_jwt = false
 
+[functions.enrich-worldbank-population]
+verify_jwt = false
+
 [functions.pipeline-enrich-events]
 verify_jwt = false
 
@@ -329,6 +332,12 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.marketplace-fx-sync]
+verify_jwt = false
+
+[functions.twenty-sync]
+verify_jwt = false
+
+[functions.twenty-inbound]
 verify_jwt = false
 
 [functions.populate-embeddings]

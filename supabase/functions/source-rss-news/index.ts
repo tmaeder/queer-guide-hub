@@ -42,8 +42,13 @@ const rssNewsAdapter: SourceAdapter = {
     // Only pull sources eligible to run right now (respects auto_paused,
     // backoff_until, fetch_frequency). The RPC encapsulates the
     // circuit-breaker policy at the source level — see news_sources_eligible().
+    // Cap 30/run: at ~90+ eligible sources a single invocation hit the edge
+    // worker resource limit (HTTP 546) on alternating hourly runs (2026-07).
+    // Cumulative feed-parse cost is the constraint, so keep the per-run set
+    // small; last_fetched_at ASC ordering rotates the remainder into the next
+    // run so coverage isn't lost.
     const { data: sources, error } = await supabase.rpc('news_sources_eligible', {
-      p_limit: 100,
+      p_limit: 30,
     })
 
     if (error || !sources || sources.length === 0) {
@@ -53,7 +58,16 @@ const rssNewsAdapter: SourceAdapter = {
 
     const allItems: RawItem[] = []
 
+    // Hard wall-clock budget. Feeds are fetched sequentially and each may take
+    // up to 20s (fetchFromRss timeout), so a run of many slow feeds can blow
+    // past the 150s edge-function limit → HTTP 546 (WORKER_LIMIT), failing the
+    // whole pipeline. Stop admitting new feeds at 120s; unprocessed sources
+    // keep their old last_fetched_at and are prioritised next run (ASC order).
+    const deadlineAt = Date.now() + 120_000
+    let skippedForTime = 0
+
     for (const source of sources as NewsSource[]) {
+      if (Date.now() > deadlineAt) { skippedForTime++; continue }
       try {
         await supabase.from('news_sources').update({ status: 'processing' }).eq('id', source.id)
 
@@ -143,6 +157,10 @@ const rssNewsAdapter: SourceAdapter = {
         console.error(`Error fetching from source ${source.name} (attempt ${failures}):`, (e as Error).message)
         await supabase.from('news_sources').update(update).eq('id', source.id)
       }
+    }
+
+    if (skippedForTime > 0) {
+      console.log(`source-rss-news: hit 120s budget, skipped ${skippedForTime} feed(s) — they rotate to next run`)
     }
 
     return allItems
@@ -294,11 +312,48 @@ async function fetchFromRss(feedUrl: string, isPodcast = false): Promise<Record<
     if (!res.ok) {
       throw new Error(`HTTP ${res.status} ${res.statusText}`)
     }
-    const xml = await res.text()
+    // Bound the body BEFORE reading it. parseRssItems parses the whole feed
+    // (maxArticles only slices afterwards), so a huge podcast-archive feed
+    // OOMs/CPU-limits the worker → HTTP 546 kills the entire run. Skip such a
+    // feed (throws → backoff) rather than letting it take down every source.
+    const declared = Number(res.headers.get('content-length') ?? '0')
+    if (declared > MAX_FEED_BYTES) {
+      throw new Error(`feed too large: ${declared} bytes (cap ${MAX_FEED_BYTES})`)
+    }
+    // Stream with a hard byte budget for feeds that don't declare a length.
+    const xml = await readCapped(res, MAX_FEED_BYTES)
     return parseRssItems(xml, isPodcast)
   } finally {
     clearTimeout(timeout)
   }
+}
+
+// 4 MB: legitimate RSS/podcast feeds are almost always < 2 MB. Keeping the cap
+// tight bounds per-feed parse cost (parseRssItems is O(feed size)), which —
+// summed across a run of feeds — is what pushes the worker into HTTP 546.
+const MAX_FEED_BYTES = 4 * 1024 * 1024
+
+async function readCapped(res: Response, maxBytes: number): Promise<string> {
+  if (!res.body) return await res.text()
+  const reader = res.body.getReader()
+  const chunks: Uint8Array[] = []
+  let total = 0
+  while (true) {
+    const { done, value } = await reader.read()
+    if (done) break
+    if (value) {
+      total += value.byteLength
+      if (total > maxBytes) {
+        await reader.cancel()
+        throw new Error(`feed too large: exceeded ${maxBytes} bytes while streaming`)
+      }
+      chunks.push(value)
+    }
+  }
+  const merged = new Uint8Array(total)
+  let off = 0
+  for (const c of chunks) { merged.set(c, off); off += c.byteLength }
+  return new TextDecoder('utf-8').decode(merged)
 }
 
 // ─── Utilities ──────────────────────
@@ -377,7 +432,11 @@ Deno.serve(withErrorReporting('source-rss-news', async (req) => {
     const body = await req.json().catch(() => ({}))
     const config: AdapterConfig = {
       batchSize: body.batch_size || 100,
-      filters: { maxArticles: body.maxArticles || 100, sinceHours: body.sinceHours || 24 },
+      // 40/source (was 100): with up to 50 feeds, 100 kept ~5000 article bodies
+      // in memory at once, contributing to the intermittent HTTP 546
+      // (WORKER_LIMIT) that killed runs at ~64s. Recent items are what matter
+      // for an hourly feed; older ones are already captured by prior runs.
+      filters: { maxArticles: body.maxArticles || 40, sinceHours: body.sinceHours || 24 },
       dryRun: body.dry_run || false,
       pipelineRunId: body.pipeline_run_id,
       nodeId: body.node_id,

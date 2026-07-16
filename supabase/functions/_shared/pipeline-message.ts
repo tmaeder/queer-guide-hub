@@ -40,6 +40,8 @@ export interface NodeState {
   items_out: number
   error?: string
   duration_ms?: number
+  /** Node failed but its config has continue_on_error — DAG kept going */
+  tolerated?: boolean
 }
 
 /** Pipeline definition node (stored in pipeline_definitions.nodes) */

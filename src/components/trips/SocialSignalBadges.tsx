@@ -23,7 +23,7 @@ export function SocialSignalBadges({ signal, tripUsageThreshold = 3 }: Props) {
           <Tooltip>
             <TooltipTrigger asChild>
               <span
-                className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-xs2 font-semibold text-foreground"
+                className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-badge text-xs2 font-semibold text-foreground"
                 style={{ backgroundColor: 'hsl(var(--muted))' }}
               >
                 <Heart size={10} fill="currentColor" />
@@ -45,7 +45,7 @@ export function SocialSignalBadges({ signal, tripUsageThreshold = 3 }: Props) {
         {showTrips && (
           <Tooltip>
             <TooltipTrigger asChild>
-              <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-xs2 font-semibold bg-muted/40 text-muted-foreground">
+              <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-badge text-xs2 font-semibold bg-muted/40 text-muted-foreground">
                 <Users size={10} />
                 <span className="text-xs2 font-semibold">
                   {t('places.social.tripUsage', {

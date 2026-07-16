@@ -190,7 +190,7 @@ export default function ExternalImageSearch({
                     role="button"
                     tabIndex={0}
                     aria-pressed={isSelected}
-                    className={`cursor-pointer rounded overflow-hidden border-2 relative bg-muted hover:border-muted ${
+                    className={`cursor-pointer rounded-element overflow-hidden border-2 relative bg-muted hover:border-muted ${
                       isSelected ? 'border-primary hover:border-primary' : 'border-transparent'
                     }`}
                   >
@@ -211,7 +211,7 @@ export default function ExternalImageSearch({
 
                     {/* Source badge */}
                     <span
-                      className="absolute top-1.5 left-1.5 h-5 px-1.5 text-2xs font-semibold text-white rounded capitalize flex items-center"
+                      className="absolute top-1.5 left-1.5 h-5 px-1.5 text-2xs font-semibold text-white rounded-badge capitalize flex items-center"
                       style={{
                         backgroundColor:
                           SOURCE_COLORS[image.source] || 'hsl(var(--muted-foreground))',
@@ -257,7 +257,7 @@ export default function ExternalImageSearch({
 
       {/* Selected image attribution */}
       {selectedImage && (
-        <div className="mt-1 p-4 border-t border-border bg-muted rounded">
+        <div className="mt-1 p-4 border-t border-border bg-muted rounded-element">
           <div className="flex flex-row gap-4 items-center">
             <img
               src={selectedImage.thumbnail}

@@ -114,7 +114,7 @@ export function CookiePreferencesDialog({ open, onOpenChange }: CookiePreference
                         {category.title}
                       </Label>
                       {category.required && (
-                        <span className="text-xs bg-accent px-2 py-0.5 rounded">Required</span>
+                        <span className="text-xs bg-accent px-2 py-0.5 rounded-badge">Required</span>
                       )}
                     </div>
                     <p className="text-sm text-muted-foreground">{category.description}</p>

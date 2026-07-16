@@ -178,6 +178,7 @@ export function TripCard({ trip }: Props) {
     <>
       <Card
         hoverable
+        className="overflow-hidden"
         role="link"
         tabIndex={0}
         aria-label={t('trips.card.ariaLabel', { title: displayTitle })}

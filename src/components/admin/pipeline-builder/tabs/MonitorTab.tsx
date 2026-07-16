@@ -295,7 +295,7 @@ export default function MonitorTab() {
                   <button
                     key={f}
                     onClick={() => setStatusFilter(f)}
-                    className={`text-2xs px-2 py-0.5 rounded border transition-colors ${
+                    className={`text-2xs px-2 py-0.5 rounded-badge border transition-colors ${
                       statusFilter === f
                         ? 'bg-primary text-primary-foreground border-primary'
                         : 'bg-background text-muted-foreground border-border hover:bg-accent'
@@ -309,7 +309,7 @@ export default function MonitorTab() {
                   <button
                     key={f}
                     onClick={() => setTypeFilter(f)}
-                    className={`text-2xs px-2 py-0.5 rounded border transition-colors ${
+                    className={`text-2xs px-2 py-0.5 rounded-badge border transition-colors ${
                       typeFilter === f
                         ? 'bg-primary text-primary-foreground border-primary'
                         : 'bg-background text-muted-foreground border-border hover:bg-accent'
@@ -406,7 +406,7 @@ export default function MonitorTab() {
                       <div key={nodeId} className="border border-border rounded-element p-2 hover:bg-muted/30 transition-colors">
                         <div className="flex items-center justify-between gap-2">
                           <span className="text-xs2 font-mono truncate" title={nodeId}>{nodeId}</span>
-                          <span className={`inline-flex items-center gap-1 text-2xs px-1.5 py-0 rounded ${statusClass[state.status as string] || 'bg-muted'}`}>
+                          <span className={`inline-flex items-center gap-1 text-2xs px-1.5 py-0 rounded-badge ${statusClass[state.status as string] || 'bg-muted'}`}>
                             <NodeIcon className={`h-2.5 w-2.5 ${state.status === 'running' ? 'animate-spin' : ''}`} />
                             {state.status as string}
                           </span>

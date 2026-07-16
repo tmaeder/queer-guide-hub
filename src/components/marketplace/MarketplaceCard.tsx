@@ -187,7 +187,7 @@ function MarketplaceCardImpl({
   return (
     <CardHoverEffect>
       <Card
-        className="group transition-colors duration-300 hover:border-foreground/40"
+        className="group overflow-hidden transition-colors duration-300 hover:border-foreground/40"
         onMouseEnter={() => setHovered(true)}
       >
         {imageBlock}

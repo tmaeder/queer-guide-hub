@@ -118,7 +118,7 @@ export function CityTravelHub({
             ))}
           </ResultsRow>
         ) : (
-          <div className="text-center py-4 bg-accent rounded">
+          <div className="text-center py-4 bg-accent rounded-element">
             <p className="text-muted-foreground text-sm">
               {originIata ? 'No flight deals available' : 'Enable location to see flight deals'}
             </p>
@@ -151,7 +151,7 @@ export function CityTravelHub({
             ))}
           </ResultsRow>
         ) : (
-          <div className="text-center py-4 bg-accent rounded">
+          <div className="text-center py-4 bg-accent rounded-element">
             <p className="text-muted-foreground text-sm">No hotels found in {destinationCity}</p>
           </div>
         )}
@@ -173,7 +173,7 @@ export function CityTravelHub({
             ))}
           </ResultsRow>
         ) : (
-          <div className="text-center py-4 bg-accent rounded">
+          <div className="text-center py-4 bg-accent rounded-element">
             <p className="text-muted-foreground text-sm">
               No activities found. Check{' '}
               <LocalizedLink to="/events" className="underline">

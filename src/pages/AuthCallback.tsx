@@ -133,7 +133,7 @@ export default function AuthCallback() {
             <p className="text-sm text-muted-foreground">
               The extension was not detected on this device. Copy the payload below and paste it into the extension popup.
             </p>
-            <pre className="bg-muted p-4 rounded text-xs break-all select-all">{manualPayload}</pre>
+            <pre className="bg-muted p-4 rounded-element text-xs break-all select-all">{manualPayload}</pre>
           </>
         )}
         {status === "error" && (

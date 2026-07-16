@@ -28,7 +28,13 @@ Deno.serve(withErrorReporting('pipeline-quality-score', async (req) => {
     let query = supabase
       .from('ingestion_staging')
       .select('id, normalized_data, enriched_data, entity_type, target_table')
-      .eq('enrichment_status', 'pending')
+      // 'pending' rows as always, PLUS 'enriched' rows once quality-enhance has
+      // stamped its verdict (enriched_data.quality_status). Enrich nodes set
+      // enrichment_status='enriched' BEFORE this node runs, so without the
+      // second arm news rows were never scored (computeNewsScore was dead code)
+      // and the review-gate zeroed their quality weight. The quality_status
+      // guard keeps us from flipping rows to 'completed' before the LLM pass.
+      .or('enrichment_status.eq.pending,and(enrichment_status.eq.enriched,enriched_data->>quality_status.not.is.null)')
       .in('dedup_status', ['unique', 'pending'])
       .in('ai_validation_status', ['approved', 'pending'])
       .order('created_at', { ascending: true })

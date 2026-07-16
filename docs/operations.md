@@ -10,7 +10,7 @@ maintainer is unavailable. Read top to bottom once; bookmark sections
 |---|---|---|
 | Frontend | Cloudflare Pages | `queer-guide.pages.dev` (project `queer-guide`) |
 | Database / Auth / Storage / Edge Functions | Supabase | project `xqeacpakadqfxjxjcewc` (eu-central-2) |
-| Search | Meilisearch (Infomaniak self-hosted) | proxied via `search-proxy` worker |
+| Search | Postgres `search_documents` (hybrid keyword + vector + geo) | served via `search-proxy` worker |
 | Cron / pipelines | Supabase pg_cron + Cloudflare Workers + GitHub Actions | see §3 |
 | Status / health | Supabase dashboard + CF dashboard | (no centralized status page yet) |
 | Sentry | Frontend (`src/sentry.ts`) + edge functions (via `_shared/report-api-error.ts`) | maedertobiassimon org, `javascript-react` project; separate "Edge Functions" DSN |
@@ -38,10 +38,10 @@ CF account: `7aa3765cc5f50f2b681b782eb4a8d296`.
   SELECT * FROM marketplace_link_health WHERE checked_at > now() - interval '24 hours' AND http_status >= 400 LIMIT 20;
   ```
 
-### Search (Meilisearch via search-proxy)
-- `curl https://search.queer.guide/health` should return 200.
-- If empty results: check (1) Meilisearch container running on Infomaniak, (2) `meilisearch-sync` recent run, (3) `search-proxy` worker logs (`wrangler tail search-proxy`).
-- The `search` edge function still falls back to PG FTS via `universal_search` RPC — Meilisearch migration incomplete (see §7 known gaps).
+### Search (Postgres via search-proxy)
+- Search runs entirely in Postgres via the `search_hybrid` / `search_facets` / `search_autocomplete` RPCs over the `search_documents` table; the `search-proxy` worker is the read path.
+- If empty results: check (1) `search-proxy` worker logs (`wrangler tail search-proxy`), (2) the entity + `content_embeddings` triggers are keeping `search_documents` fresh (`SELECT max(updated_at) FROM search_documents;`), (3) the AI Gateway embedding endpoint is reachable.
+- Meilisearch was decommissioned code-side (2026-06); `universal_search` / `algolia-sync` were dropped (migration `20260618150000`). No fallback path remains.
 
 ### Workflow dispatcher
 - `workflow-dispatcher-health` cron runs daily 08:00. Failures land in `workflow_runs` with `status = 'failed'`.
@@ -131,17 +131,16 @@ git checkout HEAD -- supabase/functions/<name>/
 ```
 
 ### Search returning empty results
-1. Check Meilisearch container: `curl https://search.queer.guide/health`
-2. Check `search-proxy` worker: `wrangler tail search-proxy` while triggering a search
-3. Check sync state:
+1. Check `search-proxy` worker: `wrangler tail search-proxy` while triggering a search.
+2. Check the index is fresh (entity + `content_embeddings` triggers keep it in sync):
    ```sql
-   SELECT * FROM meilisearch_sync_log ORDER BY created_at DESC LIMIT 5;
+   SELECT count(*), max(updated_at) FROM search_documents;
    ```
-4. Check embedding cache (semantic search):
+3. Check embeddings exist (semantic search):
    ```sql
-   SELECT count(*) FROM ai_embeddings WHERE created_at > now() - interval '7 days';
+   SELECT count(*) FROM content_embeddings WHERE created_at > now() - interval '7 days';
    ```
-5. Last resort: full re-sync via `meilisearch-sync` edge function.
+4. Verify RPCs directly: `SELECT * FROM search_hybrid('gay bar berlin', ...);` returns rows.
 
 ### Stripe payment failure
 - `stripe-webhook` edge function handles all webhooks. Check logs:
@@ -158,7 +157,7 @@ Edge functions removed in the May-2026 consolidation sprint:
 |---|---|---|
 | `algolia-search` | 2026-05-01 | 410 stub since Apr 8; replaced by `/functions/v1/search` |
 | `fetch-ilga-data` | 2026-05-01 | 410 stub since Apr 8; replaced by `source-ilga` |
-| `algolia-sync` | 2026-05-01 | Algolia replaced by Meilisearch |
+| `algolia-sync` | 2026-05-01 | Algolia replaced by Meilisearch (Meili itself later decommissioned; search is now Postgres) |
 
 Future deletion candidates (deferred):
 - `background-import-manager` — 410 stub but 7 active call sites in `useBackgroundImports.tsx`
@@ -178,7 +177,6 @@ Future deletion candidates (deferred):
 
 - **`legacy-cron` daily 06:00** — what does it actually do? Migration source unclear; investigate before disturbing.
 - **`ingest-worker` cron `* * * * *`** — every minute is aggressive; verify intent or relax.
-- **`search` edge function still calls `universal_search` PG FTS RPC** — Meilisearch migration incomplete; this is the fallback path. If you delete `universal_search`, `search` breaks.
 - **iCloud risk** — repo is NOT in iCloud per Phase 0 check, but if it ever moves, `.git` corruption risk returns.
 - **No e2e tests run on every PR** — daily-only via GitHub Actions; PR-level coverage gap.
 - **CMS BEFORE-triggers can null fields silently** — `events`, `venues`, `personalities` had `sanitize_website_field` triggers that null'd input. Check `pg_trigger` if a CMS field "doesn't save".

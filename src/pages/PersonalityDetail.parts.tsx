@@ -346,7 +346,7 @@ function RelatedContent({ personality }: { personality: Personality }) {
                 <li key={n.id}>
                   <LocalizedLink
                     to={`/news/${n.slug}`}
-                    className="flex items-start gap-4 py-4 no-underline text-inherit hover:bg-accent transition-colors -mx-2 px-2 rounded"
+                    className="flex items-start gap-4 py-4 no-underline text-inherit hover:bg-accent transition-colors -mx-2 px-2 rounded-element"
                   >
                     {n.image_url && (
                       <img
@@ -390,7 +390,7 @@ function RelatedContent({ personality }: { personality: Personality }) {
                 <li key={e.id}>
                   <LocalizedLink
                     to={`/events/${e.slug ?? e.id}`}
-                    className="flex items-start gap-4 p-2 rounded no-underline text-inherit hover:bg-accent transition-colors"
+                    className="flex items-start gap-4 p-2 rounded-element no-underline text-inherit hover:bg-accent transition-colors"
                   >
                     {e.image_url && (
                       <img

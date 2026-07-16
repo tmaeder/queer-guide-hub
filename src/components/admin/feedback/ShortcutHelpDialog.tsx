@@ -17,7 +17,7 @@ export function ShortcutHelpDialog({
         <div className="grid gap-2" style={{ gridTemplateColumns: '80px 1fr' }}>
           {shortcutHelp.map((s) => (
             <div key={s.key} style={{ display: 'contents' }}>
-              <span className="font-mono text-xs2 bg-muted/40 px-1.5 py-0.5 rounded text-center">
+              <span className="font-mono text-xs2 bg-muted/40 px-1.5 py-0.5 rounded-badge text-center">
                 {s.key}
               </span>
               <span className="self-center text-xs">{s.label}</span>

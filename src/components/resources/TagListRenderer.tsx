@@ -62,7 +62,7 @@ export function TagListRenderer({
                 />
                 {uses > 0 && (
                   <div
-                    className="absolute top-1.5 right-1.5 rounded text-white font-semibold"
+                    className="absolute top-1.5 right-1.5 rounded-badge text-white font-semibold"
                     style={{
                       padding: '1px 6px',
                       backgroundColor: 'rgba(0,0,0,0.6)',

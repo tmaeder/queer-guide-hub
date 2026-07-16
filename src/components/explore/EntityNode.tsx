@@ -69,7 +69,7 @@ function EntityNode({ data: d, id }: NodeProps<EgoFlowNode>) {
             <LocalizedLink
               to={d.href}
               aria-label={t('connections.open', { title: d.title })}
-              className="shrink-0 p-0.5 rounded text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+              className="shrink-0 p-0.5 rounded-badge text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
               onClick={(e) => e.stopPropagation()}
             >
               <ArrowUpRight className="h-3.5 w-3.5" />

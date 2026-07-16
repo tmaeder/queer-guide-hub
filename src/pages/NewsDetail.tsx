@@ -206,8 +206,8 @@ export default function NewsDetail() {
       <div className="container mx-auto py-8 px-4">
         <div className="animate-pulse">
           <div className="mb-6 h-48 rounded-container bg-muted" />
-          <div className="mb-4 h-6 w-2/5 rounded bg-muted" />
-          <div className="mb-4 h-8 w-3/5 rounded bg-muted" />
+          <div className="mb-4 h-6 w-2/5 rounded-element bg-muted" />
+          <div className="mb-4 h-8 w-3/5 rounded-element bg-muted" />
           <div className="mb-6 flex gap-2">
             {[1, 2, 3].map((i) => (
               <div key={i} className="h-7 w-20 rounded-badge bg-muted" />
