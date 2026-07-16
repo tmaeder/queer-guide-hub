@@ -1,14 +1,8 @@
 import { useEffect, useState } from 'react'
 import type { Personality } from './types'
 import { getEntry, saveEntry } from './lib/notes'
-import {
-  getMilestones,
-  linkPersonToMilestone,
-  milestonesForPerson,
-  unlinkPersonFromMilestone,
-  type Milestone,
-} from './lib/milestones'
 import { PersonEditForm } from './PersonEditForm'
+import { MilestoneLinks } from './MilestoneLinks'
 import { KebabMenu } from './KebabMenu'
 import { personDatasheet } from './lib/pdf'
 import { withFlag } from './lib/flags'
@@ -16,57 +10,6 @@ import { StatusDot } from './StatusDot'
 import { ROLES_ENABLED } from './config'
 
 const SITE = 'https://queer.guide'
-
-// Person-side milestone linking.
-function MilestoneLinks({ p }: { p: Personality }) {
-  const [links, setLinks] = useState<Milestone[]>(() => milestonesForPerson(p.slug))
-  const [pick, setPick] = useState('')
-  useEffect(() => setLinks(milestonesForPerson(p.slug)), [p.slug])
-
-  const refresh = () => setLinks(milestonesForPerson(p.slug))
-  const linkedIds = new Set(links.map((m) => m.id))
-  const options = getMilestones().filter((m) => !linkedIds.has(m.id))
-
-  const add = (id: string) => {
-    if (!id) return
-    linkPersonToMilestone(id, { slug: p.slug, name: p.name })
-    setPick('')
-    refresh()
-  }
-
-  return (
-    <div className="notes">
-      <h3>Verknüpfte Meilensteine</h3>
-      <p className="hint">Lokal. Verknüpft diese Person mit einem Meilenstein.</p>
-      {links.length === 0 && <p className="hint">— noch keine —</p>}
-      {links.map((m) => {
-        const role = m.linked_persons.find((x) => x.slug === p.slug)?.role
-        return (
-          <div className="mlink-row" key={m.id}>
-            <span className="mlink-date">{m.date}</span>
-            <span className="mlink-title">
-              {m.title}
-              {role && <span className="muted"> — {role}</span>}
-            </span>
-            <button
-              className="mlink-x"
-              title="Verknüpfung lösen"
-              onClick={() => { unlinkPersonFromMilestone(m.id, p.slug); refresh() }}
-            >
-              ×
-            </button>
-          </div>
-        )
-      })}
-      <select className="mlink-add" value={pick} onChange={(e) => add(e.target.value)}>
-        <option value="">+ Mit Meilenstein verknüpfen…</option>
-        {options.map((m) => (
-          <option key={m.id} value={m.id}>{m.date} · {m.title}</option>
-        ))}
-      </select>
-    </div>
-  )
-}
 
 function Field({ k, v, href }: { k: string; v: unknown; href?: string }) {
   let display: string

@@ -4,6 +4,7 @@ import { milestonesForPerson } from './lib/milestones'
 import { plausibilityCheck } from './lib/status'
 import { StatusDot } from './StatusDot'
 import { AiCheckPanel } from './AiCheckPanel'
+import { MilestoneLinks } from './MilestoneLinks'
 import {
   CAUSE_OF_DEATH_VALUES,
   REVIEW_STATUS_VALUES,
@@ -36,7 +37,6 @@ function toDraft(p: Personality): Draft {
     nationality: p.nationality ?? '',
     lgbti_connection: p.lgbti_connection ?? '',
     lgbti_details: p.lgbti_details ?? '',
-    milestone: p.milestone ?? '',
     website_url: p.website_url ?? '',
     wikipedia_url: p.wikipedia_url ?? '',
     wikidata_qid: p.wikidata_qid ?? '',
@@ -216,7 +216,11 @@ export function PersonEditForm({
       <h3 className="ef-group">LGBTQ+ / Meilenstein</h3>
       {Area('lgbti_connection', 'LGBTI-Bezug')}
       {Area('lgbti_details', 'LGBTI-Details')}
-      {Area('milestone', 'Meilenstein')}
+      {p.id ? (
+        <MilestoneLinks p={p} />
+      ) : (
+        <p className="hint">Meilensteine verknüpfen: erst die Person anlegen, dann per Auswahl.</p>
+      )}
 
       <h3 className="ef-group">Links & Medien</h3>
       {Text('website_url', 'Website')}
