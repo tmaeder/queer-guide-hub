@@ -9,13 +9,14 @@ Email Routing is forwarding-only). It is **not** a public mail server:
   listens on the public internet (no port 25, no host ports).
 - **Twenty** connects **IMAP + submission** over the internal docker network
   (the `mail.queer.guide` network alias → the container).
-- **Outbound** (replies) is relayed to the internet through **Resend** as a
-  smarthost, so mail rides Resend's reputation and existing `queer.guide` DKIM.
+- **Outbound** (replies) is relayed through the internal **smtp-relay** bridge,
+  which forwards to **Cloudflare Email Sending** — so Stalwart never delivers to
+  the internet directly (no port 25 outbound, no PTR/reputation concerns). No Resend.
 
 ```
 Email Worker ──JMAP/HTTPS(tunnel)──▶ stalwart:8080  (import into mailbox)
 Twenty  ──IMAP 993 / SMTP 587 (internal)──▶ stalwart   (sync + send)
-stalwart ──smarthost──▶ smtp.resend.com:465 ──▶ internet
+stalwart ──smarthost──▶ smtp-relay:2525 ──▶ Cloudflare Email Sending ──▶ internet
 ```
 
 ## Mailboxes
@@ -38,9 +39,10 @@ a Cloudflare Email Routing rule for the new address → `team-inbox` worker).
    - Put the same passwords in the `team-inbox` worker secret
      `STALWART_MAILBOX_PASSWORDS` (JSON: `{"contact":"…","support":"…",…}`) and in
      Twenty's per-account IMAP/SMTP settings.
-5. **Outbound / smarthost** → add a relay route sending all outbound mail to
-   `smtp.resend.com:465` (implicit TLS), auth user `resend`, password =
-   `RESEND_API_KEY`. Restrict Stalwart from delivering directly to the internet.
+5. **Outbound / smarthost** → add a relay route sending all outbound mail to the
+   internal bridge `smtp-relay:2525` (no TLS, internal network), auth =
+   `RELAY_SMTP_USER` / `RELAY_SMTP_PASS`. The bridge forwards to Cloudflare Email
+   Sending. Restrict Stalwart from delivering directly to the internet.
 6. **Listeners** — confirm: IMAP `993` (implicit TLS), submission `587`
    (STARTTLS), JMAP/HTTP `8080`. No SMTP `25` listener is needed (nothing
    delivers to Stalwart over SMTP; inbound is JMAP import).

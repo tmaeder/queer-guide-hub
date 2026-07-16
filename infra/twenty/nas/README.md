@@ -56,33 +56,45 @@ Turns the public team addresses into two-way CRM inboxes. Twenty can only sync a
 **real IMAP mailbox** (it rejects forwarding aliases), and queer.guide mail is on
 Cloudflare Email Routing (forwarding-only). So a self-hosted **Stalwart** mail
 server runs in this stack; the `team-inbox` Cloudflare Email Worker imports
-inbound mail into it over the tunnel; outbound goes through **Resend**. Zero extra
-cost, no new open ports.
+inbound mail into it over the tunnel; outbound goes through **Cloudflare Email
+Sending** (via a tiny internal SMTP→CF bridge, since CF Email Sending is HTTP-only
+and Twenty/Stalwart speak SMTP). No Resend. Zero extra cost, no new open ports.
 
 ```
 sender → CF Email Routing rule → team-inbox Worker → JMAP import → Stalwart mailbox
 Twenty ⇄ IMAP 993 / SMTP 587 (internal alias mail.queer.guide) ⇄ Stalwart
-Twenty replies → Stalwart → Resend smarthost → internet
-Twenty system email (EMAIL_DRIVER=SMTP) → Resend
+Twenty replies → Stalwart → smtp-relay bridge → Cloudflare Email Sending → internet
+Twenty system email (EMAIL_DRIVER=SMTP) → smtp-relay bridge → Cloudflare Email Sending
 ```
 
-### 5a. .env + bring up Stalwart
-Add to `.env`: `STALWART_ADMIN_SECRET=$(openssl rand -base64 24)` and
-`RESEND_API_KEY=<same key Supabase uses>`. Then:
+### 5a. Enable Cloudflare Email Sending (one-time)
+Onboard the domain so the bridge can send from `*@queer.guide`:
 ```bash
-sudo docker compose up -d stalwart worker server
+npx wrangler email sending enable queer.guide
+npx wrangler email sending dns get queer.guide   # confirm SPF/DKIM records
+```
+Then create a Cloudflare **API token** with **Email Sending → Send** permission on
+the account → `CF_EMAIL_TOKEN`.
+
+### 5b. .env + bring up the stack
+Add to `.env`: `STALWART_ADMIN_SECRET=$(openssl rand -base64 24)`, `CF_EMAIL_TOKEN=<token>`,
+`RELAY_SMTP_PASS=$(openssl rand -base64 18)` (`CF_ACCOUNT_ID` + `RELAY_SMTP_USER`
+have defaults). Then:
+```bash
+sudo docker compose up -d smtp-relay stalwart worker server
 ```
 The `worker` now runs with `DISABLE_CRON_JOBS_REGISTRATION=false` (messaging sync
-jobs) and both services have `OUTBOUND_HTTP_SAFE_MODE_ENABLED=false` (so Twenty may
-reach Stalwart on the private network — see the security note below).
+jobs) and both Twenty services have `OUTBOUND_HTTP_SAFE_MODE_ENABLED=false` (so
+Twenty may reach Stalwart on the private network — see the security note below).
 
-### 5b. Configure Stalwart
+### 5c. Configure Stalwart
 Follow [`stalwart/README.md`](stalwart/README.md): add the `queer.guide` domain,
 enable **ACME (Cloudflare DNS-01)** for a valid `mail.queer.guide` cert, create the
-four mailbox accounts, and set the **Resend smarthost** relay. Record each mailbox
-password — you need it in 5d and 5e.
+four mailbox accounts, and set the outbound **smarthost → `smtp-relay:2525`**
+(auth `RELAY_SMTP_USER`/`RELAY_SMTP_PASS`). Record each mailbox password — you need
+it in 5e and 5f.
 
-### 5c. Cloudflare — tunnel hostname + Email Routing rules
+### 5d. Cloudflare — tunnel hostname + Email Routing rules
 1. **Tunnel** (Zero Trust → your `twenty-nas` tunnel → Public Hostnames → Add):
    subdomain `mail`, domain `queer.guide`, **Service** = `HTTP` → `stalwart:8080`.
    (Optionally put Cloudflare Access in front — the worker still authenticates with
@@ -93,7 +105,7 @@ password — you need it in 5d and 5e.
    priority over the apex catch-all, so the per-user `travel-inbox` worker is
    untouched. Leave apex MX / SPF / DMARC as-is.
 
-### 5d. Deploy the team-inbox worker
+### 5e. Deploy the team-inbox worker
 ```bash
 cd ../../../workers/team-inbox   # from infra/twenty/nas
 npm ci
@@ -105,22 +117,23 @@ npm run deploy
 Bind the four Email Routing rules from 5c to this worker in the dashboard (Cloudflare
 does not bind Email Routing addresses from `wrangler.toml`).
 
-### 5e. Connect the inboxes in Twenty
+### 5f. Connect the inboxes in Twenty
 Settings → Accounts → **Add account → IMAP/SMTP/CalDAV**, once per mailbox:
 - IMAP host `mail.queer.guide` port `993` (SSL), SMTP host `mail.queer.guide` port
   `587` (STARTTLS), username `contact@queer.guide` (etc.) + its password.
 - Sync **INBOX** only (exclude Spam/Trash). Also flip **Settings → Lab →
   IMAP/SMTP/CalDAV** on if the connector isn't visible.
 
-### 5f. Verify end-to-end
+### 5g. Verify end-to-end
 1. `sudo docker compose logs stalwart | grep -i password` (first-boot admin) and IMAP
    login test (see `stalwart/README.md`).
 2. Send a real email to `contact@queer.guide` → `wrangler tail queer-guide-worker-team-inbox`
    shows the import → the message appears in the `contact@` INBOX.
 3. In Twenty it shows as a Message thread within ~5 min (auto-linked to the sender
-   Person/Company). Reply from Twenty → recipient receives it (via Resend); a Sent
-   copy is in the mailbox.
-4. Trigger a Twenty invite/notification → delivered via Resend.
+   Person/Company). Reply from Twenty → recipient receives it (via Cloudflare Email
+   Sending); a Sent copy is in the mailbox.
+4. Trigger a Twenty invite/notification → delivered via Cloudflare Email Sending
+   (`docker compose logs smtp-relay` shows the relayed send).
 5. Repeat the inbound test for `support@ / legal@ / press@`.
 
 ### Security note — SSRF safe mode

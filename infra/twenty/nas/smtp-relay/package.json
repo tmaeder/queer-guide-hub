@@ -1,0 +1,14 @@
+{
+  "name": "smtp-relay",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "index.mjs",
+  "scripts": {
+    "start": "node index.mjs"
+  },
+  "dependencies": {
+    "postal-mime": "^2.7.5",
+    "smtp-server": "^3.13.6"
+  }
+}
