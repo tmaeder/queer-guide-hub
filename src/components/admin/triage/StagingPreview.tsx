@@ -148,6 +148,7 @@ export function StagingPreview({ item, staging }: StagingPreviewProps) {
       {/* Image gallery */}
       {hero && (
         <div className="px-4 pt-4 space-y-2">
+          {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- onError is a media-error handler, not a user-input listener. */}
           <img
             src={hero}
             alt={item.title}
@@ -164,6 +165,7 @@ export function StagingPreview({ item, staging }: StagingPreviewProps) {
                   onClick={() => setHeroIdx(i)}
                   className={`shrink-0 border rounded-element overflow-hidden ${i === heroIdx ? 'border-foreground' : 'border-border'}`}
                 >
+                  {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- onError is a media-error handler, not a user-input listener. */}
                   <img
                     src={url}
                     alt=""

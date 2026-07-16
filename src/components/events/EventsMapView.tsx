@@ -28,7 +28,9 @@ export function EventsMapView({ events, height = 600, className }: EventsMapView
   const mapRef = useRef<maplibregl.Map | null>(null);
   const popupRef = useRef<maplibregl.Popup | null>(null);
   const [mapReady, setMapReady] = useState(false);
-  const [mapError, setMapError] = useState(false);
+  // Seed from the WebGL capability check so an unsupported browser shows the
+  // fallback without a setState during the init effect (react-hooks/set-state-in-effect).
+  const [mapError, setMapError] = useState(() => !isWebglSupported());
   const navigate = useLocalizedNavigate();
   const { resolvedTheme } = useTheme();
 
@@ -36,11 +38,7 @@ export function EventsMapView({ events, height = 600, className }: EventsMapView
 
   // Init map — recreated when the theme flips so the basemap flavor follows it.
   useEffect(() => {
-    if (!containerRef.current || mapRef.current) return;
-    if (!isWebglSupported()) {
-      setMapError(true);
-      return;
-    }
+    if (!containerRef.current || mapRef.current || mapError) return;
 
     const map = new maplibregl.Map({
       container: containerRef.current,

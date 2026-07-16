@@ -74,6 +74,14 @@ const deDate = (iso?: string | null): string => {
   return iso;
 };
 
+const Row = ({ label, value }: { label: string; value?: string | null }) =>
+  value && String(value).trim() !== '' ? (
+    <div className="pds-row">
+      <span className="pds-k">{label}</span>
+      <span className="pds-v">{value}</span>
+    </div>
+  ) : null;
+
 export default function PersonalityDataSheet() {
   const { id } = useParams<{ id: string }>();
   const [searchParams] = useSearchParams();
@@ -110,14 +118,6 @@ export default function PersonalityDataSheet() {
   const fields = toList(p.fields);
   const achievements = toList(p.achievements);
   const tags = toList(p.tags);
-
-  const Row = ({ label, value }: { label: string; value?: string | null }) =>
-    value && String(value).trim() !== '' ? (
-      <div className="pds-row">
-        <span className="pds-k">{label}</span>
-        <span className="pds-v">{value}</span>
-      </div>
-    ) : null;
 
   return (
     <>
