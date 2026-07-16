@@ -182,6 +182,34 @@ display_name · contact = name, category. Scores / safety flags / ids are **neve
 writable from Twenty. Migration `20260715183310_twenty_inbound_review.sql`; webhook
 registered via `POST /rest/webhooks`.
 
+## Data-quality program (2026-07-16)
+
+Live state after the CRM data-quality rollout:
+
+- **Workspace schema**: all `qg*` fields typed (SELECT/LINKS/EMAILS/PHONES/DATE/CURRENCY);
+  legacy TEXT archived as `<field>Legacy`; `qgCompletenessScore`/`qgTrustScore`/
+  `qgNeedsAttention` on all content objects; `companies.qgDomain`.
+- **Surfaces**: 9 quality views (Needs attention / Missing contact / Low completeness /
+  Active events) + "Data Health" dashboard + "Pending QG review flag" workflow (creates a
+  task when `qgNeedsAttention` flips true on a company). Stock demo workflows removed.
+- **Enrichment (source-side)**: `venue-contact-enrich` (crawl + regex + MX + LLM fallback),
+  `venue-osm-enrich` (Nominatim trickle), `scripts/data-quality/enrich-organizations.mjs`,
+  extended `pipeline-enrich-country-editorial`, star-rating grounding guard in
+  `hotel-agentic-enrich`. All provenance-stamped, review-gated below auto-apply confidence.
+- **Dedup/normalize**: `link_org_merchant_domain_matches()` (merchant→org by domain),
+  `organization` entity in dedup-engine, `run_data_normalization_guard()` nightly,
+  `run_org_quality_recompute()` + `run_content_completeness_recompute()` nightly.
+- **Events**: `link_event_venues()` (name+city match), flyer-title cleanup in
+  `event-agentic-enrich` (original kept in `events.raw_title`).
+- **Inbound**: venues whitelisted (name, description, email, phone, website, booking_url,
+  accessibility_notes). ⚠ Operator step still open: register the Twenty `venue.updated`
+  webhook (`POST /rest/webhooks`, targetUrl = twenty-inbound URL with `?token=` =
+  `TWENTY_WEBHOOK_SECRET`), mirroring the company/person registration.
+
+Known sync tails: Twenty's REST layer rejects a small % of records that GraphQL accepts
+(podcast news rows with junk `url` values, phones without derivable calling codes) —
+`sample_errors` in the sync response lists them; fix at source, not in Twenty.
+
 ## Scope / future
 
 - Deliberately minimal schema footprint on queer.guide (one review table); no direct
