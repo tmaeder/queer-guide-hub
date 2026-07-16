@@ -9,8 +9,10 @@
  *   personalities (public)→ Person    externalId `personality:<id>`  (public fields only)
  *   profiles (approved)   → Person    externalId `profile:<id>`      (NON-sensitive fields only)
  *
- * Body params: { limit, offset, only } — `only` targets one entity, `offset` pages a
- * large table (personalities ~2k) for the one-time backfill; the cron runs unfiltered.
+ * Body params: { limit, offset, only, mode, recent } — `only` targets one entity,
+ * `offset` pages a large table for a one-time backfill, `mode:'prune'` deletes
+ * source-duplicate rows, and `recent:<hours>` is the incremental cron mode (only rows
+ * changed in the window). The hourly cron uses `{recent:3}` — light, covers all entities.
  *
  * Twenty is a downstream consumer only. This function holds no cursor and stores
  * nothing back on queer.guide rows — safe to re-run. It NO-OPS cleanly (200) when
@@ -127,13 +129,19 @@ Deno.serve(withErrorReporting('twenty-sync', async (req) => {
   let offset = 0
   let only: string | null = null
   let mode: string | null = null
+  let recentHours = 0
   try {
-    const body = await req.json().catch(() => ({})) as { limit?: number; offset?: number; only?: string; mode?: string }
+    const body = await req.json().catch(() => ({})) as
+      { limit?: number; offset?: number; only?: string; mode?: string; recent?: number }
     if (typeof body.limit === 'number' && body.limit > 0) limit = Math.min(body.limit, 200_000)
     if (typeof body.offset === 'number' && body.offset >= 0) offset = body.offset
     if (typeof body.only === 'string') only = body.only
     if (typeof body.mode === 'string') mode = body.mode
+    if (typeof body.recent === 'number' && body.recent > 0) recentHours = body.recent
   } catch { /* no body */ }
+  // Incremental cron mode: only sync rows changed within the last `recent` hours (cheap,
+  // covers all entities). Relation maps stay lazy so nothing is built when nothing changed.
+  const recentCutoff = recentHours > 0 ? new Date(Date.now() - recentHours * 3_600_000).toISOString() : null
   // `only` restricts to one entity; `offset` pages a large table (e.g. personalities).
   const wants = (name: string) => !only || only === name
   const lo = offset, hi = offset + limit - 1
@@ -259,6 +267,7 @@ Deno.serve(withErrorReporting('twenty-sync', async (req) => {
           'status, claim_status, trust_score, completeness_score, safety_gated, needs_attention, ' +
           'city_id, country_id, primary_venue_id, city:cities(name), country:countries(name)')
         .eq('status', 'active')
+        .gte('updated_at', recentCutoff ?? '1970-01-01')
         .order('updated_at', { ascending: false })
         .range(lo, hi)
       if (error) throw new Error(`organizations: ${error.message}`)
@@ -302,6 +311,7 @@ Deno.serve(withErrorReporting('twenty-sync', async (req) => {
         .from('marketplace_merchants')
         .select('id, slug, display_name, shop_domain, provider, is_enabled, last_sync_status')
         .eq('is_enabled', true)
+        .gte('updated_at', recentCutoff ?? '1970-01-01')
         .order('updated_at', { ascending: false })
         .range(lo, hi)
       if (error) throw new Error(`marketplace_merchants: ${error.message}`)
@@ -324,6 +334,7 @@ Deno.serve(withErrorReporting('twenty-sync', async (req) => {
       const { data, error } = await supabase
         .from('contact_submissions')
         .select('id, name, email, category, message, created_at')
+        .gte('created_at', recentCutoff ?? '1970-01-01')
         .order('created_at', { ascending: false })
         .range(lo, hi)
       if (error) throw new Error(`contact_submissions: ${error.message}`)
@@ -347,6 +358,7 @@ Deno.serve(withErrorReporting('twenty-sync', async (req) => {
           'birth_date, death_date, image_url, city_id, country_id')
         .eq('visibility', 'public')
         .is('duplicate_of_id', null)
+        .gte('updated_at', recentCutoff ?? '1970-01-01')
         .order('updated_at', { ascending: false })
         .range(lo, hi)
       if (error) throw new Error(`personalities: ${error.message}`)
@@ -379,6 +391,7 @@ Deno.serve(withErrorReporting('twenty-sync', async (req) => {
         .from('profiles')
         .select('id, display_name, username, location, company, industry, job_title, moderation_status')
         .eq('moderation_status', 'approved')
+        .gte('updated_at', recentCutoff ?? '1970-01-01')
         .order('updated_at', { ascending: false })
         .range(lo, hi)
       if (error) throw new Error(`profiles: ${error.message}`)
@@ -447,7 +460,9 @@ Deno.serve(withErrorReporting('twenty-sync', async (req) => {
         const pageHi = Math.min(off + 999, hi)
         let q = supabase.from(c.table).select(c.sel)
         if (c.dedup) q = q.is('duplicate_of_id', null)
-        const { data, error } = await q.order('id', { ascending: true }).range(off, pageHi)
+        if (recentCutoff) q = q.gte('updated_at', recentCutoff)
+        q = recentCutoff ? q.order('updated_at', { ascending: false }) : q.order('id', { ascending: true })
+        const { data, error } = await q.range(off, pageHi)
         if (error) throw new Error(`${c.only}: ${error.message}`)
         const rows = (data ?? []) as Row[]
         if (!rows.length) break
