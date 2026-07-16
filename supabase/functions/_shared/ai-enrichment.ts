@@ -416,11 +416,16 @@ export interface EventMoatEnrichment {
   safety_notes?: string                 // LGBTQ+ safety context for attendees
   lineup?: string[]
   lgbtq_relevance_score?: number
+  clean_title?: string                  // cleaned human-readable title from flyer-style raw title
+  extracted_date?: string               // ISO YYYY-MM-DD start date as stated on the page
+  extracted_venue_name?: string         // venue name as stated on the page
+  extracted_address?: string            // street address as stated on the page
   confidence?: number                   // 0.0-1.0 — how well the page supported the extraction
 }
 
 const MOAT_KEYS = ['description', 'accessibility_attributes', 'accessibility_notes', 'target_groups',
-  'age_restriction', 'dress_code', 'safety_notes', 'lineup', 'lgbtq_relevance_score', 'confidence']
+  'age_restriction', 'dress_code', 'safety_notes', 'lineup', 'lgbtq_relevance_score',
+  'clean_title', 'extracted_date', 'extracted_venue_name', 'extracted_address', 'confidence']
 
 const MOAT_SYSTEM_PROMPT = `${BASE_CONTEXT}
 
@@ -436,6 +441,10 @@ Hard rules:
 - safety_notes: concise, factual LGBTQ+ safety context for an attendee. You MAY combine page facts with the provided DESTINATION CONTEXT block for legal/safety framing. Be calm and factual, never alarmist.
 - lineup: named performers/acts if listed.
 - lgbtq_relevance_score: 0.0-1.0 how clearly LGBTQ+ this event is.
+- clean_title: a cleaned, human-readable version of the given event title (titles often arrive as flyer text: emoji spam, ALL CAPS, embedded dates/prices/venue tags, decorative symbols). Keep the actual event name, normal casing, no dates/prices/venues/emoji. null if the given title is already clean.
+- extracted_date: the event START date exactly as stated on the page, ISO format YYYY-MM-DD. null unless clearly stated.
+- extracted_venue_name: the venue name exactly as stated on the page. null if not stated.
+- extracted_address: the street address exactly as stated on the page. null if not stated.
 - confidence: 0.0-1.0 how well the page text supported this extraction (low if the page was thin/irrelevant).
 
 Respond ONLY with valid JSON. No markdown code blocks.`
@@ -461,7 +470,7 @@ PAGE TEXT:
 ${ud(page)}
 
 Respond with JSON using these keys (null where unknown):
-{"description":"...","accessibility_attributes":[...],"accessibility_notes":"...","target_groups":[...],"age_restriction":"...","dress_code":"...","safety_notes":"...","lineup":[...],"lgbtq_relevance_score":0.0,"confidence":0.0}`
+{"description":"...","accessibility_attributes":[...],"accessibility_notes":"...","target_groups":[...],"age_restriction":"...","dress_code":"...","safety_notes":"...","lineup":[...],"lgbtq_relevance_score":0.0,"clean_title":"...","extracted_date":"YYYY-MM-DD","extracted_venue_name":"...","extracted_address":"...","confidence":0.0}`
 
   try {
     const result = await chatCompletion(supabase, {

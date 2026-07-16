@@ -250,18 +250,24 @@ Deno.serve(withErrorReporting('twenty-sync', async (req) => {
   }
   // EMAILS composite.
   const email = (v: unknown) => { const x = s(v); return x ? { primaryEmail: x.toLowerCase() } : null }
-  // PHONES composite — Twenty's parser rejects free-text values (letters, "ext",
-  // multiple numbers). Keep the first phone-looking token, digits/+/-/()/space only;
-  // anything unsalvageable is junk → null.
-  const phone = (v: unknown) => {
+  // PHONES composite — Twenty validates with libphonenumber, so a national-format
+  // number needs its calling code. +E.164 values pass through; national numbers get
+  // the calling code of the record's country; unresolvable values → null (the record
+  // still syncs; the raw phone stays in Supabase).
+  const phone = (v: unknown, countryKey?: unknown) => {
     const x = s(v)
     if (!x) return null
-    const m = x.match(/\+?\d[\d\s\-().]{4,}/)
+    const m = x.match(/\+?\d[\d\s\-().\/]{4,}/)
     if (!m) return null
-    const cleaned = m[0].replace(/[^\d+\-() ]/g, ' ').replace(/\s+/g, ' ').trim()
-    return cleaned.replace(/\D/g, '').length >= 5
-      ? { primaryPhoneNumber: cleaned, primaryPhoneCallingCode: '', primaryPhoneCountryCode: '' }
-      : null
+    const digits = m[0].replace(/[^\d]/g, '')
+    if (digits.length < 5 || digits.length > 15) return null
+    if (m[0].trim().startsWith('+')) {
+      return { primaryPhoneNumber: `+${digits}`, primaryPhoneCallingCode: '', primaryPhoneCountryCode: '' }
+    }
+    const c = country(countryKey)
+    const cc = c ? callingCodeByCountry.get(c.toLowerCase()) : undefined
+    if (!cc) return null
+    return { primaryPhoneNumber: digits, primaryPhoneCallingCode: cc, primaryPhoneCountryCode: '' }
   }
   // CURRENCY composite (micros).
   const money = (amount: unknown, code: unknown) => {
@@ -280,11 +286,17 @@ Deno.serve(withErrorReporting('twenty-sync', async (req) => {
   }
   // Canonical country names — venues/events store ISO-2 codes, companies/hotels full
   // names; Twenty gets full names everywhere so cross-object filters line up.
-  const { data: countryRows } = await supabase.from('countries').select('name, code')
+  const { data: countryRows } = await supabase.from('countries').select('name, code, calling_code')
   const countryCanon = buildCountryCanon((countryRows ?? []) as Array<{ name: string | null; code: string | null }>)
   const country = (v: unknown): string | null => {
     const x = s(v)
     return x ? (countryCanon.get(x.trim().toLowerCase()) ?? x) : null
+  }
+  // canonical country name (lowercase) → "+<calling code>" for national phone numbers.
+  const callingCodeByCountry = new Map<string, string>()
+  for (const c of (countryRows ?? []) as Array<{ name: string | null; calling_code: string | null }>) {
+    const cc = s(c.calling_code)
+    if (c.name && cc) callingCodeByCountry.set(c.name.toLowerCase(), cc.startsWith('+') ? cc : `+${cc}`)
   }
 
   // Relation resolution: look up the target Twenty id by its externalId.
@@ -375,7 +387,7 @@ Deno.serve(withErrorReporting('twenty-sync', async (req) => {
           qgLogoUrl: link(o.logo_url),
           qgRoles: msel(o.roles),
           qgEmail: email(o.email),
-          qgPhone: phone(o.phone),
+          qgPhone: phone(o.phone, o.country?.name),
           qgTags: arr(o.tags),
           qgTargetGroups: arr(o.target_groups),
           qgCity: s(o.city?.name),
@@ -513,7 +525,7 @@ Deno.serve(withErrorReporting('twenty-sync', async (req) => {
     }> = [
       { only: 'venues', dedup: true, table: 'venues', obj: 'venues', prefix: 'venue',
         sel: 'id, name, description, website, city, country, category, address, slug, phone, email, instagram, tags, amenities, services, price_range, star_rating, latitude, longitude, state, postal_code, verified, venue_subtype, booking_url, accessibility_notes, closed_at, vibe_tags, city_id, country_id, organization_id, queer_village_id',
-        map: (r) => ({ name: r.name, qgDescription: s(r.description), qgWebsite: link(r.website), qgCity: s(r.city), qgCountry: country(r.country), qgCategory: sel(r.category), qgAddress: addr(r.address, r.name), qgSlug: s(r.slug), qgPhone: phone(r.phone), qgEmail: email(r.email), qgInstagram: igLink(r.instagram), qgTags: arr(r.tags), qgAmenities: arr(r.amenities), qgServices: arr(r.services), qgPriceRange: n(r.price_range), qgStarRating: n(r.star_rating), qgLat: n(r.latitude), qgLng: n(r.longitude), qgState: s(r.state), qgPostalCode: s(r.postal_code), qgVerified: r.verified ?? null, qgSubtype: sel(r.venue_subtype), qgBookingUrl: link(r.booking_url), qgAccessibility: s(r.accessibility_notes), qgClosedAt: s(r.closed_at), qgVibeTags: arr(r.vibe_tags) }),
+        map: (r) => ({ name: r.name, qgDescription: s(r.description), qgWebsite: link(r.website), qgCity: s(r.city), qgCountry: country(r.country), qgCategory: sel(r.category), qgAddress: addr(r.address, r.name), qgSlug: s(r.slug), qgPhone: phone(r.phone, r.country), qgEmail: email(r.email), qgInstagram: igLink(r.instagram), qgTags: arr(r.tags), qgAmenities: arr(r.amenities), qgServices: arr(r.services), qgPriceRange: n(r.price_range), qgStarRating: n(r.star_rating), qgLat: n(r.latitude), qgLng: n(r.longitude), qgState: s(r.state), qgPostalCode: s(r.postal_code), qgVerified: r.verified ?? null, qgSubtype: sel(r.venue_subtype), qgBookingUrl: link(r.booking_url), qgAccessibility: s(r.accessibility_notes), qgClosedAt: s(r.closed_at), qgVibeTags: arr(r.vibe_tags) }),
         rels: [REL_CITY, REL_COUNTRY, REL_VILLAGE, { field: 'org', target: 'companies', fk: 'organization_id', prefix: 'org' }] },
       { only: 'events', dedup: true, table: 'events', obj: 'qgEvents', prefix: 'event',
         sel: 'id, title, description, event_type, start_date, end_date, ticket_url, price_min, price_max, is_free, age_restriction, address, state, city, country, latitude, longitude, venue_name, organizer_name, website, status, target_groups, tags, currency, liveness_status, slug, city_id, country_id, venue_id, organizer_id, queer_village_id',
@@ -528,7 +540,7 @@ Deno.serve(withErrorReporting('twenty-sync', async (req) => {
         map: (r) => ({ name: r.name, qgCode: s(r.code), qgEqualityScore: s(r.equality_score), qgDescription: s(r.description), qgSlug: s(r.slug), qgCapital: s(r.capital), qgPopulation: n(r.population), qgAreaKm2: n(r.area_km2), qgCurrency: s(r.currency), qgLanguages: arr(r.languages), qgTimezone: s(r.timezone), qgCallingCode: s(r.calling_code), qgTld: s(r.internet_tld), qgDrivingSide: s(r.driving_side), qgGdpUsd: n(r.gdp_usd), qgGdpPerCapita: n(r.gdp_per_capita_usd), qgHdi: n(r.human_development_index), qgLifeExpectancy: n(r.life_expectancy), qgLiteracyRate: n(r.literacy_rate), qgFlagEmoji: s(r.flag_emoji), qgEditorialHook: s(r.editorial_hook), qgEditorialLong: s(r.editorial_long), qgImageUrl: link(r.image_url), qgSameSexUnions: jsonText(r.lgbti_same_sex_unions), qgAdoptionRights: jsonText(r.lgbti_adoption_rights), qgGenderRecognition: jsonText(r.lgbti_gender_recognition), qgConversionTherapy: jsonText(r.lgbti_conversion_therapy_regulation) }) },
       { only: 'hotels', table: 'hotels', obj: 'hotels', prefix: 'hotel',
         sel: 'id, name, description, hotel_type, city, country, website, address, slug, phone, email, booking_url, price_range, star_rating, amenities, tags, queer_safety_notes, lgbtq_friendly, latitude, longitude, verified, city_id, country_id, queer_village_id',
-        map: (r) => ({ name: r.name, qgDescription: s(r.description), qgType: sel(r.hotel_type), qgCity: s(r.city), qgCountry: country(r.country), qgWebsite: link(r.website), qgAddress: addr(r.address, r.city), qgSlug: s(r.slug), qgPhone: phone(r.phone), qgEmail: email(r.email), qgBookingUrl: link(r.booking_url), qgPriceRange: n(r.price_range), qgStarRating: n(r.star_rating), qgAmenities: arr(r.amenities), qgTags: arr(r.tags), qgSafetyNotes: s(r.queer_safety_notes), qgLgbtqFriendly: r.lgbtq_friendly ?? null, qgLat: n(r.latitude), qgLng: n(r.longitude), qgVerified: r.verified ?? null }),
+        map: (r) => ({ name: r.name, qgDescription: s(r.description), qgType: sel(r.hotel_type), qgCity: s(r.city), qgCountry: country(r.country), qgWebsite: link(r.website), qgAddress: addr(r.address, r.city), qgSlug: s(r.slug), qgPhone: phone(r.phone, r.country), qgEmail: email(r.email), qgBookingUrl: link(r.booking_url), qgPriceRange: n(r.price_range), qgStarRating: n(r.star_rating), qgAmenities: arr(r.amenities), qgTags: arr(r.tags), qgSafetyNotes: s(r.queer_safety_notes), qgLgbtqFriendly: r.lgbtq_friendly ?? null, qgLat: n(r.latitude), qgLng: n(r.longitude), qgVerified: r.verified ?? null }),
         rels: [REL_CITY, REL_COUNTRY, REL_VILLAGE] },
       { only: 'villages', table: 'queer_villages', obj: 'villages', prefix: 'village',
         sel: 'id, name, description, website, slug, history, latitude, longitude, notable_landmarks, tags, editorial_hook, image_url, city_id, country_id',
