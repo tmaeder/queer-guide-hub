@@ -42,6 +42,10 @@ const PRUNE: Record<string, { table: string; obj: string; prefix: string }> = {
   news: { table: 'news_articles', obj: 'newsArticles', prefix: 'news' },
   products: { table: 'marketplace_listings', obj: 'products', prefix: 'product' },
   personalities: { table: 'personalities', obj: 'people', prefix: 'personality' },
+  // organizations intentionally absent: the table has no duplicate_of_id column
+  // (org merges are review-only today), so there is nothing to prune. Add an
+  // { table: 'organizations', obj: 'companies', prefix: 'org' } entry if/when
+  // soft-merge (duplicate_of_id) lands on organizations.
 }
 
 // externalId → Twenty-id maps for resolving relations. Module scope so a warm isolate
@@ -75,6 +79,7 @@ interface OrgRow {
 interface MerchantRow {
   id: string; slug: string | null; display_name: string | null; shop_domain: string | null
   provider: string | null; is_enabled: boolean | null; last_sync_status: string | null
+  organization_id: string | null
 }
 interface ContactRow { id: string; name: string | null; email: string | null; category: string | null; message: string | null }
 interface PersonalityRow {
@@ -132,14 +137,16 @@ Deno.serve(withErrorReporting('twenty-sync', async (req) => {
   let only: string | null = null
   let mode: string | null = null
   let recentHours = 0
+  let foldMerchants = false
   try {
     const body = await req.json().catch(() => ({})) as
-      { limit?: number; offset?: number; only?: string; mode?: string; recent?: number }
+      { limit?: number; offset?: number; only?: string; mode?: string; recent?: number; foldMerchants?: boolean }
     if (typeof body.limit === 'number' && body.limit > 0) limit = Math.min(body.limit, 200_000)
     if (typeof body.offset === 'number' && body.offset >= 0) offset = body.offset
     if (typeof body.only === 'string') only = body.only
     if (typeof body.mode === 'string') mode = body.mode
     if (typeof body.recent === 'number' && body.recent > 0) recentHours = body.recent
+    if (body.foldMerchants === true) foldMerchants = true
   } catch { /* no body */ }
   // Incremental cron mode: only sync rows changed within the last `recent` hours (cheap,
   // covers all entities). Relation maps stay lazy so nothing is built when nothing changed.
@@ -376,7 +383,7 @@ Deno.serve(withErrorReporting('twenty-sync', async (req) => {
     if (budgetLeft() && wants('merchants')) {
       const { data, error } = await supabase
         .from('marketplace_merchants')
-        .select('id, slug, display_name, shop_domain, provider, is_enabled, last_sync_status')
+        .select('id, slug, display_name, shop_domain, provider, is_enabled, last_sync_status, organization_id')
         .eq('is_enabled', true)
         .gte('updated_at', recentCutoff ?? '1970-01-01')
         .order('updated_at', { ascending: false })
@@ -384,6 +391,12 @@ Deno.serve(withErrorReporting('twenty-sync', async (req) => {
       if (error) throw new Error(`marketplace_merchants: ${error.message}`)
       for (const m of (data ?? []) as unknown as MerchantRow[]) {
         if (!budgetLeft()) break
+        // A merchant linked to an organization (link_org_merchant_domain_matches)
+        // duplicates its org's Company card. With {foldMerchants:true} those rows
+        // are skipped so only the org card is pushed; default keeps both (unchanged
+        // behavior). No merchant→org relation is pushed: companies has no
+        // parentOrg RELATION field yet — created by the Phase 5 schema tooling.
+        if (foldMerchants && m.organization_id) continue
         await push(`merchant:${m.id}`, 'companies', {
           name: m.display_name,
           qgWebsite: link(m.shop_domain),
