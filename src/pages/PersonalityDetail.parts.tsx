@@ -173,6 +173,12 @@ export function PersonalityHero({
   onProfessionClick,
   onContentUpdated,
 }: PersonalityHeroProps) {
+  // Tätigkeit(en) — activity layer, separate from the single Beruf (profession).
+  // Stored as slugs; `roles` may not be in the generated row type yet, so read
+  // it defensively. Prettify slug → label for display.
+  const roles = ((personality as { roles?: string[] | null }).roles ?? []).filter(Boolean);
+  const prettyRole = (slug: string) =>
+    slug.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
   return (
     <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
       <div className="flex items-start gap-4">
@@ -231,6 +237,15 @@ export function PersonalityHero({
                 <Briefcase size={16} />
                 <span>{formatProfession(personality.profession)}</span>
               </a>
+            )}
+            {roles.length > 0 && (
+              <div className="flex items-center gap-1.5 flex-wrap">
+                {roles.map((slug) => (
+                  <Badge key={slug} variant="outline" className="text-xs">
+                    {prettyRole(slug)}
+                  </Badge>
+                ))}
+              </div>
             )}
             {personality.nationality &&
               (countryId ? (
