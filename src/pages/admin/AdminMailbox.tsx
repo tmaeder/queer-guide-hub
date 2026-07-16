@@ -49,6 +49,40 @@ interface StaffUser {
 
 type Tab = 'inbox' | 'sent' | 'drafts';
 
+function TabButton({
+  id,
+  label,
+  badge,
+  activeTab,
+  onSelect,
+}: {
+  id: Tab;
+  label: string;
+  badge?: number;
+  activeTab: Tab;
+  onSelect: (id: Tab) => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={() => onSelect(id)}
+      className={
+        'flex items-center gap-2 border-b-2 px-2 py-2 text-13 ' +
+        (activeTab === id
+          ? 'border-foreground font-semibold'
+          : 'border-transparent text-muted-foreground')
+      }
+    >
+      {label}
+      {badge ? (
+        <Badge variant="secondary" className="h-5 px-1.5 text-2xs">
+          {badge}
+        </Badge>
+      ) : null}
+    </button>
+  );
+}
+
 export default function AdminMailbox() {
   const { user } = useAuth();
   const uid = user?.id ?? '';
@@ -125,24 +159,6 @@ export default function AdminMailbox() {
     onError: () => toast.error('Could not delete message'),
   });
 
-  const TabButton = ({ id, label, badge }: { id: Tab; label: string; badge?: number }) => (
-    <button
-      type="button"
-      onClick={() => setTab(id)}
-      className={
-        'flex items-center gap-2 border-b-2 px-2 py-2 text-13 ' +
-        (tab === id ? 'border-foreground font-semibold' : 'border-transparent text-muted-foreground')
-      }
-    >
-      {label}
-      {badge ? (
-        <Badge variant="secondary" className="h-5 px-1.5 text-2xs">
-          {badge}
-        </Badge>
-      ) : null}
-    </button>
-  );
-
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-4 p-6">
       <div className="flex items-center justify-between gap-4">
@@ -162,9 +178,9 @@ export default function AdminMailbox() {
       </div>
 
       <div className="flex gap-1 border-b border-border">
-        <TabButton id="inbox" label="Inbox" badge={unread} />
-        <TabButton id="sent" label="Sent" />
-        <TabButton id="drafts" label="Drafts" />
+        <TabButton id="inbox" label="Inbox" badge={unread} activeTab={tab} onSelect={setTab} />
+        <TabButton id="sent" label="Sent" activeTab={tab} onSelect={setTab} />
+        <TabButton id="drafts" label="Drafts" activeTab={tab} onSelect={setTab} />
       </div>
 
       {isLoading ? (
@@ -177,18 +193,25 @@ export default function AdminMailbox() {
             const other = tab === 'inbox' ? m.sender_id : m.recipient_id;
             const isUnread = tab === 'inbox' && !m.is_read;
             return (
+              // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- role/tabIndex/keydown make the row a button only when unread.
               <li
                 key={m.id}
                 className={
                   'rounded-element border border-border p-2 ' + (isUnread ? 'bg-muted' : '')
                 }
-                onClick={() => isUnread && markRead.mutate(m.id)}
-                onKeyDown={(e) => {
-                  if (isUnread && (e.key === 'Enter' || e.key === ' ')) {
-                    e.preventDefault();
-                    markRead.mutate(m.id);
-                  }
-                }}
+                role={isUnread ? 'button' : undefined}
+                tabIndex={isUnread ? 0 : undefined}
+                onClick={isUnread ? () => markRead.mutate(m.id) : undefined}
+                onKeyDown={
+                  isUnread
+                    ? (e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          markRead.mutate(m.id);
+                        }
+                      }
+                    : undefined
+                }
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">

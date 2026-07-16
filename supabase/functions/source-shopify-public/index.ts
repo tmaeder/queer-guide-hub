@@ -61,7 +61,7 @@ function makeAdapter(shopDomain: string, sourceSlug: string, currency = 'EUR'): 
       } catch (err) {
         throw new Error((err as Error).name === 'AbortError'
           ? `products.json timeout after 20s for ${shopDomain} (page ${page}) — likely blocking datacenter egress`
-          : (err as Error).message)
+          : (err as Error).message, { cause: err })
       } finally { clearTimeout(timer) }
       const products = data.products || []
       return products
