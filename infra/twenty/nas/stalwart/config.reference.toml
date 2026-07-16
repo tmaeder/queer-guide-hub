@@ -32,19 +32,19 @@ provider = "cloudflare"
 # secret = "<Cloudflare API token: Zone→DNS→Edit on queer.guide>"
 domains = ["mail.queer.guide"]
 
-# Outbound relay — send everything through Resend as a smarthost so mail uses
-# Resend's IPs + the existing queer.guide DKIM, and Stalwart never delivers to
-# the internet directly.
+# Outbound relay — send everything through the internal smtp-relay bridge, which
+# forwards to Cloudflare Email Sending. Stalwart never delivers to the internet
+# directly (no port 25 outbound, no reputation/PTR concerns). No Resend.
 [queue.outbound]
-next-hop = "resend"
+next-hop = "cf-relay"
 
-[remote."resend"]
-address = "smtp.resend.com"
-port = 465
+[remote."cf-relay"]
+address = "smtp-relay"
+port = 2525
 protocol = "smtp"
-tls.implicit = true
-auth.username = "resend"
-# auth.secret = "<RESEND_API_KEY>"
+tls.implicit = false        # internal compose network; TLS terminates at Cloudflare
+# auth.username = "twenty"  # = RELAY_SMTP_USER
+# auth.secret = "…"         # = RELAY_SMTP_PASS
 
 # Accounts (principals) are created in the web-admin / CLI, not here:
 #   contact@queer.guide  support@queer.guide  legal@queer.guide  press@queer.guide
