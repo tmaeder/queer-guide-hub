@@ -250,8 +250,19 @@ Deno.serve(withErrorReporting('twenty-sync', async (req) => {
   }
   // EMAILS composite.
   const email = (v: unknown) => { const x = s(v); return x ? { primaryEmail: x.toLowerCase() } : null }
-  // PHONES composite — number kept verbatim; source formats vary too much to split codes.
-  const phone = (v: unknown) => { const x = s(v); return x ? { primaryPhoneNumber: x, primaryPhoneCallingCode: '', primaryPhoneCountryCode: '' } : null }
+  // PHONES composite — Twenty's parser rejects free-text values (letters, "ext",
+  // multiple numbers). Keep the first phone-looking token, digits/+/-/()/space only;
+  // anything unsalvageable is junk → null.
+  const phone = (v: unknown) => {
+    const x = s(v)
+    if (!x) return null
+    const m = x.match(/\+?\d[\d\s\-().]{4,}/)
+    if (!m) return null
+    const cleaned = m[0].replace(/[^\d+\-() ]/g, ' ').replace(/\s+/g, ' ').trim()
+    return cleaned.replace(/\D/g, '').length >= 5
+      ? { primaryPhoneNumber: cleaned, primaryPhoneCallingCode: '', primaryPhoneCountryCode: '' }
+      : null
+  }
   // CURRENCY composite (micros).
   const money = (amount: unknown, code: unknown) => {
     const x = n(amount)
