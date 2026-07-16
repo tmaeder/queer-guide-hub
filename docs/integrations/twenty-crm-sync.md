@@ -134,6 +134,32 @@ Twenty built-in composites (`Person.name` = {firstName,lastName}, `Person.emails
 the mapping in `twenty-sync/index.ts`; per-row failures are reported in `results` and never
 abort the run.
 
+## Normalization in the sync (2026-07)
+
+The sync is the normalization gate — junk can't re-enter Twenty:
+
+- **Explicit nulls:** empty source values are sent as `null` (not omitted) so stale
+  TEXT-era junk (`''` placeholders) is cleared on the next push. Omission is reserved for
+  PROTECT (pending inbound review) and unresolved relation targets. A cleared source FK
+  also nulls the Twenty relation.
+- **Countries:** all `qgCountry` values are canonicalized to full English names via
+  `_shared/geo-normalize.ts` (`buildCountryCanon`: countries table + alias map) — venues/
+  events store ISO-2, companies/hotels full names; Twenty gets one vocabulary.
+- **URLs:** `link()` canonicalizes (scheme added, host lowercased, `utm_*`/`fbclid`/…
+  params and bare trailing slash stripped); unparseable URLs become `null`.
+- **Placeholder addresses** (venue address == venue name, hotel address == city) are
+  suppressed to `null` — they carried no information.
+- **`qgDomain`** (companies, plain TEXT): normalized registrable domain from
+  `extractDomain()` for filtering/grouping. Deliberately NOT Twenty's built-in
+  `domainName` — Twenty auto-merges records sharing `domainName`, which would collapse
+  legitimately distinct entities (org + merchant pre-merge, multi-venue orgs) and break
+  the `externalId` idempotency key. Do not "fix" this by populating `domainName`.
+
+Field types in the workspace are typed (SELECT/LINKS/EMAILS/PHONES/DATE/CURRENCY) — see
+`docs/integrations/twenty-crm-field-types.md`. Schema drift is checked with
+`scripts/data-quality/twenty-schema-audit.mjs`; the stalled TEXT→typed migration is
+completed by `scripts/data-quality/twenty-schema-repair.mjs` (dry-run by default).
+
 ## Two-way (inbound, review-gated)
 
 Edits made **in Twenty** flow back through review — they never touch public content
