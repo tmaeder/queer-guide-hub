@@ -20,6 +20,7 @@ import { CountryAutocompleteField } from './CountryAutocompleteField';
 import { UnifiedTagAutocompleteField } from './UnifiedTagAutocompleteField';
 import { VenueAutocompleteField } from './VenueAutocompleteField';
 import { ProfessionAutocompleteField } from './ProfessionAutocompleteField';
+import { RolesAutocompleteField } from './RolesAutocompleteField';
 
 export interface FieldProps {
   field: FieldConfig;
@@ -57,6 +58,7 @@ const FIELD_COMPONENTS: Record<string, React.ComponentType<FieldProps>> = {
   unified_tag: UnifiedTagAutocompleteField,
   venue_autocomplete: VenueAutocompleteField,
   profession_autocomplete: ProfessionAutocompleteField,
+  roles_autocomplete: RolesAutocompleteField,
 };
 
 interface FieldRendererProps extends FieldProps {
