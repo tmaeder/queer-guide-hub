@@ -220,6 +220,35 @@ if (!ONLY_OBJECT || ONLY_OBJECT === 'companies') {
   }
 }
 
+// Phase 5 quality-score fields on the 7 content objects (create if missing).
+// twenty-sync maps these from the source scores (organizations already push them
+// on companies); this MUST run before the next twenty-sync deploy or its upserts
+// fail with unknown-field errors.
+const SCORE_OBJECTS = ['venues', 'qgEvents', 'hotels', 'qgCities', 'qgCountries', 'villages', 'products']
+const SCORE_FIELDS = {
+  qgCompletenessScore: { type: 'NUMBER', label: 'QG Completeness Score' },
+  qgTrustScore: { type: 'NUMBER', label: 'QG Trust Score' },
+  qgNeedsAttention: { type: 'BOOLEAN', label: 'QG Needs Attention' },
+}
+for (const plural of SCORE_OBJECTS) {
+  if (ONLY_OBJECT && plural !== ONLY_OBJECT) continue
+  const obj = objects.find((o) => o.namePlural === plural)
+  if (!obj) { console.error(`object ${plural} not found — skipping score fields`); failures++; continue }
+  const byName = new Map((obj.fields ?? []).map((f) => [f.name, f]))
+  for (const [name, spec] of Object.entries(SCORE_FIELDS)) {
+    if (ONLY_FIELD && name !== ONLY_FIELD) continue
+    const existing = byName.get(name)
+    if (existing) {
+      if (existing.type !== spec.type) { console.error(`! ${plural}.${name} exists as ${existing.type} (want ${spec.type}) — manual check`); failures++ }
+      else console.log(`✓ ${plural}.${name} already ${spec.type}`)
+      continue
+    }
+    const r = await act(`${plural}.${name} — create ${spec.type}`, () =>
+      createField({ objectMetadataId: obj.id, name, label: spec.label, type: spec.type }))
+    if (!r.ok) failures++
+  }
+}
+
 console.log(`\n${APPLY ? 'Applied.' : 'Dry-run complete.'} Failures: ${failures}`)
 console.log('Next: re-run twenty-schema-audit.mjs, then full re-push (twenty-crm-sync.md backfill loop).')
 process.exit(failures ? 1 : 0)
