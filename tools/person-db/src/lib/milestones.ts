@@ -394,7 +394,354 @@ const decrimSeed: Milestone[] = [
   },
 ]
 
-const SEED: Milestone[] = [...BASE_SEED, ...decrimSeed]
+// Ehe für alle & erste eingetragene Partnerschaft — Inkrafttreten (Europa).
+// Nur tagesgenau belegte Daten (Deep-Research, je 3-0 gegengeprüft, 2026-07).
+// Länder ohne verifiziertes Tagesdatum (Portugal, Island, Frankreich, Irland,
+// Luxemburg u.a.) bewusst NICHT aufgenommen — nicht raten.
+const unionSeed: Milestone[] = [
+  {
+    id: 'ehe-niederlande-2001-04-01',
+    title: 'Ehe für alle (Niederlande) — weltweit erste',
+    date: '2001-04-01',
+    country: 'Niederlande',
+    description:
+      'Die Niederlande waren das weltweit erste Land mit der Ehe für gleichgeschlechtliche ' +
+      'Paare. Königliche Zustimmung am 21.12.2000; in Kraft getreten am 1. April 2001 — die ' +
+      'ersten vier Paare wurden um Mitternacht von Amsterdams Bürgermeister Job Cohen getraut.',
+    sources: [
+      { label: 'Wikipedia — Same-sex marriage in the Netherlands', url: 'https://en.wikipedia.org/wiki/Same-sex_marriage_in_the_Netherlands' },
+      { label: 'Wikipedia — Timeline of same-sex marriage', url: 'https://en.wikipedia.org/wiki/Timeline_of_same-sex_marriage' },
+    ],
+    linked_persons: [],
+    category: 'Gesetz / Gleichstellung',
+    significance: 5,
+    impact: 'positive',
+    checked: false,
+  },
+  {
+    id: 'ehe-belgien-2003-06-01',
+    title: 'Ehe für alle (Belgien)',
+    date: '2003-06-01',
+    country: 'Belgien',
+    description:
+      'Belgien war das zweite Land weltweit mit der Ehe für alle. Königliche Zustimmung am ' +
+      '13.2.2003; in Kraft getreten am 1. Juni 2003.',
+    sources: [
+      { label: 'Wikipedia — Same-sex marriage in Belgium', url: 'https://en.wikipedia.org/wiki/Same-sex_marriage_in_Belgium' },
+    ],
+    linked_persons: [],
+    category: 'Gesetz / Gleichstellung',
+    significance: 4,
+    impact: 'positive',
+    checked: false,
+  },
+  {
+    id: 'ehe-spanien-2005-07-03',
+    title: 'Ehe für alle (Spanien)',
+    date: '2005-07-03',
+    country: 'Spanien',
+    description:
+      'Ley 13/2005: im Congreso am 30.6.2005 beschlossen, im BOE am 2.7.2005 veröffentlicht, ' +
+      'in Kraft getreten am 3. Juli 2005 (erste Trauungen am 11.7.). Drittes Land weltweit.',
+    sources: [
+      { label: 'Wikipedia — Same-sex marriage in Spain', url: 'https://en.wikipedia.org/wiki/Same-sex_marriage_in_Spain' },
+    ],
+    linked_persons: [],
+    category: 'Gesetz / Gleichstellung',
+    significance: 4,
+    impact: 'positive',
+    checked: false,
+  },
+  {
+    id: 'ehe-norwegen-2009-01-01',
+    title: 'Ehe für alle (Norwegen)',
+    date: '2009-01-01',
+    country: 'Norwegen',
+    description:
+      'Geschlechtsneutrales Ehegesetz, königliche Zustimmung am 27.6.2008; in Kraft getreten ' +
+      'am 1. Januar 2009 (erstes Paar am 2.1.2009 am Osloer Gericht).',
+    sources: [
+      { label: 'Wikipedia — Timeline of same-sex marriage', url: 'https://en.wikipedia.org/wiki/Timeline_of_same-sex_marriage' },
+      { label: 'Library of Congress — Global Legal Monitor', url: 'https://www.loc.gov/item/global-legal-monitor/' },
+    ],
+    linked_persons: [],
+    category: 'Gesetz / Gleichstellung',
+    significance: 4,
+    impact: 'positive',
+    checked: false,
+  },
+  {
+    id: 'ehe-schweden-2009-05-01',
+    title: 'Ehe für alle (Schweden)',
+    date: '2009-05-01',
+    country: 'Schweden',
+    description:
+      'Gesetz 2009:253, vom Reichstag am 1.4.2009 beschlossen; in Kraft getreten am 1. Mai 2009. ' +
+      '(Eine eingetragene Partnerschaft bestand in Schweden bereits seit 1995.)',
+    sources: [
+      { label: 'Wikipedia — Same-sex marriage in Sweden', url: 'https://en.wikipedia.org/wiki/Same-sex_marriage_in_Sweden' },
+      { label: 'Library of Congress — Global Legal Monitor', url: 'https://www.loc.gov/item/global-legal-monitor/' },
+    ],
+    linked_persons: [],
+    category: 'Gesetz / Gleichstellung',
+    significance: 4,
+    impact: 'positive',
+    checked: false,
+  },
+  {
+    id: 'ehe-finnland-2017-03-01',
+    title: 'Ehe für alle (Finnland)',
+    date: '2017-03-01',
+    country: 'Finnland',
+    description:
+      '2014 vom Parlament beschlossen, 2015 unterzeichnet; nach Übergangsfrist in Kraft getreten ' +
+      'am 1. März 2017.',
+    sources: [
+      { label: 'Wikipedia — Timeline of same-sex marriage', url: 'https://en.wikipedia.org/wiki/Timeline_of_same-sex_marriage' },
+    ],
+    linked_persons: [],
+    category: 'Gesetz / Gleichstellung',
+    significance: 4,
+    impact: 'positive',
+    checked: false,
+  },
+  {
+    id: 'ehe-malta-2017-09-01',
+    title: 'Ehe für alle (Malta)',
+    date: '2017-09-01',
+    country: 'Malta',
+    description:
+      'Am 12.7.2017 beschlossen; in Kraft getreten am 1. September 2017.',
+    sources: [
+      { label: 'The Malta Independent (2017-08-31)', url: 'https://www.independent.com.mt/' },
+      { label: 'Wikipedia — Gleichgeschlechtliche Ehe', url: 'https://de.wikipedia.org/wiki/Gleichgeschlechtliche_Ehe' },
+    ],
+    linked_persons: [],
+    category: 'Gesetz / Gleichstellung',
+    significance: 4,
+    impact: 'positive',
+    checked: false,
+  },
+  {
+    id: 'ehe-deutschland-2017-10-01',
+    title: 'Ehe für alle (Deutschland)',
+    date: '2017-10-01',
+    country: 'Deutschland',
+    description:
+      'Bundestag 30.6.2017, Bundesrat 7.7., Ausfertigung 20.7., Verkündung im BGBl 28.7.2017; ' +
+      'in Kraft getreten am ersten Tag des dritten Monats nach Verkündung = 1. Oktober 2017 ' +
+      '(erste Trauung Karl Kreile & Bodo Mende, Berlin).',
+    sources: [
+      { label: 'Wikipedia — Same-sex marriage in Germany', url: 'https://en.wikipedia.org/wiki/Same-sex_marriage_in_Germany' },
+      { label: 'LSVD — Ehe für alle in Europa und weltweit', url: 'https://www.lsvd.de/de/ct/427-Die-gleichgeschlechtliche-Ehe-in-Europa-und-weltweit' },
+    ],
+    linked_persons: [],
+    category: 'Gesetz / Gleichstellung',
+    significance: 5,
+    impact: 'positive',
+    checked: false,
+  },
+  {
+    id: 'ehe-england-wales-2014-03-13',
+    title: 'Ehe für alle (England & Wales)',
+    date: '2014-03-13',
+    country: 'Vereinigtes Königreich',
+    region: 'England & Wales',
+    description:
+      'Marriage (Same Sex Couples) Act 2013: die Regelungen traten am 13. März 2014 in Kraft; ' +
+      'erste Trauungen am 29.3.2014 (16-tägige Anmeldefrist).',
+    sources: [
+      { label: 'Wikipedia — Same-sex marriage in the United Kingdom', url: 'https://en.wikipedia.org/wiki/Same-sex_marriage_in_the_United_Kingdom' },
+      { label: 'legislation.gov.uk — Commencement No.2 Order', url: 'https://www.legislation.gov.uk/uksi/2014/93' },
+    ],
+    linked_persons: [],
+    category: 'Gesetz / Gleichstellung',
+    significance: 4,
+    impact: 'positive',
+    checked: false,
+  },
+  {
+    id: 'ehe-schottland-2014-12-16',
+    title: 'Ehe für alle (Schottland)',
+    date: '2014-12-16',
+    country: 'Vereinigtes Königreich',
+    region: 'Schottland',
+    description:
+      'Marriage and Civil Partnership (Scotland) Act 2014: in Kraft getreten am 16. Dezember 2014 ' +
+      '(erste neue Trauungen am 31.12.2014).',
+    sources: [
+      { label: 'legislation.gov.uk — asp 2014/5', url: 'https://www.legislation.gov.uk/asp/2014/5' },
+      { label: 'Wikipedia — Same-sex marriage in the United Kingdom', url: 'https://en.wikipedia.org/wiki/Same-sex_marriage_in_the_United_Kingdom' },
+    ],
+    linked_persons: [],
+    category: 'Gesetz / Gleichstellung',
+    significance: 4,
+    impact: 'positive',
+    checked: false,
+  },
+  {
+    id: 'ehe-nordirland-2020-01-13',
+    title: 'Ehe für alle (Nordirland)',
+    date: '2020-01-13',
+    country: 'Vereinigtes Königreich',
+    region: 'Nordirland',
+    description:
+      'Über Regelungen nach dem Northern Ireland (Executive Formation etc) Act 2019 in Kraft ' +
+      'getreten am 13. Januar 2020 (erste Trauung Robyn Peoples & Sharni Edwards-Peoples am 11.2.2020).',
+    sources: [
+      { label: 'Wikipedia — Same-sex marriage in Northern Ireland', url: 'https://en.wikipedia.org/wiki/Same-sex_marriage_in_Northern_Ireland' },
+    ],
+    linked_persons: [],
+    category: 'Gesetz / Gleichstellung',
+    significance: 4,
+    impact: 'positive',
+    checked: false,
+  },
+  {
+    id: 'ehe-oesterreich-2019-01-01',
+    title: 'Ehe für alle (Österreich)',
+    date: '2019-01-01',
+    country: 'Österreich',
+    description:
+      'Der Verfassungsgerichtshof (VfGH) hob die Beschränkung mit Wirkung zum 1. Januar 2019 auf; ' +
+      'ab da war die Ehe allgemein zugänglich.',
+    sources: [
+      { label: 'Library of Congress — Global Legal Monitor', url: 'https://www.loc.gov/item/global-legal-monitor/' },
+      { label: 'Wikipedia — Same-sex marriage in Austria', url: 'https://en.wikipedia.org/wiki/Same-sex_marriage_in_Austria' },
+    ],
+    linked_persons: [],
+    category: 'Gesetz / Gleichstellung',
+    significance: 4,
+    impact: 'positive',
+    checked: false,
+  },
+  {
+    id: 'ehe-slowenien-2023-01-31',
+    title: 'Ehe für alle (Slowenien)',
+    date: '2023-01-31',
+    country: 'Slowenien',
+    description:
+      'Nach dem Verfassungsgerichtsurteil (wirksam 8./9.7.2022) beschloss die Nationalversammlung ' +
+      'die Novelle des Familiengesetzbuchs; Inkrafttreten am 31. Januar 2023.',
+    sources: [
+      { label: 'Wikipedia — Same-sex marriage in Slovenia', url: 'https://en.wikipedia.org/wiki/Same-sex_marriage_in_Slovenia' },
+      { label: 'GOV.SI — News', url: 'https://www.gov.si/en/news/' },
+    ],
+    linked_persons: [],
+    category: 'Gesetz / Gleichstellung',
+    significance: 4,
+    impact: 'positive',
+    checked: false,
+  },
+  {
+    id: 'ehe-andorra-2023-02-17',
+    title: 'Ehe für alle (Andorra)',
+    date: '2023-02-17',
+    country: 'Andorra',
+    description:
+      'Gesetz am 17.8.2022 verkündet; sechs Monate später in Kraft getreten am 17. Februar 2023.',
+    sources: [
+      { label: 'Wikipedia — Same-sex marriage in Andorra', url: 'https://en.wikipedia.org/wiki/Same-sex_marriage_in_Andorra' },
+    ],
+    linked_persons: [],
+    category: 'Gesetz / Gleichstellung',
+    significance: 4,
+    impact: 'positive',
+    checked: false,
+  },
+  {
+    id: 'ehe-estland-2024-01-01',
+    title: 'Ehe für alle (Estland)',
+    date: '2024-01-01',
+    country: 'Estland',
+    description:
+      'Im Juni 2023 beschlossen; in Kraft getreten am 1. Januar 2024 — erstes Land des ehemaligen ' +
+      'Ostblocks mit der Ehe für alle.',
+    sources: [
+      { label: 'Wikipedia — Same-sex marriage in Estonia', url: 'https://en.wikipedia.org/wiki/Same-sex_marriage_in_Estonia' },
+    ],
+    linked_persons: [],
+    category: 'Gesetz / Gleichstellung',
+    significance: 4,
+    impact: 'positive',
+    checked: false,
+  },
+  {
+    id: 'ehe-griechenland-2024-02-16',
+    title: 'Ehe für alle (Griechenland)',
+    date: '2024-02-16',
+    country: 'Griechenland',
+    description:
+      'Vom Parlament am 15.2.2024 beschlossen; in Kraft getreten mit der Veröffentlichung im ' +
+      'Amtsblatt am 16. Februar 2024 — erstes mehrheitlich orthodoxes Land mit der Ehe für alle.',
+    sources: [
+      { label: 'Wikipedia — Same-sex marriage in Greece', url: 'https://en.wikipedia.org/wiki/Same-sex_marriage_in_Greece' },
+      { label: 'Equaldex — Greece', url: 'https://www.equaldex.com/region/greece' },
+    ],
+    linked_persons: [],
+    category: 'Gesetz / Gleichstellung',
+    significance: 4,
+    impact: 'positive',
+    checked: false,
+  },
+  {
+    id: 'ehe-liechtenstein-2025-01-01',
+    title: 'Ehe für alle (Liechtenstein)',
+    date: '2025-01-01',
+    country: 'Liechtenstein',
+    description:
+      'Vom Landtag am 16.5.2024 beschlossen, fürstliche Sanktion am 9.7.2024; in Kraft getreten ' +
+      'am 1. Januar 2025.',
+    sources: [
+      { label: 'Wikipedia — Same-sex marriage in Liechtenstein', url: 'https://en.wikipedia.org/wiki/Same-sex_marriage_in_Liechtenstein' },
+      { label: 'LSVD — Ehe für alle in Europa und weltweit', url: 'https://www.lsvd.de/de/ct/427-Die-gleichgeschlechtliche-Ehe-in-Europa-und-weltweit' },
+    ],
+    linked_persons: [],
+    category: 'Gesetz / Gleichstellung',
+    significance: 4,
+    impact: 'positive',
+    checked: false,
+  },
+  {
+    id: 'partnerschaft-daenemark-1989-10-01',
+    title: 'Erste eingetragene Partnerschaft weltweit (Dänemark)',
+    date: '1989-10-01',
+    country: 'Dänemark',
+    description:
+      'Dänemark führte als weltweit erstes Land die eingetragene Partnerschaft ein. Gesetz am ' +
+      '7.6.1989 beschlossen, in Kraft getreten am 1. Oktober 1989 — die ersten Paare (u. a. ' +
+      'Axel und Eigil Axgil) registrierten sich im Kopenhagener Rathaus.',
+    sources: [
+      { label: 'Wikipedia — Same-sex marriage in Denmark', url: 'https://en.wikipedia.org/wiki/Same-sex_marriage_in_Denmark' },
+      { label: 'Wikipedia — LGBTQ rights in Denmark', url: 'https://en.wikipedia.org/wiki/LGBTQ_rights_in_Denmark' },
+    ],
+    linked_persons: [],
+    category: 'Gesetz / Gleichstellung',
+    significance: 5,
+    impact: 'positive',
+    checked: false,
+  },
+  {
+    id: 'partnerschaft-vereinigtes-koenigreich-2005-12-05',
+    title: 'Eingetragene Partnerschaft (Vereinigtes Königreich)',
+    date: '2005-12-05',
+    country: 'Vereinigtes Königreich',
+    description:
+      'Civil Partnership Act 2004 (königliche Zustimmung 18.11.2004); UK-weit in Kraft getreten ' +
+      'am 5. Dezember 2005. Erste Partnerschaft am 5.12.2005 (Matthew Roche & Christopher Cramp, ' +
+      'Worthing); allgemeine Zeremonien folgten nach der Wartefrist ab dem 19.–21.12.2005.',
+    sources: [
+      { label: 'Wikipedia — Civil partnership in the United Kingdom', url: 'https://en.wikipedia.org/wiki/Civil_partnership_in_the_United_Kingdom' },
+    ],
+    linked_persons: [],
+    category: 'Gesetz / Gleichstellung',
+    significance: 4,
+    impact: 'positive',
+    checked: false,
+  },
+]
+
+const SEED: Milestone[] = [...BASE_SEED, ...decrimSeed, ...unionSeed]
 
 const KEY = 'person-db.milestones.v2'
 
