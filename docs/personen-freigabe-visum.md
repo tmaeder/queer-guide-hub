@@ -6,6 +6,29 @@
 
 **Online = geprüft.** Eine Person ist auf der Website + in der Suche nur sichtbar, wenn sie **freigegeben** ist. Freigabe funktioniert wie ein Visum: erst wenn **alle Stempel** gesetzt sind, geht die Person online.
 
+## Flussdiagramm
+
+```mermaid
+flowchart TD
+    A["Quelle<br/>Import · Chrome-Erweiterung · Admin"] --> B["Entwurf<br/>nicht online"]
+    B --> C{"Stempel 1–4 automatisch<br/>Pflichtfelder · Beleg · KI-Check · kein Duplikat"}
+    C -->|etwas fehlt| R["Zu prüfen<br/>Mensch bearbeitet"]
+    C -->|alle 4 gesetzt| H["Stempel 5<br/>Mensch-Freigabe (Vier-Augen)"]
+    R --> H
+    H -->|freigegeben| ON(["✓ Online — Website + Suche"])
+    H -->|abgelehnt| BL["Blockiert<br/>Duplikat / archiviert · nie online"]
+    ON -->|wichtige Angabe geändert| R
+
+    classDef ok fill:#eaf6ee,stroke:#2e7d46,color:#1c6b36;
+    classDef stop fill:#fbecec,stroke:#b23838,color:#8f2a2a;
+    classDef hold fill:#f6f1e6,stroke:#b58a2e,color:#7a5a1e;
+    class ON ok;
+    class BL stop;
+    class R hold;
+```
+
+**Kurz:** Person startet als Entwurf → System setzt Stempel 1–4 → ein Mensch prüft und setzt Stempel 5 → erst dann online. Ändert sich später eine wichtige Angabe, fällt sie zurück auf „zu prüfen" (Visum verfällt).
+
 ## Die 5 Stempel
 
 | # | Stempel | Wer setzt ihn | Bedeutung |
