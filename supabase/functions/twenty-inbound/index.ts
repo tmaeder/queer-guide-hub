@@ -26,6 +26,10 @@ const MAP = {
     qgNationality: 'nationality', qgWebsite: 'website_url',
   },
   user: {} as Record<string, string>,
+  venue: {
+    name: 'name', qgDescription: 'description', qgEmail: 'email', qgPhone: 'phone',
+    qgWebsite: 'website', qgBookingUrl: 'booking_url', qgAccessibility: 'accessibility_notes',
+  },
 } as const
 
 const TABLE = {
@@ -34,6 +38,7 @@ const TABLE = {
   contact: 'contact_submissions',
   personality: 'personalities',
   user: 'profiles',
+  venue: 'venues',
 } as const
 
 type Entity = keyof typeof MAP
@@ -49,6 +54,9 @@ function twentyValue(v: unknown): string | null {
       return [o.firstName, o.lastName].filter(Boolean).join(' ').trim() || null
     }
     if ('primaryEmail' in o) return (o.primaryEmail as string) || null
+    if ('primaryPhoneNumber' in o) {
+      return [o.primaryPhoneCallingCode, o.primaryPhoneNumber].filter(Boolean).join(' ').trim() || null
+    }
   }
   return String(v)
 }
@@ -76,8 +84,8 @@ Deno.serve(withErrorReporting('twenty-inbound', async (req) => {
   const [prefix, entityId] = externalId.split(':', 2)
   const entity = ({
     org: 'organization', merchant: 'merchant', contact: 'contact',
-    personality: 'personality', profile: 'user',
-  } as const)[prefix as 'org' | 'merchant' | 'contact' | 'personality' | 'profile']
+    personality: 'personality', profile: 'user', venue: 'venue',
+  } as const)[prefix as 'org' | 'merchant' | 'contact' | 'personality' | 'profile' | 'venue']
   if (!entity) return jsonResponse({ success: true, skipped: 'unknown-prefix' }, 200, req)
 
   const map = MAP[entity as Entity]

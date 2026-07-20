@@ -15,6 +15,7 @@ import { KebabMenu } from './KebabMenu'
 import { MilestoneForm } from './MilestoneForm'
 import { Timeline } from './Timeline'
 import { NewMenu, captureOptions } from './NewMenu'
+import { MilestoneInfo } from './MilestoneInfo'
 
 const SITE = 'https://queer.guide'
 
@@ -168,7 +169,9 @@ export function Milestone() {
           Ereignisse queerer Geschichte, mit Personen verknüpfbar, mit Wertung
           (Wichtigkeit 1–5 + Richtung). Daten lokal im Tool (noch nicht Live-DB).
         </p>
-        <div className="liste-filters">
+        <MilestoneInfo />
+      </div>
+      <div className="liste-filters">
           <NewMenu
             align="left"
             options={captureOptions({ onManual: () => setMode({ kind: 'form', initial: emptyMilestone() }) })}
@@ -198,7 +201,6 @@ export function Milestone() {
           </div>
           <span className="count">{filtered.length} / {items.length}</span>
         </div>
-      </div>
 
       {mode.kind === 'timeline' ? (
         <Timeline items={filtered} onOpen={openEdit} />

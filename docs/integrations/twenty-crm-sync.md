@@ -134,6 +134,32 @@ Twenty built-in composites (`Person.name` = {firstName,lastName}, `Person.emails
 the mapping in `twenty-sync/index.ts`; per-row failures are reported in `results` and never
 abort the run.
 
+## Normalization in the sync (2026-07)
+
+The sync is the normalization gate — junk can't re-enter Twenty:
+
+- **Explicit nulls:** empty source values are sent as `null` (not omitted) so stale
+  TEXT-era junk (`''` placeholders) is cleared on the next push. Omission is reserved for
+  PROTECT (pending inbound review) and unresolved relation targets. A cleared source FK
+  also nulls the Twenty relation.
+- **Countries:** all `qgCountry` values are canonicalized to full English names via
+  `_shared/geo-normalize.ts` (`buildCountryCanon`: countries table + alias map) — venues/
+  events store ISO-2, companies/hotels full names; Twenty gets one vocabulary.
+- **URLs:** `link()` canonicalizes (scheme added, host lowercased, `utm_*`/`fbclid`/…
+  params and bare trailing slash stripped); unparseable URLs become `null`.
+- **Placeholder addresses** (venue address == venue name, hotel address == city) are
+  suppressed to `null` — they carried no information.
+- **`qgDomain`** (companies, plain TEXT): normalized registrable domain from
+  `extractDomain()` for filtering/grouping. Deliberately NOT Twenty's built-in
+  `domainName` — Twenty auto-merges records sharing `domainName`, which would collapse
+  legitimately distinct entities (org + merchant pre-merge, multi-venue orgs) and break
+  the `externalId` idempotency key. Do not "fix" this by populating `domainName`.
+
+Field types in the workspace are typed (SELECT/LINKS/EMAILS/PHONES/DATE/CURRENCY) — see
+`docs/integrations/twenty-crm-field-types.md`. Schema drift is checked with
+`scripts/data-quality/twenty-schema-audit.mjs`; the stalled TEXT→typed migration is
+completed by `scripts/data-quality/twenty-schema-repair.mjs` (dry-run by default).
+
 ## Two-way (inbound, review-gated)
 
 Edits made **in Twenty** flow back through review — they never touch public content
@@ -155,6 +181,34 @@ editorial_hook, editorial_long, email, phone, website, logo_url · merchant =
 display_name · contact = name, category. Scores / safety flags / ids are **never**
 writable from Twenty. Migration `20260715183310_twenty_inbound_review.sql`; webhook
 registered via `POST /rest/webhooks`.
+
+## Data-quality program (2026-07-16)
+
+Live state after the CRM data-quality rollout:
+
+- **Workspace schema**: all `qg*` fields typed (SELECT/LINKS/EMAILS/PHONES/DATE/CURRENCY);
+  legacy TEXT archived as `<field>Legacy`; `qgCompletenessScore`/`qgTrustScore`/
+  `qgNeedsAttention` on all content objects; `companies.qgDomain`.
+- **Surfaces**: 9 quality views (Needs attention / Missing contact / Low completeness /
+  Active events) + "Data Health" dashboard + "Pending QG review flag" workflow (creates a
+  task when `qgNeedsAttention` flips true on a company). Stock demo workflows removed.
+- **Enrichment (source-side)**: `venue-contact-enrich` (crawl + regex + MX + LLM fallback),
+  `venue-osm-enrich` (Nominatim trickle), `scripts/data-quality/enrich-organizations.mjs`,
+  extended `pipeline-enrich-country-editorial`, star-rating grounding guard in
+  `hotel-agentic-enrich`. All provenance-stamped, review-gated below auto-apply confidence.
+- **Dedup/normalize**: `link_org_merchant_domain_matches()` (merchant→org by domain),
+  `organization` entity in dedup-engine, `run_data_normalization_guard()` nightly,
+  `run_org_quality_recompute()` + `run_content_completeness_recompute()` nightly.
+- **Events**: `link_event_venues()` (name+city match), flyer-title cleanup in
+  `event-agentic-enrich` (original kept in `events.raw_title`).
+- **Inbound**: venues whitelisted (name, description, email, phone, website, booking_url,
+  accessibility_notes). ⚠ Operator step still open: register the Twenty `venue.updated`
+  webhook (`POST /rest/webhooks`, targetUrl = twenty-inbound URL with `?token=` =
+  `TWENTY_WEBHOOK_SECRET`), mirroring the company/person registration.
+
+Known sync tails: Twenty's REST layer rejects a small % of records that GraphQL accepts
+(podcast news rows with junk `url` values, phones without derivable calling codes) —
+`sample_errors` in the sync response lists them; fix at source, not in Twenty.
 
 ## Scope / future
 
