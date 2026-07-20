@@ -16,10 +16,10 @@ export const SUPABASE_ANON_KEY =
 export const READ_ONLY = true
 
 // Beruf/Tätigkeit-Trennung (personalities.roles text[]).
-// Bleibt FALSE bis die Migration `roles-field.migration.draft.sql` auf der
-// Live-DB liegt — sonst 400 (Spalte fehlt). Danach hier auf true → Feld greift
-// überall (Select, Edit-Maske, Detail, Freitext). Siehe docs/roles-field-concept.md.
-export const ROLES_ENABLED = false
+// Migration 20260716120000_person_roles_field.sql ist live (Spalte + Backfill),
+// darum aktiv: Feld greift überall (Select, Edit-Maske, Detail, Freitext).
+// Siehe docs/roles-field-concept.md.
+export const ROLES_ENABLED = true
 
 export const PAGE_SIZE = 50
 

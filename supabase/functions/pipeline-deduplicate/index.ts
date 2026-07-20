@@ -47,6 +47,7 @@ function resolveEntityType(item: { target_table?: string | null; entity_type?: s
   if (table === 'news_articles' || et === 'news_articles' || et === 'news') return 'news'
   if (table === 'marketplace_listings' || et === 'marketplace') return 'marketplace'
   if (table === 'personalities' || et === 'personality') return 'personality'
+  if (table === 'organizations' || et === 'organization') return 'organization'
   return 'unknown'
 }
 
@@ -101,6 +102,12 @@ function buildDetArgs(type: EntityType, n: Record<string, unknown>, isHotel: boo
         p_merchant_domain: (n.merchant_domain as string) ?? null,
         p_external_url: (n.external_url as string) ?? (n.url as string) ?? null,
         p_brand: (n.brand as string) ?? null,
+        p_limit: 10,
+      }
+    case 'organization':
+      return {
+        p_name: String(n.name ?? n.title ?? ''),
+        p_website_domain: (c.website_domain as string) ?? (n.website_domain as string) ?? null,
         p_limit: 10,
       }
     default:
