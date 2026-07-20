@@ -86,7 +86,7 @@ const MIGRATION = {
   products: {
     qgAvailability: { type: 'SELECT', options: OPT(['IN_STOCK', 'OUT_OF_STOCK', 'UNKNOWN']) },
     qgPriceType: { type: 'SELECT', options: OPT(['FIXED', 'STARTING_AT']) },
-    qgContentRating: { type: 'SELECT', options: OPT(['SFW', 'ADULT', 'EXPLICIT']) },
+    qgContentRating: { type: 'SELECT', options: OPT(['SFW', 'ADULT', 'EXPLICIT', 'SUGGESTIVE']) },
     qgDepartment: { type: 'SELECT', options: OPT(['APPAREL', 'UNDERWEAR', 'SWIMWEAR', 'INTIMACY', 'BDSM_FETISH', 'HYGIENE', 'JEWELRY', 'BOOKS_ART', 'SERVICES', 'OTHER']) },
     qgCurrency: { type: 'SELECT', options: OPT(['EUR', 'USD', 'GBP', 'AUD', 'CAD', 'SEK', 'CHF', 'NOK', 'DKK', 'JPY']) },
     qgOwnershipTags: { type: 'MULTI_SELECT', options: OPT(['QUEER_OWNED', 'TRANS_OWNED', 'WOMEN_OWNED', 'BLACK_OWNED']) },
