@@ -1419,6 +1419,45 @@ const unionSeed: Milestone[] = [
     impact: 'positive',
     checked: false,
   },
+  {
+    id: 'partnerschaft-portugal-2001-05-16',
+    title: 'União de facto (Portugal)',
+    date: '2001-05-16',
+    country: 'Portugal',
+    description:
+      'Lei 7/2001 (Schutz der uniões de facto, auch gleichgeschlechtlich), am 11.5.2001 im Diário ' +
+      'da República veröffentlicht. Das Gesetz setzt kein eigenes Datum; nach der allgemeinen ' +
+      'Vacatio-legis-Regel (5. Tag nach Veröffentlichung) in Kraft getreten am 16. Mai 2001. ' +
+      '(Abgeleitetes Datum — kein Tagesdatum im Gesetzestext.)',
+    sources: [
+      { label: 'Diário da República — Lei 7/2001', url: 'https://diariodarepublica.pt/dr/detalhe/lei/7-2001-314194' },
+      { label: 'PGDL — Lei 7/2001', url: 'https://www.pgdlisboa.pt/leis/lei_mostra_articulado.php?nid=901&tabela=leis' },
+    ],
+    linked_persons: [],
+    category: 'Gesetz / Gleichstellung',
+    significance: 3,
+    impact: 'positive',
+    checked: false,
+  },
+  {
+    id: 'partnerschaft-malta-2014-04-14',
+    title: 'Civil Unions Act (Malta)',
+    date: '2014-04-14',
+    country: 'Malta',
+    description:
+      'Civil Unions Act (Kapitel 530 der Gesetze Maltas). Das offizielle Gesetzesportal ' +
+      'legislation.mt führt als Inkrafttreten (Data ta’ dħul fis-seħħ) den 14. April 2014 ' +
+      '(Datum der Verabschiedung im Parlament); vom Präsidenten am 16.4. unterzeichnet, erste ' +
+      'zivile Partnerschaft am 13.6.2014.',
+    sources: [
+      { label: 'legislation.mt — Civil Unions Act, Cap. 530', url: 'https://legislation.mt/eli/cap/530/eng' },
+    ],
+    linked_persons: [],
+    category: 'Gesetz / Gleichstellung',
+    significance: 3,
+    impact: 'positive',
+    checked: false,
+  },
 ]
 
 const SEED: Milestone[] = [...BASE_SEED, ...decrimSeed, ...unionSeed]
