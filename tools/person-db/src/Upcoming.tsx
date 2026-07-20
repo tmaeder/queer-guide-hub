@@ -26,7 +26,7 @@ interface Anniv {
 const SITE = 'https://queer.guide'
 const isoDay = (d: Date) => d.toISOString().slice(0, 10)
 const annivLabel = (a: Anniv) =>
-  a.anniversary === 'born' ? `${a.years_ago}. Geburtstag` : `† vor ${a.years_ago} J.`
+  a.anniversary === 'born' ? `🎂 ${a.years_ago}. Geburtstag` : `🕯️ † vor ${a.years_ago} J.`
 
 export function Upcoming() {
   const [rows, setRows] = useState<Anniv[]>([])
