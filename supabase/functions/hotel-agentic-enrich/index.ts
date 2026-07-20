@@ -95,7 +95,8 @@ Deno.serve(async (req: Request) => {
     try {
       // Prefer the property's own page; fall back to its existing listing text
       // (bot-blocked sources like misterb&b still get a grounded rewrite).
-      const page = (h.website ? await fetchHotelPage(h.website) : null)
+      const ownSitePage = h.website ? await fetchHotelPage(h.website) : null
+      const page = ownSitePage
         || (h.booking_url ? await fetchHotelPage(h.booking_url) : null)
       const sourceText = page || h.description || ''
       if (sourceText.trim().length < 60) { skipped++; results.push({ id: h.id, status: 'no_source' }); await logStep(supabase, h.id, status, started, dryRun); continue }
@@ -143,7 +144,10 @@ Deno.serve(async (req: Request) => {
           if (merged.length > existing.length) update.amenities = merged
         }
         if (ai.queer_safety_notes && (!h.queer_safety_notes || h.queer_safety_notes.trim().length === 0)) update.queer_safety_notes = ai.queer_safety_notes
-        if (typeof ai.star_rating === 'number' && ai.star_rating >= 1 && ai.star_rating <= 5 && h.star_rating == null) update.star_rating = ai.star_rating
+        // star_rating: only when grounded in the hotel's OWN website text. From the
+        // listing-text fallback or a third-party booking page the model can echo an
+        // unverified/invented star class — never store that.
+        if (typeof ai.star_rating === 'number' && ai.star_rating >= 1 && ai.star_rating <= 5 && h.star_rating == null && ownSitePage) update.star_rating = ai.star_rating
         if (typeof ai.price_range === 'number' && ai.price_range >= 1 && ai.price_range <= 4 && h.price_range == null) update.price_range = ai.price_range
         if (typeof ai.lgbtq_relevance_score === 'number' && ai.lgbtq_relevance_score >= 0.7 && h.lgbtq_friendly !== true) update.lgbtq_friendly = true
       }
