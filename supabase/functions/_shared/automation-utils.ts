@@ -112,46 +112,10 @@ export interface SharedRefs {
 export interface CountryRef { id: string; name: string; code: string }
 export interface CityRef { id: string; name: string; country_id: string }
 
-/** Canonical country alias map — shared by geo-enricher + data-normalizer */
-export const COUNTRY_ALIASES: Record<string, string> = {
-  'us': 'United States', 'usa': 'United States', 'u.s.': 'United States', 'u.s.a.': 'United States',
-  'united states of america': 'United States', 'america': 'United States',
-  'gb': 'United Kingdom', 'uk': 'United Kingdom', 'u.k.': 'United Kingdom',
-  'great britain': 'United Kingdom', 'england': 'United Kingdom', 'scotland': 'United Kingdom',
-  'wales': 'United Kingdom', 'britain': 'United Kingdom',
-  'de': 'Germany', 'deutschland': 'Germany', 'alemania': 'Germany', 'allemagne': 'Germany',
-  'fr': 'France', 'es': 'Spain', 'españa': 'Spain', 'espana': 'Spain',
-  'it': 'Italy', 'italia': 'Italy',
-  'nl': 'Netherlands', 'holland': 'Netherlands', 'the netherlands': 'Netherlands', 'nederland': 'Netherlands',
-  'ch': 'Switzerland', 'schweiz': 'Switzerland', 'suisse': 'Switzerland', 'svizzera': 'Switzerland',
-  'at': 'Austria', 'österreich': 'Austria', 'osterreich': 'Austria',
-  'au': 'Australia', 'ca': 'Canada', 'br': 'Brazil', 'brasil': 'Brazil',
-  'mx': 'Mexico', 'méxico': 'Mexico', 'jp': 'Japan',
-  'za': 'South Africa', 'nz': 'New Zealand', 'il': 'Israel',
-  'th': 'Thailand', 'pt': 'Portugal', 'be': 'Belgium',
-  'se': 'Sweden', 'dk': 'Denmark', 'no': 'Norway', 'fi': 'Finland',
-  'ie': 'Ireland', 'cz': 'Czech Republic', 'czechia': 'Czech Republic',
-  'tw': 'Taiwan', 'ar': 'Argentina', 'co': 'Colombia',
-  'in': 'India', 'cn': 'China', 'kr': 'South Korea', 'ru': 'Russia',
-  'tr': 'Turkey', 'türkiye': 'Turkey', 'türkei': 'Turkey', 'turkei': 'Turkey', 'turkiye': 'Turkey',
-  'gr': 'Greece', 'pl': 'Poland', 'česko': 'Czech Republic', 'cesko': 'Czech Republic',
-  // Demonyms
-  'american': 'United States', 'british': 'United Kingdom', 'english': 'United Kingdom',
-  'german': 'Germany', 'french': 'France', 'spanish': 'Spain',
-  'italian': 'Italy', 'dutch': 'Netherlands', 'swiss': 'Switzerland',
-  'austrian': 'Austria', 'australian': 'Australia', 'canadian': 'Canada',
-  'brazilian': 'Brazil', 'mexican': 'Mexico', 'japanese': 'Japan',
-  'south african': 'South Africa', 'israeli': 'Israel', 'thai': 'Thailand',
-  'portuguese': 'Portugal', 'belgian': 'Belgium', 'swedish': 'Sweden',
-  'danish': 'Denmark', 'norwegian': 'Norway', 'finnish': 'Finland',
-  'irish': 'Ireland', 'czech': 'Czech Republic', 'taiwanese': 'Taiwan',
-  'argentinian': 'Argentina', 'colombian': 'Colombia', 'indian': 'India',
-  'chinese': 'China', 'korean': 'South Korea', 'russian': 'Russia',
-  'turkish': 'Turkey', 'greek': 'Greece', 'polish': 'Poland',
-  'filipino': 'Philippines', 'nigerian': 'Nigeria', 'kenyan': 'Kenya',
-  'egyptian': 'Egypt', 'moroccan': 'Morocco', 'lebanese': 'Lebanon',
-  'jamaican': 'Jamaica', 'cuban': 'Cuba',
-}
+/** Canonical country alias map — moved to geo-normalize.ts (dependency-free);
+ *  re-exported here for existing importers. */
+import { COUNTRY_ALIASES } from './geo-normalize.ts'
+export { COUNTRY_ALIASES }
 
 // ── Content Type Registry ───────────────────────────────────────────────────────
 
