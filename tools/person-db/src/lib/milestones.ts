@@ -1191,6 +1191,198 @@ const unionSeed: Milestone[] = [
     impact: 'positive',
     checked: false,
   },
+  {
+    id: 'partnerschaft-belgien-2000-01-01',
+    title: 'Gesetzliches Zusammenwohnen (Belgien)',
+    date: '2000-01-01',
+    country: 'Belgien',
+    description:
+      'Cohabitation légale / wettelijke samenwoning, Gesetz vom 23.11.1998; per Königlichem Erlass ' +
+      'vom 14.12.1999 in Kraft getreten am 1. Januar 2000. Offen für gleich- und ' +
+      'verschiedengeschlechtliche Paare.',
+    sources: [
+      { label: 'Wikipedia — Recognition of same-sex unions in Belgium', url: 'https://en.wikipedia.org/wiki/Recognition_of_same-sex_unions_in_Belgium' },
+    ],
+    linked_persons: [],
+    category: 'Gesetz / Gleichstellung',
+    significance: 3,
+    impact: 'positive',
+    checked: false,
+  },
+  {
+    id: 'partnerschaft-neuseeland-2005-04-26',
+    title: 'Civil Union (Neuseeland)',
+    date: '2005-04-26',
+    country: 'Neuseeland',
+    description:
+      'Civil Union Act 2004; die zivile Partnerschaft wurde am 26. April 2005 wirksam — erste ' +
+      'nationale Anerkennung in Ozeanien. (Später durch die Ehe für alle 2013 ergänzt.)',
+    sources: [
+      { label: 'Wikipedia — Civil Union Act 2004', url: 'https://en.wikipedia.org/wiki/Civil_Union_Act_2004' },
+    ],
+    linked_persons: [],
+    category: 'Gesetz / Gleichstellung',
+    significance: 4,
+    impact: 'positive',
+    checked: false,
+  },
+  {
+    id: 'partnerschaft-suedafrika-2006-11-30',
+    title: 'Civil Union Act (Südafrika)',
+    date: '2006-11-30',
+    country: 'Südafrika',
+    description:
+      'Civil Union Act, 2006 — ermöglicht Ehe oder civil partnership für gleichgeschlechtliche Paare; ' +
+      'am 29.11.2006 sanktioniert, in Kraft getreten am 30. November 2006. Erstes Land Afrikas mit ' +
+      'rechtlicher Anerkennung.',
+    sources: [
+      { label: 'Wikipedia — Civil Union Act, 2006', url: 'https://en.wikipedia.org/wiki/Civil_Union_Act,_2006' },
+    ],
+    linked_persons: [],
+    category: 'Gesetz / Gleichstellung',
+    significance: 4,
+    impact: 'positive',
+    checked: false,
+  },
+  {
+    id: 'partnerschaft-kolumbien-2007-02-07',
+    title: 'Unión marital de hecho (Kolumbien)',
+    date: '2007-02-07',
+    country: 'Kolumbien',
+    description:
+      'Das Verfassungsgericht erkannte am 7. Februar 2007 die unión marital de hecho für ' +
+      'gleichgeschlechtliche Paare an — registrierbar per notarieller Urkunde.',
+    sources: [
+      { label: 'Wikipedia — Recognition of same-sex unions in Colombia', url: 'https://en.wikipedia.org/wiki/Recognition_of_same-sex_unions_in_Colombia' },
+    ],
+    linked_persons: [],
+    category: 'Gesetz / Gleichstellung',
+    significance: 3,
+    impact: 'positive',
+    checked: false,
+  },
+  {
+    id: 'partnerschaft-uruguay-2008-01-20',
+    title: 'Unión concubinaria (Uruguay)',
+    date: '2008-01-20',
+    country: 'Uruguay',
+    description:
+      'Unión concubinaria (Gesetz 18.246), am 10.1.2008 veröffentlicht; in Kraft getreten am ' +
+      '20. Januar 2008 (administrative Registrierung, keine gerichtliche Anerkennung nötig).',
+    sources: [
+      { label: 'Wikipedia — Recognition of same-sex unions in Uruguay', url: 'https://en.wikipedia.org/wiki/Recognition_of_same-sex_unions_in_Uruguay' },
+    ],
+    linked_persons: [],
+    category: 'Gesetz / Gleichstellung',
+    significance: 3,
+    impact: 'positive',
+    checked: false,
+  },
+  {
+    id: 'partnerschaft-brasilien-2011-05-13',
+    title: 'União estável (Brasilien)',
+    date: '2011-05-13',
+    country: 'Brasilien',
+    description:
+      'Der Oberste Gerichtshof (STF) entschied am 5.5.2011 (ADI 4277 / ADPF 132), dass ' +
+      'gleichgeschlechtliche Paare die união estável eintragen können; die Entscheidung wurde am ' +
+      '12.5. veröffentlicht und am 13. Mai 2011 wirksam.',
+    sources: [
+      { label: 'Wikipedia — Recognition of same-sex unions in Brazil', url: 'https://en.wikipedia.org/wiki/Recognition_of_same-sex_unions_in_Brazil' },
+    ],
+    linked_persons: [],
+    category: 'Gesetz / Gleichstellung',
+    significance: 4,
+    impact: 'positive',
+    checked: false,
+  },
+  {
+    id: 'partnerschaft-liechtenstein-2011-09-01',
+    title: 'Eingetragene Partnerschaft (Liechtenstein)',
+    date: '2011-09-01',
+    country: 'Liechtenstein',
+    description:
+      'Gesetz über die eingetragene Partnerschaft, in der Volksabstimmung 2011 mit 68,8 % angenommen; ' +
+      'in Kraft getreten am 1. September 2011. (Später durch die Ehe für alle 2025 abgelöst.)',
+    sources: [
+      { label: 'Wikipedia — Recognition of same-sex unions in Liechtenstein', url: 'https://en.wikipedia.org/wiki/Recognition_of_same-sex_unions_in_Liechtenstein' },
+    ],
+    linked_persons: [],
+    category: 'Gesetz / Gleichstellung',
+    significance: 3,
+    impact: 'positive',
+    checked: false,
+  },
+  {
+    id: 'partnerschaft-argentinien-2015-08-01',
+    title: 'Unión convivencial (Argentinien)',
+    date: '2015-08-01',
+    country: 'Argentinien',
+    description:
+      'Die registrierbare unión convivencial trat mit dem neuen Código Civil y Comercial landesweit ' +
+      'in Kraft am 1. August 2015. (Ehe für alle bereits 2010; Stadt Buenos Aires civil union 2002.)',
+    sources: [
+      { label: 'Wikipedia — Recognition of same-sex unions in Argentina', url: 'https://en.wikipedia.org/wiki/Recognition_of_same-sex_unions_in_Argentina' },
+    ],
+    linked_persons: [],
+    category: 'Gesetz / Gleichstellung',
+    significance: 3,
+    impact: 'positive',
+    checked: false,
+  },
+  {
+    id: 'partnerschaft-chile-2015-10-22',
+    title: 'Acuerdo de Unión Civil (Chile)',
+    date: '2015-10-22',
+    country: 'Chile',
+    description:
+      'Acuerdo de Unión Civil (AUC, Gesetz 20.830), am 21.4.2015 veröffentlicht; in Kraft getreten ' +
+      'am 22. Oktober 2015 (erste Eintragungen am selben Tag).',
+    sources: [
+      { label: 'Wikipedia — Recognition of same-sex unions in Chile', url: 'https://en.wikipedia.org/wiki/Recognition_of_same-sex_unions_in_Chile' },
+    ],
+    linked_persons: [],
+    category: 'Gesetz / Gleichstellung',
+    significance: 3,
+    impact: 'positive',
+    checked: false,
+  },
+  {
+    id: 'partnerschaft-griechenland-2015-12-24',
+    title: 'Sýmfono symvíosis (Griechenland)',
+    date: '2015-12-24',
+    country: 'Griechenland',
+    description:
+      'Sýmfono symvíosis (Vereinbarung über das Zusammenleben) für gleichgeschlechtliche Paare, ' +
+      'Gesetz 4356/2015; am 24.12.2015 im Regierungsanzeiger veröffentlicht und mit der ' +
+      'Veröffentlichung in Kraft getreten.',
+    sources: [
+      { label: 'Wikipedia — Recognition of same-sex unions in Greece', url: 'https://en.wikipedia.org/wiki/Recognition_of_same-sex_unions_in_Greece' },
+    ],
+    linked_persons: [],
+    category: 'Gesetz / Gleichstellung',
+    significance: 3,
+    impact: 'positive',
+    checked: false,
+  },
+  {
+    id: 'partnerschaft-estland-2016-01-01',
+    title: 'Kooseluseadus — Lebensgemeinschaft (Estland)',
+    date: '2016-01-01',
+    country: 'Estland',
+    description:
+      'Kooseluseadus (Gesetz über die eingetragene Lebensgemeinschaft), am 9.10.2015 beschlossen; ' +
+      'in Kraft getreten am 1. Januar 2016 — erstes Land des ehemaligen Ostblocks mit einer solchen ' +
+      'Regelung.',
+    sources: [
+      { label: 'Wikipedia — Recognition of same-sex unions in Estonia', url: 'https://en.wikipedia.org/wiki/Recognition_of_same-sex_unions_in_Estonia' },
+    ],
+    linked_persons: [],
+    category: 'Gesetz / Gleichstellung',
+    significance: 3,
+    impact: 'positive',
+    checked: false,
+  },
 ]
 
 const SEED: Milestone[] = [...BASE_SEED, ...decrimSeed, ...unionSeed]
