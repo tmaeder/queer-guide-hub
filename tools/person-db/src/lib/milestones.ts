@@ -811,6 +811,42 @@ const unionSeed: Milestone[] = [
     checked: false,
   },
   {
+    id: 'partnerschaft-niederlande-1998-01-01',
+    title: 'Eingetragene Partnerschaft (Niederlande)',
+    date: '1998-01-01',
+    country: 'Niederlande',
+    description:
+      'Die Niederlande führten am 1. Januar 1998 die eingetragene Partnerschaft ' +
+      '(geregistreerd partnerschap) ein — offen für gleich- und verschiedengeschlechtliche ' +
+      'Paare, drei Jahre vor der Ehe für alle (2001).',
+    sources: [
+      { label: 'Wikipedia — Registered partnership in the Netherlands', url: 'https://en.wikipedia.org/wiki/Registered_partnership_in_the_Netherlands' },
+    ],
+    linked_persons: [],
+    category: 'Gesetz / Gleichstellung',
+    significance: 4,
+    impact: 'positive',
+    checked: false,
+  },
+  {
+    id: 'partnerschaft-deutschland-2001-08-01',
+    title: 'Eingetragene Lebenspartnerschaft (Deutschland)',
+    date: '2001-08-01',
+    country: 'Deutschland',
+    description:
+      'Das Lebenspartnerschaftsgesetz (LPartG) wurde vom Bundestag am 10.11.2000 beschlossen, ' +
+      'von Präsident Johannes Rau am 16.2.2001 unterzeichnet; in Kraft getreten am 1. August 2001 ' +
+      '(erste Partnerschaft Reinhard Lüschow & Heinz Friedrich Haar, Hannover).',
+    sources: [
+      { label: 'Wikipedia — Recognition of same-sex unions in Germany', url: 'https://en.wikipedia.org/wiki/Recognition_of_same-sex_unions_in_Germany' },
+    ],
+    linked_persons: [],
+    category: 'Gesetz / Gleichstellung',
+    significance: 4,
+    impact: 'positive',
+    checked: false,
+  },
+  {
     id: 'partnerschaft-vereinigtes-koenigreich-2005-12-05',
     title: 'Eingetragene Partnerschaft (Vereinigtes Königreich)',
     date: '2005-12-05',
