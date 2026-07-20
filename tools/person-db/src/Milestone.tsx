@@ -170,7 +170,8 @@ export function Milestone() {
           (Wichtigkeit 1–5 + Richtung). Daten lokal im Tool (noch nicht Live-DB).
         </p>
         <MilestoneInfo />
-        <div className="liste-filters">
+      </div>
+      <div className="liste-filters">
           <NewMenu
             align="left"
             options={captureOptions({ onManual: () => setMode({ kind: 'form', initial: emptyMilestone() }) })}
@@ -200,7 +201,6 @@ export function Milestone() {
           </div>
           <span className="count">{filtered.length} / {items.length}</span>
         </div>
-      </div>
 
       {mode.kind === 'timeline' ? (
         <Timeline items={filtered} onOpen={openEdit} />

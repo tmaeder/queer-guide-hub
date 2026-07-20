@@ -141,15 +141,17 @@ export function Upcoming() {
   )
 
   const head = (
-    <div className="dash-head">
-      <h2>Upcoming — Jahrestage (30 Tage)</h2>
-      <p className="hint">
-        Geburts- &amp; Todestage öffentlicher Personen, {range.from} bis {range.to}.
-        {loading && ' · lädt…'}
-        {error && <span className="err"> · Fehler: {error}</span>}
-      </p>
+    <>
+      <div className="dash-head">
+        <h2>Upcoming — Jahrestage (30 Tage)</h2>
+        <p className="hint">
+          Geburts- &amp; Todestage öffentlicher Personen, {range.from} bis {range.to}.
+          {loading && ' · lädt…'}
+          {error && <span className="err"> · Fehler: {error}</span>}
+        </p>
+      </div>
       {filterBar}
-    </div>
+    </>
   )
 
   const pager = (
