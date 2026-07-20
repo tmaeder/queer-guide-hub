@@ -703,6 +703,95 @@ const unionSeed: Milestone[] = [
     checked: false,
   },
   {
+    id: 'ehe-portugal-2010-06-05',
+    title: 'Ehe für alle (Portugal)',
+    date: '2010-06-05',
+    country: 'Portugal',
+    description:
+      'Vom Parlament am 11.2.2010 beschlossen, vom Präsidenten am 17.5.2010 ratifiziert, ' +
+      'im Diário da República am 31.5.2010 veröffentlicht; in Kraft getreten am 5. Juni 2010 ' +
+      '(erste Trauungen am 7.6.).',
+    sources: [
+      { label: 'Wikipedia — Same-sex marriage in Portugal', url: 'https://en.wikipedia.org/wiki/Same-sex_marriage_in_Portugal' },
+    ],
+    linked_persons: [],
+    category: 'Gesetz / Gleichstellung',
+    significance: 4,
+    impact: 'positive',
+    checked: false,
+  },
+  {
+    id: 'ehe-island-2010-06-27',
+    title: 'Ehe für alle (Island)',
+    date: '2010-06-27',
+    country: 'Island',
+    description:
+      'Vom Althing beschlossen und von Präsident Ólafur Ragnar Grímsson am 22.6.2010 ' +
+      'unterzeichnet; fünf Tage später in Kraft getreten am 27. Juni 2010.',
+    sources: [
+      { label: 'Wikipedia — Same-sex marriage in Iceland', url: 'https://en.wikipedia.org/wiki/Same-sex_marriage_in_Iceland' },
+    ],
+    linked_persons: [],
+    category: 'Gesetz / Gleichstellung',
+    significance: 4,
+    impact: 'positive',
+    checked: false,
+  },
+  {
+    id: 'ehe-frankreich-2013-05-18',
+    title: 'Ehe für alle (Frankreich)',
+    date: '2013-05-18',
+    country: 'Frankreich',
+    description:
+      'Loi 2013-404: vom Verfassungsrat gebilligt und von Präsident Hollande am 17.5.2013 ' +
+      'verkündet, am 18.5.2013 im Journal Officiel veröffentlicht — mit der Veröffentlichung ' +
+      'in Kraft getreten (erste Trauung am 29.5.2013 in Montpellier).',
+    sources: [
+      { label: 'Wikipedia — Same-sex marriage in France', url: 'https://en.wikipedia.org/wiki/Same-sex_marriage_in_France' },
+      { label: 'Wikipedia — Law 2013-404', url: 'https://en.wikipedia.org/wiki/Law_2013-404' },
+    ],
+    linked_persons: [],
+    category: 'Gesetz / Gleichstellung',
+    significance: 4,
+    impact: 'positive',
+    checked: false,
+  },
+  {
+    id: 'ehe-luxemburg-2015-01-01',
+    title: 'Ehe für alle (Luxemburg)',
+    date: '2015-01-01',
+    country: 'Luxemburg',
+    description:
+      'Im Juni 2014 vom Parlament beschlossen, am 17.7.2014 im Amtsblatt veröffentlicht; ' +
+      'in Kraft getreten am ersten Tag des sechsten Monats nach Veröffentlichung = 1. Januar 2015.',
+    sources: [
+      { label: 'Wikipedia — Same-sex marriage in Luxembourg', url: 'https://en.wikipedia.org/wiki/Same-sex_marriage_in_Luxembourg' },
+    ],
+    linked_persons: [],
+    category: 'Gesetz / Gleichstellung',
+    significance: 4,
+    impact: 'positive',
+    checked: false,
+  },
+  {
+    id: 'ehe-irland-2015-11-16',
+    title: 'Ehe für alle (Irland)',
+    date: '2015-11-16',
+    country: 'Irland',
+    description:
+      'Nach dem Referendum am 22.5.2015 (62,07 % Ja) und der Unterzeichnung des Marriage Act 2015 ' +
+      'am 29.10.2015 in Kraft getreten am 16. November 2015 (erste Trauung am 17.11.). Erstes Land ' +
+      'weltweit, das die Ehe für alle per Volksabstimmung einführte.',
+    sources: [
+      { label: 'Wikipedia — Same-sex marriage in the Republic of Ireland', url: 'https://en.wikipedia.org/wiki/Same-sex_marriage_in_the_Republic_of_Ireland' },
+    ],
+    linked_persons: [],
+    category: 'Gesetz / Gleichstellung',
+    significance: 4,
+    impact: 'positive',
+    checked: false,
+  },
+  {
     id: 'partnerschaft-daenemark-1989-10-01',
     title: 'Erste eingetragene Partnerschaft weltweit (Dänemark)',
     date: '1989-10-01',
