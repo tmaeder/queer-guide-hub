@@ -1383,6 +1383,42 @@ const unionSeed: Milestone[] = [
     impact: 'positive',
     checked: false,
   },
+  {
+    id: 'partnerschaft-ecuador-2014-09-15',
+    title: 'Unión de hecho (Ecuador)',
+    date: '2014-09-15',
+    country: 'Ecuador',
+    description:
+      'Die unión de hecho für gleichgeschlechtliche Paare war seit der Verfassung 2008 vorgesehen; ' +
+      'die landesweite Eintragung im Zivilstandsregister begann am 15. September 2014 (gesetzliche ' +
+      'Kodifizierung 2015).',
+    sources: [
+      { label: 'Wikipedia — Recognition of same-sex unions in Ecuador', url: 'https://en.wikipedia.org/wiki/Recognition_of_same-sex_unions_in_Ecuador' },
+    ],
+    linked_persons: [],
+    category: 'Gesetz / Gleichstellung',
+    significance: 3,
+    impact: 'positive',
+    checked: false,
+  },
+  {
+    id: 'partnerschaft-monaco-2020-06-27',
+    title: 'Contrat civil de solidarité (Monaco)',
+    date: '2020-06-27',
+    country: 'Monaco',
+    description:
+      'Contrat civil de solidarité (Loi n° 1.481), von Fürst Albert II. am 17.12.2019 unterzeichnet, ' +
+      'am 27.12.2019 im Amtsblatt veröffentlicht; sechs Monate später in Kraft getreten am ' +
+      '27. Juni 2020.',
+    sources: [
+      { label: 'Wikipedia — Recognition of same-sex unions in Monaco', url: 'https://en.wikipedia.org/wiki/Recognition_of_same-sex_unions_in_Monaco' },
+    ],
+    linked_persons: [],
+    category: 'Gesetz / Gleichstellung',
+    significance: 3,
+    impact: 'positive',
+    checked: false,
+  },
 ]
 
 const SEED: Milestone[] = [...BASE_SEED, ...decrimSeed, ...unionSeed]
