@@ -864,6 +864,145 @@ const unionSeed: Milestone[] = [
     impact: 'positive',
     checked: false,
   },
+  {
+    id: 'partnerschaft-norwegen-1993-08-01',
+    title: 'Eingetragene Partnerschaft (Norwegen)',
+    date: '1993-08-01',
+    country: 'Norwegen',
+    description:
+      'Norwegen führte als weltweit zweites Land (nach Dänemark) die eingetragene Partnerschaft ein. ' +
+      'Gesetz (Act No. 40) vom 30.4.1993; in Kraft getreten am 1. August 1993.',
+    sources: [
+      { label: 'regjeringen.no — Registered Partnership (PDF)', url: 'https://www.regjeringen.no/globalassets/upload/kilde/bfd/bro/2000/0009/ddd/pdfv/292713-partnerskap_internett.pdf' },
+    ],
+    linked_persons: [],
+    category: 'Gesetz / Gleichstellung',
+    significance: 4,
+    impact: 'positive',
+    checked: false,
+  },
+  {
+    id: 'partnerschaft-schweden-1995-01-01',
+    title: 'Eingetragene Partnerschaft (Schweden)',
+    date: '1995-01-01',
+    country: 'Schweden',
+    description:
+      'Lag om registrerat partnerskap (SFS 1994:1117), am 23.6.1994 ausgefertigt; in Kraft getreten ' +
+      'am 1. Januar 1995.',
+    sources: [
+      { label: 'Wikipedia — Same-sex marriage in Sweden', url: 'https://en.wikipedia.org/wiki/Same-sex_marriage_in_Sweden' },
+    ],
+    linked_persons: [],
+    category: 'Gesetz / Gleichstellung',
+    significance: 4,
+    impact: 'positive',
+    checked: false,
+  },
+  {
+    id: 'partnerschaft-frankreich-1999-11-16',
+    title: 'PACS — Zivilpakt (Frankreich)',
+    date: '1999-11-16',
+    country: 'Frankreich',
+    description:
+      'Der PACS (pacte civil de solidarité, Loi 99-944), am 15.11.1999 verkündet, am 16.11.1999 im ' +
+      'Journal officiel veröffentlicht und in Kraft getreten (operative Anwendung nach ' +
+      'Durchführungsdekret vom 21.12.1999). Offen für gleich- und verschiedengeschlechtliche Paare.',
+    sources: [
+      { label: 'Légifrance — LOI n° 99-944 (PACS)', url: 'https://www.legifrance.gouv.fr/loda/id/JORFTEXT000000761717' },
+    ],
+    linked_persons: [],
+    category: 'Gesetz / Gleichstellung',
+    significance: 4,
+    impact: 'positive',
+    checked: false,
+  },
+  {
+    id: 'partnerschaft-andorra-2005-03-24',
+    title: 'Eingetragene Partnerschaft (Andorra)',
+    date: '2005-03-24',
+    country: 'Andorra',
+    description:
+      'Llei 4/2005 qualificada de les unions estables de parella, vom Consell General am 21.2.2005 ' +
+      'beschlossen, am 23.3.2005 im BOPA veröffentlicht; am Folgetag in Kraft getreten = 24. März 2005.',
+    sources: [
+      { label: 'Consell General — Llei 4/2005 (PDF)', url: 'https://www.consellgeneral.ad/fitxers/documents/lleis-2005/llei-4-2005.pdf/at_download/file' },
+    ],
+    linked_persons: [],
+    category: 'Gesetz / Gleichstellung',
+    significance: 3,
+    impact: 'positive',
+    checked: false,
+  },
+  {
+    id: 'partnerschaft-irland-2011-01-01',
+    title: 'Eingetragene Partnerschaft (Irland)',
+    date: '2011-01-01',
+    country: 'Irland',
+    description:
+      'Civil Partnership and Certain Rights and Obligations of Cohabitants Act 2010 (No. 24 of 2010), ' +
+      'Enactment am 19.7.2010; per Ministerverordnung (S.I. 648/2010) in Kraft getreten am 1. Januar 2011.',
+    sources: [
+      { label: 'Irish Statute Book — Act No. 24 of 2010', url: 'https://www.irishstatutebook.ie/eli/2010/act/24/enacted/en/html' },
+    ],
+    linked_persons: [],
+    category: 'Gesetz / Gleichstellung',
+    significance: 3,
+    impact: 'positive',
+    checked: false,
+  },
+  {
+    id: 'partnerschaft-italien-2016-06-05',
+    title: 'Unioni civili — zivile Partnerschaft (Italien)',
+    date: '2016-06-05',
+    country: 'Italien',
+    description:
+      'Legge Cirinnà (Gesetz Nr. 76/2016) über die unioni civili für gleichgeschlechtliche Paare, ' +
+      'am 21.5.2016 in der Gazzetta Ufficiale veröffentlicht; nach 15 Tagen vacatio legis in Kraft ' +
+      'getreten am 5. Juni 2016.',
+    sources: [
+      { label: 'Gazzetta Ufficiale — Legge 76/2016', url: 'https://www.gazzettaufficiale.it/eli/id/2016/05/21/16G00082/sg' },
+    ],
+    linked_persons: [],
+    category: 'Gesetz / Gleichstellung',
+    significance: 4,
+    impact: 'positive',
+    checked: false,
+  },
+  {
+    id: 'partnerschaft-montenegro-2020-07-15',
+    title: 'Eingetragene Partnerschaft (Montenegro)',
+    date: '2020-07-15',
+    country: 'Montenegro',
+    description:
+      'Zakon o životnom partnerstvu — vom Parlament am 1.7.2020 beschlossen, vom Präsidenten am ' +
+      '3.7.2020 unterzeichnet; in Kraft getreten am 15. Juli 2020 (Anwendung ab 15.7.2021). ' +
+      'Erstes Land des westlichen Balkans mit rechtlicher Anerkennung.',
+    sources: [
+      { label: 'ILO NATLEX — Law on Life Partnership (PDF)', url: 'https://natlex.ilo.org/dyn/natlex2/natlex2/files/download/116828/MNE-116828.pdf' },
+    ],
+    linked_persons: [],
+    category: 'Gesetz / Gleichstellung',
+    significance: 3,
+    impact: 'positive',
+    checked: false,
+  },
+  {
+    id: 'partnerschaft-lettland-2024-07-01',
+    title: 'Eingetragene Partnerschaft (Lettland)',
+    date: '2024-07-01',
+    country: 'Lettland',
+    description:
+      'Partnerschaft per notarieller Beurkundung (Änderung des Notariatsgesetzes), von der Saeima ' +
+      'am 9.11.2023 beschlossen; verfügbar/in Kraft ab 1. Juli 2024.',
+    sources: [
+      { label: 'Justizministerium Lettland (tm.gov.lv)', url: 'https://www.tm.gov.lv/en/article/protecting-everyones-human-rights-and-privacy-1-july-it-will-be-possible-register-partnerships-latvia' },
+    ],
+    linked_persons: [],
+    category: 'Gesetz / Gleichstellung',
+    significance: 3,
+    impact: 'positive',
+    checked: false,
+  },
 ]
 
 const SEED: Milestone[] = [...BASE_SEED, ...decrimSeed, ...unionSeed]
