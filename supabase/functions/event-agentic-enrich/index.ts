@@ -5,6 +5,13 @@
 // fields; low confidence routes to triage (needs_attention=true) without overwriting.
 // LLM-gated: circuit-broken + per-day cap. Cheap-first: only thin/low-trust events.
 //
+// Phase 4 extraction step: clean_title (flyer-title cleanup, >= 0.9 auto-applies after
+// preserving the original in events.raw_title), extracted_venue_name/address (fill
+// EMPTY fields only — venue LINKING is the SQL RPC link_event_venues, not this job),
+// extracted_date (mismatch vs start_date > 1 day → review_queue row, never auto-fixed).
+// Selection is ACTIVE events only (start_date >= now()-1y OR NULL) via the
+// events_needing_moat_enrich selector (migration 20260716211500).
+//
 // Auth: X-Webhook-Secret (cron) or admin/service-role. Body: { batch_limit?, dry_run?, event_ids?, daily_cap? }.
 
 import { getCorsHeaders, getServiceClient, requireInternalOrAdmin, jsonResponse } from '../_shared/supabase-client.ts'
@@ -22,6 +29,8 @@ const DEFAULT_DAILY_CAP = 60        // drain untouched URL-events once each (sel
 const GET_TIMEOUT = 10_000
 const MAX_BODY_BYTES = 500_000
 const AUTO_APPLY_CONFIDENCE = 0.8
+const TITLE_APPLY_CONFIDENCE = 0.9  // flyer-title cleanup + extracted venue/address need higher confidence
+const DATE_MISMATCH_TOLERANCE_DAYS = 1  // ignore timezone/off-by-one noise
 const STEP = 'agentic-enrich'
 
 const fetchEventPage = (url: string) =>
@@ -68,7 +77,7 @@ Deno.serve(async (req: Request) => {
   // recent past. Excludes the shared WNBR homepage (no per-event moat info).
   let query = supabase
     .from('events')
-    .select('id, title, description, city, country, country_id, venue_name, website, ticket_url, accessibility_attributes, target_groups, age_restriction, trust_score, lgbti_relevance_score, enrichment_status')
+    .select('id, title, raw_title, start_date, address, field_provenance, description, city, country, country_id, venue_name, website, ticket_url, accessibility_attributes, target_groups, age_restriction, trust_score, lgbti_relevance_score, enrichment_status')
     .is('duplicate_of_id', null)
   if (eventIds?.length) {
     query = query.in('id', eventIds)
@@ -141,6 +150,60 @@ Deno.serve(async (req: Request) => {
         if (typeof ai.lgbtq_relevance_score === 'number' && ev.lgbti_relevance_score == null)
           update.lgbti_relevance_score = Math.max(0, Math.min(1, ai.lgbtq_relevance_score))
       }
+      // Flyer-title cleanup + page-grounded venue/address — jsonb field_provenance
+      // per the event truth-loop convention ({field: {value, confidence, source}}).
+      const prov: Record<string, unknown> = { ...((ev.field_provenance as Record<string, unknown>) ?? {}) }
+      let provChanged = false
+      if (confidence >= TITLE_APPLY_CONFIDENCE) {
+        const cleanTitle = typeof ai.clean_title === 'string' ? ai.clean_title.trim() : ''
+        if (cleanTitle && cleanTitle !== ev.title) {
+          // Preserve the original flyer title FIRST (only once — never overwrite raw_title).
+          if (ev.raw_title == null) update.raw_title = ev.title
+          update.title = cleanTitle
+          prov.title = { value: cleanTitle, confidence, source: 'event-agentic-enrich', cleaned_at: new Date().toISOString() }
+          provChanged = true
+        }
+        // Fill EMPTY venue_name/address only (never overwrite; linking itself is the
+        // SQL RPC link_event_venues' job — this just feeds its name+city matcher).
+        const exVenue = typeof ai.extracted_venue_name === 'string' ? ai.extracted_venue_name.trim() : ''
+        if (exVenue && !ev.venue_name) {
+          update.venue_name = exVenue
+          prov.venue_name = { value: exVenue, confidence, source: 'event-agentic-enrich' }
+          provChanged = true
+        }
+        const exAddr = typeof ai.extracted_address === 'string' ? ai.extracted_address.trim() : ''
+        if (exAddr && !ev.address) {
+          update.address = exAddr
+          prov.address = { value: exAddr, confidence, source: 'event-agentic-enrich' }
+          provChanged = true
+        }
+      }
+      if (provChanged) update.field_provenance = prov
+
+      // extracted_date vs start_date mismatch → review queue. NEVER auto-fix dates.
+      let dateMismatch = false
+      const exDate = typeof ai.extracted_date === 'string' ? ai.extracted_date.trim().slice(0, 10) : ''
+      if (/^\d{4}-\d{2}-\d{2}$/.test(exDate) && ev.start_date) {
+        const diffDays = Math.abs(new Date(`${exDate}T00:00:00Z`).getTime() - new Date(ev.start_date).getTime()) / 86_400_000
+        if (diffDays > DATE_MISMATCH_TOLERANCE_DAYS) {
+          dateMismatch = true
+          if (!dryRun) {
+            // Generic review_queue (there is no event_review_queue); dedupe pending rows.
+            const { data: openRow } = await supabase
+              .from('review_queue').select('id')
+              .eq('entity_type', 'event').eq('entity_id', ev.id)
+              .eq('review_type', 'date_mismatch').eq('status', 'pending')
+              .limit(1).maybeSingle()
+            if (!openRow) {
+              await supabase.from('review_queue').insert({
+                entity_type: 'event', entity_id: ev.id, review_type: 'date_mismatch', status: 'pending',
+                details: { start_date: ev.start_date, extracted_date: exDate, confidence, source: 'event-agentic-enrich', page: target },
+              })
+            }
+          }
+        }
+      }
+
       // Always stash the full extraction (incl. safety_notes/dress_code/lineup) for audit + admin.
       const enrichmentStatus = { ...(ev.enrichment_status ?? {}), agentic: { at: new Date().toISOString(), confidence, ...ai } }
       update.enrichment_status = enrichmentStatus
@@ -151,12 +214,12 @@ Deno.serve(async (req: Request) => {
         await supabase.from('events').update(update).eq('id', ev.id)
         await supabase.from('event_quality_signals').insert({
           event_id: ev.id, signal_type: 'enrichment', value: Math.round(confidence * 10000) / 10000,
-          source: 'event-agentic-enrich', details: { applied: highConf, fields: Object.keys(update).filter(k => k !== 'enrichment_status' && k !== 'last_verified_at' && k !== 'needs_attention') },
+          source: 'event-agentic-enrich', details: { applied: highConf, date_mismatch: dateMismatch, fields: Object.keys(update).filter(k => !['enrichment_status', 'last_verified_at', 'needs_attention', 'field_provenance'].includes(k)) },
         })
       }
       status = 'done'
       if (highConf) enriched++; else flagged++
-      results.push({ id: ev.id, status: highConf ? 'applied' : 'flagged', confidence, fields: Object.keys(update).length })
+      results.push({ id: ev.id, status: highConf ? 'applied' : 'flagged', confidence, fields: Object.keys(update).length, title_cleaned: 'title' in update, date_mismatch: dateMismatch })
     } catch (e) {
       status = 'failed'
       results.push({ id: ev.id, status: 'error', error: e instanceof Error ? e.message : String(e) })
