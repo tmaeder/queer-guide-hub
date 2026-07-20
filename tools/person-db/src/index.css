@@ -95,6 +95,12 @@ button.primary { background: var(--accent); color: var(--bg); border-color: var(
 .pill.warn { color: var(--danger); border-color: var(--danger); }
 .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--fg); flex: none; }
 .status-dot { width: 9px; height: 9px; border-radius: 50%; flex: none; display: inline-block; }
+
+/* Queere Aktionstage in Upcoming */
+.day-ico { width: 40px; height: 40px; border-radius: 8px; flex: none; display: grid; place-items: center; background: var(--panel); font-size: 20px; }
+.anniv-day, .row-day { background: var(--panel); }
+.row-day { cursor: default; }
+.day-pill { color: var(--fg); border-color: var(--fg); }
 .status-dot.green { background: #16a34a; }
 .status-dot.yellow { background: #eab308; }
 .status-dot.red { background: var(--danger); }

@@ -9,6 +9,7 @@ import { KebabMenu } from './KebabMenu'
 import { PersonEditForm } from './PersonEditForm'
 import { DetailPanel } from './DetailPanel'
 import { ViewToggle, type Layout } from './ViewToggle'
+import { queerDaysInRange, type QueerDayEvent } from './lib/queerDays'
 
 interface Anniv {
   id: string
@@ -102,11 +103,33 @@ export function Upcoming() {
 
   const shown = filtered.slice(0, visible)
   const hasMore = visible < filtered.length
+
+  // Queere Aktionstage im Fenster (nur wenn Anlass-Filter "alle"; Suche greift auf den Namen).
+  const dayEvents = useMemo(() => {
+    if (type !== 'all') return [] as QueerDayEvent[]
+    const term = q.trim().toLowerCase()
+    return queerDaysInRange(range.from, range.to).filter((d) => !term || d.name.toLowerCase().includes(term))
+  }, [range, type, q])
+
+  // Gruppiert nach Datum: Aktionstage + Personen-Jahrestage.
   const groups = useMemo(() => {
-    const m = new Map<string, Anniv[]>()
-    for (const r of shown) (m.get(r.occurs_on) ?? m.set(r.occurs_on, []).get(r.occurs_on)!).push(r)
+    const m = new Map<string, { anniv: Anniv[]; days: QueerDayEvent[] }>()
+    const ensure = (d: string) => { let g = m.get(d); if (!g) { g = { anniv: [], days: [] }; m.set(d, g) } return g }
+    for (const r of shown) ensure(r.occurs_on).anniv.push(r)
+    for (const d of dayEvents) ensure(d.occurs_on).days.push(d)
     return [...m.entries()].sort((a, b) => a[0].localeCompare(b[0]))
-  }, [shown])
+  }, [shown, dayEvents])
+
+  // Geteilte Ansicht: flache, nach Datum sortierte Mischung.
+  const splitItems = useMemo(() => {
+    type Item = { kind: 'anniv'; a: Anniv } | { kind: 'day'; d: QueerDayEvent }
+    const items: Item[] = [
+      ...shown.map((a): Item => ({ kind: 'anniv', a })),
+      ...dayEvents.map((d): Item => ({ kind: 'day', d })),
+    ]
+    const dateOf = (i: Item) => (i.kind === 'anniv' ? i.a.occurs_on : i.d.occurs_on)
+    return items.sort((x, y) => dateOf(x).localeCompare(dateOf(y)))
+  }, [shown, dayEvents])
 
   const fmtDate = (iso: string) =>
     new Date(iso + 'T00:00:00').toLocaleDateString('de-DE', { weekday: 'short', day: '2-digit', month: 'long' })
@@ -171,24 +194,34 @@ export function Upcoming() {
         {head}
         <div className="body">
           <div className="list">
-            {shown.map((a) => (
-              <div
-                key={a.id + a.anniversary}
-                className={'row' + (selectedId === a.id ? ' sel' : '')}
-                onClick={() => selectRow(a.id)}
-              >
-                {checked.has(a.id) && <span className="check">✓</span>}
-                {a.image_url ? <img src={a.image_url} alt="" loading="lazy" /> : <span className="noimg">—</span>}
-                <div className="meta">
-                  <div className="name">
-                    {annotated.has(a.id) && <span className="dot" />}{' '}
-                    {a.name}
-                    <span className={'pill' + (a.anniversary === 'died' ? ' warn' : '')}>{annivLabel(a)}</span>
+            {splitItems.map((it) =>
+              it.kind === 'day' ? (
+                <div key={'day-' + it.d.name} className="row row-day">
+                  <span className="day-ico" aria-hidden>🏳️‍🌈</span>
+                  <div className="meta">
+                    <div className="name">{it.d.name}<span className="pill day-pill">Aktionstag</span></div>
+                    <div className="sub">{[it.d.note, fmtDate(it.d.occurs_on)].filter(Boolean).join(' · ')}</div>
                   </div>
-                  <div className="sub">{[a.profession, fmtDate(a.occurs_on)].filter(Boolean).join(' · ')}</div>
                 </div>
-              </div>
-            ))}
+              ) : (
+                <div
+                  key={it.a.id + it.a.anniversary}
+                  className={'row' + (selectedId === it.a.id ? ' sel' : '')}
+                  onClick={() => selectRow(it.a.id)}
+                >
+                  {checked.has(it.a.id) && <span className="check">✓</span>}
+                  {it.a.image_url ? <img src={it.a.image_url} alt="" loading="lazy" /> : <span className="noimg">—</span>}
+                  <div className="meta">
+                    <div className="name">
+                      {annotated.has(it.a.id) && <span className="dot" />}{' '}
+                      {it.a.name}
+                      <span className={'pill' + (it.a.anniversary === 'died' ? ' warn' : '')}>{annivLabel(it.a)}</span>
+                    </div>
+                    <div className="sub">{[it.a.profession, fmtDate(it.a.occurs_on)].filter(Boolean).join(' · ')}</div>
+                  </div>
+                </div>
+              ),
+            )}
             {pager}
           </div>
           <DetailPanel
@@ -207,10 +240,19 @@ export function Upcoming() {
     <div className="dash">
       {head}
       {!loading && !error && groups.length === 0 && <p className="hint">Keine Jahrestage.</p>}
-      {groups.map(([day, items]) => (
+      {groups.map(([day, g]) => (
         <div className="anniv-group" key={day}>
           <h3 className="anniv-date">{fmtDate(day)}</h3>
-          {items.map((a) => (
+          {g.days.map((d) => (
+            <div className="anniv-row anniv-day" key={'day-' + d.name}>
+              <span className="day-ico" aria-hidden>🏳️‍🌈</span>
+              <span className="meta">
+                <span className="name">{d.name}<span className="pill day-pill">Aktionstag</span></span>
+                {d.note && <span className="sub">{d.note}</span>}
+              </span>
+            </div>
+          ))}
+          {g.anniv.map((a) => (
             <div className="anniv-row" key={a.id + a.anniversary}>
               {a.image_url ? <img src={a.image_url} alt="" loading="lazy" /> : <span className="noimg">—</span>}
               <span className="meta">
