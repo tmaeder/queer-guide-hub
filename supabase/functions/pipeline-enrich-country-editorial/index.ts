@@ -47,6 +47,7 @@ interface Candidate {
   crim: CriminalizationLike | null
   same_sex_unions: string | null
   has_description: boolean
+  has_hook: boolean
   enrichment_status: Record<string, unknown>
 }
 
@@ -91,10 +92,12 @@ Deno.serve(async (req: Request) => {
   // Skip non-serviceable territories (shell_status) — they have no LGBTQ+ content to write about.
   let q = supabase
     .from('countries')
-    .select('id, name, capital, population, currency, languages, equality_score, description, enrichment_status, lgbti_criminalization, lgbti_same_sex_unions, regions(name)')
+    .select('id, name, capital, population, currency, languages, equality_score, description, editorial_hook, enrichment_status, lgbti_criminalization, lgbti_same_sex_unions, regions(name)')
     .is('duplicate_of_id', null)
     .eq('shell_status', 'real')
-    .is('editorial_hook', null)
+    // Hook-less countries AND countries with a NULL/empty description (those may
+    // already have a hook from an earlier import — it is never overwritten below).
+    .or('editorial_hook.is.null,description.is.null,description.eq.')
     .order('content_completeness_score', { ascending: false, nullsFirst: false })
     // Wide window: already-queued countries stay hook-null and rank high (good data,
     // held for review), so a small window starves fresh candidates. Fetch all hook-null
@@ -133,6 +136,7 @@ Deno.serve(async (req: Request) => {
       crim: (r.lgbti_criminalization as CriminalizationLike) ?? null,
       same_sex_unions: (r.lgbti_same_sex_unions as string) ?? null,
       has_description: typeof r.description === 'string' && (r.description as string).trim().length > 0,
+      has_hook: typeof r.editorial_hook === 'string' && (r.editorial_hook as string).trim().length > 0,
       enrichment_status: (r.enrichment_status as Record<string, unknown>) ?? {},
     }))
 
@@ -207,8 +211,10 @@ Deno.serve(async (req: Request) => {
     let logStatus = 'done'
     if (autoPublish) {
       // Service-role direct write (approve_editorial_draft requires an admin JWT).
-      // Fill description (most-rendered About field) only when still empty.
-      const update: Record<string, unknown> = { editorial_hook: hook, editorial_long: long, enrichment_status: status }
+      // Fill description (most-rendered About field) only when still empty; never
+      // overwrite an existing hook/long (description-null countries re-enter here).
+      const update: Record<string, unknown> = { enrichment_status: status }
+      if (!c.has_hook) { update.editorial_hook = hook; update.editorial_long = long }
       if (!c.has_description) update.description = long
       const { error: upErr } = await supabase.from('countries').update(update).eq('id', c.id)
       if (upErr) {

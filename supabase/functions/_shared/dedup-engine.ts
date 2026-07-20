@@ -17,7 +17,7 @@
 
 export type EntityType =
   | 'venue' | 'hotel' | 'event' | 'city' | 'country'
-  | 'news' | 'marketplace' | 'personality'
+  | 'news' | 'marketplace' | 'personality' | 'organization'
 
 export type Decision = 'unique' | 'duplicate' | 'merge_candidate'
 export type Action = 'no_match' | 'auto_merge' | 'flag_review'
@@ -304,6 +304,18 @@ export const DEDUP_REGISTRY: Record<EntityType, TypeConfig> = {
     semantic: { enabled: true, minCosine: 0.90, confirmWeight: 0.06, standaloneReviewCosine: 0.95 },
     thresholds: { autoMerge: 0.93, review: 0.82 },
     guards: [countryGuard()],
+  },
+  organization: {
+    entityType: 'organization',
+    candidateRpc: 'find_organization_duplicate_candidates',
+    idField: 'organization_id',
+    // Orgs are indexed in search_documents; semantic confirms/flags but the RPC
+    // scoring is the precision contract: despaced-name exact + same
+    // website_domain = 1.00 (only signal above autoMerge); domain-only 0.90 and
+    // name-only 0.85 land in review. No geo on orgs → no geoGuard.
+    semantic: { enabled: true, minCosine: 0.90, confirmWeight: 0.05, standaloneReviewCosine: 0.96 },
+    thresholds: { autoMerge: 0.92, review: 0.80 },
+    guards: [],
   },
 }
 
