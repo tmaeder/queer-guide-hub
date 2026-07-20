@@ -1003,6 +1003,194 @@ const unionSeed: Milestone[] = [
     impact: 'positive',
     checked: false,
   },
+  {
+    id: 'partnerschaft-island-1996-06-27',
+    title: 'Eingetragene Partnerschaft (Island)',
+    date: '1996-06-27',
+    country: 'Island',
+    description:
+      'Gesetz 87/1996 über die staðfest samvist (bestätigte Lebensgemeinschaft), vom Althing ' +
+      'am 4.6.1996 beschlossen; in Kraft getreten am 27. Juni 1996.',
+    sources: [
+      { label: 'Wikipedia — Recognition of same-sex unions in Iceland', url: 'https://en.wikipedia.org/wiki/Recognition_of_same-sex_unions_in_Iceland' },
+    ],
+    linked_persons: [],
+    category: 'Gesetz / Gleichstellung',
+    significance: 4,
+    impact: 'positive',
+    checked: false,
+  },
+  {
+    id: 'partnerschaft-finnland-2002-03-01',
+    title: 'Eingetragene Partnerschaft (Finnland)',
+    date: '2002-03-01',
+    country: 'Finnland',
+    description:
+      'Gesetz über die rekisteröity parisuhde (registrierte Partnerschaft) für gleichgeschlechtliche ' +
+      'Paare; in Kraft getreten am 1. März 2002.',
+    sources: [
+      { label: 'Wikipedia — Recognition of same-sex unions in Finland', url: 'https://en.wikipedia.org/wiki/Recognition_of_same-sex_unions_in_Finland' },
+    ],
+    linked_persons: [],
+    category: 'Gesetz / Gleichstellung',
+    significance: 3,
+    impact: 'positive',
+    checked: false,
+  },
+  {
+    id: 'partnerschaft-luxemburg-2004-11-01',
+    title: 'Partenariat — Partnerschaft (Luxemburg)',
+    date: '2004-11-01',
+    country: 'Luxemburg',
+    description:
+      'Gesetz über bestimmte Partnerschaften (partenariat), von Großherzog Henri am 9.7.2004 ' +
+      'unterzeichnet; in Kraft getreten am 1. November 2004.',
+    sources: [
+      { label: 'Wikipedia — Recognition of same-sex unions in Luxembourg', url: 'https://en.wikipedia.org/wiki/Recognition_of_same-sex_unions_in_Luxembourg' },
+    ],
+    linked_persons: [],
+    category: 'Gesetz / Gleichstellung',
+    significance: 3,
+    impact: 'positive',
+    checked: false,
+  },
+  {
+    id: 'partnerschaft-slowenien-2005-07-23',
+    title: 'Registrierte Partnerschaft (Slowenien)',
+    date: '2005-07-23',
+    country: 'Slowenien',
+    description:
+      'Zakon o registraciji istospolne partnerske skupnosti (ZRIPS), am 8.7.2005 im Amtsblatt ' +
+      'veröffentlicht; in Kraft getreten (uveljavitev) am 23. Juli 2005; Anwendung (uporaba) ab ' +
+      '23. Juli 2006.',
+    sources: [
+      { label: 'Wikipedia — Recognition of same-sex unions in Slovenia', url: 'https://en.wikipedia.org/wiki/Recognition_of_same-sex_unions_in_Slovenia' },
+    ],
+    linked_persons: [],
+    category: 'Gesetz / Gleichstellung',
+    significance: 3,
+    impact: 'positive',
+    checked: false,
+  },
+  {
+    id: 'partnerschaft-tschechien-2006-07-01',
+    title: 'Registrierte Partnerschaft (Tschechien)',
+    date: '2006-07-01',
+    country: 'Tschechien',
+    description:
+      'Zákon o registrovaném partnerství (Gesetz 115/2006 Sb.), im März 2006 beschlossen; ' +
+      'in Kraft getreten am 1. Juli 2006.',
+    sources: [
+      { label: 'Wikipedia — Registered partnership in the Czech Republic', url: 'https://en.wikipedia.org/wiki/Registered_partnership_in_the_Czech_Republic' },
+    ],
+    linked_persons: [],
+    category: 'Gesetz / Gleichstellung',
+    significance: 3,
+    impact: 'positive',
+    checked: false,
+  },
+  {
+    id: 'partnerschaft-schweiz-2007-01-01',
+    title: 'Eingetragene Partnerschaft (Schweiz)',
+    date: '2007-01-01',
+    country: 'Schweiz',
+    description:
+      'Bundesgesetz über die eingetragene Partnerschaft (PartG), in der Volksabstimmung 2005 ' +
+      'angenommen; in Kraft getreten am 1. Januar 2007. (Später durch die Ehe für alle 2022 abgelöst.)',
+    sources: [
+      { label: 'Wikipedia — Recognition of same-sex unions in Switzerland', url: 'https://en.wikipedia.org/wiki/Recognition_of_same-sex_unions_in_Switzerland' },
+    ],
+    linked_persons: [],
+    category: 'Gesetz / Gleichstellung',
+    significance: 4,
+    impact: 'positive',
+    checked: false,
+  },
+  {
+    id: 'partnerschaft-ungarn-2009-07-01',
+    title: 'Registrierte Partnerschaft (Ungarn)',
+    date: '2009-07-01',
+    country: 'Ungarn',
+    description:
+      'Gesetz über die bejegyzett élettársi kapcsolat (registrierte Partnerschaft), von Präsident ' +
+      'László Sólyom unterzeichnet; in Kraft getreten am 1. Juli 2009.',
+    sources: [
+      { label: 'Wikipedia — Recognition of same-sex unions in Hungary', url: 'https://en.wikipedia.org/wiki/Recognition_of_same-sex_unions_in_Hungary' },
+    ],
+    linked_persons: [],
+    category: 'Gesetz / Gleichstellung',
+    significance: 3,
+    impact: 'positive',
+    checked: false,
+  },
+  {
+    id: 'partnerschaft-oesterreich-2010-01-01',
+    title: 'Eingetragene Partnerschaft (Österreich)',
+    date: '2010-01-01',
+    country: 'Österreich',
+    description:
+      'Eingetragene-Partnerschaft-Gesetz (EPG), am 10.12.2009 beschlossen, am 30.12.2009 im ' +
+      'Bundesgesetzblatt veröffentlicht; in Kraft getreten am 1. Januar 2010.',
+    sources: [
+      { label: 'Wikipedia — Recognition of same-sex unions in Austria', url: 'https://en.wikipedia.org/wiki/Recognition_of_same-sex_unions_in_Austria' },
+    ],
+    linked_persons: [],
+    category: 'Gesetz / Gleichstellung',
+    significance: 3,
+    impact: 'positive',
+    checked: false,
+  },
+  {
+    id: 'partnerschaft-kroatien-2014-08-05',
+    title: 'Lebenspartnerschaft (Kroatien)',
+    date: '2014-08-05',
+    country: 'Kroatien',
+    description:
+      'Zakon o životnom partnerstvu osoba istog spola (Life Partnership Act), am 28.7.2014 in den ' +
+      'Narodne novine (92/2014) veröffentlicht; nach 8 Tagen in Kraft getreten am 5. August 2014.',
+    sources: [
+      { label: 'Wikipedia — Recognition of same-sex unions in Croatia', url: 'https://en.wikipedia.org/wiki/Recognition_of_same-sex_unions_in_Croatia' },
+    ],
+    linked_persons: [],
+    category: 'Gesetz / Gleichstellung',
+    significance: 3,
+    impact: 'positive',
+    checked: false,
+  },
+  {
+    id: 'partnerschaft-zypern-2015-12-09',
+    title: 'Zivile Partnerschaft (Zypern)',
+    date: '2015-12-09',
+    country: 'Zypern',
+    description:
+      'Civil Union Law (πολιτική συμβίωση, Gesetz 184(I)/2015), von Präsident Anastasiades ' +
+      'unterzeichnet und am 9.12.2015 im Amtsblatt veröffentlicht; am selben Tag in Kraft getreten.',
+    sources: [
+      { label: 'Wikipedia — Recognition of same-sex unions in Cyprus', url: 'https://en.wikipedia.org/wiki/Recognition_of_same-sex_unions_in_Cyprus' },
+    ],
+    linked_persons: [],
+    category: 'Gesetz / Gleichstellung',
+    significance: 3,
+    impact: 'positive',
+    checked: false,
+  },
+  {
+    id: 'partnerschaft-san-marino-2018-12-05',
+    title: 'Unione civile — zivile Partnerschaft (San Marino)',
+    date: '2018-12-05',
+    country: 'San Marino',
+    description:
+      'Legge 147/2018 (Regolamentazione delle unioni civili); in Kraft getreten am 5. Dezember 2018 ' +
+      '(volle Anwendung nach Durchführungsdekret Anfang 2019).',
+    sources: [
+      { label: 'Wikipedia — Recognition of same-sex unions in San Marino', url: 'https://en.wikipedia.org/wiki/Recognition_of_same-sex_unions_in_San_Marino' },
+    ],
+    linked_persons: [],
+    category: 'Gesetz / Gleichstellung',
+    significance: 3,
+    impact: 'positive',
+    checked: false,
+  },
 ]
 
 const SEED: Milestone[] = [...BASE_SEED, ...decrimSeed, ...unionSeed]
