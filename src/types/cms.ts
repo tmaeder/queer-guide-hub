@@ -38,7 +38,8 @@ export type FieldType =
   | 'country_autocomplete'
   | 'unified_tag'
   | 'venue_autocomplete'
-  | 'profession_autocomplete';
+  | 'profession_autocomplete'
+  | 'roles_autocomplete';
 
 export type FieldGroup =
   | 'basic'

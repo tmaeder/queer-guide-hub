@@ -87,6 +87,7 @@ function schemaForField(field: FieldConfig): ZodTypeAny {
     case 'multiselect':
     case 'tags':
     case 'unified_tag':
+    case 'roles_autocomplete':
     case 'images':
       return required
         ? z.array(z.any()).min(1, requiredMsg)
