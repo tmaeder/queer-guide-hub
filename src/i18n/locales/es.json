@@ -208,7 +208,8 @@
     "privacy": "Privacidad",
     "terms": "Términos",
     "contact": "Contacto",
-    "supportUs": "Apóyanos"
+    "supportUs": "Apóyanos",
+    "history": "Historia"
   },
   "trips": {
     "title": "Mis viajes",
@@ -2295,6 +2296,11 @@
       "gate": "Inicia sesión para ver tus amigos.",
       "requests": "Solicitudes",
       "sentRequest": "Te envió una solicitud de amistad"
+    },
+    "entityDetail": {
+      "milestoneNotFoundTitle": "Hito no encontrado",
+      "milestoneNotFoundBody": "Ningún hito coincide con esta URL. Puede haber sido eliminado o el enlace es incorrecto.",
+      "backToHistory": "Volver a la cronología"
     }
   },
   "settings": {
@@ -3279,7 +3285,8 @@
       "diedYearsAgo": "[ES] died {{count}} years ago",
       "tripsDrawer": {
         "title": "[ES] Your trips"
-      }
+      },
+      "yearsAgo": "hace {{count}} años"
     },
     "contacts": {
       "title": "Contactos",
@@ -3391,5 +3398,67 @@
     "emptyDescription": "[ES] Open any venue, event, city or person and use its Connections button to explore from there.",
     "emptyCta": "[ES] Search the guide",
     "explore": "[ES] Explore connections"
+  },
+  "milestones": {
+    "eyebrow": "Historia queer",
+    "breadcrumb": "Historia",
+    "pageTitle": "Historia queer",
+    "pageDescription": "Hitos que marcaron la vida LGBTQ+: levantamientos, leyes, retrocesos. Con fechas y fuentes.",
+    "metaTitle": "Cronología de la historia queer — Queer Guide",
+    "metaDescription": "Hitos de la historia LGBTQ+: levantamientos, despenalizaciones, matrimonio igualitario y retrocesos — con fechas y fuentes, en todo el mundo.",
+    "empty": "Ningún hito coincide con estos filtros.",
+    "decadeNav": "Ir a la década",
+    "filter": {
+      "country": "País",
+      "allCountries": "Todos los países",
+      "clear": "Borrar filtros"
+    },
+    "category": {
+      "uprising-movement": "Levantamiento / Movimiento",
+      "law-equality": "Ley / Igualdad",
+      "law-decriminalization": "Despenalización",
+      "law-criminalization": "Criminalización",
+      "depathologization": "Despatologización",
+      "persecution-destruction": "Persecución / Destrucción",
+      "other": "Otro"
+    },
+    "impact": {
+      "positive": "Avance",
+      "neutral": "Neutral",
+      "negative": "Retroceso"
+    },
+    "sections": {
+      "sources": "Fuentes",
+      "linked": "Personas y lugares involucrados",
+      "related": "Más de {{country}}"
+    },
+    "sidebar": {
+      "facts": "Datos",
+      "date": "Fecha",
+      "place": "Lugar",
+      "city": "Ciudad",
+      "country": "País"
+    },
+    "entityType": {
+      "personality": "Persona",
+      "event": "Evento",
+      "venue": "Local",
+      "news": "Artículo de prensa",
+      "organization": "Organización"
+    },
+    "legalHistory": {
+      "title": "Historia legal",
+      "seeAll": "Cronología completa"
+    },
+    "forEntity": {
+      "heading": "Hitos"
+    },
+    "forPerson": "Hitos",
+    "home": {
+      "eyebrow": "Historia queer",
+      "title": "Tal día como hoy",
+      "seeAll": "Cronología completa",
+      "yearsAgo": "hace {{count}} años"
+    }
   }
 }

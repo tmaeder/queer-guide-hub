@@ -26,6 +26,7 @@ export const ROUTE_HREFS: Record<string, (slug: string) => string> = {
   queer_village: (s) => `/villages/${s}`,
   news: (s) => `/news/${s}`,
   organization: (s) => `/organizations/${s}`,
+  milestone: (s) => `/history/${s}`,
   hotel: (s) => `/hotels/${s}`,
   // NB: `tag` is deliberately NOT here — the glossary route /tags/:tagName
   // is NAME-keyed (fetchTagWithCategories ilike('name', …)), but ROUTE_HREFS

@@ -61,7 +61,7 @@ function gatedDetailResult(): DetailResult {
  * middleware serve the SPA shell (humans get the GatedDetailFallback sign-in
  * gate) while bots still receive noindex + no real content.
  */
-async function isGatedEntity(env: Env, entityType: 'venue' | 'event', slug: string): Promise<boolean> {
+async function isGatedEntity(env: Env, entityType: 'venue' | 'event' | 'milestone', slug: string): Promise<boolean> {
   if (!env.SUPABASE_URL) return false;
   const key = env.SUPABASE_SERVICE_ROLE_KEY ?? env.SUPABASE_ANON_KEY;
   if (!key) return false;
@@ -907,10 +907,87 @@ async function tagDetail(env: Env, slug: string, pathname: string): Promise<Deta
   return { meta, body, jsonLd: renderLd(prune(thingLd)) };
 }
 
+// Milestones — queer-history timeline entries at /history/:slug
+
+async function milestoneDetail(
+  env: Env,
+  slug: string,
+  pathname: string,
+): Promise<DetailResult | null> {
+  const rows = await fetchRows(
+    env,
+    'milestones',
+    'title,slug,description,date,date_precision,date_end,location,region,city_name,country_name,category,impact,significance,sources,image_url,seo_indexable,safety_gated,updated_at',
+    `slug=eq.${encodeURIComponent(slug)}&status=eq.published&duplicate_of_id=is.null`,
+    1,
+  );
+  const row = rows[0] ?? null;
+  if (!row) return (await isGatedEntity(env, 'milestone', slug)) ? gatedDetailResult() : null;
+  if (row.safety_gated === true) return gatedDetailResult();
+
+  const title = stringField(row, 'title') ?? slug;
+  const description = stringField(row, 'description') ?? '';
+  const date = stringField(row, 'date') ?? '';
+  const precision = stringField(row, 'date_precision') ?? 'day';
+  const year = date.slice(0, 4);
+  const cityName = stringField(row, 'city_name');
+  const countryName = stringField(row, 'country_name');
+  const place = [cityName, countryName].filter(Boolean).join(', ');
+  const image = stringField(row, 'image_url');
+  const sources = Array.isArray(row.sources) ? (row.sources as Array<Record<string, unknown>>) : [];
+  const sourceUrls = sources
+    .map((sRow) => (typeof sRow.url === 'string' ? sRow.url : null))
+    .filter((u): u is string => Boolean(u));
+
+  const meta: RouteMeta = {
+    title: truncate(`${title} (${year}) — Queer History${TITLE_SUFFIX}`, MAX_TITLE),
+    description: truncate(
+      description || `${title} (${year}) — a milestone of queer history on Queer Guide.`,
+      MAX_DESC,
+    ),
+    ogImage: safeOgImage(image ?? DEFAULT_OG_IMAGE),
+  };
+
+  const body = `<main data-prerendered="bot-ua">
+    <article>
+      <h1>${escape(title)}</h1>
+      <p><strong>${escape(precision === 'year' ? year : date)}</strong>${place ? ` — ${escape(place)}` : ''}</p>
+      ${description ? paragraphsHtml(description) : ''}
+      ${sources.length ? `<h2>Sources</h2><ul>${sources.map((sRow) => `<li>${typeof sRow.url === 'string' ? `<a href="${escape(sRow.url)}" rel="nofollow noopener">${escape(String(sRow.label ?? sRow.url))}</a>` : escape(String(sRow.label ?? ''))}</li>`).join('')}</ul>` : ''}
+    </article>
+    <nav aria-label="Site sections">
+      <ul>
+        <li><a href="/history">Queer history timeline</a></li>
+        <li><a href="/personalities">Personalities</a></li>
+      </ul>
+    </nav>
+  </main>`;
+
+  // ISO-8601 reduced precision: year-only dates emit "1969" (valid, honest).
+  const isoDate = precision === 'year' ? year : precision === 'month' ? date.slice(0, 7) : date;
+  const dateEnd = stringField(row, 'date_end');
+  const eventLd: Record<string, unknown> = {
+    '@context': 'https://schema.org',
+    '@type': 'Event',
+    name: title,
+    startDate: isoDate,
+    endDate: dateEnd ?? undefined,
+    description: description || undefined,
+    image,
+    location: place
+      ? { '@type': 'Place', name: stringField(row, 'location') ?? place, address: place }
+      : undefined,
+    sameAs: sourceUrls.length ? sourceUrls : undefined,
+    url: `${SITE_ORIGIN}${pathname}`,
+  };
+
+  return { meta, body, jsonLd: renderLd(prune(eventLd)), indexable: row.seo_indexable === true };
+}
+
 // Dispatch
 
 const DETAIL_ROUTE_RE =
-  /^\/(venues?|events?|news|personalities|personality|city|country|hotels?|villages?|tags?)\/([^/?#]+)\/?$/;
+  /^\/(venues?|events?|news|personalities|personality|city|country|hotels?|villages?|tags?|history)\/([^/?#]+)\/?$/;
 
 // Static SPA sub-routes that share a segment with detail routes
 // (/venues/guides, /events/guides, legacy /venues/leaderboard redirect, …).
@@ -1006,6 +1083,7 @@ export async function resolveDetailRoute(
     if (kindRaw.startsWith('hotel')) return await hotelDetail(env, slug, pathname);
     if (kindRaw.startsWith('village')) return await villageDetail(env, slug, pathname);
     if (kindRaw.startsWith('tag')) return await tagDetail(env, slug, pathname);
+    if (kindRaw === 'history') return await milestoneDetail(env, slug, pathname);
   } catch {
     return null;
   }

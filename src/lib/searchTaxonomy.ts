@@ -32,6 +32,7 @@ export const CONTENT_TYPES: ContentType[] = [
   { id: 'queer_village', label: 'Places', indexKey: 'queer_villages', aliasTypes: ['queer_village', 'queer_villages', 'travel'], supportsPriceSort: false },
   { id: 'group', label: 'Groups', indexKey: 'groups', aliasTypes: ['group', 'groups'], supportsPriceSort: false },
   { id: 'organization', label: 'Organizations', indexKey: 'organizations', aliasTypes: ['organization', 'organizations'], supportsPriceSort: false },
+  { id: 'milestone', label: 'History', indexKey: 'milestones', aliasTypes: ['milestone', 'milestones'], supportsPriceSort: false },
 ];
 
 const BY_ID = new Map(CONTENT_TYPES.map((t) => [t.id, t]));

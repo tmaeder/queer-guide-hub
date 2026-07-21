@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils';
 
 const footerLinks = [
   { href: '/about', labelKey: 'footer.about' },
+  { href: '/history', labelKey: 'footer.history' },
   { href: '/legal', labelKey: 'footer.legalLink' },
   { href: '/accessibility', labelKey: 'header.legal.accessibility' },
   { href: '/privacy', labelKey: 'footer.privacy' },

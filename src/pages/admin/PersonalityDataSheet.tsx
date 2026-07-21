@@ -40,7 +40,6 @@ interface AdminPersonality {
   lgbti_connection?: string | null;
   lgbti_details?: string | null;
   lgbti_connection_source?: string | null;
-  milestone?: string | null;
   website_url?: string | null;
   profile_url?: string | null;
   wikidata_qid?: string | null;
@@ -93,7 +92,7 @@ export default function PersonalityDataSheet() {
   });
 
   // Only auto-open the print dialog when launched from the editor's "Datenblatt"
-  // button (?print=1). Browsing the sheet from the milestone stream just views it.
+  // button (?print=1). Browsing the sheet from admin lists just views it.
   useEffect(() => {
     if (!data || !autoPrint) return;
     const timer = setTimeout(() => window.print(), 600);
@@ -181,7 +180,6 @@ export default function PersonalityDataSheet() {
         <Row label="Fachgebiete" value={fields.join(', ')} />
         <Row label="Auszeichnungen" value={achievements.join(', ')} />
         <Row label="Tags" value={tags.join(', ')} />
-        <Row label="Meilenstein" value={p.milestone} />
         <Row label="Sichtbarkeit" value={p.visibility} />
 
         {(p.lgbti_connection || p.lgbti_details) && (

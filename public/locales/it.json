@@ -208,7 +208,8 @@
     "privacy": "Privacy",
     "terms": "Termini",
     "contact": "Contatti",
-    "supportUs": "Sostienici"
+    "supportUs": "Sostienici",
+    "history": "Storia"
   },
   "trips": {
     "title": "I miei viaggi",
@@ -2295,6 +2296,11 @@
       "gate": "Accedi per vedere i tuoi amici.",
       "requests": "Richieste",
       "sentRequest": "Ti ha inviato una richiesta di amicizia"
+    },
+    "entityDetail": {
+      "milestoneNotFoundTitle": "Pietra miliare non trovata",
+      "milestoneNotFoundBody": "Nessuna pietra miliare corrisponde a questo URL. Potrebbe essere stata rimossa o il link è errato.",
+      "backToHistory": "Torna alla cronologia"
     }
   },
   "settings": {
@@ -3279,7 +3285,8 @@
       "diedYearsAgo": "[IT] died {{count}} years ago",
       "tripsDrawer": {
         "title": "[IT] Your trips"
-      }
+      },
+      "yearsAgo": "{{count}} anni fa"
     },
     "contacts": {
       "title": "Contatti",
@@ -3391,5 +3398,67 @@
     "emptyDescription": "[IT] Open any venue, event, city or person and use its Connections button to explore from there.",
     "emptyCta": "[IT] Search the guide",
     "explore": "[IT] Explore connections"
+  },
+  "milestones": {
+    "eyebrow": "Storia queer",
+    "breadcrumb": "Storia",
+    "pageTitle": "Storia queer",
+    "pageDescription": "Le pietre miliari che hanno segnato la vita LGBTQ+: rivolte, leggi, passi indietro. Datate e documentate.",
+    "metaTitle": "Cronologia della storia queer — Queer Guide",
+    "metaDescription": "Pietre miliari della storia LGBTQ+: rivolte, depenalizzazioni, matrimonio egualitario e passi indietro — datate, documentate, in tutto il mondo.",
+    "empty": "Nessuna pietra miliare corrisponde a questi filtri.",
+    "decadeNav": "Vai al decennio",
+    "filter": {
+      "country": "Paese",
+      "allCountries": "Tutti i paesi",
+      "clear": "Cancella filtri"
+    },
+    "category": {
+      "uprising-movement": "Rivolta / Movimento",
+      "law-equality": "Legge / Uguaglianza",
+      "law-decriminalization": "Depenalizzazione",
+      "law-criminalization": "Criminalizzazione",
+      "depathologization": "Depatologizzazione",
+      "persecution-destruction": "Persecuzione / Distruzione",
+      "other": "Altro"
+    },
+    "impact": {
+      "positive": "Progresso",
+      "neutral": "Neutrale",
+      "negative": "Passo indietro"
+    },
+    "sections": {
+      "sources": "Fonti",
+      "linked": "Persone e luoghi coinvolti",
+      "related": "Altro da {{country}}"
+    },
+    "sidebar": {
+      "facts": "Fatti",
+      "date": "Data",
+      "place": "Luogo",
+      "city": "Città",
+      "country": "Paese"
+    },
+    "entityType": {
+      "personality": "Persona",
+      "event": "Evento",
+      "venue": "Locale",
+      "news": "Articolo",
+      "organization": "Organizzazione"
+    },
+    "legalHistory": {
+      "title": "Storia giuridica",
+      "seeAll": "Cronologia completa"
+    },
+    "forEntity": {
+      "heading": "Pietre miliari"
+    },
+    "forPerson": "Pietre miliari",
+    "home": {
+      "eyebrow": "Storia queer",
+      "title": "Accadde oggi",
+      "seeAll": "Cronologia completa",
+      "yearsAgo": "{{count}} anni fa"
+    }
   }
 }

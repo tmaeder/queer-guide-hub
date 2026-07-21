@@ -40,11 +40,9 @@ function useCounts() {
           headCount((q) => q.is('lgbti_connection_source', null)),
           headCount((q) => q.not('death_date', 'is', null)),
         ]);
-      // milestone column isn't in the generated types yet → untyped count.
-      const { count: milestone } = await untypedFrom('personalities')
-        .select('*', { count: 'exact', head: true })
-        .not('milestone', 'is', null)
-        .neq('milestone', '');
+      // Milestones are a first-class content type now — count the table.
+      const { count: milestone } = await untypedFrom('milestones')
+        .select('*', { count: 'exact', head: true });
       return {
         total,
         freigegeben: approved + manuallyVerified,
@@ -146,7 +144,7 @@ export function PersonalityCheckPanel() {
           label="Meilensteine"
           value={c?.milestone ?? 0}
           icon={<Award size={13} className="text-muted-foreground" />}
-          to="/admin/personalities/milestones"
+          to="/admin/content/milestones"
         />
         <Tile
           label="Ohne Bild"

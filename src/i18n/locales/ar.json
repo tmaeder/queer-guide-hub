@@ -208,7 +208,8 @@
     "privacy": "الخصوصية",
     "terms": "الشروط",
     "contact": "تواصل معنا",
-    "supportUs": "ادعمنا"
+    "supportUs": "ادعمنا",
+    "history": "التاريخ"
   },
   "trips": {
     "title": "رحلاتي",
@@ -2299,6 +2300,11 @@
       "gate": "سجّل الدخول لعرض أصدقائك.",
       "requests": "الطلبات",
       "sentRequest": "أرسل إليك طلب صداقة"
+    },
+    "entityDetail": {
+      "milestoneNotFoundTitle": "المحطة غير موجودة",
+      "milestoneNotFoundBody": "لا توجد محطة تطابق هذا الرابط. ربما أُزيلت أو أن الرابط غير صحيح.",
+      "backToHistory": "العودة إلى الخط الزمني"
     }
   },
   "settings": {
@@ -3283,7 +3289,8 @@
       "diedYearsAgo": "[AR] died {{count}} years ago",
       "tripsDrawer": {
         "title": "[AR] Your trips"
-      }
+      },
+      "yearsAgo": "قبل {{count}} سنة"
     },
     "contacts": {
       "title": "جهات الاتصال",
@@ -3395,5 +3402,67 @@
     "emptyDescription": "[AR] Open any venue, event, city or person and use its Connections button to explore from there.",
     "emptyCta": "[AR] Search the guide",
     "explore": "[AR] Explore connections"
+  },
+  "milestones": {
+    "eyebrow": "التاريخ الكويري",
+    "breadcrumb": "التاريخ",
+    "pageTitle": "التاريخ الكويري",
+    "pageDescription": "محطات شكّلت حياة مجتمع الميم — انتفاضات وقوانين وانتكاسات. بتواريخ ومصادر.",
+    "metaTitle": "الخط الزمني للتاريخ الكويري — Queer Guide",
+    "metaDescription": "محطات من تاريخ مجتمع الميم: انتفاضات، إلغاء التجريم، زواج المثليين وانتكاسات — بتواريخ ومصادر من حول العالم.",
+    "empty": "لا توجد محطات تطابق هذه المرشحات.",
+    "decadeNav": "الانتقال إلى العقد",
+    "filter": {
+      "country": "الدولة",
+      "allCountries": "كل الدول",
+      "clear": "مسح المرشحات"
+    },
+    "category": {
+      "uprising-movement": "انتفاضة / حركة",
+      "law-equality": "قانون / مساواة",
+      "law-decriminalization": "إلغاء التجريم",
+      "law-criminalization": "تجريم",
+      "depathologization": "إزالة التصنيف المرضي",
+      "persecution-destruction": "اضطهاد / تدمير",
+      "other": "أخرى"
+    },
+    "impact": {
+      "positive": "تقدّم",
+      "neutral": "محايد",
+      "negative": "انتكاسة"
+    },
+    "sections": {
+      "sources": "المصادر",
+      "linked": "أشخاص وأماكن ذات صلة",
+      "related": "المزيد من {{country}}"
+    },
+    "sidebar": {
+      "facts": "حقائق",
+      "date": "التاريخ",
+      "place": "المكان",
+      "city": "المدينة",
+      "country": "الدولة"
+    },
+    "entityType": {
+      "personality": "شخصية",
+      "event": "فعالية",
+      "venue": "مكان",
+      "news": "مقال إخباري",
+      "organization": "منظمة"
+    },
+    "legalHistory": {
+      "title": "التاريخ القانوني",
+      "seeAll": "الخط الزمني الكامل"
+    },
+    "forEntity": {
+      "heading": "محطات"
+    },
+    "forPerson": "محطات",
+    "home": {
+      "eyebrow": "التاريخ الكويري",
+      "title": "في مثل هذا اليوم",
+      "seeAll": "الخط الزمني الكامل",
+      "yearsAgo": "قبل {{count}} سنة"
+    }
   }
 }
