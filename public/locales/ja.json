@@ -1696,7 +1696,8 @@
       "personalities": "著名人",
       "hotels": "ホテル",
       "help": "ヘルプ",
-      "tags": "タグ"
+      "tags": "タグ",
+      "history": "歴史"
     },
     "userMenu": {
       "myTrips": "マイトリップ",
@@ -3457,6 +3458,9 @@
       "title": "今日は何の日",
       "seeAll": "年表全体を見る",
       "yearsAgo": "{{count}}年前"
+    },
+    "city": {
+      "title": "{{city}}のクィアの歴史"
     }
   }
 }

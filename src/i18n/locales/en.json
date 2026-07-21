@@ -1773,7 +1773,8 @@
       "travel": "Travel",
       "personalities": "Personalities",
       "hotels": "Hotels",
-      "help": "Crisis support"
+      "help": "Crisis support",
+      "history": "History"
     },
     "userMenu": {
       "you": "You",
@@ -3429,6 +3430,9 @@
       "title": "On this day",
       "seeAll": "Full timeline",
       "yearsAgo": "{{count}} years ago"
+    },
+    "city": {
+      "title": "Queer history in {{city}}"
     }
   }
 }

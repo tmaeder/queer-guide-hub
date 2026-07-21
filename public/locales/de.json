@@ -1696,7 +1696,8 @@
       "personalities": "Persönlichkeiten",
       "hotels": "Hotels",
       "help": "Krisenhilfe",
-      "tags": "Tags"
+      "tags": "Tags",
+      "history": "Geschichte"
     },
     "userMenu": {
       "myTrips": "Meine Reisen",
@@ -3459,6 +3460,9 @@
       "title": "An diesem Tag",
       "seeAll": "Ganze Zeitleiste",
       "yearsAgo": "vor {{count}} Jahren"
+    },
+    "city": {
+      "title": "Queere Geschichte in {{city}}"
     }
   }
 }

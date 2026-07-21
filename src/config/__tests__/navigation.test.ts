@@ -10,10 +10,10 @@ import {
 } from '../navigation';
 
 describe('navigation config', () => {
-  it('has 15 destinations split into 6 primary + 9 secondary', () => {
-    expect(DESTINATIONS).toHaveLength(15);
+  it('has 16 destinations split into 6 primary + 10 secondary', () => {
+    expect(DESTINATIONS).toHaveLength(16);
     expect(PRIMARY_NAV).toHaveLength(6);
-    expect(MORE_NAV).toHaveLength(9);
+    expect(MORE_NAV).toHaveLength(10);
     expect(PRIMARY_NAV.length + MORE_NAV.length).toBe(DESTINATIONS.length);
   });
 

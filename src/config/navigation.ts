@@ -26,6 +26,7 @@ import {
   Compass,
   MessageCircle,
   User,
+  History,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -71,6 +72,7 @@ export const DESTINATIONS: NavDestination[] = [
   { to: '/tags', icon: Tags, labelKey: 'header.nav.tags', cluster: 'shop' },
   { to: '/travel', icon: Plane, labelKey: 'header.nav.travel', cluster: 'places' },
   { to: '/personalities', icon: Users, labelKey: 'header.nav.personalities', cluster: 'community', searchType: 'personality' },
+  { to: '/history', icon: History, labelKey: 'header.nav.history', cluster: 'community', searchType: 'milestone' },
   { to: '/hotels', icon: Building, labelKey: 'header.nav.hotels', cluster: 'places' },
   { to: '/help', icon: LifeBuoy, labelKey: 'header.nav.help', cluster: 'support' },
 ];
@@ -121,6 +123,7 @@ export const BOTTOM_NAV_TABS: BottomNavTab[] = [
       '/travel',
       '/resources',
       '/personalities',
+      '/history',
       '/community',
       '/feed',
       '/groups',
