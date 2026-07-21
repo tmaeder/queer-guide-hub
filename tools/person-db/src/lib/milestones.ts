@@ -1460,7 +1460,176 @@ const unionSeed: Milestone[] = [
   },
 ]
 
-const SEED: Milestone[] = [...BASE_SEED, ...decrimSeed, ...unionSeed]
+// Trans-Rechte — Depathologisierung + rechtliche Geschlechtsanerkennung/
+// Selbstbestimmung. Tagesgenau, quellengeprüft (Deep-Research 3-0 + Direkt-Fetch).
+// Malta (GIGESC, nur April 2015) und Niederlande (nur Jahr) bewusst weggelassen.
+const transSeed: Milestone[] = [
+  {
+    id: 'trans-schweden-1972-04-21',
+    title: 'Weltweit erstes Gesetz zur Geschlechtsanerkennung (Schweden)',
+    date: '1972-04-21',
+    country: 'Schweden',
+    description:
+      'Lag (1972:119) om fastställande av könstillhörighet — weltweit erstes Gesetz, das eine ' +
+      'rechtliche Änderung der Geschlechtszugehörigkeit ermöglichte (ausgefertigt am 21. April 1972). ' +
+      'Damals noch an Bedingungen wie Sterilisation geknüpft.',
+    sources: [
+      { label: 'Riksdagen — SFS 1972:119', url: 'https://www.riksdagen.se/sv/dokument-och-lagar/dokument/svensk-forfattningssamling/lag-1972119-om-faststallande-av_sfs-1972-119/' },
+    ],
+    linked_persons: [],
+    category: 'Gesetz / Gleichstellung',
+    significance: 5,
+    impact: 'positive',
+    checked: false,
+  },
+  {
+    id: 'trans-uk-2005-04-04',
+    title: 'Gender Recognition Act 2004 (Vereinigtes Königreich)',
+    date: '2005-04-04',
+    country: 'Vereinigtes Königreich',
+    description:
+      'Der Gender Recognition Act 2004 ermöglichte die rechtliche Anerkennung des Geschlechts ' +
+      '(Gender Recognition Certificate); in Kraft getreten am 4. April 2005.',
+    sources: [
+      { label: 'Wikipedia — Gender Recognition Act 2004', url: 'https://en.wikipedia.org/wiki/Gender_Recognition_Act_2004' },
+    ],
+    linked_persons: [],
+    category: 'Gesetz / Gleichstellung',
+    significance: 3,
+    impact: 'positive',
+    checked: false,
+  },
+  {
+    id: 'trans-argentinien-2012-05-24',
+    title: 'Ley de Identidad de Género (Argentinien)',
+    date: '2012-05-24',
+    country: 'Argentinien',
+    description:
+      'Ley 26.743 de Identidad de Género — weltweit erstes reines Selbstbestimmungsgesetz ' +
+      '(Änderung des Geschlechtseintrags ohne medizinische oder gerichtliche Auflagen). Sanktioniert ' +
+      'am 9.5., verkündet am 23.5., im Boletín Oficial veröffentlicht am 24. Mai 2012.',
+    sources: [
+      { label: 'Boletín Oficial — Ley 26.743', url: 'https://www.boletinoficial.gob.ar/detalleAviso/primera/70106/20120524' },
+    ],
+    linked_persons: [],
+    category: 'Gesetz / Gleichstellung',
+    significance: 5,
+    impact: 'positive',
+    checked: false,
+  },
+  {
+    id: 'trans-daenemark-2014-09-01',
+    title: 'Rechtliche Selbstbestimmung (Dänemark)',
+    date: '2014-09-01',
+    country: 'Dänemark',
+    description:
+      'Dänemark ermöglichte als erstes Land Europas die Änderung des rechtlichen Geschlechts per ' +
+      'Selbsterklärung (ohne Diagnose, Sterilisation oder Operation), mit sechsmonatiger ' +
+      'Bedenkzeit; in Kraft getreten am 1. September 2014.',
+    sources: [
+      { label: 'Wikipedia — Transgender rights in Denmark', url: 'https://en.wikipedia.org/wiki/Transgender_rights_in_Denmark' },
+    ],
+    linked_persons: [],
+    category: 'Gesetz / Gleichstellung',
+    significance: 4,
+    impact: 'positive',
+    checked: false,
+  },
+  {
+    id: 'trans-irland-2015-07-15',
+    title: 'Gender Recognition Act 2015 (Irland)',
+    date: '2015-07-15',
+    country: 'Irland',
+    description:
+      'Der Gender Recognition Act 2015 führte die rechtliche Geschlechtsanerkennung per ' +
+      'Selbstbestimmung ein; am 15. Juli 2015 vom Oireachtas verabschiedet (Inkrafttreten per ' +
+      'Ministerverordnung im September 2015).',
+    sources: [
+      { label: 'Wikipedia — Gender Recognition Act 2015', url: 'https://en.wikipedia.org/wiki/Gender_Recognition_Act_2015' },
+    ],
+    linked_persons: [],
+    category: 'Gesetz / Gleichstellung',
+    significance: 3,
+    impact: 'positive',
+    checked: false,
+  },
+  {
+    id: 'trans-norwegen-2016-07-01',
+    title: 'Rechtliche Selbstbestimmung (Norwegen)',
+    date: '2016-07-01',
+    country: 'Norwegen',
+    description:
+      'Norwegen führte die Änderung des rechtlichen Geschlechts per Selbstbestimmung ein; ' +
+      'verkündet am 17.6., in Kraft getreten am 1. Juli 2016.',
+    sources: [
+      { label: 'Wikipedia — Transgender rights in Norway', url: 'https://en.wikipedia.org/wiki/Transgender_rights_in_Norway' },
+    ],
+    linked_persons: [],
+    category: 'Gesetz / Gleichstellung',
+    significance: 3,
+    impact: 'positive',
+    checked: false,
+  },
+  {
+    id: 'trans-icd11-2022-01-01',
+    title: 'WHO ICD-11: Entpathologisierung von Trans-Identitäten',
+    date: '2022-01-01',
+    country: '',
+    description:
+      'Mit der ICD-11 verschob die WHO „Geschlechtsinkongruenz" aus dem Kapitel der psychischen ' +
+      'Störungen in ein neues Kapitel zur sexuellen Gesundheit — ein Meilenstein der ' +
+      'Entpathologisierung. Von der Weltgesundheitsversammlung am 25.5.2019 angenommen, in Kraft ' +
+      'getreten am 1. Januar 2022. (Pendant zur Streichung der Homosexualität 1990.)',
+    sources: [
+      { label: 'WHO — ICD-11 comes into effect (2022)', url: 'https://www.who.int/news/item/11-02-2022-who-s-new-international-classification-of-diseases-(icd-11)-comes-into-effect' },
+      { label: 'WHO — Gender incongruence FAQ', url: 'https://www.who.int/standards/classifications/frequently-asked-questions/gender-incongruence-and-transgender-health-in-the-icd' },
+    ],
+    linked_persons: [],
+    category: 'Entpathologisierung',
+    significance: 5,
+    impact: 'positive',
+    checked: false,
+  },
+  {
+    id: 'trans-spanien-2023-03-02',
+    title: 'Ley Trans (Spanien)',
+    date: '2023-03-02',
+    country: 'Spanien',
+    description:
+      'Ley 4/2023 („Ley Trans") — Geschlechtsanerkennung per Selbstbestimmung, ohne ärztliches oder ' +
+      'psychologisches Gutachten. Am 28.2. beschlossen, am 1.3. im BOE veröffentlicht, in Kraft ' +
+      'getreten am 2. März 2023.',
+    sources: [
+      { label: 'BOE — Ley 4/2023', url: 'https://www.boe.es/buscar/act.php?id=BOE-A-2023-5366' },
+    ],
+    linked_persons: [],
+    category: 'Gesetz / Gleichstellung',
+    significance: 3,
+    impact: 'positive',
+    checked: false,
+  },
+  {
+    id: 'trans-deutschland-2024-11-01',
+    title: 'Selbstbestimmungsgesetz (Deutschland)',
+    date: '2024-11-01',
+    country: 'Deutschland',
+    description:
+      'Das Selbstbestimmungsgesetz (SBGG) löste das Transsexuellengesetz ab: Änderung von ' +
+      'Geschlechtseintrag und Vornamen per Erklärung beim Standesamt. Vom Bundestag am 12.4.2024 ' +
+      'beschlossen; in Kraft getreten am 1. November 2024.',
+    sources: [
+      { label: 'Wikipedia — Transgender rights in Germany', url: 'https://en.wikipedia.org/wiki/Transgender_rights_in_Germany' },
+      { label: 'gesetze-im-internet — SBGG', url: 'https://www.gesetze-im-internet.de/sbgg/' },
+    ],
+    linked_persons: [],
+    category: 'Gesetz / Gleichstellung',
+    significance: 4,
+    impact: 'positive',
+    checked: false,
+  },
+]
+
+const SEED: Milestone[] = [...BASE_SEED, ...decrimSeed, ...unionSeed, ...transSeed]
 
 const KEY = 'person-db.milestones.v2'
 
