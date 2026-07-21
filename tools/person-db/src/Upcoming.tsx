@@ -200,27 +200,6 @@ export function Upcoming() {
         {head}
         <div className="body">
           <div className="list">
-            {shown.map((a) => (
-              <div
-                key={a.id + a.anniversary}
-                className={'row' + (selectedId === a.id ? ' sel' : '')}
-                role="button"
-                tabIndex={0}
-                onClick={() => selectRow(a.id)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault()
-                    selectRow(a.id)
-                  }
-                }}
-              >
-                {checked.has(a.id) && <span className="check">✓</span>}
-                {a.image_url ? <img src={a.image_url} alt="" loading="lazy" /> : <span className="noimg">—</span>}
-                <div className="meta">
-                  <div className="name">
-                    {annotated.has(a.id) && <span className="dot" />}{' '}
-                    {a.name}
-                    <span className={'pill' + (a.anniversary === 'died' ? ' warn' : '')}>{annivLabel(a)}</span>
             {splitItems.map((it) =>
               it.kind === 'day' ? (
                 <div key={'day-' + it.d.name} className="row row-day">
@@ -234,7 +213,15 @@ export function Upcoming() {
                 <div
                   key={it.a.id + it.a.anniversary}
                   className={'row' + (selectedId === it.a.id ? ' sel' : '')}
+                  role="button"
+                  tabIndex={0}
                   onClick={() => selectRow(it.a.id)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault()
+                      selectRow(it.a.id)
+                    }
+                  }}
                 >
                   {checked.has(it.a.id) && <span className="check">✓</span>}
                   {it.a.image_url ? <img src={it.a.image_url} alt="" loading="lazy" /> : <span className="noimg">—</span>}

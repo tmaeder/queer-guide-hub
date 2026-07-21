@@ -16,7 +16,6 @@ import { MilestoneForm } from './MilestoneForm'
 import { Timeline } from './Timeline'
 import { NewMenu } from './NewMenu'
 import { captureOptions } from './captureOptions'
-import { NewMenu, captureOptions } from './NewMenu'
 import { MilestoneInfo } from './MilestoneInfo'
 
 const SITE = 'https://queer.guide'
