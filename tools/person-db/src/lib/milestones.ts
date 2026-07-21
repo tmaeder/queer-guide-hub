@@ -1821,6 +1821,10 @@ const repressionSeed: Milestone[] = [
   },
 ]
 
+// Außereuropäische Entkriminalisierung — tagesgenau, gegen Primär-/Fachquellen geprüft
+// (Deep-Research-Extraktion + WebFetch-Einzelverifikation, 2026-07). Maßgeblich:
+// Gerichtsurteil = Urteilsdatum; Gesetz = Inkrafttreten (Assent separat vermerkt).
+const worldDecrimSeed: Milestone[] = [
 // Globale Rückschritte 2022–2024 (außerhalb Europas/Russlands). Tagesgenau,
 // gegen HRW/Al Jazeera/Library of Congress bzw. Wikipedia geprüft. Milestone-Datum
 // = Parlamentsbeschluss (Inkrafttreten separat vermerkt).
@@ -1844,69 +1848,187 @@ const worldRepressionSeed: Milestone[] = [
 // Maßgeblich: Gesetz = Inkrafttreten, Gerichtsurteil = Urteilsdatum (Gazette separat vermerkt).
 const worldMarriageSeed: Milestone[] = [
   {
-    id: 'ehe-kanada-2005-07-20',
-    title: 'Ehe für alle — Kanada (landesweit)',
-    date: '2005-07-20',
+    id: 'decrim-kanada-1969-06-27',
+    title: 'Entkriminalisierung der Homosexualität — Kanada',
+    date: '1969-06-27',
     country: 'Kanada',
     description:
-      'Civil Marriage Act — Royal Assent am 20. Juli 2005, landesweite Öffnung der Ehe. ' +
-      'Viertes Land weltweit; einige Provinzen hatten die Ehe seit 2003 per Gericht geöffnet.',
+      'Criminal Law Amendment Act, 1968–69 — Royal Assent am 27. Juni 1969. Straffreiheit für ' +
+      'einvernehmliche Handlungen unter Erwachsenen (ab 21) im Privaten. Justizminister Pierre ' +
+      'Trudeau: „There’s no place for the state in the bedrooms of the nation."',
     sources: [
-      { label: 'Wikipedia — Same-sex marriage in Canada', url: 'https://en.wikipedia.org/wiki/Same-sex_marriage_in_Canada' },
+      { label: 'Wikipedia — Criminal Law Amendment Act, 1968–69', url: 'https://en.wikipedia.org/wiki/Criminal_Law_Amendment_Act,_1968%E2%80%9369' },
     ],
     linked_persons: [],
-    category: 'Recht / Ehe',
+    category: 'Recht / Entkriminalisierung',
     significance: 4,
     impact: 'positive',
     checked: false,
   },
   {
-    id: 'ehe-suedafrika-2006-11-30',
-    title: 'Ehe für alle — Südafrika',
-    date: '2006-11-30',
+    id: 'decrim-neuseeland-1986-08-08',
+    title: 'Entkriminalisierung der Homosexualität — Neuseeland',
+    date: '1986-08-08',
+    country: 'Neuseeland',
+    description:
+      'Homosexual Law Reform Act 1986 — Inkrafttreten am 8. August 1986 (Royal Assent 11. Juli 1986). ' +
+      'Straffreiheit für einvernehmliche Handlungen unter Männern ab 16.',
+    sources: [
+      { label: 'Wikipedia — Homosexual Law Reform Act 1986', url: 'https://en.wikipedia.org/wiki/Homosexual_Law_Reform_Act_1986' },
+    ],
+    linked_persons: [],
+    category: 'Recht / Entkriminalisierung',
+    significance: 3,
+    impact: 'positive',
+    checked: false,
+  },
+  {
+    id: 'decrim-suedafrika-1998-10-09',
+    title: 'Entkriminalisierung der Homosexualität — Südafrika',
+    date: '1998-10-09',
     country: 'Südafrika',
     description:
-      'Civil Union Act 2006 — Inkrafttreten am 30. November 2006 (einen Tag vor der vom ' +
-      'Verfassungsgericht gesetzten Frist). Erstes Land Afrikas mit gleichgeschlechtlicher Ehe.',
+      'Verfassungsgericht-Urteil National Coalition for Gay and Lesbian Equality v. Minister of ' +
+      'Justice am 9. Oktober 1998: die aus der Kolonial-/Apartheid-Zeit stammenden Sodomie-Verbote ' +
+      'sind verfassungswidrig. Erstes Land mit Verfassungs-Diskriminierungsschutz nach sexueller Orientierung.',
     sources: [
-      { label: 'Wikipedia — Same-sex marriage in South Africa', url: 'https://en.wikipedia.org/wiki/Same-sex_marriage_in_South_Africa' },
+      { label: 'Wikipedia — NCGLE v. Minister of Justice', url: 'https://en.wikipedia.org/wiki/National_Coalition_for_Gay_and_Lesbian_Equality_v_Minister_of_Justice' },
     ],
     linked_persons: [],
-    category: 'Recht / Ehe',
+    category: 'Recht / Entkriminalisierung',
     significance: 5,
     impact: 'positive',
     checked: false,
   },
   {
-    id: 'ehe-argentinien-2010-07-22',
-    title: 'Ehe für alle — Argentinien',
-    date: '2010-07-22',
-    country: 'Argentinien',
+    id: 'decrim-usa-lawrence-2003-06-26',
+    title: 'Lawrence v. Texas — Sodomiegesetze bundesweit gekippt (USA)',
+    date: '2003-06-26',
+    country: 'Vereinigte Staaten',
     description:
-      'Ley 26.618 — Inkrafttreten am 22. Juli 2010 (Veröffentlichung im Boletín Oficial, ' +
-      'Unterschrift Präsidentin Fernández de Kirchner am 21. Juli). Erstes Land Lateinamerikas.',
+      'Urteil des Supreme Court (6:3) am 26. Juni 2003: das texanische Sodomie-Gesetz verletzt die ' +
+      'Due-Process-Klausel des 14. Zusatzartikels. Kippt gleichartige Gesetze in 13 weiteren Staaten ' +
+      'und hebt Bowers v. Hardwick (1986) auf. Faktische Entkriminalisierung landesweit.',
     sources: [
-      { label: 'Wikipedia — Same-sex marriage in Argentina', url: 'https://en.wikipedia.org/wiki/Same-sex_marriage_in_Argentina' },
+      { label: 'Cornell Law — 539 U.S. 558', url: 'https://www.law.cornell.edu/supremecourt/text/539/558' },
+      { label: 'Wikipedia — Lawrence v. Texas', url: 'https://en.wikipedia.org/wiki/Lawrence_v._Texas' },
     ],
     linked_persons: [],
-    category: 'Recht / Ehe',
+    category: 'Recht / Entkriminalisierung',
     significance: 5,
     impact: 'positive',
     checked: false,
   },
   {
-    id: 'ehe-brasilien-2013-05-16',
-    title: 'Ehe für alle — Brasilien (landesweit)',
-    date: '2013-05-16',
-    country: 'Brasilien',
+    id: 'decrim-tasmanien-1997-05-14',
+    title: 'Entkriminalisierung — Tasmanien (letzter australischer Staat)',
+    date: '1997-05-14',
+    country: 'Australien',
+    region: 'Tasmanien',
     description:
-      'Resolution des Nationalen Justizrats (CNJ) vom 14. Mai 2013 (14:1): Notare müssen ' +
-      'gleichgeschlechtliche Ehen schließen. Veröffentlichung 15. Mai, wirksam 16. Mai 2013.',
+      'Criminal Code Amendment Act 1997 — Inkrafttreten am 14. Mai 1997 (Royal Assent 13. Mai 1997). ' +
+      'Tasmanien war die letzte australische Jurisdiktion mit Sodomie-Verbot; die Aufhebung folgte auf ' +
+      'ein UN-Menschenrechtsausschuss-Verfahren (Toonen v. Australia).',
     sources: [
-      { label: 'Wikipedia — Recognition of same-sex unions in Brazil', url: 'https://en.wikipedia.org/wiki/Recognition_of_same-sex_unions_in_Brazil' },
+      { label: 'Wikipedia — LGBT rights in Tasmania', url: 'https://en.wikipedia.org/wiki/LGBT_rights_in_Tasmania' },
     ],
     linked_persons: [],
-    category: 'Recht / Ehe',
+    category: 'Recht / Entkriminalisierung',
+    significance: 3,
+    impact: 'positive',
+    checked: false,
+  },
+  {
+    id: 'decrim-indien-2018-09-06',
+    title: 'Navtej Singh Johar — § 377 heruntergelesen (Indien)',
+    date: '2018-09-06',
+    country: 'Indien',
+    description:
+      'Urteil des Supreme Court (Verfassungsbank, einstimmig) am 6. September 2018 in Navtej Singh ' +
+      'Johar v. Union of India: Section 377 ist, soweit sie einvernehmliche gleichgeschlechtliche ' +
+      'Handlungen kriminalisiert, „irrational, willkürlich und offenkundig verfassungswidrig". ' +
+      'Entkriminalisierung für rund 1,3 Mrd. Menschen.',
+    sources: [
+      { label: 'Wikipedia — Navtej Singh Johar v. Union of India', url: 'https://en.wikipedia.org/wiki/Navtej_Singh_Johar_v._Union_of_India' },
+    ],
+    linked_persons: [],
+    category: 'Recht / Entkriminalisierung',
+    significance: 5,
+    impact: 'positive',
+    checked: false,
+  },
+  {
+    id: 'decrim-botswana-2019-06-11',
+    title: 'Entkriminalisierung der Homosexualität — Botswana',
+    date: '2019-06-11',
+    country: 'Botswana',
+    description:
+      'High-Court-Urteil am 11. Juni 2019 (Motshidiemang v. Attorney General): die Sodomie-Paragrafen ' +
+      '164 und 167 des Strafgesetzbuchs sind verfassungswidrig (Verletzung von Privatheit, Würde, ' +
+      'Freiheit). 2021 vom Court of Appeal bestätigt.',
+    sources: [
+      { label: 'Human Rights Watch — Botswana High Court', url: 'https://www.hrw.org/news/2019/06/11/botswana-high-court-strikes-down-sodomy-laws' },
+    ],
+    linked_persons: [],
+    category: 'Recht / Entkriminalisierung',
+    significance: 4,
+    impact: 'positive',
+    checked: false,
+  },
+  {
+    id: 'decrim-bhutan-2021-02-17',
+    title: 'Entkriminalisierung der Homosexualität — Bhutan',
+    date: '2021-02-17',
+    country: 'Bhutan',
+    description:
+      'Penal Code (Amendment) — Inkrafttreten am 17. Februar 2021 (Parlament Dez. 2020, danach ' +
+      'königliche Zustimmung). Streicht die Strafbarkeit „widernatürlichen Geschlechts".',
+    sources: [
+      { label: 'Wikipedia — LGBTQ rights in Bhutan', url: 'https://en.wikipedia.org/wiki/LGBTQ_rights_in_Bhutan' },
+    ],
+    linked_persons: [],
+    category: 'Recht / Entkriminalisierung',
+    significance: 3,
+    impact: 'positive',
+    checked: false,
+  },
+  {
+    id: 'decrim-singapur-2023-01-03',
+    title: 'Aufhebung von § 377A — Singapur',
+    date: '2023-01-03',
+    country: 'Singapur',
+    description:
+      'Penal Code (Amendment) — Aufhebung von Section 377A. Parlament am 29. November 2022, ' +
+      'Präsidenten-Zustimmung 27. Dezember 2022, Inkrafttreten mit Veröffentlichung im Gazette ' +
+      'am 3. Januar 2023. Ende der Strafbarkeit von Sex zwischen Männern.',
+    sources: [
+      { label: 'Wikipedia — Section 377A (Singapore)', url: 'https://en.wikipedia.org/wiki/Section_377A_of_the_Penal_Code_(Singapore)' },
+    ],
+    linked_persons: [],
+    category: 'Recht / Entkriminalisierung',
+    significance: 3,
+    impact: 'positive',
+    checked: false,
+  },
+  {
+    id: 'decrim-mauritius-2023-10-04',
+    title: 'Entkriminalisierung der Homosexualität — Mauritius',
+    date: '2023-10-04',
+    country: 'Mauritius',
+    description:
+      'Supreme-Court-Urteil am 4. Oktober 2023: Section 250 des Strafgesetzbuchs (Verbot von „Sodomie", ' +
+      'aus der Kolonialzeit 1838) ist verfassungswidrig. Klage seit 2019 (Ah Seek u. a., Human Dignity Trust).',
+    sources: [
+      { label: 'Human Dignity Trust — Mauritius Supreme Court', url: 'https://www.humandignitytrust.org/news/mauritius-supreme-court-rules-law-targeting-lgbt-people-is-unconstitutional/' },
+    ],
+    linked_persons: [],
+    category: 'Recht / Entkriminalisierung',
+    significance: 4,
+    impact: 'positive',
+    checked: false,
+  },
+]
+
 // Ungarn — legislativer Rückschritt 2020–2021, tagesgenau gegen Wikipedia geprüft
 // (Deep-Research + WebFetch). Milestone-Datum = Parlamentsbeschluss (eindeutig;
 // Inkrafttreten beim Anti-LGBT-Gesetz uneinheitlich belegt → Beschlussdatum).
@@ -1994,25 +2116,79 @@ const hungarySeed: Milestone[] = [
   },
 ]
 
+// Ehe für alle — außereuropäische Länder (der Ehe-Block war bisher nur Europa).
+// Tagesgenau, je gegen Wikipedia „Same-sex marriage in X" per WebFetch geprüft.
+// Maßgeblich: Gesetz = Inkrafttreten, Gerichtsurteil = Urteilsdatum (Gazette separat vermerkt).
+const worldMarriageSeed: Milestone[] = [
 const SEED: Milestone[] = [...BASE_SEED, ...decrimSeed, ...unionSeed, ...transSeed, ...repressionSeed, ...worldRepressionSeed]
 // Außereuropäische Entkriminalisierung — tagesgenau, gegen Primär-/Fachquellen geprüft
 // (Deep-Research-Extraktion + WebFetch-Einzelverifikation, 2026-07). Maßgeblich:
 // Gerichtsurteil = Urteilsdatum; Gesetz = Inkrafttreten (Assent separat vermerkt).
 const worldDecrimSeed: Milestone[] = [
   {
-    id: 'decrim-kanada-1969-06-27',
-    title: 'Entkriminalisierung der Homosexualität — Kanada',
-    date: '1969-06-27',
+    id: 'ehe-kanada-2005-07-20',
+    title: 'Ehe für alle — Kanada (landesweit)',
+    date: '2005-07-20',
     country: 'Kanada',
     description:
-      'Criminal Law Amendment Act, 1968–69 — Royal Assent am 27. Juni 1969. Straffreiheit für ' +
-      'einvernehmliche Handlungen unter Erwachsenen (ab 21) im Privaten. Justizminister Pierre ' +
-      'Trudeau: „There’s no place for the state in the bedrooms of the nation."',
+      'Civil Marriage Act — Royal Assent am 20. Juli 2005, landesweite Öffnung der Ehe. ' +
+      'Viertes Land weltweit; einige Provinzen hatten die Ehe seit 2003 per Gericht geöffnet.',
     sources: [
-      { label: 'Wikipedia — Criminal Law Amendment Act, 1968–69', url: 'https://en.wikipedia.org/wiki/Criminal_Law_Amendment_Act,_1968%E2%80%9369' },
+      { label: 'Wikipedia — Same-sex marriage in Canada', url: 'https://en.wikipedia.org/wiki/Same-sex_marriage_in_Canada' },
     ],
     linked_persons: [],
-    category: 'Recht / Entkriminalisierung',
+    category: 'Recht / Ehe',
+    significance: 4,
+    impact: 'positive',
+    checked: false,
+  },
+  {
+    id: 'ehe-suedafrika-2006-11-30',
+    title: 'Ehe für alle — Südafrika',
+    date: '2006-11-30',
+    country: 'Südafrika',
+    description:
+      'Civil Union Act 2006 — Inkrafttreten am 30. November 2006 (einen Tag vor der vom ' +
+      'Verfassungsgericht gesetzten Frist). Erstes Land Afrikas mit gleichgeschlechtlicher Ehe.',
+    sources: [
+      { label: 'Wikipedia — Same-sex marriage in South Africa', url: 'https://en.wikipedia.org/wiki/Same-sex_marriage_in_South_Africa' },
+    ],
+    linked_persons: [],
+    category: 'Recht / Ehe',
+    significance: 5,
+    impact: 'positive',
+    checked: false,
+  },
+  {
+    id: 'ehe-argentinien-2010-07-22',
+    title: 'Ehe für alle — Argentinien',
+    date: '2010-07-22',
+    country: 'Argentinien',
+    description:
+      'Ley 26.618 — Inkrafttreten am 22. Juli 2010 (Veröffentlichung im Boletín Oficial, ' +
+      'Unterschrift Präsidentin Fernández de Kirchner am 21. Juli). Erstes Land Lateinamerikas.',
+    sources: [
+      { label: 'Wikipedia — Same-sex marriage in Argentina', url: 'https://en.wikipedia.org/wiki/Same-sex_marriage_in_Argentina' },
+    ],
+    linked_persons: [],
+    category: 'Recht / Ehe',
+    significance: 5,
+    impact: 'positive',
+    checked: false,
+  },
+  {
+    id: 'ehe-brasilien-2013-05-16',
+    title: 'Ehe für alle — Brasilien (landesweit)',
+    date: '2013-05-16',
+    country: 'Brasilien',
+    description:
+      'Resolution des Nationalen Justizrats (CNJ) vom 14. Mai 2013 (14:1): Notare müssen ' +
+      'gleichgeschlechtliche Ehen schließen. Veröffentlichung 15. Mai, wirksam 16. Mai 2013.',
+    sources: [
+      { label: 'Wikipedia — Recognition of same-sex unions in Brazil', url: 'https://en.wikipedia.org/wiki/Recognition_of_same-sex_unions_in_Brazil' },
+    ],
+    linked_persons: [],
+    category: 'Recht / Ehe',
     significance: 4,
     impact: 'positive',
     checked: false,
@@ -2029,18 +2205,6 @@ const worldDecrimSeed: Milestone[] = [
     ],
     linked_persons: [],
     category: 'Recht / Ehe',
-    id: 'decrim-neuseeland-1986-08-08',
-    title: 'Entkriminalisierung der Homosexualität — Neuseeland',
-    date: '1986-08-08',
-    country: 'Neuseeland',
-    description:
-      'Homosexual Law Reform Act 1986 — Inkrafttreten am 8. August 1986 (Royal Assent 11. Juli 1986). ' +
-      'Straffreiheit für einvernehmliche Handlungen unter Männern ab 16.',
-    sources: [
-      { label: 'Wikipedia — Homosexual Law Reform Act 1986', url: 'https://en.wikipedia.org/wiki/Homosexual_Law_Reform_Act_1986' },
-    ],
-    linked_persons: [],
-    category: 'Recht / Entkriminalisierung',
     significance: 3,
     impact: 'positive',
     checked: false,
@@ -2059,20 +2223,6 @@ const worldDecrimSeed: Milestone[] = [
     linked_persons: [],
     category: 'Recht / Ehe',
     significance: 4,
-    id: 'decrim-suedafrika-1998-10-09',
-    title: 'Entkriminalisierung der Homosexualität — Südafrika',
-    date: '1998-10-09',
-    country: 'Südafrika',
-    description:
-      'Verfassungsgericht-Urteil National Coalition for Gay and Lesbian Equality v. Minister of ' +
-      'Justice am 9. Oktober 1998: die aus der Kolonial-/Apartheid-Zeit stammenden Sodomie-Verbote ' +
-      'sind verfassungswidrig. Erstes Land mit Verfassungs-Diskriminierungsschutz nach sexueller Orientierung.',
-    sources: [
-      { label: 'Wikipedia — NCGLE v. Minister of Justice', url: 'https://en.wikipedia.org/wiki/National_Coalition_for_Gay_and_Lesbian_Equality_v_Minister_of_Justice' },
-    ],
-    linked_persons: [],
-    category: 'Recht / Entkriminalisierung',
-    significance: 5,
     impact: 'positive',
     checked: false,
   },
@@ -2089,20 +2239,6 @@ const worldDecrimSeed: Milestone[] = [
     ],
     linked_persons: [],
     category: 'Recht / Ehe',
-    id: 'decrim-usa-lawrence-2003-06-26',
-    title: 'Lawrence v. Texas — Sodomiegesetze bundesweit gekippt (USA)',
-    date: '2003-06-26',
-    country: 'Vereinigte Staaten',
-    description:
-      'Urteil des Supreme Court (6:3) am 26. Juni 2003: das texanische Sodomie-Gesetz verletzt die ' +
-      'Due-Process-Klausel des 14. Zusatzartikels. Kippt gleichartige Gesetze in 13 weiteren Staaten ' +
-      'und hebt Bowers v. Hardwick (1986) auf. Faktische Entkriminalisierung landesweit.',
-    sources: [
-      { label: 'Cornell Law — 539 U.S. 558', url: 'https://www.law.cornell.edu/supremecourt/text/539/558' },
-      { label: 'Wikipedia — Lawrence v. Texas', url: 'https://en.wikipedia.org/wiki/Lawrence_v._Texas' },
-    ],
-    linked_persons: [],
-    category: 'Recht / Entkriminalisierung',
     significance: 5,
     impact: 'positive',
     checked: false,
@@ -2138,21 +2274,6 @@ const worldDecrimSeed: Milestone[] = [
     linked_persons: [],
     category: 'Recht / Ehe',
     significance: 4,
-    id: 'decrim-tasmanien-1997-05-14',
-    title: 'Entkriminalisierung — Tasmanien (letzter australischer Staat)',
-    date: '1997-05-14',
-    country: 'Australien',
-    region: 'Tasmanien',
-    description:
-      'Criminal Code Amendment Act 1997 — Inkrafttreten am 14. Mai 1997 (Royal Assent 13. Mai 1997). ' +
-      'Tasmanien war die letzte australische Jurisdiktion mit Sodomie-Verbot; die Aufhebung folgte auf ' +
-      'ein UN-Menschenrechtsausschuss-Verfahren (Toonen v. Australia).',
-    sources: [
-      { label: 'Wikipedia — LGBT rights in Tasmania', url: 'https://en.wikipedia.org/wiki/LGBT_rights_in_Tasmania' },
-    ],
-    linked_persons: [],
-    category: 'Recht / Entkriminalisierung',
-    significance: 3,
     impact: 'positive',
     checked: false,
   },
@@ -2169,20 +2290,6 @@ const worldDecrimSeed: Milestone[] = [
     ],
     linked_persons: [],
     category: 'Recht / Ehe',
-    id: 'decrim-indien-2018-09-06',
-    title: 'Navtej Singh Johar — § 377 heruntergelesen (Indien)',
-    date: '2018-09-06',
-    country: 'Indien',
-    description:
-      'Urteil des Supreme Court (Verfassungsbank, einstimmig) am 6. September 2018 in Navtej Singh ' +
-      'Johar v. Union of India: Section 377 ist, soweit sie einvernehmliche gleichgeschlechtliche ' +
-      'Handlungen kriminalisiert, „irrational, willkürlich und offenkundig verfassungswidrig". ' +
-      'Entkriminalisierung für rund 1,3 Mrd. Menschen.',
-    sources: [
-      { label: 'Wikipedia — Navtej Singh Johar v. Union of India', url: 'https://en.wikipedia.org/wiki/Navtej_Singh_Johar_v._Union_of_India' },
-    ],
-    linked_persons: [],
-    category: 'Recht / Entkriminalisierung',
     significance: 5,
     impact: 'positive',
     checked: false,
@@ -2217,19 +2324,6 @@ const worldDecrimSeed: Milestone[] = [
     ],
     linked_persons: [],
     category: 'Recht / Ehe',
-    id: 'decrim-botswana-2019-06-11',
-    title: 'Entkriminalisierung der Homosexualität — Botswana',
-    date: '2019-06-11',
-    country: 'Botswana',
-    description:
-      'High-Court-Urteil am 11. Juni 2019 (Motshidiemang v. Attorney General): die Sodomie-Paragrafen ' +
-      '164 und 167 des Strafgesetzbuchs sind verfassungswidrig (Verletzung von Privatheit, Würde, ' +
-      'Freiheit). 2021 vom Court of Appeal bestätigt.',
-    sources: [
-      { label: 'Human Rights Watch — Botswana High Court', url: 'https://www.hrw.org/news/2019/06/11/botswana-high-court-strikes-down-sodomy-laws' },
-    ],
-    linked_persons: [],
-    category: 'Recht / Entkriminalisierung',
     significance: 4,
     impact: 'positive',
     checked: false,
@@ -2247,18 +2341,6 @@ const worldDecrimSeed: Milestone[] = [
     ],
     linked_persons: [],
     category: 'Recht / Ehe',
-    id: 'decrim-bhutan-2021-02-17',
-    title: 'Entkriminalisierung der Homosexualität — Bhutan',
-    date: '2021-02-17',
-    country: 'Bhutan',
-    description:
-      'Penal Code (Amendment) — Inkrafttreten am 17. Februar 2021 (Parlament Dez. 2020, danach ' +
-      'königliche Zustimmung). Streicht die Strafbarkeit „widernatürlichen Geschlechts".',
-    sources: [
-      { label: 'Wikipedia — LGBTQ rights in Bhutan', url: 'https://en.wikipedia.org/wiki/LGBTQ_rights_in_Bhutan' },
-    ],
-    linked_persons: [],
-    category: 'Recht / Entkriminalisierung',
     significance: 3,
     impact: 'positive',
     checked: false,
@@ -2278,20 +2360,6 @@ const worldDecrimSeed: Milestone[] = [
     linked_persons: [],
     category: 'Recht / Ehe',
     significance: 4,
-    id: 'decrim-singapur-2023-01-03',
-    title: 'Aufhebung von § 377A — Singapur',
-    date: '2023-01-03',
-    country: 'Singapur',
-    description:
-      'Penal Code (Amendment) — Aufhebung von Section 377A. Parlament am 29. November 2022, ' +
-      'Präsidenten-Zustimmung 27. Dezember 2022, Inkrafttreten mit Veröffentlichung im Gazette ' +
-      'am 3. Januar 2023. Ende der Strafbarkeit von Sex zwischen Männern.',
-    sources: [
-      { label: 'Wikipedia — Section 377A (Singapore)', url: 'https://en.wikipedia.org/wiki/Section_377A_of_the_Penal_Code_(Singapore)' },
-    ],
-    linked_persons: [],
-    category: 'Recht / Entkriminalisierung',
-    significance: 3,
     impact: 'positive',
     checked: false,
   },
@@ -2309,18 +2377,6 @@ const worldDecrimSeed: Milestone[] = [
     ],
     linked_persons: [],
     category: 'Recht / Ehe',
-    id: 'decrim-mauritius-2023-10-04',
-    title: 'Entkriminalisierung der Homosexualität — Mauritius',
-    date: '2023-10-04',
-    country: 'Mauritius',
-    description:
-      'Supreme-Court-Urteil am 4. Oktober 2023: Section 250 des Strafgesetzbuchs (Verbot von „Sodomie", ' +
-      'aus der Kolonialzeit 1838) ist verfassungswidrig. Klage seit 2019 (Ah Seek u. a., Human Dignity Trust).',
-    sources: [
-      { label: 'Human Dignity Trust — Mauritius Supreme Court', url: 'https://www.humandignitytrust.org/news/mauritius-supreme-court-rules-law-targeting-lgbt-people-is-unconstitutional/' },
-    ],
-    linked_persons: [],
-    category: 'Recht / Entkriminalisierung',
     significance: 4,
     impact: 'positive',
     checked: false,
@@ -2344,11 +2400,71 @@ const worldDecrimSeed: Milestone[] = [
   },
 ]
 
-const SEED: Milestone[] = [...BASE_SEED, ...decrimSeed, ...unionSeed, ...transSeed, ...repressionSeed, ...worldMarriageSeed]
+// Globale Rückschritte 2022–2024 (außerhalb Europas/Russlands). Tagesgenau,
+// gegen HRW/Al Jazeera/Library of Congress bzw. Wikipedia geprüft. Milestone-Datum
+// = Parlamentsbeschluss (Inkrafttreten separat vermerkt).
+const worldRepressionSeed: Milestone[] = [
+  {
+    id: 'indonesien-kuhp-2022-12-06',
+    title: 'Neues Strafgesetzbuch (KUHP) — Indonesien',
+    date: '2022-12-06',
+    country: 'Indonesien',
+    description:
+      'Am 6. Dezember 2022 verabschiedete das Parlament (DPR) einstimmig das neue Strafgesetzbuch ' +
+      '(Gesetz Nr. 1/2023). Es stellt Sex außerhalb der Ehe und Zusammenleben unter Strafe — trifft ' +
+      'gleichgeschlechtliche Paare faktisch, da gleichgeschlechtliche Ehe nicht möglich ist. ' +
+      'Inkrafttreten am 2. Januar 2026.',
+    sources: [
+      { label: 'Al Jazeera', url: 'https://www.aljazeera.com/news/2022/12/6/indonesia-passes-legislation-outlawing-sex-outside-marriage' },
+      { label: 'Human Rights Watch', url: 'https://www.hrw.org/news/2022/12/08/indonesia-new-criminal-code-disastrous-rights' },
+      { label: 'Library of Congress', url: 'https://www.loc.gov/item/global-legal-monitor/2022-12-11/indonesia-new-criminal-code-passed-by-parliament/' },
+    ],
+    linked_persons: [],
+    category: 'Recht / Kriminalisierung',
+    significance: 4,
+    impact: 'negative',
+    checked: false,
+  },
+  {
+    id: 'ghana-family-values-2024-02-28',
+    title: 'Human Sexual Rights and Family Values Bill — Ghana',
+    date: '2024-02-28',
+    country: 'Ghana',
+    description:
+      'Am 28. Februar 2024 nahm das Parlament das „Family Values"-Gesetz einstimmig an — bis zu ' +
+      '3 Jahre Haft für Identifizierung als LGBTQ, bis zu 5 Jahre für „Förderung". Der Entwurf ' +
+      'verfiel vor der Wahl 2024, wurde 2025 erneut eingebracht und 2026 wieder beschlossen; ' +
+      'bislang NICHT vom Präsidenten unterzeichnet — noch nicht in Kraft.',
+    sources: [
+      { label: 'Wikipedia — Human Sexual Rights and Family Values Bill', url: 'https://en.wikipedia.org/wiki/Human_Sexual_Rights_and_Family_Values_Bill' },
+    ],
+    linked_persons: [],
+    category: 'Recht / Kriminalisierung',
+    significance: 3,
+    impact: 'negative',
+    checked: false,
+  },
+  {
+    id: 'irak-anti-lgbt-2024-04-27',
+    title: 'Gesetz gegen gleichgeschlechtliche Beziehungen — Irak',
+    date: '2024-04-27',
+    country: 'Irak',
+    description:
+      'Am 27. April 2024 beschloss das irakische Parlament eine Änderung des Anti-Prostitutions-' +
+      'Gesetzes, die einvernehmliche gleichgeschlechtliche Beziehungen mit bis zu 15 Jahren Haft ' +
+      'und Trans-Sein mit bis zu 3 Jahren bestraft.',
+    sources: [
+      { label: 'Wikipedia — LGBT rights in Iraq', url: 'https://en.wikipedia.org/wiki/LGBT_rights_in_Iraq' },
+    ],
+    linked_persons: [],
+    category: 'Recht / Kriminalisierung',
+    significance: 4,
+    impact: 'negative',
+    checked: false,
+  },
 ]
 
-const SEED: Milestone[] = [...BASE_SEED, ...decrimSeed, ...unionSeed, ...transSeed, ...repressionSeed, ...hungarySeed]
-const SEED: Milestone[] = [...BASE_SEED, ...decrimSeed, ...unionSeed, ...transSeed, ...repressionSeed, ...worldDecrimSeed]
+const SEED: Milestone[] = [...BASE_SEED, ...decrimSeed, ...unionSeed, ...transSeed, ...repressionSeed, ...worldDecrimSeed, ...hungarySeed, ...worldMarriageSeed, ...worldRepressionSeed]
 
 const KEY = 'person-db.milestones.v2'
 
