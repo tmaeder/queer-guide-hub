@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { errMsg } from './lib/errMsg'
 import { COHORTS, type Cohort } from './types'
 import { fetchCohortCounts, type CohortCounts } from './lib/query'
 import { checkedIds } from './lib/notes'
@@ -17,7 +18,7 @@ export function Dashboard({ onPick }: { onPick: (c: Cohort) => void }) {
   useEffect(() => {
     fetchCohortCounts(COHORTS.map((c) => c.key))
       .then(setCounts)
-      .catch((e) => setError(e.message ?? String(e)))
+      .catch((e) => setError(errMsg(e)))
       .finally(() => setLoading(false))
   }, [])
 

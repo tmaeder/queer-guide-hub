@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { errMsg } from './lib/errMsg'
 import {
   fetchCohortCounts,
   fetchCountries,
@@ -62,7 +63,7 @@ export function HomeStats() {
         setCountries(cs)
         setCounts(cc)
       } catch (e) {
-        if (alive) setError(e instanceof Error ? e.message : String(e))
+        if (alive) setError(errMsg(e))
       } finally {
         if (alive) setLoading(false)
       }
