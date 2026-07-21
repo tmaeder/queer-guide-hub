@@ -1667,7 +1667,161 @@ const transSeed: Milestone[] = [
   },
 ]
 
-const SEED: Milestone[] = [...BASE_SEED, ...decrimSeed, ...unionSeed, ...transSeed]
+// Repression / Rückschritt (negativ) + DSM-Depathologisierung (positiv).
+// Tagesgenau, quellengeprüft (Deep-Research 3-0; Russland-2013 „medium",
+// Datum 30.6. = Veröffentlichung/Inkrafttreten). Ungarn 2021 ausgelassen
+// (kein belegtes Tagesdatum).
+const repressionSeed: Milestone[] = [
+  {
+    id: 'dsm-entpathologisierung-1973-12-15',
+    title: 'APA streicht Homosexualität aus dem DSM',
+    date: '1973-12-15',
+    country: 'USA',
+    description:
+      'Das Board of Trustees der American Psychiatric Association strich am 15. Dezember 1973 ' +
+      'Homosexualität aus dem Diagnosehandbuch DSM-II. Eine Mitgliederabstimmung bestätigte 1974 ' +
+      'die Entscheidung. Meilenstein der Entpathologisierung (Pendant zur WHO-Streichung 1990).',
+    sources: [
+      { label: 'History.com — APA removes homosexuality (15.12.1973)', url: 'https://www.history.com/this-day-in-history/december-15/the-american-psychiatric-association-removes-homosexuality-from-its-list-of-mental-illnesses' },
+      { label: 'NCBI/PMC — Homosexuality & the DSM', url: 'https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4695779/' },
+    ],
+    linked_persons: [],
+    category: 'Entpathologisierung',
+    significance: 5,
+    impact: 'positive',
+    checked: false,
+  },
+  {
+    id: 'section28-einfuehrung-1988-05-24',
+    title: 'Section 28 tritt in Kraft (Vereinigtes Königreich)',
+    date: '1988-05-24',
+    country: 'Vereinigtes Königreich',
+    description:
+      'Section 28 des Local Government Act 1988 verbot Kommunen die „Förderung von Homosexualität" ' +
+      '(u. a. an Schulen). Königliche Zustimmung am 24.3., in Kraft getreten am 24. Mai 1988 ' +
+      '(Regierung Thatcher). Prägte ein Klima des Schweigens an Schulen.',
+    sources: [
+      { label: 'legislation.gov.uk — Local Government Act 1988, s.28', url: 'https://www.legislation.gov.uk/ukpga/1988/9/section/28' },
+    ],
+    linked_persons: [],
+    category: 'Recht / Kriminalisierung',
+    significance: 4,
+    impact: 'negative',
+    checked: false,
+  },
+  {
+    id: 'section28-abschaffung-schottland-2001-03-29',
+    title: 'Section 28 abgeschafft (Schottland)',
+    date: '2001-03-29',
+    country: 'Vereinigtes Königreich',
+    region: 'Schottland',
+    description:
+      'Schottland hob Section 28 mit Wirkung zum 29. März 2001 auf (Ethical Standards in Public ' +
+      'Life etc. (Scotland) Act 2000) — noch vor England & Wales.',
+    sources: [
+      { label: 'legislation.gov.uk — asp 2000/7', url: 'https://www.legislation.gov.uk/asp/2000/7/contents' },
+    ],
+    linked_persons: [],
+    category: 'Gesetz / Gleichstellung',
+    significance: 3,
+    impact: 'positive',
+    checked: false,
+  },
+  {
+    id: 'section28-abschaffung-england-wales-2003-11-18',
+    title: 'Section 28 abgeschafft (England & Wales)',
+    date: '2003-11-18',
+    country: 'Vereinigtes Königreich',
+    region: 'England & Wales',
+    description:
+      'England & Wales hoben Section 28 mit Wirkung zum 18. November 2003 auf (Local Government ' +
+      'Act 2003; königliche Zustimmung 18.9.2003).',
+    sources: [
+      { label: 'legislation.gov.uk — Local Government Act 1988, s.28 (Aufhebungsvermerk)', url: 'https://www.legislation.gov.uk/ukpga/1988/9/section/28' },
+      { label: 'House of Commons Library — 20th anniversary of repeal', url: 'https://commonslibrary.parliament.uk/research-briefings/cdp-2023-0213/' },
+    ],
+    linked_persons: [],
+    category: 'Gesetz / Gleichstellung',
+    significance: 3,
+    impact: 'positive',
+    checked: false,
+  },
+  {
+    id: 'nigeria-ssmpa-2014-01-07',
+    title: 'Same-Sex Marriage (Prohibition) Act (Nigeria)',
+    date: '2014-01-07',
+    country: 'Nigeria',
+    description:
+      'Von Präsident Goodluck Jonathan am 7. Januar 2014 unterzeichnet (Commencement selben Tag). ' +
+      'Verbietet gleichgeschlechtliche Ehen, Vereinigungen und deren öffentliche „Unterstützung" ' +
+      'unter hoher Strafandrohung.',
+    sources: [
+      { label: 'Wikipedia — Same Sex Marriage (Prohibition) Act, 2013', url: 'https://en.wikipedia.org/wiki/Same_Sex_Marriage_(Prohibition)_Act,_2013' },
+    ],
+    linked_persons: [],
+    category: 'Recht / Kriminalisierung',
+    significance: 3,
+    impact: 'negative',
+    checked: false,
+  },
+  {
+    id: 'russland-propaganda-2013-06-30',
+    title: '„Propaganda"-Gesetz (Russland)',
+    date: '2013-06-30',
+    country: 'Russland',
+    description:
+      'Föderales Gesetz Nr. 135-FZ („Propaganda nichttraditioneller sexueller Beziehungen unter ' +
+      'Minderjährigen"), von Präsident Putin am 29.6. unterzeichnet, mit Veröffentlichung am ' +
+      '30. Juni 2013 in Kraft getreten. Grundlage massiver Repression (2022 auf Erwachsene ausgeweitet).',
+    sources: [
+      { label: 'Wikipedia — Russian anti-LGBTQ law', url: 'https://en.wikipedia.org/wiki/Russian_anti-LGBTQ_law' },
+      { label: 'Human Rights Campaign', url: 'https://www.hrc.org/press/putins-anti-lgbt-law-turns-one' },
+    ],
+    linked_persons: [],
+    category: 'Recht / Kriminalisierung',
+    significance: 4,
+    impact: 'negative',
+    checked: false,
+  },
+  {
+    id: 'uganda-anti-homosexuality-2023-05-30',
+    title: 'Anti-Homosexuality Act 2023 (Uganda)',
+    date: '2023-05-30',
+    country: 'Uganda',
+    description:
+      'Von Präsident Museveni am 26.5. unterzeichnet, am 30. Mai 2023 mit Veröffentlichung im ' +
+      'Gazette in Kraft getreten. Eines der weltweit härtesten Gesetze — sieht u. a. die Todesstrafe ' +
+      'für „schwere Homosexualität" vor.',
+    sources: [
+      { label: 'Wikipedia — Anti-Homosexuality Act, 2023', url: 'https://en.wikipedia.org/wiki/Anti-Homosexuality_Act,_2023' },
+    ],
+    linked_persons: [],
+    category: 'Recht / Kriminalisierung',
+    significance: 4,
+    impact: 'negative',
+    checked: false,
+  },
+  {
+    id: 'russland-lgbt-extremismus-2023-11-30',
+    title: '„LGBT-Bewegung" für extremistisch erklärt (Russland)',
+    date: '2023-11-30',
+    country: 'Russland',
+    description:
+      'Das Oberste Gericht Russlands erklärte am 30. November 2023 die „internationale LGBT-Bewegung" ' +
+      'für extremistisch (Rechtskraft 10.1.2024) — faktisches Verbot queerer Organisation und ' +
+      'Aktivität, mit strafrechtlichen Folgen.',
+    sources: [
+      { label: 'Wikipedia — Russian anti-LGBTQ law', url: 'https://en.wikipedia.org/wiki/Russian_anti-LGBTQ_law' },
+    ],
+    linked_persons: [],
+    category: 'Recht / Kriminalisierung',
+    significance: 4,
+    impact: 'negative',
+    checked: false,
+  },
+]
+
+const SEED: Milestone[] = [...BASE_SEED, ...decrimSeed, ...unionSeed, ...transSeed, ...repressionSeed]
 
 const KEY = 'person-db.milestones.v2'
 
