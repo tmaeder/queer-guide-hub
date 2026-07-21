@@ -24,6 +24,13 @@ updates:
         update-types: ['version-update:semver-major']
       - dependency-name: '@zxcvbn-ts/language-en'
         update-types: ['version-update:semver-major']
+      # typescript 7.x is incompatible with typescript-eslint (peer <6.1.0):
+      # the bump makes eslint crash with ERR_INTERNAL_ASSERTION and npm
+      # install fail with ERESOLVE. Recurred via #2117/#2136/#2140/#2189/
+      # #2190 (root), #2176 (scraper), #2082 (extension). Majors here need a
+      # deliberate toolchain migration.
+      - dependency-name: 'typescript'
+        update-types: ['version-update:semver-major']
 
   - package-ecosystem: npm
     directory: /scraper
@@ -33,6 +40,10 @@ updates:
       npm:
         patterns: ['*']
         update-types: [minor, patch]
+    ignore:
+      # See root ignore: typescript majors break typescript-eslint.
+      - dependency-name: 'typescript'
+        update-types: ['version-update:semver-major']
 
   - package-ecosystem: npm
     directory: /extension
@@ -42,6 +53,12 @@ updates:
       npm:
         patterns: ['*']
         update-types: [minor, patch]
+    ignore:
+      # See root ignore: typescript majors break the shared toolchain, and a
+      # solo typescript-major PR union-merging against the weekly group PR
+      # corrupted extension/package.json once (#2079 + #2082).
+      - dependency-name: 'typescript'
+        update-types: ['version-update:semver-major']
 
   - package-ecosystem: npm
     directory: /workers/image-cdn
