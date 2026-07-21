@@ -4,6 +4,8 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { InlineLoading } from '@/components/ui/loading';
 import LGBTJurisdictionInfo from '@/components/country/LGBTJurisdictionInfo';
 import { CountryLegalHistory } from '@/components/country/CountryLegalHistory';
+import { MilestoneRow } from '@/components/milestones/MilestoneRow';
+import { useMilestonesForCity } from '@/hooks/useMilestones';
 import type { CityRelation, CountryRelation } from './types';
 
 export interface CityRightsTabProps {
@@ -62,6 +64,7 @@ export function CityRightsTab({ city, fullCountry, countryLoading }: CityRightsT
       ) : fullCountry ? (
         <div className="flex flex-col gap-6">
           <LGBTJurisdictionInfo country={fullCountry} />
+          <CityMilestones cityId={city.id} cityName={city.name} />
           <CountryLegalHistory countryId={fullCountry.id} countrySlug={fullCountry.slug} />
         </div>
       ) : (
@@ -70,5 +73,24 @@ export function CityRightsTab({ city, fullCountry, countryLoading }: CityRightsT
         </p>
       )}
     </div>
+  );
+}
+
+/** Milestones that happened in this city itself (via milestones.city_id). Self-hides. */
+function CityMilestones({ cityId, cityName }: { cityId: string; cityName: string }) {
+  const { t } = useTranslation();
+  const { data } = useMilestonesForCity(cityId);
+  if (!data?.length) return null;
+  return (
+    <section className="rounded-container border border-border p-6">
+      <h3 className="mb-4 text-2xs uppercase tracking-wider text-muted-foreground">
+        {t('milestones.city.title', 'Queer history in {{city}}', { city: cityName })}
+      </h3>
+      <div className="space-y-4">
+        {data.map((m) => (
+          <MilestoneRow key={m.id} milestone={m} density="compact" />
+        ))}
+      </div>
+    </section>
   );
 }

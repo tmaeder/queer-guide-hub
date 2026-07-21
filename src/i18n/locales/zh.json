@@ -1696,7 +1696,8 @@
       "personalities": "名人",
       "hotels": "酒店",
       "help": "帮助",
-      "tags": "标签"
+      "tags": "标签",
+      "history": "历史"
     },
     "userMenu": {
       "myTrips": "我的行程",
@@ -3457,6 +3458,9 @@
       "title": "历史上的今天",
       "seeAll": "完整时间线",
       "yearsAgo": "{{count}} 年前"
+    },
+    "city": {
+      "title": "{{city}}的酷儿历史"
     }
   }
 }

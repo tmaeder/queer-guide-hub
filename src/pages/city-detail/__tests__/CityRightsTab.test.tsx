@@ -4,6 +4,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 vi.mock('@/components/routing/LocalizedLink', () => ({
   LocalizedLink: ({ to, children }: { to: string; children: React.ReactNode }) => <a href={to}>{children}</a>,
@@ -28,7 +29,14 @@ const city = {
   countries: { name: 'Germany', equality_score: 80, slug: 'germany', id: 'co-de' },
 } as never;
 
-const inRouter = (ui: React.ReactNode) => <MemoryRouter>{ui}</MemoryRouter>;
+// The inline CityMilestones block runs a real useQuery (useMilestonesForCity),
+// so the tree needs a QueryClient; queries stay idle (no fetch assertions here).
+const qc = new QueryClient({ defaultOptions: { queries: { retry: false, enabled: false } } });
+const inRouter = (ui: React.ReactNode) => (
+  <QueryClientProvider client={qc}>
+    <MemoryRouter>{ui}</MemoryRouter>
+  </QueryClientProvider>
+);
 
 describe('CityRightsTab', () => {
   it('shows loading state', () => {

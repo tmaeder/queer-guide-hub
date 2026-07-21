@@ -1696,7 +1696,8 @@
       "personalities": "Personalidades",
       "hotels": "Hotéis",
       "help": "Ajuda",
-      "tags": "Tags"
+      "tags": "Tags",
+      "history": "História"
     },
     "userMenu": {
       "myTrips": "Minhas Viagens",
@@ -3459,6 +3460,9 @@
       "title": "Neste dia",
       "seeAll": "Linha do tempo completa",
       "yearsAgo": "há {{count}} anos"
+    },
+    "city": {
+      "title": "História queer em {{city}}"
     }
   }
 }

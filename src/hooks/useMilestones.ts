@@ -1,6 +1,7 @@
 // Milestones data hooks (queer-history content type). All read via SECURITY
 // DEFINER RPCs that self-filter visibility + safety gating server-side.
 import { useQuery } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { untypedRpc } from '@/integrations/supabase/untyped';
 import type {
   Milestone,
@@ -11,6 +12,17 @@ import type {
 
 const HOUR = 60 * 60_000;
 
+/**
+ * Content-language overlay: translated title/description rows exist in
+ * content_translations (currently 'de' — the curated originals). English is
+ * the base column content, so 'en' maps to null (no overlay).
+ */
+function useContentLang(): string | null {
+  const { i18n } = useTranslation();
+  const base = (i18n.language || 'en').split('-')[0];
+  return base === 'en' ? null : base;
+}
+
 export interface MilestoneTimelineFilters {
   country?: string | null; // country uuid
   category?: string | null;
@@ -20,8 +32,9 @@ export interface MilestoneTimelineFilters {
 }
 
 export function useMilestonesTimeline(filters: MilestoneTimelineFilters = {}, limit = 500) {
+  const lang = useContentLang();
   return useQuery({
-    queryKey: ['milestones-timeline', filters, limit],
+    queryKey: ['milestones-timeline', filters, limit, lang],
     staleTime: HOUR,
     queryFn: async () => {
       const { data, error } = await untypedRpc<Milestone[]>('milestones_timeline', {
@@ -33,6 +46,7 @@ export function useMilestonesTimeline(filters: MilestoneTimelineFilters = {}, li
         p_significance_min: null,
         p_limit: limit,
         p_offset: 0,
+        p_lang: lang,
       });
       if (error) throw error;
       return data ?? [];
@@ -41,13 +55,15 @@ export function useMilestonesTimeline(filters: MilestoneTimelineFilters = {}, li
 }
 
 export function useMilestone(slug: string | undefined) {
+  const lang = useContentLang();
   return useQuery({
-    queryKey: ['milestone', slug],
+    queryKey: ['milestone', slug, lang],
     enabled: !!slug,
     staleTime: HOUR,
     queryFn: async () => {
       const { data, error } = await untypedRpc<Milestone | null>('get_milestone', {
         p_slug: slug,
+        p_lang: lang,
       });
       if (error) throw error;
       return data ?? null;
@@ -60,8 +76,9 @@ export function useMilestonesForEntity(
   entityId: string | undefined,
   limit = 12,
 ) {
+  const lang = useContentLang();
   return useQuery({
-    queryKey: ['milestones-for-entity', entityType, entityId, limit],
+    queryKey: ['milestones-for-entity', entityType, entityId, limit, lang],
     enabled: !!entityId,
     staleTime: HOUR,
     queryFn: async () => {
@@ -69,6 +86,7 @@ export function useMilestonesForEntity(
         p_entity_type: entityType,
         p_entity_id: entityId,
         p_limit: limit,
+        p_lang: lang,
       });
       if (error) throw error;
       return data ?? [];
@@ -77,14 +95,34 @@ export function useMilestonesForEntity(
 }
 
 export function useMilestonesForCountry(countryId: string | undefined, limit = 6) {
+  const lang = useContentLang();
   return useQuery({
-    queryKey: ['milestones-for-country', countryId, limit],
+    queryKey: ['milestones-for-country', countryId, limit, lang],
     enabled: !!countryId,
     staleTime: HOUR,
     queryFn: async () => {
       const { data, error } = await untypedRpc<MilestoneRef[]>('milestones_for_country', {
         p_country_id: countryId,
         p_limit: limit,
+        p_lang: lang,
+      });
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+}
+
+export function useMilestonesForCity(cityId: string | undefined, limit = 6) {
+  const lang = useContentLang();
+  return useQuery({
+    queryKey: ['milestones-for-city', cityId, limit, lang],
+    enabled: !!cityId,
+    staleTime: HOUR,
+    queryFn: async () => {
+      const { data, error } = await untypedRpc<MilestoneRef[]>('milestones_for_city', {
+        p_city_id: cityId,
+        p_limit: limit,
+        p_lang: lang,
       });
       if (error) throw error;
       return data ?? [];
@@ -97,13 +135,15 @@ const dayKey = (d: Date) =>
 
 export function useMilestonesOnThisDay(limit = 3) {
   const today = dayKey(new Date());
+  const lang = useContentLang();
   return useQuery({
-    queryKey: ['milestones-on-this-day', today, limit],
+    queryKey: ['milestones-on-this-day', today, limit, lang],
     staleTime: HOUR,
     queryFn: async () => {
       const { data, error } = await untypedRpc<MilestoneOnThisDay[]>('milestones_on_this_day', {
         p_today: today,
         p_limit: limit,
+        p_lang: lang,
       });
       if (error) throw error;
       return data ?? [];
@@ -113,14 +153,16 @@ export function useMilestonesOnThisDay(limit = 3) {
 
 /** Calendar "queer history" layer feed (range-capped at 62 days server-side). */
 export function useMilestoneAnniversaries(from: Date, to: Date, enabled: boolean) {
+  const lang = useContentLang();
   const query = useQuery({
-    queryKey: ['calendar-milestones', dayKey(from), dayKey(to)],
+    queryKey: ['calendar-milestones', dayKey(from), dayKey(to), lang],
     enabled,
     staleTime: HOUR,
     queryFn: async () => {
       const { data, error } = await untypedRpc<MilestoneAnniversary[]>('milestones_anniversaries', {
         p_from: dayKey(from),
         p_to: dayKey(to),
+        p_lang: lang,
       });
       if (error) throw error;
       return data ?? [];
