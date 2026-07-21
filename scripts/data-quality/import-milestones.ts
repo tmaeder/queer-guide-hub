@@ -1,4 +1,9 @@
 #!/usr/bin/env npx tsx
+// ⚠️ DO NOT RE-RUN without checking: the live rows were translated to ENGLISH
+// on 2026-07-21 (German originals preserved in content_translations, language
+// 'de'). This seed holds the GERMAN originals — a re-run would overwrite the
+// English titles/descriptions.
+//
 // One-shot import of the curated queer-history milestones from the person-db
 // curation tool (tools/person-db/src/lib/milestones.ts, ~110 entries) into the
 // live `milestones` table + `milestone_links` (personality N:M).
