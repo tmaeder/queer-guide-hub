@@ -261,7 +261,7 @@ Deno.serve(withErrorReporting('twenty-sync', async (req) => {
   const phone = (v: unknown, countryKey?: unknown) => {
     const x = s(v)
     if (!x) return null
-    const m = x.match(/\+?\d[\d\s\-().\/]{4,}/)
+    const m = x.match(/\+?\d[\d\s\-()./]{4,}/)
     if (!m) return null
     const digits = m[0].replace(/[^\d]/g, '')
     if (digits.length < 5 || digits.length > 15) return null

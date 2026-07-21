@@ -169,7 +169,7 @@ Deno.serve(async (req: Request) => {
   for (const v of venues) {
     const started = Date.now()
     let logStatus = 'skipped'
-    let outcome = 'error'
+    let outcome: string
     try {
       let baseUrl: URL
       try {
