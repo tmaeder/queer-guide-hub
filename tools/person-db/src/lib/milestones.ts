@@ -1821,7 +1821,69 @@ const repressionSeed: Milestone[] = [
   },
 ]
 
-const SEED: Milestone[] = [...BASE_SEED, ...decrimSeed, ...unionSeed, ...transSeed, ...repressionSeed]
+// Ungarn — legislativer Rückschritt 2020–2021, tagesgenau gegen Wikipedia geprüft
+// (Deep-Research + WebFetch). Milestone-Datum = Parlamentsbeschluss (eindeutig;
+// Inkrafttreten beim Anti-LGBT-Gesetz uneinheitlich belegt → Beschlussdatum).
+const hungarySeed: Milestone[] = [
+  {
+    id: 'ungarn-trans-anerkennung-2020-05-19',
+    title: 'Ende der rechtlichen Geschlechtsanerkennung — Ungarn',
+    date: '2020-05-19',
+    country: 'Ungarn',
+    description:
+      'Am 19. Mai 2020 beschloss das ungarische Parlament (134:56) ein Gesetz, das das ' +
+      'rechtliche Geschlecht auf das „bei der Geburt eingetragene" festschreibt und die ' +
+      'Änderung des Geschlechtseintrags für trans und intergeschlechtliche Personen unmöglich ' +
+      'macht. Unterschrift durch Präsident Áder am 28. Mai 2020.',
+    sources: [
+      { label: 'Wikipedia — LGBT rights in Hungary', url: 'https://en.wikipedia.org/wiki/LGBT_rights_in_Hungary' },
+    ],
+    linked_persons: [],
+    category: 'Recht / Kriminalisierung',
+    significance: 4,
+    impact: 'negative',
+    checked: false,
+  },
+  {
+    id: 'ungarn-verfassung-familie-2020-12-16',
+    title: 'Verfassungsänderung „Mutter=Frau, Vater=Mann" — Ungarn',
+    date: '2020-12-16',
+    country: 'Ungarn',
+    description:
+      'Am 16. Dezember 2020 beschloss das Parlament (123:45) die 9. Verfassungsänderung: ' +
+      '„Die Mutter ist eine Frau, der Vater ein Mann." Adoption faktisch auf verheiratete ' +
+      'verschiedengeschlechtliche Paare beschränkt — Ausschluss gleichgeschlechtlicher Paare.',
+    sources: [
+      { label: 'Wikipedia — LGBT rights in Hungary', url: 'https://en.wikipedia.org/wiki/LGBT_rights_in_Hungary' },
+    ],
+    linked_persons: [],
+    category: 'Recht / Kriminalisierung',
+    significance: 4,
+    impact: 'negative',
+    checked: false,
+  },
+  {
+    id: 'ungarn-anti-lgbt-gesetz-2021-06-15',
+    title: 'Anti-LGBT-„Propaganda"-Gesetz (Act LXXIX/2021) — Ungarn',
+    date: '2021-06-15',
+    country: 'Ungarn',
+    description:
+      'Am 15. Juni 2021 beschloss das Parlament das „Kinderschutz"-Gesetz (Act LXXIX of 2021), ' +
+      'das Darstellung/„Bewerbung" von Homosexualität und Geschlechtsangleichung gegenüber ' +
+      'Minderjährigen verbietet. Unterschrift durch Präsident Áder am 23. Juni 2021, ' +
+      'Inkrafttreten Anfang Juli 2021. Auslöser eines EU-Vertragsverletzungsverfahrens.',
+    sources: [
+      { label: 'Wikipedia — Hungarian anti-LGBT law', url: 'https://en.wikipedia.org/wiki/Hungarian_anti-LGBT_law' },
+    ],
+    linked_persons: [],
+    category: 'Recht / Kriminalisierung',
+    significance: 4,
+    impact: 'negative',
+    checked: false,
+  },
+]
+
+const SEED: Milestone[] = [...BASE_SEED, ...decrimSeed, ...unionSeed, ...transSeed, ...repressionSeed, ...hungarySeed]
 
 const KEY = 'person-db.milestones.v2'
 
