@@ -32,7 +32,6 @@ function toFlatRow(p: Personality): Record<string, string> {
     visibility: val(p.visibility),
     review_status: val(p.review_status),
     needs_attention: val(p.needs_attention),
-    milestone: val(p.milestone),
     wikipedia_url: val(p.wikipedia_url),
     website_url: val(p.website_url),
     tags: val(p.tags),

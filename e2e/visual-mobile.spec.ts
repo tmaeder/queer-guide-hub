@@ -36,7 +36,9 @@ test.describe('Mobile visual regression', () => {
       // layout break. /news is the live news feed — the hourly pipeline rotates
       // its cards past the 0.15 gate within hours of a baseline regen — so it
       // belongs in the same bucket.
-      const HIGH_ROTATION = new Set(['/', '/venues', '/news']);
+      // /marketplace joined the bucket 2026-07: the daily 04:00 sync rotates
+      // listings past the 0.15 gate (observed 0.19 nightly).
+      const HIGH_ROTATION = new Set(['/', '/venues', '/news', '/marketplace']);
       const threshold = HIGH_ROTATION.has(route) ? 0.5 : isStatic ? 0.02 : 0.15;
       await expect(page).toHaveScreenshot(`${route.replace(/\//g, '_') || '_root'}.png`, {
         fullPage: isStatic,

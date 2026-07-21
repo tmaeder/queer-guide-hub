@@ -3,10 +3,7 @@ import { ComposableMap, Geographies, Geography, type Geo } from 'react-simple-ma
 import isoCountries from 'i18n-iso-countries'
 import worldData from 'world-atlas/countries-110m.json'
 import type { Country } from './lib/query'
-import { getMilestones } from './lib/milestones'
-import { codeToFlag, nameToAlpha2 } from './lib/flags'
-
-interface MsAgg { pos: number; neg: number; neu: number }
+import { codeToFlag } from './lib/flags'
 
 // count by ISO alpha-2 → fill. Monochrome-ish blue functional scale.
 function fillFor(count: number, max: number): string {
@@ -35,35 +32,12 @@ export function WorldMap({
     return m
   }, [countries, counts])
 
-  // ISO alpha-2 → milestone counts (pos/neg/neu), from local milestones.
-  const msByAlpha2 = useMemo(() => {
-    const m: Record<string, MsAgg> = {}
-    for (const ms of getMilestones()) {
-      const a2 = nameToAlpha2(ms.country)
-      if (!a2) continue
-      const agg = (m[a2] ??= { pos: 0, neg: 0, neu: 0 })
-      if (ms.impact === 'positive') agg.pos++
-      else if (ms.impact === 'negative') agg.neg++
-      else agg.neu++
-    }
-    return m
-  }, [])
-
   const max = useMemo(() => Math.max(1, ...Object.values(byAlpha2)), [byAlpha2])
 
   const tipFor = (a2: string, name: string): string => {
     const flag = a2 ? codeToFlag(a2) + ' ' : ''
     const persons = byAlpha2[a2] ?? 0
-    const ms = msByAlpha2[a2]
-    const parts = [`${persons.toLocaleString('de-DE')} Personen`]
-    if (ms) {
-      const seg: string[] = []
-      if (ms.pos) seg.push(`${ms.pos}+ positiv`)
-      if (ms.neg) seg.push(`${ms.neg}− negativ`)
-      if (ms.neu) seg.push(`${ms.neu} neutral`)
-      parts.push(`Meilensteine: ${seg.join(', ')}`)
-    }
-    return `${flag}${name} — ${parts.join(' · ')}`
+    return `${flag}${name} — ${persons.toLocaleString('de-DE')} Personen`
   }
 
   return (
