@@ -65,7 +65,7 @@ export function CityRightsTab({ city, fullCountry, countryLoading }: CityRightsT
         <div className="flex flex-col gap-6">
           <LGBTJurisdictionInfo country={fullCountry} />
           <CityMilestones cityId={city.id} cityName={city.name} />
-          <CountryLegalHistory countryId={fullCountry.id} countrySlug={fullCountry.slug} />
+          <CountryLegalHistory countryId={fullCountry.id} countryName={fullCountry.name} />
         </div>
       ) : (
         <p className="py-8 text-center text-muted-foreground">

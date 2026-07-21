@@ -55,20 +55,22 @@ export default function HistoryTimeline() {
   const milestones = useMemo(() => {
     let rows = data ?? [];
     if (!showAll) rows = rows.filter((m) => m.significance >= 4);
-    if (country) rows = rows.filter((m) => (m.country?.slug ?? m.country_name) === country);
+    if (country) rows = rows.filter((m) => (m.country?.name ?? m.country_name) === country);
     if (category) rows = rows.filter((m) => m.category === category);
     if (impact) rows = rows.filter((m) => m.impact === impact);
     return rows;
   }, [data, showAll, country, category, impact]);
 
   const countries = useMemo(() => {
-    const seen = new Map<string, string>();
+    // The dropdown works on the display LABEL: bulk-imported rows may carry
+    // only a free-text country_name while resolved rows key by slug — the same
+    // country must be one entry and the filter must match both row shapes.
+    const labels = new Set<string>();
     for (const m of data ?? []) {
-      const key = m.country?.slug ?? m.country_name;
       const label = m.country?.name ?? m.country_name;
-      if (key && label && !seen.has(key)) seen.set(key, label);
+      if (label) labels.add(label);
     }
-    return [...seen.entries()].sort((a, b) => a[1].localeCompare(b[1]));
+    return [...labels].sort((a, b) => a.localeCompare(b));
   }, [data]);
 
   const decades = useMemo(() => {
@@ -138,8 +140,8 @@ export default function HistoryTimeline() {
             className="h-8 rounded-element border border-border bg-background px-2 text-13"
           >
             <option value="">{t('milestones.filter.allCountries', 'All countries')}</option>
-            {countries.map(([key, label]) => (
-              <option key={key} value={key}>
+            {countries.map((label) => (
+              <option key={label} value={label}>
                 {label}
               </option>
             ))}
