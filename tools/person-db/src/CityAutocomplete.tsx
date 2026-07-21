@@ -9,11 +9,13 @@ export function CityAutocomplete({
   onChange,
   placeholder,
   withCountry = false,
+  id,
 }: {
   value: string
   onChange: (v: string) => void
   placeholder?: string
   withCountry?: boolean
+  id?: string
 }) {
   const [results, setResults] = useState<CityHit[]>([])
   const [open, setOpen] = useState(false)
@@ -55,6 +57,7 @@ export function CityAutocomplete({
   return (
     <div className="city-ac" ref={ref}>
       <input
+        id={id}
         type="text"
         value={value}
         placeholder={placeholder ?? 'Stadt suchen…'}

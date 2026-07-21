@@ -14,7 +14,8 @@ import { withFlag } from './lib/flags'
 import { KebabMenu } from './KebabMenu'
 import { MilestoneForm } from './MilestoneForm'
 import { Timeline } from './Timeline'
-import { NewMenu, captureOptions } from './NewMenu'
+import { NewMenu } from './NewMenu'
+import { captureOptions } from './captureOptions'
 
 const SITE = 'https://queer.guide'
 

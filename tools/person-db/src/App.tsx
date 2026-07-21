@@ -47,10 +47,10 @@ export function App() {
 
   useEffect(() => {
     if (view !== 'list') return
-    setLoading(true)
-    setError('')
     clearTimeout(debounceRef.current)
     debounceRef.current = window.setTimeout(() => {
+      setLoading(true)
+      setError('')
       fetchPersonalities(filters, page)
         .then((r) => {
           setRows(r.rows)
@@ -183,7 +183,15 @@ export function App() {
             <div
               key={p.id}
               className={'row' + (selectedId === p.id ? ' sel' : '')}
+              role="button"
+              tabIndex={0}
               onClick={() => setSelectedId(p.id)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault()
+                  setSelectedId(p.id)
+                }
+              }}
             >
               {checked.has(p.id) && <span className="check" title="lokal geprüft">✓</span>}
               {p.image_url ? (

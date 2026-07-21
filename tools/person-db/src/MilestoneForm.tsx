@@ -29,13 +29,11 @@ export function MilestoneForm({
   const [results, setResults] = useState<LinkedPerson[]>([])
   const debounce = useRef<number | undefined>(undefined)
   useEffect(() => {
+    const t = term.trim()
+    if (!t) return
     clearTimeout(debounce.current)
-    if (!term.trim()) {
-      setResults([])
-      return
-    }
     debounce.current = window.setTimeout(() => {
-      searchPersons(term).then(setResults).catch(() => setResults([]))
+      searchPersons(t).then(setResults).catch(() => setResults([]))
     }, 250)
     return () => clearTimeout(debounce.current)
   }, [term])
@@ -93,9 +91,9 @@ export function MilestoneForm({
       {T('date', 'Datum * (YYYY-MM-DD / YYYY)')}
       {T('date_end', 'Datum bis')}
       {T('location', 'Ort (Venue/Straße)')}
-      <label className="ef">
+      <label className="ef" htmlFor="mf-city">
         <span>Stadt</span>
-        <CityAutocomplete value={m.city ?? ''} onChange={(v) => upd({ city: v })} placeholder="Stadt suchen (queer.guide)…" />
+        <CityAutocomplete id="mf-city" value={m.city ?? ''} onChange={(v) => upd({ city: v })} placeholder="Stadt suchen (queer.guide)…" />
       </label>
       {T('region', 'Region')}
       {T('country', 'Land')}
@@ -143,7 +141,7 @@ export function MilestoneForm({
           value={term}
           onChange={(e) => setTerm(e.target.value)}
         />
-        {results.length > 0 && (
+        {term.trim() && results.length > 0 && (
           <div className="link-results">
             {results.map((r) => (
               <button key={r.slug} className="link-result" onClick={() => addPerson(r)}>

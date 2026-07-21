@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import type { Personality } from './types'
 import { getEntry, saveEntry } from './lib/notes'
 import { PersonEditForm } from './PersonEditForm'
@@ -54,16 +54,20 @@ export function DetailPanel({ p, isChecked, onToggleChecked, onLocalChange }: De
   const [tagInput, setTagInput] = useState('')
   const [savedAt, setSavedAt] = useState('')
   const [editing, setEditing] = useState(false)
+  const [loadedId, setLoadedId] = useState<string | null>(null)
 
-  useEffect(() => {
-    if (!p) return
+  // Reset the local note/tags editor whenever the selected person changes.
+  // Adjusting state during render (React's "storing info from previous renders"
+  // pattern) instead of in an effect avoids an extra render pass.
+  if (p && p.id !== loadedId) {
     const e = getEntry(p.id)
+    setLoadedId(p.id)
     setNote(e.note)
     setTags(e.tags)
     setTagInput('')
     setSavedAt('')
     setEditing(false) // leave edit mask when switching person
-  }, [p?.id])
+  }
 
   if (!p) {
     return (
