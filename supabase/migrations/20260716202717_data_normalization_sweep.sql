@@ -26,14 +26,17 @@ WHERE (email IS NOT NULL AND trim(email) = '') OR (phone IS NOT NULL AND trim(ph
    OR (editorial_long IS NOT NULL AND trim(editorial_long) = '') OR (website IS NOT NULL AND trim(website) = '')
    OR (logo_url IS NOT NULL AND trim(logo_url) = '');
 
+-- venues.address is NOT NULL ('' = missing by convention) — excluded here, the
+-- placeholder sweep below owns it. Including it would re-touch every ''-address
+-- row and storm trg_search_documents_venue (statement timeout).
 UPDATE public.venues SET
   email = NULLIF(trim(email), ''), phone = NULLIF(trim(phone), ''),
   website = NULLIF(trim(website), ''), description = NULLIF(trim(description), ''),
-  address = NULLIF(trim(address), ''), instagram = NULLIF(trim(instagram), ''),
+  instagram = NULLIF(trim(instagram), ''),
   booking_url = NULLIF(trim(booking_url), '')
 WHERE (email IS NOT NULL AND trim(email) = '') OR (phone IS NOT NULL AND trim(phone) = '')
    OR (website IS NOT NULL AND trim(website) = '') OR (description IS NOT NULL AND trim(description) = '')
-   OR (address IS NOT NULL AND trim(address) = '') OR (instagram IS NOT NULL AND trim(instagram) = '')
+   OR (instagram IS NOT NULL AND trim(instagram) = '')
    OR (booking_url IS NOT NULL AND trim(booking_url) = '');
 
 UPDATE public.events SET
@@ -83,8 +86,8 @@ UPDATE public.marketplace_listings SET
 WHERE (description IS NOT NULL AND trim(description) = '') OR (brand IS NOT NULL AND trim(brand) = '');
 
 -- ── 2. one-time placeholder-address sweep ──────────────────────────────────
-UPDATE public.venues SET address = NULL
-WHERE address IS NOT NULL AND name IS NOT NULL
+UPDATE public.venues SET address = ''  -- NOT NULL column; '' = missing
+WHERE address IS NOT NULL AND name IS NOT NULL AND trim(address) <> ''
   AND lower(trim(address)) = lower(trim(name));
 
 UPDATE public.hotels SET address = NULL
@@ -152,7 +155,7 @@ BEGIN
   -- fix 1: ''-as-missing → NULL (same table/column matrix as the one-time sweep)
   FOR t IN SELECT * FROM (VALUES
     ('organizations',        ARRAY['email','phone','description','editorial_hook','editorial_long','website','logo_url']),
-    ('venues',               ARRAY['email','phone','website','description','address','instagram','booking_url']),
+    ('venues',               ARRAY['email','phone','website','description','instagram','booking_url']),  -- address: NOT NULL, handled below
     ('events',               ARRAY['venue_name','organizer_name','website','address','description','ticket_url']),
     ('hotels',               ARRAY['email','phone','website','address','description','booking_url']),
     ('cities',               ARRAY['description','editorial_hook','safety_notes','image_url','official_website']),
@@ -170,9 +173,10 @@ BEGIN
     v_empty := v_empty + v_n;
   END LOOP;
 
-  -- fix 2: placeholder addresses
-  UPDATE public.venues SET address = NULL
-  WHERE address IS NOT NULL AND name IS NOT NULL AND lower(trim(address)) = lower(trim(name));
+  -- fix 2: placeholder addresses (venues.address is NOT NULL → '' = missing)
+  UPDATE public.venues SET address = ''
+  WHERE address IS NOT NULL AND name IS NOT NULL AND trim(address) <> ''
+    AND lower(trim(address)) = lower(trim(name));
   GET DIAGNOSTICS v_n = ROW_COUNT; v_addr := v_addr + v_n;
 
   UPDATE public.hotels SET address = NULL
