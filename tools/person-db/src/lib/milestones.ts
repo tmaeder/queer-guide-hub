@@ -1821,7 +1821,193 @@ const repressionSeed: Milestone[] = [
   },
 ]
 
-const SEED: Milestone[] = [...BASE_SEED, ...decrimSeed, ...unionSeed, ...transSeed, ...repressionSeed]
+// Außereuropäische Entkriminalisierung — tagesgenau, gegen Primär-/Fachquellen geprüft
+// (Deep-Research-Extraktion + WebFetch-Einzelverifikation, 2026-07). Maßgeblich:
+// Gerichtsurteil = Urteilsdatum; Gesetz = Inkrafttreten (Assent separat vermerkt).
+const worldDecrimSeed: Milestone[] = [
+  {
+    id: 'decrim-kanada-1969-06-27',
+    title: 'Entkriminalisierung der Homosexualität — Kanada',
+    date: '1969-06-27',
+    country: 'Kanada',
+    description:
+      'Criminal Law Amendment Act, 1968–69 — Royal Assent am 27. Juni 1969. Straffreiheit für ' +
+      'einvernehmliche Handlungen unter Erwachsenen (ab 21) im Privaten. Justizminister Pierre ' +
+      'Trudeau: „There’s no place for the state in the bedrooms of the nation."',
+    sources: [
+      { label: 'Wikipedia — Criminal Law Amendment Act, 1968–69', url: 'https://en.wikipedia.org/wiki/Criminal_Law_Amendment_Act,_1968%E2%80%9369' },
+    ],
+    linked_persons: [],
+    category: 'Recht / Entkriminalisierung',
+    significance: 4,
+    impact: 'positive',
+    checked: false,
+  },
+  {
+    id: 'decrim-neuseeland-1986-08-08',
+    title: 'Entkriminalisierung der Homosexualität — Neuseeland',
+    date: '1986-08-08',
+    country: 'Neuseeland',
+    description:
+      'Homosexual Law Reform Act 1986 — Inkrafttreten am 8. August 1986 (Royal Assent 11. Juli 1986). ' +
+      'Straffreiheit für einvernehmliche Handlungen unter Männern ab 16.',
+    sources: [
+      { label: 'Wikipedia — Homosexual Law Reform Act 1986', url: 'https://en.wikipedia.org/wiki/Homosexual_Law_Reform_Act_1986' },
+    ],
+    linked_persons: [],
+    category: 'Recht / Entkriminalisierung',
+    significance: 3,
+    impact: 'positive',
+    checked: false,
+  },
+  {
+    id: 'decrim-suedafrika-1998-10-09',
+    title: 'Entkriminalisierung der Homosexualität — Südafrika',
+    date: '1998-10-09',
+    country: 'Südafrika',
+    description:
+      'Verfassungsgericht-Urteil National Coalition for Gay and Lesbian Equality v. Minister of ' +
+      'Justice am 9. Oktober 1998: die aus der Kolonial-/Apartheid-Zeit stammenden Sodomie-Verbote ' +
+      'sind verfassungswidrig. Erstes Land mit Verfassungs-Diskriminierungsschutz nach sexueller Orientierung.',
+    sources: [
+      { label: 'Wikipedia — NCGLE v. Minister of Justice', url: 'https://en.wikipedia.org/wiki/National_Coalition_for_Gay_and_Lesbian_Equality_v_Minister_of_Justice' },
+    ],
+    linked_persons: [],
+    category: 'Recht / Entkriminalisierung',
+    significance: 5,
+    impact: 'positive',
+    checked: false,
+  },
+  {
+    id: 'decrim-usa-lawrence-2003-06-26',
+    title: 'Lawrence v. Texas — Sodomiegesetze bundesweit gekippt (USA)',
+    date: '2003-06-26',
+    country: 'Vereinigte Staaten',
+    description:
+      'Urteil des Supreme Court (6:3) am 26. Juni 2003: das texanische Sodomie-Gesetz verletzt die ' +
+      'Due-Process-Klausel des 14. Zusatzartikels. Kippt gleichartige Gesetze in 13 weiteren Staaten ' +
+      'und hebt Bowers v. Hardwick (1986) auf. Faktische Entkriminalisierung landesweit.',
+    sources: [
+      { label: 'Cornell Law — 539 U.S. 558', url: 'https://www.law.cornell.edu/supremecourt/text/539/558' },
+      { label: 'Wikipedia — Lawrence v. Texas', url: 'https://en.wikipedia.org/wiki/Lawrence_v._Texas' },
+    ],
+    linked_persons: [],
+    category: 'Recht / Entkriminalisierung',
+    significance: 5,
+    impact: 'positive',
+    checked: false,
+  },
+  {
+    id: 'decrim-tasmanien-1997-05-14',
+    title: 'Entkriminalisierung — Tasmanien (letzter australischer Staat)',
+    date: '1997-05-14',
+    country: 'Australien',
+    region: 'Tasmanien',
+    description:
+      'Criminal Code Amendment Act 1997 — Inkrafttreten am 14. Mai 1997 (Royal Assent 13. Mai 1997). ' +
+      'Tasmanien war die letzte australische Jurisdiktion mit Sodomie-Verbot; die Aufhebung folgte auf ' +
+      'ein UN-Menschenrechtsausschuss-Verfahren (Toonen v. Australia).',
+    sources: [
+      { label: 'Wikipedia — LGBT rights in Tasmania', url: 'https://en.wikipedia.org/wiki/LGBT_rights_in_Tasmania' },
+    ],
+    linked_persons: [],
+    category: 'Recht / Entkriminalisierung',
+    significance: 3,
+    impact: 'positive',
+    checked: false,
+  },
+  {
+    id: 'decrim-indien-2018-09-06',
+    title: 'Navtej Singh Johar — § 377 heruntergelesen (Indien)',
+    date: '2018-09-06',
+    country: 'Indien',
+    description:
+      'Urteil des Supreme Court (Verfassungsbank, einstimmig) am 6. September 2018 in Navtej Singh ' +
+      'Johar v. Union of India: Section 377 ist, soweit sie einvernehmliche gleichgeschlechtliche ' +
+      'Handlungen kriminalisiert, „irrational, willkürlich und offenkundig verfassungswidrig". ' +
+      'Entkriminalisierung für rund 1,3 Mrd. Menschen.',
+    sources: [
+      { label: 'Wikipedia — Navtej Singh Johar v. Union of India', url: 'https://en.wikipedia.org/wiki/Navtej_Singh_Johar_v._Union_of_India' },
+    ],
+    linked_persons: [],
+    category: 'Recht / Entkriminalisierung',
+    significance: 5,
+    impact: 'positive',
+    checked: false,
+  },
+  {
+    id: 'decrim-botswana-2019-06-11',
+    title: 'Entkriminalisierung der Homosexualität — Botswana',
+    date: '2019-06-11',
+    country: 'Botswana',
+    description:
+      'High-Court-Urteil am 11. Juni 2019 (Motshidiemang v. Attorney General): die Sodomie-Paragrafen ' +
+      '164 und 167 des Strafgesetzbuchs sind verfassungswidrig (Verletzung von Privatheit, Würde, ' +
+      'Freiheit). 2021 vom Court of Appeal bestätigt.',
+    sources: [
+      { label: 'Human Rights Watch — Botswana High Court', url: 'https://www.hrw.org/news/2019/06/11/botswana-high-court-strikes-down-sodomy-laws' },
+    ],
+    linked_persons: [],
+    category: 'Recht / Entkriminalisierung',
+    significance: 4,
+    impact: 'positive',
+    checked: false,
+  },
+  {
+    id: 'decrim-bhutan-2021-02-17',
+    title: 'Entkriminalisierung der Homosexualität — Bhutan',
+    date: '2021-02-17',
+    country: 'Bhutan',
+    description:
+      'Penal Code (Amendment) — Inkrafttreten am 17. Februar 2021 (Parlament Dez. 2020, danach ' +
+      'königliche Zustimmung). Streicht die Strafbarkeit „widernatürlichen Geschlechts".',
+    sources: [
+      { label: 'Wikipedia — LGBTQ rights in Bhutan', url: 'https://en.wikipedia.org/wiki/LGBTQ_rights_in_Bhutan' },
+    ],
+    linked_persons: [],
+    category: 'Recht / Entkriminalisierung',
+    significance: 3,
+    impact: 'positive',
+    checked: false,
+  },
+  {
+    id: 'decrim-singapur-2023-01-03',
+    title: 'Aufhebung von § 377A — Singapur',
+    date: '2023-01-03',
+    country: 'Singapur',
+    description:
+      'Penal Code (Amendment) — Aufhebung von Section 377A. Parlament am 29. November 2022, ' +
+      'Präsidenten-Zustimmung 27. Dezember 2022, Inkrafttreten mit Veröffentlichung im Gazette ' +
+      'am 3. Januar 2023. Ende der Strafbarkeit von Sex zwischen Männern.',
+    sources: [
+      { label: 'Wikipedia — Section 377A (Singapore)', url: 'https://en.wikipedia.org/wiki/Section_377A_of_the_Penal_Code_(Singapore)' },
+    ],
+    linked_persons: [],
+    category: 'Recht / Entkriminalisierung',
+    significance: 3,
+    impact: 'positive',
+    checked: false,
+  },
+  {
+    id: 'decrim-mauritius-2023-10-04',
+    title: 'Entkriminalisierung der Homosexualität — Mauritius',
+    date: '2023-10-04',
+    country: 'Mauritius',
+    description:
+      'Supreme-Court-Urteil am 4. Oktober 2023: Section 250 des Strafgesetzbuchs (Verbot von „Sodomie", ' +
+      'aus der Kolonialzeit 1838) ist verfassungswidrig. Klage seit 2019 (Ah Seek u. a., Human Dignity Trust).',
+    sources: [
+      { label: 'Human Dignity Trust — Mauritius Supreme Court', url: 'https://www.humandignitytrust.org/news/mauritius-supreme-court-rules-law-targeting-lgbt-people-is-unconstitutional/' },
+    ],
+    linked_persons: [],
+    category: 'Recht / Entkriminalisierung',
+    significance: 4,
+    impact: 'positive',
+    checked: false,
+  },
+]
+
+const SEED: Milestone[] = [...BASE_SEED, ...decrimSeed, ...unionSeed, ...transSeed, ...repressionSeed, ...worldDecrimSeed]
 
 const KEY = 'person-db.milestones.v2'
 
