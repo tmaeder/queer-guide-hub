@@ -10,8 +10,7 @@ import { useBreadcrumbs } from '@/contexts/BreadcrumbContext';
 import { useMilestonesTimeline } from '@/hooks/useMilestones';
 import { milestoneDecade } from '@/lib/milestoneDate';
 import { MilestoneRow } from '@/components/milestones/MilestoneRow';
-import { milestoneCategoryLabelKey } from '@/components/milestones/MilestoneCategoryBadge';
-import { MILESTONE_CATEGORIES, type Milestone } from '@/types/milestone';
+import { MILESTONE_CATEGORIES, milestoneCategoryLabelKey, type Milestone } from '@/types/milestone';
 import { cn } from '@/lib/utils';
 
 const IMPACTS = ['positive', 'neutral', 'negative'] as const;

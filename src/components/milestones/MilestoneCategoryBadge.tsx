@@ -2,7 +2,7 @@ import { Ban, Flag, Gavel, Milestone as MilestoneIcon, Scale, ShieldAlert, Steth
 import { useTranslation } from 'react-i18next';
 import type { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import type { MilestoneCategory } from '@/types/milestone';
+import { milestoneCategoryLabelKey, type MilestoneCategory } from '@/types/milestone';
 
 const CATEGORY_ICON: Record<MilestoneCategory, LucideIcon> = {
   'uprising-movement': Flag,
@@ -13,10 +13,6 @@ const CATEGORY_ICON: Record<MilestoneCategory, LucideIcon> = {
   'persecution-destruction': ShieldAlert,
   other: MilestoneIcon,
 };
-
-export function milestoneCategoryLabelKey(category: MilestoneCategory): string {
-  return `milestones.category.${category}`;
-}
 
 /** Monochrome outline badge naming the milestone category (vocab-driven icon + i18n label). */
 export function MilestoneCategoryBadge({

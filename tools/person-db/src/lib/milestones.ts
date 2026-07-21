@@ -1,7 +1,12 @@
 // Milestone data model — events in queer history, linkable to persons.
-// v1 lives in the tool (seed + localStorage), NOT in the live DB, so we can
-// settle the schema before a migration. Later: promote to a `milestones` table
-// + N:M link to personalities.
+//
+// DEPRECATED (2026-07-21): promoted to the live DB. Canonical storage is the
+// `milestones` table + `milestone_links` junction (public: queer.guide/history,
+// curation: /admin/content/milestones). The seed below was imported once via
+// scripts/data-quality/import-milestones.ts (idempotent slug-upsert; re-runs
+// never overwrite admin-owned status/review fields). Do NOT curate new
+// milestones here — use the admin CMS. This module + the tool's milestone UI
+// are slated for removal once the CMS workflow is settled.
 
 export interface MilestoneSource {
   label: string

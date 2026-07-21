@@ -36,11 +36,15 @@ const EXTRA_CC: Record<string, string> = {
   botswana: 'BW',
   bhutan: 'BT',
   ecuador: 'EC',
+  'costa rica': 'CR',
+  ghana: 'GH',
+  nepal: 'NP',
 }
 
 const CATEGORY_MAP: Record<string, string> = {
   'Aufstand / Bewegung': 'uprising-movement',
   'Gesetz / Gleichstellung': 'law-equality',
+  'Recht / Ehe': 'law-equality',
   'Recht / Entkriminalisierung': 'law-decriminalization',
   'Recht / Kriminalisierung': 'law-criminalization',
   Entpathologisierung: 'depathologization',
