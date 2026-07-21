@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "description": "Standalone person/milestone management tool for Queer.guide (read-only v1)",
+  "description": "Standalone person management tool for Queer.guide (read-only v1)",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
