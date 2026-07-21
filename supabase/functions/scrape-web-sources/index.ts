@@ -921,6 +921,66 @@ function extractTimelineItems(
   return items
 }
 
+// ─── Equaldex timeline (equaldex.com/timeline[/year]) ──────────────────────
+// DOM: <div class="timeline_year" id="YYYY"> … <li class="timeline_item">
+//   <div class="timeline_date">September 17</div>   (month+day only; ABSENT on
+//     items sharing the previous item's date — carry it forward)
+//   <div class="timeline_info">
+//     <div><div class="flag">…</div><a href="/region/x">Region</a>[, <a>…</a>]</div>
+//     <div><b>Right</b> becomes <b>status</b>.</div>
+//     <div class="subtle">long description</div>
+//   </div>
+// The generic timeline extractor produced garbage here: its `.timeline_info a`
+// title selector grabs the REGION link, the year-less date parses to 2001, and
+// `.timeline_info` text() concatenates flag+region+event+description.
+function extractEqualdexTimeline(html: string, pageUrl: string): ExtractedItem[] {
+  const items: ExtractedItem[] = []
+  const $ = cheerio.load(html)
+
+  // The item <ul>s are SIBLINGS of the .timeline_year header, not children —
+  // walk both in document order and carry the current year (+ last date) along.
+  let year = 0
+  let lastDate: string | undefined
+  $('.timeline_year, li.timeline_item').each((_, el) => {
+    const $el = $(el)
+    if ($el.hasClass('timeline_year')) {
+      year = Number($el.attr('id') || $el.find('h2').first().text().trim()) || 0
+      lastDate = undefined
+      return
+    }
+    if (!year || year < 1000) return
+
+    const dateText = $el.find('.timeline_date').first().text().trim()
+    if (dateText) {
+      const d = new Date(`${dateText} ${year} UTC`)
+      if (!isNaN(d.getTime())) lastDate = d.toISOString()
+    }
+
+    const $info = $el.children('.timeline_info').first()
+    const $blocks = $info.children('div')
+    const regions = $blocks.eq(0).find('a').map((_, a) => $(a).text().trim()).get().filter(Boolean)
+    const event = $blocks.eq(1).text().trim().replace(/\.\s*$/, '')
+    const detail = $info.find('.subtle').first().text().trim()
+    if (!event || event.length < 5) return
+
+    const regionLink = $blocks.eq(0).find('a').first().attr('href')
+    items.push({
+      title: regions.length ? `${regions.join(', ')}: ${event}` : event,
+      name: event,
+      description: detail || event,
+      start_date: lastDate,
+      country: regions.length ? regions[regions.length - 1] : undefined,
+      url: regionLink ? new URL(regionLink, pageUrl).href : pageUrl,
+      raw_data: {
+        equaldex_timeline: true, year, date_text: dateText || null,
+        regions, event,
+      },
+    })
+  })
+
+  return items
+}
+
 // ─── API Extraction (Equaldex) ──────────────────────────────────────────────
 
 async function fetchFromApi(source: ScrapeSource): Promise<ExtractedItem[]> {
@@ -1083,6 +1143,8 @@ function extractFromPage(html: string, pageUrl: string, source: ScrapeSource): E
     return extractWikiList(html, pageUrl, source)
   } else if (config.extract === 'wiki_country_tables') {
     return extractWikiCountryTables(html, pageUrl, source)
+  } else if (config.extract === 'equaldex_timeline') {
+    return extractEqualdexTimeline(html, pageUrl)
   } else if (config.extract === 'timeline_items') {
     return extractTimelineItems(html, pageUrl, source)
   } else {
