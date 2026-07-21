@@ -64,7 +64,7 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
@@ -88,7 +88,7 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v7
         with:
           # Pinned to match ci.yml's lint job: on newer node 22.x the eslint
           # flat-config loader crashes with ERR_INTERNAL_ASSERTION while
@@ -113,7 +113,7 @@ jobs:
       E2E_ADMIN_PASSWORD: ${{ secrets.E2E_ADMIN_PASSWORD }}
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
@@ -164,7 +164,7 @@ jobs:
       OUT_NAME: axe-postdeploy
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
@@ -217,7 +217,7 @@ jobs:
         route: ['/', '/events', '/venues', '/places', '/news', '/marketplace', '/trips/discover', '/submit', '/cities', '/hotels', '/personalities', '/help', '/pride']
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v7
         with: { node-version: 22 }
       - run: npm i -g lighthouse@12 serve@14
       - name: Download dist
