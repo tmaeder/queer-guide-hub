@@ -1821,7 +1821,71 @@ const repressionSeed: Milestone[] = [
   },
 ]
 
-const SEED: Milestone[] = [...BASE_SEED, ...decrimSeed, ...unionSeed, ...transSeed, ...repressionSeed]
+// Globale Rückschritte 2022–2024 (außerhalb Europas/Russlands). Tagesgenau,
+// gegen HRW/Al Jazeera/Library of Congress bzw. Wikipedia geprüft. Milestone-Datum
+// = Parlamentsbeschluss (Inkrafttreten separat vermerkt).
+const worldRepressionSeed: Milestone[] = [
+  {
+    id: 'indonesien-kuhp-2022-12-06',
+    title: 'Neues Strafgesetzbuch (KUHP) — Indonesien',
+    date: '2022-12-06',
+    country: 'Indonesien',
+    description:
+      'Am 6. Dezember 2022 verabschiedete das Parlament (DPR) einstimmig das neue Strafgesetzbuch ' +
+      '(Gesetz Nr. 1/2023). Es stellt Sex außerhalb der Ehe und Zusammenleben unter Strafe — trifft ' +
+      'gleichgeschlechtliche Paare faktisch, da gleichgeschlechtliche Ehe nicht möglich ist. ' +
+      'Inkrafttreten am 2. Januar 2026.',
+    sources: [
+      { label: 'Al Jazeera', url: 'https://www.aljazeera.com/news/2022/12/6/indonesia-passes-legislation-outlawing-sex-outside-marriage' },
+      { label: 'Human Rights Watch', url: 'https://www.hrw.org/news/2022/12/08/indonesia-new-criminal-code-disastrous-rights' },
+      { label: 'Library of Congress', url: 'https://www.loc.gov/item/global-legal-monitor/2022-12-11/indonesia-new-criminal-code-passed-by-parliament/' },
+    ],
+    linked_persons: [],
+    category: 'Recht / Kriminalisierung',
+    significance: 4,
+    impact: 'negative',
+    checked: false,
+  },
+  {
+    id: 'ghana-family-values-2024-02-28',
+    title: 'Human Sexual Rights and Family Values Bill — Ghana',
+    date: '2024-02-28',
+    country: 'Ghana',
+    description:
+      'Am 28. Februar 2024 nahm das Parlament das „Family Values"-Gesetz einstimmig an — bis zu ' +
+      '3 Jahre Haft für Identifizierung als LGBTQ, bis zu 5 Jahre für „Förderung". Der Entwurf ' +
+      'verfiel vor der Wahl 2024, wurde 2025 erneut eingebracht und 2026 wieder beschlossen; ' +
+      'bislang NICHT vom Präsidenten unterzeichnet — noch nicht in Kraft.',
+    sources: [
+      { label: 'Wikipedia — Human Sexual Rights and Family Values Bill', url: 'https://en.wikipedia.org/wiki/Human_Sexual_Rights_and_Family_Values_Bill' },
+    ],
+    linked_persons: [],
+    category: 'Recht / Kriminalisierung',
+    significance: 3,
+    impact: 'negative',
+    checked: false,
+  },
+  {
+    id: 'irak-anti-lgbt-2024-04-27',
+    title: 'Gesetz gegen gleichgeschlechtliche Beziehungen — Irak',
+    date: '2024-04-27',
+    country: 'Irak',
+    description:
+      'Am 27. April 2024 beschloss das irakische Parlament eine Änderung des Anti-Prostitutions-' +
+      'Gesetzes, die einvernehmliche gleichgeschlechtliche Beziehungen mit bis zu 15 Jahren Haft ' +
+      'und Trans-Sein mit bis zu 3 Jahren bestraft.',
+    sources: [
+      { label: 'Wikipedia — LGBT rights in Iraq', url: 'https://en.wikipedia.org/wiki/LGBT_rights_in_Iraq' },
+    ],
+    linked_persons: [],
+    category: 'Recht / Kriminalisierung',
+    significance: 4,
+    impact: 'negative',
+    checked: false,
+  },
+]
+
+const SEED: Milestone[] = [...BASE_SEED, ...decrimSeed, ...unionSeed, ...transSeed, ...repressionSeed, ...worldRepressionSeed]
 
 const KEY = 'person-db.milestones.v2'
 
