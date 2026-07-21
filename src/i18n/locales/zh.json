@@ -3410,7 +3410,9 @@
     "filter": {
       "country": "国家",
       "allCountries": "所有国家",
-      "clear": "清除筛选"
+      "clear": "清除筛选",
+      "major": "主要里程碑",
+      "showAll": "全部里程碑"
     },
     "category": {
       "uprising-movement": "起义 / 运动",

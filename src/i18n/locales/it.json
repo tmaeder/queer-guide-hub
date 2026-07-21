@@ -3412,7 +3412,9 @@
     "filter": {
       "country": "Paese",
       "allCountries": "Tutti i paesi",
-      "clear": "Cancella filtri"
+      "clear": "Cancella filtri",
+      "major": "Pietre miliari principali",
+      "showAll": "Tutte le pietre miliari"
     },
     "category": {
       "uprising-movement": "Rivolta / Movimento",

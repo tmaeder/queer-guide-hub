@@ -3416,7 +3416,9 @@
     "filter": {
       "country": "Pays",
       "allCountries": "Tous les pays",
-      "clear": "Effacer les filtres"
+      "clear": "Effacer les filtres",
+      "major": "Jalons majeurs",
+      "showAll": "Tous les jalons"
     },
     "category": {
       "uprising-movement": "Soulèvement / Mouvement",

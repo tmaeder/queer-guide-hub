@@ -3412,7 +3412,9 @@
     "filter": {
       "country": "Land",
       "allCountries": "Alle Länder",
-      "clear": "Filter zurücksetzen"
+      "clear": "Filter zurücksetzen",
+      "major": "Wichtige Meilensteine",
+      "showAll": "Alle Meilensteine"
     },
     "category": {
       "uprising-movement": "Aufstand / Bewegung",

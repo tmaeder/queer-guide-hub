@@ -3412,7 +3412,9 @@
     "filter": {
       "country": "País",
       "allCountries": "Todos os países",
-      "clear": "Limpar filtros"
+      "clear": "Limpar filtros",
+      "major": "Marcos principais",
+      "showAll": "Todos os marcos"
     },
     "category": {
       "uprising-movement": "Levante / Movimento",

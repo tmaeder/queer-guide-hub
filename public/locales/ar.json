@@ -3416,7 +3416,9 @@
     "filter": {
       "country": "الدولة",
       "allCountries": "كل الدول",
-      "clear": "مسح المرشحات"
+      "clear": "مسح المرشحات",
+      "major": "المحطات الرئيسية",
+      "showAll": "كل المحطات"
     },
     "category": {
       "uprising-movement": "انتفاضة / حركة",

@@ -3410,7 +3410,9 @@
     "filter": {
       "country": "国",
       "allCountries": "すべての国",
-      "clear": "フィルターをクリア"
+      "clear": "フィルターをクリア",
+      "major": "主要なマイルストーン",
+      "showAll": "すべてのマイルストーン"
     },
     "category": {
       "uprising-movement": "蜂起・運動",
