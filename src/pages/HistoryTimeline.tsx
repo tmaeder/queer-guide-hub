@@ -16,16 +16,18 @@ import { cn } from '@/lib/utils';
 const IMPACTS = ['positive', 'neutral', 'negative'] as const;
 
 /**
- * /history — the queer-history timeline. All published milestones (~110 at
- * launch) are fetched once and filtered client-side; URL params keep filters
- * shareable. Switch to server-side RPC filters + year-range windowing when the
- * dataset outgrows the 500-row RPC cap. Persecution content is heavy — this
- * page stays motion-free (safety-adjacent).
+ * /history — the queer-history timeline. Published milestones are fetched once
+ * (default: significance ≥ 2; `?all=1` loads everything) and filtered
+ * client-side; URL params keep filters shareable. The RPC caps at 2500 rows —
+ * switch to server-side filters + year-range windowing if the dataset ever
+ * outgrows that. Persecution content is heavy — this page stays motion-free
+ * (safety-adjacent).
  */
 export default function HistoryTimeline() {
   const { t } = useTranslation();
   const [params, setParams] = useSearchParams();
-  const { data, isLoading } = useMilestonesTimeline();
+  const showAll = params.get('all') === '1';
+  const { data, isLoading } = useMilestonesTimeline({ significanceMin: showAll ? null : 2 });
 
   const country = params.get('country');
   const category = params.get('category');
@@ -117,6 +119,11 @@ export default function HistoryTimeline() {
               onClick={() => setParam('impact', impact === i ? null : i)}
             />
           ))}
+          <FilterChip
+            active={showAll}
+            label={t('milestones.filter.showAll', 'Show all events')}
+            onClick={() => setParam('all', showAll ? null : '1')}
+          />
           <select
             value={country ?? ''}
             onChange={(e) => setParam('country', e.target.value || null)}

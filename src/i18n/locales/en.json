@@ -3381,7 +3381,8 @@
     "filter": {
       "country": "Country",
       "allCountries": "All countries",
-      "clear": "Clear filters"
+      "clear": "Clear filters",
+      "showAll": "Show all events"
     },
     "category": {
       "uprising-movement": "Uprising / Movement",

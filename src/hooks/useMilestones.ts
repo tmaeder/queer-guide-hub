@@ -17,9 +17,10 @@ export interface MilestoneTimelineFilters {
   impact?: string | null;
   fromYear?: number | null;
   toYear?: number | null;
+  significanceMin?: number | null;
 }
 
-export function useMilestonesTimeline(filters: MilestoneTimelineFilters = {}, limit = 500) {
+export function useMilestonesTimeline(filters: MilestoneTimelineFilters = {}, limit = 2500) {
   return useQuery({
     queryKey: ['milestones-timeline', filters, limit],
     staleTime: HOUR,
@@ -30,7 +31,7 @@ export function useMilestonesTimeline(filters: MilestoneTimelineFilters = {}, li
         p_country: filters.country ?? null,
         p_category: filters.category ?? null,
         p_impact: filters.impact ?? null,
-        p_significance_min: null,
+        p_significance_min: filters.significanceMin ?? null,
         p_limit: limit,
         p_offset: 0,
       });

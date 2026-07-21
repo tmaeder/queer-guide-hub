@@ -3411,7 +3411,8 @@
     "filter": {
       "country": "País",
       "allCountries": "Todos os países",
-      "clear": "Limpar filtros"
+      "clear": "Limpar filtros",
+      "showAll": "[PT] Show all events"
     },
     "category": {
       "uprising-movement": "Levante / Movimento",

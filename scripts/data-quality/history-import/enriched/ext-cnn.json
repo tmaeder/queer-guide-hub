@@ -1,0 +1,1646 @@
+[
+  {
+    "ref": "ext-cnn:0",
+    "title": "Society for Human Rights founded in Chicago",
+    "description": "Henry Gerber established the Society for Human Rights in Chicago, recognized as the earliest documented gay rights organization in the United States.",
+    "date": "1924",
+    "country_code": "US",
+    "country": "United States",
+    "city": "Chicago",
+    "region": "Illinois",
+    "category": "uprising-movement",
+    "impact": "positive",
+    "significance": 3,
+    "sources": [
+      {
+        "label": "CNN — LGBTQ Rights Milestones Fast Facts",
+        "url": "https://edition.cnn.com/us/lgbt-rights-milestones-fast-facts"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-cnn:1",
+    "title": "Mattachine Society formed as an early gay rights group",
+    "description": "Activist Harry Hay helped launch the Mattachine Society, among the first sustained gay rights groups in the country, focused on social acceptance and support for homosexual people.",
+    "date": "1950",
+    "country_code": "US",
+    "country": "United States",
+    "city": "",
+    "region": "",
+    "category": "uprising-movement",
+    "impact": "positive",
+    "significance": 3,
+    "sources": [
+      {
+        "label": "CNN — LGBTQ Rights Milestones Fast Facts",
+        "url": "https://edition.cnn.com/us/lgbt-rights-milestones-fast-facts"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-cnn:2",
+    "title": "US psychiatry classifies homosexuality as a disorder",
+    "description": "The American Psychiatric Association’s diagnostic manual categorized homosexuality as a sociopathic personality disturbance.",
+    "date": "1952-04",
+    "country_code": "US",
+    "country": "United States",
+    "city": "",
+    "region": "",
+    "category": "other",
+    "impact": "negative",
+    "significance": 3,
+    "sources": [
+      {
+        "label": "CNN — LGBTQ Rights Milestones Fast Facts",
+        "url": "https://edition.cnn.com/us/lgbt-rights-milestones-fast-facts"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-cnn:3",
+    "title": "Eisenhower bars gay people from federal employment",
+    "description": "President Dwight D. Eisenhower issued an executive order barring homosexual people from federal government jobs, casting them as security risks.",
+    "date": "1953-04-27",
+    "country_code": "US",
+    "country": "United States",
+    "city": "",
+    "region": "",
+    "category": "persecution-destruction",
+    "impact": "negative",
+    "significance": 3,
+    "sources": [
+      {
+        "label": "CNN — LGBTQ Rights Milestones Fast Facts",
+        "url": "https://edition.cnn.com/us/lgbt-rights-milestones-fast-facts"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-cnn:4",
+    "title": "Daughters of Bilitis founded in San Francisco",
+    "description": "The Daughters of Bilitis formed in San Francisco as the first known lesbian rights organization in the country, holding private gatherings out of fear of police raids and discrimination.",
+    "date": "1955-09",
+    "country_code": "US",
+    "country": "United States",
+    "city": "San Francisco",
+    "region": "California",
+    "category": "uprising-movement",
+    "impact": "positive",
+    "significance": 3,
+    "sources": [
+      {
+        "label": "CNN — LGBTQ Rights Milestones Fast Facts",
+        "url": "https://edition.cnn.com/us/lgbt-rights-milestones-fast-facts"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-cnn:5",
+    "title": "Illinois first US state to repeal its sodomy law",
+    "description": "Illinois repealed its sodomy statute, becoming the first US state to decriminalize consensual same-sex conduct.",
+    "date": "1961-07",
+    "country_code": "US",
+    "country": "United States",
+    "city": "",
+    "region": "Illinois",
+    "category": "law-decriminalization",
+    "impact": "positive",
+    "significance": 3,
+    "sources": [
+      {
+        "label": "CNN — LGBTQ Rights Milestones Fast Facts",
+        "url": "https://edition.cnn.com/us/lgbt-rights-milestones-fast-facts"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-cnn:6",
+    "title": "First US televised documentary on homosexuality airs",
+    "description": "A California local station broadcast what is regarded as the first US-televised documentary about homosexuality.",
+    "date": "1961-09-11",
+    "country_code": "US",
+    "country": "United States",
+    "city": "",
+    "region": "California",
+    "category": "other",
+    "impact": "positive",
+    "significance": 2,
+    "sources": [
+      {
+        "label": "CNN — LGBTQ Rights Milestones Fast Facts",
+        "url": "https://edition.cnn.com/us/lgbt-rights-milestones-fast-facts"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-cnn:7",
+    "title": "Police raid on the Stonewall Inn sparks days of protest",
+    "description": "A police raid on the Stonewall Inn in New York City set off protests and demonstrations widely seen as the catalyst for the modern gay civil rights movement in the country.",
+    "date": "1969-06-28",
+    "country_code": "US",
+    "country": "United States",
+    "city": "New York",
+    "region": "New York",
+    "category": "uprising-movement",
+    "impact": "positive",
+    "significance": 5,
+    "sources": [
+      {
+        "label": "CNN — LGBTQ Rights Milestones Fast Facts",
+        "url": "https://edition.cnn.com/us/lgbt-rights-milestones-fast-facts"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-cnn:8",
+    "title": "Los Angeles Advocate renamed The Advocate",
+    "description": "The publication begun in 1967 as the Los Angeles Advocate took the name The Advocate; it is considered the oldest continuing LGBTQ periodical in the country.",
+    "date": "1969",
+    "country_code": "US",
+    "country": "United States",
+    "city": "Los Angeles",
+    "region": "California",
+    "category": "other",
+    "impact": "neutral",
+    "significance": 2,
+    "sources": [
+      {
+        "label": "CNN — LGBTQ Rights Milestones Fast Facts",
+        "url": "https://edition.cnn.com/us/lgbt-rights-milestones-fast-facts"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-cnn:9",
+    "title": "First gay pride march held in New York City",
+    "description": "On the first anniversary of the Stonewall uprising, community members marched through New York City streets in an event called Christopher Street Liberation Day, now regarded as the first gay pride parade.",
+    "date": "1970-06-28",
+    "country_code": "US",
+    "country": "United States",
+    "city": "New York",
+    "region": "New York",
+    "category": "uprising-movement",
+    "impact": "positive",
+    "significance": 4,
+    "sources": [
+      {
+        "label": "CNN — LGBTQ Rights Milestones Fast Facts",
+        "url": "https://edition.cnn.com/us/lgbt-rights-milestones-fast-facts"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-cnn:10",
+    "title": "Lambda Legal established as first LGBTQ legal group",
+    "description": "Lambda Legal became the first legal organization created to advance the rights of gay and lesbian people; after being denied nonprofit status, it won recognition through a New York court ruling.",
+    "date": "1973",
+    "country_code": "US",
+    "country": "United States",
+    "city": "New York",
+    "region": "New York",
+    "category": "uprising-movement",
+    "impact": "positive",
+    "significance": 3,
+    "sources": [
+      {
+        "label": "CNN — LGBTQ Rights Milestones Fast Facts",
+        "url": "https://edition.cnn.com/us/lgbt-rights-milestones-fast-facts"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-cnn:11",
+    "title": "Maryland first US state to ban same-sex marriage",
+    "description": "Maryland enacted the first US state statute explicitly prohibiting marriage between same-sex couples.",
+    "date": "1973-01-01",
+    "country_code": "US",
+    "country": "United States",
+    "city": "",
+    "region": "Maryland",
+    "category": "law-criminalization",
+    "impact": "negative",
+    "significance": 3,
+    "sources": [
+      {
+        "label": "CNN — LGBTQ Rights Milestones Fast Facts",
+        "url": "https://edition.cnn.com/us/lgbt-rights-milestones-fast-facts"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-cnn:12",
+    "title": "First meeting of the group that became PFLAG",
+    "description": "Parents and Friends of Gays held its first meeting, the start of an organization that expanded nationally as Parents, Families and Friends of Lesbians and Gays in 1982.",
+    "date": "1973-03-26",
+    "country_code": "US",
+    "country": "United States",
+    "city": "",
+    "region": "",
+    "category": "uprising-movement",
+    "impact": "positive",
+    "significance": 2,
+    "sources": [
+      {
+        "label": "CNN — LGBTQ Rights Milestones Fast Facts",
+        "url": "https://edition.cnn.com/us/lgbt-rights-milestones-fast-facts"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-cnn:13",
+    "title": "American Psychiatric Association declassifies homosexuality",
+    "description": "By a membership vote, the American Psychiatric Association removed homosexuality from its list of mental disorders in the DSM-II, reversing decades of pathologization.",
+    "date": "1973-12-15",
+    "country_code": "US",
+    "country": "United States",
+    "city": "",
+    "region": "",
+    "category": "depathologization",
+    "impact": "positive",
+    "significance": 5,
+    "sources": [
+      {
+        "label": "CNN — LGBTQ Rights Milestones Fast Facts",
+        "url": "https://edition.cnn.com/us/lgbt-rights-milestones-fast-facts"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-cnn:14",
+    "title": "Kathy Kozachenko wins seat on Ann Arbor council",
+    "description": "Kathy Kozachenko won a seat on the Ann Arbor, Michigan city council, becoming the first openly LGBTQ American elected to public office.",
+    "date": "1974",
+    "country_code": "US",
+    "country": "United States",
+    "city": "Ann Arbor",
+    "region": "Michigan",
+    "category": "other",
+    "impact": "positive",
+    "significance": 3,
+    "sources": [
+      {
+        "label": "CNN — LGBTQ Rights Milestones Fast Facts",
+        "url": "https://edition.cnn.com/us/lgbt-rights-milestones-fast-facts"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-cnn:15",
+    "title": "Elaine Noble elected to Massachusetts legislature",
+    "description": "Elaine Noble became the first openly gay candidate elected to a US state office when voters sent her to the Massachusetts legislature.",
+    "date": "1974",
+    "country_code": "US",
+    "country": "United States",
+    "city": "",
+    "region": "Massachusetts",
+    "category": "other",
+    "impact": "positive",
+    "significance": 3,
+    "sources": [
+      {
+        "label": "CNN — LGBTQ Rights Milestones Fast Facts",
+        "url": "https://edition.cnn.com/us/lgbt-rights-milestones-fast-facts"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-cnn:16",
+    "title": "First federal gay rights bill introduced in Congress",
+    "description": "The first federal bill addressing discrimination based on sexual orientation was introduced; it went to committee but was never brought forward for consideration.",
+    "date": "1975-01-14",
+    "country_code": "US",
+    "country": "United States",
+    "city": "",
+    "region": "",
+    "category": "other",
+    "impact": "neutral",
+    "significance": 2,
+    "sources": [
+      {
+        "label": "CNN — LGBTQ Rights Milestones Fast Facts",
+        "url": "https://edition.cnn.com/us/lgbt-rights-milestones-fast-facts"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-cnn:17",
+    "title": "Leonard Matlovich discharged after coming out",
+    "description": "Air Force Technical Sergeant and decorated Vietnam veteran Leonard Matlovich disclosed his sexual orientation to his commanding officer and was discharged months later; a 1980 appeals ruling found the dismissal improper and restored his back pay.",
+    "date": "1975-03",
+    "country_code": "US",
+    "country": "United States",
+    "city": "",
+    "region": "",
+    "category": "other",
+    "impact": "neutral",
+    "significance": 3,
+    "sources": [
+      {
+        "label": "CNN — LGBTQ Rights Milestones Fast Facts",
+        "url": "https://edition.cnn.com/us/lgbt-rights-milestones-fast-facts"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-cnn:18",
+    "title": "Renee Richards challenges ban from women’s US Open",
+    "description": "Tennis player Renee Richards was barred from the women’s US Open under a women-born-women rule after her 1975 surgery; a New York court ruled in her favor in 1977, and she competed that year.",
+    "date": "1976",
+    "date_end": "1977",
+    "country_code": "US",
+    "country": "United States",
+    "city": "",
+    "region": "",
+    "category": "other",
+    "impact": "neutral",
+    "significance": 3,
+    "sources": [
+      {
+        "label": "CNN — LGBTQ Rights Milestones Fast Facts",
+        "url": "https://edition.cnn.com/us/lgbt-rights-milestones-fast-facts"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-cnn:19",
+    "title": "Harvey Milk takes office as San Francisco supervisor",
+    "description": "Harvey Milk was inaugurated as a San Francisco city supervisor, the first openly gay man elected to office in California; that November he and Mayor George Moscone were assassinated by former supervisor Dan White.",
+    "date": "1978-01-09",
+    "country_code": "US",
+    "country": "United States",
+    "city": "San Francisco",
+    "region": "California",
+    "category": "other",
+    "impact": "neutral",
+    "significance": 4,
+    "sources": [
+      {
+        "label": "CNN — LGBTQ Rights Milestones Fast Facts",
+        "url": "https://edition.cnn.com/us/lgbt-rights-milestones-fast-facts"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-cnn:20",
+    "title": "Gilbert Baker creates the first rainbow flag",
+    "description": "Artist Gilbert Baker designed and sewed the first rainbow flag as a symbol of pride and hope for the LGBTQ community.",
+    "date": "1978",
+    "country_code": "US",
+    "country": "United States",
+    "city": "San Francisco",
+    "region": "California",
+    "category": "other",
+    "impact": "positive",
+    "significance": 3,
+    "sources": [
+      {
+        "label": "CNN — LGBTQ Rights Milestones Fast Facts",
+        "url": "https://edition.cnn.com/us/lgbt-rights-milestones-fast-facts"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-cnn:21",
+    "title": "First National March on Washington for gay rights",
+    "description": "The first National March on Washington for Lesbian and Gay Rights drew an estimated 75,000 to 125,000 people demanding equal rights.",
+    "date": "1979-10-14",
+    "country_code": "US",
+    "country": "United States",
+    "city": "Washington",
+    "region": "District of Columbia",
+    "category": "uprising-movement",
+    "impact": "positive",
+    "significance": 3,
+    "sources": [
+      {
+        "label": "CNN — LGBTQ Rights Milestones Fast Facts",
+        "url": "https://edition.cnn.com/us/lgbt-rights-milestones-fast-facts"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-cnn:22",
+    "title": "Wisconsin bans anti-gay discrimination, a US first",
+    "description": "Wisconsin became the first US state to outlaw discrimination based on sexual orientation.",
+    "date": "1982-03-02",
+    "country_code": "US",
+    "country": "United States",
+    "city": "",
+    "region": "Wisconsin",
+    "category": "law-equality",
+    "impact": "positive",
+    "significance": 3,
+    "sources": [
+      {
+        "label": "CNN — LGBTQ Rights Milestones Fast Facts",
+        "url": "https://edition.cnn.com/us/lgbt-rights-milestones-fast-facts"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-cnn:23",
+    "title": "Lambda Legal wins first HIV/AIDS discrimination case",
+    "description": "In People v. West 12 Tenants Corp., Lambda Legal won what is regarded as the first HIV/AIDS discrimination lawsuit, after neighbors sought to evict a doctor treating HIV-positive patients.",
+    "date": "1983",
+    "country_code": "US",
+    "country": "United States",
+    "city": "",
+    "region": "",
+    "category": "other",
+    "impact": "positive",
+    "significance": 2,
+    "sources": [
+      {
+        "label": "CNN — LGBTQ Rights Milestones Fast Facts",
+        "url": "https://edition.cnn.com/us/lgbt-rights-milestones-fast-facts"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-cnn:24",
+    "title": "First National Coming Out Day observed",
+    "description": "The first National Coming Out Day was marked in the country, promoting visibility for LGBTQ people.",
+    "date": "1988-10-11",
+    "country_code": "US",
+    "country": "United States",
+    "city": "",
+    "region": "",
+    "category": "other",
+    "impact": "positive",
+    "significance": 2,
+    "sources": [
+      {
+        "label": "CNN — LGBTQ Rights Milestones Fast Facts",
+        "url": "https://edition.cnn.com/us/lgbt-rights-milestones-fast-facts"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-cnn:25",
+    "title": "Clinton signs Don’t Ask, Don’t Tell military policy",
+    "description": "President Bill Clinton signed the Don’t Ask, Don’t Tell directive, barring openly gay and lesbian people from military service while restricting harassment of closeted personnel; the policy was repealed on September 20, 2011.",
+    "date": "1993-11-30",
+    "country_code": "US",
+    "country": "United States",
+    "city": "",
+    "region": "",
+    "category": "other",
+    "impact": "negative",
+    "significance": 4,
+    "sources": [
+      {
+        "label": "CNN — LGBTQ Rights Milestones Fast Facts",
+        "url": "https://edition.cnn.com/us/lgbt-rights-milestones-fast-facts"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-cnn:26",
+    "title": "Hate crime sentencing law adds sexual orientation",
+    "description": "The Hate Crimes Sentencing Enhancement Act took effect, letting judges impose harsher sentences when a victim was targeted because of characteristics including sexual orientation.",
+    "date": "1995-11",
+    "country_code": "US",
+    "country": "United States",
+    "city": "",
+    "region": "",
+    "category": "law-equality",
+    "impact": "positive",
+    "significance": 3,
+    "sources": [
+      {
+        "label": "CNN — LGBTQ Rights Milestones Fast Facts",
+        "url": "https://edition.cnn.com/us/lgbt-rights-milestones-fast-facts"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-cnn:27",
+    "title": "Clinton signs the Defense of Marriage Act",
+    "description": "President Bill Clinton signed the Defense of Marriage Act, denying federal recognition to same-sex marriage and defining marriage as a union of one man and one woman.",
+    "date": "1996-09-21",
+    "country_code": "US",
+    "country": "United States",
+    "city": "",
+    "region": "",
+    "category": "law-criminalization",
+    "impact": "negative",
+    "significance": 4,
+    "sources": [
+      {
+        "label": "CNN — LGBTQ Rights Milestones Fast Facts",
+        "url": "https://edition.cnn.com/us/lgbt-rights-milestones-fast-facts"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-cnn:28",
+    "title": "Hawaii court backs marriage rights for gay couples",
+    "description": "A Hawaii judge ruled the state could not deny same-sex couples the right to marry, making Hawaii the first state to recognize that gay and lesbian couples were entitled to the same privileges as heterosexual married couples.",
+    "date": "1996-12-03",
+    "country_code": "US",
+    "country": "United States",
+    "city": "",
+    "region": "Hawaii",
+    "category": "law-equality",
+    "impact": "positive",
+    "significance": 3,
+    "sources": [
+      {
+        "label": "CNN — LGBTQ Rights Milestones Fast Facts",
+        "url": "https://edition.cnn.com/us/lgbt-rights-milestones-fast-facts"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-cnn:29",
+    "title": "Ellen DeGeneres comes out on Time magazine cover",
+    "description": "Comedian Ellen DeGeneres publicly came out as a lesbian on the cover of Time magazine.",
+    "date": "1997-04",
+    "country_code": "US",
+    "country": "United States",
+    "city": "",
+    "region": "",
+    "category": "other",
+    "impact": "positive",
+    "significance": 3,
+    "sources": [
+      {
+        "label": "CNN — LGBTQ Rights Milestones Fast Facts",
+        "url": "https://edition.cnn.com/us/lgbt-rights-milestones-fast-facts"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-cnn:30",
+    "title": "Ellen character is first TV lead to come out",
+    "description": "On the series Ellen, the lead character Ellen Morgan came out, the first leading character to do so on a prime-time US network television show.",
+    "date": "1997-04-30",
+    "country_code": "US",
+    "country": "United States",
+    "city": "",
+    "region": "",
+    "category": "other",
+    "impact": "positive",
+    "significance": 3,
+    "sources": [
+      {
+        "label": "CNN — LGBTQ Rights Milestones Fast Facts",
+        "url": "https://edition.cnn.com/us/lgbt-rights-milestones-fast-facts"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-cnn:31",
+    "title": "Coretta Scott King calls for ending homophobia",
+    "description": "Coretta Scott King urged the civil rights community to join the effort to end homophobia.",
+    "date": "1998-04-01",
+    "country_code": "US",
+    "country": "United States",
+    "city": "",
+    "region": "",
+    "category": "other",
+    "impact": "positive",
+    "significance": 2,
+    "sources": [
+      {
+        "label": "CNN — LGBTQ Rights Milestones Fast Facts",
+        "url": "https://edition.cnn.com/us/lgbt-rights-milestones-fast-facts"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-cnn:32",
+    "title": "Matthew Shepard fatally beaten near Laramie",
+    "description": "Matthew Shepard was tied to a fence and severely beaten near Laramie, Wyoming, and died of his injuries days later; the killing drew national attention to anti-gay violence.",
+    "date": "1998-10-06",
+    "date_end": "1998-10-07",
+    "country_code": "US",
+    "country": "United States",
+    "city": "Laramie",
+    "region": "Wyoming",
+    "category": "persecution-destruction",
+    "impact": "negative",
+    "significance": 4,
+    "sources": [
+      {
+        "label": "CNN — LGBTQ Rights Milestones Fast Facts",
+        "url": "https://edition.cnn.com/us/lgbt-rights-milestones-fast-facts"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-cnn:33",
+    "title": "Shepard’s attackers make first court appearance",
+    "description": "Russell Henderson and Aaron McKinney made their first court appearance after their arrest in the attack on Matthew Shepard; each later received two life sentences.",
+    "date": "1998-10-09",
+    "country_code": "US",
+    "country": "United States",
+    "city": "",
+    "region": "Wyoming",
+    "category": "other",
+    "impact": "neutral",
+    "significance": 2,
+    "sources": [
+      {
+        "label": "CNN — LGBTQ Rights Milestones Fast Facts",
+        "url": "https://edition.cnn.com/us/lgbt-rights-milestones-fast-facts"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-cnn:34",
+    "title": "Lawrence v. Texas strikes down US sodomy laws",
+    "description": "In Lawrence v. Texas, the US Supreme Court struck down remaining sodomy laws, decriminalizing consensual same-sex conduct nationwide and overturning the 1986 Bowers v. Hardwick decision.",
+    "date": "2003-06",
+    "country_code": "US",
+    "country": "United States",
+    "city": "",
+    "region": "",
+    "category": "law-decriminalization",
+    "impact": "positive",
+    "significance": 4,
+    "sources": [
+      {
+        "label": "CNN — LGBTQ Rights Milestones Fast Facts",
+        "url": "https://edition.cnn.com/us/lgbt-rights-milestones-fast-facts"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-cnn:35",
+    "title": "First legal same-sex marriage in the United States",
+    "description": "Massachusetts became the site of the first legal same-sex marriage in the United States.",
+    "date": "2004-05-17",
+    "country_code": "US",
+    "country": "United States",
+    "city": "",
+    "region": "Massachusetts",
+    "category": "law-equality",
+    "impact": "positive",
+    "significance": 4,
+    "sources": [
+      {
+        "label": "CNN — LGBTQ Rights Milestones Fast Facts",
+        "url": "https://edition.cnn.com/us/lgbt-rights-milestones-fast-facts"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-cnn:36",
+    "title": "California legislature passes marriage bill, then vetoed",
+    "description": "California’s legislature became the first to pass a bill allowing marriage between same-sex couples, but Governor Arnold Schwarzenegger vetoed it.",
+    "date": "2005-09-06",
+    "country_code": "US",
+    "country": "United States",
+    "city": "",
+    "region": "California",
+    "category": "other",
+    "impact": "neutral",
+    "significance": 2,
+    "sources": [
+      {
+        "label": "CNN — LGBTQ Rights Milestones Fast Facts",
+        "url": "https://edition.cnn.com/us/lgbt-rights-milestones-fast-facts"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-cnn:37",
+    "title": "New Jersey court orders marriage rights for gay couples",
+    "description": "The New Jersey Supreme Court ruled that state lawmakers had to extend the rights and benefits of marriage to gay and lesbian couples.",
+    "date": "2006-10-25",
+    "country_code": "US",
+    "country": "United States",
+    "city": "",
+    "region": "New Jersey",
+    "category": "law-equality",
+    "impact": "positive",
+    "significance": 2,
+    "sources": [
+      {
+        "label": "CNN — LGBTQ Rights Milestones Fast Facts",
+        "url": "https://edition.cnn.com/us/lgbt-rights-milestones-fast-facts"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-cnn:38",
+    "title": "California high court backs same-sex marriage",
+    "description": "The California Supreme Court ruled that limiting marriage to opposite-sex couples was unconstitutional.",
+    "date": "2008-05-15",
+    "country_code": "US",
+    "country": "United States",
+    "city": "",
+    "region": "California",
+    "category": "law-equality",
+    "impact": "positive",
+    "significance": 3,
+    "sources": [
+      {
+        "label": "CNN — LGBTQ Rights Milestones Fast Facts",
+        "url": "https://edition.cnn.com/us/lgbt-rights-milestones-fast-facts"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-cnn:39",
+    "title": "California voters pass Proposition 8",
+    "description": "California voters approved Proposition 8, banning same-sex marriage; a federal judge later found the measure unconstitutional.",
+    "date": "2008-11-04",
+    "country_code": "US",
+    "country": "United States",
+    "city": "",
+    "region": "California",
+    "category": "law-criminalization",
+    "impact": "negative",
+    "significance": 3,
+    "sources": [
+      {
+        "label": "CNN — LGBTQ Rights Milestones Fast Facts",
+        "url": "https://edition.cnn.com/us/lgbt-rights-milestones-fast-facts"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-cnn:40",
+    "title": "Harvey Milk honored with Medal of Freedom",
+    "description": "President Barack Obama posthumously awarded Harvey Milk the Presidential Medal of Freedom.",
+    "date": "2009-08-12",
+    "country_code": "US",
+    "country": "United States",
+    "city": "",
+    "region": "",
+    "category": "other",
+    "impact": "positive",
+    "significance": 2,
+    "sources": [
+      {
+        "label": "CNN — LGBTQ Rights Milestones Fast Facts",
+        "url": "https://edition.cnn.com/us/lgbt-rights-milestones-fast-facts"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-cnn:41",
+    "title": "Obama signs Matthew Shepard hate crimes act",
+    "description": "President Barack Obama signed the Matthew Shepard and James Byrd Jr. Hate Crimes Prevention Act, extending federal hate-crime protections to sexual orientation and gender identity.",
+    "date": "2009-10-28",
+    "country_code": "US",
+    "country": "United States",
+    "city": "",
+    "region": "",
+    "category": "law-equality",
+    "impact": "positive",
+    "significance": 4,
+    "sources": [
+      {
+        "label": "CNN — LGBTQ Rights Milestones Fast Facts",
+        "url": "https://edition.cnn.com/us/lgbt-rights-milestones-fast-facts"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-cnn:42",
+    "title": "Obama becomes first president to back marriage equality",
+    "description": "In a television interview, Barack Obama became the first sitting US president to publicly support the freedom of same-sex couples to marry.",
+    "date": "2012-05-09",
+    "country_code": "US",
+    "country": "United States",
+    "city": "",
+    "region": "",
+    "category": "other",
+    "impact": "positive",
+    "significance": 3,
+    "sources": [
+      {
+        "label": "CNN — LGBTQ Rights Milestones Fast Facts",
+        "url": "https://edition.cnn.com/us/lgbt-rights-milestones-fast-facts"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-cnn:43",
+    "title": "Democratic Party backs marriage equality in platform",
+    "description": "The Democratic Party became the first major US political party to endorse same-sex marriage in its national platform at its convention.",
+    "date": "2012-09-04",
+    "country_code": "US",
+    "country": "United States",
+    "city": "",
+    "region": "",
+    "category": "other",
+    "impact": "positive",
+    "significance": 2,
+    "sources": [
+      {
+        "label": "CNN — LGBTQ Rights Milestones Fast Facts",
+        "url": "https://edition.cnn.com/us/lgbt-rights-milestones-fast-facts"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-cnn:44",
+    "title": "Tammy Baldwin elected to the US Senate",
+    "description": "Tammy Baldwin became the first openly gay person and the first woman from Wisconsin elected to the US Senate.",
+    "date": "2012-11-06",
+    "country_code": "US",
+    "country": "United States",
+    "city": "",
+    "region": "",
+    "category": "other",
+    "impact": "positive",
+    "significance": 3,
+    "sources": [
+      {
+        "label": "CNN — LGBTQ Rights Milestones Fast Facts",
+        "url": "https://edition.cnn.com/us/lgbt-rights-milestones-fast-facts"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-cnn:45",
+    "title": "US v. Windsor strikes down part of DOMA",
+    "description": "In United States v. Windsor, the US Supreme Court struck down a core section of the Defense of Marriage Act, granting federal benefits to legally married same-sex couples.",
+    "date": "2013-06-26",
+    "country_code": "US",
+    "country": "United States",
+    "city": "",
+    "region": "",
+    "category": "law-equality",
+    "impact": "positive",
+    "significance": 4,
+    "sources": [
+      {
+        "label": "CNN — LGBTQ Rights Milestones Fast Facts",
+        "url": "https://edition.cnn.com/us/lgbt-rights-milestones-fast-facts"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-cnn:46",
+    "title": "Supreme Court lets marriage rulings stand in five states",
+    "description": "The US Supreme Court declined to review five marriage cases, letting lower-court rulings stand and enabling same-sex couples to marry in Utah, Oklahoma, Virginia, Indiana and Wisconsin, with more states to follow.",
+    "date": "2014-10-06",
+    "country_code": "US",
+    "country": "United States",
+    "city": "",
+    "region": "",
+    "category": "law-equality",
+    "impact": "positive",
+    "significance": 3,
+    "sources": [
+      {
+        "label": "CNN — LGBTQ Rights Milestones Fast Facts",
+        "url": "https://edition.cnn.com/us/lgbt-rights-milestones-fast-facts"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-cnn:47",
+    "title": "Obergefell v. Hodges brings marriage equality nationwide",
+    "description": "After hearing oral arguments in April, the US Supreme Court ruled on June 26 that states could not ban same-sex marriage, establishing marriage equality across the country in a 5-4 decision.",
+    "date": "2015-06-26",
+    "country_code": "US",
+    "country": "United States",
+    "city": "",
+    "region": "",
+    "category": "law-equality",
+    "impact": "positive",
+    "significance": 4,
+    "sources": [
+      {
+        "label": "CNN — LGBTQ Rights Milestones Fast Facts",
+        "url": "https://edition.cnn.com/us/lgbt-rights-milestones-fast-facts"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-cnn:48",
+    "title": "US military opportunity policy covers gay members",
+    "description": "Defense Secretary Ash Carter announced that the Military Equal Opportunity policy had been expanded to cover gay and lesbian service members.",
+    "date": "2015-06-09",
+    "country_code": "US",
+    "country": "United States",
+    "city": "",
+    "region": "",
+    "category": "law-equality",
+    "impact": "positive",
+    "significance": 2,
+    "sources": [
+      {
+        "label": "CNN — LGBTQ Rights Milestones Fast Facts",
+        "url": "https://edition.cnn.com/us/lgbt-rights-milestones-fast-facts"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-cnn:49",
+    "title": "Boy Scouts lifts ban on openly gay leaders",
+    "description": "Boy Scouts of America announced that its national board had removed the restriction barring openly gay adults from serving as leaders and employees.",
+    "date": "2015-07-27",
+    "country_code": "US",
+    "country": "United States",
+    "city": "",
+    "region": "",
+    "category": "other",
+    "impact": "positive",
+    "significance": 2,
+    "sources": [
+      {
+        "label": "CNN — LGBTQ Rights Milestones Fast Facts",
+        "url": "https://edition.cnn.com/us/lgbt-rights-milestones-fast-facts"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-cnn:50",
+    "title": "Eric Fanning confirmed as first gay Army secretary",
+    "description": "The Senate confirmed Eric Fanning as secretary of the Army, making him the first openly gay leader of a US military branch.",
+    "date": "2016-05-17",
+    "country_code": "US",
+    "country": "United States",
+    "city": "",
+    "region": "",
+    "category": "other",
+    "impact": "positive",
+    "significance": 3,
+    "sources": [
+      {
+        "label": "CNN — LGBTQ Rights Milestones Fast Facts",
+        "url": "https://edition.cnn.com/us/lgbt-rights-milestones-fast-facts"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-cnn:51",
+    "title": "Stonewall named first national LGBTQ monument",
+    "description": "President Barack Obama designated the Stonewall National Monument, the first US national monument dedicated to LGBTQ rights, covering the sites of the 1969 uprising.",
+    "date": "2016-06-24",
+    "country_code": "US",
+    "country": "United States",
+    "city": "New York",
+    "region": "New York",
+    "category": "other",
+    "impact": "positive",
+    "significance": 3,
+    "sources": [
+      {
+        "label": "CNN — LGBTQ Rights Milestones Fast Facts",
+        "url": "https://edition.cnn.com/us/lgbt-rights-milestones-fast-facts"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-cnn:52",
+    "title": "Pentagon lifts ban on open transgender service",
+    "description": "Defense Secretary Ash Carter announced the Pentagon would lift its ban on transgender people serving openly in the US military.",
+    "date": "2016-06-30",
+    "country_code": "US",
+    "country": "United States",
+    "city": "",
+    "region": "",
+    "category": "law-equality",
+    "impact": "positive",
+    "significance": 3,
+    "sources": [
+      {
+        "label": "CNN — LGBTQ Rights Milestones Fast Facts",
+        "url": "https://edition.cnn.com/us/lgbt-rights-milestones-fast-facts"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-cnn:53",
+    "title": "Record number of out athletes at Rio Olympics",
+    "description": "The Rio de Janeiro Summer Olympics featured a record number of openly LGB athletes, estimated at more than 40, up from about 23 at the 2012 London Games.",
+    "date": "2016-08-05",
+    "date_end": "2016-08-21",
+    "country_code": "BR",
+    "country": "Brazil",
+    "city": "Rio de Janeiro",
+    "region": "",
+    "category": "other",
+    "impact": "positive",
+    "significance": 2,
+    "sources": [
+      {
+        "label": "CNN — LGBTQ Rights Milestones Fast Facts",
+        "url": "https://edition.cnn.com/us/lgbt-rights-milestones-fast-facts"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-cnn:54",
+    "title": "Kate Brown becomes governor of Oregon",
+    "description": "Kate Brown was sworn in as governor of Oregon, becoming the highest-ranking openly LGBTQ person elected to office in the country.",
+    "date": "2016-11-09",
+    "country_code": "US",
+    "country": "United States",
+    "city": "",
+    "region": "Oregon",
+    "category": "other",
+    "impact": "positive",
+    "significance": 3,
+    "sources": [
+      {
+        "label": "CNN — LGBTQ Rights Milestones Fast Facts",
+        "url": "https://edition.cnn.com/us/lgbt-rights-milestones-fast-facts"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-cnn:55",
+    "title": "Court says Civil Rights Act covers LGBTQ workers",
+    "description": "The 7th Circuit Court of Appeals ruled that the Civil Rights Act bars workplace discrimination against LGBTQ employees, in a case brought by Kimberly Hively against Ivy Tech Community College.",
+    "date": "2017-04-04",
+    "country_code": "US",
+    "country": "United States",
+    "city": "",
+    "region": "",
+    "category": "law-equality",
+    "impact": "positive",
+    "significance": 3,
+    "sources": [
+      {
+        "label": "CNN — LGBTQ Rights Milestones Fast Facts",
+        "url": "https://edition.cnn.com/us/lgbt-rights-milestones-fast-facts"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-cnn:56",
+    "title": "Washington DC offers gender-neutral ID marker",
+    "description": "Residents of the District of Columbia became the first in the country able to select X as a gender marker instead of male or female on driver’s licenses and identification cards.",
+    "date": "2017-06-27",
+    "country_code": "US",
+    "country": "United States",
+    "city": "Washington",
+    "region": "District of Columbia",
+    "category": "law-equality",
+    "impact": "positive",
+    "significance": 3,
+    "sources": [
+      {
+        "label": "CNN — LGBTQ Rights Milestones Fast Facts",
+        "url": "https://edition.cnn.com/us/lgbt-rights-milestones-fast-facts"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-cnn:57",
+    "title": "Danica Roem elected to Virginia legislature",
+    "description": "Danica Roem won a seat in the Virginia House of Delegates, becoming the first openly transgender candidate elected to a US state legislature.",
+    "date": "2017-11-07",
+    "country_code": "US",
+    "country": "United States",
+    "city": "",
+    "region": "Virginia",
+    "category": "other",
+    "impact": "positive",
+    "significance": 3,
+    "sources": [
+      {
+        "label": "CNN — LGBTQ Rights Milestones Fast Facts",
+        "url": "https://edition.cnn.com/us/lgbt-rights-milestones-fast-facts"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-cnn:58",
+    "title": "First openly transgender Academy Awards presenter",
+    "description": "Actor Daniela Vega became the first openly transgender presenter in Academy Awards history when she introduced a performance during the ceremony.",
+    "date": "2018-03-04",
+    "country_code": "US",
+    "country": "United States",
+    "city": "",
+    "region": "",
+    "category": "other",
+    "impact": "positive",
+    "significance": 2,
+    "sources": [
+      {
+        "label": "CNN — LGBTQ Rights Milestones Fast Facts",
+        "url": "https://edition.cnn.com/us/lgbt-rights-milestones-fast-facts"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-cnn:59",
+    "title": "Jared Polis elected first openly gay governor",
+    "description": "Jared Polis won the Colorado governor’s race, becoming the first openly gay man elected governor in the country.",
+    "date": "2018-11-06",
+    "country_code": "US",
+    "country": "United States",
+    "city": "",
+    "region": "Colorado",
+    "category": "other",
+    "impact": "positive",
+    "significance": 3,
+    "sources": [
+      {
+        "label": "CNN — LGBTQ Rights Milestones Fast Facts",
+        "url": "https://edition.cnn.com/us/lgbt-rights-milestones-fast-facts"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-cnn:60",
+    "title": "New York bans the gay and trans panic defense",
+    "description": "New York Governor Andrew Cuomo signed a law barring the gay and trans panic defense, making New York the sixth state to prohibit the tactic.",
+    "date": "2019-06-30",
+    "country_code": "US",
+    "country": "United States",
+    "city": "",
+    "region": "New York",
+    "category": "law-equality",
+    "impact": "positive",
+    "significance": 2,
+    "sources": [
+      {
+        "label": "CNN — LGBTQ Rights Milestones Fast Facts",
+        "url": "https://edition.cnn.com/us/lgbt-rights-milestones-fast-facts"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-cnn:61",
+    "title": "Billy Porter wins lead drama actor Emmy",
+    "description": "Billy Porter became the first openly gay Black man to win the Emmy for best lead actor in a drama series.",
+    "date": "2019-09-22",
+    "country_code": "US",
+    "country": "United States",
+    "city": "",
+    "region": "",
+    "category": "other",
+    "impact": "positive",
+    "significance": 2,
+    "sources": [
+      {
+        "label": "CNN — LGBTQ Rights Milestones Fast Facts",
+        "url": "https://edition.cnn.com/us/lgbt-rights-milestones-fast-facts"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-cnn:62",
+    "title": "Court orders Idaho to provide an inmate’s surgery",
+    "description": "The 9th Circuit Court of Appeals upheld a ruling that Idaho must provide gender confirmation surgery to incarcerated person Adree Edmo, the first time a federal appeals court required a state to provide such care to an inmate.",
+    "date": "2020-02-10",
+    "country_code": "US",
+    "country": "United States",
+    "city": "",
+    "region": "Idaho",
+    "category": "law-equality",
+    "impact": "positive",
+    "significance": 3,
+    "sources": [
+      {
+        "label": "CNN — LGBTQ Rights Milestones Fast Facts",
+        "url": "https://edition.cnn.com/us/lgbt-rights-milestones-fast-facts"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-cnn:63",
+    "title": "Bostock ruling protects LGBTQ workers nationwide",
+    "description": "The US Supreme Court ruled that federal law protects LGBTQ workers from job discrimination, extending Title VII protections to millions of workers across the country.",
+    "date": "2020-06-15",
+    "country_code": "US",
+    "country": "United States",
+    "city": "",
+    "region": "",
+    "category": "law-equality",
+    "impact": "positive",
+    "significance": 4,
+    "sources": [
+      {
+        "label": "CNN — LGBTQ Rights Milestones Fast Facts",
+        "url": "https://edition.cnn.com/us/lgbt-rights-milestones-fast-facts"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-cnn:64",
+    "title": "Court backs transgender student Gavin Grimm",
+    "description": "The 4th Circuit Court of Appeals ruled in favor of former student Gavin Grimm, finding that segregating transgender students through restroom policies is unconstitutional and violates federal law.",
+    "date": "2020-08-26",
+    "country_code": "US",
+    "country": "United States",
+    "city": "",
+    "region": "Virginia",
+    "category": "law-equality",
+    "impact": "positive",
+    "significance": 3,
+    "sources": [
+      {
+        "label": "CNN — LGBTQ Rights Milestones Fast Facts",
+        "url": "https://edition.cnn.com/us/lgbt-rights-milestones-fast-facts"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-cnn:65",
+    "title": "Election delivers several LGBTQ firsts to office",
+    "description": "The general election produced multiple firsts: Sarah McBride became the first openly transgender state senator in Delaware, Ritchie Torres and Mondaire Jones the first out gay Black men elected to Congress in New York, and Mauree Turner the first nonbinary state legislator in Oklahoma.",
+    "date": "2020-11-03",
+    "date_end": "2020-11-04",
+    "country_code": "US",
+    "country": "United States",
+    "city": "",
+    "region": "",
+    "category": "other",
+    "impact": "positive",
+    "significance": 3,
+    "sources": [
+      {
+        "label": "CNN — LGBTQ Rights Milestones Fast Facts",
+        "url": "https://edition.cnn.com/us/lgbt-rights-milestones-fast-facts"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-cnn:66",
+    "title": "Pete Buttigieg confirmed as first gay Cabinet member",
+    "description": "The Senate confirmed Pete Buttigieg as secretary of transportation, making him the first openly gay Cabinet member confirmed by the chamber.",
+    "date": "2021-02-02",
+    "country_code": "US",
+    "country": "United States",
+    "city": "",
+    "region": "",
+    "category": "other",
+    "impact": "positive",
+    "significance": 3,
+    "sources": [
+      {
+        "label": "CNN — LGBTQ Rights Milestones Fast Facts",
+        "url": "https://edition.cnn.com/us/lgbt-rights-milestones-fast-facts"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-cnn:67",
+    "title": "Rachel Levine confirmed as first trans federal official",
+    "description": "The Senate confirmed Dr. Rachel Levine as an assistant secretary for health, the first openly transgender federal official confirmed by the chamber.",
+    "date": "2021-03-24",
+    "country_code": "US",
+    "country": "United States",
+    "city": "",
+    "region": "",
+    "category": "other",
+    "impact": "positive",
+    "significance": 3,
+    "sources": [
+      {
+        "label": "CNN — LGBTQ Rights Milestones Fast Facts",
+        "url": "https://edition.cnn.com/us/lgbt-rights-milestones-fast-facts"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-cnn:68",
+    "title": "Carl Nassib is first active NFL player to come out",
+    "description": "Las Vegas Raiders defensive lineman Carl Nassib became the first active NFL player to publicly announce he is gay.",
+    "date": "2021-06-21",
+    "country_code": "US",
+    "country": "United States",
+    "city": "",
+    "region": "",
+    "category": "other",
+    "impact": "positive",
+    "significance": 2,
+    "sources": [
+      {
+        "label": "CNN — LGBTQ Rights Milestones Fast Facts",
+        "url": "https://edition.cnn.com/us/lgbt-rights-milestones-fast-facts"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-cnn:69",
+    "title": "State Department allows self-selected passport sex marker",
+    "description": "The State Department said it would let passport applicants self-select their sex marker and would drop medical certification requirements when the selection did not match other identity documents.",
+    "date": "2021-06-30",
+    "country_code": "US",
+    "country": "United States",
+    "city": "",
+    "region": "",
+    "category": "law-equality",
+    "impact": "positive",
+    "significance": 3,
+    "sources": [
+      {
+        "label": "CNN — LGBTQ Rights Milestones Fast Facts",
+        "url": "https://edition.cnn.com/us/lgbt-rights-milestones-fast-facts"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-cnn:70",
+    "title": "Social Security lets people choose their sex marker",
+    "description": "The Social Security Administration announced that people could choose their sex marker in their Social Security records.",
+    "date": "2022-10-19",
+    "country_code": "US",
+    "country": "United States",
+    "city": "",
+    "region": "",
+    "category": "law-equality",
+    "impact": "positive",
+    "significance": 2,
+    "sources": [
+      {
+        "label": "CNN — LGBTQ Rights Milestones Fast Facts",
+        "url": "https://edition.cnn.com/us/lgbt-rights-milestones-fast-facts"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-cnn:71",
+    "title": "Biden signs the Respect for Marriage Act",
+    "description": "President Joe Biden signed the Respect for Marriage Act, adding federal protections for same-sex and interracial couples, voiding the Defense of Marriage Act, and requiring states to honor out-of-state marriage licenses.",
+    "date": "2022-12-13",
+    "country_code": "US",
+    "country": "United States",
+    "city": "",
+    "region": "",
+    "category": "law-equality",
+    "impact": "positive",
+    "significance": 4,
+    "sources": [
+      {
+        "label": "CNN — LGBTQ Rights Milestones Fast Facts",
+        "url": "https://edition.cnn.com/us/lgbt-rights-milestones-fast-facts"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-cnn:72",
+    "title": "Tennessee bans gender-affirming care for minors",
+    "description": "Tennessee Governor Bill Lee signed a law prohibiting gender-affirming care for minors; the ban later took effect and, in June 2025, the US Supreme Court upheld it.",
+    "date": "2023-03-02",
+    "country_code": "US",
+    "country": "United States",
+    "city": "",
+    "region": "Tennessee",
+    "category": "law-criminalization",
+    "impact": "negative",
+    "significance": 3,
+    "sources": [
+      {
+        "label": "CNN — LGBTQ Rights Milestones Fast Facts",
+        "url": "https://edition.cnn.com/us/lgbt-rights-milestones-fast-facts"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-cnn:73",
+    "title": "FDA eases blood donation rules for gay and bi men",
+    "description": "The FDA finalized risk-based recommendations that removed deferrals and screening questions specific to men who have sex with men, allowing more gay and bisexual men to donate blood.",
+    "date": "2023-05-11",
+    "country_code": "US",
+    "country": "United States",
+    "city": "",
+    "region": "",
+    "category": "other",
+    "impact": "positive",
+    "significance": 3,
+    "sources": [
+      {
+        "label": "CNN — LGBTQ Rights Milestones Fast Facts",
+        "url": "https://edition.cnn.com/us/lgbt-rights-milestones-fast-facts"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-cnn:74",
+    "title": "First out gay coach in US men’s pro sports",
+    "description": "Jacksonville Jaguars strength coach Kevin Maxen became the first male coach in a US men’s professional sports league to come out as gay.",
+    "date": "2023-07-20",
+    "country_code": "US",
+    "country": "United States",
+    "city": "",
+    "region": "",
+    "category": "other",
+    "impact": "positive",
+    "significance": 2,
+    "sources": [
+      {
+        "label": "CNN — LGBTQ Rights Milestones Fast Facts",
+        "url": "https://edition.cnn.com/us/lgbt-rights-milestones-fast-facts"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-cnn:75",
+    "title": "Laphonza Butler joins the US Senate",
+    "description": "Laphonza Butler, appointed to represent California, became the first known Black lesbian in the US Senate and the first out LGBTQ member of the Judiciary Committee.",
+    "date": "2023-10",
+    "country_code": "US",
+    "country": "United States",
+    "city": "",
+    "region": "California",
+    "category": "other",
+    "impact": "positive",
+    "significance": 3,
+    "sources": [
+      {
+        "label": "CNN — LGBTQ Rights Milestones Fast Facts",
+        "url": "https://edition.cnn.com/us/lgbt-rights-milestones-fast-facts"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-cnn:76",
+    "title": "Biden rule expands LGBTQ health care protections",
+    "description": "The Biden administration announced a rule broadening safeguards against discrimination for gay and transgender people seeking medical care, reversing earlier limits on federal health protections.",
+    "date": "2024-04-26",
+    "country_code": "US",
+    "country": "United States",
+    "city": "",
+    "region": "",
+    "category": "law-equality",
+    "impact": "positive",
+    "significance": 3,
+    "sources": [
+      {
+        "label": "CNN — LGBTQ Rights Milestones Fast Facts",
+        "url": "https://edition.cnn.com/us/lgbt-rights-milestones-fast-facts"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-cnn:77",
+    "title": "Sarah McBride elected first trans member of Congress",
+    "description": "Delaware state senator Sarah McBride won a US House seat, becoming the first openly transgender person elected to Congress.",
+    "date": "2024-11-05",
+    "country_code": "US",
+    "country": "United States",
+    "city": "",
+    "region": "Delaware",
+    "category": "other",
+    "impact": "positive",
+    "significance": 3,
+    "sources": [
+      {
+        "label": "CNN — LGBTQ Rights Milestones Fast Facts",
+        "url": "https://edition.cnn.com/us/lgbt-rights-milestones-fast-facts"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-cnn:78",
+    "title": "Trump order restricts gender markers on passports",
+    "description": "President Donald Trump signed an executive order rolling back gender identity designations, and the State Department suspended issuing passports with an X marker; in November 2025 the Supreme Court allowed passport sex markers to be required to match biological sex.",
+    "date": "2025-01-20",
+    "country_code": "US",
+    "country": "United States",
+    "city": "",
+    "region": "",
+    "category": "other",
+    "impact": "negative",
+    "significance": 3,
+    "sources": [
+      {
+        "label": "CNN — LGBTQ Rights Milestones Fast Facts",
+        "url": "https://edition.cnn.com/us/lgbt-rights-milestones-fast-facts"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-cnn:79",
+    "title": "Trump orders ban on transgender service members",
+    "description": "President Donald Trump signed an executive order barring transgender people from military service; after courts intervened, the Supreme Court in May 2025 allowed the administration to enforce the ban.",
+    "date": "2025-01-27",
+    "country_code": "US",
+    "country": "United States",
+    "city": "",
+    "region": "",
+    "category": "other",
+    "impact": "negative",
+    "significance": 3,
+    "sources": [
+      {
+        "label": "CNN — LGBTQ Rights Milestones Fast Facts",
+        "url": "https://edition.cnn.com/us/lgbt-rights-milestones-fast-facts"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-cnn:80",
+    "title": "Trump order targets gender-affirming care for youth",
+    "description": "President Donald Trump signed an executive order ending federal support for institutions that provide gender-affirming care to transgender youth; a federal judge blocked the order.",
+    "date": "2025-01-28",
+    "country_code": "US",
+    "country": "United States",
+    "city": "",
+    "region": "",
+    "category": "other",
+    "impact": "negative",
+    "significance": 3,
+    "sources": [
+      {
+        "label": "CNN — LGBTQ Rights Milestones Fast Facts",
+        "url": "https://edition.cnn.com/us/lgbt-rights-milestones-fast-facts"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-cnn:81",
+    "title": "Trump order restricts trans women in sports",
+    "description": "President Donald Trump signed an executive order titled \"Keeping Men Out of Women’s Sports\" aimed at barring transgender women from women’s athletic competition.",
+    "date": "2025-02-05",
+    "country_code": "US",
+    "country": "United States",
+    "city": "",
+    "region": "",
+    "category": "other",
+    "impact": "negative",
+    "significance": 3,
+    "sources": [
+      {
+        "label": "CNN — LGBTQ Rights Milestones Fast Facts",
+        "url": "https://edition.cnn.com/us/lgbt-rights-milestones-fast-facts"
+      }
+    ],
+    "needs_review": false
+  }
+]

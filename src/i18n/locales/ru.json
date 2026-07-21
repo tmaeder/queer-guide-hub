@@ -3445,7 +3445,8 @@
     "filter": {
       "country": "Страна",
       "allCountries": "Все страны",
-      "clear": "Сбросить фильтры"
+      "clear": "Сбросить фильтры",
+      "showAll": "[RU] Show all events"
     },
     "category": {
       "uprising-movement": "Восстание / Движение",

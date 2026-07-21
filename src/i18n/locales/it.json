@@ -3411,7 +3411,8 @@
     "filter": {
       "country": "Paese",
       "allCountries": "Tutti i paesi",
-      "clear": "Cancella filtri"
+      "clear": "Cancella filtri",
+      "showAll": "[IT] Show all events"
     },
     "category": {
       "uprising-movement": "Rivolta / Movimento",

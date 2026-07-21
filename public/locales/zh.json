@@ -3409,7 +3409,8 @@
     "filter": {
       "country": "国家",
       "allCountries": "所有国家",
-      "clear": "清除筛选"
+      "clear": "清除筛选",
+      "showAll": "[ZH] Show all events"
     },
     "category": {
       "uprising-movement": "起义 / 运动",

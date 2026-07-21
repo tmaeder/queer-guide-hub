@@ -3409,7 +3409,8 @@
     "filter": {
       "country": "국가",
       "allCountries": "모든 국가",
-      "clear": "필터 지우기"
+      "clear": "필터 지우기",
+      "showAll": "[KO] Show all events"
     },
     "category": {
       "uprising-movement": "봉기 / 운동",

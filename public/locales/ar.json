@@ -3415,7 +3415,8 @@
     "filter": {
       "country": "الدولة",
       "allCountries": "كل الدول",
-      "clear": "مسح المرشحات"
+      "clear": "مسح المرشحات",
+      "showAll": "[AR] Show all events"
     },
     "category": {
       "uprising-movement": "انتفاضة / حركة",

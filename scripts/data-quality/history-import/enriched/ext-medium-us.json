@@ -1,0 +1,82 @@
+[
+  {
+    "ref": "ext-medium-us:0",
+    "title": "Virginia Colony makes male sodomy a capital offense",
+    "description": "The Colony of Virginia issued a military order that criminalized sex between men and set death as the penalty. The order lapsed later the same year when martial law ended after a change of control in the colony.",
+    "date": "1610",
+    "country_code": "US",
+    "country": "United States",
+    "city": "",
+    "region": "Virginia",
+    "category": "law-criminalization",
+    "impact": "negative",
+    "significance": 2,
+    "sources": [
+      {
+        "label": "Medium — A Comprehensive Queer History Timeline of the United States",
+        "url": "https://medium.com/prismnpen/a-comprehensive-queer-history-timeline-of-the-united-states-d0827f66059d"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-medium-us:1",
+    "title": "Richard Cornish hanged for sodomy in Virginia Colony",
+    "description": "Richard Williams Cornish of the Virginia Colony was tried and executed by hanging on a charge of sodomy, one of the earliest recorded such prosecutions in the North American colonies.",
+    "date": "1624",
+    "country_code": "US",
+    "country": "United States",
+    "city": "",
+    "region": "Virginia",
+    "category": "persecution-destruction",
+    "impact": "negative",
+    "significance": 2,
+    "sources": [
+      {
+        "label": "Medium — A Comprehensive Queer History Timeline of the United States",
+        "url": "https://medium.com/prismnpen/a-comprehensive-queer-history-timeline-of-the-united-states-d0827f66059d"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-medium-us:2",
+    "title": "Connecticut Colony sodomy law covers sex between women",
+    "description": "The Connecticut Colony enacted a sodomy statute that also prescribed punishment for sexual acts between women, an unusually explicit reference to lesbian conduct for colonial-era law.",
+    "date": "1642",
+    "country_code": "US",
+    "country": "United States",
+    "city": "",
+    "region": "Connecticut",
+    "category": "law-criminalization",
+    "impact": "negative",
+    "significance": 2,
+    "sources": [
+      {
+        "label": "Medium — A Comprehensive Queer History Timeline of the United States",
+        "url": "https://medium.com/prismnpen/a-comprehensive-queer-history-timeline-of-the-united-states-d0827f66059d"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-medium-us:3",
+    "title": "Sarah Norman charged in first known lesbian prosecution",
+    "description": "In Plymouth, Massachusetts, Sarah White Norman was charged with lewd conduct with Mary Vincent Hammon, the earliest documented prosecution for sexual activity between women in North America.",
+    "date": "1648-03",
+    "country_code": "US",
+    "country": "United States",
+    "city": "Plymouth",
+    "region": "Massachusetts",
+    "category": "persecution-destruction",
+    "impact": "negative",
+    "significance": 2,
+    "sources": [
+      {
+        "label": "Medium — A Comprehensive Queer History Timeline of the United States",
+        "url": "https://medium.com/prismnpen/a-comprehensive-queer-history-timeline-of-the-united-states-d0827f66059d"
+      }
+    ],
+    "needs_review": false
+  }
+]

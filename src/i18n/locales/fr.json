@@ -3415,7 +3415,8 @@
     "filter": {
       "country": "Pays",
       "allCountries": "Tous les pays",
-      "clear": "Effacer les filtres"
+      "clear": "Effacer les filtres",
+      "showAll": "[FR] Show all events"
     },
     "category": {
       "uprising-movement": "Soulèvement / Mouvement",
