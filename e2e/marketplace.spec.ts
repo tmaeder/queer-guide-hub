@@ -18,8 +18,7 @@ const LISTING_LINK_SELECTOR =
 //   order comes from live search ranking, and a single slow/broken listing
 //   at the top made this whole test family flaky
 async function openListingWithProductLd(page: Page): Promise<void> {
-  await page.goto('/marketplace');
-  await page.waitForLoadState('networkidle');
+  await page.goto('/marketplace', { waitUntil: 'domcontentloaded' });
   // Cookie-consent banner can overlay the grid / interrupt navigation.
   await page
     .getByRole('button', { name: /accept all|necessary only/i })
@@ -135,6 +134,9 @@ test.describe('Marketplace — discovery surface', () => {
   });
 
   test('/marketplace/share renders listings from ids param', async ({ page }) => {
+    // Multi-page derivation below (grid → two detail pages → share) chains
+    // several 30s waits; the default 30s TEST budget dies before they finish.
+    test.setTimeout(120_000);
     // Derive two real listing UUIDs by visiting detail pages and reading sku from the Product JSON-LD.
     // Avoids hardcoding API credentials in the spec.
     await page.goto('/marketplace');
