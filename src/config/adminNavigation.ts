@@ -40,7 +40,6 @@ import {
   Flag,
   Award,
   CopyCheck,
-  ListTodo,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import type { AdminRole } from '@/config/adminRoles';
@@ -115,12 +114,6 @@ export const adminNavSections: AdminNavSection[] = [
         icon: MessageSquarePlus,
         route: '/admin/feedback',
         reviewCountKey: 'review_feedback',
-      },
-      {
-        id: 'merkliste',
-        label: 'Merkliste',
-        icon: ListTodo,
-        route: '/admin/merkliste',
       },
       {
         id: 'postfach',
