@@ -213,6 +213,37 @@ Deno.serve(withErrorReporting('twenty-sync', async (req) => {
     inflight.push(task)
   }
 
+  const arr = (a?: unknown): string | undefined =>
+    Array.isArray(a) && a.length ? a.join(', ') : undefined
+  const s = (v: unknown) => (v == null || v === '' ? undefined : String(v))
+  const n = (v: unknown) => { const x = Number(v); return (v == null || v === '' || Number.isNaN(x)) ? undefined : x }
+  // Twenty typed-field encoders (fields were migrated from TEXT to SELECT/LINKS/
+  // EMAILS/PHONES/MULTI_SELECT/CURRENCY — see docs/integrations/twenty-crm-sync.md).
+  const upperSnake = (v: string) => v.toUpperCase().replace(/[^A-Z0-9]+/g, '_').replace(/^_+|_+$/g, '')
+  // SELECT option value (Twenty requires UPPER_SNAKE_CASE option values).
+  const sel = (v: unknown) => { const x = s(v); return x ? upperSnake(x) : undefined }
+  // MULTI_SELECT: array of option values.
+  const msel = (a?: unknown): string[] | undefined =>
+    Array.isArray(a) && a.length ? a.map((v) => upperSnake(String(v))) : undefined
+  // LINKS composite; bare domains get a scheme so Twenty's URL validation passes.
+  const link = (v: unknown) => { const x = s(v); return x ? { primaryLinkUrl: /^https?:\/\//i.test(x) ? x : `https://${x}`, primaryLinkLabel: '' } : undefined }
+  // Instagram: accepts full URLs or bare handles.
+  const igLink = (v: unknown) => {
+    const x = s(v)
+    if (!x) return undefined
+    if (/^https?:\/\//i.test(x)) return { primaryLinkUrl: x, primaryLinkLabel: '' }
+    const h = x.replace(/^@/, '')
+    return { primaryLinkUrl: h.includes('.') ? `https://${h}` : `https://instagram.com/${h}`, primaryLinkLabel: '' }
+  }
+  // EMAILS composite.
+  const email = (v: unknown) => { const x = s(v); return x ? { primaryEmail: x.toLowerCase() } : undefined }
+  // CURRENCY composite (micros).
+  const money = (amount: unknown, code: unknown) => {
+    const x = n(amount)
+    return x == null ? undefined : { amountMicros: Math.round(x * 1_000_000), currencyCode: (s(code) ?? 'USD').toUpperCase() }
+  }
+  // jsonb columns stringify as "[object Object]" via String(); serialize them properly.
+  const jsonText = (v: unknown) => (v == null || v === '' ? undefined : typeof v === 'string' ? v : JSON.stringify(v))
   // Empty source values are sent as EXPLICIT null (never omitted) so junk written in the
   // TEXT era — '' placeholders, stale values — is cleared by the next sync. Omission is
   // reserved for PROTECT (pending inbound review) and unresolved relation targets.
@@ -382,6 +413,25 @@ Deno.serve(withErrorReporting('twenty-sync', async (req) => {
           ...orgRels,
           name: o.legal_name || o.name,
           qgWebsite: link(o.website || o.website_domain),
+          qgSource: 'ORGANIZATION',
+          qgSlug: o.slug ?? undefined,
+          qgDescription: o.description ?? undefined,
+          qgEditorialHook: o.editorial_hook ?? undefined,
+          qgEditorialLong: o.editorial_long ?? undefined,
+          qgLogoUrl: link(o.logo_url),
+          qgRoles: msel(o.roles),
+          qgEmail: email(o.email),
+          qgPhone: o.phone ?? undefined,
+          qgTags: arr(o.tags),
+          qgTargetGroups: arr(o.target_groups),
+          qgCity: o.city?.name ?? undefined,
+          qgCountry: o.country?.name ?? undefined,
+          qgStatus: sel(o.status),
+          qgClaimStatus: sel(o.claim_status),
+          qgTrustScore: o.trust_score ?? undefined,
+          qgCompletenessScore: o.completeness_score ?? undefined,
+          qgSafetyGated: o.safety_gated ?? undefined,
+          qgNeedsAttention: o.needs_attention ?? undefined,
           qgDomain: extractDomain(o.website || o.website_domain),
           qgSource: 'ORGANIZATION',
           qgSlug: s(o.slug),
@@ -427,6 +477,11 @@ Deno.serve(withErrorReporting('twenty-sync', async (req) => {
         await push(`merchant:${m.id}`, 'companies', {
           name: m.display_name,
           qgWebsite: link(m.shop_domain),
+          qgSource: 'MERCHANT',
+          qgSlug: m.slug ?? undefined,
+          qgProvider: sel(m.provider),
+          qgIsEnabled: m.is_enabled ?? undefined,
+          qgLastSyncStatus: m.last_sync_status ?? undefined,
           qgDomain: extractDomain(m.shop_domain),
           qgSource: 'MERCHANT',
           qgSlug: s(m.slug),
@@ -450,6 +505,10 @@ Deno.serve(withErrorReporting('twenty-sync', async (req) => {
         if (!budgetLeft()) break
         await push(`contact:${c.id}`, 'people', {
           name: splitName(c.name),
+          emails: c.email ? { primaryEmail: c.email } : undefined,
+          qgSource: 'CONTACT',
+          qgCategory: c.category ?? undefined,
+          qgMessage: c.message ?? undefined,
           emails: email(c.email),
           qgSource: 'CONTACT',
           qgCategory: s(c.category),
@@ -480,6 +539,10 @@ Deno.serve(withErrorReporting('twenty-sync', async (req) => {
           ...pRels,
           name: splitName(p.name),
           qgSource: 'PERSONALITY',
+          qgSlug: p.slug ?? undefined,
+          qgProfession: p.profession ?? undefined,
+          qgNationality: p.nationality ?? undefined,
+          qgBio: p.description || p.bio || undefined,
           qgSlug: s(p.slug),
           qgProfession: s(p.profession),
           qgNationality: s(p.nationality),
@@ -510,6 +573,11 @@ Deno.serve(withErrorReporting('twenty-sync', async (req) => {
         await push(`profile:${u.id}`, 'people', {
           name: splitName(display),
           qgSource: 'USER',
+          qgUsername: u.username ?? undefined,
+          qgLocation: u.location ?? undefined,
+          qgCompany: u.company ?? undefined,
+          qgIndustry: u.industry ?? undefined,
+          qgJobTitle: u.job_title ?? undefined,
           qgUsername: s(u.username),
           qgLocation: s(u.location),
           qgCompany: s(u.company),
@@ -534,6 +602,27 @@ Deno.serve(withErrorReporting('twenty-sync', async (req) => {
       map: (r: Row) => Record<string, unknown>; rels?: Rel[]; dedup?: boolean;
     }> = [
       { only: 'venues', dedup: true, table: 'venues', obj: 'venues', prefix: 'venue',
+        sel: 'id, name, description, website, city, country, category, address, slug, phone, email, instagram, tags, amenities, services, price_range, star_rating, latitude, longitude, state, postal_code, verified, venue_subtype, booking_url, accessibility_notes, closed_at, vibe_tags, city_id, country_id, organization_id, queer_village_id',
+        map: (r) => ({ name: r.name, qgDescription: s(r.description), qgWebsite: link(r.website), qgCity: s(r.city), qgCountry: s(r.country), qgCategory: sel(r.category), qgAddress: s(r.address), qgSlug: s(r.slug), qgPhone: s(r.phone), qgEmail: email(r.email), qgInstagram: igLink(r.instagram), qgTags: arr(r.tags), qgAmenities: arr(r.amenities), qgServices: arr(r.services), qgPriceRange: n(r.price_range), qgStarRating: n(r.star_rating), qgLat: n(r.latitude), qgLng: n(r.longitude), qgState: s(r.state), qgPostalCode: s(r.postal_code), qgVerified: r.verified ?? undefined, qgSubtype: sel(r.venue_subtype), qgBookingUrl: link(r.booking_url), qgAccessibility: s(r.accessibility_notes), qgClosedAt: s(r.closed_at), qgVibeTags: arr(r.vibe_tags) }),
+        rels: [REL_CITY, REL_COUNTRY, REL_VILLAGE, { field: 'org', target: 'companies', fk: 'organization_id', prefix: 'org' }] },
+      { only: 'events', dedup: true, table: 'events', obj: 'qgEvents', prefix: 'event',
+        sel: 'id, title, description, event_type, start_date, end_date, ticket_url, price_min, price_max, is_free, age_restriction, address, state, city, country, latitude, longitude, venue_name, organizer_name, website, status, target_groups, tags, currency, liveness_status, slug, city_id, country_id, venue_id, organizer_id, queer_village_id',
+        map: (r) => ({ name: r.title, qgDescription: s(r.description), qgType: sel(r.event_type), qgStartDate: s(r.start_date), qgEndDate: s(r.end_date), qgTicketUrl: link(r.ticket_url), qgPriceMin: n(r.price_min), qgPriceMax: n(r.price_max), qgIsFree: r.is_free ?? undefined, qgAgeRestriction: s(r.age_restriction), qgAddress: s(r.address), qgState: s(r.state), qgCity: s(r.city), qgCountry: s(r.country), qgLat: n(r.latitude), qgLng: n(r.longitude), qgVenue: s(r.venue_name), qgOrganizerName: s(r.organizer_name), qgWebsite: link(r.website), qgStatus: sel(r.status), qgTargetGroups: arr(r.target_groups), qgTags: arr(r.tags), qgCurrency: s(r.currency), qgLiveness: sel(r.liveness_status), qgSlug: s(r.slug) }),
+        rels: [REL_CITY, REL_COUNTRY, REL_VILLAGE, { field: 'venue', target: 'venues', fk: 'venue_id', prefix: 'venue' }, { field: 'organizer', target: 'venues', fk: 'organizer_id', prefix: 'venue' }] },
+      { only: 'cities', dedup: true, table: 'cities', obj: 'qgCities', prefix: 'city',
+        sel: 'id, name, description, slug, region_name, population, is_capital, latitude, longitude, timezone, climate_type, founded_year, area_km2, local_language, official_website, lgbt_friendly_rating, best_time_to_visit, local_customs, editorial_hook, image_url, safety_notes, major_airport_code, country_id',
+        map: (r) => ({ name: r.name, qgDescription: s(r.description), qgSlug: s(r.slug), qgRegion: s(r.region_name), qgPopulation: n(r.population), qgIsCapital: r.is_capital ?? undefined, qgLat: n(r.latitude), qgLng: n(r.longitude), qgTimezone: s(r.timezone), qgClimate: s(r.climate_type), qgFounded: n(r.founded_year), qgAreaKm2: n(r.area_km2), qgLocalLanguage: s(r.local_language), qgOfficialWebsite: link(r.official_website), qgLgbtRating: n(r.lgbt_friendly_rating), qgBestTime: s(r.best_time_to_visit), qgLocalCustoms: s(r.local_customs), qgEditorialHook: s(r.editorial_hook), qgImageUrl: link(r.image_url), qgSafetyNotes: s(r.safety_notes), qgAirportCode: s(r.major_airport_code) }),
+        rels: [REL_COUNTRY] },
+      { only: 'countries', dedup: true, table: 'countries', obj: 'qgCountries', prefix: 'country',
+        sel: 'id, name, code, equality_score, description, slug, capital, population, area_km2, currency, languages, timezone, calling_code, internet_tld, driving_side, gdp_usd, gdp_per_capita_usd, human_development_index, life_expectancy, literacy_rate, flag_emoji, editorial_hook, editorial_long, image_url, lgbti_same_sex_unions, lgbti_adoption_rights, lgbti_gender_recognition, lgbti_conversion_therapy_regulation',
+        map: (r) => ({ name: r.name, qgCode: s(r.code), qgEqualityScore: s(r.equality_score), qgDescription: s(r.description), qgSlug: s(r.slug), qgCapital: s(r.capital), qgPopulation: n(r.population), qgAreaKm2: n(r.area_km2), qgCurrency: s(r.currency), qgLanguages: arr(r.languages), qgTimezone: s(r.timezone), qgCallingCode: s(r.calling_code), qgTld: s(r.internet_tld), qgDrivingSide: s(r.driving_side), qgGdpUsd: n(r.gdp_usd), qgGdpPerCapita: n(r.gdp_per_capita_usd), qgHdi: n(r.human_development_index), qgLifeExpectancy: n(r.life_expectancy), qgLiteracyRate: n(r.literacy_rate), qgFlagEmoji: s(r.flag_emoji), qgEditorialHook: s(r.editorial_hook), qgEditorialLong: s(r.editorial_long), qgImageUrl: link(r.image_url), qgSameSexUnions: jsonText(r.lgbti_same_sex_unions), qgAdoptionRights: jsonText(r.lgbti_adoption_rights), qgGenderRecognition: jsonText(r.lgbti_gender_recognition), qgConversionTherapy: jsonText(r.lgbti_conversion_therapy_regulation) }) },
+      { only: 'hotels', table: 'hotels', obj: 'hotels', prefix: 'hotel',
+        sel: 'id, name, description, hotel_type, city, country, website, address, slug, phone, email, booking_url, price_range, star_rating, amenities, tags, queer_safety_notes, lgbtq_friendly, latitude, longitude, verified, city_id, country_id, queer_village_id',
+        map: (r) => ({ name: r.name, qgDescription: s(r.description), qgType: sel(r.hotel_type), qgCity: s(r.city), qgCountry: s(r.country), qgWebsite: link(r.website), qgAddress: s(r.address), qgSlug: s(r.slug), qgPhone: s(r.phone), qgEmail: email(r.email), qgBookingUrl: link(r.booking_url), qgPriceRange: n(r.price_range), qgStarRating: n(r.star_rating), qgAmenities: arr(r.amenities), qgTags: arr(r.tags), qgSafetyNotes: s(r.queer_safety_notes), qgLgbtqFriendly: r.lgbtq_friendly ?? undefined, qgLat: n(r.latitude), qgLng: n(r.longitude), qgVerified: r.verified ?? undefined }),
+        rels: [REL_CITY, REL_COUNTRY, REL_VILLAGE] },
+      { only: 'villages', table: 'queer_villages', obj: 'villages', prefix: 'village',
+        sel: 'id, name, description, website, slug, history, latitude, longitude, notable_landmarks, tags, editorial_hook, image_url, city_id, country_id',
+        map: (r) => ({ name: r.name, qgDescription: s(r.description), qgWebsite: link(r.website), qgSlug: s(r.slug), qgHistory: s(r.history), qgLat: n(r.latitude), qgLng: n(r.longitude), qgLandmarks: arr(r.notable_landmarks), qgTags: arr(r.tags), qgEditorialHook: s(r.editorial_hook), qgImageUrl: link(r.image_url) }),
         sel: 'id, name, description, website, city, country, category, address, slug, phone, email, instagram, tags, amenities, services, price_range, star_rating, latitude, longitude, state, postal_code, verified, venue_subtype, booking_url, accessibility_notes, closed_at, vibe_tags, quality_score, needs_attention, city_id, country_id, organization_id, queer_village_id',
         map: (r) => ({ name: r.name, qgDescription: s(r.description), qgWebsite: link(r.website), qgCity: s(r.city), qgCountry: country(r.country), qgCategory: sel(r.category), qgAddress: addr(r.address, r.name), qgSlug: s(r.slug), qgPhone: phone(r.phone, r.country), qgEmail: email(r.email), qgInstagram: igLink(r.instagram), qgTags: arr(r.tags), qgAmenities: arr(r.amenities), qgServices: arr(r.services), qgPriceRange: n(r.price_range), qgStarRating: n(r.star_rating), qgLat: n(r.latitude), qgLng: n(r.longitude), qgState: s(r.state), qgPostalCode: s(r.postal_code), qgVerified: r.verified ?? null, qgSubtype: sel(r.venue_subtype), qgBookingUrl: link(r.booking_url), qgAccessibility: s(r.accessibility_notes), qgClosedAt: s(r.closed_at), qgVibeTags: arr(r.vibe_tags), qgTrustScore: n(r.quality_score), qgNeedsAttention: r.needs_attention ?? null }),
         rels: [REL_CITY, REL_COUNTRY, REL_VILLAGE, { field: 'org', target: 'companies', fk: 'organization_id', prefix: 'org' }] },
@@ -560,6 +649,8 @@ Deno.serve(withErrorReporting('twenty-sync', async (req) => {
         sel: 'id, title, url, published_at, category, slug, publisher_name, excerpt, author, sentiment, tags, media_type, canonical_url, image_url, content_language',
         map: (r) => ({ name: r.title, qgPublisher: s(r.publisher_name), qgUrl: link(r.url), qgPublishedAt: s(r.published_at), qgCategory: sel(r.category), qgSlug: s(r.slug), qgExcerpt: s(r.excerpt), qgAuthor: s(r.author), qgSentiment: sel(r.sentiment), qgTags: arr(r.tags), qgMediaType: sel(r.media_type), qgCanonicalUrl: link(r.canonical_url), qgImageUrl: link(r.image_url), qgLanguage: sel(r.content_language) }) },
       { only: 'products', dedup: true, table: 'marketplace_listings', obj: 'products', prefix: 'product',
+        sel: 'id, title, brand, price_usd, external_url, website, merchant_domain, category, slug, description, subcategory, price_type, currency, business_name, availability, in_stock, department, boutique_score, content_rating, community_owned_tags, venue_id',
+        map: (r) => ({ name: r.title, qgBrand: s(r.brand), qgPrice: s(r.price_usd), qgPriceMoney: money(r.price_usd, r.currency), qgUrl: link(r.external_url ?? r.website), qgMerchant: s(r.merchant_domain), qgCategory: s(r.category), qgSlug: s(r.slug), qgDescription: s(r.description), qgSubcategory: s(r.subcategory), qgPriceType: sel(r.price_type), qgCurrency: sel(r.currency), qgBusinessName: s(r.business_name), qgAvailability: sel(r.availability), qgInStock: r.in_stock ?? undefined, qgDepartment: sel(r.department), qgBoutiqueScore: n(r.boutique_score), qgContentRating: sel(r.content_rating), qgOwnershipTags: msel(r.community_owned_tags) }),
         sel: 'id, title, brand, price_usd, external_url, website, merchant_domain, category, slug, description, subcategory, price_type, currency, business_name, availability, in_stock, department, boutique_score, content_rating, community_owned_tags, completeness_score, venue_id',
         map: (r) => ({ name: r.title, qgBrand: s(r.brand), qgPrice: s(r.price_usd), qgPriceMoney: money(r.price_usd, r.currency), qgUrl: link(r.external_url ?? r.website), qgMerchant: s(r.merchant_domain), qgCategory: s(r.category), qgSlug: s(r.slug), qgDescription: s(r.description), qgSubcategory: s(r.subcategory), qgPriceType: sel(r.price_type), qgCurrency: sel(r.currency), qgBusinessName: s(r.business_name), qgAvailability: sel(r.availability), qgInStock: r.in_stock ?? null, qgDepartment: sel(r.department), qgBoutiqueScore: n(r.boutique_score), qgContentRating: sel(r.content_rating), qgOwnershipTags: msel(r.community_owned_tags), qgCompletenessScore: n(r.completeness_score) }),
         rels: [{ field: 'venue', target: 'venues', fk: 'venue_id', prefix: 'venue' }] },
