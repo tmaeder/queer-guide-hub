@@ -1,11 +1,13 @@
-import { useCallback, type MutableRefObject } from 'react';
+import { useCallback, useContext, type MutableRefObject } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
+import { QueryClientProvider, useQueryClient } from '@tanstack/react-query';
 import i18next from 'i18next';
 import maplibregl from 'maplibre-gl';
 import { MapEntityCard } from '@/components/map/MapEntityCard';
 import type { MapPointSummary } from '@/components/map/mapPoint';
 import type { MapMarker } from '@/hooks/useExploreMapData';
 import { hapticTrigger } from '@/hooks/useHaptics';
+import { AuthContext } from '@/hooks/useAuth';
 
 interface UsePopupManagerParams {
   navigate: (href: string) => void;
@@ -20,6 +22,15 @@ interface UsePopupManagerParams {
  * stay component-owned because the init-effect teardown also unmounts the root.
  */
 export function usePopupManager({ navigate, toast, popupRef, popupRootRef }: UsePopupManagerParams) {
+  // The popup renders into its own React root (MapLibre owns the DOM node),
+  // which is OUTSIDE the app's provider tree — so bridge the contexts the
+  // card actually needs (auth + react-query for QuietAddToTripButton /
+  // AddToTripDialog). Without this, opening a popup crashed with
+  // "useAuth must be used within an AuthProvider" (feedback story f615cdd2).
+  // useContext (not useAuth) so provider-less test renders don't throw at mount.
+  const auth = useContext(AuthContext);
+  const queryClient = useQueryClient();
+
   // ── Helper: native share with clipboard fallback ─────────────────────────
   const sharePoint = useCallback(
     async (point: MapPointSummary) => {
@@ -82,12 +93,16 @@ export function usePopupManager({ navigate, toast, popupRef, popupRootRef }: Use
 
       const root = createRoot(container);
       root.render(
-        <MapEntityCard
-          point={point}
-          variant="popup"
-          onNavigate={(href) => navigate(href)}
-          onShare={sharePoint}
-        />,
+        <QueryClientProvider client={queryClient}>
+          <AuthContext.Provider value={auth}>
+            <MapEntityCard
+              point={point}
+              variant="popup"
+              onNavigate={(href) => navigate(href)}
+              onShare={sharePoint}
+            />
+          </AuthContext.Provider>
+        </QueryClientProvider>,
       );
       popupRootRef.current = root;
 
@@ -101,7 +116,7 @@ export function usePopupManager({ navigate, toast, popupRef, popupRootRef }: Use
 
       popupRef.current = popup;
     },
-    [navigate, sharePoint, popupRef, popupRootRef],
+    [navigate, sharePoint, popupRef, popupRootRef, auth, queryClient],
   );
 
   // Adapter for callers that still produce the legacy MapMarker shape

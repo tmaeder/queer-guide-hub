@@ -21,8 +21,34 @@
 //   npx tsx scripts/data-quality/import-milestones.ts
 
 import { execFileSync } from 'node:child_process'
-import { MILESTONE_SEED, type Milestone } from '../../tools/person-db/src/lib/milestones'
+import { readFileSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
+import { dirname, join } from 'node:path'
 import { nameToAlpha2 } from '../../tools/person-db/src/lib/flags'
+
+// Frozen seed export of the removed tools/person-db milestone module (#2215).
+// Canonical data lives in the `milestones` table; this file only re-imports.
+interface Milestone {
+  id: string
+  title: string
+  date: string
+  date_end?: string
+  location?: string
+  city?: string
+  region?: string
+  country?: string
+  description: string
+  sources: Array<{ label: string; url?: string }>
+  linked_persons: Array<{ slug: string; name: string; role?: string }>
+  category?: string
+  significance: number
+  impact: 'positive' | 'neutral' | 'negative'
+  checked: boolean
+}
+
+const MILESTONE_SEED: Milestone[] = JSON.parse(
+  readFileSync(join(dirname(fileURLToPath(import.meta.url)), 'milestone-seed.json'), 'utf8'),
+)
 
 const PROJECT = 'xqeacpakadqfxjxjcewc'
 const DRY = process.argv.includes('--dry-run')

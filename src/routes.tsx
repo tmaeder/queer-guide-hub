@@ -698,6 +698,8 @@ export const AppRoutes = () => {
                 {/* Kink checklist tool — static paths (see people/* locale note). */}
                 <Route path="tools/checklist" element={<KinkChecklist />} />
                 <Route path="tools/checklist/s/:code" element={<KinkShareView />} />
+                {/* Hand-typed shortcut (404 reports) → the checklist tool. */}
+                <Route path="kink" element={<LocalizedRedirect to="/tools/checklist" />} />
                 <Route path="profile/tiers" element={<Navigate to="/me/progress" replace />} />
                 <Route path="profile/footprint" element={<Navigate to="/me/travel" replace />} />
                 <Route path="profile/footprint/:userId/public" element={<FootprintRedirect />} />

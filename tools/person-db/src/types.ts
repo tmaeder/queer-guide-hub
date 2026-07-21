@@ -28,7 +28,6 @@ export interface Personality {
   achievements: unknown | null
   lgbti_connection: string | null
   lgbti_details: string | null
-  milestone: string | null
   visibility: string | null
   review_status: string | null
   verification_status: string | null
@@ -54,7 +53,7 @@ export function emptyPersonality(): Personality {
     nationality: null, birth_place: null, death_place: null, cause_of_death: null,
     image_url: null, website_url: null, wikipedia_url: null, wikidata_qid: null,
     social_links: null, tags: null, fields: null, achievements: null,
-    lgbti_connection: null, lgbti_details: null, milestone: null,
+    lgbti_connection: null, lgbti_details: null,
     visibility: 'draft', review_status: 'pending', verification_status: 'pending',
     needs_attention: null, is_featured: null, is_adult: false, quality_score: null,
     trust_score: null, completeness_score: null, view_count: null,
@@ -70,7 +69,7 @@ export const PERSONALITY_COLUMNS = [
   'birth_date', 'death_date', 'is_living', 'profession', 'nationality',
   'birth_place', 'death_place', 'cause_of_death', 'image_url', 'website_url',
   'wikipedia_url', 'wikidata_qid', 'social_links', 'tags', 'fields',
-  'achievements', 'lgbti_connection', 'lgbti_details', 'milestone',
+  'achievements', 'lgbti_connection', 'lgbti_details',
   'visibility', 'review_status', 'verification_status', 'needs_attention',
   'is_featured', 'is_adult', 'quality_score', 'trust_score',
   'completeness_score', 'view_count', 'duplicate_of_id', 'created_at',

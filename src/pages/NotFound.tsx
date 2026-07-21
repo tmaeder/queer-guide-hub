@@ -1,5 +1,5 @@
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
-import { useLocation } from 'react-router';
+import { useLocation, useNavigate } from 'react-router';
 import { useEffect, useMemo, useState } from 'react';
 import { Home, ArrowLeft, MapPin, CalendarDays, Map, Users, Search, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -12,6 +12,7 @@ import { RecommendedForYou } from '@/components/discovery/RecommendedForYou';
 import { Input } from '@/components/ui/input';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useVenueSlugRedirect } from '@/hooks/useVenueSlugRedirect';
+import { useGeoSlugRedirect } from '@/hooks/useGeoSlugRedirect';
 import { hrefForEntity } from '@/lib/searchRoutes';
 
 const SUGGESTIONS = [
@@ -48,6 +49,7 @@ const NotFound = () => {
   const location = useLocation();
   const { t } = useTranslation();
   const navigate = useLocalizedNavigate();
+  const rrNavigate = useNavigate();
   const [suggestions, setSuggestions] = useState<SearchHit[]>([]);
 
   const segs = useMemo(() => pathSegments(location.pathname), [location.pathname]);
@@ -61,11 +63,35 @@ const NotFound = () => {
     if (q) navigate(`/search?q=${encodeURIComponent(q)}`);
   };
 
+  // Crawler-mangled URLs: backslash/backtick/quote/markdown junk glued onto
+  // the path (e.g. /cities%5C%60 → "/cities\`"). Redirect to the cleaned path
+  // instead of dead-ending — and skip auto-filing, it's not a missing page.
+  const junkFreePath = useMemo(() => {
+    let decoded = location.pathname;
+    try {
+      decoded = decodeURIComponent(decoded);
+    } catch {
+      /* keep raw path on malformed escapes */
+    }
+    const cleaned = decoded.replace(/[\\`'".,;:!)\]}>]+\/?$/, '');
+    return cleaned !== decoded && cleaned.length > 1 ? cleaned : null;
+  }, [location.pathname]);
+  useEffect(() => {
+    if (junkFreePath) rrNavigate(junkFreePath + location.search, { replace: true });
+  }, [junkFreePath, rrNavigate, location.search]);
+
   // File the 404 into the feedback board + keep the existing dev console log.
   useEffect(() => {
+    if (junkFreePath) return;
     console.error('404 Error: User attempted to access non-existent route:', location.pathname);
     fileError({ kind: 'not_found', routePath: location.pathname });
-  }, [location.pathname]);
+  }, [location.pathname, junkFreePath]);
+
+  // Bare geo slugs typed at the root (/maldives, /berlin) → country/city page.
+  const geoTarget = useGeoSlugRedirect(!junkFreePath && segs.length === 1 ? segs[0] : null);
+  useEffect(() => {
+    if (geoTarget) navigate(geoTarget, { replace: true });
+  }, [geoTarget, navigate]);
 
   // Client-side venue slug-redirect fallback (the edge middleware handles the
   // SEO-correct 301 for direct/bot hits; this covers in-app SPA navigation).

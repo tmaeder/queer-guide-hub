@@ -1,10 +1,8 @@
 import { useState } from 'react'
 import { READ_ONLY, ROLES_ENABLED } from './config'
-import { milestonesForPerson } from './lib/milestones'
 import { plausibilityCheck } from './lib/status'
 import { StatusDot } from './StatusDot'
 import { AiCheckPanel } from './AiCheckPanel'
-import { MilestoneLinks } from './MilestoneLinks'
 import {
   CAUSE_OF_DEATH_VALUES,
   REVIEW_STATUS_VALUES,
@@ -75,12 +73,9 @@ export function PersonEditForm({
   }
   const removeRole = (r: string) => upd('roles', roles.filter((x) => x !== r))
 
-  // Deletion is only offered for an existing person, blocked while linked to a
-  // milestone. The destructive DB write itself stays gated (read-only).
-  const linkedMs = p.id ? milestonesForPerson(p.slug) : []
-  const blocked = linkedMs.length > 0
+  // Deletion is only offered for an existing person. The destructive DB write
+  // itself stays gated (read-only).
   const onDelete = () => {
-    if (blocked) return
     if (!window.confirm(`"${p.name}" endgültig löschen? Das kann nicht rückgängig gemacht werden.`)) return
     setDelErr('Löschen ist noch deaktiviert (read-only) — es kommt mit der Hauptseiten-Anbindung (v2).')
   }
@@ -213,14 +208,9 @@ export function PersonEditForm({
       {Check('is_living', 'Lebt')}
       {Text('nationality', 'Nationalität')}
 
-      <h3 className="ef-group">LGBTQ+ / Meilenstein</h3>
+      <h3 className="ef-group">LGBTQ+</h3>
       {Area('lgbti_connection', 'LGBTI-Bezug')}
       {Area('lgbti_details', 'LGBTI-Details')}
-      {p.id ? (
-        <MilestoneLinks p={p} />
-      ) : (
-        <p className="hint">Meilensteine verknüpfen: erst die Person anlegen, dann per Auswahl.</p>
-      )}
 
       <h3 className="ef-group">Links & Medien</h3>
       {Text('website_url', 'Website')}
@@ -236,22 +226,10 @@ export function PersonEditForm({
       {Check('is_featured', 'Featured')}
       {Check('is_adult', 'Adult')}
 
-      {p.id && blocked && (
-        <div className="edit-banner">
-          <strong>Löschen nicht möglich</strong> — verknüpft mit {linkedMs.length}{' '}
-          Meilenstein{linkedMs.length > 1 ? 'en' : ''}: {linkedMs.map((m) => m.title).join(', ')}.
-          Erst die Verknüpfung(en) lösen.
-        </div>
-      )}
       {delErr && <div className="login-err">{delErr}</div>}
       <div className="edit-actions">
         {p.id && (
-          <button
-            className="btn-danger"
-            disabled={blocked}
-            onClick={onDelete}
-            title={blocked ? 'Erst Milestone-Verknüpfungen lösen' : 'Person löschen'}
-          >
+          <button className="btn-danger" onClick={onDelete} title="Person löschen">
             Person löschen
           </button>
         )}

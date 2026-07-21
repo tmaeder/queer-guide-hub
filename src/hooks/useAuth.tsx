@@ -35,7 +35,11 @@ interface AuthContextType {
   hasPasskey: boolean;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+// Exported so out-of-tree React roots (MapLibre popup content rendered via
+// createRoot in usePopupManager) can bridge the app's auth context across the
+// root boundary. Everything in-tree should keep using useAuth().
+// eslint-disable-next-line react-refresh/only-export-components
+export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
