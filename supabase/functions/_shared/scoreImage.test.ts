@@ -1,5 +1,12 @@
 import { assert, assertEquals } from 'https://deno.land/std@0.168.0/testing/asserts.ts'
-import { isAcceptable, minScoreForRole, pickBest, scoreImage } from './scoreImage.ts'
+import {
+  isAcceptable,
+  minScoreForRole,
+  pickBest,
+  QUEER_PLACE_MIN,
+  scoreImage,
+  scoreQueerPlaceImage,
+} from './scoreImage.ts'
 
 // ── Hard rejects apply to every subject type ────────────────────────────────
 
@@ -84,4 +91,55 @@ Deno.test('pickBest honours the role threshold', () => {
   const cands = [{ score: 35 }, { score: 38 }]
   assertEquals(pickBest(cands, 'cover'), null) // best 38 < 40
   assertEquals(pickBest(cands, 'gallery')?.score, 38)
+})
+
+// ── Queer-place dual-gate scorer ────────────────────────────────────────────
+
+Deno.test('real Pride photo naming the city clears the queer-place bar', () => {
+  const s = scoreQueerPlaceImage({
+    alt: 'Berlin Christopher Street Day pride parade with rainbow flags',
+    width: 1600, height: 1000, source: 'wikimedia',
+    name: 'Berlin', country: 'Germany',
+  })
+  // queer 30 + subject 40 + wikimedia 15 + ratio 10 + width 5 = 100
+  assertEquals(s, 100)
+  assert(s >= QUEER_PLACE_MIN)
+})
+
+Deno.test('generic rainbow stock with no place name is rejected', () => {
+  const s = scoreQueerPlaceImage({
+    alt: 'a rainbow pride flag waving against a blue sky',
+    width: 1600, height: 1000, source: 'pexels',
+    name: 'Ljubljana', country: 'Slovenia',
+  })
+  assertEquals(s, Number.NEGATIVE_INFINITY) // queer but not place-connected
+})
+
+Deno.test('city skyline with no queer token is rejected by the queer gate', () => {
+  const s = scoreQueerPlaceImage({
+    alt: 'Berlin skyline at sunset over the river Spree',
+    width: 1600, height: 1000, source: 'unsplash',
+    name: 'Berlin', country: 'Germany',
+  })
+  assertEquals(s, Number.NEGATIVE_INFINITY) // place but not queer
+})
+
+Deno.test('queer photo connected via country/capital only still passes (lower)', () => {
+  const s = scoreQueerPlaceImage({
+    alt: 'Pride march through the streets of Ljubljana, Slovenia',
+    width: 1400, height: 900, source: 'wikimedia',
+    name: 'Metelkova', country: 'Slovenia', capital: 'Ljubljana',
+  })
+  // queer 30 + context(capital/country) 20 + wikimedia 15 + ratio 10 + width 5 = 80
+  assertEquals(s, 80)
+  assert(s >= QUEER_PLACE_MIN)
+})
+
+Deno.test('queer-place scorer still hard-rejects wildlife', () => {
+  const s = scoreQueerPlaceImage({
+    alt: 'a flamingo bird at Barcelona pride',
+    width: 1600, height: 1000, source: 'wikimedia',
+    name: 'Barcelona', country: 'Spain',
+  })
+  assertEquals(s, Number.NEGATIVE_INFINITY)
 })
