@@ -3382,7 +3382,9 @@
     "filter": {
       "country": "Country",
       "allCountries": "All countries",
-      "clear": "Clear filters"
+      "clear": "Clear filters",
+      "major": "Major milestones",
+      "showAll": "All milestones"
     },
     "category": {
       "uprising-movement": "Uprising / Movement",

@@ -25,11 +25,14 @@ const IMPACTS = ['positive', 'neutral', 'negative'] as const;
 export default function HistoryTimeline() {
   const { t } = useTranslation();
   const [params, setParams] = useSearchParams();
-  const { data, isLoading } = useMilestonesTimeline();
+  const { data, isLoading } = useMilestonesTimeline({}, 4000);
 
   const country = params.get('country');
   const category = params.get('category');
   const impact = params.get('impact');
+  // Default to major milestones (significance >= 4) — the full set is several
+  // thousand rows; "All" opts into the complete chronology.
+  const showAll = params.get('all') === '1';
 
   useMeta({
     title: t('milestones.metaTitle', 'Queer history timeline — Queer Guide'),
@@ -51,11 +54,12 @@ export default function HistoryTimeline() {
 
   const milestones = useMemo(() => {
     let rows = data ?? [];
+    if (!showAll) rows = rows.filter((m) => m.significance >= 4);
     if (country) rows = rows.filter((m) => (m.country?.slug ?? m.country_name) === country);
     if (category) rows = rows.filter((m) => m.category === category);
     if (impact) rows = rows.filter((m) => m.impact === impact);
     return rows;
-  }, [data, country, category, impact]);
+  }, [data, showAll, country, category, impact]);
 
   const countries = useMemo(() => {
     const seen = new Map<string, string>();
@@ -84,7 +88,7 @@ export default function HistoryTimeline() {
     else next.delete(key);
     setParams(next, { replace: true });
   };
-  const hasFilters = Boolean(country || category || impact);
+  const hasFilters = Boolean(country || category || impact || showAll);
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -109,6 +113,16 @@ export default function HistoryTimeline() {
           ))}
         </div>
         <div className="flex flex-wrap items-center gap-2">
+          <FilterChip
+            active={!showAll}
+            label={t('milestones.filter.major', 'Major milestones')}
+            onClick={() => setParam('all', showAll ? null : '1')}
+          />
+          <FilterChip
+            active={showAll}
+            label={t('milestones.filter.showAll', 'All milestones')}
+            onClick={() => setParam('all', showAll ? null : '1')}
+          />
           {IMPACTS.map((i) => (
             <FilterChip
               key={i}

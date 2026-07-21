@@ -3446,7 +3446,9 @@
     "filter": {
       "country": "Страна",
       "allCountries": "Все страны",
-      "clear": "Сбросить фильтры"
+      "clear": "Сбросить фильтры",
+      "major": "Ключевые вехи",
+      "showAll": "Все вехи"
     },
     "category": {
       "uprising-movement": "Восстание / Движение",
