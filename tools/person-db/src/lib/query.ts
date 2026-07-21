@@ -273,25 +273,6 @@ export async function searchCities(term: string, limit = 8): Promise<CityHit[]> 
   }))
 }
 
-// Lightweight person search (name) for linking to milestones.
-export async function searchPersons(
-  term: string,
-  limit = 8,
-): Promise<{ slug: string; name: string }[]> {
-  const t = term.trim()
-  if (!t) return []
-  const safe = t.replace(/[%,()]/g, ' ')
-  const { data, error } = await supabase
-    .from('personalities')
-    .select('slug,name')
-    .is('duplicate_of_id', null)
-    .ilike('name', `%${safe}%`)
-    .order('name', { ascending: true })
-    .limit(limit)
-  if (error) throw error
-  return (data ?? []) as { slug: string; name: string }[]
-}
-
 // Exact head-count for one cohort (dashboard tiles).
 async function cohortCount(cohort: Cohort): Promise<number> {
   let q = supabase

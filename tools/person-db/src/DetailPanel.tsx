@@ -2,7 +2,6 @@ import { useState } from 'react'
 import type { Personality } from './types'
 import { getEntry, saveEntry } from './lib/notes'
 import { PersonEditForm } from './PersonEditForm'
-import { MilestoneLinks } from './MilestoneLinks'
 import { KebabMenu } from './KebabMenu'
 import { personDatasheet } from './lib/pdf'
 import { withFlag } from './lib/flags'
@@ -151,7 +150,6 @@ export function DetailPanel({ p, isChecked, onToggleChecked, onLocalChange }: De
       <Field k="Bio" v={p.bio} />
       <Field k="LGBTI-Bezug" v={p.lgbti_connection} />
       <Field k="LGBTI-Details" v={p.lgbti_details} />
-      <Field k="Meilenstein" v={p.milestone} />
       <Field k="Tags (DB)" v={p.tags} />
       <Field k="Achievements" v={p.achievements} />
 
@@ -170,8 +168,6 @@ export function DetailPanel({ p, isChecked, onToggleChecked, onLocalChange }: De
       <Field k="Views" v={p.view_count} />
       <Field k="Erstellt" v={p.created_at?.slice(0, 10)} />
       <Field k="Aktualisiert" v={p.updated_at?.slice(0, 10)} />
-
-      <MilestoneLinks p={p} />
 
       <div className="notes">
         <h3>
