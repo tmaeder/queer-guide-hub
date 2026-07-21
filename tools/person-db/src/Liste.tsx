@@ -152,11 +152,13 @@ export function Liste() {
   )
 
   const head = (
-    <div className="dash-head">
-      <h2>Personen — alphabetisch</h2>
-      <p className="hint">Alle Live-Personen. Filter + Ansicht wählen.</p>
+    <>
+      <div className="dash-head">
+        <h2>Personen — alphabetisch</h2>
+        <p className="hint">Alle Live-Personen. Filter + Ansicht wählen.</p>
+      </div>
       {filterBar}
-    </div>
+    </>
   )
 
   // Ausführliche Listenansicht (volle Breite, Aktionen je Zeile).
