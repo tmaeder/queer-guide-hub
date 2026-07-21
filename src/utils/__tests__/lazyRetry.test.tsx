@@ -30,9 +30,10 @@ describe('lazyOptional', () => {
   });
 
   it('renders NOTHING (not the error boundary) when the import permanently fails', async () => {
-    // Mark the reload guard so retry+reload paths are skipped — we want
-    // the final permanent-failure branch.
-    sessionStorage.setItem('chunk-reload-' + window.location.pathname, '1');
+    // Mark the reload guard (fresh timestamp = within cooldown) so
+    // retry+reload paths are skipped — we want the final permanent-failure
+    // branch.
+    sessionStorage.setItem('chunk-reload-' + window.location.pathname, String(Date.now()));
 
     const Optional = lazyOptional(() => Promise.reject(new Error('chunk poisoned')));
 

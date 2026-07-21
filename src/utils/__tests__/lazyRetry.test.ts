@@ -52,7 +52,9 @@ describe('lazyRetry', () => {
 
     expect(factory).toHaveBeenCalledTimes(2);
     expect(reloadSpy).toHaveBeenCalledTimes(1);
-    expect(sessionStorage.getItem('chunk-reload-/test-route')).toBe('1');
+    // Guard is a timestamp now (cooldown), not a boolean flag.
+    const stored = Number(sessionStorage.getItem('chunk-reload-/test-route'));
+    expect(stored).toBeGreaterThan(0);
   });
 
   // Regression: a chunk that resolves to a module WITHOUT a default export
@@ -76,8 +78,9 @@ describe('lazyRetry', () => {
     expect(reloadSpy).toHaveBeenCalledTimes(1);
   });
 
-  it('re-throws and clears the loop-guard when the retry also fails after a previous reload', async () => {
-    sessionStorage.setItem('chunk-reload-/test-route', '1');
+  it('re-throws (no reload) when the retry also fails right after a previous reload', async () => {
+    // Fresh timestamp = we just reloaded for this path → within cooldown.
+    sessionStorage.setItem('chunk-reload-/test-route', String(Date.now()));
 
     const factory = vi.fn(() => Promise.reject(new Error('still broken')));
     const lazy = lazyRetry(factory);
@@ -92,6 +95,28 @@ describe('lazyRetry', () => {
 
     expect(factory).toHaveBeenCalledTimes(2);
     expect(reloadSpy).not.toHaveBeenCalled();
-    expect(sessionStorage.getItem('chunk-reload-/test-route')).toBeNull();
+  });
+
+  // Regression (2026-07-21, /admin crash): the old boolean guard persisted for
+  // the whole tab session, so the SECOND deploy that invalidated a long-lived
+  // tab's chunks got no recovery reload and crashed to the error boundary.
+  // An old timestamp (previous deploy, outside the cooldown) must allow a
+  // fresh reload.
+  it('reloads again when the previous recovery reload is outside the cooldown', async () => {
+    sessionStorage.setItem('chunk-reload-/test-route', String(Date.now() - 5 * 60_000));
+
+    const factory = vi.fn(() => Promise.reject(new Error('stale chunk, deploy #2')));
+    const lazy = lazyRetry(factory);
+
+    type LazyInternals = {
+      _payload: { _result: Promise<unknown> };
+      _init: (p: { _result: Promise<unknown> }) => unknown;
+    };
+    const internals = lazy as unknown as LazyInternals;
+    try { internals._init(internals._payload); } catch { /* expected */ }
+    await new Promise(r => setTimeout(r, RETRY_DELAY_MS));
+
+    expect(factory).toHaveBeenCalledTimes(2);
+    expect(reloadSpy).toHaveBeenCalledTimes(1);
   });
 });
