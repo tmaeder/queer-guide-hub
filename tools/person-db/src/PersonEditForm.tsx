@@ -200,14 +200,14 @@ export function PersonEditForm({
 
       <h3 className="ef-group">Details</h3>
       {Text('birth_date', 'Geburtsdatum (YYYY-MM-DD)')}
-      <label className="ef">
+      <label className="ef" htmlFor="pef-birth-place">
         <span>Geburtsort</span>
-        <CityAutocomplete value={String(d.birth_place ?? '')} onChange={(v) => upd('birth_place', v)} placeholder="Stadt suchen (queer.guide)…" withCountry />
+        <CityAutocomplete id="pef-birth-place" value={String(d.birth_place ?? '')} onChange={(v) => upd('birth_place', v)} placeholder="Stadt suchen (queer.guide)…" withCountry />
       </label>
       {Text('death_date', 'Todesdatum (YYYY-MM-DD)')}
-      <label className="ef">
+      <label className="ef" htmlFor="pef-death-place">
         <span>Todesort</span>
-        <CityAutocomplete value={String(d.death_place ?? '')} onChange={(v) => upd('death_place', v)} placeholder="Stadt suchen (queer.guide)…" withCountry />
+        <CityAutocomplete id="pef-death-place" value={String(d.death_place ?? '')} onChange={(v) => upd('death_place', v)} placeholder="Stadt suchen (queer.guide)…" withCountry />
       </label>
       {Select('cause_of_death', 'Todesursache', CAUSE_OF_DEATH_VALUES)}
       {Check('is_living', 'Lebt')}

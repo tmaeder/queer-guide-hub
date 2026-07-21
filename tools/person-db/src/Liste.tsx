@@ -15,7 +15,8 @@ import {
 import { DetailPanel } from './DetailPanel'
 import { PageSizer } from './PageSizer'
 import { PersonEditForm } from './PersonEditForm'
-import { NewMenu, captureOptions } from './NewMenu'
+import { NewMenu } from './NewMenu'
+import { captureOptions } from './captureOptions'
 import { KebabMenu } from './KebabMenu'
 import { StatusDot } from './StatusDot'
 import { ViewToggle, type Layout } from './ViewToggle'
@@ -33,7 +34,6 @@ export function Liste() {
   const [checked, setChecked] = useState<Set<string>>(new Set())
   const [creating, setCreating] = useState<Personality | null>(null)
   const [editing, setEditing] = useState<Personality | null>(null)
-  const fileRef = useRef<HTMLInputElement>(null)
 
   // Foto-Upload: read the picked image as a local data-URL, open the new-person
   // mask with it as the image. Purely local preview (no upload) in read-only v1.
@@ -51,6 +51,9 @@ export function Liste() {
     setAnnotated(annotatedIds())
     setChecked(checkedIds())
   }, [])
+
+  const openPhotoPicker = () =>
+    document.getElementById('liste-photo-input')?.click()
 
   const setF = (patch: Partial<ListeFilters>) =>
     setFilters((f) => ({ ...f, ...patch }))
@@ -113,12 +116,12 @@ export function Liste() {
 
   const filterBar = (
     <div className="liste-filters">
-      <input ref={fileRef} type="file" accept="image/*" hidden onChange={onPhotoFile} />
+      <input id="liste-photo-input" type="file" accept="image/*" hidden onChange={onPhotoFile} />
       <NewMenu
         align="left"
         options={captureOptions({
           onManual: () => setCreating(emptyPersonality()),
-          onPhoto: () => fileRef.current?.click(),
+          onPhoto: openPhotoPicker,
         })}
       />
       <input type="text" placeholder="Suche (Name)…" value={filters.search} onChange={(e) => setF({ search: e.target.value })} />
@@ -149,11 +152,13 @@ export function Liste() {
   )
 
   const head = (
-    <div className="dash-head">
-      <h2>Personen — alphabetisch</h2>
-      <p className="hint">Alle Live-Personen. Filter + Ansicht wählen.</p>
+    <>
+      <div className="dash-head">
+        <h2>Personen — alphabetisch</h2>
+        <p className="hint">Alle Live-Personen. Filter + Ansicht wählen.</p>
+      </div>
       {filterBar}
-    </div>
+    </>
   )
 
   // Ausführliche Listenansicht (volle Breite, Aktionen je Zeile).
@@ -205,7 +210,15 @@ export function Liste() {
             <div
               key={p.id}
               className={'row' + (selectedId === p.id ? ' sel' : '')}
+              role="button"
+              tabIndex={0}
               onClick={() => setSelectedId(p.id)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault()
+                  setSelectedId(p.id)
+                }
+              }}
             >
               {checked.has(p.id) && <span className="check" title="lokal geprüft">✓</span>}
               {p.image_url ? <img src={p.image_url} alt="" loading="lazy" /> : <span className="noimg">—</span>}

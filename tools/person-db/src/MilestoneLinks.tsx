@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import type { Personality } from './types'
 import {
   getMilestones,
@@ -15,7 +15,14 @@ import {
 export function MilestoneLinks({ p }: { p: Personality }) {
   const [links, setLinks] = useState<Milestone[]>(() => milestonesForPerson(p.slug))
   const [pick, setPick] = useState('')
-  useEffect(() => setLinks(milestonesForPerson(p.slug)), [p.slug])
+  const [loadedSlug, setLoadedSlug] = useState(p.slug)
+
+  // Re-derive the person's links when the selected person changes, during
+  // render rather than in an effect to avoid an extra render pass.
+  if (p.slug !== loadedSlug) {
+    setLoadedSlug(p.slug)
+    setLinks(milestonesForPerson(p.slug))
+  }
 
   const refresh = () => setLinks(milestonesForPerson(p.slug))
   const linkedIds = new Set(links.map((m) => m.id))
