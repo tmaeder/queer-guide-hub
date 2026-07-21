@@ -298,7 +298,8 @@
     "privacy": "Privacy",
     "terms": "Terms",
     "contact": "Contact",
-    "supportUs": "Support Us"
+    "supportUs": "Support Us",
+    "history": "History"
   },
   "auth": {
     "welcome": "Welcome!",
@@ -2366,6 +2367,11 @@
         "scopeNote": "Showing {{count}} empty drafts. Delete the ones you don’t need.",
         "exitScope": "Show all trips"
       }
+    },
+    "entityDetail": {
+      "milestoneNotFoundTitle": "Milestone not found",
+      "milestoneNotFoundBody": "No milestone matches this URL. It may have been removed or the link is incorrect.",
+      "backToHistory": "Back to the timeline"
     }
   },
   "settings": {
@@ -3249,7 +3255,8 @@
       "diedYearsAgo": "died {{count}} years ago",
       "tripsDrawer": {
         "title": "Your trips"
-      }
+      },
+      "yearsAgo": "{{count}} years ago"
     },
     "contacts": {
       "title": "Contacts",
@@ -3361,5 +3368,67 @@
     "emptyDescription": "Open any venue, event, city or person and use its Connections button to explore from there.",
     "emptyCta": "Search the guide",
     "explore": "Explore connections"
+  },
+  "milestones": {
+    "eyebrow": "Queer history",
+    "breadcrumb": "History",
+    "pageTitle": "Queer history",
+    "pageDescription": "Milestones that shaped LGBTQ+ life — uprisings, laws, setbacks. Dated and sourced.",
+    "metaTitle": "Queer history timeline — Queer Guide",
+    "metaDescription": "Milestones of LGBTQ+ history: uprisings, decriminalizations, marriage equality and setbacks — dated, sourced, worldwide.",
+    "empty": "No milestones match these filters.",
+    "decadeNav": "Jump to decade",
+    "filter": {
+      "country": "Country",
+      "allCountries": "All countries",
+      "clear": "Clear filters"
+    },
+    "category": {
+      "uprising-movement": "Uprising / Movement",
+      "law-equality": "Law / Equality",
+      "law-decriminalization": "Decriminalization",
+      "law-criminalization": "Criminalization",
+      "depathologization": "Depathologization",
+      "persecution-destruction": "Persecution / Destruction",
+      "other": "Other"
+    },
+    "impact": {
+      "positive": "Progress",
+      "neutral": "Neutral",
+      "negative": "Setback"
+    },
+    "sections": {
+      "sources": "Sources",
+      "linked": "People & places involved",
+      "related": "More from {{country}}"
+    },
+    "sidebar": {
+      "facts": "Facts",
+      "date": "Date",
+      "place": "Place",
+      "city": "City",
+      "country": "Country"
+    },
+    "entityType": {
+      "personality": "Person",
+      "event": "Event",
+      "venue": "Venue",
+      "news": "News article",
+      "organization": "Organization"
+    },
+    "legalHistory": {
+      "title": "Legal history",
+      "seeAll": "Full timeline"
+    },
+    "forEntity": {
+      "heading": "Milestones"
+    },
+    "forPerson": "Milestones",
+    "home": {
+      "eyebrow": "Queer history",
+      "title": "On this day",
+      "seeAll": "Full timeline",
+      "yearsAgo": "{{count}} years ago"
+    }
   }
 }

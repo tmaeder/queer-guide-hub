@@ -208,7 +208,8 @@
     "privacy": "プライバシー",
     "terms": "利用規約",
     "contact": "お問い合わせ",
-    "supportUs": "サポートする"
+    "supportUs": "サポートする",
+    "history": "歴史"
   },
   "trips": {
     "title": "マイトリップ",
@@ -2293,6 +2294,11 @@
       "gate": "友達を見るにはサインインしてください。",
       "requests": "リクエスト",
       "sentRequest": "友達リクエストを送信しました"
+    },
+    "entityDetail": {
+      "milestoneNotFoundTitle": "マイルストーンが見つかりません",
+      "milestoneNotFoundBody": "このURLに一致するマイルストーンはありません。削除されたか、リンクが間違っている可能性があります。",
+      "backToHistory": "年表に戻る"
     }
   },
   "settings": {
@@ -3277,7 +3283,8 @@
       "diedYearsAgo": "[JA] died {{count}} years ago",
       "tripsDrawer": {
         "title": "[JA] Your trips"
-      }
+      },
+      "yearsAgo": "{{count}}年前"
     },
     "contacts": {
       "title": "連絡先",
@@ -3389,5 +3396,67 @@
     "emptyDescription": "[JA] Open any venue, event, city or person and use its Connections button to explore from there.",
     "emptyCta": "[JA] Search the guide",
     "explore": "[JA] Explore connections"
+  },
+  "milestones": {
+    "eyebrow": "クィアの歴史",
+    "breadcrumb": "歴史",
+    "pageTitle": "クィアの歴史",
+    "pageDescription": "LGBTQ+の生活を形づくった出来事 — 蜂起、法律、後退。日付と出典つき。",
+    "metaTitle": "クィアの歴史年表 — Queer Guide",
+    "metaDescription": "LGBTQ+史のマイルストーン:蜂起、非犯罪化、婚姻平等、そして後退 — 日付と出典つきで世界中から。",
+    "empty": "この条件に一致するマイルストーンはありません。",
+    "decadeNav": "年代へ移動",
+    "filter": {
+      "country": "国",
+      "allCountries": "すべての国",
+      "clear": "フィルターをクリア"
+    },
+    "category": {
+      "uprising-movement": "蜂起・運動",
+      "law-equality": "法律・平等",
+      "law-decriminalization": "非犯罪化",
+      "law-criminalization": "犯罪化",
+      "depathologization": "脱病理化",
+      "persecution-destruction": "迫害・破壊",
+      "other": "その他"
+    },
+    "impact": {
+      "positive": "前進",
+      "neutral": "中立",
+      "negative": "後退"
+    },
+    "sections": {
+      "sources": "出典",
+      "linked": "関係する人物と場所",
+      "related": "{{country}}のその他の出来事"
+    },
+    "sidebar": {
+      "facts": "基本情報",
+      "date": "日付",
+      "place": "場所",
+      "city": "都市",
+      "country": "国"
+    },
+    "entityType": {
+      "personality": "人物",
+      "event": "イベント",
+      "venue": "会場",
+      "news": "ニュース記事",
+      "organization": "団体"
+    },
+    "legalHistory": {
+      "title": "法の歴史",
+      "seeAll": "年表全体を見る"
+    },
+    "forEntity": {
+      "heading": "マイルストーン"
+    },
+    "forPerson": "マイルストーン",
+    "home": {
+      "eyebrow": "クィアの歴史",
+      "title": "今日は何の日",
+      "seeAll": "年表全体を見る",
+      "yearsAgo": "{{count}}年前"
+    }
   }
 }

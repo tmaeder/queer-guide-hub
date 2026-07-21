@@ -93,7 +93,10 @@ export function AdminFullEditSheet({
         ) : (
           <Accordion
             type="multiple"
-            defaultValue={Array.from(fieldsByGroup.keys())}
+            defaultValue={[
+              ...Array.from(fieldsByGroup.keys()),
+              ...(config.extraPanels?.map((p) => `panel:${p.id}`) ?? []),
+            ]}
             className="mt-4"
           >
             {Array.from(fieldsByGroup.entries()).map(([group, fields]) => (
@@ -121,6 +124,12 @@ export function AdminFullEditSheet({
                     ))}
                   </div>
                 </AccordionContent>
+              </AccordionItem>
+            ))}
+            {(config.extraPanels ?? []).map((panel) => (
+              <AccordionItem key={`panel:${panel.id}`} value={`panel:${panel.id}`}>
+                <AccordionTrigger>{panel.label}</AccordionTrigger>
+                <AccordionContent>{panel.render(contentId)}</AccordionContent>
               </AccordionItem>
             ))}
           </Accordion>

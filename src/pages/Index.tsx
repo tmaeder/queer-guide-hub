@@ -16,6 +16,7 @@ const EventsAgenda = React.lazy(() => import('@/components/home/EventsAgenda'));
 const HomeShoppingSection = React.lazy(() => import('@/components/home/HomeShoppingSection'));
 const HomeDestinations = React.lazy(() => import('@/components/home/HomeDestinations'));
 const HomeBornThisWeek = React.lazy(() => import('@/components/home/HomeBornThisWeek'));
+const HomeOnThisDay = React.lazy(() => import('@/components/home/HomeOnThisDay'));
 
 // Hide the on-map search (the top-bar search is the single search) and keep the
 // landing URL clean (no ?lat&lng&z written as the visitor pans).
@@ -175,6 +176,11 @@ const Index = React.memo(() => {
       {/* ── Latest news — editorial magazine grid ────────────────────── */}
       <HomeDeferred section="news-magazine" skeleton={magazineSkeleton}>
         <NewsMagazine />
+      </HomeDeferred>
+
+      {/* ── On this day — queer-history milestones (self-hides) ───────── */}
+      <HomeDeferred section="on-this-day" skeleton={null}>
+        <HomeOnThisDay />
       </HomeDeferred>
 
       {/* ── Born this week — community history marquee ────────────────── */}

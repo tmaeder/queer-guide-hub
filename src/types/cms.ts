@@ -39,7 +39,8 @@ export type FieldType =
   | 'unified_tag'
   | 'venue_autocomplete'
   | 'profession_autocomplete'
-  | 'roles_autocomplete';
+  | 'roles_autocomplete'
+  | 'link_list';
 
 export type FieldGroup =
   | 'basic'
@@ -189,6 +190,16 @@ export interface ContentTypeConfig {
   bulkOps?: BulkOpKind[];
   /** Initial sort for the admin list view (overridable by user). */
   defaultSort?: { field: string; dir: 'asc' | 'desc' };
+  /**
+   * Extra non-field panels appended to the AdminFullEditSheet accordion —
+   * escape hatch for relation editors (e.g. milestone_links) that don't map to
+   * a single column. Each panel owns its own data fetching + mutation.
+   */
+  extraPanels?: Array<{
+    id: string;
+    label: string;
+    render: (contentId: string) => ReactNode;
+  }>;
 }
 
 export type AIAssistOp =

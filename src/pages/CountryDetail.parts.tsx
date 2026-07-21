@@ -7,6 +7,7 @@ import { VenueCard } from '@/components/venues/VenueCard';
 import { EventCard } from '@/components/events/EventCard';
 import { DirectoryCard } from '@/components/directory/DirectoryCard';
 import LGBTJurisdictionInfo from '@/components/country/LGBTJurisdictionInfo';
+import { CountryLegalHistory } from '@/components/country/CountryLegalHistory';
 import { TravelDealsSection } from '@/components/travel/TravelDealsSection';
 import { ActivitiesWidget } from '@/components/activities/ActivitiesWidget';
 import { NewsCard } from '@/components/news/NewsCard';
@@ -86,7 +87,12 @@ function EmptyCard({ icon: Icon, title, description }: EmptyCardProps) {
 // section heading, so these are pure content blocks. ──────────────────────────
 
 export function CountryRightsTab({ country }: { country: CountryRelation }) {
-  return <LGBTJurisdictionInfo country={country} style={{ borderColor: 'inherit' }} />;
+  return (
+    <div className="flex flex-col gap-6">
+      <LGBTJurisdictionInfo country={country} style={{ borderColor: 'inherit' }} />
+      <CountryLegalHistory countryId={country?.id} countrySlug={country?.slug} />
+    </div>
+  );
 }
 
 export function CountryCitiesTab({

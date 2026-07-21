@@ -3,6 +3,7 @@ import { Trans, useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { InlineLoading } from '@/components/ui/loading';
 import LGBTJurisdictionInfo from '@/components/country/LGBTJurisdictionInfo';
+import { CountryLegalHistory } from '@/components/country/CountryLegalHistory';
 import type { CityRelation, CountryRelation } from './types';
 
 export interface CityRightsTabProps {
@@ -59,7 +60,10 @@ export function CityRightsTab({ city, fullCountry, countryLoading }: CityRightsT
           <InlineLoading text={t('city.rights.loading', 'Loading rights data...')} size="md" />
         </div>
       ) : fullCountry ? (
-        <LGBTJurisdictionInfo country={fullCountry} />
+        <div className="flex flex-col gap-6">
+          <LGBTJurisdictionInfo country={fullCountry} />
+          <CountryLegalHistory countryId={fullCountry.id} countrySlug={fullCountry.slug} />
+        </div>
       ) : (
         <p className="py-8 text-center text-muted-foreground">
           {t('city.rights.noData', 'Rights data is not available for this location.')}

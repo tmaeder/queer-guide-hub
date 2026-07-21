@@ -7,6 +7,7 @@ import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useMeta } from '@/hooks/useMeta';
 import { Button } from '@/components/ui/button';
 import { SimilarItems } from '@/components/discovery/SimilarItems';
+import { MilestonesForEntity } from '@/components/discovery/MilestonesForEntity';
 import { MoreLikeThisByTag } from '@/components/tags/MoreLikeThisByTag';
 import { EntityDetailLayout } from '@/components/entity/EntityDetailLayout';
 import { usePersonalities, type Personality } from '@/hooks/usePersonalities';
@@ -184,6 +185,11 @@ export default function PersonalityDetail() {
       />
       {personality && (
         <div className="mx-auto px-4">
+          <MilestonesForEntity
+            entityType="personality"
+            entityId={personality.id}
+            heading={t('milestones.forPerson', 'Milestones')}
+          />
           <SimilarItems
             entity={{ type: 'personality', id: personality.id }}
             contentTypes={['personality']}

@@ -66,6 +66,11 @@ export const STATIC_ROUTE_META: Record<string, RouteMeta> = {
     description:
       'Browse community members, organizations and creators in the global queer directory.',
   },
+  '/history': {
+    title: 'Queer History Timeline — Milestones | Queer Guide',
+    description:
+      'Milestones of LGBTQ+ history: uprisings, decriminalizations, marriage equality and setbacks — dated, sourced, worldwide.',
+  },
   '/personalities': {
     title: 'Queer Personalities — People Who Shaped Us | Queer Guide',
     description:
