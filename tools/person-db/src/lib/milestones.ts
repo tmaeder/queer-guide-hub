@@ -1627,6 +1627,44 @@ const transSeed: Milestone[] = [
     impact: 'positive',
     checked: false,
   },
+  {
+    id: 'trans-niederlande-2014-07-01',
+    title: 'Transgenderwet (Niederlande)',
+    date: '2014-07-01',
+    country: 'Niederlande',
+    description:
+      'Transgenderwet (Gesetz vom 18.12.2013 zur Änderung von Buch 1 des Bürgerlichen Gesetzbuchs): ' +
+      'Änderung des Geschlechtseintrags ohne Sterilisation oder Operation; in Kraft getreten am ' +
+      '1. Juli 2014.',
+    sources: [
+      { label: 'Wikipedia (nl) — Transgenderwet (Nederland)', url: 'https://nl.wikipedia.org/wiki/Transgenderwet_(Nederland)' },
+      { label: 'Staatsblad 2014, 222', url: 'https://zoek.officielebekendmakingen.nl/stb-2014-222.html' },
+    ],
+    linked_persons: [],
+    category: 'Gesetz / Gleichstellung',
+    significance: 3,
+    impact: 'positive',
+    checked: false,
+  },
+  {
+    id: 'trans-malta-2015-04-14',
+    title: 'GIGESC Act (Malta)',
+    date: '2015-04-14',
+    country: 'Malta',
+    description:
+      'Gender Identity, Gender Expression and Sex Characteristics Act (GIGESC, Kapitel 540): ' +
+      'Geschlechtsanerkennung per Selbstbestimmung plus weltweit wegweisender Schutz von ' +
+      'Geschlechtsmerkmalen (Intersex). Laut offiziellem Gesetzesportal legislation.mt in Kraft ' +
+      'getreten am 14. April 2015.',
+    sources: [
+      { label: 'legislation.mt — GIGESC Act, Cap. 540', url: 'https://legislation.mt/eli/cap/540/eng' },
+    ],
+    linked_persons: [],
+    category: 'Gesetz / Gleichstellung',
+    significance: 4,
+    impact: 'positive',
+    checked: false,
+  },
 ]
 
 const SEED: Milestone[] = [...BASE_SEED, ...decrimSeed, ...unionSeed, ...transSeed]
