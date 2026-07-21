@@ -88,7 +88,6 @@ const AdminCityQuality = lazyRetry(() => import('./pages/AdminCityQuality'));
 const AdminPersonalityQuality = lazyRetry(() => import('./pages/AdminPersonalityQuality'));
 const PersonalityDataSheet = lazyRetry(() => import('./pages/admin/PersonalityDataSheet'));
 const PersonalitiesAdmin = lazyRetry(() => import('./pages/admin/PersonalitiesAdmin'));
-const EditorialTasks = lazyRetry(() => import('./pages/admin/EditorialTasks'));
 const AdminMailbox = lazyRetry(() => import('./pages/admin/AdminMailbox'));
 const AdminVenueQuality = lazyRetry(() => import('./pages/AdminVenueQuality'));
 const AdminLiveness = lazyRetry(() => import('./pages/AdminLiveness'));
@@ -416,7 +415,6 @@ export const AppRoutes = () => {
                 <Route path="content/personalities/:id/datasheet" element={<PersonalityDataSheet />} />
                 {/* Legacy — milestone curation moved to the generic CMS. Keep one release. */}
                 <Route path="personalities/milestones" element={<Navigate to="/admin/content/milestones" replace />} />
-                <Route path="merkliste" element={<EditorialTasks />} />
                 <Route path="postfach" element={<AdminMailbox />} />
                 <Route path="content/marketplace-quality" element={<AdminMarketplaceQuality />} />
                 <Route path="content/twenty-crm" element={<AdminTwentyCrm />} />
