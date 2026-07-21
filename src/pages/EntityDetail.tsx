@@ -13,6 +13,7 @@ import { NotFoundMeta } from '@/components/seo/NotFoundMeta';
 import { EntityDetailScroll } from '@/components/entity/EntityDetailScroll';
 import { useVenueDescriptor } from '@/components/entity/adapters/useVenueDescriptor';
 import { useOrganizationDescriptor } from '@/components/entity/adapters/useOrganizationDescriptor';
+import { useMilestoneDescriptor } from '@/components/entity/adapters/useMilestoneDescriptor';
 import type { EntitySource, EntityDescriptorResult } from '@/components/entity/entityDescriptor';
 
 /**
@@ -21,7 +22,22 @@ import type { EntitySource, EntityDescriptorResult } from '@/components/entity/e
  * hooks). Both render the same single-scroll shell.
  */
 export default function EntityDetail({ source }: { source: EntitySource }) {
+  if (source === 'milestone') return <MilestoneEntityDetail />;
   return source === 'organization' ? <OrgEntityDetail /> : <VenueEntityDetail />;
+}
+
+function MilestoneEntityDetail() {
+  const { slug } = useParams<{ slug: string }>();
+  const { t } = useTranslation();
+  const result = useMilestoneDescriptor(slug);
+  return (
+    <EntityDetailView
+      source="milestone"
+      slug={slug}
+      result={result}
+      notFoundNode={<MilestoneNotFound t={t} />}
+    />
+  );
 }
 
 function VenueEntityDetail() {
@@ -120,6 +136,29 @@ function VenueNotFound({ slug, t }: { slug: string | undefined; t: TFunction }) 
         <Button variant="outline">
           <ArrowLeft className="w-4 h-4 mr-2" />
           {t('pages.venueDetail.backToVenues', 'Back to Venues')}
+        </Button>
+      </LocalizedLink>
+    </div>
+  );
+}
+
+function MilestoneNotFound({ t }: { t: TFunction }) {
+  return (
+    <div className="container mx-auto px-4 py-8 text-center">
+      <NotFoundMeta title={t('pages.entityDetail.milestoneNotFoundTitle', 'Milestone not found')} />
+      <h1 className="mb-4 text-xl font-bold">
+        {t('pages.entityDetail.milestoneNotFoundTitle', 'Milestone not found')}
+      </h1>
+      <p className="mb-6 text-muted-foreground">
+        {t(
+          'pages.entityDetail.milestoneNotFoundBody',
+          'No milestone matches this URL. It may have been removed or the link is incorrect.',
+        )}
+      </p>
+      <LocalizedLink to="/history">
+        <Button variant="outline">
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          {t('pages.entityDetail.backToHistory', 'Back to the timeline')}
         </Button>
       </LocalizedLink>
     </div>

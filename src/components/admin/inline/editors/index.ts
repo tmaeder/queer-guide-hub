@@ -9,6 +9,7 @@ import { HoursEditor } from './HoursEditor';
 import { ImageEditor } from './ImageEditor';
 import { ImageArrayEditor } from './ImageArrayEditor';
 import { RichTextInlineEditor } from './RichTextInlineEditor';
+import { LinkListEditor } from './LinkListEditor';
 import type { EditorProps } from './types';
 
 const REGISTRY: Partial<Record<FieldType, ComponentType<EditorProps>>> = {
@@ -27,6 +28,7 @@ const REGISTRY: Partial<Record<FieldType, ComponentType<EditorProps>>> = {
   image: ImageEditor,
   images: ImageArrayEditor,
   richtext: RichTextInlineEditor,
+  link_list: LinkListEditor,
 };
 
 export function getEditorForFieldType(type: FieldType): ComponentType<EditorProps> | null {

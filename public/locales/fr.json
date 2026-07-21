@@ -208,7 +208,8 @@
     "privacy": "Confidentialité",
     "terms": "Conditions",
     "contact": "Contact",
-    "supportUs": "Nous soutenir"
+    "supportUs": "Nous soutenir",
+    "history": "Histoire"
   },
   "trips": {
     "title": "Mes voyages",
@@ -2299,6 +2300,11 @@
       "gate": "Connectez-vous pour voir vos amis.",
       "requests": "Demandes",
       "sentRequest": "T’a envoyé une demande d’ami"
+    },
+    "entityDetail": {
+      "milestoneNotFoundTitle": "Jalon introuvable",
+      "milestoneNotFoundBody": "Aucun jalon ne correspond à cette URL. Il a peut-être été supprimé ou le lien est incorrect.",
+      "backToHistory": "Retour à la chronologie"
     }
   },
   "settings": {
@@ -3283,7 +3289,8 @@
       "diedYearsAgo": "[FR] died {{count}} years ago",
       "tripsDrawer": {
         "title": "[FR] Your trips"
-      }
+      },
+      "yearsAgo": "il y a {{count}} ans"
     },
     "contacts": {
       "title": "Contacts",
@@ -3395,5 +3402,67 @@
     "emptyDescription": "[FR] Open any venue, event, city or person and use its Connections button to explore from there.",
     "emptyCta": "[FR] Search the guide",
     "explore": "[FR] Explore connections"
+  },
+  "milestones": {
+    "eyebrow": "Histoire queer",
+    "breadcrumb": "Histoire",
+    "pageTitle": "Histoire queer",
+    "pageDescription": "Les jalons qui ont façonné la vie LGBTQ+ : soulèvements, lois, reculs. Datés et sourcés.",
+    "metaTitle": "Chronologie de l’histoire queer — Queer Guide",
+    "metaDescription": "Jalons de l’histoire LGBTQ+ : soulèvements, dépénalisations, mariage pour tous et reculs — datés, sourcés, dans le monde entier.",
+    "empty": "Aucun jalon ne correspond à ces filtres.",
+    "decadeNav": "Aller à la décennie",
+    "filter": {
+      "country": "Pays",
+      "allCountries": "Tous les pays",
+      "clear": "Effacer les filtres"
+    },
+    "category": {
+      "uprising-movement": "Soulèvement / Mouvement",
+      "law-equality": "Loi / Égalité",
+      "law-decriminalization": "Dépénalisation",
+      "law-criminalization": "Criminalisation",
+      "depathologization": "Dépathologisation",
+      "persecution-destruction": "Persécution / Destruction",
+      "other": "Autre"
+    },
+    "impact": {
+      "positive": "Progrès",
+      "neutral": "Neutre",
+      "negative": "Recul"
+    },
+    "sections": {
+      "sources": "Sources",
+      "linked": "Personnes et lieux impliqués",
+      "related": "Plus de {{country}}"
+    },
+    "sidebar": {
+      "facts": "Faits",
+      "date": "Date",
+      "place": "Lieu",
+      "city": "Ville",
+      "country": "Pays"
+    },
+    "entityType": {
+      "personality": "Personne",
+      "event": "Événement",
+      "venue": "Lieu",
+      "news": "Article de presse",
+      "organization": "Organisation"
+    },
+    "legalHistory": {
+      "title": "Histoire juridique",
+      "seeAll": "Chronologie complète"
+    },
+    "forEntity": {
+      "heading": "Jalons"
+    },
+    "forPerson": "Jalons",
+    "home": {
+      "eyebrow": "Histoire queer",
+      "title": "Ce jour-là",
+      "seeAll": "Chronologie complète",
+      "yearsAgo": "il y a {{count}} ans"
+    }
   }
 }

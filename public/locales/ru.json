@@ -208,7 +208,8 @@
     "privacy": "Конфиденциальность",
     "terms": "Условия",
     "contact": "Контакты",
-    "supportUs": "Поддержать нас"
+    "supportUs": "Поддержать нас",
+    "history": "История"
   },
   "trips": {
     "title": "Мои поездки",
@@ -2329,6 +2330,11 @@
       "gate": "Войдите, чтобы увидеть своих друзей.",
       "requests": "Запросы",
       "sentRequest": "Отправил(а) вам запрос в друзья"
+    },
+    "entityDetail": {
+      "milestoneNotFoundTitle": "Веха не найдена",
+      "milestoneNotFoundBody": "По этому URL нет вехи. Возможно, она удалена или ссылка неверна.",
+      "backToHistory": "К хронологии"
     }
   },
   "settings": {
@@ -3313,7 +3319,8 @@
       "diedYearsAgo": "[RU] died {{count}} years ago",
       "tripsDrawer": {
         "title": "[RU] Your trips"
-      }
+      },
+      "yearsAgo": "{{count}} лет назад"
     },
     "contacts": {
       "title": "Контакты",
@@ -3425,5 +3432,67 @@
     "emptyDescription": "[RU] Open any venue, event, city or person and use its Connections button to explore from there.",
     "emptyCta": "[RU] Search the guide",
     "explore": "[RU] Explore connections"
+  },
+  "milestones": {
+    "eyebrow": "Квир-история",
+    "breadcrumb": "История",
+    "pageTitle": "Квир-история",
+    "pageDescription": "Вехи, сформировавшие жизнь ЛГБТК+: восстания, законы, откаты. С датами и источниками.",
+    "metaTitle": "Хронология квир-истории — Queer Guide",
+    "metaDescription": "Вехи истории ЛГБТК+: восстания, декриминализация, равный брак и откаты — с датами и источниками, по всему миру.",
+    "empty": "Ни одна веха не соответствует этим фильтрам.",
+    "decadeNav": "Перейти к десятилетию",
+    "filter": {
+      "country": "Страна",
+      "allCountries": "Все страны",
+      "clear": "Сбросить фильтры"
+    },
+    "category": {
+      "uprising-movement": "Восстание / Движение",
+      "law-equality": "Закон / Равенство",
+      "law-decriminalization": "Декриминализация",
+      "law-criminalization": "Криминализация",
+      "depathologization": "Депатологизация",
+      "persecution-destruction": "Преследование / Разрушение",
+      "other": "Другое"
+    },
+    "impact": {
+      "positive": "Прогресс",
+      "neutral": "Нейтрально",
+      "negative": "Откат"
+    },
+    "sections": {
+      "sources": "Источники",
+      "linked": "Причастные люди и места",
+      "related": "Ещё из {{country}}"
+    },
+    "sidebar": {
+      "facts": "Факты",
+      "date": "Дата",
+      "place": "Место",
+      "city": "Город",
+      "country": "Страна"
+    },
+    "entityType": {
+      "personality": "Личность",
+      "event": "Событие",
+      "venue": "Место",
+      "news": "Новость",
+      "organization": "Организация"
+    },
+    "legalHistory": {
+      "title": "Правовая история",
+      "seeAll": "Полная хронология"
+    },
+    "forEntity": {
+      "heading": "Вехи"
+    },
+    "forPerson": "Вехи",
+    "home": {
+      "eyebrow": "Квир-история",
+      "title": "В этот день",
+      "seeAll": "Полная хронология",
+      "yearsAgo": "{{count}} лет назад"
+    }
   }
 }

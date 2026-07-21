@@ -9,7 +9,7 @@ import type { BreadcrumbItem } from '@/contexts/BreadcrumbContext';
  * the adapter — the shell is a dumb iterator over `sections`.
  */
 
-export type EntitySource = 'venue' | 'organization';
+export type EntitySource = 'venue' | 'organization' | 'milestone';
 
 /** Meta payload handed to `useMeta` (mirrors its internal MetaOptions). */
 export interface EntityMeta {

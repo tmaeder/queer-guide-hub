@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useMyAgenda } from '@/hooks/useMyAgenda';
 import { usePersonalityAnniversaries } from '@/hooks/usePersonalityAnniversaries';
+import { useMilestoneAnniversaries } from '@/hooks/useMilestones';
 import { useFriendsBirthdays } from '@/hooks/useFriendsBirthdays';
 import { useSavedNewsByDate } from '@/hooks/useSavedNewsByDate';
 import { localDayKey, layerOfAgendaKind } from './types';
@@ -25,6 +26,11 @@ export function useCalendarItems(from: Date, to: Date, enabledLayers: Set<Calend
   // fetch and filter client-side.
   const { items: agendaItems, loading: agendaLoading } = useMyAgenda(from, to);
   const { items: history, loading: historyLoading } = usePersonalityAnniversaries(
+    from,
+    to,
+    enabledLayers.has('history'),
+  );
+  const { items: milestoneHistory, loading: milestonesLoading } = useMilestoneAnniversaries(
     from,
     to,
     enabledLayers.has('history'),
@@ -73,6 +79,23 @@ export function useCalendarItems(from: Date, to: Date, enabledLayers: Set<Calend
           all_day: true,
           status: h.anniversary,
           open_target: `/personalities/${h.slug}`,
+        });
+      }
+      for (const m of milestoneHistory) {
+        out.push({
+          id: `mhist_${m.id}_${m.occurs_on}`,
+          kind: 'history',
+          layer: 'history',
+          title: m.title,
+          subtitle: t('hub.calendar.yearsAgo', {
+            defaultValue: '{{count}} years ago',
+            count: m.years_ago,
+          }),
+          starts_at: `${m.occurs_on}T00:00:00`,
+          ends_at: null,
+          all_day: true,
+          status: 'milestone',
+          open_target: `/history/${m.slug}`,
         });
       }
     }
@@ -134,11 +157,11 @@ export function useCalendarItems(from: Date, to: Date, enabledLayers: Set<Calend
     }
 
     return { items: out, byDay };
-  }, [agendaOn, agendaItems, history, birthdays, news, enabledLayers, from, to, t]);
+  }, [agendaOn, agendaItems, history, milestoneHistory, birthdays, news, enabledLayers, from, to, t]);
 
   return {
     items,
     byDay,
-    loading: agendaLoading || historyLoading || birthdaysLoading || newsLoading,
+    loading: agendaLoading || historyLoading || milestonesLoading || birthdaysLoading || newsLoading,
   };
 }

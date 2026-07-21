@@ -208,7 +208,8 @@
     "privacy": "Datenschutz",
     "terms": "Nutzungsbedingungen",
     "contact": "Kontakt",
-    "supportUs": "Unterstütze uns"
+    "supportUs": "Unterstütze uns",
+    "history": "Geschichte"
   },
   "trips": {
     "title": "Meine Reisen",
@@ -2295,6 +2296,11 @@
       "gate": "Bitte melde dich an, um deine Freunde zu sehen.",
       "requests": "Anfragen",
       "sentRequest": "Hat dir eine Freundschaftsanfrage geschickt"
+    },
+    "entityDetail": {
+      "milestoneNotFoundTitle": "Meilenstein nicht gefunden",
+      "milestoneNotFoundBody": "Kein Meilenstein unter dieser URL. Er wurde entfernt oder der Link ist falsch.",
+      "backToHistory": "Zurück zur Zeitleiste"
     }
   },
   "settings": {
@@ -3279,7 +3285,8 @@
       "diedYearsAgo": "[DE] died {{count}} years ago",
       "tripsDrawer": {
         "title": "[DE] Your trips"
-      }
+      },
+      "yearsAgo": "vor {{count}} Jahren"
     },
     "contacts": {
       "title": "Kontakte",
@@ -3391,5 +3398,67 @@
     "emptyDescription": "[DE] Open any venue, event, city or person and use its Connections button to explore from there.",
     "emptyCta": "[DE] Search the guide",
     "explore": "[DE] Explore connections"
+  },
+  "milestones": {
+    "eyebrow": "Queere Geschichte",
+    "breadcrumb": "Geschichte",
+    "pageTitle": "Queere Geschichte",
+    "pageDescription": "Meilensteine, die LGBTQ+-Leben geprägt haben — Aufstände, Gesetze, Rückschritte. Datiert und belegt.",
+    "metaTitle": "Queere Geschichte — Zeitleiste — Queer Guide",
+    "metaDescription": "Meilensteine der LGBTQ+-Geschichte: Aufstände, Entkriminalisierungen, Ehe für alle und Rückschritte — datiert, belegt, weltweit.",
+    "empty": "Keine Meilensteine für diese Filter.",
+    "decadeNav": "Zu Jahrzehnt springen",
+    "filter": {
+      "country": "Land",
+      "allCountries": "Alle Länder",
+      "clear": "Filter zurücksetzen"
+    },
+    "category": {
+      "uprising-movement": "Aufstand / Bewegung",
+      "law-equality": "Gesetz / Gleichstellung",
+      "law-decriminalization": "Entkriminalisierung",
+      "law-criminalization": "Kriminalisierung",
+      "depathologization": "Entpathologisierung",
+      "persecution-destruction": "Verfolgung / Zerstörung",
+      "other": "Sonstiges"
+    },
+    "impact": {
+      "positive": "Fortschritt",
+      "neutral": "Neutral",
+      "negative": "Rückschritt"
+    },
+    "sections": {
+      "sources": "Quellen",
+      "linked": "Beteiligte Personen & Orte",
+      "related": "Mehr aus {{country}}"
+    },
+    "sidebar": {
+      "facts": "Fakten",
+      "date": "Datum",
+      "place": "Ort",
+      "city": "Stadt",
+      "country": "Land"
+    },
+    "entityType": {
+      "personality": "Person",
+      "event": "Event",
+      "venue": "Ort",
+      "news": "Nachrichtenartikel",
+      "organization": "Organisation"
+    },
+    "legalHistory": {
+      "title": "Rechtsgeschichte",
+      "seeAll": "Ganze Zeitleiste"
+    },
+    "forEntity": {
+      "heading": "Meilensteine"
+    },
+    "forPerson": "Meilensteine",
+    "home": {
+      "eyebrow": "Queere Geschichte",
+      "title": "An diesem Tag",
+      "seeAll": "Ganze Zeitleiste",
+      "yearsAgo": "vor {{count}} Jahren"
+    }
   }
 }

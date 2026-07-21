@@ -6,6 +6,7 @@ import { KebabMenu } from './KebabMenu'
 import { personDatasheet } from './lib/pdf'
 import { withFlag } from './lib/flags'
 import { StatusDot } from './StatusDot'
+import { QualityAmpel } from './QualityAmpel'
 import { ROLES_ENABLED } from './config'
 
 const SITE = 'https://queer.guide'
@@ -128,6 +129,8 @@ export function DetailPanel({ p, isChecked, onToggleChecked, onLocalChange }: De
           />
         </div>
       </div>
+
+      <QualityAmpel p={p} localChecked={isChecked} />
 
       <Field k="Slug" v={p.slug} href={`${SITE}/personalities/${p.slug}`} />
       <Field k="Sichtbarkeit" v={p.visibility} />
