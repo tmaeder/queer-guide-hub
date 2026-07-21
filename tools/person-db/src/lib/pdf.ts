@@ -65,7 +65,6 @@ export function personDatasheet(p: Personality) {
   field('Bio', p.bio)
   field('LGBTI-Bezug', p.lgbti_connection)
   field('LGBTI-Details', p.lgbti_details)
-  field('Meilenstein', p.milestone)
   field('Tags', p.tags)
   field('Website', p.website_url)
   field('Wikipedia', p.wikipedia_url)
