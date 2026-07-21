@@ -470,3 +470,32 @@ kbd {
 .qa-field.ok { color: #16a34a; }
 .qa-field.miss { color: var(--muted); border-style: dashed; }
 .qa-note { margin: 8px 0 0; font-size: 12px; color: var(--muted); }
+
+/* ---- Qualitäts-Dashboard ---- */
+.qd-scope { display: inline-flex; gap: 4px; }
+.qd-scope button {
+  padding: 4px 12px; border: 1px solid var(--border); border-radius: 6px;
+  background: var(--bg); color: var(--muted); cursor: pointer; font-size: 13px;
+}
+.qd-scope button.on { color: var(--fg); border-color: var(--fg); font-weight: 600; }
+
+.qd-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 12px 0; }
+.qd-card {
+  display: grid; grid-template-columns: auto 1fr auto; grid-template-rows: auto auto;
+  align-items: center; gap: 2px 8px; text-align: left;
+  border: 1px solid var(--border); border-left-width: 4px; border-radius: 8px;
+  padding: 10px 12px; background: var(--bg); cursor: pointer;
+}
+.qd-card.on { outline: 2px solid var(--fg); outline-offset: -1px; }
+.qd-card .qd-dot { grid-row: 1 / 3; width: 12px; height: 12px; border-radius: 50%; }
+.qd-card.ampel-red    { border-left-color: #dc2626; } .qd-card.ampel-red .qd-dot { background: #dc2626; }
+.qd-card.ampel-yellow { border-left-color: #d97706; } .qd-card.ampel-yellow .qd-dot { background: #d97706; }
+.qd-card.ampel-green  { border-left-color: #16a34a; } .qd-card.ampel-green .qd-dot { background: #16a34a; }
+.qd-card.ampel-blue   { border-left-color: #2563eb; } .qd-card.ampel-blue .qd-dot { background: #2563eb; }
+.qd-num { font-size: 22px; font-weight: 700; color: var(--fg); }
+.qd-pct { font-size: 12px; color: var(--muted); }
+.qd-lbl { grid-column: 2 / 4; font-size: 12px; color: var(--muted); }
+
+.qd-prov { font-size: 12px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 12px; }
+.qd-prov-item b { color: var(--fg); }
+.qd-listhead { font-size: 13px; font-weight: 600; padding: 6px 8px; color: var(--muted); border-bottom: 1px solid var(--border); }

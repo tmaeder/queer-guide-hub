@@ -20,6 +20,7 @@ import { NavBar, type View } from './NavBar'
 import { Upcoming } from './Upcoming'
 import { Liste } from './Liste'
 import { DuplicateReview } from './DuplicateReview'
+import { QualityDashboard } from './QualityDashboard'
 
 export function App() {
   const [view, setView] = useState<View>('dashboard')
@@ -126,6 +127,7 @@ export function App() {
       {view === 'dashboard' && <Dashboard onPick={pickCohort} />}
       {view === 'liste' && <Liste />}
       {view === 'upcoming' && <Upcoming />}
+      {view === 'quality' && <QualityDashboard />}
       {view === 'duplicates' && <DuplicateReview onClose={() => setView('dashboard')} />}
 
       {view === 'list' && (
