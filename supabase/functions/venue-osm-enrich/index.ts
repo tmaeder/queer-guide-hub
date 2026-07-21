@@ -105,7 +105,7 @@ Deno.serve(async (req: Request) => {
     const v = venues[i]
     const started = Date.now()
     let logStatus = 'skipped'
-    let outcome = 'error'
+    let outcome: string
     try {
       const hit = await nominatimSearch(v.name, v.city)
       if (!hit || !isPlausibleVenueHit(hit)) {
