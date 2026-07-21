@@ -66,6 +66,7 @@ const TABLE_MAP: Record<string, { contentType: string }> = {
 	personalities: { contentType: "personality" },
 	unified_tags: { contentType: "tag" },
 	queer_villages: { contentType: "queer_village" },
+	milestones: { contentType: "milestone" },
 };
 
 export default {
@@ -282,8 +283,10 @@ function composeEmbedText(_table: string, r: TableRow): string {
 	if (r.category) parts.push("Category: " + r.category);
 	if (r.event_type) parts.push("Type: " + r.event_type);
 	if (r.profession) parts.push("Profession: " + r.profession);
-	if (r.city) parts.push("City: " + r.city);
-	if (r.country) parts.push("Country: " + r.country);
+	const city = r.city || (typeof r.city_name === "string" ? r.city_name : "");
+	if (city) parts.push("City: " + city);
+	const country = r.country || (typeof r.country_name === "string" ? r.country_name : "");
+	if (country) parts.push("Country: " + country);
 	// news_articles multilingual: fields like title_de, content_de may exist.
 	for (const lang of ["de", "es", "fr"]) {
 		const t = r[`title_${lang}`];
