@@ -88,6 +88,7 @@ const AdminCityQuality = lazyRetry(() => import('./pages/AdminCityQuality'));
 const AdminPersonalityQuality = lazyRetry(() => import('./pages/AdminPersonalityQuality'));
 const PersonalityDataSheet = lazyRetry(() => import('./pages/admin/PersonalityDataSheet'));
 const PersonalitiesAdmin = lazyRetry(() => import('./pages/admin/PersonalitiesAdmin'));
+const MilestonesAdmin = lazyRetry(() => import('./pages/admin/MilestonesAdmin'));
 const AdminMailbox = lazyRetry(() => import('./pages/admin/AdminMailbox'));
 const AdminVenueQuality = lazyRetry(() => import('./pages/AdminVenueQuality'));
 const AdminLiveness = lazyRetry(() => import('./pages/AdminLiveness'));
@@ -366,6 +367,9 @@ export const AppRoutes = () => {
                 {/* Personalities gets a Personencheck dashboard header above the
                     generic list; static path wins over content/:type. */}
                 <Route path="content/personalities" element={<PersonalitiesAdmin />} />
+                {/* Milestones reuse the generic list but add an "AI suggestions"
+                    action above it; static path wins over content/:type. */}
+                <Route path="content/milestones" element={<MilestonesAdmin />} />
                 <Route path="content/:type" element={<ContentListPanel />} />
                 <Route path="pages" element={<ContentListPanel contentTypeId="cms_pages" />} />
                 <Route path="media" element={<MediaLibrary />} />

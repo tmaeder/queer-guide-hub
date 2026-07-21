@@ -826,3 +826,110 @@ Respond with JSON (omit/empty where unknown):
     return null
   }
 }
+
+// ---------------------------------------------------------------------------
+// Milestone discovery (provider-agnostic; proposals are staged for review,
+// never auto-published). See the milestone-discovery edge function.
+// ---------------------------------------------------------------------------
+
+export type MilestoneCategory =
+  | 'uprising-movement'
+  | 'law-equality'
+  | 'law-decriminalization'
+  | 'law-criminalization'
+  | 'depathologization'
+  | 'persecution-destruction'
+  | 'other'
+
+export interface MilestoneCandidate {
+  title: string
+  description: string
+  date: string // YYYY-MM-DD (first-of-month/year when precision is coarser)
+  date_precision: 'day' | 'month' | 'year'
+  location?: string
+  region?: string
+  country_name?: string
+  category: MilestoneCategory
+  impact: 'positive' | 'neutral' | 'negative'
+  significance: number // 1-5
+  source_url: string
+  source_label?: string
+}
+
+const MILESTONE_CATEGORIES: MilestoneCategory[] = [
+  'uprising-movement', 'law-equality', 'law-decriminalization',
+  'law-criminalization', 'depathologization', 'persecution-destruction', 'other',
+]
+
+const MILESTONE_DISCOVERY_SYSTEM_PROMPT = `You are a meticulous LGBTQ+ history researcher curating a timeline of milestones for queer.guide.
+
+Propose notable milestones in LGBTQ+ history (rights, decriminalization, criminalization/setbacks, depathologization, movement/uprising, persecution, and major cultural/visibility firsts).
+
+STRICT RULES — a proposal that breaks any rule must be omitted:
+1. It must be REAL, notable and verifiable — no invented events.
+2. Give an EXACT date. Use YYYY-MM-DD. If only the month is reliably known, set date_precision:"month" and use the first of that month; if only the year, date_precision:"year" and use YYYY-01-01. NEVER guess a day or month you are not sure of.
+3. Every proposal MUST include at least one authoritative source_url (Wikipedia, primary law/court source, WHO/UN, reputable news). No source → omit it.
+4. category MUST be one of: ${MILESTONE_CATEGORIES.join(', ')}.
+5. impact is "positive", "neutral" or "negative" (setbacks/criminalization = negative).
+6. significance is an integer 1-5 (5 = world-historic).
+7. title and description in ENGLISH. Description 1-3 factual sentences, no flourish.
+8. Do NOT propose anything already in the EXISTING list you are given (match by topic/date, not just exact wording).
+
+Return ONLY valid JSON of the form:
+{"milestones":[{"title","description","date","date_precision","location","region","country_name","category","impact","significance","source_url","source_label"}]}`
+
+const MILESTONE_KEYS = ['milestones']
+
+/**
+ * Ask the model to propose milestones not already present. Returns validated
+ * candidates (bad category / missing date or source / bad precision dropped).
+ * The CALLER is responsible for deduping against the DB and for staging the
+ * results as review_status='pending' — this never publishes anything.
+ */
+export async function proposeMilestones(
+  supabase: SupabaseClient,
+  opts: { count: number; existing: string[]; focus?: string },
+): Promise<MilestoneCandidate[]> {
+  if (!(await isOpenAIAvailable(supabase))) return []
+
+  const existingBlock = opts.existing.slice(0, 400).map((s) => `- ${s}`).join('\n')
+  const userPrompt = `Propose up to ${opts.count} NEW milestones${opts.focus ? ` with a focus on: ${ud(opts.focus)}` : ''}.
+
+EXISTING milestones already in the timeline (do not repeat these topics/dates):
+${existingBlock}
+
+Return ONLY the JSON object described in the system prompt.`
+
+  try {
+    const result = await chatCompletion(supabase, {
+      model: 'gpt-4o-mini',
+      messages: [
+        { role: 'system', content: MILESTONE_DISCOVERY_SYSTEM_PROMPT },
+        { role: 'user', content: userPrompt },
+      ],
+      temperature: 0.4,
+      max_tokens: 2500,
+      response_format: { type: 'json_object' },
+    })
+    const parsed = parseAIResponse<{ milestones: MilestoneCandidate[] }>(result.content, MILESTONE_KEYS)
+    const list = Array.isArray(parsed?.milestones) ? parsed!.milestones : []
+    const catSet = new Set(MILESTONE_CATEGORIES)
+    const isDate = (s: unknown) => typeof s === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s)
+    return list
+      .filter((m): m is MilestoneCandidate =>
+        !!m && typeof m.title === 'string' && m.title.trim().length > 2 &&
+        typeof m.description === 'string' && m.description.trim().length > 4 &&
+        isDate(m.date) &&
+        (m.date_precision === 'day' || m.date_precision === 'month' || m.date_precision === 'year') &&
+        catSet.has(m.category as MilestoneCategory) &&
+        (m.impact === 'positive' || m.impact === 'neutral' || m.impact === 'negative') &&
+        typeof m.source_url === 'string' && /^https?:\/\//.test(m.source_url))
+      .map((m) => ({
+        ...m,
+        significance: Math.max(1, Math.min(5, Math.round(Number(m.significance) || 3))),
+      }))
+  } catch (err) {
+    console.error('proposeMilestones failed:', (err as Error).message)
+    return []
+  }
+}

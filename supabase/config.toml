@@ -419,6 +419,9 @@ verify_jwt = false
 [functions.city-agentic-enrich]
 verify_jwt = false
 
+[functions.milestone-discovery]
+verify_jwt = false
+
 [functions.amenity-truth-backfill]
 verify_jwt = false
 
