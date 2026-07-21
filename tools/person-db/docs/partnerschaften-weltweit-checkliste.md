@@ -2,8 +2,11 @@
 
 **Zweck:** Arbeitsliste, um für jedes Land mit registrierbarer Partnerschaft / ziviler Lebensgemeinschaft
 das **Inkrafttreten** (tagesgenau) mit Quelle zu prüfen und als Meilenstein aufzunehmen.
+Meilensteine leben inzwischen in der Live-`milestones`-Tabelle (Admin-CMS
+`/admin/content/milestones`); der Tool-Seed ist eingefroren als
+`scripts/data-quality/milestone-seed.json`.
 
-**Legende:** ✅ = bereits im Tool, tagesgenau verifiziert (`tools/person-db/src/lib/milestones.ts`).
+**Legende:** ✅ = bereits erfasst, tagesgenau verifiziert.
 ⬜ = noch zu prüfen. ℹ️ = nur regional/kommunal oder ohne Register → **kein** Länder-Meilenstein.
 Regel: **nur exakte Tagesdaten mit Quelle**; Inkrafttreten, nicht Unterschrift/Beschluss/erste Zeremonie.
 

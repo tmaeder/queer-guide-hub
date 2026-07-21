@@ -1,8 +1,12 @@
 # Person-DB
 
 Eigenständiges Werkzeug zum **Nachschlagen, Durchsuchen und (später) Verwalten**
-der öffentlichen LGBTQ+-Personen (`personalities`) von Queer.guide — plus, in
-einer späteren Stufe, des Meilenstein-Bereichs.
+der öffentlichen LGBTQ+-Personen (`personalities`) von Queer.guide.
+
+**Meilensteine** werden nicht mehr hier gepflegt: die Kuration lebt jetzt als
+eigener Content-Type in der Live-`milestones`-Tabelle mit Admin-CMS unter
+`/admin/content/milestones` (Seed eingefroren als
+`scripts/data-quality/milestone-seed.json`).
 
 Steht **neben** der Hauptseite: eigener Ordner, eigenes `package.json`, eigener
 Dev-Server. Ist **nicht** Teil des Haupt-Build/Deploy von queer.guide.
@@ -27,12 +31,10 @@ npm run dev
   (Flagge), **Länder-Abdeckung** (x/250 + Fortschritt + fehlende-Liste), plus eine
   **interaktive Weltkarte** (`src/WorldMap.tsx`, react-simple-maps + world-atlas +
   i18n-iso-countries; Choropleth nach Personen/Land). Hover-Tooltip zeigt
-  **Flagge + Land + Personen + Meilensteine getrennt (positiv/negativ)** — z.B.
-  „🇩🇪 Germany — 881 Personen · Meilensteine: 1+ positiv, 1− negativ". Länder-Counts
-  client-seitig aggregiert (paginiert), Flaggen aus `countries.code`; Milestone-Länder
-  per Name→ISO (`nameToAlpha2`).
+  **Flagge + Land + Personen** — z.B. „🇩🇪 Germany — 881 Personen". Länder-Counts
+  client-seitig aggregiert (paginiert), Flaggen aus `countries.code`.
 
-**„New"-Menü** (`src/NewMenu.tsx`) auf Liste + Milestone: Erfassungsart wählen —
+**„New"-Menü** (`src/NewMenu.tsx`) auf der Liste: Erfassungsart wählen —
 Manuell erfassen · **Foto-Upload** (aktiv auf Liste) · Link-Import · Listen-Import
 (CSV, soon). Manuell öffnet die leere Maske. Foto-Upload: Bild wählen → neue Person
 mit dem Foto als Vorschau (lokale data-URL, **kein Storage-Upload in v1**) → Rest
@@ -54,7 +56,7 @@ Beide: **Anzeigen 25/50/100** + **More**.
 
 **Länderflaggen:** Beim Land/Nationalität wird eine Emoji-Flagge vorangestellt
 (`src/lib/flags.ts`, Name→ISO, ~100 Länder DE+EN; unbekannt → nur Name). Sichtbar
-in Milestone (Land/Untertitel/Zeitstrahl) und Personen (Liste + Detail).
+bei Personen (Liste + Detail).
 
 **Aktionen-Menü (⋯) im Detail:** Edit · PDF · Send to… (soon) · Mark checked ·
 Check via AI (soon). **Upcoming** hat je Zeile rechts ein ⋯-Menü (Bearbeiten → lädt volle Person in die
@@ -65,27 +67,9 @@ nicht klickbar.
 - **Send to…** (soon): später an andere User im System (Rückfragen klären).
 - **Check via AI** (soon): KI-Gegencheck (KI-Bein der Visums-Struktur).
 
-**Milestone (Nav):** Ereignisse queerer Geschichte. Erster Eintrag:
-**Stonewall-Aufstände (Christopher Street), 1969**. Datenmodell
-(`src/lib/milestones.ts`): `title · date/date_end · location · city · region ·
-country · description · sources[] · linked_persons[] · category · significance
-(1–5) · impact (positive/neutral/negative) · checked`. Lokal im Tool (Seed +
-localStorage), noch **nicht Live-DB** — Schema-Entwurf; Promotion in eine
-`milestones`-Tabelle + N:M-Personen-Link folgt.
-- **Eingabemaske** (`+ Neu` / ⋯→Edit, `src/MilestoneForm.tsx`): alle Felder +
-  Sterne-Wertung + Richtung + Quellen (Zeile: `Label | URL`) + **Person-Verknüpfung**
-  per Live-Suche gegen `personalities`. Anlegen/Bearbeiten/Löschen.
-- **Wertung:** `significance` ★1–5 + `impact` (positiv/neutral/negativ, farbiges Badge).
-- **Filter:** Suche (Titel/Ort/Text) · Richtung · Kategorie · geprüft — wirkt auf
-  Karten und Zeitstrahl (Zähler „x / n").
-- **Karten / Zeitstrahl** umschaltbar (`src/Timeline.tsx`) — chronologisch, Impact
-  als farbiger Punkt, volles Datum in der Zeile, Klick öffnet Edit.
-- **⋯-Menü** je Karte: Edit · PDF-Datenblatt (mit Wertung + verknüpften Personen) ·
-  geprüft-Toggle · Löschen.
-
 **Bearbeitungsmaske:**
 - `✎ Bearbeiten`-Button im Detail-Bereich → Formular mit allen editierbaren
-  Feldern (Basis / Details / LGBTQ+ & Meilenstein / Links & Medien / Status),
+  Feldern (Basis / Details / LGBTQ+ / Links & Medien / Status),
   vorbefüllt aus den Live-Daten (`src/PersonEditForm.tsx`).
 - **Speichern ist in v1 (read-only) deaktiviert** — Maske ist Vorschau. Für v2:
   `READ_ONLY=false` + Admin-Login + `onSave → supabase.from('personalities')
@@ -94,8 +78,7 @@ localStorage), noch **nicht Live-DB** — Schema-Entwurf; Promotion in eine
 **Cohort-Listen-Ansicht (vom Dashboard):**
 - **Suche** nach Name oder Beruf; zusätzliche Filter (Sichtbarkeit,
   Review-Status, needs_attention) legen sich über die Kohorte.
-- **Detail-Ansicht** aller Felder inkl. der aktuell leeren `milestone`- und
-  `wikipedia_url`-Spalten.
+- **Detail-Ansicht** aller Felder.
 - **Geprüft markieren** pro Person (grüner ✓ in der Liste). Rein lokal.
   `geprüfte ausblenden` blendet erledigte aus → schnelles Durcharbeiten.
 - **Tastatur:** `n`/`j` nächste, `p`/`k` vorige, `c` geprüft-Umschalten.
@@ -119,8 +102,6 @@ Anschauen und Exportieren kann also nichts an queer.guide verändern.
 - 15.832 Personen — 2.192 `public`, 13.640 `draft`.
 - `review_status`: pending 7.109 · manually_verified 4.100 · archived 2.952 · approved 1.671.
 - 8.775 mit Bild.
-- `milestone` und `wikipedia_url`: Spalten existieren, **0 befüllt** → der
-  Meilenstein-Bereich ist noch leer.
 
 ## v2 — Verwalten (geplant, noch aus)
 
@@ -132,8 +113,7 @@ Roadmap:
 1. Login-Screen (Supabase Auth, admin).
 2. `READ_ONLY = false` → Feld-Editor im Detail-Panel (direktes `update` wie der
    CMS-Editor der Hauptseite, `src/hooks/useCMSEditor.tsx`).
-3. **Meilenstein-Pflege:** `milestone`-Textfeld + `wikipedia_url` befüllen.
-4. Neue Person anlegen (über `stage-personality`).
+3. Neue Person anlegen (über `stage-personality`).
 
 ## Feld-Referenz (erlaubte Werte, aus der Live-DB)
 

@@ -127,20 +127,6 @@ button.primary { background: var(--accent); color: var(--bg); border-color: var(
 .tag button { border: none; padding: 0; background: none; color: var(--muted); }
 .saved { font-size: 12px; color: var(--muted); margin-left: 8px; }
 
-/* Person ↔ milestone links */
-.mlink-row { display: flex; align-items: center; gap: 10px; padding: 5px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
-.mlink-date { color: var(--muted); font-variant-numeric: tabular-nums; flex: none; min-width: 78px; }
-.mlink-title { flex: 1; min-width: 0; }
-.mlink-x { border: none; background: none; color: var(--muted); font-size: 16px; padding: 0 4px; flex: none; }
-.mlink-x:hover { color: var(--danger); }
-.mlink-add { margin-top: 10px; width: 100%; padding: 6px 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); }
-
-/* Linked-person + role editor (milestone form) */
-.linkrole-list { display: flex; flex-direction: column; gap: 6px; }
-.linkrole-row { display: flex; align-items: center; gap: 8px; }
-.linkrole-name { flex: none; min-width: 140px; font-weight: 600; font-size: 13px; }
-.linkrole-input { flex: 1; padding: 5px 8px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); }
-
 /* Top nav bar */
 .nav {
   display: flex; align-items: center; gap: 16px;
@@ -233,15 +219,6 @@ button.primary { background: var(--accent); color: var(--bg); border-color: var(
 .ai-list { margin: 4px 0 0; padding-left: 18px; font-size: 13px; }
 .ai-list li { margin-bottom: 3px; }
 
-/* Milestone-Definition Info-Karte */
-.ms-info { border: 1px solid var(--border); border-radius: 10px; padding: 8px 12px; margin: 8px 0 4px; background: var(--panel); }
-.ms-info summary { cursor: pointer; font-weight: 600; font-size: 13px; color: var(--fg); }
-.ms-info-body { margin-top: 8px; font-size: 13px; color: var(--muted); }
-.ms-info-body p { margin: 6px 0; }
-.ms-info-body ul { margin: 6px 0; padding-left: 18px; }
-.ms-info-body li { margin-bottom: 3px; }
-.ms-info-h { font-weight: 600; color: var(--fg); margin-top: 10px; }
-
 /* KI check panel (provider-pluggable) */
 .ai-provider { font-size: 12px; padding: 2px 6px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--fg); }
 .ai-gear { border: none; background: none; color: var(--muted); font-size: 14px; cursor: pointer; }
@@ -328,65 +305,9 @@ kbd {
 .tile-l { font-size: 14px; font-weight: 600; }
 .tile-h { font-size: 12px; color: var(--muted); }
 
-.ms-card {
-  border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px;
-  margin: 14px 0;
-}
-.ms-title { margin: 0; font-size: 18px; }
-.ms-card .field { grid-template-columns: 150px 1fr; }
-.ms-card .field .v a { color: inherit; }
-
-/* Milestone head */
-.ms-head-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
-.ms-head-actions { display: flex; gap: 10px; align-items: center; }
 .seg { display: inline-flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
 .seg button { border: none; border-radius: 0; padding: 6px 12px; background: var(--bg); color: var(--muted); }
 .seg button.on { background: var(--panel); color: var(--fg); font-weight: 600; }
-
-/* Rating */
-.ms-rating { display: flex; align-items: center; gap: 12px; margin: 8px 0 12px; }
-.tl-stars { color: #d4a017; letter-spacing: 1px; }
-.star-off { color: var(--border); }
-.stars { display: inline-flex; gap: 2px; }
-.star { border: none; background: none; font-size: 20px; color: var(--border); padding: 0 2px; cursor: pointer; }
-.star.on { color: #d4a017; }
-.imp-badge { font-size: 12px; padding: 2px 8px; border-radius: 4px; border: 1px solid var(--border); }
-.imp-pos { color: #16a34a; border-color: #16a34a; }
-.imp-neg { color: var(--danger); border-color: var(--danger); }
-.imp-neu { color: var(--muted); }
-
-/* Timeline */
-.timeline { position: relative; margin: 20px 0 20px 8px; padding-left: 24px; border-left: 2px solid var(--border); }
-.tl-item {
-  display: grid; grid-template-columns: 60px 1fr; gap: 12px; align-items: center;
-  width: 100%; text-align: left; background: none; border: none; border-radius: 8px;
-  padding: 10px; position: relative;
-}
-.tl-item:hover { background: var(--panel); }
-.tl-dot {
-  position: absolute; left: -33px; top: 18px; width: 12px; height: 12px;
-  border-radius: 50%; background: var(--muted); border: 2px solid var(--bg);
-}
-.tl-dot.imp-pos { background: #16a34a; }
-.tl-dot.imp-neg { background: var(--danger); }
-.tl-dot.imp-neu { background: var(--muted); }
-.tl-year { font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums; }
-.tl-body { display: flex; flex-direction: column; min-width: 0; }
-.tl-title { font-weight: 600; display: flex; gap: 8px; align-items: baseline; }
-.tl-meta { font-size: 12px; color: var(--muted); }
-
-/* Person link search */
-.link-box { position: relative; }
-.link-box input {
-  width: 100%; padding: 6px 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg);
-}
-.link-results {
-  position: absolute; z-index: 10; left: 0; right: 0; margin-top: 4px;
-  background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 4px; max-height: 240px; overflow-y: auto;
-}
-.link-result { display: block; width: 100%; text-align: left; border: none; background: none; padding: 6px 8px; border-radius: 6px; }
-.link-result:hover { background: var(--panel); }
-.link-result .muted { color: var(--muted); font-size: 12px; }
 
 /* City autocomplete */
 .city-ac { position: relative; }
@@ -401,10 +322,6 @@ kbd {
 .city-result { display: block; width: 100%; text-align: left; border: none; background: none; padding: 6px 8px; border-radius: 6px; }
 .city-result:hover { background: var(--panel); }
 .city-result .muted { color: var(--muted); font-size: 12px; }
-
-.ms-plan { margin: 12px 0 8px; }
-.ms-plan ul { margin: 6px 0; padding-left: 20px; color: var(--muted); font-size: 14px; }
-.ms-plan li { margin-bottom: 4px; }
 
 /* New menu (capture method dropdown) */
 .newmenu { position: relative; display: inline-block; }

@@ -19,7 +19,6 @@ import { Dashboard } from './Dashboard'
 import { NavBar, type View } from './NavBar'
 import { Upcoming } from './Upcoming'
 import { Liste } from './Liste'
-import { Milestone } from './Milestone'
 import { DuplicateReview } from './DuplicateReview'
 
 export function App() {
@@ -127,7 +126,6 @@ export function App() {
       {view === 'dashboard' && <Dashboard onPick={pickCohort} />}
       {view === 'liste' && <Liste />}
       {view === 'upcoming' && <Upcoming />}
-      {view === 'milestone' && <Milestone />}
       {view === 'duplicates' && <DuplicateReview onClose={() => setView('dashboard')} />}
 
       {view === 'list' && (

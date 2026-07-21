@@ -1,5 +1,5 @@
 // Country name → emoji flag. Covers the English nationality strings used in
-// `personalities` + the German names used in milestones. Unknown → '' (graceful).
+// `personalities` + common German country names. Unknown → '' (graceful).
 
 export function codeToFlag(cc: string): string {
   if (!cc || cc.length !== 2) return ''

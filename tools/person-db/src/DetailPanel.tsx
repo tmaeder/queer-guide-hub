@@ -2,7 +2,6 @@ import { useState } from 'react'
 import type { Personality } from './types'
 import { getEntry, saveEntry } from './lib/notes'
 import { PersonEditForm } from './PersonEditForm'
-import { MilestoneLinks } from './MilestoneLinks'
 import { KebabMenu } from './KebabMenu'
 import { personDatasheet } from './lib/pdf'
 import { withFlag } from './lib/flags'
@@ -172,8 +171,6 @@ export function DetailPanel({ p, isChecked, onToggleChecked, onLocalChange }: De
       <Field k="Views" v={p.view_count} />
       <Field k="Erstellt" v={p.created_at?.slice(0, 10)} />
       <Field k="Aktualisiert" v={p.updated_at?.slice(0, 10)} />
-
-      <MilestoneLinks p={p} />
 
       <div className="notes">
         <h3>
