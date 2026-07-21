@@ -30,6 +30,7 @@ const MarketplaceCategories = lazyRetry(() => import('./pages/MarketplaceCategor
 const MarketplaceMerchant = lazyRetry(() => import('./pages/MarketplaceMerchant'));
 const MarketplaceBrand = lazyRetry(() => import('./pages/MarketplaceBrand'));
 const Organizations = lazyRetry(() => import('./pages/Organizations'));
+const HistoryTimeline = lazyRetry(() => import('./pages/HistoryTimeline'));
 const MarketplaceShare = lazyRetry(() => import('./pages/MarketplaceShare'));
 const MarketplaceCollection = lazyRetry(() => import('./pages/MarketplaceCollection'));
 const MarketplaceGuides = lazyRetry(() => import('./pages/MarketplaceGuides'));
@@ -87,7 +88,6 @@ const AdminCityQuality = lazyRetry(() => import('./pages/AdminCityQuality'));
 const AdminPersonalityQuality = lazyRetry(() => import('./pages/AdminPersonalityQuality'));
 const PersonalityDataSheet = lazyRetry(() => import('./pages/admin/PersonalityDataSheet'));
 const PersonalitiesAdmin = lazyRetry(() => import('./pages/admin/PersonalitiesAdmin'));
-const PersonalityMilestones = lazyRetry(() => import('./pages/admin/PersonalityMilestones'));
 const EditorialTasks = lazyRetry(() => import('./pages/admin/EditorialTasks'));
 const AdminMailbox = lazyRetry(() => import('./pages/admin/AdminMailbox'));
 const AdminVenueQuality = lazyRetry(() => import('./pages/AdminVenueQuality'));
@@ -414,7 +414,8 @@ export const AppRoutes = () => {
                 <Route path="content/city-quality" element={<AdminCityQuality />} />
                 <Route path="content/personality-quality" element={<AdminPersonalityQuality />} />
                 <Route path="content/personalities/:id/datasheet" element={<PersonalityDataSheet />} />
-                <Route path="personalities/milestones" element={<PersonalityMilestones />} />
+                {/* Legacy — milestone curation moved to the generic CMS. Keep one release. */}
+                <Route path="personalities/milestones" element={<Navigate to="/admin/content/milestones" replace />} />
                 <Route path="merkliste" element={<EditorialTasks />} />
                 <Route path="postfach" element={<AdminMailbox />} />
                 <Route path="content/marketplace-quality" element={<AdminMarketplaceQuality />} />
@@ -510,6 +511,9 @@ export const AppRoutes = () => {
                 <Route path="venues/:slug" element={<EntityDetail source="venue" />} />
                 <Route path="organizations" element={<Organizations />} />
                 <Route path="organizations/:slug" element={<EntityDetail source="organization" />} />
+                <Route path="history" element={<HistoryTimeline />} />
+                <Route path="history/:slug" element={<EntityDetail source="milestone" />} />
+                <Route path="milestones" element={<Navigate to="/history" replace />} />
                 <Route path="events" element={<Events />} />
                 <Route path="events/guides" element={<EventGuides />} />
                 <Route path="events/guides/:slug" element={<EventGuide />} />

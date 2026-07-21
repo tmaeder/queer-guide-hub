@@ -234,10 +234,11 @@ export const adminNavSections: AdminNavSection[] = [
         group: 'People',
       },
       {
-        id: 'personality-milestones',
+        id: 'milestones',
         label: 'Milestones',
         icon: Award,
-        route: '/admin/personalities/milestones',
+        route: '/admin/content/milestones',
+        countTable: 'milestones',
         group: 'People',
       },
       {

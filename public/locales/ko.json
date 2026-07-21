@@ -208,7 +208,8 @@
     "privacy": "개인정보",
     "terms": "이용약관",
     "contact": "문의",
-    "supportUs": "후원하기"
+    "supportUs": "후원하기",
+    "history": "역사"
   },
   "trips": {
     "title": "내 여행",
@@ -2293,6 +2294,11 @@
       "gate": "친구를 보려면 로그인하세요.",
       "requests": "요청",
       "sentRequest": "친구 요청을 보냈습니다"
+    },
+    "entityDetail": {
+      "milestoneNotFoundTitle": "이정표를 찾을 수 없습니다",
+      "milestoneNotFoundBody": "이 URL에 해당하는 이정표가 없습니다. 삭제되었거나 링크가 잘못되었을 수 있습니다.",
+      "backToHistory": "연대표로 돌아가기"
     }
   },
   "settings": {
@@ -3277,7 +3283,8 @@
       "diedYearsAgo": "[KO] died {{count}} years ago",
       "tripsDrawer": {
         "title": "[KO] Your trips"
-      }
+      },
+      "yearsAgo": "{{count}}년 전"
     },
     "contacts": {
       "title": "연락처",
@@ -3389,5 +3396,67 @@
     "emptyDescription": "[KO] Open any venue, event, city or person and use its Connections button to explore from there.",
     "emptyCta": "[KO] Search the guide",
     "explore": "[KO] Explore connections"
+  },
+  "milestones": {
+    "eyebrow": "퀴어 역사",
+    "breadcrumb": "역사",
+    "pageTitle": "퀴어 역사",
+    "pageDescription": "LGBTQ+ 삶을 만든 이정표 — 봉기, 법률, 후퇴. 날짜와 출처 포함.",
+    "metaTitle": "퀴어 역사 연대표 — Queer Guide",
+    "metaDescription": "LGBTQ+ 역사의 이정표: 봉기, 비범죄화, 결혼 평등과 후퇴 — 날짜와 출처와 함께 전 세계에서.",
+    "empty": "이 필터에 맞는 이정표가 없습니다.",
+    "decadeNav": "연대로 이동",
+    "filter": {
+      "country": "국가",
+      "allCountries": "모든 국가",
+      "clear": "필터 지우기"
+    },
+    "category": {
+      "uprising-movement": "봉기 / 운동",
+      "law-equality": "법 / 평등",
+      "law-decriminalization": "비범죄화",
+      "law-criminalization": "범죄화",
+      "depathologization": "탈병리화",
+      "persecution-destruction": "박해 / 파괴",
+      "other": "기타"
+    },
+    "impact": {
+      "positive": "진전",
+      "neutral": "중립",
+      "negative": "후퇴"
+    },
+    "sections": {
+      "sources": "출처",
+      "linked": "관련 인물과 장소",
+      "related": "{{country}}의 다른 이정표"
+    },
+    "sidebar": {
+      "facts": "정보",
+      "date": "날짜",
+      "place": "장소",
+      "city": "도시",
+      "country": "국가"
+    },
+    "entityType": {
+      "personality": "인물",
+      "event": "이벤트",
+      "venue": "장소",
+      "news": "뉴스 기사",
+      "organization": "단체"
+    },
+    "legalHistory": {
+      "title": "법의 역사",
+      "seeAll": "전체 연대표"
+    },
+    "forEntity": {
+      "heading": "이정표"
+    },
+    "forPerson": "이정표",
+    "home": {
+      "eyebrow": "퀴어 역사",
+      "title": "오늘의 역사",
+      "seeAll": "전체 연대표",
+      "yearsAgo": "{{count}}년 전"
+    }
   }
 }

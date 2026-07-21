@@ -8,7 +8,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { PageLoading } from '@/components/ui/loading';
 
-type GatedEntityType = 'venue' | 'event' | 'organization';
+type GatedEntityType = 'venue' | 'event' | 'organization' | 'milestone';
 
 interface GatedDetailFallbackProps {
   entityType: GatedEntityType;

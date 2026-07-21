@@ -1879,6 +1879,10 @@ const hungarySeed: Milestone[] = [
     category: 'Recht / Kriminalisierung',
     significance: 4,
     impact: 'negative',
+    checked: false,
+  },
+]
+
 // Außereuropäische Entkriminalisierung — tagesgenau, gegen Primär-/Fachquellen geprüft
 // (Deep-Research-Extraktion + WebFetch-Einzelverifikation, 2026-07). Maßgeblich:
 // Gerichtsurteil = Urteilsdatum; Gesetz = Inkrafttreten (Assent separat vermerkt).
@@ -2065,8 +2069,16 @@ const worldDecrimSeed: Milestone[] = [
   },
 ]
 
-const SEED: Milestone[] = [...BASE_SEED, ...decrimSeed, ...unionSeed, ...transSeed, ...repressionSeed, ...hungarySeed]
-const SEED: Milestone[] = [...BASE_SEED, ...decrimSeed, ...unionSeed, ...transSeed, ...repressionSeed, ...worldDecrimSeed]
+export const MILESTONE_SEED: Milestone[] = [
+  ...BASE_SEED,
+  ...decrimSeed,
+  ...unionSeed,
+  ...transSeed,
+  ...repressionSeed,
+  ...hungarySeed,
+  ...worldDecrimSeed,
+]
+const SEED: Milestone[] = MILESTONE_SEED
 
 const KEY = 'person-db.milestones.v2'
 

@@ -208,7 +208,8 @@
     "privacy": "Privacidade",
     "terms": "Termos",
     "contact": "Contato",
-    "supportUs": "Apoie-nos"
+    "supportUs": "Apoie-nos",
+    "history": "História"
   },
   "trips": {
     "title": "Minhas viagens",
@@ -2295,6 +2296,11 @@
       "gate": "Inicie sessão para ver os seus amigos.",
       "requests": "Solicitações",
       "sentRequest": "Enviou um pedido de amizade"
+    },
+    "entityDetail": {
+      "milestoneNotFoundTitle": "Marco não encontrado",
+      "milestoneNotFoundBody": "Nenhum marco corresponde a este URL. Pode ter sido removido ou o link está incorreto.",
+      "backToHistory": "Voltar à linha do tempo"
     }
   },
   "settings": {
@@ -3279,7 +3285,8 @@
       "diedYearsAgo": "[PT] died {{count}} years ago",
       "tripsDrawer": {
         "title": "[PT] Your trips"
-      }
+      },
+      "yearsAgo": "há {{count}} anos"
     },
     "contacts": {
       "title": "Contatos",
@@ -3391,5 +3398,67 @@
     "emptyDescription": "[PT] Open any venue, event, city or person and use its Connections button to explore from there.",
     "emptyCta": "[PT] Search the guide",
     "explore": "[PT] Explore connections"
+  },
+  "milestones": {
+    "eyebrow": "História queer",
+    "breadcrumb": "História",
+    "pageTitle": "História queer",
+    "pageDescription": "Marcos que moldaram a vida LGBTQ+: levantes, leis, retrocessos. Com datas e fontes.",
+    "metaTitle": "Linha do tempo da história queer — Queer Guide",
+    "metaDescription": "Marcos da história LGBTQ+: levantes, descriminalizações, casamento igualitário e retrocessos — com datas e fontes, no mundo todo.",
+    "empty": "Nenhum marco corresponde a esses filtros.",
+    "decadeNav": "Ir para a década",
+    "filter": {
+      "country": "País",
+      "allCountries": "Todos os países",
+      "clear": "Limpar filtros"
+    },
+    "category": {
+      "uprising-movement": "Levante / Movimento",
+      "law-equality": "Lei / Igualdade",
+      "law-decriminalization": "Descriminalização",
+      "law-criminalization": "Criminalização",
+      "depathologization": "Despatologização",
+      "persecution-destruction": "Perseguição / Destruição",
+      "other": "Outro"
+    },
+    "impact": {
+      "positive": "Avanço",
+      "neutral": "Neutro",
+      "negative": "Retrocesso"
+    },
+    "sections": {
+      "sources": "Fontes",
+      "linked": "Pessoas e lugares envolvidos",
+      "related": "Mais de {{country}}"
+    },
+    "sidebar": {
+      "facts": "Fatos",
+      "date": "Data",
+      "place": "Lugar",
+      "city": "Cidade",
+      "country": "País"
+    },
+    "entityType": {
+      "personality": "Pessoa",
+      "event": "Evento",
+      "venue": "Local",
+      "news": "Notícia",
+      "organization": "Organização"
+    },
+    "legalHistory": {
+      "title": "História jurídica",
+      "seeAll": "Linha do tempo completa"
+    },
+    "forEntity": {
+      "heading": "Marcos"
+    },
+    "forPerson": "Marcos",
+    "home": {
+      "eyebrow": "História queer",
+      "title": "Neste dia",
+      "seeAll": "Linha do tempo completa",
+      "yearsAgo": "há {{count}} anos"
+    }
   }
 }
