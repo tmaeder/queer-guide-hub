@@ -1,7 +1,7 @@
 import { READ_ONLY } from './config'
 import { ThemeToggle } from './ThemeToggle'
 
-export type View = 'dashboard' | 'list' | 'upcoming' | 'liste' | 'duplicates'
+export type View = 'dashboard' | 'list' | 'upcoming' | 'liste' | 'duplicates' | 'quality'
 
 // Top navigation. Add entries here to grow the bar later.
 // `view` values Home + Upcoming exist now; more buttons slot in as needed.
@@ -14,6 +14,7 @@ const NAV: NavItem[] = [
   { key: 'dashboard', label: 'Home' },
   { key: 'liste', label: 'Liste' },
   { key: 'upcoming', label: 'Upcoming' },
+  { key: 'quality', label: 'Qualität' },
 ]
 
 export function NavBar({
