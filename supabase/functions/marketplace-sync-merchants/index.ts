@@ -33,7 +33,6 @@ const RUN_BUDGET_MS = 120_000 // respond well before the ~150s gateway 504
 const MIN_MERCHANT_MS = 45_000 // median sync is ~30-50s: starting with less just
 // aborts the merchant and stamps it to the back of the LRU; skipping (remaining++)
 // keeps its queue position for the next hourly run
-const MIN_MERCHANT_MS = 20_000 // don't start a merchant with less than this left
 
 interface DueMerchant {
   provider: string

@@ -230,12 +230,17 @@ export function useTrip(tripId: string | undefined) {
   return useQuery({
     queryKey: ['trip', tripId],
     queryFn: async (): Promise<TripWithDetails> => {
+      // maybeSingle (not single): a nonexistent/unauthorized trip id must not
+      // produce an HTTP 406 — the browser logs it as a console error, which
+      // trips the packing-empty-trip e2e error guard. Missing row still throws
+      // so consumers keep their error states.
       const { data: trip, error } = await supabase
         .from('trips')
         .select('*')
         .eq('id', tripId!)
-        .single();
+        .maybeSingle();
       if (error) throw error;
+      if (!trip) throw new Error('Trip not found');
 
       // Parallel fetch related data
       const [membersRes, daysRes, placesRes] = await Promise.all([

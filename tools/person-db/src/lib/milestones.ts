@@ -1821,64 +1821,6 @@ const repressionSeed: Milestone[] = [
   },
 ]
 
-// Ungarn — legislativer Rückschritt 2020–2021, tagesgenau gegen Wikipedia geprüft
-// (Deep-Research + WebFetch). Milestone-Datum = Parlamentsbeschluss (eindeutig;
-// Inkrafttreten beim Anti-LGBT-Gesetz uneinheitlich belegt → Beschlussdatum).
-const hungarySeed: Milestone[] = [
-  {
-    id: 'ungarn-trans-anerkennung-2020-05-19',
-    title: 'Ende der rechtlichen Geschlechtsanerkennung — Ungarn',
-    date: '2020-05-19',
-    country: 'Ungarn',
-    description:
-      'Am 19. Mai 2020 beschloss das ungarische Parlament (134:56) ein Gesetz, das das ' +
-      'rechtliche Geschlecht auf das „bei der Geburt eingetragene" festschreibt und die ' +
-      'Änderung des Geschlechtseintrags für trans und intergeschlechtliche Personen unmöglich ' +
-      'macht. Unterschrift durch Präsident Áder am 28. Mai 2020.',
-    sources: [
-      { label: 'Wikipedia — LGBT rights in Hungary', url: 'https://en.wikipedia.org/wiki/LGBT_rights_in_Hungary' },
-    ],
-    linked_persons: [],
-    category: 'Recht / Kriminalisierung',
-    significance: 4,
-    impact: 'negative',
-    checked: false,
-  },
-  {
-    id: 'ungarn-verfassung-familie-2020-12-16',
-    title: 'Verfassungsänderung „Mutter=Frau, Vater=Mann" — Ungarn',
-    date: '2020-12-16',
-    country: 'Ungarn',
-    description:
-      'Am 16. Dezember 2020 beschloss das Parlament (123:45) die 9. Verfassungsänderung: ' +
-      '„Die Mutter ist eine Frau, der Vater ein Mann." Adoption faktisch auf verheiratete ' +
-      'verschiedengeschlechtliche Paare beschränkt — Ausschluss gleichgeschlechtlicher Paare.',
-    sources: [
-      { label: 'Wikipedia — LGBT rights in Hungary', url: 'https://en.wikipedia.org/wiki/LGBT_rights_in_Hungary' },
-    ],
-    linked_persons: [],
-    category: 'Recht / Kriminalisierung',
-    significance: 4,
-    impact: 'negative',
-    checked: false,
-  },
-  {
-    id: 'ungarn-anti-lgbt-gesetz-2021-06-15',
-    title: 'Anti-LGBT-„Propaganda"-Gesetz (Act LXXIX/2021) — Ungarn',
-    date: '2021-06-15',
-    country: 'Ungarn',
-    description:
-      'Am 15. Juni 2021 beschloss das Parlament das „Kinderschutz"-Gesetz (Act LXXIX of 2021), ' +
-      'das Darstellung/„Bewerbung" von Homosexualität und Geschlechtsangleichung gegenüber ' +
-      'Minderjährigen verbietet. Unterschrift durch Präsident Áder am 23. Juni 2021, ' +
-      'Inkrafttreten Anfang Juli 2021. Auslöser eines EU-Vertragsverletzungsverfahrens.',
-    sources: [
-      { label: 'Wikipedia — Hungarian anti-LGBT law', url: 'https://en.wikipedia.org/wiki/Hungarian_anti-LGBT_law' },
-    ],
-    linked_persons: [],
-    category: 'Recht / Kriminalisierung',
-    significance: 4,
-    impact: 'negative',
 // Außereuropäische Entkriminalisierung — tagesgenau, gegen Primär-/Fachquellen geprüft
 // (Deep-Research-Extraktion + WebFetch-Einzelverifikation, 2026-07). Maßgeblich:
 // Gerichtsurteil = Urteilsdatum; Gesetz = Inkrafttreten (Assent separat vermerkt).
@@ -2065,8 +2007,412 @@ const worldDecrimSeed: Milestone[] = [
   },
 ]
 
-const SEED: Milestone[] = [...BASE_SEED, ...decrimSeed, ...unionSeed, ...transSeed, ...repressionSeed, ...hungarySeed]
-const SEED: Milestone[] = [...BASE_SEED, ...decrimSeed, ...unionSeed, ...transSeed, ...repressionSeed, ...worldDecrimSeed]
+// Ungarn — legislativer Rückschritt 2020–2021, tagesgenau gegen Wikipedia geprüft
+// (Deep-Research + WebFetch). Milestone-Datum = Parlamentsbeschluss (eindeutig;
+// Inkrafttreten beim Anti-LGBT-Gesetz uneinheitlich belegt → Beschlussdatum).
+const hungarySeed: Milestone[] = [
+  {
+    id: 'ungarn-trans-anerkennung-2020-05-19',
+    title: 'Ende der rechtlichen Geschlechtsanerkennung — Ungarn',
+    date: '2020-05-19',
+    country: 'Ungarn',
+    description:
+      'Am 19. Mai 2020 beschloss das ungarische Parlament (134:56) ein Gesetz, das das ' +
+      'rechtliche Geschlecht auf das „bei der Geburt eingetragene" festschreibt und die ' +
+      'Änderung des Geschlechtseintrags für trans und intergeschlechtliche Personen unmöglich ' +
+      'macht. Unterschrift durch Präsident Áder am 28. Mai 2020.',
+    sources: [
+      { label: 'Wikipedia — LGBT rights in Hungary', url: 'https://en.wikipedia.org/wiki/LGBT_rights_in_Hungary' },
+    ],
+    linked_persons: [],
+    category: 'Recht / Kriminalisierung',
+    significance: 4,
+    impact: 'negative',
+    checked: false,
+  },
+  {
+    id: 'ungarn-verfassung-familie-2020-12-16',
+    title: 'Verfassungsänderung „Mutter=Frau, Vater=Mann" — Ungarn',
+    date: '2020-12-16',
+    country: 'Ungarn',
+    description:
+      'Am 16. Dezember 2020 beschloss das Parlament (123:45) die 9. Verfassungsänderung: ' +
+      '„Die Mutter ist eine Frau, der Vater ein Mann." Adoption faktisch auf verheiratete ' +
+      'verschiedengeschlechtliche Paare beschränkt — Ausschluss gleichgeschlechtlicher Paare.',
+    sources: [
+      { label: 'Wikipedia — LGBT rights in Hungary', url: 'https://en.wikipedia.org/wiki/LGBT_rights_in_Hungary' },
+    ],
+    linked_persons: [],
+    category: 'Recht / Kriminalisierung',
+    significance: 4,
+    impact: 'negative',
+    checked: false,
+  },
+  {
+    id: 'ungarn-anti-lgbt-gesetz-2021-06-15',
+    title: 'Anti-LGBT-„Propaganda"-Gesetz (Act LXXIX/2021) — Ungarn',
+    date: '2021-06-15',
+    country: 'Ungarn',
+    description:
+      'Am 15. Juni 2021 beschloss das Parlament das „Kinderschutz"-Gesetz (Act LXXIX of 2021), ' +
+      'das Darstellung/„Bewerbung" von Homosexualität und Geschlechtsangleichung gegenüber ' +
+      'Minderjährigen verbietet. Unterschrift durch Präsident Áder am 23. Juni 2021, ' +
+      'Inkrafttreten Anfang Juli 2021. Auslöser eines EU-Vertragsverletzungsverfahrens.',
+    sources: [
+      { label: 'Wikipedia — Hungarian anti-LGBT law', url: 'https://en.wikipedia.org/wiki/Hungarian_anti-LGBT_law' },
+    ],
+    linked_persons: [],
+    category: 'Recht / Kriminalisierung',
+    significance: 4,
+    impact: 'negative',
+    checked: false,
+  },
+]
+
+// Ehe für alle — außereuropäische Länder (der Ehe-Block war bisher nur Europa).
+// Tagesgenau, je gegen Wikipedia „Same-sex marriage in X" per WebFetch geprüft.
+// Maßgeblich: Gesetz = Inkrafttreten, Gerichtsurteil = Urteilsdatum (Gazette separat vermerkt).
+const worldMarriageSeed: Milestone[] = [
+  {
+    id: 'ehe-kanada-2005-07-20',
+    title: 'Ehe für alle — Kanada (landesweit)',
+    date: '2005-07-20',
+    country: 'Kanada',
+    description:
+      'Civil Marriage Act — Royal Assent am 20. Juli 2005, landesweite Öffnung der Ehe. ' +
+      'Viertes Land weltweit; einige Provinzen hatten die Ehe seit 2003 per Gericht geöffnet.',
+    sources: [
+      { label: 'Wikipedia — Same-sex marriage in Canada', url: 'https://en.wikipedia.org/wiki/Same-sex_marriage_in_Canada' },
+    ],
+    linked_persons: [],
+    category: 'Recht / Ehe',
+    significance: 4,
+    impact: 'positive',
+    checked: false,
+  },
+  {
+    id: 'ehe-suedafrika-2006-11-30',
+    title: 'Ehe für alle — Südafrika',
+    date: '2006-11-30',
+    country: 'Südafrika',
+    description:
+      'Civil Union Act 2006 — Inkrafttreten am 30. November 2006 (einen Tag vor der vom ' +
+      'Verfassungsgericht gesetzten Frist). Erstes Land Afrikas mit gleichgeschlechtlicher Ehe.',
+    sources: [
+      { label: 'Wikipedia — Same-sex marriage in South Africa', url: 'https://en.wikipedia.org/wiki/Same-sex_marriage_in_South_Africa' },
+    ],
+    linked_persons: [],
+    category: 'Recht / Ehe',
+    significance: 5,
+    impact: 'positive',
+    checked: false,
+  },
+  {
+    id: 'ehe-argentinien-2010-07-22',
+    title: 'Ehe für alle — Argentinien',
+    date: '2010-07-22',
+    country: 'Argentinien',
+    description:
+      'Ley 26.618 — Inkrafttreten am 22. Juli 2010 (Veröffentlichung im Boletín Oficial, ' +
+      'Unterschrift Präsidentin Fernández de Kirchner am 21. Juli). Erstes Land Lateinamerikas.',
+    sources: [
+      { label: 'Wikipedia — Same-sex marriage in Argentina', url: 'https://en.wikipedia.org/wiki/Same-sex_marriage_in_Argentina' },
+    ],
+    linked_persons: [],
+    category: 'Recht / Ehe',
+    significance: 5,
+    impact: 'positive',
+    checked: false,
+  },
+  {
+    id: 'ehe-brasilien-2013-05-16',
+    title: 'Ehe für alle — Brasilien (landesweit)',
+    date: '2013-05-16',
+    country: 'Brasilien',
+    description:
+      'Resolution des Nationalen Justizrats (CNJ) vom 14. Mai 2013 (14:1): Notare müssen ' +
+      'gleichgeschlechtliche Ehen schließen. Veröffentlichung 15. Mai, wirksam 16. Mai 2013.',
+    sources: [
+      { label: 'Wikipedia — Recognition of same-sex unions in Brazil', url: 'https://en.wikipedia.org/wiki/Recognition_of_same-sex_unions_in_Brazil' },
+    ],
+    linked_persons: [],
+    category: 'Recht / Ehe',
+    significance: 4,
+    impact: 'positive',
+    checked: false,
+  },
+  {
+    id: 'ehe-uruguay-2013-08-05',
+    title: 'Ehe für alle — Uruguay',
+    date: '2013-08-05',
+    country: 'Uruguay',
+    description:
+      'Ley 19.075 (Matrimonio Igualitario) — Inkrafttreten am 5. August 2013.',
+    sources: [
+      { label: 'Wikipedia — Same-sex marriage in Uruguay', url: 'https://en.wikipedia.org/wiki/Same-sex_marriage_in_Uruguay' },
+    ],
+    linked_persons: [],
+    category: 'Recht / Ehe',
+    significance: 3,
+    impact: 'positive',
+    checked: false,
+  },
+  {
+    id: 'ehe-neuseeland-2013-08-19',
+    title: 'Ehe für alle — Neuseeland',
+    date: '2013-08-19',
+    country: 'Neuseeland',
+    description:
+      'Marriage (Definition of Marriage) Amendment Act 2013 — Inkrafttreten am 19. August 2013 ' +
+      '(Royal Assent 19. April). Erstes Land der Region Ozeanien/Asien-Pazifik.',
+    sources: [
+      { label: 'Wikipedia — Same-sex marriage in New Zealand', url: 'https://en.wikipedia.org/wiki/Same-sex_marriage_in_New_Zealand' },
+    ],
+    linked_persons: [],
+    category: 'Recht / Ehe',
+    significance: 4,
+    impact: 'positive',
+    checked: false,
+  },
+  {
+    id: 'ehe-usa-obergefell-2015-06-26',
+    title: 'Obergefell v. Hodges — Ehe für alle (USA, landesweit)',
+    date: '2015-06-26',
+    country: 'Vereinigte Staaten',
+    description:
+      'Urteil des Supreme Court (5:4) am 26. Juni 2015: der 14. Zusatzartikel verpflichtet alle ' +
+      'Bundesstaaten, gleichgeschlechtliche Ehen zu schließen und anzuerkennen. Landesweite Öffnung.',
+    sources: [
+      { label: 'Wikipedia — Obergefell v. Hodges', url: 'https://en.wikipedia.org/wiki/Obergefell_v._Hodges' },
+    ],
+    linked_persons: [],
+    category: 'Recht / Ehe',
+    significance: 5,
+    impact: 'positive',
+    checked: false,
+  },
+  {
+    id: 'ehe-kolumbien-2016-04-28',
+    title: 'Ehe für alle — Kolumbien',
+    date: '2016-04-28',
+    country: 'Kolumbien',
+    description:
+      'Urteil des Verfassungsgerichts am 28. April 2016 (6:3): die Ehe zwischen ' +
+      'gleichgeschlechtlichen Personen verstößt nicht gegen die Verfassung — landesweite Öffnung.',
+    sources: [
+      { label: 'Wikipedia — Same-sex marriage in Colombia', url: 'https://en.wikipedia.org/wiki/Same-sex_marriage_in_Colombia' },
+    ],
+    linked_persons: [],
+    category: 'Recht / Ehe',
+    significance: 4,
+    impact: 'positive',
+    checked: false,
+  },
+  {
+    id: 'ehe-australien-2017-12-09',
+    title: 'Ehe für alle — Australien',
+    date: '2017-12-09',
+    country: 'Australien',
+    description:
+      'Marriage Amendment (Definition and Religious Freedoms) Act 2017 — Inkrafttreten am ' +
+      '9. Dezember 2017 (Royal Assent 8. Dezember), nach der landesweiten Briefbefragung.',
+    sources: [
+      { label: 'Wikipedia — Same-sex marriage in Australia', url: 'https://en.wikipedia.org/wiki/Same-sex_marriage_in_Australia' },
+    ],
+    linked_persons: [],
+    category: 'Recht / Ehe',
+    significance: 4,
+    impact: 'positive',
+    checked: false,
+  },
+  {
+    id: 'ehe-taiwan-2019-05-24',
+    title: 'Ehe für alle — Taiwan (erstes Land Asiens)',
+    date: '2019-05-24',
+    country: 'Taiwan',
+    description:
+      'Inkrafttreten am 24. Mai 2019 — erstes Land Asiens mit gleichgeschlechtlicher Ehe. ' +
+      '526 Paare heirateten am ersten Tag. Umsetzung eines Verfassungsgerichtsurteils von 2017.',
+    sources: [
+      { label: 'Wikipedia — Same-sex marriage in Taiwan', url: 'https://en.wikipedia.org/wiki/Same-sex_marriage_in_Taiwan' },
+    ],
+    linked_persons: [],
+    category: 'Recht / Ehe',
+    significance: 5,
+    impact: 'positive',
+    checked: false,
+  },
+  {
+    id: 'ehe-ecuador-2019-06-12',
+    title: 'Ehe für alle — Ecuador',
+    date: '2019-06-12',
+    country: 'Ecuador',
+    description:
+      'Urteil des Verfassungsgerichts am 12. Juni 2019 (5:4) zugunsten der Ehe-Öffnung. ' +
+      'Wirksam mit Veröffentlichung im Registro Oficial am 8. Juli 2019.',
+    sources: [
+      { label: 'Wikipedia — Same-sex marriage in Ecuador', url: 'https://en.wikipedia.org/wiki/Same-sex_marriage_in_Ecuador' },
+    ],
+    linked_persons: [],
+    category: 'Recht / Ehe',
+    significance: 3,
+    impact: 'positive',
+    checked: false,
+  },
+  {
+    id: 'ehe-costa-rica-2020-05-26',
+    title: 'Ehe für alle — Costa Rica (erstes Land Zentralamerikas)',
+    date: '2020-05-26',
+    country: 'Costa Rica',
+    description:
+      'Inkrafttreten am 26. Mai 2020 — erstes Land Zentralamerikas. Umsetzung eines ' +
+      'Verfassungsgerichtsurteils von 2018 nach 18-monatiger Frist.',
+    sources: [
+      { label: 'Wikipedia — Same-sex marriage in Costa Rica', url: 'https://en.wikipedia.org/wiki/Same-sex_marriage_in_Costa_Rica' },
+    ],
+    linked_persons: [],
+    category: 'Recht / Ehe',
+    significance: 4,
+    impact: 'positive',
+    checked: false,
+  },
+  {
+    id: 'ehe-chile-2022-03-10',
+    title: 'Ehe für alle — Chile',
+    date: '2022-03-10',
+    country: 'Chile',
+    description:
+      'Ley 21.400 — Inkrafttreten am 10. März 2022 (Veröffentlichung 10. Dezember 2021, ' +
+      '90 Tage später wirksam). Erste Eheschließungen am selben Tag.',
+    sources: [
+      { label: 'Wikipedia — Same-sex marriage in Chile', url: 'https://en.wikipedia.org/wiki/Same-sex_marriage_in_Chile' },
+    ],
+    linked_persons: [],
+    category: 'Recht / Ehe',
+    significance: 3,
+    impact: 'positive',
+    checked: false,
+  },
+  {
+    id: 'ehe-kuba-2022-09-27',
+    title: 'Ehe für alle — Kuba (Familiengesetzbuch)',
+    date: '2022-09-27',
+    country: 'Kuba',
+    description:
+      'Neues Familiengesetzbuch (Código de las Familias) — per Referendum am 25. September 2022 ' +
+      'angenommen (~67 %), in Kraft mit Veröffentlichung im Amtsblatt am 27. September 2022. ' +
+      'Öffnet Ehe und Adoption.',
+    sources: [
+      { label: 'Wikipedia — Same-sex marriage in Cuba', url: 'https://en.wikipedia.org/wiki/Same-sex_marriage_in_Cuba' },
+    ],
+    linked_persons: [],
+    category: 'Recht / Ehe',
+    significance: 4,
+    impact: 'positive',
+    checked: false,
+  },
+  {
+    id: 'ehe-nepal-2023-11-29',
+    title: 'Erste eingetragene gleichgeschlechtliche Ehe — Nepal (Südasien)',
+    date: '2023-11-29',
+    country: 'Nepal',
+    description:
+      'Am 29. November 2023 wurde in Lamjung die erste gleichgeschlechtliche Ehe offiziell ' +
+      'registriert (Maya Gurung / Surendra Pandey) — nach Anordnung des Obersten Gerichts. ' +
+      'Erste amtliche Registrierung in Südasien.',
+    sources: [
+      { label: 'Wikipedia — Same-sex marriage in Nepal', url: 'https://en.wikipedia.org/wiki/Same-sex_marriage_in_Nepal' },
+    ],
+    linked_persons: [],
+    category: 'Recht / Ehe',
+    significance: 4,
+    impact: 'positive',
+    checked: false,
+  },
+  {
+    id: 'ehe-thailand-2025-01-23',
+    title: 'Ehe für alle — Thailand (erstes Land Südostasiens)',
+    date: '2025-01-23',
+    country: 'Thailand',
+    description:
+      'Marriage Equality Act — Inkrafttreten am 23. Januar 2025 (Royal Assent 12. August 2024, ' +
+      'Veröffentlichung 24. September 2024, 120 Tage später wirksam). Erstes Land Südostasiens.',
+    sources: [
+      { label: 'Wikipedia — Same-sex marriage in Thailand', url: 'https://en.wikipedia.org/wiki/Same-sex_marriage_in_Thailand' },
+    ],
+    linked_persons: [],
+    category: 'Recht / Ehe',
+    significance: 5,
+    impact: 'positive',
+    checked: false,
+  },
+]
+
+// Globale Rückschritte 2022–2024 (außerhalb Europas/Russlands). Tagesgenau,
+// gegen HRW/Al Jazeera/Library of Congress bzw. Wikipedia geprüft. Milestone-Datum
+// = Parlamentsbeschluss (Inkrafttreten separat vermerkt).
+const worldRepressionSeed: Milestone[] = [
+  {
+    id: 'indonesien-kuhp-2022-12-06',
+    title: 'Neues Strafgesetzbuch (KUHP) — Indonesien',
+    date: '2022-12-06',
+    country: 'Indonesien',
+    description:
+      'Am 6. Dezember 2022 verabschiedete das Parlament (DPR) einstimmig das neue Strafgesetzbuch ' +
+      '(Gesetz Nr. 1/2023). Es stellt Sex außerhalb der Ehe und Zusammenleben unter Strafe — trifft ' +
+      'gleichgeschlechtliche Paare faktisch, da gleichgeschlechtliche Ehe nicht möglich ist. ' +
+      'Inkrafttreten am 2. Januar 2026.',
+    sources: [
+      { label: 'Al Jazeera', url: 'https://www.aljazeera.com/news/2022/12/6/indonesia-passes-legislation-outlawing-sex-outside-marriage' },
+      { label: 'Human Rights Watch', url: 'https://www.hrw.org/news/2022/12/08/indonesia-new-criminal-code-disastrous-rights' },
+      { label: 'Library of Congress', url: 'https://www.loc.gov/item/global-legal-monitor/2022-12-11/indonesia-new-criminal-code-passed-by-parliament/' },
+    ],
+    linked_persons: [],
+    category: 'Recht / Kriminalisierung',
+    significance: 4,
+    impact: 'negative',
+    checked: false,
+  },
+  {
+    id: 'ghana-family-values-2024-02-28',
+    title: 'Human Sexual Rights and Family Values Bill — Ghana',
+    date: '2024-02-28',
+    country: 'Ghana',
+    description:
+      'Am 28. Februar 2024 nahm das Parlament das „Family Values"-Gesetz einstimmig an — bis zu ' +
+      '3 Jahre Haft für Identifizierung als LGBTQ, bis zu 5 Jahre für „Förderung". Der Entwurf ' +
+      'verfiel vor der Wahl 2024, wurde 2025 erneut eingebracht und 2026 wieder beschlossen; ' +
+      'bislang NICHT vom Präsidenten unterzeichnet — noch nicht in Kraft.',
+    sources: [
+      { label: 'Wikipedia — Human Sexual Rights and Family Values Bill', url: 'https://en.wikipedia.org/wiki/Human_Sexual_Rights_and_Family_Values_Bill' },
+    ],
+    linked_persons: [],
+    category: 'Recht / Kriminalisierung',
+    significance: 3,
+    impact: 'negative',
+    checked: false,
+  },
+  {
+    id: 'irak-anti-lgbt-2024-04-27',
+    title: 'Gesetz gegen gleichgeschlechtliche Beziehungen — Irak',
+    date: '2024-04-27',
+    country: 'Irak',
+    description:
+      'Am 27. April 2024 beschloss das irakische Parlament eine Änderung des Anti-Prostitutions-' +
+      'Gesetzes, die einvernehmliche gleichgeschlechtliche Beziehungen mit bis zu 15 Jahren Haft ' +
+      'und Trans-Sein mit bis zu 3 Jahren bestraft.',
+    sources: [
+      { label: 'Wikipedia — LGBT rights in Iraq', url: 'https://en.wikipedia.org/wiki/LGBT_rights_in_Iraq' },
+    ],
+    linked_persons: [],
+    category: 'Recht / Kriminalisierung',
+    significance: 4,
+    impact: 'negative',
+    checked: false,
+  },
+]
+
+const SEED: Milestone[] = [...BASE_SEED, ...decrimSeed, ...unionSeed, ...transSeed, ...repressionSeed, ...worldDecrimSeed, ...hungarySeed, ...worldMarriageSeed, ...worldRepressionSeed]
 
 const KEY = 'person-db.milestones.v2'
 
