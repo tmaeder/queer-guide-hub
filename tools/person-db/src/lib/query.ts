@@ -152,6 +152,30 @@ export async function fetchPersonById(id: string): Promise<Personality | null> {
   return (data as unknown as Personality) ?? null
 }
 
+// Bulk read for the quality dashboard: all live (non-archived, non-duplicate)
+// rows in scope, paged through in chunks (PostgREST caps ~1000/request). Used
+// to compute the Ampel-tier distribution client-side (same logic as the detail
+// Ampel). scope='public' = only visibility='public' (the risk surface);
+// scope='live' = all live regardless of visibility (heavier).
+export async function fetchForQuality(scope: 'public' | 'live'): Promise<Personality[]> {
+  const CHUNK = 1000
+  const out: Personality[] = []
+  for (let from = 0; ; from += CHUNK) {
+    let q = supabase
+      .from('personalities')
+      .select(PERSONALITY_COLUMNS) as unknown as PgQuery
+    q = q.is('duplicate_of_id', null).not('review_status', 'eq', 'archived')
+    if (scope === 'public') q = q.eq('visibility', 'public')
+    q = q.order('updated_at', { ascending: false }).range(from, from + CHUNK - 1)
+    const { data, error } = await q
+    if (error) throw error
+    const rows = (data ?? []) as unknown as Personality[]
+    out.push(...rows)
+    if (rows.length < CHUNK) break
+  }
+  return out
+}
+
 // Duplicate pairs from duplicate_of_id (canonical ↔ duplicate) for review.
 export interface DupPair {
   left: Personality // canonical (survivor)
