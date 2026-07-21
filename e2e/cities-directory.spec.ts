@@ -9,7 +9,13 @@ import { test, expect } from '@playwright/test';
 test.describe('Cities directory', () => {
   test('renders hero, filter bar, list, and map landmarks', async ({ page }) => {
     await page.goto('/cities');
-    await page.waitForLoadState('networkidle').catch(() => {});
+    // No `networkidle`: the desktop layout mounts a live MapLibre pane whose
+    // continuous tile requests keep the network busy and eat the whole 30s
+    // test budget. Wait for the filter bar instead.
+    await page
+      .getByRole('group', { name: /filter cities/i })
+      .waitFor({ timeout: 15_000 })
+      .catch(() => {});
 
     const filterGroup = page.getByRole('group', { name: /filter cities/i });
     if (!(await filterGroup.isVisible().catch(() => false))) {
@@ -17,7 +23,10 @@ test.describe('Cities directory', () => {
       return;
     }
 
-    await expect(page.getByRole('region', { name: /cities map/i })).toBeVisible();
+    // The map pane is a lazy MapLibre chunk mounted on idle — allow it time.
+    await expect(page.getByRole('region', { name: /cities map/i })).toBeVisible({
+      timeout: 20_000,
+    });
     await expect(page.getByRole('list', { name: /^cities$/i })).toBeVisible();
     // Two role=status nodes exist: the global sr-only route announcer (a <div>,
     // routes.tsx) and the visible count (a <p>, CitiesFilterBar.tsx). Target the
@@ -29,7 +38,13 @@ test.describe('Cities directory', () => {
 
   test('typing in the search input filters the list and updates ?q=', async ({ page }) => {
     await page.goto('/cities');
-    await page.waitForLoadState('networkidle').catch(() => {});
+    // No `networkidle`: the desktop layout mounts a live MapLibre pane whose
+    // continuous tile requests keep the network busy and eat the whole 30s
+    // test budget. Wait for the filter bar instead.
+    await page
+      .getByRole('group', { name: /filter cities/i })
+      .waitFor({ timeout: 15_000 })
+      .catch(() => {});
 
     const filterGroup = page.getByRole('group', { name: /filter cities/i });
     if (!(await filterGroup.isVisible().catch(() => false))) {
@@ -44,7 +59,13 @@ test.describe('Cities directory', () => {
 
   test('toggling a continent chip updates ?continent=', async ({ page }) => {
     await page.goto('/cities');
-    await page.waitForLoadState('networkidle').catch(() => {});
+    // No `networkidle`: the desktop layout mounts a live MapLibre pane whose
+    // continuous tile requests keep the network busy and eat the whole 30s
+    // test budget. Wait for the filter bar instead.
+    await page
+      .getByRole('group', { name: /filter cities/i })
+      .waitFor({ timeout: 15_000 })
+      .catch(() => {});
 
     const continentGroup = page.getByRole('group', { name: /filter by continent/i });
     if (!(await continentGroup.isVisible().catch(() => false))) {
@@ -59,7 +80,13 @@ test.describe('Cities directory', () => {
 
   test('reset button clears filters', async ({ page }) => {
     await page.goto('/cities?q=ber&continent=eu&equality=very-high');
-    await page.waitForLoadState('networkidle').catch(() => {});
+    // No `networkidle`: the desktop layout mounts a live MapLibre pane whose
+    // continuous tile requests keep the network busy and eat the whole 30s
+    // test budget. Wait for the filter bar instead.
+    await page
+      .getByRole('group', { name: /filter cities/i })
+      .waitFor({ timeout: 15_000 })
+      .catch(() => {});
 
     const reset = page.getByRole('button', { name: /reset filters/i });
     if (!(await reset.isVisible().catch(() => false))) {
