@@ -14,6 +14,11 @@ vi.mock('@/components/ui/loading', () => ({
 vi.mock('@/components/country/LGBTJurisdictionInfo', () => ({
   default: () => <div data-testid="rights" />,
 }));
+// CountryLegalHistory runs a real useQuery (useMilestonesForCountry); stub it so
+// the tab test needs no QueryClientProvider.
+vi.mock('@/components/country/CountryLegalHistory', () => ({
+  CountryLegalHistory: () => <div data-testid="legal-history" />,
+}));
 
 import { CityRightsTab } from '../CityRightsTab';
 

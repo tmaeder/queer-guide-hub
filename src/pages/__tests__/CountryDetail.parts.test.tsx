@@ -8,6 +8,11 @@ import { MemoryRouter } from 'react-router';
 vi.mock('@/components/routing/LocalizedLink', () => ({
   LocalizedLink: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
 }));
+// CountryLegalHistory runs a real useQuery (useMilestonesForCountry); stub it so
+// the tab test needs no QueryClientProvider.
+vi.mock('@/components/country/CountryLegalHistory', () => ({
+  CountryLegalHistory: () => <div data-testid="legal-history" />,
+}));
 
 import { SectionLoader, CountryRightsTab, CountryCitiesTab } from '../CountryDetail.parts';
 
