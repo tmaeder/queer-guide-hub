@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { errMsg } from './lib/errMsg'
 import { fetchDuplicatePairs, type DupPair } from './lib/query'
 import { withFlag } from './lib/flags'
 import type { Personality } from './types'
@@ -36,7 +37,7 @@ export function DuplicateReview({ onClose }: { onClose: () => void }) {
     let alive = true
     fetchDuplicatePairs(100)
       .then((p) => alive && setPairs(p))
-      .catch((e) => alive && setError(e instanceof Error ? e.message : String(e)))
+      .catch((e) => alive && setError(errMsg(e)))
       .finally(() => alive && setLoading(false))
     return () => { alive = false }
   }, [])

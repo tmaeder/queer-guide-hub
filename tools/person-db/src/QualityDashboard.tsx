@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { errMsg } from './lib/errMsg'
 import type { Personality } from './types'
 import { fetchForQuality, fetchPersonById } from './lib/query'
 import { assessQuality, provenanceLabel, type QualityTier, type Provenance } from './lib/quality'
@@ -39,7 +40,7 @@ export function QualityDashboard() {
     setSelectedPerson(null)
     fetchForQuality(scope)
       .then((r) => { if (alive) { setRows(r); refreshLocal() } })
-      .catch((e) => { if (alive) setError(e.message ?? String(e)) })
+      .catch((e) => { if (alive) setError(errMsg(e)) })
       .finally(() => { if (alive) setLoading(false) })
     return () => { alive = false }
   }, [scope])

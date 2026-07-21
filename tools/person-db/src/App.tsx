@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { errMsg } from './lib/errMsg'
 import { PAGE_SIZE } from './config'
 import { fetchPersonalities } from './lib/query'
 import { exportCsv, exportJson } from './lib/export'
@@ -57,7 +58,7 @@ export function App() {
           setCount(r.count)
           refreshLocal()
         })
-        .catch((e) => setError(e.message ?? String(e)))
+        .catch((e) => setError(errMsg(e)))
         .finally(() => setLoading(false))
     }, 250)
     return () => clearTimeout(debounceRef.current)
