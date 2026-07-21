@@ -1,23 +1,35 @@
 name: claude-md-drift
+# Keeps the "Repo stats" counts in CLAUDE.md in sync with the actual number of
+# edge functions + migrations.
+#
+# Runs on push to main (post-merge), NOT on pull_request. The previous
+# pull_request version pushed a `skip-checks: true` commit onto the PR branch;
+# that commit became the PR head, and because its checks were skipped the
+# required status checks never reported on the head SHA — so any migration-
+# touching PR was permanently BLOCKED (had to be unstuck by hand three times on
+# 2026-07-21). Syncing on main instead means the bot never touches a PR branch,
+# so it can never block a PR. Worst case (if branch protection refuses the
+# direct push) the counts drift — cosmetic — but no PR is ever blocked.
 on:
-  pull_request:
+  push:
+    branches: [main]
     paths:
       - 'supabase/functions/**'
       - 'supabase/migrations/**'
       - 'CLAUDE.md'
 permissions:
   contents: write
+concurrency:
+  # Serialize so two quick merges don't race on the same push to main.
+  group: claude-md-drift-main
+  cancel-in-progress: false
 jobs:
-  check:
+  sync:
     runs-on: ubuntu-latest
-    env:
-      HEAD_REF: ${{ github.head_ref }}
-      HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
-      BASE_REPO: ${{ github.repository }}
     steps:
       - uses: actions/checkout@v7
         with:
-          ref: ${{ github.head_ref }}
+          ref: main
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: sync CLAUDE.md repo stats
         id: sync
@@ -46,8 +58,8 @@ jobs:
             echo "fns=$actual_fns" >> "$GITHUB_OUTPUT"
             echo "mig=$actual_mig" >> "$GITHUB_OUTPUT"
           fi
-      - name: commit drift fix (same-repo PRs)
-        if: steps.sync.outputs.changed == 'true' && github.event.pull_request.head.repo.full_name == github.repository
+      - name: commit drift fix
+        if: steps.sync.outputs.changed == 'true'
         env:
           FNS: ${{ steps.sync.outputs.fns }}
           MIG: ${{ steps.sync.outputs.mig }}
@@ -55,17 +67,10 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add CLAUDE.md
-          # skip-checks trailer instead of "[skip ci]": same skip effect on this
-          # push, but inert when a squash merge concatenates it mid-message
-          # ("[skip ci]" anywhere in a squashed message skips ALL deploys — see
-          # the CLAUDE.md gotcha; bit us on PR #1952).
+          # This commit lands on main directly. `skip-checks: true` avoids a
+          # pointless full CI/deploy rebuild for a docs-only stat bump; it is a
+          # trailer (not "[skip ci]"), so it can't poison a later squash merge.
+          # A CLAUDE.md-only change also can't re-trigger this workflow into a
+          # loop: the stats are now in sync, so the next run sees changed=false.
           git commit -m "chore(docs): sync CLAUDE.md repo counts (fns=${FNS}, mig=${MIG})" -m "skip-checks: true"
-          git push origin "HEAD:${HEAD_REF}"
-      - name: fail if drift remains (forks)
-        if: steps.sync.outputs.changed == 'true' && github.event.pull_request.head.repo.full_name != github.repository
-        env:
-          FNS: ${{ steps.sync.outputs.fns }}
-          MIG: ${{ steps.sync.outputs.mig }}
-        run: |
-          echo "::error::CLAUDE.md repo counts are stale (fns=${FNS}, mig=${MIG}); update CLAUDE.md in your fork."
-          exit 1
+          git push origin HEAD:main
