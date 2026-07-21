@@ -73,9 +73,9 @@ export function Upcoming() {
 
   useEffect(() => {
     let alive = true
-    setLoading(true)
-    setError('')
     ;(async () => {
+      setLoading(true)
+      setError('')
       const { data, error } = await supabase.rpc('personalities_anniversaries', {
         p_from: range.from,
         p_to: range.to,
@@ -89,7 +89,13 @@ export function Upcoming() {
     return () => { alive = false }
   }, [range, refreshLocal])
 
-  useEffect(() => setVisible(pageSize), [pageSize])
+  // Reset the visible window when the page size changes — during render
+  // (tracking the previous size) rather than in an effect.
+  const [lastPageSize, setLastPageSize] = useState(pageSize)
+  if (pageSize !== lastPageSize) {
+    setLastPageSize(pageSize)
+    setVisible(pageSize)
+  }
 
   // Filters, then window.
   const filtered = useMemo(() => {
@@ -207,7 +213,15 @@ export function Upcoming() {
                 <div
                   key={it.a.id + it.a.anniversary}
                   className={'row' + (selectedId === it.a.id ? ' sel' : '')}
+                  role="button"
+                  tabIndex={0}
                   onClick={() => selectRow(it.a.id)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault()
+                      selectRow(it.a.id)
+                    }
+                  }}
                 >
                   {checked.has(it.a.id) && <span className="check">✓</span>}
                   {it.a.image_url ? <img src={it.a.image_url} alt="" loading="lazy" /> : <span className="noimg">—</span>}

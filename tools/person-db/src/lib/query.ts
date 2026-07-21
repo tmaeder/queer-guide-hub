@@ -13,8 +13,27 @@ export interface PageResult {
   count: number
 }
 
+// Minimal structural view of the PostgREST filter/transform builder covering
+// only the chainable methods used here. Every method returns the same shape,
+// so reassignment (`q = q.eq(...)`) stays typed without falling back to `any`.
+// The builder is also awaitable and resolves to a { data, count, error } row set.
+interface PgQuery
+  extends PromiseLike<{
+    data: Record<string, unknown>[] | null
+    count: number | null
+    error: { message: string } | null
+  }> {
+  eq(col: string, val: unknown): PgQuery
+  is(col: string, val: unknown): PgQuery
+  or(filter: string): PgQuery
+  not(col: string, op: string, val: unknown): PgQuery
+  ilike(col: string, pattern: string): PgQuery
+  order(col: string, opts: { ascending: boolean }): PgQuery
+  range(from: number, to: number): PgQuery
+}
+
 // Apply a cohort preset's WHERE clauses to a PostgREST query builder.
-function applyCohort(q: any, cohort: Cohort) {
+function applyCohort(q: PgQuery, cohort: Cohort): PgQuery {
   switch (cohort) {
     case 'needs_attention':
       return q.eq('needs_attention', true).is('duplicate_of_id', null)
@@ -54,9 +73,9 @@ export async function fetchPersonalities(
   filters: Filters,
   page: number,
 ): Promise<PageResult> {
-  let q: any = supabase
+  let q = supabase
     .from('personalities')
-    .select(PERSONALITY_COLUMNS, { count: 'estimated' })
+    .select(PERSONALITY_COLUMNS, { count: 'estimated' }) as unknown as PgQuery
 
   q = applyCohort(q, filters.cohort)
 
@@ -87,10 +106,10 @@ export async function fetchAlpha(
   limit: number,
   f: ListeFilters,
 ): Promise<Personality[]> {
-  let q: any = supabase
+  let q = supabase
     .from('personalities')
     .select(PERSONALITY_COLUMNS)
-    .is('duplicate_of_id', null)
+    .is('duplicate_of_id', null) as unknown as PgQuery
 
   if (f.search.trim()) {
     const safe = f.search.trim().replace(/[%,()]/g, ' ')
@@ -241,7 +260,12 @@ export async function searchCities(term: string, limit = 8): Promise<CityHit[]> 
     .order('name', { ascending: true })
     .limit(limit)
   if (error) throw error
-  return ((data ?? []) as any[]).map((c) => ({
+  type CityJoinRow = {
+    id: string
+    name: string
+    countries: { name: string | null; code: string | null } | null
+  }
+  return ((data ?? []) as unknown as CityJoinRow[]).map((c) => ({
     id: c.id,
     name: c.name,
     country: c.countries?.name ?? null,
@@ -270,9 +294,9 @@ export async function searchPersons(
 
 // Exact head-count for one cohort (dashboard tiles).
 async function cohortCount(cohort: Cohort): Promise<number> {
-  let q: any = supabase
+  let q = supabase
     .from('personalities')
-    .select('id', { count: 'exact', head: true })
+    .select('id', { count: 'exact', head: true }) as unknown as PgQuery
   q = applyCohort(q, cohort)
   const { count, error } = await q
   if (error) throw error

@@ -9,6 +9,9 @@
     "build": "tsc -b && vite build",
     "preview": "vite preview"
   },
+  "overrides": {
+    "d3-color": "^3.1.0"
+  },
   "dependencies": {
     "@supabase/supabase-js": "^2.45.0",
     "i18n-iso-countries": "^7.14.0",

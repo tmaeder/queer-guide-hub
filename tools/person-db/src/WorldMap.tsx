@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { ComposableMap, Geographies, Geography } from 'react-simple-maps'
+import { ComposableMap, Geographies, Geography, type Geo } from 'react-simple-maps'
 import isoCountries from 'i18n-iso-countries'
 import worldData from 'world-atlas/countries-110m.json'
 import type { Country } from './lib/query'
@@ -74,7 +74,7 @@ export function WorldMap({
         <ComposableMap projectionConfig={{ scale: 145 }} height={380} style={{ width: '100%', height: 'auto' }}>
           <Geographies geography={worldData}>
             {({ geographies }) =>
-              geographies.map((geo: any) => {
+              geographies.map((geo: Geo) => {
                 const a2 = isoCountries.numericToAlpha2(String(geo.id)) ?? ''
                 const count = byAlpha2[a2] ?? 0
                 const name = geo.properties?.name ?? a2

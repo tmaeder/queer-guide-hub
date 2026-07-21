@@ -12,15 +12,13 @@ export function Dashboard({ onPick }: { onPick: (c: Cohort) => void }) {
   const [counts, setCounts] = useState<CohortCounts>({})
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [checked, setChecked] = useState(0)
+  const [checked] = useState(() => checkedIds().size)
 
   useEffect(() => {
-    setLoading(true)
     fetchCohortCounts(COHORTS.map((c) => c.key))
       .then(setCounts)
       .catch((e) => setError(e.message ?? String(e)))
       .finally(() => setLoading(false))
-    setChecked(checkedIds().size)
   }, [])
 
   return (
