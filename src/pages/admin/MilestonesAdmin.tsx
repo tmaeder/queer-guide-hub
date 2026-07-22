@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { ContentListPanel } from '@/components/cms/ContentListPanel';
 import { MilestoneDiscoveryButton } from '@/components/admin/MilestoneDiscoveryButton';
+import { MilestoneLinkProposalsPanel } from '@/components/admin/milestones/MilestoneLinkProposalsPanel';
 
 /**
  * Milestones admin: the generic CMS list plus an "AI suggestions" action next to
@@ -20,6 +21,7 @@ export default function MilestonesAdmin() {
         </p>
         <MilestoneDiscoveryButton onComplete={() => setRefreshKey((k) => k + 1)} />
       </div>
+      <MilestoneLinkProposalsPanel />
       <ContentListPanel key={refreshKey} contentTypeId="milestones" />
     </div>
   );

@@ -3511,7 +3511,8 @@
     },
     "era": {
       "showAll": "[ZH] Show all {{count}} events",
-      "showFewer": "[ZH] Show fewer"
+      "showFewer": "[ZH] Show fewer",
+      "keyFigures": "[ZH] Key figures of this era"
     },
     "partOf": "[ZH] Part of: {{era}}",
     "prev": "[ZH] Earlier",

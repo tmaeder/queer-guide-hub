@@ -3511,7 +3511,8 @@
     },
     "era": {
       "showAll": "[JA] Show all {{count}} events",
-      "showFewer": "[JA] Show fewer"
+      "showFewer": "[JA] Show fewer",
+      "keyFigures": "[JA] Key figures of this era"
     },
     "partOf": "[JA] Part of: {{era}}",
     "prev": "[JA] Earlier",

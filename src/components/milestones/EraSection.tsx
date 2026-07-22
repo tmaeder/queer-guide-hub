@@ -6,6 +6,7 @@ import { isRestrainedMilestone, pickAnchors } from '@/lib/historyEraGrouping';
 import { useMilestonesTimeline, type MilestoneTimelineFilters } from '@/hooks/useMilestones';
 import type { Milestone } from '@/types/milestone';
 import { AnchorMilestoneCard } from './AnchorMilestoneCard';
+import { EraKeyFigures } from './EraKeyFigures';
 import { MilestoneRow } from './MilestoneRow';
 
 /**
@@ -54,6 +55,8 @@ export function EraSection({
         <h2 className="mt-1 font-display text-headline-lg font-semibold">{t(era.titleKey)}</h2>
         <p className="mt-2 max-w-prose text-15 leading-relaxed text-muted-foreground">{t(era.introKey)}</p>
       </header>
+
+      <EraKeyFigures era={era} />
 
       {anchors.length > 0 && (
         <div

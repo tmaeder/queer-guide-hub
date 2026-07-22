@@ -163,6 +163,31 @@ export function useMilestonesForCity(cityId: string | undefined, limit = 6) {
   });
 }
 
+export interface HistoryKeyFigure {
+  personality_id: string;
+  name: string;
+  slug: string;
+  image_url: string | null;
+  year: number;
+}
+
+/**
+ * Personalities linked to published milestones, one row per link (with the
+ * milestone's year). Consumers group by era and pick the top figures per era.
+ * Server-side filtered to public, non-duplicate personalities + safety gating.
+ */
+export function useHistoryKeyFigures() {
+  return useQuery({
+    queryKey: ['history-key-figures'],
+    staleTime: HOUR,
+    queryFn: async () => {
+      const { data, error } = await untypedRpc<HistoryKeyFigure[]>('history_key_figures', {});
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+}
+
 const dayKey = (d: Date) =>
   `${d.getFullYear()}-${`${d.getMonth() + 1}`.padStart(2, '0')}-${`${d.getDate()}`.padStart(2, '0')}`;
 

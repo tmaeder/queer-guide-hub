@@ -3513,7 +3513,8 @@
     },
     "era": {
       "showAll": "[IT] Show all {{count}} events",
-      "showFewer": "[IT] Show fewer"
+      "showFewer": "[IT] Show fewer",
+      "keyFigures": "[IT] Key figures of this era"
     },
     "partOf": "[IT] Part of: {{era}}",
     "prev": "[IT] Earlier",

@@ -3482,6 +3482,7 @@
       }
     },
     "era": {
+      "keyFigures": "Key figures of this era",
       "showAll": "Show all {{count}} events",
       "showFewer": "Show fewer"
     },
