@@ -61,7 +61,11 @@ export function useOrganizationDescriptor(slug: string | undefined): EntityDescr
       related: { type: 'organization', id: org.id, title: t('pages.entityDetail.related', 'Related') },
       mobileBar: null,
       overlays: null,
-      breadcrumbs: [{ label: t('nav.home', 'Home'), href: '/' }, { label: org.name }],
+      // Entity-only trail — BreadcrumbBar prepends the Home crumb itself.
+      breadcrumbs: [
+        { label: t('breadcrumb.organizations', 'Organizations'), href: '/organizations' },
+        { label: org.name },
+      ],
       meta: buildOrgMeta(org),
       personalization: {
         entityType: 'organization',
