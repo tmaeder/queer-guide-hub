@@ -3438,14 +3438,16 @@
     "sections": {
       "sources": "المصادر",
       "linked": "أشخاص وأماكن ذات صلة",
-      "related": "المزيد من {{country}}"
+      "related": "المزيد من {{country}}",
+      "sameYear": "[AR] Elsewhere in {{year}}"
     },
     "sidebar": {
       "facts": "حقائق",
       "date": "التاريخ",
       "place": "المكان",
       "city": "المدينة",
-      "country": "الدولة"
+      "country": "الدولة",
+      "explore": "[AR] Then & now"
     },
     "entityType": {
       "personality": "شخصية",
@@ -3470,6 +3472,64 @@
     },
     "city": {
       "title": "التاريخ الكويري في {{city}}"
+    },
+    "eras": {
+      "hidden-lives": {
+        "title": "[AR] Hidden lives",
+        "intro": "[AR] Before 1800, queer life survived in the shadows of law and church. What the record preserves is mostly persecution — trials, executions, edicts — alongside rare glimpses of love and community that outlasted them."
+      },
+      "empire-criminalization": {
+        "title": "[AR] Empire & criminalization",
+        "intro": "[AR] Colonial empires exported sodomy laws across the globe in the 19th century, while a few states — revolutionary France first among them — quietly removed their own. Much of today's legal map was drawn in this era."
+      },
+      "birth-of-movement": {
+        "title": "[AR] Birth of a movement",
+        "intro": "[AR] Between the 1860s and the early 1930s the first words, organizations and campaigns emerged: Kertbeny coined 'homosexual', Hirschfeld founded the first gay rights organization, and Berlin briefly became the queer capital of the world."
+      },
+      "destruction": {
+        "title": "[AR] Destruction",
+        "intro": "[AR] Fascism destroyed the first movement. The Nazis burned Hirschfeld's institute, tightened Paragraph 175 and deported thousands of gay men to concentration camps. Remembering this era is part of why this timeline exists."
+      },
+      "homophile-years": {
+        "title": "[AR] The homophile years",
+        "intro": "[AR] After the war, small 'homophile' groups rebuilt quietly — Mattachine, the Daughters of Bilitis, Arcadie, the COC — trading radicalism for respectability while police raids and purges continued."
+      },
+      "liberation": {
+        "title": "[AR] Liberation",
+        "intro": "[AR] Stonewall in 1969 turned decades of quiet organizing into open revolt. Pride marches spread worldwide, homosexuality left the psychiatric manuals, and the first anti-discrimination laws were won."
+      },
+      "aids-crisis": {
+        "title": "[AR] The AIDS crisis",
+        "intro": "[AR] A generation was decimated while governments looked away. The epidemic's grief forged the militant activism — ACT UP, treatment-access campaigns — that reshaped medicine and queer politics alike."
+      },
+      "recognition": {
+        "title": "[AR] Recognition",
+        "intro": "[AR] From the first registered partnerships to the Netherlands opening marriage in 2001, courts and parliaments began recognizing queer lives: decriminalization accelerated and trans rights entered the legal mainstream."
+      },
+      "equality-wave": {
+        "title": "[AR] The equality wave",
+        "intro": "[AR] The 2010s brought marriage equality to dozens of countries on every continent, landmark court rulings from the United States to India, and unprecedented queer visibility in public life."
+      },
+      "backlash-now": {
+        "title": "[AR] Backlash & now",
+        "intro": "[AR] Progress continues — and so does organized backlash: 'LGBT-free zones', anti-trans legislation and new criminalization drives. The timeline is still being written."
+      }
+    },
+    "era": {
+      "showAll": "[AR] Show all {{count}} events",
+      "showFewer": "[AR] Show fewer"
+    },
+    "partOf": "[AR] Part of: {{era}}",
+    "prev": "[AR] Earlier",
+    "next": "[AR] Later",
+    "onThisDay": "[AR] On this day",
+    "eraNav": "[AR] Jump to era",
+    "stats": "[AR] {{count}} milestones across {{eras}} eras",
+    "timelineNav": "[AR] Timeline navigation",
+    "explore": {
+      "country": "[AR] Travel guide: {{name}}",
+      "city": "[AR] City guide: {{name}}",
+      "events": "[AR] Events in {{name}} today"
     }
   }
 }

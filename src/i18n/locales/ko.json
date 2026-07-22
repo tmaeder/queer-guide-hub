@@ -3432,14 +3432,16 @@
     "sections": {
       "sources": "출처",
       "linked": "관련 인물과 장소",
-      "related": "{{country}}의 다른 이정표"
+      "related": "{{country}}의 다른 이정표",
+      "sameYear": "[KO] Elsewhere in {{year}}"
     },
     "sidebar": {
       "facts": "정보",
       "date": "날짜",
       "place": "장소",
       "city": "도시",
-      "country": "국가"
+      "country": "국가",
+      "explore": "[KO] Then & now"
     },
     "entityType": {
       "personality": "인물",
@@ -3464,6 +3466,64 @@
     },
     "city": {
       "title": "{{city}}의 퀴어 역사"
+    },
+    "eras": {
+      "hidden-lives": {
+        "title": "[KO] Hidden lives",
+        "intro": "[KO] Before 1800, queer life survived in the shadows of law and church. What the record preserves is mostly persecution — trials, executions, edicts — alongside rare glimpses of love and community that outlasted them."
+      },
+      "empire-criminalization": {
+        "title": "[KO] Empire & criminalization",
+        "intro": "[KO] Colonial empires exported sodomy laws across the globe in the 19th century, while a few states — revolutionary France first among them — quietly removed their own. Much of today's legal map was drawn in this era."
+      },
+      "birth-of-movement": {
+        "title": "[KO] Birth of a movement",
+        "intro": "[KO] Between the 1860s and the early 1930s the first words, organizations and campaigns emerged: Kertbeny coined 'homosexual', Hirschfeld founded the first gay rights organization, and Berlin briefly became the queer capital of the world."
+      },
+      "destruction": {
+        "title": "[KO] Destruction",
+        "intro": "[KO] Fascism destroyed the first movement. The Nazis burned Hirschfeld's institute, tightened Paragraph 175 and deported thousands of gay men to concentration camps. Remembering this era is part of why this timeline exists."
+      },
+      "homophile-years": {
+        "title": "[KO] The homophile years",
+        "intro": "[KO] After the war, small 'homophile' groups rebuilt quietly — Mattachine, the Daughters of Bilitis, Arcadie, the COC — trading radicalism for respectability while police raids and purges continued."
+      },
+      "liberation": {
+        "title": "[KO] Liberation",
+        "intro": "[KO] Stonewall in 1969 turned decades of quiet organizing into open revolt. Pride marches spread worldwide, homosexuality left the psychiatric manuals, and the first anti-discrimination laws were won."
+      },
+      "aids-crisis": {
+        "title": "[KO] The AIDS crisis",
+        "intro": "[KO] A generation was decimated while governments looked away. The epidemic's grief forged the militant activism — ACT UP, treatment-access campaigns — that reshaped medicine and queer politics alike."
+      },
+      "recognition": {
+        "title": "[KO] Recognition",
+        "intro": "[KO] From the first registered partnerships to the Netherlands opening marriage in 2001, courts and parliaments began recognizing queer lives: decriminalization accelerated and trans rights entered the legal mainstream."
+      },
+      "equality-wave": {
+        "title": "[KO] The equality wave",
+        "intro": "[KO] The 2010s brought marriage equality to dozens of countries on every continent, landmark court rulings from the United States to India, and unprecedented queer visibility in public life."
+      },
+      "backlash-now": {
+        "title": "[KO] Backlash & now",
+        "intro": "[KO] Progress continues — and so does organized backlash: 'LGBT-free zones', anti-trans legislation and new criminalization drives. The timeline is still being written."
+      }
+    },
+    "era": {
+      "showAll": "[KO] Show all {{count}} events",
+      "showFewer": "[KO] Show fewer"
+    },
+    "partOf": "[KO] Part of: {{era}}",
+    "prev": "[KO] Earlier",
+    "next": "[KO] Later",
+    "onThisDay": "[KO] On this day",
+    "eraNav": "[KO] Jump to era",
+    "stats": "[KO] {{count}} milestones across {{eras}} eras",
+    "timelineNav": "[KO] Timeline navigation",
+    "explore": {
+      "country": "[KO] Travel guide: {{name}}",
+      "city": "[KO] City guide: {{name}}",
+      "events": "[KO] Events in {{name}} today"
     }
   }
 }

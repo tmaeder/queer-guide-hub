@@ -3468,14 +3468,16 @@
     "sections": {
       "sources": "Источники",
       "linked": "Причастные люди и места",
-      "related": "Ещё из {{country}}"
+      "related": "Ещё из {{country}}",
+      "sameYear": "[RU] Elsewhere in {{year}}"
     },
     "sidebar": {
       "facts": "Факты",
       "date": "Дата",
       "place": "Место",
       "city": "Город",
-      "country": "Страна"
+      "country": "Страна",
+      "explore": "[RU] Then & now"
     },
     "entityType": {
       "personality": "Личность",
@@ -3500,6 +3502,64 @@
     },
     "city": {
       "title": "Квир-история: {{city}}"
+    },
+    "eras": {
+      "hidden-lives": {
+        "title": "[RU] Hidden lives",
+        "intro": "[RU] Before 1800, queer life survived in the shadows of law and church. What the record preserves is mostly persecution — trials, executions, edicts — alongside rare glimpses of love and community that outlasted them."
+      },
+      "empire-criminalization": {
+        "title": "[RU] Empire & criminalization",
+        "intro": "[RU] Colonial empires exported sodomy laws across the globe in the 19th century, while a few states — revolutionary France first among them — quietly removed their own. Much of today's legal map was drawn in this era."
+      },
+      "birth-of-movement": {
+        "title": "[RU] Birth of a movement",
+        "intro": "[RU] Between the 1860s and the early 1930s the first words, organizations and campaigns emerged: Kertbeny coined 'homosexual', Hirschfeld founded the first gay rights organization, and Berlin briefly became the queer capital of the world."
+      },
+      "destruction": {
+        "title": "[RU] Destruction",
+        "intro": "[RU] Fascism destroyed the first movement. The Nazis burned Hirschfeld's institute, tightened Paragraph 175 and deported thousands of gay men to concentration camps. Remembering this era is part of why this timeline exists."
+      },
+      "homophile-years": {
+        "title": "[RU] The homophile years",
+        "intro": "[RU] After the war, small 'homophile' groups rebuilt quietly — Mattachine, the Daughters of Bilitis, Arcadie, the COC — trading radicalism for respectability while police raids and purges continued."
+      },
+      "liberation": {
+        "title": "[RU] Liberation",
+        "intro": "[RU] Stonewall in 1969 turned decades of quiet organizing into open revolt. Pride marches spread worldwide, homosexuality left the psychiatric manuals, and the first anti-discrimination laws were won."
+      },
+      "aids-crisis": {
+        "title": "[RU] The AIDS crisis",
+        "intro": "[RU] A generation was decimated while governments looked away. The epidemic's grief forged the militant activism — ACT UP, treatment-access campaigns — that reshaped medicine and queer politics alike."
+      },
+      "recognition": {
+        "title": "[RU] Recognition",
+        "intro": "[RU] From the first registered partnerships to the Netherlands opening marriage in 2001, courts and parliaments began recognizing queer lives: decriminalization accelerated and trans rights entered the legal mainstream."
+      },
+      "equality-wave": {
+        "title": "[RU] The equality wave",
+        "intro": "[RU] The 2010s brought marriage equality to dozens of countries on every continent, landmark court rulings from the United States to India, and unprecedented queer visibility in public life."
+      },
+      "backlash-now": {
+        "title": "[RU] Backlash & now",
+        "intro": "[RU] Progress continues — and so does organized backlash: 'LGBT-free zones', anti-trans legislation and new criminalization drives. The timeline is still being written."
+      }
+    },
+    "era": {
+      "showAll": "[RU] Show all {{count}} events",
+      "showFewer": "[RU] Show fewer"
+    },
+    "partOf": "[RU] Part of: {{era}}",
+    "prev": "[RU] Earlier",
+    "next": "[RU] Later",
+    "onThisDay": "[RU] On this day",
+    "eraNav": "[RU] Jump to era",
+    "stats": "[RU] {{count}} milestones across {{eras}} eras",
+    "timelineNav": "[RU] Timeline navigation",
+    "explore": {
+      "country": "[RU] Travel guide: {{name}}",
+      "city": "[RU] City guide: {{name}}",
+      "events": "[RU] Events in {{name}} today"
     }
   }
 }
