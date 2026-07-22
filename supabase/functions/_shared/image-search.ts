@@ -107,7 +107,7 @@ export async function fetchFromWikimedia(query: string, minWidth = 800, minHeigh
   } catch { return [] }
 }
 
-const WP_UA = 'QueerGuideBot/1.0 (https://queer.guide; contact@queer.guide)'
+export const WP_UA = 'QueerGuideBot/1.0 (https://queer.guide; contact@queer.guide)'
 
 export async function fetchWikipediaImage(name: string): Promise<string | null> {
   try {
