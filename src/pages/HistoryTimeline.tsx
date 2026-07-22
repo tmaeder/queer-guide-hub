@@ -44,10 +44,7 @@ export default function HistoryTimeline() {
   });
   useBreadcrumbs(
     useMemo(
-      () => [
-        { label: t('nav.home', 'Home'), href: '/' },
-        { label: t('milestones.breadcrumb', 'History') },
-      ],
+      () => [{ label: t('milestones.breadcrumb', 'History') }],
       [t],
     ),
   );

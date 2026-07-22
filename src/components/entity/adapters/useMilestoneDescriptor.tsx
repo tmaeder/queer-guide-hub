@@ -40,8 +40,8 @@ export function useMilestoneDescriptor(slug: string | undefined): EntityDescript
       related: null,
       mobileBar: null,
       overlays: null,
+      // Entity-only trail — BreadcrumbBar prepends the Home crumb itself.
       breadcrumbs: [
-        { label: t('nav.home', 'Home'), href: '/' },
         { label: t('milestones.breadcrumb', 'History'), href: '/history' },
         { label: milestone.title },
       ],
