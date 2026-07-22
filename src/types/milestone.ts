@@ -61,6 +61,14 @@ export interface Milestone {
   significance: number;
   sources: MilestoneSource[];
   image_url: string | null;
+  /** Attribution for the display photo (Wikimedia Commons backfill). */
+  image_metadata?: {
+    photographer?: string | null;
+    photographer_url?: string | null;
+    license?: string | null;
+    source?: string | null;
+    alt?: string | null;
+  } | null;
   tags: string[];
   status: string;
   seo_indexable: boolean;

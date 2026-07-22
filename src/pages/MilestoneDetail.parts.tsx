@@ -60,14 +60,23 @@ export function MilestoneHero({ milestone }: { milestone: Milestone }) {
         </LocalizedLink>
       </div>
       {imageUrl && (
-        <figure className={cn('mt-6 overflow-hidden rounded-container bg-muted', restrained ? 'max-w-sm' : '')}>
-          {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- onError is a media-error handler, not a user-input listener. */}
-          <img
-            src={imageUrl}
-            alt=""
-            onError={() => setImageFailed(true)}
-            className={cn('w-full object-cover', restrained ? 'max-h-64' : 'aspect-[16/10]')}
-          />
+        <figure className={cn('mt-6', restrained ? 'max-w-sm' : '')}>
+          <span className="block overflow-hidden rounded-container bg-muted">
+            {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- onError is a media-error handler, not a user-input listener. */}
+            <img
+              src={imageUrl}
+              alt={milestone.image_metadata?.alt ?? ''}
+              onError={() => setImageFailed(true)}
+              className={cn('w-full object-cover', restrained ? 'max-h-64' : 'aspect-[16/10]')}
+            />
+          </span>
+          {(milestone.image_metadata?.photographer || milestone.image_metadata?.license) && (
+            <figcaption className="mt-1 text-13 text-muted-foreground">
+              {t('milestones.photoCredit', 'Photo')}
+              {milestone.image_metadata?.photographer ? `: ${milestone.image_metadata.photographer}` : ''}
+              {milestone.image_metadata?.license ? ` · ${milestone.image_metadata.license}` : ''}
+            </figcaption>
+          )}
         </figure>
       )}
     </header>

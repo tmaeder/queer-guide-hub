@@ -37,8 +37,8 @@ const MAX_BATCHES = Number(getArg('max-batches', 0)); // 0 = unlimited
 const SLEEP_MS = Number(getArg('sleep', 4000));
 
 if (!KEY) { console.error('SERVICE_KEY (or SUPABASE_SERVICE_ROLE_KEY) not set'); process.exit(1); }
-if (!['city', 'country', 'event'].includes(ENTITY)) {
-  console.error('--entity must be one of: city, country, event'); process.exit(1);
+if (!['city', 'country', 'event', 'milestone'].includes(ENTITY)) {
+  console.error('--entity must be one of: city, country, event, milestone'); process.exit(1);
 }
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));

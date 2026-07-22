@@ -9,6 +9,7 @@ import {
 import { hasValidWebhookSecret } from '../_shared/webhook-auth.ts'
 import { withErrorReporting } from '../_shared/report-api-error.ts'
 import {
+  scoreImage,
   scoreQueerPlaceImage,
   QUEER_PLACE_MIN,
 } from '../_shared/scoreImage.ts'
@@ -21,7 +22,9 @@ import {
   storeImageToStorage,
 } from '../_shared/image-search.ts'
 
-// Queer-first re-imaging pass for cities + countries (+ gap-fill for events).
+// Queer-first re-imaging pass for cities + countries (+ gap-fill for events,
+// + archival Commons photos for history milestones — Wikimedia-only, scored by
+// title/place/year overlap, persecution content excluded by the selector).
 //
 // Unlike fetch-images (which fills generic skyline/landmark stock), this only
 // accepts an image whose alt text proves BOTH a queer signal AND a place name
@@ -38,8 +41,8 @@ import {
 const STEP = 'queer_image_backfill'
 const PACE_MS = 1200
 
-type EntityType = 'city' | 'country' | 'event'
-const VALID: EntityType[] = ['city', 'country', 'event']
+type EntityType = 'city' | 'country' | 'event' | 'milestone'
+const VALID: EntityType[] = ['city', 'country', 'event', 'milestone']
 
 interface DueRow {
   id: string
@@ -69,12 +72,65 @@ function buildQueries(t: EntityType, row: DueRow): string[] {
       `${name} ${country}`.trim(),
     ].filter(Boolean)
   }
+  if (t === 'milestone') {
+    // capital carries the year, country_name the most-specific place label.
+    // Archival Commons search: title verbatim first, then place/year-anchored.
+    const year = capital
+    return [
+      name,
+      country ? `${name} ${country}` : '',
+      year ? `${stripTitleDecoration(name)} ${country} ${year}`.trim() : '',
+    ].filter(Boolean)
+  }
   // city
   return [
     country ? `${name} ${country} pride parade rainbow` : `${name} pride parade rainbow`,
     `${name} CSD gay pride`,
     `${name} gay village LGBTQ`,
   ].filter(Boolean)
+}
+
+const TITLE_STOPWORDS = new Set([
+  'the', 'and', 'for', 'with', 'from', 'into', 'over', 'first', 'world',
+  'worlds', "world's", 'act', 'law', 'legal', 'between', 'across',
+])
+
+/** Significant title tokens (>3 chars, not stopwords, punctuation stripped). */
+function significantTokens(title: string): string[] {
+  return title
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}\s]/gu, ' ')
+    .split(/\s+/)
+    .filter((w) => w.length > 3 && !TITLE_STOPWORDS.has(w))
+}
+
+/** Trailing "— Place" / "(Place)" decoration stripped for looser queries. */
+function stripTitleDecoration(title: string): string {
+  return title.replace(/\s*[—-]\s*[^—-]+$/, '').replace(/\s*\([^)]*\)\s*$/, '').trim()
+}
+
+/**
+ * Historical-event scorer: generic quality/reject scoring plus a required
+ * overlap between the milestone title and the image's description — a photo
+ * that names neither the event nor its place/year is never accepted, no matter
+ * how pretty. Wikimedia (archival) preferred over stock.
+ */
+function scoreMilestoneImage(img: ImageResult, row: DueRow): number {
+  const base = scoreImage({
+    alt: img.alt,
+    width: img.width,
+    height: img.height,
+    source: img.source,
+    subject: { name: row.name, country: row.country_name ?? undefined },
+    subjectType: 'event',
+  })
+  if (!Number.isFinite(base)) return base
+  const alt = (img.alt || '').toLowerCase()
+  const matches = significantTokens(row.name).filter((t) => alt.includes(t)).length
+  const placeHit = row.country_name ? alt.includes(row.country_name.toLowerCase()) : false
+  const yearHit = row.capital ? alt.includes(row.capital) : false
+  if (matches < 2 && !(matches >= 1 && (placeHit || yearHit))) return Number.NEGATIVE_INFINITY
+  return base + matches * 10 + (yearHit ? 10 : 0) + (img.source === 'wikimedia' ? 15 : 0)
 }
 
 /** Highest finite-scoring candidate that clears the queer-place bar, or null. */
@@ -94,20 +150,24 @@ async function findQueerImage(
   uK?: string,
 ): Promise<ImageResult | null> {
   const scoreOf = (img: ImageResult) =>
-    scoreQueerPlaceImage({
-      alt: img.alt,
-      width: img.width,
-      height: img.height,
-      source: img.source,
-      name: row.name,
-      country: row.country_name ?? undefined,
-      capital: t === 'event' ? undefined : row.capital ?? undefined,
-    })
+    t === 'milestone'
+      ? scoreMilestoneImage(img, row)
+      : scoreQueerPlaceImage({
+          alt: img.alt,
+          width: img.width,
+          height: img.height,
+          source: img.source,
+          name: row.name,
+          country: row.country_name ?? undefined,
+          capital: t === 'event' ? undefined : row.capital ?? undefined,
+        })
 
   for (const query of buildQueries(t, row)) {
     const fetches: Promise<ImageResult[]>[] = [fetchFromWikimedia(query)]
-    if (pK) fetches.push(fetchFromPexels(pK, query))
-    if (uK) fetches.push(fetchFromUnsplash(uK, query))
+    // Milestones are historical events: archival Commons only — stock-photo
+    // libraries have nothing genuine to offer and mislead the scorer.
+    if (t !== 'milestone' && pK) fetches.push(fetchFromPexels(pK, query))
+    if (t !== 'milestone' && uK) fetches.push(fetchFromUnsplash(uK, query))
     const results = (await Promise.all(fetches)).flat()
     if (!results.length) continue
     for (const img of results) img.score = scoreOf(img)
@@ -139,11 +199,36 @@ async function applyHit(
   row: DueRow,
   best: ImageResult,
 ) {
-  const prefix = t === 'country' ? 'country-images' : t === 'event' ? 'event-images' : 'city-images'
+  const prefix =
+    t === 'country' ? 'country-images'
+    : t === 'event' ? 'event-images'
+    : t === 'milestone' ? 'milestone-images'
+    : 'city-images'
   const storedUrl = await storeImageToStorage(supabase, best.url, prefix, `${t}s`, row.id)
 
   if (t === 'event') {
     await supabase.from('events').update({ images: [storedUrl], updated_at: new Date().toISOString() }).eq('id', row.id)
+  } else if (t === 'milestone') {
+    const { data: cur } = await supabase.from('milestones').select('image_metadata').eq('id', row.id).single()
+    const prevMeta = (cur?.image_metadata && typeof cur.image_metadata === 'object') ? cur.image_metadata as Record<string, unknown> : {}
+    await supabase.from('milestones').update({
+      image_url: storedUrl,
+      image_metadata: {
+        ...prevMeta,
+        thumbnail: best.thumbnail,
+        alt: best.alt,
+        photographer: best.photographer,
+        photographer_url: best.photographer_url,
+        source: best.source,
+        source_id: best.source_id,
+        license: best.license,
+        score: best.score,
+        previous_image_url: row.current_image_url ?? null,
+        stored_locally: storedUrl !== best.url,
+        updated_at: new Date().toISOString(),
+      },
+      updated_at: new Date().toISOString(),
+    }).eq('id', row.id)
   } else {
     const table = t === 'country' ? 'countries' : 'cities'
     // Read the row's current metadata so we merge rather than clobber it, and
