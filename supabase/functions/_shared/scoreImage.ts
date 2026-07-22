@@ -158,14 +158,43 @@ export function pickBest<T extends { score: number }>(candidates: T[], role?: Im
 export const QUEER_PLACE_MIN = 55
 
 /**
- * Expanded queer vocabulary (superset of QUEER_TOKENS) including district and
- * event names that reliably indicate LGBTQ+ subject matter.
+ * Curated STRONG queer vocabulary — every entry unambiguously signals LGBTQ+
+ * subject matter. Deliberately excludes bare `parade` / `march` (match military
+ * and horse parades), bare `rainbow` (matches rainbow-coloured buildings and
+ * literal rainbows), and bare `trans` / `drag` (substring-match `transport`,
+ * `dragon`). Those are replaced by their unambiguous phrase forms below.
+ * Matching is whole-word and unicode-aware (see `hasWord`) so `gay` no longer
+ * matches `Gaya` nor `Nice` match `Venice`.
  */
 export const QUEER_PLACE_TOKENS = [
-  'pride', 'gay', 'lgbtq', 'lgbt', 'queer', 'rainbow', 'drag', 'parade',
-  'march', 'csd', 'christopher street', 'mardi gras', 'gay village',
-  'gayborhood', 'chueca', 'castro', 'marais', 'soho', 'pride flag',
-  'lesbian', 'trans', 'transgender', 'fierté', 'orgullo', 'regenbogen',
+  'pride', 'gay', 'lgbtq', 'lgbtqia', 'lgbt', 'queer', 'lesbian', 'transgender',
+  'csd', 'christopher street', 'gay village', 'gayborhood',
+  'chueca', 'castro', 'marais', 'fierté', 'orgullo', 'regenbogenparade',
+  'pride flag', 'rainbow flag', 'pride parade', 'pride march', 'pride festival',
+  'drag queen', 'drag king', 'drag show', 'drag perform',
+]
+
+/**
+ * Whole-word, unicode-aware, case-insensitive match: `needle` must appear in
+ * `haystack` bounded by non-letters on both sides. Prevents substring false
+ * positives (`gay`⊄`Gaya`, `nice`⊄`Venice`, `parade`-only military parades are
+ * excluded by vocabulary, not here). `needle` is already lowercase.
+ */
+function hasWord(haystack: string, needle: string): boolean {
+  if (!needle) return false
+  const esc = needle.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  return new RegExp(`(?<!\\p{L})${esc}(?!\\p{L})`, 'iu').test(haystack)
+}
+
+/**
+ * Military / national-ceremony context. When present, a caption's `pride`
+ * ("national pride", "army parade showcasing pride") is patriotic, not LGBTQ+ —
+ * reject outright so a soldiers' parade never becomes a country hero.
+ */
+const QUEER_CONTEXT_REJECT = [
+  'army', 'soldier', 'soldiers', 'military', 'troops', 'navy', 'regiment',
+  'armed forces', 'national day', 'independence day', 'patriotic',
+  'martyrs', 'veterans', 'war memorial',
 ]
 
 export interface QueerPlaceInput {
@@ -191,18 +220,21 @@ export function scoreQueerPlaceImage(input: QueerPlaceInput): number {
     if (alt.includes(token)) return Number.NEGATIVE_INFINITY
   }
 
-  // Gate 1: must be queer.
-  const hasQueer = QUEER_PLACE_TOKENS.some((t) => alt.includes(t))
+  // Military / national-ceremony context poisons a "pride" signal → reject.
+  if (QUEER_CONTEXT_REJECT.some((t) => hasWord(alt, t))) return Number.NEGATIVE_INFINITY
+
+  // Gate 1: must be queer (whole-word match against the curated strong vocab).
+  const hasQueer = QUEER_PLACE_TOKENS.some((t) => hasWord(alt, t))
   if (!hasQueer) return Number.NEGATIVE_INFINITY
 
-  // Gate 2: must be connected to the place.
+  // Gate 2: must be connected to the place (whole-word so `Nice`⊄`Venice`).
   const name = input.name.toLowerCase()
   const country = input.country?.toLowerCase() ?? ''
   const capital = input.capital?.toLowerCase() ?? ''
-  const namedSubject = name.length > 0 && alt.includes(name)
+  const namedSubject = name.length > 0 && hasWord(alt, name)
   const namedContext =
-    (country.length > 0 && alt.includes(country)) ||
-    (capital.length > 0 && alt.includes(capital))
+    (country.length > 0 && hasWord(alt, country)) ||
+    (capital.length > 0 && hasWord(alt, capital))
   if (!namedSubject && !namedContext) return Number.NEGATIVE_INFINITY
 
   let score = 30 // queer bonus (guaranteed present)
