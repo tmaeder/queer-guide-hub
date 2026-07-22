@@ -141,3 +141,84 @@ export function pickBest<T extends { score: number }>(candidates: T[], role?: Im
   if (!best || !isAcceptable(best.score, role)) return null
   return best
 }
+
+// ---------------------------------------------------------------------------
+// Queer-place scorer — used by the queer-imagery-backfill re-imaging pass.
+//
+// Unlike scoreImage() (which only rewards queer tokens for venue/event stock),
+// this scorer is strict for place subjects: a candidate is accepted ONLY when
+// its alt text carries BOTH a queer signal AND a place-connection signal. That
+// dual gate is what guarantees the image is queer *and* connected to the actual
+// city/country — disconnected rainbow stock (no place name) is rejected, so
+// accepted images are overwhelmingly real Pride-parade / gay-district photos
+// captioned with the place (typically from Wikimedia Commons).
+// ---------------------------------------------------------------------------
+
+/** Minimum score for the dual-gate to accept a queer place cover. */
+export const QUEER_PLACE_MIN = 55
+
+/**
+ * Expanded queer vocabulary (superset of QUEER_TOKENS) including district and
+ * event names that reliably indicate LGBTQ+ subject matter.
+ */
+export const QUEER_PLACE_TOKENS = [
+  'pride', 'gay', 'lgbtq', 'lgbt', 'queer', 'rainbow', 'drag', 'parade',
+  'march', 'csd', 'christopher street', 'mardi gras', 'gay village',
+  'gayborhood', 'chueca', 'castro', 'marais', 'soho', 'pride flag',
+  'lesbian', 'trans', 'transgender', 'fierté', 'orgullo', 'regenbogen',
+]
+
+export interface QueerPlaceInput {
+  alt: string
+  width?: number
+  height?: number
+  source: ImageResultSource
+  /** Entity name (city or country). */
+  name: string
+  /** Country name for a city subject (optional). */
+  country?: string
+  /** Capital name for a country subject (optional). */
+  capital?: string
+}
+
+/** image-search.ts ImageResult sources; wikimedia gets a provenance bonus. */
+export type ImageResultSource = 'pexels' | 'unsplash' | 'wikimedia' | 'wikipedia'
+
+export function scoreQueerPlaceImage(input: QueerPlaceInput): number {
+  const alt = (input.alt || '').toLowerCase()
+
+  for (const token of HARD_REJECT_TOKENS) {
+    if (alt.includes(token)) return Number.NEGATIVE_INFINITY
+  }
+
+  // Gate 1: must be queer.
+  const hasQueer = QUEER_PLACE_TOKENS.some((t) => alt.includes(t))
+  if (!hasQueer) return Number.NEGATIVE_INFINITY
+
+  // Gate 2: must be connected to the place.
+  const name = input.name.toLowerCase()
+  const country = input.country?.toLowerCase() ?? ''
+  const capital = input.capital?.toLowerCase() ?? ''
+  const namedSubject = name.length > 0 && alt.includes(name)
+  const namedContext =
+    (country.length > 0 && alt.includes(country)) ||
+    (capital.length > 0 && alt.includes(capital))
+  if (!namedSubject && !namedContext) return Number.NEGATIVE_INFINITY
+
+  let score = 30 // queer bonus (guaranteed present)
+  if (namedSubject) score += 40
+  else if (namedContext) score += 20
+  if (namedSubject && namedContext) score += 20
+
+  if (input.source === 'wikimedia') score += 15
+
+  const w = input.width ?? 0
+  const h = input.height ?? 0
+  if (w > 0 && h > 0) {
+    const ratio = w / h
+    if (ratio >= 1.3 && ratio <= 2.5) score += 10
+    if (w >= 1280) score += 5
+  }
+
+  return score
+}
