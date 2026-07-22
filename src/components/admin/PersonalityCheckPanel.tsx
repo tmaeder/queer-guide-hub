@@ -40,9 +40,11 @@ function useCounts() {
           headCount((q) => q.is('lgbti_connection_source', null)),
           headCount((q) => q.not('death_date', 'is', null)),
         ]);
-      // Milestones are a first-class content type now — count the table.
+      // Milestones are a first-class content type now — count only the
+      // published (online) ones, not drafts awaiting review.
       const { count: milestone } = await untypedFrom('milestones')
-        .select('*', { count: 'exact', head: true });
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'published');
       return {
         total,
         freigegeben: approved + manuallyVerified,
