@@ -143,3 +143,68 @@ Deno.test('queer-place scorer still hard-rejects wildlife', () => {
   })
   assertEquals(s, Number.NEGATIVE_INFINITY)
 })
+
+// ── False positives the curated whole-word vocab must reject ─────────────────
+
+Deno.test('military parade is not queer (bare "parade" dropped)', () => {
+  const s = scoreQueerPlaceImage({
+    alt: 'Syrian army soldiers in a parade in Damascus',
+    width: 1600, height: 1000, source: 'pexels',
+    name: 'Syria', capital: 'Damascus',
+  })
+  assertEquals(s, Number.NEGATIVE_INFINITY)
+})
+
+Deno.test('horse parade is not queer', () => {
+  const s = scoreQueerPlaceImage({
+    alt: 'Horses parade in front of the hotel Uzbekistan',
+    width: 1600, height: 1000, source: 'unsplash',
+    name: 'Uzbekistan', capital: 'Tashkent',
+  })
+  assertEquals(s, Number.NEGATIVE_INFINITY)
+})
+
+Deno.test('rainbow-coloured building is not queer (bare "rainbow" dropped)', () => {
+  const s = scoreQueerPlaceImage({
+    alt: 'Vibrant rainbow-colored glass facade of a museum in Kuala Lumpur',
+    width: 1600, height: 1000, source: 'pexels',
+    name: 'Malaysia', capital: 'Kuala Lumpur',
+  })
+  assertEquals(s, Number.NEGATIVE_INFINITY)
+})
+
+Deno.test('"gay" does not substring-match the city Gaya', () => {
+  const s = scoreQueerPlaceImage({
+    alt: 'Sunrise over the temples of Gaya',
+    width: 1600, height: 1000, source: 'wikimedia',
+    name: 'Gaya', country: 'India',
+  })
+  assertEquals(s, Number.NEGATIVE_INFINITY)
+})
+
+Deno.test('city Nice does not match a Venice photo', () => {
+  const s = scoreQueerPlaceImage({
+    alt: 'Gondola on a canal in Venice at sunset',
+    width: 1600, height: 1000, source: 'unsplash',
+    name: 'Nice', country: 'France',
+  })
+  assertEquals(s, Number.NEGATIVE_INFINITY) // no queer token anyway, but also no place bleed
+})
+
+Deno.test('army parade with "national pride" caption is rejected', () => {
+  const s = scoreQueerPlaceImage({
+    alt: 'Syrian army soldiers in a parade in Damascus, showcasing unity and national pride',
+    width: 1600, height: 1000, source: 'pexels',
+    name: 'Syria', capital: 'Damascus',
+  })
+  assertEquals(s, Number.NEGATIVE_INFINITY)
+})
+
+Deno.test('drag show phrase still qualifies', () => {
+  const s = scoreQueerPlaceImage({
+    alt: 'Colorful Pride festival with drag performers in Utrecht',
+    width: 1600, height: 1000, source: 'pexels',
+    name: 'Utrecht', country: 'Netherlands',
+  })
+  assert(s >= QUEER_PLACE_MIN)
+})
