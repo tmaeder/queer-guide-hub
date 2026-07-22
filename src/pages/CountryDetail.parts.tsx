@@ -90,7 +90,7 @@ export function CountryRightsTab({ country }: { country: CountryRelation }) {
   return (
     <div className="flex flex-col gap-6">
       <LGBTJurisdictionInfo country={country} style={{ borderColor: 'inherit' }} />
-      <CountryLegalHistory countryId={country?.id} countrySlug={country?.slug} />
+      <CountryLegalHistory countryId={country?.id} countryName={country?.name} />
     </div>
   );
 }
