@@ -1,5 +1,11 @@
 -- Queer-imagery backfill: work selector + daily top-up cron + admin automation.
 --
+-- Re-versioned from 20260721150000 → 20260722043000: concurrent sessions merged
+-- migrations with higher timestamps first, so the original version sorted BEFORE
+-- remote's last-applied migration and `supabase db push` refused it (out-of-order,
+-- PR #2236 deploy). Body is idempotent (CREATE OR REPLACE / IF NOT EXISTS /
+-- unschedule-then-schedule / ON CONFLICT), safe to apply once at this version.
+--
 -- The queer-imagery-backfill edge function re-images cities/countries (and
 -- gap-fills events) with queer + place-connected photos. It records one
 -- enrichment_log row per processed entity (step 'queer_image_backfill') as a
