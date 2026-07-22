@@ -3513,7 +3513,8 @@
     },
     "era": {
       "showAll": "Alle {{count}} Ereignisse anzeigen",
-      "showFewer": "Weniger anzeigen"
+      "showFewer": "Weniger anzeigen",
+      "keyFigures": "Schlüsselfiguren dieser Ära"
     },
     "partOf": "Teil von: {{era}}",
     "prev": "Früher",

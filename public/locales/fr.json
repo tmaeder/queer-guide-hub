@@ -3517,7 +3517,8 @@
     },
     "era": {
       "showAll": "[FR] Show all {{count}} events",
-      "showFewer": "[FR] Show fewer"
+      "showFewer": "[FR] Show fewer",
+      "keyFigures": "[FR] Key figures of this era"
     },
     "partOf": "[FR] Part of: {{era}}",
     "prev": "[FR] Earlier",
