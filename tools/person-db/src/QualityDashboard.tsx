@@ -34,10 +34,14 @@ export function QualityDashboard() {
 
   useEffect(() => {
     let alive = true
+    // Intentional synchronous reset when the scope changes: clear the prior
+    // scope's selection/error and show the loading state before refetching.
+    /* eslint-disable react-hooks/set-state-in-effect */
     setLoading(true)
     setError('')
     setSelectedId(null)
     setSelectedPerson(null)
+    /* eslint-enable react-hooks/set-state-in-effect */
     fetchForQuality(scope)
       .then((r) => { if (alive) { setRows(r); refreshLocal() } })
       .catch((e) => { if (alive) setError(errMsg(e)) })
