@@ -129,13 +129,73 @@ function stripHtml(value: string | undefined): string {
 /** Non-photographic lead images (legal-status maps, flags, seals, coins) never display. */
 const WIKI_IMAGE_REJECT = /\.svg|\.gif|\bmap\b|_map|locator|flag_of|coat_of_arms|logo|seal_of|\bcoin\b|banknote/i
 
+/** UI chrome / decoration files that litter article media lists. */
+const MEDIA_LIST_JUNK = /icon|stub|button|padlock|ambox|crystal|pictogram|symbol|commons-logo|wiki(?:media|news|quote|source|books)|\.ogg|\.webm|\.oga|\.pdf|\.tiff?|question_book|edit-|increase|decrease|disambig|magnify|loudspeaker|star[_.-]|checkmark/i
+
+/** One Commons imageinfo call: canonical URL, dimensions, artist, license. */
+async function commonsFileInfo(fileTitle: string): Promise<{
+  url: string
+  width: number
+  height: number
+  photographer: string | null
+  license: string | null
+} | null> {
+  const res = await fetch(
+    `https://commons.wikimedia.org/w/api.php?action=query&titles=${encodeURIComponent(fileTitle)}&prop=imageinfo&iiprop=url|size|extmetadata&iiurlwidth=1600&format=json`,
+    { headers: { 'User-Agent': WP_UA, Accept: 'application/json' } },
+  )
+  if (!res.ok) return null
+  const data = await res.json()
+  const page = Object.values(data?.query?.pages ?? {})[0] as {
+    imageinfo?: Array<{
+      url?: string
+      thumburl?: string
+      width?: number
+      height?: number
+      extmetadata?: Record<string, { value?: string }>
+    }>
+  }
+  const info = page?.imageinfo?.[0]
+  if (!info?.url) return null
+  return {
+    url: info.thumburl ?? info.url,
+    width: info.width ?? 0,
+    height: info.height ?? 0,
+    photographer: stripHtml(info.extmetadata?.Artist?.value) || null,
+    license: info.extmetadata?.LicenseShortName?.value ?? null,
+  }
+}
+
+function wikiImageResult(
+  url: string,
+  alt: string,
+  sourceId: string,
+  extra: { photographer?: string | null; license?: string | null; width?: number; height?: number },
+): ImageResult {
+  return {
+    url,
+    thumbnail: url,
+    alt,
+    photographer: extra.photographer ?? '',
+    photographer_url: '',
+    source: 'wikipedia',
+    source_id: sourceId,
+    license: extra.license ?? undefined,
+    width: extra.width,
+    height: extra.height,
+    score: 100,
+  }
+}
+
 /**
- * Grounded lookup: the lead image of the milestone's OWN Wikipedia source
- * article (e.g. "Stonewall riots" → the Stonewall Inn photograph). Far more
- * accurate than Commons keyword search, whose results are SVG maps and terse
- * filenames. Returns null when the article has no photographic lead image —
- * the typographic card is the intended fallback. Attribution is read from the
- * Commons file's extmetadata so CC BY-SA credit can render on the detail page.
+ * Grounded lookup against the milestone's OWN Wikipedia source article:
+ * 1. the article's lead image (e.g. "Stonewall riots" → the Stonewall Inn);
+ * 2. else the first photographic image from the article's media list — law
+ *    articles often carry rally/wedding/court photos in the body even when the
+ *    infobox holds no image.
+ * Non-photographic files (maps, flags, seals, icons) are rejected; a null
+ * return leaves the typographic card. Attribution comes from Commons
+ * extmetadata so CC BY-SA credit renders on the detail page.
  */
 async function wikiLeadImage(wikiUrl: string): Promise<ImageResult | null> {
   const m = wikiUrl.match(/^https?:\/\/([a-z-]+)\.(?:m\.)?wikipedia\.org\/wiki\/([^?#]+)/i)
@@ -146,47 +206,48 @@ async function wikiLeadImage(wikiUrl: string): Promise<ImageResult | null> {
     `https://${lang}.wikipedia.org/api/rest_v1/page/summary/${title}`,
     { headers: { 'User-Agent': WP_UA, Accept: 'application/json' } },
   )
-  if (!summaryRes.ok) return null
-  const summary = await summaryRes.json()
-  const img = summary.originalimage ?? summary.thumbnail
-  if (!img?.source || WIKI_IMAGE_REJECT.test(img.source)) return null
-  if ((img.width ?? 0) < 400) return null
-
-  // Commons extmetadata for artist/license (best-effort — image still usable without).
-  let photographer: string | null = null
-  let license: string | null = null
-  const fileMatch = img.source.match(/\/([^/]+\.(?:jpe?g|png|webp))(?:\/|$)/i)
-  const fileName = fileMatch ? decodeURIComponent(fileMatch[1]) : null
-  if (fileName) {
-    try {
-      const metaRes = await fetch(
-        `https://commons.wikimedia.org/w/api.php?action=query&titles=File:${encodeURIComponent(fileName)}&prop=imageinfo&iiprop=extmetadata&format=json`,
-        { headers: { 'User-Agent': WP_UA, Accept: 'application/json' } },
-      )
-      if (metaRes.ok) {
-        const meta = await metaRes.json()
-        const pages = meta?.query?.pages ?? {}
-        const info = (Object.values(pages)[0] as { imageinfo?: Array<{ extmetadata?: Record<string, { value?: string }> }> })
-          ?.imageinfo?.[0]?.extmetadata
-        photographer = stripHtml(info?.Artist?.value) || null
-        license = info?.LicenseShortName?.value || null
-      }
-    } catch { /* attribution is best-effort */ }
+  const summary = summaryRes.ok ? await summaryRes.json() : {}
+  const lead = summary.originalimage ?? summary.thumbnail
+  if (lead?.source && !WIKI_IMAGE_REJECT.test(lead.source) && (lead.width ?? 0) >= 400) {
+    const fileMatch = lead.source.match(/\/([^/]+\.(?:jpe?g|png|webp))(?:\/|$)/i)
+    const fileName = fileMatch ? decodeURIComponent(fileMatch[1]) : null
+    let attribution: { photographer?: string | null; license?: string | null } = {}
+    if (fileName) {
+      try {
+        attribution = (await commonsFileInfo(`File:${fileName}`)) ?? {}
+      } catch { /* attribution is best-effort */ }
+    }
+    return wikiImageResult(lead.source, summary.title ?? '', fileName ?? title, {
+      ...attribution,
+      width: lead.width,
+      height: lead.height,
+    })
   }
 
-  return {
-    url: img.source,
-    thumbnail: summary.thumbnail?.source ?? img.source,
-    alt: summary.title ?? '',
-    photographer: photographer ?? '',
-    photographer_url: '',
-    source: 'wikipedia',
-    source_id: fileName ?? title,
-    license: license ?? undefined,
-    width: img.width,
-    height: img.height,
-    score: 100,
-  }
+  // No usable lead image — scan the article body's media list.
+  try {
+    const listRes = await fetch(
+      `https://${lang}.wikipedia.org/api/rest_v1/page/media-list/${title}`,
+      { headers: { 'User-Agent': WP_UA, Accept: 'application/json' } },
+    )
+    if (!listRes.ok) return null
+    const list = await listRes.json()
+    const candidates = (list.items ?? [])
+      .filter((it: { type?: string; title?: string }) =>
+        it.type === 'image' &&
+        /\.(?:jpe?g|png)$/i.test(it.title ?? '') &&
+        !WIKI_IMAGE_REJECT.test(it.title ?? '') &&
+        !MEDIA_LIST_JUNK.test(it.title ?? ''))
+      .slice(0, 3)
+    for (const c of candidates) {
+      const info = await commonsFileInfo(c.title)
+      if (!info || info.width < 500) continue
+      const aspect = info.height > 0 ? info.width / info.height : 0
+      if (aspect < 0.4 || aspect > 3.2) continue
+      return wikiImageResult(info.url, c.title.replace(/^File:/, '').replace(/\.[a-z]+$/i, ''), c.title, info)
+    }
+  } catch { /* fall through */ }
+  return null
 }
 
 /**
