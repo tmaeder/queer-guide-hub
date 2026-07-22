@@ -224,7 +224,28 @@ async function wikiLeadImage(wikiUrl: string): Promise<ImageResult | null> {
     })
   }
 
-  // No usable lead image — scan the article body's media list.
+  // No usable lead image — try the Wikidata item's P18 (image) claim.
+  if (summary.wikibase_item) {
+    try {
+      const wdRes = await fetch(
+        `https://www.wikidata.org/w/api.php?action=wbgetclaims&entity=${summary.wikibase_item}&property=P18&format=json`,
+        { headers: { 'User-Agent': WP_UA, Accept: 'application/json' } },
+      )
+      if (wdRes.ok) {
+        const wd = await wdRes.json()
+        const p18 = wd?.claims?.P18?.[0]?.mainsnak?.datavalue?.value
+        if (typeof p18 === 'string' && /\.(?:jpe?g|png)$/i.test(p18)
+          && !WIKI_IMAGE_REJECT.test(p18) && !MEDIA_LIST_JUNK.test(p18)) {
+          const info = await commonsFileInfo(`File:${p18}`)
+          if (info && info.width >= 500) {
+            return wikiImageResult(info.url, p18.replace(/\.[a-z]+$/i, ''), `File:${p18}`, info)
+          }
+        }
+      }
+    } catch { /* fall through */ }
+  }
+
+  // Last resort — scan the article body's media list.
   try {
     const listRes = await fetch(
       `https://${lang}.wikipedia.org/api/rest_v1/page/media-list/${title}`,
@@ -238,7 +259,7 @@ async function wikiLeadImage(wikiUrl: string): Promise<ImageResult | null> {
         /\.(?:jpe?g|png)$/i.test(it.title ?? '') &&
         !WIKI_IMAGE_REJECT.test(it.title ?? '') &&
         !MEDIA_LIST_JUNK.test(it.title ?? ''))
-      .slice(0, 3)
+      .slice(0, 10)
     for (const c of candidates) {
       const info = await commonsFileInfo(c.title)
       if (!info || info.width < 500) continue
