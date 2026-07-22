@@ -35,18 +35,16 @@ export default function HistoryTimeline() {
   const showAll = params.get('all') === '1';
 
   useMeta({
-    title: t('milestones.metaTitle', 'Queer history timeline — Queer Guide'),
+    title: t('milestones.metaTitle', 'Queer history timeline'),
     description: t(
       'milestones.metaDescription',
       'Milestones of LGBTQ+ history: uprisings, decriminalizations, marriage equality and setbacks — dated, sourced, worldwide.',
     ),
     canonicalPath: '/history',
   });
+  // BreadcrumbBar prepends Home itself — publish the entity-only trail.
   useBreadcrumbs(
-    useMemo(
-      () => [{ label: t('milestones.breadcrumb', 'History') }],
-      [t],
-    ),
+    useMemo(() => [{ label: t('milestones.breadcrumb', 'History') }], [t]),
   );
 
   const milestones = useMemo(() => {
