@@ -1,10 +1,11 @@
 -- Queer-imagery backfill: work selector + daily top-up cron + admin automation.
 --
--- Re-versioned from 20260721150000 → 20260722043000: concurrent sessions merged
--- migrations with higher timestamps first, so the original version sorted BEFORE
--- remote's last-applied migration and `supabase db push` refused it (out-of-order,
--- PR #2236 deploy). Body is idempotent (CREATE OR REPLACE / IF NOT EXISTS /
--- unschedule-then-schedule / ON CONFLICT), safe to apply once at this version.
+-- Version history note: #2236 shipped this at 20260721150000 but its CI db push
+-- failed (out-of-order vs concurrently-merged higher timestamps). #2242 re-versioned
+-- it to 20260722043000 — but by then a concurrent session had already applied the
+-- full body to remote and stamped 20260721150000 in history, so #2242 created a
+-- remote-only-version drift instead. This PR restores the original 20260721150000
+-- filename so repo == remote history (already applied); body unchanged & idempotent.
 --
 -- The queer-imagery-backfill edge function re-images cities/countries (and
 -- gap-fills events) with queer + place-connected photos. It records one
