@@ -3406,7 +3406,7 @@
     "breadcrumb": "Geschichte",
     "pageTitle": "Queere Geschichte",
     "pageDescription": "Meilensteine, die LGBTQ+-Leben geprägt haben — Aufstände, Gesetze, Rückschritte. Datiert und belegt.",
-    "metaTitle": "Queere Geschichte — Zeitleiste — Queer Guide",
+    "metaTitle": "Queere Geschichte — Zeitleiste",
     "metaDescription": "Meilensteine der LGBTQ+-Geschichte: Aufstände, Entkriminalisierungen, Ehe für alle und Rückschritte — datiert, belegt, weltweit.",
     "empty": "Keine Meilensteine für diese Filter.",
     "decadeNav": "Zu Jahrzehnt springen",
@@ -3434,14 +3434,16 @@
     "sections": {
       "sources": "Quellen",
       "linked": "Beteiligte Personen & Orte",
-      "related": "Mehr aus {{country}}"
+      "related": "Mehr aus {{country}}",
+      "sameYear": "Anderswo im Jahr {{year}}"
     },
     "sidebar": {
       "facts": "Fakten",
       "date": "Datum",
       "place": "Ort",
       "city": "Stadt",
-      "country": "Land"
+      "country": "Land",
+      "explore": "Damals & heute"
     },
     "entityType": {
       "personality": "Person",
@@ -3466,6 +3468,64 @@
     },
     "city": {
       "title": "Queere Geschichte in {{city}}"
+    },
+    "eras": {
+      "hidden-lives": {
+        "title": "Verborgene Leben",
+        "intro": "Vor 1800 überlebte queeres Leben im Schatten von Gesetz und Kirche. Überliefert ist vor allem Verfolgung — Prozesse, Hinrichtungen, Edikte — neben seltenen Zeugnissen von Liebe und Gemeinschaft, die sie überdauerten."
+      },
+      "empire-criminalization": {
+        "title": "Imperium & Kriminalisierung",
+        "intro": "Koloniale Imperien exportierten im 19. Jahrhundert Sodomie-Gesetze in die ganze Welt, während einige Staaten — allen voran das revolutionäre Frankreich — ihre eigenen still abschafften. Ein Großteil der heutigen Rechtslandkarte entstand in dieser Ära."
+      },
+      "birth-of-movement": {
+        "title": "Geburt einer Bewegung",
+        "intro": "Zwischen den 1860ern und den frühen 1930ern entstanden die ersten Begriffe, Organisationen und Kampagnen: Kertbeny prägte das Wort 'homosexuell', Hirschfeld gründete die erste Schwulenrechtsorganisation, und Berlin wurde kurzzeitig zur queeren Hauptstadt der Welt."
+      },
+      "destruction": {
+        "title": "Zerstörung",
+        "intro": "Der Faschismus zerstörte die erste Bewegung. Die Nazis verbrannten Hirschfelds Institut, verschärften den Paragraphen 175 und deportierten Tausende schwule Männer in Konzentrationslager. Die Erinnerung an diese Ära ist Teil des Grundes für diese Zeitleiste."
+      },
+      "homophile-years": {
+        "title": "Die homophilen Jahre",
+        "intro": "Nach dem Krieg bauten kleine 'homophile' Gruppen im Stillen wieder auf — Mattachine, die Daughters of Bilitis, Arcadie, das COC — und tauschten Radikalität gegen Bürgerlichkeit, während Razzien und Säuberungen weitergingen."
+      },
+      "liberation": {
+        "title": "Befreiung",
+        "intro": "Stonewall 1969 verwandelte Jahrzehnte stiller Organisierung in offenen Aufstand. Pride-Märsche verbreiteten sich weltweit, Homosexualität verschwand aus den Psychiatrie-Handbüchern, und die ersten Antidiskriminierungsgesetze wurden erkämpft."
+      },
+      "aids-crisis": {
+        "title": "Die AIDS-Krise",
+        "intro": "Eine Generation wurde dezimiert, während Regierungen wegsahen. Aus der Trauer der Epidemie entstand der militante Aktivismus — ACT UP, Kampagnen für Behandlungszugang —, der Medizin und queere Politik gleichermaßen veränderte."
+      },
+      "recognition": {
+        "title": "Anerkennung",
+        "intro": "Von den ersten eingetragenen Partnerschaften bis zur Öffnung der Ehe in den Niederlanden 2001 begannen Gerichte und Parlamente, queere Leben anzuerkennen: Entkriminalisierung beschleunigte sich, Trans-Rechte erreichten den juristischen Mainstream."
+      },
+      "equality-wave": {
+        "title": "Die Gleichstellungswelle",
+        "intro": "Die 2010er brachten die Ehe für alle in Dutzende Länder auf allen Kontinenten, wegweisende Gerichtsurteile von den USA bis Indien und beispiellose queere Sichtbarkeit im öffentlichen Leben."
+      },
+      "backlash-now": {
+        "title": "Backlash & Gegenwart",
+        "intro": "Der Fortschritt geht weiter — und ebenso der organisierte Backlash: 'LGBT-freie Zonen', Anti-Trans-Gesetze und neue Kriminalisierungswellen. Die Zeitleiste wird noch geschrieben."
+      }
+    },
+    "era": {
+      "showAll": "Alle {{count}} Ereignisse anzeigen",
+      "showFewer": "Weniger anzeigen"
+    },
+    "partOf": "Teil von: {{era}}",
+    "prev": "Früher",
+    "next": "Später",
+    "onThisDay": "An diesem Tag",
+    "eraNav": "Zu einer Ära springen",
+    "stats": "{{count}} Meilensteine in {{eras}} Ären",
+    "timelineNav": "Zeitleisten-Navigation",
+    "explore": {
+      "country": "Reiseführer: {{name}}",
+      "city": "Stadtguide: {{name}}",
+      "events": "Events heute in {{name}}"
     }
   }
 }

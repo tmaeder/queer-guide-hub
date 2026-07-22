@@ -14,7 +14,8 @@ export function buildMilestoneMeta(milestone: Milestone): EntityMeta {
   const description =
     milestone.description?.slice(0, 200) ?? `${milestone.title} (${year}) — queer history on Queer Guide.`;
   return {
-    title: `${milestone.title} (${year}) — Queer History | Queer Guide`,
+    // useMeta appends "| Queer Guide" — don't carry the brand here.
+    title: `${milestone.title} (${year}) — Queer History`,
     description,
     canonicalPath: `/history/${milestone.slug}`,
     ogImage: milestone.image_url ?? undefined,

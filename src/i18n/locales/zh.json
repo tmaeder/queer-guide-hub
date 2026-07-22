@@ -3404,7 +3404,7 @@
     "breadcrumb": "历史",
     "pageTitle": "酷儿历史",
     "pageDescription": "塑造 LGBTQ+ 生活的里程碑——起义、法律、倒退。附日期与来源。",
-    "metaTitle": "酷儿历史时间线 — Queer Guide",
+    "metaTitle": "酷儿历史时间线",
     "metaDescription": "LGBTQ+ 历史的里程碑:起义、去罪化、婚姻平等与倒退——附日期与来源,遍及全球。",
     "empty": "没有符合这些筛选条件的里程碑。",
     "decadeNav": "跳转到年代",
@@ -3432,14 +3432,16 @@
     "sections": {
       "sources": "来源",
       "linked": "相关人物与地点",
-      "related": "{{country}}的更多里程碑"
+      "related": "{{country}}的更多里程碑",
+      "sameYear": "[ZH] Elsewhere in {{year}}"
     },
     "sidebar": {
       "facts": "事实",
       "date": "日期",
       "place": "地点",
       "city": "城市",
-      "country": "国家"
+      "country": "国家",
+      "explore": "[ZH] Then & now"
     },
     "entityType": {
       "personality": "人物",
@@ -3464,6 +3466,64 @@
     },
     "city": {
       "title": "{{city}}的酷儿历史"
+    },
+    "eras": {
+      "hidden-lives": {
+        "title": "[ZH] Hidden lives",
+        "intro": "[ZH] Before 1800, queer life survived in the shadows of law and church. What the record preserves is mostly persecution — trials, executions, edicts — alongside rare glimpses of love and community that outlasted them."
+      },
+      "empire-criminalization": {
+        "title": "[ZH] Empire & criminalization",
+        "intro": "[ZH] Colonial empires exported sodomy laws across the globe in the 19th century, while a few states — revolutionary France first among them — quietly removed their own. Much of today's legal map was drawn in this era."
+      },
+      "birth-of-movement": {
+        "title": "[ZH] Birth of a movement",
+        "intro": "[ZH] Between the 1860s and the early 1930s the first words, organizations and campaigns emerged: Kertbeny coined 'homosexual', Hirschfeld founded the first gay rights organization, and Berlin briefly became the queer capital of the world."
+      },
+      "destruction": {
+        "title": "[ZH] Destruction",
+        "intro": "[ZH] Fascism destroyed the first movement. The Nazis burned Hirschfeld's institute, tightened Paragraph 175 and deported thousands of gay men to concentration camps. Remembering this era is part of why this timeline exists."
+      },
+      "homophile-years": {
+        "title": "[ZH] The homophile years",
+        "intro": "[ZH] After the war, small 'homophile' groups rebuilt quietly — Mattachine, the Daughters of Bilitis, Arcadie, the COC — trading radicalism for respectability while police raids and purges continued."
+      },
+      "liberation": {
+        "title": "[ZH] Liberation",
+        "intro": "[ZH] Stonewall in 1969 turned decades of quiet organizing into open revolt. Pride marches spread worldwide, homosexuality left the psychiatric manuals, and the first anti-discrimination laws were won."
+      },
+      "aids-crisis": {
+        "title": "[ZH] The AIDS crisis",
+        "intro": "[ZH] A generation was decimated while governments looked away. The epidemic's grief forged the militant activism — ACT UP, treatment-access campaigns — that reshaped medicine and queer politics alike."
+      },
+      "recognition": {
+        "title": "[ZH] Recognition",
+        "intro": "[ZH] From the first registered partnerships to the Netherlands opening marriage in 2001, courts and parliaments began recognizing queer lives: decriminalization accelerated and trans rights entered the legal mainstream."
+      },
+      "equality-wave": {
+        "title": "[ZH] The equality wave",
+        "intro": "[ZH] The 2010s brought marriage equality to dozens of countries on every continent, landmark court rulings from the United States to India, and unprecedented queer visibility in public life."
+      },
+      "backlash-now": {
+        "title": "[ZH] Backlash & now",
+        "intro": "[ZH] Progress continues — and so does organized backlash: 'LGBT-free zones', anti-trans legislation and new criminalization drives. The timeline is still being written."
+      }
+    },
+    "era": {
+      "showAll": "[ZH] Show all {{count}} events",
+      "showFewer": "[ZH] Show fewer"
+    },
+    "partOf": "[ZH] Part of: {{era}}",
+    "prev": "[ZH] Earlier",
+    "next": "[ZH] Later",
+    "onThisDay": "[ZH] On this day",
+    "eraNav": "[ZH] Jump to era",
+    "stats": "[ZH] {{count}} milestones across {{eras}} eras",
+    "timelineNav": "[ZH] Timeline navigation",
+    "explore": {
+      "country": "[ZH] Travel guide: {{name}}",
+      "city": "[ZH] City guide: {{name}}",
+      "events": "[ZH] Events in {{name}} today"
     }
   }
 }

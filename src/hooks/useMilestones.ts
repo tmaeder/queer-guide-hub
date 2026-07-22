@@ -25,28 +25,61 @@ function useContentLang(): string | null {
 
 export interface MilestoneTimelineFilters {
   country?: string | null; // country uuid
+  /** Display-label country match (bulk-imported rows may carry only country_name). */
+  countryLabel?: string | null;
   category?: string | null;
   impact?: string | null;
   fromYear?: number | null;
   toYear?: number | null;
+  significanceMin?: number | null;
 }
 
-export function useMilestonesTimeline(filters: MilestoneTimelineFilters = {}, limit = 500) {
+export function useMilestonesTimeline(
+  filters: MilestoneTimelineFilters = {},
+  limit = 500,
+  options: { enabled?: boolean } = {},
+) {
   const lang = useContentLang();
   return useQuery({
     queryKey: ['milestones-timeline', filters, limit, lang],
+    enabled: options.enabled ?? true,
     staleTime: HOUR,
     queryFn: async () => {
       const { data, error } = await untypedRpc<Milestone[]>('milestones_timeline', {
         p_from: filters.fromYear ? `${filters.fromYear}-01-01` : null,
         p_to: filters.toYear ? `${filters.toYear}-12-31` : null,
         p_country: filters.country ?? null,
+        p_country_label: filters.countryLabel ?? null,
         p_category: filters.category ?? null,
         p_impact: filters.impact ?? null,
-        p_significance_min: null,
+        p_significance_min: filters.significanceMin ?? null,
         p_limit: limit,
         p_offset: 0,
         p_lang: lang,
+      });
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+}
+
+export interface MilestoneYearCount {
+  y: number;
+  n: number;
+}
+
+/** Per-year milestone histogram under the given filters — era counts without row payloads. */
+export function useMilestoneYearCounts(
+  filters: Pick<MilestoneTimelineFilters, 'countryLabel' | 'category' | 'impact'> = {},
+) {
+  return useQuery({
+    queryKey: ['milestones-year-counts', filters],
+    staleTime: HOUR,
+    queryFn: async () => {
+      const { data, error } = await untypedRpc<MilestoneYearCount[]>('milestones_year_counts', {
+        p_country_label: filters.countryLabel ?? null,
+        p_category: filters.category ?? null,
+        p_impact: filters.impact ?? null,
       });
       if (error) throw error;
       return data ?? [];

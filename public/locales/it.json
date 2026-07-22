@@ -3406,7 +3406,7 @@
     "breadcrumb": "Storia",
     "pageTitle": "Storia queer",
     "pageDescription": "Le pietre miliari che hanno segnato la vita LGBTQ+: rivolte, leggi, passi indietro. Datate e documentate.",
-    "metaTitle": "Cronologia della storia queer — Queer Guide",
+    "metaTitle": "Cronologia della storia queer",
     "metaDescription": "Pietre miliari della storia LGBTQ+: rivolte, depenalizzazioni, matrimonio egualitario e passi indietro — datate, documentate, in tutto il mondo.",
     "empty": "Nessuna pietra miliare corrisponde a questi filtri.",
     "decadeNav": "Vai al decennio",
@@ -3434,14 +3434,16 @@
     "sections": {
       "sources": "Fonti",
       "linked": "Persone e luoghi coinvolti",
-      "related": "Altro da {{country}}"
+      "related": "Altro da {{country}}",
+      "sameYear": "[IT] Elsewhere in {{year}}"
     },
     "sidebar": {
       "facts": "Fatti",
       "date": "Data",
       "place": "Luogo",
       "city": "Città",
-      "country": "Paese"
+      "country": "Paese",
+      "explore": "[IT] Then & now"
     },
     "entityType": {
       "personality": "Persona",
@@ -3466,6 +3468,64 @@
     },
     "city": {
       "title": "Storia queer a {{city}}"
+    },
+    "eras": {
+      "hidden-lives": {
+        "title": "[IT] Hidden lives",
+        "intro": "[IT] Before 1800, queer life survived in the shadows of law and church. What the record preserves is mostly persecution — trials, executions, edicts — alongside rare glimpses of love and community that outlasted them."
+      },
+      "empire-criminalization": {
+        "title": "[IT] Empire & criminalization",
+        "intro": "[IT] Colonial empires exported sodomy laws across the globe in the 19th century, while a few states — revolutionary France first among them — quietly removed their own. Much of today's legal map was drawn in this era."
+      },
+      "birth-of-movement": {
+        "title": "[IT] Birth of a movement",
+        "intro": "[IT] Between the 1860s and the early 1930s the first words, organizations and campaigns emerged: Kertbeny coined 'homosexual', Hirschfeld founded the first gay rights organization, and Berlin briefly became the queer capital of the world."
+      },
+      "destruction": {
+        "title": "[IT] Destruction",
+        "intro": "[IT] Fascism destroyed the first movement. The Nazis burned Hirschfeld's institute, tightened Paragraph 175 and deported thousands of gay men to concentration camps. Remembering this era is part of why this timeline exists."
+      },
+      "homophile-years": {
+        "title": "[IT] The homophile years",
+        "intro": "[IT] After the war, small 'homophile' groups rebuilt quietly — Mattachine, the Daughters of Bilitis, Arcadie, the COC — trading radicalism for respectability while police raids and purges continued."
+      },
+      "liberation": {
+        "title": "[IT] Liberation",
+        "intro": "[IT] Stonewall in 1969 turned decades of quiet organizing into open revolt. Pride marches spread worldwide, homosexuality left the psychiatric manuals, and the first anti-discrimination laws were won."
+      },
+      "aids-crisis": {
+        "title": "[IT] The AIDS crisis",
+        "intro": "[IT] A generation was decimated while governments looked away. The epidemic's grief forged the militant activism — ACT UP, treatment-access campaigns — that reshaped medicine and queer politics alike."
+      },
+      "recognition": {
+        "title": "[IT] Recognition",
+        "intro": "[IT] From the first registered partnerships to the Netherlands opening marriage in 2001, courts and parliaments began recognizing queer lives: decriminalization accelerated and trans rights entered the legal mainstream."
+      },
+      "equality-wave": {
+        "title": "[IT] The equality wave",
+        "intro": "[IT] The 2010s brought marriage equality to dozens of countries on every continent, landmark court rulings from the United States to India, and unprecedented queer visibility in public life."
+      },
+      "backlash-now": {
+        "title": "[IT] Backlash & now",
+        "intro": "[IT] Progress continues — and so does organized backlash: 'LGBT-free zones', anti-trans legislation and new criminalization drives. The timeline is still being written."
+      }
+    },
+    "era": {
+      "showAll": "[IT] Show all {{count}} events",
+      "showFewer": "[IT] Show fewer"
+    },
+    "partOf": "[IT] Part of: {{era}}",
+    "prev": "[IT] Earlier",
+    "next": "[IT] Later",
+    "onThisDay": "[IT] On this day",
+    "eraNav": "[IT] Jump to era",
+    "stats": "[IT] {{count}} milestones across {{eras}} eras",
+    "timelineNav": "[IT] Timeline navigation",
+    "explore": {
+      "country": "[IT] Travel guide: {{name}}",
+      "city": "[IT] City guide: {{name}}",
+      "events": "[IT] Events in {{name}} today"
     }
   }
 }

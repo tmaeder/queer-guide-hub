@@ -3376,7 +3376,7 @@
     "breadcrumb": "History",
     "pageTitle": "Queer history",
     "pageDescription": "Milestones that shaped LGBTQ+ life — uprisings, laws, setbacks. Dated and sourced.",
-    "metaTitle": "Queer history timeline — Queer Guide",
+    "metaTitle": "Queer history timeline",
     "metaDescription": "Milestones of LGBTQ+ history: uprisings, decriminalizations, marriage equality and setbacks — dated, sourced, worldwide.",
     "empty": "No milestones match these filters.",
     "decadeNav": "Jump to decade",
@@ -3404,14 +3404,16 @@
     "sections": {
       "sources": "Sources",
       "linked": "People & places involved",
-      "related": "More from {{country}}"
+      "related": "More from {{country}}",
+      "sameYear": "Elsewhere in {{year}}"
     },
     "sidebar": {
       "facts": "Facts",
       "date": "Date",
       "place": "Place",
       "city": "City",
-      "country": "Country"
+      "country": "Country",
+      "explore": "Then & now"
     },
     "entityType": {
       "personality": "Person",
@@ -3436,6 +3438,64 @@
     },
     "city": {
       "title": "Queer history in {{city}}"
+    },
+    "eras": {
+      "hidden-lives": {
+        "title": "Hidden lives",
+        "intro": "Before 1800, queer life survived in the shadows of law and church. What the record preserves is mostly persecution — trials, executions, edicts — alongside rare glimpses of love and community that outlasted them."
+      },
+      "empire-criminalization": {
+        "title": "Empire & criminalization",
+        "intro": "Colonial empires exported sodomy laws across the globe in the 19th century, while a few states — revolutionary France first among them — quietly removed their own. Much of today's legal map was drawn in this era."
+      },
+      "birth-of-movement": {
+        "title": "Birth of a movement",
+        "intro": "Between the 1860s and the early 1930s the first words, organizations and campaigns emerged: Kertbeny coined 'homosexual', Hirschfeld founded the first gay rights organization, and Berlin briefly became the queer capital of the world."
+      },
+      "destruction": {
+        "title": "Destruction",
+        "intro": "Fascism destroyed the first movement. The Nazis burned Hirschfeld's institute, tightened Paragraph 175 and deported thousands of gay men to concentration camps. Remembering this era is part of why this timeline exists."
+      },
+      "homophile-years": {
+        "title": "The homophile years",
+        "intro": "After the war, small 'homophile' groups rebuilt quietly — Mattachine, the Daughters of Bilitis, Arcadie, the COC — trading radicalism for respectability while police raids and purges continued."
+      },
+      "liberation": {
+        "title": "Liberation",
+        "intro": "Stonewall in 1969 turned decades of quiet organizing into open revolt. Pride marches spread worldwide, homosexuality left the psychiatric manuals, and the first anti-discrimination laws were won."
+      },
+      "aids-crisis": {
+        "title": "The AIDS crisis",
+        "intro": "A generation was decimated while governments looked away. The epidemic's grief forged the militant activism — ACT UP, treatment-access campaigns — that reshaped medicine and queer politics alike."
+      },
+      "recognition": {
+        "title": "Recognition",
+        "intro": "From the first registered partnerships to the Netherlands opening marriage in 2001, courts and parliaments began recognizing queer lives: decriminalization accelerated and trans rights entered the legal mainstream."
+      },
+      "equality-wave": {
+        "title": "The equality wave",
+        "intro": "The 2010s brought marriage equality to dozens of countries on every continent, landmark court rulings from the United States to India, and unprecedented queer visibility in public life."
+      },
+      "backlash-now": {
+        "title": "Backlash & now",
+        "intro": "Progress continues — and so does organized backlash: 'LGBT-free zones', anti-trans legislation and new criminalization drives. The timeline is still being written."
+      }
+    },
+    "era": {
+      "showAll": "Show all {{count}} events",
+      "showFewer": "Show fewer"
+    },
+    "partOf": "Part of: {{era}}",
+    "prev": "Earlier",
+    "next": "Later",
+    "onThisDay": "On this day",
+    "eraNav": "Jump to era",
+    "stats": "{{count}} milestones across {{eras}} eras",
+    "timelineNav": "Timeline navigation",
+    "explore": {
+      "country": "Travel guide: {{name}}",
+      "city": "City guide: {{name}}",
+      "events": "Events in {{name}} today"
     }
   }
 }
