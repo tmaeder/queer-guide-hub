@@ -119,7 +119,9 @@ for (const name of names) {
     if (errs.length > 12) console.log(`    … +${errs.length - 12} more`)
   } else {
     okCount++
-    const out = JSON.parse(readFileSync(join(enrichedDir, `${name}.json`), 'utf8')) as any[]
+    const out = JSON.parse(
+      readFileSync(join(enrichedDir, `${name}.json`), 'utf8'),
+    ) as Array<{ skip_reason?: unknown }>
     totalEntries += out.filter((e) => !e.skip_reason).length
     totalSkips += out.filter((e) => e.skip_reason).length
   }

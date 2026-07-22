@@ -108,7 +108,9 @@ function token(): string {
 }
 const TOKEN = token()
 
-async function sql(query: string): Promise<any[]> {
+type SqlRow = Record<string, unknown>
+
+async function sql(query: string): Promise<SqlRow[]> {
   const res = await fetch(`https://api.supabase.com/v1/projects/${PROJECT}/database/query`, {
     method: 'POST',
     headers: {
@@ -119,7 +121,7 @@ async function sql(query: string): Promise<any[]> {
     body: JSON.stringify({ query }),
   })
   if (!res.ok) throw new Error(`mgmt API ${res.status}: ${(await res.text()).slice(0, 400)}`)
-  return res.json() as Promise<any[]>
+  return res.json() as Promise<SqlRow[]>
 }
 
 // Dollar-quoted jsonb literal (content is trusted seed data; the tag never
@@ -171,7 +173,7 @@ async function main() {
   const cityValues = [
     ...new Set(cityPairs.map((p) => `('${countryByCode.get(p.cc)!.id}'::uuid, ${jsonStr(p.city)})`)),
   ]
-  const cityByKey = new Map<string, any>()
+  const cityByKey = new Map<string, SqlRow>()
   if (cityValues.length) {
     const cityRows = await sql(`
       with want(country_id, cname) as (values ${cityValues.join(',')})
