@@ -1,0 +1,6 @@
+# Raw parsed source text is intermediate + regenerable via the parsers.
+# schwulengeschichte.ch text is copyright (private-use-only); we keep only our
+# own original English enriched output. Wikipedia raw is CC BY-SA but still
+# regenerable, so the whole raw/ tree stays out of git.
+raw/
+existing-milestones.json

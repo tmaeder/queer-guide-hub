@@ -1,0 +1,242 @@
+[
+ {
+  "ref": "schwulengeschichte-011:0",
+  "title": "Lugano hosts the Swiss Pride festival",
+  "description": "In June 2018 Switzerland's national Pride took place in Lugano, bringing the event to the Italian-speaking canton of Ticino.",
+  "date": "2018-06",
+  "country_code": "CH",
+  "country": "Switzerland",
+  "city": "Lugano",
+  "region": "",
+  "category": "uprising-movement",
+  "impact": "positive",
+  "significance": 2,
+  "sources": [
+   { "label": "schwulengeschichte.ch — Zeittafel 2010-2019", "url": "https://schwulengeschichte.ch/zeittafeln/2010-2019" }
+  ],
+  "needs_review": false
+ },
+ {
+  "ref": "schwulengeschichte-011:1",
+  "title": "Pink Cross marks its 25th anniversary",
+  "description": "The Swiss national gay umbrella organization Pink Cross celebrated 25 years of existence, starting with a reception at the Lugano Pride on 1 June 2018 and closing with a gala evening in Bern on 15 September.",
+  "date": "2018-06-01",
+  "date_end": "2018-09-15",
+  "country_code": "CH",
+  "country": "Switzerland",
+  "city": "",
+  "region": "",
+  "category": "other",
+  "impact": "neutral",
+  "significance": 1,
+  "sources": [
+   { "label": "schwulengeschichte.ch — Zeittafel 2010-2019", "url": "https://schwulengeschichte.ch/zeittafeln/2010-2019" }
+  ],
+  "needs_review": false
+ },
+ {
+  "ref": "schwulengeschichte-011:2",
+  "title": "Swiss National Council backs adding sexual orientation to the anti-racism norm",
+  "description": "On 25 September 2018 the National Council, the lower chamber of the Swiss parliament, voted to extend the criminal provision against racial discrimination to cover sexual orientation and gender identity, a step in the legislative process toward broader anti-discrimination protection.",
+  "date": "2018-09-25",
+  "country_code": "CH",
+  "country": "Switzerland",
+  "city": "Bern",
+  "region": "",
+  "category": "other",
+  "impact": "neutral",
+  "significance": 2,
+  "sources": [
+   { "label": "schwulengeschichte.ch — Zeittafel 2010-2019", "url": "https://schwulengeschichte.ch/zeittafeln/2010-2019" }
+  ],
+  "needs_review": false
+ },
+ {
+  "ref": "schwulengeschichte-011:3",
+  "title": "Kathrin Bertschy receives the Tolerantia Award Schweiz",
+  "description": "On 5 October 2018 Pink Cross honored National Councillor Kathrin Bertschy of the Green Liberal Party with the Tolerantia Award Schweiz, presented at the award ceremony in Paris, for her sustained work for the LGBT community; in 2013 she had launched the parliamentary initiative for marriage for all.",
+  "date": "2018-10-05",
+  "country_code": "CH",
+  "country": "Switzerland",
+  "city": "",
+  "region": "",
+  "category": "other",
+  "impact": "positive",
+  "significance": 1,
+  "sources": [
+   { "label": "schwulengeschichte.ch — Zeittafel 2010-2019", "url": "https://schwulengeschichte.ch/zeittafeln/2010-2019" }
+  ],
+  "needs_review": false
+ },
+ {
+  "ref": "schwulengeschichte-011:4",
+  "title": "Swiss parliament turns down the anti-discrimination extension",
+  "description": "On 3 December 2018 the Council of States rejected the extension of the anti-racism criminal provision, and the full parliament then did the same, setting back the effort to add sexual orientation and gender identity to the norm.",
+  "date": "2018-12-03",
+  "country_code": "CH",
+  "country": "Switzerland",
+  "city": "Bern",
+  "region": "",
+  "category": "other",
+  "impact": "negative",
+  "significance": 2,
+  "sources": [
+   { "label": "schwulengeschichte.ch — Zeittafel 2010-2019", "url": "https://schwulengeschichte.ch/zeittafeln/2010-2019" }
+  ],
+  "needs_review": true
+ },
+ {
+  "ref": "schwulengeschichte-011:5",
+  "title": "Bern's HAB group takes the name hab queer bern",
+  "description": "At their annual assembly on 22 May 2019, the Homosexuelle Arbeitsgruppen Bern (HAB) renamed themselves hab queer bern, signalling openness to people who do not identify as homosexual.",
+  "date": "2019-05-22",
+  "country_code": "CH",
+  "country": "Switzerland",
+  "city": "Bern",
+  "region": "",
+  "category": "other",
+  "impact": "neutral",
+  "significance": 1,
+  "sources": [
+   { "label": "schwulengeschichte.ch — Zeittafel 2010-2019", "url": "https://schwulengeschichte.ch/zeittafeln/2010-2019" }
+  ],
+  "needs_review": false
+ },
+ {
+  "ref": "schwulengeschichte-011:6",
+  "title": "Swiss Federal Supreme Court excludes sexual orientation from equality-law protection",
+  "description": "On 30 April 2019 the Federal Supreme Court dismissed the complaint of a gay soldier whose employment was ended despite an excellent record, holding that discrimination based on sexual orientation falls outside the scope of the Gender Equality Act.",
+  "date": "2019-04-30",
+  "country_code": "CH",
+  "country": "Switzerland",
+  "city": "",
+  "region": "",
+  "category": "other",
+  "impact": "negative",
+  "significance": 2,
+  "sources": [
+   { "label": "schwulengeschichte.ch — Zeittafel 2010-2019", "url": "https://schwulengeschichte.ch/zeittafeln/2010-2019" }
+  ],
+  "needs_review": false
+ },
+ {
+  "ref": "schwulengeschichte-011:7",
+  "title": "hab queer bern counseling service moves to Checkpoint Bern",
+  "description": "In May 2019 the professional counseling service of hab queer bern was transferred to Checkpoint Bern, securing its financing.",
+  "date": "2019-05",
+  "country_code": "CH",
+  "country": "Switzerland",
+  "city": "Bern",
+  "region": "",
+  "category": "other",
+  "impact": "neutral",
+  "significance": 1,
+  "sources": [
+   { "label": "schwulengeschichte.ch — Zeittafel 2010-2019", "url": "https://schwulengeschichte.ch/zeittafeln/2010-2019" }
+  ],
+  "needs_review": false
+ },
+ {
+  "ref": "schwulengeschichte-011:8",
+  "title": "Zurich Pride celebrates its 25th edition and 50 years of Stonewall",
+  "description": "From 14 to 16 June 2019 Zurich held its 25th Pride under the motto Strong in Diversity, commemorating the 50th anniversary of the Stonewall riots. The festival was staged on Sechseläutenplatz and in the Bürkliplatz grounds for the first time.",
+  "date": "2019-06-14",
+  "date_end": "2019-06-16",
+  "country_code": "CH",
+  "country": "Switzerland",
+  "city": "Zurich",
+  "region": "",
+  "category": "uprising-movement",
+  "impact": "positive",
+  "significance": 2,
+  "sources": [
+   { "label": "schwulengeschichte.ch — Zeittafel 2010-2019", "url": "https://schwulengeschichte.ch/zeittafeln/2010-2019" }
+  ],
+  "needs_review": false
+ },
+ {
+  "ref": "schwulengeschichte-011:9",
+  "title": "Basel marches to remember Stonewall",
+  "description": "On 29 June 2019 Basel held a Remember Stonewall march marking 50 years since the New York riots.",
+  "date": "2019-06-29",
+  "country_code": "CH",
+  "country": "Switzerland",
+  "city": "Basel",
+  "region": "",
+  "category": "uprising-movement",
+  "impact": "positive",
+  "significance": 2,
+  "sources": [
+   { "label": "schwulengeschichte.ch — Zeittafel 2010-2019", "url": "https://schwulengeschichte.ch/zeittafeln/2010-2019" }
+  ],
+  "needs_review": false
+ },
+ {
+  "ref": "schwulengeschichte-011:10",
+  "title": "Geneva hosts the Swiss Pride festival",
+  "description": "In July 2019 the national Pride took place in Geneva.",
+  "date": "2019-07",
+  "country_code": "CH",
+  "country": "Switzerland",
+  "city": "Geneva",
+  "region": "",
+  "category": "uprising-movement",
+  "impact": "positive",
+  "significance": 2,
+  "sources": [
+   { "label": "schwulengeschichte.ch — Zeittafel 2010-2019", "url": "https://schwulengeschichte.ch/zeittafeln/2010-2019" }
+  ],
+  "needs_review": false
+ },
+ {
+  "ref": "schwulengeschichte-011:11",
+  "title": "National Council committee endorses marriage for all",
+  "description": "On 30 August 2019 the legal affairs committee of the Swiss National Council voted 17 to 7 in favor of opening marriage to same-sex couples, while narrowly opposing, 13 to 12, access to sperm donation and joint parenthood from birth for female couples.",
+  "date": "2019-08-30",
+  "country_code": "CH",
+  "country": "Switzerland",
+  "city": "Bern",
+  "region": "",
+  "category": "other",
+  "impact": "neutral",
+  "significance": 2,
+  "sources": [
+   { "label": "schwulengeschichte.ch — Zeittafel 2010-2019", "url": "https://schwulengeschichte.ch/zeittafeln/2010-2019" }
+  ],
+  "needs_review": false
+ },
+ {
+  "ref": "schwulengeschichte-011:12",
+  "title": "European Tolerantia Award ceremony held in Switzerland for the first time",
+  "description": "On 5 October 2019 the European Tolerantia Award ceremony took place in Switzerland for the first time. The Swiss award went to Henry Hohmann, a co-founder of Transgender Network Switzerland.",
+  "date": "2019-10-05",
+  "country_code": "CH",
+  "country": "Switzerland",
+  "city": "",
+  "region": "",
+  "category": "other",
+  "impact": "positive",
+  "significance": 1,
+  "sources": [
+   { "label": "schwulengeschichte.ch — Zeittafel 2010-2019", "url": "https://schwulengeschichte.ch/zeittafeln/2010-2019" }
+  ],
+  "needs_review": false
+ },
+ {
+  "ref": "schwulengeschichte-011:13",
+  "title": "QueerBienne association founded in Biel",
+  "description": "In 2019 the association QueerBienne was founded in the bilingual city of Biel/Bienne, creating a local queer organization for the region.",
+  "date": "2019",
+  "country_code": "CH",
+  "country": "Switzerland",
+  "city": "Biel/Bienne",
+  "region": "",
+  "category": "uprising-movement",
+  "impact": "positive",
+  "significance": 1,
+  "sources": [
+   { "label": "schwulengeschichte.ch — Zeittafel 2010-2019", "url": "https://schwulengeschichte.ch/zeittafeln/2010-2019" }
+  ],
+  "needs_review": false
+ }
+]
