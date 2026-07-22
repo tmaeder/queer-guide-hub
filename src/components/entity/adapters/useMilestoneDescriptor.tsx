@@ -5,7 +5,9 @@ import { buildMilestoneMeta } from '@/pages/MilestoneDetail.meta';
 import {
   MilestoneHero,
   MilestoneLinkedEntities,
+  MilestonePrevNext,
   MilestoneRelated,
+  MilestoneSameYear,
   MilestoneSidebar,
   MilestoneSources,
   MilestoneStory,
@@ -32,7 +34,9 @@ export function useMilestoneDescriptor(slug: string | undefined): EntityDescript
         { id: 'linked', when: links.length > 0, render: () => <MilestoneLinkedEntities links={links} /> },
         { id: 'sources', when: milestone.sources.length > 0, render: () => <MilestoneSources milestone={milestone} /> },
         { id: 'related', when: Boolean(milestone.country_id), render: () => <MilestoneRelated milestone={milestone} /> },
+        { id: 'same-year', when: true, render: () => <MilestoneSameYear milestone={milestone} /> },
         { id: 'tags', when: milestone.tags.length > 0, render: () => <MilestoneTags milestone={milestone} /> },
+        { id: 'prev-next', when: Boolean(milestone.prev || milestone.next), render: () => <MilestonePrevNext milestone={milestone} /> },
       ],
       sidebar: <MilestoneSidebar milestone={milestone} />,
       // The shell's SimilarItems rail is venue/org-typed; milestone "related"

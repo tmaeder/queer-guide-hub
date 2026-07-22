@@ -89,6 +89,19 @@ export const STATIC_ROUTE_BODY: Record<string, RouteBody> = {
     ],
   },
 
+  '/history': {
+    h1: 'Queer history timeline — milestones of LGBTQ+ life worldwide',
+    paragraphs: [
+      'Thousands of dated, sourced milestones of LGBTQ+ history, organized into narrative eras: hidden lives before 1800, criminalization under empire, the birth of a movement (1868–1932), destruction under fascism, the homophile years, liberation after Stonewall (1969–1981), the AIDS crisis, legal recognition, the marriage-equality wave of the 2010s, and the backlash of the present day.',
+      'Every milestone names its date, place, and sources — uprisings and firsts alongside criminalization and setbacks. Filter by country, theme, or impact, or walk the full chronology era by era.',
+    ],
+    links: [
+      { href: '/personalities', label: 'Notable LGBTQ+ figures' },
+      { href: '/travel', label: 'LGBTQ+ rights by country today' },
+      { href: '/news', label: 'Current LGBTQ+ news' },
+    ],
+  },
+
   '/news': {
     h1: 'LGBTQ+ news — daily, curated, ad-free',
     paragraphs: [

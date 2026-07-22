@@ -69,6 +69,9 @@ export interface Milestone {
   country?: { id: string; name: string; code: string; slug: string | null } | null;
   city?: { id: string; name: string; slug: string | null } | null;
   links?: MilestoneLink[];
+  /** Nearest major (significance>=4) timeline neighbours — detail-page navigation. */
+  prev?: MilestoneRef | null;
+  next?: MilestoneRef | null;
 }
 
 export interface MilestoneOnThisDay {

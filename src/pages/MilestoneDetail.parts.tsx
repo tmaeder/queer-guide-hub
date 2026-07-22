@@ -1,13 +1,16 @@
-import { ExternalLink, MapPin } from 'lucide-react';
+import { ArrowLeft, ArrowRight, ExternalLink, MapPin } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { TagChip } from '@/components/tags/TagChip';
 import { MilestoneCategoryBadge } from '@/components/milestones/MilestoneCategoryBadge';
 import { MilestoneImpactMarker } from '@/components/milestones/MilestoneImpactMarker';
 import { MilestoneRow } from '@/components/milestones/MilestoneRow';
-import { useMilestonesForCountry } from '@/hooks/useMilestones';
-import { formatMilestoneDate } from '@/lib/milestoneDate';
+import { useMilestonesForCountry, useMilestonesTimeline } from '@/hooks/useMilestones';
+import { eraForYear } from '@/config/historyEras';
+import { isRestrainedMilestone } from '@/lib/historyEraGrouping';
+import { formatMilestoneDate, milestoneYear } from '@/lib/milestoneDate';
 import { detailHref } from '@/lib/searchRoutes';
+import { cn } from '@/lib/utils';
 import type { Milestone, MilestoneLink } from '@/types/milestone';
 
 export function MilestoneHero({ milestone }: { milestone: Milestone }) {
@@ -22,6 +25,10 @@ export function MilestoneHero({ milestone }: { milestone: Milestone }) {
   const place = [milestone.city?.name ?? milestone.city_name, milestone.country?.name ?? milestone.country_name]
     .filter(Boolean)
     .join(', ');
+  const era = eraForYear(milestoneYear(milestone.date));
+  // Persecution/negative milestones keep imagery documentary-sized — never a
+  // full-bleed celebratory hero.
+  const restrained = isRestrainedMilestone(milestone, era);
   return (
     <header>
       <p className="text-2xs uppercase tracking-wider text-muted-foreground">
@@ -41,7 +48,22 @@ export function MilestoneHero({ milestone }: { milestone: Milestone }) {
             {place}
           </span>
         )}
+        <LocalizedLink
+          to={`/history#era-${era.slug}`}
+          className="rounded-badge border border-border px-2 py-0.5 text-13 text-muted-foreground hover:border-foreground hover:text-foreground"
+        >
+          {t('milestones.partOf', 'Part of: {{era}}', { era: t(era.titleKey) })}
+        </LocalizedLink>
       </div>
+      {milestone.image_url && (
+        <figure className={cn('mt-6 overflow-hidden rounded-container bg-muted', restrained ? 'max-w-sm' : '')}>
+          <img
+            src={milestone.image_url}
+            alt=""
+            className={cn('w-full object-cover', restrained ? 'max-h-64' : 'aspect-[16/10]')}
+          />
+        </figure>
+      )}
     </header>
   );
 }
@@ -67,15 +89,20 @@ export function MilestoneSources({ milestone }: { milestone: Milestone }) {
           <li key={`${s.label}-${i}`} className="flex items-start gap-2 text-15">
             <span className="mt-0.5 w-5 shrink-0 text-13 text-muted-foreground">{i + 1}.</span>
             {s.url ? (
-              <a
-                href={s.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 underline underline-offset-2"
-              >
-                {s.label}
-                <ExternalLink className="h-3 w-3 shrink-0" aria-hidden />
-              </a>
+              <span>
+                <a
+                  href={s.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 underline underline-offset-2"
+                >
+                  {s.label}
+                  <ExternalLink className="h-3 w-3 shrink-0" aria-hidden />
+                </a>
+                {sourceHostname(s.url) && (
+                  <span className="ml-2 text-13 text-muted-foreground">{sourceHostname(s.url)}</span>
+                )}
+              </span>
             ) : (
               <span>{s.label}</span>
             )}
@@ -84,6 +111,14 @@ export function MilestoneSources({ milestone }: { milestone: Milestone }) {
       </ol>
     </section>
   );
+}
+
+function sourceHostname(url: string): string | null {
+  try {
+    return new URL(url).hostname.replace(/^www\./, '');
+  } catch {
+    return null;
+  }
 }
 
 function linkedHref(link: MilestoneLink): string | null {
@@ -158,6 +193,69 @@ export function MilestoneRelated({ milestone }: { milestone: Milestone }) {
   );
 }
 
+/** ≤4 milestones from the same year in other countries — the global-context lens. */
+export function MilestoneSameYear({ milestone }: { milestone: Milestone }) {
+  const { t } = useTranslation();
+  const year = milestoneYear(milestone.date);
+  const { data } = useMilestonesTimeline({ fromYear: year, toYear: year }, 12);
+  const countryLabel = milestone.country?.name ?? milestone.country_name;
+  const others = (data ?? [])
+    .filter((m) => m.id !== milestone.id && (m.country?.name ?? m.country_name) !== countryLabel)
+    .slice(0, 4);
+  if (!others.length) return null;
+  return (
+    <section>
+      <h2 className="mb-4 font-display text-title font-semibold">
+        {t('milestones.sections.sameYear', 'Elsewhere in {{year}}', { year })}
+      </h2>
+      <div className="space-y-4">
+        {others.map((m) => (
+          <MilestoneRow key={m.id} milestone={m} density="compact" />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+/** Prev/next major milestone on the timeline — keeps detail pages walkable. */
+export function MilestonePrevNext({ milestone }: { milestone: Milestone }) {
+  const { t } = useTranslation();
+  if (!milestone.prev && !milestone.next) return null;
+  return (
+    <nav
+      aria-label={t('milestones.timelineNav', 'Timeline navigation')}
+      className="grid gap-4 border-t border-border pt-6 sm:grid-cols-2"
+    >
+      {milestone.prev ? (
+        <LocalizedLink to={`/history/${milestone.prev.slug}`} className="group block">
+          <span className="inline-flex items-center gap-1 text-13 text-muted-foreground">
+            <ArrowLeft className="h-3 w-3" aria-hidden />
+            {t('milestones.prev', 'Earlier')} · {milestoneYear(milestone.prev.date)}
+          </span>
+          <span className="mt-1 block text-15 font-semibold group-hover:underline">
+            {milestone.prev.title}
+          </span>
+        </LocalizedLink>
+      ) : (
+        <span />
+      )}
+      {milestone.next ? (
+        <LocalizedLink to={`/history/${milestone.next.slug}`} className="group block sm:text-right">
+          <span className="inline-flex items-center gap-1 text-13 text-muted-foreground">
+            {t('milestones.next', 'Later')} · {milestoneYear(milestone.next.date)}
+            <ArrowRight className="h-3 w-3" aria-hidden />
+          </span>
+          <span className="mt-1 block text-15 font-semibold group-hover:underline">
+            {milestone.next.title}
+          </span>
+        </LocalizedLink>
+      ) : (
+        <span />
+      )}
+    </nav>
+  );
+}
+
 export function MilestoneTags({ milestone }: { milestone: Milestone }) {
   return (
     <div className="flex flex-wrap gap-2">
@@ -207,19 +305,59 @@ export function MilestoneSidebar({ milestone }: { milestone: Milestone }) {
       ),
     });
   }
+  const exploreLinks: Array<{ label: string; to: string }> = [];
+  if (milestone.country?.slug) {
+    exploreLinks.push({
+      label: t('milestones.explore.country', 'Travel guide: {{name}}', { name: milestone.country.name }),
+      to: `/country/${milestone.country.slug}`,
+    });
+  }
+  if (milestone.city?.slug) {
+    exploreLinks.push({
+      label: t('milestones.explore.city', 'City guide: {{name}}', { name: milestone.city.name }),
+      to: `/city/${milestone.city.slug}`,
+    });
+  }
+  const cityLabel = milestone.city?.name ?? milestone.city_name;
+  if (cityLabel) {
+    // /events supports a city name filter (legacy ?city= param) — country-level
+    // event filtering doesn't exist, so the link stays city-scoped.
+    exploreLinks.push({
+      label: t('milestones.explore.events', 'Events in {{name}} today', { name: cityLabel }),
+      to: `/events?city=${encodeURIComponent(cityLabel)}`,
+    });
+  }
   return (
-    <aside className="rounded-container border border-border p-6">
-      <h2 className="mb-4 text-2xs uppercase tracking-wider text-muted-foreground">
-        {t('milestones.sidebar.facts', 'Facts')}
-      </h2>
-      <dl className="space-y-4">
-        {rows.map((r) => (
-          <div key={r.label}>
-            <dt className="text-13 text-muted-foreground">{r.label}</dt>
-            <dd className="text-15">{r.value}</dd>
-          </div>
-        ))}
-      </dl>
-    </aside>
+    <div className="space-y-6">
+      <aside className="rounded-container border border-border p-6">
+        <h2 className="mb-4 text-2xs uppercase tracking-wider text-muted-foreground">
+          {t('milestones.sidebar.facts', 'Facts')}
+        </h2>
+        <dl className="space-y-4">
+          {rows.map((r) => (
+            <div key={r.label}>
+              <dt className="text-13 text-muted-foreground">{r.label}</dt>
+              <dd className="text-15">{r.value}</dd>
+            </div>
+          ))}
+        </dl>
+      </aside>
+      {exploreLinks.length > 0 && (
+        <aside className="rounded-container border border-border p-6">
+          <h2 className="mb-4 text-2xs uppercase tracking-wider text-muted-foreground">
+            {t('milestones.sidebar.explore', 'Then & now')}
+          </h2>
+          <ul className="space-y-2">
+            {exploreLinks.map((l) => (
+              <li key={l.to}>
+                <LocalizedLink to={l.to} className="text-15 underline underline-offset-2">
+                  {l.label}
+                </LocalizedLink>
+              </li>
+            ))}
+          </ul>
+        </aside>
+      )}
+    </div>
   );
 }
