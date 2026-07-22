@@ -24,6 +24,7 @@ import { toast } from '@/hooks/use-toast';
 import { upsertEventAttendance } from '@/hooks/usePageFetchers';
 import { resolveEntityImage } from '@/lib/images/resolveEntityImage';
 import { MarketplaceForEvent } from '@/components/marketplace/MarketplaceForEvent';
+import { MilestonesForEntity } from '@/components/discovery/MilestonesForEntity';
 import {
   type EventWithRelations,
   EventHero,
@@ -343,6 +344,9 @@ export default function EventDetail() {
         </div>
 
         <div className="mt-12 flex flex-col gap-12 pb-28 md:pb-12">
+          <ErrorBoundary section="event-milestones" fallback={null}>
+            <MilestonesForEntity entityType="event" entityId={event.id} />
+          </ErrorBoundary>
           <ErrorBoundary section="event-who-is-going" fallback={null}>
             <EventWhoIsGoing event={event} user={user} isPast={isPast} />
           </ErrorBoundary>

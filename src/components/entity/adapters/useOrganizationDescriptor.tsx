@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MarketplaceFilteredView } from '@/components/marketplace/MarketplaceFilteredView';
+import { MilestonesForEntity } from '@/components/discovery/MilestonesForEntity';
 import { useOrganization } from '@/hooks/useOrganization';
 import { buildOrgMeta } from '@/pages/OrganizationDetail.meta';
 import {
@@ -38,6 +39,7 @@ export function useOrganizationDescriptor(slug: string | undefined): EntityDescr
         { id: 'what-they-do', render: () => <OrgWhatTheyDo org={org} /> },
         { id: 'on-social', when: Boolean(org.social && Object.keys(org.social).length > 0), render: () => <OrgSocial org={org} /> },
         { id: 'tags', when: (org.tags?.length ?? 0) > 0, render: () => <OrgTags org={org} /> },
+        { id: 'milestones', render: () => <MilestonesForEntity entityType="organization" entityId={org.id} /> },
         { id: 'visit', when: org.venue_count > 0, render: () => <OrgVisit org={org} /> },
         {
           id: 'articles',

@@ -19,6 +19,8 @@ export const ADMIN_AREA_DESCRIPTIONS: Record<string, string> = {
   '/admin/content/news_articles': 'News articles. Edit, tag, and manage geo and source data.',
   '/admin/content/personalities':
     'LGBTQ+ personalities. Edit profiles, professions, and connections. Freigabe = Visum-Prinzip (5 Stempel) — Info-Karte oben.',
+  '/admin/content/milestones':
+    'LGBTQ+ history milestones (public calendar timeline). "KI-Vorschläge suchen" stages AI proposals as pending — filter review_status = pending to approve.',
   '/admin/content/cities': 'Cities. Edit details and merge name-variant duplicates.',
   '/admin/content/countries': 'Countries. Edit metadata, safety, and equality data.',
   '/admin/content/hotels': 'Hotels and BnBs. Edit listings and amenities.',

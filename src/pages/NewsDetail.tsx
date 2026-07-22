@@ -3,6 +3,7 @@ import { useBreadcrumbs } from '@/contexts/BreadcrumbContext';
 import { useParams } from 'react-router';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { PodcastPlayer } from '@/components/news/PodcastPlayer';
+import { MilestonesForEntity } from '@/components/discovery/MilestonesForEntity';
 import { useEffect, useMemo, useState } from 'react';
 import {
   ArrowLeft,
@@ -530,6 +531,9 @@ export default function NewsDetail() {
         </div>
       </div>
 
+      <div className="mt-12">
+        <MilestonesForEntity entityType="news" entityId={article.id} />
+      </div>
       <RelatedNewsRail articleId={article.id} className="mt-12" />
     </div>
   );

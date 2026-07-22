@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { errMsg } from './lib/errMsg'
 import { PAGE_SIZE } from './config'
 import { fetchPersonalities } from './lib/query'
 import { exportCsv, exportJson } from './lib/export'
@@ -20,6 +21,7 @@ import { NavBar, type View } from './NavBar'
 import { Upcoming } from './Upcoming'
 import { Liste } from './Liste'
 import { DuplicateReview } from './DuplicateReview'
+import { QualityDashboard } from './QualityDashboard'
 
 export function App() {
   const [view, setView] = useState<View>('dashboard')
@@ -56,7 +58,7 @@ export function App() {
           setCount(r.count)
           refreshLocal()
         })
-        .catch((e) => setError(e.message ?? String(e)))
+        .catch((e) => setError(errMsg(e)))
         .finally(() => setLoading(false))
     }, 250)
     return () => clearTimeout(debounceRef.current)
@@ -126,6 +128,7 @@ export function App() {
       {view === 'dashboard' && <Dashboard onPick={pickCohort} />}
       {view === 'liste' && <Liste />}
       {view === 'upcoming' && <Upcoming />}
+      {view === 'quality' && <QualityDashboard />}
       {view === 'duplicates' && <DuplicateReview onClose={() => setView('dashboard')} />}
 
       {view === 'list' && (

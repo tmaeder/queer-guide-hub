@@ -1696,7 +1696,8 @@
       "personalities": "Personalidades",
       "hotels": "Hoteles",
       "help": "Ayuda",
-      "tags": "Etiquetas"
+      "tags": "Etiquetas",
+      "history": "Historia"
     },
     "userMenu": {
       "myTrips": "Mis viajes",
@@ -3412,7 +3413,8 @@
       "country": "País",
       "allCountries": "Todos los países",
       "clear": "Borrar filtros",
-      "showAll": "[ES] Show all events"
+      "major": "Hitos principales",
+      "showAll": "Todos los hitos"
     },
     "category": {
       "uprising-movement": "Levantamiento / Movimiento",
@@ -3460,6 +3462,9 @@
       "title": "Tal día como hoy",
       "seeAll": "Cronología completa",
       "yearsAgo": "hace {{count}} años"
+    },
+    "city": {
+      "title": "Historia queer en {{city}}"
     }
   }
 }

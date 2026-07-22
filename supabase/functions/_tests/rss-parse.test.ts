@@ -53,3 +53,19 @@ Deno.test('parseItunesDuration — formats', () => {
   assertEquals(parseItunesDuration(null), null)
   assertEquals(parseItunesDuration('garbage'), null)
 })
+
+Deno.test('parseRssItems — truncated feed keeps complete items, drops the cut one', () => {
+  // Simulates the byte-capped read of an oversized feed: the stream ends
+  // mid-<item>. Complete leading items must parse; the partial block drops.
+  const full = NEWS_ITEM.replace('</item>\n</channel></rss>', `</item>
+<item>
+  <title>Second complete story</title>
+  <link>https://news.example/story2</link>
+  <description>Also complete.</description>
+</item>
+<item>
+  <title>Cut off mid-descr`)
+  const items = parseRssItems(full, false)
+  assertEquals(items.length, 2)
+  assertEquals(items[1].url, 'https://news.example/story2')
+})

@@ -16,22 +16,23 @@ import { cn } from '@/lib/utils';
 const IMPACTS = ['positive', 'neutral', 'negative'] as const;
 
 /**
- * /history — the queer-history timeline. Published milestones are fetched once
- * (default: significance ≥ 2; `?all=1` loads everything) and filtered
- * client-side; URL params keep filters shareable. The RPC caps at 2500 rows —
- * switch to server-side filters + year-range windowing if the dataset ever
- * outgrows that. Persecution content is heavy — this page stays motion-free
- * (safety-adjacent).
+ * /history — the queer-history timeline. All published milestones (~110 at
+ * launch) are fetched once and filtered client-side; URL params keep filters
+ * shareable. Switch to server-side RPC filters + year-range windowing when the
+ * dataset outgrows the 500-row RPC cap. Persecution content is heavy — this
+ * page stays motion-free (safety-adjacent).
  */
 export default function HistoryTimeline() {
   const { t } = useTranslation();
   const [params, setParams] = useSearchParams();
-  const showAll = params.get('all') === '1';
-  const { data, isLoading } = useMilestonesTimeline({ significanceMin: showAll ? null : 2 });
+  const { data, isLoading } = useMilestonesTimeline({}, 4000);
 
   const country = params.get('country');
   const category = params.get('category');
   const impact = params.get('impact');
+  // Default to major milestones (significance >= 4) — the full set is several
+  // thousand rows; "All" opts into the complete chronology.
+  const showAll = params.get('all') === '1';
 
   useMeta({
     title: t('milestones.metaTitle', 'Queer history timeline — Queer Guide'),
@@ -53,20 +54,23 @@ export default function HistoryTimeline() {
 
   const milestones = useMemo(() => {
     let rows = data ?? [];
-    if (country) rows = rows.filter((m) => (m.country?.slug ?? m.country_name) === country);
+    if (!showAll) rows = rows.filter((m) => m.significance >= 4);
+    if (country) rows = rows.filter((m) => (m.country?.name ?? m.country_name) === country);
     if (category) rows = rows.filter((m) => m.category === category);
     if (impact) rows = rows.filter((m) => m.impact === impact);
     return rows;
-  }, [data, country, category, impact]);
+  }, [data, showAll, country, category, impact]);
 
   const countries = useMemo(() => {
-    const seen = new Map<string, string>();
+    // The dropdown works on the display LABEL: bulk-imported rows may carry
+    // only a free-text country_name while resolved rows key by slug — the same
+    // country must be one entry and the filter must match both row shapes.
+    const labels = new Set<string>();
     for (const m of data ?? []) {
-      const key = m.country?.slug ?? m.country_name;
       const label = m.country?.name ?? m.country_name;
-      if (key && label && !seen.has(key)) seen.set(key, label);
+      if (label) labels.add(label);
     }
-    return [...seen.entries()].sort((a, b) => a[1].localeCompare(b[1]));
+    return [...labels].sort((a, b) => a.localeCompare(b));
   }, [data]);
 
   const decades = useMemo(() => {
@@ -86,7 +90,7 @@ export default function HistoryTimeline() {
     else next.delete(key);
     setParams(next, { replace: true });
   };
-  const hasFilters = Boolean(country || category || impact);
+  const hasFilters = Boolean(country || category || impact || showAll);
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -111,6 +115,16 @@ export default function HistoryTimeline() {
           ))}
         </div>
         <div className="flex flex-wrap items-center gap-2">
+          <FilterChip
+            active={!showAll}
+            label={t('milestones.filter.major', 'Major milestones')}
+            onClick={() => setParam('all', showAll ? null : '1')}
+          />
+          <FilterChip
+            active={showAll}
+            label={t('milestones.filter.showAll', 'All milestones')}
+            onClick={() => setParam('all', showAll ? null : '1')}
+          />
           {IMPACTS.map((i) => (
             <FilterChip
               key={i}
@@ -119,11 +133,6 @@ export default function HistoryTimeline() {
               onClick={() => setParam('impact', impact === i ? null : i)}
             />
           ))}
-          <FilterChip
-            active={showAll}
-            label={t('milestones.filter.showAll', 'Show all events')}
-            onClick={() => setParam('all', showAll ? null : '1')}
-          />
           <select
             value={country ?? ''}
             onChange={(e) => setParam('country', e.target.value || null)}
@@ -131,8 +140,8 @@ export default function HistoryTimeline() {
             className="h-8 rounded-element border border-border bg-background px-2 text-13"
           >
             <option value="">{t('milestones.filter.allCountries', 'All countries')}</option>
-            {countries.map(([key, label]) => (
-              <option key={key} value={key}>
+            {countries.map((label) => (
+              <option key={label} value={label}>
                 {label}
               </option>
             ))}

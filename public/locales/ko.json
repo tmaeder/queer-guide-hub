@@ -1696,7 +1696,8 @@
       "personalities": "인물",
       "hotels": "호텔",
       "help": "도움말",
-      "tags": "태그"
+      "tags": "태그",
+      "history": "역사"
     },
     "userMenu": {
       "myTrips": "내 여행",
@@ -3410,7 +3411,8 @@
       "country": "국가",
       "allCountries": "모든 국가",
       "clear": "필터 지우기",
-      "showAll": "[KO] Show all events"
+      "major": "주요 이정표",
+      "showAll": "모든 이정표"
     },
     "category": {
       "uprising-movement": "봉기 / 운동",
@@ -3458,6 +3460,9 @@
       "title": "오늘의 역사",
       "seeAll": "전체 연대표",
       "yearsAgo": "{{count}}년 전"
+    },
+    "city": {
+      "title": "{{city}}의 퀴어 역사"
     }
   }
 }

@@ -305,22 +305,29 @@ async function fetchFromRss(feedUrl: string, isPodcast = false): Promise<Record<
   const controller = new AbortController()
   const timeout = setTimeout(() => controller.abort(), 20_000)
   try {
-    const res = await fetch(feedUrl, {
+    let res = await fetch(feedUrl, {
       headers: { 'User-Agent': 'QueerGuide/1.0 NewsBot' },
       signal: controller.signal,
     })
+    if (res.status === 403) {
+      // Some publishers (e.g. GLAAD) 403 obvious bot UAs but serve browsers.
+      // One honest-UA attempt first, then a single browser-UA fallback.
+      await res.body?.cancel()
+      res = await fetch(feedUrl, {
+        headers: { 'User-Agent': BROWSER_UA },
+        signal: controller.signal,
+      })
+    }
     if (!res.ok) {
       throw new Error(`HTTP ${res.status} ${res.statusText}`)
     }
-    // Bound the body BEFORE reading it. parseRssItems parses the whole feed
-    // (maxArticles only slices afterwards), so a huge podcast-archive feed
-    // OOMs/CPU-limits the worker → HTTP 546 kills the entire run. Skip such a
-    // feed (throws → backoff) rather than letting it take down every source.
-    const declared = Number(res.headers.get('content-length') ?? '0')
-    if (declared > MAX_FEED_BYTES) {
-      throw new Error(`feed too large: ${declared} bytes (cap ${MAX_FEED_BYTES})`)
-    }
-    // Stream with a hard byte budget for feeds that don't declare a length.
+    // Bound the body: parseRssItems parses the whole feed (maxArticles only
+    // slices afterwards), so a huge podcast-archive feed OOMs/CPU-limits the
+    // worker → HTTP 546 kills the entire run. Feeds over the cap are read up
+    // to the budget and TRUNCATED, not failed: RSS is newest-first, so the
+    // prefix holds the newest items, and the regex item parser simply drops
+    // the incomplete trailing block. (Hard-failing here auto-paused four
+    // legitimate podcast feeds whose full archives exceed 4 MB.)
     const xml = await readCapped(res, MAX_FEED_BYTES)
     return parseRssItems(xml, isPodcast)
   } finally {
@@ -333,6 +340,9 @@ async function fetchFromRss(feedUrl: string, isPodcast = false): Promise<Record<
 // summed across a run of feeds — is what pushes the worker into HTTP 546.
 const MAX_FEED_BYTES = 4 * 1024 * 1024
 
+const BROWSER_UA =
+  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36'
+
 async function readCapped(res: Response, maxBytes: number): Promise<string> {
   if (!res.body) return await res.text()
   const reader = res.body.getReader()
@@ -342,18 +352,22 @@ async function readCapped(res: Response, maxBytes: number): Promise<string> {
     const { done, value } = await reader.read()
     if (done) break
     if (value) {
-      total += value.byteLength
-      if (total > maxBytes) {
+      const room = maxBytes - total
+      if (value.byteLength >= room) {
+        chunks.push(value.subarray(0, room))
+        total += room
         await reader.cancel()
-        throw new Error(`feed too large: exceeded ${maxBytes} bytes while streaming`)
+        break
       }
+      total += value.byteLength
       chunks.push(value)
     }
   }
   const merged = new Uint8Array(total)
   let off = 0
   for (const c of chunks) { merged.set(c, off); off += c.byteLength }
-  return new TextDecoder('utf-8').decode(merged)
+  // stream:true tolerates a multi-byte UTF-8 sequence cut at the byte budget.
+  return new TextDecoder('utf-8').decode(merged, { stream: true })
 }
 
 // ─── Utilities ──────────────────────

@@ -1728,7 +1728,8 @@
       "personalities": "Личности",
       "hotels": "Отели",
       "help": "Помощь",
-      "tags": "Теги"
+      "tags": "Теги",
+      "history": "История"
     },
     "userMenu": {
       "myTrips": "Мои поездки",
@@ -3446,7 +3447,8 @@
       "country": "Страна",
       "allCountries": "Все страны",
       "clear": "Сбросить фильтры",
-      "showAll": "[RU] Show all events"
+      "major": "Ключевые вехи",
+      "showAll": "Все вехи"
     },
     "category": {
       "uprising-movement": "Восстание / Движение",
@@ -3494,6 +3496,9 @@
       "title": "В этот день",
       "seeAll": "Полная хронология",
       "yearsAgo": "{{count}} лет назад"
+    },
+    "city": {
+      "title": "Квир-история: {{city}}"
     }
   }
 }

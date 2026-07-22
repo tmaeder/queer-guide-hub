@@ -11,17 +11,18 @@ import { useMilestonesForCountry } from '@/hooks/useMilestones';
  */
 export function CountryLegalHistory({
   countryId,
-  countrySlug,
+  countryName,
   limit = 6,
 }: {
   countryId: string | null | undefined;
-  countrySlug?: string | null;
+  /** Display name — the /history country filter matches on the label. */
+  countryName?: string | null;
   limit?: number;
 }) {
   const { t } = useTranslation();
   const { data } = useMilestonesForCountry(countryId ?? undefined, limit);
   if (!countryId || !data?.length) return null;
-  const seeAll = countrySlug ? `/history?country=${encodeURIComponent(countrySlug)}` : '/history';
+  const seeAll = countryName ? `/history?country=${encodeURIComponent(countryName)}` : '/history';
 
   return (
     <section className="rounded-container border border-border p-6">

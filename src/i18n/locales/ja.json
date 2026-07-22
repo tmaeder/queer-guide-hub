@@ -1696,7 +1696,8 @@
       "personalities": "著名人",
       "hotels": "ホテル",
       "help": "ヘルプ",
-      "tags": "タグ"
+      "tags": "タグ",
+      "history": "歴史"
     },
     "userMenu": {
       "myTrips": "マイトリップ",
@@ -3410,7 +3411,8 @@
       "country": "国",
       "allCountries": "すべての国",
       "clear": "フィルターをクリア",
-      "showAll": "[JA] Show all events"
+      "major": "主要なマイルストーン",
+      "showAll": "すべてのマイルストーン"
     },
     "category": {
       "uprising-movement": "蜂起・運動",
@@ -3458,6 +3460,9 @@
       "title": "今日は何の日",
       "seeAll": "年表全体を見る",
       "yearsAgo": "{{count}}年前"
+    },
+    "city": {
+      "title": "{{city}}のクィアの歴史"
     }
   }
 }

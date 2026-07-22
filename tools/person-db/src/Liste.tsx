@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type ChangeEvent } from 'react'
+import { errMsg } from './lib/errMsg'
 import { DEFAULT_PAGE_SIZE } from './config'
 import { fetchAlpha } from './lib/query'
 import { annotatedIds, checkedIds, toggleChecked } from './lib/notes'
@@ -68,7 +69,7 @@ export function Liste() {
         setDone(batch.length < size)
         refreshLocal()
       } catch (e) {
-        setError(e instanceof Error ? e.message : String(e))
+        setError(errMsg(e))
       } finally {
         setLoading(false)
       }

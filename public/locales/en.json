@@ -1773,7 +1773,8 @@
       "travel": "Travel",
       "personalities": "Personalities",
       "hotels": "Hotels",
-      "help": "Crisis support"
+      "help": "Crisis support",
+      "history": "History"
     },
     "userMenu": {
       "you": "You",
@@ -3382,7 +3383,8 @@
       "country": "Country",
       "allCountries": "All countries",
       "clear": "Clear filters",
-      "showAll": "Show all events"
+      "major": "Major milestones",
+      "showAll": "All milestones"
     },
     "category": {
       "uprising-movement": "Uprising / Movement",
@@ -3430,6 +3432,9 @@
       "title": "On this day",
       "seeAll": "Full timeline",
       "yearsAgo": "{{count}} years ago"
+    },
+    "city": {
+      "title": "Queer history in {{city}}"
     }
   }
 }

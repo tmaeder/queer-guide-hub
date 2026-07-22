@@ -6,6 +6,7 @@ import { renderHook } from '@testing-library/react';
 import type { CalendarLayerId } from '../types';
 
 const historySpy = vi.fn();
+const milestonesSpy = vi.fn();
 const birthdaysSpy = vi.fn();
 const newsSpy = vi.fn();
 
@@ -62,6 +63,12 @@ vi.mock('@/hooks/usePersonalityAnniversaries', () => ({
     };
   },
 }));
+vi.mock('@/hooks/useMilestones', () => ({
+  useMilestoneAnniversaries: (_f: Date, _t: Date, enabled: boolean) => {
+    milestonesSpy(enabled);
+    return { items: [], loading: false };
+  },
+}));
 vi.mock('@/hooks/useFriendsBirthdays', () => ({
   useFriendsBirthdays: (_f: Date, _t: Date, enabled: boolean) => {
     birthdaysSpy(enabled);
@@ -87,6 +94,7 @@ describe('useCalendarItems', () => {
   it('passes enabled=false to disabled layers', () => {
     run(['trips', 'events']);
     expect(historySpy).toHaveBeenLastCalledWith(false);
+    expect(milestonesSpy).toHaveBeenLastCalledWith(false);
     expect(birthdaysSpy).toHaveBeenLastCalledWith(false);
     expect(newsSpy).toHaveBeenLastCalledWith(false);
   });

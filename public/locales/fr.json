@@ -1700,7 +1700,8 @@
       "personalities": "Personnalités",
       "hotels": "Hôtels",
       "help": "Aide",
-      "tags": "Tags"
+      "tags": "Tags",
+      "history": "Histoire"
     },
     "userMenu": {
       "myTrips": "Mes voyages",
@@ -3416,7 +3417,8 @@
       "country": "Pays",
       "allCountries": "Tous les pays",
       "clear": "Effacer les filtres",
-      "showAll": "[FR] Show all events"
+      "major": "Jalons majeurs",
+      "showAll": "Tous les jalons"
     },
     "category": {
       "uprising-movement": "Soulèvement / Mouvement",
@@ -3464,6 +3466,9 @@
       "title": "Ce jour-là",
       "seeAll": "Chronologie complète",
       "yearsAgo": "il y a {{count}} ans"
+    },
+    "city": {
+      "title": "Histoire queer à {{city}}"
     }
   }
 }

@@ -1702,7 +1702,8 @@
       "personalities": "شخصيات",
       "hotels": "الفنادق",
       "help": "مساعدة",
-      "tags": "الوسوم"
+      "tags": "الوسوم",
+      "history": "التاريخ"
     },
     "userMenu": {
       "myTrips": "رحلاتي",
@@ -3416,7 +3417,8 @@
       "country": "الدولة",
       "allCountries": "كل الدول",
       "clear": "مسح المرشحات",
-      "showAll": "[AR] Show all events"
+      "major": "المحطات الرئيسية",
+      "showAll": "كل المحطات"
     },
     "category": {
       "uprising-movement": "انتفاضة / حركة",
@@ -3464,6 +3466,9 @@
       "title": "في مثل هذا اليوم",
       "seeAll": "الخط الزمني الكامل",
       "yearsAgo": "قبل {{count}} سنة"
+    },
+    "city": {
+      "title": "التاريخ الكويري في {{city}}"
     }
   }
 }

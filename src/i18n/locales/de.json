@@ -1696,7 +1696,8 @@
       "personalities": "Persönlichkeiten",
       "hotels": "Hotels",
       "help": "Krisenhilfe",
-      "tags": "Tags"
+      "tags": "Tags",
+      "history": "Geschichte"
     },
     "userMenu": {
       "myTrips": "Meine Reisen",
@@ -3412,7 +3413,8 @@
       "country": "Land",
       "allCountries": "Alle Länder",
       "clear": "Filter zurücksetzen",
-      "showAll": "[DE] Show all events"
+      "major": "Wichtige Meilensteine",
+      "showAll": "Alle Meilensteine"
     },
     "category": {
       "uprising-movement": "Aufstand / Bewegung",
@@ -3460,6 +3462,9 @@
       "title": "An diesem Tag",
       "seeAll": "Ganze Zeitleiste",
       "yearsAgo": "vor {{count}} Jahren"
+    },
+    "city": {
+      "title": "Queere Geschichte in {{city}}"
     }
   }
 }

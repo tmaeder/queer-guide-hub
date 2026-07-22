@@ -117,7 +117,16 @@ export function DetailPanel({ p, isChecked, onToggleChecked, onLocalChange }: De
           {isChecked && <span className="checked-tag" title="locally checked">✓ checked</span>}
           <KebabMenu
             items={[
-              { label: 'Edit', onClick: () => setEditing(true) },
+              { label: 'Vorschau (read-only)', onClick: () => setEditing(true) },
+              {
+                label: 'Im Admin bearbeiten ↗',
+                onClick: () =>
+                  window.open(
+                    `${SITE}/admin/content/personalities?edit=${p.id}`,
+                    '_blank',
+                    'noreferrer',
+                  ),
+              },
               { label: 'PDF', onClick: () => personDatasheet(p) },
               { label: 'Send to…', disabled: true, hint: 'soon' },
               {

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router';
 import { Button } from '@/components/ui/button';
-import { LogOut, Plus, Shield, UserRound } from 'lucide-react';
+import { LogOut, Moon, Plus, Shield, Sun, UserRound } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
@@ -24,6 +24,7 @@ import { NotificationBell } from '@/components/notifications/NotificationBell';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
 import { USER_MENU_ITEMS as userMenuItems } from '@/config/navigation';
 import { getSubmitCta } from '@/lib/submitCta';
+import { useTheme } from '@/components/theme/ThemeProvider';
 
 // ── Component ───────────────────────────────────────────────────────────────
 
@@ -35,6 +36,8 @@ export function Header() {
   const { t } = useTranslation();
 
   const { user, signOut } = useAuth();
+  const { theme, setTheme } = useTheme();
+  const isDark = theme === 'dark';
   const { profile } = useProfile();
   const { isAdmin, isModerator } = useAdminRoles();
 
@@ -150,6 +153,23 @@ export function Header() {
                 <UserRound size={16} />
                 <span>{t('header.userMenu.viewProfile', 'View public profile')}</span>
               </LocalizedLink>
+            </DropdownMenuItem>
+
+            {/* Light/dark switch — sits directly above Settings. onSelect
+                preventDefault keeps the menu open so it reads as a toggle. */}
+            <DropdownMenuItem
+              onSelect={(e) => {
+                e.preventDefault();
+                setTheme(isDark ? 'light' : 'dark');
+              }}
+              className="flex gap-2"
+            >
+              {isDark ? <Sun size={16} /> : <Moon size={16} />}
+              <span>
+                {isDark
+                  ? t('header.userMenu.lightMode', 'Light mode')
+                  : t('header.userMenu.darkMode', 'Dark mode')}
+              </span>
             </DropdownMenuItem>
 
             {userMenuItems.map((item) => (
