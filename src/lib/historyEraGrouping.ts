@@ -2,6 +2,7 @@
 // pick each era's editorial anchors, and sum per-year counts into era counts.
 import { HISTORY_ERAS, eraForYear, type HistoryEra } from '@/config/historyEras';
 import { milestoneYear } from '@/lib/milestoneDate';
+import { displayableMilestoneImage } from '@/lib/milestoneImage';
 import type { Milestone } from '@/types/milestone';
 
 export interface YearCount {
@@ -29,7 +30,8 @@ export function pickAnchors(eraRows: Milestone[], max = 2): Milestone[] {
       (a, b) =>
         b.significance - a.significance ||
         Number(b.is_featured) - Number(a.is_featured) ||
-        Number(Boolean(b.image_url)) - Number(Boolean(a.image_url)) ||
+        Number(Boolean(displayableMilestoneImage(b.image_url))) -
+          Number(Boolean(displayableMilestoneImage(a.image_url))) ||
         a.date.localeCompare(b.date),
     )
     .slice(0, max);
