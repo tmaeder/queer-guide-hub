@@ -22,7 +22,9 @@ export function OnThisDayBand() {
       <ul className="mt-2 space-y-2">
         {data.map((m) => (
           <li key={m.id}>
-            <LocalizedLink to={`/history/${m.slug}`} className="group flex items-center gap-2">
+            {/* no-underline opts out of the unlayered `li a` inline-link rule
+                (which would force display:inline and crush the flex row) */}
+            <LocalizedLink to={`/history/${m.slug}`} className="group flex items-center gap-2 no-underline">
               <MilestoneImpactMarker impact={m.impact} />
               <span className="font-display text-title font-semibold leading-none">
                 {m.date.slice(0, 4)}

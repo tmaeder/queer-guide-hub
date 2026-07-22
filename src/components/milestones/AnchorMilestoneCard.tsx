@@ -1,7 +1,9 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { cn } from '@/lib/utils';
 import { formatMilestoneDate, milestoneYear } from '@/lib/milestoneDate';
+import { displayableMilestoneImage } from '@/lib/milestoneImage';
 import type { Milestone } from '@/types/milestone';
 import { MilestoneCategoryBadge } from './MilestoneCategoryBadge';
 import { MilestoneImpactMarker } from './MilestoneImpactMarker';
@@ -22,6 +24,8 @@ export function AnchorMilestoneCard({
   className?: string;
 }) {
   const { i18n } = useTranslation();
+  const [imageFailed, setImageFailed] = useState(false);
+  const imageUrl = imageFailed ? null : displayableMilestoneImage(milestone.image_url);
   const dateLabel = formatMilestoneDate(milestone.date, milestone.date_precision, i18n.language);
   const place = [milestone.city?.name ?? milestone.city_name, milestone.country?.name ?? milestone.country_name]
     .filter(Boolean)
@@ -59,12 +63,14 @@ export function AnchorMilestoneCard({
 
   return (
     <LocalizedLink to={`/history/${milestone.slug}`} className={cn('group block', className)}>
-      {milestone.image_url ? (
+      {imageUrl ? (
         <span className="mb-4 block aspect-[16/10] overflow-hidden rounded-container bg-muted">
+          {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- onError is a media-error handler, not a user-input listener. */}
           <img
-            src={milestone.image_url}
+            src={imageUrl}
             alt=""
             loading="lazy"
+            onError={() => setImageFailed(true)}
             className="h-full w-full object-cover"
           />
         </span>

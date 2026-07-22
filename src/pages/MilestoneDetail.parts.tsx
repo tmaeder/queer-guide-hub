@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { ArrowLeft, ArrowRight, ExternalLink, MapPin } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
@@ -9,12 +10,15 @@ import { useMilestonesForCountry, useMilestonesTimeline } from '@/hooks/useMiles
 import { eraForYear } from '@/config/historyEras';
 import { isRestrainedMilestone } from '@/lib/historyEraGrouping';
 import { formatMilestoneDate, milestoneYear } from '@/lib/milestoneDate';
+import { displayableMilestoneImage } from '@/lib/milestoneImage';
 import { detailHref } from '@/lib/searchRoutes';
 import { cn } from '@/lib/utils';
 import type { Milestone, MilestoneLink } from '@/types/milestone';
 
 export function MilestoneHero({ milestone }: { milestone: Milestone }) {
   const { t, i18n } = useTranslation();
+  const [imageFailed, setImageFailed] = useState(false);
+  const imageUrl = imageFailed ? null : displayableMilestoneImage(milestone.image_url);
   const dateLabel = formatMilestoneDate(
     milestone.date,
     milestone.date_precision,
@@ -55,11 +59,13 @@ export function MilestoneHero({ milestone }: { milestone: Milestone }) {
           {t('milestones.partOf', 'Part of: {{era}}', { era: t(era.titleKey) })}
         </LocalizedLink>
       </div>
-      {milestone.image_url && (
+      {imageUrl && (
         <figure className={cn('mt-6 overflow-hidden rounded-container bg-muted', restrained ? 'max-w-sm' : '')}>
+          {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- onError is a media-error handler, not a user-input listener. */}
           <img
-            src={milestone.image_url}
+            src={imageUrl}
             alt=""
+            onError={() => setImageFailed(true)}
             className={cn('w-full object-cover', restrained ? 'max-h-64' : 'aspect-[16/10]')}
           />
         </figure>
