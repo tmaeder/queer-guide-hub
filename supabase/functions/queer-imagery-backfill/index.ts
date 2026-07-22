@@ -16,6 +16,7 @@ import {
 import { upsertImageAsset, deriveImageFormat } from '../_shared/image-assets.ts'
 import {
   type ImageResult,
+  WP_UA,
   fetchFromPexels,
   fetchFromUnsplash,
   fetchFromWikimedia,
@@ -50,6 +51,8 @@ interface DueRow {
   country_name: string | null
   capital: string | null
   current_image_url: string | null
+  /** Milestones: event-specific Wikipedia source article — grounded lead-image lookup. */
+  wiki_url: string | null
 }
 
 /** Build place-connected queer queries per entity type. */
@@ -110,6 +113,83 @@ function stripTitleDecoration(title: string): string {
 }
 
 /**
+ * Commons Artist values are HTML. Strip tags to a fixpoint (single-pass regex
+ * removal is bypassable — "<scr<script>ipt>"), then drop stray angle brackets.
+ */
+function stripHtml(value: string | undefined): string {
+  let s = value ?? ''
+  let prev: string
+  do {
+    prev = s
+    s = s.replace(/<[^>]*>/g, '')
+  } while (s !== prev)
+  return s.replace(/[<>]/g, '').trim()
+}
+
+/** Non-photographic lead images (legal-status maps, flags, seals, coins) never display. */
+const WIKI_IMAGE_REJECT = /\.svg|\.gif|\bmap\b|_map|locator|flag_of|coat_of_arms|logo|seal_of|\bcoin\b|banknote/i
+
+/**
+ * Grounded lookup: the lead image of the milestone's OWN Wikipedia source
+ * article (e.g. "Stonewall riots" → the Stonewall Inn photograph). Far more
+ * accurate than Commons keyword search, whose results are SVG maps and terse
+ * filenames. Returns null when the article has no photographic lead image —
+ * the typographic card is the intended fallback. Attribution is read from the
+ * Commons file's extmetadata so CC BY-SA credit can render on the detail page.
+ */
+async function wikiLeadImage(wikiUrl: string): Promise<ImageResult | null> {
+  const m = wikiUrl.match(/^https?:\/\/([a-z-]+)\.(?:m\.)?wikipedia\.org\/wiki\/([^?#]+)/i)
+  if (!m) return null
+  const [, lang, title] = m
+  // Wikimedia APIs reject UA-less requests — always send the project UA.
+  const summaryRes = await fetch(
+    `https://${lang}.wikipedia.org/api/rest_v1/page/summary/${title}`,
+    { headers: { 'User-Agent': WP_UA, Accept: 'application/json' } },
+  )
+  if (!summaryRes.ok) return null
+  const summary = await summaryRes.json()
+  const img = summary.originalimage ?? summary.thumbnail
+  if (!img?.source || WIKI_IMAGE_REJECT.test(img.source)) return null
+  if ((img.width ?? 0) < 400) return null
+
+  // Commons extmetadata for artist/license (best-effort — image still usable without).
+  let photographer: string | null = null
+  let license: string | null = null
+  const fileMatch = img.source.match(/\/([^/]+\.(?:jpe?g|png|webp))(?:\/|$)/i)
+  const fileName = fileMatch ? decodeURIComponent(fileMatch[1]) : null
+  if (fileName) {
+    try {
+      const metaRes = await fetch(
+        `https://commons.wikimedia.org/w/api.php?action=query&titles=File:${encodeURIComponent(fileName)}&prop=imageinfo&iiprop=extmetadata&format=json`,
+        { headers: { 'User-Agent': WP_UA, Accept: 'application/json' } },
+      )
+      if (metaRes.ok) {
+        const meta = await metaRes.json()
+        const pages = meta?.query?.pages ?? {}
+        const info = (Object.values(pages)[0] as { imageinfo?: Array<{ extmetadata?: Record<string, { value?: string }> }> })
+          ?.imageinfo?.[0]?.extmetadata
+        photographer = stripHtml(info?.Artist?.value) || null
+        license = info?.LicenseShortName?.value || null
+      }
+    } catch { /* attribution is best-effort */ }
+  }
+
+  return {
+    url: img.source,
+    thumbnail: summary.thumbnail?.source ?? img.source,
+    alt: summary.title ?? '',
+    photographer: photographer ?? '',
+    photographer_url: '',
+    source: 'wikipedia',
+    source_id: fileName ?? title,
+    license: license ?? undefined,
+    width: img.width,
+    height: img.height,
+    score: 100,
+  }
+}
+
+/**
  * Historical-event scorer: generic quality/reject scoring plus a required
  * overlap between the milestone title and the image's description — a photo
  * that names neither the event nor its place/year is never accepted, no matter
@@ -149,6 +229,14 @@ async function findQueerImage(
   pK?: string,
   uK?: string,
 ): Promise<ImageResult | null> {
+  // Milestones: grounded article lead image first; keyword search is fallback.
+  if (t === 'milestone' && row.wiki_url) {
+    try {
+      const lead = await wikiLeadImage(row.wiki_url)
+      if (lead) return lead
+    } catch { /* fall through to keyword search */ }
+  }
+
   const scoreOf = (img: ImageResult) =>
     t === 'milestone'
       ? scoreMilestoneImage(img, row)
