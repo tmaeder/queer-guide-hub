@@ -112,6 +112,20 @@ function stripTitleDecoration(title: string): string {
   return title.replace(/\s*[—-]\s*[^—-]+$/, '').replace(/\s*\([^)]*\)\s*$/, '').trim()
 }
 
+/**
+ * Commons Artist values are HTML. Strip tags to a fixpoint (single-pass regex
+ * removal is bypassable — "<scr<script>ipt>"), then drop stray angle brackets.
+ */
+function stripHtml(value: string | undefined): string {
+  let s = value ?? ''
+  let prev: string
+  do {
+    prev = s
+    s = s.replace(/<[^>]*>/g, '')
+  } while (s !== prev)
+  return s.replace(/[<>]/g, '').trim()
+}
+
 /** Non-photographic lead images (legal-status maps, flags, seals, coins) never display. */
 const WIKI_IMAGE_REJECT = /\.svg|\.gif|\bmap\b|_map|locator|flag_of|coat_of_arms|logo|seal_of|\bcoin\b|banknote/i
 
@@ -154,7 +168,7 @@ async function wikiLeadImage(wikiUrl: string): Promise<ImageResult | null> {
         const pages = meta?.query?.pages ?? {}
         const info = (Object.values(pages)[0] as { imageinfo?: Array<{ extmetadata?: Record<string, { value?: string }> }> })
           ?.imageinfo?.[0]?.extmetadata
-        photographer = info?.Artist?.value?.replace(/<[^>]*>/g, '').trim() || null
+        photographer = stripHtml(info?.Artist?.value) || null
         license = info?.LicenseShortName?.value || null
       }
     } catch { /* attribution is best-effort */ }
