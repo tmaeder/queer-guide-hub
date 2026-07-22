@@ -24,6 +24,9 @@
 // Usage:
 //   npx tsx scripts/data-quality/import-milestones.ts --dry-run
 //   npx tsx scripts/data-quality/import-milestones.ts
+//   npx tsx scripts/data-quality/import-milestones.ts \
+//     --file scripts/data-quality/history-import/milestone-seed-history.json \
+//     --provenance history-import-2026-07 [--dry-run]
 
 import { execFileSync } from 'node:child_process'
 import { readFileSync } from 'node:fs'
@@ -33,6 +36,9 @@ import { nameToAlpha2 } from '../../tools/person-db/src/lib/flags'
 
 // Frozen seed export of the removed tools/person-db milestone module (#2215).
 // Canonical data lives in the `milestones` table; this file only re-imports.
+// The history-import seeds (--file) use the same shape plus optional
+// country_code (ISO alpha-2, skips the German-name map) and per-entry
+// review_status/seo_indexable overrides (else derived from `checked`).
 interface Milestone {
   id: string
   title: string
@@ -42,18 +48,28 @@ interface Milestone {
   city?: string
   region?: string
   country?: string
+  country_code?: string
   description: string
   sources: Array<{ label: string; url?: string }>
-  linked_persons: Array<{ slug: string; name: string; role?: string }>
+  linked_persons?: Array<{ slug: string; name: string; role?: string }>
   category?: string
   significance: number
   impact: 'positive' | 'neutral' | 'negative'
   checked: boolean
+  review_status?: 'pending' | 'approved' | 'rejected'
+  seo_indexable?: boolean
 }
 
-const MILESTONE_SEED: Milestone[] = JSON.parse(
-  readFileSync(join(dirname(fileURLToPath(import.meta.url)), 'milestone-seed.json'), 'utf8'),
-)
+function argValue(flag: string): string | undefined {
+  const i = process.argv.indexOf(flag)
+  return i >= 0 ? process.argv[i + 1] : undefined
+}
+
+const SEED_FILE =
+  argValue('--file') ?? join(dirname(fileURLToPath(import.meta.url)), 'milestone-seed.json')
+const PROVENANCE = argValue('--provenance') ?? 'person-db-tool-import-2026-07'
+
+const MILESTONE_SEED: Milestone[] = JSON.parse(readFileSync(SEED_FILE, 'utf8'))
 
 const PROJECT = 'xqeacpakadqfxjxjcewc'
 const DRY = process.argv.includes('--dry-run')
@@ -81,6 +97,7 @@ const CATEGORY_MAP: Record<string, string> = {
   Entpathologisierung: 'depathologization',
   'Verfolgung / Zerstörung': 'persecution-destruction',
 }
+const CANONICAL_CATEGORIES = new Set([...Object.values(CATEGORY_MAP), 'other'])
 
 function token(): string {
   if (process.env.SUPABASE_PAT) return process.env.SUPABASE_PAT
@@ -133,13 +150,15 @@ async function main() {
 
   // --- resolve countries -----------------------------------------------------
   const unresolvedCountries = new Set<string>()
-  const ccOf = (name: string | undefined): string => {
+  const ccOf = (s: Pick<Milestone, 'country' | 'country_code'>): string => {
+    if (s.country_code && /^[A-Z]{2}$/.test(s.country_code)) return s.country_code
+    const name = s.country
     if (!name) return ''
     const cc = nameToAlpha2(name) || EXTRA_CC[name.trim().toLowerCase()] || ''
     if (!cc) unresolvedCountries.add(name)
     return cc
   }
-  const codes = [...new Set(seeds.map((s) => ccOf(s.country)).filter(Boolean))]
+  const codes = [...new Set(seeds.map((s) => ccOf(s)).filter(Boolean))]
   const countryRows = await sql(
     `select id, code, name from public.countries where code in (${codes.map((c) => `'${c}'`).join(',')})`
   )
@@ -147,7 +166,7 @@ async function main() {
 
   // --- resolve cities (country-scoped) --------------------------------------
   const cityPairs = seeds
-    .map((s) => ({ cc: ccOf(s.country), city: s.city?.trim() }))
+    .map((s) => ({ cc: ccOf(s), city: s.city?.trim() }))
     .filter((p): p is { cc: string; city: string } => !!p.cc && !!p.city && !!countryByCode.get(p.cc))
   const cityValues = [
     ...new Set(cityPairs.map((p) => `('${countryByCode.get(p.cc)!.id}'::uuid, ${jsonStr(p.city)})`)),
@@ -166,7 +185,7 @@ async function main() {
   }
 
   // --- resolve personalities -------------------------------------------------
-  const personSlugs = [...new Set(seeds.flatMap((s) => s.linked_persons.map((p) => p.slug)))]
+  const personSlugs = [...new Set(seeds.flatMap((s) => (s.linked_persons ?? []).map((p) => p.slug)))]
   const personRows = personSlugs.length
     ? await sql(
         `select id, slug from public.personalities where duplicate_of_id is null and slug in (${personSlugs.map((s) => jsonStr(s)).join(',')})`
@@ -184,15 +203,21 @@ async function main() {
       return []
     }
     const de = parseDate(s.date_end)
-    const cc = ccOf(s.country)
+    const cc = ccOf(s)
     const country = cc ? countryByCode.get(cc) : undefined
+    if (s.country_code && !country) unresolvedCountries.add(`${s.country_code} (${s.id})`)
     const cityKey = country && s.city ? `${country.id}|${s.city.trim().toLowerCase()}` : ''
     const city = cityKey ? cityByKey.get(cityKey) : undefined
-    if (country && s.city && !city) unresolvedCities.push(`${s.city} (${s.country})`)
-    const unresolved = s.linked_persons.filter((p) => !personBySlug.has(p.slug))
+    if (country && s.city && !city) unresolvedCities.push(`${s.city} (${s.country ?? cc})`)
+    const linkedPersons = s.linked_persons ?? []
+    const unresolved = linkedPersons.filter((p) => !personBySlug.has(p.slug))
     for (const p of unresolved) unresolvedPersons.push(`${p.slug} @ ${s.id}`)
-    const category = s.category ? (CATEGORY_MAP[s.category] ?? 'other') : null
-    if (s.category && !CATEGORY_MAP[s.category])
+    const category = s.category
+      ? CANONICAL_CATEGORIES.has(s.category)
+        ? s.category
+        : (CATEGORY_MAP[s.category] ?? 'other')
+      : null
+    if (s.category && !CANONICAL_CATEGORIES.has(s.category) && !CATEGORY_MAP[s.category])
       console.warn(`⚠ unknown category '${s.category}' on ${s.id} → other`)
     return [
       {
@@ -215,13 +240,13 @@ async function main() {
         sources: s.sources,
         tags: [],
         status: 'published',
-        review_status: s.checked ? 'approved' : 'pending',
-        seo_indexable: s.checked,
+        review_status: s.review_status ?? (s.checked ? 'approved' : 'pending'),
+        seo_indexable: s.seo_indexable ?? s.checked,
         field_provenance: {
-          source: 'person-db-tool-import-2026-07',
+          source: PROVENANCE,
           ...(unresolved.length ? { unresolved_persons: unresolved } : {}),
         },
-        _links: s.linked_persons
+        _links: linkedPersons
           .filter((p) => personBySlug.has(p.slug))
           .map((p, i) => ({ person_id: personBySlug.get(p.slug), role: p.role ?? null, sort_order: i })),
       },
@@ -238,8 +263,36 @@ async function main() {
   }
 
   // --- upsert milestones in batches -----------------------------------------
+  // Mgmt-API timeouts roll back silently, so every batch is count-verified and
+  // retried (idempotent slug upsert). Inter-batch sleep keeps the per-row
+  // search_documents sync trigger gentle on the disk-constrained DB.
+  const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
   for (let i = 0; i < rows.length; i += BATCH) {
-    const batch = rows.slice(i, i + BATCH).map(({ _links, ...r }) => r)
+    const slice = rows.slice(i, i + BATCH)
+    const batch = slice.map(({ _links, ...r }) => r)
+    const slugList = slice.map((r) => jsonStr(r.slug)).join(',')
+    let ok = false
+    for (let attempt = 0; attempt <= 2 && !ok; attempt++) {
+      if (attempt > 0) {
+        console.warn(`  ⚠ batch at ${i} short/failed — retry ${attempt}/2`)
+        await sleep(1500)
+      }
+      try {
+        await upsertBatch(batch)
+      } catch (e) {
+        console.warn(`  ⚠ batch at ${i} error: ${(e as Error).message.slice(0, 200)}`)
+      }
+      const [{ n }] = await sql(
+        `select count(*)::int as n from public.milestones where slug in (${slugList})`
+      )
+      ok = n === slice.length
+    }
+    if (!ok) throw new Error(`batch at ${i} still incomplete after retries — aborting`)
+    console.log(`  upserted ${Math.min(i + BATCH, rows.length)}/${rows.length}`)
+    await sleep(500)
+  }
+
+  async function upsertBatch(batch: Record<string, unknown>[]) {
     await sql(`
       insert into public.milestones
         (slug, title, description, date, date_precision, date_end, date_end_precision,
@@ -267,7 +320,6 @@ async function main() {
         category = excluded.category, impact = excluded.impact,
         significance = excluded.significance, sources = excluded.sources,
         field_provenance = excluded.field_provenance`)
-    console.log(`  upserted ${Math.min(i + BATCH, rows.length)}/${rows.length}`)
   }
 
   // --- sync personality links (delete+reinsert, idempotent) ------------------

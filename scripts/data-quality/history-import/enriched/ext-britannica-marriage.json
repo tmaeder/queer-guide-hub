@@ -1,0 +1,727 @@
+[
+  {
+    "ref": "ext-britannica-marriage:0",
+    "title": "Argentina legalizes same-sex marriage",
+    "description": "Argentina legalized same-sex marriage in 2010, the first country in Latin America to do so.",
+    "date": "2010",
+    "country_code": "AR",
+    "country": "Argentina",
+    "category": "law-equality",
+    "impact": "positive",
+    "significance": 4,
+    "sources": [
+      {
+        "label": "Encyclopaedia Britannica — Same-sex marriage",
+        "url": "https://www.britannica.com/topic/same-sex-marriage"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-britannica-marriage:1",
+    "title": "Australia legalizes same-sex marriage",
+    "description": "Australia legalized same-sex marriage, with the law taking effect in 2018.",
+    "date": "2018",
+    "country_code": "AU",
+    "country": "Australia",
+    "category": "law-equality",
+    "impact": "positive",
+    "significance": 4,
+    "sources": [
+      {
+        "label": "Encyclopaedia Britannica — Same-sex marriage",
+        "url": "https://www.britannica.com/topic/same-sex-marriage"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-britannica-marriage:2",
+    "title": "Austria legalizes same-sex marriage",
+    "description": "Austria legalized same-sex marriage, with the law taking effect in 2019.",
+    "date": "2019",
+    "country_code": "AT",
+    "country": "Austria",
+    "category": "law-equality",
+    "impact": "positive",
+    "significance": 4,
+    "sources": [
+      {
+        "label": "Encyclopaedia Britannica — Same-sex marriage",
+        "url": "https://www.britannica.com/topic/same-sex-marriage"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-britannica-marriage:3",
+    "title": "Belgium legalizes same-sex marriage",
+    "description": "Belgium legalized same-sex marriage, with the law taking effect in 2003.",
+    "date": "2003",
+    "country_code": "BE",
+    "country": "Belgium",
+    "category": "law-equality",
+    "impact": "positive",
+    "significance": 4,
+    "sources": [
+      {
+        "label": "Encyclopaedia Britannica — Same-sex marriage",
+        "url": "https://www.britannica.com/topic/same-sex-marriage"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-britannica-marriage:4",
+    "title": "Brazil legalizes same-sex marriage",
+    "description": "Brazil legalized same-sex marriage, with the law taking effect in 2013.",
+    "date": "2013",
+    "country_code": "BR",
+    "country": "Brazil",
+    "category": "law-equality",
+    "impact": "positive",
+    "significance": 4,
+    "sources": [
+      {
+        "label": "Encyclopaedia Britannica — Same-sex marriage",
+        "url": "https://www.britannica.com/topic/same-sex-marriage"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-britannica-marriage:5",
+    "title": "Canada legalizes same-sex marriage",
+    "description": "Canada legalized same-sex marriage, with the law taking effect in 2005.",
+    "date": "2005",
+    "country_code": "CA",
+    "country": "Canada",
+    "category": "law-equality",
+    "impact": "positive",
+    "significance": 4,
+    "sources": [
+      {
+        "label": "Encyclopaedia Britannica — Same-sex marriage",
+        "url": "https://www.britannica.com/topic/same-sex-marriage"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-britannica-marriage:6",
+    "title": "Colombia legalizes same-sex marriage",
+    "description": "Colombia legalized same-sex marriage, with the law taking effect in 2016.",
+    "date": "2016",
+    "country_code": "CO",
+    "country": "Colombia",
+    "category": "law-equality",
+    "impact": "positive",
+    "significance": 4,
+    "sources": [
+      {
+        "label": "Encyclopaedia Britannica — Same-sex marriage",
+        "url": "https://www.britannica.com/topic/same-sex-marriage"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-britannica-marriage:7",
+    "title": "Costa Rica legalizes same-sex marriage",
+    "description": "Costa Rica legalized same-sex marriage in 2020, the first country in Central America to do so.",
+    "date": "2020",
+    "country_code": "CR",
+    "country": "Costa Rica",
+    "category": "law-equality",
+    "impact": "positive",
+    "significance": 4,
+    "sources": [
+      {
+        "label": "Encyclopaedia Britannica — Same-sex marriage",
+        "url": "https://www.britannica.com/topic/same-sex-marriage"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-britannica-marriage:8",
+    "title": "Denmark legalizes same-sex marriage",
+    "description": "Denmark legalized same-sex marriage, with the law taking effect in 2012.",
+    "date": "2012",
+    "country_code": "DK",
+    "country": "Denmark",
+    "category": "law-equality",
+    "impact": "positive",
+    "significance": 4,
+    "sources": [
+      {
+        "label": "Encyclopaedia Britannica — Same-sex marriage",
+        "url": "https://www.britannica.com/topic/same-sex-marriage"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-britannica-marriage:9",
+    "title": "Ecuador legalizes same-sex marriage",
+    "description": "Ecuador legalized same-sex marriage, with the law taking effect in 2019.",
+    "date": "2019",
+    "country_code": "EC",
+    "country": "Ecuador",
+    "category": "law-equality",
+    "impact": "positive",
+    "significance": 4,
+    "sources": [
+      {
+        "label": "Encyclopaedia Britannica — Same-sex marriage",
+        "url": "https://www.britannica.com/topic/same-sex-marriage"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-britannica-marriage:10",
+    "title": "Finland legalizes same-sex marriage",
+    "description": "Finland legalized same-sex marriage, with the law taking effect in 2017.",
+    "date": "2017",
+    "country_code": "FI",
+    "country": "Finland",
+    "category": "law-equality",
+    "impact": "positive",
+    "significance": 4,
+    "sources": [
+      {
+        "label": "Encyclopaedia Britannica — Same-sex marriage",
+        "url": "https://www.britannica.com/topic/same-sex-marriage"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-britannica-marriage:11",
+    "title": "France legalizes same-sex marriage",
+    "description": "France legalized same-sex marriage, with the law taking effect in 2013.",
+    "date": "2013",
+    "country_code": "FR",
+    "country": "France",
+    "category": "law-equality",
+    "impact": "positive",
+    "significance": 4,
+    "sources": [
+      {
+        "label": "Encyclopaedia Britannica — Same-sex marriage",
+        "url": "https://www.britannica.com/topic/same-sex-marriage"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-britannica-marriage:12",
+    "title": "Germany legalizes same-sex marriage",
+    "description": "Germany legalized same-sex marriage, with the law taking effect in 2017.",
+    "date": "2017",
+    "country_code": "DE",
+    "country": "Germany",
+    "category": "law-equality",
+    "impact": "positive",
+    "significance": 4,
+    "sources": [
+      {
+        "label": "Encyclopaedia Britannica — Same-sex marriage",
+        "url": "https://www.britannica.com/topic/same-sex-marriage"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-britannica-marriage:13",
+    "title": "Iceland legalizes same-sex marriage",
+    "description": "Iceland legalized same-sex marriage, with the law taking effect in 2010.",
+    "date": "2010",
+    "country_code": "IS",
+    "country": "Iceland",
+    "category": "law-equality",
+    "impact": "positive",
+    "significance": 4,
+    "sources": [
+      {
+        "label": "Encyclopaedia Britannica — Same-sex marriage",
+        "url": "https://www.britannica.com/topic/same-sex-marriage"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-britannica-marriage:14",
+    "title": "Ireland legalizes same-sex marriage",
+    "description": "Ireland legalized same-sex marriage in 2015 following a national referendum, the first country to adopt it by popular vote.",
+    "date": "2015",
+    "country_code": "IE",
+    "country": "Ireland",
+    "category": "law-equality",
+    "impact": "positive",
+    "significance": 4,
+    "sources": [
+      {
+        "label": "Encyclopaedia Britannica — Same-sex marriage",
+        "url": "https://www.britannica.com/topic/same-sex-marriage"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-britannica-marriage:15",
+    "title": "Luxembourg legalizes same-sex marriage",
+    "description": "Luxembourg legalized same-sex marriage, with the law taking effect in 2015.",
+    "date": "2015",
+    "country_code": "LU",
+    "country": "Luxembourg",
+    "category": "law-equality",
+    "impact": "positive",
+    "significance": 4,
+    "sources": [
+      {
+        "label": "Encyclopaedia Britannica — Same-sex marriage",
+        "url": "https://www.britannica.com/topic/same-sex-marriage"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-britannica-marriage:16",
+    "title": "Netherlands legalizes same-sex marriage",
+    "description": "The Netherlands was the first country to grant equal marriage rights to same-sex couples, with the law taking effect in 2001.",
+    "date": "2001",
+    "country_code": "NL",
+    "country": "Netherlands",
+    "category": "law-equality",
+    "impact": "positive",
+    "significance": 5,
+    "sources": [
+      {
+        "label": "Encyclopaedia Britannica — Same-sex marriage",
+        "url": "https://www.britannica.com/topic/same-sex-marriage"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-britannica-marriage:17",
+    "title": "New Zealand legalizes same-sex marriage",
+    "description": "New Zealand legalized same-sex marriage, with the law taking effect in 2013.",
+    "date": "2013",
+    "country_code": "NZ",
+    "country": "New Zealand",
+    "category": "law-equality",
+    "impact": "positive",
+    "significance": 4,
+    "sources": [
+      {
+        "label": "Encyclopaedia Britannica — Same-sex marriage",
+        "url": "https://www.britannica.com/topic/same-sex-marriage"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-britannica-marriage:18",
+    "title": "Norway legalizes same-sex marriage",
+    "description": "Norway legalized same-sex marriage, with the law taking effect in 2009.",
+    "date": "2009",
+    "country_code": "NO",
+    "country": "Norway",
+    "category": "law-equality",
+    "impact": "positive",
+    "significance": 4,
+    "sources": [
+      {
+        "label": "Encyclopaedia Britannica — Same-sex marriage",
+        "url": "https://www.britannica.com/topic/same-sex-marriage"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-britannica-marriage:19",
+    "title": "Portugal legalizes same-sex marriage",
+    "description": "Portugal legalized same-sex marriage, with the law taking effect in 2010.",
+    "date": "2010",
+    "country_code": "PT",
+    "country": "Portugal",
+    "category": "law-equality",
+    "impact": "positive",
+    "significance": 4,
+    "sources": [
+      {
+        "label": "Encyclopaedia Britannica — Same-sex marriage",
+        "url": "https://www.britannica.com/topic/same-sex-marriage"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-britannica-marriage:20",
+    "title": "South Africa legalizes same-sex marriage",
+    "description": "South Africa legalized same-sex marriage in 2006, the first country in Africa to do so.",
+    "date": "2006",
+    "country_code": "ZA",
+    "country": "South Africa",
+    "category": "law-equality",
+    "impact": "positive",
+    "significance": 4,
+    "sources": [
+      {
+        "label": "Encyclopaedia Britannica — Same-sex marriage",
+        "url": "https://www.britannica.com/topic/same-sex-marriage"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-britannica-marriage:21",
+    "title": "Spain legalizes same-sex marriage",
+    "description": "Spain legalized same-sex marriage, with the law taking effect in 2005.",
+    "date": "2005",
+    "country_code": "ES",
+    "country": "Spain",
+    "category": "law-equality",
+    "impact": "positive",
+    "significance": 4,
+    "sources": [
+      {
+        "label": "Encyclopaedia Britannica — Same-sex marriage",
+        "url": "https://www.britannica.com/topic/same-sex-marriage"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-britannica-marriage:22",
+    "title": "Sweden legalizes same-sex marriage",
+    "description": "Sweden legalized same-sex marriage, with the law taking effect in 2009.",
+    "date": "2009",
+    "country_code": "SE",
+    "country": "Sweden",
+    "category": "law-equality",
+    "impact": "positive",
+    "significance": 4,
+    "sources": [
+      {
+        "label": "Encyclopaedia Britannica — Same-sex marriage",
+        "url": "https://www.britannica.com/topic/same-sex-marriage"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-britannica-marriage:23",
+    "title": "United Kingdom completes same-sex marriage legalization",
+    "description": "By 2020 same-sex marriage was legal across the entire United Kingdom, with Northern Ireland becoming the last of its components to legalize it.",
+    "date": "2020",
+    "country_code": "GB",
+    "country": "United Kingdom",
+    "category": "law-equality",
+    "impact": "positive",
+    "significance": 4,
+    "sources": [
+      {
+        "label": "Encyclopaedia Britannica — Same-sex marriage",
+        "url": "https://www.britannica.com/topic/same-sex-marriage"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-britannica-marriage:24",
+    "title": "United States legalizes same-sex marriage nationwide",
+    "description": "Same-sex marriage became legal throughout the United States in 2015.",
+    "date": "2015",
+    "country_code": "US",
+    "country": "United States",
+    "category": "law-equality",
+    "impact": "positive",
+    "significance": 4,
+    "sources": [
+      {
+        "label": "Encyclopaedia Britannica — Same-sex marriage",
+        "url": "https://www.britannica.com/topic/same-sex-marriage"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-britannica-marriage:25",
+    "title": "Uruguay legalizes same-sex marriage",
+    "description": "Uruguay legalized same-sex marriage, with the law taking effect in 2013.",
+    "date": "2013",
+    "country_code": "UY",
+    "country": "Uruguay",
+    "category": "law-equality",
+    "impact": "positive",
+    "significance": 4,
+    "sources": [
+      {
+        "label": "Encyclopaedia Britannica — Same-sex marriage",
+        "url": "https://www.britannica.com/topic/same-sex-marriage"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-britannica-marriage:26",
+    "title": "Greenland recognizes same-sex marriage",
+    "description": "Greenland, an autonomous territory of the Kingdom of Denmark not covered by Danish legislation on the matter, passed its own law recognizing same-sex marriage in 2015.",
+    "date": "2015",
+    "country_code": "GL",
+    "country": "Greenland",
+    "category": "law-equality",
+    "impact": "positive",
+    "significance": 3,
+    "sources": [
+      {
+        "label": "Encyclopaedia Britannica — Same-sex marriage",
+        "url": "https://www.britannica.com/topic/same-sex-marriage"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-britannica-marriage:27",
+    "skip_reason": "unverifiable"
+  },
+  {
+    "ref": "ext-britannica-marriage:28",
+    "title": "Andorra recognizes same-sex civil unions",
+    "description": "Andorra introduced legal recognition of same-sex couples through civil union, taking effect in 2014.",
+    "date": "2014",
+    "country_code": "AD",
+    "country": "Andorra",
+    "category": "law-equality",
+    "impact": "positive",
+    "significance": 3,
+    "sources": [
+      {
+        "label": "Encyclopaedia Britannica — Same-sex marriage",
+        "url": "https://www.britannica.com/topic/same-sex-marriage"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-britannica-marriage:29",
+    "title": "Chile recognizes same-sex civil unions",
+    "description": "Chile introduced legal recognition of same-sex couples through civil union, taking effect in 2015.",
+    "date": "2015",
+    "country_code": "CL",
+    "country": "Chile",
+    "category": "law-equality",
+    "impact": "positive",
+    "significance": 3,
+    "sources": [
+      {
+        "label": "Encyclopaedia Britannica — Same-sex marriage",
+        "url": "https://www.britannica.com/topic/same-sex-marriage"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-britannica-marriage:30",
+    "title": "Croatia recognizes same-sex life partnerships",
+    "description": "Croatia introduced legal recognition of same-sex couples through life partnership, taking effect in 2014.",
+    "date": "2014",
+    "country_code": "HR",
+    "country": "Croatia",
+    "category": "law-equality",
+    "impact": "positive",
+    "significance": 3,
+    "sources": [
+      {
+        "label": "Encyclopaedia Britannica — Same-sex marriage",
+        "url": "https://www.britannica.com/topic/same-sex-marriage"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-britannica-marriage:31",
+    "title": "Cyprus recognizes same-sex civil partnerships",
+    "description": "Cyprus introduced legal recognition of same-sex couples through civil partnership, taking effect in 2015.",
+    "date": "2015",
+    "country_code": "CY",
+    "country": "Cyprus",
+    "category": "law-equality",
+    "impact": "positive",
+    "significance": 3,
+    "sources": [
+      {
+        "label": "Encyclopaedia Britannica — Same-sex marriage",
+        "url": "https://www.britannica.com/topic/same-sex-marriage"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-britannica-marriage:32",
+    "title": "Czech Republic recognizes same-sex registered partnerships",
+    "description": "Czech Republic introduced legal recognition of same-sex couples through registered partnership, taking effect in 2006.",
+    "date": "2006",
+    "country_code": "CZ",
+    "country": "Czech Republic",
+    "category": "law-equality",
+    "impact": "positive",
+    "significance": 3,
+    "sources": [
+      {
+        "label": "Encyclopaedia Britannica — Same-sex marriage",
+        "url": "https://www.britannica.com/topic/same-sex-marriage"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-britannica-marriage:33",
+    "title": "Estonia recognizes same-sex registered partnerships",
+    "description": "Estonia introduced legal recognition of same-sex couples through registered partnership, taking effect in 2016.",
+    "date": "2016",
+    "country_code": "EE",
+    "country": "Estonia",
+    "category": "law-equality",
+    "impact": "positive",
+    "significance": 3,
+    "sources": [
+      {
+        "label": "Encyclopaedia Britannica — Same-sex marriage",
+        "url": "https://www.britannica.com/topic/same-sex-marriage"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-britannica-marriage:34",
+    "title": "Greece recognizes same-sex civil partnerships",
+    "description": "Greece introduced legal recognition of same-sex couples through civil partnership, taking effect in 2015.",
+    "date": "2015",
+    "country_code": "GR",
+    "country": "Greece",
+    "category": "law-equality",
+    "impact": "positive",
+    "significance": 3,
+    "sources": [
+      {
+        "label": "Encyclopaedia Britannica — Same-sex marriage",
+        "url": "https://www.britannica.com/topic/same-sex-marriage"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-britannica-marriage:35",
+    "title": "Hungary recognizes same-sex registered partnerships",
+    "description": "Hungary introduced legal recognition of same-sex couples through registered partnership, taking effect in 2009.",
+    "date": "2009",
+    "country_code": "HU",
+    "country": "Hungary",
+    "category": "law-equality",
+    "impact": "positive",
+    "significance": 3,
+    "sources": [
+      {
+        "label": "Encyclopaedia Britannica — Same-sex marriage",
+        "url": "https://www.britannica.com/topic/same-sex-marriage"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-britannica-marriage:36",
+    "title": "Italy recognizes same-sex civil unions",
+    "description": "Italy introduced legal recognition of same-sex couples through civil union, taking effect in 2016.",
+    "date": "2016",
+    "country_code": "IT",
+    "country": "Italy",
+    "category": "law-equality",
+    "impact": "positive",
+    "significance": 3,
+    "sources": [
+      {
+        "label": "Encyclopaedia Britannica — Same-sex marriage",
+        "url": "https://www.britannica.com/topic/same-sex-marriage"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-britannica-marriage:37",
+    "title": "Liechtenstein recognizes same-sex registered partnerships",
+    "description": "Liechtenstein introduced legal recognition of same-sex couples through registered partnership, taking effect in 2011.",
+    "date": "2011",
+    "country_code": "LI",
+    "country": "Liechtenstein",
+    "category": "law-equality",
+    "impact": "positive",
+    "significance": 3,
+    "sources": [
+      {
+        "label": "Encyclopaedia Britannica — Same-sex marriage",
+        "url": "https://www.britannica.com/topic/same-sex-marriage"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-britannica-marriage:38",
+    "title": "Slovenia recognizes same-sex registered partnerships",
+    "description": "Slovenia introduced legal recognition of same-sex couples through registered partnership, taking effect in 2006.",
+    "date": "2006",
+    "country_code": "SI",
+    "country": "Slovenia",
+    "category": "law-equality",
+    "impact": "positive",
+    "significance": 3,
+    "sources": [
+      {
+        "label": "Encyclopaedia Britannica — Same-sex marriage",
+        "url": "https://www.britannica.com/topic/same-sex-marriage"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-britannica-marriage:39",
+    "title": "Switzerland recognizes same-sex registered partnerships",
+    "description": "Switzerland introduced legal recognition of same-sex couples through registered partnership, taking effect in 2007.",
+    "date": "2007",
+    "country_code": "CH",
+    "country": "Switzerland",
+    "category": "law-equality",
+    "impact": "positive",
+    "significance": 3,
+    "sources": [
+      {
+        "label": "Encyclopaedia Britannica — Same-sex marriage",
+        "url": "https://www.britannica.com/topic/same-sex-marriage"
+      }
+    ],
+    "needs_review": false
+  },
+  {
+    "ref": "ext-britannica-marriage:40",
+    "title": "Stonewall riots begin in New York City",
+    "description": "Police raided the Stonewall Inn in New York City on June 28, 1969, sparking days of protests that are commemorated by Pride Month.",
+    "date": "1969-06-28",
+    "country_code": "US",
+    "country": "United States",
+    "city": "New York",
+    "category": "uprising-movement",
+    "impact": "positive",
+    "significance": 5,
+    "sources": [
+      {
+        "label": "Encyclopaedia Britannica — Same-sex marriage",
+        "url": "https://www.britannica.com/topic/same-sex-marriage"
+      }
+    ],
+    "needs_review": false
+  }
+]
