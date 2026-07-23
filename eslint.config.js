@@ -355,6 +355,45 @@ export default tseslint.config(
     },
   },
 
+  // Design & Branding control center (2026-07-23) — /admin/design edits real
+  // color values, so its editor components legitimately hold neutral hex
+  // defaults (#0a0a0a placeholders, wrapper colors). This block re-states the
+  // admin design rules WITHOUT the hardcoded-color selector (flat-config
+  // no-restricted-syntax replaces wholesale per file — see CLAUDE.md).
+  {
+    files: ["src/components/admin/design/**/*.{ts,tsx}"],
+    ignores: ["src/**/__tests__/**"],
+    rules: {
+      "no-restricted-syntax": [
+        "error",
+        {
+          selector:
+            "Literal[value=/\\brounded(-(t|b|l|r|tl|tr|bl|br))?-(xs|sm|md|lg|xl|2xl|3xl|4xl)\\b/]",
+          message:
+            "Use semantic radius: rounded-container / rounded-element / rounded-badge. See src/index.css @theme.",
+        },
+        {
+          selector:
+            "Literal[value=/\\b(text|bg|border|ring|from|via|to|decoration|divide)-(red|green|emerald|amber|yellow|orange|blue|purple|pink|cyan|indigo|violet|fuchsia|rose|sky|teal|lime|slate|gray|neutral|zinc|stone)-(50|100|200|300|400|500|600|700|800|900|950)\\b/]",
+          message:
+            "Chromatic Tailwind class — use design tokens. Hex defaults for the branding editor are allowed here, chromatic utility classes are not.",
+        },
+        {
+          selector:
+            "Literal[value=/\\bshadow-(md|lg|xl|2xl)\\b/]",
+          message:
+            "Shadows are disabled (CLAUDE.md § Design). Use border or bg-muted for depth.",
+        },
+        {
+          selector:
+            "Literal[value=/\\b(p|m|mx|my|mt|mb|ml|mr|px|py|pl|pr|pt|pb|gap|gap-x|gap-y|space-x|space-y)-(3|5|7|9|11|13|15)\\b/]",
+          message:
+            "Strict 8 pt grid (UI audit P8). Use even-step Tailwind utility or .5 micro-spacing.",
+        },
+      ],
+    },
+  },
+
   // P4 (2026-05-20, UI audit) — warn (not error) on chromatic Tailwind
   // classes in the public tree. Migrate to tokens; promote to error once
   // any remaining instances are flushed.

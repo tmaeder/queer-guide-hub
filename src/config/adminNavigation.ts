@@ -38,6 +38,7 @@ import {
   MessageSquarePlus,
   Search,
   Flag,
+  Palette,
   Award,
   CopyCheck,
 } from 'lucide-react';
@@ -434,6 +435,13 @@ export const adminNavSections: AdminNavSection[] = [
         label: 'Audit Log',
         icon: History,
         route: '/admin/audit',
+        adminOnly: true,
+      },
+      {
+        id: 'design',
+        label: 'Design & Branding',
+        icon: Palette,
+        route: '/admin/design',
         adminOnly: true,
       },
       {

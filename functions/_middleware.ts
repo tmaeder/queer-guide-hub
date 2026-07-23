@@ -46,6 +46,7 @@ import {
   DEFAULT_LOCALE,
 } from './_lib/routeMeta';
 import { homepageJsonLd } from './_lib/jsonLd';
+import { getBranding, brandStyleTag, brandingMeta } from './_lib/branding';
 import { isBotUserAgent } from './_lib/botUa';
 import { buildBodyHtml, buildNoscriptHtml } from './_lib/routeBody';
 import { isLocaleLocalised, LOCALISED_LOCALES } from './_lib/localisedLocales';
@@ -234,6 +235,11 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   // Returns null if the path isn't a detail route OR the row isn't found.
   const detail = await resolveDetailRoute(env, basePath);
 
+  // Published branding overrides (site_branding, /admin/design). Memoized
+  // 60s per isolate; null (fetch failure or kill-switch) = stock site.
+  const branding = await getBranding(env);
+  const bMeta = brandingMeta(branding);
+
   // Per-row indexability (P1.1): seo_indexable=false on the row vetoes
   // indexing even if the path is otherwise indexable.
   const indexable =
@@ -266,9 +272,9 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     return notFound;
   }
 
-  const meta = detail?.meta ?? resolveMeta(basePath);
+  const meta = detail?.meta ?? resolveMeta(basePath, bMeta);
   const canonical = locale ? localizedUrl(locale, basePath) : canonicalUrl(basePath);
-  const ogImage = meta.ogImage ?? DEFAULT_OG_IMAGE;
+  const ogImage = meta.ogImage ?? bMeta.og_image_url ?? DEFAULT_OG_IMAGE;
   // og:type stays 'website' — crawlers rely on JSON-LD @type for fine-grained
   // typing (NewsArticle / Place / Event). og:type=article would be wrong for
   // city/country/venue detail pages.
@@ -287,9 +293,9 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     `<meta property="og:description" content="${escapeAttr(meta.description)}">`,
     `<meta property="og:image" content="${escapeAttr(ogImage)}">`,
     `<meta property="og:type" content="${ogType}">`,
-    `<meta property="og:site_name" content="Queer Guide">`,
+    `<meta property="og:site_name" content="${escapeAttr(bMeta.site_name ?? 'Queer Guide')}">`,
     `<meta name="twitter:card" content="summary_large_image">`,
-    `<meta name="twitter:site" content="@queerguide">`,
+    `<meta name="twitter:site" content="${escapeAttr(bMeta.twitter_handle ?? '@queerguide')}">`,
     `<meta name="twitter:title" content="${escapeAttr(meta.title)}">`,
     `<meta name="twitter:description" content="${escapeAttr(meta.description)}">`,
     `<meta name="twitter:image" content="${escapeAttr(ogImage)}">`,
@@ -319,10 +325,29 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   }
 
   if (basePath === '/' || basePath === '') {
-    headInjections.push(homepageJsonLd());
+    headInjections.push(homepageJsonLd(bMeta));
   }
   if (detail?.jsonLd) {
     headInjections.push(detail.jsonLd);
+  }
+
+  // Branding overrides: theme-color metas (last matching tag wins over the
+  // static ones in index.html) and the token override style block. The style
+  // is appended at the very end of <head> so it lands after the Vite CSS
+  // <link> and wins the custom-property cascade.
+  if (bMeta.theme_color_light) {
+    headInjections.push(
+      `<meta name="theme-color" media="(prefers-color-scheme: light)" content="${escapeAttr(bMeta.theme_color_light)}">`,
+    );
+  }
+  if (bMeta.theme_color_dark) {
+    headInjections.push(
+      `<meta name="theme-color" media="(prefers-color-scheme: dark)" content="${escapeAttr(bMeta.theme_color_dark)}">`,
+    );
+  }
+  const brandStyle = brandStyleTag(branding);
+  if (brandStyle) {
+    headInjections.push(brandStyle);
   }
 
   const rewriter = new HTMLRewriter()
