@@ -110,6 +110,7 @@ const AdminEventQuality = lazyRetry(() => import('./pages/AdminEventQuality'));
 const AdminGroupRequests = lazyRetry(() => import('./pages/AdminGroupRequests'));
 const AdminSearchIntelligence = lazyRetry(() => import('./pages/AdminSearchIntelligence'));
 const AdminRecognition = lazyRetry(() => import('./pages/admin/Recognition'));
+const AdminDesignSystem = lazyRetry(() => import('./pages/admin/DesignSystem'));
 const Contributors = lazyRetry(() => import('./pages/Contributors'));
 
 // New feature pages
@@ -400,6 +401,7 @@ export const AppRoutes = () => {
                 />
                 <Route path="audit" element={<AuditLog />} />
                 <Route path="search-intelligence" element={<AdminSearchIntelligence />} />
+                <Route path="design" element={<AdminDesignSystem />} />
                 <Route
                   path="links"
                   element={<Navigate to="/admin/automation" replace />}

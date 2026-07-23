@@ -1,0 +1,483 @@
+{
+  "generated_at": "2026-07-23T18:00:36.899Z",
+  "token_count": 89,
+  "usage": [
+    {
+      "token": "muted-foreground",
+      "count": 3342
+    },
+    {
+      "token": "foreground",
+      "count": 1650
+    },
+    {
+      "token": "border",
+      "count": 1028
+    },
+    {
+      "token": "muted",
+      "count": 1002
+    },
+    {
+      "token": "radius-element",
+      "count": 840
+    },
+    {
+      "token": "text-13",
+      "count": 591
+    },
+    {
+      "token": "background",
+      "count": 590
+    },
+    {
+      "token": "text-2xs",
+      "count": 546
+    },
+    {
+      "token": "destructive",
+      "count": 439
+    },
+    {
+      "token": "radius-badge",
+      "count": 326
+    },
+    {
+      "token": "radius-container",
+      "count": 306
+    },
+    {
+      "token": "text-xs2",
+      "count": 276
+    },
+    {
+      "token": "primary",
+      "count": 245
+    },
+    {
+      "token": "accent",
+      "count": 174
+    },
+    {
+      "token": "text-title",
+      "count": 136
+    },
+    {
+      "token": "text-15",
+      "count": 134
+    },
+    {
+      "token": "card",
+      "count": 102
+    },
+    {
+      "token": "text-primary",
+      "count": 95
+    },
+    {
+      "token": "text-headline",
+      "count": 85
+    },
+    {
+      "token": "text-body-lg",
+      "count": 83
+    },
+    {
+      "token": "text-display",
+      "count": 69
+    },
+    {
+      "token": "ring",
+      "count": 60
+    },
+    {
+      "token": "font-display",
+      "count": 49
+    },
+    {
+      "token": "text-headline-lg",
+      "count": 44
+    },
+    {
+      "token": "primary-foreground",
+      "count": 40
+    },
+    {
+      "token": "text-3xs",
+      "count": 29
+    },
+    {
+      "token": "text-hero",
+      "count": 28
+    },
+    {
+      "token": "radius",
+      "count": 28
+    },
+    {
+      "token": "input",
+      "count": 25
+    },
+    {
+      "token": "popover",
+      "count": 19
+    },
+    {
+      "token": "warning",
+      "count": 19
+    },
+    {
+      "token": "secondary",
+      "count": 15
+    },
+    {
+      "token": "popover-foreground",
+      "count": 11
+    },
+    {
+      "token": "success",
+      "count": 11
+    },
+    {
+      "token": "font-mono",
+      "count": 10
+    },
+    {
+      "token": "destructive-foreground",
+      "count": 9
+    },
+    {
+      "token": "surface-container-low",
+      "count": 8
+    },
+    {
+      "token": "text-hero-xl",
+      "count": 7
+    },
+    {
+      "token": "accent-foreground",
+      "count": 7
+    },
+    {
+      "token": "text-secondary",
+      "count": 7
+    },
+    {
+      "token": "text-muted",
+      "count": 7
+    },
+    {
+      "token": "surface-container",
+      "count": 7
+    },
+    {
+      "token": "card-foreground",
+      "count": 5
+    },
+    {
+      "token": "border-hairline",
+      "count": 4
+    },
+    {
+      "token": "secondary-foreground",
+      "count": 3
+    },
+    {
+      "token": "radius-none",
+      "count": 2
+    },
+    {
+      "token": "sidebar-background",
+      "count": 1
+    },
+    {
+      "token": "sidebar-foreground",
+      "count": 1
+    },
+    {
+      "token": "sidebar-primary",
+      "count": 1
+    },
+    {
+      "token": "sidebar-primary-foreground",
+      "count": 1
+    },
+    {
+      "token": "sidebar-accent",
+      "count": 1
+    },
+    {
+      "token": "sidebar-accent-foreground",
+      "count": 1
+    },
+    {
+      "token": "sidebar-border",
+      "count": 1
+    },
+    {
+      "token": "sidebar-ring",
+      "count": 1
+    },
+    {
+      "token": "surface",
+      "count": 1
+    },
+    {
+      "token": "surface-container-lowest",
+      "count": 1
+    },
+    {
+      "token": "surface-container-high",
+      "count": 1
+    },
+    {
+      "token": "surface-container-highest",
+      "count": 1
+    },
+    {
+      "token": "surface-dim",
+      "count": 1
+    },
+    {
+      "token": "inverse-surface",
+      "count": 1
+    },
+    {
+      "token": "font-sans",
+      "count": 0
+    },
+    {
+      "token": "text-3xs--line-height",
+      "count": 0
+    },
+    {
+      "token": "text-2xs--line-height",
+      "count": 0
+    },
+    {
+      "token": "text-xs2--line-height",
+      "count": 0
+    },
+    {
+      "token": "text-13--line-height",
+      "count": 0
+    },
+    {
+      "token": "text-15--line-height",
+      "count": 0
+    },
+    {
+      "token": "text-headline-lg--line-height",
+      "count": 0
+    },
+    {
+      "token": "text-hero-xl--line-height",
+      "count": 0
+    },
+    {
+      "token": "text-hero--line-height",
+      "count": 0
+    },
+    {
+      "token": "text-display--line-height",
+      "count": 0
+    },
+    {
+      "token": "text-headline--line-height",
+      "count": 0
+    },
+    {
+      "token": "text-title--line-height",
+      "count": 0
+    },
+    {
+      "token": "text-body-lg--line-height",
+      "count": 0
+    },
+    {
+      "token": "tracking-label",
+      "count": 0
+    },
+    {
+      "token": "radius-full",
+      "count": 0
+    },
+    {
+      "token": "shadow-none",
+      "count": 0
+    },
+    {
+      "token": "shadow-hairline",
+      "count": 0
+    },
+    {
+      "token": "warning-foreground",
+      "count": 0
+    },
+    {
+      "token": "success-foreground",
+      "count": 0
+    },
+    {
+      "token": "input-bg",
+      "count": 0
+    },
+    {
+      "token": "transition-smooth",
+      "count": 0
+    },
+    {
+      "token": "cat-venues",
+      "count": 0
+    },
+    {
+      "token": "cat-events",
+      "count": 0
+    },
+    {
+      "token": "cat-marketplace",
+      "count": 0
+    },
+    {
+      "token": "cat-places",
+      "count": 0
+    },
+    {
+      "token": "cat-hotels",
+      "count": 0
+    },
+    {
+      "token": "cat-travel",
+      "count": 0
+    },
+    {
+      "token": "cat-news",
+      "count": 0
+    },
+    {
+      "token": "cat-community",
+      "count": 0
+    }
+  ],
+  "unused": [
+    "font-sans",
+    "text-3xs--line-height",
+    "text-2xs--line-height",
+    "text-xs2--line-height",
+    "text-13--line-height",
+    "text-15--line-height",
+    "text-headline-lg--line-height",
+    "text-hero-xl--line-height",
+    "text-hero--line-height",
+    "text-display--line-height",
+    "text-headline--line-height",
+    "text-title--line-height",
+    "text-body-lg--line-height",
+    "tracking-label",
+    "radius-full",
+    "shadow-none",
+    "shadow-hairline",
+    "warning-foreground",
+    "success-foreground",
+    "input-bg",
+    "transition-smooth",
+    "cat-venues",
+    "cat-events",
+    "cat-marketplace",
+    "cat-places",
+    "cat-hotels",
+    "cat-travel",
+    "cat-news",
+    "cat-community"
+  ],
+  "eslint": {
+    "design_rule_suppressions": 0
+  },
+  "docs": {
+    "missing_from_docs": [
+      "font-sans",
+      "font-display",
+      "font-mono",
+      "text-3xs",
+      "text-3xs--line-height",
+      "text-2xs",
+      "text-2xs--line-height",
+      "text-xs2",
+      "text-xs2--line-height",
+      "text-13",
+      "text-13--line-height",
+      "text-15",
+      "text-15--line-height",
+      "text-headline-lg",
+      "text-headline-lg--line-height",
+      "text-hero-xl",
+      "text-hero-xl--line-height",
+      "text-hero",
+      "text-hero--line-height",
+      "text-display",
+      "text-display--line-height",
+      "text-headline",
+      "text-headline--line-height",
+      "text-title",
+      "text-title--line-height",
+      "text-body-lg",
+      "text-body-lg--line-height",
+      "tracking-label",
+      "radius-none",
+      "radius-container",
+      "radius-element",
+      "radius-badge",
+      "radius-full",
+      "shadow-none",
+      "shadow-hairline",
+      "card",
+      "card-foreground",
+      "popover",
+      "popover-foreground",
+      "primary",
+      "primary-foreground",
+      "secondary",
+      "secondary-foreground",
+      "accent-foreground",
+      "destructive-foreground",
+      "warning",
+      "warning-foreground",
+      "success",
+      "success-foreground",
+      "input",
+      "input-bg",
+      "sidebar-background",
+      "sidebar-foreground",
+      "sidebar-primary",
+      "sidebar-primary-foreground",
+      "sidebar-accent",
+      "sidebar-accent-foreground",
+      "sidebar-border",
+      "sidebar-ring",
+      "text-primary",
+      "text-secondary",
+      "text-muted",
+      "border-hairline",
+      "transition-smooth",
+      "surface",
+      "surface-container-lowest",
+      "surface-container-low",
+      "surface-container",
+      "surface-container-high",
+      "surface-container-highest",
+      "surface-dim",
+      "inverse-surface",
+      "cat-venues",
+      "cat-events",
+      "cat-marketplace",
+      "cat-places",
+      "cat-hotels",
+      "cat-travel",
+      "cat-news",
+      "cat-community"
+    ],
+    "stale_in_docs": [
+      "token"
+    ]
+  }
+}

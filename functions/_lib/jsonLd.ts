@@ -9,25 +9,32 @@ const escapeJsonLd = (s: string) => s.replace(/</g, '\\u003c').replace(/>/g, '\\
 const renderLd = (obj: unknown) =>
   `<script type="application/ld+json">${escapeJsonLd(JSON.stringify(obj))}</script>`;
 
-export function organizationLd() {
+/** Optional DB-driven identity overrides (site_branding.meta). */
+export type OrgOverrides = {
+  site_name?: string;
+  org_logo_url?: string;
+  org_sameas?: string[];
+};
+
+export function organizationLd(overrides?: OrgOverrides) {
   return {
     '@context': 'https://schema.org',
     '@type': 'Organization',
-    name: 'Queer Guide',
+    name: overrides?.site_name ?? 'Queer Guide',
     url: SITE_ORIGIN,
-    logo: `${SITE_ORIGIN}/icons/icon-192.png`,
-    sameAs: [
+    logo: overrides?.org_logo_url ?? `${SITE_ORIGIN}/icons/icon-192.png`,
+    sameAs: overrides?.org_sameas ?? [
       'https://www.instagram.com/queer.guide',
       'https://www.linkedin.com/company/queer-guide',
     ],
   };
 }
 
-export function websiteLd() {
+export function websiteLd(overrides?: OrgOverrides) {
   return {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
-    name: 'Queer Guide',
+    name: overrides?.site_name ?? 'Queer Guide',
     url: SITE_ORIGIN,
     potentialAction: {
       '@type': 'SearchAction',
@@ -41,6 +48,6 @@ export function websiteLd() {
   };
 }
 
-export function homepageJsonLd(): string {
-  return [renderLd(organizationLd()), renderLd(websiteLd())].join('\n');
+export function homepageJsonLd(overrides?: OrgOverrides): string {
+  return [renderLd(organizationLd(overrides)), renderLd(websiteLd(overrides))].join('\n');
 }
