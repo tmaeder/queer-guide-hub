@@ -13,7 +13,7 @@ vi.mock('../constants', () => ({
   ],
 }));
 
-import { DrawerTriageBar } from '../DrawerTriageBar';
+import { FeedbackDrawerActionBar } from '../FeedbackDrawerActionBar';
 
 const baseProps = {
   status: 'new',
@@ -28,9 +28,9 @@ const baseProps = {
   onResolutionChange: vi.fn(),
 };
 
-describe('DrawerTriageBar', () => {
+describe('FeedbackDrawerActionBar', () => {
   it('renders all four sections', () => {
-    render(<DrawerTriageBar {...baseProps} />);
+    render(<FeedbackDrawerActionBar {...baseProps} />);
     expect(screen.getByText('Status')).toBeInTheDocument();
     expect(screen.getByText('Priority')).toBeInTheDocument();
     expect(screen.getByText('Assignee')).toBeInTheDocument();
@@ -38,12 +38,12 @@ describe('DrawerTriageBar', () => {
   });
 
   it('shows resolvedAt suffix when resolution present', () => {
-    render(<DrawerTriageBar {...baseProps} resolvedAt="2026-05-15T00:00:00Z" resolution="fixed" />);
+    render(<FeedbackDrawerActionBar {...baseProps} resolvedAt="2026-05-15T00:00:00Z" resolution="fixed" />);
     expect(screen.getByText(/2h ago/)).toBeInTheDocument();
   });
 
   it('shows assignee hint when assigneeId set', () => {
-    render(<DrawerTriageBar {...baseProps} assigneeId="u1" />);
+    render(<FeedbackDrawerActionBar {...baseProps} assigneeId="u1" />);
     expect(screen.getByText(/Assigned to Alice/)).toBeInTheDocument();
   });
 });

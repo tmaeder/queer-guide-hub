@@ -10,14 +10,14 @@ vi.mock('@/components/admin/feedback/FeedbackFilters', () => ({ FeedbackFilters:
 vi.mock('@/components/admin/feedback/FeedbackPresets', () => ({ FeedbackPresets: () => null }));
 vi.mock('@/components/admin/feedback/FeedbackBulkBar', () => ({ FeedbackBulkBar: () => null }));
 
-import { TriageTab } from '../TriageTab';
+import { FeedbackQueueTab } from '../FeedbackQueueTab';
 
 const emptyGrouped = { open: [], triaged: [], in_progress: [], blocked: [], done: [], wont_fix: [] } as never;
 
-describe('TriageTab', () => {
+describe('FeedbackQueueTab', () => {
   it('renders without crashing', () => {
     const { container } = render(
-      <TriageTab
+      <FeedbackQueueTab
         state={{} as never} update={vi.fn()} clearFilters={vi.fn()} activeFilterCount={0}
         currentUserId="u1" admins={[]} availableLabels={[]} searchInputRef={createRef() as never}
         grouped={emptyGrouped} totalVisibleCount={0} voteCounts={{}}

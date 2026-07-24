@@ -10,7 +10,7 @@ import { ShortcutHelpDialog } from '@/components/admin/feedback/ShortcutHelpDial
 import { StoryDetailDrawer } from '@/components/admin/feedback/StoryDetailDrawer';
 import type { StoryStatus } from '@/components/admin/feedback/types';
 import { formatClaudePrompt } from '@/components/admin/feedback/claudePrompts';
-import { TriageTab } from './TriageTab';
+import { FeedbackQueueTab } from './FeedbackQueueTab';
 import { StoriesTab } from './StoriesTab';
 import { RoadmapTab } from './RoadmapTab';
 import { usePromoteToRoadmap } from '@/hooks/useRoadmap';
@@ -65,7 +65,7 @@ export default function AdminFeedback() {
       </Tabs>
 
       {tabValue === 'triage' && (
-        <TriageTab
+        <FeedbackQueueTab
           state={c.state}
           update={c.update}
           clearFilters={c.clearFilters}
