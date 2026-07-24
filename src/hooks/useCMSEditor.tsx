@@ -44,6 +44,10 @@ export function useCMSEditor({
   const config = getContentType(contentType);
   const autoSaveTimer = useRef<ReturnType<typeof setInterval>>();
   const serverUpdatedAt = useRef<string | null>(null);
+  // Per-field dirty tracking — updated on every setField/setFields with a
+  // single-field compare, replacing full-record JSON.stringify per keystroke.
+  // Also the source of the UPDATE delta: only these fields are submitted.
+  const dirtyFieldsRef = useRef<Set<string>>(new Set());
 
   const [state, setState] = useState<EditorState>({
     contentType,
@@ -84,6 +88,7 @@ export function useCMSEditor({
       if (error) throw error;
 
       serverUpdatedAt.current = data.updated_at || null;
+      dirtyFieldsRef.current = new Set();
 
       // Fetch CMS metadata if exists
       const { data: meta } = await supabase
@@ -119,10 +124,15 @@ export function useCMSEditor({
   const setField = useCallback((name: string, value: unknown) => {
     setState((prev) => {
       const newData = { ...prev.data, [name]: value };
+      if (JSON.stringify(value) === JSON.stringify(prev.originalData[name])) {
+        dirtyFieldsRef.current.delete(name);
+      } else {
+        dirtyFieldsRef.current.add(name);
+      }
       return {
         ...prev,
         data: newData,
-        isDirty: JSON.stringify(newData) !== JSON.stringify(prev.originalData),
+        isDirty: dirtyFieldsRef.current.size > 0,
       };
     });
   }, []);
@@ -130,10 +140,17 @@ export function useCMSEditor({
   const setFields = useCallback((fields: Record<string, unknown>) => {
     setState((prev) => {
       const newData = { ...prev.data, ...fields };
+      for (const [name, value] of Object.entries(fields)) {
+        if (JSON.stringify(value) === JSON.stringify(prev.originalData[name])) {
+          dirtyFieldsRef.current.delete(name);
+        } else {
+          dirtyFieldsRef.current.add(name);
+        }
+      }
       return {
         ...prev,
         data: newData,
-        isDirty: JSON.stringify(newData) !== JSON.stringify(prev.originalData),
+        isDirty: dirtyFieldsRef.current.size > 0,
       };
     });
   }, []);
@@ -167,35 +184,22 @@ export function useCMSEditor({
     setState((prev) => ({ ...prev, isSaving: true, errors: {} }));
 
     try {
-      // Conflict detection: check updated_at hasn't changed
-      if (itemId && serverUpdatedAt.current) {
-        const { data: current } = await supabase
-          .from(config.tableName as 'venues')
-          .select('updated_at')
-          .eq(config.primaryKey, itemId)
-          .single();
-
-        if (current?.updated_at && current.updated_at !== serverUpdatedAt.current) {
-          setState((prev) => ({
-            ...prev,
-            isSaving: false,
-            errors: {
-              _conflict: 'This item was modified by someone else. Please reload and try again.',
-            },
-          }));
-          return false;
-        }
-      }
-
-      // Prepare data (strip read-only and system fields)
+      // Prepare data (strip read-only and system fields). UPDATEs submit only
+      // the dirty-field delta — smaller payloads, fewer trigger side effects.
       const readOnlyFields = new Set(config.fields.filter((f) => f.readOnly).map((f) => f.name));
       const systemFields = new Set(['id', 'created_at', 'created_by']);
       const saveData: Record<string, unknown> = {};
 
       for (const [key, value] of Object.entries(state.data)) {
-        if (!readOnlyFields.has(key) && !systemFields.has(key)) {
-          saveData[key] = value;
-        }
+        if (readOnlyFields.has(key) || systemFields.has(key)) continue;
+        if (itemId && !dirtyFieldsRef.current.has(key)) continue;
+        saveData[key] = value;
+      }
+
+      if (itemId && Object.keys(saveData).length === 0) {
+        // Nothing editable changed — no write needed.
+        setState((prev) => ({ ...prev, isDirty: false, isSaving: false }));
+        return true;
       }
 
       // Add updated_at
@@ -205,17 +209,32 @@ export function useCMSEditor({
       let serverRow: Record<string, unknown> | null = null;
 
       if (itemId) {
-        // UPDATE — select back the row so we surface any DB-side mutation
-        // (e.g. BEFORE triggers like sanitize_website_field that silently null fields).
-        const { data: updated, error } = await supabase
+        // UPDATE with optimistic concurrency: the row must still carry the
+        // updated_at we loaded — zero rows back means someone else saved in
+        // between (or the row is gone). Replaces the old pre-save SELECT
+        // round-trip. Selecting the row back also surfaces any DB-side
+        // mutation (e.g. BEFORE triggers like sanitize_website_field).
+        let update = supabase
           .from(config.tableName as 'venues')
           .update(saveData)
-          .eq(config.primaryKey, itemId)
-          .select('*')
-          .single();
+          .eq(config.primaryKey, itemId);
+        if (serverUpdatedAt.current) {
+          update = update.eq('updated_at', serverUpdatedAt.current);
+        }
+        const { data: updatedRows, error } = await update.select('*');
 
         if (error) throw error;
-        serverRow = updated as unknown as Record<string, unknown>;
+        if (!updatedRows || updatedRows.length === 0) {
+          setState((prev) => ({
+            ...prev,
+            isSaving: false,
+            errors: {
+              _conflict: 'This item was modified by someone else. Please reload and try again.',
+            },
+          }));
+          return false;
+        }
+        serverRow = updatedRows[0] as unknown as Record<string, unknown>;
       } else {
         // INSERT
         if (user) {
@@ -249,37 +268,38 @@ export function useCMSEditor({
         }
       }
 
-      // Ensure cms_content_metadata exists for ALL content types (workflow support)
-      if (savedId && !metadata) {
-        const { data: newMeta } = await supabase
-          .from('cms_content_metadata' as 'venues')
-          .upsert(
-            {
-              source_table: config.tableName,
-              source_id: savedId,
-              workflow_state: 'draft',
-              visibility_level: 'public',
-              last_edited_by: user.id,
-              last_edited_at: new Date().toISOString(),
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString(),
-            },
-            { onConflict: 'source_table,source_id' },
-          )
-          .select()
-          .maybeSingle();
-
-        if (newMeta) setMetadata(newMeta as unknown as CMSContentMetadata);
-      }
-
-      // Create revision snapshot
+      // Bookkeeping (metadata upsert, revision snapshot, audit log) is
+      // fire-and-forget: each call swallows its own errors and none of it
+      // should sit between the user and the "Saved" state.
       if (savedId) {
-        await createRevision(config.tableName, savedId, state.data, state.originalData);
-      }
+        const bookkeepingId = savedId;
+        const snapshotData = state.data;
+        const snapshotOriginal = state.originalData;
+        void (async () => {
+          if (!metadata) {
+            const { data: newMeta } = await supabase
+              .from('cms_content_metadata' as 'venues')
+              .upsert(
+                {
+                  source_table: config.tableName,
+                  source_id: bookkeepingId,
+                  workflow_state: 'draft',
+                  visibility_level: 'public',
+                  last_edited_by: user.id,
+                  last_edited_at: new Date().toISOString(),
+                  created_at: new Date().toISOString(),
+                  updated_at: new Date().toISOString(),
+                },
+                { onConflict: 'source_table,source_id' },
+              )
+              .select()
+              .maybeSingle();
 
-      // Write audit log
-      if (savedId) {
-        await writeAuditLog(config.tableName, savedId, itemId ? 'update' : 'create', user.id);
+            if (newMeta) setMetadata(newMeta as unknown as CMSContentMetadata);
+          }
+          await createRevision(config.tableName, bookkeepingId, snapshotData, snapshotOriginal);
+          await writeAuditLog(config.tableName, bookkeepingId, itemId ? 'update' : 'create', user.id);
+        })();
       }
 
       // Update server timestamp from the row we got back, falling back
@@ -301,6 +321,7 @@ export function useCMSEditor({
         dropErrors._save = `These fields were not saved: ${droppedFields.join(', ')}`;
       }
 
+      dirtyFieldsRef.current = new Set();
       setState((prev) => ({
         ...prev,
         itemId: savedId,
@@ -326,6 +347,7 @@ export function useCMSEditor({
   // ── Reset ──────────────────────────────────────────────────────
 
   const reset = useCallback(() => {
+    dirtyFieldsRef.current = new Set();
     setState((prev) => ({
       ...prev,
       data: { ...prev.originalData },
