@@ -94,7 +94,7 @@ export function useBulkApproveHighConf() {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['triage-queue'] });
-      qc.invalidateQueries({ queryKey: ['review-counts'] });
+      qc.invalidateQueries({ queryKey: ['admin-counts'] });
       qc.invalidateQueries({ queryKey: ['triage-high-conf-count'] });
     },
   });
@@ -131,7 +131,7 @@ export function useTriageAction() {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['triage-queue'] });
-      qc.invalidateQueries({ queryKey: ['review-counts'] });
+      qc.invalidateQueries({ queryKey: ['admin-counts'] });
     },
   });
 }

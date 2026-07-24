@@ -170,4 +170,6 @@ export const milestoneContentType: ContentTypeConfig = {
       render: (contentId) => createElement(MilestoneLinksPanel, { milestoneId: contentId }),
     },
   ],
+  // Preserves the pre-registry All-content set (milestones were never listed there).
+  admin: { includeInAllContent: false },
 };
