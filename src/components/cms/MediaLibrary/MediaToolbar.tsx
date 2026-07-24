@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import {
   Select,
   SelectContent,
@@ -16,6 +18,8 @@ import {
   ArrowUpDown,
   ArrowUp,
   ArrowDown,
+  Tag as TagIcon,
+  X,
 } from 'lucide-react';
 import type {
   ViewMode,
@@ -25,7 +29,10 @@ import type {
   EntityTypeFilter,
   FormatFilter,
   SourceTypeFilter,
+  AccessLevelFilter,
+  BrandCategoryFilter,
 } from './types';
+import { ACCESS_LEVELS, BRAND_CATEGORIES } from './types';
 
 interface MediaToolbarProps {
   search: string;
@@ -38,6 +45,12 @@ interface MediaToolbarProps {
   onFormatFilterChange: (v: FormatFilter) => void;
   sourceTypeFilter: SourceTypeFilter;
   onSourceTypeFilterChange: (v: SourceTypeFilter) => void;
+  accessFilter: AccessLevelFilter;
+  onAccessFilterChange: (v: AccessLevelFilter) => void;
+  brandCategoryFilter: BrandCategoryFilter;
+  onBrandCategoryFilterChange: (v: BrandCategoryFilter) => void;
+  tagFilter: string[];
+  onTagFilterChange: (v: string[]) => void;
   sortBy: SortBy;
   onSortByChange: (v: SortBy) => void;
   sortDir: SortDir;
@@ -61,6 +74,12 @@ export function MediaToolbar(props: MediaToolbarProps) {
     onFormatFilterChange,
     sourceTypeFilter,
     onSourceTypeFilterChange,
+    accessFilter,
+    onAccessFilterChange,
+    brandCategoryFilter,
+    onBrandCategoryFilterChange,
+    tagFilter,
+    onTagFilterChange,
     sortBy,
     onSortByChange,
     sortDir,
@@ -72,12 +91,24 @@ export function MediaToolbar(props: MediaToolbarProps) {
     onRefresh,
   } = props;
 
+  const [tagDraft, setTagDraft] = useState('');
+
+  const addTag = () => {
+    const slug = tagDraft.trim().toLowerCase();
+    if (slug && !tagFilter.includes(slug)) {
+      onTagFilterChange([...tagFilter, slug]);
+    }
+    setTagDraft('');
+  };
+
   const activeFilterCount = [
     statusFilter !== 'all',
     entityTypeFilter !== 'all',
     formatFilter !== 'all',
     sourceTypeFilter !== 'all',
-  ].filter(Boolean).length;
+    accessFilter !== 'all',
+    brandCategoryFilter !== 'all',
+  ].filter(Boolean).length + tagFilter.length;
 
   return (
     <div className="flex flex-col gap-4 p-4 border border-border">
@@ -201,6 +232,30 @@ export function MediaToolbar(props: MediaToolbarProps) {
           </SelectContent>
         </Select>
 
+        <Select value={accessFilter} onValueChange={(v) => onAccessFilterChange(v as AccessLevelFilter)}>
+          <SelectTrigger style={{ width: 120 }} className="text-13">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Access</SelectItem>
+            {ACCESS_LEVELS.map((a) => (
+              <SelectItem key={a.value} value={a.value}>{a.label}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Select value={brandCategoryFilter} onValueChange={(v) => onBrandCategoryFilterChange(v as BrandCategoryFilter)}>
+          <SelectTrigger style={{ width: 130 }} className="text-13">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Categories</SelectItem>
+            {BRAND_CATEGORIES.map((c) => (
+              <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
         <div className="border-l border-border h-6 mx-1" />
 
         <Select value={sortBy} onValueChange={(v) => onSortByChange(v as SortBy)}>
@@ -237,11 +292,41 @@ export function MediaToolbar(props: MediaToolbarProps) {
               onEntityTypeFilterChange('all');
               onFormatFilterChange('all');
               onSourceTypeFilterChange('all');
+              onAccessFilterChange('all');
+              onBrandCategoryFilterChange('all');
+              onTagFilterChange([]);
             }}
           >
             Clear filters
           </Button>
         )}
+      </div>
+
+      {/* Row 3: Tag filter chips */}
+      <div className="flex gap-2 items-center flex-wrap">
+        <TagIcon size={13} className="text-muted-foreground shrink-0" />
+        {tagFilter.map((t) => (
+          <Badge key={t} variant="secondary" className="gap-1">
+            {t}
+            <button
+              type="button"
+              aria-label={`Remove tag ${t}`}
+              onClick={() => onTagFilterChange(tagFilter.filter((x) => x !== t))}
+              className="ml-0.5"
+            >
+              <X size={11} />
+            </button>
+          </Badge>
+        ))}
+        <Input
+          value={tagDraft}
+          onChange={(e) => setTagDraft(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') { e.preventDefault(); addTag(); }
+          }}
+          placeholder="Filter by tag slug…"
+          style={{ width: 180, fontSize: '0.8125rem' }}
+        />
       </div>
     </div>
   );

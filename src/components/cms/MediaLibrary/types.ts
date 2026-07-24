@@ -30,7 +30,46 @@ export interface UnifiedMediaItem {
   starred: boolean;
   usage_count: number;
   entity_types: string[] | null;
+  access_level: AccessLevel;
+  brand_category: BrandCategory | null;
+  version: number;
+  version_group_id: string | null;
+  tags: string[] | null;
 }
+
+export type AccessLevel = 'public' | 'partner' | 'internal';
+
+export type BrandCategory =
+  | 'logo'
+  | 'color'
+  | 'typography'
+  | 'photography'
+  | 'iconography'
+  | 'illustration'
+  | 'template'
+  | 'guideline'
+  | 'other';
+
+export const ACCESS_LEVELS: { value: AccessLevel; label: string }[] = [
+  { value: 'public', label: 'Public' },
+  { value: 'partner', label: 'Partner' },
+  { value: 'internal', label: 'Internal' },
+];
+
+export const BRAND_CATEGORIES: { value: BrandCategory; label: string }[] = [
+  { value: 'logo', label: 'Logo' },
+  { value: 'color', label: 'Color' },
+  { value: 'typography', label: 'Typography' },
+  { value: 'photography', label: 'Photography' },
+  { value: 'iconography', label: 'Iconography' },
+  { value: 'illustration', label: 'Illustration' },
+  { value: 'template', label: 'Template' },
+  { value: 'guideline', label: 'Guideline' },
+  { value: 'other', label: 'Other' },
+];
+
+export type AccessLevelFilter = 'all' | AccessLevel;
+export type BrandCategoryFilter = 'all' | BrandCategory;
 
 export type OptimizationStatus =
   | 'pending'
