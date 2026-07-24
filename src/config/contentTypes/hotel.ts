@@ -145,4 +145,5 @@ export const hotelContentType: ContentTypeConfig = {
   defaults: { featured: false, verified: false, lgbtq_friendly: false },
   fieldGroupOrder: ['basic', 'location', 'details', 'lgbtq', 'media', 'settings', 'external'],
   translatableFields: ['name', 'description', 'accessibility_notes'],
+  publicPath: (row) => (row.slug ? `/hotels/${row.slug}` : null),
 };

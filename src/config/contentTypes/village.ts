@@ -154,4 +154,5 @@ export const queerVillageContentType: ContentTypeConfig = {
   defaults: { featured: false },
   fieldGroupOrder: ['basic', 'details', 'location', 'media', 'settings'],
   admin: { qualityRoute: '/admin/content/village-quality' },
+  publicPath: (row) => (row.slug ? `/villages/${row.slug}` : null),
 };

@@ -240,4 +240,5 @@ export const venueContentType: ContentTypeConfig = {
     qualityRoute: '/admin/content/venue-quality',
     duplicatesRoute: '/admin/duplicates',
   },
+  publicPath: (row) => (row.slug ? `/venues/${row.slug}` : null),
 };

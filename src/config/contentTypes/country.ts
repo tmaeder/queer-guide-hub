@@ -135,4 +135,5 @@ export const countryContentType: ContentTypeConfig = {
   fieldGroupOrder: ['basic', 'details', 'location', 'lgbtq', 'media'],
   translatableFields: ['name', 'description'],
   commentable: true,
+  publicPath: (row) => (row.slug ? `/country/${row.slug}` : null),
 };

@@ -222,4 +222,5 @@ export const eventContentType: ContentTypeConfig = {
     writableFields: ['description', 'meta_title', 'meta_description', 'tags'],
   },
   admin: { qualityRoute: '/admin/content/event-quality' },
+  publicPath: (row) => (row.slug ? `/events/${row.slug}` : null),
 };
