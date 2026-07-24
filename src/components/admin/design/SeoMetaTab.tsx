@@ -19,6 +19,7 @@ function Field({
   onChange,
   textarea,
   hint,
+  error,
 }: {
   label: string;
   value: string;
@@ -26,6 +27,7 @@ function Field({
   onChange: (v: string) => void;
   textarea?: boolean;
   hint?: string;
+  error?: string;
 }) {
   return (
     <div className="space-y-2">
@@ -33,20 +35,28 @@ function Field({
       {textarea ? (
         <Textarea
           value={value}
+          aria-invalid={!!error}
           placeholder={`${placeholder} (default)`}
           maxLength={300}
           rows={3}
+          className={error ? 'border-destructive' : ''}
           onChange={(e) => onChange(e.target.value)}
         />
       ) : (
         <Input
           value={value}
+          aria-invalid={!!error}
           placeholder={`${placeholder} (default)`}
           maxLength={300}
+          className={error ? 'border-destructive' : ''}
           onChange={(e) => onChange(e.target.value)}
         />
       )}
-      {hint && <p className="text-2xs text-muted-foreground">{hint}</p>}
+      {error ? (
+        <p className="text-2xs text-destructive">{error}</p>
+      ) : (
+        hint && <p className="text-2xs text-muted-foreground">{hint}</p>
+      )}
     </div>
   );
 }
@@ -93,6 +103,7 @@ export function SeoMetaTab({ controller }: { controller: DesignSettingsControlle
             value={meta.twitter_handle ?? ''}
             placeholder={DEFAULTS.twitter_handle}
             onChange={(v) => controller.setField('meta', 'twitter_handle', v)}
+            error={controller.validationErrors['meta.twitter_handle']}
           />
           <div className="space-y-2">
             <Label className="text-2xs uppercase tracking-wide text-muted-foreground">
@@ -101,6 +112,8 @@ export function SeoMetaTab({ controller }: { controller: DesignSettingsControlle
             <Textarea
               value={sameas}
               rows={4}
+              aria-invalid={!!controller.validationErrors['meta.org_sameas']}
+              className={controller.validationErrors['meta.org_sameas'] ? 'border-destructive' : ''}
               placeholder={'https://www.instagram.com/queer.guide\nhttps://www.linkedin.com/company/queer-guide'}
               onChange={(e) =>
                 controller.setField(
@@ -113,9 +126,15 @@ export function SeoMetaTab({ controller }: { controller: DesignSettingsControlle
                 )
               }
             />
-            <p className="text-2xs text-muted-foreground">
-              JSON-LD Organization sameAs links (social profiles).
-            </p>
+            {controller.validationErrors['meta.org_sameas'] ? (
+              <p className="text-2xs text-destructive">
+                {controller.validationErrors['meta.org_sameas']}
+              </p>
+            ) : (
+              <p className="text-2xs text-muted-foreground">
+                JSON-LD Organization sameAs links (social profiles).
+              </p>
+            )}
           </div>
         </CardContent>
       </Card>

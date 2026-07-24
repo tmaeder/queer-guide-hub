@@ -14,6 +14,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { contrastVerdict, hslChannelsToCss, parseHslChannels } from '@/lib/wcagContrast';
 import { CONTRAST_PAIRS, flattenBrandingDoc, pruneDoc, resolveColor } from './tokenCatalog';
+import { TokenSpecimen } from './TokenPreviewPanel';
 import type { DesignSettingsController } from './useDesignSettings';
 
 function ValueCell({ path, value }: { path: string; value: string | undefined }) {
@@ -69,6 +70,8 @@ export function PublishDiffDialog({
       .map((p) => ({ path: p, from: published[p], to: draft[p] }));
   }, [controller.row, controller.draft]);
 
+  const tokensChanged = changes.some((c) => c.path.startsWith('tokens.') || c.path.startsWith('fonts.'));
+
   const publish = async () => {
     await controller.publish.mutateAsync(note);
     setNote('');
@@ -77,7 +80,7 @@ export function PublishDiffDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-h-[90vh] max-w-4xl overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Publish branding changes</DialogTitle>
           <DialogDescription>
@@ -86,6 +89,12 @@ export function PublishDiffDialog({
               : `${changes.length} value${changes.length === 1 ? '' : 's'} will change on queer.guide within ~60 seconds.`}
           </DialogDescription>
         </DialogHeader>
+        {tokensChanged && (
+          <div className="grid grid-cols-2 gap-4">
+            <TokenSpecimen doc={pruneDoc(controller.row?.published ?? {})} label="Published" />
+            <TokenSpecimen doc={controller.draft} label="Draft" />
+          </div>
+        )}
         {changes.length > 0 && (
           <div className="max-h-80 overflow-y-auto rounded-element border">
             <Table>
@@ -151,6 +160,7 @@ export function PublishDiffDialog({
             onClick={publish}
             disabled={
               changes.length === 0 ||
+              controller.hasErrors ||
               controller.publish.isPending ||
               (contrastHardFails.length > 0 && !ackContrast)
             }

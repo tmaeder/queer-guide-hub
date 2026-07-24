@@ -19,29 +19,34 @@ function GlobalTokenInput({
 }) {
   const value = resolveGlobal(controller.draft, token.key);
   const overridden = controller.draft.tokens?.global?.[token.key] !== undefined;
+  const error = controller.validationErrors[`tokens.global.${token.key}`];
   return (
-    <div className="flex items-center gap-2">
-      <Input
-        value={value}
-        onChange={(e) => controller.setTokenOverride('global', token.key, e.target.value)}
-        className={`h-8 font-mono text-13 ${token.kind === 'transition' ? 'w-72' : 'w-28'}`}
-        aria-label={`--${token.key}`}
-      />
-      {overridden ? (
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8"
-          aria-label={`Reset --${token.key}`}
-          onClick={() => controller.setTokenOverride('global', token.key, null)}
-        >
-          <RotateCcw className="h-3.5 w-3.5" />
-        </Button>
-      ) : (
-        <Badge variant="outline" className="text-2xs text-muted-foreground">
-          default
-        </Badge>
-      )}
+    <div>
+      <div className="flex items-center gap-2">
+        <Input
+          value={value}
+          aria-invalid={!!error}
+          onChange={(e) => controller.setTokenOverride('global', token.key, e.target.value)}
+          className={`h-8 font-mono text-13 ${token.kind === 'transition' ? 'w-72' : 'w-28'} ${error ? 'border-destructive' : ''}`}
+          aria-label={`--${token.key}`}
+        />
+        {overridden ? (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8"
+            aria-label={`Reset --${token.key}`}
+            onClick={() => controller.setTokenOverride('global', token.key, null)}
+          >
+            <RotateCcw className="h-3.5 w-3.5" />
+          </Button>
+        ) : (
+          <Badge variant="outline" className="text-2xs text-muted-foreground">
+            default
+          </Badge>
+        )}
+      </div>
+      {error && <p className="mt-1 text-2xs text-destructive">{error}</p>}
     </div>
   );
 }

@@ -36,10 +36,17 @@ export function EmailBrandingTab({ controller }: { controller: DesignSettingsCon
               </Label>
               <Input
                 value={email.from_name ?? ''}
+                aria-invalid={!!controller.validationErrors['email.from_name']}
+                className={controller.validationErrors['email.from_name'] ? 'border-destructive' : ''}
                 placeholder={`${DEFAULTS.from_name} (default)`}
                 maxLength={100}
                 onChange={(e) => controller.setField('email', 'from_name', e.target.value)}
               />
+              {controller.validationErrors['email.from_name'] && (
+                <p className="text-2xs text-destructive">
+                  {controller.validationErrors['email.from_name']}
+                </p>
+              )}
             </div>
             <div className="space-y-2">
               <Label className="text-2xs uppercase tracking-wide text-muted-foreground">
@@ -47,14 +54,22 @@ export function EmailBrandingTab({ controller }: { controller: DesignSettingsCon
               </Label>
               <Input
                 value={email.from_address ?? ''}
+                aria-invalid={!!controller.validationErrors['email.from_address']}
+                className={controller.validationErrors['email.from_address'] ? 'border-destructive' : ''}
                 placeholder={`${DEFAULTS.from_address} (default)`}
                 maxLength={100}
                 onChange={(e) => controller.setField('email', 'from_address', e.target.value)}
               />
-              <p className="text-2xs text-muted-foreground">
-                The domain must be verified with the email provider — an unverified address will
-                bounce sends.
-              </p>
+              {controller.validationErrors['email.from_address'] ? (
+                <p className="text-2xs text-destructive">
+                  {controller.validationErrors['email.from_address']}
+                </p>
+              ) : (
+                <p className="text-2xs text-muted-foreground">
+                  The domain must be verified with the email provider — an unverified address will
+                  bounce sends.
+                </p>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -68,6 +83,7 @@ export function EmailBrandingTab({ controller }: { controller: DesignSettingsCon
               hint="Absolute https URL — email clients cannot resolve relative paths."
               value={email.logo_url ?? ''}
               onChange={(v) => controller.setField('email', 'logo_url', v)}
+              error={controller.validationErrors['email.logo_url']}
             />
             <div className="grid gap-4 sm:grid-cols-2">
               {(['wrapper_bg', 'wrapper_fg'] as const).map((key) => (
@@ -85,12 +101,18 @@ export function EmailBrandingTab({ controller }: { controller: DesignSettingsCon
                     />
                     <Input
                       value={email[key] ?? ''}
+                      aria-invalid={!!controller.validationErrors[`email.${key}`]}
                       placeholder={`${DEFAULTS[key]} (default)`}
                       maxLength={7}
-                      className="w-32 font-mono text-13"
+                      className={`w-32 font-mono text-13 ${controller.validationErrors[`email.${key}`] ? 'border-destructive' : ''}`}
                       onChange={(e) => controller.setField('email', key, e.target.value)}
                     />
                   </div>
+                  {controller.validationErrors[`email.${key}`] && (
+                    <p className="text-2xs text-destructive">
+                      {controller.validationErrors[`email.${key}`]}
+                    </p>
+                  )}
                 </div>
               ))}
             </div>

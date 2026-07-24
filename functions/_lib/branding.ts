@@ -41,6 +41,15 @@ export type BrandingDoc = {
     background_color?: string;
   };
   email?: Record<string, string>;
+  fonts?: {
+    display?: FontSlot;
+    sans?: FontSlot;
+  };
+};
+
+export type FontSlot = {
+  family?: string;
+  files?: Array<{ url?: string; weight?: string; style?: string }>;
 };
 
 const COLOR_KEYS = new Set([
@@ -73,6 +82,47 @@ const HEX_RE = /^#[0-9a-fA-F]{6}$/;
 const URL_RE = /^(https:\/\/|\/)[^\s"'<>]{1,300}$/;
 const HANDLE_RE = /^@\w{1,30}$/;
 
+// Fonts — mirror of branding_validate. Host is hardcoded (our storage bucket
+// or a site-relative /fonts/ path); only woff2.
+const FONT_URL_RE =
+  /^(https:\/\/xqeacpakadqfxjxjcewc\.supabase\.co\/storage\/v1\/object\/public\/brand\/|\/fonts\/)[^\s"'<>]{1,300}\.woff2$/;
+const FAMILY_RE = /^[A-Za-z0-9 _-]{1,60}$/;
+const WEIGHT_RE = /^[1-9]00( [1-9]00)?$/;
+const FONT_SLOTS = ['display', 'sans'] as const;
+// Stock fallback stacks (src/index.css @theme) — custom family is PREPENDED, so
+// a failed webfont still renders these.
+const FONT_FALLBACK: Record<(typeof FONT_SLOTS)[number], string> = {
+  display: "'Space Grotesk', 'Inter', system-ui, sans-serif",
+  sans: "'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+};
+
+type ValidFontFile = { url: string; weight: string; style: string };
+
+function validFontFiles(slot: FontSlot | undefined): ValidFontFile[] {
+  if (!slot || !Array.isArray(slot.files)) return [];
+  return slot.files
+    .filter(
+      (f) =>
+        f &&
+        typeof f.url === 'string' &&
+        FONT_URL_RE.test(f.url) &&
+        typeof f.weight === 'string' &&
+        WEIGHT_RE.test(f.weight),
+    )
+    .slice(0, 4)
+    .map((f) => ({
+      url: f.url as string,
+      weight: f.weight as string,
+      style: f.style === 'italic' ? 'italic' : 'normal',
+    }));
+}
+
+/** family string if the slot is fully valid, else null. */
+function validFontFamily(slot: FontSlot | undefined): string | null {
+  if (!slot || typeof slot.family !== 'string' || !FAMILY_RE.test(slot.family)) return null;
+  return validFontFiles(slot).length > 0 ? slot.family : null;
+}
+
 function isValidGlobalToken(key: string, value: string): boolean {
   if (SIZE_KEYS.has(key)) return SIZE_RE.test(value);
   if (key.endsWith(LINE_HEIGHT_SUFFIX) && SIZE_KEYS.has(key.slice(0, -LINE_HEIGHT_SUFFIX.length))) {
@@ -97,16 +147,51 @@ function cssDecls(scope: Record<string, string> | undefined, validate: (k: strin
  */
 export function brandStyleTag(doc: BrandingDoc | null): string | null {
   const tokens = doc?.tokens;
-  if (!tokens) return null;
-  const light = cssDecls(tokens.light, (k, v) => COLOR_KEYS.has(k) && HSL_RE.test(v));
-  const dark = cssDecls(tokens.dark, (k, v) => COLOR_KEYS.has(k) && HSL_RE.test(v));
-  const global = cssDecls(tokens.global, isValidGlobalToken);
-  const rootDecls = [global, light].filter(Boolean).join(';');
+  const fonts = doc?.fonts;
+  const light = cssDecls(tokens?.light, (k, v) => COLOR_KEYS.has(k) && HSL_RE.test(v));
+  const dark = cssDecls(tokens?.dark, (k, v) => COLOR_KEYS.has(k) && HSL_RE.test(v));
+  const global = cssDecls(tokens?.global, isValidGlobalToken);
+
+  // @font-face blocks + --font-* overrides (custom family prepended to stock).
+  const faceBlocks: string[] = [];
+  const fontVars: string[] = [];
+  for (const slot of FONT_SLOTS) {
+    const family = validFontFamily(fonts?.[slot]);
+    if (!family) continue;
+    for (const f of validFontFiles(fonts?.[slot])) {
+      faceBlocks.push(
+        `@font-face{font-family:'${family}';src:url(${f.url}) format('woff2');` +
+          `font-weight:${f.weight};font-style:${f.style};font-display:swap}`,
+      );
+    }
+    const cssVar = slot === 'display' ? '--font-display' : '--font-sans';
+    fontVars.push(`${cssVar}:'${family}',${FONT_FALLBACK[slot]}`);
+  }
+
+  const rootDecls = [global, light, fontVars.join(';')].filter(Boolean).join(';');
   const parts: string[] = [];
+  if (faceBlocks.length) parts.push(faceBlocks.join(''));
   if (rootDecls) parts.push(`:root{${rootDecls}}`);
   if (dark) parts.push(`.dark{${dark}}`);
   if (parts.length === 0) return null;
   return `<style id="brand-overrides">${parts.join('')}</style>`;
+}
+
+/** Preload the first file of each valid font slot (perf; avoids FOUT flash). */
+export function brandFontPreloads(doc: BrandingDoc | null): string[] {
+  const fonts = doc?.fonts;
+  if (!fonts) return [];
+  const out: string[] = [];
+  for (const slot of FONT_SLOTS) {
+    if (!validFontFamily(fonts[slot])) continue;
+    const first = validFontFiles(fonts[slot])[0];
+    if (first) {
+      out.push(
+        `<link rel="preload" href="${first.url}" as="font" type="font/woff2" crossorigin>`,
+      );
+    }
+  }
+  return out;
 }
 
 /** Meta identity accessor — drops values that fail format checks. */

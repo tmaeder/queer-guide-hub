@@ -58,7 +58,21 @@ export type BrandingDoc = {
     wrapper_bg?: string;
     wrapper_fg?: string;
   };
+  fonts?: {
+    display?: FontSlot;
+    sans?: FontSlot;
+  };
 };
+
+export type FontFile = { url: string; weight: string; style: 'normal' | 'italic' };
+export type FontSlot = { family: string; files: FontFile[] };
+export type FontSlotKey = 'display' | 'sans';
+
+/** Default family stacks + the CSS var each slot overrides (mirror src/index.css). */
+export const FONT_SLOTS: Array<{ key: FontSlotKey; cssVar: string; label: string; defaultFamily: string }> = [
+  { key: 'display', cssVar: '--font-display', label: 'Display (headings)', defaultFamily: 'Space Grotesk' },
+  { key: 'sans', cssVar: '--font-sans', label: 'Sans (body & UI)', defaultFamily: 'Inter' },
+];
 
 export const COLOR_TOKENS: ColorTokenDef[] = [
   // Core
@@ -198,7 +212,8 @@ export function countOverrides(doc: BrandingDoc): number {
     tokenCount +
     Object.keys(doc.meta ?? {}).length +
     Object.keys(doc.manifest ?? {}).length +
-    Object.keys(doc.email ?? {}).length
+    Object.keys(doc.email ?? {}).length +
+    Object.keys(doc.fonts ?? {}).length
   );
 }
 
@@ -214,6 +229,10 @@ export function flattenBrandingDoc(doc: BrandingDoc): Record<string, string> {
     for (const [k, v] of Object.entries(doc[section] ?? {})) {
       out[`${section}.${k}`] = Array.isArray(v) ? v.join(', ') : String(v);
     }
+  }
+  for (const slot of ['display', 'sans'] as const) {
+    const s = doc.fonts?.[slot];
+    if (s) out[`fonts.${slot}`] = `${s.family} (${s.files?.length ?? 0} file${s.files?.length === 1 ? '' : 's'})`;
   }
   return out;
 }
@@ -233,5 +252,12 @@ export function pruneDoc(doc: BrandingDoc): BrandingDoc {
       out[section] = entries as never;
     }
   }
+  // fonts: keep only slots that have a family + at least one file
+  const fonts: NonNullable<BrandingDoc['fonts']> = {};
+  for (const slot of ['display', 'sans'] as const) {
+    const s = doc.fonts?.[slot];
+    if (s && s.family && Array.isArray(s.files) && s.files.length > 0) fonts[slot] = s;
+  }
+  if (Object.keys(fonts).length > 0) out.fonts = fonts;
   return out;
 }
