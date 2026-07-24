@@ -4,7 +4,6 @@
 
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import {
-  Save,
   X,
   RotateCcw,
   Eye,
@@ -31,6 +30,7 @@ import {
 } from '@/components/ui/dialog';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { CannedResponsePicker } from '@/components/admin/triage/CannedResponsePicker';
+import { SaveButton } from './SaveButton';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 
@@ -392,24 +392,13 @@ export function EditorHeader({
             <TooltipContent>Discard changes</TooltipContent>
           </Tooltip>
 
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                size="sm"
-                disabled={!state.isDirty || state.isSaving}
-                onClick={onSave}
-                className="font-semibold normal-case min-w-[80px]"
-              >
-                {state.isSaving ? (
-                  <Loader2 className="h-4 w-4 animate-spin mr-1" aria-label="Loading" />
-                ) : (
-                  <Save className="h-4 w-4 mr-1" />
-                )}
-                {state.isSaving ? 'Saving...' : 'Save'}
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Save ({saveShortcut})</TooltipContent>
-          </Tooltip>
+          <SaveButton
+            isDirty={state.isDirty}
+            isSaving={state.isSaving}
+            hasError={Boolean(state.errors?._save || state.errors?._conflict)}
+            onSave={onSave}
+            shortcutLabel={saveShortcut}
+          />
 
           <div className="hidden sm:block w-px h-6 bg-border mx-1" />
 
