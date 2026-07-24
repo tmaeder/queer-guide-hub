@@ -225,6 +225,34 @@ export interface AdminCompanionConfig {
   searchType?: string;
   /** Include in the "All content" aggregate list. Default true. */
   includeInAllContent?: boolean;
+  /**
+   * Duplicate-review + merge capability. When set, the type appears in the
+   * registry-driven `/admin/duplicates` console and gets a Duplicates tab.
+   */
+  dedup?: DedupCapability;
+}
+
+/**
+ * Declares how the generic `/admin/duplicates` console detects + merges
+ * duplicates for one content type. `find_duplicate_clusters` is generic over
+ * `search_documents.entity_type`, and the `merge_entities` dispatcher is generic
+ * over `p_type`, so most types need only this config — no bespoke UI.
+ */
+export interface DedupCapability {
+  /** `search_documents.entity_type` (also the `merge_entities` p_type), e.g. 'venue'. */
+  searchType: string;
+  /** Table holding the canonical-suggestion columns. */
+  metaTable: string;
+  /** PostgREST select for the meta fetch (quality_score/is_featured/created_at/images). */
+  metaCols: string;
+  /** Which merge-RPC family this type uses. */
+  mergePath: 'venue' | 'city' | 'entities';
+  /** Optional retroactive fuzzy-cluster finder RPC (same-place / same-item review). */
+  fuzzyRpc?: string;
+  /** Optional bulk same-place auto-merge sweep RPC (venues today). */
+  autoMergeRpc?: string;
+  /** Override the generic clusterer for types not in `search_documents` (e.g. hotels). */
+  clusterFinder?: string;
 }
 
 export type AIAssistOp =

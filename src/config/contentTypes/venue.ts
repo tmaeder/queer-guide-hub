@@ -239,6 +239,14 @@ export const venueContentType: ContentTypeConfig = {
   admin: {
     qualityRoute: '/admin/content/venue-quality',
     duplicatesRoute: '/admin/duplicates',
+    dedup: {
+      searchType: 'venue',
+      metaTable: 'venues',
+      metaCols: 'id, quality_score, trust_score, images, created_at, is_featured',
+      mergePath: 'venue',
+      fuzzyRpc: 'find_fuzzy_duplicate_clusters',
+      autoMergeRpc: 'run_venue_fuzzy_automerge',
+    },
   },
   publicPath: (row) => (row.slug ? `/venues/${row.slug}` : null),
 };

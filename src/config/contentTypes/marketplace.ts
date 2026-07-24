@@ -89,6 +89,16 @@ export const marketplaceContentType: ContentTypeConfig = {
     price_type: 'fixed',
   },
   fieldGroupOrder: ['basic', 'details', 'location', 'media', 'settings'],
-  admin: { qualityRoute: '/admin/content/marketplace-quality' },
+  admin: {
+    qualityRoute: '/admin/content/marketplace-quality',
+    duplicatesRoute: '/admin/duplicates',
+    dedup: {
+      searchType: 'marketplace',
+      metaTable: 'marketplace_listings',
+      metaCols: 'id, quality_score, created_at',
+      mergePath: 'entities',
+      fuzzyRpc: 'find_marketplace_fuzzy_duplicate_clusters',
+    },
+  },
   publicPath: (row) => (row.slug ? `/marketplace/${row.slug}` : null),
 };

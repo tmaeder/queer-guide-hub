@@ -16,15 +16,20 @@ const cluster = {
     { id: 'v2', title: '440 Castro', slug: '440-castro-3', city: 'San Francisco', country: 'US' },
   ],
 };
-const mergeSpy = vi.fn().mockResolvedValue({ data: { audit_id: 'au1' }, error: null });
+
+const rpcSpy = vi.fn((name: string) => {
+  if (name === 'find_duplicate_clusters') return Promise.resolve({ data: [cluster], error: null });
+  // tag cockpit reads — return empty so TagMergeReviewQueue renders cleanly
+  if (name === 'tag_merge_queue' || name === 'tag_merge_recent')
+    return Promise.resolve({ data: [], error: null });
+  if (name === 'merge_venues' || name === 'merge_cities' || name === 'merge_entities')
+    return Promise.resolve({ data: { audit_id: 'au1' }, error: null });
+  return Promise.resolve({ data: {}, error: null });
+});
 
 vi.mock('@/integrations/supabase/client', () => ({
   supabase: {
-    rpc: (name: string, args: unknown) => {
-      if (name === 'find_duplicate_clusters') return Promise.resolve({ data: [cluster], error: null });
-      if (name === 'merge_venues') return mergeSpy(name, args);
-      return Promise.resolve({ data: {}, error: null });
-    },
+    rpc: (name: string, args: unknown) => rpcSpy(name, args),
     from: () => ({
       select: () => ({
         in: () =>
@@ -43,19 +48,44 @@ vi.mock('@/integrations/supabase/client', () => ({
 import AdminDuplicates from '../AdminDuplicates';
 
 describe('AdminDuplicates', () => {
-  it('renders a venue cluster and suggests the higher-quality canonical', async () => {
+  it('builds the type selector from the registry (beyond the old hardcoded four)', async () => {
+    renderWithProviders(<AdminDuplicates />);
+    await waitFor(() => expect(screen.getByText('Duplicates & merge')).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: 'Venues' })).toBeInTheDocument();
+    // Cities is registry-driven — it was NOT in the old hardcoded list.
+    expect(screen.getByRole('button', { name: 'Cities' })).toBeInTheDocument();
+  });
+
+  it('renders a cluster and suggests the higher-quality canonical', async () => {
     renderWithProviders(<AdminDuplicates />);
     await waitFor(() => expect(screen.getByText('2 copies')).toBeInTheDocument());
-    await waitFor(() => expect(screen.getByText('Duplicates')).toBeInTheDocument());
-    await waitFor(() => expect(screen.getByText('440-castro')).toBeInTheDocument());
+    expect(screen.getByText('440-castro')).toBeInTheDocument();
     // v1 (quality 80) should be the suggested canonical, not v2 (quality 50).
     expect(screen.getByText('canonical')).toBeInTheDocument();
   });
 
-  it('merges the cluster on click', async () => {
+  it('routes a venue merge to the dedicated merge_venues RPC', async () => {
     renderWithProviders(<AdminDuplicates />);
     const btn = await screen.findByRole('button', { name: /Merge 1 into selected/ });
     fireEvent.click(btn);
-    await waitFor(() => expect(mergeSpy).toHaveBeenCalledWith('merge_venues', { p_keep_id: 'v1', p_drop_id: 'v2' }));
+    await waitFor(() =>
+      expect(rpcSpy).toHaveBeenCalledWith('merge_venues', { p_keep_id: 'v1', p_drop_id: 'v2' }),
+    );
+  });
+
+  it('routes a city merge to merge_cities (mergePath="city")', async () => {
+    renderWithProviders(<AdminDuplicates />);
+    fireEvent.click(await screen.findByRole('button', { name: 'Cities' }));
+    const btn = await screen.findByRole('button', { name: /Merge 1 into selected/ });
+    fireEvent.click(btn);
+    await waitFor(() =>
+      expect(rpcSpy).toHaveBeenCalledWith('merge_cities', { p_keep_id: 'v1', p_drop_id: 'v2' }),
+    );
+  });
+
+  it('switches to the taxonomy cockpit', async () => {
+    renderWithProviders(<AdminDuplicates />);
+    fireEvent.click(screen.getByRole('tab', { name: 'Taxonomies' }));
+    await waitFor(() => expect(screen.getByText(/keep distinct/i)).toBeInTheDocument());
   });
 });
