@@ -9,11 +9,13 @@ function HexField({
   value,
   placeholder,
   onChange,
+  error,
 }: {
   label: string;
   value: string;
   placeholder: string;
   onChange: (v: string) => void;
+  error?: string;
 }) {
   return (
     <div className="space-y-2">
@@ -28,12 +30,14 @@ function HexField({
         />
         <Input
           value={value}
+          aria-invalid={!!error}
           onChange={(e) => onChange(e.target.value)}
           placeholder={`${placeholder} (default)`}
           maxLength={7}
-          className="w-32 font-mono text-13"
+          className={`w-32 font-mono text-13 ${error ? 'border-destructive' : ''}`}
         />
       </div>
+      {error && <p className="text-2xs text-destructive">{error}</p>}
     </div>
   );
 }
@@ -53,6 +57,7 @@ export function BrandAssetsTab({ controller }: { controller: DesignSettingsContr
             hint="Used in JSON-LD structured data. Default: /icons/icon-192.png"
             value={meta.org_logo_url ?? ''}
             onChange={(v) => controller.setField('meta', 'org_logo_url', v)}
+            error={controller.validationErrors['meta.org_logo_url']}
           />
           <BrandUploadField
             label="Default OG image"
@@ -60,6 +65,7 @@ export function BrandAssetsTab({ controller }: { controller: DesignSettingsContr
             value={meta.og_image_url ?? ''}
             onChange={(v) => controller.setField('meta', 'og_image_url', v)}
             previewClassName="aspect-[1200/630] w-full max-w-80"
+            error={controller.validationErrors['meta.og_image_url']}
           />
         </CardContent>
       </Card>
@@ -99,12 +105,14 @@ export function BrandAssetsTab({ controller }: { controller: DesignSettingsContr
                 value={manifest.theme_color ?? ''}
                 placeholder="#0a0a0a"
                 onChange={(v) => controller.setField('manifest', 'theme_color', v)}
+                error={controller.validationErrors['manifest.theme_color']}
               />
               <HexField
                 label="Manifest background"
                 value={manifest.background_color ?? ''}
                 placeholder="#0a0a0a"
                 onChange={(v) => controller.setField('manifest', 'background_color', v)}
+                error={controller.validationErrors['manifest.background_color']}
               />
             </div>
             <p className="text-2xs text-muted-foreground">
@@ -123,12 +131,14 @@ export function BrandAssetsTab({ controller }: { controller: DesignSettingsContr
               value={meta.theme_color_light ?? ''}
               placeholder="#ffffff"
               onChange={(v) => controller.setField('meta', 'theme_color_light', v)}
+              error={controller.validationErrors['meta.theme_color_light']}
             />
             <HexField
               label="Dark mode"
               value={meta.theme_color_dark ?? ''}
               placeholder="#0a0a0a"
               onChange={(v) => controller.setField('meta', 'theme_color_dark', v)}
+              error={controller.validationErrors['meta.theme_color_dark']}
             />
           </CardContent>
         </Card>

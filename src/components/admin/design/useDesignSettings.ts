@@ -2,7 +2,8 @@ import { useCallback, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { untypedFrom, untypedRpc } from '@/integrations/supabase/untyped';
 import { adminAction } from '@/lib/adminAction';
-import { pruneDoc, countOverrides, type BrandingDoc } from './tokenCatalog';
+import { pruneDoc, countOverrides, type BrandingDoc, type FontSlot, type FontSlotKey } from './tokenCatalog';
+import { collectDraftErrors } from './valueValidation';
 
 export type SiteBrandingRow = {
   draft: BrandingDoc;
@@ -56,6 +57,8 @@ export function useDesignSettings() {
   const publishedJson = JSON.stringify(pruneDoc(query.data?.published ?? {}));
   const hasUnpublished = query.data != null && localDraftJson !== publishedJson;
   const overrideCount = useMemo(() => countOverrides(pruneDoc(draft)), [draft]);
+  const validationErrors = useMemo(() => collectDraftErrors(pruneDoc(draft)), [draft]);
+  const hasErrors = Object.keys(validationErrors).length > 0;
 
   const setTokenOverride = useCallback(
     (scope: 'light' | 'dark' | 'global', key: string, value: string | null) => {
@@ -78,6 +81,16 @@ export function useDesignSettings() {
         entries[key] = value;
       }
       setLocalDraft({ ...draft, [section]: entries } as BrandingDoc);
+    },
+    [draft],
+  );
+
+  const setFontSlot = useCallback(
+    (slot: FontSlotKey, value: FontSlot | null) => {
+      const fonts = { ...draft.fonts };
+      if (value === null) delete fonts[slot];
+      else fonts[slot] = value;
+      setLocalDraft({ ...draft, fonts });
     },
     [draft],
   );
@@ -179,10 +192,13 @@ export function useDesignSettings() {
     row: query.data ?? null,
     draft,
     overrideCount,
+    validationErrors,
+    hasErrors,
     isDirty,
     hasUnpublished,
     setTokenOverride,
     setField,
+    setFontSlot,
     saveDraft,
     publish,
     revert,

@@ -46,7 +46,7 @@ import {
   DEFAULT_LOCALE,
 } from './_lib/routeMeta';
 import { homepageJsonLd } from './_lib/jsonLd';
-import { getBranding, brandStyleTag, brandingMeta } from './_lib/branding';
+import { getBranding, brandStyleTag, brandingMeta, brandFontPreloads } from './_lib/branding';
 import { isBotUserAgent } from './_lib/botUa';
 import { buildBodyHtml, buildNoscriptHtml } from './_lib/routeBody';
 import { isLocaleLocalised, LOCALISED_LOCALES } from './_lib/localisedLocales';
@@ -348,6 +348,9 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   const brandStyle = brandStyleTag(branding);
   if (brandStyle) {
     headInjections.push(brandStyle);
+  }
+  for (const preload of brandFontPreloads(branding)) {
+    headInjections.push(preload);
   }
 
   const rewriter = new HTMLRewriter()

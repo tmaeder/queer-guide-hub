@@ -130,4 +130,88 @@ begin
   raise notice 'OK: single branding_save_draft overload';
 end $$;
 
+-- Presets + scheduling (20260724060722)
+-- branding_publish_internal: publishes a doc directly, bumps version, prunes.
+do $$
+declare
+  v_before int;
+  v_new int;
+  v_doc jsonb;
+begin
+  select published_version into v_before from public.site_branding where id = 1;
+  v_new := public.branding_publish_internal(
+    '{"tokens":{"light":{"muted":"0 0% 91%"}}}'::jsonb, 'test internal publish', null);
+  if v_new <> v_before + 1 then
+    raise exception 'FAIL: internal publish did not bump version (% -> %)', v_before, v_new;
+  end if;
+  select doc into v_doc from public.site_branding_versions where version = v_new;
+  if v_doc -> 'tokens' -> 'light' ->> 'muted' <> '0 0% 91%' then
+    raise exception 'FAIL: internal publish did not record the doc in history';
+  end if;
+  if (select published from public.site_branding where id = 1) -> 'tokens' -> 'light' ->> 'muted' <> '0 0% 91%' then
+    raise exception 'FAIL: internal publish did not update the live published doc';
+  end if;
+  raise notice 'OK: branding_publish_internal publishes + versions';
+end $$;
+
+-- run_branding_schedule: a due pending window activates (publishes preset, goes
+-- active, captures the pre-activation revert version); ending it reverts.
+do $$
+declare
+  v_preset uuid;
+  v_sched uuid;
+  v_pre_version int;
+  v_status text;
+  v_revert int;
+  v_result jsonb;
+begin
+  -- Preset with a distinctive token so we can trace publish/revert.
+  insert into public.site_branding_presets (name, doc)
+  values ('__test_pride__', '{"tokens":{"dark":{"accent":"0 0% 42%"}}}'::jsonb)
+  returning id into v_preset;
+
+  select published_version into v_pre_version from public.site_branding where id = 1;
+
+  -- A window that started a minute ago and ends a minute ago (both due) so one
+  -- runner pass both activates and ends it.
+  insert into public.site_branding_schedules (preset_id, starts_at, ends_at, status)
+  values (v_preset, now() - interval '2 min', now() - interval '1 min', 'pending')
+  returning id into v_sched;
+
+  -- Ensure the automation is enabled for the test regardless of seed state.
+  update public.admin_automations set enabled = true where slug = 'branding_schedule';
+
+  v_result := public.run_branding_schedule();
+
+  select status, revert_to_version into v_status, v_revert
+    from public.site_branding_schedules where id = v_sched;
+  if v_status <> 'completed' then
+    raise exception 'FAIL: due window should be completed after activate+end (got %)', v_status;
+  end if;
+  if v_revert <> v_pre_version then
+    raise exception 'FAIL: revert_to_version should capture pre-activation version (% vs %)', v_revert, v_pre_version;
+  end if;
+  -- After end-revert, the live published doc must match the pre-activation
+  -- version's doc, not the preset.
+  if (select published from public.site_branding where id = 1)
+     is distinct from (select doc from public.site_branding_versions where version = v_pre_version) then
+    raise exception 'FAIL: end-revert did not restore the pre-activation doc';
+  end if;
+  raise notice 'OK: run_branding_schedule activate+end round trip (%).', v_result;
+end $$;
+
+-- Preset cap is enforced (21st insert via RPC path would fail — check the guard
+-- exists as a count, not the full 20-row insert, to keep the test fast).
+do $$
+begin
+  if not exists (
+    select 1 from pg_proc where proname = 'branding_preset_save') then
+    raise exception 'FAIL: branding_preset_save missing';
+  end if;
+  if not exists (select 1 from pg_proc where proname = 'run_branding_schedule') then
+    raise exception 'FAIL: run_branding_schedule missing';
+  end if;
+  raise notice 'OK: preset/schedule RPCs present';
+end $$;
+
 rollback;

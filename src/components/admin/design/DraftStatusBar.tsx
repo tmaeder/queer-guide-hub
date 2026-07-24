@@ -32,6 +32,12 @@ export function DraftStatusBar({ controller }: { controller: DesignSettingsContr
         {!controller.isDirty && controller.hasUnpublished && (
           <Badge variant="outline">draft ahead of published</Badge>
         )}
+        {controller.hasErrors && (
+          <Badge variant="destructive">
+            {Object.keys(controller.validationErrors).length} invalid value
+            {Object.keys(controller.validationErrors).length === 1 ? '' : 's'}
+          </Badge>
+        )}
         {!enabled && <Badge variant="destructive">kill switch on — serving stock site</Badge>}
       </div>
       <div className="ml-auto flex flex-wrap items-center gap-2">
@@ -54,12 +60,16 @@ export function DraftStatusBar({ controller }: { controller: DesignSettingsContr
         <Button
           variant="outline"
           size="sm"
-          disabled={!controller.isDirty || controller.saveDraft.isPending}
+          disabled={!controller.isDirty || controller.hasErrors || controller.saveDraft.isPending}
           onClick={() => controller.saveDraft.mutate()}
         >
           {controller.saveDraft.isPending ? 'Saving…' : 'Save draft'}
         </Button>
-        <Button size="sm" disabled={!controller.hasUnpublished} onClick={() => setPublishOpen(true)}>
+        <Button
+          size="sm"
+          disabled={!controller.hasUnpublished || controller.hasErrors}
+          onClick={() => setPublishOpen(true)}
+        >
           <Upload className="mr-1 h-4 w-4" /> Publish…
         </Button>
       </div>

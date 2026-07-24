@@ -8,9 +8,10 @@ import { BrandAssetsTab } from '@/components/admin/design/BrandAssetsTab';
 import { SeoMetaTab } from '@/components/admin/design/SeoMetaTab';
 import { EmailBrandingTab } from '@/components/admin/design/EmailBrandingTab';
 import { DesignAuditTab } from '@/components/admin/design/DesignAuditTab';
+import { PresetsTab } from '@/components/admin/design/PresetsTab';
 import { Skeleton } from '@/components/ui/skeleton';
 
-const TABS = ['tokens', 'assets', 'seo', 'email', 'audit'] as const;
+const TABS = ['tokens', 'assets', 'seo', 'email', 'presets', 'audit'] as const;
 
 export default function DesignSystem() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -45,6 +46,7 @@ export default function DesignSystem() {
               <TabsTrigger value="assets">Brand assets</TabsTrigger>
               <TabsTrigger value="seo">SEO & meta</TabsTrigger>
               <TabsTrigger value="email">Email</TabsTrigger>
+              <TabsTrigger value="presets">Presets &amp; schedule</TabsTrigger>
               <TabsTrigger value="audit">Audit</TabsTrigger>
             </TabsList>
             <div className="mt-6">
@@ -59,6 +61,9 @@ export default function DesignSystem() {
               </TabsContent>
               <TabsContent value="email">
                 <EmailBrandingTab controller={controller} />
+              </TabsContent>
+              <TabsContent value="presets">
+                <PresetsTab />
               </TabsContent>
               <TabsContent value="audit">
                 <DesignAuditTab controller={controller} />
