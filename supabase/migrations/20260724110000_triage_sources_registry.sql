@@ -471,6 +471,31 @@ BEGIN
     'sla_hours', v_sla || jsonb_build_object('feedback', sla_feedback_h)
   );
 
+  -- Preserve the keys added by the concurrent Admin-IA work (migration
+  -- 20260724100000): the Quality hub, group-requests badge, and cockpit read
+  -- these from this same single count source. The Truth-Engine review gates
+  -- are NOT yet in the triage_sources registry (they get folded in A3); until
+  -- then, emit them here as a static block so nothing #2269 shipped regresses.
+  result := result || jsonb_build_object(
+    'review_group_requests',
+      (SELECT count(*) FROM group_join_requests WHERE status='pending'),
+    'quality_city',
+      (SELECT count(*) FROM city_review_queue WHERE status='open'),
+    'quality_venue',
+      (SELECT count(*) FROM venue_review_queue WHERE status='open'),
+    'quality_village',
+      (SELECT count(*) FROM village_review_queue WHERE status='open'),
+    'quality_personality',
+      (SELECT count(*) FROM personality_review_queue WHERE status='open'),
+    'quality_marketplace',
+      (SELECT count(*) FROM marketplace_review_queue WHERE status='open'),
+    'quality_existence',
+      (SELECT count(*) FROM entity_existence_audit
+        WHERE action='flag' AND reverted_at IS NULL),
+    'quality_editorial',
+      (SELECT count(*) FROM editorial_drafts WHERE status='pending')
+  );
+
   RETURN result;
 END;
 $function$;
