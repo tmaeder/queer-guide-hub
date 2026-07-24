@@ -167,4 +167,5 @@ export const newsArticleContentType: ContentTypeConfig = {
     ops: ['quality_review', 'summarize', 'seo_draft', 'auto_tag'],
     writableFields: ['excerpt', 'meta_title', 'meta_description', 'tags'],
   },
+  publicPath: (row) => (row.slug ? `/news/${row.slug}` : null),
 };

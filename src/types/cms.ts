@@ -206,6 +206,12 @@ export interface ContentTypeConfig {
    * the "All content" aggregate list. Replaces per-component hardcoded maps.
    */
   admin?: AdminCompanionConfig;
+  /**
+   * Public front-end path for a row, used by the editor live-preview iframe.
+   * Return null when the row has no public page yet (e.g. no slug). Path is
+   * locale-prefixed and `?preview=1`-appended by the PreviewPanel.
+   */
+  publicPath?: (row: Record<string, unknown>) => string | null;
 }
 
 export interface AdminCompanionConfig {

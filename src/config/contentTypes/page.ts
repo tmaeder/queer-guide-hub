@@ -72,4 +72,6 @@ export const cmsPagesContentType: ContentTypeConfig = {
     ops: ['summarize', 'seo_draft', 'auto_tag'],
     writableFields: ['excerpt', 'meta_title', 'meta_description', 'tags'],
   },
+  // CMS pages render at the bare slug path (/about, /terms, …).
+  publicPath: (row) => (row.slug ? `/${row.slug}` : null),
 };

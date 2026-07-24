@@ -152,4 +152,5 @@ export const personalityContentType: ContentTypeConfig = {
     writableFields: ['bio', 'description', 'meta_title', 'meta_description'],
   },
   admin: { qualityRoute: '/admin/content/personality-quality' },
+  publicPath: (row) => (row.slug ? `/personalities/${row.slug}` : null),
 };

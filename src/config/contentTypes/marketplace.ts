@@ -90,4 +90,5 @@ export const marketplaceContentType: ContentTypeConfig = {
   },
   fieldGroupOrder: ['basic', 'details', 'location', 'media', 'settings'],
   admin: { qualityRoute: '/admin/content/marketplace-quality' },
+  publicPath: (row) => (row.slug ? `/marketplace/${row.slug}` : null),
 };
