@@ -35,7 +35,7 @@ import { TagQualityPanel } from '@/components/admin/TagQualityPanel';
 import { TagSuggestionsReviewPanel } from '@/components/admin/TagSuggestionsReviewPanel';
 import { SensitiveTagReviewPanel } from '@/components/admin/SensitiveTagReviewPanel';
 import { TagsCsvImport } from '@/components/admin/TagsCsvImport';
-import TagMergeCandidates from '@/components/admin/TagMergeCandidates';
+import { TagMergeReviewQueue } from '@/components/admin/TagMergeReviewQueue';
 import { TagImageUpload } from '@/components/admin/TagImageUpload';
 import BulkCreateAITags from '@/components/admin/BulkCreateAITags';
 import { TagAliasesSection } from '@/components/admin/TagAliasesSection';
@@ -480,7 +480,7 @@ export default function AdminTags() {
           <div className="mb-6">
             <TagCategorizer />
           </div>
-          <TagMergeCandidates />
+          <TagMergeReviewQueue />
         </>
       }
       afterTable={
