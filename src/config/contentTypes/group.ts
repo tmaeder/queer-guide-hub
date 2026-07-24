@@ -39,4 +39,5 @@ export const communityGroupsContentType: ContentTypeConfig = {
   fields: groupFields,
   defaults: { is_private: false },
   fieldGroupOrder: ['basic', 'details', 'media', 'settings'],
+  admin: { requestsRoute: '/admin/content/group-requests' },
 };

@@ -153,4 +153,5 @@ export const queerVillageContentType: ContentTypeConfig = {
     '*,cities(name,population),countries(name,population),venues(count),events(count)',
   defaults: { featured: false },
   fieldGroupOrder: ['basic', 'details', 'location', 'media', 'settings'],
+  admin: { qualityRoute: '/admin/content/village-quality' },
 };

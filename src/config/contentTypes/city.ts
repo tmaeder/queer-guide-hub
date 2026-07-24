@@ -131,4 +131,5 @@ export const cityContentType: ContentTypeConfig = {
   fieldGroupOrder: ['basic', 'location', 'details', 'lgbtq', 'media', 'external'],
   translatableFields: ['name', 'description'],
   commentable: true,
+  admin: { qualityRoute: '/admin/content/city-quality' },
 };

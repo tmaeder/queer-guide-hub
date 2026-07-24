@@ -200,6 +200,25 @@ export interface ContentTypeConfig {
     label: string;
     render: (contentId: string) => ReactNode;
   }>;
+  /**
+   * Admin companion surfaces for this type — single source for the entity tab
+   * strip (List / Quality / Duplicates / Requests), palette entity search, and
+   * the "All content" aggregate list. Replaces per-component hardcoded maps.
+   */
+  admin?: AdminCompanionConfig;
+}
+
+export interface AdminCompanionConfig {
+  /** Quality/review companion page route (entity tab strip). */
+  qualityRoute?: string;
+  /** Duplicates companion page route. */
+  duplicatesRoute?: string;
+  /** Requests companion page route (e.g. group join requests). */
+  requestsRoute?: string;
+  /** `search_documents` content_type for command-palette entity search. */
+  searchType?: string;
+  /** Include in the "All content" aggregate list. Default true. */
+  includeInAllContent?: boolean;
 }
 
 export type AIAssistOp =

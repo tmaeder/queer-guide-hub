@@ -151,4 +151,5 @@ export const personalityContentType: ContentTypeConfig = {
     ops: ['quality_review', 'summarize', 'seo_draft', 'fact_check'],
     writableFields: ['bio', 'description', 'meta_title', 'meta_description'],
   },
+  admin: { qualityRoute: '/admin/content/personality-quality' },
 };

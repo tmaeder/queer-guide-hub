@@ -221,4 +221,5 @@ export const eventContentType: ContentTypeConfig = {
     ops: ['quality_review', 'summarize', 'seo_draft', 'auto_tag'],
     writableFields: ['description', 'meta_title', 'meta_description', 'tags'],
   },
+  admin: { qualityRoute: '/admin/content/event-quality' },
 };

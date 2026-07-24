@@ -89,4 +89,5 @@ export const marketplaceContentType: ContentTypeConfig = {
     price_type: 'fixed',
   },
   fieldGroupOrder: ['basic', 'details', 'location', 'media', 'settings'],
+  admin: { qualityRoute: '/admin/content/marketplace-quality' },
 };

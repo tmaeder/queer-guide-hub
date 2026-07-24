@@ -236,4 +236,8 @@ export const venueContentType: ContentTypeConfig = {
     ops: ['quality_review', 'summarize', 'seo_draft', 'auto_tag', 'fact_check'],
     writableFields: ['description', 'meta_title', 'meta_description', 'tags'],
   },
+  admin: {
+    qualityRoute: '/admin/content/venue-quality',
+    duplicatesRoute: '/admin/duplicates',
+  },
 };
