@@ -25,6 +25,7 @@ import { useAdminRoles } from '@/hooks/useAdminRoles';
 import { USER_MENU_ITEMS as userMenuItems } from '@/config/navigation';
 import { getSubmitCta } from '@/lib/submitCta';
 import { useTheme } from '@/components/theme/ThemeProvider';
+import { useSiteBranding } from '@/hooks/useSiteBranding';
 
 // ── Component ───────────────────────────────────────────────────────────────
 
@@ -51,26 +52,33 @@ export function Header() {
   const username = (profile?.username as string | null) || null;
   const avatarInitial = (displayName || user?.email || 'U').charAt(0).toUpperCase();
 
+  // Published branding overrides (/admin/design). Defaults render when unset.
+  const branding = useSiteBranding();
+  const siteName = branding.siteName ?? 'Queer Guide';
+  // Stacked wordmark: split the site name into two lines on the first space.
+  const [wordmarkTop, ...wordmarkRest] = siteName.split(' ');
+  const wordmarkBottom = wordmarkRest.join(' ');
+
   // ── Render ──────────────────────────────────────────────────────────────
 
   // ── Brand + right action cluster (shared by mobile row & desktop grid) ───
   const brand = (
     <Link
       to="/"
-      aria-label="Queer Guide"
+      aria-label={siteName}
       className="flex items-center gap-2.5 shrink-0 no-underline"
     >
       <img
-        src="/images/logo.png"
+        src={branding.logoUrl ?? '/images/logo.png'}
         alt=""
         aria-hidden="true"
         tabIndex={-1}
-        className="brightness-0 dark:invert transition-transform duration-150 hover:-rotate-6 hover:scale-110 active:scale-95"
+        className={`${branding.logoUrl ? '' : 'brightness-0 dark:invert '}transition-transform duration-150 hover:-rotate-6 hover:scale-110 active:scale-95 object-contain`}
         style={{ height: 34, width: 34 }}
       />
       <span className="hidden flex-col font-display text-base font-bold leading-[1.1] tracking-tight text-foreground md:flex">
-        <span>Queer</span>
-        <span>Guide</span>
+        <span>{wordmarkTop}</span>
+        {wordmarkBottom && <span>{wordmarkBottom}</span>}
       </span>
     </Link>
   );

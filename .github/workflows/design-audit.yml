@@ -1,0 +1,52 @@
+name: design-audit
+# Regenerates public/design-audit.json (token usage / unused tokens / lint
+# suppressions / doc drift) so the /admin/design Audit tab never goes stale.
+#
+# Same direct-push-to-main pattern as claude-md-drift: runs post-merge or on a
+# schedule, never touches a PR branch, commits with a `skip-checks: true`
+# trailer so a docs-artifact bump doesn't trigger a full CI/deploy rebuild.
+on:
+  schedule:
+    - cron: '20 5 * * 1' # Mondays 05:20 UTC
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'src/index.css'
+      - 'docs/design-system/**'
+permissions:
+  contents: write
+concurrency:
+  group: design-audit-main
+  cancel-in-progress: false
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: main
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.20.0'
+      - name: regenerate design audit artifact
+        id: audit
+        run: |
+          node scripts/design-audit.mjs
+          # generated_at changes on every run — only commit when the substance
+          # (everything except the timestamp) actually changed.
+          if git diff --quiet -I '"generated_at"' public/design-audit.json; then
+            git checkout -- public/design-audit.json
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+      - name: commit artifact
+        if: steps.audit.outputs.changed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/design-audit.json
+          git commit -m "chore(design): refresh design-audit.json" -m "skip-checks: true"
+          git push origin HEAD:main
