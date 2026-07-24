@@ -135,5 +135,14 @@ export const countryContentType: ContentTypeConfig = {
   fieldGroupOrder: ['basic', 'details', 'location', 'lgbtq', 'media'],
   translatableFields: ['name', 'description'],
   commentable: true,
+  admin: {
+    duplicatesRoute: '/admin/duplicates',
+    dedup: {
+      searchType: 'country',
+      metaTable: 'countries',
+      metaCols: 'id, quality_score:content_completeness_score, created_at',
+      mergePath: 'entities',
+    },
+  },
   publicPath: (row) => (row.slug ? `/country/${row.slug}` : null),
 };

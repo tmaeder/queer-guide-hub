@@ -153,6 +153,15 @@ export const queerVillageContentType: ContentTypeConfig = {
     '*,cities(name,population),countries(name,population),venues(count),events(count)',
   defaults: { featured: false },
   fieldGroupOrder: ['basic', 'details', 'location', 'media', 'settings'],
-  admin: { qualityRoute: '/admin/content/village-quality' },
+  admin: {
+    qualityRoute: '/admin/content/village-quality',
+    duplicatesRoute: '/admin/duplicates',
+    dedup: {
+      searchType: 'queer_village',
+      metaTable: 'queer_villages',
+      metaCols: 'id, quality_score:completeness_score, is_featured:featured, trust_score, created_at',
+      mergePath: 'entities',
+    },
+  },
   publicPath: (row) => (row.slug ? `/villages/${row.slug}` : null),
 };
