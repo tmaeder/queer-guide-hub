@@ -36,7 +36,9 @@ async function validateRelevance(item: { title: string; description: string; bra
   const acct = Deno.env.get('CF_ACCOUNT_ID') || Deno.env.get('CLOUDFLARE_ACCOUNT_ID')
   const cfToken = Deno.env.get('CF_AI_API_TOKEN') || Deno.env.get('CLOUDFLARE_API_TOKEN')
   if (!acct || !cfToken) throw new Error('CF Workers AI not configured (CF_ACCOUNT_ID + CF_AI_API_TOKEN)')
-  const model = Deno.env.get('CF_AI_MODEL') || '@cf/meta/llama-3.3-70b-instruct-fp8-fast'
+  // Relevance is a classification task → the cheap 8B is ample and ~9x cheaper
+  // per token than the 70B this used to default to (cost control, invoice IN-72568830).
+  const model = Deno.env.get('CF_AI_MODEL') || '@cf/meta/llama-3.1-8b-instruct'
   const userPrompt = `Product: ${item.title}\nBrand: ${item.brand || 'N/A'}\nCategory: ${item.category || 'N/A'}\nTags: ${(item.tags || []).join(', ')}\nDescription: ${(item.description || '').slice(0, 800)}\n\nReturn ONLY minified JSON: {"queer_relevant":boolean,"confidence":0-1,"reasoning":"brief","suggested_tags":["..."],"sensitivity_flags":[{"category":"legal|medical|nsfw","confidence":0-1,"severity":"low|medium|high","indicators":["terms"]}]}`
   const ctrl = new AbortController()
   const timer = setTimeout(() => ctrl.abort(), 45000)

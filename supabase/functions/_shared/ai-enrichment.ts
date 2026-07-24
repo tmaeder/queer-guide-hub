@@ -474,6 +474,9 @@ Respond with JSON using these keys (null where unknown):
 
   try {
     const result = await chatCompletion(supabase, {
+      // Moat/editorial output quality-sensitive → opt into the 70B (this caller
+      // is daily-capped, so the cost is bounded). See CF_MODEL_STRONG note.
+      model: '@cf/meta/llama-3.3-70b-instruct-fp8-fast',
       messages: [
         { role: 'system', content: MOAT_SYSTEM_PROMPT },
         { role: 'user', content: userPrompt },
@@ -557,6 +560,8 @@ Respond with JSON using these keys (null where unknown):
 
   try {
     const result = await chatCompletion(supabase, {
+      // Moat/editorial output quality-sensitive → opt into the 70B (daily-capped).
+      model: '@cf/meta/llama-3.3-70b-instruct-fp8-fast',
       messages: [
         { role: 'system', content: CITY_MOAT_SYSTEM_PROMPT },
         { role: 'user', content: userPrompt },
@@ -637,6 +642,8 @@ Respond with JSON using these keys (null where unknown):
 
   try {
     const result = await chatCompletion(supabase, {
+      // Moat/editorial output quality-sensitive → opt into the 70B (daily-capped).
+      model: '@cf/meta/llama-3.3-70b-instruct-fp8-fast',
       messages: [
         { role: 'system', content: VILLAGE_MOAT_SYSTEM_PROMPT },
         { role: 'user', content: userPrompt },
