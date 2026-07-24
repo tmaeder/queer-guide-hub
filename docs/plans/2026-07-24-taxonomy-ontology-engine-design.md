@@ -36,11 +36,26 @@ Missing = *structure* (concept/label split, poly-hierarchy, relations, facet sco
 
 ## 1. Data model — SKOS-lite concept graph
 
-Each `unified_tags` row becomes a **concept** (not a string).
+> **Substrate correction (post-brainstorming DB audit, 2026-07-24):** most of this model *already exists as abandoned, half-wired scaffolding*. The work is consolidation + governance + population, **not** creating new tables. Reconciled mapping:
+> | Design concept | Existing table | State |
+> |---|---|---|
+> | labels/synonyms | **`tag_aliases`** `(canonical_tag_id, alias_name, alias_slug, alias_type, review_status)` | 15,187 rows, ungoverned |
+> | curated graph | **`tag_relations`** `(source_tag_id, target_tag_id, relation_type, confidence, review_status)` | **6 rows — effectively empty** |
+> | raw similarity pool | **`tag_relationships`** `(tag1_id, tag2_id, similarity_score, relationship_type)` | 70,426 rows — never promoted into the curated graph |
+> | usage junction | **`unified_tag_assignments`** `(tag_id, entity_id, entity_type)` | 150,989 rows; `entity_type` vocab dirty (`venues`/`venue`, `news`/`news_article`, `marketplace_listing`/`marketplace`) |
+> | per-domain facet counts | **`tag_usage_summary`** (view) | 1 row/tag → facets derivable |
+> | audit | **`tag_change_log`** | 110,879 rows |
+> | embeddings | **`tag_embeddings`** `(tag_id, embedding, model)` | 7,393 / 8,998 |
+> | poly-category | **`tag_category_assignments`** + `tag_categories` | 6,257 rows |
+> | lifecycle | `unified_tags.status` (`active` 4,421 / `deprecated` 4,516 / `merged` 61) | prune partly done; **1,586 active tags still zero-usage** |
+>
+> So `tag_facets` is a **derived view**, not a base table; "labels" = govern existing `tag_aliases`; `tag_relations` is the empty canonical graph to *populate* from the 70k `tag_relationships` pool.
 
-- **`tag_labels`** — `(concept_id, label, lang, kind)` where kind ∈ `pref|alt|hidden`. Many surface strings → one concept ("gay bar" / "schwulenbar" / "gaybar"). `merged_into_id` + `name_i18n` migrate in here.
-- **`tag_relations`** — edge list `(source_id, predicate, target_id, confidence, source, status, created_at)`. Predicates: `broader` / `narrower` (maintained inverse pair), `related`, `exact_match` (external authority). Poly-hierarchical DAG, cycle-guarded on insert. Replaces single-parent `category_id`.
-- **`tag_facets`** — `(concept_id, facet)` where facet ∈ `venue|event|city|country|marketplace|news|person|amenity|profession|target_group|village|group`. **The unification** — silos become facet scopes on shared concepts rather than separate tables.
+Conceptual target (over the existing tables above):
+
+- **Labels** — `tag_aliases` (alt/synonym) + `unified_tags.name_i18n` (per-language pref). Many surface strings → one concept ("gay bar" / "schwulenbar" / "gaybar").
+- **`tag_relations`** — the curated edge graph. Predicates: `broader` (child→parent) + derived `narrower`, `related`, `exact_match`. Poly-hierarchical DAG, cycle-guarded. Populated by P1/P2 proposers from the `tag_relationships` candidate pool.
+- **`tag_facets`** (view) — `(concept_id, facet)` derived from `unified_tag_assignments` with `entity_type` normalized to a canonical facet vocab. **The unification** — silos become facet scopes on shared concepts.
 - **External anchor** — existing `wikidata_id` = `skos:exactMatch`.
 
 Silo folding (amenities 87, professions 35, target_groups, …): migrate each silo term to a concept with the matching facet; dedupe against existing concepts via embedding-NN during migration; leave a compatibility view per old table so existing readers keep working until cut over.
