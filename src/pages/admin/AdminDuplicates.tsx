@@ -18,6 +18,7 @@ import {
   type DedupType,
 } from '@/hooks/useVenueDuplicates';
 import { TagMergeReviewQueue } from '@/components/admin/TagMergeReviewQueue';
+import { VocabMerge } from '@/components/admin/VocabMerge';
 
 /**
  * /admin/duplicates — the registry-driven duplicate review & merge console,
@@ -400,16 +401,38 @@ function FuzzyDuplicates({ type }: { type: DedupType }) {
   );
 }
 
-/** Taxonomy duplicates. Tags use the propose/approve cockpit; vocabularies (Phase 3)
- *  will slot in alongside. */
+/** Taxonomy duplicates: tags (propose/approve cockpit) + the settings vocabularies. */
 function TaxonomyDuplicates() {
+  const [taxo, setTaxo] = useState<'tags' | 'vocab'>('tags');
   return (
     <div className="flex flex-col gap-4">
-      <p className="text-muted-foreground text-15">
-        Tags are governed by a propose/approve queue with a permanent “keep distinct” option —
-        merges reparent every assignment and are reversible.
-      </p>
-      <TagMergeReviewQueue />
+      <div className="flex gap-2">
+        <Button
+          variant={taxo === 'tags' ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => setTaxo('tags')}
+        >
+          Tags
+        </Button>
+        <Button
+          variant={taxo === 'vocab' ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => setTaxo('vocab')}
+        >
+          Vocabularies
+        </Button>
+      </div>
+      {taxo === 'tags' ? (
+        <>
+          <p className="text-muted-foreground text-15">
+            Tags are governed by a propose/approve queue with a permanent “keep distinct” option —
+            merges reparent every assignment and are reversible.
+          </p>
+          <TagMergeReviewQueue />
+        </>
+      ) : (
+        <VocabMerge />
+      )}
     </div>
   );
 }
