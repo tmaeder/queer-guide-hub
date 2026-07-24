@@ -22,7 +22,7 @@ export function useAssistant() {
   const inFlightRef = useRef<AbortController | null>(null);
 
   const send = useCallback(
-    async (message: string) => {
+    async (message: string, turnstileToken?: string | null) => {
       const text = message.trim();
       if (!text || pending) return;
 
@@ -40,6 +40,7 @@ export function useAssistant() {
           conversationId: conversationIdRef.current,
           userId: user?.id,
           signal: controller.signal,
+          turnstileToken,
         });
         conversationIdRef.current = res.conversation_id;
         setMessages((prev) => [

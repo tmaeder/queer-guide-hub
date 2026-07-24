@@ -19,6 +19,18 @@ export interface Env {
 	 * closed (treated as anonymous; gated content stays hidden).
 	 */
 	SUPABASE_JWT_SECRET?: string;
+	/**
+	 * Anti-abuse for the public, unauthenticated 70B endpoint (cost control, see
+	 * invoice IN-72568830). All optional so the worker degrades gracefully before
+	 * they are provisioned.
+	 */
+	RATE_LIMIT?: KVNamespace;
+	/** Per-IP requests/min cap. Defaults to 10 when unset. */
+	ASSISTANT_RATE_PER_MIN?: string;
+	/** Turnstile secret. When unset, Turnstile is skipped (fail-open) so this can ship first. */
+	TURNSTILE_SECRET?: string;
+	/** Kill-switch: "1" halts all inference and returns a graceful fallback. */
+	AI_DISABLED?: string;
 }
 
 // ── Workers AI traditional function-calling shapes ─────────────────────────

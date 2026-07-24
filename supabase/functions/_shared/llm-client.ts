@@ -69,7 +69,9 @@ function readConfig() {
       gatewayBaseUrl('workers-ai') ??
       `https://api.cloudflare.com/client/v4/accounts/${cfAcct}/ai/v1`,
     apiKey: cfToken,
-    defaultModel: Deno.env.get('CF_AI_MODEL') || '@cf/meta/llama-3.3-70b-instruct-fp8-fast',
+    // Cheap 8B by default (cost control — see openai-client CF_MODEL_DEFAULT note
+    // + invoice IN-72568830). Callers needing the 70B pass model explicitly.
+    defaultModel: Deno.env.get('CF_AI_MODEL') || '@cf/meta/llama-3.1-8b-instruct',
     gatewayed: true,
   }
 }
@@ -89,6 +91,10 @@ export function isLlmConfigured(): boolean {
 export async function llmChatCompletion(
   options: LlmCompletionOptions,
 ): Promise<LlmCompletionResult> {
+  // Kill-switch — see chatCompletion() in openai-client.ts. AI_DISABLED=1 halts spend.
+  if (Deno.env.get('AI_DISABLED') === '1') {
+    throw new Error('AI_DISABLED: LLM inference halted via kill-switch')
+  }
   const { baseUrl, apiKey, defaultModel, gatewayed } = readConfig()
   const {
     messages,
