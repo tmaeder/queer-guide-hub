@@ -464,6 +464,15 @@ git commit -m "feat(taxonomy): tag_ontology_health() coverage snapshot (P0)"
 
 ---
 
+## P0 execution outcome (2026-07-24, applied to prod)
+
+Shipped on branch `taxonomy-ontology-p0`, 6 migrations, all applied via `supabase db push` (zero drift — remote history == repo files). Two review-driven deviations from the draft, both correctness fixes:
+
+- **Task 2 fix** (`20260724125000`): the 6 legacy `tag_relations` rows were `relation_type='distinct_from'` — anti-merge guards for confusable concepts, not hierarchy. Folding them to `related` would have let P1 dedup merge Trans↔Non-Binary etc. Preserved as **5 canonical pairs** in `tag_relationship_exclusions` (two were the same unordered pair); `tag_relations` emptied for clean rebuild. New load-bearing invariant added to the design: the P1 dedup proposer MUST consult `tag_relationship_exclusions`.
+- **Task 3 fix** (`20260724135000`): a pre-existing `BEFORE UPDATE` trigger (`log_unified_tag_change`) forbids `system:%` actors from modifying **human-reviewed** tags. 718 of the 1,586 zero-usage candidates are human-reviewed. Baked a permanent `human_reviewed=false` filter into `deprecate_unused_tags` (auto-prune must never override human curation) and pruned only the **868 non-curated** dead tags. The 718 stay active as a human/cockpit decision, surfaced via the new `human_reviewed_unused` health metric.
+
+Final `tag_ontology_health()`: active **4,421 → 3,553**, deprecated 5,384, `active_zero_usage` 0, `human_reviewed_unused` 718, facet_coverage 2,808 across 6 facets, labels 15,187, exclusions 5, curated_edges 0 (P2 populates), **dedup_backlog_hi 473** (the P1 work queue). All deprecations logged in `tag_change_log` and reversible via `restore_deprecated_tag`.
+
 ## P0 done — definition of done
 
 - `tag_facets` view exists, populated, facet vocab normalized (no `venues`/`news_article` leakage). ✅ unification substrate
