@@ -54,7 +54,7 @@ export async function getEmailBranding(): Promise<EmailBranding> {
           ? email.from_address
           : DEFAULTS.from_address,
       logo_url:
-        typeof email.logo_url === 'string' && /^https:\/\/[^\s"'<>]{1,300}$/.test(email.logo_url)
+        typeof email.logo_url === 'string' && /^https:\/\/[^\s"'<>]{1,255}$/.test(email.logo_url)
           ? email.logo_url
           : undefined,
       wrapper_bg: HEX_RE.test(email.wrapper_bg ?? '') ? email.wrapper_bg : DEFAULTS.wrapper_bg,
