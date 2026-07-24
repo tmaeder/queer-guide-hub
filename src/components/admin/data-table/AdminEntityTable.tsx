@@ -15,6 +15,8 @@ export interface AdminEntityTableProps<TData extends { id: string }> {
   config: AdminTableConfig<TData>;
   beforeTable?: ReactNode;
   afterTable?: ReactNode;
+  /** Right-aligned actions in the page header row (links, secondary buttons). */
+  headerActions?: ReactNode;
   skipAuthGuard?: boolean;
 }
 
@@ -26,6 +28,7 @@ export function AdminEntityTable<TData extends { id: string }>({
   config,
   beforeTable,
   afterTable,
+  headerActions,
   skipAuthGuard = false,
 }: AdminEntityTableProps<TData>) {
   const navigate = useNavigate();
@@ -65,6 +68,7 @@ export function AdminEntityTable<TData extends { id: string }>({
             <p className="text-sm text-muted-foreground">{subtitle}</p>
           )}
         </div>
+        {headerActions && <div className="ml-auto">{headerActions}</div>}
       </div>
 
       {beforeTable}

@@ -28,24 +28,28 @@ type Tab =
   | 'geo-mismatch'
   | 'dedup' | 'scraper-health' | 'audit' | 'integrations' | 'backfills';
 
-const TABS: { key: Tab; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
-  { key: 'overview',       label: 'Overview',   icon: LayoutDashboard },
-  { key: 'builder',        label: 'Builder',    icon: Workflow },
-  { key: 'monitor',        label: 'Monitor',    icon: BarChart3 },
-  { key: 'sources',        label: 'Sources',    icon: Plug },
-  { key: 'dedup',          label: 'Dedup',      icon: Merge },
-  { key: 'geo-review',     label: 'Geo Review', icon: GitMerge },
-  { key: 'geo-mismatch',   label: 'Geo Mismatch', icon: MapPin },
-  { key: 'dlq',            label: 'DLQ',        icon: AlertTriangle },
-  { key: 'errors',         label: 'Errors',     icon: Bug },
-  { key: 'alerts',         label: 'Alerts',     icon: Bell },
-  { key: 'coverage',       label: 'Coverage',   icon: Map },
-  { key: 'news',           label: 'News',       icon: Newspaper },
-  { key: 'health',         label: 'Health',     icon: Shield },
-  { key: 'scraper-health', label: 'Scraper',    icon: Activity },
-  { key: 'audit',          label: 'Audit',      icon: History },
-  { key: 'integrations',   label: 'Integrations', icon: Webhook },
-  { key: 'backfills',      label: 'Backfills',  icon: Wrench },
+type TabGroup = 'Run' | 'Monitor' | 'Quality' | 'Config';
+
+// Ordered into four clusters so the 17-tab bar reads as labeled groups rather
+// than a flat wall. Order within the array is the render order.
+const TABS: { key: Tab; label: string; icon: React.ComponentType<{ className?: string }>; group: TabGroup }[] = [
+  { key: 'overview',       label: 'Overview',   icon: LayoutDashboard, group: 'Run' },
+  { key: 'builder',        label: 'Builder',    icon: Workflow,        group: 'Run' },
+  { key: 'backfills',      label: 'Backfills',  icon: Wrench,          group: 'Run' },
+  { key: 'monitor',        label: 'Monitor',    icon: BarChart3,       group: 'Monitor' },
+  { key: 'health',         label: 'Health',     icon: Shield,          group: 'Monitor' },
+  { key: 'scraper-health', label: 'Scraper',    icon: Activity,        group: 'Monitor' },
+  { key: 'alerts',         label: 'Alerts',     icon: Bell,            group: 'Monitor' },
+  { key: 'errors',         label: 'Errors',     icon: Bug,             group: 'Monitor' },
+  { key: 'dlq',            label: 'DLQ',        icon: AlertTriangle,   group: 'Monitor' },
+  { key: 'audit',          label: 'Audit',      icon: History,         group: 'Monitor' },
+  { key: 'dedup',          label: 'Dedup',      icon: Merge,           group: 'Quality' },
+  { key: 'geo-review',     label: 'Geo Review', icon: GitMerge,        group: 'Quality' },
+  { key: 'geo-mismatch',   label: 'Geo Mismatch', icon: MapPin,        group: 'Quality' },
+  { key: 'coverage',       label: 'Coverage',   icon: Map,             group: 'Quality' },
+  { key: 'news',           label: 'News',       icon: Newspaper,       group: 'Quality' },
+  { key: 'sources',        label: 'Sources',    icon: Plug,            group: 'Config' },
+  { key: 'integrations',   label: 'Integrations', icon: Webhook,       group: 'Config' },
 ];
 
 const TAB_COMPONENTS: Record<Tab, React.LazyExoticComponent<React.ComponentType>> = {
@@ -121,32 +125,41 @@ export default function UnifiedDataOps() {
   return (
     <div>
       {/* Tab bar */}
-      <div className="flex border-b border-border overflow-x-auto" style={{ marginBottom: activeTab === 'builder' ? 0 : 20 }}>
-        {TABS.map(({ key, label, icon: Icon }) => {
+      <div className="flex items-stretch border-b border-border overflow-x-auto" style={{ marginBottom: activeTab === 'builder' ? 0 : 20 }}>
+        {TABS.map(({ key, label, icon: Icon, group }, i) => {
           const isActive = activeTab === key;
+          const startsGroup = i === 0 || TABS[i - 1].group !== group;
           return (
-            <button
-              key={key}
-              role="tab"
-              aria-selected={isActive}
-              onClick={() => switchTab(key)}
-              className={`flex items-center gap-1.5 px-4 py-2.5 text-sm whitespace-nowrap border-b-2 transition-colors ${
-                isActive
-                  ? 'border-primary text-primary font-semibold'
-                  : 'border-transparent text-muted-foreground hover:text-foreground hover:border-muted-foreground/30'
-              }`}
-            >
-              <Icon className="h-[15px] w-[15px]" />
-              {label}
-            </button>
+            <div key={key} className="flex items-stretch">
+              {startsGroup && (
+                <span
+                  className={`flex items-center whitespace-nowrap text-2xs uppercase tracking-wide text-muted-foreground/70 ${i === 0 ? 'pr-2' : 'pl-4 pr-2'}`}
+                >
+                  {group}
+                </span>
+              )}
+              <button
+                role="tab"
+                aria-selected={isActive}
+                onClick={() => switchTab(key)}
+                className={`flex items-center gap-1.5 px-4 py-2.5 text-sm whitespace-nowrap border-b-2 transition-colors ${
+                  isActive
+                    ? 'border-primary text-primary font-semibold'
+                    : 'border-transparent text-muted-foreground hover:text-foreground hover:border-muted-foreground/30'
+                }`}
+              >
+                <Icon className="h-[15px] w-[15px]" />
+                {label}
+              </button>
+            </div>
           );
         })}
         <Link
-          to="/admin/review"
+          to="/admin/inbox"
           className="flex items-center gap-1.5 px-4 py-2.5 text-sm whitespace-nowrap text-muted-foreground hover:text-foreground transition-colors ml-auto"
         >
           <ClipboardCheck className="h-[15px] w-[15px]" />
-          Review Queue →
+          Inbox →
         </Link>
       </div>
 

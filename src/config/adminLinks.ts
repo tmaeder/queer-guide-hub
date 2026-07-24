@@ -30,8 +30,8 @@ export const adminLink = {
   /** The quality tab of an entity page. */
   quality: (type: string) => withParams(`/admin/content/${type}`, { tab: 'quality' }),
 
-  /** Unified review queue, optionally scoped to a tab. */
-  review: (tab?: string) => withParams('/admin/review', { tab }),
+  /** Unified inbox (absorbed /admin/review), optionally scoped to a queue tab. */
+  review: (tab?: string) => withParams('/admin/inbox', { tab }),
 
   /** Feedback board scoped to overdue items. */
   reviewOverdue: () => withParams('/admin/feedback', { status: 'overdue' }),

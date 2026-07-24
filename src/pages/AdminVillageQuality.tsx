@@ -1,7 +1,7 @@
 import { Link } from 'react-router';
 import { Button } from '@/components/ui/button';
 import { VillageQualityPanel } from '@/components/admin/VillageQualityPanel';
-import { VillageReviewQueue } from '@/components/admin/VillageReviewQueue';
+import { VillageReviewQueue } from '@/components/admin/review-queues/VillageReviewQueue';
 import { Table2 } from 'lucide-react';
 
 /**

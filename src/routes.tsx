@@ -92,6 +92,7 @@ const MilestonesAdmin = lazyRetry(() => import('./pages/admin/MilestonesAdmin'))
 const AdminMailbox = lazyRetry(() => import('./pages/admin/AdminMailbox'));
 const AdminVenueQuality = lazyRetry(() => import('./pages/AdminVenueQuality'));
 const AdminLiveness = lazyRetry(() => import('./pages/AdminLiveness'));
+const QualityHub = lazyRetry(() => import('./pages/admin/QualityHub'));
 const AdminMarketplaceQuality = lazyRetry(() => import('./pages/AdminMarketplaceQuality'));
 const AdminTwentyCrm = lazyRetry(() => import('./pages/AdminTwentyCrm'));
 const AdminMarketplaceGuides = lazyRetry(() => import('./pages/AdminMarketplaceGuides'));
@@ -123,7 +124,6 @@ const QueerVillageDetail = lazyRetry(() => import('./pages/QueerVillageDetail'))
 const AdminHotels = lazyRetry(() => import('./pages/AdminHotels'));
 const AdminQueerVillages = lazyRetry(() => import('./pages/AdminQueerVillages'));
 const AdminVillageQuality = lazyRetry(() => import('./pages/AdminVillageQuality'));
-const AdminReview = lazyRetry(() => import('./pages/AdminReview'));
 const AdminInbox = lazyRetry(() => import('./pages/AdminInbox'));
 const AdminAutomation = lazyRetry(() => import('./pages/AdminAutomation'));
 const AdminFeedback = lazyRetry(() => import('./pages/AdminFeedback'));
@@ -195,6 +195,12 @@ const PridePage = lazyRetry(() => import('./pages/Pride'));
 function SettingsRedirect() {
   const location = useLocation();
   return <Navigate to={`/settings${location.search}`} replace />;
+}
+
+/** /admin/review merged into /admin/inbox — preserve ?tab=/?queue= deep links. */
+function ReviewRedirect() {
+  const location = useLocation();
+  return <Navigate to={`/admin/inbox${location.search}`} replace />;
 }
 
 /** Maps the legacy /profile/footprint/:userId/public URL to the unified profile Travel tab. */
@@ -391,13 +397,13 @@ export const AppRoutes = () => {
                 <Route path="scraping" element={<Navigate to="/admin/pipelines?tab=sources" replace />} />
 
                 {/* Review & Workflow section -- unified dashboard */}
-                <Route path="review" element={<AdminReview />} />
+                <Route path="review" element={<ReviewRedirect />} />
                 <Route path="inbox" element={<AdminInbox />} />
                 <Route path="automation" element={<AdminAutomation />} />
                 <Route path="feedback" element={<AdminFeedback />} />
                 <Route
                   path="moderation"
-                  element={<Navigate to="/admin/review?tab=moderation" replace />}
+                  element={<Navigate to="/admin/inbox?tab=moderation" replace />}
                 />
                 <Route path="audit" element={<AuditLog />} />
                 <Route path="search-intelligence" element={<AdminSearchIntelligence />} />
@@ -409,11 +415,12 @@ export const AppRoutes = () => {
                 <Route path="affiliates" element={<Navigate to="/admin/affiliate?tab=partners" replace />} />
                 <Route
                   path="submissions"
-                  element={<Navigate to="/admin/review?tab=submissions" replace />}
+                  element={<Navigate to="/admin/inbox?tab=submissions" replace />}
                 />
 
                 {/* Content type admin pages */}
                 <Route path="content/venue-quality" element={<AdminVenueQuality />} />
+                <Route path="quality" element={<QualityHub />} />
                 <Route path="content/liveness" element={<AdminLiveness />} />
                 <Route path="content/event-quality" element={<AdminEventQuality />} />
                 <Route path="content/city-quality" element={<AdminCityQuality />} />

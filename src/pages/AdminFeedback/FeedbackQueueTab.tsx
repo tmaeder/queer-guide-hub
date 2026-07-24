@@ -17,7 +17,7 @@ import type { useFeedbackUrlState } from '@/hooks/useFeedbackUrlState';
 
 type UrlState = ReturnType<typeof useFeedbackUrlState>;
 
-interface TriageTabProps {
+interface FeedbackQueueTabProps {
   state: UrlState['state'];
   update: UrlState['update'];
   clearFilters: UrlState['clearFilters'];
@@ -57,7 +57,7 @@ interface TriageTabProps {
   mutationsLoading: boolean;
 }
 
-export function TriageTab({
+export function FeedbackQueueTab({
   state,
   update,
   clearFilters,
@@ -93,7 +93,7 @@ export function TriageTab({
   onAddSelectionToStory,
   onAutoTitle,
   mutationsLoading,
-}: TriageTabProps) {
+}: FeedbackQueueTabProps) {
   return (
     <>
       <div className="flex items-center gap-2 flex-wrap mb-4">

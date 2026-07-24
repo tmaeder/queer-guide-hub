@@ -23,7 +23,7 @@ interface Props {
   onResolutionChange: (resolution: FeedbackResolution | null) => void;
 }
 
-export function DrawerTriageBar({
+export function FeedbackDrawerActionBar({
   status,
   priority,
   assigneeId,
