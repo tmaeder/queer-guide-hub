@@ -1,7 +1,7 @@
 import { Link } from 'react-router';
 import { Button } from '@/components/ui/button';
 import { PersonalityQualityPanel } from '@/components/admin/PersonalityQualityPanel';
-import { PersonalityReviewQueue } from '@/components/admin/PersonalityReviewQueue';
+import { PersonalityReviewQueue } from '@/components/admin/review-queues/PersonalityReviewQueue';
 import { Table2 } from 'lucide-react';
 
 /**
