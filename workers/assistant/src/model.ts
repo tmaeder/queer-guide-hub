@@ -6,7 +6,9 @@
 
 import type { Env, AiMessage, ToolDef, ModelResult, ToolCall } from "./types";
 
-const MAX_TOKENS = 1024;
+// Bound worst-case 70B output cost per turn (cost control, invoice IN-72568830).
+// A concierge reply + tool args fit comfortably in 512.
+const MAX_TOKENS = 512;
 
 // The @cloudflare/workers-types Ai.run overloads don't cover dynamic model ids +
 // the tools input cleanly, so call through a minimal structural type.
