@@ -13,12 +13,14 @@ export const LH_RE = /^\d+(\.\d+)?(rem)?$/;
 export const TRACKING_RE = /^-?\d+(\.\d+)?em$/;
 export const TRANSITION_RE = /^[a-z0-9 .,()-]{1,120}$/;
 export const HEX_RE = /^#[0-9a-fA-F]{6}$/;
-export const URL_RE = /^(https:\/\/|\/)[^\s"'<>]{1,300}$/;
-export const HTTPS_URL_RE = /^https:\/\/[^\s"'<>]{1,300}$/;
+// URL length capped at 255: PostgreSQL regex bounds max out at 255, so the DB
+// branding_validate uses {1,255}. Mirror it here so the client rejects the same.
+export const URL_RE = /^(https:\/\/|\/)[^\s"'<>]{1,255}$/;
+export const HTTPS_URL_RE = /^https:\/\/[^\s"'<>]{1,255}$/;
 export const HANDLE_RE = /^@\w{1,30}$/;
 export const EMAIL_RE = /^[^@\s"<>]+@[^@\s"<>]+\.[^@\s"<>]+$/;
 export const FONT_URL_RE =
-  /^(https:\/\/xqeacpakadqfxjxjcewc\.supabase\.co\/storage\/v1\/object\/public\/brand\/|\/fonts\/)[^\s"'<>]{1,300}\.woff2$/;
+  /^(https:\/\/xqeacpakadqfxjxjcewc\.supabase\.co\/storage\/v1\/object\/public\/brand\/|\/fonts\/)[^\s"'<>]{1,255}\.woff2$/;
 export const FAMILY_RE = /^[A-Za-z0-9 _-]{1,60}$/;
 export const WEIGHT_RE = /^[1-9]00( [1-9]00)?$/;
 

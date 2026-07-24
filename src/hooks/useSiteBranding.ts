@@ -28,7 +28,7 @@ export function useSiteBranding(): PublicBranding {
         const meta = r.published?.meta ?? {};
         const siteName = typeof meta.site_name === 'string' && meta.site_name.length <= 300 ? meta.site_name : undefined;
         const logoUrl =
-          typeof meta.org_logo_url === 'string' && /^(https:\/\/|\/)[^\s"'<>]{1,300}$/.test(meta.org_logo_url)
+          typeof meta.org_logo_url === 'string' && /^(https:\/\/|\/)[^\s"'<>]{1,255}$/.test(meta.org_logo_url)
             ? meta.org_logo_url
             : undefined;
         return { siteName, logoUrl };

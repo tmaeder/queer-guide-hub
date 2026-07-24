@@ -79,13 +79,14 @@ const LH_RE = /^\d+(\.\d+)?(rem)?$/;
 const TRACKING_RE = /^-?\d+(\.\d+)?em$/;
 const TRANSITION_RE = /^[a-z0-9 .,()-]{1,120}$/;
 const HEX_RE = /^#[0-9a-fA-F]{6}$/;
-const URL_RE = /^(https:\/\/|\/)[^\s"'<>]{1,300}$/;
+// {1,255}: mirrors the DB branding_validate (Postgres regex bounds cap at 255).
+const URL_RE = /^(https:\/\/|\/)[^\s"'<>]{1,255}$/;
 const HANDLE_RE = /^@\w{1,30}$/;
 
 // Fonts — mirror of branding_validate. Host is hardcoded (our storage bucket
 // or a site-relative /fonts/ path); only woff2.
 const FONT_URL_RE =
-  /^(https:\/\/xqeacpakadqfxjxjcewc\.supabase\.co\/storage\/v1\/object\/public\/brand\/|\/fonts\/)[^\s"'<>]{1,300}\.woff2$/;
+  /^(https:\/\/xqeacpakadqfxjxjcewc\.supabase\.co\/storage\/v1\/object\/public\/brand\/|\/fonts\/)[^\s"'<>]{1,255}\.woff2$/;
 const FAMILY_RE = /^[A-Za-z0-9 _-]{1,60}$/;
 const WEIGHT_RE = /^[1-9]00( [1-9]00)?$/;
 const FONT_SLOTS = ['display', 'sans'] as const;
@@ -210,7 +211,7 @@ export function brandingMeta(doc: BrandingDoc | null): NonNullable<BrandingDoc['
     theme_color_dark: str(m.theme_color_dark, HEX_RE, 7),
     org_logo_url: str(m.org_logo_url, URL_RE),
     org_sameas: Array.isArray(m.org_sameas)
-      ? m.org_sameas.filter((u): u is string => typeof u === 'string' && /^https:\/\/[^\s"'<>]{1,300}$/.test(u)).slice(0, 20)
+      ? m.org_sameas.filter((u): u is string => typeof u === 'string' && /^https:\/\/[^\s"'<>]{1,255}$/.test(u)).slice(0, 20)
       : undefined,
   };
 }
