@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { Link } from 'react-router';
 import { useCentralizedTags } from '@/hooks/useCentralizedTags';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -58,6 +59,17 @@ interface TagRow {
 }
 
 const columnHelper = createColumnHelper<TagRow>();
+
+const TAXONOMY_PAGES: Array<{ label: string; route: string }> = [
+  { label: 'Venue categories', route: '/admin/settings/venue-categories' },
+  { label: 'Venue services', route: '/admin/settings/venue-services' },
+  { label: 'Event types', route: '/admin/settings/event-types' },
+  { label: 'Event amenities', route: '/admin/settings/event-amenities' },
+  { label: 'Event services', route: '/admin/settings/event-services' },
+  { label: 'Accessibility attributes', route: '/admin/settings/accessibility' },
+  { label: 'Target groups', route: '/admin/settings/target-groups' },
+  { label: 'Professions', route: '/admin/settings/professions' },
+];
 
 export default function AdminTags() {
   const { categoriesTree, createTag, updateTag, deleteTag, allTags: tags } = useCentralizedTags();
@@ -450,6 +462,18 @@ export default function AdminTags() {
       config={tableConfig}
       beforeTable={
         <>
+          <div className="mb-6 rounded-element border border-border p-4">
+            <p className="text-2xs uppercase tracking-wide text-muted-foreground mb-2">
+              Other taxonomies
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {TAXONOMY_PAGES.map((p) => (
+                <Button key={p.route} variant="outline" size="sm" asChild>
+                  <Link to={p.route}>{p.label}</Link>
+                </Button>
+              ))}
+            </div>
+          </div>
           <TagQualityPanel />
           <SensitiveTagReviewPanel />
           <TagSuggestionsReviewPanel />

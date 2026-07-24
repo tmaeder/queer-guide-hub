@@ -1,7 +1,7 @@
 import { Link } from 'react-router';
 import { Button } from '@/components/ui/button';
 import { CityQualityPanel } from '@/components/admin/CityQualityPanel';
-import { CityReviewQueue } from '@/components/admin/CityReviewQueue';
+import { CityReviewQueue } from '@/components/admin/review-queues/CityReviewQueue';
 import { Table2 } from 'lucide-react';
 
 /**

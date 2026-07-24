@@ -1,7 +1,7 @@
 import { Link } from 'react-router';
 import { Button } from '@/components/ui/button';
 import { AmenityQualityPanel } from '@/components/admin/AmenityQualityPanel';
-import { VenueReviewQueue } from '@/components/admin/VenueReviewQueue';
+import { VenueReviewQueue } from '@/components/admin/review-queues/VenueReviewQueue';
 import { Table2 } from 'lucide-react';
 
 /**

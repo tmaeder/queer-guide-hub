@@ -25,7 +25,6 @@ import {
   FileText,
   Image,
   Download,
-  ClipboardCheck,
   Settings,
   Mail,
   Link2,
@@ -41,6 +40,9 @@ import {
   Palette,
   Award,
   CopyCheck,
+  PenLine,
+  UserPlus,
+  ShieldCheck,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import type { AdminRole } from '@/config/adminRoles';
@@ -102,12 +104,6 @@ export const adminNavSections: AdminNavSection[] = [
         label: 'Inbox',
         icon: Inbox,
         route: '/admin/inbox',
-      },
-      {
-        id: 'review-queue',
-        label: 'Review Queue',
-        icon: ClipboardCheck,
-        route: '/admin/review',
       },
       {
         id: 'feedback',
@@ -173,10 +169,10 @@ export const adminNavSections: AdminNavSection[] = [
         group: 'Places',
       },
       {
-        id: 'liveness',
-        label: 'Liveness & closure',
-        icon: Flag,
-        route: '/admin/content/liveness',
+        id: 'quality',
+        label: 'Quality',
+        icon: ShieldCheck,
+        route: '/admin/quality',
       },
       {
         id: 'events',
@@ -206,7 +202,7 @@ export const adminNavSections: AdminNavSection[] = [
         id: 'hotels',
         label: 'Hotels & BnBs',
         icon: Hotel,
-        route: '/admin/content/hotels',
+        route: '/admin/hotels',
         countTable: 'hotels',
         group: 'Places',
       },
@@ -214,7 +210,7 @@ export const adminNavSections: AdminNavSection[] = [
         id: 'villages',
         label: 'Queer Villages',
         icon: Home,
-        route: '/admin/content/queer_villages',
+        route: '/admin/villages',
         countTable: 'queer_villages',
         group: 'Places',
       },
@@ -241,6 +237,14 @@ export const adminNavSections: AdminNavSection[] = [
         icon: UsersRound,
         route: '/admin/content/community_groups',
         countTable: 'community_groups',
+        group: 'People',
+      },
+      {
+        id: 'group-requests',
+        label: 'Group Requests',
+        icon: UserPlus,
+        route: '/admin/content/group-requests',
+        reviewCountKey: 'review_group_requests',
         group: 'People',
       },
       // Editorial
@@ -274,6 +278,13 @@ export const adminNavSections: AdminNavSection[] = [
         icon: Flag,
         route: '/admin/quests',
         countTable: 'quests',
+        group: 'Editorial',
+      },
+      {
+        id: 'places-editorial',
+        label: 'Editorial Drafts',
+        icon: PenLine,
+        route: '/admin/places-editorial',
         group: 'Editorial',
       },
       {
@@ -446,7 +457,7 @@ export const adminNavSections: AdminNavSection[] = [
       },
       {
         id: 'settings',
-        label: 'Settings',
+        label: 'Taxonomies',
         icon: Settings,
         route: '/admin/settings',
       },

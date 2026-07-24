@@ -1,7 +1,7 @@
 import { Link } from 'react-router';
 import { Button } from '@/components/ui/button';
 import { MarketplaceTagQualityPanel } from '@/components/admin/MarketplaceTagQualityPanel';
-import { MarketplaceReviewQueue } from '@/components/admin/MarketplaceReviewQueue';
+import { MarketplaceReviewQueue } from '@/components/admin/review-queues/MarketplaceReviewQueue';
 import { MarketplacePruneCard } from '@/components/admin/MarketplacePruneCard';
 import { Table2 } from 'lucide-react';
 

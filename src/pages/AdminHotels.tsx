@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { Link } from 'react-router';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -390,6 +391,11 @@ export default function AdminHotels() {
       title="Hotels & BnBs"
       subtitle="Manage LGBTQ+ friendly accommodations"
       backHref={null}
+      headerActions={
+        <Button variant="outline" size="sm" asChild>
+          <Link to="/admin/content/hotels">Raw content list</Link>
+        </Button>
+      }
       config={tableConfig}
       afterTable={
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
