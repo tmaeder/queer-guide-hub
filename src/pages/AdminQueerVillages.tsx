@@ -1,5 +1,6 @@
 import { slugify } from '@/lib/slugify';
 import { useState, useEffect, useMemo } from 'react';
+import { Link } from 'react-router';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -438,6 +439,11 @@ export default function AdminQueerVillages() {
       title="Queer Villages"
       subtitle="Manage LGBTQ+ neighborhoods and districts"
       backHref={null}
+      headerActions={
+        <Button variant="outline" size="sm" asChild>
+          <Link to="/admin/content/queer_villages">Raw content list</Link>
+        </Button>
+      }
       config={tableConfig}
       afterTable={
         <>

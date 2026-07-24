@@ -24,12 +24,18 @@ export const ADMIN_AREA_DESCRIPTIONS: Record<string, string> = {
   '/admin/content/cities': 'Cities. Edit details and merge name-variant duplicates.',
   '/admin/content/countries': 'Countries. Edit metadata, safety, and equality data.',
   '/admin/content/hotels': 'Hotels and BnBs. Edit listings and amenities.',
+  '/admin/hotels':
+    'Hotels and BnBs. Edit listings, amenities, and regenerate safety notes from signals.',
   '/admin/content/queer_villages': 'Queer villages and neighborhoods. Edit listings.',
+  '/admin/villages': 'Queer villages and neighborhoods. Edit listings, scores, and venue links.',
   '/admin/content/marketplace_listings':
     'Marketplace products. Edit listings, prices, and affiliate links.',
   '/admin/marketplace/guides': 'Marketplace guides. Curate product roundups.',
   '/admin/venue-guides': 'Venue guides. Curate place roundups.',
   '/admin/content/community_groups': 'Community groups. Edit listings and details.',
+  '/admin/content/group-requests': 'Group join requests. Approve or reject pending members.',
+  '/admin/places-editorial':
+    'Editorial drafts. Review LLM-written hooks, rails, and covers before publish.',
   '/admin/quests': 'Editorial quests. Manage content-improvement tasks.',
   '/admin/content/unified_tags': 'Tags. Manage the taxonomy, merge duplicates, prune orphans.',
   '/admin/content/cms_pages': 'CMS pages. Edit static and editorial pages.',
