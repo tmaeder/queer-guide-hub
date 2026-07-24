@@ -1,10 +1,10 @@
 {
-  "generated_at": "2026-07-23T18:00:36.899Z",
+  "generated_at": "2026-07-24T04:06:26.782Z",
   "token_count": 89,
   "usage": [
     {
       "token": "muted-foreground",
-      "count": 3342
+      "count": 3349
     },
     {
       "token": "foreground",
@@ -20,11 +20,11 @@
     },
     {
       "token": "radius-element",
-      "count": 840
+      "count": 843
     },
     {
       "token": "text-13",
-      "count": 591
+      "count": 604
     },
     {
       "token": "background",
@@ -32,11 +32,11 @@
     },
     {
       "token": "text-2xs",
-      "count": 546
+      "count": 549
     },
     {
       "token": "destructive",
-      "count": 439
+      "count": 442
     },
     {
       "token": "radius-badge",
@@ -60,7 +60,7 @@
     },
     {
       "token": "text-title",
-      "count": 136
+      "count": 140
     },
     {
       "token": "text-15",
@@ -76,7 +76,7 @@
     },
     {
       "token": "text-headline",
-      "count": 85
+      "count": 86
     },
     {
       "token": "text-body-lg",
@@ -392,6 +392,131 @@
   ],
   "eslint": {
     "design_rule_suppressions": 0
+  },
+  "color_literals": {
+    "total": 262,
+    "files": [
+      {
+        "file": "src/hooks/useRiskVisual.ts",
+        "count": 24
+      },
+      {
+        "file": "src/utils/equalityScore.ts",
+        "count": 18
+      },
+      {
+        "file": "src/components/country/SDGDataPanel.tsx",
+        "count": 17
+      },
+      {
+        "file": "src/pages/PatternLibrary/patterns/desktop.tsx",
+        "count": 14
+      },
+      {
+        "file": "src/hooks/useExploreMapData.ts",
+        "count": 13
+      },
+      {
+        "file": "src/hooks/useMapBoundaryLayers.ts",
+        "count": 11
+      },
+      {
+        "file": "src/components/country/SafetyAlertBanner.tsx",
+        "count": 10
+      },
+      {
+        "file": "src/config/submissionRegistry.ts",
+        "count": 9
+      },
+      {
+        "file": "src/components/pride/PrideMap.tsx",
+        "count": 8
+      },
+      {
+        "file": "src/pages/cities/CitiesMapPane.tsx",
+        "count": 7
+      },
+      {
+        "file": "src/components/auth/PasswordStrengthMeter.tsx",
+        "count": 6
+      },
+      {
+        "file": "src/components/country/WorldBankDataPanel.tsx",
+        "count": 6
+      },
+      {
+        "file": "src/components/map/EntityMap.tsx",
+        "count": 6
+      },
+      {
+        "file": "src/index.css",
+        "count": 6
+      },
+      {
+        "file": "src/pages/PatternLibrary/pattern-library.css",
+        "count": 6
+      },
+      {
+        "file": "src/pages/trips/SharedTripPage.tsx",
+        "count": 6
+      },
+      {
+        "file": "src/components/events/EventsMapView.tsx",
+        "count": 5
+      },
+      {
+        "file": "src/components/hotels/HotelsMap.tsx",
+        "count": 5
+      },
+      {
+        "file": "src/components/map/PersonalitiesMap.tsx",
+        "count": 5
+      },
+      {
+        "file": "src/config/workflowConfig.ts",
+        "count": 5
+      },
+      {
+        "file": "src/lib/avatar.ts",
+        "count": 5
+      },
+      {
+        "file": "src/components/admin/design/BrandAssetsTab.tsx",
+        "count": 4
+      },
+      {
+        "file": "src/components/map/clusterDonut.ts",
+        "count": 4
+      },
+      {
+        "file": "src/components/personalities/AddPersonalityDialog.tsx",
+        "count": 4
+      },
+      {
+        "file": "src/components/tags/TagLinkedContent.tsx",
+        "count": 4
+      },
+      {
+        "file": "src/components/trips/TripNudgesBanner.tsx",
+        "count": 4
+      },
+      {
+        "file": "src/components/location/LocationInfo.tsx",
+        "count": 3
+      },
+      {
+        "file": "src/components/map/hooks/usePointLayers.ts",
+        "count": 3
+      },
+      {
+        "file": "src/components/submission/FlyerScanResults.tsx",
+        "count": 3
+      },
+      {
+        "file": "src/components/trips/TripMap.tsx",
+        "count": 3
+      }
+    ]
   },
   "docs": {
     "missing_from_docs": [

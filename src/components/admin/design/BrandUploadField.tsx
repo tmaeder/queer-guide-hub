@@ -50,6 +50,11 @@ export function BrandUploadField({
       const {
         data: { publicUrl },
       } = supabase.storage.from('brand').getPublicUrl(data.path);
+      // Replaced a previous brand-bucket upload? Remove the orphaned object.
+      const oldPath = value.match(/\/storage\/v1\/object\/public\/brand\/(.+)$/)?.[1];
+      if (oldPath && oldPath !== data.path) {
+        void supabase.storage.from('brand').remove([decodeURIComponent(oldPath)]);
+      }
       onChange(publicUrl);
       toast.success('Uploaded');
     } catch (err) {

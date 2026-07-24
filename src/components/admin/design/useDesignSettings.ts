@@ -87,7 +87,12 @@ export function useDesignSettings() {
   const saveDraft = useMutation({
     mutationFn: async () => {
       const doc = pruneDoc(draft);
-      const { error } = await untypedRpc('branding_save_draft', { p_doc: doc });
+      // Optimistic concurrency: a second admin's newer save turns this into a
+      // "draft changed — reload" error instead of a silent clobber.
+      const { error } = await untypedRpc('branding_save_draft', {
+        p_doc: doc,
+        p_expected_updated_at: query.data?.updated_at ?? null,
+      });
       if (error) throw new Error(error.message);
       return doc;
     },
@@ -101,7 +106,10 @@ export function useDesignSettings() {
     mutationFn: async (note: string) => {
       // Persist the local buffer first so publish always ships what's on screen.
       const doc = pruneDoc(draft);
-      const { error: draftError } = await untypedRpc('branding_save_draft', { p_doc: doc });
+      const { error: draftError } = await untypedRpc('branding_save_draft', {
+        p_doc: doc,
+        p_expected_updated_at: query.data?.updated_at ?? null,
+      });
       if (draftError) throw new Error(draftError.message);
       const previousVersion = query.data?.published_version ?? 0;
       const { data, error } = await untypedRpc<number>('branding_publish', { p_note: note || null });
@@ -114,15 +122,13 @@ export function useDesignSettings() {
       await adminAction({
         label: `Published branding v${newVersion}`,
         perform: () => undefined,
-        // Undo re-publishes the previous version (only possible if one exists).
-        undo:
-          previousVersion >= 1
-            ? async () => {
-                const { error } = await untypedRpc('branding_revert', { p_version: previousVersion });
-                if (error) throw new Error(error.message);
-                await invalidate();
-              }
-            : undefined,
+        // Undo re-publishes the previous version. Version 0 (stock, empty doc)
+        // is seeded by migration, so even the first publish is undoable.
+        undo: async () => {
+          const { error } = await untypedRpc('branding_revert', { p_version: previousVersion });
+          if (error) throw new Error(error.message);
+          await invalidate();
+        },
       });
     },
   });

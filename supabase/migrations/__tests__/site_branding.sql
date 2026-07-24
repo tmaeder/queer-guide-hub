@@ -107,4 +107,27 @@ begin
   raise notice 'OK: branding_publish gated';
 end $$;
 
+-- Hardening (20260724040256): version-0 stock anchor + optimistic save guard
+do $$
+declare v_doc jsonb;
+begin
+  select doc into v_doc from public.site_branding_versions where version = 0;
+  if v_doc is null then
+    raise exception 'FAIL: version 0 (stock anchor) not seeded';
+  end if;
+  if v_doc <> '{}'::jsonb then
+    raise exception 'FAIL: version 0 must be the empty doc';
+  end if;
+  raise notice 'OK: version 0 stock anchor present';
+end $$;
+
+do $$
+begin
+  if (select count(*) from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+      where n.nspname = 'public' and p.proname = 'branding_save_draft') <> 1 then
+    raise exception 'FAIL: branding_save_draft must have exactly one signature (jsonb, timestamptz)';
+  end if;
+  raise notice 'OK: single branding_save_draft overload';
+end $$;
+
 rollback;

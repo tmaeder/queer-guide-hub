@@ -87,6 +87,20 @@ for (const text of contents) {
 }
 
 // ---------------------------------------------------------------------------
+// 3b. Hardcoded color literals per file (heuristic — ESLint is the enforcer;
+// this surfaces WHERE the functional-exception usage lives and catches drift)
+// ---------------------------------------------------------------------------
+const LITERAL_RE = /["'`]#[0-9a-fA-F]{6}\b|rgba?\(\s*\d|hsla?\(\s*\d/g;
+const colorLiteralFiles = files
+  .map((f, i) => ({
+    file: f.slice(root.length + 1),
+    count: (contents[i].match(LITERAL_RE) ?? []).length,
+  }))
+  .filter((e) => e.count > 0)
+  .sort((a, b) => b.count - a.count);
+const colorLiteralTotal = colorLiteralFiles.reduce((n, e) => n + e.count, 0);
+
+// ---------------------------------------------------------------------------
 // 4. Doc drift vs docs/design-system/README.md
 // ---------------------------------------------------------------------------
 let docTokens = [];
@@ -110,6 +124,7 @@ const artifact = {
   usage: usage.sort((a, b) => b.count - a.count),
   unused: usage.filter((u) => u.count === 0).map((u) => u.token),
   eslint: { design_rule_suppressions: suppressions },
+  color_literals: { total: colorLiteralTotal, files: colorLiteralFiles.slice(0, 30) },
   docs: { missing_from_docs: missingFromDocs, stale_in_docs: staleInDocs },
 };
 
