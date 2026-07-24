@@ -172,4 +172,5 @@ export const milestoneContentType: ContentTypeConfig = {
   ],
   // Preserves the pre-registry All-content set (milestones were never listed there).
   admin: { includeInAllContent: false },
+  publicPath: (row) => (row.slug ? `/history/${row.slug}` : null),
 };

@@ -59,6 +59,9 @@ export function useSearchTelemetry() {
 	const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
 	useEffect(() => {
+		// Suppress view telemetry when the page is rendered inside the CMS
+		// live-preview iframe (?preview=1) — those aren't real audience views.
+		if (new URLSearchParams(location.search).get('preview') === '1') return;
 		if (timer.current) clearTimeout(timer.current);
 		timer.current = setTimeout(() => {
 			void fireView(location.pathname, user?.id ?? null);
@@ -66,7 +69,7 @@ export function useSearchTelemetry() {
 		return () => {
 			if (timer.current) clearTimeout(timer.current);
 		};
-	}, [location.pathname, user?.id]);
+	}, [location.pathname, location.search, user?.id]);
 }
 
 /** Provider variant — for places that prefer wrapping children. */

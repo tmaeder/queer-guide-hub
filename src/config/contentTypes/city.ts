@@ -132,4 +132,5 @@ export const cityContentType: ContentTypeConfig = {
   translatableFields: ['name', 'description'],
   commentable: true,
   admin: { qualityRoute: '/admin/content/city-quality' },
+  publicPath: (row) => (row.slug ? `/city/${row.slug}` : null),
 };

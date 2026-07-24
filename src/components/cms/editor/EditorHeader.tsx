@@ -21,16 +21,10 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { CannedResponsePicker } from '@/components/admin/triage/CannedResponsePicker';
 import { SaveButton } from './SaveButton';
+import { PreviewPanel } from './PreviewPanel';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 
@@ -418,77 +412,14 @@ export function EditorHeader({
         </TooltipProvider>
       </div>
 
-      {/* Preview Dialog */}
-      <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
-        <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
-          <DialogHeader className="border-b border-border pb-4">
-            <DialogTitle className="flex items-center gap-4">
-              <Eye size={20} style={{ opacity: 0.6 }} />
-              <span className="font-semibold">Content Preview</span>
-            </DialogTitle>
-          </DialogHeader>
-          <div className="py-6 flex flex-col gap-4">
-            <div>
-              <p
-                className="text-xs font-semibold uppercase"
-                style={{ color: contentType.color, letterSpacing: '0.5px' }}
-              >
-                {contentType.label.singular}
-              </p>
-              <h4 className="text-2xl font-bold mt-1">{displayTitle}</h4>
-            </div>
-
-            <hr className="border-border" />
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {contentType.fields
-                .filter((f) => !f.hidden && state.data[f.name] != null && state.data[f.name] !== '')
-                .map((field) => {
-                  const value = state.data[field.name];
-                  let displayValue: string;
-
-                  if (typeof value === 'boolean') {
-                    displayValue = value ? 'Yes' : 'No';
-                  } else if (typeof value === 'object') {
-                    displayValue = JSON.stringify(value, null, 2);
-                  } else {
-                    displayValue = String(value);
-                  }
-
-                  return (
-                    <div
-                      key={field.name}
-                      className={field.colSpan === 2 ? 'col-span-full' : undefined}
-                    >
-                      <p className="text-xs text-muted-foreground font-semibold uppercase">
-                        {field.label}
-                      </p>
-                      <p
-                        className={cn(
-                          'mt-0.5 break-words',
-                          field.type === 'json'
-                            ? 'whitespace-pre-wrap font-mono text-xs'
-                            : 'text-sm',
-                        )}
-                      >
-                        {displayValue}
-                      </p>
-                    </div>
-                  );
-                })}
-            </div>
-          </div>
-          <DialogFooter className="border-t border-border pt-4">
-            <Button
-              variant="ghost"
-              onClick={() => setPreviewOpen(false)}
-              className="font-medium normal-case"
-            >
-              Close Preview
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {/* Live preview — real public route in an iframe */}
+      <PreviewPanel
+        open={previewOpen}
+        onOpenChange={setPreviewOpen}
+        contentType={contentType}
+        row={state.data}
+        isSaving={state.isSaving}
+      />
     </div>
   );
 }
