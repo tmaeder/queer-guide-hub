@@ -77,6 +77,8 @@ Structure never mutates silently. Every proposer writes a **signal** into `tag_q
 - **auto-apply (conservative):** embedding cosine > 0.97 exact-dup merges; Wikidata P279 `broader` edges. Every such write is reversible (`status`, audit row).
 - **review-gated:** all other merges, hierarchy conflicts, ambiguous labels, cross-facet collapses → `tag_review_queue`.
 
+**Anti-merge invariant (load-bearing, discovered in P0 Task 2 review):** the semantic-dedup proposer MUST consult **`tag_relationship_exclusions`** `(tag1_id, tag2_id, reason)` before proposing *any* merge and skip excluded pairs — these are curated "confusable but distinct, do not merge" guards (e.g. Trans/Non-Binary, HIV/AIDS, Non-Binary/Intersex). Embedding-NN alone will rate these as near-duplicates; without the exclusion check the engine would collapse distinct identity concepts, which is exactly the harm the guards exist to prevent. P0 seeded this table with 6 legacy `distinct_from` pairs that had been misfiled in `tag_relations`. The cockpit's "split/keep-distinct" action writes here.
+
 Support tables mirror the other engines: `tag_field_provenance` (per-field winning source), `tag_ontology_audit` (every merge/edge decision), `tag_coverage_gaps` (orphan concepts with no `broader`, thin facets, high-usage unaligned concepts), `tags_due_for_review(limit)` selector (empty/never-reviewed/broken-first).
 
 **DB-safety (load-bearing):** the DB is disk-constrained and `unified_tags` fires a search-sync trigger. Recompute stays pure-SQL, batched, and must **not** mass-UPDATE `unified_tags`; follow the column-scoped-trigger pattern already used by `tag_quality`. Structural data lives in the new side tables, not in wide updates to the concept row.
