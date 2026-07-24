@@ -214,4 +214,17 @@ begin
   raise notice 'OK: preset/schedule RPCs present';
 end $$;
 
+-- Regex-bound regression (20260724110000): URL-bearing fields must VALIDATE,
+-- not crash. {1,300} bounds threw "invalid repetition count(s)" (Postgres caps
+-- regex bounds at 255) the moment a URL regex compiled.
+do $$
+begin
+  perform public.branding_validate('{"meta":{"og_image_url":"https://queer.guide/images/og-image.png"}}'::jsonb);
+  perform public.branding_validate('{"meta":{"org_logo_url":"/icons/icon-192.png","org_sameas":["https://instagram.com/queer.guide"]}}'::jsonb);
+  perform public.branding_validate('{"email":{"logo_url":"https://queer.guide/logo.png"}}'::jsonb);
+  perform public.branding_validate(
+    '{"fonts":{"display":{"family":"Clash Display","files":[{"url":"/fonts/x.woff2","weight":"100 900","style":"normal"}]}}}'::jsonb);
+  raise notice 'OK: URL/font-URL fields validate without a regex-bound crash';
+end $$;
+
 rollback;
