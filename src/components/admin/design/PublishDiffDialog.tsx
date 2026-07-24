@@ -10,8 +10,10 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { hslChannelsToCss, parseHslChannels } from '@/lib/wcagContrast';
-import { flattenBrandingDoc, pruneDoc } from './tokenCatalog';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
+import { contrastVerdict, hslChannelsToCss, parseHslChannels } from '@/lib/wcagContrast';
+import { CONTRAST_PAIRS, flattenBrandingDoc, pruneDoc, resolveColor } from './tokenCatalog';
 import type { DesignSettingsController } from './useDesignSettings';
 
 function ValueCell({ path, value }: { path: string; value: string | undefined }) {
@@ -40,6 +42,23 @@ export function PublishDiffDialog({
   onOpenChange: (open: boolean) => void;
 }) {
   const [note, setNote] = useState('');
+  const [ackContrast, setAckContrast] = useState(false);
+
+  // Hard accessibility gate: pairs below 3:1 (fail even the large-text bar)
+  // in the DRAFT block publish unless explicitly acknowledged.
+  const contrastHardFails = useMemo(
+    () =>
+      CONTRAST_PAIRS.flatMap((pair) =>
+        (['light', 'dark'] as const).flatMap((mode) => {
+          const v = contrastVerdict(
+            resolveColor(controller.draft, pair.fg, mode),
+            resolveColor(controller.draft, pair.bg, mode),
+          );
+          return v && !v.aaLarge ? [{ label: pair.label, mode, ratio: v.ratio }] : [];
+        }),
+      ),
+    [controller.draft],
+  );
 
   const changes = useMemo(() => {
     const published = flattenBrandingDoc(pruneDoc(controller.row?.published ?? {}));
@@ -93,6 +112,31 @@ export function PublishDiffDialog({
             </Table>
           </div>
         )}
+        {contrastHardFails.length > 0 && (
+          <div className="space-y-2 rounded-element border border-destructive p-4">
+            <p className="text-13 font-medium text-destructive">
+              {contrastHardFails.length} contrast pair{contrastHardFails.length === 1 ? '' : 's'}{' '}
+              below 3:1 — fails WCAG even for large text:
+            </p>
+            <ul className="text-13 text-muted-foreground">
+              {contrastHardFails.map((f) => (
+                <li key={`${f.label}-${f.mode}`}>
+                  {f.label} · {f.mode}: {f.ratio}:1
+                </li>
+              ))}
+            </ul>
+            <div className="flex items-center gap-2">
+              <Checkbox
+                id="ack-contrast"
+                checked={ackContrast}
+                onCheckedChange={(v) => setAckContrast(v === true)}
+              />
+              <Label htmlFor="ack-contrast" className="text-13">
+                Publish anyway — I understand this harms readability
+              </Label>
+            </div>
+          </div>
+        )}
         <Input
           placeholder="Version note (optional)"
           value={note}
@@ -103,7 +147,14 @@ export function PublishDiffDialog({
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button onClick={publish} disabled={changes.length === 0 || controller.publish.isPending}>
+          <Button
+            onClick={publish}
+            disabled={
+              changes.length === 0 ||
+              controller.publish.isPending ||
+              (contrastHardFails.length > 0 && !ackContrast)
+            }
+          >
             {controller.publish.isPending ? 'Publishing…' : 'Publish'}
           </Button>
         </DialogFooter>

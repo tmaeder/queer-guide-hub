@@ -12,6 +12,7 @@ type AuditArtifact = {
   usage: Array<{ token: string; count: number }>;
   unused: string[];
   eslint: { design_rule_suppressions: number };
+  color_literals?: { total: number; files: Array<{ file: string; count: number }> };
   docs: { missing_from_docs: string[]; stale_in_docs: string[] };
 };
 
@@ -168,6 +169,32 @@ export function DesignAuditTab({ controller }: { controller: DesignSettingsContr
                   </p>
                 </CardContent>
               </Card>
+              {data.color_literals && (
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-title">
+                      Color literals in code ({data.color_literals.total})
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="max-h-56 overflow-y-auto">
+                      <Table>
+                        <TableBody>
+                          {data.color_literals.files.map((f) => (
+                            <TableRow key={f.file}>
+                              <TableCell className="font-mono text-13">{f.file}</TableCell>
+                              <TableCell className="text-right text-13">{f.count}</TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                    <p className="mt-2 text-2xs text-muted-foreground">
+                      Mostly the allowlisted functional palettes — watch for new entries.
+                    </p>
+                  </CardContent>
+                </Card>
+              )}
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-title">Documentation drift</CardTitle>
