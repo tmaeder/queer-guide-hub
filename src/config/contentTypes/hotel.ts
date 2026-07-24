@@ -145,5 +145,17 @@ export const hotelContentType: ContentTypeConfig = {
   defaults: { featured: false, verified: false, lgbtq_friendly: false },
   fieldGroupOrder: ['basic', 'location', 'details', 'lgbtq', 'media', 'settings', 'external'],
   translatableFields: ['name', 'description', 'accessibility_notes'],
+  admin: {
+    duplicatesRoute: '/admin/duplicates',
+    dedup: {
+      // Hotels aren't in search_documents (they surface as venues), so the
+      // generic clusterer can't see them — use a dedicated finder.
+      searchType: 'hotel',
+      metaTable: 'hotels',
+      metaCols: 'id, quality_score:completeness_score, created_at, images',
+      mergePath: 'entities',
+      clusterFinder: 'find_hotel_duplicate_clusters',
+    },
+  },
   publicPath: (row) => (row.slug ? `/hotels/${row.slug}` : null),
 };
