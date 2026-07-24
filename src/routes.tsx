@@ -92,6 +92,7 @@ const MilestonesAdmin = lazyRetry(() => import('./pages/admin/MilestonesAdmin'))
 const AdminMailbox = lazyRetry(() => import('./pages/admin/AdminMailbox'));
 const AdminVenueQuality = lazyRetry(() => import('./pages/AdminVenueQuality'));
 const AdminLiveness = lazyRetry(() => import('./pages/AdminLiveness'));
+const QualityHub = lazyRetry(() => import('./pages/admin/QualityHub'));
 const AdminMarketplaceQuality = lazyRetry(() => import('./pages/AdminMarketplaceQuality'));
 const AdminTwentyCrm = lazyRetry(() => import('./pages/AdminTwentyCrm'));
 const AdminMarketplaceGuides = lazyRetry(() => import('./pages/AdminMarketplaceGuides'));
@@ -419,6 +420,7 @@ export const AppRoutes = () => {
 
                 {/* Content type admin pages */}
                 <Route path="content/venue-quality" element={<AdminVenueQuality />} />
+                <Route path="quality" element={<QualityHub />} />
                 <Route path="content/liveness" element={<AdminLiveness />} />
                 <Route path="content/event-quality" element={<AdminEventQuality />} />
                 <Route path="content/city-quality" element={<AdminCityQuality />} />

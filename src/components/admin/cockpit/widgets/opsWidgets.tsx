@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { untypedRpc } from '@/integrations/supabase/untyped';
 import { Switch } from '@/components/ui/switch';
+import { useAdminCounts } from '@/hooks/useAdminCounts';
 import { useReviewSummaryQuery } from '@/hooks/useAdminCockpit';
 import { useAutomationActions } from '@/hooks/useAutomationActions';
 import { useBackfillActions } from '@/hooks/useBackfillActions';
@@ -165,6 +166,41 @@ function useRefreshDue() {
     staleTime: 5 * 60_000,
     refetchInterval: 5 * 60_000,
   });
+}
+
+const QUALITY_GATES = [
+  { key: 'quality_city', label: 'Cities' },
+  { key: 'quality_venue', label: 'Venues' },
+  { key: 'quality_personality', label: 'Personalities' },
+  { key: 'quality_marketplace', label: 'Marketplace' },
+  { key: 'quality_village', label: 'Villages' },
+  { key: 'quality_existence', label: 'Liveness' },
+  { key: 'quality_editorial', label: 'Editorial drafts' },
+] as const;
+
+export function QualityGatesBody() {
+  const navigate = useNavigate();
+  const q = useAdminCounts();
+  const counts = q.data;
+  if (!counts) return <WidgetLoading rows={2} />;
+
+  const total = QUALITY_GATES.reduce((sum, g) => sum + (counts[g.key] ?? 0), 0);
+  const nonEmpty = QUALITY_GATES.filter((g) => (counts[g.key] ?? 0) > 0);
+
+  return (
+    <div className="flex flex-col gap-2">
+      <div className="flex items-end justify-between">
+        <BigStat value={total.toLocaleString()} caption="pending in quality gates" alert={total > 50} />
+        <FreshnessIndicator dataUpdatedAt={q.dataUpdatedAt} isFetching={q.isFetching} intervalMs={60_000} />
+      </div>
+      <div className="flex flex-col divide-y divide-border">
+        {nonEmpty.slice(0, 4).map((g) => (
+          <StatRow key={g.key} label={g.label} value={counts[g.key] ?? 0} onClick={() => navigate('/admin/quality')} />
+        ))}
+      </div>
+      <DrillButton label="Open Quality hub" onClick={() => navigate('/admin/quality')} />
+    </div>
+  );
 }
 
 export function RefreshDueBody() {

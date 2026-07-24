@@ -42,6 +42,7 @@ import {
   CopyCheck,
   PenLine,
   UserPlus,
+  ShieldCheck,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import type { AdminRole } from '@/config/adminRoles';
@@ -168,11 +169,10 @@ export const adminNavSections: AdminNavSection[] = [
         group: 'Places',
       },
       {
-        id: 'liveness',
-        label: 'Liveness & closure',
-        icon: Flag,
-        route: '/admin/content/liveness',
-        group: 'Places',
+        id: 'quality',
+        label: 'Quality',
+        icon: ShieldCheck,
+        route: '/admin/quality',
       },
       {
         id: 'events',
@@ -244,6 +244,7 @@ export const adminNavSections: AdminNavSection[] = [
         label: 'Group Requests',
         icon: UserPlus,
         route: '/admin/content/group-requests',
+        reviewCountKey: 'review_group_requests',
         group: 'People',
       },
       // Editorial

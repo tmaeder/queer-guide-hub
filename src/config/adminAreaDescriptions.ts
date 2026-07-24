@@ -13,6 +13,8 @@ export const ADMIN_AREA_DESCRIPTIONS: Record<string, string> = {
 
   // Content
   '/admin/content': 'All content types in one list. Filter, edit, and bulk-act across entities.',
+  '/admin/quality':
+    'Truth Engine dashboards. Pending review gates for every entity type in one place.',
   '/admin/content/venues': 'Bars, clubs, and spaces. Edit details, set featured, merge duplicates.',
   '/admin/duplicates': 'Near-duplicate venues. Review side-by-side and merge into a survivor.',
   '/admin/content/events': 'Events and festivals. Edit details, check liveness, set featured.',
