@@ -43,6 +43,7 @@ import {
   PenLine,
   UserPlus,
   ShieldCheck,
+  Waypoints,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import type { AdminRole } from '@/config/adminRoles';
@@ -123,6 +124,13 @@ export const adminNavSections: AdminNavSection[] = [
         label: 'Affiliate',
         icon: Handshake,
         route: '/admin/affiliate',
+        adminOnly: true,
+      },
+      {
+        id: 'content-graph',
+        label: 'Content Graph',
+        icon: Waypoints,
+        route: '/admin/graph',
         adminOnly: true,
       },
     ],
