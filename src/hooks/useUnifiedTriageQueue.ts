@@ -17,6 +17,8 @@ export interface TriageItem {
   has_diff: boolean;
   reporter_id: string | null;
   meta: Record<string, unknown>;
+  /** Per-item safety gating from the queue view, e.g. {requires_confirm, risk_tier}. */
+  risk_flags?: Record<string, unknown>;
 }
 
 export interface TriageFilters {
@@ -114,6 +116,10 @@ export function useTriageAction() {
       notes?: string;
       cannedSlug?: string;
       notify?: boolean;
+      /** Explicit high-risk confirmation (items with risk_flags.requires_confirm). */
+      confirm?: boolean;
+      /** Queue-specific extras (e.g. chosen merge target). */
+      payload?: Record<string, unknown>;
     }) => {
       // p_notes / p_canned_slug are passed as `string | null`, but the generated
       // optional args reject null — route through untypedRpc to keep the null args.
@@ -125,6 +131,8 @@ export function useTriageAction() {
         p_notes: params.notes || null,
         p_canned_slug: params.cannedSlug || null,
         p_notify: params.notify ?? true,
+        p_confirm: params.confirm ?? false,
+        p_payload: params.payload ?? null,
       });
       if (error) throw error;
       return data;
