@@ -25,7 +25,6 @@ import {
   FileText,
   Image,
   Download,
-  ClipboardCheck,
   Settings,
   Mail,
   Link2,
@@ -104,12 +103,6 @@ export const adminNavSections: AdminNavSection[] = [
         label: 'Inbox',
         icon: Inbox,
         route: '/admin/inbox',
-      },
-      {
-        id: 'review-queue',
-        label: 'Review Queue',
-        icon: ClipboardCheck,
-        route: '/admin/review',
       },
       {
         id: 'feedback',

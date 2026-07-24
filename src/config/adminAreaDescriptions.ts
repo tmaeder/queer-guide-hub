@@ -42,7 +42,6 @@ export const ADMIN_AREA_DESCRIPTIONS: Record<string, string> = {
   '/admin/media': 'Media library. Upload, optimize, and manage assets.',
 
   // Import & Review
-  '/admin/review': 'Review queues. Approve, reject, and triage staged content.',
   '/admin/feedback': 'Community feedback and API error reports. Triage and resolve.',
   '/admin/imports/email-ingestions': 'Email-based ingestion. Track inbound source subscriptions.',
 

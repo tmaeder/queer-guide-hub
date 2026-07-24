@@ -142,11 +142,11 @@ export default function UnifiedDataOps() {
           );
         })}
         <Link
-          to="/admin/review"
+          to="/admin/inbox"
           className="flex items-center gap-1.5 px-4 py-2.5 text-sm whitespace-nowrap text-muted-foreground hover:text-foreground transition-colors ml-auto"
         >
           <ClipboardCheck className="h-[15px] w-[15px]" />
-          Review Queue →
+          Inbox →
         </Link>
       </div>
 
