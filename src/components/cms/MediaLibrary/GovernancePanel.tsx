@@ -10,10 +10,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Lock, Tag as TagIcon, X } from 'lucide-react';
+import { Lock, Tag as TagIcon, X, LayoutTemplate } from 'lucide-react';
 import { useMediaMutations } from '@/hooks/useMediaMutations';
-import { ACCESS_LEVELS, BRAND_CATEGORIES } from './types';
-import type { AccessLevel, BrandCategory, MediaDetailData } from './types';
+import { ACCESS_LEVELS, BRAND_CATEGORIES, TEMPLATE_STATUSES } from './types';
+import type { AccessLevel, BrandCategory, TemplateStatus, MediaDetailData } from './types';
 
 /**
  * DAM governance controls: access tier, brand category, and tags. Access-tier changes on an
@@ -25,7 +25,10 @@ export function GovernancePanel({ detail }: { detail: MediaDetailData }) {
   const [tagDraft, setTagDraft] = useState('');
   const tags = detail.tags ?? [];
   const nonPublicAlready = detail.access_level !== 'public';
-  const bytesArePublicBucket = detail.bucket_name === 'cms-media' || detail.source_type === 'image_asset';
+  // cms_media bytes now relocate automatically on a tier flip (dam-relocate-asset);
+  // only image_asset bytes live on the R2 CDN and are not per-object relocated.
+  const bytesStayOnCdn = detail.source_type === 'image_asset';
+  const isTemplate = detail.brand_category === 'template';
 
   const addTag = () => {
     const slug = tagDraft.trim().toLowerCase();
@@ -81,12 +84,44 @@ export function GovernancePanel({ detail }: { detail: MediaDetailData }) {
           </div>
         </div>
 
-        {bytesArePublicBucket && (
+        {bytesStayOnCdn && nonPublicAlready && (
           <p className="text-xs text-muted-foreground">
-            Changing the tier updates who can see this record. The stored file itself stays in its
-            current bucket — re-upload as {ACCESS_LEVELS.find((a) => a.value !== 'public')?.label} to move
-            the bytes into private storage.
+            This is an image-asset served from the public image CDN — changing the tier restricts the
+            record, but the file bytes remain publicly fetchable by URL. For truly private bytes, store
+            the asset as CMS media (which relocates into private storage on a tier change).
           </p>
+        )}
+
+        {isTemplate && (
+          <div>
+            <p className="text-sm font-medium mb-1 flex items-center gap-1">
+              <LayoutTemplate size={13} /> Template status
+            </p>
+            <div className="flex items-center gap-2">
+              <Select
+                value={detail.template_status ?? 'none'}
+                onValueChange={(v) =>
+                  mutations.setTemplateStatus.mutate({
+                    item: detail,
+                    status: v === 'none' ? null : (v as TemplateStatus),
+                  })
+                }
+              >
+                <SelectTrigger style={{ maxWidth: 240 }}><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Not set</SelectItem>
+                  {TEMPLATE_STATUSES.map((s) => (
+                    <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {detail.template_status === 'approved' && <Badge variant="secondary">Published</Badge>}
+              {detail.template_status === 'deprecated' && <Badge variant="outline">Retired</Badge>}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Only approved templates count as published for reuse. Changes are audited.
+            </p>
+          </div>
         )}
 
         <div className="flex flex-col gap-2">

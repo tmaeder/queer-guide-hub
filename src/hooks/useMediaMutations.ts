@@ -1,8 +1,8 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { untypedFrom } from '@/integrations/supabase/untyped';
+import { untypedFrom, untypedSupabase } from '@/integrations/supabase/untyped';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import type { UnifiedMediaItem, AccessLevel, BrandCategory } from '@/components/cms/MediaLibrary/types';
+import type { UnifiedMediaItem, AccessLevel, BrandCategory, TemplateStatus } from '@/components/cms/MediaLibrary/types';
 
 export function useMediaMutations() {
   const queryClient = useQueryClient();
@@ -242,6 +242,24 @@ export function useMediaMutations() {
     onError: () => toast({ title: 'Failed to set cover', variant: 'destructive' }),
   });
 
+  // Template governance: approve/deprecate a template asset via the audited RPC
+  // (set_template_status writes to dam_template_audit). Pass null to clear.
+  const setTemplateStatus = useMutation({
+    mutationFn: async ({ item, status }: { item: UnifiedMediaItem; status: TemplateStatus | null }) => {
+      const { error } = await untypedSupabase.rpc('set_template_status', {
+        p_source: item.source_type,
+        p_id: item.id,
+        p_status: status,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      invalidateMedia();
+      toast({ title: 'Template status updated' });
+    },
+    onError: () => toast({ title: 'Failed to update template status', variant: 'destructive' }),
+  });
+
   const optimizeItem = useMutation({
     mutationFn: async () => {
       const { error } = await supabase.functions.invoke('optimize-images-batch', {
@@ -266,6 +284,7 @@ export function useMediaMutations() {
     removeTag,
     removeEntityLink,
     setAsCover,
+    setTemplateStatus,
     optimizeItem,
   };
 }

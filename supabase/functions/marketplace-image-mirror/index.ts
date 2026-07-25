@@ -1,4 +1,4 @@
-import { getServiceClient, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
+import { getServiceClient, jsonResponse, errorResponse, corsResponse, requireInternalOrAdmin } from '../_shared/supabase-client.ts'
 import { mirrorImageToR2 } from '../_shared/logo-mirror.ts'
 
 // Images are hosted on Cloudflare R2 (img.queer.guide), NOT Supabase Storage.
@@ -35,6 +35,7 @@ async function mirrorOne(_supabase: ReturnType<typeof getServiceClient>, _listin
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
   const supabase = getServiceClient()
+  const _auth = await requireInternalOrAdmin(req, supabase); if (_auth instanceof Response) return _auth
   try {
     const body = await req.json().catch(() => ({}))
     const limit = body.limit || 25
