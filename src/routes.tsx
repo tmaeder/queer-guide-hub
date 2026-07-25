@@ -130,6 +130,8 @@ const AdminInbox = lazyRetry(() => import('./pages/admin/AdminInbox'));
 const AdminAutomation = lazyRetry(() => import('./pages/admin/AdminAutomation'));
 const AdminFeedback = lazyRetry(() => import('./pages/AdminFeedback'));
 const AdminAffiliate = lazyRetry(() => import('./pages/admin/AdminAffiliate'));
+const AdminVendors = lazyRetry(() => import('./pages/admin/AdminVendors'));
+const AdminBrands = lazyRetry(() => import('./pages/admin/AdminBrands'));
 
 // CMS components rendered as admin views
 const ContentListPanel = lazyRetry(() =>
@@ -368,6 +370,8 @@ export const AppRoutes = () => {
                 <Route index element={<AdminDashboard />} />
                 <Route path="analytics" element={<AdminAnalytics />} />
                 <Route path="affiliate" element={<AdminAffiliate />} />
+                <Route path="vendors" element={<AdminVendors />} />
+                <Route path="brands" element={<AdminBrands />} />
                 <Route path="maps" element={<AdminMaps />} />
                 <Route path="security" element={<SecurityMonitoringDashboard />} />
                 <Route path="cloudflare" element={<CloudflareDashboard />} />

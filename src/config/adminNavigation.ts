@@ -44,6 +44,8 @@ import {
   UserPlus,
   ShieldCheck,
   Waypoints,
+  Store,
+  BadgeCheck,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import type { AdminRole } from '@/config/adminRoles';
@@ -303,15 +305,33 @@ export const adminNavSections: AdminNavSection[] = [
         countTable: 'cms_pages',
         group: 'Editorial',
       },
-      // Taxonomy & Media
+      // Commerce
       {
         id: 'marketplace',
         label: 'Marketplace',
         icon: ShoppingBag,
         route: '/admin/content/marketplace_listings',
         countTable: 'marketplace_listings',
-        group: 'Taxonomy & Media',
+        group: 'Commerce',
       },
+      {
+        id: 'vendors',
+        label: 'Vendors',
+        icon: Store,
+        route: '/admin/vendors',
+        adminOnly: true,
+        group: 'Commerce',
+      },
+      {
+        id: 'brands',
+        label: 'Brands',
+        icon: BadgeCheck,
+        route: '/admin/brands',
+        reviewCountKey: 'review_brands',
+        adminOnly: true,
+        group: 'Commerce',
+      },
+      // Taxonomy & Media
       {
         id: 'tags',
         label: 'Tags',

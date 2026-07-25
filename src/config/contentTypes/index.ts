@@ -7,6 +7,7 @@ import { cityContentType } from './city';
 import { countryContentType } from './country';
 import { unifiedTagsContentType } from './tag';
 import { marketplaceContentType } from './marketplace';
+import { marketplaceBrandContentType } from './brand';
 import { communityGroupsContentType } from './group';
 import { cmsPagesContentType } from './page';
 import { hotelContentType } from './hotel';
@@ -24,6 +25,7 @@ export const contentTypeRegistry: Record<string, ContentTypeConfig> = {
   countries: countryContentType,
   unified_tags: unifiedTagsContentType,
   marketplace_listings: marketplaceContentType,
+  marketplace_brands: marketplaceBrandContentType,
   community_groups: communityGroupsContentType,
   cms_pages: cmsPagesContentType,
   hotels: hotelContentType,
