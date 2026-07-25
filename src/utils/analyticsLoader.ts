@@ -27,7 +27,9 @@
 const CONSENT_STORAGE_KEY = 'queer-guide-cookie-consent';
 const CONSENT_VERSION = '1.0';
 const UMAMI_SCRIPT_ID = 'umami-analytics';
-const UMAMI_SRC = '/umami.js';
+// Version query busts the year-long edge/browser cache the old /*.js rule
+// applied to this unversioned file. Bump when the tracker script changes.
+const UMAMI_SRC = '/umami.js?v=2';
 
 interface StoredConsent {
   preferences: {
