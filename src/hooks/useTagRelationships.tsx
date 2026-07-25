@@ -139,3 +139,41 @@ export function useComputeTagSimilarities() {
     },
   });
 }
+
+export interface OntologyTag {
+  id: string;
+  slug: string;
+  name: string;
+  category: string | null;
+  confidence: number;
+}
+
+export interface TagOntology {
+  broader: OntologyTag[];
+  narrower: OntologyTag[];
+  related: OntologyTag[];
+}
+
+/**
+ * Fetch the governed ontology graph (curated tag_relations: broader parents,
+ * narrower children, curated related) for a tag. Distinct from useSimilarTags,
+ * which reads the raw embedding/co-occurrence similarity pool.
+ */
+export function useTagOntology(tagId: string | null) {
+  return useQuery({
+    queryKey: ['tag-ontology', tagId],
+    enabled: !!tagId,
+    staleTime: 5 * 60 * 1000,
+    queryFn: async (): Promise<TagOntology> => {
+      if (!tagId) return { broader: [], narrower: [], related: [] };
+      const { data, error } = await supabase.rpc('get_tag_ontology', { p_tag_id: tagId });
+      if (error) throw error;
+      const o = (data ?? {}) as Partial<TagOntology>;
+      return {
+        broader: o.broader ?? [],
+        narrower: o.narrower ?? [],
+        related: o.related ?? [],
+      };
+    },
+  });
+}
