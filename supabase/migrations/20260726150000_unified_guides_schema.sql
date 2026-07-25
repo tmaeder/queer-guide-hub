@@ -461,9 +461,13 @@ CREATE TRIGGER guide_picks_count_ins
   REFERENCING NEW TABLE AS new_picks
   FOR EACH STATEMENT EXECUTE FUNCTION public.guides_refresh_pick_count_stmt();
 
+-- No column list here: Postgres disallows transition tables on triggers with
+-- column lists (0A000). Firing on every pick UPDATE is fine — one cheap
+-- statement-level count refresh; the guides search-sync trigger ignores
+-- pick_count anyway.
 DROP TRIGGER IF EXISTS guide_picks_count_upd ON public.guide_picks;
 CREATE TRIGGER guide_picks_count_upd
-  AFTER UPDATE OF guide_id, is_orphaned ON public.guide_picks
+  AFTER UPDATE ON public.guide_picks
   REFERENCING OLD TABLE AS old_picks NEW TABLE AS new_picks
   FOR EACH STATEMENT EXECUTE FUNCTION public.guides_refresh_pick_count_stmt();
 
