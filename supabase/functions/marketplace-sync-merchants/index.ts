@@ -21,7 +21,9 @@ import { withErrorReporting } from '../_shared/report-api-error.ts'
 // merchants once the budget is spent and returns 200 with `remaining` —
 // merchants_due_for_sync is LRU-ordered, the next hourly run continues.
 //
-// Body: { limit?, provider?, dry_run?, pipeline_run_id?, max_pages? }
+// Body: { limit?, provider?, dry_run?, pipeline_run_id?, max_pages?, merchant_id? }
+// merchant_id targets ONE merchant directly (admin "Sync now" / test-sync from
+// /admin/vendors), bypassing the LRU due-ness selector.
 // ============================================================
 
 const PROVIDER_FN: Record<string, string> = {
@@ -61,12 +63,21 @@ Deno.serve(withErrorReporting('marketplace-sync-merchants', async (req) => {
     const dryRun = body.dry_run === true
     const pipelineRunId = body.pipeline_run_id as string | undefined
     const maxPages = body.max_pages as number | undefined
+    const merchantId = body.merchant_id as string | undefined
 
-    const { data: due, error: dueErr } = await supabase.rpc('merchants_due_for_sync', { p_limit: limit })
-    if (dueErr) return errorResponse(`merchants_due_for_sync: ${dueErr.message}`, 500, req)
-
-    let merchants = (due ?? []) as DueMerchant[]
-    if (provider) merchants = merchants.filter(m => m.provider === provider)
+    let merchants: DueMerchant[]
+    if (merchantId) {
+      const { data: one, error: oneErr } = await supabase.from('marketplace_merchants')
+        .select('provider, slug, display_name, shop_domain, config')
+        .eq('id', merchantId).single()
+      if (oneErr) return errorResponse(`merchant lookup: ${oneErr.message}`, 404, req)
+      merchants = [one as DueMerchant]
+    } else {
+      const { data: due, error: dueErr } = await supabase.rpc('merchants_due_for_sync', { p_limit: limit })
+      if (dueErr) return errorResponse(`merchants_due_for_sync: ${dueErr.message}`, 500, req)
+      merchants = (due ?? []) as DueMerchant[]
+      if (provider) merchants = merchants.filter(m => m.provider === provider)
+    }
 
     const runStarted = Date.now()
     const results: Array<Record<string, unknown>> = []
