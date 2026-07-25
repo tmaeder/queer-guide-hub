@@ -1,6 +1,7 @@
 import { Link } from 'react-router';
 import { Button } from '@/components/ui/button';
 import { EventQualityPanel } from '@/components/admin/EventQualityPanel';
+import { DedupPendingLink } from '@/components/admin/DedupPendingLink';
 import { Table2 } from 'lucide-react';
 
 /**
@@ -25,6 +26,7 @@ export default function AdminEventQuality() {
         </Button>
       </div>
       <EventQualityPanel />
+      <DedupPendingLink entityType="event" />
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import { Link } from 'react-router';
 import { Button } from '@/components/ui/button';
 import { AmenityQualityPanel } from '@/components/admin/AmenityQualityPanel';
+import { DedupPendingLink } from '@/components/admin/DedupPendingLink';
 import { VenueReviewQueue } from '@/components/admin/review-queues/VenueReviewQueue';
 import { Table2 } from 'lucide-react';
 
@@ -24,6 +25,7 @@ export default function AdminVenueQuality() {
         </Button>
       </div>
       <AmenityQualityPanel />
+      <DedupPendingLink entityType="venue" />
       <VenueReviewQueue />
     </div>
   );

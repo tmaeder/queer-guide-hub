@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { FreigabeFunnel } from '@/components/admin/FreigabeFunnel';
 import { PersonalityFreigabeQueue } from '@/components/admin/PersonalityFreigabeQueue';
 import { PersonalityQualityPanel } from '@/components/admin/PersonalityQualityPanel';
+import { DedupPendingLink } from '@/components/admin/DedupPendingLink';
 import { PersonalityReviewQueue } from '@/components/admin/review-queues/PersonalityReviewQueue';
 import { Table2 } from 'lucide-react';
 import type { FreigabeStufe } from '@/lib/personalityStatus';
@@ -35,6 +36,7 @@ export default function AdminPersonalityQuality() {
       <FreigabeFunnel selected={stage} onSelect={setStage} />
       <PersonalityFreigabeQueue stage={stage} onStageChange={setStage} />
       <PersonalityQualityPanel />
+      <DedupPendingLink entityType="personality" />
       <PersonalityReviewQueue />
     </div>
   );

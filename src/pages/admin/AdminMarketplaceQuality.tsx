@@ -1,6 +1,7 @@
 import { Link } from 'react-router';
 import { Button } from '@/components/ui/button';
 import { MarketplaceTagQualityPanel } from '@/components/admin/MarketplaceTagQualityPanel';
+import { DedupPendingLink } from '@/components/admin/DedupPendingLink';
 import { MarketplaceReviewQueue } from '@/components/admin/review-queues/MarketplaceReviewQueue';
 import { MarketplacePruneCard } from '@/components/admin/MarketplacePruneCard';
 import { Table2 } from 'lucide-react';
@@ -25,6 +26,7 @@ export default function AdminMarketplaceQuality() {
       </div>
       <MarketplacePruneCard />
       <MarketplaceTagQualityPanel />
+      <DedupPendingLink entityType="marketplace" />
       <MarketplaceReviewQueue />
     </div>
   );

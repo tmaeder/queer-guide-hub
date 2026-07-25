@@ -9,6 +9,7 @@ import {
   Flag,
   PenLine,
   ShieldCheck,
+  GitMerge,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -65,6 +66,13 @@ const ENGINES: QualityEngine[] = [
     description: 'Grounded LLM rewrites of history, descriptions, and landmarks.',
     route: '/admin/content/village-quality',
     icon: Home,
+  },
+  {
+    countKey: 'quality_duplicates',
+    title: 'Duplicates',
+    description: 'Nightly identity sweep. Exact-key merges are automatic; ambiguous pairs wait here.',
+    route: '/admin/duplicates?view=suggested',
+    icon: GitMerge,
   },
   {
     countKey: 'quality_existence',

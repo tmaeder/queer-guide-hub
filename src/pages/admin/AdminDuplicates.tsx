@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -19,6 +20,7 @@ import {
 } from '@/hooks/useVenueDuplicates';
 import { TagMergeReviewQueue } from '@/components/admin/TagMergeReviewQueue';
 import { VocabMerge } from '@/components/admin/VocabMerge';
+import { DedupReviewQueue } from '@/components/admin/review-queues/DedupReviewQueue';
 
 /**
  * /admin/duplicates — the registry-driven duplicate review & merge console,
@@ -35,6 +37,7 @@ import { VocabMerge } from '@/components/admin/VocabMerge';
  */
 
 type Family = 'content' | 'taxonomy';
+type DupView = 'exact' | 'fuzzy' | 'suggested';
 
 const clusterKey = (c: Cluster) => `${c.normalized_title}|${c.city ?? ''}`;
 const hasImage = (m?: VenueMeta) => Array.isArray(m?.images) && (m!.images as unknown[]).length > 0;
@@ -55,7 +58,15 @@ function suggestKeep(members: ClusterMember[], meta: Map<string, VenueMeta>): st
 export default function AdminDuplicates() {
   const [family, setFamily] = useState<Family>('content');
   const types = useDedupTypes();
-  const [typeKey, setTypeKey] = useState<string>(types[0]?.key ?? 'venues');
+  // Deep links: ?type=<registry key or merge type>&view=exact|fuzzy|suggested
+  // (the Quality hub card and the per-entity quality panels link here).
+  const [searchParams] = useSearchParams();
+  const paramType = searchParams.get('type');
+  const paramView = searchParams.get('view');
+  const initialKey = types.find((t) => t.key === paramType || t.cfg.searchType === paramType)?.key;
+  const initialView: DupView =
+    paramView === 'suggested' || paramView === 'fuzzy' ? paramView : 'exact';
+  const [typeKey, setTypeKey] = useState<string>(initialKey ?? types[0]?.key ?? 'venues');
   const selected = useMemo(
     () => types.find((t) => t.key === typeKey) ?? types[0],
     [types, typeKey],
@@ -95,7 +106,12 @@ export default function AdminDuplicates() {
       {family === 'taxonomy' ? (
         <TaxonomyDuplicates />
       ) : selected ? (
-        <ContentDuplicates type={selected} types={types} onSelect={setTypeKey} />
+        <ContentDuplicates
+          type={selected}
+          types={types}
+          onSelect={setTypeKey}
+          initialView={initialView}
+        />
       ) : (
         <div className="text-muted-foreground p-4">No dedup-enabled content types.</div>
       )}
@@ -108,13 +124,15 @@ function ContentDuplicates({
   type,
   types,
   onSelect,
+  initialView = 'exact',
 }: {
   type: DedupType;
   types: DedupType[];
   onSelect: (key: string) => void;
+  initialView?: DupView;
 }) {
   const queryClient = useQueryClient();
-  const [view, setView] = useState<'exact' | 'fuzzy'>('exact');
+  const [view, setView] = useState<DupView>(initialView);
   const { clusters, meta, isLoading, isError, error } = useDuplicateClusters(type.key);
   const [picked, setPicked] = useState<Record<string, string>>({});
 
@@ -157,7 +175,7 @@ function ContentDuplicates({
   });
 
   const fuzzyAvailable = Boolean(type.cfg.fuzzyRpc);
-  const effectiveView = fuzzyAvailable ? view : 'exact';
+  const effectiveView: DupView = view === 'fuzzy' && !fuzzyAvailable ? 'exact' : view;
 
   return (
     <div className="flex flex-col gap-6">
@@ -170,7 +188,7 @@ function ContentDuplicates({
             onClick={() => {
               onSelect(t.key);
               setPicked({});
-              setView('exact');
+              setView((v) => (v === 'suggested' ? 'suggested' : 'exact'));
             }}
           >
             {t.label}
@@ -178,26 +196,35 @@ function ContentDuplicates({
         ))}
       </div>
 
-      {fuzzyAvailable && (
-        <div className="flex gap-2">
+      <div className="flex gap-2">
+        <Button
+          variant={effectiveView === 'exact' ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => setView('exact')}
+        >
+          Exact (name + city)
+        </Button>
+        {fuzzyAvailable && (
           <Button
-            variant={view === 'exact' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setView('exact')}
-          >
-            Exact (name + city)
-          </Button>
-          <Button
-            variant={view === 'fuzzy' ? 'default' : 'outline'}
+            variant={effectiveView === 'fuzzy' ? 'default' : 'outline'}
             size="sm"
             onClick={() => setView('fuzzy')}
           >
             {type.cfg.searchType === 'marketplace' ? 'Same item (fuzzy)' : 'Same place (fuzzy)'}
           </Button>
-        </div>
-      )}
+        )}
+        <Button
+          variant={effectiveView === 'suggested' ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => setView('suggested')}
+        >
+          Suggested (nightly sweep)
+        </Button>
+      </div>
 
-      {effectiveView === 'fuzzy' ? (
+      {effectiveView === 'suggested' ? (
+        <DedupReviewQueue entityType={type.cfg.searchType} />
+      ) : effectiveView === 'fuzzy' ? (
         <FuzzyDuplicates type={type} />
       ) : (
         <>
