@@ -29,6 +29,7 @@ function sentry(env: Env, request: Request, ctx: ExecutionContext): Toucan | nul
 import { getBiasVector, getUserSignal, trackEvent, popularEntities, getRecommendations, relatedEntities, fetchDisplayMap } from "./supabase";
 import { handleGo } from "./affiliate";
 import { loadActiveSynonyms, expandWithPgSynonyms } from "./pgSynonyms";
+import { expandTagsWithNarrower } from "./pgTagHierarchy";
 import { INDEX_MAP, ALL_INDEXES } from "./entityIndex";
 import { pgHybridSearch, pgAutocomplete, type PgSearchArgs } from "./pgSearch";
 import { isAuthenticatedRequest } from "./jwt";
@@ -197,6 +198,9 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 			.map((t) => INDEX_MAP[t] || t)
 			.filter((t) => ALL_INDEXES.includes(t));
 		const bPgTypes = [...new Set(bTypes.map((i) => INDEX_TO_PG_TYPE[i]).filter(Boolean))] as string[];
+		// Widen a tag filter to its narrower descendants (governed ontology). This
+		// is the primary path for the "Search everything tagged X" hierarchy bridge.
+		const bExpandedTags = await expandTagsWithNarrower(env, bFilters.tags);
 		const browse = await pgHybridSearch(env, {
 			query: "",
 			queryVec: null,
@@ -208,7 +212,7 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 				is_featured: bFilters.featured || undefined,
 				is_free: bFilters.is_free,
 				target_groups: bFilters.target_groups,
-				tags: bFilters.tags,
+				tags: bExpandedTags,
 			},
 			lat: bFilters.lat ?? null,
 			lng: bFilters.lng ?? null,
@@ -389,6 +393,10 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 		.map((i) => INDEX_TO_PG_TYPE[i])
 		.filter(Boolean) as string[];
 
+	// Widen a tag filter to include its narrower descendants (governed ontology).
+	// Fail-open: returns the original tags on any error.
+	const expandedTags = await expandTagsWithNarrower(env, mergedFilters.tags);
+
 	const pgArgs: PgSearchArgs = {
 		query: effectiveQ,
 		queryVec: blendedVec,
@@ -400,7 +408,7 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 			is_featured: mergedFilters.featured || undefined,
 			is_free: mergedFilters.is_free,
 			target_groups: mergedFilters.target_groups,
-			tags: mergedFilters.tags,
+			tags: expandedTags,
 		},
 		lat: mergedFilters.lat ?? null,
 		lng: mergedFilters.lng ?? null,
