@@ -8,10 +8,10 @@
 -- 2. affiliate_partners becomes worker-consumable: go_key (the /go?p= key,
 --    == affiliate_clicks.partner) + sub_field. The worker loads enabled
 --    rows with a non-null go_key and fails open to its baked-in map.
--- 3. marketplace_merchants: admin write path (the Merchants tab edits the
---    registry directly, like AffiliatePartnersManager does for partners)
---    + awin_advertiser_id (join key for Awin conversion reports; will
---    eventually replace the worker's AWIN_MERCHANT_MIDS env JSON).
+-- 3. marketplace_merchants.awin_advertiser_id (join key for Awin conversion
+--    reports; will eventually replace the worker's AWIN_MERCHANT_MIDS env
+--    JSON). Writes stay RPC-only (admin_upsert_marketplace_merchant from
+--    20260725160000) — extended here to carry the new column + api_key_env.
 
 -- ── 1. affiliate_clicks.click_code ─────────────────────────────────
 ALTER TABLE public.affiliate_clicks ADD COLUMN IF NOT EXISTS click_code text;
@@ -65,17 +65,88 @@ ON CONFLICT (partner_name) DO UPDATE SET
   domains   = (SELECT array_agg(DISTINCT d) FROM unnest(affiliate_partners.domains || EXCLUDED.domains) AS d),
   updated_at = now();
 
--- ── 3. marketplace_merchants: admin writes + Awin linkage ──────────
+-- ── 3. marketplace_merchants: Awin linkage (writes stay RPC-only) ──
 ALTER TABLE public.marketplace_merchants ADD COLUMN IF NOT EXISTS awin_advertiser_id text;
 
 COMMENT ON COLUMN public.marketplace_merchants.awin_advertiser_id IS
   'Awin advertiserId (MID). Join key for Awin conversion reports; also feeds the worker''s cread-wrap fallback.';
 
-DO $$ BEGIN
-  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename='marketplace_merchants' AND policyname='marketplace_merchants_admin_write') THEN
-    CREATE POLICY marketplace_merchants_admin_write ON public.marketplace_merchants
-      FOR ALL
-      USING (public.has_role_jwt('admin'))
-      WITH CHECK (public.has_role_jwt('admin'));
+-- Extend the vendor-hub upsert RPC (20260725160000) with awin_advertiser_id +
+-- api_key_env. Same contract otherwise; the table policies stay untouched
+-- (SELECT-only for admins — this RPC is the single write path).
+CREATE OR REPLACE FUNCTION public.admin_upsert_marketplace_merchant(p jsonb)
+RETURNS public.marketplace_merchants
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+DECLARE
+  v_id uuid := nullif(p->>'id','')::uuid;
+  v_provider text := p->>'provider';
+  v_slug text := p->>'slug';
+  m public.marketplace_merchants%ROWTYPE;
+BEGIN
+  IF NOT has_any_role_jwt(ARRAY['admin'::app_role]) THEN
+    RAISE EXCEPTION 'unauthorized' USING ERRCODE='42501'; END IF;
+
+  IF v_id IS NULL THEN
+    -- create: provider + slug are the identity, required and validated
+    IF v_provider IS NULL OR v_provider NOT IN ('shopify-public','woocommerce-public','etsy','crawl') THEN
+      RAISE EXCEPTION 'invalid provider % (allowed: shopify-public, woocommerce-public, etsy, crawl)', coalesce(v_provider,'<null>')
+        USING ERRCODE='22023'; END IF;
+    IF v_slug IS NULL OR v_slug !~ '^[a-z0-9-]+$' THEN
+      RAISE EXCEPTION 'invalid slug % (lowercase letters, digits, dashes only)', coalesce(v_slug,'<null>')
+        USING ERRCODE='22023'; END IF;
+    IF coalesce(p->>'display_name','') = '' THEN
+      RAISE EXCEPTION 'display_name is required' USING ERRCODE='22023'; END IF;
+
+    INSERT INTO public.marketplace_merchants
+      (provider, slug, display_name, shop_domain, config, is_enabled,
+       affiliate_partner_id, organization_id, awin_advertiser_id, api_key_env)
+    VALUES (
+      v_provider, v_slug, p->>'display_name', nullif(p->>'shop_domain',''),
+      coalesce(p->'config','{}'::jsonb),
+      coalesce((p->>'is_enabled')::boolean, true),
+      nullif(p->>'affiliate_partner_id','')::uuid,
+      nullif(p->>'organization_id','')::uuid,
+      nullif(p->>'awin_advertiser_id',''),
+      nullif(p->>'api_key_env',''))
+    ON CONFLICT (provider, slug) DO UPDATE SET
+      display_name = EXCLUDED.display_name,
+      shop_domain = EXCLUDED.shop_domain,
+      config = public.marketplace_merchants.config || EXCLUDED.config,
+      is_enabled = EXCLUDED.is_enabled,
+      affiliate_partner_id = EXCLUDED.affiliate_partner_id,
+      organization_id = EXCLUDED.organization_id,
+      awin_advertiser_id = EXCLUDED.awin_advertiser_id,
+      api_key_env = EXCLUDED.api_key_env,
+      updated_at = now()
+    RETURNING * INTO m;
+  ELSE
+    -- update: provider/slug are immutable (unique sync-registry key)
+    UPDATE public.marketplace_merchants SET
+      display_name = coalesce(nullif(p->>'display_name',''), display_name),
+      shop_domain = CASE WHEN p ? 'shop_domain' THEN nullif(p->>'shop_domain','') ELSE shop_domain END,
+      config = CASE WHEN p ? 'config' THEN config || (p->'config') ELSE config END,
+      is_enabled = coalesce((p->>'is_enabled')::boolean, is_enabled),
+      affiliate_partner_id = CASE WHEN p ? 'affiliate_partner_id'
+        THEN nullif(p->>'affiliate_partner_id','')::uuid ELSE affiliate_partner_id END,
+      organization_id = CASE WHEN p ? 'organization_id'
+        THEN nullif(p->>'organization_id','')::uuid ELSE organization_id END,
+      awin_advertiser_id = CASE WHEN p ? 'awin_advertiser_id'
+        THEN nullif(p->>'awin_advertiser_id','') ELSE awin_advertiser_id END,
+      api_key_env = CASE WHEN p ? 'api_key_env'
+        THEN nullif(p->>'api_key_env','') ELSE api_key_env END,
+      updated_at = now()
+    WHERE id = v_id
+    RETURNING * INTO m;
+    IF NOT FOUND THEN
+      RAISE EXCEPTION 'merchant not found' USING ERRCODE='22023'; END IF;
   END IF;
-END $$;
+
+  -- mirror link_org_merchant_domain_matches: linked orgs gain the seller role
+  IF m.organization_id IS NOT NULL THEN
+    UPDATE public.organizations o
+       SET roles = (SELECT array(SELECT DISTINCT unnest(o.roles || array['seller'])))
+     WHERE o.id = m.organization_id AND NOT ('seller' = ANY(o.roles));
+  END IF;
+
+  RETURN m;
+END; $$;

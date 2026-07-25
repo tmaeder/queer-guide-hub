@@ -1,17 +1,18 @@
 /**
  * Merchants tab — every marketplace vendor with its sync state, listing
  * stats, link health, clicks/commission and affiliate configuration in one
- * table (admin_merchant_overview RPC). Full CRUD over marketplace_merchants
- * + per-merchant "Sync now" via marketplace-sync-merchants.
+ * table (admin_merchant_overview RPC). Writes go through the vendor-hub
+ * RPC path (useMarketplaceMerchants — admin_upsert/delete RPCs, the table
+ * itself stays write-locked); "Sync now" targets one merchant by id.
  */
 
 import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Plus, Edit2, Trash2, RefreshCw, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { supabase } from '@/integrations/supabase/client';
 import { untypedSupabase } from '@/integrations/supabase/untyped';
 import { useAffiliateLinks } from '@/hooks/useAffiliateLinks';
+import { useMarketplaceMerchants } from '@/hooks/useMarketplaceMerchants';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
@@ -29,7 +30,8 @@ import { Stat } from './Stat';
 import { MerchantDrawer } from './MerchantDrawer';
 import type { MerchantOverviewRow } from './merchantTypes';
 
-const PROVIDERS = ['shopify-public', 'woocommerce-public', 'crawl', 'awin', 'etsy', 'shopify'];
+// Whitelist enforced by admin_upsert_marketplace_merchant.
+const PROVIDERS = ['shopify-public', 'woocommerce-public', 'etsy', 'crawl'];
 const NO_PARTNER = 'none';
 
 const emptyForm = {
@@ -47,6 +49,7 @@ const emptyForm = {
 export function MerchantsManager({ days }: { days: string }) {
   const queryClient = useQueryClient();
   const { partners } = useAffiliateLinks();
+  const { upsert, remove, sync } = useMarketplaceMerchants();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
@@ -108,9 +111,8 @@ export function MerchantsManager({ days }: { days: string }) {
     }
     setSaving(true);
     try {
-      const payload = {
-        provider: form.provider,
-        slug: form.slug.trim(),
+      await upsert.mutateAsync({
+        ...(editId ? { id: editId } : { provider: form.provider, slug: form.slug.trim() }),
         display_name: form.display_name.trim(),
         shop_domain: form.shop_domain.trim() || null,
         api_key_env: form.api_key_env.trim() || null,
@@ -118,10 +120,7 @@ export function MerchantsManager({ days }: { days: string }) {
         affiliate_partner_id: form.affiliate_partner_id === NO_PARTNER ? null : form.affiliate_partner_id,
         config,
         is_enabled: form.is_enabled,
-      };
-      const q = untypedSupabase.from('marketplace_merchants');
-      const { error } = editId ? await q.update(payload).eq('id', editId) : await q.insert(payload);
-      if (error) throw error;
+      });
       toast.success(editId ? 'Merchant updated' : 'Merchant created');
       setDialogOpen(false);
       invalidate();
@@ -133,12 +132,12 @@ export function MerchantsManager({ days }: { days: string }) {
   };
 
   const handleToggle = async (m: MerchantOverviewRow, enabled: boolean) => {
-    const { error } = await untypedSupabase
-      .from('marketplace_merchants')
-      .update({ is_enabled: enabled })
-      .eq('id', m.merchant_id);
-    if (error) toast.error(error.message);
-    else invalidate();
+    try {
+      await upsert.mutateAsync({ id: m.merchant_id, is_enabled: enabled });
+      invalidate();
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : 'Update failed');
+    }
   };
 
   const handleDelete = async (m: MerchantOverviewRow) => {
@@ -147,25 +146,22 @@ export function MerchantsManager({ days }: { days: string }) {
       return;
     }
     if (!confirm(`Delete merchant "${m.display_name}"?`)) return;
-    const { error } = await untypedSupabase.from('marketplace_merchants').delete().eq('id', m.merchant_id);
-    if (error) toast.error(error.message);
-    else {
+    try {
+      await remove.mutateAsync(m.merchant_id);
       toast.success('Merchant deleted');
       invalidate();
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : 'Delete failed');
     }
   };
 
   const handleSync = async (m: MerchantOverviewRow) => {
     setSyncing(m.merchant_id);
     try {
-      const { data, error } = await supabase.functions.invoke('marketplace-sync-merchants', {
-        body: { slug: m.slug, provider: m.provider },
-      });
-      if (error) throw error;
-      const result = (data?.results as Array<{ status: string; items?: number; error?: string }> | undefined)?.[0];
-      if (result?.status === 'ok') toast.success(`Synced ${m.display_name}: ${result.items ?? 0} items`);
-      else if (result?.status === 'skipped') toast.info(`${m.display_name}: no public feed to sync`);
-      else toast.error(`Sync failed: ${result?.error ?? 'unknown'}`);
+      const result = await sync.mutateAsync({ id: m.merchant_id });
+      if (result.status === 'ok') toast.success(`Synced ${m.display_name}: ${result.items ?? 0} items`);
+      else if (result.status === 'skipped') toast.info(`${m.display_name}: no public feed to sync`);
+      else toast.error(`Sync failed: ${result.error ?? 'unknown'}`);
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : 'Sync failed');
     } finally {
@@ -321,7 +317,7 @@ export function MerchantsManager({ days }: { days: string }) {
             <div className="grid grid-cols-2 gap-4">
               <div className="flex flex-col gap-2">
                 <Label htmlFor="m-provider">Provider</Label>
-                <Select value={form.provider} onValueChange={(v) => setForm((f) => ({ ...f, provider: v }))}>
+                <Select value={form.provider} onValueChange={(v) => setForm((f) => ({ ...f, provider: v }))} disabled={!!editId}>
                   <SelectTrigger id="m-provider"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     {PROVIDERS.map((p) => (
