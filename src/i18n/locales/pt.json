@@ -2608,7 +2608,11 @@
       "sensitiveContentBody": "Este tópico pode conter conteúdo sensível. Se precisar de apoio, visite a nossa página de linhas de apoio em crise.",
       "sensitiveContentTitle": "Tópico sensível",
       "tableOfContents": "Conteúdo",
-      "viewAsGraph": "Ver como grafo"
+      "viewAsGraph": "Ver como grafo",
+      "hierarchy": "[PT] In the taxonomy",
+      "broader": "[PT] Broader",
+      "narrower": "[PT] More specific",
+      "related": "[PT] Related"
     },
     "graph": {
       "title": "Grafo de relações",
