@@ -42,7 +42,7 @@ export const ADMIN_AREA_DESCRIPTIONS: Record<string, string> = {
   '/admin/quests': 'Editorial quests. Manage content-improvement tasks.',
   '/admin/content/unified_tags': 'Tags. Manage the taxonomy, merge duplicates, prune orphans.',
   '/admin/content/cms_pages': 'CMS pages. Edit static and editorial pages.',
-  '/admin/media': 'Media library. Upload, optimize, and manage assets.',
+  '/admin/media': 'Media & brand assets. Upload, tag, govern access, and version.',
 
   // Import & Review
   '/admin/feedback': 'Community feedback and API error reports. Triage and resolve.',

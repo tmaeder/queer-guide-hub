@@ -47,6 +47,9 @@ import {
   Crown,
 } from 'lucide-react';
 import { getOptimizationStatusBadge, formatFileSize, entityTypeLabel, entityAdminPath, getImageUrl } from './utils';
+import { GovernancePanel } from './GovernancePanel';
+import { AssetVersionSidebar } from './AssetVersionSidebar';
+import { useSignedMediaUrl } from '@/hooks/useSignedMediaUrl';
 import type { UnifiedMediaItem } from './types';
 
 export function MediaDetailPage() {
@@ -55,6 +58,7 @@ export function MediaDetailPage() {
   const { isAdmin } = useAdminRoles();
   const { data: detail, isLoading, error } = useMediaDetail(id);
   const mutations = useMediaMutations();
+  const signed = useSignedMediaUrl(detail as UnifiedMediaItem | undefined);
 
   const [altText, setAltText] = useState<string | null>(null);
   const [attribution, setAttribution] = useState<string | null>(null);
@@ -117,7 +121,7 @@ export function MediaDetailPage() {
     navigator.clipboard.writeText(text);
   };
 
-  const imageUrl = getImageUrl(detail as UnifiedMediaItem);
+  const imageUrl = getImageUrl(detail as UnifiedMediaItem) || signed.url;
 
   return (
     <div className="max-w-screen-lg mx-auto p-6 flex flex-col gap-6">
@@ -251,6 +255,12 @@ export function MediaDetailPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* DAM governance */}
+      <GovernancePanel detail={detail} />
+
+      {/* Version history */}
+      <AssetVersionSidebar detail={detail} />
 
       {/* Usage */}
       <Card>

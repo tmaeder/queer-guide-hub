@@ -14,6 +14,7 @@ vi.mock('@/hooks/useMediaMutations', () => ({
   }),
 }));
 vi.mock('@/hooks/useAdminRoles', () => ({ useAdminRoles: () => ({ isAdmin: true }) }));
+vi.mock('@/hooks/useSignedMediaUrl', () => ({ useSignedMediaUrl: () => ({ url: null, isLoading: false }) }));
 
 import { MediaDetailPage } from '../MediaDetailPage';
 

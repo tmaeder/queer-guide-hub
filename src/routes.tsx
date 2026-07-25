@@ -47,6 +47,7 @@ const PersonalityDetail = lazyRetry(() => import('./pages/PersonalityDetail'));
 // CMS-managed pages (content from cms_pages table)
 const CMSRoutePage = lazyRetry(() => import('./pages/CMSRoutePage'));
 const About = lazyRetry(() => import('./pages/About'));
+const BrandGuidelines = lazyRetry(() => import('./pages/Brand'));
 const Contact = lazyRetry(() => import('./pages/Contact'));
 const Auth = lazyRetry(() => import('./pages/Auth'));
 const AuthCallback = lazyRetry(() => import('./pages/AuthCallback'));
@@ -352,6 +353,7 @@ export const AppRoutes = () => {
               <Route path="/onboarding/venues" element={<VenuePersonalization />} />
               <Route path="/contributors" element={<Contributors />} />
               <Route path="/contributors/:year" element={<Contributors />} />
+              <Route path="/brand" element={<BrandGuidelines />} />
               {/* ── Unified Admin Console ── */}
               {/* All /admin/* routes wrapped in AdminShell layout with sidebar */}
               <Route

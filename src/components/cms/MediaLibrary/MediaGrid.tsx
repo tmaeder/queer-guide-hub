@@ -71,6 +71,26 @@ function ThumbImage({ item, size = 'full' }: { item: UnifiedMediaItem; size?: 'f
   );
 }
 
+/** Compact monochrome row of DAM governance badges: access tier, brand category, tag count. */
+function GovernanceBadges({ item }: { item: UnifiedMediaItem }) {
+  const showAccess = item.access_level && item.access_level !== 'public';
+  const tagCount = item.tags?.length ?? 0;
+  if (!showAccess && !item.brand_category && tagCount === 0) return null;
+  return (
+    <div className="flex flex-wrap items-center gap-1 mt-1">
+      {showAccess && (
+        <Badge variant="outline" className="text-2xs capitalize">{item.access_level}</Badge>
+      )}
+      {item.brand_category && (
+        <Badge variant="secondary" className="text-2xs capitalize">{item.brand_category}</Badge>
+      )}
+      {tagCount > 0 && (
+        <Badge variant="outline" className="text-2xs">{tagCount} tag{tagCount !== 1 ? 's' : ''}</Badge>
+      )}
+    </div>
+  );
+}
+
 export function MediaGrid(props: MediaGridProps) {
   const { loading, items, viewMode, bulkMode, selectedItems, onToggleSelect, onStar } = props;
   const navigate = useNavigate();
@@ -154,6 +174,7 @@ export function MediaGrid(props: MediaGridProps) {
             <CardContent className="p-2">
               <p className="text-xs truncate">{item.display_name}</p>
               <p className="text-xs text-muted-foreground">{formatFileSize(item.file_size)}</p>
+              <GovernanceBadges item={item} />
             </CardContent>
           </Card>
         ))}
@@ -212,6 +233,7 @@ export function MediaGrid(props: MediaGridProps) {
               {item.width && item.height && <span>{item.width}×{item.height}</span>}
               <span>{new Date(item.created_at).toLocaleDateString()}</span>
             </div>
+            <GovernanceBadges item={item} />
           </div>
 
           <div className="flex items-center gap-2">
