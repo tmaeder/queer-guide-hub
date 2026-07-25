@@ -1,7 +1,10 @@
 (function() {
   'use strict';
 
-  var hostUrl = 'https://xqeacpakadqfxjxjcewc.supabase.co/functions/v1';
+  // Same-origin Cloudflare Pages proxy (functions/api/track.ts) — attaches
+  // edge geo + connecting IP for the server-side visitor hash, and keeps the
+  // request first-party (adblock-resistant).
+  var trackUrl = '/api/track';
 
   var trackingDisabled = function() {
     return navigator.doNotTrack === '1' || navigator.msDoNotTrack === '1';
@@ -39,7 +42,7 @@
       device: info.device
     };
     if (name) { payload.name = name; payload.data = data; }
-    fetch(hostUrl + '/umami-analytics', {
+    fetch(trackUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)

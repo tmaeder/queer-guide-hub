@@ -17,7 +17,6 @@ import {
   Eye,
   Activity,
   Clock,
-  Globe,
   Smartphone,
   TrendingUp,
   Filter,
@@ -115,8 +114,6 @@ interface UmamiStats {
   }>;
   recentEvents: UmamiEvent[];
   liveVisitors: number;
-  totalUptime: number;
-  conversionRate: number;
 }
 
 const COLORS = [
@@ -127,6 +124,12 @@ const COLORS = [
   'hsl(var(--destructive))',
   'hsl(var(--warning))',
 ];
+
+const formatDuration = (seconds: number) => {
+  const s = Math.round(seconds);
+  if (s < 60) return `${s}s`;
+  return `${Math.floor(s / 60)}m ${s % 60}s`;
+};
 
 export const UmamiAnalyticsDashboard = () => {
   const [stats, setStats] = useState<UmamiStats>({
@@ -147,13 +150,11 @@ export const UmamiAnalyticsDashboard = () => {
     dailyData: [],
     recentEvents: [],
     liveVisitors: 0,
-    totalUptime: 0,
-    conversionRate: 0,
   });
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [dateRange, setDateRange] = useState<'7d' | '30d' | '90d' | 'custom'>('7d');
+  const [dateRange, setDateRange] = useState<'7d' | '30d' | '90d'>('7d');
   const [deviceFilter, setDeviceFilter] = useState<'all' | 'desktop' | 'mobile' | 'tablet'>('all');
   const [countryFilter, _setCountryFilter] = useState<string>('all');
   const [autoRefresh, setAutoRefresh] = useState(true);
@@ -382,7 +383,7 @@ export const UmamiAnalyticsDashboard = () => {
               <label htmlFor="umami-date-range" className="text-sm font-medium">Date Range:</label>
               <Select
                 value={dateRange}
-                onValueChange={(value: '7d' | '30d' | '90d' | 'custom') => setDateRange(value)}
+                onValueChange={(value: '7d' | '30d' | '90d') => setDateRange(value)}
               >
                 <SelectTrigger id="umami-date-range">
                   <SelectValue />
@@ -391,7 +392,6 @@ export const UmamiAnalyticsDashboard = () => {
                   <SelectItem value="7d">Last 7 days</SelectItem>
                   <SelectItem value="30d">Last 30 days</SelectItem>
                   <SelectItem value="90d">Last 90 days</SelectItem>
-                  <SelectItem value="custom">Custom</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -433,7 +433,7 @@ export const UmamiAnalyticsDashboard = () => {
       </Card>
 
       {/* Key Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
         <Card>
           <CardHeader>
             <CardTitle>Page Views</CardTitle>
@@ -473,7 +473,7 @@ export const UmamiAnalyticsDashboard = () => {
             <Clock size={16} className="text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold">{Math.round(stats.avgSessionDuration / 60)}m</p>
+            <p className="text-2xl font-bold">{formatDuration(stats.avgSessionDuration)}</p>
             <p className="text-xs text-muted-foreground">Session duration</p>
           </CardContent>
         </Card>
@@ -489,16 +489,6 @@ export const UmamiAnalyticsDashboard = () => {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Conversion</CardTitle>
-            <Globe size={16} className="text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold">{stats.conversionRate}%</p>
-            <p className="text-xs text-muted-foreground">Goal completion</p>
-          </CardContent>
-        </Card>
       </div>
 
       {/* Charts and Analytics */}
