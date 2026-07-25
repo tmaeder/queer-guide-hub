@@ -1,35 +1,43 @@
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { untypedFrom, untypedSupabase } from '@/integrations/supabase/untyped';
 import { useAuth } from '@/hooks/useAuth';
-import type { Database } from '@/integrations/supabase/types';
-
-type GuideRow = Database['public']['Tables']['marketplace_guides']['Row'];
+import type { Guide } from '@/hooks/useGuides';
 
 export interface InProgressGuide {
   guide_id: string;
   scroll_pct: number;
   started_at: string;
   guide: Pick<
-    GuideRow,
-    'id' | 'slug' | 'title' | 'dek' | 'hero_image_path' | 'category_slug' | 'pick_count' | 'reading_time_min' | 'audience_tags' | 'city_id' | 'published_at'
-  >;
+    Guide,
+    | 'id'
+    | 'format'
+    | 'slug'
+    | 'title'
+    | 'dek'
+    | 'hero_image_path'
+    | 'category'
+    | 'pick_count'
+    | 'reading_time_min'
+    | 'audience_tags'
+    | 'city_id'
+    | 'published_at'
+  > & { status: string };
 }
 
 /**
  * Guides the signed-in user has started but not yet completed.
- * Powers the "Continue reading" rail on /marketplace.
+ * Powers the "Continue reading" rail on /guides and entity index pages.
  */
 export function useContinueReadingGuides(limit = 4) {
   const { user } = useAuth();
   return useQuery({
-    queryKey: ['marketplace-continue-reading', user?.id, limit],
+    queryKey: ['guides-continue-reading', user?.id, limit],
     queryFn: async (): Promise<InProgressGuide[]> => {
       if (!user) return [];
-      const { data, error } = await supabase
-        .from('marketplace_guide_reads')
+      const { data, error } = await untypedFrom('guide_reads')
         .select(
           `guide_id, scroll_pct, started_at,
-           guide:marketplace_guides!inner(id, slug, title, dek, hero_image_path, category_slug, pick_count, reading_time_min, audience_tags, city_id, published_at, status)`,
+           guide:guides!inner(id, format, slug, title, dek, hero_image_path, category, pick_count, reading_time_min, audience_tags, city_id, published_at, status)`,
         )
         .eq('user_id', user.id)
         .is('completed_at', null)
@@ -37,7 +45,7 @@ export function useContinueReadingGuides(limit = 4) {
         .limit(limit);
       if (error) throw error;
       return ((data ?? []) as unknown as InProgressGuide[]).filter(
-        (r) => (r.guide as unknown as { status: string }).status === 'published',
+        (r) => r.guide.status === 'published',
       );
     },
     enabled: !!user,
@@ -47,20 +55,19 @@ export function useContinueReadingGuides(limit = 4) {
 }
 
 /**
- * Consecutive-ISO-weeks streak with ≥1 completed guide read.
+ * Consecutive-ISO-weeks streak with ≥1 completed guide read (any format).
  * Returns 0 when the user has no recent activity — UI hides the caption
  * when streak < 2 (no shaming).
  */
-export function useReadingStreak() {
+export function useGuideReadingStreak() {
   const { user } = useAuth();
   return useQuery({
-    queryKey: ['marketplace-reading-streak', user?.id],
+    queryKey: ['guide-reading-streak', user?.id],
     queryFn: async (): Promise<number> => {
       if (!user) return 0;
-      const { data, error } = await supabase.rpc(
-        'marketplace_guide_reading_streak',
-        { p_user_id: user.id },
-      );
+      const { data, error } = await untypedSupabase.rpc('guide_reading_streak', {
+        p_user_id: user.id,
+      });
       if (error) throw error;
       return (data as number | null) ?? 0;
     },

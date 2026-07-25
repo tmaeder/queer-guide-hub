@@ -13,8 +13,8 @@ import { DepartmentBento } from '@/components/marketplace/DepartmentBento';
 import { OccasionChips } from '@/components/marketplace/OccasionChips';
 import { MarketplaceHeroCover } from '@/components/marketplace/MarketplaceHeroCover';
 import { BrandSpotlight } from '@/components/marketplace/BrandSpotlight';
-import { GuidesStream } from '@/components/marketplace/GuidesStream';
-import { ContinueReadingRail } from '@/components/marketplace/ContinueReadingRail';
+import { GuidesRail } from '@/components/guides/GuidesRail';
+import { ContinueReadingRail } from '@/components/guides/ContinueReadingRail';
 import { AdultContentGate } from '@/components/marketplace/AdultContentGate';
 import { isAdultListing, useAdultAcknowledgement } from '@/hooks/useAdultContent';
 import { MarketplaceRow } from '@/components/marketplace/MarketplaceRow';
@@ -418,14 +418,7 @@ const Marketplace = () => {
                 subtitle="From queer- and trans-owned businesses"
               />
               <div className="mb-16 lg:mb-24">
-                <GuidesStream limit={3} showHero />
-                <LocalizedLink
-                  to="/marketplace/guides"
-                  className="mt-2 inline-flex items-center gap-1 text-13 font-medium hover:underline"
-                >
-                  All guides
-                  <ArrowRight size={14} aria-hidden="true" />
-                </LocalizedLink>
+                <GuidesRail filters={{ entityType: 'marketplace', limit: 3 }} />
               </div>
             </>
           )}

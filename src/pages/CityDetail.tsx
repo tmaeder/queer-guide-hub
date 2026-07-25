@@ -20,7 +20,7 @@ import { useTrackEvent } from '@/hooks/useTrackEvent';
 import { SimilarItems } from '@/components/discovery/SimilarItems';
 import { MarketplaceForCity } from '@/components/marketplace/MarketplaceForCity';
 import { CityLocalSupporterCaption } from '@/components/marketplace/CityLocalSupporterCaption';
-import { CityVenueGuidesRail } from '@/components/venues/VenueFeaturedInGuides';
+import { GuidesRail } from '@/components/guides/GuidesRail';
 import { TrendingStrip } from '@/components/discovery/TrendingStrip';
 import { CreateTripDialog } from '@/components/trips/CreateTripDialog';
 import { TripCoveringBanner } from '@/components/trips/TripCoveringBanner';
@@ -377,7 +377,7 @@ export default function CityDetail() {
         footer={
           <div className="flex flex-col gap-12">
             <TrendingStrip city={city.name} />
-            <CityVenueGuidesRail cityId={city.id} />
+            <GuidesRail filters={{ cityId: city.id }} />
             <MarketplaceForCity cityName={city.name} cityId={city.id} />
             <CityLocalSupporterCaption cityId={city.id} />
             <SimilarItems

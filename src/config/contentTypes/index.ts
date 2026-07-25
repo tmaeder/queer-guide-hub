@@ -15,6 +15,7 @@ import { queerVillageContentType } from './village';
 import { feedbackContentType } from './feedback';
 import { milestoneContentType } from './milestone';
 import { organizationContentType } from './organization';
+import { guideContentType } from './guide';
 
 export const contentTypeRegistry: Record<string, ContentTypeConfig> = {
   venues: venueContentType,
@@ -33,6 +34,7 @@ export const contentTypeRegistry: Record<string, ContentTypeConfig> = {
   feedback: feedbackContentType,
   milestones: milestoneContentType,
   organizations: organizationContentType,
+  guides: guideContentType,
 };
 
 /** Get all content type IDs */

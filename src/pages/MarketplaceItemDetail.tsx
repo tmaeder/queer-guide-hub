@@ -26,7 +26,7 @@ import {
 } from './MarketplaceItemDetail.parts';
 import { MarketplaceGallery } from '@/components/marketplace/MarketplaceGallery';
 import type { ListingTag } from '@/hooks/usePageFetchers';
-import { ListingFeaturedInGuides } from '@/components/marketplace/FeaturedInGuides';
+import { FeaturedInGuides } from '@/components/guides/FeaturedInGuides';
 
 interface ListingBundle {
   listing: MarketplaceListing;
@@ -241,7 +241,7 @@ export default function MarketplaceItemDetail() {
           label: 'Overview',
           content: (
             <div className="flex flex-col gap-6">
-              <ListingFeaturedInGuides listingId={listing.id} />
+              <FeaturedInGuides entityType="marketplace" entityId={listing.id} />
               <MarketplaceContent listing={listing} reviews={reviews} tags={tags} />
             </div>
           ),

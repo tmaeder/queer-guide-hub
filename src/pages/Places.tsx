@@ -14,6 +14,7 @@ import { GeoCard } from '@/components/places/GeoCard';
 import { AtlasHero } from '@/components/places/AtlasHero';
 import { PassportStrip } from '@/components/places/PassportStrip';
 import { EditorRail } from '@/components/places/EditorRail';
+import { GuidesRail } from '@/components/guides/GuidesRail';
 import { ContinentSection } from '@/components/places/ContinentSection';
 import { useEditorialRails } from '@/hooks/useEditorialRails';
 import { usePlacesPassport } from '@/hooks/usePlacesPassport';
@@ -368,6 +369,7 @@ export default function Places() {
                   topQueerCountries={topQueerCountries}
                   countriesWithContent={countriesWithContent}
                 />
+                <GuidesRail filters={{ format: 'guide', limit: 3 }} />
               </TabsContent>
 
               <TabsContent value="map">

@@ -27,6 +27,7 @@ import {
   MessageCircle,
   User,
   History,
+  BookOpen,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -64,6 +65,7 @@ export const DESTINATIONS: NavDestination[] = [
   { to: '/events', icon: Calendar, labelKey: 'header.nav.events', cluster: 'community', searchType: 'event', primary: true },
   { to: '/places', icon: Globe, labelKey: 'header.nav.places', cluster: 'places', primary: true },
   { to: '/marketplace', icon: Store, labelKey: 'header.nav.marketplace', cluster: 'shop', searchType: 'marketplace', primary: true },
+  { to: '/guides', icon: BookOpen, labelKey: 'header.nav.guides', cluster: 'shop', searchType: 'guide', primary: true },
   { to: '/news', icon: Newspaper, labelKey: 'header.nav.news', cluster: 'shop', searchType: 'news', primary: true },
   { to: '/map', icon: Map, labelKey: 'header.nav.map', cluster: 'places' },
   { to: '/community/feed', icon: Rss, labelKey: 'header.nav.feed', cluster: 'community' },
@@ -116,6 +118,7 @@ export const BOTTOM_NAV_TABS: BottomNavTab[] = [
       '/events',
       '/places',
       '/marketplace',
+      '/guides',
       '/news',
       '/map',
       '/people',

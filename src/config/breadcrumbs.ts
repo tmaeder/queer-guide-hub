@@ -32,7 +32,7 @@ const SEGMENT_SECTIONS: Record<string, { path: string; key: string; fallback: st
   cities: { path: '/cities', key: 'breadcrumb.cities', fallback: 'Cities' },
   city: { path: '/places', key: 'breadcrumb.places', fallback: 'Places' },
   country: { path: '/places', key: 'breadcrumb.places', fallback: 'Places' },
-  quests: { path: '/quests', key: 'breadcrumb.quests', fallback: 'Quests' },
+  guides: { path: '/guides', key: 'breadcrumb.guides', fallback: 'Guides' },
   groups: { path: '/groups', key: 'breadcrumb.groups', fallback: 'Groups' },
   trips: { path: '/trips', key: 'breadcrumb.trips', fallback: 'Trips' },
   help: { path: '/help', key: 'breadcrumb.help', fallback: 'Help' },

@@ -33,13 +33,11 @@ export const ADMIN_AREA_DESCRIPTIONS: Record<string, string> = {
   '/admin/villages': 'Queer villages and neighborhoods. Edit listings, scores, and venue links.',
   '/admin/content/marketplace_listings':
     'Marketplace products. Edit listings, prices, and affiliate links.',
-  '/admin/marketplace/guides': 'Marketplace guides. Curate product roundups.',
-  '/admin/venue-guides': 'Venue guides. Curate place roundups.',
+  '/admin/content/guides': 'Guides. Curate editorial guides, lists, and community quests.',
   '/admin/content/community_groups': 'Community groups. Edit listings and details.',
   '/admin/content/group-requests': 'Group join requests. Approve or reject pending members.',
   '/admin/places-editorial':
-    'Editorial drafts. Review LLM-written hooks, rails, and covers before publish.',
-  '/admin/quests': 'Editorial quests. Manage content-improvement tasks.',
+    'Editorial drafts. Review LLM-written hooks and covers before publish.',
   '/admin/content/unified_tags': 'Tags. Manage the taxonomy, merge duplicates, prune orphans.',
   '/admin/content/cms_pages': 'CMS pages. Edit static and editorial pages.',
   '/admin/media': 'Media & brand assets. Upload, tag, govern access, and version.',
