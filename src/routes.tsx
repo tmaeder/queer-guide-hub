@@ -120,11 +120,13 @@ const Contributors = lazyRetry(() => import('./pages/Contributors'));
 const Hotels = lazyRetry(() => import('./pages/Hotels'));
 const HotelDetail = lazyRetry(() => import('./pages/HotelDetail'));
 const QueerVillageDetail = lazyRetry(() => import('./pages/QueerVillageDetail'));
+const PlaceDetail = lazyRetry(() => import('./pages/PlaceDetail'));
 // Festivals routes now redirect to /events (festivals integrated into events)
 
 // New admin pages
 const AdminHotels = lazyRetry(() => import('./pages/admin/AdminHotels'));
 const AdminQueerVillages = lazyRetry(() => import('./pages/admin/AdminQueerVillages'));
+const AdminGeography = lazyRetry(() => import('./pages/admin/AdminGeography'));
 const AdminVillageQuality = lazyRetry(() => import('./pages/admin/AdminVillageQuality'));
 const AdminInbox = lazyRetry(() => import('./pages/admin/AdminInbox'));
 const AdminAutomation = lazyRetry(() => import('./pages/admin/AdminAutomation'));
@@ -443,6 +445,7 @@ export const AppRoutes = () => {
                 <Route path="content/group-requests" element={<AdminGroupRequests />} />
                 <Route path="hotels" element={<AdminHotels />} />
                 <Route path="villages" element={<AdminQueerVillages />} />
+                <Route path="geography" element={<AdminGeography />} />
 
                 {/* System section */}
                 <Route path="users" element={<AdminUsers />} />
@@ -556,6 +559,7 @@ export const AppRoutes = () => {
                 <Route path="hotels/:slug" element={<HotelDetail />} />
                 <Route path="villages" element={<Navigate to="/places" replace />} />
                 <Route path="villages/:slug" element={<QueerVillageDetail />} />
+                <Route path="place/:slug" element={<PlaceDetail />} />
                 <Route path="festivals" element={<Navigate to="/events" replace />} />
                 <Route path="festivals/:id" element={<Navigate to="/events" replace />} />
                 <Route path="places" element={<Places />} />

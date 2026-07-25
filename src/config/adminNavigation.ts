@@ -46,6 +46,7 @@ import {
   Waypoints,
   Store,
   BadgeCheck,
+  Network,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import type { AdminRole } from '@/config/adminRoles';
@@ -190,6 +191,13 @@ export const adminNavSections: AdminNavSection[] = [
         icon: Calendar,
         route: '/admin/content/events',
         countTable: 'events',
+        group: 'Places',
+      },
+      {
+        id: 'geography',
+        label: 'Geography',
+        icon: Network,
+        route: '/admin/geography',
         group: 'Places',
       },
       {
