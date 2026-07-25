@@ -29,6 +29,9 @@ export interface MerchantUpsert {
   is_enabled?: boolean;
   affiliate_partner_id?: string | null;
   organization_id?: string | null;
+  // migration 20260726090000 — Awin conversion linkage + secret indirection
+  awin_advertiser_id?: string | null;
+  api_key_env?: string | null;
 }
 
 export interface SyncResult {
