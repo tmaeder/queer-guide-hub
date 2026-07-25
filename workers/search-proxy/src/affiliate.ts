@@ -9,7 +9,7 @@
  */
 
 import type { Env } from "./index";
-import { loadPartners, type Partner, type PartnerRegistry } from "./partnerRegistry";
+import { loadPartners, type Partner } from "./partnerRegistry";
 
 const SURFACES = new Set([
 	"venue", "event", "city", "country", "news", "personality", "hotel",
