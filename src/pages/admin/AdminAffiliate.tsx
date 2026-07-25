@@ -1,33 +1,27 @@
 /**
- * /admin/affiliate — surface-attributed affiliate performance.
+ * /admin/affiliate — the affiliate cockpit.
  *
- * Reads affiliate_click_summary(p_days): clicks + impressions + CTR grouped
- * by surface × partner × vertical. This is the dimension the project was
- * missing — "which surface earns". Realized-commission reconciliation
- * (Travelpayouts stats API) is a Phase-4 follow-up.
+ * Performance  clicks/impressions/CTR by surface × partner × vertical
+ * Revenue      realized commissions (affiliate_conversions ← Awin/TP/Amazon)
+ * Merchants    every marketplace vendor: stats + sync + affiliate config
+ * Partners     affiliate_partners registry — consumed LIVE by the /go worker
+ * Link health  marketplace link-rot rollup (marketplace-link-checker)
  */
 
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { useSearchParams } from 'react-router';
-import { useQuery } from '@tanstack/react-query';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
-import { untypedSupabase } from '@/integrations/supabase/untyped';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { AffiliatePartnersManager } from '@/components/admin/AffiliatePartnersManager';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { monoChartPalette, monoChartAxis } from '@/lib/chartPalette';
+import { PerformancePanel } from '@/components/admin/affiliate/PerformancePanel';
+import { RevenuePanel } from '@/components/admin/affiliate/RevenuePanel';
+import { MerchantsManager } from '@/components/admin/affiliate/MerchantsManager';
+import { LinkHealthPanel } from '@/components/admin/affiliate/LinkHealthPanel';
+import { RegistryDriftCard } from '@/components/admin/affiliate/RegistryDriftCard';
 
-interface SummaryRow {
-  surface: string;
-  partner: string;
-  vertical: string;
-  clicks: number;
-  impressions: number;
-  ctr: number | null;
-  last_click: string | null;
-}
+const TABS = ['performance', 'revenue', 'merchants', 'partners', 'link-health'] as const;
+type Tab = (typeof TABS)[number];
 
 const PERIODS = [
   { value: '7', label: 'Last 7 days' },
@@ -40,201 +34,94 @@ const VERTICALS = [
   { value: 'shopping', label: 'Shopping only' },
 ];
 
+const HEADERS: Record<Tab, { title: string; subtitle: string }> = {
+  performance: {
+    title: 'Affiliate performance',
+    subtitle: 'Clicks attributed by surface. Which part of the product earns.',
+  },
+  revenue: {
+    title: 'Affiliate revenue',
+    subtitle: 'Realized commissions reconciled from Awin, Travelpayouts and Amazon.',
+  },
+  merchants: {
+    title: 'Marketplace merchants',
+    subtitle: 'All vendors: sync state, listings, link health, clicks, commission and affiliate config.',
+  },
+  partners: {
+    title: 'Affiliate partners',
+    subtitle: 'Partner registry — served live to the /go redirect worker.',
+  },
+  'link-health': {
+    title: 'Link health',
+    subtitle: 'Outbound link rot across marketplace listings, swept daily.',
+  },
+};
+
 export default function AdminAffiliate() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const tab = searchParams.get('tab') === 'partners' ? 'partners' : 'performance';
+  const tabParam = searchParams.get('tab') as Tab | null;
+  const tab: Tab = tabParam && TABS.includes(tabParam) ? tabParam : 'performance';
   const [days, setDays] = useState('30');
   const [vertical, setVertical] = useState('all');
 
-  const { data, isLoading, error } = useQuery({
-    queryKey: ['affiliate-summary', days, vertical],
-    queryFn: async (): Promise<SummaryRow[]> => {
-      const { data, error } = await untypedSupabase.rpc('affiliate_click_summary', {
-        p_days: Number(days),
-        p_vertical: vertical === 'all' ? null : vertical,
-      });
-      if (error) throw error;
-      return (data ?? []) as SummaryRow[];
-    },
-  });
-
-  // Shopping monetization coverage: active listings carrying a REAL
-  // affiliate_url (the truth backfill clears fake external_url copies, so
-  // post-cleanup non-null means monetized).
-  const { data: coverage } = useQuery({
-    queryKey: ['affiliate-mkt-coverage'],
-    queryFn: async () => {
-      const base = untypedSupabase.from('marketplace_listings');
-      const [{ count: total }, { count: covered }] = await Promise.all([
-        base.select('id', { count: 'exact', head: true }).eq('status', 'active'),
-        base.select('id', { count: 'exact', head: true }).eq('status', 'active').not('affiliate_url', 'is', null),
-      ]);
-      return { total: total ?? 0, covered: covered ?? 0 };
-    },
-  });
-
-  const rows = useMemo(() => data ?? [], [data]);
-
-  const totals = useMemo(() => {
-    const clicks = rows.reduce((s, r) => s + Number(r.clicks), 0);
-    const impressions = rows.reduce((s, r) => s + Number(r.impressions), 0);
-    return { clicks, impressions, ctr: impressions ? clicks / impressions : null };
-  }, [rows]);
-
-  const bySurface = useMemo(() => {
-    const map = new Map<string, number>();
-    for (const r of rows) map.set(r.surface, (map.get(r.surface) ?? 0) + Number(r.clicks));
-    return [...map.entries()].map(([surface, clicks]) => ({ surface, clicks })).sort((a, b) => b.clicks - a.clicks);
-  }, [rows]);
-
-  const palette = monoChartPalette(Math.max(bySurface.length, 1));
-
-  const tabsBar = (
-    <Tabs
-      value={tab}
-      onValueChange={(v) =>
-        setSearchParams(v === 'partners' ? { tab: 'partners' } : {}, { replace: true })
-      }
-      className="mb-6"
-    >
-      <TabsList>
-        <TabsTrigger value="performance">Performance</TabsTrigger>
-        <TabsTrigger value="partners">Partners</TabsTrigger>
-      </TabsList>
-    </Tabs>
-  );
-
-  if (tab === 'partners') {
-    return (
-      <div className="p-6">
-        <AdminPageHeader
-          eyebrow="COCKPIT · AFFILIATE"
-          title="Affiliate partners"
-          subtitle="Partner registry: domains, URL patterns and redirect templates."
-        />
-        {tabsBar}
-        <AffiliatePartnersManager />
-      </div>
-    );
-  }
+  const showPeriod = tab !== 'partners';
 
   return (
     <div className="p-6">
       <AdminPageHeader
         eyebrow="COCKPIT · AFFILIATE"
-        title="Affiliate performance"
-        subtitle="Travelpayouts clicks attributed by surface. Which part of the product earns."
+        title={HEADERS[tab].title}
+        subtitle={HEADERS[tab].subtitle}
         actions={
-          <div className="flex gap-2">
-            <Select value={vertical} onValueChange={setVertical}>
-              <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                {VERTICALS.map((v) => (
-                  <SelectItem key={v.value} value={v.value}>{v.label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Select value={days} onValueChange={setDays}>
-              <SelectTrigger className="w-44"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                {PERIODS.map((p) => (
-                  <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          showPeriod ? (
+            <div className="flex gap-2">
+              {tab === 'performance' && (
+                <Select value={vertical} onValueChange={setVertical}>
+                  <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {VERTICALS.map((v) => (
+                      <SelectItem key={v.value} value={v.value}>{v.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+              <Select value={days} onValueChange={setDays}>
+                <SelectTrigger className="w-44"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {PERIODS.map((p) => (
+                    <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          ) : undefined
         }
       />
 
-      {tabsBar}
+      <Tabs
+        value={tab}
+        onValueChange={(v) => setSearchParams(v === 'performance' ? {} : { tab: v }, { replace: true })}
+        className="mb-6"
+      >
+        <TabsList>
+          <TabsTrigger value="performance">Performance</TabsTrigger>
+          <TabsTrigger value="revenue">Revenue</TabsTrigger>
+          <TabsTrigger value="merchants">Merchants</TabsTrigger>
+          <TabsTrigger value="partners">Partners</TabsTrigger>
+          <TabsTrigger value="link-health">Link health</TabsTrigger>
+        </TabsList>
+      </Tabs>
 
-      {error && (
-        <p className="text-13 text-destructive">Failed to load affiliate data: {(error as Error).message}</p>
+      {tab === 'performance' && <PerformancePanel days={days} vertical={vertical} />}
+      {tab === 'revenue' && <RevenuePanel days={days} />}
+      {tab === 'merchants' && <MerchantsManager days={days} />}
+      {tab === 'partners' && (
+        <>
+          <RegistryDriftCard />
+          <AffiliatePartnersManager />
+        </>
       )}
-
-      {/* Top-line totals */}
-      <div className="mb-8 grid grid-cols-4 gap-4">
-        <Stat label="Clicks" value={totals.clicks.toLocaleString()} />
-        <Stat label="Impressions" value={totals.impressions.toLocaleString()} />
-        <Stat label="CTR" value={totals.ctr == null ? '—' : `${(totals.ctr * 100).toFixed(1)}%`} />
-        <Stat
-          label="Shopping affiliate coverage"
-          value={
-            coverage && coverage.total > 0
-              ? `${((coverage.covered / coverage.total) * 100).toFixed(0)}% (${coverage.covered.toLocaleString()}/${coverage.total.toLocaleString()})`
-              : '—'
-          }
-        />
-      </div>
-
-      {/* Clicks by surface */}
-      {bySurface.length > 0 && (
-        <section className="mb-8">
-          <h2 className="mb-4 text-15 font-semibold">Clicks by surface</h2>
-          <div className="h-64 w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={bySurface} layout="vertical" margin={{ top: 4, right: 16, bottom: 4, left: 8 }}>
-                <XAxis type="number" {...monoChartAxis} />
-                <YAxis type="category" dataKey="surface" width={96} {...monoChartAxis} />
-                <Tooltip cursor={{ fill: 'hsl(var(--muted))' }} />
-                <Bar dataKey="clicks" radius={[0, 4, 4, 0]}>
-                  {bySurface.map((_, i) => (
-                    <Cell key={i} fill={palette[i % palette.length]} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </section>
-      )}
-
-      {/* Detail table */}
-      <section>
-        <h2 className="mb-4 text-15 font-semibold">Surface × partner × vertical</h2>
-        {isLoading ? (
-          <p className="text-13 text-muted-foreground">Loading…</p>
-        ) : rows.length === 0 ? (
-          <p className="text-13 text-muted-foreground">No affiliate clicks in this window yet.</p>
-        ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Surface</TableHead>
-                <TableHead>Partner</TableHead>
-                <TableHead>Vertical</TableHead>
-                <TableHead className="text-right">Clicks</TableHead>
-                <TableHead className="text-right">Impr.</TableHead>
-                <TableHead className="text-right">CTR</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {rows.map((r, i) => (
-                <TableRow key={`${r.surface}-${r.partner}-${r.vertical}-${i}`}>
-                  <TableCell className="font-medium">{r.surface}</TableCell>
-                  <TableCell>{r.partner}</TableCell>
-                  <TableCell className="text-muted-foreground">{r.vertical}</TableCell>
-                  <TableCell className="text-right tabular-nums">{Number(r.clicks).toLocaleString()}</TableCell>
-                  <TableCell className="text-right tabular-nums text-muted-foreground">
-                    {Number(r.impressions).toLocaleString()}
-                  </TableCell>
-                  <TableCell className="text-right tabular-nums">
-                    {r.ctr == null ? '—' : `${(Number(r.ctr) * 100).toFixed(1)}%`}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        )}
-      </section>
-    </div>
-  );
-}
-
-function Stat({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-element border border-border p-4">
-      <p className="text-2xs uppercase tracking-[0.14em] text-muted-foreground">{label}</p>
-      <p className="mt-1 text-headline font-bold tabular-nums">{value}</p>
+      {tab === 'link-health' && <LinkHealthPanel days={days} />}
     </div>
   );
 }

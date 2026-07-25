@@ -480,3 +480,7 @@ verify_jwt = false
 # here, so a redeploy would flip it to verify_jwt=true and 401 the translate cron.
 [functions.translate-i18n-batch]
 verify_jwt = false
+
+# Cron target (pg_cron x-internal-secret) — self-gates via requireInternalOrAdmin.
+[functions.affiliate-conversions-sync]
+verify_jwt = false

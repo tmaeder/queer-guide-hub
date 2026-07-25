@@ -23,7 +23,7 @@ import { withErrorReporting } from '../_shared/report-api-error.ts'
 //
 // Body: { limit?, provider?, dry_run?, pipeline_run_id?, max_pages?, merchant_id? }
 // merchant_id targets ONE merchant directly (admin "Sync now" / test-sync from
-// /admin/vendors), bypassing the LRU due-ness selector.
+// /admin/vendors and the affiliate cockpit), bypassing the LRU due-ness selector.
 // ============================================================
 
 const PROVIDER_FN: Record<string, string> = {
