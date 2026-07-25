@@ -22,9 +22,8 @@ import { AffiliateDisclosure } from '@/components/marketplace/AffiliateDisclosur
 import { CuratedIdsProvider } from '@/components/marketplace/CuratedIdsContext';
 import { useCuratedIds } from '@/components/marketplace/useCuratedIds';
 import { ZeroResultRescue } from '@/components/marketplace/ZeroResultRescue';
-import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Button } from '@/components/ui/button';
-import { Plus, ArrowRight } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { ErrorState, LoadingTimeout } from '@/components/ui/EmptyState';
 import { useDidYouMean } from '@/hooks/useDidYouMean';
