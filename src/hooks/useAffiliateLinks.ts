@@ -4,7 +4,11 @@ import type { AffiliatePartner } from '@/lib/affiliate';
 import type { Database } from '@/integrations/supabase/types';
 
 type PartnerRow = Database['public']['Tables']['affiliate_partners']['Row'];
-type PartnerInsert = Database['public']['Tables']['affiliate_partners']['Insert'];
+// go_key/sub_field land via migration 20260726090000 — not in generated types yet.
+type PartnerInsert = Database['public']['Tables']['affiliate_partners']['Insert'] & {
+  go_key?: string | null;
+  sub_field?: string;
+};
 
 function rowToPartner(row: PartnerRow): AffiliatePartner {
   return {

@@ -25,6 +25,8 @@ import { Badge } from '@/components/ui/badge';
 import { useAffiliateLinks } from '@/hooks/useAffiliateLinks';
 import { toast } from 'sonner';
 
+const SUB_FIELDS = ['sub_id', 'booking_label', 'gyg_placement'] as const;
+
 const emptyForm = {
   partner_name: '',
   domains: '',
@@ -33,6 +35,8 @@ const emptyForm = {
   redirect_template: '',
   notes: '',
   enabled: true,
+  go_key: '',
+  sub_field: 'sub_id',
 };
 
 export function AffiliatePartnersManager() {
@@ -66,6 +70,8 @@ export function AffiliatePartnersManager() {
       redirect_template: p.redirect_template ?? '',
       notes: ((p as unknown as Record<string, unknown>).notes as string) ?? '',
       enabled: p.enabled,
+      go_key: ((p as unknown as Record<string, unknown>).go_key as string) ?? '',
+      sub_field: ((p as unknown as Record<string, unknown>).sub_field as string) ?? 'sub_id',
     });
     setDialogOpen(true);
   };
@@ -100,6 +106,8 @@ export function AffiliatePartnersManager() {
         redirect_template: form.redirect_template || null,
         notes: form.notes || null,
         enabled: form.enabled,
+        go_key: form.go_key.trim() || null,
+        sub_field: form.sub_field,
       };
       if (editId) {
         await updatePartner(editId, payload);
@@ -256,6 +264,33 @@ export function AffiliatePartnersManager() {
               <p className="text-xs text-muted-foreground">
                 Key-value pairs appended to matching URLs
               </p>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="go_key">Go key</Label>
+                <Input
+                  id="go_key"
+                  value={form.go_key}
+                  onChange={(e) => setForm((f) => ({ ...f, go_key: e.target.value }))}
+                  placeholder="booking"
+                />
+                <p className="text-xs text-muted-foreground">
+                  /go?p= key. Enabled rows with a go key are served live to the redirect worker.
+                </p>
+              </div>
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="sub_field">Sub-id field</Label>
+                <select
+                  id="sub_field"
+                  className="h-9 rounded-element border border-input bg-background px-2 text-sm"
+                  value={form.sub_field}
+                  onChange={(e) => setForm((f) => ({ ...f, sub_field: e.target.value }))}
+                >
+                  {SUB_FIELDS.map((s) => (
+                    <option key={s} value={s}>{s}</option>
+                  ))}
+                </select>
+              </div>
             </div>
             <div className="flex flex-col gap-2">
               <Label htmlFor="redirect_template">Redirect Template (optional)</Label>
