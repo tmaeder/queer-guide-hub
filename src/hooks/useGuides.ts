@@ -218,7 +218,9 @@ export function useActiveQuestGuide() {
       const { data, error } = await untypedSupabase.rpc('active_quest_guide');
       if (error) throw error;
       const row = Array.isArray(data) ? data[0] : data;
-      return (row ?? null) as Guide | null;
+      // RETURNS guides with no match serializes as an all-null composite row —
+      // truthy in JS, so require the id.
+      return row && (row as Guide).id ? (row as Guide) : null;
     },
     staleTime: 60_000,
   });
