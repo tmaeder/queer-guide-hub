@@ -248,6 +248,58 @@ describe('Entity / format / sourceType filters', () => {
   });
 });
 
+describe('Governance filters (DAM)', () => {
+  it("access:internal → .eq('access_level', 'internal')", async () => {
+    withResults({ data: [], error: null, count: 0 });
+    renderHook(() => useUnifiedMedia(defaultParams({ search: 'access:Internal' })), { wrapper });
+    await waitFor(() => expect(state.calls).toHaveLength(1));
+    const eq = state.calls[0].chain.find(
+      s => s.method === 'eq' && (s.args as [string, unknown])[0] === 'access_level',
+    );
+    expect(eq?.args).toEqual(['access_level', 'internal']);
+  });
+
+  it("cat:logo → .eq('brand_category', 'logo')", async () => {
+    withResults({ data: [], error: null, count: 0 });
+    renderHook(() => useUnifiedMedia(defaultParams({ search: 'cat:Logo' })), { wrapper });
+    await waitFor(() => expect(state.calls).toHaveLength(1));
+    const eq = state.calls[0].chain.find(
+      s => s.method === 'eq' && (s.args as [string, unknown])[0] === 'brand_category',
+    );
+    expect(eq?.args).toEqual(['brand_category', 'logo']);
+  });
+
+  it("tag:pride → .contains('tags', ['pride'])", async () => {
+    withResults({ data: [], error: null, count: 0 });
+    renderHook(() => useUnifiedMedia(defaultParams({ search: 'tag:Pride' })), { wrapper });
+    await waitFor(() => expect(state.calls).toHaveLength(1));
+    const contains = state.calls[0].chain.find(
+      s => s.method === 'contains' && (s.args as [string, unknown])[0] === 'tags',
+    );
+    expect(contains?.args).toEqual(['tags', ['pride']]);
+  });
+
+  it("accessFilter chip !== 'all' → .eq('access_level', value)", async () => {
+    withResults({ data: [], error: null, count: 0 });
+    renderHook(() => useUnifiedMedia(defaultParams({ accessFilter: 'partner' })), { wrapper });
+    await waitFor(() => expect(state.calls).toHaveLength(1));
+    const eq = state.calls[0].chain.find(
+      s => s.method === 'eq' && (s.args as [string, unknown])[0] === 'access_level',
+    );
+    expect(eq?.args).toEqual(['access_level', 'partner']);
+  });
+
+  it('tagFilter chip → .contains(\'tags\', selected)', async () => {
+    withResults({ data: [], error: null, count: 0 });
+    renderHook(() => useUnifiedMedia(defaultParams({ tagFilter: ['festival'] })), { wrapper });
+    await waitFor(() => expect(state.calls).toHaveLength(1));
+    const contains = state.calls[0].chain.find(
+      s => s.method === 'contains' && (s.args as [string, unknown])[0] === 'tags',
+    );
+    expect(contains?.args).toEqual(['tags', ['festival']]);
+  });
+});
+
 describe('Error path', () => {
   it('throws when supabase returns an error', async () => {
     withResults({ data: null, error: { message: 'rls' } });

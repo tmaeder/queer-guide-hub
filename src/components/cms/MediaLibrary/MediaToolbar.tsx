@@ -45,12 +45,12 @@ interface MediaToolbarProps {
   onFormatFilterChange: (v: FormatFilter) => void;
   sourceTypeFilter: SourceTypeFilter;
   onSourceTypeFilterChange: (v: SourceTypeFilter) => void;
-  accessFilter: AccessLevelFilter;
-  onAccessFilterChange: (v: AccessLevelFilter) => void;
-  brandCategoryFilter: BrandCategoryFilter;
-  onBrandCategoryFilterChange: (v: BrandCategoryFilter) => void;
-  tagFilter: string[];
-  onTagFilterChange: (v: string[]) => void;
+  accessFilter?: AccessLevelFilter;
+  onAccessFilterChange?: (v: AccessLevelFilter) => void;
+  brandCategoryFilter?: BrandCategoryFilter;
+  onBrandCategoryFilterChange?: (v: BrandCategoryFilter) => void;
+  tagFilter?: string[];
+  onTagFilterChange?: (v: string[]) => void;
   sortBy: SortBy;
   onSortByChange: (v: SortBy) => void;
   sortDir: SortDir;
@@ -74,11 +74,11 @@ export function MediaToolbar(props: MediaToolbarProps) {
     onFormatFilterChange,
     sourceTypeFilter,
     onSourceTypeFilterChange,
-    accessFilter,
+    accessFilter = 'all',
     onAccessFilterChange,
-    brandCategoryFilter,
+    brandCategoryFilter = 'all',
     onBrandCategoryFilterChange,
-    tagFilter,
+    tagFilter = [],
     onTagFilterChange,
     sortBy,
     onSortByChange,
@@ -96,7 +96,7 @@ export function MediaToolbar(props: MediaToolbarProps) {
   const addTag = () => {
     const slug = tagDraft.trim().toLowerCase();
     if (slug && !tagFilter.includes(slug)) {
-      onTagFilterChange([...tagFilter, slug]);
+      onTagFilterChange?.([...tagFilter, slug]);
     }
     setTagDraft('');
   };
@@ -232,7 +232,7 @@ export function MediaToolbar(props: MediaToolbarProps) {
           </SelectContent>
         </Select>
 
-        <Select value={accessFilter} onValueChange={(v) => onAccessFilterChange(v as AccessLevelFilter)}>
+        <Select value={accessFilter} onValueChange={(v) => onAccessFilterChange?.(v as AccessLevelFilter)}>
           <SelectTrigger style={{ width: 120 }} className="text-13">
             <SelectValue />
           </SelectTrigger>
@@ -244,7 +244,7 @@ export function MediaToolbar(props: MediaToolbarProps) {
           </SelectContent>
         </Select>
 
-        <Select value={brandCategoryFilter} onValueChange={(v) => onBrandCategoryFilterChange(v as BrandCategoryFilter)}>
+        <Select value={brandCategoryFilter} onValueChange={(v) => onBrandCategoryFilterChange?.(v as BrandCategoryFilter)}>
           <SelectTrigger style={{ width: 130 }} className="text-13">
             <SelectValue />
           </SelectTrigger>
@@ -292,9 +292,9 @@ export function MediaToolbar(props: MediaToolbarProps) {
               onEntityTypeFilterChange('all');
               onFormatFilterChange('all');
               onSourceTypeFilterChange('all');
-              onAccessFilterChange('all');
-              onBrandCategoryFilterChange('all');
-              onTagFilterChange([]);
+              onAccessFilterChange?.('all');
+              onBrandCategoryFilterChange?.('all');
+              onTagFilterChange?.([]);
             }}
           >
             Clear filters
@@ -311,7 +311,7 @@ export function MediaToolbar(props: MediaToolbarProps) {
             <button
               type="button"
               aria-label={`Remove tag ${t}`}
-              onClick={() => onTagFilterChange(tagFilter.filter((x) => x !== t))}
+              onClick={() => onTagFilterChange?.(tagFilter.filter((x) => x !== t))}
               className="ml-0.5"
             >
               <X size={11} />
