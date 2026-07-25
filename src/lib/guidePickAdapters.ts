@@ -86,16 +86,17 @@ const ADAPTERS: Partial<Record<GuideEntityType, Adapter>> = {
   },
   event: {
     table: 'events',
-    select: 'id, slug, title, images, event_type, start_date, end_date, location',
+    select: 'id, slug, title, images, event_type, start_date, end_date, venue_name, city',
     toDisplay: (r) => {
       const start = fmtDate(r.start_date);
       const end = fmtDate(r.end_date);
       const dates = start && end && start !== end ? `${start} – ${end}` : start;
+      const place = str(r.venue_name) ?? str(r.city);
       return {
         name: str(r.title) ?? 'Event',
         href: `/events/${str(r.slug) ?? r.id}`,
         imagePath: firstImage(r.images),
-        metaLine: [dates, str(r.location)].filter(Boolean).join(' · ') || null,
+        metaLine: [dates, place].filter(Boolean).join(' · ') || null,
         categoryLabel: str(r.event_type),
       };
     },
@@ -118,12 +119,12 @@ const ADAPTERS: Partial<Record<GuideEntityType, Adapter>> = {
   },
   city: {
     table: 'cities',
-    select: 'id, slug, name, image_url, region',
+    select: 'id, slug, name, image_url',
     toDisplay: (r) => ({
       name: str(r.name) ?? 'City',
       href: `/city/${str(r.slug) ?? r.id}`,
       imagePath: str(r.image_url),
-      metaLine: str(r.region),
+      metaLine: null,
       categoryLabel: null,
     }),
   },
@@ -140,12 +141,12 @@ const ADAPTERS: Partial<Record<GuideEntityType, Adapter>> = {
   },
   queer_village: {
     table: 'queer_villages',
-    select: 'id, slug, name, image_url, city_name',
+    select: 'id, slug, name, image_url',
     toDisplay: (r) => ({
       name: str(r.name) ?? 'Village',
       href: `/villages/${str(r.slug) ?? r.id}`,
       imagePath: str(r.image_url),
-      metaLine: str(r.city_name),
+      metaLine: null,
       categoryLabel: null,
     }),
   },

@@ -40,8 +40,8 @@ const ENTITY_SOURCES: Record<string, { table: string; select: string; toCtx: (r:
   },
   event: {
     table: 'events',
-    select: 'id, title, event_type, location, start_date, end_date, description',
-    toCtx: (r) => ({ name: r.title, event_type: r.event_type, location: r.location, start_date: r.start_date, end_date: r.end_date, description: String(r.description ?? '').slice(0, 600) }),
+    select: 'id, title, event_type, venue_name, city, start_date, end_date, description',
+    toCtx: (r) => ({ name: r.title, event_type: r.event_type, venue: r.venue_name, city: r.city, start_date: r.start_date, end_date: r.end_date, description: String(r.description ?? '').slice(0, 600) }),
   },
   marketplace: {
     table: 'marketplace_listings',
@@ -50,8 +50,8 @@ const ENTITY_SOURCES: Record<string, { table: string; select: string; toCtx: (r:
   },
   city: {
     table: 'cities',
-    select: 'id, name, region, editorial_hook, description',
-    toCtx: (r) => ({ name: r.name, region: r.region, hook: r.editorial_hook, description: String(r.description ?? '').slice(0, 600) }),
+    select: 'id, name, editorial_hook, description',
+    toCtx: (r) => ({ name: r.name, hook: r.editorial_hook, description: String(r.description ?? '').slice(0, 600) }),
   },
   country: {
     table: 'countries',
@@ -60,8 +60,8 @@ const ENTITY_SOURCES: Record<string, { table: string; select: string; toCtx: (r:
   },
   queer_village: {
     table: 'queer_villages',
-    select: 'id, name, city_name, description',
-    toCtx: (r) => ({ name: r.name, city: r.city_name, description: String(r.description ?? '').slice(0, 600) }),
+    select: 'id, name, description',
+    toCtx: (r) => ({ name: r.name, description: String(r.description ?? '').slice(0, 600) }),
   },
 }
 
