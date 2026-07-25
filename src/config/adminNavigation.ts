@@ -322,7 +322,7 @@ export const adminNavSections: AdminNavSection[] = [
       },
       {
         id: 'media-library',
-        label: 'Media Library',
+        label: 'Media & Assets',
         icon: Image,
         route: '/admin/media',
         group: 'Taxonomy & Media',

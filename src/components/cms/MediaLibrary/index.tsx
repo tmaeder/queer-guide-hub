@@ -19,7 +19,7 @@ import { useUnifiedMedia, PAGE_SIZE } from '@/hooks/useUnifiedMedia';
 import { useMediaMutations } from '@/hooks/useMediaMutations';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import type { UnifiedMediaItem, ViewMode, SortBy, SortDir, StatusFilter, EntityTypeFilter, FormatFilter, SourceTypeFilter } from './types';
+import type { UnifiedMediaItem, ViewMode, SortBy, SortDir, StatusFilter, EntityTypeFilter, FormatFilter, SourceTypeFilter, AccessLevelFilter, BrandCategoryFilter } from './types';
 import { MediaToolbar } from './MediaToolbar';
 import { MediaGrid } from './MediaGrid';
 import { MediaUploadZone } from './MediaUploadZone';
@@ -38,6 +38,9 @@ export function MediaLibrary() {
   const [entityTypeFilter, setEntityTypeFilter] = useState<EntityTypeFilter>('all');
   const [formatFilter, setFormatFilter] = useState<FormatFilter>('all');
   const [sourceTypeFilter, setSourceTypeFilter] = useState<SourceTypeFilter>('all');
+  const [accessFilter, setAccessFilter] = useState<AccessLevelFilter>('all');
+  const [brandCategoryFilter, setBrandCategoryFilter] = useState<BrandCategoryFilter>('all');
+  const [tagFilter, setTagFilter] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState<SortBy>('created_at');
   const [sortDir, setSortDir] = useState<SortDir>('desc');
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
@@ -61,6 +64,9 @@ export function MediaLibrary() {
     entityTypeFilter,
     formatFilter,
     sourceTypeFilter,
+    accessFilter,
+    brandCategoryFilter,
+    tagFilter,
     sortBy,
     sortDir,
     enabled: isAdmin,
@@ -124,12 +130,15 @@ export function MediaLibrary() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h4 className="text-2xl font-bold">Media Library</h4>
+          <h4 className="text-2xl font-bold">Media &amp; Assets</h4>
           <p className="text-sm text-muted-foreground">
             {totalCount.toLocaleString()} items
           </p>
         </div>
         <div className="flex gap-2">
+          <Button variant="ghost" size="sm" asChild>
+            <a href="/brand" target="_blank" rel="noopener noreferrer">Brand guidelines</a>
+          </Button>
           <Button variant="outline" size="sm" onClick={handleBulkOptimize}>
             <Zap size={14} className="mr-1" />
             Optimize All
@@ -160,6 +169,12 @@ export function MediaLibrary() {
             onFormatFilterChange={(v) => { setFormatFilter(v); setPage(0); }}
             sourceTypeFilter={sourceTypeFilter}
             onSourceTypeFilterChange={(v) => { setSourceTypeFilter(v); setPage(0); }}
+            accessFilter={accessFilter}
+            onAccessFilterChange={(v) => { setAccessFilter(v); setPage(0); }}
+            brandCategoryFilter={brandCategoryFilter}
+            onBrandCategoryFilterChange={(v) => { setBrandCategoryFilter(v); setPage(0); }}
+            tagFilter={tagFilter}
+            onTagFilterChange={(v) => { setTagFilter(v); setPage(0); }}
             sortBy={sortBy}
             onSortByChange={(v) => { setSortBy(v); setPage(0); }}
             sortDir={sortDir}
