@@ -2606,7 +2606,11 @@
       "sensitiveContentBody": "该主题可能包含敏感内容。如果你需要支持，请访问我们的危机热线页面。",
       "sensitiveContentTitle": "敏感主题",
       "tableOfContents": "目录",
-      "viewAsGraph": "以图谱形式查看"
+      "viewAsGraph": "以图谱形式查看",
+      "hierarchy": "[ZH] In the taxonomy",
+      "broader": "[ZH] Broader",
+      "narrower": "[ZH] More specific",
+      "related": "[ZH] Related"
     },
     "graph": {
       "title": "标签关系图",

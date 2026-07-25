@@ -2606,7 +2606,11 @@
       "sensitiveContentBody": "이 주제에는 민감한 내용이 포함될 수 있습니다. 도움이 필요하면 위기 상담 전화 페이지를 방문하세요.",
       "sensitiveContentTitle": "민감한 주제",
       "tableOfContents": "목차",
-      "viewAsGraph": "그래프로 보기"
+      "viewAsGraph": "그래프로 보기",
+      "hierarchy": "[KO] In the taxonomy",
+      "broader": "[KO] Broader",
+      "narrower": "[KO] More specific",
+      "related": "[KO] Related"
     },
     "graph": {
       "title": "태그 관계 그래프",

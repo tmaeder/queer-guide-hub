@@ -2608,7 +2608,11 @@
       "sensitiveContentBody": "Dieses Thema kann sensible Inhalte enthalten. Wenn du Unterstützung brauchst, besuche unsere Seite mit Krisen-Hotlines.",
       "sensitiveContentTitle": "Sensibles Thema",
       "tableOfContents": "Inhalt",
-      "viewAsGraph": "Als Graph anzeigen"
+      "viewAsGraph": "Als Graph anzeigen",
+      "hierarchy": "[DE] In the taxonomy",
+      "broader": "[DE] Broader",
+      "narrower": "[DE] More specific",
+      "related": "[DE] Related"
     },
     "graph": {
       "title": "Tag-Beziehungsgraph",

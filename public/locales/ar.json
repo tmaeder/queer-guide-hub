@@ -2612,7 +2612,11 @@
       "sensitiveContentBody": "قد يحتوي هذا الموضوع على محتوى حساس. إذا كنت بحاجة إلى دعم، تفضل بزيارة صفحة خطوط المساعدة في الأزمات لدينا.",
       "sensitiveContentTitle": "موضوع حساس",
       "tableOfContents": "المحتويات",
-      "viewAsGraph": "عرض كرسم بياني"
+      "viewAsGraph": "عرض كرسم بياني",
+      "hierarchy": "[AR] In the taxonomy",
+      "broader": "[AR] Broader",
+      "narrower": "[AR] More specific",
+      "related": "[AR] Related"
     },
     "graph": {
       "title": "رسم علاقات الوسوم",

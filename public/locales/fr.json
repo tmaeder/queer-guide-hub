@@ -2612,7 +2612,11 @@
       "sensitiveContentBody": "Ce sujet peut contenir du contenu sensible. Si vous avez besoin de soutien, consultez notre page des lignes d'écoute de crise.",
       "sensitiveContentTitle": "Sujet sensible",
       "tableOfContents": "Sommaire",
-      "viewAsGraph": "Voir comme graphe"
+      "viewAsGraph": "Voir comme graphe",
+      "hierarchy": "[FR] In the taxonomy",
+      "broader": "[FR] Broader",
+      "narrower": "[FR] More specific",
+      "related": "[FR] Related"
     },
     "graph": {
       "title": "Graphe des relations",
