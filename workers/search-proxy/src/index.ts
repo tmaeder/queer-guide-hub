@@ -132,7 +132,7 @@ export default {
 				case "/go":
 					return await handleGo(request, env, ctx);
 				case "/go/registry":
-					return await handleGoRegistry(env);
+					return await handleGoRegistry(env, cors);
 				case "/track":
 					return await handleTrack(request, env, cors);
 				case "/onboarding":

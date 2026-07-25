@@ -133,7 +133,7 @@ export async function handleGo(request: Request, env: Env, ctx: ExecutionContext
  * is actually serving (db vs baked-in fallback) and its partner keys.
  * Non-secret: keys and hosts are already public in the frontend bundle.
  */
-export async function handleGoRegistry(env: Env): Promise<Response> {
+export async function handleGoRegistry(env: Env, cors: HeadersInit = {}): Promise<Response> {
 	const registry = await loadPartners(env);
 	return new Response(
 		JSON.stringify({
@@ -141,7 +141,7 @@ export async function handleGoRegistry(env: Env): Promise<Response> {
 			fetchedAt: registry.fetchedAt,
 			keys: Object.keys(registry.partners).sort(),
 		}),
-		{ headers: { "Content-Type": "application/json", "Cache-Control": "no-store" } },
+		{ headers: { ...cors, "Content-Type": "application/json", "Cache-Control": "no-store" } },
 	);
 }
 
