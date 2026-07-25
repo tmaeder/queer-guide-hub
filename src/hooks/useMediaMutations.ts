@@ -111,6 +111,22 @@ export function useMediaMutations() {
       item: UnifiedMediaItem;
       updates: { access_level?: AccessLevel; brand_category?: BrandCategory | null };
     }) => {
+      // A cms_media access-tier change must relocate the bytes to the bucket/prefix that
+      // enforces the new tier — client storage RLS can't do that (admins can't delete
+      // root-level cms-media objects), so route it through the service-role edge function
+      // which moves the object and patches the row atomically.
+      if (
+        item.source_type === 'cms_media' &&
+        updates.access_level &&
+        updates.access_level !== item.access_level
+      ) {
+        const body: Record<string, unknown> = { id: item.id, access_level: updates.access_level };
+        if (updates.brand_category !== undefined) body.brand_category = updates.brand_category;
+        const { error } = await supabase.functions.invoke('dam-relocate-asset', { body });
+        if (error) throw error;
+        return;
+      }
+
       const table = item.source_type === 'image_asset' ? 'image_assets' : 'cms_media';
       const patch: Record<string, unknown> = { ...updates };
       if (item.source_type === 'image_asset') patch.updated_at = new Date().toISOString();
