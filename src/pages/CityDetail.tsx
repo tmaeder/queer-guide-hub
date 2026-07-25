@@ -31,6 +31,7 @@ import { EditorialDetailLayout, type SectionDef } from '@/components/entity/edit
 import { CITY_SECTION_DEFS } from './city-detail/CitySectionDefs';
 import { PersonalitiesForEntity } from '@/components/discovery/PersonalitiesForEntity';
 import { NearbyTriptych } from '@/components/discovery/NearbyTriptych';
+import { CityLandmarksRail } from '@/components/geo/CityLandmarksRail';
 import {
   CityHero,
   CityAtAGlance,
@@ -376,6 +377,7 @@ export default function CityDetail() {
         sections={sections}
         footer={
           <div className="flex flex-col gap-12">
+            <CityLandmarksRail cityId={city.id} />
             <TrendingStrip city={city.name} />
             <CityVenueGuidesRail cityId={city.id} />
             <MarketplaceForCity cityName={city.name} cityId={city.id} />
