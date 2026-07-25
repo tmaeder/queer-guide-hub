@@ -150,7 +150,6 @@ export function useGuide(slug: string | undefined) {
     queryFn: async (): Promise<GuideDetail | null> => {
       if (!slug) return null;
 
-      let guide: Guide | null = null;
       let redirectedFrom: string | null = null;
 
       const direct = await untypedFrom('guides')
@@ -159,7 +158,7 @@ export function useGuide(slug: string | undefined) {
         .eq('status', 'published')
         .maybeSingle();
       if (direct.error) throw direct.error;
-      guide = (direct.data ?? null) as Guide | null;
+      let guide = (direct.data ?? null) as Guide | null;
 
       if (!guide) {
         const { data: resolved, error: rerr } = await untypedSupabase.rpc('resolve_guide_slug', {
