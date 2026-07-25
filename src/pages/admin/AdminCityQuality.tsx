@@ -1,6 +1,7 @@
 import { Link } from 'react-router';
 import { Button } from '@/components/ui/button';
 import { CityQualityPanel } from '@/components/admin/CityQualityPanel';
+import { DedupPendingLink } from '@/components/admin/DedupPendingLink';
 import { CityReviewQueue } from '@/components/admin/review-queues/CityReviewQueue';
 import { Table2 } from 'lucide-react';
 
@@ -24,6 +25,7 @@ export default function AdminCityQuality() {
         </Button>
       </div>
       <CityQualityPanel />
+      <DedupPendingLink entityType="city" />
       <CityReviewQueue />
     </div>
   );
