@@ -35,9 +35,18 @@ export interface UnifiedMediaItem {
   version: number;
   version_group_id: string | null;
   tags: string[] | null;
+  template_status: TemplateStatus | null;
 }
 
 export type AccessLevel = 'public' | 'partner' | 'internal';
+
+export type TemplateStatus = 'draft' | 'approved' | 'deprecated';
+
+export const TEMPLATE_STATUSES: { value: TemplateStatus; label: string }[] = [
+  { value: 'draft', label: 'Draft' },
+  { value: 'approved', label: 'Approved' },
+  { value: 'deprecated', label: 'Deprecated' },
+];
 
 export type BrandCategory =
   | 'logo'

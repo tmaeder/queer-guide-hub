@@ -392,6 +392,10 @@ verify_jwt = true
 [functions.marketplace-image-mirror]
 verify_jwt = false
 
+# DAM phash backfill — internal-secret gated in-function (cron caller)
+[functions.image-phash-backfill]
+verify_jwt = false
+
 [functions.marketplace-relevance]
 verify_jwt = false
 

@@ -49,6 +49,7 @@ import {
 import { getOptimizationStatusBadge, formatFileSize, entityTypeLabel, entityAdminPath, getImageUrl } from './utils';
 import { GovernancePanel } from './GovernancePanel';
 import { AssetVersionSidebar } from './AssetVersionSidebar';
+import { SimilarImagesPanel } from './SimilarImagesPanel';
 import { useSignedMediaUrl } from '@/hooks/useSignedMediaUrl';
 import type { UnifiedMediaItem } from './types';
 
@@ -261,6 +262,11 @@ export function MediaDetailPage() {
 
       {/* Version history */}
       <AssetVersionSidebar detail={detail} />
+
+      {/* Visual similarity (image assets with a perceptual hash) */}
+      {detail.source_type === 'image_asset' && detail.phash && (
+        <SimilarImagesPanel assetId={detail.id} />
+      )}
 
       {/* Usage */}
       <Card>
