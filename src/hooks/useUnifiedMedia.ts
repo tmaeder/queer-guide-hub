@@ -21,9 +21,9 @@ export interface UnifiedMediaParams {
   entityTypeFilter: EntityTypeFilter;
   formatFilter: FormatFilter;
   sourceTypeFilter: SourceTypeFilter;
-  accessFilter: AccessLevelFilter;
-  brandCategoryFilter: BrandCategoryFilter;
-  tagFilter: string[];
+  accessFilter?: AccessLevelFilter;
+  brandCategoryFilter?: BrandCategoryFilter;
+  tagFilter?: string[];
   sortBy: SortBy;
   sortDir: SortDir;
   enabled?: boolean;
@@ -85,7 +85,7 @@ function parseSizeStr(s: string): number | undefined {
 }
 
 async function fetchUnifiedMedia(params: UnifiedMediaParams) {
-  const { page, search, statusFilter, entityTypeFilter, formatFilter, sourceTypeFilter, accessFilter, brandCategoryFilter, tagFilter, sortBy, sortDir } = params;
+  const { page, search, statusFilter, entityTypeFilter, formatFilter, sourceTypeFilter, accessFilter = 'all', brandCategoryFilter = 'all', tagFilter = [], sortBy, sortDir } = params;
   const from = page * PAGE_SIZE;
   const to = from + PAGE_SIZE - 1;
 
@@ -192,7 +192,7 @@ async function fetchUnifiedMedia(params: UnifiedMediaParams) {
 }
 
 export function useUnifiedMedia(params: UnifiedMediaParams) {
-  const { page, search, statusFilter, entityTypeFilter, formatFilter, sourceTypeFilter, accessFilter, brandCategoryFilter, tagFilter, sortBy, sortDir, enabled = true } = params;
+  const { page, search, statusFilter, entityTypeFilter, formatFilter, sourceTypeFilter, accessFilter = 'all', brandCategoryFilter = 'all', tagFilter = [], sortBy, sortDir, enabled = true } = params;
 
   return useQuery({
     queryKey: ['unified-media', page, search, statusFilter, entityTypeFilter, formatFilter, sourceTypeFilter, accessFilter, brandCategoryFilter, tagFilter.join(','), sortBy, sortDir],
