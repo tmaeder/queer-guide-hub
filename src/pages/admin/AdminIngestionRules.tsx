@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -286,6 +286,7 @@ export default function AdminIngestionRules() {
       </Card>
 
       <RuleEditDialog
+        key={`${editing?.id ?? 'new'}:${dialogOpen}`}
         rule={editing}
         open={dialogOpen}
         onClose={() => {
@@ -307,33 +308,21 @@ interface DialogProps {
   saving: boolean;
 }
 
+// Initial form values are derived from the rule prop; the dialog is keyed by
+// rule id + open state in the parent so it remounts (and re-derives) on open.
 function RuleEditDialog({ rule, open, onClose, onSave, saving }: DialogProps) {
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
-  const [priority, setPriority] = useState(100);
-  const [platforms, setPlatforms] = useState('');
-  const [anyOf, setAnyOf] = useState('');
-  const [allOf, setAllOf] = useState('');
-  const [regex, setRegex] = useState('');
-  const [addLabels, setAddLabels] = useState('');
-  const [setPriorityVal, setSetPriorityVal] = useState('');
-  const [forceReview, setForceReview] = useState(false);
-
-  useEffect(() => {
-    if (!rule || !open) return;
-    setName(rule.name);
-    setDescription(rule.description ?? '');
-    setPriority(rule.priority);
-    setPlatforms(rule.match.platforms?.join(', ') ?? '');
-    setAnyOf(rule.match.any_of?.join(', ') ?? '');
-    setAllOf(rule.match.all_of?.join(', ') ?? '');
-    setRegex(rule.match.regex ?? '');
-    setAddLabels(rule.actions.add_labels?.join(', ') ?? '');
-    setSetPriorityVal(
-      typeof rule.actions.set_priority === 'number' ? String(rule.actions.set_priority) : '',
-    );
-    setForceReview(Boolean(rule.actions.force_review));
-  }, [rule, open]);
+  const [name, setName] = useState(rule?.name ?? '');
+  const [description, setDescription] = useState(rule?.description ?? '');
+  const [priority, setPriority] = useState(rule?.priority ?? 100);
+  const [platforms, setPlatforms] = useState(rule?.match.platforms?.join(', ') ?? '');
+  const [anyOf, setAnyOf] = useState(rule?.match.any_of?.join(', ') ?? '');
+  const [allOf, setAllOf] = useState(rule?.match.all_of?.join(', ') ?? '');
+  const [regex, setRegex] = useState(rule?.match.regex ?? '');
+  const [addLabels, setAddLabels] = useState(rule?.actions.add_labels?.join(', ') ?? '');
+  const [setPriorityVal, setSetPriorityVal] = useState(
+    typeof rule?.actions.set_priority === 'number' ? String(rule.actions.set_priority) : '',
+  );
+  const [forceReview, setForceReview] = useState(Boolean(rule?.actions.force_review));
 
   const splitCsv = (s: string): string[] =>
     s
