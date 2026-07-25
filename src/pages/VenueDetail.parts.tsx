@@ -32,7 +32,7 @@ import { VenueEvents } from '@/components/venues/VenueEvents';
 import { VenueCheckInButton } from '@/components/venues/VenueCheckInButton';
 import { VenueRecentCheckins } from '@/components/venues/VenueRecentCheckins';
 import { VenueSafetySignalDisplay } from '@/components/venues/VenueSafetySignalDisplay';
-import { VenueFeaturedInGuides } from '@/components/venues/VenueFeaturedInGuides';
+import { FeaturedInGuides } from '@/components/guides/FeaturedInGuides';
 import { AmenityDisplay } from '@/components/venues/AmenityDisplay';
 import { DestinationSafetyCard } from '@/components/safety/DestinationSafetyCard';
 import EqualityScoreBadge from '@/components/country/EqualityScoreBadge';
@@ -534,7 +534,7 @@ export function VenueOverview({
 
   return (
     <div className="flex flex-col gap-10">
-      <VenueFeaturedInGuides venueId={venue.id} />
+      <FeaturedInGuides entityType="venue" entityId={venue.id} />
 
       {venue.organizations && (
         <LocalizedLink

@@ -14,16 +14,6 @@ export interface EditorialDraft {
   model: string | null;
 }
 
-export interface EditorialRailRow {
-  id: string;
-  slug: string;
-  title: string;
-  editor_note: string | null;
-  entity_type: EditorialEntityType;
-  status: 'draft' | 'published' | 'archived';
-  position: number;
-}
-
 export interface EditorialCoverRow {
   id: string;
   entity_type: EditorialEntityType;
@@ -125,52 +115,6 @@ export function useRejectDraft() {
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['editorial-drafts'] }),
-  });
-}
-
-// ---------------------------------------------------------------------------
-// Rails (admin view of all rails, draft + published + archived)
-// ---------------------------------------------------------------------------
-
-export function useAdminRails() {
-  return useQuery({
-    queryKey: ['editorial-rails-all'],
-    queryFn: async (): Promise<EditorialRailRow[]> => {
-      const { data, error } = await supabase
-        .from('editorial_rails')
-        .select('id, slug, title, editor_note, entity_type, status, position')
-        .order('position', { ascending: true });
-      if (error) throw error;
-      return (data ?? []) as EditorialRailRow[];
-    },
-  });
-}
-
-export function useCreateRail() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: async (input: Omit<EditorialRailRow, 'id'>) => {
-      const { error } = await supabase.from('editorial_rails').insert(input);
-      if (error) throw error;
-    },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['editorial-rails-all'] }),
-  });
-}
-
-export function useUpdateRail() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: async (input: { id: string; patch: Partial<EditorialRailRow> }) => {
-      const { error } = await supabase
-        .from('editorial_rails')
-        .update(input.patch)
-        .eq('id', input.id);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: ['editorial-rails-all'] });
-      void qc.invalidateQueries({ queryKey: ['editorial-rails-published'] });
-    },
   });
 }
 

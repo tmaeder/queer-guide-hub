@@ -1697,7 +1697,8 @@
       "hotels": "Hotéis",
       "help": "Ajuda",
       "tags": "Tags",
-      "history": "História"
+      "history": "História",
+      "guides": "[PT] Guides"
     },
     "userMenu": {
       "myTrips": "Minhas Viagens",
@@ -3063,7 +3064,8 @@
     "contributors": "Colaboradores",
     "wishlists": "Listas de desejos",
     "tags": "Tags",
-    "organizations": "[PT] Organizations"
+    "organizations": "[PT] Organizations",
+    "guides": "[PT] Guides"
   },
   "chat": {
     "react": "Reagir",
@@ -3531,6 +3533,126 @@
       "country": "[PT] Travel guide: {{name}}",
       "city": "[PT] City guide: {{name}}",
       "events": "[PT] Events in {{name}} today"
+    }
+  },
+  "guides": {
+    "hub": {
+      "title": "[PT] Guides",
+      "eyebrow": "[PT] Editorial",
+      "lede": "[PT] Comparison-driven guides, curated lists and community quests — written by editors, no fluff.",
+      "metaDescription": "[PT] Editor-written guides, curated lists and community quests across LGBTQ+ places, events and shopping.",
+      "empty": "[PT] No guides yet.",
+      "emptyHint": "[PT] New guides land regularly. Check back soon."
+    },
+    "format": {
+      "guide": "[PT] Guide",
+      "list": "[PT] List",
+      "quest": "[PT] Quest"
+    },
+    "card": {
+      "minRead": "[PT] {{count}} min read",
+      "picks": "[PT] {{count}} picks",
+      "open": "[PT] Open guide:",
+      "placeholder": "[PT] Editorial",
+      "communityQuest": "[PT] Community quest"
+    },
+    "boost": {
+      "homeCity": "[PT] Near you",
+      "interest": "[PT] Matches your interests",
+      "categoryAffinity": "[PT] Picks for you",
+      "featured": "[PT] Editor’s pick",
+      "continueReading": "[PT] Continue reading",
+      "activeQuest": "[PT] Quest live now"
+    },
+    "tier": {
+      "top": "[PT] Our pick",
+      "alsoGreat": "[PT] Also great",
+      "upgrade": "[PT] Worth the upgrade",
+      "budget": "[PT] Budget pick",
+      "avoid": "[PT] Skip this one"
+    },
+    "pick": {
+      "pros": "[PT] Pros",
+      "cons": "[PT] Cons",
+      "seeFullPage": "[PT] See full page",
+      "unavailable": "[PT] No longer available"
+    },
+    "detail": {
+      "allGuides": "[PT] All guides",
+      "atAGlance": "[PT] At a glance",
+      "tier": "[PT] Tier",
+      "pick": "[PT] Pick",
+      "where": "[PT] Where",
+      "bestFor": "[PT] Best for",
+      "lastUpdated": "[PT] Last updated",
+      "browseAll": "[PT] Browse all guides",
+      "fallbackTitle": "[PT] Guide",
+      "notFound": {
+        "title": "[PT] Guide not found.",
+        "description": "[PT] It may have been moved or unpublished."
+      }
+    },
+    "quest": {
+      "module": "[PT] Quest",
+      "liveNow": "[PT] Live now",
+      "completed": "[PT] Completed",
+      "scheduled": "[PT] Scheduled",
+      "startsSoon": "[PT] Starts soon",
+      "ended": "[PT] Ended",
+      "criteria": "[PT] Criteria",
+      "type": "[PT] Type",
+      "target": "[PT] Target",
+      "contributions": "[PT] {{count}} contributions",
+      "tags": "[PT] Tags",
+      "region": "[PT] Region",
+      "recapTitle": "[PT] Recap published",
+      "recapBody": "[PT] Read the editorial recap with named contributor credits in the News section.",
+      "progress": "[PT] Progress",
+      "progressCaption": "[PT] {{contributors}} contributors · {{pending}} pending review",
+      "join": "[PT] Join",
+      "signIn": "[PT] Sign in",
+      "toParticipate": "[PT] to participate.",
+      "showMe": "[PT] Show me in contributors",
+      "displayName": "[PT] Display name (optional)",
+      "anonymous": "[PT] Anonymous",
+      "saving": "[PT] Saving…",
+      "update": "[PT] Update",
+      "updated": "[PT] Updated",
+      "joining": "[PT] Joining…",
+      "joinCta": "[PT] Join quest",
+      "joined": "[PT] Joined quest",
+      "contributors": "[PT] Contributors",
+      "noContributors": "[PT] No public contributors yet.",
+      "activeBanner": "[PT] Community quest · live now"
+    },
+    "rail": {
+      "title": "[PT] Guides",
+      "seeAll": "[PT] All guides"
+    },
+    "filters": {
+      "label": "[PT] Filter guides",
+      "all": "[PT] All",
+      "quests": "[PT] Quests",
+      "entity": {
+        "venue": "[PT] Places",
+        "event": "[PT] Events",
+        "marketplace": "[PT] Shopping",
+        "city": "[PT] Cities",
+        "country": "[PT] Countries",
+        "queerVillage": "[PT] Villages",
+        "personality": "[PT] People",
+        "news": "[PT] News",
+        "milestone": "[PT] History",
+        "group": "[PT] Groups",
+        "organization": "[PT] Organizations"
+      }
+    },
+    "continueReading": {
+      "title": "[PT] Continue reading",
+      "pctRead": "[PT] {{pct}}% read"
+    },
+    "featuredIn": {
+      "title": "[PT] Featured in guides"
     }
   }
 }

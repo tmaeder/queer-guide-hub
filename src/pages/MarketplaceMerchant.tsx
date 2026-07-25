@@ -6,7 +6,7 @@ import { useMeta } from '@/hooks/useMeta';
 import { useBreadcrumbs } from '@/contexts/BreadcrumbContext';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { MarketplaceFilteredView } from '@/components/marketplace/MarketplaceFilteredView';
-import { MerchantFeaturedInGuides } from '@/components/marketplace/FeaturedInGuides';
+import { GuidesRail } from '@/components/guides/GuidesRail';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Button } from '@/components/ui/button';
 import { useOrgSlugByDomain } from '@/hooks/useOrganization';
@@ -69,7 +69,7 @@ export default function MarketplaceMerchant() {
             </Button>
           }
         />
-        <MerchantFeaturedInGuides merchantDomain={cleanDomain} />
+        <GuidesRail filters={{ entityType: 'marketplace', limit: 3 }} />
         <MarketplaceFilteredView
           filters={{ merchantDomain: cleanDomain }}
           emptyTitle="No listings from this merchant yet."

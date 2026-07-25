@@ -1697,7 +1697,8 @@
       "hotels": "酒店",
       "help": "帮助",
       "tags": "标签",
-      "history": "历史"
+      "history": "历史",
+      "guides": "[ZH] Guides"
     },
     "userMenu": {
       "myTrips": "我的行程",
@@ -3061,7 +3062,8 @@
     "contributors": "贡献者",
     "wishlists": "心愿单",
     "tags": "标签",
-    "organizations": "[ZH] Organizations"
+    "organizations": "[ZH] Organizations",
+    "guides": "[ZH] Guides"
   },
   "chat": {
     "react": "回应",
@@ -3529,6 +3531,126 @@
       "country": "[ZH] Travel guide: {{name}}",
       "city": "[ZH] City guide: {{name}}",
       "events": "[ZH] Events in {{name}} today"
+    }
+  },
+  "guides": {
+    "hub": {
+      "title": "[ZH] Guides",
+      "eyebrow": "[ZH] Editorial",
+      "lede": "[ZH] Comparison-driven guides, curated lists and community quests — written by editors, no fluff.",
+      "metaDescription": "[ZH] Editor-written guides, curated lists and community quests across LGBTQ+ places, events and shopping.",
+      "empty": "[ZH] No guides yet.",
+      "emptyHint": "[ZH] New guides land regularly. Check back soon."
+    },
+    "format": {
+      "guide": "[ZH] Guide",
+      "list": "[ZH] List",
+      "quest": "[ZH] Quest"
+    },
+    "card": {
+      "minRead": "[ZH] {{count}} min read",
+      "picks": "[ZH] {{count}} picks",
+      "open": "[ZH] Open guide:",
+      "placeholder": "[ZH] Editorial",
+      "communityQuest": "[ZH] Community quest"
+    },
+    "boost": {
+      "homeCity": "[ZH] Near you",
+      "interest": "[ZH] Matches your interests",
+      "categoryAffinity": "[ZH] Picks for you",
+      "featured": "[ZH] Editor’s pick",
+      "continueReading": "[ZH] Continue reading",
+      "activeQuest": "[ZH] Quest live now"
+    },
+    "tier": {
+      "top": "[ZH] Our pick",
+      "alsoGreat": "[ZH] Also great",
+      "upgrade": "[ZH] Worth the upgrade",
+      "budget": "[ZH] Budget pick",
+      "avoid": "[ZH] Skip this one"
+    },
+    "pick": {
+      "pros": "[ZH] Pros",
+      "cons": "[ZH] Cons",
+      "seeFullPage": "[ZH] See full page",
+      "unavailable": "[ZH] No longer available"
+    },
+    "detail": {
+      "allGuides": "[ZH] All guides",
+      "atAGlance": "[ZH] At a glance",
+      "tier": "[ZH] Tier",
+      "pick": "[ZH] Pick",
+      "where": "[ZH] Where",
+      "bestFor": "[ZH] Best for",
+      "lastUpdated": "[ZH] Last updated",
+      "browseAll": "[ZH] Browse all guides",
+      "fallbackTitle": "[ZH] Guide",
+      "notFound": {
+        "title": "[ZH] Guide not found.",
+        "description": "[ZH] It may have been moved or unpublished."
+      }
+    },
+    "quest": {
+      "module": "[ZH] Quest",
+      "liveNow": "[ZH] Live now",
+      "completed": "[ZH] Completed",
+      "scheduled": "[ZH] Scheduled",
+      "startsSoon": "[ZH] Starts soon",
+      "ended": "[ZH] Ended",
+      "criteria": "[ZH] Criteria",
+      "type": "[ZH] Type",
+      "target": "[ZH] Target",
+      "contributions": "[ZH] {{count}} contributions",
+      "tags": "[ZH] Tags",
+      "region": "[ZH] Region",
+      "recapTitle": "[ZH] Recap published",
+      "recapBody": "[ZH] Read the editorial recap with named contributor credits in the News section.",
+      "progress": "[ZH] Progress",
+      "progressCaption": "[ZH] {{contributors}} contributors · {{pending}} pending review",
+      "join": "[ZH] Join",
+      "signIn": "[ZH] Sign in",
+      "toParticipate": "[ZH] to participate.",
+      "showMe": "[ZH] Show me in contributors",
+      "displayName": "[ZH] Display name (optional)",
+      "anonymous": "[ZH] Anonymous",
+      "saving": "[ZH] Saving…",
+      "update": "[ZH] Update",
+      "updated": "[ZH] Updated",
+      "joining": "[ZH] Joining…",
+      "joinCta": "[ZH] Join quest",
+      "joined": "[ZH] Joined quest",
+      "contributors": "[ZH] Contributors",
+      "noContributors": "[ZH] No public contributors yet.",
+      "activeBanner": "[ZH] Community quest · live now"
+    },
+    "rail": {
+      "title": "[ZH] Guides",
+      "seeAll": "[ZH] All guides"
+    },
+    "filters": {
+      "label": "[ZH] Filter guides",
+      "all": "[ZH] All",
+      "quests": "[ZH] Quests",
+      "entity": {
+        "venue": "[ZH] Places",
+        "event": "[ZH] Events",
+        "marketplace": "[ZH] Shopping",
+        "city": "[ZH] Cities",
+        "country": "[ZH] Countries",
+        "queerVillage": "[ZH] Villages",
+        "personality": "[ZH] People",
+        "news": "[ZH] News",
+        "milestone": "[ZH] History",
+        "group": "[ZH] Groups",
+        "organization": "[ZH] Organizations"
+      }
+    },
+    "continueReading": {
+      "title": "[ZH] Continue reading",
+      "pctRead": "[ZH] {{pct}}% read"
+    },
+    "featuredIn": {
+      "title": "[ZH] Featured in guides"
     }
   }
 }

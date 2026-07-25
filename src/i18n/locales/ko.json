@@ -1697,7 +1697,8 @@
       "hotels": "호텔",
       "help": "도움말",
       "tags": "태그",
-      "history": "역사"
+      "history": "역사",
+      "guides": "[KO] Guides"
     },
     "userMenu": {
       "myTrips": "내 여행",
@@ -3061,7 +3062,8 @@
     "contributors": "기여자",
     "wishlists": "위시리스트",
     "tags": "태그",
-    "organizations": "[KO] Organizations"
+    "organizations": "[KO] Organizations",
+    "guides": "[KO] Guides"
   },
   "chat": {
     "react": "반응",
@@ -3529,6 +3531,126 @@
       "country": "[KO] Travel guide: {{name}}",
       "city": "[KO] City guide: {{name}}",
       "events": "[KO] Events in {{name}} today"
+    }
+  },
+  "guides": {
+    "hub": {
+      "title": "[KO] Guides",
+      "eyebrow": "[KO] Editorial",
+      "lede": "[KO] Comparison-driven guides, curated lists and community quests — written by editors, no fluff.",
+      "metaDescription": "[KO] Editor-written guides, curated lists and community quests across LGBTQ+ places, events and shopping.",
+      "empty": "[KO] No guides yet.",
+      "emptyHint": "[KO] New guides land regularly. Check back soon."
+    },
+    "format": {
+      "guide": "[KO] Guide",
+      "list": "[KO] List",
+      "quest": "[KO] Quest"
+    },
+    "card": {
+      "minRead": "[KO] {{count}} min read",
+      "picks": "[KO] {{count}} picks",
+      "open": "[KO] Open guide:",
+      "placeholder": "[KO] Editorial",
+      "communityQuest": "[KO] Community quest"
+    },
+    "boost": {
+      "homeCity": "[KO] Near you",
+      "interest": "[KO] Matches your interests",
+      "categoryAffinity": "[KO] Picks for you",
+      "featured": "[KO] Editor’s pick",
+      "continueReading": "[KO] Continue reading",
+      "activeQuest": "[KO] Quest live now"
+    },
+    "tier": {
+      "top": "[KO] Our pick",
+      "alsoGreat": "[KO] Also great",
+      "upgrade": "[KO] Worth the upgrade",
+      "budget": "[KO] Budget pick",
+      "avoid": "[KO] Skip this one"
+    },
+    "pick": {
+      "pros": "[KO] Pros",
+      "cons": "[KO] Cons",
+      "seeFullPage": "[KO] See full page",
+      "unavailable": "[KO] No longer available"
+    },
+    "detail": {
+      "allGuides": "[KO] All guides",
+      "atAGlance": "[KO] At a glance",
+      "tier": "[KO] Tier",
+      "pick": "[KO] Pick",
+      "where": "[KO] Where",
+      "bestFor": "[KO] Best for",
+      "lastUpdated": "[KO] Last updated",
+      "browseAll": "[KO] Browse all guides",
+      "fallbackTitle": "[KO] Guide",
+      "notFound": {
+        "title": "[KO] Guide not found.",
+        "description": "[KO] It may have been moved or unpublished."
+      }
+    },
+    "quest": {
+      "module": "[KO] Quest",
+      "liveNow": "[KO] Live now",
+      "completed": "[KO] Completed",
+      "scheduled": "[KO] Scheduled",
+      "startsSoon": "[KO] Starts soon",
+      "ended": "[KO] Ended",
+      "criteria": "[KO] Criteria",
+      "type": "[KO] Type",
+      "target": "[KO] Target",
+      "contributions": "[KO] {{count}} contributions",
+      "tags": "[KO] Tags",
+      "region": "[KO] Region",
+      "recapTitle": "[KO] Recap published",
+      "recapBody": "[KO] Read the editorial recap with named contributor credits in the News section.",
+      "progress": "[KO] Progress",
+      "progressCaption": "[KO] {{contributors}} contributors · {{pending}} pending review",
+      "join": "[KO] Join",
+      "signIn": "[KO] Sign in",
+      "toParticipate": "[KO] to participate.",
+      "showMe": "[KO] Show me in contributors",
+      "displayName": "[KO] Display name (optional)",
+      "anonymous": "[KO] Anonymous",
+      "saving": "[KO] Saving…",
+      "update": "[KO] Update",
+      "updated": "[KO] Updated",
+      "joining": "[KO] Joining…",
+      "joinCta": "[KO] Join quest",
+      "joined": "[KO] Joined quest",
+      "contributors": "[KO] Contributors",
+      "noContributors": "[KO] No public contributors yet.",
+      "activeBanner": "[KO] Community quest · live now"
+    },
+    "rail": {
+      "title": "[KO] Guides",
+      "seeAll": "[KO] All guides"
+    },
+    "filters": {
+      "label": "[KO] Filter guides",
+      "all": "[KO] All",
+      "quests": "[KO] Quests",
+      "entity": {
+        "venue": "[KO] Places",
+        "event": "[KO] Events",
+        "marketplace": "[KO] Shopping",
+        "city": "[KO] Cities",
+        "country": "[KO] Countries",
+        "queerVillage": "[KO] Villages",
+        "personality": "[KO] People",
+        "news": "[KO] News",
+        "milestone": "[KO] History",
+        "group": "[KO] Groups",
+        "organization": "[KO] Organizations"
+      }
+    },
+    "continueReading": {
+      "title": "[KO] Continue reading",
+      "pctRead": "[KO] {{pct}}% read"
+    },
+    "featuredIn": {
+      "title": "[KO] Featured in guides"
     }
   }
 }

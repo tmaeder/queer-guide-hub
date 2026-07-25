@@ -1697,7 +1697,8 @@
       "hotels": "ホテル",
       "help": "ヘルプ",
       "tags": "タグ",
-      "history": "歴史"
+      "history": "歴史",
+      "guides": "[JA] Guides"
     },
     "userMenu": {
       "myTrips": "マイトリップ",
@@ -3061,7 +3062,8 @@
     "contributors": "貢献者",
     "wishlists": "ウィッシュリスト",
     "tags": "タグ",
-    "organizations": "[JA] Organizations"
+    "organizations": "[JA] Organizations",
+    "guides": "[JA] Guides"
   },
   "chat": {
     "react": "リアクション",
@@ -3529,6 +3531,126 @@
       "country": "[JA] Travel guide: {{name}}",
       "city": "[JA] City guide: {{name}}",
       "events": "[JA] Events in {{name}} today"
+    }
+  },
+  "guides": {
+    "hub": {
+      "title": "[JA] Guides",
+      "eyebrow": "[JA] Editorial",
+      "lede": "[JA] Comparison-driven guides, curated lists and community quests — written by editors, no fluff.",
+      "metaDescription": "[JA] Editor-written guides, curated lists and community quests across LGBTQ+ places, events and shopping.",
+      "empty": "[JA] No guides yet.",
+      "emptyHint": "[JA] New guides land regularly. Check back soon."
+    },
+    "format": {
+      "guide": "[JA] Guide",
+      "list": "[JA] List",
+      "quest": "[JA] Quest"
+    },
+    "card": {
+      "minRead": "[JA] {{count}} min read",
+      "picks": "[JA] {{count}} picks",
+      "open": "[JA] Open guide:",
+      "placeholder": "[JA] Editorial",
+      "communityQuest": "[JA] Community quest"
+    },
+    "boost": {
+      "homeCity": "[JA] Near you",
+      "interest": "[JA] Matches your interests",
+      "categoryAffinity": "[JA] Picks for you",
+      "featured": "[JA] Editor’s pick",
+      "continueReading": "[JA] Continue reading",
+      "activeQuest": "[JA] Quest live now"
+    },
+    "tier": {
+      "top": "[JA] Our pick",
+      "alsoGreat": "[JA] Also great",
+      "upgrade": "[JA] Worth the upgrade",
+      "budget": "[JA] Budget pick",
+      "avoid": "[JA] Skip this one"
+    },
+    "pick": {
+      "pros": "[JA] Pros",
+      "cons": "[JA] Cons",
+      "seeFullPage": "[JA] See full page",
+      "unavailable": "[JA] No longer available"
+    },
+    "detail": {
+      "allGuides": "[JA] All guides",
+      "atAGlance": "[JA] At a glance",
+      "tier": "[JA] Tier",
+      "pick": "[JA] Pick",
+      "where": "[JA] Where",
+      "bestFor": "[JA] Best for",
+      "lastUpdated": "[JA] Last updated",
+      "browseAll": "[JA] Browse all guides",
+      "fallbackTitle": "[JA] Guide",
+      "notFound": {
+        "title": "[JA] Guide not found.",
+        "description": "[JA] It may have been moved or unpublished."
+      }
+    },
+    "quest": {
+      "module": "[JA] Quest",
+      "liveNow": "[JA] Live now",
+      "completed": "[JA] Completed",
+      "scheduled": "[JA] Scheduled",
+      "startsSoon": "[JA] Starts soon",
+      "ended": "[JA] Ended",
+      "criteria": "[JA] Criteria",
+      "type": "[JA] Type",
+      "target": "[JA] Target",
+      "contributions": "[JA] {{count}} contributions",
+      "tags": "[JA] Tags",
+      "region": "[JA] Region",
+      "recapTitle": "[JA] Recap published",
+      "recapBody": "[JA] Read the editorial recap with named contributor credits in the News section.",
+      "progress": "[JA] Progress",
+      "progressCaption": "[JA] {{contributors}} contributors · {{pending}} pending review",
+      "join": "[JA] Join",
+      "signIn": "[JA] Sign in",
+      "toParticipate": "[JA] to participate.",
+      "showMe": "[JA] Show me in contributors",
+      "displayName": "[JA] Display name (optional)",
+      "anonymous": "[JA] Anonymous",
+      "saving": "[JA] Saving…",
+      "update": "[JA] Update",
+      "updated": "[JA] Updated",
+      "joining": "[JA] Joining…",
+      "joinCta": "[JA] Join quest",
+      "joined": "[JA] Joined quest",
+      "contributors": "[JA] Contributors",
+      "noContributors": "[JA] No public contributors yet.",
+      "activeBanner": "[JA] Community quest · live now"
+    },
+    "rail": {
+      "title": "[JA] Guides",
+      "seeAll": "[JA] All guides"
+    },
+    "filters": {
+      "label": "[JA] Filter guides",
+      "all": "[JA] All",
+      "quests": "[JA] Quests",
+      "entity": {
+        "venue": "[JA] Places",
+        "event": "[JA] Events",
+        "marketplace": "[JA] Shopping",
+        "city": "[JA] Cities",
+        "country": "[JA] Countries",
+        "queerVillage": "[JA] Villages",
+        "personality": "[JA] People",
+        "news": "[JA] News",
+        "milestone": "[JA] History",
+        "group": "[JA] Groups",
+        "organization": "[JA] Organizations"
+      }
+    },
+    "continueReading": {
+      "title": "[JA] Continue reading",
+      "pctRead": "[JA] {{pct}}% read"
+    },
+    "featuredIn": {
+      "title": "[JA] Featured in guides"
     }
   }
 }

@@ -15,14 +15,12 @@ import { useAuth } from '@/hooks/useAuth';
 const Index = lazyRetry(() => import('./pages/Index'));
 const Venues = lazyRetry(() => import('./pages/Venues'));
 const EntityDetail = lazyRetry(() => import('./pages/EntityDetail'));
-const VenueGuides = lazyRetry(() => import('./pages/VenueGuides'));
-const VenueGuide = lazyRetry(() => import('./pages/VenueGuide'));
+const Guides = lazyRetry(() => import('./pages/Guides'));
+const GuideDetail = lazyRetry(() => import('./pages/GuideDetail'));
 const ProfilePage = lazyRetry(() => import('./pages/profile/ProfilePage'));
 const VenuePersonalization = lazyRetry(() => import('./pages/onboarding/VenuePersonalization'));
 const Events = lazyRetry(() => import('./pages/Events'));
 const EventDetail = lazyRetry(() => import('./pages/EventDetail'));
-const EventGuides = lazyRetry(() => import('./pages/EventGuides'));
-const EventGuide = lazyRetry(() => import('./pages/EventGuide'));
 const Marketplace = lazyRetry(() => import('./pages/Marketplace'));
 const MarketplaceItemDetail = lazyRetry(() => import('./pages/MarketplaceItemDetail'));
 const MarketplaceCategory = lazyRetry(() => import('./pages/MarketplaceCategory'));
@@ -33,8 +31,6 @@ const Organizations = lazyRetry(() => import('./pages/Organizations'));
 const HistoryTimeline = lazyRetry(() => import('./pages/HistoryTimeline'));
 const MarketplaceShare = lazyRetry(() => import('./pages/MarketplaceShare'));
 const MarketplaceCollection = lazyRetry(() => import('./pages/MarketplaceCollection'));
-const MarketplaceGuides = lazyRetry(() => import('./pages/MarketplaceGuides'));
-const MarketplaceGuide = lazyRetry(() => import('./pages/MarketplaceGuide'));
 const Wishlist = lazyRetry(() => import('./pages/Wishlist'));
 const Wishlists = lazyRetry(() => import('./pages/Wishlists'));
 
@@ -97,13 +93,8 @@ const QualityHub = lazyRetry(() => import('./pages/admin/QualityHub'));
 const ContentGraph = lazyRetry(() => import('./pages/admin/ContentGraph'));
 const AdminMarketplaceQuality = lazyRetry(() => import('./pages/admin/AdminMarketplaceQuality'));
 const AdminTwentyCrm = lazyRetry(() => import('./pages/admin/AdminTwentyCrm'));
-const AdminMarketplaceGuides = lazyRetry(() => import('./pages/admin/AdminMarketplaceGuides'));
-const AdminVenueGuides = lazyRetry(() => import('./pages/admin/AdminVenueGuides'));
 const EmailTemplates = lazyRetry(() => import('./pages/admin/EmailTemplates'));
-const AdminQuests = lazyRetry(() => import('./pages/admin/AdminQuests'));
 const AdminPlacesEditorial = lazyRetry(() => import('./pages/admin/AdminPlacesEditorial'));
-const Quests = lazyRetry(() => import('./pages/Quests'));
-const QuestDetail = lazyRetry(() => import('./pages/QuestDetail'));
 const AdminRedirects = lazyRetry(() => import('./pages/admin/AdminRedirects'));
 const AdminPipelines = lazyRetry(() => import('./pages/admin/AdminPipelines'));
 const AdminIngestionRules = lazyRetry(() => import('./pages/admin/AdminIngestionRules'));
@@ -472,11 +463,11 @@ export const AppRoutes = () => {
                 <Route path="cities" element={<Navigate to="/admin/content/city-quality" replace />} />
                 <Route path="countries" element={<Navigate to="/admin/content/countries" replace />} />
                 <Route path="personalities" element={<Navigate to="/admin/content/personalities" replace />} />
-                <Route path="quests" element={<AdminQuests />} />
+                <Route path="quests" element={<Navigate to="/admin/content/guides" replace />} />
                 <Route path="places-editorial" element={<AdminPlacesEditorial />} />
                 <Route path="marketplace" element={<Navigate to="/admin/content/marketplace_listings" replace />} />
-                <Route path="marketplace/guides" element={<AdminMarketplaceGuides />} />
-                <Route path="venue-guides" element={<AdminVenueGuides />} />
+                <Route path="marketplace/guides" element={<Navigate to="/admin/content/guides" replace />} />
+                <Route path="venue-guides" element={<Navigate to="/admin/content/guides" replace />} />
                 <Route path="groups" element={<Navigate to="/admin/content/community_groups" replace />} />
                 <Route path="news-sources" element={<Navigate to="/admin/pipelines?tab=sources" replace />} />
                 <Route path="cms" element={<Navigate to="/admin/content" replace />} />
@@ -528,8 +519,10 @@ export const AppRoutes = () => {
                 {/* Legacy routes — canonical lives under /me/*. Keep one release. */}
                 <Route path="venues/leaderboard" element={<Navigate to="/me/progress" replace />} />
                 <Route path="venues/passport" element={<Navigate to="/me/progress" replace />} />
-                <Route path="venues/guides" element={<VenueGuides />} />
-                <Route path="venues/guides/:slug" element={<VenueGuide />} />
+                <Route path="guides" element={<Guides />} />
+                <Route path="guides/:slug" element={<GuideDetail />} />
+                <Route path="venues/guides" element={<LocalizedRedirect to="/guides?entity=venue" />} />
+                <Route path="venues/guides/:slug" element={<SlugAliasRedirect toBase="guides" />} />
                 <Route path="venues/:slug" element={<EntityDetail source="venue" />} />
                 <Route path="organizations" element={<Organizations />} />
                 <Route path="organizations/:slug" element={<EntityDetail source="organization" />} />
@@ -537,8 +530,8 @@ export const AppRoutes = () => {
                 <Route path="history/:slug" element={<EntityDetail source="milestone" />} />
                 <Route path="milestones" element={<Navigate to="/history" replace />} />
                 <Route path="events" element={<Events />} />
-                <Route path="events/guides" element={<EventGuides />} />
-                <Route path="events/guides/:slug" element={<EventGuide />} />
+                <Route path="events/guides" element={<LocalizedRedirect to="/guides?entity=event" />} />
+                <Route path="events/guides/:slug" element={<SlugAliasRedirect toBase="guides" />} />
                 <Route path="events/:slug" element={<EventDetail />} />
                 <Route path="pride" element={<PridePage />} />
                 <Route path="pride/:year" element={<PridePage />} />
@@ -548,8 +541,8 @@ export const AppRoutes = () => {
                 <Route path="marketplace/categories" element={<MarketplaceCategories />} />
                 <Route path="marketplace/category/:slug" element={<MarketplaceCategory />} />
                 <Route path="marketplace/collection/:slug" element={<MarketplaceCollection />} />
-                <Route path="marketplace/guides" element={<MarketplaceGuides />} />
-                <Route path="marketplace/guides/:slug" element={<MarketplaceGuide />} />
+                <Route path="marketplace/guides" element={<LocalizedRedirect to="/guides?entity=marketplace" />} />
+                <Route path="marketplace/guides/:slug" element={<SlugAliasRedirect toBase="guides" />} />
                 <Route path="marketplace/merchants/:domain" element={<MarketplaceMerchant />} />
                 <Route path="marketplace/brands/:slug" element={<MarketplaceBrand />} />
                 <Route path="marketplace/:slug" element={<MarketplaceItemDetail />} />
@@ -606,8 +599,8 @@ export const AppRoutes = () => {
                 <Route path="wiki/:slug" element={<SlugAliasRedirect toBase="tags" />} />
                 <Route path="europe" element={<LocalizedRedirect to="/cities" />} />
                 <Route path="africa" element={<LocalizedRedirect to="/cities" />} />
-                <Route path="quests" element={<Quests />} />
-                <Route path="quests/:slug" element={<QuestDetail />} />
+                <Route path="quests" element={<LocalizedRedirect to="/guides?format=quest" />} />
+                <Route path="quests/:slug" element={<SlugAliasRedirect toBase="guides" />} />
                 <Route path="tags" element={<Resources />} />
                 <Route path="tags/topic/:slug" element={<ResourceTopic />} />
                 <Route path="tags/c/:categorySlug" element={<Resources />} />

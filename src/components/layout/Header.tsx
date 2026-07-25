@@ -233,6 +233,7 @@ export function Header() {
     { to: '/places', labelKey: 'header.nav.places', fallback: 'Places' },
     { to: '/events', labelKey: 'header.nav.events', fallback: 'Events' },
     { to: '/marketplace', labelKey: 'header.nav.marketplace', fallback: 'Marketplace' },
+    { to: '/guides', labelKey: 'header.nav.guides', fallback: 'Guides' },
     { to: '/news', labelKey: 'header.nav.news', fallback: 'News' },
   ] as const;
   const desktopNav = (

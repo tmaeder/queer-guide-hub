@@ -1701,7 +1701,8 @@
       "hotels": "Hôtels",
       "help": "Aide",
       "tags": "Tags",
-      "history": "Histoire"
+      "history": "Histoire",
+      "guides": "[FR] Guides"
     },
     "userMenu": {
       "myTrips": "Mes voyages",
@@ -3067,7 +3068,8 @@
     "contributors": "Contributeurs",
     "wishlists": "Listes de souhaits",
     "tags": "Tags",
-    "organizations": "[FR] Organizations"
+    "organizations": "[FR] Organizations",
+    "guides": "[FR] Guides"
   },
   "chat": {
     "react": "Réagir",
@@ -3535,6 +3537,126 @@
       "country": "[FR] Travel guide: {{name}}",
       "city": "[FR] City guide: {{name}}",
       "events": "[FR] Events in {{name}} today"
+    }
+  },
+  "guides": {
+    "hub": {
+      "title": "[FR] Guides",
+      "eyebrow": "[FR] Editorial",
+      "lede": "[FR] Comparison-driven guides, curated lists and community quests — written by editors, no fluff.",
+      "metaDescription": "[FR] Editor-written guides, curated lists and community quests across LGBTQ+ places, events and shopping.",
+      "empty": "[FR] No guides yet.",
+      "emptyHint": "[FR] New guides land regularly. Check back soon."
+    },
+    "format": {
+      "guide": "[FR] Guide",
+      "list": "[FR] List",
+      "quest": "[FR] Quest"
+    },
+    "card": {
+      "minRead": "[FR] {{count}} min read",
+      "picks": "[FR] {{count}} picks",
+      "open": "[FR] Open guide:",
+      "placeholder": "[FR] Editorial",
+      "communityQuest": "[FR] Community quest"
+    },
+    "boost": {
+      "homeCity": "[FR] Near you",
+      "interest": "[FR] Matches your interests",
+      "categoryAffinity": "[FR] Picks for you",
+      "featured": "[FR] Editor’s pick",
+      "continueReading": "[FR] Continue reading",
+      "activeQuest": "[FR] Quest live now"
+    },
+    "tier": {
+      "top": "[FR] Our pick",
+      "alsoGreat": "[FR] Also great",
+      "upgrade": "[FR] Worth the upgrade",
+      "budget": "[FR] Budget pick",
+      "avoid": "[FR] Skip this one"
+    },
+    "pick": {
+      "pros": "[FR] Pros",
+      "cons": "[FR] Cons",
+      "seeFullPage": "[FR] See full page",
+      "unavailable": "[FR] No longer available"
+    },
+    "detail": {
+      "allGuides": "[FR] All guides",
+      "atAGlance": "[FR] At a glance",
+      "tier": "[FR] Tier",
+      "pick": "[FR] Pick",
+      "where": "[FR] Where",
+      "bestFor": "[FR] Best for",
+      "lastUpdated": "[FR] Last updated",
+      "browseAll": "[FR] Browse all guides",
+      "fallbackTitle": "[FR] Guide",
+      "notFound": {
+        "title": "[FR] Guide not found.",
+        "description": "[FR] It may have been moved or unpublished."
+      }
+    },
+    "quest": {
+      "module": "[FR] Quest",
+      "liveNow": "[FR] Live now",
+      "completed": "[FR] Completed",
+      "scheduled": "[FR] Scheduled",
+      "startsSoon": "[FR] Starts soon",
+      "ended": "[FR] Ended",
+      "criteria": "[FR] Criteria",
+      "type": "[FR] Type",
+      "target": "[FR] Target",
+      "contributions": "[FR] {{count}} contributions",
+      "tags": "[FR] Tags",
+      "region": "[FR] Region",
+      "recapTitle": "[FR] Recap published",
+      "recapBody": "[FR] Read the editorial recap with named contributor credits in the News section.",
+      "progress": "[FR] Progress",
+      "progressCaption": "[FR] {{contributors}} contributors · {{pending}} pending review",
+      "join": "[FR] Join",
+      "signIn": "[FR] Sign in",
+      "toParticipate": "[FR] to participate.",
+      "showMe": "[FR] Show me in contributors",
+      "displayName": "[FR] Display name (optional)",
+      "anonymous": "[FR] Anonymous",
+      "saving": "[FR] Saving…",
+      "update": "[FR] Update",
+      "updated": "[FR] Updated",
+      "joining": "[FR] Joining…",
+      "joinCta": "[FR] Join quest",
+      "joined": "[FR] Joined quest",
+      "contributors": "[FR] Contributors",
+      "noContributors": "[FR] No public contributors yet.",
+      "activeBanner": "[FR] Community quest · live now"
+    },
+    "rail": {
+      "title": "[FR] Guides",
+      "seeAll": "[FR] All guides"
+    },
+    "filters": {
+      "label": "[FR] Filter guides",
+      "all": "[FR] All",
+      "quests": "[FR] Quests",
+      "entity": {
+        "venue": "[FR] Places",
+        "event": "[FR] Events",
+        "marketplace": "[FR] Shopping",
+        "city": "[FR] Cities",
+        "country": "[FR] Countries",
+        "queerVillage": "[FR] Villages",
+        "personality": "[FR] People",
+        "news": "[FR] News",
+        "milestone": "[FR] History",
+        "group": "[FR] Groups",
+        "organization": "[FR] Organizations"
+      }
+    },
+    "continueReading": {
+      "title": "[FR] Continue reading",
+      "pctRead": "[FR] {{pct}}% read"
+    },
+    "featuredIn": {
+      "title": "[FR] Featured in guides"
     }
   }
 }

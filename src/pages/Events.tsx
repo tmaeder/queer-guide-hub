@@ -14,7 +14,7 @@ const EventsMapView = lazy(() =>
 );
 import { Button } from '@/components/ui/button';
 import { PageHero } from '@/components/discovery';
-import { EventGuidesStream } from '@/components/events/EventGuidesStream';
+import { GuidesRail } from '@/components/guides/GuidesRail';
 import { EmptyState, LoadingTimeout, ErrorState } from '@/components/ui/EmptyState';
 import { Calendar } from 'lucide-react';
 import type { Database } from '@/integrations/supabase/types';
@@ -112,7 +112,7 @@ const Events = () => {
         size="md"
       />
       <div className="container mx-auto px-4 py-8 md:py-12">
-        <EventGuidesStream limit={6} />
+        <GuidesRail filters={{ entityType: 'event', limit: 6 }} />
         {/* Filters — first interactive surface after hero */}
         <div className="flex flex-col gap-4 p-4 bg-card rounded-container mb-6">
           {/* Search Bar */}

@@ -19,7 +19,8 @@
     "help": "Help",
     "pride": "Pride",
     "contributors": "Contributors",
-    "wishlists": "Wishlists"
+    "wishlists": "Wishlists",
+    "guides": "Guides"
   },
   "inbox": {
     "title": "Inbox",
@@ -1775,7 +1776,8 @@
       "personalities": "Personalities",
       "hotels": "Hotels",
       "help": "Crisis support",
-      "history": "History"
+      "history": "History",
+      "guides": "Guides"
     },
     "userMenu": {
       "you": "You",
@@ -3501,6 +3503,126 @@
       "country": "Travel guide: {{name}}",
       "city": "City guide: {{name}}",
       "events": "Events in {{name}} today"
+    }
+  },
+  "guides": {
+    "hub": {
+      "title": "Guides",
+      "eyebrow": "Editorial",
+      "lede": "Comparison-driven guides, curated lists and community quests — written by editors, no fluff.",
+      "metaDescription": "Editor-written guides, curated lists and community quests across LGBTQ+ places, events and shopping.",
+      "empty": "No guides yet.",
+      "emptyHint": "New guides land regularly. Check back soon."
+    },
+    "format": {
+      "guide": "Guide",
+      "list": "List",
+      "quest": "Quest"
+    },
+    "card": {
+      "minRead": "{{count}} min read",
+      "picks": "{{count}} picks",
+      "open": "Open guide:",
+      "placeholder": "Editorial",
+      "communityQuest": "Community quest"
+    },
+    "boost": {
+      "homeCity": "Near you",
+      "interest": "Matches your interests",
+      "categoryAffinity": "Picks for you",
+      "featured": "Editor’s pick",
+      "continueReading": "Continue reading",
+      "activeQuest": "Quest live now"
+    },
+    "tier": {
+      "top": "Our pick",
+      "alsoGreat": "Also great",
+      "upgrade": "Worth the upgrade",
+      "budget": "Budget pick",
+      "avoid": "Skip this one"
+    },
+    "pick": {
+      "pros": "Pros",
+      "cons": "Cons",
+      "seeFullPage": "See full page",
+      "unavailable": "No longer available"
+    },
+    "detail": {
+      "allGuides": "All guides",
+      "atAGlance": "At a glance",
+      "tier": "Tier",
+      "pick": "Pick",
+      "where": "Where",
+      "bestFor": "Best for",
+      "lastUpdated": "Last updated",
+      "browseAll": "Browse all guides",
+      "fallbackTitle": "Guide",
+      "notFound": {
+        "title": "Guide not found.",
+        "description": "It may have been moved or unpublished."
+      }
+    },
+    "quest": {
+      "module": "Quest",
+      "liveNow": "Live now",
+      "completed": "Completed",
+      "scheduled": "Scheduled",
+      "startsSoon": "Starts soon",
+      "ended": "Ended",
+      "criteria": "Criteria",
+      "type": "Type",
+      "target": "Target",
+      "contributions": "{{count}} contributions",
+      "tags": "Tags",
+      "region": "Region",
+      "recapTitle": "Recap published",
+      "recapBody": "Read the editorial recap with named contributor credits in the News section.",
+      "progress": "Progress",
+      "progressCaption": "{{contributors}} contributors · {{pending}} pending review",
+      "join": "Join",
+      "signIn": "Sign in",
+      "toParticipate": "to participate.",
+      "showMe": "Show me in contributors",
+      "displayName": "Display name (optional)",
+      "anonymous": "Anonymous",
+      "saving": "Saving…",
+      "update": "Update",
+      "updated": "Updated",
+      "joining": "Joining…",
+      "joinCta": "Join quest",
+      "joined": "Joined quest",
+      "contributors": "Contributors",
+      "noContributors": "No public contributors yet.",
+      "activeBanner": "Community quest · live now"
+    },
+    "rail": {
+      "title": "Guides",
+      "seeAll": "All guides"
+    },
+    "filters": {
+      "label": "Filter guides",
+      "all": "All",
+      "quests": "Quests",
+      "entity": {
+        "venue": "Places",
+        "event": "Events",
+        "marketplace": "Shopping",
+        "city": "Cities",
+        "country": "Countries",
+        "queerVillage": "Villages",
+        "personality": "People",
+        "news": "News",
+        "milestone": "History",
+        "group": "Groups",
+        "organization": "Organizations"
+      }
+    },
+    "continueReading": {
+      "title": "Continue reading",
+      "pctRead": "{{pct}}% read"
+    },
+    "featuredIn": {
+      "title": "Featured in guides"
     }
   }
 }

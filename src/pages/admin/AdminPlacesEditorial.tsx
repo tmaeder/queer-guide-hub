@@ -11,7 +11,6 @@ import { useMeta } from '@/hooks/useMeta';
 import {
   type EditorialEntityType,
   type EditorialDraft,
-  type EditorialRailRow,
   type EditorialCoverRow,
   usePendingDrafts,
   useEntityName,
@@ -19,9 +18,6 @@ import {
   useSaveDraft,
   useApproveDraft,
   useRejectDraft,
-  useAdminRails,
-  useCreateRail,
-  useUpdateRail,
   useAdminCovers,
   useToggleCoverPublished,
 } from '@/hooks/useAdminEditorial';
@@ -29,7 +25,7 @@ import {
 export default function AdminPlacesEditorial() {
   useMeta({
     title: 'Editorial — Places',
-    description: 'Admin: drafts queue, rails, covers.',
+    description: 'Admin: drafts queue, covers. Rails moved to /admin/content/guides (format=list).',
     canonicalPath: '/admin/places-editorial',
   });
 
@@ -38,21 +34,18 @@ export default function AdminPlacesEditorial() {
       <header className="flex flex-col gap-1">
         <h1 className="text-headline-lg font-bold tracking-tight">Editorial — Places</h1>
         <p className="text-15 text-muted-foreground">
-          Generate LLM drafts, review hooks, curate rails and covers for /places.
+          Generate LLM drafts, review hooks, curate covers for /places. Rails are now Guides
+          (format “List”) at /admin/content/guides.
         </p>
       </header>
 
       <Tabs defaultValue="drafts">
         <TabsList>
           <TabsTrigger value="drafts">Hooks queue</TabsTrigger>
-          <TabsTrigger value="rails">Rails</TabsTrigger>
           <TabsTrigger value="covers">Covers</TabsTrigger>
         </TabsList>
         <TabsContent value="drafts" className="mt-6">
           <DraftsQueue />
-        </TabsContent>
-        <TabsContent value="rails" className="mt-6">
-          <RailsEditor />
         </TabsContent>
         <TabsContent value="covers" className="mt-6">
           <CoversEditor />
@@ -265,179 +258,6 @@ function DraftRow({ draft }: { draft: EditorialDraft }) {
           Reject
         </Button>
       </div>
-    </Card>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Rails editor
-// ---------------------------------------------------------------------------
-
-function RailsEditor() {
-  const { toast } = useToast();
-  const rails = useAdminRails();
-  const create = useCreateRail();
-  const update = useUpdateRail();
-
-  return (
-    <div className="flex flex-col gap-6">
-      <NewRailForm
-        onCreate={(input) =>
-          create.mutate(input, { onSuccess: () => toast({ title: 'Rail created' }) })
-        }
-        pending={create.isPending}
-      />
-
-      {rails.isLoading ? (
-        <p className="text-muted-foreground">Loading…</p>
-      ) : (rails.data ?? []).length === 0 ? (
-        <p className="text-muted-foreground">No rails yet. Create one.</p>
-      ) : (
-        <div className="flex flex-col gap-4">
-          {(rails.data ?? []).map((r) => (
-            <Card key={r.id} className="p-4 flex items-center justify-between gap-4">
-              <div className="flex flex-col gap-1">
-                <div className="flex items-center gap-2">
-                  <p className="text-title font-semibold">{r.title}</p>
-                  <Badge variant="outline" className="text-2xs uppercase">
-                    {r.entity_type}
-                  </Badge>
-                  <Badge
-                    variant={r.status === 'published' ? 'default' : 'secondary'}
-                    className="text-2xs"
-                  >
-                    {r.status}
-                  </Badge>
-                </div>
-                {r.editor_note && (
-                  <p className="text-15 text-muted-foreground">{r.editor_note}</p>
-                )}
-                <p className="text-2xs text-muted-foreground">
-                  {r.slug} · position {r.position}
-                </p>
-              </div>
-              <div className="flex items-center gap-2">
-                {r.status !== 'published' ? (
-                  <Button
-                    size="sm"
-                    onClick={() => update.mutate({ id: r.id, patch: { status: 'published' } })}
-                  >
-                    Publish
-                  </Button>
-                ) : (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => update.mutate({ id: r.id, patch: { status: 'draft' } })}
-                  >
-                    Unpublish
-                  </Button>
-                )}
-              </div>
-            </Card>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-function NewRailForm({
-  onCreate,
-  pending,
-}: {
-  onCreate: (input: Omit<EditorialRailRow, 'id'>) => void;
-  pending: boolean;
-}) {
-  const [title, setTitle] = useState('');
-  const [slug, setSlug] = useState('');
-  const [note, setNote] = useState('');
-  const [entityType, setEntityType] = useState<EditorialEntityType>('country');
-  const [position, setPosition] = useState(0);
-
-  const titleId = useId();
-  const slugId = useId();
-  const noteId = useId();
-  const typeId = useId();
-  const posId = useId();
-
-  return (
-    <Card className="p-4 flex flex-wrap items-end gap-4">
-      <div className="flex flex-col gap-1">
-        <label
-          htmlFor={titleId}
-          className="text-2xs uppercase tracking-wide text-muted-foreground"
-        >
-          Title
-        </label>
-        <Input id={titleId} value={title} onChange={(e) => setTitle(e.target.value)} className="w-64" />
-      </div>
-      <div className="flex flex-col gap-1">
-        <label
-          htmlFor={slugId}
-          className="text-2xs uppercase tracking-wide text-muted-foreground"
-        >
-          Slug
-        </label>
-        <Input id={slugId} value={slug} onChange={(e) => setSlug(e.target.value)} className="w-44" />
-      </div>
-      <div className="flex flex-col gap-1">
-        <label
-          htmlFor={noteId}
-          className="text-2xs uppercase tracking-wide text-muted-foreground"
-        >
-          Note
-        </label>
-        <Input id={noteId} value={note} onChange={(e) => setNote(e.target.value)} className="w-72" />
-      </div>
-      <div className="flex flex-col gap-1">
-        <label
-          htmlFor={typeId}
-          className="text-2xs uppercase tracking-wide text-muted-foreground"
-        >
-          Type
-        </label>
-        <select
-          id={typeId}
-          className="border border-input rounded-element px-2 py-2 bg-background"
-          value={entityType}
-          onChange={(e) => setEntityType(e.target.value as EditorialEntityType)}
-        >
-          <option value="country">country</option>
-          <option value="city">city</option>
-          <option value="village">village</option>
-        </select>
-      </div>
-      <div className="flex flex-col gap-1">
-        <label
-          htmlFor={posId}
-          className="text-2xs uppercase tracking-wide text-muted-foreground"
-        >
-          Position
-        </label>
-        <Input
-          id={posId}
-          type="number"
-          value={position}
-          onChange={(e) => setPosition(Number(e.target.value))}
-          className="w-20"
-        />
-      </div>
-      <Button
-        onClick={() =>
-          onCreate({
-            slug,
-            title,
-            editor_note: note || null,
-            entity_type: entityType,
-            status: 'draft',
-            position,
-          })
-        }
-        disabled={pending || !title.trim() || !slug.trim()}
-      >
-        Create rail
-      </Button>
     </Card>
   );
 }

@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { untypedFrom } from '@/integrations/supabase/untyped';
 import { useAuth } from '@/hooks/useAuth';
 
 const COMPLETE_AT_PCT = 90;
@@ -7,13 +7,13 @@ const UPDATE_THROTTLE_MS = 4000;
 
 /**
  * Tracks a signed-in user's reading state on a guide page:
- *   - Inserts a marketplace_guide_reads row on mount.
+ *   - Upserts a guide_reads row on mount.
  *   - Updates scroll_pct as they scroll (throttled to ~4s).
  *   - Auto-sets completed_at = now() the first time scroll_pct >= 90.
  *
  * Anonymous users are a no-op. Server enforces auth.uid() = user_id via RLS.
- * The Phase 3 scorer reads marketplace_guide_reads for the
- * "continue_reading" and "already_completed" signals.
+ * guides_recommend reads guide_reads for the "continue_reading" and
+ * "already_completed" signals; guide_reading_streak counts completed weeks.
  */
 export function useGuideReadTracker(guideId: string | undefined): void {
   const { user } = useAuth();
@@ -31,17 +31,15 @@ export function useGuideReadTracker(guideId: string | undefined): void {
     maxPctRef.current = 0;
 
     void (async () => {
-      const { error } = await supabase
-        .from('marketplace_guide_reads')
-        .upsert(
-          {
-            user_id: user.id,
-            guide_id: guideId,
-            started_at: new Date().toISOString(),
-            scroll_pct: 0,
-          },
-          { onConflict: 'user_id,guide_id', ignoreDuplicates: false },
-        );
+      const { error } = await untypedFrom('guide_reads').upsert(
+        {
+          user_id: user.id,
+          guide_id: guideId,
+          started_at: new Date().toISOString(),
+          scroll_pct: 0,
+        },
+        { onConflict: 'user_id,guide_id', ignoreDuplicates: false },
+      );
       if (cancelled) return;
       if (!error) startedRef.current = true;
     })();
@@ -63,8 +61,7 @@ export function useGuideReadTracker(guideId: string | undefined): void {
       const completing = pct >= COMPLETE_AT_PCT;
       if (completing) completedRef.current = true;
 
-      void supabase
-        .from('marketplace_guide_reads')
+      void untypedFrom('guide_reads')
         .update({
           scroll_pct: pct,
           completed_at: completing ? new Date().toISOString() : null,
