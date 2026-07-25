@@ -1729,7 +1729,8 @@
       "hotels": "Отели",
       "help": "Помощь",
       "tags": "Теги",
-      "history": "История"
+      "history": "История",
+      "guides": "[RU] Guides"
     },
     "userMenu": {
       "myTrips": "Мои поездки",
@@ -3097,7 +3098,8 @@
     "contributors": "Участники",
     "wishlists": "Списки желаний",
     "tags": "Теги",
-    "organizations": "[RU] Organizations"
+    "organizations": "[RU] Organizations",
+    "guides": "[RU] Guides"
   },
   "chat": {
     "react": "Реакция",
@@ -3565,6 +3567,126 @@
       "country": "[RU] Travel guide: {{name}}",
       "city": "[RU] City guide: {{name}}",
       "events": "[RU] Events in {{name}} today"
+    }
+  },
+  "guides": {
+    "hub": {
+      "title": "[RU] Guides",
+      "eyebrow": "[RU] Editorial",
+      "lede": "[RU] Comparison-driven guides, curated lists and community quests — written by editors, no fluff.",
+      "metaDescription": "[RU] Editor-written guides, curated lists and community quests across LGBTQ+ places, events and shopping.",
+      "empty": "[RU] No guides yet.",
+      "emptyHint": "[RU] New guides land regularly. Check back soon."
+    },
+    "format": {
+      "guide": "[RU] Guide",
+      "list": "[RU] List",
+      "quest": "[RU] Quest"
+    },
+    "card": {
+      "minRead": "[RU] {{count}} min read",
+      "picks": "[RU] {{count}} picks",
+      "open": "[RU] Open guide:",
+      "placeholder": "[RU] Editorial",
+      "communityQuest": "[RU] Community quest"
+    },
+    "boost": {
+      "homeCity": "[RU] Near you",
+      "interest": "[RU] Matches your interests",
+      "categoryAffinity": "[RU] Picks for you",
+      "featured": "[RU] Editor’s pick",
+      "continueReading": "[RU] Continue reading",
+      "activeQuest": "[RU] Quest live now"
+    },
+    "tier": {
+      "top": "[RU] Our pick",
+      "alsoGreat": "[RU] Also great",
+      "upgrade": "[RU] Worth the upgrade",
+      "budget": "[RU] Budget pick",
+      "avoid": "[RU] Skip this one"
+    },
+    "pick": {
+      "pros": "[RU] Pros",
+      "cons": "[RU] Cons",
+      "seeFullPage": "[RU] See full page",
+      "unavailable": "[RU] No longer available"
+    },
+    "detail": {
+      "allGuides": "[RU] All guides",
+      "atAGlance": "[RU] At a glance",
+      "tier": "[RU] Tier",
+      "pick": "[RU] Pick",
+      "where": "[RU] Where",
+      "bestFor": "[RU] Best for",
+      "lastUpdated": "[RU] Last updated",
+      "browseAll": "[RU] Browse all guides",
+      "fallbackTitle": "[RU] Guide",
+      "notFound": {
+        "title": "[RU] Guide not found.",
+        "description": "[RU] It may have been moved or unpublished."
+      }
+    },
+    "quest": {
+      "module": "[RU] Quest",
+      "liveNow": "[RU] Live now",
+      "completed": "[RU] Completed",
+      "scheduled": "[RU] Scheduled",
+      "startsSoon": "[RU] Starts soon",
+      "ended": "[RU] Ended",
+      "criteria": "[RU] Criteria",
+      "type": "[RU] Type",
+      "target": "[RU] Target",
+      "contributions": "[RU] {{count}} contributions",
+      "tags": "[RU] Tags",
+      "region": "[RU] Region",
+      "recapTitle": "[RU] Recap published",
+      "recapBody": "[RU] Read the editorial recap with named contributor credits in the News section.",
+      "progress": "[RU] Progress",
+      "progressCaption": "[RU] {{contributors}} contributors · {{pending}} pending review",
+      "join": "[RU] Join",
+      "signIn": "[RU] Sign in",
+      "toParticipate": "[RU] to participate.",
+      "showMe": "[RU] Show me in contributors",
+      "displayName": "[RU] Display name (optional)",
+      "anonymous": "[RU] Anonymous",
+      "saving": "[RU] Saving…",
+      "update": "[RU] Update",
+      "updated": "[RU] Updated",
+      "joining": "[RU] Joining…",
+      "joinCta": "[RU] Join quest",
+      "joined": "[RU] Joined quest",
+      "contributors": "[RU] Contributors",
+      "noContributors": "[RU] No public contributors yet.",
+      "activeBanner": "[RU] Community quest · live now"
+    },
+    "rail": {
+      "title": "[RU] Guides",
+      "seeAll": "[RU] All guides"
+    },
+    "filters": {
+      "label": "[RU] Filter guides",
+      "all": "[RU] All",
+      "quests": "[RU] Quests",
+      "entity": {
+        "venue": "[RU] Places",
+        "event": "[RU] Events",
+        "marketplace": "[RU] Shopping",
+        "city": "[RU] Cities",
+        "country": "[RU] Countries",
+        "queerVillage": "[RU] Villages",
+        "personality": "[RU] People",
+        "news": "[RU] News",
+        "milestone": "[RU] History",
+        "group": "[RU] Groups",
+        "organization": "[RU] Organizations"
+      }
+    },
+    "continueReading": {
+      "title": "[RU] Continue reading",
+      "pctRead": "[RU] {{pct}}% read"
+    },
+    "featuredIn": {
+      "title": "[RU] Featured in guides"
     }
   }
 }

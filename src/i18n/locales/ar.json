@@ -1703,7 +1703,8 @@
       "hotels": "الفنادق",
       "help": "مساعدة",
       "tags": "الوسوم",
-      "history": "التاريخ"
+      "history": "التاريخ",
+      "guides": "[AR] Guides"
     },
     "userMenu": {
       "myTrips": "رحلاتي",
@@ -3067,7 +3068,8 @@
     "contributors": "المساهمون",
     "wishlists": "قوائم الرغبات",
     "tags": "الوسوم",
-    "organizations": "[AR] Organizations"
+    "organizations": "[AR] Organizations",
+    "guides": "[AR] Guides"
   },
   "chat": {
     "react": "تفاعل",
@@ -3535,6 +3537,126 @@
       "country": "[AR] Travel guide: {{name}}",
       "city": "[AR] City guide: {{name}}",
       "events": "[AR] Events in {{name}} today"
+    }
+  },
+  "guides": {
+    "hub": {
+      "title": "[AR] Guides",
+      "eyebrow": "[AR] Editorial",
+      "lede": "[AR] Comparison-driven guides, curated lists and community quests — written by editors, no fluff.",
+      "metaDescription": "[AR] Editor-written guides, curated lists and community quests across LGBTQ+ places, events and shopping.",
+      "empty": "[AR] No guides yet.",
+      "emptyHint": "[AR] New guides land regularly. Check back soon."
+    },
+    "format": {
+      "guide": "[AR] Guide",
+      "list": "[AR] List",
+      "quest": "[AR] Quest"
+    },
+    "card": {
+      "minRead": "[AR] {{count}} min read",
+      "picks": "[AR] {{count}} picks",
+      "open": "[AR] Open guide:",
+      "placeholder": "[AR] Editorial",
+      "communityQuest": "[AR] Community quest"
+    },
+    "boost": {
+      "homeCity": "[AR] Near you",
+      "interest": "[AR] Matches your interests",
+      "categoryAffinity": "[AR] Picks for you",
+      "featured": "[AR] Editor’s pick",
+      "continueReading": "[AR] Continue reading",
+      "activeQuest": "[AR] Quest live now"
+    },
+    "tier": {
+      "top": "[AR] Our pick",
+      "alsoGreat": "[AR] Also great",
+      "upgrade": "[AR] Worth the upgrade",
+      "budget": "[AR] Budget pick",
+      "avoid": "[AR] Skip this one"
+    },
+    "pick": {
+      "pros": "[AR] Pros",
+      "cons": "[AR] Cons",
+      "seeFullPage": "[AR] See full page",
+      "unavailable": "[AR] No longer available"
+    },
+    "detail": {
+      "allGuides": "[AR] All guides",
+      "atAGlance": "[AR] At a glance",
+      "tier": "[AR] Tier",
+      "pick": "[AR] Pick",
+      "where": "[AR] Where",
+      "bestFor": "[AR] Best for",
+      "lastUpdated": "[AR] Last updated",
+      "browseAll": "[AR] Browse all guides",
+      "fallbackTitle": "[AR] Guide",
+      "notFound": {
+        "title": "[AR] Guide not found.",
+        "description": "[AR] It may have been moved or unpublished."
+      }
+    },
+    "quest": {
+      "module": "[AR] Quest",
+      "liveNow": "[AR] Live now",
+      "completed": "[AR] Completed",
+      "scheduled": "[AR] Scheduled",
+      "startsSoon": "[AR] Starts soon",
+      "ended": "[AR] Ended",
+      "criteria": "[AR] Criteria",
+      "type": "[AR] Type",
+      "target": "[AR] Target",
+      "contributions": "[AR] {{count}} contributions",
+      "tags": "[AR] Tags",
+      "region": "[AR] Region",
+      "recapTitle": "[AR] Recap published",
+      "recapBody": "[AR] Read the editorial recap with named contributor credits in the News section.",
+      "progress": "[AR] Progress",
+      "progressCaption": "[AR] {{contributors}} contributors · {{pending}} pending review",
+      "join": "[AR] Join",
+      "signIn": "[AR] Sign in",
+      "toParticipate": "[AR] to participate.",
+      "showMe": "[AR] Show me in contributors",
+      "displayName": "[AR] Display name (optional)",
+      "anonymous": "[AR] Anonymous",
+      "saving": "[AR] Saving…",
+      "update": "[AR] Update",
+      "updated": "[AR] Updated",
+      "joining": "[AR] Joining…",
+      "joinCta": "[AR] Join quest",
+      "joined": "[AR] Joined quest",
+      "contributors": "[AR] Contributors",
+      "noContributors": "[AR] No public contributors yet.",
+      "activeBanner": "[AR] Community quest · live now"
+    },
+    "rail": {
+      "title": "[AR] Guides",
+      "seeAll": "[AR] All guides"
+    },
+    "filters": {
+      "label": "[AR] Filter guides",
+      "all": "[AR] All",
+      "quests": "[AR] Quests",
+      "entity": {
+        "venue": "[AR] Places",
+        "event": "[AR] Events",
+        "marketplace": "[AR] Shopping",
+        "city": "[AR] Cities",
+        "country": "[AR] Countries",
+        "queerVillage": "[AR] Villages",
+        "personality": "[AR] People",
+        "news": "[AR] News",
+        "milestone": "[AR] History",
+        "group": "[AR] Groups",
+        "organization": "[AR] Organizations"
+      }
+    },
+    "continueReading": {
+      "title": "[AR] Continue reading",
+      "pctRead": "[AR] {{pct}}% read"
+    },
+    "featuredIn": {
+      "title": "[AR] Featured in guides"
     }
   }
 }

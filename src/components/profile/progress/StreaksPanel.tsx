@@ -1,7 +1,7 @@
 import { ArrowRight, BookOpen, Bookmark, Flame, Globe } from 'lucide-react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { SectionHeader } from '@/components/ui/SectionHeader';
-import { useReadingStreak as useGuideStreak, useContinueReadingGuides } from '@/hooks/useGuideReadingProgress';
+import { useGuideReadingStreak as useGuideStreak, useContinueReadingGuides } from '@/hooks/useGuideReadingProgress';
 import { useReadingStreak as useNewsStreak } from '@/hooks/useReadingStreak';
 import { useUserNewsReadsList } from '@/hooks/useUserNewsReadsList';
 
@@ -76,7 +76,7 @@ export function StreaksPanel() {
               Continue reading
             </p>
             <LocalizedLink
-              to="/marketplace/guides"
+              to="/guides"
               className="inline-flex items-center gap-1 text-13 text-muted-foreground hover:text-foreground"
             >
               All guides <ArrowRight size={14} aria-hidden />
@@ -86,7 +86,7 @@ export function StreaksPanel() {
             {continueItems.map((it) => (
               <li key={it.guide_id} className="py-2">
                 <LocalizedLink
-                  to={`/marketplace/guides/${it.guide.slug}`}
+                  to={`/guides/${it.guide.slug}`}
                   className="group flex items-center gap-4 no-underline"
                 >
                   <div className="flex-1 min-w-0">
