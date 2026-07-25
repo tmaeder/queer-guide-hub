@@ -2,15 +2,25 @@ import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { untypedFrom, untypedRpc } from '@/integrations/supabase/untyped';
+import { contentTypeRegistry, getContentType } from '@/config/contentTypes';
+import type { DedupCapability } from '@/types/cms';
 
 /**
- * Data + mutations for the /admin/duplicates surface (dedup Phase 1).
+ * Data + mutations for the registry-driven /admin/duplicates console.
  *
- * `find_duplicate_clusters`, `merge_venues` and `unmerge_venues` are in the
- * generated types and called natively. The dynamic fuzzy-cluster RPCs,
- * `run_venue_fuzzy_automerge`, `merge_entities` (whose generated arg names differ
- * from what the DB function actually takes) and `unmerge_entities` go through
- * `untypedRpc` — the project's bridge for not-yet-regenerated schema.
+ * Every content type declares its dedup capability once, in its registry
+ * `admin.dedup` block (see `DedupCapability`). The generic clusterer
+ * `find_duplicate_clusters` is column-generic over `search_documents.entity_type`,
+ * and `merge_entities` is generic over `p_type`, so most types need no bespoke
+ * code here — this hook just reads the per-type config and dispatches.
+ *
+ * Merge routing by `cfg.mergePath`: venues → `merge_venues`, cities →
+ * `merge_cities`, everything else → the `merge_entities` dispatcher. The dynamic
+ * fuzzy finders, `merge_cities`/`merge_entities` (whose generated arg names differ
+ * from the DB) go through `untypedRpc`; `find_duplicate_clusters`, `merge_venues`
+ * and `unmerge_venues` are in the generated types and called natively.
+ *
+ * (Filename kept for git history — this is the general dedup hook, not venue-only.)
  */
 
 export interface ClusterMember {
@@ -35,30 +45,44 @@ export interface VenueMeta {
   is_featured: boolean | null;
 }
 
-/** Content types the /admin/duplicates surface can review + merge. */
-export type DedupContentType = 'venue' | 'event' | 'marketplace' | 'personality';
+/** A dedup-enabled content type resolved from the registry. */
+export interface DedupType {
+  /** Registry key, e.g. 'venues'. */
+  key: string;
+  /** Plural label for the selector, e.g. 'Venues'. */
+  label: string;
+  cfg: DedupCapability;
+}
 
-// Per-type table + the columns we need for the canonical suggestion. Marketplace
-// has no is_featured; only venues carry an images array for the thumbnail icon.
-const META_TABLE: Record<DedupContentType, string> = {
-  venue: 'venues',
-  event: 'events',
-  marketplace: 'marketplace_listings',
-  personality: 'personalities',
-};
-const META_COLS: Record<DedupContentType, string> = {
-  venue: 'id, quality_score, trust_score, images, created_at, is_featured',
-  event: 'id, quality_score, created_at, is_featured',
-  marketplace: 'id, quality_score, created_at',
-  personality: 'id, quality_score, created_at, is_featured',
-};
+/** Every content type whose registry `admin.dedup` block is set, in registry order. */
+export function useDedupTypes(): DedupType[] {
+  return useMemo(
+    () =>
+      Object.entries(contentTypeRegistry)
+        .filter(([, c]) => c.admin?.dedup)
+        .map(([key, c]) => ({ key, label: c.label.plural, cfg: c.admin!.dedup! })),
+    [],
+  );
+}
 
-export function useDuplicateClusters(contentType: DedupContentType = 'venue') {
+const dedupCfg = (typeKey: string): DedupCapability | undefined =>
+  getContentType(typeKey)?.admin?.dedup;
+
+export function useDuplicateClusters(typeKey: string) {
+  const cfg = dedupCfg(typeKey);
   const clustersQuery = useQuery({
-    queryKey: ['dup-clusters', contentType],
+    queryKey: ['dup-clusters', typeKey],
+    enabled: Boolean(cfg),
     queryFn: async (): Promise<Cluster[]> => {
+      if (!cfg) return [];
+      // Types not in search_documents (e.g. hotels) supply a dedicated finder.
+      if (cfg.clusterFinder) {
+        const { data, error } = await untypedRpc(cfg.clusterFinder, { p_limit: 200 });
+        if (error) throw error;
+        return (data ?? []) as unknown as Cluster[];
+      }
       const { data, error } = await supabase.rpc('find_duplicate_clusters', {
-        p_content_type: contentType,
+        p_content_type: cfg.searchType,
         p_limit: 200,
       });
       if (error) throw error;
@@ -70,11 +94,11 @@ export function useDuplicateClusters(contentType: DedupContentType = 'venue') {
   const memberIds = useMemo(() => clusters.flatMap((c) => c.members.map((m) => m.id)), [clusters]);
 
   const metaQuery = useQuery({
-    queryKey: ['dup-entity-meta', contentType, memberIds],
-    enabled: memberIds.length > 0,
+    queryKey: ['dup-entity-meta', typeKey, memberIds],
+    enabled: Boolean(cfg) && memberIds.length > 0,
     queryFn: async (): Promise<Map<string, VenueMeta>> => {
-      const { data, error } = await untypedFrom(META_TABLE[contentType])
-        .select(META_COLS[contentType])
+      const { data, error } = await untypedFrom(cfg!.metaTable)
+        .select(cfg!.metaCols)
         .in('id', memberIds);
       if (error) throw error;
       return new Map((data as unknown as VenueMeta[]).map((v) => [v.id, v]));
@@ -90,11 +114,11 @@ export function useDuplicateClusters(contentType: DedupContentType = 'venue') {
   };
 }
 
-// --- Fuzzy (same-place) dedup — Phase 1 -----------------------------------
-// find_fuzzy_duplicate_clusters surfaces near-identical names at effectively the
-// same coordinates that the exact name+city grouping misses (word-order swaps,
-// punctuation). auto_eligible pairs (name ≥0.92, ≤100m) are what the automated
-// pass acts on; the rest are here for a human to merge.
+// --- Fuzzy (same-place / same-item) dedup ---------------------------------
+// A type's fuzzy finder surfaces near-identical names at effectively the same
+// coordinates that the exact name+city grouping misses (word-order swaps,
+// punctuation). auto_eligible pairs are what the automated sweep acts on; the
+// rest are here for a human to merge.
 
 export interface FuzzyMember {
   id: string;
@@ -114,20 +138,10 @@ export interface FuzzyCluster {
   members: FuzzyMember[];
 }
 
-/** Per-type retroactive fuzzy finder RPC. Personalities have none (namesake risk). */
-const FUZZY_RPC: Partial<Record<DedupContentType, string>> = {
-  venue: 'find_fuzzy_duplicate_clusters',
-  event: 'find_event_fuzzy_duplicate_clusters',
-  marketplace: 'find_marketplace_fuzzy_duplicate_clusters',
-};
-
-/** Content types that expose the fuzzy "same place / same item" review tab. */
-export const FUZZY_CONTENT_TYPES: DedupContentType[] = ['venue', 'event', 'marketplace'];
-
-export function useFuzzyDuplicateClusters(contentType: DedupContentType = 'venue') {
-  const rpc = FUZZY_RPC[contentType];
+export function useFuzzyDuplicateClusters(typeKey: string) {
+  const rpc = dedupCfg(typeKey)?.fuzzyRpc;
   const query = useQuery({
-    queryKey: ['fuzzy-dup-clusters', contentType],
+    queryKey: ['fuzzy-dup-clusters', typeKey],
     enabled: Boolean(rpc),
     queryFn: async (): Promise<FuzzyCluster[]> => {
       const { data, error } = await untypedRpc(rpc!, { p_limit: 300 });
@@ -143,8 +157,11 @@ export function useFuzzyDuplicateClusters(contentType: DedupContentType = 'venue
   };
 }
 
-/** Auto-merge the unambiguous same-place pairs (name ≥0.92, ≤100m). */
-export async function runFuzzyAutomerge(dryRun: boolean): Promise<{
+/** Auto-merge the unambiguous same-place pairs via a type's bulk sweep RPC. */
+export async function runFuzzyAutomerge(
+  rpc: string,
+  dryRun: boolean,
+): Promise<{
   merged: number;
   eligible_pairs: number;
   skipped: number;
@@ -157,43 +174,43 @@ export async function runFuzzyAutomerge(dryRun: boolean): Promise<{
     skipped: number;
     chains_collapsed: number;
     dry_run: boolean;
-  }>('run_venue_fuzzy_automerge', {
-    p_dry_run: dryRun,
-  });
+  }>(rpc, { p_dry_run: dryRun });
   if (error) throw error;
   return data!;
 }
 
-/** Merge one duplicate into the canonical; returns the audit id for undo. */
-export async function mergeVenuePair(keepId: string, dropId: string): Promise<string | undefined> {
-  const { data, error } = await supabase.rpc('merge_venues', {
-    p_keep_id: keepId,
-    p_drop_id: dropId,
-  });
-  if (error) throw error;
-  return (data as { audit_id?: string } | null)?.audit_id;
-}
-
-/** Reverse a venue merge by its audit id. */
-export async function unmergeAudit(auditId: string): Promise<void> {
-  const { error } = await supabase.rpc('unmerge_venues', { p_audit_id: auditId });
-  if (error) throw error;
-}
-
 /**
- * Merge one duplicate into the canonical for ANY supported content type.
- * Venues keep their dedicated merge_venues RPC; events / marketplace /
- * personalities go through the generic merge_entities dispatcher. Returns the
- * audit id for undo.
+ * Merge one duplicate into the canonical for ANY dedup-enabled content type.
+ * Routes by `cfg.mergePath`: venues → dedicated `merge_venues`, cities →
+ * `merge_cities`, everything else → the generic `merge_entities` dispatcher.
+ * Returns the audit id for undo.
  */
 export async function mergeEntityPair(
-  contentType: DedupContentType,
+  typeKey: string,
   keepId: string,
   dropId: string,
 ): Promise<string | undefined> {
-  if (contentType === 'venue') return mergeVenuePair(keepId, dropId);
+  const cfg = dedupCfg(typeKey);
+  if (!cfg) throw new Error(`No dedup config for content type "${typeKey}"`);
+
+  if (cfg.mergePath === 'venue') {
+    const { data, error } = await supabase.rpc('merge_venues', {
+      p_keep_id: keepId,
+      p_drop_id: dropId,
+    });
+    if (error) throw error;
+    return (data as { audit_id?: string } | null)?.audit_id;
+  }
+  if (cfg.mergePath === 'city') {
+    const { data, error } = await untypedRpc('merge_cities', {
+      p_keep_id: keepId,
+      p_drop_id: dropId,
+    });
+    if (error) throw error;
+    return (data as { audit_id?: string } | null)?.audit_id;
+  }
   const { data, error } = await untypedRpc('merge_entities', {
-    p_type: contentType,
+    p_type: cfg.searchType,
     p_keep_id: keepId,
     p_drop_id: dropId,
   });
@@ -201,9 +218,19 @@ export async function mergeEntityPair(
   return (data as { audit_id?: string } | null)?.audit_id;
 }
 
-/** Reverse a merge by audit id for ANY supported content type. */
-export async function unmergeEntity(contentType: DedupContentType, auditId: string): Promise<void> {
-  if (contentType === 'venue') return unmergeAudit(auditId);
+/** Reverse a merge by audit id for ANY dedup-enabled content type. */
+export async function unmergeEntity(typeKey: string, auditId: string): Promise<void> {
+  const cfg = dedupCfg(typeKey);
+  if (cfg?.mergePath === 'venue') {
+    const { error } = await supabase.rpc('unmerge_venues', { p_audit_id: auditId });
+    if (error) throw error;
+    return;
+  }
+  if (cfg?.mergePath === 'city') {
+    const { error } = await untypedRpc('unmerge_cities', { p_audit_id: auditId });
+    if (error) throw error;
+    return;
+  }
   const { error } = await untypedRpc('unmerge_entities', { p_audit_id: auditId });
   if (error) throw error;
 }

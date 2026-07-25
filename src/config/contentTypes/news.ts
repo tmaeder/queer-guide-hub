@@ -167,5 +167,14 @@ export const newsArticleContentType: ContentTypeConfig = {
     ops: ['quality_review', 'summarize', 'seo_draft', 'auto_tag'],
     writableFields: ['excerpt', 'meta_title', 'meta_description', 'tags'],
   },
+  admin: {
+    duplicatesRoute: '/admin/duplicates',
+    dedup: {
+      searchType: 'news',
+      metaTable: 'news_articles',
+      metaCols: 'id, quality_score, created_at, is_featured',
+      mergePath: 'entities',
+    },
+  },
   publicPath: (row) => (row.slug ? `/news/${row.slug}` : null),
 };

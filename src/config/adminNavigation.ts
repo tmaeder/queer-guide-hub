@@ -171,7 +171,7 @@ export const adminNavSections: AdminNavSection[] = [
       },
       {
         id: 'duplicates',
-        label: 'Duplicate venues',
+        label: 'Duplicates & merge',
         icon: CopyCheck,
         route: '/admin/duplicates',
         group: 'Places',

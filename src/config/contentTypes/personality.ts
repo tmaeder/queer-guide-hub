@@ -151,6 +151,15 @@ export const personalityContentType: ContentTypeConfig = {
     ops: ['quality_review', 'summarize', 'seo_draft', 'fact_check'],
     writableFields: ['bio', 'description', 'meta_title', 'meta_description'],
   },
-  admin: { qualityRoute: '/admin/content/personality-quality' },
+  admin: {
+    qualityRoute: '/admin/content/personality-quality',
+    duplicatesRoute: '/admin/duplicates',
+    dedup: {
+      searchType: 'personality',
+      metaTable: 'personalities',
+      metaCols: 'id, quality_score, created_at, is_featured',
+      mergePath: 'entities',
+    },
+  },
   publicPath: (row) => (row.slug ? `/personalities/${row.slug}` : null),
 };

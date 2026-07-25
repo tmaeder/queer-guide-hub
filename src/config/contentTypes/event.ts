@@ -221,6 +221,16 @@ export const eventContentType: ContentTypeConfig = {
     ops: ['quality_review', 'summarize', 'seo_draft', 'auto_tag'],
     writableFields: ['description', 'meta_title', 'meta_description', 'tags'],
   },
-  admin: { qualityRoute: '/admin/content/event-quality' },
+  admin: {
+    qualityRoute: '/admin/content/event-quality',
+    duplicatesRoute: '/admin/duplicates',
+    dedup: {
+      searchType: 'event',
+      metaTable: 'events',
+      metaCols: 'id, quality_score, created_at, is_featured',
+      mergePath: 'entities',
+      fuzzyRpc: 'find_event_fuzzy_duplicate_clusters',
+    },
+  },
   publicPath: (row) => (row.slug ? `/events/${row.slug}` : null),
 };

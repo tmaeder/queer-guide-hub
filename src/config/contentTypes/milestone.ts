@@ -171,6 +171,15 @@ export const milestoneContentType: ContentTypeConfig = {
     },
   ],
   // Preserves the pre-registry All-content set (milestones were never listed there).
-  admin: { includeInAllContent: false },
+  admin: {
+    includeInAllContent: false,
+    duplicatesRoute: '/admin/duplicates',
+    dedup: {
+      searchType: 'milestone',
+      metaTable: 'milestones',
+      metaCols: 'id, quality_score, created_at, is_featured',
+      mergePath: 'entities',
+    },
+  },
   publicPath: (row) => (row.slug ? `/history/${row.slug}` : null),
 };
