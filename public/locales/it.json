@@ -2608,7 +2608,11 @@
       "sensitiveContentBody": "Questo argomento può contenere contenuti sensibili. Se hai bisogno di supporto, visita la nostra pagina delle linee di assistenza in caso di crisi.",
       "sensitiveContentTitle": "Argomento sensibile",
       "tableOfContents": "Indice",
-      "viewAsGraph": "Visualizza come grafo"
+      "viewAsGraph": "Visualizza come grafo",
+      "hierarchy": "[IT] In the taxonomy",
+      "broader": "[IT] Broader",
+      "narrower": "[IT] More specific",
+      "related": "[IT] Related"
     },
     "graph": {
       "title": "Grafo delle relazioni",

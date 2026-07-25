@@ -2606,7 +2606,11 @@
       "sensitiveContentBody": "このトピックにはセンシティブな内容が含まれる場合があります。サポートが必要な場合は、危機ホットラインのページをご覧ください。",
       "sensitiveContentTitle": "センシティブなトピック",
       "tableOfContents": "目次",
-      "viewAsGraph": "グラフで表示"
+      "viewAsGraph": "グラフで表示",
+      "hierarchy": "[JA] In the taxonomy",
+      "broader": "[JA] Broader",
+      "narrower": "[JA] More specific",
+      "related": "[JA] Related"
     },
     "graph": {
       "title": "タグ関係グラフ",
