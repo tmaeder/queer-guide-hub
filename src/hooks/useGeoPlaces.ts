@@ -68,6 +68,15 @@ export interface LandmarkFormValues {
   accessibility_notes: string;
 }
 
+/**
+ * The profile FK is composite (place_id, place_type), so PostgREST embeds it as
+ * an array rather than detecting one-to-one — unwrap to a single object.
+ */
+function unwrapProfile<T>(row: Record<string, unknown>): T {
+  const p = row.geo_landmark_profiles;
+  return { ...row, geo_landmark_profiles: Array.isArray(p) ? (p[0] ?? null) : p } as T;
+}
+
 // ── Public hooks ───────────────────────────────────────────────────────────────
 
 /** Approved (non-review) landmarks in a city, for the public rail. */
@@ -85,7 +94,7 @@ export function useCityLandmarks(cityId: string | undefined) {
         .is('duplicate_of_id', null)
         .order('name');
       if (error) throw error;
-      return (data ?? []) as unknown as LandmarkListItem[];
+      return (data ?? []).map((r) => unwrapProfile<LandmarkListItem>(r as Record<string, unknown>));
     },
   });
 }
@@ -106,7 +115,7 @@ export function usePlaceDetail(slug: string | undefined) {
         .is('duplicate_of_id', null)
         .maybeSingle();
       if (error) throw error;
-      return data as unknown as PlaceDetailRow | null;
+      return data ? unwrapProfile<PlaceDetailRow>(data as Record<string, unknown>) : null;
     },
   });
 }

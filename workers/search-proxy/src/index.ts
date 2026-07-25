@@ -778,6 +778,7 @@ const INDEX_TO_PG_TYPE: Record<string, string> = {
 	groups: "group",
 	organizations: "organization",
 	milestones: "milestone",
+	landmarks: "landmark",
 };
 
 async function loadSignal(env: Env, who: { user_id?: string; session_id?: string }) {
