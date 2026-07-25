@@ -85,7 +85,9 @@ const FRAME_SRC = [
 ];
 
 const IMG_SRC = ["'self'", 'data:', 'blob:', 'https:'];
-const FONT_SRC = ["'self'", 'data:', 'https://protomaps.github.io'];
+// *.supabase.co allows custom brand fonts served from our storage bucket
+// (Design & Branding control center). Keep in sync with public/_headers font-src.
+const FONT_SRC = ["'self'", 'data:', 'https://protomaps.github.io', 'https://*.supabase.co'];
 
 export function buildContentSecurityPolicy(nonce: string): string {
   return [

@@ -131,4 +131,15 @@ export const cityContentType: ContentTypeConfig = {
   fieldGroupOrder: ['basic', 'location', 'details', 'lgbtq', 'media', 'external'],
   translatableFields: ['name', 'description'],
   commentable: true,
+  admin: {
+    qualityRoute: '/admin/content/city-quality',
+    duplicatesRoute: '/admin/duplicates',
+    dedup: {
+      searchType: 'city',
+      metaTable: 'cities',
+      metaCols: 'id, quality_score:completeness_score, trust_score, created_at',
+      mergePath: 'city',
+    },
+  },
+  publicPath: (row) => (row.slug ? `/city/${row.slug}` : null),
 };

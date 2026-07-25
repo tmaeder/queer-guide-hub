@@ -16,12 +16,21 @@ class_name = "Conversation"
 tag = "v1"
 new_sqlite_classes = ["Conversation"]
 
+# Anti-abuse KV counter for the per-IP rate limit (cost control, invoice IN-72568830).
+# Create with:  wrangler kv namespace create assistant-rate-limit
+# then paste the returned id below (reuse the submit worker's namespace if preferred).
+[[kv_namespaces]]
+binding = "RATE_LIMIT"
+id = "REPLACE_WITH_KV_NAMESPACE_ID"
+
 [vars]
 ALLOWED_ORIGINS = "https://queer.guide,https://www.queer.guide,http://localhost:3000"
 # AI Gateway id — caching / rate-limit / observability on the AI.run calls.
 AI_GATEWAY_NAME = "qg-search"
 # Tool-capable Workers AI model that runs the agent loop.
 ROUTER_MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast"
+# Per-IP requests/min cap on the public endpoint.
+ASSISTANT_RATE_PER_MIN = "10"
 
 # Secrets (set via: wrangler secret put NAME):
 #   SUPABASE_URL
@@ -30,6 +39,9 @@ ROUTER_MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast"
 #     access token is verified offline to decide whether a logged-in user may see
 #     gated (high-risk-country) content in chat. When unset, falls back to a GoTrue
 #     check using SUPABASE_SERVICE_KEY, so the gate works without this secret.
+#   TURNSTILE_SECRET      - OPTIONAL. When set, /assistant requires a valid Turnstile
+#     token (fail-open when unset, so this ships ahead of the frontend widget).
+#   AI_DISABLED           - OPTIONAL kill-switch. Set to "1" to halt all inference.
 # (No LLM API key — inference runs on the Workers AI binding above.)
 
 [observability]

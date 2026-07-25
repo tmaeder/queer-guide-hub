@@ -33,7 +33,9 @@ import { EditorHeader } from './EditorHeader';
 import { EditorSidebar } from './EditorSidebar';
 import { EntityAuditHistory } from '@/components/cms/EntityAuditHistory';
 import { AIAssistDrawer } from '@/components/cms/AIAssistDrawer';
-import { supabase } from '@/integrations/supabase/client';
+import { useEditorEnrich } from './hooks/useEditorEnrich';
+import { useEditorQueue } from './hooks/useEditorQueue';
+import { useEditorShortcuts } from './hooks/useEditorShortcuts';
 import { toast } from 'sonner';
 import type { FieldGroup, WorkflowState } from '@/types/cms';
 import type { EditorQueue } from '@/components/admin/shell/AdminShell';
@@ -147,65 +149,7 @@ export function CMSEditorLayout({
   }, [config, state.data]);
 
   // ── Enrichment ────────────────────────────────────────────
-  const [isEnriching, setIsEnriching] = useState(false);
-
-  const handleEnrich = useCallback(async () => {
-    if (!state.itemId || !config) return;
-    setIsEnriching(true);
-    try {
-      const baseArgs = {
-        content_type: contentType,
-        record_id: state.itemId,
-        source: state.data as Record<string, unknown>,
-      };
-      const [summaryRes, seoRes] = await Promise.all([
-        supabase.functions.invoke('cms-ai', { body: { op: 'summarize', ...baseArgs } }),
-        supabase.functions.invoke('cms-ai', { body: { op: 'seo_draft', ...baseArgs } }),
-      ]);
-      if (summaryRes.error) throw summaryRes.error;
-      if (seoRes.error) throw seoRes.error;
-
-      const updates: Record<string, unknown> = {};
-      const isEmpty = (v: unknown) => v == null || (typeof v === 'string' && v.trim() === '');
-      const summary = summaryRes.data?.output as string | undefined;
-      const seo = seoRes.data?.output as
-        | { meta_title?: string; meta_description?: string }
-        | undefined;
-
-      const descField = config.fields.find(
-        (f) => f.name === 'description' && !f.readOnly && !f.hidden,
-      );
-      const excerptField = config.fields.find(
-        (f) => f.name === 'excerpt' && !f.readOnly && !f.hidden,
-      );
-      if (summary && descField && isEmpty(state.data.description)) updates.description = summary;
-      else if (summary && excerptField && isEmpty(state.data.excerpt)) updates.excerpt = summary;
-
-      const metaTitleField = config.fields.find(
-        (f) => f.name === 'meta_title' && !f.readOnly && !f.hidden,
-      );
-      const metaDescField = config.fields.find(
-        (f) => f.name === 'meta_description' && !f.readOnly && !f.hidden,
-      );
-      if (seo?.meta_title && metaTitleField && isEmpty(state.data.meta_title))
-        updates.meta_title = seo.meta_title;
-      if (seo?.meta_description && metaDescField && isEmpty(state.data.meta_description))
-        updates.meta_description = seo.meta_description;
-
-      const count = Object.keys(updates).length;
-      if (count > 0) {
-        setFields(updates);
-        toast.success(`AI filled ${count} field${count > 1 ? 's' : ''}`);
-      } else {
-        toast.info('Content already looks good — no changes suggested');
-      }
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Unknown error';
-      toast.error(`Enrichment failed: ${msg}`);
-    } finally {
-      setIsEnriching(false);
-    }
-  }, [state.itemId, contentType, config, state.data, setFields]);
+  const { isEnriching, handleEnrich } = useEditorEnrich(contentType, config, state, setFields);
 
   // Handle save
   const handleSave = useCallback(async () => {
@@ -215,120 +159,47 @@ export function CMSEditorLayout({
     }
   }, [save, onSaved, state.itemId]);
 
-  // ── Queue (cockpit) navigation + actions ─────────────────────────
-  const inQueue = Boolean(queue && queue.items.length > 0);
-  const queueIndex = queue?.index ?? 0;
-  const queueTotal = queue?.items.length ?? 0;
-  const isFirst = queueIndex <= 0;
-  const isLast = queueIndex >= queueTotal - 1;
+  // ── Queue (cockpit) navigation + actions + [/]/⌘Enter loop ───────
+  const {
+    inQueue,
+    queueIndex,
+    queueTotal,
+    isFirst,
+    isLast,
+    handlePrev,
+    handleNext,
+    handleApprove,
+    handleRequestChanges,
+  } = useEditorQueue({
+    queue,
+    onNavigate,
+    onClose,
+    state,
+    config,
+    save,
+    transition,
+    isTransitioning,
+  });
 
-  const confirmDiscardIfDirty = useCallback(() => {
-    if (!state.isDirty) return true;
-    return window.confirm('You have unsaved changes. Discard them and continue?');
-  }, [state.isDirty]);
-
-  const handlePrev = useCallback(() => {
-    if (!inQueue || isFirst) return;
-    if (!confirmDiscardIfDirty()) return;
-    onNavigate?.(queueIndex - 1);
-  }, [inQueue, isFirst, confirmDiscardIfDirty, onNavigate, queueIndex]);
-
-  // Step forward; close + toast when the queue is drained.
-  const advance = useCallback(
-    (processed: number) => {
-      if (!inQueue || isLast) {
-        if (inQueue) toast.success(`Queue cleared — ${processed} processed`);
-        onClose();
-        return;
-      }
-      onNavigate?.(queueIndex + 1);
-    },
-    [inQueue, isLast, onClose, onNavigate, queueIndex],
-  );
-
-  const handleNext = useCallback(() => {
-    if (!inQueue || isLast) return;
-    if (!confirmDiscardIfDirty()) return;
-    onNavigate?.(queueIndex + 1);
-  }, [inQueue, isLast, confirmDiscardIfDirty, onNavigate, queueIndex]);
-
-  const handleApprove = useCallback(async () => {
-    if (!state.itemId || !config) return;
-    // Persist any pending edits before publishing, else they're lost on advance.
+  // ── Global shortcuts: ⌘S save, ⌘Enter publish (queue mode owns ⌘Enter) ──
+  const handlePublish = useCallback(async () => {
+    if (!config || !state.itemId) return;
     if (state.isDirty) {
       const saved = await save();
       if (!saved) return;
     }
     const ok = await transition(config.tableName, state.itemId, 'published');
-    if (ok) {
-      toast.success('Published');
-      advance(queueIndex + 1);
-    } else {
-      toast.error('Could not publish — check workflow state / permissions');
-    }
-  }, [state.itemId, state.isDirty, config, save, transition, advance, queueIndex]);
+    if (ok) toast.success('Published');
+    else toast.error('Could not publish — check workflow state / permissions');
+  }, [config, state.itemId, state.isDirty, save, transition]);
 
-  const handleRequestChanges = useCallback(
-    async (reason: string) => {
-      if (!state.itemId || !config || !reason.trim()) return;
-      const ok = await transition(config.tableName, state.itemId, 'draft', reason.trim());
-      if (ok) {
-        toast.success('Sent back to draft');
-        advance(queueIndex + 1);
-      } else {
-        toast.error('Could not request changes');
-      }
-    },
-    [state.itemId, config, transition, advance, queueIndex],
-  );
-
-  // Bridge global CMS shortcuts to local editor handlers (CMSShell dispatches
-  // these so it can own ⌘K/⌘S/⌘Enter without holding editor refs).
-  useEffect(() => {
-    const onSaveEvt = () => {
-      if (state.isDirty && !state.isSaving) handleSave();
-    };
-    const onPublishEvt = () => {
-      // Fall back to save when no explicit publish action is wired here;
-      // the WorkflowPanel owns the actual state transition.
-      if (state.isDirty && !state.isSaving) handleSave();
-    };
-    window.addEventListener('cms:editor:save', onSaveEvt);
-    window.addEventListener('cms:editor:publish', onPublishEvt);
-    return () => {
-      window.removeEventListener('cms:editor:save', onSaveEvt);
-      window.removeEventListener('cms:editor:publish', onPublishEvt);
-    };
-  }, [handleSave, state.isDirty, state.isSaving]);
-
-  // Cockpit keyboard loop: [ / ] prev/next, ⌘/Ctrl+Enter approve. Ignored while
-  // typing in a field. Active only in queue mode.
-  useEffect(() => {
-    if (!inQueue) return;
-    const isTyping = (el: EventTarget | null) => {
-      const node = el as HTMLElement | null;
-      if (!node) return false;
-      const tag = node.tagName;
-      return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || node.isContentEditable;
-    };
-    const onKey = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
-        e.preventDefault();
-        if (!isTransitioning && !state.isSaving) handleApprove();
-        return;
-      }
-      if (isTyping(e.target)) return;
-      if (e.key === ']') {
-        e.preventDefault();
-        handleNext();
-      } else if (e.key === '[') {
-        e.preventDefault();
-        handlePrev();
-      }
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [inQueue, isTransitioning, state.isSaving, handleApprove, handleNext, handlePrev]);
+  useEditorShortcuts({
+    publishEnabled: !inQueue,
+    isDirty: state.isDirty,
+    isSaving: state.isSaving,
+    onSave: handleSave,
+    onPublish: handlePublish,
+  });
 
   // Curried field change handler
   const handleFieldChange = useCallback(

@@ -8,7 +8,7 @@ import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useParams } from 'react-router';
 import { useContext } from 'react';
-import { getContentType } from '@/config/contentTypeRegistry';
+import { getContentType, getContentTypeIds } from '@/config/contentTypeRegistry';
 import { AdminShellContext } from '@/components/admin/shell/AdminShell';
 import type { ContentTypeConfig, FieldConfig, SelectOption } from '@/types/cms';
 import {
@@ -224,22 +224,11 @@ export function useContentListController({
 
   async function loadAllTypes() {
     const allItems: ListItem[] = [];
-    const configs = [
-      'venues',
-      'events',
-      'personalities',
-      'news_articles',
-      'cities',
-      'countries',
-      'unified_tags',
-      'marketplace_listings',
-      'community_groups',
-      'hotels',
-      'queer_villages',
-      'cms_pages',
-    ]
+    const configs = getContentTypeIds()
       .map((id) => getContentType(id))
-      .filter(Boolean) as ContentTypeConfig[];
+      .filter(
+        (ct): ct is ContentTypeConfig => !!ct && ct.admin?.includeInAllContent !== false,
+      );
 
     for (const ct of configs) {
       let query = supabase

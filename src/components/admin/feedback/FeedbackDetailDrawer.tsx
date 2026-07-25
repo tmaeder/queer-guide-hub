@@ -20,7 +20,7 @@ import type {
   SubmissionStoryRef,
 } from './types';
 import { DuplicateBanner } from './DuplicateBanner';
-import { DrawerTriageBar } from './DrawerTriageBar';
+import { FeedbackDrawerActionBar } from './FeedbackDrawerActionBar';
 import { DrawerContextPanel } from './DrawerContextPanel';
 import { DrawerActionFooter } from './DrawerActionFooter';
 import { ReplyThread } from './ReplyThread';
@@ -276,7 +276,7 @@ export function FeedbackDetailDrawer({
           </div>
 
           {/* Triage controls — immediately after title */}
-          <DrawerTriageBar
+          <FeedbackDrawerActionBar
             status={item.feedback_status || 'new'}
             priority={item.priority ?? 2}
             assigneeId={item.assignee_id}

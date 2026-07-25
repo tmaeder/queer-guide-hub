@@ -6,7 +6,17 @@ import { untypedFrom } from '@/integrations/supabase/untyped';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Upload, X, CheckCircle, AlertTriangle } from 'lucide-react';
+import { bucketForTier, objectKeyForTier } from '@/lib/mediaAccess';
+import { ACCESS_LEVELS, BRAND_CATEGORIES } from './types';
+import type { AccessLevel, BrandCategory } from './types';
 
 const MAX_FILE_SIZE = 20 * 1024 * 1024;
 const ALLOWED_TYPES = [
@@ -26,20 +36,24 @@ interface UploadFile {
 export function MediaUploadZone() {
   const [files, setFiles] = useState<UploadFile[]>([]);
   const [expanded, setExpanded] = useState(false);
+  const [access, setAccess] = useState<AccessLevel>('public');
+  const [brandCategory, setBrandCategory] = useState<BrandCategory | 'none'>('none');
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
-  const uploadFile = useCallback(async (uf: UploadFile) => {
+  const uploadFile = useCallback(async (uf: UploadFile, tier: AccessLevel, category: BrandCategory | 'none') => {
     setFiles(prev => prev.map(f => f.id === uf.id ? { ...f, status: 'uploading' as const, progress: 10 } : f));
 
     try {
       const ext = uf.file.name.split('.').pop() || 'bin';
-      const path = `${crypto.randomUUID()}.${ext}`;
+      const bucket = bucketForTier(tier);
+      // Public bytes go to cms-media (flat); private bytes to dam-private under a tier prefix.
+      const path = objectKeyForTier(tier, `${crypto.randomUUID()}.${ext}`);
 
       setFiles(prev => prev.map(f => f.id === uf.id ? { ...f, progress: 30 } : f));
 
       const { error: storageError } = await supabase.storage
-        .from('cms-media')
+        .from(bucket)
         .upload(path, uf.file, { contentType: uf.file.type });
 
       if (storageError) throw storageError;
@@ -52,6 +66,9 @@ export function MediaUploadZone() {
         mime_type: uf.file.type,
         file_size: uf.file.size,
         storage_path: path,
+        storage_bucket: bucket,
+        access_level: tier,
+        brand_category: category === 'none' ? null : category,
       });
 
       if (dbError) throw dbError;
@@ -75,9 +92,9 @@ export function MediaUploadZone() {
     setExpanded(true);
 
     for (const uf of newFiles) {
-      uploadFile(uf);
+      uploadFile(uf, access, brandCategory);
     }
-  }, [uploadFile]);
+  }, [uploadFile, access, brandCategory]);
 
   const onDropEnd = useCallback(() => {
     const allDone = files.every(f => f.status === 'done' || f.status === 'error');
@@ -111,6 +128,31 @@ export function MediaUploadZone() {
 
   return (
     <div className="flex flex-col gap-2">
+      {/* New uploads inherit these DAM defaults; non-public tiers store bytes privately. */}
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="text-xs text-muted-foreground">New uploads:</span>
+        <Select value={access} onValueChange={(v) => setAccess(v as AccessLevel)}>
+          <SelectTrigger style={{ width: 130 }} className="text-13">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {ACCESS_LEVELS.map((a) => (
+              <SelectItem key={a.value} value={a.value}>{a.label}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Select value={brandCategory} onValueChange={(v) => setBrandCategory(v as BrandCategory | 'none')}>
+          <SelectTrigger style={{ width: 150 }} className="text-13">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="none">No category</SelectItem>
+            {BRAND_CATEGORIES.map((c) => (
+              <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
       <div
         {...getRootProps()}
         className={`border border-dashed p-4 text-center cursor-pointer transition-colors ${

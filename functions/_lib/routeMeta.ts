@@ -215,13 +215,26 @@ function dynamicMeta(pathname: string): RouteMeta | null {
   };
 }
 
-export function resolveMeta(pathname: string): RouteMeta {
+/** DB-driven identity defaults (site_branding). Absent fields fall back to the
+ * compiled-in constants so a failed fetch reproduces today's output exactly. */
+export type MetaOverrides = {
+  default_title?: string;
+  default_description?: string;
+  og_image_url?: string;
+};
+
+export function resolveMeta(pathname: string, overrides?: MetaOverrides): RouteMeta {
   const clean = pathname.replace(/\/+$/, '') || '/';
+  const fallbackOg = overrides?.og_image_url ?? DEFAULT_OG_IMAGE;
   const exact = STATIC_ROUTE_META[clean];
-  if (exact) return { ogImage: DEFAULT_OG_IMAGE, ...exact };
+  if (exact) return { ogImage: fallbackOg, ...exact };
   const dyn = dynamicMeta(clean);
-  if (dyn) return { ogImage: DEFAULT_OG_IMAGE, ...dyn };
-  return DEFAULT_META;
+  if (dyn) return { ogImage: fallbackOg, ...dyn };
+  return {
+    title: overrides?.default_title ?? DEFAULT_META.title,
+    description: overrides?.default_description ?? DEFAULT_META.description,
+    ogImage: fallbackOg,
+  };
 }
 
 export function canonicalUrl(pathname: string): string {

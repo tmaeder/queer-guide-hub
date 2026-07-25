@@ -1,4 +1,5 @@
 import { sendEmail, isEmailConfigured } from "../_shared/email.ts";
+import { getEmailBranding, fromHeader, wrapHtml } from "../_shared/branding.ts";
 import { getCorsHeaders, getServiceClient } from '../_shared/supabase-client.ts';
 
 function escapeHtml(s: string): string {
@@ -157,11 +158,12 @@ const handler = async (req: Request): Promise<Response> => {
 
         console.log(`Sending email with subject: "${subject}" to ${recipient.email}`);
 
+        const branding = await getEmailBranding();
         const emailResult = await sendEmail({
-          from: "The Queer Guide <noreply@resend.dev>",
+          from: fromHeader(branding),
           to: [recipient.email],
           subject,
-          html: htmlContent,
+          html: wrapHtml(htmlContent, branding),
           text: textContent.trim() || undefined,
         });
 

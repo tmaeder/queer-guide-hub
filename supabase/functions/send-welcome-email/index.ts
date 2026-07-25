@@ -8,6 +8,7 @@
 // the shared sendEmail() helper (Resend backend).
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5';
 import { sendEmail } from '../_shared/email.ts';
+import { getEmailBranding, fromHeader, wrapHtml } from '../_shared/branding.ts';
 import { getCorsHeaders, getServiceClient, hasInternalSecret, requireAdmin } from '../_shared/supabase-client.ts';
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
@@ -113,11 +114,12 @@ const handler = async (req: Request): Promise<Response> => {
   };
 
   try {
+    const branding = await getEmailBranding();
     await sendEmail({
-      from: 'The Queer Guide <noreply@queer.guide>',
+      from: fromHeader(branding),
       to: [toEmail],
       subject: renderTemplate(tpl.subject, vars),
-      html: renderTemplate(tpl.html_content, vars),
+      html: wrapHtml(renderTemplate(tpl.html_content, vars), branding),
       text: tpl.text_content ? renderTemplate(tpl.text_content, vars) : undefined,
     });
   } catch (e) {

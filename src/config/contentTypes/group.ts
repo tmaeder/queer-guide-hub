@@ -39,4 +39,14 @@ export const communityGroupsContentType: ContentTypeConfig = {
   fields: groupFields,
   defaults: { is_private: false },
   fieldGroupOrder: ['basic', 'details', 'media', 'settings'],
+  admin: {
+    requestsRoute: '/admin/content/group-requests',
+    duplicatesRoute: '/admin/duplicates',
+    dedup: {
+      searchType: 'group',
+      metaTable: 'community_groups',
+      metaCols: 'id, quality_score:member_count, is_featured:featured, created_at',
+      mergePath: 'entities',
+    },
+  },
 };

@@ -30,4 +30,6 @@ export const feedbackContentType: ContentTypeConfig = {
   ],
   defaults: {},
   fieldGroupOrder: ['basic'],
+  // Feedback is worked on the feedback board, not the All-content list.
+  admin: { includeInAllContent: false },
 };

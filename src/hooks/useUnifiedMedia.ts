@@ -8,6 +8,8 @@ import type {
   EntityTypeFilter,
   FormatFilter,
   SourceTypeFilter,
+  AccessLevelFilter,
+  BrandCategoryFilter,
 } from '@/components/cms/MediaLibrary/types';
 
 const PAGE_SIZE = 60;
@@ -19,6 +21,9 @@ export interface UnifiedMediaParams {
   entityTypeFilter: EntityTypeFilter;
   formatFilter: FormatFilter;
   sourceTypeFilter: SourceTypeFilter;
+  accessFilter?: AccessLevelFilter;
+  brandCategoryFilter?: BrandCategoryFilter;
+  tagFilter?: string[];
   sortBy: SortBy;
   sortDir: SortDir;
   enabled?: boolean;
@@ -32,7 +37,10 @@ function parseStructuredSearch(raw: string) {
     minSize?: number;
     maxSize?: number;
     minWidth?: number;
-  } = { text: '' };
+    tags: string[];
+    access?: string;
+    cat?: string;
+  } = { text: '', tags: [] };
 
   const parts = raw.split(/\s+/);
   const textParts: string[] = [];
@@ -49,6 +57,13 @@ function parseStructuredSearch(raw: string) {
       filters.maxSize = parseSizeStr(part.slice(6));
     } else if (lower.startsWith('dim:>')) {
       filters.minWidth = parseInt(part.slice(5), 10) || undefined;
+    } else if (lower.startsWith('tag:')) {
+      const t = part.slice(4).toLowerCase();
+      if (t) filters.tags.push(t);
+    } else if (lower.startsWith('access:')) {
+      filters.access = part.slice(7).toLowerCase();
+    } else if (lower.startsWith('cat:')) {
+      filters.cat = part.slice(4).toLowerCase();
     } else {
       textParts.push(part);
     }
@@ -70,7 +85,7 @@ function parseSizeStr(s: string): number | undefined {
 }
 
 async function fetchUnifiedMedia(params: UnifiedMediaParams) {
-  const { page, search, statusFilter, entityTypeFilter, formatFilter, sourceTypeFilter, sortBy, sortDir } = params;
+  const { page, search, statusFilter, entityTypeFilter, formatFilter, sourceTypeFilter, accessFilter = 'all', brandCategoryFilter = 'all', tagFilter = [], sortBy, sortDir } = params;
   const from = page * PAGE_SIZE;
   const to = from + PAGE_SIZE - 1;
 
@@ -78,6 +93,9 @@ async function fetchUnifiedMedia(params: UnifiedMediaParams) {
     .select('*', { count: 'exact' })
     .order(sortBy, { ascending: sortDir === 'asc' })
     .range(from, to);
+
+  // Tag filters combine the structured `tag:` tokens with explicit chip selections.
+  const tagSet = new Set<string>(tagFilter.map((t) => t.toLowerCase()));
 
   if (search) {
     const parsed = parseStructuredSearch(search);
@@ -102,6 +120,24 @@ async function fetchUnifiedMedia(params: UnifiedMediaParams) {
     if (parsed.minWidth) {
       query = query.gte('width', parsed.minWidth);
     }
+    parsed.tags.forEach((t) => tagSet.add(t));
+    if (parsed.access) {
+      query = query.eq('access_level', parsed.access);
+    }
+    if (parsed.cat) {
+      query = query.eq('brand_category', parsed.cat);
+    }
+  }
+
+  if (accessFilter !== 'all') {
+    query = query.eq('access_level', accessFilter);
+  }
+  if (brandCategoryFilter !== 'all') {
+    query = query.eq('brand_category', brandCategoryFilter);
+  }
+  if (tagSet.size > 0) {
+    // Array-contains: rows whose tags[] include every selected slug.
+    query = query.contains('tags', Array.from(tagSet));
   }
 
   switch (statusFilter) {
@@ -156,10 +192,10 @@ async function fetchUnifiedMedia(params: UnifiedMediaParams) {
 }
 
 export function useUnifiedMedia(params: UnifiedMediaParams) {
-  const { page, search, statusFilter, entityTypeFilter, formatFilter, sourceTypeFilter, sortBy, sortDir, enabled = true } = params;
+  const { page, search, statusFilter, entityTypeFilter, formatFilter, sourceTypeFilter, accessFilter = 'all', brandCategoryFilter = 'all', tagFilter = [], sortBy, sortDir, enabled = true } = params;
 
   return useQuery({
-    queryKey: ['unified-media', page, search, statusFilter, entityTypeFilter, formatFilter, sourceTypeFilter, sortBy, sortDir],
+    queryKey: ['unified-media', page, search, statusFilter, entityTypeFilter, formatFilter, sourceTypeFilter, accessFilter, brandCategoryFilter, tagFilter.join(','), sortBy, sortDir],
     queryFn: () => fetchUnifiedMedia(params),
     enabled,
     placeholderData: keepPreviousData,

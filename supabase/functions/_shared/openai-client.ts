@@ -213,6 +213,14 @@ export interface ChatCompletionResult {
   model: string
 }
 
+// Cost-control defaults. The 8B model costs ~9x less per output token than the
+// 70B and handles classification/extraction/normalization/relevance fine. The
+// 70B is reserved for callers that OPT IN (pass a `@cf/...` id, or a `claude-`
+// name via the shim). A one-off $765 Workers-AI bill (invoice IN-72568830,
+// Jul 2026) traced back to everything silently defaulting to the 70B here.
+const CF_MODEL_DEFAULT = '@cf/meta/llama-3.1-8b-instruct'
+const CF_MODEL_STRONG = '@cf/meta/llama-3.3-70b-instruct-fp8-fast'
+
 /**
  * Map a legacy OpenAI model name to the CF Workers AI equivalent. Edge cases
  * (e.g. embeddings, tool-calling) should opt out by passing a `@cf/...` model
@@ -220,11 +228,12 @@ export interface ChatCompletionResult {
  */
 function mapToCfModel(openaiModel: string): string {
   if (openaiModel.startsWith('@cf/')) return openaiModel
-  // Anthropic models smuggled through (via shim) → big Llama
-  if (openaiModel.startsWith('claude-')) return '@cf/meta/llama-3.3-70b-instruct-fp8-fast'
-  // Default: route everything to the strongest production model. Override per
-  // call by passing model: '@cf/...'.
-  return Deno.env.get('CF_AI_MODEL') || '@cf/meta/llama-3.3-70b-instruct-fp8-fast'
+  // Anthropic models smuggled through (via shim) are a DELIBERATE request for a
+  // strong model → big Llama (overridable via CF_AI_MODEL_STRONG).
+  if (openaiModel.startsWith('claude-')) return Deno.env.get('CF_AI_MODEL_STRONG') || CF_MODEL_STRONG
+  // Default: the cheap model. Callers that need the 70B pass a `@cf/...` id (or
+  // a `claude-` name) explicitly. Override the fleet default via CF_AI_MODEL.
+  return Deno.env.get('CF_AI_MODEL') || CF_MODEL_DEFAULT
 }
 
 /**
@@ -265,6 +274,12 @@ export async function chatCompletion(
   supabase: SupabaseClient,
   options: ChatCompletionOptions,
 ): Promise<ChatCompletionResult> {
+  // Kill-switch: set AI_DISABLED=1 in the function env to instantly halt ALL
+  // LLM spend (throws so circuit-breakered/defensive callers skip gracefully)
+  // without waiting on a redeploy. Cost-runaway backstop — see invoice IN-72568830.
+  if (Deno.env.get('AI_DISABLED') === '1') {
+    throw new Error('AI_DISABLED: LLM inference halted via kill-switch')
+  }
   const {
     model = 'gpt-4o-mini',
     messages,

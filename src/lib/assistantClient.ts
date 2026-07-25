@@ -41,6 +41,14 @@ export interface AskAssistantArgs {
   conversationId?: string;
   userId?: string;
   signal?: AbortSignal;
+  /**
+   * Cloudflare Turnstile token. The worker rejects with 403 when a
+   * TURNSTILE_SECRET is configured and no valid token is sent (anti-abuse on the
+   * public 70B endpoint — cost control, invoice IN-72568830). Optional here so
+   * the worker's fail-open default keeps chat working before Turnstile is
+   * provisioned; pass it once the widget is wired.
+   */
+  turnstileToken?: string | null;
 }
 
 export class AssistantException extends Error {
@@ -58,6 +66,7 @@ export async function askAssistant({
   conversationId,
   userId,
   signal,
+  turnstileToken,
 }: AskAssistantArgs): Promise<AssistantReply> {
   const controller = new AbortController();
   // The tool loop can take a few seconds (embed + RPC + synthesis turn).
@@ -87,6 +96,7 @@ export async function askAssistant({
         message,
         ...(conversationId && { conversation_id: conversationId }),
         ...(userId && { user_id: userId }),
+        ...(turnstileToken && { turnstile_token: turnstileToken }),
         session_id: getSessionId(),
       }),
       signal: controller.signal,

@@ -1,12 +1,13 @@
 /**
- * useReviewCounts -- Aggregate badge counts across all review queues.
- * Uses a single RPC call instead of multiple HEAD requests to avoid
- * PostgREST connection pool exhaustion.
+ * useReviewCounts — legacy-shaped selector over the shared `useAdminCounts`
+ * query. One `get_admin_counts` fetch (query key ['admin-counts']) feeds the
+ * sidebar, command palette, cockpit AND the triage view; this hook only
+ * reshapes that payload — it performs no fetching of its own, so badge counts
+ * can never drift between surfaces.
  */
 
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { untypedFrom } from '@/integrations/supabase/untyped';
+import { useMemo } from 'react';
+import { useAdminCounts, type AdminCounts } from './useAdminCounts';
 
 export interface ReviewCounts {
   staging: number;
@@ -20,46 +21,15 @@ export interface ReviewCounts {
   total: number;
 }
 
-async function fetchReviewCounts(): Promise<ReviewCounts> {
-  const { data, error } = await supabase.rpc('get_admin_counts');
-
-  if (error || !data) {
-    return {
-      staging: 0,
-      cmsReview: 0,
-      moderation: 0,
-      submissions: 0,
-      automation: 0,
-      tagSuggestions: 0,
-      duplicates: 0,
-      feedback: 0,
-      total: 0,
-    };
-  }
-
-  const raw = data as Record<string, number>;
+export function toReviewCounts(raw: AdminCounts): ReviewCounts {
   const staging = raw.review_staging ?? 0;
   const cmsReview = raw.review_cms ?? 0;
   const moderation = raw.review_moderation ?? 0;
-  let automation = raw.review_automation ?? 0;
-  if (!automation) {
-    const { count: automationCount } = await untypedFrom('content_flags')
-      .select('id', { count: 'exact', head: true })
-      .eq('status', 'pending');
-    automation = automationCount ?? 0;
-  }
+  const submissions = raw.review_submissions ?? 0;
+  const automation = raw.review_automation ?? 0;
   const tagSuggestions = raw.review_tags ?? 0;
   const duplicates = raw.review_duplicates ?? 0;
   const feedback = raw.review_feedback ?? 0;
-
-  // Submissions count — fetch pending community submissions
-  let submissions = raw.review_submissions ?? 0;
-  if (!submissions) {
-    const { count } = await untypedFrom('community_submissions')
-      .select('id', { count: 'exact', head: true })
-      .eq('status', 'pending');
-    submissions = count ?? 0;
-  }
 
   return {
     staging,
@@ -83,10 +53,10 @@ async function fetchReviewCounts(): Promise<ReviewCounts> {
 }
 
 export function useReviewCounts() {
-  return useQuery({
-    queryKey: ['review-counts'],
-    queryFn: fetchReviewCounts,
-    staleTime: 60_000,
-    refetchInterval: 300_000,
-  });
+  const query = useAdminCounts();
+  const data = useMemo(
+    () => (query.data ? toReviewCounts(query.data) : undefined),
+    [query.data],
+  );
+  return { ...query, data };
 }

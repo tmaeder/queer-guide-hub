@@ -2,6 +2,7 @@ import React, { lazy, Suspense, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { type CentralizedTag } from '@/hooks/useCentralizedTags';
 import { RelatedTagsCard } from '@/components/tags/RelatedTagsCard';
+import { TagHierarchyCard } from '@/components/tags/TagHierarchyCard';
 import { TagLinkedContent } from '@/components/tags/TagLinkedContent';
 import { FollowTagButton } from '@/components/tags/FollowTagButton';
 import { TagWikiContent } from '@/components/tags/TagWikiContent';
@@ -317,7 +318,10 @@ export function ResourceTagDetail({
           {/* TOC */}
           <TagTableOfContents headings={tocHeadings} />
 
-          {/* Related tags */}
+          {/* Governed ontology: broader / narrower / related */}
+          <TagHierarchyCard tagId={selectedTag.id} />
+
+          {/* Related tags (raw similarity pool) */}
           <RelatedTagsCard
             tagId={selectedTag.id}
             sourceCategory={primary?.name}

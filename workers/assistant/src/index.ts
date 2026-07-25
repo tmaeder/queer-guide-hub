@@ -13,6 +13,8 @@
 
 import type { Env } from "./types";
 import { isAuthenticatedRequest } from "./jwt";
+import { rateLimit } from "./rate-limit";
+import { verifyTurnstile } from "./turnstile";
 export { Conversation } from "./conversation";
 
 function corsHeaders(request: Request, env: Env): Record<string, string> {
@@ -53,6 +55,32 @@ export default {
 			}
 			if (typeof body.message !== "string" || !body.message.trim()) {
 				return json({ error: "message required" }, 400, cors);
+			}
+
+			// Kill-switch: instantly halt 70B spend without a redeploy race.
+			if (env.AI_DISABLED === "1") {
+				return json({ reply: "The assistant is temporarily unavailable. Please try again later.", cards: [], grounding_ok: false }, 503, cors);
+			}
+
+			// Anti-abuse for this PUBLIC, unauthenticated 70B endpoint (cost control,
+			// invoice IN-72568830). (1) Per-IP rate limit; (2) Turnstile token.
+			const clientIp = request.headers.get("cf-connecting-ip") ?? "unknown";
+			if (env.RATE_LIMIT) {
+				const perMin = parseInt(env.ASSISTANT_RATE_PER_MIN ?? "10", 10) || 10;
+				const rl = await rateLimit(env.RATE_LIMIT, clientIp, perMin);
+				if (!rl.ok) {
+					return json({ error: "rate_limited", retry_after: rl.retryAfter }, 429, {
+						...cors,
+						"Retry-After": String(rl.retryAfter),
+					});
+				}
+			}
+			const turnstileToken = typeof (body as { turnstile_token?: unknown }).turnstile_token === "string"
+				? (body as { turnstile_token: string }).turnstile_token
+				: request.headers.get("cf-turnstile-response") ?? undefined;
+			const ts = await verifyTurnstile(env.TURNSTILE_SECRET, turnstileToken, clientIp);
+			if (!ts.ok) {
+				return json({ error: "turnstile_failed" }, 403, cors);
 			}
 
 			// Safety layer: a verified-logged-in caller may see high-risk-country

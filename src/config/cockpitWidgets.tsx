@@ -34,6 +34,7 @@ import {
   ModerationFlagsBody,
   DuplicateClustersBody,
   RefreshDueBody,
+  QualityGatesBody,
 } from '@/components/admin/cockpit/widgets/opsWidgets';
 import {
   SystemHealthBody,
@@ -122,6 +123,16 @@ export const COCKPIT_WIDGETS: CockpitWidgetDef[] = [
     interactivity: ['drilldown'],
     defaultOrder: { moderator: 7, admin: 13 },
     Body: DuplicateClustersBody,
+  },
+  {
+    id: 'qualityGates',
+    title: 'Quality Gates',
+    icon: ShieldCheck,
+    minRole: 'moderator',
+    size: 'md',
+    interactivity: ['live', 'drilldown'],
+    defaultOrder: { moderator: 5, admin: 9 },
+    Body: QualityGatesBody,
   },
   {
     id: 'refreshDue',
