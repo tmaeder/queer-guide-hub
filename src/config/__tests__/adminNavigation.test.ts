@@ -7,9 +7,10 @@ import {
 } from '../adminNavigation';
 
 describe('adminNavSections shape', () => {
-  it('has cockpit, content, import-data, system sections', () => {
+  it('has cockpit, review, content, import-data, system sections', () => {
     expect(adminNavSections.map(s => s.id)).toEqual([
       'cockpit',
+      'review',
       'content',
       'import-data',
       'system',

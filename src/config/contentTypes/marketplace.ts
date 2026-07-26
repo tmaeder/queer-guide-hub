@@ -90,7 +90,7 @@ export const marketplaceContentType: ContentTypeConfig = {
   },
   fieldGroupOrder: ['basic', 'details', 'location', 'media', 'settings'],
   admin: {
-    qualityRoute: '/admin/content/marketplace-quality',
+    qualityRoute: '/admin/quality',
     duplicatesRoute: '/admin/duplicates',
     dedup: {
       searchType: 'marketplace',

@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { useSearchParams } from 'react-router';
+import { Link, useSearchParams } from 'react-router';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -20,7 +20,6 @@ import {
 } from '@/hooks/useVenueDuplicates';
 import { TagMergeReviewQueue } from '@/components/admin/TagMergeReviewQueue';
 import { VocabMerge } from '@/components/admin/VocabMerge';
-import { DedupReviewQueue } from '@/components/admin/review-queues/DedupReviewQueue';
 
 /**
  * /admin/duplicates — the registry-driven duplicate review & merge console,
@@ -37,7 +36,7 @@ import { DedupReviewQueue } from '@/components/admin/review-queues/DedupReviewQu
  */
 
 type Family = 'content' | 'taxonomy';
-type DupView = 'exact' | 'fuzzy' | 'suggested';
+type DupView = 'exact' | 'fuzzy';
 
 const clusterKey = (c: Cluster) => `${c.normalized_title}|${c.city ?? ''}`;
 const hasImage = (m?: VenueMeta) => Array.isArray(m?.images) && (m!.images as unknown[]).length > 0;
@@ -58,14 +57,13 @@ function suggestKeep(members: ClusterMember[], meta: Map<string, VenueMeta>): st
 export default function AdminDuplicates() {
   const [family, setFamily] = useState<Family>('content');
   const types = useDedupTypes();
-  // Deep links: ?type=<registry key or merge type>&view=exact|fuzzy|suggested
-  // (the Quality hub card and the per-entity quality panels link here).
+  // Deep links: ?type=<registry key or merge type>&view=exact|fuzzy
+  // (?view=suggested is legacy — the nightly-sweep queue moved to the inbox).
   const [searchParams] = useSearchParams();
   const paramType = searchParams.get('type');
   const paramView = searchParams.get('view');
   const initialKey = types.find((t) => t.key === paramType || t.cfg.searchType === paramType)?.key;
-  const initialView: DupView =
-    paramView === 'suggested' || paramView === 'fuzzy' ? paramView : 'exact';
+  const initialView: DupView = paramView === 'fuzzy' ? 'fuzzy' : 'exact';
   const [typeKey, setTypeKey] = useState<string>(initialKey ?? types[0]?.key ?? 'venues');
   const selected = useMemo(
     () => types.find((t) => t.key === typeKey) ?? types[0],
@@ -81,6 +79,17 @@ export default function AdminDuplicates() {
           redirect, and every merge is reversible.
         </p>
       </header>
+
+      <div className="rounded-container flex flex-wrap items-center gap-2 border p-4 text-15">
+        <GitMerge size={16} className="text-muted-foreground" />
+        <span>
+          Suggested pairs from the nightly sweep are reviewed in the{' '}
+          <Link to="/admin/inbox?queue=dedup-review" className="font-medium underline">
+            inbox dedup queue
+          </Link>
+          . This page is the exact/fuzzy merge power tool.
+        </span>
+      </div>
 
       <div className="flex gap-2 border-b border-border pb-2" role="tablist">
         <Button
@@ -188,7 +197,7 @@ function ContentDuplicates({
             onClick={() => {
               onSelect(t.key);
               setPicked({});
-              setView((v) => (v === 'suggested' ? 'suggested' : 'exact'));
+              setView('exact');
             }}
           >
             {t.label}
@@ -213,18 +222,9 @@ function ContentDuplicates({
             {type.cfg.searchType === 'marketplace' ? 'Same item (fuzzy)' : 'Same place (fuzzy)'}
           </Button>
         )}
-        <Button
-          variant={effectiveView === 'suggested' ? 'default' : 'outline'}
-          size="sm"
-          onClick={() => setView('suggested')}
-        >
-          Suggested (nightly sweep)
-        </Button>
       </div>
 
-      {effectiveView === 'suggested' ? (
-        <DedupReviewQueue entityType={type.cfg.searchType} />
-      ) : effectiveView === 'fuzzy' ? (
+      {effectiveView === 'fuzzy' ? (
         <FuzzyDuplicates type={type} />
       ) : (
         <>

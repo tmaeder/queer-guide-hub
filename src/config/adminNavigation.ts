@@ -1,6 +1,7 @@
 /**
  * Admin Navigation Configuration
- * Simplified 4-section layout: Cockpit, Content, Import & Review, System (Review & Moderation merged into Import & Review).
+ * Five-section layout: Cockpit, Review (inbox-centric review surfaces), Content,
+ * Data (ingestion + data tooling), System.
  * Central config for the unified admin sidebar. Each section groups related nav items.
  * Used by AdminSidebar to render the navigation tree.
  */
@@ -102,19 +103,6 @@ export const adminNavSections: AdminNavSection[] = [
         route: '/admin',
       },
       {
-        id: 'inbox',
-        label: 'Inbox',
-        icon: Inbox,
-        route: '/admin/inbox',
-      },
-      {
-        id: 'feedback',
-        label: 'Feedback',
-        icon: MessageSquarePlus,
-        route: '/admin/feedback',
-        reviewCountKey: 'review_feedback',
-      },
-      {
         id: 'postfach',
         label: 'Postfach',
         icon: Mail,
@@ -127,12 +115,36 @@ export const adminNavSections: AdminNavSection[] = [
         route: '/admin/affiliate',
         adminOnly: true,
       },
+    ],
+  },
+
+  // ── Review (inbox-centric review & quality surfaces) ────────────
+  {
+    id: 'review',
+    label: 'Review',
+    icon: Inbox,
+    collapsible: true,
+    defaultExpanded: true,
+    minRole: 'editor',
+    items: [
       {
-        id: 'content-graph',
-        label: 'Content Graph',
-        icon: Waypoints,
-        route: '/admin/graph',
-        adminOnly: true,
+        id: 'inbox',
+        label: 'Inbox',
+        icon: Inbox,
+        route: '/admin/inbox',
+      },
+      {
+        id: 'quality',
+        label: 'Quality',
+        icon: ShieldCheck,
+        route: '/admin/quality',
+      },
+      {
+        id: 'feedback',
+        label: 'Feedback',
+        icon: MessageSquarePlus,
+        route: '/admin/feedback',
+        reviewCountKey: 'review_feedback',
       },
     ],
   },
@@ -169,19 +181,6 @@ export const adminNavSections: AdminNavSection[] = [
         route: '/admin/content/venues',
         countTable: 'venues',
         group: 'Places',
-      },
-      {
-        id: 'duplicates',
-        label: 'Duplicates & merge',
-        icon: CopyCheck,
-        route: '/admin/duplicates',
-        group: 'Places',
-      },
-      {
-        id: 'quality',
-        label: 'Quality',
-        icon: ShieldCheck,
-        route: '/admin/quality',
       },
       {
         id: 'events',
@@ -340,10 +339,10 @@ export const adminNavSections: AdminNavSection[] = [
     ],
   },
 
-  // ── Import & Data (ingestion + automation) ──────────────────────
+  // ── Data (ingestion + data tooling) ─────────────────────────────
   {
     id: 'import-data',
-    label: 'Import & Data',
+    label: 'Data',
     icon: Download,
     collapsible: true,
     defaultExpanded: true,
@@ -363,18 +362,17 @@ export const adminNavSections: AdminNavSection[] = [
         countTable: 'email_ingestions',
       },
       {
-        id: 'automation',
-        label: 'Automations',
-        icon: Workflow,
-        route: '/admin/automation',
-        minRole: 'moderator',
-      },
-      {
         id: 'pipelines',
         label: 'Pipelines',
         icon: Workflow,
         route: '/admin/pipelines',
         adminOnly: true,
+      },
+      {
+        id: 'duplicates',
+        label: 'Duplicates & merge',
+        icon: CopyCheck,
+        route: '/admin/duplicates',
       },
       {
         id: 'search-intelligence',
@@ -395,6 +393,20 @@ export const adminNavSections: AdminNavSection[] = [
     defaultExpanded: false,
     minRole: 'moderator',
     items: [
+      {
+        id: 'automation',
+        label: 'Automations',
+        icon: Workflow,
+        route: '/admin/automation',
+        minRole: 'moderator',
+      },
+      {
+        id: 'content-graph',
+        label: 'Content Graph',
+        icon: Waypoints,
+        route: '/admin/graph',
+        adminOnly: true,
+      },
       {
         id: 'users',
         label: 'Users & Roles',

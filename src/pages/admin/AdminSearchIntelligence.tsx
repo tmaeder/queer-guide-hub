@@ -27,7 +27,7 @@ export default function AdminSearchIntelligence() {
   return (
     <div className="container mx-auto max-w-screen-xl px-4 py-8">
       <AdminPageHeader
-        eyebrow="Import & Review"
+        eyebrow="Data"
         title="Search Intelligence"
         subtitle="Admin surface for tags, topics, suggestions, ingestion quality, and audit."
       />

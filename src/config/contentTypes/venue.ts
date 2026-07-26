@@ -237,7 +237,7 @@ export const venueContentType: ContentTypeConfig = {
     writableFields: ['description', 'meta_title', 'meta_description', 'tags'],
   },
   admin: {
-    qualityRoute: '/admin/content/venue-quality',
+    qualityRoute: '/admin/quality',
     duplicatesRoute: '/admin/duplicates',
     dedup: {
       searchType: 'venue',

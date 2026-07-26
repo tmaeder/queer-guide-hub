@@ -81,17 +81,13 @@ const AdminEventServices = lazyRetry(() => import('./pages/admin/AdminEventServi
 const AdminAccessibilityAttributes = lazyRetry(() => import('./pages/admin/AdminAccessibilityAttributes'));
 const AdminTargetGroups = lazyRetry(() => import('./pages/admin/AdminTargetGroups'));
 const AdminProfessions = lazyRetry(() => import('./pages/admin/AdminProfessions'));
-const AdminCityQuality = lazyRetry(() => import('./pages/admin/AdminCityQuality'));
-const AdminPersonalityQuality = lazyRetry(() => import('./pages/admin/AdminPersonalityQuality'));
 const PersonalityDataSheet = lazyRetry(() => import('./pages/admin/PersonalityDataSheet'));
 const PersonalitiesAdmin = lazyRetry(() => import('./pages/admin/PersonalitiesAdmin'));
 const MilestonesAdmin = lazyRetry(() => import('./pages/admin/MilestonesAdmin'));
 const AdminMailbox = lazyRetry(() => import('./pages/admin/AdminMailbox'));
-const AdminVenueQuality = lazyRetry(() => import('./pages/admin/AdminVenueQuality'));
 const AdminLiveness = lazyRetry(() => import('./pages/admin/AdminLiveness'));
 const QualityHub = lazyRetry(() => import('./pages/admin/QualityHub'));
 const ContentGraph = lazyRetry(() => import('./pages/admin/ContentGraph'));
-const AdminMarketplaceQuality = lazyRetry(() => import('./pages/admin/AdminMarketplaceQuality'));
 const AdminTwentyCrm = lazyRetry(() => import('./pages/admin/AdminTwentyCrm'));
 const EmailTemplates = lazyRetry(() => import('./pages/admin/EmailTemplates'));
 const AdminPlacesEditorial = lazyRetry(() => import('./pages/admin/AdminPlacesEditorial'));
@@ -117,7 +113,6 @@ const PlaceDetail = lazyRetry(() => import('./pages/PlaceDetail'));
 const AdminHotels = lazyRetry(() => import('./pages/admin/AdminHotels'));
 const AdminQueerVillages = lazyRetry(() => import('./pages/admin/AdminQueerVillages'));
 const AdminGeography = lazyRetry(() => import('./pages/admin/AdminGeography'));
-const AdminVillageQuality = lazyRetry(() => import('./pages/admin/AdminVillageQuality'));
 const AdminInbox = lazyRetry(() => import('./pages/admin/AdminInbox'));
 const AdminAutomation = lazyRetry(() => import('./pages/admin/AdminAutomation'));
 const AdminFeedback = lazyRetry(() => import('./pages/AdminFeedback'));
@@ -418,20 +413,21 @@ export const AppRoutes = () => {
                 />
 
                 {/* Content type admin pages */}
-                <Route path="content/venue-quality" element={<AdminVenueQuality />} />
+                {/* Standalone quality pages folded into the hub (P5) — review lives in the inbox. */}
+                <Route path="content/venue-quality" element={<Navigate to="/admin/quality" replace />} />
                 <Route path="quality" element={<QualityHub />} />
                 <Route path="graph" element={<ContentGraph />} />
                 <Route path="content/liveness" element={<AdminLiveness />} />
                 <Route path="content/event-quality" element={<AdminEventQuality />} />
-                <Route path="content/city-quality" element={<AdminCityQuality />} />
-                <Route path="content/personality-quality" element={<AdminPersonalityQuality />} />
+                <Route path="content/city-quality" element={<Navigate to="/admin/quality" replace />} />
+                <Route path="content/personality-quality" element={<Navigate to="/admin/quality" replace />} />
                 <Route path="content/personalities/:id/datasheet" element={<PersonalityDataSheet />} />
                 {/* Legacy — milestone curation moved to the generic CMS. Keep one release. */}
                 <Route path="personalities/milestones" element={<Navigate to="/admin/content/milestones" replace />} />
                 <Route path="postfach" element={<AdminMailbox />} />
-                <Route path="content/marketplace-quality" element={<AdminMarketplaceQuality />} />
+                <Route path="content/marketplace-quality" element={<Navigate to="/admin/quality" replace />} />
                 <Route path="content/twenty-crm" element={<AdminTwentyCrm />} />
-                <Route path="content/village-quality" element={<AdminVillageQuality />} />
+                <Route path="content/village-quality" element={<Navigate to="/admin/quality" replace />} />
                 <Route path="content/group-requests" element={<AdminGroupRequests />} />
                 <Route path="hotels" element={<AdminHotels />} />
                 <Route path="villages" element={<AdminQueerVillages />} />
@@ -459,7 +455,7 @@ export const AppRoutes = () => {
                 <Route path="duplicates" element={<AdminDuplicates />} />
                 <Route path="events" element={<Navigate to="/admin/content/events" replace />} />
                 <Route path="tags" element={<Navigate to="/admin/content/unified_tags" replace />} />
-                <Route path="cities" element={<Navigate to="/admin/content/city-quality" replace />} />
+                <Route path="cities" element={<Navigate to="/admin/quality" replace />} />
                 <Route path="countries" element={<Navigate to="/admin/content/countries" replace />} />
                 <Route path="personalities" element={<Navigate to="/admin/content/personalities" replace />} />
                 <Route path="quests" element={<Navigate to="/admin/content/guides" replace />} />

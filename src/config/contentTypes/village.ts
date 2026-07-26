@@ -154,7 +154,7 @@ export const queerVillageContentType: ContentTypeConfig = {
   defaults: { featured: false },
   fieldGroupOrder: ['basic', 'details', 'location', 'media', 'settings'],
   admin: {
-    qualityRoute: '/admin/content/village-quality',
+    qualityRoute: '/admin/quality',
     duplicatesRoute: '/admin/duplicates',
     dedup: {
       searchType: 'queer_village',

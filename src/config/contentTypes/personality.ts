@@ -152,7 +152,7 @@ export const personalityContentType: ContentTypeConfig = {
     writableFields: ['bio', 'description', 'meta_title', 'meta_description'],
   },
   admin: {
-    qualityRoute: '/admin/content/personality-quality',
+    qualityRoute: '/admin/quality',
     duplicatesRoute: '/admin/duplicates',
     dedup: {
       searchType: 'personality',

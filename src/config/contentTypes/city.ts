@@ -132,7 +132,7 @@ export const cityContentType: ContentTypeConfig = {
   translatableFields: ['name', 'description'],
   commentable: true,
   admin: {
-    qualityRoute: '/admin/content/city-quality',
+    qualityRoute: '/admin/quality',
     duplicatesRoute: '/admin/duplicates',
     dedup: {
       searchType: 'city',

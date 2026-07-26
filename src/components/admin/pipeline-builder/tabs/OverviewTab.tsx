@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { useNavigate } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { formatDistanceToNow } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
@@ -176,6 +176,21 @@ export default function OverviewTab() {
             label="Open circuits"
             alert={openCircuits > 0}
           />
+        </div>
+
+        {/* Dedup pointer — the old dedup / geo-review tabs moved to the inbox. */}
+        <div className="flex flex-wrap items-center gap-2 rounded-element border border-border p-2 text-xs text-muted-foreground">
+          <GitBranch className="h-3.5 w-3.5" />
+          <span>
+            Dedup decisions →{' '}
+            <Link to="/admin/inbox?queue=duplicates" className="underline text-foreground">
+              inbox
+            </Link>{' '}
+            · power tool →{' '}
+            <Link to="/admin/duplicates" className="underline text-foreground">
+              /admin/duplicates
+            </Link>
+          </span>
         </div>
 
         {/* Filter + search */}
