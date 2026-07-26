@@ -11,7 +11,7 @@
     "wrangler": "^4.114.0"
   },
   "dependencies": {
-    "jose": "^6.2.3"
+    "jose": "^6.2.4"
   },
   "overrides": {
     "esbuild": "0.28.1",
