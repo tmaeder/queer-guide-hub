@@ -43,15 +43,24 @@ export function useAssistant() {
   const turnstileRef = useRef<TurnstileHandle>(null);
   const tokenRef = useRef<string | null>(null);
   const tokenWaitersRef = useRef<Array<(token: string | null) => void>>([]);
+  const expireResetsRef = useRef(0);
 
   const onTurnstileVerify = useCallback((token: string) => {
+    expireResetsRef.current = 0;
     const waiter = tokenWaitersRef.current.shift();
     if (waiter) waiter(token);
     else tokenRef.current = token;
   }, []);
 
+  // Tokens live ~5 min; on expiry (or challenge error) re-run the invisible
+  // widget so a fresh token is ready for the next send. Capped so a
+  // persistently-failing challenge can't reset-loop forever.
   const onTurnstileExpire = useCallback(() => {
     tokenRef.current = null;
+    if (expireResetsRef.current < 5) {
+      expireResetsRef.current += 1;
+      setTimeout(() => turnstileRef.current?.reset(), 1_000);
+    }
   }, []);
 
   /**
@@ -80,6 +89,8 @@ export function useAssistant() {
         resolve(null);
       }, TOKEN_WAIT_MS);
       tokenWaitersRef.current.push(waiter);
+      // Nudge an idle widget (e.g. sat past token expiry) to mint again.
+      turnstileRef.current?.reset();
     });
   }, []);
 
