@@ -25,7 +25,6 @@ describe('getRouteMinRole', () => {
   it('gates automation adminOnly items at admin, base automation at moderator', () => {
     expect(getRouteMinRole('/admin/automation')).toBe('moderator');
     expect(getRouteMinRole('/admin/pipelines')).toBe('admin');
-    expect(getRouteMinRole('/admin/ingestion-rules')).toBe('admin');
   });
 
   it('gates system adminOnly pages at admin, settings at moderator', () => {

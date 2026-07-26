@@ -49,7 +49,6 @@ export const ADMIN_AREA_DESCRIPTIONS: Record<string, string> = {
   // Automation
   '/admin/automation': 'Automated workflow rules and triggers.',
   '/admin/pipelines': 'Data pipeline builder and monitor. Sources, runs, and config.',
-  '/admin/ingestion-rules': 'Data transformation rules for the ingestion pipeline.',
   '/admin/search-intelligence': 'Search bias and intent learning.',
 
   // System

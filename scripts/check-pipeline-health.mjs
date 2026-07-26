@@ -66,4 +66,31 @@ if (missingWeekly.length > 0) {
   console.log(`✓ Weekly pipelines completed in last 7 days: ${weeklyExpected.join(', ')}`)
 }
 
+// 5. Cron + staging hygiene (P0 simplification guards, 2026-07-26)
+const hygieneRes = await fetch(`${BASE}/rest/v1/rpc/pipeline_hygiene_stats`, {
+  method: 'POST',
+  headers: { ...headers, 'Content-Type': 'application/json' },
+  body: '{}',
+})
+if (!hygieneRes.ok) {
+  console.warn(`⚠ pipeline_hygiene_stats → HTTP ${hygieneRes.status} (RPC missing?)`)
+} else {
+  const hygiene = await hygieneRes.json()
+  const legacy = hygiene.legacy_cron_jobs ?? []
+  if (legacy.length > 0) {
+    console.error(`✗ Legacy pipeline crons resurrected: ${legacy.join(', ')}`)
+    process.exit(1)
+  }
+  if ((hygiene.i18n_percombo_cron_count ?? 0) > 0) {
+    console.error(`✗ Per-combo i18n crons re-appeared (${hygiene.i18n_percombo_cron_count}) — the i18n_translation_dispatch job replaced them`)
+    process.exit(1)
+  }
+  const pending = hygiene.staging_pending_review ?? 0
+  if (pending > 5000) {
+    console.error(`✗ ingestion_staging pending_review backlog at ${pending} (limit 5000) — auto-triage sweeps are falling behind`)
+    process.exit(1)
+  }
+  console.log(`✓ Cron hygiene clean (${hygiene.cron_total} active jobs); staging pending_review=${pending}`)
+}
+
 console.log('✓ Pipeline health check passed')

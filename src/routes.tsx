@@ -97,7 +97,6 @@ const EmailTemplates = lazyRetry(() => import('./pages/admin/EmailTemplates'));
 const AdminPlacesEditorial = lazyRetry(() => import('./pages/admin/AdminPlacesEditorial'));
 const AdminRedirects = lazyRetry(() => import('./pages/admin/AdminRedirects'));
 const AdminPipelines = lazyRetry(() => import('./pages/admin/AdminPipelines'));
-const AdminIngestionRules = lazyRetry(() => import('./pages/admin/AdminIngestionRules'));
 const AdminEmailIngestions = lazyRetry(() => import('./pages/admin/AdminEmailIngestions'));
 const AdminImports = lazyRetry(() => import('./pages/admin/AdminImports'));
 const AdminEventQuality = lazyRetry(() => import('./pages/admin/AdminEventQuality'));
@@ -392,7 +391,7 @@ export const AppRoutes = () => {
                 <Route path="imports" element={<Navigate to="/admin/pipelines" replace />} />
                 <Route path="workflows" element={<Navigate to="/admin/pipelines" replace />} />
                 <Route path="pipelines" element={<AdminPipelines />} />
-                <Route path="ingestion-rules" element={<AdminIngestionRules />} />
+                <Route path="ingestion-rules" element={<Navigate to="/admin/imports/data" replace />} />
                 <Route path="pipelines/dashboard" element={<Navigate to="/admin/pipelines" replace />} />
                 <Route path="scraping" element={<Navigate to="/admin/pipelines?tab=sources" replace />} />
 
