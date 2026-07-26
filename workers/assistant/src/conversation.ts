@@ -109,7 +109,9 @@ export class Conversation {
 			}
 
 			finalText = text;
-			break;
+			// A stripped text-form tool call can leave an empty reply — retry
+			// within the step budget rather than returning nothing.
+			if (finalText) break;
 		}
 
 		if (!finalText) finalText = "I couldn't pull that together just now. Want me to try a different search?";
