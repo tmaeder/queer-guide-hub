@@ -67,6 +67,7 @@ const TABLE_MAP: Record<string, { contentType: string }> = {
 	unified_tags: { contentType: "tag" },
 	queer_villages: { contentType: "queer_village" },
 	milestones: { contentType: "milestone" },
+	guides: { contentType: "guide" },
 };
 
 export default {
@@ -279,6 +280,9 @@ function composeEmbedText(_table: string, r: TableRow): string {
 	if (title) parts.push(title);
 	const desc = r.description || r.bio || r.summary || "";
 	if (desc) parts.push(desc);
+	// guides: dek is the one-liner, intro_md the substance.
+	if (typeof r.dek === "string" && r.dek) parts.push(r.dek);
+	if (typeof r.intro_md === "string" && r.intro_md) parts.push(r.intro_md);
 	if (Array.isArray(r.tags)) parts.push("Tags: " + r.tags.join(", "));
 	if (r.category) parts.push("Category: " + r.category);
 	if (r.event_type) parts.push("Type: " + r.event_type);
