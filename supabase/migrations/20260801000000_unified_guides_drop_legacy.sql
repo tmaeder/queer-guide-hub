@@ -421,7 +421,19 @@ END $function$;
 ALTER TABLE public.community_submissions DROP COLUMN IF EXISTS quest_id;
 
 -- ---------------------------------------------------------------------------
--- 4. Drop the 15 frozen legacy tables + 2 dead tables (children first; their
+-- 4. Drop legacy RPCs BEFORE the tables — active_quest() returns SETOF quests
+--    (rowtype dependency blocks DROP TABLE), and the recommend_*/streak fns
+--    read the legacy tables.
+-- ---------------------------------------------------------------------------
+DROP FUNCTION IF EXISTS public.recommend_guides(uuid, integer);
+DROP FUNCTION IF EXISTS public.recommend_venue_guides(uuid, integer);
+DROP FUNCTION IF EXISTS public.recommend_event_guides(uuid, integer);
+DROP FUNCTION IF EXISTS public.marketplace_guide_reading_streak(uuid);
+DROP FUNCTION IF EXISTS public.venue_guide_reading_streak(uuid);
+DROP FUNCTION IF EXISTS public.active_quest();
+
+-- ---------------------------------------------------------------------------
+-- 5. Drop the 15 frozen legacy tables + 2 dead tables (children first; their
 --    RLS policies, indexes and remaining set_updated_at triggers go with them).
 --    user_news_reads / news_reading_streak stay (still live).
 -- ---------------------------------------------------------------------------
@@ -447,15 +459,9 @@ DROP TABLE IF EXISTS public.news_challenges;
 -- editorial_drafts still use it.
 
 -- ---------------------------------------------------------------------------
--- 5. Drop legacy RPCs and their now-unbound trigger functions.
+-- 6. Drop the now-unbound legacy trigger functions (after the tables, since
+--    the tables' triggers depended on them).
 -- ---------------------------------------------------------------------------
-DROP FUNCTION IF EXISTS public.recommend_guides(uuid, integer);
-DROP FUNCTION IF EXISTS public.recommend_venue_guides(uuid, integer);
-DROP FUNCTION IF EXISTS public.recommend_event_guides(uuid, integer);
-DROP FUNCTION IF EXISTS public.marketplace_guide_reading_streak(uuid);
-DROP FUNCTION IF EXISTS public.venue_guide_reading_streak(uuid);
-DROP FUNCTION IF EXISTS public.active_quest();
-
 DROP FUNCTION IF EXISTS public.marketplace_guides_refresh_pick_count();
 DROP FUNCTION IF EXISTS public.venue_guides_refresh_pick_count();
 DROP FUNCTION IF EXISTS public.event_guides_refresh_pick_count();
