@@ -132,26 +132,3 @@ export function useOrganizationOptions() {
   });
 }
 
-export interface SellerOrg {
-  id: string;
-  name: string;
-  slug: string;
-  website_domain: string | null;
-  roles: string[];
-}
-
-/** Organizations carrying the seller role, for the vendors hub Orgs tab. */
-export function useSellerOrgs() {
-  return useQuery({
-    queryKey: ['seller-orgs'],
-    queryFn: async (): Promise<SellerOrg[]> => {
-      const { data, error } = await supabase
-        .from('organizations')
-        .select('id, name, slug, website_domain, roles')
-        .contains('roles', ['seller'])
-        .order('name');
-      if (error) throw error;
-      return (data ?? []) as SellerOrg[];
-    },
-  });
-}
