@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/refs -- receives the component-owned map + latest-value refs read inside the debounced recompute; documented MapLibre integration pattern. */
 import { useCallback, useEffect, useRef, useState, type MutableRefObject } from 'react';
-import maplibregl from 'maplibre-gl';
+import * as maplibregl from 'maplibre-gl';
 import { summaryFromFeature, type MapPointSummary } from '@/components/map/mapPoint';
 import type { PointFeature } from '@/hooks/useViewportPoints';
 import type { useVisitorLocation } from '@/hooks/useVisitorLocation';

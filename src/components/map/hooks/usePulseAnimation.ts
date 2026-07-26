@@ -1,5 +1,5 @@
 import { useCallback, useEffect, type MutableRefObject } from 'react';
-import maplibregl from 'maplibre-gl';
+import * as maplibregl from 'maplibre-gl';
 import { PULSE_LAYER } from '@/config/mapLayers';
 
 interface UsePulseAnimationParams {

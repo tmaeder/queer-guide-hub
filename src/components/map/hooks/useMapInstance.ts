@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, type MutableRefObject, type Dispatch, type SetStateAction } from 'react';
 import { type Root } from 'react-dom/client';
-import maplibregl from 'maplibre-gl';
+import * as maplibregl from 'maplibre-gl';
 import { getMapStyle, type BasemapMode } from '@/config/mapStyle';
 import { isWebglSupported } from '@/lib/webglSupport';
 import { loadGlyphImages } from '@/components/map/mapGlyphs';
@@ -137,12 +137,14 @@ export function useMapInstance({
     // Donut cluster icons are generated on demand: the cluster layer's
     // icon-image expression produces composition-encoded ids; any id the
     // style doesn't know yet is rasterized synchronously right here.
-    map.on('styleimagemissing', (e: { id: string }) => {
-      if (!e.id.startsWith(`${DONUT_PREFIX}|`) || map.hasImage(e.id)) return;
-      const img = getDonutImage(e.id);
-      if (img && !map.hasImage(e.id)) {
+    // maplibre-gl 6: styleimagemissing is notify-only — images must be
+    // supplied via the resolver, which maplibre awaits before giving up.
+    map.setMissingStyleImageResolver((id: string) => {
+      if (!id.startsWith(`${DONUT_PREFIX}|`) || map.hasImage(id)) return;
+      const img = getDonutImage(id);
+      if (img && !map.hasImage(id)) {
         try {
-          map.addImage(e.id, img, { pixelRatio: DONUT_PIXEL_RATIO });
+          map.addImage(id, img, { pixelRatio: DONUT_PIXEL_RATIO });
         } catch {
           /* concurrent add — ignore */
         }

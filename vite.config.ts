@@ -140,6 +140,10 @@ export default defineConfig(({ mode }) => ({
     // imports the recharts chunk — dragging ~92 KB onto pages that don't
     // use any chart.
     include: ['boneyard-js/react', 'clsx', 'tailwind-merge', 'class-variance-authority'],
+    // maplibre-gl 6 loads its worker as a real module URL; the dep optimizer
+    // can't emit maplibre-gl-worker.mjs, so the map hangs forever in dev.
+    // Excluding it serves maplibre from source (prod build is unaffected).
+    exclude: ['maplibre-gl'],
   },
   esbuild: mode === 'production' ? {
     drop: ['console', 'debugger'],

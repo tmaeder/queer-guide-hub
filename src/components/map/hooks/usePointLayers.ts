@@ -1,5 +1,6 @@
 import { useEffect, useRef, type MutableRefObject } from 'react';
-import maplibregl, { type GeoJSONSource, type MapLayerMouseEvent } from 'maplibre-gl';
+import * as maplibregl from 'maplibre-gl';
+import { type GeoJSONSource, type MapLayerMouseEvent } from 'maplibre-gl';
 import { summaryFromFeature, type MapPointSummary } from '@/components/map/mapPoint';
 import type { PointFeature } from '@/hooks/useViewportPoints';
 import type { LayerType } from '@/hooks/useExploreMapData';
