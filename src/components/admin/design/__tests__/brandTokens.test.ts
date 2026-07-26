@@ -37,13 +37,13 @@ describe('brand token API composer', () => {
     expect(css).toContain(':root {');
     expect(css).toContain('.dark {');
     expect(css).toContain('--background: 0 0% 100%;');
-    expect(css).toContain('--radius-container: 1rem;');
+    expect(css).toContain('--radius-container: 0.5rem;');
   });
 
   it('produces structured JSON with color + global sections', () => {
     const json = tokensToJson(resolveTokens(null));
     expect(json.color.light).toBeTruthy();
     expect(json.color.dark).toBeTruthy();
-    expect(json.global['radius-badge']).toBe('0.25rem');
+    expect(json.global['radius-badge']).toBe('0rem');
   });
 });

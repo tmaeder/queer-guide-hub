@@ -48,6 +48,7 @@ export function HomeSection({
           eyebrow={eyebrow}
           title={title}
           subtitle={description}
+          size="masthead"
           seeAllHref={seeAllHref}
           seeAllLabel={seeAllLabel}
         />

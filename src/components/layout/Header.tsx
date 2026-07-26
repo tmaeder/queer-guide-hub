@@ -249,7 +249,7 @@ export function Header() {
             aria-current={active ? 'page' : undefined}
             className={
               active
-                ? 'px-2 py-2 text-sm font-semibold text-foreground underline decoration-2 underline-offset-8'
+                ? 'px-2 py-2 text-sm font-semibold text-foreground underline decoration-[3px] underline-offset-8'
                 : 'px-2 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground no-underline'
             }
           >

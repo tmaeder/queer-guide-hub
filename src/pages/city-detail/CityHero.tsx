@@ -86,10 +86,23 @@ export function CityHero({
         </Button>
       </div>
 
-      {/* Title block — bottom-left, over the scrim. */}
+      {/* Title block — bottom-left, over the scrim. Dateline kicker above the
+          name (PHOTOCOPY masthead convention), name at the top of the scale. */}
       <div className="absolute inset-x-0 bottom-0 p-6 sm:p-8 md:p-12 text-white">
         <div className="max-w-3xl">
-          <h1 className="text-headline-lg sm:text-display md:text-hero font-bold leading-[1.02] tracking-tight">
+          <p className="mb-2 text-2xs font-semibold uppercase tracking-[0.2em] text-white/75">
+            {city.region_name && `${city.region_name} · `}
+            {countryHref ? (
+              <LocalizedLink
+                to={countryHref}
+                className="text-white/75 underline decoration-white/40 underline-offset-4 transition-colors hover:text-white"
+                style={{ color: 'inherit' }}
+              >
+                {city.countries.name}
+              </LocalizedLink>
+            ) : null}
+          </p>
+          <h1 className="text-display sm:text-hero md:text-hero-xl font-bold leading-[0.95] tracking-tight break-words">
             {city.countries?.flag_emoji && <span className="mr-2">{city.countries.flag_emoji}</span>}
             <Editable
               contentType="cities"
@@ -101,18 +114,6 @@ export function CityHero({
               {city.name}
             </Editable>
           </h1>
-          <p className="mt-2 text-body-lg text-white/85">
-            {city.region_name && `${city.region_name}, `}
-            {countryHref ? (
-              <LocalizedLink
-                to={countryHref}
-                className="text-white/85 underline decoration-white/40 underline-offset-4 transition-colors hover:text-white"
-                style={{ color: 'inherit' }}
-              >
-                {city.countries.name}
-              </LocalizedLink>
-            ) : null}
-          </p>
           {city.editorial_hook && (
             <p className="mt-4 max-w-2xl text-15 leading-relaxed text-white/80 sm:text-body-lg">
               {city.editorial_hook}

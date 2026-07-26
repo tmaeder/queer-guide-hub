@@ -34,17 +34,18 @@
   /* ── Editorial type scale — hero / display / headline tokens ──────
      Added 2026-05-20 (UI audit P5 sub-PR 1) to replace recurring
      `text-[NNrem]` arbitrary values across About.tsx + Index.tsx +
-     SharedTripPage.tsx. Sizes mirror the previously inlined values 1:1
-     so the change is visually identical. */
-  --text-hero-xl: 5.5rem;
-  --text-hero-xl--line-height: 1.05;
-  --text-hero: 4rem;
-  --text-hero--line-height: 1.05;
-  --text-display: 2.5rem;
-  --text-display--line-height: 1.1;
+     SharedTripPage.tsx. Re-tuned 2026-07-26 (PHOTOCOPY rebrand):
+     heroes up + sub-1.0 leading, title down — wider jumps between
+     levels. Mirror any change in tokenCatalog.ts (drift test). */
+  --text-hero-xl: 7rem;
+  --text-hero-xl--line-height: 0.95;
+  --text-hero: 4.75rem;
+  --text-hero--line-height: 1;
+  --text-display: 2.75rem;
+  --text-display--line-height: 1.05;
   --text-headline: 1.75rem;
   --text-headline--line-height: 1.2;
-  --text-title: 1.375rem;
+  --text-title: 1.25rem;
   --text-title--line-height: 1.4;
   --text-body-lg: 1.0625rem;
   --text-body-lg--line-height: 1.7;
@@ -65,9 +66,9 @@
      scope, fighting via CSS last-wins. Scoped variants are now expressed
      via class selectors below (.admin-shell, .sensitive-controls). */
   --radius-none: 0;
-  --radius-container: 1rem;     /* 16px — Bento grids, large cards, hero blocks */
-  --radius-element:   0.5rem;   /* 8px  — buttons, inputs, list rows, nested cards */
-  --radius-badge:     0.25rem;  /* 4px  — tags, chips, status pills, metadata */
+  --radius-container: 0.5rem;   /* 8px — Bento grids, large cards, hero blocks */
+  --radius-element:   0.25rem;  /* 4px — buttons, inputs, list rows, nested cards */
+  --radius-badge:     0rem;     /* 0px — tags, chips, status pills, metadata */
   --radius-full:      9999px;
 
   /* ── Colors — CSS-variable-based monochrome ────────────────────── */
@@ -1104,7 +1105,8 @@ h1, h2, .font-display {
 }
 
 /* News editorial — magazine drop cap on the lead-story dek. */
-.news-lead-dek::first-letter {
+.news-lead-dek::first-letter,
+.dek-dropcap::first-letter {
   font-size: 2.4em;
   font-weight: 700;
   font-style: normal;
@@ -1112,6 +1114,12 @@ h1, h2, .font-display {
   float: left;
   padding-right: 0.12em;
   margin-top: 0.05em;
+}
+
+/* PHOTOCOPY rebrand — the 2px black rule. Rationed signature: masthead
+   tops, the homepage CTA band, the footer. Never full card outlines. */
+.rule-heavy {
+  border-top: 2px solid hsl(var(--foreground));
 }
 
 /* Mobile search overlay: Radix renders PopoverContent inside a translated
