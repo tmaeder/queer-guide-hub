@@ -68,12 +68,22 @@ interface TurnstileWidgetProps {
   /** Called when the token expires or the challenge errors out. */
   onExpire?: () => void;
   className?: string;
+  /**
+   * Widget-specific site key overriding the auth one (e.g. the invisible
+   * assistant widget). Read once on mount — must be stable for the lifetime
+   * of the component.
+   */
+  siteKey?: string;
+  /** Turnstile `action` label, segments the Cloudflare analytics breakdown. */
+  action?: string;
 }
 
 export const TurnstileWidget = forwardRef<TurnstileHandle, TurnstileWidgetProps>(
-  function TurnstileWidget({ onVerify, onExpire, className }, ref) {
+  function TurnstileWidget({ onVerify, onExpire, className, siteKey, action }, ref) {
     const containerRef = useRef<HTMLDivElement>(null);
     const widgetIdRef = useRef<string | null>(null);
+    const keyRef = useRef(siteKey ?? SITE_KEY);
+    const actionRef = useRef(action);
 
     // Keep latest callbacks in refs so the widget mounts only once and never
     // re-renders on parent state changes (a re-render would drop the token).
@@ -91,15 +101,16 @@ export const TurnstileWidget = forwardRef<TurnstileHandle, TurnstileWidgetProps>
     }), []);
 
     useEffect(() => {
-      if (!SITE_KEY) return;
+      if (!keyRef.current) return;
       let cancelled = false;
 
       loadTurnstileScript()
         .then(() => {
           if (cancelled || !containerRef.current || !window.turnstile) return;
           widgetIdRef.current = window.turnstile.render(containerRef.current, {
-            sitekey: SITE_KEY,
+            sitekey: keyRef.current,
             theme: 'auto',
+            ...(actionRef.current && { action: actionRef.current }),
             callback: (token: string) => onVerifyRef.current(token),
             'expired-callback': () => onExpireRef.current?.(),
             'error-callback': () => onExpireRef.current?.(),
@@ -122,7 +133,7 @@ export const TurnstileWidget = forwardRef<TurnstileHandle, TurnstileWidgetProps>
       };
     }, []);
 
-    if (!SITE_KEY) return null;
+    if (!keyRef.current) return null;
 
     return <div ref={containerRef} className={className} />;
   },
