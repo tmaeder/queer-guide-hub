@@ -17,6 +17,9 @@ export interface ReviewCounts {
   automation: number;
   tagSuggestions: number;
   duplicates: number;
+  /** Truth-Engine quality queues folded into triage (P4): city+venue+village+personality+marketplace. */
+  quality: number;
+  editorial: number;
   feedback: number;
   total: number;
 }
@@ -29,6 +32,13 @@ export function toReviewCounts(raw: AdminCounts): ReviewCounts {
   const automation = raw.review_automation ?? 0;
   const tagSuggestions = raw.review_tags ?? 0;
   const duplicates = raw.review_duplicates ?? 0;
+  const quality =
+    (raw.quality_city ?? 0) +
+    (raw.quality_venue ?? 0) +
+    (raw.quality_village ?? 0) +
+    (raw.quality_personality ?? 0) +
+    (raw.quality_marketplace ?? 0);
+  const editorial = raw.quality_editorial ?? 0;
   const feedback = raw.review_feedback ?? 0;
 
   return {
@@ -39,6 +49,8 @@ export function toReviewCounts(raw: AdminCounts): ReviewCounts {
     automation,
     tagSuggestions,
     duplicates,
+    quality,
+    editorial,
     feedback,
     total:
       staging +
@@ -48,6 +60,8 @@ export function toReviewCounts(raw: AdminCounts): ReviewCounts {
       automation +
       tagSuggestions +
       duplicates +
+      quality +
+      editorial +
       feedback,
   };
 }
