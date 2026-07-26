@@ -12,7 +12,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { AlertTriangle, Trash2, Zap } from 'lucide-react';
+import { AlertTriangle, Trash2, Zap, Loader2 } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
 import { useUnifiedMedia, PAGE_SIZE } from '@/hooks/useUnifiedMedia';
@@ -27,7 +27,7 @@ import { DuplicateFinderPanel } from './DuplicateFinderPanel';
 import { StorageBreakdown } from './StorageBreakdown';
 
 export function MediaLibrary() {
-  const { isAdmin } = useAdminRoles();
+  const { isAdmin, loading: rolesLoading } = useAdminRoles();
   const { toast } = useToast();
   const mutations = useMediaMutations();
 
@@ -75,6 +75,15 @@ export function MediaLibrary() {
   const items = data?.items ?? [];
   const totalCount = data?.totalCount ?? 0;
   const totalPages = Math.ceil(totalCount / PAGE_SIZE);
+
+  // Wait for the role fetch before deciding — otherwise the denial flashes on load.
+  if (rolesLoading) {
+    return (
+      <div className="flex items-center justify-center py-24">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
 
   if (!isAdmin) {
     return (

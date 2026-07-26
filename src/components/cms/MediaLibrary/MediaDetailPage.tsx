@@ -56,7 +56,7 @@ import type { UnifiedMediaItem } from './types';
 export function MediaDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { isAdmin } = useAdminRoles();
+  const { isAdmin, loading: rolesLoading } = useAdminRoles();
   const { data: detail, isLoading, error } = useMediaDetail(id);
   const mutations = useMediaMutations();
   const signed = useSignedMediaUrl(detail as UnifiedMediaItem | undefined);
@@ -66,6 +66,15 @@ export function MediaDetailPage() {
   const [license, setLicense] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [metaDirty, setMetaDirty] = useState(false);
+
+  // Wait for the role fetch before deciding — otherwise the denial flashes on load.
+  if (rolesLoading) {
+    return (
+      <div className="flex items-center justify-center py-24">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
 
   if (!isAdmin) {
     return (
