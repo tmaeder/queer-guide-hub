@@ -1,5 +1,6 @@
 import { useEffect, type MutableRefObject } from 'react';
-import maplibregl, { type GeoJSONSource } from 'maplibre-gl';
+import * as maplibregl from 'maplibre-gl';
+import { type GeoJSONSource } from 'maplibre-gl';
 import { FOCUS_RING_LAYER, FOCUS_SOURCE } from '@/config/mapLayers';
 
 interface UseFocusRingParams {
