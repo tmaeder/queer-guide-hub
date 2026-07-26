@@ -20,6 +20,52 @@
 -- pipeline-health CI check now fails above 5000 pending.
 -- ============================================================================
 
+-- ----------------------------------------------------------------------------
+-- Bookkeeping reconcile: 57.9k rows were already dispositioned by the pipeline
+-- (committed / inserted / updated / rejected / skipped) but review_status was
+-- never advanced past 'pending_review', inflating every queue count from the
+-- real ~2k to ~60k. Normalize them: terminal-success dispositions -> 'auto'
+-- (pipeline decided, no human), rejected/skipped -> 'rejected'. Batched loop;
+-- the only ingestion_staging trigger is column-scoped (source_name/
+-- source_entity_id/payload_hash) and does not fire on these updates.
+-- ----------------------------------------------------------------------------
+DO $$
+DECLARE
+  v_n int;
+BEGIN
+  LOOP
+    WITH pick AS (
+      SELECT id FROM public.ingestion_staging
+      WHERE review_status = 'pending_review'
+        AND disposition IN ('committed', 'inserted', 'updated')
+      LIMIT 10000
+    )
+    UPDATE public.ingestion_staging s
+    SET review_status = 'auto',
+        review_notes = coalesce(s.review_notes || E'\n', '')
+          || 'reconcile: pipeline already dispositioned (' || s.disposition || ')'
+    FROM pick WHERE s.id = pick.id;
+    GET DIAGNOSTICS v_n = ROW_COUNT;
+    EXIT WHEN v_n = 0;
+  END LOOP;
+
+  LOOP
+    WITH pick AS (
+      SELECT id FROM public.ingestion_staging
+      WHERE review_status = 'pending_review'
+        AND disposition IN ('rejected', 'skipped')
+      LIMIT 10000
+    )
+    UPDATE public.ingestion_staging s
+    SET review_status = 'rejected',
+        review_notes = coalesce(s.review_notes || E'\n', '')
+          || 'reconcile: pipeline already dispositioned (' || s.disposition || ')'
+    FROM pick WHERE s.id = pick.id;
+    GET DIAGNOSTICS v_n = ROW_COUNT;
+    EXIT WHEN v_n = 0;
+  END LOOP;
+END $$;
+
 CREATE OR REPLACE FUNCTION public.run_staging_backlog_drain(p_batch int DEFAULT 500)
 RETURNS jsonb
 LANGUAGE plpgsql

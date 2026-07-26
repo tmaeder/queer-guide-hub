@@ -60,7 +60,7 @@ AS $$
     ),
     'staging_pending_review', (
       SELECT count(*) FROM public.ingestion_staging
-      WHERE review_status = 'pending_review'
+      WHERE review_status = 'pending_review' AND disposition = 'pending'
     )
   );
 $$;
