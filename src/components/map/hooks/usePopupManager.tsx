@@ -2,7 +2,7 @@ import { useCallback, useContext, type MutableRefObject } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { QueryClientProvider, useQueryClient } from '@tanstack/react-query';
 import i18next from 'i18next';
-import maplibregl from 'maplibre-gl';
+import * as maplibregl from 'maplibre-gl';
 import { MapEntityCard } from '@/components/map/MapEntityCard';
 import type { MapPointSummary } from '@/components/map/mapPoint';
 import type { MapMarker } from '@/hooks/useExploreMapData';
