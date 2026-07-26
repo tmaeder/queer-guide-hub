@@ -10,6 +10,12 @@
 -- has no allowlist and simply stops listing the dropped queues.
 -- ============================================================================
 
+-- NOTE: pgmq.drop_queue() fails on this project with SQLSTATE 55000
+-- ("table pgmq.q_scheduled_jobs is not a member of extension pgmq") — the
+-- queue tables were detached from the extension (pgmq >=1.x pattern) so the
+-- internal ALTER EXTENSION ... DROP TABLE step errors. Drop directly instead:
+-- queue table + archive table + the pgmq.meta row is exactly what drop_queue
+-- would have removed.
 DO $$
 DECLARE
   v_q text;
@@ -20,7 +26,13 @@ BEGIN
       SELECT 1 FROM information_schema.tables
       WHERE table_schema = 'pgmq' AND table_name = 'q_' || v_q
     ) THEN
-      PERFORM pgmq.drop_queue(v_q);
+      BEGIN
+        PERFORM pgmq.drop_queue(v_q);
+      EXCEPTION WHEN OTHERS THEN
+        EXECUTE format('DROP TABLE IF EXISTS pgmq.%I CASCADE', 'q_' || v_q);
+        EXECUTE format('DROP TABLE IF EXISTS pgmq.%I CASCADE', 'a_' || v_q);
+        DELETE FROM pgmq.meta WHERE queue_name = v_q;
+      END;
     END IF;
   END LOOP;
 END $$;
