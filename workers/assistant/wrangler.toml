@@ -17,11 +17,10 @@ tag = "v1"
 new_sqlite_classes = ["Conversation"]
 
 # Anti-abuse KV counter for the per-IP rate limit (cost control, invoice IN-72568830).
-# Create with:  wrangler kv namespace create assistant-rate-limit
-# then paste the returned id below (reuse the submit worker's namespace if preferred).
+# Namespace "assistant-rate-limit" on the queer-guide CF account.
 [[kv_namespaces]]
 binding = "RATE_LIMIT"
-id = "REPLACE_WITH_KV_NAMESPACE_ID"
+id = "dbaa7042550146f7b85c7e6fb73aff9b"
 
 [vars]
 ALLOWED_ORIGINS = "https://queer.guide,https://www.queer.guide,http://localhost:3000"
