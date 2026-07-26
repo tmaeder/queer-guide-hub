@@ -31,7 +31,16 @@ BEGIN
       EXCEPTION WHEN OTHERS THEN
         EXECUTE format('DROP TABLE IF EXISTS pgmq.%I CASCADE', 'q_' || v_q);
         EXECUTE format('DROP TABLE IF EXISTS pgmq.%I CASCADE', 'a_' || v_q);
-        DELETE FROM pgmq.meta WHERE queue_name = v_q;
+        -- meta bookkeeping: dynamic + best-effort. Under the db push role the
+        -- static reference raised 42P01 ("relation pgmq.meta does not exist")
+        -- even though the table exists; a stale meta row is cosmetic
+        -- (metrics_all lists a queue with no table), so visibility/privilege
+        -- failures must not block the migration batch queued behind this.
+        BEGIN
+          EXECUTE format('DELETE FROM pgmq.meta WHERE queue_name = %L', v_q);
+        EXCEPTION WHEN undefined_table OR insufficient_privilege THEN
+          NULL;
+        END;
       END;
     END IF;
   END LOOP;
