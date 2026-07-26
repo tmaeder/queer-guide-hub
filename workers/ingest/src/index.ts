@@ -278,9 +278,10 @@ function composeEmbedText(_table: string, r: TableRow): string {
 	const parts: string[] = [];
 	const title = r.title || r.name || "";
 	if (title) parts.push(title);
-	const desc = r.description || r.bio || r.summary || r.dek || "";
+	const desc = r.description || r.bio || r.summary || "";
 	if (desc) parts.push(desc);
 	// guides: dek is the one-liner, intro_md the substance.
+	if (typeof r.dek === "string" && r.dek) parts.push(r.dek);
 	if (typeof r.intro_md === "string" && r.intro_md) parts.push(r.intro_md);
 	if (Array.isArray(r.tags)) parts.push("Tags: " + r.tags.join(", "));
 	if (r.category) parts.push("Category: " + r.category);
