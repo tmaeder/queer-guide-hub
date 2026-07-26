@@ -12,14 +12,24 @@ import { Search } from 'lucide-react';
 import type { ReviewCounts } from '@/hooks/useReviewCounts';
 import type { TriageFilters } from '@/hooks/useUnifiedTriageQueue';
 
+const QUALITY_QUEUE_KEYS = [
+  'quality-city',
+  'quality-venue',
+  'quality-village',
+  'quality-personality',
+  'quality-marketplace',
+];
+
 const QUEUE_CHIPS = [
-  { key: 'staging', label: 'Staging', countKey: 'staging' as const },
-  { key: 'moderation', label: 'Reports', countKey: 'moderation' as const },
-  { key: 'submissions', label: 'Submissions', countKey: 'submissions' as const },
-  { key: 'content', label: 'CMS', countKey: 'cmsReview' as const },
-  { key: 'automation', label: 'Auto', countKey: 'automation' as const },
-  { key: 'tags', label: 'Tags', countKey: 'tagSuggestions' as const },
-  { key: 'duplicates', label: 'Dedup', countKey: 'duplicates' as const },
+  { key: 'staging', keys: ['staging'], label: 'Staging', countKey: 'staging' as const },
+  { key: 'moderation', keys: ['moderation'], label: 'Reports', countKey: 'moderation' as const },
+  { key: 'submissions', keys: ['submissions'], label: 'Submissions', countKey: 'submissions' as const },
+  { key: 'content', keys: ['content'], label: 'CMS', countKey: 'cmsReview' as const },
+  { key: 'automation', keys: ['automation'], label: 'Auto', countKey: 'automation' as const },
+  { key: 'tags', keys: ['tags'], label: 'Tags', countKey: 'tagSuggestions' as const },
+  { key: 'duplicates', keys: ['duplicates'], label: 'Dedup', countKey: 'duplicates' as const },
+  { key: 'quality', keys: QUALITY_QUEUE_KEYS, label: 'Quality', countKey: 'quality' as const },
+  { key: 'editorial', keys: ['editorial'], label: 'Editorial', countKey: 'editorial' as const },
 ] as const;
 
 interface TriageFilterBarProps {
@@ -31,11 +41,12 @@ interface TriageFilterBarProps {
 export function TriageFilterBar({ filters, counts, onFiltersChange }: TriageFilterBarProps) {
   const [searchInput, setSearchInput] = useState(filters.search);
 
-  function toggleQueue(key: string) {
+  function toggleQueue(keys: readonly string[]) {
     const current = filters.queueTypes ?? [];
-    const next = current.includes(key)
-      ? current.filter((k) => k !== key)
-      : [...current, key];
+    const allActive = keys.every((k) => current.includes(k));
+    const next = allActive
+      ? current.filter((k) => !keys.includes(k))
+      : [...current, ...keys.filter((k) => !current.includes(k))];
     onFiltersChange({ queueTypes: next.length > 0 ? next : null, page: 1 });
   }
 
@@ -47,13 +58,13 @@ export function TriageFilterBar({ filters, counts, onFiltersChange }: TriageFilt
     <div className="flex flex-wrap items-center gap-2 px-4 py-2 border-b">
       <div className="flex flex-wrap gap-1">
         {QUEUE_CHIPS.map((chip) => {
-          const active = filters.queueTypes?.includes(chip.key) ?? false;
+          const active = chip.keys.every((k) => filters.queueTypes?.includes(k) ?? false);
           const count = counts?.[chip.countKey] ?? 0;
           return (
             <button
               key={chip.key}
               type="button"
-              onClick={() => toggleQueue(chip.key)}
+              onClick={() => toggleQueue(chip.keys)}
               className={`inline-flex items-center gap-1 px-2 py-0.5 text-xs border transition-colors ${
                 active
                   ? 'bg-foreground text-background border-foreground'

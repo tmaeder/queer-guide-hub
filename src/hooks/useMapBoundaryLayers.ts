@@ -7,7 +7,7 @@
  */
 
 import { useCallback, useEffect, useRef, type MutableRefObject } from 'react';
-import maplibregl from 'maplibre-gl';
+import * as maplibregl from 'maplibre-gl';
 import type { GeoJSONSource, MapLayerMouseEvent } from 'maplibre-gl';
 import type { LayerType, MapMarker } from '@/hooks/useExploreMapData';
 import { enrichBoundaryFeatures } from '@/utils/boundaryUtils';

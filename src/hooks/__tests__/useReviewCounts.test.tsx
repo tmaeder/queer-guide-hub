@@ -37,6 +37,9 @@ describe('toReviewCounts', () => {
       review_tags: 6,
       review_duplicates: 7,
       review_feedback: 8,
+      quality_city: 2,
+      quality_venue: 1,
+      quality_editorial: 3,
     });
     expect(counts).toEqual({
       staging: 3,
@@ -46,8 +49,10 @@ describe('toReviewCounts', () => {
       automation: 5,
       tagSuggestions: 6,
       duplicates: 7,
+      quality: 3,
+      editorial: 3,
       feedback: 8,
-      total: 36,
+      total: 42,
     });
   });
 

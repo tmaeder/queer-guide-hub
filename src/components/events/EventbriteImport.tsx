@@ -61,8 +61,8 @@ export const EventbriteImport = ({ onImportComplete }: EventbriteImportProps) =>
       if (error) throw error;
 
       toast({
-        title: "Import successful",
-        description: `Successfully imported ${data.imported} events from Eventbrite`
+        title: "Staged for review",
+        description: `Staged ${data.staged ?? 0} Eventbrite events for the review pipeline`
       });
 
       setIsOpen(false);

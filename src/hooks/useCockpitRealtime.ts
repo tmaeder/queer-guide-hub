@@ -12,7 +12,7 @@ import { supabase } from '@/integrations/supabase/client';
 
 const WATCHED: Array<{ table: string; keys: string[][] }> = [
   { table: 'admin_automation_runs', keys: [['cockpit', 'automation-summary'], ['admin-automations'], ['admin-automation-runs']] },
-  { table: 'import_jobs', keys: [['cockpit', 'imports']] },
+  { table: 'import_jobs_enhanced', keys: [['cockpit', 'imports']] },
   { table: 'moderation_flags', keys: [['cockpit', 'review'], ['admin-counts']] },
   { table: 'workflow_runs', keys: [['cockpit', 'pipeline-errors']] },
 ];

@@ -2,11 +2,12 @@ import { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
 import { jsonResponse, errorResponse, corsResponse, requireAdmin, requireInternalOrAdmin, getServiceClient } from '../_shared/supabase-client.ts'
 import { reportApiError } from '../_shared/report-api-error.ts'
 
-// Queue configuration: name → visibility timeout in seconds
+// Queue configuration: name → visibility timeout in seconds.
+// P3 (2026-07-26): this function is now ONLY the pgmq pump for the
+// pipeline-executor DAG engine. Single-function workflows are invoked
+// directly by the enqueue_workflow() SQL fn (net.http_post + X-Internal-Secret)
+// — the scheduled_jobs / import_jobs / content_processing queues are retired.
 const QUEUE_CONFIG: Record<string, number> = {
-  scheduled_jobs: 300,    // 5 min
-  import_jobs: 600,       // 10 min
-  content_processing: 120, // 2 min
   pipeline_steps: 300,    // 5 min — DAG pipeline execution
 }
 

@@ -1,5 +1,5 @@
 import { useCallback, type MutableRefObject } from 'react';
-import maplibregl from 'maplibre-gl';
+import * as maplibregl from 'maplibre-gl';
 import { summaryFromFeature } from '@/components/map/mapPoint';
 import type { PointFeature } from '@/hooks/useViewportPoints';
 
