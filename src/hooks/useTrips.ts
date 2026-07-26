@@ -197,7 +197,7 @@ export function useTrips() {
       const { data, error } = await supabase
         .from('trips')
         .select(
-          '*, trip_members(id), trip_days(id), trip_places(id, countries:country_id(equality_score))',
+          '*, trip_members(id), trip_days(id), trip_places(id, countries(equality_score))',
         )
         .in('id', tripIds)
         .order('updated_at', { ascending: false });
@@ -260,8 +260,8 @@ export function useTrip(tripId: string | undefined) {
             venues:venue_id(id, name, category, images, address),
             events:event_id(id, title, event_type, start_date, end_date, images),
             hotels:hotel_id(id, name, star_rating, images, address),
-            cities:city_id(id, name),
-            countries:country_id(id, name, code, equality_score)
+            cities(id, name),
+            countries(id, name, code, equality_score)
           `)
           .eq('trip_id', tripId!)
           .order('sort_order', { ascending: true }),

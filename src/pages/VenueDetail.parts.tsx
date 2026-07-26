@@ -73,8 +73,10 @@ export type VenueWithRelations = Venue & {
 
 export type SocialSignals = ReturnType<typeof useVenueSocialSignals>['data'];
 
+// Geo embeds are BARE (no :city_id column hints): after the P2 FK re-point they
+// resolve via PostgREST computed relationships, which column hints bypass.
 export const VENUE_SELECT_FIELDS =
-  '*, cities:city_id(id, slug, name), countries:country_id(id, slug, name, equality_score, lgbti_criminalization), organizations:organization_id(slug, name, roles)';
+  '*, cities(id, slug, name), countries(id, slug, name, equality_score, lgbti_criminalization), organizations:organization_id(slug, name, roles)';
 
 export interface FetchVenueResult {
   venue: VenueWithRelations | null;
