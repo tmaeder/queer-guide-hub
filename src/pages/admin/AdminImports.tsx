@@ -16,6 +16,7 @@ import { PersonalitiesCsvImport } from '@/components/personalities/Personalities
 import { AdultModelsCsvImport } from '@/components/personalities/AdultModelsCsvImport';
 import { BulkCreatePersonalities } from '@/components/personalities/BulkCreatePersonalities';
 import { AwinImportDialog } from '@/components/marketplace/AwinImportDialog';
+import { UrlImportCard } from '@/components/admin/UrlImportCard';
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -37,6 +38,8 @@ export default function AdminImports() {
           Manual, operator-run imports. Each one stages records into the normal review pipeline.
         </p>
       </div>
+
+      <UrlImportCard />
 
       <Tabs defaultValue="venues">
         <TabsList>

@@ -30,7 +30,6 @@ import {
   Link2,
   Handshake,
   Workflow,
-  Filter,
   Hotel,
   Home,
   History,
@@ -375,13 +374,6 @@ export const adminNavSections: AdminNavSection[] = [
         label: 'Pipelines',
         icon: Workflow,
         route: '/admin/pipelines',
-        adminOnly: true,
-      },
-      {
-        id: 'ingestion-rules',
-        label: 'Ingestion Rules',
-        icon: Filter,
-        route: '/admin/ingestion-rules',
         adminOnly: true,
       },
       {
