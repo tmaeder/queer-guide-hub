@@ -550,17 +550,20 @@ export const UniversalSearchBar = () => {
           }}
         >
           {mode === 'ask' ? (
-            <SearchAskPanel
-              messages={assistant.messages}
-              pending={assistant.pending}
-              error={assistant.error}
-              onSend={(m) => void assistant.send(m)}
-              onBack={() => {
-                setMode('search');
-                focusInput();
-              }}
-              onSelectCard={navigateToCard}
-            />
+            <>
+              {assistant.turnstile}
+              <SearchAskPanel
+                messages={assistant.messages}
+                pending={assistant.pending}
+                error={assistant.error}
+                onSend={(m) => void assistant.send(m)}
+                onBack={() => {
+                  setMode('search');
+                  focusInput();
+                }}
+                onSelectCard={navigateToCard}
+              />
+            </>
           ) : isMobile ? (
             <SearchPopoverMobile
               query={query}

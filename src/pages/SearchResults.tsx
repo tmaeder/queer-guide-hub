@@ -566,6 +566,7 @@ export default function SearchResults() {
           <SheetHeader className="sr-only">
             <SheetTitle>{t('search.ask.title', 'Ask the guide')}</SheetTitle>
           </SheetHeader>
+          {assistant.turnstile}
           <SearchAskPanel
             messages={assistant.messages}
             pending={assistant.pending}
