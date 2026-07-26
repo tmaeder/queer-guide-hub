@@ -7,19 +7,22 @@
  * their merchant links (identity spine).
  */
 
-import { useSearchParams } from 'react-router';
+import { Navigate, useSearchParams } from 'react-router';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { AffiliatePartnersManager } from '@/components/admin/AffiliatePartnersManager';
 import { MerchantsManager } from '@/components/admin/vendors/MerchantsManager';
-import { SellerOrgsPanel } from '@/components/admin/vendors/SellerOrgsPanel';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
-const TABS = ['merchants', 'partners', 'orgs'] as const;
+const TABS = ['merchants', 'partners'] as const;
 type Tab = (typeof TABS)[number];
 
 export default function AdminVendors() {
   const [searchParams, setSearchParams] = useSearchParams();
   const raw = searchParams.get('tab');
+
+  // Seller orgs moved to the Business console (organizations spine).
+  if (raw === 'orgs') return <Navigate to="/admin/business" replace />;
+
   const tab: Tab = (TABS as readonly string[]).includes(raw ?? '') ? (raw as Tab) : 'merchants';
 
   return (
@@ -27,7 +30,7 @@ export default function AdminVendors() {
       <AdminPageHeader
         eyebrow="COMMERCE · VENDORS"
         title="Vendors"
-        subtitle="Marketplace merchants, travel affiliate partners, and seller organizations."
+        subtitle="Marketplace merchants and travel affiliate partners. Seller organizations live in the Business console."
       />
       <Tabs
         value={tab}
@@ -39,7 +42,6 @@ export default function AdminVendors() {
         <TabsList>
           <TabsTrigger value="merchants">Merchants</TabsTrigger>
           <TabsTrigger value="partners">Partners</TabsTrigger>
-          <TabsTrigger value="orgs">Organizations</TabsTrigger>
         </TabsList>
       </Tabs>
 
@@ -47,7 +49,6 @@ export default function AdminVendors() {
       {/* AffiliatePartnersManager brings its own p-6 container — matches the
           standalone /admin/affiliate?tab=partners rendering. */}
       {tab === 'partners' && <AffiliatePartnersManager />}
-      {tab === 'orgs' && <SellerOrgsPanel />}
     </div>
   );
 }

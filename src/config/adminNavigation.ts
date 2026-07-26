@@ -121,6 +121,14 @@ export const adminNavSections: AdminNavSection[] = [
         route: '/admin/postfach',
       },
       {
+        id: 'business',
+        label: 'Business',
+        icon: Building,
+        route: '/admin/business',
+        reviewCountKey: 'review_org_links',
+        adminOnly: true,
+      },
+      {
         id: 'affiliate',
         label: 'Affiliate',
         icon: Handshake,

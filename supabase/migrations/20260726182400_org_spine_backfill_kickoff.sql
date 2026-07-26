@@ -1,7 +1,11 @@
--- [Drift recovery 2026-07-26] Applied live via MCP by a concurrent session;
--- recovered verbatim from supabase_migrations.schema_migrations.statements.
-
--- Business Spine Unification — Phase B3: automation + cron (see repo file 20260801100300)
+-- ============================================================
+-- Business Spine Unification — Phase B3: automation + cron
+--
+-- Nightly batched backfill (05:10 UTC — clear of dedup 05:50 and the
+-- 06:00/06:15 sweeps). No inline full backfill here: org INSERTs fire the
+-- search_documents sync per row, so the work runs 200-a-night per source
+-- until org_spine_drift_counts() reads zero.
+-- ============================================================
 
 INSERT INTO public.admin_automations (slug, name, description, managed_by, enabled, trigger, conditions, action, schedule)
 VALUES ('org_spine_backfill', 'Business spine backfill',

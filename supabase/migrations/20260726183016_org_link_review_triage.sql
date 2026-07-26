@@ -1,6 +1,3 @@
--- [Drift recovery 2026-07-26] Applied live via MCP by a concurrent session;
--- recovered verbatim from supabase_migrations.schema_migrations.statements.
-
 -- Business Spine Unification — org link suggestions join the triage registry.
 -- get_admin_counts auto-derives review_org_links from this row; the unified
 -- inbox shows the queue; decisions deep-link to /admin/business?tab=review.

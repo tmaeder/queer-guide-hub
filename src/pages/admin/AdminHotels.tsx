@@ -37,8 +37,10 @@ import { AdminEntityTable } from '@/components/admin/data-table';
 import type { AdminTableConfig, AdminColumnMeta } from '@/components/admin/data-table/types';
 import { createColumnHelper } from '@tanstack/react-table';
 import { useQueryClient } from '@tanstack/react-query';
-import { Edit, Trash2, Star, Plus, RefreshCw } from 'lucide-react';
+import { Edit, Trash2, Star, Plus, RefreshCw, Briefcase } from 'lucide-react';
 import { toast } from 'sonner';
+import { useNavigate } from 'react-router';
+import { usePromoteToOrg } from '@/hooks/useBusinessSpine';
 
 const HOTEL_TYPES = [
   { value: 'hotel', label: 'Hotel' },
@@ -106,6 +108,19 @@ export default function AdminHotels() {
   const [editingHotel, setEditingHotel] = useState<HotelRow | null>(null);
   const [formData, setFormData] = useState(emptyForm);
   const [regenBusy, setRegenBusy] = useState(false);
+  const navigate = useNavigate();
+  const promote = usePromoteToOrg();
+
+  // Promote a hotel to (or open) its business-spine organization.
+  const handlePromote = async (hotel: HotelRow) => {
+    try {
+      const orgId = await promote.mutateAsync({ entityType: 'hotel', entityId: hotel.id });
+      toast.success(`${hotel.name} linked to business`);
+      navigate(`/admin/business/${orgId}`);
+    } catch (e) {
+      toast.error(`Error: ${(e as Error).message}`);
+    }
+  };
 
   // Recompose this hotel's safety note from its amenity signals (deterministic composer).
   const handleRegenerateSafety = async () => {
@@ -358,6 +373,7 @@ export default function AdminHotels() {
       ],
       rowActions: [
         { key: 'edit', label: 'Edit', icon: Edit, onClick: handleEdit },
+        { key: 'promote', label: 'Promote to business', icon: Briefcase, onClick: handlePromote },
         {
           key: 'delete',
           label: 'Delete',
