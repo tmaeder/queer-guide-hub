@@ -137,14 +137,16 @@ export function useMapInstance({
     // Donut cluster icons are generated on demand: the cluster layer's
     // icon-image expression produces composition-encoded ids; any id the
     // style doesn't know yet is rasterized synchronously right here.
-    // maplibre-gl 6: styleimagemissing is notify-only — images must be
-    // supplied via the resolver, which maplibre awaits before giving up.
-    map.setMissingStyleImageResolver((id: string) => {
-      if (!id.startsWith(`${DONUT_PREFIX}|`) || map.hasImage(id)) return;
-      const img = getDonutImage(id);
-      if (img && !map.hasImage(id)) {
+    // (v5 callback event. On a future maplibre-gl 6 upgrade this must move to
+    // map.setMissingStyleImageResolver — v6 makes this event notify-only. The
+    // v6 form shipped prematurely in #2352 while the dep was still 5.24 and
+    // threw on every map, so keep this matched to the installed major.)
+    map.on('styleimagemissing', (e: { id: string }) => {
+      if (!e.id.startsWith(`${DONUT_PREFIX}|`) || map.hasImage(e.id)) return;
+      const img = getDonutImage(e.id);
+      if (img && !map.hasImage(e.id)) {
         try {
-          map.addImage(id, img, { pixelRatio: DONUT_PIXEL_RATIO });
+          map.addImage(e.id, img, { pixelRatio: DONUT_PIXEL_RATIO });
         } catch {
           /* concurrent add — ignore */
         }
