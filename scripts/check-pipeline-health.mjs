@@ -90,6 +90,11 @@ if (!hygieneRes.ok) {
     console.error(`✗ ingestion_staging pending_review backlog at ${pending} (limit 5000) — auto-triage sweeps are falling behind`)
     process.exit(1)
   }
+  const unregistered = hygiene.unregistered_cron_jobs ?? []
+  if (unregistered.length > 0) {
+    console.error(`✗ Cron jobs with no admin_automations registry row: ${unregistered.join(', ')} — register them (P1 registry-of-record policy)`)
+    process.exit(1)
+  }
   console.log(`✓ Cron hygiene clean (${hygiene.cron_total} active jobs); staging pending_review=${pending}`)
 }
 

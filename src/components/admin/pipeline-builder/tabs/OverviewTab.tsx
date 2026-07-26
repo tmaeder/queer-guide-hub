@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { formatDistanceToNow } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
-import { untypedFrom } from '@/integrations/supabase/untyped';
+import { untypedFrom, untypedSupabase } from '@/integrations/supabase/untyped';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -111,8 +111,8 @@ export default function OverviewTab() {
         });
         if (error) throw error;
       } else {
-        const { error } = await supabase.functions.invoke('workflow-dispatcher', {
-          body: { workflow_name: row.name, triggered_by: 'manual-overview' },
+        const { error } = await untypedSupabase.rpc('admin_enqueue_workflow', {
+          p_workflow_name: row.name,
         });
         if (error) throw error;
       }
