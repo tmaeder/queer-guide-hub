@@ -61,7 +61,7 @@ function gatedDetailResult(): DetailResult {
  * middleware serve the SPA shell (humans get the GatedDetailFallback sign-in
  * gate) while bots still receive noindex + no real content.
  */
-async function isGatedEntity(env: Env, entityType: 'venue' | 'event' | 'milestone', slug: string): Promise<boolean> {
+async function isGatedEntity(env: Env, entityType: 'venue' | 'event' | 'milestone' | 'guide', slug: string): Promise<boolean> {
   if (!env.SUPABASE_URL) return false;
   const key = env.SUPABASE_SERVICE_ROLE_KEY ?? env.SUPABASE_ANON_KEY;
   if (!key) return false;
@@ -984,10 +984,75 @@ async function milestoneDetail(
   return { meta, body, jsonLd: renderLd(prune(eventLd)), indexable: row.seo_indexable === true };
 }
 
+// Guides (unified editorial family: guide | list | quest)
+
+async function guideDetail(env: Env, slug: string, pathname: string): Promise<DetailResult | null> {
+  const rows = await fetchRows(
+    env,
+    'guides',
+    'title,slug,format,dek,intro_md,hero_image_path,category,reading_time_min,pick_count,published_at,updated_at,safety_gated',
+    `slug=eq.${encodeURIComponent(slug)}&status=eq.published`,
+    1,
+  );
+  const row = rows[0] ?? null;
+  if (!row) return (await isGatedEntity(env, 'guide', slug)) ? gatedDetailResult() : null;
+  if (row.safety_gated === true) return gatedDetailResult();
+
+  const title = stringField(row, 'title') ?? slug;
+  const dek = stringField(row, 'dek');
+  const intro = stringField(row, 'intro_md') ?? '';
+  const format = stringField(row, 'format') ?? 'guide';
+  const formatLabel = format === 'quest' ? 'Community quest' : format === 'list' ? 'Curated list' : 'Guide';
+  const picks = numField(row, 'pick_count');
+  const hero = stringField(row, 'hero_image_path');
+
+  const meta: RouteMeta = {
+    title: truncate(`${title}${TITLE_SUFFIX}`, MAX_TITLE),
+    description: truncate(
+      dek ??
+        (intro
+          ? collapseWs(stripHtml(intro))
+          : `${formatLabel} on Queer Guide${picks ? ` — ${picks} picks` : ''}.`),
+      MAX_DESC,
+    ),
+    ogImage: safeOgImage(hero && /^https?:\/\//.test(hero) ? hero : DEFAULT_OG_IMAGE),
+  };
+
+  const body = `<main data-prerendered="bot-ua">
+    <article>
+      <h1>${escape(title)}</h1>
+      ${dek ? `<p><em>${escape(dek)}</em></p>` : ''}
+      ${intro ? paragraphsHtml(intro) : ''}
+      ${picks ? `<p>${picks} picks in this ${escape(formatLabel.toLowerCase())}.</p>` : ''}
+    </article>
+    <nav aria-label="Site sections">
+      <ul>
+        <li><a href="/guides">All guides</a></li>
+        <li><a href="/venues">Venues</a></li>
+        <li><a href="/events">Events</a></li>
+      </ul>
+    </nav>
+  </main>`;
+
+  const articleLd: Record<string, unknown> = {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: title,
+    description: meta.description,
+    image: meta.ogImage,
+    datePublished: stringField(row, 'published_at'),
+    dateModified: stringField(row, 'updated_at'),
+    author: { '@type': 'Organization', name: 'Queer Guide' },
+    url: `${SITE_ORIGIN}${pathname}`,
+  };
+
+  return { meta, body, jsonLd: renderLd(prune(articleLd)), indexable: true };
+}
+
 // Dispatch
 
 const DETAIL_ROUTE_RE =
-  /^\/(venues?|events?|news|personalities|personality|city|country|hotels?|villages?|tags?|history)\/([^/?#]+)\/?$/;
+  /^\/(venues?|events?|news|personalities|personality|city|country|hotels?|villages?|tags?|history|guides)\/([^/?#]+)\/?$/;
 
 // Static SPA sub-routes that share a segment with detail routes
 // (/venues/guides, /events/guides, legacy /venues/leaderboard redirect, …).
@@ -1041,9 +1106,25 @@ export async function resolveSlugRedirect(
   const m = matchDetailPath(pathname);
   if (!m) return null;
   const [, kindRaw, rawSlug] = m;
-  if (!kindRaw.startsWith('venue')) return null;
   const slug = decodeURIComponent(rawSlug);
   try {
+    if (kindRaw === 'guides') {
+      // Backfill-suffixed / renamed guide slugs live in guide_slug_redirects.
+      const redirectRows = await fetchRows(
+        env,
+        'guide_slug_redirects',
+        'guide_id',
+        `old_slug=eq.${encodeURIComponent(slug)}`,
+        1,
+      );
+      const guideId = stringField(redirectRows[0] ?? {}, 'guide_id');
+      if (!guideId) return null;
+      const guideRows = await fetchRows(env, 'guides', 'slug', `id=eq.${guideId}`, 1);
+      const newSlug = stringField(guideRows[0] ?? {}, 'slug');
+      if (!newSlug || newSlug === slug) return null;
+      return `/guides/${newSlug}`;
+    }
+    if (!kindRaw.startsWith('venue')) return null;
     const redirectRows = await fetchRows(
       env,
       'venue_slug_redirects',
@@ -1084,6 +1165,7 @@ export async function resolveDetailRoute(
     if (kindRaw.startsWith('village')) return await villageDetail(env, slug, pathname);
     if (kindRaw.startsWith('tag')) return await tagDetail(env, slug, pathname);
     if (kindRaw === 'history') return await milestoneDetail(env, slug, pathname);
+    if (kindRaw === 'guides') return await guideDetail(env, slug, pathname);
   } catch {
     return null;
   }
