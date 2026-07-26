@@ -40,7 +40,11 @@ export function VenueProviderImport({ onImportComplete }: { onImportComplete?: (
     try {
       const { data, error } = await supabase.functions.invoke(FN_MAP[provider], { body: config });
       if (error) throw error;
-      toast.success(`Import completed: ${data.message}`);
+      toast.success(
+        typeof data.staged === 'number'
+          ? `Staged ${data.staged} items for the review pipeline`
+          : `Import completed: ${data.message}`,
+      );
       onImportComplete?.();
     } catch {
       toast.error(`Import failed: could not import from ${provider}`);

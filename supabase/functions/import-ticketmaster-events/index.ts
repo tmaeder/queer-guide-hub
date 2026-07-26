@@ -1,5 +1,13 @@
-import { enrichEventWithAI } from '../_shared/ai-enrichment.ts';
 import { getCorsHeaders, getServiceClient, requireAdmin } from '../_shared/supabase-client.ts';
+
+// ============================================================
+// Admin-triggered Ticketmaster fetcher.
+// Fetch + parse only — every event is staged into ingestion_staging
+// via stage_event_for_commit and flows through the standard
+// validate → dedupe → review-gate → commit pipeline (hourly
+// ev-drain-* crons). No direct entity writes, no pre-commit LLM
+// enrichment (event-agentic-enrich covers committed events).
+// ============================================================
 
 interface TicketmasterEvent {
   id: string;
@@ -118,177 +126,157 @@ Deno.serve(async (req) => {
       throw new Error('Ticketmaster API key not configured');
     }
 
-    console.log('Importing events from Ticketmaster:', { keyword, city, countryCode, classificationName });
+    console.log('Staging events from Ticketmaster:', { keyword, city, countryCode, classificationName });
 
-    // Create background task for processing
-    const backgroundTask = async () => {
-      console.log('Starting background task for Ticketmaster import');
-      
-      // Build search parameters
-      const searchParams = new URLSearchParams({
-        apikey: ticketmasterApiKey,
-        keyword: keyword,
-        countryCode: countryCode,
-        size: '50',
-        sort: 'relevance,desc'
-      });
+    // Build search parameters
+    const searchParams = new URLSearchParams({
+      apikey: ticketmasterApiKey,
+      keyword: keyword,
+      countryCode: countryCode,
+      size: '50',
+      sort: 'relevance,desc'
+    });
 
-      if (city) {
-        searchParams.append('city', city);
+    if (city) {
+      searchParams.append('city', city);
+    }
+
+    if (classificationName) {
+      searchParams.append('classificationName', classificationName);
+    }
+
+    // Make request to Ticketmaster API
+    const ticketmasterUrl = `https://app.ticketmaster.com/discovery/v2/events.json?${searchParams.toString()}`;
+
+    console.log('Ticketmaster API URL:', ticketmasterUrl.replace(ticketmasterApiKey, '[REDACTED]'));
+
+    const ticketmasterResponse = await fetch(ticketmasterUrl, {
+      headers: {
+        'Content-Type': 'application/json'
       }
+    });
 
-      if (classificationName) {
-        searchParams.append('classificationName', classificationName);
-      }
+    if (!ticketmasterResponse.ok) {
+      const errorText = await ticketmasterResponse.text();
+      console.error('Ticketmaster API error:', errorText);
+      throw new Error(`Ticketmaster API error: ${ticketmasterResponse.status} - ${errorText}`);
+    }
 
-      // Make request to Ticketmaster API
-      const ticketmasterUrl = `https://app.ticketmaster.com/discovery/v2/events.json?${searchParams.toString()}`;
-      
-      console.log('Ticketmaster API URL:', ticketmasterUrl.replace(ticketmasterApiKey, '[REDACTED]'));
+    const ticketmasterData: TicketmasterResponse = await ticketmasterResponse.json();
+    const events = ticketmasterData._embedded?.events || [];
 
+    console.log(`Found ${events.length} events from Ticketmaster`);
+
+    let stagedCount = 0;
+
+    for (const event of events) {
       try {
-        const ticketmasterResponse = await fetch(ticketmasterUrl, {
-          headers: {
-            'Content-Type': 'application/json'
-          }
+        // Map event type from classification
+        let eventType = 'other';
+        const classification = event.classifications?.[0];
+        if (classification?.segment?.name) {
+          const segment = classification.segment.name.toLowerCase();
+          if (segment.includes('music')) eventType = 'concert';
+          else if (segment.includes('sports')) eventType = 'sports';
+          else if (segment.includes('arts') || segment.includes('theatre')) eventType = 'theater';
+          else if (segment.includes('film')) eventType = 'other';
+        }
+
+        // Extract venue data
+        const venue = event._embedded?.venues?.[0];
+        const address = venue?.address;
+        const venueCity = venue?.city?.name || '';
+        const state = venue?.state?.stateCode || venue?.state?.name || '';
+        const country = venue?.country?.countryCode || countryCode;
+        const latitude = venue?.location?.latitude ? parseFloat(venue.location.latitude) : null;
+        const longitude = venue?.location?.longitude ? parseFloat(venue.location.longitude) : null;
+        const fullAddress = [address?.line1, address?.line2].filter(Boolean).join(', ');
+
+        // Extract pricing
+        const priceRange = event.priceRanges?.[0];
+        const priceMin = priceRange?.min || null;
+        const priceMax = priceRange?.max || null;
+        const isFree = priceMin === 0 && priceMax === 0;
+
+        // Build dates
+        const startDate = event.dates.start.dateTime ||
+          `${event.dates.start.localDate}T${event.dates.start.localTime || '00:00:00'}`;
+
+        const endDate = event.dates.end?.dateTime ||
+          (event.dates.end?.localDate ? `${event.dates.end.localDate}T${event.dates.end.localTime || '23:59:59'}` : null);
+
+        // Age restrictions
+        let ageRestriction = null;
+        if (event.ageRestrictions?.legalAgeEnforced) {
+          ageRestriction = '18+';
+        }
+
+        const eventData = {
+          title: event.name,
+          description: event.description || event.info || event.pleaseNote || null,
+          event_type: eventType,
+          start_date: startDate,
+          end_date: endDate,
+          timezone: event.dates?.timezone || null,
+          venue_name: venue?.name || null,
+          address: fullAddress || null,
+          city: venueCity,
+          state: state,
+          country: country,
+          latitude: latitude,
+          longitude: longitude,
+          website: event.url,
+          ticket_url: event.url,
+          organizer_name: event.promoter?.name || null,
+          organizer_contact: event.promoter?.description || null,
+          is_free: isFree,
+          price_min: priceMin,
+          price_max: priceMax,
+          age_restriction: ageRestriction,
+          max_attendees: event.accessibility?.ticketLimit || null,
+          status: 'active',
+          is_featured: false
+        };
+
+        console.log('Staging event:', eventData.title);
+
+        const { error } = await supabaseClient.rpc('stage_event_for_commit', {
+          p_source_type: 'ticketmaster',
+          p_source_name: 'ticketmaster-api',
+          p_source_entity_id: event.id,
+          p_raw: event as unknown as Record<string, unknown>,
+          p_normalized: eventData,
+          p_source_url: event.url,
         });
 
-        if (!ticketmasterResponse.ok) {
-          const errorText = await ticketmasterResponse.text();
-          console.error('Ticketmaster API error:', errorText);
-          throw new Error(`Ticketmaster API error: ${ticketmasterResponse.status} - ${errorText}`);
+        if (error) {
+          console.error('Error staging event:', error);
+        } else {
+          stagedCount++;
         }
-
-        const ticketmasterData: TicketmasterResponse = await ticketmasterResponse.json();
-        const events = ticketmasterData._embedded?.events || [];
-        
-        console.log(`Found ${events.length} events from Ticketmaster`);
-
-        let importedCount = 0;
-
-        for (const event of events) {
-          try {
-            // Map event type from classification
-            let eventType = 'other';
-            const classification = event.classifications?.[0];
-            if (classification?.segment?.name) {
-              const segment = classification.segment.name.toLowerCase();
-              if (segment.includes('music')) eventType = 'concert';
-              else if (segment.includes('sports')) eventType = 'sports';
-              else if (segment.includes('arts') || segment.includes('theatre')) eventType = 'theater';
-              else if (segment.includes('film')) eventType = 'other';
-            }
-
-            // Extract venue data
-            const venue = event._embedded?.venues?.[0];
-            const address = venue?.address;
-            const city = venue?.city?.name || '';
-            const state = venue?.state?.stateCode || venue?.state?.name || '';
-            const country = venue?.country?.countryCode || countryCode;
-            const latitude = venue?.location?.latitude ? parseFloat(venue.location.latitude) : null;
-            const longitude = venue?.location?.longitude ? parseFloat(venue.location.longitude) : null;
-            const fullAddress = [address?.line1, address?.line2].filter(Boolean).join(', ');
-
-            // Extract pricing
-            const priceRange = event.priceRanges?.[0];
-            const priceMin = priceRange?.min || null;
-            const priceMax = priceRange?.max || null;
-            const isFree = priceMin === 0 && priceMax === 0;
-
-            // Build dates
-            const startDate = event.dates.start.dateTime || 
-              `${event.dates.start.localDate}T${event.dates.start.localTime || '00:00:00'}`;
-            
-            const endDate = event.dates.end?.dateTime || 
-              (event.dates.end?.localDate ? `${event.dates.end.localDate}T${event.dates.end.localTime || '23:59:59'}` : null);
-
-            // Age restrictions
-            let ageRestriction = null;
-            if (event.ageRestrictions?.legalAgeEnforced) {
-              ageRestriction = '18+';
-            }
-
-            const eventData = {
-              title: event.name,
-              description: event.description || event.info || event.pleaseNote || null,
-              event_type: eventType,
-              start_date: startDate,
-              end_date: endDate,
-              timezone: event.dates?.timezone || null,
-              venue_name: venue?.name || null,
-              address: fullAddress || null,
-              city: city,
-              state: state,
-              country: country,
-              latitude: latitude,
-              longitude: longitude,
-              website: event.url,
-              ticket_url: event.url,
-              organizer_name: event.promoter?.name || null,
-              organizer_contact: event.promoter?.description || null,
-              is_free: isFree,
-              price_min: priceMin,
-              price_max: priceMax,
-              age_restriction: ageRestriction,
-              max_attendees: event.accessibility?.ticketLimit || null,
-              status: 'active',
-              is_featured: false
-            };
-
-            // AI enrichment — enhance description and classify event type
-            try {
-              const aiEnrichment = await enrichEventWithAI(supabaseClient, eventData)
-              if (aiEnrichment) {
-                if (aiEnrichment.description && !eventData.description) eventData.description = aiEnrichment.description as string
-                if (aiEnrichment.event_type && eventData.event_type === 'other') eventData.event_type = aiEnrichment.event_type as string
-              }
-            } catch (e) { console.warn('AI enrichment skipped:', e) }
-
-            console.log('Staging event:', eventData.title);
-
-            const { error } = await supabaseClient.rpc('stage_event_for_commit', {
-              p_source_type: 'ticketmaster',
-              p_source_name: 'ticketmaster-api',
-              p_source_entity_id: event.id,
-              p_raw: event as unknown as Record<string, unknown>,
-              p_normalized: eventData,
-              p_source_url: event.url,
-            });
-
-            if (error) {
-              console.error('Error staging event:', error);
-            } else {
-              importedCount++;
-            }
-          } catch (eventError) {
-            console.error('Error processing event:', event.name, eventError);
-            // Continue with next event
-          }
-        }
-
-        console.log(`Background task completed. Imported ${importedCount} out of ${events.length} events`);
-      } catch (error) {
-        console.error('Background task error:', error);
+      } catch (eventError) {
+        console.error('Error processing event:', event.name, eventError);
+        // Continue with next event
       }
-    };
+    }
 
-    // Start the background task
-    EdgeRuntime.waitUntil(backgroundTask());
+    console.log(`Staged ${stagedCount} of ${events.length} Ticketmaster events`);
 
-    // Return immediate response
     return new Response(
-      JSON.stringify({ 
-        success: true, 
-        message: 'Ticketmaster import started in background',
+      JSON.stringify({
+        success: true,
+        staged: stagedCount,
+        total_processed: events.length,
+        message: `Staged ${stagedCount} events for the review pipeline`,
         keyword: keyword,
         city: city,
         countryCode: countryCode
       }),
-      { 
-        headers: { 
-          ...corsHeaders, 
-          'Content-Type': 'application/json' 
-        } 
+      {
+        headers: {
+          ...corsHeaders,
+          'Content-Type': 'application/json'
+        }
       }
     );
 

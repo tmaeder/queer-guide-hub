@@ -1,5 +1,13 @@
 import { getCorsHeaders, requireAdmin, errorResponse, getServiceClient } from '../_shared/supabase-client.ts';
-import { enrichEventWithAI } from '../_shared/ai-enrichment.ts';
+
+// ============================================================
+// Admin-triggered Eventbrite fetcher.
+// Fetch + parse only — every event is staged into ingestion_staging
+// via stage_event_for_commit and flows through the standard
+// validate → dedupe → review-gate → commit pipeline (hourly
+// ev-drain-* crons). No direct entity writes, no pre-commit LLM
+// enrichment (event-agentic-enrich covers committed events).
+// ============================================================
 
 interface EventbriteEvent {
   id: string;
@@ -88,156 +96,136 @@ Deno.serve(async (req) => {
       throw new Error('Eventbrite OAuth token not configured');
     }
 
-    console.log('Importing events from Eventbrite:', { query, location, categoryId });
+    console.log('Staging events from Eventbrite:', { query, location, categoryId });
 
-    // Create background task for processing
-    const backgroundTask = async () => {
-      console.log('Starting background task for Eventbrite import');
-      
-      // Build search parameters
-      const searchParams = new URLSearchParams({
-        q: query,
-        'location.within': location ? `25mi` : '',
-        'location.address': location || '',
-        'start_date.range_start': new Date().toISOString(),
-        'sort_by': 'relevance',
-        'page_size': '50'
-      });
+    // Build search parameters
+    const searchParams = new URLSearchParams({
+      q: query,
+      'location.within': location ? `25mi` : '',
+      'location.address': location || '',
+      'start_date.range_start': new Date().toISOString(),
+      'sort_by': 'relevance',
+      'page_size': '50'
+    });
 
-      if (categoryId) {
-        searchParams.append('categories', categoryId);
+    if (categoryId) {
+      searchParams.append('categories', categoryId);
+    }
+
+    if (location) {
+      searchParams.append('location.address', location);
+      searchParams.append('location.within', '25mi');
+    }
+
+    // Make request to Eventbrite API
+    const eventbriteUrl = `https://www.eventbriteapi.com/v3/events/search/?${searchParams.toString()}`;
+
+    console.log('Eventbrite API URL:', eventbriteUrl);
+
+    const eventbriteResponse = await fetch(eventbriteUrl, {
+      headers: {
+        'Authorization': `Bearer ${eventbriteToken}`,
+        'Content-Type': 'application/json'
       }
+    });
 
-      if (location) {
-        searchParams.append('location.address', location);
-        searchParams.append('location.within', '25mi');
-      }
+    if (!eventbriteResponse.ok) {
+      const errorText = await eventbriteResponse.text();
+      console.error('Eventbrite API error:', errorText);
+      throw new Error(`Eventbrite API error: ${eventbriteResponse.status} - ${errorText}`);
+    }
 
-      // Make request to Eventbrite API
-      const eventbriteUrl = `https://www.eventbriteapi.com/v3/events/search/?${searchParams.toString()}`;
-      
-      console.log('Eventbrite API URL:', eventbriteUrl);
+    const eventbriteData: EventbriteResponse = await eventbriteResponse.json();
+    console.log(`Found ${eventbriteData.events.length} events from Eventbrite`);
 
+    let stagedCount = 0;
+
+    for (const event of eventbriteData.events) {
       try {
-        const eventbriteResponse = await fetch(eventbriteUrl, {
-          headers: {
-            'Authorization': `Bearer ${eventbriteToken}`,
-            'Content-Type': 'application/json'
-          }
+        // Map event type from category
+        let eventType = 'other';
+        if (event.category?.name) {
+          const category = event.category.name.toLowerCase();
+          if (category.includes('music')) eventType = 'concert';
+          else if (category.includes('food') || category.includes('drink')) eventType = 'party';
+          else if (category.includes('arts') || category.includes('performing')) eventType = 'art';
+          else if (category.includes('sports') || category.includes('fitness')) eventType = 'sports';
+          else if (category.includes('business') || category.includes('professional')) eventType = 'conference';
+          else if (category.includes('community') || category.includes('culture')) eventType = 'meetup';
+        }
+
+        // Extract location data
+        const address = event.venue?.address;
+        const city = address?.city || '';
+        const state = address?.region || '';
+        const country = address?.country || 'US';
+        const latitude = address?.latitude ? parseFloat(address.latitude) : null;
+        const longitude = address?.longitude ? parseFloat(address.longitude) : null;
+        const fullAddress = address?.address_1 || '';
+
+        // Extract pricing
+        const isFree = event.ticket_availability?.is_free || false;
+        const priceMin = event.ticket_availability?.minimum_ticket_price?.major_value || null;
+        const priceMax = event.ticket_availability?.maximum_ticket_price?.major_value || null;
+
+        const eventData = {
+          title: event.name.text,
+          description: event.description?.text || null,
+          event_type: eventType,
+          start_date: event.start.utc,
+          end_date: event.end.utc,
+          timezone: event.start.timezone || null,
+          venue_name: event.venue?.name || null,
+          address: fullAddress || null,
+          city: city,
+          state: state,
+          country: country,
+          latitude: latitude,
+          longitude: longitude,
+          website: event.organizer?.url || null, // Use organizer's website, not the Eventbrite listing URL
+          ticket_url: event.url, // Eventbrite URL is correct for ticket purchases
+          organizer_name: event.organizer?.name || null,
+          organizer_contact: event.organizer?.url || null,
+          is_free: isFree,
+          price_min: priceMin,
+          price_max: priceMax,
+          max_attendees: event.capacity || null,
+          status: 'active',
+          is_featured: false
+        };
+
+        console.log('Staging event:', eventData.title);
+
+        // Route through ingestion_staging for the bullet-proof pipeline:
+        // validate → deduplicate → commit (advisory-locked, idempotent).
+        const { error } = await supabaseClient.rpc('stage_event_for_commit', {
+          p_source_type: 'eventbrite',
+          p_source_name: 'eventbrite-api',
+          p_source_entity_id: event.id,
+          p_raw: event as unknown as Record<string, unknown>,
+          p_normalized: eventData,
+          p_source_url: event.url,
         });
 
-        if (!eventbriteResponse.ok) {
-          const errorText = await eventbriteResponse.text();
-          console.error('Eventbrite API error:', errorText);
-          throw new Error(`Eventbrite API error: ${eventbriteResponse.status} - ${errorText}`);
+        if (error) {
+          console.error('Error staging event:', error);
+        } else {
+          stagedCount++;
         }
-
-        const eventbriteData: EventbriteResponse = await eventbriteResponse.json();
-        console.log(`Found ${eventbriteData.events.length} events from Eventbrite`);
-
-        let importedCount = 0;
-
-        for (const event of eventbriteData.events) {
-          try {
-            // Map event type from category
-            let eventType = 'other';
-            if (event.category?.name) {
-              const category = event.category.name.toLowerCase();
-              if (category.includes('music')) eventType = 'concert';
-              else if (category.includes('food') || category.includes('drink')) eventType = 'party';
-              else if (category.includes('arts') || category.includes('performing')) eventType = 'art';
-              else if (category.includes('sports') || category.includes('fitness')) eventType = 'sports';
-              else if (category.includes('business') || category.includes('professional')) eventType = 'conference';
-              else if (category.includes('community') || category.includes('culture')) eventType = 'meetup';
-            }
-
-            // Extract location data
-            const address = event.venue?.address;
-            const city = address?.city || '';
-            const state = address?.region || '';
-            const country = address?.country || 'US';
-            const latitude = address?.latitude ? parseFloat(address.latitude) : null;
-            const longitude = address?.longitude ? parseFloat(address.longitude) : null;
-            const fullAddress = address?.address_1 || '';
-
-            // Extract pricing
-            const isFree = event.ticket_availability?.is_free || false;
-            const priceMin = event.ticket_availability?.minimum_ticket_price?.major_value || null;
-            const priceMax = event.ticket_availability?.maximum_ticket_price?.major_value || null;
-
-            const eventData = {
-              title: event.name.text,
-              description: event.description?.text || null,
-              event_type: eventType,
-              start_date: event.start.utc,
-              end_date: event.end.utc,
-              timezone: event.start.timezone || null,
-              venue_name: event.venue?.name || null,
-              address: fullAddress || null,
-              city: city,
-              state: state,
-              country: country,
-              latitude: latitude,
-              longitude: longitude,
-              website: event.organizer?.url || null, // Use organizer's website, not the Eventbrite listing URL
-              ticket_url: event.url, // Eventbrite URL is correct for ticket purchases
-              organizer_name: event.organizer?.name || null,
-              organizer_contact: event.organizer?.url || null,
-              is_free: isFree,
-              price_min: priceMin,
-              price_max: priceMax,
-              max_attendees: event.capacity || null,
-              status: 'active',
-              is_featured: false
-            };
-
-            // AI enrichment — enhance description and classify event type
-            try {
-              const aiEnrichment = await enrichEventWithAI(supabaseClient, eventData)
-              if (aiEnrichment) {
-                if (aiEnrichment.description && !eventData.description) eventData.description = aiEnrichment.description as string
-                if (aiEnrichment.event_type && eventData.event_type === 'other') eventData.event_type = aiEnrichment.event_type as string
-              }
-            } catch (e) { console.warn('AI enrichment skipped:', e) }
-
-            console.log('Staging event:', eventData.title);
-
-            // Route through ingestion_staging for the bullet-proof pipeline:
-            // validate → deduplicate → commit (advisory-locked, idempotent).
-            const { error } = await supabaseClient.rpc('stage_event_for_commit', {
-              p_source_type: 'eventbrite',
-              p_source_name: 'eventbrite-api',
-              p_source_entity_id: event.id,
-              p_raw: event as unknown as Record<string, unknown>,
-              p_normalized: eventData,
-              p_source_url: event.url,
-            });
-
-            if (error) {
-              console.error('Error staging event:', error);
-            } else {
-              importedCount++;
-            }
-          } catch (eventError) {
-            console.error('Error processing event:', event.name.text, eventError);
-            // Continue with next event
-          }
-        }
-
-        console.log(`Background task completed. Imported ${importedCount} out of ${eventbriteData.events.length} events`);
-      } catch (error) {
-        console.error('Background task error:', error);
+      } catch (eventError) {
+        console.error('Error processing event:', event.name.text, eventError);
+        // Continue with next event
       }
-    };
+    }
 
-    // Start the background task
-    EdgeRuntime.waitUntil(backgroundTask());
+    console.log(`Staged ${stagedCount} of ${eventbriteData.events.length} Eventbrite events`);
 
-    // Return immediate response
     return new Response(
-      JSON.stringify({ 
-        success: true, 
-        message: 'Eventbrite import started in background',
+      JSON.stringify({
+        success: true,
+        staged: stagedCount,
+        total_processed: eventbriteData.events.length,
+        message: `Staged ${stagedCount} events for the review pipeline`,
         query: query,
         location: location
       }),

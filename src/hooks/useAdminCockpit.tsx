@@ -146,16 +146,16 @@ async function fetchImportSummary(): Promise<ImportSummary> {
 
   const [activeRes, completedRes, failedRes] = await Promise.all([
     supabase
-      .from('import_jobs' as 'venues')
+      .from('import_jobs_enhanced')
       .select('id', { count: 'exact', head: true })
-      .in('status', ['queued', 'running', 'paused']),
+      .in('status', ['pending', 'validating', 'processing']),
     supabase
-      .from('import_jobs' as 'venues')
+      .from('import_jobs_enhanced')
       .select('id', { count: 'exact', head: true })
       .eq('status', 'completed')
       .gte('updated_at', todayISO),
     supabase
-      .from('import_jobs' as 'venues')
+      .from('import_jobs_enhanced')
       .select('id', { count: 'exact', head: true })
       .eq('status', 'failed')
       .gte('updated_at', todayISO),

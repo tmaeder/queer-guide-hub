@@ -111,6 +111,12 @@ function stableStringify(value: unknown): string {
  * by source-csv-upload to write per-row classified groups to staging
  * without spawning a separate adapter per group. (Issue #113)
  *
+ * `config.sourceType` overrides the staged row's `source_type` tag while
+ * `source_name` stays `adapter.name` — used by the admin-triggered import-*
+ * fetchers so provenance shows the import path ('import-foursquare') without
+ * breaking source_name-keyed continuity (venue_sources junction rows,
+ * source_reliability weights).
+ *
  * `config.refresh` (opt-in; used by the recurring marketplace sources) changes
  * the idempotency behavior from INSERT-skip to UPSERT-on-change: an already-seen
  * product whose normalized payload CHANGED has its staging row refreshed, and if
@@ -124,7 +130,7 @@ export async function writeToStaging(
   supabase: SupabaseClient,
   adapter: SourceAdapter,
   rawItems: RawItem[],
-  config: AdapterConfig & { targetTable: string; entityType?: string; refresh?: boolean }
+  config: AdapterConfig & { targetTable: string; entityType?: string; refresh?: boolean; sourceType?: string }
 ): Promise<number> {
   if (rawItems.length === 0) return 0
 
@@ -138,7 +144,7 @@ export async function writeToStaging(
     seen.add(sid)
     const normalized = adapter.normalize(raw)
     return [{
-      source_type: adapter.name,
+      source_type: config.sourceType || adapter.name,
       source_name: adapter.name,
       source_entity_id: sid,
       entity_type: entityType,
