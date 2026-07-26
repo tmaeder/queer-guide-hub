@@ -122,6 +122,13 @@ export async function requireAdmin(
   req: Request,
   serviceClient: SupabaseClient
 ): Promise<AdminContext | Response> {
+  // Internal invocations (pg_cron / enqueue_workflow direct invoke) authenticate
+  // with X-Internal-Secret — the same trust level the workflow-dispatcher's
+  // service-role bearer used to grant on this path.
+  if (hasInternalSecret(req)) {
+    return { userId: 'internal', isServiceRole: true, originalActorId: null }
+  }
+
   const authHeader = req.headers.get('Authorization')
   if (!authHeader) {
     return errorResponse('Missing authorization header', 401, req)
