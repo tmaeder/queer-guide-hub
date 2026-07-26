@@ -280,7 +280,7 @@ function FactCell({
         <Icon size={13} aria-hidden="true" />
         <Eyebrow as="span">{label}</Eyebrow>
       </span>
-      <span className="mt-1 block text-15 font-medium">{value}</span>
+      <span className="mt-1 block font-mono text-15 font-medium tabular-nums">{value}</span>
     </div>
   );
 }
@@ -376,12 +376,12 @@ export function VenueHero({
         </div>
       )}
 
-      {/* Editorial header */}
-      <div className="mb-6">
+      {/* Editorial header — masthead opener (PHOTOCOPY): 2px rule + kicker. */}
+      <div className="mb-6 rule-heavy pt-2">
         {(venue.category || venue.countries?.equality_score != null) && (
           <div className="mb-2 flex flex-wrap items-center gap-2">
             {venue.category && (
-              <Eyebrow as="span" className="capitalize">
+              <Eyebrow as="span" variant="kicker" className="capitalize">
                 {venue.category}
               </Eyebrow>
             )}
@@ -393,7 +393,7 @@ export function VenueHero({
         )}
 
         <h1
-          className="m-0 text-display font-bold leading-[1.05] tracking-tight md:text-headline-lg"
+          className="m-0 text-display font-bold leading-[1.05] tracking-tight"
           style={{ overflowWrap: 'anywhere' }}
         >
           <Editable

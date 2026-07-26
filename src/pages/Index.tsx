@@ -160,6 +160,8 @@ const Index = React.memo(() => {
         {!isMobile && <HeroIdentityOverlay variant="overlay" dimmed={heroDimmed} />}
       </section>
 
+      {/* ── Editorial bands — photocopy grain on the whole region, not the map. */}
+      <div className="bg-noise">
       {/* ── Returning visitors: one light personalized rail (self-hides) ─ */}
       <RecentlyViewedRail />
 
@@ -192,9 +194,10 @@ const Index = React.memo(() => {
       <HomeDeferred section="home-shopping" skeleton={railSkeleton}>
         <HomeShoppingSection />
       </HomeDeferred>
+      </div>
 
       {/* ── Final CTA — adaptive on auth state ───────────────────────── */}
-      <section className="px-4 sm:px-6 md:px-8 py-20 md:py-28 bg-foreground text-background">
+      <section className="rule-heavy px-4 sm:px-6 md:px-8 py-20 md:py-28 bg-foreground text-background">
         <div className="max-w-3xl">
           <h2
             className="text-display md:text-hero font-bold tracking-tight"
@@ -211,13 +214,13 @@ const Index = React.memo(() => {
               <>
                 <LocalizedLink
                   to="/submit"
-                  className="inline-flex items-center justify-center rounded-full bg-background px-8 py-4 text-sm font-bold tracking-tight text-foreground transition-opacity hover:opacity-90 no-underline"
+                  className="inline-flex items-center justify-center rounded-element bg-background px-8 py-4 text-sm font-bold tracking-tight text-foreground transition-opacity hover:opacity-90 no-underline"
                 >
                   {t('home.cta.submit', 'Add a venue')}
                 </LocalizedLink>
                 <LocalizedLink
                   to="/friends"
-                  className="inline-flex items-center justify-center rounded-full border border-background/40 px-8 py-4 text-sm font-bold tracking-tight text-background transition-colors hover:border-background no-underline"
+                  className="inline-flex items-center justify-center rounded-element border border-background/40 px-8 py-4 text-sm font-bold tracking-tight text-background transition-colors hover:border-background no-underline"
                 >
                   {t('home.cta.invite', 'Invite friends')}
                 </LocalizedLink>
@@ -226,13 +229,13 @@ const Index = React.memo(() => {
               <>
                 <LocalizedLink
                   to="/auth?mode=signup"
-                  className="inline-flex items-center justify-center rounded-full bg-background px-8 py-4 text-sm font-bold tracking-tight text-foreground transition-opacity hover:opacity-90 no-underline"
+                  className="inline-flex items-center justify-center rounded-element bg-background px-8 py-4 text-sm font-bold tracking-tight text-foreground transition-opacity hover:opacity-90 no-underline"
                 >
                   {t('home.cta.join', 'Join the community')}
                 </LocalizedLink>
                 <LocalizedLink
                   to="/about"
-                  className="inline-flex items-center justify-center rounded-full border border-background/40 px-8 py-4 text-sm font-bold tracking-tight text-background transition-colors hover:border-background no-underline"
+                  className="inline-flex items-center justify-center rounded-element border border-background/40 px-8 py-4 text-sm font-bold tracking-tight text-background transition-colors hover:border-background no-underline"
                 >
                   {t('home.cta.about', 'Read the mission')}
                 </LocalizedLink>
