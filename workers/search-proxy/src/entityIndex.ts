@@ -42,6 +42,8 @@ export const INDEX_MAP: Record<string, string> = {
 	milestones: "milestones",
 	landmark: "landmarks",
 	landmarks: "landmarks",
+	guide: "guides",
+	guides: "guides",
 };
 
 export const ALL_INDEXES = [
@@ -60,4 +62,5 @@ export const ALL_INDEXES = [
 	"festivals",
 	"milestones",
 	"landmarks",
+	"guides",
 ];

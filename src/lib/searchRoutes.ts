@@ -29,6 +29,7 @@ export const ROUTE_HREFS: Record<string, (slug: string) => string> = {
   milestone: (s) => `/history/${s}`,
   hotel: (s) => `/hotels/${s}`,
   landmark: (s) => `/place/${s}`,
+  guide: (s) => `/guides/${s}`,
   // NB: `tag` is deliberately NOT here — the glossary route /tags/:tagName
   // is NAME-keyed (fetchTagWithCategories ilike('name', …)), but ROUTE_HREFS
   // builders only receive the slug. Route tags via `tagHref(name)` / hrefForEntity
