@@ -73,4 +73,9 @@ jobs:
           # A CLAUDE.md-only change also can't re-trigger this workflow into a
           # loop: the stats are now in sync, so the next run sees changed=false.
           git commit -m "chore(docs): sync CLAUDE.md repo counts (fns=${FNS}, mig=${MIG})" -m "skip-checks: true"
-          git push origin HEAD:main
+          # Branch protection (required status checks, added 2026-07-25) rejects
+          # pushes from GITHUB_TOKEN. That is the documented worst case above —
+          # counts drift, cosmetic — so surface a notice instead of failing red.
+          if ! git push origin HEAD:main; then
+            echo "::notice::CLAUDE.md stats drift (fns=${FNS}, mig=${MIG}) — branch protection refused the bot push; sync the counts in your next PR touching CLAUDE.md."
+          fi
