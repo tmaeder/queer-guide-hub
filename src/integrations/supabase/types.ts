@@ -9095,6 +9095,45 @@ export type Database = {
         }
         Relationships: []
       }
+      i18n_translation_targets: {
+        Row: {
+          batch_limit: number
+          created_at: string
+          enabled: boolean
+          field: string
+          id: string
+          last_run_at: string | null
+          locale: string
+          min_quality: number | null
+          priority: number
+          table_name: string
+        }
+        Insert: {
+          batch_limit?: number
+          created_at?: string
+          enabled?: boolean
+          field: string
+          id?: string
+          last_run_at?: string | null
+          locale: string
+          min_quality?: number | null
+          priority?: number
+          table_name: string
+        }
+        Update: {
+          batch_limit?: number
+          created_at?: string
+          enabled?: boolean
+          field?: string
+          id?: string
+          last_run_at?: string | null
+          locale?: string
+          min_quality?: number | null
+          priority?: number
+          table_name?: string
+        }
+        Relationships: []
+      }
       image_asset_links: {
         Row: {
           added_at: string
@@ -9770,101 +9809,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
-      }
-      ingestion_rule_hits: {
-        Row: {
-          applied_actions: Json | null
-          created_at: string
-          id: string
-          matched_terms: Json | null
-          rule_id: string
-          submission_id: string
-        }
-        Insert: {
-          applied_actions?: Json | null
-          created_at?: string
-          id?: string
-          matched_terms?: Json | null
-          rule_id: string
-          submission_id: string
-        }
-        Update: {
-          applied_actions?: Json | null
-          created_at?: string
-          id?: string
-          matched_terms?: Json | null
-          rule_id?: string
-          submission_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "ingestion_rule_hits_rule_id_fkey"
-            columns: ["rule_id"]
-            isOneToOne: false
-            referencedRelation: "ingestion_rules"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "ingestion_rule_hits_submission_id_fkey"
-            columns: ["submission_id"]
-            isOneToOne: false
-            referencedRelation: "community_submissions"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "ingestion_rule_hits_submission_id_fkey"
-            columns: ["submission_id"]
-            isOneToOne: false
-            referencedRelation: "triage_src_submissions"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "ingestion_rule_hits_submission_id_fkey"
-            columns: ["submission_id"]
-            isOneToOne: false
-            referencedRelation: "v_api_error_daily"
-            referencedColumns: ["submission_id"]
-          },
-        ]
-      }
-      ingestion_rules: {
-        Row: {
-          actions: Json
-          created_at: string
-          created_by: string | null
-          description: string | null
-          enabled: boolean
-          id: string
-          match: Json
-          name: string
-          priority: number
-          updated_at: string
-        }
-        Insert: {
-          actions: Json
-          created_at?: string
-          created_by?: string | null
-          description?: string | null
-          enabled?: boolean
-          id?: string
-          match: Json
-          name: string
-          priority?: number
-          updated_at?: string
-        }
-        Update: {
-          actions?: Json
-          created_at?: string
-          created_by?: string | null
-          description?: string | null
-          enabled?: boolean
-          id?: string
-          match?: Json
-          name?: string
-          priority?: number
-          updated_at?: string
-        }
-        Relationships: []
       }
       ingestion_sources: {
         Row: {
@@ -31521,6 +31465,7 @@ export type Database = {
           total: number
         }[]
       }
+      pipeline_hygiene_stats: { Args: never; Returns: Json }
       position_first_letter: { Args: { s: string }; Returns: number }
       post_like_counts: {
         Args: { post_ids: string[] }
@@ -32292,7 +32237,10 @@ export type Database = {
         Args: { p_batch?: number; p_hotel_id?: string }
         Returns: Json
       }
-      run_i18n_cron_auth_fix: { Args: never; Returns: Json }
+      run_i18n_translation_dispatch: {
+        Args: { p_slots?: number }
+        Returns: number
+      }
       run_ingestion_events_purge: { Args: never; Returns: Json }
       run_link_orgs_to_venues_by_domain: { Args: never; Returns: number }
       run_marketplace_affiliate_backfill: {
@@ -32375,6 +32323,7 @@ export type Database = {
       run_scraper_dedupe_purge: { Args: never; Returns: Json }
       run_social_card_refresh: { Args: never; Returns: undefined }
       run_staging_auto_reject_stale: { Args: never; Returns: Json }
+      run_staging_backlog_drain: { Args: { p_batch?: number }; Returns: Json }
       run_tag_assignment_reconcile: { Args: never; Returns: Json }
       run_tag_auto_merge: {
         Args: { p_limit?: number; p_min_similarity?: number }
