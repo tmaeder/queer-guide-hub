@@ -1,5 +1,13 @@
-import { enrichEventWithAI } from '../_shared/ai-enrichment.ts'
 import { getCorsHeaders, getServiceClient, requireAdmin } from '../_shared/supabase-client.ts'
+
+// ============================================================
+// Admin CSV event upload.
+// Parse only — rows are staged into ingestion_staging via
+// stage_event_for_commit (source_type 'import-events-csv') and flow
+// through the standard validate → dedupe → review-gate → commit
+// pipeline (hourly ev-drain-* crons). No direct writes to
+// events/venues/cities — the commit stage resolves venue/city.
+// ============================================================
 
 const VALID_EVENT_TYPES = [
   'party', 'festival', 'pride', 'fetish', 'community',
@@ -42,11 +50,11 @@ function parseCSV(csvText: string): EventData[] {
     const result: string[] = [];
     let current = '';
     let inQuotes = false;
-    
+
     for (let i = 0; i < line.length; i++) {
       const char = line[i];
       const nextChar = line[i + 1];
-      
+
       if (char === '"') {
         if (inQuotes && nextChar === '"') {
           // Escaped quote
@@ -64,7 +72,7 @@ function parseCSV(csvText: string): EventData[] {
         current += char;
       }
     }
-    
+
     // Add the last field
     result.push(current.trim());
     return result;
@@ -75,9 +83,9 @@ function parseCSV(csvText: string): EventData[] {
 
   for (let i = 1; i < lines.length; i++) {
     if (!lines[i].trim()) continue; // Skip empty lines
-    
+
     const values = parseCSVLine(lines[i]).map(v => v.replace(/^"|"$/g, ''));
-    
+
     if (values.length !== headers.length) {
       console.error(`Skipping row ${i + 1}: column count mismatch (expected ${headers.length}, got ${values.length})`);
       console.error(`Headers: ${headers.join(', ')}`);
@@ -88,7 +96,7 @@ function parseCSV(csvText: string): EventData[] {
     const eventData: Record<string, unknown> = {};
     headers.forEach((header, index) => {
       const value = values[index];
-      
+
       switch (header) {
         case 'title':
         case 'description':
@@ -129,27 +137,35 @@ function parseCSV(csvText: string): EventData[] {
     }
 
     // Validate event_type against allowed values
-    if (!VALID_EVENT_TYPES.includes(eventData.event_type.toLowerCase() as unknown)) {
+    const eventType = String(eventData.event_type).toLowerCase();
+    if (!(VALID_EVENT_TYPES as readonly string[]).includes(eventType)) {
       console.warn(`Skipping row ${i + 1}: invalid event_type '${eventData.event_type}'. Allowed: ${VALID_EVENT_TYPES.join(', ')}`);
       continue;
     }
-    eventData.event_type = eventData.event_type.toLowerCase();
+    eventData.event_type = eventType;
 
     // Validate date format
     try {
-      new Date(eventData.start_date).toISOString();
+      new Date(String(eventData.start_date)).toISOString();
       if (eventData.end_date) {
-        new Date(eventData.end_date).toISOString();
+        new Date(String(eventData.end_date)).toISOString();
       }
     } catch (_error) {
       console.warn(`Skipping row ${i + 1}: invalid date format`);
       continue;
     }
 
-    events.push(eventData as EventData);
+    events.push(eventData as unknown as EventData);
   }
 
   return events;
+}
+
+/** Deterministic per-row source id so re-uploading the same CSV is idempotent
+ * (stage_event_for_commit also hashes the payload). */
+function rowSourceId(e: EventData): string {
+  const key = `${e.title}|${e.start_date}|${e.city}`.toLowerCase().replace(/\s+/g, ' ').trim()
+  return `csv-${key.replace(/[^a-z0-9|]+/g, '-').slice(0, 180)}`
 }
 
 Deno.serve(async (req) => {
@@ -182,9 +198,9 @@ Deno.serve(async (req) => {
     if (!file) {
       return new Response(
         JSON.stringify({ error: 'No file provided' }),
-        { 
-          status: 400, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         }
       );
     }
@@ -198,162 +214,51 @@ Deno.serve(async (req) => {
     if (events.length === 0) {
       return new Response(
         JSON.stringify({ error: 'No valid events found in CSV' }),
-        { 
-          status: 400, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         }
       );
     }
 
-    // Process events and create venues/cities if needed
-    const eventsWithCreatorAndVenues = [];
-    
+    // Stage every parsed row for the review pipeline. The commit stage
+    // resolves venue_name/city to venue_id/city_id — no pre-creation here.
+    let staged = 0;
+
     for (const event of events) {
-      let venue_id = null;
-      let city_id = null;
-      
-      // First, handle city creation/lookup
-      if (event.city && event.country) {
-        // Check if city exists
-        const { data: existingCities } = await supabaseClient
-          .from('cities')
-          .select('id')
-          .eq('name', event.city)
-          .eq('country_id', (
-            await supabaseClient
-              .from('countries')
-              .select('id')
-              .eq('name', event.country)
-              .limit(1)
-              .single()
-          )?.data?.id || '')
-          .limit(1);
-        
-        if (existingCities && existingCities.length > 0) {
-          city_id = existingCities[0].id;
-        } else {
-          // Get country_id first
-          const { data: country } = await supabaseClient
-            .from('countries')
-            .select('id')
-            .eq('name', event.country)
-            .limit(1)
-            .single();
-          
-          if (country) {
-            // Create new city
-            const cityData = {
-              name: event.city,
-              country_id: country.id,
-              region_name: event.state || null
-            };
-            
-            const { data: newCity, error: cityError } = await supabaseClient
-              .from('cities')
-              .insert(cityData)
-              .select('id')
-              .single();
-            
-            if (cityError) {
-              console.error('Failed to create city:', cityError);
-            } else {
-              city_id = newCity.id;
-              console.log(`Created new city: ${event.city}, ${event.country}`);
-            }
-          }
-        }
-      }
-      
-      // If venue_name is provided, check if venue exists or create it
-      if (event.venue_name) {
-        // Check if venue exists
-        const { data: existingVenues } = await supabaseClient
-          .from('venues')
-          .select('id')
-          .eq('name', event.venue_name)
-          .eq('city', event.city)
-          .eq('country', event.country)
-          .limit(1);
-        
-        if (existingVenues && existingVenues.length > 0) {
-          venue_id = existingVenues[0].id;
-        } else {
-          // Create new venue
-          const venueData = {
-            name: event.venue_name,
-            address: event.address || '',
-            city: event.city,
-            state: event.state,
-            country: event.country,
-            category: 'event_venue',
-            created_by: auth.userId,
-            verified: false,
-            city_id: city_id
-          };
-          
-          const { data: newVenue, error: venueError } = await supabaseClient
-            .from('venues')
-            .insert(venueData)
-            .select('id')
-            .single();
-          
-          if (venueError) {
-            console.error('Failed to create venue:', venueError);
-          } else {
-            venue_id = newVenue.id;
-            console.log(`Created new venue: ${event.venue_name}`);
-          }
-        }
-      }
-      
-      eventsWithCreatorAndVenues.push({
+      const normalized = {
         ...event,
-        created_by: auth.userId,
-        venue_id: venue_id
-      });
-    }
+        uploaded_by: auth.userId,
+        status: 'active',
+      };
 
-    // AI enrichment — enhance events missing descriptions
-    for (const event of eventsWithCreatorAndVenues) {
-      if (!event.description) {
-        try {
-          const aiEnrichment = await enrichEventWithAI(supabaseClient, event)
-          if (aiEnrichment) {
-            if (aiEnrichment.description) event.description = aiEnrichment.description as string
-            if (aiEnrichment.event_type && !event.event_type) event.event_type = aiEnrichment.event_type as string
-          }
-        } catch (e) { console.warn('AI enrichment skipped for event:', event.title, e) }
+      const { error } = await supabaseClient.rpc('stage_event_for_commit', {
+        p_source_type: 'import-events-csv',
+        p_source_name: 'events-csv-upload',
+        p_source_entity_id: rowSourceId(event),
+        p_raw: event as unknown as Record<string, unknown>,
+        p_normalized: normalized,
+        p_source_url: event.website || event.ticket_url || null,
+      });
+
+      if (error) {
+        console.error('Error staging event:', event.title, error);
+      } else {
+        staged++;
       }
     }
 
-    // Insert events into database
-    const { data: insertedEvents, error: insertError } = await supabaseClient
-      .from('events')
-      .insert(eventsWithCreatorAndVenues)
-      .select();
-
-    if (insertError) {
-      console.error('Database insert error:', insertError);
-      return new Response(
-        JSON.stringify({ error: 'Failed to insert events into database' }),
-        { 
-          status: 500, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
-      );
-    }
-
-    console.log(`Successfully inserted ${insertedEvents?.length || 0} events`);
+    console.log(`Staged ${staged} of ${events.length} events for the review pipeline`);
 
     return new Response(
-      JSON.stringify({ 
-        message: 'Events imported successfully',
-        imported: insertedEvents?.length || 0,
+      JSON.stringify({
+        message: `Staged ${staged} events for the review pipeline`,
+        staged,
         total_processed: events.length
       }),
-      { 
-        status: 200, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      {
+        status: 200,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       }
     );
 
@@ -361,9 +266,9 @@ Deno.serve(async (req) => {
     console.error('Error in import-events-csv function:', error);
     return new Response(
       JSON.stringify({ error: 'Internal server error' }),
-      { 
-        status: 500, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       }
     );
   }

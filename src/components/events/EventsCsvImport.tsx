@@ -53,8 +53,8 @@ export const EventsCsvImport = ({ onImportComplete }: EventsCsvImportProps) => {
       if (error) throw error;
 
       toast({
-        title: "Import successful",
-        description: `Successfully imported ${data.imported} events`
+        title: "Staged for review",
+        description: `Staged ${data.staged ?? 0} events for the review pipeline`
       });
 
       setIsOpen(false);

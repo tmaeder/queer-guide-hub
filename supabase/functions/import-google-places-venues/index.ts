@@ -1,7 +1,14 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.50.5";
-import { enrichVenueWithAI } from '../_shared/ai-enrichment.ts';
 import { getCorsHeaders, requireAdmin, getServiceClient } from '../_shared/supabase-client.ts';
-import { getOrCreateCity, getOrCreateVenueCategory } from '../_shared/venue-import-helpers.ts';
+import type { SourceAdapter, RawItem, NormalizedItem, AdapterConfig } from '../_shared/source-adapter.ts';
+import { writeToStaging } from '../_shared/source-adapter.ts';
+
+// ============================================================
+// Admin-triggered Google Places fetcher.
+// Fetch + parse only — venues are staged into ingestion_staging
+// (source_type 'import-google-places') and flow through the
+// standard validate → dedupe → review-gate → commit pipeline.
+// No direct writes to venues/cities/venue_categories.
+// ============================================================
 
 interface GooglePlacesResult {
   place_id: string;
@@ -36,7 +43,7 @@ interface GooglePlacesResult {
 
 function mapGooglePlaceTypeToCategory(types: string[]) {
   // Map Google Places types to our venue categories
-  const typeMapping = {
+  const typeMapping: Record<string, { name: string; slug: string; category: string }> = {
     'night_club': { name: 'Entertainment & Nightlife', slug: 'entertainment-nightlife', category: 'club' },
     'bar': { name: 'Entertainment & Nightlife', slug: 'entertainment-nightlife', category: 'bar' },
     'restaurant': { name: 'Restaurants & Dining', slug: 'restaurants-dining', category: 'restaurant' },
@@ -62,38 +69,38 @@ function mapGooglePlaceTypeToCategory(types: string[]) {
 
 async function searchGooglePlaces(apiKey: string, query: string, location: string) {
   const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(location)}&key=${apiKey}`;
-  
+
   console.log(`Geocoding location: ${location}`);
   const geocodeResponse = await fetch(geocodeUrl);
-  
+
   if (!geocodeResponse.ok) {
     throw new Error(`Geocoding failed: ${geocodeResponse.status}`);
   }
-  
+
   const geocodeData = await geocodeResponse.json();
-  
+
   if (geocodeData.status !== 'OK' || !geocodeData.results?.length) {
     throw new Error(`No geocoding results for location: ${location}`);
   }
-  
+
   const { lat, lng } = geocodeData.results[0].geometry.location;
-  
+
   // Search for places using Text Search
   const searchUrl = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(query + ' ' + location)}&location=${lat},${lng}&radius=10000&key=${apiKey}`;
-  
+
   console.log(`Searching Google Places for: ${query} in ${location}`);
   const searchResponse = await fetch(searchUrl);
-  
+
   if (!searchResponse.ok) {
     throw new Error(`Google Places search failed: ${searchResponse.status}`);
   }
-  
+
   const searchData = await searchResponse.json();
-  
+
   if (searchData.status !== 'OK') {
     throw new Error(`Google Places API error: ${searchData.status} - ${searchData.error_message || 'Unknown error'}`);
   }
-  
+
   return {
     results: searchData.results || [],
     location: { lat, lng }
@@ -102,23 +109,109 @@ async function searchGooglePlaces(apiKey: string, query: string, location: strin
 
 async function getPlaceDetails(apiKey: string, placeId: string): Promise<GooglePlacesResult | null> {
   const detailsUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&fields=place_id,name,formatted_address,geometry,rating,user_ratings_total,price_level,types,photos,opening_hours,website,formatted_phone_number,international_phone_number&key=${apiKey}`;
-  
+
   const response = await fetch(detailsUrl);
-  
+
   if (!response.ok) {
     console.error(`Failed to get place details for ${placeId}: ${response.status}`);
     return null;
   }
-  
+
   const data = await response.json();
-  
+
   if (data.status !== 'OK') {
     console.error(`Google Places details error for ${placeId}: ${data.status}`);
     return null;
   }
-  
+
   return data.result;
 }
+
+// Staging adapter: normalizes a fetched place into the standard
+// NormalizedItem shape the venue pipeline (validate/dedupe/commit) expects.
+const googlePlacesImportAdapter: SourceAdapter = {
+  name: 'google-places',
+  entityType: 'venue',
+
+  // fetch is driven inline by the handler (query × location loops).
+  fetch(_config: AdapterConfig): Promise<RawItem[]> {
+    return Promise.resolve([]);
+  },
+
+  normalize(raw: RawItem): NormalizedItem {
+    const d = raw.data as unknown as GooglePlacesResult & {
+      _search_query?: string;
+      _search_location?: string;
+    };
+    const categoryMapping = mapGooglePlaceTypeToCategory(d.types || []);
+
+    // Extract city from address (same heuristic as the legacy importer)
+    const addressParts = (d.formatted_address || '').split(',');
+    const cityName = addressParts[addressParts.length - 3]?.trim()
+      || String(d._search_location || '').split(',')[0].trim();
+    const stateName = addressParts[addressParts.length - 2]?.trim() || '';
+
+    // Query-derived LGBTQ+ tags
+    const query = String(d._search_query || '');
+    const tags = ['lgbt-friendly', 'google-places'];
+    if (query.includes('gay')) tags.push('gay-friendly');
+    if (query.includes('lesbian')) tags.push('lesbian-friendly');
+    if (query.includes('queer')) tags.push('queer-friendly');
+    if (query.includes('pride')) tags.push('pride-friendly');
+
+    // Opening hours
+    let hours: Record<string, { open: string; close: string }> | null = null;
+    if (d.opening_hours?.periods) {
+      hours = {};
+      const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+      for (const period of d.opening_hours.periods) {
+        const dayName = dayNames[period.open.day];
+        if (dayName && period.close) {
+          hours[dayName] = { open: period.open.time, close: period.close.time };
+        }
+      }
+    }
+
+    return {
+      entityType: 'venue',
+      sourceId: raw.sourceId,
+      sourceName: 'google-places',
+      name: String(d.name || '').slice(0, 200),
+      description: '',
+      category: categoryMapping.category,
+      location: {
+        lat: d.geometry?.location?.lat,
+        lng: d.geometry?.location?.lng,
+        address: d.formatted_address || '',
+        city: cityName,
+        country: 'US', // Most Google Places results are US-based for our queries
+      },
+      urls: d.website ? [String(d.website)] : [],
+      tags,
+      contacts: {
+        phone: d.formatted_phone_number || d.international_phone_number || undefined,
+        website: d.website || undefined,
+      },
+      metadata: {
+        google_place_id: d.place_id,
+        google_rating: d.rating ?? null,
+        google_review_count: d.user_ratings_total ?? null,
+        price_range: d.price_level ?? null,
+        hours,
+        state: stateName,
+        types: d.types,
+        search_query: d._search_query ?? null,
+        search_location: d._search_location ?? null,
+        platform_ids: { google: d.place_id },
+        data_source: 'google_places',
+      },
+    } as NormalizedItem;
+  },
+
+  getSourceId(raw: RawItem): string {
+    return raw.sourceId;
+  },
+};
 
 Deno.serve(async (req) => {
   const cors = getCorsHeaders(req);
@@ -129,191 +222,85 @@ Deno.serve(async (req) => {
   if (auth instanceof Response) return auth;
 
   try {
-    console.log('Starting Google Places venues import...');
+    console.log('Starting Google Places venues fetch...');
 
-    // Initialize Supabase client
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const googleApiKey = Deno.env.get('GOOGLE_PLACES_API_KEY')!;
-    
+
     console.log('Google Places API Key configured:', googleApiKey ? 'Yes' : 'No');
-    
+
     if (!googleApiKey) {
       throw new Error('Google Places API key not configured');
     }
 
-    const supabase = createClient(supabaseUrl, supabaseKey);
-
     // Test API key validity first
     console.log('Testing Google Places API key...');
     const testUrl = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=restaurant&location=40.7128,-74.0060&radius=1000&key=${googleApiKey}`;
-    
+
     const testResponse = await fetch(testUrl);
     const testData = await testResponse.json();
-    
+
     if (!testResponse.ok || testData.status !== 'OK') {
       console.error('API key test failed:', testData);
       let errorMessage = `Google Places API key invalid - ${testData.error_message || 'Unknown error'}`;
-      
+
       // Provide specific guidance for common errors
       if (testData.status === 'REQUEST_DENIED') {
         errorMessage += '. Please ensure the API key has Google Places API enabled and billing is activated in Google Cloud Console.';
       } else if (testData.status === 'OVER_QUERY_LIMIT') {
         errorMessage += '. The API quota has been exceeded. Please check your billing and quota limits.';
       }
-      
+
       throw new Error(errorMessage);
     }
-    
+
     console.log('Google Places API key test successful');
 
     // LGBTQ+ friendly search queries
     const queries = [
       'LGBTQ friendly bar',
       'gay bar',
-      'lesbian bar', 
+      'lesbian bar',
       'queer friendly restaurant',
       'pride friendly cafe',
       'LGBTQ community center'
     ];
-    
+
     const locations = ['New York, NY', 'San Francisco, CA', 'Los Angeles, CA', 'Chicago, IL'];
-    
-    let totalImported = 0;
-    let totalSkipped = 0;
+
+    const rawItems: RawItem[] = [];
+    const seen = new Set<string>();
 
     for (const query of queries) {
       for (const location of locations) {
         console.log(`Searching for "${query}" in ${location}...`);
-        
+
         try {
           const searchResults = await searchGooglePlaces(googleApiKey, query, location);
-          
+
           console.log(`Found ${searchResults.results.length} results for "${query}" in ${location}`);
 
           // Process each place (limit to 5 per search to avoid rate limits)
           for (const place of searchResults.results.slice(0, 5)) {
             try {
+              if (seen.has(place.place_id)) continue;
+              seen.add(place.place_id);
+
               // Get detailed information
               const placeDetails = await getPlaceDetails(googleApiKey, place.place_id);
-              
+
               if (!placeDetails) {
                 console.log(`Skipping place ${place.place_id} - no details available`);
                 continue;
               }
-              
-              // Check if venue already exists
-              const { data: existingVenue } = await supabase
-                .from('venues')
-                .select('id')
-                .or(`google_place_id.eq.${placeDetails.place_id},and(data_source.eq.google_places,external_id.eq.${placeDetails.place_id})`)
-                .maybeSingle();
 
-              if (existingVenue) {
-                console.log(`Venue ${placeDetails.name} already exists, skipping...`);
-                totalSkipped++;
-                continue;
-              }
-
-              // Extract city from address
-              const addressParts = placeDetails.formatted_address.split(',');
-              const cityName = addressParts[addressParts.length - 3]?.trim() || location.split(',')[0];
-              const stateName = addressParts[addressParts.length - 2]?.trim();
-              const countryCode = 'US'; // Most Google Places results will be US-based for our queries
-
-              // Get or create city
-              const _cityId = await getOrCreateCity(
-                supabase, 
-                cityName, 
-                countryCode, 
-                placeDetails.geometry.location.lat, 
-                placeDetails.geometry.location.lng
-              );
-
-              // Map category
-              const categoryMapping = mapGooglePlaceTypeToCategory(placeDetails.types);
-              const _categoryId = await getOrCreateVenueCategory(supabase, categoryMapping.name, categoryMapping.slug, 'Google Places');
-
-              // Prepare tags
-              const tags = ['lgbt-friendly', 'google-places'];
-              if (query.includes('gay')) tags.push('gay-friendly');
-              if (query.includes('lesbian')) tags.push('lesbian-friendly');
-              if (query.includes('queer')) tags.push('queer-friendly');
-              if (query.includes('pride')) tags.push('pride-friendly');
-
-              // Prepare hours data
-              let hours = null;
-              if (placeDetails.opening_hours?.periods) {
-                hours = {};
-                const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-                placeDetails.opening_hours.periods.forEach(period => {
-                  const dayName = dayNames[period.open.day];
-                  if (dayName && period.close) {
-                    hours[dayName] = {
-                      open: period.open.time,
-                      close: period.close.time
-                    };
-                  }
-                });
-              }
-
-              // Prepare venue data
-              const venueData = {
-                name: placeDetails.name,
-                description: `${categoryMapping.category} found via Google Places import for "${query}"`,
-                address: placeDetails.formatted_address,
-                city: cityName,
-                state: stateName || '',
-                country: countryCode,
-                postal_code: '', // Google doesn't always provide postal code separately
-                latitude: placeDetails.geometry.location.lat,
-                longitude: placeDetails.geometry.location.lng,
-                phone: placeDetails.formatted_phone_number || placeDetails.international_phone_number || null,
-                website: placeDetails.website || null,
-                email: null, // Google Places doesn't provide email
-                category: categoryMapping.category,
-                tags: tags,
-                amenities: [], // We'll add basic amenities based on types
-                services: [], // We'll add basic services based on types
-                price_range: placeDetails.price_level || null,
-                hours: hours,
-                images: [], // We can fetch photos separately if needed
-                verified: false,
-                is_featured: false,
-                google_place_id: placeDetails.place_id,
-                google_rating: placeDetails.rating || null,
-                google_review_count: placeDetails.user_ratings_total || null,
-                data_source: 'google_places',
-                external_id: placeDetails.place_id,
-                last_synced_at: new Date().toISOString(),
-                sync_status: 'synced',
-                created_by: null // System import
-              };
-
-              // AI enrichment — enhance description and tags if available
-              try {
-                const aiEnrichment = await enrichVenueWithAI(supabase, venueData)
-                if (aiEnrichment) {
-                  if (aiEnrichment.description && !venueData.description) venueData.description = aiEnrichment.description as string
-                  if (aiEnrichment.tags) venueData.tags = [...new Set([...(venueData.tags || []), ...(aiEnrichment.tags as string[])])]
-                }
-              } catch (e) { console.warn('AI enrichment skipped:', e) }
-
-              // Insert venue
-              const { data: _insertedVenue, error: insertError } = await supabase
-                .from('venues')
-                .insert(venueData)
-                .select()
-                .single();
-
-              if (insertError) {
-                console.error('Error inserting venue:', insertError);
-                continue;
-              }
-
-              console.log(`Successfully imported venue: ${placeDetails.name}`);
-              totalImported++;
-
+              rawItems.push({
+                sourceId: placeDetails.place_id,
+                data: {
+                  ...(placeDetails as unknown as Record<string, unknown>),
+                  _search_query: query,
+                  _search_location: location,
+                },
+              });
             } catch (venueError) {
               console.error(`Error processing venue ${place.place_id}:`, venueError);
             }
@@ -331,14 +318,21 @@ Deno.serve(async (req) => {
       }
     }
 
-    console.log(`Google Places import completed. Imported: ${totalImported}, Skipped: ${totalSkipped}`);
+    // Stage everything for the review pipeline (idempotent per source id).
+    const staged = await writeToStaging(supabase, googlePlacesImportAdapter, rawItems, {
+      batchSize: rawItems.length,
+      targetTable: 'venues',
+      sourceType: 'import-google-places',
+    });
+
+    console.log(`Google Places fetch completed. Staged ${staged} of ${rawItems.length} venues.`);
 
     return new Response(
       JSON.stringify({
         success: true,
-        message: `Google Places import completed successfully. Imported ${totalImported} venues, skipped ${totalSkipped} duplicates.`,
-        imported: totalImported,
-        skipped: totalSkipped
+        message: `Staged ${staged} venues for the review pipeline`,
+        staged,
+        total_processed: rawItems.length
       }),
       {
         headers: { ...cors, 'Content-Type': 'application/json' },
@@ -347,7 +341,7 @@ Deno.serve(async (req) => {
     );
 
   } catch (error) {
-    console.error('Google Places import error:', error);
+    console.error('Google Places fetch error:', error);
 
     return new Response(
       JSON.stringify({

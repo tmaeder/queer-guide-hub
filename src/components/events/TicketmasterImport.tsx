@@ -76,8 +76,8 @@ export const TicketmasterImport = ({ onImportComplete }: TicketmasterImportProps
       if (error) throw error;
 
       toast({
-        title: "Import successful",
-        description: `Successfully imported ${data.imported} events from Ticketmaster`
+        title: "Staged for review",
+        description: `Staged ${data.staged ?? 0} Ticketmaster events for the review pipeline`
       });
 
       setIsOpen(false);
