@@ -191,7 +191,7 @@ export async function fetchEventBySlugOrId<T extends { id: string }>(
  * Joins city.historical_names so the detail page can resolve period-correct
  * birthplaces (e.g. "Ost-Berlin, DDR") without a second round-trip. */
 const PERSONALITY_DETAIL_SELECT =
-  '*, birth_city:cities!city_id(id,name,name_de,name_en,historical_names,country:countries!country_id(code,name,flag_emoji))';
+  '*, birth_city:birth_city(id,name,name_de,name_en,historical_names,country:countries!country_id(code,name,flag_emoji))';
 
 export async function fetchPublicPersonalityBySlugOrId<T = unknown>(
   slugOrId: string,

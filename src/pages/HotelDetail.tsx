@@ -20,7 +20,8 @@ import {
 } from './HotelDetail.parts';
 import { getHotelPhotosToShow } from './hotelPhotosUtil';
 
-const JOIN_SPEC = '*, cities:city_id(id, name), countries:country_id(id, name)';
+// Bare geo embeds (no column hints) — see VenueDetail.parts VENUE_SELECT_FIELDS.
+const JOIN_SPEC = '*, cities(id, name), countries(id, name)';
 
 export default function HotelDetail() {
   const { slug } = useParams<{ slug: string }>();

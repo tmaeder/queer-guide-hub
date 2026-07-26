@@ -106,8 +106,8 @@ export type EventWithRelations = Database['public']['Tables']['events']['Row'] &
 export const EVENT_SELECT_FIELDS = `
   *,
   venues!venue_id(id, slug, name, address, city, state, country, phone, website, email, latitude, longitude),
-  cities:city_id(id, slug, name, country_id, countries:country_id(id, slug, name, equality_score, lgbti_criminalization)),
-  countries:country_id(id, slug, name, equality_score, lgbti_criminalization),
+  cities(id, slug, name, country_id, countries:country_id(id, slug, name, equality_score, lgbti_criminalization)),
+  countries(id, slug, name, equality_score, lgbti_criminalization),
   festivals:festival_id(id, name),
   organizer:venues!organizer_id(id, slug, name, website, email, instagram, phone, organizer_handles)
 `;

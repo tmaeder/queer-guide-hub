@@ -85,7 +85,7 @@ export function useDiscoverableTrips(cityFilter?: string) {
       const SIGNAL_COLS =
         'is_staff_pick, fork_count, save_count, traveler_type, vibe_tags';
       const NESTED =
-        'trip_places(cities:city_id(name), countries:country_id(name, equality_score)), primary_city:cities!primary_city_id(name, latitude, longitude), primary_country:countries!primary_country_id(code)';
+        'trip_places(cities(name), countries(name, equality_score)), primary_city:primary_city(name, latitude, longitude), primary_country:primary_country(code)';
 
       const runQuery = (cols: string) =>
         supabase

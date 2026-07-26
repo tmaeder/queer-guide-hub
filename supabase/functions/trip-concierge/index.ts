@@ -93,8 +93,8 @@ async function loadTripContext(supabase: any, tripId: string): Promise<TripConte
        trip_places(custom_name, day_id,
          venues:venue_id(name),
          events:event_id(title),
-         cities:city_id(name),
-         countries:country_id(name)),
+         cities(name),
+         countries(name)),
        trip_days(id, date)`,
     )
     .eq('id', tripId)
