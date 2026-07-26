@@ -1,0 +1,51 @@
+name: Migration drift monitor
+
+# Compares the remote schema_migrations history against the repo's migration
+# files and FAILS if the remote has any version with no committed file. That
+# state — a migration applied to prod (MCP apply_migration / raw SQL) without
+# committing a file — makes `supabase db push` skip silently, so merged
+# migrations never apply. The push-triggered check in deploy-supabase-functions.yml
+# only fires when a migration is pushed to main; this runs on a schedule so the
+# same drift is caught within hours regardless of push activity.
+#
+# Detection only. Remediation is manual (recover the orphan SQL from
+# schema_migrations.statements into a file at its exact version and commit it —
+# see CLAUDE.md), because a blind `db pull` is the wrong fix here.
+
+on:
+  schedule:
+    - cron: "17 */6 * * *" # every 6h, offset off the hour
+  workflow_dispatch:
+
+concurrency:
+  group: migration-drift-monitor
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  drift:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_PROJECT_REF: xqeacpakadqfxjxjcewc
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Skip notice (no token)
+        if: env.SUPABASE_ACCESS_TOKEN == ''
+        run: |
+          echo "::warning::SUPABASE_ACCESS_TOKEN not configured — migration drift monitor skipped."
+
+      - name: Set up Node
+        if: env.SUPABASE_ACCESS_TOKEN != ''
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Check for remote-only migration versions
+        if: env.SUPABASE_ACCESS_TOKEN != ''
+        run: node scripts/check-migration-drift.mjs
