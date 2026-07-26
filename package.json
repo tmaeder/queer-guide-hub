@@ -114,7 +114,7 @@
     "lowlight": "^3.3.0",
     "lucide-react": "^1.27.0",
     "mammoth": "^1.12.0",
-    "maplibre-gl": "^5.24.0",
+    "maplibre-gl": "^6.0.0",
     "motion": "^12.42.2",
     "pdfjs-dist": "^6.1.200",
     "react": "^19.2.8",
