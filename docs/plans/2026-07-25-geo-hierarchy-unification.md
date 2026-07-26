@@ -37,6 +37,20 @@ Create spine + satellites; backfill from countries (250), cities (~3800), villag
 ### P2 — FK flips (3–4 PRs)
 Re-point ~46 inbound FKs (venues/events/hotels/festivals, news join tables, favorites, trips, `city_aliases`, `geo_sources`, personalities, orgs/milestones/user_place_marks/intimate_profile) to `geo_places(id)` with type checks. `NOT VALID` → `VALIDATE CONSTRAINT` in follow-ups; chunk by table group to limit lock queueing on hot tables.
 
+> **AMENDED after the 2026-07-26 attempt (#2336, rolled back same hour, #2338):** all 62
+> external FKs were flipped to the satellite PKs (`geo_*_profiles.place_id` — type-safe,
+> the right target) and every constraint validated cleanly, but **PostgREST resolves
+> embeds through FK relationships**: the moment `venues.city_id` stopped referencing
+> `cities`, every client `cities:city_id(...)`/`countries:country_id(...)` join spec
+> returned 42703 in production. FK flips for any table the frontend embeds from are
+> therefore **sequenced AFTER the client embed migration** (P5 reordered before P2 for
+> those call sites), or must ship together with compatibility views. The support/audit
+> tables with no client embeds (city_aliases, quality signals, merge audits, slug
+> redirects, coverage gaps, geo_sources) CAN flip early — but a partial flip splits the
+> FK topology in two, so prefer one coordinated pass. Deep parity verification
+> (field-level, on-demand) proved a valid substitute for the calendar soak; the spine
+> mirror held exactly under live traffic throughout.
+
 ### P3 — Engine/trigger/RPC rewrites (6–8 PRs, each testable)
 Recreate against spine+profiles while dual-write keeps parity: search sync triggers (`20260531155351`), safety-gated recompute chain (`20260623160000-2`), truth engines (city `20260607100000/110000/130000`, safety composer `20260608000001`, village, country), merge cores (collapse three per-type cores → one geo core — net simplification), RPCs signature-compatible under same names (`resolve_city_and_country`, `gated_count_for_location`, `location_is_high_risk`, `search_hybrid` facets, `admin_content_graph`, `admin_entity_neighbors`). **Golden-set safety parity test: identical `safety_gated` output old-vs-new is a hard gate before P4.**
 
