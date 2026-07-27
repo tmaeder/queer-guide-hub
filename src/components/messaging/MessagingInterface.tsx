@@ -82,7 +82,7 @@ export const MessagingInterface = ({ filter, className }: MessagingInterfaceProp
       {/* Merged inbox rail - full width on mobile, 1/3 on desktop */}
       <div
         className={`${selected ? 'hidden md:flex' : 'flex'} w-full md:w-1/3 border-r flex-col`}
-        style={{ backgroundColor: 'rgba(var(--background-rgb), 0.5)' }}
+        style={{ backgroundColor: 'hsl(var(--background) / 0.5)' }}
       >
         {/* Rail header */}
         <div className="border-b">
@@ -174,7 +174,7 @@ export const MessagingInterface = ({ filter, className }: MessagingInterfaceProp
             className="flex-1 flex items-center justify-center"
             style={{
               background:
-                'linear-gradient(to bottom, rgba(var(--background-rgb), 0.5), var(--background))',
+                'linear-gradient(to bottom, hsl(var(--background) / 0.5), hsl(var(--background)))',
             }}
           >
             <div className="text-center px-4">

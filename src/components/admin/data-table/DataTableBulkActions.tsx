@@ -139,7 +139,7 @@ export function DataTableBulkActions({
           variant="outline"
           size="sm"
           onClick={() => setDeleteOpen(true)}
-          style={{ color: 'var(--destructive)', borderColor: 'var(--destructive)' }}
+          style={{ color: 'hsl(var(--destructive))', borderColor: 'hsl(var(--destructive))' }}
         >
           <Trash2 size={14} className="mr-1" />
           Delete
@@ -160,7 +160,7 @@ export function DataTableBulkActions({
             <AlertDialogAction
               onClick={handleBulkDelete}
               disabled={deleting}
-              style={{ backgroundColor: 'var(--destructive)', color: 'white' }}
+              style={{ backgroundColor: 'hsl(var(--destructive))', color: 'white' }}
             >
               {deleting ? 'Deleting...' : `Delete ${selectedCount} items`}
             </AlertDialogAction>

@@ -177,7 +177,7 @@ export default function LogStreamDrawer({ pipelineRunId, onClose }: LogStreamDra
               const errorMsg = (e.payload as Record<string, unknown>)?.error
                 || (e.payload as Record<string, unknown>)?.crash;
               return (
-                <div key={e.id} className={`flex items-start gap-2 py-0.5 px-2 rounded-element hover:bg-muted/30 ${isError ? 'bg-destructive/10/30 dark:bg-destructive/20' : ''}`}>
+                <div key={e.id} className={`flex items-start gap-2 py-0.5 px-2 rounded-element hover:bg-muted/30 ${isError ? 'bg-destructive/10 dark:bg-destructive/20' : ''}`}>
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <span className="text-muted-foreground text-2xs whitespace-nowrap cursor-help">

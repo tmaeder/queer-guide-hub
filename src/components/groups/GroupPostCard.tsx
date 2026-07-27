@@ -80,7 +80,7 @@ export const GroupPostCard = ({
     return (
       <div className="mt-4 p-4 rounded-element bg-muted">
         <div className="flex items-center gap-2 mb-4">
-          <BarChart3 size={16} color="var(--primary)" />
+          <BarChart3 size={16} color="hsl(var(--primary))" />
           <p className="text-sm font-medium">{post.poll_data.question}</p>
         </div>
 
@@ -158,7 +158,7 @@ export const GroupPostCard = ({
                     )}
 
                     {post.is_pinned && (
-                      <Pin size={12} color="var(--primary)" />
+                      <Pin size={12} color="hsl(var(--primary))" />
                     )}
                   </div>
                 </div>

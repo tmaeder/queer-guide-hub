@@ -209,7 +209,7 @@ export function TagsCsvImport({ onImportComplete }: { onImportComplete?: () => v
                       <p className="text-sm text-muted-foreground">{importResult.details}</p>
                     )}
                     {importResult.hint && (
-                      <p className="text-sm" style={{ color: 'hsl(var(--info, 199 89% 48%))' }}>{importResult.hint}</p>
+                      <p className="text-sm text-muted-foreground">{importResult.hint}</p>
                     )}
                     {importResult.errors && importResult.errors.length > 0 && (
                       <div>

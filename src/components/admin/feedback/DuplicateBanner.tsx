@@ -80,7 +80,7 @@ export function DuplicateBanner({
                   className="cursor-pointer bg-transparent border-0 p-0 text-left w-full"
                   style={{
                     textDecoration: 'underline dotted',
-                    textDecorationColor: 'var(--muted-foreground)',
+                    textDecorationColor: 'hsl(var(--muted-foreground))',
                   }}
                 >
                   <p className="text-sm truncate">

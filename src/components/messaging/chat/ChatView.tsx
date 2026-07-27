@@ -246,7 +246,7 @@ export const ChatView = ({ conversationId, onBack }: ChatViewProps) => {
       <div
         className="p-4 md:p-4 border-b"
         style={{
-          backgroundColor: 'rgba(var(--background-rgb), 0.5)',
+          backgroundColor: 'hsl(var(--background) / 0.5)',
           backdropFilter: 'blur(8px)',
         }}
       >
@@ -288,7 +288,7 @@ export const ChatView = ({ conversationId, onBack }: ChatViewProps) => {
                     right: -2,
                     width: 12,
                     height: 12,
-                    border: '2px solid var(--background)',
+                    border: '2px solid hsl(var(--background))',
                   }}
                 ></div>
               )}
@@ -413,7 +413,7 @@ export const ChatView = ({ conversationId, onBack }: ChatViewProps) => {
         style={{
           flex: 1,
           background:
-            'linear-gradient(to bottom, color-mix(in srgb, var(--background) 50%, transparent), var(--background))',
+            'linear-gradient(to bottom, hsl(var(--background) / 0.50), hsl(var(--background)))',
         }}
       >
         <div className="p-4 md:p-4">

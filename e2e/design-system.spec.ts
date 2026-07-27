@@ -29,13 +29,20 @@ test.describe('design system: semantic radius (16/8/4)', () => {
     await page.waitForTimeout(500);
   });
 
-  test('cards use --radius-container (16px)', async ({ page }) => {
+  // Assertions read the token rather than a literal px value: the semantic trio
+  // is re-tuned by design passes (and is runtime-overridable via /admin/design),
+  // so hardcoding the px froze these tests at the 16/4px era and they went stale.
+  test('cards use --radius-container', async ({ page }) => {
     const cards = page.locator('.bg-card').first();
     await expect(cards).toBeVisible();
-    const radius = await cards.evaluate(
-      (el) => getComputedStyle(el).borderRadius,
-    );
-    expect(radius).toBe('16px');
+    const { radius, token } = await cards.evaluate((el) => ({
+      radius: getComputedStyle(el).borderRadius,
+      token: getComputedStyle(document.documentElement)
+        .getPropertyValue('--radius-container')
+        .trim(),
+    }));
+    const expected = `${parseFloat(token) * 16}px`;
+    expect(radius).toBe(expected);
   });
 
   test('cards have no box-shadow', async ({ page }) => {
@@ -47,13 +54,16 @@ test.describe('design system: semantic radius (16/8/4)', () => {
     expect(shadow).toBe('none');
   });
 
-  test('badges use --radius-badge (4px)', async ({ page }) => {
+  test('badges use --radius-badge', async ({ page }) => {
     const badge = page.locator('[class*="badge"]').first();
     if ((await badge.count()) > 0) {
-      const radius = await badge.evaluate(
-        (el) => getComputedStyle(el).borderRadius,
-      );
-      expect(radius).toBe('4px');
+      const { radius, token } = await badge.evaluate((el) => ({
+        radius: getComputedStyle(el).borderRadius,
+        token: getComputedStyle(document.documentElement)
+          .getPropertyValue('--radius-badge')
+          .trim(),
+      }));
+      expect(radius).toBe(`${parseFloat(token) * 16}px`);
     }
   });
 });

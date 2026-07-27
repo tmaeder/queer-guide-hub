@@ -39,7 +39,7 @@ export function TransferSection({
       >
         <Bus
           size={20}
-          style={{ color: isLowSafety ? 'var(--warning)' : 'var(--primary)' }}
+          style={{ color: isLowSafety ? 'hsl(var(--warning))' : 'hsl(var(--primary))' }}
           className="shrink-0"
         />
         <div className="flex-1">
@@ -68,8 +68,8 @@ export function TransferSection({
         </p>
         {isLowSafety && (
           <div className="flex items-center gap-1 ml-2">
-            <Shield size={14} style={{ color: 'var(--warning)' }} />
-            <p className="text-xs font-semibold" style={{ color: 'var(--warning)' }}>
+            <Shield size={14} style={{ color: 'hsl(var(--warning))' }} />
+            <p className="text-xs font-semibold" style={{ color: 'hsl(var(--warning))' }}>
               Recommended
             </p>
           </div>

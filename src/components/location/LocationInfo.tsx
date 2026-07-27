@@ -300,7 +300,7 @@ export const LocationInfo = ({ name, type, className }: LocationInfoProps) => {
                   <div
                     style={{
                       inset: 0,
-                      backgroundColor: 'rgba(var(--primary-rgb), 0.1)',
+                      backgroundColor: 'hsl(var(--primary) / 0.1)',
                       opacity: 0,
                       transition: 'opacity 0.3s',
                       alignItems: 'center',
@@ -311,7 +311,7 @@ export const LocationInfo = ({ name, type, className }: LocationInfoProps) => {
                     <div
                       className="rounded-full"
                       style={{
-                        backgroundColor: 'rgba(var(--background-rgb), 0.9)',
+                        backgroundColor: 'hsl(var(--background) / 0.9)',
                         backdropFilter: 'blur(4px)',
                         padding: '0.5rem',
                         transform: 'scale(0)',
@@ -329,7 +329,7 @@ export const LocationInfo = ({ name, type, className }: LocationInfoProps) => {
               style={{
                 marginTop: '1.5rem',
                 paddingTop: '1rem',
-                borderTop: '1px solid var(--muted)',
+                borderTop: '1px solid hsl(var(--muted))',
               }}
             >
               <p className="text-xs text-muted-foreground text-center">

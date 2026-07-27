@@ -131,8 +131,8 @@ export const MessageInput = ({
     <form
       onSubmit={handleSubmit}
       style={{
-        borderTop: '1px solid var(--border)',
-        backgroundColor: 'color-mix(in srgb, var(--background) 50%, transparent)',
+        borderTop: '1px solid hsl(var(--border))',
+        backgroundColor: 'hsl(var(--background) / 0.50)',
         backdropFilter: 'blur(8px)',
       }}
       className="flex flex-col gap-2 p-4"
