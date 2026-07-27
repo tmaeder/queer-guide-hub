@@ -905,11 +905,14 @@ export function EventWhere({ event, venueRef, countryId, onOrganizerClick }: Whe
               </Button>
             )}
             {event.venues && (
-              <LocalizedLink to={`/venues/${event.venues.slug || event.venues.id}`}>
-                <Button variant="outline" size="sm">
+              <Button asChild variant="outline" size="sm">
+                <LocalizedLink
+                  to={`/venues/${event.venues.slug || event.venues.id}`}
+                  className="no-underline"
+                >
                   View venue
-                </Button>
-              </LocalizedLink>
+                </LocalizedLink>
+              </Button>
             )}
             {event.website && (
               <Button variant="outline" size="sm" asChild>

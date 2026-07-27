@@ -237,12 +237,14 @@ export default function NewsDetail() {
         <p className="mb-6 text-muted-foreground">
           {t('newsDetail.notFoundDesc', "The article you're looking for doesn't exist.")}
         </p>
-        <LocalizedLink to="/news">
-          <Button>
+        {/* asChild, not a Link wrapping a Button — that nests a <button>
+            inside an <a>, which is invalid HTML. */}
+        <Button asChild>
+          <LocalizedLink to="/news" className="no-underline">
             <ArrowLeft size={16} className="mr-2" />
             {t('newsDetail.backToNews', 'Back to News')}
-          </Button>
-        </LocalizedLink>
+          </LocalizedLink>
+        </Button>
       </div>
     );
   }

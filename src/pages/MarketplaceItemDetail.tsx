@@ -207,12 +207,14 @@ export default function MarketplaceItemDetail() {
         <p className="text-muted-foreground mb-6">
           The marketplace item you're looking for doesn't exist.
         </p>
-        <LocalizedLink to="/marketplace">
-          <Button>
+        {/* asChild, not a Link wrapping a Button — that nests a <button>
+            inside an <a>, which is invalid HTML. */}
+        <Button asChild>
+          <LocalizedLink to="/marketplace" className="no-underline">
             <ArrowLeft size={16} className="mr-2" />
             Back to Marketplace
-          </Button>
-        </LocalizedLink>
+          </LocalizedLink>
+        </Button>
       </div>
     );
   }

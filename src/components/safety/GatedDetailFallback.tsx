@@ -60,9 +60,13 @@ export function GatedDetailFallback({ entityType, slug, notFound }: GatedDetailF
               })}
             </p>
           </div>
-          <LocalizedLink to="/auth">
-            <Button variant="accent">{t('safety.gatedDetail.cta', { defaultValue: 'Sign in' })}</Button>
-          </LocalizedLink>
+          {/* asChild, not a Link wrapping a Button — that nests a <button>
+              inside an <a>, which is invalid HTML. */}
+          <Button asChild variant="accent">
+            <LocalizedLink to="/auth" className="no-underline">
+              {t('safety.gatedDetail.cta', { defaultValue: 'Sign in' })}
+            </LocalizedLink>
+          </Button>
         </div>
       );
     }
