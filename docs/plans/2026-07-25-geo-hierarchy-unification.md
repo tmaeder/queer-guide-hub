@@ -68,6 +68,35 @@ Re-point ~46 inbound FKs (venues/events/hotels/festivals, news join tables, favo
 ### P3 — Engine/trigger/RPC rewrites (6–8 PRs, each testable)
 Recreate against spine+profiles while dual-write keeps parity: search sync triggers (`20260531155351`), safety-gated recompute chain (`20260623160000-2`), truth engines (city `20260607100000/110000/130000`, safety composer `20260608000001`, village, country), merge cores (collapse three per-type cores → one geo core — net simplification), RPCs signature-compatible under same names (`resolve_city_and_country`, `gated_count_for_location`, `location_is_high_risk`, `search_hybrid` facets, `admin_content_graph`, `admin_entity_neighbors`). **Golden-set safety parity test: identical `safety_gated` output old-vs-new is a hard gate before P4.**
 
+> **P3 STEP 1 SHIPPED 2026-07-27 (PR #2371).** Delivered:
+> - **The P4 hard gate exists**: `geo_safety_parity_check()`. Because
+>   `location_is_high_risk` is *pure* over `(country_id, city_id)`, covering every
+>   pair in use + every city + every country + the null cases is an exhaustive
+>   proof, not a sample. Result: **7,698 pairs, 0 mismatches, 575 high-risk both
+>   ways, 0 stale stored flags.** Re-run this before every subsequent step.
+> - **Safety chain reads the spine**: `location_is_high_risk` +
+>   `recompute_safety_gated_for_country`.
+> - **Ordering hazard found and fixed** (would have silently corrupted gating):
+>   AFTER triggers fire alphabetically, so `trg_countries_recompute_safety_gated`
+>   ran BEFORE `trg_sync_geo_spine` — recomputing while the spine profile was
+>   still stale. Harmless while the predicate read typed tables; wrong the moment
+>   it reads the spine. Trigger relocated to `geo_country_profiles`, making the
+>   order correct by construction. **Generalise this: any trigger that consumes
+>   spine data must fire FROM the spine, never from a typed table.**
+> - **Search-sync triggers** for city/country/village moved onto `geo_places`
+>   (dual-write propagates in-transaction, so firing frequency is unchanged).
+>
+> **Deliberately still on the typed tables**: the BEFORE triggers (`auto_slug_from_name`,
+> `*_maintain_normalized`, `sanitize_website_field`) mutate NEW *before* the typed
+> row is written, so moving them early would break NOT NULL on `slug`. They move
+> as part of the P4 swap itself, re-created on the spine with the INSTEAD OF
+> routing. Also still pending: `trg_cities_mirror_historical_names` (AFTER, would
+> move to `geo_city_profiles`), the truth engines, and the merge-core collapse.
+>
+> **Useful discovery for P3 remainder**: read-only RPCs do *not* all need rewriting —
+> a faithful P4 view is transparent to them. The genuinely forced work is triggers
+> (impossible on views) and multi-table writes (which need INSTEAD OF routing).
+
 ### P4 — Table→view swap (3 PRs: villages first, cities, countries last)
 Per type, one transactional migration: drop dual-write triggers, `DROP TABLE`, `CREATE VIEW ... WITH (security_invoker = true)` joining spine+profile, `INSTEAD OF` triggers. PostgREST keeps serving the 137 call sites. Precondition: P2 removed inbound FKs, P3 removed trigger/engine deps. Run a `pg_depend` audit script + freeze window (no concurrent agent migrations) before each swap. Caveat: type-gen marks view columns nullable — hand-maintain type overrides until P5.
 
