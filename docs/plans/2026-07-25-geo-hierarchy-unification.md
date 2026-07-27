@@ -98,7 +98,15 @@ Recreate against spine+profiles while dual-write keeps parity: search sync trigg
 > (impossible on views) and multi-table writes (which need INSTEAD OF routing).
 
 ### P4 — Table→view swap (3 PRs: villages first, cities, countries last)
-Per type, one transactional migration: drop dual-write triggers, `DROP TABLE`, `CREATE VIEW ... WITH (security_invoker = true)` joining spine+profile, `INSTEAD OF` triggers. PostgREST keeps serving the 137 call sites. Precondition: P2 removed inbound FKs, P3 removed trigger/engine deps. Run a `pg_depend` audit script + freeze window (no concurrent agent migrations) before each swap. Caveat: type-gen marks view columns nullable — hand-maintain type overrides until P5.
+**Prepared, not executed — needs a scheduled freeze window. Runbook: [`docs/deploy/geo-p4-view-swap-runbook.md`](../deploy/geo-p4-view-swap-runbook.md).**
+
+Per type, one transactional migration: drop dual-write triggers, `DROP TABLE ... CASCADE`, `CREATE VIEW ... WITH (security_invoker = true)` joining spine+profile, `INSTEAD OF` triggers. PostgREST keeps serving the 137 call sites. Caveat: type-gen marks view columns nullable — hand-maintain type overrides until P5.
+
+Pre-flight is now a function, `geo_p4_preflight()` — re-run it *at window time* (the schema moves under concurrent agent sessions). Three gates must read 0: `safety_parity_mismatches`, `spine_drift`, `external_fks_on_typed`. It also inventories the swap workload; the audit found more than this plan originally assumed: **8 dependent views** needing drop+recreate under `CASCADE`, 38 indexes, 9 RLS policies, 1 generated column (`cities.canonical_key`, impossible on a view), and the 5 BEFORE triggers.
+
+Why a human window rather than autonomous execution: this is the one irreversible step (recovery = restore from backup, not revert), and the realistic failure mode is a *concurrent* session's migration landing mid-swap — a risk care on the executing side cannot remove.
+
+**Deferred into the swap on purpose:** the truth engines and merge cores read *and write* the typed tables. Rewriting their reads early is cosmetic; rewriting their writes early is actively wrong, because dual-write only flows typed → spine, so spine-only writes would never reach the columns the frontend still reads. Their write target flips exactly when the tables become views.
 
 ### P5 — Client migration + view retirement (4–6 mechanical PRs)
 Migrate 58 files to `geo_places`/new RPCs, regenerate `src/integrations/supabase/types.ts`, drop views. Optional finale: villages fully become `place_type='village'` rows (slug redirects via existing redirects kit).
