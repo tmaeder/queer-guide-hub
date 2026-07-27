@@ -95,8 +95,8 @@ export const COLOR_TOKENS: ColorTokenDef[] = [
   { key: 'input-bg', group: 'core', light: '0 0% 100%', dark: '0 0% 7%' },
   { key: 'ring', group: 'core', light: '0 0% 4%', dark: '0 0% 96%' },
   // Feedback — destructive is the only chromatic hue; warning + success are neutral
-  { key: 'destructive', group: 'feedback', light: '0 70% 38%', dark: '0 84% 48%' },
-  { key: 'destructive-foreground', group: 'feedback', light: '0 0% 100%', dark: '0 0% 100%' },
+  { key: 'destructive', group: 'feedback', light: '0 70% 38%', dark: '0 84% 62%' },
+  { key: 'destructive-foreground', group: 'feedback', light: '0 0% 100%', dark: '0 0% 4%' },
   { key: 'warning', group: 'feedback', light: '0 0% 4%', dark: '0 0% 96%' },
   { key: 'warning-foreground', group: 'feedback', light: '0 0% 100%', dark: '0 0% 4%' },
   { key: 'success', group: 'feedback', light: '0 0% 4%', dark: '0 0% 96%' },

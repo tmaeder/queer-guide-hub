@@ -50,7 +50,7 @@ print-grids on city/venue detail read like real printed tables.
 | Token | Light | Dark | Why |
 |---|---|---|---|
 | `--text-muted` | 56% → 45% (4.85:1) | 40% → 62% (7.4:1) | Failed AA in both modes (3.24:1 / 3.45:1) |
-| `--destructive` | unchanged | 62% → 48% | White on dark destructive was 3.59:1 — failed AA. 48% gives 4.84:1 and only improves the documented `/help` QuickExit compromise. |
+| `--destructive` | unchanged | **stays 62%**; `--destructive-foreground` dark → 4% | White on dark destructive was 3.59:1, failing AA. See the correction below — darkening the red was the wrong fix. |
 | `--warning*` | → neutral | → neutral | Red means danger only. Matches the existing `--success` convention: differentiated by icon + label, not colour. |
 | `--text-primary` dark | 98% → 96% | | Pointless divergence from `--foreground` |
 
@@ -111,3 +111,33 @@ desktop/mobile × **light and dark**, with axe `color-contrast` enabled and hard
 serious/critical — plus Lighthouse a11y ≥95 on 13 routes. `e2e/design-system.spec.ts`
 counts backgrounds whose saturation exceeds 15% and allows ≤5; it is nightly-only, so run
 it locally before merging the spot ink rather than discovering a failure after merge.
+
+## Correction: destructive dark (post-#2366)
+
+#2366 darkened `--destructive` dark from 62% → 48% to fix the destructive **button**
+(white on red was 3.59:1). That was the wrong lever, and the axe route sweep caught it
+on `/city/s-o-paulo` in dark mode — Brazil's equality score routes that page through the
+`text-destructive` branch of the city safety cell.
+
+The token is read as **text** (`text-destructive`, 236 usages) far more than as a button
+fill (16). Darkening the red raised button contrast but dropped red-on-dark-page text from
+5.51:1 to **4.06:1**, below AA. Both cases can be satisfied at once by leaving the red
+bright and flipping the *foreground* instead:
+
+| | text on dark page | button (fg on red) |
+|---|---|---|
+| before #2366 | 5.51:1 ✓ | 3.59:1 ✗ |
+| #2366 (62%→48%) | 4.06:1 ✗ | 4.87:1 ✓ |
+| **corrected** (62%, fg→4%) | **5.51:1 ✓** | **5.51:1 ✓** |
+
+So `--destructive` dark returns to `0 84% 62%` and `--destructive-foreground` dark becomes
+`0 0% 4%`. All 8 `text-destructive-foreground` sites pair with a full-opacity
+`bg-destructive`, so none of them end up dark-on-dark. The `/help` QuickExit crisis button
+becomes black-on-red at 5.51:1 (was 3.59:1) — it had previously been "resolved" only by
+qualifying the text as large.
+
+**Lesson for the next colour change:** a token used in both a foreground and a background
+role has two contrast constraints that pull in opposite directions. Tune the pairing, not
+the hue. And when a token has 200+ usages, check the dominant role first — `CONTRAST_PAIRS`
+only audits the button pairing (`destructive-foreground` on `destructive`), so the text
+role was invisible to every automated check except the full axe sweep.
