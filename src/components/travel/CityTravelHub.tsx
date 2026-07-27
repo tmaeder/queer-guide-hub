@@ -37,11 +37,13 @@ function SectionHeader({
           {title}
         </span>
       </div>
-      <LocalizedLink to={moreLink}>
-        <Button variant="ghost" size="sm">
+      {/* asChild, not a Link wrapping a Button — that nests a <button>
+          inside an <a>, which is invalid HTML. */}
+      <Button asChild variant="ghost" size="sm">
+        <LocalizedLink to={moreLink} className="no-underline">
           See all <ArrowRight size={14} className="ml-1" />
-        </Button>
-      </LocalizedLink>
+        </LocalizedLink>
+      </Button>
     </div>
   );
 }
@@ -201,9 +203,11 @@ export function CityTravelHub({
 
       {/* CTA */}
       <div className="text-center">
-        <LocalizedLink to="/trips">
-          <Button>Plan a trip to {destinationCity}</Button>
-        </LocalizedLink>
+        <Button asChild>
+          <LocalizedLink to="/trips" className="no-underline">
+            Plan a trip to {destinationCity}
+          </LocalizedLink>
+        </Button>
       </div>
     </div>
   );

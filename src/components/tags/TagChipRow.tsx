@@ -72,7 +72,7 @@ export function TagChipRow({
           >
             +{hidden} more
           </button>
-        ) : typeof more === 'string' ? (
+        ) : typeof more === 'string' && !linkless ? (
           <LocalizedLink
             to={more}
             onClick={(e) => e.stopPropagation()}

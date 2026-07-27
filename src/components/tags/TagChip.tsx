@@ -52,8 +52,11 @@ export function TagChip({
 }: TagChipProps) {
   const label = name ? normalizeTagName(name) : displayFromSlug(tag);
 
+  // min-h-6 keeps all three render modes the same height. index.css only grants
+  // `a.rounded-badge` / `button.rounded-badge` a 24px minimum, so without this the
+  // `linkless` <span> would render 4px shorter than the link and button variants.
   const base = cn(
-    'inline-flex items-center gap-1 rounded-badge border font-medium tracking-tight no-underline transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+    'inline-flex min-h-6 items-center gap-1 rounded-badge border font-medium tracking-tight no-underline transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring',
     size === 'sm' ? 'px-2 py-0.5 text-2xs' : 'px-2.5 py-0.5 text-xs2',
     active
       ? 'border-transparent bg-foreground text-background'

@@ -18,6 +18,7 @@ vi.mock('@/hooks/useFavorites', () => ({
   }),
 }));
 
+import { expectNoNestedInteractive } from '@/test/test-utils';
 import { GeoCard } from '../GeoCard';
 
 describe('GeoCard', () => {
@@ -74,5 +75,17 @@ describe('GeoCard', () => {
       </MemoryRouter>,
     );
     expect(screen.getByLabelText(/Save Berlin/)).toBeInTheDocument();
+  });
+
+  it('nests no interactive element inside the card link', () => {
+    const { container } = render(
+      <MemoryRouter>
+        <GeoCard variant="city" id="c6" slug="berlin" name="Berlin" countryName="Germany" />
+      </MemoryRouter>,
+    );
+    expectNoNestedInteractive(container);
+    const link = screen.getByRole('link');
+    expect(link).toHaveAttribute('href', '/city/berlin');
+    expect(link).toHaveAccessibleName('Berlin');
   });
 });

@@ -83,7 +83,9 @@ export const GeoCard = memo(function GeoCard(props: GeoCardProps) {
   const href = slug || id;
 
   return (
-    <LocalizedLink to={VARIANT_HREF[variant](href)} className="block group">
+    // No `h-full` here: the old root anchor was `block`, so adding it would make
+    // the card stretch to the grid row height and change existing layouts.
+    <div className="relative group">
       <Card hoverable className="overflow-hidden h-full flex flex-col">
         <div className="relative">
           <CardImage
@@ -105,7 +107,7 @@ export const GeoCard = memo(function GeoCard(props: GeoCardProps) {
                 void toggleFavorite(id);
               }}
               className={cn(
-                'absolute top-2 right-2 rounded-element bg-background/85 backdrop-blur',
+                'absolute top-2 right-2 z-10 rounded-element bg-background/85 backdrop-blur',
                 'border border-border/60 p-2 transition-colors',
                 'hover:bg-background',
               )}
@@ -149,6 +151,12 @@ export const GeoCard = memo(function GeoCard(props: GeoCardProps) {
           )}
         </div>
       </Card>
-    </LocalizedLink>
+      {/* Card-wide click target — overlay sibling, never a wrapper (see EventCard). */}
+      <LocalizedLink
+        to={VARIANT_HREF[variant](href)}
+        aria-label={name}
+        className="absolute inset-0 rounded-container no-underline"
+      />
+    </div>
   );
 });
