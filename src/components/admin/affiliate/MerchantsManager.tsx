@@ -1,18 +1,23 @@
 /**
- * Merchants tab — every marketplace vendor with its sync state, listing
+ * Merchants manager — every marketplace vendor with its sync state, listing
  * stats, link health, clicks/commission and affiliate configuration in one
  * table (admin_merchant_overview RPC). Writes go through the vendor-hub
  * RPC path (useMarketplaceMerchants — admin_upsert/delete RPCs, the table
  * itself stays write-locked); "Sync now" targets one merchant by id.
+ *
+ * Single implementation for both mount points (the former vendors/ variant
+ * was folded in here): unscoped inside the Business console's Merchants tab,
+ * and `organizationId`-scoped on a business detail page, where it lists only
+ * that org's merchants and pre-links new ones to it.
  */
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Plus, Edit2, Trash2, RefreshCw, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { untypedSupabase } from '@/integrations/supabase/untyped';
 import { useAffiliateLinks } from '@/hooks/useAffiliateLinks';
-import { useMarketplaceMerchants } from '@/hooks/useMarketplaceMerchants';
+import { useMarketplaceMerchants, useOrganizationOptions } from '@/hooks/useMarketplaceMerchants';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
@@ -33,6 +38,7 @@ import type { MerchantOverviewRow } from './merchantTypes';
 // Whitelist enforced by admin_upsert_marketplace_merchant.
 const PROVIDERS = ['shopify-public', 'woocommerce-public', 'etsy', 'crawl'];
 const NO_PARTNER = 'none';
+const NO_ORG = 'none';
 
 const emptyForm = {
   provider: 'shopify-public',
@@ -42,14 +48,23 @@ const emptyForm = {
   api_key_env: '',
   awin_advertiser_id: '',
   affiliate_partner_id: NO_PARTNER,
+  organization_id: NO_ORG,
   config: '{}',
   is_enabled: true,
 };
 
-export function MerchantsManager({ days }: { days: string }) {
+export function MerchantsManager({
+  days = '30',
+  organizationId,
+}: {
+  days?: string;
+  /** Scope to one business: filters the table and pre-links new merchants. */
+  organizationId?: string;
+}) {
   const queryClient = useQueryClient();
   const { partners } = useAffiliateLinks();
-  const { upsert, remove, sync } = useMarketplaceMerchants();
+  const { data: merchantRows, upsert, remove, sync } = useMarketplaceMerchants();
+  const { data: orgOptions } = useOrganizationOptions();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
@@ -66,11 +81,21 @@ export function MerchantsManager({ days }: { days: string }) {
     },
   });
 
-  const invalidate = () => queryClient.invalidateQueries({ queryKey: ['merchant-overview'] });
+  const invalidate = () => {
+    void queryClient.invalidateQueries({ queryKey: ['merchant-overview'] });
+    void queryClient.invalidateQueries({ queryKey: ['admin-merchants'] });
+  };
+
+  // admin_merchant_overview is stats-only and carries no organization_id, so
+  // the org link comes from the merchants table rows we already load.
+  const orgByMerchant = useMemo(
+    () => new Map((merchantRows ?? []).map((m) => [m.id, m.organization_id ?? null])),
+    [merchantRows],
+  );
 
   const openCreate = () => {
     setEditId(null);
-    setForm(emptyForm);
+    setForm({ ...emptyForm, organization_id: organizationId ?? NO_ORG });
     setDialogOpen(true);
   };
 
@@ -90,6 +115,7 @@ export function MerchantsManager({ days }: { days: string }) {
           api_key_env: data?.api_key_env ?? '',
           awin_advertiser_id: m.awin_advertiser_id ?? '',
           affiliate_partner_id: m.affiliate_partner_id ?? NO_PARTNER,
+          organization_id: orgByMerchant.get(m.merchant_id) ?? NO_ORG,
           config: JSON.stringify(data?.config ?? {}, null, 2),
           is_enabled: m.is_enabled,
         });
@@ -118,6 +144,7 @@ export function MerchantsManager({ days }: { days: string }) {
         api_key_env: form.api_key_env.trim() || null,
         awin_advertiser_id: form.awin_advertiser_id.trim() || null,
         affiliate_partner_id: form.affiliate_partner_id === NO_PARTNER ? null : form.affiliate_partner_id,
+        organization_id: form.organization_id === NO_ORG ? null : form.organization_id,
         config,
         is_enabled: form.is_enabled,
       });
@@ -181,7 +208,9 @@ export function MerchantsManager({ days }: { days: string }) {
     return <p className="text-13 text-destructive">Failed to load merchants: {(error as Error).message}</p>;
   }
 
-  const merchants = rows ?? [];
+  const merchants = organizationId
+    ? (rows ?? []).filter((m) => orgByMerchant.get(m.merchant_id) === organizationId)
+    : (rows ?? []);
   const totals = merchants.reduce(
     (acc, m) => ({
       merchants: acc.merchants + 1,
@@ -203,14 +232,16 @@ export function MerchantsManager({ days }: { days: string }) {
       </div>
 
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-15 font-semibold">All vendors</h2>
+        <h2 className="text-15 font-semibold">{organizationId ? 'Merchants' : 'All vendors'}</h2>
         <Button onClick={openCreate}>
           <Plus className="w-4 h-4 mr-1" /> Add merchant
         </Button>
       </div>
 
       {merchants.length === 0 ? (
-        <p className="text-13 text-muted-foreground">No merchants registered yet.</p>
+        <p className="text-13 text-muted-foreground">
+          {organizationId ? 'No merchants linked to this business yet.' : 'No merchants registered yet.'}
+        </p>
       ) : (
         <Table>
           <TableHeader>
@@ -388,6 +419,25 @@ export function MerchantsManager({ days }: { days: string }) {
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="m-org">Business</Label>
+              <Select
+                value={form.organization_id}
+                onValueChange={(v) => setForm((f) => ({ ...f, organization_id: v }))}
+              >
+                <SelectTrigger id="m-org"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={NO_ORG}>Not linked</SelectItem>
+                  {(orgOptions ?? []).map((o) => (
+                    <SelectItem key={o.id} value={o.id}>{o.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                The organizations-spine row this vendor belongs to. Leave unlinked and the nightly
+                backfill will adopt or mint one.
+              </p>
             </div>
             <div className="flex flex-col gap-2">
               <Label htmlFor="m-config">Config (JSON)</Label>

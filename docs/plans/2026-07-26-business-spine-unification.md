@@ -134,3 +134,42 @@ Deviations from the plan above, decided during implementation:
   `20260726182150/182227/182350/182400/183016`.
 - Backfill cron `org_spine_backfill` nightly 05:10 UTC, 200/batch per source;
   progress via `SELECT org_spine_drift_counts()`.
+
+---
+
+## Implementation notes (Phase D — cockpit absorption, shipped 2026-07-27)
+
+**P1 fixed first: the backfill cron had never once succeeded.** Every run of job
+2231 died on `canceling statement due to statement timeout` inside
+`find_org_adoption_candidates`. The matcher joined organizations to each entity
+table on `(domain = o.dom) OR (dedup_despace(name) = o.key)` — an OR across two
+different join keys is not indexable, so Postgres nested-looped the cross product
+(≈2 989 unlinked venues × 246 active orgs) evaluating unaccent+regexp per pair.
+Migration `20260727154853` splits the OR into a UNION ALL of two equi-joins and
+adds partial expression indexes on both sides. Venue pass: 120 s timeout → 110 ms.
+The first successful run linked 29 merchants + 17 venues and minted 250 orgs
+(246 → 496); hotels and merchants are now fully linked and 0 bnb rooms were
+minted (the `hotel_type IN ('hotel','resort')` gate held). **Never re-introduce
+an OR across the domain and name keys.**
+
+`/admin/business` is now the single business surface:
+- Tabs `directory | hotels | merchants | brands | partners | review`. Hotels,
+  merchants, brands and partners were absorbed from their own cockpits;
+  `/admin/hotels`, `/admin/vendors`, `/admin/brands` and the affiliate cockpit's
+  `?tab=merchants|partners` all redirect in. `/admin/affiliate` keeps only
+  network-level analytics (performance, revenue, link health + registry drift).
+- The two `MerchantsManager` files are one component again. The surviving
+  (richer, `admin_merchant_overview`-backed) one gained the org-link select the
+  vendors variant had, plus an optional `organizationId` scope used on business
+  detail pages. `AffiliatePartnersManager` gained the same scope plus an
+  `embedded` flag — it used to hard-code its own `p-6` page shell.
+- Deviation: `BrandReviewQueue` is NOT org-filtered. `marketplace_brands_pending`
+  is a *pre-approval* queue — those rows have no organization link yet, so an org
+  filter would always be empty. Brand review stays global in the Brands tab, with
+  the pending count on the tab label.
+- Deviation: hotels are not org-scopable on the detail page. `HotelsManager` is an
+  `AdminEntityTable` page shell; scoping it means teaching that component a base
+  filter, a bigger change than v2 warrants. The detail page's Hotels tab keeps the
+  link/unlink list.
+- Still open for v3: the claim portal (Phase E) — `organizations` already carries
+  `claim_status`/`claimed_by`.

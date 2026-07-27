@@ -1,3 +1,8 @@
+/**
+ * Hotels & BnBs manager — the former /admin/hotels page, now a tab of the
+ * Business console (that route redirects here). Brings its own AdminEntityTable
+ * page shell including padding, so the console mounts it full-bleed.
+ */
 import { useState, useMemo } from 'react';
 import { Link } from 'react-router';
 import { Button } from '@/components/ui/button';
@@ -98,7 +103,7 @@ const emptyForm = {
   verified: false,
 };
 
-export default function AdminHotels() {
+export function HotelsManager() {
   const { user } = useAuth();
   const { createHotel, updateHotel, deleteHotel, regenerateSafetyNote } = useHotels();
   const { resolveAddress } = useAddressResolver();

@@ -1,26 +1,26 @@
 /**
- * /admin/affiliate — the affiliate cockpit.
+ * /admin/affiliate — the affiliate cockpit, network analytics only.
  *
  * Performance  clicks/impressions/CTR by surface × partner × vertical
  * Revenue      realized commissions (affiliate_conversions ← Awin/TP/Amazon)
- * Merchants    every marketplace vendor: stats + sync + affiliate config
- * Partners     affiliate_partners registry — consumed LIVE by the /go worker
  * Link health  marketplace link-rot rollup (marketplace-link-checker)
+ *
+ * The per-business registries that used to live here — Merchants and Partners —
+ * moved into the Business console (/admin/business), which owns businesses;
+ * this page keeps only what is network-level. Both old tab URLs redirect.
  */
 
 import { useState } from 'react';
-import { useSearchParams } from 'react-router';
+import { Navigate, useSearchParams } from 'react-router';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
-import { AffiliatePartnersManager } from '@/components/admin/AffiliatePartnersManager';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { PerformancePanel } from '@/components/admin/affiliate/PerformancePanel';
 import { RevenuePanel } from '@/components/admin/affiliate/RevenuePanel';
-import { MerchantsManager } from '@/components/admin/affiliate/MerchantsManager';
 import { LinkHealthPanel } from '@/components/admin/affiliate/LinkHealthPanel';
 import { RegistryDriftCard } from '@/components/admin/affiliate/RegistryDriftCard';
 
-const TABS = ['performance', 'revenue', 'merchants', 'partners', 'link-health'] as const;
+const TABS = ['performance', 'revenue', 'link-health'] as const;
 type Tab = (typeof TABS)[number];
 
 const PERIODS = [
@@ -43,14 +43,6 @@ const HEADERS: Record<Tab, { title: string; subtitle: string }> = {
     title: 'Affiliate revenue',
     subtitle: 'Realized commissions reconciled from Awin, Travelpayouts and Amazon.',
   },
-  merchants: {
-    title: 'Marketplace merchants',
-    subtitle: 'All vendors: sync state, listings, link health, clicks, commission and affiliate config.',
-  },
-  partners: {
-    title: 'Affiliate partners',
-    subtitle: 'Partner registry — served live to the /go redirect worker.',
-  },
   'link-health': {
     title: 'Link health',
     subtitle: 'Outbound link rot across marketplace listings, swept daily.',
@@ -59,12 +51,15 @@ const HEADERS: Record<Tab, { title: string; subtitle: string }> = {
 
 export default function AdminAffiliate() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const tabParam = searchParams.get('tab') as Tab | null;
-  const tab: Tab = tabParam && TABS.includes(tabParam) ? tabParam : 'performance';
+  const rawTab = searchParams.get('tab');
   const [days, setDays] = useState('30');
   const [vertical, setVertical] = useState('all');
 
-  const showPeriod = tab !== 'partners';
+  // Absorbed by the Business console — keep the old deep links working.
+  if (rawTab === 'merchants') return <Navigate to="/admin/business?tab=merchants" replace />;
+  if (rawTab === 'partners') return <Navigate to="/admin/business?tab=partners" replace />;
+
+  const tab: Tab = TABS.includes(rawTab as Tab) ? (rawTab as Tab) : 'performance';
 
   return (
     <div className="p-6">
@@ -73,8 +68,7 @@ export default function AdminAffiliate() {
         title={HEADERS[tab].title}
         subtitle={HEADERS[tab].subtitle}
         actions={
-          showPeriod ? (
-            <div className="flex gap-2">
+          <div className="flex gap-2">
               {tab === 'performance' && (
                 <Select value={vertical} onValueChange={setVertical}>
                   <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
@@ -93,8 +87,7 @@ export default function AdminAffiliate() {
                   ))}
                 </SelectContent>
               </Select>
-            </div>
-          ) : undefined
+          </div>
         }
       />
 
@@ -106,22 +99,19 @@ export default function AdminAffiliate() {
         <TabsList>
           <TabsTrigger value="performance">Performance</TabsTrigger>
           <TabsTrigger value="revenue">Revenue</TabsTrigger>
-          <TabsTrigger value="merchants">Merchants</TabsTrigger>
-          <TabsTrigger value="partners">Partners</TabsTrigger>
           <TabsTrigger value="link-health">Link health</TabsTrigger>
         </TabsList>
       </Tabs>
 
       {tab === 'performance' && <PerformancePanel days={days} vertical={vertical} />}
       {tab === 'revenue' && <RevenuePanel days={days} />}
-      {tab === 'merchants' && <MerchantsManager days={days} />}
-      {tab === 'partners' && (
+      {tab === 'link-health' && (
         <>
+          {/* /go registry drift is network-level ops, not a per-business concern. */}
           <RegistryDriftCard />
-          <AffiliatePartnersManager />
+          <LinkHealthPanel days={days} />
         </>
       )}
-      {tab === 'link-health' && <LinkHealthPanel days={days} />}
     </div>
   );
 }

@@ -111,7 +111,7 @@ export function useOrgLinkedEntities(orgId: string | undefined) {
             id: h.id,
             name: h.name,
             detail: [h.hotel_type, h.city].filter(Boolean).join(' · ') || null,
-            editHref: `/admin/hotels`,
+            editHref: `/admin/business?tab=hotels`,
           })),
         ),
         merchant: map(
@@ -119,7 +119,7 @@ export function useOrgLinkedEntities(orgId: string | undefined) {
             id: m.id,
             name: m.display_name,
             detail: [m.provider, m.shop_domain].filter(Boolean).join(' · ') || null,
-            editHref: `/admin/affiliate?tab=merchants`,
+            editHref: `/admin/business?tab=merchants`,
           })),
         ),
         affiliate_partner: map(
@@ -127,7 +127,7 @@ export function useOrgLinkedEntities(orgId: string | undefined) {
             id: p.id,
             name: p.partner_name,
             detail: [p.vertical, p.enabled ? 'enabled' : 'disabled'].filter(Boolean).join(' · '),
-            editHref: `/admin/affiliate?tab=partners`,
+            editHref: `/admin/business?tab=partners`,
           })),
         ),
         brand: map(
@@ -135,7 +135,7 @@ export function useOrgLinkedEntities(orgId: string | undefined) {
             id: b.id,
             name: b.display_name,
             detail: b.status,
-            editHref: `/admin/brands`,
+            editHref: `/admin/business?tab=brands`,
           })),
         ),
         news_source: map(

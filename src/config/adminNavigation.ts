@@ -31,7 +31,6 @@ import {
   Link2,
   Handshake,
   Workflow,
-  Hotel,
   Home,
   History,
   MessageSquarePlus,
@@ -43,8 +42,6 @@ import {
   UserPlus,
   ShieldCheck,
   Waypoints,
-  Store,
-  BadgeCheck,
   Network,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
@@ -222,14 +219,6 @@ export const adminNavSections: AdminNavSection[] = [
         group: 'Places',
       },
       {
-        id: 'hotels',
-        label: 'Hotels & BnBs',
-        icon: Hotel,
-        route: '/admin/hotels',
-        countTable: 'hotels',
-        group: 'Places',
-      },
-      {
         id: 'villages',
         label: 'Queer Villages',
         icon: Home,
@@ -311,23 +300,9 @@ export const adminNavSections: AdminNavSection[] = [
         countTable: 'marketplace_listings',
         group: 'Commerce',
       },
-      {
-        id: 'vendors',
-        label: 'Vendors',
-        icon: Store,
-        route: '/admin/vendors',
-        adminOnly: true,
-        group: 'Commerce',
-      },
-      {
-        id: 'brands',
-        label: 'Brands',
-        icon: BadgeCheck,
-        route: '/admin/brands',
-        reviewCountKey: 'review_brands',
-        adminOnly: true,
-        group: 'Commerce',
-      },
+      // Vendors, Brands and Hotels are tabs of the Business console (Cockpit ·
+      // Business) since the spine unification — one nav row per surface, and
+      // the console is the surface. Their old routes redirect there.
       // Taxonomy & Media
       {
         id: 'tags',
