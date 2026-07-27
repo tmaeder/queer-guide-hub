@@ -1,0 +1,24 @@
+-- ============================================================================
+-- INCIDENT REPAIR (step 1/2): restore the pgmq extension
+-- ----------------------------------------------------------------------------
+-- ALREADY APPLIED LIVE at this exact version (2026-07-27) — committed here so
+-- `db push` file<->history matching stays clean. Remote-only versions make
+-- db push skip EVERY pending migration silently; that is the same failure mode
+-- this project hit on 2026-07-26.
+--
+-- Cause: the P3b queue drop (20260801032000) fell back to
+-- `DROP TABLE pgmq.q_* CASCADE` because pgmq.drop_queue() errors on this
+-- project's detached queue tables. That CASCADE removed the pgmq EXTENSION
+-- itself — every pgmq.* function, the pgmq.meta registry, the per-queue msg_id
+-- sequences, and the msg_id COLUMN on each surviving q_* table.
+--
+-- Blast radius: the three queues P3b deliberately KEPT (pipeline_steps,
+-- dead_letter, enrichment_queue) still hold rows but became unusable — every
+-- public.pgmq_* wrapper calls a pgmq.* function that no longer exists, so
+-- pipeline-executor cannot advance a DAG step. pipeline_runs over the 6h after
+-- the migration applied: 16 failed, 3 running, 0 completed.
+--
+-- Step 2 (next migration) restores the queue tables to canonical shape.
+-- ============================================================================
+
+CREATE EXTENSION IF NOT EXISTS pgmq SCHEMA pgmq;
