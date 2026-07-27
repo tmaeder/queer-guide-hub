@@ -11,6 +11,31 @@ interface TagHierarchyCardProps {
   tagId: string;
 }
 
+function TagSection({
+  icon,
+  label,
+  tags,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  tags: OntologyTag[];
+}) {
+  if (tags.length === 0) return null;
+  return (
+    <div>
+      <div className="flex items-center gap-1.5 text-2xs uppercase tracking-wide text-muted-foreground mb-2">
+        {icon}
+        {label}
+      </div>
+      <div className="flex flex-wrap gap-2">
+        {tags.map((tg) => (
+          <TagChip key={tg.id} tag={tg.slug || tg.name} name={tg.name} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 /**
  * Public surface of the governed ontology graph on a tag page: broader parents,
  * narrower children, and curated related concepts (from tag_relations), each
@@ -49,46 +74,23 @@ export function TagHierarchyCard({ tagId }: TagHierarchyCardProps) {
   const { broader, narrower, related } = filtered;
   if (broader.length === 0 && narrower.length === 0 && related.length === 0) return null;
 
-  const Section = ({
-    icon,
-    label,
-    tags,
-  }: {
-    icon: React.ReactNode;
-    label: string;
-    tags: OntologyTag[];
-  }) =>
-    tags.length === 0 ? null : (
-      <div>
-        <div className="flex items-center gap-1.5 text-2xs uppercase tracking-wide text-muted-foreground mb-2">
-          {icon}
-          {label}
-        </div>
-        <div className="flex flex-wrap gap-2">
-          {tags.map((tg) => (
-            <TagChip key={tg.id} tag={tg.slug || tg.name} name={tg.name} />
-          ))}
-        </div>
-      </div>
-    );
-
   return (
     <div>
       <h2 className="text-sm font-semibold mb-4 text-muted-foreground uppercase tracking-wide">
         {t('resources.tagDetail.hierarchy', 'In the taxonomy')}
       </h2>
       <div className="flex flex-col gap-4">
-        <Section
+        <TagSection
           icon={<ChevronUp size={12} />}
           label={t('resources.tagDetail.broader', 'Broader')}
           tags={broader}
         />
-        <Section
+        <TagSection
           icon={<ChevronDown size={12} />}
           label={t('resources.tagDetail.narrower', 'More specific')}
           tags={narrower}
         />
-        <Section
+        <TagSection
           icon={<Link2 size={12} />}
           label={t('resources.tagDetail.related', 'Related')}
           tags={related}
