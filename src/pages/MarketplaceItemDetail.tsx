@@ -12,6 +12,8 @@ import { BrandMoreFrom } from '@/components/marketplace/BrandMoreFrom';
 import { PairsWithRail } from '@/components/marketplace/PairsWithRail';
 import { useAuth } from '@/hooks/useAuth';
 import { useMarketplace } from '@/hooks/useMarketplace';
+import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
+import { useSlugRedirect } from '@/hooks/useSlugRedirect';
 import { useMeta } from '@/hooks/useMeta';
 import { toast } from '@/hooks/use-toast';
 import {
@@ -64,6 +66,7 @@ export default function MarketplaceItemDetail() {
   const { slug } = useParams<{ slug: string }>();
   const { t } = useTranslation();
   const { user } = useAuth();
+  const navigate = useLocalizedNavigate();
   const { incrementViews } = useMarketplace();
   const [isFavorited, setIsFavorited] = useState(false);
 
@@ -80,6 +83,20 @@ export default function MarketplaceItemDetail() {
   });
 
   const listing = data?.listing ?? null;
+
+  // Merged-duplicate slug redirect (marketplace_slug_redirects); client-side
+  // fallback for in-app navigation — the edge middleware handles the 301.
+  const redirectListingSlug = useSlugRedirect(
+    {
+      redirectTable: 'marketplace_slug_redirects',
+      redirectIdColumn: 'listing_id',
+      entityTable: 'marketplace_listings',
+    },
+    !isLoading && !listing ? (slug ?? null) : null,
+  );
+  useEffect(() => {
+    if (redirectListingSlug) navigate(`/marketplace/${redirectListingSlug}`, { replace: true });
+  }, [redirectListingSlug, navigate]);
   useTrackView({
     type: 'marketplace',
     slug: listing?.slug,

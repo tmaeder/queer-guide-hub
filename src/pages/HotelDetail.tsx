@@ -9,7 +9,9 @@ import { useHotelByIdFallback } from '@/hooks/usePageFetchers';
 import { AddToTripDialog } from '@/components/trips/AddToTripDialog';
 import { useEntityTripStatus } from '@/hooks/useEntityTripStatus';
 import { useTranslation } from 'react-i18next';
+import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useEntityDetail } from '@/hooks/useEntityDetail';
+import { useSlugRedirect } from '@/hooks/useSlugRedirect';
 import { EntityDetailLayout, type EntityDetailTab } from '@/components/entity/EntityDetailLayout';
 import {
   HotelHero,
@@ -27,6 +29,7 @@ export default function HotelDetail() {
   const { slug } = useParams<{ slug: string }>();
   const { t } = useTranslation();
   const { toast } = useToast();
+  const navigate = useLocalizedNavigate();
   const [addToTripOpen, setAddToTripOpen] = useState(false);
 
   const {
@@ -49,6 +52,17 @@ export default function HotelDetail() {
   );
 
   const hotel = primary ?? fallback ?? null;
+  const hotelSettled = !primaryLoading && !primary && !fallbackLoading && !fallback;
+
+  // Merged-duplicate slug redirect (hotel_slug_redirects); client-side fallback
+  // for in-app navigation — the edge middleware handles the SEO-correct 301.
+  const redirectHotelSlug = useSlugRedirect(
+    { redirectTable: 'hotel_slug_redirects', redirectIdColumn: 'hotel_id', entityTable: 'hotels' },
+    hotelSettled ? (slug ?? null) : null,
+  );
+  useEffect(() => {
+    if (redirectHotelSlug) navigate(`/hotels/${redirectHotelSlug}`, { replace: true });
+  }, [redirectHotelSlug, navigate]);
   useTrackView({
     type: 'hotel',
     slug: hotel?.slug,

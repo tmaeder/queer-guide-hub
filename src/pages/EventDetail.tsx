@@ -18,6 +18,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useTrackEvent } from '@/hooks/useTrackEvent';
 import { useEntityTripStatus } from '@/hooks/useEntityTripStatus';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
+import { useSlugRedirect } from '@/hooks/useSlugRedirect';
 import { useMeta } from '@/hooks/useMeta';
 import { socialSameAs } from '@/lib/social/registry';
 import { toast } from '@/hooks/use-toast';
@@ -64,6 +65,17 @@ export default function EventDetail() {
     staleTime: 60_000,
     queryFn: () => fetchEvent(slug!, user?.id),
   });
+
+  // Merged-duplicate slug redirect: a dropped event's old slug points via
+  // event_slug_redirects to its canonical survivor. Client-side fallback for
+  // in-app navigation (the edge middleware handles the SEO-correct 301).
+  const redirectEventSlug = useSlugRedirect(
+    { redirectTable: 'event_slug_redirects', redirectIdColumn: 'event_id', entityTable: 'events' },
+    !isLoading && !event ? (slug ?? null) : null,
+  );
+  useEffect(() => {
+    if (redirectEventSlug) navigate(`/events/${redirectEventSlug}`, { replace: true });
+  }, [redirectEventSlug, navigate]);
 
   const { data: tripStatus } = useEntityTripStatus('event', event?.id);
   useTrackView({
