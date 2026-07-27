@@ -101,6 +101,9 @@ export const COLOR_TOKENS: ColorTokenDef[] = [
   { key: 'warning-foreground', group: 'feedback', light: '0 0% 100%', dark: '0 0% 4%' },
   { key: 'success', group: 'feedback', light: '0 0% 4%', dark: '0 0% 96%' },
   { key: 'success-foreground', group: 'feedback', light: '0 0% 100%', dark: '0 0% 4%' },
+  // Riso spot ink — brand mark, never semantic. See src/index.css for the rules.
+  { key: 'spot', group: 'feedback', light: '330 95% 55%', dark: '330 100% 66%' },
+  { key: 'spot-foreground', group: 'feedback', light: '0 0% 4%', dark: '0 0% 4%' },
   // Text hierarchy
   { key: 'text-primary', group: 'text', light: '0 0% 4%', dark: '0 0% 96%' },
   { key: 'text-secondary', group: 'text', light: '0 0% 32%', dark: '0 0% 64%' },
@@ -176,6 +179,7 @@ export const CONTRAST_PAIRS: Array<{ fg: string; bg: string; label: string }> = 
   { fg: 'destructive-foreground', bg: 'destructive', label: 'Destructive button' },
   { fg: 'warning-foreground', bg: 'warning', label: 'Warning' },
   { fg: 'success-foreground', bg: 'success', label: 'Success' },
+  { fg: 'spot-foreground', bg: 'spot', label: 'Spot ink (selection highlight)' },
   { fg: 'text-primary', bg: 'background', label: 'Text hierarchy: primary' },
   { fg: 'text-secondary', bg: 'background', label: 'Text hierarchy: secondary' },
   { fg: 'text-muted', bg: 'background', label: 'Text hierarchy: muted' },
