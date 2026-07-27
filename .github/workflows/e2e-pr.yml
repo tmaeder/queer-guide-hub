@@ -59,6 +59,17 @@ jobs:
             e2e/hotels-filters.spec.ts \
             e2e/nested-interactive.spec.ts \
             --reporter=line
+          # Design-system guards (radius tiers + monochrome) used to run ONLY in
+          # the nightly suite, so the PHOTOCOPY radius retune passed every PR
+          # check and turned nightly red the next morning. Second invocation
+          # because --grep is global and would filter the specs above; shares
+          # the preview server already running in this step. The visual snapshot
+          # block stays nightly-only — it needs CI-generated baselines and would
+          # otherwise block PRs on any intentional visual change.
+          npx playwright test \
+            e2e/design-system.spec.ts \
+            --grep-invert "visual snapshots" \
+            --reporter=line
       - name: Upload report
         if: failure()
         uses: actions/upload-artifact@v7
