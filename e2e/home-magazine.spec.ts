@@ -106,6 +106,14 @@ test.describe('homepage sections', () => {
     await gotoHome(page, DESKTOP);
     await scrollThrough(page);
 
+    // Marketplace is the last lazy/deferred section before the static closing
+    // CTA — its chunk load + spotlight/rail fetch can outlast scrollThrough's
+    // fixed settle time, so wait for it explicitly before reading headings
+    // (flaked as a false "missing" on production, 2026-07-27).
+    await expect(
+      page.locator('main h2', { hasText: /queer-owned finds|community picks/i }).first(),
+    ).toBeVisible({ timeout: 20_000 });
+
     const headings = page.locator('main h2');
     const texts = (await headings.allTextContents()).map((t) => t.trim());
 
