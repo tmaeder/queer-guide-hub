@@ -50,6 +50,20 @@ Re-point ~46 inbound FKs (venues/events/hotels/festivals, news join tables, favo
 > FK topology in two, so prefer one coordinated pass. Deep parity verification
 > (field-level, on-demand) proved a valid substitute for the calendar soak; the spine
 > mirror held exactly under live traffic throughout.
+>
+> **P2 COMPLETED 2026-07-27 (embed-first redo, PRs #2358 + #2363):** sequence was
+> (1) hint-drop client edits (`cities:city_id(...)` → bare `cities(...)`; named
+> computed rels `primary_city`/`primary_country` on trips, `birth_city` on
+> personalities) deployed first, (2) per-batch migrations creating **PostgREST
+> computed relationships** (forward `rows 1` + reverse for `venues(count)`/
+> `events(count)` from city/village lists) atomically with the FK flips to the
+> satellite PKs. Pilot-proven constraint: **computed relationships OVERRIDE
+> same-named FK relationships**, so hinted embeds must be gone before the rels
+> exist. Verified live: 10/10 exact client-spec embeds, `!inner` + `count()`
+> through computed rels, write-path with wrong-type rejection, drift 0, browser
+> UI pass. All 62 external geo FKs now reference `geo_*_profiles(place_id)`.
+> Bonus: `city_favorites`/`country_favorites` embeds work for the first time
+> (those tables never had FKs). P3 preconditions from this phase are met.
 
 ### P3 — Engine/trigger/RPC rewrites (6–8 PRs, each testable)
 Recreate against spine+profiles while dual-write keeps parity: search sync triggers (`20260531155351`), safety-gated recompute chain (`20260623160000-2`), truth engines (city `20260607100000/110000/130000`, safety composer `20260608000001`, village, country), merge cores (collapse three per-type cores → one geo core — net simplification), RPCs signature-compatible under same names (`resolve_city_and_country`, `gated_count_for_location`, `location_is_high_risk`, `search_hybrid` facets, `admin_content_graph`, `admin_entity_neighbors`). **Golden-set safety parity test: identical `safety_gated` output old-vs-new is a hard gate before P4.**
