@@ -10,21 +10,27 @@ import type { ReactNode } from 'react';
 
 vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ user: { id: 'u1' } }) }));
 vi.mock('@/hooks/useHotels', () => ({
-  useHotels: () => ({ createHotel: vi.fn(), updateHotel: vi.fn(), deleteHotel: vi.fn(), refetch: vi.fn() }),
+  useHotels: () => ({
+    createHotel: vi.fn(),
+    updateHotel: vi.fn(),
+    deleteHotel: vi.fn(),
+    regenerateSafetyNote: vi.fn(),
+    refetch: vi.fn(),
+  }),
 }));
 vi.mock('@/hooks/useAddressResolver', () => ({ useAddressResolver: () => ({ resolveAddress: vi.fn() }) }));
 vi.mock('@/components/admin/data-table/AdminDataTable', () => ({ AdminDataTable: () => <div>table</div> }));
 
-import AdminHotels from '../AdminHotels';
+import { HotelsManager } from '../HotelsManager';
 
 function wrapper({ children }: { children: ReactNode }) {
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } });
   return <MemoryRouter><QueryClientProvider client={qc}><TooltipProvider>{children}</TooltipProvider></QueryClientProvider></MemoryRouter>;
 }
 
-describe('AdminHotels', () => {
+describe('HotelsManager', () => {
   it('renders without crashing', () => {
-    const { container } = render(<AdminHotels />, { wrapper });
+    const { container } = render(<HotelsManager />, { wrapper });
     expect(container).toBeTruthy();
   });
 });
