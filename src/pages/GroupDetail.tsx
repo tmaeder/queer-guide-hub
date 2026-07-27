@@ -169,10 +169,7 @@ export default function GroupDetail() {
           <div className="flex flex-col md:flex-row gap-6">
             <Avatar style={{ height: 96, width: 96 }}>
               <AvatarImage src={group.image_url || undefined} alt={group.name} />
-              <AvatarFallback
-                style={{ background: 'var(--gradient-primary)', color: 'white' }}
-                className="text-2xl"
-              >
+              <AvatarFallback className="bg-foreground text-background text-2xl">
                 {group.name.charAt(0).toUpperCase()}
               </AvatarFallback>
             </Avatar>
@@ -267,11 +264,7 @@ export default function GroupDetail() {
 
               <div className="flex gap-2 justify-center md:justify-start">
                 {!group.is_member ? (
-                  <Button
-                    onClick={handleJoin}
-                    disabled={isJoining}
-                    style={{ background: 'var(--gradient-primary)' }}
-                  >
+                  <Button onClick={handleJoin} disabled={isJoining}>
                     <UserPlus size={16} className="mr-2" />
                     {isJoining ? 'Joining...' : 'Join Group'}
                   </Button>

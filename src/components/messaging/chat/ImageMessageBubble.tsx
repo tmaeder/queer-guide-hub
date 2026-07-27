@@ -52,8 +52,8 @@ export const ImageMessageBubble = ({ image, caption, isOwn, sending, highlighted
           className="whitespace-pre-wrap break-words px-4 py-2 text-sm"
           style={
             isOwn
-              ? { backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }
-              : { backgroundColor: 'var(--muted)' }
+              ? { backgroundColor: 'hsl(var(--primary))', color: 'hsl(var(--primary-foreground))' }
+              : { backgroundColor: 'hsl(var(--muted))' }
           }
         >
           {caption}

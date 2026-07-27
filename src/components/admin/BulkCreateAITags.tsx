@@ -75,9 +75,9 @@ const BulkCreateAITags = ({ onComplete }: BulkCreateAITagsProps) => {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'created':
-        return <CheckCircle className="w-4 h-4" style={{ color: 'var(--success)' }} />;
+        return <CheckCircle className="w-4 h-4" style={{ color: 'hsl(var(--success))' }} />;
       case 'exists':
-        return <AlertCircle className="w-4 h-4" style={{ color: 'var(--warning)' }} />;
+        return <AlertCircle className="w-4 h-4" style={{ color: 'hsl(var(--warning))' }} />;
       case 'error':
         return <XCircle className="w-4 h-4 text-destructive" />;
       default:

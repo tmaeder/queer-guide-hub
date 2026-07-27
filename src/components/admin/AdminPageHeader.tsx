@@ -53,7 +53,7 @@ export function AdminPageHeader({
   return (
     <header
       className={cn(
-        'mb-6 flex flex-col gap-4 border-b border-hairline pb-6 sm:flex-row sm:items-end sm:justify-between',
+        'mb-6 flex flex-col gap-4 border-b border-border-hairline pb-6 sm:flex-row sm:items-end sm:justify-between',
         className,
       )}
     >

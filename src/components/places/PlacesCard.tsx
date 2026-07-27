@@ -207,7 +207,7 @@ export const PlacesCard = memo(function PlacesCard({ type, name, data, onClick }
                 style={{
                   width: 24,
                   height: 24,
-                  backgroundColor: 'rgba(var(--primary-rgb, 59, 130, 246), 0.1)',
+                  backgroundColor: 'hsl(var(--primary) / 0.1)',
                 }}
               >
                 <Crown size={12} />
@@ -219,10 +219,10 @@ export const PlacesCard = memo(function PlacesCard({ type, name, data, onClick }
                 style={{
                   width: 24,
                   height: 24,
-                  backgroundColor: 'rgba(var(--secondary-rgb, 107, 114, 128), 0.1)',
+                  backgroundColor: 'hsl(var(--secondary) / 0.1)',
                 }}
               >
-                <Building2 size={12} style={{ color: 'var(--secondary-foreground)' }} />
+                <Building2 size={12} style={{ color: 'hsl(var(--secondary-foreground))' }} />
               </div>
             )}
           </div>

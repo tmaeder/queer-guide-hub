@@ -263,7 +263,7 @@ export const PostCard = ({ post, onLike, onUnlike, onDelete }: PostCardProps) =>
                         style={{
                           width: 24,
                           height: 24,
-                          border: '2px solid var(--muted-foreground)',
+                          border: '2px solid hsl(var(--muted-foreground))',
                         }}
                       ></span>
                       {option}

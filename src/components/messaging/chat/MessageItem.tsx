@@ -190,12 +190,12 @@ export const MessageItem = ({
                 borderRadius: 'var(--radius-container)',
                 ...(isOwn
                   ? {
-                      backgroundColor: 'var(--primary)',
-                      color: 'var(--primary-foreground)',
+                      backgroundColor: 'hsl(var(--primary))',
+                      color: 'hsl(var(--primary-foreground))',
                       borderBottomRightRadius: 'var(--radius-element)',
                     }
                   : {
-                      backgroundColor: 'var(--muted)',
+                      backgroundColor: 'hsl(var(--muted))',
                       borderBottomLeftRadius: 'var(--radius-element)',
                     }),
                 ...(message.status === 'sending' ? { opacity: 0.6 } : {}),

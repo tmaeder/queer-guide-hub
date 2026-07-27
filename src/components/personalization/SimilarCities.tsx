@@ -101,10 +101,10 @@ export function SimilarCities({
                         style={{
                           color:
                             city.eq_score >= 70
-                              ? 'var(--success)'
+                              ? 'hsl(var(--success))'
                               : city.eq_score >= 40
-                                ? 'var(--warning)'
-                                : 'var(--destructive)',
+                                ? 'hsl(var(--warning))'
+                                : 'hsl(var(--destructive))',
                         }}
                       />
                       <span className="text-2xs font-semibold">{city.eq_score}</span>

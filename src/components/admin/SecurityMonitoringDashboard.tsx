@@ -120,9 +120,9 @@ export function SecurityMonitoringDashboard() {
           <div className="flex items-center gap-4">
             <div
               className="p-2 rounded-element"
-              style={{ backgroundColor: 'rgba(var(--destructive-rgb), 0.1)' }}
+              style={{ backgroundColor: 'hsl(var(--destructive) / 0.1)' }}
             >
-              <AlertTriangle size={16} style={{ color: 'var(--destructive)' }} />
+              <AlertTriangle size={16} style={{ color: 'hsl(var(--destructive))' }} />
             </div>
             <div>
               <p className="text-sm font-medium">Failed Login Attempts</p>
@@ -136,9 +136,9 @@ export function SecurityMonitoringDashboard() {
           <div className="flex items-center gap-4">
             <div
               className="p-2 rounded-element"
-              style={{ backgroundColor: 'rgba(var(--success-rgb), 0.1)' }}
+              style={{ backgroundColor: 'hsl(var(--success) / 0.1)' }}
             >
-              <Shield size={16} style={{ color: 'var(--success)' }} />
+              <Shield size={16} style={{ color: 'hsl(var(--success))' }} />
             </div>
             <div>
               <p className="text-sm font-medium">CAPTCHA Verifications</p>
@@ -249,7 +249,7 @@ export function SecurityMonitoringDashboard() {
                 >
                   <AlertTriangle
                     size={16}
-                    style={{ color: 'var(--destructive)' }}
+                    style={{ color: 'hsl(var(--destructive))' }}
                     className="mt-1"
                   />
                   <div className="flex-1 flex flex-col gap-1">

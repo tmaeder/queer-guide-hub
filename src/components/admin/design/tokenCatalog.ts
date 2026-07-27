@@ -90,22 +90,25 @@ export const COLOR_TOKENS: ColorTokenDef[] = [
   { key: 'muted-foreground', group: 'core', light: '0 0% 35%', dark: '0 0% 68%' },
   { key: 'accent', group: 'core', light: '0 0% 96%', dark: '0 0% 12%' },
   { key: 'accent-foreground', group: 'core', light: '0 0% 4%', dark: '0 0% 96%' },
-  { key: 'border', group: 'core', light: '0 0% 88%', dark: '0 0% 18%' },
-  { key: 'input', group: 'core', light: '0 0% 88%', dark: '0 0% 18%' },
+  { key: 'border', group: 'core', light: '0 0% 58%', dark: '0 0% 37%' },
+  { key: 'input', group: 'core', light: '0 0% 58%', dark: '0 0% 37%' },
   { key: 'input-bg', group: 'core', light: '0 0% 100%', dark: '0 0% 7%' },
   { key: 'ring', group: 'core', light: '0 0% 4%', dark: '0 0% 96%' },
-  // Feedback (the only chromatic hues in the system)
-  { key: 'destructive', group: 'feedback', light: '0 70% 38%', dark: '0 84% 62%' },
+  // Feedback — destructive is the only chromatic hue; warning + success are neutral
+  { key: 'destructive', group: 'feedback', light: '0 70% 38%', dark: '0 84% 48%' },
   { key: 'destructive-foreground', group: 'feedback', light: '0 0% 100%', dark: '0 0% 100%' },
-  { key: 'warning', group: 'feedback', light: '0 70% 38%', dark: '0 84% 62%' },
-  { key: 'warning-foreground', group: 'feedback', light: '0 0% 100%', dark: '0 0% 100%' },
+  { key: 'warning', group: 'feedback', light: '0 0% 4%', dark: '0 0% 96%' },
+  { key: 'warning-foreground', group: 'feedback', light: '0 0% 100%', dark: '0 0% 4%' },
   { key: 'success', group: 'feedback', light: '0 0% 4%', dark: '0 0% 96%' },
   { key: 'success-foreground', group: 'feedback', light: '0 0% 100%', dark: '0 0% 4%' },
+  // Riso spot ink — brand mark, never semantic. See src/index.css for the rules.
+  { key: 'spot', group: 'feedback', light: '330 95% 55%', dark: '330 100% 66%' },
+  { key: 'spot-foreground', group: 'feedback', light: '0 0% 4%', dark: '0 0% 4%' },
   // Text hierarchy
-  { key: 'text-primary', group: 'text', light: '0 0% 4%', dark: '0 0% 98%' },
+  { key: 'text-primary', group: 'text', light: '0 0% 4%', dark: '0 0% 96%' },
   { key: 'text-secondary', group: 'text', light: '0 0% 32%', dark: '0 0% 64%' },
-  { key: 'text-muted', group: 'text', light: '0 0% 56%', dark: '0 0% 40%' },
-  { key: 'border-hairline', group: 'text', light: '0 0% 88%', dark: '0 0% 18%' },
+  { key: 'text-muted', group: 'text', light: '0 0% 45%', dark: '0 0% 62%' },
+  { key: 'border-hairline', group: 'text', light: '0 0% 58%', dark: '0 0% 37%' },
   // Surface elevation ladder
   { key: 'surface', group: 'surface', light: '0 0% 100%', dark: '0 0% 4%' },
   { key: 'surface-container-lowest', group: 'surface', light: '0 0% 100%', dark: '0 0% 2%' },
@@ -122,7 +125,7 @@ export const COLOR_TOKENS: ColorTokenDef[] = [
   { key: 'sidebar-primary-foreground', group: 'sidebar', light: '0 0% 100%', dark: '0 0% 4%' },
   { key: 'sidebar-accent', group: 'sidebar', light: '0 0% 96%', dark: '0 0% 12%' },
   { key: 'sidebar-accent-foreground', group: 'sidebar', light: '0 0% 4%', dark: '0 0% 96%' },
-  { key: 'sidebar-border', group: 'sidebar', light: '0 0% 88%', dark: '0 0% 18%' },
+  { key: 'sidebar-border', group: 'sidebar', light: '0 0% 58%', dark: '0 0% 37%' },
   { key: 'sidebar-ring', group: 'sidebar', light: '0 0% 4%', dark: '0 0% 96%' },
 ];
 
@@ -176,6 +179,7 @@ export const CONTRAST_PAIRS: Array<{ fg: string; bg: string; label: string }> = 
   { fg: 'destructive-foreground', bg: 'destructive', label: 'Destructive button' },
   { fg: 'warning-foreground', bg: 'warning', label: 'Warning' },
   { fg: 'success-foreground', bg: 'success', label: 'Success' },
+  { fg: 'spot-foreground', bg: 'spot', label: 'Spot ink (selection highlight)' },
   { fg: 'text-primary', bg: 'background', label: 'Text hierarchy: primary' },
   { fg: 'text-secondary', bg: 'background', label: 'Text hierarchy: secondary' },
   { fg: 'text-muted', bg: 'background', label: 'Text hierarchy: muted' },
