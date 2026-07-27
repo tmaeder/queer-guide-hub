@@ -90,6 +90,9 @@
   --color-destructive: hsl(var(--destructive));
   --color-destructive-foreground: hsl(var(--destructive-foreground));
 
+  --color-spot: hsl(var(--spot));
+  --color-spot-foreground: hsl(var(--spot-foreground));
+
   --color-card: hsl(var(--card));
   --color-card-foreground: hsl(var(--card-foreground));
 
@@ -251,6 +254,15 @@
   --success: 0 0% 4%;
   --success-foreground: 0 0% 100%;
 
+  /* Riso spot ink. NON-SEMANTIC BY CONSTRUCTION: red means danger, spot means
+     nothing — it is brand ink on wayfinding marks only (::selection, focus ring,
+     active-nav underline, inline-link hover). It must never encode state, never
+     appear as small text (3.74:1 fails AA below 18px), and never reach /help,
+     /safety, /report-*, the trip-safety briefing, the equality scale or any risk
+     badge. That is what keeps it from competing with the danger signal. */
+  --spot: 330 95% 55%;
+  --spot-foreground: 0 0% 4%;
+
   /* Shadows are disabled, so these 1px rules carry ALL structural depth. Kept at
      exactly the lightest value clearing WCAG 1.4.11 (3:1 non-text) against this
      mode's background — 58% = 3.04:1 on white; 59% drops to 2.94:1. */
@@ -328,6 +340,9 @@
 
   --success: 0 0% 96%;
   --success-foreground: 0 0% 4%;
+
+  --spot: 330 100% 66%;
+  --spot-foreground: 0 0% 4%;
 
   --border: 0 0% 37%;
   --input: 0 0% 37%;
@@ -502,14 +517,19 @@ body {
   }
 }
 
-/* ── Focus-visible — WCAG 2.4.7, 2px solid foreground ──────────────── */
+/* ── Focus-visible — WCAG 2.4.7 ─────────────────────────────────────
+   Riso spot ink, mark #3. Reads at 3.74:1 light / 6.61:1 dark, clearing the
+   3:1 non-text bar in both modes, and a chromatic ring is easier to spot than
+   a black one on a page that is otherwise black-on-white. Deliberately the
+   single global rule rather than re-pointing --ring, so the ink is not
+   duplicated into a second token that would drift out of sync with --spot. */
 
 *:focus-visible,
 [role="button"]:focus-visible,
 [role="tab"]:focus-visible,
 [role="option"]:focus-visible,
 [role="menuitem"]:focus-visible {
-  outline: 2px solid hsl(var(--foreground)) !important;
+  outline: 2px solid hsl(var(--spot)) !important;
   outline-offset: 2px !important;
 }
 
@@ -1064,6 +1084,20 @@ h1, h2, .font-display {
     min-width: 44px;
     min-height: 44px;
   }
+}
+
+/* Riso spot ink, mark #1 — highlighter selection. Black text stays black, so the
+   pink is a fill behind it (5.29:1) rather than coloured text. */
+::selection {
+  background-color: hsl(var(--spot));
+  color: hsl(var(--spot-foreground));
+}
+
+/* Riso spot ink, mark #2 — inline links ink up on hover. The underline (not the
+   text) carries the colour, so body copy never drops below AA. */
+p a:hover, li a:hover, td a:hover, span a:hover, label a:hover {
+  text-decoration-color: hsl(var(--spot));
+  text-decoration-thickness: 2px;
 }
 
 /* Search suggestion match highlight — Meili emits <em>match</em>. Strip italic,
