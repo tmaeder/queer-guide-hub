@@ -57,6 +57,7 @@ jobs:
             e2e/venues/detail-content.spec.ts \
             e2e/help-locale.spec.ts \
             e2e/hotels-filters.spec.ts \
+            e2e/nested-interactive.spec.ts \
             --reporter=line
       - name: Upload report
         if: failure()
