@@ -244,7 +244,12 @@
 
   /* Sole permitted hue: error semantics. `--warning` was a literal duplicate of
      this until 2026-07-27, so 22 caution states shouted in the same red as hard
-     failures. Caution is now neutral: red means danger, nothing else. */
+     failures. Caution is now neutral: red means danger, nothing else.
+     NOTE the dark values: this token is read as TEXT (`text-destructive`, 236
+     usages) far more than as a button fill (16), so its lightness is tuned for
+     red-on-dark-page legibility and the BUTTON case is solved by flipping
+     --destructive-foreground to near-black in dark instead. Darkening the red
+     to fix the button broke the text case in reverse — see #2366. */
   --destructive: 0 70% 38%;
   --destructive-foreground: 0 0% 100%;
   --warning: 0 0% 4%;
@@ -333,8 +338,8 @@
   --accent: 0 0% 12%;
   --accent-foreground: 0 0% 96%;
 
-  --destructive: 0 84% 48%;
-  --destructive-foreground: 0 0% 100%;
+  --destructive: 0 84% 62%;
+  --destructive-foreground: 0 0% 4%;
   --warning: 0 0% 96%;
   --warning-foreground: 0 0% 4%;
 
