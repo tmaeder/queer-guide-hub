@@ -74,9 +74,13 @@ export function GatedContentNotice({ cityId, countryId }: GatedContentNoticeProp
           </p>
         </div>
       </div>
-      <LocalizedLink to="/auth" className="shrink-0">
-        <Button variant="accent">{t('safety.gated.cta', { defaultValue: 'Sign in to view' })}</Button>
-      </LocalizedLink>
+      {/* asChild, not a Link wrapping a Button — that nests a <button>
+          inside an <a>, which is invalid HTML. */}
+      <Button asChild variant="accent">
+        <LocalizedLink to="/auth" className="shrink-0 no-underline">
+          {t('safety.gated.cta', { defaultValue: 'Sign in to view' })}
+        </LocalizedLink>
+      </Button>
     </div>
   );
 }

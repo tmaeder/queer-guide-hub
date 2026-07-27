@@ -1,27 +1,14 @@
 -- Business spine: make the adoption matcher index-friendly.
 --
--- Applied live via MCP apply_migration (P1 — the nightly cron was dead), so this
--- file carries the version the remote actually stamped (20260727154853), not a
--- 2026-08-01 block version; CI's db push then matches it and skips.
---
--- The nightly org_spine_backfill cron (job 2231) has failed every run since it
--- was created with "canceling statement due to statement timeout" inside
--- find_org_adoption_candidates -> dedup_despace. Cause: the matcher joined
--- organizations to each entity table on
---     (normalized_domain = o.dom) OR (dedup_despace(name) = o.key)
--- An OR across two different join keys is not indexable, so Postgres nested-loops
--- the whole cross product and evaluates unaccent+regexp per pair (≈2 989 unlinked
--- venues x 246 active orgs before the other sources). Nothing was ever adopted.
---
--- Fix: split the OR into a UNION ALL of two equi-joins, each of which can use an
--- expression index, then keep the best row per entity. Same result set and the
--- same confidence ladder as before (domain 1.00 > name+city 0.95 > name-only
--- 0.60), just a plan the planner can actually index.
+-- DRIFT REPAIR: this migration was applied to the remote database directly
+-- (MCP apply_migration, which stamps its own version and does NOT create the
+-- repo file), leaving version 20260727154853 present in remote
+-- supabase_migrations.schema_migrations with no matching file. `db push` then
+-- skips the whole batch — "remote-only migration versions" — so every merged
+-- migration behind it silently fails to apply. Body below is recovered
+-- verbatim from schema_migrations.statements at that version; every statement
+-- is idempotent (IF NOT EXISTS / OR REPLACE), so re-application is a no-op.
 
--- Expression indexes for the name rung. dedup_despace / org_normalize_domain are
--- both IMMUTABLE, so they are indexable. Partial on the "still unlinked" predicate
--- keeps them tiny and exactly matches the matcher's WHERE. No CONCURRENTLY —
--- migrations run inside a transaction.
 CREATE INDEX IF NOT EXISTS idx_organizations_despace_active
   ON public.organizations (public.dedup_despace(name))
   WHERE status = 'active';
@@ -72,7 +59,6 @@ AS $function$
     where org.status = 'active'
   ),
   raw as (
-    -- ── hotels ────────────────────────────────────────────────────────────
     select 'hotel'::text as entity_type, h.id as entity_id, h.name as entity_name,
            o.id as organization_id, o.name as org_name,
            'domain_exact'::text as match_type, 1.00::numeric as confidence
@@ -92,7 +78,6 @@ AS $function$
       and h.organization_id is null and h.duplicate_of_id is null
       and length(public.dedup_despace(h.name)) >= 4
 
-    -- ── venues ────────────────────────────────────────────────────────────
     union all
     select 'venue', v.id, v.name, o.id, o.name, 'domain_exact', 1.00::numeric
     from public.venues v
@@ -111,7 +96,6 @@ AS $function$
       and v.organization_id is null and v.duplicate_of_id is null
       and length(public.dedup_despace(v.name)) >= 4
 
-    -- ── merchants ─────────────────────────────────────────────────────────
     union all
     select 'merchant', mm.id, mm.display_name, o.id, o.name, 'domain_exact', 1.00::numeric
     from public.marketplace_merchants mm
@@ -128,7 +112,6 @@ AS $function$
       and mm.organization_id is null
       and length(public.dedup_despace(mm.display_name)) >= 4
 
-    -- ── affiliate partners (domain array + merchant back-link) ────────────
     union all
     select 'affiliate_partner', ap.id, ap.partner_name, o.id, o.name, 'domain_exact', 1.00::numeric
     from public.affiliate_partners ap
@@ -144,7 +127,6 @@ AS $function$
     join public.organizations org on org.id = mm.organization_id
     where p_entity_type = 'affiliate_partner' and ap.organization_id is null
 
-    -- ── brands (queer-owned only; queue-only downstream) ──────────────────
     union all
     select 'brand', b.id, b.display_name, o.id, o.name, 'domain_exact', 0.85::numeric
     from public.marketplace_brands b
@@ -163,10 +145,6 @@ AS $function$
       and b.ownership_tags <> '{}'
       and length(public.dedup_despace(b.display_name)) >= 4
   )
-  -- One row per (entity, org) pair: the domain and name rungs can both fire for
-  -- the same pair, and the caller's ladder expects the strongest match only.
-  -- The de-dup has to happen in a subquery — DISTINCT ON dictates its own ORDER BY,
-  -- and the caller needs the *highest-confidence* p_limit rows, not the first by id.
   select entity_type, entity_id, entity_name, organization_id, org_name, match_type, confidence
   from (
     select distinct on (entity_id, organization_id)
@@ -182,6 +160,4 @@ REVOKE ALL ON FUNCTION public.find_org_adoption_candidates(text, integer) FROM p
 GRANT EXECUTE ON FUNCTION public.find_org_adoption_candidates(text, integer) TO service_role, authenticated;
 
 COMMENT ON FUNCTION public.find_org_adoption_candidates(text, integer) IS
-  'Adopt-before-create matcher for the organizations spine. Domain and name rungs '
-  'are separate equi-joins (indexable) unioned together — never re-introduce an '
-  'OR across the two keys, it made the nightly cron time out.';
+  'Adopt-before-create matcher for the organizations spine. Domain and name rungs are separate equi-joins (indexable) unioned together - never re-introduce an OR across the two keys, it made the nightly cron time out.';
