@@ -72,7 +72,10 @@ test.describe('No nested interactive elements', () => {
   for (const route of CARD_ROUTES) {
     test(`${route} has no interactive element nested inside an <a>`, async ({ page }) => {
       await page.goto(route, { waitUntil: 'domcontentloaded' });
-      await page.waitForSelector('main', { timeout: 30_000 });
+      // 60s, not 30s: against prod the FIRST route of a run pays a cold
+      // Cloudflare edge miss. /city/berlin timed out at 30s waiting for `main`
+      // on a real run, then passed in 6.8s on an immediate re-run.
+      await page.waitForSelector('main', { timeout: 60_000 });
       await page.waitForSelector(CARD_LINK, { timeout: 120_000 });
       // Let the rest of the lazy sections hydrate before snapshotting the DOM.
       await page.waitForTimeout(3_000);
