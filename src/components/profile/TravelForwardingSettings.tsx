@@ -60,12 +60,14 @@ export function TravelForwardingSettings({ username }: { username: string | null
               </Button>
             </div>
             <div>
-              <LocalizedLink to="/hub/messages">
-                <Button variant="outline" size="sm">
+              {/* asChild, not a Link wrapping a Button — that nests a <button>
+                  inside an <a>, which is invalid HTML. */}
+              <Button asChild variant="outline" size="sm">
+                <LocalizedLink to="/hub/messages" className="no-underline">
                   <InboxIcon size={14} className="mr-1.5" />
                   {t('settings.forwarding.openInbox', 'Open inbox')}
-                </Button>
-              </LocalizedLink>
+                </LocalizedLink>
+              </Button>
             </div>
           </>
         ) : (

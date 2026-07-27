@@ -97,155 +97,154 @@ export const UserDirectoryGrid = ({
             const mode = typeof profile.user_mode === 'string' ? profile.user_mode : null;
 
             return (
-              <li key={profile.user_id} className="h-full">
+              <li key={profile.user_id} className="group relative h-full">
+                <Card className="h-full p-6 flex flex-col gap-4 transition-colors group-hover:bg-muted/40">
+                  <div className="flex items-start gap-4">
+                    <div className="relative shrink-0">
+                      <Avatar className="h-16 w-16">
+                        <AvatarImage src={profile.avatar_url || undefined} alt="" />
+                        <AvatarFallback className="bg-foreground text-background text-lg font-semibold">
+                          {profile.display_name?.charAt(0)?.toUpperCase() || 'U'}
+                        </AvatarFallback>
+                      </Avatar>
+                      {profile.verified_identity && (
+                        <span
+                          aria-label="Verified"
+                          className="absolute -top-1 -right-1 inline-flex h-6 w-6 items-center justify-center rounded-full bg-foreground text-background border-2 border-background"
+                        >
+                          <Check size={12} />
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-foreground truncate text-title">
+                        {profile.display_name || 'Anonymous member'}
+                      </h3>
+                      {isAuthed && (profile.pronouns || profile.age_range) && (
+                        <p className="text-sm text-muted-foreground mt-1">
+                          {profile.pronouns}
+                          {profile.pronouns && profile.age_range && ' · '}
+                          {profile.age_range}
+                        </p>
+                      )}
+                      <div className="flex flex-wrap gap-1.5 mt-2">
+                        {mode && <UserModeBadge mode={mode} size="sm" />}
+                        {profile.is_business && (
+                          <Badge variant="outline" className="text-xs gap-1">
+                            <Briefcase size={12} />
+                            Business
+                          </Badge>
+                        )}
+                        {profile.verified_identity && (
+                          <Badge variant="default" className="text-xs gap-1">
+                            <Check size={12} />
+                            Verified
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {isAuthed && profile.bio && (
+                    <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
+                      {profile.bio}
+                    </p>
+                  )}
+
+                  {isAuthed && (
+                    <div className="flex flex-col gap-2">
+                      {profile.location && (
+                        <div className="flex items-center text-sm text-muted-foreground gap-2">
+                          <MapPin size={14} />
+                          <span className="truncate">{profile.location}</span>
+                        </div>
+                      )}
+
+                      {profile.occupation && (
+                        <div className="flex items-center text-sm text-muted-foreground gap-2">
+                          <Briefcase size={14} />
+                          <span className="truncate">{profile.occupation}</span>
+                        </div>
+                      )}
+
+                      {profile.education && (
+                        <div className="flex items-center text-sm text-muted-foreground gap-2">
+                          <GraduationCap size={14} />
+                          <span className="truncate">{profile.education}</span>
+                        </div>
+                      )}
+
+                      {joinedValid && (
+                        <div className="flex items-center text-sm text-muted-foreground gap-2">
+                          <Calendar size={14} />
+                          Joined {joined.toLocaleDateString()}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {isAuthed && (
+                    <div className="flex flex-wrap gap-1.5">
+                      {profile.relationship_status && (
+                        <Badge variant="soft" className="text-xs gap-1">
+                          <Heart size={12} />
+                          {profile.relationship_status}
+                        </Badge>
+                      )}
+                      {profile.has_children && (
+                        <Badge variant="soft" className="text-xs">
+                          Children
+                        </Badge>
+                      )}
+                      {profile.has_pets && (
+                        <Badge variant="soft" className="text-xs">
+                          Pets
+                        </Badge>
+                      )}
+                      {profile.gender_identity && (
+                        <Badge variant="soft" className="text-xs">
+                          {profile.gender_identity}
+                        </Badge>
+                      )}
+                    </div>
+                  )}
+
+                  <div className="flex items-center justify-between pt-2 mt-auto border-t border-border">
+                    {profile.website ? (
+                      <a
+                        href={profile.website}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="relative z-10 text-sm font-medium inline-flex items-center gap-1 text-foreground"
+                      >
+                        Visit website
+                        <ExternalLink size={12} />
+                      </a>
+                    ) : (
+                      <span />
+                    )}
+
+                    {isAuthed && (
+                      <div className="relative z-10">
+                        <StartConversationButton
+                          userId={profile.user_id}
+                          userName={profile.display_name || 'Anonymous member'}
+                          variant="outline"
+                          size="sm"
+                        />
+                      </div>
+                    )}
+                  </div>
+                </Card>
+                {/* Card-wide click target. Overlay sibling (not a wrapper) so the
+                    card's website link and message button are never nested inside
+                    an <a>. `no-underline` is load-bearing: `li a:not(.no-underline)`
+                    in index.css forces position:relative. */}
                 <LocalizedLink
                   to={`/user/${profile.user_id}`}
-                  className="block no-underline text-foreground h-full focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-container"
-                >
-                  <Card className="h-full p-6 flex flex-col gap-4 transition-colors hover:bg-muted/40">
-                    <div className="flex items-start gap-4">
-                      <div className="relative shrink-0">
-                        <Avatar className="h-16 w-16">
-                          <AvatarImage src={profile.avatar_url || undefined} alt="" />
-                          <AvatarFallback className="bg-foreground text-background text-lg font-semibold">
-                            {profile.display_name?.charAt(0)?.toUpperCase() || 'U'}
-                          </AvatarFallback>
-                        </Avatar>
-                        {profile.verified_identity && (
-                          <span
-                            aria-label="Verified"
-                            className="absolute -top-1 -right-1 inline-flex h-6 w-6 items-center justify-center rounded-full bg-foreground text-background border-2 border-background"
-                          >
-                            <Check size={12} />
-                          </span>
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-foreground truncate text-title">
-                          {profile.display_name || 'Anonymous member'}
-                        </h3>
-                        {isAuthed && (profile.pronouns || profile.age_range) && (
-                          <p className="text-sm text-muted-foreground mt-1">
-                            {profile.pronouns}
-                            {profile.pronouns && profile.age_range && ' · '}
-                            {profile.age_range}
-                          </p>
-                        )}
-                        <div className="flex flex-wrap gap-1.5 mt-2">
-                          {mode && <UserModeBadge mode={mode} size="sm" />}
-                          {profile.is_business && (
-                            <Badge variant="outline" className="text-xs gap-1">
-                              <Briefcase size={12} />
-                              Business
-                            </Badge>
-                          )}
-                          {profile.verified_identity && (
-                            <Badge variant="default" className="text-xs gap-1">
-                              <Check size={12} />
-                              Verified
-                            </Badge>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-
-                    {isAuthed && profile.bio && (
-                      <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
-                        {profile.bio}
-                      </p>
-                    )}
-
-                    {isAuthed && (
-                      <div className="flex flex-col gap-2">
-                        {profile.location && (
-                          <div className="flex items-center text-sm text-muted-foreground gap-2">
-                            <MapPin size={14} />
-                            <span className="truncate">{profile.location}</span>
-                          </div>
-                        )}
-
-                        {profile.occupation && (
-                          <div className="flex items-center text-sm text-muted-foreground gap-2">
-                            <Briefcase size={14} />
-                            <span className="truncate">{profile.occupation}</span>
-                          </div>
-                        )}
-
-                        {profile.education && (
-                          <div className="flex items-center text-sm text-muted-foreground gap-2">
-                            <GraduationCap size={14} />
-                            <span className="truncate">{profile.education}</span>
-                          </div>
-                        )}
-
-                        {joinedValid && (
-                          <div className="flex items-center text-sm text-muted-foreground gap-2">
-                            <Calendar size={14} />
-                            Joined {joined.toLocaleDateString()}
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    {isAuthed && (
-                      <div className="flex flex-wrap gap-1.5">
-                        {profile.relationship_status && (
-                          <Badge variant="soft" className="text-xs gap-1">
-                            <Heart size={12} />
-                            {profile.relationship_status}
-                          </Badge>
-                        )}
-                        {profile.has_children && (
-                          <Badge variant="soft" className="text-xs">
-                            Children
-                          </Badge>
-                        )}
-                        {profile.has_pets && (
-                          <Badge variant="soft" className="text-xs">
-                            Pets
-                          </Badge>
-                        )}
-                        {profile.gender_identity && (
-                          <Badge variant="soft" className="text-xs">
-                            {profile.gender_identity}
-                          </Badge>
-                        )}
-                      </div>
-                    )}
-
-                    <div className="flex items-center justify-between pt-2 mt-auto border-t border-border">
-                      {profile.website ? (
-                        <a
-                          href={profile.website}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-sm font-medium inline-flex items-center gap-1 text-foreground"
-                          onClick={(e: React.MouseEvent) => e.stopPropagation()}
-                        >
-                          Visit website
-                          <ExternalLink size={12} />
-                        </a>
-                      ) : (
-                        <span />
-                      )}
-
-                      {isAuthed && (
-                        <div
-                          onClick={(e) => e.stopPropagation()}
-                          onKeyDown={(e) => e.stopPropagation()}
-                          role="presentation"
-                        >
-                          <StartConversationButton
-                            userId={profile.user_id}
-                            userName={profile.display_name || 'Anonymous member'}
-                            variant="outline"
-                            size="sm"
-                          />
-                        </div>
-                      )}
-                    </div>
-                  </Card>
-                </LocalizedLink>
+                  aria-label={profile.display_name || 'Anonymous member'}
+                  className="absolute inset-0 rounded-container no-underline focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                />
               </li>
             );
           })}

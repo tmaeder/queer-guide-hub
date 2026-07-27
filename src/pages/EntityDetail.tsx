@@ -132,12 +132,14 @@ function VenueNotFound({ slug, t }: { slug: string | undefined; t: TFunction }) 
           ?
         </p>
       )}
-      <LocalizedLink to="/venues">
-        <Button variant="outline">
+      {/* asChild, not a Link wrapping a Button — that nests a <button>
+          inside an <a>, which is invalid HTML. */}
+      <Button asChild variant="outline">
+        <LocalizedLink to="/venues" className="no-underline">
           <ArrowLeft className="w-4 h-4 mr-2" />
           {t('pages.venueDetail.backToVenues', 'Back to Venues')}
-        </Button>
-      </LocalizedLink>
+        </LocalizedLink>
+      </Button>
     </div>
   );
 }
@@ -155,12 +157,12 @@ function MilestoneNotFound({ t }: { t: TFunction }) {
           'No milestone matches this URL. It may have been removed or the link is incorrect.',
         )}
       </p>
-      <LocalizedLink to="/history">
-        <Button variant="outline">
+      <Button asChild variant="outline">
+        <LocalizedLink to="/history" className="no-underline">
           <ArrowLeft className="mr-2 h-4 w-4" />
           {t('pages.entityDetail.backToHistory', 'Back to the timeline')}
-        </Button>
-      </LocalizedLink>
+        </LocalizedLink>
+      </Button>
     </div>
   );
 }
@@ -178,12 +180,12 @@ function OrgNotFound({ t }: { t: TFunction }) {
           'No organization matches this URL. It may have been removed or the link is incorrect.',
         )}
       </p>
-      <LocalizedLink to="/search">
-        <Button variant="outline">
+      <Button asChild variant="outline">
+        <LocalizedLink to="/search" className="no-underline">
           <ArrowLeft className="mr-2 h-4 w-4" />
           {t('pages.entityDetail.backToSearch', 'Back to search')}
-        </Button>
-      </LocalizedLink>
+        </LocalizedLink>
+      </Button>
     </div>
   );
 }

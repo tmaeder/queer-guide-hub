@@ -257,12 +257,14 @@ export default function EventDetail() {
       <div className="container mx-auto px-4 py-8 text-center">
         <h2 className="mb-4 text-2xl font-bold">Event Not Found</h2>
         <p className="mb-6 text-muted-foreground">The event you're looking for doesn't exist.</p>
-        <LocalizedLink to="/events">
-          <Button>
+        {/* asChild, not a Link wrapping a Button — that nests a <button>
+            inside an <a>, which is invalid HTML. */}
+        <Button asChild>
+          <LocalizedLink to="/events" className="no-underline">
             <ArrowLeft size={16} className="mr-2" />
             Back to Events
-          </Button>
-        </LocalizedLink>
+          </LocalizedLink>
+        </Button>
       </div>
     );
     return <GatedDetailFallback entityType="event" slug={slug} notFound={eventNotFound} />;

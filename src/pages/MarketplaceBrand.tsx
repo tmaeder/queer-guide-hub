@@ -45,12 +45,14 @@ export default function MarketplaceBrand() {
     return (
       <div className="container mx-auto py-12 px-4 text-center">
         <h1 className="mb-4 text-headline font-display">Brand not found</h1>
-        <LocalizedLink to="/marketplace">
-          <Button>
+        {/* asChild, not a Link wrapping a Button — that nests a <button>
+            inside an <a>, which is invalid HTML. */}
+        <Button asChild>
+          <LocalizedLink to="/marketplace" className="no-underline">
             <ArrowLeft size={16} className="mr-2" />
             Back to Marketplace
-          </Button>
-        </LocalizedLink>
+          </LocalizedLink>
+        </Button>
       </div>
     );
   }

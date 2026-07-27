@@ -22,12 +22,14 @@ export default function MarketplaceCategories() {
     <div className="min-h-screen">
       <div className="container mx-auto py-12 md:py-20 px-4">
         <div className="mb-4">
-          <LocalizedLink to="/marketplace">
-            <Button variant="ghost" size="sm">
+          {/* asChild, not a Link wrapping a Button — that nests a <button>
+              inside an <a>, which is invalid HTML. */}
+          <Button asChild variant="ghost" size="sm">
+            <LocalizedLink to="/marketplace" className="no-underline">
               <ArrowLeft size={14} className="mr-1.5" />
               All marketplace
-            </Button>
-          </LocalizedLink>
+            </LocalizedLink>
+          </Button>
         </div>
         <PageHeader
           title="All categories"

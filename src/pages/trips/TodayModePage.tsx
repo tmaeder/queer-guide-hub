@@ -269,12 +269,14 @@ export default function TodayModePage() {
               "Today-mode only shows content while you're on the trip. Head back to the planner.",
             )}
           </p>
-          <LocalizedLink to={`/trips/${effectiveTrip.id}`}>
-            <Button variant="outline">
+          {/* asChild, not a Link wrapping a Button — that nests a <button>
+              inside an <a>, which is invalid HTML. */}
+          <Button asChild variant="outline">
+            <LocalizedLink to={`/trips/${effectiveTrip.id}`} className="no-underline">
               <ArrowLeft className="w-4 h-4 mr-1.5" />
               {t('trips.today.backToPlanner', 'Back to planner')}
-            </Button>
-          </LocalizedLink>
+            </LocalizedLink>
+          </Button>
         </div>
       </div>
     );

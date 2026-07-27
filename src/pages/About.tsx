@@ -374,24 +374,28 @@ export default function About() {
           </div>
 
           <div className="mt-10 flex flex-wrap gap-2">
-            <LocalizedLink to="/submit" className="no-underline">
-              <Button
-                size="lg"
-                className="bg-background text-foreground hover:bg-background/90 hover:opacity-100"
-              >
+            {/* asChild, not a Link wrapping a Button — that nests a <button>
+                inside an <a>, which is invalid HTML. */}
+            <Button
+              asChild
+              size="lg"
+              className="bg-background text-foreground hover:bg-background/90 hover:opacity-100"
+            >
+              <LocalizedLink to="/submit" className="no-underline">
                 Submit a venue
                 <ArrowRight size={18} className="ml-1" aria-hidden="true" />
-              </Button>
-            </LocalizedLink>
-            <LocalizedLink to="/donate" className="no-underline">
-              <Button
-                size="lg"
-                variant="outline"
-                className="border-background/40 bg-transparent text-background hover:bg-background/10 hover:text-background"
-              >
+              </LocalizedLink>
+            </Button>
+            <Button
+              asChild
+              size="lg"
+              variant="outline"
+              className="border-background/40 bg-transparent text-background hover:bg-background/10 hover:text-background"
+            >
+              <LocalizedLink to="/donate" className="no-underline">
                 Support us
-              </Button>
-            </LocalizedLink>
+              </LocalizedLink>
+            </Button>
           </div>
         </div>
       </section>

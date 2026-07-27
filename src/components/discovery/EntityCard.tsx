@@ -7,6 +7,11 @@ export type EntitySpan = 'sm' | 'md' | 'lg' | 'wide' | 'tall';
 interface EntityCardProps {
   href: string;
   title: React.ReactNode;
+  /**
+   * Accessible name for the card-wide click target. Required when `title` is
+   * not a plain string, since the overlay link has no text of its own.
+   */
+  linkLabel?: string;
   eyebrow?: React.ReactNode;
   meta?: React.ReactNode;
   image?: string | null;
@@ -14,6 +19,11 @@ interface EntityCardProps {
   span?: EntitySpan;
   overlay?: boolean;
   badges?: React.ReactNode;
+  /**
+   * Corner slot for per-card controls (favorite, share, …). Rendered as a
+   * sibling of the click target with `z-20`, so interactive nodes here are
+   * never nested inside the card's <a>.
+   */
   actions?: React.ReactNode;
   className?: string;
   children?: React.ReactNode;
@@ -38,6 +48,7 @@ const ASPECT_BY_SPAN: Record<EntitySpan, string> = {
 export function EntityCard({
   href,
   title,
+  linkLabel,
   eyebrow,
   meta,
   image,
@@ -50,11 +61,10 @@ export function EntityCard({
   children,
 }: EntityCardProps) {
   return (
-    <LocalizedLink
-      to={href}
+    <div
       className={cn(
         SPAN_CLASSES[span],
-        'group relative isolate flex flex-col overflow-hidden rounded-container border border-border bg-background no-underline transition-colors duration-300 hover:border-foreground/40 hover:bg-surface-container',
+        'group relative isolate flex flex-col overflow-hidden rounded-container border border-border bg-background transition-colors duration-300 hover:border-foreground/40 hover:bg-surface-container',
         className,
       )}
     >
@@ -79,10 +89,10 @@ export function EntityCard({
         )}
 
         {badges && (
-          <div className="absolute left-3 top-3 flex flex-wrap gap-1">{badges}</div>
+          <div className="absolute left-3 top-3 z-20 flex flex-wrap gap-1">{badges}</div>
         )}
         {actions && (
-          <div className="absolute right-2 top-2 flex items-center gap-1">{actions}</div>
+          <div className="absolute right-2 top-2 z-20 flex items-center gap-1">{actions}</div>
         )}
 
         {overlay && (
@@ -121,6 +131,17 @@ export function EntityCard({
         aria-hidden="true"
         className="absolute inset-x-0 bottom-0 h-px w-0 bg-foreground transition-[width] duration-500 ease-out group-hover:w-full"
       />
-    </LocalizedLink>
+
+      {/* Card-wide click target. Overlay sibling (not a wrapper) so anything
+          passed to `badges` / `actions` / `children` is never nested inside an
+          <a> — that is invalid HTML and axe `nested-interactive`. `no-underline`
+          is load-bearing: `li a:not(.no-underline)` in index.css is unlayered
+          and would force position:relative, collapsing the overlay. */}
+      <LocalizedLink
+        to={href}
+        aria-label={linkLabel ?? (typeof title === 'string' ? title : undefined)}
+        className="absolute inset-0 z-10 rounded-container no-underline"
+      />
+    </div>
   );
 }

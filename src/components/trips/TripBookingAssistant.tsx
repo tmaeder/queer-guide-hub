@@ -366,11 +366,13 @@ export function TripBookingAssistant({ tripId, places, _days, startDate, endDate
             <div className="flex items-center gap-2 p-4 bg-muted rounded-element">
               <Plane size={16} className="text-muted-foreground" />
               <p className="text-sm flex-1">{t('trips.bookingAssistant.flights', 'Flights')}</p>
-              <LocalizedLink to="/travel?tab=flights">
-                <Button variant="outline" size="sm">
+              {/* asChild, not a Link wrapping a Button — that nests a <button>
+                  inside an <a>, which is invalid HTML. */}
+              <Button asChild variant="outline" size="sm">
+                <LocalizedLink to="/travel?tab=flights" className="no-underline">
                   {t('trips.bookingAssistant.search', 'Search')}
-                </Button>
-              </LocalizedLink>
+                </LocalizedLink>
+              </Button>
             </div>
           )}
           {hasFlightBooked && (
@@ -392,13 +394,14 @@ export function TripBookingAssistant({ tripId, places, _days, startDate, endDate
                     })
                   : t('trips.bookingAssistant.hotel', 'Hotel')}
               </p>
-              <LocalizedLink
-                to={`/travel?tab=hotels${firstCity ? `&city=${encodeURIComponent(firstCity.name)}` : ''}`}
-              >
-                <Button variant="outline" size="sm">
+              <Button asChild variant="outline" size="sm">
+                <LocalizedLink
+                  to={`/travel?tab=hotels${firstCity ? `&city=${encodeURIComponent(firstCity.name)}` : ''}`}
+                  className="no-underline"
+                >
                   {t('trips.bookingAssistant.search', 'Search')}
-                </Button>
-              </LocalizedLink>
+                </LocalizedLink>
+              </Button>
             </div>
           )}
           {hasHotelBooked && (
