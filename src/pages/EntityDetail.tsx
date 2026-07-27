@@ -8,6 +8,8 @@ import { Button } from '@/components/ui/button';
 import { useMeta } from '@/hooks/useMeta';
 import { useTrackView } from '@/hooks/useTrackView';
 import { useTrackEvent } from '@/hooks/useTrackEvent';
+import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
+import { useSlugRedirect, type SlugRedirectConfig } from '@/hooks/useSlugRedirect';
 import { GatedDetailFallback } from '@/components/safety/GatedDetailFallback';
 import { NotFoundMeta } from '@/components/seo/NotFoundMeta';
 import { EntityDetailScroll } from '@/components/entity/EntityDetailScroll';
@@ -81,6 +83,18 @@ function EntityDetailView({
 }) {
   const { descriptor, isLoading, error, notFound } = result;
   const { track } = useTrackEvent();
+  const navigate = useLocalizedNavigate();
+
+  const redirectConfig = REDIRECT_CONFIG[source] ?? NO_REDIRECT_CONFIG;
+  const redirectSlug = useSlugRedirect(
+    redirectConfig,
+    !isLoading && notFound ? (slug ?? null) : null,
+  );
+  useEffect(() => {
+    if (redirectSlug) navigate(`${redirectConfig.routePrefix}/${redirectSlug}`, { replace: true });
+    // redirectConfig is derived from `source`, which is fixed per instance.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [redirectSlug, navigate]);
 
   useMeta(descriptor?.meta ?? {});
   useTrackView(
@@ -106,6 +120,33 @@ function EntityDetailView({
 
   return <EntityDetailScroll descriptor={descriptor} loading={isLoading} error={error} />;
 }
+
+// Merged-duplicate slug-redirect config per source (venue is handled inside
+// useVenueDescriptor/fetchVenueWithReviews already). Client-side fallback for
+// in-app navigation — the edge middleware handles the SEO-correct 301.
+// Dummy config passed for sources with no entry (venue) — oldSlug is always
+// null for those, so useSlugRedirect short-circuits before reading these.
+const NO_REDIRECT_CONFIG: SlugRedirectConfig & { routePrefix: string } = {
+  redirectTable: '',
+  redirectIdColumn: '',
+  entityTable: '',
+  routePrefix: '',
+};
+
+const REDIRECT_CONFIG: Partial<Record<EntitySource, SlugRedirectConfig & { routePrefix: string }>> = {
+  organization: {
+    redirectTable: 'org_slug_redirects',
+    redirectIdColumn: 'organization_id',
+    entityTable: 'organizations',
+    routePrefix: '/organizations',
+  },
+  milestone: {
+    redirectTable: 'milestone_slug_redirects',
+    redirectIdColumn: 'milestone_id',
+    entityTable: 'milestones',
+    routePrefix: '/history',
+  },
+};
 
 const SECTION_SLUGS = ['hotels', 'events', 'news', 'marketplace', 'travel', 'groups', 'resources'];
 

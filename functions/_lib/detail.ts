@@ -1088,13 +1088,38 @@ export function isDetailPath(pathname: string): boolean {
   return matchDetailPath(pathname) !== null;
 }
 
+// Merged/renamed-entity slug redirects, one row per `kindRaw` match. Each
+// entity's merge core (or, for guides, the rename flow) leaves the old slug in
+// `<redirectTable>` (old_slug → <redirectIdColumn>); this drives the generic
+// lookup below. Marketplace and organizations aren't here — they have no edge
+// SSR detail route at all (not in DETAIL_ROUTE_RE), so an edge 301 isn't
+// architecturally possible for them yet. Tags are skipped too — their public
+// routes are topic/category pages, not a single `/tags/:slug` detail page, so
+// the redirect target isn't a simple slug swap.
+const SLUG_REDIRECT_KINDS: Array<{
+  test: (kindRaw: string) => boolean;
+  redirectTable: string;
+  redirectIdColumn: string;
+  entityTable: string;
+  routePrefix: string;
+}> = [
+  { test: (k) => k.startsWith('venue'), redirectTable: 'venue_slug_redirects', redirectIdColumn: 'venue_id', entityTable: 'venues', routePrefix: '/venues' },
+  { test: (k) => k.startsWith('event'), redirectTable: 'event_slug_redirects', redirectIdColumn: 'event_id', entityTable: 'events', routePrefix: '/events' },
+  { test: (k) => k.startsWith('personalit'), redirectTable: 'personality_slug_redirects', redirectIdColumn: 'personality_id', entityTable: 'personalities', routePrefix: '/personalities' },
+  { test: (k) => k === 'country', redirectTable: 'country_slug_redirects', redirectIdColumn: 'country_id', entityTable: 'countries', routePrefix: '/country' },
+  { test: (k) => k.startsWith('hotel'), redirectTable: 'hotel_slug_redirects', redirectIdColumn: 'hotel_id', entityTable: 'hotels', routePrefix: '/hotels' },
+  { test: (k) => k.startsWith('village'), redirectTable: 'village_slug_redirects', redirectIdColumn: 'village_id', entityTable: 'queer_villages', routePrefix: '/villages' },
+  { test: (k) => k === 'news', redirectTable: 'news_slug_redirects', redirectIdColumn: 'article_id', entityTable: 'news_articles', routePrefix: '/news' },
+  { test: (k) => k === 'history', redirectTable: 'milestone_slug_redirects', redirectIdColumn: 'milestone_id', entityTable: 'milestones', routePrefix: '/history' },
+  { test: (k) => k === 'guides', redirectTable: 'guide_slug_redirects', redirectIdColumn: 'guide_id', entityTable: 'guides', routePrefix: '/guides' },
+];
+
 /**
- * Renamed-venue redirect. A merged/renamed venue leaves its old slug in
- * `venue_slug_redirects` (old_slug → venue_id). When a `/venues/:slug` row is
- * missing, check for a redirect and return the venue's CURRENT `/venues/:slug`
+ * Merged/renamed-entity redirect. A dropped or renamed row leaves its old slug
+ * in a `<type>_slug_redirects` table (old_slug → canonical id). When a detail
+ * route's row is missing, check for a redirect and return the CURRENT detail
  * path so the middleware can emit a real 301 (keeps SEO link equity). Returns
- * the de-localised target path, or null if no redirect exists. Venues are the
- * only public entity with a slug-redirect table + a public detail route.
+ * the de-localised target path, or null if no redirect exists.
  */
 export async function resolveSlugRedirect(
   env: Env,
@@ -1107,37 +1132,22 @@ export async function resolveSlugRedirect(
   if (!m) return null;
   const [, kindRaw, rawSlug] = m;
   const slug = decodeURIComponent(rawSlug);
+  const kind = SLUG_REDIRECT_KINDS.find((k) => k.test(kindRaw));
+  if (!kind) return null;
   try {
-    if (kindRaw === 'guides') {
-      // Backfill-suffixed / renamed guide slugs live in guide_slug_redirects.
-      const redirectRows = await fetchRows(
-        env,
-        'guide_slug_redirects',
-        'guide_id',
-        `old_slug=eq.${encodeURIComponent(slug)}`,
-        1,
-      );
-      const guideId = stringField(redirectRows[0] ?? {}, 'guide_id');
-      if (!guideId) return null;
-      const guideRows = await fetchRows(env, 'guides', 'slug', `id=eq.${guideId}`, 1);
-      const newSlug = stringField(guideRows[0] ?? {}, 'slug');
-      if (!newSlug || newSlug === slug) return null;
-      return `/guides/${newSlug}`;
-    }
-    if (!kindRaw.startsWith('venue')) return null;
     const redirectRows = await fetchRows(
       env,
-      'venue_slug_redirects',
-      'venue_id',
+      kind.redirectTable,
+      kind.redirectIdColumn,
       `old_slug=eq.${encodeURIComponent(slug)}`,
       1,
     );
-    const venueId = stringField(redirectRows[0] ?? {}, 'venue_id');
-    if (!venueId) return null;
-    const venueRows = await fetchRows(env, 'venues', 'slug', `id=eq.${venueId}`, 1);
-    const newSlug = stringField(venueRows[0] ?? {}, 'slug');
+    const canonicalId = stringField(redirectRows[0] ?? {}, kind.redirectIdColumn);
+    if (!canonicalId) return null;
+    const canonicalRows = await fetchRows(env, kind.entityTable, 'slug', `id=eq.${canonicalId}`, 1);
+    const newSlug = stringField(canonicalRows[0] ?? {}, 'slug');
     if (!newSlug || newSlug === slug) return null;
-    return `/venues/${newSlug}`;
+    return `${kind.routePrefix}/${newSlug}`;
   } catch {
     return null;
   }

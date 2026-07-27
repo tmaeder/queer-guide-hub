@@ -2,6 +2,7 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useBreadcrumbs } from '@/contexts/BreadcrumbContext';
 import { useParams } from 'react-router';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
+import { useSlugRedirect } from '@/hooks/useSlugRedirect';
 import { PodcastPlayer } from '@/components/news/PodcastPlayer';
 import { MilestonesForEntity } from '@/components/discovery/MilestonesForEntity';
 import { useEffect, useMemo, useState } from 'react';
@@ -161,6 +162,16 @@ export default function NewsDetail() {
       cancelled = true;
     };
   }, [slug, navigate]);
+
+  // Merged-duplicate slug redirect (news_slug_redirects); client-side fallback
+  // for in-app navigation — the edge middleware handles the SEO-correct 301.
+  const redirectNewsSlug = useSlugRedirect(
+    { redirectTable: 'news_slug_redirects', redirectIdColumn: 'article_id', entityTable: 'news_articles' },
+    !loading && !article ? (slug ?? null) : null,
+  );
+  useEffect(() => {
+    if (redirectNewsSlug) navigate(`/news/${redirectNewsSlug}`, { replace: true });
+  }, [redirectNewsSlug, navigate]);
 
   const handleShare = async () => {
     const url = window.location.href;

@@ -11,6 +11,8 @@ import { useFavorites } from '@/hooks/useFavorites';
 import { useVenues } from '@/hooks/useVenues';
 import { useEvents } from '@/hooks/useEvents';
 import { useEntityDetail } from '@/hooks/useEntityDetail';
+import { useSlugRedirect } from '@/hooks/useSlugRedirect';
+import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { EntityDetailLayout } from '@/components/entity/EntityDetailLayout';
 import {
   EditorialDetailLayout,
@@ -44,6 +46,7 @@ export default function QueerVillageDetail() {
   const { t } = useTranslation();
   const { slug } = useParams<{ slug: string }>();
   const { toast } = useToast();
+  const navigate = useLocalizedNavigate();
   const { toggleFavorite, isFavorited } = useFavorites('queer_village');
 
   const {
@@ -57,6 +60,16 @@ export default function QueerVillageDetail() {
     joinSpec: JOIN_SPEC,
     queryKey: 'queer-village-detail',
   });
+
+  // Merged-duplicate slug redirect (village_slug_redirects); client-side
+  // fallback for in-app navigation — the edge middleware handles the 301.
+  const redirectVillageSlug = useSlugRedirect(
+    { redirectTable: 'village_slug_redirects', redirectIdColumn: 'village_id', entityTable: 'queer_villages' },
+    !isLoading && !village ? (slug ?? null) : null,
+  );
+  useEffect(() => {
+    if (redirectVillageSlug) navigate(`/villages/${redirectVillageSlug}`, { replace: true });
+  }, [redirectVillageSlug, navigate]);
 
   const cityName = village?.cities?.name;
   const { venues, loading: venuesLoading, fetchVenues } = useVenues(false);

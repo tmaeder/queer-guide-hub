@@ -5,6 +5,8 @@ import { useTranslation } from 'react-i18next';
 import { useTrackView } from '@/hooks/useTrackView';
 import { resolveEntityImage } from '@/lib/images/resolveEntityImage';
 import { useTrackEvent } from '@/hooks/useTrackEvent';
+import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
+import { useSlugRedirect } from '@/hooks/useSlugRedirect';
 import { PageLoading } from '@/components/ui/loading';
 import SafetyAlertBanner from '@/components/country/SafetyAlertBanner';
 import { GatedContentNotice } from '@/components/safety/GatedContentNotice';
@@ -51,8 +53,19 @@ export default function CountryDetail() {
   const { slug: countrySlug } = useParams<{ slug: string }>();
   const { t } = useTranslation();
   const { track } = useTrackEvent();
+  const navigate = useLocalizedNavigate();
 
   const { country, loading, refetch: refetchCountry } = useOptimizedCountry(countrySlug ?? '');
+
+  // Merged-duplicate slug redirect (country_slug_redirects); client-side
+  // fallback for in-app navigation — the edge middleware handles the 301.
+  const redirectCountrySlug = useSlugRedirect(
+    { redirectTable: 'country_slug_redirects', redirectIdColumn: 'country_id', entityTable: 'countries' },
+    !loading && !country ? (countrySlug ?? null) : null,
+  );
+  useEffect(() => {
+    if (redirectCountrySlug) navigate(`/country/${redirectCountrySlug}`, { replace: true });
+  }, [redirectCountrySlug, navigate]);
 
   useTrackView({
     type: 'country',

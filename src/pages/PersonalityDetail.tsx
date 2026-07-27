@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { ArrowLeft } from 'lucide-react';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
+import { useSlugRedirect } from '@/hooks/useSlugRedirect';
 import { useMeta } from '@/hooks/useMeta';
 import { Button } from '@/components/ui/button';
 import { SimilarItems } from '@/components/discovery/SimilarItems';
@@ -40,6 +41,20 @@ export default function PersonalityDetail() {
     queryFn: () => fetchPersonalityBySlug(slug!),
     retry: false,
   });
+
+  // Merged-duplicate slug redirect (personality_slug_redirects); client-side
+  // fallback for in-app navigation — the edge middleware handles the 301.
+  const redirectPersonalitySlug = useSlugRedirect(
+    {
+      redirectTable: 'personality_slug_redirects',
+      redirectIdColumn: 'personality_id',
+      entityTable: 'personalities',
+    },
+    !isLoading && !personality ? (slug ?? null) : null,
+  );
+  useEffect(() => {
+    if (redirectPersonalitySlug) navigate(`/personalities/${redirectPersonalitySlug}`, { replace: true });
+  }, [redirectPersonalitySlug, navigate]);
 
   // Note: deliberately NOT storing nationality — it's sensitive personal data
   // and recently-viewed history lives in plaintext localStorage.
