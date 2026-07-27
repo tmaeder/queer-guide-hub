@@ -40,7 +40,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { useAdminCounts } from '@/hooks/useAdminCounts';
 import { ORG_ROLE_LABELS, useAdminOrgList, useOrgSpineDrift } from '@/hooks/useBusinessSpine';
 
 const ROLE_FILTERS = ['venue', 'hotel', 'seller', 'affiliate_partner', 'brand', 'publisher', 'support'];
@@ -78,8 +77,6 @@ export default function AdminBusiness() {
     claimStatus: claim || undefined,
   });
   const { data: drift } = useOrgSpineDrift();
-  const { data: counts } = useAdminCounts();
-  const brandsPending = counts?.review_brands ?? 0;
 
   const setParam = (key: string, value: string) => {
     const next = new URLSearchParams(searchParams);
@@ -115,9 +112,10 @@ export default function AdminBusiness() {
             </TabsTrigger>
             <TabsTrigger value="hotels">Hotels</TabsTrigger>
             <TabsTrigger value="merchants">Merchants</TabsTrigger>
-            <TabsTrigger value="brands">
-              Brands{brandsPending > 0 ? ` (${brandsPending})` : ''}
-            </TabsTrigger>
+            {/* No count: get_admin_counts exposes no brand key (the old
+                /admin/brands nav badge read a `review_brands` that never
+                existed). The queue itself shows the pending rows. */}
+            <TabsTrigger value="brands">Brands</TabsTrigger>
             <TabsTrigger value="partners">Partners</TabsTrigger>
             <TabsTrigger value="review">
               Link review{drift && drift.suggestions_open > 0 ? ` (${drift.suggestions_open})` : ''}
