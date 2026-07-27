@@ -9,7 +9,15 @@ import { Image } from './Image';
 export { MotionCard } from './MotionCard';
 
 interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
-  hoverable?: boolean;
+  /**
+   * `true` — the card reacts to hovering itself.
+   * `'group'` — the card reacts to hovering an ancestor marked `group`. Use this
+   * whenever the card's click target is an absolutely-positioned overlay link
+   * rendered as a SIBLING of the card (the card-overlay convention): the overlay
+   * covers the card, so the pointer never puts the card in its own hover chain
+   * and plain `hover:` silently never fires. `CardHoverEffect` is the `group`.
+   */
+  hoverable?: boolean | 'group';
 }
 
 const Card = React.forwardRef<HTMLDivElement, CardProps>(
@@ -18,7 +26,8 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
       ref={ref}
       className={cn(
         'bg-card text-card-foreground rounded-container border border-border transition-all duration-[250ms] ease-[cubic-bezier(0.22,1,0.36,1)]',
-        hoverable && 'cursor-pointer hover:bg-muted/40 hover:border-foreground/50',
+        hoverable === 'group' && 'group-hover:bg-muted/40 group-hover:border-foreground/50',
+        hoverable === true && 'cursor-pointer hover:bg-muted/40 hover:border-foreground/50',
         className,
       )}
       {...props}

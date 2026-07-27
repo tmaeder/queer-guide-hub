@@ -137,7 +137,7 @@ export const EventCard = memo(function EventCard({ event, loading = false, socia
     >
       {event && (
         <CardHoverEffect>
-          <Card hoverable className="group overflow-hidden">
+          <Card hoverable="group" className="overflow-hidden">
             <Image
               src={resolvedImage}
               alt={event.title}
