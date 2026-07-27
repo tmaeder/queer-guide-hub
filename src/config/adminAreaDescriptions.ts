@@ -27,8 +27,8 @@ export const ADMIN_AREA_DESCRIPTIONS: Record<string, string> = {
   '/admin/content/cities': 'Cities. Edit details and merge name-variant duplicates.',
   '/admin/content/countries': 'Countries. Edit metadata, safety, and equality data.',
   '/admin/content/hotels': 'Hotels and BnBs. Edit listings and amenities.',
-  '/admin/hotels':
-    'Hotels and BnBs. Edit listings, amenities, and regenerate safety notes from signals.',
+  '/admin/business':
+    'Every business on the platform on one spine — directory plus hotels, merchants, brands, partners and the adoption link-review queue.',
   '/admin/content/queer_villages': 'Queer villages and neighborhoods. Edit listings.',
   '/admin/villages': 'Queer villages and neighborhoods. Edit listings, scores, and venue links.',
   '/admin/content/marketplace_listings':

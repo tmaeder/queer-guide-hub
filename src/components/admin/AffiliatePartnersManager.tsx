@@ -39,9 +39,17 @@ const emptyForm = {
   sub_field: 'sub_id',
 };
 
-export function AffiliatePartnersManager() {
+export function AffiliatePartnersManager({
+  organizationId,
+  embedded = false,
+}: {
+  /** Scope to one business: shows only that org's partner rows. */
+  organizationId?: string;
+  /** Drop the page-level container — the host already provides padding. */
+  embedded?: boolean;
+} = {}) {
   const {
-    partners,
+    partners: allPartners,
     loading,
     error: fetchError,
     fetchPartners,
@@ -53,6 +61,13 @@ export function AffiliatePartnersManager() {
   const [editId, setEditId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
+
+  const partners = organizationId
+    ? allPartners.filter(
+        (p) => (p as unknown as Record<string, unknown>).organization_id === organizationId,
+      )
+    : allPartners;
+  const shell = embedded ? '' : 'p-6 max-w-[1000px] mx-auto';
 
   const openCreate = () => {
     setEditId(null);
@@ -146,7 +161,7 @@ export function AffiliatePartnersManager() {
 
   if (fetchError) {
     return (
-      <div className="p-6 max-w-[1000px] mx-auto">
+      <div className={shell}>
         <div className="rounded-element border bg-card p-8 text-center">
           <AlertCircle size={32} style={{ margin: '0 auto 12px' }} className="text-destructive" />
           <h6 className="text-lg font-medium mb-1">Failed to load affiliate partners</h6>
@@ -161,7 +176,7 @@ export function AffiliatePartnersManager() {
   }
 
   return (
-    <div className="p-6 max-w-[1000px] mx-auto">
+    <div className={shell}>
       <div className="flex justify-between items-center mb-6">
         <h5 className="text-xl font-medium flex items-center gap-2">
           <Handshake size={24} />
@@ -174,7 +189,11 @@ export function AffiliatePartnersManager() {
 
       {partners.length === 0 ? (
         <div className="rounded-element border bg-card p-8 text-center">
-          <p className="text-muted-foreground">No affiliate partners configured yet.</p>
+          <p className="text-muted-foreground">
+            {organizationId
+              ? 'No affiliate partner linked to this business yet.'
+              : 'No affiliate partners configured yet.'}
+          </p>
         </div>
       ) : (
         <div className="flex flex-col gap-4">

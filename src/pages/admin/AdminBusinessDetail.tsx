@@ -8,6 +8,8 @@ import { useState } from 'react';
 import { Link, useParams } from 'react-router';
 import { ExternalLink, Link2, Loader2, Unlink } from 'lucide-react';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
+import { AffiliatePartnersManager } from '@/components/admin/AffiliatePartnersManager';
+import { MerchantsManager } from '@/components/admin/affiliate/MerchantsManager';
 import { OrgEntityPickerDialog } from '@/components/admin/business/OrgEntityPickerDialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -188,6 +190,20 @@ export default function AdminBusinessDetail() {
               </Button>
             </div>
             <LinkedList orgId={org.id} entityType={t.type} rows={linked?.[t.type] ?? []} />
+
+            {/* Below the link list: the operational registry for this business,
+                so vendor sync config and partner payout settings are editable
+                without leaving the business. */}
+            {t.type === 'merchant' && (
+              <div className="mt-8 border-t pt-6">
+                <MerchantsManager organizationId={org.id} />
+              </div>
+            )}
+            {t.type === 'affiliate_partner' && (
+              <div className="mt-8 border-t pt-6">
+                <AffiliatePartnersManager organizationId={org.id} embedded />
+              </div>
+            )}
           </TabsContent>
         ))}
       </Tabs>

@@ -110,15 +110,12 @@ const PlaceDetail = lazyRetry(() => import('./pages/PlaceDetail'));
 // Festivals routes now redirect to /events (festivals integrated into events)
 
 // New admin pages
-const AdminHotels = lazyRetry(() => import('./pages/admin/AdminHotels'));
 const AdminQueerVillages = lazyRetry(() => import('./pages/admin/AdminQueerVillages'));
 const AdminGeography = lazyRetry(() => import('./pages/admin/AdminGeography'));
 const AdminInbox = lazyRetry(() => import('./pages/admin/AdminInbox'));
 const AdminAutomation = lazyRetry(() => import('./pages/admin/AdminAutomation'));
 const AdminFeedback = lazyRetry(() => import('./pages/AdminFeedback'));
 const AdminAffiliate = lazyRetry(() => import('./pages/admin/AdminAffiliate'));
-const AdminVendors = lazyRetry(() => import('./pages/admin/AdminVendors'));
-const AdminBrands = lazyRetry(() => import('./pages/admin/AdminBrands'));
 const AdminBusiness = lazyRetry(() => import('./pages/admin/AdminBusiness'));
 const AdminBusinessDetail = lazyRetry(() => import('./pages/admin/AdminBusinessDetail'));
 
@@ -359,8 +356,9 @@ export const AppRoutes = () => {
                 <Route index element={<AdminDashboard />} />
                 <Route path="analytics" element={<AdminAnalytics />} />
                 <Route path="affiliate" element={<AdminAffiliate />} />
-                <Route path="vendors" element={<AdminVendors />} />
-                <Route path="brands" element={<AdminBrands />} />
+                {/* Vendors and brands were absorbed by the Business console. */}
+                <Route path="vendors" element={<Navigate to="/admin/business?tab=merchants" replace />} />
+                <Route path="brands" element={<Navigate to="/admin/business?tab=brands" replace />} />
                 <Route path="business" element={<AdminBusiness />} />
                 <Route path="business/:id" element={<AdminBusinessDetail />} />
                 <Route path="maps" element={<AdminMaps />} />
@@ -433,7 +431,8 @@ export const AppRoutes = () => {
                 <Route path="content/twenty-crm" element={<AdminTwentyCrm />} />
                 <Route path="content/village-quality" element={<Navigate to="/admin/quality" replace />} />
                 <Route path="content/group-requests" element={<AdminGroupRequests />} />
-                <Route path="hotels" element={<AdminHotels />} />
+                {/* Hotel CRUD now lives in the Business console's Hotels tab. */}
+                <Route path="hotels" element={<Navigate to="/admin/business?tab=hotels" replace />} />
                 <Route path="villages" element={<AdminQueerVillages />} />
                 <Route path="geography" element={<AdminGeography />} />
 
