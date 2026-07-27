@@ -3,13 +3,17 @@ import { test, expect } from '@playwright/test';
 /**
  * Design system enforcement tests.
  *
- * Verify the semantic 3-tier radius (16/8/4 px — see CLAUDE.md §Shape)
- * and monochrome (no chromatic colors in public pages).
+ * Verify the semantic 3-tier radius (see CLAUDE.md §Shape) and monochrome
+ * (no chromatic colors in public pages).
  *
- * The original "flat / 0 radius" assertions were tightened to specific
- * pixel values after commit ca37912d intentionally moved to the rounded
- * --radius-container (1rem) / --radius-element (0.5rem) / --radius-badge
- * (0.25rem) tokens.
+ * Radius assertions read --radius-{container,element,badge} off the document
+ * at runtime instead of hardcoding px. They used to assert 16/8/4 literally,
+ * which silently went stale the moment a design pass re-tuned the trio (the
+ * PHOTOCOPY rebrand moved it to 8/4/0 and broke four of these tests) — and
+ * because this spec is nightly-only, nothing surfaced it on the PR. The trio
+ * is also runtime-overridable via /admin/design, so a literal can never be
+ * the source of truth. What these tests actually guard is that cards/buttons/
+ * dialogs/badges each consume the RIGHT tier, not any particular value.
  */
 
 const dismissCookieBanner = async (page) => {
@@ -20,7 +24,7 @@ const dismissCookieBanner = async (page) => {
     .catch(() => {});
 };
 
-test.describe('design system: semantic radius (16/8/4)', () => {
+test.describe('design system: semantic radius (token-derived)', () => {
   test.beforeEach(async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 900 });
     await page.goto('/events');
@@ -69,7 +73,7 @@ test.describe('design system: semantic radius (16/8/4)', () => {
 });
 
 test.describe('design system: buttons', () => {
-  test('app buttons use --radius-element (8px)', async ({ page }) => {
+  test('app buttons use --radius-element', async ({ page }) => {
     await page.goto('/events');
     await page.waitForLoadState('networkidle');
     await dismissCookieBanner(page);
@@ -81,17 +85,22 @@ test.describe('design system: buttons', () => {
       .first();
     if ((await btn.count()) > 0) {
       await expect(btn).toBeVisible();
-      const radius = await btn.evaluate((el) => getComputedStyle(el).borderRadius);
-      // 8px = --radius-element. Allow rounded-full (≥9999px) escape hatch
-      // for icon-only / avatar buttons.
+      const { radius, token } = await btn.evaluate((el) => ({
+        radius: getComputedStyle(el).borderRadius,
+        token: getComputedStyle(document.documentElement)
+          .getPropertyValue('--radius-element')
+          .trim(),
+      }));
+      // Read the token, not a literal, so a design pass can re-tune the trio.
+      // Allow rounded-full (≥9999px) escape hatch for icon/avatar buttons.
       const px = parseInt(radius, 10);
-      expect(px === 8 || px >= 9999).toBe(true);
+      expect(px === parseFloat(token) * 16 || px >= 9999).toBe(true);
     }
   });
 });
 
 test.describe('design system: dialog', () => {
-  test('dialog uses --radius-container (16px)', async ({ page }) => {
+  test('dialog uses --radius-container', async ({ page }) => {
     await page.goto('/trips');
     await page.waitForLoadState('networkidle');
     await dismissCookieBanner(page);
@@ -104,12 +113,17 @@ test.describe('design system: dialog', () => {
       await page.waitForTimeout(500);
       const dialog = page.getByRole('dialog').first();
       if ((await dialog.count()) > 0) {
-        const radius = await dialog.evaluate((el) => {
+        const { radius, token } = await dialog.evaluate((el) => {
           // The dialog content panel is the styled child
           const panel = el.querySelector('[class*="DialogContent"], [class*="dialog"]') || el;
-          return getComputedStyle(panel).borderRadius;
+          return {
+            radius: getComputedStyle(panel).borderRadius,
+            token: getComputedStyle(document.documentElement)
+              .getPropertyValue('--radius-container')
+              .trim(),
+          };
         });
-        expect(radius).toBe('16px');
+        expect(radius).toBe(`${parseFloat(token) * 16}px`);
       }
     }
   });
