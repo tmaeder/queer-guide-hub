@@ -54,12 +54,14 @@ export function TravelDealsSection({ destinationIata, destinationCity }: TravelD
             ? `Flight deals to ${destinationCity} aren't available yet`
             : `Enable location to see personalized flight deals to ${destinationCity}`}
         </p>
-        <LocalizedLink to="/travel">
-          <Button variant="outline" size="sm">
+        {/* asChild, not a Link wrapping a Button — that nests a <button>
+            inside an <a>, which is invalid HTML. */}
+        <Button asChild variant="outline" size="sm">
+          <LocalizedLink to="/travel" className="no-underline">
             <Plane size={14} className="mr-1.5" />
             Search Flights Manually
-          </Button>
-        </LocalizedLink>
+          </LocalizedLink>
+        </Button>
       </div>
     );
   }
@@ -74,11 +76,14 @@ export function TravelDealsSection({ destinationIata, destinationCity }: TravelD
           </h3>
           <p className="text-xs text-muted-foreground">Best deals based on your location</p>
         </div>
-        <LocalizedLink to={`/travel${destinationIata ? `?to=${destinationIata}` : ''}`}>
-          <Button variant="ghost" size="sm">
+        <Button asChild variant="ghost" size="sm">
+          <LocalizedLink
+            to={`/travel${destinationIata ? `?to=${destinationIata}` : ''}`}
+            className="no-underline"
+          >
             More <ArrowRight size={14} className="ml-1" />
-          </Button>
-        </LocalizedLink>
+          </LocalizedLink>
+        </Button>
       </div>
 
       {loading ? (
@@ -102,11 +107,14 @@ export function TravelDealsSection({ destinationIata, destinationCity }: TravelD
         <div className="text-center py-6 bg-muted rounded-element">
           <Plane size={24} style={{ margin: '0 auto 8px' }} className="text-muted-foreground" />
           <p className="text-muted-foreground mb-2">No deals available right now</p>
-          <LocalizedLink to={`/travel${destinationIata ? `?to=${destinationIata}` : ''}`}>
-            <Button variant="outline" size="sm">
+          <Button asChild variant="outline" size="sm">
+            <LocalizedLink
+              to={`/travel${destinationIata ? `?to=${destinationIata}` : ''}`}
+              className="no-underline"
+            >
               Search Flights to {destinationCity}
-            </Button>
-          </LocalizedLink>
+            </LocalizedLink>
+          </Button>
         </div>
       )}
     </div>
