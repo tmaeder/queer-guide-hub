@@ -200,7 +200,7 @@ export function RedirectFormDialog({
                 style={{
                   color: validationErrors.slug
                     ? 'hsl(var(--destructive))'
-                    : 'var(--muted-foreground)',
+                    : 'hsl(var(--muted-foreground))',
                 }}
               >
                 {validationErrors.slug || `Short URL: queer.guide/go/${slug || '...'}`}
@@ -250,7 +250,7 @@ export function RedirectFormDialog({
               style={{
                 color: validationErrors.target
                   ? 'hsl(var(--destructive))'
-                  : 'var(--muted-foreground)',
+                  : 'hsl(var(--muted-foreground))',
               }}
             >
               {validationErrors.target || 'Relative path (/page) or allowlisted absolute URL'}
@@ -296,7 +296,7 @@ export function RedirectFormDialog({
                 style={{
                   color: validationErrors.queryOverride
                     ? 'hsl(var(--destructive))'
-                    : 'var(--muted-foreground)',
+                    : 'hsl(var(--muted-foreground))',
                 }}
               >
                 {validationErrors.queryOverride || 'e.g. {"ref":"campaign-a"}'}
@@ -312,7 +312,7 @@ export function RedirectFormDialog({
               style={{
                 color: validationErrors.utmDefaults
                   ? 'hsl(var(--destructive))'
-                  : 'var(--muted-foreground)',
+                  : 'hsl(var(--muted-foreground))',
               }}
             >
               {validationErrors.utmDefaults || 'Added if not already present'}

@@ -136,10 +136,10 @@ export function PersonalizedFeed() {
                           style={{
                             color:
                               city.equality_score >= 70
-                                ? 'var(--success)'
+                                ? 'hsl(var(--success))'
                                 : city.equality_score >= 40
-                                  ? 'var(--warning)'
-                                  : 'var(--destructive)',
+                                  ? 'hsl(var(--warning))'
+                                  : 'hsl(var(--destructive))',
                           }}
                         />
                         <span className="font-semibold" style={{ fontSize: '0.7rem' }}>

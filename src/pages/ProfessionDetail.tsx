@@ -99,7 +99,7 @@ export default function ProfessionDetail() {
   if (error || !professionData) {
     return (
       <div className="container mx-auto py-6 px-4">
-        <Card style={{ borderColor: 'var(--destructive)' }}>
+        <Card style={{ borderColor: 'hsl(var(--destructive))' }}>
           <CardContent className="p-6 text-center">
             <p className="text-destructive">{error || 'Profession not found'}</p>
             <Button variant="outline" onClick={handleBack} className="mt-4">

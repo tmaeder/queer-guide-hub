@@ -173,7 +173,7 @@ export const DirectoryCard = ({ type, name, data, onClick }: DirectoryCardProps)
                   justifyContent: 'center',
                   width: 24,
                   height: 24,
-                  backgroundColor: 'rgba(var(--primary-rgb), 0.1)',
+                  backgroundColor: 'hsl(var(--primary) / 0.1)',
                 }}
               >
                 <Crown size={12} className="text-primary" />
@@ -187,10 +187,10 @@ export const DirectoryCard = ({ type, name, data, onClick }: DirectoryCardProps)
                   justifyContent: 'center',
                   width: 24,
                   height: 24,
-                  backgroundColor: 'rgba(var(--secondary-rgb), 0.1)',
+                  backgroundColor: 'hsl(var(--secondary) / 0.1)',
                 }}
               >
-                <Building2 size={12} style={{ color: 'var(--secondary-foreground)' }} />
+                <Building2 size={12} style={{ color: 'hsl(var(--secondary-foreground))' }} />
               </div>
             )}
           </div>
@@ -216,7 +216,7 @@ export const DirectoryCard = ({ type, name, data, onClick }: DirectoryCardProps)
       {type === 'country' && (
         <div
           className="rounded-t-container overflow-hidden"
-          style={{ aspectRatio: '4/3', width: '100%', backgroundColor: 'var(--accent)' }}
+          style={{ aspectRatio: '4/3', width: '100%', backgroundColor: 'hsl(var(--accent))' }}
         >
           {imageLoading ? (
             <div
@@ -231,7 +231,7 @@ export const DirectoryCard = ({ type, name, data, onClick }: DirectoryCardProps)
               <div
                 style={{
                   animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                  backgroundColor: 'rgba(var(--muted-foreground-rgb), 0.2)',
+                  backgroundColor: 'hsl(var(--muted-foreground) / 0.2)',
                   width: '100%',
                   height: '100%',
                 }}
@@ -261,7 +261,7 @@ export const DirectoryCard = ({ type, name, data, onClick }: DirectoryCardProps)
       {type === 'city' && (
         <div
           className="rounded-t-container overflow-hidden"
-          style={{ aspectRatio: '4/3', width: '100%', backgroundColor: 'var(--accent)' }}
+          style={{ aspectRatio: '4/3', width: '100%', backgroundColor: 'hsl(var(--accent))' }}
         >
           {cityImageLoading ? (
             <div

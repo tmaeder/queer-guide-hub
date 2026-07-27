@@ -63,9 +63,9 @@ const DefaultErrorFallback = ({
         <CardHeader>
           <div className="flex items-center gap-2">
             {isNetworkError ? (
-              <Wifi size={20} style={{ color: 'var(--destructive)' }} />
+              <Wifi size={20} style={{ color: 'hsl(var(--destructive))' }} />
             ) : (
-              <AlertCircle size={20} style={{ color: 'var(--destructive)' }} />
+              <AlertCircle size={20} style={{ color: 'hsl(var(--destructive))' }} />
             )}
             <CardTitle>{isNetworkError ? 'Connection Issue' : 'Something went wrong'}</CardTitle>
           </div>

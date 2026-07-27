@@ -84,7 +84,7 @@ export function ApiErrorFilters({ state, update, counts }: Props) {
               background: 'transparent',
               padding: 0,
               cursor: 'pointer',
-              color: 'var(--muted-foreground)',
+              color: 'hsl(var(--muted-foreground))',
               display: 'inline-flex',
             }}
           >
@@ -155,7 +155,7 @@ export function ApiErrorFilters({ state, update, counts }: Props) {
           style={{
             border: 0,
             background: 'transparent',
-            color: 'var(--muted-foreground)',
+            color: 'hsl(var(--muted-foreground))',
             fontSize: '0.7rem',
             cursor: 'pointer',
             textDecoration: 'none',
@@ -190,7 +190,7 @@ function FilterChip({
         border: 0,
         background: 'transparent',
         padding: '2px 6px',
-        color: active ? 'hsl(var(--foreground))' : 'var(--muted-foreground)',
+        color: active ? 'hsl(var(--foreground))' : 'hsl(var(--muted-foreground))',
         fontWeight: active ? 700 : 500,
         fontSize: '0.72rem',
         letterSpacing: 0.2,
@@ -204,7 +204,7 @@ function FilterChip({
         if (!active) e.currentTarget.style.color = 'hsl(var(--foreground))';
       }}
       onMouseLeave={(e) => {
-        if (!active) e.currentTarget.style.color = 'var(--muted-foreground)';
+        if (!active) e.currentTarget.style.color = 'hsl(var(--muted-foreground))';
       }}
     >
       {dotColor && (

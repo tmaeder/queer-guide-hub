@@ -140,7 +140,7 @@ export function MediaToolbar(props: MediaToolbarProps) {
               variant={viewMode === 'list' ? 'default' : 'ghost'}
               size="sm"
               onClick={() => onViewModeChange('list')}
-              style={{ borderLeft: '1px solid var(--border)' }}
+              style={{ borderLeft: '1px solid hsl(var(--border))' }}
             >
               <List size={14} />
             </Button>

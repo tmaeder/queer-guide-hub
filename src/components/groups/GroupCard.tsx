@@ -105,9 +105,9 @@ export const GroupCard = ({
                   </p>
                 </LocalizedLink>
                 {group.is_private ? (
-                  <Lock size={16} color="var(--muted-foreground)" />
+                  <Lock size={16} color="hsl(var(--muted-foreground))" />
                 ) : (
-                  <Globe size={16} color="var(--muted-foreground)" />
+                  <Globe size={16} color="hsl(var(--muted-foreground))" />
                 )}
               </div>
 
