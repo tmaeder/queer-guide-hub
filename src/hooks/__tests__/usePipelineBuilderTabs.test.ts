@@ -54,9 +54,6 @@ import {
   fetchHotelIngestStats,
   fetchDlqRows,
   retryDlqItem,
-  fetchPendingDedupDecisions,
-  setDedupDecision,
-  resolveGeoMergeCandidate,
 } from '../usePipelineBuilderTabs';
 
 beforeEach(() => {
@@ -162,101 +159,5 @@ describe('retryDlqItem', () => {
     expect(payload.status).toBe('pending');
     expect(payload.locked_until).toBeNull();
     expect(typeof payload.next_retry_at).toBe('string');
-  });
-});
-
-describe('fetchPendingDedupDecisions', () => {
-  it("filters by entity_type when entityFilter !== 'all'", async () => {
-    // First call returns the pending decisions; subsequent calls return
-    // empty hydration data for each entity table.
-    withResults(
-      {
-        data: [
-          {
-            id: 'd1',
-            entity_type: 'venues',
-            entity_a_id: 'a',
-            entity_b_id: 'b',
-            confidence: 0.9,
-            decision: 'pending',
-          },
-        ],
-        error: null,
-      },
-      { data: [{ id: 'a', name: 'Bar A' }, { id: 'b', name: 'Bar B' }], error: null },
-    );
-
-    const r = await fetchPendingDedupDecisions('venues');
-    expect(r[0].entity_a_name).toBe('Bar A');
-    expect(r[0].entity_b_name).toBe('Bar B');
-
-    const first = state.calls[0];
-    expect(first.table).toBe('scraper_dedupe_decisions');
-    const eqVenue = first.chain.find(s => s.method === 'eq' && (s.args[0] === 'entity_type'));
-    expect(eqVenue?.args).toEqual(['entity_type', 'venues']);
-  });
-
-  it("omits the entity_type filter when entityFilter='all'", async () => {
-    withResults({ data: [], error: null });
-    await fetchPendingDedupDecisions('all');
-    const first = state.calls[0];
-    const entityEq = first.chain.find(s => s.method === 'eq' && s.args[0] === 'entity_type');
-    expect(entityEq).toBeUndefined();
-  });
-
-  it('skips name hydration for unknown entity_type', async () => {
-    withResults({
-      data: [{
-        id: 'd1',
-        entity_type: 'mystery',
-        entity_a_id: 'a',
-        entity_b_id: 'b',
-        decision: 'pending',
-      }],
-      error: null,
-    });
-
-    const r = await fetchPendingDedupDecisions('all');
-    // Names stay nullish for unknown entity types.
-    expect(r[0].entity_a_name == null).toBe(true);
-    // Only the initial query — no hydration call queued.
-    expect(state.calls).toHaveLength(1);
-  });
-});
-
-describe('setDedupDecision', () => {
-  it('updates the decision row by id', async () => {
-    withResults({ data: null, error: null });
-    await setDedupDecision('d1', 'merge');
-
-    const call = state.calls[0];
-    expect(call.table).toBe('scraper_dedupe_decisions');
-    const updateCall = call.chain.find(s => s.method === 'update');
-    expect(updateCall?.args[0]).toEqual({ decision: 'merge' });
-    const eqCall = call.chain.find(s => s.method === 'eq');
-    expect(eqCall?.args).toEqual(['id', 'd1']);
-  });
-});
-
-describe('resolveGeoMergeCandidate', () => {
-  it("calls the resolve_geo_merge_candidate RPC with actor='admin-ui'", async () => {
-    withResults({ data: null, error: null });
-    await resolveGeoMergeCandidate('staging-1', 'merge');
-
-    const call = state.calls[0];
-    expect(call.rpc).toBe('resolve_geo_merge_candidate');
-    const [, args] = call.chain[0].args as [string, Record<string, unknown>];
-    expect(args).toEqual({
-      p_staging_id: 'staging-1',
-      p_decision: 'merge',
-      p_actor: 'admin-ui',
-    });
-  });
-
-  it('throws on RPC error', async () => {
-    withResults({ data: null, error: { message: 'denied' } });
-    await expect(
-      resolveGeoMergeCandidate('s', 'not_duplicate'),
-    ).rejects.toEqual({ message: 'denied' });
   });
 });

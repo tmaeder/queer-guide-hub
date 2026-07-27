@@ -1,7 +1,7 @@
 import { lazy, Suspense, useCallback, Component, type ReactNode } from 'react';
 import { useSearchParams, Link } from 'react-router';
 import { ReactFlowProvider } from '@xyflow/react';
-import { LayoutDashboard, Workflow, BarChart3, Shield, Newspaper, ClipboardCheck, AlertTriangle, Map, MapPin, GitMerge, Plug, Bug, Bell, Merge, Activity, History, Webhook, Wrench } from 'lucide-react';
+import { LayoutDashboard, Workflow, Shield, Newspaper, ClipboardCheck, Plug, History } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const OverviewTab = lazy(() => import('./tabs/OverviewTab'));
@@ -11,66 +11,69 @@ const HealthTab = lazy(() => import('./tabs/HealthTab'));
 const NewsTab = lazy(() => import('./tabs/NewsTab'));
 const DLQTab = lazy(() => import('./tabs/DLQTab'));
 const CoverageTab = lazy(() => import('./tabs/CoverageTab'));
-const GeoReviewTab = lazy(() => import('./tabs/GeoReviewTab'));
-const GeoMismatchTab = lazy(() => import('./tabs/GeoMismatchTab'));
 const SourcesTab = lazy(() => import('./tabs/SourcesTab'));
 const ErrorsTab = lazy(() => import('./tabs/ErrorsTab'));
 const AlertsTab = lazy(() => import('./tabs/AlertsTab'));
-const DedupDecisionsTab = lazy(() => import('./tabs/DedupDecisionsTab'));
 const ScraperHealthTab  = lazy(() => import('./tabs/ScraperHealthTab'));
 const AuditTab          = lazy(() => import('./tabs/AuditTab'));
 const IntegrationsTab   = lazy(() => import('./tabs/IntegrationsTab'));
 const BackfillsTab      = lazy(() => import('./tabs/BackfillsTab'));
 
-type Tab =
-  | 'overview' | 'builder' | 'monitor' | 'sources' | 'dlq'
-  | 'errors' | 'alerts' | 'coverage' | 'news' | 'health' | 'geo-review'
-  | 'geo-mismatch'
-  | 'dedup' | 'scraper-health' | 'audit' | 'integrations' | 'backfills';
+type Tab = 'overview' | 'builder' | 'health' | 'sources' | 'news' | 'audit';
 
-type TabGroup = 'Run' | 'Monitor' | 'Quality' | 'Config';
+/** Sub-sections of the grouped Health and Sources tabs. */
+type SubSection = {
+  key: string;
+  label: string;
+  Component: React.LazyExoticComponent<React.ComponentType>;
+};
 
-// Ordered into four clusters so the 17-tab bar reads as labeled groups rather
-// than a flat wall. Order within the array is the render order.
-const TABS: { key: Tab; label: string; icon: React.ComponentType<{ className?: string }>; group: TabGroup }[] = [
-  { key: 'overview',       label: 'Overview',   icon: LayoutDashboard, group: 'Run' },
-  { key: 'builder',        label: 'Builder',    icon: Workflow,        group: 'Run' },
-  { key: 'backfills',      label: 'Backfills',  icon: Wrench,          group: 'Run' },
-  { key: 'monitor',        label: 'Monitor',    icon: BarChart3,       group: 'Monitor' },
-  { key: 'health',         label: 'Health',     icon: Shield,          group: 'Monitor' },
-  { key: 'scraper-health', label: 'Scraper',    icon: Activity,        group: 'Monitor' },
-  { key: 'alerts',         label: 'Alerts',     icon: Bell,            group: 'Monitor' },
-  { key: 'errors',         label: 'Errors',     icon: Bug,             group: 'Monitor' },
-  { key: 'dlq',            label: 'DLQ',        icon: AlertTriangle,   group: 'Monitor' },
-  { key: 'audit',          label: 'Audit',      icon: History,         group: 'Monitor' },
-  { key: 'dedup',          label: 'Dedup',      icon: Merge,           group: 'Quality' },
-  { key: 'geo-review',     label: 'Geo Review', icon: GitMerge,        group: 'Quality' },
-  { key: 'geo-mismatch',   label: 'Geo Mismatch', icon: MapPin,        group: 'Quality' },
-  { key: 'coverage',       label: 'Coverage',   icon: Map,             group: 'Quality' },
-  { key: 'news',           label: 'News',       icon: Newspaper,       group: 'Quality' },
-  { key: 'sources',        label: 'Sources',    icon: Plug,            group: 'Config' },
-  { key: 'integrations',   label: 'Integrations', icon: Webhook,       group: 'Config' },
+const HEALTH_SUBS: SubSection[] = [
+  { key: 'monitor',        label: 'Runs',     Component: MonitorTab },
+  { key: 'health',         label: 'Health',   Component: HealthTab },
+  { key: 'scraper-health', label: 'Scraper',  Component: ScraperHealthTab },
+  { key: 'alerts',         label: 'Alerts',   Component: AlertsTab },
+  { key: 'errors',         label: 'Errors',   Component: ErrorsTab },
+  { key: 'dlq',            label: 'DLQ',      Component: DLQTab },
 ];
 
-const TAB_COMPONENTS: Record<Tab, React.LazyExoticComponent<React.ComponentType>> = {
-  overview: OverviewTab,
-  builder: PipelineBuilder,
-  monitor: MonitorTab,
-  sources: SourcesTab,
-  dedup: DedupDecisionsTab,
-  'geo-review': GeoReviewTab,
-  'geo-mismatch': GeoMismatchTab,
-  dlq: DLQTab,
-  errors: ErrorsTab,
-  alerts: AlertsTab,
-  coverage: CoverageTab,
-  news: NewsTab,
-  health: HealthTab,
-  'scraper-health': ScraperHealthTab,
-  audit: AuditTab,
-  integrations: IntegrationsTab,
-  backfills: BackfillsTab,
+const SOURCES_SUBS: SubSection[] = [
+  { key: 'sources',      label: 'Managers',     Component: SourcesTab },
+  { key: 'coverage',     label: 'Coverage',     Component: CoverageTab },
+  { key: 'integrations', label: 'Integrations', Component: IntegrationsTab },
+  { key: 'backfills',    label: 'Backfills',    Component: BackfillsTab },
+];
+
+const TABS: { key: Tab; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
+  { key: 'overview', label: 'Overview', icon: LayoutDashboard },
+  { key: 'builder',  label: 'Builder',  icon: Workflow },
+  { key: 'health',   label: 'Monitoring', icon: Shield },
+  { key: 'sources',  label: 'Sources',  icon: Plug },
+  { key: 'news',     label: 'News',     icon: Newspaper },
+  { key: 'audit',    label: 'Audit',    icon: History },
+];
+
+/**
+ * Legacy ?tab= deep-link compat. Old top-level tabs map to their new home
+ * (grouped tab + sub-section). The three dedup tabs (dedup / geo-review /
+ * geo-mismatch) were removed — those decisions live in the inbox now — so
+ * their deep links land on the overview, which carries the pointer card.
+ */
+const TAB_ALIAS: Record<string, { tab: Tab; sub?: string }> = {
+  monitor: { tab: 'health', sub: 'monitor' },
+  'scraper-health': { tab: 'health', sub: 'scraper-health' },
+  alerts: { tab: 'health', sub: 'alerts' },
+  errors: { tab: 'health', sub: 'errors' },
+  dlq: { tab: 'health', sub: 'dlq' },
+  coverage: { tab: 'sources', sub: 'coverage' },
+  integrations: { tab: 'sources', sub: 'integrations' },
+  backfills: { tab: 'sources', sub: 'backfills' },
+  dedup: { tab: 'overview' },
+  'geo-review': { tab: 'overview' },
+  'geo-mismatch': { tab: 'overview' },
 };
+
+const TAB_KEYS: Tab[] = TABS.map((t) => t.key);
 
 function TabSkeleton() {
   return (
@@ -102,56 +105,102 @@ class TabErrorBoundary extends Component<{ children: ReactNode; tab: string }, {
   }
 }
 
+/** Secondary pill bar switching the sub-sections of a grouped tab. */
+function SubTabs({
+  subs,
+  active,
+  onSelect,
+}: {
+  subs: SubSection[];
+  active: string;
+  onSelect: (key: string) => void;
+}) {
+  const current = subs.find((s) => s.key === active) ?? subs[0];
+  const ActiveComponent = current.Component;
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-wrap gap-1" role="tablist" aria-label="Sub-sections">
+        {subs.map((s) => (
+          <button
+            key={s.key}
+            role="tab"
+            aria-selected={s.key === current.key}
+            onClick={() => onSelect(s.key)}
+            className={`px-2 py-1 text-xs border rounded-element transition-colors ${
+              s.key === current.key
+                ? 'bg-foreground text-background border-foreground'
+                : 'bg-background text-muted-foreground border-border hover:text-foreground'
+            }`}
+          >
+            {s.label}
+          </button>
+        ))}
+      </div>
+      <TabErrorBoundary tab={current.label} key={current.key}>
+        <Suspense fallback={<TabSkeleton />}>
+          <ActiveComponent />
+        </Suspense>
+      </TabErrorBoundary>
+    </div>
+  );
+}
+
 export default function UnifiedDataOps() {
   const [params, setParams] = useSearchParams();
-  const rawTab = params.get('tab') as Tab;
-  const activeTab = rawTab && rawTab in TAB_COMPONENTS ? rawTab : 'overview';
+  const rawTab = params.get('tab') ?? '';
+  const alias = TAB_ALIAS[rawTab];
+  const activeTab: Tab = alias?.tab ?? (TAB_KEYS.includes(rawTab as Tab) ? (rawTab as Tab) : 'overview');
+  const activeSub = alias?.sub ?? params.get('sub') ?? undefined;
 
   const switchTab = useCallback((tab: Tab) => {
     setParams(tab === 'overview' ? {} : { tab });
   }, [setParams]);
 
-  const ActiveComponent = TAB_COMPONENTS[activeTab];
-  const needsReactFlow = activeTab === 'builder';
+  const switchSub = useCallback((sub: string) => {
+    setParams({ tab: activeTab, sub });
+  }, [setParams, activeTab]);
 
-  const content = (
-    <TabErrorBoundary tab={activeTab} key={activeTab}>
-      <Suspense fallback={<TabSkeleton />}>
-        <ActiveComponent />
-      </Suspense>
-    </TabErrorBoundary>
-  );
+  let content: ReactNode;
+  if (activeTab === 'health') {
+    content = <SubTabs subs={HEALTH_SUBS} active={activeSub ?? 'monitor'} onSelect={switchSub} />;
+  } else if (activeTab === 'sources') {
+    content = <SubTabs subs={SOURCES_SUBS} active={activeSub ?? 'sources'} onSelect={switchSub} />;
+  } else {
+    const ActiveComponent =
+      activeTab === 'builder' ? PipelineBuilder
+      : activeTab === 'news' ? NewsTab
+      : activeTab === 'audit' ? AuditTab
+      : OverviewTab;
+    content = (
+      <TabErrorBoundary tab={activeTab} key={activeTab}>
+        <Suspense fallback={<TabSkeleton />}>
+          <ActiveComponent />
+        </Suspense>
+      </TabErrorBoundary>
+    );
+  }
 
   return (
     <div>
       {/* Tab bar */}
       <div className="flex items-stretch border-b border-border overflow-x-auto" style={{ marginBottom: activeTab === 'builder' ? 0 : 20 }}>
-        {TABS.map(({ key, label, icon: Icon, group }, i) => {
+        {TABS.map(({ key, label, icon: Icon }) => {
           const isActive = activeTab === key;
-          const startsGroup = i === 0 || TABS[i - 1].group !== group;
           return (
-            <div key={key} className="flex items-stretch">
-              {startsGroup && (
-                <span
-                  className={`flex items-center whitespace-nowrap text-2xs uppercase tracking-wide text-muted-foreground/70 ${i === 0 ? 'pr-2' : 'pl-4 pr-2'}`}
-                >
-                  {group}
-                </span>
-              )}
-              <button
-                role="tab"
-                aria-selected={isActive}
-                onClick={() => switchTab(key)}
-                className={`flex items-center gap-1.5 px-4 py-2.5 text-sm whitespace-nowrap border-b-2 transition-colors ${
-                  isActive
-                    ? 'border-primary text-primary font-semibold'
-                    : 'border-transparent text-muted-foreground hover:text-foreground hover:border-muted-foreground/30'
-                }`}
-              >
-                <Icon className="h-[15px] w-[15px]" />
-                {label}
-              </button>
-            </div>
+            <button
+              key={key}
+              role="tab"
+              aria-selected={isActive}
+              onClick={() => switchTab(key)}
+              className={`flex items-center gap-1.5 px-4 py-2.5 text-sm whitespace-nowrap border-b-2 transition-colors ${
+                isActive
+                  ? 'border-primary text-primary font-semibold'
+                  : 'border-transparent text-muted-foreground hover:text-foreground hover:border-muted-foreground/30'
+              }`}
+            >
+              <Icon className="h-[15px] w-[15px]" />
+              {label}
+            </button>
           );
         })}
         <Link
@@ -163,7 +212,7 @@ export default function UnifiedDataOps() {
         </Link>
       </div>
 
-      {needsReactFlow ? <ReactFlowProvider>{content}</ReactFlowProvider> : content}
+      {activeTab === 'builder' ? <ReactFlowProvider>{content}</ReactFlowProvider> : content}
     </div>
   );
 }

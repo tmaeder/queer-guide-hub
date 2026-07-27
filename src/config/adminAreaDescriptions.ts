@@ -14,10 +14,10 @@ export const ADMIN_AREA_DESCRIPTIONS: Record<string, string> = {
   // Content
   '/admin/content': 'All content types in one list. Filter, edit, and bulk-act across entities.',
   '/admin/quality':
-    'Truth Engine dashboards. Pending review gates for every entity type in one place.',
+    'Truth Engine dashboards and review gates. Review actions live in the inbox queues.',
   '/admin/content/venues': 'Bars, clubs, and spaces. Edit details, set featured, merge duplicates.',
   '/admin/duplicates':
-    'Near-duplicate records across every content type and taxonomy. Review side-by-side and merge into a survivor.',
+    'Exact/fuzzy merge power tool across every content type and taxonomy. Nightly-sweep suggestions are reviewed in the inbox.',
   '/admin/content/events': 'Events and festivals. Edit details, check liveness, set featured.',
   '/admin/content/news_articles': 'News articles. Edit, tag, and manage geo and source data.',
   '/admin/content/personalities':
@@ -42,13 +42,13 @@ export const ADMIN_AREA_DESCRIPTIONS: Record<string, string> = {
   '/admin/content/cms_pages': 'CMS pages. Edit static and editorial pages.',
   '/admin/media': 'Media & brand assets. Upload, tag, govern access, and version.',
 
-  // Import & Review
+  // Review & Data
   '/admin/feedback': 'Community feedback and API error reports. Triage and resolve.',
   '/admin/imports/email-ingestions': 'Email-based ingestion. Track inbound source subscriptions.',
 
   // Automation
   '/admin/automation': 'Automated workflow rules and triggers.',
-  '/admin/pipelines': 'Data pipeline builder and monitor. Sources, runs, and config.',
+  '/admin/pipelines': 'Data pipeline builder and monitoring. Sources, runs, and config.',
   '/admin/search-intelligence': 'Search bias and intent learning.',
 
   // System
