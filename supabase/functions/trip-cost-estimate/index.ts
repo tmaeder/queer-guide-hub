@@ -67,8 +67,8 @@ async function loadTrip(supabase: any, tripId: string): Promise<TripDigest> {
        trip_days(id),
        trip_places(
          custom_name,
-         venues:venue_id(name, category, city:city_id(name), country:country_id(name)),
-         events:event_id(title, city:city_id(name), country:country_id(name)),
+         venues:venue_id(name, category, city:cities(name), country:countries(name)),
+         events:event_id(title, city:cities(name), country:countries(name)),
          hotels:hotel_id(name)
        )`,
     )

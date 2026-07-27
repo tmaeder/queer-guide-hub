@@ -133,6 +133,25 @@ test.describe('homepage sections', () => {
     expect(texts.some((t) => /built by the community/i.test(t))).toBeTruthy();
   });
 
+  test('desktop: no 4xx from PostgREST while the homepage loads and mounts', async ({ page }) => {
+    // Regression guard for PR #2371's incident: a broken embed 400s, and
+    // sections that render nothing on error/empty (`return null`) hide the
+    // failure from every DOM assertion above. Catch it at the network layer
+    // instead, independent of which section swallows the error.
+    const failures: string[] = [];
+    page.on('response', (response) => {
+      const url = response.url();
+      if (url.includes('/rest/v1/') && response.status() >= 400) {
+        failures.push(`${response.status()} ${url}`);
+      }
+    });
+
+    await gotoHome(page, DESKTOP);
+    await scrollThrough(page);
+
+    expect(failures, `PostgREST 4xx responses: ${failures.join('\n')}`).toEqual([]);
+  });
+
   test('desktop: destinations rail links to city pages', async ({ page }) => {
     await gotoHome(page, DESKTOP);
     await scrollThrough(page);

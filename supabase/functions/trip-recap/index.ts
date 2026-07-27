@@ -45,8 +45,8 @@ async function loadTrip(supabase: any, tripId: string) {
       `id, title, start_date, end_date, owner_id,
        trip_places(
          id, day_id, custom_name, sort_order,
-         venues:venue_id(name, city:city_id(name), country:country_id(name)),
-         events:event_id(title, city:city_id(name), country:country_id(name)),
+         venues:venue_id(name, city:cities(name), country:countries(name)),
+         events:event_id(title, city:cities(name), country:countries(name)),
          hotels:hotel_id(name)
        ),
        trip_days(id, date, title)`,

@@ -35,8 +35,8 @@ export function useUpcomingPrideEvents({
         .from('events')
         .select(
           `id, title, slug, event_type, start_date, end_date, images,
-           city:city_id(id, name),
-           country:country_id(id, name, code, equality_score)`,
+           city:cities(id, name),
+           country:countries(id, name, code, equality_score)`,
         )
         .or('event_type.ilike.%pride%,event_type.ilike.%festival%')
         .gte('start_date', now.toISOString())
