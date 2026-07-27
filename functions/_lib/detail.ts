@@ -147,13 +147,18 @@ const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-');
 // Venues
 
 async function venueDetail(env: Env, slug: string, pathname: string): Promise<DetailResult | null> {
-  const row = await fetchOne(
+  // duplicate_of_id=is.null: a merged venue's dropped row still exists at its
+  // old slug (merge_venues doesn't delete it) — exclude it so the caller's
+  // !detail check falls through to resolveSlugRedirect instead of rendering
+  // the stale duplicate's own content forever.
+  const rows = await fetchRows(
     env,
     'venues',
-    'slug',
-    slug,
     'name,slug,description,address,city,country,postal_code,latitude,longitude,phone,website,images,category,venue_subtype,foursquare_rating,tripadvisor_rating,tomtom_rating,hours,updated_at,safety_gated',
+    `slug=eq.${encodeURIComponent(slug)}&duplicate_of_id=is.null`,
+    1,
   );
+  const row = rows[0] ?? null;
   if (!row) return (await isGatedEntity(env, 'venue', slug)) ? gatedDetailResult() : null;
   if (row.safety_gated === true) return gatedDetailResult();
 
@@ -271,13 +276,15 @@ function mapVenueType(subtype: string): string {
 // Events
 
 async function eventDetail(env: Env, slug: string, pathname: string): Promise<DetailResult | null> {
-  const row = await fetchOne(
+  // duplicate_of_id=is.null — see the identical comment in venueDetail.
+  const rows = await fetchRows(
     env,
     'events',
-    'slug',
-    slug,
     'title,slug,description,address,city,country,start_date,end_date,latitude,longitude,images,ticket_url,organizer_name,venue_name,price_min,price_max,is_free,event_type,timezone,updated_at,safety_gated',
+    `slug=eq.${encodeURIComponent(slug)}&duplicate_of_id=is.null`,
+    1,
   );
+  const row = rows[0] ?? null;
   if (!row) return (await isGatedEntity(env, 'event', slug)) ? gatedDetailResult() : null;
   if (row.safety_gated === true) return gatedDetailResult();
 
@@ -366,13 +373,15 @@ async function eventDetail(env: Env, slug: string, pathname: string): Promise<De
 // News articles
 
 async function newsDetail(env: Env, slug: string, pathname: string): Promise<DetailResult | null> {
-  const row = await fetchOne(
+  // duplicate_of_id=is.null — see the identical comment in venueDetail.
+  const rows = await fetchRows(
     env,
     'news_articles',
-    'slug',
-    slug,
     'title,slug,excerpt,author,image_url,published_at,url,publisher_name,updated_at,seo_indexable',
+    `slug=eq.${encodeURIComponent(slug)}&duplicate_of_id=is.null`,
+    1,
   );
+  const row = rows[0] ?? null;
   if (!row) return null;
 
   const title = stringField(row, 'title') ?? slug;
@@ -449,13 +458,15 @@ async function personalityDetail(
   slug: string,
   pathname: string,
 ): Promise<DetailResult | null> {
-  const row = await fetchOne(
+  // duplicate_of_id=is.null — see the identical comment in venueDetail.
+  const rows = await fetchRows(
     env,
     'personalities',
-    'slug',
-    slug,
     'name,slug,bio,description,image_url,profession,lgbti_connection,lgbti_details,birth_date,death_date,birth_place,nationality,pronouns,website_url,updated_at,is_living',
+    `slug=eq.${encodeURIComponent(slug)}&duplicate_of_id=is.null`,
+    1,
   );
+  const row = rows[0] ?? null;
   if (!row) return null;
 
   const name = stringField(row, 'name') ?? slug;
@@ -643,13 +654,15 @@ async function cityDetail(env: Env, slug: string, pathname: string): Promise<Det
 // Country — /country/:slug
 
 async function countryDetail(env: Env, slug: string, pathname: string): Promise<DetailResult | null> {
-  const row = await fetchOne(
+  // duplicate_of_id=is.null — see the identical comment in venueDetail.
+  const rows = await fetchRows(
     env,
     'countries',
-    'slug',
-    slug,
     'id,name,slug,code,description,editorial_hook,editorial_long,image_url,capital,latitude,longitude,equality_score,lgbti_same_sex_unions,population,updated_at',
+    `slug=eq.${encodeURIComponent(slug)}&duplicate_of_id=is.null`,
+    1,
   );
+  const row = rows[0] ?? null;
   if (!row) return null;
 
   const name = stringField(row, 'name') ?? slug;
@@ -704,13 +717,15 @@ async function countryDetail(env: Env, slug: string, pathname: string): Promise<
 // Hotels — /hotels/:slug
 
 async function hotelDetail(env: Env, slug: string, pathname: string): Promise<DetailResult | null> {
-  const row = await fetchOne(
+  // duplicate_of_id=is.null — see the identical comment in venueDetail.
+  const rows = await fetchRows(
     env,
     'hotels',
-    'slug',
-    slug,
     'name,slug,description,address,city,country,latitude,longitude,images,hotel_type,star_rating,price_range,amenities,booking_url,phone,website,queer_safety_notes,lgbtq_friendly,updated_at',
+    `slug=eq.${encodeURIComponent(slug)}&duplicate_of_id=is.null`,
+    1,
   );
+  const row = rows[0] ?? null;
   if (!row) return null;
 
   const name = stringField(row, 'name') ?? slug;
@@ -783,13 +798,15 @@ async function hotelDetail(env: Env, slug: string, pathname: string): Promise<De
 // Queer villages — /villages/:slug
 
 async function villageDetail(env: Env, slug: string, pathname: string): Promise<DetailResult | null> {
-  const row = await fetchOne(
+  // duplicate_of_id=is.null — see the identical comment in venueDetail.
+  const rows = await fetchRows(
     env,
     'queer_villages',
-    'slug',
-    slug,
     'name,slug,description,history,latitude,longitude,images,image_url,notable_landmarks,website,updated_at',
+    `slug=eq.${encodeURIComponent(slug)}&duplicate_of_id=is.null`,
+    1,
   );
+  const row = rows[0] ?? null;
   if (!row) return null;
 
   const name = stringField(row, 'name') ?? slug;
