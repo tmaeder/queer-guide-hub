@@ -26,6 +26,15 @@ describe('TagChip', () => {
     expect(onRemove).toHaveBeenCalledOnce();
   });
 
+  it('renders an inert span when linkless (used inside card links)', () => {
+    const { container } = render(wrap(<TagChip tag="bear-bar" name="Bear Bar" linkless />));
+    expect(screen.queryByRole('link')).toBeNull();
+    expect(screen.queryByRole('button')).toBeNull();
+    const chip = container.querySelector('[data-tag-slug="bear-bar"]');
+    expect(chip?.tagName).toBe('SPAN');
+    expect(chip).toHaveTextContent('Bear Bar');
+  });
+
   it('shows a count when greater than zero', () => {
     render(wrap(<TagChip tag="nightlife" count={42} />));
     expect(screen.getByRole('link')).toHaveTextContent('42');

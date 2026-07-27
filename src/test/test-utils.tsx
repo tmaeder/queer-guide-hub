@@ -73,6 +73,24 @@ export function renderWithProviders(
 // import everything from a single place.
 export * from '@testing-library/react';
 
+/**
+ * Nested interactive content is invalid HTML — browsers un-nest it
+ * unpredictably and it breaks keyboard / screen-reader navigation
+ * (axe `nested-interactive`, WCAG 4.1.2). Card-level links must be overlay
+ * siblings, never wrappers.
+ */
+export function expectNoNestedInteractive(container: HTMLElement) {
+  const nested = Array.from(
+    container.querySelectorAll('a a, a button, a [role="button"]'),
+  );
+  if (nested.length > 0) {
+    throw new Error(
+      `Nested interactive element(s) inside an <a>:\n` +
+        nested.map((el) => el.outerHTML.slice(0, 160)).join('\n'),
+    );
+  }
+}
+
 export function expectNoPlaceholderLeaks(container: HTMLElement) {
   const text = container.textContent ?? '';
   const needles: Array<[string, RegExp]> = [

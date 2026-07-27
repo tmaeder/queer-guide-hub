@@ -220,12 +220,14 @@ export default function News() {
                   The full archive has every story, every filter.
                 </p>
               </div>
-              <LocalizedLink to="/news/all" className="no-underline">
-                <Button variant="outline" className="gap-2">
+              {/* asChild, not a Link wrapping a Button — that nests a <button>
+                  inside an <a>, which is invalid HTML. */}
+              <Button asChild variant="outline" className="gap-2">
+                <LocalizedLink to="/news/all" className="no-underline">
                   {t('pages.news.openArchive', 'Open archive')}
                   <ArrowRight size={16} />
-                </Button>
-              </LocalizedLink>
+                </LocalizedLink>
+              </Button>
             </div>
           </main>
 

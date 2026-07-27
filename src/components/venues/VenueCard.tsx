@@ -110,139 +110,139 @@ function VenueCardImpl({ venue, loading = false, socialSignal }: VenueCardProps)
       fallback={<PageLoadingState count={1} />}
     >
       {venue && (
-        <LocalizedLink
-          to={`/venues/${venue.slug}`}
-          style={{ color: 'inherit' }}
-          className="block no-underline"
-        >
-          <CardHoverEffect>
-            <Card hoverable className="group overflow-hidden">
-              <Image
-                src={visual.src}
-                fit={visual.fit}
-                alt={venue.name}
-                aspect="card"
-                imageRole="cover"
-                fallbackEntityType="venue"
-                fallbackKey={venue.id}
-              >
-                {overlay && (
-                  <div
-                    className={
-                      overlay.variant === 'closed'
-                        ? 'absolute top-2 left-2 px-2 py-0.5 rounded-badge text-2xs font-semibold uppercase tracking-wider bg-destructive text-destructive-foreground'
-                        : 'absolute top-2 left-2 px-2 py-0.5 rounded-badge text-2xs font-semibold uppercase tracking-wider bg-foreground/80 text-background'
-                    }
-                  >
-                    {overlay.label}
-                  </div>
-                )}
-
+        <CardHoverEffect>
+          <Card hoverable className="group overflow-hidden">
+            <Image
+              src={visual.src}
+              fit={visual.fit}
+              alt={venue.name}
+              aspect="card"
+              imageRole="cover"
+              fallbackEntityType="venue"
+              fallbackKey={venue.id}
+            >
+              {overlay && (
                 <div
-                  className="absolute top-1 right-1"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                  }}
+                  className={
+                    overlay.variant === 'closed'
+                      ? 'absolute top-2 left-2 px-2 py-0.5 rounded-badge text-2xs font-semibold uppercase tracking-wider bg-destructive text-destructive-foreground'
+                      : 'absolute top-2 left-2 px-2 py-0.5 rounded-badge text-2xs font-semibold uppercase tracking-wider bg-foreground/80 text-background'
+                  }
+                >
+                  {overlay.label}
+                </div>
+              )}
+
+              <div
+                className="absolute top-1 right-1 z-10"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                }}
+                onKeyDown={(e) => e.stopPropagation()}
+                role="presentation"
+              >
+                <FavoriteButton itemId={venue.id} type="venue" size="tap" />
+              </div>
+              <QuietAddToTripButton
+                className="top-2 right-14 z-10"
+                entity={{
+                  type: 'venue',
+                  id: venue.id,
+                  name: venue.name,
+                  latitude: venue.latitude ? Number(venue.latitude) : null,
+                  longitude: venue.longitude ? Number(venue.longitude) : null,
+                  city_id: venue.city_id ?? null,
+                  country_id: venue.country_id ?? null,
+                  address: venue.address ?? null,
+                  category: venue.category ?? null,
+                }}
+              />
+            </Image>
+
+            <div className="p-4">
+              <div className="flex items-baseline gap-2 min-w-0">
+                <h3 className="text-body-lg font-semibold leading-tight truncate flex-1 min-w-0">
+                  {venue.name}
+                  {isVerified && (
+                    <BadgeCheck
+                      aria-label={t('venues.verified', 'Verified')}
+                      size={14}
+                      className="inline ml-1 text-foreground/60 align-middle"
+                    />
+                  )}
+                </h3>
+                {priceTier && (
+                  <span
+                    aria-label={`Price tier ${priceTier}`}
+                    className="text-xs font-medium text-muted-foreground tabular-nums shrink-0"
+                  >
+                    {priceTier}
+                  </span>
+                )}
+              </div>
+              <p className="mt-1 text-xs text-muted-foreground truncate">
+                {locationLabel || (
+                  <span className="inline-flex items-center gap-1">
+                    <MapPin size={12} />
+                    {t('venues.locationUnknown', 'Location unknown')}
+                  </span>
+                )}
+              </p>
+              {(() => {
+                const blurb = (venue.description ?? '').split(/(?<=[.!?])\s+/)[0]?.trim();
+                if (!blurb || blurb.length < 12) return null;
+                return (
+                  <p className="mt-2 text-13 text-muted-foreground line-clamp-2">
+                    {blurb}
+                  </p>
+                );
+              })()}
+              {topTags.length > 0 && (
+                <TagChipRow tags={topTags} max={2} size="sm" className="mt-2" linkless />
+              )}
+              {socialSignal && (
+                <SocialSignalBar
+                  className="mt-4"
+                  signals={[
+                    {
+                      icon: SignalIcons.friends,
+                      count: socialSignal.friends_saved,
+                      label: t('social.friendsSaved', 'friends saved'),
+                    },
+                    {
+                      icon: SignalIcons.trip,
+                      count: socialSignal.trip_usage,
+                      label: t('social.inTrips', 'in trips'),
+                    },
+                  ]}
+                />
+              )}
+              {!isClosed && (
+                <div
+                  className="relative z-10 mt-4"
+                  onClick={(e) => e.stopPropagation()}
                   onKeyDown={(e) => e.stopPropagation()}
                   role="presentation"
                 >
-                  <FavoriteButton itemId={venue.id} type="venue" size="tap" />
-                </div>
-                <QuietAddToTripButton
-                  className="top-2 right-14"
-                  entity={{
-                    type: 'venue',
-                    id: venue.id,
-                    name: venue.name,
-                    latitude: venue.latitude ? Number(venue.latitude) : null,
-                    longitude: venue.longitude ? Number(venue.longitude) : null,
-                    city_id: venue.city_id ?? null,
-                    country_id: venue.country_id ?? null,
-                    address: venue.address ?? null,
-                    category: venue.category ?? null,
-                  }}
-                />
-              </Image>
-
-              <div className="p-4">
-                <div className="flex items-baseline gap-2 min-w-0">
-                  <h3 className="text-body-lg font-semibold leading-tight truncate flex-1 min-w-0">
-                    {venue.name}
-                    {isVerified && (
-                      <BadgeCheck
-                        aria-label={t('venues.verified', 'Verified')}
-                        size={14}
-                        className="inline ml-1 text-foreground/60 align-middle"
-                      />
-                    )}
-                  </h3>
-                  {priceTier && (
-                    <span
-                      aria-label={`Price tier ${priceTier}`}
-                      className="text-xs font-medium text-muted-foreground tabular-nums shrink-0"
-                    >
-                      {priceTier}
-                    </span>
-                  )}
-                </div>
-                <p className="mt-1 text-xs text-muted-foreground truncate">
-                  {locationLabel || (
-                    <span className="inline-flex items-center gap-1">
-                      <MapPin size={12} />
-                      {t('venues.locationUnknown', 'Location unknown')}
-                    </span>
-                  )}
-                </p>
-                {(() => {
-                  const blurb = (venue.description ?? '').split(/(?<=[.!?])\s+/)[0]?.trim();
-                  if (!blurb || blurb.length < 12) return null;
-                  return (
-                    <p className="mt-2 text-13 text-muted-foreground line-clamp-2">
-                      {blurb}
-                    </p>
-                  );
-                })()}
-                {topTags.length > 0 && (
-                  <TagChipRow tags={topTags} max={2} size="sm" className="mt-2" />
-                )}
-                {socialSignal && (
-                  <SocialSignalBar
-                    className="mt-4"
-                    signals={[
-                      {
-                        icon: SignalIcons.friends,
-                        count: socialSignal.friends_saved,
-                        label: t('social.friendsSaved', 'friends saved'),
-                      },
-                      {
-                        icon: SignalIcons.trip,
-                        count: socialSignal.trip_usage,
-                        label: t('social.inTrips', 'in trips'),
-                      },
-                    ]}
+                  <VenueCheckInButton
+                    compact
+                    venueId={venue.id}
+                    venueName={venue.name}
+                    venueLatitude={venue.latitude ? Number(venue.latitude) : null}
+                    venueLongitude={venue.longitude ? Number(venue.longitude) : null}
                   />
-                )}
-                {!isClosed && (
-                  <div
-                    className="mt-4"
-                    onClick={(e) => e.stopPropagation()}
-                    onKeyDown={(e) => e.stopPropagation()}
-                    role="presentation"
-                  >
-                    <VenueCheckInButton
-                      compact
-                      venueId={venue.id}
-                      venueName={venue.name}
-                      venueLatitude={venue.latitude ? Number(venue.latitude) : null}
-                      venueLongitude={venue.longitude ? Number(venue.longitude) : null}
-                    />
-                  </div>
-                )}
-              </div>
-            </Card>
-          </CardHoverEffect>
-        </LocalizedLink>
+                </div>
+              )}
+            </div>
+          </Card>
+          {/* Card-wide click target — overlay sibling, never a wrapper (see EventCard). */}
+          <LocalizedLink
+            to={`/venues/${venue.slug}`}
+            aria-label={venue.name}
+            className="absolute inset-0 rounded-container no-underline"
+          />
+        </CardHoverEffect>
       )}
     </Skeleton>
   );

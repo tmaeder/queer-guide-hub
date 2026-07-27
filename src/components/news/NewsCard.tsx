@@ -5,7 +5,6 @@ import { formatDistanceToNow } from 'date-fns';
 import { shareOrCopy, articleShareUrl, estimateReadingTime } from '@/lib/share';
 import type { Tables } from '@/integrations/supabase/types';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
-import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { FavoriteButton } from '@/components/ui/favorite-button';
 import { memo, useState, useMemo } from 'react';
 import { cleanTitle, cleanAuthor, cleanExcerpt } from '@/utils/htmlDecode';
@@ -111,7 +110,6 @@ const NewsCardImpl = ({
   density = 'comfortable',
   imageAsset,
 }: NewsCardProps) => {
-  const navigate = useLocalizedNavigate();
   const { i18n } = useTranslation();
   const [imgFailed, setImgFailed] = useState(false);
   const fallbackSrc = useMemo(() => getFallbackImage('news', article?.id), [article?.id]);
@@ -362,12 +360,7 @@ const NewsCardImpl = ({
   // Featured variant: large hero card
   if (variant === 'featured') {
     return (
-      <LocalizedLink
-        to={`/news/${article.slug}`}
-        aria-label={safeTitle}
-        className="flex flex-col md:flex-row gap-6 cursor-pointer transition-opacity hover:opacity-90 no-underline"
-        style={{ color: 'inherit' }}
-      >
+      <div className="relative flex flex-col md:flex-row gap-6 cursor-pointer transition-opacity hover:opacity-90">
         <div className="md:flex-[0_0_45%] rounded-container overflow-hidden">
           {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- onError is a non-interactive image lifecycle event */}
           <img
@@ -411,25 +404,27 @@ const NewsCardImpl = ({
               type="button"
               onClick={onShare}
               aria-label={`Share ${safeTitle}`}
-              className="ml-auto inline-flex items-center justify-center rounded-element p-1 hover:bg-muted text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="relative z-10 ml-auto inline-flex items-center justify-center rounded-element p-1 hover:bg-muted text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               style={{ height: 28, width: 28 }}
             >
               <Share2 size={14} aria-hidden="true" />
             </button>
           </div>
         </div>
-      </LocalizedLink>
+        {/* Card-wide click target — overlay sibling, never a wrapper (see EventCard). */}
+        <LocalizedLink
+          to={`/news/${article.slug}`}
+          aria-label={safeTitle}
+          className="absolute inset-0 rounded-container no-underline"
+        />
+      </div>
     );
   }
 
   // Compact list variant: thumbnail left, text right
   if (variant === 'compact') {
     return (
-      <LocalizedLink
-        to={`/news/${article.slug}`}
-        aria-label={safeTitle}
-        className="flex gap-4 p-4 rounded-container border border-border hover:bg-muted no-underline text-inherit focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-      >
+      <div className="relative flex gap-4 p-4 rounded-container border border-border hover:bg-muted">
         <img
           loading="lazy"
           decoding="async"
@@ -470,14 +465,20 @@ const NewsCardImpl = ({
               type="button"
               onClick={onShare}
               aria-label={`Share ${safeTitle}`}
-              className="ml-auto inline-flex items-center justify-center rounded-element p-1 hover:bg-muted text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="relative z-10 ml-auto inline-flex items-center justify-center rounded-element p-1 hover:bg-muted text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               style={{ height: 24, width: 24 }}
             >
               <Share2 size={12} aria-hidden="true" />
             </button>
           </div>
         </div>
-      </LocalizedLink>
+        {/* Card-wide click target — overlay sibling, never a wrapper (see EventCard). */}
+        <LocalizedLink
+          to={`/news/${article.slug}`}
+          aria-label={safeTitle}
+          className="absolute inset-0 rounded-container no-underline"
+        />
+      </div>
     );
   }
 
@@ -487,7 +488,6 @@ const NewsCardImpl = ({
       <Card
         className="group transition-colors duration-300 hover:border-foreground/40 cursor-pointer"
         style={{ borderColor: 'hsl(var(--border))' }}
-        onClick={() => navigate(`/news/${article.slug}`)}
       >
         <CardHeader style={{ flexDirection: 'column' }} className="flex gap-2 p-0">
           <div className="relative overflow-hidden rounded-container rounded-b-none">
@@ -549,7 +549,7 @@ const NewsCardImpl = ({
             </div>
 
             <div
-              className="flex items-center gap-1 shrink-0"
+              className="relative z-10 flex items-center gap-1 shrink-0"
               onClick={(e) => e.stopPropagation()}
               onKeyDown={(e) => e.stopPropagation()}
               role="presentation"
@@ -568,6 +568,13 @@ const NewsCardImpl = ({
           </div>
         </CardContent>
       </Card>
+      {/* Card-wide click target — overlay sibling, never a wrapper (see EventCard).
+          Replaces the former onClick-on-div, which had no href and no keyboard access. */}
+      <LocalizedLink
+        to={`/news/${article.slug}`}
+        aria-label={safeTitle}
+        className="absolute inset-0 rounded-container no-underline"
+      />
     </CardHoverEffect>
   );
 };

@@ -136,101 +136,103 @@ export const EventCard = memo(function EventCard({ event, loading = false, socia
       fallback={<PageLoadingState count={1} />}
     >
       {event && (
-        <LocalizedLink
-          to={`/events/${event.slug}`}
-          style={{ color: 'inherit' }}
-          className="block no-underline"
-        >
-          <CardHoverEffect>
-            <Card hoverable className="group overflow-hidden">
-              <Image
-                src={resolvedImage}
-                alt={event.title}
-                aspect="card"
-                imageRole="cover"
-                fallbackEntityType="event"
-                fallbackKey={event.id}
-              >
-                {overlay && (
-                  <div
-                    className={`absolute top-2 left-2 px-2 py-0.5 rounded-badge text-2xs font-semibold uppercase tracking-wider ${overlayClass}`}
-                  >
-                    {overlay.label}
-                  </div>
-                )}
-
+        <CardHoverEffect>
+          <Card hoverable className="group overflow-hidden">
+            <Image
+              src={resolvedImage}
+              alt={event.title}
+              aspect="card"
+              imageRole="cover"
+              fallbackEntityType="event"
+              fallbackKey={event.id}
+            >
+              {overlay && (
                 <div
-                  className="absolute top-1 right-1"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                  }}
-                  onKeyDown={(e) => e.stopPropagation()}
-                  role="presentation"
+                  className={`absolute top-2 left-2 px-2 py-0.5 rounded-badge text-2xs font-semibold uppercase tracking-wider ${overlayClass}`}
                 >
-                  <FavoriteButton itemId={event.id} type="event" size="tap" />
+                  {overlay.label}
                 </div>
-                <QuietAddToTripButton
-                  className="top-2 right-14"
-                  entity={{
-                    type: 'event',
-                    id: event.id,
-                    name: event.title,
-                    latitude: event.latitude ? Number(event.latitude) : null,
-                    longitude: event.longitude ? Number(event.longitude) : null,
-                    city_id: event.city_id ?? null,
-                    country_id: event.country_id ?? null,
-                    address: event.address ?? null,
-                    category: event.event_type ?? null,
-                  }}
-                />
-              </Image>
+              )}
 
-              <div className="p-4">
-                <div className="flex items-baseline gap-2 min-w-0">
-                  <h3 className="text-body-lg font-semibold leading-tight truncate flex-1 min-w-0">
-                    {event.title}
-                  </h3>
-                  {priceDisplay && (
-                    <span className="text-xs font-medium text-muted-foreground tabular-nums shrink-0">
-                      {priceDisplay}
-                    </span>
-                  )}
-                </div>
-                <p className="mt-1 text-xs text-muted-foreground truncate">
-                  <span className="inline-flex items-center gap-1">
-                    <Calendar size={12} className="shrink-0" />
-                    {formatEventDate(event.start_date, event.end_date)}
-                  </span>
-                  {locationLabel && <> · {locationLabel}</>}
-                </p>
-                {eventTypeTag && (
-                  <p className="mt-2 text-2xs text-muted-foreground truncate capitalize">
-                    {eventTypeTag}
-                  </p>
-                )}
-                {event.tags && event.tags.length > 0 && (
-                  <TagChipRow tags={event.tags} max={2} size="sm" className="mt-2" />
-                )}
-                <SocialSignalBar
-                  className="mt-2"
-                  signals={[
-                    {
-                      icon: SignalIcons.friends,
-                      count: socialSignal?.friends_going ?? 0,
-                      label: t('social.friendsGoing', 'friends going'),
-                    },
-                    {
-                      icon: SignalIcons.going,
-                      count: socialSignal?.attending_count ?? event.attendee_count ?? 0,
-                      label: t('social.going', 'going'),
-                    },
-                  ]}
-                />
+              <div
+                className="absolute top-1 right-1 z-10"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                }}
+                onKeyDown={(e) => e.stopPropagation()}
+                role="presentation"
+              >
+                <FavoriteButton itemId={event.id} type="event" size="tap" />
               </div>
-            </Card>
-          </CardHoverEffect>
-        </LocalizedLink>
+              <QuietAddToTripButton
+                className="top-2 right-14 z-10"
+                entity={{
+                  type: 'event',
+                  id: event.id,
+                  name: event.title,
+                  latitude: event.latitude ? Number(event.latitude) : null,
+                  longitude: event.longitude ? Number(event.longitude) : null,
+                  city_id: event.city_id ?? null,
+                  country_id: event.country_id ?? null,
+                  address: event.address ?? null,
+                  category: event.event_type ?? null,
+                }}
+              />
+            </Image>
+
+            <div className="p-4">
+              <div className="flex items-baseline gap-2 min-w-0">
+                <h3 className="text-body-lg font-semibold leading-tight truncate flex-1 min-w-0">
+                  {event.title}
+                </h3>
+                {priceDisplay && (
+                  <span className="text-xs font-medium text-muted-foreground tabular-nums shrink-0">
+                    {priceDisplay}
+                  </span>
+                )}
+              </div>
+              <p className="mt-1 text-xs text-muted-foreground truncate">
+                <span className="inline-flex items-center gap-1">
+                  <Calendar size={12} className="shrink-0" />
+                  {formatEventDate(event.start_date, event.end_date)}
+                </span>
+                {locationLabel && <> · {locationLabel}</>}
+              </p>
+              {eventTypeTag && (
+                <p className="mt-2 text-2xs text-muted-foreground truncate capitalize">
+                  {eventTypeTag}
+                </p>
+              )}
+              {event.tags && event.tags.length > 0 && (
+                <TagChipRow tags={event.tags} max={2} size="sm" className="mt-2" linkless />
+              )}
+              <SocialSignalBar
+                className="mt-2"
+                signals={[
+                  {
+                    icon: SignalIcons.friends,
+                    count: socialSignal?.friends_going ?? 0,
+                    label: t('social.friendsGoing', 'friends going'),
+                  },
+                  {
+                    icon: SignalIcons.going,
+                    count: socialSignal?.attending_count ?? event.attendee_count ?? 0,
+                    label: t('social.going', 'going'),
+                  },
+                ]}
+              />
+            </div>
+          </Card>
+          {/* Card-wide click target. Overlay sibling (not a wrapper) so the card's
+              buttons and chips are never nested inside an <a>. `no-underline` is
+              load-bearing: `li a:not(.no-underline)` in index.css forces position:relative. */}
+          <LocalizedLink
+            to={`/events/${event.slug}`}
+            aria-label={event.title}
+            className="absolute inset-0 rounded-container no-underline"
+          />
+        </CardHoverEffect>
       )}
     </Skeleton>
   );
