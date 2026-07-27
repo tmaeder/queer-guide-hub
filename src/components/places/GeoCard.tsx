@@ -86,7 +86,7 @@ export const GeoCard = memo(function GeoCard(props: GeoCardProps) {
     // No `h-full` here: the old root anchor was `block`, so adding it would make
     // the card stretch to the grid row height and change existing layouts.
     <div className="relative group">
-      <Card hoverable className="overflow-hidden h-full flex flex-col">
+      <Card hoverable="group" className="overflow-hidden h-full flex flex-col">
         <div className="relative">
           <CardImage
             src={imageUrl ?? null}

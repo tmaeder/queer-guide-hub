@@ -111,7 +111,7 @@ function VenueCardImpl({ venue, loading = false, socialSignal }: VenueCardProps)
     >
       {venue && (
         <CardHoverEffect>
-          <Card hoverable className="group overflow-hidden">
+          <Card hoverable="group" className="overflow-hidden">
             <Image
               src={visual.src}
               fit={visual.fit}
