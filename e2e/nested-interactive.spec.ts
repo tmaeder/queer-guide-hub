@@ -32,23 +32,29 @@ const CARD_ROUTES = ['/city/berlin', '/events', '/venues', '/news', '/places'];
 
 // Routes covering the converted `<Button asChild>` sites. These render static
 // chrome rather than data-driven cards, so they only need `main` to be present.
-//   /about                    — About.tsx (Submit a venue / Support us)
-//   /marketplace/categories   — MarketplaceCategories.tsx (All marketplace)
-//   /marketplace/share        — MarketplaceShare.tsx (Marketplace)
+//   /about                  — About.tsx (Submit a venue / Support us)
+//   /marketplace/categories — MarketplaceCategories.tsx (All marketplace)
+//   /marketplace/share      — MarketplaceShare.tsx (Marketplace)
+//   /community/members      — UserDirectoryGrid.tsx (card overlay link)
 // The `__no-such-*__` slugs deliberately hit each page's not-found branch,
-// which is where the "Back to …" buttons live.
-//   /venues/…      — EntityDetail.tsx      /events/…      — EventDetail.tsx
-//   /news/…        — NewsDetail.tsx        /marketplace/… — MarketplaceItemDetail.tsx
-//   /marketplace/category/… — MarketplaceCategory.tsx
+// which is where the "Back to …" buttons live:
+//   /venues/…            — EntityDetail.tsx   /events/…  — EventDetail.tsx
+//   /news/…              — NewsDetail.tsx     /marketplace/… — MarketplaceItemDetail.tsx
+//   /marketplace/brands/… — MarketplaceBrand.tsx
+// Not covered here: MarketplaceCategory and MarketplaceMerchant derive their
+// subject from the URL param, so an arbitrary slug renders an empty-but-valid
+// page instead of the not-found branch — there is no anon-reachable URL that
+// exercises those two buttons. The unit-level guards still cover them.
 const STATIC_ROUTES = [
   '/about',
   '/marketplace/categories',
   '/marketplace/share',
+  '/community/members',
   '/venues/__no-such-venue__',
   '/events/__no-such-event__',
   '/news/__no-such-article__',
   '/marketplace/__no-such-item__',
-  '/marketplace/category/__no-such-category__',
+  '/marketplace/brands/__no-such-brand__',
 ];
 
 async function expectNoNestedInteractive(page: import('@playwright/test').Page, route: string) {
@@ -79,8 +85,10 @@ test.describe('No nested interactive elements', () => {
     test(`${route} has no interactive element nested inside an <a>`, async ({ page }) => {
       await page.goto(route, { waitUntil: 'domcontentloaded' });
       await page.waitForSelector('main', { timeout: 30_000 });
-      // The not-found branches render only after their query resolves.
-      await page.waitForTimeout(5_000);
+      // The not-found branches render only after their query resolves, and the
+      // gated-detail fallback adds a second round trip on top — 5s was not
+      // enough for /venues locally.
+      await page.waitForTimeout(10_000);
 
       await expectNoNestedInteractive(page, route);
     });
