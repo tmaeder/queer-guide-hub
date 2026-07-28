@@ -3,10 +3,11 @@ import { useQueryClient } from '@tanstack/react-query';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Accessibility, ShieldCheck, AlertTriangle, Sparkles, Play } from 'lucide-react';
+import { Accessibility, ShieldCheck, Sparkles, Play } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAmenityQualitySummary } from '@/hooks/useAmenityQualitySummary';
+import { AdminStat } from '@/components/admin/primitives/AdminStat';
 
 /**
  * Compact health summary for the Amenity Truth Engine: amenity + accessibility
@@ -60,10 +61,10 @@ export function AmenityQualityPanel() {
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
         <div className="flex flex-wrap gap-2">
-          <Stat label={`Amenity coverage (${pct(withAmenities)}%)`} value={withAmenities} />
-          <Stat label={`Accessibility coverage (${pct(withAccessibility)}%)`} value={withAccessibility} icon={<Accessibility size={12} />} />
-          <Stat label="Pending accessibility approvals" value={reviewOpen} hardFail={reviewOpen > 0} />
-          <Stat label="Needs review" value={needsAttention} />
+          <AdminStat label={`Amenity coverage (${pct(withAmenities)}%)`} value={withAmenities} />
+          <AdminStat label={`Accessibility coverage (${pct(withAccessibility)}%)`} value={withAccessibility} icon={<Accessibility size={12} />} />
+          <AdminStat label="Pending accessibility approvals" value={reviewOpen} hardFail={reviewOpen > 0} />
+          <AdminStat label="Needs review" value={needsAttention} />
         </div>
 
         {gaps.length > 0 && (
@@ -83,20 +84,5 @@ export function AmenityQualityPanel() {
         )}
       </CardContent>
     </Card>
-  );
-}
-
-function Stat({ label, value, hardFail, icon }: { label: string; value: number; hardFail?: boolean; icon?: React.ReactNode }) {
-  return (
-    <div className="flex items-center gap-2 rounded-element border bg-muted/40 px-4 py-2">
-      <span className="text-headline tabular-nums" style={hardFail && value > 0 ? { color: 'hsl(var(--destructive))' } : undefined}>
-        {value}
-      </span>
-      <span className="flex items-center gap-1 text-13 text-muted-foreground">
-        {hardFail && value > 0 && <AlertTriangle size={12} style={{ color: 'hsl(var(--destructive))' }} />}
-        {icon}
-        {label}
-      </span>
-    </div>
   );
 }

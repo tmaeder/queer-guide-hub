@@ -1,7 +1,8 @@
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { AlertTriangle, MapPin, ShieldCheck } from 'lucide-react';
+import { MapPin, ShieldCheck } from 'lucide-react';
 import { useEventQualitySummary } from '@/hooks/useEventQualitySummary';
+import { AdminStat } from '@/components/admin/primitives/AdminStat';
 
 /**
  * Compact health summary for the Continuous Event Truth Loop:
@@ -30,9 +31,9 @@ export function EventQualityPanel() {
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
         <div className="flex flex-wrap gap-2">
-          <Stat label="Needs review" value={needsAttention} />
-          <Stat label="Low trust (upcoming)" value={lowTrust} />
-          <Stat label="Cancelled / dead link" value={livenessFail} hardFail={livenessFail > 0} />
+          <AdminStat label="Needs review" value={needsAttention} />
+          <AdminStat label="Low trust (upcoming)" value={lowTrust} />
+          <AdminStat label="Cancelled / dead link" value={livenessFail} hardFail={livenessFail > 0} />
         </div>
 
         {coverage.length > 0 && (
@@ -91,23 +92,6 @@ function CoverageBar({ label, pct }: { label: string; pct: number }) {
         <div className="h-full rounded-badge bg-foreground" style={{ width: `${pct}%` }} />
       </div>
       <span className="w-10 shrink-0 text-right text-13 tabular-nums">{pct}%</span>
-    </div>
-  );
-}
-
-function Stat({ label, value, hardFail }: { label: string; value: number; hardFail?: boolean }) {
-  return (
-    <div className="flex items-center gap-2 rounded-element border bg-muted/40 px-4 py-2">
-      <span
-        className="text-headline tabular-nums"
-        style={hardFail && value > 0 ? { color: 'hsl(var(--destructive))' } : undefined}
-      >
-        {value}
-      </span>
-      <span className="flex items-center gap-1 text-13 text-muted-foreground">
-        {hardFail && value > 0 && <AlertTriangle size={12} style={{ color: 'hsl(var(--destructive))' }} />}
-        {label}
-      </span>
     </div>
   );
 }

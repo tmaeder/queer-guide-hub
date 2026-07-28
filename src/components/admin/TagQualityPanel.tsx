@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { AlertTriangle, Gauge } from 'lucide-react';
+import { Gauge } from 'lucide-react';
 import { useTagQualityScorecard } from '@/hooks/useTagQualityScorecard';
+import { AdminStat } from '@/components/admin/primitives/AdminStat';
 
 const GAP_LABELS: Record<string, string> = {
   description: 'No description',
@@ -42,12 +43,12 @@ export function TagQualityPanel() {
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
         <div className="flex flex-wrap gap-2">
-          <Stat label={`Mean score (${scored}/${active_total} scored)`} value={mean_score ?? 0} />
+          <AdminStat label={`Mean score (${scored}/${active_total} scored)`} value={mean_score ?? 0} />
           {mean_confidence != null && (
-            <Stat label="Mean confidence" value={mean_confidence} />
+            <AdminStat label="Mean confidence" value={mean_confidence} />
           )}
           {sensitive_unreviewed > 0 && (
-            <Stat label="Sensitive · unreviewed" value={sensitive_unreviewed} hardFail />
+            <AdminStat label="Sensitive · unreviewed" value={sensitive_unreviewed} hardFail />
           )}
         </div>
 
@@ -88,24 +89,5 @@ export function TagQualityPanel() {
         </div>
       </CardContent>
     </Card>
-  );
-}
-
-function Stat({ label, value, hardFail }: { label: string; value: number; hardFail?: boolean }) {
-  return (
-    <div className="flex items-center gap-2 rounded-element border bg-muted/40 px-4 py-2">
-      <span
-        className="text-headline tabular-nums"
-        style={hardFail && value > 0 ? { color: 'hsl(var(--destructive))' } : undefined}
-      >
-        {value}
-      </span>
-      <span className="flex items-center gap-1 text-13 text-muted-foreground">
-        {hardFail && value > 0 && (
-          <AlertTriangle size={12} style={{ color: 'hsl(var(--destructive))' }} />
-        )}
-        {label}
-      </span>
-    </div>
   );
 }
