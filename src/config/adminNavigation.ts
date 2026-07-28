@@ -43,7 +43,6 @@ import {
   UserPlus,
   ShieldCheck,
   Waypoints,
-  Store,
   BadgeCheck,
   Network,
 } from 'lucide-react';
@@ -305,14 +304,11 @@ export const adminNavSections: AdminNavSection[] = [
         countTable: 'marketplace_listings',
         group: 'Commerce',
       },
-      {
-        id: 'vendors',
-        label: 'Vendors',
-        icon: Store,
-        route: '/admin/vendors',
-        adminOnly: true,
-        group: 'Commerce',
-      },
+      // Vendors was folded into the affiliate cockpit 2026-07 (merchants +
+      // partners + orgs were already tabs there). No row here: nav routes are
+      // matched against pathname only, so a "?tab=" route would break both the
+      // active-state prefix match and the adminOnly gate in getRouteMinRole.
+      // Reach it via Cockpit → Affiliate → Merchants.
       {
         id: 'brands',
         label: 'Brands',

@@ -70,4 +70,39 @@ describe('AdminEntityTable', () => {
     expect(screen.getByText('before-slot')).toBeInTheDocument();
     expect(screen.getByText('after-slot')).toBeInTheDocument();
   });
+
+  // ── A1: the header moved onto AdminPageHeader ────────────────────────────
+  // This component is the single widest lever in the admin console — the 8
+  // taxonomy pages plus AdminUsers / AdminHotels / AdminQueerVillages /
+  // AdminTags all render through it. It used to hand-roll
+  // <h4 className="text-2xl font-bold">, which is both the wrong heading level
+  // for a page title and an arbitrary size outside the type scale.
+
+  it('renders the page title as a real h1, not a styled h4', () => {
+    renderWithProviders(<AdminEntityTable title="Widgets" config={config} />);
+    const heading = screen.getByRole('heading', { name: 'Widgets' });
+    expect(heading.tagName).toBe('H1');
+  });
+
+  it('renders a back link without doubling the "Back to" prefix', () => {
+    // AdminUsers passes backLabel="Back to Admin"; AdminPageHeader already
+    // prefixes "Back to", so the raw label would read "Back to Back to Admin".
+    renderWithProviders(
+      <AdminEntityTable
+        title="Users"
+        config={config}
+        backHref="/admin"
+        backLabel="Back to Admin"
+      />,
+    );
+    expect(screen.getByText('Back to Admin')).toBeInTheDocument();
+    expect(screen.queryByText(/Back to Back/)).toBeNull();
+  });
+
+  it('omits the back link when backHref is null', () => {
+    renderWithProviders(
+      <AdminEntityTable title="Hotels" config={config} backHref={null} />,
+    );
+    expect(screen.queryByText(/^Back to/)).toBeNull();
+  });
 });

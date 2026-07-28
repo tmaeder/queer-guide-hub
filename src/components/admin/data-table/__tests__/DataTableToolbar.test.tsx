@@ -37,4 +37,27 @@ describe('DataTableToolbar', () => {
     render(<DataTableToolbar {...baseProps} totalCount={1234} />);
     expect(screen.getByText(/1,234/)).toBeInTheDocument();
   });
+
+  // ── A1 regression: the count used to be REPLACED by "Loading..." whenever
+  // isFetching was true. Search refetches, so every keystroke blanked the
+  // number and reflowed the toolbar — on every admin table.
+  it('keeps the last known count visible while refetching', () => {
+    render(<DataTableToolbar {...baseProps} totalCount={1234} isFetching />);
+    expect(screen.getByText(/1,234/)).toBeInTheDocument();
+  });
+
+  it('never renders bare "Loading..." text in place of the count', () => {
+    const { container } = render(
+      <DataTableToolbar {...baseProps} totalCount={1234} isFetching />,
+    );
+    expect(container.textContent).not.toMatch(/Loading\s*[.…]/);
+  });
+
+  it('marks the count as stale with a spinner while refetching', () => {
+    const { rerender } = render(<DataTableToolbar {...baseProps} totalCount={1234} />);
+    expect(screen.queryByRole('status')).toBeNull();
+
+    rerender(<DataTableToolbar {...baseProps} totalCount={1234} isFetching />);
+    expect(screen.getByRole('status')).toBeInTheDocument();
+  });
 });

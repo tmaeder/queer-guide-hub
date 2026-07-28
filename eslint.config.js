@@ -10,6 +10,7 @@ import tseslint from "typescript-eslint";
 import prettier from "eslint-config-prettier";
 import noSupabaseFromInPages from "./eslint-rules/no-supabase-from-in-pages.js";
 import noSonnerToastObject from "./eslint-rules/no-sonner-toast-object.js";
+import adminUiPrimitives from "./eslint-rules/admin-ui-primitives.js";
 
 // typescript-eslint v8 throws when its project-service auto-detect sees
 // multiple candidate root dirs (here: repo root + scraper/). Pin it via
@@ -66,7 +67,7 @@ export default tseslint.config(
       "react-refresh": reactRefresh,
       "jsx-a11y": jsxA11y,
       "unused-imports": unusedImports,
-      "queerguide": { rules: { "no-supabase-from-in-pages": noSupabaseFromInPages, "no-sonner-toast-object": noSonnerToastObject } },
+      "queerguide": { rules: { "no-supabase-from-in-pages": noSupabaseFromInPages, "no-sonner-toast-object": noSonnerToastObject, "admin-ui-primitives": adminUiPrimitives } },
     },
     rules: {
       ...reactHooks.configs.recommended.rules,
@@ -352,6 +353,26 @@ export default tseslint.config(
             "Strict 8 pt grid (UI audit P8). Use even-step Tailwind utility (-4, -6, -8, -10, -12, -14, -16) or the explicit .5 micro-spacing (-0.5, -1.5, -2.5, -3.5) for icon-level offsets. Admin was previously exempt from this rule (no-restricted-syntax overrides wholesale per file) — closed 2026-07-07.",
         },
       ],
+    },
+  },
+
+  // Admin UI primitives (2026-07-28, admin consolidation A1). Its own rule
+  // rather than more no-restricted-syntax selectors: flat config replaces that
+  // rule WHOLESALE per file, so adding a second block at a different severity
+  // would silently disable the colour/radius/spacing selectors above (the exact
+  // trap that dropped the public hex selector in #2049).
+  //
+  // Starts at "warn": the A8 sweep clears the ~66 pre-existing sites (41 empty
+  // states, 7 loading strings, 18 hand-rolled <h1>), then this flips to error.
+  {
+    files: [
+      "src/components/admin/**/*.{ts,tsx}",
+      "src/pages/admin/**/*.{ts,tsx}",
+      "src/pages/admin-*/**/*.{ts,tsx}",
+    ],
+    ignores: ["src/**/__tests__/**", "src/test/**"],
+    rules: {
+      "queerguide/admin-ui-primitives": "warn",
     },
   },
 

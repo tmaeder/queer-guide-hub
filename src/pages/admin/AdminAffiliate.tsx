@@ -19,8 +19,9 @@ import { RevenuePanel } from '@/components/admin/affiliate/RevenuePanel';
 import { MerchantsManager } from '@/components/admin/affiliate/MerchantsManager';
 import { LinkHealthPanel } from '@/components/admin/affiliate/LinkHealthPanel';
 import { RegistryDriftCard } from '@/components/admin/affiliate/RegistryDriftCard';
+import { SellerOrgsPanel } from '@/components/admin/affiliate/SellerOrgsPanel';
 
-const TABS = ['performance', 'revenue', 'merchants', 'partners', 'link-health'] as const;
+const TABS = ['performance', 'revenue', 'merchants', 'partners', 'orgs', 'link-health'] as const;
 type Tab = (typeof TABS)[number];
 
 const PERIODS = [
@@ -51,6 +52,10 @@ const HEADERS: Record<Tab, { title: string; subtitle: string }> = {
     title: 'Affiliate partners',
     subtitle: 'Partner registry — served live to the /go redirect worker.',
   },
+  orgs: {
+    title: 'Seller organizations',
+    subtitle: 'Seller orgs and their merchant links — the vendor identity spine.',
+  },
   'link-health': {
     title: 'Link health',
     subtitle: 'Outbound link rot across marketplace listings, swept daily.',
@@ -64,7 +69,8 @@ export default function AdminAffiliate() {
   const [days, setDays] = useState('30');
   const [vertical, setVertical] = useState('all');
 
-  const showPeriod = tab !== 'partners';
+  // Partners and orgs are registries, not time series — no period selector.
+  const showPeriod = tab !== 'partners' && tab !== 'orgs';
 
   return (
     <div className="p-6">
@@ -108,6 +114,7 @@ export default function AdminAffiliate() {
           <TabsTrigger value="revenue">Revenue</TabsTrigger>
           <TabsTrigger value="merchants">Merchants</TabsTrigger>
           <TabsTrigger value="partners">Partners</TabsTrigger>
+          <TabsTrigger value="orgs">Organizations</TabsTrigger>
           <TabsTrigger value="link-health">Link health</TabsTrigger>
         </TabsList>
       </Tabs>
@@ -121,6 +128,7 @@ export default function AdminAffiliate() {
           <AffiliatePartnersManager />
         </>
       )}
+      {tab === 'orgs' && <SellerOrgsPanel />}
       {tab === 'link-health' && <LinkHealthPanel days={days} />}
     </div>
   );

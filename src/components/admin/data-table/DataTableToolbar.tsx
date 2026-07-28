@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
+import { AdminInlineSpinner } from '@/components/admin/primitives/AdminLoading';
 import type { FilterPreset } from './types';
 
 interface ColumnInfo {
@@ -283,9 +284,13 @@ export function DataTableToolbar({
 
         {toolbarActions}
 
-        {/* Count + fetching indicator */}
-        <p className="text-sm text-muted-foreground whitespace-nowrap">
-          {isFetching ? 'Loading...' : `${totalCount.toLocaleString()} total`}
+        {/* Count + fetching indicator. The count must SURVIVE a refetch: every
+            keystroke in the search box sets isFetching, so swapping the number
+            for "Loading..." made it flicker on each character and reflow the
+            toolbar. Keep the last known total, mark it stale with a spinner. */}
+        <p className="flex items-center gap-2 whitespace-nowrap text-sm text-muted-foreground">
+          <span className="tabular-nums">{totalCount.toLocaleString()} total</span>
+          {isFetching && <AdminInlineSpinner />}
         </p>
       </div>
 

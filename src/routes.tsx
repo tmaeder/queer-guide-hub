@@ -121,10 +121,10 @@ const AdminGeography = lazyRetry(() => import('./pages/admin/AdminGeography'));
 const AdminVillageQuality = lazyRetry(() => import('./pages/admin/AdminVillageQuality'));
 const AdminInbox = lazyRetry(() => import('./pages/admin/AdminInbox'));
 const AdminAutomation = lazyRetry(() => import('./pages/admin/AdminAutomation'));
-const AdminFeedback = lazyRetry(() => import('./pages/AdminFeedback'));
+const AdminFeedback = lazyRetry(() => import('./pages/admin/feedback'));
 const AdminAffiliate = lazyRetry(() => import('./pages/admin/AdminAffiliate'));
-const AdminVendors = lazyRetry(() => import('./pages/admin/AdminVendors'));
 const AdminBrands = lazyRetry(() => import('./pages/admin/AdminBrands'));
+const AdminNotFound = lazyRetry(() => import('./pages/admin/AdminNotFound'));
 
 // CMS components rendered as admin views
 const ContentListPanel = lazyRetry(() =>
@@ -363,7 +363,10 @@ export const AppRoutes = () => {
                 <Route index element={<AdminDashboard />} />
                 <Route path="analytics" element={<AdminAnalytics />} />
                 <Route path="affiliate" element={<AdminAffiliate />} />
-                <Route path="vendors" element={<AdminVendors />} />
+                {/* Vendors was a strict subset of the affiliate cockpit (merchants
+                    + partners + orgs); folded in 2026-07 so one MerchantsManager
+                    survives — the RPC-backed one. */}
+                <Route path="vendors" element={<Navigate to="/admin/affiliate?tab=merchants" replace />} />
                 <Route path="brands" element={<AdminBrands />} />
                 <Route path="maps" element={<AdminMaps />} />
                 <Route path="security" element={<SecurityMonitoringDashboard />} />
@@ -378,7 +381,9 @@ export const AppRoutes = () => {
                     action above it; static path wins over content/:type. */}
                 <Route path="content/milestones" element={<MilestonesAdmin />} />
                 <Route path="content/:type" element={<ContentListPanel />} />
-                <Route path="pages" element={<ContentListPanel contentTypeId="cms_pages" />} />
+                {/* /admin/pages duplicated /admin/content/cms_pages (which is what
+                    nav points at); kept as a redirect for old bookmarks. */}
+                <Route path="pages" element={<Navigate to="/admin/content/cms_pages" replace />} />
                 <Route path="media" element={<MediaLibrary />} />
                 <Route path="media/:id" element={<MediaDetailPage />} />
 
@@ -501,6 +506,11 @@ export const AppRoutes = () => {
                   path="target-groups"
                   element={<Navigate to="/admin/settings/target-groups" replace />}
                 />
+
+                {/* Unknown /admin/* — React Router ranks "*" lowest, so this can
+                    never shadow content/:type. Without it the shell renders an
+                    empty content area, which reads as a broken page. */}
+                <Route path="*" element={<AdminNotFound />} />
               </Route>
 
               {/* ── Locale-aware public routes ── */}
