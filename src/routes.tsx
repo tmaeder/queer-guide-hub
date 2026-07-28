@@ -114,7 +114,8 @@ const AdminQueerVillages = lazyRetry(() => import('./pages/admin/AdminQueerVilla
 const AdminGeography = lazyRetry(() => import('./pages/admin/AdminGeography'));
 const AdminInbox = lazyRetry(() => import('./pages/admin/AdminInbox'));
 const AdminAutomation = lazyRetry(() => import('./pages/admin/AdminAutomation'));
-const AdminFeedback = lazyRetry(() => import('./pages/AdminFeedback'));
+const AdminFeedback = lazyRetry(() => import('./pages/admin/feedback'));
+const AdminNotFound = lazyRetry(() => import('./pages/admin/AdminNotFound'));
 const AdminAffiliate = lazyRetry(() => import('./pages/admin/AdminAffiliate'));
 const AdminBusiness = lazyRetry(() => import('./pages/admin/AdminBusiness'));
 const AdminBusinessDetail = lazyRetry(() => import('./pages/admin/AdminBusinessDetail'));
@@ -374,7 +375,9 @@ export const AppRoutes = () => {
                     action above it; static path wins over content/:type. */}
                 <Route path="content/milestones" element={<MilestonesAdmin />} />
                 <Route path="content/:type" element={<ContentListPanel />} />
-                <Route path="pages" element={<ContentListPanel contentTypeId="cms_pages" />} />
+                {/* /admin/pages duplicated /admin/content/cms_pages (what nav points at);
+                    kept as a redirect for old bookmarks. */}
+                <Route path="pages" element={<Navigate to="/admin/content/cms_pages" replace />} />
                 <Route path="media" element={<MediaLibrary />} />
                 <Route path="media/:id" element={<MediaDetailPage />} />
 
@@ -499,6 +502,11 @@ export const AppRoutes = () => {
                   path="target-groups"
                   element={<Navigate to="/admin/settings/target-groups" replace />}
                 />
+              
+                {/* Unknown /admin/* — React Router ranks "*" lowest, so this can
+                    never shadow content/:type. Without it the shell renders an
+                    empty content area, which reads as a broken page. */}
+                <Route path="*" element={<AdminNotFound />} />
               </Route>
 
               {/* ── Locale-aware public routes ── */}

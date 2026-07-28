@@ -49,20 +49,22 @@ export const TYPE_META: Record<string, TypeMeta> = {
   venue: { icon: Building, table: 'venues', titleCol: 'name', adminHref: '/admin/content/venues' },
   event: { icon: Calendar, table: 'events', titleCol: 'title', adminHref: '/admin/content/event-quality' },
   personality: { icon: Users, table: 'personalities', titleCol: 'name', adminHref: '/admin/content/personalities' },
-  news: { icon: Newspaper, table: 'news_articles', titleCol: 'title', adminHref: '/admin/content' },
+  news: { icon: Newspaper, table: 'news_articles', titleCol: 'title', adminHref: '/admin/content/news_articles' },
   marketplace: { icon: ShoppingBag, table: 'marketplace_listings', titleCol: 'title', adminHref: '/admin/content/marketplace_listings' },
-  hotel: { icon: Hotel, table: 'hotels', titleCol: 'name', adminHref: '/admin/content' },
-  organization: { icon: Handshake, table: 'organizations', titleCol: 'name', adminHref: '/admin/content' },
+  hotel: { icon: Hotel, table: 'hotels', titleCol: 'name', adminHref: '/admin/content/hotels' },
+  organization: { icon: Handshake, table: 'organizations', titleCol: 'name', adminHref: '/admin/content/organizations' },
   milestone: { icon: History, table: 'milestones', titleCol: 'title', adminHref: '/admin/content/milestones' },
   city: { icon: MapPin, table: 'cities', titleCol: 'name', adminHref: '/admin/content/cities' },
-  country: { icon: Globe, table: 'countries', titleCol: 'name', adminHref: '/admin/content' },
-  continent: { icon: Globe, table: null, titleCol: 'name', adminHref: '/admin/content' },
-  region: { icon: Map, table: null, titleCol: 'name', adminHref: '/admin/content' },
+  country: { icon: Globe, table: 'countries', titleCol: 'name', adminHref: '/admin/content/countries' },
+  // Continents and regions have no table of their own — the geography tree is
+  // the only place they are editable.
+  continent: { icon: Globe, table: null, titleCol: 'name', adminHref: '/admin/geography' },
+  region: { icon: Map, table: null, titleCol: 'name', adminHref: '/admin/geography' },
   village: { icon: Home, table: 'queer_villages', titleCol: 'name', adminHref: '/admin/villages' },
-  festival: { icon: PartyPopper, table: null, titleCol: 'name', adminHref: '/admin/content' },
-  group: { icon: UsersRound, table: null, titleCol: 'name', adminHref: '/admin/content' },
-  tag: { icon: Tag, table: null, titleCol: 'name', adminHref: '/admin/tags' },
-  image: { icon: Image, table: null, titleCol: 'name', adminHref: '/admin/content/media' },
+  festival: { icon: PartyPopper, table: null, titleCol: 'name', adminHref: '/admin/content/events' },
+  group: { icon: UsersRound, table: null, titleCol: 'name', adminHref: '/admin/content/community_groups' },
+  tag: { icon: Tag, table: null, titleCol: 'name', adminHref: '/admin/content/unified_tags' },
+  image: { icon: Image, table: null, titleCol: 'name', adminHref: '/admin/media' },
 };
 
 export function typeMeta(type: string): TypeMeta {

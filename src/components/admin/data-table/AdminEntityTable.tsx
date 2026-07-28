@@ -1,9 +1,9 @@
 import type { ReactNode } from 'react';
 import { useNavigate } from 'react-router';
-import { ArrowLeft } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
+import { AdminCardSkeleton } from '@/components/admin/primitives/AdminLoading';
 import { AdminDataTable } from './AdminDataTable';
 import type { AdminTableConfig } from './types';
 
@@ -24,7 +24,7 @@ export function AdminEntityTable<TData extends { id: string }>({
   title,
   subtitle,
   backHref = '/admin',
-  backLabel = 'Back',
+  backLabel = 'Cockpit',
   config,
   beforeTable,
   afterTable,
@@ -42,8 +42,8 @@ export function AdminEntityTable<TData extends { id: string }>({
     }
     if (rolesLoading) {
       return (
-        <div className="p-6 text-center">
-          <p>Loading...</p>
+        <div className="w-full p-6">
+          <AdminCardSkeleton />
         </div>
       );
     }
@@ -55,21 +55,21 @@ export function AdminEntityTable<TData extends { id: string }>({
 
   return (
     <div className="w-full p-6">
-      <div className="flex items-center gap-4 mb-6">
-        {backHref !== null && (
-          <Button variant="outline" onClick={() => navigate(backHref)}>
-            <ArrowLeft size={16} className="mr-2" />
-            {backLabel}
-          </Button>
-        )}
-        <div>
-          <h4 className="text-2xl font-bold">{title}</h4>
-          {subtitle && (
-            <p className="text-sm text-muted-foreground">{subtitle}</p>
-          )}
-        </div>
-        {headerActions && <div className="ml-auto">{headerActions}</div>}
-      </div>
+      {/* AdminPageHeader supplies the route eyebrow, typography tokens and back
+          link. Adopting it here gives every AdminEntityTable consumer — the 8
+          taxonomy pages included — the standard header in one edit, replacing a
+          hand-rolled <h4 className="text-2xl font-bold"> that bypassed the type
+          scale. AdminPageHeader prefixes "Back to", so labels are bare nouns. */}
+      <AdminPageHeader
+        title={title}
+        subtitle={subtitle}
+        actions={headerActions}
+        backTo={
+          backHref === null
+            ? undefined
+            : { route: backHref, label: backLabel.replace(/^back\s*(to\s*)?/i, '') || 'Cockpit' }
+        }
+      />
 
       {beforeTable}
 
