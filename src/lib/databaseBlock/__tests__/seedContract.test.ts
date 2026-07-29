@@ -106,6 +106,11 @@ describe('edge seed payload contract', () => {
 
   it('survives a malformed payload rather than breaking the page', () => {
     const el = document.createElement('script');
+    // `type` is load-bearing here, not decoration: without it jsdom treats the
+    // tag as executable JavaScript, evaluates `{not json` and raises an
+    // uncaught SyntaxError that fails the whole run even though every
+    // assertion passes. The real edge tag is always application/json.
+    el.type = 'application/json';
     el.id = SEED_ELEMENT_ID;
     el.textContent = '{not json';
     document.head.appendChild(el);
