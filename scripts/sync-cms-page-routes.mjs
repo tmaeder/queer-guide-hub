@@ -43,9 +43,7 @@ function render(slugs) {
 //
 // Re-run the script when a CMS route is added or removed.
 
-export const CMS_PAGE_SLUGS: readonly string[] = ${JSON.stringify(slugs, null, 2)
-    .replace(/"/g, "'")
-    .replace(/\n/g, '\n')} as const;
+export const CMS_PAGE_SLUGS: readonly string[] = ${JSON.stringify(slugs, null, 2).replace(/"/g, "'")} as const;
 
 const SLUG_SET = new Set(CMS_PAGE_SLUGS);
 
