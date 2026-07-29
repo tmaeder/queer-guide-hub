@@ -12,6 +12,9 @@ import { EmailIngestionsManager } from '../EmailIngestionsManager';
 describe('EmailIngestionsManager', () => {
   it('renders empty state', async () => {
     render(<EmailIngestionsManager />);
-    await waitFor(() => expect(screen.getByText(/email/i)).toBeInTheDocument());
+    // This used to match the "Loading email ingestions..." string, so it was
+    // really asserting the LOADING state. Now that first-load is a skeleton it
+    // reaches the real empty state, where several nodes match /email/i.
+    await waitFor(() => expect(screen.getAllByText(/email/i).length).toBeGreaterThan(0));
   });
 });

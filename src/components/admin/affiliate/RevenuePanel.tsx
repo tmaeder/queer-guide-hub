@@ -19,6 +19,7 @@ import {
 } from '@/components/ui/dialog';
 import { monoChartPalette, monoChartAxis } from '@/lib/chartPalette';
 import { Stat } from './Stat';
+import { AdminTextSkeleton } from '@/components/admin/primitives/AdminLoading';
 
 interface FunnelRow {
   surface: string;
@@ -154,7 +155,7 @@ export function RevenuePanel({ days }: { days: string }) {
       <section>
         <h2 className="mb-4 text-15 font-semibold">Funnel: surface × partner</h2>
         {isLoading ? (
-          <p className="text-13 text-muted-foreground">Loading…</p>
+          <AdminTextSkeleton lines={2} />
         ) : rows.length === 0 ? (
           <p className="text-13 text-muted-foreground">
             No data yet. Conversions appear after the first network pull (needs API tokens configured).

@@ -33,8 +33,10 @@ describe('MergeDialog', () => {
       .mockReturnValueOnce({ data: null, isLoading: true })
       .mockReturnValueOnce({ data: null, isLoading: false });
     render(<MergeDialog open entityType="venues" entityAId="a" entityBId="b" onOpenChange={vi.fn()} />);
-    expect(screen.getByLabelText('Loading')).toBeInTheDocument();
-    expect(screen.getByText(/Loading records/i)).toBeInTheDocument();
+    // The body is a skeleton now, not the words "Loading records". There are
+    // two status regions while loading (the spinner and the skeleton), so
+    // assert on the set rather than a single match.
+    expect(screen.getAllByRole('status').length).toBeGreaterThan(0);
   });
 
   it('shows not-found message when either entity missing post-load', () => {

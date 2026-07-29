@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { AdminStatTile } from '@/components/admin/primitives/AdminStatTile';
 import { contrastVerdict } from '@/lib/wcagContrast';
 import { CONTRAST_PAIRS, resolveColor } from './tokenCatalog';
 import type { DesignSettingsController } from './useDesignSettings';
@@ -17,17 +18,6 @@ type AuditArtifact = {
 };
 
 const STALE_AFTER_DAYS = 14;
-
-function StatCard({ label, value, flagged }: { label: string; value: string | number; flagged?: boolean }) {
-  return (
-    <Card>
-      <CardContent className="p-4">
-        <p className={`text-headline font-display ${flagged ? 'text-destructive' : ''}`}>{value}</p>
-        <p className="text-2xs uppercase tracking-wide text-muted-foreground">{label}</p>
-      </CardContent>
-    </Card>
-  );
-}
 
 export function DesignAuditTab({ controller }: { controller: DesignSettingsController }) {
   const artifact = useQuery({
@@ -63,18 +53,18 @@ export function DesignAuditTab({ controller }: { controller: DesignSettingsContr
   return (
     <div className="space-y-6">
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-        <StatCard label="Tokens defined" value={data?.token_count ?? '—'} />
-        <StatCard label="Overridden (draft)" value={controller.overrideCount} />
-        <StatCard
+        <AdminStatTile label="Tokens defined" value={data?.token_count ?? '—'} />
+        <AdminStatTile label="Overridden (draft)" value={controller.overrideCount} />
+        <AdminStatTile
           label="Unused in code"
           value={data?.unused.length ?? '—'}
-          flagged={(data?.unused.length ?? 0) > 0}
+          alert={(data?.unused.length ?? 0) > 0}
         />
-        <StatCard label="Contrast failures (AA)" value={contrastFailures} flagged={contrastFailures > 0} />
-        <StatCard
+        <AdminStatTile label="Contrast failures (AA)" value={contrastFailures} alert={contrastFailures > 0} />
+        <AdminStatTile
           label="Lint suppressions"
           value={data?.eslint.design_rule_suppressions ?? '—'}
-          flagged={(data?.eslint.design_rule_suppressions ?? 0) > 0}
+          alert={(data?.eslint.design_rule_suppressions ?? 0) > 0}
         />
       </div>
 

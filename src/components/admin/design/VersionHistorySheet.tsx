@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { countOverrides } from './tokenCatalog';
 import { useBrandingVersions, type DesignSettingsController } from './useDesignSettings';
+import { AdminTextSkeleton } from '@/components/admin/primitives/AdminLoading';
 
 export function VersionHistorySheet({
   controller,
@@ -32,7 +33,7 @@ export function VersionHistorySheet({
           </SheetDescription>
         </SheetHeader>
         <div className="mt-6 space-y-4 overflow-y-auto">
-          {versions.isLoading && <p className="text-13 text-muted-foreground">Loading…</p>}
+          {versions.isLoading && <AdminTextSkeleton lines={2} />}
           {versions.data?.length === 0 && (
             <p className="text-13 text-muted-foreground">No versions published yet.</p>
           )}

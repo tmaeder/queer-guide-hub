@@ -17,6 +17,7 @@ import {
   Search,
 } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { AdminTextSkeleton } from '@/components/admin/primitives/AdminLoading';
 
 interface EmailIngestion {
   id: string;
@@ -148,7 +149,7 @@ export function EmailIngestionsManager() {
   if (loading) {
     return (
       <div className="text-center p-8">
-        <p className="text-sm text-muted-foreground">Loading email ingestions...</p>
+        <AdminTextSkeleton lines={2} />
       </div>
     );
   }

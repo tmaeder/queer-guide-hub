@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import type { AppNode, AppEdge } from '../types';
+import { AdminTextSkeleton } from '@/components/admin/primitives/AdminLoading';
 
 interface Template {
   id: string;
@@ -178,7 +179,7 @@ export default function TemplateLibrary({ selectedNodes, selectedEdges, onApply,
             </div>
 
             <div className="flex-1 overflow-y-auto border border-border rounded-element">
-              {isLoading && <div className="p-4 text-xs text-muted-foreground text-center">Loading...</div>}
+              {isLoading && <AdminTextSkeleton lines={2} />}
               {!isLoading && filtered.length === 0 && (
                 <div className="p-8 text-xs text-muted-foreground text-center">
                   {templates.length === 0 ? 'No templates yet. Select nodes on canvas and save your first template.' : 'No templates match filter'}

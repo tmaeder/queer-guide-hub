@@ -11,6 +11,7 @@ import {
   ackDataOpsAlert,
   type DataOpsAlert as Alert,
 } from '@/hooks/usePipelineBuilderTabs';
+import { AdminTableRowSkeleton } from '@/components/admin/primitives/AdminLoading';
 
 type Filter = 'open' | 'all';
 
@@ -117,7 +118,7 @@ export default function AlertsTab() {
           </thead>
           <tbody>
             {isLoading ? (
-              <tr><td colSpan={6} className="p-6 text-center text-muted-foreground text-xs">Loading…</td></tr>
+              <AdminTableRowSkeleton columns={6} />
             ) : alerts.length === 0 ? (
               <tr><td colSpan={6} className="p-6 text-center text-foreground dark:text-foreground text-sm font-medium">
                 <CheckCircle className="h-5 w-5 inline mr-1" />

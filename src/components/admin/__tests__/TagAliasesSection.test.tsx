@@ -29,7 +29,8 @@ describe('TagAliasesSection', () => {
       deleteAlias: { mutateAsync: deleteMutateAsync },
     });
     render(<TagAliasesSection tagId="t1" />);
-    expect(screen.getByText(/Loading/)).toBeInTheDocument();
+    // First-load now renders a skeleton, not the word "Loading".
+    expect(screen.getByRole('status')).toBeInTheDocument();
   });
 
   it('shows empty hint when no aliases', () => {

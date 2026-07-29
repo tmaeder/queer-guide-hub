@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Shield, AlertTriangle, Activity, Users } from 'lucide-react';
+import { AdminCardSkeleton } from '@/components/admin/primitives/AdminLoading';
 import { formatDistanceToNow } from 'date-fns';
 
 interface SecurityEvent {
@@ -82,7 +83,12 @@ export function SecurityMonitoringDashboard() {
   );
 
   if (isLoading) {
-    return <div>Loading security dashboard...</div>;
+    return (
+      <div className="flex flex-col gap-6 p-6">
+        <AdminCardSkeleton />
+        <AdminCardSkeleton />
+      </div>
+    );
   }
 
   return (

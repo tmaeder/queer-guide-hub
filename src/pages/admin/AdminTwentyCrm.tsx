@@ -6,6 +6,7 @@ import { Check, X, ArrowRight, Inbox } from 'lucide-react';
 import { toast } from 'sonner';
 import { useTwentyInboundReview, type TwentyInboundRow } from '@/hooks/useTwentyInboundReview';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
+import { AdminTextSkeleton } from '@/components/admin/primitives/AdminLoading';
 
 const ENTITY_LABEL: Record<TwentyInboundRow['entity_type'], string> = {
   organization: 'Organization',
@@ -61,7 +62,7 @@ export default function AdminTwentyCrm() {
           </CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
-          {isLoading && <p className="text-13 text-muted-foreground">Loading…</p>}
+          {isLoading && <AdminTextSkeleton lines={2} />}
           {!isLoading && (!rows || rows.length === 0) && (
             <p className="text-13 text-muted-foreground">No edits awaiting review.</p>
           )}

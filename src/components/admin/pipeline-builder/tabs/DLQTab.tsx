@@ -12,6 +12,7 @@ import {
   retryDlqItem,
   type DlqRow,
 } from '@/hooks/usePipelineBuilderTabs';
+import { AdminTableRowSkeleton } from '@/components/admin/primitives/AdminLoading';
 
 interface SummaryRow {
   source_slug: string | null;
@@ -179,7 +180,7 @@ export default function DLQTab() {
             </thead>
             <tbody>
               {isLoading ? (
-                <tr><td colSpan={6} className="p-6 text-center text-muted-foreground text-xs">Loading…</td></tr>
+                <AdminTableRowSkeleton columns={6} />
               ) : rows.length === 0 ? (
                 <tr><td colSpan={6} className="p-6 text-center text-muted-foreground text-xs">Nothing in queue</td></tr>
               ) : rows.map(r => (

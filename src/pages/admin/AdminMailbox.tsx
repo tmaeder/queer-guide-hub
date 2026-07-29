@@ -24,6 +24,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
+import { AdminTextSkeleton } from '@/components/admin/primitives/AdminLoading';
 
 /**
  * Postfach — internal admin-to-admin messaging, ported from the PHP tool.
@@ -189,7 +190,7 @@ export default function AdminMailbox() {
       </div>
 
       {isLoading ? (
-        <p className="text-13 text-muted-foreground">Loading…</p>
+        <AdminTextSkeleton lines={2} />
       ) : filtered.length === 0 ? (
         <p className="text-13 text-muted-foreground">No messages.</p>
       ) : (

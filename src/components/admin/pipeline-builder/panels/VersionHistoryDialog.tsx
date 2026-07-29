@@ -9,6 +9,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { untypedFrom } from '@/integrations/supabase/untyped';
 import type { StoredPipelineNode } from '../hooks/usePipelineBuilder';
 import type { AppEdge } from '../types';
+import { AdminTextSkeleton } from '@/components/admin/primitives/AdminLoading';
 
 interface VersionRow {
   id: string;
@@ -81,7 +82,7 @@ export default function VersionHistoryDialog({ pipelineId, currentVersion, onRev
 
         <div className="overflow-y-auto flex-1">
           {isLoading ? (
-            <div className="p-6 text-center text-muted-foreground text-xs">Loading…</div>
+            <AdminTextSkeleton lines={2} />
           ) : versions.length === 0 ? (
             <div className="p-6 text-center text-muted-foreground text-xs">No version history yet</div>
           ) : (

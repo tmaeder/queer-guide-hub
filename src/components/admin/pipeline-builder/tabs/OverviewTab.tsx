@@ -11,7 +11,9 @@ import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import { Activity, AlertTriangle, CheckCircle, Play, Workflow, GitBranch, Search, Loader2 } from 'lucide-react';
+import { AdminStatTile } from '@/components/admin/primitives/AdminStatTile';
 import { useUnifiedPipelineOverview, usePipelineRunCounts24h, useCircuitBreakers, type UnifiedPipelineRow } from '../hooks/usePipelineHistory';
+import { AdminTableRowSkeleton } from '@/components/admin/primitives/AdminLoading';
 
 type Filter = 'all' | 'pipelines' | 'workflows' | 'failing' | 'disabled';
 
@@ -60,20 +62,6 @@ function StatusDots({ statuses }: { statuses: string[] }) {
           </Tooltip>
         );
       })}
-    </div>
-  );
-}
-
-function StatCard({ icon: Icon, color, value, label, alert }: {
-  icon: React.ComponentType<{ className?: string }>; color: string; value: React.ReactNode; label: string; alert?: boolean;
-}) {
-  return (
-    <div className="border border-border rounded-element bg-background p-4">
-      <div className="flex items-center gap-2">
-        <Icon className={`h-4 w-4 ${color}`} />
-        <span className={`text-2xl font-bold tabular-nums ${alert ? 'text-destructive' : ''}`}>{value}</span>
-      </div>
-      <div className="text-xs text-muted-foreground mt-1">{label}</div>
     </div>
   );
 }
@@ -160,18 +148,18 @@ export default function OverviewTab() {
       <div className="flex flex-col gap-6">
         {/* Stat cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard icon={Activity} color="text-primary" value={activeCount} label="Active definitions" />
-          <StatCard icon={CheckCircle} color="text-foreground dark:text-foreground" value={counts24h?.total ?? '—'} label="Runs in last 24h" />
-          <StatCard
+          <AdminStatTile icon={Activity} iconClassName="text-primary" value={activeCount} label="Active definitions" />
+          <AdminStatTile icon={CheckCircle} iconClassName="text-foreground dark:text-foreground" value={counts24h?.total ?? '—'} label="Runs in last 24h" />
+          <AdminStatTile
             icon={AlertTriangle}
-            color={failingCount > 0 ? 'text-destructive' : 'text-muted-foreground'}
+            iconClassName={failingCount > 0 ? 'text-destructive' : 'text-muted-foreground'}
             value={failingCount}
             label="Currently failing"
             alert={failingCount > 0}
           />
-          <StatCard
+          <AdminStatTile
             icon={AlertTriangle}
-            color={openCircuits > 0 ? 'text-destructive' : 'text-foreground dark:text-foreground'}
+            iconClassName={openCircuits > 0 ? 'text-destructive' : 'text-foreground dark:text-foreground'}
             value={openCircuits}
             label="Open circuits"
             alert={openCircuits > 0}
@@ -234,7 +222,7 @@ export default function OverviewTab() {
             </thead>
             <tbody>
               {isLoading ? (
-                <tr><td colSpan={9} className="p-6 text-center text-muted-foreground text-xs">Loading…</td></tr>
+                <AdminTableRowSkeleton columns={9} />
               ) : filtered.length === 0 ? (
                 <tr><td colSpan={9} className="p-6 text-center text-muted-foreground text-xs">
                   {rows?.length === 0 ? 'No definitions yet' : 'No matches'}

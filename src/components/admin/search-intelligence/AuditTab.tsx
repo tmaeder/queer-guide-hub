@@ -4,6 +4,8 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { callSearchIntelligence, AuditEntry } from '@/hooks/useSearchIntelligence';
+import { AdminTextSkeleton } from '@/components/admin/primitives/AdminLoading';
+import { AdminEmpty } from '@/components/admin/primitives/AdminEmpty';
 
 export function AuditTab() {
   const [entries, setEntries] = useState<AuditEntry[]>([]);
@@ -58,9 +60,9 @@ export function AuditTab() {
       </div>
       {error && <p className="text-destructive text-sm">{error}</p>}
       {loading ? (
-        <p className="text-sm">Loading…</p>
+        <AdminTextSkeleton lines={3} />
       ) : entries.length === 0 ? (
-        <p className="text-sm text-muted-foreground">No audit entries match these filters.</p>
+        <AdminEmpty noun="audit entries" filtered />
       ) : (
         <div className="flex flex-col gap-2">
           {entries.map((e) => (
