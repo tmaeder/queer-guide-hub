@@ -105,6 +105,18 @@ describe('QualityHub — business link review', () => {
     expect(Element.prototype.scrollIntoView).toHaveBeenCalled();
   });
 
+  it('re-scrolls when the section is already open (state does not change)', async () => {
+    renderHub();
+    fireEvent.click(cardButton());
+    await waitFor(() => expect(screen.getByText('Roses Bar')).toBeTruthy());
+    (Element.prototype.scrollIntoView as ReturnType<typeof vi.fn>).mockClear();
+
+    fireEvent.click(cardButton());
+
+    expect(Element.prototype.scrollIntoView).toHaveBeenCalled();
+    expect(screen.getByText('Roses Bar')).toBeTruthy();
+  });
+
   it('decides a suggestion inline', async () => {
     renderHub();
     fireEvent.click(cardButton());

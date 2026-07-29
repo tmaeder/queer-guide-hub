@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Link } from 'react-router';
 import {
   MapPin,
@@ -267,6 +267,7 @@ function EngineCardBody({
 export default function QualityHub() {
   const { data: counts } = useAdminCounts();
   const [openSections, setOpenSections] = useState<string[]>(['personalities']);
+  const pendingScroll = useRef<string | null>(null);
   const totalPending = ENGINES.reduce(
     (sum, e) => sum + (e.countKey ? (counts?.[e.countKey] ?? 0) : 0),
     0,
@@ -274,12 +275,27 @@ export default function QualityHub() {
 
   /** Expand an inline gate's section and bring it into view. */
   const revealSection = (value: string) => {
-    setOpenSections((prev) => (prev.includes(value) ? prev : [...prev, value]));
-    // Let the accordion item mount before scrolling to it.
-    requestAnimationFrame(() =>
-      document.getElementById(`section-${value}`)?.scrollIntoView({ block: 'start' }),
-    );
+    // Already open: the state never changes, so the effect below would not
+    // fire and the card would look dead on a second click. Scroll directly.
+    if (openSections.includes(value)) {
+      document.getElementById(`section-${value}`)?.scrollIntoView({ block: 'start' });
+      return;
+    }
+    setOpenSections((prev) => [...prev, value]);
+    pendingScroll.current = value;
   };
+
+  // Scroll once the accordion has committed. Scheduling this from the click
+  // handler (rAF) races the expansion and silently no-ops. Expanding a section
+  // does not move its own top, so no settle logic is needed — but collapsing
+  // the others would (it shrinks the page enough to clamp the scroll), which
+  // is why revealSection only ever adds.
+  useEffect(() => {
+    const value = pendingScroll.current;
+    if (!value) return;
+    pendingScroll.current = null;
+    document.getElementById(`section-${value}`)?.scrollIntoView({ block: 'start' });
+  }, [openSections]);
 
   return (
     <div className="mx-auto flex max-w-5xl flex-col gap-6 p-6">
