@@ -274,7 +274,12 @@ export default function CMSRoutePage({ slug }: CMSRoutePageProps) {
           heroImage={getEditorialImage(slug)}
         >
           {/* Already sanitized above; extractSections only added heading ids. */}
-          <CMSBody html={htmlWithIds} preSanitized className="qg-cms-body qg-cms-body--legal" />
+          <CMSBody
+            html={htmlWithIds}
+            preSanitized
+            className="qg-cms-body qg-cms-body--legal"
+            pageSlug={slug}
+          />
         </LegalPageLayout>
       </>
     );
@@ -312,6 +317,7 @@ export default function CMSRoutePage({ slug }: CMSRoutePageProps) {
         html={sanitizedHtml}
         preSanitized
         className={editorialHero ? 'qg-cms-body qg-cms-body--no-title' : 'qg-cms-body'}
+        pageSlug={slug}
       />
 
       {/* Accessibility page embeds the live settings panel so it isn't a dead end. */}

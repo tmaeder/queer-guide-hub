@@ -21,6 +21,7 @@ import {
   Minus,
   Code,
   Highlighter,
+  Database,
   Paintbrush,
   Code2,
 } from 'lucide-react';
@@ -32,6 +33,8 @@ import { Youtube } from '@/components/icons/brand';
 
 interface EditorToolbarProps {
   editor: Editor | null;
+  /** Shows the database-block control. Only jsonb-backed document fields set it. */
+  enableDatabaseBlock?: boolean;
 }
 
 /* ------------------------------------------------------------------ */
@@ -82,7 +85,7 @@ function ToolbarDivider() {
 /*  Main toolbar                                                       */
 /* ------------------------------------------------------------------ */
 
-export function EditorToolbar({ editor }: EditorToolbarProps) {
+export function EditorToolbar({ editor, enableDatabaseBlock = false }: EditorToolbarProps) {
   if (!editor) return null;
 
   /* ---- helpers ---- */
@@ -303,6 +306,18 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
           editor.chain().focus().setColor(color).run();
         }}
       />
+
+      {enableDatabaseBlock && (
+        <>
+          <Divider />
+          <ToolbarButton
+            icon={<Database />}
+            label="Insert database block"
+            isActive={editor.isActive('databaseBlock')}
+            onClick={() => editor.chain().focus().insertDatabaseBlock().run()}
+          />
+        </>
+      )}
     </div>
   );
 }

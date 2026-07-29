@@ -36,6 +36,16 @@ export const pageFields: FieldConfig[] = [
   },
   { name: 'category', label: 'Category', type: 'text', group: 'basic', filterable: true },
   { name: 'tags', label: 'Tags', type: 'unified_tag', group: 'basic' },
+  {
+    // Writes body_doc (source of truth), body_html (what the public site
+    // renders) and body_source together — see DocumentField.
+    name: 'body_doc',
+    label: 'Body',
+    type: 'document',
+    group: 'basic',
+    colSpan: 2,
+    helpText: 'Page content. Use the database-block control to embed live venues, events or places.',
+  },
   // SEO
   { name: 'meta_title', label: 'Meta Title', type: 'text', group: 'seo', maxLength: 70 },
   {
@@ -63,7 +73,6 @@ export const cmsPagesContentType: ContentTypeConfig = {
   label: { singular: 'Page', plural: 'Pages' },
   color: 'hsl(var(--foreground))',
   fields: pageFields,
-  hasRichText: true,
   defaults: { page_type: 'blog_post', workflow_state: 'draft', visibility_level: 'private' },
   fieldGroupOrder: ['basic', 'seo', 'media'],
   translatableFields: ['title', 'subtitle', 'excerpt', 'body_html', 'meta_title', 'meta_description'],
