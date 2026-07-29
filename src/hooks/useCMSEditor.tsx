@@ -8,7 +8,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { getContentType } from '@/config/contentTypeRegistry';
 import { validateAgainstRegistry } from '@/lib/cms/zodFromFields';
-import { documentToEdgeRows } from '@/lib/databaseBlock/parse';
 import type { EditorState, CMSContentMetadata, FieldGroup } from '@/types/cms';
 
 interface UseCMSEditorOptions {
@@ -276,8 +275,6 @@ export function useCMSEditor({
         const bookkeepingId = savedId;
         const snapshotData = state.data;
         const snapshotOriginal = state.originalData;
-        // Captured before dirty tracking is reset below.
-        const bodyDocChanged = 'body_doc' in saveData;
         void (async () => {
           if (!metadata) {
             const { data: newMeta } = await supabase
@@ -302,13 +299,6 @@ export function useCMSEditor({
           }
           await createRevision(config.tableName, bookkeepingId, snapshotData, snapshotOriginal);
           await writeAuditLog(config.tableName, bookkeepingId, itemId ? 'update' : 'create', user.id);
-          if (bodyDocChanged) {
-            await syncDocumentEntityEdges(
-              config.tableName,
-              bookkeepingId,
-              snapshotData.body_doc,
-            );
-          }
         })();
       }
 
@@ -449,35 +439,6 @@ export function useCMSEditor({
 }
 
 // ── Internal helpers ───────────────────────────────────────────────
-
-/**
- * Records which entities a document references, for backlinks and
- * delete-time warnings.
- *
- * Derived bookkeeping, so it inherits the same swallow-errors contract as
- * createRevision and writeAuditLog: a failed edge write must never surface to
- * an editor who has already saved their work successfully.
- *
- * Only cms_pages carries a block document today; the RPC rejects anything else,
- * so the guard here keeps a pointless round-trip off every other save.
- */
-async function syncDocumentEntityEdges(
-  sourceTable: string,
-  sourceId: string,
-  bodyDoc: unknown,
-) {
-  if (sourceTable !== 'cms_pages') return;
-  try {
-    const edges = documentToEdgeRows(bodyDoc);
-    await supabase.rpc('sync_document_entity_edges' as 'get_admin_counts', {
-      p_document_table: sourceTable,
-      p_document_id: sourceId,
-      p_edges: edges,
-    } as never);
-  } catch (err) {
-    console.warn('[cms] entity edge sync failed', err);
-  }
-}
 
 async function createRevision(
   sourceTable: string,

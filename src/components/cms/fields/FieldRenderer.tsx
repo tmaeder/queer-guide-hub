@@ -3,7 +3,6 @@ import type { FieldConfig } from '@/types/cms';
 import { TextField } from './TextField';
 import { TextAreaField } from './TextAreaField';
 import { RichTextField } from './RichTextField';
-import { DocumentField } from './DocumentField';
 import { NumberField } from './NumberField';
 import { BooleanField } from './BooleanField';
 import { SelectField } from './SelectField';
@@ -42,7 +41,6 @@ const FIELD_COMPONENTS: Record<string, React.ComponentType<FieldProps>> = {
   phone: TextField,
   textarea: TextAreaField,
   richtext: RichTextField,
-  document: DocumentField,
   number: NumberField,
   boolean: BooleanField,
   select: SelectField,

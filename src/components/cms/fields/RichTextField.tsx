@@ -4,42 +4,19 @@ import type { FieldProps } from './FieldRenderer';
 
 /**
  * Rich text editor field for the 'richtext' type.
- *
- * Every column bound to this field is a plain `text` column (venues.description,
- * news_articles.content, personalities.bio, …), so this field persists HTML —
- * the SECOND argument of the editor's onChange. Persisting the first argument
- * writes a ProseMirror object into a text column; that was the prior behaviour
- * and it corrupted rows across ~13 content types.
- *
- * Falls back to a textarea while the editor chunk loads.
+ * Lazy-loads the RichTextEditor from the CMS editor module.
+ * Value can be stored as HTML string or JSON (TipTap/ProseMirror doc).
+ * Falls back to a textarea if the editor is not yet available.
  */
 
 const RichTextEditor = lazy(() =>
-  // Named export only. The previous `mod.RichTextEditor ?? mod.default` fallback
-  // collapsed the inferred component type to `any`, which is why tsc could not
-  // see the onChange/value/disabled mismatches this file used to have.
+  // Named export only. A `?? mod.default` fallback collapses the inferred
+  // component type to `any`, which is what previously hid the prop mismatches
+  // below from tsc.
   import('@/components/cms/editor/RichTextEditor').then((mod) => ({
     default: mod.RichTextEditor,
   }))
 );
-
-/** A ProseMirror doc that was previously persisted into a text column. */
-function parseCorruptedDoc(raw: string): Record<string, unknown> | null {
-  if (!raw.startsWith('{')) return null;
-  try {
-    const parsed: unknown = JSON.parse(raw);
-    if (
-      typeof parsed === 'object' &&
-      parsed !== null &&
-      (parsed as { type?: unknown }).type === 'doc'
-    ) {
-      return parsed as Record<string, unknown>;
-    }
-  } catch {
-    /* not JSON — genuine HTML/text content */
-  }
-  return null;
-}
 
 function RichTextFallback({
   value,
@@ -64,26 +41,24 @@ function RichTextFallback({
 }
 
 export function RichTextField({ field, value, onChange, error, disabled }: FieldProps) {
-  /**
-   * What the editor is seeded with. A row corrupted by the previous wiring holds
-   * a stringified ProseMirror doc; hand that back to Tiptap as a document rather
-   * than rendering raw JSON as literal text, so the next save repairs the row.
-   */
-  const editorValue = useMemo<string | Record<string, unknown>>(() => {
+  // Normalize value to string for the editor
+  const htmlValue = useMemo(() => {
     if (value === null || value === undefined) return '';
-    if (typeof value === 'object') return value as Record<string, unknown>;
-    if (typeof value !== 'string') return String(value);
-    return parseCorruptedDoc(value) ?? value;
+    if (typeof value === 'string') return value;
+    // If stored as JSON (TipTap doc), try to serialize it
+    if (typeof value === 'object') {
+      try {
+        return JSON.stringify(value);
+      } catch {
+        return '';
+      }
+    }
+    return String(value);
   }, [value]);
 
-  /** Plain-string mirror for the textarea fallback, which cannot render a doc. */
-  const textValue = useMemo(
-    () => (typeof editorValue === 'string' ? editorValue : ''),
-    [editorValue]
-  );
-
-  // The editor emits (json, html). This field is bound to text columns, so it
-  // persists the HTML and deliberately discards the JSON.
+  // The editor emits (json, html). Every column bound to this field is a plain
+  // `text` column, so persist the HTML and discard the JSON — passing the first
+  // argument through writes a ProseMirror object into a text column.
   const handleEditorChange = useCallback(
     (_json: Record<string, unknown>, html: string) => {
       onChange(html);
@@ -98,7 +73,7 @@ export function RichTextField({ field, value, onChange, error, disabled }: Field
       <Suspense
         fallback={
           <RichTextFallback
-            value={textValue}
+            value={htmlValue}
             onChange={handleTextChange}
             disabled={disabled}
             placeholder={field.placeholder}
@@ -106,7 +81,7 @@ export function RichTextField({ field, value, onChange, error, disabled }: Field
         }
       >
         <RichTextEditor
-          value={editorValue}
+          value={htmlValue}
           onChange={handleEditorChange}
           editable={!disabled}
           placeholder={field.placeholder}

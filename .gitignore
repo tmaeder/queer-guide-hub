@@ -26,10 +26,6 @@ tmp/
 /*.txt
 /*.json
 !/design-sync.config.json
-# TypeScript project configs are source, not dumps. Without this, a new
-# tsconfig.*.json is silently ignored by the rule above — `git add -A` skips it
-# and `git status` stays clean, so it only surfaces as a CI failure.
-!/tsconfig*.json
 
 # Local workspaces + tool outputs
 .claude/

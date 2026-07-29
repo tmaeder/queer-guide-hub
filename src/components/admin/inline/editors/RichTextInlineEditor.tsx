@@ -27,7 +27,7 @@ export function RichTextInlineEditor({
   return (
     <div className="block">
       <RichTextEditor
-        value={seed}
+        value={seed as unknown as Record<string, unknown>}
         onChange={(_json, html) => {
           htmlRef.current = html;
         }}

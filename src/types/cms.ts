@@ -19,8 +19,6 @@ export type FieldType =
   | 'text'
   | 'textarea'
   | 'richtext'
-  /** Block editor over a jsonb document column; writes body_html alongside. */
-  | 'document'
   | 'number'
   | 'boolean'
   | 'select'
@@ -174,6 +172,8 @@ export interface ContentTypeConfig {
   validate?: (
     data: Record<string, unknown>,
   ) => import('@/utils/contentValidation').ValidationResult;
+  /** Whether this content type supports rich text body */
+  hasRichText?: boolean;
   /** Default field groups order */
   fieldGroupOrder?: FieldGroup[];
   /** Zod schema for validation; overrides field-level rules when present. Auto-generated from fields if absent. */
