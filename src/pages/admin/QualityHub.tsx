@@ -11,6 +11,7 @@ import {
   PenLine,
   ShieldCheck,
   GitMerge,
+  Link2,
   Table2,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
@@ -32,6 +33,7 @@ import { MarketplacePruneCard } from '@/components/admin/MarketplacePruneCard';
 import { FreigabeFunnel } from '@/components/admin/FreigabeFunnel';
 import { PersonalityFreigabeQueue } from '@/components/admin/PersonalityFreigabeQueue';
 import { DedupPendingLink } from '@/components/admin/DedupPendingLink';
+import { OrgLinkReviewQueue } from '@/components/admin/business/OrgLinkReviewQueue';
 import type { FreigabeStufe } from '@/lib/personalityStatus';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 
@@ -40,7 +42,10 @@ interface QualityEngine {
   countKey: string | null;
   title: string;
   description: string;
-  route: string;
+  /** Where the card navigates. null when the gate is reviewed inline via `section`. */
+  route: string | null;
+  /** EngineSection.value to expand in place instead of navigating. */
+  section?: string;
   icon: LucideIcon;
 }
 
@@ -94,6 +99,15 @@ const ENGINES: QualityEngine[] = [
     description: 'Nightly identity sweep. Exact-key merges are automatic; ambiguous pairs wait here.',
     route: '/admin/inbox?queue=dedup-review',
     icon: GitMerge,
+  },
+  {
+    countKey: 'review_org_links',
+    title: 'Business links',
+    description:
+      'Ambiguous entity→business matches and brand mint proposals from the nightly spine backfill.',
+    route: null,
+    section: 'business-links',
+    icon: Link2,
   },
   {
     countKey: 'quality_existence',
@@ -191,7 +205,58 @@ const SECTIONS: EngineSection[] = [
       </>
     ),
   },
+  {
+    /* Reviewed inline rather than in the inbox: approving a suggestion picks a
+       target org, and with none set decide_org_adoption mints a new one —
+       inputs the generic triage panel does not model. */
+    value: 'business-links',
+    title: 'Business links — adoption review',
+    editRoute: '/admin/business',
+    editLabel: 'Open Business console',
+    render: () => <OrgLinkReviewQueue />,
+  },
 ];
+
+const CARD_CLASS =
+  'flex flex-col gap-2 rounded-container border border-border p-4 text-left transition-colors hover:bg-muted/40';
+
+/** Card face, identical whether the card navigates or expands a section below. */
+function EngineCardBody({
+  engine,
+  pending,
+}: {
+  engine: QualityEngine;
+  pending: number | undefined;
+}) {
+  const Icon = engine.icon;
+  return (
+    <>
+      <div className="flex items-center justify-between gap-2">
+        <span className="flex items-center gap-2 font-medium">
+          <Icon size={16} />
+          {engine.title}
+        </span>
+        {engine.countKey === null ? (
+          <Badge variant="outline" className="font-normal">
+            no gate
+          </Badge>
+        ) : pending != null && pending > 0 ? (
+          <Badge className="tabular-nums">{pending}</Badge>
+        ) : (
+          <Badge variant="secondary" className="font-normal tabular-nums">
+            {pending ?? '…'}
+          </Badge>
+        )}
+      </div>
+      <p className="text-13 text-muted-foreground">{engine.description}</p>
+      {engine.countKey !== null && pending != null && pending > 0 && (
+        <p className="text-13 font-medium">
+          Review {pending} item{pending === 1 ? '' : 's'} →
+        </p>
+      )}
+    </>
+  );
+}
 
 /**
  * Quality hub — one page surfacing every Truth Engine review gate with its
@@ -201,10 +266,20 @@ const SECTIONS: EngineSection[] = [
  */
 export default function QualityHub() {
   const { data: counts } = useAdminCounts();
+  const [openSections, setOpenSections] = useState<string[]>(['personalities']);
   const totalPending = ENGINES.reduce(
     (sum, e) => sum + (e.countKey ? (counts?.[e.countKey] ?? 0) : 0),
     0,
   );
+
+  /** Expand an inline gate's section and bring it into view. */
+  const revealSection = (value: string) => {
+    setOpenSections((prev) => (prev.includes(value) ? prev : [...prev, value]));
+    // Let the accordion item mount before scrolling to it.
+    requestAnimationFrame(() =>
+      document.getElementById(`section-${value}`)?.scrollIntoView({ block: 'start' }),
+    );
+  };
 
   return (
     <div className="mx-auto flex max-w-5xl flex-col gap-6 p-6">
@@ -230,37 +305,20 @@ export default function QualityHub() {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         {ENGINES.map((e) => {
           const pending = e.countKey ? counts?.[e.countKey] : undefined;
-          const Icon = e.icon;
-          return (
-            <Link
-              key={e.route}
-              to={e.route}
-              className="flex flex-col gap-2 rounded-container border border-border p-4 transition-colors hover:bg-muted/40"
-            >
-              <div className="flex items-center justify-between gap-2">
-                <span className="flex items-center gap-2 font-medium">
-                  <Icon size={16} />
-                  {e.title}
-                </span>
-                {e.countKey === null ? (
-                  <Badge variant="outline" className="font-normal">
-                    no gate
-                  </Badge>
-                ) : pending != null && pending > 0 ? (
-                  <Badge className="tabular-nums">{pending}</Badge>
-                ) : (
-                  <Badge variant="secondary" className="font-normal tabular-nums">
-                    {pending ?? '…'}
-                  </Badge>
-                )}
-              </div>
-              <p className="text-13 text-muted-foreground">{e.description}</p>
-              {e.countKey !== null && pending != null && pending > 0 && (
-                <p className="text-13 font-medium">
-                  Review {pending} item{pending === 1 ? '' : 's'} →
-                </p>
-              )}
+          const body = <EngineCardBody engine={e} pending={pending} />;
+          return e.route ? (
+            <Link key={e.title} to={e.route} className={CARD_CLASS}>
+              {body}
             </Link>
+          ) : (
+            <button
+              key={e.title}
+              type="button"
+              className={CARD_CLASS}
+              onClick={() => e.section && revealSection(e.section)}
+            >
+              {body}
+            </button>
           );
         })}
       </div>
@@ -271,9 +329,9 @@ export default function QualityHub() {
           Coverage, completeness, and funnel stats per Truth Engine.
         </p>
       </div>
-      <Accordion type="multiple" defaultValue={['personalities']}>
+      <Accordion type="multiple" value={openSections} onValueChange={setOpenSections}>
         {SECTIONS.map((s) => (
-          <AccordionItem key={s.value} value={s.value}>
+          <AccordionItem key={s.value} id={`section-${s.value}`} value={s.value}>
             <AccordionTrigger className="text-15">{s.title}</AccordionTrigger>
             <AccordionContent>
               <div className="flex flex-col gap-4 pt-2">

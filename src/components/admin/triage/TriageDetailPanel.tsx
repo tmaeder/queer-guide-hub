@@ -1,4 +1,6 @@
+import { Link } from 'react-router';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Loader2, Clock, User, Zap } from 'lucide-react';
 import { EntityPreviewCard } from './EntityPreviewCard';
 import { StagingPreview } from './StagingPreview';
@@ -22,6 +24,16 @@ function formatDate(dateStr: string): string {
     minute: '2-digit',
   });
 }
+
+/**
+ * Queues the inbox lists but cannot decide: triage_action has no branch for
+ * them because the decision needs inputs this generic panel does not model.
+ * Mirrors triage_sources.capabilities.external_console. Deliberately excludes
+ * dedup-review, which does have a working branch and keeps its action bar.
+ */
+const EXTERNAL_CONSOLE: Record<string, { route: string; label: string }> = {
+  'org-link-review': { route: '/admin/quality', label: 'Review in Quality' },
+};
 
 /** Keys to hide from meta display — internal or already shown in header */
 const META_HIDDEN_KEYS = new Set([
@@ -66,6 +78,7 @@ function humanize(raw: string): string {
 export function TriageDetailPanel({ item, onAction, isActionLoading }: TriageDetailPanelProps) {
   const { data: entityData, isLoading: entityLoading } = useEntityData(item);
   const { data: stagingData } = useStagingData(item);
+  const externalConsole = EXTERNAL_CONSOLE[item.queue_type];
 
   const diffs = item.has_diff && entityData && stagingData
     ? computeFieldDiffs(
@@ -218,8 +231,19 @@ export function TriageDetailPanel({ item, onAction, isActionLoading }: TriageDet
         )}
       </div>
 
-      {/* Action bar */}
-      <ActionBar onAction={onAction} isLoading={isActionLoading} />
+      {/* Action bar — or a deep link out for queues decided elsewhere */}
+      {externalConsole ? (
+        <div className="flex items-center justify-between gap-4 border-t p-4">
+          <p className="text-13 text-muted-foreground">
+            Decided in its own console — approving picks a target business.
+          </p>
+          <Button asChild size="sm" variant="outline">
+            <Link to={externalConsole.route}>{externalConsole.label} →</Link>
+          </Button>
+        </div>
+      ) : (
+        <ActionBar onAction={onAction} isLoading={isActionLoading} />
+      )}
     </div>
   );
 }

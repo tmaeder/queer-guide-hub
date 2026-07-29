@@ -14,7 +14,7 @@ export const ADMIN_AREA_DESCRIPTIONS: Record<string, string> = {
   // Content
   '/admin/content': 'All content types in one list. Filter, edit, and bulk-act across entities.',
   '/admin/quality':
-    'Truth Engine dashboards and review gates. Review actions live in the inbox queues.',
+    'Truth Engine dashboards and review gates, plus business link review. Most review actions live in the inbox queues.',
   '/admin/content/venues': 'Bars, clubs, and spaces. Edit details, set featured, merge duplicates.',
   '/admin/duplicates':
     'Exact/fuzzy merge power tool across every content type and taxonomy. Nightly-sweep suggestions are reviewed in the inbox.',
@@ -28,7 +28,7 @@ export const ADMIN_AREA_DESCRIPTIONS: Record<string, string> = {
   '/admin/content/countries': 'Countries. Edit metadata, safety, and equality data.',
   '/admin/content/hotels': 'Hotels and BnBs. Edit listings and amenities.',
   '/admin/business':
-    'Every business on the platform on one spine — directory plus hotels, merchants, brands, partners and the adoption link-review queue.',
+    'Every business on the platform on one spine — directory plus hotels, merchants, brands and partners. Adoption link review lives on /admin/quality.',
   '/admin/content/queer_villages': 'Queer villages and neighborhoods. Edit listings.',
   '/admin/villages': 'Queer villages and neighborhoods. Edit listings, scores, and venue links.',
   '/admin/content/marketplace_listings':
