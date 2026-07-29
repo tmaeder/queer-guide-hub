@@ -31,6 +31,11 @@ jobs:
           cache: npm
       - run: npm ci --prefer-offline --no-audit
       - run: npm run typecheck
+      # The step above is currently vacuous: the root tsconfig is solution-style
+      # ("files": [] + references) and `tsc --noEmit` without `-b` checks nothing.
+      # `tsc -p tsconfig.app.json` has ~1400 pre-existing errors, so this gate
+      # enforces the directories we can keep clean. See tsconfig.databaseBlock.json.
+      - run: npm run typecheck:blocks
 
   lint:
     runs-on: ubuntu-latest
