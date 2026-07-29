@@ -29,8 +29,7 @@ export const ADMIN_AREA_DESCRIPTIONS: Record<string, string> = {
   '/admin/content/hotels': 'Hotels and BnBs. Edit listings and amenities.',
   '/admin/business':
     'Every business on the platform on one spine — directory plus hotels, merchants, brands, partners and the adoption link-review queue.',
-  '/admin/content/queer_villages': 'Queer villages and neighborhoods. Edit listings.',
-  '/admin/villages': 'Queer villages and neighborhoods. Edit listings, scores, and venue links.',
+  '/admin/content/queer_villages': 'Queer villages and neighborhoods. Edit listings, scores, and venue links.',
   '/admin/content/marketplace_listings':
     'Marketplace products. Edit listings, prices, and affiliate links.',
   '/admin/content/guides': 'Guides. Curate editorial guides, lists, and community quests.',

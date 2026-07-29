@@ -162,7 +162,7 @@ const SECTIONS: EngineSection[] = [
   {
     value: 'villages',
     title: 'Queer Villages',
-    editRoute: '/admin/villages',
+    editRoute: '/admin/content/queer_villages',
     editLabel: 'Edit villages',
     render: () => (
       <>

@@ -222,7 +222,7 @@ export const adminNavSections: AdminNavSection[] = [
         id: 'villages',
         label: 'Queer Villages',
         icon: Home,
-        route: '/admin/villages',
+        route: '/admin/content/queer_villages',
         countTable: 'queer_villages',
         group: 'Places',
       },
