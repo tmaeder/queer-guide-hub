@@ -22,8 +22,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { ChevronRight, FileText, Shield, Cookie, Scale } from 'lucide-react';
 import { useCMSPage } from '@/hooks/useCMSPage';
-import { CMSBody } from '@/components/content/CMSBody';
-import { sanitizeCmsHtml } from '@/lib/cms/sanitizeCmsHtml';
+import DOMPurify from 'dompurify';
 import { useMeta } from '@/hooks/useMeta';
 import { LegalPageLayout } from '@/components/ui/LegalPageLayout';
 import { EditorialHero } from '@/components/editorial/EditorialHero';
@@ -212,9 +211,10 @@ export default function CMSRoutePage({ slug }: CMSRoutePageProps) {
     );
   }
 
-  // Sanitized here rather than inside <CMSBody> because the legal-child branch
-  // parses headings out of the string to build its TOC before rendering.
-  const sanitizedHtml = sanitizeCmsHtml(page.body_html);
+  // All CMS HTML is sanitized through DOMPurify before rendering
+  const sanitizedHtml = page.body_html
+    ? DOMPurify.sanitize(page.body_html, { ADD_ATTR: ['id'] })
+    : '';
 
   // ── Legal hub layout ────────────────────────────────────────────────────
   if (isLegalHub) {
@@ -273,12 +273,9 @@ export default function CMSRoutePage({ slug }: CMSRoutePageProps) {
           sections={sections}
           heroImage={getEditorialImage(slug)}
         >
-          {/* Already sanitized above; extractSections only added heading ids. */}
-          <CMSBody
-            html={htmlWithIds}
-            preSanitized
+          <div
             className="qg-cms-body qg-cms-body--legal"
-            pageSlug={slug}
+            dangerouslySetInnerHTML={{ __html: htmlWithIds }}
           />
         </LegalPageLayout>
       </>
@@ -313,12 +310,12 @@ export default function CMSRoutePage({ slug }: CMSRoutePageProps) {
         )
       )}
 
-      <CMSBody
-        html={sanitizedHtml}
-        preSanitized
-        className={editorialHero ? 'qg-cms-body qg-cms-body--no-title' : 'qg-cms-body'}
-        pageSlug={slug}
-      />
+      {sanitizedHtml && (
+        <div
+          className={editorialHero ? 'qg-cms-body qg-cms-body--no-title' : 'qg-cms-body'}
+          dangerouslySetInnerHTML={{ __html: sanitizedHtml }}
+        />
+      )}
 
       {/* Accessibility page embeds the live settings panel so it isn't a dead end. */}
       {slug === 'accessibility' && (

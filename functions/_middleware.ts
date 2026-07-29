@@ -48,8 +48,6 @@ import {
 import { homepageJsonLd } from './_lib/jsonLd';
 import { getBranding, brandStyleTag, brandingMeta, brandFontPreloads } from './_lib/branding';
 import { isBotUserAgent } from './_lib/botUa';
-import { cmsPageSlugFor } from './_lib/cmsPageRoutes';
-import { buildDbBlockSeed } from './_lib/dbBlockSeed';
 import { buildBodyHtml, buildNoscriptHtml } from './_lib/routeBody';
 import { isLocaleLocalised, LOCALISED_LOCALES } from './_lib/localisedLocales';
 import { resolveDetailRoute, isDetailPath, resolveSlugRedirect } from './_lib/detail';
@@ -353,17 +351,6 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   }
   for (const preload of brandFontPreloads(branding)) {
     headInjections.push(preload);
-  }
-
-  // Database-block pre-hydration. Detection is a compile-time slug allowlist,
-  // so non-CMS routes (including "/") cost nothing. Anon key only, reading the
-  // safety-gated v_entity_cards view, so the payload is identical for every
-  // viewer and safe to serve to all of them. Returns null on any failure —
-  // the client then fetches for itself.
-  const cmsSlug = cmsPageSlugFor(basePath);
-  if (cmsSlug) {
-    const seed = await buildDbBlockSeed(env, cmsSlug);
-    if (seed) headInjections.push(seed.scriptTag);
   }
 
   const rewriter = new HTMLRewriter()
