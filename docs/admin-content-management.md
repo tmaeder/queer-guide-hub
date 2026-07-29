@@ -59,10 +59,30 @@ so they cannot become config. Tag CRUD itself lives in the registry
 (`/admin/content/unified_tags`), and the per-tag alias editor moved there as an
 `extraPanel`.
 
-**Open follow-up:** `AdminTags` still embeds a duplicate `unified_tags` table
-alongside its ops panels. The parity gap that justified it (alias editing) is
-closed, so the table can now be dropped in favour of a link to the registry —
-left undone because verifying it needs a signed-in admin session.
+## What blocks further convergence
+
+`AdminTags` and `AdminRedirects` both keep a table the registry cannot yet
+replace. Alias editing — the gap closed above — turned out to be only one of
+several. `AdminDataTable` configs use capabilities that `ContentTypeConfig` has
+no equivalent for:
+
+| capability | `AdminTableConfig` | `ContentTypeConfig` |
+|---|---|---|
+| `rowActions` | yes | **no** |
+| `toolbarActions` | yes | **no** |
+| `bulkEditFields` | yes | **no** |
+| `entityFilters` | yes | **no** |
+| `exportColumns` | yes | **no** |
+| `backfillJobs` | yes | **no** |
+
+So the remaining `AdminDataTable` pages are not lingering duplication to be
+mopped up — they are using a richer list surface. Converting one today trades
+row actions and bulk edit for revisions and workflow, which is a sideways move
+at best.
+
+**The real next step**, for anyone continuing this: teach the registry list
+those capabilities (starting with `rowActions` and `entityFilters`, which cover
+most usage), then convert. Until then, leave them.
 
 ## Everything else under `/admin/`
 
