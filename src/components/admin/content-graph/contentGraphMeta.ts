@@ -60,7 +60,7 @@ export const TYPE_META: Record<string, TypeMeta> = {
   // the only place they are editable.
   continent: { icon: Globe, table: null, titleCol: 'name', adminHref: '/admin/geography' },
   region: { icon: Map, table: null, titleCol: 'name', adminHref: '/admin/geography' },
-  village: { icon: Home, table: 'queer_villages', titleCol: 'name', adminHref: '/admin/villages' },
+  village: { icon: Home, table: 'queer_villages', titleCol: 'name', adminHref: '/admin/content/queer_villages' },
   festival: { icon: PartyPopper, table: null, titleCol: 'name', adminHref: '/admin/content/events' },
   group: { icon: UsersRound, table: null, titleCol: 'name', adminHref: '/admin/content/community_groups' },
   tag: { icon: Tag, table: null, titleCol: 'name', adminHref: '/admin/content/unified_tags' },

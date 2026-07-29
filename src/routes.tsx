@@ -73,14 +73,6 @@ const Travel = lazyRetry(() => import('./pages/Travel'));
 const TravelBook = lazyRetry(() => import('./pages/travel/Book'));
 const MapPage = lazyRetry(() => import('./pages/Map'));
 const AdminDuplicates = lazyRetry(() => import('./pages/admin/AdminDuplicates'));
-const AdminVenueCategories = lazyRetry(() => import('./pages/admin/AdminVenueCategories'));
-const AdminVenueServices = lazyRetry(() => import('./pages/admin/AdminVenueServices'));
-const AdminEventTypes = lazyRetry(() => import('./pages/admin/AdminEventTypes'));
-const AdminEventAmenities = lazyRetry(() => import('./pages/admin/AdminEventAmenities'));
-const AdminEventServices = lazyRetry(() => import('./pages/admin/AdminEventServices'));
-const AdminAccessibilityAttributes = lazyRetry(() => import('./pages/admin/AdminAccessibilityAttributes'));
-const AdminTargetGroups = lazyRetry(() => import('./pages/admin/AdminTargetGroups'));
-const AdminProfessions = lazyRetry(() => import('./pages/admin/AdminProfessions'));
 const PersonalityDataSheet = lazyRetry(() => import('./pages/admin/PersonalityDataSheet'));
 const PersonalitiesAdmin = lazyRetry(() => import('./pages/admin/PersonalitiesAdmin'));
 const MilestonesAdmin = lazyRetry(() => import('./pages/admin/MilestonesAdmin'));
@@ -110,7 +102,6 @@ const PlaceDetail = lazyRetry(() => import('./pages/PlaceDetail'));
 // Festivals routes now redirect to /events (festivals integrated into events)
 
 // New admin pages
-const AdminQueerVillages = lazyRetry(() => import('./pages/admin/AdminQueerVillages'));
 const AdminGeography = lazyRetry(() => import('./pages/admin/AdminGeography'));
 const AdminInbox = lazyRetry(() => import('./pages/admin/AdminInbox'));
 const AdminAutomation = lazyRetry(() => import('./pages/admin/AdminAutomation'));
@@ -436,7 +427,7 @@ export const AppRoutes = () => {
                 <Route path="content/group-requests" element={<AdminGroupRequests />} />
                 {/* Hotel CRUD now lives in the Business console's Hotels tab. */}
                 <Route path="hotels" element={<Navigate to="/admin/business?tab=hotels" replace />} />
-                <Route path="villages" element={<AdminQueerVillages />} />
+                <Route path="villages" element={<Navigate to="/admin/content/queer_villages" replace />} />
                 <Route path="geography" element={<AdminGeography />} />
 
                 {/* System section */}
@@ -447,14 +438,14 @@ export const AppRoutes = () => {
 
                 {/* Settings -- taxonomy management pages */}
                 <Route path="settings" element={<AdminTags />} />
-                <Route path="settings/venue-categories" element={<AdminVenueCategories />} />
-                <Route path="settings/venue-services" element={<AdminVenueServices />} />
-                <Route path="settings/event-types" element={<AdminEventTypes />} />
-                <Route path="settings/event-amenities" element={<AdminEventAmenities />} />
-                <Route path="settings/event-services" element={<AdminEventServices />} />
-                <Route path="settings/accessibility" element={<AdminAccessibilityAttributes />} />
-                <Route path="settings/target-groups" element={<AdminTargetGroups />} />
-                <Route path="settings/professions" element={<AdminProfessions />} />
+                <Route path="settings/venue-categories" element={<Navigate to="/admin/content/venue_categories" replace />} />
+                <Route path="settings/venue-services" element={<Navigate to="/admin/content/venue_services" replace />} />
+                <Route path="settings/event-types" element={<Navigate to="/admin/content/event_types" replace />} />
+                <Route path="settings/event-amenities" element={<Navigate to="/admin/content/event_amenities" replace />} />
+                <Route path="settings/event-services" element={<Navigate to="/admin/content/event_services" replace />} />
+                <Route path="settings/accessibility" element={<Navigate to="/admin/content/accessibility_attributes" replace />} />
+                <Route path="settings/target-groups" element={<Navigate to="/admin/content/target_groups" replace />} />
+                <Route path="settings/professions" element={<Navigate to="/admin/content/professions" replace />} />
 
                 {/* Legacy routes -- redirect to new paths */}
                 <Route path="venues" element={<Navigate to="/admin/content/venues" replace />} />
