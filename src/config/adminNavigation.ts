@@ -110,7 +110,7 @@ export const adminNavSections: AdminNavSection[] = [
         label: 'Business',
         icon: Building,
         route: '/admin/business',
-        reviewCountKey: 'review_org_links',
+        // No review badge: link review lives on /admin/quality with the other gates.
         adminOnly: true,
       },
       {

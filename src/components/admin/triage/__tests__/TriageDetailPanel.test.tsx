@@ -3,6 +3,7 @@
  */
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
+import { MemoryRouter } from 'react-router';
 
 const { useEntityDataMock, useStagingDataMock } = vi.hoisted(() => ({
   useEntityDataMock: vi.fn(),
@@ -73,5 +74,41 @@ describe('TriageDetailPanel', () => {
     expect(screen.getByText('Context')).toBeInTheDocument();
     expect(screen.getByText('City')).toBeInTheDocument();
     expect(screen.getByText('Berlin')).toBeInTheDocument();
+  });
+});
+
+/**
+ * triage_action has no 'org-link-review' branch — it raises
+ * `unknown queue_type`. The panel must not offer actions it cannot perform.
+ */
+describe('TriageDetailPanel — queues decided in an external console', () => {
+  const orgLinkItem = { ...(item as object), queue_type: 'org-link-review' } as never;
+
+  beforeEach(() => {
+    useEntityDataMock.mockReturnValue({ data: null, isLoading: false });
+    useStagingDataMock.mockReturnValue({ data: null });
+  });
+
+  it('replaces the action bar with a deep link to the Quality hub', () => {
+    render(
+      <MemoryRouter>
+        <TriageDetailPanel item={orgLinkItem} onAction={vi.fn()} isActionLoading={false} />
+      </MemoryRouter>,
+    );
+    expect(screen.queryByTestId('actions')).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Review in Quality/i })).toHaveAttribute(
+      'href',
+      '/admin/quality',
+    );
+  });
+
+  it('keeps the action bar for dedup-review, which triage_action does handle', () => {
+    const dedupItem = { ...(item as object), queue_type: 'dedup-review' } as never;
+    render(
+      <MemoryRouter>
+        <TriageDetailPanel item={dedupItem} onAction={vi.fn()} isActionLoading={false} />
+      </MemoryRouter>,
+    );
+    expect(screen.getByTestId('actions')).toBeInTheDocument();
   });
 });
