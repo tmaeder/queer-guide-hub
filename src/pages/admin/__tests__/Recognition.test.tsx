@@ -2,7 +2,8 @@
  * @vitest-environment jsdom
  */
 import { describe, it, expect, vi } from 'vitest';
-import { render } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
+import { MemoryRouter } from 'react-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 vi.mock('@/hooks/useRecognitions', () => ({
@@ -17,10 +18,29 @@ vi.mock('@/hooks/useRecognitions', () => ({
 
 import AdminRecognition from '../Recognition';
 
+// AdminPageHeader reads useLocation() to derive the route eyebrow, so the page
+// now needs a Router — it always has one in the app, where every admin page
+// renders inside AdminShell's <Outlet />.
+function renderPage() {
+  const qc = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } });
+  return render(
+    <MemoryRouter initialEntries={['/admin/recognition']}>
+      <QueryClientProvider client={qc}>
+        <AdminRecognition />
+      </QueryClientProvider>
+    </MemoryRouter>,
+  );
+}
+
 describe('AdminRecognition', () => {
   it('renders without crashing', () => {
-    const qc = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } });
-    const { container } = render(<QueryClientProvider client={qc}><AdminRecognition /></QueryClientProvider>);
+    const { container } = renderPage();
     expect(container).toBeTruthy();
+  });
+
+  it('renders its title through AdminPageHeader as a real h1', () => {
+    renderPage();
+    const heading = screen.getByRole('heading', { name: 'Recognition Wall' });
+    expect(heading.tagName).toBe('H1');
   });
 });

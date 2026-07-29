@@ -156,6 +156,10 @@ export default function PersonalityDataSheet() {
           <button onClick={() => window.close()}>Schließen</button>
         </div>
 
+        {/* eslint-disable-next-line queerguide/admin-ui-primitives --
+            Print datasheet, not a console page: styled by the .pds stylesheet
+            for paper output. Admin chrome (route eyebrow, back link) must not
+            appear in the PDF. */}
         <h1>{p.name}</h1>
         {p.profession && <p className="sub">{p.profession}</p>}
         <div className="status">

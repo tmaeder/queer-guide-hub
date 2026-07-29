@@ -34,6 +34,7 @@ import { useAdminRoles } from '@/hooks/useAdminRoles';
 import { adminAction } from '@/lib/adminAction';
 import { formatNextFire } from '@/lib/nextCronFire';
 import { toast } from 'sonner';
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 
 interface Automation {
   id: string;
@@ -249,17 +250,18 @@ export default function AdminAutomation() {
 
   return (
     <div className="flex flex-col gap-6">
-      <header className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-headline font-bold flex items-center gap-2">
-            <Workflow size={22} />
+      {/* mb-0: the parent already spaces children with gap-6. */}
+      <AdminPageHeader
+        className="mb-0"
+        title={
+          <span className="flex items-center gap-2">
+            <Workflow size={22} aria-hidden />
             Automation
-          </h1>
-          <p className="text-13 text-muted-foreground mt-1">
-            Things the system is doing on its own. Each row is a rule; runs are audited below.
-          </p>
-        </div>
-        <div className="flex gap-2 flex-shrink-0 flex-wrap">
+          </span>
+        }
+        subtitle="Things the system is doing on its own. Each row is a rule; runs are audited below."
+        actions={
+          <div className="flex gap-2 flex-shrink-0 flex-wrap">
           <Button
             variant="ghost"
             size="sm"
@@ -301,8 +303,9 @@ export default function AdminAutomation() {
             </Button>
           </>
         )}
-        </div>
-      </header>
+          </div>
+        }
+      />
 
       {/* Registry */}
       <section>
