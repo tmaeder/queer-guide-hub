@@ -17,6 +17,8 @@ import { CodeBlockLowlight } from '@tiptap/extension-code-block-lowlight';
 import { common, createLowlight } from 'lowlight';
 import { cn } from '@/lib/utils';
 import { EditorToolbar } from './EditorToolbar';
+import { DatabaseBlockWithView } from './extensions/DatabaseBlockWithView';
+import { injectSnapshotLists } from './extensions/DatabaseBlock';
 
 /* ------------------------------------------------------------------ */
 /*  Create lowlight instance with common languages                     */
@@ -48,6 +50,14 @@ interface RichTextEditorProps {
   className?: string;
   /** Minimum height of the editor area (CSS value, default "200px") */
   minHeight?: string;
+  /**
+   * Enables the `databaseBlock` node and its toolbar control.
+   *
+   * Off by default: the ~13 fields bound to plain `text` columns cannot store a
+   * block, so offering one there would let an editor author content that
+   * silently degrades on save. Only a jsonb-backed document field turns it on.
+   */
+  enableDatabaseBlock?: boolean;
 }
 
 /* ------------------------------------------------------------------ */
@@ -61,11 +71,13 @@ export function RichTextEditor({
   editable = true,
   className,
   minHeight = '200px',
+  enableDatabaseBlock = false,
 }: RichTextEditorProps) {
   const editor = useEditor({
     editable,
     content: value ?? undefined,
     extensions: [
+      ...(enableDatabaseBlock ? [DatabaseBlockWithView] : []),
       StarterKit.configure({
         // Disable the built-in codeBlock in favour of CodeBlockLowlight
         codeBlock: false,
@@ -96,7 +108,11 @@ export function RichTextEditor({
       CodeBlockLowlight.configure({ lowlight }),
     ],
     onUpdate: ({ editor: ed }) => {
-      onChange?.(ed.getJSON() as Record<string, unknown>, ed.getHTML());
+      // Database blocks serialize to an empty placeholder div; the crawlable
+      // <ul> of entity links is spliced in here, so whatever is persisted as
+      // body_html carries real links rather than an empty shell.
+      const html = enableDatabaseBlock ? injectSnapshotLists(ed.getHTML()) : ed.getHTML();
+      onChange?.(ed.getJSON() as Record<string, unknown>, html);
     },
   });
 
@@ -108,7 +124,7 @@ export function RichTextEditor({
       )}
     >
       {/* Toolbar */}
-      {editable && <EditorToolbar editor={editor} />}
+      {editable && <EditorToolbar editor={editor} enableDatabaseBlock={enableDatabaseBlock} />}
 
       {/* Editor content area */}
       <div

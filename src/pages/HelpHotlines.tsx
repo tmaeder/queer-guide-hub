@@ -409,7 +409,7 @@ export default function HelpHotlines() {
       <WhatToExpect />
 
       {/* CMS intro text */}
-      <CMSBody html={page?.body_html} className="qg-help-intro mb-8" />
+      <CMSBody html={page?.body_html} className="qg-help-intro mb-8" pageSlug="help" />
 
       {loading || !ready ? (
         <>

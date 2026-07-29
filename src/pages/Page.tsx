@@ -73,6 +73,7 @@ export default function Page() {
       <CMSBody
         html={page.body_html}
         className="prose prose-neutral dark:prose-invert max-w-none"
+        pageSlug={slug}
       />
 
       {/* Tags */}
