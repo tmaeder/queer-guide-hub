@@ -38,6 +38,11 @@ jobs:
       - run: npm run typecheck
       # Zero-tolerance gate for directories we keep fully clean.
       - run: npm run typecheck:blocks
+      # functions/ (Cloudflare Pages) was in no tsconfig include and
+      # _middleware.ts is ESLint-ignored, so edge code shipped with no static
+      # checking at all — and vitest coverage excludes it too. It typechecks
+      # clean today; this keeps it that way.
+      - run: npm run typecheck:functions
 
   lint:
     runs-on: ubuntu-latest
