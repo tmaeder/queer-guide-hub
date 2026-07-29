@@ -14,6 +14,12 @@
  * safety-gated entities away from signed-out readers.
  */
 
+/**
+ * ProseMirror node name. Shared so the Tiptap extension, the document walker
+ * and the edge middleware cannot disagree about what a block looks like.
+ */
+export const DATABASE_BLOCK_NODE_NAME = 'databaseBlock';
+
 /* ------------------------------------------------------------------ */
 /*  Entity vocabulary                                                  */
 /* ------------------------------------------------------------------ */
