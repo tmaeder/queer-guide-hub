@@ -25,6 +25,7 @@
     "src/lib/cms/sanitizeCmsHtml.ts",
     "src/components/content/**/*",
     "src/components/cms/blocks/**/*",
+    "src/components/cms/editor/extensions/**/*",
     "src/hooks/useEntityCards.ts"
   ]
 }
