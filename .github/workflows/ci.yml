@@ -43,6 +43,10 @@ jobs:
       # checking at all — and vitest coverage excludes it too. It typechecks
       # clean today; this keeps it that way.
       - run: npm run typecheck:functions
+      # The middleware detects CMS pages from a generated slug allowlist rather
+      # than a DB round-trip on every request. If a CMS route is added without
+      # regenerating, its blocks silently stop being pre-hydrated.
+      - run: node scripts/sync-cms-page-routes.mjs --check
 
   lint:
     runs-on: ubuntu-latest
