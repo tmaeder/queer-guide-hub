@@ -47,7 +47,7 @@ import {
   ShieldAlert,
   BadgeCheck,
 } from 'lucide-react';
-import DOMPurify from 'dompurify';
+import { CMSBody } from '@/components/content/CMSBody';
 
 import { useMeta } from '@/hooks/useMeta';
 import { useCMSPage } from '@/hooks/useCMSPage';
@@ -320,10 +320,6 @@ export default function HelpHotlines() {
     })[0];
   }, [visibleHotlines, countryFilter]);
 
-  const sanitizedIntroHtml = useMemo(
-    () => (page?.body_html ? DOMPurify.sanitize(page.body_html) : ''),
-    [page],
-  );
 
   useMeta({
     title: t('help.title', 'Help & Crisis Hotlines'),
@@ -413,12 +409,7 @@ export default function HelpHotlines() {
       <WhatToExpect />
 
       {/* CMS intro text */}
-      {sanitizedIntroHtml && (
-        <div
-          className="qg-help-intro mb-8"
-          dangerouslySetInnerHTML={{ __html: sanitizedIntroHtml }}
-        />
-      )}
+      <CMSBody html={page?.body_html} className="qg-help-intro mb-8" />
 
       {loading || !ready ? (
         <>

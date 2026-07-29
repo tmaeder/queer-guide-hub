@@ -7,7 +7,7 @@
 import { useParams } from 'react-router';
 import { Loader2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import DOMPurify from 'dompurify';
+import { CMSBody } from '@/components/content/CMSBody';
 import { useCMSPage } from '@/hooks/useCMSPage';
 
 export default function Page() {
@@ -34,8 +34,6 @@ export default function Page() {
       </div>
     );
   }
-
-  const sanitizedHtml = page.body_html ? DOMPurify.sanitize(page.body_html) : '';
 
   return (
     <div className="container mx-auto py-8 px-4">
@@ -72,12 +70,10 @@ export default function Page() {
       </div>
 
       {/* Body */}
-      {sanitizedHtml && (
-        <div
-          dangerouslySetInnerHTML={{ __html: sanitizedHtml }}
-          className="prose prose-neutral dark:prose-invert max-w-none"
-        />
-      )}
+      <CMSBody
+        html={page.body_html}
+        className="prose prose-neutral dark:prose-invert max-w-none"
+      />
 
       {/* Tags */}
       {page.tags && page.tags.length > 0 && (
