@@ -21,6 +21,7 @@ import {
   useAdminCovers,
   useToggleCoverPublished,
 } from '@/hooks/useAdminEditorial';
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 
 export default function AdminPlacesEditorial() {
   useMeta({
@@ -31,13 +32,12 @@ export default function AdminPlacesEditorial() {
 
   return (
     <div className="container mx-auto py-8 px-4 flex flex-col gap-6">
-      <header className="flex flex-col gap-1">
-        <h1 className="text-headline-lg font-bold tracking-tight">Editorial — Places</h1>
-        <p className="text-15 text-muted-foreground">
-          Generate LLM drafts, review hooks, curate covers for /places. Rails are now Guides
-          (format “List”) at /admin/content/guides.
-        </p>
-      </header>
+      {/* mb-0: the parent already spaces children with gap-6. */}
+      <AdminPageHeader
+        className="mb-0"
+        title="Editorial — Places"
+        subtitle="Generate LLM drafts, review hooks, curate covers for /places. Rails are now Guides (format “List”) at /admin/content/guides."
+      />
 
       <Tabs defaultValue="drafts">
         <TabsList>
