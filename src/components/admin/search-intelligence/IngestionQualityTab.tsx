@@ -20,6 +20,7 @@ import {
   VisibilityAxis,
   VISIBILITY_AXES,
 } from '@/lib/visibilityScore';
+import { AdminTextSkeleton } from '@/components/admin/primitives/AdminLoading';
 
 const ENTITY_TYPES: Array<{ value: string; label: string }> = [
   { value: 'venue', label: 'Venue' },
@@ -245,7 +246,7 @@ export function IngestionQualityTab() {
             </Select>
           </div>
           {coverageBusy && worst.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Loading…</p>
+            <AdminTextSkeleton lines={2} />
           ) : worst.length === 0 ? (
             <p className="text-sm text-muted-foreground">
               No scores yet. Click "Score next 2,000" to populate.

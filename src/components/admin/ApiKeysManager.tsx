@@ -47,6 +47,7 @@ import {
   Server,
   Shield,
 } from 'lucide-react';
+import { AdminTextSkeleton } from '@/components/admin/primitives/AdminLoading';
 
 const PREDEFINED_SERVICES = [
   { value: 'openai', label: 'OpenAI' },
@@ -317,7 +318,7 @@ export const ApiKeysManager = () => {
               style={{ animation: 'spin 1s linear infinite', margin: '0 auto 16px' }}
               className="text-muted-foreground"
             />
-            <p className="text-muted-foreground">Loading API keys...</p>
+            <AdminTextSkeleton lines={2} />
           </CardContent>
         </Card>
       ) : (

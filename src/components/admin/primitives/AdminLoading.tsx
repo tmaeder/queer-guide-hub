@@ -34,6 +34,62 @@ export function AdminTableSkeleton({
   );
 }
 
+/**
+ * Skeleton rows for a <tbody>.
+ *
+ * A div-based skeleton is invalid HTML inside <table> and gets hoisted out by
+ * the parser, so the seven pipeline-builder tables that rendered
+ * `<tr><td colSpan={n}>Loading…</td></tr>` need this shape specifically.
+ */
+export function AdminTableRowSkeleton({
+  columns,
+  rows = 3,
+}: {
+  columns: number;
+  rows?: number;
+}) {
+  return (
+    <>
+      {Array.from({ length: rows }).map((_, r) => (
+        <tr key={r}>
+          {Array.from({ length: columns }).map((_, c) => (
+            <td key={c} className="p-4">
+              <Skeleton className="h-4" style={{ width: c === 0 ? '70%' : '45%' }} />
+            </td>
+          ))}
+        </tr>
+      ))}
+    </>
+  );
+}
+
+/**
+ * Bare stack of text-line placeholders, no border or heading.
+ *
+ * For first-load INSIDE a container that already draws its own chrome — a
+ * <Card> body, a panel section. AdminCardSkeleton would nest a border in a
+ * border there; this is the shape those ~25 `<p>Loading…</p>` sites needed.
+ */
+export function AdminTextSkeleton({
+  lines = 3,
+  className,
+}: {
+  lines?: number;
+  className?: string;
+}) {
+  return (
+    <div
+      className={cn('flex flex-col gap-2', className)}
+      role="status"
+      aria-label="Loading"
+    >
+      {Array.from({ length: lines }).map((_, i) => (
+        <Skeleton key={i} className="h-4" style={{ width: i === lines - 1 ? '60%' : '100%' }} />
+      ))}
+    </div>
+  );
+}
+
 /** Heading-plus-body placeholder for a card or panel. */
 export function AdminCardSkeleton({
   lines = 3,

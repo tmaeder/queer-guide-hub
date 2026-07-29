@@ -6,6 +6,7 @@ import { listFrom } from '@/hooks/usePageFetchers';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { AdminTextSkeleton } from '@/components/admin/primitives/AdminLoading';
 
 interface CoverageRow {
   source_name: string;
@@ -163,7 +164,7 @@ export default function ScraperHealthTab() {
         <SectionHeader icon={Activity} title="Field coverage per recent run" />
         <div className="max-h-[400px] overflow-auto">
           {covLoading ? (
-            <div className="p-6 text-center text-muted-foreground text-xs">Loading…</div>
+            <AdminTextSkeleton lines={2} />
           ) : coverage.length === 0 ? (
             <div className="p-6 text-center text-muted-foreground text-xs">No completed runs yet</div>
           ) : (

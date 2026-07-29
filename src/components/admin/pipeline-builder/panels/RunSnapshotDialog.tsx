@@ -4,6 +4,7 @@ import '@xyflow/react/dist/style.css';
 import { format } from 'date-fns';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
+import { AdminTextSkeleton } from '@/components/admin/primitives/AdminLoading';
 import BaseNode from '../nodes/BaseNode';
 import CommentNode from '../nodes/CommentNode';
 import GroupNode from '../nodes/GroupNode';
@@ -70,9 +71,15 @@ export default function RunSnapshotDialog({ runId, onClose }: RunSnapshotDialogP
 
         <div className="flex-1 min-h-0 border border-border rounded-element overflow-hidden">
           {!hasSnapshot ? (
-            <div className="h-full flex items-center justify-center text-xs text-muted-foreground px-6 text-center">
-              {run ? 'No pipeline snapshot was stored for this run (older runs predate snapshots).' : 'Loading…'}
-            </div>
+            run ? (
+              <div className="h-full flex items-center justify-center text-xs text-muted-foreground px-6 text-center">
+                No pipeline snapshot was stored for this run (older runs predate snapshots).
+              </div>
+            ) : (
+              <div className="h-full p-6">
+                <AdminTextSkeleton lines={4} />
+              </div>
+            )
           ) : (
             <ReactFlowProvider>
               <ReactFlow<AppNode, AppEdge>

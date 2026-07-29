@@ -7,12 +7,13 @@
 import { Button } from '@/components/ui/button';
 import { Check, X } from 'lucide-react';
 import { useGroupJoinRequests } from '@/hooks/useGroupJoinRequests';
+import { AdminTextSkeleton } from '@/components/admin/primitives/AdminLoading';
 
 export function PendingJoinRequestsPanel() {
   const { requests, isLoading, approve, isApproving, reject, isRejecting } = useGroupJoinRequests();
 
   if (isLoading) {
-    return <p className="text-sm text-muted-foreground">Loading…</p>;
+    return <AdminTextSkeleton lines={2} />;
   }
   if (!requests.length) {
     return <p className="text-sm text-muted-foreground">No pending join requests.</p>;

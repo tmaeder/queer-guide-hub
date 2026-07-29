@@ -5,6 +5,7 @@ import { untypedFrom } from '@/integrations/supabase/untyped';
 import { AlertTriangle, AlertCircle, Info, Bug, Search, CheckCircle2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { AdminTableRowSkeleton } from '@/components/admin/primitives/AdminLoading';
 
 interface ErrorRow {
   id: number;
@@ -164,7 +165,7 @@ export default function ErrorsTab() {
               </thead>
               <tbody>
                 {isLoading ? (
-                  <tr><td colSpan={4} className="p-6 text-center text-muted-foreground text-xs">Loading…</td></tr>
+                  <AdminTableRowSkeleton columns={4} />
                 ) : filtered.length === 0 ? (
                   <tr><td colSpan={4} className="p-6 text-center text-muted-foreground text-xs">
                     {errors.length === 0 ? 'No errors' : 'No errors match search'}

@@ -13,6 +13,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Plus, X } from 'lucide-react';
+import { AdminTextSkeleton } from '@/components/admin/primitives/AdminLoading';
 
 const ALIAS_TYPES = [
   { value: 'synonym', label: 'Synonym' },
@@ -59,7 +60,7 @@ export function TagAliasesSection({ tagId }: TagAliasesSectionProps) {
     <div>
       <Label>Synonyms / Aliases</Label>
       {isLoading ? (
-        <span className="text-xs text-muted-foreground">Loading...</span>
+        <AdminTextSkeleton lines={2} />
       ) : (
         <>
           {aliases.length > 0 && (

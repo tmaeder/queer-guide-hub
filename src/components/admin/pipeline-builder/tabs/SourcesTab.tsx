@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
+import { AdminTableRowSkeleton } from '@/components/admin/primitives/AdminLoading';
 
 const IngestionSourcesManager = lazy(() => import('@/components/admin/IngestionSourcesManager').then(m => ({ default: m.IngestionSourcesManager })));
 const NewsSourcesManager = lazy(() => import('@/components/admin/NewsSourcesManager').then(m => ({ default: m.NewsSourcesManager })));
@@ -184,7 +185,7 @@ export default function SourcesTab() {
               </thead>
               <tbody>
                 {isLoading ? (
-                  <tr><td colSpan={8} className="p-6 text-center text-muted-foreground text-xs">Loading…</td></tr>
+                  <AdminTableRowSkeleton columns={8} />
                 ) : filtered.length === 0 ? (
                   <tr><td colSpan={8} className="p-6 text-center text-muted-foreground text-xs">
                     {counts.all === 0 ? 'No sources configured' : 'No sources match filters'}

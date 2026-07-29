@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { usePipelineRunsForPipeline } from '../hooks/usePipelineHistory';
 import RunSnapshotDialog from './RunSnapshotDialog';
+import { AdminTextSkeleton } from '@/components/admin/primitives/AdminLoading';
 
 interface RunHistorySidebarProps {
   pipelineId: string | undefined;
@@ -101,7 +102,7 @@ export default function RunHistorySidebar({ pipelineId, activeRunId, onSelectRun
       {/* Run list */}
       <div className="flex-1 overflow-y-auto">
         {isLoading && (
-          <div className="p-4 text-xs text-muted-foreground text-center">Loading...</div>
+          <AdminTextSkeleton lines={2} />
         )}
         {!isLoading && filtered.length === 0 && (
           <div className="p-4 text-xs text-muted-foreground text-center">

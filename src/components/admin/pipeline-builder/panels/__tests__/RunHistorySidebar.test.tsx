@@ -21,7 +21,9 @@ describe('RunHistorySidebar', () => {
   it('shows loading state', () => {
     useRunsMock.mockReturnValue({ data: [], isLoading: true });
     render(wrap(<RunHistorySidebar pipelineId="p1" activeRunId={null} onSelectRun={vi.fn()} />));
-    expect(screen.getByText(/Loading/)).toBeInTheDocument();
+    // First-load now renders a skeleton, not the word "Loading" — assert the
+    // accessible status region instead of the removed copy.
+    expect(screen.getByRole('status')).toBeInTheDocument();
   });
 
   it('shows empty message when no runs', () => {

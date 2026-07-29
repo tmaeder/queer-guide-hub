@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
 import { GitMerge, Undo2, Check, X, ChevronDown, ChevronUp, ArrowRight } from 'lucide-react';
+import { AdminTextSkeleton } from '@/components/admin/primitives/AdminLoading';
 
 // Governed merge-review cockpit for the P1 taxonomy engine. Replaces the retired
 // TagMergeCandidates (which drove the lossy merge_unified_tag). Reads via the
@@ -126,7 +127,7 @@ export function TagMergeReviewQueue() {
 
         {queueOpen && (
           <div className="flex flex-col gap-2 border-t border-border p-4">
-            {queueLoading && <p className="text-13 text-muted-foreground">Loading…</p>}
+            {queueLoading && <AdminTextSkeleton lines={2} />}
             {!queueLoading && pendingCount === 0 && (
               <p className="text-13 text-muted-foreground">No pending merge proposals.</p>
             )}
@@ -207,7 +208,7 @@ export function TagMergeReviewQueue() {
 
         {recentOpen && (
           <div className="flex flex-col gap-2 border-t border-border p-4">
-            {recentLoading && <p className="text-13 text-muted-foreground">Loading…</p>}
+            {recentLoading && <AdminTextSkeleton lines={2} />}
             {!recentLoading && (recent ?? []).length === 0 && (
               <p className="text-13 text-muted-foreground">No recent merges.</p>
             )}

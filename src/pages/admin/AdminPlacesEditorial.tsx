@@ -22,6 +22,7 @@ import {
   useToggleCoverPublished,
 } from '@/hooks/useAdminEditorial';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
+import { AdminTextSkeleton } from '@/components/admin/primitives/AdminLoading';
 
 export default function AdminPlacesEditorial() {
   useMeta({
@@ -134,7 +135,7 @@ function DraftsQueue() {
       </Card>
 
       {drafts.isLoading ? (
-        <p className="text-muted-foreground">Loading drafts…</p>
+        <AdminTextSkeleton lines={2} />
       ) : (drafts.data ?? []).length === 0 ? (
         <p className="text-muted-foreground">No pending drafts. Generate some.</p>
       ) : (
@@ -279,7 +280,7 @@ function CoversEditor() {
       </p>
 
       {covers.isLoading ? (
-        <p className="text-muted-foreground">Loading…</p>
+        <AdminTextSkeleton lines={2} />
       ) : (covers.data ?? []).length === 0 ? (
         <p className="text-muted-foreground">No covers yet.</p>
       ) : (

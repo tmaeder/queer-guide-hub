@@ -6,6 +6,7 @@ import { Check, X, RotateCcw, Flag, Archive, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
 import { useExistenceEngine, type ExistenceAuditRow } from '@/hooks/useExistenceEngine';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
+import { AdminTextSkeleton } from '@/components/admin/primitives/AdminLoading';
 
 const TYPES = ['venue', 'event', 'marketplace'] as const;
 
@@ -71,7 +72,7 @@ export default function AdminLiveness() {
             Single dead signal, or a strong-dead match on a featured / saved entity. Approve to archive (reversible),
             or dismiss as still-alive.
           </p>
-          {reviewQueue.isLoading && <p className="text-13 text-muted-foreground">Loading…</p>}
+          {reviewQueue.isLoading && <AdminTextSkeleton lines={2} />}
           {!reviewQueue.isLoading && (reviewQueue.data ?? []).length === 0 && (
             <p className="text-13 text-muted-foreground">Nothing awaiting review.</p>
           )}

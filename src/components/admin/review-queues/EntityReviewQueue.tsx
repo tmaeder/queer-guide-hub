@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Check, X, ExternalLink, ShieldAlert } from 'lucide-react';
 import { toast } from 'sonner';
+import { AdminTextSkeleton } from '@/components/admin/primitives/AdminLoading';
 
 /** Minimal shape every *_review_queue row shares. */
 export interface ReviewQueueRowBase {
@@ -126,7 +127,7 @@ export function EntityReviewQueue<Row extends ReviewQueueRowBase>({
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
         <p className="text-13 text-muted-foreground">{description}</p>
-        {isLoading && <p className="text-13 text-muted-foreground">Loading…</p>}
+        {isLoading && <AdminTextSkeleton lines={2} />}
         {!isLoading && (!rows || rows.length === 0) && (
           <p className="text-13 text-muted-foreground">No items awaiting review.</p>
         )}

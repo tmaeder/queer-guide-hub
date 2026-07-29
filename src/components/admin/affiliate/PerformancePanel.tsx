@@ -10,6 +10,7 @@ import { untypedSupabase } from '@/integrations/supabase/untyped';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { monoChartPalette, monoChartAxis } from '@/lib/chartPalette';
 import { Stat } from './Stat';
+import { AdminTextSkeleton } from '@/components/admin/primitives/AdminLoading';
 
 interface SummaryRow {
   surface: string;
@@ -111,7 +112,7 @@ export function PerformancePanel({ days, vertical }: { days: string; vertical: s
       <section>
         <h2 className="mb-4 text-15 font-semibold">Surface × partner × vertical</h2>
         {isLoading ? (
-          <p className="text-13 text-muted-foreground">Loading…</p>
+          <AdminTextSkeleton lines={2} />
         ) : rows.length === 0 ? (
           <p className="text-13 text-muted-foreground">No affiliate clicks in this window yet.</p>
         ) : (
