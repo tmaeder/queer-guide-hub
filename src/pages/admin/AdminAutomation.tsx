@@ -429,7 +429,6 @@ export default function AdminAutomation() {
                             e.stopPropagation();
                             runNow(a.slug);
                           }}
-                          onClick={(e) => { e.stopPropagation(); runNow(a.slug); }}
                           disabled={busySlug !== null || !a.enabled}
                           className="ml-2"
                           title={a.enabled ? 'Run now' : 'Enable to run'}

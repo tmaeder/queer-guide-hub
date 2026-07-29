@@ -14,6 +14,8 @@ LGBTQ+ travel & community platform at queer.guide
 | Typecheck | `npm run typecheck` |
 | Format | `npm run format` |
 
+**Typecheck is a baseline ratchet.** `npm run typecheck` runs `scripts/typecheck-ratchet.mjs` → real `tsc -p tsconfig.app.json --noEmit`, compared against `scripts/typecheck-baseline.json`; it fails only on errors NEW per (file, TS-code). ~1.4k pre-existing errors are recorded there (a large share are Supabase client type-inference `SelectQueryError` unions, not live bugs). Fix errors rather than re-baselining; after fixing, run `npm run typecheck:baseline` to lock the improvement in. `npm run typecheck:blocks` stays a separate zero-tolerance gate for the dirs in `tsconfig.databaseBlock.json`. Until 2026-07-29 `typecheck` was bare `tsc --noEmit` against the solution-style root tsconfig (`"files": []` + `references`) — with no `-b` that compiles **zero** files and always exits 0, so the CI gate was vacuously green for its whole life. Never "fix" errors by loosening `tsconfig.app.json`.
+
 The scraper has its own `package.json` under `scraper/` — `cd scraper && npm install`, then `npm test` etc. there. Workers each from their own directory: `wrangler dev` / `wrangler deploy`.
 
 ## Architecture

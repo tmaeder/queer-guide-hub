@@ -1,7 +1,7 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, type Mock } from 'vitest';
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { DocumentField } from '../DocumentField';
 
@@ -42,13 +42,13 @@ function renderField(
   over: {
     value?: unknown;
     allValues?: Record<string, unknown>;
-    setFields?: ReturnType<typeof vi.fn>;
-    onChange?: ReturnType<typeof vi.fn>;
+    setFields?: Mock<(fields: Record<string, unknown>) => void>;
+    onChange?: Mock<(value: unknown) => void>;
     disabled?: boolean;
   } = {},
 ) {
-  const setFields = over.setFields ?? vi.fn();
-  const onChange = over.onChange ?? vi.fn();
+  const setFields = over.setFields ?? vi.fn<(fields: Record<string, unknown>) => void>();
+  const onChange = over.onChange ?? vi.fn<(value: unknown) => void>();
   render(
     <DocumentField
       field={field}

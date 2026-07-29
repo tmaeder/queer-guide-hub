@@ -1,15 +1,11 @@
 /*
  * Scoped, ACTUALLY-ENFORCED typecheck for the database-block feature.
  *
- * Why this file exists: the root `npm run typecheck` is `tsc --noEmit` against
- * a solution-style tsconfig (`"files": []` + `references`) with no `-b`, so it
- * checks zero files and exits in ~0.4s. The CI typecheck job is therefore
- * vacuously green. `tsc -p tsconfig.app.json` reports ~1400 pre-existing errors,
- * so flipping the root over is not a small change.
- *
- * Rather than leave a feature whose safety rests on discriminated unions with no
- * compile-time enforcement at all, this config typechecks the new directories
- * only, and CI runs it as a hard gate (`npm run typecheck:blocks`).
+ * Why this file exists: `npm run typecheck` checks the whole app but only fails
+ * on errors NEW relative to scripts/typecheck-baseline.json (~1400 pre-existing
+ * errors, mostly Supabase type-inference noise). This config is the
+ * zero-tolerance gate — CI runs it separately as `npm run typecheck:blocks`, so
+ * these directories must have no errors at all, not merely no new ones.
  *
  * Widen `include` as the feature grows. Do not add pre-existing directories
  * without fixing their errors first — this gate must stay green.
