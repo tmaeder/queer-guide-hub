@@ -36,6 +36,11 @@ jobs:
       # `tsc -p tsconfig.app.json` has ~1400 pre-existing errors, so this gate
       # enforces the directories we can keep clean. See tsconfig.databaseBlock.json.
       - run: npm run typecheck:blocks
+      # functions/ (Cloudflare Pages) was in no tsconfig include and
+      # _middleware.ts is ESLint-ignored, so edge code shipped with no static
+      # checking at all — and vitest coverage excludes it too. It typechecks
+      # clean today; this keeps it that way.
+      - run: npm run typecheck:functions
 
   lint:
     runs-on: ubuntu-latest
