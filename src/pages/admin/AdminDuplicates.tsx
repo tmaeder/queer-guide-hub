@@ -20,6 +20,7 @@ import {
 } from '@/hooks/useVenueDuplicates';
 import { TagMergeReviewQueue } from '@/components/admin/TagMergeReviewQueue';
 import { VocabMerge } from '@/components/admin/VocabMerge';
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 
 /**
  * /admin/duplicates — the registry-driven duplicate review & merge console,
@@ -72,13 +73,12 @@ export default function AdminDuplicates() {
 
   return (
     <div className="flex flex-col gap-6 p-6">
-      <header className="flex flex-col gap-2">
-        <h1 className="text-headline font-semibold">Duplicates &amp; merge</h1>
-        <p className="text-muted-foreground text-15">
-          Pick the canonical record and merge the rest — duplicates are hidden, their URLs
-          redirect, and every merge is reversible.
-        </p>
-      </header>
+      {/* mb-0: the parent already spaces children with gap-6. */}
+      <AdminPageHeader
+        className="mb-0"
+        title="Duplicates & merge"
+        subtitle="Pick the canonical record and merge the rest — duplicates are hidden, their URLs redirect, and every merge is reversible."
+      />
 
       <div className="rounded-container flex flex-wrap items-center gap-2 border p-4 text-15">
         <GitMerge size={16} className="text-muted-foreground" />
