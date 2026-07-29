@@ -513,6 +513,19 @@ export const AppRoutes = () => {
               {/* /:locale? makes the locale segment optional — /venues and /de/venues both work */}
               <Route path="/:locale?" element={<LocaleRouter />}>
                 <Route index element={<Index />} />
+                {/* Declared FIRST among the locale parent's children on purpose.
+                  React Router expands the optional `:locale?`, so /p/about
+                  scores `/:locale/about` (locale="p" → About) and `/p/:slug`
+                  (slug="about" → CMSPage) identically (17). The tie breaks
+                  toward the earlier-declared sibling, so every CMS slug that
+                  also names a top-level route (about, contact, help, blog,
+                  press, …) rendered NotFound via LocaleRouter's unknown-locale
+                  branch. Unlike the `submit/<slug>` fix below, CMS slugs are DB
+                  rows and can't be enumerated into static paths, so ordering is
+                  the lever: from here `p/:slug` wins every /p/* tie, and its
+                  static first segment means it can steal nothing else.
+                  Guarded by src/__tests__/cmsPageRouting.test.tsx. */}
+                <Route path="p/:slug" element={<CMSPage />} />
                 <Route path="venues" element={<Venues />} />
                 {/* Section-name slugs collide with /venues/:slug — redirect to top-level pages */}
                 <Route path="venues/hotels" element={<Navigate to="/hotels" replace />} />
@@ -746,7 +759,7 @@ export const AppRoutes = () => {
                   <Route key={slug} path={`submit/${slug}`} element={<SubmitForm contentType={slug} />} />
                 ))}
                 <Route path="submit/:contentType" element={<SubmitForm />} />
-                <Route path="p/:slug" element={<CMSPage />} />
+                {/* `p/:slug` moved to the top of this list — see note there. */}
                 <Route path="share-target" element={<ShareTarget />} />
                 {/* Inner catch-all: paths like /de/unknown or /en/typo
                   fall through to NotFound instead of rendering nothing
