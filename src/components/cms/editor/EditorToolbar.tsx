@@ -309,7 +309,7 @@ export function EditorToolbar({ editor, enableDatabaseBlock = false }: EditorToo
 
       {enableDatabaseBlock && (
         <>
-          <Divider />
+          <ToolbarDivider />
           <ToolbarButton
             icon={<Database />}
             label="Insert database block"
