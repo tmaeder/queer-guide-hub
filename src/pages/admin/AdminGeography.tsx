@@ -66,7 +66,7 @@ const LEGAL_PARENT: Record<string, string[]> = {
 const EDITOR_LINK: Record<string, string> = {
   country: '/admin/content/countries',
   city: '/admin/content/cities',
-  village: '/admin/villages',
+  village: '/admin/content/queer_villages',
 };
 
 const PUBLIC_HREF: Record<string, (slug: string) => string> = {

@@ -102,7 +102,6 @@ const PlaceDetail = lazyRetry(() => import('./pages/PlaceDetail'));
 // Festivals routes now redirect to /events (festivals integrated into events)
 
 // New admin pages
-const AdminQueerVillages = lazyRetry(() => import('./pages/admin/AdminQueerVillages'));
 const AdminGeography = lazyRetry(() => import('./pages/admin/AdminGeography'));
 const AdminInbox = lazyRetry(() => import('./pages/admin/AdminInbox'));
 const AdminAutomation = lazyRetry(() => import('./pages/admin/AdminAutomation'));
@@ -428,7 +427,7 @@ export const AppRoutes = () => {
                 <Route path="content/group-requests" element={<AdminGroupRequests />} />
                 {/* Hotel CRUD now lives in the Business console's Hotels tab. */}
                 <Route path="hotels" element={<Navigate to="/admin/business?tab=hotels" replace />} />
-                <Route path="villages" element={<AdminQueerVillages />} />
+                <Route path="villages" element={<Navigate to="/admin/content/queer_villages" replace />} />
                 <Route path="geography" element={<AdminGeography />} />
 
                 {/* System section */}
