@@ -29,9 +29,16 @@ const lowlight = createLowlight(common);
 /* ------------------------------------------------------------------ */
 
 interface RichTextEditorProps {
-  /** Tiptap JSON document */
-  value?: Record<string, unknown>;
-  /** Called on every content change with both JSON and HTML */
+  /**
+   * Initial content: an HTML string or a Tiptap JSON document. Most callers
+   * bind this to a plain `text` column and therefore pass HTML.
+   */
+  value?: string | Record<string, unknown> | null;
+  /**
+   * Called on every content change with BOTH representations. Callers writing
+   * to a `text` column must persist the second argument (`html`) — persisting
+   * the first writes a ProseMirror object into a text column.
+   */
   onChange?: (json: Record<string, unknown>, html: string) => void;
   /** Placeholder text shown when editor is empty */
   placeholder?: string;
