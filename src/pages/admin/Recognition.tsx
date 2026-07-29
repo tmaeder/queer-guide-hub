@@ -37,6 +37,7 @@ import {
   useRecognitionMutations,
   type RecognitionRow,
 } from '@/hooks/useRecognitions';
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 
 const CATEGORIES = [
   { value: 'editorial', label: 'Editorial' },
@@ -94,12 +95,14 @@ export default function AdminRecognition() {
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between gap-4 flex-wrap">
-        <div>
-          <h1 className="text-2xl font-semibold">Recognition Wall</h1>
-          <p className="text-sm text-muted-foreground">
-            Curate the annual /contributors/{year} page. Editorial only — not a live leaderboard.
-          </p>
-        </div>
+        {/* border-b-0: this header sits inline beside the year picker, so it
+            keeps the type scale but drops AdminPageHeader's own rule.
+            Was text-2xl font-semibold — an arbitrary size off the scale. */}
+        <AdminPageHeader
+          className="mb-0 border-b-0 pb-0"
+          title="Recognition Wall"
+          subtitle={`Curate the annual /contributors/${year} page. Editorial only — not a live leaderboard.`}
+        />
         <div className="flex items-center gap-2">
           <Label className="text-xs uppercase tracking-wide text-muted-foreground">Year</Label>
           <Input

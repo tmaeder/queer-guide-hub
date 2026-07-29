@@ -33,6 +33,7 @@ import { FreigabeFunnel } from '@/components/admin/FreigabeFunnel';
 import { PersonalityFreigabeQueue } from '@/components/admin/PersonalityFreigabeQueue';
 import { DedupPendingLink } from '@/components/admin/DedupPendingLink';
 import type { FreigabeStufe } from '@/lib/personalityStatus';
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 
 interface QualityEngine {
   /** get_admin_counts key for pending review items; null = engine has no gate. */
@@ -207,18 +208,24 @@ export default function QualityHub() {
 
   return (
     <div className="mx-auto flex max-w-5xl flex-col gap-6 p-6">
-      <div>
-        <h1 className="flex items-center gap-2 text-headline">
-          <ShieldCheck size={22} />
-          Quality
-        </h1>
-        <p className="text-13 text-muted-foreground">
-          Truth Engine review gates and dashboards. Review happens in the inbox.{' '}
-          {counts
-            ? `${totalPending} item${totalPending === 1 ? '' : 's'} awaiting review.`
-            : 'Loading counts…'}
-        </p>
-      </div>
+      {/* mb-0: the parent already spaces children with gap-6. */}
+      <AdminPageHeader
+        className="mb-0"
+        title={
+          <span className="flex items-center gap-2">
+            <ShieldCheck size={22} aria-hidden />
+            Quality
+          </span>
+        }
+        subtitle={
+          <>
+            Truth Engine review gates and dashboards. Review happens in the inbox.{' '}
+            {counts
+              ? `${totalPending} item${totalPending === 1 ? '' : 's'} awaiting review.`
+              : 'Loading counts…'}
+          </>
+        }
+      />
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         {ENGINES.map((e) => {
