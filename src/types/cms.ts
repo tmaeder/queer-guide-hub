@@ -80,6 +80,18 @@ export interface FieldConfig {
   readOnly?: boolean;
   /** Hidden from editor UI */
   hidden?: boolean;
+  /**
+   * Hide this field unless the predicate holds for the current form values.
+   *
+   * `hidden` is static; this is the conditional form. Redirects are the case
+   * that needed it: a SHORT redirect has a `slug`, a PATH redirect has a
+   * `source_path`, and showing both for every row is worse than the bespoke
+   * form it replaces.
+   *
+   * A field hidden this way is also exempt from `required`, so a rule that only
+   * applies to one shape cannot block saving the other.
+   */
+  visibleWhen?: (values: Record<string, unknown>) => boolean;
   /** Searchable in list view */
   searchable?: boolean;
   /** Sortable in list view */
