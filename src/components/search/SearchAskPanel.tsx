@@ -61,7 +61,11 @@ export function SearchAskPanel({
         </span>
       </div>
 
-      <div ref={scrollRef} className="flex-1 space-y-4 overflow-y-auto px-4 py-4">
+      <div
+        ref={scrollRef}
+        data-testid="ask-messages"
+        className="flex-1 space-y-4 overflow-y-auto px-4 py-4"
+      >
         {messages.map((m, i) =>
           m.role === 'user' ? (
             <div key={i} className="flex justify-end">
