@@ -2,6 +2,13 @@
  * Public page renderer for cms_pages.
  * Route: /p/:slug
  * Fetches published page by slug and renders HTML body.
+ *
+ * SEO: every cms_pages row carries authored `meta_title`/`meta_description`,
+ * which this renderer previously dropped on the floor — /p/* inherited whatever
+ * <title> the previous SPA route left behind. Meta is emitted via the same
+ * useMeta call CMSRoutePage uses, with an explicit canonicalPath so the
+ * locale-prefixed form (/de/p/about) canonicalises to the unprefixed URL
+ * instead of minting a separate one per locale.
  */
 
 import { useParams } from 'react-router';
@@ -9,12 +16,20 @@ import { Loader2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import DOMPurify from 'dompurify';
 import { useCMSPage } from '@/hooks/useCMSPage';
+import { useMeta } from '@/hooks/useMeta';
 
 export default function Page() {
   const { slug } = useParams<{ slug: string }>();
   const { data, isLoading: loading } = useCMSPage(slug);
   const page = data?.page ?? null;
   const notFound = !!data && data.notFound;
+
+  useMeta({
+    title: page?.meta_title || page?.title || '',
+    description: page?.meta_description || page?.excerpt || '',
+    ogImage: page?.og_image_url || page?.cover_image_url,
+    canonicalPath: slug ? `/p/${slug}` : undefined,
+  });
 
   if (loading) {
     return (
