@@ -525,22 +525,28 @@ grant execute on function public.run_detect_stale_venues(integer, integer) to se
 -- INSIDE these functions would not affect their own call. It has to be a
 -- separate statement in the cron command, ahead of the SELECT.
 --
--- Batch size is a LOCK-DURATION budget, not just a timeout budget. Each of these
--- is a single UPDATE in a single transaction, so it holds row locks for its whole
--- run. A 7,000-row marketplace batch was measured on prod at 7+ minutes and
--- blocked marketplace_commit_drain (migration 20260806110000) on a row lock until
--- the drain hit its own timeout. ~1,200-1,500 rows keeps each run near a minute.
+-- Batch size is ALSO a lock-duration budget, not just a timeout budget. Each of
+-- these is a single UPDATE in a single transaction, so it holds row locks for its
+-- whole run. A 7,000-row marketplace batch runs ~7 minutes and WILL block
+-- marketplace_commit_drain (migration 20260806110000) on a row lock in
+-- marketplace_listings if the two overlap -- observed on prod when a manual drain
+-- was issued mid-run.
 --
--- The three with large cold-start backlogs run hourly rather than nightly so the
--- smaller batch still converges within a day, and they are spaced away from the
--- drain's :35 slot. detect-stale-venues stays nightly -- its scope is small once
--- caught up, and it writes venues, which nothing else here contends for.
-select cron.schedule('marketplace_quality_recompute', '5 * * * *',
-  $cmd$SET statement_timeout = '240s'; SELECT public.run_marketplace_quality_recompute(1200);$cmd$
+-- The two marketplace jobs keep the 900s/7000 sizing: the real cost is ~10s fixed
+-- + ~60 ms/row, so 540s was only 1.25x headroom, and a smaller batch would not
+-- converge the cold-start backlog. The constraint that matters is SEPARATION --
+-- they must stay away from the drain's :35 slot. Do not move them onto :35
+-- without shrinking the batch first.
+--
+-- All three with cold-start backlogs run hourly so they converge within a day.
+-- detect-stale-venues stays nightly: its scope is small once caught up, and it
+-- writes venues, which nothing else here contends for.
+select cron.schedule('marketplace_quality_recompute', '18 * * * *',
+  $cmd$SET statement_timeout = '900s'; SELECT public.run_marketplace_quality_recompute(7000);$cmd$
 );
 
 select cron.schedule('content_completeness_recompute', '50 * * * *',
-  $cmd$SET statement_timeout = '240s'; SELECT public.run_content_completeness_recompute(false, 1200);$cmd$
+  $cmd$SET statement_timeout = '900s'; SELECT public.run_content_completeness_recompute(false, 7000);$cmd$
 );
 
 select cron.schedule('event_trust_recompute', '10 * * * *',
