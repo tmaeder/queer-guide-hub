@@ -79,6 +79,7 @@ export function ContentListPanel(props: ContentListPanelProps) {
             </TooltipTrigger>
             <TooltipContent>Refresh</TooltipContent>
           </Tooltip>
+          {c.config?.toolbarActions?.()}
           {c.config && c.allListColumns.length > 0 && (
             <ExportExcelButton
               onExport={() => exportContentType(c.config!, c.allListColumns)}
