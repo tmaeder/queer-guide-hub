@@ -22,6 +22,7 @@ import {
 } from '@/hooks/useImportHubQueries';
 import { DuplicatePairCard } from './DuplicatePairCard';
 import { MergeDialog } from './MergeDialog';
+import { AdminEmpty } from '@/components/admin/primitives/AdminEmpty';
 
 export function DuplicatesPanel() {
   const [subTab, setSubTab] = useState('staging');
@@ -362,9 +363,7 @@ function MergeHistorySection() {
               <Loader2 className="h-7 w-7 animate-spin" aria-label="Loading" />
             </div>
           ) : history.length === 0 ? (
-            <p className="text-muted-foreground text-center py-8">
-              No merges have been performed yet.
-            </p>
+            <AdminEmpty noun="merges" description="Merges you perform appear here." />
           ) : (
             <div className="flex flex-col gap-2">
               {history.map((entry: Record<string, unknown>) => {

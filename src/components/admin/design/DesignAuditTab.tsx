@@ -6,6 +6,7 @@ import { AdminStatTile } from '@/components/admin/primitives/AdminStatTile';
 import { contrastVerdict } from '@/lib/wcagContrast';
 import { CONTRAST_PAIRS, resolveColor } from './tokenCatalog';
 import type { DesignSettingsController } from './useDesignSettings';
+import { AdminEmpty } from '@/components/admin/primitives/AdminEmpty';
 
 type AuditArtifact = {
   generated_at: string;
@@ -76,7 +77,7 @@ export function DesignAuditTab({ controller }: { controller: DesignSettingsContr
       )}
       {artifact.isSuccess && !data && (
         <p className="rounded-element border p-4 text-13 text-muted-foreground">
-          No audit artifact found. Generate one with{' '}
+          <AdminEmpty variant="inline" noun="audit artifact" className="inline" /> Generate one with{' '}
           <code className="font-mono">node scripts/design-audit.mjs</code> and commit
           public/design-audit.json.
         </p>

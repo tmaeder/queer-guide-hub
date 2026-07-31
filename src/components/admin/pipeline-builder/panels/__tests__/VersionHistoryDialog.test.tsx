@@ -44,7 +44,7 @@ describe('VersionHistoryDialog', () => {
     });
     render(<VersionHistoryDialog pipelineId="p1" onRevert={vi.fn()} />, { wrapper });
     fireEvent.click(screen.getByRole('button'));
-    await waitFor(() => expect(screen.getByText(/No version history yet/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/No versions yet/)).toBeInTheDocument());
   });
 
   it('renders version rows with current badge', async () => {

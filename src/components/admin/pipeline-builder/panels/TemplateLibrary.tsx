@@ -14,6 +14,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import type { AppNode, AppEdge } from '../types';
 import { AdminTextSkeleton } from '@/components/admin/primitives/AdminLoading';
+import { AdminEmpty } from '@/components/admin/primitives/AdminEmpty';
 
 interface Template {
   id: string;
@@ -182,7 +183,13 @@ export default function TemplateLibrary({ selectedNodes, selectedEdges, onApply,
               {isLoading && <AdminTextSkeleton lines={2} />}
               {!isLoading && filtered.length === 0 && (
                 <div className="p-8 text-xs text-muted-foreground text-center">
-                  {templates.length === 0 ? 'No templates yet. Select nodes on canvas and save your first template.' : 'No templates match filter'}
+                  <AdminEmpty
+                  variant="inline"
+                  noun="templates"
+                  filtered={templates.length > 0}
+                  description="Select nodes on canvas and save your first template."
+                  className="text-xs"
+                />
                 </div>
               )}
               {filtered.map(t => (

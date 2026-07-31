@@ -362,9 +362,10 @@ export default tseslint.config(
   // would silently disable the colour/radius/spacing selectors above (the exact
   // trap that dropped the public hex selector in #2049).
   //
-  // Starts at "warn": ~100 pre-existing sites (loading strings, ad-hoc empty
-  // states, hand-rolled <h1>, StatCard copies) are a visible backlog, swept in
-  // a follow-up before this flips to error.
+  // "error" since the sweep: the ~100 pre-existing sites (loading strings,
+  // ad-hoc empty states, hand-rolled <h1>, StatCard copies) are all gone, so
+  // new drift should fail the build rather than accumulate as warnings nobody
+  // reads. The one surviving suppression (FeedbackBulkBar) carries its reason.
   {
     files: [
       "src/components/admin/**/*.{ts,tsx}",
@@ -373,7 +374,7 @@ export default tseslint.config(
     ],
     ignores: ["src/**/__tests__/**", "src/test/**"],
     rules: {
-      "queerguide/admin-ui-primitives": "warn",
+      "queerguide/admin-ui-primitives": "error",
     },
   },
 

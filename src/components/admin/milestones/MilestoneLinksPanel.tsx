@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/select';
 import { toast } from '@/hooks/use-toast';
 import { untypedFrom } from '@/integrations/supabase/untyped';
+import { AdminEmpty } from '@/components/admin/primitives/AdminEmpty';
 
 type LinkEntityType = 'personality' | 'event' | 'venue' | 'news' | 'organization';
 
@@ -133,7 +134,7 @@ export function MilestoneLinksPanel({ milestoneId }: { milestoneId: string }) {
           </li>
         ))}
         {!links?.length && (
-          <li className="text-sm italic text-muted-foreground">No linked entities yet.</li>
+          <li><AdminEmpty variant="inline" noun="linked entities" className="italic" /></li>
         )}
       </ul>
 

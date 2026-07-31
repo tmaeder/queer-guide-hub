@@ -21,6 +21,7 @@ import {
 import { Github as GithubIcon } from '@/components/icons/brand';
 import { timeAgo } from '@/utils/timezone';
 import type { FeedbackHandoff, HandoffStatus, HandoffTarget } from './types';
+import { AdminEmpty } from '@/components/admin/primitives/AdminEmpty';
 
 interface Props {
   handoffs: FeedbackHandoff[];
@@ -114,7 +115,8 @@ export function HandoffSection({ handoffs, prompt, onRecord, onUpdateStatus, isR
         {/* Timeline */}
         {sorted.length === 0 ? (
           <span className="block py-2 px-4 bg-muted rounded-element text-xs2 text-muted-foreground">
-            No handoffs yet. Click <strong>Copy prompt for Claude</strong> to send this ticket to
+            <AdminEmpty variant="inline" noun="handoffs" className="inline text-xs2" /> Click{' '}
+            <strong>Copy prompt for Claude</strong> to send this ticket to
             Claude Code.
           </span>
         ) : (

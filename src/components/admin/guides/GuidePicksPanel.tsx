@@ -16,6 +16,7 @@ import { toast } from '@/hooks/use-toast';
 import { untypedFrom, untypedSupabase } from '@/integrations/supabase/untyped';
 import type { GuideEntityType } from '@/lib/guidePickAdapters';
 import type { PickTier } from '@/hooks/useGuides';
+import { AdminEmpty } from '@/components/admin/primitives/AdminEmpty';
 
 const ENTITY_TABLES: Record<string, { table: string; nameCol: string }> = {
   venue: { table: 'venues', nameCol: 'name' },
@@ -253,7 +254,7 @@ export function GuidePicksPanel({ guideId }: { guideId: string }) {
           </li>
         ))}
         {!picks?.length && (
-          <li className="text-sm italic text-muted-foreground">No picks yet.</li>
+          <li><AdminEmpty variant="inline" noun="picks" className="italic" /></li>
         )}
       </ul>
 

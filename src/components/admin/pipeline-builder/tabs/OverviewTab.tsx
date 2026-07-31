@@ -14,6 +14,7 @@ import { Activity, AlertTriangle, CheckCircle, Play, Workflow, GitBranch, Search
 import { AdminStatTile } from '@/components/admin/primitives/AdminStatTile';
 import { useUnifiedPipelineOverview, usePipelineRunCounts24h, useCircuitBreakers, type UnifiedPipelineRow } from '../hooks/usePipelineHistory';
 import { AdminTableRowSkeleton } from '@/components/admin/primitives/AdminLoading';
+import { AdminEmpty } from '@/components/admin/primitives/AdminEmpty';
 
 type Filter = 'all' | 'pipelines' | 'workflows' | 'failing' | 'disabled';
 
@@ -225,7 +226,12 @@ export default function OverviewTab() {
                 <AdminTableRowSkeleton columns={9} />
               ) : filtered.length === 0 ? (
                 <tr><td colSpan={9} className="p-6 text-center text-muted-foreground text-xs">
-                  {rows?.length === 0 ? 'No definitions yet' : 'No matches'}
+                  <AdminEmpty
+                    variant="inline"
+                    noun="definitions"
+                    filtered={(rows?.length ?? 0) > 0}
+                    className="text-xs"
+                  />
                 </td></tr>
               ) : filtered.map(row => (
                 <tr key={`${row.kind}-${row.id}`} className="border-b border-border/40 hover:bg-muted/30 transition-colors">

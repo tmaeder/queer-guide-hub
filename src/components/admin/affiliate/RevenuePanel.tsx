@@ -20,6 +20,7 @@ import {
 import { monoChartPalette, monoChartAxis } from '@/lib/chartPalette';
 import { Stat } from './Stat';
 import { AdminTextSkeleton } from '@/components/admin/primitives/AdminLoading';
+import { AdminEmpty } from '@/components/admin/primitives/AdminEmpty';
 
 interface FunnelRow {
   surface: string;
@@ -157,9 +158,11 @@ export function RevenuePanel({ days }: { days: string }) {
         {isLoading ? (
           <AdminTextSkeleton lines={2} />
         ) : rows.length === 0 ? (
-          <p className="text-13 text-muted-foreground">
-            No data yet. Conversions appear after the first network pull (needs API tokens configured).
-          </p>
+          <AdminEmpty
+            variant="inline"
+            noun="conversions"
+            description="They appear after the first network pull (needs API tokens configured)."
+          />
         ) : (
           <Table>
             <TableHeader>

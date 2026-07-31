@@ -1,29 +1,44 @@
-import { Inbox, type LucideIcon } from 'lucide-react';
+import { type LucideIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { AdminEmpty } from '@/components/admin/primitives/AdminEmpty';
 
 interface DataTableEmptyStateProps {
   isLoading: boolean;
   hasFilters: boolean;
   columnCount: number;
-  /** Title for the empty (non-filtered) state. Default "No results found". */
-  title?: string;
+  /**
+   * Plural noun for the rows that are missing, lowercase — "venues", "runs".
+   * Renders through AdminEmpty as "No {noun} yet." Defaults to "results" so a
+   * table that never passed copy still reads in the house voice.
+   */
+  noun?: string;
   /** Secondary line for the empty (non-filtered) state. */
   description?: string;
   /** Icon for the empty (non-filtered) state. Default Inbox. */
   icon?: LucideIcon;
   /** Optional primary action (e.g. a "New X" button), shown when not filtered. */
   action?: ReactNode;
+  /** Clears the active filters, offered only while filtered. */
+  onResetFilters?: () => void;
 }
 
+/**
+ * Loading + empty rendering for the admin tables.
+ *
+ * The skeleton is table-shaped so it stays here; the empty branch delegates to
+ * <AdminEmpty> so every admin table distinguishes "nothing exists yet" from
+ * "your filters matched nothing" in one place.
+ */
 export function DataTableEmptyState({
   isLoading,
   hasFilters,
   columnCount,
-  title,
+  noun = 'results',
   description,
-  icon: Icon = Inbox,
+  icon,
   action,
+  onResetFilters,
 }: DataTableEmptyStateProps) {
   if (isLoading) {
     return (
@@ -41,17 +56,13 @@ export function DataTableEmptyState({
   }
 
   return (
-    <div className="flex flex-col items-center justify-center py-16 px-8 text-center">
-      <Icon className="h-12 w-12 text-muted-foreground mb-4" />
-      <h6 className="text-base font-semibold mb-1">
-        {hasFilters ? 'No results found' : title ?? 'No results found'}
-      </h6>
-      <p className="text-sm text-muted-foreground">
-        {hasFilters
-          ? 'Try adjusting your filters or search terms.'
-          : description ?? 'No data available yet.'}
-      </p>
-      {!hasFilters && action && <div className="mt-4">{action}</div>}
-    </div>
+    <AdminEmpty
+      noun={noun}
+      filtered={hasFilters}
+      onReset={onResetFilters}
+      description={description}
+      icon={icon}
+      action={action}
+    />
   );
 }

@@ -1,6 +1,6 @@
 {
   "project": "tsconfig.app.json",
-  "total": 1391,
+  "total": 1385,
   "files": {
     "src/assets/intimate/pictograms.tsx": {
       "TS2503": 2
@@ -197,16 +197,8 @@
     "src/components/admin/review-queues/BrandReviewQueue.tsx": {
       "TS2322": 2
     },
-    "src/components/admin/review-queues/DedupReviewQueue.tsx": {
-      "TS2345": 1
-    },
     "src/components/admin/review/ReviewBulkBar.tsx": {
       "TS6133": 1
-    },
-    "src/components/admin/taxonomy/TaxonomyAdminPage.tsx": {
-      "TS2304": 1,
-      "TS2322": 1,
-      "TS7006": 1
     },
     "src/components/admin/triage/EntityPreviewCard.tsx": {
       "TS2339": 1,
@@ -1305,10 +1297,6 @@
       "TS2345": 4,
       "TS2352": 1,
       "TS2353": 2
-    },
-    "src/pages/admin/AdminQueerVillages.tsx": {
-      "TS2322": 1,
-      "TS2345": 1
     },
     "src/pages/admin/AdminRedirects.tsx": {
       "TS2322": 8,

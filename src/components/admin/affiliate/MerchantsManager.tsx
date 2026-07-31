@@ -34,6 +34,7 @@ import {
 import { Stat } from './Stat';
 import { MerchantDrawer } from './MerchantDrawer';
 import type { MerchantOverviewRow } from './merchantTypes';
+import { AdminEmpty } from '@/components/admin/primitives/AdminEmpty';
 
 // Whitelist enforced by admin_upsert_marketplace_merchant.
 const PROVIDERS = ['shopify-public', 'woocommerce-public', 'etsy', 'crawl'];
@@ -239,9 +240,10 @@ export function MerchantsManager({
       </div>
 
       {merchants.length === 0 ? (
-        <p className="text-13 text-muted-foreground">
-          {organizationId ? 'No merchants linked to this business yet.' : 'No merchants registered yet.'}
-        </p>
+        <AdminEmpty
+          variant="inline"
+          noun={organizationId ? 'merchants linked to this business' : 'merchants registered'}
+        />
       ) : (
         <Table>
           <TableHeader>

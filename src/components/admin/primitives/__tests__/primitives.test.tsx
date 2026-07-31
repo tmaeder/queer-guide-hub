@@ -69,6 +69,37 @@ describe('AdminEmpty', () => {
     rerender(<AdminEmpty noun="venues" filtered action={action} />);
     expect(screen.queryByRole('button', { name: 'New venue' })).toBeNull();
   });
+
+  describe('inline variant', () => {
+    it('keeps the same copy rule as the block variant', () => {
+      const { rerender } = render(<AdminEmpty noun="picks" variant="inline" />);
+      expect(screen.getByText('No picks yet.')).toBeTruthy();
+
+      rerender(<AdminEmpty noun="picks" variant="inline" filtered />);
+      expect(screen.getByText('No picks match these filters.')).toBeTruthy();
+    });
+
+    it('renders a <span>, so it stays valid inside <p>/<li>/<td>', () => {
+      // A <p> nested in phrasing content is invalid HTML the browser silently
+      // re-parents, which is exactly how this variant gets used.
+      const { container } = render(<AdminEmpty noun="synonyms" variant="inline" />);
+      const el = screen.getByText('No synonyms yet.');
+      expect(el.tagName).toBe('SPAN');
+      expect(container.querySelector('p')).toBeNull();
+    });
+
+    it('drops the icon and the padding the block variant owns', () => {
+      const { container } = render(<AdminEmpty noun="runs" variant="inline" />);
+      expect(container.querySelector('svg')).toBeNull();
+    });
+
+    it('lets a caller flow it into a sentence with className="inline"', () => {
+      render(<AdminEmpty noun="audit artifact" variant="inline" className="inline" />);
+      const el = screen.getByText('No audit artifact yet.');
+      expect(el.className).toContain('inline');
+      expect(el.className).not.toContain('block');
+    });
+  });
 });
 
 describe('AdminLoading', () => {

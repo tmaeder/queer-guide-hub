@@ -22,6 +22,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
+import { AdminEmpty } from '@/components/admin/primitives/AdminEmpty';
 import { useAffiliateLinks } from '@/hooks/useAffiliateLinks';
 import { toast } from 'sonner';
 
@@ -188,12 +189,11 @@ export function AffiliatePartnersManager({
       </div>
 
       {partners.length === 0 ? (
-        <div className="rounded-element border bg-card p-8 text-center">
-          <p className="text-muted-foreground">
-            {organizationId
-              ? 'No affiliate partner linked to this business yet.'
-              : 'No affiliate partners configured yet.'}
-          </p>
+        <div className="rounded-element border bg-card">
+          <AdminEmpty
+            noun={organizationId ? 'affiliate partners for this business' : 'affiliate partners'}
+            icon={Handshake}
+          />
         </div>
       ) : (
         <div className="flex flex-col gap-4">

@@ -15,15 +15,22 @@ describe('DataTableEmptyState', () => {
     expect(skeletonRows).toHaveLength(5);
   });
 
-  it("shows 'No data available yet.' when not loading and no filters", () => {
+  it('reads "No {noun} yet." when not loading and no filters', () => {
     render(<DataTableEmptyState isLoading={false} hasFilters={false} columnCount={4} />);
-    expect(screen.getByText('No results found')).toBeInTheDocument();
-    expect(screen.getByText('No data available yet.')).toBeInTheDocument();
+    expect(screen.getByText('No results yet.')).toBeInTheDocument();
   });
 
-  it("shows filter hint when hasFilters=true", () => {
-    render(<DataTableEmptyState isLoading={false} hasFilters={true} columnCount={4} />);
-    expect(screen.getByText(/adjusting your filters/i)).toBeInTheDocument();
+  it('uses the caller\'s noun so tables do not all say "results"', () => {
+    render(
+      <DataTableEmptyState isLoading={false} hasFilters={false} columnCount={4} noun="venues" />,
+    );
+    expect(screen.getByText('No venues yet.')).toBeInTheDocument();
+  });
+
+  it('distinguishes a filtered miss from a genuinely empty table', () => {
+    render(<DataTableEmptyState isLoading={false} hasFilters={true} columnCount={4} noun="venues" />);
+    expect(screen.getByText('No venues match these filters.')).toBeInTheDocument();
+    expect(screen.getByText(/adjust the filters/i)).toBeInTheDocument();
   });
 
   it('caps column skeleton count at 5 even when columnCount is higher', () => {
