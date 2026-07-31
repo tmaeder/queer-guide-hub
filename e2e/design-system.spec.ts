@@ -158,7 +158,18 @@ test.describe('design system: monochrome public pages', () => {
     test(`no chromatic backgrounds on ${path}`, async ({ page }) => {
       await page.setViewportSize({ width: 1280, height: 900 });
       await page.goto(path);
-      await page.waitForLoadState('networkidle');
+      // Wait for the app to mount, NOT for the network to fall idle.
+      //
+      // `networkidle` needs 500ms with zero in-flight requests. The homepage
+      // carries maps, lazy images and analytics, so on a slow CI runner it can
+      // simply never reach that inside the 30s timeout — it failed all three
+      // retries on PR #2408 while /events, /venues and /hotels passed in the
+      // same run, and the change under test touched only admin routes.
+      //
+      // The assertion below reads computed styles under #root/header/main/footer,
+      // so what it actually needs is a painted app. Waiting for that is both
+      // faster and deterministic.
+      await page.waitForSelector('#root *', { state: 'attached', timeout: 15_000 });
       await dismissCookieBanner(page);
       await page.waitForTimeout(500);
 

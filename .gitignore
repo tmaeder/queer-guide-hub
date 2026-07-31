@@ -53,6 +53,10 @@ worker-submit/
 # Playwright test output (HTML reports, traces, last-run state)
 playwright-report/
 test-results/
+# Playwright visual baselines are generated on CI (linux). A local macOS
+# run writes *-darwin.png beside them, which must never be committed —
+# CI would ignore them and reviewers would see phantom binary churn.
+*-darwin.png
 
 # Bundle visualizer output (vite rollup-plugin-visualizer, enabled via BUNDLE_STATS=1)
 bundle-baselines/

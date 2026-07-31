@@ -59,10 +59,40 @@ so they cannot become config. Tag CRUD itself lives in the registry
 (`/admin/content/unified_tags`), and the per-tag alias editor moved there as an
 `extraPanel`.
 
-**Open follow-up:** `AdminTags` still embeds a duplicate `unified_tags` table
-alongside its ops panels. The parity gap that justified it (alias editing) is
-closed, so the table can now be dropped in favour of a link to the registry —
-left undone because verifying it needs a signed-in admin session.
+## What blocks further convergence
+
+`AdminTags` and `AdminRedirects` both keep a table the registry cannot yet
+replace. Alias editing — the gap closed above — turned out to be only one of
+several. `AdminDataTable` configs use capabilities that `ContentTypeConfig` has
+no equivalent for:
+
+| capability | `AdminTableConfig` | `ContentTypeConfig` |
+|---|---|---|
+| `rowActions` | yes | **yes** (added) |
+| `toolbarActions` | yes | **no** |
+| `bulkEditFields` | yes | **no** |
+| `entityFilters` | yes | **no** |
+| `exportColumns` | yes | **no** |
+| `backfillJobs` | yes | **no** |
+
+So the remaining `AdminDataTable` pages are not lingering duplication to be
+mopped up — they are using a richer list surface. Converting one today trades
+row actions and bulk edit for revisions and workflow, which is a sideways move
+at best.
+
+`rowActions` is now on `ContentTypeConfig` — declare `{ id, label, icon,
+visible?, onSelect }` and the list renders it beside Edit. It is deliberately
+narrower than the `AdminDataTable` version (no destructive variant, no bulk or
+toolbar forms) until something needs more.
+
+**No page can convert on that alone.** `AdminRedirects`, the obvious first
+candidate, also needs `toolbarActions` for its import dialog and Excel export,
+plus somewhere for its click-analytics viewer. `entityFilters` is the next
+biggest gap — most of these lists are unusable without faceting.
+
+**The real next step**, in order: `entityFilters`, then `toolbarActions`, then
+convert `AdminRedirects` as the smallest proof. Until then, leave these pages
+alone; a partial conversion loses tooling.
 
 ## Everything else under `/admin/`
 
