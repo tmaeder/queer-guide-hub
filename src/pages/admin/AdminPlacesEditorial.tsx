@@ -23,6 +23,7 @@ import {
 } from '@/hooks/useAdminEditorial';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { AdminTextSkeleton } from '@/components/admin/primitives/AdminLoading';
+import { AdminEmpty } from '@/components/admin/primitives/AdminEmpty';
 
 export default function AdminPlacesEditorial() {
   useMeta({
@@ -282,7 +283,7 @@ function CoversEditor() {
       {covers.isLoading ? (
         <AdminTextSkeleton lines={2} />
       ) : (covers.data ?? []).length === 0 ? (
-        <p className="text-muted-foreground">No covers yet.</p>
+        <AdminEmpty noun="covers" />
       ) : (
         <div className="flex flex-col gap-4">
           {(covers.data ?? []).map((c: EditorialCoverRow) => (

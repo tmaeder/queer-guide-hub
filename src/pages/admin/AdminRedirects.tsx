@@ -27,6 +27,7 @@ import {
 } from '@/components/ui/table';
 import { AdminDataTable } from '@/components/admin/data-table';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
+import { AdminEmpty } from '@/components/admin/primitives/AdminEmpty';
 import type { AdminTableConfig } from '@/components/admin/data-table/types';
 import { ExportExcelButton } from '@/components/admin/ExportExcelButton';
 import {
@@ -288,9 +289,7 @@ export default function AdminRedirects() {
               <Skeleton style={{ height: 200, width: '100%' }} />
             </div>
           ) : events.length === 0 ? (
-            <p className="text-center text-muted-foreground pt-6 pb-6">
-              No click events recorded yet.
-            </p>
+            <AdminEmpty noun="click events" />
           ) : (
             <Table>
               <TableHeader>

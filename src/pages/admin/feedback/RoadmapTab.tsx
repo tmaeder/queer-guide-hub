@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { Loader2, ThumbsUp } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { RoadmapItemDrawer } from '@/components/admin/feedback/RoadmapItemDrawer';
+import { AdminEmpty } from '@/components/admin/primitives/AdminEmpty';
 import {
   roadmapColumns,
   useRoadmapItems,
@@ -35,8 +36,11 @@ export function RoadmapTab() {
 
   if (items.length === 0) {
     return (
-      <div className="rounded-container border p-12 text-center text-muted-foreground">
-        No roadmap items yet. Promote an idea from the Triage tab to start one.
+      <div className="rounded-container border">
+        <AdminEmpty
+          noun="roadmap items"
+          description="Promote an idea from the Triage tab to start one."
+        />
       </div>
     );
   }

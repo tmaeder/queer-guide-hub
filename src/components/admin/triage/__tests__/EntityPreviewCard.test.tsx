@@ -36,7 +36,7 @@ describe('EntityPreviewCard', () => {
         entityData={null}
       />,
     );
-    expect(screen.getByText(/No preview available/)).toBeInTheDocument();
+    expect(screen.getByText(/No preview data yet/)).toBeInTheDocument();
   });
 
   it('falls back to FallbackPreview for unknown entity types', () => {
