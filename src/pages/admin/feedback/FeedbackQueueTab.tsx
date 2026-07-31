@@ -3,6 +3,7 @@ import { FeedbackKanban } from '@/components/admin/feedback/FeedbackKanban';
 import { FeedbackFilters } from '@/components/admin/feedback/FeedbackFilters';
 import { FeedbackPresets } from '@/components/admin/feedback/FeedbackPresets';
 import { FeedbackBulkBar } from '@/components/admin/feedback/FeedbackBulkBar';
+import { AdminEmpty } from '@/components/admin/primitives/AdminEmpty';
 import {
   kanbanColumns,
   type KanbanStatus,
@@ -116,11 +117,7 @@ export function FeedbackQueueTab({
       </div>
 
       {totalVisibleCount === 0 ? (
-        <p className="text-sm text-muted-foreground py-12 text-center">
-          {activeFilterCount > 0
-            ? 'No submissions match the current filters.'
-            : 'No submissions yet.'}
-        </p>
+        <AdminEmpty noun="submissions" filtered={activeFilterCount > 0} />
       ) : (
         <FeedbackKanban
           grouped={grouped}

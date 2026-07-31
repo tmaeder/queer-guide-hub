@@ -35,6 +35,7 @@ import { adminAction } from '@/lib/adminAction';
 import { formatNextFire } from '@/lib/nextCronFire';
 import { toast } from 'sonner';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
+import { AdminEmpty } from '@/components/admin/primitives/AdminEmpty';
 
 interface Automation {
   id: string;
@@ -474,7 +475,7 @@ export default function AdminAutomation() {
         {runsQ.isLoading ? (
           <Skeleton className="h-24 w-full" />
         ) : runsQ.data?.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No runs yet.</p>
+          <AdminEmpty noun="runs" />
         ) : (
           <div className="border border-border">
             <table className="w-full text-13">
