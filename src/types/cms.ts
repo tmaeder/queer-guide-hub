@@ -223,6 +223,18 @@ export interface ContentTypeConfig {
    */
   rowActions?: ContentRowAction[];
   /**
+   * Extra buttons in the list header, left of Export and New.
+   *
+   * The remaining `AdminDataTable` pages each carry a couple of these — an
+   * import dialog, a bespoke export — and it was the last thing keeping
+   * `AdminRedirects` off the registry.
+   *
+   * A render function rather than a node so the config stays a static object:
+   * anything needing React state (a dialog) owns it inside the returned
+   * component, not in the config.
+   */
+  toolbarActions?: () => ReactNode;
+  /**
    * Admin companion surfaces for this type — single source for the entity tab
    * strip (List / Quality / Duplicates / Requests), palette entity search, and
    * the "All content" aggregate list. Replaces per-component hardcoded maps.
