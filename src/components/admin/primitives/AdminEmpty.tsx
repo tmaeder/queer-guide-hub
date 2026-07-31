@@ -15,6 +15,13 @@ export interface AdminEmptyProps {
   /** True when filters/search are active — the list is empty, the table isn't. */
   filtered?: boolean;
   onReset?: () => void;
+  /**
+   * `block` (default) owns a whole list/table/panel body: centred, icon, generous
+   * padding. `inline` is one muted line for a hint sitting INSIDE a dense form or
+   * card (an alias editor, a preview slot) — same copy rule, no icon, no padding,
+   * so it doesn't blow a small panel apart.
+   */
+  variant?: 'block' | 'inline';
   className?: string;
 }
 
@@ -36,8 +43,25 @@ export function AdminEmpty({
   action,
   filtered = false,
   onReset,
+  variant = 'block',
   className,
 }: AdminEmptyProps) {
+  const headline = filtered ? `No ${noun} match these filters.` : `No ${noun} yet.`;
+
+  if (variant === 'inline') {
+    // A <span>, not a <p>: inline hints get nested inside <p>, <span>, <li> and
+    // <td>, and a <p> inside phrasing content is invalid HTML the browser
+    // silently re-parents. Defaults to display:block so it still reads as its
+    // own line; pass `className="inline"` to flow it into a sentence
+    // (tailwind-merge drops the conflicting display class).
+    return (
+      <span className={cn('block text-13 text-muted-foreground', className)}>
+        {headline}
+        {description ? <> {description}</> : null}
+      </span>
+    );
+  }
+
   return (
     <div
       className={cn(
@@ -46,9 +70,7 @@ export function AdminEmpty({
       )}
     >
       <Icon size={32} className="mb-4 text-muted-foreground" aria-hidden />
-      <p className="text-15 font-medium text-foreground">
-        {filtered ? `No ${noun} match these filters.` : `No ${noun} yet.`}
-      </p>
+      <p className="text-15 font-medium text-foreground">{headline}</p>
       {(description || filtered) && (
         <p className="mt-1 max-w-md text-13 text-muted-foreground">
           {filtered ? 'Adjust the filters or clear them to see everything.' : description}

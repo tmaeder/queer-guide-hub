@@ -10,6 +10,7 @@ import { untypedFrom } from '@/integrations/supabase/untyped';
 import type { StoredPipelineNode } from '../hooks/usePipelineBuilder';
 import type { AppEdge } from '../types';
 import { AdminTextSkeleton } from '@/components/admin/primitives/AdminLoading';
+import { AdminEmpty } from '@/components/admin/primitives/AdminEmpty';
 
 interface VersionRow {
   id: string;
@@ -84,7 +85,7 @@ export default function VersionHistoryDialog({ pipelineId, currentVersion, onRev
           {isLoading ? (
             <AdminTextSkeleton lines={2} />
           ) : versions.length === 0 ? (
-            <div className="p-6 text-center text-muted-foreground text-xs">No version history yet</div>
+            <AdminEmpty variant="inline" noun="versions" className="p-6 text-center text-xs" />
           ) : (
             <div className="divide-y divide-border">
               {versions.map(v => {

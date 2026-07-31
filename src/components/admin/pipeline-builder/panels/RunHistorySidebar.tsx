@@ -7,6 +7,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { usePipelineRunsForPipeline } from '../hooks/usePipelineHistory';
 import RunSnapshotDialog from './RunSnapshotDialog';
 import { AdminTextSkeleton } from '@/components/admin/primitives/AdminLoading';
+import { AdminEmpty } from '@/components/admin/primitives/AdminEmpty';
 
 interface RunHistorySidebarProps {
   pipelineId: string | undefined;
@@ -107,7 +108,7 @@ export default function RunHistorySidebar({ pipelineId, activeRunId, onSelectRun
         {!isLoading && filtered.length === 0 && (
           <div className="p-4 text-xs text-muted-foreground text-center">
             <Filter className="h-5 w-5 mx-auto mb-1 opacity-40" />
-            {runs.length === 0 ? 'No runs yet' : `No ${filter} runs`}
+            <AdminEmpty variant="inline" noun="runs" filtered={runs.length > 0} className="text-xs" />
           </div>
         )}
         {!isLoading && filtered.map(run => {

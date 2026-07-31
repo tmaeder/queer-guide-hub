@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { countOverrides } from './tokenCatalog';
 import { useBrandingVersions, type DesignSettingsController } from './useDesignSettings';
 import { AdminTextSkeleton } from '@/components/admin/primitives/AdminLoading';
+import { AdminEmpty } from '@/components/admin/primitives/AdminEmpty';
 
 export function VersionHistorySheet({
   controller,
@@ -35,7 +36,7 @@ export function VersionHistorySheet({
         <div className="mt-6 space-y-4 overflow-y-auto">
           {versions.isLoading && <AdminTextSkeleton lines={2} />}
           {versions.data?.length === 0 && (
-            <p className="text-13 text-muted-foreground">No versions published yet.</p>
+            <AdminEmpty variant="inline" noun="published versions" />
           )}
           {versions.data?.map((v) => (
             <div

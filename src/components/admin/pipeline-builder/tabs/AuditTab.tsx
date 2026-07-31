@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import { untypedFrom } from '@/integrations/supabase/untyped';
+import { AdminEmpty } from '@/components/admin/primitives/AdminEmpty';
 
 /**
  * Unified audit trail combining:
@@ -179,7 +180,12 @@ export default function AuditTab() {
             {filtered.length === 0 ? (
               <div className="p-6 text-center text-muted-foreground text-xs">
                 <Filter className="h-5 w-5 inline mb-1 opacity-40" />
-                <div>{events.length === 0 ? 'No audit events yet' : 'No events match filters'}</div>
+                <AdminEmpty
+                  variant="inline"
+                  noun="audit events"
+                  filtered={events.length > 0}
+                  className="text-xs"
+                />
               </div>
             ) : (
               <div className="divide-y divide-border/40">

@@ -11,6 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { monoChartPalette, monoChartAxis } from '@/lib/chartPalette';
 import { Stat } from './Stat';
 import { AdminTextSkeleton } from '@/components/admin/primitives/AdminLoading';
+import { AdminEmpty } from '@/components/admin/primitives/AdminEmpty';
 
 interface SummaryRow {
   surface: string;
@@ -114,7 +115,7 @@ export function PerformancePanel({ days, vertical }: { days: string; vertical: s
         {isLoading ? (
           <AdminTextSkeleton lines={2} />
         ) : rows.length === 0 ? (
-          <p className="text-13 text-muted-foreground">No affiliate clicks in this window yet.</p>
+          <AdminEmpty variant="inline" noun="affiliate clicks in this window" />
         ) : (
           <Table>
             <TableHeader>

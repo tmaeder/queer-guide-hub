@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { AdminTableSkeleton } from '@/components/admin/primitives/AdminLoading';
+import { AdminEmpty } from '@/components/admin/primitives/AdminEmpty';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -397,9 +398,11 @@ export function NewsSourcesManager() {
         </CardHeader>
         <CardContent>
           {sources.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              No news sources configured yet. Add your first source to get started.
-            </div>
+            <AdminEmpty
+              noun="news sources"
+              icon={Rss}
+              description="Add your first source to get started."
+            />
           ) : (
             <div className="flex flex-col gap-4">
               {sources.map((source) => (

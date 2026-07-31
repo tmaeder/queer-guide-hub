@@ -43,6 +43,7 @@ export function AdminDataTable<TData extends { id: string }>({
   const {
     tableName,
     mutationTable,
+    emptyNoun,
     select,
     columns,
     entityFilters = [],
@@ -289,6 +290,7 @@ export function AdminDataTable<TData extends { id: string }>({
           isLoading={isLoading}
           hasFilters={activeFilterCount > 0}
           columnCount={columns.length}
+          noun={emptyNoun ?? tableName.replace(/_/g, ' ')}
         />
       ) : (
         <Table>

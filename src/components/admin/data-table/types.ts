@@ -57,6 +57,12 @@ export interface AdminTableConfig<TData> {
    * is a read-only view. Defaults to `tableName`.
    */
   mutationTable?: string;
+  /**
+   * Plural noun for a row, lowercase — "venues", "news sources". Drives the
+   * empty state ("No venues yet."). Defaults to `tableName` de-underscored,
+   * which is already the right word for most tables.
+   */
+  emptyNoun?: string;
   select?: string;
   columns: ColumnDef<TData, unknown>[];
   entityFilters?: EntityFilterConfig[];

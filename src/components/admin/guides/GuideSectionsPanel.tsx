@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/select';
 import { toast } from '@/hooks/use-toast';
 import { untypedFrom } from '@/integrations/supabase/untyped';
+import { AdminEmpty } from '@/components/admin/primitives/AdminEmpty';
 
 interface SectionRow {
   id: string;
@@ -128,7 +129,7 @@ export function GuideSectionsPanel({ guideId }: { guideId: string }) {
           </li>
         ))}
         {!sections?.length && (
-          <li className="text-sm italic text-muted-foreground">No sections yet.</li>
+          <li><AdminEmpty variant="inline" noun="sections" className="italic" /></li>
         )}
       </ul>
       <Button variant="outline" size="sm" onClick={() => addSection.mutate()}>

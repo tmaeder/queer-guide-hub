@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { AdminTextSkeleton } from '@/components/admin/primitives/AdminLoading';
+import { AdminEmpty } from '@/components/admin/primitives/AdminEmpty';
 
 interface CoverageRow {
   source_name: string;
@@ -166,7 +167,7 @@ export default function ScraperHealthTab() {
           {covLoading ? (
             <AdminTextSkeleton lines={2} />
           ) : coverage.length === 0 ? (
-            <div className="p-6 text-center text-muted-foreground text-xs">No completed runs yet</div>
+            <AdminEmpty variant="inline" noun="completed runs" className="p-6 text-center text-xs" />
           ) : (
             <table className="w-full text-sm">
               <thead className="bg-muted/40 sticky top-0">
@@ -206,7 +207,7 @@ export default function ScraperHealthTab() {
         <SectionHeader icon={BarChart3} title="Quality score distribution" badge={<Badge variant="outline" className="text-2xs px-1.5 py-0">30-day · per source × type</Badge>} />
         <div className="max-h-[400px] overflow-auto">
           {quality.length === 0 ? (
-            <div className="p-6 text-center text-muted-foreground text-xs">No scored items yet</div>
+            <AdminEmpty variant="inline" noun="scored items" className="p-6 text-center text-xs" />
           ) : (
             <table className="w-full text-sm">
               <thead className="bg-muted/40 sticky top-0">

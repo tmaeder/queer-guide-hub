@@ -16,6 +16,7 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { presetOverrideCount, useBrandingPresets } from './useBrandingPresets';
 import { AdminTextSkeleton } from '@/components/admin/primitives/AdminLoading';
+import { AdminEmpty } from '@/components/admin/primitives/AdminEmpty';
 
 function fmt(dt: string) {
   return new Date(dt).toLocaleString();
@@ -141,7 +142,7 @@ export function PresetsTab() {
 
           {presets.isLoading && <AdminTextSkeleton lines={2} />}
           {presets.data?.length === 0 && (
-            <p className="text-13 text-muted-foreground">No presets yet.</p>
+            <AdminEmpty variant="inline" noun="presets" />
           )}
           <div className="space-y-2">
             {presets.data?.map((p) => (

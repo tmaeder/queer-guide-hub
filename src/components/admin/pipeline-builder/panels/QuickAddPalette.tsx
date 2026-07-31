@@ -2,6 +2,7 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { resolvePipelineIcon } from '../icon-registry';
 import type { PipelineNodeType } from '../hooks/usePipelineBuilder';
+import { AdminEmpty } from '@/components/admin/primitives/AdminEmpty';
 
 interface QuickAddPaletteProps {
   nodeTypes: PipelineNodeType[];
@@ -40,7 +41,9 @@ export default function QuickAddPalette({ nodeTypes, onAdd, open, onOpenChange }
         <Command className="rounded-element">
           <CommandInput placeholder="Type to search nodes... (Esc to close)" autoFocus />
           <CommandList className="max-h-[400px]">
-            <CommandEmpty>No nodes found</CommandEmpty>
+            <CommandEmpty>
+              <AdminEmpty variant="inline" noun="nodes" filtered />
+            </CommandEmpty>
             {orderedCategories.map(cat => (
               <CommandGroup key={cat} heading={categoryLabels[cat] || cat}>
                 {grouped[cat].map(nt => {

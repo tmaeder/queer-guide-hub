@@ -21,6 +21,7 @@ import { feedbackCategoryMap, feedbackCategories } from '@/config/feedbackCatego
 import { monoChartPalette } from '@/lib/chartPalette';
 import { kanbanColumns, priorityFor } from '../constants';
 import type { FeedbackSubmission } from '../types';
+import { AdminEmpty } from '@/components/admin/primitives/AdminEmpty';
 
 interface Props {
   items: FeedbackSubmission[];
@@ -139,7 +140,7 @@ export function AnalyticsTab({ items, voteCounts }: Props) {
       <div className="border border-border rounded-element bg-background p-4 col-span-1 md:col-auto">
         <p className="text-sm font-bold mb-2">Time to resolve (90d, resolved items only)</p>
         {sla.length === 0 ? (
-          <p className="text-xs text-muted-foreground">No resolved items yet.</p>
+          <AdminEmpty variant="inline" noun="resolved items" className="text-xs" />
         ) : (
           <table className="w-full border-collapse [&_th]:text-left [&_th]:text-xs [&_th]:py-1 [&_th]:px-1.5 [&_th]:border-b [&_th]:font-semibold [&_td]:text-left [&_td]:text-xs [&_td]:py-1 [&_td]:px-1.5">
             <thead>
@@ -179,7 +180,7 @@ export function AnalyticsTab({ items, voteCounts }: Props) {
       <div className="border border-border rounded-element bg-background p-4">
         <p className="text-sm font-bold mb-2">Top voted</p>
         {topVoted.length === 0 ? (
-          <p className="text-xs text-muted-foreground">No votes yet.</p>
+          <AdminEmpty variant="inline" noun="votes" className="text-xs" />
         ) : (
           <div className="flex flex-col gap-1">
             {topVoted.map(({ item, votes }) => {

@@ -15,6 +15,7 @@ import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/comp
 import RunCompareDialog from '../panels/RunCompareDialog';
 import { AdminStatTile } from '@/components/admin/primitives/AdminStatTile';
 import { AdminTableRowSkeleton } from '@/components/admin/primitives/AdminLoading';
+import { AdminEmpty } from '@/components/admin/primitives/AdminEmpty';
 
 type StatusFilter = 'all' | 'running' | 'completed' | 'failed';
 type TypeFilter = 'all' | 'pipeline' | 'workflow';
@@ -322,7 +323,12 @@ export default function MonitorTab() {
                     <AdminTableRowSkeleton columns={6} />
                   ) : filteredRuns.length === 0 ? (
                     <tr><td colSpan={6} className="p-6 text-center text-muted-foreground text-xs">
-                      {allRuns.length === 0 ? 'No runs yet' : 'No runs match filters'}
+                      <AdminEmpty
+                        variant="inline"
+                        noun="runs"
+                        filtered={allRuns.length > 0}
+                        className="text-xs"
+                      />
                     </td></tr>
                   ) : filteredRuns.map(run => {
                     const Icon = statusIcon[run.status] || Clock;

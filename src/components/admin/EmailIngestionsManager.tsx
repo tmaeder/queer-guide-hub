@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { AdminTextSkeleton } from '@/components/admin/primitives/AdminLoading';
+import { AdminEmpty } from '@/components/admin/primitives/AdminEmpty';
 
 interface EmailIngestion {
   id: string;
@@ -238,15 +239,17 @@ export function EmailIngestionsManager() {
       {/* Ingestion list */}
       {filtered.length === 0 ? (
         <Card>
-          <CardContent className="p-8">
-            <div className="text-center text-muted-foreground">
-              <Mail size={40} style={{ margin: '0 auto 12px', opacity: 0.4 }} />
-              <p className="text-sm">
-                {ingestions.length === 0
-                  ? 'No email ingestions yet. Forward emails to ingest@queer.guide to get started.'
-                  : 'No ingestions match your filters.'}
-              </p>
-            </div>
+          <CardContent className="p-0">
+            <AdminEmpty
+              noun="email ingestions"
+              icon={Mail}
+              description="Forward emails to ingest@queer.guide to get started."
+              filtered={Boolean(searchQuery) || statusFilter !== 'all'}
+              onReset={() => {
+                setSearchQuery('');
+                setStatusFilter('all');
+              }}
+            />
           </CardContent>
         </Card>
       ) : (

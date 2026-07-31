@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
+import { AdminEmpty } from '@/components/admin/primitives/AdminEmpty';
 import {
   Select,
   SelectContent,
@@ -98,7 +99,7 @@ export function TagAliasesSection({ tagId }: TagAliasesSectionProps) {
             </div>
           )}
           {aliases.length === 0 && (
-            <span className="block text-xs text-muted-foreground mb-2">No synonyms yet</span>
+            <AdminEmpty noun="synonyms" variant="inline" className="mb-2 block text-xs" />
           )}
           <div className="flex gap-1 items-end">
             <Input

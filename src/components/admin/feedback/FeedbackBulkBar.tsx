@@ -201,6 +201,10 @@ export function FeedbackBulkBar({
                 </>
               )}
               {onAddToStory && openStories.length === 0 && (
+                // Not an empty state: this is the disabled LABEL of a menu item, so it
+                // must stay a single line of menu text. <AdminEmpty> would nest a <p>
+                // inside a menuitem and break the menu's roving-focus semantics.
+                // eslint-disable-next-line queerguide/admin-ui-primitives
                 <DropdownMenuItem disabled>No open stories yet</DropdownMenuItem>
               )}
             </DropdownMenuContent>
