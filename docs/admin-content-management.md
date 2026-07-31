@@ -74,13 +74,18 @@ the same feature under a different mechanism:
 | per-row actions | `rowActions` | `ContentTypeConfig.rowActions` |
 | filtering | `entityFilters` | `FieldConfig.filterable` (+ `dynamicOptions`) |
 | Excel export | `exportColumns` | `ContentListPanel/exportContentList.ts` |
+| toolbar buttons | `toolbarActions` | `ContentTypeConfig.toolbarActions` |
 | bulk edit | `bulkEditFields` | **missing** |
-| toolbar buttons | `toolbarActions` | **missing** |
 | backfill jobs | `backfillJobs` | **missing** |
 
-Three real gaps, not six. `ContentTypeConfig.bulkOps` looked like a fourth but
-was dead config — declared, never read, set by no content type — and has been
-removed rather than left to imply a feature that does not exist.
+Two real gaps left, and both only matter for `AdminTags`.
+`ContentTypeConfig.bulkOps` looked like another but was dead config — declared,
+never read, set by no content type — and has been removed rather than left to
+imply a feature that does not exist.
+
+`toolbarActions` is a render **function**, not a node, so the config object stays
+static: anything needing React state (a dialog) owns it inside the returned
+component.
 
 So the remaining `AdminDataTable` pages are not lingering duplication to be
 mopped up — they are using a richer list surface. Converting one today trades
@@ -91,13 +96,25 @@ at best.
 beside Edit. `onSelect` receives the raw row, because actions need columns the
 list never shows (a redirect's `slug`).
 
-**`AdminRedirects` is the smallest remaining conversion.** It needs one thing:
-somewhere to put its two toolbar buttons (bulk import dialog, Excel export). Its
-row actions and filtering are already expressible, and generic export exists.
+**`AdminRedirects` is now fully expressible.** Everything it does has a registry
+equivalent:
 
-**Next step:** add `toolbarActions` to `ContentTypeConfig`, then convert
-`AdminRedirects` as the proof. `bulkEditFields` and `backfillJobs` only matter
-for `AdminTags` and can wait.
+| AdminRedirects feature | registry home |
+|---|---|
+| copy short URL, test redirect | `rowActions` (plain callbacks — clipboard, `window.open`) |
+| bulk import dialog | `toolbarActions` |
+| Excel export | generic `exportContentList` |
+| type / enabled filters | `FieldConfig.filterable` |
+| edit dialog | the registry editor |
+| click-analytics viewer | `extraPanels` — it is per-redirect, so it belongs in the editor |
+
+Converting it is the natural next step and the first proof that an
+`AdminDataTable` page can move without losing anything.
+
+One constraint to design around: `rowActions.onSelect` is a plain callback in a
+static config, so it can copy, navigate or open a URL, but cannot open a React
+dialog owned by the page. Anything stateful belongs in `extraPanels` (per-record)
+or `toolbarActions` (per-collection).
 
 ### The larger question
 
