@@ -1,1 +1,18 @@
+# Migration guards. Both failure modes make `supabase db push` skip SILENTLY —
+# nothing deploys and no workflow goes red — so catch them before the push.
+#   check-migration-versions: duplicate / malformed 14-digit versions (pure local)
+#   check-migration-drift:    versions already applied to prod with no repo file
+node scripts/check-migration-versions.mjs || exit 1
+
+# husky runs hooks under `sh -e`, so a bare non-zero exit here would abort the
+# hook before the exit code is inspected. `|| drift=$?` keeps it in an || list.
+drift=0
+node scripts/check-migration-drift.mjs || drift=$?
+# 1 = real drift, block. Anything else (no SUPABASE_ACCESS_TOKEN, Management API
+# unreachable, no git baseline) means the check could not fully run — the degraded
+# merge-base check has already reported, so warn rather than block the push.
+if [ "$drift" -eq 1 ]; then
+  exit 1
+fi
+
 npm run lint

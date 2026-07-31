@@ -24,28 +24,49 @@
  * version and commit it (repo == history), or `supabase migration repair` if it was
  * rolled back. Never blindly `db pull`.
  *
+ * Without a token (the common local case) it falls back to a DEGRADED check that
+ * needs no credentials: every version present at the merge-base with origin/main
+ * has, by definition, already been merged and applied to prod, so a version that
+ * the working tree no longer has a file for is the same remote-only drift — just
+ * self-inflicted (a delete or a rename of an already-applied migration). The
+ * merge-base, not origin/main's tip, is the baseline on purpose: comparing against
+ * the tip flags every migration merged while your branch was open.
+ *
  * Env:
- *   SUPABASE_ACCESS_TOKEN  (required)  personal/CI access token
+ *   SUPABASE_ACCESS_TOKEN  personal/CI access token (also read from .env.local/.env);
+ *                          without it the degraded merge-base check runs instead
  *   SUPABASE_PROJECT_REF   (default xqeacpakadqfxjxjcewc)
  *
  * Usage: node scripts/check-migration-drift.mjs
- * Exit:  0 = no drift, 1 = drift or hard error, 2 = misconfigured (no token)
+ * Exit:  0 = no drift
+ *        1 = drift — a version has been applied that the repo has no file for
+ *        2 = could not check at all (no token AND no git baseline)
+ *        3 = wanted the remote check but the API failed / no token; a degraded
+ *            merge-base check ran and was clean. Callers that must not block on a
+ *            network blip (the pre-push hook) treat this as a warning.
  */
 
-import { readdirSync } from 'node:fs'
+import { execFileSync } from 'node:child_process'
+import { existsSync, readdirSync, readFileSync } from 'node:fs'
 
 const MIGRATIONS_DIR = 'supabase/migrations'
 const VERSION_RE = /^(\d{14})_.+\.sql$/
 const PROJECT_REF = process.env.SUPABASE_PROJECT_REF || 'xqeacpakadqfxjxjcewc'
-const TOKEN = process.env.SUPABASE_ACCESS_TOKEN
 // The all-zeros row is the CLI's schema baseline; it never has a repo file.
 const BASELINE = new Set(['00000000000000'])
 
-if (!TOKEN) {
-  console.error('✗ SUPABASE_ACCESS_TOKEN is not set — cannot query remote migration history.')
-  console.error('  Set it (repo secret in CI, or export locally) and re-run.')
-  process.exit(2)
+/** Token from the environment, else from an uncommitted .env file. */
+function resolveToken() {
+  if (process.env.SUPABASE_ACCESS_TOKEN) return process.env.SUPABASE_ACCESS_TOKEN
+  for (const file of ['.env.local', '.env']) {
+    if (!existsSync(file)) continue
+    const m = readFileSync(file, 'utf8').match(/^\s*SUPABASE_ACCESS_TOKEN\s*=\s*(.+?)\s*$/m)
+    if (m) return m[1].replace(/^["']|["']$/g, '')
+  }
+  return null
 }
+
+const TOKEN = resolveToken()
 
 /** Remote history versions from schema_migrations via the Management API. */
 async function remoteVersions() {
@@ -96,25 +117,85 @@ function repoVersions() {
   return out
 }
 
-const remote = await remoteVersions()
+function git(args) {
+  return execFileSync('git', args, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] })
+}
+
+/**
+ * Degraded, credential-free baseline: the versions committed at the merge-base
+ * with the upstream default branch. Everything there is already merged, so it is
+ * already in remote history. Returns null when there is no usable git baseline.
+ */
+function mergeBaseVersions() {
+  let base
+  for (const ref of ['origin/main', 'main']) {
+    try {
+      base = git(['merge-base', 'HEAD', ref]).trim()
+      if (base) break
+    } catch {
+      /* ref missing (shallow clone, no remote) — try the next one */
+    }
+  }
+  if (!base) return null
+  const out = git(['ls-tree', '-r', '--name-only', base, '--', MIGRATIONS_DIR])
+  const versions = new Set()
+  for (const line of out.split('\n')) {
+    const m = line.split('/').pop()?.match(VERSION_RE)
+    if (m) versions.add(m[1])
+  }
+  return versions.size > 0 ? versions : null
+}
+
 const repo = repoVersions()
 
-const remoteOnly = [...remote].filter((v) => !repo.has(v)).sort()
+let applied = null
+let degraded = null // set to the reason the remote check did not run
 
-if (remoteOnly.length > 0) {
-  console.error(
-    `\n✗ MIGRATION DRIFT: ${remoteOnly.length} remote version(s) have no repo file.`,
-  )
-  console.error(
-    '  These were applied to prod (MCP apply_migration or raw SQL) without committing a file.',
-  )
-  console.error('  `supabase db push` will SKIP, so merged migrations never apply. Fix each:')
-  console.error('  recover the SQL from schema_migrations.statements into')
-  console.error('  supabase/migrations/<version>_<name>.sql and commit it (see CLAUDE.md).\n')
-  for (const v of remoteOnly) console.error(`    - ${v}`)
+if (TOKEN) {
+  try {
+    applied = await remoteVersions()
+  } catch (err) {
+    degraded = `remote query failed — ${err.message.split('\n')[0]}`
+  }
+} else {
+  degraded = 'SUPABASE_ACCESS_TOKEN is not set'
+}
+
+if (!applied) {
+  applied = mergeBaseVersions()
+  if (!applied) {
+    console.error(`✗ cannot check migration drift: ${degraded}, and no git baseline to fall back on.`)
+    process.exit(2)
+  }
+}
+
+const missing = [...applied].filter((v) => !repo.has(v)).sort()
+
+if (missing.length > 0) {
+  console.error(`\n✗ MIGRATION DRIFT: ${missing.length} applied version(s) have no repo file.`)
+  if (degraded) {
+    console.error('  (checked against the origin/main merge-base — these are already merged,')
+    console.error('   so they are already in remote history. Your tree deleted or renamed them.)')
+    console.error('  Restore the file at its EXACT version, or rename it back.\n')
+  } else {
+    console.error(
+      '  These were applied to prod (MCP apply_migration or raw SQL) without committing a file.',
+    )
+    console.error('  `supabase db push` will SKIP, so merged migrations never apply. Fix each:')
+    console.error('  recover the SQL from schema_migrations.statements into')
+    console.error('  supabase/migrations/<version>_<name>.sql and commit it (see CLAUDE.md).\n')
+  }
+  for (const v of missing) console.error(`    - ${v}`)
   process.exit(1)
 }
 
+if (degraded) {
+  console.log(
+    `⚠ remote drift check skipped (${degraded}); ${applied.size} merge-base versions all still present among ${repo.size} repo files`,
+  )
+  process.exit(3)
+}
+
 console.log(
-  `✓ no migration drift (${remote.size} remote versions all present among ${repo.size} repo files)`,
+  `✓ no migration drift (${applied.size} remote versions all present among ${repo.size} repo files)`,
 )
