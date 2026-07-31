@@ -66,12 +66,22 @@ export function fieldToZod(field: FieldConfig): ZodTypeAny {
   return schema;
 }
 
-export function zodFromFields(config: ContentTypeConfig): ZodTypeAny {
+/**
+ * @param values Current form values. When supplied, a field whose `visibleWhen`
+ *   predicate is false is treated as optional: a rule that applies to only one
+ *   shape of record must not block saving another. A PATH redirect has no
+ *   `slug`, so a required `slug` would make it unsavable.
+ */
+export function zodFromFields(
+  config: ContentTypeConfig,
+  values?: Record<string, unknown>,
+): ZodTypeAny {
   if (config.validation) return config.validation;
   const shape: Record<string, ZodTypeAny> = {};
   for (const field of config.fields) {
     if (field.hidden && field.readOnly) continue;
-    shape[field.name] = fieldToZod(field);
+    const conditionallyHidden = !!values && !!field.visibleWhen && !field.visibleWhen(values);
+    shape[field.name] = fieldToZod(conditionallyHidden ? { ...field, required: false } : field);
   }
   return z.object(shape).passthrough();
 }
@@ -85,7 +95,7 @@ export function validateAgainstRegistry(
   config: ContentTypeConfig,
   data: Record<string, unknown>,
 ): { ok: true; data: Record<string, unknown> } | { ok: false; issues: ValidationIssue[] } {
-  const schema = zodFromFields(config);
+  const schema = zodFromFields(config, data);
   const result = schema.safeParse(data);
   if (result.success) {
     return { ok: true, data: result.data as Record<string, unknown> };
