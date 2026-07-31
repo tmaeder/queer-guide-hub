@@ -68,7 +68,7 @@ no equivalent for:
 
 | capability | `AdminTableConfig` | `ContentTypeConfig` |
 |---|---|---|
-| `rowActions` | yes | **no** |
+| `rowActions` | yes | **yes** (added) |
 | `toolbarActions` | yes | **no** |
 | `bulkEditFields` | yes | **no** |
 | `entityFilters` | yes | **no** |
@@ -80,9 +80,19 @@ mopped up — they are using a richer list surface. Converting one today trades
 row actions and bulk edit for revisions and workflow, which is a sideways move
 at best.
 
-**The real next step**, for anyone continuing this: teach the registry list
-those capabilities (starting with `rowActions` and `entityFilters`, which cover
-most usage), then convert. Until then, leave them.
+`rowActions` is now on `ContentTypeConfig` — declare `{ id, label, icon,
+visible?, onSelect }` and the list renders it beside Edit. It is deliberately
+narrower than the `AdminDataTable` version (no destructive variant, no bulk or
+toolbar forms) until something needs more.
+
+**No page can convert on that alone.** `AdminRedirects`, the obvious first
+candidate, also needs `toolbarActions` for its import dialog and Excel export,
+plus somewhere for its click-analytics viewer. `entityFilters` is the next
+biggest gap — most of these lists are unusable without faceting.
+
+**The real next step**, in order: `entityFilters`, then `toolbarActions`, then
+convert `AdminRedirects` as the smallest proof. Until then, leave these pages
+alone; a partial conversion loses tooling.
 
 ## Everything else under `/admin/`
 
