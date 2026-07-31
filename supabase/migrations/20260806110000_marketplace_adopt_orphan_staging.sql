@@ -147,5 +147,5 @@ values ('marketplace_commit_drain', 'Marketplace commit drain',
 on conflict (slug) do update set enabled=true, description=excluded.description,
   trigger=excluded.trigger, action=excluded.action;
 
-select cron.schedule('marketplace_commit_drain', '35 * * * *',
+select cron.schedule('marketplace_commit_drain', '40 * * * *',
   $cmd$SET statement_timeout = '540s'; SELECT public.run_marketplace_commit_drain(1500);$cmd$);

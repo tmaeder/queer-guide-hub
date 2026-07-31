@@ -535,13 +535,17 @@ grant execute on function public.run_detect_stale_venues(integer, integer) to se
 -- The two marketplace jobs keep the 900s/7000 sizing: the real cost is ~10s fixed
 -- + ~60 ms/row, so 540s was only 1.25x headroom, and a smaller batch would not
 -- converge the cold-start backlog. The constraint that matters is SEPARATION --
--- they must stay away from the drain's :35 slot. Do not move them onto :35
+-- they must stay away from the drain's :40 slot. Do not move them onto :40
 -- without shrinking the batch first.
 --
--- All three with cold-start backlogs run hourly so they converge within a day.
--- detect-stale-venues stays nightly: its scope is small once caught up, and it
--- writes venues, which nothing else here contends for.
-select cron.schedule('marketplace_quality_recompute', '18 * * * *',
+-- Slot map for the three jobs that write marketplace_listings, at their timeout
+-- caps -- keep them disjoint:
+--   marketplace_quality_recompute   03:50 -> 04:05  (daily, 900s)
+--   content_completeness_recompute    :50 ->   :05  (hourly, 900s)
+--   marketplace_commit_drain          :40 ->   :42  (hourly, 540s)
+-- detect-stale-venues stays nightly and writes venues, which nothing here
+-- contends for.
+select cron.schedule('marketplace_quality_recompute', '50 3 * * *',
   $cmd$SET statement_timeout = '900s'; SELECT public.run_marketplace_quality_recompute(7000);$cmd$
 );
 
