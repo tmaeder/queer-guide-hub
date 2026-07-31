@@ -68,6 +68,30 @@ select cron.alter_job(
   command => $cmd$SET statement_timeout = '900s'; SELECT public.run_marketplace_quality_recompute(7000);$cmd$
 );
 
+-- Deconflict 03:50. content_completeness_recompute was moved to hourly `50 * * * *`
+-- (registry updated to match), which puts it on the SAME minute as
+-- marketplace_quality_recompute's `50 3 * * *`. Those are the two heaviest jobs
+-- here — both batch 7,000, both with a 900 s ceiling — and marketplace alone
+-- measured 549 s on an idle database. Run concurrently they contend for the same
+-- search_documents index maintenance, so both could plausibly exceed 900 s and
+-- BOTH roll back, which is the exact all-or-nothing failure this migration exists
+-- to prevent.
+--
+-- Move marketplace to 03:20. Hourly traffic already occupies :10
+-- (event_trust_recompute, 240 s) and :50 (content_completeness, up to 900 s), so
+-- :20 is clear: 03:10→03:14, 03:20→~03:29, 03:50→~03:59, 04:30 detect-stale-venues.
+-- The registry is the source of truth for schedules (`automation_cron_sync`,
+-- `10 5 * * *`), so it has to be updated too or this reverts within a day.
+select cron.alter_job(
+  (select jobid from cron.job where jobname = 'marketplace_quality_recompute'),
+  schedule => '20 3 * * *'
+);
+
+update public.admin_automations
+   set schedule = '20 3 * * *', updated_at = now()
+ where coalesce(action->>'jobname', slug) = 'marketplace_quality_recompute'
+   and schedule is distinct from '20 3 * * *';
+
 select cron.alter_job(
   (select jobid from cron.job where jobname = 'content_completeness_recompute'),
   command => $cmd$SET statement_timeout = '900s'; SELECT public.run_content_completeness_recompute(false, 7000);$cmd$
