@@ -29,7 +29,13 @@ function ensureDefaultExport<T>(mod: { default: T } | undefined | null): { defau
   return mod;
 }
 
-export function lazyRetry<T extends React.ComponentType<unknown>>(
+// The constraint mirrors React's own `lazy<T extends ComponentType<any>>`.
+// The previous `ComponentType<unknown>` erased props to `unknown`, so wrapping a
+// component that actually takes props (e.g. MapShell) failed at its call site
+// with "not assignable to type 'IntrinsicAttributes'". Keeping React's exact
+// constraint preserves each component's own props contract.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- mirrors React.lazy's own signature; narrowing it erases callers' props
+export function lazyRetry<T extends React.ComponentType<any>>(
   factory: () => Promise<{ default: T }>,
 ): React.LazyExoticComponent<T> {
   return lazy(() => retryDynamicImport(() => factory().then(ensureDefaultExport)));
@@ -41,7 +47,8 @@ export function lazyRetry<T extends React.ComponentType<unknown>>(
  * NOTHING rather than crash the whole app or show an error. The banner
  * being temporarily absent is strictly better than a blank screen.
  */
-export function lazyOptional<T extends React.ComponentType<unknown>>(
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- see lazyRetry
+export function lazyOptional<T extends React.ComponentType<any>>(
   factory: () => Promise<{ default: T }>,
 ): React.LazyExoticComponent<T> {
   return lazy(() =>

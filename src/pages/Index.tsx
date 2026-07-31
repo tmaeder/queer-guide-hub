@@ -9,14 +9,20 @@ import { RecentlyViewedRail } from '@/components/home/RecentlyViewedRail';
 import { HeroIdentityOverlay } from '@/components/home/HeroIdentityOverlay';
 import { DeferredSection } from '@/components/home/DeferredSection';
 import { FadeIn } from '@/components/motion';
+import { lazyOptional, lazyRetry } from '@/utils/lazyRetry';
 
-const MapShell = React.lazy(() => import('@/components/map/MapShell'));
-const NewsMagazine = React.lazy(() => import('@/components/home/NewsMagazine'));
-const EventsAgenda = React.lazy(() => import('@/components/home/EventsAgenda'));
-const HomeShoppingSection = React.lazy(() => import('@/components/home/HomeShoppingSection'));
-const HomeDestinations = React.lazy(() => import('@/components/home/HomeDestinations'));
-const HomeBornThisWeek = React.lazy(() => import('@/components/home/HomeBornThisWeek'));
-const HomeOnThisDay = React.lazy(() => import('@/components/home/HomeOnThisDay'));
+// Plain React.lazy reads `.default` off whatever the dynamic import resolves to.
+// During a deploy window a stale index.html requests a chunk hash the new deploy
+// no longer serves, the import resolves to undefined, and the homepage crashes
+// with "Cannot read properties of undefined (reading 'default')". lazyRetry /
+// lazyOptional guard that shape and retry → reload → degrade instead.
+const MapShell = lazyRetry(() => import('@/components/map/MapShell'));
+const NewsMagazine = lazyOptional(() => import('@/components/home/NewsMagazine'));
+const EventsAgenda = lazyOptional(() => import('@/components/home/EventsAgenda'));
+const HomeShoppingSection = lazyOptional(() => import('@/components/home/HomeShoppingSection'));
+const HomeDestinations = lazyOptional(() => import('@/components/home/HomeDestinations'));
+const HomeBornThisWeek = lazyOptional(() => import('@/components/home/HomeBornThisWeek'));
+const HomeOnThisDay = lazyOptional(() => import('@/components/home/HomeOnThisDay'));
 
 // Hide the on-map search (the top-bar search is the single search) and keep the
 // landing URL clean (no ?lat&lng&z written as the visitor pans).
