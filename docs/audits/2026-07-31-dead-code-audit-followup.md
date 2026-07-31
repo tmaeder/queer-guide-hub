@@ -69,7 +69,31 @@ is intentional design, not cruft. Recent run history for the workflows with run 
 was 100% green except for one real, fresh failure — see §4. No duplicate jobs, no dead workflow
 files referencing removed scripts, nothing recommended for removal.
 
-## 4. NEW — production migration drift, unrecoverable from git (needs owner action)
+## 4. NEW — production migration drift — RESOLVED 2026-07-31 (PR #2424)
+
+> **Resolved the same day, and this section's central claim was wrong.** The SQL was *not*
+> unrecoverable: both commits existed all along on a **purely local, never-pushed** branch
+> (`claude/friendly-chandrasekhar-5a8a01`, checked out in a git worktree). Every search listed
+> below is a *remote* view — GitHub code/commit/PR search, and "all 15 open branches" enumerates
+> **`origin/*`** — so none of them could ever have seen it. One local command finds it instantly:
+>
+> ```
+> git log --all --oneline --diff-filter=A -- 'supabase/migrations/20260806*'
+> ```
+>
+> **Lesson for future audits: when a repo is worked in git worktrees, `--all` over the local
+> object store is a different and larger search space than anything GitHub can answer.** Check it
+> before concluding that history is lost.
+>
+> The recommended reconstruction was therefore unnecessary and would have been actively harmful —
+> it would have invented a plausible file to stand in for commits that already existed. The
+> original commits were rebased onto `main` and merged as-is in
+> [#2424](https://github.com/tmaeder/queer-guide-hub/pull/2424); all nine DB objects they create
+> were confirmed present on prod first, and the drift monitor is green again.
+>
+> The rest of this section is left unedited as the original record.
+
+### Original finding (as written)
 
 `migration-drift-monitor.yml` (runs every 6h) went from green to **failing** at
 **2026-07-31 18:47 UTC** — its first failure in the run history checked. It caught exactly the
