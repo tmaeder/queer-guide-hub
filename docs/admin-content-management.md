@@ -1,7 +1,7 @@
 # Admin content management
 
-How content is edited under `/admin/`, and which pages are deliberately not on
-the shared shell.
+How content is edited under `/admin/`, which pages are deliberately not on the
+shared shell, and what still blocks the ones that could be.
 
 ## One shell for content CRUD
 
@@ -12,15 +12,14 @@ served by the CMS registry at `/admin/content/<id>`:
 - editor, validation, dirty tracking, optimistic concurrency — `src/hooks/useCMSEditor.tsx`
 - revisions, workflow state, comments, i18n, AI assist — same shell, per-type config
 
-Adding a content type means adding a config, not a page. Controlled
-vocabularies get a factory (`contentTypes/vocabulary.ts`) because the eight of
-them are structurally identical; writing them longhand would reintroduce the
-duplication that factory removed.
+Adding a content type means adding a config, not a page. Controlled vocabularies
+get a factory (`contentTypes/vocabulary.ts`) because the eight of them are
+structurally identical; writing them longhand would reintroduce the duplication
+that factory removed.
 
 ## Why this matters
 
-Before consolidation, content CRUD ran on three shells with different
-capabilities:
+Content CRUD used to run on three shells with different capabilities:
 
 | | revisions | workflow | validation | a11y | i18n |
 |---|---|---|---|---|---|
@@ -28,14 +27,13 @@ capabilities:
 | `TaxonomyAdminPage` (deleted) | no | no | partial | no | no |
 | `AdminDataTable` | no | no | no | partial | no |
 
-Editing a venue gave you revision history and accessible markup; editing a
-target group gave you neither. Same job, silently weaker tooling, and no audit
-trail on taxonomy changes that reclassify content site-wide.
+Editing a venue gave you revision history and accessible markup; editing a target
+group gave you neither. Same job, silently weaker tooling, and no audit trail on
+taxonomy changes that reclassify content site-wide.
 
 ## Deliberately NOT on the registry
 
-These are specialized tools, not entity CRUD. Converting them would lose
-capability. Do not "unify" them without first replacing what they do.
+Specialized tools, not entity CRUD. Converting them would lose capability.
 
 **`AdminGeography`** — a hierarchy editor over the `geo_places` spine:
 re-parenting nodes, integrity-violation triage, landmark spine and review. Built
@@ -43,92 +41,94 @@ on ~12 geo-specific hooks (`useGeoMoveNode`, `useGeoIntegrityViolations`,
 `useLandmarkSpine`, …). A tree, not a table.
 
 **`AdminUsers`** — roles and bans over `profiles`. Access control rather than
-content. The actions are guarded operations, not form fields, and a generic
-editor would be the wrong shape for them.
-
-**`AdminRedirects`** — plain CRUD over `redirects`, but it carries `rowActions`
-including a live "test this redirect" that opens the `redirect-handler` edge
-function, plus bulk-edit and toolbar actions. `ContentTypeConfig` has no
-`rowActions` equivalent, so moving it to the registry today would be a
-downgrade. Convert only after the registry grows row actions.
+content; the actions are guarded operations, not form fields.
 
 **`AdminTags`** (`/admin/settings`) — a tag *operations* console: merge review
 queue, CSV import, bulk AI create, categorizer, quality and suggestion panels.
-These are collection-level, and `extraPanels.render(contentId)` is per-record,
-so they cannot become config. Tag CRUD itself lives in the registry
+These are collection-level, and `extraPanels.render(contentId)` is per-record, so
+they cannot become config. Tag CRUD itself is already on the registry
 (`/admin/content/unified_tags`), and the per-tag alias editor moved there as an
 `extraPanel`.
 
-## What blocks further convergence
+## Registry capability parity
 
-`AdminTags` and `AdminRedirects` both keep a table the registry cannot yet
-replace. Alias editing — the gap closed above — turned out to be only one of
-several. `AdminDataTable` configs use capabilities that `ContentTypeConfig` has
-no equivalent for:
-
-Audited by capability, not by config-key name — several "gaps" turned out to be
-the same feature under a different mechanism:
+Audited by **behaviour, not by config-key name** — several apparent gaps turned
+out to be the same feature under a different name:
 
 | capability | `AdminDataTable` | registry equivalent |
 |---|---|---|
 | per-row actions | `rowActions` | `ContentTypeConfig.rowActions` |
+| toolbar buttons | `toolbarActions` | `ContentTypeConfig.toolbarActions` |
 | filtering | `entityFilters` | `FieldConfig.filterable` (+ `dynamicOptions`) |
 | Excel export | `exportColumns` | `ContentListPanel/exportContentList.ts` |
-| toolbar buttons | `toolbarActions` | `ContentTypeConfig.toolbarActions` |
-| bulk edit | `bulkEditFields` | **missing** |
-| backfill jobs | `backfillJobs` | **missing** |
+| bulk edit | `bulkEditFields` | **missing** — only `AdminTags` needs it |
+| backfill jobs | `backfillJobs` | **missing** — only `AdminTags` needs it |
 
-Two real gaps left, and both only matter for `AdminTags`.
-`ContentTypeConfig.bulkOps` looked like another but was dead config — declared,
-never read, set by no content type — and has been removed rather than left to
-imply a feature that does not exist.
+`ContentTypeConfig.bulkOps` looked like another gap but was dead config —
+declared, never read, set by no content type — and has been removed rather than
+left implying a feature that does not exist.
 
-`toolbarActions` is a render **function**, not a node, so the config object stays
-static: anything needing React state (a dialog) owns it inside the returned
-component.
+Two design constraints worth knowing before adding more:
 
-So the remaining `AdminDataTable` pages are not lingering duplication to be
-mopped up — they are using a richer list surface. Converting one today trades
-row actions and bulk edit for revisions and workflow, which is a sideways move
-at best.
+- `toolbarActions` is a render **function**, not a node. Configs are module-level
+  static objects, so a node would be constructed once at import and could never
+  hold state; a dialog has to live inside the returned component.
+- `rowActions.onSelect` is a plain callback in that same static config. It can
+  copy, navigate or open a URL, but cannot open a React dialog owned by the page.
+  Stateful things belong in `extraPanels` (per-record) or `toolbarActions`
+  (per-collection).
 
-`rowActions` is declared as `{ id, label, icon, visible?, onSelect }` and renders
-beside Edit. `onSelect` receives the raw row, because actions need columns the
-list never shows (a redirect's `slug`).
+## `AdminRedirects`: one gap short
 
-**`AdminRedirects` is now fully expressible.** Everything it does has a registry
-equivalent:
+Most of it maps cleanly:
 
-| AdminRedirects feature | registry home |
+| feature | registry home |
 |---|---|
-| copy short URL, test redirect | `rowActions` (plain callbacks — clipboard, `window.open`) |
-| bulk import dialog | `toolbarActions` |
+| copy short URL, test redirect | `rowActions` — clipboard, `window.open` |
+| bulk import, preview dialogs | `toolbarActions` |
 | Excel export | generic `exportContentList` |
 | type / enabled filters | `FieldConfig.filterable` |
-| edit dialog | the registry editor |
-| click-analytics viewer | `extraPanels` — it is per-redirect, so it belongs in the editor |
+| click-analytics viewer | `extraPanels` — per-redirect, so it belongs in the editor |
+| slug + loop validation | `ContentTypeConfig.validate` |
 
-Converting it is the natural next step and the first proof that an
-`AdminDataTable` page can move without losing anything.
+`validateSlug` and `detectLoop` (`src/lib/redirects/validation.ts`) are
+synchronous and read only the row being saved, so they fit `validate` as-is.
+Cross-row or async validation was the thing most likely to block this, and it
+does not: `detectLoop` compares request path to target and never queries other
+redirects.
 
-One constraint to design around: `rowActions.onSelect` is a plain callback in a
-static config, so it can copy, navigate or open a URL, but cannot open a React
-dialog owned by the page. Anything stateful belongs in `extraPanels` (per-record)
-or `toolbarActions` (per-collection).
+**The blocker is conditional field visibility.** `RedirectFormDialog` shows
+`slug` when `type === 'SHORT'` and `source_path` when `type === 'PATH'`.
+`FieldConfig` has only a static `hidden`, so a converted editor would show both
+fields for every redirect and rely on `validate` to reject the wrong combination
+after the fact. That is a worse editor than the one being replaced — exactly the
+trade this effort exists to avoid.
 
-### The larger question
+Converting needs `visibleWhen?: (row) => boolean` on `FieldConfig` first.
+
+## The larger question
 
 `ContentListPanel` maintains its own ~576-line table (`ContentListTable`) beside
-`AdminDataTable`'s ~405. Two implementations of the same job, each with its own
-fetching, sorting, pagination and selection. Closing gaps one at a time makes
-the registry list slowly reimplement the other component.
+`AdminDataTable`'s ~405 — two implementations of the same job, each with its own
+fetching, sorting, pagination and selection. Closing gaps one at a time makes the
+registry slowly reimplement a component that already exists.
 
 Making `ContentListPanel` render `AdminDataTable` internally would grant every
-remaining capability at once and delete a table. That is the better fix, and the
-bigger one: the registry list is the editing surface for all 25 content types,
-so it wants someone who can actually open the page and look at it.
+remaining capability at once and delete a table. That is the better fix and the
+bigger one: the registry list is the editing surface for all 25 content types, so
+it wants someone who can open the page and look at it.
+
+## A method note
+
+Three times during this work a feature looked expressible from its config-key
+shape and turned out otherwise once the implementation was read — and twice in
+the other direction, where `entityFilters` and `exportColumns` already existed
+under different names. An earlier draft of this file told the next person to
+build filtering the registry had had all along.
+
+Read the implementation before promising a conversion.
 
 ## Everything else under `/admin/`
 
-Dashboards, review queues, pipelines, imports, analytics and integrations are
-not content management and are out of scope for this shell.
+Dashboards, review queues, pipelines, imports, analytics and integrations are not
+content management and are out of scope for this shell.
