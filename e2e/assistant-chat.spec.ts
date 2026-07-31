@@ -34,7 +34,10 @@ test('ask panel returns a prose reply without tool-call JSON', async ({ page }) 
   await expect(page.getByRole('alert')).toHaveCount(0);
 
   // An assistant reply rendered, and it is prose — not leaked tool JSON.
-  const replies = page.locator('p.text-sm.leading-relaxed');
+  // Scoped to the message log: the bare `p.text-sm.leading-relaxed` selector
+  // also matched the cookie-consent banner's paragraph, so this assertion
+  // passed on the banner alone even when the assistant produced NOTHING.
+  const replies = page.getByTestId('ask-messages').locator('p.text-sm.leading-relaxed');
   await expect(replies.first()).toBeVisible();
   const text = (await replies.allInnerTexts()).join('\n');
   expect(text.length).toBeGreaterThan(20);

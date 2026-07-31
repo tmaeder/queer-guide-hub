@@ -128,7 +128,13 @@ export function useAssistant() {
         } else if (err instanceof AssistantException && err.message === 'rate_limited') {
           setError('Too many questions in a row — wait a minute and try again.');
         } else {
-          setError(err instanceof Error ? err.message : "Couldn't reach the guide.");
+          // Everything else reaches us as a MACHINE string — the worker returns
+          // {"error":"assistant_error"} on any unhandled failure, and
+          // assistantClient overwrites `detail` with it. Rendering err.message
+          // put the literal text "assistant_error" in front of users for the
+          // whole Workers-AI outage. Keep the diagnostic in the console, show copy.
+          if (err instanceof Error) console.error('[assistant]', err.message);
+          setError("Couldn't reach the guide. Try again in a moment.");
         }
       } finally {
         if (inFlightRef.current === controller) inFlightRef.current = null;
