@@ -1,6 +1,6 @@
 {
   "project": "tsconfig.app.json",
-  "total": 1385,
+  "total": 1344,
   "files": {
     "src/assets/intimate/pictograms.tsx": {
       "TS2503": 2
@@ -1364,9 +1364,6 @@
     "src/providers/SearchTelemetryProvider.tsx": {
       "TS2339": 3,
       "TS2345": 1
-    },
-    "src/routes.tsx": {
-      "TS2322": 41
     },
     "src/test/test-utils.tsx": {
       "TS2353": 1
