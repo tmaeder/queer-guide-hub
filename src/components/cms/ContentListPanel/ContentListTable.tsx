@@ -488,23 +488,53 @@ export function ContentListTable({
                     </TableCell>
 
                     <TableCell className="text-right">
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-7 w-7 p-0"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onEdit(item.contentType, item.id);
-                            }}
-                            style={{ ['--tw-color' as never]: rowColor } as never}
-                          >
-                            <Edit size={15} />
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>Edit</TooltipContent>
-                      </Tooltip>
+                      <div className="flex items-center justify-end gap-0.5">
+                        {(config?.rowActions ?? [])
+                          .filter((a) => !a.visible || a.visible(item.raw ?? {}))
+                          .map((action) => {
+                            const ActionIcon = action.icon;
+                            return (
+                              <Tooltip key={action.id}>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-7 w-7 p-0"
+                                    aria-label={action.label}
+                                    onClick={(e) => {
+                                      // The row itself opens the editor, so without
+                                      // this every action would also navigate away.
+                                      e.stopPropagation();
+                                      action.onSelect(item.raw ?? {});
+                                    }}
+                                  >
+                                    <ActionIcon size={15} />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>{action.label}</TooltipContent>
+                              </Tooltip>
+                            );
+                          })}
+
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-7 w-7 p-0"
+                              aria-label="Edit"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onEdit(item.contentType, item.id);
+                              }}
+                              style={{ ['--tw-color' as never]: rowColor } as never}
+                            >
+                              <Edit size={15} />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>Edit</TooltipContent>
+                        </Tooltip>
+                      </div>
                     </TableCell>
                   </TableRow>
                 );

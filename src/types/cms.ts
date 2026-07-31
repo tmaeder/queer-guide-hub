@@ -138,6 +138,17 @@ export interface FieldConfig {
 
 // ── Content Type Registry ──────────────────────────────────────────
 
+/** A per-row action rendered in the content list beside Edit. */
+export interface ContentRowAction {
+  id: string;
+  /** Tooltip text; also the accessible name, so write it for a screen reader. */
+  label: string;
+  icon: LucideIcon;
+  /** Hide the action for rows it does not apply to. Defaults to always shown. */
+  visible?: (row: Record<string, unknown>) => boolean;
+  onSelect: (row: Record<string, unknown>) => void;
+}
+
 export interface ContentTypeConfig {
   /** Unique ID matching the source table (e.g., 'venues', 'events') */
   id: string;
@@ -186,8 +197,6 @@ export interface ContentTypeConfig {
   workflow?: ContentTypeWorkflowConfig;
   /** Whether this type supports threaded comments (review/moderation). */
   commentable?: boolean;
-  /** Cross-type bulk operations enabled for this type. */
-  bulkOps?: BulkOpKind[];
   /** Initial sort for the admin list view (overridable by user). */
   defaultSort?: { field: string; dir: 'asc' | 'desc' };
   /**
@@ -200,6 +209,19 @@ export interface ContentTypeConfig {
     label: string;
     render: (contentId: string) => ReactNode;
   }>;
+  /**
+   * Per-row actions in the list, beside Edit.
+   *
+   * The reason this exists: pages still on `AdminDataTable` (redirects, tags)
+   * carry `rowActions` — e.g. redirects has a live "test this redirect" that
+   * opens the edge function — and the registry had no equivalent. Converting
+   * them would have traded working tooling for revisions, so they stayed on the
+   * other shell. This closes that gap.
+   *
+   * Deliberately narrower than `AdminTableConfig['rowActions']`: no bulk or
+   * toolbar variants until something needs them.
+   */
+  rowActions?: ContentRowAction[];
   /**
    * Admin companion surfaces for this type — single source for the entity tab
    * strip (List / Quality / Duplicates / Requests), palette entity search, and
@@ -278,14 +300,6 @@ export interface ContentTypeWorkflowConfig {
   /** Default visibility for newly created items. */
   defaultVisibility?: VisibilityLevel;
 }
-
-export type BulkOpKind =
-  | 'publish'
-  | 'archive'
-  | 'unpublish'
-  | 'translate'
-  | 'tag'
-  | 'delete';
 
 // ── Content Items ──────────────────────────────────────────────────
 

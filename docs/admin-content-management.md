@@ -66,23 +66,50 @@ replace. Alias editing — the gap closed above — turned out to be only one of
 several. `AdminDataTable` configs use capabilities that `ContentTypeConfig` has
 no equivalent for:
 
-| capability | `AdminTableConfig` | `ContentTypeConfig` |
+Audited by capability, not by config-key name — several "gaps" turned out to be
+the same feature under a different mechanism:
+
+| capability | `AdminDataTable` | registry equivalent |
 |---|---|---|
-| `rowActions` | yes | **no** |
-| `toolbarActions` | yes | **no** |
-| `bulkEditFields` | yes | **no** |
-| `entityFilters` | yes | **no** |
-| `exportColumns` | yes | **no** |
-| `backfillJobs` | yes | **no** |
+| per-row actions | `rowActions` | `ContentTypeConfig.rowActions` |
+| filtering | `entityFilters` | `FieldConfig.filterable` (+ `dynamicOptions`) |
+| Excel export | `exportColumns` | `ContentListPanel/exportContentList.ts` |
+| bulk edit | `bulkEditFields` | **missing** |
+| toolbar buttons | `toolbarActions` | **missing** |
+| backfill jobs | `backfillJobs` | **missing** |
+
+Three real gaps, not six. `ContentTypeConfig.bulkOps` looked like a fourth but
+was dead config — declared, never read, set by no content type — and has been
+removed rather than left to imply a feature that does not exist.
 
 So the remaining `AdminDataTable` pages are not lingering duplication to be
 mopped up — they are using a richer list surface. Converting one today trades
 row actions and bulk edit for revisions and workflow, which is a sideways move
 at best.
 
-**The real next step**, for anyone continuing this: teach the registry list
-those capabilities (starting with `rowActions` and `entityFilters`, which cover
-most usage), then convert. Until then, leave them.
+`rowActions` is declared as `{ id, label, icon, visible?, onSelect }` and renders
+beside Edit. `onSelect` receives the raw row, because actions need columns the
+list never shows (a redirect's `slug`).
+
+**`AdminRedirects` is the smallest remaining conversion.** It needs one thing:
+somewhere to put its two toolbar buttons (bulk import dialog, Excel export). Its
+row actions and filtering are already expressible, and generic export exists.
+
+**Next step:** add `toolbarActions` to `ContentTypeConfig`, then convert
+`AdminRedirects` as the proof. `bulkEditFields` and `backfillJobs` only matter
+for `AdminTags` and can wait.
+
+### The larger question
+
+`ContentListPanel` maintains its own ~576-line table (`ContentListTable`) beside
+`AdminDataTable`'s ~405. Two implementations of the same job, each with its own
+fetching, sorting, pagination and selection. Closing gaps one at a time makes
+the registry list slowly reimplement the other component.
+
+Making `ContentListPanel` render `AdminDataTable` internally would grant every
+remaining capability at once and delete a table. That is the better fix, and the
+bigger one: the registry list is the editing surface for all 25 content types,
+so it wants someone who can actually open the page and look at it.
 
 ## Everything else under `/admin/`
 
