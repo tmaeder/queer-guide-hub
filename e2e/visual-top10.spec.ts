@@ -32,9 +32,14 @@ const ROUTES = [
 // run, so `fullPage` fails on a dimension mismatch before maxDiffPixelRatio
 // applies (e.g. personalities 3931px baseline vs 3788px actual). Capture a
 // dimension-stable above-the-fold viewport crop for those; keep fullPage only
-// for genuinely static pages (/help, and /trips which redirects signed-out
-// visitors to a static auth page).
-const STATIC_ROUTES = new Set(['/help', '/trips']);
+// for genuinely static pages.
+//
+// /help left this set 2026-07-31: its full height rounds between 2874px and
+// 2875px run to run (fractional line-box height, not a content change), and a
+// 1px dimension mismatch fails BEFORE maxDiffPixelRatio applies — it broke the
+// nightly every run from 07-27 on. A viewport crop is dimension-stable, so the
+// page is still guarded above the fold instead of being flaky-red below it.
+const STATIC_ROUTES = new Set(['/trips']);
 
 test.describe('Top-10 desktop visual baselines', () => {
   test.setTimeout(60_000);

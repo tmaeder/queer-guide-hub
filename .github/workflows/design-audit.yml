@@ -49,4 +49,10 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add public/design-audit.json
           git commit -m "chore(design): refresh design-audit.json" -m "skip-checks: true"
-          git push origin HEAD:main
+          # Branch protection (required status checks, added 2026-07-25) rejects
+          # pushes from GITHUB_TOKEN with GH006. A stale audit artifact is
+          # cosmetic — the /admin/design Audit tab lags until someone reruns
+          # `node scripts/design-audit.mjs` — so surface a notice, don't fail red.
+          if ! git push origin HEAD:main; then
+            echo "::notice::design-audit.json is stale — branch protection refused the bot push. Run 'node scripts/design-audit.mjs' and commit the result in your next PR."
+          fi
