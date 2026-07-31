@@ -1,6 +1,7 @@
 import { Suspense, lazy, type ComponentProps } from 'react';
 import { Loader2 } from 'lucide-react';
 import type { TriageItem } from '@/hooks/useUnifiedTriageQueue';
+import { AdminEmpty } from '@/components/admin/primitives/AdminEmpty';
 
 const VenueCard = lazy(() =>
   import('@/components/venues/VenueCard').then((m) => ({ default: m.VenueCard })),
@@ -74,7 +75,7 @@ function FallbackPreview({ item }: { item: TriageItem }) {
       )}
 
       {metaFields.length === 0 && !item.subtitle && (
-        <p className="text-xs text-muted-foreground">No preview available.</p>
+        <AdminEmpty noun="preview data" />
       )}
     </div>
   );

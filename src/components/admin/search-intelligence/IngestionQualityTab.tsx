@@ -21,6 +21,7 @@ import {
   VISIBILITY_AXES,
 } from '@/lib/visibilityScore';
 import { AdminTextSkeleton } from '@/components/admin/primitives/AdminLoading';
+import { AdminEmpty } from '@/components/admin/primitives/AdminEmpty';
 
 const ENTITY_TYPES: Array<{ value: string; label: string }> = [
   { value: 'venue', label: 'Venue' },
@@ -248,9 +249,7 @@ export function IngestionQualityTab() {
           {coverageBusy && worst.length === 0 ? (
             <AdminTextSkeleton lines={2} />
           ) : worst.length === 0 ? (
-            <p className="text-sm text-muted-foreground">
-              No scores yet. Click "Score next 2,000" to populate.
-            </p>
+            <AdminEmpty noun="scores" description='Click "Score next 2,000" to populate.' />
           ) : (
             <div className="flex flex-col divide-y" style={{ borderColor: 'hsl(var(--border))' }}>
               {worst.map((w) => (

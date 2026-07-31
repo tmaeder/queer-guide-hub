@@ -31,6 +31,7 @@ import {
 } from '@/components/ui/dialog';
 import { Loader2, Plus, RefreshCw, Trash2, Edit2, Star } from 'lucide-react';
 import { toast } from 'sonner';
+import { AdminEmpty } from '@/components/admin/primitives/AdminEmpty';
 import {
   useAdminRecognitions,
   useContributionMetrics,
@@ -137,9 +138,10 @@ export default function AdminRecognition() {
               <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
             </div>
           ) : recognitions.length === 0 ? (
-            <p className="text-sm text-muted-foreground py-8 text-center">
-              No recognitions yet for {year}. Pick from the metrics below.
-            </p>
+            <AdminEmpty
+              noun={`recognitions for ${year}`}
+              description="Pick from the metrics below."
+            />
           ) : (
             <Table>
               <TableHeader>

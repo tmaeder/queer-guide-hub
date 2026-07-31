@@ -1,0 +1,134 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+
+  // This repo is a poly-repo, not an npm workspace monorepo: the root
+  // package.json has no `workspaces` field, yet 15 sub-projects ship their own
+  // package.json. Without this file knip analysed everything as one root
+  // workspace with default entry patterns and reported 534 "unused" files —
+  // almost all of them platform-invoked entry points it had no way to see.
+  //
+  // Dependency verdicts are only accurate when every workspace is installed
+  // (root `npm install` plus one per sub-project). With a sub-project
+  // uninstalled, knip cannot map its binaries and reports its deps as both
+  // "unused" and "unlisted" at the same time — that pairing means "not
+  // installed", not "dead code".
+  "workspaces": {
+    ".": {
+      // The root workspace also owns four directories that have no package.json
+      // of their own, so they cannot be workspaces: functions/, supabase/,
+      // client-sdk/ and workers/_shared/.
+      "entry": [
+        "index.html",
+        "src/main.tsx",
+        "src/test/setup.ts",
+        "vite.config.ts",
+        "playwright.config.ts",
+        "eslint.config.js",
+        "eslint-rules/*.js",
+
+        // Cloudflare Pages Functions are file-based routes invoked by the
+        // platform and never imported. _lib/ is helper code, not a route.
+        "functions/**/*.ts",
+        "!functions/_lib/**",
+
+        // Operator scripts are each invoked independently (package.json
+        // scripts, .husky hooks, GitHub Actions, or ad-hoc). There is no
+        // import graph among them to prune.
+        "scripts/**/*.{mjs,ts}",
+
+        // Playwright: testDir is ./e2e, and auth.setup.ts is a setup project
+        // referenced by regex (testMatch), not by an import.
+        "e2e/**/*.spec.ts",
+        "e2e/auth.setup.ts",
+
+        // Consumed only across workspace boundaries by relative path
+        // (workers/submit -> client-sdk, several workers -> _shared).
+        "client-sdk/*.ts",
+        "workers/_shared/*.ts",
+
+        // Supabase Deno edge functions: one directory per function, always
+        // index.ts. Deployed by the Supabase CLI, never imported.
+        "supabase/functions/*/index.ts",
+        "supabase/functions/_tests/*.test.ts",
+        "supabase/functions/**/*.test.ts"
+      ],
+      "project": [
+        "src/**/*.{ts,tsx}",
+        "functions/**/*.ts",
+        "scripts/**/*.{mjs,ts}",
+        "e2e/**/*.ts",
+        "eslint-rules/*.js",
+        "client-sdk/*.ts",
+        "workers/_shared/*.ts",
+        "supabase/functions/**/*.ts"
+      ],
+      "ignoreDependencies": [
+        // Deno protocol specifiers (`jsr:@std/assert`, `npm:resend@2.0.0`) in
+        // the edge functions. Knip is npm-based and parses the scheme itself
+        // as the package name.
+        "jsr",
+        "npm",
+        // Imported from CSS (`@import "tailwindcss"` in src/index.css) via
+        // @tailwindcss/vite. Knip does not follow CSS imports.
+        "tailwindcss",
+        // Held as a direct dependency to anchor the `overrides` security pin;
+        // deliberately never imported.
+        "brace-expansion",
+        // .github/workflows/eslint.yml installs @microsoft/eslint-formatter-sarif
+        // with --no-save on purpose; knip's Actions plugin misparses the name.
+        "eslint-formatter-.*"
+      ],
+      // Binary is `boneyard`, package is `boneyard-js`.
+      "ignoreBinaries": ["boneyard"]
+    },
+
+    // All 11 workers share one shape: wrangler `main` is src/index.ts, and the
+    // ones with tests use vitest with include: tests/**/*.test.ts.
+    "workers/*": {
+      "entry": ["src/index.ts", "tests/**/*.test.ts"],
+      "project": ["src/**/*.ts", "tests/**/*.ts"]
+    },
+
+    "scraper": {
+      "entry": [
+        "src/cli.ts",
+        "src/db/migrate.ts",
+        "scripts/*.ts",
+        "tests/**/*.test.ts"
+      ],
+      "project": ["src/**/*.ts", "scripts/**/*.ts", "tests/**/*.ts"],
+      "ignoreDependencies": [
+        // pino resolves its transport by string name at runtime.
+        "pino-pretty",
+        // False positive: zod is imported by src/types/schemas.ts, but it is
+        // the only source-level dependency present in BOTH root and scraper,
+        // and knip's shared module resolver credits the hoisted root copy.
+        "zod"
+      ]
+    },
+
+    "extension": {
+      // extract.ts and selection.ts are absent from manifest.json — the
+      // background worker injects them by string path at runtime.
+      "entry": [
+        "src/background/index.ts",
+        "src/content/*.ts",
+        "src/popup/main.tsx",
+        "tests/**/*.test.ts"
+      ],
+      "project": ["src/**/*.{ts,tsx}", "tests/**/*.ts"]
+    },
+
+    // Standalone Vite admin tool, explicitly outside the main build/deploy.
+    "tools/person-db": {
+      "entry": ["index.html", "src/main.tsx"],
+      "project": ["src/**/*.{ts,tsx}"]
+    },
+
+    // Node service deployed by Dockerfile; package.json `main` is the entry.
+    "infra/twenty/nas/smtp-relay": {
+      "entry": ["index.mjs"],
+      "project": ["**/*.mjs"]
+    }
+  }
+}
