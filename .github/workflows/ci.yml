@@ -170,6 +170,34 @@ jobs:
       - uses: denoland/setup-deno@v2
         with:
           deno-version: v2.x
+      # These tests import straight from esm.sh and jsr.io at run time, with no
+      # lockfile. Every run re-downloaded the whole graph, so a single registry
+      # blip failed the job on PRs that never touched an edge function — a docs-only
+      # PR died on `Import 'https://esm.sh/@supabase/supabase-js@2.50.5' failed: 522`
+      # (Cloudflare connection-timeout). Caching DENO_DIR removes the fetch on a
+      # cache hit; the retry below covers a cold cache when a registry is flaky.
+      - name: Cache Deno dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/deno
+          key: deno-${{ runner.os }}-${{ hashFiles('supabase/functions/_tests/**/*.ts') }}
+          restore-keys: |
+            deno-${{ runner.os }}-
       - name: Run deno unit tests
         working-directory: supabase/functions/_tests
-        run: deno test --allow-net --allow-env --allow-read source-adapter.test.ts pipeline-nodes.test.ts wikinews.test.ts enrichment-driver.test.ts batch-circuit-checker.test.ts trip-inbox-fields.test.ts
+        # Retries only help a network fetch; a genuine assertion failure fails all
+        # three attempts, so the gate still holds.
+        run: |
+          set -o pipefail
+          for attempt in 1 2 3; do
+            if deno test --allow-net --allow-env --allow-read \
+                 source-adapter.test.ts pipeline-nodes.test.ts wikinews.test.ts \
+                 enrichment-driver.test.ts batch-circuit-checker.test.ts \
+                 trip-inbox-fields.test.ts; then
+              exit 0
+            fi
+            echo "::warning::deno test attempt $attempt failed"
+            [ "$attempt" -lt 3 ] && sleep $((attempt * 10))
+          done
+          echo "::error::deno tests failed after 3 attempts"
+          exit 1
