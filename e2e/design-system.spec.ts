@@ -28,7 +28,11 @@ test.describe('design system: semantic radius (token-derived)', () => {
   test.beforeEach(async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 900 });
     await page.goto('/events');
-    await page.waitForLoadState('networkidle');
+    // Wait for the app to paint, not for the network to fall idle. These guards
+    // read computed styles under #root, and `networkidle` (500ms of zero
+    // requests) never settles on pages with maps, lazy images and analytics —
+    // all four timed out against production.
+    await page.waitForSelector('#root *', { state: 'attached', timeout: 15_000 });
     await dismissCookieBanner(page);
     await page.waitForTimeout(500);
   });
@@ -52,9 +56,7 @@ test.describe('design system: semantic radius (token-derived)', () => {
   test('cards have no box-shadow', async ({ page }) => {
     const card = page.locator('.bg-card').first();
     await expect(card).toBeVisible();
-    const shadow = await card.evaluate(
-      (el) => getComputedStyle(el).boxShadow,
-    );
+    const shadow = await card.evaluate((el) => getComputedStyle(el).boxShadow);
     expect(shadow).toBe('none');
   });
 
@@ -63,9 +65,7 @@ test.describe('design system: semantic radius (token-derived)', () => {
     if ((await badge.count()) > 0) {
       const { radius, token } = await badge.evaluate((el) => ({
         radius: getComputedStyle(el).borderRadius,
-        token: getComputedStyle(document.documentElement)
-          .getPropertyValue('--radius-badge')
-          .trim(),
+        token: getComputedStyle(document.documentElement).getPropertyValue('--radius-badge').trim(),
       }));
       expect(radius).toBe(`${parseFloat(token) * 16}px`);
     }
@@ -75,14 +75,16 @@ test.describe('design system: semantic radius (token-derived)', () => {
 test.describe('design system: buttons', () => {
   test('app buttons use --radius-element', async ({ page }) => {
     await page.goto('/events');
-    await page.waitForLoadState('networkidle');
+    // Wait for the app to paint, not for the network to fall idle. These guards
+    // read computed styles under #root, and `networkidle` (500ms of zero
+    // requests) never settles on pages with maps, lazy images and analytics —
+    // all four timed out against production.
+    await page.waitForSelector('#root *', { state: 'attached', timeout: 15_000 });
     await dismissCookieBanner(page);
     await page.waitForTimeout(300);
     // Target app buttons inside main content, not third-party banners.
     // Skip avatars / round dots (rounded-full → very large px).
-    const btn = page.locator('main button, header button')
-      .filter({ hasNotText: '' })
-      .first();
+    const btn = page.locator('main button, header button').filter({ hasNotText: '' }).first();
     if ((await btn.count()) > 0) {
       await expect(btn).toBeVisible();
       const { radius, token } = await btn.evaluate((el) => ({
@@ -102,12 +104,14 @@ test.describe('design system: buttons', () => {
 test.describe('design system: dialog', () => {
   test('dialog uses --radius-container', async ({ page }) => {
     await page.goto('/trips');
-    await page.waitForLoadState('networkidle');
+    // Wait for the app to paint, not for the network to fall idle. These guards
+    // read computed styles under #root, and `networkidle` (500ms of zero
+    // requests) never settles on pages with maps, lazy images and analytics —
+    // all four timed out against production.
+    await page.waitForSelector('#root *', { state: 'attached', timeout: 15_000 });
     await dismissCookieBanner(page);
     await page.waitForTimeout(300);
-    const signInBtn = page
-      .getByRole('button', { name: /sign in/i })
-      .first();
+    const signInBtn = page.getByRole('button', { name: /sign in/i }).first();
     if ((await signInBtn.count()) > 0) {
       await signInBtn.click();
       await page.waitForTimeout(500);
@@ -132,7 +136,11 @@ test.describe('design system: dialog', () => {
 test.describe('design system: typography', () => {
   test('no Plus Jakarta Sans in font stack', async ({ page }) => {
     await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    // Wait for the app to paint, not for the network to fall idle. These guards
+    // read computed styles under #root, and `networkidle` (500ms of zero
+    // requests) never settles on pages with maps, lazy images and analytics —
+    // all four timed out against production.
+    await page.waitForSelector('#root *', { state: 'attached', timeout: 15_000 });
     await dismissCookieBanner(page);
     // Check that Plus Jakarta Sans is not declared anywhere
     const hasJakarta = await page.evaluate(() => {
@@ -142,7 +150,9 @@ test.describe('design system: typography', () => {
           for (const rule of sheet.cssRules) {
             if (rule.cssText?.toLowerCase().includes('jakarta')) return true;
           }
-        } catch { /* cross-origin */ }
+        } catch {
+          /* cross-origin */
+        }
       }
       return false;
     });
@@ -175,9 +185,7 @@ test.describe('design system: monochrome public pages', () => {
 
       const chromaticCount = await page.evaluate(() => {
         const isChromatic = (color: string): boolean => {
-          const m = color.match(
-            /rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/,
-          );
+          const m = color.match(/rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/);
           if (!m) return false;
           const [r, g, b] = [+m[1], +m[2], +m[3]];
           const max = Math.max(r, g, b);
