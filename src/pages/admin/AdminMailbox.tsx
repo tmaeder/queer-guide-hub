@@ -23,6 +23,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
+import { AdminTextSkeleton } from '@/components/admin/primitives/AdminLoading';
 
 /**
  * Postfach — internal admin-to-admin messaging, ported from the PHP tool.
@@ -161,21 +163,25 @@ export default function AdminMailbox() {
 
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-4 p-6">
-      <div className="flex items-center justify-between gap-4">
-        <div>
-          <h1 className="text-headline flex items-center gap-2">
-            <Mail size={22} /> Postfach
-          </h1>
-          <p className="text-13 text-muted-foreground">Internal staff messages.</p>
-        </div>
-        <ComposeDialog
-          open={composeOpen}
-          onOpenChange={setComposeOpen}
-          staff={(staff ?? []).filter((s) => s.user_id !== uid)}
-          senderId={uid}
-          onSent={() => qc.invalidateQueries({ queryKey: key })}
-        />
-      </div>
+      {/* mb-0: the parent already spaces children with gap-4. */}
+      <AdminPageHeader
+        className="mb-0"
+        title={
+          <span className="flex items-center gap-2">
+            <Mail size={22} aria-hidden /> Postfach
+          </span>
+        }
+        subtitle="Internal staff messages."
+        actions={
+          <ComposeDialog
+            open={composeOpen}
+            onOpenChange={setComposeOpen}
+            staff={(staff ?? []).filter((s) => s.user_id !== uid)}
+            senderId={uid}
+            onSent={() => qc.invalidateQueries({ queryKey: key })}
+          />
+        }
+      />
 
       <div className="flex gap-1 border-b border-border">
         <TabButton id="inbox" label="Inbox" badge={unread} activeTab={tab} onSelect={setTab} />
@@ -184,7 +190,7 @@ export default function AdminMailbox() {
       </div>
 
       {isLoading ? (
-        <p className="text-13 text-muted-foreground">Loading…</p>
+        <AdminTextSkeleton lines={2} />
       ) : filtered.length === 0 ? (
         <p className="text-13 text-muted-foreground">No messages.</p>
       ) : (

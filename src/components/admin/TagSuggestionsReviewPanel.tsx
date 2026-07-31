@@ -7,6 +7,7 @@ import { Inbox, Sparkles } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { callSearchIntelligence } from '@/hooks/useSearchIntelligence';
 import { fetchTagNames } from '@/hooks/useTagNames';
+import { AdminTextSkeleton } from '@/components/admin/primitives/AdminLoading';
 
 interface TagSuggestion {
   id: string;
@@ -137,7 +138,7 @@ export function TagSuggestionsReviewPanel() {
           </Alert>
         )}
         {loading ? (
-          <p className="text-13 text-muted-foreground">Loading…</p>
+          <AdminTextSkeleton lines={2} />
         ) : items.length === 0 ? (
           <p className="text-13 text-muted-foreground">No tag suggestions pending review.</p>
         ) : (

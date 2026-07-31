@@ -5,6 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Check, X, ArrowRight, Inbox } from 'lucide-react';
 import { toast } from 'sonner';
 import { useTwentyInboundReview, type TwentyInboundRow } from '@/hooks/useTwentyInboundReview';
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
+import { AdminTextSkeleton } from '@/components/admin/primitives/AdminLoading';
 
 const ENTITY_LABEL: Record<TwentyInboundRow['entity_type'], string> = {
   organization: 'Organization',
@@ -45,13 +47,12 @@ export default function AdminTwentyCrm() {
 
   return (
     <div className="mx-auto flex max-w-5xl flex-col gap-6 p-6">
-      <div>
-        <h1 className="text-headline">Twenty CRM sync</h1>
-        <p className="text-13 text-muted-foreground">
-          Edits made in Twenty land here as proposals. Approving applies only the shown fields to
-          the live record; nothing reaches public content until you approve.
-        </p>
-      </div>
+      {/* mb-0: the parent already spaces children with gap-6. */}
+      <AdminPageHeader
+        className="mb-0"
+        title="Twenty CRM sync"
+        subtitle="Edits made in Twenty land here as proposals. Approving applies only the shown fields to the live record; nothing reaches public content until you approve."
+      />
 
       <Card>
         <CardHeader className="pb-2">
@@ -61,7 +62,7 @@ export default function AdminTwentyCrm() {
           </CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
-          {isLoading && <p className="text-13 text-muted-foreground">Loading…</p>}
+          {isLoading && <AdminTextSkeleton lines={2} />}
           {!isLoading && (!rows || rows.length === 0) && (
             <p className="text-13 text-muted-foreground">No edits awaiting review.</p>
           )}

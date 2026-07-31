@@ -13,6 +13,8 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import RunCompareDialog from '../panels/RunCompareDialog';
+import { AdminStatTile } from '@/components/admin/primitives/AdminStatTile';
+import { AdminTableRowSkeleton } from '@/components/admin/primitives/AdminLoading';
 
 type StatusFilter = 'all' | 'running' | 'completed' | 'failed';
 type TypeFilter = 'all' | 'pipeline' | 'workflow';
@@ -76,18 +78,6 @@ function totalsFor(sources: Array<[string, Agg]>) {
       pending_review: t.pending_review + v.pending_review,
     }),
     { staged: 0, inserted: 0, rejected: 0, pending_review: 0 }
-  );
-}
-
-function StatCard({ icon: Icon, color, value, label }: { icon: React.ComponentType<{ className?: string }>; color: string; value: number | string; label: string }) {
-  return (
-    <div className="border border-border rounded-element bg-background px-4 py-4">
-      <div className="flex items-center gap-2">
-        <Icon className={`h-4 w-4 ${color}`} />
-        <span className="text-2xl font-bold tabular-nums">{value}</span>
-      </div>
-      <p className="text-xs2 text-muted-foreground mt-0.5">{label}</p>
-    </div>
   );
 }
 
@@ -217,11 +207,11 @@ export default function MonitorTab() {
       <div className="flex flex-col gap-6">
         {/* Summary cards */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-          <StatCard icon={Play} color="text-foreground" value={stats.running} label="Running" />
-          <StatCard icon={CheckCircle} color="text-foreground" value={stats.completed} label="Completed" />
-          <StatCard icon={XCircle} color="text-destructive" value={stats.failed} label="Failed" />
-          <StatCard icon={Database} color="text-muted-foreground" value={totalStaging} label="Staging Items" />
-          <StatCard icon={BarChart3} color="text-muted-foreground" value={stats.total} label="Total Runs" />
+          <AdminStatTile icon={Play} iconClassName="text-foreground" value={stats.running} label="Running" />
+          <AdminStatTile icon={CheckCircle} iconClassName="text-foreground" value={stats.completed} label="Completed" />
+          <AdminStatTile icon={XCircle} iconClassName="text-destructive" value={stats.failed} label="Failed" alert={stats.failed > 0} />
+          <AdminStatTile icon={Database} iconClassName="text-muted-foreground" value={totalStaging} label="Staging Items" />
+          <AdminStatTile icon={BarChart3} iconClassName="text-muted-foreground" value={stats.total} label="Total Runs" />
         </div>
 
         {/* Charts */}
@@ -329,7 +319,7 @@ export default function MonitorTab() {
                 </thead>
                 <tbody>
                   {isLoading ? (
-                    <tr><td colSpan={6} className="p-6 text-center text-muted-foreground text-xs">Loading...</td></tr>
+                    <AdminTableRowSkeleton columns={6} />
                   ) : filteredRuns.length === 0 ? (
                     <tr><td colSpan={6} className="p-6 text-center text-muted-foreground text-xs">
                       {allRuns.length === 0 ? 'No runs yet' : 'No runs match filters'}

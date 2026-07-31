@@ -8,6 +8,7 @@ import {
 import { Loader2 } from 'lucide-react';
 import { SideBySideComparison } from './SideBySideComparison';
 import { useEntityById, useMergeEntities } from '@/hooks/useImportHubQueries';
+import { AdminTextSkeleton } from '@/components/admin/primitives/AdminLoading';
 
 interface MergeDialogProps {
   open: boolean;
@@ -61,7 +62,7 @@ export function MergeDialog({
         {loading ? (
           <div className="flex justify-center items-center py-16">
             <Loader2 className="h-8 w-8 animate-spin" aria-label="Loading" />
-            <p className="ml-4 text-muted-foreground">Loading records...</p>
+            <AdminTextSkeleton lines={2} />
           </div>
         ) : !entityA || !entityB ? (
           <div className="py-8 text-center">

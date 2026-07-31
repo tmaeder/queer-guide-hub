@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { presetOverrideCount, useBrandingPresets } from './useBrandingPresets';
+import { AdminTextSkeleton } from '@/components/admin/primitives/AdminLoading';
 
 function fmt(dt: string) {
   return new Date(dt).toLocaleString();
@@ -138,7 +139,7 @@ export function PresetsTab() {
             </Button>
           </div>
 
-          {presets.isLoading && <p className="text-13 text-muted-foreground">Loading…</p>}
+          {presets.isLoading && <AdminTextSkeleton lines={2} />}
           {presets.data?.length === 0 && (
             <p className="text-13 text-muted-foreground">No presets yet.</p>
           )}
@@ -183,7 +184,7 @@ export function PresetsTab() {
           <ScheduleDialog presetIds={(presets.data ?? []).map((p) => ({ id: p.id, name: p.name }))} />
         </CardHeader>
         <CardContent className="space-y-2">
-          {schedules.isLoading && <p className="text-13 text-muted-foreground">Loading…</p>}
+          {schedules.isLoading && <AdminTextSkeleton lines={2} />}
           {schedules.data?.length === 0 && (
             <p className="text-13 text-muted-foreground">No upcoming or active schedules.</p>
           )}

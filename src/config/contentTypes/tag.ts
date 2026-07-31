@@ -1,4 +1,6 @@
+import { createElement } from 'react';
 import { Tag } from 'lucide-react';
+import { TagAliasesSection } from '@/components/admin/TagAliasesSection';
 import type { ContentTypeConfig, FieldConfig } from '@/types/cms';
 
 export const tagFields: FieldConfig[] = [
@@ -74,4 +76,17 @@ export const unifiedTagsContentType: ContentTypeConfig = {
   defaults: { status: 'active' },
   fieldGroupOrder: ['basic', 'details', 'media'],
   translatableFields: ['name', 'description', 'short_description', 'long_description'],
+  // Aliases were reachable only from the separate tag console's edit dialog, so
+  // the registry editor could not fully edit a tag — which is what kept that
+  // console's duplicate tag table alive. This closes the gap. The console keeps
+  // the tools that are genuinely collection-level (merge queue, CSV import,
+  // bulk create, categorizer), which extraPanels cannot host: `render` is
+  // per-record, not per-collection.
+  extraPanels: [
+    {
+      id: 'aliases',
+      label: 'Aliases',
+      render: (contentId: string) => createElement(TagAliasesSection, { tagId: contentId }),
+    },
+  ],
 };

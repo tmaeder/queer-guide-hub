@@ -10,8 +10,11 @@ import type { FieldProps } from './FieldRenderer';
  */
 
 const RichTextEditor = lazy(() =>
+  // Named export only. A `?? mod.default` fallback collapses the inferred
+  // component type to `any`, which is what previously hid the prop mismatches
+  // below from tsc.
   import('@/components/cms/editor/RichTextEditor').then((mod) => ({
-    default: mod.RichTextEditor ?? mod.default,
+    default: mod.RichTextEditor,
   }))
 );
 
@@ -53,12 +56,17 @@ export function RichTextField({ field, value, onChange, error, disabled }: Field
     return String(value);
   }, [value]);
 
-  const handleChange = useCallback(
-    (newValue: string) => {
-      onChange(newValue);
+  // The editor emits (json, html). Every column bound to this field is a plain
+  // `text` column, so persist the HTML and discard the JSON — passing the first
+  // argument through writes a ProseMirror object into a text column.
+  const handleEditorChange = useCallback(
+    (_json: Record<string, unknown>, html: string) => {
+      onChange(html);
     },
     [onChange]
   );
+
+  const handleTextChange = useCallback((next: string) => onChange(next), [onChange]);
 
   return (
     <FieldWrapper field={field} error={error}>
@@ -66,7 +74,7 @@ export function RichTextField({ field, value, onChange, error, disabled }: Field
         fallback={
           <RichTextFallback
             value={htmlValue}
-            onChange={handleChange}
+            onChange={handleTextChange}
             disabled={disabled}
             placeholder={field.placeholder}
           />
@@ -74,8 +82,8 @@ export function RichTextField({ field, value, onChange, error, disabled }: Field
       >
         <RichTextEditor
           value={htmlValue}
-          onChange={handleChange}
-          disabled={disabled}
+          onChange={handleEditorChange}
+          editable={!disabled}
           placeholder={field.placeholder}
         />
       </Suspense>

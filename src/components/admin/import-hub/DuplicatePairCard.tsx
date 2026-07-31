@@ -6,6 +6,7 @@ import { Merge, X, Eye, ChevronUp } from 'lucide-react';
 import { useEntityById, useDismissDuplicate } from '@/hooks/useImportHubQueries';
 import { StructuredFieldDisplay } from './StructuredFieldDisplay';
 import type { DuplicatePair } from '@/hooks/useImportHubQueries';
+import { AdminTextSkeleton } from '@/components/admin/primitives/AdminLoading';
 
 interface DuplicatePairCardProps {
   pair: DuplicatePair;
@@ -95,9 +96,7 @@ export function DuplicatePairCard({ pair, onMerge }: DuplicatePairCardProps) {
         {expanded && (
           <div className="mt-4">
             {(loadingA || loadingB) ? (
-              <p className="text-sm text-muted-foreground py-4 text-center">
-                Loading records...
-              </p>
+              <AdminTextSkeleton lines={2} />
             ) : !entityA && !entityB ? (
               <p className="text-sm text-muted-foreground text-center">
                 Could not load either record. They may have been deleted or merged.

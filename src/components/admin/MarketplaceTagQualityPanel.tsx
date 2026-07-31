@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tags } from 'lucide-react';
 import { useMarketplaceTagQuality } from '@/hooks/useMarketplaceTagQuality';
 import { departmentLabel } from '@/lib/marketplaceTaxonomy';
+import { AdminTextSkeleton } from '@/components/admin/primitives/AdminLoading';
 
 /** Live counts for the marketplace tag engine: departments, attributes, open gate. */
 export function MarketplaceTagQualityPanel() {
@@ -16,7 +17,7 @@ export function MarketplaceTagQualityPanel() {
         </CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
-        {isLoading && <p className="text-13 text-muted-foreground">Loading…</p>}
+        {isLoading && <AdminTextSkeleton lines={2} />}
         {data && (
           <>
             <div className="grid grid-cols-3 gap-4">

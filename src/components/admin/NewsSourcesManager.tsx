@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { AdminTableSkeleton } from '@/components/admin/primitives/AdminLoading';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -197,7 +198,7 @@ export function NewsSourcesManager() {
   const apiSourcesCount = sources.filter((s) => s.source_type === 'api').length;
 
   if (loading) {
-    return <div className="text-center p-4">Loading news sources...</div>;
+    return <AdminTableSkeleton rows={4} columns={4} />;
   }
 
   return (

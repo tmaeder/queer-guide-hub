@@ -17,6 +17,7 @@ import { AdultModelsCsvImport } from '@/components/personalities/AdultModelsCsvI
 import { BulkCreatePersonalities } from '@/components/personalities/BulkCreatePersonalities';
 import { AwinImportDialog } from '@/components/marketplace/AwinImportDialog';
 import { UrlImportCard } from '@/components/admin/UrlImportCard';
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -32,12 +33,12 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 export default function AdminImports() {
   return (
     <div className="mx-auto flex max-w-5xl flex-col gap-6 p-6">
-      <div>
-        <h1 className="text-headline">Import data</h1>
-        <p className="text-13 text-muted-foreground">
-          Manual, operator-run imports. Each one stages records into the normal review pipeline.
-        </p>
-      </div>
+      {/* mb-0: the parent already spaces children with gap-6. */}
+      <AdminPageHeader
+        className="mb-0"
+        title="Import data"
+        subtitle="Manual, operator-run imports. Each one stages records into the normal review pipeline."
+      />
 
       <UrlImportCard />
 

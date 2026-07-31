@@ -11,7 +11,7 @@
  * Link review the nightly backfill's ambiguous adoption suggestions
  */
 import { useState } from 'react';
-import { Link, useSearchParams } from 'react-router';
+import { Link, Navigate, useSearchParams } from 'react-router';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { untypedSupabase } from '@/integrations/supabase/untyped';
@@ -19,7 +19,6 @@ import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { AffiliatePartnersManager } from '@/components/admin/AffiliatePartnersManager';
 import { MerchantsManager } from '@/components/admin/affiliate/MerchantsManager';
 import { HotelsManager } from '@/components/admin/business/HotelsManager';
-import { OrgLinkReviewQueue } from '@/components/admin/business/OrgLinkReviewQueue';
 import { BrandReviewQueue } from '@/components/admin/review-queues/BrandReviewQueue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -44,13 +43,13 @@ import { ORG_ROLE_LABELS, useAdminOrgList, useOrgSpineDrift } from '@/hooks/useB
 
 const ROLE_FILTERS = ['venue', 'hotel', 'seller', 'affiliate_partner', 'brand', 'publisher', 'support'];
 
-const TABS = ['directory', 'hotels', 'merchants', 'brands', 'partners', 'review'] as const;
+const TABS = ['directory', 'hotels', 'merchants', 'brands', 'partners'] as const;
 type Tab = (typeof TABS)[number];
 
 export default function AdminBusiness() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const tabParam = searchParams.get('tab') as Tab | null;
-  const tab: Tab = tabParam && TABS.includes(tabParam) ? tabParam : 'directory';
+  const tabParam = searchParams.get('tab');
+  const tab: Tab = TABS.includes(tabParam as Tab) ? (tabParam as Tab) : 'directory';
   const roleParam = searchParams.get('role') ?? '';
   const [q, setQ] = useState('');
   const [claim, setClaim] = useState('');
@@ -77,6 +76,10 @@ export default function AdminBusiness() {
     claimStatus: claim || undefined,
   });
   const { data: drift } = useOrgSpineDrift();
+
+  // Link review moved to the Quality hub, where every review gate lives.
+  // Declared below the hooks so hook order stays unconditional.
+  if (tabParam === 'review') return <Navigate to="/admin/quality" replace />;
 
   const setParam = (key: string, value: string) => {
     const next = new URLSearchParams(searchParams);
@@ -117,9 +120,6 @@ export default function AdminBusiness() {
                 existed). The queue itself shows the pending rows. */}
             <TabsTrigger value="brands">Brands</TabsTrigger>
             <TabsTrigger value="partners">Partners</TabsTrigger>
-            <TabsTrigger value="review">
-              Link review{drift && drift.suggestions_open > 0 ? ` (${drift.suggestions_open})` : ''}
-            </TabsTrigger>
           </TabsList>
         </Tabs>
       </div>
@@ -148,12 +148,6 @@ export default function AdminBusiness() {
       {tab === 'partners' && (
         <div className="px-6 pb-6">
           <AffiliatePartnersManager embedded />
-        </div>
-      )}
-
-      {tab === 'review' && (
-        <div className="px-6 pb-6">
-          <OrgLinkReviewQueue />
         </div>
       )}
 

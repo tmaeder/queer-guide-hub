@@ -71,6 +71,11 @@ export default function AdminInbox() {
   return (
     <div className="flex flex-col h-full">
       <header className="px-4 py-4 border-b border-border bg-background">
+        {/* eslint-disable-next-line queerguide/admin-ui-primitives --
+            The inbox is a full-height app shell, not a standard page: this
+            header is a dense sticky bar (px-4 py-4, its own border) sitting
+            above a split pane. AdminPageHeader's mb-6/pb-6 block layout would
+            push the list below the fold. */}
         <h1 className="text-headline font-bold leading-tight">Inbox</h1>
         <p className="text-13 text-muted-foreground mt-1">
           Everything that needs you, across queues. Sorted by priority. Press{' '}

@@ -11,6 +11,7 @@ import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/comp
 import { supabase } from '@/integrations/supabase/client';
 import { untypedFrom } from '@/integrations/supabase/untyped';
 import { toast } from 'sonner';
+import { AdminTextSkeleton } from '@/components/admin/primitives/AdminLoading';
 
 interface Grant {
   id: string;
@@ -149,7 +150,7 @@ export default function AccessDialog({ pipelineId, pipelineName }: AccessDialogP
 
           <div className="border border-border rounded-element bg-background overflow-hidden max-h-[300px] overflow-y-auto">
             {isLoading ? (
-              <div className="p-4 text-center text-muted-foreground text-xs">Loading…</div>
+              <AdminTextSkeleton lines={2} />
             ) : grants.length === 0 ? (
               <div className="p-6 text-center text-sm text-muted-foreground">
                 <Users className="h-5 w-5 mx-auto mb-2 opacity-40" />

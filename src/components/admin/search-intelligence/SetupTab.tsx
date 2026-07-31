@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { callSearchIntelligence } from '@/hooks/useSearchIntelligence';
+import { AdminTextSkeleton } from '@/components/admin/primitives/AdminLoading';
 
 type Status = 'ok' | 'warn' | 'fail' | 'na';
 
@@ -69,7 +70,7 @@ export function SetupTab() {
     refresh();
   }, [refresh]);
 
-  if (loading && !data) return <p>Loading…</p>;
+  if (loading && !data) return <AdminTextSkeleton lines={4} />;
   if (error) {
     return (
       <Alert variant="destructive">

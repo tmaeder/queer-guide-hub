@@ -13,6 +13,7 @@ import {
   type CoverageTargetRow as CoverageRow,
   type HotelIngestStats as HotelStats,
 } from '@/hooks/usePipelineBuilderTabs';
+import { AdminTableRowSkeleton } from '@/components/admin/primitives/AdminLoading';
 
 function sloBadge(s: HotelStats) {
   const total = s.staged || 1;
@@ -159,7 +160,7 @@ export default function CoverageTab() {
             </thead>
             <tbody>
               {covLoading ? (
-                <tr><td colSpan={6} className="p-6 text-center text-muted-foreground text-xs">Loading…</td></tr>
+                <AdminTableRowSkeleton columns={6} />
               ) : coverage.length === 0 ? (
                 <tr><td colSpan={6} className="p-6 text-center text-muted-foreground text-xs">No targets configured</td></tr>
               ) : coverage.map(r => (

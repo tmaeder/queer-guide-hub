@@ -12,6 +12,7 @@ import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/comp
 import { supabase } from '@/integrations/supabase/client';
 import { untypedFrom } from '@/integrations/supabase/untyped';
 import { toast } from 'sonner';
+import { AdminTextSkeleton } from '@/components/admin/primitives/AdminLoading';
 
 interface Integration {
   id: string;
@@ -227,7 +228,7 @@ export default function IntegrationsTab() {
 
         <div className="border border-border rounded-element bg-background overflow-hidden">
           {isLoading ? (
-            <div className="p-6 text-center text-muted-foreground text-xs">Loading…</div>
+            <AdminTextSkeleton lines={2} />
           ) : integrations.length === 0 ? (
             <div className="p-8 text-center text-sm text-muted-foreground">
               <Webhook className="h-5 w-5 mx-auto mb-2 opacity-40" />

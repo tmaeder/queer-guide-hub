@@ -2,6 +2,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { MapPin, ShieldCheck } from 'lucide-react';
 import { useVillageQualitySummary } from '@/hooks/useVillageQualitySummary';
+import { AdminStat } from '@/components/admin/primitives/AdminStat';
 
 /**
  * Compact health summary for the Village Truth Engine: completeness average,
@@ -23,11 +24,11 @@ export function VillageQualityPanel() {
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
         <div className="flex flex-wrap gap-2">
-          <Stat label="Avg completeness" value={avgCompleteness} />
-          <Stat label={`Have venues (of ${total})`} value={withVenues} />
-          <Stat label="Pending reviews" value={reviewOpen} />
-          <Stat label="Low completeness" value={lowCompleteness} />
-          <Stat label="Ghost shells (no venues)" value={ghosts} />
+          <AdminStat label="Avg completeness" value={avgCompleteness} />
+          <AdminStat label={`Have venues (of ${total})`} value={withVenues} />
+          <AdminStat label="Pending reviews" value={reviewOpen} />
+          <AdminStat label="Low completeness" value={lowCompleteness} />
+          <AdminStat label="Ghost shells (no venues)" value={ghosts} />
         </div>
 
         {gaps.length > 0 && (
@@ -47,14 +48,5 @@ export function VillageQualityPanel() {
         )}
       </CardContent>
     </Card>
-  );
-}
-
-function Stat({ label, value }: { label: string; value: number }) {
-  return (
-    <div className="flex items-center gap-2 rounded-element border bg-muted/40 px-4 py-2">
-      <span className="text-headline tabular-nums">{value}</span>
-      <span className="text-13 text-muted-foreground">{label}</span>
-    </div>
   );
 }

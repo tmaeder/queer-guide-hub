@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AdminTextSkeleton } from '@/components/admin/primitives/AdminLoading';
+import { AdminEmpty } from '@/components/admin/primitives/AdminEmpty';
 import {
   Select,
   SelectContent,
@@ -279,9 +281,9 @@ export function SuggestionsTab() {
       </Card>
 
       {loading ? (
-        <p>Loading…</p>
+        <AdminTextSkeleton lines={3} />
       ) : items.length === 0 ? (
-        <p className="text-muted-foreground">No suggestions match these filters.</p>
+        <AdminEmpty noun="suggestions" filtered />
       ) : (
         <div className="flex flex-col gap-2">
           {items.map((s) => (

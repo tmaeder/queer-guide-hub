@@ -30,6 +30,11 @@ jobs:
           node-version: "22.20.0"
           cache: npm
       - run: npm ci --prefer-offline --no-audit
+      # Real check of the whole app (tsconfig.app.json) with a baseline ratchet:
+      # ~1400 pre-existing errors are recorded in scripts/typecheck-baseline.json
+      # and only NEW ones fail. Until 2026-07-29 this step was bare `tsc --noEmit`
+      # against the solution-style root tsconfig ("files": [] + references), which
+      # without `-b` compiles zero files and always exits 0 — vacuously green.
       - run: npm run typecheck
 
   lint:

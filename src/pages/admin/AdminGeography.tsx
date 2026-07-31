@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
+import { AdminTextSkeleton } from '@/components/admin/primitives/AdminLoading';
 import {
   Building,
   ChevronDown,
@@ -65,7 +66,7 @@ const LEGAL_PARENT: Record<string, string[]> = {
 const EDITOR_LINK: Record<string, string> = {
   country: '/admin/content/countries',
   city: '/admin/content/cities',
-  village: '/admin/villages',
+  village: '/admin/content/queer_villages',
 };
 
 const PUBLIC_HREF: Record<string, (slug: string) => string> = {
@@ -155,11 +156,8 @@ function NodeChildren({
   const { data, isLoading } = useGeoChildren(parentId);
   if (isLoading) {
     return (
-      <div
-        className="py-2 text-13 text-muted-foreground"
-        style={{ paddingLeft: `${depth * 20 + 16}px` }}
-      >
-        Loading…
+      <div className="py-2" style={{ paddingLeft: `${depth * 20 + 16}px` }}>
+        <AdminTextSkeleton lines={2} />
       </div>
     );
   }

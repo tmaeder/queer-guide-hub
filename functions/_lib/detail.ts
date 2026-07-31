@@ -1087,6 +1087,14 @@ const RESERVED_DETAIL_SLUGS = new Set([
   'travel',
   'groups',
   'resources',
+  // Missing entries here are invisible until someone loads the page: the route
+  // exists in the SPA, but the edge hard-404s it before React ever runs.
+  // /news/all (the "Open archive" CTA), /news/me and /personalities/milestones
+  // were all dead in production this way. `reservedDetailSlugs.test.ts` parses
+  // src/routes.tsx and fails if a static sub-route is missing from this set.
+  'all',
+  'me',
+  'milestones',
 ]);
 
 function matchDetailPath(pathname: string): RegExpMatchArray | null {

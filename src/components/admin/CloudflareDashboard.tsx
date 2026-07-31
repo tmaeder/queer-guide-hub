@@ -119,7 +119,9 @@ export function CloudflareDashboard() {
           </div>
           <div>
             <h2 className="font-bold text-2xl">Cloudflare Dashboard</h2>
-            <p className="text-muted-foreground">Zone: {zoneInfo?.result?.name || 'Loading...'}</p>
+            {/* An em dash, not "Loading...": this is a fallback VALUE for a
+                field, and the repo renders unknown values as —. */}
+            <p className="text-muted-foreground">Zone: {zoneInfo?.result?.name || '—'}</p>
           </div>
         </div>
         <Button onClick={handleRefresh} disabled={refreshing}>

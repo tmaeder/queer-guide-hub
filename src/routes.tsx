@@ -73,14 +73,6 @@ const Travel = lazyRetry(() => import('./pages/Travel'));
 const TravelBook = lazyRetry(() => import('./pages/travel/Book'));
 const MapPage = lazyRetry(() => import('./pages/Map'));
 const AdminDuplicates = lazyRetry(() => import('./pages/admin/AdminDuplicates'));
-const AdminVenueCategories = lazyRetry(() => import('./pages/admin/AdminVenueCategories'));
-const AdminVenueServices = lazyRetry(() => import('./pages/admin/AdminVenueServices'));
-const AdminEventTypes = lazyRetry(() => import('./pages/admin/AdminEventTypes'));
-const AdminEventAmenities = lazyRetry(() => import('./pages/admin/AdminEventAmenities'));
-const AdminEventServices = lazyRetry(() => import('./pages/admin/AdminEventServices'));
-const AdminAccessibilityAttributes = lazyRetry(() => import('./pages/admin/AdminAccessibilityAttributes'));
-const AdminTargetGroups = lazyRetry(() => import('./pages/admin/AdminTargetGroups'));
-const AdminProfessions = lazyRetry(() => import('./pages/admin/AdminProfessions'));
 const PersonalityDataSheet = lazyRetry(() => import('./pages/admin/PersonalityDataSheet'));
 const PersonalitiesAdmin = lazyRetry(() => import('./pages/admin/PersonalitiesAdmin'));
 const MilestonesAdmin = lazyRetry(() => import('./pages/admin/MilestonesAdmin'));
@@ -110,11 +102,11 @@ const PlaceDetail = lazyRetry(() => import('./pages/PlaceDetail'));
 // Festivals routes now redirect to /events (festivals integrated into events)
 
 // New admin pages
-const AdminQueerVillages = lazyRetry(() => import('./pages/admin/AdminQueerVillages'));
 const AdminGeography = lazyRetry(() => import('./pages/admin/AdminGeography'));
 const AdminInbox = lazyRetry(() => import('./pages/admin/AdminInbox'));
 const AdminAutomation = lazyRetry(() => import('./pages/admin/AdminAutomation'));
-const AdminFeedback = lazyRetry(() => import('./pages/AdminFeedback'));
+const AdminFeedback = lazyRetry(() => import('./pages/admin/feedback'));
+const AdminNotFound = lazyRetry(() => import('./pages/admin/AdminNotFound'));
 const AdminAffiliate = lazyRetry(() => import('./pages/admin/AdminAffiliate'));
 const AdminBusiness = lazyRetry(() => import('./pages/admin/AdminBusiness'));
 const AdminBusinessDetail = lazyRetry(() => import('./pages/admin/AdminBusinessDetail'));
@@ -374,7 +366,9 @@ export const AppRoutes = () => {
                     action above it; static path wins over content/:type. */}
                 <Route path="content/milestones" element={<MilestonesAdmin />} />
                 <Route path="content/:type" element={<ContentListPanel />} />
-                <Route path="pages" element={<ContentListPanel contentTypeId="cms_pages" />} />
+                {/* /admin/pages duplicated /admin/content/cms_pages (what nav points at);
+                    kept as a redirect for old bookmarks. */}
+                <Route path="pages" element={<Navigate to="/admin/content/cms_pages" replace />} />
                 <Route path="media" element={<MediaLibrary />} />
                 <Route path="media/:id" element={<MediaDetailPage />} />
 
@@ -433,7 +427,7 @@ export const AppRoutes = () => {
                 <Route path="content/group-requests" element={<AdminGroupRequests />} />
                 {/* Hotel CRUD now lives in the Business console's Hotels tab. */}
                 <Route path="hotels" element={<Navigate to="/admin/business?tab=hotels" replace />} />
-                <Route path="villages" element={<AdminQueerVillages />} />
+                <Route path="villages" element={<Navigate to="/admin/content/queer_villages" replace />} />
                 <Route path="geography" element={<AdminGeography />} />
 
                 {/* System section */}
@@ -444,14 +438,14 @@ export const AppRoutes = () => {
 
                 {/* Settings -- taxonomy management pages */}
                 <Route path="settings" element={<AdminTags />} />
-                <Route path="settings/venue-categories" element={<AdminVenueCategories />} />
-                <Route path="settings/venue-services" element={<AdminVenueServices />} />
-                <Route path="settings/event-types" element={<AdminEventTypes />} />
-                <Route path="settings/event-amenities" element={<AdminEventAmenities />} />
-                <Route path="settings/event-services" element={<AdminEventServices />} />
-                <Route path="settings/accessibility" element={<AdminAccessibilityAttributes />} />
-                <Route path="settings/target-groups" element={<AdminTargetGroups />} />
-                <Route path="settings/professions" element={<AdminProfessions />} />
+                <Route path="settings/venue-categories" element={<Navigate to="/admin/content/venue_categories" replace />} />
+                <Route path="settings/venue-services" element={<Navigate to="/admin/content/venue_services" replace />} />
+                <Route path="settings/event-types" element={<Navigate to="/admin/content/event_types" replace />} />
+                <Route path="settings/event-amenities" element={<Navigate to="/admin/content/event_amenities" replace />} />
+                <Route path="settings/event-services" element={<Navigate to="/admin/content/event_services" replace />} />
+                <Route path="settings/accessibility" element={<Navigate to="/admin/content/accessibility_attributes" replace />} />
+                <Route path="settings/target-groups" element={<Navigate to="/admin/content/target_groups" replace />} />
+                <Route path="settings/professions" element={<Navigate to="/admin/content/professions" replace />} />
 
                 {/* Legacy routes -- redirect to new paths */}
                 <Route path="venues" element={<Navigate to="/admin/content/venues" replace />} />
@@ -499,12 +493,30 @@ export const AppRoutes = () => {
                   path="target-groups"
                   element={<Navigate to="/admin/settings/target-groups" replace />}
                 />
+              
+                {/* Unknown /admin/* — React Router ranks "*" lowest, so this can
+                    never shadow content/:type. Without it the shell renders an
+                    empty content area, which reads as a broken page. */}
+                <Route path="*" element={<AdminNotFound />} />
               </Route>
 
               {/* ── Locale-aware public routes ── */}
               {/* /:locale? makes the locale segment optional — /venues and /de/venues both work */}
               <Route path="/:locale?" element={<LocaleRouter />}>
                 <Route index element={<Index />} />
+                {/* Declared FIRST among the locale parent's children on purpose.
+                  React Router expands the optional `:locale?`, so /p/about
+                  scores `/:locale/about` (locale="p" → About) and `/p/:slug`
+                  (slug="about" → CMSPage) identically (17). The tie breaks
+                  toward the earlier-declared sibling, so every CMS slug that
+                  also names a top-level route (about, contact, help, blog,
+                  press, …) rendered NotFound via LocaleRouter's unknown-locale
+                  branch. Unlike the `submit/<slug>` fix below, CMS slugs are DB
+                  rows and can't be enumerated into static paths, so ordering is
+                  the lever: from here `p/:slug` wins every /p/* tie, and its
+                  static first segment means it can steal nothing else.
+                  Guarded by src/__tests__/cmsPageRouting.test.tsx. */}
+                <Route path="p/:slug" element={<CMSPage />} />
                 <Route path="venues" element={<Venues />} />
                 {/* Section-name slugs collide with /venues/:slug — redirect to top-level pages */}
                 <Route path="venues/hotels" element={<Navigate to="/hotels" replace />} />
@@ -738,7 +750,7 @@ export const AppRoutes = () => {
                   <Route key={slug} path={`submit/${slug}`} element={<SubmitForm contentType={slug} />} />
                 ))}
                 <Route path="submit/:contentType" element={<SubmitForm />} />
-                <Route path="p/:slug" element={<CMSPage />} />
+                {/* `p/:slug` moved to the top of this list — see note there. */}
                 <Route path="share-target" element={<ShareTarget />} />
                 {/* Inner catch-all: paths like /de/unknown or /en/typo
                   fall through to NotFound instead of rendering nothing

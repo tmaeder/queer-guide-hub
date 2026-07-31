@@ -15,6 +15,7 @@ import {
   AnalyticsTopQuery,
   AnalyticsZeroResult,
 } from '@/hooks/useSearchIntelligence';
+import { AdminTextSkeleton } from '@/components/admin/primitives/AdminLoading';
 
 const RANGES: Array<{ value: string; label: string }> = [
   { value: '24h', label: 'Last 24h' },
@@ -149,7 +150,7 @@ export function AnalyticsTab({ onAddSynonym }: { onAddSynonym?: (term: string) =
             Searches that returned nothing — candidates for synonyms or content gaps.
           </p>
           {busy && !zero.length ? (
-            <p className="text-sm text-muted-foreground">Loading…</p>
+            <AdminTextSkeleton lines={2} />
           ) : zero.length === 0 ? (
             <p className="text-sm text-muted-foreground">No zero-result queries in this window.</p>
           ) : (
@@ -181,7 +182,7 @@ export function AnalyticsTab({ onAddSynonym }: { onAddSynonym?: (term: string) =
         <CardContent>
           <h6 className="text-lg font-semibold mb-4">Top queries</h6>
           {busy && !top.length ? (
-            <p className="text-sm text-muted-foreground">Loading…</p>
+            <AdminTextSkeleton lines={2} />
           ) : top.length === 0 ? (
             <p className="text-sm text-muted-foreground">No queries in this window.</p>
           ) : (

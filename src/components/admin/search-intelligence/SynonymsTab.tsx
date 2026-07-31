@@ -26,6 +26,7 @@ import {
   SynonymList,
   SynonymCounts,
 } from '@/hooks/useSearchIntelligence';
+import { AdminTextSkeleton } from '@/components/admin/primitives/AdminLoading';
 
 const PAGE_SIZE = 50;
 
@@ -271,7 +272,7 @@ export function SynonymsTab({ prefillTerm }: { prefillTerm?: string | null }) {
       <Card>
         <CardContent>
           {busy && !rows.length ? (
-            <p className="text-sm text-muted-foreground">Loading…</p>
+            <AdminTextSkeleton lines={2} />
           ) : rows.length === 0 ? (
             <p className="text-sm text-muted-foreground">No synonyms match.</p>
           ) : (
