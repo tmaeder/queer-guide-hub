@@ -197,8 +197,6 @@ export interface ContentTypeConfig {
   workflow?: ContentTypeWorkflowConfig;
   /** Whether this type supports threaded comments (review/moderation). */
   commentable?: boolean;
-  /** Cross-type bulk operations enabled for this type. */
-  bulkOps?: BulkOpKind[];
   /** Initial sort for the admin list view (overridable by user). */
   defaultSort?: { field: string; dir: 'asc' | 'desc' };
   /**
@@ -302,14 +300,6 @@ export interface ContentTypeWorkflowConfig {
   /** Default visibility for newly created items. */
   defaultVisibility?: VisibilityLevel;
 }
-
-export type BulkOpKind =
-  | 'publish'
-  | 'archive'
-  | 'unpublish'
-  | 'translate'
-  | 'tag'
-  | 'delete';
 
 // ── Content Items ──────────────────────────────────────────────────
 
