@@ -79,3 +79,116 @@ update public.pipeline_definitions
    and not exists (
      select 1 from jsonb_array_elements(nodes) n where n->>'id' = 'adopt-orphans'
    );
+
+-- ---------------------------------------------------------------------------
+-- Throughput: drain the commit stage from SQL, not through PostgREST.
+--
+-- The adoption node above lets the nightly DAG *see* these rows, but it cannot
+-- clear the backlog. The DAG's commit node calls
+-- commit_marketplace_staging_batch over PostgREST, and PostgREST runs it under a
+-- role whose statement_timeout is 8s -- the node failed after 8.4s on a batch of
+-- 50, because each marketplace commit fans out into price-history, the
+-- source-junction upsert and the search_documents trigger. That caps the DAG at
+-- a few dozen rows per nightly run against a backlog of ~6.9k eligible rows.
+--
+-- The RPC already accepts p_pipeline_run_id => NULL, meaning "commit any
+-- eligible row regardless of run". Calling it from pg_cron runs it in the
+-- database with a timeout we control, so it can move real volume. This is the
+-- workhorse; the DAG node stays for the per-run path.
+create or replace function public.run_marketplace_commit_drain(p_batch integer default 400)
+returns jsonb language plpgsql security definer set search_path = public as $fn$
+declare
+  v_automation_id uuid; v_run_id bigint; v_enabled boolean;
+  v_started_at timestamptz := now(); v_committed int := 0; v_pending int := 0;
+begin
+  select id, enabled into v_automation_id, v_enabled
+    from public.admin_automations where slug = 'marketplace_commit_drain';
+  insert into public.admin_automation_runs
+    (automation_id, automation_slug, started_at, status, items_examined, items_changed)
+  values (v_automation_id, 'marketplace_commit_drain', v_started_at, 'success', 0, 0)
+  returning id into v_run_id;
+  if v_automation_id is not null and v_enabled is distinct from true then
+    update public.admin_automation_runs set finished_at=now(),
+      summary=jsonb_build_object('skipped',true,'reason','paused') where id=v_run_id;
+    return jsonb_build_object('skipped', true, 'reason', 'paused');
+  end if;
+
+  select count(*) into v_committed
+    from public.commit_marketplace_staging_batch(p_batch, null);
+
+  select count(*) into v_pending from public.ingestion_staging s
+   where s.target_table = 'marketplace_listings' and s.disposition = 'pending'
+     and s.ai_validation_status = 'approved' and s.classification_result is not null
+     and (s.dedup_status in ('unique','duplicate') or s.dedup_status is null)
+     and s.review_status in ('auto','approved');
+
+  update public.admin_automation_runs
+     set finished_at=now(), items_examined=v_committed+v_pending, items_changed=v_committed,
+         summary=jsonb_build_object('committed',v_committed,'pending',v_pending,'batch',p_batch)
+   where id=v_run_id;
+  update public.admin_automations set last_run_at=v_started_at, last_run_status='success'
+    where id=v_automation_id;
+  return jsonb_build_object('committed', v_committed, 'pending', v_pending);
+exception when others then
+  update public.admin_automation_runs set finished_at=now(), status='error', error=sqlerrm where id=v_run_id;
+  update public.admin_automations set last_run_at=v_started_at, last_run_status='error' where id=v_automation_id;
+  return jsonb_build_object('error', sqlerrm);
+end;
+$fn$;
+
+revoke all on function public.run_marketplace_commit_drain(integer) from public, anon, authenticated;
+grant execute on function public.run_marketplace_commit_drain(integer) to service_role;
+
+insert into public.admin_automations (slug, name, description, enabled, trigger, action, conditions)
+values ('marketplace_commit_drain', 'Marketplace commit drain',
+  'Commits marketplace staging rows that passed validate/relevance/dedup/review but were never committed, including rows staged without a pipeline_run_id by the hourly merchant sync. Runs in SQL so it is not bound by the PostgREST 8s statement timeout that caps the DAG commit node.',
+  true, '{"type":"schedule"}'::jsonb,
+  '{"fn":"run_marketplace_commit_drain","type":"rpc","jobname":"marketplace_commit_drain"}'::jsonb, '{}'::jsonb)
+on conflict (slug) do update set enabled=true, description=excluded.description,
+  trigger=excluded.trigger, action=excluded.action;
+
+select cron.schedule('marketplace_commit_drain', '40 * * * *',
+  $cmd$SET statement_timeout = '540s'; SELECT public.run_marketplace_commit_drain(1500);$cmd$);
+
+-- ---------------------------------------------------------------------------
+-- Keep the registry and pg_cron agreeing, so nobody silently reverts this.
+--
+-- sync_automations_to_cron() treats admin_automations as authoritative: it
+-- rewrites any cron job whose schedule differs from its registry row, and it
+-- re-creates a missing job only when the registry row carries action->>'command'.
+-- A dry run after the changes above reported two problems:
+--
+--   * event_trust_recompute and content_completeness_recompute had registry
+--     schedules still pointing at their old nightly slots while pg_cron carried
+--     the new hourly ones. Anyone running the sync with p_apply=true would have
+--     silently reverted them to nightly.
+--   * cron_failure_sweep had no registry row at all, so it read as a rogue cron
+--     and could never be re-created by the sync. That is the wrong thing to leave
+--     unregistered: it is the safety net that makes timeout failures visible,
+--     because a statement_timeout cancels the handler's own writes and a timing
+--     out job therefore cannot record its own failure.
+update public.admin_automations a
+   set schedule = j.schedule
+  from cron.job j
+ where j.jobname = coalesce(a.action->>'jobname', a.slug)
+   and a.enabled and a.schedule is not null and a.schedule <> j.schedule;
+
+insert into public.admin_automations (slug, name, description, enabled, trigger, action, conditions, schedule)
+values ('cron_failure_sweep', 'Cron failure sweep',
+  'Hourly reconciliation that records cron failures the jobs themselves cannot record. A statement_timeout cancels the handler''s own writes, so a timing-out job cannot log its failure from inside its transaction -- this sweep reads cron.job_run_details afterwards and writes the missing admin_automation_runs rows.',
+  true, '{"type":"schedule"}'::jsonb,
+  jsonb_build_object('type','rpc','fn','run_cron_failure_sweep','jobname','cron_failure_sweep',
+                     'command','SELECT public.run_cron_failure_sweep();'),
+  '{}'::jsonb, '20 * * * *')
+on conflict (slug) do update set enabled=true, schedule=excluded.schedule, action=excluded.action;
+
+-- Give the drain a schedule + command in the registry too, so the sync can
+-- restore it rather than reporting it as rogue.
+update public.admin_automations
+   set schedule = '40 * * * *',
+       action = action || jsonb_build_object('command',
+         $c$SET statement_timeout = '540s'; SELECT public.run_marketplace_commit_drain(1500);$c$)
+ where slug = 'marketplace_commit_drain';
+
+-- After this, sync_automations_to_cron(false) returns empty for unregistered,
+-- schedule_fixed, recreated and disabled_killed.

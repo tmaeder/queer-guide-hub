@@ -523,27 +523,42 @@ grant execute on function public.run_detect_stale_venues(integer, integer) to se
 -- ---------------------------------------------------------------------------
 -- statement_timeout is armed when the top-level statement starts, so `SET LOCAL`
 -- INSIDE these functions would not affect their own call. It has to be a
--- separate statement in the cron command, ahead of the SELECT. 540s at the
--- measured ~55 ms/row covers a 7,000-row batch with margin and drains each
--- cold-start backlog in a handful of nights.
-select cron.alter_job(
-  (select jobid from cron.job where jobname = 'marketplace_quality_recompute'),
-  command => $cmd$SET statement_timeout = '540s'; SELECT public.run_marketplace_quality_recompute(7000);$cmd$
+-- separate statement in the cron command, ahead of the SELECT.
+--
+-- Batch size is ALSO a lock-duration budget, not just a timeout budget. Each of
+-- these is a single UPDATE in a single transaction, so it holds row locks for its
+-- whole run. A 7,000-row marketplace batch runs ~7 minutes and WILL block
+-- marketplace_commit_drain (migration 20260806110000) on a row lock in
+-- marketplace_listings if the two overlap -- observed on prod when a manual drain
+-- was issued mid-run.
+--
+-- The two marketplace jobs keep the 900s/7000 sizing: the real cost is ~10s fixed
+-- + ~60 ms/row, so 540s was only 1.25x headroom, and a smaller batch would not
+-- converge the cold-start backlog. The constraint that matters is SEPARATION --
+-- they must stay away from the drain's :40 slot. Do not move them onto :40
+-- without shrinking the batch first.
+--
+-- Slot map for the three jobs that write marketplace_listings, at their timeout
+-- caps -- keep them disjoint:
+--   marketplace_quality_recompute   03:50 -> 04:05  (daily, 900s)
+--   content_completeness_recompute    :50 ->   :05  (hourly, 900s)
+--   marketplace_commit_drain          :40 ->   :42  (hourly, 540s)
+-- detect-stale-venues stays nightly and writes venues, which nothing here
+-- contends for.
+select cron.schedule('marketplace_quality_recompute', '50 3 * * *',
+  $cmd$SET statement_timeout = '900s'; SELECT public.run_marketplace_quality_recompute(7000);$cmd$
 );
 
-select cron.alter_job(
-  (select jobid from cron.job where jobname = 'content_completeness_recompute'),
-  command => $cmd$SET statement_timeout = '540s'; SELECT public.run_content_completeness_recompute(false, 7000);$cmd$
+select cron.schedule('content_completeness_recompute', '50 * * * *',
+  $cmd$SET statement_timeout = '900s'; SELECT public.run_content_completeness_recompute(false, 7000);$cmd$
 );
 
-select cron.alter_job(
-  (select jobid from cron.job where jobname = 'event_trust_recompute'),
-  command => $cmd$SET statement_timeout = '540s'; SELECT public.run_event_trust_recompute(7000);$cmd$
+select cron.schedule('event_trust_recompute', '10 * * * *',
+  $cmd$SET statement_timeout = '240s'; SELECT public.run_event_trust_recompute(1500);$cmd$
 );
 
-select cron.alter_job(
-  (select jobid from cron.job where jobname = 'detect-stale-venues'),
-  command => $cmd$SET statement_timeout = '540s'; SELECT public.run_detect_stale_venues(180, 7000);$cmd$
+select cron.schedule('detect-stale-venues', '30 4 * * *',
+  $cmd$SET statement_timeout = '240s'; SELECT public.run_detect_stale_venues(180, 1500);$cmd$
 );
 
 
