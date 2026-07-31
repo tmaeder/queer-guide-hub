@@ -618,23 +618,66 @@ async function handleBuiltInNode(
       }
       return { items_out: 0 }
     }
-    case 'source-personality-staging': {
-      // Adopt pending personality staging rows into this pipeline run so
-      // downstream nodes (normalize, validate, etc.) can filter by pipeline_run_id.
-      const entityType = (config as Record<string, string>).entity_type || 'personality'
-      const batchSize = (config as Record<string, number>).batch_size || 500
+    case 'source-personality-staging':
+    case 'source-adopt-staging': {
+      // Adopt ORPHANED staging rows into this pipeline run so downstream nodes
+      // (normalize, validate, etc.), which filter by pipeline_run_id, can see
+      // them. Without this, anything that stages without a run id is written and
+      // then never processed — pipeline-normalize deliberately scopes to the
+      // current run "so executor invocations don't get starved behind legacy
+      // backlog", which also means unstamped rows are starved forever.
+      //
+      // `source-adopt-staging` is the entity-agnostic name; the personality slug
+      // is kept as an alias so the existing DAG keeps working.
+      //
+      // Only pipeline_run_id IS NULL rows are adopted: adopting rows already
+      // stamped by another run would steal work from a concurrent execution.
+      //
+      // `only_unnormalized` restricts adoption to rows that have not been
+      // normalized yet. The legacy personality node always behaved that way, so
+      // it keeps that default; the generic node does NOT, because the marketplace
+      // orphans it exists for are the opposite case -- already normalized,
+      // validated, classified and approved, and stuck solely because nothing ever
+      // committed them. Re-running them through the DAG is cheap: normalize skips
+      // rows with normalized_data, validate skips non-'pending'
+      // ai_validation_status, and marketplace-relevance skips rows that already
+      // have a classification_result, so no LLM call is repeated.
+      const cfg = config as Record<string, unknown>
+      const entityType = (cfg.entity_type as string) || 'personality'
+      const batchSize = (cfg.batch_size as number) || 500
+      const onlyUnnormalized = cfg.only_unnormalized !== undefined
+        ? cfg.only_unnormalized === true
+        : node.type === 'source-personality-staging'
       const runId = run.id as string
-      const { data: items } = await supabase
+      let adoptQuery = supabase
         .from('ingestion_staging')
         .select('id')
         .eq('entity_type', entityType)
-        .is('normalized_data', null)
         .eq('disposition', 'pending')
+        .is('pipeline_run_id', null)
+        .order('created_at', { ascending: true })
         .limit(batchSize)
+      if (onlyUnnormalized) adoptQuery = adoptQuery.is('normalized_data', null)
+      const { data: items } = await adoptQuery
       if (!items || items.length === 0) return { items_out: 0 }
       const ids = items.map((r: Record<string, string>) => r.id)
-      await supabase.from('ingestion_staging').update({ pipeline_run_id: runId }).in('id', ids)
-      return { items_out: ids.length }
+
+      // Chunk the UPDATE. PostgREST puts `in.(...)` in the URL, so a single call
+      // with ~1000 UUIDs exceeds the URL length limit and fails. The previous
+      // code neither chunked nor checked the error, so it reported items_out=1000
+      // while stamping zero rows — the node looked healthy and did nothing.
+      const CHUNK = 200
+      let stamped = 0
+      for (let i = 0; i < ids.length; i += CHUNK) {
+        const slice = ids.slice(i, i + CHUNK)
+        const { error: updErr } = await supabase
+          .from('ingestion_staging')
+          .update({ pipeline_run_id: runId })
+          .in('id', slice)
+        if (updErr) throw new Error(`adopt-staging update failed: ${updErr.message}`)
+        stamped += slice.length
+      }
+      return { items_out: stamped }
     }
     default:
       console.warn(`Unknown built-in node type: ${node.type}`)
