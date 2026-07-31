@@ -149,3 +149,46 @@ on conflict (slug) do update set enabled=true, description=excluded.description,
 
 select cron.schedule('marketplace_commit_drain', '40 * * * *',
   $cmd$SET statement_timeout = '540s'; SELECT public.run_marketplace_commit_drain(1500);$cmd$);
+
+-- ---------------------------------------------------------------------------
+-- Keep the registry and pg_cron agreeing, so nobody silently reverts this.
+--
+-- sync_automations_to_cron() treats admin_automations as authoritative: it
+-- rewrites any cron job whose schedule differs from its registry row, and it
+-- re-creates a missing job only when the registry row carries action->>'command'.
+-- A dry run after the changes above reported two problems:
+--
+--   * event_trust_recompute and content_completeness_recompute had registry
+--     schedules still pointing at their old nightly slots while pg_cron carried
+--     the new hourly ones. Anyone running the sync with p_apply=true would have
+--     silently reverted them to nightly.
+--   * cron_failure_sweep had no registry row at all, so it read as a rogue cron
+--     and could never be re-created by the sync. That is the wrong thing to leave
+--     unregistered: it is the safety net that makes timeout failures visible,
+--     because a statement_timeout cancels the handler's own writes and a timing
+--     out job therefore cannot record its own failure.
+update public.admin_automations a
+   set schedule = j.schedule
+  from cron.job j
+ where j.jobname = coalesce(a.action->>'jobname', a.slug)
+   and a.enabled and a.schedule is not null and a.schedule <> j.schedule;
+
+insert into public.admin_automations (slug, name, description, enabled, trigger, action, conditions, schedule)
+values ('cron_failure_sweep', 'Cron failure sweep',
+  'Hourly reconciliation that records cron failures the jobs themselves cannot record. A statement_timeout cancels the handler''s own writes, so a timing-out job cannot log its failure from inside its transaction -- this sweep reads cron.job_run_details afterwards and writes the missing admin_automation_runs rows.',
+  true, '{"type":"schedule"}'::jsonb,
+  jsonb_build_object('type','rpc','fn','run_cron_failure_sweep','jobname','cron_failure_sweep',
+                     'command','SELECT public.run_cron_failure_sweep();'),
+  '{}'::jsonb, '20 * * * *')
+on conflict (slug) do update set enabled=true, schedule=excluded.schedule, action=excluded.action;
+
+-- Give the drain a schedule + command in the registry too, so the sync can
+-- restore it rather than reporting it as rogue.
+update public.admin_automations
+   set schedule = '40 * * * *',
+       action = action || jsonb_build_object('command',
+         $c$SET statement_timeout = '540s'; SELECT public.run_marketplace_commit_drain(1500);$c$)
+ where slug = 'marketplace_commit_drain';
+
+-- After this, sync_automations_to_cron(false) returns empty for unregistered,
+-- schedule_fixed, recreated and disabled_killed.
