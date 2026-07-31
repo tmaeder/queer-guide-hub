@@ -8,7 +8,10 @@
  * Merchants   marketplace vendor registry + sync (absorbed /admin/vendors)
  * Brands      trust-gated ownership review + brand registry (absorbed /admin/brands)
  * Partners    affiliate_partners registry — read live by the /go worker
- * Link review the nightly backfill's ambiguous adoption suggestions
+ *
+ * The nightly backfill's ambiguous adoption suggestions are NOT here: link
+ * review lives on /admin/quality with the other review gates. ?tab=review
+ * redirects there.
  */
 import { useState } from 'react';
 import { Link, Navigate, useSearchParams } from 'react-router';
