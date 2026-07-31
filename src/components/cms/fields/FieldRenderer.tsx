@@ -79,6 +79,13 @@ export function FieldRenderer({
     return null;
   }
 
+  // Conditional visibility (e.g. a redirect's `slug` only when type is SHORT).
+  // Treated as visible while `allValues` is absent, so a field never vanishes
+  // mid-edit just because form state has not propagated yet.
+  if (field.visibleWhen && allValues && !field.visibleWhen(allValues)) {
+    return null;
+  }
+
   const Component = FIELD_COMPONENTS[field.type];
 
   if (!Component) {

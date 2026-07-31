@@ -137,7 +137,14 @@ export function CMSEditorLayout({
   // Required fields progress (% filled)
   const requiredProgress = useMemo(() => {
     if (!config) return 100;
-    const requiredFields = config.fields.filter((f) => f.required && !f.hidden);
+    const requiredFields = config.fields.filter(
+      (f) =>
+        f.required &&
+        !f.hidden &&
+        // A conditionally-hidden field is not required, so progress never
+        // stalls below 100% on a rule this record's shape cannot satisfy.
+        (!f.visibleWhen || f.visibleWhen(state.data)),
+    );
     if (requiredFields.length === 0) return 100;
     const filled = requiredFields.filter((f) => {
       const val = state.data[f.name];
