@@ -81,14 +81,35 @@ else
 fi
 
 # Reported, not gated. Pages' built-in SPA fallback answers *any* unmatched
-# path with index.html, hashed-asset URLs included, so a stale bundle asking
-# for a deleted chunk gets 200 text/html here. Two layers already absorb that:
-# public/sw.js turns an HTML answer for a .js/.css URL into a synthetic 404,
-# and functions/_middleware.ts does the same at the edge whenever Pages
-# Functions are running. Kept visible so the gap doesn't get forgotten.
-echo "== missing hashed asset (informational) =="
+# Pages Functions were uploaded but never invoked for months: wrangler reads
+# its generated _routes.json inside a bare `catch {}`, and with nothing
+# uploaded Cloudflare has no routing config for the Functions worker. Every
+# Function 404'd on a green deploy. public/_routes.json now ships explicitly;
+# these assertions are what proves it is actually in effect.
+echo "== Pages Functions are executing =="
+expect_status /sitemap.xml 200
+expect_content_type /sitemap.xml xml
+expect_content_type /brand/tokens.css text/css
+expect_content_type /api/geo application/json
+
+# The edge middleware rewrites the shell <head> per route. No canonical means
+# the middleware did not run, whatever the Function routes returned.
+if curl -sS "$SITE/" | grep -q 'rel="canonical"'; then
+	echo "  ✓ / has middleware-injected <link rel=canonical>"; pass=$((pass+1))
+else
+	echo "  ✗ / has no canonical — functions/_middleware.ts is not running"; fail=$((fail+1))
+fi
+
+# With the middleware live, a missing hashed chunk must get a real 404 rather
+# than the SPA shell — a stale bundle would otherwise try to parse HTML as JS.
+echo "== missing hashed asset fails loudly =="
 stale="/assets/js/does-not-exist-00000000.js"
-echo "  · $stale -> $(curl -sS -o /dev/null -w '%{http_code} %{content_type}' "$SITE$stale")"
+read -r code ctype < <(curl -sS -o /dev/null -w '%{http_code} %{content_type}' "$SITE$stale")
+if [ "$code" = "200" ]; then
+	echo "  ✗ $stale -> 200 $ctype (stale bundles will fail MIME checks)"; fail=$((fail+1))
+else
+	echo "  ✓ $stale -> $code $ctype"; pass=$((pass+1))
+fi
 
 echo
 echo "smoke: $pass passed, $fail failed"

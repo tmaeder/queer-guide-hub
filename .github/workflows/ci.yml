@@ -52,11 +52,11 @@ jobs:
           cache: npm
       - run: npm ci --prefer-offline --no-audit
       - run: npm run lint
-      # Cloudflare Pages silently ignores _redirects rules it cannot accept
-      # (illegal status, self-looping rewrite target) and drops dynamic rules
-      # past its cap. A dropped SPA catch-all 404'd every deep route on
-      # 2026-08-01 while wrangler printed the warning on every deploy.
-      - run: npm run check:redirects
+      # Cloudflare Pages silently ignores config it cannot accept: _redirects
+      # rules with an illegal status or a self-looping rewrite target, and a
+      # missing _routes.json (which leaves the Functions bundle unrouted, so
+      # every Pages Function 404s). Both shipped green on 2026-08-01.
+      - run: npm run check:pages-routing
 
   test:
     runs-on: ubuntu-latest
