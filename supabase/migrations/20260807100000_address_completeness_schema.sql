@@ -323,8 +323,14 @@ as $$
     'cities', (
       select jsonb_build_object(
         'live',                count(*),
-        'missing_region_name',  count(*) filter (where region_name is null),
-        'geocodable_gap',       count(*) filter (where region_name is null and latitude is not null)
+        'missing_region_name', count(*) filter (where region_name is null),
+        -- Actionable work only: a 'tmp-' slug is a placeholder stub, which the
+        -- backfill deliberately skips, so counting them here would overstate
+        -- the gap by ~1,800 and make a finished job look stuck.
+        'geocodable_gap',      count(*) filter (
+                                 where region_name is null
+                                   and latitude is not null
+                                   and (slug is null or slug not like 'tmp-%'))
       ) from public.cities where duplicate_of_id is null
     ),
     'queue', (
