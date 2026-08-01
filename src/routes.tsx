@@ -734,6 +734,11 @@ export const AppRoutes = () => {
                 <Route path="feedback" element={<FeedbackBoard />} />
                 <Route path="help" element={<HelpHotlines />} />
                 <Route path="help/:country" element={<HelpHotlines />} />
+                {/* Legacy crisis URL. public/_redirects 301s it, but that is a
+                  Cloudflare Pages feature and is inert anywhere else (local
+                  dev, `vite preview`, the PR e2e run) — so the route exists
+                  too. A dead crisis link must not depend on the host layer. */}
+                <Route path="help-hotlines" element={<LocalizedRedirect to="/help" />} />
                 <Route path="submit" element={<SubmitHub />} />
                 {/* Explicit static route per submission type. The locale
                   layout parent is `/:locale?`; React Router expands the
