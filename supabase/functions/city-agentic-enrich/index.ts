@@ -13,6 +13,7 @@ import { hasValidWebhookSecret } from '../_shared/webhook-auth.ts'
 import { withCircuitBreaker, CircuitOpenError } from '../_shared/circuit-breaker.ts'
 import { researchEnrichCityFromSources, type CityMoatEnrichment } from '../_shared/ai-enrichment.ts'
 import { fetchPageText } from '../_shared/enrich-harness.ts'
+import { cityNameCandidates } from '../_shared/city-name-normalize.ts'
 
 const DEFAULT_BATCH_LIMIT = 5
 const DEFAULT_DAILY_CAP = 120
@@ -63,6 +64,11 @@ Deno.serve(async (req: Request) => {
   const dailyCap: number = body.daily_cap ?? DEFAULT_DAILY_CAP
   const dryRun: boolean = body.dry_run ?? false
   const cityIds: string[] | undefined = body.city_ids
+  // Suppress the review-gated proposals. Used during operator backfills: this
+  // function queues lgbt_friendly_rating / editorial_hook for human approval,
+  // and 692 such items are already open and unreviewed since 2026-06-28. A bulk
+  // sweep would grow that backlog into the thousands while nobody is draining it.
+  const skipGated: boolean = body.skip_gated ?? false
 
   const since = new Date(); since.setUTCHours(0, 0, 0, 0)
   const { count: doneToday } = await supabase
@@ -75,7 +81,7 @@ Deno.serve(async (req: Request) => {
 
   let query = supabase
     .from('cities')
-    .select('id, name, slug, region_name, description, best_time_to_visit, local_customs, official_website, completeness_score, enrichment_status, country_id, countries(name, equality_score, lgbti_criminalization)')
+    .select('id, name, slug, region_name, description, best_time_to_visit, local_customs, official_website, completeness_score, enrichment_status, wikipedia_title, country_id, countries(name, equality_score, lgbti_criminalization)')
     .is('duplicate_of_id', null)
   if (cityIds?.length) {
     query = query.in('id', cityIds)
@@ -84,6 +90,9 @@ Deno.serve(async (req: Request) => {
       .not('slug', 'like', 'tmp-%')
       .lt('completeness_score', COMPLETENESS_CEILING)
       .order('completeness_score', { ascending: true })
+      // Tiebreaker. Without it a stable low-completeness tail is re-picked every
+      // hour while the daily cap burns on the same cities.
+      .order('last_refreshed_at', { ascending: true, nullsFirst: true })
       .limit(remaining)
   }
   const { data: cities, error } = await query
@@ -96,16 +105,27 @@ Deno.serve(async (req: Request) => {
   for (const c of cities) {
     const started = Date.now()
     let status = 'skipped'
+    let failReason: string | null = null
     try {
       // Grounding sources: Wikipedia extract + official site page.
       const country = (c.countries as { name?: string } | null)?.name
       const sources: { url: string; text: string }[] = []
-      let wpExtract = country ? await fetchWikipediaExtract(`${c.name}, ${country}`) : null
-      if (!wpExtract) wpExtract = await fetchWikipediaExtract(c.name)
-      if (wpExtract) sources.push({ url: `https://en.wikipedia.org/wiki/${encodeURIComponent(c.name)}`, text: wpExtract })
+      // Prefer the enwiki sitelink title cached by city-factual-backfill. Looking
+      // the page up by cities.name is what produced 3,590 `no_sources` skips in
+      // 30 days — the import residue ("Kapstadt, Südafrika") 404s the title API.
+      const titles = c.wikipedia_title
+        ? [c.wikipedia_title]
+        : cityNameCandidates(c.name, { country }).queries
+      let wpExtract: string | null = null
+      let wpTitle: string | null = null
+      for (const t of titles) {
+        wpExtract = await fetchWikipediaExtract(t)
+        if (wpExtract) { wpTitle = t; break }
+      }
+      if (wpExtract) sources.push({ url: `https://en.wikipedia.org/wiki/${encodeURIComponent(wpTitle ?? c.name)}`, text: wpExtract })
       if (c.official_website) { const site = await fetchCityPage(c.official_website); if (site) sources.push({ url: c.official_website, text: site }) }
       if (c.description && !wpExtract) sources.push({ url: 'existing', text: c.description })
-      if (!sources.length) { skipped++; results.push({ id: c.id, status: 'no_sources' }); await logStep(supabase, c.id, status, started, dryRun); continue }
+      if (!sources.length) { skipped++; results.push({ id: c.id, status: 'no_sources' }); await logStep(supabase, c.id, status, started, dryRun, 'no_sources'); continue }
 
       // Destination safety context.
       let safetyContext: string | undefined
@@ -127,7 +147,7 @@ Deno.serve(async (req: Request) => {
         if (e instanceof CircuitOpenError) return jsonResponse({ enriched, gated, skipped, circuit_open: true, results }, 200, req)
         throw e
       }
-      if (!ai) { skipped++; results.push({ id: c.id, status: 'no_ai' }); await logStep(supabase, c.id, status, started, dryRun); continue }
+      if (!ai) { skipped++; results.push({ id: c.id, status: 'no_ai' }); await logStep(supabase, c.id, status, started, dryRun, 'no_ai'); continue }
 
       const confidence = typeof ai.confidence === 'number' ? ai.confidence : 0.5
       const highConf = confidence >= AUTO_APPLY_CONFIDENCE
@@ -157,6 +177,7 @@ Deno.serve(async (req: Request) => {
       // the SQL compose_safety_note() / city safety backfill (migration 20260608000001).
       if (ai.editorial_hook) gatedProposals.push({ field: 'editorial_hook', value: { value: ai.editorial_hook }, cite: citations.filter(x => x?.field === 'editorial_hook' || x?.field === 'hook') })
 
+      if (skipGated) gatedProposals.length = 0
       if (gatedProposals.length) update.needs_attention = true
 
       if (!dryRun) {
@@ -187,17 +208,28 @@ Deno.serve(async (req: Request) => {
       results.push({ id: c.id, name: c.name, confidence, auto_filled: autoCount, gated: queued })
     } catch (e) {
       status = 'failed'
-      results.push({ id: c.id, status: 'error', error: e instanceof Error ? e.message : String(e) })
+      failReason = (e instanceof Error ? e.message : String(e)).slice(0, 200)
+      results.push({ id: c.id, status: 'error', error: failReason })
     }
-    await logStep(supabase, c.id, status, started, dryRun)
+    await logStep(supabase, c.id, status, started, dryRun, failReason)
   }
 
-  return jsonResponse({ enriched, gated, skipped, dry_run: dryRun, results }, 200, req)
+  return jsonResponse({ enriched, gated, skipped, skip_gated: skipGated, dry_run: dryRun, results }, 200, req)
 })
 
-async function logStep(supabase: ReturnType<typeof getServiceClient>, cityId: string, status: string, started: number, dryRun: boolean) {
+/**
+ * Every non-done outcome carries a reason. Without one, 3,590 identical bare
+ * `skipped` rows over 30 days were indistinguishable from "nothing to do" — which
+ * is exactly how this function's starvation went unnoticed.
+ */
+async function logStep(
+  supabase: ReturnType<typeof getServiceClient>, cityId: string, status: string,
+  started: number, dryRun: boolean, reason?: string | null,
+) {
   if (dryRun) return
   await supabase.from('enrichment_log').insert({
-    entity_type: 'city', entity_id: cityId, step: STEP, status, duration_ms: Date.now() - started,
+    entity_type: 'city', entity_id: cityId, step: STEP, status,
+    error_message: status === 'done' ? null : (reason ?? null),
+    duration_ms: Date.now() - started,
   }).then(() => {}, () => {})
 }
