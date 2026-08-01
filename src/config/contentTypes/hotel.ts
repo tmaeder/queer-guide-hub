@@ -106,15 +106,20 @@ export const hotelFields: FieldConfig[] = [
   },
   { name: 'amenities', label: 'Amenities', type: 'tags', group: 'details' },
   { name: 'accessibility_attributes', label: 'Accessibility', type: 'tags', group: 'details' },
-  { name: 'target_groups', label: 'Target Groups', type: 'tags', group: 'details' },
   {
     name: 'accessibility_notes',
     label: 'Accessibility Notes',
     type: 'textarea',
     group: 'details',
     colSpan: 2,
+    helpText: 'Detail that does not fit the accessibility vocabulary above.',
   },
-  { name: 'event_amenities', label: 'Event Amenities', type: 'tags', group: 'details' },
+  // `target_groups` and `event_amenities` used to sit here. Neither is a column on
+  // `hotels`, so both silently discarded whatever an admin typed. Removed rather
+  // than given columns: hotels are not in `search_documents` (they surface as
+  // venues), so neither has a facet, filter or detail-page reader anywhere — adding
+  // storage would only make the data write-only. `event_amenities` was never a
+  // column concept at all: it is a vocabulary TABLE, pasted in as if it were one.
   { name: 'lgbtq_friendly', label: 'LGBTQ+ Friendly', type: 'boolean', group: 'lgbtq' },
   {
     name: 'queer_safety_notes',

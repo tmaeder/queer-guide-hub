@@ -8884,6 +8884,8 @@ export type Database = {
       }
       hotels: {
         Row: {
+          accessibility_attributes: string[] | null
+          accessibility_notes: string | null
           address: string | null
           amenities: string[] | null
           booking_url: string | null
@@ -8933,6 +8935,8 @@ export type Database = {
           website: string | null
         }
         Insert: {
+          accessibility_attributes?: string[] | null
+          accessibility_notes?: string | null
           address?: string | null
           amenities?: string[] | null
           booking_url?: string | null
@@ -8982,6 +8986,8 @@ export type Database = {
           website?: string | null
         }
         Update: {
+          accessibility_attributes?: string[] | null
+          accessibility_notes?: string | null
           address?: string | null
           amenities?: string[] | null
           booking_url?: string | null
