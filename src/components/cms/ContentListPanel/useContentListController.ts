@@ -76,6 +76,7 @@ export function useContentListController({
   // navigating away and back.
   const [view, setView] = useState<ContentView>(persisted?.view ?? 'table');
   const [groupBy, setGroupBy] = useState<string | null>(persisted?.groupBy ?? null);
+  const [dateField, setDateField] = useState<string | null>(persisted?.dateField ?? null);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [dynamicOptions, setDynamicOptions] = useState<Record<string, SelectOption[]>>({});
 
@@ -97,9 +98,17 @@ export function useContentListController({
   // Persist filter+sort+columns per content type
   useEffect(() => {
     if (persistKey) {
-      persistState(persistKey, { sortField, sortDir, filters, hiddenColumns, view, groupBy });
+      persistState(persistKey, {
+        sortField,
+        sortDir,
+        filters,
+        hiddenColumns,
+        view,
+        groupBy,
+        dateField,
+      });
     }
-  }, [persistKey, sortField, sortDir, filters, hiddenColumns, view, groupBy]);
+  }, [persistKey, sortField, sortDir, filters, hiddenColumns, view, groupBy, dateField]);
 
   // Load dynamic filter options (e.g. country/city dropdowns).
   useEffect(() => {
@@ -382,6 +391,8 @@ export function useContentListController({
     setView,
     groupBy,
     setGroupBy,
+    dateField,
+    setDateField,
     selected,
     setSelected,
     dynamicOptions,
