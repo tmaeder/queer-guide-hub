@@ -22,7 +22,14 @@ export type NumberRange = { min?: number; max?: number };
 export type FilterValue = string | boolean | DateRange | NumberRange | undefined;
 export type FilterState = Record<string, FilterValue>;
 
+/** Views every content type gets. Table is the default and always available. */
+export type ContentView = 'table' | 'gallery' | 'board';
+
 export interface PersistedState {
+  /** Remembered per content type, so a chosen view survives navigation. */
+  view?: ContentView;
+  /** Board grouping column, remembered alongside the view. */
+  groupBy?: string | null;
   sortField?: SortField;
   sortDir?: SortDir;
   filters?: FilterState;
@@ -96,7 +103,8 @@ export function getStatusColor(status: string | undefined): string {
   if (['published', 'active', 'public', 'verified'].includes(s)) return 'hsl(var(--foreground))';
   if (['draft', 'pending'].includes(s)) return 'hsl(var(--muted-foreground))';
   if (['review', 'restricted'].includes(s)) return 'hsl(var(--foreground) / 0.55)';
-  if (['archived', 'expired', 'sold', 'completed', 'rejected'].includes(s)) return 'hsl(var(--muted-foreground))';
+  if (['archived', 'expired', 'sold', 'completed', 'rejected'].includes(s))
+    return 'hsl(var(--muted-foreground))';
   if (['cancelled'].includes(s)) return 'hsl(var(--destructive))';
   return 'hsl(var(--muted-foreground))';
 }
