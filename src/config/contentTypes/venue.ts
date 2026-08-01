@@ -283,7 +283,9 @@ export const venueContentType: ContentTypeConfig = {
   label: { singular: 'Venue', plural: 'Venues' },
   color: 'hsl(var(--foreground))',
   fields: venueFields,
-  defaults: { featured: false, verified: false, verification_status: 'pending' },
+  // Has to follow the field above to `is_featured` — `defaults` goes into every
+  // CREATE payload, so the name dropped in PR #312 400'd the whole insert.
+  defaults: { is_featured: false, verified: false, verification_status: 'pending' },
   validate: validateVenue,
   fieldGroupOrder: ['basic', 'location', 'details', 'media', 'settings', 'external'],
   translatableFields: ['name', 'description', 'accessibility_notes'],

@@ -101,7 +101,9 @@ describe('registry field types match their database columns', () => {
 
     for (const field of config.fields) {
       const column = columns.get(field.name);
-      if (!column) continue; // computed/virtual field, not a column
+      // Absent columns are fieldColumnExists.test.ts's job — it asserts that a
+      // field with no column carries `virtual: true`. Here we only compare types.
+      if (!column) continue;
 
       const expected = FIELD_KIND[field.type];
       if (!expected) continue;

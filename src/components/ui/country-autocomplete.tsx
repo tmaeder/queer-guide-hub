@@ -23,6 +23,12 @@ export interface Country {
 interface CountryAutocompleteProps {
   value?: string;
   onValueChange: (value: string) => void;
+  /**
+   * FK fallback for the displayed selection. Used by callers whose table stores
+   * only `country_id` and has no `country` text column, where `value` is always
+   * empty. Resolved against the already-loaded list — no extra query.
+   */
+  valueId?: string | null;
   /** Called with full country object when selected (includes id for FK linking) */
   onCountrySelect?: (country: Country | null) => void;
   placeholder?: string;
@@ -36,6 +42,7 @@ interface CountryAutocompleteProps {
 export function CountryAutocomplete({
   value,
   onValueChange,
+  valueId,
   onCountrySelect,
   placeholder = 'Select a country...',
   required,
@@ -68,7 +75,10 @@ export function CountryAutocomplete({
     fetchCountries();
   }, []);
 
-  const selectedCountry = countries.find((country) => country.name === value) || null;
+  const selectedCountry =
+    countries.find((country) => country.name === value) ||
+    (valueId ? countries.find((country) => country.id === valueId) : null) ||
+    null;
 
   return (
     <Popover open={open} onOpenChange={setOpen}>

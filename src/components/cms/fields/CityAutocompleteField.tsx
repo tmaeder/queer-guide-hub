@@ -82,8 +82,18 @@ export function CityAutocompleteField({
     fetchCities();
   }, [currentCountryId]);
 
-  const selectedCity = cities.find((c) => c.name === value) || null;
-  const currentValueLabel = String(value ?? '');
+  // Display label. `relatedFields` is a write-only name→FK map, so on tables
+  // that store only `city_id` (queer_villages) `value` is always undefined and
+  // the trigger would show its placeholder over a perfectly good link. Fall
+  // back to resolving the FK against the list we already fetched — the list is
+  // country-scoped, so the linked city is in it and this costs no extra query.
+  const cityIdField = field.relatedFields?.city_id;
+  const currentCityId = cityIdField && allValues ? String(allValues[cityIdField] ?? '') : '';
+  const selectedCity =
+    cities.find((c) => c.name === value) ||
+    (currentCityId ? cities.find((c) => c.id === currentCityId) : null) ||
+    null;
+  const currentValueLabel = String(value ?? '') || selectedCity?.name || '';
 
   const selectExisting = useCallback(
     (city: CityOption) => {

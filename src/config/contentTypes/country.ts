@@ -39,7 +39,15 @@ export const countryFields: FieldConfig[] = [
     ],
   },
   { name: 'government_type', label: 'Government Type', type: 'text', group: 'details' },
-  { name: 'continent', label: 'Continent', type: 'text', group: 'details' },
+  // `countries` links to the continent by FK; there is no `continent` text column.
+  {
+    name: 'continent_id',
+    label: 'Continent',
+    type: 'select',
+    group: 'details',
+    filterable: true,
+    dynamicOptions: { table: 'continents', valueColumn: 'id', labelColumn: 'name' },
+  },
   { name: 'languages', label: 'Languages', type: 'tags', group: 'details' },
   { name: 'national_day', label: 'National Day', type: 'text', group: 'details' },
   { name: 'major_religions', label: 'Major Religions', type: 'tags', group: 'details' },

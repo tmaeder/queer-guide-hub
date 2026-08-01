@@ -109,7 +109,15 @@ export interface FieldConfig {
   /**
    * Marks a field as virtual (computed/joined, no backing DB column on the
    * primary table). Virtual fields are skipped during server-side filter/sort
-   * even if `filterable`/`sortable` is true.
+   * even if `filterable`/`sortable` is true, are never included in a save
+   * payload, and are not inline-editable.
+   *
+   * This is load-bearing, not documentation: a non-virtual field whose name has
+   * no matching column makes PostgREST reject the whole write with PGRST204.
+   * `fieldColumnTypes.test.ts` fails CI on exactly that shape, so reach for this
+   * flag only when the field genuinely has no column (a picker that writes an FK
+   * through `relatedFields`, or a value read from a `listSelect` join) — never to
+   * silence the guard on a field that is simply pointing at the wrong column.
    */
   virtual?: boolean;
   /**

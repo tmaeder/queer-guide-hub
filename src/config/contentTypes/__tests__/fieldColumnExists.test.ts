@@ -12,49 +12,32 @@ import { contentTypeRegistry } from '@/config/contentTypeRegistry';
  *
  * fieldColumnTypes.test.ts cannot catch this: it skips any field whose column is absent
  * ("computed/virtual field, not a column"), which is exactly the hole this fell through.
- * Here the default is inverted — a field must either name a real column or be declared
- * virtual below, so a typo fails CI instead of silently dropping data.
- */
-
-/**
- * Fields that intentionally have no column of their own — autocomplete inputs that write
- * only through relatedFields, and read-only aggregates rendered from joins.
+ * Here the default is inverted — a field must either name a real column or carry
+ * `virtual: true`, so a typo fails CI instead of silently dropping data.
  *
- * This is a baseline, not an endorsement. The four entries that turned out to be real
- * write bugs — events.venue_address, venues.featured, and the queer_villages / milestones
- * relatedFields targets — were fixed rather than listed. Anything ADDED here later needs
- * the same check: the point of this test is that a new phantom field fails CI instead of
- * silently dropping what an admin typed.
+ * The exemption is the field's own `virtual` flag, not a list in this file. Two hardcoded
+ * maps used to live here — VIRTUAL_FIELDS and a KNOWN_BROKEN escape hatch — and both were
+ * the wrong shape for the same reason: an allowlist entry is invisible from the config
+ * being read, and it was inert. `virtual` now actually gates the write path (useCMSEditor
+ * drops those keys from the save payload, Editable refuses to open an editor on them), so
+ * declaring a field virtual is a behavioural statement this guard can verify rather than a
+ * note asking CI to look away — and the assertion below IS the ratchet, so a second list
+ * legitimising writes to a non-existent column only blunts it.
  *
- * A `KNOWN_BROKEN` escape hatch used to sit alongside this, holding twelve fields open
- * "while the fix is scheduled". It is gone, and deliberately not kept as an empty map:
- * the phantom assertion below IS the ratchet, and a second list that legitimises writing
- * to a non-existent column only blunts it. What was in it:
+ * What the two maps held, and where each entry went:
  *   - hotels.accessibility_attributes / accessibility_notes — real data loss. They now
  *     have columns (migration 20260807130000) and render via AmenityDisplay.
  *   - hotels.target_groups / event_amenities — real data loss, removed from the config:
  *     no column, and no facet, filter or reader anywhere for a hotel.
- *   - the eight cities / queer_villages aggregates — never broken at all. They are
- *     `hidden` + `virtual` list renders, and calling them "broken" hid the four that were.
+ *   - queer_villages.city / country and cities.country — autocomplete inputs whose value
+ *     lives in the FK columns they populate. Now `virtual: true`, which is what stopped
+ *     them poisoning the save payload and failing the whole statement with PGRST204.
+ *   - the eight cities / queer_villages aggregates — never broken. Already `hidden` +
+ *     `virtual` list renders; calling them "broken" hid the four that were.
+ *   - countries.continent → the real `continent_id` FK. unified_tags.color and
+ *     marketplace_listings.verified / needs_attention → removed, no columns.
+ *   - the four feedback fields → the actual community_submissions triage columns.
  */
-const VIRTUAL_FIELDS: Record<string, string[]> = {
-  // Autocomplete inputs whose value lives in the FK columns they populate, plus the
-  // list-only aggregates hydrated from each config's `listSelect` joins. Every aggregate
-  // below is declared `hidden: true, virtual: true, listColumn: true` with a `listRender`
-  // reading the joined relation (`row.countries`, `row.venues[0].count`, …). Being
-  // `hidden` they render no editor input at all, so there is nothing an admin can type
-  // and nothing to discard — display-only, checked field by field against the configs.
-  events: ['venue_address'],
-  queer_villages: ['city', 'country', 'country_name', 'population', 'venues_count', 'events_count'],
-  cities: ['country', 'country_name', 'equality_score', 'venue_count', 'event_count'],
-  // Read-only aggregates and joined display values.
-  countries: ['continent'],
-  unified_tags: ['color'],
-  marketplace_listings: ['verified', 'needs_attention'],
-  // The feedback type is backed by community_submissions, which nests its payload in jsonb
-  // rather than exposing these as top-level columns.
-  feedback: ['title', 'description', 'category', 'contact_email'],
-};
 
 function parseRowColumns(source: string): Map<string, Set<string>> {
   const tables = new Map<string, Set<string>>();
@@ -84,18 +67,31 @@ describe('registry fields name real columns', () => {
   });
 
   const phantoms: string[] = [];
+  const inertVirtuals: string[] = [];
   for (const config of Object.values(contentTypeRegistry)) {
     const columns = schema.get(config.tableName);
     if (!columns) continue; // view-backed or otherwise not in Tables
-    const allowed = new Set(VIRTUAL_FIELDS[config.id] ?? []);
     for (const field of config.fields) {
-      if (columns.has(field.name) || allowed.has(field.name)) continue;
-      phantoms.push(`${config.id}.${field.name} -> no column ${config.tableName}.${field.name}`);
+      const exists = columns.has(field.name);
+      if (!exists && !field.virtual) {
+        phantoms.push(`${config.id}.${field.name} -> no column ${config.tableName}.${field.name}`);
+      }
+      // The inverse mistake: `virtual` on a field that DOES have a column means
+      // useCMSEditor strips it from every save, so the column can never be written.
+      if (exists && field.virtual) {
+        inertVirtuals.push(
+          `${config.id}.${field.name} -> marked virtual, but ${config.tableName}.${field.name} exists and will never be saved`,
+        );
+      }
     }
   }
 
   it('has no field writing to a column that does not exist', () => {
     expect(phantoms).toEqual([]);
+  });
+
+  it('has no virtual field shadowing a real column', () => {
+    expect(inertVirtuals).toEqual([]);
   });
 
   it('routes every relatedFields target to a real column', () => {

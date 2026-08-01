@@ -17,12 +17,14 @@ export const cityFields: FieldConfig[] = [
   { name: 'slug', label: 'Slug', type: 'text', group: 'basic' },
   { name: 'description', label: 'Description', type: 'richtext', group: 'basic', colSpan: 2 },
   { name: 'region_name', label: 'Region', type: 'text', group: 'basic' },
+  // Picker, not a stored value: `cities` has `country_id` only, no `country`
+  // text column. See the `virtual` note on queer_villages.city.
   {
     name: 'country',
     label: 'Country',
     type: 'country_autocomplete',
     group: 'basic',
-    filterable: true,
+    virtual: true,
     relatedFields: { country_id: 'country_id' },
   },
   { name: 'population', label: 'Population', type: 'number', group: 'details', sortable: true },

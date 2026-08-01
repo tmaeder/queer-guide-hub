@@ -33,6 +33,9 @@ export function useInlineSave(contentType: string, recordId: string) {
     async ({ field, value }: SaveArgs): Promise<SaveResult> => {
       if (!config) return { success: false, error: `Unknown content type: ${contentType}` };
       if (field.readOnly) return { success: false, error: 'Field is read-only' };
+      // Defence in depth behind Editable's guard: a virtual field has no column,
+      // so this would UPDATE a name PostgREST does not know.
+      if (field.virtual) return { success: false, error: 'Field is not stored on this table' };
 
       const validation = validateValue(field, value);
       if (!validation.ok) {

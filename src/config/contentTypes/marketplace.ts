@@ -49,9 +49,19 @@ export const marketplaceFields: FieldConfig[] = [
   { name: 'shipping_info', label: 'Shipping Info', type: 'text', group: 'details' },
   { name: 'images', label: 'Images', type: 'images', group: 'media' },
   { name: 'featured', label: 'Featured', type: 'boolean', group: 'settings' },
-  { name: 'verified', label: 'Verified', type: 'boolean', group: 'settings' },
   { name: 'in_stock', label: 'In Stock', type: 'boolean', group: 'settings' },
-  { name: 'needs_attention', label: 'Needs Attention', type: 'boolean', group: 'settings', filterable: true, listColumn: true },
+  // `verified` and `needs_attention` were declared here but neither column
+  // exists on marketplace_listings — `verified` also sat in `defaults` (so every
+  // create 400'd) and `needs_attention` was driving a server-side filter and a
+  // list column against nothing. Verification state is `last_verified_at`;
+  // triage state is `review_status`.
+  {
+    name: 'last_verified_at',
+    label: 'Last Verified',
+    type: 'datetime',
+    group: 'settings',
+    readOnly: true,
+  },
   { name: 'lgbti_relevance_score', label: 'LGBTQ+ Relevance', type: 'number', group: 'settings', min: 0, max: 1 },
   {
     name: 'status',
@@ -82,7 +92,6 @@ export const marketplaceContentType: ContentTypeConfig = {
   defaults: {
     status: 'active',
     featured: false,
-    verified: false,
     in_stock: true,
     shipping_available: false,
     currency: 'USD',
