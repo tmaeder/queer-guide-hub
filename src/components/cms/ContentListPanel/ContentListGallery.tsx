@@ -81,7 +81,7 @@ export function ContentListGallery({
               <Image
                 src={imageUrl}
                 alt=""
-                imageRole="thumbnail"
+                imageRole="thumb"
                 className="w-full h-[140px] object-cover"
               />
             ) : (

@@ -46,6 +46,10 @@ export function ContentListPanel(props: ContentListPanelProps) {
 
   const typeColor = c.config?.color || 'hsl(var(--muted-foreground))';
   const Icon = c.config?.icon;
+  // The controller can return undefined (no type selected); the views model
+  // "no config" as null, so normalize once here rather than at each call site.
+  const config = c.config ?? null;
+  const groupable = groupableFields(config);
 
   return (
     <div>
@@ -160,17 +164,16 @@ export function ContentListPanel(props: ContentListPanelProps) {
           </div>
         )}
 
-        {c.contentTypeId && c.view === 'board' && groupableFields(c.config).length > 0 && (
+        {c.contentTypeId && c.view === 'board' && groupable.length > 0 && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button size="sm" variant="outline">
-                Group:{' '}
-                {groupableFields(c.config).find((f) => f.name === c.groupBy)?.label ?? 'Status'}
+                Group: {groupable.find((f) => f.name === c.groupBy)?.label ?? 'Status'}
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start">
               <DropdownMenuItem onClick={() => c.setGroupBy(null)}>Status</DropdownMenuItem>
-              {groupableFields(c.config).map((f) => (
+              {groupable.map((f) => (
                 <DropdownMenuItem key={f.name} onClick={() => c.setGroupBy(f.name)}>
                   {f.label}
                 </DropdownMenuItem>
@@ -244,7 +247,7 @@ export function ContentListPanel(props: ContentListPanelProps) {
         <ContentListGallery
           items={c.items}
           loading={c.loading}
-          config={c.config}
+          config={config}
           selected={c.selected}
           toggleSelect={c.toggleSelect}
           onEdit={c.onEdit}
@@ -253,14 +256,14 @@ export function ContentListPanel(props: ContentListPanelProps) {
         <ContentListBoard
           items={c.items}
           loading={c.loading}
-          config={c.config}
+          config={config}
           groupBy={c.groupBy}
           onEdit={c.onEdit}
         />
       ) : (
         <ContentListTable
           contentTypeId={c.contentTypeId}
-          config={c.config}
+          config={config}
           items={c.items}
           loading={c.loading}
           totalCount={c.totalCount}

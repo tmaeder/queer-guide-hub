@@ -45,15 +45,8 @@ export function loadPersistedState(key: string): PersistedState | null {
   }
 }
 
-export function persistState(
-  key: string,
-  state: {
-    sortField: SortField;
-    sortDir: SortDir;
-    filters: FilterState;
-    hiddenColumns: string[];
-  },
-) {
+/** Takes PersistedState so a new remembered key needs one edit, not two. */
+export function persistState(key: string, state: PersistedState) {
   try {
     sessionStorage.setItem(key, JSON.stringify(state));
   } catch {
