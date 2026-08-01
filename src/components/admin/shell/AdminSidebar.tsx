@@ -5,7 +5,7 @@
  */
 
 import { useMemo, useState } from 'react';
-import { useNavigate, useLocation } from 'react-router';
+import { useNavigate, useLocation, Link } from 'react-router';
 import {
   ChevronDown,
   LogOut,
@@ -16,25 +16,19 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   Pin,
+  Moon,
+  Sun,
 } from 'lucide-react';
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from '@/components/ui/collapsible';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Input } from '@/components/ui/input';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 import { adminNavSections, resolveItemMinRole } from '@/config/adminNavigation';
 import type { AdminNavItem, AdminNavSection } from '@/config/adminNavigation';
 import { supabase } from '@/integrations/supabase/client';
+import { useTheme } from '@/components/theme/ThemeProvider';
 import { useAuth } from '@/hooks/useAuth';
 import { useGranularRoles } from '@/hooks/useGranularRoles';
 import { roleAtLeast } from '@/config/adminRoles';
@@ -44,7 +38,13 @@ import { cn } from '@/lib/utils';
 
 const COLLAPSE_KEY = 'admin.nav.collapsed';
 
-function IconBadge({ icon: Icon, size = 15 }: { icon: React.ComponentType<{ size?: number }>; size?: number }) {
+function IconBadge({
+  icon: Icon,
+  size = 15,
+}: {
+  icon: React.ComponentType<{ size?: number }>;
+  size?: number;
+}) {
   return (
     <div className="w-7 h-7 flex items-center justify-center text-muted-foreground">
       <Icon size={size} />
@@ -60,7 +60,10 @@ function CountBadge({ count, overdue }: { count: number | undefined; overdue?: n
       {hasOverdue && (
         <Tooltip>
           <TooltipTrigger asChild>
-            <span aria-label={`${overdue} overdue`} className="inline-block w-1.5 h-1.5 rounded-full bg-destructive" />
+            <span
+              aria-label={`${overdue} overdue`}
+              className="inline-block w-1.5 h-1.5 rounded-full bg-destructive"
+            />
           </TooltipTrigger>
           <TooltipContent>{overdue} overdue</TooltipContent>
         </Tooltip>
@@ -81,6 +84,7 @@ export function AdminSidebar() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
+  const { theme, setTheme } = useTheme();
   const { effectiveRole } = useGranularRoles();
   const isAdmin = effectiveRole === 'admin';
 
@@ -134,7 +138,9 @@ export function AdminSidebar() {
   };
 
   const isItemActive = (item: AdminNavItem) =>
-    item.route === '/admin' ? location.pathname === '/admin' : location.pathname.startsWith(item.route);
+    item.route === '/admin'
+      ? location.pathname === '/admin'
+      : location.pathname.startsWith(item.route);
 
   const userEmail = user?.email ?? '';
   const userDisplayName =
@@ -244,7 +250,9 @@ export function AdminSidebar() {
 
   const searching = search.trim().length > 0;
   const searchResults = searching
-    ? visibleItems.filter(({ item }) => item.label.toLowerCase().includes(search.trim().toLowerCase()))
+    ? visibleItems.filter(({ item }) =>
+        item.label.toLowerCase().includes(search.trim().toLowerCase()),
+      )
     : [];
 
   const pinnedItems = pins
@@ -259,12 +267,23 @@ export function AdminSidebar() {
           collapsed ? 'w-[64px]' : 'w-[260px]',
         )}
       >
-        {/* Header */}
+        {/* Header — the brand block is the way back to the public site. The
+            admin console no longer renders the public header, so this is the
+            only exit and it must survive the collapsed icon rail. */}
         <div className={cn('border-b border-border', collapsed ? 'px-2 py-4' : 'px-6 py-6')}>
           <div className="flex items-center gap-4">
-            <div className="w-8 h-8 flex items-center justify-center flex-shrink-0 bg-foreground text-background">
-              <Layers size={16} />
-            </div>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Link
+                  to="/"
+                  aria-label="Back to queer.guide"
+                  className="w-8 h-8 flex items-center justify-center flex-shrink-0 bg-foreground text-background no-underline hover:opacity-80"
+                >
+                  <Layers size={16} />
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent side="right">Back to queer.guide</TooltipContent>
+            </Tooltip>
             {!collapsed && (
               <div className="min-w-0">
                 <p className="text-sm font-bold tracking-tight leading-tight">Admin Console</p>
@@ -288,7 +307,11 @@ export function AdminSidebar() {
         {!collapsed && (
           <div className="px-4 py-2 border-b border-border">
             <div className="relative">
-              <SearchIcon size={13} className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground" aria-hidden />
+              <SearchIcon
+                size={13}
+                className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground"
+                aria-hidden
+              />
               <Input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
@@ -317,7 +340,9 @@ export function AdminSidebar() {
                 <div className="mb-1">
                   <div className="mx-1.5 mt-1 mb-px py-1 px-2 inline-flex items-center gap-2">
                     <Pin size={12} className="text-muted-foreground/70" aria-hidden />
-                    <span className="text-2xs font-bold tracking-[0.08em] text-muted-foreground/70">PINNED</span>
+                    <span className="text-2xs font-bold tracking-[0.08em] text-muted-foreground/70">
+                      PINNED
+                    </span>
                   </div>
                   {pinnedItems.map(({ item }) => (
                     <NavRow key={`pin-${item.id}`} item={item} />
@@ -347,13 +372,20 @@ export function AdminSidebar() {
                           className="w-[calc(100%-12px)] rounded-element mx-1.5 mb-px py-1 px-2 inline-flex items-center gap-2 hover:translate-x-0.5 transition-transform"
                           style={{ marginTop: sectionIdx === 0 ? 4 : 0 }}
                         >
-                          <span className={cn('flex items-center transition-transform', !isOpen && '-rotate-90')}>
+                          <span
+                            className={cn(
+                              'flex items-center transition-transform',
+                              !isOpen && '-rotate-90',
+                            )}
+                          >
                             <ChevronDown size={14} />
                           </span>
                           <span className="flex-1 text-left text-2xs font-bold tracking-[0.08em] text-muted-foreground/70">
                             {section.label.toUpperCase()}
                           </span>
-                          <span className="text-2xs font-medium text-muted-foreground/70">{items.length}</span>
+                          <span className="text-2xs font-medium text-muted-foreground/70">
+                            {items.length}
+                          </span>
                         </button>
                       </CollapsibleTrigger>
                       <CollapsibleContent>
@@ -378,8 +410,15 @@ export function AdminSidebar() {
           {!collapsed && <span className="text-2xs font-medium">Collapse</span>}
         </button>
 
-        {/* User info footer */}
-        <div className={cn('border-t border-border flex items-center gap-4 bg-muted/40', collapsed ? 'px-2 py-4 justify-center' : 'px-4 py-4')}>
+        {/* User info footer. Theme toggle and sign-out live OUTSIDE the
+            !collapsed guard: with the public header gone they are the only
+            copies in the app, and the collapsed state is persisted. */}
+        <div
+          className={cn(
+            'border-t border-border flex gap-4 bg-muted/40',
+            collapsed ? 'flex-col items-center px-2 py-4' : 'items-center px-4 py-4',
+          )}
+        >
           <Avatar className="h-8 w-8">
             <AvatarImage src={user?.user_metadata?.avatar_url as string | undefined} />
             <AvatarFallback className="bg-foreground text-background text-13 font-semibold">
@@ -387,29 +426,43 @@ export function AdminSidebar() {
             </AvatarFallback>
           </Avatar>
           {!collapsed && (
-            <>
-              <div className="flex-1 min-w-0">
-                <p className="font-semibold text-13 leading-tight whitespace-nowrap overflow-hidden text-ellipsis">
-                  {userDisplayName}
-                </p>
-                <p className="text-2xs text-muted-foreground/70 leading-tight whitespace-nowrap overflow-hidden text-ellipsis">
-                  {userEmail}
-                </p>
-              </div>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <button
-                    type="button"
-                    onClick={() => supabase.auth.signOut()}
-                    className="p-1 rounded-element text-muted-foreground/70 hover:bg-muted hover:text-muted-foreground transition-colors flex items-center justify-center flex-shrink-0"
-                  >
-                    <LogOut size={14} />
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent>Sign out</TooltipContent>
-              </Tooltip>
-            </>
+            <div className="flex-1 min-w-0">
+              <p className="font-semibold text-13 leading-tight whitespace-nowrap overflow-hidden text-ellipsis">
+                {userDisplayName}
+              </p>
+              <p className="text-2xs text-muted-foreground/70 leading-tight whitespace-nowrap overflow-hidden text-ellipsis">
+                {userEmail}
+              </p>
+            </div>
           )}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                type="button"
+                onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+                className="p-1 rounded-element text-muted-foreground/70 hover:bg-muted hover:text-muted-foreground transition-colors flex items-center justify-center flex-shrink-0"
+              >
+                {theme === 'dark' ? <Sun size={14} /> : <Moon size={14} />}
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side={collapsed ? 'right' : 'top'}>
+              {theme === 'dark' ? 'Light mode' : 'Dark mode'}
+            </TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                type="button"
+                onClick={() => supabase.auth.signOut()}
+                aria-label="Sign out"
+                className="p-1 rounded-element text-muted-foreground/70 hover:bg-muted hover:text-muted-foreground transition-colors flex items-center justify-center flex-shrink-0"
+              >
+                <LogOut size={14} />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side={collapsed ? 'right' : 'top'}>Sign out</TooltipContent>
+          </Tooltip>
         </div>
       </div>
     </TooltipProvider>

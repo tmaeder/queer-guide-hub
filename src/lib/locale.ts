@@ -14,3 +14,13 @@ export function stripLocale(pathname: string): string {
 export function isMapRoute(pathname: string): boolean {
   return /^\/(?:[a-z]{2}\/)?map\/?$/.test(pathname);
 }
+
+/**
+ * Whether the path is inside the admin console. Admin is mounted at the top
+ * level (routes.tsx), outside the optional `/:locale` parent, so there is no
+ * locale variant to strip. The exact-or-slash test keeps a future
+ * `/administrators` route from matching.
+ */
+export function isAdminRoute(pathname: string): boolean {
+  return pathname === '/admin' || pathname.startsWith('/admin/');
+}
