@@ -24,7 +24,8 @@ export const brandFields: FieldConfig[] = [
     type: 'text',
     required: true,
     group: 'basic',
-    helpText: 'Normalized join key against listings (lowercase). Immutable once products link to it.',
+    helpText:
+      'Normalized join key against listings (lowercase). Immutable once products link to it.',
   },
   { name: 'slug', label: 'Slug', type: 'text', group: 'basic' },
   { name: 'story', label: 'Story', type: 'textarea', group: 'basic', colSpan: 2 },
@@ -56,7 +57,10 @@ export const brandFields: FieldConfig[] = [
   {
     name: 'ownership_tags',
     label: 'Ownership Tags',
-    type: 'text',
+    // text over a text[] column. readOnly keeps it out of the form but NOT out
+    // of the validation schema (only hidden+readOnly is skipped), so a brand
+    // carrying ownership tags failed to save. Still not editable here.
+    type: 'tags',
     group: 'settings',
     readOnly: true,
     listColumn: true,
