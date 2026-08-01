@@ -1,11 +1,40 @@
 # Geo P4 — table→view swap runbook
 
-**Status: ready to execute, NOT executed. Needs a freeze window.**
+**Status: REHEARSED, not executed. Needs a freeze window.**
 
 P0–P3 are live (see `docs/plans/2026-07-25-geo-hierarchy-unification.md`). P4 replaces
 `cities` / `countries` / `queer_villages` with views over the spine, making
 `geo_places` + the satellites the single physical source of truth and retiring the
 dual-write.
+
+## Rehearsal — 2026-08-01
+
+The villages swap was run end-to-end in an isolated `geo_p4_rehearsal` schema
+(copies of `geo_places` + `geo_village_profiles`, all 190 villages), verified, and
+torn down. Production was not modified. The proven statements are in
+**[`geo-p4-villages-swap.sql`](./geo-p4-villages-swap.sql)** — execute that rather
+than composing SQL live in the window.
+
+Verified there: column-shape parity 36/36 (exact type *and* ordinal match),
+INSERT/UPDATE/DELETE through the view, ancestor derivation, ON DELETE CASCADE to
+the profile.
+
+Three things the rehearsal caught that would each have cost real time at 8am:
+
+1. **`latitude`/`longitude` need an explicit `::double precision` cast.** The spine
+   stores `numeric`; the old table exposed `double precision`. Without the cast the
+   view's types drift silently under ~137 client call sites.
+2. **The `INSTEAD OF` INSERT depends on `trg_geo_places_derive` surviving.** It fills
+   `parent_type` — which a CHECK requires to travel with `parent_id` — plus the
+   derived ancestors. Absent it, every insert fails `geo_places_parent_pair_chk`.
+3. **The DELETE cascade depends on the composite FK** `(place_id, place_type) →
+   geo_places(id, place_type) ON DELETE CASCADE`. It exists in production; the
+   rehearsal surfaced it because `CREATE TABLE ... LIKE INCLUDING ALL` does not copy
+   foreign keys, so the profile row outlived its spine row until the FK was added.
+
+Scope note: villages has only **2** dependent views (`geo_integrity_violations`,
+`triage_src_quality_village`) of the 8 across all three types — which is why it goes
+first.
 
 ## Why this one needs a human-scheduled window
 
@@ -41,6 +70,11 @@ Re-run the pre-flight **at window time**, not from this document: the schema cha
 under concurrent sessions, and `swap_workload` below is a snapshot.
 
 ## Swap workload (snapshot 2026-07-27 — re-verify)
+
+> Snapshot drift is real and expected: by 2026-08-01 a `trg_erq_cascade` trigger had
+> appeared on both `cities` and `queer_villages` (8 triggers → 10) from unrelated
+> entity-review-queue work. That is exactly why the pre-flight is a function you
+> re-run, not a number you read here.
 
 **Triggers still on the typed tables (8).** The three `trg_sync_geo_spine` are
 dropped (the mirror becomes the source). The five BEFORE triggers must be
