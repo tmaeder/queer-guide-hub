@@ -37,7 +37,9 @@ export const hotelFields: FieldConfig[] = [
     resolverType: 'address',
     relatedFields: {
       city: 'city',
+      state: 'state',
       country: 'country',
+      postal_code: 'postal_code',
       latitude: 'latitude',
       longitude: 'longitude',
       city_id: 'city_id',
@@ -57,6 +59,7 @@ export const hotelFields: FieldConfig[] = [
       country: 'country',
     },
   },
+  { name: 'state', label: 'State/Province', type: 'text', group: 'location' },
   {
     name: 'country',
     label: 'Country',
@@ -69,6 +72,7 @@ export const hotelFields: FieldConfig[] = [
       city_id: 'city_id',
     },
   },
+  { name: 'postal_code', label: 'Postal Code', type: 'text', group: 'location' },
   {
     name: 'latitude',
     label: 'Latitude',
@@ -103,7 +107,13 @@ export const hotelFields: FieldConfig[] = [
   { name: 'amenities', label: 'Amenities', type: 'tags', group: 'details' },
   { name: 'accessibility_attributes', label: 'Accessibility', type: 'tags', group: 'details' },
   { name: 'target_groups', label: 'Target Groups', type: 'tags', group: 'details' },
-  { name: 'accessibility_notes', label: 'Accessibility Notes', type: 'textarea', group: 'details', colSpan: 2 },
+  {
+    name: 'accessibility_notes',
+    label: 'Accessibility Notes',
+    type: 'textarea',
+    group: 'details',
+    colSpan: 2,
+  },
   { name: 'event_amenities', label: 'Event Amenities', type: 'tags', group: 'details' },
   { name: 'lgbtq_friendly', label: 'LGBTQ+ Friendly', type: 'boolean', group: 'lgbtq' },
   {
@@ -114,7 +124,14 @@ export const hotelFields: FieldConfig[] = [
     colSpan: 2,
   },
   { name: 'featured', label: 'Featured', type: 'boolean', group: 'settings' },
-  { name: 'featured_priority', label: 'Featured Priority', type: 'number', group: 'settings', min: 0, helpText: 'Higher = more prominent' },
+  {
+    name: 'featured_priority',
+    label: 'Featured Priority',
+    type: 'number',
+    group: 'settings',
+    min: 0,
+    helpText: 'Higher = more prominent',
+  },
   { name: 'verified', label: 'Verified', type: 'boolean', group: 'settings' },
   { name: 'images', label: 'Images', type: 'images', group: 'media' },
   { name: 'tags', label: 'Tags', type: 'unified_tag', group: 'settings' },
