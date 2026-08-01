@@ -106,9 +106,11 @@ export function useCockpitSections() {
         version: 2,
         byRole: { ...prev.byRole, [role]: { hidden: nextHidden } },
       };
-      // `preferences` is a generated Json column, so the structured value has to
-      // be widened once here rather than at each use site.
-      const nextPrefs = { ...prefs, cockpit } as Profile['preferences'];
+      // `preferences` is a generated `Json` column. An interface like
+      // CockpitPrefs is not assignable to Json (Json's index signature cannot
+      // absorb a declared interface), so TS refuses the direct assertion —
+      // widen through `unknown` once here rather than at each use site.
+      const nextPrefs = { ...prefs, cockpit } as unknown as Profile['preferences'];
 
       // Optimistic cache patch so the feed reflects the change immediately.
       if (cached) {
