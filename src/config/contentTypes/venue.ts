@@ -168,7 +168,9 @@ export const venueFields: FieldConfig[] = [
   { name: 'images', label: 'Images', type: 'images', group: 'media' },
   { name: 'logo_url', label: 'Logo', type: 'image', group: 'media' },
   // Settings
-  { name: 'featured', label: 'Featured', type: 'boolean', group: 'settings' },
+  // The legacy `venues.featured` column was dropped in PR #312; the toggle kept writing
+  // to it and did nothing. `is_featured` is the column every other entity uses.
+  { name: 'is_featured', label: 'Featured', type: 'boolean', group: 'settings' },
   { name: 'verified', label: 'Verified', type: 'boolean', group: 'settings' },
   { name: 'star_rating', label: 'Star Rating', type: 'number', group: 'settings', min: 1, max: 5 },
   {

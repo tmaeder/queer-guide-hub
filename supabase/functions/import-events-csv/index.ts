@@ -123,6 +123,8 @@ function parseCSV(csvText: string): EventData[] {
           eventData[header] = value && !isNaN(parseInt(value)) ? parseInt(value) : null;
           break;
         case 'is_free':
+          eventData.is_free = value.toLowerCase() === 'true';
+          break;
         case 'featured':
         case 'is_featured':
           eventData.is_featured = value.toLowerCase() === 'true';
