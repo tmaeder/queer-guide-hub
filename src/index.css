@@ -8,10 +8,26 @@
    wrong; only the cached entry was, and it outlives any code fix. #2476 has since
    made the middleware convert an HTML /assets/** response into a `404 no-store`
    so this cannot recur — but that guard never runs for a response already in
-   cache. Editing this file changes the content hash, which retires the poisoned
-   URL for every visitor without needing a zone-scoped purge token.
-   Safe to delete once that URL has aged out of cache (~2027-08-01). */
+   cache.
+
+   FIRST ATTEMPT WAS A NO-OP — this comment alone did not retire anything. The
+   content hash is computed from the MINIFIED output, and the minifier strips
+   comments, so the build kept emitting the same `index-BWI3mGiS.css` and every
+   visitor kept getting the poisoned entry. Verified against the deployment that
+   contained this very comment. To bust a CSS hash you must change something
+   that survives minification; the custom property below does, because a
+   minifier cannot prove an unreferenced custom property is unused.
+   Safe to delete both once that URL has aged out of cache (~2027-08-01). */
 @import 'tailwindcss';
+
+/* The hash-busting declaration itself. Must sit AFTER the @import — @import has
+   to precede every other at-rule, so putting this above it silently breaks the
+   Tailwind import. */
+@property --asset-cache-bust {
+  syntax: '<integer>';
+  inherits: false;
+  initial-value: 20260801;
+}
 
 @custom-variant dark (&:where(.dark, .dark *));
 

@@ -126,9 +126,31 @@ fi
 stale="/assets/js/does-not-exist-00000000.js"
 echo "  ·    missing chunk $stale -> $(curl -sS -o /dev/null -w '%{http_code} %{content_type}' "$SITE$stale")"
 
+# Attribute the degradation instead of leaving the next person to re-run the
+# whole elimination. Pages Functions are Workers and draw on the SAME account
+# quota, so when it is exhausted every Worker on the account answers 429 with
+# `error code: 1027` and Pages quietly serves the static layer alone. One
+# standalone Worker is enough to tell "account quota" from "our bundle".
+functions_verdict() {
+	local code body
+	code=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 10 "$WORKER_CANARY" 2>/dev/null || echo 000)
+	body=$(curl -sS --max-time 10 "$WORKER_CANARY" 2>/dev/null | head -c 60 || true)
+	if [ "$code" = "429" ] || case "$body" in *1027*) true ;; *) false ;; esac; then
+		echo "quota"
+	else
+		echo "unknown ($WORKER_CANARY -> $code)"
+	fi
+}
+WORKER_CANARY=${WORKER_CANARY:-https://search.queer.guide/search}
+
 echo
 echo "smoke: $pass passed, $fail failed"
 if [ "$degraded" -gt 0 ]; then
-	echo "::warning::Pages Functions still not executing ($degraded checks) — sitemaps, /api/*, /brand/* and all crawler meta are dead. Not a regression from this deploy; needs Cloudflare-side investigation (see CLAUDE.md)."
+	verdict=$(functions_verdict)
+	if [ "$verdict" = "quota" ]; then
+		echo "::warning::Pages Functions dead ($degraded checks) because the CLOUDFLARE ACCOUNT WORKERS QUOTA IS EXHAUSTED — $WORKER_CANARY also returns 429/1027. Not a repo fault and no deploy fixes it: restore the Workers Paid plan. See CLAUDE.md 'Pages Functions do not execute in production'."
+	else
+		echo "::warning::Pages Functions not executing ($degraded checks) — sitemaps, /api/*, /brand/* and all crawler meta are dead. Account Workers quota looks OK ($verdict), so this is NOT the known 1027 quota stop — investigate as a new fault. See CLAUDE.md."
+	fi
 fi
 [ "$fail" -eq 0 ] || exit 1
