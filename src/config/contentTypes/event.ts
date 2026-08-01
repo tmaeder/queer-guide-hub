@@ -220,7 +220,9 @@ export const eventContentType: ContentTypeConfig = {
   commentable: true,
   aiAssist: {
     ops: ['quality_review', 'summarize', 'seo_draft', 'auto_tag'],
-    writableFields: ['description', 'meta_title', 'meta_description', 'tags'],
+    // No meta_title/meta_description — events has no such columns. SEO
+    // overrides for entity types live in the cms_content_metadata sidecar.
+    writableFields: ['description', 'tags'],
   },
   admin: {
     qualityRoute: '/admin/content/event-quality',

@@ -149,7 +149,9 @@ export const personalityContentType: ContentTypeConfig = {
   commentable: true,
   aiAssist: {
     ops: ['quality_review', 'summarize', 'seo_draft', 'fact_check'],
-    writableFields: ['bio', 'description', 'meta_title', 'meta_description'],
+    // No meta_title/meta_description — personalities has no such columns. SEO
+    // overrides for entity types live in the cms_content_metadata sidecar.
+    writableFields: ['bio', 'description'],
   },
   admin: {
     qualityRoute: '/admin/quality',

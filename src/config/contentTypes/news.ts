@@ -165,7 +165,9 @@ export const newsArticleContentType: ContentTypeConfig = {
   commentable: true,
   aiAssist: {
     ops: ['quality_review', 'summarize', 'seo_draft', 'auto_tag'],
-    writableFields: ['excerpt', 'meta_title', 'meta_description', 'tags'],
+    // No meta_title/meta_description — news_articles has no such columns. SEO
+    // overrides for entity types live in the cms_content_metadata sidecar.
+    writableFields: ['excerpt', 'tags'],
   },
   admin: {
     duplicatesRoute: '/admin/duplicates',
