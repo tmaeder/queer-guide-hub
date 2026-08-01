@@ -1,5 +1,22 @@
 {
   "version": 1,
   "include": ["/*"],
-  "exclude": []
+  "exclude": [
+    "/assets/*",
+    "/fonts/*",
+    "/icons/*",
+    "/images/*",
+    "/og/*",
+    "/locales/*",
+    "/extension/*",
+    "/sw.js",
+    "/umami.js",
+    "/favicon.ico",
+    "/robots.txt",
+    "/build-id.txt",
+    "/placeholder.svg",
+    "/design-audit.json",
+    "/offline.html",
+    "/410.html"
+  ]
 }

@@ -1512,3 +1512,20 @@ label a:hover {
   inset: 0 !important;
   min-width: 0 !important;
 }
+
+/* Cache-bust 2026-08-01 — exists only to rotate this stylesheet's content hash.
+   The `/  200` catch-all from #2469 made Pages answer
+   /assets/css/index-BWI3mGiS.css with index.html, and the /assets/* rule in
+   public/_headers stamps every such response `immutable, max-age=31536000`.
+   Cloudflare cached the SPA shell under the stylesheet URL, so the site
+   rendered completely unstyled — and would have until 2027: reverting the
+   rewrite does not evict an already-cached object, and the content hash had
+   not moved, so every redeploy shipped the same poisoned URL. Changing the
+   emitted bytes ships a filename that was never poisoned.
+   A comment alone would NOT work — build.cssMinify follows `minify:'esbuild'`
+   (vite.config.ts) with legalComments:'none', and the hash is taken from the
+   minified output, so comments never reach it.
+   Inert by construction: no element carries this attribute. */
+[data-qg-cache-bust='2026-08-01'] {
+  display: revert;
+}
