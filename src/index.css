@@ -8,8 +8,19 @@
    wrong; only the cached entry was, and it outlives any code fix. #2476 has since
    made the middleware convert an HTML /assets/** response into a `404 no-store`
    so this cannot recur — but that guard never runs for a response already in
-   cache. Editing this file changes the content hash, which retires the poisoned
-   URL for every visitor without needing a zone-scoped purge token.
+   cache.
+
+   #2479 tried to retire the URL by adding this comment, on the theory that
+   "editing this file changes the content hash". It does not: Vite minifies CSS
+   and strips comments, so the emitted bytes were identical and the build kept
+   producing index-BWI3mGiS.css. The CI smoke log for a09fe1a3e — a deploy that
+   already contained this comment — still reports index-BWI3mGiS.css, which is
+   the proof. Only a change to the *emitted* CSS moves the hash, which is what
+   `--asset-rev` below is for: a custom property survives minification.
+
+   Also note the poisoning is per-PoP. That same CI run saw text/css from a US
+   edge while Zurich served text/html on the identical deployment, so a green
+   asset check in CI does not mean visitors are fine.
    Safe to delete once that URL has aged out of cache (~2027-08-01). */
 @import 'tailwindcss';
 
@@ -234,6 +245,14 @@
    --foreground or --primary directly. */
 
 :root {
+  /* Bump this integer to force a new stylesheet content hash — the deploy-only
+     substitute for a cache purge when a hashed asset URL has been poisoned at
+     the edge (see the file header for the 2026-08-01 incident). It must stay a
+     real declaration: a comment would be stripped by the minifier and the hash
+     would not move. Verified: adding this took the build from
+     index-BWI3mGiS.css to index-Bt7ko9Qm.css. */
+  --asset-rev: 1;
+
   --background: 0 0% 100%;
   --foreground: 0 0% 4%;
 
