@@ -66,8 +66,15 @@ Deno.serve(withErrorReporting('pipeline-normalize', async (req) => {
             try {
               const geo = await geocodeAddress(addrParts)
               if (geo) {
-                (normalized.location as Record<string, unknown>).lat = geo.lat
-                ;(normalized.location as Record<string, unknown>).lng = geo.lng
+                const target = normalized.location as Record<string, unknown>
+                target.lat = geo.lat
+                target.lng = geo.lng
+                // Fill only what is still empty — a source-provided value always
+                // outranks the geocoder's guess.
+                if (!target.state && geo.state) target.state = geo.state
+                if (!target.postal_code && geo.postcode) target.postal_code = geo.postcode
+                if (!target.country_code && geo.countrycode) target.country_code = geo.countrycode
+                if (!target.country && geo.countrycode) target.country = geo.countrycode
                 normalized.geocoded_by = 'photon'
                 normalized.geocoded_at = new Date().toISOString()
               }
@@ -184,6 +191,10 @@ function normalizeItem(raw: Record<string, unknown>, entityType: string): Record
   const lng = Number(raw.lng ?? raw.longitude ?? loc.lng ?? raw.lon ?? geo.lng)
   if (Number.isFinite(lat) || Number.isFinite(lng) || raw.address || raw.city || raw.country) {
     const country = cleanText(raw.country || loc.country || '')
+    // state/postal_code accept every alias the sources actually emit — notably
+    // `postcode`, which source-osm-venue has always sent and which was silently
+    // dropped here, so it never reached venues.postal_code.
+    // Canonical output keys are `state` and `postal_code`.
     n.location = {
       lat: Number.isFinite(lat) ? lat : null,
       lng: Number.isFinite(lng) ? lng : null,
@@ -191,6 +202,14 @@ function normalizeItem(raw: Record<string, unknown>, entityType: string): Record
       city:    cleanText(raw.city || loc.city || ''),
       country: country || null,
       country_code: String(raw.country_code || raw.countryCode || loc.country_code || '').toUpperCase().slice(0, 2) || null,
+      state: cleanText(
+        raw.state || raw.region || raw.province || raw.administrative_area
+        || loc.state || loc.region || loc.province || '',
+      ) || null,
+      postal_code: cleanText(
+        raw.postal_code || raw.postcode || raw.zip || raw.zip_code || raw.postalCode
+        || loc.postal_code || loc.postcode || loc.zip || '',
+      ) || null,
     }
   }
 
@@ -539,8 +558,17 @@ function hydrateSocialSignalsIntoRaw(raw: Record<string, unknown>): void {
   }
 }
 
-/** Forward-geocode a free-form address via Photon (komoot). Returns null on any failure. */
-async function geocodeAddress(query: string): Promise<{ lat: number; lng: number } | null> {
+/**
+ * Forward-geocode a free-form address via Photon (komoot). Returns null on any failure.
+ *
+ * Photon returns state / postcode / countrycode in the SAME response as the
+ * coordinates, so we hand them back too — filling them costs zero extra
+ * requests. This used to discard them, which is why staged rows kept arriving
+ * without a postal code even when a geocode had just succeeded.
+ */
+async function geocodeAddress(query: string): Promise<
+  { lat: number; lng: number; state: string | null; postcode: string | null; countrycode: string | null } | null
+> {
   try {
     const url = `https://photon.komoot.io/api?q=${encodeURIComponent(query)}&limit=1&lang=en`
     const controller = new AbortController()
@@ -548,11 +576,24 @@ async function geocodeAddress(query: string): Promise<{ lat: number; lng: number
     const res = await fetch(url, { signal: controller.signal })
     clearTimeout(timer)
     if (!res.ok) return null
-    const j = await res.json() as { features?: Array<{ geometry?: { coordinates?: number[] } }> }
-    const coords = j.features?.[0]?.geometry?.coordinates
+    const j = await res.json() as {
+      features?: Array<{
+        geometry?: { coordinates?: number[] }
+        properties?: { state?: string; postcode?: string; countrycode?: string }
+      }>
+    }
+    const feature = j.features?.[0]
+    const coords = feature?.geometry?.coordinates
     if (!coords || coords.length < 2) return null
     const [lng, lat] = coords
     if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null
-    return { lat, lng }
+    const p = feature?.properties ?? {}
+    return {
+      lat,
+      lng,
+      state: p.state?.trim() || null,
+      postcode: p.postcode?.trim() || null,
+      countrycode: p.countrycode?.trim().toUpperCase().slice(0, 2) || null,
+    }
   } catch { return null }
 }
