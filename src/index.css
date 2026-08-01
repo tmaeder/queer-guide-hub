@@ -1,3 +1,16 @@
+/* Cache-bust 2026-08-01: index-BWI3mGiS.css was poisoned at the Cloudflare edge.
+   During that day's routing outage /assets/** fell through to the SPA shell, so
+   this stylesheet URL returned index.html — and the `/assets/*` rule in
+   public/_headers stamped that HTML `max-age=31536000, immutable`. The edge
+   cached the wrong body for a YEAR (verified: cf-cache-status HIT, age 13366,
+   content-type text/html) while queer-guide.pages.dev served the real text/css,
+   so every visitor to the apex got an unstyled site. The deployment was never
+   wrong; only the cached entry was, and it outlives any code fix. #2476 has since
+   made the middleware convert an HTML /assets/** response into a `404 no-store`
+   so this cannot recur — but that guard never runs for a response already in
+   cache. Editing this file changes the content hash, which retires the poisoned
+   URL for every visitor without needing a zone-scoped purge token.
+   Safe to delete once that URL has aged out of cache (~2027-08-01). */
 @import 'tailwindcss';
 
 @custom-variant dark (&:where(.dark, .dark *));
