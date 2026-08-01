@@ -16,6 +16,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5';
 import { getCorsHeaders } from '../_shared/supabase-client.ts';
 import { checkUserRateLimit } from '../_shared/user-rate-limit.ts';
+import { hasEnoughSignal, ungroundedSensitiveConcepts } from '../_shared/story-title-guard.ts';
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -51,8 +52,11 @@ Rules:
 - Narrative MUST follow the exact template "As a X, I Y, so that Z."
 - Pick the most specific persona the content supports. Examples:
   traveller, LGBTQ+ traveller, venue owner, event organiser, admin, visitor.
+- Use only concepts present in the items. Never introduce a theme, topic or
+  subject matter the items do not mention — especially not safety, identity or
+  discrimination themes. If the items are build/infrastructure errors, say so
+  plainly and use persona "admin".
 - Plain sentence case. No quotes, no markdown, no preface.
-- If items are API errors rather than user reports, use persona "admin".
 - Output ONLY the JSON object.`;
 
 function buildUserPrompt(members: MemberText[]): string {
@@ -172,11 +176,35 @@ Deno.serve(async (req) => {
 
   if (members.length === 0) return jsonResp({ error: 'no usable member content' }, 400);
 
+  // The text the model will actually see. With nothing in it the model
+  // free-associates off the system prompt's LGBTQ+ framing and invents a
+  // safety theme — refuse rather than let it guess. See
+  // _shared/story-title-guard.ts for the 2026-08-01 incident.
+  const corpus = members.map((m) => m.title ?? m.message ?? m.description ?? '').filter(Boolean);
+  if (!hasEnoughSignal(corpus)) {
+    return jsonResp({ success: true, skipped: 'insufficient_member_text' });
+  }
+
   let result: { brief_title: string; narrative: string };
   try {
     result = await cfNarrate(members);
   } catch (err) {
     return jsonResp({ error: (err as Error).message }, 502);
+  }
+
+  // Discard a narrative that asserts a safety or identity theme the source
+  // never mentions; keep the factual seed text instead.
+  const ungrounded = ungroundedSensitiveConcepts(
+    `${result.brief_title} ${result.narrative}`,
+    corpus,
+  );
+  if (ungrounded.length > 0) {
+    console.warn(
+      '[story-narrate] rejected ungrounded narrative',
+      storyId,
+      JSON.stringify({ ...result, concepts: ungrounded }),
+    );
+    return jsonResp({ success: true, skipped: 'ungrounded_narrative', concepts: ungrounded });
   }
 
   const { error: updErr } = await admin
