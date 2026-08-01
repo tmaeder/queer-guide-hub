@@ -64,12 +64,14 @@
 # that used to live here were rejected by the parser on every deploy and
 # never did anything.
 #
-# Accepted gap: the built-in fallback answers *any* unmatched path with
-# index.html, hashed-asset URLs included, so a stale bundle asking for a
-# deleted chunk gets 200 text/html rather than a 404. Two layers absorb it —
-# public/sw.js turns an HTML answer for a .js/.css URL into a synthetic 404,
-# and functions/_middleware.ts does the same at the edge whenever Pages
-# Functions are running. scripts/smoke-pages.sh reports it after each deploy.
+# The built-in fallback answers *any* unmatched path with index.html,
+# hashed-asset URLs included — so on its own a stale bundle asking for a
+# deleted chunk would get 200 text/html rather than a 404. functions/
+# _middleware.ts closes that: it inspects asset-like paths and turns an HTML
+# answer into a real 404. That only works while Pages Functions are routed,
+# which is what public/_routes.json guarantees — do not delete it.
+# public/sw.js does the same client-side as a second layer, and
+# scripts/smoke-pages.sh asserts all of it after every deploy.
 #
 # DO NOT add identity rewrites like `/sw.js /sw.js 200` — they create
 # infinite rewrite loops that abort rule parsing for the whole file.
