@@ -212,7 +212,7 @@ jobs:
       # (Cloudflare connection-timeout). Caching DENO_DIR removes the fetch on a
       # cache hit; the retry below covers a cold cache when a registry is flaky.
       - name: Cache Deno dependencies
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/.cache/deno
           key: deno-${{ runner.os }}-${{ hashFiles('supabase/functions/_tests/**/*.ts') }}
