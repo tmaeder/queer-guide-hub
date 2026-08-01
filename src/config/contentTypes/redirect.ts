@@ -81,17 +81,19 @@ export const redirectFields: FieldConfig[] = [
     helpText: 'Where the redirect lands. A path, or an absolute URL.',
   },
   {
+    // A number field, NOT a select. `status_code` is an integer column, but
+    // SelectField emits strings and nothing in the save path coerces — so a
+    // select built a z.enum of strings that rejected the NUMBER Postgres
+    // returns, and every existing redirect failed validation on open. Guarded
+    // by redirectStatusCode.test.ts.
     name: 'status_code',
     label: 'Status Code',
-    type: 'select',
+    type: 'number',
     group: 'settings',
     sortable: true,
-    options: [
-      { value: '301', label: '301 Permanent' },
-      { value: '302', label: '302 Temporary' },
-      { value: '307', label: '307 Temporary' },
-      { value: '308', label: '308 Permanent' },
-    ],
+    min: 300,
+    max: 399,
+    helpText: '301 or 308 permanent, 302 or 307 temporary.',
   },
   {
     name: 'is_enabled',
