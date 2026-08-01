@@ -15,7 +15,8 @@
 // field_provenance.unresolved_persons.
 //
 // Idempotent: upsert on slug. Re-runs never overwrite status/review_status/
-// is_featured (admin-owned after launch); personality links are delete+reinsert.
+// seo_indexable/is_featured (admin-owned after launch) UNLESS --sync-status is
+// passed; personality links are delete+reinsert.
 //
 // Auth: Supabase Management API via the macOS-keychain CLI token (house
 // pattern; set SUPABASE_PAT to override). Batches of 25 keep the
@@ -73,6 +74,12 @@ const MILESTONE_SEED: Milestone[] = JSON.parse(readFileSync(SEED_FILE, 'utf8'))
 
 const PROJECT = 'xqeacpakadqfxjxjcewc'
 const DRY = process.argv.includes('--dry-run')
+// Opt-in: also reconcile status/review_status/seo_indexable from the seed on
+// conflict. OFF by default because those three are admin-owned after launch —
+// but without it the seed can never repair them, which is how the 2026-07
+// history import ended up with all 3,014 rows pinned at draft/pending (every
+// re-run refreshed the prose and silently left the publish state untouched).
+const SYNC_STATUS = process.argv.includes('--sync-status')
 const BATCH = 25
 
 // Seed country names the tool's flags.ts map doesn't cover.
@@ -321,7 +328,10 @@ async function main() {
         city_id = excluded.city_id, country_id = excluded.country_id,
         category = excluded.category, impact = excluded.impact,
         significance = excluded.significance, sources = excluded.sources,
-        field_provenance = excluded.field_provenance`)
+        field_provenance = excluded.field_provenance
+      ${SYNC_STATUS ? `, status = excluded.status,
+        review_status = excluded.review_status,
+        seo_indexable = excluded.seo_indexable` : ''}`)
   }
 
   // --- sync personality links (delete+reinsert, idempotent) ------------------
