@@ -53,7 +53,13 @@ Dev/
 supabase/.temp/
 
 # Asset staging dirs
-Icons/
+# Root-anchored: macOS sets core.ignorecase=true, so a bare `Icons/` also
+# matched the real, shipped `public/icons/` and `extension/icons/` — the
+# existing files there only survive because they predate the rule, while a
+# NEW pwa/extension icon was silently dropped by `git add -A`.
+/Icons/
+!public/icons/
+!extension/icons/
 !src/components/icons/
 stich/
 Queer Guide/
@@ -83,7 +89,10 @@ scripts/output/
 ds-bundle/
 .design-sync/.cache/
 .design-sync/learnings/
-types/
+# Root-anchored (`--declarationDir types` runs from the repo root). A bare
+# `types/` also matched `src/types/` and `scraper/src/types/` — real source
+# whose existing files only survive because they predate the rule.
+/types/
 /index.d.ts
 
 # Local test-user credentials (not for commit)
