@@ -616,16 +616,51 @@ async function processPostalQueue(
       if (job.latitude == null || job.longitude == null) throw new Error('no_coords')
       const geo = await photonReverse(Number(job.latitude), Number(job.longitude))
 
-      if (geo?.postcode || geo?.state) {
+      // country_id from Photon's countrycode. This is a DIFFERENT kind of answer
+      // from the free-text `country` column, which needs resolve_country_from_text's
+      // corroboration because a 2-letter string there might be a US state. A
+      // countrycode derived from coordinates is unambiguous, so a direct lookup
+      // is correct — and it is the only way ~1,000 venues that have coordinates
+      // but neither a city link nor country text can ever get a country.
+      let geoCountryId: string | null = null
+      if (geo?.countrycode) {
+        const { data: co } = await supabase
+          .from('countries')
+          .select('id')
+          .eq('code', geo.countrycode)
+          .is('duplicate_of_id', null)
+          .limit(1)
+          .maybeSingle()
+        geoCountryId = co?.id ?? null
+      }
+
+      if (geo?.postcode || geo?.state || geoCountryId) {
         // NULL-fill only — never overwrite a value a source already supplied.
         const patch: Record<string, string> = {}
-        if (geo.postcode) patch.postal_code = geo.postcode
-        if (geo.state) patch.state = geo.state
+        if (geo?.postcode) patch.postal_code = geo.postcode
+        if (geo?.state) patch.state = geo.state
 
-        let q = supabase.from(table).update(patch).eq('id', job.entity_id)
-        if (geo.postcode) q = q.is('postal_code', null)
-        const { error: upErr } = await q
-        if (upErr) throw new Error(upErr.message)
+        if (Object.keys(patch).length > 0) {
+          let q = supabase.from(table).update(patch).eq('id', job.entity_id)
+          if (geo?.postcode) q = q.is('postal_code', null)
+          const { error: upErr } = await q
+          if (upErr) throw new Error(upErr.message)
+        }
+
+        // country_id gets its OWN statement with its own `is null` guard.
+        // PostgREST applies one filter set per update, so folding it into the
+        // patch above would let a row that already has a country be overwritten
+        // whenever it happened to be missing a postal code. Writing country_id
+        // fires the derive trigger and recomputes safety_gated — which is
+        // exactly why it must only ever fill a NULL.
+        if (geoCountryId) {
+          const { error: cErr } = await supabase
+            .from(table)
+            .update({ country_id: geoCountryId })
+            .eq('id', job.entity_id)
+            .is('country_id', null)
+          if (cErr) throw new Error(cErr.message)
+        }
         filled++
       } else {
         // A real answer of "this place has no postcode/state" (city-states,

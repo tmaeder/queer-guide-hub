@@ -20,9 +20,12 @@
  * as an overnight run, and do not lower the interval without watching for 429s
  * across a few hundred requests first.
  *
- * Writes touch ONLY state/postal_code, so venue_coord_guard_trg,
- * trg_venue_geocode and trg_*_safety_gated (all scoped to coords/city/country)
- * stay out of it. Only the search_documents sync fires.
+ * Writes touch state, postal_code and country_id. The first two fire nothing but
+ * the search_documents sync — venue_coord_guard_trg and trg_venue_geocode are
+ * scoped to coords/city/address and stay out of it. country_id DOES reach the
+ * derive trigger and recomputes safety_gated, which is correct (a venue that
+ * just learned it is in a criminalizing country must be gated) and is why every
+ * write is coalesce-guarded to fill NULLs only.
  */
 
 import { execFileSync } from 'node:child_process';
@@ -93,7 +96,13 @@ async function reverse(lat, lon) {
   const j = await res.json();
   const p = j?.features?.[0]?.properties ?? {};
   // `state` only — Photon's county for Los Angeles is "Los Angeles", not a state.
-  return { state: p.state?.trim() || null, postcode: p.postcode?.trim() || null };
+  // countrycode comes back in the same response; it is the only way a venue with
+  // coordinates but no city link and no country text can ever get a country.
+  return {
+    state: p.state?.trim() || null,
+    postcode: p.postcode?.trim() || null,
+    countrycode: p.countrycode?.trim().toUpperCase().slice(0, 2) || null,
+  };
 }
 
 let done = 0, filled = 0, empty = 0, failed = 0;
@@ -118,7 +127,7 @@ for (;;) {
       if (r.latitude == null || r.longitude == null) throw new Error('no_coords');
       const geo = await reverse(Number(r.latitude), Number(r.longitude));
       const table = TABLES[r.entity_type];
-      if (geo.postcode || geo.state) {
+      if (geo.postcode || geo.state || geo.countrycode) {
         (writes[table] ??= []).push({ id: r.entity_id, ...geo });
         filled++;
       } else {
@@ -150,13 +159,24 @@ for (;;) {
     for (const [table, items] of Object.entries(writes)) {
       if (!items.length) continue;
       const values = items
-        .map((i) => `(${q(i.id)}::uuid, ${i.state ? q(i.state) : 'null'}, ${i.postcode ? q(i.postcode) : 'null'})`)
+        .map(
+          (i) =>
+            `(${q(i.id)}::uuid, ${i.state ? q(i.state) : 'null'}, ${i.postcode ? q(i.postcode) : 'null'}, ${i.countrycode ? q(i.countrycode) : 'null'})`,
+        )
         .join(',');
       // coalesce = NULL-fill only; never overwrite what a source supplied.
+      // country_id resolves from Photon's countrycode via a plain code lookup —
+      // unlike the free-text `country` column, a countrycode derived from
+      // coordinates is unambiguous and needs no corroboration. Filling it fires
+      // the derive trigger, which recomputes safety_gated; that is why the
+      // coalesce guard matters.
       await sql(`update public.${table} t
                     set state = coalesce(t.state, v.state),
-                        postal_code = coalesce(t.postal_code, v.postcode)
-                  from (values ${values}) as v(id, state, postcode)
+                        postal_code = coalesce(t.postal_code, v.postcode),
+                        country_id = coalesce(t.country_id, co.id)
+                  from (values ${values}) as v(id, state, postcode, cc)
+                  left join public.countries co
+                         on upper(co.code) = v.cc and co.duplicate_of_id is null
                   where t.id = v.id`);
     }
     if (drop.length) {
