@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
+import { waitForAppReady } from './support/appReady';
 
 // Route transitions fade opacity 0->1 (LayoutShell motion.div). axe blends that
 // opacity into computed text color, flagging transient mid-fade frames as contrast
@@ -14,11 +15,10 @@ test.describe('Events — automated a11y', () => {
 
   test('/events has no serious/critical axe violations', async ({ page }) => {
     await page.goto('/events');
-    // networkidle (not domcontentloaded): wait for stylesheets to finish loading
-    // so axe scans the fully-painted page. Scanning at domcontentloaded catches a
-    // pre-paint flash where themed buttons are briefly unstyled, yielding flaky
-    // color-contrast violations. Matches the sibling a11y-header/dialogs/admin specs.
-    await page.waitForLoadState('networkidle');
+    // Wait for stylesheets to apply so axe scans the fully-painted page —
+    // scanning at domcontentloaded catches a pre-paint flash where themed
+    // buttons are briefly unstyled, yielding flaky colour-contrast violations.
+    await waitForAppReady(page);
     await page.waitForSelector('main', { timeout: 30_000 }).catch(() => {});
 
     const results = await new AxeBuilder({ page })
@@ -35,7 +35,7 @@ test.describe('Events — automated a11y', () => {
 
   test('ticket CTA has accessible name when event cards render', async ({ page }) => {
     await page.goto('/events');
-    await page.waitForLoadState('networkidle');
+    await waitForAppReady(page);
     const ticketBtn = page.getByRole('button', { name: /get tickets|tickets/i }).first();
     // If no tickets on any event today, skip; otherwise it must have an accessible name
     if ((await ticketBtn.count()) > 0) {

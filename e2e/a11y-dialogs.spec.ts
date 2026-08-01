@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
+import { waitForAppReady } from './support/appReady';
 
 // Route transitions fade opacity 0->1 (LayoutShell motion.div). axe blends that
 // opacity into computed text color, flagging transient mid-fade frames as contrast
@@ -38,7 +39,7 @@ test.describe('Public dialogs — automated a11y', () => {
   // No standalone command palette exists in the codebase today.
   test('search suggestions popover', async ({ page }) => {
     await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await waitForAppReady(page);
     await page.waitForTimeout(500);
 
     // The search input is always rendered — focus it then assert no a11y violations.
@@ -68,7 +69,7 @@ test.describe('Public dialogs — automated a11y', () => {
 
   test('event card → detail page (no dialog leak)', async ({ page }) => {
     await page.goto('/events');
-    await page.waitForLoadState('networkidle');
+    await waitForAppReady(page);
     // Sanity: no orphan dialog rendered on the events index
     const dialogs = await page.getByRole('dialog').count();
     expect(dialogs).toBe(0);
@@ -76,7 +77,7 @@ test.describe('Public dialogs — automated a11y', () => {
 
   test('cookie/consent banner (if present) has accessible name', async ({ page }) => {
     await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await waitForAppReady(page);
     const banner = page.getByRole('dialog').or(page.getByRole('alertdialog')).first();
     if (!(await banner.isVisible().catch(() => false))) {
       test.skip(true, 'No consent banner currently shown.');
