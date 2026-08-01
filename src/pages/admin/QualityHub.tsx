@@ -1,19 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Link } from 'react-router';
-import {
-  MapPin,
-  Building,
-  Calendar,
-  Users,
-  ShoppingBag,
-  Home,
-  Flag,
-  PenLine,
-  ShieldCheck,
-  GitMerge,
-  Link2,
-  Table2,
-} from 'lucide-react';
+import { Calendar, ShieldCheck, Table2 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -24,6 +11,7 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { useAdminCounts } from '@/hooks/useAdminCounts';
+import { QUALITY_GATES } from '@/config/adminQueues';
 import { CityQualityPanel } from '@/components/admin/CityQualityPanel';
 import { AmenityQualityPanel } from '@/components/admin/AmenityQualityPanel';
 import { VillageQualityPanel } from '@/components/admin/VillageQualityPanel';
@@ -42,29 +30,20 @@ interface QualityEngine {
   countKey: string | null;
   title: string;
   description: string;
-  /** Where the card navigates. null when the gate is reviewed inline via `section`. */
-  route: string | null;
+  /** Where the card navigates. */
+  route: string;
   /** EngineSection.value to expand in place instead of navigating. */
   section?: string;
   icon: LucideIcon;
 }
 
-/** Review actions live in the unified inbox; each gated engine deep-links to its queue. */
-const ENGINES: QualityEngine[] = [
-  {
-    countKey: 'quality_city',
-    title: 'Cities',
-    description: 'Safety notes, ratings, and hooks. Criminalizing destinations stay human-gated.',
-    route: '/admin/inbox?queue=quality-city',
-    icon: MapPin,
-  },
-  {
-    countKey: 'quality_venue',
-    title: 'Venues',
-    description: 'Amenity vocabulary and accessibility claims. Accessibility is always review-gated.',
-    route: '/admin/inbox?queue=quality-venue',
-    icon: Building,
-  },
+/**
+ * The one card that is not a queue: no count, no SLA, no overdue notion. It is
+ * kept local rather than pushed into ADMIN_QUEUES, which would force every
+ * consumer of the registry to null-check a countKey that is non-null for all
+ * twenty real queues.
+ */
+const UNGATED_ENGINES: QualityEngine[] = [
   {
     countKey: null,
     title: 'Events',
@@ -72,57 +51,17 @@ const ENGINES: QualityEngine[] = [
     route: '/admin/content/event-quality',
     icon: Calendar,
   },
-  {
-    countKey: 'quality_personality',
-    title: 'Personalities',
-    description: 'LLM-proposed identity fields and adult-cohort consent publishing.',
-    route: '/admin/inbox?queue=quality-personality',
-    icon: Users,
-  },
-  {
-    countKey: 'quality_marketplace',
-    title: 'Marketplace',
-    description: 'Content-rating downgrades. Wrong-SFW never applies without approval.',
-    route: '/admin/inbox?queue=quality-marketplace',
-    icon: ShoppingBag,
-  },
-  {
-    countKey: 'quality_village',
-    title: 'Queer Villages',
-    description: 'Grounded LLM rewrites of history, descriptions, and landmarks.',
-    route: '/admin/inbox?queue=quality-village',
-    icon: Home,
-  },
-  {
-    countKey: 'quality_duplicates',
-    title: 'Duplicates',
-    description: 'Nightly identity sweep. Exact-key merges are automatic; ambiguous pairs wait here.',
-    route: '/admin/inbox?queue=dedup-review',
-    icon: GitMerge,
-  },
-  {
-    countKey: 'review_org_links',
-    title: 'Business links',
-    description:
-      'Ambiguous entity→business matches and brand mint proposals from the nightly spine backfill.',
-    route: null,
-    section: 'business-links',
-    icon: Link2,
-  },
-  {
-    countKey: 'quality_existence',
-    title: 'Liveness & closure',
-    description: 'Existence Engine: flagged dead entities awaiting archive review.',
-    route: '/admin/content/liveness',
-    icon: Flag,
-  },
-  {
-    countKey: 'quality_editorial',
-    title: 'Editorial drafts',
-    description: 'Country editorial hooks and paragraphs awaiting approval.',
-    route: '/admin/inbox?queue=editorial',
-    icon: PenLine,
-  },
+];
+
+/**
+ * Review actions live in the unified inbox; each gated engine deep-links to its
+ * queue. Gates come from the shared registry so their title, count key and
+ * destination cannot drift from the cockpit's copy of the same list.
+ */
+const ENGINES: QualityEngine[] = [
+  ...QUALITY_GATES.slice(0, 2),
+  ...UNGATED_ENGINES,
+  ...QUALITY_GATES.slice(2),
 ];
 
 /** One engine dashboard section: edit link + panels + dedup cross-link. */
@@ -322,19 +261,22 @@ export default function QualityHub() {
         {ENGINES.map((e) => {
           const pending = e.countKey ? counts?.[e.countKey] : undefined;
           const body = <EngineCardBody engine={e} pending={pending} />;
-          return e.route ? (
-            <Link key={e.title} to={e.route} className={CARD_CLASS}>
-              {body}
-            </Link>
-          ) : (
+          // A gate with a `section` is reviewed inline on this page — expand it
+          // rather than navigating. `route` is still set for the cockpit, which
+          // has no accordion to expand and links here instead.
+          return e.section ? (
             <button
               key={e.title}
               type="button"
               className={CARD_CLASS}
-              onClick={() => e.section && revealSection(e.section)}
+              onClick={() => revealSection(e.section as string)}
             >
               {body}
             </button>
+          ) : (
+            <Link key={e.title} to={e.route} className={CARD_CLASS}>
+              {body}
+            </Link>
           );
         })}
       </div>
