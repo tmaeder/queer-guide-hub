@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 @custom-variant dark (&:where(.dark, .dark *));
 
@@ -66,10 +66,10 @@
      scope, fighting via CSS last-wins. Scoped variants are now expressed
      via class selectors below (.admin-shell, .sensitive-controls). */
   --radius-none: 0;
-  --radius-container: 0.5rem;   /* 8px — Bento grids, large cards, hero blocks */
-  --radius-element:   0.25rem;  /* 4px — buttons, inputs, list rows, nested cards */
-  --radius-badge:     0rem;     /* 0px — tags, chips, status pills, metadata */
-  --radius-full:      9999px;
+  --radius-container: 0.5rem; /* 8px — Bento grids, large cards, hero blocks */
+  --radius-element: 0.25rem; /* 4px — buttons, inputs, list rows, nested cards */
+  --radius-badge: 0rem; /* 0px — tags, chips, status pills, metadata */
+  --radius-full: 9999px;
 
   /* ── Colors — CSS-variable-based monochrome ────────────────────── */
   --color-border: hsl(var(--border));
@@ -103,22 +103,22 @@
   --color-secondary-foreground: hsl(var(--secondary-foreground));
 
   /* ── Semantic text hierarchy + hairline border ─────────────────── */
-  --color-text-primary:    hsl(var(--text-primary));
-  --color-text-secondary:  hsl(var(--text-secondary));
-  --color-text-muted:      hsl(var(--text-muted));
+  --color-text-primary: hsl(var(--text-primary));
+  --color-text-secondary: hsl(var(--text-secondary));
+  --color-text-muted: hsl(var(--text-muted));
   --color-border-hairline: hsl(var(--border-hairline));
 
   /* ── Surface elevation ladder (monochrome depth, no shadows) ─────
      Light mode steps up via darker grays; dark mode steps up via
      lighter grays. Defined in :root / .dark blocks below. */
-  --color-surface:                    hsl(var(--surface));
-  --color-surface-container-lowest:   hsl(var(--surface-container-lowest));
-  --color-surface-container-low:      hsl(var(--surface-container-low));
-  --color-surface-container:          hsl(var(--surface-container));
-  --color-surface-container-high:     hsl(var(--surface-container-high));
-  --color-surface-container-highest:  hsl(var(--surface-container-highest));
-  --color-surface-dim:                hsl(var(--surface-dim));
-  --color-inverse-surface:            hsl(var(--inverse-surface));
+  --color-surface: hsl(var(--surface));
+  --color-surface-container-lowest: hsl(var(--surface-container-lowest));
+  --color-surface-container-low: hsl(var(--surface-container-low));
+  --color-surface-container: hsl(var(--surface-container));
+  --color-surface-container-high: hsl(var(--surface-container-high));
+  --color-surface-container-highest: hsl(var(--surface-container-highest));
+  --color-surface-dim: hsl(var(--surface-dim));
+  --color-inverse-surface: hsl(var(--inverse-surface));
 
   --color-sidebar: hsl(var(--sidebar-background));
   --color-sidebar-foreground: hsl(var(--sidebar-foreground));
@@ -291,9 +291,9 @@
      primary  = body, headings
      secondary = supporting copy
      muted    = captions, hints, disabled */
-  --text-primary:    0 0% 4%;
-  --text-secondary:  0 0% 32%;
-  --text-muted:      0 0% 45%;
+  --text-primary: 0 0% 4%;
+  --text-secondary: 0 0% 32%;
+  --text-muted: 0 0% 45%;
   --border-hairline: 0 0% 58%;
   --transition-smooth: all 0.18s cubic-bezier(0.22, 1, 0.36, 1);
 
@@ -313,7 +313,12 @@
   --z-modal: 1200;
   --z-skip-link: 2000;
   --sidebar-width: 260px;
-  --admin-content-min-h: calc(100vh - 100px);
+  /* The admin console owns the whole viewport — LayoutShell no longer renders
+     the public header + breadcrumb bar above it (that pair was the 100px this
+     used to subtract). dvh so the mobile URL bar collapsing doesn't leave a
+     gap. Keep this a min-height: AdminShell relies on the document scrolling,
+     not on an inner overflow container. */
+  --admin-content-min-h: 100dvh;
 }
 
 .dark {
@@ -364,9 +369,9 @@
   --sidebar-ring: 0 0% 96%;
 
   /* ── Semantic text hierarchy (dark) ──────────────────────────── */
-  --text-primary:    0 0% 96%;
-  --text-secondary:  0 0% 64%;
-  --text-muted:      0 0% 62%;
+  --text-primary: 0 0% 96%;
+  --text-secondary: 0 0% 64%;
+  --text-muted: 0 0% 62%;
   --border-hairline: 0 0% 37%;
 
   --surface: 0 0% 4%;
@@ -487,7 +492,13 @@
 }
 
 html {
-  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family:
+    'Inter',
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
@@ -497,7 +508,10 @@ body {
   margin: 0;
   background-color: hsl(var(--background));
   color: hsl(var(--foreground));
-  font-feature-settings: 'rlig' 1, 'calt' 1, 'ss01' 1;
+  font-feature-settings:
+    'rlig' 1,
+    'calt' 1,
+    'ss01' 1;
   font-family: inherit;
 }
 
@@ -530,10 +544,10 @@ body {
    duplicated into a second token that would drift out of sync with --spot. */
 
 *:focus-visible,
-[role="button"]:focus-visible,
-[role="tab"]:focus-visible,
-[role="option"]:focus-visible,
-[role="menuitem"]:focus-visible {
+[role='button']:focus-visible,
+[role='tab']:focus-visible,
+[role='option']:focus-visible,
+[role='menuitem']:focus-visible {
   outline: 2px solid hsl(var(--spot)) !important;
   outline-offset: 2px !important;
 }
@@ -545,7 +559,13 @@ body {
 /* ── Touch target minimum (WCAG 2.5.5) ─────────────────────────────── */
 
 @layer base {
-  a, button, [role="button"], input, select, textarea, summary {
+  a,
+  button,
+  [role='button'],
+  input,
+  select,
+  textarea,
+  summary {
     min-height: 44px;
   }
 
@@ -553,8 +573,8 @@ body {
      min-height beats the h-* utility at the box-model level, so the 44px
      rule was stretching them into vertical pills. The wrapping label keeps
      the 44px tap target instead (WCAG 2.5.5). */
-  label:has([role="checkbox"]),
-  label:has([role="switch"]) {
+  label:has([role='checkbox']),
+  label:has([role='switch']) {
     min-height: 44px;
     display: inline-flex;
     align-items: center;
@@ -568,7 +588,7 @@ body {
      still wins (utilities layer beats base). */
   a.rounded-badge,
   button.rounded-badge,
-  [role="button"].rounded-badge {
+  [role='button'].rounded-badge {
     min-height: 24px;
   }
 }
@@ -578,13 +598,21 @@ body {
    is the only signal distinguishing them (axe `link-in-text-block`,
    WCAG 1.4.1 Use of Color). Standalone links — nav, buttons, cards — stay
    un-underlined. Documented exception to the editorial flat rule. */
-p a:not(.no-underline), li a:not(.no-underline), td a:not(.no-underline), span a:not(.no-underline), label a:not(.no-underline) {
+p a:not(.no-underline),
+li a:not(.no-underline),
+td a:not(.no-underline),
+span a:not(.no-underline),
+label a:not(.no-underline) {
   min-height: unset;
   display: inline;
   text-decoration: none;
   position: relative;
 }
-p a:not(.no-underline)::after, li a:not(.no-underline)::after, td a:not(.no-underline)::after, span a:not(.no-underline)::after, label a:not(.no-underline)::after {
+p a:not(.no-underline)::after,
+li a:not(.no-underline)::after,
+td a:not(.no-underline)::after,
+span a:not(.no-underline)::after,
+label a:not(.no-underline)::after {
   content: '';
   position: absolute;
   left: 0;
@@ -596,18 +624,31 @@ p a:not(.no-underline)::after, li a:not(.no-underline)::after, td a:not(.no-unde
   transform-origin: center;
   transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
-p a:not(.no-underline):hover::after, li a:not(.no-underline):hover::after, td a:not(.no-underline):hover::after, span a:not(.no-underline):hover::after, label a:not(.no-underline):hover::after {
+p a:not(.no-underline):hover::after,
+li a:not(.no-underline):hover::after,
+td a:not(.no-underline):hover::after,
+span a:not(.no-underline):hover::after,
+label a:not(.no-underline):hover::after {
   transform: scaleX(0);
 }
 @media (prefers-reduced-motion: reduce) {
-  p a:not(.no-underline)::after, li a:not(.no-underline)::after, td a:not(.no-underline)::after, span a:not(.no-underline)::after, label a:not(.no-underline)::after {
+  p a:not(.no-underline)::after,
+  li a:not(.no-underline)::after,
+  td a:not(.no-underline)::after,
+  span a:not(.no-underline)::after,
+  label a:not(.no-underline)::after {
     transition: none;
   }
 }
 
 /* ── Typography defaults — bold, tight, editorial ──────────────────── */
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-weight: 700;
   letter-spacing: -0.02em;
   line-height: 1.1;
@@ -617,13 +658,16 @@ h1, h2, h3, h4, h5, h6 {
    h1/h2 are page heroes + section headlines; h3+ (card titles, 22px
    and down) stay on Inter for legibility density. `.font-display`
    opts in any non-heading hero element (eyebrows, big numbers). */
-h1, h2, .font-display {
+h1,
+h2,
+.font-display {
   font-family: var(--font-display);
   letter-spacing: -0.03em;
 }
 
 /* Heroes get the tightest tracking — Space Grotesk reads wide at scale. */
-.text-hero-xl, .text-hero {
+.text-hero-xl,
+.text-hero {
   font-family: var(--font-display);
   letter-spacing: -0.04em;
 }
@@ -642,8 +686,12 @@ h1, h2, .font-display {
 /* ── Animation Keyframes (functional only) ─────────────────────────── */
 
 @keyframes fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 /* Route transition (RouteFade). CSS-only replacement for the framer-motion
@@ -660,46 +708,93 @@ h1, h2, .font-display {
 }
 
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
 }
 
 @keyframes reveal-up {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes content-enter {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes scale-in {
-  from { opacity: 0; transform: scale(0.98); }
-  to { opacity: 1; transform: scale(1); }
+  from {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 @keyframes slide-up-in {
-  from { opacity: 0; transform: translateY(12px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes slide-down-in {
-  from { opacity: 0; transform: translateY(-8px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* ── Animation Utilities ───────────────────────────────────────────── */
 
-.animate-fade-in { animation: fade-in 0.2s ease-out; }
-.pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
-.scale-in { animation: scale-in 0.2s cubic-bezier(0.22, 1, 0.36, 1) both; }
-.content-enter { animation: content-enter 0.3s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.animate-fade-in {
+  animation: fade-in 0.2s ease-out;
+}
+.pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+.scale-in {
+  animation: scale-in 0.2s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.content-enter {
+  animation: content-enter 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
 
 /* Skeleton shimmer — neutral grayscale only. */
 .shimmer {
@@ -709,83 +804,176 @@ h1, h2, .font-display {
 }
 
 @keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
 }
 
 /* Reduced motion: entrance utilities render their final state instantly. */
 @media (prefers-reduced-motion: reduce) {
-  .animate-fade-in, .scale-in, .content-enter { animation: none; }
+  .animate-fade-in,
+  .scale-in,
+  .content-enter {
+    animation: none;
+  }
 }
 
 /* Step body swap (StepperShell) — enter-only slide, no exit wait. */
 @keyframes step-enter {
-  from { opacity: 0; transform: translateX(40px); }
-  to { opacity: 1; transform: translateX(0); }
+  from {
+    opacity: 0;
+    transform: translateX(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
-.step-enter { animation: step-enter 0.35s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.step-enter {
+  animation: step-enter 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
 @media (prefers-reduced-motion: reduce) {
-  .step-enter { animation: none; }
+  .step-enter {
+    animation: none;
+  }
 }
 
 /* Beam connector (AnimatedBeamConnector): fill draws in, glint pulses. */
 .beam-fill {
-  transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1), height 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  transition:
+    width 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+    height 0.6s cubic-bezier(0.22, 1, 0.36, 1);
 }
 @keyframes beam-glint {
-  0%, 100% { opacity: 0; }
-  50% { opacity: 0.6; }
+  0%,
+  100% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 0.6;
+  }
 }
-.beam-glint { animation: beam-glint 1.6s ease-in-out infinite; }
+.beam-glint {
+  animation: beam-glint 1.6s ease-in-out infinite;
+}
 @media (prefers-reduced-motion: reduce) {
-  .beam-fill { transition: none; }
-  .beam-glint { animation: none; opacity: 0; }
+  .beam-fill {
+    transition: none;
+  }
+  .beam-glint {
+    animation: none;
+    opacity: 0;
+  }
 }
 
 /* Tier upgrade celebration (TierUpgradeOverlay). */
 @keyframes tier-overlay-in {
-  from { opacity: 0; backdrop-filter: blur(0); }
-  to { opacity: 1; backdrop-filter: blur(12px); }
+  from {
+    opacity: 0;
+    backdrop-filter: blur(0);
+  }
+  to {
+    opacity: 1;
+    backdrop-filter: blur(12px);
+  }
 }
 .tier-overlay {
   backdrop-filter: blur(12px);
   animation: tier-overlay-in 0.4s ease-out both;
 }
 @keyframes tier-card-in {
-  from { opacity: 0; transform: scale(0.6) translateY(12px); }
-  60% { opacity: 1; transform: scale(1.03) translateY(0); }
-  to { opacity: 1; transform: scale(1) translateY(0); }
+  from {
+    opacity: 0;
+    transform: scale(0.6) translateY(12px);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.03) translateY(0);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
 }
-.tier-card { animation: tier-card-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) 0.15s both; }
+.tier-card {
+  animation: tier-card-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) 0.15s both;
+}
 @keyframes tier-badge-in {
-  0% { transform: scale(0) rotate(0deg); }
-  55% { transform: scale(1.05) rotate(-8deg); }
-  80% { transform: scale(1) rotate(8deg); }
-  100% { transform: scale(1) rotate(0deg); }
+  0% {
+    transform: scale(0) rotate(0deg);
+  }
+  55% {
+    transform: scale(1.05) rotate(-8deg);
+  }
+  80% {
+    transform: scale(1) rotate(8deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+  }
 }
-.tier-badge { animation: tier-badge-in 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.35s both; }
+.tier-badge {
+  animation: tier-badge-in 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.35s both;
+}
 @keyframes tier-ring-ripple {
-  from { transform: scale(1); opacity: 0.6; }
-  to { transform: scale(1.6); opacity: 0; }
+  from {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  to {
+    transform: scale(1.6);
+    opacity: 0;
+  }
 }
 .tier-ring {
   opacity: 0;
   animation: tier-ring-ripple 1.4s ease-out 0.5s 3;
 }
 @keyframes tier-rise {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
-.tier-rise { animation: tier-rise 0.3s ease-out both; }
+.tier-rise {
+  animation: tier-rise 0.3s ease-out both;
+}
 @keyframes tier-sparkle-out {
-  0% { transform: translate(0, 0) scale(0) rotate(0deg); opacity: 0; }
-  35% { transform: translate(calc(var(--dx) * 0.5), calc(var(--dy) * 0.5)) scale(1) rotate(126deg); opacity: 1; }
-  100% { transform: translate(var(--dx), var(--dy)) scale(0.6) rotate(360deg); opacity: 0; }
+  0% {
+    transform: translate(0, 0) scale(0) rotate(0deg);
+    opacity: 0;
+  }
+  35% {
+    transform: translate(calc(var(--dx) * 0.5), calc(var(--dy) * 0.5)) scale(1) rotate(126deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--dx), var(--dy)) scale(0.6) rotate(360deg);
+    opacity: 0;
+  }
 }
-.tier-sparkle { animation: tier-sparkle-out 1.8s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.tier-sparkle {
+  animation: tier-sparkle-out 1.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
 @media (prefers-reduced-motion: reduce) {
-  .tier-overlay, .tier-card, .tier-badge, .tier-rise { animation: none; }
-  .tier-ring, .tier-sparkle { animation: none; opacity: 0; }
+  .tier-overlay,
+  .tier-card,
+  .tier-badge,
+  .tier-rise {
+    animation: none;
+  }
+  .tier-ring,
+  .tier-sparkle {
+    animation: none;
+    opacity: 0;
+  }
 }
 
 /* ── Hover Utilities ───────────────────────────────────────────────── */
@@ -809,23 +997,42 @@ h1, h2, .font-display {
 .reveal-up {
   animation: reveal-up 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
-.reveal-delay-1 { animation-delay: 0.08s; }
-.reveal-delay-2 { animation-delay: 0.16s; }
-.reveal-delay-3 { animation-delay: 0.24s; }
-.reveal-delay-4 { animation-delay: 0.32s; }
-.reveal-delay-5 { animation-delay: 0.4s; }
+.reveal-delay-1 {
+  animation-delay: 0.08s;
+}
+.reveal-delay-2 {
+  animation-delay: 0.16s;
+}
+.reveal-delay-3 {
+  animation-delay: 0.24s;
+}
+.reveal-delay-4 {
+  animation-delay: 0.32s;
+}
+.reveal-delay-5 {
+  animation-delay: 0.4s;
+}
 
 .content-crossfade-enter {
   animation: fade-in 0.25s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-.slide-up-in { animation: slide-up-in 0.25s cubic-bezier(0.22, 1, 0.36, 1) both; }
-.slide-down-in { animation: slide-down-in 0.25s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.slide-up-in {
+  animation: slide-up-in 0.25s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.slide-down-in {
+  animation: slide-down-in 0.25s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
 
 /* ── Utility helpers ───────────────────────────────────────────────── */
 
-.no-scrollbar::-webkit-scrollbar { display: none; }
-.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
 
 /* ── Aceternity-style monochrome backgrounds ───────────────────────── */
 
@@ -839,7 +1046,7 @@ h1, h2, .font-display {
 
 /* Aceternity-style dotted grid background (monochrome). */
 .bg-grid-dots {
-  background-image: radial-gradient(hsl(var(--foreground) / 0.10) 1px, transparent 1px);
+  background-image: radial-gradient(hsl(var(--foreground) / 0.1) 1px, transparent 1px);
   background-size: 24px 24px;
 }
 .dark .bg-grid-dots {
@@ -856,17 +1063,28 @@ h1, h2, .font-display {
 
 /* Aceternity "spotlight" radial overlay — neutral. */
 .spotlight-radial {
-  background:
-    radial-gradient(ellipse 60% 50% at 50% 0%, hsl(var(--foreground) / 0.06), transparent 70%);
+  background: radial-gradient(
+    ellipse 60% 50% at 50% 0%,
+    hsl(var(--foreground) / 0.06),
+    transparent 70%
+  );
 }
 .dark .spotlight-radial {
-  background:
-    radial-gradient(ellipse 60% 50% at 50% 0%, hsl(var(--foreground) / 0.10), transparent 70%);
+  background: radial-gradient(
+    ellipse 60% 50% at 50% 0%,
+    hsl(var(--foreground) / 0.1),
+    transparent 70%
+  );
 }
 
 /* Soft scrim — for readable text over imagery. */
 .scrim-bottom {
-  background: linear-gradient(to top, hsl(0 0% 0% / 0.70) 0%, hsl(0 0% 0% / 0.30) 50%, transparent 100%);
+  background: linear-gradient(
+    to top,
+    hsl(0 0% 0% / 0.7) 0%,
+    hsl(0 0% 0% / 0.3) 50%,
+    transparent 100%
+  );
 }
 
 /* ── 3-tier image scrim system ───────────────────────────────────────
@@ -877,37 +1095,66 @@ h1, h2, .font-display {
  *   strong   — full-bleed heroes with large overlaid headlines
  * `.scrim-bottom` is kept as an alias of readable for existing callers. */
 .img-scrim-readable {
-  background: linear-gradient(to top, hsl(0 0% 0% / 0.55) 0%, hsl(0 0% 0% / 0.15) 45%, transparent 70%);
+  background: linear-gradient(
+    to top,
+    hsl(0 0% 0% / 0.55) 0%,
+    hsl(0 0% 0% / 0.15) 45%,
+    transparent 70%
+  );
 }
 .img-scrim-strong {
-  background: linear-gradient(to top, hsl(0 0% 0% / 0.80) 0%, hsl(0 0% 0% / 0.40) 40%, transparent 75%);
+  background: linear-gradient(
+    to top,
+    hsl(0 0% 0% / 0.8) 0%,
+    hsl(0 0% 0% / 0.4) 40%,
+    transparent 75%
+  );
 }
-
 
 /* Animated border-conic for "moving border" cards (monochrome). */
 @keyframes border-rotate {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 .moving-border::before {
   content: '';
   position: absolute;
   inset: -1px;
   border-radius: inherit;
-  background: conic-gradient(from 0deg, transparent 0%, hsl(var(--foreground) / 0.40) 12%, transparent 25%);
+  background: conic-gradient(
+    from 0deg,
+    transparent 0%,
+    hsl(var(--foreground) / 0.4) 12%,
+    transparent 25%
+  );
   animation: border-rotate 6s linear infinite;
   z-index: 0;
   pointer-events: none;
 }
-.moving-border > * { position: relative; z-index: 1; }
+.moving-border > * {
+  position: relative;
+  z-index: 1;
+}
 @media (prefers-reduced-motion: reduce) {
-  .moving-border::before { animation: none; }
+  .moving-border::before {
+    animation: none;
+  }
 }
 
 /* Meteor streak — diagonal trail with fading tail. */
 @keyframes meteor {
-  0% { transform: rotate(215deg) translateX(0); opacity: 1; }
-  70% { opacity: 1; }
-  100% { transform: rotate(215deg) translateX(-500px); opacity: 0; }
+  0% {
+    transform: rotate(215deg) translateX(0);
+    opacity: 1;
+  }
+  70% {
+    opacity: 1;
+  }
+  100% {
+    transform: rotate(215deg) translateX(-500px);
+    opacity: 0;
+  }
 }
 .meteor {
   animation: meteor 5s linear infinite;
@@ -922,13 +1169,23 @@ h1, h2, .font-display {
   background: linear-gradient(to right, hsl(var(--foreground)), transparent);
 }
 @media (prefers-reduced-motion: reduce) {
-  .meteor { animation: none; opacity: 0; }
+  .meteor {
+    animation: none;
+    opacity: 0;
+  }
 }
 
 /* Pulsing beam — vertical, soft falloff. */
 @keyframes beam-pulse {
-  0%, 100% { opacity: 0.0; transform: translateY(-100%); }
-  50%      { opacity: 0.8; transform: translateY(100%); }
+  0%,
+  100% {
+    opacity: 0;
+    transform: translateY(-100%);
+  }
+  50% {
+    opacity: 0.8;
+    transform: translateY(100%);
+  }
 }
 .beam {
   position: absolute;
@@ -938,15 +1195,25 @@ h1, h2, .font-display {
   animation: beam-pulse 6s ease-in-out infinite;
 }
 @media (prefers-reduced-motion: reduce) {
-  .beam { animation: none; opacity: 0.2; }
+  .beam {
+    animation: none;
+    opacity: 0.2;
+  }
 }
 
 /* Button shine sweep. */
 @keyframes shine-sweep {
-  0%   { transform: translateX(-100%) skewX(-12deg); }
-  100% { transform: translateX(250%) skewX(-12deg); }
+  0% {
+    transform: translateX(-100%) skewX(-12deg);
+  }
+  100% {
+    transform: translateX(250%) skewX(-12deg);
+  }
 }
-.shine-on-hover { position: relative; overflow: hidden; }
+.shine-on-hover {
+  position: relative;
+  overflow: hidden;
+}
 .shine-on-hover::after {
   content: '';
   position: absolute;
@@ -960,12 +1227,17 @@ h1, h2, .font-display {
   animation: shine-sweep 0.9s ease-out;
 }
 @media (prefers-reduced-motion: reduce) {
-  .shine-on-hover:hover::after { animation: none; transform: translateX(0); }
+  .shine-on-hover:hover::after {
+    animation: none;
+    transform: translateX(0);
+  }
 }
 
 /* Conic moving border — for hover-border-gradient effect. */
 @keyframes hover-border-spin {
-  to { --hover-angle: 360deg; }
+  to {
+    --hover-angle: 360deg;
+  }
 }
 @property --hover-angle {
   syntax: '<angle>';
@@ -974,24 +1246,52 @@ h1, h2, .font-display {
 }
 .hover-border-gradient {
   --hover-angle: 0deg;
-  background: conic-gradient(from var(--hover-angle), hsl(var(--foreground) / 0.0), hsl(var(--foreground) / 0.8) 25%, hsl(var(--foreground) / 0.0) 50%);
+  background: conic-gradient(
+    from var(--hover-angle),
+    hsl(var(--foreground) / 0),
+    hsl(var(--foreground) / 0.8) 25%,
+    hsl(var(--foreground) / 0) 50%
+  );
 }
 .hover-border-gradient.active {
   animation: hover-border-spin 2s linear infinite;
 }
 
 /* Marquee — horizontal infinite scroll. */
-@keyframes marquee-fwd { from { transform: translateX(0); } to { transform: translateX(calc(-100% - var(--gap))); } }
-@keyframes marquee-rev { from { transform: translateX(calc(-100% - var(--gap))); } to { transform: translateX(0); } }
+@keyframes marquee-fwd {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(calc(-100% - var(--gap)));
+  }
+}
+@keyframes marquee-rev {
+  from {
+    transform: translateX(calc(-100% - var(--gap)));
+  }
+  to {
+    transform: translateX(0);
+  }
+}
 @media (prefers-reduced-motion: reduce) {
-  [style*="marquee-fwd"], [style*="marquee-rev"] { animation: none !important; }
+  [style*='marquee-fwd'],
+  [style*='marquee-rev'] {
+    animation: none !important;
+  }
 }
 
 /* Aurora replacement — slow, soft, monochrome luminance shift. */
 @keyframes aurora-pan {
-  0%   { background-position: 0% 50%; }
-  50%  { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
 }
 .aurora-mono {
   background:
@@ -1002,7 +1302,9 @@ h1, h2, .font-display {
   animation: aurora-pan 20s ease infinite;
 }
 @media (prefers-reduced-motion: reduce) {
-  .aurora-mono { animation: none; }
+  .aurora-mono {
+    animation: none;
+  }
 }
 
 /* ── Image lazy-load fade ─────────────────────────────────────────── */
@@ -1017,12 +1319,22 @@ h1, h2, .font-display {
 
 /* ── Accessibility classes ─────────────────────────────────────────── */
 
-.font-size-small { font-size: 0.875rem; }
-.font-size-medium { font-size: 1rem; }
-.font-size-large { font-size: 1.125rem; }
-.font-size-extra-large { font-size: 1.25rem; }
+.font-size-small {
+  font-size: 0.875rem;
+}
+.font-size-medium {
+  font-size: 1rem;
+}
+.font-size-large {
+  font-size: 1.125rem;
+}
+.font-size-extra-large {
+  font-size: 1.25rem;
+}
 
-.high-contrast { filter: contrast(150%); }
+.high-contrast {
+  filter: contrast(150%);
+}
 
 .reduce-motion *,
 .reduce-motion *::before,
@@ -1100,7 +1412,11 @@ h1, h2, .font-display {
 
 /* Riso spot ink, mark #2 — inline links ink up on hover. The underline (not the
    text) carries the colour, so body copy never drops below AA. */
-p a:hover, li a:hover, td a:hover, span a:hover, label a:hover {
+p a:hover,
+li a:hover,
+td a:hover,
+span a:hover,
+label a:hover {
   text-decoration-color: hsl(var(--spot));
   text-decoration-thickness: 2px;
 }
@@ -1116,8 +1432,12 @@ p a:hover, li a:hover, td a:hover, span a:hover, label a:hover {
 
 /* News editorial — live ticker marquee (CSS-only, pauses on hover, no JS rAF). */
 @keyframes news-ticker-scroll {
-  from { transform: translateX(0); }
-  to { transform: translateX(-50%); }
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
 }
 .news-ticker-marquee {
   animation: news-ticker-scroll 60s linear infinite;
@@ -1127,7 +1447,9 @@ p a:hover, li a:hover, td a:hover, span a:hover, label a:hover {
   animation-play-state: paused;
 }
 @media (prefers-reduced-motion: reduce) {
-  .news-ticker-marquee { animation: none; }
+  .news-ticker-marquee {
+    animation: none;
+  }
 }
 
 /* News editorial — magazine drop cap on the lead-story dek. */

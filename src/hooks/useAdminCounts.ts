@@ -7,7 +7,16 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
-export type AdminCounts = Record<string, number>;
+/**
+ * The RPC payload is *almost* a flat count map — `sla_hours` is a nested object
+ * of per-queue SLA hours. Typing it as a bare Record<string, number> is a lie
+ * that only holds while nothing enumerates the payload; anything doing
+ * `Object.entries(counts)` would treat `sla_hours` as a queue with an object
+ * count. Consumers should look keys up by name (see config/adminQueues).
+ */
+export type AdminCounts = Record<string, number> & {
+  sla_hours?: Record<string, number>;
+};
 
 async function fetchAdminCounts(): Promise<AdminCounts> {
   const { data, error } = await supabase.rpc('get_admin_counts');

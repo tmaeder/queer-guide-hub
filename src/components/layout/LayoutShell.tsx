@@ -10,7 +10,7 @@ import { AnalyticsTracker } from '@/components/analytics/AnalyticsTracker';
 import { useGlobalPresence } from '@/hooks/useConversationPresence';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { lazyOptional } from '@/utils/lazyRetry';
-import { isMapRoute } from '@/lib/locale';
+import { isMapRoute, isAdminRoute } from '@/lib/locale';
 
 // Peripheral chrome — banners and the feedback FAB. None of these are
 // above-the-fold or interaction-critical on first paint, so defer their
@@ -22,7 +22,9 @@ const FeedbackButton = lazyOptional(() =>
   import('@/components/feedback/FeedbackButton').then((m) => ({ default: m.FeedbackButton })),
 );
 const CookieConsentBanner = lazyOptional(() =>
-  import('@/components/privacy/CookieConsentBanner').then((m) => ({ default: m.CookieConsentBanner })),
+  import('@/components/privacy/CookieConsentBanner').then((m) => ({
+    default: m.CookieConsentBanner,
+  })),
 );
 const InstallBanner = lazyOptional(() =>
   import('@/components/pwa/InstallBanner').then((m) => ({ default: m.InstallBanner })),
@@ -32,15 +34,30 @@ const InstallBanner = lazyOptional(() =>
  * Visual chrome around the route content: header, footer, banners, skip-link, background.
  * Children are the route table (`<AppRoutes />`).
  *
+ * Two routes opt out of parts of it.
+ *
  * /map is rendered full-bleed: footer is hidden on this route so the map
  * can fill the viewport below the header without forcing a scroll past
  * it to reach language/currency/theme controls (those still live in the
  * user menu in the header).
+ *
+ * /admin/* opts out of ALL public chrome. AdminShell brings its own top bar,
+ * breadcrumbs and navigation, so rendering the public ones as well stacked
+ * five bars above the fold and let the floating MobileBottomNav cover the
+ * bottom of every admin page (admin content never got the footer wrapper's
+ * `pb-24` clearance). Each block is gated in place rather than early-returning
+ * a different tree, so `{children}` keeps its index in the children array and
+ * React reconciles the route subtree instead of remounting it as the pathname
+ * flips. Two things stay mounted on admin deliberately: AnalyticsTracker
+ * (renders null; gating it would silently drop admin pageviews) and
+ * CookieConsentBanner (analytics does not consent-gate itself, so a first-time
+ * visitor landing straight on /admin must still get the prompt).
  */
 export const LayoutShell = ({ children }: { children: React.ReactNode }) => {
   const { pathname } = useLocation();
   // Match /map and /:locale/map (locale prefix is optional in the router).
   const isFullBleedMap = isMapRoute(pathname);
+  const isAdmin = isAdminRoute(pathname);
   // Broadcast the current user's global presence (only if they opted into the
   // global dot) so inbox/discovery surfaces can show "active now".
   useGlobalPresence();
@@ -50,57 +67,66 @@ export const LayoutShell = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      {/* Skip link for keyboard users (a11y: WCAG 2.4.1) */}
-      <a
-        href="#main-content"
-        className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[9999] focus:bg-card focus:text-foreground focus:px-4 focus:py-2 focus:rounded-element focus:font-semibold focus:text-sm focus:no-underline focus:outline focus:outline-[3px] focus:outline-primary focus:outline-offset-2"
-      >
-        Skip to main content
-      </a>
+      {/* Skip link for keyboard users (a11y: WCAG 2.4.1). AdminShell renders
+        its own ("Skip to admin content"), so this one would just be a
+        competing first tab stop inside the console. */}
+      {!isAdmin && (
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[9999] focus:bg-card focus:text-foreground focus:px-4 focus:py-2 focus:rounded-element focus:font-semibold focus:text-sm focus:no-underline focus:outline focus:outline-[3px] focus:outline-primary focus:outline-offset-2"
+        >
+          Skip to main content
+        </a>
+      )}
 
       {/* Aceternity-style ambient backdrop: solid + dot grid overlay. */}
-      <div
-        aria-hidden="true"
-        className="fixed inset-0 z-0 pointer-events-none bg-background"
-      />
-      <div
-        aria-hidden="true"
-        className="fixed inset-0 z-0 pointer-events-none bg-grid-dots opacity-50"
-      />
+      {!isAdmin && (
+        <>
+          <div aria-hidden="true" className="fixed inset-0 z-0 pointer-events-none bg-background" />
+          <div
+            aria-hidden="true"
+            className="fixed inset-0 z-0 pointer-events-none bg-grid-dots opacity-50"
+          />
+        </>
+      )}
       <AnalyticsTracker />
       {/* Header + banners are wrapped in dedicated error boundaries so a crash
         in (e.g.) the avatar menu's notifications subscription cannot blank the
         whole app. The inner ErrorBoundary in routes.tsx handles route-level
         crashes; this outer boundary catches the chrome. */}
-      <div className="relative z-10">
-        <ErrorBoundary section="header" fallback={null}>
-          <Header />
-        </ErrorBoundary>
-        <ErrorBoundary section="banners" fallback={null}>
-          <EmailVerifyBanner />
-          <TripContextBar />
-        </ErrorBoundary>
-        {!isFullBleedMap && (
-          <ErrorBoundary section="breadcrumbs" fallback={null}>
-            <BreadcrumbBar />
+      {!isAdmin && (
+        <div className="relative z-10">
+          <ErrorBoundary section="header" fallback={null}>
+            <Header />
           </ErrorBoundary>
-        )}
-      </div>
+          <ErrorBoundary section="banners" fallback={null}>
+            <EmailVerifyBanner />
+            <TripContextBar />
+          </ErrorBoundary>
+          {!isFullBleedMap && (
+            <ErrorBoundary section="breadcrumbs" fallback={null}>
+              <BreadcrumbBar />
+            </ErrorBoundary>
+          )}
+        </div>
+      )}
       {/* Route transitions live in RouteFade (routes.tsx) — the former
           AnimatePresence mode="wait" wrapper here both duplicated that fade
           and held every incoming route's paint hostage to the exit animation,
           while chaining framer-motion onto the entry bundle. */}
       <div className="relative z-10 flex-1 flex flex-col">{children}</div>
-      {!isFullBleedMap && (
+      {!isFullBleedMap && !isAdmin && (
         <div className="relative z-10 pb-24 md:pb-0">
           <ErrorBoundary section="footer" fallback={null}>
             <Footer />
           </ErrorBoundary>
         </div>
       )}
-      <ErrorBoundary section="mobile-bottom-nav" fallback={null}>
-        <MobileBottomNav />
-      </ErrorBoundary>
+      {!isAdmin && (
+        <ErrorBoundary section="mobile-bottom-nav" fallback={null}>
+          <MobileBottomNav />
+        </ErrorBoundary>
+      )}
       {/* Belt-and-suspenders: lazyOptional already swallows permanent
         failures, but a dedicated boundary with fallback={null} ensures
         any unexpected throw inside these banners can never blank the
@@ -108,8 +134,8 @@ export const LayoutShell = ({ children }: { children: React.ReactNode }) => {
       <ErrorBoundary section="peripheral-chrome" fallback={null}>
         <Suspense fallback={null}>
           <CookieConsentBanner />
-          <FeedbackButton />
-          <InstallBanner />
+          {!isAdmin && <FeedbackButton />}
+          {!isAdmin && <InstallBanner />}
         </Suspense>
       </ErrorBoundary>
     </div>

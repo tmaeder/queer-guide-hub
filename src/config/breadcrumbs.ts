@@ -10,6 +10,8 @@ const HIDDEN_PREFIXES = [
   '/claim-username',
   '/map',
   '/pattern-library',
+  // AdminShell derives and renders its own trail from adminNavigation.
+  '/admin',
 ];
 
 /**

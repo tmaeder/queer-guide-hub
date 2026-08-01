@@ -10,11 +10,18 @@ import { useEffect, useId } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
+// Keys must match what the cockpit actually queries. The pre-rebuild map
+// pointed at ['cockpit','automation-summary'|'imports'|'review'|'pipeline-errors'],
+// three of which no longer exist — the feed would have kept its 60s poll but
+// stopped reacting to writes, which is the kind of staleness nobody notices.
 const WATCHED: Array<{ table: string; keys: string[][] }> = [
-  { table: 'admin_automation_runs', keys: [['cockpit', 'automation-summary'], ['admin-automations'], ['admin-automation-runs']] },
-  { table: 'import_jobs_enhanced', keys: [['cockpit', 'imports']] },
-  { table: 'moderation_flags', keys: [['cockpit', 'review'], ['admin-counts']] },
-  { table: 'workflow_runs', keys: [['cockpit', 'pipeline-errors']] },
+  {
+    table: 'admin_automation_runs',
+    keys: [['cockpit', 'ops'], ['admin-automations'], ['admin-automation-runs']],
+  },
+  { table: 'import_jobs_enhanced', keys: [['cockpit', 'ops']] },
+  { table: 'moderation_flags', keys: [['admin-counts']] },
+  { table: 'workflow_runs', keys: [['cockpit', 'ops']] },
 ];
 
 export function useCockpitRealtime(enabled = true) {
