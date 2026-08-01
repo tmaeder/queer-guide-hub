@@ -57,9 +57,7 @@ export function ContentListPanel(props: ContentListPanelProps) {
               <Icon size={16} style={{ color: typeColor }} />
             </div>
           )}
-          <h5 className="text-xl font-bold">
-            {c.config ? c.config.label.plural : 'All Content'}
-          </h5>
+          <h5 className="text-xl font-bold">{c.config ? c.config.label.plural : 'All Content'}</h5>
           {!c.loading && (
             <Badge
               variant="secondary"
@@ -73,7 +71,12 @@ export function ContentListPanel(props: ContentListPanelProps) {
         <div className="flex flex-row gap-2">
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => c.loadItems()}>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 w-7 p-0"
+                onClick={() => c.loadItems()}
+              >
                 <RefreshCw size={16} />
               </Button>
             </TooltipTrigger>
@@ -81,9 +84,7 @@ export function ContentListPanel(props: ContentListPanelProps) {
           </Tooltip>
           {c.config?.toolbarActions?.()}
           {c.config && c.allListColumns.length > 0 && (
-            <ExportExcelButton
-              onExport={() => exportContentType(c.config!, c.allListColumns)}
-            />
+            <ExportExcelButton onExport={() => exportContentType(c.config!, c.allListColumns)} />
           )}
           {c.config && (
             <Button size="sm" onClick={() => c.onCreate(c.config!.id)}>
@@ -96,9 +97,16 @@ export function ContentListPanel(props: ContentListPanelProps) {
 
       <div className="flex items-center gap-4 mb-4">
         <div className="relative w-full sm:w-[320px]">
-          <Search size={16} className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground" />
+          <Search
+            size={16}
+            className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground"
+          />
           <Input
-            placeholder={c.config ? `Search ${c.config.label.plural.toLowerCase()}...` : 'Search all content...'}
+            placeholder={
+              c.config
+                ? `Search ${c.config.label.plural.toLowerCase()}...`
+                : 'Search all content...'
+            }
             value={c.search}
             onChange={(e) => c.setSearch(e.target.value)}
             className="pl-8 pr-8 h-9"
@@ -203,6 +211,7 @@ export function ContentListPanel(props: ContentListPanelProps) {
         onClearSearch={() => c.setSearch('')}
         onEdit={c.onEdit}
         onCreate={c.onCreate}
+        onRefresh={c.loadItems}
       />
 
       {c.selected.size > 0 && c.config && (

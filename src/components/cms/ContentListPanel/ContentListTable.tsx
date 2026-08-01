@@ -32,6 +32,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Editable } from '@/components/admin/inline/Editable';
 import type { ContentTypeConfig, FieldConfig } from '@/types/cms';
 import {
   getStatusColor,
@@ -285,6 +286,8 @@ export interface ContentListTableProps {
   onClearSearch: () => void;
   onEdit: (contentType: string, id: string) => void;
   onCreate: (contentType: string) => void;
+  /** Refetch after an inline edit so the row shows the saved value. */
+  onRefresh?: () => void;
 }
 
 export function ContentListTable({
@@ -310,6 +313,7 @@ export function ContentListTable({
   onClearSearch,
   onEdit,
   onCreate,
+  onRefresh,
 }: ContentListTableProps) {
   const colCount = (contentTypeId ? 5 : 6) + extraColumns.length;
   const totalPages = Math.max(1, Math.ceil(totalCount / rowsPerPage));
@@ -393,9 +397,8 @@ export function ContentListTable({
                 const statusColor = getStatusColor(item.status);
                 // Rows the public can't see are visually set apart so editors
                 // spot hidden/draft entries at a glance (feedback request).
-                const rawVisibility = (item.raw as Record<string, unknown> | undefined)?.visibility as
-                  | string
-                  | undefined;
+                const rawVisibility = (item.raw as Record<string, unknown> | undefined)
+                  ?.visibility as string | undefined;
                 const isHidden =
                   (rawVisibility !== undefined && rawVisibility !== 'public') ||
                   (item.raw as Record<string, unknown> | undefined)?.is_public === false;
@@ -421,7 +424,9 @@ export function ContentListTable({
                     </TableCell>
 
                     <TableCell>
-                      <p className={`text-sm font-medium leading-tight ${isHidden ? 'text-muted-foreground' : ''}`}>
+                      <p
+                        className={`text-sm font-medium leading-tight ${isHidden ? 'text-muted-foreground' : ''}`}
+                      >
                         {item.title}
                         {isHidden && (
                           <span className="ml-2 inline-block rounded-badge bg-muted px-1.5 align-middle text-2xs uppercase tracking-wide text-muted-foreground">
@@ -437,7 +442,22 @@ export function ContentListTable({
                     </TableCell>
 
                     {extraColumns.map((f) => (
-                      <TableCell key={f.name}>{renderColumnValue(f, item.raw, config)}</TableCell>
+                      <TableCell key={f.name} onClick={(e) => e.stopPropagation()}>
+                        {/* Editable resolves the field config from the registry and
+                            owns the save. readOnly/unsupported types fall through to
+                            plain display, so this is safe for every column. */}
+                        <Editable
+                          contentType={item.contentType}
+                          recordId={item.id}
+                          field={f.name}
+                          value={(item.raw as Record<string, unknown> | undefined)?.[f.name]}
+                          requireAltClick={false}
+                          as="div"
+                          onSaved={onRefresh}
+                        >
+                          {renderColumnValue(f, item.raw, config)}
+                        </Editable>
+                      </TableCell>
                     ))}
 
                     {!contentTypeId && (
