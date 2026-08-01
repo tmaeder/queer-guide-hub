@@ -388,8 +388,11 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 	]);
 
 	// Compose biased vector in JS (weighted mean over signal.biasItems, normalized).
+	// qVec is null when the embedding model is unavailable; keep it null all the way
+	// down so search_hybrid degrades to keyword-only rather than fusing against a
+	// meaningless vector (see the catch in ai.ts embed()).
 	const biasVec = computeBias(signal.biasItems);
-	const blendedVec = biasVec ? blendVectors(qVec, biasVec, 0.7) : qVec;
+	const blendedVec = qVec && biasVec ? blendVectors(qVec, biasVec, 0.7) : qVec;
 
 	const pgTypes = requestedIndexes
 		.map((i) => INDEX_TO_PG_TYPE[i])
@@ -512,6 +515,9 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 						pgSize: dbg.pgSize,
 						fusedSize: dbg.fusedSize,
 						embedModel,
+						// true => the embedding call failed and this was a keyword-only
+						// search. Makes an AI outage visible instead of silently degrading.
+						embedFailed: qVec === null,
 						reranker: env.ENABLE_RERANKER === "1",
 						rewrite,
 						effectiveQ,
