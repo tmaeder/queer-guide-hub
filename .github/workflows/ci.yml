@@ -143,11 +143,12 @@ jobs:
             exit 1
           fi
 
-  # Migration-version guard (pure-local, no DB). Fails a PR that introduces a
-  # duplicate 14-digit migration version or a malformed filename — the class of
-  # breakage that silently kills `supabase db push` (see PR #1553 and
-  # scripts/check-migration-versions.mjs). Pre-existing duplicates are
-  # grandfathered as warnings.
+  # Migration guards. Both steps catch a way to silently kill `supabase db push`:
+  #   1. duplicate 14-digit version / malformed filename (pure-local, no DB; see
+  #      PR #1553 and scripts/check-migration-versions.mjs — pre-existing
+  #      duplicates are grandfathered as warnings)
+  #   2. a version already applied to prod with no repo file (queries remote
+  #      schema_migrations; see the step comment below)
   migration-versions:
     runs-on: ubuntu-latest
     steps:
@@ -166,6 +167,30 @@ jobs:
             echo "MIGRATION_BASE_REF=HEAD~1" >> "$GITHUB_ENV"
           fi
       - run: node scripts/check-migration-versions.mjs
+
+      # Remote-only versions: a migration applied to prod (MCP apply_migration or
+      # raw Management-API SQL) with no committed file makes `supabase db push`
+      # skip EVERYTHING — merged migrations silently never apply and nothing goes
+      # red. migration-drift-monitor.yml catches it within 6h; this catches it
+      # before merge. On pull_request the checkout is the MERGE commit, so the
+      # question asked is the right one: would db push skip once this PR lands?
+      # (A stale branch therefore does NOT false-positive — main's files are in
+      # the merge tree.) Without the secret the script falls back to its
+      # credential-free merge-base check; that can't see remote, so it warns.
+      - name: Check for remote-only migration versions
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_PROJECT_REF: xqeacpakadqfxjxjcewc
+        run: |
+          rc=0
+          node scripts/check-migration-drift.mjs || rc=$?
+          if [ "$rc" -eq 1 ]; then
+            echo "::error::Migration drift — a version applied to prod has no repo file. Recover the SQL from schema_migrations.statements into supabase/migrations/<version>_<name>.sql (see CLAUDE.md). Never blindly db pull."
+            exit 1
+          fi
+          if [ "$rc" -ne 0 ]; then
+            echo "::warning::Remote migration drift check could not run (exit $rc) — only the degraded merge-base check ran."
+          fi
 
   # Deno tests for supabase/functions. Mirrors pipeline-health.yml's
   # known-working invocation exactly: same Deno version, same test
