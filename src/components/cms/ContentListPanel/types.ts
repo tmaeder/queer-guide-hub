@@ -92,16 +92,51 @@ export function extractStatus(
   return undefined;
 }
 
-export function getStatusColor(status: string | undefined): string {
-  if (!status) return 'transparent';
+/**
+ * The token expression for a status, WITHOUT the hsl() wrapper, so callers can
+ * compose an alpha instead of concatenating one onto a finished colour.
+ */
+function statusToken(status: string | undefined): { token: string; alpha: number } | null {
+  if (!status) return null;
   const s = status.toLowerCase();
-  if (['published', 'active', 'public', 'verified'].includes(s)) return 'hsl(var(--foreground))';
-  if (['draft', 'pending'].includes(s)) return 'hsl(var(--muted-foreground))';
-  if (['review', 'restricted'].includes(s)) return 'hsl(var(--foreground) / 0.55)';
+  if (['published', 'active', 'public', 'verified'].includes(s))
+    return { token: 'var(--foreground)', alpha: 1 };
+  if (['draft', 'pending'].includes(s)) return { token: 'var(--muted-foreground)', alpha: 1 };
+  if (['review', 'restricted'].includes(s)) return { token: 'var(--foreground)', alpha: 0.55 };
   if (['archived', 'expired', 'sold', 'completed', 'rejected'].includes(s))
-    return 'hsl(var(--muted-foreground))';
-  if (['cancelled'].includes(s)) return 'hsl(var(--destructive))';
-  return 'hsl(var(--muted-foreground))';
+    return { token: 'var(--muted-foreground)', alpha: 1 };
+  if (['cancelled'].includes(s)) return { token: 'var(--destructive)', alpha: 1 };
+  return { token: 'var(--muted-foreground)', alpha: 1 };
+}
+
+export function getStatusColor(status: string | undefined): string {
+  const t = statusToken(status);
+  if (!t) return 'transparent';
+  return t.alpha === 1 ? `hsl(${t.token})` : `hsl(${t.token} / ${t.alpha})`;
+}
+
+/**
+ * Faint background tint for a status badge.
+ *
+ * Callers used to build this by appending the hex alpha `1A` to
+ * `getStatusColor(...)`. That worked while the palette was hex, but the
+ * monochrome refactor made these `hsl(var(--x))`, and `hsl(var(--x))1A` is
+ * invalid: `var()` defers validation to computed-value time, where the trailing
+ * garbage makes the whole declaration drop. Verified in Chromium — it computes
+ * to `rgba(0, 0, 0, 0)`, so the tint silently disappeared everywhere.
+ */
+export function getStatusTint(status: string | undefined): string {
+  const t = statusToken(status);
+  return t ? `hsl(${t.token} / 0.1)` : 'transparent';
+}
+
+/** Same fix for a content type's own colour, which is also `hsl(var(--x))`. */
+export function tintOf(color: string | undefined): string {
+  if (!color) return 'transparent';
+  const m = /^hsl\(\s*(.+?)\s*\)$/.exec(color.trim());
+  if (!m) return 'transparent';
+  // Drop any existing alpha before adding ours.
+  return `hsl(${m[1].split('/')[0].trim()} / 0.1)`;
 }
 
 export function getStatusLabel(status: string | undefined): string {
