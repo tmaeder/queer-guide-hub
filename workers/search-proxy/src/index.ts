@@ -96,6 +96,12 @@ export interface Env {
 // writes from random sites. (Server-side scrapers bypass CORS either way.)
 const WRITE_PATHS = new Set(["/track", "/feedback", "/onboarding"]);
 
+// search_hybrid timeout for the keyword-only path (no query embedding). See the
+// call site for the measurements — the default 4s in pgSearch.ts is below this
+// path's normal runtime, which silently downgraded good results to the
+// popularity fallback.
+const KEYWORD_ONLY_RPC_TIMEOUT_MS = 9000;
+
 export default {
 	async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
 		const url = new URL(request.url);
@@ -430,7 +436,20 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 
 	// search_hybrid fuses keyword (FTS+trigram) + vector via RRF in SQL, so it
 	// replaces both the old multi-search and personalized_semantic_search.
-	const pg = await pgHybridSearch(env, pgArgs).catch((e) => {
+	//
+	// Keyword-only (no embedding) is markedly SLOWER than the hybrid path: the vnn
+	// top-200 admission normally narrows the candidate set before ranking, and
+	// without a vector the FTS arm ranks a much wider set. Measured on prod
+	// 2026-08-01 while Workers AI was down: ~2.4-2.9s at limit 3 and 4.7s at
+	// limit 20, against the default 4s RPC timeout — so roughly 1 in 5 queries
+	// timed out and fell back to the popularity list, i.e. correct results were
+	// computed and then thrown away. Give that path headroom; the healthy hybrid
+	// path keeps the tight default so it still fails fast.
+	const pg = await pgHybridSearch(
+		env,
+		pgArgs,
+		pgArgs.queryVec ? undefined : KEYWORD_ONLY_RPC_TIMEOUT_MS,
+	).catch((e) => {
 		console.warn("pgHybridSearch", (e as Error).message);
 		return null;
 	});
