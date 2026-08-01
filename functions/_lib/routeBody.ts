@@ -85,7 +85,7 @@ export const STATIC_ROUTE_BODY: Record<string, RouteBody> = {
       { href: '/places', label: 'Browse by country' },
       { href: '/hotels', label: 'LGBTQ+ friendly hotels' },
       { href: '/venues', label: 'Venues at your destination' },
-      { href: '/help-hotlines', label: 'Crisis support abroad' },
+      { href: '/help', label: 'Crisis support abroad' },
     ],
   },
 
@@ -147,7 +147,7 @@ export const STATIC_ROUTE_BODY: Record<string, RouteBody> = {
       "Written and reviewed by queer people. Where we link out, we say what we trust the source for and where its limits are. Where we don't have an answer, we say so.",
     ],
     links: [
-      { href: '/help-hotlines', label: 'Crisis hotlines' },
+      { href: '/help', label: 'Crisis hotlines' },
       { href: '/news', label: 'News' },
       { href: '/personalities', label: 'Notable LGBTQ+ figures' },
     ],
@@ -260,7 +260,7 @@ export function buildNoscriptHtml(pathname: string): string | null {
   <h1 style="margin:0 0 .5rem;font-size:1.25rem">${escape(entry.h1)}</h1>
   <p style="margin:0 0 .75rem">${escape(intro)}</p>
   <ul style="margin:0;padding-left:1.25rem;line-height:1.7">${linksHtml}</ul>
-  <p style="margin-top:1rem">Enable JavaScript to see the full interactive page. For crisis support, see <a href="/help-hotlines">help hotlines</a>.</p>
+  <p style="margin-top:1rem">Enable JavaScript to see the full interactive page. For crisis support, see <a href="/help">help hotlines</a>.</p>
 </div>`;
 }
 

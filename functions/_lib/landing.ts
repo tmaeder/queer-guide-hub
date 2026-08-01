@@ -285,7 +285,7 @@ ${venuesHtml}
   <li><a href="/venues">All LGBTQ+ venues</a></li>
   <li><a href="/events">LGBTQ+ events</a></li>
   <li><a href="/travel">Country safety guide</a></li>
-  <li><a href="/help-hotlines">Crisis hotlines</a></li>
+  <li><a href="/help">Crisis hotlines</a></li>
 </ul>`,
   });
 

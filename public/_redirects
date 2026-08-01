@@ -20,6 +20,13 @@
 /cities/:slug    /city/:slug    301
 /countries/:slug /country/:slug 301
 
+# /help is the canonical crisis hub; /help-hotlines is the legacy URL and
+# was never a React Router route, so it rendered the SPA 404 — on the one
+# page where that is least acceptable. It still has inbound links (and the
+# edge HTML in functions/_lib/ linked to it until 2026-08-01), so redirect
+# rather than drop it.
+/help-hotlines   /help          301
+
 # Asset paths get a real 404 when missing. Without these rules the SPA
 # catch-all below returns index.html (200 text/html) for any unmatched
 # /assets/* path — and stale browser sessions whose cached bundle still
