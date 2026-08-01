@@ -10,8 +10,20 @@
    so this cannot recur — but that guard never runs for a response already in
    cache. Editing this file changes the content hash, which retires the poisoned
    URL for every visitor without needing a zone-scoped purge token.
-   Safe to delete once that URL has aged out of cache (~2027-08-01). */
+   Safe to delete once that URL has aged out of cache (~2027-08-01).
+
+   NOTE: a comment alone is NOT enough. The first attempt at this fix (#2479)
+   added only the block above; esbuild strips comments when minifying, so the
+   emitted bytes were identical, the content hash did not move, and index.html
+   kept pointing at the poisoned URL. The custom property below is a real
+   declaration that survives minification — that is what actually changes the
+   hash. Bump its value if this ever has to be done again. */
 @import 'tailwindcss';
+
+/* Load-bearing for the cache-bust above: a real emitted declaration, not a comment. */
+:root {
+  --asset-revision: 2;
+}
 
 @custom-variant dark (&:where(.dark, .dark *));
 
