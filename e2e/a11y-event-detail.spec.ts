@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
+import { waitForAppReady } from './support/appReady';
 
 // Route transitions fade opacity 0->1 (LayoutShell motion.div). axe blends that
 // opacity into computed text color, flagging transient mid-fade frames as contrast
@@ -33,10 +34,10 @@ test.describe('Event detail — automated a11y + SEO landmarks', () => {
     test.skip(!slug, 'No events visible to drive a detail-page test');
 
     await page.goto(`/events/${slug}`);
-    // Wait for real content + network/style settle so axe analyses the rendered
+    // Wait for real content + styles to settle so axe analyses the rendered
     // page, not the empty loading skeleton (which passes vacuously).
     await page.waitForSelector('h1', { timeout: 30_000 }).catch(() => {});
-    await page.waitForLoadState('networkidle');
+    await waitForAppReady(page);
 
     const results = await new AxeBuilder({ page })
       .exclude('footer')

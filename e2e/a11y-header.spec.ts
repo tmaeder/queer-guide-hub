@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
+import { waitForAppReady } from './support/appReady';
 
 // Route transitions fade opacity 0->1 (LayoutShell motion.div). axe blends that
 // opacity into computed text color, flagging transient mid-fade frames as contrast
@@ -14,7 +15,7 @@ test.describe('Header a11y', () => {
 
   test('no serious/critical violations inside header', async ({ page }) => {
     await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await waitForAppReady(page);
     const results = await new AxeBuilder({ page })
       .include('header')
       .disableRules(['link-in-text-block'])
@@ -33,7 +34,7 @@ test.describe('Header mobile a11y', () => {
   test('no hamburger drawer; search opens the discovery hub', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await waitForAppReady(page);
 
     // The legacy hamburger drawer + search-toggle are gone.
     await expect(page.locator('button[aria-label="Open menu"]')).toHaveCount(0);
