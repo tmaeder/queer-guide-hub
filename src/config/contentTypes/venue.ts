@@ -290,7 +290,9 @@ export const venueContentType: ContentTypeConfig = {
   commentable: true,
   aiAssist: {
     ops: ['quality_review', 'summarize', 'seo_draft', 'auto_tag', 'fact_check'],
-    writableFields: ['description', 'meta_title', 'meta_description', 'tags'],
+    // No meta_title/meta_description — venues has no such columns. SEO
+    // overrides for entity types live in the cms_content_metadata sidecar.
+    writableFields: ['description', 'tags'],
   },
   admin: {
     qualityRoute: '/admin/quality',
