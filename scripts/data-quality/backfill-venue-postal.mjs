@@ -52,14 +52,35 @@ function token() {
 }
 const TOKEN = token();
 
-async function sql(query) {
-  const res = await fetch(`https://api.supabase.com/v1/projects/${PROJECT}/database/query`, {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${TOKEN}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ query }),
-  });
-  if (!res.ok) throw new Error(`mgmt API ${res.status}: ${(await res.text()).slice(0, 300)}`);
-  return res.json();
+/**
+ * Retries transient failures. This is a multi-hour run against a hosted API:
+ * a single 502 from the edge in front of the Management API killed a 960-row
+ * pass outright before this existed. Nothing was lost — the queue is the work
+ * list and rows are only deleted after a successful write — but the job has to
+ * survive a blip rather than needing a babysitter.
+ */
+async function sql(query, attempt = 0) {
+  let res;
+  try {
+    res = await fetch(`https://api.supabase.com/v1/projects/${PROJECT}/database/query`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${TOKEN}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query }),
+    });
+  } catch (e) {
+    if (attempt >= 5) throw e;
+    await sleep(2000 * 2 ** attempt);
+    return sql(query, attempt + 1);
+  }
+  if (res.ok) return res.json();
+  const body = (await res.text()).slice(0, 300);
+  // 5xx and 429 are transient; a 4xx is our own bad SQL and must surface.
+  if ((res.status >= 500 || res.status === 429) && attempt < 5) {
+    console.error(`  mgmt API ${res.status}, retry ${attempt + 1}/5`);
+    await sleep(2000 * 2 ** attempt);
+    return sql(query, attempt + 1);
+  }
+  throw new Error(`mgmt API ${res.status}: ${body}`);
 }
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const q = (s) => `'${String(s).replace(/'/g, "''")}'`;
