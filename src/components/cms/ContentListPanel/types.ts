@@ -23,13 +23,15 @@ export type FilterValue = string | boolean | DateRange | NumberRange | undefined
 export type FilterState = Record<string, FilterValue>;
 
 /** Views every content type gets. Table is the default and always available. */
-export type ContentView = 'table' | 'gallery' | 'board';
+export type ContentView = 'table' | 'gallery' | 'board' | 'timeline' | 'calendar';
 
 export interface PersistedState {
   /** Remembered per content type, so a chosen view survives navigation. */
   view?: ContentView;
   /** Board grouping column, remembered alongside the view. */
   groupBy?: string | null;
+  /** Column the date views plot against, remembered alongside the view. */
+  dateField?: string | null;
   sortField?: SortField;
   sortDir?: SortDir;
   filters?: FilterState;

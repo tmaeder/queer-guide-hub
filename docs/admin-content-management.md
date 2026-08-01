@@ -78,6 +78,47 @@ Two design constraints worth knowing before adding more:
   Stateful things belong in `extraPanels` (per-record) or `toolbarActions`
   (per-collection).
 
+## Views and inline editing
+
+Both are properties of the **shell**, not of a config, so every registered type
+gets them and a newly registered type gets them for free.
+
+| view | how it works for any type |
+|---|---|
+| Table | the default list |
+| Gallery | image from the type's `imageField`, type icon as fallback |
+| Board | groups by any `select`/`boolean` field, or workflow status |
+| Timeline | months, newest first, against a chosen date column |
+| Calendar | month grid, records on their day |
+
+The chosen view — plus the board's grouping column and the date views' column —
+persists per content type in `PersistedState`, so a layout survives navigating
+away and back. That is the customisable part: a view is a per-type preference,
+not a global mode.
+
+Three rules the helpers encode, each guarding a way these views can lie:
+
+- `groupableFields` excludes free text. Grouping by a name column would produce
+  one board column per record.
+- `dateOf` returns `null` for a missing or unparseable value rather than
+  defaulting to now, so undated records cannot silently pile onto today.
+  Timeline lists them under "Undated"; Calendar reports the count beneath the
+  grid instead of dropping them.
+- Board and Timeline place their catch-all group **last**, so an
+  incomplete-data bucket never pushes real groups off-screen.
+
+Calendar does **not** reuse `src/components/hub/calendar/MonthGrid.tsx`. That
+component is entangled with `CalendarItem`, `EventChip`, calendar layers and a
+history-aggregation rule, and has one live user-facing caller; genericizing it
+to serve an admin list would refactor a working surface for a secondary
+consumer. Only the pure day-key logic is shared in spirit.
+
+Inline editing wraps list cells in the existing `Editable` kit
+(`src/components/admin/inline/`), which resolves field config from the registry
+and owns the save — so no per-type wiring was needed. It is passed
+`requireAltClick={false}`: Alt-click is right on a **public** page, where a
+plain click means "read this", but in an admin list the opposite holds.
+
 ## `AdminRedirects`: one gap short
 
 Most of it maps cleanly:

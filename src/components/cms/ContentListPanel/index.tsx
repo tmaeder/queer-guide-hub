@@ -6,7 +6,18 @@
 
 import { lazy, Suspense } from 'react';
 import { useParams } from 'react-router';
-import { Plus, Search, RefreshCw, X, Columns3, Table2, LayoutGrid, Columns } from 'lucide-react';
+import {
+  Plus,
+  Search,
+  RefreshCw,
+  X,
+  Columns3,
+  Table2,
+  LayoutGrid,
+  Columns,
+  GanttChart,
+  CalendarDays,
+} from 'lucide-react';
 import { ContentEntityTabs } from '@/components/admin/ContentEntityTabs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -25,7 +36,10 @@ import { ContentListFilters } from './ContentListFilters';
 import { ContentListTable } from './ContentListTable';
 import { ContentListGallery } from './ContentListGallery';
 import { ContentListBoard } from './ContentListBoard';
+import { ContentListTimeline } from './ContentListTimeline';
+import { ContentListCalendar } from './ContentListCalendar';
 import { groupableFields } from './boardGrouping';
+import { dateFields } from './dateFields';
 import { useContentListController } from './useContentListController';
 import { ExportExcelButton } from '@/components/admin/ExportExcelButton';
 import { exportContentType } from './exportContentList';
@@ -50,6 +64,8 @@ export function ContentListPanel(props: ContentListPanelProps) {
   // "no config" as null, so normalize once here rather than at each call site.
   const config = c.config ?? null;
   const groupable = groupableFields(config);
+  const dateable = dateFields(config);
+  const isDateView = c.view === 'timeline' || c.view === 'calendar';
 
   return (
     <div>
@@ -145,6 +161,8 @@ export function ContentListPanel(props: ContentListPanelProps) {
                 { id: 'table', label: 'Table', Icon: Table2 },
                 { id: 'gallery', label: 'Gallery', Icon: LayoutGrid },
                 { id: 'board', label: 'Board', Icon: Columns },
+                { id: 'timeline', label: 'Timeline', Icon: GanttChart },
+                { id: 'calendar', label: 'Calendar', Icon: CalendarDays },
               ] as const
             ).map(({ id, label, Icon }) => (
               <Button
@@ -175,6 +193,26 @@ export function ContentListPanel(props: ContentListPanelProps) {
               <DropdownMenuItem onClick={() => c.setGroupBy(null)}>Status</DropdownMenuItem>
               {groupable.map((f) => (
                 <DropdownMenuItem key={f.name} onClick={() => c.setGroupBy(f.name)}>
+                  {f.label}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
+
+        {c.contentTypeId && isDateView && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button size="sm" variant="outline">
+                Date: {dateable.find((f) => f.name === c.dateField)?.label ?? 'Last updated'}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start">
+              {/* Always offered: every record has updated_at, so a type with no
+                  date column of its own still gets a usable date view. */}
+              <DropdownMenuItem onClick={() => c.setDateField(null)}>Last updated</DropdownMenuItem>
+              {dateable.map((f) => (
+                <DropdownMenuItem key={f.name} onClick={() => c.setDateField(f.name)}>
                   {f.label}
                 </DropdownMenuItem>
               ))}
@@ -250,6 +288,20 @@ export function ContentListPanel(props: ContentListPanelProps) {
           config={config}
           selected={c.selected}
           toggleSelect={c.toggleSelect}
+          onEdit={c.onEdit}
+        />
+      ) : c.view === 'timeline' ? (
+        <ContentListTimeline
+          items={c.items}
+          loading={c.loading}
+          dateField={c.dateField}
+          onEdit={c.onEdit}
+        />
+      ) : c.view === 'calendar' ? (
+        <ContentListCalendar
+          items={c.items}
+          loading={c.loading}
+          dateField={c.dateField}
           onEdit={c.onEdit}
         />
       ) : c.view === 'board' ? (
