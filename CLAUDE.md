@@ -133,16 +133,30 @@ queer-guide-hub/
 
 ### SPA routing on Cloudflare Pages (2026-08-01)
 
-**There is no SPA catch-all in `public/_redirects`, and no `public/404.html`. Both are load-bearing absences — `scripts/check-redirects.mjs` fails the build if either returns.** With no `404.html` in the output, Pages' built-in fallback serves `index.html` (200) for any unmatched path and leaves static assets alone. That is the only shape that works; every alternative was measured against the real rule engine (`wrangler pages dev`) and fails:
+**Three things here are load-bearing and `scripts/check-pages-routing.mjs` fails the build if any of them changes: no SPA catch-all in `public/_redirects`, no `public/404.html`, and `public/_routes.json` present.** With no `404.html` in the output, Pages' built-in fallback serves `index.html` (200) for any unmatched path and leaves static assets alone. That is the only shape that works; every alternative was measured against the real rule engine (`wrangler pages dev`) and fails:
 
 - `/*  /index.html  200` — **silently dropped.** Pages strips `.html`/`/index` from rewrite targets, so the rule re-enters itself and the parser discards it as an infinite loop. Everything then fell through to `404.html`: `/help`, `/city/:slug` and every sitemap 404'd site-wide. Wrangler printed the warning on *every* deploy for months and nobody read it.
 - `/*  /  200` — parses, but **200-rewrites outrank static-asset serving**, so `/robots.txt`, `/build-id.txt` and every hashed `/assets/**.{js,css}` are served the SPA HTML. The homepage rendered completely unstyled. (#2469, reverted in #2473.)
 - `/section/*  /index.html  200` — same infinite-loop drop. `/section  /index.html  200` — 308-redirects instead of rewriting. **No rewrite whose target is `/index.html` can ever work here.**
 - Status `404` is not expressible: Pages accepts only 200/301/302/303/307/308. Four `/assets/* /404.html 404` guards lived in the file for months and were rejected by the parser on every deploy.
 
-Known gap while Pages Functions are down: a request for a *missing* hashed asset gets `200 text/html` from the built-in fallback. `public/sw.js` turns that into a synthetic 404 client-side, and `functions/_middleware.ts` does the same at the edge whenever Functions run. `scripts/smoke-pages.sh` runs after every deploy and reports it.
+`public/_routes.json` is shipped explicitly rather than left to wrangler. Without it wrangler generates the routing config and reads it back inside a bare `catch {}` (the `routesOutputPath` branch of `pages deploy`), which can upload the Functions bundle with no routes at all and no warning. The explicit file takes the validated branch and logs `✨ Uploading _routes.json` on every deploy, so the config is provably applied. **This was tried as a fix for the dead-Functions fault below and did NOT fix it** — keep the file (it removes a real silent-failure path), but do not mistake it for the cause.
 
-**Read wrangler's `_redirects` parser output.** It reports dropped rules as warnings on a deploy that otherwise exits 0 and prints "Deployment complete".
+### Pages Functions do not execute in production — OPEN
+
+Every Pages Function 404s in production: `/sitemap*.xml`, `/api/*`, `/brand/tokens.*`, all crawler `<head>` injection and the nonce CSP. **The repo has been eliminated as the cause.** Ruled out with evidence:
+
+- The bundle compiles and uploads on every deploy (`✨ Compiled Worker successfully`, `✨ Uploading Functions bundle`), and `wrangler pages functions build` produces a clean 158 KB worker — far under any size limit.
+- `_routes.json` is now uploaded and validated (`✨ Uploading _routes.json` in the deploy log) — Functions still do not run.
+- The identical bundle serves **every** Function correctly under `wrangler pages dev`: sitemaps, `/api/geo`, `/brand/tokens.css`, canonical + nonce injection, and the asset-404 conversion.
+- It fails on the raw per-deployment `*.pages.dev` URL too, so it is not custom-domain or DNS routing.
+- No `_worker.js`, no Node-builtin imports, no top-level throws. Responses are clean static 404s, not `1101`/Worker-error pages — consistent with *never invoked*, not *invoked and crashing*.
+
+Next step needs Cloudflare dashboard/API access, which CI does not have: `wrangler pages deployment tail`, plus the Pages project's Functions settings and compatibility date. Until then the SPA works fine and `scripts/smoke-pages.sh` reports the degradation on every deploy without failing it (a known, tracked, pre-existing fault should not mask a new regression).
+
+The built-in fallback answers *any* unmatched path with `index.html`, hashed-asset URLs included, so a stale bundle asking for a deleted chunk gets `200 text/html`. `functions/_middleware.ts` would turn that into a real 404 — but only while Functions run, so today `public/sw.js` is the only layer actually doing it.
+
+**Read wrangler's parser output.** It reports dropped `_redirects` rules — and says nothing at all about unrouted Functions — on a deploy that otherwise exits 0 and prints "Deployment complete".
 
 ## Testing
 
