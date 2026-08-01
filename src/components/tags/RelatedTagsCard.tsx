@@ -3,7 +3,7 @@ import { useSimilarTags, type SimilarTag } from '@/hooks/useTagRelationships';
 import { Skeleton } from '@/components/ui/skeleton';
 import { TagChip } from '@/components/tags/TagChip';
 import { useSafeMode } from '@/providers/SafeModeProvider';
-import { isAdultCategoryName } from '@/components/resources/categoryMeta';
+import { isAdultTag } from '@/components/resources/categoryMeta';
 import { useTranslation } from 'react-i18next';
 
 interface RelatedTagsCardProps {
@@ -20,7 +20,7 @@ function rankAndFilter(
   let filtered = tags;
 
   if (safeEnabled) {
-    filtered = filtered.filter((t) => !isAdultCategoryName(t.category));
+    filtered = filtered.filter((t) => !isAdultTag(t));
   }
 
   if (!sourceCategory) return filtered;

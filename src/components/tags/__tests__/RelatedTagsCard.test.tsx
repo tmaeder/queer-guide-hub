@@ -44,15 +44,35 @@ describe('RelatedTagsCard', () => {
 
   it('renders nothing when no similar tags', () => {
     mockSimilarData = [];
-    const { container } = render(<RelatedTagsCard tagId="t-1" onTagClick={vi.fn()} />, { wrapper: w });
+    const { container } = render(<RelatedTagsCard tagId="t-1" onTagClick={vi.fn()} />, {
+      wrapper: w,
+    });
     expect(container.innerHTML).toBe('');
   });
 
   it('renders tag badges as links', () => {
     localStorage.setItem('qg_safe_mode', 'off');
     mockSimilarData = [
-      { tag_id: '1', name: 'Leather', slug: 'leather', category: 'Gear & Aesthetics', similarity_score: 0.9, relationship_type: 'embedding', usage_count: 5, image_url: null },
-      { tag_id: '2', name: 'Bear', slug: 'bear', category: 'Identity & Expression', similarity_score: 0.8, relationship_type: 'embedding', usage_count: 10, image_url: null },
+      {
+        tag_id: '1',
+        name: 'Leather',
+        slug: 'leather',
+        category: 'Gear & Aesthetics',
+        similarity_score: 0.9,
+        relationship_type: 'embedding',
+        usage_count: 5,
+        image_url: null,
+      },
+      {
+        tag_id: '2',
+        name: 'Bear',
+        slug: 'bear',
+        category: 'Identity & Expression',
+        similarity_score: 0.8,
+        relationship_type: 'embedding',
+        usage_count: 10,
+        image_url: null,
+      },
     ];
     render(<RelatedTagsCard tagId="t-1" onTagClick={vi.fn()} />, { wrapper: w });
     expect(screen.getByText('Leather')).toBeInTheDocument();
@@ -61,9 +81,36 @@ describe('RelatedTagsCard', () => {
 
   it('filters adult-category tags when safe mode is on (default)', () => {
     mockSimilarData = [
-      { tag_id: '1', name: 'Fisting', slug: 'fisting', category: 'Practices & Play', similarity_score: 0.95, relationship_type: 'embedding', usage_count: 5, image_url: null },
-      { tag_id: '2', name: 'Bear', slug: 'bear', category: 'Body Types & Archetypes', similarity_score: 0.85, relationship_type: 'embedding', usage_count: 10, image_url: null },
-      { tag_id: '3', name: 'Community', slug: 'community', category: 'Community & Culture', similarity_score: 0.7, relationship_type: 'co_occurrence', usage_count: 20, image_url: null },
+      {
+        tag_id: '1',
+        name: 'Fisting',
+        slug: 'fisting',
+        category: 'Practices & Play',
+        similarity_score: 0.95,
+        relationship_type: 'embedding',
+        usage_count: 5,
+        image_url: null,
+      },
+      {
+        tag_id: '2',
+        name: 'Bear',
+        slug: 'bear',
+        category: 'Body Types & Archetypes',
+        similarity_score: 0.85,
+        relationship_type: 'embedding',
+        usage_count: 10,
+        image_url: null,
+      },
+      {
+        tag_id: '3',
+        name: 'Community',
+        slug: 'community',
+        category: 'Community & Culture',
+        similarity_score: 0.7,
+        relationship_type: 'co_occurrence',
+        usage_count: 20,
+        image_url: null,
+      },
     ];
     // Safe mode defaults to 'on'
     render(<RelatedTagsCard tagId="t-1" onTagClick={vi.fn()} />, { wrapper: w });
@@ -72,11 +119,87 @@ describe('RelatedTagsCard', () => {
     expect(screen.getByText('Community')).toBeInTheDocument();
   });
 
+  it('filters adult tags whose category is a legacy free-text value', () => {
+    // Regression: get_similar_tags falls back to unified_tags.category when
+    // category_id is NULL (1,215 of 3,609 active tags on prod). Those values —
+    // 'Kink & Fetish', 'Power Exchange', null — match no v2 taxonomy name, so
+    // filtering on the category string alone let them through with Safe mode on.
+    mockSimilarData = [
+      {
+        tag_id: '1',
+        name: 'Analsex',
+        slug: 'anal-sex',
+        category: 'Kink & Fetish',
+        is_adult: true,
+        similarity_score: 0.95,
+        relationship_type: 'embedding',
+        usage_count: 5,
+        image_url: null,
+      },
+      {
+        tag_id: '2',
+        name: 'Bestiality',
+        slug: 'bestiality',
+        category: 'kink',
+        is_adult: true,
+        similarity_score: 0.9,
+        relationship_type: 'embedding',
+        usage_count: 1,
+        image_url: null,
+      },
+      {
+        tag_id: '3',
+        name: 'Fisting',
+        slug: 'anal-fisting',
+        category: null,
+        is_adult: true,
+        similarity_score: 0.88,
+        relationship_type: 'embedding',
+        usage_count: 2,
+        image_url: null,
+      },
+      {
+        tag_id: '4',
+        name: 'Community',
+        slug: 'community',
+        category: 'Community & Culture',
+        is_adult: false,
+        similarity_score: 0.7,
+        relationship_type: 'co_occurrence',
+        usage_count: 20,
+        image_url: null,
+      },
+    ];
+    render(<RelatedTagsCard tagId="t-1" onTagClick={vi.fn()} />, { wrapper: w });
+    expect(screen.queryByText('Analsex')).not.toBeInTheDocument();
+    expect(screen.queryByText('Bestiality')).not.toBeInTheDocument();
+    expect(screen.queryByText('Fisting')).not.toBeInTheDocument();
+    expect(screen.getByText('Community')).toBeInTheDocument();
+  });
+
   it('shows adult-category tags when safe mode is off', () => {
     localStorage.setItem('qg_safe_mode', 'off');
     mockSimilarData = [
-      { tag_id: '1', name: 'Fisting', slug: 'fisting', category: 'Practices & Play', similarity_score: 0.95, relationship_type: 'embedding', usage_count: 5, image_url: null },
-      { tag_id: '3', name: 'Community', slug: 'community', category: 'Community & Culture', similarity_score: 0.7, relationship_type: 'co_occurrence', usage_count: 20, image_url: null },
+      {
+        tag_id: '1',
+        name: 'Fisting',
+        slug: 'fisting',
+        category: 'Practices & Play',
+        similarity_score: 0.95,
+        relationship_type: 'embedding',
+        usage_count: 5,
+        image_url: null,
+      },
+      {
+        tag_id: '3',
+        name: 'Community',
+        slug: 'community',
+        category: 'Community & Culture',
+        similarity_score: 0.7,
+        relationship_type: 'co_occurrence',
+        usage_count: 20,
+        image_url: null,
+      },
     ];
     render(<RelatedTagsCard tagId="t-1" onTagClick={vi.fn()} />, { wrapper: w });
     expect(screen.getByText('Fisting')).toBeInTheDocument();
@@ -85,8 +208,26 @@ describe('RelatedTagsCard', () => {
 
   it('prefers within-category tags (sorted first)', () => {
     mockSimilarData = [
-      { tag_id: '1', name: 'OutTag', slug: 'out', category: 'Other', similarity_score: 0.95, relationship_type: 'embedding', usage_count: 5, image_url: null },
-      { tag_id: '2', name: 'InTag', slug: 'in', category: 'Identity & Expression', similarity_score: 0.80, relationship_type: 'embedding', usage_count: 10, image_url: null },
+      {
+        tag_id: '1',
+        name: 'OutTag',
+        slug: 'out',
+        category: 'Other',
+        similarity_score: 0.95,
+        relationship_type: 'embedding',
+        usage_count: 5,
+        image_url: null,
+      },
+      {
+        tag_id: '2',
+        name: 'InTag',
+        slug: 'in',
+        category: 'Identity & Expression',
+        similarity_score: 0.8,
+        relationship_type: 'embedding',
+        usage_count: 10,
+        image_url: null,
+      },
     ];
     localStorage.setItem('qg_safe_mode', 'off');
     render(

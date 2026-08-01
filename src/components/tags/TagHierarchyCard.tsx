@@ -5,7 +5,7 @@ import { useTagOntology, type OntologyTag } from '@/hooks/useTagRelationships';
 import { TagChip } from '@/components/tags/TagChip';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useSafeMode } from '@/providers/SafeModeProvider';
-import { isAdultCategoryName } from '@/components/resources/categoryMeta';
+import { isAdultTag } from '@/components/resources/categoryMeta';
 
 interface TagHierarchyCardProps {
   tagId: string;
@@ -48,7 +48,7 @@ export function TagHierarchyCard({ tagId }: TagHierarchyCardProps) {
 
   const filtered = useMemo(() => {
     const strip = (tags: OntologyTag[]) =>
-      safeEnabled ? tags.filter((tg) => !isAdultCategoryName(tg.category)) : tags;
+      safeEnabled ? tags.filter((tg) => !isAdultTag(tg)) : tags;
     return {
       broader: strip(data?.broader ?? []),
       narrower: strip(data?.narrower ?? []),
