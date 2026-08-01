@@ -6,7 +6,7 @@
 
 import { lazy, Suspense } from 'react';
 import { useParams } from 'react-router';
-import { Plus, Search, RefreshCw, X, Columns3 } from 'lucide-react';
+import { Plus, Search, RefreshCw, X, Columns3, Table2, LayoutGrid, Columns } from 'lucide-react';
 import { ContentEntityTabs } from '@/components/admin/ContentEntityTabs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -23,6 +23,9 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { ContentListFilters } from './ContentListFilters';
 import { ContentListTable } from './ContentListTable';
+import { ContentListGallery } from './ContentListGallery';
+import { ContentListBoard } from './ContentListBoard';
+import { groupableFields } from './boardGrouping';
 import { useContentListController } from './useContentListController';
 import { ExportExcelButton } from '@/components/admin/ExportExcelButton';
 import { exportContentType } from './exportContentList';
@@ -43,6 +46,10 @@ export function ContentListPanel(props: ContentListPanelProps) {
 
   const typeColor = c.config?.color || 'hsl(var(--muted-foreground))';
   const Icon = c.config?.icon;
+  // The controller can return undefined (no type selected); the views model
+  // "no config" as null, so normalize once here rather than at each call site.
+  const config = c.config ?? null;
+  const groupable = groupableFields(config);
 
   return (
     <div>
@@ -57,9 +64,7 @@ export function ContentListPanel(props: ContentListPanelProps) {
               <Icon size={16} style={{ color: typeColor }} />
             </div>
           )}
-          <h5 className="text-xl font-bold">
-            {c.config ? c.config.label.plural : 'All Content'}
-          </h5>
+          <h5 className="text-xl font-bold">{c.config ? c.config.label.plural : 'All Content'}</h5>
           {!c.loading && (
             <Badge
               variant="secondary"
@@ -73,7 +78,12 @@ export function ContentListPanel(props: ContentListPanelProps) {
         <div className="flex flex-row gap-2">
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => c.loadItems()}>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 w-7 p-0"
+                onClick={() => c.loadItems()}
+              >
                 <RefreshCw size={16} />
               </Button>
             </TooltipTrigger>
@@ -81,9 +91,7 @@ export function ContentListPanel(props: ContentListPanelProps) {
           </Tooltip>
           {c.config?.toolbarActions?.()}
           {c.config && c.allListColumns.length > 0 && (
-            <ExportExcelButton
-              onExport={() => exportContentType(c.config!, c.allListColumns)}
-            />
+            <ExportExcelButton onExport={() => exportContentType(c.config!, c.allListColumns)} />
           )}
           {c.config && (
             <Button size="sm" onClick={() => c.onCreate(c.config!.id)}>
@@ -96,9 +104,16 @@ export function ContentListPanel(props: ContentListPanelProps) {
 
       <div className="flex items-center gap-4 mb-4">
         <div className="relative w-full sm:w-[320px]">
-          <Search size={16} className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground" />
+          <Search
+            size={16}
+            className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground"
+          />
           <Input
-            placeholder={c.config ? `Search ${c.config.label.plural.toLowerCase()}...` : 'Search all content...'}
+            placeholder={
+              c.config
+                ? `Search ${c.config.label.plural.toLowerCase()}...`
+                : 'Search all content...'
+            }
             value={c.search}
             onChange={(e) => c.setSearch(e.target.value)}
             className="pl-8 pr-8 h-9"
@@ -119,7 +134,55 @@ export function ContentListPanel(props: ContentListPanelProps) {
             {c.selected.size} selected
           </p>
         )}
-        {c.contentTypeId && c.allListColumns.length > 0 && (
+        {c.contentTypeId && (
+          <div
+            role="radiogroup"
+            aria-label="View"
+            className="inline-flex items-center gap-1 border border-border rounded-element p-1"
+          >
+            {(
+              [
+                { id: 'table', label: 'Table', Icon: Table2 },
+                { id: 'gallery', label: 'Gallery', Icon: LayoutGrid },
+                { id: 'board', label: 'Board', Icon: Columns },
+              ] as const
+            ).map(({ id, label, Icon }) => (
+              <Button
+                key={id}
+                role="radio"
+                aria-checked={c.view === id}
+                aria-label={label}
+                size="sm"
+                variant={c.view === id ? 'secondary' : 'ghost'}
+                className="h-7 px-2"
+                onClick={() => c.setView(id)}
+              >
+                <Icon size={14} className="mr-1" />
+                {label}
+              </Button>
+            ))}
+          </div>
+        )}
+
+        {c.contentTypeId && c.view === 'board' && groupable.length > 0 && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button size="sm" variant="outline">
+                Group: {groupable.find((f) => f.name === c.groupBy)?.label ?? 'Status'}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start">
+              <DropdownMenuItem onClick={() => c.setGroupBy(null)}>Status</DropdownMenuItem>
+              {groupable.map((f) => (
+                <DropdownMenuItem key={f.name} onClick={() => c.setGroupBy(f.name)}>
+                  {f.label}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
+
+        {c.contentTypeId && c.view === 'table' && c.allListColumns.length > 0 && (
           <div className="ml-auto">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -180,30 +243,50 @@ export function ContentListPanel(props: ContentListPanelProps) {
         clearFilters={c.clearFilters}
       />
 
-      <ContentListTable
-        contentTypeId={c.contentTypeId}
-        config={c.config}
-        items={c.items}
-        loading={c.loading}
-        totalCount={c.totalCount}
-        page={c.page}
-        rowsPerPage={c.rowsPerPage}
-        setPage={c.setPage}
-        setRowsPerPage={c.setRowsPerPage}
-        sortField={c.sortField}
-        sortDir={c.sortDir}
-        handleSort={c.handleSort}
-        extraColumns={c.extraColumns}
-        selected={c.selected}
-        allSelected={c.allSelected}
-        someSelected={c.someSelected}
-        toggleSelect={c.toggleSelect}
-        toggleSelectAll={c.toggleSelectAll}
-        debouncedSearch={c.debouncedSearch}
-        onClearSearch={() => c.setSearch('')}
-        onEdit={c.onEdit}
-        onCreate={c.onCreate}
-      />
+      {c.view === 'gallery' ? (
+        <ContentListGallery
+          items={c.items}
+          loading={c.loading}
+          config={config}
+          selected={c.selected}
+          toggleSelect={c.toggleSelect}
+          onEdit={c.onEdit}
+        />
+      ) : c.view === 'board' ? (
+        <ContentListBoard
+          items={c.items}
+          loading={c.loading}
+          config={config}
+          groupBy={c.groupBy}
+          onEdit={c.onEdit}
+        />
+      ) : (
+        <ContentListTable
+          contentTypeId={c.contentTypeId}
+          config={config}
+          items={c.items}
+          loading={c.loading}
+          totalCount={c.totalCount}
+          page={c.page}
+          rowsPerPage={c.rowsPerPage}
+          setPage={c.setPage}
+          setRowsPerPage={c.setRowsPerPage}
+          sortField={c.sortField}
+          sortDir={c.sortDir}
+          handleSort={c.handleSort}
+          extraColumns={c.extraColumns}
+          selected={c.selected}
+          allSelected={c.allSelected}
+          someSelected={c.someSelected}
+          toggleSelect={c.toggleSelect}
+          toggleSelectAll={c.toggleSelectAll}
+          debouncedSearch={c.debouncedSearch}
+          onClearSearch={() => c.setSearch('')}
+          onEdit={c.onEdit}
+          onCreate={c.onCreate}
+          onRefresh={c.loadItems}
+        />
+      )}
 
       {c.selected.size > 0 && c.config && (
         <Suspense fallback={null}>

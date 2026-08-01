@@ -1,6 +1,6 @@
 {
   "project": "tsconfig.app.json",
-  "total": 1344,
+  "total": 1329,
   "files": {
     "src/assets/intimate/pictograms.tsx": {
       "TS2503": 2
@@ -244,10 +244,7 @@
       "TS2322": 1
     },
     "src/components/cms/ContentListPanel/__tests__/types.test.ts": {
-      "TS2345": 2
-    },
-    "src/components/cms/ContentListPanel/index.tsx": {
-      "TS2322": 1
+      "TS2345": 1
     },
     "src/components/cms/ContentListPanel/useContentListController.ts": {
       "TS2345": 3,
@@ -1297,12 +1294,6 @@
       "TS2345": 4,
       "TS2352": 1,
       "TS2353": 2
-    },
-    "src/pages/admin/AdminRedirects.tsx": {
-      "TS2322": 8,
-      "TS2339": 1,
-      "TS2345": 3,
-      "TS6133": 1
     },
     "src/pages/admin/AdminTags.tsx": {
       "TS2322": 10,

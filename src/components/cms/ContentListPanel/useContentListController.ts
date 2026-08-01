@@ -10,6 +10,7 @@ import { useParams } from 'react-router';
 import { useContext } from 'react';
 import { getContentType, getContentTypeIds } from '@/config/contentTypeRegistry';
 import { AdminShellContext } from '@/components/admin/shell/AdminShell';
+import type { ContentView } from './types';
 import type { ContentTypeConfig, FieldConfig, SelectOption } from '@/types/cms';
 import {
   extractStatus,
@@ -71,6 +72,10 @@ export function useContentListController({
   const [sortDir, setSortDir] = useState<SortDir>(initialSortDir);
   const [filters, setFilters] = useState<FilterState>(persisted?.filters ?? {});
   const [hiddenColumns, setHiddenColumns] = useState<string[]>(persisted?.hiddenColumns ?? []);
+  // View + board grouping persist per content type, so a chosen layout survives
+  // navigating away and back.
+  const [view, setView] = useState<ContentView>(persisted?.view ?? 'table');
+  const [groupBy, setGroupBy] = useState<string | null>(persisted?.groupBy ?? null);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [dynamicOptions, setDynamicOptions] = useState<Record<string, SelectOption[]>>({});
 
@@ -91,8 +96,10 @@ export function useContentListController({
 
   // Persist filter+sort+columns per content type
   useEffect(() => {
-    if (persistKey) persistState(persistKey, { sortField, sortDir, filters, hiddenColumns });
-  }, [persistKey, sortField, sortDir, filters, hiddenColumns]);
+    if (persistKey) {
+      persistState(persistKey, { sortField, sortDir, filters, hiddenColumns, view, groupBy });
+    }
+  }, [persistKey, sortField, sortDir, filters, hiddenColumns, view, groupBy]);
 
   // Load dynamic filter options (e.g. country/city dropdowns).
   useEffect(() => {
@@ -167,11 +174,7 @@ export function useContentListController({
 
     const sortFieldDef = ct.fields.find((f) => f.name === sortField);
     const dbSortField =
-      sortField === 'title'
-        ? ct.titleField
-        : sortFieldDef?.virtual
-          ? 'updated_at'
-          : sortField;
+      sortField === 'title' ? ct.titleField : sortFieldDef?.virtual ? 'updated_at' : sortField;
 
     let query = supabase
       .from(ct.tableName as 'events')
@@ -226,9 +229,7 @@ export function useContentListController({
     const allItems: ListItem[] = [];
     const configs = getContentTypeIds()
       .map((id) => getContentType(id))
-      .filter(
-        (ct): ct is ContentTypeConfig => !!ct && ct.admin?.includeInAllContent !== false,
-      );
+      .filter((ct): ct is ContentTypeConfig => !!ct && ct.admin?.includeInAllContent !== false);
 
     for (const ct of configs) {
       let query = supabase
@@ -315,10 +316,7 @@ export function useContentListController({
     setPage(0);
   }
 
-  const allVisibleIds = useMemo(
-    () => items.map((it) => `${it.contentType}-${it.id}`),
-    [items],
-  );
+  const allVisibleIds = useMemo(() => items.map((it) => `${it.contentType}-${it.id}`), [items]);
   const allSelected = items.length > 0 && allVisibleIds.every((id) => selected.has(id));
   const someSelected = allVisibleIds.some((id) => selected.has(id));
 
@@ -380,6 +378,10 @@ export function useContentListController({
     clearFilters,
     hiddenColumns,
     setHiddenColumns,
+    view,
+    setView,
+    groupBy,
+    setGroupBy,
     selected,
     setSelected,
     dynamicOptions,

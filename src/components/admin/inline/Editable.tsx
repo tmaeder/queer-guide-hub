@@ -19,6 +19,12 @@ interface EditableProps {
   fieldOverride?: Partial<FieldConfig>;
   /** Hide the affordance even for admins (e.g. inside another Editable). */
   disabled?: boolean;
+  /**
+   * Public pages require Alt-click so ordinary clicks are not hijacked. Admin
+   * surfaces that exist only to edit — the content list — set this false so a
+   * plain click opens the editor.
+   */
+  requireAltClick?: boolean;
   /** Render mode for the wrapper. */
   as?: 'span' | 'div';
   className?: string;
@@ -33,6 +39,7 @@ export function Editable({
   onSaved,
   fieldOverride,
   disabled,
+  requireAltClick = true,
   as = 'span',
   className,
 }: EditableProps) {
@@ -57,24 +64,23 @@ export function Editable({
     return fieldOverride ? ({ ...base, ...fieldOverride } as FieldConfig) : base;
   }, [contentType, field, fieldOverride]);
 
-   
   const Editor = useMemo(
     () => (fieldConfig ? getEditorForFieldType(fieldConfig.type) : null),
     [fieldConfig],
   );
-   
+
   const adminActive =
     isAdmin && !disabled && fieldConfig != null && Editor != null && !fieldConfig.readOnly;
 
   const handleClick = useCallback(
     (e: React.MouseEvent) => {
       if (!adminActive) return;
-      if (!e.altKey) return;
+      if (requireAltClick && !e.altKey) return;
       e.preventDefault();
       e.stopPropagation();
       setEditing(true);
     },
-    [adminActive],
+    [adminActive, requireAltClick],
   );
 
   const onConfirm = useCallback(
@@ -110,14 +116,19 @@ export function Editable({
     );
   }
 
-  const affordanceClass = altHeld
+  const showAffordance = requireAltClick ? altHeld : adminActive;
+  const affordanceClass = showAffordance
     ? 'outline outline-1 outline-dashed outline-foreground/40 cursor-pointer rounded-element'
     : '';
 
   return (
     <Wrapper
       onClick={handleClick}
-      title={altHeld ? `Alt-click to edit · ${fieldConfig.label}` : undefined}
+      title={
+        showAffordance
+          ? `${requireAltClick ? 'Alt-click' : 'Click'} to edit · ${fieldConfig.label}`
+          : undefined
+      }
       className={[className, affordanceClass].filter(Boolean).join(' ')}
       data-editable-field={field}
     >
