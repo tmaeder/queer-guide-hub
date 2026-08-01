@@ -450,7 +450,22 @@ async function runLinkPhase(supabase: Db, req: Request, rows: CityRow[], dryRun:
         update.field_provenance = prov
         update.enrichment_status = state
         update.last_refreshed_at = new Date().toISOString()
-        const { error: upErr } = await supabase.from('cities').update(update).eq('id', c.id)
+        let { error: upErr } = await supabase.from('cities').update(update).eq('id', c.id)
+
+        // Two live cities resolving to the same Wikidata entity is a genuine
+        // duplicate, which uq_cities_wikidata_qid catches. Don't throw away the
+        // rest of the enrichment over it: keep every other field, leave the QID
+        // unclaimed, and flag the row so the dedup engine / an admin can look.
+        if (upErr && /uq_cities_wikidata_qid/.test(upErr.message)) {
+          delete update.wikidata_qid
+          state.wikidata_link = {
+            state: 'pending', source: 'wikidata', at: new Date().toISOString(), qid: qid ?? undefined,
+          }
+          update.enrichment_status = { ...state, qid_conflict: { qid, at: new Date().toISOString() } }
+          update.needs_attention = true
+          ;({ error: upErr } = await supabase.from('cities').update(update).eq('id', c.id))
+          missReason = `qid_conflict:${qid}`
+        }
         if (upErr) throw new Error(upErr.message)
         await supabase.from('city_quality_signals').insert({
           city_id: c.id, signal_type: 'enrichment',
