@@ -22,6 +22,18 @@ tmp/
 *.docx
 *.rtf
 *.pptx
+# Root-only screenshots left behind by agent sessions. Every root-level image
+# in this repo's history has been a stray (brand-prod.png, the home-*/map-*/
+# prod-map-*/search-* dumps) and every one was removed again in a later chore
+# commit — there has never been a legitimate image at the repo root. Anchored
+# so real assets under public/, src/ and the Playwright *-snapshots/ dirs are
+# untouched; add a `!/name.png` negation if a root image ever becomes real.
+/*.png
+/*.jpg
+/*.jpeg
+/*.gif
+/*.webp
+
 # Root-only txt/json dumps (keep nested ones for real code)
 /*.txt
 /*.json
