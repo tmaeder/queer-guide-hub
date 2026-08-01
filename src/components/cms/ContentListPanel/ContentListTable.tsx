@@ -38,6 +38,7 @@ import {
   getStatusColor,
   getStatusLabel,
   relativeTime,
+  tintOf,
   type ListItem,
   type SortDir,
   type SortField,
@@ -220,7 +221,7 @@ function renderColumnValue(
     return (
       <Badge
         className="h-5 text-xs2 font-semibold"
-        style={{ backgroundColor: `${color}1A`, color }}
+        style={{ backgroundColor: tintOf(color), color }}
       >
         {opt?.label ?? String(v)}
       </Badge>
@@ -465,7 +466,7 @@ export function ContentListTable({
                         <Badge
                           className="h-5 text-xs2 font-semibold"
                           style={{
-                            backgroundColor: `${item.contentTypeColor}1A`,
+                            backgroundColor: tintOf(item.contentTypeColor),
                             color: item.contentTypeColor,
                           }}
                         >

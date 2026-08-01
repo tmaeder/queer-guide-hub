@@ -51,6 +51,9 @@ export function buildVenueJsonLd(
   const address: Record<string, string> = { '@type': 'PostalAddress' };
   if (venue.address) address.streetAddress = venue.address;
   if (cityName) address.addressLocality = cityName;
+  // addressRegion was missing while `state` was empty on 22k venues, so it went
+  // unnoticed; now that state is populated it needs to reach search engines too.
+  if (venue.state) address.addressRegion = venue.state;
   if (countryName) address.addressCountry = countryName;
   if (venue.postal_code) address.postalCode = venue.postal_code;
 

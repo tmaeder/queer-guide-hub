@@ -3,7 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { ContentTypeConfig, FieldConfig } from '@/types/cms';
 import { UNGROUPED } from './boardGrouping';
-import { getStatusColor, getStatusLabel, type ListItem } from './types';
+import { getStatusColor, getStatusLabel, getStatusTint, type ListItem } from './types';
 
 /**
  * Board view for any content type.
@@ -121,7 +121,7 @@ export function ContentListBoard({
                   {item.status && groupBy && (
                     <Badge
                       className="mt-2 h-5 text-xs2 font-semibold"
-                      style={{ backgroundColor: `${statusColor}1A`, color: statusColor }}
+                      style={{ backgroundColor: getStatusTint(item.status), color: statusColor }}
                     >
                       {getStatusLabel(item.status)}
                     </Badge>

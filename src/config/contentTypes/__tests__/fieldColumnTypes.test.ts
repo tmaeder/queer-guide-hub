@@ -42,8 +42,15 @@ function parseRowTypes(source: string): Map<string, Map<string, string>> {
 }
 
 function columnKind(tsType: string): ColumnKind {
-  // Strip the nullable union so `number | null` reads as numeric.
-  const t = tsType.replace(/\s*\|\s*null$/, '').trim();
+  // Tolerate a trailing semicolon. The generator emits none, but any tool that
+  // reformats this file (prettier via lint-staged, an IDE "organize" action)
+  // adds them — and every column then fell through to 'string', reporting ~20
+  // bogus mismatches that look like real schema drift. types.ts is now
+  // prettier-ignored as well; this is the belt to that braces.
+  const t = tsType
+    .replace(/;\s*$/, '')
+    .replace(/\s*\|\s*null$/, '')
+    .trim();
   if (t.endsWith('[]')) return 'array';
   if (t === 'Json') return 'json';
   if (t === 'number') return 'number';

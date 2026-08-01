@@ -538,6 +538,131 @@ async function processSingleEvent(
 
 // ── Handler ─────────────────────────────────────────────────────────────────
 
+// ── Postal queue drain: coords → state + postal_code ────────────────────────
+//
+// Deliberately NOT folded into processReverse/processForward. Those two speak
+// Nominatim and their matchCity() auto-create path is tuned to Nominatim's
+// address.{city,town,village,municipality} shape; they are also load-bearing for
+// trg_venue_geocode / trg_event_geocode. Photon has a different response shape
+// (features[0].properties.{state,postcode,countrycode}) and this drain has
+// different failure semantics (retry with backoff, park after 4 attempts), so it
+// gets its own client.
+//
+// `state` is normally derived from cities.region_name by the
+// derive_entity_geo_address trigger and never reaches here. This fills the
+// residue: rows whose city has no region, or which have no city link at all.
+
+const PHOTON_REVERSE = Deno.env.get('PHOTON_REVERSE_URL') || 'https://photon.komoot.io/reverse'
+const PHOTON_INTERVAL_MS = Number(Deno.env.get('PHOTON_INTERVAL_MS') || 1100)
+
+const QUEUE_TABLES: Record<string, string> = {
+  venue: 'venues',
+  event: 'events',
+  hotel: 'hotels',
+  organization: 'organizations',
+}
+
+interface PhotonReverse { state: string | null; postcode: string | null; countrycode: string | null }
+
+async function photonReverse(lat: number, lon: number): Promise<PhotonReverse | null> {
+  // &lang=en is REQUIRED — without it the same region comes back as "Bayern"
+  // for some rows and "Bavaria" for others and the values will not group.
+  const url = `${PHOTON_REVERSE}?lat=${lat}&lon=${lon}&lang=en`
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), 8000)
+  try {
+    const res = await fetch(url, {
+      signal: controller.signal,
+      headers: { 'User-Agent': 'QueerGuide/1.0 (https://queer.guide)' },
+    })
+    if (res.status === 429) throw new Error('photon_rate_limited')
+    if (!res.ok) throw new Error(`photon_${res.status}`)
+    const j = await res.json() as { features?: Array<{ properties?: Record<string, string> }> }
+    const p = j.features?.[0]?.properties ?? {}
+    // `state` only. Photon's `county` for Los Angeles is "Los Angeles", which is
+    // not a state — never fall back to it.
+    return {
+      state: p.state?.trim() || null,
+      postcode: p.postcode?.trim() || null,
+      countrycode: p.countrycode?.trim().toUpperCase().slice(0, 2) || null,
+    }
+  } finally {
+    clearTimeout(timer)
+  }
+}
+
+async function processPostalQueue(
+  supabase: ReturnType<typeof getServiceClient>,
+  batchSize: number,
+): Promise<{ processed: number; filled: number; missed: number; failed: number; remaining: number }> {
+  const { data: jobs, error } = await supabase
+    .from('geo_address_queue')
+    .select('entity_type, entity_id, latitude, longitude, attempts')
+    .lt('attempts', 4)
+    .lte('next_attempt_at', new Date().toISOString())
+    .order('next_attempt_at')
+    .limit(batchSize)
+
+  if (error) throw error
+  if (!jobs?.length) return { processed: 0, filled: 0, missed: 0, failed: 0, remaining: 0 }
+
+  let filled = 0, missed = 0, failed = 0
+
+  for (const job of jobs) {
+    const table = QUEUE_TABLES[job.entity_type]
+    if (!table) continue
+
+    try {
+      if (job.latitude == null || job.longitude == null) throw new Error('no_coords')
+      const geo = await photonReverse(Number(job.latitude), Number(job.longitude))
+
+      if (geo?.postcode || geo?.state) {
+        // NULL-fill only — never overwrite a value a source already supplied.
+        const patch: Record<string, string> = {}
+        if (geo.postcode) patch.postal_code = geo.postcode
+        if (geo.state) patch.state = geo.state
+
+        let q = supabase.from(table).update(patch).eq('id', job.entity_id)
+        if (geo.postcode) q = q.is('postal_code', null)
+        const { error: upErr } = await q
+        if (upErr) throw new Error(upErr.message)
+        filled++
+      } else {
+        // A real answer of "this place has no postcode/state" (city-states,
+        // micro-states). Not a failure — drop it so we never ask again.
+        missed++
+      }
+
+      await supabase.from('geo_address_queue')
+        .delete()
+        .eq('entity_type', job.entity_type)
+        .eq('entity_id', job.entity_id)
+    } catch (e) {
+      failed++
+      const attempts = (job.attempts ?? 0) + 1
+      // Exponential backoff; parks at attempts >= 4 where the admin panel shows it.
+      const backoffHours = Math.pow(2, attempts)
+      await supabase.from('geo_address_queue')
+        .update({
+          attempts,
+          last_error: String((e as Error).message).slice(0, 500),
+          next_attempt_at: new Date(Date.now() + backoffHours * 3600_000).toISOString(),
+        })
+        .eq('entity_type', job.entity_type)
+        .eq('entity_id', job.entity_id)
+    }
+
+    await new Promise((r) => setTimeout(r, PHOTON_INTERVAL_MS))
+  }
+
+  const { count } = await supabase
+    .from('geo_address_queue')
+    .select('entity_id', { count: 'exact', head: true })
+    .lt('attempts', 4)
+
+  return { processed: jobs.length, filled, missed, failed, remaining: count ?? 0 }
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
 
@@ -567,6 +692,14 @@ Deno.serve(async (req) => {
       return jsonResponse({ success: true, mode: 'single', ...singleResult }, 200, req)
     }
 
+    // Drain the geo_address_queue for state/postal_code. Separate from the two
+    // modes below because it speaks Photon, not Nominatim, and returns its own
+    // shape — see processPostalQueue.
+    if (mode === 'postal') {
+      const postal = await processPostalQueue(supabase, batchSize)
+      return jsonResponse({ success: true, mode: 'postal', ...postal }, 200, req)
+    }
+
     let result: { results: VenueResult[]; remaining: number }
 
     switch (mode) {
@@ -577,7 +710,7 @@ Deno.serve(async (req) => {
         result = await processForward(supabase, batchSize)
         break
       default:
-        return errorResponse(`Unknown mode: ${mode}. Use "reverse" or "forward".`, 400, req)
+        return errorResponse(`Unknown mode: ${mode}. Use "reverse", "forward" or "postal".`, 400, req)
     }
 
     if (!result.results.length) {

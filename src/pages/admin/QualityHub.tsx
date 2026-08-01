@@ -34,6 +34,7 @@ import { FreigabeFunnel } from '@/components/admin/FreigabeFunnel';
 import { PersonalityFreigabeQueue } from '@/components/admin/PersonalityFreigabeQueue';
 import { DedupPendingLink } from '@/components/admin/DedupPendingLink';
 import { OrgLinkReviewQueue } from '@/components/admin/business/OrgLinkReviewQueue';
+import { GeoAddressQualityPanel } from '@/components/admin/GeoAddressQualityPanel';
 import type { FreigabeStufe } from '@/lib/personalityStatus';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 
@@ -214,6 +215,15 @@ const SECTIONS: EngineSection[] = [
     editRoute: '/admin/business',
     editLabel: 'Open Business console',
     render: () => <OrgLinkReviewQueue />,
+  },
+  {
+    /* Cross-type rather than per-entity: state/postal/country share one derive
+       trigger and one queue, so the gaps only make sense side by side. */
+    value: 'addresses',
+    title: 'Addresses — state, postal code & country',
+    editRoute: '/admin/geography',
+    editLabel: 'Open Geography',
+    render: () => <GeoAddressQualityPanel />,
   },
 ];
 

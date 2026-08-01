@@ -9,9 +9,6 @@
 --
 -- Also retires a live CMS type-drift bug: src/config/contentTypes/country.ts has
 -- always declared national_day as `type: 'text'` against this date column.
---
--- Applied live via MCP apply_migration; filename carries the version the remote
--- history actually stamped (see CLAUDE.md § Migrations).
 
 alter table public.countries
   alter column national_day type text using national_day::text;

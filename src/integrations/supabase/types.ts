@@ -5995,6 +5995,7 @@ export type Database = {
           organizer_contact: string | null
           organizer_id: string | null
           organizer_name: string | null
+          postal_code: string | null
           price_max: number | null
           price_min: number | null
           pride_subtypes: string[] | null
@@ -6073,6 +6074,7 @@ export type Database = {
           organizer_contact?: string | null
           organizer_id?: string | null
           organizer_name?: string | null
+          postal_code?: string | null
           price_max?: number | null
           price_min?: number | null
           pride_subtypes?: string[] | null
@@ -6151,6 +6153,7 @@ export type Database = {
           organizer_contact?: string | null
           organizer_id?: string | null
           organizer_name?: string | null
+          postal_code?: string | null
           price_max?: number | null
           price_min?: number | null
           pride_subtypes?: string[] | null
@@ -8915,12 +8918,14 @@ export type Database = {
           name_i18n: Json
           payload_hash: string | null
           phone: string | null
+          postal_code: string | null
           price_range: number | null
           queer_safety_notes: string | null
           queer_village_id: string | null
           seo_indexable: boolean
           slug: string | null
           star_rating: number | null
+          state: string | null
           tags: string[] | null
           updated_at: string
           updated_by: string | null
@@ -8962,12 +8967,14 @@ export type Database = {
           name_i18n?: Json
           payload_hash?: string | null
           phone?: string | null
+          postal_code?: string | null
           price_range?: number | null
           queer_safety_notes?: string | null
           queer_village_id?: string | null
           seo_indexable?: boolean
           slug?: string | null
           star_rating?: number | null
+          state?: string | null
           tags?: string[] | null
           updated_at?: string
           updated_by?: string | null
@@ -9009,12 +9016,14 @@ export type Database = {
           name_i18n?: Json
           payload_hash?: string | null
           phone?: string | null
+          postal_code?: string | null
           price_range?: number | null
           queer_safety_notes?: string | null
           queer_village_id?: string | null
           seo_indexable?: boolean
           slug?: string | null
           star_rating?: number | null
+          state?: string | null
           tags?: string[] | null
           updated_at?: string
           updated_by?: string | null
@@ -13823,6 +13832,7 @@ export type Database = {
       }
       organizations: {
         Row: {
+          address: string | null
           city_id: string | null
           claim_status: string
           claimed_by: string | null
@@ -13844,11 +13854,13 @@ export type Database = {
           name: string
           needs_attention: boolean
           phone: string | null
+          postal_code: string | null
           primary_venue_id: string | null
           roles: string[]
           safety_gated: boolean
           slug: string
           social: Json
+          state: string | null
           status: string
           tags: string[]
           target_groups: string[]
@@ -13858,6 +13870,7 @@ export type Database = {
           website_domain: string | null
         }
         Insert: {
+          address?: string | null
           city_id?: string | null
           claim_status?: string
           claimed_by?: string | null
@@ -13879,11 +13892,13 @@ export type Database = {
           name: string
           needs_attention?: boolean
           phone?: string | null
+          postal_code?: string | null
           primary_venue_id?: string | null
           roles?: string[]
           safety_gated?: boolean
           slug: string
           social?: Json
+          state?: string | null
           status?: string
           tags?: string[]
           target_groups?: string[]
@@ -13893,6 +13908,7 @@ export type Database = {
           website_domain?: string | null
         }
         Update: {
+          address?: string | null
           city_id?: string | null
           claim_status?: string
           claimed_by?: string | null
@@ -13914,11 +13930,13 @@ export type Database = {
           name?: string
           needs_attention?: boolean
           phone?: string | null
+          postal_code?: string | null
           primary_venue_id?: string | null
           roles?: string[]
           safety_gated?: boolean
           slug?: string
           social?: Json
+          state?: string | null
           status?: string
           tags?: string[]
           target_groups?: string[]
@@ -29360,6 +29378,10 @@ export type Database = {
       gated_entity_exists: {
         Args: { p_entity_type: string; p_slug: string }
         Returns: boolean
+      }
+      geo_address_gap_counts: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
       }
       gc_stale_api_errors: {
         Args: { p_age_days?: number; p_max_occurrence?: number }
