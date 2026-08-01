@@ -11,6 +11,7 @@ export interface SimilarTag {
   usage_count: number;
   similarity_score: number;
   relationship_type: string;
+  is_adult: boolean;
 }
 
 export interface GraphNode {
@@ -65,6 +66,7 @@ export function useSimilarTags(tagId: string | null, limit: number = 10) {
         usage_count: (r.usage_count ?? 0) as number,
         similarity_score: (r.similarity_score ?? 0) as number,
         relationship_type: (r.relationship_type ?? '') as string,
+        is_adult: r.is_adult === true,
       }));
     },
     enabled: !!tagId,
@@ -87,7 +89,10 @@ export function useTagGraph(minScore: number = 0.8, categoryFilter: string | nul
       const params: Record<string, unknown> = { p_min_score: minScore };
       if (categoryFilter) params.p_category_filter = categoryFilter;
 
-      const { data, error } = await supabase.rpc('get_tag_graph_data', params as Record<string, unknown>);
+      const { data, error } = await supabase.rpc(
+        'get_tag_graph_data',
+        params as Record<string, unknown>,
+      );
 
       if (error) {
         throw error;
@@ -146,6 +151,7 @@ export interface OntologyTag {
   name: string;
   category: string | null;
   confidence: number;
+  is_adult: boolean;
 }
 
 export interface TagOntology {
@@ -169,10 +175,14 @@ export function useTagOntology(tagId: string | null) {
       const { data, error } = await supabase.rpc('get_tag_ontology', { p_tag_id: tagId });
       if (error) throw error;
       const o = (data ?? {}) as Partial<TagOntology>;
+      // Normalize is_adult: the jsonb key is absent on responses served before
+      // the RPC gained the field, and Safe mode must not read undefined there.
+      const norm = (list: OntologyTag[] | undefined): OntologyTag[] =>
+        (list ?? []).map((t) => ({ ...t, is_adult: t.is_adult === true }));
       return {
-        broader: o.broader ?? [],
-        narrower: o.narrower ?? [],
-        related: o.related ?? [],
+        broader: norm(o.broader),
+        narrower: norm(o.narrower),
+        related: norm(o.related),
       };
     },
   });
