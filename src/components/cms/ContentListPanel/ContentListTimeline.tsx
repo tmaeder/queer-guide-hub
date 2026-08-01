@@ -2,7 +2,13 @@ import { useMemo } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { dateOf, monthKey, monthLabel } from './dateFields';
-import { getStatusColor, getStatusLabel, relativeTime, type ListItem } from './types';
+import {
+  getStatusColor,
+  getStatusLabel,
+  getStatusTint,
+  relativeTime,
+  type ListItem,
+} from './types';
 
 /**
  * Timeline view for any content type.
@@ -109,7 +115,10 @@ export function ContentListTimeline({
                       {item.status && (
                         <Badge
                           className="h-5 text-xs2 font-semibold"
-                          style={{ backgroundColor: `${statusColor}1A`, color: statusColor }}
+                          style={{
+                            backgroundColor: getStatusTint(item.status),
+                            color: statusColor,
+                          }}
                         >
                           {getStatusLabel(item.status)}
                         </Badge>

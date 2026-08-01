@@ -3,7 +3,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Image } from '@/components/ui/Image';
 import type { ContentTypeConfig } from '@/types/cms';
-import { getStatusColor, getStatusLabel, type ListItem } from './types';
+import { getStatusColor, getStatusLabel, getStatusTint, type ListItem } from './types';
 
 /**
  * Gallery view for any content type.
@@ -102,7 +102,7 @@ export function ContentListGallery({
               {item.status && (
                 <Badge
                   className="mt-2 h-5 text-xs2 font-semibold"
-                  style={{ backgroundColor: `${statusColor}1A`, color: statusColor }}
+                  style={{ backgroundColor: getStatusTint(item.status), color: statusColor }}
                 >
                   {getStatusLabel(item.status)}
                 </Badge>
