@@ -271,8 +271,12 @@ Deno.serve(async (req: Request) => {
   if (body.city_ids?.length) {
     ids = body.city_ids.slice(0, MAX_BATCH_LIMIT)
   } else {
+    // The sparql phase can only work on cities that already have a QID, but the
+    // selector doesn't know that and interleaves unlinked rows — a batch of 24
+    // was yielding 9 usable cities. Over-fetch and let the phase filter.
+    const selectLimit = phase === 'sparql' ? Math.min(1000, batchLimit * 4) : batchLimit
     const { data: due, error: dueErr } = await supabase.rpc('cities_due_for_refresh', {
-      p_limit: batchLimit, p_scope: scope,
+      p_limit: selectLimit, p_scope: scope,
     })
     if (dueErr) return jsonResponse({ error: dueErr.message, success: false }, 500, req)
     ids = ((due ?? []) as { id: string }[]).map(r => r.id)
@@ -285,7 +289,7 @@ Deno.serve(async (req: Request) => {
   const rows = (cities ?? []) as unknown as CityRow[]
 
   return phase === 'sparql'
-    ? await runSparqlPhase(supabase, req, rows, dryRun)
+    ? await runSparqlPhase(supabase, req, rows, dryRun, batchLimit)
     : await runLinkPhase(supabase, req, rows, dryRun, body.relink ?? false)
 })
 
@@ -583,9 +587,16 @@ async function runSparql(supabase: Db, query: string): Promise<SparqlBinding[]> 
   return (d?.results as { bindings?: SparqlBinding[] } | undefined)?.bindings ?? []
 }
 
-async function runSparqlPhase(supabase: Db, req: Request, rows: CityRow[], dryRun: boolean): Promise<Response> {
+async function runSparqlPhase(
+  supabase: Db, req: Request, rows: CityRow[], dryRun: boolean, cap: number,
+): Promise<Response> {
+  // rows is over-fetched (see selectLimit); take the first `cap` linked cities.
   const byQid = new Map<string, CityRow>()
-  for (const r of rows) if (r.wikidata_qid) byQid.set(r.wikidata_qid, r)
+  for (const r of rows) {
+    if (!r.wikidata_qid || byQid.has(r.wikidata_qid)) continue
+    if (byQid.size >= cap) break
+    byQid.set(r.wikidata_qid, r)
+  }
   if (!byQid.size) {
     return jsonResponse({ phase: 'sparql', processed: 0, message: 'no linked cities in batch' }, 200, req)
   }
