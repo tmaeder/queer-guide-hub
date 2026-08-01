@@ -66,7 +66,9 @@ export const eventFields: FieldConfig[] = [
     placeholder: 'Search the directory or type a venue…',
     relatedFields: {
       venue_id: 'venue_id',
-      venue_address: 'venue_address',
+      // The venue's street address IS the event's address — `events` has no
+      // `venue_address` column, so writing one silently dropped the value.
+      venue_address: 'address',
       city: 'city',
       country: 'country',
       city_id: 'city_id',
@@ -75,7 +77,6 @@ export const eventFields: FieldConfig[] = [
       longitude: 'longitude',
     },
   },
-  { name: 'venue_address', label: 'Venue Address', type: 'text', group: 'location' },
   {
     name: 'address',
     label: 'Address',

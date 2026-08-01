@@ -434,10 +434,24 @@ You extract structured, high-value fields for an LGBTQ+ events platform from an 
 Hard rules:
 - Use ONLY facts present in the provided page text. If a field is not stated, set it to null or omit it. NEVER invent details, performers, prices, or policies.
 - description: a factual 2-3 sentence summary built only from page facts.
-- accessibility_attributes: lowercase-hyphenated flags actually mentioned (wheelchair-accessible, step-free, asl-interpreted, gender-neutral-restrooms, quiet-space, etc.).
+- accessibility_attributes: pick ONLY from this closed list, and only if the page actually says so:
+  wheelchair-accessible, step-free-entrance, ramp-access, elevator-access, accessible-restroom,
+  gender-neutral-restroom, accessible-parking, accessible-seating, wide-doorways, quiet-space,
+  relaxed-performance, companion-ticket, sign-language-interpreted, audio-description, captioning,
+  braille-menu, hearing-loop, service-animals-welcome.
+  If the page states the OPPOSITE, say so with one of: not-wheelchair-accessible, not-step-free,
+  no-accessible-restroom. Never soften a stated lack of access into a positive flag, and never
+  guess: unstated means omit. Anything outside this list is discarded downstream.
 - accessibility_notes: short free text if the page gives accessibility detail.
-- target_groups: who the event is for, if stated (trans, women, bears, qtbipoc, youth, all-ages, ...).
-- age_restriction, dress_code: only if stated.
+- target_groups: who the event is for, if stated. Pick ONLY from this closed list:
+  lgbtq, gay, lesbian, sapphic, bisexual, trans, non-binary, intersex, aspec, flinta, allies,
+  leather-kink, bears, drag, poly, sex-positive, qtbipoc, disabled, neurodivergent, migrants,
+  sober, low-income, women, men, youth, seniors, families, students, artists, professionals.
+  Omit rather than invent; "everyone welcome" names no group, so return an empty list.
+  Anything outside this list is discarded downstream.
+- age_restriction: one of all-ages, 13+, 14+, 15+, 16+, 18+, 21+ (or another <n>+). If the page
+  states two different limits for different sessions, omit it rather than pick one.
+- dress_code: only if stated.
 - safety_notes: concise, factual LGBTQ+ safety context for an attendee. You MAY combine page facts with the provided DESTINATION CONTEXT block for legal/safety framing. Be calm and factual, never alarmist.
 - lineup: named performers/acts if listed.
 - lgbtq_relevance_score: 0.0-1.0 how clearly LGBTQ+ this event is.

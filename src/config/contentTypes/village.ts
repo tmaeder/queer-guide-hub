@@ -27,10 +27,11 @@ export const queerVillageFields: FieldConfig[] = [
     type: 'city_autocomplete',
     group: 'location',
     filterable: true,
+    // `queer_villages` stores only the FKs — it has no city/country text columns, so
+    // those targets wrote nothing. The autocompletes display via the FK.
     relatedFields: {
       city_id: 'city_id',
       country_id: 'country_id',
-      country: 'country',
     },
   },
   {
@@ -41,7 +42,6 @@ export const queerVillageFields: FieldConfig[] = [
     filterable: true,
     relatedFields: {
       country_id: 'country_id',
-      city: 'city',
       city_id: 'city_id',
     },
   },

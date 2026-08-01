@@ -80,7 +80,9 @@ export const milestoneFields: FieldConfig[] = [
     label: 'City',
     type: 'city_autocomplete',
     group: 'location',
-    relatedFields: { city_id: 'city_id', country_id: 'country_id', country_name: 'country' },
+    // `milestones` has country_name, not country — the old target silently dropped the
+    // country every time an admin picked a city.
+    relatedFields: { city_id: 'city_id', country_id: 'country_id', country_name: 'country_name' },
   },
   {
     name: 'country_name',
