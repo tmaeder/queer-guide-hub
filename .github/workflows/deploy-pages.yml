@@ -51,3 +51,12 @@ jobs:
           # multibyte UTF-8 (e.g. — or →) with "Invalid commit message, it must
           # be a valid UTF-8 string [code 8000111]", failing the whole deploy.
           command: pages deploy dist --project-name=queer-guide --branch=main --commit-hash=${{ github.sha }} --commit-message="deploy ${{ github.sha }}" --commit-dirty=true
+
+      # The site went down twice on 2026-08-01 with a fully green deploy:
+      # first every SPA deep route 404'd, then every static asset was served
+      # as HTML. Nothing in this workflow looked at the deployed site. Now it
+      # does — a broken routing config fails the deploy instead of the users.
+      - name: Smoke-test the deployed site
+        run: bash scripts/smoke-pages.sh
+        env:
+          SITE_URL: https://queer.guide
