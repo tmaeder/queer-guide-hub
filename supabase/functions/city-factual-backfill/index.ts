@@ -315,6 +315,13 @@ async function runLinkPhase(
 
     try {
       const prov: Prov = { ...(c.field_provenance ?? {}) }
+      // Staleness must be judged against provenance as it was BEFORE this run.
+      // addCandidate() rewrites prov[field] with the freshly-fetched value, and
+      // it runs before the write guard — so reading `prov` there compared the NEW
+      // value against the OLD column and concluded a human had curated it.
+      // Buenos Aires kept "Gregory Habib" while its own provenance already said
+      // "Jorge Macri".
+      const provBefore: Prov = JSON.parse(JSON.stringify(c.field_provenance ?? {}))
       const state: Status = { ...(c.enrichment_status ?? {}) }
       const update: Record<string, unknown> = {}
       const rankFixed: string[] = []
@@ -386,30 +393,40 @@ async function runLinkPhase(
         bumpMiss(state, 'wikipedia_page', 'wikipedia')
       }
 
-      // A relink that lands on a DIFFERENT entity means every fact we previously
-      // wrote came from the wrong city (Buenos Aires held the mayor of an
-      // unrelated Córdoba town). Those values must be re-derived, not preserved
-      // by the empty-only rule — but only where provenance proves we wrote them.
-      const wrongEntity = relink && !!c.wikidata_qid && !!qid && qid !== c.wikidata_qid
+      // On a relink, every value THIS ENGINE wrote from Wikidata is re-derived —
+      // not just when the QID changes. Buenos Aires is why: its mayor was written
+      // while the row pointed at an unrelated Córdoba town, and by the time the
+      // QID had been corrected to Q1486 the "entity changed" test no longer fired,
+      // so the wrong mayor survived the repair. Provenance still gates it, so a
+      // human-curated value is never touched.
       const stale = (field: string, current: unknown) =>
-        wrongEntity && ourWikidataValue(prov, field, current)
+        relink && ourWikidataValue(provBefore, field, current)
+
+      /**
+       * A field we own that the correct entity has no value for must be CLEARED,
+       * not left holding the old answer. Without this a relink can only replace,
+       * never retract.
+       */
+      const clearIfStale = (field: string, current: unknown, fresh: unknown) => {
+        if (fresh == null && current != null && stale(field, current)) update[field] = null
+      }
 
       // --- 4. Group-A columns, empty-only --------------------------------
       if (facts) {
         if (facts.population != null) {
           addCandidate(prov, 'population', 'wikidata', facts.population)
           if (c.population == null || stale('population', c.population)) update.population = facts.population
-          else if (applyRankFix('population', c.population, facts.population, prov, update)) rankFixed.push('population')
+          else if (applyRankFix('population', c.population, facts.population, provBefore, update)) rankFixed.push('population')
         }
         if (facts.area_km2 != null) {
           addCandidate(prov, 'area_km2', 'wikidata', facts.area_km2)
           if (c.area_km2 == null || stale('area_km2', c.area_km2)) update.area_km2 = facts.area_km2
-          else if (applyRankFix('area_km2', c.area_km2, facts.area_km2, prov, update)) rankFixed.push('area_km2')
+          else if (applyRankFix('area_km2', c.area_km2, facts.area_km2, provBefore, update)) rankFixed.push('area_km2')
         }
         if (facts.elevation_m != null) {
           addCandidate(prov, 'elevation_m', 'wikidata', facts.elevation_m)
           if (c.elevation_m == null || stale('elevation_m', c.elevation_m)) update.elevation_m = facts.elevation_m
-          else if (applyRankFix('elevation_m', c.elevation_m, facts.elevation_m, prov, update)) rankFixed.push('elevation_m')
+          else if (applyRankFix('elevation_m', c.elevation_m, facts.elevation_m, provBefore, update)) rankFixed.push('elevation_m')
         }
         if (facts.founded_year != null) {
           addCandidate(prov, 'founded_year', 'wikidata', facts.founded_year)
@@ -425,13 +442,13 @@ async function runLinkPhase(
           addCandidate(prov, 'postal_codes', 'wikidata', facts.postal_codes)
           if (isEmptyArr(c.postal_codes) || stale('postal_codes', c.postal_codes)) update.postal_codes = facts.postal_codes
           markResolved(state, 'postal_codes', 'wikidata')
-        } else bumpMiss(state, 'postal_codes', 'wikidata')
+        } else { clearIfStale('postal_codes', c.postal_codes, undefined); bumpMiss(state, 'postal_codes', 'wikidata') }
 
         if (facts.area_codes?.length) {
           addCandidate(prov, 'area_codes', 'wikidata', facts.area_codes)
           if (isEmptyArr(c.area_codes) || stale('area_codes', c.area_codes)) update.area_codes = facts.area_codes
           markResolved(state, 'area_codes', 'wikidata')
-        } else bumpMiss(state, 'area_codes', 'wikidata')
+        } else { clearIfStale('area_codes', c.area_codes, undefined); bumpMiss(state, 'area_codes', 'wikidata') }
 
         // QID-valued fields resolve their labels in one batched call.
         const refQids = [
@@ -447,13 +464,13 @@ async function runLinkPhase(
           addCandidate(prov, 'sister_cities', 'wikidata', named.sister_cities)
           if (isEmptyArr(c.sister_cities) || stale('sister_cities', c.sister_cities)) update.sister_cities = named.sister_cities
           markResolved(state, 'sister_cities', 'wikidata')
-        } else bumpMiss(state, 'sister_cities', 'wikidata')
+        } else { clearIfStale('sister_cities', c.sister_cities, undefined); bumpMiss(state, 'sister_cities', 'wikidata') }
 
         if (named.local_language) {
           addCandidate(prov, 'local_language', 'wikidata', named.local_language)
           if (!c.local_language || stale('local_language', c.local_language)) update.local_language = named.local_language
           markResolved(state, 'local_language', 'wikidata')
-        } else bumpMiss(state, 'local_language', 'wikidata')
+        } else { clearIfStale('local_language', c.local_language, undefined); bumpMiss(state, 'local_language', 'wikidata') }
 
         if (named.mayor) {
           addCandidate(prov, 'mayor', 'wikidata', named.mayor)
@@ -462,6 +479,7 @@ async function runLinkPhase(
         } else {
           // Expected for most cities: every P6 statement carries an end date, and
           // an ended term must never be published as the current mayor.
+          clearIfStale('mayor', c.mayor, undefined)
           bumpMiss(state, 'mayor', 'wikidata')
         }
 
@@ -469,13 +487,13 @@ async function runLinkPhase(
           addCandidate(prov, 'climate_type', 'wikidata', named.climate_type)
           if (!c.climate_type || stale('climate_type', c.climate_type)) update.climate_type = named.climate_type
           markResolved(state, 'climate_type', 'wikidata')
-        } else bumpMiss(state, 'climate_type', 'wikidata')
+        } else { clearIfStale('climate_type', c.climate_type, undefined); bumpMiss(state, 'climate_type', 'wikidata') }
 
         if (named.economy_sectors?.length) {
           addCandidate(prov, 'economy_sectors', 'wikidata', named.economy_sectors)
           if (isEmptyArr(c.economy_sectors) || stale('economy_sectors', c.economy_sectors)) update.economy_sectors = named.economy_sectors
           markResolved(state, 'economy_sectors', 'wikidata')
-        } else bumpMiss(state, 'economy_sectors', 'wikidata')
+        } else { clearIfStale('economy_sectors', c.economy_sectors, undefined); bumpMiss(state, 'economy_sectors', 'wikidata') }
       }
 
       // The QID/title cache is infrastructure, not a data fill — excluding it
