@@ -142,6 +142,7 @@ async function main() {
   // nothing left to fill. Without this the driver spins forever making upstream
   // calls for nothing (observed: batches 130-192 all 0/40).
   let dryStreak = 0
+  let upstreamFailures = 0
 
   for (let b = 1; b <= MAX_BATCHES; b++) {
     const { status, data } = await invoke({
@@ -155,7 +156,18 @@ async function main() {
       await sleep(60000)
       continue
     }
-    if (data.error) { console.error(`  batch ${b} error: ${data.error}`); break }
+    // WDQS returns 500/502 under load often enough that a single failure must not
+    // end an operator run — it is a degraded upstream, not a finished work-list.
+    // Anything else is a real error and stops the sweep.
+    if (data.error) {
+      if (/wdqs|sparql|timeout|fetch/i.test(String(data.error)) && ++upstreamFailures <= 8) {
+        console.log(`  batch ${b}: upstream failed (${data.error}) — backing off 45s [${upstreamFailures}/8]`)
+        await sleep(45000)
+        continue
+      }
+      console.error(`  batch ${b} error: ${data.error}`)
+      break
+    }
     if (!data.processed) { console.log(`  batch ${b}: nothing due — done`); break }
 
     for (const k of Object.keys(total)) total[k] += data[k] || 0
