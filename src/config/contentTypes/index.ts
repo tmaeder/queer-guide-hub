@@ -16,6 +16,7 @@ import { feedbackContentType } from './feedback';
 import { milestoneContentType } from './milestone';
 import { organizationContentType } from './organization';
 import { guideContentType } from './guide';
+import { redirectContentType } from './redirect';
 import { vocabularyContentType } from './vocabulary';
 import {
   Accessibility,
@@ -63,6 +64,7 @@ export const contentTypeRegistry: Record<string, ContentTypeConfig> = {
   milestones: milestoneContentType,
   organizations: organizationContentType,
   guides: guideContentType,
+  redirects: redirectContentType,
 
   // Controlled vocabularies. Previously eight standalone pages on their own
   // shell; now on the same registry as every other content type, which is what

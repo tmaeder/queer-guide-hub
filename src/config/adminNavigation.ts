@@ -429,7 +429,7 @@ export const adminNavSections: AdminNavSection[] = [
         id: 'redirects',
         label: 'Redirects',
         icon: Link2,
-        route: '/admin/redirects',
+        route: '/admin/content/redirects',
         adminOnly: true,
         countTable: 'redirects',
       },

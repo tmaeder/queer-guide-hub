@@ -57,7 +57,7 @@ export const ADMIN_AREA_DESCRIPTIONS: Record<string, string> = {
   '/admin/security': 'Security monitoring. RLS, auth, and anomaly detection.',
   '/admin/cloudflare': 'Cloudflare analytics and rules.',
   '/admin/affiliates': 'Affiliate partners. Manage merchant links and payouts.',
-  '/admin/redirects': 'URL redirect rules.',
+  '/admin/content/redirects': 'URL redirect rules.',
   '/admin/email-templates': 'Transactional email templates.',
   '/admin/recognition': 'Contributor recognition wall.',
   '/admin/audit': 'Audit log. Who changed what, across the admin.',

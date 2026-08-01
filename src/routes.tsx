@@ -83,7 +83,6 @@ const ContentGraph = lazyRetry(() => import('./pages/admin/ContentGraph'));
 const AdminTwentyCrm = lazyRetry(() => import('./pages/admin/AdminTwentyCrm'));
 const EmailTemplates = lazyRetry(() => import('./pages/admin/EmailTemplates'));
 const AdminPlacesEditorial = lazyRetry(() => import('./pages/admin/AdminPlacesEditorial'));
-const AdminRedirects = lazyRetry(() => import('./pages/admin/AdminRedirects'));
 const AdminPipelines = lazyRetry(() => import('./pages/admin/AdminPipelines'));
 const AdminEmailIngestions = lazyRetry(() => import('./pages/admin/AdminEmailIngestions'));
 const AdminImports = lazyRetry(() => import('./pages/admin/AdminImports'));
@@ -432,7 +431,7 @@ export const AppRoutes = () => {
 
                 {/* System section */}
                 <Route path="users" element={<AdminUsers />} />
-                <Route path="redirects" element={<AdminRedirects />} />
+                <Route path="redirects" element={<Navigate to="/admin/content/redirects" replace />} />
                 <Route path="email-templates" element={<EmailTemplates />} />
                 <Route path="recognition" element={<AdminRecognition />} />
 
