@@ -8,6 +8,8 @@
 import { useState, useCallback } from 'react';
 import { CheckCheck, Archive, EyeOff, Languages, ChevronDown, X, Loader2 } from 'lucide-react';
 import { upsertCMSContentMetadata, insertContentActions } from '@/hooks/useCMSContentMetadata';
+import { useBulkColumnEdit } from '@/hooks/useBulkColumnEdit';
+import type { ContentBulkEditField } from '@/types/cms';
 import { SUPPORTED_LOCALES, DEFAULT_LOCALE } from '@/i18n/languages';
 import type { SupportedLocale } from '@/i18n/languages';
 import type { WorkflowState } from '@/types/cms';
@@ -30,12 +32,24 @@ interface BulkActionsBarProps {
   selections: BulkSelection[];
   onClear: () => void;
   onComplete?: () => void;
+  /**
+   * Columns the current type allows editing across selected rows. Unlike the
+   * workflow buttons — which write cms_content_metadata — these write the
+   * entity table itself.
+   */
+  bulkEditFields?: ContentBulkEditField[];
 }
 
-export function BulkActionsBar({ selections, onClear, onComplete }: BulkActionsBarProps) {
+export function BulkActionsBar({
+  selections,
+  onClear,
+  onComplete,
+  bulkEditFields,
+}: BulkActionsBarProps) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [progress, setProgress] = useState<string | null>(null);
+  const bulkColumnEdit = useBulkColumnEdit();
 
   const updateState = useCallback(
     async (state: WorkflowState) => {
@@ -60,6 +74,40 @@ export function BulkActionsBar({ selections, onClear, onComplete }: BulkActionsB
       }
     },
     [selections, onClear, onComplete],
+  );
+
+  /**
+   * Writes one column across every selected row.
+   *
+   * Single `.in()` update rather than a per-row loop: this is one statement on
+   * one table, and each entity write costs a search-index sync on this
+   * instance, so a loop would multiply that by the selection size.
+   */
+  const applyBulkEdit = useCallback(
+    async (column: string, value: unknown, label: string) => {
+      const table = selections[0]?.tableName;
+      if (!table) return;
+      setBusy(true);
+      setError(null);
+      setProgress(`Setting ${label} on ${selections.length} item(s)…`);
+
+      const { error: e } = await bulkColumnEdit(
+        table,
+        selections.map((s) => s.id),
+        column,
+        value,
+      );
+
+      setBusy(false);
+      setProgress(null);
+      if (e) {
+        setError(e);
+      } else {
+        onComplete?.();
+        onClear();
+      }
+    },
+    [selections, onClear, onComplete, bulkColumnEdit],
   );
 
   const enqueueTranslate = useCallback(
@@ -100,6 +148,41 @@ export function BulkActionsBar({ selections, onClear, onComplete }: BulkActionsB
       <div className="flex-1 min-w-0">
         {progress && <span className="text-xs text-muted-foreground">{progress}</span>}
       </div>
+      {(bulkEditFields ?? []).map((f) => (
+        <DropdownMenu key={f.name}>
+          <DropdownMenuTrigger asChild>
+            <Button size="sm" variant="outline" disabled={busy} className="normal-case font-semibold">
+              {f.label}
+              <ChevronDown size={14} className="ml-1" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            {f.type === 'boolean' ? (
+              [
+                { value: true, label: 'Yes' },
+                { value: false, label: 'No' },
+              ].map((o) => (
+                <DropdownMenuItem
+                  key={String(o.value)}
+                  onClick={() => void applyBulkEdit(f.name, o.value, `${f.label} → ${o.label}`)}
+                >
+                  {o.label}
+                </DropdownMenuItem>
+              ))
+            ) : (
+              (f.options ?? []).map((o) => (
+                <DropdownMenuItem
+                  key={o.value}
+                  onClick={() => void applyBulkEdit(f.name, o.value, `${f.label} → ${o.label}`)}
+                >
+                  {o.label}
+                </DropdownMenuItem>
+              ))
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      ))}
+
       <Button
         size="sm"
         disabled={busy}

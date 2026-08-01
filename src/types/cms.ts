@@ -150,6 +150,23 @@ export interface FieldConfig {
 
 // ── Content Type Registry ──────────────────────────────────────────
 
+/**
+ * A column offered in the bulk-edit menu when rows are selected.
+ *
+ * Distinct from the publish/archive/translate actions, which write workflow
+ * metadata. This writes a real column on the entity table — the thing
+ * AdminDataTable could do and the registry could not, which was the last
+ * capability keeping pages on the other shell.
+ */
+export interface ContentBulkEditField {
+  /** Column name on `tableName`. */
+  name: string;
+  label: string;
+  type: 'boolean' | 'select';
+  /** Required for `select`. */
+  options?: SelectOption[];
+}
+
 /** A per-row action rendered in the content list beside Edit. */
 export interface ContentRowAction {
   id: string;
@@ -234,6 +251,11 @@ export interface ContentTypeConfig {
    * toolbar variants until something needs them.
    */
   rowActions?: ContentRowAction[];
+  /**
+   * Columns editable across selected rows. Rendered in the bulk bar beside the
+   * workflow actions. Omit for types where mass-editing a column is not safe.
+   */
+  bulkEditFields?: ContentBulkEditField[];
   /**
    * Extra buttons in the list header, left of Export and New.
    *
