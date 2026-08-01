@@ -1,1 +1,8 @@
 bash scripts/check-secrets.sh
+
+# Formats and auto-fixes only the staged files, then re-stages them, so the
+# commit carries the fixed content. The `lint-staged` block in package.json has
+# been configured since husky was introduced, but nothing ever invoked it — the
+# hook only ran the secret guard, so the formatting gate was silently dead and
+# lint drift reached CI instead of being caught here.
+npm run lint:staged
