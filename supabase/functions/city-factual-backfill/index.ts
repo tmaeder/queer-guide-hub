@@ -434,14 +434,16 @@ async function runLinkPhase(supabase: Db, req: Request, rows: CityRow[], dryRun:
 
       filled = Object.keys(update).filter(k => k !== 'wikidata_qid' && k !== 'wikipedia_title')
 
-      // --- 5. Write. Never a no-op UPDATE. -------------------------------
-      // The old code stamped last_refreshed_at unconditionally, so ~90 cities a
-      // day each paid a spine upsert + profile upsert + HNSW delete/insert just
-      // to record that nothing had happened.
-      const stateChanged = JSON.stringify(state) !== JSON.stringify(c.enrichment_status ?? {})
-      const hasWrite = Object.keys(update).length > 0 || stateChanged
-
-      if (hasWrite && !dryRun) {
+      // --- 5. Write -------------------------------------------------------
+      // last_refreshed_at is stamped on EVERY visit, even when nothing was
+      // filled. It is not bookkeeping — it is the selector's round-robin cursor
+      // (cities_due_for_refresh orders by last_refreshed_at ASC NULLS FIRST). An
+      // earlier revision skipped the write when no column changed, to save the
+      // spine + profile upsert and the search_documents HNSW churn; that turned
+      // every unfillable city into a permanent queue-head and the sweep stalled
+      // at 0 updated per batch. The real saving is the terminal sentinel, which
+      // removes exhausted cities from the pool altogether.
+      if (!dryRun) {
         update.field_provenance = prov
         update.enrichment_status = state
         update.last_refreshed_at = new Date().toISOString()
@@ -564,8 +566,9 @@ async function runSparqlPhase(supabase: Db, req: Request, rows: CityRow[], dryRu
     }
 
     const filled = Object.keys(update)
-    const stateChanged = JSON.stringify(state) !== JSON.stringify(c.enrichment_status ?? {})
-    if ((filled.length || stateChanged) && !dryRun) {
+    // Stamp last_refreshed_at on every visit — see the note in runLinkPhase; it
+    // is the selector's cursor, not bookkeeping.
+    if (!dryRun) {
       update.field_provenance = prov
       update.enrichment_status = state
       update.last_refreshed_at = new Date().toISOString()
