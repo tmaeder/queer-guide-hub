@@ -5,14 +5,23 @@ import { cityNameCandidates } from './city-name-normalize.ts'
 Deno.test('strips a country suffix and keeps the bare toponym', () => {
   const r = cityNameCandidates('Kapstadt, Südafrika', { country: 'South Africa' })
   assertEquals(r.base, 'Kapstadt')
-  assertEquals(r.queries, ['Kapstadt, South Africa', 'Kapstadt', 'Kapstadt, Südafrika'])
+  assertEquals(r.queries, ['Kapstadt', 'Kapstadt, South Africa', 'Kapstadt, Südafrika'])
   assertEquals(r.suspect, false)
 })
 
 Deno.test('strips multiple qualifiers', () => {
   const r = cityNameCandidates('El Cajon, Kalifornien, USA', { country: 'United States' })
   assertEquals(r.base, 'El Cajon')
-  assertEquals(r.queries[0], 'El Cajon, United States')
+  assertEquals(r.queries[0], 'El Cajon')
+})
+
+// Regression: the country-qualified form must never be tried first.
+// wbsearchentities("Buenos Aires, Argentina") returns ONLY Q1537768, an obscure
+// town whose description also contains "Argentina", so it satisfied the country
+// check and beat the capital Q1486. Buenos Aires got that town's mayor.
+Deno.test('bare name is always the first query', () => {
+  const r = cityNameCandidates('Buenos Aires', { country: 'Argentina' })
+  assertEquals(r.queries, ['Buenos Aires', 'Buenos Aires, Argentina'])
 })
 
 Deno.test('splits on spaced dashes as well as commas', () => {
@@ -33,9 +42,9 @@ Deno.test('dedupes when no country is supplied', () => {
   assertEquals(cityNameCandidates('Lisbon').queries, ['Lisbon'])
 })
 
-Deno.test('country-qualified query comes first, raw string last', () => {
+Deno.test('country-qualified query is a fallback, not the first attempt', () => {
   const r = cityNameCandidates('Cologne', { country: 'Germany' })
-  assertEquals(r.queries, ['Cologne, Germany', 'Cologne'])
+  assertEquals(r.queries, ['Cologne', 'Cologne, Germany'])
 })
 
 Deno.test('flags placeholder names', () => {
@@ -73,7 +82,7 @@ Deno.test('a real city that shares a country name is NOT flagged when unknown', 
   // advisory; disposition additionally requires a failed QID resolution.
   const r = cityNameCandidates('Luxembourg', { country: 'Luxembourg' })
   assertEquals(r.base, 'Luxembourg')
-  assertEquals(r.queries[0], 'Luxembourg, Luxembourg')
+  assertEquals(r.queries, ['Luxembourg', 'Luxembourg, Luxembourg'])
 })
 
 Deno.test('collapses whitespace and normalizes unicode', () => {

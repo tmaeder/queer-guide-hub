@@ -77,10 +77,18 @@ export function cityNameCandidates(
     if (v && !queries.includes(v)) queries.push(v)
   }
   const country = opts.country?.trim()
-  // Country-qualified first (disambiguates "Springfield"), then the bare
-  // toponym (this is the one that recovers exonyms), then the raw string.
-  if (base && country) push(`${base}, ${country}`)
+  // BARE NAME FIRST. wbsearchentities matches labels, so a country-qualified
+  // string like "Buenos Aires, Argentina" scores an obscure exact-label town
+  // (Q1537768, "City in Argentina") above the capital (Q1486) — and because that
+  // town's description also contains "Argentina" it satisfied the country check
+  // and won outright. The bare query returns the prominent entity, and the
+  // caller's country-vs-description match is what disambiguates. Verified:
+  //   "Buenos Aires, Argentina" -> [Q1537768]
+  //   "Buenos Aires"            -> [Q44754(province), Q1486(capital), ...]
+  // The qualified form is kept as a later fallback for names too generic to
+  // resolve alone.
   push(base)
+  if (base && country) push(`${base}, ${country}`)
   push(original)
 
   let suspectReason: SuspectReason | undefined

@@ -162,6 +162,29 @@ function markResolved(status: Status, key: string, source: string, qid?: string)
 }
 
 /**
+ * True when this engine is the only thing that ever wrote the field, so it is
+ * safe for the engine to correct it. A field with any other source — or with a
+ * value that no longer matches what provenance recorded — has been curated since
+ * and must be left alone.
+ */
+function ourWikidataValue(prov: Prov, field: string, current: unknown): boolean {
+  const entry = prov[field]
+  if (!entry) return false
+  const sources = entry.sources ?? entry.candidates?.map(c => c.source) ?? []
+  if (!sources.length || !sources.every(s => s === 'wikidata' || s === 'wikidata.sparql')) return false
+  if (current == null) return true
+  // `value` is only present after city-corroboration has fused the candidates;
+  // on a fresh row the recorded value lives in candidates[]. Checking only
+  // `entry.value` made this always false, so the relink repair silently did
+  // nothing (Buenos Aires kept the wrong mayor after its QID was corrected).
+  const recorded = entry.value !== undefined
+    ? entry.value
+    : entry.candidates?.find(c => c.source === 'wikidata' || c.source === 'wikidata.sparql')?.value
+  if (recorded === undefined) return false
+  return JSON.stringify(recorded) === JSON.stringify(current)
+}
+
+/**
  * The one sanctioned overwrite of a non-empty column.
  *
  * The old parser read claims[P][0] — array position, not rank — so every
@@ -222,6 +245,7 @@ const CITY_COLUMNS =
 const isEmptyArr = (a: unknown[] | null | undefined) =>
   !a || a.every(v => v == null || String(v).trim() === '')
 
+
 // ------------------------------------------------------------------ entry
 
 Deno.serve(async (req: Request) => {
@@ -234,7 +258,8 @@ Deno.serve(async (req: Request) => {
   }
 
   const body = await req.json().catch(() => ({})) as {
-    phase?: string; batch_limit?: number; dry_run?: boolean; city_ids?: string[]; scope?: string
+    phase?: string; batch_limit?: number; dry_run?: boolean; city_ids?: string[]
+    scope?: string; relink?: boolean
   }
   const phase = body.phase === 'sparql' ? 'sparql' : 'link'
   const batchLimit = Math.min(MAX_BATCH_LIMIT, Math.max(1, body.batch_limit ?? DEFAULT_BATCH_LIMIT))
@@ -261,12 +286,14 @@ Deno.serve(async (req: Request) => {
 
   return phase === 'sparql'
     ? await runSparqlPhase(supabase, req, rows, dryRun)
-    : await runLinkPhase(supabase, req, rows, dryRun)
+    : await runLinkPhase(supabase, req, rows, dryRun, body.relink ?? false)
 })
 
 // ------------------------------------------------------------------ phase: link
 
-async function runLinkPhase(supabase: Db, req: Request, rows: CityRow[], dryRun: boolean): Promise<Response> {
+async function runLinkPhase(
+  supabase: Db, req: Request, rows: CityRow[], dryRun: boolean, relink: boolean,
+): Promise<Response> {
   // Country + region names power the suspect-name heuristic: "Indonesien" and
   // "Baskenland" are filed as cities but are not places this engine can enrich.
   const knownPlaceNames = new Set<string>()
@@ -294,8 +321,11 @@ async function runLinkPhase(supabase: Db, req: Request, rows: CityRow[], dryRun:
       const country = c.countries?.name ?? null
 
       // --- 1. QID: cached, or resolved from cleaned name candidates -------
-      let qid = c.wikidata_qid
-      let enwikiTitle = c.wikipedia_title
+      // `relink` ignores the cache and re-resolves. Needed after a resolver bug:
+      // the cache is what makes a repeat visit cheap, so without an override a
+      // wrong QID would be sticky forever.
+      let qid = relink ? null : c.wikidata_qid
+      let enwikiTitle = relink ? null : c.wikipedia_title
       const cand = cityNameCandidates(c.name, { country, knownPlaceNames })
 
       if (!qid) {
@@ -356,42 +386,50 @@ async function runLinkPhase(supabase: Db, req: Request, rows: CityRow[], dryRun:
         bumpMiss(state, 'wikipedia_page', 'wikipedia')
       }
 
+      // A relink that lands on a DIFFERENT entity means every fact we previously
+      // wrote came from the wrong city (Buenos Aires held the mayor of an
+      // unrelated Córdoba town). Those values must be re-derived, not preserved
+      // by the empty-only rule — but only where provenance proves we wrote them.
+      const wrongEntity = relink && !!c.wikidata_qid && !!qid && qid !== c.wikidata_qid
+      const stale = (field: string, current: unknown) =>
+        wrongEntity && ourWikidataValue(prov, field, current)
+
       // --- 4. Group-A columns, empty-only --------------------------------
       if (facts) {
         if (facts.population != null) {
           addCandidate(prov, 'population', 'wikidata', facts.population)
-          if (c.population == null) update.population = facts.population
+          if (c.population == null || stale('population', c.population)) update.population = facts.population
           else if (applyRankFix('population', c.population, facts.population, prov, update)) rankFixed.push('population')
         }
         if (facts.area_km2 != null) {
           addCandidate(prov, 'area_km2', 'wikidata', facts.area_km2)
-          if (c.area_km2 == null) update.area_km2 = facts.area_km2
+          if (c.area_km2 == null || stale('area_km2', c.area_km2)) update.area_km2 = facts.area_km2
           else if (applyRankFix('area_km2', c.area_km2, facts.area_km2, prov, update)) rankFixed.push('area_km2')
         }
         if (facts.elevation_m != null) {
           addCandidate(prov, 'elevation_m', 'wikidata', facts.elevation_m)
-          if (c.elevation_m == null) update.elevation_m = facts.elevation_m
+          if (c.elevation_m == null || stale('elevation_m', c.elevation_m)) update.elevation_m = facts.elevation_m
           else if (applyRankFix('elevation_m', c.elevation_m, facts.elevation_m, prov, update)) rankFixed.push('elevation_m')
         }
         if (facts.founded_year != null) {
           addCandidate(prov, 'founded_year', 'wikidata', facts.founded_year)
-          if (c.founded_year == null) update.founded_year = facts.founded_year
+          if (c.founded_year == null || stale('founded_year', c.founded_year)) update.founded_year = facts.founded_year
         }
         if (facts.official_website) {
           addCandidate(prov, 'official_website', 'wikidata', facts.official_website)
-          if (!c.official_website) update.official_website = facts.official_website
+          if (!c.official_website || stale('official_website', c.official_website)) update.official_website = facts.official_website
         }
 
         // Columns that were at literal 0% before this change.
         if (facts.postal_codes?.length) {
           addCandidate(prov, 'postal_codes', 'wikidata', facts.postal_codes)
-          if (isEmptyArr(c.postal_codes)) update.postal_codes = facts.postal_codes
+          if (isEmptyArr(c.postal_codes) || stale('postal_codes', c.postal_codes)) update.postal_codes = facts.postal_codes
           markResolved(state, 'postal_codes', 'wikidata')
         } else bumpMiss(state, 'postal_codes', 'wikidata')
 
         if (facts.area_codes?.length) {
           addCandidate(prov, 'area_codes', 'wikidata', facts.area_codes)
-          if (isEmptyArr(c.area_codes)) update.area_codes = facts.area_codes
+          if (isEmptyArr(c.area_codes) || stale('area_codes', c.area_codes)) update.area_codes = facts.area_codes
           markResolved(state, 'area_codes', 'wikidata')
         } else bumpMiss(state, 'area_codes', 'wikidata')
 
@@ -407,19 +445,19 @@ async function runLinkPhase(supabase: Db, req: Request, rows: CityRow[], dryRun:
 
         if (named.sister_cities?.length) {
           addCandidate(prov, 'sister_cities', 'wikidata', named.sister_cities)
-          if (isEmptyArr(c.sister_cities)) update.sister_cities = named.sister_cities
+          if (isEmptyArr(c.sister_cities) || stale('sister_cities', c.sister_cities)) update.sister_cities = named.sister_cities
           markResolved(state, 'sister_cities', 'wikidata')
         } else bumpMiss(state, 'sister_cities', 'wikidata')
 
         if (named.local_language) {
           addCandidate(prov, 'local_language', 'wikidata', named.local_language)
-          if (!c.local_language) update.local_language = named.local_language
+          if (!c.local_language || stale('local_language', c.local_language)) update.local_language = named.local_language
           markResolved(state, 'local_language', 'wikidata')
         } else bumpMiss(state, 'local_language', 'wikidata')
 
         if (named.mayor) {
           addCandidate(prov, 'mayor', 'wikidata', named.mayor)
-          if (!c.mayor) update.mayor = named.mayor
+          if (!c.mayor || stale('mayor', c.mayor)) update.mayor = named.mayor
           markResolved(state, 'mayor', 'wikidata')
         } else {
           // Expected for most cities: every P6 statement carries an end date, and
@@ -429,13 +467,13 @@ async function runLinkPhase(supabase: Db, req: Request, rows: CityRow[], dryRun:
 
         if (named.climate_type) {
           addCandidate(prov, 'climate_type', 'wikidata', named.climate_type)
-          if (!c.climate_type) update.climate_type = named.climate_type
+          if (!c.climate_type || stale('climate_type', c.climate_type)) update.climate_type = named.climate_type
           markResolved(state, 'climate_type', 'wikidata')
         } else bumpMiss(state, 'climate_type', 'wikidata')
 
         if (named.economy_sectors?.length) {
           addCandidate(prov, 'economy_sectors', 'wikidata', named.economy_sectors)
-          if (isEmptyArr(c.economy_sectors)) update.economy_sectors = named.economy_sectors
+          if (isEmptyArr(c.economy_sectors) || stale('economy_sectors', c.economy_sectors)) update.economy_sectors = named.economy_sectors
           markResolved(state, 'economy_sectors', 'wikidata')
         } else bumpMiss(state, 'economy_sectors', 'wikidata')
       }
@@ -459,10 +497,13 @@ async function runLinkPhase(supabase: Db, req: Request, rows: CityRow[], dryRun:
         update.last_refreshed_at = new Date().toISOString()
         let { error: upErr } = await supabase.from('cities').update(update).eq('id', c.id)
 
-        // Two live cities resolving to the same Wikidata entity is a genuine
-        // duplicate, which uq_cities_wikidata_qid catches. Don't throw away the
-        // rest of the enrichment over it: keep every other field, leave the QID
-        // unclaimed, and flag the row so the dedup engine / an admin can look.
+        // Two live cities resolving to the same Wikidata entity — caught by
+        // uq_cities_wikidata_qid. In practice these are duplicate ROWS for one
+        // real city ("Athen"/"Athens", "Distrito Federal"/"Mexico City"), so the
+        // facts are correct for both and worth keeping; only the unique QID can
+        // be held by one row. Verified on the live conflicts: Athens→Haris
+        // Doukas, Ghent→Mathias De Clercq, Freiburg→Martin Horn are all right.
+        // Flag the row — the collision is a genuine duplicate signal for dedup.
         if (upErr && /uq_cities_wikidata_qid/.test(upErr.message)) {
           delete update.wikidata_qid
           state.wikidata_link = {
