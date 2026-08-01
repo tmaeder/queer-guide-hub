@@ -213,7 +213,14 @@ const CITY_COLUMNS =
   'airport_codes, major_airport_code, transportation_info, ' +
   'field_provenance, enrichment_status, wikidata_qid, wikipedia_title, country_id, countries(name)'
 
-const isEmptyArr = (a: unknown[] | null | undefined) => !a || a.length === 0
+/**
+ * An array counts as empty when it holds nothing usable, not merely when it has
+ * zero length. 236 of the 326 rows with `airport_codes` hold exactly `[null]` —
+ * residue from an older import. A plain length check treats those as populated,
+ * so they would never be repaired and would keep rendering as a blank chip.
+ */
+const isEmptyArr = (a: unknown[] | null | undefined) =>
+  !a || a.every(v => v == null || String(v).trim() === '')
 
 // ------------------------------------------------------------------ entry
 
