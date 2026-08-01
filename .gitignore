@@ -26,6 +26,10 @@ tmp/
 /*.txt
 /*.json
 !/design-sync.config.json
+# Root tsconfigs are real code. The existing ones only survive `/*.json`
+# because they were tracked before that rule landed — a NEW one is silently
+# ignored, so CI would run `tsc -p` against a file that never ships.
+!/tsconfig*.json
 
 # Local workspaces + tool outputs
 .claude/
