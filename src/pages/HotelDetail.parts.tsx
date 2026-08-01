@@ -189,7 +189,14 @@ export function HotelOverview({ hotel, t, onContentUpdated }: { hotel: HotelWith
           <CardContent><p className="text-sm">{hotel.queer_safety_notes}</p></CardContent>
         </Card>
       )}
-      <AmenityDisplay amenities={hotel.amenities} />
+      {/* Accessibility gets the same prominent, separate block it already gets on
+          venues and events. It was missing here only because the columns did not
+          exist, so there was nothing to pass. */}
+      <AmenityDisplay
+        amenities={hotel.amenities}
+        accessibility={hotel.accessibility_attributes}
+        accessibilityNotes={hotel.accessibility_notes}
+      />
       {hasMap && (
         <Card>
           <CardHeader><CardTitle>{t('pages.hotelDetail.location', 'Location')}</CardTitle></CardHeader>

@@ -25,12 +25,28 @@ import { contentTypeRegistry } from '@/config/contentTypeRegistry';
  * relatedFields targets — were fixed rather than listed. Anything ADDED here later needs
  * the same check: the point of this test is that a new phantom field fails CI instead of
  * silently dropping what an admin typed.
+ *
+ * A `KNOWN_BROKEN` escape hatch used to sit alongside this, holding twelve fields open
+ * "while the fix is scheduled". It is gone, and deliberately not kept as an empty map:
+ * the phantom assertion below IS the ratchet, and a second list that legitimises writing
+ * to a non-existent column only blunts it. What was in it:
+ *   - hotels.accessibility_attributes / accessibility_notes — real data loss. They now
+ *     have columns (migration 20260807130000) and render via AmenityDisplay.
+ *   - hotels.target_groups / event_amenities — real data loss, removed from the config:
+ *     no column, and no facet, filter or reader anywhere for a hotel.
+ *   - the eight cities / queer_villages aggregates — never broken at all. They are
+ *     `hidden` + `virtual` list renders, and calling them "broken" hid the four that were.
  */
 const VIRTUAL_FIELDS: Record<string, string[]> = {
-  // Autocomplete inputs whose value lives in the FK columns they populate.
+  // Autocomplete inputs whose value lives in the FK columns they populate, plus the
+  // list-only aggregates hydrated from each config's `listSelect` joins. Every aggregate
+  // below is declared `hidden: true, virtual: true, listColumn: true` with a `listRender`
+  // reading the joined relation (`row.countries`, `row.venues[0].count`, …). Being
+  // `hidden` they render no editor input at all, so there is nothing an admin can type
+  // and nothing to discard — display-only, checked field by field against the configs.
   events: ['venue_address'],
-  queer_villages: ['city', 'country'],
-  cities: ['country'],
+  queer_villages: ['city', 'country', 'country_name', 'population', 'venues_count', 'events_count'],
+  cities: ['country', 'country_name', 'equality_score', 'venue_count', 'event_count'],
   // Read-only aggregates and joined display values.
   countries: ['continent'],
   unified_tags: ['color'],
@@ -38,19 +54,6 @@ const VIRTUAL_FIELDS: Record<string, string[]> = {
   // The feedback type is backed by community_submissions, which nests its payload in jsonb
   // rather than exposing these as top-level columns.
   feedback: ['title', 'description', 'category', 'contact_email'],
-};
-
-/**
- * Phantom fields that are NOT display-only — the admin types into them and the value is
- * discarded. Listed separately so the guard stays green while the fix is scheduled, and so
- * nobody reads them as "intended". `hotels` is the sharp one: it has an `amenities` column
- * and nothing else, so the accessibility fields on the hotel editor save nothing at all,
- * and this project treats a wrong or missing access claim as real-world harm.
- */
-const KNOWN_BROKEN: Record<string, string[]> = {
-  hotels: ['accessibility_attributes', 'target_groups', 'accessibility_notes', 'event_amenities'],
-  cities: ['country_name', 'equality_score', 'venue_count', 'event_count'],
-  queer_villages: ['country_name', 'population', 'venues_count', 'events_count'],
 };
 
 function parseRowColumns(source: string): Map<string, Set<string>> {
@@ -84,10 +87,7 @@ describe('registry fields name real columns', () => {
   for (const config of Object.values(contentTypeRegistry)) {
     const columns = schema.get(config.tableName);
     if (!columns) continue; // view-backed or otherwise not in Tables
-    const allowed = new Set([
-      ...(VIRTUAL_FIELDS[config.id] ?? []),
-      ...(KNOWN_BROKEN[config.id] ?? []),
-    ]);
+    const allowed = new Set(VIRTUAL_FIELDS[config.id] ?? []);
     for (const field of config.fields) {
       if (columns.has(field.name) || allowed.has(field.name)) continue;
       phantoms.push(`${config.id}.${field.name} -> no column ${config.tableName}.${field.name}`);
