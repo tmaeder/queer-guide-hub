@@ -208,6 +208,7 @@ export function ContentListPanel(props: ContentListPanelProps) {
       {c.selected.size > 0 && c.config && (
         <Suspense fallback={null}>
           <BulkActionsBar
+            bulkEditFields={c.config.bulkEditFields}
             selections={Array.from(c.selected).map((id) => ({
               contentType: c.config!.id,
               tableName: c.config!.tableName,
