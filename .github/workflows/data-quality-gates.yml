@@ -30,6 +30,13 @@ jobs:
         if: ${{ env.SUPABASE_URL != '' && env.SUPABASE_SERVICE_ROLE_KEY != '' }}
         run: node scripts/check-data-quality-gates.mjs
 
+      # Stock ALTER DEFAULT PRIVILEGES grants anon/authenticated write on every new
+      # view, which silently bypasses RLS on any SECURITY DEFINER view. Runs even if
+      # the gate above fails, so both reports land in a single run.
+      - name: No API-role writes on SECURITY DEFINER views
+        if: ${{ !cancelled() && env.SUPABASE_URL != '' && env.SUPABASE_SERVICE_ROLE_KEY != '' }}
+        run: node scripts/check-definer-view-grants.mjs
+
       - name: Skip (missing secrets)
         if: ${{ env.SUPABASE_URL == '' || env.SUPABASE_SERVICE_ROLE_KEY == '' }}
         run: echo "::warning::SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY not set — skipping data-quality gates. Configure repo secrets to enable."
