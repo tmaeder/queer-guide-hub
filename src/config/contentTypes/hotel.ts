@@ -106,15 +106,19 @@ export const hotelFields: FieldConfig[] = [
   },
   { name: 'amenities', label: 'Amenities', type: 'tags', group: 'details' },
   { name: 'accessibility_attributes', label: 'Accessibility', type: 'tags', group: 'details' },
-  { name: 'target_groups', label: 'Target Groups', type: 'tags', group: 'details' },
   {
     name: 'accessibility_notes',
     label: 'Accessibility Notes',
     type: 'textarea',
     group: 'details',
     colSpan: 2,
+    helpText: 'Detail that does not fit the accessibility vocabulary above.',
   },
-  { name: 'event_amenities', label: 'Event Amenities', type: 'tags', group: 'details' },
+  // `target_groups` and `event_amenities` used to sit here. Neither is a column
+  // on `hotels` and neither has a reader on any hotel surface, so anything typed
+  // was discarded on save. `event_amenities` is a vocabulary TABLE that was
+  // copy-pasted in as if it were a column. Removed rather than given columns:
+  // adding storage with no consumer would just make the data write-only.
   { name: 'lgbtq_friendly', label: 'LGBTQ+ Friendly', type: 'boolean', group: 'lgbtq' },
   {
     name: 'queer_safety_notes',

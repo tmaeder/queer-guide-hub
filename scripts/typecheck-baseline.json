@@ -1,6 +1,6 @@
 {
   "project": "tsconfig.app.json",
-  "total": 1329,
+  "total": 1318,
   "files": {
     "src/assets/intimate/pictograms.tsx": {
       "TS2503": 2
@@ -701,10 +701,6 @@
       "TS2353": 1,
       "TS2769": 1
     },
-    "src/hooks/useAdminCockpit.tsx": {
-      "TS2345": 6,
-      "TS2352": 1
-    },
     "src/hooks/useAdminTableQuery.ts": {
       "TS2339": 12,
       "TS2345": 1,
@@ -775,16 +771,8 @@
     "src/hooks/useCitiesDirectory.ts": {
       "TS2339": 2
     },
-    "src/hooks/useCockpitLayout.ts": {
-      "TS2322": 1,
-      "TS2345": 1,
-      "TS2352": 1
-    },
     "src/hooks/useCockpitRealtime.ts": {
       "TS2578": 1
-    },
-    "src/hooks/useCockpitWidgetData.ts": {
-      "TS2352": 1
     },
     "src/hooks/useCommunityPosts.tsx": {
       "TS2322": 1

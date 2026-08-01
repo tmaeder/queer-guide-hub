@@ -42,16 +42,19 @@ const VIRTUAL_FIELDS: Record<string, string[]> = {
 
 /**
  * Phantom fields that are NOT display-only — the admin types into them and the value is
- * discarded. Listed separately so the guard stays green while the fix is scheduled, and so
- * nobody reads them as "intended". `hotels` is the sharp one: it has an `amenities` column
- * and nothing else, so the accessibility fields on the hotel editor save nothing at all,
- * and this project treats a wrong or missing access claim as real-world harm.
+ * discarded. Empty, and it should stay that way: a new entry here means a form is
+ * accepting input it will throw away.
+ *
+ * It previously held twelve. Eight (cities / queer_villages) were never broken at all —
+ * they are `virtual: true, hidden: true` list-only renders, and the guard missed that
+ * because it read a hardcoded map instead of the flag the config already declares.
+ * Labelling working fields "broken" is its own failure: it hides the real ones.
+ *
+ * The other four were real. `hotels.accessibility_attributes` / `accessibility_notes` now
+ * have columns (migration 20260807120000) and are rendered on the hotel detail page;
+ * `target_groups` and `event_amenities` were removed, having neither column nor reader.
  */
-const KNOWN_BROKEN: Record<string, string[]> = {
-  hotels: ['accessibility_attributes', 'target_groups', 'accessibility_notes', 'event_amenities'],
-  cities: ['country_name', 'equality_score', 'venue_count', 'event_count'],
-  queer_villages: ['country_name', 'population', 'venues_count', 'events_count'],
-};
+const KNOWN_BROKEN: Record<string, string[]> = {};
 
 function parseRowColumns(source: string): Map<string, Set<string>> {
   const tables = new Map<string, Set<string>>();
@@ -89,10 +92,20 @@ describe('registry fields name real columns', () => {
       ...(KNOWN_BROKEN[config.id] ?? []),
     ]);
     for (const field of config.fields) {
+      // Honour the field's OWN declaration first. A config that already says
+      // `virtual: true` should not also need an entry in the map above — that
+      // duplication is what mislabelled eight working city/village fields.
+      if (field.virtual) continue;
       if (columns.has(field.name) || allowed.has(field.name)) continue;
       phantoms.push(`${config.id}.${field.name} -> no column ${config.tableName}.${field.name}`);
     }
   }
+
+  it('keeps the known-broken list empty', () => {
+    // A ratchet, not decoration. This list existed to hold a fix open; refilling
+    // it would re-legitimise a form that accepts input and throws it away.
+    expect(Object.keys(KNOWN_BROKEN)).toEqual([]);
+  });
 
   it('has no field writing to a column that does not exist', () => {
     expect(phantoms).toEqual([]);
@@ -106,7 +119,9 @@ describe('registry fields name real columns', () => {
       for (const field of config.fields) {
         for (const target of Object.values(field.relatedFields ?? {})) {
           if (typeof target === 'string' && !columns.has(target)) {
-            bad.push(`${config.id}.${field.name} relatedFields -> ${config.tableName}.${target} does not exist`);
+            bad.push(
+              `${config.id}.${field.name} relatedFields -> ${config.tableName}.${target} does not exist`,
+            );
           }
         }
       }
