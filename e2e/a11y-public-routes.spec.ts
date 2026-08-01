@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
+import { waitForAppReady } from './support/appReady';
 
 // Route transitions fade opacity 0->1 (LayoutShell motion.div). axe blends that
 // opacity into computed text color, flagging transient mid-fade frames as contrast
@@ -22,24 +23,10 @@ test.describe('Public routes — automated a11y', () => {
       await page.goto(route);
       await page.waitForLoadState('domcontentloaded');
       await page.waitForSelector('main', { timeout: 30_000 }).catch(() => {});
-      // axe reads *computed* colors. If it runs before the theme stylesheet has
-      // applied its CSS custom properties (--foreground / --muted-foreground /
-      // --background), it samples fallback greys and reports bogus contrast
-      // failures — ratios ~1.0–1.4 that match no real token (the shipped
-      // --muted-foreground is 0 0% 35% ≈ 7:1). Wait for network + fonts, and
-      // confirm the tokens have actually resolved on :root, before analysing.
-      await page.waitForLoadState('networkidle');
-      await page.evaluate(() => document.fonts.ready);
-      await page
-        .waitForFunction(
-          () =>
-            getComputedStyle(document.documentElement)
-              .getPropertyValue('--foreground')
-              .trim() !== '',
-          null,
-          { timeout: 10_000 },
-        )
-        .catch(() => {});
+      // axe reads *computed* colors, so the theme's custom properties must have
+      // resolved before it samples — see waitForAppReady for why this is not
+      // 'networkidle'.
+      await waitForAppReady(page);
 
       const results = await new AxeBuilder({ page })
         .exclude('footer')

@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { waitForAppReady } from './support/appReady';
 
 /**
  * Regression check for WCAG 2.4.7 Focus Visible on the trip planner surface.
@@ -24,9 +25,9 @@ async function outlineOf(locator: ReturnType<typeof import('@playwright/test').P
 test.describe('Trip planner — focus visibility', () => {
   test('focused buttons on /trips have a visible outline', async ({ page }) => {
     await page.goto('/trips');
-    // networkidle (not domcontentloaded): ensure stylesheets are applied before
-    // asserting focus-outline styling — matches the sibling test below.
-    await page.waitForLoadState('networkidle');
+    // Stylesheets must be applied before asserting focus-outline styling —
+    // matches the sibling test below.
+    await waitForAppReady(page);
 
     const button = page.locator('button, [role="button"], a').first();
     await expect(button).toBeVisible({ timeout: 15000 });
@@ -47,7 +48,7 @@ test.describe('Trip planner — focus visibility', () => {
     // matches() returns true but computed style does not apply the rule).
     // Real keyboard Tab is the only valid way to assert focus-visible styling.
     await page.goto('/trips');
-    await page.waitForLoadState('networkidle');
+    await waitForAppReady(page);
 
     const offenders: string[] = [];
     for (let i = 0; i < 15; i++) {
