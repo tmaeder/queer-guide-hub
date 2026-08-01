@@ -41,7 +41,9 @@ const WP_UA = 'QueerGuideBot/1.0 (https://queer.guide; contact@queer.guide)'
 const FETCH_TIMEOUT = 10_000
 const SPARQL_TIMEOUT = 45_000
 
+// The Supabase client's generated types are not available to edge functions.
 // deno-lint-ignore no-explicit-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Db = any
 
 // ------------------------------------------------------------------ fetch
@@ -274,9 +276,8 @@ async function runLinkPhase(supabase: Db, req: Request, rows: CityRow[], dryRun:
 
   for (const c of rows) {
     const started = Date.now()
-    let status = 'skipped'
+    let status: string
     let missReason: string | null = null
-    let filled: string[] = []
 
     try {
       const prov: Prov = { ...(c.field_provenance ?? {}) }
@@ -432,7 +433,9 @@ async function runLinkPhase(supabase: Db, req: Request, rows: CityRow[], dryRun:
         } else bumpMiss(state, 'economy_sectors', 'wikidata')
       }
 
-      filled = Object.keys(update).filter(k => k !== 'wikidata_qid' && k !== 'wikipedia_title')
+      // The QID/title cache is infrastructure, not a data fill — excluding it
+      // keeps `updated` an honest count of columns a reader would notice.
+      const filled = Object.keys(update).filter(k => k !== 'wikidata_qid' && k !== 'wikipedia_title')
 
       // --- 5. Write -------------------------------------------------------
       // last_refreshed_at is stamped on EVERY visit, even when nothing was
