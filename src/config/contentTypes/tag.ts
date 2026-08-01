@@ -30,7 +30,6 @@ export const tagFields: FieldConfig[] = [
       { value: 'merged', label: 'Merged' },
     ],
   },
-  { name: 'color', label: 'Color', type: 'text', group: 'details', placeholder: 'hsl(var(--muted-foreground))' },
   {
     name: 'usage_count',
     label: 'Usage Count',

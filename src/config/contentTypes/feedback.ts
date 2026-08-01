@@ -5,31 +5,42 @@ export const feedbackContentType: ContentTypeConfig = {
   id: 'feedback',
   tableName: 'community_submissions',
   primaryKey: 'id',
-  titleField: 'title',
-  descriptionField: 'description',
+  // `community_submissions` keeps the submitted payload in a `data` jsonb — it
+  // has no title / description / category / contact_email columns. All four were
+  // declared here as required writable fields, so this config could not read or
+  // write a single one of them. Fields below are the real triage columns.
+  titleField: 'content_type',
+  descriptionField: 'reviewer_notes',
   icon: MessageSquarePlus,
   label: { singular: 'Feedback', plural: 'Feedback' },
   color: 'hsl(var(--foreground))',
   fields: [
-    { name: 'title', label: 'Title', type: 'text', required: true, group: 'basic', maxLength: 200 },
-    { name: 'description', label: 'Description', type: 'textarea', required: true, group: 'basic', colSpan: 2 },
+    { name: 'content_type', label: 'Type', type: 'text', group: 'basic', filterable: true },
     {
-      name: 'category',
-      label: 'Category',
-      type: 'select',
-      required: true,
+      name: 'data',
+      label: 'Submission',
+      type: 'json',
       group: 'basic',
-      options: [
-        { value: 'bug', label: 'Bug Report' },
-        { value: 'idea', label: 'Feature Idea' },
-        { value: 'improvement', label: 'Improvement' },
-        { value: 'content-idea', label: 'Content Idea' },
-      ],
+      colSpan: 2,
+      readOnly: true,
+      helpText: 'Submitted payload — title, description and contact details live in here.',
     },
-    { name: 'contact_email', label: 'Email (optional)', type: 'email', group: 'basic' },
+    { name: 'source_url', label: 'Source URL', type: 'url', group: 'basic' },
+    { name: 'status', label: 'Status', type: 'text', group: 'settings', filterable: true },
+    {
+      name: 'feedback_status',
+      label: 'Feedback Status',
+      type: 'text',
+      group: 'settings',
+      filterable: true,
+    },
+    { name: 'priority', label: 'Priority', type: 'number', group: 'settings', min: 0, max: 5 },
+    { name: 'labels', label: 'Labels', type: 'tags', group: 'settings' },
+    { name: 'resolution', label: 'Resolution', type: 'text', group: 'settings' },
+    { name: 'reviewer_notes', label: 'Reviewer Notes', type: 'textarea', group: 'settings', colSpan: 2 },
   ],
   defaults: {},
-  fieldGroupOrder: ['basic'],
+  fieldGroupOrder: ['basic', 'settings'],
   // Feedback is worked on the feedback board, not the All-content list.
   admin: { includeInAllContent: false },
 };

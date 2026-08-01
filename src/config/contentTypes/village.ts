@@ -4,6 +4,10 @@ import type { ContentTypeConfig, FieldConfig } from '@/types/cms';
 const fmtNum = (n: unknown): string =>
   typeof n === 'number' && Number.isFinite(n) ? new Intl.NumberFormat().format(n) : '-';
 
+/** Coordinates are float8; 4 decimals is ~11 m — plenty for a neighbourhood. */
+const fmtCoord = (n: unknown): string | null =>
+  typeof n === 'number' && Number.isFinite(n) ? n.toFixed(4) : null;
+
 export const queerVillageFields: FieldConfig[] = [
   {
     name: 'name',
@@ -21,14 +25,20 @@ export const queerVillageFields: FieldConfig[] = [
   { name: 'notable_landmarks', label: 'Notable Landmarks', type: 'tags', group: 'details' },
   { name: 'boundaries', label: 'Boundaries', type: 'json', group: 'details', helpText: 'GeoJSON boundary data' },
   // Location
+  // `queer_villages` stores only the FKs — it has no city/country text columns, so
+  // those targets wrote nothing. The autocompletes display via the FK.
+  //
+  // `virtual` is what stops them being write targets: the editor's save payload
+  // is built from every dirty key, so a field naming a column that does not
+  // exist made PostgREST reject the WHOLE statement (PGRST204) and took the
+  // legitimate city_id down with it. Filtering lives on the hidden city_id /
+  // country_id fields below, which are real columns.
   {
     name: 'city',
     label: 'City',
     type: 'city_autocomplete',
     group: 'location',
-    filterable: true,
-    // `queer_villages` stores only the FKs — it has no city/country text columns, so
-    // those targets wrote nothing. The autocompletes display via the FK.
+    virtual: true,
     relatedFields: {
       city_id: 'city_id',
       country_id: 'country_id',
@@ -39,14 +49,32 @@ export const queerVillageFields: FieldConfig[] = [
     label: 'Country',
     type: 'country_autocomplete',
     group: 'location',
-    filterable: true,
+    virtual: true,
     relatedFields: {
       country_id: 'country_id',
       city_id: 'city_id',
     },
   },
-  { name: 'latitude', label: 'Latitude', type: 'number', group: 'location', min: -90, max: 90 },
-  { name: 'longitude', label: 'Longitude', type: 'number', group: 'location', min: -180, max: 180 },
+  {
+    name: 'latitude',
+    label: 'Latitude',
+    type: 'number',
+    group: 'location',
+    min: -90,
+    max: 90,
+    listColumn: true,
+    listRender: (row) => fmtCoord(row.latitude),
+  },
+  {
+    name: 'longitude',
+    label: 'Longitude',
+    type: 'number',
+    group: 'location',
+    min: -180,
+    max: 180,
+    listColumn: true,
+    listRender: (row) => fmtCoord(row.longitude),
+  },
   {
     name: 'featured',
     label: 'Featured',
@@ -79,6 +107,19 @@ export const queerVillageFields: FieldConfig[] = [
     dynamicOptions: { table: 'countries', valueColumn: 'id', labelColumn: 'name' },
   },
   // Virtual list-only columns (sourced from listSelect joins).
+  {
+    name: 'city_name',
+    label: 'City',
+    type: 'text',
+    group: 'external',
+    hidden: true,
+    virtual: true,
+    listColumn: true,
+    listRender: (row) => {
+      const c = row.cities as { name?: string } | null | undefined;
+      return c?.name ?? null;
+    },
+  },
   {
     name: 'country_name',
     label: 'Country',

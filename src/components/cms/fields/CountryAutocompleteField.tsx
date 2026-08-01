@@ -18,8 +18,16 @@ export function CountryAutocompleteField({
   error,
   disabled,
   setFields,
+  allValues,
 }: FieldProps) {
-  const prevCountryIdRef = useRef<string | null>(null);
+  const countryIdField = field.relatedFields?.country_id;
+  const currentCountryId =
+    countryIdField && allValues ? String(allValues[countryIdField] ?? '') : '';
+
+  // Seed from the record's existing FK. Left at null, the very first selection
+  // reads as "changed to a different country" even when the user re-picked the
+  // one already stored, and the city would be cleared underneath them.
+  const prevCountryIdRef = useRef<string | null>(currentCountryId || null);
 
   const handleCountrySelect = useCallback(
     (country: Country | null) => {
@@ -55,6 +63,7 @@ export function CountryAutocompleteField({
       <CountryAutocomplete
         id={field.name}
         value={String(value ?? '')}
+        valueId={currentCountryId || null}
         onValueChange={(name) => onChange(name)}
         onCountrySelect={handleCountrySelect}
         placeholder={field.placeholder || 'Select a country...'}

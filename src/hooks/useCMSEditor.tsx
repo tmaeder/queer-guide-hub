@@ -184,14 +184,24 @@ export function useCMSEditor({
     setState((prev) => ({ ...prev, isSaving: true, errors: {} }));
 
     try {
-      // Prepare data (strip read-only and system fields). UPDATEs submit only
-      // the dirty-field delta — smaller payloads, fewer trigger side effects.
+      // Prepare data (strip read-only, virtual and system fields). UPDATEs
+      // submit only the dirty-field delta — smaller payloads, fewer trigger
+      // side effects.
+      //
+      // Virtual fields have no column on this table, so including one makes
+      // PostgREST reject the ENTIRE statement with PGRST204 and take the
+      // legitimate fields down with it. That is what happened to
+      // queer_villages.city: picking a city marked `city` dirty, the write
+      // 400'd, and the city_id the picker had just resolved was lost. The
+      // picker's real output is the FK it sets through `relatedFields`, which
+      // is a genuine column and still saves.
       const readOnlyFields = new Set(config.fields.filter((f) => f.readOnly).map((f) => f.name));
+      const virtualFields = new Set(config.fields.filter((f) => f.virtual).map((f) => f.name));
       const systemFields = new Set(['id', 'created_at', 'created_by']);
       const saveData: Record<string, unknown> = {};
 
       for (const [key, value] of Object.entries(state.data)) {
-        if (readOnlyFields.has(key) || systemFields.has(key)) continue;
+        if (readOnlyFields.has(key) || virtualFields.has(key) || systemFields.has(key)) continue;
         if (itemId && !dirtyFieldsRef.current.has(key)) continue;
         saveData[key] = value;
       }

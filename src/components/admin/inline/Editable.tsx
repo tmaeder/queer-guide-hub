@@ -69,8 +69,17 @@ export function Editable({
     [fieldConfig],
   );
 
+  // `virtual` fields are joined/computed and have no column to write — the list
+  // view wraps every extra column in an Editable, so without this a click on
+  // Country / Population / Venues on a village opened an editor that could only
+  // ever fail at the DB.
   const adminActive =
-    isAdmin && !disabled && fieldConfig != null && Editor != null && !fieldConfig.readOnly;
+    isAdmin &&
+    !disabled &&
+    fieldConfig != null &&
+    Editor != null &&
+    !fieldConfig.readOnly &&
+    !fieldConfig.virtual;
 
   const handleClick = useCallback(
     (e: React.MouseEvent) => {
