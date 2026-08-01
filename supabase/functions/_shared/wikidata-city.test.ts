@@ -133,9 +133,29 @@ Deno.test('official_website must be an http(s) url', () => {
 
 // --- languages -------------------------------------------------------------
 
-Deno.test('P37 is primary and P2936 is only a fallback', () => {
+Deno.test('P37 wins over P2936', () => {
   assertEquals(parseCityFacts({ P37: [ent('Q14196')], P2936: [ent('Q1860')] }).refs.local_language, ['Q14196'])
+})
+
+Deno.test('a short P2936 is an acceptable fallback (Manila -> Tagalog)', () => {
   assertEquals(parseCityFacts({ P2936: [ent('Q1860')] }).refs.local_language, ['Q1860'])
+  assertEquals(parseCityFacts({ P2936: [ent('Q1860'), ent('Q2')] }).refs.local_language, ['Q1860', 'Q2'])
+})
+
+Deno.test('a long P2936 is an inventory, not a local language — leave it empty', () => {
+  // Jerusalem "Yevanic, Lishana Deni, Biblical Hebrew"; Delhi "Punjabi, Bauria,
+  // Central Tibetan". Every 3+ value result measured was wrong.
+  const claims: Claims = { P2936: [ent('Q1'), ent('Q2'), ent('Q3')] }
+  assertEquals(parseCityFacts(claims).refs.local_language, [])
+})
+
+Deno.test('an unknown-value P37 snak falls through rather than throwing', () => {
+  // Mexico City's P37 is snaktype 'somevalue'; its P2936 is long -> empty.
+  const claims: Claims = {
+    P37: [{ rank: 'normal', mainsnak: { snaktype: 'somevalue' } }],
+    P2936: [ent('Q1'), ent('Q2'), ent('Q3')],
+  }
+  assertEquals(parseCityFacts(claims).refs.local_language, [])
 })
 
 // --- labels ----------------------------------------------------------------

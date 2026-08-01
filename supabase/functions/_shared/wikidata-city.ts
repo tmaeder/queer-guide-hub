@@ -139,6 +139,8 @@ const MAX_POSTAL = 20
 const MAX_AREA_CODES = 10
 const MAX_SISTER = 25
 const MAX_LANGUAGES = 3
+/** Beyond two, P2936 is an inventory of languages spoken, not the local language. */
+const P2936_MAX_FALLBACK = 2
 const MAX_SECTORS = 8
 
 function uniq(xs: string[]): string[] {
@@ -201,9 +203,26 @@ export function parseCityFacts(claims: Claims): CityWdFacts {
   const areaCodes = readAreaCodes(claims.P473); if (areaCodes.length) out.area_codes = areaCodes
 
   out.refs.sister_cities = qidsOf(currentStatements(claims.P190), MAX_SISTER)
-  // P37 (official language) is the primary; P2936 (language used) is a fallback.
+  // P37 (official language) is primary; P2936 ("language used") is a fallback
+  // ONLY when it names at most two languages.
+  //
+  // Measured over the 63 rows this fallback produced: every wrong answer had
+  // three or more values, because at that length P2936 is an inventory of
+  // minority / indigenous / historical languages rather than the lingua franca —
+  //   Jerusalem   -> "Yevanic, Lishana Deni, Biblical Hebrew"
+  //   Delhi       -> "Punjabi, Bauria, Central Tibetan"
+  //   Kaohsiung   -> "Saaroa, Kanakanavu, Rukai"
+  //   Mexico City -> "Tilapa Otomi, Tilantongo Mixtec, Copala Triqui"
+  // while the one- and two-value results were right (Manila -> Tagalog,
+  // Montevideo -> Spanish, Marseille -> French). A city whose P37 is absent or an
+  // unknown-value snak and whose P2936 is long keeps an empty column.
   const langs = qidsOf(currentStatements(claims.P37), MAX_LANGUAGES)
-  out.refs.local_language = langs.length ? langs : qidsOf(currentStatements(claims.P2936), MAX_LANGUAGES)
+  if (langs.length) {
+    out.refs.local_language = langs
+  } else {
+    const used = qidsOf(currentStatements(claims.P2936), MAX_LANGUAGES)
+    out.refs.local_language = used.length <= P2936_MAX_FALLBACK ? used : []
+  }
   // Only a mayor who has not left office. Usually empty — that is correct.
   const mayor = bestStatement(currentStatements(claims.P6))
   const mayorQid = asQid(valueOf(mayor?.mainsnak))

@@ -41,11 +41,15 @@ const flag = (name, fallback) => {
   return i >= 0 && args[i + 1] && !args[i + 1].startsWith('--') ? args[i + 1] : fallback
 }
 const DRY_RUN = args.includes('--dry-run')
+// Re-resolve the cached QID instead of trusting it. Needed after a resolver fix:
+// the cache makes a repeat visit cheap, so a wrong QID is otherwise sticky.
+const RELINK = args.includes('--relink')
 const PHASE = flag('phase', 'link')
 const SCOPE = flag('scope', 'content_first')
 const BATCH = Number(flag('batch', PHASE === 'sparql' ? 24 : 40))
 const SLEEP_MS = Number(flag('sleep', 3000))
 const MAX_BATCHES = Number(flag('max-batches', 500))
+const DRY_STREAK_LIMIT = Number(flag('dry-streak', 3))
 
 function token() {
   if (process.env.SUPABASE_PAT) return process.env.SUPABASE_PAT
@@ -133,10 +137,16 @@ async function main() {
 
   const total = { processed: 0, updated: 0, skipped: 0, failed: 0 }
   const filledCounts = {}
+  // The selector round-robins by last_refreshed_at and never returns empty, so
+  // once the pool is exhausted it just keeps handing back cities that have
+  // nothing left to fill. Without this the driver spins forever making upstream
+  // calls for nothing (observed: batches 130-192 all 0/40).
+  let dryStreak = 0
+  let upstreamFailures = 0
 
   for (let b = 1; b <= MAX_BATCHES; b++) {
     const { status, data } = await invoke({
-      phase: PHASE, scope: SCOPE, batch_limit: BATCH, dry_run: DRY_RUN,
+      phase: PHASE, scope: SCOPE, batch_limit: BATCH, dry_run: DRY_RUN, relink: RELINK,
     }, PHASE === 'sparql' ? 240000 : 150000)
 
     if (data.circuit_open) {
@@ -146,7 +156,18 @@ async function main() {
       await sleep(60000)
       continue
     }
-    if (data.error) { console.error(`  batch ${b} error: ${data.error}`); break }
+    // WDQS returns 500/502 under load often enough that a single failure must not
+    // end an operator run — it is a degraded upstream, not a finished work-list.
+    // Anything else is a real error and stops the sweep.
+    if (data.error) {
+      if (/wdqs|sparql|timeout|fetch/i.test(String(data.error)) && ++upstreamFailures <= 8) {
+        console.log(`  batch ${b}: upstream failed (${data.error}) — backing off 45s [${upstreamFailures}/8]`)
+        await sleep(45000)
+        continue
+      }
+      console.error(`  batch ${b} error: ${data.error}`)
+      break
+    }
     if (!data.processed) { console.log(`  batch ${b}: nothing due — done`); break }
 
     for (const k of Object.keys(total)) total[k] += data[k] || 0
@@ -156,6 +177,12 @@ async function main() {
       `  batch ${b} [${status}] processed=${data.processed} updated=${data.updated} ` +
       `skipped=${data.skipped} failed=${data.failed ?? 0} (running updated=${total.updated})`,
     )
+
+    dryStreak = data.updated > 0 ? 0 : dryStreak + 1
+    if (dryStreak >= DRY_STREAK_LIMIT) {
+      console.log(`  ${DRY_STREAK_LIMIT} consecutive batches filled nothing — pool exhausted, stopping.`)
+      break
+    }
 
     if (DRY_RUN) break            // a dry run must not loop: it changes no state
     await sleep(SLEEP_MS)
