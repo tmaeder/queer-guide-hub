@@ -102,20 +102,20 @@ export function useCockpitSections() {
       const cached = qc.getQueryData<Profile | null>(profileQueryKey(user.id));
       const prefs = (cached?.preferences as Record<string, unknown> | null) ?? {};
       const prev = (prefs.cockpit as CockpitPrefs | undefined) ?? { version: 2, byRole: {} };
-      const nextPrefs = {
-        ...prefs,
-        cockpit: {
-          version: 2,
-          byRole: { ...prev.byRole, [role]: { hidden: nextHidden } },
-        } satisfies CockpitPrefs,
+      const cockpit: CockpitPrefs = {
+        version: 2,
+        byRole: { ...prev.byRole, [role]: { hidden: nextHidden } },
       };
+      // `preferences` is a generated Json column, so the structured value has to
+      // be widened once here rather than at each use site.
+      const nextPrefs = { ...prefs, cockpit } as Profile['preferences'];
 
       // Optimistic cache patch so the feed reflects the change immediately.
       if (cached) {
         qc.setQueryData<Profile | null>(profileQueryKey(user.id), {
           ...cached,
-          preferences: nextPrefs as Profile['preferences'],
-        });
+          preferences: nextPrefs,
+        } as Profile);
       }
       void supabase.from('profiles').update({ preferences: nextPrefs }).eq('user_id', user.id);
     },

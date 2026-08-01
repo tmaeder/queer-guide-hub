@@ -11,10 +11,20 @@ import { screen, within } from '@testing-library/react';
 import { renderWithProviders } from '@/test/test-utils';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import type { AdminCounts } from '@/hooks/useAdminCounts';
+import type { CockpitOps } from '@/hooks/useCockpitOps';
+
+interface OpsResult {
+  data: CockpitOps | undefined;
+  isLoading: boolean;
+  isError: boolean;
+}
 
 const mockCounts = vi.fn<() => Partial<ReturnType<typeof adminCountsResult>>>();
 const mockRole = vi.fn(() => ({ effectiveRole: 'admin', loading: false }));
-const mockOps = vi.fn(() => ({ data: undefined, isLoading: false, isError: false }));
+// The `enabled` parameter has to be in the signature, not just passed through:
+// the request-budget assertions below read `mock.calls[i][0]`, which is a
+// zero-length tuple for a `vi.fn(() => …)`.
+const mockOps = vi.fn<(enabled: boolean) => OpsResult>();
 
 function adminCountsResult(data: AdminCounts | undefined) {
   return { data, isLoading: false, isFetching: false, dataUpdatedAt: 1_700_000_000_000 };
@@ -26,7 +36,7 @@ vi.mock('@/hooks/useAdminCounts', async (importOriginal) => {
 });
 vi.mock('@/hooks/useGranularRoles', () => ({ useGranularRoles: () => mockRole() }));
 vi.mock('@/hooks/useCockpitOps', () => ({
-  useCockpitOps: (enabled: boolean) => mockOps(enabled as never),
+  useCockpitOps: (enabled: boolean) => mockOps(enabled),
 }));
 vi.mock('@/hooks/useCockpitRealtime', () => ({ useCockpitRealtime: () => {} }));
 vi.mock('@/hooks/useCockpitSections', async (importOriginal) => {
@@ -155,7 +165,7 @@ describe('AdminDashboard — Broken', () => {
       },
       isLoading: false,
       isError: false,
-    } as never);
+    });
     render();
     expect(screen.getByText('Nothing failing.')).toBeTruthy();
   });
