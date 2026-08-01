@@ -53,7 +53,14 @@ describe('vocabulary registry entries', () => {
   it('does not collide with the pre-existing entity types', () => {
     // unified_tags already existed; a vocabulary must never shadow a real type.
     expect(contentTypeRegistry.unified_tags.tableName).toBe('unified_tags');
-    expect(Object.keys(contentTypeRegistry)).toHaveLength(25);
+
+    // Asserts the property that matters — every id maps to its own table —
+    // rather than a total count. The count version broke the moment an
+    // unrelated content type was registered, which is noise, not a defect.
+    const ids = Object.keys(contentTypeRegistry);
+    const tables = ids.map((id) => contentTypeRegistry[id].tableName);
+    expect(new Set(tables).size).toBe(tables.length);
+    for (const id of VOCABULARIES) expect(ids).toContain(id);
   });
 });
 
