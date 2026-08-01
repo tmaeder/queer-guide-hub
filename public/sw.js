@@ -62,7 +62,7 @@ const PRECACHE_ASSETS = [
   '/venues',
   '/events',
   '/resources',
-  '/help-hotlines',
+  '/help',
   '/map',
 ];
 

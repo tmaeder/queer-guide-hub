@@ -1,0 +1,29 @@
+{
+  /* Cloudflare Pages Functions — the edge middleware that serves crawler
+     head/meta, branding overrides, sitemaps and security headers. These files
+     were covered by NO tsconfig (tsconfig.app.json is "include": ["src"]),
+     so a type error in them only ever surfaced in production. Zero-tolerance
+     gate: unlike tsconfig.app.json there is no baseline to ratchet against. */
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "skipLibCheck": true,
+
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "isolatedModules": true,
+    "moduleDetection": "force",
+    "noEmit": true,
+    "types": ["@cloudflare/workers-types"],
+
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitReturns": true
+  },
+  "include": ["functions"]
+}

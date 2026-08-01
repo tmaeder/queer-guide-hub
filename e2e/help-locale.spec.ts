@@ -78,4 +78,14 @@ test.describe('@p0-2 /help locale', () => {
     }
     await ctx.close();
   });
+
+  // The legacy crisis URL. /help-hotlines was never a React Router route, so
+  // it rendered the SPA 404 while routeMeta still advertised it and the edge
+  // HTML in functions/_lib/ linked to it from every detail page — a dead link
+  // on the one page where that matters most. It now 301s to /help.
+  test('legacy /help-hotlines reaches the crisis hub, not the SPA 404', async ({ page }) => {
+    await page.goto('/help-hotlines');
+    await expect(page).toHaveURL(/\/help(\/|$)/);
+    await expect(page.getByText('In acute danger').first()).toBeVisible({ timeout: 20_000 });
+  });
 });

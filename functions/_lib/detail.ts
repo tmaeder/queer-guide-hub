@@ -690,7 +690,7 @@ async function countryDetail(env: Env, slug: string, pathname: string): Promise<
       ${capital ? `<p><strong>Capital:</strong> ${escape(capital)}</p>` : ''}
       ${unions ? `<p><strong>Same-sex unions:</strong> ${escape(unions)}</p>` : ''}
       ${description ? paragraphsHtml(description) : `<p>Country profile, legal status and travel notes for ${escape(name)}.</p>`}
-      <section><h2>Plan your trip</h2><p>Read the <a href="/travel">global travel safety guide</a>, browse <a href="/places">cities and queer villages</a>, and check <a href="/help-hotlines">crisis hotlines</a> before you go.</p></section>
+      <section><h2>Plan your trip</h2><p>Read the <a href="/travel">global travel safety guide</a>, browse <a href="/places">cities and queer villages</a>, and check <a href="/help">crisis hotlines</a> before you go.</p></section>
     </article>
     <nav aria-label="Site sections">
       <ul>

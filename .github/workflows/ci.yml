@@ -36,6 +36,11 @@ jobs:
       # against the solution-style root tsconfig ("files": [] + references), which
       # without `-b` compiles zero files and always exits 0 — vacuously green.
       - run: npm run typecheck
+      # Cloudflare Pages Functions were covered by NO tsconfig until 2026-08-01
+      # (tsconfig.app.json is "include": ["src"]), so a type error in the edge
+      # middleware that serves crawler meta, branding and sitemaps only ever
+      # surfaced in production. Zero-tolerance — it starts at 0 errors.
+      - run: npm run typecheck:functions
 
   lint:
     runs-on: ubuntu-latest

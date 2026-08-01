@@ -35,7 +35,7 @@ const ROUTES = [
   '/sitemap',
   '/submit',
   '/feedback',
-  '/help-hotlines',
+  '/help',
   '/about-hub',
   '/about',
   '/contact',

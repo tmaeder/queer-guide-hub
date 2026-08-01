@@ -11,7 +11,7 @@ import type { HydratedPick, PickTier } from '@/hooks/useGuides';
  * this session) renders nothing.
  */
 
-export function useTierLabels(): Record<PickTier, string> {
+function useTierLabels(): Record<PickTier, string> {
   const { t } = useTranslation();
   return {
     top: t('guides.tier.top', 'Our pick'),

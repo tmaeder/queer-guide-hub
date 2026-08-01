@@ -107,14 +107,11 @@ export const STATIC_ROUTE_META: Record<string, RouteMeta> = {
     title: 'Send Feedback | Queer Guide',
     description: 'Tell us what to fix, what to add, and what is missing. Your feedback shapes the guide.',
   },
-  '/help-hotlines': {
-    title: 'LGBTQ+ Help Hotlines & Crisis Support | Queer Guide',
-    description:
-      'Free, confidential hotlines and crisis lines for LGBTQ+ people around the world. You are not alone.',
-  },
   // P4.3 — /help is the live canonical for the crisis hub (HelpHotlines
   // renders both /help and /help/:country). /help-hotlines is the legacy
-  // URL; keep it indexable for now since it still has inbound links.
+  // URL. It was never a React Router route, so "keeping it indexable" gave
+  // it real meta but an SPA 404 body; it now 301s to /help from
+  // public/_redirects and so can never reach this table.
   '/help': {
     title: 'LGBTQ+ help hotlines, crisis lines, and country resources | Queer Guide',
     description:
