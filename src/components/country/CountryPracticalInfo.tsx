@@ -36,37 +36,61 @@ export function CountryPracticalInfo({ country }: CountryPracticalInfoProps) {
         ? t('country.practical.drivesRight', 'Right-hand side')
         : null;
 
-  const nationalDay = country.national_day
-    ? new Date(country.national_day as string).toLocaleDateString(undefined, {
-        month: 'long',
-        day: 'numeric',
-      })
-    : null;
+  // `national_day` is free text ("German Unity Day, 3 October"), not a date — a
+  // national day is a named recurring occasion, so it carries no year to parse.
+  const nationalDay =
+    typeof country.national_day === 'string' && country.national_day.trim()
+      ? country.national_day.trim()
+      : null;
 
   const items: PracticalItem[] = [
     languages.length
-      ? { icon: Languages, label: t('country.practical.languages', 'Languages'), value: languages.slice(0, 4).join(', ') }
+      ? {
+          icon: Languages,
+          label: t('country.practical.languages', 'Languages'),
+          value: languages.slice(0, 4).join(', '),
+        }
       : null,
     country.currency
       ? { icon: Coins, label: t('country.practical.currency', 'Currency'), value: country.currency }
       : null,
     country.calling_code
-      ? { icon: Phone, label: t('country.practical.callingCode', 'Calling code'), value: country.calling_code }
+      ? {
+          icon: Phone,
+          label: t('country.practical.callingCode', 'Calling code'),
+          value: country.calling_code,
+        }
       : null,
     country.internet_tld
-      ? { icon: Globe, label: t('country.practical.tld', 'Internet domain'), value: country.internet_tld }
+      ? {
+          icon: Globe,
+          label: t('country.practical.tld', 'Internet domain'),
+          value: country.internet_tld,
+        }
       : null,
     drivingSide
       ? { icon: Car, label: t('country.practical.driving', 'Driving'), value: drivingSide }
       : null,
     airports.length
-      ? { icon: Plane, label: t('country.practical.airports', 'Major airports'), value: airports.slice(0, 4).join(' · ') }
+      ? {
+          icon: Plane,
+          label: t('country.practical.airports', 'Major airports'),
+          value: airports.slice(0, 4).join(' · '),
+        }
       : null,
     country.government_type
-      ? { icon: Landmark, label: t('country.practical.government', 'Government'), value: country.government_type }
+      ? {
+          icon: Landmark,
+          label: t('country.practical.government', 'Government'),
+          value: country.government_type,
+        }
       : null,
     nationalDay
-      ? { icon: CalendarDays, label: t('country.practical.nationalDay', 'National day'), value: nationalDay }
+      ? {
+          icon: CalendarDays,
+          label: t('country.practical.nationalDay', 'National day'),
+          value: nationalDay,
+        }
       : null,
   ].filter(Boolean) as PracticalItem[];
 
