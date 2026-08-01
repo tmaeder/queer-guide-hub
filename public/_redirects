@@ -27,26 +27,50 @@
 # rather than drop it.
 /help-hotlines   /help          301
 
-# Asset paths get a real 404 when missing. Without these rules the SPA
-# catch-all below returns index.html (200 text/html) for any unmatched
-# /assets/* path — and stale browser sessions whose cached bundle still
-# references an old chunk hash then try to import that HTML as JS and
-# blow up with "Failed to load module script: text/html MIME". CF Pages
-# tries the static file first; these rules only fire when no file exists.
-# DO NOT add identity rewrites like `/sw.js /sw.js 200` here — they
-# create infinite rewrite loops that abort CF rule parsing entirely
-# (breaks the SPA catch-all below, every route returns 404).
-/assets/*  /404.html  404
-/icons/*   /404.html  404
-/fonts/*   /404.html  404
-/locales/*  /404.html  404
-
-# Cloudflare Pages SPA catch-all (must be last).
+# ---------------------------------------------------------------------------
+# There is deliberately NO SPA catch-all rule below. Do not add one.
 #
-# DO NOT change the target to `/`. A 200-rewrite to `/` takes precedence over
-# static-asset serving in CF Pages, so EVERY path — /robots.txt, /build-id.txt,
-# and every hashed /assets/**.js — is served this HTML instead of the real
-# file. The JS then fails strict MIME checking and the SPA never boots: the
-# whole site returns 200 and renders a blank page. Tried and reverted on
-# 2026-08-01 (#2469 -> this revert).
-/*    /index.html   200
+# SPA fallback is handled by Cloudflare Pages' built-in behaviour instead:
+# when the output directory contains no 404.html, Pages serves index.html
+# with a 200 for any path that doesn't match a static asset. That is why
+# public/404.html was deleted — see scripts/check-redirects.mjs, which fails
+# the build if either the catch-all or the 404.html comes back.
+#
+# Every catch-all shape was measured against the real Cloudflare rule engine
+# (`wrangler pages dev`, wrangler 4.118) on 2026-08-01. All of them are wrong:
+#
+#   /*  /index.html  200   Wrangler drops the rule outright — "Infinite loop
+#                          detected in this rule and has been ignored": Pages
+#                          strips `.html`/`/index` from the target, which
+#                          re-enters `/*`. With the rule gone, every unmatched
+#                          path fell through to 404.html, so /help, /city/:slug
+#                          and every sitemap 404'd site-wide. The warning is
+#                          printed on every deploy and was never read.
+#
+#   /*  /  200             Parses, but a 200-rewrite outranks static-asset
+#                          serving, so /robots.txt, /build-id.txt AND every
+#                          hashed /assets/**.{js,css} are served the SPA HTML.
+#                          Strict MIME checking then rejects the stylesheet and
+#                          the module scripts. (#2469, reverted in #2473.)
+#
+#   /section/*  /index.html  200   Same infinite-loop drop as `/*`.
+#   /section    /index.html  200   Parses, then 308-redirects to `/` — because
+#                          Pages canonicalises /index.html -> / at the asset
+#                          layer. No rewrite whose target is /index.html can
+#                          ever work here.
+#
+# Status 404 is likewise not expressible: Pages accepts only 200, 301, 302,
+# 303, 307 and 308 in this file. The four `/assets/* /404.html 404` guards
+# that used to live here were rejected by the parser on every deploy and
+# never did anything.
+#
+# Accepted gap: the built-in fallback answers *any* unmatched path with
+# index.html, hashed-asset URLs included, so a stale bundle asking for a
+# deleted chunk gets 200 text/html rather than a 404. Two layers absorb it —
+# public/sw.js turns an HTML answer for a .js/.css URL into a synthetic 404,
+# and functions/_middleware.ts does the same at the edge whenever Pages
+# Functions are running. scripts/smoke-pages.sh reports it after each deploy.
+#
+# DO NOT add identity rewrites like `/sw.js /sw.js 200` — they create
+# infinite rewrite loops that abort rule parsing for the whole file.
+# ---------------------------------------------------------------------------

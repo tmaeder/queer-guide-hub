@@ -131,6 +131,19 @@ queer-guide-hub/
 - **Scraper:** GitHub Actions — daily full refresh (03:15 UTC) + hourly events
 - **DB migrations:** merged to `main` auto-apply via CI `db push` (history drift repaired 2026-06-10; remote `schema_migrations` == repo files). If applying early via MCP `apply_migration` (records history), commit the file with the SAME version — CI then skips it. Raw Management-API SQL does NOT record history → drift returns.
 
+### SPA routing on Cloudflare Pages (2026-08-01)
+
+**There is no SPA catch-all in `public/_redirects`, and no `public/404.html`. Both are load-bearing absences — `scripts/check-redirects.mjs` fails the build if either returns.** With no `404.html` in the output, Pages' built-in fallback serves `index.html` (200) for any unmatched path and leaves static assets alone. That is the only shape that works; every alternative was measured against the real rule engine (`wrangler pages dev`) and fails:
+
+- `/*  /index.html  200` — **silently dropped.** Pages strips `.html`/`/index` from rewrite targets, so the rule re-enters itself and the parser discards it as an infinite loop. Everything then fell through to `404.html`: `/help`, `/city/:slug` and every sitemap 404'd site-wide. Wrangler printed the warning on *every* deploy for months and nobody read it.
+- `/*  /  200` — parses, but **200-rewrites outrank static-asset serving**, so `/robots.txt`, `/build-id.txt` and every hashed `/assets/**.{js,css}` are served the SPA HTML. The homepage rendered completely unstyled. (#2469, reverted in #2473.)
+- `/section/*  /index.html  200` — same infinite-loop drop. `/section  /index.html  200` — 308-redirects instead of rewriting. **No rewrite whose target is `/index.html` can ever work here.**
+- Status `404` is not expressible: Pages accepts only 200/301/302/303/307/308. Four `/assets/* /404.html 404` guards lived in the file for months and were rejected by the parser on every deploy.
+
+Known gap while Pages Functions are down: a request for a *missing* hashed asset gets `200 text/html` from the built-in fallback. `public/sw.js` turns that into a synthetic 404 client-side, and `functions/_middleware.ts` does the same at the edge whenever Functions run. `scripts/smoke-pages.sh` runs after every deploy and reports it.
+
+**Read wrangler's `_redirects` parser output.** It reports dropped rules as warnings on a deploy that otherwise exits 0 and prints "Deployment complete".
+
 ## Testing
 
 - **Always verify on production** (https://queer.guide) after deploy, not just localhost. The deploy target is Cloudflare Pages, not Vercel — Vercel is preview-only.
