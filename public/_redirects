@@ -43,13 +43,10 @@
 
 # Cloudflare Pages SPA catch-all (must be last).
 #
-# Target is `/`, NOT `/index.html`. CF Pages 308-redirects `/index.html` -> `/`,
-# and a 200-rewrite whose target is itself a redirect does not resolve — the
-# rule silently stops matching and EVERY unmatched path falls through to the
-# static 404.html. That took the whole site down on 2026-08-01: every deep
-# route and every sitemap 404'd, only `/` and static assets survived. The 301
-# rules above kept working throughout, which is exactly what makes it look
-# like rule parsing is healthy. functions/_middleware.ts hit the identical
-# trap and documents it at its `env.ASSETS.fetch('/')` call — same cause,
-# same fix. Do not "tidy" this back to /index.html.
-/*    /   200
+# DO NOT change the target to `/`. A 200-rewrite to `/` takes precedence over
+# static-asset serving in CF Pages, so EVERY path — /robots.txt, /build-id.txt,
+# and every hashed /assets/**.js — is served this HTML instead of the real
+# file. The JS then fails strict MIME checking and the SPA never boots: the
+# whole site returns 200 and renders a blank page. Tried and reverted on
+# 2026-08-01 (#2469 -> this revert).
+/*    /index.html   200
