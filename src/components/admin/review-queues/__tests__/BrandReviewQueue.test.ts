@@ -3,7 +3,7 @@ import {
   sensitiveConfirmMessage,
   OWNERSHIP_VOCAB,
   SENSITIVE_TAGS,
-} from '../BrandReviewQueue';
+} from '../brandReviewVocab';
 
 // Mirrors approve_marketplace_brand's p_confirm contract: asserting
 // queer/trans/BIPOC ownership must go through the explicit confirm; the other
