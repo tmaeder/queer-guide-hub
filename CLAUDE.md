@@ -142,21 +142,36 @@ queer-guide-hub/
 
 `public/_routes.json` is shipped explicitly rather than left to wrangler. Without it wrangler generates the routing config and reads it back inside a bare `catch {}` (the `routesOutputPath` branch of `pages deploy`), which can upload the Functions bundle with no routes at all and no warning. The explicit file takes the validated branch and logs `✨ Uploading _routes.json` on every deploy, so the config is provably applied. **This was tried as a fix for the dead-Functions fault below and did NOT fix it** — keep the file (it removes a real silent-failure path), but do not mistake it for the cause.
 
-### Pages Functions do not execute in production — OPEN
+### Pages Functions do not execute in production — CAUSE FOUND: the Workers quota
 
-Every Pages Function 404s in production: `/sitemap*.xml`, `/api/*`, `/brand/tokens.*`, all crawler `<head>` injection and the nonce CSP. **The repo has been eliminated as the cause.** Ruled out with evidence:
+Every Pages Function 404s in production: `/sitemap*.xml`, `/api/*`, `/brand/tokens.*`, all crawler `<head>` injection and the nonce CSP. **The repo was correctly eliminated as the cause** — bundle compiles and uploads (158 KB), `_routes.json` uploaded and validated, the identical bundle serves every Function under `wrangler pages dev`, it fails on the raw `*.pages.dev` URL too, no `_worker.js`, no Node builtins, no top-level throws, and the responses are clean static 404s rather than `1101` Worker errors (never invoked, not invoked-and-crashing).
 
-- The bundle compiles and uploads on every deploy (`✨ Compiled Worker successfully`, `✨ Uploading Functions bundle`), and `wrangler pages functions build` produces a clean 158 KB worker — far under any size limit.
-- `_routes.json` is now uploaded and validated (`✨ Uploading _routes.json` in the deploy log) — Functions still do not run.
-- The identical bundle serves **every** Function correctly under `wrangler pages dev`: sitemaps, `/api/geo`, `/brand/tokens.css`, canonical + nonce injection, and the asset-404 conversion.
-- It fails on the raw per-deployment `*.pages.dev` URL too, so it is not custom-domain or DNS routing.
-- No `_worker.js`, no Node-builtin imports, no top-level throws. Responses are clean static 404s, not `1101`/Worker-error pages — consistent with *never invoked*, not *invoked and crashing*.
+**It is the account request quota, not routing.** One command settles it — curl any Worker subdomain:
 
-Next step needs Cloudflare dashboard/API access, which CI does not have: `wrangler pages deployment tail`, plus the Pages project's Functions settings and compatibility date. Until then the SPA works fine and `scripts/smoke-pages.sh` reports the degradation on every deploy without failing it (a known, tracked, pre-existing fault should not mask a new regression).
+```
+curl -s -o /dev/null -w '%{http_code}\n' "https://search.queer.guide/search?q=test"   # 429
+curl -s https://img.queer.guide/ | head -1                                            # error code: 1027
+```
+
+`search.`, `img.` and `extract.queer.guide` all returned `429 error code: 1027` simultaneously on 2026-08-01. **Three unrelated Workers failing at once is account-level, never a code bug.** Invoice IN-72568830 is unpaid, the account is off Workers Paid, and the free **100k requests/day** cap is exhausted daily — and **Pages Functions ARE Workers billing against that same cap**, so they stop executing with it. It self-heals at UTC midnight and breaks again each afternoon. That also explains the two observations that looked most like a routing bug: it fails identically on `*.pages.dev` (same account), and it works under `wrangler pages dev` (local runtime, no quota).
+
+**Check the Worker subdomains for 1027 BEFORE investigating Pages routing.** The repo-side elimination above cost a full session and could not have succeeded, because nothing in the repo was wrong.
+
+Only a billing action fixes it. `public/_routes.json`'s exclude list (below) is the code-side mitigation — it cuts invocations ~50× so ordinary traffic no longer exhausts the cap — but `search.`, `img.`, `extract.` and Workers AI stay down until Workers Paid is restored. Until then `scripts/smoke-pages.sh` reports the degradation on every deploy without failing it (a known, tracked fault should not mask a new regression).
 
 The built-in fallback answers *any* unmatched path with `index.html`, hashed-asset URLs included, so a stale bundle asking for a deleted chunk gets `200 text/html`. `functions/_middleware.ts` would turn that into a real 404 — but only while Functions run, so today `public/sw.js` is the only layer actually doing it.
 
 **Read wrangler's parser output.** It reports dropped `_redirects` rules — and says nothing at all about unrouted Functions — on a deploy that otherwise exits 0 and prints "Deployment complete".
+
+**A bad `_redirects` rule outlives its revert — it poisons the CDN.** The `/  200` window above lasted ~13 minutes, but Pages answered `/assets/css/index-*.css` with `index.html` during it and `public/_headers` stamps `/assets/*` `immutable, max-age=31536000`, so Cloudflare cached the SPA shell **under the stylesheet URL for a year**. The site rendered completely unstyled for hours after the revert deployed, across three clean deploys, because reverting config does not evict a cached object and the content hash never moved. Two things to know: **(1) it is per-colo** — `smoke-pages.sh` passed from the CI runner while the same script failed from Zurich, so a green deploy proves one colo is clean and nothing more; **(2) the escape is a purge or a new URL, never a redeploy.** `expect_asset_type` in `scripts/smoke-pages.sh` now tells the two causes apart (plain URL wrong + `?cb=` right ⇒ poisoned cache; both wrong ⇒ origin broken). Hashed chunks can be rotated by changing their bytes; `/fonts`, `/icons` and `/images` cannot be rotated at all — only a purge clears those.
+
+### `public/_routes.json` — assets must not invoke Pages Functions (2026-08-01)
+
+**Pages runs Functions AHEAD of static assets by default, and Pages Functions ARE Workers billing against the same request quota.** With no `_routes.json`, every hashed chunk, font and icon invoked `functions/_middleware.ts` just to reach its pass-through — putting one cold page load at **~51 billed invocations** (1 HTML + 1 CSS + 47 JS + 2 fonts). Off Workers Paid the account has a free **100k requests/day** cap, so the whole site died after roughly **1,800 page views/day** with `429 error code: 1027` — every afternoon, self-healing at UTC midnight. `public/_routes.json` excludes the static paths, cutting that ~50×.
+
+**Do not add `/manifest.json`, `/brand/*`, `/sitemap*.xml` or `/api/*` to `exclude`** — those are real Function routes (`functions/manifest.json.ts`, `functions/brand/`, the 15 sitemap generators, `functions/api/`) and excluding them serves the static file or a 404 instead of the generated body. `/manifest.json` is the trap: a static `public/manifest.json` also exists, so excluding it fails silently with stale content rather than an error. `exclude` wins over `include`; the two lists together cap at 100 rules.
+
+This does not replace paying the Cloudflare bill — Workers AI, `search.`, `img.` and `extract.queer.guide` still need Workers Paid. It only stops **the site itself** from being collateral.
 
 ## Testing
 

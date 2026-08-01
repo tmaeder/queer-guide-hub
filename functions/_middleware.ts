@@ -81,10 +81,27 @@ const ASSET_SUFFIXES = [
   '.woff2',
 ];
 
-// Path prefixes the route-meta middleware never touches (no HTML to
-// rewrite). /assets/ is intentionally NOT in this list any more — the
-// middleware *does* look at /assets/ responses to convert HTML SPA
-// fallbacks into real 404s.
+// Path prefixes the route-meta middleware never touches (no HTML to rewrite).
+//
+// NOTE (2026-08-01): the asset branch below is mostly DEAD IN PRODUCTION now,
+// and that is deliberate. public/_routes.json excludes /assets/, /fonts/,
+// /icons/, /images/, /og/, /locales/ and the loose static files, so Pages
+// serves them without invoking this Function at all.
+//
+// Why: Pages Functions ARE Workers and bill against the same request quota,
+// and Pages runs Functions AHEAD of static assets by default — so every one
+// of the ~50 hashed chunks in a cold page load was a billed invocation just
+// to reach the pass-through on line ~176. That put a single page view at ~51
+// requests, which exhausted the account's free 100k/day cap after roughly
+// 1,800 page views and took the whole site down every afternoon with
+// `429 error code: 1027` (see the Workers-AI billing memo).
+//
+// What that costs us: the synthetic-404 guard below no longer runs at the
+// edge for excluded paths. public/sw.js still enforces the same rule
+// client-side (EXT_CONTENT_TYPES / isResponseValidForUrl), which is what
+// actually protects returning users with a stale bundle. Keep the branch —
+// it still covers any asset-looking path NOT in the exclude list, and it
+// comes straight back if the exclusions are ever narrowed.
 const SKIP_PREFIXES = ['/api/', '/functions/'];
 const SKIP_SUFFIXES = ['.json', '.xml', '.txt'];
 
