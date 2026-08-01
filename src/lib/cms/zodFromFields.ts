@@ -14,13 +14,17 @@ function baseSchemaForType(type: FieldType): ZodTypeAny {
       return z.number();
     case 'boolean':
       return z.boolean();
+    // The autocompletes store a single resolved id/name, so they are strings.
     case 'select':
-    case 'tags':
     case 'city_autocomplete':
     case 'country_autocomplete':
       return z.string();
+    // 'tags' belongs here, not with the string cases: TagsField emits an array
+    // and every tags column is text[]. Grouping it above made
+    // "expected string, received array" block the save of any record with tags.
     case 'multiselect':
     case 'images':
+    case 'tags':
       return z.array(z.string());
     case 'date':
     case 'datetime':
@@ -52,7 +56,11 @@ export function fieldToZod(field: FieldConfig): ZodTypeAny {
     if (typeof field.min === 'number') schema = schema.min(field.min);
     if (typeof field.max === 'number') schema = schema.max(field.max);
   }
-  if (field.options && field.options.length > 0 && (field.type === 'select' || field.type === 'multiselect')) {
+  if (
+    field.options &&
+    field.options.length > 0 &&
+    (field.type === 'select' || field.type === 'multiselect')
+  ) {
     const values = field.options.map((o) => o.value);
     if (values.length >= 2) {
       const enumSchema = z.enum(values as [string, ...string[]]);
