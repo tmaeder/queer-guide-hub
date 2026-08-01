@@ -538,7 +538,6 @@ export type Database = {
           go_key: string | null
           id: string
           notes: string | null
-          organization_id: string | null
           parameters: Json
           partner_name: string
           provider_type: string | null
@@ -558,7 +557,6 @@ export type Database = {
           go_key?: string | null
           id?: string
           notes?: string | null
-          organization_id?: string | null
           parameters?: Json
           partner_name: string
           provider_type?: string | null
@@ -578,7 +576,6 @@ export type Database = {
           go_key?: string | null
           id?: string
           notes?: string | null
-          organization_id?: string | null
           parameters?: Json
           partner_name?: string
           provider_type?: string | null
@@ -591,15 +588,7 @@ export type Database = {
           url_patterns?: string[] | null
           vertical?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "affiliate_partners_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       ai_suggestions: {
         Row: {
@@ -1046,6 +1035,36 @@ export type Database = {
           id?: string
           key?: string
           last_attempt?: string
+        }
+        Relationships: []
+      }
+      automated_review_rules: {
+        Row: {
+          config: Json
+          created_at: string
+          enabled: boolean
+          id: string
+          last_run_at: string | null
+          rule_name: string
+          rule_type: string
+        }
+        Insert: {
+          config?: Json
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          last_run_at?: string | null
+          rule_name: string
+          rule_type: string
+        }
+        Update: {
+          config?: Json
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          last_run_at?: string | null
+          rule_name?: string
+          rule_type?: string
         }
         Relationships: []
       }
@@ -1660,8 +1679,15 @@ export type Database = {
             foreignKeyName: "city_aliases_city_id_fkey"
             columns: ["city_id"]
             isOneToOne: false
-            referencedRelation: "geo_city_profiles"
-            referencedColumns: ["place_id"]
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "city_aliases_city_id_fkey"
+            columns: ["city_id"]
+            isOneToOne: false
+            referencedRelation: "cities_admin"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1698,8 +1724,15 @@ export type Database = {
             foreignKeyName: "city_climate_monthly_city_id_fkey"
             columns: ["city_id"]
             isOneToOne: false
-            referencedRelation: "geo_city_profiles"
-            referencedColumns: ["place_id"]
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "city_climate_monthly_city_id_fkey"
+            columns: ["city_id"]
+            isOneToOne: false
+            referencedRelation: "cities_admin"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1748,8 +1781,15 @@ export type Database = {
             foreignKeyName: "city_consensus_audit_city_id_fkey"
             columns: ["city_id"]
             isOneToOne: false
-            referencedRelation: "geo_city_profiles"
-            referencedColumns: ["place_id"]
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "city_consensus_audit_city_id_fkey"
+            columns: ["city_id"]
+            isOneToOne: false
+            referencedRelation: "cities_admin"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1801,8 +1841,15 @@ export type Database = {
             foreignKeyName: "city_coverage_gaps_city_id_fkey"
             columns: ["city_id"]
             isOneToOne: true
-            referencedRelation: "geo_city_profiles"
-            referencedColumns: ["place_id"]
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "city_coverage_gaps_city_id_fkey"
+            columns: ["city_id"]
+            isOneToOne: true
+            referencedRelation: "cities_admin"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1860,15 +1907,29 @@ export type Database = {
             foreignKeyName: "city_merge_audit_drop_id_fkey"
             columns: ["drop_id"]
             isOneToOne: false
-            referencedRelation: "geo_city_profiles"
-            referencedColumns: ["place_id"]
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "city_merge_audit_drop_id_fkey"
+            columns: ["drop_id"]
+            isOneToOne: false
+            referencedRelation: "cities_admin"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "city_merge_audit_keep_id_fkey"
             columns: ["keep_id"]
             isOneToOne: false
-            referencedRelation: "geo_city_profiles"
-            referencedColumns: ["place_id"]
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "city_merge_audit_keep_id_fkey"
+            columns: ["keep_id"]
+            isOneToOne: false
+            referencedRelation: "cities_admin"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1908,12 +1969,19 @@ export type Database = {
             foreignKeyName: "city_quality_signals_city_id_fkey"
             columns: ["city_id"]
             isOneToOne: false
-            referencedRelation: "geo_city_profiles"
-            referencedColumns: ["place_id"]
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "city_quality_signals_city_id_fkey"
+            columns: ["city_id"]
+            isOneToOne: false
+            referencedRelation: "cities_admin"
+            referencedColumns: ["id"]
           },
         ]
       }
-      city_review_queue_legacy: {
+      city_review_queue: {
         Row: {
           citations: Json
           city_id: string
@@ -1961,8 +2029,15 @@ export type Database = {
             foreignKeyName: "city_review_queue_city_id_fkey"
             columns: ["city_id"]
             isOneToOne: false
-            referencedRelation: "geo_city_profiles"
-            referencedColumns: ["place_id"]
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "city_review_queue_city_id_fkey"
+            columns: ["city_id"]
+            isOneToOne: false
+            referencedRelation: "cities_admin"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -4521,8 +4596,8 @@ export type Database = {
             foreignKeyName: "country_slug_redirects_country_id_fkey"
             columns: ["country_id"]
             isOneToOne: false
-            referencedRelation: "geo_country_profiles"
-            referencedColumns: ["place_id"]
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -5406,54 +5481,6 @@ export type Database = {
         }
         Relationships: []
       }
-      entity_review_queue: {
-        Row: {
-          citations: Json
-          confidence: number | null
-          created_at: string
-          entity_id: string
-          entity_type: string
-          field: string
-          id: string
-          model: string | null
-          proposed_value: Json
-          reviewed_at: string | null
-          reviewer_id: string | null
-          reviewer_note: string | null
-          status: string
-        }
-        Insert: {
-          citations?: Json
-          confidence?: number | null
-          created_at?: string
-          entity_id: string
-          entity_type: string
-          field: string
-          id?: string
-          model?: string | null
-          proposed_value: Json
-          reviewed_at?: string | null
-          reviewer_id?: string | null
-          reviewer_note?: string | null
-          status?: string
-        }
-        Update: {
-          citations?: Json
-          confidence?: number | null
-          created_at?: string
-          entity_id?: string
-          entity_type?: string
-          field?: string
-          id?: string
-          model?: string | null
-          proposed_value?: Json
-          reviewed_at?: string | null
-          reviewer_id?: string | null
-          reviewer_note?: string | null
-          status?: string
-        }
-        Relationships: []
-      }
       event_amenities: {
         Row: {
           aliases: string[]
@@ -5611,8 +5638,15 @@ export type Database = {
             foreignKeyName: "event_coverage_gaps_city_id_fkey"
             columns: ["city_id"]
             isOneToOne: true
-            referencedRelation: "geo_city_profiles"
-            referencedColumns: ["place_id"]
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_coverage_gaps_city_id_fkey"
+            columns: ["city_id"]
+            isOneToOne: true
+            referencedRelation: "cities_admin"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -6156,15 +6190,22 @@ export type Database = {
             foreignKeyName: "events_city_id_fkey"
             columns: ["city_id"]
             isOneToOne: false
-            referencedRelation: "geo_city_profiles"
-            referencedColumns: ["place_id"]
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "events_city_id_fkey"
+            columns: ["city_id"]
+            isOneToOne: false
+            referencedRelation: "cities_admin"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "events_country_id_fkey"
             columns: ["country_id"]
             isOneToOne: false
-            referencedRelation: "geo_country_profiles"
-            referencedColumns: ["place_id"]
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "events_created_by_fkey"
@@ -6233,8 +6274,8 @@ export type Database = {
             foreignKeyName: "events_queer_village_id_fkey"
             columns: ["queer_village_id"]
             isOneToOne: false
-            referencedRelation: "geo_village_profiles"
-            referencedColumns: ["place_id"]
+            referencedRelation: "queer_villages"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "events_venue_id_fkey"
@@ -6911,15 +6952,22 @@ export type Database = {
             foreignKeyName: "festivals_city_id_fkey"
             columns: ["city_id"]
             isOneToOne: false
-            referencedRelation: "geo_city_profiles"
-            referencedColumns: ["place_id"]
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "festivals_city_id_fkey"
+            columns: ["city_id"]
+            isOneToOne: false
+            referencedRelation: "cities_admin"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "festivals_country_id_fkey"
             columns: ["country_id"]
             isOneToOne: false
-            referencedRelation: "geo_country_profiles"
-            referencedColumns: ["place_id"]
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "festivals_venue_id_fkey"
@@ -6998,15 +7046,22 @@ export type Database = {
             foreignKeyName: "flyer_scans_matched_city_id_fkey"
             columns: ["matched_city_id"]
             isOneToOne: false
-            referencedRelation: "geo_city_profiles"
-            referencedColumns: ["place_id"]
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "flyer_scans_matched_city_id_fkey"
+            columns: ["matched_city_id"]
+            isOneToOne: false
+            referencedRelation: "cities_admin"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "flyer_scans_matched_country_id_fkey"
             columns: ["matched_country_id"]
             isOneToOne: false
-            referencedRelation: "geo_country_profiles"
-            referencedColumns: ["place_id"]
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "flyer_scans_matched_venue_id_fkey"
@@ -7035,42 +7090,6 @@ export type Database = {
           fetched_at?: string
           rate_to_usd?: number
           source?: string | null
-        }
-        Relationships: []
-      }
-      geo_address_queue: {
-        Row: {
-          attempts: number
-          enqueued_at: string
-          entity_id: string
-          entity_type: string
-          last_error: string | null
-          latitude: number | null
-          longitude: number | null
-          next_attempt_at: string
-          reason: string
-        }
-        Insert: {
-          attempts?: number
-          enqueued_at?: string
-          entity_id: string
-          entity_type: string
-          last_error?: string | null
-          latitude?: number | null
-          longitude?: number | null
-          next_attempt_at?: string
-          reason?: string
-        }
-        Update: {
-          attempts?: number
-          enqueued_at?: string
-          entity_id?: string
-          entity_type?: string
-          last_error?: string | null
-          latitude?: number | null
-          longitude?: number | null
-          next_attempt_at?: string
-          reason?: string
         }
         Relationships: []
       }
@@ -7704,15 +7723,22 @@ export type Database = {
             foreignKeyName: "geo_sources_city_id_fkey"
             columns: ["city_id"]
             isOneToOne: false
-            referencedRelation: "geo_city_profiles"
-            referencedColumns: ["place_id"]
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "geo_sources_city_id_fkey"
+            columns: ["city_id"]
+            isOneToOne: false
+            referencedRelation: "cities_admin"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "geo_sources_country_id_fkey"
             columns: ["country_id"]
             isOneToOne: false
-            referencedRelation: "geo_country_profiles"
-            referencedColumns: ["place_id"]
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -8797,8 +8823,15 @@ export type Database = {
             foreignKeyName: "guides_city_id_fkey"
             columns: ["city_id"]
             isOneToOne: false
-            referencedRelation: "geo_city_profiles"
-            referencedColumns: ["place_id"]
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "guides_city_id_fkey"
+            columns: ["city_id"]
+            isOneToOne: false
+            referencedRelation: "cities_admin"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "guides_recap_article_id_fkey"
@@ -8883,14 +8916,12 @@ export type Database = {
           longitude: number | null
           name: string
           name_i18n: Json
-          organization_id: string | null
           payload_hash: string | null
           phone: string | null
           postal_code: string | null
           price_range: number | null
           queer_safety_notes: string | null
           queer_village_id: string | null
-          safety_gated: boolean
           seo_indexable: boolean
           slug: string | null
           star_rating: number | null
@@ -8934,14 +8965,12 @@ export type Database = {
           longitude?: number | null
           name: string
           name_i18n?: Json
-          organization_id?: string | null
           payload_hash?: string | null
           phone?: string | null
           postal_code?: string | null
           price_range?: number | null
           queer_safety_notes?: string | null
           queer_village_id?: string | null
-          safety_gated?: boolean
           seo_indexable?: boolean
           slug?: string | null
           star_rating?: number | null
@@ -8985,14 +9014,12 @@ export type Database = {
           longitude?: number | null
           name?: string
           name_i18n?: Json
-          organization_id?: string | null
           payload_hash?: string | null
           phone?: string | null
           postal_code?: string | null
           price_range?: number | null
           queer_safety_notes?: string | null
           queer_village_id?: string | null
-          safety_gated?: boolean
           seo_indexable?: boolean
           slug?: string | null
           star_rating?: number | null
@@ -9008,15 +9035,22 @@ export type Database = {
             foreignKeyName: "hotels_city_id_fkey"
             columns: ["city_id"]
             isOneToOne: false
-            referencedRelation: "geo_city_profiles"
-            referencedColumns: ["place_id"]
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hotels_city_id_fkey"
+            columns: ["city_id"]
+            isOneToOne: false
+            referencedRelation: "cities_admin"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "hotels_country_id_fkey"
             columns: ["country_id"]
             isOneToOne: false
-            referencedRelation: "geo_country_profiles"
-            referencedColumns: ["place_id"]
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "hotels_duplicate_of_id_fkey"
@@ -9026,18 +9060,11 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "hotels_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "hotels_queer_village_id_fkey"
             columns: ["queer_village_id"]
             isOneToOne: false
-            referencedRelation: "geo_village_profiles"
-            referencedColumns: ["place_id"]
+            referencedRelation: "queer_villages"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -9343,17 +9370,79 @@ export type Database = {
             foreignKeyName: "import_audit_log_import_job_id_fkey"
             columns: ["import_job_id"]
             isOneToOne: false
-            referencedRelation: "import_jobs"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "import_audit_log_import_job_id_fkey"
-            columns: ["import_job_id"]
-            isOneToOne: false
             referencedRelation: "import_jobs_enhanced"
             referencedColumns: ["id"]
           },
         ]
+      }
+      import_jobs: {
+        Row: {
+          batch_size: number
+          created_at: string
+          current_batch: number
+          data: Json
+          duplicate_items: number | null
+          error_details: string | null
+          failed_items: number | null
+          id: string
+          import_config: Json | null
+          max_retries: number
+          message: string
+          processed_items: number
+          progress: number
+          retry_count: number
+          status: string
+          successful_items: number | null
+          total_batches: number
+          total_items: number
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          batch_size?: number
+          created_at?: string
+          current_batch?: number
+          data?: Json
+          duplicate_items?: number | null
+          error_details?: string | null
+          failed_items?: number | null
+          id?: string
+          import_config?: Json | null
+          max_retries?: number
+          message?: string
+          processed_items?: number
+          progress?: number
+          retry_count?: number
+          status?: string
+          successful_items?: number | null
+          total_batches?: number
+          total_items?: number
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          batch_size?: number
+          created_at?: string
+          current_batch?: number
+          data?: Json
+          duplicate_items?: number | null
+          error_details?: string | null
+          failed_items?: number | null
+          id?: string
+          import_config?: Json | null
+          max_retries?: number
+          message?: string
+          processed_items?: number
+          progress?: number
+          retry_count?: number
+          status?: string
+          successful_items?: number | null
+          total_batches?: number
+          total_items?: number
+          type?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       import_jobs_enhanced: {
         Row: {
@@ -9534,13 +9623,6 @@ export type Database = {
             foreignKeyName: "import_validation_results_import_job_id_fkey"
             columns: ["import_job_id"]
             isOneToOne: false
-            referencedRelation: "import_jobs"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "import_validation_results_import_job_id_fkey"
-            columns: ["import_job_id"]
-            isOneToOne: false
             referencedRelation: "import_jobs_enhanced"
             referencedColumns: ["id"]
           },
@@ -9683,15 +9765,22 @@ export type Database = {
             foreignKeyName: "ingestion_events_city_id_fkey"
             columns: ["city_id"]
             isOneToOne: false
-            referencedRelation: "geo_city_profiles"
-            referencedColumns: ["place_id"]
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ingestion_events_city_id_fkey"
+            columns: ["city_id"]
+            isOneToOne: false
+            referencedRelation: "cities_admin"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "ingestion_events_country_id_fkey"
             columns: ["country_id"]
             isOneToOne: false
-            referencedRelation: "geo_country_profiles"
-            referencedColumns: ["place_id"]
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "ingestion_events_staging_id_fkey"
@@ -9949,8 +10038,15 @@ export type Database = {
             foreignKeyName: "intimate_cruising_mode_city_id_fkey"
             columns: ["city_id"]
             isOneToOne: false
-            referencedRelation: "geo_city_profiles"
-            referencedColumns: ["place_id"]
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "intimate_cruising_mode_city_id_fkey"
+            columns: ["city_id"]
+            isOneToOne: false
+            referencedRelation: "cities_admin"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "intimate_cruising_mode_user_id_fkey"
@@ -10138,8 +10234,15 @@ export type Database = {
             foreignKeyName: "intimate_profiles_discovery_city_id_fkey"
             columns: ["discovery_city_id"]
             isOneToOne: false
-            referencedRelation: "geo_city_profiles"
-            referencedColumns: ["place_id"]
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "intimate_profiles_discovery_city_id_fkey"
+            columns: ["discovery_city_id"]
+            isOneToOne: false
+            referencedRelation: "cities_admin"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "intimate_profiles_id_fkey"
@@ -10973,7 +11076,6 @@ export type Database = {
           id: string
           is_spotlight: boolean
           logo_url: string | null
-          organization_id: string | null
           ownership_tags: string[]
           product_count: number
           reviewed_at: string | null
@@ -10998,7 +11100,6 @@ export type Database = {
           id?: string
           is_spotlight?: boolean
           logo_url?: string | null
-          organization_id?: string | null
           ownership_tags?: string[]
           product_count?: number
           reviewed_at?: string | null
@@ -11023,7 +11124,6 @@ export type Database = {
           id?: string
           is_spotlight?: boolean
           logo_url?: string | null
-          organization_id?: string | null
           ownership_tags?: string[]
           product_count?: number
           reviewed_at?: string | null
@@ -11038,15 +11138,7 @@ export type Database = {
           updated_at?: string
           website?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "marketplace_brands_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       marketplace_categories: {
         Row: {
@@ -11669,7 +11761,7 @@ export type Database = {
           },
         ]
       }
-      marketplace_review_queue_legacy: {
+      marketplace_review_queue: {
         Row: {
           citations: Json
           confidence: number | null
@@ -12238,15 +12330,22 @@ export type Database = {
             foreignKeyName: "milestones_city_id_fkey"
             columns: ["city_id"]
             isOneToOne: false
-            referencedRelation: "geo_city_profiles"
-            referencedColumns: ["place_id"]
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "milestones_city_id_fkey"
+            columns: ["city_id"]
+            isOneToOne: false
+            referencedRelation: "cities_admin"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "milestones_country_id_fkey"
             columns: ["country_id"]
             isOneToOne: false
-            referencedRelation: "geo_country_profiles"
-            referencedColumns: ["place_id"]
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "milestones_duplicate_of_id_fkey"
@@ -12518,8 +12617,15 @@ export type Database = {
             foreignKeyName: "news_article_cities_city_id_fkey"
             columns: ["city_id"]
             isOneToOne: false
-            referencedRelation: "geo_city_profiles"
-            referencedColumns: ["place_id"]
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "news_article_cities_city_id_fkey"
+            columns: ["city_id"]
+            isOneToOne: false
+            referencedRelation: "cities_admin"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -12568,8 +12674,8 @@ export type Database = {
             foreignKeyName: "news_article_countries_country_id_fkey"
             columns: ["country_id"]
             isOneToOne: false
-            referencedRelation: "geo_country_profiles"
-            referencedColumns: ["place_id"]
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -13698,62 +13804,6 @@ export type Database = {
         }
         Relationships: []
       }
-      org_link_suggestions: {
-        Row: {
-          confidence: number
-          created_at: string
-          entity_id: string
-          entity_type: string
-          id: string
-          organization_id: string | null
-          payload: Json
-          reason: string
-          reviewed_at: string | null
-          reviewer_id: string | null
-          reviewer_note: string | null
-          source: string
-          status: string
-        }
-        Insert: {
-          confidence?: number
-          created_at?: string
-          entity_id: string
-          entity_type: string
-          id?: string
-          organization_id?: string | null
-          payload?: Json
-          reason?: string
-          reviewed_at?: string | null
-          reviewer_id?: string | null
-          reviewer_note?: string | null
-          source?: string
-          status?: string
-        }
-        Update: {
-          confidence?: number
-          created_at?: string
-          entity_id?: string
-          entity_type?: string
-          id?: string
-          organization_id?: string | null
-          payload?: Json
-          reason?: string
-          reviewed_at?: string | null
-          reviewer_id?: string | null
-          reviewer_note?: string | null
-          source?: string
-          status?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "org_link_suggestions_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       org_slug_redirects: {
         Row: {
           created_at: string
@@ -13900,15 +13950,22 @@ export type Database = {
             foreignKeyName: "organizations_city_id_fkey"
             columns: ["city_id"]
             isOneToOne: false
-            referencedRelation: "geo_city_profiles"
-            referencedColumns: ["place_id"]
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "organizations_city_id_fkey"
+            columns: ["city_id"]
+            isOneToOne: false
+            referencedRelation: "cities_admin"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "organizations_country_id_fkey"
             columns: ["country_id"]
             isOneToOne: false
-            referencedRelation: "geo_country_profiles"
-            referencedColumns: ["place_id"]
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "organizations_duplicate_of_id_fkey"
@@ -14232,29 +14289,43 @@ export type Database = {
             foreignKeyName: "personalities_city_id_fkey"
             columns: ["city_id"]
             isOneToOne: false
-            referencedRelation: "geo_city_profiles"
-            referencedColumns: ["place_id"]
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "personalities_city_id_fkey"
+            columns: ["city_id"]
+            isOneToOne: false
+            referencedRelation: "cities_admin"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "personalities_country_id_fkey"
             columns: ["country_id"]
             isOneToOne: false
-            referencedRelation: "geo_country_profiles"
-            referencedColumns: ["place_id"]
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "personalities_death_city_id_fkey"
             columns: ["death_city_id"]
             isOneToOne: false
-            referencedRelation: "geo_city_profiles"
-            referencedColumns: ["place_id"]
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "personalities_death_city_id_fkey"
+            columns: ["death_city_id"]
+            isOneToOne: false
+            referencedRelation: "cities_admin"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "personalities_death_country_id_fkey"
             columns: ["death_country_id"]
             isOneToOne: false
-            referencedRelation: "geo_country_profiles"
-            referencedColumns: ["place_id"]
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "personalities_duplicate_of_id_fkey"
@@ -14592,7 +14663,7 @@ export type Database = {
           },
         ]
       }
-      personality_review_queue_legacy: {
+      personality_review_queue: {
         Row: {
           citations: Json
           confidence: number | null
@@ -16560,15 +16631,22 @@ export type Database = {
             foreignKeyName: "reservations_city_id_fkey"
             columns: ["city_id"]
             isOneToOne: false
-            referencedRelation: "geo_city_profiles"
-            referencedColumns: ["place_id"]
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reservations_city_id_fkey"
+            columns: ["city_id"]
+            isOneToOne: false
+            referencedRelation: "cities_admin"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "reservations_country_id_fkey"
             columns: ["country_id"]
             isOneToOne: false
-            referencedRelation: "geo_country_profiles"
-            referencedColumns: ["place_id"]
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "reservations_trip_day_id_fkey"
@@ -16608,48 +16686,6 @@ export type Database = {
           created_at?: string
           name?: string
           reason?: string
-        }
-        Relationships: []
-      }
-      review_field_registry: {
-        Row: {
-          active: boolean
-          apply_args: Json
-          apply_mode: string
-          batchable: boolean
-          entity_type: string
-          field: string
-          label: string
-          risk_gate: string | null
-          target_column: string | null
-          target_table: string
-          value_key: string
-        }
-        Insert: {
-          active?: boolean
-          apply_args?: Json
-          apply_mode: string
-          batchable?: boolean
-          entity_type: string
-          field: string
-          label: string
-          risk_gate?: string | null
-          target_column?: string | null
-          target_table: string
-          value_key?: string
-        }
-        Update: {
-          active?: boolean
-          apply_args?: Json
-          apply_mode?: string
-          batchable?: boolean
-          entity_type?: string
-          field?: string
-          label?: string
-          risk_gate?: string | null
-          target_column?: string | null
-          target_table?: string
-          value_key?: string
         }
         Relationships: []
       }
@@ -16873,13 +16909,6 @@ export type Database = {
           status?: string
         }
         Relationships: [
-          {
-            foreignKeyName: "scrape_runs_job_id_fkey"
-            columns: ["job_id"]
-            isOneToOne: false
-            referencedRelation: "import_jobs"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "scrape_runs_job_id_fkey"
             columns: ["job_id"]
@@ -18481,8 +18510,15 @@ export type Database = {
             foreignKeyName: "source_coverage_targets_city_id_fkey"
             columns: ["city_id"]
             isOneToOne: false
-            referencedRelation: "geo_city_profiles"
-            referencedColumns: ["place_id"]
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "source_coverage_targets_city_id_fkey"
+            columns: ["city_id"]
+            isOneToOne: false
+            referencedRelation: "cities_admin"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -19864,7 +19900,6 @@ export type Database = {
           active: boolean
           capabilities: Json
           count_key: string
-          count_prefix: string
           label: string
           priority_weight: number
           queue_key: string
@@ -19875,7 +19910,6 @@ export type Database = {
           active?: boolean
           capabilities?: Json
           count_key: string
-          count_prefix?: string
           label: string
           priority_weight?: number
           queue_key: string
@@ -19886,7 +19920,6 @@ export type Database = {
           active?: boolean
           capabilities?: Json
           count_key?: string
-          count_prefix?: string
           label?: string
           priority_weight?: number
           queue_key?: string
@@ -20241,15 +20274,22 @@ export type Database = {
             foreignKeyName: "trip_destinations_city_id_fkey"
             columns: ["city_id"]
             isOneToOne: false
-            referencedRelation: "geo_city_profiles"
-            referencedColumns: ["place_id"]
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trip_destinations_city_id_fkey"
+            columns: ["city_id"]
+            isOneToOne: false
+            referencedRelation: "cities_admin"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "trip_destinations_country_id_fkey"
             columns: ["country_id"]
             isOneToOne: false
-            referencedRelation: "geo_country_profiles"
-            referencedColumns: ["place_id"]
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "trip_destinations_trip_id_fkey"
@@ -20269,8 +20309,8 @@ export type Database = {
             foreignKeyName: "trip_destinations_village_id_fkey"
             columns: ["village_id"]
             isOneToOne: false
-            referencedRelation: "geo_village_profiles"
-            referencedColumns: ["place_id"]
+            referencedRelation: "queer_villages"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -20325,8 +20365,8 @@ export type Database = {
             foreignKeyName: "trip_documents_country_id_fkey"
             columns: ["country_id"]
             isOneToOne: false
-            referencedRelation: "geo_country_profiles"
-            referencedColumns: ["place_id"]
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "trip_documents_trip_id_fkey"
@@ -20383,15 +20423,22 @@ export type Database = {
             foreignKeyName: "trip_geo_review_queue_resolved_city_id_fkey"
             columns: ["resolved_city_id"]
             isOneToOne: false
-            referencedRelation: "geo_city_profiles"
-            referencedColumns: ["place_id"]
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trip_geo_review_queue_resolved_city_id_fkey"
+            columns: ["resolved_city_id"]
+            isOneToOne: false
+            referencedRelation: "cities_admin"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "trip_geo_review_queue_resolved_country_id_fkey"
             columns: ["resolved_country_id"]
             isOneToOne: false
-            referencedRelation: "geo_country_profiles"
-            referencedColumns: ["place_id"]
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "trip_geo_review_queue_trip_id_fkey"
@@ -21098,15 +21145,22 @@ export type Database = {
             foreignKeyName: "trip_places_city_id_fkey"
             columns: ["city_id"]
             isOneToOne: false
-            referencedRelation: "geo_city_profiles"
-            referencedColumns: ["place_id"]
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trip_places_city_id_fkey"
+            columns: ["city_id"]
+            isOneToOne: false
+            referencedRelation: "cities_admin"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "trip_places_country_id_fkey"
             columns: ["country_id"]
             isOneToOne: false
-            referencedRelation: "geo_country_profiles"
-            referencedColumns: ["place_id"]
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "trip_places_day_id_fkey"
@@ -21710,15 +21764,22 @@ export type Database = {
             foreignKeyName: "trips_primary_city_id_fkey"
             columns: ["primary_city_id"]
             isOneToOne: false
-            referencedRelation: "geo_city_profiles"
-            referencedColumns: ["place_id"]
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trips_primary_city_id_fkey"
+            columns: ["primary_city_id"]
+            isOneToOne: false
+            referencedRelation: "cities_admin"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "trips_primary_country_id_fkey"
             columns: ["primary_country_id"]
             isOneToOne: false
-            referencedRelation: "geo_country_profiles"
-            referencedColumns: ["place_id"]
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -22544,8 +22605,15 @@ export type Database = {
             foreignKeyName: "user_place_marks_city_id_fkey"
             columns: ["city_id"]
             isOneToOne: false
-            referencedRelation: "geo_city_profiles"
-            referencedColumns: ["place_id"]
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_place_marks_city_id_fkey"
+            columns: ["city_id"]
+            isOneToOne: false
+            referencedRelation: "cities_admin"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "user_place_marks_trip_id_fkey"
@@ -22608,15 +22676,22 @@ export type Database = {
             foreignKeyName: "user_presence_location_city_id_fkey"
             columns: ["city_id"]
             isOneToOne: false
-            referencedRelation: "geo_city_profiles"
-            referencedColumns: ["place_id"]
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_presence_location_city_id_fkey"
+            columns: ["city_id"]
+            isOneToOne: false
+            referencedRelation: "cities_admin"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "user_presence_location_country_id_fkey"
             columns: ["country_id"]
             isOneToOne: false
-            referencedRelation: "geo_country_profiles"
-            referencedColumns: ["place_id"]
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -22878,15 +22953,22 @@ export type Database = {
             foreignKeyName: "user_travel_preferences_home_city_id_fkey"
             columns: ["home_city_id"]
             isOneToOne: false
-            referencedRelation: "geo_city_profiles"
-            referencedColumns: ["place_id"]
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_travel_preferences_home_city_id_fkey"
+            columns: ["home_city_id"]
+            isOneToOne: false
+            referencedRelation: "cities_admin"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "user_travel_preferences_home_country_id_fkey"
             columns: ["home_country_id"]
             isOneToOne: false
-            referencedRelation: "geo_country_profiles"
-            referencedColumns: ["place_id"]
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -23631,7 +23713,7 @@ export type Database = {
         }
         Relationships: []
       }
-      venue_review_queue_legacy: {
+      venue_review_queue: {
         Row: {
           citations: Json
           confidence: number | null
@@ -24215,15 +24297,22 @@ export type Database = {
             foreignKeyName: "venues_city_id_fkey"
             columns: ["city_id"]
             isOneToOne: false
-            referencedRelation: "geo_city_profiles"
-            referencedColumns: ["place_id"]
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "venues_city_id_fkey"
+            columns: ["city_id"]
+            isOneToOne: false
+            referencedRelation: "cities_admin"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "venues_country_id_fkey"
             columns: ["country_id"]
             isOneToOne: false
-            referencedRelation: "geo_country_profiles"
-            referencedColumns: ["place_id"]
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "venues_created_by_fkey"
@@ -24271,8 +24360,8 @@ export type Database = {
             foreignKeyName: "venues_queer_village_id_fkey"
             columns: ["queer_village_id"]
             isOneToOne: false
-            referencedRelation: "geo_village_profiles"
-            referencedColumns: ["place_id"]
+            referencedRelation: "queer_villages"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -24502,8 +24591,8 @@ export type Database = {
             foreignKeyName: "village_coverage_gaps_village_id_fkey"
             columns: ["village_id"]
             isOneToOne: true
-            referencedRelation: "geo_village_profiles"
-            referencedColumns: ["place_id"]
+            referencedRelation: "queer_villages"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -24543,12 +24632,12 @@ export type Database = {
             foreignKeyName: "village_quality_signals_village_id_fkey"
             columns: ["village_id"]
             isOneToOne: false
-            referencedRelation: "geo_village_profiles"
-            referencedColumns: ["place_id"]
+            referencedRelation: "queer_villages"
+            referencedColumns: ["id"]
           },
         ]
       }
-      village_review_queue_legacy: {
+      village_review_queue: {
         Row: {
           citations: Json
           confidence: number | null
@@ -24596,8 +24685,8 @@ export type Database = {
             foreignKeyName: "village_review_queue_village_id_fkey"
             columns: ["village_id"]
             isOneToOne: false
-            referencedRelation: "geo_village_profiles"
-            referencedColumns: ["place_id"]
+            referencedRelation: "queer_villages"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -24622,8 +24711,8 @@ export type Database = {
             foreignKeyName: "village_slug_redirects_village_id_fkey"
             columns: ["village_id"]
             isOneToOne: false
-            referencedRelation: "geo_village_profiles"
-            referencedColumns: ["place_id"]
+            referencedRelation: "queer_villages"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -24890,7 +24979,6 @@ export type Database = {
           id: string
           idempotency_key: string | null
           input_payload: Json | null
-          invoke_request_id: number | null
           items_failed: number | null
           items_processed: number | null
           items_succeeded: number | null
@@ -24919,7 +25007,6 @@ export type Database = {
           id?: string
           idempotency_key?: string | null
           input_payload?: Json | null
-          invoke_request_id?: number | null
           items_failed?: number | null
           items_processed?: number | null
           items_succeeded?: number | null
@@ -24948,7 +25035,6 @@ export type Database = {
           id?: string
           idempotency_key?: string | null
           input_payload?: Json | null
-          invoke_request_id?: number | null
           items_failed?: number | null
           items_processed?: number | null
           items_succeeded?: number | null
@@ -25072,54 +25158,6 @@ export type Database = {
           staged: number | null
           unique_items: number | null
           validated: number | null
-        }
-        Relationships: []
-      }
-      city_review_queue: {
-        Row: {
-          citations: Json | null
-          city_id: string | null
-          confidence: number | null
-          created_at: string | null
-          entity_type: string | null
-          field: string | null
-          id: string | null
-          model: string | null
-          proposed_value: Json | null
-          reviewed_at: string | null
-          reviewer_id: string | null
-          reviewer_note: string | null
-          status: string | null
-        }
-        Insert: {
-          citations?: Json | null
-          city_id?: string | null
-          confidence?: number | null
-          created_at?: string | null
-          entity_type?: string | null
-          field?: string | null
-          id?: string | null
-          model?: string | null
-          proposed_value?: Json | null
-          reviewed_at?: string | null
-          reviewer_id?: string | null
-          reviewer_note?: string | null
-          status?: string | null
-        }
-        Update: {
-          citations?: Json | null
-          city_id?: string | null
-          confidence?: number | null
-          created_at?: string | null
-          entity_type?: string | null
-          field?: string | null
-          id?: string | null
-          model?: string | null
-          proposed_value?: Json | null
-          reviewed_at?: string | null
-          reviewer_id?: string | null
-          reviewer_note?: string | null
-          status?: string | null
         }
         Relationships: []
       }
@@ -25399,75 +25437,6 @@ export type Database = {
         }
         Relationships: []
       }
-      import_jobs: {
-        Row: {
-          batch_size: number | null
-          created_at: string | null
-          current_batch: number | null
-          data: Json | null
-          duplicate_items: number | null
-          error_details: string | null
-          failed_items: number | null
-          id: string | null
-          import_config: Json | null
-          max_retries: number | null
-          message: string | null
-          processed_items: number | null
-          progress: number | null
-          retry_count: number | null
-          status: string | null
-          successful_items: number | null
-          total_batches: number | null
-          total_items: number | null
-          type: string | null
-          updated_at: string | null
-        }
-        Insert: {
-          batch_size?: never
-          created_at?: string | null
-          current_batch?: never
-          data?: never
-          duplicate_items?: never
-          error_details?: never
-          failed_items?: never
-          id?: string | null
-          import_config?: Json | null
-          max_retries?: never
-          message?: never
-          processed_items?: never
-          progress?: never
-          retry_count?: never
-          status?: never
-          successful_items?: never
-          total_batches?: never
-          total_items?: never
-          type?: never
-          updated_at?: string | null
-        }
-        Update: {
-          batch_size?: never
-          created_at?: string | null
-          current_batch?: never
-          data?: never
-          duplicate_items?: never
-          error_details?: never
-          failed_items?: never
-          id?: string | null
-          import_config?: Json | null
-          max_retries?: never
-          message?: never
-          processed_items?: never
-          progress?: never
-          retry_count?: never
-          status?: never
-          successful_items?: never
-          total_batches?: never
-          total_items?: never
-          type?: never
-          updated_at?: string | null
-        }
-        Relationships: []
-      }
       inbox_orphan_count_v: {
         Row: {
           orphan_count: number | null
@@ -25493,8 +25462,15 @@ export type Database = {
             foreignKeyName: "intimate_profiles_discovery_city_id_fkey"
             columns: ["discovery_city_id"]
             isOneToOne: false
-            referencedRelation: "geo_city_profiles"
-            referencedColumns: ["place_id"]
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "intimate_profiles_discovery_city_id_fkey"
+            columns: ["discovery_city_id"]
+            isOneToOne: false
+            referencedRelation: "cities_admin"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "intimate_profiles_id_fkey"
@@ -25548,54 +25524,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
-      }
-      marketplace_review_queue: {
-        Row: {
-          citations: Json | null
-          confidence: number | null
-          created_at: string | null
-          entity_type: string | null
-          field: string | null
-          id: string | null
-          listing_id: string | null
-          model: string | null
-          proposed_value: Json | null
-          reviewed_at: string | null
-          reviewer_id: string | null
-          reviewer_note: string | null
-          status: string | null
-        }
-        Insert: {
-          citations?: Json | null
-          confidence?: number | null
-          created_at?: string | null
-          entity_type?: string | null
-          field?: string | null
-          id?: string | null
-          listing_id?: string | null
-          model?: string | null
-          proposed_value?: Json | null
-          reviewed_at?: string | null
-          reviewer_id?: string | null
-          reviewer_note?: string | null
-          status?: string | null
-        }
-        Update: {
-          citations?: Json | null
-          confidence?: number | null
-          created_at?: string | null
-          entity_type?: string | null
-          field?: string | null
-          id?: string | null
-          listing_id?: string | null
-          model?: string | null
-          proposed_value?: Json | null
-          reviewed_at?: string | null
-          reviewer_id?: string | null
-          reviewer_note?: string | null
-          status?: string | null
-        }
-        Relationships: []
       }
       mv_entity_popularity: {
         Row: {
@@ -25651,8 +25579,8 @@ export type Database = {
             foreignKeyName: "trips_primary_country_id_fkey"
             columns: ["primary_country_id"]
             isOneToOne: false
-            referencedRelation: "geo_country_profiles"
-            referencedColumns: ["place_id"]
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -25809,54 +25737,6 @@ export type Database = {
           ttl_days: number | null
           view_count: number | null
           wikidata_qid_missing: boolean | null
-        }
-        Relationships: []
-      }
-      personality_review_queue: {
-        Row: {
-          citations: Json | null
-          confidence: number | null
-          created_at: string | null
-          entity_type: string | null
-          field: string | null
-          id: string | null
-          model: string | null
-          personality_id: string | null
-          proposed_value: Json | null
-          reviewed_at: string | null
-          reviewer_id: string | null
-          reviewer_note: string | null
-          status: string | null
-        }
-        Insert: {
-          citations?: Json | null
-          confidence?: number | null
-          created_at?: string | null
-          entity_type?: string | null
-          field?: string | null
-          id?: string | null
-          model?: string | null
-          personality_id?: string | null
-          proposed_value?: Json | null
-          reviewed_at?: string | null
-          reviewer_id?: string | null
-          reviewer_note?: string | null
-          status?: string | null
-        }
-        Update: {
-          citations?: Json | null
-          confidence?: number | null
-          created_at?: string | null
-          entity_type?: string | null
-          field?: string | null
-          id?: string | null
-          model?: string | null
-          personality_id?: string | null
-          proposed_value?: Json | null
-          reviewed_at?: string | null
-          reviewer_id?: string | null
-          reviewer_note?: string | null
-          status?: string | null
         }
         Relationships: []
       }
@@ -26770,75 +26650,6 @@ export type Database = {
         }
         Relationships: []
       }
-      triage_src_editorial: {
-        Row: {
-          confidence_score: number | null
-          content_type:
-            | Database["public"]["Enums"]["editorial_entity_type"]
-            | null
-          created_at: string | null
-          entity_id: string | null
-          entity_table:
-            | Database["public"]["Enums"]["editorial_entity_type"]
-            | null
-          flag_type: string | null
-          has_diff: boolean | null
-          id: string | null
-          meta: Json | null
-          queue_type: string | null
-          reporter_id: string | null
-          risk_flags: Json | null
-          source: string | null
-          status: Database["public"]["Enums"]["editorial_draft_status"] | null
-          subtitle: Database["public"]["Enums"]["editorial_entity_type"] | null
-          title: string | null
-        }
-        Insert: {
-          confidence_score?: never
-          content_type?:
-            | Database["public"]["Enums"]["editorial_entity_type"]
-            | null
-          created_at?: string | null
-          entity_id?: string | null
-          entity_table?:
-            | Database["public"]["Enums"]["editorial_entity_type"]
-            | null
-          flag_type?: never
-          has_diff?: never
-          id?: string | null
-          meta?: never
-          queue_type?: never
-          reporter_id?: never
-          risk_flags?: never
-          source?: never
-          status?: Database["public"]["Enums"]["editorial_draft_status"] | null
-          subtitle?: Database["public"]["Enums"]["editorial_entity_type"] | null
-          title?: never
-        }
-        Update: {
-          confidence_score?: never
-          content_type?:
-            | Database["public"]["Enums"]["editorial_entity_type"]
-            | null
-          created_at?: string | null
-          entity_id?: string | null
-          entity_table?:
-            | Database["public"]["Enums"]["editorial_entity_type"]
-            | null
-          flag_type?: never
-          has_diff?: never
-          id?: string | null
-          meta?: never
-          queue_type?: never
-          reporter_id?: never
-          risk_flags?: never
-          source?: never
-          status?: Database["public"]["Enums"]["editorial_draft_status"] | null
-          subtitle?: Database["public"]["Enums"]["editorial_entity_type"] | null
-          title?: never
-        }
-        Relationships: []
-      }
       triage_src_entity_links: {
         Row: {
           confidence_score: number | null
@@ -27031,215 +26842,6 @@ export type Database = {
           title?: string | null
         }
         Relationships: []
-      }
-      triage_src_org_link_review: {
-        Row: {
-          confidence_score: number | null
-          content_type: string | null
-          created_at: string | null
-          entity_id: string | null
-          entity_table: string | null
-          flag_type: string | null
-          has_diff: boolean | null
-          id: string | null
-          meta: Json | null
-          queue_type: string | null
-          reporter_id: string | null
-          risk_flags: Json | null
-          source: string | null
-          status: string | null
-          subtitle: string | null
-          title: string | null
-        }
-        Insert: {
-          confidence_score?: number | null
-          content_type?: string | null
-          created_at?: string | null
-          entity_id?: string | null
-          entity_table?: string | null
-          flag_type?: never
-          has_diff?: never
-          id?: string | null
-          meta?: Json | null
-          queue_type?: never
-          reporter_id?: never
-          risk_flags?: never
-          source?: string | null
-          status?: string | null
-          subtitle?: string | null
-          title?: never
-        }
-        Update: {
-          confidence_score?: number | null
-          content_type?: string | null
-          created_at?: string | null
-          entity_id?: string | null
-          entity_table?: string | null
-          flag_type?: never
-          has_diff?: never
-          id?: string | null
-          meta?: Json | null
-          queue_type?: never
-          reporter_id?: never
-          risk_flags?: never
-          source?: string | null
-          status?: string | null
-          subtitle?: string | null
-          title?: never
-        }
-        Relationships: []
-      }
-      triage_src_quality_city: {
-        Row: {
-          confidence_score: number | null
-          content_type: string | null
-          created_at: string | null
-          entity_id: string | null
-          entity_table: string | null
-          flag_type: string | null
-          has_diff: boolean | null
-          id: string | null
-          meta: Json | null
-          queue_type: string | null
-          reporter_id: string | null
-          risk_flags: Json | null
-          source: string | null
-          status: string | null
-          subtitle: string | null
-          title: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "city_review_queue_city_id_fkey"
-            columns: ["entity_id"]
-            isOneToOne: false
-            referencedRelation: "geo_city_profiles"
-            referencedColumns: ["place_id"]
-          },
-        ]
-      }
-      triage_src_quality_marketplace: {
-        Row: {
-          confidence_score: number | null
-          content_type: string | null
-          created_at: string | null
-          entity_id: string | null
-          entity_table: string | null
-          flag_type: string | null
-          has_diff: boolean | null
-          id: string | null
-          meta: Json | null
-          queue_type: string | null
-          reporter_id: string | null
-          risk_flags: Json | null
-          source: string | null
-          status: string | null
-          subtitle: string | null
-          title: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "marketplace_review_queue_listing_id_fkey"
-            columns: ["entity_id"]
-            isOneToOne: false
-            referencedRelation: "marketplace_listings"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      triage_src_quality_personality: {
-        Row: {
-          confidence_score: number | null
-          content_type: string | null
-          created_at: string | null
-          entity_id: string | null
-          entity_table: string | null
-          flag_type: string | null
-          has_diff: boolean | null
-          id: string | null
-          meta: Json | null
-          queue_type: string | null
-          reporter_id: string | null
-          risk_flags: Json | null
-          source: string | null
-          status: string | null
-          subtitle: string | null
-          title: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "personality_review_queue_personality_id_fkey"
-            columns: ["entity_id"]
-            isOneToOne: false
-            referencedRelation: "personalities"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "personality_review_queue_personality_id_fkey"
-            columns: ["entity_id"]
-            isOneToOne: false
-            referencedRelation: "personality_data_health"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      triage_src_quality_venue: {
-        Row: {
-          confidence_score: number | null
-          content_type: string | null
-          created_at: string | null
-          entity_id: string | null
-          entity_table: string | null
-          flag_type: string | null
-          has_diff: boolean | null
-          id: string | null
-          meta: Json | null
-          queue_type: string | null
-          reporter_id: string | null
-          risk_flags: Json | null
-          source: string | null
-          status: string | null
-          subtitle: string | null
-          title: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "venue_review_queue_venue_id_fkey"
-            columns: ["entity_id"]
-            isOneToOne: false
-            referencedRelation: "venues"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      triage_src_quality_village: {
-        Row: {
-          confidence_score: number | null
-          content_type: string | null
-          created_at: string | null
-          entity_id: string | null
-          entity_table: string | null
-          flag_type: string | null
-          has_diff: boolean | null
-          id: string | null
-          meta: Json | null
-          queue_type: string | null
-          reporter_id: string | null
-          risk_flags: Json | null
-          source: string | null
-          status: string | null
-          subtitle: string | null
-          title: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "village_review_queue_village_id_fkey"
-            columns: ["entity_id"]
-            isOneToOne: false
-            referencedRelation: "geo_village_profiles"
-            referencedColumns: ["place_id"]
-          },
-        ]
       }
       triage_src_staging: {
         Row: {
@@ -27452,8 +27054,8 @@ export type Database = {
             foreignKeyName: "trip_places_country_id_fkey"
             columns: ["country_id"]
             isOneToOne: false
-            referencedRelation: "geo_country_profiles"
-            referencedColumns: ["place_id"]
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -27683,8 +27285,15 @@ export type Database = {
             foreignKeyName: "venues_city_id_fkey"
             columns: ["city_id"]
             isOneToOne: false
-            referencedRelation: "geo_city_profiles"
-            referencedColumns: ["place_id"]
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "venues_city_id_fkey"
+            columns: ["city_id"]
+            isOneToOne: false
+            referencedRelation: "cities_admin"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -27698,112 +27307,8 @@ export type Database = {
         }
         Relationships: []
       }
-      venue_review_queue: {
-        Row: {
-          citations: Json | null
-          confidence: number | null
-          created_at: string | null
-          entity_type: string | null
-          field: string | null
-          id: string | null
-          model: string | null
-          proposed_value: Json | null
-          reviewed_at: string | null
-          reviewer_id: string | null
-          reviewer_note: string | null
-          status: string | null
-          venue_id: string | null
-        }
-        Insert: {
-          citations?: Json | null
-          confidence?: number | null
-          created_at?: string | null
-          entity_type?: string | null
-          field?: string | null
-          id?: string | null
-          model?: string | null
-          proposed_value?: Json | null
-          reviewed_at?: string | null
-          reviewer_id?: string | null
-          reviewer_note?: string | null
-          status?: string | null
-          venue_id?: string | null
-        }
-        Update: {
-          citations?: Json | null
-          confidence?: number | null
-          created_at?: string | null
-          entity_type?: string | null
-          field?: string | null
-          id?: string | null
-          model?: string | null
-          proposed_value?: Json | null
-          reviewed_at?: string | null
-          reviewer_id?: string | null
-          reviewer_note?: string | null
-          status?: string | null
-          venue_id?: string | null
-        }
-        Relationships: []
-      }
-      village_review_queue: {
-        Row: {
-          citations: Json | null
-          confidence: number | null
-          created_at: string | null
-          entity_type: string | null
-          field: string | null
-          id: string | null
-          model: string | null
-          proposed_value: Json | null
-          reviewed_at: string | null
-          reviewer_id: string | null
-          reviewer_note: string | null
-          status: string | null
-          village_id: string | null
-        }
-        Insert: {
-          citations?: Json | null
-          confidence?: number | null
-          created_at?: string | null
-          entity_type?: string | null
-          field?: string | null
-          id?: string | null
-          model?: string | null
-          proposed_value?: Json | null
-          reviewed_at?: string | null
-          reviewer_id?: string | null
-          reviewer_note?: string | null
-          status?: string | null
-          village_id?: string | null
-        }
-        Update: {
-          citations?: Json | null
-          confidence?: number | null
-          created_at?: string | null
-          entity_type?: string | null
-          field?: string | null
-          id?: string | null
-          model?: string | null
-          proposed_value?: Json | null
-          reviewed_at?: string | null
-          reviewer_id?: string | null
-          reviewer_note?: string | null
-          status?: string | null
-          village_id?: string | null
-        }
-        Relationships: []
-      }
     }
     Functions: {
-      _apply_review_value: {
-        Args: {
-          p_entity_id: string
-          p_proposed: Json
-          p_reg: Database["public"]["Tables"]["review_field_registry"]["Row"]
-        }
-        Returns: undefined
-      }
       _country_merge_core: {
         Args: { p_actor: string; p_drop_id: string; p_keep_id: string }
         Returns: Json
@@ -27898,38 +27403,6 @@ export type Database = {
       _queer_village_merge_core: {
         Args: { p_actor: string; p_drop_id: string; p_keep_id: string }
         Returns: Json
-      }
-      _review_clear_needs_attention: {
-        Args: { p_entity_id: string; p_entity_type: string }
-        Returns: undefined
-      }
-      _review_risk_blocked: {
-        Args: { p_entity_id: string; p_entity_type: string; p_field: string }
-        Returns: boolean
-      }
-      _review_write_audit: {
-        Args: {
-          p_action: string
-          p_confidence: number
-          p_details: Json
-          p_entity_id: string
-          p_entity_type: string
-          p_field: string
-          p_proposed: Json
-          p_source: string
-        }
-        Returns: undefined
-      }
-      _review_write_provenance: {
-        Args: {
-          p_citations: Json
-          p_confidence: number
-          p_entity_id: string
-          p_entity_type: string
-          p_field: string
-          p_proposed: Json
-        }
-        Returns: undefined
       }
       _venue_merge_core: {
         Args: { p_actor: string; p_drop_id: string; p_keep_id: string }
@@ -28039,10 +27512,6 @@ export type Database = {
       admin_delete_marketplace_merchant: {
         Args: { p_id: string }
         Returns: Json
-      }
-      admin_enqueue_workflow: {
-        Args: { p_payload?: Json; p_workflow_name: string }
-        Returns: number
       }
       admin_entity_neighbors: {
         Args: { p_id: string; p_type: string }
@@ -28205,18 +27674,6 @@ export type Database = {
       approve_editorial_draft: {
         Args: { p_draft_id: string }
         Returns: undefined
-      }
-      approve_entity_review: {
-        Args: { p_confirm?: boolean; p_id: string; p_note?: string }
-        Returns: Json
-      }
-      approve_entity_review_batch: {
-        Args: {
-          p_entity_type: string
-          p_limit?: number
-          p_min_confidence?: number
-        }
-        Returns: Json
       }
       approve_group_join_request: {
         Args: { request_id: string }
@@ -28494,79 +27951,6 @@ export type Database = {
           tag_name: string
         }[]
       }
-      birth_city: {
-        Args: { p: Database["public"]["Tables"]["personalities"]["Row"] }
-        Returns: {
-          airport_codes: string[] | null
-          area_codes: string[] | null
-          area_km2: number | null
-          best_time_to_visit: string | null
-          canonical_key: string | null
-          climate_type: string | null
-          completeness_score: number
-          cost_of_living: Json | null
-          country_id: string
-          created_at: string
-          curated_image_url: string | null
-          data_source: string | null
-          demographics: Json | null
-          description: string | null
-          description_i18n: Json
-          duplicate_of_id: string | null
-          economy_sectors: string[] | null
-          editorial_hook: string | null
-          elevation_m: number | null
-          enrichment_status: Json
-          field_provenance: Json
-          founded_year: number | null
-          historical_names: Json
-          id: string
-          image_flagged: boolean
-          image_metadata: Json | null
-          image_url: string | null
-          is_capital: boolean | null
-          is_major_city: boolean | null
-          last_refreshed_at: string | null
-          last_synced_at: string | null
-          last_verified_at: string | null
-          latitude: number | null
-          lgbt_friendly_rating: number | null
-          local_customs: string | null
-          local_language: string | null
-          longitude: number | null
-          major_airport_code: string | null
-          mayor: string | null
-          name: string
-          name_de: string | null
-          name_en: string | null
-          name_i18n: Json
-          name_normalized: string | null
-          needs_attention: boolean
-          notable_landmarks: string[] | null
-          official_website: string | null
-          population: number | null
-          postal_codes: string[] | null
-          region_name: string | null
-          safety_notes: string | null
-          seo_indexable: boolean
-          shell_status: string
-          sister_cities: string[] | null
-          slug: string
-          social_links: Json
-          timezone: string | null
-          transportation_info: Json | null
-          trust_score: number
-          universities: string[] | null
-          updated_at: string
-          wolfram_enriched_at: string | null
-        }
-        SetofOptions: {
-          from: "personalities"
-          to: "cities"
-          isOneToOne: true
-          isSetofReturn: true
-        }
-      }
       branding_preset_apply: { Args: { p_id: string }; Returns: undefined }
       branding_preset_delete: { Args: { p_id: string }; Returns: undefined }
       branding_preset_save: {
@@ -28718,593 +28102,6 @@ export type Database = {
         Args: { p_api_name: string }
         Returns: undefined
       }
-      cities:
-        | {
-            Args: { a: Database["public"]["Tables"]["city_aliases"]["Row"] }
-            Returns: {
-              airport_codes: string[] | null
-              area_codes: string[] | null
-              area_km2: number | null
-              best_time_to_visit: string | null
-              canonical_key: string | null
-              climate_type: string | null
-              completeness_score: number
-              cost_of_living: Json | null
-              country_id: string
-              created_at: string
-              curated_image_url: string | null
-              data_source: string | null
-              demographics: Json | null
-              description: string | null
-              description_i18n: Json
-              duplicate_of_id: string | null
-              economy_sectors: string[] | null
-              editorial_hook: string | null
-              elevation_m: number | null
-              enrichment_status: Json
-              field_provenance: Json
-              founded_year: number | null
-              historical_names: Json
-              id: string
-              image_flagged: boolean
-              image_metadata: Json | null
-              image_url: string | null
-              is_capital: boolean | null
-              is_major_city: boolean | null
-              last_refreshed_at: string | null
-              last_synced_at: string | null
-              last_verified_at: string | null
-              latitude: number | null
-              lgbt_friendly_rating: number | null
-              local_customs: string | null
-              local_language: string | null
-              longitude: number | null
-              major_airport_code: string | null
-              mayor: string | null
-              name: string
-              name_de: string | null
-              name_en: string | null
-              name_i18n: Json
-              name_normalized: string | null
-              needs_attention: boolean
-              notable_landmarks: string[] | null
-              official_website: string | null
-              population: number | null
-              postal_codes: string[] | null
-              region_name: string | null
-              safety_notes: string | null
-              seo_indexable: boolean
-              shell_status: string
-              sister_cities: string[] | null
-              slug: string
-              social_links: Json
-              timezone: string | null
-              transportation_info: Json | null
-              trust_score: number
-              universities: string[] | null
-              updated_at: string
-              wolfram_enriched_at: string | null
-            }
-            SetofOptions: {
-              from: "city_aliases"
-              to: "cities"
-              isOneToOne: true
-              isSetofReturn: true
-            }
-          }
-        | {
-            Args: { e: Database["public"]["Tables"]["events"]["Row"] }
-            Returns: {
-              airport_codes: string[] | null
-              area_codes: string[] | null
-              area_km2: number | null
-              best_time_to_visit: string | null
-              canonical_key: string | null
-              climate_type: string | null
-              completeness_score: number
-              cost_of_living: Json | null
-              country_id: string
-              created_at: string
-              curated_image_url: string | null
-              data_source: string | null
-              demographics: Json | null
-              description: string | null
-              description_i18n: Json
-              duplicate_of_id: string | null
-              economy_sectors: string[] | null
-              editorial_hook: string | null
-              elevation_m: number | null
-              enrichment_status: Json
-              field_provenance: Json
-              founded_year: number | null
-              historical_names: Json
-              id: string
-              image_flagged: boolean
-              image_metadata: Json | null
-              image_url: string | null
-              is_capital: boolean | null
-              is_major_city: boolean | null
-              last_refreshed_at: string | null
-              last_synced_at: string | null
-              last_verified_at: string | null
-              latitude: number | null
-              lgbt_friendly_rating: number | null
-              local_customs: string | null
-              local_language: string | null
-              longitude: number | null
-              major_airport_code: string | null
-              mayor: string | null
-              name: string
-              name_de: string | null
-              name_en: string | null
-              name_i18n: Json
-              name_normalized: string | null
-              needs_attention: boolean
-              notable_landmarks: string[] | null
-              official_website: string | null
-              population: number | null
-              postal_codes: string[] | null
-              region_name: string | null
-              safety_notes: string | null
-              seo_indexable: boolean
-              shell_status: string
-              sister_cities: string[] | null
-              slug: string
-              social_links: Json
-              timezone: string | null
-              transportation_info: Json | null
-              trust_score: number
-              universities: string[] | null
-              updated_at: string
-              wolfram_enriched_at: string | null
-            }
-            SetofOptions: {
-              from: "events"
-              to: "cities"
-              isOneToOne: true
-              isSetofReturn: true
-            }
-          }
-        | {
-            Args: { f: Database["public"]["Tables"]["city_favorites"]["Row"] }
-            Returns: {
-              airport_codes: string[] | null
-              area_codes: string[] | null
-              area_km2: number | null
-              best_time_to_visit: string | null
-              canonical_key: string | null
-              climate_type: string | null
-              completeness_score: number
-              cost_of_living: Json | null
-              country_id: string
-              created_at: string
-              curated_image_url: string | null
-              data_source: string | null
-              demographics: Json | null
-              description: string | null
-              description_i18n: Json
-              duplicate_of_id: string | null
-              economy_sectors: string[] | null
-              editorial_hook: string | null
-              elevation_m: number | null
-              enrichment_status: Json
-              field_provenance: Json
-              founded_year: number | null
-              historical_names: Json
-              id: string
-              image_flagged: boolean
-              image_metadata: Json | null
-              image_url: string | null
-              is_capital: boolean | null
-              is_major_city: boolean | null
-              last_refreshed_at: string | null
-              last_synced_at: string | null
-              last_verified_at: string | null
-              latitude: number | null
-              lgbt_friendly_rating: number | null
-              local_customs: string | null
-              local_language: string | null
-              longitude: number | null
-              major_airport_code: string | null
-              mayor: string | null
-              name: string
-              name_de: string | null
-              name_en: string | null
-              name_i18n: Json
-              name_normalized: string | null
-              needs_attention: boolean
-              notable_landmarks: string[] | null
-              official_website: string | null
-              population: number | null
-              postal_codes: string[] | null
-              region_name: string | null
-              safety_notes: string | null
-              seo_indexable: boolean
-              shell_status: string
-              sister_cities: string[] | null
-              slug: string
-              social_links: Json
-              timezone: string | null
-              transportation_info: Json | null
-              trust_score: number
-              universities: string[] | null
-              updated_at: string
-              wolfram_enriched_at: string | null
-            }
-            SetofOptions: {
-              from: "city_favorites"
-              to: "cities"
-              isOneToOne: true
-              isSetofReturn: true
-            }
-          }
-        | {
-            Args: { h: Database["public"]["Tables"]["hotels"]["Row"] }
-            Returns: {
-              airport_codes: string[] | null
-              area_codes: string[] | null
-              area_km2: number | null
-              best_time_to_visit: string | null
-              canonical_key: string | null
-              climate_type: string | null
-              completeness_score: number
-              cost_of_living: Json | null
-              country_id: string
-              created_at: string
-              curated_image_url: string | null
-              data_source: string | null
-              demographics: Json | null
-              description: string | null
-              description_i18n: Json
-              duplicate_of_id: string | null
-              economy_sectors: string[] | null
-              editorial_hook: string | null
-              elevation_m: number | null
-              enrichment_status: Json
-              field_provenance: Json
-              founded_year: number | null
-              historical_names: Json
-              id: string
-              image_flagged: boolean
-              image_metadata: Json | null
-              image_url: string | null
-              is_capital: boolean | null
-              is_major_city: boolean | null
-              last_refreshed_at: string | null
-              last_synced_at: string | null
-              last_verified_at: string | null
-              latitude: number | null
-              lgbt_friendly_rating: number | null
-              local_customs: string | null
-              local_language: string | null
-              longitude: number | null
-              major_airport_code: string | null
-              mayor: string | null
-              name: string
-              name_de: string | null
-              name_en: string | null
-              name_i18n: Json
-              name_normalized: string | null
-              needs_attention: boolean
-              notable_landmarks: string[] | null
-              official_website: string | null
-              population: number | null
-              postal_codes: string[] | null
-              region_name: string | null
-              safety_notes: string | null
-              seo_indexable: boolean
-              shell_status: string
-              sister_cities: string[] | null
-              slug: string
-              social_links: Json
-              timezone: string | null
-              transportation_info: Json | null
-              trust_score: number
-              universities: string[] | null
-              updated_at: string
-              wolfram_enriched_at: string | null
-            }
-            SetofOptions: {
-              from: "hotels"
-              to: "cities"
-              isOneToOne: true
-              isSetofReturn: true
-            }
-          }
-        | {
-            Args: { p: Database["public"]["Tables"]["personalities"]["Row"] }
-            Returns: {
-              airport_codes: string[] | null
-              area_codes: string[] | null
-              area_km2: number | null
-              best_time_to_visit: string | null
-              canonical_key: string | null
-              climate_type: string | null
-              completeness_score: number
-              cost_of_living: Json | null
-              country_id: string
-              created_at: string
-              curated_image_url: string | null
-              data_source: string | null
-              demographics: Json | null
-              description: string | null
-              description_i18n: Json
-              duplicate_of_id: string | null
-              economy_sectors: string[] | null
-              editorial_hook: string | null
-              elevation_m: number | null
-              enrichment_status: Json
-              field_provenance: Json
-              founded_year: number | null
-              historical_names: Json
-              id: string
-              image_flagged: boolean
-              image_metadata: Json | null
-              image_url: string | null
-              is_capital: boolean | null
-              is_major_city: boolean | null
-              last_refreshed_at: string | null
-              last_synced_at: string | null
-              last_verified_at: string | null
-              latitude: number | null
-              lgbt_friendly_rating: number | null
-              local_customs: string | null
-              local_language: string | null
-              longitude: number | null
-              major_airport_code: string | null
-              mayor: string | null
-              name: string
-              name_de: string | null
-              name_en: string | null
-              name_i18n: Json
-              name_normalized: string | null
-              needs_attention: boolean
-              notable_landmarks: string[] | null
-              official_website: string | null
-              population: number | null
-              postal_codes: string[] | null
-              region_name: string | null
-              safety_notes: string | null
-              seo_indexable: boolean
-              shell_status: string
-              sister_cities: string[] | null
-              slug: string
-              social_links: Json
-              timezone: string | null
-              transportation_info: Json | null
-              trust_score: number
-              universities: string[] | null
-              updated_at: string
-              wolfram_enriched_at: string | null
-            }
-            SetofOptions: {
-              from: "personalities"
-              to: "cities"
-              isOneToOne: true
-              isSetofReturn: true
-            }
-          }
-        | {
-            Args: {
-              r: Database["public"]["Tables"]["city_review_queue_legacy"]["Row"]
-            }
-            Returns: {
-              airport_codes: string[] | null
-              area_codes: string[] | null
-              area_km2: number | null
-              best_time_to_visit: string | null
-              canonical_key: string | null
-              climate_type: string | null
-              completeness_score: number
-              cost_of_living: Json | null
-              country_id: string
-              created_at: string
-              curated_image_url: string | null
-              data_source: string | null
-              demographics: Json | null
-              description: string | null
-              description_i18n: Json
-              duplicate_of_id: string | null
-              economy_sectors: string[] | null
-              editorial_hook: string | null
-              elevation_m: number | null
-              enrichment_status: Json
-              field_provenance: Json
-              founded_year: number | null
-              historical_names: Json
-              id: string
-              image_flagged: boolean
-              image_metadata: Json | null
-              image_url: string | null
-              is_capital: boolean | null
-              is_major_city: boolean | null
-              last_refreshed_at: string | null
-              last_synced_at: string | null
-              last_verified_at: string | null
-              latitude: number | null
-              lgbt_friendly_rating: number | null
-              local_customs: string | null
-              local_language: string | null
-              longitude: number | null
-              major_airport_code: string | null
-              mayor: string | null
-              name: string
-              name_de: string | null
-              name_en: string | null
-              name_i18n: Json
-              name_normalized: string | null
-              needs_attention: boolean
-              notable_landmarks: string[] | null
-              official_website: string | null
-              population: number | null
-              postal_codes: string[] | null
-              region_name: string | null
-              safety_notes: string | null
-              seo_indexable: boolean
-              shell_status: string
-              sister_cities: string[] | null
-              slug: string
-              social_links: Json
-              timezone: string | null
-              transportation_info: Json | null
-              trust_score: number
-              universities: string[] | null
-              updated_at: string
-              wolfram_enriched_at: string | null
-            }
-            SetofOptions: {
-              from: "city_review_queue_legacy"
-              to: "cities"
-              isOneToOne: true
-              isSetofReturn: true
-            }
-          }
-        | {
-            Args: { tp: Database["public"]["Tables"]["trip_places"]["Row"] }
-            Returns: {
-              airport_codes: string[] | null
-              area_codes: string[] | null
-              area_km2: number | null
-              best_time_to_visit: string | null
-              canonical_key: string | null
-              climate_type: string | null
-              completeness_score: number
-              cost_of_living: Json | null
-              country_id: string
-              created_at: string
-              curated_image_url: string | null
-              data_source: string | null
-              demographics: Json | null
-              description: string | null
-              description_i18n: Json
-              duplicate_of_id: string | null
-              economy_sectors: string[] | null
-              editorial_hook: string | null
-              elevation_m: number | null
-              enrichment_status: Json
-              field_provenance: Json
-              founded_year: number | null
-              historical_names: Json
-              id: string
-              image_flagged: boolean
-              image_metadata: Json | null
-              image_url: string | null
-              is_capital: boolean | null
-              is_major_city: boolean | null
-              last_refreshed_at: string | null
-              last_synced_at: string | null
-              last_verified_at: string | null
-              latitude: number | null
-              lgbt_friendly_rating: number | null
-              local_customs: string | null
-              local_language: string | null
-              longitude: number | null
-              major_airport_code: string | null
-              mayor: string | null
-              name: string
-              name_de: string | null
-              name_en: string | null
-              name_i18n: Json
-              name_normalized: string | null
-              needs_attention: boolean
-              notable_landmarks: string[] | null
-              official_website: string | null
-              population: number | null
-              postal_codes: string[] | null
-              region_name: string | null
-              safety_notes: string | null
-              seo_indexable: boolean
-              shell_status: string
-              sister_cities: string[] | null
-              slug: string
-              social_links: Json
-              timezone: string | null
-              transportation_info: Json | null
-              trust_score: number
-              universities: string[] | null
-              updated_at: string
-              wolfram_enriched_at: string | null
-            }
-            SetofOptions: {
-              from: "trip_places"
-              to: "cities"
-              isOneToOne: true
-              isSetofReturn: true
-            }
-          }
-        | {
-            Args: { v: Database["public"]["Tables"]["venues"]["Row"] }
-            Returns: {
-              airport_codes: string[] | null
-              area_codes: string[] | null
-              area_km2: number | null
-              best_time_to_visit: string | null
-              canonical_key: string | null
-              climate_type: string | null
-              completeness_score: number
-              cost_of_living: Json | null
-              country_id: string
-              created_at: string
-              curated_image_url: string | null
-              data_source: string | null
-              demographics: Json | null
-              description: string | null
-              description_i18n: Json
-              duplicate_of_id: string | null
-              economy_sectors: string[] | null
-              editorial_hook: string | null
-              elevation_m: number | null
-              enrichment_status: Json
-              field_provenance: Json
-              founded_year: number | null
-              historical_names: Json
-              id: string
-              image_flagged: boolean
-              image_metadata: Json | null
-              image_url: string | null
-              is_capital: boolean | null
-              is_major_city: boolean | null
-              last_refreshed_at: string | null
-              last_synced_at: string | null
-              last_verified_at: string | null
-              latitude: number | null
-              lgbt_friendly_rating: number | null
-              local_customs: string | null
-              local_language: string | null
-              longitude: number | null
-              major_airport_code: string | null
-              mayor: string | null
-              name: string
-              name_de: string | null
-              name_en: string | null
-              name_i18n: Json
-              name_normalized: string | null
-              needs_attention: boolean
-              notable_landmarks: string[] | null
-              official_website: string | null
-              population: number | null
-              postal_codes: string[] | null
-              region_name: string | null
-              safety_notes: string | null
-              seo_indexable: boolean
-              shell_status: string
-              sister_cities: string[] | null
-              slug: string
-              social_links: Json
-              timezone: string | null
-              transportation_info: Json | null
-              trust_score: number
-              universities: string[] | null
-              updated_at: string
-              wolfram_enriched_at: string | null
-            }
-            SetofOptions: {
-              from: "venues"
-              to: "cities"
-              isOneToOne: true
-              isSetofReturn: true
-            }
-          }
       cities_due_for_refresh: {
         Args: { p_limit?: number }
         Returns: {
@@ -29621,454 +28418,6 @@ export type Database = {
         Args: { p_include_adult?: boolean; p_slug: string }
         Returns: number
       }
-      countries:
-        | {
-            Args: { e: Database["public"]["Tables"]["events"]["Row"] }
-            Returns: {
-              airport_codes: string[] | null
-              area_km2: number | null
-              calling_code: string | null
-              capital: string | null
-              capital_coordinates: Json | null
-              climate_zones: string[] | null
-              code: string
-              content_completeness_score: number | null
-              continent_id: string
-              created_at: string
-              curated_image_url: string | null
-              currency: string | null
-              data_source: string | null
-              description: string | null
-              description_i18n: Json
-              driving_side: string | null
-              duplicate_of_id: string | null
-              editorial_hook: string | null
-              editorial_long: string | null
-              enrichment_status: Json
-              equality_score: number | null
-              exports: string[] | null
-              flag_emoji: string | null
-              gdp_per_capita_usd: number | null
-              gdp_usd: number | null
-              government_type: string | null
-              human_development_index: number | null
-              id: string
-              image_flagged: boolean
-              image_metadata: Json | null
-              image_url: string | null
-              imports: string[] | null
-              internet_tld: string | null
-              languages: string[] | null
-              last_refreshed_at: string | null
-              last_synced_at: string | null
-              latitude: number | null
-              lgbti_adoption_rights: string | null
-              lgbti_association_restrictions: Json | null
-              lgbti_bullying_protection: Json | null
-              lgbti_constitutional_protection: Json | null
-              lgbti_conversion_therapy_regulation: string | null
-              lgbti_criminalization: Json | null
-              lgbti_data_last_updated: string | null
-              lgbti_education_protection: Json | null
-              lgbti_employment_protection: Json | null
-              lgbti_expression_restrictions: Json | null
-              lgbti_gender_recognition: Json | null
-              lgbti_goods_services_protection: Json | null
-              lgbti_hate_crime_law: Json | null
-              lgbti_health_protection: Json | null
-              lgbti_housing_protection: Json | null
-              lgbti_incitement_prohibition: Json | null
-              lgbti_intersex_protection: string | null
-              lgbti_same_sex_unions: string | null
-              life_expectancy: number | null
-              literacy_rate: number | null
-              longitude: number | null
-              major_airports: string[] | null
-              major_industries: string[] | null
-              major_religions: string[] | null
-              name: string
-              name_i18n: Json
-              name_normalized: string | null
-              national_anthem: string | null
-              national_day: string | null
-              national_symbols: Json | null
-              natural_resources: string[] | null
-              population: number | null
-              region_id: string | null
-              seo_indexable: boolean
-              shell_status: string
-              slug: string
-              timezone: string | null
-              unesco_sites: string[] | null
-              updated_at: string
-              visa_requirements: Json | null
-              wolfram_enriched_at: string | null
-            }
-            SetofOptions: {
-              from: "events"
-              to: "countries"
-              isOneToOne: true
-              isSetofReturn: true
-            }
-          }
-        | {
-            Args: {
-              f: Database["public"]["Tables"]["country_favorites"]["Row"]
-            }
-            Returns: {
-              airport_codes: string[] | null
-              area_km2: number | null
-              calling_code: string | null
-              capital: string | null
-              capital_coordinates: Json | null
-              climate_zones: string[] | null
-              code: string
-              content_completeness_score: number | null
-              continent_id: string
-              created_at: string
-              curated_image_url: string | null
-              currency: string | null
-              data_source: string | null
-              description: string | null
-              description_i18n: Json
-              driving_side: string | null
-              duplicate_of_id: string | null
-              editorial_hook: string | null
-              editorial_long: string | null
-              enrichment_status: Json
-              equality_score: number | null
-              exports: string[] | null
-              flag_emoji: string | null
-              gdp_per_capita_usd: number | null
-              gdp_usd: number | null
-              government_type: string | null
-              human_development_index: number | null
-              id: string
-              image_flagged: boolean
-              image_metadata: Json | null
-              image_url: string | null
-              imports: string[] | null
-              internet_tld: string | null
-              languages: string[] | null
-              last_refreshed_at: string | null
-              last_synced_at: string | null
-              latitude: number | null
-              lgbti_adoption_rights: string | null
-              lgbti_association_restrictions: Json | null
-              lgbti_bullying_protection: Json | null
-              lgbti_constitutional_protection: Json | null
-              lgbti_conversion_therapy_regulation: string | null
-              lgbti_criminalization: Json | null
-              lgbti_data_last_updated: string | null
-              lgbti_education_protection: Json | null
-              lgbti_employment_protection: Json | null
-              lgbti_expression_restrictions: Json | null
-              lgbti_gender_recognition: Json | null
-              lgbti_goods_services_protection: Json | null
-              lgbti_hate_crime_law: Json | null
-              lgbti_health_protection: Json | null
-              lgbti_housing_protection: Json | null
-              lgbti_incitement_prohibition: Json | null
-              lgbti_intersex_protection: string | null
-              lgbti_same_sex_unions: string | null
-              life_expectancy: number | null
-              literacy_rate: number | null
-              longitude: number | null
-              major_airports: string[] | null
-              major_industries: string[] | null
-              major_religions: string[] | null
-              name: string
-              name_i18n: Json
-              name_normalized: string | null
-              national_anthem: string | null
-              national_day: string | null
-              national_symbols: Json | null
-              natural_resources: string[] | null
-              population: number | null
-              region_id: string | null
-              seo_indexable: boolean
-              shell_status: string
-              slug: string
-              timezone: string | null
-              unesco_sites: string[] | null
-              updated_at: string
-              visa_requirements: Json | null
-              wolfram_enriched_at: string | null
-            }
-            SetofOptions: {
-              from: "country_favorites"
-              to: "countries"
-              isOneToOne: true
-              isSetofReturn: true
-            }
-          }
-        | {
-            Args: { h: Database["public"]["Tables"]["hotels"]["Row"] }
-            Returns: {
-              airport_codes: string[] | null
-              area_km2: number | null
-              calling_code: string | null
-              capital: string | null
-              capital_coordinates: Json | null
-              climate_zones: string[] | null
-              code: string
-              content_completeness_score: number | null
-              continent_id: string
-              created_at: string
-              curated_image_url: string | null
-              currency: string | null
-              data_source: string | null
-              description: string | null
-              description_i18n: Json
-              driving_side: string | null
-              duplicate_of_id: string | null
-              editorial_hook: string | null
-              editorial_long: string | null
-              enrichment_status: Json
-              equality_score: number | null
-              exports: string[] | null
-              flag_emoji: string | null
-              gdp_per_capita_usd: number | null
-              gdp_usd: number | null
-              government_type: string | null
-              human_development_index: number | null
-              id: string
-              image_flagged: boolean
-              image_metadata: Json | null
-              image_url: string | null
-              imports: string[] | null
-              internet_tld: string | null
-              languages: string[] | null
-              last_refreshed_at: string | null
-              last_synced_at: string | null
-              latitude: number | null
-              lgbti_adoption_rights: string | null
-              lgbti_association_restrictions: Json | null
-              lgbti_bullying_protection: Json | null
-              lgbti_constitutional_protection: Json | null
-              lgbti_conversion_therapy_regulation: string | null
-              lgbti_criminalization: Json | null
-              lgbti_data_last_updated: string | null
-              lgbti_education_protection: Json | null
-              lgbti_employment_protection: Json | null
-              lgbti_expression_restrictions: Json | null
-              lgbti_gender_recognition: Json | null
-              lgbti_goods_services_protection: Json | null
-              lgbti_hate_crime_law: Json | null
-              lgbti_health_protection: Json | null
-              lgbti_housing_protection: Json | null
-              lgbti_incitement_prohibition: Json | null
-              lgbti_intersex_protection: string | null
-              lgbti_same_sex_unions: string | null
-              life_expectancy: number | null
-              literacy_rate: number | null
-              longitude: number | null
-              major_airports: string[] | null
-              major_industries: string[] | null
-              major_religions: string[] | null
-              name: string
-              name_i18n: Json
-              name_normalized: string | null
-              national_anthem: string | null
-              national_day: string | null
-              national_symbols: Json | null
-              natural_resources: string[] | null
-              population: number | null
-              region_id: string | null
-              seo_indexable: boolean
-              shell_status: string
-              slug: string
-              timezone: string | null
-              unesco_sites: string[] | null
-              updated_at: string
-              visa_requirements: Json | null
-              wolfram_enriched_at: string | null
-            }
-            SetofOptions: {
-              from: "hotels"
-              to: "countries"
-              isOneToOne: true
-              isSetofReturn: true
-            }
-          }
-        | {
-            Args: { tp: Database["public"]["Tables"]["trip_places"]["Row"] }
-            Returns: {
-              airport_codes: string[] | null
-              area_km2: number | null
-              calling_code: string | null
-              capital: string | null
-              capital_coordinates: Json | null
-              climate_zones: string[] | null
-              code: string
-              content_completeness_score: number | null
-              continent_id: string
-              created_at: string
-              curated_image_url: string | null
-              currency: string | null
-              data_source: string | null
-              description: string | null
-              description_i18n: Json
-              driving_side: string | null
-              duplicate_of_id: string | null
-              editorial_hook: string | null
-              editorial_long: string | null
-              enrichment_status: Json
-              equality_score: number | null
-              exports: string[] | null
-              flag_emoji: string | null
-              gdp_per_capita_usd: number | null
-              gdp_usd: number | null
-              government_type: string | null
-              human_development_index: number | null
-              id: string
-              image_flagged: boolean
-              image_metadata: Json | null
-              image_url: string | null
-              imports: string[] | null
-              internet_tld: string | null
-              languages: string[] | null
-              last_refreshed_at: string | null
-              last_synced_at: string | null
-              latitude: number | null
-              lgbti_adoption_rights: string | null
-              lgbti_association_restrictions: Json | null
-              lgbti_bullying_protection: Json | null
-              lgbti_constitutional_protection: Json | null
-              lgbti_conversion_therapy_regulation: string | null
-              lgbti_criminalization: Json | null
-              lgbti_data_last_updated: string | null
-              lgbti_education_protection: Json | null
-              lgbti_employment_protection: Json | null
-              lgbti_expression_restrictions: Json | null
-              lgbti_gender_recognition: Json | null
-              lgbti_goods_services_protection: Json | null
-              lgbti_hate_crime_law: Json | null
-              lgbti_health_protection: Json | null
-              lgbti_housing_protection: Json | null
-              lgbti_incitement_prohibition: Json | null
-              lgbti_intersex_protection: string | null
-              lgbti_same_sex_unions: string | null
-              life_expectancy: number | null
-              literacy_rate: number | null
-              longitude: number | null
-              major_airports: string[] | null
-              major_industries: string[] | null
-              major_religions: string[] | null
-              name: string
-              name_i18n: Json
-              name_normalized: string | null
-              national_anthem: string | null
-              national_day: string | null
-              national_symbols: Json | null
-              natural_resources: string[] | null
-              population: number | null
-              region_id: string | null
-              seo_indexable: boolean
-              shell_status: string
-              slug: string
-              timezone: string | null
-              unesco_sites: string[] | null
-              updated_at: string
-              visa_requirements: Json | null
-              wolfram_enriched_at: string | null
-            }
-            SetofOptions: {
-              from: "trip_places"
-              to: "countries"
-              isOneToOne: true
-              isSetofReturn: true
-            }
-          }
-        | {
-            Args: { v: Database["public"]["Tables"]["venues"]["Row"] }
-            Returns: {
-              airport_codes: string[] | null
-              area_km2: number | null
-              calling_code: string | null
-              capital: string | null
-              capital_coordinates: Json | null
-              climate_zones: string[] | null
-              code: string
-              content_completeness_score: number | null
-              continent_id: string
-              created_at: string
-              curated_image_url: string | null
-              currency: string | null
-              data_source: string | null
-              description: string | null
-              description_i18n: Json
-              driving_side: string | null
-              duplicate_of_id: string | null
-              editorial_hook: string | null
-              editorial_long: string | null
-              enrichment_status: Json
-              equality_score: number | null
-              exports: string[] | null
-              flag_emoji: string | null
-              gdp_per_capita_usd: number | null
-              gdp_usd: number | null
-              government_type: string | null
-              human_development_index: number | null
-              id: string
-              image_flagged: boolean
-              image_metadata: Json | null
-              image_url: string | null
-              imports: string[] | null
-              internet_tld: string | null
-              languages: string[] | null
-              last_refreshed_at: string | null
-              last_synced_at: string | null
-              latitude: number | null
-              lgbti_adoption_rights: string | null
-              lgbti_association_restrictions: Json | null
-              lgbti_bullying_protection: Json | null
-              lgbti_constitutional_protection: Json | null
-              lgbti_conversion_therapy_regulation: string | null
-              lgbti_criminalization: Json | null
-              lgbti_data_last_updated: string | null
-              lgbti_education_protection: Json | null
-              lgbti_employment_protection: Json | null
-              lgbti_expression_restrictions: Json | null
-              lgbti_gender_recognition: Json | null
-              lgbti_goods_services_protection: Json | null
-              lgbti_hate_crime_law: Json | null
-              lgbti_health_protection: Json | null
-              lgbti_housing_protection: Json | null
-              lgbti_incitement_prohibition: Json | null
-              lgbti_intersex_protection: string | null
-              lgbti_same_sex_unions: string | null
-              life_expectancy: number | null
-              literacy_rate: number | null
-              longitude: number | null
-              major_airports: string[] | null
-              major_industries: string[] | null
-              major_religions: string[] | null
-              name: string
-              name_i18n: Json
-              name_normalized: string | null
-              national_anthem: string | null
-              national_day: string | null
-              national_symbols: Json | null
-              natural_resources: string[] | null
-              population: number | null
-              region_id: string | null
-              seo_indexable: boolean
-              shell_status: string
-              slug: string
-              timezone: string | null
-              unesco_sites: string[] | null
-              updated_at: string
-              visa_requirements: Json | null
-              wolfram_enriched_at: string | null
-            }
-            SetofOptions: {
-              from: "venues"
-              to: "countries"
-              isOneToOne: true
-              isSetofReturn: true
-            }
-          }
       countries_due_for_enrichment: {
         Args: { p_limit?: number; p_phase?: string }
         Returns: {
@@ -30135,15 +28484,6 @@ export type Database = {
         }[]
       }
       custom_access_token_hook: { Args: { event: Json }; Returns: Json }
-      decide_org_adoption: {
-        Args: {
-          p_approve: boolean
-          p_id: string
-          p_note?: string
-          p_org_id?: string
-        }
-        Returns: Json
-      }
       decrement_comment_likes: {
         Args: { comment_id: string }
         Returns: undefined
@@ -30154,14 +28494,6 @@ export type Database = {
         Returns: string[]
       }
       dedup_despace: { Args: { p: string }; Returns: string }
-      definer_view_api_write_grants: {
-        Args: never
-        Returns: {
-          grantee: string
-          privileges: string
-          view_name: string
-        }[]
-      }
       delete_my_account: { Args: { p_user_id: string }; Returns: Json }
       delete_news_search: { Args: { p_id: string }; Returns: undefined }
       deprecate_unused_tags: {
@@ -30457,183 +28789,6 @@ export type Database = {
         Args: { p_city?: string; p_limit?: number; p_title: string }
         Returns: Json
       }
-      events:
-        | {
-            Args: { c: Database["public"]["Tables"]["cities"]["Row"] }
-            Returns: {
-              accessibility_attributes: string[] | null
-              accessibility_notes: string | null
-              address: string | null
-              age_restriction: string | null
-              city: string | null
-              city_id: string | null
-              classified_at: string | null
-              content_language: string | null
-              country: string | null
-              country_id: string | null
-              created_at: string
-              created_by: string | null
-              currency: string | null
-              data_source: string | null
-              description: string | null
-              description_i18n: Json
-              duplicate_of_id: string | null
-              edition: string | null
-              end_date: string | null
-              enrichment_status: Json | null
-              event_type: string
-              external_id: string | null
-              festival_id: string | null
-              field_provenance: Json
-              geo_linked_at: string | null
-              group_id: string | null
-              id: string
-              images: string[] | null
-              is_featured: boolean
-              is_free: boolean | null
-              is_public: boolean
-              is_recurring: boolean | null
-              last_refreshed_at: string | null
-              last_synced_at: string | null
-              last_verified_at: string | null
-              latitude: number | null
-              lgbti_relevance_score: number | null
-              liveness_status: string
-              logo_fetched_at: string | null
-              logo_url: string | null
-              longitude: number | null
-              max_attendees: number | null
-              needs_attention: boolean | null
-              organizer_contact: string | null
-              organizer_id: string | null
-              organizer_name: string | null
-              postal_code: string | null
-              price_max: number | null
-              price_min: number | null
-              pride_subtypes: string[] | null
-              quality_score: number | null
-              queer_village_id: string | null
-              raw_title: string | null
-              recurrence_pattern: string | null
-              recurrence_rule: Json | null
-              review_status: string | null
-              safety_gated: boolean
-              sensitivity_flags: Json | null
-              seo_indexable: boolean
-              slug: string
-              social_links: Json
-              start_date: string
-              state: string | null
-              status: string | null
-              tags: string[]
-              target_groups: string[] | null
-              ticket_url: string | null
-              timezone: string | null
-              title: string
-              title_i18n: Json
-              title_normalized: string | null
-              trust_score: number
-              updated_at: string
-              venue_id: string | null
-              venue_name: string | null
-              verification_status: string
-              website: string | null
-            }[]
-            SetofOptions: {
-              from: "cities"
-              to: "events"
-              isOneToOne: false
-              isSetofReturn: true
-            }
-          }
-        | {
-            Args: { qv: Database["public"]["Tables"]["queer_villages"]["Row"] }
-            Returns: {
-              accessibility_attributes: string[] | null
-              accessibility_notes: string | null
-              address: string | null
-              age_restriction: string | null
-              city: string | null
-              city_id: string | null
-              classified_at: string | null
-              content_language: string | null
-              country: string | null
-              country_id: string | null
-              created_at: string
-              created_by: string | null
-              currency: string | null
-              data_source: string | null
-              description: string | null
-              description_i18n: Json
-              duplicate_of_id: string | null
-              edition: string | null
-              end_date: string | null
-              enrichment_status: Json | null
-              event_type: string
-              external_id: string | null
-              festival_id: string | null
-              field_provenance: Json
-              geo_linked_at: string | null
-              group_id: string | null
-              id: string
-              images: string[] | null
-              is_featured: boolean
-              is_free: boolean | null
-              is_public: boolean
-              is_recurring: boolean | null
-              last_refreshed_at: string | null
-              last_synced_at: string | null
-              last_verified_at: string | null
-              latitude: number | null
-              lgbti_relevance_score: number | null
-              liveness_status: string
-              logo_fetched_at: string | null
-              logo_url: string | null
-              longitude: number | null
-              max_attendees: number | null
-              needs_attention: boolean | null
-              organizer_contact: string | null
-              organizer_id: string | null
-              organizer_name: string | null
-              postal_code: string | null
-              price_max: number | null
-              price_min: number | null
-              pride_subtypes: string[] | null
-              quality_score: number | null
-              queer_village_id: string | null
-              raw_title: string | null
-              recurrence_pattern: string | null
-              recurrence_rule: Json | null
-              review_status: string | null
-              safety_gated: boolean
-              sensitivity_flags: Json | null
-              seo_indexable: boolean
-              slug: string
-              social_links: Json
-              start_date: string
-              state: string | null
-              status: string | null
-              tags: string[]
-              target_groups: string[] | null
-              ticket_url: string | null
-              timezone: string | null
-              title: string
-              title_i18n: Json
-              title_normalized: string | null
-              trust_score: number
-              updated_at: string
-              venue_id: string | null
-              venue_name: string | null
-              verification_status: string
-              website: string | null
-            }[]
-            SetofOptions: {
-              from: "queer_villages"
-              to: "events"
-              isOneToOne: false
-              isSetofReturn: true
-            }
-          }
       events_due_for_existence_check: {
         Args: { p_limit?: number }
         Returns: {
@@ -30739,10 +28894,6 @@ export type Database = {
         }[]
       }
       extract_website_domain: { Args: { url: string }; Returns: string }
-      feedback_is_machine_alert: {
-        Args: { p_content_type: string; p_data: Json }
-        Returns: boolean
-      }
       feedback_sla_stats: {
         Args: { p_days_window?: number }
         Returns: {
@@ -30996,18 +29147,6 @@ export type Database = {
           title_similarity: number
         }[]
       }
-      find_org_adoption_candidates: {
-        Args: { p_entity_type: string; p_limit?: number }
-        Returns: {
-          confidence: number
-          entity_id: string
-          entity_name: string
-          entity_type: string
-          match_type: string
-          org_name: string
-          organization_id: string
-        }[]
-      }
       find_org_merchant_domain_matches: {
         Args: never
         Returns: {
@@ -31240,6 +29379,10 @@ export type Database = {
         Args: { p_entity_type: string; p_slug: string }
         Returns: boolean
       }
+      geo_address_gap_counts: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
       gc_stale_api_errors: {
         Args: { p_age_days?: number; p_max_occurrence?: number }
         Returns: Json
@@ -31262,13 +29405,10 @@ export type Database = {
         }
         Returns: string
       }
-      geo_address_gap_counts: { Args: never; Returns: Json }
       geo_move_node: {
         Args: { p_id: string; p_new_parent_id: string }
         Returns: Json
       }
-      geo_p4_preflight: { Args: never; Returns: Json }
-      geo_safety_parity_check: { Args: never; Returns: Json }
       geo_spine_drift_check: { Args: never; Returns: Json }
       get_admin_counts: { Args: never; Returns: Json }
       get_admin_platform_stats: { Args: never; Returns: Json }
@@ -31667,7 +29807,6 @@ export type Database = {
         Returns: {
           category_color: string
           category_name: string
-          is_adult: boolean
           relationship_type: string
           similarity_score: number
           tag_id: string
@@ -32303,7 +30442,6 @@ export type Database = {
           p_role?: string
         }
         Returns: {
-          address: string | null
           city_id: string | null
           claim_status: string
           claimed_by: string | null
@@ -32325,13 +30463,11 @@ export type Database = {
           name: string
           needs_attention: boolean
           phone: string | null
-          postal_code: string | null
           primary_venue_id: string | null
           roles: string[]
           safety_gated: boolean
           slug: string
           social: Json
-          state: string | null
           status: string
           tags: string[]
           target_groups: string[]
@@ -32360,10 +30496,6 @@ export type Database = {
         }[]
       }
       location_is_high_risk: {
-        Args: { p_city_id: string; p_country_id: string }
-        Returns: boolean
-      }
-      location_is_high_risk_spine: {
         Args: { p_city_id: string; p_country_id: string }
         Returns: boolean
       }
@@ -32454,7 +30586,6 @@ export type Database = {
           id: string
           is_spotlight: boolean
           logo_url: string | null
-          organization_id: string | null
           ownership_tags: string[]
           product_count: number
           reviewed_at: string | null
@@ -32882,25 +31013,6 @@ export type Database = {
         }
         Returns: string
       }
-      org_adopt_pass: {
-        Args: { p_entity_type: string; p_limit?: number }
-        Returns: Json
-      }
-      org_mint: {
-        Args: {
-          p_city_id: string
-          p_country_id: string
-          p_logo: string
-          p_name: string
-          p_provenance?: Json
-          p_role: string
-          p_status?: string
-          p_website: string
-        }
-        Returns: string
-      }
-      org_normalize_domain: { Args: { p: string }; Returns: string }
-      org_spine_drift_counts: { Args: never; Returns: Json }
       organization_articles: {
         Args: { p_limit?: number; p_offset?: number; p_org_id: string }
         Returns: {
@@ -33400,172 +31512,6 @@ export type Database = {
           written: boolean
         }[]
       }
-      primary_city: {
-        Args: { t: Database["public"]["Tables"]["trips"]["Row"] }
-        Returns: {
-          airport_codes: string[] | null
-          area_codes: string[] | null
-          area_km2: number | null
-          best_time_to_visit: string | null
-          canonical_key: string | null
-          climate_type: string | null
-          completeness_score: number
-          cost_of_living: Json | null
-          country_id: string
-          created_at: string
-          curated_image_url: string | null
-          data_source: string | null
-          demographics: Json | null
-          description: string | null
-          description_i18n: Json
-          duplicate_of_id: string | null
-          economy_sectors: string[] | null
-          editorial_hook: string | null
-          elevation_m: number | null
-          enrichment_status: Json
-          field_provenance: Json
-          founded_year: number | null
-          historical_names: Json
-          id: string
-          image_flagged: boolean
-          image_metadata: Json | null
-          image_url: string | null
-          is_capital: boolean | null
-          is_major_city: boolean | null
-          last_refreshed_at: string | null
-          last_synced_at: string | null
-          last_verified_at: string | null
-          latitude: number | null
-          lgbt_friendly_rating: number | null
-          local_customs: string | null
-          local_language: string | null
-          longitude: number | null
-          major_airport_code: string | null
-          mayor: string | null
-          name: string
-          name_de: string | null
-          name_en: string | null
-          name_i18n: Json
-          name_normalized: string | null
-          needs_attention: boolean
-          notable_landmarks: string[] | null
-          official_website: string | null
-          population: number | null
-          postal_codes: string[] | null
-          region_name: string | null
-          safety_notes: string | null
-          seo_indexable: boolean
-          shell_status: string
-          sister_cities: string[] | null
-          slug: string
-          social_links: Json
-          timezone: string | null
-          transportation_info: Json | null
-          trust_score: number
-          universities: string[] | null
-          updated_at: string
-          wolfram_enriched_at: string | null
-        }
-        SetofOptions: {
-          from: "trips"
-          to: "cities"
-          isOneToOne: true
-          isSetofReturn: true
-        }
-      }
-      primary_country: {
-        Args: { t: Database["public"]["Tables"]["trips"]["Row"] }
-        Returns: {
-          airport_codes: string[] | null
-          area_km2: number | null
-          calling_code: string | null
-          capital: string | null
-          capital_coordinates: Json | null
-          climate_zones: string[] | null
-          code: string
-          content_completeness_score: number | null
-          continent_id: string
-          created_at: string
-          curated_image_url: string | null
-          currency: string | null
-          data_source: string | null
-          description: string | null
-          description_i18n: Json
-          driving_side: string | null
-          duplicate_of_id: string | null
-          editorial_hook: string | null
-          editorial_long: string | null
-          enrichment_status: Json
-          equality_score: number | null
-          exports: string[] | null
-          flag_emoji: string | null
-          gdp_per_capita_usd: number | null
-          gdp_usd: number | null
-          government_type: string | null
-          human_development_index: number | null
-          id: string
-          image_flagged: boolean
-          image_metadata: Json | null
-          image_url: string | null
-          imports: string[] | null
-          internet_tld: string | null
-          languages: string[] | null
-          last_refreshed_at: string | null
-          last_synced_at: string | null
-          latitude: number | null
-          lgbti_adoption_rights: string | null
-          lgbti_association_restrictions: Json | null
-          lgbti_bullying_protection: Json | null
-          lgbti_constitutional_protection: Json | null
-          lgbti_conversion_therapy_regulation: string | null
-          lgbti_criminalization: Json | null
-          lgbti_data_last_updated: string | null
-          lgbti_education_protection: Json | null
-          lgbti_employment_protection: Json | null
-          lgbti_expression_restrictions: Json | null
-          lgbti_gender_recognition: Json | null
-          lgbti_goods_services_protection: Json | null
-          lgbti_hate_crime_law: Json | null
-          lgbti_health_protection: Json | null
-          lgbti_housing_protection: Json | null
-          lgbti_incitement_prohibition: Json | null
-          lgbti_intersex_protection: string | null
-          lgbti_same_sex_unions: string | null
-          life_expectancy: number | null
-          literacy_rate: number | null
-          longitude: number | null
-          major_airports: string[] | null
-          major_industries: string[] | null
-          major_religions: string[] | null
-          name: string
-          name_i18n: Json
-          name_normalized: string | null
-          national_anthem: string | null
-          national_day: string | null
-          national_symbols: Json | null
-          natural_resources: string[] | null
-          population: number | null
-          region_id: string | null
-          seo_indexable: boolean
-          shell_status: string
-          slug: string
-          timezone: string | null
-          unesco_sites: string[] | null
-          updated_at: string
-          visa_requirements: Json | null
-          wolfram_enriched_at: string | null
-        }
-        SetofOptions: {
-          from: "trips"
-          to: "countries"
-          isOneToOne: true
-          isSetofReturn: true
-        }
-      }
-      promote_entity_to_organization: {
-        Args: { p_entity_id: string; p_entity_type: string }
-        Returns: string
-      }
       promote_personality: {
         Args: { p_id: string; p_source?: string }
         Returns: Json
@@ -33624,197 +31570,6 @@ export type Database = {
           user_id: string
         }[]
       }
-      queer_villages:
-        | {
-            Args: { e: Database["public"]["Tables"]["events"]["Row"] }
-            Returns: {
-              boundaries: Json | null
-              city_id: string
-              completeness_score: number
-              country_id: string
-              created_at: string
-              created_by: string | null
-              description: string | null
-              description_i18n: Json
-              duplicate_of_id: string | null
-              editorial_hook: string | null
-              enrichment_status: Json
-              featured: boolean | null
-              field_provenance: Json
-              geometry: unknown
-              history: string | null
-              id: string
-              image_metadata: Json | null
-              image_url: string | null
-              images: string[] | null
-              last_refreshed_at: string | null
-              last_verified_at: string | null
-              latitude: number | null
-              longitude: number | null
-              name: string
-              name_i18n: Json
-              needs_attention: boolean
-              notable_landmarks: string[] | null
-              seo_indexable: boolean
-              shell_status: string
-              slug: string
-              social_links: Json
-              tags: string[] | null
-              trust_score: number
-              updated_at: string
-              updated_by: string | null
-              website: string | null
-            }
-            SetofOptions: {
-              from: "events"
-              to: "queer_villages"
-              isOneToOne: true
-              isSetofReturn: true
-            }
-          }
-        | {
-            Args: { h: Database["public"]["Tables"]["hotels"]["Row"] }
-            Returns: {
-              boundaries: Json | null
-              city_id: string
-              completeness_score: number
-              country_id: string
-              created_at: string
-              created_by: string | null
-              description: string | null
-              description_i18n: Json
-              duplicate_of_id: string | null
-              editorial_hook: string | null
-              enrichment_status: Json
-              featured: boolean | null
-              field_provenance: Json
-              geometry: unknown
-              history: string | null
-              id: string
-              image_metadata: Json | null
-              image_url: string | null
-              images: string[] | null
-              last_refreshed_at: string | null
-              last_verified_at: string | null
-              latitude: number | null
-              longitude: number | null
-              name: string
-              name_i18n: Json
-              needs_attention: boolean
-              notable_landmarks: string[] | null
-              seo_indexable: boolean
-              shell_status: string
-              slug: string
-              social_links: Json
-              tags: string[] | null
-              trust_score: number
-              updated_at: string
-              updated_by: string | null
-              website: string | null
-            }
-            SetofOptions: {
-              from: "hotels"
-              to: "queer_villages"
-              isOneToOne: true
-              isSetofReturn: true
-            }
-          }
-        | {
-            Args: {
-              r: Database["public"]["Tables"]["village_review_queue_legacy"]["Row"]
-            }
-            Returns: {
-              boundaries: Json | null
-              city_id: string
-              completeness_score: number
-              country_id: string
-              created_at: string
-              created_by: string | null
-              description: string | null
-              description_i18n: Json
-              duplicate_of_id: string | null
-              editorial_hook: string | null
-              enrichment_status: Json
-              featured: boolean | null
-              field_provenance: Json
-              geometry: unknown
-              history: string | null
-              id: string
-              image_metadata: Json | null
-              image_url: string | null
-              images: string[] | null
-              last_refreshed_at: string | null
-              last_verified_at: string | null
-              latitude: number | null
-              longitude: number | null
-              name: string
-              name_i18n: Json
-              needs_attention: boolean
-              notable_landmarks: string[] | null
-              seo_indexable: boolean
-              shell_status: string
-              slug: string
-              social_links: Json
-              tags: string[] | null
-              trust_score: number
-              updated_at: string
-              updated_by: string | null
-              website: string | null
-            }
-            SetofOptions: {
-              from: "village_review_queue_legacy"
-              to: "queer_villages"
-              isOneToOne: true
-              isSetofReturn: true
-            }
-          }
-        | {
-            Args: { v: Database["public"]["Tables"]["venues"]["Row"] }
-            Returns: {
-              boundaries: Json | null
-              city_id: string
-              completeness_score: number
-              country_id: string
-              created_at: string
-              created_by: string | null
-              description: string | null
-              description_i18n: Json
-              duplicate_of_id: string | null
-              editorial_hook: string | null
-              enrichment_status: Json
-              featured: boolean | null
-              field_provenance: Json
-              geometry: unknown
-              history: string | null
-              id: string
-              image_metadata: Json | null
-              image_url: string | null
-              images: string[] | null
-              last_refreshed_at: string | null
-              last_verified_at: string | null
-              latitude: number | null
-              longitude: number | null
-              name: string
-              name_i18n: Json
-              needs_attention: boolean
-              notable_landmarks: string[] | null
-              seo_indexable: boolean
-              shell_status: string
-              slug: string
-              social_links: Json
-              tags: string[] | null
-              trust_score: number
-              updated_at: string
-              updated_by: string | null
-              website: string | null
-            }
-            SetofOptions: {
-              from: "venues"
-              to: "queer_villages"
-              isOneToOne: true
-              isSetofReturn: true
-            }
-          }
       quest_create_recap_stub: { Args: { p_quest_id: string }; Returns: string }
       quest_progress: {
         Args: { p_quest_id: string }
@@ -34047,7 +31802,9 @@ export type Database = {
         }
         Returns: number
       }
-      recount_all_tag_usage: { Args: { p_batch?: number }; Returns: number }
+      recount_all_tag_usage:
+        | { Args: never; Returns: number }
+        | { Args: { p_batch?: number }; Returns: number }
       recount_unified_tag_usage: { Args: never; Returns: undefined }
       recount_unified_tag_usage_for: {
         Args: { p_ids: string[] }
@@ -34081,14 +31838,6 @@ export type Database = {
         Returns: Json
       }
       reject_dedup_review: {
-        Args: { p_id: string; p_note?: string }
-        Returns: Json
-      }
-      reject_editorial_draft: {
-        Args: { p_draft_id: string; p_note?: string }
-        Returns: Json
-      }
-      reject_entity_review: {
         Args: { p_id: string; p_note?: string }
         Returns: Json
       }
@@ -34450,22 +32199,6 @@ export type Database = {
         Args: { p_force?: boolean }
         Returns: Json
       }
-      run_backfill_orgs_from_affiliate_partners: {
-        Args: { p_limit?: number }
-        Returns: Json
-      }
-      run_backfill_orgs_from_hotels: {
-        Args: { p_limit?: number }
-        Returns: Json
-      }
-      run_backfill_orgs_from_merchants: {
-        Args: { p_limit?: number }
-        Returns: Json
-      }
-      run_backfill_orgs_from_venues: {
-        Args: { p_limit?: number; p_min_quality?: number }
-        Returns: Json
-      }
       run_branding_schedule: { Args: never; Returns: Json }
       run_city_completeness_recompute: {
         Args: { p_force?: boolean }
@@ -34478,12 +32211,11 @@ export type Database = {
       }
       run_city_trust_recompute: { Args: { p_force?: boolean }; Returns: Json }
       run_content_completeness_recompute: {
-        Args: { p_batch?: number; p_force?: boolean }
+        Args: { p_force?: boolean }
         Returns: Json
       }
       run_content_graph_recompute: { Args: never; Returns: Json }
       run_country_completeness_recompute: { Args: never; Returns: Json }
-      run_cron_failure_sweep: { Args: { p_window?: string }; Returns: Json }
       run_data_normalization_guard: {
         Args: { p_force?: boolean }
         Returns: Json
@@ -34493,10 +32225,6 @@ export type Database = {
         Returns: Json
       }
       run_dedup_truth_sweep_all: { Args: { p_mode?: string }; Returns: Json }
-      run_detect_stale_venues: {
-        Args: { p_batch?: number; p_stale_after_days?: number }
-        Returns: Json
-      }
       run_enrichment_log_purge: { Args: never; Returns: Json }
       run_event_auto_archive: { Args: never; Returns: Json }
       run_event_completeness_recompute: { Args: never; Returns: Json }
@@ -34514,7 +32242,7 @@ export type Database = {
           tagged: number
         }[]
       }
-      run_event_trust_recompute: { Args: { p_batch?: number }; Returns: Json }
+      run_event_trust_recompute: { Args: never; Returns: Json }
       run_event_venue_link: { Args: never; Returns: Json }
       run_existence_decision: {
         Args: { p_dry_run?: boolean; p_entity_type: string }
@@ -34545,19 +32273,12 @@ export type Database = {
         Args: { p_batch?: number; p_force?: boolean }
         Returns: Json
       }
-      run_marketplace_commit_drain: {
-        Args: { p_batch?: number }
-        Returns: Json
-      }
       run_marketplace_dedup_sweep: { Args: never; Returns: number }
       run_marketplace_ownership_apply: {
         Args: { p_batch?: number; p_force?: boolean }
         Returns: Json
       }
-      run_marketplace_quality_recompute: {
-        Args: { p_batch?: number }
-        Returns: Json
-      }
+      run_marketplace_quality_recompute: { Args: never; Returns: number }
       run_marketplace_review_autotriage: {
         Args: { p_batch?: number; p_force?: boolean }
         Returns: Json
@@ -34596,7 +32317,6 @@ export type Database = {
         Returns: Json
       }
       run_org_quality_recompute: { Args: { p_force?: boolean }; Returns: Json }
-      run_org_spine_backfill: { Args: { p_limit?: number }; Returns: Json }
       run_personality_auto_promote: {
         Args: { p_limit?: number }
         Returns: Json
@@ -34618,10 +32338,6 @@ export type Database = {
         }[]
       }
       run_promote_support_orgs: { Args: never; Returns: number }
-      run_queue_brand_org_suggestions: {
-        Args: { p_limit?: number }
-        Returns: Json
-      }
       run_review_queue_retention: {
         Args: { p_max_batches?: number }
         Returns: Json
@@ -35122,7 +32838,6 @@ export type Database = {
           proposed_title: string
         }[]
       }
-      sync_automations_to_cron: { Args: { p_apply?: boolean }; Returns: Json }
       tag_coverage_radar: {
         Args: { p_limit?: number }
         Returns: {
@@ -35488,199 +33203,6 @@ export type Database = {
         Returns: string
       }
       venue_quality_stats: { Args: never; Returns: Json }
-      venues:
-        | {
-            Args: { c: Database["public"]["Tables"]["cities"]["Row"] }
-            Returns: {
-              accessibility_attributes: string[] | null
-              accessibility_notes: string | null
-              accommodation_type: string | null
-              address: string
-              address_normalized: string | null
-              amenities: string[] | null
-              amenities_verified: boolean
-              booking_url: string | null
-              category: string
-              city: string | null
-              city_id: string | null
-              classified_at: string | null
-              closed_at: string | null
-              content_language: string | null
-              country: string | null
-              country_id: string | null
-              created_at: string
-              created_by: string | null
-              data_source: string | null
-              day_part: string[] | null
-              description: string | null
-              description_i18n: Json
-              duplicate_of_id: string | null
-              email: string | null
-              email_lower: string | null
-              enrichment_status: Json | null
-              external_id: string | null
-              foursquare_data: Json | null
-              foursquare_id: string | null
-              foursquare_rating: number | null
-              geo_linked_at: string | null
-              geocode_attempted: boolean | null
-              hours: Json | null
-              id: string
-              images: string[] | null
-              instagram: string | null
-              is_featured: boolean
-              is_organizer: boolean
-              last_refreshed_at: string | null
-              last_synced_at: string | null
-              latitude: number | null
-              lgbti_relevance_score: number | null
-              logo_fetched_at: string | null
-              logo_url: string | null
-              longitude: number | null
-              name: string
-              name_i18n: Json
-              name_normalized: string | null
-              needs_attention: boolean | null
-              organization_id: string | null
-              organizer_handles: Json | null
-              phone: string | null
-              phone_e164: string | null
-              platform_ids: Json
-              postal_code: string | null
-              price_range: number | null
-              quality_score: number | null
-              queer_village_id: string | null
-              review_status: string | null
-              safety_gated: boolean
-              sensitivity_flags: Json | null
-              seo_indexable: boolean
-              services: string[] | null
-              slug: string
-              social_links: Json
-              star_rating: number | null
-              state: string | null
-              sync_status: string | null
-              tags: string[] | null
-              target_groups: string[] | null
-              tomtom_data: Json | null
-              tomtom_id: string | null
-              tomtom_rating: number | null
-              tripadvisor_id: string | null
-              tripadvisor_rating: number | null
-              tripadvisor_review_count: number | null
-              updated_at: string
-              url_checked_at: string | null
-              url_status: string | null
-              venue_subtype: string | null
-              verification_status: string
-              verified: boolean | null
-              vibe_tags: string[] | null
-              website: string | null
-              website_domain: string | null
-            }[]
-            SetofOptions: {
-              from: "cities"
-              to: "venues"
-              isOneToOne: false
-              isSetofReturn: true
-            }
-          }
-        | {
-            Args: { qv: Database["public"]["Tables"]["queer_villages"]["Row"] }
-            Returns: {
-              accessibility_attributes: string[] | null
-              accessibility_notes: string | null
-              accommodation_type: string | null
-              address: string
-              address_normalized: string | null
-              amenities: string[] | null
-              amenities_verified: boolean
-              booking_url: string | null
-              category: string
-              city: string | null
-              city_id: string | null
-              classified_at: string | null
-              closed_at: string | null
-              content_language: string | null
-              country: string | null
-              country_id: string | null
-              created_at: string
-              created_by: string | null
-              data_source: string | null
-              day_part: string[] | null
-              description: string | null
-              description_i18n: Json
-              duplicate_of_id: string | null
-              email: string | null
-              email_lower: string | null
-              enrichment_status: Json | null
-              external_id: string | null
-              foursquare_data: Json | null
-              foursquare_id: string | null
-              foursquare_rating: number | null
-              geo_linked_at: string | null
-              geocode_attempted: boolean | null
-              hours: Json | null
-              id: string
-              images: string[] | null
-              instagram: string | null
-              is_featured: boolean
-              is_organizer: boolean
-              last_refreshed_at: string | null
-              last_synced_at: string | null
-              latitude: number | null
-              lgbti_relevance_score: number | null
-              logo_fetched_at: string | null
-              logo_url: string | null
-              longitude: number | null
-              name: string
-              name_i18n: Json
-              name_normalized: string | null
-              needs_attention: boolean | null
-              organization_id: string | null
-              organizer_handles: Json | null
-              phone: string | null
-              phone_e164: string | null
-              platform_ids: Json
-              postal_code: string | null
-              price_range: number | null
-              quality_score: number | null
-              queer_village_id: string | null
-              review_status: string | null
-              safety_gated: boolean
-              sensitivity_flags: Json | null
-              seo_indexable: boolean
-              services: string[] | null
-              slug: string
-              social_links: Json
-              star_rating: number | null
-              state: string | null
-              sync_status: string | null
-              tags: string[] | null
-              target_groups: string[] | null
-              tomtom_data: Json | null
-              tomtom_id: string | null
-              tomtom_rating: number | null
-              tripadvisor_id: string | null
-              tripadvisor_rating: number | null
-              tripadvisor_review_count: number | null
-              updated_at: string
-              url_checked_at: string | null
-              url_status: string | null
-              venue_subtype: string | null
-              verification_status: string
-              verified: boolean | null
-              vibe_tags: string[] | null
-              website: string | null
-              website_domain: string | null
-            }[]
-            SetofOptions: {
-              from: "queer_villages"
-              to: "venues"
-              isOneToOne: false
-              isSetofReturn: true
-            }
-          }
       venues_due_for_amenity_backfill: {
         Args: { p_limit?: number; p_only_fillable?: boolean }
         Returns: {
