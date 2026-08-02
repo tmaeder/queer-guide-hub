@@ -31,6 +31,15 @@ export interface ViewSpec {
   groupBy: string | null;
   /** null means the record's updated_at. */
   dateField: string | null;
+  /**
+   * Saved search term. Empty for a fresh view.
+   *
+   * Note the tradeoff this accepts: switching to a view that carries a term
+   * re-applies it, so a view can legitimately show fewer rows than the same
+   * filters alone would. The search box always shows the active term, so it is
+   * visible rather than hidden state.
+   */
+  search: string;
 }
 
 export const VIEW_KINDS: ContentView[] = ['table', 'gallery', 'board', 'timeline', 'calendar'];
@@ -59,6 +68,7 @@ export function buildDefaultSpec(config: ContentTypeConfig | null): ViewSpec {
       : [{ field: 'updated_at', dir: 'desc' }],
     groupBy: null,
     dateField: null,
+    search: '',
   };
 }
 
@@ -120,7 +130,9 @@ export function normalizeSpec(input: unknown, config: ContentTypeConfig | null):
       ? raw.dateField
       : null;
 
-  return { kind, columns, filters, sorts, groupBy, dateField };
+  const search = typeof raw.search === 'string' ? raw.search.slice(0, 200) : '';
+
+  return { kind, columns, filters, sorts, groupBy, dateField, search };
 }
 
 /**
@@ -131,6 +143,7 @@ export function normalizeSpec(input: unknown, config: ContentTypeConfig | null):
  */
 export function specEquals(a: ViewSpec, b: ViewSpec): boolean {
   if (a.kind !== b.kind || a.groupBy !== b.groupBy || a.dateField !== b.dateField) return false;
+  if (a.search !== b.search) return false;
   if (a.columns.length !== b.columns.length) return false;
   if (a.columns.some((c, i) => c !== b.columns[i])) return false;
   if (a.sorts.length !== b.sorts.length) return false;
@@ -169,5 +182,6 @@ export function queryShapeOf(spec: ViewSpec): string {
     filters: spec.filters.map((f) => [f.field, f.op, f.value ?? null]),
     sorts: spec.sorts.map((s) => [s.field, s.dir]),
     groupBy: spec.groupBy,
+    search: spec.search,
   });
 }

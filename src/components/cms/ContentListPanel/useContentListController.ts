@@ -338,8 +338,8 @@ export function useContentListController({
   // The live spec, assembled from the individual pieces of state. Saving a
   // view stores exactly this.
   const spec: ViewSpec = useMemo(
-    () => ({ kind: view, columns, filters, sorts, groupBy, dateField }),
-    [view, columns, filters, sorts, groupBy, dateField],
+    () => ({ kind: view, columns, filters, sorts, groupBy, dateField, search }),
+    [view, columns, filters, sorts, groupBy, dateField, search],
   );
 
   /** Replace every part of the view at once, e.g. when switching saved views. */
@@ -352,6 +352,8 @@ export function useContentListController({
       setSorts(safe.sorts.length ? safe.sorts : [{ field: initialSortField, dir: initialSortDir }]);
       setGroupBy(safe.groupBy);
       setDateField(safe.dateField);
+      setSearch(safe.search);
+      setDebouncedSearch(safe.search);
       setPage(0);
     },
     [config, initialSortField, initialSortDir],

@@ -4,8 +4,8 @@
  * relative dates, status indicators, and polished empty states.
  */
 
-import { lazy, Suspense, useState } from 'react';
-import { useParams } from 'react-router';
+import { lazy, Suspense, useEffect, useRef, useState } from 'react';
+import { useParams, useSearchParams } from 'react-router';
 import { Plus, Search, RefreshCw, X } from 'lucide-react';
 import { ContentEntityTabs } from '@/components/admin/ContentEntityTabs';
 import { Button } from '@/components/ui/button';
@@ -62,6 +62,7 @@ function ContentListPanelBody(props: ContentListPanelProps) {
   const { type } = useParams();
   const v = useContentViews(props.contentTypeId);
   const [activeViewId, setActiveViewId] = useState<string | null>(null);
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const activeView = v.views.find((x) => x.id === activeViewId) ?? null;
   // Dirty means "the live spec differs from what this view last saved". With no
@@ -81,7 +82,37 @@ function ContentListPanelBody(props: ContentListPanelProps) {
   const selectView = (view: SavedView) => {
     setActiveViewId(view.id);
     c.applySpec(normalizeSpec(view.spec, c.config ?? null));
+    // `replace` so Back does not step through every view switch. Only the view
+    // ID is encoded — a 15-filter spec would make an unshareable URL, and the
+    // id IS the shareable handle.
+    setSearchParams(
+      (p) => {
+        p.set('view', view.id);
+        return p;
+      },
+      { replace: true },
+    );
   };
+
+  // Resolve the initial view ONCE per type, after the saved list arrives:
+  // ?view=<id> if it names a view that exists, else the default, else nothing.
+  // A stale or foreign id falls through silently rather than erroring.
+  const resolvedRef = useRef<string | null>(null);
+  useEffect(() => {
+    const scope = props.contentTypeId ?? '';
+    if (v.loading || resolvedRef.current === scope) return;
+    resolvedRef.current = scope;
+    const wanted = searchParams.get('view');
+    const target = v.views.find((x) => x.id === wanted) ?? v.views.find((x) => x.isDefault);
+    // A ?view= naming a deleted or foreign view simply falls through to the
+    // default. The param is left alone rather than stripped: rewriting the URL
+    // from an effect is another state write for a purely cosmetic gain.
+    // The initial view can only be resolved once the saved list arrives from
+    // the server, and the ref above makes this strictly one-shot per type.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (target) selectView(target);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [v.loading, v.views, props.contentTypeId]);
 
   const typeColor = c.config?.color || 'hsl(var(--muted-foreground))';
   const Icon = c.config?.icon;
