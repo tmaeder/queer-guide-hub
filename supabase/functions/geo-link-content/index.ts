@@ -3,18 +3,31 @@
  *
  * Links content items (venues, events, personalities, news_articles) to
  * cities and countries using alias normalization and exact matching.
- * No AI / external APIs — pure DB matching against 351 cities + 199 countries.
+ * No AI / external APIs — pure DB matching against the cities/countries tables.
+ *
+ * Matching refuses to guess: an ambiguous city name resolves to NULL rather
+ * than to the most-populous candidate, and a candidate contradicted by the
+ * row's state or its source metro slug is blocked outright. Guard logic lives
+ * in `_shared/city-collision-guard.ts` — same rules as the SQL runner
+ * `run_event_city_link`.
  */
 
 import { requireAdmin, getCorsHeaders, getServiceClient } from '../_shared/supabase-client.ts';
 import { COUNTRY_ALIASES } from '../_shared/automation-utils.ts';
+import { cityCollisionReason } from '../_shared/city-collision-guard.ts';
 
 const supabase = getServiceClient();
 
 // ── Types ────────────────────────────────────────────────────────────
 
 interface CountryRef { id: string; name: string; code: string }
-interface CityRef { id: string; name: string; country_id: string; population: number | null }
+interface CityRef {
+  id: string;
+  name: string;
+  country_id: string;
+  population: number | null;
+  region_name: string | null;
+}
 
 interface GeoLinkResult {
   entity_id: string;
@@ -23,7 +36,8 @@ interface GeoLinkResult {
   country_resolved: string | null;
   city_id: string | null;
   country_id: string | null;
-  status: 'linked' | 'partial' | 'skipped' | 'already_linked' | 'no_data';
+  status: 'linked' | 'partial' | 'skipped' | 'already_linked' | 'no_data' | 'blocked';
+  blocked_reason?: string;
 }
 
 interface BatchResult {
@@ -35,6 +49,7 @@ interface BatchResult {
   total_partial: number;
   total_skipped: number;
   total_already_linked: number;
+  total_blocked: number;
   results: GeoLinkResult[];
   error?: string;
 }
@@ -72,7 +87,7 @@ async function loadReferenceData() {
   // rows with a NULL city_id/country_id).
   const { data: cities } = await supabase
     .from('cities')
-    .select('id, name, country_id, population')
+    .select('id, name, country_id, population, region_name')
     .not('slug', 'like', 'tmp-%')
     .order('population', { ascending: false, nullsFirst: false });
 
@@ -88,6 +103,19 @@ async function loadReferenceData() {
   }
 
   console.log(`Loaded ${countriesCache.length} countries, ${citiesCache.length} cities`);
+
+  // The cities fetch has no explicit range, so PostgREST caps it at max-rows
+  // (1000 today, against 2,964 non-tmp cities). That truncation is why most
+  // same-name collisions never even surface here — Charleston and Springfield
+  // are simply absent from the cache. Do not lift this quietly: it would newly
+  // link a large slice of the corpus in one pass, and every events/venues write
+  // fans out through the search_documents trigger.
+  if (citiesCache.length >= 1000) {
+    console.warn(
+      `cities cache truncated at ${citiesCache.length} rows by the PostgREST ` +
+      `row cap — city matching is operating on a partial reference set`,
+    );
+  }
 }
 
 // ── Matching functions ───────────────────────────────────────────────
@@ -122,14 +150,23 @@ function resolveCity(text: string | null | undefined, countryId?: string | null)
   const candidates = citiesByName.get(normalized);
   if (!candidates || candidates.length === 0) return null;
 
-  // If country_id provided, prefer matching city in that country
+  // `cities` holds at most one row per (name, country), so the country anchor
+  // makes the match unique when we have one. (It does NOT make it correct —
+  // the same-name twin may simply be absent from `cities`; that is what the
+  // collision guards downstream are for.)
   if (countryId) {
     const inCountry = candidates.find(c => c.country_id === countryId);
     if (inCountry) return inCountry;
+    // D10 fall-through: feeds do ship wrong country codes (an Outsavvy event in
+    // Salford, UK arrives with addressCountry="US"), so a cross-country match
+    // is still worth taking — but only below.
   }
 
-  // Return first match (highest population since cities are sorted by population desc)
-  return candidates[0];
+  // Only link when the name is globally unambiguous. The former fallback
+  // returned candidates[0], i.e. the most-populous same-name city, which is
+  // how a wrong-country "Paris" got linked. Guessing is not recoverable; a
+  // NULL city_id is.
+  return candidates.length === 1 ? candidates[0] : null;
 }
 
 // Names that are too ambiguous for regex matching (common English words, short names)
@@ -192,6 +229,7 @@ async function processVenuesOrEvents(
   table: 'venues' | 'events',
   items: Record<string, unknown>[],
   dryRun: boolean,
+  metroSlugs: Map<string, string> = new Map(),
 ): Promise<GeoLinkResult[]> {
   const results: GeoLinkResult[] = [];
 
@@ -202,6 +240,7 @@ async function processVenuesOrEvents(
     const countryText = item.country as string | null;
     const existingCityId = item.city_id as string | null;
     const existingCountryId = item.country_id as string | null;
+    const stateText = item.state as string | null;
 
     // Skip if already fully linked
     if (existingCityId && existingCountryId) {
@@ -227,9 +266,30 @@ async function processVenuesOrEvents(
     let country = existingCountryId
       ? countryById.get(existingCountryId) || null
       : resolveCountry(countryText);
-    const city = existingCityId
+    let city = existingCityId
       ? citiesCache.find(c => c.id === existingCityId) || null
       : resolveCity(cityText, country?.id);
+
+    // Same-name city collision: refuse rather than guess. Two sources of a
+    // refusal — a live contradiction found here, or a standing quarantine that
+    // `run_event_city_link` already recorded (otherwise this hourly job would
+    // undo that runner's decision one row at a time). Country linking is
+    // unaffected: the collision is within a single country.
+    let blockedReason: string | null = null;
+    if (!existingCityId && city) {
+      const enrichment = (item.enrichment_status || {}) as Record<string, unknown>;
+      const priorLink = enrichment.event_city_link as Record<string, unknown> | undefined;
+      // Live contradiction first so the log names the actual evidence; the
+      // standing quarantine is the fallback (it covers rows whose evidence
+      // lives somewhere this function cannot see).
+      blockedReason = cityCollisionReason(city, stateText, metroSlugs.get(id), cityText || '')
+        || (priorLink?.blocked ? `quarantined by run_event_city_link: ${priorLink.blocked}` : null);
+
+      if (blockedReason) {
+        console.log(`[${table}] ${id} city link refused — ${blockedReason}`);
+        city = null;
+      }
+    }
 
     // D10: trust city > country text. Source feeds sometimes ship a
     // wrong country code (e.g. an Outsavvy event in Salford, UK arrives
@@ -249,7 +309,8 @@ async function processVenuesOrEvents(
         entity_id: id, entity_name: name,
         city_resolved: null, country_resolved: null,
         city_id: null, country_id: null,
-        status: 'skipped',
+        status: blockedReason ? 'blocked' : 'skipped',
+        ...(blockedReason ? { blocked_reason: blockedReason } : {}),
       });
       continue;
     }
@@ -275,7 +336,8 @@ async function processVenuesOrEvents(
       city_resolved: city?.name || null,
       country_resolved: country?.name || null,
       city_id: newCityId, country_id: newCountryId,
-      status: newCityId && newCountryId ? 'linked' : 'partial',
+      status: blockedReason ? 'blocked' : (newCityId && newCountryId ? 'linked' : 'partial'),
+      ...(blockedReason ? { blocked_reason: blockedReason } : {}),
     });
   }
 
@@ -452,7 +514,7 @@ async function fetchUnlinkedItems(
     case 'venues': {
       let query = supabase
         .from('venues')
-        .select('id, name, city, country, city_id, country_id');
+        .select('id, name, city, state, country, city_id, country_id, enrichment_status');
       if (contentId) {
         query = query.eq('id', contentId);
       } else {
@@ -464,7 +526,7 @@ async function fetchUnlinkedItems(
     case 'events': {
       let query = supabase
         .from('events')
-        .select('id, title, city, country, city_id, country_id');
+        .select('id, title, city, state, country, city_id, country_id, enrichment_status');
       if (contentId) {
         query = query.eq('id', contentId);
       } else {
@@ -509,6 +571,38 @@ async function fetchUnlinkedItems(
     default:
       return [];
   }
+}
+
+/**
+ * Fetch the gaycities metro slug per event (guard B). Chunked: a PostgREST
+ * `in.()` filter travels in the URL, and a few hundred UUIDs overflow it —
+ * silently returning fewer rows rather than erroring.
+ */
+async function fetchMetroSlugs(eventIds: string[]): Promise<Map<string, string>> {
+  const slugs = new Map<string, string>();
+  for (let i = 0; i < eventIds.length; i += 100) {
+    const chunk = eventIds.slice(i, i + 100);
+    const { data, error } = await supabase
+      .from('event_sources')
+      .select(
+        'event_id, ' +
+        'sub_norm:payload->normalized->metadata->>gaycities_subdomain, ' +
+        'sub_raw:payload->metadata->>gaycities_subdomain',
+      )
+      .in('event_id', chunk);
+    if (error) {
+      // Fail loudly: a silent empty map would disarm guard B without a trace.
+      console.error('fetchMetroSlugs failed:', error.message);
+      continue;
+    }
+    for (const row of data || []) {
+      // The JSON-path aliases above are opaque to the generated PostgREST types.
+      const r = row as unknown as Record<string, string | null>;
+      const slug = r.sub_norm || r.sub_raw;
+      if (slug && r.event_id && !slugs.has(r.event_id)) slugs.set(r.event_id, slug);
+    }
+  }
+  return slugs;
 }
 
 // ── Main handler ─────────────────────────────────────────────────────
@@ -557,7 +651,10 @@ Deno.serve(async (req) => {
 
         let results: GeoLinkResult[];
         if (type === 'venues' || type === 'events') {
-          results = await processVenuesOrEvents(type, items, dry_run);
+          const slugs = type === 'events'
+            ? await fetchMetroSlugs(items.map(i => i.id as string))
+            : new Map<string, string>();
+          results = await processVenuesOrEvents(type, items, dry_run, slugs);
         } else if (type === 'personalities') {
           results = await processPersonalities(items, dry_run);
         } else {
@@ -568,12 +665,14 @@ Deno.serve(async (req) => {
         const partial = results.filter(r => r.status === 'partial').length;
         const skipped = results.filter(r => r.status === 'skipped').length;
         const alreadyLinked = results.filter(r => r.status === 'already_linked').length;
+        const blocked = results.filter(r => r.status === 'blocked').length;
 
         allResults[type] = {
           success: true, content_type: type, dry_run,
           total_processed: results.length,
           total_linked: linked, total_partial: partial,
           total_skipped: skipped, total_already_linked: alreadyLinked,
+          total_blocked: blocked,
           results,
         };
 
@@ -583,8 +682,8 @@ Deno.serve(async (req) => {
             entity_type: type,
             total_processed: results.length,
             total_linked: linked + partial,
-            total_skipped: skipped + alreadyLinked,
-            details: { dry_run, batch_limit, linked, partial, skipped, already_linked: alreadyLinked },
+            total_skipped: skipped + alreadyLinked + blocked,
+            details: { dry_run, batch_limit, linked, partial, skipped, already_linked: alreadyLinked, blocked },
           });
         }
       }
@@ -625,7 +724,10 @@ Deno.serve(async (req) => {
 
     let results: GeoLinkResult[];
     if (content_type === 'venues' || content_type === 'events') {
-      results = await processVenuesOrEvents(content_type, items, dry_run);
+      const slugs = content_type === 'events'
+        ? await fetchMetroSlugs(items.map(i => i.id as string))
+        : new Map<string, string>();
+      results = await processVenuesOrEvents(content_type, items, dry_run, slugs);
     } else if (content_type === 'personalities') {
       results = await processPersonalities(items, dry_run);
     } else {
@@ -636,6 +738,7 @@ Deno.serve(async (req) => {
     const partial = results.filter(r => r.status === 'partial').length;
     const skipped = results.filter(r => r.status === 'skipped').length;
     const alreadyLinked = results.filter(r => r.status === 'already_linked').length;
+    const blocked = results.filter(r => r.status === 'blocked').length;
 
     // Log to geo_link_log
     if (!dry_run && results.length > 0) {
@@ -643,8 +746,8 @@ Deno.serve(async (req) => {
         entity_type: content_type,
         total_processed: results.length,
         total_linked: linked + partial,
-        total_skipped: skipped + alreadyLinked,
-        details: { dry_run, batch_limit, content_id, linked, partial, skipped, already_linked: alreadyLinked },
+        total_skipped: skipped + alreadyLinked + blocked,
+        details: { dry_run, batch_limit, content_id, linked, partial, skipped, already_linked: alreadyLinked, blocked },
       });
     }
 
@@ -657,6 +760,7 @@ Deno.serve(async (req) => {
       total_partial: partial,
       total_skipped: skipped,
       total_already_linked: alreadyLinked,
+      total_blocked: blocked,
       results,
     }), {
       headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
