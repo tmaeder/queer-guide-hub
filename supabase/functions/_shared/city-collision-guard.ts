@@ -125,6 +125,99 @@ export function claimedStateFromMetroSlug(
 }
 
 /**
+ * Guard C — corroboration from prose (the news path).
+ *
+ * A news article carries neither a `state` column nor a metro slug, so guards A
+ * and B have nothing to read. All it has is its own text, and the same collision
+ * lands there: of 132 articles linked to Portland, Oregon, 13 name Maine.
+ *
+ * The obvious rule — "any US state in the text that disagrees with
+ * `cities.region_name` blocks the link" — was measured against the live corpus
+ * and REJECTED: it fires on 873 of 9,538 US city links, and the sample is
+ * overwhelmingly correct links that merely mention another state in passing
+ * (a Seattle article referencing Indiana, a SCOTUS roundup listing five states).
+ * Blocking those would delete ~9% of a working topical index to fix 13 rows.
+ *
+ * What actually separates the 13 from the 873 is that **Portland is an ambiguous
+ * name and Seattle is not**. So the burden of proof is inverted for ambiguous
+ * names only: for those, a state mentioned in the text that is not the
+ * candidate's own state refuses the link. Narrowed this way the rule fires on 53
+ * of 9,538 links (0.55%), and the blocked set is almost entirely the documented
+ * collision pairs — Portland/Maine, Charleston/{SC,WV}, Columbia/SC, Dover/DE,
+ * Glendale/AZ, Jackson/MS — plus a few links that were spurious anyway.
+ *
+ * Consistent with the rest of this module, refusing is the safe direction, and
+ * more so here: `news_article_cities` is a topical tag, not an authoritative
+ * location, so a missing tag costs far less than a wrong one on a city page.
+ */
+
+/**
+ * US city names with a well-known twin in another state. `cities` holds at most
+ * one row per (name, country) and therefore cannot represent the twin, so this
+ * list cannot be derived from the table — its absence IS the bug. Curated, and
+ * deliberately short: every entry widens the set of links that need positive
+ * corroboration, so add a name only when the twin is prominent enough that
+ * articles about it plausibly reach this corpus.
+ */
+export const AMBIGUOUS_US_CITY_NAMES = new Set([
+  'portland', 'charleston', 'springfield', 'columbia', 'columbus', 'wilmington',
+  'richmond', 'rochester', 'manchester', 'athens', 'cambridge', 'jackson',
+  'franklin', 'aurora', 'glendale', 'lancaster', 'salem', 'newark', 'bristol',
+  'dover', 'auburn', 'cleveland', 'alexandria', 'pasadena', 'peoria',
+]);
+
+/**
+ * `Washington` is excluded from the claimed-state vocabulary entirely. It is
+ * simultaneously a state, a city, and the everyday name for the District of
+ * Columbia, so a mention corroborates nothing — it produced false blocks on
+ * Arlington, Virginia (a DC-metro city) in the measurement.
+ */
+const PROSE_STATE_NAMES: string[] = [...new Set(Object.values(US_STATE_BY_ABBR))]
+  .filter((s) => s !== 'Washington');
+
+const wordRegex = (phrase: string) =>
+  new RegExp(`\\b${phrase.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i');
+
+/**
+ * States the text names, ignoring any whose name is part of the city's own name.
+ * Without that exclusion "Kansas City" reads every mention of Kansas as a
+ * contradiction of Missouri, which was the single largest false-positive group.
+ */
+export function claimedStatesFromText(
+  text: string | null | undefined,
+  cityName: string | null | undefined,
+): string[] {
+  const body = (text || '').trim();
+  if (!body) return [];
+  const city = (cityName || '').toLowerCase();
+  return PROSE_STATE_NAMES.filter(
+    (state) => !city.includes(state.toLowerCase()) && wordRegex(state).test(body),
+  );
+}
+
+/**
+ * Returns a reason when an ambiguously-named city is contradicted by the prose,
+ * otherwise null. Naming the candidate's own state anywhere in the text clears
+ * it — corroboration outranks a competing mention, so a Portland, Oregon article
+ * that also refers to Maine still links.
+ */
+export function proseStateContradiction(
+  city: CollisionCandidate,
+  text: string | null | undefined,
+): string | null {
+  if (!AMBIGUOUS_US_CITY_NAMES.has((city.name || '').trim().toLowerCase())) return null;
+
+  const region = normalizeRegion(city.region_name);
+  if (!region) return null; // nothing to corroborate against — guard A's stance
+
+  const claimed = claimedStatesFromText(text, city.name);
+  if (claimed.length === 0) return null;
+  if (claimed.some((s) => s.toLowerCase() === region)) return null; // corroborated
+
+  return `text names ${claimed.join('/')} but candidate is ${city.name}, ${city.region_name}`;
+}
+
+/**
  * Returns a human-readable reason when the candidate city contradicts what the
  * row (or its source) claims about the state, otherwise null.
  *

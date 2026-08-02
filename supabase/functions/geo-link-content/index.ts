@@ -14,7 +14,7 @@
 
 import { requireAdmin, getCorsHeaders, getServiceClient } from '../_shared/supabase-client.ts';
 import { COUNTRY_ALIASES } from '../_shared/automation-utils.ts';
-import { cityCollisionReason } from '../_shared/city-collision-guard.ts';
+import { cityCollisionReason, proseStateContradiction } from '../_shared/city-collision-guard.ts';
 
 const supabase = getServiceClient();
 
@@ -207,6 +207,15 @@ function extractGeoFromText(
     if (AMBIGUOUS_GEO_NAMES.has(city.name.toLowerCase())) continue;
     const regex = new RegExp(`\\b${escapeRegex(city.name)}\\b`, 'i');
     if (regex.test(text)) {
+      // Same-name collision, prose edition. A bare "Portland" cannot tell
+      // Portland, Maine from Portland, Oregon, and `cities` holds only the
+      // latter. AMBIGUOUS_GEO_NAMES above does not cover this — it lists common
+      // English words, not names whose twin the reference table cannot hold.
+      const collision = proseStateContradiction(city, text);
+      if (collision) {
+        console.log(`[news] city link refused — ${collision}`);
+        continue;
+      }
       foundCityIds.add(city.id);
       // Also add the city's country
       if (city.country_id) foundCountryIds.add(city.country_id);
