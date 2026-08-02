@@ -78,4 +78,4 @@ as $function$
 $function$;
 
 comment on function public.find_event_venue_candidates(integer, boolean) is
-  'Event -> venue link candidates within the same city. Skips events whose venue_name is actually a city or queer-village name: scraped events often carry the city there, and venues rows share those names, so the pair normalizes to name_exact and would auto-link an event to a non-venue.';;
+  'Event -> venue link candidates within the same city. Skips events whose venue_name is actually a city or queer-village name: scraped events often carry the city there, and venues rows share those names, so the pair normalizes to name_exact and would auto-link an event to a non-venue.';
