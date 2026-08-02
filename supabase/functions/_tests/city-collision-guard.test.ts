@@ -5,6 +5,7 @@ import {
   cityCollisionReason,
   claimedStateFromMetroSlug,
   normalizeRegion,
+  regionsContradict,
 } from '../_shared/city-collision-guard.ts'
 
 const PORTLAND_OR = { name: 'Portland', region_name: 'Oregon' }
@@ -81,6 +82,54 @@ Deno.test('guard A: an empty state on either side is inert', () => {
 
 Deno.test('guard A: comparison is case- and whitespace-insensitive', () => {
   assertEquals(cityCollisionReason(PORTLAND_OR, '  oregon ', null, 'Portland'), null)
+})
+
+// ── Guard A false positives, measured on prod ────────────────────────
+//
+// Across the 114 already-linked events whose `state` disagreed with
+// cities.region_name, 113 were these three shapes and only ONE was real. A
+// guard that blocks them refuses correct links for Australia and Spain.
+
+Deno.test('guard A: an opaque numeric region_name is not a contradiction', () => {
+  // Melbourne, state "VIC", cities.region_name "07" — 27 events.
+  assertEquals(cityCollisionReason({ name: 'Melbourne', region_name: '07' }, 'VIC', null, 'Melbourne'), null)
+  assertEquals(cityCollisionReason({ name: 'Sydney', region_name: '02' }, 'NSW', null, 'Sydney'), null)
+})
+
+Deno.test('guard A: AU and CA codes expand, so they agree instead of blocking', () => {
+  assertEquals(cityCollisionReason({ name: 'Byron Bay', region_name: 'New South Wales' }, 'NSW', null, 'Byron Bay'), null)
+  assertEquals(cityCollisionReason({ name: 'Daylesford', region_name: 'Victoria' }, 'VIC', null, 'Daylesford'), null)
+  assertEquals(cityCollisionReason({ name: 'Toronto', region_name: 'Ontario' }, 'ON', null, 'Toronto'), null)
+})
+
+Deno.test('guard A: administrative wording is agreement, not contradiction', () => {
+  assertEquals(cityCollisionReason({ name: 'Madrid', region_name: 'Community of Madrid' }, 'Madrid', null, 'Madrid'), null)
+  assertEquals(cityCollisionReason({ name: 'Valencia', region_name: 'Valencian Community' }, 'Valencia', null, 'Valencia'), null)
+  assertEquals(cityCollisionReason({ name: 'Gijón', region_name: 'Principality of Asturias' }, 'Asturias', null, 'Gijón'), null)
+})
+
+Deno.test('guard A: an unrecognized short code carries no signal', () => {
+  assertEquals(regionsContradict('XYZ', 'Oregon'), false)
+})
+
+Deno.test('guard A: a code claimed by two countries carries no signal', () => {
+  // WA = Washington and Western Australia; NT = Northern Territory and
+  // Northwest Territories. Resolving either way would be a guess.
+  assertEquals(normalizeRegion('WA'), '')
+  assertEquals(regionsContradict('WA', 'Western Australia'), false)
+  assertEquals(regionsContradict('NT', 'Washington'), false)
+})
+
+Deno.test('guard A still has teeth: the one real mis-link in that cohort', () => {
+  // A Durango, COLORADO event attached to Durango, Durango — in MEXICO.
+  const durangoMx = { name: 'Durango', region_name: 'Durango' }
+  assertEquals(typeof cityCollisionReason(durangoMx, 'Colorado', null, 'Durango'), 'string')
+})
+
+Deno.test('guard B is unaffected by the guard A relaxation', () => {
+  // An opaque region_name still cannot corroborate an explicit metro claim.
+  const r = cityCollisionReason({ name: 'Portland', region_name: '07' }, null, 'portland-maine', 'Portland')
+  assertEquals(typeof r, 'string')
 })
 
 // ── Helpers ──────────────────────────────────────────────────────────
