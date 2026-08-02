@@ -17,6 +17,8 @@ import {
   keywordsFor,
   hasProfessionMapping,
   scoreOccupationMatch,
+  PROFESSION_KEYWORDS,
+  PROFESSION_ALIASES,
 } from '../../../supabase/functions/_shared/profession-keywords.js';
 
 import { readTimeClaim, readClaim, readClaimIds }
@@ -68,6 +70,43 @@ describe('profession keywords', () => {
     expect(hasProfessionMapping('Kartograph des Zaren')).toBe(false);
     expect(hasProfessionMapping('')).toBe(false);
     expect(hasProfessionMapping(null)).toBe(false);
+  });
+
+  it('resolves every alias to a real keyword set (no dangling targets)', () => {
+    for (const [alias, target] of Object.entries(PROFESSION_ALIASES)) {
+      expect(PROFESSION_KEYWORDS[target], `alias "${alias}" → missing key "${target}"`)
+        .toBeDefined();
+    }
+  });
+
+  it('never defines a term as both a direct key and an alias', () => {
+    // lookup() consults PROFESSION_KEYWORDS first, so a term in both tables
+    // silently ignores its alias. 'wrestler' was in both and kept the narrow
+    // two-word list instead of inheriting the full athlete set.
+    for (const alias of Object.keys(PROFESSION_ALIASES)) {
+      expect(PROFESSION_KEYWORDS[alias], `"${alias}" is both a key and an alias`)
+        .toBeUndefined();
+    }
+  });
+
+  it('gives an alias EXACTLY its target keyword list', () => {
+    // The regression this guards: German entries were once duplicate lists and
+    // drifted narrower than their English equivalents — 'sportler' lacked
+    // boxer/equestrian, so Irma Testa ("Italian boxer") and Hans Peter
+    // Minderhoud ("equestrian") scored as namesake conflicts despite being the
+    // right person. Aliasing means one list per concept; this asserts it stays
+    // that way.
+    for (const [alias, target] of Object.entries(PROFESSION_ALIASES)) {
+      expect(keywordsFor(alias), `alias "${alias}"`).toEqual(PROFESSION_KEYWORDS[target]);
+    }
+  });
+
+  it('matches the athlete disciplines that broke before', () => {
+    const kws = keywordsFor('Sportler/in');
+    expect(scoreOccupationMatch(['boxer'], kws)).toBeGreaterThan(0);
+    expect(scoreOccupationMatch(['equestrian'], kws)).toBeGreaterThan(0);
+    // …without becoming a catch-all: an astrophysicist is still not an athlete.
+    expect(scoreOccupationMatch(['astrophysicist'], kws)).toBe(0);
   });
 
   it('scores occupation overlap', () => {

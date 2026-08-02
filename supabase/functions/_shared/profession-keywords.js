@@ -15,17 +15,17 @@
 export const PROFESSION_KEYWORDS = {
   'adult performer': ['porn', 'adult', 'erotic', 'escort', 'pornographic'],
   'pornographic actor': ['porn', 'adult', 'erotic'],
-  'actor': ['actor', 'actress', 'film', 'television'],
-  'singer': ['singer', 'vocalist', 'musician'],
+  'actor': ['actor', 'actress', 'film', 'television', 'performer'],
+  'singer': ['singer', 'vocalist', 'musician', 'opera'],
   'musician': ['musician', 'composer', 'instrumentalist', 'singer'],
-  'writer': ['writer', 'author', 'novelist', 'poet', 'playwright', 'journalist'],
+  'writer': ['writer', 'author', 'novelist', 'poet', 'playwright', 'journalist', 'essayist', 'lyricist', 'dramatist', 'screenwriter'],
   'politician': ['politician', 'statesman', 'stateswoman', 'minister', 'senator', 'representative'],
   'activist': ['activist', 'campaigner'],
-  'artist': ['artist', 'painter', 'sculptor', 'photographer'],
+  'artist': ['artist', 'painter', 'sculptor', 'photographer', 'illustrator'],
   'scientist': ['scientist', 'researcher', 'mathematician', 'physicist', 'biologist', 'chemist'],
   'director': ['director', 'filmmaker'],
   'producer': ['producer'],
-  'athlete': ['athlete', 'player', 'sportsperson', 'footballer', 'basketball', 'tennis', 'swimmer', 'runner', 'boxer'],
+  'athlete': ['athlete', 'player', 'sportsperson', 'footballer', 'basketball', 'tennis', 'swimmer', 'runner', 'boxer', 'equestrian', 'wrestler', 'cyclist', 'sprinter', 'fighter', 'rower', 'gymnast', 'skater'],
   'drag queen': ['drag', 'performer'],
   'drag king': ['drag', 'performer'],
   'dragqueen': ['drag', 'performer'],
@@ -39,72 +39,89 @@ export const PROFESSION_KEYWORDS = {
   'entertainer': ['entertainer', 'performer'],
   'rapper': ['rapper', 'musician', 'singer'],
   'youtuber': ['youtuber', 'streamer', 'content creator'],
-  'military': ['military', 'officer', 'soldier'],
-  'lawyer': ['lawyer', 'jurist', 'attorney', 'barrister'],
+  'military': ['military', 'officer', 'soldier', 'sailor', 'naval'],
+  'lawyer': ['lawyer', 'jurist', 'attorney', 'barrister', 'judge'],
   'photographer': ['photographer'],
-  'composer': ['composer', 'musician'],
+  'composer': ['composer', 'musician', 'conductor'],
+  'dancer': ['dancer', 'choreographer', 'ballet'],
+  'historian': ['historian', 'history'],
+  'physician': ['physician', 'doctor', 'surgeon', 'medic'],
+  'architect': ['architect'],
+  'designer': ['designer'],
+  'diplomat': ['diplomat', 'ambassador'],
+  'entrepreneur': ['entrepreneur', 'businessperson'],
+  'teacher': ['teacher', 'educator', 'professor'],
   'singer-songwriter': ['singer', 'songwriter', 'musician'],
   'tv presenter': ['presenter', 'host', 'television'],
-  'wrestler': ['wrestler', 'athlete'],
-
-  // --- German (and German-suffixed) forms present in this corpus. -------------
-  // keywordsFor() strips "/in", ":in" and trailing "in" before lookup, so only
-  // the masculine stem needs a key.
-  'schriftsteller': ['writer', 'author', 'novelist', 'poet', 'playwright'],
-  'autor': ['writer', 'author', 'novelist', 'essayist'],
-  'dichter': ['poet', 'writer', 'author'],
-  'lyriker': ['poet', 'writer', 'lyricist'],
-  'dramatiker': ['playwright', 'dramatist', 'writer'],
-  'politiker': ['politician', 'statesman', 'minister', 'senator', 'representative'],
-  'aktivist': ['activist', 'campaigner'],
-  'lgbt-aktivist': ['activist', 'campaigner'],
-  'schauspieler': ['actor', 'actress', 'film', 'television'],
-  'darsteller': ['actor', 'actress', 'performer'],
-  'saenger': ['singer', 'vocalist', 'musician'],
-  'sanger': ['singer', 'vocalist', 'musician'],
-  'opernsaenger': ['singer', 'opera', 'vocalist'],
-  'opernsanger': ['singer', 'opera', 'vocalist'],
-  'musiker': ['musician', 'composer', 'instrumentalist'],
-  'komponist': ['composer', 'musician'],
-  'dirigent': ['conductor', 'musician'],
-  'texter': ['lyricist', 'songwriter', 'writer'],
-  'maler': ['painter', 'artist'],
-  'kuenstler': ['artist', 'painter', 'sculptor'],
-  'kunstler': ['artist', 'painter', 'sculptor'],
-  'bildhauer': ['sculptor', 'artist'],
-  'fotograf': ['photographer'],
-  'regisseur': ['director', 'filmmaker'],
-  'filmemacher': ['filmmaker', 'director'],
-  'produzent': ['producer'],
-  'moderator': ['presenter', 'host', 'television'],
-  'komiker': ['comedian', 'humorist'],
-  'sportler': ['athlete', 'player', 'sportsperson'],
-  'fussballspieler': ['footballer', 'player', 'athlete'],
-  'basketballspieler': ['basketball', 'player', 'athlete'],
-  'sprinter': ['sprinter', 'athlete', 'runner'],
-  'reiter': ['equestrian', 'rider', 'athlete'],
-  'mma-kaempfer': ['fighter', 'martial art', 'athlete'],
-  'mma-kampfer': ['fighter', 'martial art', 'athlete'],
-  'taenzer': ['dancer', 'choreographer'],
-  'tanzer': ['dancer', 'choreographer'],
-  'choreograf': ['choreographer', 'dancer'],
-  'modedesigner': ['designer', 'fashion'],
-  'designer': ['designer'],
-  'architekt': ['architect'],
-  'historiker': ['historian'],
-  'wissenschaftler': ['scientist', 'researcher', 'academic'],
-  'arzt': ['physician', 'doctor', 'surgeon'],
-  'aerztin': ['physician', 'doctor', 'surgeon'],
-  'richter': ['judge', 'jurist'],
-  'diplomat': ['diplomat', 'ambassador'],
-  'unternehmer': ['entrepreneur', 'businessperson'],
-  'soldat': ['soldier', 'military', 'officer'],
-  'lehrer': ['teacher', 'educator'],
-  'koch': ['chef', 'cook', 'restaurateur'],
-  'koechin': ['chef', 'cook', 'restaurateur'],
-  'sprecher': ['voice actor', 'announcer', 'spokesperson'],
-  'creator': ['content creator', 'youtuber', 'streamer'],
+  // NOTE: no standalone 'wrestler' key — it is an alias onto 'athlete' below.
+  // A key that also appears in PROFESSION_ALIASES silently wins over the alias
+  // (lookup() checks this table first), which is how it would drift narrower.
 };
+
+// German (and German-suffixed) forms present in this corpus, expressed as
+// ALIASES onto the English keys above rather than as duplicate keyword lists.
+//
+// They were duplicated lists at first and immediately drifted: 'sportler'
+// carried only ['athlete','player','sportsperson'] while the English 'athlete'
+// also lists boxer/swimmer/runner/tennis, so Irma Testa ("Italian boxer") and
+// Hans Peter Minderhoud ("equestrian") — both plainly the right person — were
+// scored as namesake conflicts. Aliasing makes that class of drift impossible:
+// there is exactly one keyword list per concept.
+//
+// keywordsFor() strips "/in", ":in" and trailing "in" before lookup, so only the
+// masculine stem needs an entry.
+/** @type {Record<string, string>} */
+export const PROFESSION_ALIASES = {
+  schriftsteller: 'writer',
+  autor: 'writer',
+  dichter: 'writer',
+  lyriker: 'writer',
+  dramatiker: 'writer',
+  politiker: 'politician',
+  aktivist: 'activist',
+  'lgbt-aktivist': 'activist',
+  schauspieler: 'actor',
+  darsteller: 'actor',
+  saenger: 'singer',
+  sanger: 'singer',
+  opernsaenger: 'singer',
+  opernsanger: 'singer',
+  musiker: 'musician',
+  komponist: 'composer',
+  dirigent: 'musician',
+  texter: 'writer',
+  maler: 'artist',
+  kuenstler: 'artist',
+  kunstler: 'artist',
+  bildhauer: 'artist',
+  fotograf: 'photographer',
+  regisseur: 'director',
+  filmemacher: 'director',
+  produzent: 'producer',
+  moderator: 'tv presenter',
+  komiker: 'comedian',
+  sportler: 'athlete',
+  fussballspieler: 'athlete',
+  basketballspieler: 'athlete',
+  sprinter: 'athlete',
+  reiter: 'athlete',
+  'mma-kaempfer': 'athlete',
+  'mma-kampfer': 'athlete',
+  wrestler: 'athlete',
+  taenzer: 'dancer',
+  tanzer: 'dancer',
+  choreograf: 'dancer',
+  modedesigner: 'fashion designer',
+  historiker: 'historian',
+  wissenschaftler: 'scientist',
+  arzt: 'physician',
+  aerztin: 'physician',
+  richter: 'lawyer',
+  soldat: 'military',
+  koch: 'chef',
+  koechin: 'chef',
+};
+
 
 /**
  * Expand a token into the spelling variants the corpus actually uses:
@@ -139,22 +156,28 @@ export function stripGenderSuffix(token) {
  * @param {string} profession
  * @returns {string[]}
  */
+/** Keyword list for one already-normalised token, following an alias if present. */
+function lookup(token) {
+  return PROFESSION_KEYWORDS[token] ?? PROFESSION_KEYWORDS[PROFESSION_ALIASES[token]] ?? null;
+}
+
 export function keywordsFor(profession) {
   const p = profession.trim().toLowerCase();
-  if (PROFESSION_KEYWORDS[p]) return PROFESSION_KEYWORDS[p];
+  const direct = lookup(p);
+  if (direct) return direct;
 
   // The corpus separates multi-value professions with ";" and "," as well as
   // "/" — "Journalist/in; Schriftsteller/in", "Tänzer/in, Choreograf/in".
   const kws = new Set();
   for (const raw of p.split(/[\s,;/]+/).filter(Boolean)) {
     for (const form of stripGenderSuffix(raw)) {
-      const set = PROFESSION_KEYWORDS[form];
+      const set = lookup(form);
       if (set) set.forEach((k) => kws.add(k));
     }
   }
   if (kws.size === 0) {
     for (const form of stripGenderSuffix(p)) {
-      const set = PROFESSION_KEYWORDS[form];
+      const set = lookup(form);
       if (set) set.forEach((k) => kws.add(k));
     }
   }

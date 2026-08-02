@@ -9,6 +9,13 @@
 /** Free-text profession (any language) → English occupation keywords. */
 export declare const PROFESSION_KEYWORDS: Record<string, string[]>;
 
+/**
+ * Non-English profession stem → the PROFESSION_KEYWORDS key it reuses.
+ * Aliases rather than duplicate lists, so a German entry cannot drift narrower
+ * than its English equivalent.
+ */
+export declare const PROFESSION_ALIASES: Record<string, string>;
+
 /** Spelling variants of a German token: "Schriftsteller/in" → "schriftsteller". */
 export declare function stripGenderSuffix(token: string): string[];
 

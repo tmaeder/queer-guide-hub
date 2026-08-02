@@ -166,7 +166,11 @@ export default function NewsDetail() {
   // Merged-duplicate slug redirect (news_slug_redirects); client-side fallback
   // for in-app navigation — the edge middleware handles the SEO-correct 301.
   const redirectNewsSlug = useSlugRedirect(
-    { redirectTable: 'news_slug_redirects', redirectIdColumn: 'article_id', entityTable: 'news_articles' },
+    {
+      redirectTable: 'news_slug_redirects',
+      redirectIdColumn: 'article_id',
+      entityTable: 'news_articles',
+    },
     !loading && !article ? (slug ?? null) : null,
   );
   useEffect(() => {
@@ -194,16 +198,25 @@ export default function NewsDetail() {
     return category?.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
   };
 
+  // Authoritative category, falling back to the frozen legacy column for rows
+  // the backfill has not reached. Reading `category` alone — as this page did —
+  // meant a correctly classified article still showed no category anywhere.
+  const articleCategory =
+    (article as { category_canonical?: string | null } | null)?.category_canonical ||
+    article?.category ||
+    null;
+  const hasCategory = !!articleCategory && articleCategory !== 'general';
+
   // Publish the breadcrumb trail to the global bar (News / [Category] / Title).
   useBreadcrumbs(
     article
       ? [
           { label: t('breadcrumb.news', 'News'), href: '/news' },
-          ...(article.category && article.category !== 'general'
+          ...(hasCategory
             ? [
                 {
-                  label: getCategoryLabel(article.category),
-                  href: `/news?category=${article.category}`,
+                  label: getCategoryLabel(articleCategory),
+                  href: `/news?category=${articleCategory}`,
                 },
               ]
             : []),
@@ -242,9 +255,7 @@ export default function NewsDetail() {
   if (!article) {
     return (
       <div className="container mx-auto py-8 px-4 text-center">
-        <h1 className="mb-4 text-xl font-bold">
-          {t('newsDetail.notFound', 'Article Not Found')}
-        </h1>
+        <h1 className="mb-4 text-xl font-bold">{t('newsDetail.notFound', 'Article Not Found')}</h1>
         <p className="mb-6 text-muted-foreground">
           {t('newsDetail.notFoundDesc', "The article you're looking for doesn't exist.")}
         </p>
@@ -268,8 +279,7 @@ export default function NewsDetail() {
   const readMins = estimateReadingTime(article.content, article.excerpt);
   const fresh = isFreshArticle(article.published_at);
   const corroboration = article.corroboration_count ?? 0;
-  const categoryLabel =
-    article.category && article.category !== 'general' ? getCategoryLabel(article.category) : null;
+  const categoryLabel = hasCategory ? getCategoryLabel(articleCategory) : null;
 
   return (
     <div className="container mx-auto px-4 py-8 pb-24">
