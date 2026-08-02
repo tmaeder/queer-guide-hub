@@ -58,16 +58,21 @@ interface PipelineErrorRow {
   errors_24h?: number;
 }
 
-/** release_gate_checks() has drifted its column names across migrations, so
- *  read it defensively rather than pinning one shape. */
+/**
+ * The exact shape of admin_release_gates() / release_gate_checks():
+ * `TABLE(gate text, severity text, failures bigint, detail jsonb)`.
+ *
+ * This was previously a union of guessed column names (check/label/name/ok/
+ * status/count) in the name of reading it "defensively". None of them exist.
+ * Defensive reading of a shape nobody checked is worse than pinning the real
+ * one: every gate parsed as `failures: undefined` -> 0, so the section would
+ * have reported "Nothing failing." no matter how many gates were red. Pin the
+ * real columns; if they ever drift, the section should break loudly.
+ */
 interface GateRow {
-  check?: string;
-  label?: string;
-  name?: string;
+  gate?: string;
   severity?: string | null;
-  status?: string | null;
-  ok?: boolean | null;
-  count?: number | null;
+  failures?: number | null;
 }
 
 function startOfTodayISO(): string {
@@ -80,7 +85,10 @@ async function fetchOps(): Promise<CockpitOps> {
   const [automations, errors, gates, imports] = await Promise.all([
     untypedFrom('admin_automations').select('slug, name, enabled, last_run_status, last_run_at'),
     untypedFrom('pipeline_error_summary').select('function_name, errors_24h').limit(100),
-    untypedRpc<GateRow[]>('release_gate_checks'),
+    // admin_release_gates(), not release_gate_checks(): the core grants EXECUTE
+    // only to postgres + service_role, so calling it as the signed-in admin
+    // returned 42501 and blanked this whole section on production.
+    untypedRpc<GateRow[]>('admin_release_gates'),
     // One select instead of the three head-counts the old Import Status widget
     // fired: today's rows are bounded, so counting client-side is cheaper.
     supabase.from('import_jobs_enhanced').select('status').gte('updated_at', startOfTodayISO()),
@@ -109,11 +117,11 @@ async function fetchOps(): Promise<CockpitOps> {
     .sort((a, b) => b.errors24h - a.errors24h);
 
   const failingGates = ((gates.data ?? []) as GateRow[])
-    .filter((g) => g.ok === false || g.status === 'fail' || (g.count ?? 0) > 0)
+    .filter((g) => (g.failures ?? 0) > 0)
     .map((g) => ({
-      label: g.label ?? g.check ?? g.name ?? 'Unnamed gate',
+      label: g.gate ?? 'Unnamed gate',
       severity: g.severity ?? null,
-      count: g.count ?? null,
+      count: g.failures ?? null,
     }));
 
   const failedImportsToday = ((imports.data ?? []) as Array<{ status?: string }>).filter(
