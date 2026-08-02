@@ -482,21 +482,25 @@ async function resolveCity(
   if (!name) return null
   const trimmed = name.trim()
 
-  // Check city_aliases first
+  // Check city_aliases first. An alias can outlive its city being merged
+  // away, so constrain the embedded row to a canonical one.
   const { data: alias } = await supabase
     .from('city_aliases')
     .select('city_id, cities!inner(id, name)')
-    .ilike('alias_name', trimmed)
+    .ilike('alias', trimmed)
+    .is('cities.duplicate_of_id', null)
     .limit(1)
     .single()
 
   if (alias?.cities) return { id: alias.cities.id, name: alias.cities.name }
 
-  // Direct city name match
+  // Direct city name match — never resolve to a merged duplicate, whose name
+  // survives the merge and would re-attach content the merge consolidated.
   let query = supabase
     .from('cities')
     .select('id, name')
     .ilike('name', trimmed)
+    .is('duplicate_of_id', null)
     .limit(1)
 
   if (countryId) query = query.eq('country_id', countryId)

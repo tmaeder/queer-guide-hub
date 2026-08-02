@@ -1,3 +1,4 @@
+import type { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
 import { getServiceClient, jsonResponse, errorResponse, corsResponse, requireAdmin } from '../_shared/supabase-client.ts'
 import { COUNTRY_ALIASES } from '../_shared/automation-utils.ts'
 
@@ -172,7 +173,7 @@ Deno.serve(async (req) => {
 })
 
 async function createCity(
-  supabase: unknown,
+  supabase: SupabaseClient,
   cityName: string,
   countryId: string,
   countryName: string,
@@ -242,13 +243,29 @@ async function createCity(
       if (insertErr.code === '23505') {
         const { data: existing } = await supabase
           .from('cities')
-          .select('id, name')
+          .select('id, name, duplicate_of_id')
           .eq('country_id', countryId)
           .ilike('name', cityName)
           .limit(1)
           .single()
 
-        return existing || null
+        if (!existing) return null
+
+        // The row we collided with may since have been merged away. Follow it
+        // to the canonical city instead of handing back a duplicate — callers
+        // stamp this id onto content, and a merged city_id resurfaces the very
+        // rows a merge was meant to consolidate.
+        if (existing.duplicate_of_id) {
+          const { data: canonical } = await supabase
+            .from('cities')
+            .select('id, name')
+            .eq('id', existing.duplicate_of_id)
+            .is('duplicate_of_id', null)
+            .maybeSingle()
+          if (canonical) return canonical
+        }
+
+        return { id: existing.id, name: existing.name }
       }
       console.error('Error inserting city:', insertErr)
       return null

@@ -85,10 +85,18 @@ async function loadReferenceData() {
   // linked to a hidden, low-quality bucket city (the cause of the mis-bucketing
   // that this function would otherwise never re-fix, since it only reprocesses
   // rows with a NULL city_id/country_id).
+  //
+  // Also exclude merged duplicates. A merged row keeps its name and its
+  // non-tmp slug, so the tmp- filter alone leaves it live in this cache and
+  // this function keeps feeding it new content every hour — quietly undoing
+  // the merge. That is exactly what happened to "New York City" (a Montclair,
+  // NJ row that had absorbed 3,364 New York events): the SQL runner
+  // run_event_city_link filters `c.duplicate_of_id is null`, this one did not.
   const { data: cities } = await supabase
     .from('cities')
     .select('id, name, country_id, population, region_name')
     .not('slug', 'like', 'tmp-%')
+    .is('duplicate_of_id', null)
     .order('population', { ascending: false, nullsFirst: false });
 
   citiesCache = cities || [];
