@@ -6,32 +6,13 @@
 
 import { lazy, Suspense } from 'react';
 import { useParams } from 'react-router';
-import {
-  Plus,
-  Search,
-  RefreshCw,
-  X,
-  Columns3,
-  Table2,
-  LayoutGrid,
-  Columns,
-  GanttChart,
-  CalendarDays,
-} from 'lucide-react';
+import { Plus, Search, RefreshCw, X } from 'lucide-react';
 import { ContentEntityTabs } from '@/components/admin/ContentEntityTabs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-} from '@/components/ui/dropdown-menu';
+
 import { tintOf } from './types';
 import { ContentListTable } from './ContentListTable';
 import { ContentListGallery } from './ContentListGallery';
@@ -40,8 +21,7 @@ import { ContentListTimeline } from './ContentListTimeline';
 import { ContentListCalendar } from './ContentListCalendar';
 import { FilterBuilder } from './filters/FilterBuilder';
 import { SortBuilder } from './filters/SortBuilder';
-import { groupableFields } from './boardGrouping';
-import { dateFields } from './dateFields';
+import { ViewSettings } from './filters/ViewSettings';
 import { useContentListController } from './useContentListController';
 import { ExportExcelButton } from '@/components/admin/ExportExcelButton';
 import { exportContentType } from './exportContentList';
@@ -80,9 +60,6 @@ function ContentListPanelBody(props: ContentListPanelProps) {
   // The controller can return undefined (no type selected); the views model
   // "no config" as null, so normalize once here rather than at each call site.
   const config = c.config ?? null;
-  const groupable = groupableFields(config);
-  const dateable = dateFields(config);
-  const isDateView = c.view === 'timeline' || c.view === 'calendar';
 
   return (
     <div>
@@ -167,38 +144,6 @@ function ContentListPanelBody(props: ContentListPanelProps) {
             {c.selected.size} selected
           </p>
         )}
-        {c.contentTypeId && (
-          <div
-            role="radiogroup"
-            aria-label="View"
-            className="inline-flex items-center gap-1 border border-border rounded-element p-1"
-          >
-            {(
-              [
-                { id: 'table', label: 'Table', Icon: Table2 },
-                { id: 'gallery', label: 'Gallery', Icon: LayoutGrid },
-                { id: 'board', label: 'Board', Icon: Columns },
-                { id: 'timeline', label: 'Timeline', Icon: GanttChart },
-                { id: 'calendar', label: 'Calendar', Icon: CalendarDays },
-              ] as const
-            ).map(({ id, label, Icon }) => (
-              <Button
-                key={id}
-                role="radio"
-                aria-checked={c.view === id}
-                aria-label={label}
-                size="sm"
-                variant={c.view === id ? 'secondary' : 'ghost'}
-                className="h-7 px-2"
-                onClick={() => c.setView(id)}
-              >
-                <Icon size={14} className="mr-1" />
-                {label}
-              </Button>
-            ))}
-          </div>
-        )}
-
         {c.contentTypeId && config && (
           <FilterBuilder
             fields={config.fields}
@@ -212,93 +157,19 @@ function ContentListPanelBody(props: ContentListPanelProps) {
           <SortBuilder fields={config.fields} sorts={c.sorts} onChange={c.setSorts} />
         )}
 
-        {c.contentTypeId && c.view === 'board' && groupable.length > 0 && (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button size="sm" variant="outline">
-                Group: {groupable.find((f) => f.name === c.groupBy)?.label ?? 'Status'}
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start">
-              <DropdownMenuItem onClick={() => c.setGroupBy(null)}>Status</DropdownMenuItem>
-              {groupable.map((f) => (
-                <DropdownMenuItem key={f.name} onClick={() => c.setGroupBy(f.name)}>
-                  {f.label}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        )}
-
-        {c.contentTypeId && isDateView && (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button size="sm" variant="outline">
-                Date: {dateable.find((f) => f.name === c.dateField)?.label ?? 'Last updated'}
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start">
-              {/* Always offered: every record has updated_at, so a type with no
-                  date column of its own still gets a usable date view. */}
-              <DropdownMenuItem onClick={() => c.setDateField(null)}>Last updated</DropdownMenuItem>
-              {dateable.map((f) => (
-                <DropdownMenuItem key={f.name} onClick={() => c.setDateField(f.name)}>
-                  {f.label}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        )}
-
-        {c.contentTypeId && c.view === 'table' && c.allListColumns.length > 0 && (
+        {c.contentTypeId && config && (
           <div className="ml-auto">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button size="sm" variant="outline">
-                  <Columns3 size={14} className="mr-1" />
-                  Columns
-                  {c.hiddenColumns.length > 0 && (
-                    <span className="ml-1 text-xs text-muted-foreground">
-                      ({c.allListColumns.length - c.hiddenColumns.length}/{c.allListColumns.length})
-                    </span>
-                  )}
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="min-w-[220px]">
-                <DropdownMenuLabel className="text-xs text-muted-foreground font-semibold">
-                  Visible columns
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                {c.allListColumns.map((f) => {
-                  const visible = !c.hiddenColumns.includes(f.name);
-                  return (
-                    <DropdownMenuItem
-                      key={f.name}
-                      onSelect={(e) => {
-                        e.preventDefault();
-                        c.setHiddenColumns(
-                          visible
-                            ? [...c.hiddenColumns, f.name]
-                            : c.hiddenColumns.filter((n) => n !== f.name),
-                        );
-                      }}
-                      className="gap-2"
-                    >
-                      <Checkbox checked={visible} />
-                      <span className="text-sm">{f.label}</span>
-                    </DropdownMenuItem>
-                  );
-                })}
-                {c.hiddenColumns.length > 0 && (
-                  <>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onSelect={() => c.setHiddenColumns([])}>
-                      <span className="text-sm">Show all</span>
-                    </DropdownMenuItem>
-                  </>
-                )}
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <ViewSettings
+              config={config}
+              view={c.view}
+              columns={c.columns}
+              groupBy={c.groupBy}
+              dateField={c.dateField}
+              onViewChange={c.setView}
+              onColumnsChange={c.setColumns}
+              onGroupByChange={c.setGroupBy}
+              onDateFieldChange={c.setDateField}
+            />
           </div>
         )}
       </div>

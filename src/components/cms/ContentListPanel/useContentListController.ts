@@ -81,7 +81,12 @@ export function useContentListController({
   const [filters, setFilters] = useState<Filter[]>(
     () => normalizeSpec({ filters: persisted?.filters }, config ?? null).filters,
   );
-  const [hiddenColumns, setHiddenColumns] = useState<string[]>(persisted?.hiddenColumns ?? []);
+  // Ordered list of VISIBLE fields. Replaces the old subtractive
+  // `hiddenColumns`: the array is the column order, so there is no second
+  // ordering structure that could disagree with it.
+  const [columns, setColumns] = useState<string[]>(
+    () => normalizeSpec({ columns: persisted?.columns }, config ?? null).columns,
+  );
   // View + board grouping persist per content type, so a chosen layout survives
   // navigating away and back.
   const [view, setView] = useState<ContentView>(persisted?.view ?? 'table');
@@ -96,10 +101,11 @@ export function useContentListController({
     () => (config?.fields ?? []).filter((f) => f.listColumn),
     [config],
   );
-  const extraColumns: FieldConfig[] = useMemo(
-    () => allListColumns.filter((f) => !hiddenColumns.includes(f.name)),
-    [allListColumns, hiddenColumns],
-  );
+  // Spec order, not config order — `columns` is what the user arranged.
+  const extraColumns: FieldConfig[] = useMemo(() => {
+    const byName = new Map((config?.fields ?? []).map((f) => [f.name, f]));
+    return columns.map((n) => byName.get(n)).filter((f): f is FieldConfig => !!f);
+  }, [columns, config]);
   const filterFields: FieldConfig[] = useMemo(
     () => (config?.fields ?? []).filter((f) => f.filterable),
     [config],
@@ -111,13 +117,13 @@ export function useContentListController({
       persistState(persistKey, {
         sorts,
         filters,
-        hiddenColumns,
+        columns,
         view,
         groupBy,
         dateField,
       });
     }
-  }, [persistKey, sorts, filters, hiddenColumns, view, groupBy, dateField]);
+  }, [persistKey, sorts, filters, columns, view, groupBy, dateField]);
 
   // Load dynamic filter options (e.g. country/city dropdowns).
   useEffect(() => {
@@ -390,8 +396,8 @@ export function useContentListController({
     filters,
     setFilters,
     clearFilters,
-    hiddenColumns,
-    setHiddenColumns,
+    columns,
+    setColumns,
     view,
     setView,
     groupBy,

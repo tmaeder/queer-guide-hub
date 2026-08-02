@@ -37,8 +37,9 @@ const controller = {
   setFilter: vi.fn(),
   clearFilters: vi.fn(),
   dynamicOptions: {},
-  hiddenColumns: [],
-  setHiddenColumns: vi.fn(),
+  columns: [],
+  setColumns: vi.fn(),
+
   allListColumns: [],
   extraColumns: [],
   selected: new Set<string>(),

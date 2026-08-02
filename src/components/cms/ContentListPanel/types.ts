@@ -36,7 +36,8 @@ export interface PersistedState {
   sorts?: unknown[];
   /** Ordered list; see the note in useContentListController. */
   filters?: unknown[];
-  hiddenColumns?: string[];
+  /** Ordered list of VISIBLE field names. */
+  columns?: unknown[];
 }
 
 export function loadPersistedState(key: string): PersistedState | null {
