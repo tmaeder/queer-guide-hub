@@ -24,8 +24,24 @@ jobs:
           deno-version: v2.x
 
       - name: Run Deno unit tests
-        working-directory: supabase/functions/_tests
-        run: deno test --allow-net --allow-env --allow-read source-adapter.test.ts pipeline-nodes.test.ts wikinews.test.ts
+        # Whole tree by discovery, matching ci.yml + deploy-supabase-functions.yml.
+        # This job differs from those two in one way that matters: it sets real
+        # SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY at job level, so tests that
+        # self-skip in PR CI actually run here, against prod. Audited before
+        # widening: pipeline-nodes.test.ts is the ONLY test that reads either var
+        # (`const skip = !BASE || !KEY`) and it was already in the old list; every
+        # one of its invocations passes `dry_run: true`. No other test constructs a
+        # Supabase client, calls fetch(), or issues an insert/update/upsert/delete,
+        # so widening adds reads and pure logic only — no new prod writes.
+        # ai-gateway.test.ts does Deno.env.delete(), but only of AI_GATEWAY_*/
+        # CF_ACCOUNT_ID — it cannot clear the creds this job depends on.
+        #
+        # --node-modules-dir=none: the root package.json puts Deno in npm mode and
+        # this job never runs `npm ci`, so the moment the graph reaches an `npm:`
+        # specifier (_shared/email.ts, _shared/sentry.ts) it would demand a
+        # node_modules/. The old 3-file list never reached one.
+        working-directory: supabase/functions
+        run: deno test --allow-net --allow-env --allow-read --node-modules-dir=none
 
       - name: Check pipeline health
         if: ${{ env.SUPABASE_URL != '' && env.SUPABASE_SERVICE_ROLE_KEY != '' }}
