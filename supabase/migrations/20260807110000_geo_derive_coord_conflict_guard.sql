@@ -20,16 +20,25 @@
 --   San Lorenzo, US         -> state "Oyam" (a district of Uganda)
 --   Santa Rosa, California  -> linked to Santa Rosa BRAZIL, state "23"
 --
--- The rule: when a row's own coordinates sit more than 25km from the city it is
--- linked to, the row contradicts itself and we cannot tell which side is wrong.
--- Copy NOTHING from the city — leave the fields empty and let a human resolve
--- the conflict. 25km is the same threshold venue_coord_guard already uses.
+-- The rule: copy nothing from a city that disagrees with the row's own ISO-2
+-- country, or that sits more than 500km from its coordinates.
+--
+-- Distance alone is NOT the test, and a first cut using venue_coord_guard's
+-- 25km threshold was wrong. Measured on production: of 289 venues 25-900km from
+-- their linked city, 0 disagree on country — they are sprawling metros and rural
+-- areas legitimately attached to a city (a bar 31km from central Houston is
+-- still in Houston). Past ~900km it inverts: 75 of 109 disagree on country.
+-- The 25km rule flagged 398 venues where only 202 are genuinely broken, and
+-- stripped good state/postal from 274 legitimate ones.
 --
 -- Remediation applied alongside this migration: state/postal_code cleared and
--- needs_attention set on the 398 venues + 56 events that were internally
--- inconsistent. Note the first attempt at that cleanup silently reverted —
--- nulling `state` fires this very trigger, which re-derived it from the wrong
--- city. The guard has to land BEFORE the data fix, not after.
+-- needs_attention set on the 202 venues + 56 events that genuinely contradict
+-- themselves; the 274 the first 25km cut over-flagged were restored and
+-- re-queued for postal.
+--
+-- Note the first cleanup attempt silently reverted — nulling `state` fires this
+-- very trigger, which re-derived it from the wrong city and refilled 316 of 383
+-- rows inside the same statement. The guard has to land BEFORE the data fix.
 -- ============================================================================
 
 create or replace function public.derive_entity_geo_address()
@@ -49,8 +58,10 @@ declare
   v_city_region     text;
   v_city_lat        numeric;
   v_city_lng        numeric;
+  v_city_cc         text;
   v_country_id      uuid;
   v_conflict        boolean := false;
+  v_km              double precision;
 begin
   if v_upd then
     v_fk_explicit := new.country_id is distinct from old.country_id;
@@ -61,9 +72,10 @@ begin
   end if;
 
   if new.city_id is not null then
-    select c.name, c.country_id, c.region_name, c.latitude, c.longitude
-      into v_city_name, v_city_country_id, v_city_region, v_city_lat, v_city_lng
+    select c.name, c.country_id, c.region_name, c.latitude, c.longitude, co.code
+      into v_city_name, v_city_country_id, v_city_region, v_city_lat, v_city_lng, v_city_cc
       from public.cities c
+      left join public.countries co on co.id = c.country_id
      where c.id = new.city_id;
 
     -- country_id still follows the link: a mis-linked city is usually still in
@@ -75,16 +87,32 @@ begin
     end if;
   end if;
 
-  -- Self-contradiction test. The 'minimal' shape (organizations) has no
-  -- coordinate columns at all, so the whole test is nested under the shape
-  -- check — PL/pgSQL prepares a boolean expression as ONE SQL statement and
-  -- would resolve new.latitude even when the left side is false.
-  if v_shape = 'full' and v_city_lat is not null and v_city_lng is not null then
-    if new.latitude is not null and new.longitude is not null then
-      if extensions.ST_Distance(
-           extensions.ST_MakePoint(new.longitude::float8, new.latitude::float8)::extensions.geography,
-           extensions.ST_MakePoint(v_city_lng::float8, v_city_lat::float8)::extensions.geography
-         ) > 25000 then
+  -- Self-contradiction test.
+  --
+  -- Distance ALONE is the wrong signal: measured on production, venues 25-900km
+  -- from their linked city almost never disagree on country (0 of 289) -- they
+  -- are sprawling metros and rural areas legitimately attached to a city.
+  -- Past ~900km the picture flips: 75 of 109 disagree on country. So the primary
+  -- test is country disagreement, with a large distance as the backstop for a
+  -- wrong city WITHIN one country.
+  --
+  -- The 'minimal' shape (organizations) has no coordinate or country-text
+  -- columns, so everything is nested under the shape check -- PL/pgSQL prepares
+  -- a boolean expression as ONE statement and would resolve new.latitude even
+  -- when the left side is false.
+  if v_shape = 'full' then
+    if v_city_cc is not null and coalesce(btrim(new.country), '') <> ''
+       and upper(btrim(new.country)) <> upper(v_city_cc) then
+      v_conflict := true;
+    end if;
+
+    if not v_conflict and v_city_lat is not null and v_city_lng is not null
+       and new.latitude is not null and new.longitude is not null then
+      v_km := extensions.ST_Distance(
+                extensions.ST_MakePoint(new.longitude::float8, new.latitude::float8)::extensions.geography,
+                extensions.ST_MakePoint(v_city_lng::float8, v_city_lat::float8)::extensions.geography
+              ) / 1000.0;
+      if v_km > 500 then
         v_conflict := true;
       end if;
     end if;
@@ -130,4 +158,4 @@ end;
 $$;
 
 comment on function public.derive_entity_geo_address() is
-  'BEFORE trigger: fills country_id / state / city / country from the linked city and the ambiguity-guarded country text, then recomputes safety_gated. Copies NOTHING from a city whose position contradicts the row own coordinates by more than 25km - that conflict must be resolved by a human, not papered over. Explicit caller input always wins.';
+  'BEFORE trigger: fills country_id / state / city / country from the linked city and the ambiguity-guarded country text, then recomputes safety_gated. Copies NOTHING from a city that disagrees with the row own ISO-2 country, or sits >500km from its coordinates. Distance alone is not the test - 25-900km disagreements are almost always legitimate metro sprawl.';
