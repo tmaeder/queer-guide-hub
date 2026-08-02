@@ -1260,15 +1260,21 @@ h2,
 }
 
 /* ── Paper ─────────────────────────────────────────────────────────────
-   The existing .bg-noise turbulence, pushed from 0.06 to 0.11 alpha and
-   retiled larger so the grain reads as stock rather than as JPEG noise.
-   Kept as a separate class: .bg-noise has one live consumer (Index.tsx)
-   whose calibration should not move underneath it in this PR. */
+   The existing .bg-noise turbulence at a heavier alpha (0.06 → 0.11) so the
+   grain reads as stock rather than as JPEG noise. Kept as a separate class:
+   .bg-noise has one live consumer (Index.tsx) whose calibration should not
+   move underneath it in this PR.
+
+   numOctaves stays at 2 and the tile at 200×200 — the same cost as the
+   `.bg-noise` it mirrors. A 3-octave 300×300 tile was tried first: it is a real
+   rasterisation cost on a full-viewport `fixed inset-0` layer, for grain that is
+   indistinguishable at these alphas. Cheap textures only — this element covers
+   every pixel of every public page. */
 .paper-grain {
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><filter id='p'><feTurbulence type='fractalNoise' baseFrequency='0.62' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.11 0'/></filter><rect width='100%' height='100%' filter='url(%23p)'/></svg>");
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='p'><feTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.11 0'/></filter><rect width='100%' height='100%' filter='url(%23p)'/></svg>");
 }
 .dark .paper-grain {
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><filter id='p'><feTurbulence type='fractalNoise' baseFrequency='0.62' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.09 0'/></filter><rect width='100%' height='100%' filter='url(%23p)'/></svg>");
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='p'><feTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.09 0'/></filter><rect width='100%' height='100%' filter='url(%23p)'/></svg>");
 }
 
 /* ── Overprint ─────────────────────────────────────────────────────────
