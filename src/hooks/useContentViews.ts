@@ -9,7 +9,7 @@ import type { ViewSpec } from '@/components/cms/ContentListPanel/viewSpec';
  * Saved, named views for one admin content type.
  *
  * Queries go through `untypedFrom` because `admin_content_views` is created by
- * migration 20260807150000 and is not in the generated `types.ts` until that
+ * migration 20260807160000 and is not in the generated `types.ts` until that
  * applies and the types are regenerated. This is the documented escape hatch
  * (CLAUDE.md) — the row shape is asserted by the local `Row` interface below.
  *
@@ -42,7 +42,7 @@ interface Result {
 /**
  * `untypedFrom` casts the CLIENT, but the returned builder still types its
  * column arguments against the generated table union — and this table is not
- * in it until migration 20260807150000 applies and types are regenerated. This
+ * in it until migration 20260807160000 applies and types are regenerated. This
  * is the narrow surface actually used, so the escape hatch stays visible
  * instead of spreading `as never` across every call.
  */
