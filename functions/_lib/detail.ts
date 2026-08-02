@@ -476,7 +476,7 @@ async function personalityDetail(
   const rows = await fetchRows(
     env,
     'personalities',
-    'name,slug,bio,description,image_url,profession,lgbti_connection,lgbti_details,birth_date,death_date,birth_place,nationality,pronouns,website_url,updated_at,is_living',
+    'name,slug,bio,description,image_url,profession,lgbti_connection,lgbti_details,birth_date,death_date,birth_place,nationality,pronouns,website_url,updated_at,is_living,seo_indexable',
     `slug=eq.${encodeURIComponent(slug)}&duplicate_of_id=is.null&visibility=eq.public`,
     1,
   );
@@ -533,7 +533,17 @@ async function personalityDetail(
     url: `${SITE_ORIGIN}${pathname}`,
   };
 
-  return { meta, body, jsonLd: renderLd(prune(personLd)) };
+  // Honour the row's own indexability gate, the way newsDetail (`indexable:
+  // row.seo_indexable !== false`) and eventDetail already do. Omitting it made
+  // `detail.indexable !== false` in _middleware trivially true, so a personality
+  // page was ALWAYS indexable — `seo_indexable=false`, which the thin-content
+  // trigger sets, had no effect on this route at all.
+  return {
+    meta,
+    body,
+    jsonLd: renderLd(prune(personLd)),
+    indexable: row.seo_indexable !== false,
+  };
 }
 
 // City — programmatic SEO surface for /city/:slug
