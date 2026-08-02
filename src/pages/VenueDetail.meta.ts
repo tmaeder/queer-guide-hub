@@ -53,6 +53,14 @@ export function buildVenueJsonLd(
   if (cityName) address.addressLocality = cityName;
   // addressRegion was missing while `state` was empty on 22k venues, so it went
   // unnoticed; now that state is populated it needs to reach search engines too.
+  //
+  // THERE ARE TWO JSON-LD BUILDERS. This client one only renders when the Pages
+  // middleware did NOT inject markup — and the middleware injects on every
+  // normal request, so crawlers see `functions/_lib/detail.ts`, not this file.
+  // Changing one without the other is invisible until Functions happen to be
+  // down (they quota-fail daily on the free tier), which is exactly how this
+  // field looked fixed for hours while production still omitted it. Keep the
+  // two in sync.
   if (venue.state) address.addressRegion = venue.state;
   if (countryName) address.addressCountry = countryName;
   if (venue.postal_code) address.postalCode = venue.postal_code;
