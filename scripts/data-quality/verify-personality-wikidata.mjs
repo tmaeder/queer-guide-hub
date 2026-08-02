@@ -191,6 +191,21 @@ export async function verdictFor(row, entity) {
     };
   }
 
+  // The same argument from the other end of the life. Commercial gay adult film
+  // begins around 1970, so an is_adult row that DIED before then cannot be one.
+  //
+  // Needed separately because the birth check misses any chimera whose birth
+  // date happens to land after 1900: "Christoph Scharff" (died 1640),
+  // "Jessie Cooper" (died 1917) and "Leo Wyatt" (born 1924, died 1942) were all
+  // still public after the birth rule had run.
+  if (row.is_adult && row.death_date && row.death_date < '1970-01-01') {
+    return {
+      verdict: 'conflict',
+      reason: 'impossible_deathdate_for_adult_cohort',
+      label, description, occupations: [],
+    };
+  }
+
   if (!entity || entity.missing !== undefined) {
     return { verdict: 'unverifiable', reason: 'entity_missing', label: null, occupations: [] };
   }
