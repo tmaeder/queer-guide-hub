@@ -396,6 +396,7 @@ purge_poisoned() {
 	# signal green. That is how the 2026-08-08 deploy printed "recovered 6/6"
 	# while every browser still got text/html.
 	local recovered=0 want ct
+	local survivors=()
 	for entry in ${POISONED[@]+"${POISONED[@]}"}; do
 		path=${entry%%|*}; want=${entry##*|}
 		ct=$(curl -sS -o /dev/null -w '%{content_type}' \
@@ -406,13 +407,15 @@ purge_poisoned() {
 				echo "  ✓ $path recovered ($ct)"
 				recovered=$((recovered+1)); pass=$((pass+1)); fail=$((fail-1))
 				;;
-			*)  echo "  ✗ $path still $ct after purge — investigate, this is not a stale cache" ;;
+			*)
+				echo "  ✗ $path still $ct after purge — not evictable by URL"
+				survivors+=("$path")
+				;;
 		esac
 	done
 	# Same single-origin discipline as the check above — one reading for the
 	# whole re-verification, not one per route.
 	local origin_now plain
-	local survivors=()
 	origin_now=$(origin_entry)
 	for route in ${STALE_ROUTES[@]+"${STALE_ROUTES[@]}"}; do
 		plain=$(entry_hash "$SITE$route")
@@ -448,7 +451,7 @@ purge_poisoned() {
 	# verified via a cache-busted read). It cannot fire on a clean deploy.
 	if [ ${#survivors[@]} -gt 0 ]; then
 		echo
-		echo "  ! ${#survivors[@]} route(s) survived a targeted purge:${survivors[*]}"
+		echo "  ! ${#survivors[@]} entr(y/ies) survived a targeted purge:${survivors[*]}"
 		echo "    These are not in the zone cache (cf-cache-status: DYNAMIC), so purge"
 		echo "    by URL cannot evict them. Escalating to purge_everything."
 		local eresp eok
@@ -465,15 +468,37 @@ purge_poisoned() {
 		echo "    purge_everything accepted; re-checking after propagation"
 		sleep 20
 		origin_now=$(origin_entry)
-		for route in "${survivors[@]}"; do
-			plain=$(entry_hash "$SITE$route")
-			if [ -n "$origin_now" ] && [ "$plain" = "$origin_now" ]; then
-				echo "    ✓ $route recovered ($plain)"
-				pass=$((pass+1)); fail=$((fail-1))
-			else
-				echo "    ✗ $route STILL stale after purge_everything (cached $plain vs origin $origin_now)"
-				echo "      Not a cache this pipeline can reach. Escalate to Cloudflare."
-			fi
+		# Survivors are a mixed list: hashed assets are judged by content type
+		# (an asset serving text/html is the failure), SPA routes by whether the
+		# document references the current entry chunk. Judging an asset by entry
+		# hash would compare against markup it does not contain and report every
+		# recovery as a failure.
+		local item ct2
+		for item in "${survivors[@]}"; do
+			case "$item" in
+				/assets/*)
+					ct2=$(curl -sS -o /dev/null -w '%{content_type}' \
+						-H "Origin: $SITE" -H 'Sec-Fetch-Mode: cors' -H 'Sec-Fetch-Dest: script' \
+						"$SITE$item")
+					case "$ct2" in
+						*html*)
+							echo "    ✗ $item STILL text/html after purge_everything"
+							echo "      Not a cache this pipeline can reach. Escalate to Cloudflare."
+							;;
+						*)  echo "    ✓ $item recovered ($ct2)"; pass=$((pass+1)); fail=$((fail-1)) ;;
+					esac
+					;;
+				*)
+					plain=$(entry_hash "$SITE$item")
+					if [ -n "$origin_now" ] && [ "$plain" = "$origin_now" ]; then
+						echo "    ✓ $item recovered ($plain)"
+						pass=$((pass+1)); fail=$((fail-1))
+					else
+						echo "    ✗ $item STILL stale after purge_everything (cached $plain vs origin $origin_now)"
+						echo "      Not a cache this pipeline can reach. Escalate to Cloudflare."
+					fi
+					;;
+			esac
 		done
 	fi
 }
