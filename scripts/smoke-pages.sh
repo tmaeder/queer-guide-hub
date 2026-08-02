@@ -412,6 +412,7 @@ purge_poisoned() {
 	# Same single-origin discipline as the check above — one reading for the
 	# whole re-verification, not one per route.
 	local origin_now plain
+	local survivors=()
 	origin_now=$(origin_entry)
 	for route in ${STALE_ROUTES[@]+"${STALE_ROUTES[@]}"}; do
 		plain=$(entry_hash "$SITE$route")
@@ -420,9 +421,61 @@ purge_poisoned() {
 			recovered=$((recovered+1)); pass=$((pass+1)); fail=$((fail-1))
 		else
 			echo "  ✗ $route still stale after purge (cached $plain vs origin $origin_now)"
+			survivors+=("$route")
 		fi
 	done
 	echo "  recovered $recovered/$total"
+
+	# ── Escalation: purge_everything ─────────────────────────────────────
+	#
+	# Some HTML entries are NOT evictable by URL. Measured on 2026-08-02 after
+	# the deploy of efae95b: `/` and `/news` cleared from a purge call while
+	# `/venues`, `/events` and `/help` — listed in the SAME request, which
+	# returned success — stayed pinned at `age: 84712` (23.5h) with
+	# `cf-cache-status: DYNAMIC`. DYNAMIC means the object is not in the zone
+	# cache at all, so a zone purge-by-URL has nothing to evict; the copy lives
+	# upstream. `?cb=` returned the correct fresh document throughout, so origin
+	# was healthy the whole time and no redeploy could have helped.
+	#
+	# Those documents reference chunk hashes the current deploy no longer
+	# serves, so every module request falls through to the SPA shell and the
+	# route renders BLANK. That is a site outage for every route in this state.
+	#
+	# purge_everything is the only remaining lever. It is a big hammer — it
+	# evicts healthy objects too and costs a cold cache — so it fires ONLY when
+	# a targeted purge has already been tried and demonstrably failed on a
+	# route we have PROVEN stale (cached hash != origin hash, with origin
+	# verified via a cache-busted read). It cannot fire on a clean deploy.
+	if [ ${#survivors[@]} -gt 0 ]; then
+		echo
+		echo "  ! ${#survivors[@]} route(s) survived a targeted purge:${survivors[*]}"
+		echo "    These are not in the zone cache (cf-cache-status: DYNAMIC), so purge"
+		echo "    by URL cannot evict them. Escalating to purge_everything."
+		local eresp eok
+		eresp=$(curl -sS -X POST \
+			"https://api.cloudflare.com/client/v4/zones/$CLOUDFLARE_ZONE_ID/purge_cache" \
+			-H "Authorization: Bearer $token" \
+			-H 'Content-Type: application/json' \
+			--data '{"purge_everything":true}' 2>&1)
+		eok=$(printf '%s' "$eresp" | grep -o '"success":[a-z]*' | head -1 | cut -d: -f2)
+		if [ "$eok" != "true" ]; then
+			echo "    ✗ purge_everything failed: $(printf '%s' "$eresp" | head -c 200)"
+			return 0
+		fi
+		echo "    purge_everything accepted; re-checking after propagation"
+		sleep 20
+		origin_now=$(origin_entry)
+		for route in "${survivors[@]}"; do
+			plain=$(entry_hash "$SITE$route")
+			if [ -n "$origin_now" ] && [ "$plain" = "$origin_now" ]; then
+				echo "    ✓ $route recovered ($plain)"
+				pass=$((pass+1)); fail=$((fail-1))
+			else
+				echo "    ✗ $route STILL stale after purge_everything (cached $plain vs origin $origin_now)"
+				echo "      Not a cache this pipeline can reach. Escalate to Cloudflare."
+			fi
+		done
+	fi
 }
 purge_poisoned
 
