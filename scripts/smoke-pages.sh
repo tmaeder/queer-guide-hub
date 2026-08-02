@@ -156,29 +156,67 @@ done
 # plain URL names a different entry chunk than the cache-busted one, the cached
 # document is stale. Only a purge fixes it — the HTML is `cf-cache-status:
 # DYNAMIC`, so it is not even the same cache class as the hashed assets.
+#
+# ONE origin reading for the whole sweep, not one per route. This is an SPA:
+# every route ships the same entry chunk, so per-route ?cb= calls only add
+# chances for the answer to move underneath us. It moved on the very first CI
+# run of this check — a newer deploy landed mid-sweep, so /, /venues and /events
+# were compared against the OLD origin and passed while /help was compared
+# against the NEW one and was reported stale. All four were fine; the reading
+# was not. A deploy landing mid-run must not read as a cache fault.
+#
+# The re-read below closes the remaining window: if anything looks stale, take a
+# fresh origin reading and re-judge against it. A deploy that landed mid-sweep
+# changes the origin hash and the "stale" routes resolve; a genuinely stale cache
+# entry does not move and is still reported.
 echo "== deep routes reference the CURRENT build =="
 entry_hash() {
 	curl -sS "$1" | grep -oE '/assets/js/index-[^"]+\.js' | sort -u | head -1
 }
-for route in / /venues /events /help; do
-	plain=$(entry_hash "$SITE$route")
-	fresh=$(entry_hash "$SITE$route?cb=$$-${SECONDS}-${RANDOM}")
-	if [ -z "$fresh" ]; then
-		echo "  ✗ $route has no entry chunk even with ?cb= — the shell looks wrong"
-		fail=$((fail+1))
-	elif [ "$plain" = "$fresh" ]; then
-		echo "  ✓ $route -> $plain"; pass=$((pass+1))
-	else
-		echo "  ✗ $route serves a STALE cached document"
-		echo "      cached: $plain"
-		echo "      origin: $fresh"
-		echo "    Those cached chunk URLs are gone, so every module request falls"
-		echo "    through to the SPA shell and the page renders BLANK. Redeploying"
-		echo "    does not help — purge the route."
-		fail=$((fail+1))
-		STALE_ROUTES+=("$route")
+origin_entry() {
+	entry_hash "$SITE/?cb=$$-${SECONDS}-${RANDOM}"
+}
+
+ROUTES="/ /venues /events /help"
+origin=$(origin_entry)
+if [ -z "$origin" ]; then
+	echo "  ✗ / has no entry chunk even with ?cb= — the HTML shell looks wrong"
+	fail=$((fail+1))
+else
+	suspect=""
+	for route in $ROUTES; do
+		[ "$(entry_hash "$SITE$route")" = "$origin" ] || suspect="$suspect $route"
+	done
+
+	# Only if something looks wrong do we pay for a second origin reading.
+	if [ -n "$suspect" ]; then
+		origin2=$(origin_entry)
+		if [ -n "$origin2" ] && [ "$origin2" != "$origin" ]; then
+			echo "  · a deploy landed mid-sweep ($origin -> $origin2); re-judging"
+			origin=$origin2
+			suspect=""
+			for route in $ROUTES; do
+				[ "$(entry_hash "$SITE$route")" = "$origin" ] || suspect="$suspect $route"
+			done
+		fi
 	fi
-done
+
+	for route in $ROUTES; do
+		case " $suspect " in
+			*" $route "*)
+				echo "  ✗ $route serves a STALE cached document"
+				echo "      cached: $(entry_hash "$SITE$route")"
+				echo "      origin: $origin"
+				echo "    Those cached chunk URLs are gone, so every module request falls"
+				echo "    through to the SPA shell and the page renders BLANK. Redeploying"
+				echo "    does not help — purge the route."
+				fail=$((fail+1))
+				STALE_ROUTES+=("$route")
+				;;
+			*) echo "  ✓ $route -> $origin"; pass=$((pass+1)) ;;
+		esac
+	done
+fi
 
 echo "== static assets keep their real content types =="
 expect_content_type /robots.txt text/plain
@@ -282,15 +320,17 @@ purge_poisoned() {
 			*)  echo "  ✗ $path still $ct after purge — investigate, this is not a stale cache" ;;
 		esac
 	done
+	# Same single-origin discipline as the check above — one reading for the
+	# whole re-verification, not one per route.
+	local origin_now plain
+	origin_now=$(origin_entry)
 	for route in ${STALE_ROUTES[@]+"${STALE_ROUTES[@]}"}; do
-		local plain fresh
 		plain=$(entry_hash "$SITE$route")
-		fresh=$(entry_hash "$SITE$route?cb=$$-${SECONDS}-${RANDOM}")
-		if [ -n "$fresh" ] && [ "$plain" = "$fresh" ]; then
+		if [ -n "$origin_now" ] && [ "$plain" = "$origin_now" ]; then
 			echo "  ✓ $route recovered ($plain)"
 			recovered=$((recovered+1)); pass=$((pass+1)); fail=$((fail-1))
 		else
-			echo "  ✗ $route still stale after purge (cached $plain vs origin $fresh)"
+			echo "  ✗ $route still stale after purge (cached $plain vs origin $origin_now)"
 		fi
 	done
 	echo "  recovered $recovered/$total"
