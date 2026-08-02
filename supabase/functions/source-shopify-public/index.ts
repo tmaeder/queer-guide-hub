@@ -48,7 +48,14 @@ interface MerchantOverrides {
   businessName?: string | null
 }
 
-function makeAdapter(shopDomain: string, sourceSlug: string, currency = 'EUR', ov: MerchantOverrides = {}): SourceAdapter {
+/** ISO-3166 country whose Shopify Market prices in the given currency. Only the
+ *  currencies this project's SAFE_CURRENCIES list can present need an entry. */
+const CURRENCY_MARKET: Record<string, string> = {
+  GBP: 'GB', USD: 'US', EUR: 'DE', CHF: 'CH', CAD: 'CA', AUD: 'AU',
+  NZD: 'NZ', SEK: 'SE', NOK: 'NO', DKK: 'DK', JPY: 'JP',
+}
+
+function makeAdapter(shopDomain: string, sourceSlug: string, currency = 'EUR', ov: MerchantOverrides = {}, marketCountry: string | null = null): SourceAdapter {
   return {
     name: sourceSlug, entityType: 'marketplace',
     // Single page (config.offset = page number). The handler streams page-by-page
@@ -56,7 +63,24 @@ function makeAdapter(shopDomain: string, sourceSlug: string, currency = 'EUR', o
     // worker (HTTP 546). Returns [] past the last page.
     async fetch(config: AdapterConfig): Promise<RawItem[]> {
       const page = Number(config.offset ?? 1)
-      const url = `https://${shopDomain}/products.json?limit=${PER_PAGE}&page=${page}`
+      // KNOWN UNSOLVED (2026-08-02): products.json carries NO currency field, and
+      // Shopify Markets localises presentment prices by the REQUESTER's geo-IP. This
+      // function runs in eu-central-2, so queerlit.co.uk (base currency GBP, confirmed
+      // via /meta.json) served it EUR and we stored those numbers under
+      // `currency: 'GBP'` — A Dangerous Bargain: 12.45 stored vs £10.99 actual, exactly
+      // the EUR rate. Wrong prices are user-facing, so those listings are quarantined
+      // (status='inactive') and the merchant is disabled.
+      //
+      // `?country=` below was MEASURED AND DOES NOT FIX IT — Shopify honours that param
+      // on the Storefront API, not on products.json; the edge function still received
+      // 12.45 after it was added. It is kept only as a manual `config.market_country`
+      // hook. DO NOT treat this as solved: a real fix needs either a region-pinned
+      // fetch (proxy/worker in the target market) or the Storefront GraphQL API with
+      // an explicit @inContext(country:) directive, which returns the currency code so
+      // the value can be self-verified instead of assumed.
+      const q = new URLSearchParams({ limit: String(PER_PAGE), page: String(page) })
+      if (marketCountry) q.set('country', marketCountry)
+      const url = `https://${shopDomain}/products.json?${q}`
       // Per-page timeout: merchants that tarpit datacenter egress (e.g.
       // ohmyfantasy.com) otherwise hang the fetch until the function hits its
       // wall-clock limit (HTTP 546) — fail fast with a clear error instead.
@@ -145,6 +169,12 @@ Deno.serve(withErrorReporting('source-shopify-public', async (req) => {
     // truth would silently re-price every staging row of any merchant whose config
     // disagrees with what its rows were written with.
     const currency = typeof body.currency === 'string' && body.currency ? body.currency : 'EUR'
+    // Pin the market to the country that prices in `currency`, so the numbers we store
+    // are actually denominated in the currency we label them with.
+    const marketCountry = (typeof body.market_country === 'string' && body.market_country)
+      || cfgStr('market_country')
+      || CURRENCY_MARKET[normalizeCurrency(currency)]
+      || null
     const adapter = makeAdapter(shopDomain, sourceSlug, currency, {
       subcategory: (typeof body.subcategory === 'string' && body.subcategory) || cfgStr('subcategory'),
       businessName: (typeof body.business_name === 'string' && body.business_name) || cfgStr('business_name'),
