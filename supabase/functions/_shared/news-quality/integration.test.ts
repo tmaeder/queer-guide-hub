@@ -8,7 +8,7 @@ import { evaluatePublishGate } from './decision.ts'
 import type { QualityDecision } from './schema.ts'
 import { _internals as entityInternals } from './entity-link.ts'
 
-function decisionFor(input: Partial<QualityDecision>): QualityDecision {
+function decisionFor(input: Partial<QualityDecision> = {}): QualityDecision {
   return {
     isRelevant: true,
     relevanceScore: 0.9,

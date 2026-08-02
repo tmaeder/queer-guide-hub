@@ -124,7 +124,10 @@ export function parseSafetyRelevance(raw: string): SafetyRelevanceResult {
     return v;
   };
 
-  const flagsIn = Array.isArray(parsed.safety_flags) ? parsed.safety_flags : [];
+  // Annotated `unknown[]`: without it the ternary yields `any[] | never[]`,
+  // which defeats overload resolution on the type-predicate `.filter` below
+  // and leaves the downstream `f` params implicitly `any`.
+  const flagsIn: unknown[] = Array.isArray(parsed.safety_flags) ? parsed.safety_flags : [];
   const flags = flagsIn
     .filter(
       (f: unknown): f is Record<string, unknown> =>
