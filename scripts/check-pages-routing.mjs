@@ -29,6 +29,12 @@ import { existsSync, readFileSync } from 'node:fs';
 const REDIRECTS = 'public/_redirects';
 const ROUTES = 'public/_routes.json';
 const NOT_FOUND_PAGE = 'public/404.html';
+const INDEX_HTML = 'index.html';
+
+// Marker for the inline blank-page guard in index.html. It is the LAST line of
+// defence for a cached document that outlived its chunks, so it gets the same
+// build-fails treatment as the routing files above. See the check near the end.
+const BLANK_PAGE_GUARD_MARKER = 'preload-error-reload';
 
 // The only statuses Cloudflare Pages accepts in _redirects. Anything else is
 // rejected by the parser and the rule does nothing.
@@ -194,6 +200,41 @@ if (!existsSync(ROUTES)) {
         );
       }
     }
+  }
+}
+
+// The inline blank-page guard in index.html. With /assets/ excluded from
+// _routes.json the middleware's synthetic-404 never runs at the edge, so a
+// document that outlived its chunks gets 200 text/html for a module script and
+// the entry graph dies before any bundled code executes — #root stays empty.
+//
+// src/main.tsx's `vite:preloadError` handler cannot cover this: it is itself
+// inside the failed graph. Reproduced 2026-08-02 against a Pages-mimicking
+// server — blank page, one navigation, gate never armed. The recovery has to be
+// a classic inline script, and it has to come BEFORE the module entry or it
+// misses the error it exists to catch.
+if (!existsSync(INDEX_HTML)) {
+  errors.push(`${INDEX_HTML} is missing.`);
+} else {
+  const html = readFileSync(INDEX_HTML, 'utf8');
+  const guardAt = html.indexOf(BLANK_PAGE_GUARD_MARKER);
+  const moduleAt = html.search(/<script[^>]*type="module"/);
+
+  if (guardAt === -1) {
+    errors.push(
+      `${INDEX_HTML} — the inline blank-page guard is gone (no "${BLANK_PAGE_GUARD_MARKER}"). ` +
+        `A stale cached document would render an empty #root with no way to recover.`,
+    );
+  } else if (!/addEventListener\(\s*['"]error['"]/.test(html)) {
+    errors.push(
+      `${INDEX_HTML} — the blank-page guard no longer listens for 'error'. Resource load ` +
+        `failures do not bubble, so it must be a capture-phase window 'error' listener.`,
+    );
+  } else if (moduleAt !== -1 && guardAt > moduleAt) {
+    errors.push(
+      `${INDEX_HTML} — the blank-page guard must come BEFORE the module entry, otherwise ` +
+        `the entry can fail before the listener is registered.`,
+    );
   }
 }
 

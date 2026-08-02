@@ -6,7 +6,59 @@
     <title>Queer Guide — LGBTQ+ Safe Spaces, Events & Community</title>
     <meta name="description" content="The global guide to LGBTQ+ venues, events, travel and community. Find safe spaces near you and around the world." />
     <meta name="author" content="Queer Guide" />
-    
+
+    <!-- Blank-page guard for stale HTML after a deploy. MUST stay a classic
+         inline script and MUST stay ahead of the module entry Vite injects.
+
+         A cached index.html (browser, service worker, or CDN) can reference a
+         hashed chunk that a later deploy deleted. Cloudflare Pages ships no
+         404.html, so its built-in fallback answers the dead URL with
+         index.html — 200 text/html. The browser refuses that as a module, the
+         whole entry graph fails, and #root stays empty: a blank page rather
+         than a broken-looking one.
+
+         src/main.tsx already has a `vite:preloadError` recovery for this, but
+         it cannot fire here: main.tsx is itself inside the failed graph, so
+         its listener is never registered. Reproduced against a Pages-mimicking
+         server — the page rendered blank with navCount 1 and the
+         sessionStorage gate never armed. That handler covers *dynamic*
+         imports after boot; only an out-of-graph listener covers the entry
+         graph itself.
+
+         The failure surfaces as an `error` event on the entry <script>
+         element — verified; the dead chunk's own modulepreload link fires
+         nothing — so match any same-origin /assets/ script rather than trying
+         to identify the dead URL. -->
+    <script>
+      (function () {
+        var KEY = 'preload-error-reload'; // shared with main.tsx, which clears it on a good load
+        function alreadyRetried() {
+          try {
+            // Storage works (the normal case): precise one-retry-per-session gate,
+            // matching main.tsx so the two mechanisms can't double-reload.
+            return !!sessionStorage.getItem(KEY);
+          } catch (e) { /* storage blocked — fall through */ }
+          try {
+            // No storage: a reload-type navigation means we already retried.
+            var nav = performance.getEntriesByType('navigation')[0];
+            return !!(nav && nav.type === 'reload');
+          } catch (e2) {
+            return true; // can't tell — refuse to reload rather than risk a loop
+          }
+        }
+        window.addEventListener('error', function (e) {
+          var el = e.target;
+          if (!el || el === window || el.tagName !== 'SCRIPT') return;
+          // Only our own hashed build output; ignore third-party script errors.
+          if (String(el.src || '').lastIndexOf(location.origin + '/assets/', 0) !== 0) return;
+          if (alreadyRetried()) return; // genuinely broken, not stale — don't loop
+          try { sessionStorage.setItem(KEY, String(Date.now())); } catch (err) { /* private mode */ }
+          location.reload();
+        }, true); // capture — resource load errors do not bubble
+      })();
+    </script>
+
+
     <!-- Fonts: self-hosted (no external CDN) — see src/index.css @font-face.
          Preload the two latin variable files (body + display) so headings
          don't late-swap; latin-ext/italic variants stay lazy. -->
