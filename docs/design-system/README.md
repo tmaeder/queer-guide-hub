@@ -62,7 +62,7 @@ Adding or renaming an ink touches **four layers in lockstep** or CI goes red:
 `src/index.css` → `tokenCatalog.ts` (`COLOR_TOKENS` + `CONTRAST_PAIRS`) →
 `functions/_lib/branding.ts` `COLOR_KEYS` → a migration extending
 `branding_validate`'s `v_color_keys` (precedent:
-`supabase/migrations/20260808100000_branding_pasteup_ink_tokens.sql`).
+`supabase/migrations/20260809130000_branding_pasteup_ink_tokens.sql`).
 
 ## The print layer
 

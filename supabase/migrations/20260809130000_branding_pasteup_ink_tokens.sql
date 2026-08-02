@@ -17,6 +17,11 @@
 --
 -- Additive only: widening the whitelist cannot invalidate a doc that already
 -- passed it, so every published site_branding row keeps validating.
+--
+-- Version note: originally authored as 20260808100000, when the remote head was
+-- 20260807170000. #2523 then recovered drifted versions up to 20260809120000,
+-- which would have left this file BELOW the head and unapplied - the
+-- out-of-order case `db push` skips. Renamed above the new head.
 
 CREATE OR REPLACE FUNCTION public.branding_validate(p_doc jsonb)
 RETURNS void
