@@ -2,7 +2,18 @@
  * @vitest-environment jsdom
  */
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render as rtlRender, screen } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
+// ContentListPanel now loads saved views through TanStack Query.
+const render = (ui: React.ReactElement) =>
+  rtlRender(
+    <QueryClientProvider
+      client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}
+    >
+      {ui}
+    </QueryClientProvider>,
+  );
 import { MemoryRouter } from 'react-router';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { Tag } from 'lucide-react';
@@ -26,16 +37,22 @@ const controller = {
   search: '',
   debouncedSearch: '',
   setSearch: vi.fn(),
+  sorts: [{ field: 'title', dir: 'asc' }],
+  setSorts: vi.fn(),
   sortField: 'title',
   sortDir: 'desc',
   handleSort: vi.fn(),
-  filters: {},
+  filters: [],
+  setFilters: vi.fn(),
   filterFields: [],
   setFilter: vi.fn(),
   clearFilters: vi.fn(),
   dynamicOptions: {},
-  hiddenColumns: [],
-  setHiddenColumns: vi.fn(),
+  columns: [],
+  spec: { kind: 'table', columns: [], filters: [], sorts: [], groupBy: null, dateField: null },
+  applySpec: vi.fn(),
+  setColumns: vi.fn(),
+
   allListColumns: [],
   extraColumns: [],
   selected: new Set<string>(),

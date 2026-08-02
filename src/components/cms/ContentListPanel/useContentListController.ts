@@ -6,6 +6,8 @@
 
 import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { applyFilters, applySorts } from './filterOps';
+import { normalizeSpec, type Filter, type SortSpec, type ViewSpec } from './viewSpec';
 import { useParams } from 'react-router';
 import { useContext } from 'react';
 import { getContentType, getContentTypeIds } from '@/config/contentTypeRegistry';
@@ -16,11 +18,7 @@ import {
   extractStatus,
   loadPersistedState,
   persistState,
-  type DateRange,
-  type FilterState,
-  type FilterValue,
   type ListItem,
-  type NumberRange,
   type SortDir,
   type SortField,
 } from './types';
@@ -57,9 +55,9 @@ export function useContentListController({
     [persistKey],
   );
 
-  const initialSortField: SortField =
-    persisted?.sortField ?? config?.defaultSort?.field ?? 'updated_at';
-  const initialSortDir: SortDir = persisted?.sortDir ?? config?.defaultSort?.dir ?? 'desc';
+  // Fallback used only when the persisted spec carries no sorts at all.
+  const initialSortField: SortField = config?.defaultSort?.field ?? 'updated_at';
+  const initialSortDir: SortDir = config?.defaultSort?.dir ?? 'desc';
 
   const [items, setItems] = useState<ListItem[]>([]);
   const [totalCount, setTotalCount] = useState(0);
@@ -68,10 +66,27 @@ export function useContentListController({
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(25);
-  const [sortField, setSortField] = useState<SortField>(initialSortField);
-  const [sortDir, setSortDir] = useState<SortDir>(initialSortDir);
-  const [filters, setFilters] = useState<FilterState>(persisted?.filters ?? {});
-  const [hiddenColumns, setHiddenColumns] = useState<string[]>(persisted?.hiddenColumns ?? []);
+  // `sorts` is the source of truth and its ARRAY ORDER is the precedence.
+  // sortField/sortDir stay as derived values of the primary sort so the table
+  // headers keep their existing props.
+  const [sorts, setSorts] = useState<SortSpec[]>(() =>
+    normalizeSpec({ sorts: persisted?.sorts }, config ?? null).sorts.length
+      ? normalizeSpec({ sorts: persisted?.sorts }, config ?? null).sorts
+      : [{ field: initialSortField, dir: initialSortDir }],
+  );
+  const sortField: SortField = sorts[0]?.field ?? initialSortField;
+  const sortDir: SortDir = sorts[0]?.dir ?? initialSortDir;
+  // `filters` is an ORDERED LIST, not a map keyed by field: two filters on the
+  // same field (price >= 1 AND price <= 4) are legal and a map cannot hold them.
+  const [filters, setFilters] = useState<Filter[]>(
+    () => normalizeSpec({ filters: persisted?.filters }, config ?? null).filters,
+  );
+  // Ordered list of VISIBLE fields. Replaces the old subtractive
+  // `hiddenColumns`: the array is the column order, so there is no second
+  // ordering structure that could disagree with it.
+  const [columns, setColumns] = useState<string[]>(
+    () => normalizeSpec({ columns: persisted?.columns }, config ?? null).columns,
+  );
   // View + board grouping persist per content type, so a chosen layout survives
   // navigating away and back.
   const [view, setView] = useState<ContentView>(persisted?.view ?? 'table');
@@ -86,10 +101,11 @@ export function useContentListController({
     () => (config?.fields ?? []).filter((f) => f.listColumn),
     [config],
   );
-  const extraColumns: FieldConfig[] = useMemo(
-    () => allListColumns.filter((f) => !hiddenColumns.includes(f.name)),
-    [allListColumns, hiddenColumns],
-  );
+  // Spec order, not config order — `columns` is what the user arranged.
+  const extraColumns: FieldConfig[] = useMemo(() => {
+    const byName = new Map((config?.fields ?? []).map((f) => [f.name, f]));
+    return columns.map((n) => byName.get(n)).filter((f): f is FieldConfig => !!f);
+  }, [columns, config]);
   const filterFields: FieldConfig[] = useMemo(
     () => (config?.fields ?? []).filter((f) => f.filterable),
     [config],
@@ -99,16 +115,15 @@ export function useContentListController({
   useEffect(() => {
     if (persistKey) {
       persistState(persistKey, {
-        sortField,
-        sortDir,
+        sorts,
         filters,
-        hiddenColumns,
+        columns,
         view,
         groupBy,
         dateField,
       });
     }
-  }, [persistKey, sortField, sortDir, filters, hiddenColumns, view, groupBy, dateField]);
+  }, [persistKey, sorts, filters, columns, view, groupBy, dateField]);
 
   // Load dynamic filter options (e.g. country/city dropdowns).
   useEffect(() => {
@@ -175,43 +190,33 @@ export function useContentListController({
       setLoading(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- helpers below, deps control re-fetching
-  }, [contentTypeId, config, page, rowsPerPage, debouncedSearch, sortField, sortDir, filters]);
+  }, [contentTypeId, config, page, rowsPerPage, debouncedSearch, sorts, filters]);
 
   async function loadSingleType(ct: ContentTypeConfig) {
     const from = page * rowsPerPage;
     const to = from + rowsPerPage - 1;
 
-    const sortFieldDef = ct.fields.find((f) => f.name === sortField);
-    const dbSortField =
-      sortField === 'title' ? ct.titleField : sortFieldDef?.virtual ? 'updated_at' : sortField;
+    // 'title' is an alias for the type's real title column, and a virtual field
+    // has no column to order by at all.
+    const resolveSortField = (name: string) => {
+      if (name === 'title') return ct.titleField;
+      return ct.fields.find((f) => f.name === name)?.virtual ? 'updated_at' : name;
+    };
 
     let query = supabase
       .from(ct.tableName as 'events')
       .select(ct.listSelect ?? '*', { count: 'exact' })
-      .order(dbSortField, { ascending: sortDir === 'asc' })
       .range(from, to);
+    query = applySorts(query as never, sorts, resolveSortField) as typeof query;
 
     if (debouncedSearch) {
       query = query.ilike(ct.titleField, `%${debouncedSearch}%`);
     }
 
-    for (const f of ct.fields.filter((x) => x.filterable && !x.virtual)) {
-      const val = filters[f.name];
-      if (val === undefined || val === '' || val === null) continue;
-      if (f.type === 'select' || f.type === 'boolean') {
-        query = query.eq(f.name, val as string | boolean);
-      } else if (f.type === 'datetime' || f.type === 'date') {
-        const range = val as DateRange;
-        if (range.from) query = query.gte(f.name, range.from);
-        if (range.to) query = query.lte(f.name, range.to);
-      } else if (f.type === 'number') {
-        const range = val as NumberRange;
-        if (range.min !== undefined) query = query.gte(f.name, range.min);
-        if (range.max !== undefined) query = query.lte(f.name, range.max);
-      } else if (f.type === 'text') {
-        query = query.ilike(f.name, `%${val as string}%`);
-      }
-    }
+    // Every filter goes through the shared translator. The previous inline
+    // version had five type branches and silently skipped everything else, so
+    // filtering on an autocomplete/url/textarea did nothing at all.
+    query = applyFilters(query as never, filters) as typeof query;
 
     const { data, error, count } = await query;
     if (error) throw error;
@@ -295,19 +300,21 @@ export function useContentListController({
     setSelected(new Set());
   }, [debouncedSearch, filters]);
 
-  // On content type change, restore persisted state (or defaults) and reset
-  const lastTypeRef = useRef<string | undefined>(contentTypeId);
-  useEffect(() => {
-    if (lastTypeRef.current === contentTypeId) return;
-    lastTypeRef.current = contentTypeId;
-    setPage(0);
-    setSelected(new Set());
-    const p = persistKey ? loadPersistedState(persistKey) : null;
-    setSortField(p?.sortField ?? config?.defaultSort?.field ?? 'updated_at');
-    setSortDir(p?.sortDir ?? config?.defaultSort?.dir ?? 'desc');
-    setFilters(p?.filters ?? {});
-    setHiddenColumns(p?.hiddenColumns ?? []);
-  }, [contentTypeId, persistKey, config]);
+  // There is deliberately NO "restore on content-type change" effect.
+  //
+  // There used to be one, and it corrupted state. React runs effects in
+  // declaration order, so on a type switch the persist effect above ran first
+  // in a commit where `persistKey` was already the INCOMING type but every
+  // state value was still the outgoing one — writing venues' sort/filters/
+  // columns into the events key, which the restore effect then read back. The
+  // incoming type's saved state was destroyed on every switch. It also only
+  // restored sort/filters/columns, so view/groupBy/dateField leaked across
+  // types regardless.
+  //
+  // ContentListPanel now remounts on the type id (`key`), so `persistKey` is
+  // constant for this hook's whole life and initial state comes from the
+  // useState initializers. The bug has no path to exist rather than being
+  // patched.
 
   // Clear selection on page change
   useEffect(() => {
@@ -315,15 +322,51 @@ export function useContentListController({
     setSelected(new Set());
   }, [page]);
 
-  function handleSort(field: SortField) {
-    if (sortField === field) {
-      setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
-    } else {
-      setSortField(field);
-      setSortDir(field === 'title' ? 'asc' : 'desc');
-    }
+  /**
+   * Plain click sorts by this field alone. Shift-click appends it, or flips it
+   * if already present — the standard multi-sort idiom, and the only way to
+   * build a precedence list without opening the Sort panel.
+   */
+  function handleSort(field: SortField, append = false) {
+    setSorts((prev) => {
+      const existing = prev.find((s2) => s2.field === field);
+      const flipped: SortSpec = {
+        field,
+        dir: existing
+          ? existing.dir === 'asc'
+            ? 'desc'
+            : 'asc'
+          : field === 'title'
+            ? 'asc'
+            : 'desc',
+      };
+      if (!append) return [flipped];
+      return existing ? prev.map((s2) => (s2.field === field ? flipped : s2)) : [...prev, flipped];
+    });
     setPage(0);
   }
+
+  // The live spec, assembled from the individual pieces of state. Saving a
+  // view stores exactly this.
+  const spec: ViewSpec = useMemo(
+    () => ({ kind: view, columns, filters, sorts, groupBy, dateField }),
+    [view, columns, filters, sorts, groupBy, dateField],
+  );
+
+  /** Replace every part of the view at once, e.g. when switching saved views. */
+  const applySpec = useCallback(
+    (next: ViewSpec) => {
+      const safe = normalizeSpec(next, config ?? null);
+      setView(safe.kind);
+      setColumns(safe.columns);
+      setFilters(safe.filters);
+      setSorts(safe.sorts.length ? safe.sorts : [{ field: initialSortField, dir: initialSortDir }]);
+      setGroupBy(safe.groupBy);
+      setDateField(safe.dateField);
+      setPage(0);
+    },
+    [config, initialSortField, initialSortDir],
+  );
 
   const allVisibleIds = useMemo(() => items.map((it) => `${it.contentType}-${it.id}`), [items]);
   const allSelected = items.length > 0 && allVisibleIds.every((id) => selected.has(id));
@@ -349,20 +392,8 @@ export function useContentListController({
     });
   }
 
-  function setFilter(name: string, value: FilterValue) {
-    setFilters((prev) => {
-      const next = { ...prev };
-      if (value === undefined || value === '' || value === null) {
-        delete next[name];
-      } else {
-        next[name] = value;
-      }
-      return next;
-    });
-  }
-
   function clearFilters() {
-    setFilters({});
+    setFilters([]);
   }
 
   return {
@@ -380,13 +411,17 @@ export function useContentListController({
     setPage,
     rowsPerPage,
     setRowsPerPage,
+    sorts,
+    setSorts,
     sortField,
     sortDir,
     filters,
-    setFilter,
+    setFilters,
     clearFilters,
-    hiddenColumns,
-    setHiddenColumns,
+    columns,
+    setColumns,
+    spec,
+    applySpec,
     view,
     setView,
     groupBy,
