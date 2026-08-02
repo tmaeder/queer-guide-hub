@@ -401,3 +401,16 @@ describe('window + url helpers', () => {
     expect(decodeURIComponent(url).replace(/\+/g, ' ')).toContain('01/01/2024 - 03/01/2024');
   });
 });
+
+describe('mapEventType word boundaries', () => {
+  // `fair\b` / `race\b` without a leading boundary matched "affair" (249 corpus rows)
+  // and "embrace". Regression guard.
+  it('does not match type words embedded inside other words', () => {
+    expect(mapEventType('A Sordid Affair')).not.toBe('fair');
+    expect(mapEventType('Embrace: A Night of Connection')).not.toBe('sports');
+  });
+
+  it('still matches suffixed festival names', () => {
+    expect(mapEventType('Oktoberfest Munich')).toBe('festival');
+  });
+});

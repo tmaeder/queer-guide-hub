@@ -588,7 +588,8 @@ export const EVENT_TYPE_VOCAB = [
  * Rule of thumb for anything added here: a genre word (music, art, dance) is weaker
  * evidence than a format word (party, festival, workshop), so it belongs further down.
  */
-const EVENT_TYPE_RULES: Array<[RegExp, string]> = [
+/** [pattern, event_type, titleOnly?] — titleOnly rules ignore the description. */
+const EVENT_TYPE_RULES: Array<[RegExp, string, boolean?]> = [
   // Identity / community formats — the most specific signals we have.
   [/\bpride\b|christopher street day|\bcsd\b/i, 'pride'],
   [/\bdrag\b/i, 'drag'],
@@ -600,10 +601,12 @@ const EVENT_TYPE_RULES: Array<[RegExp, string]> = [
   [/exhibition|\bexhibit\b|vernissage/i, 'exhibition'],
   [/conference|summit|convention|symposium/i, 'conference'],
   [/workshop|class\b|seminar|masterclass/i, 'workshop'],
-  [/sports|run\b|race\b|rodeo|tournament|ski\b|marathon|games\b/i, 'sports'],
+  // Leading \b matters: `race\b` alone matches "embrace" and `run\b` matches "overrun".
+  [/sports|\brun\b|\brace\b|rodeo|tournament|\bski\b|marathon|\bgames\b/i, 'sports'],
   [/protest|march for|rally|demonstration|vigil/i, 'protest'],
   [/fundrais|charity|benefit|\bgala\b/i, 'fundraiser'],
-  [/street.?fair|fair\b|market\b/i, 'fair'],
+  // `fair\b` without the leading boundary matched "affair" on 249 corpus rows.
+  [/street.?fair|\bfair\b|\bexpo\b|\bmarket\b/i, 'fair'],
   [/meetup|meet-up|mixer|networking/i, 'meetup'],
   // Subculture words are audience signals, not format signals, so they rank below every
   // explicit format above: a bear-community panel discussion is a conference and a
@@ -614,17 +617,41 @@ const EVENT_TYPE_RULES: Array<[RegExp, string]> = [
   // Format words beat genre words: a "Music Festival" is a festival, and a club night
   // with a DJ lineup is a party, not a concert.
   [/festival|fest\b/i, 'festival'],
-  [/party|club night|tea.?dance|pool.?party|t-?dance|circuit|\bdjs?\b|afterparty/i, 'party'],
-  // Genre words last — only reached when nothing above matched.
-  [/concert|music|live band|symphony|philharmonic|chorus|choir|recital|\btour\b/i, 'concert'],
+  // Title-only (3rd element): "Madonna Fan Party" and "Kylie Minogue Concert After
+  // Party" are parties, and a performance word is only trustworthy in a title.
+  [/\bparty\b/i, 'party', true],
+  // `music of` (as in "The Music of the Beatles") is a tribute-concert idiom and is a
+  // clean signal, unlike bare `music`; all 14 corpus titles carrying it are concerts.
+  [/concert|live in concert|\btour\b|symphony|philharmonic|chorus|choir|recital|unplugged|live at|live in|music of/i, 'concert', true],
+  [/party|club night|tea.?dance|pool.?party|t-?dance|circuit|\bdjs?\b|afterparty|\bball\b|\bbash\b|no cover|drink specials/i, 'party'],
+  // Genre words last — only reached when nothing above matched. Note `music` is absent:
+  // on its own it is a club-night signal, not a concert one.
+  [/concert|live band|symphony|philharmonic|chorus|choir|recital/i, 'concert'],
   [/\bart\b|gallery/i, 'art'],
-  [/community|social\b/i, 'social'],
+  [/community|\bsocial\b/i, 'social'],
 ];
 
+/**
+ * First signal is the title; the rest are supporting context.
+ *
+ * Most rules read every signal, but a few may only read the TITLE. A club night's
+ * *description* almost always mentions music ("music by …", "Summer Music Jam", "New
+ * Energy in Music"), so `music`/`tour`/`live at` are trustworthy only in a title.
+ * Validated by re-deriving the whole 10,782-row `concert` bucket: read from the full
+ * text they kept 2,277 rows as concerts, of which hand-checking found roughly a third
+ * genuine; restricted to the title they left 352, of which ~19 of 22 sampled were real
+ * (Cher, Madonna, Kylie Minogue, chorale concerts).
+ *
+ * Kept in sync with public.infer_event_type() (migration 20260808120300), which does the
+ * same derivation for the backfill. If you change one, change the other.
+ */
 export function mapEventType(...signals: Array<string | null | undefined>): string {
+  const title = signals[0] ?? '';
   const haystack = signals.filter(Boolean).join(' ');
-  for (const [re, type] of EVENT_TYPE_RULES) {
-    if (re.test(haystack)) return type;
+  const test = (re: RegExp, titleOnly: boolean) => re.test(titleOnly ? title : haystack);
+
+  for (const [re, type, titleOnly = false] of EVENT_TYPE_RULES) {
+    if (test(re, titleOnly)) return type;
   }
   return 'other';
 }
