@@ -25,7 +25,9 @@ import { ViewSettings } from './filters/ViewSettings';
 import { ViewBar } from './filters/ViewBar';
 import { ListPagination } from './ListPagination';
 import { useContentViews, type SavedView } from '@/hooks/useContentViews';
+import { useGroupedRows } from '@/hooks/useGroupedRows';
 import { normalizeSpec, specEquals } from './viewSpec';
+import { toListItem } from './types';
 import { useContentListController } from './useContentListController';
 import { ExportExcelButton } from '@/components/admin/ExportExcelButton';
 import { exportContentType } from './exportContentList';
@@ -66,6 +68,15 @@ function ContentListPanelBody(props: ContentListPanelProps) {
   // view selected there is nothing to be dirty against.
   const dirty =
     !!activeView && !specEquals(normalizeSpec(activeView.spec, c.config ?? null), c.spec);
+
+  // True per-group totals; only meaningful once a group column is chosen.
+  const grouped = useGroupedRows({
+    config: c.config ?? null,
+    groupBy: c.groupBy,
+    filters: c.filters,
+    search: c.debouncedSearch,
+    enabled: c.view === 'board',
+  });
 
   const selectView = (view: SavedView) => {
     setActiveViewId(view.id);
@@ -240,9 +251,19 @@ function ContentListPanelBody(props: ContentListPanelProps) {
       ) : c.view === 'board' ? (
         <ContentListBoard
           items={c.items}
-          loading={c.loading}
+          loading={c.loading || grouped.loading}
           config={config}
           groupBy={c.groupBy}
+          serverGroups={
+            config && grouped.groups
+              ? grouped.groups.map((g) => ({
+                  key: g.key,
+                  label: g.label,
+                  count: g.count,
+                  items: g.rows.map((row) => toListItem(row, config)),
+                }))
+              : null
+          }
           onEdit={c.onEdit}
         />
       ) : (

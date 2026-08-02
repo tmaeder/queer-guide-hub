@@ -23,6 +23,13 @@ interface ContentListBoardProps {
   config: ContentTypeConfig | null;
   /** Field name to group by. Falls back to workflow status when absent. */
   groupBy: string | null;
+  /**
+   * Server-computed groups with TRUE totals. When present these win: deriving
+   * columns from `items` only ever describes the loaded page, which is
+   * meaningless on a large type. Absent (no groupBy, or status grouping) the
+   * page-derived fallback below still applies.
+   */
+  serverGroups?: { key: string; label: string; count: number; items: ListItem[] }[] | null;
   onEdit: (contentType: string, id: string) => void;
 }
 
@@ -30,6 +37,8 @@ interface Column {
   key: string;
   label: string;
   items: ListItem[];
+  /** True total when known; otherwise the loaded-page count is used. */
+  total?: number;
 }
 
 function labelFor(field: FieldConfig | undefined, value: unknown): string {
@@ -43,11 +52,20 @@ export function ContentListBoard({
   loading,
   config,
   groupBy,
+  serverGroups,
   onEdit,
 }: ContentListBoardProps) {
   const field = config?.fields.find((f) => f.name === groupBy);
 
   const columns = useMemo<Column[]>(() => {
+    if (serverGroups) {
+      return serverGroups.map((g) => ({
+        key: g.key,
+        label: g.label,
+        items: g.items,
+        total: g.count,
+      }));
+    }
     const map = new Map<string, Column>();
     const ungrouped: ListItem[] = [];
 
@@ -76,7 +94,7 @@ export function ContentListBoard({
     const out = [...map.values()];
     if (ungrouped.length) out.push({ key: UNGROUPED, label: 'Ungrouped', items: ungrouped });
     return out;
-  }, [items, groupBy, field]);
+  }, [items, groupBy, field, serverGroups]);
 
   if (loading) {
     return (
@@ -99,10 +117,15 @@ export function ContentListBoard({
             <span className="text-2xs uppercase tracking-wide text-muted-foreground font-semibold">
               {col.label}
             </span>
-            <span className="text-xs text-muted-foreground">{col.items.length}</span>
+            <span className="text-xs text-muted-foreground">
+              {(col.total ?? col.items.length).toLocaleString()}
+            </span>
           </div>
 
           <div className="flex flex-col gap-2">
+            {col.items.length === 0 && (
+              <p className="text-xs text-muted-foreground px-2 py-1">None.</p>
+            )}
             {col.items.map((item) => {
               const statusColor = getStatusColor(item.status);
               return (

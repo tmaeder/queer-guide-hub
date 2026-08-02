@@ -16,6 +16,7 @@ import type { ContentView } from './types';
 import type { ContentTypeConfig, FieldConfig, SelectOption } from '@/types/cms';
 import {
   extractStatus,
+  toListItem,
   loadPersistedState,
   persistState,
   type ListItem,
@@ -221,19 +222,7 @@ export function useContentListController({
     const { data, error, count } = await query;
     if (error) throw error;
 
-    const mapped = (data || []).map((row: Record<string, unknown>) => ({
-      id: row[ct.primaryKey] as string,
-      title: (row[ct.titleField] as string) || '(Untitled)',
-      description: ct.descriptionField
-        ? (row[ct.descriptionField] as string | undefined)
-        : undefined,
-      updatedAt: row.updated_at as string | undefined,
-      contentType: ct.id,
-      contentTypeLabel: ct.label.singular,
-      contentTypeColor: ct.color,
-      status: extractStatus(row, ct),
-      raw: row,
-    }));
+    const mapped = (data || []).map((row: Record<string, unknown>) => toListItem(row, ct));
 
     setItems(mapped);
     setTotalCount(count ?? 0);
