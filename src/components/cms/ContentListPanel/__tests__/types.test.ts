@@ -18,8 +18,9 @@ describe('ContentListPanel/types', () => {
   });
 
   it('persistState then loadPersistedState round-trips', () => {
-    persistState('k', { sortField: 'title', sortDir: 'desc' });
-    expect(loadPersistedState('k')).toEqual({ sortField: 'title', sortDir: 'desc' });
+    const state = { sorts: [{ field: 'title', dir: 'asc' }], hiddenColumns: ['slug'] };
+    persistState('k', state);
+    expect(loadPersistedState('k')).toEqual(state);
   });
 
   it('relativeTime returns string', () => {

@@ -32,10 +32,12 @@ export interface PersistedState {
   groupBy?: string | null;
   /** Column the date views plot against, remembered alongside the view. */
   dateField?: string | null;
-  sortField?: SortField;
-  sortDir?: SortDir;
-  filters?: FilterState;
-  hiddenColumns?: string[];
+  /** Ordered; array order is precedence. */
+  sorts?: unknown[];
+  /** Ordered list; see the note in useContentListController. */
+  filters?: unknown[];
+  /** Ordered list of VISIBLE field names. */
+  columns?: unknown[];
 }
 
 export function loadPersistedState(key: string): PersistedState | null {
