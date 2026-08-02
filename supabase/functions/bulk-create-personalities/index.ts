@@ -18,6 +18,8 @@ interface PersonalityData {
   bio: string;
   top_book?: string | null;
   next_concerts?: unknown[] | null;
+  /** Verified QID from resolveByNameAndProfession — used as the staging source_entity_id. */
+  wikidata_qid?: string | null;
 }
 
 Deno.serve(async (req) => {
@@ -315,7 +317,11 @@ async function fetchPersonalityData(supabaseClient: SupabaseClient, searchTerm: 
       image_url: imageUrl,
       bio: enhancedData.bio,
       top_book: topBook,
-      next_concerts: nextConcerts
+      next_concerts: nextConcerts,
+      // Carry the QID so stagePersonality records it as source_entity_id. This
+      // was previously never set (the caller always read null); it is only safe
+      // to propagate now that the resolver verifies personhood and occupation.
+      wikidata_qid: entityId
     };
 
   } catch (error) {
