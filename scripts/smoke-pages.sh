@@ -311,19 +311,39 @@ purge_poisoned() {
 	done
 	# Stale HTML documents purge by the same mechanism, just a different cache
 	# class (DYNAMIC rather than the hashed assets' immutable entries).
-	for route in ${STALE_ROUTES[@]+"${STALE_ROUTES[@]}"}; do
+	#
+	# Every SPA route goes in, not only the ones THIS runner saw as stale.
+	# Detection is per-colo — the sweep reads one PoP (see the cf-ray line
+	# below) while a document can be poisoned in another. Measured on
+	# 2026-08-02: run 30748289369 found `/` and `/events` stale from its colo,
+	# purged 8 URLs and reported "60 passed, 0 failed", while `/venues`,
+	# `/help` and `/city/berlin` were still serving an 18h-old document out of
+	# ZRH and rendering completely blank. Those three were never in the purge
+	# list because the runner could not see them.
+	#
+	# Purging a route that is already correct costs one origin re-fetch and
+	# nothing else, so the safe move is to purge the whole list whenever we are
+	# purging anything at all.
+	local purge_routes="$ROUTES /map /news /venues/guides"
+	for route in $purge_routes; do
 		files+=("\"$SITE$route\"")
 	done
-	local body
-	body=$(printf '{"files":[%s]}' "$(IFS=,; echo "${files[*]}")")
-
-	local resp ok
-	resp=$(curl -sS -X POST \
-		"https://api.cloudflare.com/client/v4/zones/$CLOUDFLARE_ZONE_ID/purge_cache" \
-		-H "Authorization: Bearer $token" \
-		-H 'Content-Type: application/json' \
-		--data "$body" 2>&1)
-	ok=$(printf '%s' "$resp" | grep -o '"success":[a-z]*' | head -1 | cut -d: -f2)
+	# Chunked at the API's documented 30-files-per-call limit. Before the SPA
+	# routes were added unconditionally the list was short enough that one call
+	# always sufficed; it is not any more, and an over-long body is rejected
+	# wholesale — every URL would silently stay poisoned.
+	local resp ok="true" body i chunk
+	for (( i = 0; i < ${#files[@]}; i += 30 )); do
+		chunk=("${files[@]:i:30}")
+		body=$(printf '{"files":[%s]}' "$(IFS=,; echo "${chunk[*]}")")
+		resp=$(curl -sS -X POST \
+			"https://api.cloudflare.com/client/v4/zones/$CLOUDFLARE_ZONE_ID/purge_cache" \
+			-H "Authorization: Bearer $token" \
+			-H 'Content-Type: application/json' \
+			--data "$body" 2>&1)
+		ok=$(printf '%s' "$resp" | grep -o '"success":[a-z]*' | head -1 | cut -d: -f2)
+		[ "$ok" = "true" ] || break
+	done
 
 	if [ "$ok" != "true" ]; then
 		echo "  ! purge call failed — leaving these as failures. Response:"
@@ -338,8 +358,10 @@ purge_poisoned() {
 		return 0
 	fi
 
-	local total=$(( ${#POISONED[@]} + ${#STALE_ROUTES[@]} ))
-	echo "  purged $total URL(s); re-checking after propagation"
+	local total=${#files[@]}
+	echo "  purged $total URL(s) (${#POISONED[@]} asset(s) + every listed SPA route); re-checking after propagation"
+	echo "  · detail routes (/city/*, /venue/*, …) cannot be enumerated, so a"
+	echo "    poisoned one is not covered here — it needs a dashboard purge."
 	sleep 10
 
 	local recovered=0 want ct
