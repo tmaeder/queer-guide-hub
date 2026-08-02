@@ -100,6 +100,15 @@ expect_content_type() {
 # which can only ever poison a URL nothing references), and only then read the
 # real key a single time. A mismatch at that point is genuine poisoning, not a
 # propagation gap.
+#
+# CORS VARIANT (2026-08-02): read the real key the way a BROWSER does, with an
+# Origin header. Cloudflare caches the CORS and non-CORS variants of the same
+# URL separately, and only the CORS one was poisoned in the incident that made
+# every route render blank. A plain curl returned application/javascript and
+# every smoke check passed while real browsers got text/html and #root stayed
+# empty site-wide. `<link rel="modulepreload" crossorigin>` and `<script
+# type="module" crossorigin>` — which is every chunk Vite emits — are fetched in
+# CORS mode, so the variant this header selects is the ONLY one users ever hit.
 expect_asset_type() {
 	local path=$1 want=$2 ct busted=""
 	for _ in 1 2 3 4 5; do
@@ -108,7 +117,9 @@ expect_asset_type() {
 		sleep 5
 	done
 
-	ct=$(curl -sS -o /dev/null -w '%{content_type}' "$SITE$path")
+	ct=$(curl -sS -o /dev/null -w '%{content_type}' \
+		-H "Origin: $SITE" -H 'Sec-Fetch-Mode: cors' -H 'Sec-Fetch-Dest: script' \
+		"$SITE$path")
 	case "$ct" in
 		*"$want"*) echo "  ✓ $path is $ct"; pass=$((pass+1)); return ;;
 	esac
