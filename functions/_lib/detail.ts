@@ -462,11 +462,22 @@ async function personalityDetail(
   pathname: string,
 ): Promise<DetailResult | null> {
   // duplicate_of_id=is.null — see the identical comment in venueDetail.
+  //
+  // visibility=eq.public is load-bearing. fetchRows PREFERS the service-role
+  // key, so it bypasses RLS: without this filter a draft personality is served
+  // to crawlers as a fully prerendered page — title, description, bio, image —
+  // even though the SPA renders "Personality not found" for the same URL.
+  //
+  // That is how Googlebot was still receiving
+  // "<title>Carl Sagan — Adult performer</title>" after the 2026-08 namesake
+  // repair had already unpublished the row. The exposed set was precisely the
+  // rows pulled from public view *because* their identity data was wrong or
+  // unverified.
   const rows = await fetchRows(
     env,
     'personalities',
     'name,slug,bio,description,image_url,profession,lgbti_connection,lgbti_details,birth_date,death_date,birth_place,nationality,pronouns,website_url,updated_at,is_living',
-    `slug=eq.${encodeURIComponent(slug)}&duplicate_of_id=is.null`,
+    `slug=eq.${encodeURIComponent(slug)}&duplicate_of_id=is.null&visibility=eq.public`,
     1,
   );
   const row = rows[0] ?? null;

@@ -169,11 +169,31 @@ function claimIds(entity, prop) {
  * unverifiable — entity missing/redirected, not a human, or profession unmappable
  */
 export async function verdictFor(row, entity) {
+  const label = entity?.labels?.en?.value ?? null;
+  const description = entity?.descriptions?.en?.value ?? '';
+
+  // Decisive on its own, checked BEFORE any occupation reasoning: commercial
+  // adult film does not predate 1900, so an is_adult row with a pre-1900 birth
+  // date is a namesake match no matter what the entity's occupations say.
+  //
+  // This is not redundant with the occupation check — it is what that check
+  // cannot see. In the 2026-08 sweep, 22 such rows survived as "unverifiable"
+  // because 21 of them carry NO P106 at all (a Mayflower passenger, a Count of
+  // Lippe-Detmold, two Holocaust victims, a Baltimore merchant, an American
+  // judge) and one, Q60665 "Cole Turner", is a fictional character from Charmed
+  // and so failed the P31=Q5 human test. Every one was plainly wrong, and the
+  // conservative branches spared all of them.
+  if (row.is_adult && row.birth_date && row.birth_date < '1900-01-01') {
+    return {
+      verdict: 'conflict',
+      reason: 'impossible_birthdate_for_adult_cohort',
+      label, description, occupations: [],
+    };
+  }
+
   if (!entity || entity.missing !== undefined) {
     return { verdict: 'unverifiable', reason: 'entity_missing', label: null, occupations: [] };
   }
-  const label = entity.labels?.en?.value ?? null;
-  const description = entity.descriptions?.en?.value ?? '';
 
   if (!claimIds(entity, 'P31').includes('Q5')) {
     return { verdict: 'unverifiable', reason: 'not_human', label, description, occupations: [] };
