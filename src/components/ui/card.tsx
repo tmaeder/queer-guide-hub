@@ -20,14 +20,31 @@ interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   hoverable?: boolean | 'group';
 }
 
+/**
+ * PASTE-UP card.
+ *
+ * The card is an ink PLATE, not an outlined box. It used to carry
+ * `border border-border`, which was load-bearing: shadows are disabled
+ * app-wide, so that 1px line was the only thing separating a card from the
+ * page. Replacing it with a fill keeps the boundary (the tonal step is
+ * measured ≥3:1, comfortably past the 3.04:1 the hairline managed) and gets
+ * rid of the outline the rebrand set out to remove.
+ *
+ * The misregistered second plate that snaps home on hover lives on the card's
+ * WRAPPER (`CardHoverEffect`), not here — entity cards pass `overflow-hidden`
+ * to clip their cover image, which would clip the off-register plate away.
+ */
 const Card = React.forwardRef<HTMLDivElement, CardProps>(
   ({ className, children, hoverable, ...props }, ref) => (
     <div
       ref={ref}
       className={cn(
-        'bg-card text-card-foreground rounded-container border border-border transition-all duration-[250ms] ease-[cubic-bezier(0.22,1,0.36,1)]',
-        hoverable === 'group' && 'group-hover:bg-muted/40 group-hover:border-foreground/50',
-        hoverable === true && 'cursor-pointer hover:bg-muted/40 hover:border-foreground/50',
+        // The fill IS the edge now. surface-container sits one measured step
+        // off the page in both modes, so the card still reads as a placed
+        // object with no outline at all.
+        'bg-surface-container text-card-foreground rounded-container transition-all duration-[250ms] ease-[cubic-bezier(0.22,1,0.36,1)]',
+        hoverable === 'group' && 'group-hover:bg-surface-container-high',
+        hoverable === true && 'cursor-pointer hover:bg-surface-container-high',
         className,
       )}
       {...props}

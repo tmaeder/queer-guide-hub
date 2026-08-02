@@ -26,24 +26,9 @@ import { NewStoriesPill } from '@/components/news/editorial/NewStoriesPill';
 
 type Article = Tables<'news_articles'> & { news_sources?: Tables<'news_sources'> };
 
-// Section dek copy keyed by category slug. Falls back to the category description.
-const SECTION_DEK: Record<string, string> = {
-  rights: 'Law, politics, and the moving line of what queer people can do where.',
-  pride: 'Marches, festivals, and the public face of community.',
-  culture: 'Books, film, music, and how queer stories get told.',
-  health: 'Bodies, minds, and the systems meant to care for them.',
-  community: 'How queer people build, organize, and care for each other.',
-};
-
 export default function News() {
   const { t } = useTranslation();
-  const {
-    articles,
-    sources,
-    categories,
-    totalArticles,
-    fetchArticles,
-  } = useNews();
+  const { articles, sources, categories, totalArticles, fetchArticles } = useNews();
   // Live, self-ranking front: hotness = recency × quality × soft featured boost
   // × trending. Replaces the old `is_featured` pin that left a months-old story
   // as the permanent headline. Auto-refreshes (poll + focus) so it never goes stale.
@@ -183,7 +168,9 @@ export default function News() {
             <ForYouSection
               sourcesMap={sourcesMap}
               categoriesMap={categoriesMap}
-              excludeIds={[leadArticle?.id, topStory?.id, editorsPick?.id].filter(Boolean) as string[]}
+              excludeIds={
+                [leadArticle?.id, topStory?.id, editorsPick?.id].filter(Boolean) as string[]
+              }
             />
 
             {sectionCats.map((cat) => {
@@ -197,7 +184,7 @@ export default function News() {
                   sourcesMap={sourcesMap}
                   categoriesMap={categoriesMap}
                   assets={assets}
-                  dek={SECTION_DEK[cat.slug] ?? cat.description ?? undefined}
+                  dek={cat.description ?? undefined}
                 />
               );
             })}

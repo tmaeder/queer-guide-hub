@@ -28,6 +28,11 @@ POISONED=()
 # remedy as a poisoned asset — a purge — so they ride the same remediation.
 STALE_ROUTES=()
 
+# Every hashed asset this run checked, poisoned or not. #2512 widened the purge
+# to cover every SPA ROUTE for exactly the colo-blindness reason below; the same
+# argument applies to the hashed assets, which it left narrow.
+ALL_ASSETS=()
+
 # Cloudflare needs a moment to make a fresh deployment live everywhere.
 retry_status() {
 	local url=$1 want=$2 code=""
@@ -111,6 +116,7 @@ expect_content_type() {
 # CORS mode, so the variant this header selects is the ONLY one users ever hit.
 expect_asset_type() {
 	local path=$1 want=$2 ct busted=""
+	ALL_ASSETS+=("$path|$want")
 	for _ in 1 2 3 4 5; do
 		busted=$(curl -sS -o /dev/null -w '%{content_type}' "$SITE$path?cb=$$-${SECONDS}-${RANDOM}")
 		case "$busted" in *"$want"*) break ;; esac
@@ -275,7 +281,11 @@ fi
 # Safe to do automatically: purging cannot serve wrong content, it can only
 # force a re-fetch of an object we have just proven is correct at origin.
 purge_poisoned() {
-	[ ${#POISONED[@]} -eq 0 ] && [ ${#STALE_ROUTES[@]} -eq 0 ] && return 0
+	if [ "${SKIP_ASSET_PURGE:-}" = "1" ]; then
+		echo; echo "== cache purge skipped (SKIP_ASSET_PURGE=1) =="
+		return 0
+	fi
+	[ ${#ALL_ASSETS[@]} -eq 0 ] && [ ${#STALE_ROUTES[@]} -eq 0 ] && return 0
 
 	echo
 	echo "== poisoned cache remediation =="
@@ -305,25 +315,49 @@ purge_poisoned() {
 
 	# The API takes up to 30 files per call.
 	local files=() path
-	for entry in ${POISONED[@]+"${POISONED[@]}"}; do
+	# Same colo-blindness argument #2512 applied to routes, applied to assets:
+	# this runner sees one PoP, purge-by-URL is global. On 2026-08-08 the 6
+	# entries MSP could see were purged and reported "recovered 6/6" while 29
+	# chunks kept serving text/html from ZRH.
+	for entry in ${ALL_ASSETS[@]+"${ALL_ASSETS[@]}"}; do
 		path=${entry%%|*}
 		files+=("\"$SITE$path\"")
 	done
 	# Stale HTML documents purge by the same mechanism, just a different cache
 	# class (DYNAMIC rather than the hashed assets' immutable entries).
-	for route in ${STALE_ROUTES[@]+"${STALE_ROUTES[@]}"}; do
+	#
+	# Every SPA route goes in, not only the ones THIS runner saw as stale.
+	# Detection is per-colo — the sweep reads one PoP (see the cf-ray line
+	# below) while a document can be poisoned in another. Measured on
+	# 2026-08-02: run 30748289369 found `/` and `/events` stale from its colo,
+	# purged 8 URLs and reported "60 passed, 0 failed", while `/venues`,
+	# `/help` and `/city/berlin` were still serving an 18h-old document out of
+	# ZRH and rendering completely blank. Those three were never in the purge
+	# list because the runner could not see them.
+	#
+	# Purging a route that is already correct costs one origin re-fetch and
+	# nothing else, so the safe move is to purge the whole list whenever we are
+	# purging anything at all.
+	local purge_routes="$ROUTES /map /news /venues/guides"
+	for route in $purge_routes; do
 		files+=("\"$SITE$route\"")
 	done
-	local body
-	body=$(printf '{"files":[%s]}' "$(IFS=,; echo "${files[*]}")")
-
-	local resp ok
-	resp=$(curl -sS -X POST \
-		"https://api.cloudflare.com/client/v4/zones/$CLOUDFLARE_ZONE_ID/purge_cache" \
-		-H "Authorization: Bearer $token" \
-		-H 'Content-Type: application/json' \
-		--data "$body" 2>&1)
-	ok=$(printf '%s' "$resp" | grep -o '"success":[a-z]*' | head -1 | cut -d: -f2)
+	# Chunked at the API's documented 30-files-per-call limit. Before the SPA
+	# routes were added unconditionally the list was short enough that one call
+	# always sufficed; it is not any more, and an over-long body is rejected
+	# wholesale — every URL would silently stay poisoned.
+	local resp ok="true" body i chunk
+	for (( i = 0; i < ${#files[@]}; i += 30 )); do
+		chunk=("${files[@]:i:30}")
+		body=$(printf '{"files":[%s]}' "$(IFS=,; echo "${chunk[*]}")")
+		resp=$(curl -sS -X POST \
+			"https://api.cloudflare.com/client/v4/zones/$CLOUDFLARE_ZONE_ID/purge_cache" \
+			-H "Authorization: Bearer $token" \
+			-H 'Content-Type: application/json' \
+			--data "$body" 2>&1)
+		ok=$(printf '%s' "$resp" | grep -o '"success":[a-z]*' | head -1 | cut -d: -f2)
+		[ "$ok" = "true" ] || break
+	done
 
 	if [ "$ok" != "true" ]; then
 		echo "  ! purge call failed — leaving these as failures. Response:"
@@ -338,20 +372,45 @@ purge_poisoned() {
 		return 0
 	fi
 
+	echo "  purged ${#files[@]} URL(s) (every hashed asset + every listed SPA route)"
+	echo "  · detail routes (/city/*, /venue/*, …) cannot be enumerated, so a"
+	echo "    poisoned one is not covered here — it needs a dashboard purge."
+
+	# The denominator counts only what a recovery can be VERIFIED for: the
+	# entries THIS colo actually saw fail. Everything else was purged
+	# prophylactically for colos we cannot reach, so there is nothing to
+	# re-observe and including it would inflate the count into a fake
+	# "recovered 54/54".
 	local total=$(( ${#POISONED[@]} + ${#STALE_ROUTES[@]} ))
-	echo "  purged $total URL(s); re-checking after propagation"
+	if [ "$total" -eq 0 ]; then
+		echo "  nothing failed at this colo, so there is nothing to re-verify"
+		return 0
+	fi
+	echo "  re-checking the $total entry(ies) that failed here"
 	sleep 10
 
+	# Re-read the SAME cache variant the detection used. This curl carried no
+	# Origin header until 2026-08-08, so it verified the NON-CORS entry — the one
+	# that was never poisoned in the first place. A recovery check that cannot
+	# observe the failure it is confirming is worse than none: it turns a red
+	# signal green. That is how the 2026-08-08 deploy printed "recovered 6/6"
+	# while every browser still got text/html.
 	local recovered=0 want ct
+	local survivors=()
 	for entry in ${POISONED[@]+"${POISONED[@]}"}; do
 		path=${entry%%|*}; want=${entry##*|}
-		ct=$(curl -sS -o /dev/null -w '%{content_type}' "$SITE$path")
+		ct=$(curl -sS -o /dev/null -w '%{content_type}' \
+			-H "Origin: $SITE" -H 'Sec-Fetch-Mode: cors' -H 'Sec-Fetch-Dest: script' \
+			"$SITE$path")
 		case "$ct" in
 			*"$want"*)
 				echo "  ✓ $path recovered ($ct)"
 				recovered=$((recovered+1)); pass=$((pass+1)); fail=$((fail-1))
 				;;
-			*)  echo "  ✗ $path still $ct after purge — investigate, this is not a stale cache" ;;
+			*)
+				echo "  ✗ $path still $ct after purge — not evictable by URL"
+				survivors+=("$path")
+				;;
 		esac
 	done
 	# Same single-origin discipline as the check above — one reading for the
@@ -365,9 +424,83 @@ purge_poisoned() {
 			recovered=$((recovered+1)); pass=$((pass+1)); fail=$((fail-1))
 		else
 			echo "  ✗ $route still stale after purge (cached $plain vs origin $origin_now)"
+			survivors+=("$route")
 		fi
 	done
 	echo "  recovered $recovered/$total"
+
+	# ── Escalation: purge_everything ─────────────────────────────────────
+	#
+	# Some HTML entries are NOT evictable by URL. Measured on 2026-08-02 after
+	# the deploy of efae95b: `/` and `/news` cleared from a purge call while
+	# `/venues`, `/events` and `/help` — listed in the SAME request, which
+	# returned success — stayed pinned at `age: 84712` (23.5h) with
+	# `cf-cache-status: DYNAMIC`. DYNAMIC means the object is not in the zone
+	# cache at all, so a zone purge-by-URL has nothing to evict; the copy lives
+	# upstream. `?cb=` returned the correct fresh document throughout, so origin
+	# was healthy the whole time and no redeploy could have helped.
+	#
+	# Those documents reference chunk hashes the current deploy no longer
+	# serves, so every module request falls through to the SPA shell and the
+	# route renders BLANK. That is a site outage for every route in this state.
+	#
+	# purge_everything is the only remaining lever. It is a big hammer — it
+	# evicts healthy objects too and costs a cold cache — so it fires ONLY when
+	# a targeted purge has already been tried and demonstrably failed on a
+	# route we have PROVEN stale (cached hash != origin hash, with origin
+	# verified via a cache-busted read). It cannot fire on a clean deploy.
+	if [ ${#survivors[@]} -gt 0 ]; then
+		echo
+		echo "  ! ${#survivors[@]} entr(y/ies) survived a targeted purge:${survivors[*]}"
+		echo "    These are not in the zone cache (cf-cache-status: DYNAMIC), so purge"
+		echo "    by URL cannot evict them. Escalating to purge_everything."
+		local eresp eok
+		eresp=$(curl -sS -X POST \
+			"https://api.cloudflare.com/client/v4/zones/$CLOUDFLARE_ZONE_ID/purge_cache" \
+			-H "Authorization: Bearer $token" \
+			-H 'Content-Type: application/json' \
+			--data '{"purge_everything":true}' 2>&1)
+		eok=$(printf '%s' "$eresp" | grep -o '"success":[a-z]*' | head -1 | cut -d: -f2)
+		if [ "$eok" != "true" ]; then
+			echo "    ✗ purge_everything failed: $(printf '%s' "$eresp" | head -c 200)"
+			return 0
+		fi
+		echo "    purge_everything accepted; re-checking after propagation"
+		sleep 20
+		origin_now=$(origin_entry)
+		# Survivors are a mixed list: hashed assets are judged by content type
+		# (an asset serving text/html is the failure), SPA routes by whether the
+		# document references the current entry chunk. Judging an asset by entry
+		# hash would compare against markup it does not contain and report every
+		# recovery as a failure.
+		local item ct2
+		for item in "${survivors[@]}"; do
+			case "$item" in
+				/assets/*)
+					ct2=$(curl -sS -o /dev/null -w '%{content_type}' \
+						-H "Origin: $SITE" -H 'Sec-Fetch-Mode: cors' -H 'Sec-Fetch-Dest: script' \
+						"$SITE$item")
+					case "$ct2" in
+						*html*)
+							echo "    ✗ $item STILL text/html after purge_everything"
+							echo "      Not a cache this pipeline can reach. Escalate to Cloudflare."
+							;;
+						*)  echo "    ✓ $item recovered ($ct2)"; pass=$((pass+1)); fail=$((fail-1)) ;;
+					esac
+					;;
+				*)
+					plain=$(entry_hash "$SITE$item")
+					if [ -n "$origin_now" ] && [ "$plain" = "$origin_now" ]; then
+						echo "    ✓ $item recovered ($plain)"
+						pass=$((pass+1)); fail=$((fail-1))
+					else
+						echo "    ✗ $item STILL stale after purge_everything (cached $plain vs origin $origin_now)"
+						echo "      Not a cache this pipeline can reach. Escalate to Cloudflare."
+					fi
+					;;
+			esac
+		done
+	fi
 }
 purge_poisoned
 

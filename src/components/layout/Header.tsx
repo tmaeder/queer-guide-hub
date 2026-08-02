@@ -264,7 +264,10 @@ export function Header() {
 
   return (
     <header
-      className="sticky top-0 border-b border-border bg-background/80 backdrop-blur-xl"
+      // PASTE-UP masthead: a heavy 2px black rule under the header rather than
+      // a hairline box edge, matching the footer and the section mastheads.
+      // `.rule-heavy` draws on the top edge, so the bottom rule is spelled out.
+      className="sticky top-0 border-b-2 border-foreground bg-background/80 backdrop-blur-xl"
       style={{ zIndex: 1100, paddingTop: 'env(safe-area-inset-top, 0px)' }}
     >
       <div className="px-4 sm:px-6 md:px-8">

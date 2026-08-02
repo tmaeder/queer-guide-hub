@@ -49,6 +49,11 @@ Deno.serve(
                 tags: Array.from(
                   new Set([...((n.tags as string[]) ?? []), ...(ai.suggested_tags ?? [])])
                 ).slice(0, 20),
+                // Read by the BEFORE INSERT trigger on news_articles, which
+                // re-validates it against news_categories and falls back to the
+                // keyword classifier when absent — which is what happens on
+                // every circuit-breaker trip, since `ai` is null then.
+                category_canonical: ai.category ?? null,
               }
             : null,
           enrichedData: {
@@ -57,6 +62,7 @@ Deno.serve(
             ai_lgbtq_relevance_score: ai?.lgbtq_relevance_score ?? null,
             ai_sentiment: ai?.sentiment ?? null,
             ai_topics: ai?.topics ?? [],
+            ai_category: ai?.category ?? null,
             enriched_at: new Date().toISOString(),
           },
         }

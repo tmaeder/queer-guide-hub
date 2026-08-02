@@ -1,90 +1,90 @@
 {
-  "generated_at": "2026-07-24T04:06:26.782Z",
-  "token_count": 89,
+  "generated_at": "2026-08-02T15:01:19.056Z",
+  "token_count": 91,
   "usage": [
     {
       "token": "muted-foreground",
-      "count": 3349
+      "count": 3296
     },
     {
       "token": "foreground",
-      "count": 1650
+      "count": 1602
     },
     {
       "token": "border",
-      "count": 1028
+      "count": 1036
     },
     {
       "token": "muted",
-      "count": 1002
+      "count": 963
     },
     {
       "token": "radius-element",
-      "count": 843
+      "count": 851
     },
     {
-      "token": "text-13",
+      "token": "text-2xs",
       "count": 604
     },
     {
       "token": "background",
-      "count": 590
+      "count": 592
     },
     {
-      "token": "text-2xs",
-      "count": 549
+      "token": "text-13",
+      "count": 558
     },
     {
       "token": "destructive",
-      "count": 442
+      "count": 457
     },
     {
       "token": "radius-badge",
-      "count": 326
+      "count": 320
     },
     {
       "token": "radius-container",
-      "count": 306
+      "count": 317
     },
     {
       "token": "text-xs2",
-      "count": 276
+      "count": 283
     },
     {
       "token": "primary",
-      "count": 245
+      "count": 246
     },
     {
       "token": "accent",
-      "count": 174
-    },
-    {
-      "token": "text-title",
-      "count": 140
+      "count": 173
     },
     {
       "token": "text-15",
-      "count": 134
+      "count": 153
     },
     {
-      "token": "card",
-      "count": 102
+      "token": "text-title",
+      "count": 149
     },
     {
       "token": "text-primary",
-      "count": 95
+      "count": 94
+    },
+    {
+      "token": "card",
+      "count": 89
     },
     {
       "token": "text-headline",
-      "count": 86
+      "count": 75
     },
     {
       "token": "text-body-lg",
-      "count": 83
+      "count": 74
     },
     {
       "token": "text-display",
-      "count": 69
+      "count": 71
     },
     {
       "token": "ring",
@@ -95,47 +95,55 @@
       "count": 49
     },
     {
-      "token": "text-headline-lg",
-      "count": 44
+      "token": "primary-foreground",
+      "count": 39
     },
     {
-      "token": "primary-foreground",
-      "count": 40
+      "token": "text-headline-lg",
+      "count": 37
     },
     {
       "token": "text-3xs",
-      "count": 29
-    },
-    {
-      "token": "text-hero",
-      "count": 28
+      "count": 30
     },
     {
       "token": "radius",
-      "count": 28
+      "count": 30
+    },
+    {
+      "token": "text-hero",
+      "count": 26
     },
     {
       "token": "input",
-      "count": 25
-    },
-    {
-      "token": "popover",
-      "count": 19
+      "count": 22
     },
     {
       "token": "warning",
       "count": 19
     },
     {
-      "token": "secondary",
-      "count": 15
+      "token": "popover",
+      "count": 18
     },
     {
-      "token": "popover-foreground",
-      "count": 11
+      "token": "secondary",
+      "count": 17
+    },
+    {
+      "token": "surface-container",
+      "count": 13
     },
     {
       "token": "success",
+      "count": 12
+    },
+    {
+      "token": "spot",
+      "count": 12
+    },
+    {
+      "token": "popover-foreground",
       "count": 11
     },
     {
@@ -147,12 +155,20 @@
       "count": 9
     },
     {
-      "token": "surface-container-low",
-      "count": 8
+      "token": "border-hairline",
+      "count": 9
+    },
+    {
+      "token": "surface-container-high",
+      "count": 9
     },
     {
       "token": "text-hero-xl",
-      "count": 7
+      "count": 8
+    },
+    {
+      "token": "surface-container-low",
+      "count": 8
     },
     {
       "token": "accent-foreground",
@@ -167,15 +183,19 @@
       "count": 7
     },
     {
-      "token": "surface-container",
-      "count": 7
+      "token": "ink-blue",
+      "count": 6
+    },
+    {
+      "token": "ink-pink",
+      "count": 5
     },
     {
       "token": "card-foreground",
       "count": 5
     },
     {
-      "token": "border-hairline",
+      "token": "spot-foreground",
       "count": 4
     },
     {
@@ -183,7 +203,27 @@
       "count": 3
     },
     {
+      "token": "ink-blue-foreground",
+      "count": 3
+    },
+    {
+      "token": "ink-over",
+      "count": 3
+    },
+    {
       "token": "radius-none",
+      "count": 2
+    },
+    {
+      "token": "ink-over-foreground",
+      "count": 2
+    },
+    {
+      "token": "surface-container-highest",
+      "count": 2
+    },
+    {
+      "token": "plate-offset",
       "count": 2
     },
     {
@@ -227,19 +267,15 @@
       "count": 1
     },
     {
-      "token": "surface-container-high",
-      "count": 1
-    },
-    {
-      "token": "surface-container-highest",
-      "count": 1
-    },
-    {
       "token": "surface-dim",
       "count": 1
     },
     {
       "token": "inverse-surface",
+      "count": 1
+    },
+    {
+      "token": "plate-offset-ink",
       "count": 1
     },
     {
@@ -311,6 +347,10 @@
       "count": 0
     },
     {
+      "token": "asset-rev",
+      "count": 0
+    },
+    {
       "token": "warning-foreground",
       "count": 0
     },
@@ -324,38 +364,6 @@
     },
     {
       "token": "transition-smooth",
-      "count": 0
-    },
-    {
-      "token": "cat-venues",
-      "count": 0
-    },
-    {
-      "token": "cat-events",
-      "count": 0
-    },
-    {
-      "token": "cat-marketplace",
-      "count": 0
-    },
-    {
-      "token": "cat-places",
-      "count": 0
-    },
-    {
-      "token": "cat-hotels",
-      "count": 0
-    },
-    {
-      "token": "cat-travel",
-      "count": 0
-    },
-    {
-      "token": "cat-news",
-      "count": 0
-    },
-    {
-      "token": "cat-community",
       "count": 0
     }
   ],
@@ -377,24 +385,17 @@
     "radius-full",
     "shadow-none",
     "shadow-hairline",
+    "asset-rev",
     "warning-foreground",
     "success-foreground",
     "input-bg",
-    "transition-smooth",
-    "cat-venues",
-    "cat-events",
-    "cat-marketplace",
-    "cat-places",
-    "cat-hotels",
-    "cat-travel",
-    "cat-news",
-    "cat-community"
+    "transition-smooth"
   ],
   "eslint": {
     "design_rule_suppressions": 0
   },
   "color_literals": {
-    "total": 262,
+    "total": 263,
     "files": [
       {
         "file": "src/hooks/useRiskVisual.ts",
@@ -521,7 +522,6 @@
   "docs": {
     "missing_from_docs": [
       "font-sans",
-      "font-display",
       "font-mono",
       "text-3xs",
       "text-3xs--line-height",
@@ -549,12 +549,11 @@
       "text-body-lg--line-height",
       "tracking-label",
       "radius-none",
-      "radius-container",
-      "radius-element",
-      "radius-badge",
       "radius-full",
+      "ink-pink",
       "shadow-none",
       "shadow-hairline",
+      "asset-rev",
       "card",
       "card-foreground",
       "popover",
@@ -569,6 +568,9 @@
       "warning-foreground",
       "success",
       "success-foreground",
+      "spot-foreground",
+      "ink-blue-foreground",
+      "ink-over-foreground",
       "input",
       "input-bg",
       "sidebar-background",
@@ -579,6 +581,7 @@
       "sidebar-accent-foreground",
       "sidebar-border",
       "sidebar-ring",
+      "radius",
       "text-primary",
       "text-secondary",
       "text-muted",
@@ -587,22 +590,16 @@
       "surface",
       "surface-container-lowest",
       "surface-container-low",
-      "surface-container",
       "surface-container-high",
       "surface-container-highest",
       "surface-dim",
       "inverse-surface",
-      "cat-venues",
-      "cat-events",
-      "cat-marketplace",
-      "cat-places",
-      "cat-hotels",
-      "cat-travel",
-      "cat-news",
-      "cat-community"
+      "plate-offset",
+      "plate-offset-ink"
     ],
     "stale_in_docs": [
-      "token"
+      "token",
+      "text-"
     ]
   }
 }

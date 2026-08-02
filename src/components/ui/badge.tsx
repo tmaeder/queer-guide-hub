@@ -3,16 +3,24 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const badgeVariants = cva(
-  "inline-flex items-center rounded-badge border px-2.5 py-0.5 text-xs2 font-medium tracking-tight transition-all focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+  // PASTE-UP: a badge is a stamped chip, so the base carries no border at all
+  // and every variant is a flat fill.
+  "inline-flex items-center rounded-badge px-2.5 py-0.5 text-xs2 font-semibold tracking-tight transition-all focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
   {
     variants: {
       variant: {
-        default: "border-transparent bg-foreground text-background",
-        outline: "border-foreground/20 bg-background/60 backdrop-blur-sm text-foreground hover:border-foreground/40",
-        soft: "border-transparent bg-muted text-foreground",
-        // Legacy aliases.
-        secondary: "border-transparent bg-muted text-foreground",
-        destructive: "border-transparent bg-destructive text-destructive-foreground",
+        default: "bg-foreground text-background",
+        // The one variant that keeps a hairline: it sits over photography,
+        // where a fill would cover the subject.
+        outline:
+          "border border-foreground/20 bg-background/60 backdrop-blur-sm text-foreground hover:border-foreground/40",
+        soft: "bg-surface-container-high text-foreground",
+        // Brand ink chip. NON-SEMANTIC — never use it to mean a status, and
+        // never on a safety surface. See the doctrine in src/index.css.
+        ink: "bg-ink-pink text-ink-pink-foreground",
+        // Legacy alias.
+        secondary: "bg-surface-container-high text-foreground",
+        destructive: "bg-destructive text-destructive-foreground",
       },
     },
     defaultVariants: { variant: "default" },
