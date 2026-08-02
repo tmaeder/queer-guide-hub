@@ -60,3 +60,12 @@ jobs:
         run: bash scripts/smoke-pages.sh
         env:
           SITE_URL: https://queer.guide
+          # Lets the smoke test evict an edge entry it has PROVEN is poisoned
+          # (plain URL serves HTML, ?cb= serves the real object). That failure
+          # class cannot be fixed by redeploying — the content hash does not
+          # move — so without this the pipeline stays red until a human purges,
+          # and /fonts, /icons and /images cannot be hash-rotated at all.
+          # If the token lacks the Cache Purge permission the script says so
+          # and leaves the checks failing; it never silently passes.
+          CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}

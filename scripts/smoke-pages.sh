@@ -19,6 +19,11 @@ SITE="${SITE_URL:-https://queer.guide}"
 
 pass=0; fail=0
 
+# Paths proven to be poisoned edge-cache entries (plain URL wrong, ?cb= right).
+# Collected rather than only printed, because this is the one failure class a
+# redeploy can never fix — see purge_poisoned() at the bottom.
+POISONED=()
+
 # Cloudflare needs a moment to make a fresh deployment live everywhere.
 retry_status() {
 	local url=$1 want=$2 code=""
@@ -110,10 +115,8 @@ expect_asset_type() {
 			echo "  ✗ $path is $ct — POISONED EDGE CACHE (origin is fine: ?cb= gives $busted)"
 			echo "    A colo is serving cached SPA HTML for this URL under"
 			echo "    Cache-Control: immutable, max-age=31536000. Redeploying will NOT"
-			echo "    evict it — the content hash does not change. Purge it:"
-			echo "      curl -X POST https://api.cloudflare.com/client/v4/zones/\$CLOUDFLARE_ZONE_ID/purge_cache \\"
-			echo "        -H \"Authorization: Bearer \$CLOUDFLARE_API_TOKEN\" -H 'Content-Type: application/json' \\"
-			echo "        -d '{\"files\":[\"$SITE$path\"]}'"
+			echo "    evict it — the content hash does not change. Only a purge does."
+			POISONED+=("$path|$want")
 			;;
 		*)
 			echo "  ✗ $path is $ct, and $busted with ?cb= — ORIGIN IS BROKEN"
@@ -164,6 +167,73 @@ if [ -n "$js" ]; then
 else
 	echo "  ✗ no entry script found in / — the HTML shell looks wrong"; fail=$((fail+1))
 fi
+
+# A poisoned entry is the one failure here that NO redeploy can clear: the
+# filename hash does not move, so the bad object sits under `immutable,
+# max-age=31536000` for a year. Rotating the hash only works for files we
+# generate — /fonts, /icons and /images cannot be rotated at all. So purge.
+#
+# Deliberately narrow: only paths `expect_asset_type` already PROVED are
+# poisoned (plain URL wrong AND ?cb= right). Never a blanket "purge
+# everything" — that would also evict every healthy object and hide an
+# origin-broken deploy behind a cache miss that happens to look correct.
+#
+# Safe to do automatically: purging cannot serve wrong content, it can only
+# force a re-fetch of an object we have just proven is correct at origin.
+purge_poisoned() {
+	[ ${#POISONED[@]} -eq 0 ] && return 0
+
+	echo
+	echo "== poisoned cache remediation =="
+	if [ -z "${CLOUDFLARE_ZONE_ID:-}" ] || [ -z "${CLOUDFLARE_API_TOKEN:-}" ]; then
+		echo "  ! ${#POISONED[@]} poisoned URL(s) and no purge credentials in env."
+		echo "    Set CLOUDFLARE_ZONE_ID + CLOUDFLARE_API_TOKEN (needs the Cache Purge"
+		echo "    permission), or purge from the dashboard. Leaving them as failures."
+		return 0
+	fi
+
+	# The API takes up to 30 files per call.
+	local files=() path
+	for entry in "${POISONED[@]}"; do
+		path=${entry%%|*}
+		files+=("\"$SITE$path\"")
+	done
+	local body
+	body=$(printf '{"files":[%s]}' "$(IFS=,; echo "${files[*]}")")
+
+	local resp ok
+	resp=$(curl -sS -X POST \
+		"https://api.cloudflare.com/client/v4/zones/$CLOUDFLARE_ZONE_ID/purge_cache" \
+		-H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+		-H 'Content-Type: application/json' \
+		--data "$body" 2>&1)
+	ok=$(printf '%s' "$resp" | grep -o '"success":[a-z]*' | head -1 | cut -d: -f2)
+
+	if [ "$ok" != "true" ]; then
+		echo "  ! purge call failed — leaving these as failures. Response:"
+		printf '    %s\n' "$(printf '%s' "$resp" | head -c 400)"
+		echo "    A 403/9109 here means CLOUDFLARE_API_TOKEN lacks 'Cache Purge'."
+		return 0
+	fi
+
+	echo "  purged ${#POISONED[@]} URL(s); re-checking after propagation"
+	sleep 10
+
+	local recovered=0 want ct
+	for entry in "${POISONED[@]}"; do
+		path=${entry%%|*}; want=${entry##*|}
+		ct=$(curl -sS -o /dev/null -w '%{content_type}' "$SITE$path")
+		case "$ct" in
+			*"$want"*)
+				echo "  ✓ $path recovered ($ct)"
+				recovered=$((recovered+1)); pass=$((pass+1)); fail=$((fail-1))
+				;;
+			*)  echo "  ✗ $path still $ct after purge — investigate, this is not a stale cache" ;;
+		esac
+	done
+	echo "  recovered $recovered/${#POISONED[@]}"
+}
+purge_poisoned
 
 # Pages Functions do not execute in production. The repo is not the cause —
 # the bundle compiles and uploads, _routes.json is uploaded and validated, and
