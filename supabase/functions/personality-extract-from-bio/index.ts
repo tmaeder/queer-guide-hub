@@ -34,10 +34,25 @@ function parseJson(text: unknown): Record<string, unknown> | null {
   try { return JSON.parse(m[0]) } catch { return null }
 }
 
-function intYear(v: unknown): number | null {
+/**
+ * Parse a year the LLM claims to have read out of a bio.
+ *
+ * `source` is the bio text the model was given, and the year MUST appear in it
+ * verbatim. This is the load-bearing check: the model is asked to extract, but
+ * an LLM handed a bio that states no birth year will happily produce a
+ * plausible-looking one, and this function's output is written straight to
+ * `personalities.birth_date`. Requiring the literal digits makes the field an
+ * extraction rather than a guess.
+ *
+ * The upper bound is the current year (nobody in this corpus is born in the
+ * future); the lower bound stays permissive because the corpus holds genuine
+ * historical figures back to the 12th century.
+ */
+function intYear(v: unknown, source = ''): number | null {
   const n = Number(v)
   if (!Number.isInteger(n)) return null
-  if (n < 1000 || n > 2100) return null
+  if (n < 1000 || n > new Date().getUTCFullYear()) return null
+  if (!new RegExp(`\\b${n}\\b`).test(source)) return null
   return n
 }
 
@@ -113,8 +128,8 @@ Deno.serve(async (req) => {
       const j = parseJson(res?.content)
       if (!j) { failed++; continue }
 
-      const by = intYear(j.birth_year)
-      const dy = intYear(j.death_year)
+      const by = intYear(j.birth_year, bio)
+      const dy = intYear(j.death_year, bio)
       const prof = cleanStr(j.profession)
       const nat = cleanStr(j.nationality)
 

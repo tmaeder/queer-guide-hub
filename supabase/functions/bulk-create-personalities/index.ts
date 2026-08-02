@@ -1,14 +1,9 @@
 import { chatCompletion, isOpenAIAvailable } from '../_shared/openai-client.ts';
 import { getCorsHeaders, getServiceClient, requireAdmin } from '../_shared/supabase-client.ts'
-import { fetchOpenSanctionsData, fetchWikidataEntityLabel, formatWikidataDate, fetchTopBook, fetchUpcomingConcerts, WIKIDATA_USER_AGENT } from '../_shared/personality-fetcher.ts'
+import { fetchOpenSanctionsData, fetchWikidataEntityLabel, fetchTopBook, fetchUpcomingConcerts } from '../_shared/personality-fetcher.ts'
 import { stagePersonality, triggerPersonalityPipeline } from '../_shared/personality-staging.ts'
+import { resolveByNameAndProfession, readTimeClaim } from '../_shared/wikidata-resolve.ts'
 import type { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
-
-interface WikidataSearchResult {
-  id: string;
-  label: string;
-  description?: string;
-}
 
 interface PersonalityData {
   name: string;
@@ -23,6 +18,8 @@ interface PersonalityData {
   bio: string;
   top_book?: string | null;
   next_concerts?: unknown[] | null;
+  /** Verified QID from resolveByNameAndProfession — used as the staging source_entity_id. */
+  wikidata_qid?: string | null;
 }
 
 Deno.serve(async (req) => {
@@ -37,7 +34,10 @@ Deno.serve(async (req) => {
   if (auth instanceof Response) return auth
 
   try {
-    const { names, sources = {} } = await req.json();
+    // `profession` applies to the whole batch and is what makes a Wikidata match
+    // safe: without it there is no way to tell the performer "Carl Sagan" from
+    // the astronomer, and the resolver will (correctly) refuse to pick either.
+    const { names, sources = {}, profession = null } = await req.json();
 
     if (!names || !Array.isArray(names)) {
       throw new Error('Names array is required');
@@ -70,7 +70,7 @@ Deno.serve(async (req) => {
         console.log(`Processing: ${name}`);
         
         // Fetch personality data using the same logic as fetch-personality-data
-        const personalityData = await fetchPersonalityData(supabase, name.trim(), sourceConfig);
+        const personalityData = await fetchPersonalityData(supabase, name.trim(), sourceConfig, profession);
         
         console.log(`Data fetched for ${name}:`, personalityData ? 'success' : 'failed');
         
@@ -142,10 +142,14 @@ Deno.serve(async (req) => {
   }
 });
 
-async function fetchPersonalityData(supabaseClient: SupabaseClient, searchTerm: string, sources: unknown): Promise<PersonalityData | null> {
+async function fetchPersonalityData(supabaseClient: SupabaseClient, searchTerm: string, sources: unknown, profession: string | null = null): Promise<PersonalityData | null> {
   try {
     if (!sources.wikidata) {
       console.log(`Wikidata source disabled for: ${searchTerm}`);
+      return null;
+    }
+    if (!profession || !profession.trim()) {
+      console.log(`No profession supplied for "${searchTerm}" — refusing to guess a Wikidata entity by name alone.`);
       return null;
     }
 
@@ -160,57 +164,58 @@ async function fetchPersonalityData(supabaseClient: SupabaseClient, searchTerm: 
       openSanctions: null
     };
 
-    // Search for the entity in Wikidata
-    const searchUrl = `https://www.wikidata.org/w/api.php?action=wbsearchentities&search=${encodeURIComponent(searchTerm)}&language=en&format=json&limit=1`;
-    const searchResponse = await fetch(searchUrl, {
-      headers: {
-        'User-Agent': WIKIDATA_USER_AGENT
-      }
-    });
-    
-    if (!searchResponse.ok) {
-      console.log(`Wikidata API error ${searchResponse.status} for: ${searchTerm}`);
+    // Resolve the entity via the disambiguating resolver.
+    //
+    // This used to be `wbsearchentities&limit=1` → search[0], with no personhood
+    // or occupation check. Stage names collide with famous namesakes, so that
+    // bound performer records to strangers ("Carl Sagan" → Q410) and copied the
+    // stranger's dates and social handles across. resolveByNameAndProfession
+    // requires P31=Q5 plus an occupation overlap and refuses ambiguous matches;
+    // returning null here means the caller creates the row without Wikidata
+    // enrichment rather than with someone else's facts.
+    const resolved = await resolveByNameAndProfession(searchTerm, profession);
+    if (!resolved) {
+      console.log(`No confident Wikidata match for: ${searchTerm} (profession: ${profession ?? 'none'})`);
       return null;
     }
-    
-    const searchData = await searchResponse.json();
+    const entityId = resolved.qid;
+    const entityInfo = resolved.entity;
 
-    if (!searchData.search || searchData.search.length === 0) {
-      console.log(`No Wikidata results found for: ${searchTerm}`);
-      return null;
-    }
-
-    const entity = searchData.search[0] as WikidataSearchResult;
-    const entityId = entity.id;
-
-    // Get detailed information from Wikidata
-    const entityUrl = `https://www.wikidata.org/w/api.php?action=wbgetentities&ids=${entityId}&format=json&languages=en`;
-    const entityResponse = await fetch(entityUrl);
-    const entityData = await entityResponse.json();
-
-    const entityInfo = entityData.entities[entityId];
-    if (!entityInfo) {
-      return null;
-    }
+    // resolveByNameAndProfession returns a structurally-typed entity
+    // (Record<string, unknown>), so the label/claim shapes are narrowed once
+    // here rather than at each of the dozen read sites below.
+    // `value` is a string for media/identifier claims (P18) and an object for
+    // entity-valued ones (P106/P27/P19), hence the union.
+    type WdSnak = {
+      mainsnak?: { datavalue?: { value?: string | { id?: string; time?: string } } };
+    };
+    const labels = entityInfo.labels as Record<string, { value?: string }> | undefined;
+    const descriptions = entityInfo.descriptions as Record<string, { value?: string }> | undefined;
+    const sitelinks = entityInfo.sitelinks as Record<string, { title?: string }> | undefined;
+    const claims = (entityInfo.claims ?? {}) as Record<string, WdSnak[] | undefined>;
+    const snakId = (s?: WdSnak) => {
+      const v = s?.mainsnak?.datavalue?.value;
+      return typeof v === 'object' ? v?.id : undefined;
+    };
 
     // Extract data from Wikidata
-    const name = entityInfo.labels?.en?.value || searchTerm;
-    const description = entityInfo.descriptions?.en?.value || '';
-    
-    // Parse claims for additional information
-    const claims = entityInfo.claims || {};
-    
-    // Birth date (P569)
-    const birthDate = claims.P569?.[0]?.mainsnak?.datavalue?.value?.time;
-    
-    // Death date (P570)
-    const deathDate = claims.P570?.[0]?.mainsnak?.datavalue?.value?.time;
-    
+    const name = labels?.en?.value || searchTerm;
+    const description = descriptions?.en?.value || '';
+
+    // Birth/death dates (P569/P570) — rank- and precision-aware. Reading
+    // claims[0].…time and formatting it blind treats a decade-precision snak
+    // ("+1800-00-00T00:00:00Z") as 1 January 1800 and lets a deprecated
+    // statement outrank the preferred one.
+    const birthTime = readTimeClaim(entityInfo, 'P569');
+    const deathTime = readTimeClaim(entityInfo, 'P570');
+    const birthDate = birthTime?.date ?? null;
+    const deathDate = deathTime?.date ?? null;
+
     // Occupation (P106)
     const occupationClaim = claims.P106?.[0];
     let occupation = '';
     if (occupationClaim) {
-      const occupationId = occupationClaim.mainsnak?.datavalue?.value?.id;
+      const occupationId = snakId(occupationClaim);
       if (occupationId) {
         occupation = await fetchWikidataEntityLabel(occupationId);
       }
@@ -220,7 +225,7 @@ async function fetchPersonalityData(supabaseClient: SupabaseClient, searchTerm: 
     const nationalityClaim = claims.P27?.[0];
     let nationality = '';
     if (nationalityClaim) {
-      const nationalityId = nationalityClaim.mainsnak?.datavalue?.value?.id;
+      const nationalityId = snakId(nationalityClaim);
       if (nationalityId) {
         nationality = await fetchWikidataEntityLabel(nationalityId);
       }
@@ -230,7 +235,7 @@ async function fetchPersonalityData(supabaseClient: SupabaseClient, searchTerm: 
     const birthPlaceClaim = claims.P19?.[0];
     let birthPlace: string | null = null;
     if (birthPlaceClaim) {
-      const birthPlaceId = birthPlaceClaim.mainsnak?.datavalue?.value?.id;
+      const birthPlaceId = snakId(birthPlaceClaim);
       if (birthPlaceId) {
         const label = await fetchWikidataEntityLabel(birthPlaceId);
         birthPlace = label || null;
@@ -239,7 +244,7 @@ async function fetchPersonalityData(supabaseClient: SupabaseClient, searchTerm: 
 
     // Get Wikipedia page and bio
     let bio = description;
-    const wikipediaTitle = entityInfo.sitelinks?.enwiki?.title;
+    const wikipediaTitle = sitelinks?.enwiki?.title;
     if (wikipediaTitle && sources.wikipedia) {
       try {
         const wikiResponse = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(wikipediaTitle)}`);
@@ -257,7 +262,7 @@ async function fetchPersonalityData(supabaseClient: SupabaseClient, searchTerm: 
     const imageClaim = claims.P18?.[0];
     if (imageClaim) {
       const imageFile = imageClaim.mainsnak?.datavalue?.value;
-      if (imageFile) {
+      if (typeof imageFile === 'string') {
         // Convert to Wikimedia Commons URL
         const fileName = imageFile.replace(/ /g, '_');
         imageUrl = `https://upload.wikimedia.org/wikipedia/commons/thumb/${fileName}`;
@@ -289,9 +294,14 @@ async function fetchPersonalityData(supabaseClient: SupabaseClient, searchTerm: 
       profession: occupation,
       nationality,
       birth_place: birthPlace,
-      birth_date: formatWikidataDate(birthDate),
-      death_date: formatWikidataDate(deathDate),
-      is_living: !deathDate,
+      // Already normalised ISO dates — readTimeClaim did the formatting, so do
+      // NOT re-run formatWikidataDate here (it expects a raw "+YYYY-…" snak and
+      // would reject an already-formatted value).
+      birth_date: birthDate,
+      death_date: deathDate,
+      // Presence of a P570 statement is the death signal, even when the snak
+      // itself was too coarse to format into a date.
+      is_living: !(claims.P570?.length),
       openSanctionsData: sourceData.openSanctions
     });
 
@@ -307,7 +317,11 @@ async function fetchPersonalityData(supabaseClient: SupabaseClient, searchTerm: 
       image_url: imageUrl,
       bio: enhancedData.bio,
       top_book: topBook,
-      next_concerts: nextConcerts
+      next_concerts: nextConcerts,
+      // Carry the QID so stagePersonality records it as source_entity_id. This
+      // was previously never set (the caller always read null); it is only safe
+      // to propagate now that the resolver verifies personhood and occupation.
+      wikidata_qid: entityId
     };
 
   } catch (error) {

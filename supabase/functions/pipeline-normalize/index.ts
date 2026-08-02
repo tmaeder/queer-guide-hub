@@ -479,19 +479,22 @@ function normalizeBirthDate(v: unknown): string | null {
   // BCE dates not supported by PG date type without era handling — drop.
   if (s.startsWith('-')) return null
   const stripped = s.replace(/^\+/, '').replace(/T.*$/, '')
-  // Year-only → Jan 1
-  const yearOnly = stripped.match(/^(\d{3,4})$/)
-  if (yearOnly) return `${yearOnly[1].padStart(4, '0')}-01-01`
+  // Year-only → Jan 1. Exactly four digits: a 3-digit value is not a year in
+  // this corpus, it is a truncated field, an age or an id, and padStart turned
+  // "947" into the year 0947.
+  const yearOnly = stripped.match(/^(\d{4})$/)
+  if (yearOnly) return `${yearOnly[1]}-01-01`
   // Year-month → day 1
   const ym = stripped.match(/^(\d{4})-(\d{2})$/)
   if (ym) return `${ym[1]}-${ym[2]}-01`
   // Full YYYY-MM-DD
   const ymd = stripped.match(/^(\d{4})-(\d{2})-(\d{2})$/)
   if (ymd) return ymd[0]
-  // Fallback: Date parse
-  const d = new Date(stripped)
-  if (isNaN(d.getTime())) return null
-  return d.toISOString().slice(0, 10)
+  // No `new Date()` fallback. V8 legacy parsing accepts ambiguous strings and
+  // guesses at them — "5/12/47" becomes 1947-05-12 or 2047-12-05 depending on
+  // locale conventions, and toISOString() then shifts locally-parsed values by a
+  // day. An unrecognised date is dropped rather than invented.
+  return null
 }
 
 /**
