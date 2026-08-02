@@ -32,6 +32,7 @@ import {
 import { formatDateTime } from '@/lib/format';
 import { TagCategorizer } from '@/components/admin/TagCategorizer';
 import { TagQualityPanel } from '@/components/admin/TagQualityPanel';
+import { TagVocabularyHealthPanel } from '@/components/admin/TagVocabularyHealthPanel';
 import { TagSuggestionsReviewPanel } from '@/components/admin/TagSuggestionsReviewPanel';
 import { SensitiveTagReviewPanel } from '@/components/admin/SensitiveTagReviewPanel';
 import { TagsCsvImport } from '@/components/admin/TagsCsvImport';
@@ -475,6 +476,7 @@ export default function AdminTags() {
             </div>
           </div>
           <TagQualityPanel />
+          <TagVocabularyHealthPanel />
           <SensitiveTagReviewPanel />
           <TagSuggestionsReviewPanel />
           <div className="mb-6">

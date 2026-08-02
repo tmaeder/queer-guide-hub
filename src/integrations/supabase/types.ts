@@ -32365,7 +32365,21 @@ export type Database = {
         }
         Returns: number
       }
+      run_tag_category_resync: {
+        Args: { p_batch?: number }
+        Returns: number
+      }
       run_tag_ontology_recompute: { Args: never; Returns: Json }
+      run_tag_plural_merge: {
+        Args: { p_dry_run?: boolean; p_limit?: number }
+        Returns: {
+          merged: boolean
+          note: string
+          plural_slug: string
+          rule: string
+          singular_slug: string
+        }[]
+      }
       run_tag_quality_recompute: { Args: never; Returns: Json }
       run_tag_wikidata_hierarchy: {
         Args: { p_chunk?: number }
@@ -32897,11 +32911,32 @@ export type Database = {
         }[]
       }
       tag_ontology_health: { Args: never; Returns: Json }
+      tag_plural_irregular: {
+        Args: { p_plural: string; p_singular: string }
+        Returns: boolean
+      }
+      tag_plural_of: {
+        Args: { p_plural: string; p_singular: string }
+        Returns: boolean
+      }
+      tag_plural_pairs: {
+        Args: { p_limit?: number }
+        Returns: {
+          plural_id: string
+          plural_slug: string
+          plural_usage: number
+          rule: string
+          singular_id: string
+          singular_slug: string
+          singular_usage: number
+        }[]
+      }
       tag_quality_scorecard: { Args: never; Returns: Json }
       tag_slugs_are_variants: {
         Args: { a: string; b: string }
         Returns: boolean
       }
+      tag_vocabulary_health: { Args: never; Returns: Json }
       tags_adult_review_candidates: {
         Args: { p_limit?: number }
         Returns: {
@@ -32944,6 +32979,15 @@ export type Database = {
           id: string
           name: string
           slug: string
+        }[]
+      }
+      tags_without_category: {
+        Args: { p_limit?: number }
+        Returns: {
+          id: string
+          name: string
+          slug: string
+          usage_count: number
         }[]
       }
       tags_missing_embeddings: {
