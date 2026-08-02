@@ -189,7 +189,10 @@ export async function applySuggestion(
         .eq('id', s.entity_id)
         .single()
       if (readErr) throw new Error(`translation read failed: ${readErr.message}`)
-      const current = ((row as Record<string, unknown>)[i18nCol] as Record<string, unknown> | null) ?? {}
+      // Cast via `unknown`: PostgREST types `row` as a union that includes
+      // `GenericStringError`, which does not overlap `Record<string, unknown>`
+      // directly. Type-only change — the runtime read is unchanged.
+      const current = ((row as unknown as Record<string, unknown>)[i18nCol] as Record<string, unknown> | null) ?? {}
       const next = { ...current, [s.locale]: cleanValue }
       const { error: writeErr } = await client
         .from(s.entity_type)

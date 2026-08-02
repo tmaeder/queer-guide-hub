@@ -193,11 +193,14 @@ jobs:
           fi
 
   # Deno tests for supabase/functions. Mirrors pipeline-health.yml's
-  # known-working invocation exactly: same Deno version, same test
-  # files, same flags. The other 6 test files under _tests/ need
-  # per-file triage in a follow-up — they fail fast in CI (probably
-  # transitive import or env-var issues) and the goal of this PR is
-  # to get the existing CI-tested suites running on every PR.
+  # known-working invocation, but runs the WHOLE tree by discovery — no
+  # hardcoded file list. Until 2026-08-02 this named 7 files under _tests/,
+  # so 38 of the 45 test files in the tree (every one under _shared/,
+  # including the venue-consensus and amenity-normalize suites CLAUDE.md
+  # calls "pure + unit-tested") had never executed anywhere. They were not
+  # broken — once run, all 395 tests passed; only 4 type errors needed
+  # fixing. A file list silently excludes every new test, so discovery is
+  # the gate: adding a *.test.ts file anywhere is enough to have it run.
   edge-fn-tests:
     runs-on: ubuntu-latest
     steps:
@@ -205,9 +208,10 @@ jobs:
       - uses: denoland/setup-deno@v2
         with:
           deno-version: v2.x
-      # These tests import straight from esm.sh and jsr.io at run time, with no
-      # lockfile. Every run re-downloaded the whole graph, so a single registry
-      # blip failed the job on PRs that never touched an edge function — a docs-only
+      # These tests import straight from esm.sh and jsr.io at run time. Versions
+      # are pinned in the root deno.lock, but payloads are still fetched, so a
+      # single registry blip could fail the job on PRs that never touched an edge
+      # function — a docs-only
       # PR died on `Import 'https://esm.sh/@supabase/supabase-js@2.50.5' failed: 522`
       # (Cloudflare connection-timeout). Caching DENO_DIR removes the fetch on a
       # cache hit; the retry below covers a cold cache when a registry is flaky.
@@ -215,20 +219,17 @@ jobs:
         uses: actions/cache@v6
         with:
           path: ~/.cache/deno
-          key: deno-${{ runner.os }}-${{ hashFiles('supabase/functions/_tests/**/*.ts') }}
+          key: deno-${{ runner.os }}-${{ hashFiles('supabase/functions/**/*.ts') }}
           restore-keys: |
             deno-${{ runner.os }}-
       - name: Run deno unit tests
-        working-directory: supabase/functions/_tests
+        working-directory: supabase/functions
         # Retries only help a network fetch; a genuine assertion failure fails all
         # three attempts, so the gate still holds.
         run: |
           set -o pipefail
           for attempt in 1 2 3; do
-            if deno test --allow-net --allow-env --allow-read \
-                 source-adapter.test.ts pipeline-nodes.test.ts wikinews.test.ts \
-                 enrichment-driver.test.ts batch-circuit-checker.test.ts \
-                 trip-inbox-fields.test.ts city-collision-guard.test.ts; then
+            if deno test --allow-net --allow-env --allow-read; then
               exit 0
             fi
             echo "::warning::deno test attempt $attempt failed"
