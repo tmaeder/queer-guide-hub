@@ -37,9 +37,6 @@
 -- re-queued for postal.
 --
 -- Note the first cleanup attempt silently reverted — nulling `state` fires this
--- very trigger, which re-derived it from the wrong city and refilled 316 of 383
--- rows inside the same statement. The guard has to land BEFORE the data fix.
--- ============================================================================
 
 create or replace function public.derive_entity_geo_address()
 returns trigger
@@ -78,9 +75,6 @@ begin
       left join public.countries co on co.id = c.country_id
      where c.id = new.city_id;
 
-    -- country_id still follows the link: a mis-linked city is usually still in
-    -- a plausible country, and country_id has a corroborating source (the ISO-2
-    -- text) that state and city name do not.
     if v_city_country_id is not null
        and (new.country_id is null or (v_city_moved and not v_fk_explicit)) then
       new.country_id := v_city_country_id;
@@ -158,4 +152,4 @@ end;
 $$;
 
 comment on function public.derive_entity_geo_address() is
-  'BEFORE trigger: fills country_id / state / city / country from the linked city and the ambiguity-guarded country text, then recomputes safety_gated. Copies NOTHING from a city that disagrees with the row own ISO-2 country, or sits >500km from its coordinates. Distance alone is not the test - 25-900km disagreements are almost always legitimate metro sprawl.';
+  'BEFORE trigger: fills country_id / state / city / country from the linked city and the ambiguity-guarded country text, then recomputes safety_gated. Copies NOTHING from a city that disagrees with the row own ISO-2 country, or sits >500km from its coordinates. Distance alone is not the test - 25-900km disagreements are almost always legitimate metro sprawl.';;
