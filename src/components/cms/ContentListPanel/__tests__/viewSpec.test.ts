@@ -21,7 +21,7 @@ const config = {
   icon: Tag,
   label: { singular: 'Venue', plural: 'Venues' },
   color: 'hsl(0 0% 20%)',
-  defaultSort: { field: 'updated_at', direction: 'desc' },
+  defaultSort: { field: 'updated_at', dir: 'desc' },
   fields: [
     f({ name: 'name', listColumn: true, sortable: true }),
     f({
@@ -52,6 +52,14 @@ describe('buildDefaultSpec', () => {
 
   it('honours defaultSort', () => {
     expect(buildDefaultSpec(config).sorts).toEqual([{ field: 'updated_at', dir: 'desc' }]);
+  });
+
+  it('honours an ASCENDING defaultSort', () => {
+    // The original fixture used desc on both sides, so reading the wrong key
+    // (`direction` instead of `dir`) still passed. Milestones really do sort
+    // ascending; this is the case that catches it.
+    const asc = { ...config, defaultSort: { field: 'date', dir: 'asc' } } as ContentTypeConfig;
+    expect(buildDefaultSpec(asc).sorts).toEqual([{ field: 'date', dir: 'asc' }]);
   });
 
   it('survives a null config', () => {

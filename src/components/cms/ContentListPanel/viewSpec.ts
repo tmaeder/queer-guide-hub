@@ -51,8 +51,11 @@ export function buildDefaultSpec(config: ContentTypeConfig | null): ViewSpec {
     kind: 'table',
     columns,
     filters: [],
+    // The config key is `dir`, not `direction`. Reading the wrong one silently
+    // forces every type to 'desc' and quietly breaks the ascending configs
+    // (milestones sorts by date asc).
     sorts: defaultSort
-      ? [{ field: defaultSort.field, dir: defaultSort.direction === 'asc' ? 'asc' : 'desc' }]
+      ? [{ field: defaultSort.field, dir: defaultSort.dir === 'asc' ? 'asc' : 'desc' }]
       : [{ field: 'updated_at', dir: 'desc' }],
     groupBy: null,
     dateField: null,
