@@ -76,7 +76,7 @@ jobs:
         # dir, same flags, no file list) so a PR that passes CI also clears
         # the deploy gate.
         working-directory: supabase/functions
-        run: deno test --allow-net --allow-env --allow-read
+        run: deno test --allow-net --allow-env --allow-read --node-modules-dir=none
 
       - name: Install Supabase CLI
         uses: supabase/setup-cli@v3

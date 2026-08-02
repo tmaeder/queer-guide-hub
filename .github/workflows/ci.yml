@@ -224,12 +224,21 @@ jobs:
             deno-${{ runner.os }}-
       - name: Run deno unit tests
         working-directory: supabase/functions
+        # --node-modules-dir=none is load-bearing. The repo root package.json puts
+        # Deno in npm mode, so it expects an up-to-date node_modules/ as soon as the
+        # graph reaches an `npm:` specifier (_shared/email.ts, _shared/sentry.ts) —
+        # and this job never runs `npm ci`. It passes locally either way because a
+        # dev's node_modules/ is already there, so the failure only shows up here.
+        # The old 7-file list never reached an npm: specifier, which is why it was
+        # not needed before. `none` resolves npm deps from Deno's global cache,
+        # matching the Supabase edge runtime (which has no node_modules).
+        #
         # Retries only help a network fetch; a genuine assertion failure fails all
         # three attempts, so the gate still holds.
         run: |
           set -o pipefail
           for attempt in 1 2 3; do
-            if deno test --allow-net --allow-env --allow-read; then
+            if deno test --allow-net --allow-env --allow-read --node-modules-dir=none; then
               exit 0
             fi
             echo "::warning::deno test attempt $attempt failed"

@@ -29,7 +29,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "test:functions": "cd supabase/functions && deno test --allow-net --allow-env --allow-read",
+    "test:functions": "cd supabase/functions && deno test --allow-net --allow-env --allow-read --node-modules-dir=none",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "bones": "boneyard build",
