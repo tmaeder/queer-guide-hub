@@ -188,10 +188,19 @@ export async function verdictFor(row, entity) {
   const keywords = keywordsFor(row.profession);
   const score = scoreOccupationMatch(occupations, keywords);
 
-  // The English description is a secondary corroboration channel: some genuine
-  // performers have a bare P106 but "pornographic actor" in the description.
-  const descHit = /\b(porn|pornographic|adult film|adult model|erotic)\b/i.test(description)
-    && keywords.some((k) => ['porn', 'adult', 'erotic', 'pornographic'].includes(k));
+  // The English description is a second corroboration channel, and it matters:
+  // P106 is frequently sparse or uses a narrower term than the description.
+  // "Brandan Robertson" (local profession "LGBTQ+ rights activist") carries P106
+  // writer/blogger/pastor but is described as "Christian writer, activist, and
+  // speaker" — occupation-only scoring called that a namesake conflict when it
+  // is plainly the same person.
+  //
+  // This only ever RESCUES a match, never creates one: it requires the same
+  // profession keywords. Carl Sagan ("American astrophysicist, cosmologist and
+  // author") still fails every adult-performer keyword, so the conflicts that
+  // motivated this sweep are unaffected.
+  const desc = (description ?? '').toLowerCase();
+  const descHit = keywords.some((k) => desc.includes(k));
 
   if (score > 0 || descHit) {
     return { verdict: 'confirmed', reason: 'occupation_match', label, description, occupations, score };
