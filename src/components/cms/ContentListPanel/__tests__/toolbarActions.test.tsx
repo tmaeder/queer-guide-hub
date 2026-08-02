@@ -26,6 +26,8 @@ const controller = {
   search: '',
   debouncedSearch: '',
   setSearch: vi.fn(),
+  sorts: [{ field: 'title', dir: 'asc' }],
+  setSorts: vi.fn(),
   sortField: 'title',
   sortDir: 'desc',
   handleSort: vi.fn(),

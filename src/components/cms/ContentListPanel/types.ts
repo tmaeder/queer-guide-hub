@@ -32,8 +32,8 @@ export interface PersistedState {
   groupBy?: string | null;
   /** Column the date views plot against, remembered alongside the view. */
   dateField?: string | null;
-  sortField?: SortField;
-  sortDir?: SortDir;
+  /** Ordered; array order is precedence. */
+  sorts?: unknown[];
   /** Ordered list; see the note in useContentListController. */
   filters?: unknown[];
   hiddenColumns?: string[];

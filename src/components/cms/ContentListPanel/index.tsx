@@ -39,6 +39,7 @@ import { ContentListBoard } from './ContentListBoard';
 import { ContentListTimeline } from './ContentListTimeline';
 import { ContentListCalendar } from './ContentListCalendar';
 import { FilterBuilder } from './filters/FilterBuilder';
+import { SortBuilder } from './filters/SortBuilder';
 import { groupableFields } from './boardGrouping';
 import { dateFields } from './dateFields';
 import { useContentListController } from './useContentListController';
@@ -207,6 +208,10 @@ function ContentListPanelBody(props: ContentListPanelProps) {
           />
         )}
 
+        {c.contentTypeId && config && (
+          <SortBuilder fields={config.fields} sorts={c.sorts} onChange={c.setSorts} />
+        )}
+
         {c.contentTypeId && c.view === 'board' && groupable.length > 0 && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -343,6 +348,7 @@ function ContentListPanelBody(props: ContentListPanelProps) {
           sortField={c.sortField}
           sortDir={c.sortDir}
           handleSort={c.handleSort}
+          sorts={c.sorts}
           extraColumns={c.extraColumns}
           selected={c.selected}
           allSelected={c.allSelected}

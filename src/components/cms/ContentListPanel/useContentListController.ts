@@ -6,8 +6,8 @@
 
 import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { applyFilters } from './filterOps';
-import { normalizeSpec, type Filter } from './viewSpec';
+import { applyFilters, applySorts } from './filterOps';
+import { normalizeSpec, type Filter, type SortSpec } from './viewSpec';
 import { useParams } from 'react-router';
 import { useContext } from 'react';
 import { getContentType, getContentTypeIds } from '@/config/contentTypeRegistry';
@@ -55,9 +55,9 @@ export function useContentListController({
     [persistKey],
   );
 
-  const initialSortField: SortField =
-    persisted?.sortField ?? config?.defaultSort?.field ?? 'updated_at';
-  const initialSortDir: SortDir = persisted?.sortDir ?? config?.defaultSort?.dir ?? 'desc';
+  // Fallback used only when the persisted spec carries no sorts at all.
+  const initialSortField: SortField = config?.defaultSort?.field ?? 'updated_at';
+  const initialSortDir: SortDir = config?.defaultSort?.dir ?? 'desc';
 
   const [items, setItems] = useState<ListItem[]>([]);
   const [totalCount, setTotalCount] = useState(0);
@@ -66,8 +66,16 @@ export function useContentListController({
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(25);
-  const [sortField, setSortField] = useState<SortField>(initialSortField);
-  const [sortDir, setSortDir] = useState<SortDir>(initialSortDir);
+  // `sorts` is the source of truth and its ARRAY ORDER is the precedence.
+  // sortField/sortDir stay as derived values of the primary sort so the table
+  // headers keep their existing props.
+  const [sorts, setSorts] = useState<SortSpec[]>(() =>
+    normalizeSpec({ sorts: persisted?.sorts }, config ?? null).sorts.length
+      ? normalizeSpec({ sorts: persisted?.sorts }, config ?? null).sorts
+      : [{ field: initialSortField, dir: initialSortDir }],
+  );
+  const sortField: SortField = sorts[0]?.field ?? initialSortField;
+  const sortDir: SortDir = sorts[0]?.dir ?? initialSortDir;
   // `filters` is an ORDERED LIST, not a map keyed by field: two filters on the
   // same field (price >= 1 AND price <= 4) are legal and a map cannot hold them.
   const [filters, setFilters] = useState<Filter[]>(
@@ -101,8 +109,7 @@ export function useContentListController({
   useEffect(() => {
     if (persistKey) {
       persistState(persistKey, {
-        sortField,
-        sortDir,
+        sorts,
         filters,
         hiddenColumns,
         view,
@@ -110,7 +117,7 @@ export function useContentListController({
         dateField,
       });
     }
-  }, [persistKey, sortField, sortDir, filters, hiddenColumns, view, groupBy, dateField]);
+  }, [persistKey, sorts, filters, hiddenColumns, view, groupBy, dateField]);
 
   // Load dynamic filter options (e.g. country/city dropdowns).
   useEffect(() => {
@@ -177,21 +184,24 @@ export function useContentListController({
       setLoading(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- helpers below, deps control re-fetching
-  }, [contentTypeId, config, page, rowsPerPage, debouncedSearch, sortField, sortDir, filters]);
+  }, [contentTypeId, config, page, rowsPerPage, debouncedSearch, sorts, filters]);
 
   async function loadSingleType(ct: ContentTypeConfig) {
     const from = page * rowsPerPage;
     const to = from + rowsPerPage - 1;
 
-    const sortFieldDef = ct.fields.find((f) => f.name === sortField);
-    const dbSortField =
-      sortField === 'title' ? ct.titleField : sortFieldDef?.virtual ? 'updated_at' : sortField;
+    // 'title' is an alias for the type's real title column, and a virtual field
+    // has no column to order by at all.
+    const resolveSortField = (name: string) => {
+      if (name === 'title') return ct.titleField;
+      return ct.fields.find((f) => f.name === name)?.virtual ? 'updated_at' : name;
+    };
 
     let query = supabase
       .from(ct.tableName as 'events')
       .select(ct.listSelect ?? '*', { count: 'exact' })
-      .order(dbSortField, { ascending: sortDir === 'asc' })
       .range(from, to);
+    query = applySorts(query as never, sorts, resolveSortField) as typeof query;
 
     if (debouncedSearch) {
       query = query.ilike(ct.titleField, `%${debouncedSearch}%`);
@@ -306,13 +316,27 @@ export function useContentListController({
     setSelected(new Set());
   }, [page]);
 
-  function handleSort(field: SortField) {
-    if (sortField === field) {
-      setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
-    } else {
-      setSortField(field);
-      setSortDir(field === 'title' ? 'asc' : 'desc');
-    }
+  /**
+   * Plain click sorts by this field alone. Shift-click appends it, or flips it
+   * if already present — the standard multi-sort idiom, and the only way to
+   * build a precedence list without opening the Sort panel.
+   */
+  function handleSort(field: SortField, append = false) {
+    setSorts((prev) => {
+      const existing = prev.find((s2) => s2.field === field);
+      const flipped: SortSpec = {
+        field,
+        dir: existing
+          ? existing.dir === 'asc'
+            ? 'desc'
+            : 'asc'
+          : field === 'title'
+            ? 'asc'
+            : 'desc',
+      };
+      if (!append) return [flipped];
+      return existing ? prev.map((s2) => (s2.field === field ? flipped : s2)) : [...prev, flipped];
+    });
     setPage(0);
   }
 
@@ -359,6 +383,8 @@ export function useContentListController({
     setPage,
     rowsPerPage,
     setRowsPerPage,
+    sorts,
+    setSorts,
     sortField,
     sortDir,
     filters,

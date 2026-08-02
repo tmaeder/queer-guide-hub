@@ -152,24 +152,33 @@ function SortableHeader({
   currentField,
   currentDir,
   onSort,
+  sorts,
 }: {
   label: string;
   field: SortField;
   currentField: SortField;
   currentDir: SortDir;
-  onSort: (field: SortField) => void;
+  onSort: (field: SortField, append?: boolean) => void;
+  sorts?: { field: string; dir: 'asc' | 'desc' }[];
 }) {
-  const isActive = currentField === field;
+  // With a multi-sort active, "is this the primary sort" is not the same
+  // question as "is this sorted at all".
+  const rank = sorts ? sorts.findIndex((s) => s.field === field) : -1;
+  const isActive = rank >= 0 || currentField === field;
+  const dir = rank >= 0 ? sorts![rank].dir : currentDir;
+  const showRank = !!sorts && sorts.length > 1 && rank >= 0;
 
   return (
     <TableHead
       className="font-semibold cursor-pointer select-none transition-colors hover:text-primary"
-      onClick={() => onSort(field)}
+      // Shift-click appends to the sort list instead of replacing it.
+      onClick={(e) => onSort(field, e.shiftKey)}
+      title="Click to sort. Shift-click to add to the sort."
     >
       <div className="flex items-center gap-1">
         {label}
         {isActive ? (
-          currentDir === 'asc' ? (
+          dir === 'asc' ? (
             <ArrowUp size={14} style={{ opacity: 0.8 }} />
           ) : (
             <ArrowDown size={14} style={{ opacity: 0.8 }} />
@@ -177,6 +186,7 @@ function SortableHeader({
         ) : (
           <ArrowUpDown size={14} style={{ opacity: 0.3 }} />
         )}
+        {showRank && <span className="text-2xs text-muted-foreground">{rank + 1}</span>}
       </div>
     </TableHead>
   );
@@ -276,7 +286,9 @@ export interface ContentListTableProps {
   setRowsPerPage: (n: number) => void;
   sortField: SortField;
   sortDir: SortDir;
-  handleSort: (field: SortField) => void;
+  handleSort: (field: SortField, append?: boolean) => void;
+  /** Ordered; used to show precedence when more than one sort is active. */
+  sorts?: { field: string; dir: 'asc' | 'desc' }[];
   extraColumns: FieldConfig[];
   selected: Set<string>;
   allSelected: boolean;
@@ -304,6 +316,7 @@ export function ContentListTable({
   sortField,
   sortDir,
   handleSort,
+  sorts,
   extraColumns,
   selected,
   allSelected,
@@ -338,6 +351,7 @@ export function ContentListTable({
                 currentField={sortField}
                 currentDir={sortDir}
                 onSort={handleSort}
+                sorts={sorts}
               />
 
               {extraColumns.map((f) =>
@@ -349,6 +363,7 @@ export function ContentListTable({
                     currentField={sortField}
                     currentDir={sortDir}
                     onSort={handleSort}
+                    sorts={sorts}
                   />
                 ) : (
                   <TableHead key={f.name} className="font-semibold">
@@ -369,6 +384,7 @@ export function ContentListTable({
                 currentField={sortField}
                 currentDir={sortDir}
                 onSort={handleSort}
+                sorts={sorts}
               />
 
               <TableHead className="text-right font-semibold" style={{ width: 60 }}>
