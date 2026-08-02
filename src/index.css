@@ -34,6 +34,11 @@
 @source inline("rounded-{t,b,l,r,tl,tr,bl,br}-{container,element,badge}");
 @source inline("{,hover:,dark:}{text,bg,border}-text-{primary,secondary,muted}");
 @source inline("{,dark:}border-border-hairline");
+/* PASTE-UP inks. P0 ships the system with no consumers yet, so without this
+   safelist Tailwind purges every ink utility and the plate classes below
+   would resolve to nothing the moment P1 starts using them. */
+@source inline("{,hover:,focus:,group-hover:,dark:}{bg,text,decoration}-ink-{pink,blue,over}");
+@source inline("{,dark:}{bg,text}-ink-{pink,blue,over}-foreground");
 
 @theme {
   /* ── Font families ─────────────────────────────────────────────── */
@@ -116,6 +121,19 @@
 
   --color-spot: hsl(var(--spot));
   --color-spot-foreground: hsl(var(--spot-foreground));
+
+  /* ── PASTE-UP inks ───────────────────────────────────────────────
+     `ink-pink` is an ALIAS of --spot, not a second declaration: one value,
+     one runtime override in /admin/design, no drift. That also keeps it out
+     of tokenCatalog's COLOR_TOKENS (which would otherwise assert a second
+     `--ink-pink:` occurrence in this file) and out of design-audit's token
+     inventory, which skips every `--color-*` key. */
+  --color-ink-pink: hsl(var(--spot));
+  --color-ink-pink-foreground: hsl(var(--spot-foreground));
+  --color-ink-blue: hsl(var(--ink-blue));
+  --color-ink-blue-foreground: hsl(var(--ink-blue-foreground));
+  --color-ink-over: hsl(var(--ink-over));
+  --color-ink-over-foreground: hsl(var(--ink-over-foreground));
 
   --color-card: hsl(var(--card));
   --color-card-foreground: hsl(var(--card-foreground));
@@ -300,6 +318,34 @@
   --spot: 330 95% 55%;
   --spot-foreground: 0 0% 4%;
 
+  /* ── PASTE-UP ink set ────────────────────────────────────────────
+     The second and third drums. `--spot` above is the first (fluorescent
+     pink) and is aliased as `--color-ink-pink` in @theme rather than
+     duplicated here, so the two can never drift apart.
+
+     The whole `--spot` doctrine six lines up applies verbatim to these:
+     NON-SEMANTIC BY CONSTRUCTION. Ink is never a state, never a status,
+     never a risk signal, and never reaches /help, /safety, /report-*, the
+     trip-safety briefing, the equality scale or any risk badge. Red is the
+     only colour in this product that means something.
+
+     Every value below was measured with src/lib/wcagContrast.ts before it
+     was written, in both modes:
+       ink-blue  vs page  7.00 light / 5.54 dark   (WCAG 1.4.11 wants 3)
+       ink-over  vs page  7.22 light / 6.96 dark
+     Both are NON-TEXT tokens — they tint plates, never letterforms. Text
+     placed ON a plate uses the paired *-foreground, which flips by mode
+     because the inks themselves flip: on white paper blue and violet are
+     dark inks that take white type; on a black page they are light inks
+     that take black type. Measured: 6.41 / 5.54 (blue), 6.61 / 6.96 (over).
+
+     Pink keeps --spot-foreground (black type, 5.29 light / 6.61 dark) — it
+     is the one ink that is light in both modes. */
+  --ink-blue: 223 88% 46%;
+  --ink-blue-foreground: 0 0% 96%;
+  --ink-over: 285 75% 40%;
+  --ink-over-foreground: 0 0% 96%;
+
   /* Shadows are disabled, so these 1px rules carry ALL structural depth. Kept at
      exactly the lightest value clearing WCAG 1.4.11 (3:1 non-text) against this
      mode's background — 58% = 3.04:1 on white; 59% drops to 2.94:1. */
@@ -385,6 +431,13 @@
 
   --spot: 330 100% 66%;
   --spot-foreground: 0 0% 4%;
+
+  /* PASTE-UP ink set — dark drums. The inks lighten and their type flips to
+     black; see the light-mode block for the measured ratios. */
+  --ink-blue: 219 90% 62%;
+  --ink-blue-foreground: 0 0% 4%;
+  --ink-over: 285 90% 70%;
+  --ink-over-foreground: 0 0% 4%;
 
   --border: 0 0% 37%;
   --input: 0 0% 37%;
@@ -1064,6 +1117,331 @@ h2,
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   PASTE-UP — the print layer
+   ══════════════════════════════════════════════════════════════════════
+
+   Everything below lives in the stylesheet on purpose. eslint.config.js
+   scopes every design rule to `**​/*.{ts,tsx}` and matches `Literal` AST
+   nodes, so ESLint never parses this file — which is why the gradients,
+   masks and blend modes a print system needs can exist here without
+   touching the no-gradient / no-hex / no-shadow bans, and without adding
+   a single entry to their ~50-file `ignores` allowlist. Components only
+   ever apply a class name.
+
+   The system's one structural idea: depth is carried by a FILLED PLATE,
+   not by a 1px line and never by a shadow. See docs/design-system.
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* ── Plates ────────────────────────────────────────────────────────────
+   The replacement for `border border-border`. A plate is a flat fill; its
+   edge is the tonal step against whatever it sits on, which is measured to
+   clear WCAG 1.4.11 (3:1 non-text) — strictly better than the 3.04:1 the
+   hairline manages today.
+
+   `border: 0` is belt-and-braces: the @layer base reset already zeroes
+   every border-width, so a leftover `border-border` colour utility on a
+   migrated component is inert rather than half-styled. */
+.plate {
+  background-color: hsl(var(--surface-container));
+  border: 0;
+}
+.plate-ink {
+  background-color: hsl(var(--spot));
+  color: hsl(var(--spot-foreground));
+  border: 0;
+}
+.plate-blue {
+  background-color: hsl(var(--ink-blue));
+  color: hsl(var(--ink-blue-foreground));
+  border: 0;
+}
+.plate-over {
+  background-color: hsl(var(--ink-over));
+  color: hsl(var(--ink-over-foreground));
+  border: 0;
+}
+
+/* ── Misregistration ───────────────────────────────────────────────────
+   A second plate, printed a few px off-register, snapping home on hover.
+   It is a real positioned element (::before), NOT a box-shadow — which is
+   both truer to the press (it IS another plate) and the reason
+   `e2e/design-system.spec.ts`'s `expect(boxShadow).toBe('none')` stays
+   green on every card.
+
+   `--plate-offset` and `--plate-offset-ink` are per-instance knobs so a
+   component can shift the amount or swap the drum without new CSS.
+
+   Goes on the card's WRAPPER, never the card itself: entity cards pass
+   `overflow-hidden` to clip their cover image to the radius, which would clip
+   the off-register plate out of existence. The wrapper is already the `group`
+   that drives card hover, so the two belong together anyway.
+
+   Depth is handled with `isolation: isolate` + `z-index: -1`, NOT by lifting
+   the children. Two traps closed at once:
+     - Without the isolate, `position: relative; z-index: auto` does not create
+       a stacking context, so a negative z escapes behind the nearest ancestor
+       that does — the page — and the plate never appears at all.
+     - The obvious alternative, `.plate-offset > * { position: relative }`,
+       would silently break every card. This rule is UNLAYERED, and unlayered
+       CSS beats Tailwind utilities regardless of specificity, so it would
+       override the `absolute inset-0` on each card's overlay click target and
+       drop the link into the flow.
+   With the isolate, ::before paints above the wrapper's own background and
+   below its in-flow content, and the children are left completely alone. */
+.plate-offset {
+  position: relative;
+  isolation: isolate;
+  --plate-offset: 6px;
+  --plate-offset-ink: var(--spot);
+}
+.plate-offset::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: var(--radius-container);
+  background-color: hsl(var(--plate-offset-ink));
+  transform: translate(var(--plate-offset), var(--plate-offset));
+  transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+  pointer-events: none;
+}
+.plate-offset:hover::before,
+.plate-offset:focus-within::before {
+  transform: translate(0, 0);
+}
+@media (prefers-reduced-motion: reduce) {
+  .plate-offset::before {
+    transition: none;
+  }
+}
+
+/* ── Halftone screens ──────────────────────────────────────────────────
+   Dot screens, one per drum, each on its own angle the way a real
+   separation is screened so the dots interleave instead of moiré-ing.
+   CSS cannot rotate a background-image, so the angle is faked the way
+   printers describe it anyway — by offsetting alternate rows, which is
+   what a rotated screen looks like locally.
+
+   These are TEXTURE. Never put small text on one: the dots halve the
+   effective contrast of anything sitting on top. */
+.halftone-pink,
+.halftone-blue,
+.halftone-ink {
+  background-repeat: repeat;
+}
+.halftone-pink {
+  background-image: radial-gradient(hsl(var(--spot) / 0.55) 1.6px, transparent 1.7px);
+  background-size: 6px 6px;
+}
+.halftone-blue {
+  background-image: radial-gradient(hsl(var(--ink-blue) / 0.5) 1.6px, transparent 1.7px);
+  background-size: 6px 6px;
+  background-position: 3px 3px;
+}
+.halftone-ink {
+  background-image: radial-gradient(hsl(var(--foreground) / 0.28) 1.4px, transparent 1.5px);
+  background-size: 5px 5px;
+  background-position: 2px 1px;
+}
+.dark .halftone-ink {
+  background-image: radial-gradient(hsl(var(--foreground) / 0.22) 1.4px, transparent 1.5px);
+}
+/* For INVERTED surfaces (an ink flood, e.g. the homepage CTA band). There the
+   screen is the paper showing through the ink, so the dots are --background.
+   `.halftone-ink` would be foreground-on-foreground and render nothing. */
+.halftone-paper {
+  background-image: radial-gradient(hsl(var(--background) / 0.22) 1.4px, transparent 1.5px);
+  background-size: 5px 5px;
+  background-position: 2px 1px;
+  background-repeat: repeat;
+}
+
+/* ── Paper ─────────────────────────────────────────────────────────────
+   The existing .bg-noise turbulence at a heavier alpha (0.06 → 0.11) so the
+   grain reads as stock rather than as JPEG noise. Kept as a separate class:
+   .bg-noise has one live consumer (Index.tsx) whose calibration should not
+   move underneath it in this PR.
+
+   numOctaves stays at 2 and the tile at 200×200 — the same cost as the
+   `.bg-noise` it mirrors. A 3-octave 300×300 tile was tried first: it is a real
+   rasterisation cost on a full-viewport `fixed inset-0` layer, for grain that is
+   indistinguishable at these alphas. Cheap textures only — this element covers
+   every pixel of every public page. */
+.paper-grain {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='p'><feTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.11 0'/></filter><rect width='100%' height='100%' filter='url(%23p)'/></svg>");
+}
+.dark .paper-grain {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='p'><feTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.09 0'/></filter><rect width='100%' height='100%' filter='url(%23p)'/></svg>");
+}
+
+/* ── Overprint ─────────────────────────────────────────────────────────
+   Where two plates overlap, the inks combine for real.
+
+   The blend mode flips by theme because the physics does. On white paper
+   ink SUBTRACTS light, so overlapping plates multiply — pink over blue
+   composites to a deep indigo (measured 15.7:1 against the page). On a
+   black page there is no paper to absorb anything and the inks read as
+   emitted light, so they screen; multiplying there collapses to 2.0:1
+   against the background, which fails WCAG 1.4.11 outright.
+
+   DECORATIVE ONLY. The composite is whatever the two drums produce, so it
+   is not a measured value — never place text on an .overprint region. Use
+   the .plate-over class (--ink-over, measured) when you want the third
+   colour under type. */
+.overprint {
+  mix-blend-mode: multiply;
+}
+.dark .overprint {
+  mix-blend-mode: screen;
+}
+
+/* ── Deckle ────────────────────────────────────────────────────────────
+   Torn/cut edge for full-bleed band boundaries, so a section ends like a
+   piece of paper rather than like a div. Masked, not clipped, so text
+   inside is untouched by the geometry. */
+.deckle-bottom {
+  -webkit-mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='1200' height='24' preserveAspectRatio='none'><path d='M0,0 H1200 V14 L1140,19 L1080,12 L1020,20 L960,13 L900,21 L840,14 L780,22 L720,15 L660,20 L600,13 L540,21 L480,14 L420,19 L360,12 L300,20 L240,13 L180,21 L120,14 L60,19 L0,13 Z' fill='black'/></svg>");
+  mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='1200' height='24' preserveAspectRatio='none'><path d='M0,0 H1200 V14 L1140,19 L1080,12 L1020,20 L960,13 L900,21 L840,14 L780,22 L720,15 L660,20 L600,13 L540,21 L480,14 L420,19 L360,12 L300,20 L240,13 L180,21 L120,14 L60,19 L0,13 Z' fill='black'/></svg>");
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+}
+
+/* ── Duotone ───────────────────────────────────────────────────────────
+   Two-drum separation of a photograph: shadows take the ink, highlights
+   take the paper. Applied ONLY through <Image treatment="riso">, which is
+   opt-in and off by default — src/components/ui/Image.tsx documents a
+   deliberate decision that entity imagery renders in full colour, and
+   flattening every portrait on an LGBTQ+ platform has a real
+   representational cost. Heroes and editorial bands only. */
+.duotone-riso {
+  position: relative;
+  isolation: isolate;
+}
+.duotone-riso > img {
+  filter: grayscale(1) contrast(1.18) brightness(1.02);
+}
+.duotone-riso::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-color: hsl(var(--spot));
+  mix-blend-mode: multiply;
+  pointer-events: none;
+}
+.duotone-riso::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background-color: hsl(var(--ink-blue) / 0.35);
+  mix-blend-mode: screen;
+  pointer-events: none;
+}
+
+/* ── Halftone dissolve ─────────────────────────────────────────────────
+   The one cinematic reveal: the image resolves out of its own dot screen
+   as the mask apertures open. mask-size is the animated property — it is
+   composited, not laid out, so this stays off the layout path.
+
+   Budgeted at ONE per page. It is a hero entrance, not a scroll effect. */
+@keyframes halftone-dissolve {
+  from {
+    -webkit-mask-size: 1px 1px;
+    mask-size: 1px 1px;
+  }
+  to {
+    -webkit-mask-size: 100px 100px;
+    mask-size: 100px 100px;
+  }
+}
+.halftone-dissolve {
+  -webkit-mask-image: radial-gradient(circle at center, black 62%, transparent 64%);
+  mask-image: radial-gradient(circle at center, black 62%, transparent 64%);
+  -webkit-mask-size: 100px 100px;
+  mask-size: 100px 100px;
+  animation: halftone-dissolve 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .halftone-dissolve {
+    animation: none;
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+}
+
+/* ── Paper feed ────────────────────────────────────────────────────────
+   Route transition. Replaces the flat .route-fade crossfade with a short
+   vertical feed, the way a sheet advances through a press. No fill-mode
+   dependency: if the animation never runs the page is simply visible. */
+@keyframes paper-feed {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.paper-feed {
+  animation: paper-feed 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .paper-feed {
+    animation: none;
+  }
+}
+
+/* ── Ink bleed ─────────────────────────────────────────────────────────
+   Press feedback on a primary action: the ink spreads for a beat. Scale +
+   opacity on a pseudo-element, so nothing reflows. */
+@keyframes ink-bleed {
+  from {
+    transform: scale(0.4);
+    opacity: 0.55;
+  }
+  to {
+    transform: scale(1.9);
+    opacity: 0;
+  }
+}
+.ink-bleed {
+  position: relative;
+  overflow: hidden;
+}
+.ink-bleed:active::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-color: hsl(var(--spot) / 0.5);
+  animation: ink-bleed 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+  pointer-events: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ink-bleed:active::after {
+    animation: none;
+    opacity: 0;
+  }
+}
+
+/* ── Icon weight ───────────────────────────────────────────────────────
+   lucide stamps `.lucide` on every icon it renders. Squaring the caps and
+   joins here — paired with the <LucideProvider strokeWidth={2.5}> that
+   wraps the non-admin branch of LayoutShell — re-cuts every icon on the
+   public site as a chunky flat mark, with no change to any of the 783
+   files that import them and no icon-library swap.
+
+   Scoped under [data-ink-icons] so the admin console, which shares the
+   same lucide build, keeps its softer default. */
+[data-ink-icons] .lucide {
+  stroke-linecap: butt;
+  stroke-linejoin: miter;
 }
 
 /* ── Aceternity-style monochrome backgrounds ───────────────────────── */

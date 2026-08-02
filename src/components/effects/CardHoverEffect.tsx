@@ -3,7 +3,20 @@ import { cn } from '@/lib/utils';
 interface CardHoverEffectProps {
   children: React.ReactNode;
   className?: string;
+  /**
+   * Which drum prints the misregistered plate. `'none'` opts out for cards
+   * that are containers rather than click targets.
+   */
+  ink?: 'pink' | 'blue' | 'over' | 'none';
 }
+
+// Tailwind cannot see a dynamically-built arbitrary property, so the three
+// variants are written out. Keep them literal.
+const INK_VAR: Record<string, string> = {
+  pink: '[--plate-offset-ink:var(--spot)]',
+  blue: '[--plate-offset-ink:var(--ink-blue)]',
+  over: '[--plate-offset-ink:var(--ink-over)]',
+};
 
 /**
  * Interactive-card wrapper. A pure positioning passthrough — every consumer
@@ -22,6 +35,19 @@ interface CardHoverEffectProps {
  * that ancestor, so card hover states must be written as `group-hover:`
  * (`<Card hoverable="group">`).
  */
-export function CardHoverEffect({ children, className }: CardHoverEffectProps) {
-  return <div className={cn('group relative', className)}>{children}</div>;
+export function CardHoverEffect({ children, className, ink = 'pink' }: CardHoverEffectProps) {
+  return (
+    <div
+      className={cn(
+        'group relative',
+        // PASTE-UP: the off-register second plate. It lives here rather than on
+        // <Card> because the card clips its own overflow — see card.tsx.
+        ink !== 'none' && 'plate-offset',
+        ink !== 'none' && INK_VAR[ink],
+        className,
+      )}
+    >
+      {children}
+    </div>
+  );
 }

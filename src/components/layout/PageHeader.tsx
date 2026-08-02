@@ -28,7 +28,10 @@ export const PageHeader = ({
   children,
 }: PageHeaderProps) => {
   return (
-    <div className="content-enter rounded-container border border-border/60 bg-card/60 p-6 sm:p-8 mb-6">
+    // PASTE-UP masthead. The outlined card is gone: a page title does not live
+    // in a box, it sits under a heavy rule like the head of a printed section.
+    // `.rule-heavy` is the existing rationed 2px black signature.
+    <div className="content-enter rule-heavy pt-6 pb-6 sm:pb-8 mb-6">
       <div
         className={`flex flex-col gap-4 justify-between sm:flex-row sm:items-center ${
           center ? 'sm:flex-col text-center' : 'items-start'
@@ -36,7 +39,7 @@ export const PageHeader = ({
       >
         <div className="flex-1 min-w-0">
           <h1
-            className={`content-enter text-headline md:text-headline-lg font-bold tracking-tight ${subtitle ? 'mb-2' : ''}`}
+            className={`content-enter font-display text-display md:text-headline-lg font-bold tracking-tight ${subtitle ? 'mb-2' : ''}`}
             style={{ animationDelay: '50ms' }}
           >
             {title}
