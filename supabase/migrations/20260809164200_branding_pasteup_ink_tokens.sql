@@ -18,10 +18,14 @@
 -- Additive only: widening the whitelist cannot invalidate a doc that already
 -- passed it, so every published site_branding row keeps validating.
 --
--- Version note: originally authored as 20260808100000, when the remote head was
--- 20260807170000. #2523 then recovered drifted versions up to 20260809120000,
--- which would have left this file BELOW the head and unapplied - the
--- out-of-order case `db push` skips. Renamed above the new head.
+-- Version note: renumbered twice while this branch was in flight. Authored as
+-- 20260808100000 (remote head was then 20260807170000); #2523 recovered drifted
+-- versions up to 20260809120000, which would have left it BELOW the head and
+-- unapplied — the out-of-order case `db push` skips; the follow-up 20260809130000
+-- then COLLIDED with personality_adult_deathdate_guard landing on main minutes
+-- later, and duplicate versions break db push's file<->history matching (#1553).
+-- Hence an off-the-hour slot rather than another round number: concurrent
+-- sessions all reach for HHmm0000 and keep colliding.
 
 CREATE OR REPLACE FUNCTION public.branding_validate(p_doc jsonb)
 RETURNS void
