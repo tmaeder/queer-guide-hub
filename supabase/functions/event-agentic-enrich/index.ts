@@ -140,6 +140,10 @@ Deno.serve(async (req: Request) => {
       const highConf = confidence >= AUTO_APPLY_CONFIDENCE
 
       // Build the auto-apply update — only fill EMPTY fields, never overwrite curated data.
+      // accessibility_attributes / target_groups / age_restriction are written raw here;
+      // the trg_events_taxonomy BEFORE trigger normalizes them against the controlled
+      // vocabularies on the way in (migration 20260808120000). Until that trigger existed
+      // the prompt's "anything outside this list is discarded downstream" was not true.
       const update: Record<string, unknown> = {}
       if (highConf) {
         if (ai.description && (!ev.description || ev.description.length < 80)) update.description = ai.description

@@ -571,26 +571,53 @@ export function parseGcDate(input: unknown): string | null {
 export const EVENT_TYPE_VOCAB = [
   'party', 'festival', 'pride', 'fetish', 'community', 'meetup', 'conference',
   'workshop', 'concert', 'film', 'drag', 'sports', 'art', 'theater',
-  'fundraiser', 'protest', 'social', 'fair', 'other',
+  'fundraiser', 'protest', 'social', 'fair', 'cruise', 'comedy', 'exhibition',
+  'other',
 ] as const;
 
+/**
+ * Ordered most-specific-first; the first match wins.
+ *
+ * Order is load-bearing. Until 2026-08-02 the generic `concert` rule sat fifth and
+ * matched on a bare `dj\b`/`music`, so it swallowed almost every club listing before
+ * the `party` rule at position fourteen could see it — 10,782 rows (the single largest
+ * event_type bucket) were pool parties, tea dances, drag nights and Mardi Gras filed as
+ * concerts. `dj` is a party signal and now lives on the party rule; `concert` keeps
+ * `music` but only gets to see a listing that showed no party/festival/drag signal.
+ *
+ * Rule of thumb for anything added here: a genre word (music, art, dance) is weaker
+ * evidence than a format word (party, festival, workshop), so it belongs further down.
+ */
 const EVENT_TYPE_RULES: Array<[RegExp, string]> = [
-  [/\bpride\b/i, 'pride'],
+  // Identity / community formats — the most specific signals we have.
+  [/\bpride\b|christopher street day|\bcsd\b/i, 'pride'],
   [/\bdrag\b/i, 'drag'],
-  [/film|movie|cinema/i, 'film'],
-  [/theatre|theater/i, 'theater'],
-  [/concert|music|dj\b|live band/i, 'concert'],
-  [/conference|summit|convention/i, 'conference'],
-  [/workshop|class\b/i, 'workshop'],
-  [/sports|run\b|race\b|rodeo|tournament|ski\b/i, 'sports'],
-  [/\bart\b|gallery|exhibit/i, 'art'],
-  [/fundrais|charity|benefit/i, 'fundraiser'],
-  [/protest|march for|rally/i, 'protest'],
+  // Named formats.
+  [/\bcruise\b|\bsailing\b|\bcharter\b/i, 'cruise'],
+  [/comedy|stand-?up|improv/i, 'comedy'],
+  [/film|movie|cinema|screening/i, 'film'],
+  [/theatre|theater|musical|opera/i, 'theater'],
+  [/exhibition|\bexhibit\b|vernissage/i, 'exhibition'],
+  [/conference|summit|convention|symposium/i, 'conference'],
+  [/workshop|class\b|seminar|masterclass/i, 'workshop'],
+  [/sports|run\b|race\b|rodeo|tournament|ski\b|marathon|games\b/i, 'sports'],
+  [/protest|march for|rally|demonstration|vigil/i, 'protest'],
+  [/fundrais|charity|benefit|\bgala\b/i, 'fundraiser'],
   [/street.?fair|fair\b|market\b/i, 'fair'],
-  [/bear|leather|fetish|kink|cruise\b/i, 'fetish'],
-  [/party|club night|tea.?dance|pool.?party|t-?dance|circuit/i, 'party'],
+  [/meetup|meet-up|mixer|networking/i, 'meetup'],
+  // Subculture words are audience signals, not format signals, so they rank below every
+  // explicit format above: a bear-community panel discussion is a conference and a
+  // leather-bar fundraiser is a fundraiser. They still outrank the generic buckets below,
+  // because a leather party is meaningfully a fetish event. `bear` is word-bounded —
+  // unbounded it matched a coffee roaster ("Bear Coffee") and "beard".
+  [/\bbears?\b|\bleather\b|fetish|\bkink\b|\brubber\b|pup(py)? play|cruising/i, 'fetish'],
+  // Format words beat genre words: a "Music Festival" is a festival, and a club night
+  // with a DJ lineup is a party, not a concert.
   [/festival|fest\b/i, 'festival'],
-  [/meetup|meet-up/i, 'meetup'],
+  [/party|club night|tea.?dance|pool.?party|t-?dance|circuit|\bdjs?\b|afterparty/i, 'party'],
+  // Genre words last — only reached when nothing above matched.
+  [/concert|music|live band|symphony|philharmonic|chorus|choir|recital|\btour\b/i, 'concert'],
+  [/\bart\b|gallery/i, 'art'],
   [/community|social\b/i, 'social'],
 ];
 

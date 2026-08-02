@@ -14,31 +14,19 @@ import { MultiCombobox } from '@/components/events/MultiCombobox';
 import { TagSelector } from '@/components/tags/TagSelector';
 import { CalendarIcon, X } from 'lucide-react';
 import { format } from 'date-fns';
+import { useEventTypeOptions } from '@/lib/eventTypes';
 
-const EVENT_TYPES = [
-  'party',
-  'workshop',
-  'meetup',
-  'pride',
-  'festival',
-  'rally',
-  'conference',
-  'social',
-  'fundraiser',
-  'performance',
-  'cruise',
-];
+// The "Pride type" chips that used to live here wrote `pride:parade`-style tags. No
+// ingest path has ever produced them (0 rows carry a `pride:*` tag, and the
+// `pride_subtypes` column they originally targeted is empty on all 39,715 events), so
+// every chip was a guaranteed empty result set. The general tag filter below is backed
+// by real data (34,988 events carry tags). Restore these only alongside a writer.
 
-const PRIDE_SUBTYPES: Array<{ tag: string; label: string }> = [
-  { tag: 'pride:parade', label: 'Parade' },
-  { tag: 'pride:week', label: 'Pride Week' },
-  { tag: 'pride:festival', label: 'Festival' },
-  { tag: 'pride:party', label: 'Party' },
-  { tag: 'pride:rally', label: 'Rally / Protest' },
-  { tag: 'pride:community', label: 'Community' },
-];
-
-type Option = { name: string; id: string };
+/**
+ * Vocabulary rows behind the audience / accessibility pickers. `slug` is what the
+ * entity columns store and therefore what the filter must send; `name` is display-only.
+ */
+type Option = { name: string; id: string; slug?: string | null };
 
 interface EventFiltersPanelProps {
   availableCities: string[];
@@ -95,6 +83,7 @@ export function EventFiltersPanel({
   onClear,
 }: EventFiltersPanelProps) {
   const { t } = useTranslation();
+  const eventTypeOptions = useEventTypeOptions();
   return (
     <nav aria-label="Event filters" className="flex flex-col gap-4 pt-4">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -117,10 +106,7 @@ export function EventFiltersPanel({
             placeholder={t('pages.events.selectEventTypes', 'All types')}
             searchPlaceholder={t('pages.events.searchEventTypes', 'Search types…')}
             emptyText={t('pages.events.noTypes', 'No types found.')}
-            options={EVENT_TYPES.map((type) => ({
-              value: type,
-              label: type.charAt(0).toUpperCase() + type.slice(1),
-            }))}
+            options={eventTypeOptions}
             selected={eventTypes}
             onChange={setEventTypes}
           />
@@ -188,34 +174,6 @@ export function EventFiltersPanel({
         </div>
       </div>
 
-      {/* Pride sub-kinds: Parade / Week / Festival / Party / Rally / Community */}
-      {eventTypes.includes('pride') && (
-        <div className="flex flex-col gap-2">
-          <Label>{t('pages.events.prideSubtype', 'Pride type')}</Label>
-          <div className="flex flex-wrap gap-2">
-            {PRIDE_SUBTYPES.map(({ tag, label }) => {
-              const active = selectedTags.includes(tag);
-              return (
-                <Button
-                  key={tag}
-                  type="button"
-                  size="sm"
-                  variant={active ? 'default' : 'outline'}
-                  onClick={() =>
-                    setSelectedTags((prev) =>
-                      active ? prev.filter((x) => x !== tag) : [...prev, tag],
-                    )
-                  }
-                  aria-pressed={active}
-                >
-                  {label}
-                </Button>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
       {/* Accessibility + Target groups + Language + Age */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="flex flex-col gap-2">
@@ -223,10 +181,9 @@ export function EventFiltersPanel({
           <MultiCombobox
             ariaLabel={t('pages.events.accessibility', 'Accessibility')}
             placeholder={t('pages.events.accessibilityPlaceholder', 'Any')}
-            options={(accAttrOptions as Option[]).map((a) => ({
-              value: a.name,
-              label: a.name,
-            }))}
+            options={(accAttrOptions as Option[])
+              .filter((a) => a.slug)
+              .map((a) => ({ value: a.slug as string, label: a.name }))}
             selected={accessibilityAttrs}
             onChange={setAccessibilityAttrs}
           />
@@ -236,10 +193,9 @@ export function EventFiltersPanel({
           <MultiCombobox
             ariaLabel={t('pages.events.targetGroups', 'Audience')}
             placeholder={t('pages.events.targetGroupsPlaceholder', 'Any')}
-            options={(tgOptions as Option[]).map((g) => ({
-              value: g.name,
-              label: g.name,
-            }))}
+            options={(tgOptions as Option[])
+              .filter((g) => g.slug)
+              .map((g) => ({ value: g.slug as string, label: g.name }))}
             selected={targetGroupsFilter}
             onChange={setTargetGroupsFilter}
           />
@@ -278,7 +234,8 @@ export function EventFiltersPanel({
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="any">{t('pages.events.ageAny', 'Any')}</SelectItem>
-              <SelectItem value="all_ages">{t('pages.events.ageAllAges', 'All ages')}</SelectItem>
+              {/* `all-ages` (hyphen) is what normalize_age_restriction stores. */}
+              <SelectItem value="all-ages">{t('pages.events.ageAllAges', 'All ages')}</SelectItem>
               <SelectItem value="18+">{t('pages.events.age18Plus', '18+')}</SelectItem>
               <SelectItem value="21+">{t('pages.events.age21Plus', '21+')}</SelectItem>
             </SelectContent>

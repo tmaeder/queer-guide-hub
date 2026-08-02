@@ -64,6 +64,38 @@ describe('mapEventType', () => {
       expect(EVENT_TYPE_VOCAB).toContain(mapEventType(s));
     }
   });
+
+  // Real titles from the 10,782-row `concert` bucket this ordering bug produced.
+  // A DJ lineup or the word "music" is not evidence of a concert.
+  it('does not file club listings as concerts', () => {
+    expect(mapEventType('SPLASH POOL PARTY - Saturday')).toBe('party');
+    expect(mapEventType('Big Gay Block Party')).toBe('party');
+    expect(
+      mapEventType('ADE EVENT: GAY MINDED: 10 Amsterdam Gay & Lesbian Djs, 1 Incredible Night'),
+    ).toBe('party');
+    expect(
+      mapEventType('Stripper Circus WED', 'STRIPPER CIRCUIT WeHo\'s Favorite Party! DJ DREW G'),
+    ).toBe('party');
+  });
+
+  it('still recognises genuine concerts', () => {
+    expect(mapEventType('Rihanna - Loud Tour with special guests Cee Lo Green')).toBe('concert');
+    expect(mapEventType('CGMC presents ALL YOU NEED IS LOVE: The Music of the Beatles')).toBe(
+      'concert',
+    );
+    expect(mapEventType('San Francisco Gay Men\'s Chorus Holiday Spectacular')).toBe('concert');
+  });
+
+  it('prefers the format word over the genre word', () => {
+    expect(mapEventType('Amsterdam Dance Music Festival')).toBe('festival');
+    expect(mapEventType('Queer Art Workshop')).toBe('workshop');
+  });
+
+  it('covers the three types the scraper previously could not emit', () => {
+    expect(mapEventType('Atlantis Gay Caribbean Cruise')).toBe('cruise');
+    expect(mapEventType('Queer Comedy Night')).toBe('comedy');
+    expect(mapEventType('Tom of Finland Exhibition')).toBe('exhibition');
+  });
 });
 
 const CARD_HTML = `
