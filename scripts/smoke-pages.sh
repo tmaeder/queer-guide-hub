@@ -241,10 +241,27 @@ purge_poisoned() {
 
 	echo
 	echo "== poisoned cache remediation =="
-	if [ -z "${CLOUDFLARE_ZONE_ID:-}" ] || [ -z "${CLOUDFLARE_API_TOKEN:-}" ]; then
+
+	# Purging is a ZONE operation. CLOUDFLARE_API_TOKEN is the account-scoped
+	# Pages:Edit token used to deploy — it can publish the build but has no
+	# permission on the queer.guide zone at all, so it can never purge. That is
+	# why a failure here reads as code 10000 "Authentication error" (the token
+	# cannot see the zone) rather than 9109 (sees it, lacks the permission):
+	# 10000 looks like an expired token and sent one investigation down that
+	# path, but the deploy step in the same job authenticates with the very
+	# same secret and succeeds.
+	#
+	# So prefer CLOUDFLARE_PURGE_TOKEN, a dedicated Zone:Cache Purge token on
+	# queer.guide. This split already existed in the old deploy.yml (commit
+	# 09f0dcd79, Apr 2026) and was lost when that workflow was deleted in the
+	# Dev/ declutter; the secret survived, unreferenced, and the purge added
+	# later was wired back to the token that cannot do the job.
+	local token="${CLOUDFLARE_PURGE_TOKEN:-${CLOUDFLARE_API_TOKEN:-}}"
+	if [ -z "${CLOUDFLARE_ZONE_ID:-}" ] || [ -z "$token" ]; then
 		echo "  ! ${#POISONED[@]} poisoned asset(s) + ${#STALE_ROUTES[@]} stale route(s) and no purge credentials in env."
-		echo "    Set CLOUDFLARE_ZONE_ID + CLOUDFLARE_API_TOKEN (needs the Cache Purge"
-		echo "    permission), or purge from the dashboard. Leaving them as failures."
+		echo "    Set CLOUDFLARE_ZONE_ID + CLOUDFLARE_PURGE_TOKEN (a token scoped to"
+		echo "    Zone -> Cache Purge on queer.guide), or purge from the dashboard."
+		echo "    Leaving them as failures."
 		return 0
 	fi
 
@@ -265,7 +282,7 @@ purge_poisoned() {
 	local resp ok
 	resp=$(curl -sS -X POST \
 		"https://api.cloudflare.com/client/v4/zones/$CLOUDFLARE_ZONE_ID/purge_cache" \
-		-H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+		-H "Authorization: Bearer $token" \
 		-H 'Content-Type: application/json' \
 		--data "$body" 2>&1)
 	ok=$(printf '%s' "$resp" | grep -o '"success":[a-z]*' | head -1 | cut -d: -f2)
@@ -273,7 +290,13 @@ purge_poisoned() {
 	if [ "$ok" != "true" ]; then
 		echo "  ! purge call failed — leaving these as failures. Response:"
 		printf '    %s\n' "$(printf '%s' "$resp" | head -c 400)"
-		echo "    A 403/9109 here means CLOUDFLARE_API_TOKEN lacks 'Cache Purge'."
+		if [ -z "${CLOUDFLARE_PURGE_TOKEN:-}" ]; then
+			echo "    No CLOUDFLARE_PURGE_TOKEN is set, so this fell back to the"
+			echo "    account-scoped deploy token, which cannot purge a zone."
+		fi
+		echo "    code 10000 = the token has no access to this zone (wrong token —"
+		echo "    an account/Pages token, not a Zone:Cache Purge one)."
+		echo "    code 9109/403 = right zone, but the 'Cache Purge' permission is off."
 		return 0
 	fi
 

@@ -68,4 +68,10 @@ jobs:
           # If the token lacks the Cache Purge permission the script says so
           # and leaves the checks failing; it never silently passes.
           CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+          # Purging is a ZONE operation and CLOUDFLARE_API_TOKEN is the
+          # account-scoped Pages:Edit token used by the deploy step above — it
+          # has no permission on the queer.guide zone, so every purge failed
+          # with code 10000. CLOUDFLARE_PURGE_TOKEN is the dedicated
+          # Zone:Cache Purge token; the script prefers it and falls back.
+          CLOUDFLARE_PURGE_TOKEN: ${{ secrets.CLOUDFLARE_PURGE_TOKEN }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
