@@ -73,21 +73,37 @@ expect_content_type() {
 # The tell is the query string: Cloudflare keys the cache on the full URL, so
 # ?cb= is a different entry and reaches the real object behind the bad one.
 #
-# Retries on the same schedule as expect_content_type first — a just-deployed
-# chunk that has not propagated yet also answers text/html, and calling that a
-# poisoned cache would be a confident wrong diagnosis rather than a flake.
+# ORDER IS LOAD-BEARING — ?cb= FIRST, and the plain URL exactly once.
+#
+# This script runs seconds after a deploy, and an asset that has not propagated
+# to this colo yet answers with the SPA shell — which public/_headers stamps
+# `immutable, max-age=31536000`. So *requesting the plain URL during the gap is
+# itself what pins the wrong body for a year.* A retry loop on the plain URL is
+# the worst possible shape: it hammers the very cache key it is testing, at the
+# one moment that key is poisonable.
+#
+# It already happened: run 30721121563 reported
+# /assets/js/TurnstileWidget-DqFfRY1o.js as text/html from IAD on a brand-new
+# hash that could not have been poisoned by any earlier incident, while the same
+# URL served application/javascript from ZRH minutes later.
+#
+# So: wait for the asset to exist at origin using a throwaway cache key (?cb=,
+# which can only ever poison a URL nothing references), and only then read the
+# real key a single time. A mismatch at that point is genuine poisoning, not a
+# propagation gap.
 expect_asset_type() {
-	local path=$1 want=$2 ct="" busted
+	local path=$1 want=$2 ct busted=""
 	for _ in 1 2 3 4 5; do
-		ct=$(curl -sS -o /dev/null -w '%{content_type}' "$SITE$path")
-		case "$ct" in *"$want"*) break ;; esac
+		busted=$(curl -sS -o /dev/null -w '%{content_type}' "$SITE$path?cb=$$-${SECONDS}-${RANDOM}")
+		case "$busted" in *"$want"*) break ;; esac
 		sleep 5
 	done
+
+	ct=$(curl -sS -o /dev/null -w '%{content_type}' "$SITE$path")
 	case "$ct" in
 		*"$want"*) echo "  ✓ $path is $ct"; pass=$((pass+1)); return ;;
 	esac
 
-	busted=$(curl -sS -o /dev/null -w '%{content_type}' "$SITE$path?cb=$$-${SECONDS}")
 	fail=$((fail+1))
 	case "$busted" in
 		*"$want"*)
