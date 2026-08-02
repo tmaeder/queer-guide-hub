@@ -3,8 +3,9 @@ import { test, expect } from '@playwright/test';
 /**
  * Design system enforcement tests.
  *
- * Verify the semantic 3-tier radius (see CLAUDE.md §Shape) and monochrome
- * (no chromatic colors in public pages).
+ * Verify the semantic 3-tier radius (see CLAUDE.md §Shape) and that public
+ * pages only ever paint sanctioned brand ink (see the PASTE-UP guard below —
+ * it replaced the old "at most 5 chromatic backgrounds" budget).
  *
  * Radius assertions read --radius-{container,element,badge} off the document
  * at runtime instead of hardcoding px. They used to assert 16/8/4 literally,
@@ -160,53 +161,156 @@ test.describe('design system: typography', () => {
   });
 });
 
-test.describe('design system: monochrome public pages', () => {
+/**
+ * PASTE-UP ink guard (replaced the old "no chromatic backgrounds ≤ 5" budget).
+ *
+ * The previous version counted every element whose background saturation
+ * exceeded 0.15 and allowed up to five of them. That made sense while the app
+ * was strictly monochrome, but it has two holes: it permits five arbitrary
+ * rogue hues (it never looked at WHICH colour), and it fails outright the
+ * moment legitimate brand ink lands.
+ *
+ * This replacement is strictly stronger in both directions. It reads the
+ * sanctioned palette off the live document — so it can never go stale when the
+ * tokens are re-tuned, and it keeps working when /admin/design overrides them
+ * at runtime — and then requires EVERY saturated background on the page to be
+ * one of those values. The numeric budget is gone: one unsanctioned hue fails.
+ *
+ * The allowlist is the three PASTE-UP drums plus --destructive. It deliberately
+ * does NOT include the locked functional palettes (trip-safety traffic light,
+ * equality scale, map layers) because none of them render on these four routes;
+ * if one ever does, add it here explicitly rather than widening the tolerance.
+ */
+const SANCTIONED_TOKENS = ['spot', 'ink-blue', 'ink-over', 'destructive'];
+
+test.describe('design system: sanctioned ink only', () => {
   // /news excluded — news cards may have category images with chromatic content
   const publicPages = ['/', '/events', '/venues', '/hotels'];
 
   for (const path of publicPages) {
-    test(`no chromatic backgrounds on ${path}`, async ({ page }) => {
+    test(`only sanctioned brand ink on ${path}`, async ({ page }) => {
       await page.setViewportSize({ width: 1280, height: 900 });
       await page.goto(path);
-      // Wait for the app to mount, NOT for the network to fall idle.
-      //
-      // `networkidle` needs 500ms with zero in-flight requests. The homepage
-      // carries maps, lazy images and analytics, so on a slow CI runner it can
-      // simply never reach that inside the 30s timeout — it failed all three
-      // retries on PR #2408 while /events, /venues and /hotels passed in the
-      // same run, and the change under test touched only admin routes.
-      //
-      // The assertion below reads computed styles under #root/header/main/footer,
-      // so what it actually needs is a painted app. Waiting for that is both
-      // faster and deterministic.
       await page.waitForSelector('#root *', { state: 'attached', timeout: 15_000 });
       await dismissCookieBanner(page);
       await page.waitForTimeout(500);
 
-      const chromaticCount = await page.evaluate(() => {
-        const isChromatic = (color: string): boolean => {
-          const m = color.match(/rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/);
-          if (!m) return false;
-          const [r, g, b] = [+m[1], +m[2], +m[3]];
-          const max = Math.max(r, g, b);
-          const min = Math.min(r, g, b);
-          if (max === 0) return false;
-          const saturation = (max - min) / max;
-          return saturation > 0.15;
+      const rogue = await page.evaluate((tokens) => {
+        const root = document.documentElement;
+
+        // Resolve each token's HSL triple to rgb the way the browser does,
+        // by letting the browser do it. Reading the raw "330 95% 55%" and
+        // converting by hand would re-implement (and could disagree with)
+        // the engine's own rounding.
+        // Normalise ANY computed background to [r,g,b,a] by painting it on a
+        // canvas and reading the pixel back.
+        //
+        // Regex-parsing the serialisation looks simpler and is a trap. A real
+        // page returns at least three forms: plain `rgb(…)`, `color(srgb … / a)`
+        // from a Tailwind v4 opacity modifier, and `oklab(… / a)` from the same
+        // modifier on a different token — and the browser is free to add more.
+        // An earlier draft of this guard matched only `rgb(…)` and silently
+        // SKIPPED everything else, which meant a rogue hue behind `/50` sailed
+        // through a green test. Handing the string to the engine that produced
+        // it converts every colour space correctly, needs no maintenance, and
+        // cannot drift.
+        const canvas = document.createElement('canvas');
+        canvas.width = 1;
+        canvas.height = 1;
+        const ctx = canvas.getContext('2d', { willReadFrequently: true })!;
+        const parse = (css: string): [number, number, number, number] | null => {
+          ctx.clearRect(0, 0, 1, 1);
+          // An unparseable value leaves fillStyle at its previous setting, so
+          // set a known sentinel first and detect "nothing happened".
+          ctx.fillStyle = '#000000';
+          ctx.fillStyle = css;
+          if (ctx.fillStyle === '#000000' && !/^(#000000|black|rgb\(0, 0, 0\))$/.test(css.trim())) {
+            return null;
+          }
+          ctx.fillRect(0, 0, 1, 1);
+          const d = ctx.getImageData(0, 0, 1, 1).data;
+          return [d[0], d[1], d[2], d[3] / 255];
         };
 
-        let count = 0;
-        // Only check elements inside the app, skip third-party overlays
+        const probe = document.createElement('div');
+        probe.style.position = 'absolute';
+        probe.style.visibility = 'hidden';
+        root.appendChild(probe);
+        const sanctioned = new Set<string>();
+        for (const t of tokens) {
+          const raw = getComputedStyle(root).getPropertyValue(`--${t}`).trim();
+          if (!raw) continue;
+          probe.style.backgroundColor = `hsl(${raw})`;
+          const resolved = parse(getComputedStyle(probe).backgroundColor);
+          if (resolved) sanctioned.add(`${resolved[0]},${resolved[1]},${resolved[2]}`);
+        }
+        probe.remove();
+
+        const saturation = (r: number, g: number, b: number) => {
+          const max = Math.max(r, g, b);
+          const min = Math.min(r, g, b);
+          return max === 0 ? 0 : (max - min) / max;
+        };
+
+        // A few channels of slack: an ink can arrive through a Tailwind opacity
+        // modifier or a color-mix, both of which can shift the last bit.
+        const NEAR = 4;
+        const isSanctioned = (r: number, g: number, b: number) => {
+          for (const s of sanctioned) {
+            const [sr, sg, sb] = s.split(',').map(Number);
+            if (
+              Math.abs(r - sr) <= NEAR &&
+              Math.abs(g - sg) <= NEAR &&
+              Math.abs(b - sb) <= NEAR
+            ) {
+              return true;
+            }
+          }
+          return false;
+        };
+
+        const offenders: string[] = [];
+        let unparsed = 0;
         const els = document.querySelectorAll('#root *, header *, main *, footer *');
         for (const el of els) {
-          const cs = getComputedStyle(el);
-          if (isChromatic(cs.backgroundColor)) count++;
+          const bg = getComputedStyle(el).backgroundColor;
+          if (bg === 'transparent' || bg === 'rgba(0, 0, 0, 0)') continue;
+          const parsed = parse(bg);
+          // A colour space this guard cannot read is a hole, not a pass —
+          // surface it instead of skipping silently.
+          if (!parsed) {
+            unparsed++;
+            continue;
+          }
+          const [r, g, b, a] = parsed;
+          if (a === 0) continue;
+          if (saturation(r, g, b) <= 0.15) continue;
+          if (isSanctioned(r, g, b)) continue;
+          const tag = el.tagName.toLowerCase();
+          const cls = (el.getAttribute('class') ?? '').slice(0, 80);
+          offenders.push(`${bg} on <${tag} class="${cls}">`);
         }
-        return count;
-      });
+        return { offenders: [...new Set(offenders)], sanctioned: [...sanctioned], unparsed };
+      }, SANCTIONED_TOKENS);
 
-      // Allow small count for --destructive tokens or dynamic content
-      expect(chromaticCount).toBeLessThanOrEqual(5);
+      expect(
+        rogue.sanctioned.length,
+        'no brand ink tokens resolved — the palette probe is broken, not the page',
+      ).toBeGreaterThan(0);
+
+      expect(
+        rogue.unparsed,
+        `${rogue.unparsed} background(s) used a colour space this guard cannot parse, so they ` +
+          'were never checked. Teach parse() the new serialisation rather than letting the ' +
+          'hole widen.',
+      ).toBe(0);
+
+      expect(
+        rogue.offenders,
+        `Unsanctioned chromatic backgrounds on ${path}. Every saturated fill must be ` +
+          `one of --${SANCTIONED_TOKENS.join(' / --')}. Resolved ink: ` +
+          `${rogue.sanctioned.join(' | ')}.\n${rogue.offenders.join('\n')}`,
+      ).toEqual([]);
     });
   }
 });

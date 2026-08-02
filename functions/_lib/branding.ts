@@ -58,6 +58,9 @@ const COLOR_KEYS = new Set([
   'muted', 'muted-foreground', 'accent', 'accent-foreground',
   'destructive', 'destructive-foreground', 'warning', 'warning-foreground',
   'success', 'success-foreground', 'spot', 'spot-foreground',
+  // PASTE-UP inks (2nd + 3rd drums). `ink-pink` is absent by design — it is a
+  // @theme alias of `spot`, so overriding `spot` moves both.
+  'ink-blue', 'ink-blue-foreground', 'ink-over', 'ink-over-foreground',
   'border', 'input', 'input-bg', 'ring',
   'sidebar-background', 'sidebar-foreground', 'sidebar-primary', 'sidebar-primary-foreground',
   'sidebar-accent', 'sidebar-accent-foreground', 'sidebar-border', 'sidebar-ring',

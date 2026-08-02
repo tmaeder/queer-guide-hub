@@ -62,6 +62,11 @@ const NON_TEXT_ON_PAGE = [
   'sidebar-border',
   'ring',
   'spot',
+  // PASTE-UP inks. These tint plates; they are never letterforms. With borders
+  // removed, a plate's own fill IS its boundary, so 1.4.11 applies to the ink
+  // exactly as it did to the hairline it replaced.
+  'ink-blue',
+  'ink-over',
 ];
 
 describe('design tokens: contrast guards', () => {
@@ -105,6 +110,36 @@ describe('design tokens: contrast guards', () => {
     // which is precisely why it is barred from small text.
     expect(TEXT_ON_PAGE).not.toContain('spot');
     expect(NON_TEXT_ON_PAGE).toContain('spot');
+  });
+
+  it('keeps every PASTE-UP ink off the small-text path', () => {
+    // Same contract as --spot, extended to the 2nd and 3rd drums. An ink is a
+    // plate fill; type on a plate uses the paired *-foreground, which
+    // CONTRAST_PAIRS gates at 4.5:1. If an ink ever appears here as text, the
+    // axe route sweep fails first and this test explains why it should.
+    for (const ink of ['ink-blue', 'ink-over']) {
+      expect(TEXT_ON_PAGE, `--${ink} must never be body text`).not.toContain(ink);
+      expect(NON_TEXT_ON_PAGE, `--${ink} must still clear the 3:1 fill bar`).toContain(ink);
+    }
+  });
+
+  it('never lets an ink impersonate the danger signal', () => {
+    // The safety contract in src/index.css: red means danger, ink means
+    // nothing. If a brand ink ever drifts into the red hue band, a risk badge
+    // and a decorative plate become indistinguishable on a product used in
+    // criminalising countries. Guard the hue directly.
+    const hueOf = (v: string) => Number(v.split(' ')[0]);
+    for (const ink of ['spot', 'ink-blue', 'ink-over']) {
+      for (const mode of MODES) {
+        const hue = hueOf(value(ink, mode));
+        const distanceFromRed = Math.min(hue, 360 - hue);
+        expect(
+          distanceFromRed,
+          `--${ink} (${mode}) sits at hue ${hue}, only ${distanceFromRed}° from --destructive. ` +
+            'Brand ink must never be mistakable for the danger signal.',
+        ).toBeGreaterThan(25);
+      }
+    }
   });
 
   it('audits every token that CONTRAST_PAIRS references', () => {
