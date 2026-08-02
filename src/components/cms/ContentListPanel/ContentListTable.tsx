@@ -101,7 +101,7 @@ function EmptyState({
         style={{
           width: 72,
           height: 72,
-          backgroundColor: `${color}14`,
+          backgroundColor: tintOf(color),
         }}
       >
         {Icon ? (

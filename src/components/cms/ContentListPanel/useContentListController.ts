@@ -295,19 +295,21 @@ export function useContentListController({
     setSelected(new Set());
   }, [debouncedSearch, filters]);
 
-  // On content type change, restore persisted state (or defaults) and reset
-  const lastTypeRef = useRef<string | undefined>(contentTypeId);
-  useEffect(() => {
-    if (lastTypeRef.current === contentTypeId) return;
-    lastTypeRef.current = contentTypeId;
-    setPage(0);
-    setSelected(new Set());
-    const p = persistKey ? loadPersistedState(persistKey) : null;
-    setSortField(p?.sortField ?? config?.defaultSort?.field ?? 'updated_at');
-    setSortDir(p?.sortDir ?? config?.defaultSort?.dir ?? 'desc');
-    setFilters(p?.filters ?? {});
-    setHiddenColumns(p?.hiddenColumns ?? []);
-  }, [contentTypeId, persistKey, config]);
+  // There is deliberately NO "restore on content-type change" effect.
+  //
+  // There used to be one, and it corrupted state. React runs effects in
+  // declaration order, so on a type switch the persist effect above ran first
+  // in a commit where `persistKey` was already the INCOMING type but every
+  // state value was still the outgoing one — writing venues' sort/filters/
+  // columns into the events key, which the restore effect then read back. The
+  // incoming type's saved state was destroyed on every switch. It also only
+  // restored sort/filters/columns, so view/groupBy/dateField leaked across
+  // types regardless.
+  //
+  // ContentListPanel now remounts on the type id (`key`), so `persistKey` is
+  // constant for this hook's whole life and initial state comes from the
+  // useState initializers. The bug has no path to exist rather than being
+  // patched.
 
   // Clear selection on page change
   useEffect(() => {

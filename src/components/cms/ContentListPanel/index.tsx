@@ -32,6 +32,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
+import { tintOf } from './types';
 import { ContentListFilters } from './ContentListFilters';
 import { ContentListTable } from './ContentListTable';
 import { ContentListGallery } from './ContentListGallery';
@@ -54,7 +55,22 @@ interface ContentListPanelProps {
   onCreate?: (contentType: string) => void;
 }
 
+/**
+ * Remounts the body whenever the content type changes.
+ *
+ * This route element is shared by `content` and `content/:type` (routes.tsx),
+ * and it reads `useParams` itself, so React Router never remounts it on a type
+ * switch. That shared lifetime is what let one commit exist with the new type's
+ * persist key and the old type's state — see the note in
+ * useContentListController. Keying here is the fix, and it costs three lines.
+ */
 export function ContentListPanel(props: ContentListPanelProps) {
+  const { type } = useParams();
+  const typeId = props.contentTypeId ?? type;
+  return <ContentListPanelBody key={typeId ?? '__all__'} {...props} contentTypeId={typeId} />;
+}
+
+function ContentListPanelBody(props: ContentListPanelProps) {
   const c = useContentListController(props);
   const { type } = useParams();
 
@@ -75,7 +91,7 @@ export function ContentListPanel(props: ContentListPanelProps) {
           {Icon && (
             <div
               className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
-              style={{ backgroundColor: `${typeColor}1f` }}
+              style={{ backgroundColor: tintOf(typeColor) }}
             >
               <Icon size={16} style={{ color: typeColor }} />
             </div>
@@ -85,7 +101,7 @@ export function ContentListPanel(props: ContentListPanelProps) {
             <Badge
               variant="secondary"
               className="h-[22px] text-xs font-semibold"
-              style={{ backgroundColor: `${typeColor}14`, color: typeColor }}
+              style={{ backgroundColor: tintOf(typeColor), color: typeColor }}
             >
               {c.totalCount.toLocaleString()}
             </Badge>
