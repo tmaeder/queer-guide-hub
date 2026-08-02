@@ -33,7 +33,22 @@ function defaultSlug(shopDomain: string): string {
   return shopDomain.replace(/^www\./, '').split('.')[0]
 }
 
-function makeAdapter(shopDomain: string, sourceSlug: string, currency = 'EUR'): SourceAdapter {
+// Per-merchant overrides read from marketplace_merchants.config. Both are OPTIONAL and
+// must stay so: writeToStaging refresh mode diffs stableStringify(normalized_data), so
+// emitting a new metadata key unconditionally would mark all ~50k existing staging rows
+// changed and force a full re-commit across every registered merchant. Gating on config
+// presence keeps every shop that doesn't set them byte-identical.
+interface MerchantOverrides {
+  // Shopify `product_type` is the merchant's own label; on a bookshop feed it is
+  // "Paperback"/"Hardback", which marketplace_subcategory_group() maps to 'other'.
+  // Pinning subcategory is what lands the catalog in department books_art.
+  subcategory?: string | null
+  // `vendor` is the AUTHOR on a bookshop feed, not the seller — without this every
+  // listing would name the author as the business.
+  businessName?: string | null
+}
+
+function makeAdapter(shopDomain: string, sourceSlug: string, currency = 'EUR', ov: MerchantOverrides = {}): SourceAdapter {
   return {
     name: sourceSlug, entityType: 'marketplace',
     // Single page (config.offset = page number). The handler streams page-by-page
@@ -88,7 +103,9 @@ function makeAdapter(shopDomain: string, sourceSlug: string, currency = 'EUR'): 
           merchant_deep_link: externalUrl, merchant_domain: extractMerchantDomain(externalUrl),
           price: Number.isFinite(price) && price != null && price > 0 ? price : null,
           currency: normalizeCurrency(currency), category: p.product_type, brand: p.vendor, brand_name: p.vendor,
-          business_name: p.vendor || shopDomain, in_stock: inStock, sku: variant?.sku, handle: p.handle,
+          business_name: ov.businessName || p.vendor || shopDomain, in_stock: inStock, sku: variant?.sku, handle: p.handle,
+          // Emitted ONLY when the merchant configures it — see MerchantOverrides.
+          ...(ov.subcategory ? { subcategory: ov.subcategory } : {}),
         },
       }
     },
@@ -109,15 +126,29 @@ Deno.serve(withErrorReporting('source-shopify-public', async (req) => {
     // wiped catalog, …) is skipped no matter who invokes this function.
     const { data: merchant } = await supabase
       .from('marketplace_merchants')
-      .select('is_enabled')
+      .select('is_enabled, config')
       .eq('shop_domain', shopDomain)
       .maybeSingle()
     if (merchant && merchant.is_enabled === false) {
       return jsonResponse(skippedResponse('merchant_disabled', [shopDomain]), 200, req)
     }
 
+    // Registry config is the source of truth for per-merchant shaping; the request
+    // body may override it for one-off manual runs.
+    const mcfg = (merchant?.config ?? {}) as Record<string, unknown>
+    const cfgStr = (k: string): string | null => {
+      const v = mcfg[k]
+      return typeof v === 'string' && v.trim() ? v.trim() : null
+    }
+    // currency deliberately NOT read from config here — marketplace-sync-merchants
+    // already forwards config.currency in the body, and adding a second source of
+    // truth would silently re-price every staging row of any merchant whose config
+    // disagrees with what its rows were written with.
     const currency = typeof body.currency === 'string' && body.currency ? body.currency : 'EUR'
-    const adapter = makeAdapter(shopDomain, sourceSlug, currency)
+    const adapter = makeAdapter(shopDomain, sourceSlug, currency, {
+      subcategory: (typeof body.subcategory === 'string' && body.subcategory) || cfgStr('subcategory'),
+      businessName: (typeof body.business_name === 'string' && body.business_name) || cfgStr('business_name'),
+    })
     const maxPages = Number(body.max_pages ?? 40)
     const dryRun = body.dry_run || false
     const refresh = body.refresh === true

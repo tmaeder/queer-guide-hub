@@ -104,6 +104,33 @@ Deno.test('classifyMerchantType: precedence resolves compound German labels', ()
   assertEquals(classifyMerchantType('Halsband')?.slug, 'bdsm_and_bondage')      // collar, not necklace
 })
 
+// Book-trade type labels must resolve at Tier 1 (0.95). If they fall through to
+// Tier 2, `jewelry_and_pins` (\bring\b, \bchain\b) and `bdsm_and_bondage`
+// (\bgag\b, whip) are tested BEFORE books_and_art, so a novel whose blurb happens
+// to mention a ring is retyped to Jewelry at 0.78 and leaves department books_art.
+Deno.test('classifyMerchantType: book-trade labels resolve to books_and_art', () => {
+  assertEquals(classifyMerchantType('Paperback')?.slug, 'books_and_art')
+  assertEquals(classifyMerchantType('Hardback')?.slug, 'books_and_art')
+  assertEquals(classifyMerchantType('Hardcover')?.slug, 'books_and_art')
+  assertEquals(classifyMerchantType('Taschenbuch')?.slug, 'books_and_art')
+  assertEquals(classifyMerchantType('Hörbuch')?.slug, 'books_and_art')
+  assertEquals(classifyMerchantType('Sachbuch')?.slug, 'books_and_art')
+  assertEquals(classifyMerchantType('Bücher')?.slug, 'books_and_art')   // umlaut plural: `buch` does NOT match
+  assertEquals(classifyMerchantType('Roman')?.slug, 'books_and_art')
+  assertEquals(classifyMerchantType('Belletristik')?.slug, 'books_and_art')
+  assertEquals(classifyMerchantType('Gebundene Ausgabe')?.slug, 'books_and_art')
+  assertEquals(classifyMerchantType('eBook')?.slug, 'books_and_art')
+  assertEquals(classifyMerchantType('Audiobook')?.slug, 'books_and_art')
+  assertEquals(classifyMerchantType('Paperback')?.confidence, 0.95)
+})
+
+// The adult rules deliberately outrank books — a book-shaped label that also
+// names an adult category keeps the adult bucket (content_rating depends on it).
+Deno.test('classifyMerchantType: adult labels still outrank the widened books rule', () => {
+  assertEquals(classifyMerchantType('Spielzeug')?.slug, 'sex_toys')      // not books via `spiel`
+  assertEquals(classifyMerchantType('Analbuch')?.slug, 'anal_toys')
+})
+
 Deno.test('classifyMerchantType: no signal -> null (falls through to text tier)', () => {
   assertEquals(classifyMerchantType('Sonderposten'), null)
   assertEquals(classifyMerchantType(''), null)

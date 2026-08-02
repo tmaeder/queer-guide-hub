@@ -464,6 +464,11 @@ verify_jwt = false
 [functions.marketplace-sync-merchants]
 verify_jwt = false
 
+# Self-gated via requireInternalOrAdmin. Takes no URL from the request body — every
+# crawl parameter comes from marketplace_merchants.config.
+[functions.source-shop-crawl]
+verify_jwt = false
+
 [functions.send-username-reminder]
 verify_jwt = false
 

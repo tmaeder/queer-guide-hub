@@ -29,6 +29,10 @@ import { withErrorReporting } from '../_shared/report-api-error.ts'
 const PROVIDER_FN: Record<string, string> = {
   'shopify-public': 'source-shopify-public',
   'woocommerce-public': 'source-woocommerce-public',
+  // Storefronts with no machine feed: sitemap + per-page schema.org. A crawl merchant
+  // consumes its whole RUN_BUDGET_MS, so at most one runs per hourly tick and any
+  // second is skipped (remaining++), keeping its LRU position.
+  'crawl': 'source-shop-crawl',
 }
 
 const RUN_BUDGET_MS = 120_000 // respond well before the ~150s gateway 504

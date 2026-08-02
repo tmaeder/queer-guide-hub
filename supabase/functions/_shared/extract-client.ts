@@ -25,6 +25,10 @@ export interface ExtractResult {
   meta: ExtractMeta
   /** schema.org objects from JSON-LD (Event/Place/Product/…). Empty if none. */
   jsonLd?: Array<Record<string, unknown>>
+  /** schema.org Product read from inline MICRODATA, for storefronts that ship no
+   *  JSON-LD (nopCommerce, Magento). Nested scopes appear as sub-objects so the shape
+   *  matches JSON-LD: `microdata.offers.price`. Undefined when the page has none. */
+  microdata?: Record<string, unknown>
   links?: { flat: string[]; external: string[] }
   method: 'fetch' | 'render'
   charCount: number
