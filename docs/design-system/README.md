@@ -84,6 +84,35 @@ shadow. Utilities live in `src/index.css`; components only apply class names.
 
 Every animated class has a `prefers-reduced-motion` branch.
 
+### Where the ink is actually used
+
+Ink is an accent, not a surface. It appears in exactly these places:
+
+| Surface | Treatment |
+|---|---|
+| Homepage masthead | The closing line (`Worldwide.`) prints on a pink plate; the other two stay black. Inking all three would make ink the surface. |
+| Homepage CTA band | Drenched black flood + `.halftone-paper` screen, primary CTA in pink with `.ink-bleed`. |
+| `Button variant="accent"` | First drum (pink). |
+| `Button variant="brand"` | Second drum (blue). No longer deprecated. |
+| `Badge variant="ink"` | Pink chip. |
+| Interactive cards | Off-register pink plate behind the card, snapping into register on hover. |
+| `::selection`, focus ring, active nav, inline-link hover | The four original `--spot` marks, unchanged. |
+
+**Where it is banned**, beyond the token rules above: `Button variant="accent"` was in
+use on `GatedContentNotice` and `GatedDetailFallback` — the safety-gating
+surfaces shown to users in criminalising countries — and was reverted to
+monochrome there. `.ink-bleed` is deliberately NOT baked into any button
+variant, because `brand` is used across `src/components/trips/**` and travel
+content stays motion-free; opt in per call site.
+
+### Fields are ruled, not boxed
+
+Inputs, textareas and selects dropped their outline for a tonal fill plus a 2px
+black bottom rule — a printed form has a line you write ON. The fill alone
+measures **1.17:1** against the page, nowhere near the 3:1 WCAG 1.4.11 wants for
+a control boundary, so the rule is load-bearing rather than decorative. At
+`--foreground` it is 19.78:1.
+
 ## Typography
 
 Inter for body/UI, Space Grotesk (`--font-display`) for large headings. Both

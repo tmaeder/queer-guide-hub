@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-02T12:47:40.179Z",
+  "generated_at": "2026-08-02T15:01:19.056Z",
   "token_count": 91,
   "usage": [
     {
@@ -8,15 +8,15 @@
     },
     {
       "token": "foreground",
-      "count": 1610
+      "count": 1602
     },
     {
       "token": "border",
-      "count": 1040
+      "count": 1036
     },
     {
       "token": "muted",
-      "count": 967
+      "count": 963
     },
     {
       "token": "radius-element",
@@ -28,7 +28,7 @@
     },
     {
       "token": "background",
-      "count": 598
+      "count": 592
     },
     {
       "token": "text-13",
@@ -44,7 +44,7 @@
     },
     {
       "token": "radius-container",
-      "count": 316
+      "count": 317
     },
     {
       "token": "text-xs2",
@@ -56,7 +56,7 @@
     },
     {
       "token": "accent",
-      "count": 174
+      "count": 173
     },
     {
       "token": "text-15",
@@ -72,11 +72,11 @@
     },
     {
       "token": "card",
-      "count": 91
+      "count": 89
     },
     {
       "token": "text-headline",
-      "count": 76
+      "count": 75
     },
     {
       "token": "text-body-lg",
@@ -84,7 +84,7 @@
     },
     {
       "token": "text-display",
-      "count": 70
+      "count": 71
     },
     {
       "token": "ring",
@@ -108,7 +108,7 @@
     },
     {
       "token": "radius",
-      "count": 29
+      "count": 30
     },
     {
       "token": "text-hero",
@@ -116,30 +116,34 @@
     },
     {
       "token": "input",
-      "count": 25
-    },
-    {
-      "token": "popover",
-      "count": 19
+      "count": 22
     },
     {
       "token": "warning",
       "count": 19
     },
     {
+      "token": "popover",
+      "count": 18
+    },
+    {
       "token": "secondary",
       "count": 17
+    },
+    {
+      "token": "surface-container",
+      "count": 13
     },
     {
       "token": "success",
       "count": 12
     },
     {
-      "token": "popover-foreground",
-      "count": 11
+      "token": "spot",
+      "count": 12
     },
     {
-      "token": "spot",
+      "token": "popover-foreground",
       "count": 11
     },
     {
@@ -155,15 +159,15 @@
       "count": 9
     },
     {
+      "token": "surface-container-high",
+      "count": 9
+    },
+    {
       "token": "text-hero-xl",
       "count": 8
     },
     {
       "token": "surface-container-low",
-      "count": 8
-    },
-    {
-      "token": "surface-container",
       "count": 8
     },
     {
@@ -179,6 +183,14 @@
       "count": 7
     },
     {
+      "token": "ink-blue",
+      "count": 6
+    },
+    {
+      "token": "ink-pink",
+      "count": 5
+    },
+    {
       "token": "card-foreground",
       "count": 5
     },
@@ -187,11 +199,15 @@
       "count": 4
     },
     {
-      "token": "ink-blue",
-      "count": 4
+      "token": "secondary-foreground",
+      "count": 3
     },
     {
-      "token": "secondary-foreground",
+      "token": "ink-blue-foreground",
+      "count": 3
+    },
+    {
+      "token": "ink-over",
       "count": 3
     },
     {
@@ -199,15 +215,11 @@
       "count": 2
     },
     {
-      "token": "ink-blue-foreground",
-      "count": 2
-    },
-    {
-      "token": "ink-over",
-      "count": 2
-    },
-    {
       "token": "ink-over-foreground",
+      "count": 2
+    },
+    {
+      "token": "surface-container-highest",
       "count": 2
     },
     {
@@ -252,14 +264,6 @@
     },
     {
       "token": "surface-container-lowest",
-      "count": 1
-    },
-    {
-      "token": "surface-container-high",
-      "count": 1
-    },
-    {
-      "token": "surface-container-highest",
       "count": 1
     },
     {
@@ -335,10 +339,6 @@
       "count": 0
     },
     {
-      "token": "ink-pink",
-      "count": 0
-    },
-    {
       "token": "shadow-none",
       "count": 0
     },
@@ -383,7 +383,6 @@
     "text-body-lg--line-height",
     "tracking-label",
     "radius-full",
-    "ink-pink",
     "shadow-none",
     "shadow-hairline",
     "asset-rev",

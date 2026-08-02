@@ -1172,9 +1172,28 @@ h2,
    green on every card.
 
    `--plate-offset` and `--plate-offset-ink` are per-instance knobs so a
-   component can shift the amount or swap the drum without new CSS. */
+   component can shift the amount or swap the drum without new CSS.
+
+   Goes on the card's WRAPPER, never the card itself: entity cards pass
+   `overflow-hidden` to clip their cover image to the radius, which would clip
+   the off-register plate out of existence. The wrapper is already the `group`
+   that drives card hover, so the two belong together anyway.
+
+   Depth is handled with `isolation: isolate` + `z-index: -1`, NOT by lifting
+   the children. Two traps closed at once:
+     - Without the isolate, `position: relative; z-index: auto` does not create
+       a stacking context, so a negative z escapes behind the nearest ancestor
+       that does — the page — and the plate never appears at all.
+     - The obvious alternative, `.plate-offset > * { position: relative }`,
+       would silently break every card. This rule is UNLAYERED, and unlayered
+       CSS beats Tailwind utilities regardless of specificity, so it would
+       override the `absolute inset-0` on each card's overlay click target and
+       drop the link into the flow.
+   With the isolate, ::before paints above the wrapper's own background and
+   below its in-flow content, and the children are left completely alone. */
 .plate-offset {
   position: relative;
+  isolation: isolate;
   --plate-offset: 6px;
   --plate-offset-ink: var(--spot);
 }
@@ -1183,14 +1202,14 @@ h2,
   position: absolute;
   inset: 0;
   z-index: -1;
+  border-radius: var(--radius-container);
   background-color: hsl(var(--plate-offset-ink));
   transform: translate(var(--plate-offset), var(--plate-offset));
   transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1);
   pointer-events: none;
 }
 .plate-offset:hover::before,
-.plate-offset:focus-within::before,
-.group:hover .plate-offset::before {
+.plate-offset:focus-within::before {
   transform: translate(0, 0);
 }
 @media (prefers-reduced-motion: reduce) {
@@ -1229,6 +1248,15 @@ h2,
 }
 .dark .halftone-ink {
   background-image: radial-gradient(hsl(var(--foreground) / 0.22) 1.4px, transparent 1.5px);
+}
+/* For INVERTED surfaces (an ink flood, e.g. the homepage CTA band). There the
+   screen is the paper showing through the ink, so the dots are --background.
+   `.halftone-ink` would be foreground-on-foreground and render nothing. */
+.halftone-paper {
+  background-image: radial-gradient(hsl(var(--background) / 0.22) 1.4px, transparent 1.5px);
+  background-size: 5px 5px;
+  background-position: 2px 1px;
+  background-repeat: repeat;
 }
 
 /* ── Paper ─────────────────────────────────────────────────────────────

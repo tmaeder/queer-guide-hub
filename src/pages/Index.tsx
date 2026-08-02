@@ -202,11 +202,20 @@ const Index = React.memo(() => {
       </HomeDeferred>
       </div>
 
-      {/* ── Final CTA — adaptive on auth state ───────────────────────── */}
-      <section className="rule-heavy px-4 sm:px-6 md:px-8 py-20 md:py-28 bg-foreground text-background">
-        <div className="max-w-3xl">
+      {/* ── Final CTA — adaptive on auth state ─────────────────────────
+          PASTE-UP: the page's one drenched plate. Black ink flooded edge to
+          edge, with a halftone screen laid over it so the flood reads as
+          something PRINTED rather than a filled div — the dots are what a
+          solid area of ink actually looks like off a riso drum.
+
+          The screen is absolutely positioned and aria-hidden, and the content
+          sits above it; it never touches the text's contrast because it is
+          behind the copy, not over it. */}
+      <section className="relative isolate overflow-hidden rule-heavy px-4 sm:px-6 md:px-8 py-20 md:py-28 bg-foreground text-background">
+        <div aria-hidden="true" className="absolute inset-0 -z-10 halftone-paper" />
+        <div className="relative max-w-3xl">
           <h2
-            className="text-display md:text-hero font-bold tracking-tight"
+            className="font-display text-display md:text-hero font-bold tracking-tight"
             style={{ letterSpacing: '-0.035em' }}
           >
             {t('home.cta.title', 'Built by the community,')}{' '}
@@ -220,7 +229,7 @@ const Index = React.memo(() => {
               <>
                 <LocalizedLink
                   to="/submit"
-                  className="inline-flex items-center justify-center rounded-element bg-background px-8 py-4 text-sm font-bold tracking-tight text-foreground transition-opacity hover:opacity-90 no-underline"
+                  className="ink-bleed inline-flex items-center justify-center rounded-element bg-ink-pink px-8 py-4 text-sm font-bold tracking-tight text-ink-pink-foreground transition-opacity hover:opacity-90 no-underline"
                 >
                   {t('home.cta.submit', 'Add a venue')}
                 </LocalizedLink>
@@ -235,7 +244,7 @@ const Index = React.memo(() => {
               <>
                 <LocalizedLink
                   to="/auth?mode=signup"
-                  className="inline-flex items-center justify-center rounded-element bg-background px-8 py-4 text-sm font-bold tracking-tight text-foreground transition-opacity hover:opacity-90 no-underline"
+                  className="ink-bleed inline-flex items-center justify-center rounded-element bg-ink-pink px-8 py-4 text-sm font-bold tracking-tight text-ink-pink-foreground transition-opacity hover:opacity-90 no-underline"
                 >
                   {t('home.cta.join', 'Join the community')}
                 </LocalizedLink>

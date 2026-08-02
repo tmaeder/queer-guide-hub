@@ -32,8 +32,24 @@ describe('CardHoverEffect', () => {
       </CardHoverEffect>,
     );
     const card = container.firstElementChild?.firstElementChild;
-    // group-hover, not hover — the pointer never reaches the Card itself.
-    expect(card?.className).toContain('group-hover:bg-muted/40');
-    expect(card?.className).not.toMatch(/(^|\s)hover:bg-muted\/40/);
+    // Assert the MECHANISM, not the palette. This used to pin the literal
+    // `group-hover:bg-muted/40`, which broke the moment the PASTE-UP pass
+    // repainted cards as ink plates even though the behaviour it guards was
+    // untouched. What must hold is that the hover state is group-scoped —
+    // a bare `hover:` on the Card can never fire, because the sibling overlay
+    // link covers it and the pointer never enters the Card's own hover chain.
+    expect(card?.className).toMatch(/group-hover:bg-\S+/);
+    expect(card?.className).not.toMatch(/(^|\s)hover:bg-\S+/);
+  });
+
+  // The off-register second plate lives on the WRAPPER, not the Card: entity
+  // cards pass `overflow-hidden` to clip their cover image, which would clip
+  // the offset plate out of existence.
+  it('prints the misregistered plate on the wrapper, and lets callers opt out', () => {
+    const { container: inked } = render(<CardHoverEffect>x</CardHoverEffect>);
+    expect(inked.firstElementChild?.className).toContain('plate-offset');
+
+    const { container: plain } = render(<CardHoverEffect ink="none">x</CardHoverEffect>);
+    expect(plain.firstElementChild?.className).not.toContain('plate-offset');
   });
 });

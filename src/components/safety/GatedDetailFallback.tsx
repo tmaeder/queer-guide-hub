@@ -62,7 +62,10 @@ export function GatedDetailFallback({ entityType, slug, notFound }: GatedDetailF
           </div>
           {/* asChild, not a Link wrapping a Button — that nests a <button>
               inside an <a>, which is invalid HTML. */}
-          <Button asChild variant="accent">
+          {/* Monochrome on purpose: this is the safety layer. PASTE-UP ink is
+              non-semantic decoration and must never appear on a surface a user
+              in a criminalising country is reading for risk info. */}
+          <Button asChild variant="default">
             <LocalizedLink to="/auth" className="no-underline">
               {t('safety.gatedDetail.cta', { defaultValue: 'Sign in' })}
             </LocalizedLink>
