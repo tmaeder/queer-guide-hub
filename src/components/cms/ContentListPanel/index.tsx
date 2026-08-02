@@ -4,7 +4,7 @@
  * relative dates, status indicators, and polished empty states.
  */
 
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import { useParams } from 'react-router';
 import { Plus, Search, RefreshCw, X } from 'lucide-react';
 import { ContentEntityTabs } from '@/components/admin/ContentEntityTabs';
@@ -22,6 +22,10 @@ import { ContentListCalendar } from './ContentListCalendar';
 import { FilterBuilder } from './filters/FilterBuilder';
 import { SortBuilder } from './filters/SortBuilder';
 import { ViewSettings } from './filters/ViewSettings';
+import { ViewBar } from './filters/ViewBar';
+import { ListPagination } from './ListPagination';
+import { useContentViews, type SavedView } from '@/hooks/useContentViews';
+import { normalizeSpec, specEquals } from './viewSpec';
 import { useContentListController } from './useContentListController';
 import { ExportExcelButton } from '@/components/admin/ExportExcelButton';
 import { exportContentType } from './exportContentList';
@@ -54,6 +58,19 @@ export function ContentListPanel(props: ContentListPanelProps) {
 function ContentListPanelBody(props: ContentListPanelProps) {
   const c = useContentListController(props);
   const { type } = useParams();
+  const v = useContentViews(props.contentTypeId);
+  const [activeViewId, setActiveViewId] = useState<string | null>(null);
+
+  const activeView = v.views.find((x) => x.id === activeViewId) ?? null;
+  // Dirty means "the live spec differs from what this view last saved". With no
+  // view selected there is nothing to be dirty against.
+  const dirty =
+    !!activeView && !specEquals(normalizeSpec(activeView.spec, c.config ?? null), c.spec);
+
+  const selectView = (view: SavedView) => {
+    setActiveViewId(view.id);
+    c.applySpec(normalizeSpec(view.spec, c.config ?? null));
+  };
 
   const typeColor = c.config?.color || 'hsl(var(--muted-foreground))';
   const Icon = c.config?.icon;
@@ -111,6 +128,29 @@ function ContentListPanelBody(props: ContentListPanelProps) {
           )}
         </div>
       </div>
+
+      {c.contentTypeId && (
+        <ViewBar
+          views={v.views}
+          activeId={activeViewId}
+          dirty={dirty}
+          onSelect={selectView}
+          onCreate={async (name) => {
+            const created = await v.createView(name, c.spec);
+            if (created) setActiveViewId(created.id);
+          }}
+          onRename={(id, name) => void v.updateView(id, { name })}
+          onDelete={async (id) => {
+            await v.deleteView(id);
+            if (id === activeViewId) setActiveViewId(null);
+          }}
+          onSetDefault={(id) => void v.setDefaultView(id)}
+          onSave={() => activeViewId && void v.updateView(activeViewId, { spec: c.spec })}
+          onReset={() =>
+            activeView && c.applySpec(normalizeSpec(activeView.spec, c.config ?? null))
+          }
+        />
+      )}
 
       <div className="flex items-center gap-4 mb-4">
         <div className="relative w-full sm:w-[320px]">
@@ -231,6 +271,20 @@ function ContentListPanelBody(props: ContentListPanelProps) {
           onEdit={c.onEdit}
           onCreate={c.onCreate}
           onRefresh={c.loadItems}
+        />
+      )}
+
+      {/* Every non-table view needs this too — they shipped able to show only
+          the first page, which is meaningless on a 40k-row type. The table
+          renders its own inside the bordered container. */}
+      {c.contentTypeId && c.view !== 'table' && (
+        <ListPagination
+          page={c.page}
+          rowsPerPage={c.rowsPerPage}
+          totalCount={c.totalCount}
+          setPage={c.setPage}
+          setRowsPerPage={c.setRowsPerPage}
+          hidden={c.items.length === 0}
         />
       )}
 

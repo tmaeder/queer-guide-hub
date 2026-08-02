@@ -17,23 +17,10 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from '@/components/ui/pagination';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+
 import { Editable } from '@/components/admin/inline/Editable';
 import type { ContentTypeConfig, FieldConfig } from '@/types/cms';
+import { ListPagination } from './ListPagination';
 import {
   getStatusColor,
   getStatusLabel,
@@ -330,7 +317,6 @@ export function ContentListTable({
   onRefresh,
 }: ContentListTableProps) {
   const colCount = (contentTypeId ? 5 : 6) + extraColumns.length;
-  const totalPages = Math.max(1, Math.ceil(totalCount / rowsPerPage));
 
   return (
     <div className="overflow-hidden rounded-element border border-border bg-background">
@@ -580,64 +566,14 @@ export function ContentListTable({
           </TableBody>
         </Table>
       </div>
-      {items.length > 0 && (
-        <div className="flex items-center justify-between gap-4 px-4 py-2 border-t border-border">
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <span>Rows per page:</span>
-            <Select
-              value={String(rowsPerPage)}
-              onValueChange={(v) => {
-                setRowsPerPage(parseInt(v, 10));
-                setPage(0);
-              }}
-            >
-              <SelectTrigger className="h-7 w-[70px] text-xs">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {[10, 25, 50, 100].map((n) => (
-                  <SelectItem key={n} value={String(n)}>
-                    {n}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <span>
-              {page * rowsPerPage + 1}-{Math.min((page + 1) * rowsPerPage, totalCount)} of{' '}
-              {totalCount}
-            </span>
-          </div>
-          <Pagination className="mx-0 w-auto justify-end">
-            <PaginationContent>
-              <PaginationItem>
-                <PaginationPrevious
-                  href="#"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    if (page > 0) setPage(page - 1);
-                  }}
-                  aria-disabled={page === 0}
-                />
-              </PaginationItem>
-              <PaginationItem>
-                <PaginationLink href="#" isActive>
-                  {page + 1}
-                </PaginationLink>
-              </PaginationItem>
-              <PaginationItem>
-                <PaginationNext
-                  href="#"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    if (page + 1 < totalPages) setPage(page + 1);
-                  }}
-                  aria-disabled={page + 1 >= totalPages}
-                />
-              </PaginationItem>
-            </PaginationContent>
-          </Pagination>
-        </div>
-      )}
+      <ListPagination
+        page={page}
+        rowsPerPage={rowsPerPage}
+        totalCount={totalCount}
+        setPage={setPage}
+        setRowsPerPage={setRowsPerPage}
+        hidden={items.length === 0}
+      />
     </div>
   );
 }

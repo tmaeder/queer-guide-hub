@@ -7,7 +7,7 @@
 import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { applyFilters, applySorts } from './filterOps';
-import { normalizeSpec, type Filter, type SortSpec } from './viewSpec';
+import { normalizeSpec, type Filter, type SortSpec, type ViewSpec } from './viewSpec';
 import { useParams } from 'react-router';
 import { useContext } from 'react';
 import { getContentType, getContentTypeIds } from '@/config/contentTypeRegistry';
@@ -346,6 +346,28 @@ export function useContentListController({
     setPage(0);
   }
 
+  // The live spec, assembled from the individual pieces of state. Saving a
+  // view stores exactly this.
+  const spec: ViewSpec = useMemo(
+    () => ({ kind: view, columns, filters, sorts, groupBy, dateField }),
+    [view, columns, filters, sorts, groupBy, dateField],
+  );
+
+  /** Replace every part of the view at once, e.g. when switching saved views. */
+  const applySpec = useCallback(
+    (next: ViewSpec) => {
+      const safe = normalizeSpec(next, config ?? null);
+      setView(safe.kind);
+      setColumns(safe.columns);
+      setFilters(safe.filters);
+      setSorts(safe.sorts.length ? safe.sorts : [{ field: initialSortField, dir: initialSortDir }]);
+      setGroupBy(safe.groupBy);
+      setDateField(safe.dateField);
+      setPage(0);
+    },
+    [config, initialSortField, initialSortDir],
+  );
+
   const allVisibleIds = useMemo(() => items.map((it) => `${it.contentType}-${it.id}`), [items]);
   const allSelected = items.length > 0 && allVisibleIds.every((id) => selected.has(id));
   const someSelected = allVisibleIds.some((id) => selected.has(id));
@@ -398,6 +420,8 @@ export function useContentListController({
     clearFilters,
     columns,
     setColumns,
+    spec,
+    applySpec,
     view,
     setView,
     groupBy,
