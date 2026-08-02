@@ -34,7 +34,12 @@ export const newsArticleFields: FieldConfig[] = [
     listColumn: true,
   },
   {
-    name: 'category',
+    // Authoritative category. Options are the `news_categories` slugs — the same
+    // vocabulary the public tabs and the classifier use. This field previously
+    // pointed at the legacy `category` column with its own private 8-value list
+    // (travel/entertainment exist nowhere else in the product), which is why the
+    // admin list rendered "General" on 93% of rows.
+    name: 'category_canonical',
     label: 'Category',
     type: 'select',
     required: true,
@@ -42,14 +47,17 @@ export const newsArticleFields: FieldConfig[] = [
     filterable: true,
     listColumn: true,
     options: [
-      { value: 'general', label: 'General' },
+      { value: 'rights-legal', label: 'Rights & Legal' },
       { value: 'politics', label: 'Politics' },
-      { value: 'culture', label: 'Culture' },
-      { value: 'health', label: 'Health' },
-      { value: 'travel', label: 'Travel' },
       { value: 'community', label: 'Community' },
-      { value: 'rights', label: 'Rights' },
-      { value: 'entertainment', label: 'Entertainment' },
+      { value: 'health-wellness', label: 'Health & Wellness' },
+      { value: 'culture-arts', label: 'Culture & Arts' },
+      { value: 'sports', label: 'Sports' },
+      { value: 'education', label: 'Education' },
+      { value: 'technology', label: 'Technology' },
+      { value: 'business-economy', label: 'Business & Economy' },
+      { value: 'international', label: 'International' },
+      { value: 'general', label: 'General (unclassified)' },
     ],
   },
   {
@@ -113,7 +121,13 @@ export const newsArticleFields: FieldConfig[] = [
     dynamicOptions: { table: 'news_sources', valueColumn: 'id', labelColumn: 'name' },
   },
   { name: 'image_attribution', label: 'Image Attribution', type: 'text', group: 'details' },
-  { name: 'country_ids', label: 'Countries', type: 'tags', group: 'details', helpText: 'Country geo-tags' },
+  {
+    name: 'country_ids',
+    label: 'Countries',
+    type: 'tags',
+    group: 'details',
+    helpText: 'Country geo-tags',
+  },
   { name: 'city_ids', label: 'Cities', type: 'tags', group: 'details', helpText: 'City geo-tags' },
   { name: 'image_url', label: 'Image', type: 'image', group: 'media' },
   {
@@ -131,7 +145,7 @@ export const newsArticleFields: FieldConfig[] = [
     group: 'settings',
     filterable: true,
     listColumn: true,
-    helpText: "Surfaces as the right-hand column of the Above-the-fold band on /news.",
+    helpText: 'Surfaces as the right-hand column of the Above-the-fold band on /news.',
   },
   {
     name: 'needs_attention',
@@ -143,7 +157,15 @@ export const newsArticleFields: FieldConfig[] = [
   },
   // External
   { name: 'views_count', label: 'Views', type: 'number', group: 'external', readOnly: true },
-  { name: 'relevance_score', label: 'Relevance Score', type: 'number', group: 'external', readOnly: true, min: 0, max: 1 },
+  {
+    name: 'relevance_score',
+    label: 'Relevance Score',
+    type: 'number',
+    group: 'external',
+    readOnly: true,
+    min: 0,
+    max: 1,
+  },
 ];
 
 export const newsArticleContentType: ContentTypeConfig = {
@@ -157,7 +179,7 @@ export const newsArticleContentType: ContentTypeConfig = {
   label: { singular: 'News Article', plural: 'News Articles' },
   color: 'hsl(var(--foreground))',
   fields: newsArticleFields,
-  defaults: { category: 'general', is_featured: false },
+  defaults: { category_canonical: 'general', is_featured: false },
   validate: validateNewsArticle,
   defaultSort: { field: 'published_at', dir: 'desc' },
   fieldGroupOrder: ['basic', 'details', 'media', 'settings', 'external'],
