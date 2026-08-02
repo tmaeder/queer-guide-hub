@@ -24,6 +24,10 @@ pass=0; fail=0
 # redeploy can never fix — see purge_poisoned() at the bottom.
 POISONED=()
 
+# Deep routes serving a stale cached index.html (see the check below). Same
+# remedy as a poisoned asset — a purge — so they ride the same remediation.
+STALE_ROUTES=()
+
 # Cloudflare needs a moment to make a fresh deployment live everywhere.
 retry_status() {
 	local url=$1 want=$2 code=""
@@ -135,6 +139,47 @@ for route in / /help /venues /events /map /venues/guides; do
 	expect_status "$route" 200
 done
 
+# A deep route can be served a STALE cached index.html — one that references
+# chunk hashes from an older deploy. Those chunk URLs no longer exist, so each
+# one falls through to the SPA shell, the browser refuses `text/html` for a
+# module script, and #root stays empty: a blank page, not a broken-looking one.
+#
+# This is invisible to every other check here. The route still answers 200
+# text/html, and the homepage is usually fine because `/` is requested far more
+# often and stays warm — so the site looks up while /venues, /events and
+# /city/* are completely dark. Measured on 2026-08-02: /venues served a
+# 16-hour-old document (age 57251) referencing index-BQ4YSaoC.js while origin
+# and the homepage both served index-QdFbvcen.js. 47 chunks answered text/html
+# and the page rendered nothing at all.
+#
+# The tell is the same one the asset check uses: ?cb= reaches origin. If the
+# plain URL names a different entry chunk than the cache-busted one, the cached
+# document is stale. Only a purge fixes it — the HTML is `cf-cache-status:
+# DYNAMIC`, so it is not even the same cache class as the hashed assets.
+echo "== deep routes reference the CURRENT build =="
+entry_hash() {
+	curl -sS "$1" | grep -oE '/assets/js/index-[^"]+\.js' | sort -u | head -1
+}
+for route in / /venues /events /help; do
+	plain=$(entry_hash "$SITE$route")
+	fresh=$(entry_hash "$SITE$route?cb=$$-${SECONDS}-${RANDOM}")
+	if [ -z "$fresh" ]; then
+		echo "  ✗ $route has no entry chunk even with ?cb= — the shell looks wrong"
+		fail=$((fail+1))
+	elif [ "$plain" = "$fresh" ]; then
+		echo "  ✓ $route -> $plain"; pass=$((pass+1))
+	else
+		echo "  ✗ $route serves a STALE cached document"
+		echo "      cached: $plain"
+		echo "      origin: $fresh"
+		echo "    Those cached chunk URLs are gone, so every module request falls"
+		echo "    through to the SPA shell and the page renders BLANK. Redeploying"
+		echo "    does not help — purge the route."
+		fail=$((fail+1))
+		STALE_ROUTES+=("$route")
+	fi
+done
+
 echo "== static assets keep their real content types =="
 expect_content_type /robots.txt text/plain
 expect_content_type /manifest.json application/json
@@ -181,12 +226,12 @@ fi
 # Safe to do automatically: purging cannot serve wrong content, it can only
 # force a re-fetch of an object we have just proven is correct at origin.
 purge_poisoned() {
-	[ ${#POISONED[@]} -eq 0 ] && return 0
+	[ ${#POISONED[@]} -eq 0 ] && [ ${#STALE_ROUTES[@]} -eq 0 ] && return 0
 
 	echo
 	echo "== poisoned cache remediation =="
 	if [ -z "${CLOUDFLARE_ZONE_ID:-}" ] || [ -z "${CLOUDFLARE_API_TOKEN:-}" ]; then
-		echo "  ! ${#POISONED[@]} poisoned URL(s) and no purge credentials in env."
+		echo "  ! ${#POISONED[@]} poisoned asset(s) + ${#STALE_ROUTES[@]} stale route(s) and no purge credentials in env."
 		echo "    Set CLOUDFLARE_ZONE_ID + CLOUDFLARE_API_TOKEN (needs the Cache Purge"
 		echo "    permission), or purge from the dashboard. Leaving them as failures."
 		return 0
@@ -194,9 +239,14 @@ purge_poisoned() {
 
 	# The API takes up to 30 files per call.
 	local files=() path
-	for entry in "${POISONED[@]}"; do
+	for entry in ${POISONED[@]+"${POISONED[@]}"}; do
 		path=${entry%%|*}
 		files+=("\"$SITE$path\"")
+	done
+	# Stale HTML documents purge by the same mechanism, just a different cache
+	# class (DYNAMIC rather than the hashed assets' immutable entries).
+	for route in ${STALE_ROUTES[@]+"${STALE_ROUTES[@]}"}; do
+		files+=("\"$SITE$route\"")
 	done
 	local body
 	body=$(printf '{"files":[%s]}' "$(IFS=,; echo "${files[*]}")")
@@ -216,11 +266,12 @@ purge_poisoned() {
 		return 0
 	fi
 
-	echo "  purged ${#POISONED[@]} URL(s); re-checking after propagation"
+	local total=$(( ${#POISONED[@]} + ${#STALE_ROUTES[@]} ))
+	echo "  purged $total URL(s); re-checking after propagation"
 	sleep 10
 
 	local recovered=0 want ct
-	for entry in "${POISONED[@]}"; do
+	for entry in ${POISONED[@]+"${POISONED[@]}"}; do
 		path=${entry%%|*}; want=${entry##*|}
 		ct=$(curl -sS -o /dev/null -w '%{content_type}' "$SITE$path")
 		case "$ct" in
@@ -231,7 +282,18 @@ purge_poisoned() {
 			*)  echo "  ✗ $path still $ct after purge — investigate, this is not a stale cache" ;;
 		esac
 	done
-	echo "  recovered $recovered/${#POISONED[@]}"
+	for route in ${STALE_ROUTES[@]+"${STALE_ROUTES[@]}"}; do
+		local plain fresh
+		plain=$(entry_hash "$SITE$route")
+		fresh=$(entry_hash "$SITE$route?cb=$$-${SECONDS}-${RANDOM}")
+		if [ -n "$fresh" ] && [ "$plain" = "$fresh" ]; then
+			echo "  ✓ $route recovered ($plain)"
+			recovered=$((recovered+1)); pass=$((pass+1)); fail=$((fail-1))
+		else
+			echo "  ✗ $route still stale after purge (cached $plain vs origin $fresh)"
+		fi
+	done
+	echo "  recovered $recovered/$total"
 }
 purge_poisoned
 
