@@ -81,6 +81,25 @@ export function relativeTime(dateStr: string): string {
 
 import type { ContentTypeConfig } from '@/types/cms';
 
+/**
+ * One database row -> one ListItem. Shared so the list query and the
+ * server-grouped board produce identical shapes; they used to diverge because
+ * the mapping was written inline in the fetch.
+ */
+export function toListItem(row: Record<string, unknown>, ct: ContentTypeConfig): ListItem {
+  return {
+    id: row[ct.primaryKey] as string,
+    title: (row[ct.titleField] as string) || '(Untitled)',
+    description: ct.descriptionField ? (row[ct.descriptionField] as string | undefined) : undefined,
+    updatedAt: row.updated_at as string | undefined,
+    contentType: ct.id,
+    contentTypeLabel: ct.label.singular,
+    contentTypeColor: ct.color,
+    status: extractStatus(row, ct),
+    raw: row,
+  };
+}
+
 /** Get the status/workflow field value from raw row data. */
 export function extractStatus(
   row: Record<string, unknown>,
