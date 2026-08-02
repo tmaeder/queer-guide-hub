@@ -121,4 +121,4 @@ revoke all on function public.run_event_city_link(integer, boolean) from public,
 grant execute on function public.run_event_city_link(integer, boolean) to service_role;
 
 comment on function public.run_event_city_link(integer, boolean) is
-  'Batched: resolves events.city_id from (country, city text). Refuses to link when events.state or the gaycities source metro slug contradicts cities.region_name — cities holds one row per (name, country), so same-name twins are otherwise linked silently and wrongly.';;
+  'Batched: resolves events.city_id from (country, city text). Refuses to link when events.state or the gaycities source metro slug contradicts cities.region_name — cities holds one row per (name, country), so same-name twins are otherwise linked silently and wrongly.';

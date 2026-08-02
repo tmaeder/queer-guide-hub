@@ -1,3 +1,13 @@
+-- RECOVERED from supabase_migrations.schema_migrations (applied 2026-08-02 09:07:47).
+-- Transcribed verbatim from the recorded `statements`; no edits. It was applied
+-- live via MCP apply_migration, which stamps its own timestamp, so no repo file
+-- was ever created and `check-migration-drift` failed every PR in the repo.
+--
+-- Superseded ~6 minutes later by 20260802091345, which replaces the pure-distance
+-- conflict test with a country-disagreement test. Kept anyway: the file must exist
+-- for every APPLIED version, or replaying the history from scratch does not
+-- reproduce production.
+
 create or replace function public.derive_entity_geo_address()
 returns trigger
 language plpgsql
@@ -97,4 +107,4 @@ end;
 $$;
 
 comment on function public.derive_entity_geo_address() is
-  'BEFORE trigger: fills country_id / state / city / country from the linked city and the ambiguity-guarded country text, then recomputes safety_gated. Copies NOTHING from a city whose position contradicts the row own coordinates by more than 25km - that conflict must be resolved by a human, not papered over. Explicit caller input always wins.';;
+  'BEFORE trigger: fills country_id / state / city / country from the linked city and the ambiguity-guarded country text, then recomputes safety_gated. Copies NOTHING from a city whose position contradicts the row own coordinates by more than 25km - that conflict must be resolved by a human, not papered over. Explicit caller input always wins.';

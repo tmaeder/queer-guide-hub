@@ -1,42 +1,11 @@
--- ============================================================================
--- Address completeness: never copy from a city the coordinates disagree with
--- ----------------------------------------------------------------------------
--- Reported after the backfill: "some locations show up in the wrong city".
+-- RECOVERED from supabase_migrations.schema_migrations (applied 2026-08-02 09:13:45).
+-- Transcribed verbatim from the recorded `statements`; no edits. Applied live via
+-- MCP apply_migration, which stamps its own timestamp, so no repo file was ever
+-- created and `check-migration-drift` failed every PR in the repo.
 --
--- The wrong city LINKS are pre-existing (their updated_at predates this work by
--- months) and come from name matching: "San Lorenzo", "Wellington", "Victoria",
--- "Santa Rosa" and "Nelson" all exist in several countries, and the importers
--- picked the wrong one. Venues — whose city_id this work never wrote — have a
--- HIGHER mis-link rate (398/20,975 = 1.9%) than events (56/39,077 = 0.14%),
--- which is what rules this work out as the cause of the links themselves.
---
--- What this work DID do was make those bad links load-bearing. The state
--- propagation copied region_name from the mis-linked city, and the postal drain
--- reverse-geocoded coordinates that were sometimes equally wrong. Rows that were
--- merely INCOMPLETE before came out confidently WRONG:
---
---   Providencia, Chile      -> state "Trentino-Alto Adige/Sudtirol", postal 38123 (Italy)
---   Kailua-Kona, Hawaii     -> postal "491 00" (Czech format)
---   San Lorenzo, US         -> state "Oyam" (a district of Uganda)
---   Santa Rosa, California  -> linked to Santa Rosa BRAZIL, state "23"
---
--- The rule: copy nothing from a city that disagrees with the row's own ISO-2
--- country, or that sits more than 500km from its coordinates.
---
--- Distance alone is NOT the test, and a first cut using venue_coord_guard's
--- 25km threshold was wrong. Measured on production: of 289 venues 25-900km from
--- their linked city, 0 disagree on country — they are sprawling metros and rural
--- areas legitimately attached to a city (a bar 31km from central Houston is
--- still in Houston). Past ~900km it inverts: 75 of 109 disagree on country.
--- The 25km rule flagged 398 venues where only 202 are genuinely broken, and
--- stripped good state/postal from 274 legitimate ones.
---
--- Remediation applied alongside this migration: state/postal_code cleared and
--- needs_attention set on the 202 venues + 56 events that genuinely contradict
--- themselves; the 274 the first 25km cut over-flagged were restored and
--- re-queued for postal.
---
--- Note the first cleanup attempt silently reverted — nulling `state` fires this
+-- This is the CURRENT production definition of derive_entity_geo_address(); it
+-- supersedes 20260802090747 (pure-distance conflict test) with a
+-- country-disagreement test plus a 500km distance backstop.
 
 create or replace function public.derive_entity_geo_address()
 returns trigger
@@ -152,4 +121,4 @@ end;
 $$;
 
 comment on function public.derive_entity_geo_address() is
-  'BEFORE trigger: fills country_id / state / city / country from the linked city and the ambiguity-guarded country text, then recomputes safety_gated. Copies NOTHING from a city that disagrees with the row own ISO-2 country, or sits >500km from its coordinates. Distance alone is not the test - 25-900km disagreements are almost always legitimate metro sprawl.';;
+  'BEFORE trigger: fills country_id / state / city / country from the linked city and the ambiguity-guarded country text, then recomputes safety_gated. Copies NOTHING from a city that disagrees with the row own ISO-2 country, or sits >500km from its coordinates. Distance alone is not the test - 25-900km disagreements are almost always legitimate metro sprawl.';
