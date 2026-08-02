@@ -92,13 +92,6 @@ const BY_TYPE: Partial<Record<FieldType, FieldCapability>> = {
     groupable: false,
     dateable: false,
   },
-  slug: {
-    displayable: true,
-    operators: TEXTUAL,
-    sortable: true,
-    groupable: false,
-    dateable: false,
-  },
   url: {
     displayable: true,
     operators: TEXTUAL,

@@ -8,24 +8,38 @@ import type { Filter } from '../viewSpec';
  */
 type Call = [string, ...unknown[]];
 
-function stub() {
+interface Stub extends QueryBuilderLike<Stub> {
+  calls: Call[];
+}
+
+function stub(): { q: Stub; calls: Call[] } {
   const calls: Call[] = [];
-  const q: QueryBuilderLike<ReturnType<typeof stub>['q']> & { calls: Call[] } = {
+  const rec =
+    (name: string) =>
+    (...args: unknown[]): Stub => {
+      calls.push([name, ...args]);
+      return q;
+    };
+  const q: Stub = {
     calls,
-    eq: (c, v) => (calls.push(['eq', c, v]), q),
-    neq: (c, v) => (calls.push(['neq', c, v]), q),
-    gt: (c, v) => (calls.push(['gt', c, v]), q),
-    gte: (c, v) => (calls.push(['gte', c, v]), q),
-    lt: (c, v) => (calls.push(['lt', c, v]), q),
-    lte: (c, v) => (calls.push(['lte', c, v]), q),
-    ilike: (c, v) => (calls.push(['ilike', c, v]), q),
-    not: (c, o, v) => (calls.push(['not', c, o, v]), q),
-    is: (c, v) => (calls.push(['is', c, v]), q),
-    in: (c, v) => (calls.push(['in', c, v]), q),
-    contains: (c, v) => (calls.push(['contains', c, v]), q),
-    overlaps: (c, v) => (calls.push(['overlaps', c, v]), q),
-    order: (c, o) => (calls.push(['order', c, o.ascending]), q),
-  } as never;
+    eq: rec('eq'),
+    neq: rec('neq'),
+    gt: rec('gt'),
+    gte: rec('gte'),
+    lt: rec('lt'),
+    lte: rec('lte'),
+    ilike: rec('ilike'),
+    not: rec('not'),
+    is: rec('is'),
+    in: rec('in'),
+    contains: rec('contains'),
+    overlaps: rec('overlaps'),
+    // Flattened so assertions read ['order', col, ascending].
+    order: (c: string, o: { ascending: boolean }) => {
+      calls.push(['order', c, o.ascending]);
+      return q;
+    },
+  };
   return { q, calls };
 }
 
