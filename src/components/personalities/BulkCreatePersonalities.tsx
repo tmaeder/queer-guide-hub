@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2, Plus, AlertCircle, CheckCircle, XCircle, RefreshCw } from 'lucide-react';
@@ -14,6 +15,10 @@ import { Label } from '@/components/ui/label';
 
 export const BulkCreatePersonalities = () => {
   const [names, setNames] = useState('');
+  // Required for Wikidata enrichment. The resolver matches a candidate's
+  // occupation against this; without it a stage name cannot be told apart from
+  // a famous namesake and the backend refuses to enrich rather than guess.
+  const [profession, setProfession] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [progress, setProgress] = useState({ current: 0, total: 0 });
   const [results, setResults] = useState<{
@@ -110,7 +115,7 @@ export const BulkCreatePersonalities = () => {
       let data, error;
       try {
         const response = await supabase.functions.invoke('bulk-create-personalities', {
-          body: { names: validNames, sources },
+          body: { names: validNames, sources, profession: profession.trim() || null },
         });
         data = response.data;
         error = response.error;
@@ -244,6 +249,22 @@ export const BulkCreatePersonalities = () => {
                   </Button>
                 )}
               </div>
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="bulk-profession">Profession</Label>
+              <Input
+                id="bulk-profession"
+                placeholder="Adult performer"
+                value={profession}
+                onChange={(e) => setProfession(e.target.value)}
+                disabled={isLoading}
+              />
+              <p className="text-13 text-muted-foreground">
+                Applies to every name in this batch. Required for Wikidata enrichment — it is
+                what separates a stage name from a famous namesake. Without it, names are
+                created without Wikidata data rather than matched to the wrong person.
+              </p>
             </div>
 
             <div className="flex flex-col gap-4">

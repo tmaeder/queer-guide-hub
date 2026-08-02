@@ -4,6 +4,19 @@
 // not overlap the local profession — this is what produced 614 polluted rows
 // (adult performers tagged with athlete/basketball-player descriptions).
 
+// The profession vocabulary lives in ./profession-keywords.js because the Node
+// repair script (scripts/data-quality/verify-personality-wikidata.mjs) has to
+// apply the exact same matching rules — a second copy would drift silently and
+// misclassify real historical figures as namesake conflicts.
+import {
+  keywordsFor,
+  hasProfessionMapping,
+  scoreOccupationMatch,
+} from './profession-keywords.js';
+
+// Re-exported so existing importers of this module keep working.
+export { keywordsFor, hasProfessionMapping };
+
 const UA = 'QueerGuide/1.0 (https://queer.guide; contact@queer.guide)';
 
 export interface WikidataResolution {
@@ -13,43 +26,6 @@ export interface WikidataResolution {
   entity: Record<string, unknown>;
   occupations: string[]; // lowercased English labels
   score: number;
-}
-
-// Keywords that must overlap between local `profession` and Wikidata
-// occupation labels (P106). Keep small and high-precision; expand only
-// when false-negatives surface. All entries are lowercase.
-const PROFESSION_KEYWORDS: Record<string, string[]> = {
-  'adult performer': ['porn', 'adult', 'erotic', 'escort', 'pornographic'],
-  'pornographic actor': ['porn', 'adult', 'erotic'],
-  'actor': ['actor', 'actress', 'film', 'television'],
-  'singer': ['singer', 'vocalist', 'musician'],
-  'musician': ['musician', 'composer', 'instrumentalist', 'singer'],
-  'writer': ['writer', 'author', 'novelist', 'poet', 'playwright', 'journalist'],
-  'politician': ['politician', 'statesman', 'stateswoman', 'minister', 'senator', 'representative'],
-  'activist': ['activist', 'campaigner'],
-  'artist': ['artist', 'painter', 'sculptor', 'photographer'],
-  'scientist': ['scientist', 'researcher', 'mathematician', 'physicist', 'biologist', 'chemist'],
-  'director': ['director', 'filmmaker'],
-  'producer': ['producer'],
-  'athlete': ['athlete', 'player', 'sportsperson', 'footballer', 'basketball', 'tennis', 'swimmer', 'runner', 'boxer'],
-  'drag queen': ['drag', 'performer'],
-  'model': ['model'],
-  'fashion designer': ['designer', 'fashion'],
-  'chef': ['chef', 'cook', 'restaurateur'],
-};
-
-function keywordsFor(profession: string): string[] {
-  const p = profession.trim().toLowerCase();
-  if (PROFESSION_KEYWORDS[p]) return PROFESSION_KEYWORDS[p];
-  // Multi-word professions: union of keyword sets for each token that matches.
-  const kws = new Set<string>();
-  for (const token of p.split(/[\s,/]+/).filter(Boolean)) {
-    const set = PROFESSION_KEYWORDS[token];
-    if (set) set.forEach(k => kws.add(k));
-  }
-  // Fallback: treat the profession itself as a keyword.
-  if (kws.size === 0) kws.add(p);
-  return [...kws];
 }
 
 async function fetchJson(url: string): Promise<Record<string, unknown> | null> {
@@ -77,16 +53,9 @@ async function wdEntity(qid: string): Promise<Record<string, unknown> | null> {
   return (data?.entities as Record<string, unknown>)?.[qid] as Record<string, unknown> ?? null;
 }
 
+// Rank-aware (deprecated statements dropped) — see readClaimIds below.
 function claimQids(entity: Record<string, unknown>, prop: string): string[] {
-  const claims = (entity.claims as Record<string, unknown>)?.[prop] as Array<Record<string, unknown>> | undefined;
-  if (!claims?.length) return [];
-  const ids: string[] = [];
-  for (const c of claims) {
-    const v = (c.mainsnak as Record<string, unknown>)?.datavalue as Record<string, unknown> | undefined;
-    const id = (v?.value as Record<string, unknown>)?.id as string | undefined;
-    if (id) ids.push(id);
-  }
-  return ids;
+  return readClaimIds(entity, prop);
 }
 
 async function entityLabel(qid: string): Promise<string | null> {
@@ -104,15 +73,6 @@ async function occupationLabels(entity: Record<string, unknown>): Promise<string
   const ids = claimQids(entity, 'P106');
   const labels = await Promise.all(ids.slice(0, 8).map(entityLabel));
   return labels.filter((l): l is string => !!l).map(l => l.toLowerCase());
-}
-
-function scoreOccupationMatch(occupations: string[], keywords: string[]): number {
-  if (!occupations.length || !keywords.length) return 0;
-  let hits = 0;
-  for (const kw of keywords) {
-    if (occupations.some(o => o.includes(kw))) hits++;
-  }
-  return hits / keywords.length;
 }
 
 /**
@@ -163,19 +123,116 @@ export async function resolveByNameAndProfession(
   return null;
 }
 
+// ---------------------------------------------------------------------------
+// Claim readers.
+//
+// Two failure modes these guard against, both of which have already produced
+// wrong data in this project:
+//
+//  1. RANK. `claims[prop][0]` is array position, not truth. Wikidata marks
+//     superseded statements `deprecated` and the current one `preferred`, in no
+//     particular order. Reading index 0 is how Cape Town's population came back
+//     as 433,688 instead of 3,776,313 (see _shared/wikidata-city.ts applyRankFix).
+//  2. PRECISION. A P569 snak carries `precision`: 11=day, 10=month, 9=year,
+//     8=decade, 7=century. The time string is always zero-padded to a full date,
+//     so a century-precision value serialises as "+1800-00-00T00:00:00Z" and a
+//     naive parser silently reports it as 1 January 1800.
+// ---------------------------------------------------------------------------
+
+const RANK_ORDER: Record<string, number> = { preferred: 2, normal: 1, deprecated: 0 };
+
+/** Statements for `prop`, best rank first, `deprecated` dropped entirely. */
+function rankedStatements(
+  entity: Record<string, unknown>,
+  prop: string,
+): Array<Record<string, unknown>> {
+  const claims = (entity.claims as Record<string, unknown>)?.[prop] as Array<Record<string, unknown>> | undefined;
+  if (!claims?.length) return [];
+  return claims
+    .filter(c => (c.rank as string) !== 'deprecated')
+    .sort((a, b) => (RANK_ORDER[b.rank as string] ?? 1) - (RANK_ORDER[a.rank as string] ?? 1));
+}
+
+function snakValue(statement: Record<string, unknown>): Record<string, unknown> | null {
+  // `somevalue`/`novalue` snaks carry no datavalue — they mean "known to be
+  // unknown", which is NOT the same as absent. Returning null is correct.
+  return (statement.mainsnak as Record<string, unknown>)?.datavalue as Record<string, unknown> ?? null;
+}
+
 // Helpers exported for callers that need to read entity fields after resolution.
 export function readClaim(entity: Record<string, unknown>, prop: string): string | null {
-  const c = (entity.claims as Record<string, unknown>)?.[prop] as Array<Record<string, unknown>> | undefined;
-  if (!c?.length) return null;
-  const m = (c[0].mainsnak as Record<string, unknown>)?.datavalue as Record<string, unknown> | undefined;
-  if (!m) return null;
-  const v = m.value;
-  if (typeof v === 'string') return v;
-  if (typeof v === 'object' && v !== null) {
-    const vv = v as Record<string, unknown>;
-    return (vv.id as string) ?? (vv.time as string) ?? (vv.text as string) ?? null;
+  for (const st of rankedStatements(entity, prop)) {
+    const m = snakValue(st);
+    if (!m) continue;
+    const v = m.value;
+    if (typeof v === 'string') return v;
+    if (typeof v === 'object' && v !== null) {
+      const vv = v as Record<string, unknown>;
+      const out = (vv.id as string) ?? (vv.time as string) ?? (vv.text as string) ?? null;
+      if (out) return out;
+    }
   }
   return null;
+}
+
+export interface WikidataTime {
+  /** ISO `YYYY-MM-DD`, always a real calendar date. */
+  date: string;
+  /** Wikidata precision: 11=day, 10=month, 9=year, 8=decade, 7=century. */
+  precision: number;
+  /** True only at precision 11 — month and day are real, not padding. */
+  exact: boolean;
+}
+
+/**
+ * Read a time-valued claim (P569 birth, P570 death) rank-aware and
+ * precision-aware.
+ *
+ * `minPrecision` defaults to 9 (year). Anything coarser is refused outright
+ * rather than rounded, because a decade-precision snak rendered as a date is a
+ * fabricated fact. Below day precision the missing components are filled with
+ * "01" and `exact` is false, so callers can choose to store a year only.
+ *
+ * BCE times (leading "-") are refused: the column is a Postgres `date` and no
+ * subject in this corpus predates the common era.
+ */
+export function readTimeClaim(
+  entity: Record<string, unknown>,
+  prop: string,
+  minPrecision = 9,
+): WikidataTime | null {
+  for (const st of rankedStatements(entity, prop)) {
+    const m = snakValue(st);
+    if (!m) continue;
+    const v = m.value as Record<string, unknown> | undefined;
+    const time = v?.time as string | undefined;
+    if (!time) continue;
+
+    const precision = typeof v?.precision === 'number' ? v.precision as number : 0;
+    if (precision < minPrecision) continue;
+
+    const match = time.match(/^\+(\d{4,})-(\d{2})-(\d{2})/);
+    if (!match) continue; // BCE ("-0500-…") and malformed values fall out here.
+
+    const year = match[1].padStart(4, '0');
+    if (year === '0000') continue;
+    const month = precision >= 10 && match[2] !== '00' ? match[2] : '01';
+    const day = precision >= 11 && match[3] !== '00' ? match[3] : '01';
+
+    return { date: `${year}-${month}-${day}`, precision, exact: precision >= 11 };
+  }
+  return null;
+}
+
+/** Every value of a rank-aware entity-id claim (e.g. P106 occupations). */
+export function readClaimIds(entity: Record<string, unknown>, prop: string): string[] {
+  const ids: string[] = [];
+  for (const st of rankedStatements(entity, prop)) {
+    const m = snakValue(st);
+    const id = (m?.value as Record<string, unknown>)?.id as string | undefined;
+    if (id) ids.push(id);
+  }
+  return ids;
 }
 
 export async function readEntityLabel(qid: string): Promise<string | null> {

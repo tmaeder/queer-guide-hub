@@ -8,6 +8,7 @@ import { getServiceClient, jsonResponse, errorResponse, corsResponse } from '../
 import { withErrorReporting } from '../_shared/report-api-error.ts'
 import { fillBlanks, parseWikipediaSummary } from '../_shared/personality-enrich-core.ts'
 import { personalityQualityScore } from '../_shared/personality-quality.ts'
+import { resolveByNameAndProfession, readClaim, readTimeClaim } from '../_shared/wikidata-resolve.ts'
 
 const UA = 'QueerGuide/1.0 (https://queer.guide; contact@queer.guide)'
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
@@ -16,41 +17,26 @@ const WD_EXT: Record<string, string> = {
   P646: 'freebase_id', P2002: 'twitter', P2003: 'instagram', P2013: 'facebook',
 }
 
-async function wdSearch(name: string): Promise<{ id: string; description?: string } | null> {
-  try {
-    const url = `https://www.wikidata.org/w/api.php?action=wbsearchentities&search=${encodeURIComponent(name)}&language=en&format=json&limit=1`
-    const res = await fetch(url, { headers: { 'User-Agent': UA } })
-    const data = await res.json()
-    return data.search?.[0] ?? null
-  } catch { return null }
-}
+// There is deliberately NO name-only Wikidata search in this function.
+//
+// It used to call `wbsearchentities&limit=1` and take search[0] with no
+// personhood or occupation check. Because a large share of this corpus are stage
+// names, that bound performers to their famous namesakes and wrote the
+// stranger's birth date, death date and social handles onto the record —
+// "Carl Sagan" → Q410, "Thomas Jefferson" → Q11812. A 2026-08 audit measured
+// 59.7% of adult-cohort QIDs as wrong.
+//
+// Resolution now goes through resolveByNameAndProfession(), which requires
+// P31=Q5 and an occupation overlap with the local profession, and refuses
+// ambiguous matches. When it declines we persist a SKIP_<uuid> sentinel — the
+// convention the promotion gate and truth engine already read as "no Wikidata
+// match" — so the row is not retried forever and is never guessed at.
 async function wdEntity(qid: string): Promise<Record<string, unknown> | null> {
   try {
     const res = await fetch(`https://www.wikidata.org/wiki/Special:EntityData/${qid}.json`, { headers: { 'User-Agent': UA } })
     const data = await res.json()
     return data.entities?.[qid] ?? null
   } catch { return null }
-}
-function claimValue(entity: Record<string, unknown>, prop: string): string | null {
-  const claims = (entity.claims as Record<string, unknown>)?.[prop] as Array<Record<string, unknown>> | undefined
-  if (!claims?.length) return null
-  const main = (claims[0].mainsnak as Record<string, unknown>)?.datavalue as Record<string, unknown> | undefined
-  if (!main) return null
-  const v = main.value
-  if (typeof v === 'string') return v
-  if (typeof v === 'object' && v !== null) {
-    const vv = v as Record<string, unknown>
-    return (vv.id as string) ?? (vv.time as string) ?? (vv.text as string) ?? null
-  }
-  return null
-}
-function formatDate(v: string | null): string | null {
-  if (!v) return null
-  const m = v.match(/^\+?(-?\d{4})-(\d{2})-(\d{2})/)
-  if (!m || m[1].startsWith('-')) return null
-  const mm = m[2] === '00' ? '01' : m[2]
-  const dd = m[3] === '00' ? '01' : m[3]
-  return `${m[1].padStart(4, '0')}-${mm}-${dd}`
 }
 async function imageOk(url: string | null): Promise<boolean> {
   if (!url || !/^https?:\/\//i.test(url)) return false
@@ -100,33 +86,48 @@ Deno.serve(withErrorReporting('personality-refresh', async (req) => {
       if (!p) continue
 
       const incoming: Row = {}
-      let qid = p.wikidata_qid as string | null
+      const existingQid = p.wikidata_qid as string | null
+      // A SKIP_ sentinel is a recorded decision that no match exists — honour it.
+      let qid = existingQid && !existingQid.startsWith('SKIP_') ? existingQid : null
       let entity: Record<string, unknown> | null = null
       let wdUrl: string | null = null
+      let unresolved = false
 
-      if (!qid && p.name) {
-        const hit = await wdSearch(String(p.name))
-        if (hit?.id) { qid = hit.id; if (hit.description) incoming.description = hit.description }
+      if (!qid && !existingQid && p.name) {
+        const hit = await resolveByNameAndProfession(String(p.name), p.profession as string | null)
+        if (hit) {
+          qid = hit.qid
+          entity = hit.entity
+          if (hit.description) incoming.description = hit.description
+        } else {
+          // No confident match. Record the refusal rather than guessing.
+          unresolved = true
+        }
       }
       if (qid) {
         incoming.wikidata_qid = qid
         wdUrl = `https://www.wikidata.org/wiki/${qid}`
-        entity = await wdEntity(qid)
+        entity = entity ?? await wdEntity(qid)
         if (entity) {
-          const birth = formatDate(claimValue(entity, 'P569'))
-          const death = formatDate(claimValue(entity, 'P570'))
-          const image = claimValue(entity, 'P18')
-          if (birth) incoming.birth_date = birth
-          if (death) incoming.death_date = death
+          // readTimeClaim is rank-aware and precision-aware: it drops deprecated
+          // statements and refuses anything coarser than year precision, so a
+          // century snak ("+1800-00-00T00:00:00Z") no longer becomes 1800-01-01.
+          const birth = readTimeClaim(entity, 'P569')
+          const death = readTimeClaim(entity, 'P570')
+          const image = readClaim(entity, 'P18')
+          if (birth) incoming.birth_date = birth.date
+          if (death) incoming.death_date = death.date
           if (image) incoming.image_url = `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(image)}`
           const ext: Record<string, string> = { ...((p.external_ids as Record<string, string>) ?? {}) }
           let extChanged = false
           for (const [prop, key] of Object.entries(WD_EXT)) {
-            const v = claimValue(entity, prop)
+            const v = readClaim(entity, prop)
             if (v && !ext[key]) { ext[key] = v; extChanged = true }
           }
           if (extChanged) incoming.external_ids = ext
         }
+      } else if (unresolved) {
+        incoming.wikidata_qid = `SKIP_${crypto.randomUUID()}`
       }
 
       // Wikipedia is fetched ONLY via the Wikidata-confirmed enwiki sitelink — never by

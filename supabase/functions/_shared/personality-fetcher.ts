@@ -12,14 +12,35 @@ export async function fetchWikidataEntityLabel(entityId: string): Promise<string
   }
 }
 
-export function formatWikidataDate(dateString: string | null): string | null {
+/**
+ * Format a Wikidata time value.
+ *
+ * `precision` is REQUIRED to be passed by callers that have it (it lives on the
+ * same datavalue object as `time`). Wikidata pads every time string to a full
+ * date regardless of precision, so a century-precision snak arrives as
+ * "+1800-00-00T00:00:00Z"; without the precision check this silently becomes
+ * 1 January 1800. Anything coarser than year precision (9) is refused.
+ *
+ * Prefer readTimeClaim() in _shared/wikidata-resolve.ts, which reads rank and
+ * precision straight off the entity. This wrapper exists for callers that have
+ * already destructured the snak.
+ */
+export function formatWikidataDate(
+  dateString: string | null,
+  precision?: number,
+): string | null {
   if (!dateString) return null
   try {
-    const match = dateString.match(/^\+?(\d{4})-(\d{2})-(\d{2})/)
+    if (typeof precision === 'number' && precision < 9) return null
+    // Anchored on "+" so BCE values ("-0500-…") are refused rather than sliced
+    // into a bogus CE year.
+    const match = dateString.match(/^\+(\d{4,})-(\d{2})-(\d{2})/)
     if (match) {
-      const year = match[1]
-      const month = match[2] === '00' ? '01' : match[2]
-      const day = match[3] === '00' ? '01' : match[3]
+      const year = match[1].padStart(4, '0')
+      if (year === '0000') return null
+      const known = (p: number) => precision === undefined || precision >= p
+      const month = known(10) && match[2] !== '00' ? match[2] : '01'
+      const day = known(11) && match[3] !== '00' ? match[3] : '01'
       return `${year}-${month}-${day}`
     }
   } catch (error) {

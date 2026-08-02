@@ -1,6 +1,7 @@
 import { requireAdmin, getCorsHeaders, getServiceClient } from '../_shared/supabase-client.ts';
 import { chatCompletion, isOpenAIAvailable } from '../_shared/openai-client.ts';
 import { fetchOpenSanctionsData, fetchWikidataEntityLabel } from '../_shared/personality-fetcher.ts'
+import { readTimeClaim } from '../_shared/wikidata-resolve.ts'
 
 import type { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
 
@@ -203,26 +204,22 @@ Deno.serve(async (req) => {
     // Extract claims (properties)
     const claims = entity.claims || {}
     
-    // Parse birth date (P569)
-    let birthDate = ''
-    if (claims.P569 && claims.P569[0]?.mainsnak?.datavalue) {
-      const birthValue = claims.P569[0].mainsnak.datavalue.value
-      if (birthValue.time) {
-        // Convert Wikidata time format to ISO date
-        birthDate = birthValue.time.substring(1, 11) // Remove + and get YYYY-MM-DD
-      }
-    }
+    // Parse birth date (P569) — rank- and precision-aware.
+    //
+    // This previously did `time.substring(1, 11)`, which assumes the leading
+    // character is always "+" and that every component is real. Neither holds:
+    // a BCE value ("-0500-01-01T…") sliced that way yields "500-01-01", and a
+    // century-precision value ("+1800-00-00T…") yields "1800-00-00". It also
+    // read claims[0], which is array position rather than statement rank.
+    const birthTime = readTimeClaim(entity, 'P569')
+    const birthDate = birthTime?.date ?? ''
 
     // Parse death date (P570)
-    let deathDate = ''
-    let isLiving = true
-    if (claims.P570 && claims.P570[0]?.mainsnak?.datavalue) {
-      const deathValue = claims.P570[0].mainsnak.datavalue.value
-      if (deathValue.time) {
-        deathDate = deathValue.time.substring(1, 11)
-        isLiving = false
-      }
-    }
+    const deathTime = readTimeClaim(entity, 'P570')
+    const deathDate = deathTime?.date ?? ''
+    // A P570 statement is itself the death signal — a snak we refused to format
+    // (coarse precision, BCE) still means the subject is not living.
+    const isLiving = !(entity.claims?.P570?.length > 0)
 
     // Parse occupation (P106)
     let profession = ''
