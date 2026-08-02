@@ -12,9 +12,15 @@ export interface TagVocabularyHealth {
   slug_corrupt: number;
   /** Informational: mostly proper nouns and English loanwords, not defects. */
   non_ascii_active: number;
+  /** Excludes the mat-/vibe-/occ- marketplace facets, which are uncategorized by design. */
   uncategorized_active: number;
   /** Free-text categories outside the governed tree. Should be 0. */
   legacy_category_values: number;
+  /** Aliases shadowing a different live tag. Guarded, so non-zero means the guard is gone. */
+  shadowing_aliases: number;
+  /** Merge proposals whose stored lexical flag predates the current predicate. */
+  stale_lexical_flags: number;
+  merge_review_pending: number;
   plural_cron_last_success: string | null;
 }
 
