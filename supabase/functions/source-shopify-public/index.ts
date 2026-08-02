@@ -55,6 +55,109 @@ const CURRENCY_MARKET: Record<string, string> = {
   NZD: 'NZ', SEK: 'SE', NOK: 'NO', DKK: 'DK', JPY: 'JP',
 }
 
+// ── Storefront GraphQL (the currency-correct path) ─────────────────────────────
+//
+// products.json has no currency field and Shopify Markets localises presentment
+// prices by the REQUESTER's geo-IP, so an eu-central-2 edge function reading a GBP
+// shop silently received EUR and stored it as GBP (queerlit "A Dangerous Bargain":
+// 12.45 stored vs £10.99 actual). Nothing in that response could ever have revealed
+// the mismatch.
+//
+// The Storefront API fixes both halves: @inContext(country:) PINS the market, and
+// price.currencyCode comes back with the number so it is VERIFIED, not assumed.
+// Measured on queerlit 2026-08-02 — GB 10.99 GBP / DE 13.35 EUR / US 15.42 USD.
+//
+// The token is the shop theme's own PUBLIC storefront token (read-only, rate-limited,
+// served in every page load). It is config, not a secret.
+const STOREFRONT_API_VERSION = '2024-10'
+const STOREFRONT_PER_PAGE = 250
+
+// `country` is passed as a $variable rather than interpolated into the query string:
+// it originates from merchant config, and a directive built by concatenation would be
+// an injection point into the GraphQL document.
+const STOREFRONT_QUERY = `query($n:Int!,$c:String,$country:CountryCode!) @inContext(country: $country) {
+  products(first:$n, after:$c) {
+    pageInfo { hasNextPage endCursor }
+    nodes {
+      id title handle description vendor productType tags onlineStoreUrl
+      images(first:5){ nodes{ url } }
+      variants(first:1){ nodes{ sku availableForSale price{ amount currencyCode } } }
+    }
+  }
+}`
+
+interface StorefrontProduct {
+  id: string; title: string; handle: string; description: string
+  vendor: string; productType: string; tags: string[]; onlineStoreUrl: string | null
+  images: { nodes: { url: string }[] }
+  variants: { nodes: { sku: string | null; availableForSale: boolean; price: { amount: string; currencyCode: string } }[] }
+}
+
+async function storefrontPage(
+  shopDomain: string, token: string, country: string, cursor: string | null,
+): Promise<{ nodes: StorefrontProduct[]; hasNext: boolean; endCursor: string | null }> {
+  const ctrl = new AbortController()
+  const timer = setTimeout(() => ctrl.abort(), 25_000)
+  try {
+    const res = await fetch(`https://${shopDomain}/api/${STOREFRONT_API_VERSION}/graphql.json`, {
+      method: 'POST', signal: ctrl.signal,
+      headers: {
+        'X-Shopify-Storefront-Access-Token': token,
+        'content-type': 'application/json',
+        'User-Agent': UA,
+      },
+      body: JSON.stringify({
+        query: STOREFRONT_QUERY,
+        variables: { n: STOREFRONT_PER_PAGE, c: cursor, country },
+      }),
+    })
+    if (!res.ok) throw new Error(`storefront ${res.status}: ${(await res.text()).slice(0, 200)}`)
+    const json = await res.json() as { data?: { products?: { pageInfo: { hasNextPage: boolean; endCursor: string | null }; nodes: StorefrontProduct[] } }; errors?: unknown[] }
+    if (json.errors?.length) throw new Error(`storefront graphql: ${JSON.stringify(json.errors).slice(0, 250)}`)
+    const p = json.data?.products
+    if (!p) throw new Error('storefront: no products in response')
+    return { nodes: p.nodes ?? [], hasNext: p.pageInfo.hasNextPage, endCursor: p.pageInfo.endCursor }
+  } finally { clearTimeout(timer) }
+}
+
+function makeStorefrontAdapter(
+  shopDomain: string, sourceSlug: string, expectedCurrency: string,
+  ov: MerchantOverrides, token: string, country: string,
+): SourceAdapter {
+  return {
+    name: sourceSlug, entityType: 'marketplace',
+    // The handler drives pagination and passes the page's nodes through config.
+    fetch: () => Promise.resolve([]),
+    normalize(raw: RawItem): NormalizedItem {
+      const p = raw.data as unknown as StorefrontProduct
+      const v = p.variants?.nodes?.[0]
+      const price = v ? Number(v.price.amount) : undefined
+      const externalUrl = p.onlineStoreUrl || `https://${shopDomain}/products/${p.handle}`
+      return {
+        entityType: 'marketplace', sourceId: raw.sourceId, sourceName: sourceSlug,
+        name: p.title,
+        description: String(p.description || '').replace(/\s+/g, ' ').trim(),
+        urls: [externalUrl],
+        images: (p.images?.nodes ?? []).map(i => i.url).filter(Boolean),
+        tags: (p.tags ?? []).map(t => String(t).trim()).filter(Boolean),
+        metadata: {
+          source_slug: sourceSlug, shop_domain: shopDomain, product_id: p.id,
+          merchant_deep_link: externalUrl, merchant_domain: extractMerchantDomain(externalUrl),
+          price: Number.isFinite(price) && price != null && price > 0 ? price : null,
+          // Straight off the wire — NOT the configured guess. This is the whole point.
+          currency: normalizeCurrency(v?.price.currencyCode ?? expectedCurrency),
+          category: p.productType, brand: p.vendor, brand_name: p.vendor,
+          business_name: ov.businessName || p.vendor || shopDomain,
+          in_stock: v?.availableForSale, sku: v?.sku ?? undefined, handle: p.handle,
+          market_country: country,
+          ...(ov.subcategory ? { subcategory: ov.subcategory } : {}),
+        },
+      }
+    },
+    getSourceId(raw: RawItem): string { return raw.sourceId },
+  }
+}
+
 function makeAdapter(shopDomain: string, sourceSlug: string, currency = 'EUR', ov: MerchantOverrides = {}, marketCountry: string | null = null): SourceAdapter {
   return {
     name: sourceSlug, entityType: 'marketplace',
@@ -175,13 +278,66 @@ Deno.serve(withErrorReporting('source-shopify-public', async (req) => {
       || cfgStr('market_country')
       || CURRENCY_MARKET[normalizeCurrency(currency)]
       || null
-    const adapter = makeAdapter(shopDomain, sourceSlug, currency, {
+    const overrides: MerchantOverrides = {
       subcategory: (typeof body.subcategory === 'string' && body.subcategory) || cfgStr('subcategory'),
       businessName: (typeof body.business_name === 'string' && body.business_name) || cfgStr('business_name'),
-    })
+    }
     const maxPages = Number(body.max_pages ?? 40)
     const dryRun = body.dry_run || false
     const refresh = body.refresh === true
+
+    // ── Storefront GraphQL path (currency-correct) ────────────────────────────
+    const storefrontToken = (typeof body.storefront_token === 'string' && body.storefront_token)
+      || cfgStr('storefront_token')
+    if (storefrontToken) {
+      if (!marketCountry) return jsonResponse(skippedResponse('missing_config', ['market_country']), 200, req)
+      const expected = normalizeCurrency(currency)
+      const sfAdapter = makeStorefrontAdapter(shopDomain, sourceSlug, expected, overrides, storefrontToken, marketCountry)
+      let total = 0, written = 0, pages = 0, cursor: string | null = null
+      let seenCurrency: string | null = null
+      for (pages = 0; pages < maxPages; pages++) {
+        const { nodes, hasNext, endCursor }: { nodes: StorefrontProduct[]; hasNext: boolean; endCursor: string | null } =
+          await storefrontPage(shopDomain, storefrontToken, marketCountry, cursor)
+        if (nodes.length === 0) break
+
+        // Verify, do not assume. This is the check whose absence let EUR prices be
+        // stored as GBP: refuse the batch rather than persist a number whose currency
+        // we cannot vouch for.
+        for (const n of nodes) {
+          const cc = n.variants?.nodes?.[0]?.price?.currencyCode
+          if (!cc) continue
+          seenCurrency ??= cc
+          if (cc !== expected) {
+            return errorResponse(
+              `currency mismatch for ${sourceSlug}: market ${marketCountry} returned ${cc}, config says ${expected}. ` +
+              `Refusing to stage — fix config.currency / config.market_country first.`,
+              422, req,
+            )
+          }
+        }
+
+        const items: RawItem[] = nodes
+          .filter(n => n.handle)
+          .map(n => ({ sourceId: `${sourceSlug}:${n.handle}`, data: n as unknown as Record<string, unknown> }))
+        total += items.length
+        if (!dryRun && items.length) {
+          written += await writeToStaging(supabase, sfAdapter, items, {
+            batchSize: items.length, pipelineRunId: body.pipeline_run_id, nodeId: body.node_id,
+            targetTable: 'marketplace_listings', refresh,
+          })
+        }
+        cursor = endCursor
+        if (!hasNext || !cursor) break
+      }
+      return jsonResponse({
+        success: true, items: dryRun ? total : written, items_total: total,
+        items_processed: dryRun ? total : written, items_succeeded: dryRun ? total : written,
+        items_failed: 0, pages_fetched: pages + 1,
+        source: 'storefront', market_country: marketCountry, currency_verified: seenCurrency,
+      }, 200, req)
+    }
+
+    const adapter = makeAdapter(shopDomain, sourceSlug, currency, overrides)
 
     // Stream page-by-page: fetch one page, stage it, release it. Bounds memory so
     // a 7k+ catalog doesn't OOM the worker. writeToStaging is idempotent on
