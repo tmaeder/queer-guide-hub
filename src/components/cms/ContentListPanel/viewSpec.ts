@@ -71,37 +71,38 @@ export function buildDefaultSpec(config: ContentTypeConfig | null): ViewSpec {
  * here. It also keeps a spec honest across config changes — a renamed or
  * deleted field silently disappears instead of producing a broken query.
  */
-export function normalizeSpec(
-  input: Partial<ViewSpec> | null | undefined,
-  config: ContentTypeConfig | null,
-): ViewSpec {
+export function normalizeSpec(input: unknown, config: ContentTypeConfig | null): ViewSpec {
   const base = buildDefaultSpec(config);
   if (!input || typeof input !== 'object') return base;
+  // Typed as `unknown` on purpose: the input is a jsonb blob from the database
+  // or a sessionStorage string. Claiming it is already a Partial<ViewSpec>
+  // would be the assumption this function exists to avoid.
+  const raw = input as Partial<ViewSpec>;
 
   const byName = new Map<string, FieldConfig>((config?.fields ?? []).map((f) => [f.name, f]));
   const known = (name: unknown): name is string => typeof name === 'string' && byName.has(name);
 
   const kind =
-    typeof input.kind === 'string' && VIEW_KINDS.includes(input.kind as ContentView)
-      ? (input.kind as ContentView)
+    typeof raw.kind === 'string' && VIEW_KINDS.includes(raw.kind as ContentView)
+      ? (raw.kind as ContentView)
       : base.kind;
 
-  const columns = Array.isArray(input.columns)
-    ? Array.from(new Set(input.columns.filter(known)))
+  const columns = Array.isArray(raw.columns)
+    ? Array.from(new Set(raw.columns.filter(known)))
         .filter((n) => capabilitiesFor(byName.get(n)!).displayable)
         .slice(0, SPEC_LIMITS.columns)
     : base.columns;
 
-  const filters = Array.isArray(input.filters)
-    ? input.filters
+  const filters = Array.isArray(raw.filters)
+    ? raw.filters
         .filter((f): f is Filter => !!f && typeof f === 'object' && known((f as Filter).field))
         .filter((f) => capabilitiesFor(byName.get(f.field)!).operators.includes(f.op))
         .slice(0, SPEC_LIMITS.filters)
         .map((f, i) => ({ ...f, id: typeof f.id === 'string' && f.id ? f.id : `f${i}` }))
     : [];
 
-  const sorts = Array.isArray(input.sorts)
-    ? input.sorts
+  const sorts = Array.isArray(raw.sorts)
+    ? raw.sorts
         .filter((s): s is SortSpec => !!s && typeof s === 'object' && known((s as SortSpec).field))
         .filter((s) => capabilitiesFor(byName.get(s.field)!).sortable)
         .map((s) => ({
@@ -112,13 +113,11 @@ export function normalizeSpec(
     : base.sorts;
 
   const groupBy =
-    known(input.groupBy) && capabilitiesFor(byName.get(input.groupBy)!).groupable
-      ? input.groupBy
-      : null;
+    known(raw.groupBy) && capabilitiesFor(byName.get(raw.groupBy)!).groupable ? raw.groupBy : null;
 
   const dateField =
-    known(input.dateField) && capabilitiesFor(byName.get(input.dateField)!).dateable
-      ? input.dateField
+    known(raw.dateField) && capabilitiesFor(byName.get(raw.dateField)!).dateable
+      ? raw.dateField
       : null;
 
   return { kind, columns, filters, sorts, groupBy, dateField };

@@ -34,7 +34,8 @@ export interface PersistedState {
   dateField?: string | null;
   sortField?: SortField;
   sortDir?: SortDir;
-  filters?: FilterState;
+  /** Ordered list; see the note in useContentListController. */
+  filters?: unknown[];
   hiddenColumns?: string[];
 }
 

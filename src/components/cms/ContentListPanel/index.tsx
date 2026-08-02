@@ -33,12 +33,12 @@ import {
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import { tintOf } from './types';
-import { ContentListFilters } from './ContentListFilters';
 import { ContentListTable } from './ContentListTable';
 import { ContentListGallery } from './ContentListGallery';
 import { ContentListBoard } from './ContentListBoard';
 import { ContentListTimeline } from './ContentListTimeline';
 import { ContentListCalendar } from './ContentListCalendar';
+import { FilterBuilder } from './filters/FilterBuilder';
 import { groupableFields } from './boardGrouping';
 import { dateFields } from './dateFields';
 import { useContentListController } from './useContentListController';
@@ -198,6 +198,15 @@ function ContentListPanelBody(props: ContentListPanelProps) {
           </div>
         )}
 
+        {c.contentTypeId && config && (
+          <FilterBuilder
+            fields={config.fields}
+            filters={c.filters}
+            optionsFor={(f) => c.dynamicOptions[f.name] ?? f.options ?? []}
+            onChange={c.setFilters}
+          />
+        )}
+
         {c.contentTypeId && c.view === 'board' && groupable.length > 0 && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -288,14 +297,6 @@ function ContentListPanelBody(props: ContentListPanelProps) {
           </div>
         )}
       </div>
-
-      <ContentListFilters
-        filterFields={c.filterFields}
-        filters={c.filters}
-        dynamicOptions={c.dynamicOptions}
-        setFilter={c.setFilter}
-        clearFilters={c.clearFilters}
-      />
 
       {c.view === 'gallery' ? (
         <ContentListGallery

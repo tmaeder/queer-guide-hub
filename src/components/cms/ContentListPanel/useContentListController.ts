@@ -6,6 +6,8 @@
 
 import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { applyFilters } from './filterOps';
+import { normalizeSpec, type Filter } from './viewSpec';
 import { useParams } from 'react-router';
 import { useContext } from 'react';
 import { getContentType, getContentTypeIds } from '@/config/contentTypeRegistry';
@@ -16,11 +18,7 @@ import {
   extractStatus,
   loadPersistedState,
   persistState,
-  type DateRange,
-  type FilterState,
-  type FilterValue,
   type ListItem,
-  type NumberRange,
   type SortDir,
   type SortField,
 } from './types';
@@ -70,7 +68,11 @@ export function useContentListController({
   const [rowsPerPage, setRowsPerPage] = useState(25);
   const [sortField, setSortField] = useState<SortField>(initialSortField);
   const [sortDir, setSortDir] = useState<SortDir>(initialSortDir);
-  const [filters, setFilters] = useState<FilterState>(persisted?.filters ?? {});
+  // `filters` is an ORDERED LIST, not a map keyed by field: two filters on the
+  // same field (price >= 1 AND price <= 4) are legal and a map cannot hold them.
+  const [filters, setFilters] = useState<Filter[]>(
+    () => normalizeSpec({ filters: persisted?.filters }, config ?? null).filters,
+  );
   const [hiddenColumns, setHiddenColumns] = useState<string[]>(persisted?.hiddenColumns ?? []);
   // View + board grouping persist per content type, so a chosen layout survives
   // navigating away and back.
@@ -195,23 +197,10 @@ export function useContentListController({
       query = query.ilike(ct.titleField, `%${debouncedSearch}%`);
     }
 
-    for (const f of ct.fields.filter((x) => x.filterable && !x.virtual)) {
-      const val = filters[f.name];
-      if (val === undefined || val === '' || val === null) continue;
-      if (f.type === 'select' || f.type === 'boolean') {
-        query = query.eq(f.name, val as string | boolean);
-      } else if (f.type === 'datetime' || f.type === 'date') {
-        const range = val as DateRange;
-        if (range.from) query = query.gte(f.name, range.from);
-        if (range.to) query = query.lte(f.name, range.to);
-      } else if (f.type === 'number') {
-        const range = val as NumberRange;
-        if (range.min !== undefined) query = query.gte(f.name, range.min);
-        if (range.max !== undefined) query = query.lte(f.name, range.max);
-      } else if (f.type === 'text') {
-        query = query.ilike(f.name, `%${val as string}%`);
-      }
-    }
+    // Every filter goes through the shared translator. The previous inline
+    // version had five type branches and silently skipped everything else, so
+    // filtering on an autocomplete/url/textarea did nothing at all.
+    query = applyFilters(query as never, filters) as typeof query;
 
     const { data, error, count } = await query;
     if (error) throw error;
@@ -351,20 +340,8 @@ export function useContentListController({
     });
   }
 
-  function setFilter(name: string, value: FilterValue) {
-    setFilters((prev) => {
-      const next = { ...prev };
-      if (value === undefined || value === '' || value === null) {
-        delete next[name];
-      } else {
-        next[name] = value;
-      }
-      return next;
-    });
-  }
-
   function clearFilters() {
-    setFilters({});
+    setFilters([]);
   }
 
   return {
@@ -385,7 +362,7 @@ export function useContentListController({
     sortField,
     sortDir,
     filters,
-    setFilter,
+    setFilters,
     clearFilters,
     hiddenColumns,
     setHiddenColumns,
