@@ -9,11 +9,10 @@
 -- Result: /tags/caf 404'd after 'caf' was merged into 'cafe', even though the
 -- merge was correct and the alias existed. Only run_tag_plural_merge() inserted
 -- redirects, and only for the pairs it handled -- every other merge path (admin
--- approval, the nightly dedup sweep, the diacritic repair) left dead URLs
--- behind. 172 redirects exist after this backfill; 118 of them predate it.
+-- approval, the dedup sweep, the diacritic repair) left dead URLs behind.
 --
 -- A trigger on the status flip covers all of them at once, including future
--- callers, instead of each one having to remember.
+-- callers, instead of each one remembering to do it.
 create or replace function public.log_unified_tag_merge_redirect()
 returns trigger
 language plpgsql
@@ -56,4 +55,4 @@ begin
   if (select id from public.resolve_tag_slug('caf')) is null then
     raise exception 'resolve_tag_slug(caf) still returns nothing after backfill';
   end if;
-end $do$;
+end $do$;;

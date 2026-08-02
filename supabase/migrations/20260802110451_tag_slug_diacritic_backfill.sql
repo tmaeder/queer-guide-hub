@@ -71,4 +71,4 @@ begin
   if v_bad > 0 then
     raise exception '% live tags still carry a diacritic-corrupted slug', v_bad;
   end if;
-end $do$;
+end $do$;;

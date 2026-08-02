@@ -19,6 +19,8 @@ as $fn$
                              where source = 'auto:plural' and not is_reversed
                                and created_at > now() - interval '7 days'),
     'plural_exclusions',   (select count(*) from public.tag_plural_exclusions),
+    -- Live tags whose slug still disagrees with the slugifier. Tombstones
+    -- (status='merged') are excluded: their slug IS the redirect trail.
     'slug_corrupt',        (select count(*) from public.unified_tags
                              where status <> 'merged'
                                and slug <> public.normalize_tag_slug(name)),
@@ -41,4 +43,4 @@ as $fn$
 $fn$;
 
 revoke all on function public.tag_vocabulary_health() from public;
-grant execute on function public.tag_vocabulary_health() to authenticated, service_role;
+grant execute on function public.tag_vocabulary_health() to authenticated, service_role;;

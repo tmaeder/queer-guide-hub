@@ -80,4 +80,4 @@ begin
   if not exists (select 1 from public.unified_tags where slug = 'munich' and name = 'Munich') then
     raise exception 'Munchen was not renamed to Munich';
   end if;
-end $do$;
+end $do$;;

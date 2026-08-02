@@ -154,7 +154,7 @@ async function venueDetail(env: Env, slug: string, pathname: string): Promise<De
   const rows = await fetchRows(
     env,
     'venues',
-    'name,slug,description,address,city,country,postal_code,latitude,longitude,phone,website,images,category,venue_subtype,foursquare_rating,tripadvisor_rating,tomtom_rating,hours,updated_at,safety_gated',
+    'name,slug,description,address,city,state,country,postal_code,latitude,longitude,phone,website,images,category,venue_subtype,foursquare_rating,tripadvisor_rating,tomtom_rating,hours,updated_at,safety_gated',
     `slug=eq.${encodeURIComponent(slug)}&duplicate_of_id=is.null`,
     1,
   );
@@ -234,6 +234,7 @@ async function venueDetail(env: Env, slug: string, pathname: string): Promise<De
             '@type': 'PostalAddress',
             streetAddress: address,
             addressLocality: city,
+            addressRegion: stringField(row, 'state'),
             postalCode: stringField(row, 'postal_code'),
             addressCountry: country,
           }
@@ -280,7 +281,7 @@ async function eventDetail(env: Env, slug: string, pathname: string): Promise<De
   const rows = await fetchRows(
     env,
     'events',
-    'title,slug,description,address,city,country,start_date,end_date,latitude,longitude,images,ticket_url,organizer_name,venue_name,price_min,price_max,is_free,event_type,timezone,updated_at,safety_gated',
+    'title,slug,description,address,city,state,country,postal_code,start_date,end_date,latitude,longitude,images,ticket_url,organizer_name,venue_name,price_min,price_max,is_free,event_type,timezone,updated_at,safety_gated',
     `slug=eq.${encodeURIComponent(slug)}&duplicate_of_id=is.null`,
     1,
   );
@@ -339,6 +340,8 @@ async function eventDetail(env: Env, slug: string, pathname: string): Promise<De
         '@type': 'PostalAddress',
         streetAddress: stringField(row, 'address'),
         addressLocality: city,
+        addressRegion: stringField(row, 'state'),
+        postalCode: stringField(row, 'postal_code'),
         addressCountry: country,
       },
       geo:
@@ -771,6 +774,8 @@ async function hotelDetail(env: Env, slug: string, pathname: string): Promise<De
             '@type': 'PostalAddress',
             streetAddress: stringField(row, 'address'),
             addressLocality: city,
+            addressRegion: stringField(row, 'state'),
+            postalCode: stringField(row, 'postal_code'),
             addressCountry: country,
           }
         : undefined,

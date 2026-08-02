@@ -42,4 +42,4 @@ as $fn$
 $fn$;
 
 revoke all on function public.tag_vocabulary_health() from public;
-grant execute on function public.tag_vocabulary_health() to authenticated, service_role;
+grant execute on function public.tag_vocabulary_health() to authenticated, service_role;;

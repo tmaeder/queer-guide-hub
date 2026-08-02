@@ -17,23 +17,10 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from '@/components/ui/pagination';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+
 import { Editable } from '@/components/admin/inline/Editable';
 import type { ContentTypeConfig, FieldConfig } from '@/types/cms';
+import { ListPagination } from './ListPagination';
 import {
   getStatusColor,
   getStatusLabel,
@@ -101,7 +88,7 @@ function EmptyState({
         style={{
           width: 72,
           height: 72,
-          backgroundColor: `${color}14`,
+          backgroundColor: tintOf(color),
         }}
       >
         {Icon ? (
@@ -152,24 +139,33 @@ function SortableHeader({
   currentField,
   currentDir,
   onSort,
+  sorts,
 }: {
   label: string;
   field: SortField;
   currentField: SortField;
   currentDir: SortDir;
-  onSort: (field: SortField) => void;
+  onSort: (field: SortField, append?: boolean) => void;
+  sorts?: { field: string; dir: 'asc' | 'desc' }[];
 }) {
-  const isActive = currentField === field;
+  // With a multi-sort active, "is this the primary sort" is not the same
+  // question as "is this sorted at all".
+  const rank = sorts ? sorts.findIndex((s) => s.field === field) : -1;
+  const isActive = rank >= 0 || currentField === field;
+  const dir = rank >= 0 ? sorts![rank].dir : currentDir;
+  const showRank = !!sorts && sorts.length > 1 && rank >= 0;
 
   return (
     <TableHead
       className="font-semibold cursor-pointer select-none transition-colors hover:text-primary"
-      onClick={() => onSort(field)}
+      // Shift-click appends to the sort list instead of replacing it.
+      onClick={(e) => onSort(field, e.shiftKey)}
+      title="Click to sort. Shift-click to add to the sort."
     >
       <div className="flex items-center gap-1">
         {label}
         {isActive ? (
-          currentDir === 'asc' ? (
+          dir === 'asc' ? (
             <ArrowUp size={14} style={{ opacity: 0.8 }} />
           ) : (
             <ArrowDown size={14} style={{ opacity: 0.8 }} />
@@ -177,6 +173,7 @@ function SortableHeader({
         ) : (
           <ArrowUpDown size={14} style={{ opacity: 0.3 }} />
         )}
+        {showRank && <span className="text-2xs text-muted-foreground">{rank + 1}</span>}
       </div>
     </TableHead>
   );
@@ -276,7 +273,9 @@ export interface ContentListTableProps {
   setRowsPerPage: (n: number) => void;
   sortField: SortField;
   sortDir: SortDir;
-  handleSort: (field: SortField) => void;
+  handleSort: (field: SortField, append?: boolean) => void;
+  /** Ordered; used to show precedence when more than one sort is active. */
+  sorts?: { field: string; dir: 'asc' | 'desc' }[];
   extraColumns: FieldConfig[];
   selected: Set<string>;
   allSelected: boolean;
@@ -304,6 +303,7 @@ export function ContentListTable({
   sortField,
   sortDir,
   handleSort,
+  sorts,
   extraColumns,
   selected,
   allSelected,
@@ -317,7 +317,6 @@ export function ContentListTable({
   onRefresh,
 }: ContentListTableProps) {
   const colCount = (contentTypeId ? 5 : 6) + extraColumns.length;
-  const totalPages = Math.max(1, Math.ceil(totalCount / rowsPerPage));
 
   return (
     <div className="overflow-hidden rounded-element border border-border bg-background">
@@ -338,6 +337,7 @@ export function ContentListTable({
                 currentField={sortField}
                 currentDir={sortDir}
                 onSort={handleSort}
+                sorts={sorts}
               />
 
               {extraColumns.map((f) =>
@@ -349,6 +349,7 @@ export function ContentListTable({
                     currentField={sortField}
                     currentDir={sortDir}
                     onSort={handleSort}
+                    sorts={sorts}
                   />
                 ) : (
                   <TableHead key={f.name} className="font-semibold">
@@ -369,6 +370,7 @@ export function ContentListTable({
                 currentField={sortField}
                 currentDir={sortDir}
                 onSort={handleSort}
+                sorts={sorts}
               />
 
               <TableHead className="text-right font-semibold" style={{ width: 60 }}>
@@ -564,64 +566,14 @@ export function ContentListTable({
           </TableBody>
         </Table>
       </div>
-      {items.length > 0 && (
-        <div className="flex items-center justify-between gap-4 px-4 py-2 border-t border-border">
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <span>Rows per page:</span>
-            <Select
-              value={String(rowsPerPage)}
-              onValueChange={(v) => {
-                setRowsPerPage(parseInt(v, 10));
-                setPage(0);
-              }}
-            >
-              <SelectTrigger className="h-7 w-[70px] text-xs">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {[10, 25, 50, 100].map((n) => (
-                  <SelectItem key={n} value={String(n)}>
-                    {n}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <span>
-              {page * rowsPerPage + 1}-{Math.min((page + 1) * rowsPerPage, totalCount)} of{' '}
-              {totalCount}
-            </span>
-          </div>
-          <Pagination className="mx-0 w-auto justify-end">
-            <PaginationContent>
-              <PaginationItem>
-                <PaginationPrevious
-                  href="#"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    if (page > 0) setPage(page - 1);
-                  }}
-                  aria-disabled={page === 0}
-                />
-              </PaginationItem>
-              <PaginationItem>
-                <PaginationLink href="#" isActive>
-                  {page + 1}
-                </PaginationLink>
-              </PaginationItem>
-              <PaginationItem>
-                <PaginationNext
-                  href="#"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    if (page + 1 < totalPages) setPage(page + 1);
-                  }}
-                  aria-disabled={page + 1 >= totalPages}
-                />
-              </PaginationItem>
-            </PaginationContent>
-          </Pagination>
-        </div>
-      )}
+      <ListPagination
+        page={page}
+        rowsPerPage={rowsPerPage}
+        totalCount={totalCount}
+        setPage={setPage}
+        setRowsPerPage={setRowsPerPage}
+        hidden={items.length === 0}
+      />
     </div>
   );
 }

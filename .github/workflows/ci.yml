@@ -228,7 +228,7 @@ jobs:
             if deno test --allow-net --allow-env --allow-read \
                  source-adapter.test.ts pipeline-nodes.test.ts wikinews.test.ts \
                  enrichment-driver.test.ts batch-circuit-checker.test.ts \
-                 trip-inbox-fields.test.ts; then
+                 trip-inbox-fields.test.ts city-collision-guard.test.ts; then
               exit 0
             fi
             echo "::warning::deno test attempt $attempt failed"
