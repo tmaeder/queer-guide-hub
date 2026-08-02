@@ -68,6 +68,15 @@ export function HeroIdentityOverlay({ variant, dimmed = false }: HeroIdentityOve
   const plate = isOverlay
     ? 'w-fit bg-background/85 backdrop-blur-sm rounded-container px-4 py-2'
     : undefined;
+  // PASTE-UP: the closing line prints in the first drum, so the masthead reads
+  // as three separately-pasted strips rather than one block — two in black,
+  // one in ink. Black type on pink is 5.29:1, and at hero size it is large
+  // text several times over, so the brand moment costs nothing in legibility.
+  // Deliberately ONE line: inking all three would make the ink the surface
+  // instead of the accent.
+  const inkPlate = isOverlay
+    ? 'w-fit bg-ink-pink text-ink-pink-foreground rounded-container px-4 py-2'
+    : undefined;
 
   const heading = (
     <h1
@@ -81,7 +90,7 @@ export function HeroIdentityOverlay({ variant, dimmed = false }: HeroIdentityOve
         <>
           <span className={plate}>{t('home.heroLine1', 'Queer venues,')}</span>
           <span className={plate}>{t('home.heroLine2', 'events, and people.')}</span>
-          <span className={plate}>{t('home.heroLine3', 'Worldwide.')}</span>
+          <span className={inkPlate}>{t('home.heroLine3', 'Worldwide.')}</span>
         </>
       ) : (
         <>

@@ -79,4 +79,17 @@ describe('adult helpers', () => {
     expect(isAdultCategorySlug('underwear')).toBe(false);
     expect(isAdultCategorySlug(undefined)).toBe(false);
   });
+
+  it('gates adult publications, whose titles carry no adult vocabulary', () => {
+    // A nude photography magazine is named after a city, so text matching can
+    // never classify it — the subcategory is the only signal.
+    expect(isAdultCategorySlug('Adult Magazines')).toBe(true);
+    expect(isAdultCategorySlug('adult_photo_books')).toBe(true);
+    expect(isAdultCategorySlug('Adult Art Prints')).toBe(true);
+    expect(isAdultCategorySlug('adult-zines')).toBe(true);
+    expect(isAdultCategorySlug('Adult Polaroids')).toBe(true);
+    // Non-adult merch from the same publishers stays ungated.
+    expect(isAdultCategorySlug('Accessories')).toBe(false);
+    expect(isAdultCategorySlug('Magazines')).toBe(false);
+  });
 });
