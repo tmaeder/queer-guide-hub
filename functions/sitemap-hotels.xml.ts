@@ -2,12 +2,16 @@ import { fetchRows, urlsetXml, xmlResponse, ORIGIN, type Env, type SitemapEntry 
 
 export const onRequest: PagesFunction<Env> = async ({ env }) => {
   // P1.1 — seo_indexable gate.
+  // Safety layer — hotels carry `safety_gated` too (Business Spine, 2026-07-26)
+  // and this sitemap was missing the filter that venues/events/milestones all
+  // have. fetchRows prefers the service-role key and so bypasses RLS, meaning
+  // nothing else would have stopped a hotel in a criminalizing country from
+  // being advertised to crawlers. Same defect class as PR #2513.
   const rows = await fetchRows(
     env,
     'hotels',
     'slug,updated_at',
-    'slug=not.is.null&seo_indexable=eq.true',
-    5000,
+    'slug=not.is.null&seo_indexable=eq.true&safety_gated=eq.false&duplicate_of_id=is.null',
   );
   const entries: SitemapEntry[] = rows
     .filter((r) => typeof r.slug === 'string' && (r.slug as string).length > 0)
