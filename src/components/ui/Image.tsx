@@ -1,7 +1,6 @@
 import * as React from 'react';
 import type { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { resolveImageUrl } from '@/utils/resolveImageUrl';
 import { buildCfSrcSet } from '@/utils/cloudflareOptimizations';
 import { imageReferrerPolicy } from '@/utils/imageHost';
 import { getFallbackImage, type FallbackTheme } from '@/utils/fallbackImages';
@@ -133,21 +132,41 @@ export const Image = ({
   className,
   children,
 }: ImageProps) => {
-  const resolved = src ?? resolveImageUrl({ imageUrl, optimizedUrl, thumbnailUrl, preferThumb });
+  // Source ladder, best first. `resolveImageUrl` prefers the R2 mirror, so when
+  // the mirror host is down EVERY image on the site died at once even though the
+  // ORIGINAL publisher URL was still serving — one dead host, a page full of
+  // fallback textures. Conceding to the texture is only correct once every real
+  // source has actually been tried.
+  const sources = React.useMemo(() => {
+    const ordered =
+      src != null
+        ? [src, optimizedUrl, thumbnailUrl, imageUrl]
+        : preferThumb
+          ? [thumbnailUrl, optimizedUrl, imageUrl]
+          : [optimizedUrl, thumbnailUrl, imageUrl];
+    // Dedupe: the same URL twice would burn a rung without retrying anything.
+    return [...new Set(ordered.filter((u): u is string => !!u && u.trim() !== ''))];
+  }, [src, optimizedUrl, thumbnailUrl, imageUrl, preferThumb]);
 
-  const [error, setError] = React.useState(false);
+  const [rung, setRung] = React.useState(0);
   const [loaded, setLoaded] = React.useState(false);
   const imgRef = React.useRef<HTMLImageElement | null>(null);
 
-  // Reset on src change. Done during render rather than in an effect so the
-  // reset can never land AFTER the DOM sync below and clobber it — that
-  // ordering is what made the fallback stick over a perfectly good image.
-  const [renderedSrc, setRenderedSrc] = React.useState(resolved);
-  if (renderedSrc !== resolved) {
-    setRenderedSrc(resolved);
-    setError(false);
+  // Reset when the ladder itself changes. Done during render rather than in an
+  // effect so the reset can never land AFTER the DOM sync below and clobber it —
+  // that ordering is what made the fallback stick over a perfectly good image.
+  const ladderKey = sources.join('|');
+  const [renderedKey, setRenderedKey] = React.useState(ladderKey);
+  if (renderedKey !== ladderKey) {
+    setRenderedKey(ladderKey);
+    setRung(0);
     setLoaded(false);
   }
+
+  const resolved = sources[rung] ?? null;
+  const error = sources.length > 0 && rung >= sources.length;
+  // Advance to the next real source; only the last failure reaches the texture.
+  const onSourceError = () => setRung((r) => (r < sources.length ? r + 1 : r));
 
   const fallback = React.useMemo(
     () => getFallbackImage(fallbackEntityType, fallbackKey),
@@ -164,12 +183,20 @@ export const Image = ({
   // Build the responsive srcset from the LARGEST on-CDN source, not `effectiveSrc`
   // — `preferThumb` collapses `effectiveSrc` to the 400px thumbnail, and CF would
   // then upscale that to 800/1200w (blurry). The thumb stays as the fast LQIP base.
-  const cfBase = showingFallback ? effectiveSrc : (optimizedUrl ?? src ?? imageUrl ?? effectiveSrc);
+  // Only the FIRST rung may widen to a different URL. Once a source has failed
+  // we have moved down the ladder, and a srcset still pointing at the abandoned
+  // URL would hand the browser the very source we just proved dead.
+  const onFirstRung = rung === 0;
+  const cfBase = showingFallback
+    ? effectiveSrc
+    : onFirstRung
+      ? (optimizedUrl ?? resolved)
+      : resolved;
   const cfSrcSet = cfBase ? buildCfSrcSet(cfBase, widthSet) : undefined;
   // External hosts can't use CF resizing; fall back to a two-stop set when we
   // have both a small and a large URL for the same asset.
   const externalSrcSet =
-    !cfSrcSet && optimizedUrl && thumbnailUrl
+    !cfSrcSet && onFirstRung && !showingFallback && optimizedUrl && thumbnailUrl
       ? `${thumbnailUrl} 400w, ${optimizedUrl} 1600w`
       : undefined;
   const srcSet = cfSrcSet ?? externalSrcSet;
@@ -199,9 +226,10 @@ export const Image = ({
       // without firing onLoad must not be replaced by the fallback.
       const el = imgRef.current;
       if (el?.complete && el.naturalWidth > 0) setLoaded(true);
-      else setError(true);
+      else onSourceError();
     }, 8000);
     return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- onSourceError is a stable setState updater; re-arm only when the source or priority changes
   }, [resolved, priority, error]);
   const referrerPolicy = effectiveSrc ? imageReferrerPolicy(effectiveSrc) : undefined;
 
@@ -243,9 +271,7 @@ export const Image = ({
           fetchPriority={priority ? 'high' : 'auto'}
           referrerPolicy={referrerPolicy}
           onLoad={() => setLoaded(true)}
-          onError={() => {
-            if (!error) setError(true);
-          }}
+          onError={onSourceError}
           style={effectiveObjectPosition ? { objectPosition: effectiveObjectPosition } : undefined}
           className={cn(
             'img-lazy-fade h-full w-full transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]',
