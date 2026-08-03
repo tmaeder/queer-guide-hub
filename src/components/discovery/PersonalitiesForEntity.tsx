@@ -75,7 +75,7 @@ function PersonalityRailCard({ personality, href }: { personality: Personality; 
       aria-label={personality.name}
       className="group flex h-full flex-col gap-2 no-underline"
     >
-      <div className="relative aspect-square w-full overflow-hidden rounded-container border bg-muted">
+      <div className="relative aspect-square w-full overflow-hidden rounded-container bg-muted">
         {src ? (
           <img
             src={src}
@@ -98,9 +98,7 @@ function PersonalityRailCard({ personality, href }: { personality: Personality; 
             {formatProfession(personality.profession)}
           </p>
         ) : null}
-        {era ? (
-          <p className="truncate text-2xs text-muted-foreground tabular-nums">{era}</p>
-        ) : null}
+        {era ? <p className="truncate text-2xs text-muted-foreground tabular-nums">{era}</p> : null}
       </div>
     </LocalizedLink>
   );

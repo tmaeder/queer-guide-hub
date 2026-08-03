@@ -57,7 +57,7 @@ export function StepperShell({
   if (variant === 'discreet') {
     return (
       <div className={cn('min-h-screen bg-background flex flex-col', className)}>
-        <div className="border-b border-border">
+        <div>
           <div className="container mx-auto px-4 py-4 flex items-center justify-between gap-4">
             <div className="flex items-baseline gap-4">
               <span className="text-xs tracking-widest uppercase text-muted-foreground">
@@ -66,12 +66,7 @@ export function StepperShell({
               <span className="text-sm font-medium">{active?.label}</span>
             </div>
             {onSkip && showSkip && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={onSkip}
-                className="text-muted-foreground"
-              >
+              <Button variant="ghost" size="sm" onClick={onSkip} className="text-muted-foreground">
                 {skipLabel}
               </Button>
             )}
@@ -93,7 +88,7 @@ export function StepperShell({
           <div key={active?.id ?? current}>{children}</div>
         </div>
 
-        <div className="sticky bottom-0 border-t border-border bg-background/95 backdrop-blur-sm">
+        <div className="sticky bottom-0 bg-surface-container/95 backdrop-blur-sm">
           <div className="container mx-auto px-4 py-4 max-w-2xl flex items-center justify-between gap-4">
             <Button
               variant="ghost"
@@ -106,11 +101,7 @@ export function StepperShell({
             </Button>
             <div className="flex items-center gap-4">
               {footerExtra}
-              <Button
-                onClick={onNext}
-                disabled={!canGoNext}
-                className="rounded-element"
-              >
+              <Button onClick={onNext} disabled={!canGoNext} className="rounded-element">
                 {nextLabel}
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
@@ -140,13 +131,10 @@ export function StepperShell({
                     )}
                     <span
                       className={cn(
-                        'relative z-10 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 transition-all',
-                        status === 'done' &&
-                          'bg-foreground border-foreground text-background',
-                        status === 'active' &&
-                          'border-foreground text-foreground bg-background',
-                        status === 'pending' &&
-                          'border-border text-muted-foreground bg-background',
+                        'relative z-10 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full transition-all',
+                        status === 'done' && 'bg-foreground border-foreground text-background',
+                        status === 'active' && 'border-foreground text-foreground bg-background',
+                        status === 'pending' && 'border-border text-muted-foreground bg-background',
                       )}
                     >
                       {status === 'done' ? (
@@ -167,9 +155,7 @@ export function StepperShell({
                         {step.label}
                       </p>
                       {step.description && status === 'active' && (
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {step.description}
-                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">{step.description}</p>
                       )}
                     </div>
                   </li>
@@ -207,22 +193,14 @@ export function StepperShell({
               {children}
             </div>
 
-            <div className="mt-12 pt-6 border-t border-border flex items-center justify-between gap-4">
+            <div className="mt-12 pt-6 flex items-center justify-between gap-4">
               <div className="flex items-center gap-2">
-                <Button
-                  variant="ghost"
-                  onClick={onPrev}
-                  disabled={!canGoPrev || current === 0}
-                >
+                <Button variant="ghost" onClick={onPrev} disabled={!canGoPrev || current === 0}>
                   <ArrowLeft className="w-4 h-4 mr-2" />
                   {prevLabel}
                 </Button>
                 {onSkip && showSkip && (
-                  <Button
-                    variant="ghost"
-                    onClick={onSkip}
-                    className="text-muted-foreground"
-                  >
+                  <Button variant="ghost" onClick={onSkip} className="text-muted-foreground">
                     {skipLabel}
                   </Button>
                 )}

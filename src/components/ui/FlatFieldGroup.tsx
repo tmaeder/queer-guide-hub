@@ -25,24 +25,14 @@ export function FlatFieldGroup({
   className,
 }: FlatFieldGroupProps) {
   return (
-    <section
-      className={cn(
-        'py-6',
-        !noTopBorder && 'border-t border-border',
-        className,
-      )}
-    >
+    <section className={cn('py-6', !noTopBorder && 'mt-8', className)}>
       {(title || description) && (
         <header className="mb-6">
           {title && (
-            <h3 className="text-base font-semibold tracking-tight text-foreground">
-              {title}
-            </h3>
+            <h3 className="text-base font-semibold tracking-tight text-foreground">{title}</h3>
           )}
           {description && (
-            <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
-              {description}
-            </p>
+            <p className="text-sm text-muted-foreground mt-1 leading-relaxed">{description}</p>
           )}
         </header>
       )}
@@ -60,20 +50,11 @@ interface FlatFieldProps {
 }
 
 /** A single labelled field row inside a FlatFieldGroup. */
-export function FlatField({
-  label,
-  hint,
-  htmlFor,
-  children,
-  className,
-}: FlatFieldProps) {
+export function FlatField({ label, hint, htmlFor, children, className }: FlatFieldProps) {
   return (
     <div className={cn('space-y-1.5', className)}>
       {label && (
-        <label
-          htmlFor={htmlFor}
-          className="block text-sm text-muted-foreground"
-        >
+        <label htmlFor={htmlFor} className="block text-sm text-muted-foreground">
           {label}
         </label>
       )}

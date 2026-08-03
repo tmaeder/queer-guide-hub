@@ -40,11 +40,18 @@ export function GroupCollections({ groupId, isMember, className }: GroupCollecti
 
   // Auto-select the first collection on load so the panel isn't empty.
   const selected = activeId
-    ? collections.find((c) => c.id === activeId) ?? collections[0] ?? null
-    : collections[0] ?? null;
+    ? (collections.find((c) => c.id === activeId) ?? collections[0] ?? null)
+    : (collections[0] ?? null);
 
   if (isLoading) {
-    return <div className={cn('h-40 rounded-container border border-border bg-card animate-pulse', className)} />;
+    return (
+      <div
+        className={cn(
+          'h-40 rounded-container border border-border bg-card animate-pulse',
+          className,
+        )}
+      />
+    );
   }
 
   return (
@@ -70,7 +77,7 @@ export function GroupCollections({ groupId, isMember, className }: GroupCollecti
                     type="button"
                     onClick={() => setActiveId(c.id)}
                     className={cn(
-                      'w-full rounded-element border px-4 py-2 text-left text-sm whitespace-nowrap md:whitespace-normal',
+                      'w-full rounded-element px-4 py-2 text-left text-sm whitespace-nowrap md:whitespace-normal bg-surface-container',
                       active
                         ? 'border-foreground bg-foreground text-background'
                         : 'border-border bg-card text-foreground hover:bg-muted/40',
@@ -183,7 +190,8 @@ function CollectionItemsPanel({
       ) : items.length === 0 ? (
         <p className="text-13 text-muted-foreground">
           No items yet.
-          {isMember && ' Use the "Add to group collection" action on any venue, event, listing or trip.'}
+          {isMember &&
+            ' Use the "Add to group collection" action on any venue, event, listing or trip.'}
         </p>
       ) : (
         <ul className="flex flex-col gap-2">
@@ -193,9 +201,7 @@ function CollectionItemsPanel({
               className="flex items-center justify-between gap-2 rounded-element border border-border bg-background px-4 py-2 text-sm"
             >
               <div className="min-w-0 flex-1">
-                <p className="truncate font-medium text-foreground capitalize">
-                  {it.item_type}
-                </p>
+                <p className="truncate font-medium text-foreground capitalize">{it.item_type}</p>
                 <p className="truncate text-13 text-muted-foreground tabular-nums">
                   {it.item_id}
                   {it.note && <span className="text-muted-foreground"> · {it.note}</span>}

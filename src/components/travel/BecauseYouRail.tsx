@@ -21,9 +21,7 @@ export function BecauseYouRail({ limit = 8 }: { limit?: number }) {
   const { data: recs, isLoading } = useRecommendations({ recType: 'destination', limit });
   const cityIds = useMemo(
     () =>
-      (recs || [])
-        .filter((r) => r.entity_type === 'city' && r.entity_id)
-        .map((r) => r.entity_id),
+      (recs || []).filter((r) => r.entity_type === 'city' && r.entity_id).map((r) => r.entity_id),
     [recs],
   );
 
@@ -67,7 +65,7 @@ export function BecauseYouRail({ limit = 8 }: { limit?: number }) {
               >
                 <LocalizedLink
                   to={cityHref}
-                  className="group flex h-full flex-col overflow-hidden rounded-container border bg-background no-underline transition-opacity hover:opacity-90"
+                  className="group flex h-full flex-col overflow-hidden rounded-container bg-background no-underline transition-opacity hover:opacity-90"
                 >
                   <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted">
                     {city.image_url ? (
@@ -129,7 +127,12 @@ function RailSkeleton() {
       <div className="mb-4 h-6 w-40 bg-muted" />
       <div className="flex gap-4 overflow-hidden">
         {Array.from({ length: 4 }).map((_, i) => (
-          <Skeleton key={i} variant="rectangular" height={280} className="w-72 shrink-0 rounded-container" />
+          <Skeleton
+            key={i}
+            variant="rectangular"
+            height={280}
+            className="w-72 shrink-0 rounded-container"
+          />
         ))}
       </div>
     </section>

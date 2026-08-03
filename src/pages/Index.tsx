@@ -54,7 +54,10 @@ const railSkeleton = (
       <Skeleton className="mb-8 h-9 w-64" />
       <div className="flex gap-4 overflow-hidden">
         {Array.from({ length: 4 }).map((_, i) => (
-          <Skeleton key={i} className="aspect-[3/4] w-[200px] sm:w-[240px] shrink-0 rounded-container" />
+          <Skeleton
+            key={i}
+            className="aspect-[3/4] w-[200px] sm:w-[240px] shrink-0 rounded-container"
+          />
         ))}
       </div>
     </div>
@@ -145,7 +148,11 @@ const Index = React.memo(() => {
       {isMobile && <HeroIdentityOverlay variant="band" />}
 
       {/* ── Hero = the live map (same MapShell as /map), search-free ──── */}
-      <section ref={heroRef} className="relative isolate overflow-hidden" style={{ height: mapHeight }}>
+      <section
+        ref={heroRef}
+        className="relative isolate overflow-hidden"
+        style={{ height: mapHeight }}
+      >
         <ErrorBoundary section="map" fallback={<div className="h-full w-full bg-muted" />}>
           {mapReady ? (
             <React.Suspense fallback={<div className="h-full w-full animate-pulse bg-muted" />}>
@@ -168,38 +175,38 @@ const Index = React.memo(() => {
 
       {/* ── Editorial bands — photocopy grain on the whole region, not the map. */}
       <div className="bg-noise">
-      {/* ── Returning visitors: one light personalized rail (self-hides) ─ */}
-      <RecentlyViewedRail />
+        {/* ── Returning visitors: one light personalized rail (self-hides) ─ */}
+        <RecentlyViewedRail />
 
-      {/* ── Events near you — lead card + date-grouped agenda ─────────── */}
-      <HomeDeferred section="events-agenda" skeleton={agendaSkeleton}>
-        <EventsAgenda />
-      </HomeDeferred>
+        {/* ── Events near you — lead card + date-grouped agenda ─────────── */}
+        <HomeDeferred section="events-agenda" skeleton={agendaSkeleton}>
+          <EventsAgenda />
+        </HomeDeferred>
 
-      {/* ── Destinations — editorial city rail ────────────────────────── */}
-      <HomeDeferred section="home-destinations" skeleton={railSkeleton}>
-        <HomeDestinations />
-      </HomeDeferred>
+        {/* ── Destinations — editorial city rail ────────────────────────── */}
+        <HomeDeferred section="home-destinations" skeleton={railSkeleton}>
+          <HomeDestinations />
+        </HomeDeferred>
 
-      {/* ── Latest news — editorial magazine grid ────────────────────── */}
-      <HomeDeferred section="news-magazine" skeleton={magazineSkeleton}>
-        <NewsMagazine />
-      </HomeDeferred>
+        {/* ── Latest news — editorial magazine grid ────────────────────── */}
+        <HomeDeferred section="news-magazine" skeleton={magazineSkeleton}>
+          <NewsMagazine />
+        </HomeDeferred>
 
-      {/* ── On this day — queer-history milestones (self-hides) ───────── */}
-      <HomeDeferred section="on-this-day" skeleton={null}>
-        <HomeOnThisDay />
-      </HomeDeferred>
+        {/* ── On this day — queer-history milestones (self-hides) ───────── */}
+        <HomeDeferred section="on-this-day" skeleton={null}>
+          <HomeOnThisDay />
+        </HomeDeferred>
 
-      {/* ── Born this week — community history marquee ────────────────── */}
-      <HomeDeferred section="born-this-week" skeleton={null}>
-        <HomeBornThisWeek />
-      </HomeDeferred>
+        {/* ── Born this week — community history marquee ────────────────── */}
+        <HomeDeferred section="born-this-week" skeleton={null}>
+          <HomeBornThisWeek />
+        </HomeDeferred>
 
-      {/* ── Marketplace — brand-safe spotlight + rail (self-hides) ───── */}
-      <HomeDeferred section="home-shopping" skeleton={railSkeleton}>
-        <HomeShoppingSection />
-      </HomeDeferred>
+        {/* ── Marketplace — brand-safe spotlight + rail (self-hides) ───── */}
+        <HomeDeferred section="home-shopping" skeleton={railSkeleton}>
+          <HomeShoppingSection />
+        </HomeDeferred>
       </div>
 
       {/* ── Final CTA — adaptive on auth state ─────────────────────────
@@ -235,7 +242,7 @@ const Index = React.memo(() => {
                 </LocalizedLink>
                 <LocalizedLink
                   to="/friends"
-                  className="inline-flex items-center justify-center rounded-element border border-background/40 px-8 py-4 text-sm font-bold tracking-tight text-background transition-colors hover:border-background no-underline"
+                  className="inline-flex items-center justify-center rounded-element bg-background/15 hover:bg-background/25 transition-colors px-8 py-4 text-sm font-bold tracking-tight text-background transition-colors hover:border-background no-underline"
                 >
                   {t('home.cta.invite', 'Invite friends')}
                 </LocalizedLink>
@@ -250,7 +257,7 @@ const Index = React.memo(() => {
                 </LocalizedLink>
                 <LocalizedLink
                   to="/about"
-                  className="inline-flex items-center justify-center rounded-element border border-background/40 px-8 py-4 text-sm font-bold tracking-tight text-background transition-colors hover:border-background no-underline"
+                  className="inline-flex items-center justify-center rounded-element bg-background/15 hover:bg-background/25 transition-colors px-8 py-4 text-sm font-bold tracking-tight text-background transition-colors hover:border-background no-underline"
                 >
                   {t('home.cta.about', 'Read the mission')}
                 </LocalizedLink>

@@ -46,7 +46,7 @@ export default function HomeDestinations() {
                 <StaggerItem key={city.id} className="snap-start shrink-0 w-[200px] sm:w-[240px]">
                   <LocalizedLink
                     to={`/city/${city.slug || city.id}`}
-                    className="group relative block aspect-[3/4] overflow-hidden rounded-container border border-border no-underline"
+                    className="group relative block aspect-[3/4] overflow-hidden rounded-container bg-surface-container no-underline"
                   >
                     {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- onError is a media-error handler, not a user-input listener. */}
                     <img

@@ -538,7 +538,7 @@ const NewsCardImpl = ({
             </p>
           )}
 
-          <div className="flex items-center justify-between gap-2 pt-4 border-t border-border">
+          <div className="flex items-center justify-between gap-2 pt-4">
             <div className="flex items-center gap-2 text-2xs uppercase tracking-wider text-muted-foreground min-w-0">
               {readingTime !== null && (
                 <span className="inline-flex items-center gap-1 whitespace-nowrap">

@@ -28,7 +28,10 @@ function Column({
 }) {
   return (
     <div>
-      <p className="text-2xs uppercase tracking-[0.2em] text-muted-foreground border-t border-foreground pt-4 mb-4">
+      {/* `.rule-heavy` rather than a hand-rolled `border-t border-foreground`:
+          the 2px black rule is the one sanctioned print mark, and spelling it
+          out here made it read as an ordinary hairline to the border budget. */}
+      <p className="text-2xs uppercase tracking-[0.2em] text-muted-foreground rule-heavy pt-4 mb-4">
         {label}
       </p>
       <NewsCard

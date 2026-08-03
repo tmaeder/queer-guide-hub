@@ -115,7 +115,7 @@ export function KinkWizard({ onFinished }: { onFinished?: () => void }) {
         <Progress value={progress} className="h-1" />
       </div>
 
-      <div className="rounded-container border border-border p-6">
+      <div className="rounded-container bg-surface-container p-6">
         <div className="flex items-start justify-between gap-2">
           <h3 className="text-headline font-display">{kinkLabel(item, lang)}</h3>
           {item.discussion_recommended && (

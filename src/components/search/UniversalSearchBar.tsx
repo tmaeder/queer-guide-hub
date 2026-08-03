@@ -476,7 +476,7 @@ export const UniversalSearchBar = () => {
                 {!query && !isMobile && (
                   <kbd
                     aria-hidden="true"
-                    className="pointer-events-none border border-border px-1.5 py-0.5 text-xs2 leading-none text-muted-foreground font-[inherit]"
+                    className="pointer-events-none rounded-badge bg-surface-container-high px-1.5 py-0.5 text-xs2 leading-none text-muted-foreground font-[inherit]"
                   >
                     {isMac ? '⌘K' : 'Ctrl+K'}
                   </kbd>

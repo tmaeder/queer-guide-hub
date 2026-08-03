@@ -34,7 +34,7 @@ function PersonChip({ person, img }: { person: Person; img: string }) {
   const [celebrated, setCelebrated] = useState(false);
 
   return (
-    <div className="relative flex shrink-0 items-center gap-2.5 rounded-element border border-border bg-background py-2 ps-2 pe-2">
+    <div className="relative flex shrink-0 items-center gap-2.5 rounded-element bg-surface-container py-2 ps-2 pe-2">
       <LocalizedLink
         to={person.slug ? `/personalities/${person.slug}` : '/personalities'}
         className="flex min-w-0 items-center gap-2.5 no-underline"
@@ -55,7 +55,9 @@ function PersonChip({ person, img }: { person: Person; img: string }) {
         <span className="min-w-0">
           <span className="block truncate text-13 font-semibold tracking-tight">{person.name}</span>
           <span className="block truncate text-xs2 text-muted-foreground">
-            {[formatProfession(person.profession), birthYear(person.birth_date)].filter(Boolean).join(' · ')}
+            {[formatProfession(person.profession), birthYear(person.birth_date)]
+              .filter(Boolean)
+              .join(' · ')}
           </span>
         </span>
       </LocalizedLink>
@@ -111,7 +113,7 @@ export default function HomeBornThisWeek() {
       title={t('home.bornThisWeek.title', 'Born this week')}
       seeAllHref="/personalities"
       seeAllLabel={t('home.bornThisWeek.seeAll', 'All personalities')}
-      className="bg-grid-dots border-y border-border"
+      className="bg-grid-dots"
     >
       {marquee ? (
         <div className="group/marquee overflow-hidden" style={{ '--gap': '1rem' } as CSSProperties}>

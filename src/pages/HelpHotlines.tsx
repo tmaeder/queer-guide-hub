@@ -504,7 +504,10 @@ export default function HelpHotlines() {
 
               {availableIntersections.length > 0 && (
                 <div className="min-w-[180px] flex-[1_1_180px]">
-                  <Label htmlFor="help-filter-intersection" className="mb-1 block text-xs font-semibold">
+                  <Label
+                    htmlFor="help-filter-intersection"
+                    className="mb-1 block text-xs font-semibold"
+                  >
                     {t('help.filter_intersection', 'Population')}
                   </Label>
                   <Select value={intersectionFilter} onValueChange={setIntersectionFilter}>
@@ -610,16 +613,16 @@ export default function HelpHotlines() {
                   <LocalizedLink
                     key={org.id}
                     to={`/organizations/${org.slug}`}
-                    className="flex items-center gap-2 rounded-element border p-4 no-underline transition-colors hover:bg-muted"
+                    className="flex items-center gap-2 rounded-element p-4 no-underline transition-colors hover:bg-muted"
                   >
                     {org.logo_url ? (
                       <img
                         src={org.logo_url}
                         alt=""
-                        className="h-10 w-10 shrink-0 rounded-element border object-contain"
+                        className="h-10 w-10 shrink-0 rounded-element object-contain"
                       />
                     ) : (
-                      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-element border text-muted-foreground">
+                      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-element text-muted-foreground bg-surface-container">
                         <Building2 size={18} aria-hidden="true" />
                       </span>
                     )}
@@ -745,7 +748,7 @@ function HotlineCard({
         <p className="text-sm leading-relaxed text-muted-foreground">{hotline.description}</p>
 
         {hotline.what_to_expect && (
-          <details className="rounded-element border bg-muted/30 px-4 py-2 text-sm">
+          <details className="rounded-element bg-muted/30 px-4 py-2 text-sm">
             <summary className="cursor-pointer font-medium">
               {t('help.expect_short', 'What to expect')}
             </summary>

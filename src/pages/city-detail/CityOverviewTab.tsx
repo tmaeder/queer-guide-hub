@@ -10,7 +10,7 @@ export interface CityOverviewTabProps {
 
 function FactRow({ label, value }: { label: string; value: ReactNode }) {
   return (
-    <div className="flex items-baseline justify-between gap-4 border-b border-border/60 py-2.5 last:border-b-0">
+    <div className="flex items-baseline justify-between gap-4 py-2.5">
       <dt className="text-13 text-muted-foreground">{label}</dt>
       <dd className="text-right text-15 font-medium text-foreground">{value}</dd>
     </div>
@@ -33,23 +33,14 @@ function ChipCluster({ heading, items }: { heading: string; items: string[] }) {
   );
 }
 
-function DefinitionGrid({
-  heading,
-  entries,
-}: {
-  heading: string;
-  entries: [string, unknown][];
-}) {
+function DefinitionGrid({ heading, entries }: { heading: string; entries: [string, unknown][] }) {
   if (!entries.length) return null;
   return (
     <div>
       <h3 className="mb-4 text-title font-semibold tracking-tight">{heading}</h3>
       <dl className="grid grid-cols-1 gap-x-8 sm:grid-cols-2">
         {entries.map(([key, value]) => (
-          <div
-            key={key}
-            className="flex items-baseline justify-between gap-4 border-b border-border/60 py-2"
-          >
+          <div key={key} className="flex items-baseline justify-between gap-4 py-2">
             <dt className="text-13 capitalize text-muted-foreground">{key.replace(/_/g, ' ')}</dt>
             <dd className="text-right text-15 font-medium">{String(value)}</dd>
           </div>
@@ -66,11 +57,7 @@ function DefinitionGrid({
  */
 export function CityOverviewTab({ city }: CityOverviewTabProps) {
   const facts: { label: string; value: ReactNode }[] = [];
-  const civicStatus = city.is_capital
-    ? 'Capital city'
-    : city.is_major_city
-      ? 'Major city'
-      : null;
+  const civicStatus = city.is_capital ? 'Capital city' : city.is_major_city ? 'Major city' : null;
   if (civicStatus) facts.push({ label: 'Status', value: civicStatus });
   if (city.region_name) facts.push({ label: 'Region', value: city.region_name });
   if (city.timezone) facts.push({ label: 'Timezone', value: city.timezone });
@@ -124,7 +111,7 @@ export function CityOverviewTab({ city }: CityOverviewTabProps) {
             <h3 className="mb-4 text-2xs uppercase tracking-[0.18em] text-muted-foreground">
               City facts
             </h3>
-            <dl className="rounded-container border border-border/60 px-4 py-1">
+            <dl className="rounded-container bg-surface-container px-4 py-1">
               {facts.map((f) => (
                 <FactRow key={f.label} label={f.label} value={f.value} />
               ))}

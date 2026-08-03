@@ -56,11 +56,14 @@ export function TagChip({
   // `a.rounded-badge` / `button.rounded-badge` a 24px minimum, so without this the
   // `linkless` <span> would render 4px shorter than the link and button variants.
   const base = cn(
-    'inline-flex min-h-6 items-center gap-1 rounded-badge border font-medium tracking-tight no-underline transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+    // PASTE-UP: a tag is a stamped chip, so both states are flat fills and the
+    // outline is gone. This one string renders 20-41 times on a single city
+    // page — the densest border source in the app before the sweep.
+    'inline-flex min-h-6 items-center gap-1 rounded-badge font-medium tracking-tight no-underline transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring',
     size === 'sm' ? 'px-2 py-0.5 text-2xs' : 'px-2.5 py-0.5 text-xs2',
     active
-      ? 'border-transparent bg-foreground text-background'
-      : 'border-foreground/20 bg-background/60 text-foreground hover:border-foreground/40 hover:bg-muted/60',
+      ? 'bg-foreground text-background'
+      : 'bg-surface-container-high text-foreground hover:bg-surface-container-highest',
     className,
   );
 

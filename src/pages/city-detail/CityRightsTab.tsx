@@ -19,7 +19,7 @@ export function CityRightsTab({ city, fullCountry, countryLoading }: CityRightsT
   return (
     <div className="flex flex-col gap-6">
       {city.safety_notes && (
-        <div className="flex gap-4 rounded-container border border-border/60 p-4 sm:p-6">
+        <div className="flex gap-4 rounded-container bg-surface-container p-4 sm:p-6">
           <ShieldCheck size={18} className="mt-0.5 shrink-0 text-muted-foreground" />
           <div>
             <h3 className="font-semibold">
@@ -82,7 +82,7 @@ function CityMilestones({ cityId, cityName }: { cityId: string; cityName: string
   const { data } = useMilestonesForCity(cityId);
   if (!data?.length) return null;
   return (
-    <section className="rounded-container border border-border p-6">
+    <section className="rounded-container bg-surface-container p-6">
       <h3 className="mb-4 text-2xs uppercase tracking-wider text-muted-foreground">
         {t('milestones.city.title', 'Queer history in {{city}}', { city: cityName })}
       </h3>

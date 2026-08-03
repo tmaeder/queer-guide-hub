@@ -70,7 +70,7 @@ export function StreaksPanel() {
       </div>
 
       {continueItems.length > 0 && (
-        <div className="rounded-container border border-border p-6 bg-card">
+        <div className="rounded-container bg-surface-container p-6 bg-card">
           <header className="flex items-center justify-between gap-4 mb-4">
             <p className="text-13 uppercase tracking-[0.1em] text-muted-foreground">
               Continue reading

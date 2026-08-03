@@ -23,8 +23,19 @@ import { SectionHeader } from '@/components/ui/SectionHeader';
 // Explicit registry so Rollup tree-shakes lucide-react. Add new icons here
 // when the achievements_catalog gains new icon strings.
 const ACHIEVEMENT_ICONS: Record<string, LucideIcon> = {
-  CalendarDays, Crown, Flag, Flame, Footprints, Globe, Globe2,
-  Heart, LayoutGrid, Map, MapPin, Moon, Sparkles,
+  CalendarDays,
+  Crown,
+  Flag,
+  Flame,
+  Footprints,
+  Globe,
+  Globe2,
+  Heart,
+  LayoutGrid,
+  Map,
+  MapPin,
+  Moon,
+  Sparkles,
 };
 
 /** Full achievements catalog with earned/locked state. Moved from VenuesPassport. */
@@ -35,7 +46,8 @@ export function AchievementsGrid() {
 
   return (
     <section aria-labelledby="achievements-h">
-      <SectionHeader size="section"
+      <SectionHeader
+        size="section"
         id="achievements-h"
         title={t('venues.passport.achievements', 'Achievements')}
         className="mb-4"
@@ -55,7 +67,7 @@ export function AchievementsGrid() {
               <div
                 key={a.slug}
                 className={
-                  'rounded-container border p-4 ' +
+                  'rounded-container p-4 bg-surface-container' +
                   (earned ? 'bg-card' : 'bg-card/40 text-muted-foreground')
                 }
               >

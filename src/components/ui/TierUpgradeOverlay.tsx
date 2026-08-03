@@ -96,7 +96,7 @@ export function TierUpgradeOverlay({
           {icon ?? <Sparkles size={42} />}
           <span
             aria-hidden
-            className="tier-ring absolute inset-0 rounded-full border-2 border-foreground"
+            className="tier-ring absolute inset-0 rounded-full outline outline-2 outline-foreground"
           />
         </div>
 

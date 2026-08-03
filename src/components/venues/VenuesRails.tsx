@@ -44,11 +44,7 @@ async function fetchRanked(params: {
   return data.map((r) => r.venue);
 }
 
-function useRailData(
-  enabled: boolean,
-  fetcher: () => Promise<Venue[]>,
-  deps: unknown[],
-): RailData {
+function useRailData(enabled: boolean, fetcher: () => Promise<Venue[]>, deps: unknown[]): RailData {
   const [state, setState] = useState<RailData>({ loading: enabled, venues: [] });
   useEffect(() => {
     let cancelled = false;
@@ -151,7 +147,10 @@ export function VenuesRails({ userLocation, primaryCityId, primaryCityName }: Ve
       {user ? (
         <RailSection
           title={t('venues.rails.forYou.title', 'For your taste')}
-          subtitle={t('venues.rails.forYou.subtitle', 'Picked from your interests and where you’ve been.')}
+          subtitle={t(
+            'venues.rails.forYou.subtitle',
+            'Picked from your interests and where you’ve been.',
+          )}
           data={forYou}
         />
       ) : (
@@ -164,7 +163,10 @@ export function VenuesRails({ userLocation, primaryCityId, primaryCityName }: Ve
       />
       {!!primaryCityName && (
         <RailSection
-          title={t('venues.rails.topInCity.title', { city: primaryCityName, defaultValue: 'Top in {{city}}' })}
+          title={t('venues.rails.topInCity.title', {
+            city: primaryCityName,
+            defaultValue: 'Top in {{city}}',
+          })}
           subtitle={t('venues.rails.topInCity.subtitle', 'Popular with the community right now.')}
           data={topInCity}
         />
@@ -178,7 +180,15 @@ export function VenuesRails({ userLocation, primaryCityId, primaryCityName }: Ve
   );
 }
 
-function RailSection({ title, subtitle, data }: { title: string; subtitle: string; data: RailData }) {
+function RailSection({
+  title,
+  subtitle,
+  data,
+}: {
+  title: string;
+  subtitle: string;
+  data: RailData;
+}) {
   if (!data.loading && data.venues.length === 0) return null;
   return (
     <Rail title={title} subtitle={subtitle}>
@@ -202,7 +212,7 @@ function AnonPersonalizationPromo() {
   return (
     <section
       aria-label={t('venues.rails.forYouPromo.label', 'Personalize your venues')}
-      className="rounded-container border bg-card p-8"
+      className="rounded-container bg-card p-8"
     >
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
         <div className="max-w-xl">

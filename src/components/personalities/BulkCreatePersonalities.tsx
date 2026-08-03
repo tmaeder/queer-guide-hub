@@ -261,9 +261,9 @@ export const BulkCreatePersonalities = () => {
                 disabled={isLoading}
               />
               <p className="text-13 text-muted-foreground">
-                Applies to every name in this batch. Required for Wikidata enrichment — it is
-                what separates a stage name from a famous namesake. Without it, names are
-                created without Wikidata data rather than matched to the wrong person.
+                Applies to every name in this batch. Required for Wikidata enrichment — it is what
+                separates a stage name from a famous namesake. Without it, names are created without
+                Wikidata data rather than matched to the wrong person.
               </p>
             </div>
 
@@ -392,7 +392,7 @@ export const BulkCreatePersonalities = () => {
                   {results.created.map((personality, index: number) => (
                     <div
                       key={index}
-                      className="text-sm p-2 rounded-element border"
+                      className="text-sm p-2 rounded-element bg-surface-container"
                       style={{
                         backgroundColor: 'hsl(var(--success) / 0.1)',
                         borderColor: 'hsl(var(--success) / 0.35)',
@@ -443,7 +443,7 @@ export const BulkCreatePersonalities = () => {
                   {results.errors.map((error, index: number) => (
                     <div
                       key={index}
-                      className="text-sm p-2 rounded-element border"
+                      className="text-sm p-2 rounded-element bg-surface-container"
                       style={{
                         backgroundColor: 'hsl(var(--destructive) / 0.1)',
                         borderColor: 'hsl(var(--destructive) / 0.35)',

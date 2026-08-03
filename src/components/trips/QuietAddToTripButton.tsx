@@ -50,7 +50,7 @@ export function QuietAddToTripButton({
         aria-label={label}
         title={label}
         className={cn(
-          'inline-flex h-8 w-8 items-center justify-center rounded-element border bg-background/85 backdrop-blur transition-opacity duration-150 hover:bg-background',
+          'inline-flex h-8 w-8 items-center justify-center rounded-element bg-background/85 backdrop-blur transition-opacity duration-150 hover:bg-background',
           variant === 'overlay' && [
             'absolute right-3 top-3',
             'opacity-0 group-hover:opacity-100 focus-visible:opacity-100',
@@ -63,9 +63,7 @@ export function QuietAddToTripButton({
       >
         <Icon size={14} aria-hidden="true" />
       </button>
-      {open ? (
-        <AddToTripDialog open={open} onClose={() => setOpen(false)} entity={entity} />
-      ) : null}
+      {open ? <AddToTripDialog open={open} onClose={() => setOpen(false)} entity={entity} /> : null}
     </>
   );
 }

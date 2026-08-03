@@ -22,7 +22,10 @@ export function relativeDateLabel(
   t?: TFunction | ((key: string, vars?: Record<string, unknown>) => string),
 ): string {
   const days = Math.round((new Date(iso).getTime() - now) / 86_400_000);
-  const tr = (key: string, vars?: Record<string, unknown>) => (t ? (t as (k: string, v?: Record<string, unknown>) => string)(`pride.upNext.${key}`, vars) : fallback(key, vars));
+  const tr = (key: string, vars?: Record<string, unknown>) =>
+    t
+      ? (t as (k: string, v?: Record<string, unknown>) => string)(`pride.upNext.${key}`, vars)
+      : fallback(key, vars);
   if (days < 0) return tr('past');
   if (days === 0) return tr('today');
   if (days === 1) return tr('tomorrow');
@@ -76,13 +79,18 @@ export function PrideUpNext({ events, selectedId, onSelect, limit = 8 }: PrideUp
               onClick={() => onSelect?.(isSelected ? null : e.id)}
               aria-pressed={isSelected}
               className={cn(
-                'snap-start shrink-0 w-[240px] min-h-0 p-4 text-left rounded-container border bg-background transition-colors',
+                'snap-start shrink-0 w-[240px] min-h-0 p-4 text-left rounded-container bg-background transition-colors',
                 isSelected ? 'border-foreground' : 'border-foreground/15 hover:border-foreground',
               )}
             >
               <div className="flex items-center justify-between text-xs2 uppercase tracking-label text-muted-foreground mb-2">
                 <span>{relativeDateLabel(e.start_date, now, t)}</span>
-                {e.is_featured && <Star className="size-3 fill-foreground text-foreground" aria-label={t('pride.featured')} />}
+                {e.is_featured && (
+                  <Star
+                    className="size-3 fill-foreground text-foreground"
+                    aria-label={t('pride.featured')}
+                  />
+                )}
               </div>
               <div className="flex items-baseline gap-2 mb-2">
                 <span className="text-display leading-none font-medium tabular-nums">{day}</span>

@@ -60,7 +60,7 @@ export function BreadcrumbBar() {
   const collapse = trail.length > 3;
 
   return (
-    <div className="border-b border-border bg-background">
+    <div className="bg-background">
       <div className="container mx-auto flex min-h-11 items-center overflow-hidden px-4 py-2.5">
         <Breadcrumb className="min-w-0 max-w-full">
           {/* Locked to a single line: every crumb but the last keeps its width

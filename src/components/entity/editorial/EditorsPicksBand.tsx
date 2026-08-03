@@ -27,7 +27,7 @@ export function EditorsPicksBand({ picks, className }: EditorsPicksBandProps) {
         <LocalizedLink
           key={i}
           to={pick.href}
-          className="group flex flex-col overflow-hidden rounded-container border bg-background no-underline transition-opacity hover:opacity-90"
+          className="group flex flex-col overflow-hidden rounded-container bg-background no-underline transition-opacity hover:opacity-90"
         >
           {pick.imageUrl ? (
             <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted">

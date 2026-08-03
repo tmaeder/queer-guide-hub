@@ -26,7 +26,10 @@ export function MilestoneHero({ milestone }: { milestone: Milestone }) {
     milestone.date_end,
     milestone.date_end_precision,
   );
-  const place = [milestone.city?.name ?? milestone.city_name, milestone.country?.name ?? milestone.country_name]
+  const place = [
+    milestone.city?.name ?? milestone.city_name,
+    milestone.country?.name ?? milestone.country_name,
+  ]
     .filter(Boolean)
     .join(', ');
   const era = eraForYear(milestoneYear(milestone.date));
@@ -73,7 +76,9 @@ export function MilestoneHero({ milestone }: { milestone: Milestone }) {
           {(milestone.image_metadata?.photographer || milestone.image_metadata?.license) && (
             <figcaption className="mt-1 text-13 text-muted-foreground">
               {t('milestones.photoCredit', 'Photo')}
-              {milestone.image_metadata?.photographer ? `: ${milestone.image_metadata.photographer}` : ''}
+              {milestone.image_metadata?.photographer
+                ? `: ${milestone.image_metadata.photographer}`
+                : ''}
               {milestone.image_metadata?.license ? ` · ${milestone.image_metadata.license}` : ''}
             </figcaption>
           )}
@@ -115,7 +120,9 @@ export function MilestoneSources({ milestone }: { milestone: Milestone }) {
                   <ExternalLink className="h-3 w-3 shrink-0" aria-hidden />
                 </a>
                 {sourceHostname(s.url) && (
-                  <span className="ml-2 text-13 text-muted-foreground">{sourceHostname(s.url)}</span>
+                  <span className="ml-2 text-13 text-muted-foreground">
+                    {sourceHostname(s.url)}
+                  </span>
                 )}
               </span>
             ) : (
@@ -137,7 +144,12 @@ function sourceHostname(url: string): string | null {
 }
 
 function linkedHref(link: MilestoneLink): string | null {
-  return detailHref({ type: link.entity_type, slug: link.slug, id: link.entity_id, title: link.name });
+  return detailHref({
+    type: link.entity_type,
+    slug: link.slug,
+    id: link.entity_id,
+    title: link.name,
+  });
 }
 
 export function MilestoneLinkedEntities({ links }: { links: MilestoneLink[] }) {
@@ -163,7 +175,9 @@ export function MilestoneLinkedEntities({ links }: { links: MilestoneLink[] }) {
                 <span className="h-10 w-10 shrink-0 rounded-full bg-muted" aria-hidden />
               )}
               <span className="min-w-0">
-                <span className="block truncate text-15 font-medium group-hover:underline">{link.name}</span>
+                <span className="block truncate text-15 font-medium group-hover:underline">
+                  {link.name}
+                </span>
                 <span className="block truncate text-13 text-muted-foreground">
                   {link.role || t(`milestones.entityType.${link.entity_type}`)}
                 </span>
@@ -295,7 +309,8 @@ export function MilestoneSidebar({ milestone }: { milestone: Milestone }) {
       ),
     },
   ];
-  if (milestone.location) rows.push({ label: t('milestones.sidebar.place', 'Place'), value: milestone.location });
+  if (milestone.location)
+    rows.push({ label: t('milestones.sidebar.place', 'Place'), value: milestone.location });
   if (milestone.city?.slug ?? milestone.city_name) {
     rows.push({
       label: t('milestones.sidebar.city', 'City'),
@@ -312,7 +327,10 @@ export function MilestoneSidebar({ milestone }: { milestone: Milestone }) {
     rows.push({
       label: t('milestones.sidebar.country', 'Country'),
       value: milestone.country?.slug ? (
-        <LocalizedLink to={`/country/${milestone.country.slug}`} className="underline underline-offset-2">
+        <LocalizedLink
+          to={`/country/${milestone.country.slug}`}
+          className="underline underline-offset-2"
+        >
           {milestone.country.name}
         </LocalizedLink>
       ) : (
@@ -323,7 +341,9 @@ export function MilestoneSidebar({ milestone }: { milestone: Milestone }) {
   const exploreLinks: Array<{ label: string; to: string }> = [];
   if (milestone.country?.slug) {
     exploreLinks.push({
-      label: t('milestones.explore.country', 'Travel guide: {{name}}', { name: milestone.country.name }),
+      label: t('milestones.explore.country', 'Travel guide: {{name}}', {
+        name: milestone.country.name,
+      }),
       to: `/country/${milestone.country.slug}`,
     });
   }
@@ -344,7 +364,7 @@ export function MilestoneSidebar({ milestone }: { milestone: Milestone }) {
   }
   return (
     <div className="space-y-6">
-      <aside className="rounded-container border border-border p-6">
+      <aside className="rounded-container bg-surface-container p-6">
         <h2 className="mb-4 text-2xs uppercase tracking-wider text-muted-foreground">
           {t('milestones.sidebar.facts', 'Facts')}
         </h2>
@@ -358,7 +378,7 @@ export function MilestoneSidebar({ milestone }: { milestone: Milestone }) {
         </dl>
       </aside>
       {exploreLinks.length > 0 && (
-        <aside className="rounded-container border border-border p-6">
+        <aside className="rounded-container bg-surface-container p-6">
           <h2 className="mb-4 text-2xs uppercase tracking-wider text-muted-foreground">
             {t('milestones.sidebar.explore', 'Then & now')}
           </h2>

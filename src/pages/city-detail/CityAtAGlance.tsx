@@ -74,15 +74,17 @@ export function CityAtAGlance({ city, hasAirport, effectiveIata }: CityAtAGlance
       value: hasAirport ? effectiveIata : `~${effectiveIata}`,
     });
 
-  // Print-grid (PHOTOCOPY): hairlines via border-t/border-l on every cell +
-  // -mt/-ml compensation on the inner grid — unlike gap-px/bg-border this
-  // leaves no colored holes when the conditional fact count rags the last row.
+  // PASTE-UP: separate plates with a gutter, not a hairline grid. Each fact
+  // used to be ruled with border-t/border-l plus -mt-px/-ml-px compensation;
+  // now every fact is its own pasted tile and the page shows through between
+  // them — closer to real paste-up than the rules were, and it still rags
+  // cleanly when the conditional fact count leaves the last row short.
   return (
-    <div className="overflow-hidden rounded-element border border-border bg-background">
-      <div className="-mt-px -ml-px grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6">
+    <div className="rounded-element">
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
         <a
           href="#rights"
-          className="col-span-2 block border-t border-l border-border p-4 no-underline sm:col-span-1"
+          className="col-span-2 block bg-surface-container p-4 no-underline sm:col-span-1"
           aria-label={t('cities.detail.glance.safetyLink', 'Jump to safety & rights')}
         >
           <Eyebrow as="div" className="mb-2">
@@ -90,26 +92,30 @@ export function CityAtAGlance({ city, hasAirport, effectiveIata }: CityAtAGlance
           </Eyebrow>
           <span
             className={cn(
-              'inline-flex items-center gap-1.5 rounded-badge border px-2 py-1 text-13 font-semibold transition-colors',
+              'inline-flex items-center gap-1.5 rounded-badge px-2 py-1 text-13 font-semibold transition-colors',
               danger
-                ? 'border-destructive/30 bg-destructive/5 text-destructive'
-                : 'border-border text-foreground hover:bg-muted',
+                ? 'bg-destructive/10 text-destructive'
+                : 'bg-surface-container-high text-foreground hover:bg-surface-container-highest',
             )}
           >
             <SafetyIcon size={14} aria-hidden="true" />
             {safetyLabel}
           </span>
           {score != null && (
-            <span className="ml-2 font-mono text-13 tabular-nums text-muted-foreground">{score}/100</span>
+            <span className="ml-2 font-mono text-13 tabular-nums text-muted-foreground">
+              {score}/100
+            </span>
           )}
         </a>
 
         {facts.map((f) => (
-          <div key={f.label} className="min-w-0 border-t border-l border-border p-4">
+          <div key={f.label} className="min-w-0 bg-surface-container p-4">
             <Eyebrow as="div" className="mb-2">
               {f.label}
             </Eyebrow>
-            <p className="truncate font-mono text-15 font-medium tabular-nums text-foreground">{f.value}</p>
+            <p className="truncate font-mono text-15 font-medium tabular-nums text-foreground">
+              {f.value}
+            </p>
           </div>
         ))}
       </div>

@@ -102,16 +102,15 @@ export function PrideTrips({ events, selectedId, onSelect }: PrideTripsProps) {
         <h2 id="trips-heading" className="text-title font-medium">
           {t('pride.trips.title')}
         </h2>
-        <span className="text-xs2 text-muted-foreground">Up to 4 prides · within 21 days · &lt;4000&nbsp;km</span>
+        <span className="text-xs2 text-muted-foreground">
+          Up to 4 prides · within 21 days · &lt;4000&nbsp;km
+        </span>
         <span className="text-xs2 text-muted-foreground">{t('pride.trips.subtitle')}</span>
       </div>
 
       <div className="grid lg:grid-cols-2 gap-4">
         {clusters.map((c) => (
-          <article
-            key={c.id}
-            className="rounded-container border border-foreground/15 bg-background p-6 space-y-4"
-          >
+          <article key={c.id} className="rounded-container bg-background p-6 space-y-4">
             <div className="flex items-baseline justify-between gap-2 flex-wrap">
               <p className="text-xs2 uppercase tracking-label text-foreground/60">
                 {c.events.length} prides · {c.span} day{c.span === 1 ? '' : 's'}
@@ -125,7 +124,9 @@ export function PrideTrips({ events, selectedId, onSelect }: PrideTripsProps) {
                   : t('pride.trips.meta', { count: c.events.length, days: c.span })}
               </p>
               {c.events.some((e) => e.is_featured) && (
-                <span className="text-2xs uppercase tracking-label text-foreground/60">{t('pride.trips.featured')}</span>
+                <span className="text-2xs uppercase tracking-label text-foreground/60">
+                  {t('pride.trips.featured')}
+                </span>
               )}
             </div>
 
@@ -149,7 +150,8 @@ export function PrideTrips({ events, selectedId, onSelect }: PrideTripsProps) {
                       <span className="flex-1 min-w-0">
                         <span className="block text-sm font-medium truncate">{e.title}</span>
                         <span className="block text-xs2 text-foreground/60">
-                          {[e.city, e.country].filter(Boolean).join(', ')} · {formatShort(e.start_date)}
+                          {[e.city, e.country].filter(Boolean).join(', ')} ·{' '}
+                          {formatShort(e.start_date)}
                         </span>
                       </span>
                     </button>
@@ -162,7 +164,14 @@ export function PrideTrips({ events, selectedId, onSelect }: PrideTripsProps) {
               <Button asChild size="sm" variant="outline" className="flex-1">
                 <Link
                   to={`/trips?seed=${c.events.map((e) => e.id).join(',')}`}
-                  aria-label={t('pride.trips.buildTrip') + ': ' + c.events.map((e) => e.city).filter(Boolean).join(' → ')}
+                  aria-label={
+                    t('pride.trips.buildTrip') +
+                    ': ' +
+                    c.events
+                      .map((e) => e.city)
+                      .filter(Boolean)
+                      .join(' → ')
+                  }
                 >
                   <Luggage className="size-3.5 mr-1.5" />
                   {t('pride.trips.buildTrip')}

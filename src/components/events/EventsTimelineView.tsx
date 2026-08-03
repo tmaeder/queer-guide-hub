@@ -71,7 +71,11 @@ function buildBuckets(viewport: Viewport): Bucket[] {
       cursor = startOfDay(new Date(viewport.startMs));
       while (cursor < rangeEnd) {
         const next = addDays(cursor, 1);
-        buckets.push({ startMs: cursor.getTime(), endMs: next.getTime(), label: format(cursor, 'MMM d') });
+        buckets.push({
+          startMs: cursor.getTime(),
+          endMs: next.getTime(),
+          label: format(cursor, 'MMM d'),
+        });
         cursor = next;
       }
       break;
@@ -79,7 +83,11 @@ function buildBuckets(viewport: Viewport): Bucket[] {
       cursor = startOfWeek(new Date(viewport.startMs), { weekStartsOn: 1 });
       while (cursor < rangeEnd) {
         const next = addWeeks(cursor, 1);
-        buckets.push({ startMs: cursor.getTime(), endMs: next.getTime(), label: format(cursor, 'MMM d') });
+        buckets.push({
+          startMs: cursor.getTime(),
+          endMs: next.getTime(),
+          label: format(cursor, 'MMM d'),
+        });
         cursor = next;
       }
       break;
@@ -205,7 +213,9 @@ export function EventsTimelineView({
   const [internalViewport, setInternalViewport] = useState<Viewport>(() => {
     if (controlledViewport) return controlledViewport;
     const starts = events.map((e) => new Date(e.start_date).getTime()).filter((n) => !isNaN(n));
-    const ends = events.map((e) => new Date(e.end_date ?? e.start_date).getTime()).filter((n) => !isNaN(n));
+    const ends = events
+      .map((e) => new Date(e.end_date ?? e.start_date).getTime())
+      .filter((n) => !isNaN(n));
     return fitToData(starts, ends) ?? defaultViewport();
   });
   const viewport = controlledViewport ?? internalViewport;
@@ -222,7 +232,9 @@ export function EventsTimelineView({
   useEffect(() => {
     if (controlledViewport || userInteractedRef.current) return;
     const starts = events.map((e) => new Date(e.start_date).getTime()).filter((n) => !isNaN(n));
-    const ends = events.map((e) => new Date(e.end_date ?? e.start_date).getTime()).filter((n) => !isNaN(n));
+    const ends = events
+      .map((e) => new Date(e.end_date ?? e.start_date).getTime())
+      .filter((n) => !isNaN(n));
     const fit = fitToData(starts, ends);
     // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
     if (fit) setInternalViewport(fit);
@@ -350,8 +362,12 @@ export function EventsTimelineView({
           setViewport(zoomBy(viewport, f, center));
         }}
         onFit={() => {
-          const starts = events.map((e) => new Date(e.start_date).getTime()).filter((n) => !isNaN(n));
-          const ends = events.map((e) => new Date(e.end_date ?? e.start_date).getTime()).filter((n) => !isNaN(n));
+          const starts = events
+            .map((e) => new Date(e.start_date).getTime())
+            .filter((n) => !isNaN(n));
+          const ends = events
+            .map((e) => new Date(e.end_date ?? e.start_date).getTime())
+            .filter((n) => !isNaN(n));
           const fit = fitToData(starts, ends);
           if (fit) {
             userInteractedRef.current = false;
@@ -379,7 +395,9 @@ export function EventsTimelineView({
               key={b.startMs}
               type="button"
               onClick={() => {
-                const el = scrollRef.current?.querySelector<HTMLDivElement>(`[data-bucket="${b.startMs}"]`);
+                const el = scrollRef.current?.querySelector<HTMLDivElement>(
+                  `[data-bucket="${b.startMs}"]`,
+                );
                 el?.scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' });
               }}
               className="px-2 py-1 text-xs2 rounded-badge border border-foreground/20 hover:bg-muted transition-colors min-h-0 whitespace-nowrap"
@@ -398,7 +416,7 @@ export function EventsTimelineView({
 
       <div
         ref={scrollRef}
-        className="relative overflow-x-auto border border-foreground/10 rounded-container bg-background"
+        className="relative overflow-x-auto rounded-container bg-background"
         role="region"
         aria-label="Events timeline"
       >
@@ -412,7 +430,10 @@ export function EventsTimelineView({
           onPointerCancel={onPointerUpTrack}
           onWheel={onWheelTrack}
         >
-          <div className="absolute inset-0 grid" style={{ gridTemplateColumns: `repeat(${buckets.length}, 1fr)` }}>
+          <div
+            className="absolute inset-0 grid"
+            style={{ gridTemplateColumns: `repeat(${buckets.length}, 1fr)` }}
+          >
             {buckets.map((b, i) => (
               <div
                 key={b.startMs}
@@ -442,156 +463,161 @@ export function EventsTimelineView({
           )}
 
           {placed.map((p) => {
-              const item = (p.item as unknown as { _item: TrackItem })._item;
-              const xStart = pxForMs(p.startMs);
-              const xEnd = pxForMs(p.endMs);
-              const y = 36 + p.row * ROW_HEIGHT;
-              const isPast = p.endMs < today.getTime();
+            const item = (p.item as unknown as { _item: TrackItem })._item;
+            const xStart = pxForMs(p.startMs);
+            const xEnd = pxForMs(p.endMs);
+            const y = 36 + p.row * ROW_HEIGHT;
+            const isPast = p.endMs < today.getTime();
 
-              if (item.kind === 'cluster') {
-                const count = item.events.length;
-                return (
-                  <Popover
-                    key={item.id}
-                    open={openCluster === item.id}
-                    onOpenChange={(o) => setOpenCluster(o ? item.id : null)}
-                  >
-                    <PopoverTrigger asChild>
-                      <button
-                        type="button"
-                        aria-label={`${count} events around ${format(new Date(p.startMs), 'PP')}`}
-                        className={cn(
-                          'absolute flex items-center justify-center text-2xs font-medium leading-none',
-                          'bg-foreground text-background rounded-full border border-foreground hover:scale-110 transition-transform',
-                          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-1',
-                          isPast && 'opacity-50',
-                        )}
-                        style={{
-                          left: `${xStart}px`,
-                          top: `${y}px`,
-                          width: `${Math.max(BAR_HEIGHT, BAR_HEIGHT + (count.toString().length - 1) * 4)}px`,
-                          height: `${BAR_HEIGHT}px`,
-                        }}
-                      >
-                        {count}
-                      </button>
-                    </PopoverTrigger>
-                    <PopoverContent
-                      side="top"
-                      sideOffset={8}
-                      collisionPadding={12}
-                      className="z-50 w-72 max-w-[calc(100vw-24px)] p-0 rounded-element border border-foreground/15 bg-background"
-                    >
-                      <div className="px-4 py-2 border-b border-foreground/10 text-xs2 text-foreground/70">
-                        {count} events · {format(new Date(item.startMs), 'PP')}
-                      </div>
-                      <ul className="max-h-64 overflow-y-auto">
-                        {item.events.map((e) => (
-                          <li key={e.id}>
-                            <Link
-                              to={`/events/${e.slug}`}
-                              onClick={() => {
-                                setOpenCluster(null);
-                                onEventSelect?.(e);
-                              }}
-                              className="block px-4 py-2 hover:bg-muted text-sm no-underline border-b border-foreground/5 last:border-b-0"
-                            >
-                              <p className="font-medium leading-tight truncate">
-                                {e.is_featured && (
-                                  <Star className="inline size-3 mr-1 fill-foreground" aria-label="Featured" />
-                                )}
-                                {e.title}
-                              </p>
-                              <p className="mt-0.5 text-xs2 text-foreground/60 truncate">
-                                {format(new Date(e.start_date), 'MMM d')}
-                                {e.city && ` · ${e.city}`}
-                                {e.event_type && ` · ${e.event_type}`}
-                              </p>
-                            </Link>
-                          </li>
-                        ))}
-                      </ul>
-                    </PopoverContent>
-                  </Popover>
-                );
-              }
-
-              const event = item.event;
-              const widthPx = xEnd - xStart;
-              const isBar = widthPx >= CLUSTER_PX;
-              const dateLabel = format(new Date(event.start_date), 'MMM d');
-
+            if (item.kind === 'cluster') {
+              const count = item.events.length;
               return (
-                <EventHoverCard
-                  key={event.id}
-                  event={event}
-                  onRsvp={onRsvp}
-                  onSaveToTrip={onSaveToTrip}
-                  enableSaveToTrip={enableSaveToTrip}
-                  isInTrip={isInTrip?.(event.id)}
-                  attendStatus={attendStatus?.(event.id) ?? null}
+                <Popover
+                  key={item.id}
+                  open={openCluster === item.id}
+                  onOpenChange={(o) => setOpenCluster(o ? item.id : null)}
                 >
-                  <Link
-                    to={`/events/${event.slug}`}
-                    data-event-id={event.id}
-                    aria-label={`${event.title} on ${dateLabel}`}
-                    onClick={(e) => {
-                      if (panState.current?.moved) {
-                        e.preventDefault();
-                        return;
-                      }
-                      onEventSelect?.(event);
-                    }}
-                    draggable={false}
-                    className={cn(
-                      'absolute flex items-center gap-1.5 min-h-0 min-w-0 p-0 bg-transparent group no-underline',
-                      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-1 rounded-badge',
-                      isPast && 'opacity-50',
-                    )}
-                    style={{
-                      left: `${xStart}px`,
-                      top: `${y}px`,
-                      height: `${BAR_HEIGHT}px`,
-                      maxWidth: isBar ? undefined : `${LABEL_PX + 16}px`,
-                    }}
+                  <PopoverTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label={`${count} events around ${format(new Date(p.startMs), 'PP')}`}
+                      className={cn(
+                        'absolute flex items-center justify-center text-2xs font-medium leading-none',
+                        'bg-foreground text-background rounded-full border border-foreground hover:scale-110 transition-transform',
+                        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-1',
+                        isPast && 'opacity-50',
+                      )}
+                      style={{
+                        left: `${xStart}px`,
+                        top: `${y}px`,
+                        width: `${Math.max(BAR_HEIGHT, BAR_HEIGHT + (count.toString().length - 1) * 4)}px`,
+                        height: `${BAR_HEIGHT}px`,
+                      }}
+                    >
+                      {count}
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    side="top"
+                    sideOffset={8}
+                    collisionPadding={12}
+                    className="z-50 w-72 max-w-[calc(100vw-24px)] p-0 rounded-element bg-background"
                   >
-                    {isBar ? (
+                    <div className="px-4 py-2 border-b border-foreground/10 text-xs2 text-foreground/70">
+                      {count} events · {format(new Date(item.startMs), 'PP')}
+                    </div>
+                    <ul className="max-h-64 overflow-y-auto">
+                      {item.events.map((e) => (
+                        <li key={e.id}>
+                          <Link
+                            to={`/events/${e.slug}`}
+                            onClick={() => {
+                              setOpenCluster(null);
+                              onEventSelect?.(e);
+                            }}
+                            className="block px-4 py-2 hover:bg-muted text-sm no-underline border-b border-foreground/5 last:border-b-0"
+                          >
+                            <p className="font-medium leading-tight truncate">
+                              {e.is_featured && (
+                                <Star
+                                  className="inline size-3 mr-1 fill-foreground"
+                                  aria-label="Featured"
+                                />
+                              )}
+                              {e.title}
+                            </p>
+                            <p className="mt-0.5 text-xs2 text-foreground/60 truncate">
+                              {format(new Date(e.start_date), 'MMM d')}
+                              {e.city && ` · ${e.city}`}
+                              {e.event_type && ` · ${e.event_type}`}
+                            </p>
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </PopoverContent>
+                </Popover>
+              );
+            }
+
+            const event = item.event;
+            const widthPx = xEnd - xStart;
+            const isBar = widthPx >= CLUSTER_PX;
+            const dateLabel = format(new Date(event.start_date), 'MMM d');
+
+            return (
+              <EventHoverCard
+                key={event.id}
+                event={event}
+                onRsvp={onRsvp}
+                onSaveToTrip={onSaveToTrip}
+                enableSaveToTrip={enableSaveToTrip}
+                isInTrip={isInTrip?.(event.id)}
+                attendStatus={attendStatus?.(event.id) ?? null}
+              >
+                <Link
+                  to={`/events/${event.slug}`}
+                  data-event-id={event.id}
+                  aria-label={`${event.title} on ${dateLabel}`}
+                  onClick={(e) => {
+                    if (panState.current?.moved) {
+                      e.preventDefault();
+                      return;
+                    }
+                    onEventSelect?.(event);
+                  }}
+                  draggable={false}
+                  className={cn(
+                    'absolute flex items-center gap-1.5 min-h-0 min-w-0 p-0 bg-transparent group no-underline',
+                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-1 rounded-badge',
+                    isPast && 'opacity-50',
+                  )}
+                  style={{
+                    left: `${xStart}px`,
+                    top: `${y}px`,
+                    height: `${BAR_HEIGHT}px`,
+                    maxWidth: isBar ? undefined : `${LABEL_PX + 16}px`,
+                  }}
+                >
+                  {isBar ? (
+                    <span
+                      className={cn(
+                        'flex items-center px-2 rounded-element border border-foreground transition-colors',
+                        event.is_featured
+                          ? 'bg-foreground text-background'
+                          : 'bg-background text-foreground group-hover:bg-muted',
+                      )}
+                      style={{ width: `${widthPx}px`, height: `${BAR_HEIGHT}px` }}
+                    >
+                      <span className="truncate text-2xs leading-none font-medium">
+                        {event.title}
+                      </span>
+                    </span>
+                  ) : (
+                    <>
                       <span
                         className={cn(
-                          'flex items-center px-2 rounded-element border border-foreground transition-colors',
+                          'shrink-0 rounded-full border border-foreground transition-all',
                           event.is_featured
-                            ? 'bg-foreground text-background'
-                            : 'bg-background text-foreground group-hover:bg-muted',
+                            ? 'bg-foreground w-2.5 h-2.5 group-hover:scale-125'
+                            : 'bg-background w-2 h-2 group-hover:scale-125 group-hover:bg-foreground',
                         )}
-                        style={{ width: `${widthPx}px`, height: `${BAR_HEIGHT}px` }}
+                      />
+                      <span
+                        className={cn(
+                          'flex items-center gap-1 text-2xs leading-none whitespace-nowrap overflow-hidden min-w-0',
+                          event.is_featured ? 'text-foreground font-medium' : 'text-foreground/70',
+                          'group-hover:text-foreground group-hover:font-medium',
+                        )}
                       >
-                        <span className="truncate text-2xs leading-none font-medium">{event.title}</span>
+                        <span className="truncate">{event.title}</span>
                       </span>
-                    ) : (
-                      <>
-                        <span
-                          className={cn(
-                            'shrink-0 rounded-full border border-foreground transition-all',
-                            event.is_featured
-                              ? 'bg-foreground w-2.5 h-2.5 group-hover:scale-125'
-                              : 'bg-background w-2 h-2 group-hover:scale-125 group-hover:bg-foreground',
-                          )}
-                        />
-                        <span
-                          className={cn(
-                            'flex items-center gap-1 text-2xs leading-none whitespace-nowrap overflow-hidden min-w-0',
-                            event.is_featured ? 'text-foreground font-medium' : 'text-foreground/70',
-                            'group-hover:text-foreground group-hover:font-medium',
-                          )}
-                        >
-                          <span className="truncate">{event.title}</span>
-                        </span>
-                      </>
-                    )}
-                  </Link>
-                </EventHoverCard>
-              );
-            })}
+                    </>
+                  )}
+                </Link>
+              </EventHoverCard>
+            );
+          })}
         </div>
       </div>
 
@@ -605,8 +631,8 @@ export function EventsTimelineView({
       />
 
       <p className="text-xs2 text-foreground/50 mt-2">
-        {visibleEvents.length} of {events.length} {events.length === 1 ? 'event' : 'events'} visible · drag to
-        pan, cmd+scroll to zoom · solid markers are featured
+        {visibleEvents.length} of {events.length} {events.length === 1 ? 'event' : 'events'} visible
+        · drag to pan, cmd+scroll to zoom · solid markers are featured
       </p>
     </div>
   );

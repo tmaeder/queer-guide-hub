@@ -101,9 +101,9 @@ export function MapQuickFilters({
 
   // h-9 keeps the chips comfortably tappable in the mobile bar's chip row.
   const chipBase =
-    'h-9 md:h-8 inline-flex items-center gap-1.5 rounded-element border px-4 text-xs transition-colors focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2';
-  const on = 'border-foreground bg-foreground text-background';
-  const off = 'border-border bg-background/90 text-foreground hover:bg-muted';
+    'h-9 md:h-8 inline-flex items-center gap-1.5 rounded-element px-4 text-xs transition-colors focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2';
+  const on = 'bg-foreground text-background';
+  const off = 'bg-background/90 text-foreground hover:bg-surface-container-high';
   // Below lg the desktop bar is tight — collapse chip labels to icons.
   const labelClass = compactLabels ? 'hidden lg:inline' : undefined;
 

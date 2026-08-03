@@ -27,7 +27,7 @@ export function CookieConsentBanner() {
         animate={{ opacity: 1, y: 0 }}
         exit={reduced ? { opacity: 0 } : { opacity: 0, y: distance.lg }}
         transition={reduced ? { duration: 0 } : { duration: duration.normal, ease: easing.decel }}
-        className="fixed inset-x-0 bottom-0 z-[var(--z-sticky)] border-t border-border/60 bg-background/95 backdrop-blur-md"
+        className="fixed inset-x-0 bottom-0 z-[var(--z-sticky)] bg-surface-container-highest/95 backdrop-blur-md"
       >
         <div className="mx-auto flex max-w-6xl flex-col gap-4 p-4 md:flex-row md:items-center md:gap-6">
           <div className="flex items-start gap-2 md:items-center">

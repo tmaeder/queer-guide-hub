@@ -38,7 +38,11 @@ const EMPTY_FILTERS: PrideFilters = {
 
 function filtersFromParams(params: URLSearchParams): PrideFilters {
   return {
-    months: (params.get('m') ?? '').split(',').filter(Boolean).map(Number).filter((n) => n >= 0 && n < 12),
+    months: (params.get('m') ?? '')
+      .split(',')
+      .filter(Boolean)
+      .map(Number)
+      .filter((n) => n >= 0 && n < 12),
     continents: (params.get('r') ?? '').split(',').filter(Boolean),
     countries: (params.get('c') ?? '').split(',').filter(Boolean),
     featuredOnly: params.get('f') === '1',
@@ -89,7 +93,7 @@ export default function PridePage() {
   );
 
   const selectedEvent = useMemo(
-    () => (selectedId ? filtered.find((e) => e.id === selectedId) ?? null : null),
+    () => (selectedId ? (filtered.find((e) => e.id === selectedId) ?? null) : null),
     [selectedId, filtered],
   );
 
@@ -121,7 +125,9 @@ export default function PridePage() {
             >
               <ChevronLeft className="size-4" />
             </Button>
-            <h1 className="text-display lg:text-hero font-medium leading-none tabular-nums">{year}</h1>
+            <h1 className="text-display lg:text-hero font-medium leading-none tabular-nums">
+              {year}
+            </h1>
             <Button
               variant="outline"
               size="icon"
@@ -158,65 +164,73 @@ export default function PridePage() {
       </div>
 
       <div className="space-y-12 min-w-0">
-          {/* Timeline */}
-          <section aria-labelledby="timeline-heading">
-            <h2 id="timeline-heading" className="sr-only">
-              {t('pride.timeline.srTitle')}
-            </h2>
-            {isLoading ? (
-              <Skeleton className="h-40 w-full rounded-container" />
-            ) : (
-              <PrideTimeline
-                events={filtered}
-                year={year}
-                selectedId={selectedId}
-                onSelect={setSelectedId}
-              />
-            )}
-          </section>
-
-          {/* Selected event spotlight */}
-          {selectedEvent && (
-            <section aria-labelledby="spotlight-title">
-              <PrideSpotlight
-                event={selectedEvent}
-                onDismiss={() => setSelectedId(null)}
-                onOpenMap={() => {
-                  document.getElementById('map-heading')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }}
-              />
-            </section>
+        {/* Timeline */}
+        <section aria-labelledby="timeline-heading">
+          <h2 id="timeline-heading" className="sr-only">
+            {t('pride.timeline.srTitle')}
+          </h2>
+          {isLoading ? (
+            <Skeleton className="h-40 w-full rounded-container" />
+          ) : (
+            <PrideTimeline
+              events={filtered}
+              year={year}
+              selectedId={selectedId}
+              onSelect={setSelectedId}
+            />
           )}
+        </section>
 
-          {/* Up next */}
-          {!isLoading && <PrideUpNext events={filtered} selectedId={selectedId} onSelect={setSelectedId} />}
-
-          {/* Map */}
-          <section aria-labelledby="map-heading">
-            <h2 id="map-heading" className="text-title font-medium mb-4">
-              {t('pride.map.title')}
-            </h2>
-            {isLoading ? (
-              <Skeleton className="h-[480px] w-full rounded-container" />
-            ) : (
-              <PrideMap events={filtered} selectedId={selectedId} onSelect={setSelectedId} />
-            )}
+        {/* Selected event spotlight */}
+        {selectedEvent && (
+          <section aria-labelledby="spotlight-title">
+            <PrideSpotlight
+              event={selectedEvent}
+              onDismiss={() => setSelectedId(null)}
+              onOpenMap={() => {
+                document
+                  .getElementById('map-heading')
+                  ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }}
+            />
           </section>
+        )}
 
-          {/* Pride trip ideas */}
-          {!isLoading && <PrideTrips events={filtered} selectedId={selectedId} onSelect={setSelectedId} />}
+        {/* Up next */}
+        {!isLoading && (
+          <PrideUpNext events={filtered} selectedId={selectedId} onSelect={setSelectedId} />
+        )}
 
-          {/* All prides — sortable table */}
-          {!isLoading && <PrideTable events={filtered} selectedId={selectedId} onSelect={setSelectedId} />}
-
-          {!isLoading && filtered.length === 0 && (
-            <div className="border border-foreground/15 rounded-container p-12 text-center">
-              <p className="text-foreground/70">{t('pride.noMatches')}</p>
-              <Button variant="outline" onClick={() => setFilters(EMPTY_FILTERS)} className="mt-4">
-                {t('pride.clearFilters')}
-              </Button>
-            </div>
+        {/* Map */}
+        <section aria-labelledby="map-heading">
+          <h2 id="map-heading" className="text-title font-medium mb-4">
+            {t('pride.map.title')}
+          </h2>
+          {isLoading ? (
+            <Skeleton className="h-[480px] w-full rounded-container" />
+          ) : (
+            <PrideMap events={filtered} selectedId={selectedId} onSelect={setSelectedId} />
           )}
+        </section>
+
+        {/* Pride trip ideas */}
+        {!isLoading && (
+          <PrideTrips events={filtered} selectedId={selectedId} onSelect={setSelectedId} />
+        )}
+
+        {/* All prides — sortable table */}
+        {!isLoading && (
+          <PrideTable events={filtered} selectedId={selectedId} onSelect={setSelectedId} />
+        )}
+
+        {!isLoading && filtered.length === 0 && (
+          <div className="rounded-container p-12 text-center bg-surface-container">
+            <p className="text-foreground/70">{t('pride.noMatches')}</p>
+            <Button variant="outline" onClick={() => setFilters(EMPTY_FILTERS)} className="mt-4">
+              {t('pride.clearFilters')}
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );
