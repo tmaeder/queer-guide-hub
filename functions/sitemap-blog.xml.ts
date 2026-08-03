@@ -9,7 +9,6 @@ export const onRequest: PagesFunction<Env> = async ({ env }) => {
     'blog_posts',
     'slug,updated_at',
     'slug=not.is.null&seo_indexable=eq.true&published_at=not.is.null',
-    5000,
   ).catch(() => []);
   const entries: SitemapEntry[] = rows
     .filter((r) => typeof r.slug === 'string' && (r.slug as string).length > 0)
