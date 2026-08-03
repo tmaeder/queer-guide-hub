@@ -35,14 +35,28 @@ if (!BASE || !KEY) {
   process.exit(0)
 }
 
-async function callRpc(name) {
+/**
+ * @param {string} name
+ * @param {boolean} [optional] When the RPC does not exist yet, warn and skip instead of
+ *   failing. The gate reads PROD, but a migration only reaches prod on merge to main —
+ *   so a check introduced alongside its RPC would otherwise fail on its own PR, and on
+ *   every unrelated PR opened before that merge. Only "function is missing" is tolerated;
+ *   any other error still fails.
+ */
+async function callRpc(name, optional = false) {
   const res = await fetch(`${BASE}/rest/v1/rpc/${name}`, {
     method: 'POST',
     headers: { apikey: KEY, Authorization: `Bearer ${KEY}`, 'Content-Type': 'application/json' },
     body: '{}',
   })
   if (!res.ok) {
-    console.error(`${name} → HTTP ${res.status}: ${await res.text()}`)
+    const body = await res.text()
+    // PostgREST answers an unknown function with 404 PGRST202.
+    if (optional && res.status === 404 && body.includes('PGRST202')) {
+      console.warn(`⚠ ${name}() is not on prod yet — skipping that check until its migration lands.`)
+      return null
+    }
+    console.error(`${name} → HTTP ${res.status}: ${body}`)
     process.exit(1)
   }
   return res.json()
@@ -73,9 +87,11 @@ if (grantRows.length === 0) {
 // If that view's write grants were already revoked, the check above stays SILENT — which
 // is exactly how admin_media_unified regressed unnoticed. See migration
 // 20260810140000_restore_security_invoker_on_replaced_views.sql.
-const invokerRows = await callRpc('security_invoker_view_regressions')
+const invokerRows = await callRpc('security_invoker_view_regressions', true)
 
-if (invokerRows.length === 0) {
+if (invokerRows === null) {
+  // Not deployed yet; callRpc already warned.
+} else if (invokerRows.length === 0) {
   console.log('✓ Every view registered as security_invoker still has it.')
 } else {
   failed = true

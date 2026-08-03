@@ -56,10 +56,16 @@ alter view public.news_quality_scorecard set (security_invoker = on);
 alter view public.admin_media_unified    set (security_invoker = on);
 
 -- Defense in depth: invoker alone already satisfies the gate, but an aggregate view has
--- no business carrying a write set. REVOKE is idempotent — and a concurrent session
--- already revoked the news_quality_scorecard write set on prod out-of-band, so this is
--- expected to be a no-op there and is kept so the repo alone still describes the end
--- state.
+-- no business carrying a write set. REVOKE is idempotent — #2555 (20260810140000) and the
+-- out-of-band apply recovered as 20260803110928 already revoked the news_quality_scorecard
+-- write set on prod, so this is a no-op there. Kept anyway so the repo alone describes the
+-- end state instead of depending on an out-of-band action having happened.
+--
+-- ALTER ... SET (security_invoker) above is likewise idempotent, so this migration stays
+-- correct whichever order it lands in relative to branch
+-- fix/restore-news-scorecard-security-invoker (20260810150000), which restores the flag on
+-- news_quality_scorecard only. admin_media_unified and the regression gate are covered
+-- here and nowhere else.
 revoke insert, update, delete, truncate on
   public.news_quality_scorecard,
   public.admin_media_unified
