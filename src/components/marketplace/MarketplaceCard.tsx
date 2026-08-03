@@ -9,7 +9,6 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { WishlistPicker } from '@/components/marketplace/WishlistPicker';
 import { Skeleton } from 'boneyard-js/react';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
-import { resolveImageUrl } from '@/utils/resolveImageUrl';
 import type { EntityImageAsset } from '@/hooks/useEntityImageAssets';
 import { useCurrency } from '@/hooks/useCurrency';
 import { useFxRates } from '@/hooks/useFxRates';
@@ -46,7 +45,10 @@ function HighlightedText({ text, query }: { text: string; query?: string }) {
     <>
       {parts.map((p, i) =>
         p.match ? (
-          <mark key={i} className="bg-transparent text-foreground underline underline-offset-2 decoration-foreground/60">
+          <mark
+            key={i}
+            className="bg-transparent text-foreground underline underline-offset-2 decoration-foreground/60"
+          >
             {p.text}
           </mark>
         ) : (
@@ -83,11 +85,14 @@ function MarketplaceCardImpl({
   }
 
   const price = formatListingPrice(listing, { displayCurrency: currency, rates });
-  const listingImage = resolveImageUrl({
+  // Hand <Image> the raw sources instead of pre-resolving to one URL: it walks
+  // optimized → thumbnail → original on error, so a mirror-host outage falls
+  // back to the merchant's own image rather than to a texture.
+  const listingSources = {
     imageUrl: listing.images?.[0] ?? null,
     optimizedUrl: imageAsset?.optimized_url ?? null,
     thumbnailUrl: imageAsset?.thumbnail_url ?? null,
-  });
+  };
   const secondImage = listing.images?.[1] ?? null;
   const outbound = getOutboundLink(listing, surface);
   const isAffiliate = outbound?.isAffiliate ?? false;
@@ -116,11 +121,13 @@ function MarketplaceCardImpl({
         >
           <div className="relative">
             <Image
-              src={listingImage ?? undefined}
+              {...listingSources}
               alt={listing.title}
               aspect="portrait"
               rounded="element"
               priority={priority}
+              fallbackEntityType="marketplace"
+              fallbackKey={listing.id}
             />
             {secondImage && hovered && (
               <img
@@ -158,10 +165,12 @@ function MarketplaceCardImpl({
               tabIndex={-1}
             >
               <Image
-                src={listingImage ?? undefined}
+                {...listingSources}
                 alt={listing.title}
                 aspect="square"
                 rounded="element"
+                fallbackEntityType="marketplace"
+                fallbackKey={listing.id}
               />
             </LocalizedLink>
             {showFavoriteButton && (
@@ -222,11 +231,17 @@ function MarketplaceCardImpl({
                 <span className="mx-1.5">·</span>
               </>
             ) : null}
-            <span>{departmentLabel(listing.department ?? departmentOf(listing.subcategory_slug))}</span>
+            <span>
+              {departmentLabel(listing.department ?? departmentOf(listing.subcategory_slug))}
+            </span>
           </p>
 
           <h3 className="text-15 font-medium leading-snug line-clamp-2 text-balance">
-            {isAdult && <span className="mr-1.5 text-2xs uppercase tracking-wider text-muted-foreground">{t('marketplace.adultBadge', '18+')}</span>}
+            {isAdult && (
+              <span className="mr-1.5 text-2xs uppercase tracking-wider text-muted-foreground">
+                {t('marketplace.adultBadge', '18+')}
+              </span>
+            )}
             <LocalizedLink
               to={`/marketplace/${listing.slug}`}
               onClick={(e) => e.stopPropagation()}
@@ -239,7 +254,9 @@ function MarketplaceCardImpl({
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-baseline gap-1.5 min-w-0">
               {price.modifier && (
-                <span className="text-2xs uppercase tracking-wider text-muted-foreground">{price.modifier}</span>
+                <span className="text-2xs uppercase tracking-wider text-muted-foreground">
+                  {price.modifier}
+                </span>
               )}
               <p
                 className={`text-15 font-semibold leading-none tabular-nums ${outOfStock ? 'line-through text-muted-foreground' : ''}`}
@@ -251,13 +268,19 @@ function MarketplaceCardImpl({
               )}
               {/* FTC-honest without shouting: monetized listings get an Ad marker. */}
               {isAffiliate && (
-                <span className="text-2xs uppercase tracking-wider text-muted-foreground">{t('marketplace.adBadge', 'Ad')}</span>
+                <span className="text-2xs uppercase tracking-wider text-muted-foreground">
+                  {t('marketplace.adBadge', 'Ad')}
+                </span>
               )}
             </div>
-            {queerOwned && <Badge variant="outline">{t('marketplace.queerOwnedBadge', 'Queer-owned')}</Badge>}
+            {queerOwned && (
+              <Badge variant="outline">{t('marketplace.queerOwnedBadge', 'Queer-owned')}</Badge>
+            )}
           </div>
           {outOfStock && (
-            <p className="text-2xs uppercase tracking-wider text-muted-foreground">{t('marketplace.outOfStock', 'Out of stock')}</p>
+            <p className="text-2xs uppercase tracking-wider text-muted-foreground">
+              {t('marketplace.outOfStock', 'Out of stock')}
+            </p>
           )}
           {/* Quiet trust line, revealed on hover where hover exists. */}
           {metaFacts.length > 0 && (
@@ -313,7 +336,9 @@ function RowBody({
       </p>
       <h3 className="text-15 font-medium leading-snug line-clamp-2">
         {isAdult && (
-          <span className="mr-1.5 text-2xs uppercase tracking-wider text-muted-foreground">{t('marketplace.adultBadge', '18+')}</span>
+          <span className="mr-1.5 text-2xs uppercase tracking-wider text-muted-foreground">
+            {t('marketplace.adultBadge', '18+')}
+          </span>
         )}
         <LocalizedLink
           to={`/marketplace/${listing.slug}`}
@@ -329,14 +354,22 @@ function RowBody({
         >
           {price.primary}
         </p>
-        {price.secondary && <span className="text-xs text-muted-foreground">{price.secondary}</span>}
+        {price.secondary && (
+          <span className="text-xs text-muted-foreground">{price.secondary}</span>
+        )}
         {isAffiliate && (
-          <span className="text-2xs uppercase tracking-wider text-muted-foreground">{t('marketplace.adBadge', 'Ad')}</span>
+          <span className="text-2xs uppercase tracking-wider text-muted-foreground">
+            {t('marketplace.adBadge', 'Ad')}
+          </span>
         )}
         {outOfStock && (
-          <span className="text-2xs uppercase tracking-wider text-muted-foreground">{t('marketplace.outOfStock', 'Out of stock')}</span>
+          <span className="text-2xs uppercase tracking-wider text-muted-foreground">
+            {t('marketplace.outOfStock', 'Out of stock')}
+          </span>
         )}
-        {queerOwned && <Badge variant="outline">{t('marketplace.queerOwnedBadge', 'Queer-owned')}</Badge>}
+        {queerOwned && (
+          <Badge variant="outline">{t('marketplace.queerOwnedBadge', 'Queer-owned')}</Badge>
+        )}
       </div>
     </div>
   );

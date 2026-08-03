@@ -122,4 +122,67 @@ describe('Image', () => {
 
     expect(container.querySelector('img')!.getAttribute('src')).toContain('/images/fallback/');
   });
+
+  describe('source ladder', () => {
+    const MIRROR = 'https://img.example.com/mirror.webp';
+    const THUMB = 'https://img.example.com/thumb/mirror.webp';
+    const ORIGINAL = 'https://cdn.merchant.com/product.jpg';
+    const fail = (c: HTMLElement) =>
+      act(() => {
+        c.querySelector('img')!.dispatchEvent(new Event('error'));
+      });
+
+    it('walks optimized → thumbnail → original before conceding to the texture', () => {
+      stubLoadState({ complete: false, naturalWidth: 0 });
+      const { container } = render(
+        <Image
+          optimizedUrl={MIRROR}
+          thumbnailUrl={THUMB}
+          imageUrl={ORIGINAL}
+          alt="listing"
+          fallbackKey="m1"
+        />,
+      );
+      const src = () => container.querySelector('img')!.getAttribute('src');
+
+      expect(src()).toBe(MIRROR);
+      fail(container);
+      expect(src()).toBe(THUMB);
+      fail(container);
+      // The whole point: a dead mirror host must not cost us the merchant's image.
+      expect(src()).toBe(ORIGINAL);
+      fail(container);
+      expect(src()).toContain('/images/fallback/');
+    });
+
+    it('does not point the srcset at a source that already failed', () => {
+      stubLoadState({ complete: false, naturalWidth: 0 });
+      const { container } = render(
+        <Image optimizedUrl={MIRROR} imageUrl={ORIGINAL} alt="listing" fallbackKey="m2" />,
+      );
+
+      fail(container);
+
+      const img = container.querySelector('img')!;
+      expect(img.getAttribute('src')).toBe(ORIGINAL);
+      expect(img.getAttribute('srcset') ?? '').not.toContain(MIRROR);
+    });
+
+    it('does not burn a rung when two sources are the same URL', () => {
+      stubLoadState({ complete: false, naturalWidth: 0 });
+      const { container } = render(
+        <Image
+          optimizedUrl={MIRROR}
+          thumbnailUrl={MIRROR}
+          imageUrl={ORIGINAL}
+          alt="l"
+          fallbackKey="m3"
+        />,
+      );
+
+      fail(container);
+
+      expect(container.querySelector('img')!.getAttribute('src')).toBe(ORIGINAL);
+    });
+  });
 });
