@@ -224,7 +224,9 @@ export function EventFiltersPanel({
           />
         </div>
         <div className="flex flex-col gap-2">
-          <Label htmlFor="age-restriction">{t('pages.events.ageRestriction', 'Age restriction')}</Label>
+          <Label htmlFor="age-restriction">
+            {t('pages.events.ageRestriction', 'Age restriction')}
+          </Label>
           <Select
             value={ageRestriction || 'any'}
             onValueChange={(v) => setAgeRestriction(v === 'any' ? '' : v)}

@@ -8,7 +8,16 @@ import { dedupeEvents } from '@/utils/eventDedup';
 type Event = Database['public']['Tables']['events']['Row'];
 type EventInsert = Database['public']['Tables']['events']['Insert'];
 
-export function useEvents(autoFetch: boolean = true) {
+/**
+ * @param autoFetch  run the initial list query on mount
+ * @param opts.skipDatasetTotal
+ *   Skip the `count: 'exact'` probe. It is an unfiltered COUNT(*) over ~40k
+ *   rows and fires on EVERY mount independently of `autoFetch`, so consumers
+ *   that never read `datasetTotal` (the map) were paying for it silently.
+ *   Pages that render "showing N of M" must leave this off.
+ */
+export function useEvents(autoFetch: boolean = true, opts?: { skipDatasetTotal?: boolean }) {
+  const skipDatasetTotal = opts?.skipDatasetTotal ?? false;
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(autoFetch);
   const [error, setError] = useState<string | null>(null);
@@ -20,6 +29,7 @@ export function useEvents(autoFetch: boolean = true) {
   const [totalCount, setTotalCount] = useState<number | null>(null);
 
   useEffect(() => {
+    if (skipDatasetTotal) return;
     let cancelled = false;
     (async () => {
       const { count } = await supabase
@@ -31,7 +41,7 @@ export function useEvents(autoFetch: boolean = true) {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [skipDatasetTotal]);
 
   useEffect(() => {
     if (!loading) {
@@ -43,99 +53,103 @@ export function useEvents(autoFetch: boolean = true) {
     return () => clearTimeout(timer);
   }, [loading]);
 
-  const fetchEvents = useCallback(async (
-    filters?: {
-      city?: string;
-      cities?: string[];
-      countryId?: string;
-      eventType?: string;
-      eventTypes?: string[];
-      dateRange?: { start: string; end: string };
-      tags?: string[];
-      accessibilityAttributes?: string[];
-      targetGroups?: string[];
-      languages?: string[];
-      ageRestriction?: string;
-      organizerId?: string;
-      search?: string;
-      nearMe?: { lat: number; lng: number };
-      bounds?: { minLat: number; maxLat: number; minLng: number; maxLng: number };
-      limit?: number;
-      includePast?: boolean;
-      featured?: boolean;
-      isFree?: boolean;
-      sort?: 'date-asc' | 'date-desc' | 'popularity' | 'distance' | 'recent';
-    },
-    options?: { page?: number; pageSize?: number; append?: boolean; signal?: AbortSignal },
-  ) => {
-    const signal = options?.signal;
-    if (signal?.aborted) return { fetched: 0, total: null as number | null };
-    let fetchedCount = 0;
-    try {
-      setLoading(true);
-      setLoadingTimedOut(false);
-      const page = options?.page;
-      const pageSize = options?.pageSize ?? 24;
+  const fetchEvents = useCallback(
+    async (
+      filters?: {
+        city?: string;
+        cities?: string[];
+        countryId?: string;
+        eventType?: string;
+        eventTypes?: string[];
+        dateRange?: { start: string; end: string };
+        tags?: string[];
+        accessibilityAttributes?: string[];
+        targetGroups?: string[];
+        languages?: string[];
+        ageRestriction?: string;
+        organizerId?: string;
+        search?: string;
+        nearMe?: { lat: number; lng: number };
+        bounds?: { minLat: number; maxLat: number; minLng: number; maxLng: number };
+        limit?: number;
+        includePast?: boolean;
+        featured?: boolean;
+        isFree?: boolean;
+        sort?: 'date-asc' | 'date-desc' | 'popularity' | 'distance' | 'recent';
+      },
+      options?: { page?: number; pageSize?: number; append?: boolean; signal?: AbortSignal },
+    ) => {
+      const signal = options?.signal;
+      if (signal?.aborted) return { fetched: 0, total: null as number | null };
+      let fetchedCount = 0;
+      try {
+        setLoading(true);
+        setLoadingTimedOut(false);
+        const page = options?.page;
+        const pageSize = options?.pageSize ?? 24;
 
-      // Route through search_events RPC when we need accent-insensitive
-      // city match or overlap-aware date filtering. Geo-bounds / nearMe
-      // still use the legacy client query below (RPC has no geo filter).
-      const useRpc =
-        !filters?.bounds &&
-        !filters?.nearMe &&
-        !filters?.featured &&
-        !filters?.isFree &&
-        !filters?.sort &&
-        !filters?.cities?.length &&
-        !filters?.countryId &&
-        !filters?.eventTypes?.length &&
-        !filters?.languages?.length &&
-        !filters?.ageRestriction &&
-        !filters?.organizerId &&
-        !filters?.tags?.length &&
-        (Boolean(filters?.city) || Boolean(filters?.dateRange));
+        // Route through search_events RPC when we need accent-insensitive
+        // city match or overlap-aware date filtering. Geo-bounds / nearMe
+        // still use the legacy client query below (RPC has no geo filter).
+        const useRpc =
+          !filters?.bounds &&
+          !filters?.nearMe &&
+          !filters?.featured &&
+          !filters?.isFree &&
+          !filters?.sort &&
+          !filters?.cities?.length &&
+          !filters?.countryId &&
+          !filters?.eventTypes?.length &&
+          !filters?.languages?.length &&
+          !filters?.ageRestriction &&
+          !filters?.organizerId &&
+          !filters?.tags?.length &&
+          (Boolean(filters?.city) || Boolean(filters?.dateRange));
 
-      let data: Event[] | null = null;
-      let error: Error | null = null;
-      let count: number | null = null;
+        let data: Event[] | null = null;
+        let error: Error | null = null;
+        let count: number | null = null;
 
-      if (useRpc) {
-        const limit =
-          typeof filters?.limit === 'number'
-            ? filters.limit
-            : typeof page === 'number'
-            ? pageSize
-            : 1000;
-        const offset = typeof page === 'number' ? (page - 1) * pageSize : 0;
+        if (useRpc) {
+          const limit =
+            typeof filters?.limit === 'number'
+              ? filters.limit
+              : typeof page === 'number'
+                ? pageSize
+                : 1000;
+          const offset = typeof page === 'number' ? (page - 1) * pageSize : 0;
 
-        const rpcResult = (await queryWithRetry(() => {
-          const q = supabase.rpc('search_events', {
-            p_city: filters?.city ?? null,
-            p_event_type: filters?.eventType ?? null,
-            p_start: filters?.dateRange?.start ?? null,
-            p_end: filters?.dateRange?.end ?? null,
-            p_tags: filters?.tags?.length ? filters.tags : null,
-            p_accessibility_attributes: filters?.accessibilityAttributes?.length
-              ? filters.accessibilityAttributes
-              : null,
-            p_target_groups: filters?.targetGroups?.length ? filters.targetGroups : null,
-            p_search: filters?.search ?? null,
-            p_include_past: filters?.includePast ?? false,
-            p_limit: limit,
-            p_offset: offset,
-          });
-          return signal ? q.abortSignal(signal) : q;
-        })) as { data: Array<{ total: number | string; event: Event }> | null; error: Error | null };
+          const rpcResult = (await queryWithRetry(() => {
+            const q = supabase.rpc('search_events', {
+              p_city: filters?.city ?? null,
+              p_event_type: filters?.eventType ?? null,
+              p_start: filters?.dateRange?.start ?? null,
+              p_end: filters?.dateRange?.end ?? null,
+              p_tags: filters?.tags?.length ? filters.tags : null,
+              p_accessibility_attributes: filters?.accessibilityAttributes?.length
+                ? filters.accessibilityAttributes
+                : null,
+              p_target_groups: filters?.targetGroups?.length ? filters.targetGroups : null,
+              p_search: filters?.search ?? null,
+              p_include_past: filters?.includePast ?? false,
+              p_limit: limit,
+              p_offset: offset,
+            });
+            return signal ? q.abortSignal(signal) : q;
+          })) as {
+            data: Array<{ total: number | string; event: Event }> | null;
+            error: Error | null;
+          };
 
-        if (rpcResult.error) throw rpcResult.error;
-        const rows = rpcResult.data ?? [];
-        data = rows.map((r) => r.event);
-        count = rows.length > 0 ? Number(rows[0].total) : 0;
-      } else {
-        let query = supabase
-          .from('events')
-          .select(
-            `
+          if (rpcResult.error) throw rpcResult.error;
+          const rows = rpcResult.data ?? [];
+          data = rows.map((r) => r.event);
+          count = rows.length > 0 ? Number(rows[0].total) : 0;
+        } else {
+          let query = supabase
+            .from('events')
+            .select(
+              `
             *,
             venues!venue_id(
               id,
@@ -149,201 +163,217 @@ export function useEvents(autoFetch: boolean = true) {
               email
             )
           `,
-            { count: 'exact' },
-          )
-          .eq('status', 'active')
-          .is('duplicate_of_id', null);
+              { count: 'exact' },
+            )
+            .eq('status', 'active')
+            .is('duplicate_of_id', null);
 
-        const sort = filters?.sort ?? 'date-asc';
-        if (sort === 'date-desc') {
-          query = query.order('is_featured', { ascending: false }).order('start_date', { ascending: false });
-        } else if (sort === 'recent') {
-          query = query.order('created_at', { ascending: false });
+          const sort = filters?.sort ?? 'date-asc';
+          if (sort === 'date-desc') {
+            query = query
+              .order('is_featured', { ascending: false })
+              .order('start_date', { ascending: false });
+          } else if (sort === 'recent') {
+            query = query.order('created_at', { ascending: false });
+          } else {
+            // date-asc (default), distance (client-side after fetch), popularity
+            // (no attendance_count column yet — fall back to featured + date)
+            query = query
+              .order('is_featured', { ascending: false })
+              .order('start_date', { ascending: filters?.includePast ? false : true });
+          }
+
+          const nowIso = new Date().toISOString();
+          if (filters?.includePast) {
+            query = query.lte('start_date', nowIso);
+          } else {
+            query = query.gte('start_date', nowIso);
+          }
+
+          if (filters?.eventTypes?.length) {
+            query = query.in('event_type', filters.eventTypes);
+          } else if (filters?.eventType) {
+            query = query.eq('event_type', filters.eventType);
+          }
+
+          if (filters?.featured) {
+            // D5: the "Featured" preset must reflect what the page shows as
+            // spotlight. Production currently has 0 upcoming events with
+            // is_featured=true; the EventsHeroSpotlight falls back to pride /
+            // festival events. Mirror that fallback so the preset returns
+            // something meaningful instead of always being empty.
+            query = query.or('is_featured.eq.true,event_type.in.(pride,festival)');
+          }
+
+          if (filters?.isFree) {
+            query = query.eq('is_free', true);
+          }
+
+          if (filters?.countryId) {
+            query = query.eq('country_id', filters.countryId);
+          }
+
+          if (filters?.cities?.length) {
+            // ilike on a list — use or() with multiple ilike clauses
+            // Multi-city: chained OR with sanitized ilike clauses
+            const parts = filters.cities.map((c) => `city.ilike.${c.replace(/[,()*]/g, '')}`);
+            query = query.or(parts.join(','));
+          } else if (filters?.city) {
+            query = query.ilike('city', filters.city);
+          }
+
+          if (filters?.languages?.length) {
+            query = query.in('content_language', filters.languages);
+          }
+
+          if (filters?.ageRestriction) {
+            query = query.eq('age_restriction', filters.ageRestriction);
+          }
+
+          if (filters?.organizerId) {
+            query = query.eq('group_id', filters.organizerId);
+          }
+
+          if (filters?.dateRange) {
+            query = query
+              .gte('start_date', filters.dateRange.start)
+              .lte('start_date', filters.dateRange.end);
+          }
+
+          if (filters?.tags && filters.tags.length > 0) {
+            // `events.tags` (added 20260607220000) is the tag surface the search_events RPC
+            // path already filters on. This branch used to hit `pride_subtypes`, which no
+            // code has ever written, so the same UI control returned results via the RPC
+            // path and nothing via this one.
+            query = query.overlaps('tags', filters.tags);
+          }
+
+          if (filters?.accessibilityAttributes?.length) {
+            query = query.overlaps('accessibility_attributes', filters.accessibilityAttributes);
+          }
+
+          if (filters?.targetGroups?.length) {
+            query = query.overlaps('target_groups', filters.targetGroups);
+          }
+
+          if (filters?.bounds) {
+            query = query
+              .gte('latitude', filters.bounds.minLat)
+              .lte('latitude', filters.bounds.maxLat)
+              .gte('longitude', filters.bounds.minLng)
+              .lte('longitude', filters.bounds.maxLng);
+          }
+
+          if (typeof filters?.limit === 'number') {
+            query = query.limit(filters.limit);
+          }
+
+          if (filters?.search) {
+            query = query.or(
+              `title.ilike.%${filters.search}%,description.ilike.%${filters.search}%`,
+            );
+          }
+
+          if (typeof page === 'number') {
+            const from = (page - 1) * pageSize;
+            const to = from + pageSize - 1;
+            query = query.range(from, to);
+          }
+
+          const result = (await queryWithRetry(() =>
+            signal ? query.abortSignal(signal) : query,
+          )) as { data: Event[] | null; error: Error | null; count: number | null };
+          data = result.data;
+          error = result.error;
+          count = result.count;
+        }
+
+        if (signal?.aborted) return { fetched: 0, total: null as number | null };
+        if (error) throw error;
+
+        // D2 client-side safety net for near-duplicates the ingestion pipeline
+        // missed (language variants, slight city-name spellings). Pairs like
+        // "International Mr Leather" + "Internationaler Herr Leder" share venue
+        // + day but slip past duplicate_of_id linking.
+        let eventsData = dedupeEvents((data as Event[]) || []);
+
+        // Attach public attendee counts via SECURITY DEFINER RPC.
+        // event_attendees has restricted SELECT (own rows only); the RPC
+        // returns aggregate counts that are safe to expose to anon.
+        if (eventsData.length > 0) {
+          const ids = eventsData.map((e) => e.id);
+          const { data: counts } = await supabase.rpc('event_attendee_counts', {
+            event_ids: ids,
+          });
+          const byId = new Map(
+            (counts ?? []).map((r: { event_id: string; going_count: number }) => [
+              r.event_id,
+              r.going_count,
+            ]),
+          );
+          eventsData = eventsData.map((e) => ({
+            ...e,
+            attendee_count: byId.get(e.id) ?? 0,
+          })) as Event[];
+        }
+
+        // Filter by distance if nearMe is provided
+        if (filters?.nearMe) {
+          // Filter events within 50km and add distance
+          eventsData = eventsData
+            .filter((event) => event.latitude && event.longitude)
+            .map((event) => ({
+              ...event,
+              distance: calculateDistanceKm(
+                filters.nearMe!.lat,
+                filters.nearMe!.lng,
+                event.latitude!,
+                event.longitude!,
+              ),
+            }))
+            .filter((event: Event & { distance: number }) => event.distance <= 50)
+            .sort(
+              (a: Event & { distance: number }, b: Event & { distance: number }) =>
+                a.distance - b.distance,
+            );
+        }
+
+        if (options?.append) {
+          setEvents((prev) => {
+            const merged = [...prev, ...eventsData];
+            return Array.from(new Map(merged.map((e) => [e.id, e])).values());
+          });
         } else {
-          // date-asc (default), distance (client-side after fetch), popularity
-          // (no attendance_count column yet — fall back to featured + date)
-          query = query.order('is_featured', { ascending: false })
-            .order('start_date', { ascending: filters?.includePast ? false : true });
+          setEvents(eventsData);
         }
 
-        const nowIso = new Date().toISOString();
-        if (filters?.includePast) {
-          query = query.lte('start_date', nowIso);
-        } else {
-          query = query.gte('start_date', nowIso);
-        }
+        fetchedCount = eventsData.length;
+        const resultTotal = typeof count === 'number' ? count : null;
+        setTotalCount(resultTotal);
 
-        if (filters?.eventTypes?.length) {
-          query = query.in('event_type', filters.eventTypes);
-        } else if (filters?.eventType) {
-          query = query.eq('event_type', filters.eventType);
-        }
-
-        if (filters?.featured) {
-          // D5: the "Featured" preset must reflect what the page shows as
-          // spotlight. Production currently has 0 upcoming events with
-          // is_featured=true; the EventsHeroSpotlight falls back to pride /
-          // festival events. Mirror that fallback so the preset returns
-          // something meaningful instead of always being empty.
-          query = query.or('is_featured.eq.true,event_type.in.(pride,festival)');
-        }
-
-        if (filters?.isFree) {
-          query = query.eq('is_free', true);
-        }
-
-        if (filters?.countryId) {
-          query = query.eq('country_id', filters.countryId);
-        }
-
-        if (filters?.cities?.length) {
-          // ilike on a list — use or() with multiple ilike clauses
-          // Multi-city: chained OR with sanitized ilike clauses
-          const parts = filters.cities.map((c) => `city.ilike.${c.replace(/[,()*]/g, '')}`);
-          query = query.or(parts.join(','));
-        } else if (filters?.city) {
-          query = query.ilike('city', filters.city);
-        }
-
-        if (filters?.languages?.length) {
-          query = query.in('content_language', filters.languages);
-        }
-
-        if (filters?.ageRestriction) {
-          query = query.eq('age_restriction', filters.ageRestriction);
-        }
-
-        if (filters?.organizerId) {
-          query = query.eq('group_id', filters.organizerId);
-        }
-
-        if (filters?.dateRange) {
-          query = query.gte('start_date', filters.dateRange.start).lte('start_date', filters.dateRange.end);
-        }
-
-        if (filters?.tags && filters.tags.length > 0) {
-          // `events.tags` (added 20260607220000) is the tag surface the search_events RPC
-          // path already filters on. This branch used to hit `pride_subtypes`, which no
-          // code has ever written, so the same UI control returned results via the RPC
-          // path and nothing via this one.
-          query = query.overlaps('tags', filters.tags);
-        }
-
-        if (filters?.accessibilityAttributes?.length) {
-          query = query.overlaps('accessibility_attributes', filters.accessibilityAttributes);
-        }
-
-        if (filters?.targetGroups?.length) {
-          query = query.overlaps('target_groups', filters.targetGroups);
-        }
-
-        if (filters?.bounds) {
-          query = query
-            .gte('latitude', filters.bounds.minLat)
-            .lte('latitude', filters.bounds.maxLat)
-            .gte('longitude', filters.bounds.minLng)
-            .lte('longitude', filters.bounds.maxLng);
-        }
-
-        if (typeof filters?.limit === 'number') {
-          query = query.limit(filters.limit);
-        }
-
-        if (filters?.search) {
-          query = query.or(`title.ilike.%${filters.search}%,description.ilike.%${filters.search}%`);
-        }
-
-        if (typeof page === 'number') {
-          const from = (page - 1) * pageSize;
-          const to = from + pageSize - 1;
-          query = query.range(from, to);
-        }
-
-        const result = (await queryWithRetry(() => (signal ? query.abortSignal(signal) : query))) as { data: Event[] | null; error: Error | null; count: number | null };
-        data = result.data;
-        error = result.error;
-        count = result.count;
-      }
-
-      if (signal?.aborted) return { fetched: 0, total: null as number | null };
-      if (error) throw error;
-
-      // D2 client-side safety net for near-duplicates the ingestion pipeline
-      // missed (language variants, slight city-name spellings). Pairs like
-      // "International Mr Leather" + "Internationaler Herr Leder" share venue
-      // + day but slip past duplicate_of_id linking.
-      let eventsData = dedupeEvents((data as Event[]) || []);
-
-      // Attach public attendee counts via SECURITY DEFINER RPC.
-      // event_attendees has restricted SELECT (own rows only); the RPC
-      // returns aggregate counts that are safe to expose to anon.
-      if (eventsData.length > 0) {
-        const ids = eventsData.map((e) => e.id);
-        const { data: counts } = await supabase.rpc('event_attendee_counts', {
-          event_ids: ids,
-        });
-        const byId = new Map(
-          (counts ?? []).map((r: { event_id: string; going_count: number }) => [
-            r.event_id,
-            r.going_count,
-          ]),
-        );
-        eventsData = eventsData.map((e) => ({
-          ...e,
-          attendee_count: byId.get(e.id) ?? 0,
-        })) as Event[];
-      }
-
-      // Filter by distance if nearMe is provided
-      if (filters?.nearMe) {
-        // Filter events within 50km and add distance
-        eventsData = eventsData
-          .filter((event) => event.latitude && event.longitude)
-          .map((event) => ({
-            ...event,
-            distance: calculateDistanceKm(
-              filters.nearMe!.lat,
-              filters.nearMe!.lng,
-              event.latitude!,
-              event.longitude!,
-            ),
-          }))
-          .filter((event: Event & { distance: number }) => event.distance <= 50)
-          .sort((a: Event & { distance: number }, b: Event & { distance: number }) => a.distance - b.distance);
-      }
-
-      if (options?.append) {
-        setEvents((prev) => {
-          const merged = [...prev, ...eventsData];
-          return Array.from(new Map(merged.map((e) => [e.id, e])).values());
-        });
-      } else {
-        setEvents(eventsData);
-      }
-
-      fetchedCount = eventsData.length;
-      const resultTotal = typeof count === 'number' ? count : null;
-      setTotalCount(resultTotal);
-
-      if (typeof count === 'number') {
-        if (typeof page === 'number') {
-          const from = (page - 1) * pageSize;
-          setHasMore(from + eventsData.length < count);
+        if (typeof count === 'number') {
+          if (typeof page === 'number') {
+            const from = (page - 1) * pageSize;
+            setHasMore(from + eventsData.length < count);
+          } else {
+            setHasMore(false);
+          }
         } else {
           setHasMore(false);
         }
-      } else {
-        setHasMore(false);
+      } catch (err) {
+        if (signal?.aborted) return { fetched: 0, total: null as number | null };
+        setError(err instanceof Error ? err.message : 'Failed to fetch events');
+      } finally {
+        if (!signal?.aborted) setLoading(false);
       }
-    } catch (err) {
-      if (signal?.aborted) return { fetched: 0, total: null as number | null };
-      setError(err instanceof Error ? err.message : 'Failed to fetch events');
-    } finally {
-      if (!signal?.aborted) setLoading(false);
-    }
-    return { fetched: fetchedCount, total: totalCount } as { fetched: number; total: number | null };
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchEvents must be a stable callback so consumers (Calendar, MapData, etc.) don't trigger re-fetch loops; the returned `total` reflects state-as-of-callback-creation, which is the documented contract.
-  }, []);
+      return { fetched: fetchedCount, total: totalCount } as {
+        fetched: number;
+        total: number | null;
+      };
+    },
+    [],
+  );
 
   const createEvent = async (event: EventInsert) => {
     try {
@@ -357,7 +387,7 @@ export function useEvents(autoFetch: boolean = true) {
         error:
           err instanceof Error
             ? err.message
-            : (err as { message?: string })?.message ?? 'Failed to create event',
+            : ((err as { message?: string })?.message ?? 'Failed to create event'),
       };
     }
   };
@@ -379,7 +409,7 @@ export function useEvents(autoFetch: boolean = true) {
         error:
           err instanceof Error
             ? err.message
-            : (err as { message?: string })?.message ?? 'Failed to update event',
+            : ((err as { message?: string })?.message ?? 'Failed to update event'),
       };
     }
   };
@@ -408,10 +438,7 @@ export function useEvents(autoFetch: boolean = true) {
       // we surface "Failed to update attendance".
       const { error } = await supabase
         .from('event_attendees')
-        .upsert(
-          { event_id: eventId, user_id: userId, status },
-          { onConflict: 'event_id,user_id' },
-        );
+        .upsert({ event_id: eventId, user_id: userId, status }, { onConflict: 'event_id,user_id' });
 
       if (error) throw error;
 
@@ -436,7 +463,7 @@ export function useEvents(autoFetch: boolean = true) {
       // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
       fetchEvents();
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoFetch]);
 
   return {

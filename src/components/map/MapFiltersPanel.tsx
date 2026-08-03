@@ -226,7 +226,10 @@ export const MapFiltersPanel = ({
                       onSelect={() => toggleTag(tag.value)}
                       className="flex items-center gap-2 cursor-pointer"
                     >
-                      <Check size={14} className={cn('shrink-0', active ? 'opacity-100' : 'opacity-0')} />
+                      <Check
+                        size={14}
+                        className={cn('shrink-0', active ? 'opacity-100' : 'opacity-0')}
+                      />
                       <span className="text-sm">{tag.label}</span>
                     </CommandItem>
                   );

@@ -8,7 +8,16 @@ import { queryWithRetry } from '@/utils/fetchWithRetry';
 type Venue = Database['public']['Tables']['venues']['Row'];
 type VenueInsert = Database['public']['Tables']['venues']['Insert'];
 
-export function useVenues(autoFetch: boolean = true) {
+/**
+ * @param autoFetch  run the initial list query on mount
+ * @param opts.skipDatasetTotal
+ *   Skip the `count: 'exact'` probe. It is an unfiltered COUNT(*) over ~19k
+ *   rows and fires on EVERY mount independently of `autoFetch`, so consumers
+ *   that never read `datasetTotal` (the map) were paying for it silently.
+ *   Pages that render "showing N of M" must leave this off.
+ */
+export function useVenues(autoFetch: boolean = true, opts?: { skipDatasetTotal?: boolean }) {
+  const skipDatasetTotal = opts?.skipDatasetTotal ?? false;
   const [venues, setVenues] = useState<Venue[]>([]);
   const [loading, setLoading] = useState(autoFetch);
   const [error, setError] = useState<string | null>(null);
@@ -18,6 +27,7 @@ export function useVenues(autoFetch: boolean = true) {
   const [filteredTotal, setFilteredTotal] = useState<number | null>(null);
 
   useEffect(() => {
+    if (skipDatasetTotal) return;
     let cancelled = false;
     (async () => {
       const { count } = await supabase
@@ -32,7 +42,7 @@ export function useVenues(autoFetch: boolean = true) {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [skipDatasetTotal]);
 
   useEffect(() => {
     if (!loading) {
@@ -108,8 +118,7 @@ export function useVenues(autoFetch: boolean = true) {
           if (filters?.openNow) rpcFilters.openNow = true;
           if (typeof filters?.priceLevel === 'number') rpcFilters.priceLevel = filters.priceLevel;
 
-          const offset =
-            typeof page === 'number' ? (page - 1) * pageSize : 0;
+          const offset = typeof page === 'number' ? (page - 1) * pageSize : 0;
 
           const { data, error: rpcErr } = await queryWithRetry(() =>
             untypedRpc<
@@ -148,7 +157,7 @@ export function useVenues(autoFetch: boolean = true) {
           return { fetched: fetchedCount, total: totalCount };
         } catch (rpcErr) {
           // Fall through to legacy path if RPC is unavailable.
-           
+
           console.warn('[useVenues] rpc_venues_ranked failed, falling back', rpcErr);
         }
       }
@@ -196,7 +205,9 @@ export function useVenues(autoFetch: boolean = true) {
         // Fetch by city_id so correctly-linked venues with mismatched city TEXT
         // still appear, while keeping name-text matches for the (many) venues
         // whose city_id was never backfilled. PostgREST .or() uses * wildcards.
-        const nameClause = filters?.city ? `,and(city_id.is.null,city.ilike.*${filters.city}*)` : '';
+        const nameClause = filters?.city
+          ? `,and(city_id.is.null,city.ilike.*${filters.city}*)`
+          : '';
         query = query.or(`city_id.eq.${filters.cityId}${nameClause}`);
       } else if (filters?.city) {
         query = query.ilike('city', `%${filters.city}%`);
@@ -251,7 +262,11 @@ export function useVenues(autoFetch: boolean = true) {
         query = query.range(from, to);
       }
 
-      const { data, error, count } = (await queryWithRetry(() => query)) as { data: Record<string, unknown>[] | null; error: Error | null; count: number | null };
+      const { data, error, count } = (await queryWithRetry(() => query)) as {
+        data: Record<string, unknown>[] | null;
+        error: Error | null;
+        count: number | null;
+      };
 
       if (error) throw error;
 

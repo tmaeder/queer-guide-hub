@@ -217,9 +217,8 @@ export const ExploreMap = ({
   }, []);
   const pinOpacityExpr = useMemo(
     () =>
-      (isNight
-        ? ['case', ['==', ['get', 'live'], true], 1, 0.45]
-        : 1) as maplibregl.ExpressionSpecification | number,
+      (isNight ? ['case', ['==', ['get', 'live'], true], 1, 0.45] : 1) as
+        maplibregl.ExpressionSpecification | number,
     [isNight],
   );
 
@@ -343,6 +342,9 @@ export const ExploreMap = ({
     onMapHandleRef,
     onViewportChange,
     onViewportChangeProp,
+    // Mirrors useMapAutoFly's own bail-out above: whenever it will fly, the
+    // load-time world fetch is thrown away ~0.3 s later, so skip it.
+    deferInitialFetch: !skipAutoFly && !initialCenter,
     setMapReady,
     setIsCounterStale,
     setCurrentZoom,
