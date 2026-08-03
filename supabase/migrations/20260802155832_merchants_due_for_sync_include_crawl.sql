@@ -1,3 +1,16 @@
+-- RECOVERED FILE (2026-08-02). This version was applied to production without a
+-- committed migration file, which makes `supabase db push` skip — so every
+-- merged migration after it silently never applies, and `migration-versions`
+-- fails on every PR in the repo. It blocked #2522.
+--
+-- Recovered verbatim from supabase_migrations.schema_migrations.statements at
+-- version 20260802155832 (name: merchants_due_for_sync_include_crawl), per the
+-- recovery procedure in CLAUDE.md. NOT authored here and not modified: the body
+-- below is exactly what is already live. `CREATE OR REPLACE` makes re-running it
+-- a no-op against prod while giving every other environment the same state.
+--
+-- The original commentary is preserved as-is.
+
 -- Let provider='crawl' merchants into the hourly sync LRU, now that source-shop-crawl
 -- exists to serve them (they were registered in July 2026 against a crawler that was
 -- never built, so every one has imported zero products).

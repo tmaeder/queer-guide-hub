@@ -30,6 +30,15 @@ for (const [from, to] of [['pubs', 'pub'], ['gay-bars', 'gay-bar'], ['saunas', '
   check(`resolve /tags/${from} -> ${to}`, row?.slug === to, `got ${JSON.stringify(row) || r.status}`);
 }
 
+// 1b. multi-hop merge chains must land on the terminal canonical, not 404.
+// A -> B -> C used to return nothing, because resolve_tag_slug hops once and
+// filters the target on status='active'.
+for (const [from, to] of [['nightclubs', 'night-club'], ['night-clubs', 'night-club'], ['femboyfemboi', 'femboy-femboi']]) {
+  const r = await rpc('resolve_tag_slug', { p_slug: from });
+  const row = Array.isArray(r.body) ? r.body[0] : r.body;
+  check(`chain /tags/${from} -> ${to}`, row?.slug === to, `got ${JSON.stringify(row) || r.status}`);
+}
+
 // 2. merged plurals must no longer be live tags
 const merged = await tbl('unified_tags?slug=in.(pubs,gay-bars,saunas)&status=eq.active&select=slug');
 check('merged plurals not active', Array.isArray(merged.body) && merged.body.length === 0, JSON.stringify(merged.body));

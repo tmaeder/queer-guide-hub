@@ -14,7 +14,7 @@
 
 import { requireAdmin, getCorsHeaders, getServiceClient } from '../_shared/supabase-client.ts';
 import { COUNTRY_ALIASES } from '../_shared/automation-utils.ts';
-import { cityCollisionReason } from '../_shared/city-collision-guard.ts';
+import { cityCollisionReason, proseStateContradiction } from '../_shared/city-collision-guard.ts';
 
 const supabase = getServiceClient();
 
@@ -81,13 +81,21 @@ async function loadReferenceData() {
     countryById.set(c.id, c);
   }
 
-  // Load all cities — exclude placeholder ("tmp-") stubs so content is never
-  // linked to a hidden, low-quality bucket city (the cause of the mis-bucketing
-  // that this function would otherwise never re-fix, since it only reprocesses
-  // rows with a NULL city_id/country_id).
+  // Load all cities, minus two classes that must never receive new content:
+  //
+  //   * placeholder ("tmp-") stubs — linking to a hidden, low-quality bucket
+  //     city is the mis-bucketing this function would otherwise never re-fix,
+  //     since it only reprocesses rows with a NULL city_id/country_id.
+  //   * MERGED rows (`duplicate_of_id is not null`). A merge is the admin
+  //     saying "this row is not a place any more"; leaving it in the cache
+  //     means this job re-populates it every hour and silently undoes the
+  //     merge. The tmp- filter does not cover them — `new-york-city` was a
+  //     merged row with an ordinary slug, and it kept absorbing content.
+  //     The SQL runner `run_event_city_link` has always filtered on this.
   const { data: cities } = await supabase
     .from('cities')
     .select('id, name, country_id, population, region_name')
+    .is('duplicate_of_id', null)
     .not('slug', 'like', 'tmp-%')
     .order('population', { ascending: false, nullsFirst: false });
 
@@ -207,6 +215,15 @@ function extractGeoFromText(
     if (AMBIGUOUS_GEO_NAMES.has(city.name.toLowerCase())) continue;
     const regex = new RegExp(`\\b${escapeRegex(city.name)}\\b`, 'i');
     if (regex.test(text)) {
+      // Same-name collision, prose edition. A bare "Portland" cannot tell
+      // Portland, Maine from Portland, Oregon, and `cities` holds only the
+      // latter. AMBIGUOUS_GEO_NAMES above does not cover this — it lists common
+      // English words, not names whose twin the reference table cannot hold.
+      const collision = proseStateContradiction(city, text);
+      if (collision) {
+        console.log(`[news] city link refused — ${collision}`);
+        continue;
+      }
       foundCityIds.add(city.id);
       // Also add the city's country
       if (city.country_id) foundCountryIds.add(city.country_id);

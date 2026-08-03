@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import type { FieldConfig } from '@/types/cms';
 import { displayableFields } from '../fieldCapabilities';
+import { DragReorderList, DragReorderRow } from './SortableRow';
 
 /**
  * Choose which fields a view shows, and in what order.
@@ -76,40 +77,42 @@ export function PropertyManager({ fields, columns, onChange }: Props) {
       {shown.length === 0 ? (
         <p className="text-sm text-muted-foreground py-1">No properties shown.</p>
       ) : (
-        <ul className="flex flex-col">
+        <DragReorderList ids={shown} onReorder={onChange}>
           {shown.map((name, i) =>
             matches(name) ? (
-              <li key={name} className="flex items-center gap-2 py-1">
-                <Switch
-                  checked
-                  aria-label={`Hide ${label(name)}`}
-                  onCheckedChange={() => onChange(shown.filter((n) => n !== name))}
-                />
-                <span className="text-sm flex-1 min-w-0 truncate">{label(name)}</span>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-7 w-7 p-0"
-                  aria-label={`Move ${label(name)} up`}
-                  disabled={i === 0}
-                  onClick={() => move(i, i - 1)}
-                >
-                  <ChevronUp size={14} />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-7 w-7 p-0"
-                  aria-label={`Move ${label(name)} down`}
-                  disabled={i === shown.length - 1}
-                  onClick={() => move(i, i + 1)}
-                >
-                  <ChevronDown size={14} />
-                </Button>
-              </li>
+              <div key={name} className="py-1">
+                <DragReorderRow id={name} label={label(name)}>
+                  <Switch
+                    checked
+                    aria-label={`Hide ${label(name)}`}
+                    onCheckedChange={() => onChange(shown.filter((n) => n !== name))}
+                  />
+                  <span className="text-sm flex-1 min-w-0 truncate">{label(name)}</span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 w-7 p-0"
+                    aria-label={`Move ${label(name)} up`}
+                    disabled={i === 0}
+                    onClick={() => move(i, i - 1)}
+                  >
+                    <ChevronUp size={14} />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 w-7 p-0"
+                    aria-label={`Move ${label(name)} down`}
+                    disabled={i === shown.length - 1}
+                    onClick={() => move(i, i + 1)}
+                  >
+                    <ChevronDown size={14} />
+                  </Button>
+                </DragReorderRow>
+              </div>
             ) : null,
           )}
-        </ul>
+        </DragReorderList>
       )}
 
       <div className="flex items-center justify-between mt-4 mb-1">

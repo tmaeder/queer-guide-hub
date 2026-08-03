@@ -10,8 +10,7 @@ export const onRequest: PagesFunction<Env> = async ({ env }) => {
     env,
     'events',
     'slug,updated_at',
-    `slug=not.is.null&seo_indexable=eq.true&status=neq.cancelled&start_date=gte.${today}&safety_gated=eq.false`,
-    5000,
+    `slug=not.is.null&seo_indexable=eq.true&status=neq.cancelled&start_date=gte.${today}&safety_gated=eq.false&duplicate_of_id=is.null`,
   );
   const entries: SitemapEntry[] = rows
     .filter((r) => typeof r.slug === 'string' && (r.slug as string).length > 0)

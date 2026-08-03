@@ -3,6 +3,7 @@
 // Strict guards prevent false positives (e.g. "Georgia" the US state vs the country).
 
 import type { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
+import { proseStateContradiction } from '../city-collision-guard.ts'
 
 export type EntityType = 'country' | 'city' | 'region' | 'venue' | 'event' | 'personality' | 'organisation'
 
@@ -86,9 +87,11 @@ export async function resolveEntities(
     if (!name || name.length < 2) continue
 
     // Cheap exact-ish prefilter via ilike; trigram score for ranking.
+    // Cities also select `region_name`: it is the only thing the collision
+    // guard below can corroborate the article's prose against.
     const { data, error } = await supabase
       .from(table)
-      .select(`id, ${nameColumn}`)
+      .select(table === 'cities' ? `id, ${nameColumn}, region_name` : `id, ${nameColumn}`)
       .ilike(nameColumn, `%${name.slice(0, 60)}%`)
       .limit(8)
 
@@ -101,12 +104,17 @@ export async function resolveEntities(
     const rows = (data ?? []) as unknown as Array<Record<string, unknown>>
     if (!rows.length) continue // no candidate in DB — nothing to review
 
-    let best: EntityCandidate | null = null
+    let best: (EntityCandidate & { regionName: string | null }) | null = null
     for (const row of rows) {
       const candidateName = String(row[nameColumn] ?? '')
       const score = trigramSimilarity(name, candidateName)
       if (!best || score > best.score) {
-        best = { id: String(row.id), name: candidateName, score }
+        best = {
+          id: String(row.id),
+          name: candidateName,
+          score,
+          regionName: row.region_name == null ? null : String(row.region_name),
+        }
       }
     }
     if (!best) continue
@@ -117,8 +125,24 @@ export async function resolveEntities(
       continue
     }
 
+    // Same-name city collision. `cities` cannot hold Portland ME and Portland
+    // OR at once, so a name match alone proved nothing and 13 Maine articles
+    // were tagged onto Portland, Oregon's city page. Review rather than link
+    // when the article's own prose names a different state.
+    if (entityType === 'city') {
+      const collision = proseStateContradiction(
+        { name: best.name, region_name: best.regionName },
+        body,
+      )
+      if (collision) {
+        needsReview.push({ name: best.name, score: best.score, reason: `city_collision:${collision}` })
+        continue
+      }
+    }
+
     if (best.score >= AUTO_LINK_MIN) {
-      linked.push(best)
+      // Drop the internal regionName so the emitted payload shape is unchanged.
+      linked.push({ id: best.id, name: best.name, score: best.score })
     } else if (best.score >= REVIEW_MIN) {
       needsReview.push({ name: best.name, score: best.score, reason: 'low_confidence' })
     }

@@ -105,3 +105,24 @@ describe('empty states', () => {
     expect(screen.queryByText('deleted_field')).not.toBeInTheDocument();
   });
 });
+
+describe('drag affordance', () => {
+  it('gives each shown property a named drag handle', () => {
+    setup(['name', 'category']);
+    expect(screen.getByRole('button', { name: 'Reorder Name' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Reorder Category' })).toBeInTheDocument();
+  });
+
+  it('keeps the up/down buttons — drag is layered on, not a replacement', () => {
+    // Drag is unusable by keyboard-only and screen-reader users on its own, so
+    // the buttons stay the contract and these tests drive them.
+    setup(['name', 'category']);
+    expect(screen.getByRole('button', { name: 'Move Category up' })).toBeEnabled();
+  });
+
+  it('does not give hidden properties a handle', () => {
+    // Order is only meaningful for what is shown.
+    setup(['name']);
+    expect(screen.queryByRole('button', { name: 'Reorder Category' })).not.toBeInTheDocument();
+  });
+});

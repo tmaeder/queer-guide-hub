@@ -1,5 +1,6 @@
 import React, { Suspense } from 'react';
 import { useLocation } from 'react-router';
+import { LucideProvider } from 'lucide-react';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { MobileBottomNav } from '@/components/layout/MobileBottomNav';
@@ -65,8 +66,16 @@ export const LayoutShell = ({ children }: { children: React.ReactNode }) => {
   // Key route transitions by the first non-locale segment so detail-page
   // tab switches don't trigger a full fade (only true route changes do).
 
-  return (
-    <div className="min-h-screen flex flex-col bg-background">
+  // PASTE-UP iconography. lucide stamps `.lucide` on every icon it renders and
+  // exposes a context that sets strokeWidth for a whole subtree, so a thicker,
+  // square-cut mark costs one provider plus one CSS rule instead of an
+  // icon-library swap across the ~780 files that import icons. Scoped to the
+  // public tree — the admin console keeps lucide's softer default.
+  const tree = (
+    <div
+      className="min-h-screen flex flex-col bg-background"
+      {...(!isAdmin ? { 'data-ink-icons': '' } : {})}
+    >
       {/* Skip link for keyboard users (a11y: WCAG 2.4.1). AdminShell renders
         its own ("Skip to admin content"), so this one would just be a
         competing first tab stop inside the console. */}
@@ -79,13 +88,15 @@ export const LayoutShell = ({ children }: { children: React.ReactNode }) => {
         </a>
       )}
 
-      {/* Aceternity-style ambient backdrop: solid + dot grid overlay. */}
+      {/* PASTE-UP backdrop: the page is a sheet of stock, so the ambient layer
+          is paper grain rather than the old dot grid. The grid read as a
+          designer's canvas; grain reads as something printed. */}
       {!isAdmin && (
         <>
           <div aria-hidden="true" className="fixed inset-0 z-0 pointer-events-none bg-background" />
           <div
             aria-hidden="true"
-            className="fixed inset-0 z-0 pointer-events-none bg-grid-dots opacity-50"
+            className="fixed inset-0 z-0 pointer-events-none paper-grain"
           />
         </>
       )}
@@ -140,4 +151,6 @@ export const LayoutShell = ({ children }: { children: React.ReactNode }) => {
       </ErrorBoundary>
     </div>
   );
+
+  return isAdmin ? tree : <LucideProvider strokeWidth={2.5}>{tree}</LucideProvider>;
 };

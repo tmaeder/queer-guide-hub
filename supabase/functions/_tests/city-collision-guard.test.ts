@@ -1,8 +1,11 @@
 // Unit tests for the same-name city collision guards.
 // Run with: cd supabase/functions/_tests && deno test city-collision-guard.test.ts
 import { assertEquals } from 'jsr:@std/assert'
+import type { CollisionCandidate } from '../_shared/city-collision-guard.ts'
 import {
   cityCollisionReason,
+  claimedStatesFromText,
+  proseStateContradiction,
   claimedStateFromMetroSlug,
   normalizeRegion,
   regionsContradict,
@@ -147,4 +150,101 @@ Deno.test('claimedStateFromMetroSlug reads the suffix, hyphenated or not', () =>
   assertEquals(claimedStateFromMetroSlug('portland', 'Portland'), null)
   assertEquals(claimedStateFromMetroSlug(null, 'Portland'), null)
   assertEquals(claimedStateFromMetroSlug('portlandzz', 'Portland'), null)
+})
+
+// ── Guard C: corroboration from prose (the news path) ────────────────
+//
+// Titles below are real rows from `news_article_cities`, all 13 of which were
+// attached to Portland, Oregon while naming Maine.
+
+Deno.test('guard C: a Maine article does not link to Portland, Oregon', () => {
+  for (const title of [
+    "Maine's Highest Court Keeps Trans Athlete Referendum Off Ballot",
+    "Maine Senate candidate Troy Jackson's greatest political asset may be that he's boring",
+    // This row's TITLE says "Mainers", which \bMaine\b deliberately does not
+    // match — demonyms are left alone to keep the rule conservative. It is
+    // caught by its excerpt, which is why both call sites pass title+excerpt.
+    'Trans Mainers Fight Back Against ICE. Jesse Holleran does coms for Equality Maine by day.',
+    "Paganism's Growing Popularity in Maine",
+  ]) {
+    assertEquals(typeof proseStateContradiction(PORTLAND_OR, title), 'string', title)
+  }
+})
+
+Deno.test('guard C: the other measured collision pairs block', () => {
+  const cases: [CollisionCandidate, string][] = [
+    [CHARLESTON_IL, 'Trans girl wins West Virginia state championship'],
+    [SPRINGFIELD_VT, 'Anti-trans bill advances in Missouri'],
+    [{ name: 'Columbia', region_name: 'Missouri' }, "Lindsey Graham's sister eyes a South Carolina Senate seat"],
+    [{ name: 'Dover', region_name: 'New Hampshire' }, 'Delaware Governor Signs Parentage Bill'],
+    [{ name: 'Glendale', region_name: 'California' }, 'The Heartbreaking Mystery of Jhessye Shockley in Arizona'],
+    [{ name: 'Jackson', region_name: 'Wyoming' }, 'A Mississippi clinic closes its doors'],
+  ]
+  for (const [city, text] of cases) {
+    assertEquals(typeof proseStateContradiction(city, text), 'string', `${city.name}: ${text}`)
+  }
+})
+
+Deno.test('guard C: naming the candidate own state clears it', () => {
+  // Corroboration outranks a competing mention.
+  assertEquals(proseStateContradiction(PORTLAND_OR, 'Portland, Oregon opens a new shelter'), null)
+  assertEquals(
+    proseStateContradiction(PORTLAND_OR, 'Oregon and Maine both expanded trans healthcare'),
+    null,
+  )
+})
+
+Deno.test('guard C: a text naming no state is inert', () => {
+  assertEquals(proseStateContradiction(PORTLAND_OR, 'Portland Pride draws record crowds'), null)
+  assertEquals(proseStateContradiction(PORTLAND_OR, ''), null)
+  assertEquals(proseStateContradiction(PORTLAND_OR, null), null)
+})
+
+// ── Guard C false positives, measured on prod ────────────────────────
+//
+// The unnarrowed rule ("any disagreeing state blocks") fired on 873 of 9,538 US
+// city links and was overwhelmingly wrong. These are the shapes that killed it.
+
+Deno.test('guard C: an unambiguous city name is never blocked by a passing mention', () => {
+  // Seattle has no twin, so an article referencing Indiana is not evidence.
+  assertEquals(
+    proseStateContradiction({ name: 'Seattle', region_name: 'Washington' },
+      "Stefanie Dolson's message to Sophie Cunningham: 'Trans rights are human rights' (Indiana)"), null,
+  )
+  // A SCOTUS roundup naming several states must not unlink Detroit.
+  assertEquals(
+    proseStateContradiction({ name: 'Detroit', region_name: 'Michigan' },
+      'SCOTUS Summary: LGBTQ Rights Cases from Iowa and New York'), null,
+  )
+})
+
+Deno.test('guard C: a state inside the city own name is not a contradiction', () => {
+  // "Kansas City, Missouri" vs every mention of Kansas — the largest
+  // false-positive group before the substring exclusion.
+  assertEquals(
+    proseStateContradiction({ name: 'Kansas City', region_name: 'Missouri' },
+      "Kansas Revokes Driver's Licenses from Trans Residents"), null,
+  )
+  assertEquals(claimedStatesFromText('Kansas voids licenses', 'Kansas City'), [])
+})
+
+Deno.test('guard C: Washington is not a claimed-state signal', () => {
+  // State, city, and the everyday name for DC. It produced false blocks on
+  // Arlington, Virginia, a DC-metro city.
+  assertEquals(claimedStatesFromText('Lawmakers Honored at AIDSWatch in Washington', 'Arlington'), [])
+  assertEquals(
+    proseStateContradiction({ name: 'Alexandria', region_name: 'Virginia' },
+      'Rally in Washington draws hundreds'), null,
+  )
+})
+
+Deno.test('guard C: an empty region_name cannot be corroborated against', () => {
+  assertEquals(proseStateContradiction({ name: 'Portland', region_name: null }, 'A Maine story'), null)
+})
+
+Deno.test('guard C: state matching is word-bounded', () => {
+  // "Indianapolis" contains "Indiana"; "Delaware County" is a real trap only
+  // if we match loosely.
+  assertEquals(claimedStatesFromText('Indianapolis hosts the finals', 'Aurora'), [])
+  assertEquals(claimedStatesFromText('Ohioans rally downtown', 'Aurora'), [])
 })

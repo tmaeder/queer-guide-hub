@@ -13,7 +13,6 @@ import { resolveImageUrl } from '@/utils/resolveImageUrl';
 import { isValidImageUrl } from '@/lib/images/resolveEntityImage';
 import type { EntityImageAsset } from '@/hooks/useEntityImageAssets';
 import { safeText } from '@/utils/safeDisplay';
-import { formatNewsTag } from '@/lib/newsTags';
 import { resolvePublisherName } from '@/lib/publisherName';
 import { Skeleton } from 'boneyard-js/react';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
@@ -33,7 +32,9 @@ type NewsArticle = Tables<'news_articles'> & {
 const NewsCardFixture = () => (
   <Card>
     <CardHeader style={{ flexDirection: 'column' }} className="flex gap-2">
-      <p className="text-2xs uppercase tracking-wider text-muted-foreground">Politics · Source · 2h ago</p>
+      <p className="text-2xs uppercase tracking-wider text-muted-foreground">
+        Politics · Source · 2h ago
+      </p>
       <h3 className="text-base font-semibold leading-tight">Sample News Headline</h3>
     </CardHeader>
     <CardContent style={{ flexDirection: 'column' }} className="flex gap-2">
@@ -102,7 +103,9 @@ const NewsCardImpl = ({
   cityNames: _cityNames = {},
   countryNames: _countryNames = {},
   sourcesMap = {},
-  tags = [],
+  // Kept on the props contract for callers, but no longer rendered: tags used
+  // to stand in for a missing category, which disguised the classification gap.
+  tags: _tags = [],
   categoriesMap = {},
   variant = 'default',
   priority = false,
@@ -160,17 +163,18 @@ const NewsCardImpl = ({
     typeof articleAny.category_canonical === 'string'
       ? (articleAny.category_canonical as string)
       : null;
+  // category_canonical is authoritative; the legacy `category` column is frozen
+  // (free text, last written 2026-02) and read only as a fallback for rows the
+  // backfill has not reached yet. Deliberately no tag fallback: showing an
+  // arbitrary tag in the category slot manufactured a plausible-looking
+  // category out of unrelated data, which is why four months of entirely
+  // uncategorised articles looked perfectly normal on the page.
   const displayCategory = !isHiddenCategory(canonical)
     ? canonical
     : !isHiddenCategory(article.category)
       ? article.category
       : null;
-  const firstUsableTag = tags.find((t) => !isHiddenCategory(t));
-  const fallbackCategoryFromTag =
-    !displayCategory && firstUsableTag ? formatNewsTag(firstUsableTag) : null;
-  const categoryDisplay = displayCategory
-    ? getCategoryLabel(displayCategory)
-    : fallbackCategoryFromTag;
+  const categoryDisplay = displayCategory ? getCategoryLabel(displayCategory) : null;
   const isPremium = (article as Record<string, unknown>).is_premium === true;
 
   const resolvedSrc = resolveImageUrl({
@@ -303,9 +307,7 @@ const NewsCardImpl = ({
             {safeTitle}
           </h3>
           {langBadge}
-          {dek && (
-            <p className="text-15 italic text-muted-foreground leading-relaxed">{dek}</p>
-          )}
+          {dek && <p className="text-15 italic text-muted-foreground leading-relaxed">{dek}</p>}
           <div className="flex items-center gap-4 text-2xs uppercase tracking-wider text-muted-foreground mt-2">
             {authorName && <span>By {authorName}</span>}
             {readingTime !== null && (
@@ -543,9 +545,7 @@ const NewsCardImpl = ({
                   <BookOpen size={12} aria-hidden="true" /> {readingTime} min
                 </span>
               )}
-              {authorName && (
-                <span className="truncate">By {authorName}</span>
-              )}
+              {authorName && <span className="truncate">By {authorName}</span>}
             </div>
 
             <div

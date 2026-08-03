@@ -46,4 +46,4 @@ SELECT cron.schedule(
     timeout_milliseconds := 150000
   );
   $job$
-);
+);;

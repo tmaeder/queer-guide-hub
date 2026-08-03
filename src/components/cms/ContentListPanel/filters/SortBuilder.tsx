@@ -12,6 +12,7 @@ import {
 import type { FieldConfig } from '@/types/cms';
 import { sortableFields } from '../fieldCapabilities';
 import type { SortSpec } from '../viewSpec';
+import { DragReorderList, DragReorderRow } from './SortableRow';
 
 /**
  * Ordered multi-sort. List order IS precedence, matching how PostgREST applies
@@ -84,85 +85,96 @@ export function SortRows({ fields, sorts, onChange }: Props) {
 
   return (
     <div className="flex flex-col gap-2">
-      {sorts.map((s, i) => {
-        const field = fields.find((f) => f.name === s.field);
-        const [asc, desc] = directionLabels(field);
-        const label = field?.label ?? s.field;
-        return (
-          <div key={s.field} className="flex items-center gap-2">
-            <span className="text-xs text-muted-foreground w-4 shrink-0">{i + 1}</span>
+      <DragReorderList
+        ids={sorts.map((x) => x.field)}
+        onReorder={(ids) =>
+          onChange(
+            ids.map((id) => sorts.find((x) => x.field === id)).filter((x): x is SortSpec => !!x),
+          )
+        }
+      >
+        {sorts.map((s, i) => {
+          const field = fields.find((f) => f.name === s.field);
+          const [asc, desc] = directionLabels(field);
+          const label = field?.label ?? s.field;
+          return (
+            <div key={s.field} className="py-0.5">
+              <DragReorderRow id={s.field} label={label}>
+                <span className="text-xs text-muted-foreground w-4 shrink-0">{i + 1}</span>
 
-            <Select
-              value={s.field}
-              onValueChange={(name) =>
-                onChange(sorts.map((x, xi) => (xi === i ? { ...x, field: name } : x)))
-              }
-            >
-              <SelectTrigger className="h-8 w-[170px] shrink-0" aria-label="Sort field">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {candidates.map((f) => (
-                  <SelectItem
-                    key={f.name}
-                    value={f.name}
-                    disabled={f.name !== s.field && used.has(f.name)}
-                  >
-                    {f.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+                <Select
+                  value={s.field}
+                  onValueChange={(name) =>
+                    onChange(sorts.map((x, xi) => (xi === i ? { ...x, field: name } : x)))
+                  }
+                >
+                  <SelectTrigger className="h-8 w-[170px] shrink-0" aria-label="Sort field">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {candidates.map((f) => (
+                      <SelectItem
+                        key={f.name}
+                        value={f.name}
+                        disabled={f.name !== s.field && used.has(f.name)}
+                      >
+                        {f.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
 
-            <Select
-              value={s.dir}
-              onValueChange={(dir) =>
-                onChange(
-                  sorts.map((x, xi) => (xi === i ? { ...x, dir: dir as 'asc' | 'desc' } : x)),
-                )
-              }
-            >
-              <SelectTrigger className="h-8 flex-1 min-w-0" aria-label="Sort direction">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="asc">{asc}</SelectItem>
-                <SelectItem value="desc">{desc}</SelectItem>
-              </SelectContent>
-            </Select>
+                <Select
+                  value={s.dir}
+                  onValueChange={(dir) =>
+                    onChange(
+                      sorts.map((x, xi) => (xi === i ? { ...x, dir: dir as 'asc' | 'desc' } : x)),
+                    )
+                  }
+                >
+                  <SelectTrigger className="h-8 flex-1 min-w-0" aria-label="Sort direction">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="asc">{asc}</SelectItem>
+                    <SelectItem value="desc">{desc}</SelectItem>
+                  </SelectContent>
+                </Select>
 
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-8 w-8 p-0 shrink-0"
-              aria-label={`Move ${label} up`}
-              disabled={i === 0}
-              onClick={() => move(i, i - 1)}
-            >
-              <ChevronUp size={14} />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-8 w-8 p-0 shrink-0"
-              aria-label={`Move ${label} down`}
-              disabled={i === sorts.length - 1}
-              onClick={() => move(i, i + 1)}
-            >
-              <ChevronDown size={14} />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-8 w-8 p-0 shrink-0"
-              aria-label={`Remove sort: ${label}`}
-              onClick={() => onChange(sorts.filter((_, xi) => xi !== i))}
-            >
-              <X size={14} />
-            </Button>
-          </div>
-        );
-      })}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 w-8 p-0 shrink-0"
+                  aria-label={`Move ${label} up`}
+                  disabled={i === 0}
+                  onClick={() => move(i, i - 1)}
+                >
+                  <ChevronUp size={14} />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 w-8 p-0 shrink-0"
+                  aria-label={`Move ${label} down`}
+                  disabled={i === sorts.length - 1}
+                  onClick={() => move(i, i + 1)}
+                >
+                  <ChevronDown size={14} />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 w-8 p-0 shrink-0"
+                  aria-label={`Remove sort: ${label}`}
+                  onClick={() => onChange(sorts.filter((_, xi) => xi !== i))}
+                >
+                  <X size={14} />
+                </Button>
+              </DragReorderRow>
+            </div>
+          );
+        })}
+      </DragReorderList>
       {addButton}
     </div>
   );
