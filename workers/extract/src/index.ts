@@ -2,7 +2,7 @@
  * queer-guide extract worker — self-hosted deepcrawl extraction service.
  *
  *   POST /extract  { url, render?:bool, crawl?:bool }
- *     → { url, finalUrl, markdown, meta, jsonLd, links?, method, charCount }
+ *     → { url, finalUrl, markdown, meta, jsonLd, microdata?, links?, method, charCount }
  *   GET  /health   → { ok: true }
  *
  * Internal-only (X-Internal-Secret). Static path: fetch → cheerio main-content →
@@ -126,6 +126,7 @@ export default {
         markdown: result.markdown,
         meta: result.meta,
         jsonLd: result.jsonLd,
+        microdata: result.microdata,
         links: body.crawl ? result.links : undefined,
         method,
         contentMethod: result.contentMethod,

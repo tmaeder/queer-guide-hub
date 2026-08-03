@@ -93,7 +93,13 @@ const MERCHANT_TYPE_RULES: Array<{ slug: string; rx: RegExp }> = [
   { slug: 'swimwear', rx: /(bademode|bikini|badeanzug|swim)/i },
   { slug: 'underwear_and_swimwear', rx: /(slip|string|tanga|thong|panty|pants|jock|boxer|unterwäsche|unterhose|\bbh\b|dessous|babydoll|neglig(é|e)|bodystocking|\bbody\b|straps|strumpf|strümpfe|cors(age|et)|korsett|korsage|bustier|mieder|teddy|chemise|peignoir|unterrock|ouvert|\brio\b|hotpants|underwear|briefs|lingerie)/i },
   { slug: 'jewelry_and_pins', rx: /(kette|schmuck|armband|anklet|necklace|bracelet|jewel|pendant|\bpins?\b(?!-)|brooch)/i },
-  { slug: 'books_and_art', rx: /(buch|\bdvd\b|kalender|spiel|würfel|karten|book|calendar|poster|\bprint\b|\bzine\b|game)/i },
+  // Book-trade type labels (Paperback/Hardback/Taschenbuch/…) must resolve HERE at
+  // 0.95, not fall through to Tier 2 — there `jewelry_and_pins` (\bring\b, \bchain\b)
+  // and `bdsm_and_bondage` (\bgag\b, whip) are tested BEFORE books_and_art, so a
+  // novel whose blurb mentions a ring gets retyped to Jewelry at 0.78.
+  // `buch` already covers Taschenbuch/Hörbuch/Sachbuch by substring, but NOT the
+  // umlauted plural `bücher`, which is why it is listed separately.
+  { slug: 'books_and_art', rx: /(buch|bücher|gebunden|roman|belletristik|\bdvd\b|kalender|spiel|würfel|karten|book|paperback|hardback|hardcover|audiobook|ebook|calendar|poster|\bprint\b|\bzine\b|game)/i },
   { slug: 'apparel_and_accessories', rx: /(kleid|rock|\btop\b|shirt|hose|leggings|shorts|overall|kimono|mantel|tunika|schürze|handschuh|socken|\bhut\b|kostüm|perücke|stulpen|hemd|gürtel|tasche|schuh|apparel|hoodie|jacket|dress|skirt)/i },
 ]
 
