@@ -137,23 +137,17 @@ export const Image = ({
 
   const [error, setError] = React.useState(false);
   const [loaded, setLoaded] = React.useState(false);
-  // Read in the stall-timer without re-arming it; the effect closure captures
-  // `loaded === false` at creation, so a state read there is always stale.
-  const loadedRef = React.useRef(false);
+  const imgRef = React.useRef<HTMLImageElement | null>(null);
 
-  // Reset on src change, and guard against Pexels-style 200-then-stall URLs
-  // that never fire onLoad/onError (8s → treat as failed). Only armed for
-  // priority (above-fold) images — lazy grid images legitimately stay unloaded
-  // while off-screen and must not be force-failed.
-  React.useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- syncing state with external src prop
+  // Reset on src change. Done during render rather than in an effect so the
+  // reset can never land AFTER the DOM sync below and clobber it — that
+  // ordering is what made the fallback stick over a perfectly good image.
+  const [renderedSrc, setRenderedSrc] = React.useState(resolved);
+  if (renderedSrc !== resolved) {
+    setRenderedSrc(resolved);
     setError(false);
     setLoaded(false);
-    loadedRef.current = false;
-    if (!resolved || !priority) return;
-    const timer = setTimeout(() => setError((prev) => prev || !loadedRef.current), 8000);
-    return () => clearTimeout(timer);
-  }, [resolved, priority]);
+  }
 
   const fallback = React.useMemo(
     () => getFallbackImage(fallbackEntityType, fallbackKey),
@@ -162,7 +156,7 @@ export const Image = ({
 
   const showingFallback = !resolved || error;
   const showIconTile = showingFallback && !!FallbackIcon;
-  const effectiveSrc = showIconTile ? null : (showingFallback ? fallback : resolved);
+  const effectiveSrc = showIconTile ? null : showingFallback ? fallback : resolved;
   // Logos render contained; the texture fallback and icon tile always cover.
   const useContain = fit === 'contain' && !showingFallback && !showIconTile;
 
@@ -179,6 +173,36 @@ export const Image = ({
       ? `${thumbnailUrl} 400w, ${optimizedUrl} 1600w`
       : undefined;
   const srcSet = cfSrcSet ?? externalSrcSet;
+
+  // `onLoad` is not a reliable signal that an image loaded — it only says it
+  // loaded AFTER React attached the listener. A cached image (back navigation,
+  // a second card showing the same photo, a warm bfcache) finishes during the
+  // same commit, so the event never fires at all. Two visible consequences,
+  // both fixed by reading the element instead of trusting the event: the img
+  // stays at `opacity: 0` behind `bg-muted` forever, and the stall guard below
+  // then concludes it failed and swaps the fallback texture in over a photo
+  // that downloaded fine.
+  React.useLayoutEffect(() => {
+    const el = imgRef.current;
+    if (!el?.complete || el.naturalWidth === 0) return;
+    setLoaded(true);
+  }, [effectiveSrc, srcSet]);
+
+  // Guard against Pexels-style 200-then-stall URLs that never fire
+  // onLoad/onError (8s → treat as failed). Only armed for priority (above-fold)
+  // images — lazy grid images legitimately stay unloaded while off-screen and
+  // must not be force-failed.
+  React.useEffect(() => {
+    if (!resolved || !priority || error) return;
+    const timer = setTimeout(() => {
+      // Ask the element, never the missable event: an image that finished
+      // without firing onLoad must not be replaced by the fallback.
+      const el = imgRef.current;
+      if (el?.complete && el.naturalWidth > 0) setLoaded(true);
+      else setError(true);
+    }, 8000);
+    return () => clearTimeout(timer);
+  }, [resolved, priority, error]);
   const referrerPolicy = effectiveSrc ? imageReferrerPolicy(effectiveSrc) : undefined;
 
   // Person photos are framed head-and-shoulders; the face sits in the upper
@@ -189,17 +213,17 @@ export const Image = ({
   // Landscape venue/event/city photos keep center (heads aren't the subject).
   const effectiveObjectPosition =
     objectPosition ??
-    (aspect === 'portrait'
-      ? 'top'
-      : fallbackEntityType === 'person'
-        ? '50% 35%'
-        : undefined);
+    (aspect === 'portrait' ? 'top' : fallbackEntityType === 'person' ? '50% 35%' : undefined);
 
   const scrimClass = SCRIM_CLASS[scrim];
 
   return (
     <div
-      className={cn('relative overflow-hidden bg-muted', heightPx == null && ASPECT_CLASS[aspect], ROUNDED_CLASS[rounded])}
+      className={cn(
+        'relative overflow-hidden bg-muted',
+        heightPx == null && ASPECT_CLASS[aspect],
+        ROUNDED_CLASS[rounded],
+      )}
       style={heightPx != null ? { height: heightPx } : undefined}
     >
       {showIconTile ? (
@@ -209,6 +233,7 @@ export const Image = ({
       ) : (
         // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- onError is a media-error handler, not a user-input listener.
         <img
+          ref={imgRef}
           src={effectiveSrc ?? undefined}
           srcSet={srcSet}
           sizes={srcSet ? (sizes ?? DEFAULT_SIZES[imageRole]) : undefined}
@@ -217,8 +242,10 @@ export const Image = ({
           decoding={priority ? 'sync' : 'async'}
           fetchPriority={priority ? 'high' : 'auto'}
           referrerPolicy={referrerPolicy}
-          onLoad={() => { loadedRef.current = true; setLoaded(true); }}
-          onError={() => { if (!error) setError(true); }}
+          onLoad={() => setLoaded(true)}
+          onError={() => {
+            if (!error) setError(true);
+          }}
           style={effectiveObjectPosition ? { objectPosition: effectiveObjectPosition } : undefined}
           className={cn(
             'img-lazy-fade h-full w-full transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]',
@@ -228,7 +255,9 @@ export const Image = ({
           )}
         />
       )}
-      {scrimClass ? <div className={cn('pointer-events-none absolute inset-0', scrimClass)} aria-hidden /> : null}
+      {scrimClass ? (
+        <div className={cn('pointer-events-none absolute inset-0', scrimClass)} aria-hidden />
+      ) : null}
       {children}
     </div>
   );
