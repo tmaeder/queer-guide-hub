@@ -1,7 +1,7 @@
 // Versioned junk phrase list for the news sanitizer.
 // Bump JUNK_PHRASES_VERSION when adding/removing entries so audit logs stay coherent.
 
-export const JUNK_PHRASES_VERSION = '2026.06.21.1'
+export const JUNK_PHRASES_VERSION = '2026.08.03.1'
 
 // Exact-match snippets stripped wholesale (case-insensitive). Order matters: longer first.
 export const EXACT_PHRASES: ReadonlyArray<string> = [
@@ -84,6 +84,17 @@ export const EXACT_PHRASES: ReadonlyArray<string> = [
   'show caption',
   '(opens in new window)',
   'opens in new window',
+  // Player / browser error strings scraped as body text. These are messages the
+  // publisher's page shows INSTEAD of media — never article prose.
+  'To view this video please enable JavaScript, and consider upgrading to a web browser that supports HTML5 video',
+  'Please enable JavaScript to view this content',
+  'JavaScript is disabled in your browser',
+  'Please enable JavaScript in your browser',
+  'Your browser does not support the video tag',
+  'Your browser does not support the audio element',
+  'This video is no longer available',
+  'Checking your browser before accessing',
+  'Please enable cookies to continue',
 ] as const
 
 // Regex patterns (case-insensitive, multiline). One per line so they're easy to maintain.
@@ -112,6 +123,15 @@ export const PATTERN_PHRASES: ReadonlyArray<RegExp> = [
   /Sign\s+up\s+for\s+[^\n]{0,50}newsletter[^\n]{0,30}Thank\s+you[!.]?\s*/gi,
   // "(Opens in new window)" / "(opens in a new tab)" link artifacts
   /\(opens?\s+in\s+(?:a\s+)?new\s+(?:window|tab)\)/gi,
+  // Dead-embed notices ("Sorry, this video isn't available any more.")
+  /Sorry,\s+this\s+(?:video|content|page|post)\s+is\s*n[o']?t\s+available\s+any\s*more\.?/gi,
+  // Carousel/pagination chrome scraped from an embed shell
+  /\b(?:Up Next|Previous Page|Next Page)(?:\s+(?:Up Next|Previous Page|Next Page)){1,}/gi,
+  // Scraper footer left by syndication plugins
+  /^\s*Source link\s*$/gim,
+  // Attitude's injected subscribe widget — the sibling of the <style> block that
+  // used to leak as raw CSS (see code-residue.ts).
+  /Get more Attitude\s+Subscribe in print[^\n]{0,240}/gi,
 ] as const
 
 // Truncation markers — presence of any of these at the END of body strongly suggests truncation.

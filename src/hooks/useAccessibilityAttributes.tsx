@@ -1,16 +1,29 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
+/**
+ * Accessibility options for filtering.
+ *
+ * Reads `amenities` (kind='accessibility'), NOT the similarly-named
+ * `accessibility_attributes` table. `events.accessibility_attributes` and
+ * `venues.accessibility_attributes` store amenity *slugs* (`wheelchair-accessible`),
+ * which is what `normalize_event_accessibility` emits; the `accessibility_attributes`
+ * table holds display names ("Wheelchair Accessible") and has no slug column at all,
+ * so filtering by its values could never match a row.
+ */
 export function useAccessibilityAttributes() {
-  const [accessibilityAttributes, setAccessibilityAttributes] = useState<Record<string, unknown>[]>([]);
+  const [accessibilityAttributes, setAccessibilityAttributes] = useState<Record<string, unknown>[]>(
+    [],
+  );
   const [loading, setLoading] = useState(false);
 
   const fetchAccessibilityAttributes = async () => {
     try {
       setLoading(true);
       const { data, error } = await supabase
-        .from('accessibility_attributes')
-        .select('*')
+        .from('amenities')
+        .select('id, slug, name')
+        .eq('kind', 'accessibility')
         .eq('is_active', true)
         .order('sort_order', { ascending: true });
 
@@ -31,6 +44,6 @@ export function useAccessibilityAttributes() {
   return {
     accessibilityAttributes,
     loading,
-    fetchAccessibilityAttributes
+    fetchAccessibilityAttributes,
   };
 }

@@ -1,6 +1,7 @@
 import { Building } from 'lucide-react';
 import type { ContentTypeConfig, FieldConfig } from '@/types/cms';
 import { validateVenue } from '@/utils/contentValidation';
+import { VENUE_CATEGORY_OPTIONS } from '@/lib/venueCategories';
 
 export const venueFields: FieldConfig[] = [
   // Basic
@@ -23,23 +24,10 @@ export const venueFields: FieldConfig[] = [
     required: true,
     group: 'basic',
     filterable: true,
-    options: [
-      { value: 'bar', label: 'Bar' },
-      { value: 'club', label: 'Club' },
-      { value: 'restaurant', label: 'Restaurant' },
-      { value: 'cafe', label: 'Café' },
-      { value: 'sauna', label: 'Sauna' },
-      { value: 'hotel', label: 'Hotel' },
-      { value: 'shop', label: 'Shop' },
-      { value: 'community_center', label: 'Community Center' },
-      { value: 'beach', label: 'Beach' },
-      { value: 'cruise_club', label: 'Cruise Club' },
-      { value: 'theater', label: 'Theater' },
-      { value: 'gallery', label: 'Gallery' },
-      { value: 'bookstore', label: 'Bookstore' },
-      { value: 'gym', label: 'Gym' },
-      { value: 'other', label: 'Other' },
-    ],
+    // Was a hand-maintained list offering beach / cruise_club / bookstore, none of which
+    // venues_category_check allows — picking one failed the save outright — while
+    // omitting organization and event-venue, which are legal and in use.
+    options: VENUE_CATEGORY_OPTIONS,
   },
   {
     name: 'accommodation_type',

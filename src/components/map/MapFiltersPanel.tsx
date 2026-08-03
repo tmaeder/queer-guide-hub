@@ -13,21 +13,14 @@ import { hapticTrigger } from '@/hooks/useHaptics';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from 'react-i18next';
 import type { MapFilterKey, MapShellFilters } from './MapShell.types';
+import { VENUE_CATEGORY_OPTIONS } from '@/lib/venueCategories';
 
-// Venue categories that carry real data. `other` is excluded — it's the
-// 83%-of-rows catch-all and filtering to it is meaningless.
-const CATEGORIES: { value: string; label: string }[] = [
-  { value: 'bar', label: 'Bar' },
-  { value: 'club', label: 'Club' },
-  { value: 'restaurant', label: 'Restaurant' },
-  { value: 'sauna', label: 'Sauna' },
-  { value: 'hotel', label: 'Hotel' },
-  { value: 'community_center', label: 'Community' },
-  { value: 'event-venue', label: 'Event venue' },
-  { value: 'theater', label: 'Theater' },
-  { value: 'gallery', label: 'Gallery' },
-  { value: 'salon', label: 'Salon' },
-];
+// Venue categories that carry real data. `other` is still excluded — filtering to a
+// catch-all is meaningless — but the rest now come from the shared vocabulary rather
+// than a hand-maintained list, which had dropped cafe / outdoor / shop / cruising.
+const CATEGORIES: { value: string; label: string }[] = VENUE_CATEGORY_OPTIONS.filter(
+  (o) => o.value !== 'other',
+);
 
 // Curated from the most-used real `venues.tags` values so every option is a
 // guaranteed array-overlap match (the column stores kebab-case strings, not
@@ -233,7 +226,10 @@ export const MapFiltersPanel = ({
                       onSelect={() => toggleTag(tag.value)}
                       className="flex items-center gap-2 cursor-pointer"
                     >
-                      <Check size={14} className={cn('shrink-0', active ? 'opacity-100' : 'opacity-0')} />
+                      <Check
+                        size={14}
+                        className={cn('shrink-0', active ? 'opacity-100' : 'opacity-0')}
+                      />
                       <span className="text-sm">{tag.label}</span>
                     </CommandItem>
                   );

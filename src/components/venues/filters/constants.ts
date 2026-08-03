@@ -1,37 +1,15 @@
 // Shared constants + types for the venue filter surface.
 // Extracted from VenueFilters.tsx (behavior-preserving decomposition).
+import { VENUE_CATEGORIES, VENUE_CATEGORY_OPTIONS } from '@/lib/venueCategories';
 
-export const categories = [
-  'bar',
-  'restaurant',
-  'club',
-  'hotel',
-  'sauna',
-  'community_center',
-  'theater',
-  'gallery',
-  'gym',
-  'salon',
-  'organization',
-  'event-venue',
-  'other',
-] as const;
+// Re-exported from the single source of truth so the filter chips can never drift from
+// venues_category_check. The previous hand-maintained list omitted cafe, outdoor, shop
+// and cruising — four categories with real rows behind them (outdoor alone has 1,203).
+export const categories = VENUE_CATEGORIES;
 
-export const categoryLabels: Record<string, string> = {
-  bar: 'Bar',
-  restaurant: 'Restaurant',
-  club: 'Club',
-  hotel: 'Hotel',
-  sauna: 'Sauna',
-  community_center: 'Community',
-  theater: 'Theater',
-  gallery: 'Gallery',
-  gym: 'Gym',
-  salon: 'Salon',
-  organization: 'Organization',
-  'event-venue': 'Event Venue',
-  other: 'Other',
-};
+export const categoryLabels: Record<string, string> = Object.fromEntries(
+  VENUE_CATEGORY_OPTIONS.map((o) => [o.value, o.label]),
+);
 
 export const commonAmenities = [
   'wifi',

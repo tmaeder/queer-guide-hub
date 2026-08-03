@@ -571,33 +571,87 @@ export function parseGcDate(input: unknown): string | null {
 export const EVENT_TYPE_VOCAB = [
   'party', 'festival', 'pride', 'fetish', 'community', 'meetup', 'conference',
   'workshop', 'concert', 'film', 'drag', 'sports', 'art', 'theater',
-  'fundraiser', 'protest', 'social', 'fair', 'other',
+  'fundraiser', 'protest', 'social', 'fair', 'cruise', 'comedy', 'exhibition',
+  'other',
 ] as const;
 
-const EVENT_TYPE_RULES: Array<[RegExp, string]> = [
-  [/\bpride\b/i, 'pride'],
+/**
+ * Ordered most-specific-first; the first match wins.
+ *
+ * Order is load-bearing. Until 2026-08-02 the generic `concert` rule sat fifth and
+ * matched on a bare `dj\b`/`music`, so it swallowed almost every club listing before
+ * the `party` rule at position fourteen could see it — 10,782 rows (the single largest
+ * event_type bucket) were pool parties, tea dances, drag nights and Mardi Gras filed as
+ * concerts. `dj` is a party signal and now lives on the party rule; `concert` keeps
+ * `music` but only gets to see a listing that showed no party/festival/drag signal.
+ *
+ * Rule of thumb for anything added here: a genre word (music, art, dance) is weaker
+ * evidence than a format word (party, festival, workshop), so it belongs further down.
+ */
+/** [pattern, event_type, titleOnly?] — titleOnly rules ignore the description. */
+const EVENT_TYPE_RULES: Array<[RegExp, string, boolean?]> = [
+  // Identity / community formats — the most specific signals we have.
+  [/\bpride\b|christopher street day|\bcsd\b/i, 'pride'],
   [/\bdrag\b/i, 'drag'],
-  [/film|movie|cinema/i, 'film'],
-  [/theatre|theater/i, 'theater'],
-  [/concert|music|dj\b|live band/i, 'concert'],
-  [/conference|summit|convention/i, 'conference'],
-  [/workshop|class\b/i, 'workshop'],
-  [/sports|run\b|race\b|rodeo|tournament|ski\b/i, 'sports'],
-  [/\bart\b|gallery|exhibit/i, 'art'],
-  [/fundrais|charity|benefit/i, 'fundraiser'],
-  [/protest|march for|rally/i, 'protest'],
-  [/street.?fair|fair\b|market\b/i, 'fair'],
-  [/bear|leather|fetish|kink|cruise\b/i, 'fetish'],
-  [/party|club night|tea.?dance|pool.?party|t-?dance|circuit/i, 'party'],
+  // Named formats.
+  [/\bcruise\b|\bsailing\b|\bcharter\b/i, 'cruise'],
+  [/comedy|stand-?up|improv/i, 'comedy'],
+  [/film|movie|cinema|screening/i, 'film'],
+  [/theatre|theater|musical|opera/i, 'theater'],
+  [/exhibition|\bexhibit\b|vernissage/i, 'exhibition'],
+  [/conference|summit|convention|symposium/i, 'conference'],
+  [/workshop|class\b|seminar|masterclass/i, 'workshop'],
+  // Leading \b matters: `race\b` alone matches "embrace" and `run\b` matches "overrun".
+  [/sports|\brun\b|\brace\b|rodeo|tournament|\bski\b|marathon|\bgames\b/i, 'sports'],
+  [/protest|march for|rally|demonstration|vigil/i, 'protest'],
+  [/fundrais|charity|benefit|\bgala\b/i, 'fundraiser'],
+  // `fair\b` without the leading boundary matched "affair" on 249 corpus rows.
+  [/street.?fair|\bfair\b|\bexpo\b|\bmarket\b/i, 'fair'],
+  [/meetup|meet-up|mixer|networking/i, 'meetup'],
+  // Subculture words are audience signals, not format signals, so they rank below every
+  // explicit format above: a bear-community panel discussion is a conference and a
+  // leather-bar fundraiser is a fundraiser. They still outrank the generic buckets below,
+  // because a leather party is meaningfully a fetish event. `bear` is word-bounded —
+  // unbounded it matched a coffee roaster ("Bear Coffee") and "beard".
+  [/\bbears?\b|\bleather\b|fetish|\bkink\b|\brubber\b|pup(py)? play|cruising/i, 'fetish'],
+  // Format words beat genre words: a "Music Festival" is a festival, and a club night
+  // with a DJ lineup is a party, not a concert.
   [/festival|fest\b/i, 'festival'],
-  [/meetup|meet-up/i, 'meetup'],
-  [/community|social\b/i, 'social'],
+  // Title-only (3rd element): "Madonna Fan Party" and "Kylie Minogue Concert After
+  // Party" are parties, and a performance word is only trustworthy in a title.
+  [/\bparty\b/i, 'party', true],
+  // `music of` (as in "The Music of the Beatles") is a tribute-concert idiom and is a
+  // clean signal, unlike bare `music`; all 14 corpus titles carrying it are concerts.
+  [/concert|live in concert|\btour\b|symphony|philharmonic|chorus|choir|recital|unplugged|live at|live in|music of/i, 'concert', true],
+  [/party|club night|tea.?dance|pool.?party|t-?dance|circuit|\bdjs?\b|afterparty|\bball\b|\bbash\b|no cover|drink specials/i, 'party'],
+  // Genre words last — only reached when nothing above matched. Note `music` is absent:
+  // on its own it is a club-night signal, not a concert one.
+  [/concert|live band|symphony|philharmonic|chorus|choir|recital/i, 'concert'],
+  [/\bart\b|gallery/i, 'art'],
+  [/community|\bsocial\b/i, 'social'],
 ];
 
+/**
+ * First signal is the title; the rest are supporting context.
+ *
+ * Most rules read every signal, but a few may only read the TITLE. A club night's
+ * *description* almost always mentions music ("music by …", "Summer Music Jam", "New
+ * Energy in Music"), so `music`/`tour`/`live at` are trustworthy only in a title.
+ * Validated by re-deriving the whole 10,782-row `concert` bucket: read from the full
+ * text they kept 2,277 rows as concerts, of which hand-checking found roughly a third
+ * genuine; restricted to the title they left 352, of which ~19 of 22 sampled were real
+ * (Cher, Madonna, Kylie Minogue, chorale concerts).
+ *
+ * Kept in sync with public.infer_event_type() (migration 20260810120300), which does the
+ * same derivation for the backfill. If you change one, change the other.
+ */
 export function mapEventType(...signals: Array<string | null | undefined>): string {
+  const title = signals[0] ?? '';
   const haystack = signals.filter(Boolean).join(' ');
-  for (const [re, type] of EVENT_TYPE_RULES) {
-    if (re.test(haystack)) return type;
+  const test = (re: RegExp, titleOnly: boolean) => re.test(titleOnly ? title : haystack);
+
+  for (const [re, type, titleOnly = false] of EVENT_TYPE_RULES) {
+    if (test(re, titleOnly)) return type;
   }
   return 'other';
 }

@@ -176,7 +176,7 @@ function parseEventsPage(html: string, pageUrl: string, citySlug: string): Scrap
             address: item.location?.address?.streetAddress || undefined,
             website: null, // Never store scraper source URLs — only real event websites
             images: item.image ? [typeof item.image === 'string' ? item.image : item.image.url] : [],
-            event_type: 'LGBTQ+ Event',
+            event_type: 'other',
             source_url: pageUrl,
           })
         }
@@ -278,7 +278,7 @@ function parseEventsPage(html: string, pageUrl: string, citySlug: string): Scrap
       country: cityInfo.country,
       website: null, // Never store scraper source URLs — only real event websites
       images: image ? [image.startsWith('http') ? image : `${BASE_URL}${image}`] : [],
-      event_type: 'LGBTQ+ Event',
+      event_type: 'other',
       source_url: pageUrl,
     })
   })

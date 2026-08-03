@@ -55,6 +55,14 @@ Deno.serve(withErrorReporting('pipeline-resanitize-news', async (req) => {
         'content.ilike.%<p>%', 'content.ilike.%<a %', 'content.ilike.%&lt;%',
         'content.ilike.%&amp;%', 'content.ilike.%(opens in new window)%',
         'content.ilike.%Facebook Twitter%',
+        // Leaked machine code (`<style>`/`<script>` bodies that survived tag
+        // stripping). Trigger-maintained flag, so this is an indexed lookup rather
+        // than a regex over 38k article bodies.
+        'has_code_residue.is.true',
+        // Player / browser error strings rendered as body text.
+        'content.ilike.%enable JavaScript%',
+        'content.ilike.%Source link%',
+        'content.ilike.%Get more Attitude%',
       ].join(','))
       .order('created_at', { ascending: false })
       .limit(batchSize)

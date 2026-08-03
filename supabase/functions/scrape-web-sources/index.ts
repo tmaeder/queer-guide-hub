@@ -617,7 +617,7 @@ function extractEventsFromPage(
           venue_name: typeof loc === 'string' ? loc : loc.name || undefined,
           city: addr?.addressLocality || undefined,
           country: addr?.addressCountry || undefined,
-          event_type: (config.event_type as string) || 'LGBTQ+ Event',
+          event_type: (config.event_type as string) || 'other',
           url: node.url || pageUrl,
           image_url: image,
           images: image ? [image] : [],
@@ -672,7 +672,7 @@ function extractEventsFromPage(
         description: desc.slice(0, 1000) || undefined,
         start_date: parsedDate,
         city: location || undefined,
-        event_type: (config.event_type as string) || 'LGBTQ+ Event',
+        event_type: (config.event_type as string) || 'other',
         url: link && link.startsWith('http') ? link : link ? new URL(link, source.url).href : pageUrl,
         image_url: image && image.startsWith('http') ? image : image ? new URL(image, source.url).href : undefined,
         images: [],
@@ -740,7 +740,7 @@ function extractWikiTable(
           city,
           country,
           start_date: dateStr,
-          event_type: (config.event_type as string) || 'Event',
+          event_type: (config.event_type as string) || 'other',
           url,
           raw_data: { wiki_table: true, row_index: i },
         })
@@ -795,7 +795,7 @@ function extractWikiList(
           name: `${(config.event_type as string) || 'Event'} - ${city}`,
           city,
           country: currentCountry,
-          event_type: (config.event_type as string) || 'Event',
+          event_type: (config.event_type as string) || 'other',
           description: rawText.slice(0, 500) || undefined,
           url: link.attr('href')
             ? new URL(link.attr('href')!, pageUrl).href
@@ -1070,7 +1070,7 @@ function normalizeItem(
       return {
         title: item.title || item.name,
         description: item.description || null,
-        event_type: item.event_type || 'LGBTQ+ Event',
+        event_type: item.event_type || 'other',
         start_date: item.start_date || new Date().toISOString(),
         end_date: item.end_date || null,
         venue_name: item.venue_name || null,

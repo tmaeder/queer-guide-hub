@@ -135,8 +135,31 @@ jobs:
             exit 0
           fi
 
-          echo "::error title=Supabase db push failed::\`supabase db push\` failed for a reason other than drift. See log above."
-          exit 1
+          # Any OTHER push failure gets the same treatment as drift: record it,
+          # let the functions deploy, fail the run at the end. Exiting 1 here
+          # skipped the deploy step entirely, and that is strictly worse — the
+          # migration half of a merge can still land (someone reruns `db push`
+          # by hand) while the code half silently never ships, leaving prod in a
+          # state no commit describes. That is exactly what happened on #2515:
+          # an out-of-order migration failed this step, "Deploy changed edge
+          # functions" was skipped, the cleanup migration was then applied
+          # manually — so the data fix went live while the guard meant to
+          # PREVENT the bug sat undeployed. Both halves failing is recoverable;
+          # half-shipping is the trap.
+          if echo "$push_output" | grep -q "to be inserted before the last migration"; then
+            {
+              echo "::warning title=Out-of-order migration::A migration in this repo sorts BEFORE the newest version already applied to prod."
+              echo "::warning::This happens when another PR merges a migration while yours is open."
+              echo "::warning::Fix: rename your file to a version ABOVE the remote max (see \`supabase_migrations.schema_migrations\`), then re-run."
+              echo "::warning::Do NOT add --include-all here — see the comment above; it applies out-of-order migrations and can silently revert a newer definition."
+            }
+          fi
+          {
+            echo "::warning title=Supabase db push failed::\`supabase db push\` failed for a reason other than drift. See log above."
+            echo "::warning::Continuing so edge functions still deploy — the run is FAILED at the end."
+          }
+          echo "PUSH_FAILED=true" >> "$GITHUB_ENV"
+          exit 0
 
       - name: Deploy changed edge functions
         if: env.SUPABASE_ACCESS_TOKEN != ''
@@ -180,12 +203,20 @@ jobs:
           echo "::warning::Add it under repo Settings to Secrets to enable automatic deploys."
           echo "::warning::Generate a token at https://supabase.com/dashboard/account/tokens"
 
-      # Runs after functions have deployed, so drift never blocks an edge-function
-      # deploy — but a drifted run is now a FAILED run (loud + notified) instead of
-      # a green run with a buried warning. Resolve by committing the orphan SQL into
-      # a file at its remote version, `supabase db pull`, or `migration repair`.
-      - name: Fail the run on migration drift
-        if: env.DRIFT_DETECTED == 'true'
+      # Runs after functions have deployed, so a migration problem never blocks an
+      # edge-function deploy — but such a run is a FAILED run (loud + notified)
+      # instead of a green run with a buried warning. Deploying the code while the
+      # schema lags is the deliberate trade: a stale schema under new code is
+      # visible and re-runnable, whereas skipping the deploy produces a prod state
+      # that no commit describes and that nothing flags once someone applies the
+      # migration by hand.
+      - name: Fail the run on migration problems
+        if: env.DRIFT_DETECTED == 'true' || env.PUSH_FAILED == 'true'
         run: |
-          echo "::error title=Supabase migration drift::db push was skipped due to remote-only migration versions, so MERGED MIGRATIONS DID NOT APPLY. Edge functions still deployed. Resolve the drift, then re-run."
+          if [ "$DRIFT_DETECTED" = "true" ]; then
+            echo "::error title=Supabase migration drift::db push was skipped due to remote-only migration versions, so MERGED MIGRATIONS DID NOT APPLY. Edge functions still deployed. Resolve the drift, then re-run."
+          fi
+          if [ "$PUSH_FAILED" = "true" ]; then
+            echo "::error title=Supabase db push failed::MERGED MIGRATIONS DID NOT APPLY. Edge functions still deployed, so prod runs new code against the OLD schema. Fix the migration and re-run this workflow — do not hand-apply the migration and leave the run red."
+          fi
           exit 1

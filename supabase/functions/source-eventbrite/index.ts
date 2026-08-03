@@ -92,8 +92,9 @@ const eventbriteAdapter: SourceAdapter = {
 }
 
 function mapEventType(categoryId: string | undefined): string {
+  // Values must be legal events.event_type (events_event_type_check); 'event' was not.
   const map: Record<string, string> = { '103': 'concert', '110': 'party', '105': 'art', '101': 'conference', '104': 'theater' }
-  return map[categoryId || ''] || 'event'
+  return map[categoryId || ''] || 'other'
 }
 
 Deno.serve(withErrorReporting('source-eventbrite', async (req) => {
