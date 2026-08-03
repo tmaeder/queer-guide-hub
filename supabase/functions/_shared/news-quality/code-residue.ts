@@ -179,11 +179,10 @@ function bodyIsCode(body: string): boolean {
 // Walk left from `open` over whitespace-delimited tokens for as long as they look
 // like a selector / block head. Returns the index the removal should start at.
 function headStart(text: string, open: number): number {
-  let start = open
   let i = open
-  // Tokens accepted only provisionally, while hunting backwards for an `@media`
-  // keyword. Discarded if no at-rule turns up — an at-rule prelude fragment on its
-  // own ("(max-width:") is not evidence of code.
+  // Only CONFIRMED head tokens move the start of the removal. An at-rule prelude
+  // fragment ("(max-width:") lets the walk continue leftwards but proves nothing on
+  // its own, so it is silently discarded unless an `@media` keyword turns up behind it.
   let confirmed = open
   let prevWasAssign = false
   for (let tokens = 0; tokens < 12; tokens++) {
@@ -200,13 +199,10 @@ function headStart(text: string, open: number): number {
     const isAssignTarget = prevWasAssign && /^[A-Za-z_$][\w$.[\]'"]*$/.test(tok)
 
     if (isHeadToken(tok, tokens === 0) || isAssignTarget) {
-      start = k + 1
-      confirmed = start
+      confirmed = k + 1
       prevWasAssign = tok.endsWith('=')
       if (tok.startsWith('@')) break // at-rule keyword — head complete
     } else if (isPreludeFragment(tok)) {
-      // Provisional: only kept if an `@media`-style keyword turns up further left.
-      start = k + 1
       prevWasAssign = false
     } else {
       break
