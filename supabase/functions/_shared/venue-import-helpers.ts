@@ -13,10 +13,17 @@ export async function getOrCreateCity(
   lat: number,
   lon: number
 ) {
+  // Exclude merged duplicates: a merged row keeps its name, so without this
+  // an importer stamps a city_id that a merge already consolidated away.
+  // NOTE: this lookup is still name-only — it has no country scope, so a
+  // same-name pair across countries resolves by whichever row exists. That is
+  // the collision class documented for run_event_city_link and needs its own
+  // fix; maybeSingle() at least fails loudly instead of guessing.
   const { data: existingCity } = await supabase
     .from('cities')
     .select('id')
     .eq('name', cityName)
+    .is('duplicate_of_id', null)
     .maybeSingle()
 
   if (existingCity) {
