@@ -21,6 +21,7 @@
 
 import { getCorsHeaders, getServiceClient, requireInternalOrAdmin, jsonResponse } from '../_shared/supabase-client.ts'
 import { hasValidWebhookSecret } from '../_shared/webhook-auth.ts'
+import { safeErrCode } from '../_shared/safe-error.ts'
 import { withCircuitBreaker, CircuitOpenError } from '../_shared/circuit-breaker.ts'
 import { cityNameCandidates } from '../_shared/city-name-normalize.ts'
 import {
@@ -59,6 +60,17 @@ async function fetchJson(url: string, timeout = FETCH_TIMEOUT, accept = 'applica
 }
 
 const wdFetch = (url: string) => fetchJson(url)
+
+// Codes this function throws itself and is willing to expose. Anything else
+// reaching a catch is either a driver/DB message (the cities UPDATE below
+// rethrows a Postgres error) or a runtime fault whose text can carry schema
+// names — neither belongs in an HTTP body (CWE-209). `wdqs_request_failed` must
+// survive verbatim: the operator driver matches /wdqs|sparql|timeout|fetch/ on
+// it to decide whether a batch failure is a degraded upstream (back off) or a
+// real bug (stop the sweep).
+const SAFE_ERROR_CODES = new Set(['wdqs_request_failed'])
+
+const errCode = (e: unknown) => safeErrCode(e, SAFE_ERROR_CODES, STEP)
 
 interface WpSummary { extract?: string; thumbnail?: string; lat?: number; lon?: number }
 
@@ -556,8 +568,10 @@ async function runLinkPhase(
         return jsonResponse({ processed, updated, skipped, failed, circuit_open: e.apiName, results }, 200, req)
       }
       status = 'failed'; failed++
+      // enrichment_log is service-role-only and is the durable diagnostic
+      // record, so it keeps the raw text; the HTTP body gets the safe code.
       missReason = (e instanceof Error ? e.message : String(e)).slice(0, 200)
-      results.push({ id: c.id, name: c.name, status: 'error', error: missReason })
+      results.push({ id: c.id, name: c.name, status: 'error', error: errCode(e) })
     }
 
     processed++
@@ -615,7 +629,7 @@ async function runSparqlPhase(
     if (e instanceof CircuitOpenError) {
       return jsonResponse({ phase: 'sparql', circuit_open: e.apiName, processed: 0 }, 200, req)
     }
-    return jsonResponse({ phase: 'sparql', error: (e instanceof Error ? e.message : String(e)) }, 200, req)
+    return jsonResponse({ phase: 'sparql', error: errCode(e) }, 200, req)
   }
 
   let updated = 0, skipped = 0
