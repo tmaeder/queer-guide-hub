@@ -97,7 +97,12 @@ const JS_BARE_HEAD_WORDS = new Set(['else', 'try', 'finally'])
 const CSS_SELECTOR = new RegExp(
   '^(?:\\*|[A-Za-z][A-Za-z0-9_-]*|[#.][A-Za-z_][A-Za-z0-9_-]*|\\[[^\\]]+\\])' +
   '(?:[#.][A-Za-z_][A-Za-z0-9_-]*|\\[[^\\]]+\\]|::?[A-Za-z-]+(?:\\([^)]*\\))?|' +
-  '[>+~](?:\\*|[A-Za-z][A-Za-z0-9_-]*|[#.][A-Za-z_][A-Za-z0-9_-]*)?)*,?$',
+  // A combinator MUST consume the simple selector after it. Left optional, `a+#b`
+  // parses two ways (one iteration, or a bare `+` then `#b`) and CodeQL's js/redos
+  // finds the exponential blow-up that ambiguity opens on `*+#A#A#A…`.
+  '[>+~](?:\\*|[A-Za-z][A-Za-z0-9_-]*|[#.][A-Za-z_][A-Za-z0-9_-]*))*' +
+  // A token may still END on a combinator — `.a> .b` splits that way on whitespace.
+  '[>+~]?,?$',
 )
 // Without a structural marker the token is just a word, so it only counts when it
 // names a real element.
@@ -154,7 +159,7 @@ const CSS_DECLARATION = /(?:^|[;{])\s*[a-z-]{2,}\s*:\s*[^;{}]{1,300};/
 // Narrow JS signatures — a bare `new`/`return`/`this` inside a sentence must not count.
 const JS_STATEMENT = [
   /\b(?:var|let|const)\s+[A-Za-z_$][\w$]*\s*=/,
-  /\bfunction\s*[A-Za-z_$\w]*\s*\(/,
+  /\bfunction\s*[\w$]*\s*\(/,
   /\b(?:window|document|console|navigator)\s*\.\s*[A-Za-z_$]/,
   /=>\s*[{(]/,
   /\breturn\s*[!A-Za-z_$(][^;]{0,80};/,
