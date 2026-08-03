@@ -12,7 +12,6 @@ export const onRequest: PagesFunction<Env> = async ({ env }) => {
     'geo_places',
     'slug,updated_at,geo_landmark_profiles!inner(needs_review)',
     'place_type=eq.landmark&safety_gated=is.false&duplicate_of_id=is.null&seo_indexable=is.true&geo_landmark_profiles.needs_review=is.false',
-    1000,
   );
   const entries: SitemapEntry[] = rows
     .filter((r) => typeof r.slug === 'string' && (r.slug as string).length > 0)

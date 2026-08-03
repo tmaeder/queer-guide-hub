@@ -51,7 +51,10 @@ export default defineConfig(({ mode }) => ({
   test: {
     globals: true,
     environment: 'jsdom',
-    include: ['src/**/*.{test,spec}.{ts,tsx}'],
+    // `functions/` is the Cloudflare Pages edge tree. It is NOT under src/, so
+    // a test placed there was previously never executed by any runner — the
+    // same gap that hid 38 of 45 edge-function tests until 2026-08-02.
+    include: ['src/**/*.{test,spec}.{ts,tsx}', 'functions/**/*.{test,spec}.ts'],
     setupFiles: ['./src/test/setup.ts'],
     // 5s default flakes under parallel load (saturated CI workers /
     // concurrent local suites); headroom above asyncUtilTimeout (5s)

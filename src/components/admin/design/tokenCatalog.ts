@@ -104,6 +104,14 @@ export const COLOR_TOKENS: ColorTokenDef[] = [
   // Riso spot ink — brand mark, never semantic. See src/index.css for the rules.
   { key: 'spot', group: 'feedback', light: '330 95% 55%', dark: '330 100% 66%' },
   { key: 'spot-foreground', group: 'feedback', light: '0 0% 4%', dark: '0 0% 4%' },
+  // PASTE-UP inks — the 2nd and 3rd drums. Same doctrine as `spot`: never
+  // semantic, never a state. `ink-pink` is absent on purpose — it is a
+  // @theme alias of `spot`, so it has no `:root` declaration to catalog and
+  // one runtime override drives both.
+  { key: 'ink-blue', group: 'feedback', light: '223 88% 46%', dark: '219 90% 62%' },
+  { key: 'ink-blue-foreground', group: 'feedback', light: '0 0% 96%', dark: '0 0% 4%' },
+  { key: 'ink-over', group: 'feedback', light: '285 75% 40%', dark: '285 90% 70%' },
+  { key: 'ink-over-foreground', group: 'feedback', light: '0 0% 96%', dark: '0 0% 4%' },
   // Text hierarchy
   { key: 'text-primary', group: 'text', light: '0 0% 4%', dark: '0 0% 96%' },
   { key: 'text-secondary', group: 'text', light: '0 0% 32%', dark: '0 0% 64%' },
@@ -180,6 +188,12 @@ export const CONTRAST_PAIRS: Array<{ fg: string; bg: string; label: string }> = 
   { fg: 'warning-foreground', bg: 'warning', label: 'Warning' },
   { fg: 'success-foreground', bg: 'success', label: 'Success' },
   { fg: 'spot-foreground', bg: 'spot', label: 'Spot ink (selection highlight)' },
+  // Type sitting on a PASTE-UP plate. Both foregrounds flip by mode because
+  // the inks do — dark ink + white type on paper, light ink + black type on
+  // a black page. Gating them here means /admin/design cannot publish an ink
+  // override that makes plate copy unreadable.
+  { fg: 'ink-blue-foreground', bg: 'ink-blue', label: 'Blue ink plate' },
+  { fg: 'ink-over-foreground', bg: 'ink-over', label: 'Overprint plate' },
   { fg: 'text-primary', bg: 'background', label: 'Text hierarchy: primary' },
   { fg: 'text-secondary', bg: 'background', label: 'Text hierarchy: secondary' },
   { fg: 'text-muted', bg: 'background', label: 'Text hierarchy: muted' },

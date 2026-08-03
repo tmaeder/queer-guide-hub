@@ -42,16 +42,34 @@ window.addEventListener('vite:preloadError', (event) => {
   // Boot-time stale chunk: one-time hard reload to pick up the current
   // index.html / chunk hashes. sessionStorage gate prevents a loop if the
   // file is genuinely broken rather than stale.
+  //
+  // Reload through a throwaway query param, not a bare location.reload().
+  // The stale document lives at the EDGE (observed: `age: 72721` on a
+  // `s-maxage=300` route), so re-requesting the same cache key returns the
+  // same dead chunk hashes and the retry gate then blocks any further
+  // attempt — the exact shape that leaves a route permanently blank. A fresh
+  // query string is a different cache key and reaches origin. Mirrors the
+  // inline guard in index.html, which catches the entry-script failure this
+  // listener cannot see (main.tsx is inside the graph that failed).
   const key = 'preload-error-reload';
+  const reloadFresh = () => {
+    try {
+      const u = new URL(window.location.href);
+      u.searchParams.set('__fresh', String(Date.now()));
+      window.location.replace(u.toString());
+    } catch {
+      window.location.reload();
+    }
+  };
   try {
     if (!sessionStorage.getItem(key)) {
       sessionStorage.setItem(key, String(Date.now()));
-      window.location.reload();
+      reloadFresh();
     }
   } catch {
     // sessionStorage unavailable (private mode, sandbox) — best-effort
     // reload anyway; this path is rare.
-    window.location.reload();
+    reloadFresh();
   }
 });
 
@@ -66,6 +84,23 @@ window.addEventListener(
       sessionStorage.removeItem('preload-error-reload');
     } catch {
       /* sandboxed */
+    }
+    // Drop the cache-busting param the stale-chunk recovery added, so it never
+    // reaches the address bar, a shared link, canonical URLs or analytics.
+    // replaceState (not a navigation) — the app has already booted from this
+    // document and must not re-fetch anything.
+    try {
+      const u = new URL(window.location.href);
+      if (u.searchParams.has('__fresh')) {
+        u.searchParams.delete('__fresh');
+        window.history.replaceState(
+          window.history.state,
+          '',
+          u.pathname + (u.search || '') + u.hash,
+        );
+      }
+    } catch {
+      /* URL unavailable */
     }
   },
   { once: true },

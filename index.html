@@ -46,6 +46,23 @@
             return true; // can't tell — refuse to reload rather than risk a loop
           }
         }
+        // A plain location.reload() CANNOT fix this. The stale document is held
+        // at the edge, not in the browser cache — /city/berlin was observed
+        // serving `age: 72721` under `s-maxage=300` — so reloading re-requests
+        // the same cache key and gets the same dead chunk hashes back. The
+        // one-retry gate then blocks any further attempt, which is precisely
+        // how a page ends up permanently blank instead of self-healing.
+        // Reloading through a throwaway query param selects a different cache
+        // key and reaches origin; main.tsx strips it once the app boots.
+        function reloadFresh() {
+          try {
+            var u = new URL(location.href);
+            u.searchParams.set('__fresh', String(Date.now()));
+            location.replace(u.toString());
+          } catch (e3) {
+            location.reload(); // URL unavailable — better than nothing
+          }
+        }
         window.addEventListener('error', function (e) {
           var el = e.target;
           if (!el || el === window || el.tagName !== 'SCRIPT') return;
@@ -53,7 +70,7 @@
           if (String(el.src || '').lastIndexOf(location.origin + '/assets/', 0) !== 0) return;
           if (alreadyRetried()) return; // genuinely broken, not stale — don't loop
           try { sessionStorage.setItem(KEY, String(Date.now())); } catch (err) { /* private mode */ }
-          location.reload();
+          reloadFresh();
         }, true); // capture — resource load errors do not bubble
       })();
     </script>

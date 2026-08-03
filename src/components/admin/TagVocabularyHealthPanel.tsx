@@ -34,10 +34,13 @@ export function TagVocabularyHealthPanel() {
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
         <div className="flex flex-wrap gap-2">
-          {/* All three are hard zeros: a non-zero value is a real defect. */}
+          {/* All five are hard zeros: a non-zero value is a real defect, and for
+              the last two it means a guard was dropped rather than that data drifted. */}
           <AdminStat label="Plural pairs open" value={data.plural_pairs_open} hardFail />
           <AdminStat label="Corrupted slugs" value={data.slug_corrupt} hardFail />
           <AdminStat label="Off-tree categories" value={data.legacy_category_values} hardFail />
+          <AdminStat label="Shadowing aliases" value={data.shadowing_aliases} hardFail />
+          <AdminStat label="Stale merge flags" value={data.stale_lexical_flags} hardFail />
         </div>
 
         <div className="flex flex-wrap gap-2">
@@ -50,6 +53,7 @@ export function TagVocabularyHealthPanel() {
         <div className="flex flex-wrap gap-2">
           <AdminStat label="Uncategorized" value={data.uncategorized_active} />
           <AdminStat label="Non-ASCII names" value={data.non_ascii_active} />
+          <AdminStat label="Merge queue" value={data.merge_review_pending} />
         </div>
 
         <p className="text-13 text-muted-foreground">
