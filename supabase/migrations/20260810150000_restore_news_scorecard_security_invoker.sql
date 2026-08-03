@@ -1,0 +1,39 @@
+-- SECURITY: restore `security_invoker` on public.news_quality_scorecard.
+--
+-- This completes #2555, which was an incomplete fix. Read it together with
+-- 20260810140000.
+--
+-- `CREATE OR REPLACE VIEW` resets the relation's reloptions but NOT its ACL.
+-- 20260810130000_news_code_residue_health.sql re-created this view to add the
+-- code_residue column, which therefore did two independent things:
+--
+--   1. re-armed anon/authenticated write grants (ALTER DEFAULT PRIVILEGES) —
+--      loud, because it tripped the definer-view CI gate; fixed in 20260810140000
+--   2. silently dropped `security_invoker = true`, set by
+--      20260610190942_security_lint_fixes.sql — SILENT, because the gate skips
+--      security_invoker views and keys only on write grants
+--
+-- (2) is the one that matters and is the one that nearly got away. Revoking the
+-- write grants in 20260810140000 turned the gate green while leaving the view
+-- running as its owner (postgres), i.e. bypassing RLS on news_articles for every
+-- read. Once the grants are gone the gate can no longer see this view at all, so
+-- the DEFINER state would have persisted indefinitely with CI reporting success.
+--
+-- Confirmed against the live catalog before writing this:
+--
+--   news_quality_scorecard      reloptions = NULL                  <- stripped
+--   news_quality_source_health  reloptions = {security_invoker=true} <- untouched
+--
+-- Both were set by 20260610190942; only the scorecard was re-created by
+-- 20260810130000. The sibling is the control that proves REPLACE is the cause
+-- rather than the lint migration never having applied.
+--
+-- Impact was modest but real: the view exposes aggregate counts
+-- (count/avg/max over news_articles, no GROUP BY) and `authenticated` holds
+-- SELECT, so any logged-in user saw counts computed over rows their RLS policy
+-- would otherwise exclude. No row contents leak, and the view is not updatable
+-- (is_updatable = NO), so this was never a write path.
+--
+-- ALTER ... SET is idempotent.
+
+alter view public.news_quality_scorecard set (security_invoker = true);
