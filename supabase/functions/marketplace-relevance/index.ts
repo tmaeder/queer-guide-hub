@@ -1,4 +1,4 @@
-import { getServiceClient, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
+import { getServiceClient, jsonResponse, errorResponse, corsResponse, requireInternalOrAdmin } from '../_shared/supabase-client.ts'
 
 interface RelevanceResult {
   queer_relevant: boolean
@@ -68,6 +68,15 @@ async function validateRelevance(item: { title: string; description: string; bra
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
   const supabase = getServiceClient()
+  // verify_jwt = false, so this handler is the ONLY gate. Every input below is
+  // caller-controlled, and `trust_sources` in particular writes
+  // classification_result — the exact column 20260713195608 made mandatory to
+  // stop unclassified rows reaching live listings. Without this check anyone
+  // could POST a source name and force-approve staged listings with empty
+  // sensitivity_flags. pg_cron sends x-internal-secret, pipeline-executor sends
+  // the service-role bearer; both satisfy requireInternalOrAdmin.
+  const auth = await requireInternalOrAdmin(req, supabase)
+  if (auth instanceof Response) return auth
   try {
     const body = await req.json().catch(() => ({}))
     const pipelineRunId = body.pipeline_run_id as string | undefined
