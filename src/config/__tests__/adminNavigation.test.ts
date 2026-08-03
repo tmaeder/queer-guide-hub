@@ -4,29 +4,67 @@ import {
   getNavItemByRoute,
   getBreadcrumbsForRoute,
   getAllCountTables,
+  resolveItemMinRole,
 } from '../adminNavigation';
+import { roleAtLeast } from '../adminRoles';
 
 describe('adminNavSections shape', () => {
-  it('has cockpit, review, content, import-data, system sections', () => {
-    expect(adminNavSections.map(s => s.id)).toEqual([
-      'cockpit',
-      'review',
-      'content',
-      'import-data',
-      'system',
-    ]);
+  it('has cockpit, content, data, system sections', () => {
+    expect(adminNavSections.map((s) => s.id)).toEqual(['cockpit', 'content', 'data', 'system']);
   });
 
   it('every item has unique id within its section', () => {
     for (const section of adminNavSections) {
-      const ids = section.items.map(i => i.id);
+      const ids = section.items.map((i) => i.id);
       expect(new Set(ids).size).toBe(ids.length);
     }
   });
 
   it('every route is unique across the whole tree', () => {
-    const routes = adminNavSections.flatMap(s => s.items.map(i => i.route));
+    const routes = adminNavSections.flatMap((s) => s.items.map((i) => i.route));
     expect(new Set(routes).size).toBe(routes.length);
+  });
+
+  // The collapsed 64px rail drops section chrome and renders a flat icon list
+  // (AdminSidebar's `if (collapsed)` branch), so a repeated icon is
+  // unresolvable there — no label, no group, no section to disambiguate it.
+  it('every item icon is unique across the whole tree', () => {
+    const seen = new Map<unknown, string>();
+    const dupes: string[] = [];
+    for (const section of adminNavSections) {
+      for (const item of section.items) {
+        const prev = seen.get(item.icon);
+        if (prev) dupes.push(`${item.id} shares an icon with ${prev}`);
+        else seen.set(item.icon, item.id);
+      }
+    }
+    expect(dupes).toEqual([]);
+  });
+
+  // getBreadcrumbsForRoute links a section crumb to section.items[0].route.
+  // If that item outranks the section, everyone who can see the section gets a
+  // breadcrumb that 403s.
+  it('no section leads with an item stricter than the section itself', () => {
+    for (const section of adminNavSections) {
+      const first = section.items[0];
+      const sectionRole = section.minRole ?? 'editor';
+      expect(
+        roleAtLeast(sectionRole, resolveItemMinRole(first, section)),
+        `${section.id} leads with ${first.id}, which needs a higher role than the section`,
+      ).toBe(true);
+    }
+  });
+
+  it('every group renders more than one row', () => {
+    for (const section of adminNavSections) {
+      const counts = new Map<string, number>();
+      for (const item of section.items) {
+        if (item.group) counts.set(item.group, (counts.get(item.group) ?? 0) + 1);
+      }
+      for (const [group, n] of counts) {
+        expect(n, `${section.id} › ${group} is a subheader over a single row`).toBeGreaterThan(1);
+      }
+    }
   });
 });
 
@@ -50,17 +88,13 @@ describe('getBreadcrumbsForRoute', () => {
 
   it('builds [Admin Console, Section, Item] for a deep route', () => {
     const crumbs = getBreadcrumbsForRoute('/admin/content/venues');
-    expect(crumbs.map(c => c.label)).toEqual([
-      'Admin Console',
-      'Content',
-      'Venues',
-    ]);
+    expect(crumbs.map((c) => c.label)).toEqual(['Admin Console', 'Content', 'Venues']);
   });
 
   it("omits section crumb for cockpit's /admin overview", () => {
     const crumbs = getBreadcrumbsForRoute('/admin');
     // Cockpit's section crumb is suppressed; only Admin Console + Overview.
-    expect(crumbs.map(c => c.label)).toEqual(['Admin Console', 'Overview']);
+    expect(crumbs.map((c) => c.label)).toEqual(['Admin Console', 'Overview']);
   });
 
   it('falls back to prefix match — first matching item wins', () => {
@@ -90,7 +124,7 @@ describe('getAllCountTables', () => {
 
   it('returns at least venues and events', () => {
     const tables = getAllCountTables();
-    const tableNames = tables.map(t => t.table);
+    const tableNames = tables.map((t) => t.table);
     expect(tableNames).toContain('venues');
     expect(tableNames).toContain('events');
   });
