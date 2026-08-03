@@ -11,6 +11,7 @@ import * as maplibregl from 'maplibre-gl';
 import { getMapStyle, type BasemapMode } from '@/config/mapStyle';
 import { isWebglSupported } from '@/lib/webglSupport';
 import { loadGlyphImages } from '@/components/map/mapGlyphs';
+import { installBasemapFallback } from '@/components/map/basemapFallback';
 import { DONUT_PREFIX, DONUT_PIXEL_RATIO, getDonutImage } from '@/components/map/clusterDonut';
 import type { ExploreMapHandle } from '@/components/map/ExploreMap';
 import type { MapViewport } from '@/hooks/useExploreMapData';
@@ -115,6 +116,9 @@ export function useMapInstance({
   }, [deferInitialFetch]);
   const didViewportFetchRef = useRef(false);
   const initialFetchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Detach fn for the basemap failover listener, cleared on teardown so a
+  // basemap-mode recreate does not leak a listener onto the dead map.
+  const detachBasemapFallbackRef = useRef<(() => void) | null>(null);
 
   // ── Map initialisation ───────────────────────────────────────────────────
   useEffect(() => {
@@ -159,6 +163,11 @@ export function useMapInstance({
       geolocateControl,
       triggerGeolocate: () => geolocateControl.trigger(),
     });
+
+    // Emergency basemap failover. No-op unless VITE_BASEMAP_FALLBACK_TILE_URL
+    // is set; installed here (not in `load`) so tile errors during the very
+    // first style fetch are counted too.
+    detachBasemapFallbackRef.current = installBasemapFallback(map);
 
     // Donut cluster icons are generated on demand: the cluster layer's
     // icon-image expression produces composition-encoded ids; any id the
@@ -261,6 +270,8 @@ export function useMapInstance({
         clearTimeout(initialFetchTimerRef.current);
         initialFetchTimerRef.current = null;
       }
+      detachBasemapFallbackRef.current?.();
+      detachBasemapFallbackRef.current = null;
       const r = popupRootRef.current;
       popupRootRef.current = null;
       if (r) setTimeout(() => r.unmount(), 0);
