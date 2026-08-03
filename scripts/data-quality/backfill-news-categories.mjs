@@ -40,6 +40,19 @@ const flag = (name, fallback) => {
   return i >= 0 && args[i + 1] && !args[i + 1].startsWith('--') ? args[i + 1] : fallback
 }
 const DRY_RUN = args.includes('--dry-run')
+// backfill = classify rows still on the 'general' sentinel (the normal job).
+// revise   = re-run the classifier over rows THIS classifier already labelled,
+//            after a classifier change. run_news_category_backfill can never do
+//            this: its selector only sees the sentinel, so it cannot revisit its
+//            own past output. Scoped in SQL to via='keyword', so it can never
+//            touch the ~14k pre-existing labels of unknown provenance.
+const MODE = flag('mode', 'backfill')
+if (!['backfill', 'revise'].includes(MODE)) {
+  console.error(`--mode must be backfill or revise, got: ${MODE}`)
+  process.exit(1)
+}
+const RPC = MODE === 'revise' ? 'run_news_category_revise' : 'run_news_category_backfill'
+const COUNT_KEY = MODE === 'revise' ? 'revised' : 'classified'
 // Batches of 500 rows per RPC call. 2 keeps a call near ~35-55s, comfortably
 // inside the Management API's HTTP window.
 const BATCHES = Number(flag('batches', 2))
@@ -55,21 +68,43 @@ function token() {
 }
 const TOKEN = token()
 
-async function sql(query) {
-  const res = await fetch(`https://api.supabase.com/v1/projects/${PROJECT}/database/query`, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${TOKEN}`,
-      'Content-Type': 'application/json',
-      'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
-    },
-    body: JSON.stringify({ query }),
-  })
-  if (!res.ok) throw new Error(`mgmt API ${res.status}: ${(await res.text()).slice(0, 300)}`)
-  return res.json()
-}
-
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+
+// Retries transport failures and 5xx only. A 4xx is a real error in the query
+// and is thrown immediately — retrying it would just repeat the mistake.
+// Worth having: this drives a ~20-minute sequence of ~50s calls, and a single
+// transient `fetch failed` otherwise kills the whole run (it did, on call 1).
+// Retrying is safe because both runners are keyset-paged and idempotent — a
+// repeated call re-examines rows and updates only those whose value differs.
+async function sql(query, attempt = 1) {
+  const MAX = 4
+  try {
+    const res = await fetch(`https://api.supabase.com/v1/projects/${PROJECT}/database/query`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${TOKEN}`,
+        'Content-Type': 'application/json',
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
+      },
+      body: JSON.stringify({ query }),
+    })
+    if (res.status >= 500 && attempt < MAX) {
+      console.warn(`  mgmt API ${res.status}, retry ${attempt}/${MAX - 1}`)
+      await sleep(2000 * attempt)
+      return sql(query, attempt + 1)
+    }
+    if (!res.ok) throw new Error(`mgmt API ${res.status}: ${(await res.text()).slice(0, 300)}`)
+    return res.json()
+  } catch (e) {
+    // TypeError('fetch failed') — DNS/TLS/socket, not an HTTP response.
+    if (e instanceof TypeError && attempt < MAX) {
+      console.warn(`  ${e.message}, retry ${attempt}/${MAX - 1}`)
+      await sleep(2000 * attempt)
+      return sql(query, attempt + 1)
+    }
+    throw e
+  }
+}
 
 async function remaining() {
   const [row] = await sql(`select count(*)::int as n from public.news_articles
@@ -79,11 +114,37 @@ async function remaining() {
 
 async function main() {
   const before = await remaining()
+  console.log(`mode: ${MODE}  (rpc ${RPC})`)
   console.log(`unclassified before: ${before}`)
 
   if (DRY_RUN) {
     // Report what the classifier WOULD produce without writing anything, so the
-    // distribution can be sanity-checked before 23.7k search reindexes.
+    // distribution can be sanity-checked before tens of thousands of search
+    // reindexes. `revise` samples rather than scanning: running the 10-regex
+    // classifier over every already-labelled row trips the statement timeout.
+    if (MODE === 'revise') {
+      const [r] = await sql(`
+        with samp as (
+          select title, content, tags, category_canonical as old
+            from public.news_articles
+           where duplicate_of_id is null
+             and enrichment_status->'category'->>'via' = 'keyword'
+           order by id limit 2000
+        ), cand as (
+          select old, coalesce(public.news_category_from_text(title, content, tags),'general') as new from samp
+        )
+        select count(*)::int as sampled,
+               count(*) filter (where old is distinct from new)::int as would_change,
+               count(*) filter (where old is distinct from new and new = 'general')::int as to_unclassified,
+               count(*) filter (where old is distinct from new and new <> 'general')::int as moved
+          from cand`)
+      const pct = ((r.would_change / r.sampled) * 100).toFixed(1)
+      console.log(`\nsampled ${r.sampled} already-labelled rows (no writes):`)
+      console.log(`  would change      ${r.would_change}  (${pct}%)`)
+      console.log(`  → unclassified    ${r.to_unclassified}  (no real signal; honest 'general')`)
+      console.log(`  → other category  ${r.moved}`)
+      return
+    }
     const rows = await sql(`
       select coalesce(public.news_category_from_text(title, content, tags), '(still general)') as cat,
              count(*)::int as n
@@ -102,17 +163,16 @@ async function main() {
   for (let call = 1; call <= MAX_CALLS; call++) {
     const after = cursor ? `'${cursor}'::uuid` : 'null'
     const started = Date.now()
-    const [row] = await sql(
-      `select public.run_news_category_backfill(${after}, ${BATCHES}) as r`,
-    )
+    const [row] = await sql(`select public.${RPC}(${after}, ${BATCHES}) as r`)
     const r = row.r
     if (r.error) throw new Error(`runner error: ${r.error}`)
-    totalChanged += r.classified ?? 0
+    const n = r[COUNT_KEY] ?? 0
+    totalChanged += n
     cursor = r.last_id
     const secs = ((Date.now() - started) / 1000).toFixed(1)
     console.log(
       `call ${String(call).padStart(3)}  examined=${String(r.examined).padStart(4)}  ` +
-        `classified=${String(r.classified).padStart(4)}  ${secs}s  cursor=${cursor?.slice(0, 8)}`,
+        `${COUNT_KEY}=${String(n).padStart(4)}  ${secs}s  cursor=${cursor?.slice(0, 8)}`,
     )
     if (r.done) {
       console.log('\nrunner reports done.')
@@ -122,7 +182,7 @@ async function main() {
   }
 
   const left = await remaining()
-  console.log(`\nclassified this run: ${totalChanged}`)
+  console.log(`\n${COUNT_KEY} this run: ${totalChanged}`)
   console.log(`unclassified after:  ${left}  (was ${before})`)
 
   const dist = await sql(`
