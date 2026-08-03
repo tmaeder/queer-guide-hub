@@ -8,6 +8,7 @@ import {
   CRITICAL_PAYWALL_MARKERS,
   JUNK_PHRASES_VERSION,
 } from './junk-phrases.ts'
+import { stripRawTextElements, stripCodeResidue, detectCodeResidue } from './code-residue.ts'
 
 export interface SanitizeResult {
   title: string
@@ -17,6 +18,9 @@ export interface SanitizeResult {
   removedArtifacts: string[]
   truncated: boolean
   criticalPaywall: boolean
+  // Code signals STILL present after stripping — a leak shape the scrubber does not
+  // understand yet. Blocks auto-publish so it surfaces in review instead of on the page.
+  codeResidue: boolean
   changed: boolean
   version: string
 }
@@ -100,8 +104,13 @@ const BLOCK_TAGS = new Set([
 // CodeQL "incomplete multi-character sanitization" rule). Any `<` opens tag mode,
 // `>` closes it; text outside tag mode is emitted. Block-level tags collapse to a
 // newline so paragraph boundaries don't fuse words; inline tags vanish silently.
+//
+// `<script>` / `<style>` and friends must be removed WITH their contents first: the
+// state machine only deletes the `<…>` delimiters, so a stylesheet or an analytics
+// snippet would otherwise survive as visible article prose (see code-residue.ts).
 export function stripHtmlTags(html: string): string {
   if (!html) return ''
+  html = stripRawTextElements(html)
   const LT = 60 // <
   const GT = 62 // >
   let out = ''
@@ -190,6 +199,7 @@ export function cleanShortText(raw: string, singleLine = false): string {
     s = decodeHtmlEntities(stripHtmlTags(s))
     if (s === before) break
   }
+  s = stripCodeResidue(s).text
   s = singleLine ? s.replace(/\s+/g, ' ').trim() : normalizeWhitespace(s)
   return s
 }
@@ -232,6 +242,13 @@ export function sanitizeArticle(
   if (strippedAny) removed.push('html_tags')
   if (decodedAny) removed.push('html_entities')
 
+  // Bare CSS/JS left in already-tag-stripped text (legacy rows, aggregator feeds
+  // that pre-strip markup). Runs before junk phrases so a stylesheet can't hide a
+  // phrase match inside itself.
+  const residue = stripCodeResidue(body)
+  if (residue.removed) removed.push('code_residue')
+  body = residue.text
+
   const stripBody = stripJunkPhrases(body)
   removed.push(...stripBody.removed)
   body = stripBody.text
@@ -256,6 +273,7 @@ export function sanitizeArticle(
     removedArtifacts: removed,
     truncated,
     criticalPaywall,
+    codeResidue: detectCodeResidue(body),
     changed,
     version: JUNK_PHRASES_VERSION,
   }

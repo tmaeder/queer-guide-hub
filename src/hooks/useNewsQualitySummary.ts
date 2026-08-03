@@ -21,6 +21,8 @@ export interface NewsQualityScorecard {
   last_30d: number;
   needs_attention: number;
   last_run_at: string | null;
+  /** Bodies that still contain CSS/JS after sanitizing. Expected 0. */
+  code_residue: number;
 }
 
 /** Global news content-quality coverage snapshot (news_quality_scorecard view). */

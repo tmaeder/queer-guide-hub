@@ -9,6 +9,9 @@ export interface PublishGateInput {
   truncated: boolean
   hasEntityReviewItems: boolean
   imageProbeOk: boolean
+  // Machine code (CSS/JS) the sanitizer could not fully remove. Optional so existing
+  // callers keep compiling; absent means "not checked", never "verified clean".
+  codeResidue?: boolean
 }
 
 export interface PublishGateResult {
@@ -31,6 +34,7 @@ export function evaluatePublishGate(input: PublishGateInput): PublishGateResult 
   if (d.needsManualReview) reasons.push('manual_review_requested')
   if (criticalPaywall) reasons.push('critical_paywall')
   if (truncated) reasons.push('truncated_body')
+  if (input.codeResidue) reasons.push('code_residue')
   if (d.isSatire) reasons.push('satire')
   if (d.isAdvertorial) reasons.push('advertorial')
   if (!d.imageAssessment.isUsable && !imageProbeOk) reasons.push('image_unusable')

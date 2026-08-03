@@ -99,6 +99,7 @@ async function processJob(
     decision,
     criticalPaywall: sani.criticalPaywall,
     truncated: sani.truncated,
+    codeResidue: sani.codeResidue,
     hasEntityReviewItems: false,
     imageProbeOk: imageProbe.ok,
   })
