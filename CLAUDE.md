@@ -173,6 +173,25 @@ The built-in fallback answers *any* unmatched path with `index.html`, hashed-ass
 
 **A bad `_redirects` rule outlives its revert — it poisons the CDN.** The `/  200` window above lasted ~13 minutes, but Pages answered `/assets/css/index-*.css` with `index.html` during it and `public/_headers` stamps `/assets/*` `immutable, max-age=31536000`, so Cloudflare cached the SPA shell **under the stylesheet URL for a year**. The site rendered completely unstyled for hours after the revert deployed, across three clean deploys, because reverting config does not evict a cached object and the content hash never moved. Two things to know: **(1) it is per-colo** — `smoke-pages.sh` passed from the CI runner while the same script failed from Zurich, so a green deploy proves one colo is clean and nothing more; **(2) the escape is a purge or a new URL, never a redeploy.** `expect_asset_type` in `scripts/smoke-pages.sh` now tells the two causes apart (plain URL wrong + `?cb=` right ⇒ poisoned cache; both wrong ⇒ origin broken). Hashed chunks can be rotated by changing their bytes; `/fonts`, `/icons` and `/images` cannot be rotated at all — only a purge clears those.
 
+### Stale SPA documents on the APEX that no purge can evict (2026-08-03)
+
+Extends the stale-document fault above with eliminations that have now cost several sessions.
+
+**`purge_everything` fails too, not just purge-by-URL.** Measured 2026-08-03: a targeted purge of all 55 shell URLs left `/venues` and `/events` untouched, and the escalation to `{"purge_everything":true}` was accepted by the API and *also* left them untouched. Together with `cf-cache-status: DYNAMIC` alongside `age: 130273`, that definitively excludes the zone cache — there is nothing there to evict. `scripts/smoke-pages.sh` now automates the whole ladder (targeted purge → escalate → re-verify) and prints "STILL stale after purge_everything". **That message means this fault. Stop purging.**
+
+**Diagnose in this order.** The apex-vs-pages.dev comparison comes first, because it rules out the deployment in one command:
+```
+curl -s https://queer.guide/venues           | grep -o 'index-[^"]*\.js'   # stale
+curl -s https://queer-guide.pages.dev/venues | grep -o 'index-[^"]*\.js'   # CURRENT
+```
+Pages serves the current build; only the apex is stale, so no redeploy can help. `?cb=` is second and **falsely reports healthy** — it is a different cache key, so it reaches origin and tells you nothing about what users get. Third, curl a worker subdomain for `error code: 1027` (the Workers quota, which independently kills every Function daily until ~00:00Z).
+
+`functions/_middleware.ts` DOES run on the affected routes — canonical and CSP nonce are both injected — so the request reaches our code and the middleware is not the cause. A previous session inspected the entire zone in the dashboard (Always Online, URL purge, Cache Rules, Workers Routes, Page Rules, DNS, the Pages custom domain) and ruled all of it out. **Cloudflare-side; needs support.**
+
+**The inline self-heal guard can never fire on an already-stale document.** `index.html` and `main.tsx` reload through `?__fresh=` for exactly this case (a bare `location.reload()` re-fetches the same key, and the one-retry gate then pins the page blank forever). But the guard is an inline script, and a stale document carries the nonce from its original render while the CSP header is regenerated per request — mismatch, blocked. When Functions are quota-dead there is no nonce at all and `script-src 'self'` has no `unsafe-inline` — blocked again. The guard protects documents cached from now on; it cannot repair the ones already stuck.
+
+**Do not "fix" this in `_middleware.ts`.** Sourcing the shell from `env.ASSETS.fetch('/')` is the obvious-looking repair and is the wrong layer, per the pages.dev evidence above. It would also risk clobbering the Function-generated HTML that `functions/news/[slug].ts` and friends legitimately return from `next()`.
+
 ### `public/_routes.json` — assets must not invoke Pages Functions (2026-08-01)
 
 **Pages runs Functions AHEAD of static assets by default, and Pages Functions ARE Workers billing against the same request quota.** With no `_routes.json`, every hashed chunk, font and icon invoked `functions/_middleware.ts` just to reach its pass-through — putting one cold page load at **~51 billed invocations** (1 HTML + 1 CSS + 47 JS + 2 fonts). Off Workers Paid the account has a free **100k requests/day** cap, so the whole site died after roughly **1,800 page views/day** with `429 error code: 1027` — every afternoon, self-healing at UTC midnight. `public/_routes.json` excludes the static paths, cutting that ~50×.

@@ -39,6 +39,12 @@ export interface CleanResult {
   /** schema.org objects parsed from <script type="application/ld+json"> — the
    *  highest-signal source on event/venue/product pages. Empty if none found. */
   jsonLd: Array<Record<string, unknown>>;
+  /** schema.org Product parsed from inline MICRODATA (itemscope/itemprop). Older
+   *  storefronts (nopCommerce, Magento) carry no JSON-LD at all and put the price in
+   *  `<meta itemprop="price" content="11.35">` — a `content` attribute, which does not
+   *  survive HTML→markdown conversion, so `markdown` alone cannot recover it.
+   *  Undefined when the page has no Product itemscope. */
+  microdata?: Record<string, unknown>;
   contentMethod: 'article' | 'main' | 'density' | 'body';
   charCount: number;
 }
@@ -200,6 +206,77 @@ function extractJsonLd($: cheerio.CheerioAPI): Array<Record<string, unknown>> {
   return kept;
 }
 
+// Caps mirror the JSON-LD ones — a hostile page must not be able to inflate the
+// response by nesting itemprops.
+const MICRODATA_MAX_PROPS = 30;
+const MICRODATA_MAX_BYTES = 4_000;
+
+/** Read one itemprop's value using the schema.org precedence: an explicit `content`
+ *  attribute wins (that is where machine-readable prices live), then the URL-bearing
+ *  attribute for links/images/times, then the visible text. */
+function microdataValue($: cheerio.CheerioAPI, el: Element): string {
+  const $el = $(el);
+  const content = $el.attr('content');
+  if (typeof content === 'string' && content.trim()) return content.trim();
+  const tag = (el as { tagName?: string }).tagName?.toLowerCase() ?? '';
+  const urlAttr = tag === 'a' || tag === 'link' ? 'href'
+    : tag === 'img' || tag === 'source' ? 'src'
+    : tag === 'time' ? 'datetime'
+    : null;
+  if (urlAttr) {
+    const v = $el.attr(urlAttr);
+    if (typeof v === 'string' && v.trim()) return v.trim();
+  }
+  return $el.text().replace(/\s+/g, ' ').trim();
+}
+
+/** Parse the first schema.org Product microdata block. Nested itemscopes (notably
+ *  `offers`) become sub-objects so callers read `microdata.offers.price` exactly as
+ *  they would read the JSON-LD shape. Runs before noise stripping. */
+function extractMicrodata($: cheerio.CheerioAPI): Record<string, unknown> | undefined {
+  const scope = $('[itemtype*="schema.org/Product" i]').first();
+  if (scope.length === 0) return undefined;
+
+  const out: Record<string, unknown> = {};
+  let props = 0;
+  let bytes = 0;
+
+  scope.find('[itemprop]').each((_i, el) => {
+    if (props >= MICRODATA_MAX_PROPS || bytes >= MICRODATA_MAX_BYTES) return false;
+    const $el = $(el);
+    const name = ($el.attr('itemprop') ?? '').trim();
+    if (!name) return;
+
+    if ($el.is('[itemscope]')) return; // a nested entity; reached via its children below
+
+    // Props belonging to a nested scope are collected under that scope's key rather
+    // than flattened into the product, so an Offer's `price` cannot be confused with
+    // a product-level one. A nested scope with NO itemprop of its own is a separate,
+    // unrelated entity — nopCommerce nests a data-vocabulary.org Breadcrumb (carrying
+    // `url` and `title`) inside the Product scope — and its props are dropped.
+    const owner = $el.parents('[itemscope]').first();
+    let nestedName: string | null = null;
+    if (!owner.is(scope)) {
+      nestedName = (owner.attr('itemprop') ?? '').trim() || null;
+      if (!nestedName) return;
+    }
+
+    const value = microdataValue($, el);
+    if (!value) return;
+    bytes += name.length + value.length;
+    props++;
+
+    if (nestedName) {
+      const sub = (out[nestedName] ??= {}) as Record<string, unknown>;
+      if (sub[name] === undefined) sub[name] = value;
+    } else if (out[name] === undefined) {
+      out[name] = value;
+    }
+  });
+
+  return props > 0 ? out : undefined;
+}
+
 /** Same main-content strategy as the news extractor, returning the element's HTML. */
 function pickMainContentHtml(
   $: cheerio.CheerioAPI,
@@ -293,12 +370,13 @@ export function cleanHtml(
   const $ = cheerio.load(html);
   const meta = extractMeta($, url);
   const jsonLd = extractJsonLd($);
+  const microdata = extractMicrodata($);
   const links = opts.crawl ? extractLinks($, url) : { flat: [], external: [] };
 
   // pickMainContentHtml mutates $ (strips noise incl. <script>) — run metadata,
-  // JSON-LD, and links first.
+  // JSON-LD, microdata, and links first.
   const { html: contentHtml, method } = pickMainContentHtml($);
   const markdown = toMarkdown(contentHtml);
 
-  return { markdown, meta, jsonLd, links, contentMethod: method, charCount: markdown.length };
+  return { markdown, meta, jsonLd, microdata, links, contentMethod: method, charCount: markdown.length };
 }

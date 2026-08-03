@@ -107,3 +107,53 @@ describe('assertPublicHttpUrl', () => {
     expect(() => assertPublicHttpUrl(u)).toThrow(UnsafeUrlError);
   });
 });
+
+// Shape copied from a live queerbooks.ch (nopCommerce) product page, 2026-08-02.
+// Note: itemtype is http:// not https://, there is NO itemprop="name" (the title
+// only exists in <title>/og:title), the price lives in a `content` attribute that
+// cannot survive markdown conversion, and a data-vocabulary.org Breadcrumb scope
+// carrying `url`/`title` is nested INSIDE the Product scope.
+const MICRODATA_PRODUCT_HTML = `
+<!doctype html><html lang="de"><head>
+  <title>Raffauf, Elisabeth: Stark gegen Mobbing</title>
+  <meta property="og:image" content="//queerbooks.b-cdn.net/content/images/thumbs/004/0049088.jpeg">
+</head><body>
+  <div itemscope itemtype="http://schema.org/Product" data-productid="38745">
+    <div class="breadcrumb">
+      <span itemscope itemtype="http://data-vocabulary.org/Breadcrumb">
+        <a href="/" itemprop="url"><span itemprop="title">Home</span></a>
+      </span>
+    </div>
+    <div class="full-description" itemprop="description">Ein Sachbuch über Mobbing.</div>
+    <span class="value" itemprop="sku" id="sku-38745">9783737373975</span>
+    <div class="prices" itemprop="offers" itemscope itemtype="http://schema.org/Offer">
+      <span itemprop="price" content="22.90" class="price-value-38745">CHF 22.90</span>
+      <meta itemprop="priceCurrency" content="CHF"/>
+      <link itemprop="availability" href="http://schema.org/InStock"/>
+    </div>
+  </div>
+</body></html>`;
+
+describe('cleanHtml microdata', () => {
+  it('reads a schema.org Product with a nested Offer', () => {
+    const r = cleanHtml(MICRODATA_PRODUCT_HTML, 'https://www.queerbooks.ch/x-isbn-9783737373975');
+    expect(r.microdata).toBeDefined();
+    expect(r.microdata!.sku).toBe('9783737373975');
+    expect(r.microdata!.description).toBe('Ein Sachbuch über Mobbing.');
+    const offers = r.microdata!.offers as Record<string, unknown>;
+    // The `content` attribute must win over the visible "CHF 22.90" text.
+    expect(offers.price).toBe('22.90');
+    expect(offers.priceCurrency).toBe('CHF');
+    expect(offers.availability).toBe('http://schema.org/InStock');
+  });
+
+  it('drops props of an unrelated nested scope (breadcrumb), not just re-keys them', () => {
+    const r = cleanHtml(MICRODATA_PRODUCT_HTML, 'https://www.queerbooks.ch/x');
+    expect(r.microdata!.title).toBeUndefined();
+    expect(r.microdata!.url).toBeUndefined();
+  });
+
+  it('is undefined when the page has no Product itemscope', () => {
+    expect(cleanHtml(ARTICLE_HTML, 'https://example.com/a').microdata).toBeUndefined();
+  });
+});

@@ -1,4 +1,4 @@
-import { getServiceClient, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
+import { getServiceClient, jsonResponse, errorResponse, corsResponse, requireInternalOrAdmin } from '../_shared/supabase-client.ts'
 
 interface RelevanceResult {
   queer_relevant: boolean
@@ -68,6 +68,15 @@ async function validateRelevance(item: { title: string; description: string; bra
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
   const supabase = getServiceClient()
+  // verify_jwt = false, so this handler is the ONLY gate. Every input below is
+  // caller-controlled, and `trust_sources` in particular writes
+  // classification_result — the exact column 20260713195608 made mandatory to
+  // stop unclassified rows reaching live listings. Without this check anyone
+  // could POST a source name and force-approve staged listings with empty
+  // sensitivity_flags. pg_cron sends x-internal-secret, pipeline-executor sends
+  // the service-role bearer; both satisfy requireInternalOrAdmin.
+  const auth = await requireInternalOrAdmin(req, supabase)
+  if (auth instanceof Response) return auth
   try {
     const body = await req.json().catch(() => ({}))
     const pipelineRunId = body.pipeline_run_id as string | undefined
@@ -79,6 +88,16 @@ Deno.serve(async (req) => {
     const aggregatorSources: string[] = body.aggregator_sources ?? ['ohmyfantasy', 'misterb']
     const dryRun = body.dry_run || false
 
+    // Source-trust stamp: for merchants that ARE the editorial filter (a dedicated
+    // queer bookshop curates its own shelves), classify deterministically instead of
+    // spending an LLM call per item. commit_marketplace_staging_batch hard-requires
+    // classification_result IS NOT NULL — a gate added in 20260713195608 to close a
+    // bypass — so we SATISFY that contract rather than loosening it, and the stamp
+    // carries classifier:'source_trust' so a later pass can re-classify exactly these
+    // rows for real. Trust stamps neither consume nor are bounded by daily_cap.
+    const trustSources: string[] = body.trust_sources ?? []
+    const trustScore = Number(body.trust_score ?? 0.75) // > 0.60 so marketplace_prune_candidates() won't sweep them
+
     // Daily cap / circuit-breaker: this node has no per-call rate limit beyond
     // batch_size + a 200ms sleep. With the recurring registry engine now driving
     // many vendors, bound total LLM spend per UTC day (steady-state stays far
@@ -89,10 +108,14 @@ Deno.serve(async (req) => {
     const { count: doneToday } = await supabase.from('ingestion_events')
       .select('id', { count: 'exact', head: true })
       .eq('stage', 'relevance').gte('created_at', startOfDay)
-    if ((doneToday ?? 0) >= dailyCap) {
+    // Trust-stamped items make no LLM call, so a run that only has trusted sources
+    // must not be short-circuited by the cap. With no trust_sources the behaviour is
+    // byte-identical to before.
+    const llmBudget = Math.max(0, dailyCap - (doneToday ?? 0))
+    if (llmBudget <= 0 && trustSources.length === 0) {
       return jsonResponse({ success: true, items: 0, message: 'daily_cap_reached', daily_cap: dailyCap, done_today: doneToday }, 200, req)
     }
-    const effectiveBatch = Math.max(1, Math.min(batchSize, dailyCap - (doneToday ?? 0)))
+    const effectiveBatch = trustSources.length > 0 ? batchSize : Math.max(1, Math.min(batchSize, llmBudget))
 
     // order='newest' classifies freshly-synced vendor products first so they
     // reach live listings promptly instead of starving behind the large legacy
@@ -102,13 +125,52 @@ Deno.serve(async (req) => {
     const ascending = String(body.order ?? 'oldest') !== 'newest'
     let query = supabase.from('ingestion_staging').select('id, normalized_data').eq('target_table', 'marketplace_listings').eq('ai_validation_status', 'approved').is('classification_result', null).order('created_at', { ascending }).limit(effectiveBatch)
     if (pipelineRunId) query = query.eq('pipeline_run_id', pipelineRunId)
+    // Scope the batch to specific merchants. Without this a trust-stamp backfill still
+    // pulls a mixed batch and spends most of it on LLM calls for unrelated sources —
+    // the staging table carries source_name, so filter in SQL rather than in the loop.
+    const sourceNames: string[] = body.source_names ?? []
+    if (sourceNames.length > 0) query = query.in('source_name', sourceNames)
     const { data: items, error } = await query
     if (error) return errorResponse(error.message, 500, req)
     if (!items || items.length === 0) return jsonResponse({ success: true, items: 0, message: 'nothing to classify' }, 200, req)
-    let approved = 0, rejected = 0
+    let approved = 0, rejected = 0, trusted = 0, capSkipped = 0, llmUsed = 0
     for (const item of items) {
       const n = (item.normalized_data ?? {}) as Record<string, unknown>
       const meta = (n.metadata ?? {}) as Record<string, unknown>
+      const itemSource = String(n.sourceName ?? meta.source_slug ?? '')
+
+      // ── Source-trust path: no LLM, no cap consumption ──────────────────────
+      if (trustSources.includes(itemSource)) {
+        if (dryRun) { trusted++; continue }
+        const classification = {
+          lgbti_relevant: true,
+          lgbti_relevance_score: trustScore,
+          lgbti_reasoning: `source_trust: ${itemSource} is a trusted LGBTQ+ merchant; catalog admitted without per-item classification`,
+          classifier: 'source_trust',
+          sensitivity_flags: [] as unknown[],
+          review_priority: 'normal',
+          suggested_tags: [] as string[],
+          classified_at: new Date().toISOString(),
+        }
+        // disposition stays 'pending' and review_status stays 'auto', so the row
+        // satisfies the commit gate on the next pipeline-commit tick.
+        const { error: tErr } = await supabase.from('ingestion_staging')
+          .update({ classification_result: classification, ai_confidence_score: trustScore })
+          .eq('id', item.id)
+        if (tErr) { console.error(`trust-stamp ${item.id}:`, tErr.message); continue }
+        // stage='relevance_trust', NOT 'relevance' — the daily-cap query counts only
+        // 'relevance', so stamps must not eat tomorrow's LLM budget.
+        await supabase.from('ingestion_events').insert({
+          staging_id: item.id, stage: 'relevance_trust', new_status: 'approved',
+          actor: 'marketplace-relevance', payload: classification,
+        })
+        trusted++
+        continue
+      }
+
+      // ── LLM path: bounded by the remaining daily budget ────────────────────
+      if (llmUsed >= llmBudget) { capSkipped++; continue }
+      llmUsed++
       try {
         const r = await validateRelevance({
           title: String(n.name ?? n.title ?? meta.product_name ?? ''),
@@ -125,7 +187,6 @@ Deno.serve(async (req) => {
         }
         if (dryRun) continue
         const update: Record<string, unknown> = { classification_result: classification, ai_confidence_score: r.confidence }
-        const itemSource = String(n.sourceName ?? meta.source_slug ?? '')
         const effectiveThreshold = aggregatorSources.includes(itemSource) ? aggregatorThreshold : threshold
         if (r.confidence < effectiveThreshold) {
           update.disposition = 'rejected'
@@ -139,6 +200,12 @@ Deno.serve(async (req) => {
         await new Promise(r => setTimeout(r, 200))
       } catch (err) { console.error(`relevance ${item.id}:`, (err as Error).message) }
     }
-    return jsonResponse({ success: true, items: approved + rejected, items_processed: approved + rejected, items_succeeded: approved, items_failed: rejected, approved, rejected, dry_run: dryRun }, 200, req)
+    const handled = approved + rejected + trusted
+    return jsonResponse({
+      success: true, items: handled, items_processed: handled,
+      items_succeeded: approved + trusted, items_failed: rejected,
+      approved, rejected, trusted, llm_used: llmUsed, cap_skipped: capSkipped,
+      daily_cap: dailyCap, dry_run: dryRun,
+    }, 200, req)
   } catch (error) { return errorResponse((error as Error).message, 500, req) }
 })
