@@ -35,41 +35,73 @@ Deno.serve(withErrorReporting('pipeline-resanitize-news', async (req) => {
 
     const includeUnindexed = body.include_unindexed === true
 
-    // Select articles that likely have contamination in ANY rendered field.
-    // Entity/tag patterns are unambiguous (don't trip the version guard); the
-    // junk-phrase patterns (subscribe/newsletter/…) stay version-guarded so the
-    // cron stays a cheap no-op once the content backlog is clean.
-    let q = supabase
+    const COLS = 'id, title, content, excerpt, author, title_i18n, quality_pipeline_version'
+
+    // TWO queries, deliberately not one `.or()`. Every pattern below is an
+    // unanchored ILIKE over `content`, so the planner can only answer them with a
+    // Seq Scan that detoasts all 38k bodies — measured at 11.4s / 522k buffers,
+    // over the authenticator role's 8s statement_timeout. ORing the indexed
+    // `has_code_residue` flag into that list does NOT get an index scan; it just
+    // inherits the seq scan, so the flagged backlog never drained at all.
+    //
+    // (1) Flagged rows first: idx_news_articles_code_residue is a partial index, so
+    // this is a handful of rows and always completes. NOT filtered by
+    // seo_indexable — leaked CSS/JS renders on the page whether or not the page is
+    // indexed, and 21 of the flagged rows are noindex.
+    const { data: flagged, error: flaggedErr } = await supabase
       .from('news_articles')
-      .select('id, title, content, excerpt, author, title_i18n, quality_pipeline_version')
+      .select(COLS)
       .is('duplicate_of_id', null)
-    if (!includeUnindexed) q = q.eq('seo_indexable', true)
-    const { data: items, error } = await q
-      .or([
-        // entity/tag contamination across rendered text fields (jsonb i18n is
-        // cleaned opportunistically on any selected row + via the translate fix)
-        'title.ilike.%&#%', 'title.ilike.%&lt;%', 'title.ilike.%&amp;%',
-        'excerpt.ilike.%&#%', 'excerpt.ilike.%&lt;%', 'excerpt.ilike.%&amp;%', 'excerpt.ilike.%&nbsp;%',
-        'author.ilike.%&#%', 'author.ilike.%&amp;%', 'author.ilike.%&lt;%',
-        // body junk
-        'content.ilike.%<p>%', 'content.ilike.%<a %', 'content.ilike.%&lt;%',
-        'content.ilike.%&amp;%', 'content.ilike.%(opens in new window)%',
-        'content.ilike.%Facebook Twitter%',
-        // Leaked machine code (`<style>`/`<script>` bodies that survived tag
-        // stripping). Trigger-maintained flag, so this is an indexed lookup rather
-        // than a regex over 38k article bodies.
-        'has_code_residue.is.true',
-        // Player / browser error strings rendered as body text.
-        'content.ilike.%enable JavaScript%',
-        'content.ilike.%Source link%',
-        'content.ilike.%Get more Attitude%',
-      ].join(','))
-      .order('created_at', { ascending: false })
+      .eq('has_code_residue', true)
       .limit(batchSize)
 
-    if (error) return errorResponse(`load: ${error.message}`, 500, req)
-    if (!items || items.length === 0) {
-      return jsonResponse({ success: true, items: 0, message: 'nothing to resanitize' }, 200, req)
+    if (flaggedErr) return errorResponse(`load flagged: ${flaggedErr.message}`, 500, req)
+
+    // (2) Pattern rows second, with whatever budget is left. This one can exceed the
+    // statement timeout, and when it does it must NOT sink the flagged pass — a
+    // failure here is logged and the run continues with what (1) returned.
+    const items = [...(flagged ?? [])]
+    const remaining = batchSize - items.length
+    let patternError: string | null = null
+
+    if (remaining > 0) {
+      let q = supabase
+        .from('news_articles')
+        .select(COLS)
+        .is('duplicate_of_id', null)
+      if (!includeUnindexed) q = q.eq('seo_indexable', true)
+      const { data: patterned, error: patErr } = await q
+        .or([
+          // entity/tag contamination across rendered text fields (jsonb i18n is
+          // cleaned opportunistically on any selected row + via the translate fix)
+          'title.ilike.%&#%', 'title.ilike.%&lt;%', 'title.ilike.%&amp;%',
+          'excerpt.ilike.%&#%', 'excerpt.ilike.%&lt;%', 'excerpt.ilike.%&amp;%', 'excerpt.ilike.%&nbsp;%',
+          'author.ilike.%&#%', 'author.ilike.%&amp;%', 'author.ilike.%&lt;%',
+          // body junk
+          'content.ilike.%<p>%', 'content.ilike.%<a %', 'content.ilike.%&lt;%',
+          'content.ilike.%&amp;%', 'content.ilike.%(opens in new window)%',
+          'content.ilike.%Facebook Twitter%',
+          // Player / browser error strings rendered as body text.
+          'content.ilike.%enable JavaScript%',
+          'content.ilike.%Source link%',
+          'content.ilike.%Get more Attitude%',
+        ].join(','))
+        .order('created_at', { ascending: false })
+        .limit(remaining)
+
+      if (patErr) {
+        patternError = patErr.message
+        console.warn(`pattern scan skipped: ${patErr.message}`)
+      } else {
+        const seen = new Set(items.map((r) => r.id))
+        for (const row of patterned ?? []) if (!seen.has(row.id)) items.push(row)
+      }
+    }
+
+    if (items.length === 0) {
+      return jsonResponse(
+        { success: true, items: 0, message: 'nothing to resanitize', pattern_error: patternError },
+        200, req)
     }
 
     let updated = 0, skipped = 0, failed = 0
@@ -131,8 +163,12 @@ Deno.serve(withErrorReporting('pipeline-resanitize-news', async (req) => {
       success: true,
       dry_run: dryRun,
       items_total: items.length,
+      flagged_total: flagged?.length ?? 0,
       updated, skipped, failed,
       removed_summary: totalRemoved,
+      // Non-null when the content-pattern scan blew the statement timeout. The
+      // flagged pass still ran; this says the other half of the sweep did not.
+      pattern_error: patternError,
     }, 200, req)
   } catch (error) {
     console.error('pipeline-resanitize-news:', error)
