@@ -11,7 +11,7 @@ export function ReaderRail() {
     return (
       <aside
         aria-label="Reader rail"
-        className="border border-border rounded-container p-6 flex flex-col gap-4"
+        className="bg-surface-container rounded-container p-6 flex flex-col gap-4"
       >
         <p className="text-2xs uppercase tracking-[0.2em] text-muted-foreground">Your shelf</p>
         <p className="text-base leading-snug m-0">

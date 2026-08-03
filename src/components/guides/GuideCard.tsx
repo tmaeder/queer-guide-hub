@@ -70,7 +70,12 @@ function Eyebrow({ guide }: { guide: GuideCardSummary }) {
     const w = questWindowLabel(guide.starts_at, guide.ends_at, t);
     if (w) parts.push(w);
   } else if (guide.reading_time_min) {
-    parts.push(t('guides.card.minRead', '{{count}} min read').replace('{{count}}', String(guide.reading_time_min)));
+    parts.push(
+      t('guides.card.minRead', '{{count}} min read').replace(
+        '{{count}}',
+        String(guide.reading_time_min),
+      ),
+    );
   }
   return (
     <p className="text-xs2 uppercase tracking-[0.15em] text-muted-foreground">
@@ -101,7 +106,7 @@ export const GuideCard = memo(function GuideCard({
       className={
         isHero
           ? 'col-span-12 grid grid-cols-12 gap-6 rounded-container border border-border overflow-hidden bg-card'
-          : 'group flex flex-col rounded-container border border-border overflow-hidden bg-card'
+          : 'group flex flex-col rounded-container overflow-hidden bg-surface-container'
       }
     >
       <LocalizedLink
@@ -142,22 +147,20 @@ export const GuideCard = memo(function GuideCard({
               : 'text-title md:text-headline leading-tight'
           }
         >
-          <LocalizedLink
-            to={detailUrl}
-            className="no-underline hover:underline underline-offset-4"
-          >
+          <LocalizedLink to={detailUrl} className="no-underline hover:underline underline-offset-4">
             {guide.title}
           </LocalizedLink>
         </h3>
-        {guide.dek && (
-          <p className="italic text-body-lg text-muted-foreground">{guide.dek}</p>
-        )}
+        {guide.dek && <p className="italic text-body-lg text-muted-foreground">{guide.dek}</p>}
         <div className="mt-auto flex flex-wrap items-center justify-between gap-2 pt-2">
           <span className="inline-flex items-center gap-2 text-13 text-muted-foreground">
             {isQuest ? <Flag size={14} aria-hidden /> : <Clock size={14} aria-hidden />}
             {isQuest
               ? t('guides.card.communityQuest', 'Community quest')
-              : t('guides.card.picks', '{{count}} picks').replace('{{count}}', String(guide.pick_count))}
+              : t('guides.card.picks', '{{count}} picks').replace(
+                  '{{count}}',
+                  String(guide.pick_count),
+                )}
           </span>
           {guide.boost_reason && <WhyChip reason={guide.boost_reason} />}
         </div>

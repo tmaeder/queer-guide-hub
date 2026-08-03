@@ -82,7 +82,7 @@ function CityMilestones({ cityId, cityName }: { cityId: string; cityName: string
   const { data } = useMilestonesForCity(cityId);
   if (!data?.length) return null;
   return (
-    <section className="rounded-container border border-border p-6">
+    <section className="rounded-container bg-surface-container p-6">
       <h3 className="mb-4 text-2xs uppercase tracking-wider text-muted-foreground">
         {t('milestones.city.title', 'Queer history in {{city}}', { city: cityName })}
       </h3>

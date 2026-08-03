@@ -20,14 +20,14 @@ export function AtlasHero({ featuredCountryNames }: Props) {
 
   const fallback = useMemo(() => {
     if (cover) return null;
-    const featured = (countries ?? []).filter((c) =>
-      featuredCountryNames.has(c.name as string),
-    );
+    const featured = (countries ?? []).filter((c) => featuredCountryNames.has(c.name as string));
     if (featured.length === 0) return null;
     // Deterministic pick by ISO week so the cover changes weekly without admin input.
     const now = new Date();
     const onejan = new Date(now.getFullYear(), 0, 1);
-    const week = Math.ceil(((now.getTime() - onejan.getTime()) / 86400000 + onejan.getDay() + 1) / 7);
+    const week = Math.ceil(
+      ((now.getTime() - onejan.getTime()) / 86400000 + onejan.getDay() + 1) / 7,
+    );
     const c = featured[week % featured.length];
     return c
       ? {
@@ -69,7 +69,7 @@ export function AtlasHero({ featuredCountryNames }: Props) {
 
   return (
     <LocalizedLink to={href} className="block group">
-      <section className="relative overflow-hidden rounded-container border border-border/60 min-h-[420px] md:min-h-[520px]">
+      <section className="relative overflow-hidden rounded-container min-h-[420px] md:min-h-[520px]">
         {view.hero_image_url ? (
           <img
             src={view.hero_image_url}
@@ -83,7 +83,10 @@ export function AtlasHero({ featuredCountryNames }: Props) {
           <div className="absolute inset-0 bg-muted" />
         )}
         {/* Documented scrim exception in CLAUDE.md — readability over photography */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/15 via-black/35 to-black/75" aria-hidden />
+        <div
+          className="absolute inset-0 bg-gradient-to-b from-black/15 via-black/35 to-black/75"
+          aria-hidden
+        />
         <div className="relative h-full p-8 md:p-16 flex flex-col justify-end gap-4 text-white min-h-[420px] md:min-h-[520px]">
           <p className="text-2xs md:text-xs uppercase tracking-[0.2em] opacity-80">
             Cover · {new Date().toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}

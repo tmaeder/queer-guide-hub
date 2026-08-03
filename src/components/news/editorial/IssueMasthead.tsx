@@ -13,7 +13,7 @@ export function IssueMasthead({ totalArticles, sourceCount }: IssueMastheadProps
   const issueNumber = Math.floor((now.getTime() - EPOCH) / WEEK_MS);
 
   return (
-    <header className="border-b border-border pb-8 mb-8">
+    <header className="pb-8 mb-8">
       <p className="text-2xs uppercase tracking-[0.2em] text-muted-foreground">
         {format(now, 'EEEE · MMMM d, yyyy')} · Issue #{issueNumber}
       </p>

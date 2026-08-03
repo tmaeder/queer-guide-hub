@@ -198,7 +198,7 @@ export default function News() {
 
             <WeekInReview articles={articles as Article[]} sourceCount={sources.length} />
 
-            <div className="border-t border-border pt-8 flex flex-col md:flex-row gap-4 md:items-center md:justify-between">
+            <div className="pt-8 flex flex-col md:flex-row gap-4 md:items-center md:justify-between">
               <div>
                 <p className="text-2xs uppercase tracking-[0.2em] text-muted-foreground">
                   Looking for more?
