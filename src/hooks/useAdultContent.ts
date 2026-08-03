@@ -19,6 +19,17 @@ const ADULT_CATEGORY_SLUGS = new Set([
   'lubricant',
   'bdsm',
   'adult_toys',
+  // adult publications — explicit/nude photography, porn zines, erotic art
+  // books. Their titles carry no adult vocabulary at all ("Elska Akureyri
+  // (Iceland)"), so the subcategory is the only signal available.
+  'adult_magazines',
+  'adult_digital_magazines',
+  'adult_photo_books',
+  'adult_art_prints',
+  'adult_zines',
+  'adult_photography',
+  'adult_polaroids',
+  'adult_subscriptions',
   // department umbrellas
   'intimacy',
   'bdsm_fetish',

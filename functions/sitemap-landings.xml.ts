@@ -38,13 +38,14 @@ export const onRequest: PagesFunction<Env> = async ({ env }) => {
     }
   }
 
-  // Pride per major city — fetch top cities by population so the sitemap
-  // stays bounded. Skip if Supabase isn't configured.
+  // Pride per major city. The 200 is a DELIBERATE editorial bound, not the
+  // db-max-rows truncation fixed elsewhere: each city fans out to 3 pride
+  // years, so this is already 600 URLs. Keep it explicit.
   const cities = await fetchRows(
     env,
     'cities',
     'slug,is_major_city',
-    'slug=not.is.null&is_major_city=eq.true',
+    'slug=not.is.null&is_major_city=eq.true&seo_indexable=eq.true&duplicate_of_id=is.null&shell_status=not.in.(ghost,merged)',
     200,
   ).catch(() => []);
 

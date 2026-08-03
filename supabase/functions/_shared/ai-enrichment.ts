@@ -36,12 +36,34 @@ export interface PersonalityEnrichment {
   notable_achievements?: string[]
 }
 
+/**
+ * The `news_categories` vocabulary. Must stay in sync with the slugs seeded by
+ * migration 20260808120000 — the DB trigger validates whatever we send against
+ * that table and falls back to the keyword classifier on a mismatch, so drift
+ * here degrades quality silently rather than erroring.
+ */
+export const NEWS_CATEGORIES = [
+  'rights-legal',
+  'politics',
+  'community',
+  'health-wellness',
+  'culture-arts',
+  'sports',
+  'education',
+  'technology',
+  'business-economy',
+  'international',
+] as const
+
+export type NewsCategory = (typeof NEWS_CATEGORIES)[number]
+
 export interface NewsEnrichment {
   summary?: string
   suggested_tags?: string[]
   lgbtq_relevance_score?: number
   sentiment?: 'positive' | 'neutral' | 'negative'
   topics?: string[]
+  category?: NewsCategory
 }
 
 export interface ScrapedContentEnrichment {
@@ -107,7 +129,8 @@ You analyse news articles for an LGBTQ+ news aggregator. Given article data, gen
 2. Suggested tags (up to 5, lowercase, hyphenated)
 3. LGBTQ+ relevance score (0.0-1.0)
 4. Sentiment (positive, neutral, negative)
-5. Topics covered (e.g., "rights", "culture", "health", "politics", "community")
+5. Topics covered (free-form, for tagging)
+6. category — the single best fit, and it MUST be exactly one of: ${NEWS_CATEGORIES.join(', ')}. Pick the article's primary subject, not an incidental mention. If none fits, omit the field entirely rather than guessing.
 
 Respond ONLY with valid JSON. No markdown code blocks.`
 
@@ -129,7 +152,7 @@ Respond ONLY with valid JSON. No markdown code blocks.`
 const VENUE_KEYS = ['description', 'lgbtq_context', 'suggested_tags', 'lgbtq_relevance_score', 'category_suggestion', 'amenity_suggestions']
 const EVENT_KEYS = ['description', 'event_type', 'suggested_tags', 'lgbtq_relevance_score', 'target_audience']
 const PERSONALITY_KEYS = ['bio', 'lgbtq_context', 'suggested_tags', 'notable_achievements']
-const NEWS_KEYS = ['summary', 'suggested_tags', 'lgbtq_relevance_score', 'sentiment', 'topics']
+const NEWS_KEYS = ['summary', 'suggested_tags', 'lgbtq_relevance_score', 'sentiment', 'topics', 'category']
 const SCRAPED_KEYS = ['cleaned_title', 'cleaned_description', 'suggested_tags', 'lgbtq_relevance_score', 'extracted_fields']
 
 /**
@@ -340,7 +363,7 @@ Content: ${ud(textContent.slice(0, 2000))}
 URL: ${ud(article.url || 'N/A')}
 
 Keep "summary" under 40 words. Respond with ONLY this JSON, nothing before or after:
-{"summary": "...", "suggested_tags": [...], "lgbtq_relevance_score": 0.0, "sentiment": "neutral", "topics": [...]}`
+{"summary": "...", "suggested_tags": [...], "lgbtq_relevance_score": 0.0, "sentiment": "neutral", "topics": [...], "category": "one of the listed slugs"}`
 
   try {
     const result = await chatCompletion(supabase, {
@@ -356,7 +379,16 @@ Keep "summary" under 40 words. Respond with ONLY this JSON, nothing before or af
       response_format: { type: 'json_object' },
     })
 
-    return parseAIResponse<NewsEnrichment>(result.content, NEWS_KEYS)
+    const parsed = parseAIResponse<NewsEnrichment>(result.content, NEWS_KEYS)
+    if (parsed?.category && !NEWS_CATEGORIES.includes(parsed.category)) {
+      // Models invent categories despite the enum. Drop it rather than pass a
+      // value on: the DB trigger would reject it and reclassify by keyword
+      // anyway, but discarding it here keeps the intent explicit and the
+      // enrichment payload honest.
+      console.warn(`News AI returned out-of-vocabulary category: ${parsed.category}`)
+      delete parsed.category
+    }
+    return parsed
   } catch (err) {
     console.error('News AI enrichment failed:', (err as Error).message)
     return null

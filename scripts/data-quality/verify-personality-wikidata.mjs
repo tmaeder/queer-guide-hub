@@ -30,7 +30,20 @@
 //   GEOCODE_TOKEN=sbp_... node scripts/data-quality/verify-personality-wikidata.mjs            # dry run, all
 //   GEOCODE_TOKEN=sbp_... node scripts/data-quality/verify-personality-wikidata.mjs --apply --cohort adult
 //
-// Flags: --apply (default is dry run) --cohort adult|all --limit N --verbose
+// Without a Management API token (Wikidata itself needs no auth):
+//   node scripts/data-quality/verify-personality-wikidata.mjs \
+//     --cohort all --rows rows.json --emit-sql repair.sql
+//
+// Flags:
+//   --apply            execute the writes (default is a dry run)
+//   --cohort adult|all which rows to verify
+//   --limit N          cap the number of rows
+//   --verbose          print every verdict, not just conflicts
+//   --rows <file>      read target rows from JSON instead of the Management API
+//   --emit-sql <file>  write the repair SQL to a file instead of executing it
+
+import { randomUUID } from 'node:crypto';
+import { writeFileSync, readFileSync } from 'node:fs';
 
 import { keywordsFor, hasProfessionMapping, scoreOccupationMatch }
   from '../../supabase/functions/_shared/profession-keywords.js';
@@ -45,6 +58,13 @@ const APPLY = args.includes('--apply');
 const VERBOSE = args.includes('--verbose');
 const COHORT = (args[args.indexOf('--cohort') + 1] || 'all').toLowerCase();
 const LIMIT = args.includes('--limit') ? Number(args[args.indexOf('--limit') + 1]) : Infinity;
+// Write the repair SQL to a file instead of executing it. Lets the sweep run
+// with no Management API token (Wikidata itself needs no auth) so the SQL can be
+// reviewed and applied through whatever channel the operator already has.
+const EMIT_SQL = args.includes('--emit-sql') ? args[args.indexOf('--emit-sql') + 1] : null;
+// Row source override, for the same reason: `--rows <file>` reads the target
+// rows from JSON rather than querying via the Management API.
+const ROWS_FILE = args.includes('--rows') ? args[args.indexOf('--rows') + 1] : null;
 
 // Wikidata allows 50 ids per wbgetentities call.
 const WD_BATCH = 50;
@@ -59,7 +79,13 @@ const WRITE_BATCH = 200;
 const IS_MAIN = import.meta.url === `file://${process.argv[1]}`;
 
 if (IS_MAIN) {
-  if (!TOKEN) { console.error('GEOCODE_TOKEN not set'); process.exit(1); }
+  // A token is only needed for the paths that actually talk to the Management
+  // API: reading rows (unless --rows) and writing (unless --emit-sql).
+  const needsToken = !ROWS_FILE || (APPLY && !EMIT_SQL);
+  if (needsToken && !TOKEN) {
+    console.error('GEOCODE_TOKEN not set (or pass --rows <file> and --emit-sql <file>)');
+    process.exit(1);
+  }
   if (!['all', 'adult'].includes(COHORT)) { console.error('--cohort must be all|adult'); process.exit(1); }
 }
 
@@ -143,11 +169,46 @@ function claimIds(entity, prop) {
  * unverifiable — entity missing/redirected, not a human, or profession unmappable
  */
 export async function verdictFor(row, entity) {
+  const label = entity?.labels?.en?.value ?? null;
+  const description = entity?.descriptions?.en?.value ?? '';
+
+  // Decisive on its own, checked BEFORE any occupation reasoning: commercial
+  // adult film does not predate 1900, so an is_adult row with a pre-1900 birth
+  // date is a namesake match no matter what the entity's occupations say.
+  //
+  // This is not redundant with the occupation check — it is what that check
+  // cannot see. In the 2026-08 sweep, 22 such rows survived as "unverifiable"
+  // because 21 of them carry NO P106 at all (a Mayflower passenger, a Count of
+  // Lippe-Detmold, two Holocaust victims, a Baltimore merchant, an American
+  // judge) and one, Q60665 "Cole Turner", is a fictional character from Charmed
+  // and so failed the P31=Q5 human test. Every one was plainly wrong, and the
+  // conservative branches spared all of them.
+  if (row.is_adult && row.birth_date && row.birth_date < '1900-01-01') {
+    return {
+      verdict: 'conflict',
+      reason: 'impossible_birthdate_for_adult_cohort',
+      label, description, occupations: [],
+    };
+  }
+
+  // The same argument from the other end of the life. Commercial gay adult film
+  // begins around 1970, so an is_adult row that DIED before then cannot be one.
+  //
+  // Needed separately because the birth check misses any chimera whose birth
+  // date happens to land after 1900: "Christoph Scharff" (died 1640),
+  // "Jessie Cooper" (died 1917) and "Leo Wyatt" (born 1924, died 1942) were all
+  // still public after the birth rule had run.
+  if (row.is_adult && row.death_date && row.death_date < '1970-01-01') {
+    return {
+      verdict: 'conflict',
+      reason: 'impossible_deathdate_for_adult_cohort',
+      label, description, occupations: [],
+    };
+  }
+
   if (!entity || entity.missing !== undefined) {
     return { verdict: 'unverifiable', reason: 'entity_missing', label: null, occupations: [] };
   }
-  const label = entity.labels?.en?.value ?? null;
-  const description = entity.descriptions?.en?.value ?? '';
 
   if (!claimIds(entity, 'P31').includes('Q5')) {
     return { verdict: 'unverifiable', reason: 'not_human', label, description, occupations: [] };
@@ -162,10 +223,19 @@ export async function verdictFor(row, entity) {
   const keywords = keywordsFor(row.profession);
   const score = scoreOccupationMatch(occupations, keywords);
 
-  // The English description is a secondary corroboration channel: some genuine
-  // performers have a bare P106 but "pornographic actor" in the description.
-  const descHit = /\b(porn|pornographic|adult film|adult model|erotic)\b/i.test(description)
-    && keywords.some((k) => ['porn', 'adult', 'erotic', 'pornographic'].includes(k));
+  // The English description is a second corroboration channel, and it matters:
+  // P106 is frequently sparse or uses a narrower term than the description.
+  // "Brandan Robertson" (local profession "LGBTQ+ rights activist") carries P106
+  // writer/blogger/pastor but is described as "Christian writer, activist, and
+  // speaker" — occupation-only scoring called that a namesake conflict when it
+  // is plainly the same person.
+  //
+  // This only ever RESCUES a match, never creates one: it requires the same
+  // profession keywords. Carl Sagan ("American astrophysicist, cosmologist and
+  // author") still fails every adult-performer keyword, so the conflicts that
+  // motivated this sweep are unaffected.
+  const desc = (description ?? '').toLowerCase();
+  const descHit = keywords.some((k) => desc.includes(k));
 
   if (score > 0 || descHit) {
     return { verdict: 'confirmed', reason: 'occupation_match', label, description, occupations, score };
@@ -217,7 +287,16 @@ values (${sq(row.id)}, 'verification', 0, 1.0, 'verify-personality-wikidata', ${
 }
 
 function queueSql(row, v) {
+  // `value` is the scalar approve_entity_review() will write into
+  // personalities.wikidata_qid via review_field_registry
+  // ('personality','wikidata_qid', apply_mode='text_required'). Everything else
+  // is evidence for the reviewer and is ignored by the apply step.
+  //
+  // A descriptor object here instead of a scalar would make approval write JSON
+  // into the column; an unregistered field would make it raise 22023. Both were
+  // true before migration 20260807180000.
   const proposed = JSON.stringify({
+    value: `SKIP_${randomUUID()}`,
     action: 'clear_wikidata_link',
     current_qid: row.wikidata_qid,
     wikidata_label: v.label,
@@ -245,7 +324,9 @@ async function main() {
   const cohortFilter = COHORT === 'adult' ? 'and is_adult' : '';
   console.log(`[${new Date().toISOString()}] cohort=${COHORT} apply=${APPLY}`);
 
-  const rows = await mgmt(`
+  const rows = ROWS_FILE
+    ? JSON.parse(readFileSync(ROWS_FILE, 'utf8'))
+    : await mgmt(`
     select id::text, name, profession, is_adult, wikidata_qid,
            birth_date::text, death_date::text
       from public.personalities
@@ -289,13 +370,24 @@ async function main() {
   console.table(stats);
   console.log('reasons:', reasons);
 
+  const writes = [...repairs, ...queues];
+
+  // --emit-sql writes the statements out instead of executing them, so the
+  // sweep is usable without a Management API token and the SQL can be reviewed
+  // before it touches anything.
+  if (EMIT_SQL) {
+    writeFileSync(EMIT_SQL, writes.join('\n'));
+    console.log(`\nWrote ${writes.length} statements to ${EMIT_SQL} `
+      + `(${repairs.length} adult repairs, ${queues.length} review-queue inserts).`);
+    return;
+  }
+
   if (!APPLY) {
     console.log(`\nDRY RUN — would repair ${repairs.length} adult rows, queue ${queues.length} for review.`);
     console.log('Re-run with --apply to write.');
     return;
   }
 
-  const writes = [...repairs, ...queues];
   for (let i = 0; i < writes.length; i += WRITE_BATCH) {
     const chunk = writes.slice(i, i + WRITE_BATCH);
     const started = Date.now();
