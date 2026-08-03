@@ -28073,6 +28073,7 @@ export type Database = {
         }
         Returns: number
       }
+      category_coverage_health: { Args: never; Returns: Json }
       change_username: { Args: { new_username: string }; Returns: Json }
       check_financial_data_access: {
         Args: {

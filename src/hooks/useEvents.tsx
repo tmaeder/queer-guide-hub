@@ -222,8 +222,11 @@ export function useEvents(autoFetch: boolean = true) {
         }
 
         if (filters?.tags && filters.tags.length > 0) {
-          // Pride sub-kinds live in events.pride_subtypes (events has no `tags` column).
-          query = query.overlaps('pride_subtypes', filters.tags);
+          // `events.tags` (added 20260607220000) is the tag surface the search_events RPC
+          // path already filters on. This branch used to hit `pride_subtypes`, which no
+          // code has ever written, so the same UI control returned results via the RPC
+          // path and nothing via this one.
+          query = query.overlaps('tags', filters.tags);
         }
 
         if (filters?.accessibilityAttributes?.length) {

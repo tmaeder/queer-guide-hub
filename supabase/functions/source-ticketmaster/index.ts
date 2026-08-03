@@ -86,8 +86,10 @@ const ticketmasterAdapter: SourceAdapter = {
 
 function mapTmType(classifications: Array<Record<string, Record<string, string>>> | undefined): string {
   const segment = classifications?.[0]?.segment?.name?.toLowerCase()
-  const map: Record<string, string> = { music: 'concert', sports: 'sports', arts: 'theater', film: 'screening' }
-  return map[segment || ''] || 'event'
+  // Values must be legal events.event_type (events_event_type_check). 'screening' and
+  // 'event' were not, so every row carrying them was rejected at commit.
+  const map: Record<string, string> = { music: 'concert', sports: 'sports', arts: 'theater', film: 'film' }
+  return map[segment || ''] || 'other'
 }
 
 Deno.serve(withErrorReporting('source-ticketmaster', async (req) => {

@@ -15,6 +15,10 @@ import {
   Accessibility,
   Landmark,
   Globe,
+  Coffee,
+  ShoppingBag,
+  Trees,
+  Footprints,
   type LucideIcon,
 } from 'lucide-react';
 import type { LayerType } from '@/hooks/useExploreMapData';
@@ -34,6 +38,11 @@ const VENUE_CATEGORY_ICONS: Record<string, LucideIcon> = {
   gallery: ImageIcon,
   gym: Dumbbell,
   organization: Building2,
+  cafe: Coffee,
+  shop: ShoppingBag,
+  outdoor: Trees,
+  cruising: Footprints,
+  toilet: Accessibility,
 };
 
 const LAYER_FALLBACK_ICONS: Record<LayerType, LucideIcon> = {

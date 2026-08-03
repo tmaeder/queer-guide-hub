@@ -50,6 +50,7 @@ const CATEGORY_LABELS: Record<string, string> = {
   bookshop: 'bookshop',
   bookstore: 'bookshop',
   cruising: 'cruising space',
+  toilet: 'public restroom',
 };
 
 /**
