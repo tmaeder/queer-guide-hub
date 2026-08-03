@@ -53,7 +53,7 @@ export const ExploreMapLayers = ({
         aria-label={expanded ? 'Hide map layers' : 'Show map layers'}
         aria-expanded={expanded}
         onClick={() => setExpanded((v) => !v)}
-        className="rounded-container border border-border bg-background/85 backdrop-blur-md hover:bg-background h-10 w-10 p-0"
+        className="rounded-container bg-background/85 backdrop-blur-md hover:bg-background h-10 w-10 p-0"
       >
         <Layers size={18} />
       </Button>
@@ -61,7 +61,7 @@ export const ExploreMapLayers = ({
       {/* Chip grid */}
       <Collapsible open={expanded} onOpenChange={setExpanded}>
         <CollapsibleContent>
-          <div className="flex flex-wrap gap-1.5 max-w-[240px] rounded-container border border-border bg-background/85 backdrop-blur-md p-2">
+          <div className="flex flex-wrap gap-1.5 max-w-[240px] rounded-container bg-background/85 backdrop-blur-md p-2">
             {LAYER_DEFS.map(({ type, label, icon: Icon, comingSoon }) => {
               const enabled = enabledLayers.includes(type);
               const count = layerCounts[type];
@@ -76,21 +76,42 @@ export const ExploreMapLayers = ({
                   aria-pressed={enabled}
                   aria-label={`${label}${enabled && count > 0 ? `, ${count} visible` : ''}`}
                   onClick={() => { hapticTrigger('nudge'); onToggle(type); }}
-                  className="inline-flex items-center gap-1 h-7 px-2 text-xs rounded-full border transition-all focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                  className="inline-flex items-center gap-1 h-7 px-2 text-xs rounded-full transition-all focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
                   style={{
                     fontWeight: enabled ? 600 : 400,
                     // Active: monochrome fill (foreground/background) so the label
                     // always clears WCAG AA regardless of the layer hue — pairing
                     // white/dark text with an arbitrary functional LAYER_COLOR
-                    // failed contrast for several layers per theme. The layer hue
-                    // stays as the border accent (and on the map pins themselves),
-                    // keeping the chrome monochrome per the design system.
-                    backgroundColor: enabled ? 'hsl(var(--foreground))' : 'transparent',
+                    // failed contrast for several layers per theme.
+                    //
+                    // The chip is a plate, not an outline (border budget, see
+                    // e2e/design-system.spec.ts). The layer hue used to ride on
+                    // the border; it now rides on the dot below, so the chip
+                    // still keys to its map pins. Inactive chips get a surface
+                    // plate rather than a hairline.
+                    //
+                    // Measured: on this foreground fill the dot reads BETTER
+                    // than the old border did on the panel for 6 of 7 layers
+                    // (restrooms 2.54 -> 7.80, hotels 2.15 -> 9.22 — the border
+                    // was under the 3:1 bar for both). The exception is
+                    // `neighbourhoods`, which is deliberately foreground-
+                    // coloured ("concrete"), so its dot would sit at 1.00:1 on
+                    // this fill. That layer has no hue to key to, so it gets no
+                    // dot at all rather than an invisible one.
+                    backgroundColor: enabled
+                      ? 'hsl(var(--foreground))'
+                      : 'hsl(var(--surface-container))',
                     color: enabled ? 'hsl(var(--background))' : 'hsl(var(--muted-foreground))',
-                    borderColor: enabled ? color : 'hsl(var(--border))',
                     outlineColor: color,
                   }}
                 >
+                  {enabled && color !== LAYER_COLORS.neighbourhoods && (
+                    <span
+                      aria-hidden="true"
+                      className="h-1.5 w-1.5 shrink-0 rounded-full"
+                      style={{ backgroundColor: color }}
+                    />
+                  )}
                   <Icon size={13} style={{ color: enabled ? 'hsl(var(--background))' : 'hsl(var(--muted-foreground))' }} />
                   {`${label}${enabled && count > 0 ? ` (${count})` : ''}`}
                 </button>
