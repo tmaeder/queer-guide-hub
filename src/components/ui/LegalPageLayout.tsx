@@ -92,10 +92,12 @@ export const LegalPageLayout = ({
                 type="button"
                 onClick={() => scrollToSection(s.id)}
                 className={cn(
-                  'border-l-2 px-2 py-1.5 text-left text-13 leading-snug transition-colors',
+                  // Was a `border-l-2` side-stripe, which the design rules ban
+                  // outright. The active item is a filled plate instead.
+                  'rounded-element px-2 py-1.5 text-left text-13 leading-snug transition-colors',
                   activeSection === s.id
-                    ? 'border-foreground font-semibold text-foreground'
-                    : 'border-border text-muted-foreground hover:border-foreground/40 hover:text-foreground',
+                    ? 'bg-foreground font-semibold text-background'
+                    : 'text-muted-foreground hover:bg-surface-container hover:text-foreground',
                 )}
               >
                 {s.title}
@@ -122,7 +124,7 @@ export const LegalPageLayout = ({
             {tocOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
           </Button>
           {tocOpen && (
-            <div className="mt-2 flex flex-col rounded-element border border-border bg-card p-2">
+            <div className="mt-2 flex flex-col rounded-element bg-surface-container p-2">
               {sections.map((s) => (
                 <button
                   key={s.id}
@@ -146,7 +148,7 @@ export const LegalPageLayout = ({
         <div className="min-w-0 flex-1">
           {children}
 
-          <div className="mt-12 border-t border-border pt-6">
+          <div className="mt-12 pt-6">
             <p className="text-15 text-muted-foreground">
               Questions? We're real humans at{' '}
               <a href="mailto:legal@queer.guide" className="text-foreground hover:opacity-85">

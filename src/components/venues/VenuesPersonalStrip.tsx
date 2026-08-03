@@ -15,7 +15,7 @@ export function VenuesPersonalStrip() {
 
   if (loading) {
     return (
-      <div className="rounded-container border bg-card p-6">
+      <div className="rounded-container bg-card p-6">
         <Skeleton className="h-6 w-48 mb-4" />
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
           {Array.from({ length: 4 }).map((_, i) => (
@@ -33,12 +33,16 @@ export function VenuesPersonalStrip() {
 
   return (
     <section
-      className="rounded-container border bg-card p-6"
+      className="rounded-container bg-card p-6"
       aria-label={t('venues.personalStrip.label', 'Your venue stats')}
     >
       <div className="flex flex-wrap items-baseline justify-between gap-2 mb-4">
         <h2 className="text-title font-semibold">
-          {t('venues.personalStrip.title', { name: levelName(data.level), defaultValue: '{{name}} · Level {{level}}', level: data.level })}
+          {t('venues.personalStrip.title', {
+            name: levelName(data.level),
+            defaultValue: '{{name}} · Level {{level}}',
+            level: data.level,
+          })}
         </h2>
         <Link
           to="/venues/passport"
@@ -49,19 +53,40 @@ export function VenuesPersonalStrip() {
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
-        <Stat icon={<Trophy size={18} />} label={t('venues.personalStrip.points', 'Points')} value={data.points} />
-        <Stat icon={<MapPin size={18} />} label={t('venues.personalStrip.venues', 'Venues')} value={data.total_venues} />
-        <Stat icon={<Flame size={18} />} label={t('venues.personalStrip.streak', 'Day streak')} value={data.current_streak} />
-        <Stat icon={<Sparkles size={18} />} label={t('venues.personalStrip.checkins', 'Check-ins')} value={data.total_checkins} />
+        <Stat
+          icon={<Trophy size={18} />}
+          label={t('venues.personalStrip.points', 'Points')}
+          value={data.points}
+        />
+        <Stat
+          icon={<MapPin size={18} />}
+          label={t('venues.personalStrip.venues', 'Venues')}
+          value={data.total_venues}
+        />
+        <Stat
+          icon={<Flame size={18} />}
+          label={t('venues.personalStrip.streak', 'Day streak')}
+          value={data.current_streak}
+        />
+        <Stat
+          icon={<Sparkles size={18} />}
+          label={t('venues.personalStrip.checkins', 'Check-ins')}
+          value={data.total_checkins}
+        />
       </div>
 
       {next !== null && (
         <div className="mt-6">
           <div className="flex justify-between text-xs text-muted-foreground mb-2">
             <span>
-              {t('venues.personalStrip.nextLevel', { name: levelName(data.level + 1), defaultValue: 'Next: {{name}}' })}
+              {t('venues.personalStrip.nextLevel', {
+                name: levelName(data.level + 1),
+                defaultValue: 'Next: {{name}}',
+              })}
             </span>
-            <span>{data.points} / {next}</span>
+            <span>
+              {data.points} / {next}
+            </span>
           </div>
           <div className="h-2 w-full overflow-hidden rounded-element bg-muted">
             <div

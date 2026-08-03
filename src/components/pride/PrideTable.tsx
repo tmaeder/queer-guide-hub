@@ -31,10 +31,12 @@ export function PrideTable({ events, selectedId, onSelect }: PrideTableProps) {
     const arr = [...events];
     arr.sort((a, b) => {
       let cmp = 0;
-      if (sortKey === 'date') cmp = new Date(a.start_date).getTime() - new Date(b.start_date).getTime();
+      if (sortKey === 'date')
+        cmp = new Date(a.start_date).getTime() - new Date(b.start_date).getTime();
       else if (sortKey === 'name') cmp = a.title.localeCompare(b.title);
       else if (sortKey === 'location')
-        cmp = (a.country ?? '').localeCompare(b.country ?? '') ||
+        cmp =
+          (a.country ?? '').localeCompare(b.country ?? '') ||
           (a.city ?? '').localeCompare(b.city ?? '');
       return sortAsc ? cmp : -cmp;
     });
@@ -61,7 +63,8 @@ export function PrideTable({ events, selectedId, onSelect }: PrideTableProps) {
       )}
     >
       {label}
-      {sortKey === key && (sortAsc ? <ArrowUp className="size-3" /> : <ArrowDown className="size-3" />)}
+      {sortKey === key &&
+        (sortAsc ? <ArrowUp className="size-3" /> : <ArrowDown className="size-3" />)}
     </button>
   );
 
@@ -76,7 +79,7 @@ export function PrideTable({ events, selectedId, onSelect }: PrideTableProps) {
         </span>
       </div>
 
-      <div className="rounded-container border border-foreground/15 bg-background overflow-hidden">
+      <div className="rounded-container bg-background overflow-hidden">
         <table className="w-full text-sm">
           <thead className="bg-muted/40">
             <tr>
@@ -102,7 +105,9 @@ export function PrideTable({ events, selectedId, onSelect }: PrideTableProps) {
                 {headerBtn(t('pride.table.location'), 'location')}
               </th>
               <th scope="col" className="py-2 px-4 text-left hidden lg:table-cell w-[110px]">
-                <span className="text-xs2 uppercase tracking-label text-foreground/60">{t('pride.table.region')}</span>
+                <span className="text-xs2 uppercase tracking-label text-foreground/60">
+                  {t('pride.table.region')}
+                </span>
               </th>
               <th scope="col" className="py-2 px-2 w-[40px]" aria-label="Flags" />
             </tr>
@@ -125,7 +130,9 @@ export function PrideTable({ events, selectedId, onSelect }: PrideTableProps) {
                   <td className="py-2 px-4 align-top whitespace-nowrap tabular-nums">
                     <span className="text-sm">{fmtDate(e.start_date, e.end_date)}</span>
                     {e.verification_status !== 'verified' && (
-                      <span className="block text-2xs text-muted-foreground">{t('pride.table.estimated')}</span>
+                      <span className="block text-2xs text-muted-foreground">
+                        {t('pride.table.estimated')}
+                      </span>
                     )}
                   </td>
                   <td className="py-2 px-4 align-top">
@@ -148,7 +155,10 @@ export function PrideTable({ events, selectedId, onSelect }: PrideTableProps) {
                   </td>
                   <td className="py-2 px-2 align-top text-right">
                     {e.is_featured && (
-                      <Star className="inline size-3.5 fill-foreground text-foreground" aria-label={t('pride.featured')} />
+                      <Star
+                        className="inline size-3.5 fill-foreground text-foreground"
+                        aria-label={t('pride.featured')}
+                      />
                     )}
                   </td>
                 </tr>

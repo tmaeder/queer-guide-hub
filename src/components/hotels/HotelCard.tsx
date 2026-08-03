@@ -43,7 +43,7 @@ function PriceIndicator({ range }: { range: number | null }) {
 }
 
 const HotelCardFixture = () => (
-  <div className="overflow-hidden rounded-container h-full flex flex-col bg-card border">
+  <div className="overflow-hidden rounded-container h-full flex flex-col bg-card">
     <div className="bg-accent flex items-center justify-center" style={{ height: 180 }}>
       <MapPin size={32} className="text-muted-foreground" />
     </div>
@@ -132,7 +132,11 @@ function HotelCardImpl({ hotel, loading = false }: HotelCardProps) {
             {/* Content */}
             <div className="p-4 flex-1 flex flex-col gap-1">
               {hotelName && (
-                <h3 className="font-semibold truncate text-base" style={{ lineHeight: 1.3 }} title={hotelName}>
+                <h3
+                  className="font-semibold truncate text-base"
+                  style={{ lineHeight: 1.3 }}
+                  title={hotelName}
+                >
                   {hotelName}
                 </h3>
               )}

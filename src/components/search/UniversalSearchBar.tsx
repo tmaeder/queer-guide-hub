@@ -27,15 +27,7 @@ import { SearchPopoverMobile } from './SearchPopoverMobile';
 import { SearchAskPanel } from './SearchAskPanel';
 
 // Order for Alt+1-9 scope shortcuts (mirrors SearchScopeChips).
-const SCOPE_IDS = [
-  'venue',
-  'event',
-  'marketplace',
-  'news',
-  'personality',
-  'city',
-  'queer_village',
-];
+const SCOPE_IDS = ['venue', 'event', 'marketplace', 'news', 'personality', 'city', 'queer_village'];
 
 function prefetchRoute(suggestion: SearchSuggestion) {
   // Only prefetch a canonical detail route — `detailHref` returns null for
@@ -59,11 +51,7 @@ function prefetchRoute(suggestion: SearchSuggestion) {
   }
 }
 
-function getPlaceholder(
-  pathname: string,
-  t: (k: string, d?: string) => string,
-  isMobile: boolean,
-) {
+function getPlaceholder(pathname: string, t: (k: string, d?: string) => string, isMobile: boolean) {
   if (pathname.startsWith('/admin')) return t('search.placeholders.generic', 'Search...');
   if (pathname.startsWith('/hotels')) return t('search.placeholders.hotels', 'Search hotels...');
   if (pathname.startsWith('/events')) return t('search.placeholders.events', 'Find events...');
@@ -230,8 +218,7 @@ export const UniversalSearchBar = () => {
         title: suggestion.name || suggestion.title,
       });
       navigate(
-        href ??
-          `/search?q=${encodeURIComponent(displayName)}&types=${suggestion.type}&direct=true`,
+        href ?? `/search?q=${encodeURIComponent(displayName)}&types=${suggestion.type}&direct=true`,
       );
       setIsOpen(false);
     },
@@ -330,7 +317,16 @@ export const UniversalSearchBar = () => {
         handleSearch();
       }
     },
-    [mode, query, suggestions, resultsFocused, setScope, focusInput, handleSelectSuggestion, handleSearch],
+    [
+      mode,
+      query,
+      suggestions,
+      resultsFocused,
+      setScope,
+      focusInput,
+      handleSelectSuggestion,
+      handleSearch,
+    ],
   );
 
   // ⌘K / Ctrl+K hotkey.
@@ -404,7 +400,9 @@ export const UniversalSearchBar = () => {
                 aria-expanded={isOpen}
                 aria-controls="qg-search-listbox"
                 aria-haspopup="listbox"
-                aria-activedescendant={resultsFocused !== null ? `result-${resultsFocused}` : undefined}
+                aria-activedescendant={
+                  resultsFocused !== null ? `result-${resultsFocused}` : undefined
+                }
                 placeholder={placeholder}
                 value={query}
                 onChange={(e) => {
@@ -464,7 +462,7 @@ export const UniversalSearchBar = () => {
                 {!query && !isMobile && (
                   <kbd
                     aria-hidden="true"
-                    className="pointer-events-none border border-border px-1.5 py-0.5 text-xs2 leading-none text-muted-foreground font-[inherit]"
+                    className="pointer-events-none rounded-badge bg-surface-container-high px-1.5 py-0.5 text-xs2 leading-none text-muted-foreground font-[inherit]"
                   >
                     {isMac ? '⌘K' : 'Ctrl+K'}
                   </kbd>

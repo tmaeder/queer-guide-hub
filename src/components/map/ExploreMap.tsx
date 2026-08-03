@@ -445,7 +445,7 @@ export const ExploreMap = ({
   // ── Render ───────────────────────────────────────────────────────────────
   return (
     <div
-      className={`relative rounded-container overflow-hidden border border-border ${
+      className={`relative rounded-container overflow-hidden ${
         showNativeNav ? '' : 'qg-hide-native-nav '
       }${className ?? ''}`}
       style={{ height }}

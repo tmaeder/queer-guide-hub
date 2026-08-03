@@ -100,7 +100,7 @@ export function CountryPracticalInfo({ country }: CountryPracticalInfoProps) {
   // grouping); the decorative icon lives inside the <dt> so the <dl> never
   // holds non-term/description children — fixes axe definition-list/dlitem.
   return (
-    <dl className="grid grid-cols-1 gap-px overflow-hidden rounded-container border bg-border sm:grid-cols-2 lg:grid-cols-3">
+    <dl className="grid grid-cols-1 gap-px overflow-hidden rounded-container bg-border sm:grid-cols-2 lg:grid-cols-3">
       {items.map((item) => (
         <div key={item.label} className="min-w-0 bg-background p-6">
           <dt className="flex items-center gap-2 text-2xs uppercase tracking-[0.12em] text-muted-foreground">

@@ -41,10 +41,15 @@ type StatusKind = 'yes' | 'no' | 'severe' | 'partial' | 'none';
  * negatives) routes to the `destructive` token — the only chromatic accent the
  * design system permits. Everything else is encoded by glyph + weight, never hue.
  */
-function classifyStatus(value: string | boolean | null | undefined, severeNegative = false): StatusKind {
+function classifyStatus(
+  value: string | boolean | null | undefined,
+  severeNegative = false,
+): StatusKind {
   if (value === true) return 'yes';
   if (value === false) return severeNegative ? 'severe' : 'no';
-  const v = String(value ?? '').toLowerCase().trim();
+  const v = String(value ?? '')
+    .toLowerCase()
+    .trim();
   if (!v || v === 'no data' || v === 'unknown') return 'none';
   // Negations must be caught before positive substrings: "not banned"
   // (e.g. conversion therapy still legal) contains "banned" but is negative.
@@ -65,7 +70,12 @@ function classifyStatus(value: string | boolean | null | undefined, severeNegati
     return 'yes';
   }
   if (v === 'no' || v.startsWith('no ')) return severeNegative ? 'severe' : 'no';
-  if (v.includes('partial') || v.includes('limited') || v.includes('varies') || v.includes('civil union')) {
+  if (
+    v.includes('partial') ||
+    v.includes('limited') ||
+    v.includes('varies') ||
+    v.includes('civil union')
+  ) {
     return 'partial';
   }
   return 'partial';
@@ -100,7 +110,8 @@ function StatusRow({
   severeNegative?: boolean;
 }) {
   const { t } = useTranslation();
-  const display = typeof value === 'string' ? value : value === true ? 'Yes' : value === false ? 'No' : null;
+  const display =
+    typeof value === 'string' ? value : value === true ? 'Yes' : value === false ? 'No' : null;
   const kind = classifyStatus(value, severeNegative);
   const hasData = display && display !== 'No data';
 
@@ -159,7 +170,7 @@ function ProtectionRow({
                 (isYes
                   ? 'bg-foreground text-background'
                   : isNo
-                    ? 'border border-border text-muted-foreground'
+                    ? 'bg-surface-container-highest text-muted-foreground'
                     : 'bg-muted text-muted-foreground')
               }
             >
@@ -179,7 +190,11 @@ const SectionLabel = ({ children }: { children: React.ReactNode }) => (
   </p>
 );
 
-export default function LGBTJurisdictionInfo({ country, className = '', style }: LGBTJurisdictionInfoProps) {
+export default function LGBTJurisdictionInfo({
+  country,
+  className = '',
+  style,
+}: LGBTJurisdictionInfoProps) {
   const { t } = useTranslation();
   if (!country) return null;
 
@@ -212,15 +227,17 @@ export default function LGBTJurisdictionInfo({ country, className = '', style }:
         </div>
         {lastUpdated && (
           <p className="text-xs text-muted-foreground">
-            {t('country.rights.source', 'ILGA World Database')} · {t('country.rights.updated', 'Updated')}{' '}
-            {lastUpdated}
+            {t('country.rights.source', 'ILGA World Database')} ·{' '}
+            {t('country.rights.updated', 'Updated')} {lastUpdated}
           </p>
         )}
       </CardHeader>
       <CardContent>
         {/* Criminalisation & freedoms — leads with the most safety-critical fact. */}
         <div>
-          <SectionLabel>{t('country.rights.section.criminalisation', 'Criminalisation & freedoms')}</SectionLabel>
+          <SectionLabel>
+            {t('country.rights.section.criminalisation', 'Criminalisation & freedoms')}
+          </SectionLabel>
           <div className="flex flex-col gap-1">
             <div className="flex items-center gap-4 py-2">
               <Scale size={15} className="shrink-0 text-muted-foreground" aria-hidden="true" />
@@ -251,12 +268,15 @@ export default function LGBTJurisdictionInfo({ country, className = '', style }:
               <p className="pl-8 text-xs font-medium text-destructive">
                 {t('country.rights.penalty', 'Penalty')}: {crim?.penalty as string}
                 {crim?.max_prison ? ` (${crim.max_prison as string})` : ''}
-                {deathPenalty ? ` — ${t('country.rights.deathPenalty', 'death penalty possible')}` : ''}
+                {deathPenalty
+                  ? ` — ${t('country.rights.deathPenalty', 'death penalty possible')}`
+                  : ''}
               </p>
             )}
             {crimLegal === true && (crim?.decrim_year_1 as string) && (
               <p className="pl-8 text-xs text-muted-foreground">
-                {t('country.rights.decriminalized', 'Decriminalized')}: {crim?.decrim_year_1 as string}
+                {t('country.rights.decriminalized', 'Decriminalized')}:{' '}
+                {crim?.decrim_year_1 as string}
                 {crim?.decrim_year_2 ? ` / ${crim.decrim_year_2 as string}` : ''}
               </p>
             )}
@@ -283,20 +303,51 @@ export default function LGBTJurisdictionInfo({ country, className = '', style }:
             </p>
             <div className="flex gap-1">
               {['SO', 'GI', 'GE', 'SC'].map((dim) => (
-                <span key={dim} className="w-6 text-center text-3xs font-semibold text-muted-foreground">
+                <span
+                  key={dim}
+                  className="w-6 text-center text-3xs font-semibold text-muted-foreground"
+                >
                   {dim}
                 </span>
               ))}
             </div>
           </div>
           <div className="flex flex-col">
-            <ProtectionRow label={t('country.rights.constitutional', 'Constitutional')} icon={Shield} data={country.lgbti_constitutional_protection as Record<string, unknown>} />
-            <ProtectionRow label={t('country.rights.employment', 'Employment')} icon={Briefcase} data={country.lgbti_employment_protection as Record<string, unknown>} />
-            <ProtectionRow label={t('country.rights.housing', 'Housing')} icon={Home} data={country.lgbti_housing_protection as Record<string, unknown>} />
-            <ProtectionRow label={t('country.rights.education', 'Education')} icon={GraduationCap} data={country.lgbti_education_protection as Record<string, unknown>} />
-            <ProtectionRow label={t('country.rights.health', 'Health')} icon={Stethoscope} data={country.lgbti_health_protection as Record<string, unknown>} />
-            <ProtectionRow label={t('country.rights.goodsServices', 'Goods & services')} icon={ShoppingBag} data={country.lgbti_goods_services_protection as Record<string, unknown>} />
-            <ProtectionRow label={t('country.rights.bullying', 'Bullying')} icon={Shield} data={country.lgbti_bullying_protection as Record<string, unknown>} />
+            <ProtectionRow
+              label={t('country.rights.constitutional', 'Constitutional')}
+              icon={Shield}
+              data={country.lgbti_constitutional_protection as Record<string, unknown>}
+            />
+            <ProtectionRow
+              label={t('country.rights.employment', 'Employment')}
+              icon={Briefcase}
+              data={country.lgbti_employment_protection as Record<string, unknown>}
+            />
+            <ProtectionRow
+              label={t('country.rights.housing', 'Housing')}
+              icon={Home}
+              data={country.lgbti_housing_protection as Record<string, unknown>}
+            />
+            <ProtectionRow
+              label={t('country.rights.education', 'Education')}
+              icon={GraduationCap}
+              data={country.lgbti_education_protection as Record<string, unknown>}
+            />
+            <ProtectionRow
+              label={t('country.rights.health', 'Health')}
+              icon={Stethoscope}
+              data={country.lgbti_health_protection as Record<string, unknown>}
+            />
+            <ProtectionRow
+              label={t('country.rights.goodsServices', 'Goods & services')}
+              icon={ShoppingBag}
+              data={country.lgbti_goods_services_protection as Record<string, unknown>}
+            />
+            <ProtectionRow
+              label={t('country.rights.bullying', 'Bullying')}
+              icon={Shield}
+              data={country.lgbti_bullying_protection as Record<string, unknown>}
+            />
           </div>
         </div>
 
@@ -304,10 +355,20 @@ export default function LGBTJurisdictionInfo({ country, className = '', style }:
 
         {/* Criminal justice */}
         <div>
-          <SectionLabel>{t('country.rights.section.criminalJustice', 'Criminal justice')}</SectionLabel>
+          <SectionLabel>
+            {t('country.rights.section.criminalJustice', 'Criminal justice')}
+          </SectionLabel>
           <div className="flex flex-col">
-            <ProtectionRow label={t('country.rights.hateCrime', 'Hate crime laws')} icon={Gavel} data={country.lgbti_hate_crime_law as Record<string, unknown>} />
-            <ProtectionRow label={t('country.rights.incitement', 'Incitement prohibition')} icon={Ban} data={country.lgbti_incitement_prohibition as Record<string, unknown>} />
+            <ProtectionRow
+              label={t('country.rights.hateCrime', 'Hate crime laws')}
+              icon={Gavel}
+              data={country.lgbti_hate_crime_law as Record<string, unknown>}
+            />
+            <ProtectionRow
+              label={t('country.rights.incitement', 'Incitement prohibition')}
+              icon={Ban}
+              data={country.lgbti_incitement_prohibition as Record<string, unknown>}
+            />
           </div>
         </div>
 
@@ -315,11 +376,15 @@ export default function LGBTJurisdictionInfo({ country, className = '', style }:
 
         {/* Family & relationships */}
         <div>
-          <SectionLabel>{t('country.rights.section.family', 'Family & relationships')}</SectionLabel>
+          <SectionLabel>
+            {t('country.rights.section.family', 'Family & relationships')}
+          </SectionLabel>
           <div className="flex flex-col gap-1">
             <div className="flex items-center gap-4 py-2">
               <Heart size={15} className="shrink-0 text-muted-foreground" aria-hidden="true" />
-              <p className="flex-1 text-13 font-medium">{t('country.rights.unions', 'Same-sex unions')}</p>
+              <p className="flex-1 text-13 font-medium">
+                {t('country.rights.unions', 'Same-sex unions')}
+              </p>
               {ssu.summary && ssu.summary !== 'No data' ? (
                 <div className="flex shrink-0 items-center gap-2">
                   <StatusGlyph kind={classifyStatus(ssu.summary)} />
@@ -341,7 +406,11 @@ export default function LGBTJurisdictionInfo({ country, className = '', style }:
                   : ''}
               </p>
             )}
-            <StatusRow label={t('country.rights.adoption', 'Adoption rights')} icon={Users} value={country.lgbti_adoption_rights as string} />
+            <StatusRow
+              label={t('country.rights.adoption', 'Adoption rights')}
+              icon={Users}
+              value={country.lgbti_adoption_rights as string}
+            />
           </div>
         </div>
 
@@ -353,9 +422,15 @@ export default function LGBTJurisdictionInfo({ country, className = '', style }:
           <div className="flex flex-col gap-1">
             {gender && Object.keys(gender).length > 0 && (
               <div className="flex items-start gap-4 py-2">
-                <Fingerprint size={15} className="mt-0.5 shrink-0 text-muted-foreground" aria-hidden="true" />
+                <Fingerprint
+                  size={15}
+                  className="mt-0.5 shrink-0 text-muted-foreground"
+                  aria-hidden="true"
+                />
                 <div className="flex-1">
-                  <p className="text-13 font-medium">{t('country.rights.genderRecognition', 'Gender recognition')}</p>
+                  <p className="text-13 font-medium">
+                    {t('country.rights.genderRecognition', 'Gender recognition')}
+                  </p>
                   <div className="mt-1 flex flex-wrap gap-1">
                     {gender.gender_marker ? (
                       <Badge variant="secondary" className="text-2xs">
@@ -382,13 +457,21 @@ export default function LGBTJurisdictionInfo({ country, className = '', style }:
                 </div>
               </div>
             )}
-            <StatusRow label={t('country.rights.conversionTherapy', 'Conversion therapy')} icon={Ban} value={country.lgbti_conversion_therapy_regulation as string} />
-            <StatusRow label={t('country.rights.intersex', 'Intersex bodily integrity')} icon={Shield} value={country.lgbti_intersex_protection as string} />
+            <StatusRow
+              label={t('country.rights.conversionTherapy', 'Conversion therapy')}
+              icon={Ban}
+              value={country.lgbti_conversion_therapy_regulation as string}
+            />
+            <StatusRow
+              label={t('country.rights.intersex', 'Intersex bodily integrity')}
+              icon={Shield}
+              value={country.lgbti_intersex_protection as string}
+            />
           </div>
         </div>
 
         {/* Source */}
-        <div className="border-t pt-2">
+        <div className="pt-2">
           <a
             href="https://database.ilga.org/"
             target="_blank"

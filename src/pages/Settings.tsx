@@ -18,11 +18,7 @@ import {
   Sparkles,
   X,
 } from 'lucide-react';
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from '@/components/ui/collapsible';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { useAuth } from '@/hooks/useAuth';
 import { useMeta } from '@/hooks/useMeta';
 import { useProfile } from '@/hooks/useProfile';
@@ -69,14 +65,7 @@ type ProfileX = Profile & {
 };
 
 type SectionKind =
-  | 'profile'
-  | 'status'
-  | 'dating'
-  | 'privacy'
-  | 'travel'
-  | 'account'
-  | 'avatar'
-  | null;
+  'profile' | 'status' | 'dating' | 'privacy' | 'travel' | 'account' | 'avatar' | null;
 
 /** Personal documents are removed after this date (T+30 export window). */
 const DOCS_REMOVAL_DATE = 'July 11, 2026';
@@ -117,7 +106,14 @@ interface LoaderProps {
   user: SupabaseUser;
 }
 
-function ProfileSettingsLoader({ updateProfile, refetchProfile, toast, navigate, hasPasskey, user }: LoaderProps) {
+function ProfileSettingsLoader({
+  updateProfile,
+  refetchProfile,
+  toast,
+  navigate,
+  hasPasskey,
+  user,
+}: LoaderProps) {
   const { profile, isLoading, isError, errors, profileLoading, profileError } = useProfileData();
 
   if (isLoading || profileLoading) {
@@ -173,7 +169,11 @@ function SaveStatusLine({
   onSignIn: () => void;
 }) {
   return (
-    <div role="status" aria-live="polite" className="flex items-center justify-center gap-2 text-sm">
+    <div
+      role="status"
+      aria-live="polite"
+      className="flex items-center justify-center gap-2 text-sm"
+    >
       {status === 'saving' && (
         <>
           <Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} />
@@ -187,11 +187,15 @@ function SaveStatusLine({
         </>
       )}
       {status === 'unsaved' && (
-        <Badge variant="outline" className="rounded-element">Unsaved changes</Badge>
+        <Badge variant="outline" className="rounded-element">
+          Unsaved changes
+        </Badge>
       )}
       {status === 'error' && (
         <div className="flex items-center gap-4">
-          <Badge variant="destructive" className="rounded-element">Save failed</Badge>
+          <Badge variant="destructive" className="rounded-element">
+            Save failed
+          </Badge>
           <Button variant="outline" size="sm" onClick={onRetry} className="rounded-element">
             Retry
           </Button>
@@ -199,7 +203,9 @@ function SaveStatusLine({
       )}
       {status === 'auth-error' && (
         <div className="flex items-center gap-4">
-          <Badge variant="destructive" className="rounded-element">Session expired</Badge>
+          <Badge variant="destructive" className="rounded-element">
+            Session expired
+          </Badge>
           <Button variant="outline" size="sm" onClick={onSignIn} className="rounded-element">
             Sign in
           </Button>
@@ -235,7 +241,7 @@ function AccordionSection({
       <div
         id={`settings-section-${id}`}
         className={cn(
-          'rounded-container border bg-card transition-colors scroll-mt-24',
+          'rounded-container bg-card transition-colors scroll-mt-24',
           active ? 'border-foreground/30' : 'border-border',
         )}
       >
@@ -573,7 +579,9 @@ function ProfileSettingsContent({
           id="account"
           icon={SettingsIcon}
           title="Account"
-          summary={username ? `@${username} · email, notifications` : 'Username, email, notifications'}
+          summary={
+            username ? `@${username} · email, notifications` : 'Username, email, notifications'
+          }
           active={activeSection === 'account'}
           onToggle={toggleSection}
         >
@@ -582,9 +590,7 @@ function ProfileSettingsContent({
               <CardContent className="pt-6 flex flex-col gap-4">
                 <div>
                   <p className="font-semibold">Username</p>
-                  <p className="text-sm text-muted-foreground">
-                    Your unique queer.guide handle.
-                  </p>
+                  <p className="text-sm text-muted-foreground">Your unique queer.guide handle.</p>
                 </div>
                 <UsernamePanel
                   username={username}
@@ -601,7 +607,10 @@ function ProfileSettingsContent({
       </div>
 
       {/* Preferences — review-only mirror of in-context choices */}
-      <PreferencesMirrorCard profile={profile} onUpdate={(u) => updateProfile(u as Partial<Profile>)} />
+      <PreferencesMirrorCard
+        profile={profile}
+        onUpdate={(u) => updateProfile(u as Partial<Profile>)}
+      />
 
       {/* Personal documents — deprecation notice; the list itself is behind a disclosure */}
       <Card>

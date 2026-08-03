@@ -1,6 +1,16 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Ticket, Check, X, Send, ExternalLink, Loader2, Calendar, MapPin, Plus } from 'lucide-react';
+import {
+  Ticket,
+  Check,
+  X,
+  Send,
+  ExternalLink,
+  Loader2,
+  Calendar,
+  MapPin,
+  Plus,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -81,10 +91,7 @@ export function TripEmailThread({ itemId }: { itemId: string }) {
         ? `${item.parsed_price} ${item.parsed_currency ?? ''}`.trim()
         : null,
     ],
-    [
-      t('inbox.tripmail.confirmation', { defaultValue: 'Confirmation' }),
-      item.parsed_confirmation,
-    ],
+    [t('inbox.tripmail.confirmation', { defaultValue: 'Confirmation' }), item.parsed_confirmation],
   ];
 
   const handleSend = () => {
@@ -107,7 +114,8 @@ export function TripEmailThread({ itemId }: { itemId: string }) {
         <div className="flex items-center gap-2">
           <Ticket className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
           <p className="truncate text-sm font-semibold">
-            {item.parsed_title || item.raw_subject ||
+            {item.parsed_title ||
+              item.raw_subject ||
               t('inbox.tripmail.fallbackTitle', { defaultValue: 'Forwarded email' })}
           </p>
         </div>
@@ -222,7 +230,7 @@ export function TripEmailThread({ itemId }: { itemId: string }) {
             <div
               key={turn.id}
               className={cn(
-                'max-w-[85%] rounded-element border px-4 py-2 text-sm',
+                'max-w-[85%] rounded-element px-4 py-2 text-sm bg-surface-container',
                 turn.role === 'user'
                   ? 'self-end border-foreground bg-foreground text-background'
                   : 'self-start border-border',

@@ -39,11 +39,7 @@ const PRIVILEGES: Record<TrustTier, string[]> = {
     'Submissions fast-track through review-gate.',
     'Endorse other members.',
   ],
-  guardian: [
-    'All Steward privileges.',
-    'Early access to new features.',
-    'Granted by staff only.',
-  ],
+  guardian: ['All Steward privileges.', 'Early access to new features.', 'Granted by staff only.'],
 };
 
 function progressLine(
@@ -74,8 +70,8 @@ export function TrustTierLadder() {
     <section aria-label="Trust tier" className="flex flex-col gap-4">
       <SectionHeader size="section" title="Trust tier" />
       <p className="text-sm text-muted-foreground">
-        Tiers reflect verified contributions. Counts stay private — only your tier label is
-        visible to others.
+        Tiers reflect verified contributions. Counts stay private — only your tier label is visible
+        to others.
       </p>
 
       <Card>
@@ -91,9 +87,17 @@ export function TrustTierLadder() {
               <div className="text-sm font-medium">Progress to {LABEL[next]}</div>
               {(
                 [
-                  progressLine(data.submissions_accepted, nextReq.submissions, 'accepted submissions'),
+                  progressLine(
+                    data.submissions_accepted,
+                    nextReq.submissions,
+                    'accepted submissions',
+                  ),
                   progressLine(data.safety_validated, nextReq.safety, 'validated safety reports'),
-                  progressLine(data.endorsements_received, nextReq.endorsements, 'peer endorsements'),
+                  progressLine(
+                    data.endorsements_received,
+                    nextReq.endorsements,
+                    'peer endorsements',
+                  ),
                 ].filter(Boolean) as { line: string; pct: number }[]
               ).map((row, i) => (
                 <div key={i} className="space-y-1">
@@ -110,9 +114,7 @@ export function TrustTierLadder() {
             </div>
           )}
           {!next && (
-            <div className="text-sm text-muted-foreground">
-              You're at the top tier. Thank you.
-            </div>
+            <div className="text-sm text-muted-foreground">You're at the top tier. Thank you.</div>
           )}
         </CardContent>
       </Card>
@@ -147,7 +149,7 @@ export function TrustTierLadder() {
               </span>
               <div
                 className={
-                  'flex-1 rounded-element border p-4 ' +
+                  'flex-1 rounded-element p-4 bg-surface-container' +
                   (active ? 'border-foreground' : 'border-border')
                 }
               >

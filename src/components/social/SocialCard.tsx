@@ -1,6 +1,12 @@
 import { ExternalLink } from 'lucide-react';
 import { useSocialProfiles } from '@/hooks/useSocialProfiles';
-import { platformLabel, buildProfileUrl, isAdultPlatform, displayHandle, type SocialPlatformKey } from '@/lib/social/registry';
+import {
+  platformLabel,
+  buildProfileUrl,
+  isAdultPlatform,
+  displayHandle,
+  type SocialPlatformKey,
+} from '@/lib/social/registry';
 import { platformIcon } from '@/lib/social/icons';
 import { resolveImageUrl } from '@/utils/resolveImageUrl';
 
@@ -45,7 +51,7 @@ export function SocialCards({ links, className }: SocialCardsProps) {
             href={href}
             target="_blank"
             rel="noopener nofollow"
-            className="no-underline flex items-center gap-2.5 rounded-element border border-foreground/10 p-4 transition-colors hover:bg-muted"
+            className="no-underline flex items-center gap-2.5 rounded-element p-4 transition-colors hover:bg-muted"
           >
             {avatar ? (
               <img

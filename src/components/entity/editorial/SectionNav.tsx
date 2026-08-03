@@ -28,10 +28,7 @@ export function SectionNav({ items, activeId, onSelect, className }: SectionNavP
   return (
     <nav
       aria-label="Sections"
-      className={cn(
-        'sticky top-16 z-30 -mx-4 mb-8 border-b bg-background/80 backdrop-blur',
-        className,
-      )}
+      className={cn('sticky top-16 z-30 -mx-4 mb-8 bg-background/80 backdrop-blur', className)}
     >
       <ul
         ref={listRef}
@@ -69,4 +66,3 @@ export function SectionNav({ items, activeId, onSelect, className }: SectionNavP
     </nav>
   );
 }
-

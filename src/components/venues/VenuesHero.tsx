@@ -20,7 +20,7 @@ export function VenuesHero() {
 
   return (
     <section
-      className="relative overflow-hidden rounded-container border bg-card"
+      className="relative overflow-hidden rounded-container bg-card"
       aria-label={t('venues.hero.label', 'Featured venue')}
     >
       <div className="grid md:grid-cols-2">

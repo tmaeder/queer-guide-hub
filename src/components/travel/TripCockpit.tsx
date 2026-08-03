@@ -41,7 +41,7 @@ export function TripCockpit() {
   return (
     <section
       aria-labelledby="trip-cockpit-heading"
-      className="mb-10 rounded-container border bg-background"
+      className="mb-10 rounded-container bg-background"
     >
       <div className="flex flex-wrap items-start justify-between gap-6 p-6 md:p-8">
         <div className="min-w-0 flex-1">
@@ -50,10 +50,7 @@ export function TripCockpit() {
               ? countdownLabel(t, countdown)
               : t('travel.cockpit.kicker', 'Next on your itinerary')}
           </p>
-          <LocalizedLink
-            to={`/trips/${current.id}`}
-            className="block no-underline"
-          >
+          <LocalizedLink to={`/trips/${current.id}`} className="block no-underline">
             <h2
               id="trip-cockpit-heading"
               className="truncate text-headline-lg font-bold leading-tight text-foreground"
@@ -165,7 +162,7 @@ function TripSwitcher({
 
 function CockpitSkeleton() {
   return (
-    <section className="mb-10 rounded-container border bg-background p-8" aria-hidden>
+    <section className="mb-10 rounded-container bg-background p-8" aria-hidden>
       <div className="h-4 w-24 bg-muted" />
       <div className="mt-4 h-8 w-2/3 bg-muted" />
       <div className="mt-2 flex gap-4">

@@ -13,7 +13,8 @@ export const MotionCard = React.forwardRef<HTMLDivElement, MotionCardProps>(
       <div
         ref={ref}
         className={cn(
-          'bg-card text-card-foreground rounded-container border border-border/60',
+          // Matches card.tsx — plate, no outline.
+          'bg-surface-container text-card-foreground rounded-container',
           'transition-colors duration-200 hover:bg-muted/40 motion-reduce:transition-none',
           className,
         )}

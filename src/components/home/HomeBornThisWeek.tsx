@@ -111,7 +111,7 @@ export default function HomeBornThisWeek() {
       title={t('home.bornThisWeek.title', 'Born this week')}
       seeAllHref="/personalities"
       seeAllLabel={t('home.bornThisWeek.seeAll', 'All personalities')}
-      className="bg-grid-dots border-y border-border"
+      className="bg-grid-dots"
     >
       {marquee ? (
         <div className="group/marquee overflow-hidden" style={{ '--gap': '1rem' } as CSSProperties}>

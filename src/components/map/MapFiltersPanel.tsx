@@ -193,7 +193,7 @@ export const MapFiltersPanel = ({
             onClick={toggleNearMe}
             disabled={locating}
             className={cn(
-              'inline-flex items-center gap-2 h-9 px-4 text-sm rounded-element border transition-colors focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2',
+              'inline-flex items-center gap-2 h-9 px-4 text-sm rounded-element transition-colors focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 bg-surface-container',
               filters.nearMe
                 ? 'bg-foreground text-background border-foreground'
                 : 'border-border hover:bg-muted',
@@ -226,7 +226,10 @@ export const MapFiltersPanel = ({
                       onSelect={() => toggleTag(tag.value)}
                       className="flex items-center gap-2 cursor-pointer"
                     >
-                      <Check size={14} className={cn('shrink-0', active ? 'opacity-100' : 'opacity-0')} />
+                      <Check
+                        size={14}
+                        className={cn('shrink-0', active ? 'opacity-100' : 'opacity-0')}
+                      />
                       <span className="text-sm">{tag.label}</span>
                     </CommandItem>
                   );

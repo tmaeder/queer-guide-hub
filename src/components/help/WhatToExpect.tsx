@@ -12,7 +12,7 @@ export function WhatToExpect() {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="mb-6 rounded-element border bg-muted/40">
+    <div className="mb-6 rounded-element bg-muted/40">
       <button
         type="button"
         className="flex w-full items-center justify-between px-4 py-4 text-left"
@@ -34,16 +34,28 @@ export function WhatToExpect() {
         <div className="border-t px-4 py-4 text-sm leading-relaxed text-muted-foreground">
           <ul className="list-disc space-y-1 pl-6">
             <li>
-              {t('help.expect_1', 'You’ll hear a short greeting. You don’t have to give your name.')}
+              {t(
+                'help.expect_1',
+                'You’ll hear a short greeting. You don’t have to give your name.',
+              )}
             </li>
             <li>
-              {t('help.expect_2', 'You can hang up at any time. You can call back as often as you need.')}
+              {t(
+                'help.expect_2',
+                'You can hang up at any time. You can call back as often as you need.',
+              )}
             </li>
             <li>
-              {t('help.expect_3', 'Free hotlines in DE/AT/CH don’t appear on itemized phone bills.')}
+              {t(
+                'help.expect_3',
+                'Free hotlines in DE/AT/CH don’t appear on itemized phone bills.',
+              )}
             </li>
             <li>
-              {t('help.expect_4', 'If you can’t speak, ask for text or chat — most hotlines offer it.')}
+              {t(
+                'help.expect_4',
+                'If you can’t speak, ask for text or chat — most hotlines offer it.',
+              )}
             </li>
           </ul>
         </div>

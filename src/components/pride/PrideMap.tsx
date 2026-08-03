@@ -161,7 +161,9 @@ export function PrideMap({ events, selectedId, onSelect, height = 480 }: PrideMa
         if (id && onSelect) onSelect(id);
         const [lng, lat] = (feature.geometry as GeoJSON.Point).coordinates;
         popupRef.current?.remove();
-        const date = start ? new Date(start).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : '';
+        const date = start
+          ? new Date(start).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
+          : '';
         const html = `<div style="font-family:inherit;min-width:180px"><strong>${title ?? ''}</strong><br/><span style="color:#666">${[city, country].filter(Boolean).join(', ')}${date ? ' · ' + date : ''}</span><br/><a href="/events/${slug ?? ''}" style="display:inline-block;margin-top:6px;text-decoration:underline">View pride</a></div>`;
         const popup = new maplibregl.Popup({ offset: 12, closeButton: true })
           .setLngLat([lng, lat])
@@ -189,7 +191,11 @@ export function PrideMap({ events, selectedId, onSelect, height = 480 }: PrideMa
     if (selectedId) {
       const ev = events.find((e) => e.id === selectedId);
       if (ev && typeof ev.latitude === 'number' && typeof ev.longitude === 'number') {
-        map.easeTo({ center: [ev.longitude, ev.latitude], zoom: Math.max(map.getZoom(), 4), duration: 600 });
+        map.easeTo({
+          center: [ev.longitude, ev.latitude],
+          zoom: Math.max(map.getZoom(), 4),
+          duration: 600,
+        });
       }
     }
   }, [selectedId, ready, events]);
@@ -197,7 +203,7 @@ export function PrideMap({ events, selectedId, onSelect, height = 480 }: PrideMa
   return (
     <div
       ref={containerRef}
-      className="w-full rounded-container border border-foreground/10 overflow-hidden"
+      className="w-full rounded-container overflow-hidden bg-surface-container"
       style={{ height }}
       role="region"
       aria-label={t('pride.map.aria')}

@@ -12,10 +12,7 @@ import { X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { EqualityChip, TIER_LABEL } from './EqualityChip';
 import { EQUALITY_TIERS, CITIES_SORT_KEYS } from '@/utils/citiesFilter';
-import type {
-  CitiesSortKey,
-  EqualityTier,
-} from '@/utils/citiesFilter';
+import type { CitiesSortKey, EqualityTier } from '@/utils/citiesFilter';
 import type { DirectoryContinent } from '@/hooks/useCitiesDirectory';
 
 interface CitiesFilterBarProps {
@@ -67,7 +64,7 @@ function ChipButton({
       aria-label={label}
       onClick={onPress}
       className={cn(
-        'inline-flex items-center gap-1.5 whitespace-nowrap rounded-element border px-2.5 py-1.5 text-13 font-medium transition-colors',
+        'inline-flex items-center gap-1.5 whitespace-nowrap rounded-element px-2.5 py-1.5 text-13 font-medium transition-colors bg-surface-container',
         pressed
           ? 'border-foreground bg-foreground text-background'
           : 'border-foreground/15 bg-background text-foreground hover:bg-muted',
@@ -94,8 +91,7 @@ export function CitiesFilterBar({
 }: CitiesFilterBarProps) {
   const { t } = useTranslation();
 
-  const hasFilters =
-    q.length > 0 || selectedContinents.size > 0 || selectedTiers.size > 0;
+  const hasFilters = q.length > 0 || selectedContinents.size > 0 || selectedTiers.size > 0;
 
   return (
     <div
@@ -182,11 +178,12 @@ export function CitiesFilterBar({
             <label htmlFor="cities-sort" className="text-13 text-muted-foreground">
               {t('cities.sortLabel', 'Sort')}
             </label>
-            <Select
-              value={sort}
-              onValueChange={(v) => onSortChange(v as CitiesSortKey)}
-            >
-              <SelectTrigger id="cities-sort" className="w-[180px]" aria-label={t('cities.sortAriaLabel', 'Sort cities')}>
+            <Select value={sort} onValueChange={(v) => onSortChange(v as CitiesSortKey)}>
+              <SelectTrigger
+                id="cities-sort"
+                className="w-[180px]"
+                aria-label={t('cities.sortAriaLabel', 'Sort cities')}
+              >
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -201,11 +198,7 @@ export function CitiesFilterBar({
         </div>
 
         {/* Result count */}
-        <p
-          className="text-13 text-muted-foreground m-0"
-          aria-live="polite"
-          role="status"
-        >
+        <p className="text-13 text-muted-foreground m-0" aria-live="polite" role="status">
           {t('cities.resultCount', '{{shown}} of {{total}} cities', {
             shown: filteredCount,
             total: totalCount,

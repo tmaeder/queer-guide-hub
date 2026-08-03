@@ -78,7 +78,7 @@ export function MailDetail({ emailId }: { emailId: string }) {
         />
 
         {replyOpen && (
-          <div className="flex flex-col gap-4 rounded-container border p-4">
+          <div className="flex flex-col gap-4 rounded-container p-4 bg-surface-container">
             <div className="flex items-center justify-between">
               <h3 className="text-15 font-semibold">
                 <Reply className="mr-2 inline-block h-4 w-4 align-middle" aria-hidden />
@@ -95,7 +95,7 @@ export function MailDetail({ emailId }: { emailId: string }) {
               </Button>
             </div>
             <textarea
-              className="min-h-[160px] w-full rounded-element border border-input bg-background px-4 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              className="min-h-[160px] w-full rounded-element bg-background px-4 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               placeholder={t('inbox.mail.replyPlaceholder', { defaultValue: 'Write your reply…' })}
               value={replyBody}
               onChange={(e) => setReplyBody(e.target.value)}

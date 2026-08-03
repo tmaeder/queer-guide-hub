@@ -22,7 +22,8 @@ export function VisitedVenuesList() {
 
   return (
     <section aria-labelledby="visited-h">
-      <SectionHeader size="section"
+      <SectionHeader
+        size="section"
         id="visited-h"
         title={t('venues.passport.visited', {
           count: venues.length,
@@ -49,7 +50,10 @@ export function VisitedVenuesList() {
               </h3>
               <ul className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {list.map((v) => (
-                  <li key={v.id} className="border rounded-container overflow-hidden flex">
+                  <li
+                    key={v.id}
+                    className="rounded-container overflow-hidden flex bg-surface-container"
+                  >
                     {v.images?.[0] && (
                       <div
                         className="w-20 h-20 shrink-0 bg-muted bg-cover bg-center"

@@ -315,6 +315,82 @@ test.describe('design system: sanctioned ink only', () => {
   }
 });
 
+/**
+ * PASTE-UP border budget.
+ *
+ * The rebrand replaced outlines with filled ink plates, and then drifted back to
+ * 150 bordered elements on a single city page because nothing measured it.
+ *
+ * Computed border width is the signal, not the class name: it catches a border
+ * however it arrives (utility, `divide-y`, inline style, a stylesheet) and it
+ * ignores the `border-<color>`-without-width classes that the `@layer base`
+ * reset in src/index.css already neutralises. Fully transparent borders are
+ * skipped too — `scroll-area` and `switch` use them purely as spacing.
+ *
+ * Route choice is load-bearing. `/`, `/news`, `/places` and `/marketplace` all
+ * report 2-8 and would have declared this fixed while the city page sat at 150;
+ * they simply had not loaded much content. Measure a dense page, and confirm it
+ * actually rendered before believing the number.
+ */
+test.describe('design system: border budget', () => {
+  // Survivors, by design: `.rule-heavy` band rules and the masthead's 2px rule
+  // (the rationed PASTE-UP signature) plus the spinner, which is drawn WITH a
+  // border rather than wearing one. Focus rings use `outline`, so they are
+  // outside this check by construction.
+  const ALLOWED = /rule-heavy|border-b-2 border-foreground|animate-spin/;
+  const BUDGET = 6;
+
+  test('/city/new-york paints almost no borders', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 1400 });
+    await page.goto('/city/new-york', { waitUntil: 'domcontentloaded' });
+    await page.waitForSelector('#root *', { state: 'attached', timeout: 20_000 });
+    await dismissCookieBanner(page);
+
+    // Wait for CONTENT. `#root *` attaches when the header mounts; a count
+    // taken then measures the chrome and misses the entire page.
+    let last = -1;
+    for (let i = 0; i < 30; i++) {
+      const n = await page.evaluate(() => document.body.innerText.trim().length);
+      if (n > 1500 && n === last) break;
+      last = n;
+      await page.waitForTimeout(500);
+    }
+
+    const result = await page.evaluate(() => {
+      const offenders: string[] = [];
+      for (const el of document.querySelectorAll('#root *, header *, footer *')) {
+        const cs = getComputedStyle(el);
+        const visible = ['Top', 'Right', 'Bottom', 'Left'].some((s) => {
+          if ((parseFloat(cs[`border${s}Width` as keyof CSSStyleDeclaration] as string) || 0) <= 0)
+            return false;
+          const c = (cs[`border${s}Color` as keyof CSSStyleDeclaration] as string) || '';
+          const m = c.match(/^rgba?\([^)]*?,\s*([\d.]+)\s*\)$/);
+          if (m && Number(m[1]) === 0) return false;
+          return c !== 'transparent';
+        });
+        if (!visible) continue;
+        const r = el.getBoundingClientRect();
+        if (r.width < 8 || r.height < 8) continue;
+        offenders.push(el.getAttribute('class') || `<${el.tagName.toLowerCase()}>`);
+      }
+      return { offenders, bodyText: document.body.innerText.trim().length };
+    });
+
+    expect(
+      result.bodyText,
+      'the page never rendered its content, so this count proves nothing',
+    ).toBeGreaterThan(1500);
+
+    const unexpected = result.offenders.filter((c) => !ALLOWED.test(c));
+    expect(
+      unexpected.length,
+      `${unexpected.length} bordered elements on /city/new-york (budget ${BUDGET}). ` +
+        'Borders were replaced by ink plates — use bg-surface-container* instead.\n' +
+        unexpected.map((c) => `  ${c.slice(0, 110)}`).join('\n'),
+    ).toBeLessThanOrEqual(BUDGET);
+  });
+});
+
 test.describe('design system: visual snapshots', () => {
   test('homepage above fold', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 900 });

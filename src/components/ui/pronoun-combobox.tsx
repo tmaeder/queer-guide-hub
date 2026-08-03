@@ -12,7 +12,11 @@ import {
 } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
-import { PRONOUN_SUGGESTIONS, MAX_PRONOUN_SETS, pronounDisplay } from '@/components/ui/pronoun-utils';
+import {
+  PRONOUN_SUGGESTIONS,
+  MAX_PRONOUN_SETS,
+  pronounDisplay,
+} from '@/components/ui/pronoun-utils';
 
 const MAX_FREE_TEXT_LEN = 30;
 
@@ -61,7 +65,7 @@ export function PronounCombobox({ value, onValueChange, id, disabled }: PronounC
             aria-expanded={open}
             disabled={disabled}
             className={cn(
-              'h-10 w-full justify-between rounded-element border border-input bg-background px-4 py-2 font-normal transition-all hover:border-foreground/40 hover:bg-background',
+              'h-10 w-full justify-between rounded-element bg-inverse-surface text-background placeholder:text-background/70 px-4 py-2 font-normal transition-all hover:opacity-95',
               value.length === 0 && 'text-muted-foreground',
             )}
           >
@@ -135,9 +139,7 @@ export function PronounCombobox({ value, onValueChange, id, disabled }: PronounC
           ))}
         </div>
       )}
-      {atLimit && (
-        <p className="text-xs text-muted-foreground">Up to {MAX_PRONOUN_SETS} sets.</p>
-      )}
+      {atLimit && <p className="text-xs text-muted-foreground">Up to {MAX_PRONOUN_SETS} sets.</p>}
     </div>
   );
 }

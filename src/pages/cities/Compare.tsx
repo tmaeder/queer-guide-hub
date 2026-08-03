@@ -30,8 +30,8 @@ export default function CitiesCompare() {
   const ids = useMemo(() => [aId, bId].filter(Boolean) as string[], [aId, bId]);
   const { data: rows, isLoading } = useCityCompareData(ids);
   const byId = useMemo(() => new Map((rows ?? []).map((r) => [r.id, r])), [rows]);
-  const a = aId ? byId.get(aId) ?? null : null;
-  const b = bId ? byId.get(bId) ?? null : null;
+  const a = aId ? (byId.get(aId) ?? null) : null;
+  const b = bId ? (byId.get(bId) ?? null) : null;
 
   const setSide = (side: 'a' | 'b') => (sel: GeoSelection | null) => {
     setSearchParams(
@@ -96,7 +96,7 @@ export default function CitiesCompare() {
           type="button"
           aria-label={t('cities.compare.swap', 'Swap')}
           onClick={swap}
-          className="mx-auto inline-flex h-10 w-10 items-center justify-center rounded-element border bg-background text-muted-foreground transition-colors hover:text-foreground"
+          className="mx-auto inline-flex h-10 w-10 items-center justify-center rounded-element bg-background text-muted-foreground transition-colors hover:text-foreground"
         >
           <ArrowLeftRight size={16} />
         </button>
@@ -179,11 +179,14 @@ function ComparisonTable({
   ];
 
   return (
-    <div className="overflow-x-auto rounded-container border">
+    <div className="overflow-x-auto rounded-container bg-surface-container">
       <table className="w-full text-13">
         <thead>
           <tr className="border-b">
-            <th scope="col" className="px-4 py-4 text-left text-2xs uppercase tracking-[0.14em] text-muted-foreground">
+            <th
+              scope="col"
+              className="px-4 py-4 text-left text-2xs uppercase tracking-[0.14em] text-muted-foreground"
+            >
               {t('cities.compare.row.label', 'Attribute')}
             </th>
             <th scope="col" className="px-4 py-4 text-left">
@@ -240,13 +243,7 @@ function countryCell(c: CityComparison): React.ReactNode {
   );
 }
 
-function EmptyHint({
-  t,
-  hasOne,
-}: {
-  t: ReturnType<typeof useTranslation>['t'];
-  hasOne: boolean;
-}) {
+function EmptyHint({ t, hasOne }: { t: ReturnType<typeof useTranslation>['t']; hasOne: boolean }) {
   return (
     <div
       className="rounded-container border border-dashed bg-muted/30 p-8 text-center text-muted-foreground"
