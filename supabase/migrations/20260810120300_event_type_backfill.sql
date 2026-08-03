@@ -163,6 +163,20 @@ BEGIN
     WHERE e.duplicate_of_id IS NULL
       AND e.event_type = p_scope
       AND NOT (coalesce(e.enrichment_status, '{}'::jsonb) ? 'event_type_backfill')
+      -- Provenance scope. The claim this function acts on -- "this label is wrong" --
+      -- is only true of the mapper that produced it, so the rows it may rewrite are
+      -- confined to that mapper's. Measured before shipping: 10,778 of the 10,782
+      -- 'concert' rows are gaycities and the other 4 have no event_sources row at
+      -- all, so this takes nothing away from the backfill it was written for (10,778
+      -- still in scope). It matters because this is a nightly cron, not a one-shot:
+      -- without it a genuine Ticketmaster or Eventbrite concert landing tomorrow
+      -- enters the same pool, and a title like "Block Party feat. Live Band" flips it
+      -- to 'party' at 0.95 with no second signal and nobody watching. Confining the
+      -- rewrite to the broken source IS the second signal.
+      AND EXISTS (
+        SELECT 1 FROM public.event_sources es
+        WHERE es.event_id = e.id AND es.source_slug = 'gaycities'
+      )
     ORDER BY e.id
     LIMIT v_batch
   LOOP
