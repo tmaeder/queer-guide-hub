@@ -14,8 +14,7 @@ export const onRequest: PagesFunction<Env> = async ({ env }) => {
     env,
     'personalities',
     'slug,updated_at',
-    'slug=not.is.null&seo_indexable=eq.true&visibility=eq.public',
-    5000,
+    'slug=not.is.null&seo_indexable=eq.true&visibility=eq.public&duplicate_of_id=is.null',
   );
   const entries: SitemapEntry[] = rows
     .filter((r) => typeof r.slug === 'string' && (r.slug as string).length > 0)

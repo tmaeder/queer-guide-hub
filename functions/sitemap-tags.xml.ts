@@ -5,8 +5,9 @@ export const onRequest: PagesFunction<Env> = async ({ env }) => {
     env,
     'unified_tags',
     'slug,updated_at,status',
-    'slug=not.is.null&status=eq.active',
-    5000,
+    // seo_indexable was never gated here — 100 active-but-noindex tags were
+    // being advertised to crawlers (measured 2026-08-02).
+    'slug=not.is.null&status=eq.active&seo_indexable=eq.true',
   );
   const entries: SitemapEntry[] = rows
     .filter((r) => typeof r.slug === 'string' && (r.slug as string).length > 0)
