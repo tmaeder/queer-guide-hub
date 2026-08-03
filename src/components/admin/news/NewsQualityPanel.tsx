@@ -31,13 +31,23 @@ export function NewsQualityPanel() {
       <div className="px-4 py-2 border-b border-border text-xs font-semibold text-muted-foreground flex items-center gap-2 flex-wrap">
         <ShieldCheck className="h-3.5 w-3.5" />
         News content quality
-        <Badge variant="outline" className="text-2xs px-1.5 py-0">{total.toLocaleString()} live</Badge>
+        <Badge variant="outline" className="text-2xs px-1.5 py-0">
+          {total.toLocaleString()} live
+        </Badge>
+        {/* A defect count, not a coverage gap — stays silent while it is zero. */}
+        {data.code_residue > 0 && (
+          <Badge variant="destructive" className="text-2xs px-1.5 py-0">
+            {data.code_residue.toLocaleString()} with leaked code
+          </Badge>
+        )}
         <span className="ml-auto flex items-center gap-2 font-normal normal-case tracking-normal">
           <span className="flex items-center gap-1">
             <Gauge className="h-3 w-3" />
             avg completeness <strong className="tabular-nums">{data.avg_quality ?? '–'}</strong>/100
           </span>
-          <span>avg relevance <strong className="tabular-nums">{data.avg_relevance ?? '–'}</strong></span>
+          <span>
+            avg relevance <strong className="tabular-nums">{data.avg_relevance ?? '–'}</strong>
+          </span>
           <span>{data.corroborated.toLocaleString()} corroborated</span>
         </span>
       </div>
@@ -46,7 +56,9 @@ export function NewsQualityPanel() {
           <div key={g.label} className="bg-background p-4">
             <div className="text-2xl font-bold tabular-nums">{pct(g.missing)}%</div>
             <div className="text-xs2 text-muted-foreground mt-0.5">{g.label}</div>
-            <div className="text-3xs text-muted-foreground/70 tabular-nums">{g.missing.toLocaleString()}</div>
+            <div className="text-3xs text-muted-foreground/70 tabular-nums">
+              {g.missing.toLocaleString()}
+            </div>
           </div>
         ))}
       </div>

@@ -218,6 +218,7 @@ Deno.serve(withErrorReporting('pipeline-quality-enhance', async (req) => {
           decision,
           criticalPaywall: sani.criticalPaywall,
           truncated: sani.truncated,
+          codeResidue: sani.codeResidue,
           hasEntityReviewItems: allReviewItems.length > 0,
           imageProbeOk: effectiveImageOk,
         })
