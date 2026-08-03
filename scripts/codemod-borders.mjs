@@ -20,6 +20,13 @@ import { readFileSync, writeFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 
 const APPLY = process.argv.includes('--apply');
+// `--wide` widens the SHAPE gate only — every safety veto below still applies.
+// The original gate accepted `rounded-container|element` exclusively, which is
+// why `rounded-badge` chips survived the first sweep: EqualityChip alone
+// painted 1,218 of the site's 4,964 remaining borders, because it repeats per
+// row on every city list. Widening which shapes we look at does not widen what
+// we are willing to delete.
+const WIDE = process.argv.includes('--wide');
 
 const SKIP_DIR = new Set(['node_modules', '__tests__', 'admin', 'cms', 'PatternLibrary']);
 const SKIP_FILE = [
@@ -34,11 +41,24 @@ const SKIP_FILE = [
 ];
 
 // A className string is out of scope if it contains any of these.
-const VETO = [
-  'border-dashed', 'border-background', 'border-white', 'border-black',
-  'divide-', 'rule-heavy',
-  'border-t', 'border-b', 'border-l', 'border-r', 'border-y', 'border-x',
-  'border-2', 'border-4', 'border-0', 'border-[',
+//
+// These MUST be matched as whole utility tokens, not as substrings. The first
+// version of this list was checked with `body.includes(v)`, and
+// `'border-border'.includes('border-b')` is TRUE — so the veto that exists to
+// protect directional `border-b` rules silently vetoed every string containing
+// `border-border`, the most common border token in the tree. The sweep reported
+// success while 4,964 borders remained, and that one line is why.
+//
+// `(?![a-z])` is the load-bearing part: after `border-` a directional utility is
+// followed by a boundary or a width (`border-b-2`), never by another letter, so
+// it cannot match the `b` in `border-border`.
+const VETO_RE_LIST = [
+  /(?:^|[\s:])border-dashed(?![a-z])/,
+  /(?:^|[\s:])border-(?:background|white|black)(?![a-z])/,
+  /(?:^|[\s:])divide-/,
+  /rule-heavy/,
+  /(?:^|[\s:])border-[tblrxy](?![a-z])/,
+  /(?:^|[\s:])border-(?:0|2|4|\[)/,
 ];
 // `border-foreground` with no opacity is a deliberate heavy rule (the PASTE-UP
 // signature spelled as a utility). Stripping the width would leave a dangling
@@ -71,11 +91,30 @@ for (const file of files) {
   // Only touch quoted string literals that look like class lists.
   out = out.replace(/(['"`])([^'"`\n]*?)\1/g, (whole, q, body) => {
     if (!/\bborder\b|\bborder-border\b|\bborder-input\b|border-foreground\/|border-primary\//.test(body)) return whole;
-    if (!/rounded-(container|element)\b/.test(body)) return whole;
-    if (VETO.some((v) => body.includes(v))) return whole;
+    const SHAPE = WIDE
+      ? /rounded-(container|element|badge|full)\b/
+      : /rounded-(container|element)\b/;
+    if (!SHAPE.test(body)) return whole;
+    if (VETO_RE_LIST.some((re) => re.test(body))) return whole;
     if (VETO_RE.some((re) => re.test(body))) return whole;
 
     let next = body.replace(DROP, '');
+    // Dropping the base width leaves `hover:border-foreground/40` behind, which
+    // then paints nothing — `src/index.css` resets `border-width: 0` on `*`, so
+    // a colour-only utility has no width to colour. Strip the dead state
+    // variants rather than leave a hover rule that silently does nothing.
+    //
+    // This runs whenever the string ends up with no base width, not only when
+    // DROP fired, so it also cleans strings a previous pass already stripped.
+    // `hover:border-2` carries its own width and is not matched.
+    const hasBaseWidth =
+      /(?:^|\s)border(?:-[0-9]|-\[)?(?=\s|$)/.test(next) || /(?:^|\s)border-[tblrxy](?![a-z])/.test(next);
+    if (!hasBaseWidth) {
+      next = next.replace(
+        /(?:^|\s)(?:hover|focus|focus-visible|group-hover|active):border-(?:border|foreground|input|primary|muted|accent)(?:\/\d+)?(?=\s|$)/g,
+        '',
+      );
+    }
     if (next === body) return whole;
     next = next.replace(/\s{2,}/g, ' ').trim();
     // Give it an edge back: a plate fill, but only if it has no background yet
@@ -83,6 +122,13 @@ for (const file of files) {
     // plate there is dead weight).
     const isImage = /\bobject-(cover|contain)\b|\baspect-/.test(next);
     if (!/\bbg-/.test(next) && !isImage) next = `${next} bg-surface-container`;
+    // `bg-background` IS the page colour, so on those the border was the only
+    // thing separating the element from the page — deleting it alone makes the
+    // element vanish rather than flatten. Promote the fill to a plate instead.
+    // Only the bare token: `bg-background/85` is a translucent scrim over a map
+    // or photo, where the backdrop already supplies the edge.
+    else if (/(?:^|\s)bg-background(?=\s|$)/.test(next) && !isImage)
+      next = next.replace(/(?:^|\s)bg-background(?=\s|$)/, ' bg-surface-container');
     edits++;
     if (samples.length < 12) samples.push(`${file}\n    - ${body.slice(0, 100)}\n    + ${next.slice(0, 100)}`);
     return q + next + q;

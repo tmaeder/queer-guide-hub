@@ -104,13 +104,16 @@ export function SpotlightRail({
   if (loading && total === 0) {
     return (
       <div className="pointer-events-none absolute inset-x-0 bottom-4 z-20 flex justify-center px-4">
-        <div className="pointer-events-auto w-[min(960px,100%)] rounded-container border border-border bg-background/95 p-2 backdrop-blur-md">
+        <div className="pointer-events-auto w-[min(960px,100%)] rounded-container bg-background/95 p-2 backdrop-blur-md">
           <div className="px-1 pb-1.5">
             <span className="inline-block h-4 w-28 animate-pulse rounded-badge bg-muted" />
           </div>
           <div className="flex gap-2 overflow-hidden pb-1.5">
             {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="h-16 w-56 shrink-0 animate-pulse rounded-container bg-muted" />
+              <div
+                key={i}
+                className="h-16 w-56 shrink-0 animate-pulse rounded-container bg-muted"
+              />
             ))}
           </div>
         </div>
@@ -131,7 +134,7 @@ export function SpotlightRail({
         <button
           type="button"
           onClick={() => setCollapsed(false)}
-          className="pointer-events-auto inline-flex items-center gap-1.5 rounded-element border border-border bg-background/95 px-4 py-1.5 text-13 text-foreground backdrop-blur-md hover:bg-background focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+          className="pointer-events-auto inline-flex items-center gap-1.5 rounded-element bg-background/95 px-4 py-1.5 text-13 text-foreground backdrop-blur-md hover:bg-background focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
         >
           <Sparkles className="h-3.5 w-3.5" aria-hidden />
           <span aria-live="polite">{countLabel}</span>
@@ -143,7 +146,7 @@ export function SpotlightRail({
 
   return (
     <div className="pointer-events-none absolute inset-x-0 bottom-4 z-20 flex justify-center px-4">
-      <div className="pointer-events-auto w-[min(960px,100%)] rounded-container border border-border bg-background/95 p-2 backdrop-blur-md">
+      <div className="pointer-events-auto w-[min(960px,100%)] rounded-container bg-background/95 p-2 backdrop-blur-md">
         <div className="flex items-center justify-between px-1 pb-1.5">
           <span
             className="inline-flex items-center gap-1.5 text-13 font-medium text-foreground"

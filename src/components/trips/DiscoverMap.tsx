@@ -89,9 +89,7 @@ export function DiscoverMap({ trips, height = 480 }: Props) {
           },
         })),
       };
-      const existing = map.getSource('discover-trips') as
-        | maplibregl.GeoJSONSource
-        | undefined;
+      const existing = map.getSource('discover-trips') as maplibregl.GeoJSONSource | undefined;
       if (existing) {
         existing.setData(featureCollection);
       } else {
@@ -153,7 +151,10 @@ export function DiscoverMap({ trips, height = 480 }: Props) {
 
   return (
     <div className="relative" style={{ height }}>
-      <div ref={mapContainer} className="absolute inset-0 rounded-element overflow-hidden border border-border" />
+      <div
+        ref={mapContainer}
+        className="absolute inset-0 rounded-element overflow-hidden bg-surface-container"
+      />
       {selectedTrip && (
         <div className="absolute top-3 right-3 w-[320px] max-w-[calc(100%-24px)] z-10">
           <div className="relative">
@@ -161,7 +162,7 @@ export function DiscoverMap({ trips, height = 480 }: Props) {
               type="button"
               onClick={() => setSelectedId(null)}
               aria-label="Close trip preview"
-              className="absolute -top-2 -right-2 z-10 inline-flex items-center justify-center w-7 h-7 rounded-full bg-foreground text-background border border-border/40"
+              className="absolute -top-2 -right-2 z-10 inline-flex items-center justify-center w-7 h-7 rounded-full bg-foreground text-background"
             >
               ×
             </button>
@@ -171,7 +172,7 @@ export function DiscoverMap({ trips, height = 480 }: Props) {
       )}
       {geocoded.length === 0 && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <p className="text-sm text-muted-foreground bg-background/85 backdrop-blur-sm px-4 py-2 rounded-element border border-border">
+          <p className="text-sm text-muted-foreground bg-background/85 backdrop-blur-sm px-4 py-2 rounded-element">
             No trips with mapped destinations yet.
           </p>
         </div>

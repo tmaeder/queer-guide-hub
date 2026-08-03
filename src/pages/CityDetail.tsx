@@ -88,7 +88,8 @@ export default function CityDetail() {
   // Placeholder ("tmp-") cities are auto-created ingest stubs, excluded from maps,
   // listings, and search. Keep the page reachable (e.g. personality-birthplace links)
   // but mark it noindex so it never enters search results.
-  const isPlaceholderCity = !!city && (city.slug?.startsWith('tmp-') || city.seo_indexable === false);
+  const isPlaceholderCity =
+    !!city && (city.slug?.startsWith('tmp-') || city.seo_indexable === false);
   useEffect(() => {
     if (!isPlaceholderCity) return;
     let el = document.querySelector('meta[name="robots"]') as HTMLMetaElement | null;
@@ -185,8 +186,12 @@ export default function CityDetail() {
           ? t('favorites.removedTitle', 'Removed from favorites')
           : t('favorites.addedTitle', 'Added to favorites'),
         description: isFavorited(city.id)
-          ? t('favorites.removedDescription', '{{name}} removed from your favorites', { name: city.name })
-          : t('favorites.addedDescription', '{{name}} added to your favorites', { name: city.name }),
+          ? t('favorites.removedDescription', '{{name}} removed from your favorites', {
+              name: city.name,
+            })
+          : t('favorites.addedDescription', '{{name}} added to your favorites', {
+              name: city.name,
+            }),
       });
     } catch (_error) {
       toast({
@@ -209,7 +214,7 @@ export default function CityDetail() {
       >
         <div className="h-[58vh] min-h-[380px] max-h-[600px] w-full rounded-container bg-muted animate-pulse" />
         <div className="mt-6 h-11 w-48 rounded-element bg-muted animate-pulse" />
-        <div className="mt-8 grid grid-cols-2 gap-6 sm:grid-cols-3 rounded-container border border-border/60 p-6">
+        <div className="mt-8 grid grid-cols-2 gap-6 sm:grid-cols-3 rounded-container p-6 bg-surface-container">
           {[0, 1, 2].map((i) => (
             <div key={i} className="flex flex-col gap-2">
               <div className="h-3 w-16 rounded-badge bg-muted animate-pulse" />
@@ -255,8 +260,7 @@ export default function CityDetail() {
     { label: city.name },
   ];
 
-  const hasCoords =
-    typeof city.latitude === 'number' && typeof city.longitude === 'number';
+  const hasCoords = typeof city.latitude === 'number' && typeof city.longitude === 'number';
 
   const seeAll = (href: string) => (
     <SeeAllLink to={href} label={t('cities.detail.seeAll', 'See all')} />
@@ -276,9 +280,7 @@ export default function CityDetail() {
       />
     ),
     events: <CityEventsTab city={city} events={events} eventsLoading={eventsLoading} />,
-    map: hasCoords ? (
-      <CityMapTab city={city} ExploreMap={ExploreMap} Suspense={Suspense} />
-    ) : null,
+    map: hasCoords ? <CityMapTab city={city} ExploreMap={ExploreMap} Suspense={Suspense} /> : null,
     personalities: (
       <PersonalitiesForEntity
         cityId={city.id}

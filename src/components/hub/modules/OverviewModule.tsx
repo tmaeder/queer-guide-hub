@@ -183,7 +183,7 @@ export function OverviewModule() {
                   return (
                     <div
                       key={req.id}
-                      className="flex items-center gap-2 rounded-element border border-border px-4 py-2"
+                      className="flex items-center gap-2 rounded-element px-4 py-2 bg-surface-container"
                     >
                       <Avatar className="h-8 w-8">
                         <AvatarImage src={profile?.avatar_url || undefined} alt="" />

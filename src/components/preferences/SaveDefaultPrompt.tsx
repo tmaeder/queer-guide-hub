@@ -28,9 +28,14 @@ export function SaveDefaultPrompt({ message, onSave, onDismiss }: SaveDefaultPro
   };
 
   return (
-    <div className="flex items-center gap-2 rounded-element border border-border bg-muted/40 px-2 py-1.5">
+    <div className="flex items-center gap-2 rounded-element bg-muted/40 px-2 py-1.5">
       <p className="flex-1 text-13 text-muted-foreground">{message}</p>
-      <Button size="sm" className="rounded-element" disabled={saving} onClick={() => void handleSave()}>
+      <Button
+        size="sm"
+        className="rounded-element"
+        disabled={saving}
+        onClick={() => void handleSave()}
+      >
         {t('prefs.saveDefault.save', 'Save')}
       </Button>
       <Button

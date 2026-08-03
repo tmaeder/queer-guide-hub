@@ -1,7 +1,10 @@
 import { ArrowRight, BookOpen, Bookmark, Flame, Globe } from 'lucide-react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { SectionHeader } from '@/components/ui/SectionHeader';
-import { useGuideReadingStreak as useGuideStreak, useContinueReadingGuides } from '@/hooks/useGuideReadingProgress';
+import {
+  useGuideReadingStreak as useGuideStreak,
+  useContinueReadingGuides,
+} from '@/hooks/useGuideReadingProgress';
 import { useReadingStreak as useNewsStreak } from '@/hooks/useReadingStreak';
 import { useUserNewsReadsList } from '@/hooks/useUserNewsReadsList';
 
@@ -17,7 +20,7 @@ function StatTile({
   suffix?: string | null;
 }) {
   return (
-    <div className="rounded-container border border-border p-4 bg-card">
+    <div className="rounded-container p-4 bg-card">
       <p className="flex items-center gap-1 text-2xs uppercase tracking-[0.1em] text-muted-foreground">
         {icon}
         {label}
@@ -37,7 +40,11 @@ function StatTile({
 export function StreaksPanel() {
   const { data: guideStreak = 0 } = useGuideStreak();
   const { streak: newsStreak, loading: newsLoading } = useNewsStreak();
-  const { totalReads, countriesCovered, loading: readsLoading } = useUserNewsReadsList({ limit: 1 });
+  const {
+    totalReads,
+    countriesCovered,
+    loading: readsLoading,
+  } = useUserNewsReadsList({ limit: 1 });
   const { data: continueItems = [] } = useContinueReadingGuides(6);
 
   return (
@@ -82,7 +89,7 @@ export function StreaksPanel() {
               All guides <ArrowRight size={14} aria-hidden />
             </LocalizedLink>
           </header>
-          <ul className="divide-y divide-border">
+          <ul className="">
             {continueItems.map((it) => (
               <li key={it.guide_id} className="py-2">
                 <LocalizedLink

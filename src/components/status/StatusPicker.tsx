@@ -66,13 +66,12 @@ function toForm(s: UserStatus | null): FormState {
     tags: new Set(s?.tags ?? []),
     dndUntil: s?.dndUntil ?? null,
     travel: s?.travel ?? {},
-    visibility:
-      s?.visibility ?? {
-        global_dot: false,
-        in_directory: false,
-        in_groups: false,
-        in_discovery: false,
-      },
+    visibility: s?.visibility ?? {
+      global_dot: false,
+      in_directory: false,
+      in_groups: false,
+      in_discovery: false,
+    },
   };
 }
 
@@ -101,10 +100,7 @@ export function StatusPicker({ open, onOpenChange }: StatusPickerProps) {
       expiresAt: form.expiresAt,
       tags: Array.from(form.tags),
       dndUntil: form.dndUntil,
-      travel:
-        form.travel.city_name || form.travel.city_id || form.travel.note
-          ? form.travel
-          : null,
+      travel: form.travel.city_name || form.travel.city_id || form.travel.note ? form.travel : null,
       visibility: form.visibility,
     };
     const res = await setStatus(patch);
@@ -147,17 +143,13 @@ export function StatusPicker({ open, onOpenChange }: StatusPickerProps) {
                   key={p.label}
                   variant={
                     (p.hours === null && form.expiresAt === null) ||
-                    (p.hours !== null && form.expiresAt && p.label === '1 h'
-                      ? false
-                      : false)
+                    (p.hours !== null && form.expiresAt && p.label === '1 h' ? false : false)
                       ? 'default'
                       : 'outline'
                   }
                   size="sm"
                   type="button"
-                  onClick={() =>
-                    setForm((f) => ({ ...f, expiresAt: hoursFromNow(p.hours) }))
-                  }
+                  onClick={() => setForm((f) => ({ ...f, expiresAt: hoursFromNow(p.hours) }))}
                 >
                   Clear in {p.label}
                 </Button>
@@ -174,7 +166,7 @@ export function StatusPicker({ open, onOpenChange }: StatusPickerProps) {
                   type="button"
                   onClick={() => toggleTag(t)}
                   className={cn(
-                    'rounded-badge border border-border px-2.5 py-1 text-13',
+                    'rounded-badge px-2.5 py-1 text-13 bg-surface-container',
                     form.tags.has(t)
                       ? 'bg-foreground text-background'
                       : 'text-muted-foreground hover:bg-muted/40',
@@ -209,9 +201,7 @@ export function StatusPicker({ open, onOpenChange }: StatusPickerProps) {
                     type="button"
                     variant="outline"
                     size="sm"
-                    onClick={() =>
-                      setForm((f) => ({ ...f, dndUntil: hoursFromNow(p.hours) }))
-                    }
+                    onClick={() => setForm((f) => ({ ...f, dndUntil: hoursFromNow(p.hours) }))}
                   >
                     {p.label}
                   </Button>
@@ -243,9 +233,7 @@ export function StatusPicker({ open, onOpenChange }: StatusPickerProps) {
                     ...f,
                     travel: {
                       ...f.travel,
-                      until: e.target.value
-                        ? new Date(e.target.value).toISOString()
-                        : undefined,
+                      until: e.target.value ? new Date(e.target.value).toISOString() : undefined,
                     },
                   }))
                 }
@@ -264,7 +252,7 @@ export function StatusPicker({ open, onOpenChange }: StatusPickerProps) {
             </div>
           </section>
 
-          <section className="space-y-2 rounded-element border border-border p-4">
+          <section className="space-y-2 rounded-element p-4 bg-surface-container">
             <Label>Who can see this</Label>
             <p className="text-13 text-muted-foreground">
               Status defaults to invisible. Choose where it shows up.

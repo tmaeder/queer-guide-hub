@@ -25,7 +25,7 @@ export function TravelInboxAddressBanner() {
   }
 
   return (
-    <div className="mb-4 flex flex-col gap-2 rounded-container border border-border bg-muted/40 p-4">
+    <div className="mb-4 flex flex-col gap-2 rounded-container bg-muted/40 p-4">
       <div className="flex items-center gap-2">
         <Mail size={14} className="text-muted-foreground shrink-0" />
         <span className="text-2xs uppercase tracking-wider text-muted-foreground">
@@ -56,7 +56,8 @@ export function TravelInboxAddressBanner() {
       )}
       <p className="text-2xs text-muted-foreground">
         {t('chat.itinerary.forwardHint', {
-          defaultValue: 'Booking.com, Airbnb, Lufthansa and more. Each booking needs your approval before it is saved.',
+          defaultValue:
+            'Booking.com, Airbnb, Lufthansa and more. Each booking needs your approval before it is saved.',
         })}
       </p>
     </div>

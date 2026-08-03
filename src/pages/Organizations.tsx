@@ -35,10 +35,10 @@ function OrgCard({ org }: { org: OrgListItem }) {
               <img
                 src={org.logo_url}
                 alt=""
-                className="h-10 w-10 shrink-0 rounded-element border border-border object-contain"
+                className="h-10 w-10 shrink-0 rounded-element object-contain"
               />
             ) : (
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-element border border-border text-muted-foreground">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-element text-muted-foreground bg-surface-container">
                 <Building2 size={18} aria-hidden="true" />
               </span>
             )}

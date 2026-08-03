@@ -98,7 +98,7 @@ export function PrideTimeline({
             return (
               <span
                 key={m}
-                className="px-2 py-1 text-xs2 text-muted-foreground rounded-badge border border-foreground/10"
+                className="px-2 py-1 text-xs2 text-muted-foreground rounded-badge bg-surface-container"
               >
                 {m}
               </span>
@@ -112,7 +112,7 @@ export function PrideTimeline({
                 const el = scrollRef.current?.querySelector<HTMLDivElement>(`[data-month="${i}"]`);
                 el?.scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' });
               }}
-              className="px-2 py-1 text-xs2 rounded-badge border border-foreground/20 hover:bg-muted transition-colors min-h-0"
+              className="px-2 py-1 text-xs2 rounded-badge hover:bg-muted transition-colors min-h-0"
             >
               {m} <span className="text-muted-foreground">{count}</span>
             </button>

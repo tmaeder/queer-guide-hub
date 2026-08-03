@@ -10,11 +10,7 @@ import {
   type DragOverEvent,
   type DragStartEvent,
 } from '@dnd-kit/core';
-import {
-  SortableContext,
-  verticalListSortingStrategy,
-  arrayMove,
-} from '@dnd-kit/sortable';
+import { SortableContext, verticalListSortingStrategy, arrayMove } from '@dnd-kit/sortable';
 import { Plus, Inbox, Map as MapIcon } from 'lucide-react';
 import { differenceInCalendarDays, isSameDay } from 'date-fns';
 import { useTranslation } from 'react-i18next';
@@ -95,9 +91,7 @@ export function DraggableItinerary({
   }, [trip.trip_places]);
 
   const sortedDays = useMemo(() => {
-    const sorted = [...trip.trip_days].sort((a, b) =>
-      a.date.localeCompare(b.date),
-    );
+    const sorted = [...trip.trip_days].sort((a, b) => a.date.localeCompare(b.date));
     const firstDate = sorted[0]?.date ? new Date(sorted[0].date) : null;
     const now = new Date();
     return sorted.map((day, index) => {
@@ -105,10 +99,7 @@ export function DraggableItinerary({
       return {
         day,
         index,
-        dayNumber:
-          firstDate != null
-            ? differenceInCalendarDays(date, firstDate) + 1
-            : index + 1,
+        dayNumber: firstDate != null ? differenceInCalendarDays(date, firstDate) + 1 : index + 1,
         isFirst: index === 0,
         isLast: index === sorted.length - 1,
         isToday: isSameDay(date, now),
@@ -243,8 +234,7 @@ export function DraggableItinerary({
   };
 
   const unassigned = placesByContainer['unassigned'] || [];
-  const itineraryIsEmpty =
-    trip.trip_days.length === 0 && unassigned.length === 0;
+  const itineraryIsEmpty = trip.trip_days.length === 0 && unassigned.length === 0;
 
   return (
     <div ref={rootRef}>
@@ -260,14 +250,21 @@ export function DraggableItinerary({
           <div className="border border-dashed border-border rounded-container p-6 mb-4 bg-muted/40 backdrop-blur-sm">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background/60 px-4 py-1 text-xs2 font-semibold uppercase tracking-[0.18em] text-muted-foreground backdrop-blur-sm">
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-background/60 px-4 py-1 text-xs2 font-semibold uppercase tracking-[0.18em] text-muted-foreground backdrop-blur-sm">
                   <Inbox size={12} aria-hidden="true" />
                   {t('trips.itinerary.unassigned')}
                 </span>
-                <Badge variant="outline" className="rounded-full">{unassigned.length}</Badge>
+                <Badge variant="outline" className="rounded-full">
+                  {unassigned.length}
+                </Badge>
               </div>
               {!readOnly && (
-                <Button variant="ghost" size="sm" onClick={() => onAddPlace()} className="rounded-full">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => onAddPlace()}
+                  className="rounded-full"
+                >
                   <Plus size={14} className="mr-1" />
                   {t('trips.itinerary.add')}
                 </Button>
@@ -303,12 +300,15 @@ export function DraggableItinerary({
                 style={{ backgroundColor: 'hsl(var(--foreground))' }}
                 aria-hidden="true"
               />
-              <MapIcon size={28}
+              <MapIcon
+                size={28}
                 aria-hidden="true"
                 className="absolute inset-0 m-auto text-foreground"
               />
             </div>
-            <h6 className="font-bold mb-2 text-xl tracking-tight">{t('trips.itinerary.emptyTitle')}</h6>
+            <h6 className="font-bold mb-2 text-xl tracking-tight">
+              {t('trips.itinerary.emptyTitle')}
+            </h6>
             <p className="text-sm text-muted-foreground mb-6 max-w-[420px] mx-auto leading-relaxed">
               {t('trips.itinerary.emptyDescription')}
             </p>
@@ -353,15 +353,17 @@ export function DraggableItinerary({
         })}
 
         {!itineraryIsEmpty && !readOnly && (
-          <Button variant="outline" onClick={() => onAddPlace()} className="w-full mt-4 rounded-element border-dashed h-12">
+          <Button
+            variant="outline"
+            onClick={() => onAddPlace()}
+            className="w-full mt-4 rounded-element border-dashed h-12"
+          >
             <Plus size={16} className="mr-1.5" />
             {t('trips.itinerary.addPlace')}
           </Button>
         )}
 
-        <DragOverlay>
-          {activePlace ? <PlaceCardOverlay place={activePlace} /> : null}
-        </DragOverlay>
+        <DragOverlay>{activePlace ? <PlaceCardOverlay place={activePlace} /> : null}</DragOverlay>
       </DndContext>
     </div>
   );

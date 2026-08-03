@@ -26,7 +26,10 @@ import { Badge } from '@/components/ui/badge';
 import { VirtualizedGrid } from '@/components/ui/VirtualizedGrid';
 import { useGridColumns } from '@/components/ui/useGridColumns';
 
-import { PersonalityCard, PersonalityCardSkeleton } from '@/components/personalities/PersonalityCard';
+import {
+  PersonalityCard,
+  PersonalityCardSkeleton,
+} from '@/components/personalities/PersonalityCard';
 import { useEntityImageAssets } from '@/hooks/useEntityImageAssets';
 import { PersonalitiesFiltersBar } from '@/components/personalities/PersonalitiesFiltersBar';
 import { StickyLetterBar } from '@/components/personalities/StickyLetterBar';
@@ -35,7 +38,7 @@ import { EditorialEntries } from '@/components/personalities/EditorialEntries';
 import { PersonalitiesTimeline } from '@/components/personalities/PersonalitiesTimeline';
 // Lazy: keeps the maplibre chunk off the default grid/timeline views
 const PersonalitiesMap = lazy(() =>
-  import('@/components/map/PersonalitiesMap').then((m) => ({ default: m.PersonalitiesMap }))
+  import('@/components/map/PersonalitiesMap').then((m) => ({ default: m.PersonalitiesMap })),
 );
 import { AddPersonalityDialog } from '@/components/personalities/AddPersonalityDialog';
 import { LayoutGrid, Rows3, Map as MapIcon } from 'lucide-react';
@@ -120,14 +123,8 @@ export default function Personalities() {
   const [autoLoadedCount, setAutoLoadedCount] = useState(0);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
 
-  const {
-    personalities,
-    totalCount,
-    loading,
-    error,
-    hasMore,
-    fetchPersonalities,
-  } = usePersonalities(false);
+  const { personalities, totalCount, loading, error, hasMore, fetchPersonalities } =
+    usePersonalities(false);
 
   const personalityIds = personalities.map((p) => p.id);
   const { assets: imageAssets } = useEntityImageAssets('personality', personalityIds);
@@ -175,7 +172,7 @@ export default function Personalities() {
     );
     const a = JSON.stringify(fromUrl);
     const b = JSON.stringify(filters);
-     
+
     if (a !== b) {
       // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
       setFilters(fromUrl);
@@ -191,7 +188,7 @@ export default function Personalities() {
   useEffect(() => {
     if (!validProfessions.length) return;
     const { filters: cleaned, changed } = parseFilters(searchParams, validProfessions);
-     
+
     if (changed) {
       // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
       setFilters(cleaned);
@@ -212,7 +209,6 @@ export default function Personalities() {
     setFilters({ sortBy: 'featured' });
   }, []);
 
-   
   const syncPageToUrl = useCallback(
     (n: number) => {
       setSearchParams(
@@ -236,12 +232,7 @@ export default function Personalities() {
     const observer = new IntersectionObserver(
       async (entries) => {
         const [entry] = entries;
-        if (
-          entry.isIntersecting &&
-          !loading &&
-          hasMore &&
-          autoLoadedCount < AUTO_LOAD_CAP
-        ) {
+        if (entry.isIntersecting && !loading && hasMore && autoLoadedCount < AUTO_LOAD_CAP) {
           const nextPage = page + 1;
           setPage(nextPage);
           const result = await fetchPersonalities(filters, {
@@ -367,8 +358,7 @@ export default function Personalities() {
     setFilters((prev) => ({ ...prev, profession }));
   }, []);
 
-  const showLoadMoreButton =
-    !loading && hasMore && autoLoadedCount >= AUTO_LOAD_CAP;
+  const showLoadMoreButton = !loading && hasMore && autoLoadedCount >= AUTO_LOAD_CAP;
   const loadedCount = personalities.length;
 
   return (
@@ -392,7 +382,6 @@ export default function Personalities() {
         </div>
       </BackgroundDots>
       <div className="container mx-auto px-4 py-8 md:py-12">
-
         {/* NSFW visibility hint — surfaces the otherwise-hidden adult filter. */}
         <div className="text-center text-xs text-muted-foreground mb-6">
           {filters.exclude_adult !== false ? (
@@ -440,7 +429,7 @@ export default function Personalities() {
           <div
             role="tablist"
             aria-label="View mode"
-            className="inline-flex border border-border rounded-element overflow-hidden"
+            className="inline-flex rounded-element overflow-hidden bg-surface-container"
           >
             <button
               type="button"
@@ -449,7 +438,9 @@ export default function Personalities() {
               onClick={() => setView('grid')}
               className={
                 'px-4 py-2 text-sm flex items-center gap-1.5 ' +
-                (view === 'grid' ? 'bg-foreground text-background' : 'bg-background hover:bg-accent')
+                (view === 'grid'
+                  ? 'bg-foreground text-background'
+                  : 'bg-background hover:bg-accent')
               }
               title="Grid view"
             >
@@ -470,7 +461,9 @@ export default function Personalities() {
               title="Timeline view"
             >
               <Rows3 size={14} aria-hidden="true" />
-              <span className="hidden sm:inline">{t('pages.personalities.view.timeline', 'Timeline')}</span>
+              <span className="hidden sm:inline">
+                {t('pages.personalities.view.timeline', 'Timeline')}
+              </span>
             </button>
             <button
               type="button"
@@ -479,9 +472,7 @@ export default function Personalities() {
               onClick={() => setView('map')}
               className={
                 'px-4 py-2 text-sm flex items-center gap-1.5 border-l border-border ' +
-                (view === 'map'
-                  ? 'bg-foreground text-background'
-                  : 'bg-background hover:bg-accent')
+                (view === 'map' ? 'bg-foreground text-background' : 'bg-background hover:bg-accent')
               }
               title="Map view"
             >
@@ -491,23 +482,14 @@ export default function Personalities() {
           </div>
         </div>
 
-        <StickyLetterBar
-          letter={filters.name_starts_with ?? null}
-          onChange={handleLetterChange}
-        />
+        <StickyLetterBar letter={filters.name_starts_with ?? null} onChange={handleLetterChange} />
 
         {/* Active filter chips */}
         {activeChips.length > 0 && (
           <div className="flex flex-wrap items-center gap-2 mb-4">
-            <p className="text-sm">
-              Active:
-            </p>
+            <p className="text-sm">Active:</p>
             {activeChips.map((chip) => (
-              <Badge
-                key={chip.key}
-                variant="secondary"
-
-              >
+              <Badge key={chip.key} variant="secondary">
                 {chip.label}
                 <button
                   type="button"
@@ -569,7 +551,10 @@ export default function Personalities() {
           <EmptyState
             icon={Users}
             title={t('pages.personalities.emptyTitle', 'No personalities match your filters')}
-            description={t('pages.personalities.emptyDescription', 'Try clearing a filter or searching for a different name.')}
+            description={t(
+              'pages.personalities.emptyDescription',
+              'Try clearing a filter or searching for a different name.',
+            )}
             mood="encouraging"
           />
         )}
@@ -621,11 +606,7 @@ export default function Personalities() {
               </div>
             )}
 
-            {loading && personalities.length > 0 && (
-              <p className="text-sm">
-                Loading more…
-              </p>
-            )}
+            {loading && personalities.length > 0 && <p className="text-sm">Loading more…</p>}
           </>
         )}
       </div>

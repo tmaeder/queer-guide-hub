@@ -42,7 +42,7 @@ export function SearchPopoverEmpty({
           {recentItems.map((term, i) => (
             <span
               key={`recent-${i}`}
-              className="inline-flex items-center gap-1 rounded-badge border border-border px-2 py-1 text-xs"
+              className="inline-flex items-center gap-1 rounded-badge px-2 py-1 text-xs bg-surface-container"
             >
               <button
                 type="button"
@@ -80,18 +80,22 @@ export function SearchPopoverEmpty({
                 className?: string;
               }>;
               const image = (hit.image_url || hit.cover_image_url || hit.hero_image_url) as
-                | string
-                | undefined;
+                string | undefined;
               return (
                 <button
                   key={`trend-${hit.type}-${hit.id}`}
                   type="button"
                   onClick={() => onSelectTrending(hit)}
-                  className="flex cursor-pointer flex-col overflow-hidden rounded-element border border-border bg-transparent p-0 text-left transition-colors hover:bg-accent"
+                  className="flex cursor-pointer flex-col overflow-hidden rounded-element bg-transparent p-0 text-left transition-colors hover:bg-accent"
                 >
                   <div className="flex h-24 items-center justify-center overflow-hidden bg-muted">
                     {image ? (
-                      <img src={image} alt="" loading="lazy" className="h-full w-full object-cover" />
+                      <img
+                        src={image}
+                        alt=""
+                        loading="lazy"
+                        className="h-full w-full object-cover"
+                      />
                     ) : (
                       <Icon className="h-6 w-6 text-muted-foreground" />
                     )}

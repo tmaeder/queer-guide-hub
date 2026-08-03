@@ -29,7 +29,9 @@ export function MarketplacePriceHistory({ listingId }: { listingId: string }) {
       max,
       x,
       y,
-      path: values.map((v, i) => `${i === 0 ? 'M' : 'L'}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(' '),
+      path: values
+        .map((v, i) => `${i === 0 ? 'M' : 'L'}${x(i).toFixed(1)},${y(v).toFixed(1)}`)
+        .join(' '),
     };
   }, [points]);
 
@@ -42,11 +44,12 @@ export function MarketplacePriceHistory({ listingId }: { listingId: string }) {
   const hovered = hover != null ? points[hover] : null;
 
   return (
-    <div className="rounded-container border border-border p-4 bg-card">
+    <div className="rounded-container p-4 bg-card">
       <div className="flex items-baseline justify-between mb-2">
         <p className="text-sm font-semibold">Price (90 days)</p>
         <p className={`text-xs ${delta < 0 ? 'text-foreground' : 'text-muted-foreground'}`}>
-          {delta < 0 ? '↓' : delta > 0 ? '↑' : '→'} {formatCurrency(Math.abs(delta), 'USD')} ({deltaPct.toFixed(1)}%)
+          {delta < 0 ? '↓' : delta > 0 ? '↑' : '→'} {formatCurrency(Math.abs(delta), 'USD')} (
+          {deltaPct.toFixed(1)}%)
         </p>
       </div>
       <div className="relative">
@@ -67,14 +70,25 @@ export function MarketplacePriceHistory({ listingId }: { listingId: string }) {
           }}
           onMouseLeave={() => setHover(null)}
         >
-          <path d={geom.path} fill="none" stroke="hsl(var(--foreground))" strokeWidth={1.5} vectorEffect="non-scaling-stroke" />
+          <path
+            d={geom.path}
+            fill="none"
+            stroke="hsl(var(--foreground))"
+            strokeWidth={1.5}
+            vectorEffect="non-scaling-stroke"
+          />
           {hovered && hover != null && (
-            <circle cx={geom.x(hover)} cy={geom.y(hovered.price_usd)} r={2.5} fill="hsl(var(--foreground))" />
+            <circle
+              cx={geom.x(hover)}
+              cy={geom.y(hovered.price_usd)}
+              r={2.5}
+              fill="hsl(var(--foreground))"
+            />
           )}
         </svg>
         {hovered && hover != null && (
           <div
-            className="pointer-events-none absolute -top-1 -translate-x-1/2 -translate-y-full rounded-badge border border-border bg-background px-2 py-0.5 text-xs whitespace-nowrap"
+            className="pointer-events-none absolute -top-1 -translate-x-1/2 -translate-y-full rounded-badge bg-surface-container px-2 py-0.5 text-xs whitespace-nowrap"
             style={{ left: `${(geom.x(hover) / W) * 100}%` }}
           >
             {formatCurrency(hovered.price_usd, 'USD')} ·{' '}

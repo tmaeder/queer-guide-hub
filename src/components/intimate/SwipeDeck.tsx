@@ -1,11 +1,5 @@
 import { useEffect, useState } from 'react';
-import {
-  motion,
-  useMotionValue,
-  useTransform,
-  useReducedMotion,
-  type PanInfo,
-} from 'motion/react';
+import { motion, useMotionValue, useTransform, useReducedMotion, type PanInfo } from 'motion/react';
 import { Heart, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -99,7 +93,7 @@ export function SwipeDeck({ cards, onLike, onPass, className }: SwipeDeckProps) 
             <motion.div
               key={card.id}
               className={cn(
-                'absolute inset-0 flex flex-col gap-4 overflow-hidden rounded-container border border-border bg-card p-4 select-none',
+                'absolute inset-0 flex flex-col gap-4 overflow-hidden rounded-container bg-card p-4 select-none',
                 isTop ? 'cursor-grab active:cursor-grabbing' : 'pointer-events-none',
               )}
               style={isTop ? { x, rotate, zIndex: 10 } : { zIndex: 10 - i }}

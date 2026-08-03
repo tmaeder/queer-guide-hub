@@ -88,7 +88,7 @@ export function SearchResultRow({
         focused ? 'bg-accent outline outline-1 -outline-offset-1 outline-ring' : 'hover:bg-accent',
       )}
     >
-      <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-element border border-border bg-muted">
+      <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-element bg-muted">
         {image ? (
           /* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- onError is a media-error handler, not a user-input listener. */
           <img

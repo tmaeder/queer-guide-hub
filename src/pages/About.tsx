@@ -87,12 +87,36 @@ const differentiators = [
 ];
 
 const values = [
-  { icon: Heart, title: 'Inclusivity', description: 'Every identity, every background, every story belongs here.' },
-  { icon: Shield, title: 'Safety', description: 'Safe spaces online and offline — always our top priority.' },
-  { icon: Users, title: 'Community', description: 'Meaningful connections between individuals and organizations worldwide.' },
-  { icon: Sparkles, title: 'Authenticity', description: 'Be yourself. We built this place so you never have to hide.' },
-  { icon: HandHeart, title: 'Accessibility', description: 'A platform for everyone — highlighting spaces that prioritize access.' },
-  { icon: Globe, title: 'Growth', description: 'Always evolving, always listening. Built on your feedback.' },
+  {
+    icon: Heart,
+    title: 'Inclusivity',
+    description: 'Every identity, every background, every story belongs here.',
+  },
+  {
+    icon: Shield,
+    title: 'Safety',
+    description: 'Safe spaces online and offline — always our top priority.',
+  },
+  {
+    icon: Users,
+    title: 'Community',
+    description: 'Meaningful connections between individuals and organizations worldwide.',
+  },
+  {
+    icon: Sparkles,
+    title: 'Authenticity',
+    description: 'Be yourself. We built this place so you never have to hide.',
+  },
+  {
+    icon: HandHeart,
+    title: 'Accessibility',
+    description: 'A platform for everyone — highlighting spaces that prioritize access.',
+  },
+  {
+    icon: Globe,
+    title: 'Growth',
+    description: 'Always evolving, always listening. Built on your feedback.',
+  },
 ];
 
 const team = [
@@ -118,9 +142,24 @@ const team = [
 
 const getInvolved = [
   { icon: MapPin, title: 'Add Venues', desc: 'Know a safe spot? Share it.', link: '/venues/new' },
-  { icon: Calendar, title: 'Create Events', desc: 'Organize community gatherings.', link: '/events/new' },
-  { icon: MessageCircle, title: 'Join Discussions', desc: 'Your voice matters here.', link: '/groups' },
-  { icon: Megaphone, title: 'Spread the Word', desc: 'Tell someone who needs this.', link: '/about' },
+  {
+    icon: Calendar,
+    title: 'Create Events',
+    desc: 'Organize community gatherings.',
+    link: '/events/new',
+  },
+  {
+    icon: MessageCircle,
+    title: 'Join Discussions',
+    desc: 'Your voice matters here.',
+    link: '/groups',
+  },
+  {
+    icon: Megaphone,
+    title: 'Spread the Word',
+    desc: 'Tell someone who needs this.',
+    link: '/about',
+  },
 ];
 
 export default function About() {
@@ -140,7 +179,8 @@ export default function About() {
   const aboutExtras = EDITORIAL_IMAGES.about.extras ?? [];
   const features: FeatureItem[] = featuresBase.map((f) => {
     if (f.title === 'Venues' && aboutExtras[0]) return { ...f, image: aboutExtras[0], colSpan: 2 };
-    if (f.title === 'Community' && aboutExtras[2]) return { ...f, image: aboutExtras[2], colSpan: 2 };
+    if (f.title === 'Community' && aboutExtras[2])
+      return { ...f, image: aboutExtras[2], colSpan: 2 };
     return f;
   });
 
@@ -201,7 +241,7 @@ export default function About() {
             </div>
           </div>
 
-          <div className="bg-muted dark:bg-card border border-border rounded-container p-6 md:p-8">
+          <div className="bg-muted dark:bg-card rounded-container p-6 md:p-8">
             <h3 className="font-bold text-title">What makes us different</h3>
             <dl className="mt-6 flex flex-col gap-4">
               {differentiators.map((d) => (
@@ -229,7 +269,7 @@ export default function About() {
                 key={feature.title}
                 to={feature.link}
                 className={
-                  'group block rounded-container overflow-hidden border border-border bg-card text-foreground no-underline transition-colors hover:bg-accent ' +
+                  'group block rounded-container overflow-hidden bg-card text-foreground no-underline transition-colors hover:bg-accent' +
                   (feature.colSpan === 2 ? 'sm:col-span-2' : '')
                 }
               >
@@ -242,9 +282,15 @@ export default function About() {
                   />
                 ) : (
                   <div className="flex h-full flex-col gap-2 p-6 md:p-8">
-                    <feature.icon size={18} className="shrink-0 text-muted-foreground" aria-hidden="true" />
+                    <feature.icon
+                      size={18}
+                      className="shrink-0 text-muted-foreground"
+                      aria-hidden="true"
+                    />
                     <p className="font-bold text-body-lg">{feature.title}</p>
-                    <p className="text-15 leading-[1.6] text-muted-foreground">{feature.description}</p>
+                    <p className="text-15 leading-[1.6] text-muted-foreground">
+                      {feature.description}
+                    </p>
                   </div>
                 )}
               </LocalizedLink>
@@ -261,7 +307,11 @@ export default function About() {
             {values.map((value) => (
               <div key={value.title} className="flex flex-col gap-2">
                 <p className="font-bold flex items-center gap-2">
-                  <value.icon size={18} className="shrink-0 text-muted-foreground" aria-hidden="true" />
+                  <value.icon
+                    size={18}
+                    className="shrink-0 text-muted-foreground"
+                    aria-hidden="true"
+                  />
                   {value.title}
                 </p>
                 <p className="text-15 leading-[1.6] text-muted-foreground">{value.description}</p>
@@ -287,7 +337,9 @@ export default function About() {
                   <p className="text-13 font-semibold uppercase tracking-label text-muted-foreground">
                     {member.role}
                   </p>
-                  <p className="text-15 leading-[1.6] text-muted-foreground">{member.description}</p>
+                  <p className="text-15 leading-[1.6] text-muted-foreground">
+                    {member.description}
+                  </p>
                 </CardContent>
               </Card>
             ))}
@@ -309,8 +361,8 @@ export default function About() {
               title: '2021',
               content: (
                 <p className="text-muted-foreground leading-relaxed">
-                  A side-project. Three contributors, one spreadsheet, big ambitions. We started with
-                  a list of safe bars across five European cities — shared on a Telegram group.
+                  A side-project. Three contributors, one spreadsheet, big ambitions. We started
+                  with a list of safe bars across five European cities — shared on a Telegram group.
                 </p>
               ),
             },

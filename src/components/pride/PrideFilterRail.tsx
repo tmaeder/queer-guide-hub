@@ -164,7 +164,7 @@ export function PrideFilterRail({ filters, setFilters, events }: PrideFilterRail
 
   const chip = (active: boolean) =>
     cn(
-      'px-2 py-1 text-xs rounded-badge border transition-colors min-h-0',
+      'px-2 py-1 text-xs rounded-badge transition-colors min-h-0 bg-surface-container',
       active
         ? 'bg-foreground text-background border-foreground'
         : 'border-foreground/20 hover:bg-muted',
@@ -287,7 +287,7 @@ export function PrideFilterRail({ filters, setFilters, events }: PrideFilterRail
                     onClick={() => toggleCountry(cc)}
                     aria-pressed={on}
                     className={cn(
-                      'px-1.5 py-0.5 text-2xs rounded-badge border transition-colors min-h-0',
+                      'px-1.5 py-0.5 text-2xs rounded-badge transition-colors min-h-0 bg-surface-container',
                       on
                         ? 'bg-foreground text-background border-foreground'
                         : 'border-foreground/20 hover:bg-muted',

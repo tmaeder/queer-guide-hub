@@ -58,12 +58,7 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { ErrorState } from '@/components/ui/EmptyState';
 import { classifyTripError } from '@/utils/tripError';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
@@ -147,10 +142,7 @@ export default function TripPlannerPage() {
     setTimeout(() => setOfflineSaved(false), 2500);
   };
 
-  const safetyAlert = useMemo(
-    () => (trip ? hasSafetyWarnings(trip) : false),
-    [trip],
-  );
+  const safetyAlert = useMemo(() => (trip ? hasSafetyWarnings(trip) : false), [trip]);
 
   if (isLoading) {
     return (
@@ -279,7 +271,7 @@ export default function TripPlannerPage() {
 
       {pendingOffline > 0 && (
         <div
-          className="flex items-center gap-2 border border-border rounded-element px-4 py-2 mb-4 text-sm text-muted-foreground"
+          className="flex items-center gap-2 rounded-element px-4 py-2 mb-4 text-sm text-muted-foreground bg-surface-container"
           data-testid="offline-pending-banner"
         >
           <Loader2 size={14} className="animate-spin" aria-hidden />
@@ -303,7 +295,7 @@ export default function TripPlannerPage() {
 
       {/* Quick action row */}
       <div className="flex items-center justify-between mb-6 gap-4 mt-2">
-        <span className="inline-flex items-center gap-2 rounded-full border border-border bg-background/60 px-4 py-1 text-xs2 font-semibold uppercase tracking-[0.18em] text-muted-foreground backdrop-blur-sm">
+        <span className="inline-flex items-center gap-2 rounded-full bg-background/60 px-4 py-1 text-xs2 font-semibold uppercase tracking-[0.18em] text-muted-foreground backdrop-blur-sm">
           <span className="w-1.5 h-1.5 rounded-full bg-foreground" aria-hidden="true" />
           {t('trips.planner.placesCount', { count: trip.trip_places.length })}
           {trip.trip_days.length > 0 && (
@@ -510,10 +502,7 @@ export default function TripPlannerPage() {
                 </Suspense>
               </ErrorBoundary>
               <ErrorBoundary section="trip-gear" fallback={null}>
-                <MarketplaceForTrip
-                  cityName={trip.primary_city_name}
-                  places={trip.trip_places}
-                />
+                <MarketplaceForTrip cityName={trip.primary_city_name} places={trip.trip_places} />
               </ErrorBoundary>
             </AccordionContent>
           </AccordionItem>
@@ -613,11 +602,7 @@ export default function TripPlannerPage() {
         nextSortOrder={trip.trip_places.length}
       />
 
-      <ShareTripDialog
-        open={shareOpen}
-        onClose={() => setShareOpen(false)}
-        tripId={trip.id}
-      />
+      <ShareTripDialog open={shareOpen} onClose={() => setShareOpen(false)} tripId={trip.id} />
     </div>
   );
 }

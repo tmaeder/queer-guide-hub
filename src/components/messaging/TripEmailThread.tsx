@@ -127,7 +127,7 @@ export function TripEmailThread({ itemId }: { itemId: string }) {
       <ScrollArea className="min-h-0 flex-1">
         <div className="flex flex-col gap-4 p-4">
           {/* Parsed-fields card — live-updates as the assistant revises. */}
-          <div className="rounded-element border border-border p-4">
+          <div className="rounded-element p-4 bg-surface-container">
             <div className="mb-2 flex items-center justify-between gap-2">
               <p className="text-13 font-semibold uppercase tracking-wider text-muted-foreground">
                 {t('inbox.tripmail.extracted', { defaultValue: 'Extracted booking' })}
@@ -179,7 +179,7 @@ export function TripEmailThread({ itemId }: { itemId: string }) {
 
           {/* Extracted event/venue candidates — stage into the pipeline. */}
           {entities.length > 0 && (
-            <div className="rounded-element border border-border p-4">
+            <div className="rounded-element p-4 bg-surface-container">
               <p className="mb-2 text-13 font-semibold uppercase tracking-wider text-muted-foreground">
                 {t('inbox.tripmail.foundEntities', { defaultValue: 'Found in this email' })}
               </p>

@@ -141,7 +141,7 @@ export function SearchAskPanel({
           onClick={submit}
           disabled={!draft.trim() || pending}
           aria-label={t('search.ask.send', 'Send')}
-          className="inline-flex items-center justify-center rounded-element border border-border p-1.5 text-foreground transition-colors hover:bg-accent disabled:opacity-40"
+          className="inline-flex items-center justify-center rounded-element p-1.5 text-foreground transition-colors hover:bg-accent disabled:opacity-40"
         >
           <CornerDownLeft className="h-4 w-4" />
         </button>

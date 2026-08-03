@@ -41,7 +41,7 @@ export function CityListPane({
 
   if (loading) {
     return (
-      <ul className="divide-y divide-border" role="list" aria-label={t('cities.listLabel', 'Cities')}>
+      <ul className="" role="list" aria-label={t('cities.listLabel', 'Cities')}>
         {Array.from({ length: 12 }).map((_, i) => (
           <RowSkeleton key={i} />
         ))}
@@ -64,18 +64,16 @@ export function CityListPane({
   }
 
   return (
-    <ul
-      className="divide-y divide-border"
-      role="list"
-      aria-label={t('cities.listLabel', 'Cities')}
-    >
+    <ul className="" role="list" aria-label={t('cities.listLabel', 'Cities')}>
       {cities.map((city, index) => (
         <CityListRow
           key={city.id}
           city={city}
           venueCount={venueCounts.get(city.id)}
           nextPride={prideByCity?.get(city.id)}
-          selected={!!selectedCityId && (selectedCityId === city.id || selectedCityId === city.slug)}
+          selected={
+            !!selectedCityId && (selectedCityId === city.id || selectedCityId === city.slug)
+          }
           // First 3 rows are LCP candidates — fetch eagerly with high
           // priority so the thumbnail is the LCP element instead of waiting
           // on a lazy-load IntersectionObserver.

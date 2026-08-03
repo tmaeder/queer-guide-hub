@@ -1,4 +1,12 @@
-import { Ban, Flag, Gavel, Milestone as MilestoneIcon, Scale, ShieldAlert, Stethoscope } from 'lucide-react';
+import {
+  Ban,
+  Flag,
+  Gavel,
+  Milestone as MilestoneIcon,
+  Scale,
+  ShieldAlert,
+  Stethoscope,
+} from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -28,7 +36,7 @@ export function MilestoneCategoryBadge({
   return (
     <span
       className={cn(
-        'inline-flex items-center gap-1 rounded-badge border border-border px-1.5 py-0.5 text-2xs uppercase tracking-wide text-muted-foreground',
+        'inline-flex items-center gap-1 rounded-badge px-1.5 py-0.5 text-2xs uppercase tracking-wide text-muted-foreground bg-surface-container',
         className,
       )}
     >

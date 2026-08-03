@@ -69,7 +69,7 @@ export function SearchPopoverResults({
           aria-pressed={filtersOpen}
           aria-label={t('search.filters', 'Filters')}
           className={cn(
-            'inline-flex shrink-0 items-center gap-1 rounded-badge border border-border px-2 py-0.5 text-xs text-foreground transition-colors',
+            'inline-flex shrink-0 items-center gap-1 rounded-badge px-2 py-0.5 text-xs text-foreground transition-colors bg-surface-container',
             filtersOpen ? 'bg-accent' : 'bg-transparent hover:bg-accent',
           )}
         >

@@ -5,10 +5,8 @@ export function ReadingStreak() {
   const { streak, loading } = useReadingStreak();
   if (loading || !streak) {
     return (
-      <div className="border border-border rounded-container p-6">
-        <p className="text-2xs uppercase tracking-[0.2em] text-muted-foreground">
-          Reading streak
-        </p>
+      <div className="rounded-container p-6 bg-surface-container">
+        <p className="text-2xs uppercase tracking-[0.2em] text-muted-foreground">Reading streak</p>
         <p className="mt-4 text-display font-bold leading-none tracking-tight tabular-nums">—</p>
       </div>
     );
@@ -18,7 +16,7 @@ export function ReadingStreak() {
   const longest = streak.longest_streak;
 
   return (
-    <div className="border border-border rounded-container p-6">
+    <div className="rounded-container p-6 bg-surface-container">
       <p className="text-2xs uppercase tracking-[0.2em] text-muted-foreground flex items-center gap-2">
         <Flame size={12} aria-hidden="true" />
         Reading streak

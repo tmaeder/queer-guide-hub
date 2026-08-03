@@ -53,7 +53,7 @@ export function MarketplaceGallery({ listingId, images, title }: MarketplaceGall
     <div className="flex flex-col gap-4">
       {/* Nested tray — the image plate sits in a muted frame, depth from
           borders, never shadows. */}
-      <div className="rounded-container border border-border bg-muted p-2">
+      <div className="rounded-container bg-muted p-2">
         <div className="overflow-hidden rounded-element bg-muted">
           {current && !failed.has(safeActive) ? (
             // onError is a standard non-interactive image fallback handler, not a

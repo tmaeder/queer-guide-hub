@@ -19,10 +19,17 @@ const TIER_LABEL: Record<EqualityTier, string> = {
 };
 
 /**
- * Compact equality chip for list rows. Monochrome text + border; the only
- * chromatic element is a 6px tier dot using the allowlisted equality-scores
- * functional scale (see eslint.config.js — file is on the per-file ignore
- * list for the color-literal rule).
+ * Compact equality chip for list rows. Monochrome plate; the only chromatic
+ * element is a 6px tier dot using the allowlisted equality-scores functional
+ * scale (see eslint.config.js — file is on the per-file ignore list for the
+ * color-literal rule).
+ *
+ * The chip is a PLATE, not an outline. It used to be `bg-background` (the page
+ * colour) with a `border-foreground/15` hairline, which made the border the
+ * only thing separating it from the page — so the fill has to carry the edge
+ * once the hairline goes, hence `bg-surface-container` rather than a bare
+ * border deletion. This one component rendered 1,218 of the site's borders,
+ * because it repeats per row on every city list (/cities, /africa, /europe).
  */
 export function EqualityChip({ score, className, showLabel = false }: EqualityChipProps) {
   const tier = tierFor(score);
@@ -36,7 +43,7 @@ export function EqualityChip({ score, className, showLabel = false }: EqualityCh
   return (
     <span
       className={cn(
-        'inline-flex items-center gap-1.5 rounded-badge border border-foreground/15 bg-background px-2 py-0.5 text-13 font-medium text-foreground',
+        'inline-flex items-center gap-1.5 rounded-badge bg-surface-container px-2 py-0.5 text-13 font-medium text-foreground',
         className,
       )}
       aria-label={ariaLabel}

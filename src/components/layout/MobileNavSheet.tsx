@@ -133,7 +133,7 @@ export function MobileNavSheet({ open, onOpenChange }: MobileNavSheetProps) {
               <LocalizedLink
                 to="/hub/plans"
                 onClick={close}
-                className="flex items-center gap-2 rounded-element border border-border p-4 no-underline hover:bg-muted"
+                className="flex items-center gap-2 rounded-element p-4 no-underline hover:bg-muted"
               >
                 <Plane size={18} className="text-muted-foreground" />
                 <span className="text-sm font-medium">
@@ -160,7 +160,7 @@ export function MobileNavSheet({ open, onOpenChange }: MobileNavSheetProps) {
                           key={dest.to}
                           to={dest.to}
                           onClick={close}
-                          className="flex flex-col items-center justify-center gap-2 rounded-element border border-border p-4 text-center no-underline hover:bg-muted"
+                          className="flex flex-col items-center justify-center gap-2 rounded-element p-4 text-center no-underline hover:bg-muted"
                         >
                           <Icon size={20} className="text-foreground" aria-hidden />
                           <span className="text-2xs leading-tight text-muted-foreground">

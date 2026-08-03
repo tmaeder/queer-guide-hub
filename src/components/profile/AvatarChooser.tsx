@@ -38,16 +38,84 @@ const IMPORT_SOURCES = [
 // Six curated bases — the "style" choice. Skin tone, hair color and accessory
 // are picked separately; everything else comes from the base.
 const STYLE_PRESETS: Array<Partial<AvatarConfig>> = [
-  { hair: 'short', clothing: 'shirt', clothingColor: 'black', eyes: 'normal', eyebrows: 'raised', mouth: 'grin', body: 'chest', lipColor: 'red', lashes: false },
-  { hair: 'long', clothing: 'dress', clothingColor: 'red', eyes: 'happy', eyebrows: 'raised', mouth: 'openSmile', body: 'breasts', lipColor: 'pink', lashes: true },
-  { hair: 'buzz', clothing: 'tankTop', clothingColor: 'white', eyes: 'content', eyebrows: 'serious', mouth: 'serious', body: 'chest', lipColor: 'purple', lashes: false },
-  { hair: 'bob', clothing: 'vneck', clothingColor: 'green', eyes: 'wink', eyebrows: 'raised', mouth: 'lips', body: 'breasts', lipColor: 'red', lashes: true },
-  { hair: 'afro', clothing: 'dressShirt', clothingColor: 'blue', eyes: 'happy', eyebrows: 'raised', mouth: 'openSmile', body: 'chest', lipColor: 'pink', lashes: false },
-  { hair: 'bun', clothing: 'shirt', clothingColor: 'white', eyes: 'content', eyebrows: 'serious', mouth: 'grin', body: 'chest', lipColor: 'purple', lashes: true },
+  {
+    hair: 'short',
+    clothing: 'shirt',
+    clothingColor: 'black',
+    eyes: 'normal',
+    eyebrows: 'raised',
+    mouth: 'grin',
+    body: 'chest',
+    lipColor: 'red',
+    lashes: false,
+  },
+  {
+    hair: 'long',
+    clothing: 'dress',
+    clothingColor: 'red',
+    eyes: 'happy',
+    eyebrows: 'raised',
+    mouth: 'openSmile',
+    body: 'breasts',
+    lipColor: 'pink',
+    lashes: true,
+  },
+  {
+    hair: 'buzz',
+    clothing: 'tankTop',
+    clothingColor: 'white',
+    eyes: 'content',
+    eyebrows: 'serious',
+    mouth: 'serious',
+    body: 'chest',
+    lipColor: 'purple',
+    lashes: false,
+  },
+  {
+    hair: 'bob',
+    clothing: 'vneck',
+    clothingColor: 'green',
+    eyes: 'wink',
+    eyebrows: 'raised',
+    mouth: 'lips',
+    body: 'breasts',
+    lipColor: 'red',
+    lashes: true,
+  },
+  {
+    hair: 'afro',
+    clothing: 'dressShirt',
+    clothingColor: 'blue',
+    eyes: 'happy',
+    eyebrows: 'raised',
+    mouth: 'openSmile',
+    body: 'chest',
+    lipColor: 'pink',
+    lashes: false,
+  },
+  {
+    hair: 'bun',
+    clothing: 'shirt',
+    clothingColor: 'white',
+    eyes: 'content',
+    eyebrows: 'serious',
+    mouth: 'grin',
+    body: 'chest',
+    lipColor: 'purple',
+    lashes: true,
+  },
 ];
 
 const SKIN_TONES: AvatarConfig['skinTone'][] = ['light', 'yellow', 'brown', 'red', 'dark', 'black'];
-const HAIR_COLORS: AvatarConfig['hairColor'][] = ['black', 'brown', 'blonde', 'orange', 'pink', 'blue', 'white'];
+const HAIR_COLORS: AvatarConfig['hairColor'][] = [
+  'black',
+  'brown',
+  'blonde',
+  'orange',
+  'pink',
+  'blue',
+  'white',
+];
 const ACCESSORIES: Array<{ value: AvatarConfig['accessory']; label: string }> = [
   { value: 'none', label: 'None' },
   { value: 'roundGlasses', label: 'Glasses' },
@@ -56,14 +124,32 @@ const ACCESSORIES: Array<{ value: AvatarConfig['accessory']; label: string }> = 
 ];
 
 const NEUTRAL_BASE: AvatarConfig = {
-  accessory: 'none', body: 'chest', clothing: 'shirt', clothingColor: 'black',
-  eyebrows: 'raised', eyes: 'normal', facialHair: 'none', graphic: 'none',
-  hair: 'short', hairColor: 'black', hat: 'none', hatColor: 'white',
-  lashes: false, lipColor: 'red', mask: false, mouth: 'grin',
-  skinTone: 'light', circleColor: 'blue',
+  accessory: 'none',
+  body: 'chest',
+  clothing: 'shirt',
+  clothingColor: 'black',
+  eyebrows: 'raised',
+  eyes: 'normal',
+  facialHair: 'none',
+  graphic: 'none',
+  hair: 'short',
+  hairColor: 'black',
+  hat: 'none',
+  hatColor: 'white',
+  lashes: false,
+  lipColor: 'red',
+  mask: false,
+  mouth: 'grin',
+  skinTone: 'light',
+  circleColor: 'blue',
 };
 
-function buildConfig(styleIdx: number, skin: AvatarConfig['skinTone'], hairColor: AvatarConfig['hairColor'], accessory: AvatarConfig['accessory']): AvatarConfig {
+function buildConfig(
+  styleIdx: number,
+  skin: AvatarConfig['skinTone'],
+  hairColor: AvatarConfig['hairColor'],
+  accessory: AvatarConfig['accessory'],
+): AvatarConfig {
   return { ...NEUTRAL_BASE, ...STYLE_PRESETS[styleIdx], skinTone: skin, hairColor, accessory };
 }
 
@@ -102,7 +188,9 @@ export function AvatarChooser({ email, currentUrl, currentConfig, onSave }: Avat
   // ---- Builder state
   const [styleIdx, setStyleIdx] = useState(0);
   const [skin, setSkin] = useState<AvatarConfig['skinTone']>(currentConfig?.skinTone ?? 'light');
-  const [hairColor, setHairColor] = useState<AvatarConfig['hairColor']>(currentConfig?.hairColor ?? 'black');
+  const [hairColor, setHairColor] = useState<AvatarConfig['hairColor']>(
+    currentConfig?.hairColor ?? 'black',
+  );
   const [accessory, setAccessory] = useState<AvatarConfig['accessory']>('none');
 
   const builderConfig = useMemo(
@@ -135,12 +223,16 @@ export function AvatarChooser({ email, currentUrl, currentConfig, onSave }: Avat
         .from('avatars')
         .upload(fileName, blob, { upsert: true, contentType: 'image/webp' });
       if (uploadError) throw uploadError;
-      const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(fileName);
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from('avatars').getPublicUrl(fileName);
       await onSave({ avatarUrl: publicUrl, avatarConfig: null, avatarType: 'upload' });
       URL.revokeObjectURL(cropSrc);
       setCropSrc(null);
     } catch (err) {
-      fail(err instanceof Error ? err.message : 'Upload failed — your previous avatar is untouched.');
+      fail(
+        err instanceof Error ? err.message : 'Upload failed — your previous avatar is untouched.',
+      );
     } finally {
       setBusy(false);
     }
@@ -152,7 +244,9 @@ export function AvatarChooser({ email, currentUrl, currentConfig, onSave }: Avat
     setImportPreview(null);
     setBusy(true);
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       if (!session) throw new Error('Sign in again to import an avatar.');
       const res = await fetch(RESOLVE_ENDPOINT, {
         method: 'POST',
@@ -206,14 +300,28 @@ export function AvatarChooser({ email, currentUrl, currentConfig, onSave }: Avat
   return (
     <div className="flex flex-col gap-6">
       <div className="flex justify-center">
-        <AvatarDisplay avatarUrl={currentUrl ?? undefined} avatarConfig={currentConfig ?? undefined} email={email} size="lg" />
+        <AvatarDisplay
+          avatarUrl={currentUrl ?? undefined}
+          avatarConfig={currentConfig ?? undefined}
+          email={email}
+          size="lg"
+        />
       </div>
 
       <Tabs defaultValue="create" className="w-full">
         <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="upload"><Upload size={16} className="mr-2" />Upload</TabsTrigger>
-          <TabsTrigger value="import"><Globe size={16} className="mr-2" />Import</TabsTrigger>
-          <TabsTrigger value="create"><Palette size={16} className="mr-2" />Create</TabsTrigger>
+          <TabsTrigger value="upload">
+            <Upload size={16} className="mr-2" />
+            Upload
+          </TabsTrigger>
+          <TabsTrigger value="import">
+            <Globe size={16} className="mr-2" />
+            Import
+          </TabsTrigger>
+          <TabsTrigger value="create">
+            <Palette size={16} className="mr-2" />
+            Create
+          </TabsTrigger>
         </TabsList>
 
         {/* ---------- Upload ---------- */}
@@ -221,8 +329,12 @@ export function AvatarChooser({ email, currentUrl, currentConfig, onSave }: Avat
           {!cropSrc ? (
             <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-muted-foreground rounded-element cursor-pointer transition-colors hover:bg-muted">
               <Upload size={32} className="mb-2 text-muted-foreground" />
-              <p className="text-sm"><span className="font-semibold">Choose a photo</span></p>
-              <p className="text-xs text-muted-foreground">Cropped on your device, uploaded as a small square</p>
+              <p className="text-sm">
+                <span className="font-semibold">Choose a photo</span>
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Cropped on your device, uploaded as a small square
+              </p>
               <input type="file" className="hidden" accept="image/*" onChange={handleFileSelect} />
             </label>
           ) : (
@@ -240,7 +352,9 @@ export function AvatarChooser({ email, currentUrl, currentConfig, onSave }: Avat
                 />
               </div>
               <div className="flex items-center gap-4">
-                <Label htmlFor="avatar-zoom" className="text-xs text-muted-foreground shrink-0">Zoom</Label>
+                <Label htmlFor="avatar-zoom" className="text-xs text-muted-foreground shrink-0">
+                  Zoom
+                </Label>
                 <input
                   id="avatar-zoom"
                   type="range"
@@ -280,17 +394,33 @@ export function AvatarChooser({ email, currentUrl, currentConfig, onSave }: Avat
             on our servers.
           </p>
           <div className="grid grid-cols-[140px_1fr] gap-2">
-            <Select value={source} onValueChange={(v) => { setSource(v); setEmailConfirmed(false); setImportPreview(null); setImportError(null); }}>
-              <SelectTrigger aria-label="Import source"><SelectValue /></SelectTrigger>
+            <Select
+              value={source}
+              onValueChange={(v) => {
+                setSource(v);
+                setEmailConfirmed(false);
+                setImportPreview(null);
+                setImportError(null);
+              }}
+            >
+              <SelectTrigger aria-label="Import source">
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
                 {IMPORT_SOURCES.map((s) => (
-                  <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+                  <SelectItem key={s.value} value={s.value}>
+                    {s.label}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
             <Input
               value={identifier}
-              onChange={(e) => { setIdentifier(e.target.value); setImportPreview(null); setImportError(null); }}
+              onChange={(e) => {
+                setIdentifier(e.target.value);
+                setImportPreview(null);
+                setImportError(null);
+              }}
               placeholder={needsEmailConfirm ? 'email address' : 'handle, e.g. mariposa'}
               autoComplete="off"
               spellCheck={false}
@@ -314,7 +444,11 @@ export function AvatarChooser({ email, currentUrl, currentConfig, onSave }: Avat
               </span>
             </label>
           )}
-          {importError && <p className="text-xs text-destructive" role="alert">{importError}</p>}
+          {importError && (
+            <p className="text-xs text-destructive" role="alert">
+              {importError}
+            </p>
+          )}
           {!importPreview ? (
             <Button
               onClick={resolveImport}
@@ -325,10 +459,18 @@ export function AvatarChooser({ email, currentUrl, currentConfig, onSave }: Avat
             </Button>
           ) : (
             <div className="flex items-center gap-4">
-              <img src={importPreview} alt="Imported avatar preview" className="w-16 h-16 rounded-full border border-border object-cover" />
+              <img
+                src={importPreview}
+                alt="Imported avatar preview"
+                className="w-16 h-16 rounded-full object-cover"
+              />
               <div className="flex gap-2">
-                <Button onClick={confirmImport} disabled={busy}>Use this</Button>
-                <Button variant="outline" disabled={busy} onClick={() => setImportPreview(null)}>Try another</Button>
+                <Button onClick={confirmImport} disabled={busy}>
+                  Use this
+                </Button>
+                <Button variant="outline" disabled={busy} onClick={() => setImportPreview(null)}>
+                  Try another
+                </Button>
               </div>
             </div>
           )}
@@ -337,7 +479,9 @@ export function AvatarChooser({ email, currentUrl, currentConfig, onSave }: Avat
         {/* ---------- Create ---------- */}
         <TabsContent value="create" className="mt-4 flex flex-col gap-4">
           <div className="flex items-center justify-between">
-            <p className="text-sm font-medium" id="avatar-style-label">Style</p>
+            <p className="text-sm font-medium" id="avatar-style-label">
+              Style
+            </p>
             <Button
               type="button"
               variant="ghost"
@@ -362,7 +506,9 @@ export function AvatarChooser({ email, currentUrl, currentConfig, onSave }: Avat
                 aria-label={`Style ${i + 1}`}
                 className={cn(
                   'aspect-square rounded-element border-2 flex items-center justify-center transition-colors',
-                  styleIdx === i ? 'border-foreground bg-accent' : 'border-border hover:border-foreground/50',
+                  styleIdx === i
+                    ? 'border-foreground bg-accent'
+                    : 'border-border hover:border-foreground/50',
                 )}
               >
                 <div className="w-16 h-16">
@@ -376,27 +522,51 @@ export function AvatarChooser({ email, currentUrl, currentConfig, onSave }: Avat
             <div className="flex flex-col gap-1">
               <Label htmlFor="avatar-skin">Skin tone</Label>
               <Select value={skin} onValueChange={(v) => setSkin(v as AvatarConfig['skinTone'])}>
-                <SelectTrigger id="avatar-skin"><SelectValue /></SelectTrigger>
+                <SelectTrigger id="avatar-skin">
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
-                  {SKIN_TONES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                  {SKIN_TONES.map((s) => (
+                    <SelectItem key={s} value={s}>
+                      {s}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
             <div className="flex flex-col gap-1">
               <Label htmlFor="avatar-hair">Hair color</Label>
-              <Select value={hairColor} onValueChange={(v) => setHairColor(v as AvatarConfig['hairColor'])}>
-                <SelectTrigger id="avatar-hair"><SelectValue /></SelectTrigger>
+              <Select
+                value={hairColor}
+                onValueChange={(v) => setHairColor(v as AvatarConfig['hairColor'])}
+              >
+                <SelectTrigger id="avatar-hair">
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
-                  {HAIR_COLORS.map((h) => <SelectItem key={h} value={h}>{h}</SelectItem>)}
+                  {HAIR_COLORS.map((h) => (
+                    <SelectItem key={h} value={h}>
+                      {h}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
             <div className="flex flex-col gap-1">
               <Label htmlFor="avatar-accessory">Accessory</Label>
-              <Select value={accessory} onValueChange={(v) => setAccessory(v as AvatarConfig['accessory'])}>
-                <SelectTrigger id="avatar-accessory"><SelectValue /></SelectTrigger>
+              <Select
+                value={accessory}
+                onValueChange={(v) => setAccessory(v as AvatarConfig['accessory'])}
+              >
+                <SelectTrigger id="avatar-accessory">
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
-                  {ACCESSORIES.map((a) => <SelectItem key={a.value} value={a.value}>{a.label}</SelectItem>)}
+                  {ACCESSORIES.map((a) => (
+                    <SelectItem key={a.value} value={a.value}>
+                      {a.label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>

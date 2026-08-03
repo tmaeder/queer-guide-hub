@@ -43,18 +43,12 @@ export default function Welcome() {
       {
         id: 'personalize',
         label: t('onboarding.steps.personalize', 'Personalize'),
-        description: t(
-          'onboarding.steps.personalizeDesc',
-          'Tell us what you want to discover.',
-        ),
+        description: t('onboarding.steps.personalizeDesc', 'Tell us what you want to discover.'),
       },
       {
         id: 'trust',
         label: t('onboarding.steps.trust', 'Trust tier'),
-        description: t(
-          'onboarding.steps.trustDesc',
-          'Your community standing begins here.',
-        ),
+        description: t('onboarding.steps.trustDesc', 'Your community standing begins here.'),
       },
     ],
     [t],
@@ -115,11 +109,7 @@ export default function Welcome() {
         {step === 0 && (
           <div className="max-w-xl">
             <div className="mb-8">
-              <Heart
-                size={40}
-                className="mb-4 text-foreground"
-                style={{ fill: 'currentcolor' }}
-              />
+              <Heart size={40} className="mb-4 text-foreground" style={{ fill: 'currentcolor' }} />
               <h1 className="text-3xl font-bold tracking-tight mb-2">
                 {t('onboarding.welcome', 'Welcome to Queer Guide')}
               </h1>
@@ -158,10 +148,7 @@ export default function Welcome() {
                 {enrolling && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 {hasPasskey && <Check className="mr-2 h-4 w-4" />}
                 {hasPasskey
-                  ? t(
-                      'onboarding.passkeyAlreadyEnrolled',
-                      'Passkey already enabled',
-                    )
+                  ? t('onboarding.passkeyAlreadyEnrolled', 'Passkey already enabled')
                   : t('onboarding.passkeyEnable', 'Enable passkey')}
               </Button>
             </div>
@@ -180,10 +167,7 @@ export default function Welcome() {
               )}
             </p>
             <div className="flex gap-4">
-              <Button
-                variant="outline"
-                onClick={() => navigate('/onboarding/search')}
-              >
+              <Button variant="outline" onClick={() => navigate('/onboarding/search')}>
                 {t('onboarding.openPersonalization', 'Open personalization')}
               </Button>
             </div>
@@ -203,19 +187,14 @@ export default function Welcome() {
               )}
             </p>
             <div className="space-y-4 text-sm">
-              {['Visitor', 'Explorer', 'Resident', 'Guardian'].map(
-                (tier, i) => (
-                  <div
-                    key={tier}
-                    className="flex items-center gap-4 border-t border-border pt-4"
-                  >
-                    <span className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-border text-xs font-semibold">
-                      {i + 1}
-                    </span>
-                    <span className="font-medium">{tier}</span>
-                  </div>
-                ),
-              )}
+              {['Visitor', 'Explorer', 'Resident', 'Guardian'].map((tier, i) => (
+                <div key={tier} className="flex items-center gap-4 border-t border-border pt-4">
+                  <span className="inline-flex h-6 w-6 items-center justify-center rounded-full text-xs font-semibold bg-surface-container">
+                    {i + 1}
+                  </span>
+                  <span className="font-medium">{tier}</span>
+                </div>
+              ))}
             </div>
           </div>
         )}

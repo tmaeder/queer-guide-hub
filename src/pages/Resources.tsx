@@ -306,7 +306,10 @@ export default function Resources() {
   // in the bug report's Stack Adaptation note.
   const tagDetailMeta = useMemo(() => {
     if (viewMode !== 'tag-detail' || !selectedTag) return null;
-    const longFirst = selectedTag.long_description?.trim().split(/\n{2,}/)[0]?.trim();
+    const longFirst = selectedTag.long_description
+      ?.trim()
+      .split(/\n{2,}/)[0]
+      ?.trim();
     const desc =
       selectedTag.description?.trim() ||
       (longFirst ? longFirst.slice(0, 200) : '') ||
@@ -544,7 +547,7 @@ export default function Resources() {
             <CollapsibleTrigger asChild>
               <button
                 type="button"
-                className="w-full flex items-center justify-between gap-4 rounded-element border border-border bg-background px-4 py-4 text-left hover:bg-muted transition-colors group"
+                className="w-full flex items-center justify-between gap-4 rounded-element bg-surface-container px-4 py-4 text-left hover:bg-muted transition-colors group"
                 aria-label={t('resources.disclosureAria')}
               >
                 <span className="font-semibold text-sm">{t('resources.disclosure')}</span>

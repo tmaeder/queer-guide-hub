@@ -56,8 +56,8 @@ export function KinkShareManager() {
           Share links
         </h3>
         <p className="mt-1 text-13 text-muted-foreground">
-          A link shows only categories you flagged for sharing, only to signed-in 18+
-          members. You can revoke any link at any time.
+          A link shows only categories you flagged for sharing, only to signed-in 18+ members. You
+          can revoke any link at any time.
         </p>
       </div>
 
@@ -74,17 +74,13 @@ export function KinkShareManager() {
             ))}
           </SelectContent>
         </Select>
-        <Button
-          onClick={handleCreate}
-          disabled={create.isPending}
-          className="rounded-element"
-        >
+        <Button onClick={handleCreate} disabled={create.isPending} className="rounded-element">
           Create link
         </Button>
       </div>
 
       {active.length > 0 && (
-        <ul className="divide-y divide-border">
+        <ul className="">
           {active.map((link) => (
             <li key={link.id} className="flex items-center justify-between gap-2 py-2">
               <div className="min-w-0">

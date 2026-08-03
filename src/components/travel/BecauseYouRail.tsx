@@ -92,7 +92,7 @@ export function BecauseYouRail({ limit = 8 }: { limit?: number }) {
                           <li
                             key={reason}
                             className={cn(
-                              'inline-flex items-center rounded-badge border bg-muted px-2 py-0.5 text-2xs uppercase tracking-[0.1em] text-muted-foreground',
+                              'inline-flex items-center rounded-badge bg-muted px-2 py-0.5 text-2xs uppercase tracking-[0.1em] text-muted-foreground',
                             )}
                           >
                             {reason}

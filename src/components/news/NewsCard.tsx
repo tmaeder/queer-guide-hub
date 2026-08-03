@@ -426,7 +426,7 @@ const NewsCardImpl = ({
   // Compact list variant: thumbnail left, text right
   if (variant === 'compact') {
     return (
-      <div className="relative flex gap-4 p-4 rounded-container border border-border hover:bg-muted">
+      <div className="relative flex gap-4 p-4 rounded-container hover:bg-muted">
         <img
           loading="lazy"
           decoding="async"

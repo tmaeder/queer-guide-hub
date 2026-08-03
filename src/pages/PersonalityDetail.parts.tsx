@@ -26,10 +26,7 @@ import { fetchPublicPersonalityBySlugOrId } from '@/hooks/usePageFetchers';
 import { formatPersonDateRange, isoDateAttr } from '@/lib/personDate';
 import { usePersonalityRelated } from '@/hooks/usePersonalityRelated';
 import { useTranslation } from 'react-i18next';
-import {
-  resolveHistoricalPlace,
-  type HistoricalNameEntry,
-} from '@/lib/historicalPlace';
+import { resolveHistoricalPlace, type HistoricalNameEntry } from '@/lib/historicalPlace';
 import { codeToFlagEmoji } from '@/lib/countryFlag';
 import { resolvePublisherName } from '@/lib/publisherName';
 
@@ -54,7 +51,6 @@ export type PersonalityWithBirthCity = Personality & {
   birth_city?: PersonalityBirthCity | null;
   death_city?: PersonalityDeathCity | null;
 };
-
 
 // Imports may write structured objects into fields/achievements (e.g.
 // {"parties": [...]}, {"type": "award_detail", "text": "..."}). The detail
@@ -341,7 +337,7 @@ function RelatedContent({ personality }: { personality: Personality }) {
             <CardTitle>{t('pages.personalities.detail.inTheNews', 'In the news')}</CardTitle>
           </CardHeader>
           <CardContent>
-            <ul className="flex flex-col divide-y divide-border">
+            <ul className="flex flex-col">
               {news.map((n) => (
                 <li key={n.id}>
                   <LocalizedLink
@@ -511,11 +507,7 @@ export function PersonalityOverview({
   );
 }
 
-export function PersonalitySidebar({
-  personality,
-}: {
-  personality: Personality;
-}) {
+export function PersonalitySidebar({ personality }: { personality: Personality }) {
   return (
     <ScrollReveal direction="up">
       <div className="flex flex-col gap-6">
@@ -525,10 +517,7 @@ export function PersonalitySidebar({
           </CardHeader>
           <CardContent style={{ flexDirection: 'column', gap: '0.75rem' }} className="flex">
             {(() => {
-              const range = formatPersonDateRange(
-                personality.birth_date,
-                personality.death_date,
-              );
+              const range = formatPersonDateRange(personality.birth_date, personality.death_date);
               return (
                 <>
                   {personality.birth_date && (
@@ -569,81 +558,87 @@ export function PersonalitySidebar({
                 prominently in the hero. Repeating them in this fact box was the source of the
                 "actor three times / Canada twice" redundancy. The sidebar keeps only the
                 date/place facts the hero doesn't carry. */}
-            {personality.birth_place && (() => {
-              const p = personality as PersonalityWithBirthCity;
-              const city = p.birth_city ?? null;
-              const flag = city?.country?.flag_emoji ?? codeToFlagEmoji(city?.country?.code);
-              const resolved = resolveHistoricalPlace({
-                historicalNames: city?.historical_names ?? [],
-                rawPlace: p.birth_place ?? null,
-                birthDate: p.birth_date ?? null,
-                currentName: city?.name ?? null,
-                currentNameDe: city?.name_de ?? null,
-                currentNameEn: city?.name_en ?? null,
-                currentCountry: city?.country?.name ?? null,
-                locale: 'de',
-              });
-              // Drop the country suffix when it just repeats the nationality already shown in
-              // the hero (e.g. nationality "Canada" + birth place "Halifax, Canada").
-              const countryMatchesNationality =
-                resolved.country &&
-                personality.nationality &&
-                resolved.country.trim().toLowerCase() ===
-                  personality.nationality.trim().toLowerCase();
-              const display =
-                resolved.country && !countryMatchesNationality
-                  ? `${resolved.name ?? p.birth_place}, ${resolved.country}`
-                  : (resolved.name ?? p.birth_place);
-              const today =
-                resolved.historical && city?.name
-                  ? `heute ${city.name}${city.country?.name ? ', ' + city.country.name : ''}`
-                  : null;
-              return (
-                <div className="flex items-center gap-4">
-                  <MapPin size={16} className="text-muted-foreground" />
-                  <div>
-                    <p className="text-sm text-muted-foreground">Birth Place</p>
-                    <p className="font-medium">
-                      {flag && !resolved.historical && (
-                        <span aria-hidden="true" className="mr-2">{flag}</span>
-                      )}
-                      {display}
-                    </p>
-                    {today && (
-                      <p className="text-xs text-muted-foreground">
-                        {flag && (
-                          <span aria-hidden="true" className="mr-2">{flag}</span>
+            {personality.birth_place &&
+              (() => {
+                const p = personality as PersonalityWithBirthCity;
+                const city = p.birth_city ?? null;
+                const flag = city?.country?.flag_emoji ?? codeToFlagEmoji(city?.country?.code);
+                const resolved = resolveHistoricalPlace({
+                  historicalNames: city?.historical_names ?? [],
+                  rawPlace: p.birth_place ?? null,
+                  birthDate: p.birth_date ?? null,
+                  currentName: city?.name ?? null,
+                  currentNameDe: city?.name_de ?? null,
+                  currentNameEn: city?.name_en ?? null,
+                  currentCountry: city?.country?.name ?? null,
+                  locale: 'de',
+                });
+                // Drop the country suffix when it just repeats the nationality already shown in
+                // the hero (e.g. nationality "Canada" + birth place "Halifax, Canada").
+                const countryMatchesNationality =
+                  resolved.country &&
+                  personality.nationality &&
+                  resolved.country.trim().toLowerCase() ===
+                    personality.nationality.trim().toLowerCase();
+                const display =
+                  resolved.country && !countryMatchesNationality
+                    ? `${resolved.name ?? p.birth_place}, ${resolved.country}`
+                    : (resolved.name ?? p.birth_place);
+                const today =
+                  resolved.historical && city?.name
+                    ? `heute ${city.name}${city.country?.name ? ', ' + city.country.name : ''}`
+                    : null;
+                return (
+                  <div className="flex items-center gap-4">
+                    <MapPin size={16} className="text-muted-foreground" />
+                    <div>
+                      <p className="text-sm text-muted-foreground">Birth Place</p>
+                      <p className="font-medium">
+                        {flag && !resolved.historical && (
+                          <span aria-hidden="true" className="mr-2">
+                            {flag}
+                          </span>
                         )}
-                        {today}
+                        {display}
                       </p>
-                    )}
-                  </div>
-                </div>
-              );
-            })()}
-            {personality.death_place && (() => {
-              const p = personality as PersonalityWithBirthCity;
-              const city = p.death_city ?? null;
-              const flag = city?.country?.flag_emoji ?? codeToFlagEmoji(city?.country?.code);
-              const country = city?.country?.name ?? null;
-              const display = country
-                ? `${p.death_place}, ${country}`
-                : p.death_place;
-              return (
-                <div className="flex items-center gap-4">
-                  <MapPin size={16} className="text-muted-foreground" />
-                  <div>
-                    <p className="text-sm text-muted-foreground">Death Place</p>
-                    <p className="font-medium">
-                      {flag && (
-                        <span aria-hidden="true" className="mr-2">{flag}</span>
+                      {today && (
+                        <p className="text-xs text-muted-foreground">
+                          {flag && (
+                            <span aria-hidden="true" className="mr-2">
+                              {flag}
+                            </span>
+                          )}
+                          {today}
+                        </p>
                       )}
-                      {display}
-                    </p>
+                    </div>
                   </div>
-                </div>
-              );
-            })()}
+                );
+              })()}
+            {personality.death_place &&
+              (() => {
+                const p = personality as PersonalityWithBirthCity;
+                const city = p.death_city ?? null;
+                const flag = city?.country?.flag_emoji ?? codeToFlagEmoji(city?.country?.code);
+                const country = city?.country?.name ?? null;
+                const display = country ? `${p.death_place}, ${country}` : p.death_place;
+                return (
+                  <div className="flex items-center gap-4">
+                    <MapPin size={16} className="text-muted-foreground" />
+                    <div>
+                      <p className="text-sm text-muted-foreground">Death Place</p>
+                      <p className="font-medium">
+                        {flag && (
+                          <span aria-hidden="true" className="mr-2">
+                            {flag}
+                          </span>
+                        )}
+                        {display}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })()}
           </CardContent>
         </Card>
 

@@ -21,7 +21,7 @@ export function PrideScroller() {
   const { data, isLoading } = useUpcomingPrideEvents({ months: 4, limit: 12 });
 
   return (
-    <section className="border border-border bg-background p-6 mb-8 rounded-element">
+    <section className=" bg-surface-container p-6 mb-8 rounded-element">
       <div className="flex items-baseline justify-between mb-4">
         <h2 className="text-xl font-bold tracking-tight">
           {t('pages.travel.pride.title', 'Pride this season')}

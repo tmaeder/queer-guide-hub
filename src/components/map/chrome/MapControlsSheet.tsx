@@ -1,11 +1,6 @@
 import { Locate, Maximize2, Share2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import type { LayerType } from '@/hooks/useExploreMapData';
 import { LensPicker } from '../LensPicker';
 import { MapFiltersPanel } from '../MapFiltersPanel';
@@ -82,9 +77,7 @@ export const MapControlsSheet = ({
         {hasPanelFilters && (
           <div className="mt-4 border-t border-border pt-4">
             <div className="flex items-center justify-between pb-1.5">
-              <p className={sectionTitle}>
-                {t('map.sheet.filters', { defaultValue: 'Filters' })}
-              </p>
+              <p className={sectionTitle}>{t('map.sheet.filters', { defaultValue: 'Filters' })}</p>
               {activeFilterCount > 0 && (
                 <button
                   type="button"
@@ -114,7 +107,7 @@ export const MapControlsSheet = ({
             <p className={`${sectionTitle} pb-1.5`}>
               {t('map.sheet.time', { defaultValue: 'Time' })}
             </p>
-            <div className="rounded-element border border-border">
+            <div className="rounded-element bg-surface-container">
               <TimeRangePicker
                 value={filters.dateRange}
                 onChange={(v) => onFiltersChange({ ...filters, dateRange: v })}

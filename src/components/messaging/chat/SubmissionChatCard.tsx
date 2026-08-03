@@ -32,7 +32,13 @@ function statusLabel(row: SubmissionStatusRow | undefined): string {
  * conversation-scoped get_chat_submission_status RPC (no realtime — status
  * changes are rare; focus refetch keeps it honest).
  */
-export function SubmissionChatCard({ messageId, meta }: { messageId: string; meta: SubmissionMeta }) {
+export function SubmissionChatCard({
+  messageId,
+  meta,
+}: {
+  messageId: string;
+  meta: SubmissionMeta;
+}) {
   const { t } = useTranslation();
   const isTemp = messageId.startsWith('temp-');
   const { data: statuses = [] } = useQuery({
@@ -52,7 +58,7 @@ export function SubmissionChatCard({ messageId, meta }: { messageId: string; met
 
   return (
     <div
-      className="flex flex-col gap-1 rounded-element border border-border bg-card px-2 py-2"
+      className="flex flex-col gap-1 rounded-element bg-card px-2 py-2"
       style={{ minWidth: 220 }}
     >
       <div className="flex items-center gap-2 px-2 pt-1">

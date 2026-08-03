@@ -19,7 +19,11 @@ function freqLabel(min: number): string {
 }
 
 function host(url: string): string {
-  try { return new URL(url).hostname.replace(/^www\./, ''); } catch { return url; }
+  try {
+    return new URL(url).hostname.replace(/^www\./, '');
+  } catch {
+    return url;
+  }
 }
 
 export function WatchedSitesList() {
@@ -30,7 +34,8 @@ export function WatchedSitesList() {
   if (watches.length === 0) {
     return (
       <p className="text-13 text-muted-foreground">
-        No watched sites yet. Scan a link on the Submit page, then choose “Watch this site” to auto-import new content.
+        No watched sites yet. Scan a link on the Submit page, then choose “Watch this site” to
+        auto-import new content.
       </p>
     );
   }
@@ -38,7 +43,7 @@ export function WatchedSitesList() {
   return (
     <ul className="flex flex-col gap-2">
       {watches.map((w) => (
-        <li key={w.id} className="flex items-center gap-2 rounded-element border border-border p-4">
+        <li key={w.id} className="flex items-center gap-2 rounded-element p-4 bg-surface-container">
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
               <a
@@ -54,9 +59,17 @@ export function WatchedSitesList() {
             </div>
             <p className="text-xs text-muted-foreground">
               {freqLabel(w.frequency_minutes)}
-              {w.last_checked_at ? ` · checked ${new Date(w.last_checked_at).toLocaleDateString()}` : ' · not checked yet'}
+              {w.last_checked_at
+                ? ` · checked ${new Date(w.last_checked_at).toLocaleDateString()}`
+                : ' · not checked yet'}
               {w.imported_count > 0 && (
-                <> · <Badge variant="secondary" className="ml-2">{w.imported_count} imported</Badge></>
+                <>
+                  {' '}
+                  ·{' '}
+                  <Badge variant="secondary" className="ml-2">
+                    {w.imported_count} imported
+                  </Badge>
+                </>
               )}
             </p>
           </div>

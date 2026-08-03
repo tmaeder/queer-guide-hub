@@ -5,7 +5,13 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Check, Eye } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useWatchedUrls } from '@/hooks/useWatchedUrls';
@@ -25,7 +31,7 @@ export function WatchSiteControl({ url }: { url: string }) {
 
   if (already) {
     return (
-      <div className="flex items-center gap-2 rounded-element border border-border p-4 text-sm text-muted-foreground">
+      <div className="flex items-center gap-2 rounded-element p-4 text-sm text-muted-foreground bg-surface-container">
         <Check size={16} className="shrink-0" />
         You’re watching this site — new content will be queued for review automatically.
       </div>
@@ -35,7 +41,10 @@ export function WatchSiteControl({ url }: { url: string }) {
   const onWatch = async () => {
     try {
       await addWatch.mutateAsync({ url, frequency_minutes: Number(frequency) });
-      toast({ title: 'Watching this site', description: 'We’ll check it and import new content for review.' });
+      toast({
+        title: 'Watching this site',
+        description: 'We’ll check it and import new content for review.',
+      });
     } catch (err) {
       toast({
         title: 'Could not start watching',
@@ -46,7 +55,7 @@ export function WatchSiteControl({ url }: { url: string }) {
   };
 
   return (
-    <div className="flex flex-col gap-2 rounded-element border border-border p-4">
+    <div className="flex flex-col gap-2 rounded-element p-4 bg-surface-container">
       <div className="flex items-center gap-2 text-sm font-semibold">
         <Eye size={16} className="shrink-0" />
         Watch this site for updates
@@ -61,7 +70,9 @@ export function WatchSiteControl({ url }: { url: string }) {
           </SelectTrigger>
           <SelectContent>
             {FREQUENCIES.map((f) => (
-              <SelectItem key={f.value} value={f.value}>{f.label}</SelectItem>
+              <SelectItem key={f.value} value={f.value}>
+                {f.label}
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>

@@ -42,8 +42,17 @@ interface SearchResult {
 }
 
 const customCategories = [
-  'restaurant', 'bar', 'club', 'cafe', 'museum', 'park',
-  'beach', 'shopping', 'accommodation', 'transport', 'other',
+  'restaurant',
+  'bar',
+  'club',
+  'cafe',
+  'museum',
+  'park',
+  'beach',
+  'shopping',
+  'accommodation',
+  'transport',
+  'other',
 ];
 
 const RECENT_SEARCHES_KEY = 'trips.addPlace.recentSearches';
@@ -56,7 +65,9 @@ function loadRecentSearches(): string[] {
     const raw = localStorage.getItem(RECENT_SEARCHES_KEY);
     if (!raw) return [];
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed.filter((s) => typeof s === 'string').slice(0, MAX_RECENT) : [];
+    return Array.isArray(parsed)
+      ? parsed.filter((s) => typeof s === 'string').slice(0, MAX_RECENT)
+      : [];
   } catch {
     return [];
   }
@@ -83,7 +94,14 @@ interface Props {
   places?: TripPlace[];
 }
 
-export function AddPlaceDialog({ open, onClose, tripId, days, preselectedDayId, places = [] }: Props) {
+export function AddPlaceDialog({
+  open,
+  onClose,
+  tripId,
+  days,
+  preselectedDayId,
+  places = [],
+}: Props) {
   const { t } = useTranslation();
   const { toast } = useToast();
   const { addPlace } = useTripMutations();
@@ -135,9 +153,36 @@ export function AddPlaceDialog({ open, onClose, tripId, days, preselectedDayId, 
 
     try {
       setSearchQuery(query);
-      type VenueRow = { id: string; name: string; category?: string; city_id?: string; country_id?: string; latitude?: number; longitude?: number; address?: string; foursquare_rating?: number };
-      type EventRow = { id: string; title: string; event_type?: string; city_id?: string; country_id?: string; latitude?: number; longitude?: number };
-      type HotelRow = { id: string; name: string; star_rating?: number; city_id?: string; country_id?: string; latitude?: number; longitude?: number; address?: string };
+      type VenueRow = {
+        id: string;
+        name: string;
+        category?: string;
+        city_id?: string;
+        country_id?: string;
+        latitude?: number;
+        longitude?: number;
+        address?: string;
+        foursquare_rating?: number;
+      };
+      type EventRow = {
+        id: string;
+        title: string;
+        event_type?: string;
+        city_id?: string;
+        country_id?: string;
+        latitude?: number;
+        longitude?: number;
+      };
+      type HotelRow = {
+        id: string;
+        name: string;
+        star_rating?: number;
+        city_id?: string;
+        country_id?: string;
+        latitude?: number;
+        longitude?: number;
+        address?: string;
+      };
       const [venues, events, hotels] = await Promise.all([
         listFromWhere<VenueRow>(
           'venues',
@@ -161,21 +206,35 @@ export function AddPlaceDialog({ open, onClose, tripId, days, preselectedDayId, 
 
       const mapped: SearchResult[] = [
         ...venues.map((v) => ({
-          id: v.id, name: v.name, type: 'venue' as const,
-          rating: v.foursquare_rating ?? undefined, address: v.address ?? undefined,
-          latitude: v.latitude ?? undefined, longitude: v.longitude ?? undefined,
-          country_id: v.country_id ?? undefined, city_id: v.city_id ?? undefined,
+          id: v.id,
+          name: v.name,
+          type: 'venue' as const,
+          rating: v.foursquare_rating ?? undefined,
+          address: v.address ?? undefined,
+          latitude: v.latitude ?? undefined,
+          longitude: v.longitude ?? undefined,
+          country_id: v.country_id ?? undefined,
+          city_id: v.city_id ?? undefined,
         })),
         ...events.map((e) => ({
-          id: e.id, name: e.title, type: 'event' as const,
-          latitude: e.latitude ?? undefined, longitude: e.longitude ?? undefined,
-          country_id: e.country_id ?? undefined, city_id: e.city_id ?? undefined,
+          id: e.id,
+          name: e.title,
+          type: 'event' as const,
+          latitude: e.latitude ?? undefined,
+          longitude: e.longitude ?? undefined,
+          country_id: e.country_id ?? undefined,
+          city_id: e.city_id ?? undefined,
         })),
         ...hotels.map((h) => ({
-          id: h.id, name: h.name, type: 'hotel' as const,
-          rating: h.star_rating ?? undefined, address: h.address ?? undefined,
-          latitude: h.latitude ?? undefined, longitude: h.longitude ?? undefined,
-          country_id: h.country_id ?? undefined, city_id: h.city_id ?? undefined,
+          id: h.id,
+          name: h.name,
+          type: 'hotel' as const,
+          rating: h.star_rating ?? undefined,
+          address: h.address ?? undefined,
+          latitude: h.latitude ?? undefined,
+          longitude: h.longitude ?? undefined,
+          country_id: h.country_id ?? undefined,
+          city_id: h.city_id ?? undefined,
         })),
       ];
       setResults(mapped);
@@ -258,8 +317,10 @@ export function AddPlaceDialog({ open, onClose, tripId, days, preselectedDayId, 
     setRecentSearches([]);
   };
 
-  const filteredResults = typeFilter === 'all' ? results : results.filter((r) => r.type === typeFilter);
-  const countFor = (t: TypeFilter) => (t === 'all' ? results.length : results.filter((r) => r.type === t).length);
+  const filteredResults =
+    typeFilter === 'all' ? results : results.filter((r) => r.type === typeFilter);
+  const countFor = (t: TypeFilter) =>
+    t === 'all' ? results.length : results.filter((r) => r.type === t).length;
 
   const venueIdsInResults = [...filteredResults, ...nearbyResults]
     .filter((r) => r.type === 'venue')
@@ -307,32 +368,55 @@ export function AddPlaceDialog({ open, onClose, tripId, days, preselectedDayId, 
     try {
       if ((mode === 'search' || mode === 'nearby') && selected) {
         await addPlace.mutateAsync({
-          trip_id: tripId, day_id: dayId || null,
+          trip_id: tripId,
+          day_id: dayId || null,
           venue_id: selected.type === 'venue' ? selected.id : null,
           event_id: selected.type === 'event' ? selected.id : null,
           hotel_id: selected.type === 'hotel' ? selected.id : null,
-          custom_name: null, custom_address: selected.address || null,
-          latitude: selected.latitude || null, longitude: selected.longitude || null,
-          city_id: selected.city_id || null, country_id: selected.country_id || null,
-          start_time: null, end_time: null, duration_minutes: null, notes: null,
-          category: selected.type, sort_order: 0, created_by: null,
+          custom_name: null,
+          custom_address: selected.address || null,
+          latitude: selected.latitude || null,
+          longitude: selected.longitude || null,
+          city_id: selected.city_id || null,
+          country_id: selected.country_id || null,
+          start_time: null,
+          end_time: null,
+          duration_minutes: null,
+          notes: null,
+          category: selected.type,
+          sort_order: 0,
+          created_by: null,
         });
       } else if (mode === 'custom' && customName.trim()) {
         await addPlace.mutateAsync({
-          trip_id: tripId, day_id: dayId || null,
-          venue_id: null, event_id: null, hotel_id: null,
-          custom_name: customName.trim(), custom_address: customAddress.trim() || null,
+          trip_id: tripId,
+          day_id: dayId || null,
+          venue_id: null,
+          event_id: null,
+          hotel_id: null,
+          custom_name: customName.trim(),
+          custom_address: customAddress.trim() || null,
           latitude: customLat ? parseFloat(customLat) : null,
           longitude: customLng ? parseFloat(customLng) : null,
-          city_id: null, country_id: null,
-          start_time: null, end_time: null, duration_minutes: null, notes: null,
-          category: customCategory, sort_order: 0, created_by: null,
+          city_id: null,
+          country_id: null,
+          start_time: null,
+          end_time: null,
+          duration_minutes: null,
+          notes: null,
+          category: customCategory,
+          sort_order: 0,
+          created_by: null,
         });
       }
       toast({ title: t('trips.addPlace.addedToast', 'Place added to trip') });
       resetAndClose();
     } catch (err) {
-      toast({ title: t('trips.addPlace.addFailedToast', 'Failed to add place'), description: String(err), variant: 'destructive' });
+      toast({
+        title: t('trips.addPlace.addFailedToast', 'Failed to add place'),
+        description: String(err),
+        variant: 'destructive',
+      });
     }
   };
 
@@ -344,24 +428,40 @@ export function AddPlaceDialog({ open, onClose, tripId, days, preselectedDayId, 
     <Dialog open={open} onOpenChange={(o) => !o && resetAndClose()}>
       <DialogContent className="rounded-container">
         <DialogHeader>
-          <span className="inline-flex items-center gap-1.5 self-start rounded-full border border-border bg-background/60 px-4 py-1 text-xs2 font-semibold uppercase tracking-[0.18em] text-muted-foreground backdrop-blur-sm mb-2">
+          <span className="inline-flex items-center gap-1.5 self-start rounded-full bg-background/60 px-4 py-1 text-xs2 font-semibold uppercase tracking-[0.18em] text-muted-foreground backdrop-blur-sm mb-2">
             <span className="w-1.5 h-1.5 rounded-full bg-foreground" aria-hidden="true" />
             {t('trips.addPlace.eyebrow', 'New place')}
           </span>
-          <DialogTitle className="text-2xl font-bold tracking-tight">{t('trips.addPlace.title', 'Add Place')}</DialogTitle>
+          <DialogTitle className="text-2xl font-bold tracking-tight">
+            {t('trips.addPlace.title', 'Add Place')}
+          </DialogTitle>
         </DialogHeader>
 
         <div className="mt-4 mb-1 flex flex-col gap-1.5">
-          <Label htmlFor="add-place-day" className="text-xs uppercase tracking-wider text-muted-foreground">{t('trips.addPlace.assignToDay', 'Assign to Day')}</Label>
-          <Select value={dayId || '__none__'} onValueChange={(v) => setDayId(v === '__none__' ? '' : v)}>
+          <Label
+            htmlFor="add-place-day"
+            className="text-xs uppercase tracking-wider text-muted-foreground"
+          >
+            {t('trips.addPlace.assignToDay', 'Assign to Day')}
+          </Label>
+          <Select
+            value={dayId || '__none__'}
+            onValueChange={(v) => setDayId(v === '__none__' ? '' : v)}
+          >
             <SelectTrigger id="add-place-day">
               <SelectValue placeholder={t('trips.addPlace.unassigned', 'Unassigned')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="__none__">{t('trips.addPlace.unassigned', 'Unassigned')}</SelectItem>
+              <SelectItem value="__none__">
+                {t('trips.addPlace.unassigned', 'Unassigned')}
+              </SelectItem>
               {days.map((d) => (
                 <SelectItem key={d.id} value={d.id}>
-                  {new Date(d.date).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}
+                  {new Date(d.date).toLocaleDateString(undefined, {
+                    weekday: 'short',
+                    month: 'short',
+                    day: 'numeric',
+                  })}
                   {d.title ? ` -- ${d.title}` : ''}
                 </SelectItem>
               ))}
@@ -371,26 +471,40 @@ export function AddPlaceDialog({ open, onClose, tripId, days, preselectedDayId, 
 
         <Tabs value={mode} onValueChange={handleModeChange}>
           <TabsList>
-            <TabsTrigger value="search">{t('trips.addPlace.searchTab', 'Search queer.guide')}</TabsTrigger>
+            <TabsTrigger value="search">
+              {t('trips.addPlace.searchTab', 'Search queer.guide')}
+            </TabsTrigger>
             <TabsTrigger value="nearby">
               <Sparkles size={13} className="mr-1" />
               {t('trips.addPlace.nearbyTab', 'Suggested')}
             </TabsTrigger>
-            <TabsTrigger value="custom">{t('trips.addPlace.customTab', 'Custom Place')}</TabsTrigger>
+            <TabsTrigger value="custom">
+              {t('trips.addPlace.customTab', 'Custom Place')}
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="search">
             <div className="relative">
-              <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+              <Search
+                size={16}
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+              />
               <Input
-                placeholder={t('trips.addPlace.searchPlaceholder', 'Search venues, events, hotels...')}
+                placeholder={t(
+                  'trips.addPlace.searchPlaceholder',
+                  'Search venues, events, hotels...',
+                )}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                 className="pl-10 pr-10 h-11 rounded-container"
               />
               {searching && (
-                <Loader2 size={16} className="absolute right-3 top-1/2 -translate-y-1/2 animate-spin text-muted-foreground" aria-label="Loading" />
+                <Loader2
+                  size={16}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 animate-spin text-muted-foreground"
+                  aria-label="Loading"
+                />
               )}
             </div>
 
@@ -400,7 +514,12 @@ export function AddPlaceDialog({ open, onClose, tripId, days, preselectedDayId, 
                   <span className="text-xs text-muted-foreground inline-flex items-center gap-1">
                     <Clock size={12} /> {t('trips.addPlace.recent', 'Recent')}
                   </span>
-                  <Button variant="ghost" size="sm" onClick={clearRecent} className="h-6 px-2 text-xs">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={clearRecent}
+                    className="h-6 px-2 text-xs"
+                  >
                     {t('common.clear', 'Clear')}
                   </Button>
                 </div>
@@ -441,7 +560,8 @@ export function AddPlaceDialog({ open, onClose, tripId, days, preselectedDayId, 
                 {(['all', 'venue', 'event', 'hotel'] as TypeFilter[]).map((tf) => {
                   const count = countFor(tf);
                   if (tf !== 'all' && count === 0) return null;
-                  const labelFallback = tf === 'all' ? 'All' : tf.charAt(0).toUpperCase() + tf.slice(1);
+                  const labelFallback =
+                    tf === 'all' ? 'All' : tf.charAt(0).toUpperCase() + tf.slice(1);
                   const active = typeFilter === tf;
                   return (
                     <Badge
@@ -461,7 +581,10 @@ export function AddPlaceDialog({ open, onClose, tripId, days, preselectedDayId, 
 
             {!searching && results.length === 0 && searchQuery.trim() && (
               <p className="text-sm text-muted-foreground mt-4 text-center">
-                {t('trips.addPlace.noResults', 'No results found. Try a different search or add a custom place.')}
+                {t(
+                  'trips.addPlace.noResults',
+                  'No results found. Try a different search or add a custom place.',
+                )}
               </p>
             )}
           </TabsContent>
@@ -469,7 +592,11 @@ export function AddPlaceDialog({ open, onClose, tripId, days, preselectedDayId, 
           <TabsContent value="nearby">
             {nearbyLoading && (
               <div className="flex justify-center py-8">
-                <Loader2 size={20} className="animate-spin text-muted-foreground" aria-label="Loading" />
+                <Loader2
+                  size={20}
+                  className="animate-spin text-muted-foreground"
+                  aria-label="Loading"
+                />
               </div>
             )}
             {!nearbyLoading && nearbyResults.length > 0 && renderResultItems(nearbyResults)}
@@ -536,7 +663,10 @@ export function AddPlaceDialog({ open, onClose, tripId, days, preselectedDayId, 
                   <SelectContent>
                     {customCategories.map((c) => (
                       <SelectItem key={c} value={c}>
-                        {t(`trips.addPlace.customCategories.${c}`, c.charAt(0).toUpperCase() + c.slice(1))}
+                        {t(
+                          `trips.addPlace.customCategories.${c}`,
+                          c.charAt(0).toUpperCase() + c.slice(1),
+                        )}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -547,9 +677,13 @@ export function AddPlaceDialog({ open, onClose, tripId, days, preselectedDayId, 
         </Tabs>
 
         <DialogFooter className="mt-4">
-          <Button variant="outline" onClick={resetAndClose}>{t('common.cancel', 'Cancel')}</Button>
+          <Button variant="outline" onClick={resetAndClose}>
+            {t('common.cancel', 'Cancel')}
+          </Button>
           <Button onClick={handleSubmit} disabled={!canSubmit || addPlace.isPending}>
-            {addPlace.isPending && <Loader2 size={16} className="mr-1 animate-spin" aria-label="Loading" />}
+            {addPlace.isPending && (
+              <Loader2 size={16} className="mr-1 animate-spin" aria-label="Loading" />
+            )}
             {t('trips.addPlace.title', 'Add Place')}
           </Button>
         </DialogFooter>

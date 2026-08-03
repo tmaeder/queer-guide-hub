@@ -2,7 +2,16 @@ import { Component, ErrorInfo, ReactNode, useMemo, useState } from 'react';
 import * as Sentry from '@sentry/react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
-import { AlertTriangle, RefreshCw, Home, Search, MapPin, CalendarDays, Map, Clock } from 'lucide-react';
+import {
+  AlertTriangle,
+  RefreshCw,
+  Home,
+  Search,
+  MapPin,
+  CalendarDays,
+  Map,
+  Clock,
+} from 'lucide-react';
 import { fileError } from '@/utils/autoFileError';
 import { getRecentlyViewed, recentlyViewedHref } from '@/lib/recentlyViewed';
 
@@ -83,12 +92,7 @@ export class ErrorBoundary extends Component<Props, State> {
         return this.props.fallback;
       }
 
-      return (
-        <ErrorFallback
-          error={this.state.error}
-          onRetry={this.handleRetry}
-        />
-      );
+      return <ErrorFallback error={this.state.error} onRetry={this.handleRetry} />;
     }
 
     return this.props.children;
@@ -180,7 +184,7 @@ function ErrorFallback({ error, onRetry }: { error: Error | null; onRetry: () =>
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search venues, events, cities…"
             aria-label="Search venues, events, cities…"
-            className="w-full h-12 pl-12 pr-4 rounded-element border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground/40"
+            className="w-full h-12 pl-12 pr-4 rounded-element bg-surface-container text-foreground placeholder:text-muted-foreground focus:outline-none"
           />
         </form>
 
@@ -196,7 +200,7 @@ function ErrorFallback({ error, onRetry }: { error: Error | null; onRetry: () =>
                 <a
                   key={`${item.type}:${item.slug}`}
                   href={recentlyViewedHref(item)}
-                  className="flex flex-col gap-1 rounded-element border border-border bg-background px-4 py-4 no-underline transition-colors hover:bg-surface-container hover:border-foreground/30"
+                  className="flex flex-col gap-1 rounded-element bg-surface-container px-4 py-4 no-underline transition-colors hover:bg-surface-container"
                 >
                   <span className="text-15 font-medium text-foreground truncate">{item.title}</span>
                   {(item.city || item.country) && (
@@ -220,7 +224,7 @@ function ErrorFallback({ error, onRetry }: { error: Error | null; onRetry: () =>
               <a
                 key={href}
                 href={href}
-                className="flex flex-col items-center gap-2 rounded-element border border-border bg-background px-4 py-6 no-underline transition-colors hover:bg-surface-container hover:border-foreground/30"
+                className="flex flex-col items-center gap-2 rounded-element bg-surface-container px-4 py-6 no-underline transition-colors hover:bg-surface-container"
               >
                 <Icon size={20} aria-hidden="true" className="text-muted-foreground" />
                 <span className="text-13 font-medium text-foreground">{label}</span>

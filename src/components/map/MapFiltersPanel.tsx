@@ -170,7 +170,7 @@ export const MapFiltersPanel = ({
                   aria-pressed={active}
                   onClick={() => setCategory(c.value)}
                   className={cn(
-                    'h-8 px-4 text-xs rounded-badge border transition-colors focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2',
+                    'h-8 px-4 text-xs rounded-badge transition-colors focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 bg-surface-container',
                     active
                       ? 'bg-foreground text-background border-foreground font-semibold'
                       : 'border-border text-muted-foreground hover:bg-muted',
@@ -212,7 +212,7 @@ export const MapFiltersPanel = ({
       {showTags && (
         <div className="flex flex-col gap-2">
           <SectionLabel count={selectedTags.length}>Tags</SectionLabel>
-          <Command className="border border-border rounded-element">
+          <Command className="rounded-element bg-surface-container">
             <CommandInput placeholder="Search tags…" className="h-9" />
             <CommandList className="max-h-44">
               <CommandEmpty>No tags found.</CommandEmpty>

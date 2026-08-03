@@ -87,7 +87,7 @@ export const MobileMapBar = ({
           a 320px viewport; there is deliberately no overflow-x here. */}
       <div
         data-testid="map-command-bar"
-        className="flex h-11 items-center gap-1.5 rounded-element border border-border bg-background/95 px-1.5 backdrop-blur-md"
+        className="flex h-11 items-center gap-1.5 rounded-element bg-background/95 px-1.5 backdrop-blur-md"
       >
         {showSearch &&
           (searchOpen ? (
@@ -141,9 +141,7 @@ export const MobileMapBar = ({
       </div>
 
       {/* Row 2 — quick-filter chips, scrollable shortcuts with a fade cue. */}
-      <div
-        className="-mx-1 overflow-x-auto px-1 no-scrollbar [mask-image:linear-gradient(to_right,black_calc(100%-24px),transparent)]"
-      >
+      <div className="-mx-1 overflow-x-auto px-1 no-scrollbar [mask-image:linear-gradient(to_right,black_calc(100%-24px),transparent)]">
         <MapQuickFilters
           filters={filters}
           onChange={onFiltersChange}

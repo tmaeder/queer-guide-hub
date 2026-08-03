@@ -45,7 +45,7 @@ export function TagListRenderer({
               key={tag.id}
               type="button"
               onClick={() => onTagClick(tag)}
-              className="flex flex-col overflow-hidden rounded-element bg-background border border-border cursor-pointer text-left p-0 transition-colors hover:border-primary hover:bg-muted/40 focus-visible:outline-2 focus-visible:outline focus-visible:outline-primary focus-visible:outline-offset-2"
+              className="flex flex-col overflow-hidden rounded-element bg-surface-container cursor-pointer text-left p-0 transition-colors hover:bg-muted/40 focus-visible:outline-2 focus-visible:outline focus-visible:outline-primary focus-visible:outline-offset-2"
               style={{ font: 'inherit', color: 'inherit' }}
             >
               <div className="relative w-full bg-muted" style={{ aspectRatio: '4 / 3' }}>
@@ -57,7 +57,8 @@ export function TagListRenderer({
                   referrerPolicy="no-referrer"
                   className="absolute inset-0 w-full h-full object-cover"
                   onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
-                    if ((e.target as HTMLImageElement).src !== fallback) (e.target as HTMLImageElement).src = fallback;
+                    if ((e.target as HTMLImageElement).src !== fallback)
+                      (e.target as HTMLImageElement).src = fallback;
                   }}
                 />
                 {uses > 0 && (
@@ -102,7 +103,7 @@ export function TagListRenderer({
               key={tag.id}
               type="button"
               onClick={() => onTagClick(tag)}
-              className="flex items-center gap-4 px-4 py-2 rounded-element cursor-pointer bg-background border border-border text-left transition-all hover:border-primary hover:bg-muted focus-visible:outline-2 focus-visible:outline focus-visible:outline-primary"
+              className="flex items-center gap-4 px-4 py-2 rounded-element cursor-pointer bg-surface-container text-left transition-all hover:bg-muted focus-visible:outline-2 focus-visible:outline focus-visible:outline-primary"
               style={{ minHeight: 44, font: 'inherit', color: 'inherit' }}
             >
               <div
@@ -117,7 +118,8 @@ export function TagListRenderer({
                   referrerPolicy="no-referrer"
                   className="w-full h-full object-cover"
                   onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
-                    if ((e.target as HTMLImageElement).src !== fallback) (e.target as HTMLImageElement).src = fallback;
+                    if ((e.target as HTMLImageElement).src !== fallback)
+                      (e.target as HTMLImageElement).src = fallback;
                   }}
                 />
               </div>

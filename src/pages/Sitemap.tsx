@@ -27,7 +27,6 @@ function setCanonical(href: string) {
   link.href = href;
 }
 
-
 export default function Sitemap() {
   const [query, setQuery] = useState('');
   const { _t } = useTranslation();
@@ -169,10 +168,7 @@ export default function Sitemap() {
       <div className="container mx-auto px-4">
         <main className="grid gap-6 md:grid-cols-[240px_1fr]">
           <aside className="md:sticky md:top-24">
-            <nav
-              aria-label="Section jump navigation"
-              className="p-4 bg-card rounded-container border border-border"
-            >
+            <nav aria-label="Section jump navigation" className="p-4 bg-card rounded-container">
               <p className="text-sm font-semibold mb-2 flex items-center gap-2">
                 <Hash className="w-4 h-4" /> Sections
               </p>
@@ -200,11 +196,7 @@ export default function Sitemap() {
               {filtered.map((section) => {
                 const id = slugify(section.title);
                 return (
-                  <article
-                    key={section.title}
-                    id={id}
-                    className="p-4 bg-card rounded-container border border-border"
-                  >
+                  <article key={section.title} id={id} className="p-4 bg-card rounded-container">
                     <header className="flex items-center justify-between gap-4 mb-4">
                       <h6 className="text-base font-semibold">
                         <a href={`#${id}`} className="underline-offset-4 hover:underline">

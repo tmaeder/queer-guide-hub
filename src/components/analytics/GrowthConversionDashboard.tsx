@@ -31,8 +31,19 @@ import {
 import { ArrowRight } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { untypedSupabase } from '@/integrations/supabase/untyped';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { monoChartPalette, monoChartAxis, monoChartGrid, monoChartStroke } from '@/lib/chartPalette';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  monoChartPalette,
+  monoChartAxis,
+  monoChartGrid,
+  monoChartStroke,
+} from '@/lib/chartPalette';
 import { callSearchIntelligence, type AnalyticsSummary } from '@/hooks/useSearchIntelligence';
 
 interface FunnelSummary {
@@ -72,7 +83,9 @@ export function GrowthConversionDashboard() {
   const funnel = useQuery({
     queryKey: ['growth-funnel', days],
     queryFn: async (): Promise<FunnelSummary> => {
-      const { data, error } = await untypedSupabase.rpc('growth_funnel_summary', { p_days: Number(days) });
+      const { data, error } = await untypedSupabase.rpc('growth_funnel_summary', {
+        p_days: Number(days),
+      });
       if (error) throw error;
       return data as FunnelSummary;
     },
@@ -94,9 +107,16 @@ export function GrowthConversionDashboard() {
   const views = useQuery({
     queryKey: ['growth-views', days],
     queryFn: async (): Promise<number | null> => {
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       const { data, error } = await supabase.functions.invoke('umami-dashboard', {
-        body: { action: 'get_enhanced_stats', dateRange: `${days}d`, deviceFilter: 'all', countryFilter: 'all' },
+        body: {
+          action: 'get_enhanced_stats',
+          dateRange: `${days}d`,
+          deviceFilter: 'all',
+          countryFilter: 'all',
+        },
         headers: session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {},
       });
       if (error) return null;
@@ -119,7 +139,9 @@ export function GrowthConversionDashboard() {
   const cohorts = useQuery({
     queryKey: ['growth-cohorts'],
     queryFn: async (): Promise<CohortRow[]> => {
-      const { data, error } = await untypedSupabase.rpc('engagement_cohort_retention', { p_weeks: 8 });
+      const { data, error } = await untypedSupabase.rpc('engagement_cohort_retention', {
+        p_weeks: 8,
+      });
       if (error) throw error;
       return (data ?? []) as CohortRow[];
     },
@@ -149,17 +171,23 @@ export function GrowthConversionDashboard() {
           How engagement converts toward a booking. First-party events except the view stage.
         </p>
         <Select value={days} onValueChange={setDays}>
-          <SelectTrigger className="w-44"><SelectValue /></SelectTrigger>
+          <SelectTrigger className="w-44">
+            <SelectValue />
+          </SelectTrigger>
           <SelectContent>
             {PERIODS.map((p) => (
-              <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>
+              <SelectItem key={p.value} value={p.value}>
+                {p.label}
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>
       </div>
 
       {funnel.error && (
-        <p className="text-13 text-destructive">Failed to load funnel: {(funnel.error as Error).message}</p>
+        <p className="text-13 text-destructive">
+          Failed to load funnel: {(funnel.error as Error).message}
+        </p>
       )}
 
       {/* Funnel */}
@@ -172,7 +200,11 @@ export function GrowthConversionDashboard() {
         </div>
         <div className="h-64 w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={funnelBars} layout="vertical" margin={{ top: 4, right: 24, bottom: 4, left: 8 }}>
+            <BarChart
+              data={funnelBars}
+              layout="vertical"
+              margin={{ top: 4, right: 24, bottom: 4, left: 8 }}
+            >
               <XAxis type="number" {...monoChartAxis} />
               <YAxis type="category" dataKey="stage" width={104} {...monoChartAxis} />
               <Tooltip cursor={{ fill: 'hsl(var(--muted))' }} />
@@ -185,7 +217,8 @@ export function GrowthConversionDashboard() {
           </ResponsiveContainer>
         </div>
         <p className="text-2xs text-muted-foreground">
-          * Views are site-wide Umami page views and cannot be joined to first-party events; treat View → Save as directional only.
+          * Views are site-wide Umami page views and cannot be joined to first-party events; treat
+          View → Save as directional only.
         </p>
       </section>
 
@@ -235,7 +268,8 @@ export function GrowthConversionDashboard() {
         <div>
           <h2 className="text-15 font-semibold">Weekly retention cohorts</h2>
           <p className="text-13 text-muted-foreground">
-            Of users whose first activity fell in a given week, the share still active N weeks later.
+            Of users whose first activity fell in a given week, the share still active N weeks
+            later.
           </p>
         </div>
         {cohorts.isLoading ? (
@@ -250,7 +284,10 @@ export function GrowthConversionDashboard() {
                   <th className="p-2 text-left font-medium text-muted-foreground">Cohort week</th>
                   <th className="p-2 text-right font-medium text-muted-foreground">Users</th>
                   {cohortGrid.offsets.map((o) => (
-                    <th key={o} className="p-2 text-center font-medium text-muted-foreground tabular-nums">
+                    <th
+                      key={o}
+                      className="p-2 text-center font-medium text-muted-foreground tabular-nums"
+                    >
                       W{o}
                     </th>
                   ))}
@@ -270,7 +307,8 @@ export function GrowthConversionDashboard() {
                             className="inline-block min-w-[3rem] rounded-badge px-2 py-1 tabular-nums"
                             style={{
                               backgroundColor: `hsl(var(--foreground) / ${(0.08 + 0.8 * cell).toFixed(3)})`,
-                              color: cell > 0.5 ? 'hsl(var(--background))' : 'hsl(var(--foreground))',
+                              color:
+                                cell > 0.5 ? 'hsl(var(--background))' : 'hsl(var(--foreground))',
                             }}
                           >
                             {Math.round(cell * 100)}%
@@ -291,8 +329,16 @@ export function GrowthConversionDashboard() {
         <h2 className="text-15 font-semibold">Search conversion</h2>
         <div className="grid grid-cols-3 gap-4">
           <Stat label="Search CTR" value={pct(search.data?.ctr_pct ?? null)} />
-          <Stat label="Zero-result rate" value={pct(search.data?.zero_pct ?? null)} tone={(search.data?.zero_pct ?? 0) > 5 ? 'warn' : undefined} />
-          <Stat label="Searches" value={search.data ? search.data.total.toLocaleString() : '—'} sub={search.data ? `${search.data.distinct_q} distinct` : undefined} />
+          <Stat
+            label="Zero-result rate"
+            value={pct(search.data?.zero_pct ?? null)}
+            tone={(search.data?.zero_pct ?? 0) > 5 ? 'warn' : undefined}
+          />
+          <Stat
+            label="Searches"
+            value={search.data ? search.data.total.toLocaleString() : '—'}
+            sub={search.data ? `${search.data.distinct_q} distinct` : undefined}
+          />
         </div>
         <Link
           to="/admin/search-intelligence?tab=analytics"
@@ -338,11 +384,25 @@ function pct(v: number | null): string {
   return v == null ? '—' : `${v}%`;
 }
 
-function Stat({ label, value, sub, tone }: { label: string; value: string; sub?: string; tone?: 'warn' }) {
+function Stat({
+  label,
+  value,
+  sub,
+  tone,
+}: {
+  label: string;
+  value: string;
+  sub?: string;
+  tone?: 'warn';
+}) {
   return (
-    <div className="rounded-element border border-border p-4">
+    <div className="rounded-element p-4 bg-surface-container">
       <p className="text-2xs uppercase tracking-[0.14em] text-muted-foreground">{label}</p>
-      <p className={`mt-1 text-headline font-bold tabular-nums ${tone === 'warn' ? 'text-destructive' : ''}`}>{value}</p>
+      <p
+        className={`mt-1 text-headline font-bold tabular-nums ${tone === 'warn' ? 'text-destructive' : ''}`}
+      >
+        {value}
+      </p>
       {sub && <p className="mt-1 text-2xs text-muted-foreground">{sub}</p>}
     </div>
   );

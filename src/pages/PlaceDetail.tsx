@@ -94,7 +94,7 @@ export default function PlaceDetail() {
         )}
       </dl>
       {profile?.accessibility_notes && (
-        <div className="rounded-element border border-border p-4">
+        <div className="rounded-element p-4 bg-surface-container">
           <div className="mb-2 flex items-center gap-2 font-medium">
             <Accessibility className="h-4 w-4" aria-hidden />
             {t('geo.place.accessibility', 'Accessibility')}

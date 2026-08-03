@@ -27,7 +27,10 @@ export function AnchorMilestoneCard({
   const [imageFailed, setImageFailed] = useState(false);
   const imageUrl = imageFailed ? null : displayableMilestoneImage(milestone.image_url);
   const dateLabel = formatMilestoneDate(milestone.date, milestone.date_precision, i18n.language);
-  const place = [milestone.city?.name ?? milestone.city_name, milestone.country?.name ?? milestone.country_name]
+  const place = [
+    milestone.city?.name ?? milestone.city_name,
+    milestone.country?.name ?? milestone.country_name,
+  ]
     .filter(Boolean)
     .join(', ');
   const eyebrow = place ? `${dateLabel} · ${place}` : dateLabel;
@@ -36,7 +39,10 @@ export function AnchorMilestoneCard({
     return (
       <LocalizedLink
         to={`/history/${milestone.slug}`}
-        className={cn('group flex items-start gap-4 rounded-element border border-border p-4', className)}
+        className={cn(
+          'group flex items-start gap-4 rounded-element p-4 bg-surface-container',
+          className,
+        )}
       >
         <span className="mt-1.5 shrink-0">
           <MilestoneImpactMarker impact={milestone.impact} />

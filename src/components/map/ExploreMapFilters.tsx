@@ -14,10 +14,7 @@ import {
 } from '@/components/ui/command';
 import { Loader2, Search, SlidersHorizontal, X } from 'lucide-react';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
-import {
-  useSearchSuggestions,
-  type SearchSuggestion,
-} from '@/hooks/useSearchSuggestions';
+import { useSearchSuggestions, type SearchSuggestion } from '@/hooks/useSearchSuggestions';
 import type { ExploreMapFilters as Filters } from '@/hooks/useExploreMapData';
 
 interface ExploreMapFiltersProps {
@@ -55,10 +52,7 @@ const TYPE_LABEL: Record<string, string> = {
   user: 'User',
 };
 
-export const ExploreMapFiltersPanel = ({
-  filters,
-  onFiltersChange,
-}: ExploreMapFiltersProps) => {
+export const ExploreMapFiltersPanel = ({ filters, onFiltersChange }: ExploreMapFiltersProps) => {
   const navigate = useLocalizedNavigate();
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [popoverOpen, setPopoverOpen] = useState(false);
@@ -100,9 +94,12 @@ export const ExploreMapFiltersPanel = ({
   // right-12 keeps the bar clear of the maplibre NavigationControl at
   // top-right (axe target-size: the bar obscured the zoom buttons).
   return (
-    <div className="absolute top-3 left-16 right-12 z-20 rounded-container border border-border bg-background/85 backdrop-blur-md px-4 py-2">
+    <div className="absolute top-3 left-16 right-12 z-20 rounded-container bg-background/85 backdrop-blur-md px-4 py-2">
       <div className="flex gap-2 items-center">
-        <Popover open={popoverOpen && (loading || suggestions.length > 0 || query.length >= 2)} onOpenChange={setPopoverOpen}>
+        <Popover
+          open={popoverOpen && (loading || suggestions.length > 0 || query.length >= 2)}
+          onOpenChange={setPopoverOpen}
+        >
           <PopoverTrigger asChild>
             {/* Radix forwards aria-haspopup / aria-expanded onto the asChild
                 element. role="combobox" is required for those attrs to be
@@ -113,7 +110,10 @@ export const ExploreMapFiltersPanel = ({
               aria-expanded={popoverOpen}
               aria-controls="map-search-listbox"
             >
-              <Search size={16} className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground" />
+              <Search
+                size={16}
+                className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground"
+              />
               <Input
                 ref={inputRef}
                 placeholder="Search the map…"
@@ -196,7 +196,7 @@ export const ExploreMapFiltersPanel = ({
             aria-label={filtersOpen ? 'Hide filters' : 'Show filters'}
             aria-expanded={filtersOpen}
             onClick={() => setFiltersOpen((o) => !o)}
-            className="h-9 w-9 p-0 rounded-element border border-border"
+            className="h-9 w-9 p-0 rounded-element bg-surface-container"
           >
             <SlidersHorizontal size={16} />
           </Button>
@@ -204,7 +204,10 @@ export const ExploreMapFiltersPanel = ({
           <CollapsibleContent>
             <div className="mt-4 flex gap-2 flex-wrap items-end">
               <div className="flex flex-col gap-1 min-w-[140px]">
-                <Label htmlFor="category-filter" className="text-xs2 uppercase tracking-wider text-muted-foreground">
+                <Label
+                  htmlFor="category-filter"
+                  className="text-xs2 uppercase tracking-wider text-muted-foreground"
+                >
                   Category
                 </Label>
                 <Input

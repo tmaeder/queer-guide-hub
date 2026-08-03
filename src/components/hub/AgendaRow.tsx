@@ -63,14 +63,12 @@ export function AgendaRow({ item }: { item: AgendaItem | CalendarItem }) {
   return (
     <LocalizedLink
       to={item.open_target}
-      className="flex items-center gap-2 rounded-element border border-border px-4 py-2 no-underline transition-colors hover:bg-muted"
+      className="flex items-center gap-2 rounded-element px-4 py-2 no-underline transition-colors hover:bg-muted"
     >
       <Icon className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-medium">{item.title}</p>
-        {item.subtitle && (
-          <p className="truncate text-13 text-muted-foreground">{item.subtitle}</p>
-        )}
+        {item.subtitle && <p className="truncate text-13 text-muted-foreground">{item.subtitle}</p>}
       </div>
       <span className="shrink-0 text-13 text-muted-foreground">
         {t(KIND_LABEL_KEY[item.kind], { defaultValue: KIND_LABEL_DEFAULT[item.kind] })} · {time}

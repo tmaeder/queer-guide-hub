@@ -1,9 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router';
-import {
-  useMyIntimateProfile,
-  useIntimateDiscovery,
-} from '@/hooks/useIntimateProfile';
+import { useMyIntimateProfile, useIntimateDiscovery } from '@/hooks/useIntimateProfile';
 import { usePeopleDiscovery } from '@/hooks/usePeopleDiscovery';
 import {
   useIntimateMatches,
@@ -48,7 +45,11 @@ export default function IntimateDiscovery() {
 
   const cityId = me?.discovery_city_id ?? null;
   const { data: cards, isLoading: loadingDisc } = useIntimateDiscovery({
-    cityId, roles, intoTags: into, ageBands: ages, bodyTypes: bodies,
+    cityId,
+    roles,
+    intoTags: into,
+    ageBands: ages,
+    bodyTypes: bodies,
   });
 
   const { data: likedIds = [] } = useMyIntimateLikes();
@@ -139,7 +140,11 @@ export default function IntimateDiscovery() {
           <Link to="/settings?tab=dating" className="text-sm underline">
             Edit my profile
           </Link>
-          <div className="inline-flex rounded-element border border-border overflow-hidden" role="tablist" aria-label="View mode">
+          <div
+            className="inline-flex rounded-element overflow-hidden bg-surface-container"
+            role="tablist"
+            aria-label="View mode"
+          >
             {(['grid', 'deck'] as const).map((m) => (
               <button
                 key={m}
@@ -161,10 +166,30 @@ export default function IntimateDiscovery() {
       </header>
 
       <section className="mb-6 space-y-4 border-b pb-4">
-        <FilterRow label="Role" options={ROLES as readonly string[]} selected={roles} onToggle={(v) => setRoles(toggle(roles, v))} />
-        <FilterRow label="Into" options={INTO_TAGS as readonly string[]} selected={into} onToggle={(v) => setInto(toggle(into, v))} />
-        <FilterRow label="Age" options={AGE_BANDS as readonly string[]} selected={ages} onToggle={(v) => setAges(toggle(ages, v))} />
-        <FilterRow label="Body" options={BODY_TYPES as readonly string[]} selected={bodies} onToggle={(v) => setBodies(toggle(bodies, v))} />
+        <FilterRow
+          label="Role"
+          options={ROLES as readonly string[]}
+          selected={roles}
+          onToggle={(v) => setRoles(toggle(roles, v))}
+        />
+        <FilterRow
+          label="Into"
+          options={INTO_TAGS as readonly string[]}
+          selected={into}
+          onToggle={(v) => setInto(toggle(into, v))}
+        />
+        <FilterRow
+          label="Age"
+          options={AGE_BANDS as readonly string[]}
+          selected={ages}
+          onToggle={(v) => setAges(toggle(ages, v))}
+        />
+        <FilterRow
+          label="Body"
+          options={BODY_TYPES as readonly string[]}
+          selected={bodies}
+          onToggle={(v) => setBodies(toggle(bodies, v))}
+        />
       </section>
 
       {loadingDisc ? (
@@ -212,9 +237,7 @@ export default function IntimateDiscovery() {
                     )}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <span className="font-medium truncate">
-                          {c.display_name ?? 'Anon'}
-                        </span>
+                        <span className="font-medium truncate">{c.display_name ?? 'Anon'}</span>
                         {typeof score === 'number' && score > 0 ? (
                           <span className="shrink-0 text-2xs uppercase tracking-wide text-muted-foreground rounded-badge bg-muted px-1.5 py-0.5">
                             {score}% match
@@ -256,9 +279,15 @@ function toggle(arr: string[], v: string) {
 }
 
 function FilterRow({
-  label, options, selected, onToggle,
+  label,
+  options,
+  selected,
+  onToggle,
 }: {
-  label: string; options: readonly string[]; selected: string[]; onToggle: (v: string) => void;
+  label: string;
+  options: readonly string[];
+  selected: string[];
+  onToggle: (v: string) => void;
 }) {
   return (
     <div>
@@ -273,7 +302,9 @@ function FilterRow({
               variant={on ? 'default' : 'outline'}
               onClick={() => onToggle(o)}
               className="rounded-element"
-            >{o.replace(/_/g, ' ')}</Button>
+            >
+              {o.replace(/_/g, ' ')}
+            </Button>
           );
         })}
       </div>

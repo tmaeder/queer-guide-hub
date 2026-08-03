@@ -43,18 +43,26 @@ export function SocialSummaryRow({ userId, isOwnProfile, onPostsClick }: SocialS
             <span className="text-13 text-muted-foreground">{label}</span>
           </>
         );
-        const cls =
-          'flex flex-col items-center gap-1 rounded-element border border-border bg-card p-4';
+        const cls = 'flex flex-col items-center gap-1 rounded-element bg-card p-4';
         if (to) {
           return (
-            <LocalizedLink key={label} to={to} className={`${cls} hover:bg-muted/30 transition-colors`}>
+            <LocalizedLink
+              key={label}
+              to={to}
+              className={`${cls} hover:bg-muted/30 transition-colors`}
+            >
               {inner}
             </LocalizedLink>
           );
         }
         if (onClick) {
           return (
-            <button key={label} type="button" onClick={onClick} className={`${cls} hover:bg-muted/30 transition-colors`}>
+            <button
+              key={label}
+              type="button"
+              onClick={onClick}
+              className={`${cls} hover:bg-muted/30 transition-colors`}
+            >
               {inner}
             </button>
           );

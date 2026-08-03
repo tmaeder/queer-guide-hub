@@ -99,7 +99,7 @@ function CityListRowImpl({
             <span className="flex items-center gap-2 shrink-0">
               {prideLabel && (
                 <span
-                  className="inline-flex items-center rounded-badge border border-foreground/20 px-1.5 py-0.5 text-xs2 font-medium text-foreground"
+                  className="inline-flex items-center rounded-badge px-1.5 py-0.5 text-xs2 font-medium text-foreground bg-surface-container"
                   aria-label={`${nextPride!.title} on ${formatPrideDate(nextPride!.date)}`}
                 >
                   {prideLabel}

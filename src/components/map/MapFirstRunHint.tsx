@@ -25,7 +25,10 @@ export function MapFirstRunHint({ count, ready }: { count: number; ready: boolea
     triggered.current = true;
     const showTimer = setTimeout(() => setShow(true), 0);
     const hideTimer = setTimeout(() => setShow(false), 7000);
-    return () => { clearTimeout(showTimer); clearTimeout(hideTimer); };
+    return () => {
+      clearTimeout(showTimer);
+      clearTimeout(hideTimer);
+    };
   }, [ready, count]);
 
   if (!show) return null;
@@ -33,7 +36,7 @@ export function MapFirstRunHint({ count, ready }: { count: number; ready: boolea
   return (
     // top-28 clears the two-row mobile bar; md:top-16 sits under the desktop bar.
     <div className="pointer-events-none absolute left-1/2 top-28 z-30 -translate-x-1/2 px-4 md:top-16">
-      <div className="pointer-events-auto flex items-center gap-2 rounded-element border border-border bg-background/95 py-1.5 pl-4 pr-1.5 backdrop-blur-md">
+      <div className="pointer-events-auto flex items-center gap-2 rounded-element bg-background/95 py-1.5 pl-4 pr-1.5 backdrop-blur-md">
         <Sparkles className="h-3.5 w-3.5 text-muted-foreground" aria-hidden />
         <span className="text-13 text-foreground">
           {t('map.firstRun.spotsInView', {

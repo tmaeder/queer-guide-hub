@@ -64,18 +64,14 @@ export function PersonalitiesTimeline({ personalities }: PersonalitiesTimelinePr
     >
       <div className="flex gap-4 min-w-max">
         {buckets.map((b) => (
-          <div
-            key={b.label}
-            className="flex-shrink-0 w-56 border border-border rounded-element bg-background"
-          >
+          <div key={b.label} className="flex-shrink-0 w-56 rounded-element bg-surface-container">
             <div className="px-4 py-2 border-b border-border sticky top-0 bg-background">
               <div className="text-sm font-semibold">{b.label}</div>
               <div className="text-xs text-muted-foreground">
-                {b.items.length.toLocaleString()}{' '}
-                {b.items.length === 1 ? 'person' : 'people'}
+                {b.items.length.toLocaleString()} {b.items.length === 1 ? 'person' : 'people'}
               </div>
             </div>
-            <ul className="divide-y divide-border max-h-[70vh] overflow-y-auto">
+            <ul className="max-h-[70vh] overflow-y-auto">
               {b.items.map((p) => {
                 const year = p.birth_date ? new Date(p.birth_date).getFullYear() : null;
                 return (
@@ -103,7 +99,9 @@ export function PersonalitiesTimeline({ personalities }: PersonalitiesTimelinePr
                         <div className="text-xs font-medium truncate">{p.name}</div>
                         <div className="text-xs2 text-muted-foreground truncate">
                           {year ?? ''}
-                          {p.profession ? `${year ? ' · ' : ''}${formatProfession(p.profession)}` : ''}
+                          {p.profession
+                            ? `${year ? ' · ' : ''}${formatProfession(p.profession)}`
+                            : ''}
                         </div>
                       </div>
                     </LocalizedLink>

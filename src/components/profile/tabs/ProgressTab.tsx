@@ -17,9 +17,7 @@ import { useCommunityScore } from '@/hooks/useCommunityScore';
 
 /** Each section is isolated so one failing gamification query can't blank the tab. */
 function Guarded({ children }: { children: ReactNode }) {
-  return (
-    <OptimizedErrorBoundary fallback={DataErrorFallback}>{children}</OptimizedErrorBoundary>
-  );
+  return <OptimizedErrorBoundary fallback={DataErrorFallback}>{children}</OptimizedErrorBoundary>;
 }
 
 /**
@@ -62,7 +60,7 @@ export function ProgressTab() {
                 <DomainBreakdown breakdown={score.domain_breakdown} />
               </div>
             ) : (
-              <div className="h-20 rounded-element border border-border bg-card animate-pulse" />
+              <div className="h-20 rounded-element bg-card animate-pulse" />
             )}
           </Guarded>
           <Guarded>

@@ -529,7 +529,7 @@ export const ExploreMap = ({
           variant="ghost"
           aria-label="Open full map"
           onClick={() => navigate(linkToFullMap)}
-          className="absolute bottom-3 left-3 z-10 min-w-0 px-4 py-1.5 rounded-full border border-border normal-case text-xs leading-tight bg-background/85 hover:bg-background"
+          className="absolute bottom-3 left-3 z-10 min-w-0 px-4 py-1.5 rounded-full normal-case text-xs leading-tight bg-background/85 hover:bg-background"
         >
           <ExternalLink size={14} />
           <span className="hidden sm:inline ml-1">Full map</span>

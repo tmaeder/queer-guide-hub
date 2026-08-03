@@ -18,13 +18,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import {
-  Sheet,
-  SheetContent,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-} from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetFooter, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { X } from 'lucide-react';
 import { TagSelector } from '@/components/tags/TagSelector';
 import type { MarketplaceFiltersInput } from '@/hooks/useMarketplace';
@@ -98,7 +92,8 @@ export function MarketplaceFilterSheet({
   const { data: subcategoryOptions } = useMarketplaceSubcategoryTiles(null, includeAdult);
   const { data: departmentCountData } = useMarketplaceDepartmentCounts(includeAdult);
   const { data: attributeVocab } = useMarketplaceAttributeVocab();
-  const fmtCount = (n: number | undefined) => (n != null && n > 0 ? ` (${n.toLocaleString()})` : '');
+  const fmtCount = (n: number | undefined) =>
+    n != null && n > 0 ? ` (${n.toLocaleString()})` : '';
 
   const patch = (p: Partial<MarketplaceFiltersInput>) => onFiltersChange({ ...filters, ...p });
 
@@ -175,7 +170,7 @@ export function MarketplaceFilterSheet({
         </SheetHeader>
 
         {onIncludeAdultChange && (
-          <div className="mb-4 flex items-center justify-between gap-4 rounded-element border border-border px-4 py-2">
+          <div className="mb-4 flex items-center justify-between gap-4 rounded-element px-4 py-2 bg-surface-container">
             <Label htmlFor="show-adult" className="text-13 text-muted-foreground">
               Show adult products (18+)
             </Label>

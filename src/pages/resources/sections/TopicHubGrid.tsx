@@ -38,7 +38,9 @@ export function TopicHubGrid() {
 
   return (
     <section aria-labelledby="topics-heading">
-      <h2 id="topics-heading" className="text-base font-semibold mb-4">{t('resources.topicHubs.heading')}</h2>
+      <h2 id="topics-heading" className="text-base font-semibold mb-4">
+        {t('resources.topicHubs.heading')}
+      </h2>
       <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {visible.map((topic) => (
           <li key={topic.slug}>
@@ -63,7 +65,7 @@ function TopicCard({ topic }: { topic: TopicHubRow }) {
   return (
     <LocalizedLink
       to={`/tags/topic/${topic.slug}`}
-      className="group block h-full rounded-container border border-border bg-card p-4 transition-colors hover:bg-foreground/[0.03] no-underline text-inherit focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      className="group block h-full rounded-container bg-card p-4 transition-colors hover:bg-foreground/[0.03] no-underline text-inherit focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
       <div className="flex items-start justify-between gap-2 mb-2">
         <div className="flex items-center gap-2">
@@ -72,7 +74,8 @@ function TopicCard({ topic }: { topic: TopicHubRow }) {
         </div>
         <ChevronRight
           aria-hidden
-          className="opacity-30 transition-transform group-hover:translate-x-0.5" size={16}
+          className="opacity-30 transition-transform group-hover:translate-x-0.5"
+          size={16}
         />
       </div>
       <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">

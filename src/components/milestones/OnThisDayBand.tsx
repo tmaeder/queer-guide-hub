@@ -14,7 +14,7 @@ export function OnThisDayBand() {
   return (
     <section
       aria-label={t('milestones.onThisDay', 'On this day')}
-      className="mb-8 rounded-container border border-border p-4"
+      className="mb-8 rounded-container p-4 bg-surface-container"
     >
       <p className="text-2xs uppercase tracking-wider text-muted-foreground">
         {t('milestones.onThisDay', 'On this day')}
@@ -24,7 +24,10 @@ export function OnThisDayBand() {
           <li key={m.id}>
             {/* no-underline opts out of the unlayered `li a` inline-link rule
                 (which would force display:inline and crush the flex row) */}
-            <LocalizedLink to={`/history/${m.slug}`} className="group flex items-center gap-2 no-underline">
+            <LocalizedLink
+              to={`/history/${m.slug}`}
+              className="group flex items-center gap-2 no-underline"
+            >
               <MilestoneImpactMarker impact={m.impact} />
               <span className="font-display text-title font-semibold leading-none">
                 {m.date.slice(0, 4)}

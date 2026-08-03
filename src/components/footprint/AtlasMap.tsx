@@ -139,15 +139,13 @@ export function AtlasMap() {
   }, [mapReady, boundaries, visitedCodes, bucketCodes]);
 
   const selected = selectedCode ? byCode.get(selectedCode) : null;
-  const selectedState = selected
-    ? countries.find((c) => c.countryId === selected.id)
-    : null;
+  const selectedState = selected ? countries.find((c) => c.countryId === selected.id) : null;
   const visitedOn = !!(selectedState?.visitedManual || selectedState?.visitedFromTrips);
   const bucketOn = !!selectedState?.bucket;
 
   return (
     <div>
-      <div className="relative h-[320px] md:h-[420px] rounded-container overflow-hidden border border-border">
+      <div className="relative h-[320px] md:h-[420px] rounded-container overflow-hidden bg-surface-container">
         <div ref={mapContainer} className="absolute inset-0" />
         {(isLoading || !boundaries) && (
           <div className="absolute inset-0 flex items-center justify-center bg-background/40">
@@ -198,9 +196,7 @@ export function AtlasMap() {
             size="sm"
             variant={bucketOn ? 'default' : 'outline'}
             disabled={toggle.isPending}
-            onClick={() =>
-              toggle.mutate({ countryId: selected.id, kind: 'saved', on: !bucketOn })
-            }
+            onClick={() => toggle.mutate({ countryId: selected.id, kind: 'saved', on: !bucketOn })}
             className="h-8"
           >
             <Bookmark className="w-3.5 h-3.5 mr-1" />

@@ -97,7 +97,7 @@ function HotelCardImpl({ hotel, loading = false }: HotelCardProps) {
     <Skeleton name="hotel-card" loading={false} fixture={<HotelCardFixture />}>
       <LocalizedLink to={`/hotels/${hotel.slug}`} className="no-underline">
         <CardHoverEffect>
-          <div className="group overflow-hidden rounded-container border border-border bg-card transition-colors duration-300 hover:border-foreground/40 h-full flex flex-col">
+          <div className="group overflow-hidden rounded-container bg-card transition-colors duration-300 h-full flex flex-col">
             {/* Image */}
             <Image
               src={imageUrl || hotelFallback}

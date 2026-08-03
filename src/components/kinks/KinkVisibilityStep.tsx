@@ -18,9 +18,19 @@ import { kinkLabel, type KinkTier } from '@/lib/kinks/types';
 
 const TIER_META: { value: KinkTier; label: string; hint: string; icon: typeof Lock }[] = [
   { value: 'private', label: 'Private', hint: 'Only you', icon: Lock },
-  { value: 'unlocked', label: 'People I unlock', hint: 'Only people you unlock, one by one', icon: Unlock },
+  {
+    value: 'unlocked',
+    label: 'People I unlock',
+    hint: 'Only people you unlock, one by one',
+    icon: Unlock,
+  },
   { value: 'matches', label: 'Matches', hint: 'Your mutual matches', icon: Heart },
-  { value: 'members', label: 'Members', hint: 'Signed-in 18+ members who also opted in', icon: Users },
+  {
+    value: 'members',
+    label: 'Members',
+    hint: 'Signed-in 18+ members who also opted in',
+    icon: Users,
+  },
 ];
 
 interface VisRow {
@@ -109,7 +119,7 @@ export function KinkVisibilityStep({ onDone }: { onDone?: () => void }) {
         ))}
       </div>
 
-      <ul className="divide-y divide-border">
+      <ul className="">
         {taxonomy.categories.map((cat) => {
           const row = effective(cat.id);
           return (
@@ -119,7 +129,10 @@ export function KinkVisibilityStep({ onDone }: { onDone?: () => void }) {
                 value={row.tier}
                 onValueChange={(tier) => setOverride(cat.id, { tier: tier as KinkTier })}
               >
-                <SelectTrigger className="w-44 rounded-element" aria-label={`Visibility for ${kinkLabel(cat, lang)}`}>
+                <SelectTrigger
+                  className="w-44 rounded-element"
+                  aria-label={`Visibility for ${kinkLabel(cat, lang)}`}
+                >
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>

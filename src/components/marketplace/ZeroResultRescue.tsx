@@ -87,7 +87,7 @@ export function ZeroResultRescue({
                 key={s.label}
                 type="button"
                 onClick={() => onFiltersChange(s.next)}
-                className="rounded-badge border border-border px-2 py-1 text-13 transition-colors hover:bg-muted"
+                className="rounded-badge px-2 py-1 text-13 transition-colors hover:bg-muted"
               >
                 {s.label}
               </button>

@@ -50,8 +50,7 @@ export function DepartmentBento() {
   const { data: covers } = useDepartmentCovers();
 
   const counts = new Map(departments.map((d) => [d.slug, d.count]));
-  const tiles = DEPARTMENT_ORDER
-    .filter((d) => d !== 'other' && (counts.get(d) ?? 0) > 0)
+  const tiles = DEPARTMENT_ORDER.filter((d) => d !== 'other' && (counts.get(d) ?? 0) > 0)
     .filter((d) => acknowledged || !ADULT_DEPARTMENTS.has(d))
     .map((d) => ({ slug: d, count: counts.get(d) ?? 0 }));
 
@@ -94,7 +93,7 @@ export function DepartmentBento() {
               <LocalizedLink
                 key={tile.slug}
                 to={`/marketplace/category/${tile.slug}`}
-                className="group col-span-2 flex flex-col rounded-container border border-border bg-card p-2 transition-colors hover:bg-muted md:col-span-3"
+                className="group col-span-2 flex flex-col rounded-container bg-card p-2 transition-colors hover:bg-muted md:col-span-3"
               >
                 <div className="overflow-hidden rounded-element bg-muted">
                   <Image src={cover} alt="" aspect="card" rounded="element" />
@@ -123,10 +122,14 @@ export function DepartmentBento() {
               <LocalizedLink
                 key={tile.slug}
                 to={`/marketplace/category/${tile.slug}`}
-                className="group relative flex min-h-[120px] flex-col justify-between rounded-container border border-border bg-card p-4 transition-colors hover:bg-muted md:col-span-2"
+                className="group relative flex min-h-[120px] flex-col justify-between rounded-container bg-card p-4 transition-colors hover:bg-muted md:col-span-2"
               >
                 <div className="flex items-start justify-between gap-2">
-                  <Icon style={{ width: 22, height: 22 }} className="text-foreground" aria-hidden="true" />
+                  <Icon
+                    style={{ width: 22, height: 22 }}
+                    className="text-foreground"
+                    aria-hidden="true"
+                  />
                   <ArrowUpRight
                     size={14}
                     className="text-muted-foreground transition-colors group-hover:text-foreground"

@@ -12,7 +12,7 @@ export function EntityShareCard({ meta, note }: { meta: EntityShareMeta; note?: 
       {showNote && <p className="text-sm whitespace-pre-wrap break-words px-2">{note}</p>}
       <Link
         to={meta.path}
-        className="flex items-center gap-2 rounded-element border border-border bg-card px-2 py-2 hover:bg-muted/50 transition-colors"
+        className="flex items-center gap-2 rounded-element bg-card px-2 py-2 hover:bg-muted/50 transition-colors"
         style={{ minWidth: 220 }}
       >
         {meta.image_url && !meta.gated ? (
@@ -27,7 +27,11 @@ export function EntityShareCard({ meta, note }: { meta: EntityShareMeta; note?: 
             className="rounded-element bg-muted flex items-center justify-center shrink-0"
             style={{ width: 44, height: 44 }}
           >
-            {meta.gated ? <Lock size={16} className="text-muted-foreground" /> : <ArrowRight size={16} className="text-muted-foreground" />}
+            {meta.gated ? (
+              <Lock size={16} className="text-muted-foreground" />
+            ) : (
+              <ArrowRight size={16} className="text-muted-foreground" />
+            )}
           </div>
         )}
         <div className="min-w-0 flex-1">

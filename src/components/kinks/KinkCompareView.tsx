@@ -104,7 +104,7 @@ export function KinkCompareView({ otherId, otherName, onOpeningLine }: KinkCompa
               return (
                 <li
                   key={`${row.item_slug}:${row.my_side}`}
-                  className="flex items-center justify-between gap-2 rounded-element border border-border px-4 py-2"
+                  className="flex items-center justify-between gap-2 rounded-element px-4 py-2 bg-surface-container"
                 >
                   <div>
                     <span className="flex items-center gap-1.5 text-sm">
@@ -127,7 +127,7 @@ export function KinkCompareView({ otherId, otherName, onOpeningLine }: KinkCompa
       ))}
 
       {discuss.length > 0 && (
-        <section className="rounded-container border border-border p-4">
+        <section className="rounded-container p-4 bg-surface-container">
           <h4 className="flex items-center gap-1.5 text-sm font-medium">
             <MessageCircle className="h-4 w-4" />
             Talk about these first

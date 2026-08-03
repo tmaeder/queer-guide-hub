@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import * as maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { MapPin } from "lucide-react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { MapPin } from 'lucide-react';
 import { getMapStyle } from '@/config/mapStyle';
 import { useTheme } from '@/components/theme/ThemeProvider';
 import { isWebglSupported } from '@/lib/webglSupport';
@@ -21,59 +21,59 @@ interface UmamiMapProps {
 // Country coordinates mapping for popular countries
 const countryCoordinates: Record<string, [number, number]> = {
   'United States': [-95.7129, 37.0902],
-  'Germany': [10.4515, 51.1657],
-  'United Kingdom': [-3.4360, 55.3781],
-  'France': [2.2137, 46.2276],
-  'Canada': [-106.3468, 56.1304],
-  'Australia': [133.7751, -25.2744],
-  'Japan': [138.2529, 36.2048],
-  'Brazil': [-51.9253, -14.2350],
-  'India': [78.9629, 20.5937],
-  'China': [104.1954, 35.8617],
-  'Russia': [105.3188, 61.5240],
-  'Spain': [-3.7492, 40.4637],
-  'Italy': [12.5674, 41.8719],
-  'Netherlands': [5.2913, 52.1326],
-  'Switzerland': [8.2275, 46.8182],
-  'Austria': [14.5501, 47.5162],
-  'Belgium': [4.4699, 50.5039],
-  'Sweden': [18.6435, 60.1282],
-  'Norway': [8.4689, 60.4720],
-  'Denmark': [9.5018, 56.2639],
-  'Finland': [25.7482, 61.9241],
-  'Poland': [19.1343, 51.9194],
-  'Czech Republic': [15.4730, 49.8175],
-  'Portugal': [-8.2245, 39.3999],
-  'Greece': [21.8243, 39.0742],
-  'Turkey': [35.2433, 38.9637],
+  Germany: [10.4515, 51.1657],
+  'United Kingdom': [-3.436, 55.3781],
+  France: [2.2137, 46.2276],
+  Canada: [-106.3468, 56.1304],
+  Australia: [133.7751, -25.2744],
+  Japan: [138.2529, 36.2048],
+  Brazil: [-51.9253, -14.235],
+  India: [78.9629, 20.5937],
+  China: [104.1954, 35.8617],
+  Russia: [105.3188, 61.524],
+  Spain: [-3.7492, 40.4637],
+  Italy: [12.5674, 41.8719],
+  Netherlands: [5.2913, 52.1326],
+  Switzerland: [8.2275, 46.8182],
+  Austria: [14.5501, 47.5162],
+  Belgium: [4.4699, 50.5039],
+  Sweden: [18.6435, 60.1282],
+  Norway: [8.4689, 60.472],
+  Denmark: [9.5018, 56.2639],
+  Finland: [25.7482, 61.9241],
+  Poland: [19.1343, 51.9194],
+  'Czech Republic': [15.473, 49.8175],
+  Portugal: [-8.2245, 39.3999],
+  Greece: [21.8243, 39.0742],
+  Turkey: [35.2433, 38.9637],
   'South Korea': [127.7669, 35.9078],
-  'Mexico': [-102.5528, 23.6345],
-  'Argentina': [-63.6167, -38.4161],
-  'Chile': [-71.5430, -35.6751],
+  Mexico: [-102.5528, 23.6345],
+  Argentina: [-63.6167, -38.4161],
+  Chile: [-71.543, -35.6751],
   'South Africa': [22.9375, -30.5595],
-  'Egypt': [30.8025, 26.8206],
-  'Israel': [34.8516, 32.4279],
-  'UAE': [53.8478, 23.4241],
+  Egypt: [30.8025, 26.8206],
+  Israel: [34.8516, 32.4279],
+  UAE: [53.8478, 23.4241],
   'Saudi Arabia': [45.0792, 23.8859],
-  'Singapore': [103.8198, 1.3521],
-  'Thailand': [100.9925, 15.8700],
-  'Indonesia': [113.9213, -0.7893],
-  'Philippines': [121.7740, 12.8797],
-  'Vietnam': [108.2772, 14.0583],
-  'Malaysia': [101.9758, 4.2105],
-  'Taiwan': [120.9605, 23.6978],
+  Singapore: [103.8198, 1.3521],
+  Thailand: [100.9925, 15.87],
+  Indonesia: [113.9213, -0.7893],
+  Philippines: [121.774, 12.8797],
+  Vietnam: [108.2772, 14.0583],
+  Malaysia: [101.9758, 4.2105],
+  Taiwan: [120.9605, 23.6978],
   'Hong Kong': [114.1694, 22.3193],
-  'New Zealand': [174.8860, -40.9006],
-  'Ireland': [-8.2439, 53.4129],
-  'Iceland': [-19.0208, 64.9631],
-  'Luxembourg': [6.1296, 49.8153],
-  'Monaco': [7.4167, 43.7333],
-  'Liechtenstein': [9.5554, 47.1410],
+  'New Zealand': [174.886, -40.9006],
+  Ireland: [-8.2439, 53.4129],
+  Iceland: [-19.0208, 64.9631],
+  Luxembourg: [6.1296, 49.8153],
+  Monaco: [7.4167, 43.7333],
+  Liechtenstein: [9.5554, 47.141],
   'San Marino': [12.4464, 43.9424],
   'Vatican City': [12.4534, 41.9029],
-  'Malta': [14.3754, 35.9375],
-  'Cyprus': [33.4299, 35.1264],
-  'Andorra': [1.5218, 42.5063],
+  Malta: [14.3754, 35.9375],
+  Cyprus: [33.4299, 35.1264],
+  Andorra: [1.5218, 42.5063],
 };
 
 export const UmamiMap = ({ countryData, loading = false }: UmamiMapProps) => {
@@ -99,7 +99,7 @@ export const UmamiMap = ({ countryData, loading = false }: UmamiMapProps) => {
       new maplibregl.NavigationControl({
         visualizePitch: true,
       }),
-      'top-right'
+      'top-right',
     );
 
     // Ref publishes on `load` so the marker effect never touches a style
@@ -121,7 +121,7 @@ export const UmamiMap = ({ countryData, loading = false }: UmamiMapProps) => {
     if (!map.current || !mapReady || loading) return;
 
     // Clear existing markers
-    markers.current.forEach(marker => marker.remove());
+    markers.current.forEach((marker) => marker.remove());
     markers.current = [];
 
     // Add markers for countries with data
@@ -198,7 +198,7 @@ export const UmamiMap = ({ countryData, loading = false }: UmamiMapProps) => {
 
     // Cleanup function
     return () => {
-      markers.current.forEach(marker => marker.remove());
+      markers.current.forEach((marker) => marker.remove());
       markers.current = [];
     };
   }, [countryData, loading, mapReady]);
@@ -238,9 +238,14 @@ export const UmamiMap = ({ countryData, loading = false }: UmamiMapProps) => {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div ref={mapContainer} className="h-96 rounded-element overflow-hidden border border-border" />
+        <div
+          ref={mapContainer}
+          className="h-96 rounded-element overflow-hidden bg-surface-container"
+        />
         <div className="mt-4 flex items-center justify-between text-sm text-muted-foreground">
-          <p className="text-sm text-muted-foreground">Showing top {countryData.length} countries</p>
+          <p className="text-sm text-muted-foreground">
+            Showing top {countryData.length} countries
+          </p>
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
               <span className="w-3 h-3 rounded-full bg-primary opacity-60" />

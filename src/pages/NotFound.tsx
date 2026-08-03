@@ -25,15 +25,47 @@ const SUGGESTIONS = [
 /** First path segment → entity type + i18n key for type-aware copy. Mirrors
  *  notFoundKindFor() in functions/_middleware.ts. */
 const SEGMENT_TYPE: Record<string, { type: string; key: string; fallback: string }> = {
-  venues: { type: 'venue', key: 'pages.notFound.kind.venue', fallback: "We couldn't find that venue." },
-  events: { type: 'event', key: 'pages.notFound.kind.event', fallback: "We couldn't find that event." },
+  venues: {
+    type: 'venue',
+    key: 'pages.notFound.kind.venue',
+    fallback: "We couldn't find that venue.",
+  },
+  events: {
+    type: 'event',
+    key: 'pages.notFound.kind.event',
+    fallback: "We couldn't find that event.",
+  },
   city: { type: 'city', key: 'pages.notFound.kind.city', fallback: "We couldn't find that city." },
-  country: { type: 'country', key: 'pages.notFound.kind.country', fallback: "We couldn't find that country." },
-  personalities: { type: 'personality', key: 'pages.notFound.kind.personality', fallback: "We couldn't find that person." },
-  hotels: { type: 'hotel', key: 'pages.notFound.kind.hotel', fallback: "We couldn't find that hotel." },
-  villages: { type: 'queer_village', key: 'pages.notFound.kind.village', fallback: "We couldn't find that place." },
-  marketplace: { type: 'marketplace', key: 'pages.notFound.kind.marketplace', fallback: "We couldn't find that product." },
-  news: { type: 'news', key: 'pages.notFound.kind.news', fallback: "We couldn't find that article." },
+  country: {
+    type: 'country',
+    key: 'pages.notFound.kind.country',
+    fallback: "We couldn't find that country.",
+  },
+  personalities: {
+    type: 'personality',
+    key: 'pages.notFound.kind.personality',
+    fallback: "We couldn't find that person.",
+  },
+  hotels: {
+    type: 'hotel',
+    key: 'pages.notFound.kind.hotel',
+    fallback: "We couldn't find that hotel.",
+  },
+  villages: {
+    type: 'queer_village',
+    key: 'pages.notFound.kind.village',
+    fallback: "We couldn't find that place.",
+  },
+  marketplace: {
+    type: 'marketplace',
+    key: 'pages.notFound.kind.marketplace',
+    fallback: "We couldn't find that product.",
+  },
+  news: {
+    type: 'news',
+    key: 'pages.notFound.kind.news',
+    fallback: "We couldn't find that article.",
+  },
 };
 
 const LOCALE_RE = /^(en|es|fr|de|pt|it|ru|zh|ja|ko|ar|he|ur)$/;
@@ -189,7 +221,7 @@ const NotFound = () => {
                   <LocalizedLink
                     key={`${hit.type}:${hit.id}`}
                     to={href}
-                    className="flex items-center justify-between gap-2 rounded-element border border-border bg-background px-4 py-4 no-underline transition-colors hover:bg-surface-container hover:border-foreground/30"
+                    className="flex items-center justify-between gap-2 rounded-element bg-surface-container px-4 py-4 no-underline transition-colors hover:bg-surface-container"
                   >
                     <span className="text-15 font-medium text-foreground truncate">
                       {hit.title || hit.name}
@@ -218,7 +250,7 @@ const NotFound = () => {
                 <LocalizedLink
                   key={`${item.type}:${item.slug}`}
                   to={recentlyViewedHref(item)}
-                  className="flex flex-col gap-1 rounded-element border border-border bg-background px-4 py-4 no-underline transition-colors hover:bg-surface-container hover:border-foreground/30"
+                  className="flex flex-col gap-1 rounded-element bg-surface-container px-4 py-4 no-underline transition-colors hover:bg-surface-container"
                 >
                   <span className="text-15 font-medium text-foreground truncate">{item.title}</span>
                   {(item.city || item.country) && (
@@ -245,7 +277,7 @@ const NotFound = () => {
               <LocalizedLink
                 key={to}
                 to={to}
-                className="flex flex-col items-center gap-2 rounded-element border border-border bg-background px-4 py-6 no-underline transition-colors hover:bg-surface-container hover:border-foreground/30"
+                className="flex flex-col items-center gap-2 rounded-element bg-surface-container px-4 py-6 no-underline transition-colors hover:bg-surface-container"
               >
                 <Icon size={20} aria-hidden="true" className="text-muted-foreground" />
                 <span className="text-13 font-medium text-foreground">{t(labelKey, fallback)}</span>

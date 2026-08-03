@@ -70,7 +70,8 @@ function buildChips(filters: MapShellFilters): Chip[] {
       key: 'queerOwned',
       label: tOr('map.filterChips.queerOwned', 'Queer-owned'),
     });
-  if (filters.era) chips.push({ key: 'era', label: `${filters.era.decadeStart}s–${filters.era.decadeEnd}s` });
+  if (filters.era)
+    chips.push({ key: 'era', label: `${filters.era.decadeStart}s–${filters.era.decadeEnd}s` });
   return chips;
 }
 
@@ -89,25 +90,25 @@ export const FilterChips = ({ filters, onRemove, onClearAll, className }: Filter
       aria-label={t('map.filterChips.groupLabel', { defaultValue: 'Active filters' })}
     >
       <AnimatePresence initial={false}>
-      {chips.map((c) => (
-        <motion.button
-          key={c.key}
-          type="button"
-          onClick={() => onRemove(c.key)}
-          initial={reduced ? false : { opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={reduced ? { opacity: 0 } : { opacity: 0, scale: 0.9 }}
-          transition={reduced ? { duration: 0 } : tweens.fast}
-          className="h-8 inline-flex items-center gap-1 rounded-element border border-border bg-background px-4 text-xs text-foreground hover:bg-muted focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-          aria-label={t('map.filterChips.remove', {
-            defaultValue: 'Remove filter: {{label}}',
-            label: c.label,
-          })}
-        >
-          <span>{c.label}</span>
-          <X size={12} aria-hidden="true" />
-        </motion.button>
-      ))}
+        {chips.map((c) => (
+          <motion.button
+            key={c.key}
+            type="button"
+            onClick={() => onRemove(c.key)}
+            initial={reduced ? false : { opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={reduced ? { opacity: 0 } : { opacity: 0, scale: 0.9 }}
+            transition={reduced ? { duration: 0 } : tweens.fast}
+            className="h-8 inline-flex items-center gap-1 rounded-element bg-surface-container px-4 text-xs text-foreground hover:bg-muted focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+            aria-label={t('map.filterChips.remove', {
+              defaultValue: 'Remove filter: {{label}}',
+              label: c.label,
+            })}
+          >
+            <span>{c.label}</span>
+            <X size={12} aria-hidden="true" />
+          </motion.button>
+        ))}
       </AnimatePresence>
       {onClearAll && chips.length > 1 && (
         <button

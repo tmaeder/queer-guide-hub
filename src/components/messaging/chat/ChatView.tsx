@@ -83,7 +83,7 @@ export const ChatView = ({ conversationId, onBack }: ChatViewProps) => {
   const currentTypingUsers = typingUsers[conversationId] || [];
   const isLoadingOlder = !!loadingOlder[conversationId];
   const messageById = (id: string | null) =>
-    id ? currentMessages.find((m) => m.id === id) ?? null : null;
+    id ? (currentMessages.find((m) => m.id === id) ?? null) : null;
 
   const loadOlder = useCallback(() => {
     if (hasMore[conversationId] !== false && !loadingOlder[conversationId]) {
@@ -105,7 +105,12 @@ export const ChatView = ({ conversationId, onBack }: ChatViewProps) => {
       setEditing(null);
     } else if (pendingImage) {
       await sendMessage(conversationId, content, replyTarget?.id, 'image', undefined, [
-        { type: 'image', url: pendingImage.url, width: pendingImage.width, height: pendingImage.height },
+        {
+          type: 'image',
+          url: pendingImage.url,
+          width: pendingImage.width,
+          height: pendingImage.height,
+        },
       ]);
       setPendingImage(null);
       setReplyTarget(null);
@@ -260,8 +265,18 @@ export const ChatView = ({ conversationId, onBack }: ChatViewProps) => {
               className="p-0 md:hidden"
               onClick={onBack}
             >
-              <svg style={{ height: 20, width: 20 }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              <svg
+                style={{ height: 20, width: 20 }}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 19l-7-7 7-7"
+                />
               </svg>
             </Button>
 
@@ -275,7 +290,8 @@ export const ChatView = ({ conversationId, onBack }: ChatViewProps) => {
                   <>
                     <AvatarImage src={otherParticipant?.profile?.avatar_url || ''} />
                     <AvatarFallback>
-                      {otherParticipant?.profile?.display_name?.charAt(0) || (isTravelInbox ? '✈' : 'C')}
+                      {otherParticipant?.profile?.display_name?.charAt(0) ||
+                        (isTravelInbox ? '✈' : 'C')}
                     </AvatarFallback>
                   </>
                 )}
@@ -352,7 +368,7 @@ export const ChatView = ({ conversationId, onBack }: ChatViewProps) => {
               />
             </div>
             {searchQuery.trim().length >= 2 && (
-              <div className="mt-2 max-h-64 overflow-y-auto rounded-element border border-border bg-background">
+              <div className="mt-2 max-h-64 overflow-y-auto rounded-element bg-surface-container">
                 {searching ? (
                   <p className="px-4 py-2 text-sm text-muted-foreground">
                     {t('common.loading', { defaultValue: 'Loading…' })}
@@ -370,11 +386,14 @@ export const ChatView = ({ conversationId, onBack }: ChatViewProps) => {
                       className="flex w-full flex-col items-start gap-0.5 border-b border-border px-4 py-2 text-left last:border-b-0 hover:bg-muted"
                     >
                       <span className="text-2xs font-medium text-foreground">
-                        {hit.sender_display_name || t('chat.reply.someone', { defaultValue: 'Someone' })}
+                        {hit.sender_display_name ||
+                          t('chat.reply.someone', { defaultValue: 'Someone' })}
                         {' · '}
                         {new Date(hit.created_at).toLocaleDateString()}
                       </span>
-                      <span className="line-clamp-2 text-sm text-muted-foreground">{hit.content}</span>
+                      <span className="line-clamp-2 text-sm text-muted-foreground">
+                        {hit.content}
+                      </span>
                     </button>
                   ))
                 )}
@@ -426,9 +445,15 @@ export const ChatView = ({ conversationId, onBack }: ChatViewProps) => {
           {currentMessages.length === 0 ? (
             isTravelInbox ? null : (
               <div className="text-center py-8">
-                <MessageCircle size={48} style={{ margin: '0 auto 16px' }} className="text-muted-foreground" />
+                <MessageCircle
+                  size={48}
+                  style={{ margin: '0 auto 16px' }}
+                  className="text-muted-foreground"
+                />
                 <p className="text-muted-foreground">
-                  {t('chat.emptyThread', { defaultValue: 'No messages yet. Start the conversation!' })}
+                  {t('chat.emptyThread', {
+                    defaultValue: 'No messages yet. Start the conversation!',
+                  })}
                 </p>
               </div>
             )

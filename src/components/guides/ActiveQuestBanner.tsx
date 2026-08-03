@@ -16,7 +16,7 @@ export function ActiveQuestBanner() {
   return (
     <LocalizedLink
       to={`/guides/${quest.slug}`}
-      className="group mb-8 flex items-center justify-between gap-4 rounded-container border border-border bg-card p-6 no-underline hover:bg-muted/40"
+      className="group mb-8 flex items-center justify-between gap-4 rounded-container bg-card p-6 no-underline hover:bg-muted/40"
     >
       <div className="flex items-center gap-4 min-w-0">
         <Flag size={20} aria-hidden className="shrink-0" />

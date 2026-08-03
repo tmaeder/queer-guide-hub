@@ -87,7 +87,7 @@ const Wishlists = () => {
                 <li key={w.id}>
                   <LocalizedLink
                     to={`/wishlists/${w.slug}`}
-                    className="block border border-border rounded-container p-6 hover:border-foreground/40 transition-colors"
+                    className="block rounded-container p-6 transition-colors bg-surface-container"
                   >
                     <div className="flex items-center justify-between mb-2">
                       <Icon size={14} className="text-muted-foreground" aria-hidden="true" />

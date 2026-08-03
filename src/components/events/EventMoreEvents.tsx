@@ -151,7 +151,7 @@ export function EventMoreEvents({ eventId, city, limit = 8, className }: Props) 
               onClick={() =>
                 trackClick({ type: 'event', id: c.id }, 'similar', { reason: c.reason })
               }
-              className="group flex flex-col overflow-hidden rounded-element border border-border bg-background no-underline text-inherit transition-colors hover:border-foreground/40"
+              className="group flex flex-col overflow-hidden rounded-element bg-surface-container no-underline text-inherit transition-colors"
             >
               <div className="relative aspect-[4/3] w-full bg-muted">
                 <Image

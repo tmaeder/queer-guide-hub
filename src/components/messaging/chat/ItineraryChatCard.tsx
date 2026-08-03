@@ -87,14 +87,19 @@ export function ItineraryChatCard({ meta }: { meta: ItineraryMeta }) {
   const activeTrips = trips.filter((tr) => tr.status !== 'archived');
 
   return (
-    <div className="flex flex-col gap-2 rounded-container border border-border bg-card p-4" style={{ minWidth: 260, maxWidth: 340 }}>
+    <div
+      className="flex flex-col gap-2 rounded-container bg-card p-4"
+      style={{ minWidth: 260, maxWidth: 340 }}
+    >
       <div className="flex items-start gap-2">
         <div className="flex h-9 w-9 items-center justify-center rounded-element bg-muted shrink-0">
           <Icon size={18} className="text-foreground" />
         </div>
         <div className="min-w-0 flex-1">
           {meta.vendor && (
-            <p className="text-2xs uppercase tracking-wider text-muted-foreground truncate">{meta.vendor}</p>
+            <p className="text-2xs uppercase tracking-wider text-muted-foreground truncate">
+              {meta.vendor}
+            </p>
           )}
           <p className="text-sm font-medium text-foreground break-words">
             {meta.title || t('chat.itinerary.untitled', { defaultValue: 'Forwarded booking' })}
@@ -126,11 +131,26 @@ export function ItineraryChatCard({ meta }: { meta: ItineraryMeta }) {
             })}
           </p>
           <div className="flex items-center gap-2">
-            <Button size="sm" className="h-8 flex-1" disabled={!!busy} onClick={() => decide('approved')}>
-              {busy === 'approved' ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} className="mr-1" />}
+            <Button
+              size="sm"
+              className="h-8 flex-1"
+              disabled={!!busy}
+              onClick={() => decide('approved')}
+            >
+              {busy === 'approved' ? (
+                <Loader2 size={14} className="animate-spin" />
+              ) : (
+                <Check size={14} className="mr-1" />
+              )}
               {t('chat.itinerary.approve', { defaultValue: 'Approve' })}
             </Button>
-            <Button size="sm" variant="outline" className="h-8" disabled={!!busy} onClick={() => decide('rejected')}>
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-8"
+              disabled={!!busy}
+              onClick={() => decide('rejected')}
+            >
               <X size={14} className="mr-1" />
               {t('chat.itinerary.reject', { defaultValue: 'Reject' })}
             </Button>
@@ -146,7 +166,11 @@ export function ItineraryChatCard({ meta }: { meta: ItineraryMeta }) {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button size="sm" variant="outline" className="h-8" disabled={!!busy}>
-                {busy === 'slot' ? <Loader2 size={14} className="mr-1 animate-spin" /> : <Plus size={14} className="mr-1" />}
+                {busy === 'slot' ? (
+                  <Loader2 size={14} className="mr-1 animate-spin" />
+                ) : (
+                  <Plus size={14} className="mr-1" />
+                )}
                 {t('chat.itinerary.addToTrip', { defaultValue: 'Add to a trip' })}
               </Button>
             </DropdownMenuTrigger>

@@ -26,7 +26,7 @@ export function UserReviewsList({ userId }: UserReviewsListProps) {
   const { data: reviews = [], isLoading } = useUserReviews(userId);
 
   if (isLoading) {
-    return <div className="h-20 rounded-container border border-border bg-card animate-pulse" />;
+    return <div className="h-20 rounded-container bg-card animate-pulse" />;
   }
   if (reviews.length === 0) {
     return <p className="text-sm text-muted-foreground">No reviews yet.</p>;
@@ -35,7 +35,7 @@ export function UserReviewsList({ userId }: UserReviewsListProps) {
   return (
     <ul className="flex flex-col gap-4">
       {reviews.map((r) => (
-        <li key={`${r.kind}-${r.id}`} className="rounded-container border border-border bg-card p-4">
+        <li key={`${r.kind}-${r.id}`} className="rounded-container bg-card p-4">
           <div className="flex items-center justify-between gap-4 mb-1">
             {r.target_link ? (
               <LocalizedLink to={r.target_link} className="text-sm font-semibold truncate">

@@ -80,7 +80,7 @@ export function SearchCalendarView({ results, query, onSelect }: SearchCalendarV
 
   return (
     <div className="grid gap-6 md:grid-cols-[auto_1fr]">
-      <div className="rounded-element border border-border md:self-start">
+      <div className="rounded-element md:self-start bg-surface-container">
         <Calendar
           mode="single"
           month={month}

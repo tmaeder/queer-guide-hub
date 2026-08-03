@@ -36,7 +36,6 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 
-
 /** Inline SVG donut — replaces the recharts PieChart (the legend badges below
  * it already carry the exact values; slices keep a native <title> readout). */
 function DonutChart({
@@ -79,7 +78,12 @@ function DonutChart({
     };
   });
   return (
-    <svg viewBox="0 0 200 200" className="mx-auto block h-full" role="img" aria-label="Spending by category">
+    <svg
+      viewBox="0 0 200 200"
+      className="mx-auto block h-full"
+      role="img"
+      aria-label="Spending by category"
+    >
       {slices.map((sl) => (
         <path key={sl.name} d={sl.path} fill={sl.color}>
           <title>{`${sl.name}: ${format(sl.value)}`}</title>
@@ -403,7 +407,7 @@ export function BudgetTab({ tripId, members, defaultCurrency }: Props) {
       {/* FABs */}
       <Button
         variant="outline"
-        className="fixed bottom-[84px] right-7 h-10 w-10 p-0 rounded-full bg-background border-border"
+        className="fixed bottom-[84px] right-7 h-10 w-10 p-0 rounded-full bg-surface-container"
         onClick={() => setEstimateOpen(true)}
         aria-label={t('trips.budget.estimateCosts', { defaultValue: 'Estimate costs' })}
       >
