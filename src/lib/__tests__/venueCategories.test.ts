@@ -29,7 +29,7 @@ function checkValues(migrationFile: string, constraintMarker: string): string[] 
 describe('venue category vocabulary', () => {
   it('matches venues_category_check', () => {
     const dbValues = checkValues(
-      '20260808120100_venue_category_toilet.sql',
+      '20260810120100_venue_category_toilet.sql',
       'ADD CONSTRAINT venues_category_check',
     );
     expect([...VENUE_CATEGORIES].sort()).toEqual([...dbValues].sort());
@@ -46,7 +46,7 @@ describe('venue category vocabulary', () => {
 describe('event type vocabulary', () => {
   it('matches the event_type whitelist enforced by the write-gate trigger', () => {
     const dbValues = checkValues(
-      '20260808120000_event_taxonomy_write_gate.sql',
+      '20260810120000_event_taxonomy_write_gate.sql',
       'v_valid CONSTANT text[]',
     );
     expect([...EVENT_TYPES].sort()).toEqual([...dbValues].sort());

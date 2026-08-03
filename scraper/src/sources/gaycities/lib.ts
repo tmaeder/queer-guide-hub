@@ -642,7 +642,7 @@ const EVENT_TYPE_RULES: Array<[RegExp, string, boolean?]> = [
  * genuine; restricted to the title they left 352, of which ~19 of 22 sampled were real
  * (Cher, Madonna, Kylie Minogue, chorale concerts).
  *
- * Kept in sync with public.infer_event_type() (migration 20260808120300), which does the
+ * Kept in sync with public.infer_event_type() (migration 20260810120300), which does the
  * same derivation for the backfill. If you change one, change the other.
  */
 export function mapEventType(...signals: Array<string | null | undefined>): string {
