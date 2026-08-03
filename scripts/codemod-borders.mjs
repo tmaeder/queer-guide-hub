@@ -64,7 +64,7 @@ let edits = 0;
 const samples = [];
 
 for (const file of files) {
-  if (SKIP_FILE.some((s) => file.endsWith(s.replace(/^src\//, 'src/')))) continue;
+  if (SKIP_FILE.some((s) => file.endsWith(s))) continue;
   const src = readFileSync(file, 'utf8');
   let out = src;
 
