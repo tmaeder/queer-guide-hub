@@ -23,6 +23,7 @@ import { PersonalityFreigabeQueue } from '@/components/admin/PersonalityFreigabe
 import { DedupPendingLink } from '@/components/admin/DedupPendingLink';
 import { OrgLinkReviewQueue } from '@/components/admin/business/OrgLinkReviewQueue';
 import { GeoAddressQualityPanel } from '@/components/admin/GeoAddressQualityPanel';
+import { CategoryCoveragePanel } from '@/components/admin/CategoryCoveragePanel';
 import type { FreigabeStufe } from '@/lib/personalityStatus';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 
@@ -163,6 +164,15 @@ const SECTIONS: EngineSection[] = [
     editRoute: '/admin/geography',
     editLabel: 'Open Geography',
     render: () => <GeoAddressQualityPanel />,
+  },
+  {
+    /* Cross-type like Addresses: venues.category and events.event_type are the two
+       browse axes and share one backfill pattern, so they read together. */
+    value: 'categories',
+    title: 'Categories — venue & event coverage',
+    editRoute: '/admin/content/venues',
+    editLabel: 'Open Venues',
+    render: () => <CategoryCoveragePanel />,
   },
 ];
 
