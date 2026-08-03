@@ -35,9 +35,21 @@ export function NextLegFromHere({ cityId, latitude, longitude }: Props) {
     label: string;
     rows: NearbyCity[];
   }> = [
-    { bucket: 'short', label: t('discovery.nextLeg.short', '< 2h flight'), rows: data.filter((c) => c.bucket === 'short') },
-    { bucket: 'medium', label: t('discovery.nextLeg.medium', '2–5h flight'), rows: data.filter((c) => c.bucket === 'medium') },
-    { bucket: 'long', label: t('discovery.nextLeg.long', '5h+ flight'), rows: data.filter((c) => c.bucket === 'long') },
+    {
+      bucket: 'short',
+      label: t('discovery.nextLeg.short', '< 2h flight'),
+      rows: data.filter((c) => c.bucket === 'short'),
+    },
+    {
+      bucket: 'medium',
+      label: t('discovery.nextLeg.medium', '2–5h flight'),
+      rows: data.filter((c) => c.bucket === 'medium'),
+    },
+    {
+      bucket: 'long',
+      label: t('discovery.nextLeg.long', '5h+ flight'),
+      rows: data.filter((c) => c.bucket === 'long'),
+    },
   ].filter((g) => g.rows.length > 0);
 
   return (
@@ -56,33 +68,33 @@ export function NextLegFromHere({ cityId, latitude, longitude }: Props) {
               // trap for the very traveler this rail serves — surface the risk.
               const criminalized = hasCriminalizationFlag(row.countries?.lgbti_criminalization);
               return (
-              <li key={row.id}>
-                <LocalizedLink
-                  to={to}
-                  className="flex items-center justify-between gap-2 rounded-element border px-4 py-2 no-underline transition-colors hover:border-foreground/40"
-                >
-                  <span className="flex min-w-0 items-baseline gap-2">
-                    {row.countries?.flag_emoji ? (
-                      <span aria-hidden className="shrink-0 text-13">
-                        {row.countries.flag_emoji}
+                <li key={row.id}>
+                  <LocalizedLink
+                    to={to}
+                    className="flex items-center justify-between gap-2 rounded-element bg-surface-container px-4 py-2 no-underline transition-colors hover:bg-surface-container-high"
+                  >
+                    <span className="flex min-w-0 items-baseline gap-2">
+                      {row.countries?.flag_emoji ? (
+                        <span aria-hidden className="shrink-0 text-13">
+                          {row.countries.flag_emoji}
+                        </span>
+                      ) : null}
+                      <span className="truncate text-13 font-semibold text-foreground">
+                        {row.name}
                       </span>
-                    ) : null}
-                    <span className="truncate text-13 font-semibold text-foreground">
-                      {row.name}
+                      {criminalized && (
+                        <span className="inline-flex shrink-0 items-center gap-1 rounded-badge bg-destructive/10 px-1.5 text-3xs font-semibold uppercase tracking-[0.1em] text-destructive">
+                          <ShieldAlert size={10} aria-hidden />
+                          {t('discovery.nextLeg.risk', 'Legal risk')}
+                        </span>
+                      )}
                     </span>
-                    {criminalized && (
-                      <span className="inline-flex shrink-0 items-center gap-1 rounded-badge border border-destructive/40 px-1.5 text-3xs font-semibold uppercase tracking-[0.1em] text-destructive">
-                        <ShieldAlert size={10} aria-hidden />
-                        {t('discovery.nextLeg.risk', 'Legal risk')}
-                      </span>
-                    )}
-                  </span>
-                  <span className="inline-flex shrink-0 items-center gap-1 text-2xs uppercase tracking-[0.1em] text-muted-foreground tabular-nums">
-                    <Plane size={12} aria-hidden />
-                    {Math.round(row.distance_km).toLocaleString()} km
-                  </span>
-                </LocalizedLink>
-              </li>
+                    <span className="inline-flex shrink-0 items-center gap-1 text-2xs uppercase tracking-[0.1em] text-muted-foreground tabular-nums">
+                      <Plane size={12} aria-hidden />
+                      {Math.round(row.distance_km).toLocaleString()} km
+                    </span>
+                  </LocalizedLink>
+                </li>
               );
             })}
           </ul>

@@ -39,10 +39,7 @@ export function EditorialEntries({
   const { items: bornThisWeek } = useBornThisWeek(8, 'born');
   const { items: diedThisWeek } = useBornThisWeek(8, 'died');
 
-  const renderStrip = (
-    items: typeof bornThisWeek,
-    dateField: 'birth_date' | 'death_date',
-  ) => (
+  const renderStrip = (items: typeof bornThisWeek, dateField: 'birth_date' | 'death_date') => (
     <ul className="flex gap-4 overflow-x-auto pb-2 -mx-4 px-4">
       {items.map((p) => {
         const iso = p[dateField];
@@ -140,18 +137,14 @@ export function EditorialEntries({
                 <button
                   key={f.profession}
                   type="button"
-                  onClick={() =>
-                    onProfessionSelect(active ? undefined : f.profession)
-                  }
+                  onClick={() => onProfessionSelect(active ? undefined : f.profession)}
                   aria-pressed={active}
                   className={
-                    'flex items-center justify-between text-left px-4 py-2.5 border rounded-element transition-colors hover:bg-accent ' +
+                    'flex items-center justify-between text-left px-4 py-2.5 rounded-element transition-colors hover:bg-accent' +
                     (active ? 'border-foreground bg-accent' : 'border-border')
                   }
                 >
-                  <span className="text-sm font-medium truncate">
-                    {f.profession}
-                  </span>
+                  <span className="text-sm font-medium truncate">{f.profession}</span>
                   <span className="text-xs text-muted-foreground ml-2 shrink-0">
                     {f.count.toLocaleString()}
                   </span>

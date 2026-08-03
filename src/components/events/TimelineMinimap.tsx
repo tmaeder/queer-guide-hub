@@ -13,15 +13,25 @@ interface TimelineMinimapProps {
 const HEIGHT = 56;
 const MINIMAP_DEFAULT_SPAN_MS = 5 * 365 * 86_400_000;
 
-export function TimelineMinimap({ viewport, eventStarts, rangeMs, onViewportChange }: TimelineMinimapProps) {
+export function TimelineMinimap({
+  viewport,
+  eventStarts,
+  rangeMs,
+  onViewportChange,
+}: TimelineMinimapProps) {
   const ref = useRef<HTMLDivElement | null>(null);
   const dragState = useRef<{ startX: number; origStartMs: number } | null>(null);
 
-  const range = rangeMs ?? (() => {
-    // eslint-disable-next-line react-hooks/purity -- fallback default centered on now when no rangeMs prop is supplied; recomputed per render.
-    const now = Date.now();
-    return { startMs: now - MINIMAP_DEFAULT_SPAN_MS / 2, endMs: now + MINIMAP_DEFAULT_SPAN_MS / 2 };
-  })();
+  const range =
+    rangeMs ??
+    (() => {
+      // eslint-disable-next-line react-hooks/purity -- fallback default centered on now when no rangeMs prop is supplied; recomputed per render.
+      const now = Date.now();
+      return {
+        startMs: now - MINIMAP_DEFAULT_SPAN_MS / 2,
+        endMs: now + MINIMAP_DEFAULT_SPAN_MS / 2,
+      };
+    })();
   const span = range.endMs - range.startMs;
 
   // Bucket events into 60 columns (~ months over 5 years)
@@ -39,39 +49,48 @@ export function TimelineMinimap({ viewport, eventStarts, rangeMs, onViewportChan
   const vpLeftPct = ((viewport.startMs - range.startMs) / span) * 100;
   const vpWidthPct = ((viewport.endMs - viewport.startMs) / span) * 100;
 
-  const onPointerDown = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
-    if (!ref.current) return;
-    (e.target as Element).setPointerCapture?.(e.pointerId);
-    dragState.current = { startX: e.clientX, origStartMs: viewport.startMs };
-  }, [viewport.startMs]);
+  const onPointerDown = useCallback(
+    (e: React.PointerEvent<HTMLDivElement>) => {
+      if (!ref.current) return;
+      (e.target as Element).setPointerCapture?.(e.pointerId);
+      dragState.current = { startX: e.clientX, origStartMs: viewport.startMs };
+    },
+    [viewport.startMs],
+  );
 
-  const onPointerMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
-    if (!dragState.current || !ref.current) return;
-    const dx = e.clientX - dragState.current.startX;
-    const w = ref.current.offsetWidth;
-    const deltaMs = (dx / w) * span;
-    const target = viewport.startMs - viewport.startMs + dragState.current.origStartMs + deltaMs;
-    const proposed: Viewport = {
-      startMs: dragState.current.origStartMs + deltaMs,
-      endMs: dragState.current.origStartMs + deltaMs + (viewport.endMs - viewport.startMs),
-    };
-    onViewportChange(proposed);
-    void target;
-  }, [span, viewport.startMs, viewport.endMs, onViewportChange]);
+  const onPointerMove = useCallback(
+    (e: React.PointerEvent<HTMLDivElement>) => {
+      if (!dragState.current || !ref.current) return;
+      const dx = e.clientX - dragState.current.startX;
+      const w = ref.current.offsetWidth;
+      const deltaMs = (dx / w) * span;
+      const target = viewport.startMs - viewport.startMs + dragState.current.origStartMs + deltaMs;
+      const proposed: Viewport = {
+        startMs: dragState.current.origStartMs + deltaMs,
+        endMs: dragState.current.origStartMs + deltaMs + (viewport.endMs - viewport.startMs),
+      };
+      onViewportChange(proposed);
+      void target;
+    },
+    [span, viewport.startMs, viewport.endMs, onViewportChange],
+  );
 
   const onPointerUp = useCallback(() => {
     dragState.current = null;
   }, []);
 
-  const onClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-    // Ignore if drag just finished (within 3px)
-    if (!ref.current) return;
-    const rect = ref.current.getBoundingClientRect();
-    const px = e.clientX - rect.left;
-    const ms = range.startMs + (px / rect.width) * span;
-    const half = (viewport.endMs - viewport.startMs) / 2;
-    onViewportChange({ startMs: ms - half, endMs: ms + half });
-  }, [range.startMs, span, viewport.startMs, viewport.endMs, onViewportChange]);
+  const onClick = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      // Ignore if drag just finished (within 3px)
+      if (!ref.current) return;
+      const rect = ref.current.getBoundingClientRect();
+      const px = e.clientX - rect.left;
+      const ms = range.startMs + (px / rect.width) * span;
+      const half = (viewport.endMs - viewport.startMs) / 2;
+      onViewportChange({ startMs: ms - half, endMs: ms + half });
+    },
+    [range.startMs, span, viewport.startMs, viewport.endMs, onViewportChange],
+  );
 
   // Year ticks
   const yearTicks = useMemo(() => {
@@ -96,12 +115,12 @@ export function TimelineMinimap({ viewport, eventStarts, rangeMs, onViewportChan
       {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- custom scrubber widget: region role exposes it as a labelled landmark, but it also accepts click + keyboard input. */}
       <div
         ref={ref}
-        className="relative bg-muted/30 border border-foreground/10 rounded-element cursor-crosshair select-none"
+        className="relative bg-muted/30 rounded-element cursor-crosshair select-none"
         style={{ height: `${HEIGHT}px` }}
         onClick={onClick}
         onKeyDown={(e) => {
           if ((e.key === 'Enter' || e.key === ' ') && ref.current) {
-            const ms = range.startMs + (0.5 * span);
+            const ms = range.startMs + 0.5 * span;
             const half = (viewport.endMs - viewport.startMs) / 2;
             onViewportChange({ startMs: ms - half, endMs: ms + half });
           } else if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
@@ -167,7 +186,10 @@ export function TimelineMinimap({ viewport, eventStarts, rangeMs, onViewportChan
               e.stopPropagation();
               const step = (viewport.endMs - viewport.startMs) * 0.1;
               const delta = e.key === 'ArrowLeft' ? -step : step;
-              onViewportChange({ startMs: viewport.startMs + delta, endMs: viewport.endMs + delta });
+              onViewportChange({
+                startMs: viewport.startMs + delta,
+                endMs: viewport.endMs + delta,
+              });
             }
           }}
           tabIndex={0}
@@ -181,4 +203,3 @@ export function TimelineMinimap({ viewport, eventStarts, rangeMs, onViewportChan
     </div>
   );
 }
-

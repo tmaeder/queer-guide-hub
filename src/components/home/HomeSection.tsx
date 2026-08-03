@@ -38,7 +38,9 @@ export function HomeSection({
       aria-labelledby={headingId}
       className={cn(
         'px-4 sm:px-6 md:px-8 py-12 md:py-16',
-        tinted && 'bg-muted/30 border-y border-border',
+        // The tint alone marks the band — the rules it used to sit between were
+        // the last hairlines on the homepage.
+        tinted && 'bg-muted/30',
         className,
       )}
     >

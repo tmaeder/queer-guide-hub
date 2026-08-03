@@ -23,17 +23,59 @@ interface PrideFilterRailProps {
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 const CONTINENT_MAP: Record<string, string> = {
-  DE: 'Europe', GB: 'Europe', FR: 'Europe', ES: 'Europe', NL: 'Europe', SE: 'Europe',
-  DK: 'Europe', NO: 'Europe', FI: 'Europe', IT: 'Europe', PT: 'Europe', AT: 'Europe',
-  CH: 'Europe', BE: 'Europe', CZ: 'Europe', PL: 'Europe', HU: 'Europe', GR: 'Europe',
-  IE: 'Europe', IS: 'Europe', EE: 'Europe', LV: 'Europe', LT: 'Europe', RO: 'Europe',
-  BG: 'Europe', SI: 'Europe', HR: 'Europe', BA: 'Europe', RS: 'Europe', SK: 'Europe',
-  GE: 'Europe', TR: 'Europe',
-  US: 'Americas', CA: 'Americas', MX: 'Americas', BR: 'Americas', AR: 'Americas',
-  CL: 'Americas', CO: 'Americas', PE: 'Americas', EC: 'Americas', UY: 'Americas',
-  AU: 'Oceania', NZ: 'Oceania',
-  IL: 'Asia', JP: 'Asia', TW: 'Asia', TH: 'Asia', HK: 'Asia', KR: 'Asia',
-  SG: 'Asia', PH: 'Asia', VN: 'Asia',
+  DE: 'Europe',
+  GB: 'Europe',
+  FR: 'Europe',
+  ES: 'Europe',
+  NL: 'Europe',
+  SE: 'Europe',
+  DK: 'Europe',
+  NO: 'Europe',
+  FI: 'Europe',
+  IT: 'Europe',
+  PT: 'Europe',
+  AT: 'Europe',
+  CH: 'Europe',
+  BE: 'Europe',
+  CZ: 'Europe',
+  PL: 'Europe',
+  HU: 'Europe',
+  GR: 'Europe',
+  IE: 'Europe',
+  IS: 'Europe',
+  EE: 'Europe',
+  LV: 'Europe',
+  LT: 'Europe',
+  RO: 'Europe',
+  BG: 'Europe',
+  SI: 'Europe',
+  HR: 'Europe',
+  BA: 'Europe',
+  RS: 'Europe',
+  SK: 'Europe',
+  GE: 'Europe',
+  TR: 'Europe',
+  US: 'Americas',
+  CA: 'Americas',
+  MX: 'Americas',
+  BR: 'Americas',
+  AR: 'Americas',
+  CL: 'Americas',
+  CO: 'Americas',
+  PE: 'Americas',
+  EC: 'Americas',
+  UY: 'Americas',
+  AU: 'Oceania',
+  NZ: 'Oceania',
+  IL: 'Asia',
+  JP: 'Asia',
+  TW: 'Asia',
+  TH: 'Asia',
+  HK: 'Asia',
+  KR: 'Asia',
+  SG: 'Asia',
+  PH: 'Asia',
+  VN: 'Asia',
   ZA: 'Africa',
 };
 
@@ -52,7 +94,8 @@ export function applyPrideFilters(
     const d = new Date(e.start_date);
     const month = d.getUTCMonth();
     if (filters.months.length && !filters.months.includes(month)) return false;
-    if (filters.continents.length && !filters.continents.includes(continentOf(e.country))) return false;
+    if (filters.continents.length && !filters.continents.includes(continentOf(e.country)))
+      return false;
     if (filters.countries.length && !filters.countries.includes(e.country ?? '')) return false;
     if (filters.featuredOnly && !e.is_featured) return false;
     if (filters.verifiedOnly && e.verification_status !== 'verified') return false;
@@ -92,17 +135,23 @@ export function PrideFilterRail({ filters, setFilters, events }: PrideFilterRail
   const toggleMonth = (m: number) =>
     setFilters({
       ...filters,
-      months: filters.months.includes(m) ? filters.months.filter((x) => x !== m) : [...filters.months, m],
+      months: filters.months.includes(m)
+        ? filters.months.filter((x) => x !== m)
+        : [...filters.months, m],
     });
   const toggleContinent = (c: string) =>
     setFilters({
       ...filters,
-      continents: filters.continents.includes(c) ? filters.continents.filter((x) => x !== c) : [...filters.continents, c],
+      continents: filters.continents.includes(c)
+        ? filters.continents.filter((x) => x !== c)
+        : [...filters.continents, c],
     });
   const toggleCountry = (c: string) =>
     setFilters({
       ...filters,
-      countries: filters.countries.includes(c) ? filters.countries.filter((x) => x !== c) : [...filters.countries, c],
+      countries: filters.countries.includes(c)
+        ? filters.countries.filter((x) => x !== c)
+        : [...filters.countries, c],
     });
 
   const hasActive =
@@ -116,12 +165,14 @@ export function PrideFilterRail({ filters, setFilters, events }: PrideFilterRail
   const chip = (active: boolean) =>
     cn(
       'px-2 py-1 text-xs rounded-badge border transition-colors min-h-0',
-      active ? 'bg-foreground text-background border-foreground' : 'border-foreground/20 hover:bg-muted',
+      active
+        ? 'bg-foreground text-background border-foreground'
+        : 'border-foreground/20 hover:bg-muted',
     );
 
   return (
     <div
-      className="rounded-container border border-foreground/15 bg-background p-4 lg:p-6 space-y-4"
+      className="rounded-container bg-background p-4 lg:p-6 space-y-4"
       aria-label={t('pride.filters.aria')}
     >
       <div className="flex flex-wrap items-center gap-4">
@@ -134,7 +185,7 @@ export function PrideFilterRail({ filters, setFilters, events }: PrideFilterRail
             onChange={(e) => setFilters({ ...filters, query: e.target.value })}
             placeholder={t('pride.filters.searchPlaceholder')}
             aria-label={t('pride.filters.searchAria')}
-            className="w-full rounded-element border border-foreground/20 bg-background pl-8 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-foreground"
+            className="w-full rounded-element bg-background pl-8 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-foreground"
           />
         </div>
 
@@ -162,7 +213,14 @@ export function PrideFilterRail({ filters, setFilters, events }: PrideFilterRail
             variant="outline"
             size="sm"
             onClick={() =>
-              setFilters({ months: [], continents: [], countries: [], featuredOnly: false, verifiedOnly: false, query: '' })
+              setFilters({
+                months: [],
+                continents: [],
+                countries: [],
+                featuredOnly: false,
+                verifiedOnly: false,
+                query: '',
+              })
             }
             className="ml-auto min-h-0"
           >
@@ -173,11 +231,19 @@ export function PrideFilterRail({ filters, setFilters, events }: PrideFilterRail
       </div>
 
       <div className="flex items-center gap-2 flex-wrap">
-        <span className="text-xs2 font-medium uppercase tracking-wide text-foreground/60 mr-1">{t('pride.filters.month')}</span>
+        <span className="text-xs2 font-medium uppercase tracking-wide text-foreground/60 mr-1">
+          {t('pride.filters.month')}
+        </span>
         {MONTHS.map((m, i) => {
           const on = filters.months.includes(i);
           return (
-            <button key={m} type="button" onClick={() => toggleMonth(i)} aria-pressed={on} className={chip(on)}>
+            <button
+              key={m}
+              type="button"
+              onClick={() => toggleMonth(i)}
+              aria-pressed={on}
+              className={chip(on)}
+            >
               {m}
             </button>
           );
@@ -185,11 +251,19 @@ export function PrideFilterRail({ filters, setFilters, events }: PrideFilterRail
       </div>
 
       <div className="flex items-center gap-2 flex-wrap">
-        <span className="text-xs2 font-medium uppercase tracking-wide text-foreground/60 mr-1">{t('pride.filters.region')}</span>
+        <span className="text-xs2 font-medium uppercase tracking-wide text-foreground/60 mr-1">
+          {t('pride.filters.region')}
+        </span>
         {continents.map((c) => {
           const on = filters.continents.includes(c);
           return (
-            <button key={c} type="button" onClick={() => toggleContinent(c)} aria-pressed={on} className={chip(on)}>
+            <button
+              key={c}
+              type="button"
+              onClick={() => toggleContinent(c)}
+              aria-pressed={on}
+              className={chip(on)}
+            >
               {t(`pride.continents.${c}` as 'pride.continents.Europe')}
             </button>
           );
@@ -198,25 +272,31 @@ export function PrideFilterRail({ filters, setFilters, events }: PrideFilterRail
 
       {filters.continents.length > 0 && (
         <div className="flex items-center gap-1.5 flex-wrap">
-          <span className="text-xs2 font-medium uppercase tracking-wide text-foreground/60 mr-1">{t('pride.filters.country')}</span>
+          <span className="text-xs2 font-medium uppercase tracking-wide text-foreground/60 mr-1">
+            {t('pride.filters.country')}
+          </span>
           {filters.continents.flatMap((cont) =>
-            Array.from(countriesByContinent.get(cont) ?? []).sort().map((cc) => {
-              const on = filters.countries.includes(cc);
-              return (
-                <button
-                  key={cc}
-                  type="button"
-                  onClick={() => toggleCountry(cc)}
-                  aria-pressed={on}
-                  className={cn(
-                    'px-1.5 py-0.5 text-2xs rounded-badge border transition-colors min-h-0',
-                    on ? 'bg-foreground text-background border-foreground' : 'border-foreground/20 hover:bg-muted',
-                  )}
-                >
-                  {cc}
-                </button>
-              );
-            }),
+            Array.from(countriesByContinent.get(cont) ?? [])
+              .sort()
+              .map((cc) => {
+                const on = filters.countries.includes(cc);
+                return (
+                  <button
+                    key={cc}
+                    type="button"
+                    onClick={() => toggleCountry(cc)}
+                    aria-pressed={on}
+                    className={cn(
+                      'px-1.5 py-0.5 text-2xs rounded-badge border transition-colors min-h-0',
+                      on
+                        ? 'bg-foreground text-background border-foreground'
+                        : 'border-foreground/20 hover:bg-muted',
+                    )}
+                  >
+                    {cc}
+                  </button>
+                );
+              }),
           )}
         </div>
       )}

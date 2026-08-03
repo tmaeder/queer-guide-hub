@@ -39,7 +39,7 @@ function CityRow({ city }: { city: LocalSupporterCity }) {
 export function LocalSupporterBlock() {
   const { data: cities = [], isLoading } = useLocalSupporterCities();
   return (
-    <section className="rounded-container border border-border p-6 bg-card">
+    <section className="rounded-container bg-surface-container p-6 bg-card">
       <header className="flex items-center justify-between gap-4 mb-2">
         <p className="text-13 uppercase tracking-[0.1em] text-muted-foreground">
           Local Supporter

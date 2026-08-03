@@ -119,7 +119,7 @@ function SaveButton({ eventId, className }: { eventId: string; className?: strin
       aria-pressed={saved}
       className={cn(
         'relative inline-flex h-10 w-10 items-center justify-center rounded-full',
-        'bg-background/85 backdrop-blur-sm border border-border text-foreground transition-colors hover:border-foreground/40',
+        'bg-background/85 backdrop-blur-sm text-foreground transition-colors hover:bg-background',
         className,
       )}
       onClick={(e) => {
@@ -248,47 +248,50 @@ const EventsAgenda = () => {
         <div className="grid grid-cols-1 gap-10 md:grid-cols-[1.1fr_1fr]">
           {lead && (
             <div className="relative self-start">
-            <LocalizedLink
-              to={`/events/${lead.slug}`}
-              className="group relative block overflow-hidden rounded-container border border-border no-underline"
-            >
-              <img
-                src={resolveEventImage(lead, false)}
-                alt=""
-                aria-hidden
-                loading="lazy"
-                referrerPolicy="no-referrer"
-                onError={(e) => {
-                  const fb = getFallbackImage('event', lead.id);
-                  if (e.currentTarget.src !== fb) e.currentTarget.src = fb;
-                }}
-                className="aspect-[16/10] w-full bg-muted object-cover transition-transform group-hover:scale-[1.02]"
-              />
-              <div className="img-scrim-readable absolute inset-0" />
-              <div className="absolute bottom-0 start-0 end-0 p-6 text-white">
-                <div className="mb-2 flex items-center gap-2">
-                  {isOnNow(lead, now) ? (
-                    <Badge variant="default" className="gap-1.5">
-                      <span className="h-1.5 w-1.5 rounded-full bg-current animate-pulse" aria-hidden />
-                      {t('home.events.onNow', 'On now')}
-                    </Badge>
-                  ) : (
-                    <Badge variant="outline">
-                      {format(new Date(lead.start_date), 'EEE, MMM d')}
-                    </Badge>
+              <LocalizedLink
+                to={`/events/${lead.slug}`}
+                className="group relative block overflow-hidden rounded-container bg-surface-container no-underline"
+              >
+                <img
+                  src={resolveEventImage(lead, false)}
+                  alt=""
+                  aria-hidden
+                  loading="lazy"
+                  referrerPolicy="no-referrer"
+                  onError={(e) => {
+                    const fb = getFallbackImage('event', lead.id);
+                    if (e.currentTarget.src !== fb) e.currentTarget.src = fb;
+                  }}
+                  className="aspect-[16/10] w-full bg-muted object-cover transition-transform group-hover:scale-[1.02]"
+                />
+                <div className="img-scrim-readable absolute inset-0" />
+                <div className="absolute bottom-0 start-0 end-0 p-6 text-white">
+                  <div className="mb-2 flex items-center gap-2">
+                    {isOnNow(lead, now) ? (
+                      <Badge variant="default" className="gap-1.5">
+                        <span
+                          className="h-1.5 w-1.5 rounded-full bg-current animate-pulse"
+                          aria-hidden
+                        />
+                        {t('home.events.onNow', 'On now')}
+                      </Badge>
+                    ) : (
+                      <Badge variant="outline">
+                        {format(new Date(lead.start_date), 'EEE, MMM d')}
+                      </Badge>
+                    )}
+                  </div>
+                  <p className="font-display text-title md:text-headline font-bold leading-tight">
+                    {lead.title}
+                  </p>
+                  {(lead.venue_name || lead.city) && (
+                    <p className="mt-1 truncate text-13 opacity-90">
+                      {[lead.venue_name, lead.city].filter(Boolean).join(' · ')}
+                    </p>
                   )}
                 </div>
-                <p className="font-display text-title md:text-headline font-bold leading-tight">
-                  {lead.title}
-                </p>
-                {(lead.venue_name || lead.city) && (
-                  <p className="mt-1 truncate text-13 opacity-90">
-                    {[lead.venue_name, lead.city].filter(Boolean).join(' · ')}
-                  </p>
-                )}
-              </div>
-            </LocalizedLink>
-            <SaveButton eventId={lead.id} className="absolute top-4 end-4" />
+              </LocalizedLink>
+              <SaveButton eventId={lead.id} className="absolute top-4 end-4" />
             </div>
           )}
 
@@ -309,7 +312,7 @@ const EventsAgenda = () => {
                       <LocalizedLink
                         key={ev.id}
                         to={`/events/${ev.slug}`}
-                        className="group grid grid-cols-[3.5rem_1fr_auto] items-center gap-4 rounded-element border-t border-border px-2 py-4 no-underline transition-colors hover:bg-muted"
+                        className="group grid grid-cols-[3.5rem_1fr_auto] items-center gap-4 rounded-element px-2 py-4 no-underline transition-colors hover:bg-muted"
                       >
                         <img
                           src={resolveEventImage(ev, true)}

@@ -380,7 +380,9 @@ export const UmamiAnalyticsDashboard = () => {
         <CardContent>
           <div className="flex flex-wrap items-center gap-4">
             <div className="flex items-center gap-2">
-              <label htmlFor="umami-date-range" className="text-sm font-medium">Date Range:</label>
+              <label htmlFor="umami-date-range" className="text-sm font-medium">
+                Date Range:
+              </label>
               <Select
                 value={dateRange}
                 onValueChange={(value: '7d' | '30d' | '90d') => setDateRange(value)}
@@ -397,7 +399,9 @@ export const UmamiAnalyticsDashboard = () => {
             </div>
 
             <div className="flex items-center gap-2">
-              <label htmlFor="umami-device" className="text-sm font-medium">Device:</label>
+              <label htmlFor="umami-device" className="text-sm font-medium">
+                Device:
+              </label>
               <Select
                 value={deviceFilter}
                 onValueChange={(value: 'all' | 'desktop' | 'mobile' | 'tablet') =>
@@ -417,7 +421,9 @@ export const UmamiAnalyticsDashboard = () => {
             </div>
 
             <div className="flex items-center gap-2">
-              <span id="umami-autorefresh-label" className="text-sm font-medium">Auto Refresh:</span>
+              <span id="umami-autorefresh-label" className="text-sm font-medium">
+                Auto Refresh:
+              </span>
               <Button
                 variant={autoRefresh ? 'default' : 'outline'}
                 size="sm"
@@ -488,7 +494,6 @@ export const UmamiAnalyticsDashboard = () => {
             <p className="text-xs text-muted-foreground">Single page visits</p>
           </CardContent>
         </Card>
-
       </div>
 
       {/* Charts and Analytics */}
@@ -674,7 +679,7 @@ export const UmamiAnalyticsDashboard = () => {
                 {stats.topCountries.map((country, index) => (
                   <div
                     key={country.country}
-                    className="flex items-center justify-between p-4 rounded-element border"
+                    className="flex items-center justify-between p-4 rounded-element bg-surface-container"
                   >
                     <div className="flex items-center gap-4">
                       <Badge variant="outline">{index + 1}</Badge>

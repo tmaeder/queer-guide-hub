@@ -1,4 +1,12 @@
-import { MapPin, Building2, Calendar, Newspaper, Activity, Loader2, ShieldAlert } from 'lucide-react';
+import {
+  MapPin,
+  Building2,
+  Calendar,
+  Newspaper,
+  Activity,
+  Loader2,
+  ShieldAlert,
+} from 'lucide-react';
 import { hasAnyCriminalizationSignal } from '@/utils/equalityScore';
 import { MapShell } from '@/components/map/MapShell';
 import { MAP_SHELL_ENABLED } from '@/lib/featureFlags';
@@ -184,7 +192,7 @@ export function CountryTravelTab({
   // suppressed in favor of a sober pointer to the rights section.
   if (hasAnyCriminalizationSignal(country.lgbti_criminalization)) {
     return (
-      <div className="flex gap-4 rounded-container border border-destructive/40 p-6">
+      <div className="flex gap-4 rounded-container border-destructive/40 p-6 bg-surface-container">
         <ShieldAlert size={18} aria-hidden="true" className="mt-0.5 shrink-0 text-destructive" />
         <div className="flex flex-col gap-2">
           <p className="text-body-lg font-medium">
@@ -215,7 +223,10 @@ export function CountryTravelTab({
           <CardDescription>{activitiesDescription}</CardDescription>
         </CardHeader>
         <CardContent>
-          <ActivitiesWidget destination={country.capital || country.name} countryCode={country.code} />
+          <ActivitiesWidget
+            destination={country.capital || country.name}
+            countryCode={country.code}
+          />
         </CardContent>
       </Card>
     </div>

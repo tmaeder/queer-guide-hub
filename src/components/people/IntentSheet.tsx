@@ -16,7 +16,7 @@ import { IntentChips } from '@/components/status/IntentChips';
 
 const chip = (active: boolean) =>
   cn(
-    'inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-element border px-2.5 py-2 text-xs transition-colors',
+    'inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-element px-2.5 py-2 text-xs transition-colors bg-surface-container',
     active
       ? 'border-foreground bg-foreground text-background'
       : 'border-border text-muted-foreground hover:text-foreground',
@@ -57,7 +57,7 @@ export function IntentSheet({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="bottom" className="max-h-[90dvh] overflow-y-auto px-4 pb-8 sm:px-6">
         <SheetHeader className="text-left">
-          <SheetTitle>{t('people.intent.title', "What are you here for?")}</SheetTitle>
+          <SheetTitle>{t('people.intent.title', 'What are you here for?')}</SheetTitle>
           <SheetDescription>
             {t('people.intent.subtitle', 'Sets how we rank people for you. Change it anytime.')}
           </SheetDescription>
@@ -104,7 +104,10 @@ export function IntentSheet({
               <div className="flex items-center justify-between gap-4 rounded-element border border-border px-4 py-2.5">
                 <span className="flex items-center gap-2 text-sm">
                   <Plane className="h-4 w-4 text-muted-foreground" aria-hidden />
-                  {t('people.intent.travelActive', { defaultValue: 'Visible to people in {{city}}', city: travel?.city_name ?? t('people.intent.yourCity', 'your destination') })}
+                  {t('people.intent.travelActive', {
+                    defaultValue: 'Visible to people in {{city}}',
+                    city: travel?.city_name ?? t('people.intent.yourCity', 'your destination'),
+                  })}
                 </span>
                 <Button variant="outline" size="sm" onClick={() => setTravel(null)}>
                   {t('common.clear', 'Clear')}
@@ -126,7 +129,10 @@ export function IntentSheet({
               </button>
             ) : (
               <p className="text-sm text-muted-foreground">
-                {t('people.intent.travelEmpty', 'Plan a trip to find travel buddies heading to the same place.')}
+                {t(
+                  'people.intent.travelEmpty',
+                  'Plan a trip to find travel buddies heading to the same place.',
+                )}
               </p>
             )}
           </section>

@@ -22,7 +22,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
           // Match the normalized overlay surface (dialogs / popovers):
           // rounded-container, hairline border, translucent popover bg + blur.
           toast:
-            'group toast rounded-container border border-border/60 bg-popover/95 backdrop-blur-md text-popover-foreground',
+            'group toast rounded-container bg-surface-container-highest/95 backdrop-blur-md text-popover-foreground',
           description: 'group-[.toast]:text-muted-foreground',
           actionButton: 'group-[.toast]:bg-primary group-[.toast]:text-primary-foreground',
           cancelButton: 'group-[.toast]:bg-muted group-[.toast]:text-muted-foreground',

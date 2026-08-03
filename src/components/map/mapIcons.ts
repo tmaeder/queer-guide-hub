@@ -67,9 +67,7 @@ export function iconForMarker(type: LayerType, category?: string | null): Lucide
 /** A short, human label for a category (Title Case, underscores → spaces). */
 export function categoryLabel(category?: string | null): string {
   if (!category) return '';
-  return category
-    .replace(/[_-]+/g, ' ')
-    .replace(/\b\w/g, (c) => c.toUpperCase());
+  return category.replace(/[_-]+/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 const normalize = (s: string) => s.toLowerCase().replace(/[\s-]+/g, '_');

@@ -28,7 +28,8 @@ export function CompareRightsSideBySide({
     anchorEqualityScore,
   });
 
-  if (isLoading) return <Skeleton variant="rectangular" height={140} className="rounded-container" />;
+  if (isLoading)
+    return <Skeleton variant="rectangular" height={140} className="rounded-container" />;
   if (!peers || peers.length === 0) return null;
 
   const rows = [
@@ -45,7 +46,7 @@ export function CompareRightsSideBySide({
   ];
 
   return (
-    <div className="overflow-x-auto rounded-container border">
+    <div className="overflow-x-auto rounded-container bg-surface-container">
       <table className="w-full text-13">
         <thead>
           <tr className="border-b text-2xs uppercase tracking-[0.14em] text-muted-foreground">
@@ -62,9 +63,7 @@ export function CompareRightsSideBySide({
             <tr
               key={row.id}
               className={
-                row.isAnchor
-                  ? 'border-b bg-muted font-semibold'
-                  : 'border-b last:border-b-0'
+                row.isAnchor ? 'border-b bg-muted font-semibold' : 'border-b last:border-b-0'
               }
             >
               <td className="px-4 py-2">
@@ -90,4 +89,3 @@ export function CompareRightsSideBySide({
     </div>
   );
 }
-

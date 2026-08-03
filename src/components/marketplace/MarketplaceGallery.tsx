@@ -87,7 +87,7 @@ export function MarketplaceGallery({ listingId, images, title }: MarketplaceGall
               aria-label={`Show image ${i + 1} of ${gallery.length}`}
               aria-current={i === safeActive}
               className={cn(
-                'h-16 w-16 flex-shrink-0 snap-start overflow-hidden rounded-element border bg-muted transition-colors md:h-20 md:w-20',
+                'h-16 w-16 flex-shrink-0 snap-start overflow-hidden rounded-element bg-muted transition-colors md:h-20 md:w-20',
                 i === safeActive ? 'border-foreground' : 'border-border hover:border-foreground/40',
               )}
             >

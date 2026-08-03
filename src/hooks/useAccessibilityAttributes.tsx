@@ -12,7 +12,9 @@ import { supabase } from '@/integrations/supabase/client';
  * so filtering by its values could never match a row.
  */
 export function useAccessibilityAttributes() {
-  const [accessibilityAttributes, setAccessibilityAttributes] = useState<Record<string, unknown>[]>([]);
+  const [accessibilityAttributes, setAccessibilityAttributes] = useState<Record<string, unknown>[]>(
+    [],
+  );
   const [loading, setLoading] = useState(false);
 
   const fetchAccessibilityAttributes = async () => {
@@ -42,6 +44,6 @@ export function useAccessibilityAttributes() {
   return {
     accessibilityAttributes,
     loading,
-    fetchAccessibilityAttributes
+    fetchAccessibilityAttributes,
   };
 }

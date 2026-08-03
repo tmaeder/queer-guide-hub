@@ -68,7 +68,7 @@ export function CountryHero({ country, weatherData, onContentUpdated }: CountryH
   const place = [regionName, continentName].filter(Boolean).join(' · ');
 
   return (
-    <div className="relative h-72 overflow-hidden rounded-container border bg-muted md:h-96">
+    <div className="relative h-72 overflow-hidden rounded-container bg-muted md:h-96">
       {imageUrl ? (
         <img
           src={imageUrl}
@@ -109,7 +109,9 @@ export function CountryHero({ country, weatherData, onContentUpdated }: CountryH
       {/* Bottom-left editorial overlay */}
       <div className="absolute inset-x-0 bottom-0 flex flex-col gap-2 p-6 md:p-8">
         {place && (
-          <p className="text-2xs font-semibold uppercase tracking-[0.18em] text-white/80">{place}</p>
+          <p className="text-2xs font-semibold uppercase tracking-[0.18em] text-white/80">
+            {place}
+          </p>
         )}
         <h1 className="flex items-center gap-4 text-display font-bold leading-none text-white sm:text-hero">
           {country.flag_emoji && (

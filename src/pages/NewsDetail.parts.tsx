@@ -176,7 +176,7 @@ export function IntegrityNotice({ flags }: { flags?: string[] | null }) {
   const shown = (flags ?? []).filter((f) => f in INTEGRITY_FLAGS);
   if (shown.length === 0) return null;
   return (
-    <div className="flex flex-col gap-2 rounded-element border border-foreground/30 bg-muted px-4 py-2">
+    <div className="flex flex-col gap-2 rounded-element bg-muted px-4 py-2">
       {shown.map((flag) => {
         const { key, fallback, icon: Icon } = INTEGRITY_FLAGS[flag];
         return (
@@ -318,7 +318,11 @@ export function TagsCard({ tags }: { tags: string[] }) {
       <CardContent>
         <div className="flex flex-wrap gap-2">
           {tags.map((tag) => (
-            <LocalizedLink key={tag} to={`/tags/${encodeURIComponent(tag)}`} className="no-underline">
+            <LocalizedLink
+              key={tag}
+              to={`/tags/${encodeURIComponent(tag)}`}
+              className="no-underline"
+            >
               <Badge variant="outline" className="cursor-pointer px-2.5 py-0.5 text-xs">
                 {formatNewsTag(tag)}
               </Badge>
@@ -559,7 +563,13 @@ function ForYouNewsRail({
  * signed-in users (falls back to semantic neighbours when there's no bias yet),
  * and the semantic "More like this" rail for everyone else.
  */
-export function RelatedNewsRail({ articleId, className }: { articleId: string; className?: string }) {
+export function RelatedNewsRail({
+  articleId,
+  className,
+}: {
+  articleId: string;
+  className?: string;
+}) {
   const { t } = useTranslation();
   const { user } = useAuth();
   if (user) return <ForYouNewsRail articleId={articleId} userId={user.id} className={className} />;

@@ -196,10 +196,7 @@ export function DayCard({
     const visualOrder = SLOT_ORDER.flatMap((slot) => placesBySlot[slot]);
     return buildLegs(visualOrder);
   }, [placesBySlot]);
-  const legByFromId = useMemo(
-    () => Object.fromEntries(legs.map((l) => [l.fromId, l])),
-    [legs],
-  );
+  const legByFromId = useMemo(() => Object.fromEntries(legs.map((l) => [l.fromId, l])), [legs]);
   const walkingKm = useMemo(() => totalWalkingKm(legs), [legs]);
 
   const dimClass = isPast ? 'opacity-60' : '';
@@ -209,7 +206,7 @@ export function DayCard({
     <Card
       data-day-id={day.id}
       data-day-today={isToday ? 'true' : undefined}
-      className={`mb-4 rounded-container overflow-hidden border ${cardBorder} ${dimClass}`}
+      className={`mb-4 rounded-container overflow-hidden ${cardBorder} ${dimClass} bg-surface-container`}
     >
       <CardContent>
         {/* Header */}
@@ -330,12 +327,7 @@ export function DayCard({
               </Button>
             )}
             {directionsUrl && (
-              <Button
-                variant="ghost"
-                size="sm"
-                asChild
-                className="rounded-full"
-              >
+              <Button variant="ghost" size="sm" asChild className="rounded-full">
                 <a
                   href={directionsUrl}
                   target="_blank"
@@ -369,7 +361,12 @@ export function DayCard({
                 >
                   <StickyNote size={14} />
                 </Button>
-                <Button variant="ghost" size="sm" onClick={() => onAddPlace()} className="rounded-full">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => onAddPlace()}
+                  className="rounded-full"
+                >
                   <Plus size={14} className="mr-1" />
                   {t('trips.itinerary.add')}
                 </Button>

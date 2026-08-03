@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { useEffect, useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 
 /**
  * Magic-link / OAuth redirect target. Supports both Supabase auth flows:
@@ -20,9 +20,7 @@ import { supabase } from "@/integrations/supabase/client";
  * manually if the extension is not installed in the same browser.
  */
 export default function AuthCallback() {
-  const [status, setStatus] = useState<
-    "working" | "ok" | "ext-ok" | "manual" | "error"
-  >("working");
+  const [status, setStatus] = useState<'working' | 'ok' | 'ext-ok' | 'manual' | 'error'>('working');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [manualPayload, setManualPayload] = useState<string | null>(null);
 
@@ -34,43 +32,46 @@ export default function AuthCallback() {
   async function run() {
     try {
       const search = new URLSearchParams(window.location.search);
-      const hash = new URLSearchParams(window.location.hash.replace(/^#/, ""));
-      const extId = search.get("ext");
+      const hash = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+      const extId = search.get('ext');
 
-      const code = search.get("code");
-      const accessToken = hash.get("access_token");
-      const refreshToken = hash.get("refresh_token");
-      const expiresIn = parseInt(hash.get("expires_in") ?? "3600", 10);
-      const tokenError = search.get("error_description") ?? hash.get("error_description");
+      const code = search.get('code');
+      const accessToken = hash.get('access_token');
+      const refreshToken = hash.get('refresh_token');
+      const expiresIn = parseInt(hash.get('expires_in') ?? '3600', 10);
+      const tokenError = search.get('error_description') ?? hash.get('error_description');
 
       if (tokenError) throw new Error(tokenError);
 
       if (!code && !accessToken) {
-        throw new Error("missing auth code or token");
+        throw new Error('missing auth code or token');
       }
 
       // Extension flow: forward whatever Supabase gave us so the extension
       // can persist its own session in chrome.storage.
       if (extId) {
         const ok = await sendToExtension(extId, {
-          type: "qg:auth",
+          type: 'qg:auth',
           code,
           access_token: accessToken,
           refresh_token: refreshToken,
           expires_in: expiresIn,
         });
         if (ok) {
-          setStatus("ext-ok");
+          setStatus('ext-ok');
           return;
         }
         // Extension not installed in this browser → fall through to manual.
-        setManualPayload(JSON.stringify(
-          accessToken
-            ? { access_token: accessToken, refresh_token: refreshToken, expires_in: expiresIn }
-            : { code },
-          null, 2,
-        ));
-        setStatus("manual");
+        setManualPayload(
+          JSON.stringify(
+            accessToken
+              ? { access_token: accessToken, refresh_token: refreshToken, expires_in: expiresIn }
+              : { code },
+            null,
+            2,
+          ),
+        );
+        setStatus('manual');
         return;
       }
 
@@ -85,41 +86,45 @@ export default function AuthCallback() {
         const { error } = await supabase.auth.exchangeCodeForSession(code);
         if (error) throw error;
       }
-      setStatus("ok");
+      setStatus('ok');
 
       // OAuth providers don't populate raw_user_meta_data.username, so the
       // handle_new_user() trigger leaves profiles.username = NULL. Force a
       // one-time claim step before landing on the app. If a username already
       // exists (returning user), skip straight to home.
-      const { data: { user } } = await supabase.auth.getUser();
-      let destination = "/";
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      let destination = '/';
       if (user) {
         // Imperative one-shot lookup inside the OAuth callback flow — can't
         // be expressed as a useQuery without delaying navigation behind a
         // re-render cycle, so the rule is disabled for this single line.
         // eslint-disable-next-line queerguide/no-supabase-from-in-pages
         const { data: profileRow } = await supabase
-          .from("profiles")
-          .select("username")
-          .eq("user_id", user.id)
+          .from('profiles')
+          .select('username')
+          .eq('user_id', user.id)
           .maybeSingle();
         if (!profileRow?.username) {
-          destination = "/claim-username";
+          destination = '/claim-username';
         }
       }
-      setTimeout(() => { window.location.href = destination; }, 600);
+      setTimeout(() => {
+        window.location.href = destination;
+      }, 600);
     } catch (e) {
-      setStatus("error");
+      setStatus('error');
       setErrorMsg(e instanceof Error ? e.message : String(e));
     }
   }
 
   return (
     <div className="min-h-screen flex items-center justify-center p-6">
-      <div className="max-w-md w-full bg-card border rounded-element p-6 space-y-4">
-        {status === "working" && <p>Signing you in…</p>}
-        {status === "ok" && <p>Signed in. Redirecting…</p>}
-        {status === "ext-ok" && (
+      <div className="max-w-md w-full bg-card rounded-element p-6 space-y-4">
+        {status === 'working' && <p>Signing you in…</p>}
+        {status === 'ok' && <p>Signed in. Redirecting…</p>}
+        {status === 'ext-ok' && (
           <>
             <h1 className="text-lg font-semibold">Extension signed in</h1>
             <p className="text-sm text-muted-foreground">
@@ -127,16 +132,19 @@ export default function AuthCallback() {
             </p>
           </>
         )}
-        {status === "manual" && (
+        {status === 'manual' && (
           <>
             <h1 className="text-lg font-semibold">Almost there</h1>
             <p className="text-sm text-muted-foreground">
-              The extension was not detected on this device. Copy the payload below and paste it into the extension popup.
+              The extension was not detected on this device. Copy the payload below and paste it
+              into the extension popup.
             </p>
-            <pre className="bg-muted p-4 rounded-element text-xs break-all select-all">{manualPayload}</pre>
+            <pre className="bg-muted p-4 rounded-element text-xs break-all select-all">
+              {manualPayload}
+            </pre>
           </>
         )}
-        {status === "error" && (
+        {status === 'error' && (
           <>
             <h1 className="text-lg font-semibold text-destructive">Sign-in failed</h1>
             <p className="text-sm">{errorMsg}</p>

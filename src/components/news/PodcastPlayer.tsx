@@ -48,7 +48,7 @@ export function PodcastPlayer({ audioUrl, title, durationSeconds }: PodcastPlaye
   }, []);
 
   return (
-    <div className="rounded-element border bg-muted/40 p-4">
+    <div className="rounded-element bg-muted/40 p-4">
       <div className="flex items-center gap-4">
         <button
           type="button"

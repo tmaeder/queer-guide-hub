@@ -13,19 +13,34 @@ const mockEq = vi.fn();
 vi.mock('@/integrations/supabase/client', () => {
   const builder = {
     select: () => builder,
-    eq: (col: string, val: unknown) => { mockEq(col, val); return builder; },
+    eq: (col: string, val: unknown) => {
+      mockEq(col, val);
+      return builder;
+    },
     order: (...args: unknown[]) => mockOrder(...args),
   };
-  return { supabase: { from: (table: string) => { mockFrom(table); return builder; } } };
+  return {
+    supabase: {
+      from: (table: string) => {
+        mockFrom(table);
+        return builder;
+      },
+    },
+  };
 });
 
 import { useAccessibilityAttributes } from '../useAccessibilityAttributes';
 
 describe('useAccessibilityAttributes', () => {
-  beforeEach(() => { vi.clearAllMocks(); });
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
 
   it('should start with empty array and fetch on mount', async () => {
-    mockOrder.mockResolvedValue({ data: [{ id: '1', slug: 'wheelchair-accessible', name: 'Wheelchair' }], error: null });
+    mockOrder.mockResolvedValue({
+      data: [{ id: '1', slug: 'wheelchair-accessible', name: 'Wheelchair' }],
+      error: null,
+    });
     const { result } = renderHook(() => useAccessibilityAttributes());
     expect(result.current.accessibilityAttributes).toEqual([]);
     await waitFor(() => expect(result.current.loading).toBe(false));

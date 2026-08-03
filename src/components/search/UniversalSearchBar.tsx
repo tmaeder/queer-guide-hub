@@ -1,4 +1,5 @@
-import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useRef, useEffect, useCallback, useMemo, Suspense } from 'react';
+import { lazyOptional } from '@/utils/lazyRetry';
 import { useTranslation } from 'react-i18next';
 import { useLocation } from 'react-router';
 import { Loader2, Search, X, Mic } from 'lucide-react';
@@ -22,20 +23,25 @@ import { MODE_SCOPE_BIAS } from '@/config/navigation';
 import type { SearchFilters } from '@/hooks/useSearch';
 import type { AssistantCard } from '@/lib/assistantClient';
 import { detailHref } from '@/lib/searchRoutes';
-import { SearchPopoverDesktop } from './SearchPopoverDesktop';
-import { SearchPopoverMobile } from './SearchPopoverMobile';
-import { SearchAskPanel } from './SearchAskPanel';
+// The three popover bodies only ever render inside <PopoverContent>, which
+// Radix mounts on open — so nothing here is needed for first paint. Eagerly
+// importing them put the whole results subtree, including dompurify (~58 KB),
+// in the entry graph via Header on EVERY route. Lazy keeps the input (which is
+// above the fold) eager and defers the dropdown to first focus.
+// lazyOptional, not lazyRetry: a permanently failed chunk should leave an empty
+// dropdown, never throw into the boundary that wraps the site header.
+const SearchPopoverDesktop = lazyOptional(() =>
+  import('./SearchPopoverDesktop').then((m) => ({ default: m.SearchPopoverDesktop })),
+);
+const SearchPopoverMobile = lazyOptional(() =>
+  import('./SearchPopoverMobile').then((m) => ({ default: m.SearchPopoverMobile })),
+);
+const SearchAskPanel = lazyOptional(() =>
+  import('./SearchAskPanel').then((m) => ({ default: m.SearchAskPanel })),
+);
 
 // Order for Alt+1-9 scope shortcuts (mirrors SearchScopeChips).
-const SCOPE_IDS = [
-  'venue',
-  'event',
-  'marketplace',
-  'news',
-  'personality',
-  'city',
-  'queer_village',
-];
+const SCOPE_IDS = ['venue', 'event', 'marketplace', 'news', 'personality', 'city', 'queer_village'];
 
 function prefetchRoute(suggestion: SearchSuggestion) {
   // Only prefetch a canonical detail route — `detailHref` returns null for
@@ -59,11 +65,7 @@ function prefetchRoute(suggestion: SearchSuggestion) {
   }
 }
 
-function getPlaceholder(
-  pathname: string,
-  t: (k: string, d?: string) => string,
-  isMobile: boolean,
-) {
+function getPlaceholder(pathname: string, t: (k: string, d?: string) => string, isMobile: boolean) {
   if (pathname.startsWith('/admin')) return t('search.placeholders.generic', 'Search...');
   if (pathname.startsWith('/hotels')) return t('search.placeholders.hotels', 'Search hotels...');
   if (pathname.startsWith('/events')) return t('search.placeholders.events', 'Find events...');
@@ -230,8 +232,7 @@ export const UniversalSearchBar = () => {
         title: suggestion.name || suggestion.title,
       });
       navigate(
-        href ??
-          `/search?q=${encodeURIComponent(displayName)}&types=${suggestion.type}&direct=true`,
+        href ?? `/search?q=${encodeURIComponent(displayName)}&types=${suggestion.type}&direct=true`,
       );
       setIsOpen(false);
     },
@@ -330,7 +331,16 @@ export const UniversalSearchBar = () => {
         handleSearch();
       }
     },
-    [mode, query, suggestions, resultsFocused, setScope, focusInput, handleSelectSuggestion, handleSearch],
+    [
+      mode,
+      query,
+      suggestions,
+      resultsFocused,
+      setScope,
+      focusInput,
+      handleSelectSuggestion,
+      handleSearch,
+    ],
   );
 
   // ⌘K / Ctrl+K hotkey.
@@ -404,7 +414,9 @@ export const UniversalSearchBar = () => {
                 aria-expanded={isOpen}
                 aria-controls="qg-search-listbox"
                 aria-haspopup="listbox"
-                aria-activedescendant={resultsFocused !== null ? `result-${resultsFocused}` : undefined}
+                aria-activedescendant={
+                  resultsFocused !== null ? `result-${resultsFocused}` : undefined
+                }
                 placeholder={placeholder}
                 value={query}
                 onChange={(e) => {
@@ -464,7 +476,7 @@ export const UniversalSearchBar = () => {
                 {!query && !isMobile && (
                   <kbd
                     aria-hidden="true"
-                    className="pointer-events-none border border-border px-1.5 py-0.5 text-xs2 leading-none text-muted-foreground font-[inherit]"
+                    className="pointer-events-none rounded-badge bg-surface-container-high px-1.5 py-0.5 text-xs2 leading-none text-muted-foreground font-[inherit]"
                   >
                     {isMac ? '⌘K' : 'Ctrl+K'}
                   </kbd>
@@ -549,102 +561,114 @@ export const UniversalSearchBar = () => {
             if (searchBoxRef.current?.contains(e.target as Node)) e.preventDefault();
           }}
         >
-          {mode === 'ask' ? (
-            <>
-              {assistant.turnstile}
-              <SearchAskPanel
-                messages={assistant.messages}
-                pending={assistant.pending}
-                error={assistant.error}
-                onSend={(m) => void assistant.send(m)}
-                onBack={() => {
-                  setMode('search');
+          {/* Height-stable fallback: the popover is already positioned when the
+              chunk resolves, so a zero-height fallback would make it jump. */}
+          <Suspense
+            fallback={
+              <div className="p-4" role="status" aria-live="polite">
+                <span className="sr-only">Loading search</span>
+                <div className="h-4 w-2/3 animate-pulse rounded-badge bg-muted" />
+                <div className="mt-2 h-4 w-1/2 animate-pulse rounded-badge bg-muted" />
+              </div>
+            }
+          >
+            {mode === 'ask' ? (
+              <>
+                {assistant.turnstile}
+                <SearchAskPanel
+                  messages={assistant.messages}
+                  pending={assistant.pending}
+                  error={assistant.error}
+                  onSend={(m) => void assistant.send(m)}
+                  onBack={() => {
+                    setMode('search');
+                    focusInput();
+                  }}
+                  onSelectCard={navigateToCard}
+                />
+              </>
+            ) : isMobile ? (
+              <SearchPopoverMobile
+                query={query}
+                activeScope={activeScope}
+                suggestions={suggestions}
+                countsByType={countsByType}
+                loading={suggestionsLoading}
+                error={suggestionsError}
+                trending={discoveryHits}
+                discoverySource={discoverySource}
+                showFilters={showFilters}
+                filters={filters}
+                setFilters={setFilters}
+                setScope={setScope}
+                onSelect={handleSelectSuggestion}
+                onSearchAll={() => handleSearch()}
+                onToggleFilters={() => setShowFilters(!showFilters)}
+                activeFiltersCount={activeFiltersCount}
+                onClose={() => setIsOpen(false)}
+                onClear={() => {
+                  setQuery('');
                   focusInput();
                 }}
-                onSelectCard={navigateToCard}
+                onPrefetch={prefetchRoute}
+                navigate={navigate}
+                onAsk={enterAsk}
+                recentSearches={recentSearches}
+                onSelectRecent={(term) => {
+                  setQuery(term);
+                  handleSearch(term);
+                }}
+                clearRecents={clearRecents}
               />
-            </>
-          ) : isMobile ? (
-            <SearchPopoverMobile
-              query={query}
-              activeScope={activeScope}
-              suggestions={suggestions}
-              countsByType={countsByType}
-              loading={suggestionsLoading}
-              error={suggestionsError}
-              trending={discoveryHits}
-              discoverySource={discoverySource}
-              showFilters={showFilters}
-              filters={filters}
-              setFilters={setFilters}
-              setScope={setScope}
-              onSelect={handleSelectSuggestion}
-              onSearchAll={() => handleSearch()}
-              onToggleFilters={() => setShowFilters(!showFilters)}
-              activeFiltersCount={activeFiltersCount}
-              onClose={() => setIsOpen(false)}
-              onClear={() => {
-                setQuery('');
-                focusInput();
-              }}
-              onPrefetch={prefetchRoute}
-              navigate={navigate}
-              onAsk={enterAsk}
-              recentSearches={recentSearches}
-              onSelectRecent={(term) => {
-                setQuery(term);
-                handleSearch(term);
-              }}
-              clearRecents={clearRecents}
-            />
-          ) : (
-            <SearchPopoverDesktop
-              query={query}
-              activeScope={activeScope}
-              suggestions={suggestions}
-              countsByType={countsByType}
-              loading={suggestionsLoading}
-              error={suggestionsError}
-              trending={discoveryHits}
-              discoverySource={discoverySource}
-              recentSearches={recentSearches}
-              showFilters={showFilters}
-              setShowFilters={setShowFilters}
-              filters={filters}
-              setFilters={setFilters}
-              setScope={setScope}
-              onSelectIndex={(s, i) => {
-                setResultsFocused(i);
-                handleSelectSuggestion(s);
-              }}
-              resultsFocused={resultsFocused}
-              setResultsFocused={setResultsFocused}
-              activeFiltersCount={activeFiltersCount}
-              onSearchAll={() => handleSearch()}
-              clearRecents={clearRecents}
-              onSelectRecent={(term) => {
-                setQuery(term);
-                handleSearch(term);
-              }}
-              onSelectTrending={(hit) =>
-                handleSelectSuggestion({
-                  id: hit.id,
-                  name: (hit.title || hit.name || '') as string,
-                  type: hit.type,
-                  icon: () => null,
-                  title: (hit.title || hit.name || '') as string,
-                  subtitle: hit.city as string | undefined,
-                  slug: hit.slug as string | undefined,
-                })
-              }
-              onBrowse={(path) => {
-                setIsOpen(false);
-                navigate(path);
-              }}
-              onPrefetch={prefetchRoute}
-              onAsk={enterAsk}
-            />
-          )}
+            ) : (
+              <SearchPopoverDesktop
+                query={query}
+                activeScope={activeScope}
+                suggestions={suggestions}
+                countsByType={countsByType}
+                loading={suggestionsLoading}
+                error={suggestionsError}
+                trending={discoveryHits}
+                discoverySource={discoverySource}
+                recentSearches={recentSearches}
+                showFilters={showFilters}
+                setShowFilters={setShowFilters}
+                filters={filters}
+                setFilters={setFilters}
+                setScope={setScope}
+                onSelectIndex={(s, i) => {
+                  setResultsFocused(i);
+                  handleSelectSuggestion(s);
+                }}
+                resultsFocused={resultsFocused}
+                setResultsFocused={setResultsFocused}
+                activeFiltersCount={activeFiltersCount}
+                onSearchAll={() => handleSearch()}
+                clearRecents={clearRecents}
+                onSelectRecent={(term) => {
+                  setQuery(term);
+                  handleSearch(term);
+                }}
+                onSelectTrending={(hit) =>
+                  handleSelectSuggestion({
+                    id: hit.id,
+                    name: (hit.title || hit.name || '') as string,
+                    type: hit.type,
+                    icon: () => null,
+                    title: (hit.title || hit.name || '') as string,
+                    subtitle: hit.city as string | undefined,
+                    slug: hit.slug as string | undefined,
+                  })
+                }
+                onBrowse={(path) => {
+                  setIsOpen(false);
+                  navigate(path);
+                }}
+                onPrefetch={prefetchRoute}
+                onAsk={enterAsk}
+              />
+            )}
+          </Suspense>
         </PopoverContent>
       </Popover>
     </div>

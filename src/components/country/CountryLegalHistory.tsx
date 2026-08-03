@@ -25,7 +25,7 @@ export function CountryLegalHistory({
   const seeAll = countryName ? `/history?country=${encodeURIComponent(countryName)}` : '/history';
 
   return (
-    <section className="rounded-container border border-border p-6">
+    <section className="rounded-container bg-surface-container p-6">
       <h3 className="mb-4 text-2xs uppercase tracking-wider text-muted-foreground">
         {t('milestones.legalHistory.title', 'Legal history')}
       </h3>

@@ -19,7 +19,7 @@ export function LeaderboardWidget({ cityId, cityName }: LeaderboardWidgetProps) 
 
   return (
     <section
-      className="rounded-container border bg-card p-6"
+      className="rounded-container bg-card p-6"
       aria-label={t('venues.leaderboard.widget.label', 'Top explorers')}
     >
       <div className="flex items-center justify-between mb-4">
@@ -27,7 +27,10 @@ export function LeaderboardWidget({ cityId, cityName }: LeaderboardWidgetProps) 
           <Trophy size={16} />
           <h2 className="text-title font-semibold">
             {cityName
-              ? t('venues.leaderboard.widget.titleCity', { city: cityName, defaultValue: 'Top in {{city}}' })
+              ? t('venues.leaderboard.widget.titleCity', {
+                  city: cityName,
+                  defaultValue: 'Top in {{city}}',
+                })
               : t('venues.leaderboard.widget.titleGlobal', 'Top explorers')}
           </h2>
         </div>
@@ -61,9 +64,7 @@ export function LeaderboardWidget({ cityId, cityName }: LeaderboardWidgetProps) 
                       </span>
                     )}
                   </span>
-                  <span className="tabular-nums text-muted-foreground">
-                    {r.venues_visited}
-                  </span>
+                  <span className="tabular-nums text-muted-foreground">{r.venues_visited}</span>
                 </li>
               );
             })}

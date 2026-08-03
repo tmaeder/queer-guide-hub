@@ -59,11 +59,9 @@ export function CountryAutocomplete({
     const fetchCountries = async () => {
       setLoading(true);
       try {
-        const data = await listFrom<Country>(
-          'countries',
-          'id, name, code, flag_emoji',
-          { col: 'name' },
-        );
+        const data = await listFrom<Country>('countries', 'id, name, code, flag_emoji', {
+          col: 'name',
+        });
         setCountries(data);
       } catch (err) {
         console.error('Error fetching countries:', err);
@@ -94,7 +92,7 @@ export function CountryAutocomplete({
           aria-describedby={ariaDescribedBy}
           disabled={disabled}
           className={cn(
-            'h-10 w-full justify-between rounded-element border border-input bg-background px-4.5 py-2 font-normal text-foreground transition-all hover:border-foreground/40 hover:bg-background hover:text-foreground focus:border-foreground focus-visible:ring-2 focus-visible:ring-foreground/15 focus-visible:ring-offset-0',
+            'h-10 w-full justify-between rounded-element bg-inverse-surface text-background placeholder:text-background/70 px-4.5 py-2 font-normal transition-all hover:opacity-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-foreground/15 focus-visible:ring-offset-0',
             !selectedCountry && 'text-muted-foreground',
             error && 'border-destructive',
           )}
@@ -106,7 +104,10 @@ export function CountryAutocomplete({
             <span className="truncate">{selectedCountry ? selectedCountry.name : placeholder}</span>
           </span>
           {loading ? (
-            <Loader2 className="ml-2 h-4 w-4 shrink-0 animate-spin opacity-50" aria-label="Loading" />
+            <Loader2
+              className="ml-2 h-4 w-4 shrink-0 animate-spin opacity-50"
+              aria-label="Loading"
+            />
           ) : (
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           )}
@@ -139,11 +140,7 @@ export function CountryAutocomplete({
                       selectedCountry?.code === country.code ? 'opacity-100' : 'opacity-0',
                     )}
                   />
-                  {country.flag_emoji && (
-                    <span className="mr-2 text-xl">
-                      {country.flag_emoji}
-                    </span>
-                  )}
+                  {country.flag_emoji && <span className="mr-2 text-xl">{country.flag_emoji}</span>}
                   <span>{country.name}</span>
                 </CommandItem>
               ))}

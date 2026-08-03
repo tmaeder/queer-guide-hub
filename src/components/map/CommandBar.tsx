@@ -19,11 +19,7 @@ import { TimePopover } from './FilterPopovers';
 import { MapFiltersPanel } from './MapFiltersPanel';
 import { MapSearchField } from './chrome/MapSearchField';
 import { MapLayerList } from './chrome/MapLayerList';
-import {
-  type MapFilterKey,
-  type MapLens,
-  type MapShellFilters,
-} from './MapShell.types';
+import { type MapFilterKey, type MapLens, type MapShellFilters } from './MapShell.types';
 
 interface CommandBarProps {
   /** Render the search field. Default true. False keeps lens/filter/layer
@@ -117,7 +113,7 @@ export const CommandBar = ({
       className={cn(
         // Content-width pill anchored top-left — NOT full-width, so wide screens
         // don't get a huge empty gap between the left controls and the right.
-        'absolute top-3 left-3 z-20 flex items-center gap-1.5 rounded-element border border-border bg-background/95 backdrop-blur-md h-11 px-2 max-w-[calc(100%-1.5rem)]',
+        'absolute top-3 left-3 z-20 flex items-center gap-1.5 rounded-element bg-background/95 backdrop-blur-md h-11 px-2 max-w-[calc(100%-1.5rem)]',
         className,
       )}
     >
@@ -185,7 +181,10 @@ export const CommandBar = ({
                 )}
               </Button>
             </PopoverTrigger>
-            <PopoverContent align="end" className="p-0 w-80 max-h-[70dvh] overflow-hidden flex flex-col">
+            <PopoverContent
+              align="end"
+              className="p-0 w-80 max-h-[70dvh] overflow-hidden flex flex-col"
+            >
               <div className="flex items-center justify-between gap-4 border-b border-border px-4 py-2">
                 <span className="text-13 font-semibold text-foreground">
                   {t('map.commandBar.filters', { defaultValue: 'Filters' })}

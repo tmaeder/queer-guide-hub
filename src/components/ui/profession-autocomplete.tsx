@@ -1,6 +1,6 @@
-import { useState } from "react"
-import { Check, ChevronsUpDown, Loader2 } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { useState } from 'react';
+import { Check, ChevronsUpDown, Loader2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import {
   Command,
   CommandEmpty,
@@ -8,32 +8,32 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "@/components/ui/command"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { cn } from "@/lib/utils"
-import { useProfessions } from "@/hooks/useProfessions"
+} from '@/components/ui/command';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { cn } from '@/lib/utils';
+import { useProfessions } from '@/hooks/useProfessions';
 
 interface ProfessionAutocompleteProps {
-  value?: string
-  onValueChange: (value: string) => void
-  placeholder?: string
-  required?: boolean
-  id?: string
-  disabled?: boolean
+  value?: string;
+  onValueChange: (value: string) => void;
+  placeholder?: string;
+  required?: boolean;
+  id?: string;
+  disabled?: boolean;
 }
 
 export function ProfessionAutocomplete({
   value,
   onValueChange,
-  placeholder = "Select or type a profession...",
+  placeholder = 'Select or type a profession...',
   required,
   id,
   disabled,
 }: ProfessionAutocompleteProps) {
-    const { professions, loading } = useProfessions()
-  const [open, setOpen] = useState(false)
-  const [search, setSearch] = useState("")
-  const showCreate = search && !professions.some((p) => p.toLowerCase() === search.toLowerCase())
+  const { professions, loading } = useProfessions();
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState('');
+  const showCreate = search && !professions.some((p) => p.toLowerCase() === search.toLowerCase());
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -47,13 +47,16 @@ export function ProfessionAutocomplete({
           aria-required={required}
           disabled={disabled}
           className={cn(
-            "h-10 w-full justify-between rounded-element border border-input bg-background px-4.5 py-2 font-normal text-foreground transition-all hover:border-foreground/40 hover:bg-background hover:text-foreground focus:border-foreground focus-visible:ring-2 focus-visible:ring-foreground/15 focus-visible:ring-offset-0",
-            !value && "text-muted-foreground",
+            'h-10 w-full justify-between rounded-element bg-inverse-surface text-background placeholder:text-background/70 px-4.5 py-2 font-normal transition-all hover:opacity-95 focus:border-foreground focus-visible:ring-2 focus-visible:ring-foreground/15 focus-visible:ring-offset-0',
+            !value && 'text-muted-foreground',
           )}
         >
           <span className="truncate">{value || placeholder}</span>
           {loading ? (
-            <Loader2 className="ml-2 h-4 w-4 shrink-0 animate-spin opacity-50" aria-label="Loading" />
+            <Loader2
+              className="ml-2 h-4 w-4 shrink-0 animate-spin opacity-50"
+              aria-label="Loading"
+            />
           ) : (
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           )}
@@ -74,12 +77,15 @@ export function ProfessionAutocomplete({
                   key={profession}
                   value={profession}
                   onSelect={(selected) => {
-                    onValueChange(selected)
-                    setOpen(false)
+                    onValueChange(selected);
+                    setOpen(false);
                   }}
                 >
                   <Check
-                    className={cn("mr-2 h-4 w-4", value === profession ? "opacity-100" : "opacity-0")}
+                    className={cn(
+                      'mr-2 h-4 w-4',
+                      value === profession ? 'opacity-100' : 'opacity-0',
+                    )}
                   />
                   {profession}
                 </CommandItem>
@@ -88,8 +94,8 @@ export function ProfessionAutocomplete({
                 <CommandItem
                   value={search}
                   onSelect={() => {
-                    onValueChange(search)
-                    setOpen(false)
+                    onValueChange(search);
+                    setOpen(false);
                   }}
                 >
                   <Check className="mr-2 h-4 w-4 opacity-0" />
@@ -101,5 +107,5 @@ export function ProfessionAutocomplete({
         </Command>
       </PopoverContent>
     </Popover>
-  )
+  );
 }

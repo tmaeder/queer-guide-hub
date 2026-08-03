@@ -90,10 +90,8 @@ interface SheetContentProps extends React.HTMLAttributes<HTMLDivElement> {
 const sideClasses: Record<SheetSide, string> = {
   right:
     'inset-y-0 right-0 h-full w-full sm:w-[400px] data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right',
-  left:
-    'inset-y-0 left-0 h-full w-full sm:w-[400px] data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left',
-  top:
-    'inset-x-0 top-0 w-full data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:slide-out-to-top data-[state=open]:slide-in-from-top',
+  left: 'inset-y-0 left-0 h-full w-full sm:w-[400px] data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left',
+  top: 'inset-x-0 top-0 w-full data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:slide-out-to-top data-[state=open]:slide-in-from-top',
   bottom:
     'inset-x-0 bottom-0 w-full data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom',
 };
@@ -148,7 +146,7 @@ const SheetContent = React.forwardRef<HTMLDivElement, SheetContentProps>(
           tabIndex={-1}
           data-state={open ? 'open' : 'closed'}
           className={cn(
-            'fixed bg-background p-6 border border-border/60 transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] overflow-auto',
+            'fixed bg-surface-container-highest p-6 transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] overflow-auto',
             side === 'left' || side === 'right' ? 'rounded-none' : 'rounded-t-container',
             sideClasses[side],
             className,

@@ -16,7 +16,7 @@ export function PassportStrip() {
     return (
       <section
         aria-label="Your queer.guide passport"
-        className="rounded-container border border-border/60 bg-card p-6 md:p-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4"
+        className="rounded-container bg-surface-container p-6 md:p-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4"
       >
         <div className="flex items-start gap-4">
           <div className="rounded-element bg-muted p-2">
@@ -41,7 +41,7 @@ export function PassportStrip() {
   return (
     <section
       aria-label="Your queer.guide passport"
-      className="rounded-container border border-border/60 bg-card p-6 md:p-8 flex flex-col md:flex-row md:items-center md:justify-between gap-6"
+      className="rounded-container bg-surface-container p-6 md:p-8 flex flex-col md:flex-row md:items-center md:justify-between gap-6"
     >
       <div className="flex items-center gap-4">
         <div className="rounded-element bg-muted p-2">
@@ -103,7 +103,10 @@ function PassportCount({
         <p className="text-headline font-semibold leading-none tabular-nums">
           {loading ? '—' : value.toLocaleString()}
           {total !== undefined && (
-            <span className="text-15 text-muted-foreground font-normal"> / {total.toLocaleString()}</span>
+            <span className="text-15 text-muted-foreground font-normal">
+              {' '}
+              / {total.toLocaleString()}
+            </span>
           )}
         </p>
         <p className="text-2xs uppercase tracking-wide text-muted-foreground mt-1">{label}</p>

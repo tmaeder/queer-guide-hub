@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import {
   CheckCircle2,
   Download,
@@ -12,25 +12,25 @@ import {
   Bug,
   Link2,
   Loader2,
-} from "lucide-react";
-import { useAuth } from "@/hooks/useAuth";
-import { useLocalizedNavigate } from "@/hooks/useLocalizedNavigate";
-import { supabase } from "@/integrations/supabase/client";
+} from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
+import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
+import { supabase } from '@/integrations/supabase/client';
 
-const RELEASE_ZIP_URL = "/extension/queer-guide-extension.zip";
+const RELEASE_ZIP_URL = '/extension/queer-guide-extension.zip';
 // Kept in step with the deployed zip by the `sync-extension-zip` CI workflow,
 // which rebuilds public/extension/queer-guide-extension.zip on every manifest bump.
-const RELEASE_VERSION = "1.0.2";
-const RELEASE_SIZE = "~780 KB";
+const RELEASE_VERSION = '1.0.2';
+const RELEASE_SIZE = '~780 KB';
 const DEV_BUILD_DOC =
-  "https://github.com/tmaeder/queer-guide-hub/tree/main/extension#build--install-developer-mode";
+  'https://github.com/tmaeder/queer-guide-hub/tree/main/extension#build--install-developer-mode';
 
 const CAPTURE_TYPES = [
-  { key: "venues", fallback: "Venues" },
-  { key: "events", fallback: "Events" },
-  { key: "hotels", fallback: "Hotels" },
-  { key: "marketplace", fallback: "Marketplace" },
-  { key: "news", fallback: "News" },
+  { key: 'venues', fallback: 'Venues' },
+  { key: 'events', fallback: 'Events' },
+  { key: 'hotels', fallback: 'Hotels' },
+  { key: 'marketplace', fallback: 'Marketplace' },
+  { key: 'news', fallback: 'News' },
 ] as const;
 
 interface ExtMeta {
@@ -38,7 +38,7 @@ interface ExtMeta {
   version?: string;
 }
 
-type ConnectStatus = "idle" | "connecting" | "connected" | "error";
+type ConnectStatus = 'idle' | 'connecting' | 'connected' | 'error';
 
 /**
  * Public install page for registered users. Listens for a `qg-extension-ready`
@@ -52,35 +52,36 @@ export default function ExtensionInstall() {
   const { t } = useTranslation();
   const navigate = useLocalizedNavigate();
   const [ext, setExt] = useState<ExtMeta | null>(null);
-  const [status, setStatus] = useState<ConnectStatus>("idle");
+  const [status, setStatus] = useState<ConnectStatus>('idle');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   useEffect(() => {
     function onMessage(e: MessageEvent) {
       if (e.source !== window) return;
       if (e.origin !== window.location.origin) return;
-      const data = e.data as { type?: string; id?: string; version?: string; ok?: boolean } | undefined;
-      if (data?.type === "qg-extension-ready" && typeof data.id === "string") {
+      const data = e.data as
+        { type?: string; id?: string; version?: string; ok?: boolean } | undefined;
+      if (data?.type === 'qg-extension-ready' && typeof data.id === 'string') {
         setExt({ id: data.id, version: data.version });
       }
-      if (data?.type === "qg-session-ack") {
-        setStatus(data.ok ? "connected" : "error");
-        if (!data.ok) setErrorMsg("Extension did not accept the session.");
+      if (data?.type === 'qg-session-ack') {
+        setStatus(data.ok ? 'connected' : 'error');
+        if (!data.ok) setErrorMsg('Extension did not accept the session.');
       }
     }
-    window.addEventListener("message", onMessage);
-    return () => window.removeEventListener("message", onMessage);
+    window.addEventListener('message', onMessage);
+    return () => window.removeEventListener('message', onMessage);
   }, []);
 
   async function connect() {
-    setStatus("connecting");
+    setStatus('connecting');
     setErrorMsg(null);
     try {
       const { data, error } = await supabase.auth.getSession();
-      if (error || !data.session) throw new Error("no active session — please sign in first");
+      if (error || !data.session) throw new Error('no active session — please sign in first');
       window.postMessage(
         {
-          type: "qg-share-session",
+          type: 'qg-share-session',
           session: {
             access_token: data.session.access_token,
             refresh_token: data.session.refresh_token,
@@ -92,7 +93,7 @@ export default function ExtensionInstall() {
       );
       // ack arrives via the message listener above
     } catch (e) {
-      setStatus("error");
+      setStatus('error');
       setErrorMsg(e instanceof Error ? e.message : String(e));
     }
   }
@@ -102,13 +103,22 @@ export default function ExtensionInstall() {
       <div className="flex items-center gap-4 mb-4">
         <Puzzle className="h-8 w-8" />
         <div>
-          <h1 className="text-3xl font-bold">{t("extension.heading.title", "queer.guide capture")}</h1>
+          <h1 className="text-3xl font-bold">
+            {t('extension.heading.title', 'queer.guide capture')}
+          </h1>
           <p className="text-muted-foreground">
-            {t("extension.heading.subtitle", "Browser extension that turns any webpage into a structured suggestion for our moderators.")}
+            {t(
+              'extension.heading.subtitle',
+              'Browser extension that turns any webpage into a structured suggestion for our moderators.',
+            )}
           </p>
         </div>
         <div className="ml-auto">
-          {ext && <Badge variant="default" className="gap-1"><CheckCircle2 className="h-4 w-4" /> {t("extension.badge.installed", "Installed")}</Badge>}
+          {ext && (
+            <Badge variant="default" className="gap-1">
+              <CheckCircle2 className="h-4 w-4" /> {t('extension.badge.installed', 'Installed')}
+            </Badge>
+          )}
         </div>
       </div>
 
@@ -122,7 +132,7 @@ export default function ExtensionInstall() {
           errorMsg={errorMsg}
           signedIn={!!user}
           userEmail={user?.email ?? null}
-          onSignIn={() => navigate("/auth")}
+          onSignIn={() => navigate('/auth')}
         />
       ) : (
         <InstallSteps />
@@ -131,14 +141,14 @@ export default function ExtensionInstall() {
       <Highlights />
 
       <div className="mt-10 text-sm text-muted-foreground">
-        {t("extension.bug.label", "Found a bug?")}{" "}
+        {t('extension.bug.label', 'Found a bug?')}{' '}
         <a
           className="underline inline-flex items-center gap-1"
           href="https://github.com/tmaeder/queer-guide-hub/issues/new"
           target="_blank"
           rel="noreferrer"
         >
-          <Bug className="h-3 w-3" /> {t("extension.bug.cta", "open an issue")}
+          <Bug className="h-3 w-3" /> {t('extension.bug.cta', 'open an issue')}
         </a>
         .
       </div>
@@ -169,41 +179,62 @@ function ConnectCard({
       <CardHeader>
         <CardTitle className="text-xl flex items-center gap-2">
           <Link2 className="h-5 w-5" />
-          {t("extension.connect.title", "Connect this browser")}
+          {t('extension.connect.title', 'Connect this browser')}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4 text-sm">
         <p>
-          {t("extension.connect.detected", "Extension")} <code>{ext.id.slice(0, 6)}…</code>{ext.version ? ` v${ext.version}` : ""} {t("extension.connect.installed", "is installed in this browser.")}
+          {t('extension.connect.detected', 'Extension')} <code>{ext.id.slice(0, 6)}…</code>
+          {ext.version ? ` v${ext.version}` : ''}{' '}
+          {t('extension.connect.installed', 'is installed in this browser.')}
         </p>
-        {status === "connected" ? (
+        {status === 'connected' ? (
           <div className="bg-muted border border-border p-4">
-            <p className="font-medium">{t("extension.connect.done.title", "Connected.")}</p>
+            <p className="font-medium">{t('extension.connect.done.title', 'Connected.')}</p>
             <p className="text-muted-foreground">
-              {t("extension.connect.done.body", "Open the extension popup on any page to capture content for queer.guide.")}
+              {t(
+                'extension.connect.done.body',
+                'Open the extension popup on any page to capture content for queer.guide.',
+              )}
             </p>
           </div>
         ) : signedIn ? (
           <>
             <p className="text-muted-foreground">
-              {t("extension.connect.body", "Sign your queer.guide session into the extension so you can submit content from any webpage.")}
-              {userEmail ? <> {t("extension.connect.signedInAs", "Signed in as")} <strong>{userEmail}</strong>.</> : null}
+              {t(
+                'extension.connect.body',
+                'Sign your queer.guide session into the extension so you can submit content from any webpage.',
+              )}
+              {userEmail ? (
+                <>
+                  {' '}
+                  {t('extension.connect.signedInAs', 'Signed in as')} <strong>{userEmail}</strong>.
+                </>
+              ) : null}
             </p>
-            <Button onClick={onConnect} disabled={status === "connecting"}>
-              {status === "connecting"
-                ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> {t("extension.connect.connecting", "Connecting…")}</>
-                : t("extension.connect.cta", "Connect")}
+            <Button onClick={onConnect} disabled={status === 'connecting'}>
+              {status === 'connecting' ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />{' '}
+                  {t('extension.connect.connecting', 'Connecting…')}
+                </>
+              ) : (
+                t('extension.connect.cta', 'Connect')
+              )}
             </Button>
-            {status === "error" && errorMsg && (
+            {status === 'error' && errorMsg && (
               <p className="text-xs text-destructive">{errorMsg}</p>
             )}
           </>
         ) : (
           <>
             <p className="text-muted-foreground">
-              {t("extension.connect.signInPrompt", "Sign in to your queer.guide account to connect this browser and start submitting.")}
+              {t(
+                'extension.connect.signInPrompt',
+                'Sign in to your queer.guide account to connect this browser and start submitting.',
+              )}
             </p>
-            <Button onClick={onSignIn}>{t("extension.signInGate.cta", "Sign in")}</Button>
+            <Button onClick={onSignIn}>{t('extension.signInGate.cta', 'Sign in')}</Button>
           </>
         )}
       </CardContent>
@@ -216,49 +247,72 @@ function InstallSteps() {
   return (
     <Card className="mb-6">
       <CardHeader>
-        <CardTitle className="text-xl">{t("extension.steps.title", "Install in 3 steps")}</CardTitle>
+        <CardTitle className="text-xl">
+          {t('extension.steps.title', 'Install in 3 steps')}
+        </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
-        <Step n={1} title={t("extension.steps.s1.title", "Download the latest build")}>
+        <Step n={1} title={t('extension.steps.s1.title', 'Download the latest build')}>
           <p className="text-sm text-muted-foreground mb-4">
-            {t("extension.steps.s1.body", "We don't have the extension on the Chrome Web Store yet. For now, grab the latest signed build.")}
+            {t(
+              'extension.steps.s1.body',
+              "We don't have the extension on the Chrome Web Store yet. For now, grab the latest signed build.",
+            )}
           </p>
           <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
             <Button asChild>
               <a href={RELEASE_ZIP_URL} download target="_blank" rel="noreferrer">
                 <Download className="h-4 w-4 mr-2" />
-                {t("extension.steps.s1.download", "Download .zip")}
+                {t('extension.steps.s1.download', 'Download .zip')}
               </a>
             </Button>
-            <span className="text-xs text-muted-foreground">v{RELEASE_VERSION} · {RELEASE_SIZE}</span>
+            <span className="text-xs text-muted-foreground">
+              v{RELEASE_VERSION} · {RELEASE_SIZE}
+            </span>
           </div>
           <p className="text-xs text-muted-foreground mt-2">
-            {t("extension.steps.s1.note", "Unzip it somewhere you won't accidentally delete (e.g. ~/Applications/queer-guide-extension).")}
+            {t(
+              'extension.steps.s1.note',
+              "Unzip it somewhere you won't accidentally delete (e.g. ~/Applications/queer-guide-extension).",
+            )}
           </p>
         </Step>
 
-        <Step n={2} title={t("extension.steps.s2.title", "Load it in Chrome")}>
+        <Step n={2} title={t('extension.steps.s2.title', 'Load it in Chrome')}>
           <ol className="list-decimal pl-6 text-sm space-y-1">
-            <li>{t("extension.steps.s2.l1", "Open chrome://extensions in a new tab.")}</li>
-            <li>{t("extension.steps.s2.l2", "Toggle Developer mode on (top right).")}</li>
-            <li>{t("extension.steps.s2.l3", "Click Load unpacked and pick the unzipped folder.")}</li>
-            <li>{t("extension.steps.s2.l4", "The magenta puzzle icon shows up — pin it for one-click access.")}</li>
+            <li>{t('extension.steps.s2.l1', 'Open chrome://extensions in a new tab.')}</li>
+            <li>{t('extension.steps.s2.l2', 'Toggle Developer mode on (top right).')}</li>
+            <li>
+              {t('extension.steps.s2.l3', 'Click Load unpacked and pick the unzipped folder.')}
+            </li>
+            <li>
+              {t(
+                'extension.steps.s2.l4',
+                'The magenta puzzle icon shows up — pin it for one-click access.',
+              )}
+            </li>
           </ol>
           <p className="text-xs text-muted-foreground mt-2">
-            {t("extension.steps.s2.note", "Other Chromium browsers (Edge, Brave, Arc) work the same way. Firefox / Safari are not supported yet.")}
+            {t(
+              'extension.steps.s2.note',
+              'Other Chromium browsers (Edge, Brave, Arc) work the same way. Firefox / Safari are not supported yet.',
+            )}
           </p>
         </Step>
 
-        <Step n={3} title={t("extension.steps.s3.title", "Reload this page and Connect")}>
+        <Step n={3} title={t('extension.steps.s3.title', 'Reload this page and Connect')}>
           <p className="text-sm">
-            {t("extension.steps.s3.body", "Once Chrome confirms the extension loaded, refresh this page. A “Connect” button will appear and one click signs the extension into your queer.guide account.")}
+            {t(
+              'extension.steps.s3.body',
+              'Once Chrome confirms the extension loaded, refresh this page. A “Connect” button will appear and one click signs the extension into your queer.guide account.',
+            )}
           </p>
         </Step>
 
         <p className="text-xs text-muted-foreground">
-          {t("extension.steps.dev.label", "Want to build it yourself or contribute?")}{" "}
+          {t('extension.steps.dev.label', 'Want to build it yourself or contribute?')}{' '}
           <a className="underline" href={DEV_BUILD_DOC} target="_blank" rel="noreferrer">
-            {t("extension.steps.dev.cta", "Build instructions")}
+            {t('extension.steps.dev.cta', 'Build instructions')}
           </a>
           .
         </p>
@@ -271,7 +325,9 @@ function Captures() {
   const { t } = useTranslation();
   return (
     <div className="flex flex-wrap items-center gap-2 mb-6">
-      <span className="text-sm text-muted-foreground">{t("extension.captures.label", "Captures")}:</span>
+      <span className="text-sm text-muted-foreground">
+        {t('extension.captures.label', 'Captures')}:
+      </span>
       {CAPTURE_TYPES.map(({ key, fallback }) => (
         <Badge key={key} variant="secondary">
           {t(`extension.captures.${key}`, fallback)}
@@ -285,28 +341,38 @@ function Highlights() {
   const { t } = useTranslation();
   return (
     <div className="grid sm:grid-cols-3 gap-4">
-      <Highlight icon={<Wand2 className="h-5 w-5" />} title={t("extension.highlights.smart.title", "Smart capture")}>
-        {t("extension.highlights.smart.body", "Reads JSON-LD, OpenGraph, microdata and DOM heuristics — most pages just work.")}
+      <Highlight
+        icon={<Wand2 className="h-5 w-5" />}
+        title={t('extension.highlights.smart.title', 'Smart capture')}
+      >
+        {t(
+          'extension.highlights.smart.body',
+          'Reads JSON-LD, OpenGraph, microdata and DOM heuristics — most pages just work.',
+        )}
       </Highlight>
-      <Highlight icon={<ShieldCheck className="h-5 w-5" />} title={t("extension.highlights.privacy.title", "Privacy-first")}>
-        {t("extension.highlights.privacy.body", "Only runs when you click. No host permissions, no background tracking.")}
+      <Highlight
+        icon={<ShieldCheck className="h-5 w-5" />}
+        title={t('extension.highlights.privacy.title', 'Privacy-first')}
+      >
+        {t(
+          'extension.highlights.privacy.body',
+          'Only runs when you click. No host permissions, no background tracking.',
+        )}
       </Highlight>
-      <Highlight icon={<CheckCircle2 className="h-5 w-5" />} title={t("extension.highlights.review.title", "Always reviewed")}>
-        {t("extension.highlights.review.body", "Submissions land in a moderation queue, never live until approved.")}
+      <Highlight
+        icon={<CheckCircle2 className="h-5 w-5" />}
+        title={t('extension.highlights.review.title', 'Always reviewed')}
+      >
+        {t(
+          'extension.highlights.review.body',
+          'Submissions land in a moderation queue, never live until approved.',
+        )}
       </Highlight>
     </div>
   );
 }
 
-function Step({
-  n,
-  title,
-  children,
-}: {
-  n: number;
-  title: string;
-  children: React.ReactNode;
-}) {
+function Step({ n, title, children }: { n: number; title: string; children: React.ReactNode }) {
   return (
     <div className="flex gap-4">
       <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-semibold">
@@ -320,10 +386,21 @@ function Step({
   );
 }
 
-function Highlight({ icon, title, children }: { icon: React.ReactNode; title: string; children: React.ReactNode }) {
+function Highlight({
+  icon,
+  title,
+  children,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  children: React.ReactNode;
+}) {
   return (
-    <div className="border rounded-element p-4">
-      <div className="flex items-center gap-2 mb-1 font-semibold">{icon}{title}</div>
+    <div className="rounded-element p-4 bg-surface-container">
+      <div className="flex items-center gap-2 mb-1 font-semibold">
+        {icon}
+        {title}
+      </div>
       <p className="text-sm text-muted-foreground">{children}</p>
     </div>
   );

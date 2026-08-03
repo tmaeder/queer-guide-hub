@@ -3,13 +3,7 @@ import { useParams } from 'react-router';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsTrigger } from '@/components/ui/tabs';
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { ArrowLeft, Eye, Flag, Share2, Shield, User } from 'lucide-react';
 import { ProfileHeader } from '@/components/profile/ProfileHeader';
 import { ScrollableTabList } from '@/components/profile/ScrollableTabList';
@@ -66,10 +60,12 @@ export default function ProfilePage({ tab: tabProp }: { tab?: string } = {}) {
 
   const { profile, loading, error, isOwnProfile } = useSecurePublicProfile(targetUserId);
   const { status: ownStatus } = useStatus();
-  const { status: othersStatus } = usePublicStatus(isOwnProfile ? null : targetUserId ?? null);
+  const { status: othersStatus } = usePublicStatus(isOwnProfile ? null : (targetUserId ?? null));
   const status = isOwnProfile ? ownStatus : othersStatus;
   const { data: ownScore } = useCommunityScore();
-  const { score: othersScore } = usePublicCommunityScore(isOwnProfile ? null : targetUserId ?? null);
+  const { score: othersScore } = usePublicCommunityScore(
+    isOwnProfile ? null : (targetUserId ?? null),
+  );
   const score = isOwnProfile ? ownScore : othersScore;
   const [statusPickerOpen, setStatusPickerOpen] = useState(false);
   const [viewAsOpen, setViewAsOpen] = useState(false);
@@ -102,7 +98,8 @@ export default function ProfilePage({ tab: tabProp }: { tab?: string } = {}) {
     const url = window.location.href;
     const shareName = publicDisplayName(profile?.display_name as string | undefined);
     const title = shareName ? `${shareName}'s profile` : 'A queer.guide profile';
-    const text = profile?.bio || (shareName ? `${shareName} on queer.guide` : 'A profile on queer.guide');
+    const text =
+      profile?.bio || (shareName ? `${shareName} on queer.guide` : 'A profile on queer.guide');
     if (navigator.share && navigator.canShare && navigator.canShare({ title, text, url })) {
       try {
         await navigator.share({ title, text, url });
@@ -155,8 +152,12 @@ export default function ProfilePage({ tab: tabProp }: { tab?: string } = {}) {
         <div className="text-center py-12 flex flex-col items-center gap-4">
           <Shield size={48} className="text-muted-foreground" aria-hidden />
           <div>
-            <p className="text-base font-medium mb-2">{publicDisplayName(profile.display_name as string | undefined) || 'Anonymous User'}</p>
-            <p className="text-sm text-muted-foreground">This profile is only visible to friends.</p>
+            <p className="text-base font-medium mb-2">
+              {publicDisplayName(profile.display_name as string | undefined) || 'Anonymous User'}
+            </p>
+            <p className="text-sm text-muted-foreground">
+              This profile is only visible to friends.
+            </p>
           </div>
           <UserRelationshipActions targetUserId={profile.user_id} />
         </div>
@@ -166,9 +167,7 @@ export default function ProfilePage({ tab: tabProp }: { tab?: string } = {}) {
 
   const visibility =
     ((profile.privacy_settings as Record<string, unknown> | null)?.profile_visibility as
-      | string
-      | boolean
-      | undefined) ?? 'public';
+      string | boolean | undefined) ?? 'public';
   if ((visibility === 'private' || visibility === false) && !isOwnProfile) {
     return (
       <div className="container mx-auto p-6">
@@ -227,7 +226,7 @@ export default function ProfilePage({ tab: tabProp }: { tab?: string } = {}) {
                             setViewAsOpen(false);
                           }}
                           className={
-                            'rounded-element border p-4 text-left transition-colors ' +
+                            'rounded-element p-4 text-left transition-colors bg-surface-container' +
                             (lens === value
                               ? 'border-foreground bg-muted/40'
                               : 'border-border hover:bg-muted/30')
@@ -280,7 +279,9 @@ export default function ProfilePage({ tab: tabProp }: { tab?: string } = {}) {
                 ['travel', t('profile.tabs.travel', 'Travel')],
                 ['groups', t('profile.tabs.groups', 'Groups')],
                 ['contributions', t('profile.tabs.contributions', 'Contributions')],
-                ...(ownView ? ([['progress', t('profile.tabs.progress', 'Progress')]] as const) : []),
+                ...(ownView
+                  ? ([['progress', t('profile.tabs.progress', 'Progress')]] as const)
+                  : []),
               ] as ReadonlyArray<readonly [string, string]>
             ).map(([v, l]) => (
               <TabsTrigger

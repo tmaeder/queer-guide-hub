@@ -34,7 +34,12 @@ const TableBody = React.forwardRef<
   HTMLTableSectionElement,
   React.HTMLAttributes<HTMLTableSectionElement>
 >(({ className, style, ...props }, ref) => (
-  <tbody ref={ref} className={cn('[&_tr:last-child]:border-0', className)} style={style} {...props} />
+  <tbody
+    ref={ref}
+    className={cn('[&_tr:last-child]:border-0', className)}
+    style={style}
+    {...props}
+  />
 ));
 TableBody.displayName = 'TableBody';
 
@@ -45,7 +50,9 @@ const TableFooter = React.forwardRef<
   <tfoot
     ref={ref}
     className={className}
-    style={{ borderTop: '1px solid hsl(var(--border))', fontWeight: 500, ...style }}
+    // Inline style beats every class and the @layer base reset, so the footer
+    // rule had to be removed here rather than in a className.
+    style={{ fontWeight: 500, ...style }}
     {...props}
   />
 ));
@@ -55,7 +62,10 @@ const TableRow = React.forwardRef<HTMLTableRowElement, React.HTMLAttributes<HTML
   ({ className, style, ...props }, ref) => (
     <tr
       ref={ref}
-      className={cn('border-b border-border', className)}
+      className={
+        // Rows are striped plates, not ruled lines.
+        cn('odd:bg-surface-container/60', className)
+      }
       style={{
         transition: 'background-color 0.15s',
         ...style,

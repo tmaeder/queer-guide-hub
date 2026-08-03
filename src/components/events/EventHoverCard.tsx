@@ -37,10 +37,22 @@ function relativeLabel(iso: string, t: (k: string, v?: Record<string, unknown>) 
   if (days === 0 && hours <= 1) return t('events.timeUntil.now', { defaultValue: 'happening now' });
   if (days === 0) return t('events.timeUntil.today', { defaultValue: 'today' });
   if (days === 1) return t('events.timeUntil.tomorrow', { defaultValue: 'tomorrow' });
-  if (days < 7) return t('events.timeUntil.inDays', { count: days, defaultValue: `in ${days} days` });
-  if (days < 30) return t('events.timeUntil.inWeeks', { count: Math.round(days / 7), defaultValue: `in ${Math.round(days / 7)} weeks` });
-  if (days < 365) return t('events.timeUntil.inMonths', { count: Math.round(days / 30), defaultValue: `in ${Math.round(days / 30)} months` });
-  return t('events.timeUntil.inYears', { count: Math.round(days / 365), defaultValue: `in ${Math.round(days / 365)} years` });
+  if (days < 7)
+    return t('events.timeUntil.inDays', { count: days, defaultValue: `in ${days} days` });
+  if (days < 30)
+    return t('events.timeUntil.inWeeks', {
+      count: Math.round(days / 7),
+      defaultValue: `in ${Math.round(days / 7)} weeks`,
+    });
+  if (days < 365)
+    return t('events.timeUntil.inMonths', {
+      count: Math.round(days / 30),
+      defaultValue: `in ${Math.round(days / 30)} months`,
+    });
+  return t('events.timeUntil.inYears', {
+    count: Math.round(days / 365),
+    defaultValue: `in ${Math.round(days / 365)} years`,
+  });
 }
 
 export function EventHoverCard({
@@ -113,7 +125,7 @@ export function EventHoverCard({
                 src={img}
                 alt=""
                 loading="lazy"
-                className="w-16 h-16 object-cover rounded-element border border-foreground/10"
+                className="w-16 h-16 object-cover rounded-element"
               />
             </Link>
           )}
@@ -210,7 +222,11 @@ export function EventHoverCard({
                 onClick={handleSave}
                 disabled={saveLoading}
                 aria-pressed={isInTrip}
-                aria-label={isInTrip ? t('events.removeFromTrip', 'Remove from trip') : t('events.saveToTrip', 'Save to trip')}
+                aria-label={
+                  isInTrip
+                    ? t('events.removeFromTrip', 'Remove from trip')
+                    : t('events.saveToTrip', 'Save to trip')
+                }
               >
                 {isInTrip ? <Check className="size-3" /> : <Plus className="size-3" />}
               </Button>

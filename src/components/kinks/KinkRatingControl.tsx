@@ -1,10 +1,6 @@
 import { MessageCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import type { KinkRatingValue, KinkSide } from '@/lib/kinks/types';
 import { RATING_META, SIDE_LABEL } from './kinkRatingMeta';
 
@@ -55,7 +51,7 @@ export function KinkRatingControl({
                   aria-label={label}
                   onClick={() => onRate(selected ? null : value)}
                   className={cn(
-                    'inline-flex min-h-0 items-center justify-center rounded-element border transition-colors',
+                    'inline-flex min-h-0 items-center justify-center rounded-element transition-colors bg-surface-container',
                     btn,
                     selected
                       ? 'border-foreground bg-foreground text-background'
@@ -79,7 +75,7 @@ export function KinkRatingControl({
               aria-label="Talk about it first"
               onClick={() => onToggleDiscussion(!needsDiscussion)}
               className={cn(
-                'ml-1 inline-flex min-h-0 items-center justify-center rounded-element border transition-colors',
+                'ml-1 inline-flex min-h-0 items-center justify-center rounded-element transition-colors bg-surface-container',
                 btn,
                 needsDiscussion
                   ? 'border-foreground bg-muted text-foreground'

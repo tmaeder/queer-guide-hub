@@ -50,14 +50,20 @@ export function CategoryCoveragePanel() {
               <tr className="border-t border-border">
                 <td className="py-2">Venues</td>
                 <td className="py-2 text-right tabular-nums">{venues.total.toLocaleString()}</td>
-                <td className="py-2 text-right tabular-nums">{venues.uncategorised.toLocaleString()}</td>
+                <td className="py-2 text-right tabular-nums">
+                  {venues.uncategorised.toLocaleString()}
+                </td>
                 <td className="py-2 text-right tabular-nums">{venues.uncategorised_pct ?? 0}%</td>
-                <td className="py-2 text-right tabular-nums">{venues.unexamined.toLocaleString()}</td>
+                <td className="py-2 text-right tabular-nums">
+                  {venues.unexamined.toLocaleString()}
+                </td>
               </tr>
               <tr className="border-t border-border">
                 <td className="py-2">Events</td>
                 <td className="py-2 text-right tabular-nums">{events.total.toLocaleString()}</td>
-                <td className="py-2 text-right tabular-nums">{events.uncategorised.toLocaleString()}</td>
+                <td className="py-2 text-right tabular-nums">
+                  {events.uncategorised.toLocaleString()}
+                </td>
                 <td className="py-2 text-right tabular-nums">{events.uncategorised_pct ?? 0}%</td>
                 <td className="py-2 text-right tabular-nums">
                   {events.unexamined_concert.toLocaleString()}
@@ -84,8 +90,8 @@ export function CategoryCoveragePanel() {
           <p className="flex items-start gap-1.5 text-13 text-muted-foreground">
             <AlertTriangle size={13} className="mt-0.5 shrink-0" />
             Backfill job not running: {stalled.map(([k]) => JOB_LABELS[k] ?? k).join(', ')}. The
-            venue engine sat unscheduled for its entire existence, so an unregistered or
-            failing job here is the failure mode to watch.
+            venue engine sat unscheduled for its entire existence, so an unregistered or failing job
+            here is the failure mode to watch.
           </p>
         )}
       </CardContent>

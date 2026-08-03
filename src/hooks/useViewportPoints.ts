@@ -76,6 +76,13 @@ interface UseViewportPointsOptions {
 // ── Constants ─────────────────────────────────────────────────────────────────
 
 const DEBOUNCE_MS = 200;
+/**
+ * Hard ceiling on rows pulled per layer per viewport. Matches PostgREST's
+ * `db-max-rows`, which was already truncating these queries silently — stating
+ * it here makes the cap explicit rather than an invisible server default.
+ * Lowering it is safe; raising it past db-max-rows has no effect.
+ */
+const VIEWPORT_POINT_LIMIT = 1000;
 const EMPTY_FC: PointCollection = { type: 'FeatureCollection', features: [] };
 
 // Gated debug logger — matches ExploreMap's mapDebug. Opt in via
@@ -87,7 +94,6 @@ const mapDebug = (...args: unknown[]): void => {
       import.meta.env.DEV ||
       (typeof localStorage !== 'undefined' && localStorage.getItem('qg:debug:map') === '1')
     ) {
-       
       console.debug('[venues-map]', ...args);
     }
   } catch {
@@ -145,7 +151,9 @@ async function fetchOptimizedAssets(
     const results = await Promise.all(
       chunks.map((chunk) =>
         untypedFrom('image_asset_links')
-          .select('entity_id, role, image_assets!inner(optimized_url, thumbnail_url, optimization_status, status)')
+          .select(
+            'entity_id, role, image_assets!inner(optimized_url, thumbnail_url, optimization_status, status)',
+          )
           .eq('entity_type', entityType)
           .in('entity_id', chunk)
           .eq('image_assets.status', 'active'),
@@ -154,13 +162,18 @@ async function fetchOptimizedAssets(
     type Row = {
       entity_id: string;
       role: string;
-      image_assets: { optimized_url: string | null; thumbnail_url: string | null; optimization_status: string | null };
+      image_assets: {
+        optimized_url: string | null;
+        thumbnail_url: string | null;
+        optimization_status: string | null;
+      };
     };
     const data = results.flatMap((r) => (r.error || !r.data ? [] : (r.data as unknown as Row[])));
     for (const row of data) {
       const ia = row.image_assets;
       if (!ia) continue;
-      if (ia.optimization_status !== 'optimized' && ia.optimization_status !== 'cdn_optimized') continue;
+      if (ia.optimization_status !== 'optimized' && ia.optimization_status !== 'cdn_optimized')
+        continue;
       const existing = map.get(row.entity_id);
       if (existing && row.role !== 'cover') continue; // prefer cover, else first wins
       map.set(row.entity_id, {
@@ -192,7 +205,12 @@ async function fetchVenuesInBbox(
     .lte('latitude', bbox.north)
     .gte('longitude', bbox.west)
     .lte('longitude', bbox.east)
-    .order('is_featured', { ascending: false });
+    .order('is_featured', { ascending: false })
+    // PostgREST's db-max-rows silently caps this at 1000 with no error and no
+    // header, so at world zoom the map was showing 1000 arbitrary rows out of
+    // ~21k and reporting no truncation. Ask explicitly, so the cap is ours and
+    // callers can detect that they hit it.
+    .limit(VIEWPORT_POINT_LIMIT);
 
   if (filters?.category) query = query.eq('category', filters.category);
   if (filters?.tags?.length) query = query.overlaps('tags', filters.tags);
@@ -262,7 +280,16 @@ async function fetchEventsInBbox(
     .is('duplicate_of_id', null)
     .gte('start_date', new Date().toISOString())
     .order('is_featured', { ascending: false })
-    .order('start_date', { ascending: true });
+    .order('start_date', { ascending: true })
+    // NOTE: there is deliberately no server-side bbox filter here — an event's
+    // coords may live on the row OR on its joined venue, so the bbox is applied
+    // in JS below. That means this fetches every future active event globally
+    // (~257 today, which is why it is not yet slow). Once that count passes
+    // VIEWPORT_POINT_LIMIT this silently becomes wrong, not just slow: the cap
+    // is applied globally by is_featured/start_date BEFORE the bbox filter, so
+    // a viewport can end up with zero events. Fix then = filter server-side on
+    // coalesce(event coords, venue coords), not a bigger limit.
+    .limit(VIEWPORT_POINT_LIMIT);
 
   if (filters?.search) {
     query = query.or(`title.ilike.%${filters.search}%,description.ilike.%${filters.search}%`);
@@ -307,49 +334,46 @@ async function fetchEventsInBbox(
   }
 
   return rows.map(({ e, lat, lng }) => {
-      const dateStr = e.start_date ? new Date(e.start_date).toLocaleDateString() : '';
-      const images = Array.isArray(e.images) ? (e.images as string[]) : [];
-      const now = Date.now();
-      const startMs = e.start_date ? Date.parse(e.start_date as string) : NaN;
-      const endMs = e.end_date ? Date.parse(e.end_date as string) : NaN;
-      // "Happening now": within the start/end window, or flagged live, or
-      // starting within the next 24h (a near-term event reads as alive).
-      const happeningNow =
-        e.liveness_status === 'live' ||
-        (!Number.isNaN(startMs) &&
-          !Number.isNaN(endMs) &&
-          startMs <= now &&
-          endMs >= now) ||
-        (!Number.isNaN(startMs) && startMs >= now && startMs - now < 24 * 60 * 60 * 1000);
-      const featured = Boolean(e.is_featured);
-      const asset = assets.get(String(e.id));
-      return {
-        type: 'Feature' as const,
-        geometry: { type: 'Point' as const, coordinates: [Number(lng), Number(lat)] },
-        properties: {
-          id: `event-${e.id}`,
-          pointType: 'events' as const,
-          name: e.title ?? 'Event',
-          subtitle: dateStr,
-          color: LAYER_COLORS.events,
-          linkTo: e.slug ? `/events/${e.slug}` : '',
-          featured,
-          live: happeningNow,
-          iconKey: glyphKeyFor('events'),
-          meta: JSON.stringify({
-            startDate: e.start_date,
-            eventType: e.event_type,
-            venueName: e.venues?.name,
-            city: e.city,
-            image: images[0] ?? undefined,
-            optimizedImage: asset?.optimized_url,
-            thumbImage: asset?.thumbnail_url,
-            trustScore: typeof e.trust_score === 'number' ? e.trust_score : undefined,
-            attendeeCount: goingById.get(String(e.id)),
-          }),
-        },
-      };
-    }) as PointFeature[];
+    const dateStr = e.start_date ? new Date(e.start_date).toLocaleDateString() : '';
+    const images = Array.isArray(e.images) ? (e.images as string[]) : [];
+    const now = Date.now();
+    const startMs = e.start_date ? Date.parse(e.start_date as string) : NaN;
+    const endMs = e.end_date ? Date.parse(e.end_date as string) : NaN;
+    // "Happening now": within the start/end window, or flagged live, or
+    // starting within the next 24h (a near-term event reads as alive).
+    const happeningNow =
+      e.liveness_status === 'live' ||
+      (!Number.isNaN(startMs) && !Number.isNaN(endMs) && startMs <= now && endMs >= now) ||
+      (!Number.isNaN(startMs) && startMs >= now && startMs - now < 24 * 60 * 60 * 1000);
+    const featured = Boolean(e.is_featured);
+    const asset = assets.get(String(e.id));
+    return {
+      type: 'Feature' as const,
+      geometry: { type: 'Point' as const, coordinates: [Number(lng), Number(lat)] },
+      properties: {
+        id: `event-${e.id}`,
+        pointType: 'events' as const,
+        name: e.title ?? 'Event',
+        subtitle: dateStr,
+        color: LAYER_COLORS.events,
+        linkTo: e.slug ? `/events/${e.slug}` : '',
+        featured,
+        live: happeningNow,
+        iconKey: glyphKeyFor('events'),
+        meta: JSON.stringify({
+          startDate: e.start_date,
+          eventType: e.event_type,
+          venueName: e.venues?.name,
+          city: e.city,
+          image: images[0] ?? undefined,
+          optimizedImage: asset?.optimized_url,
+          thumbImage: asset?.thumbnail_url,
+          trustScore: typeof e.trust_score === 'number' ? e.trust_score : undefined,
+          attendeeCount: goingById.get(String(e.id)),
+        }),
+      },
+    };
+  }) as PointFeature[];
 }
 
 async function fetchHotelsInBbox(bbox: Bbox): Promise<PointFeature[]> {
@@ -376,7 +400,12 @@ async function fetchHotelsInBbox(bbox: Bbox): Promise<PointFeature[]> {
       featured: Boolean(h.featured),
       live: false,
       iconKey: glyphKeyFor('hotels'),
-      meta: JSON.stringify({ city: h.city, country: h.country, hotel_type: h.hotel_type, featured: h.featured }),
+      meta: JSON.stringify({
+        city: h.city,
+        country: h.country,
+        hotel_type: h.hotel_type,
+        featured: h.featured,
+      }),
     },
   }));
 }
@@ -549,8 +578,12 @@ export function useViewportPoints({
       if (nm) {
         finalFeatures = allFeatures.filter(
           (f) =>
-            calculateDistanceKm(nm.lat, nm.lng, f.geometry.coordinates[1], f.geometry.coordinates[0]) <=
-            nm.radiusKm,
+            calculateDistanceKm(
+              nm.lat,
+              nm.lng,
+              f.geometry.coordinates[1],
+              f.geometry.coordinates[0],
+            ) <= nm.radiusKm,
         );
         for (const k of Object.keys(counts) as LayerType[]) counts[k] = 0;
         for (const f of finalFeatures) {
