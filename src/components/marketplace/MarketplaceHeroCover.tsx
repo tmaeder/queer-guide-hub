@@ -44,7 +44,9 @@ export function MarketplaceHeroCover() {
             {hero.title}
           </h2>
           {hero.editor_blurb && (
-            <p className="mb-6 max-w-prose text-body-lg text-muted-foreground">{hero.editor_blurb}</p>
+            <p className="mb-6 max-w-prose text-body-lg text-muted-foreground">
+              {hero.editor_blurb}
+            </p>
           )}
           <LocalizedLink
             to={`/marketplace/collection/${hero.slug}`}
@@ -56,7 +58,7 @@ export function MarketplaceHeroCover() {
         {cover && (
           <div className="order-1 lg:order-2 lg:col-span-7">
             {/* Cover plate in a muted tray — nested borders, no scrim, no shadow. */}
-            <div className="rounded-container border border-border bg-muted p-2">
+            <div className="rounded-container bg-muted p-2">
               <LocalizedLink
                 to={`/marketplace/collection/${hero.slug}`}
                 aria-label={hero.title}

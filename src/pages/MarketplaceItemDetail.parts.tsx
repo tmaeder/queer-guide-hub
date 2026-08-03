@@ -42,7 +42,7 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 const MarketplacePriceHistory = lazy(() =>
   import('@/components/marketplace/MarketplacePriceHistory').then((m) => ({
     default: m.MarketplacePriceHistory,
-  }))
+  })),
 );
 
 export type MarketplaceListing = Database['public']['Tables']['marketplace_listings']['Row'];
@@ -221,9 +221,13 @@ export function MarketplaceBuyBox({
               )}
               <span className="text-headline-lg font-display">{price.primary}</span>
             </div>
-            {price.secondary && <p className="mt-1 text-sm text-muted-foreground">{price.secondary}</p>}
+            {price.secondary && (
+              <p className="mt-1 text-sm text-muted-foreground">{price.secondary}</p>
+            )}
             {provenance && (
-              <p className="mt-1 text-xs2 uppercase tracking-wider text-muted-foreground/70">{provenance}</p>
+              <p className="mt-1 text-xs2 uppercase tracking-wider text-muted-foreground/70">
+                {provenance}
+              </p>
             )}
           </div>
 
@@ -233,7 +237,7 @@ export function MarketplaceBuyBox({
                 <span
                   key={p.key}
                   title={p.title}
-                  className="inline-flex items-center rounded-full border border-border bg-background/60 px-2 py-0.5 text-2xs font-semibold uppercase tracking-[0.14em] text-muted-foreground"
+                  className="inline-flex items-center rounded-full bg-background/60 px-2 py-0.5 text-2xs font-semibold uppercase tracking-[0.14em] text-muted-foreground"
                 >
                   {p.label}
                 </span>
@@ -242,7 +246,7 @@ export function MarketplaceBuyBox({
           )}
 
           {linkState === 'broken' && (
-            <div className="rounded-element border border-border bg-muted p-2 text-xs text-muted-foreground">
+            <div className="rounded-element bg-muted p-2 text-xs text-muted-foreground">
               This merchant link appears to be broken. Try the contact options below.
             </div>
           )}
@@ -349,7 +353,10 @@ function Fact({ label, children }: { label: string; children: React.ReactNode })
 }
 
 function ProductFacts({ listing }: { listing: MarketplaceListing }) {
-  const dept = listing.department && listing.department !== 'other' ? departmentLabel(listing.department) : null;
+  const dept =
+    listing.department && listing.department !== 'other'
+      ? departmentLabel(listing.department)
+      : null;
   const subcat = listing.subcategory ? humanize(listing.subcategory) : null;
   const availability =
     listing.in_stock === true
@@ -421,11 +428,15 @@ function ProductTags({ tags }: { tags: ListingTag[] }) {
       <CardContent className="flex flex-col gap-4">
         {grouped.map((g) => (
           <div key={g.kind}>
-            <p className="mb-2 text-xs2 uppercase tracking-[0.12em] text-muted-foreground">{g.label}</p>
+            <p className="mb-2 text-xs2 uppercase tracking-[0.12em] text-muted-foreground">
+              {g.label}
+            </p>
             <div className="flex flex-wrap gap-2">{g.items.map((t) => chip(t.name))}</div>
           </div>
         ))}
-        {other.length > 0 && <div className="flex flex-wrap gap-2">{other.map((t) => chip(t.name))}</div>}
+        {other.length > 0 && (
+          <div className="flex flex-wrap gap-2">{other.map((t) => chip(t.name))}</div>
+        )}
       </CardContent>
     </Card>
   );
@@ -510,7 +521,9 @@ export function MarketplaceContent({ listing, reviews, tags }: ContentProps) {
                     </div>
                   </div>
                   {review.title && <p className="mb-1 text-sm font-medium">{review.title}</p>}
-                  {review.content && <p className="pb-4 text-sm text-muted-foreground">{review.content}</p>}
+                  {review.content && (
+                    <p className="pb-4 text-sm text-muted-foreground">{review.content}</p>
+                  )}
                 </div>
               ))}
             </div>
@@ -519,7 +532,6 @@ export function MarketplaceContent({ listing, reviews, tags }: ContentProps) {
           )}
         </CardContent>
       </Card>
-
     </div>
   );
 }

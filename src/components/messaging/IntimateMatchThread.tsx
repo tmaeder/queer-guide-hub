@@ -93,18 +93,16 @@ export function IntimateMatchThread({
   const theirUnlocked =
     side === 'a' ? consent.photo_unlocked_b : side === 'b' ? consent.photo_unlocked_a : false;
   const photosUnlockedBoth = consent.photo_unlocked_a && consent.photo_unlocked_b;
-   
+
   const locationActive =
-    // eslint-disable-next-line react-hooks/purity -- time-relative value (Date.now / Math.random) used to compute a label or filter cutoff; sub-second precision irrelevant for this UI.
-    consent.location_expires_at !== null && new Date(consent.location_expires_at).getTime() > Date.now();
+     
+    consent.location_expires_at !== null &&
+    new Date(consent.location_expires_at).getTime() > Date.now();
 
   if (ended) {
     return (
       <div
-        className={cn(
-          'rounded-element border border-border bg-muted/30 p-4 text-13 text-muted-foreground',
-          className,
-        )}
+        className={cn('rounded-element bg-muted/30 p-4 text-13 text-muted-foreground', className)}
         role="status"
       >
         Conversation ended {fmt(consent.ended_at)}.
@@ -114,7 +112,7 @@ export function IntimateMatchThread({
 
   return (
     <div className={cn('flex flex-col gap-4', className)}>
-      <div className="flex items-center justify-between gap-2 rounded-element border border-border bg-card p-4 text-13">
+      <div className="flex items-center justify-between gap-2 rounded-element bg-card p-4 text-13">
         <div className="flex items-center gap-2 text-foreground">
           <Sparkles className="h-4 w-4" aria-hidden />
           <span>Matched{matchedOn ? ` ${matchedOn}` : ''}</span>
@@ -133,7 +131,7 @@ export function IntimateMatchThread({
 
       <div className="grid gap-4 sm:grid-cols-2">
         {/* Photo unlock — mutual consent */}
-        <div className="flex flex-col gap-2 rounded-element border border-border p-4">
+        <div className="flex flex-col gap-2 rounded-element p-4 bg-surface-container">
           <div className="flex items-center justify-between gap-2">
             <Label
               htmlFor={`photo-unlock-${conversationId}`}
@@ -161,7 +159,7 @@ export function IntimateMatchThread({
         </div>
 
         {/* Location share — single auto-expire timestamp */}
-        <div className="flex flex-col gap-2 rounded-element border border-border p-4">
+        <div className="flex flex-col gap-2 rounded-element p-4 bg-surface-container">
           <div className="flex items-center gap-2 text-sm font-medium">
             <MapPin className="h-4 w-4" aria-hidden />
             Share location
@@ -184,9 +182,7 @@ export function IntimateMatchThread({
             </>
           ) : (
             <>
-              <p className="text-13 text-muted-foreground">
-                Auto-expires. Stop any time.
-              </p>
+              <p className="text-13 text-muted-foreground">Auto-expires. Stop any time.</p>
               <div className="flex flex-wrap gap-2">
                 {LOCATION_PRESETS.map((p) => (
                   <Button
@@ -209,7 +205,7 @@ export function IntimateMatchThread({
 
       {/* Interests compare — double-opt-in intersection reveal */}
       {otherId && (
-        <div className="flex flex-col gap-2 rounded-element border border-border p-4">
+        <div className="flex flex-col gap-2 rounded-element p-4 bg-surface-container">
           <p className="text-sm font-medium">Interests & boundaries</p>
           <p className="text-13 text-muted-foreground">
             Compare checklists — you'll each only see what you both marked positively.
@@ -233,7 +229,7 @@ export function IntimateMatchThread({
                 key={m.slug}
                 type="button"
                 onClick={() => onPickOpeningMove?.(m.prompt)}
-                className="rounded-badge border border-border px-2.5 py-1 text-13 text-foreground hover:bg-muted/40 transition-colors"
+                className="rounded-badge px-2.5 py-1 text-13 text-foreground hover:bg-muted/40 transition-colors"
                 title={m.tone}
               >
                 {m.prompt.length > 60 ? `${m.prompt.slice(0, 57)}…` : m.prompt}
@@ -248,8 +244,8 @@ export function IntimateMatchThread({
           <DialogHeader>
             <DialogTitle>End conversation?</DialogTitle>
             <DialogDescription>
-              Both of you will lose access to this thread. No notification is sent.
-              You can still block the other person separately if needed.
+              Both of you will lose access to this thread. No notification is sent. You can still
+              block the other person separately if needed.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2">

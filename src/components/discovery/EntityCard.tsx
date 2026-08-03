@@ -64,7 +64,7 @@ export function EntityCard({
     <div
       className={cn(
         SPAN_CLASSES[span],
-        'group relative isolate flex flex-col overflow-hidden rounded-container border border-border bg-background transition-colors duration-300 hover:border-foreground/40 hover:bg-surface-container',
+        'group relative isolate flex flex-col overflow-hidden rounded-container bg-surface-container transition-colors duration-300 hover:bg-surface-container',
         className,
       )}
     >
@@ -88,9 +88,7 @@ export function EntityCard({
           />
         )}
 
-        {badges && (
-          <div className="absolute left-3 top-3 z-20 flex flex-wrap gap-1">{badges}</div>
-        )}
+        {badges && <div className="absolute left-3 top-3 z-20 flex flex-wrap gap-1">{badges}</div>}
         {actions && (
           <div className="absolute right-2 top-2 z-20 flex items-center gap-1">{actions}</div>
         )}
@@ -120,9 +118,7 @@ export function EntityCard({
           <h3 className="text-lg font-bold tracking-tight leading-tight text-foreground">
             {title}
           </h3>
-          {meta && (
-            <div className="text-xs text-muted-foreground tabular-nums">{meta}</div>
-          )}
+          {meta && <div className="text-xs text-muted-foreground tabular-nums">{meta}</div>}
           {children}
         </div>
       )}

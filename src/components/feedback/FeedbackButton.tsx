@@ -45,7 +45,7 @@ export function FeedbackButton() {
   const screenshotUrlRef = useRef<string | null>(null);
 
   // Capture current URL when dialog opens so user sees what will be sent
-   
+
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
     if (open) setPageUrl(window.location.href);
@@ -329,7 +329,7 @@ export function FeedbackButton() {
                 </div>
                 {includeScreenshot && screenshotUrlRef.current && (
                   <div
-                    className="mt-2 border border-border rounded-element overflow-hidden ml-8"
+                    className="mt-2 rounded-element overflow-hidden ml-8 bg-surface-container"
                     style={{ maxWidth: 220 }}
                   >
                     <img

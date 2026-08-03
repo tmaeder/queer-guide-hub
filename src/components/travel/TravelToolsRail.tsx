@@ -70,7 +70,7 @@ export function TravelToolsRail() {
             <LocalizedLink
               key={tile.href}
               to={tile.href}
-              className="group flex h-full flex-col gap-4 rounded-container bg-background p-6 no-underline transition-colors hover:border-foreground/40"
+              className="group flex h-full flex-col gap-4 rounded-container bg-surface-container p-6 no-underline transition-colors"
             >
               <Icon size={24} className="shrink-0 text-foreground" aria-hidden />
               <div className="flex flex-1 flex-col gap-2">

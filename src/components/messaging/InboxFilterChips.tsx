@@ -14,7 +14,7 @@ const BASE_FILTERS: { key: InboxFilter; labelKey: string; defaultLabel: string }
 
 const chipClass = (active: boolean) =>
   cn(
-    'flex min-h-0 items-center whitespace-nowrap rounded-badge border px-4 py-2 text-13',
+    'flex min-h-0 items-center whitespace-nowrap rounded-badge px-4 py-2 text-13 bg-surface-container',
     active ? 'bg-foreground text-background' : 'bg-background text-foreground',
   );
 

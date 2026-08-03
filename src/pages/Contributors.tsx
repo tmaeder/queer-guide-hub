@@ -47,7 +47,7 @@ function ContributorCard({ row }: ContributorCardProps) {
 
   return (
     <motion.article
-      className="group relative h-44 overflow-hidden rounded-container border border-border bg-card focus-within:ring-2 focus-within:ring-foreground/40"
+      className="group relative h-44 overflow-hidden rounded-container bg-card focus-within:ring-2 focus-within:ring-foreground/40"
       initial="rest"
       animate="rest"
       whileHover="hover"
@@ -76,9 +76,7 @@ function ContributorCard({ row }: ContributorCardProps) {
         </div>
         <div className="flex flex-col gap-1">
           <span className="text-base font-medium leading-tight">{row.display_name}</span>
-          {hasDetail && (
-            <span className="text-xs text-muted-foreground">Hover for details</span>
-          )}
+          {hasDetail && <span className="text-xs text-muted-foreground">Hover for details</span>}
         </div>
       </motion.div>
       {hasDetail && (
@@ -96,7 +94,6 @@ function ContributorCard({ row }: ContributorCardProps) {
     </motion.article>
   );
 }
-
 
 export default function Contributors() {
   const { year: yearParam } = useParams<{ year?: string }>();
@@ -116,7 +113,7 @@ export default function Contributors() {
 
   const { data, isLoading } = usePublicRecognitions(validYear ? year : 0);
   const rows = data?.rows ?? [];
-  const error = !validYear ? 'Invalid year' : data?.error ?? null;
+  const error = !validYear ? 'Invalid year' : (data?.error ?? null);
 
   const featured = rows.filter((r) => r.featured);
   const grouped = CATEGORY_ORDER.map((cat) => ({
@@ -132,8 +129,8 @@ export default function Contributors() {
         </p>
         <h1 className="text-5xl sm:text-7xl font-semibold tracking-tight">{year}</h1>
         <p className="mt-6 max-w-xl text-base text-muted-foreground">
-          The people who shaped queer.guide this year — venue scouts, history
-          documentarians, safety reporters, translators. Names. Not a leaderboard.
+          The people who shaped queer.guide this year — venue scouts, history documentarians, safety
+          reporters, translators. Names. Not a leaderboard.
         </p>
       </header>
 
@@ -146,18 +143,14 @@ export default function Contributors() {
       )}
 
       {!isLoading && rows.length === 0 && !error && (
-        <p className="text-muted-foreground">
-          No recognitions published for {year} yet.
-        </p>
+        <p className="text-muted-foreground">No recognitions published for {year} yet.</p>
       )}
 
       {error && <p className="text-destructive">{error}</p>}
 
       {featured.length > 0 && (
         <section className="mb-16">
-          <h2 className="text-sm uppercase tracking-widest text-muted-foreground mb-6">
-            Featured
-          </h2>
+          <h2 className="text-sm uppercase tracking-widest text-muted-foreground mb-6">Featured</h2>
           <ul className="space-y-10">
             {featured.map((row) => (
               <li key={row.id}>
@@ -166,9 +159,7 @@ export default function Contributors() {
                   {CATEGORY_LABELS[row.category] ?? row.category}
                 </p>
                 {row.blurb_md && (
-                  <p className="mt-4 max-w-2xl text-base leading-relaxed">
-                    {row.blurb_md}
-                  </p>
+                  <p className="mt-4 max-w-2xl text-base leading-relaxed">{row.blurb_md}</p>
                 )}
               </li>
             ))}
@@ -192,8 +183,7 @@ export default function Contributors() {
       ))}
 
       <footer className="border-t border-border pt-8 mt-16 text-xs text-muted-foreground">
-        Selected by the editorial team. Anyone can opt out of being named in their
-        profile settings.
+        Selected by the editorial team. Anyone can opt out of being named in their profile settings.
       </footer>
     </div>
   );

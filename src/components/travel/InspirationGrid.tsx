@@ -39,7 +39,7 @@ export function InspirationGrid({ visitedFilter = 'all' }: Props) {
   const featuredTrips = useMemo(() => (trips ?? []).slice(0, 3), [trips]);
 
   const villagesPanel = (
-    <div className="border border-border bg-background p-6 rounded-element">
+    <div className=" bg-surface-container p-6 rounded-element">
       <div className="flex items-baseline justify-between mb-4">
         <h3 className="text-lg font-bold tracking-tight">
           {t('pages.travel.inspiration.villages', 'Queer villages')}
@@ -75,7 +75,7 @@ export function InspirationGrid({ visitedFilter = 'all' }: Props) {
   return (
     <section className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
       {villagesPanel}
-      <div className="border border-border bg-background p-6 rounded-element">
+      <div className=" bg-surface-container p-6 rounded-element">
         <div className="flex items-baseline justify-between mb-4">
           <h3 className="text-lg font-bold tracking-tight">
             {t('pages.travel.inspiration.publicTrips', 'Public trips')}

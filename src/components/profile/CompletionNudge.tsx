@@ -23,7 +23,7 @@ export function CompletionNudge({ percent, threshold = 80, className }: Completi
     <LocalizedLink
       to="/settings"
       className={cn(
-        'flex items-center gap-4 rounded-container border border-border bg-card p-4 hover:bg-muted/30 transition-colors',
+        'flex items-center gap-4 rounded-container bg-card p-4 hover:bg-muted/30 transition-colors',
         className,
       )}
       aria-label={`Profile ${Math.round(percent)}% complete — continue setup`}

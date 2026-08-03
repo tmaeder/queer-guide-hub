@@ -42,14 +42,8 @@ export default function Cities() {
     [url.q, url.continents, url.tiers, url.sort],
   );
 
-  const {
-    cities,
-    filtered,
-    continents,
-    venueCounts,
-    loading,
-    error,
-  } = useCitiesDirectory(filterParams);
+  const { cities, filtered, continents, venueCounts, loading, error } =
+    useCitiesDirectory(filterParams);
 
   // Pride-soon pill data — fetch current year, plus next year only when the
   // 90-day window from today crosses into January, so we don't double-fetch
@@ -66,10 +60,7 @@ export default function Cities() {
 
   useMeta({
     title: t('cities.metaTitle', 'Cities'),
-    description: t(
-      'cities.metaDescription',
-      'Browse LGBTQ+ friendly cities around the world.',
-    ),
+    description: t('cities.metaDescription', 'Browse LGBTQ+ friendly cities around the world.'),
     canonicalPath: '/cities',
     jsonLd: {
       '@context': 'https://schema.org',
@@ -195,7 +186,7 @@ export default function Cities() {
               </div>
               <div
                 className={cn(
-                  'lg:block lg:sticky lg:top-[200px] lg:self-start lg:h-[calc(100vh-220px)] rounded-container overflow-hidden border border-border bg-muted',
+                  'lg:block lg:sticky lg:top-[200px] lg:self-start lg:h-[calc(100vh-220px)] rounded-container overflow-hidden bg-muted',
                   // On mobile, take ~60vh when map view is active.
                   showMap ? 'h-[60vh]' : 'hidden',
                 )}
@@ -224,10 +215,7 @@ export default function Cities() {
                     {t('cities.suggestTitle', 'Missing a city?')}
                   </p>
                   <p className="text-13 text-muted-foreground mt-1 m-0">
-                    {t(
-                      'cities.suggestLede',
-                      'Suggest one — adds to the directory after review.',
-                    )}
+                    {t('cities.suggestLede', 'Suggest one — adds to the directory after review.')}
                   </p>
                 </div>
                 <LocalizedLink

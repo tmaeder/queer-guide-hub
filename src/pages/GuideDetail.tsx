@@ -16,7 +16,7 @@ function SectionBlock({ section }: { section: GuideSection }) {
   const paras = section.body_md.split(/\n\n+/);
   if (section.kind === 'callout') {
     return (
-      <aside className="rounded-container border border-border bg-muted/40 p-6 space-y-4">
+      <aside className="rounded-container bg-muted/40 p-6 space-y-4">
         {paras.map((p, i) => (
           <p key={i} className="text-body-lg leading-relaxed">
             {p}

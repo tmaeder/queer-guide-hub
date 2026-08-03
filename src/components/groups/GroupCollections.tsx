@@ -44,14 +44,7 @@ export function GroupCollections({ groupId, isMember, className }: GroupCollecti
     : (collections[0] ?? null);
 
   if (isLoading) {
-    return (
-      <div
-        className={cn(
-          'h-40 rounded-container border border-border bg-card animate-pulse',
-          className,
-        )}
-      />
-    );
+    return <div className={cn('h-40 rounded-container bg-card animate-pulse', className)} />;
   }
 
   return (
@@ -177,7 +170,7 @@ function CollectionItemsPanel({
   const removeMutation = useRemoveCollectionItem(collection.id);
 
   return (
-    <div className="rounded-container border border-border bg-card p-4">
+    <div className="rounded-container bg-card p-4">
       <header className="mb-4">
         <h4 className="text-base font-semibold text-foreground">{collection.name}</h4>
         {collection.description && (
@@ -198,7 +191,7 @@ function CollectionItemsPanel({
           {items.map((it) => (
             <li
               key={it.id}
-              className="flex items-center justify-between gap-2 rounded-element border border-border bg-background px-4 py-2 text-sm"
+              className="flex items-center justify-between gap-2 rounded-element bg-surface-container px-4 py-2 text-sm"
             >
               <div className="min-w-0 flex-1">
                 <p className="truncate font-medium text-foreground capitalize">{it.item_type}</p>

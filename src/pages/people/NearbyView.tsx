@@ -28,14 +28,20 @@ export function NearbyView() {
   };
 
   if (!supported) {
-    return <p className="text-muted-foreground">{t('people.nearby.unsupported', 'Location is not available on this device.')}</p>;
+    return (
+      <p className="text-muted-foreground">
+        {t('people.nearby.unsupported', 'Location is not available on this device.')}
+      </p>
+    );
   }
 
   if (!isLive) {
     return (
-      <div className="mx-auto max-w-md rounded-container border border-border p-6 text-center">
+      <div className="mx-auto max-w-md rounded-container p-6 text-center bg-surface-container">
         <MapPin className="mx-auto mb-4 h-8 w-8 text-muted-foreground" aria-hidden />
-        <h2 className="mb-2 text-title font-display">{t('people.nearby.goLiveTitle', 'Go live to see who’s nearby')}</h2>
+        <h2 className="mb-2 text-title font-display">
+          {t('people.nearby.goLiveTitle', 'Go live to see who’s nearby')}
+        </h2>
         <p className="mb-2 text-sm text-muted-foreground">
           {t(
             'people.nearby.goLiveBody',
@@ -43,7 +49,9 @@ export function NearbyView() {
           )}
         </p>
         <Button variant="accent" onClick={handleGoLive} disabled={busy || loading} className="mt-4">
-          {busy || loading ? t('people.nearby.locating', 'Locating…') : t('people.nearby.goLive', 'Go live')}
+          {busy || loading
+            ? t('people.nearby.locating', 'Locating…')
+            : t('people.nearby.goLive', 'Go live')}
         </Button>
         {error === 'denied' && (
           <p className="mt-4 text-sm text-destructive">
@@ -61,7 +69,7 @@ export function NearbyView() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-wrap items-center justify-between gap-4 rounded-element border border-border px-4 py-2.5">
+      <div className="flex flex-wrap items-center justify-between gap-4 rounded-element px-4 py-2.5 bg-surface-container">
         <span className="flex items-center gap-2 text-sm">
           <span className="h-2 w-2 rounded-full bg-foreground" aria-hidden />
           {t('people.nearby.live', 'You’re visible nearby')}

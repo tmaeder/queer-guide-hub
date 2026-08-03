@@ -73,10 +73,7 @@ export function EmptyTripsHero({ onCreate }: Props) {
           {t('trips.empty.hero.title', 'Plan a trip you’ll feel safe on.')}
         </h2>
         <p className="text-muted-foreground text-base md:text-lg leading-relaxed">
-          {t(
-            'trips.empty.hero.subtitle',
-            'Three ways to start — pick whichever fits.',
-          )}
+          {t('trips.empty.hero.subtitle', 'Three ways to start — pick whichever fits.')}
         </p>
       </div>
 
@@ -92,21 +89,15 @@ export function EmptyTripsHero({ onCreate }: Props) {
             <CardContent className="flex flex-col items-start gap-4 p-6 w-full">
               <span
                 aria-hidden="true"
-                className="inline-flex h-11 w-11 items-center justify-center rounded-container border border-border bg-background"
+                className="inline-flex h-11 w-11 items-center justify-center rounded-container bg-surface-container"
               >
                 <Icon style={{ width: 20, height: 20 }} />
               </span>
               <div className="flex-1">
                 <h3 className="text-lg font-bold tracking-tight mb-1">{title}</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  {description}
-                </p>
+                <p className="text-sm text-muted-foreground leading-relaxed">{description}</p>
               </div>
-              <Button
-                variant={brand ? 'brand' : 'outline'}
-                onClick={onClick}
-                className="mt-1"
-              >
+              <Button variant={brand ? 'brand' : 'outline'} onClick={onClick} className="mt-1">
                 {cta}
                 <ArrowRight size={14} className="ml-1.5" />
               </Button>
@@ -129,11 +120,7 @@ export function EmptyTripsHero({ onCreate }: Props) {
                 {t('trips.empty.discoverTitle', 'Recent public trips')}
               </h3>
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate('/trips/discover')}
-            >
+            <Button variant="ghost" size="sm" onClick={() => navigate('/trips/discover')}>
               {t('trips.empty.discoverCta', 'Open Discover')}
               <ArrowRight size={14} className="ml-1" />
             </Button>

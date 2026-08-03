@@ -63,9 +63,19 @@ export function EventSeriesFields({ data, setFields }: EventSeriesFieldsProps) {
       case 'daily':
         return applyRule({ freq: 'DAILY', interval: 1, until: rule?.until });
       case 'weekly':
-        return applyRule({ freq: 'WEEKLY', interval: 1, byDay: rule?.byDay ?? [], until: rule?.until });
+        return applyRule({
+          freq: 'WEEKLY',
+          interval: 1,
+          byDay: rule?.byDay ?? [],
+          until: rule?.until,
+        });
       case 'biweekly':
-        return applyRule({ freq: 'WEEKLY', interval: 2, byDay: rule?.byDay ?? [], until: rule?.until });
+        return applyRule({
+          freq: 'WEEKLY',
+          interval: 2,
+          byDay: rule?.byDay ?? [],
+          until: rule?.until,
+        });
       case 'monthly_date':
         return applyRule({ freq: 'MONTHLY', interval: 1, until: rule?.until });
       case 'monthly_weekday':
@@ -82,9 +92,7 @@ export function EventSeriesFields({ data, setFields }: EventSeriesFieldsProps) {
   const toggleDay = (code: string) => {
     if (!rule) return;
     const current = rule.byDay ?? [];
-    const next = current.includes(code)
-      ? current.filter((d) => d !== code)
-      : [...current, code];
+    const next = current.includes(code) ? current.filter((d) => d !== code) : [...current, code];
     applyRule({ ...rule, byDay: WEEKDAY_CODES.filter((c) => next.includes(c)) });
   };
 
@@ -184,9 +192,7 @@ export function EventSeriesFields({ data, setFields }: EventSeriesFieldsProps) {
           </div>
         )}
 
-        {rule && (
-          <p className="text-xs text-muted-foreground mt-1">{describeRecurrence(rule)}</p>
-        )}
+        {rule && <p className="text-xs text-muted-foreground mt-1">{describeRecurrence(rule)}</p>}
       </div>
 
       {/* ── Festival / series grouping ─────────────────────────── */}
@@ -237,7 +243,7 @@ function FestivalPicker({ data, setFields }: EventSeriesFieldsProps) {
 
       {/* Linked state */}
       {linked && (
-        <div className="flex items-center justify-between gap-2 rounded-element border border-border p-2">
+        <div className="flex items-center justify-between gap-2 rounded-element p-2 bg-surface-container">
           <span className="text-sm font-medium">{festivalName}</span>
           <Button type="button" variant="ghost" size="sm" onClick={clearFestival} className="gap-1">
             <X size={14} /> Remove
@@ -287,7 +293,7 @@ function FestivalPicker({ data, setFields }: EventSeriesFieldsProps) {
             onChange={(e) => setQuery(e.target.value)}
           />
           {hits.length > 0 && (
-            <ul className="m-0 p-0 list-none flex flex-col gap-1 rounded-element border border-border">
+            <ul className="m-0 p-0 list-none flex flex-col gap-1 rounded-element bg-surface-container">
               {hits.map((f) => (
                 <li key={f.id}>
                   <button

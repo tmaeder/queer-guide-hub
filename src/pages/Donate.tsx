@@ -22,7 +22,8 @@ const IMPACT = [
   {
     icon: Globe,
     title: 'Independent + global',
-    description: 'No investors steering the roadmap — just the community and 180+ countries served.',
+    description:
+      'No investors steering the roadmap — just the community and 180+ countries served.',
   },
 ];
 
@@ -78,7 +79,7 @@ export default function Donate() {
               ) : (
                 <div
                   key={item.title}
-                  className="flex flex-col gap-2 rounded-container border border-border bg-card p-6 md:p-8"
+                  className="flex flex-col gap-2 rounded-container bg-card p-6 md:p-8"
                 >
                   <item.icon size={18} className="text-muted-foreground" aria-hidden="true" />
                   <p className="font-bold text-body-lg">{item.title}</p>

@@ -27,7 +27,7 @@ export function ScoreLevelChip({
     return (
       <span
         className={cn(
-          'inline-flex items-center gap-1.5 rounded-badge border border-border px-2 py-0.5 text-13 text-foreground',
+          'inline-flex items-center gap-1.5 rounded-badge px-2 py-0.5 text-13 text-foreground bg-surface-container',
           className,
         )}
         title={
@@ -47,7 +47,7 @@ export function ScoreLevelChip({
   return (
     <div
       className={cn(
-        'inline-flex flex-col gap-1.5 rounded-element border border-border px-4 py-2',
+        'inline-flex flex-col gap-1.5 rounded-element px-4 py-2 bg-surface-container',
         className,
       )}
     >

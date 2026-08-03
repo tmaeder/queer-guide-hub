@@ -29,7 +29,7 @@ export function OrgHero({ org }: { org: Organization }) {
   const { t } = useTranslation();
   const cover = org.cover_image_url || org.images?.[0] || null;
   return (
-    <div className="overflow-hidden rounded-container border border-border">
+    <div className="overflow-hidden rounded-container bg-surface-container">
       <div className="relative h-40 w-full bg-muted md:h-56">
         {cover && <img src={cover} alt="" className="h-full w-full object-cover" loading="eager" />}
         {cover && <div className="absolute inset-0 bg-gradient-to-b from-black/15 to-black/65" />}
@@ -39,11 +39,13 @@ export function OrgHero({ org }: { org: Organization }) {
           <img
             src={org.logo_url}
             alt=""
-            className="-mt-16 h-24 w-24 rounded-element border border-border bg-background object-contain p-2"
+            className="-mt-16 h-24 w-24 rounded-element bg-background object-contain p-2"
           />
         )}
         <div className="min-w-0 flex-1">
-          <h1 className="font-display text-headline-lg leading-tight md:text-display">{org.name}</h1>
+          <h1 className="font-display text-headline-lg leading-tight md:text-display">
+            {org.name}
+          </h1>
           <div className="mt-2 flex flex-wrap items-center gap-2">
             {org.roles.map((role) => (
               <Badge key={role} variant="secondary">
@@ -55,7 +57,9 @@ export function OrgHero({ org }: { org: Organization }) {
             )}
           </div>
           {org.editorial_hook && (
-            <p className="mt-4 max-w-2xl text-body-lg text-muted-foreground">{org.editorial_hook}</p>
+            <p className="mt-4 max-w-2xl text-body-lg text-muted-foreground">
+              {org.editorial_hook}
+            </p>
           )}
         </div>
         {org.website && (
@@ -89,7 +93,9 @@ export function OrgSocial({ org }: { org: Organization }) {
   if (!hasSocial) return null;
   return (
     <section>
-      <h2 className="mb-4 font-display text-headline">{t('pages.entityDetail.onSocial', 'On social')}</h2>
+      <h2 className="mb-4 font-display text-headline">
+        {t('pages.entityDetail.onSocial', 'On social')}
+      </h2>
       <SocialCards links={org.social} />
     </section>
   );
@@ -220,7 +226,11 @@ export function OrgVisit({ org }: { org: Organization }) {
           <LocalizedLink key={v.id} to={`/venues/${v.slug}`}>
             <Card className="h-full transition-colors hover:bg-muted">
               <CardContent className="flex items-center gap-2 p-4">
-                <Building2 size={18} className="shrink-0 text-muted-foreground" aria-hidden="true" />
+                <Building2
+                  size={18}
+                  className="shrink-0 text-muted-foreground"
+                  aria-hidden="true"
+                />
                 <div className="min-w-0">
                   <div className="truncate font-medium">{v.name}</div>
                   {v.city && <div className="text-13 text-muted-foreground">{v.city}</div>}
@@ -247,7 +257,11 @@ export function OrgArticles({ orgId }: { orgId: string }) {
     );
   }
   if (articles.length === 0) {
-    return <p className="text-muted-foreground">{t('pages.entityDetail.noArticles', 'No articles yet.')}</p>;
+    return (
+      <p className="text-muted-foreground">
+        {t('pages.entityDetail.noArticles', 'No articles yet.')}
+      </p>
+    );
   }
   return (
     <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">

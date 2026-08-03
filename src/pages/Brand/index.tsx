@@ -30,7 +30,8 @@ export default function BrandGuidelines() {
         <h1 className="font-display text-display">Queer Guide design system</h1>
         <p className="text-body-lg text-muted-foreground max-w-2xl">
           A strict monochrome, high-contrast system. Colors are HSL channel triples; type and shape
-          use a fixed scale. The live, branding-resolved values are available via the Token API below.
+          use a fixed scale. The live, branding-resolved values are available via the Token API
+          below.
         </p>
       </header>
 
@@ -45,7 +46,7 @@ export default function BrandGuidelines() {
               <h3 className="text-title">{COLOR_GROUP_LABELS[group]}</h3>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                 {tokens.map((t) => (
-                  <div key={t.key} className="border border-border rounded-element overflow-hidden">
+                  <div key={t.key} className="rounded-element overflow-hidden bg-surface-container">
                     <div className="grid grid-cols-2 h-16">
                       <div style={{ backgroundColor: hslChannelsToCss(t.light) }} aria-hidden />
                       <div style={{ backgroundColor: hslChannelsToCss(t.dark) }} aria-hidden />
@@ -75,8 +76,11 @@ export default function BrandGuidelines() {
             return (
               <div
                 key={pair.label}
-                className="flex items-center justify-between border border-border rounded-element p-4"
-                style={{ backgroundColor: hslChannelsToCss(bg.light), color: hslChannelsToCss(fg.light) }}
+                className="flex items-center justify-between rounded-element p-4 bg-surface-container"
+                style={{
+                  backgroundColor: hslChannelsToCss(bg.light),
+                  color: hslChannelsToCss(fg.light),
+                }}
               >
                 <span className="text-15">{pair.label}</span>
                 <span className="flex items-center gap-2">
@@ -135,17 +139,29 @@ export default function BrandGuidelines() {
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Card>
-            <CardHeader><CardTitle className="text-base">JSON</CardTitle></CardHeader>
+            <CardHeader>
+              <CardTitle className="text-base">JSON</CardTitle>
+            </CardHeader>
             <CardContent className="flex flex-col gap-2">
-              <a href="/brand/tokens.json" className="text-15 underline">/brand/tokens.json</a>
-              <p className="text-13 text-muted-foreground">Structured color (light/dark) + global tokens.</p>
+              <a href="/brand/tokens.json" className="text-15 underline">
+                /brand/tokens.json
+              </a>
+              <p className="text-13 text-muted-foreground">
+                Structured color (light/dark) + global tokens.
+              </p>
             </CardContent>
           </Card>
           <Card>
-            <CardHeader><CardTitle className="text-base">CSS</CardTitle></CardHeader>
+            <CardHeader>
+              <CardTitle className="text-base">CSS</CardTitle>
+            </CardHeader>
             <CardContent className="flex flex-col gap-2">
-              <a href="/brand/tokens.css" className="text-15 underline">/brand/tokens.css</a>
-              <p className="text-13 text-muted-foreground">Ready-to-link :root + .dark custom properties.</p>
+              <a href="/brand/tokens.css" className="text-15 underline">
+                /brand/tokens.css
+              </a>
+              <p className="text-13 text-muted-foreground">
+                Ready-to-link :root + .dark custom properties.
+              </p>
             </CardContent>
           </Card>
         </div>

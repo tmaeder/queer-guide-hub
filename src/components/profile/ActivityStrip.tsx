@@ -74,20 +74,13 @@ export function ActivityStrip({ className, limit = 8, userId, hideWhenEmpty }: A
 
   if (loading) {
     if (hideWhenEmpty) return null;
-    return (
-      <div className={cn('h-24 rounded-container border border-border bg-card animate-pulse', className)} />
-    );
+    return <div className={cn('h-24 rounded-container bg-card animate-pulse', className)} />;
   }
 
   if (events.length === 0) {
     if (hideWhenEmpty) return null;
     return (
-      <div
-        className={cn(
-          'rounded-container border border-border bg-card p-4 text-sm text-muted-foreground',
-          className,
-        )}
-      >
+      <div className={cn('rounded-container bg-card p-4 text-sm text-muted-foreground', className)}>
         No activity yet.
       </div>
     );
@@ -95,7 +88,7 @@ export function ActivityStrip({ className, limit = 8, userId, hideWhenEmpty }: A
 
   return (
     <section
-      className={cn('rounded-container border border-border bg-card p-4', className)}
+      className={cn('rounded-container bg-card p-4', className)}
       aria-label="Recent activity"
     >
       <div className="flex items-baseline justify-between mb-4">
@@ -116,7 +109,9 @@ export function ActivityStrip({ className, limit = 8, userId, hideWhenEmpty }: A
                   </span>
                 </div>
                 {ev.points_delta > 0 && (
-                  <p className="text-13 text-muted-foreground tabular-nums">+{ev.points_delta} pts</p>
+                  <p className="text-13 text-muted-foreground tabular-nums">
+                    +{ev.points_delta} pts
+                  </p>
                 )}
               </div>
             </li>

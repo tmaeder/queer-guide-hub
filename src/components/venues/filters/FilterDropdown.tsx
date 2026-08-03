@@ -89,7 +89,7 @@ export function FilterDropdown({
                       <div className="flex items-center gap-2">
                         {item.color && (
                           <div
-                            className="rounded-full border border-border w-2.5 h-2.5"
+                            className="rounded-full w-2.5 h-2.5 bg-surface-container"
                             // data-driven category color (allowlisted functional color)
                             style={{ backgroundColor: item.color }}
                           />

@@ -16,11 +16,7 @@ import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { Card, CardImage, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import {
-  Tooltip,
-  TooltipTrigger,
-  TooltipContent,
-} from '@/components/ui/tooltip';
+import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 import { useAuth } from '@/hooks/useAuth';
 import { useTripMutations } from '@/hooks/useTrips';
 import { useToast } from '@/hooks/use-toast';
@@ -94,10 +90,9 @@ export function PublicTripCard({ trip }: Props) {
     setForking(true);
     try {
       // Preferred path: server-side RPC clones places + days atomically.
-      const { data: rpcData, error: rpcError } = await supabase.rpc(
-        'fork_public_trip',
-        { p_source_trip_id: trip.id },
-      );
+      const { data: rpcData, error: rpcError } = await supabase.rpc('fork_public_trip', {
+        p_source_trip_id: trip.id,
+      });
 
       if (!rpcError && typeof rpcData === 'string') {
         toast({
@@ -173,19 +168,13 @@ export function PublicTripCard({ trip }: Props) {
                 <span
                   aria-label={t(`trips.card.safety.${safetyLevel}`)}
                   className={cn(
-                    'absolute top-2 left-2 w-7 h-7 rounded-full flex items-center justify-center text-white border border-border/40 cursor-help',
+                    'absolute top-2 left-2 w-7 h-7 rounded-full flex items-center justify-center text-white cursor-help bg-surface-container',
                     safetyBg,
                   )}
                 >
-                  {safetyLevel === 'safe' && (
-                    <ShieldCheck size={16} />
-                  )}
-                  {safetyLevel === 'caution' && (
-                    <ShieldAlert size={16} />
-                  )}
-                  {safetyLevel === 'danger' && (
-                    <AlertTriangle size={16} />
-                  )}
+                  {safetyLevel === 'safe' && <ShieldCheck size={16} />}
+                  {safetyLevel === 'caution' && <ShieldAlert size={16} />}
+                  {safetyLevel === 'danger' && <AlertTriangle size={16} />}
                 </span>
               </TooltipTrigger>
               <TooltipContent>{t(`trips.card.safety.${safetyLevel}`)}</TooltipContent>

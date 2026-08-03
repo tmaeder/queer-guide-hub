@@ -38,7 +38,7 @@ function WhyChip({ reason }: { reason: GuideBoostReason }) {
     active_quest: t('guides.boost.activeQuest', 'Quest live now'),
   };
   return (
-    <span className="inline-flex items-center gap-2 rounded-badge border border-border px-2 py-1 text-2xs uppercase tracking-wide text-muted-foreground">
+    <span className="inline-flex items-center gap-2 rounded-badge px-2 py-1 text-2xs uppercase tracking-wide text-muted-foreground bg-surface-container">
       <span aria-hidden className="size-[6px] rounded-full bg-foreground" />
       {label[reason]}
     </span>
@@ -105,7 +105,7 @@ export const GuideCard = memo(function GuideCard({
     <article
       className={
         isHero
-          ? 'col-span-12 grid grid-cols-12 gap-6 rounded-container border border-border overflow-hidden bg-card'
+          ? 'col-span-12 grid grid-cols-12 gap-6 rounded-container overflow-hidden bg-card'
           : 'group flex flex-col rounded-container overflow-hidden bg-surface-container'
       }
     >

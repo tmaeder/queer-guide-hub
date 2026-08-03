@@ -31,7 +31,7 @@ function Chip({
       className={
         active
           ? 'rounded-badge border border-foreground bg-foreground px-4 py-1.5 text-13 text-background'
-          : 'rounded-badge border border-border px-4 py-1.5 text-13 text-muted-foreground hover:text-foreground'
+          : 'rounded-badge px-4 py-1.5 text-13 text-muted-foreground hover:text-foreground bg-surface-container'
       }
     >
       {children}
@@ -63,7 +63,11 @@ export function GuidesFilterBar({
   };
 
   return (
-    <div className="flex flex-wrap items-center gap-2" role="group" aria-label={t('guides.filters.label', 'Filter guides')}>
+    <div
+      className="flex flex-wrap items-center gap-2"
+      role="group"
+      aria-label={t('guides.filters.label', 'Filter guides')}
+    >
       <Chip
         active={filters.format === null && filters.entity === null}
         onClick={() => onChange({ format: null, entity: null })}
@@ -83,9 +87,7 @@ export function GuidesFilterBar({
         <Chip
           key={e}
           active={filters.entity === e}
-          onClick={() =>
-            onChange({ format: null, entity: filters.entity === e ? null : e })
-          }
+          onClick={() => onChange({ format: null, entity: filters.entity === e ? null : e })}
         >
           {entityLabel[e]}
         </Chip>

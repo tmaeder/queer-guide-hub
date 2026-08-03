@@ -9,13 +9,20 @@ import { isValidImageUrl } from '@/lib/images/resolveEntityImage';
 
 function fallbackTheme(type: string): FallbackTheme {
   switch (type) {
-    case 'venue': return 'venue';
-    case 'event': return 'event';
-    case 'hotel': return 'hotel';
-    case 'news': return 'news';
-    case 'marketplace': return 'marketplace';
-    case 'personality': return 'person';
-    default: return 'place';
+    case 'venue':
+      return 'venue';
+    case 'event':
+      return 'event';
+    case 'hotel':
+      return 'hotel';
+    case 'news':
+      return 'news';
+    case 'marketplace':
+      return 'marketplace';
+    case 'personality':
+      return 'person';
+    default:
+      return 'place';
   }
 }
 
@@ -67,13 +74,15 @@ export function MoreLikeThisByTag({
           const href = hrefForEntity({ type: item.type, slug: item.slug, title: item.title });
           const fallback = getFallbackImage(fallbackTheme(item.type), item.id);
           const img =
-            (isValidImageUrl(item.image_url) ? resolveImageUrl({ imageUrl: item.image_url }) : null) ?? fallback;
+            (isValidImageUrl(item.image_url)
+              ? resolveImageUrl({ imageUrl: item.image_url })
+              : null) ?? fallback;
           const location = [item.city, item.country].filter(Boolean).join(', ');
           return (
             <LocalizedLink
               key={`${item.type}:${item.id}`}
               to={href}
-              className="group flex flex-col overflow-hidden rounded-element border border-border bg-background no-underline text-inherit transition-colors hover:border-foreground/40"
+              className="group flex flex-col overflow-hidden rounded-element bg-surface-container no-underline text-inherit transition-colors"
             >
               <div className="relative aspect-[4/3] w-full bg-muted">
                 <img
@@ -92,9 +101,7 @@ export function MoreLikeThisByTag({
                 </Badge>
               </div>
               <div className="flex flex-col gap-1.5 p-4">
-                <span className="line-clamp-2 text-15 font-medium leading-snug">
-                  {item.title}
-                </span>
+                <span className="line-clamp-2 text-15 font-medium leading-snug">{item.title}</span>
                 {location && (
                   <span className="inline-flex items-center gap-1.5 truncate text-2xs text-muted-foreground">
                     <MapPin size={11} className="shrink-0" />

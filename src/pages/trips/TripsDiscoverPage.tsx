@@ -3,10 +3,7 @@ import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Search, Compass, ArrowDownUp, Check, List, Map } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import {
-  useDiscoverableTrips,
-  type DiscoverableTrip,
-} from '@/hooks/useDiscoverableTrips';
+import { useDiscoverableTrips, type DiscoverableTrip } from '@/hooks/useDiscoverableTrips';
 import { PublicTripCard } from '@/components/trips/PublicTripCard';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { PageHeader } from '@/components/layout/PageHeader';
@@ -92,8 +89,7 @@ function sortTrips(trips: DiscoverableTrip[], key: SortKey): DiscoverableTrip[] 
     case 'recent':
     default:
       return copy.sort(
-        (a, b) =>
-          new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+        (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
       );
   }
 }
@@ -111,8 +107,7 @@ export default function TripsDiscoverPage() {
   const [query, setQuery] = useState('');
   const [sortKey, setSortKey] = useState<SortKey>('recent');
   const [activeFilters, setActiveFilters] = useState<Set<QuickFilter>>(new Set());
-  const [advancedFilters, setAdvancedFilters] =
-    useState<DiscoverFilterState>(DEFAULT_FILTERS);
+  const [advancedFilters, setAdvancedFilters] = useState<DiscoverFilterState>(DEFAULT_FILTERS);
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
   const { data: trips, isLoading } = useDiscoverableTrips(query);
 
@@ -128,9 +123,7 @@ export default function TripsDiscoverPage() {
   const filtered = useMemo(() => {
     let result = trips ?? [];
     if (activeFilters.size > 0) {
-      result = result.filter((t) =>
-        [...activeFilters].every((f) => matchesFilter(t, f)),
-      );
+      result = result.filter((t) => [...activeFilters].every((f) => matchesFilter(t, f)));
     }
     if (!filtersAreEmpty(advancedFilters)) {
       result = applyAdvancedFilters(result, advancedFilters);
@@ -152,8 +145,7 @@ export default function TripsDiscoverPage() {
     filtersAreEmpty(advancedFilters) &&
     viewMode === 'list';
 
-  const showRegionRails =
-    showStaffPicks && sorted.length >= 12 && sortKey === 'recent';
+  const showRegionRails = showStaffPicks && sorted.length >= 12 && sortKey === 'recent';
 
   const regionGroups = useMemo(() => {
     if (!showRegionRails) return null;
@@ -163,9 +155,9 @@ export default function TripsDiscoverPage() {
       if (!map.has(r)) map.set(r, []);
       map.get(r)!.push(trip);
     }
-    return REGION_ORDER
-      .map((r) => ({ region: r, trips: map.get(r) ?? [] }))
-      .filter((g) => g.trips.length >= 2);
+    return REGION_ORDER.map((r) => ({ region: r, trips: map.get(r) ?? [] })).filter(
+      (g) => g.trips.length >= 2,
+    );
   }, [sorted, showRegionRails]);
 
   return (
@@ -178,7 +170,7 @@ export default function TripsDiscoverPage() {
           'Real itineraries from QG travelers — copy ideas, find queer-friendly stops, plan your own.',
         )}
         actions={
-          <div className="inline-flex h-11 w-11 items-center justify-center rounded-element border border-border bg-background">
+          <div className="inline-flex h-11 w-11 items-center justify-center rounded-element bg-surface-container">
             <Compass size={20} />
           </div>
         }
@@ -210,14 +202,8 @@ export default function TripsDiscoverPage() {
             </DropdownMenuTrigger>
             <DropdownMenuContent>
               {SORT_KEYS.map((key) => (
-                <DropdownMenuItem
-                  key={key}
-                  onClick={() => setSortKey(key)}
-                  className="gap-2"
-                >
-                  <span className="w-4 inline-flex">
-                    {key === sortKey && <Check size={14} />}
-                  </span>
+                <DropdownMenuItem key={key} onClick={() => setSortKey(key)} className="gap-2">
+                  <span className="w-4 inline-flex">{key === sortKey && <Check size={14} />}</span>
                   {t(`trips.discover.sort.${key}`, sortLabel(key))}
                 </DropdownMenuItem>
               ))}
@@ -315,11 +301,7 @@ export default function TripsDiscoverPage() {
       )}
 
       {!isLoading && sorted.length > 0 && viewMode === 'map' && (
-        <Suspense
-          fallback={
-            <Skeleton className="h-[480px] w-full rounded-container" />
-          }
-        >
+        <Suspense fallback={<Skeleton className="h-[480px] w-full rounded-container" />}>
           <DiscoverMap trips={sorted} />
         </Suspense>
       )}
@@ -334,10 +316,7 @@ export default function TripsDiscoverPage() {
                     {t('trips.discover.staffPicks.eyebrow', 'Staff picks')}
                   </span>
                   <h2 className="text-lg md:text-xl font-bold tracking-tight">
-                    {t(
-                      'trips.discover.staffPicks.title',
-                      'Trips worth copying',
-                    )}
+                    {t('trips.discover.staffPicks.title', 'Trips worth copying')}
                   </h2>
                 </div>
               </div>

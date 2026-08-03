@@ -33,7 +33,7 @@ export function FeaturedInGuides({
           <li key={g.id}>
             <LocalizedLink
               to={`/guides/${g.slug}`}
-              className="group flex items-baseline justify-between gap-4 rounded-element border border-border px-4 py-2 no-underline hover:bg-muted/40"
+              className="group flex items-baseline justify-between gap-4 rounded-element px-4 py-2 no-underline hover:bg-muted/40"
             >
               <span className="text-15 font-medium group-hover:underline underline-offset-4">
                 {g.title}

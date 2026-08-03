@@ -220,7 +220,7 @@ export function PersonalizationRibbon({
   if (!place) return null;
 
   return (
-    <div className="mb-6 flex items-center gap-2 rounded-element border border-border bg-muted/60 px-4 py-2 text-13 text-muted-foreground">
+    <div className="mb-6 flex items-center gap-2 rounded-element bg-muted/60 px-4 py-2 text-13 text-muted-foreground">
       <MapPin size={14} className="shrink-0" aria-hidden="true" />
       <span>
         {t('newsDetail.closeToHome', 'Close to your home base')} ·{' '}

@@ -60,7 +60,10 @@ export function QuestModule({ guide }: { guide: Guide }) {
   const criteria = guide.criteria ?? {};
 
   return (
-    <section className="grid gap-8 md:grid-cols-[1fr_280px]" aria-label={t('guides.quest.module', 'Quest')}>
+    <section
+      className="grid gap-8 md:grid-cols-[1fr_280px]"
+      aria-label={t('guides.quest.module', 'Quest')}
+    >
       <div className="space-y-8">
         <div className="flex flex-wrap items-center gap-4">
           <Badge variant={isActive ? 'default' : 'outline'}>
@@ -77,7 +80,7 @@ export function QuestModule({ guide }: { guide: Guide }) {
           )}
         </div>
 
-        <div className="rounded-container border border-border bg-card p-6">
+        <div className="rounded-container bg-card p-6">
           <h3 className="mb-4 text-2xs uppercase tracking-wider text-muted-foreground">
             {t('guides.quest.criteria', 'Criteria')}
           </h3>
@@ -118,7 +121,7 @@ export function QuestModule({ guide }: { guide: Guide }) {
         </div>
 
         {isCompleted && guide.recap_article_id && (
-          <div className="rounded-container border border-border bg-card p-6">
+          <div className="rounded-container bg-card p-6">
             <h3 className="mb-2 text-title">{t('guides.quest.recapTitle', 'Recap published')}</h3>
             <p className="text-15 text-muted-foreground">
               {t(
@@ -131,7 +134,7 @@ export function QuestModule({ guide }: { guide: Guide }) {
       </div>
 
       <aside className="space-y-6">
-        <div className="rounded-container border border-border bg-card p-6">
+        <div className="rounded-container bg-card p-6">
           <h3 className="mb-4 text-2xs uppercase tracking-wider text-muted-foreground">
             {t('guides.quest.progress', 'Progress')}
           </h3>
@@ -143,14 +146,17 @@ export function QuestModule({ guide }: { guide: Guide }) {
             <div className="h-full bg-foreground" style={{ width: `${pct}%` }} />
           </div>
           <p className="mt-4 text-xs2 text-muted-foreground">
-            {t('guides.quest.progressCaption', '{{contributors}} contributors · {{pending}} pending review')
+            {t(
+              'guides.quest.progressCaption',
+              '{{contributors}} contributors · {{pending}} pending review',
+            )
               .replace('{{contributors}}', String(progress?.contributor_count ?? 0))
               .replace('{{pending}}', String(progress?.pending_count ?? 0))}
           </p>
         </div>
 
         {isActive && (
-          <div className="rounded-container border border-border bg-card p-6">
+          <div className="rounded-container bg-card p-6">
             <h3 className="mb-4 text-2xs uppercase tracking-wider text-muted-foreground">
               {t('guides.quest.join', 'Join')}
             </h3>
@@ -224,7 +230,7 @@ export function QuestModule({ guide }: { guide: Guide }) {
           </div>
         )}
 
-        <div className="rounded-container border border-border bg-card p-6">
+        <div className="rounded-container bg-card p-6">
           <h3 className="mb-4 text-2xs uppercase tracking-wider text-muted-foreground">
             {t('guides.quest.contributors', 'Contributors')}
           </h3>

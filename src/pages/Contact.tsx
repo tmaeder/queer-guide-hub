@@ -199,7 +199,7 @@ export default function Contact() {
                 key={faq.question}
                 open={openFaq === index}
                 onOpenChange={() => setOpenFaq(openFaq === index ? null : index)}
-                className="rounded-container border border-border bg-card"
+                className="rounded-container bg-card"
               >
                 <CollapsibleTrigger className="flex w-full items-center justify-between gap-4 p-4 text-left">
                   <span className="font-semibold text-15">{faq.question}</span>

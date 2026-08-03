@@ -33,9 +33,7 @@ export function SocialSignalBar({ signals, className, inline = false }: SocialSi
   if (inline) {
     return (
       <p className={cn('text-13 text-muted-foreground', className)}>
-        {visible
-          .map((s) => s.text ?? `${s.count} ${s.label ?? ''}`.trim())
-          .join(' · ')}
+        {visible.map((s) => s.text ?? `${s.count} ${s.label ?? ''}`.trim()).join(' · ')}
       </p>
     );
   }
@@ -50,7 +48,7 @@ export function SocialSignalBar({ signals, className, inline = false }: SocialSi
         return (
           <li
             key={i}
-            className="inline-flex items-center gap-1.5 rounded-badge border border-border px-2 py-0.5 text-13 text-foreground"
+            className="inline-flex items-center gap-1.5 rounded-badge px-2 py-0.5 text-13 text-foreground bg-surface-container"
             title={s.title}
           >
             <Icon className="h-3 w-3 shrink-0" aria-hidden />
@@ -62,4 +60,3 @@ export function SocialSignalBar({ signals, className, inline = false }: SocialSi
     </ul>
   );
 }
-

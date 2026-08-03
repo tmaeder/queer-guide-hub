@@ -8,19 +8,24 @@ import type { InboxItem } from '@/hooks/useInboxFeed';
 
 function notifIcon(subtype: string, meta?: SubmissionNotifMeta | null) {
   if (subtype === 'trip_nudge') return <Map size={32} className="text-muted-foreground" />;
-  if (subtype === 'event_reminder') return <CalendarClock size={32} className="text-muted-foreground" />;
+  if (subtype === 'event_reminder')
+    return <CalendarClock size={32} className="text-muted-foreground" />;
   if (subtype === 'submission_update') {
     if (meta?.outcome === 'rejected') return <FileX size={32} className="text-muted-foreground" />;
-    if (meta?.outcome === 'needs_info') return <FileQuestion size={32} className="text-muted-foreground" />;
+    if (meta?.outcome === 'needs_info')
+      return <FileQuestion size={32} className="text-muted-foreground" />;
     return <FileCheck size={32} className="text-muted-foreground" />;
   }
   return null;
 }
 
 function actionLabel(subtype: string, t: (k: string, o: object) => string) {
-  if (subtype === 'trip_nudge') return t('inbox.notification.openTrip', { defaultValue: 'Open trip' });
-  if (subtype === 'event_reminder') return t('inbox.notification.viewEvent', { defaultValue: 'View event' });
-  if (subtype === 'submission_update') return t('inbox.notification.view', { defaultValue: 'View' });
+  if (subtype === 'trip_nudge')
+    return t('inbox.notification.openTrip', { defaultValue: 'Open trip' });
+  if (subtype === 'event_reminder')
+    return t('inbox.notification.viewEvent', { defaultValue: 'View event' });
+  if (subtype === 'submission_update')
+    return t('inbox.notification.view', { defaultValue: 'View' });
   return t('inbox.notification.open', { defaultValue: 'Open' });
 }
 
@@ -42,7 +47,7 @@ export function NotificationDetailCard({ item }: { item: InboxItem }) {
       <h2 className="text-title">{item.title}</h2>
       <p className="text-body-lg text-muted-foreground">{item.preview}</p>
       {notes && (
-        <div className="rounded-element border border-border bg-muted/50 px-4 py-2">
+        <div className="rounded-element bg-muted/50 px-4 py-2">
           <p className="text-2xs uppercase tracking-wider text-muted-foreground">
             {t('inbox.notification.reviewerNotes', { defaultValue: 'Reviewer notes' })}
           </p>

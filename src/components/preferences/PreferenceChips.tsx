@@ -55,72 +55,72 @@ export function PreferenceChips({ chips, onToggle, onForget, className }: Prefer
         {t('prefs.chips.yours', 'Yours')}
       </span>
       <AnimatePresence initial={false}>
-      {chips.map((chip) => (
-        <motion.span
-          key={chip.id}
-          initial={reduced ? false : { opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={reduced ? { opacity: 0 } : { opacity: 0, scale: 0.9 }}
-          transition={reduced ? { duration: 0 } : tweens.fast}
-          className="inline-flex items-stretch overflow-hidden rounded-badge border border-border"
-        >
-          <button
-            type="button"
-            aria-pressed={chip.active}
-            title={
-              chip.active
-                ? t('prefs.chips.tapOff', 'Applied — tap to turn off for this session')
-                : t('prefs.chips.tapOn', 'Off for this session — tap to apply')
-            }
-            className={cn(
-              'inline-flex items-center gap-1 px-2 py-0.5 text-xs transition-colors',
-              chip.active
-                ? 'bg-foreground text-background'
-                : 'bg-background text-muted-foreground line-through hover:bg-muted',
-            )}
-            onClick={() => {
-              if (longPressed.current) return; // long-press opened the menu
-              onToggle(chip.id);
-            }}
-            onPointerDown={() => startPress(chip.id)}
-            onPointerUp={cancelPress}
-            onPointerLeave={cancelPress}
-            onContextMenu={(e) => {
-              e.preventDefault();
-              setMenuFor(chip.id);
-            }}
+        {chips.map((chip) => (
+          <motion.span
+            key={chip.id}
+            initial={reduced ? false : { opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={reduced ? { opacity: 0 } : { opacity: 0, scale: 0.9 }}
+            transition={reduced ? { duration: 0 } : tweens.fast}
+            className="inline-flex items-stretch overflow-hidden rounded-badge bg-surface-container"
           >
-            {chip.kind === 'accessibility' && <Accessibility size={12} aria-hidden="true" />}
-            {chip.label}
-          </button>
-          <DropdownMenu
-            open={menuFor === chip.id}
-            onOpenChange={(open) => setMenuFor(open ? chip.id : null)}
-          >
-            <DropdownMenuTrigger asChild>
-              <button
-                type="button"
-                aria-label={t('prefs.chips.options', 'Options for {{label}}', {
-                  label: chip.label,
-                })}
-                className="inline-flex items-center border-l border-border bg-background px-1 text-muted-foreground hover:bg-muted"
-              >
-                <ChevronDown size={12} aria-hidden="true" />
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start">
-              <DropdownMenuItem asChild>
-                <LocalizedLink to="/settings">
-                  {t('prefs.chips.edit', 'Edit in settings')}
-                </LocalizedLink>
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => void onForget(chip)}>
-                {t('prefs.chips.forget', 'Forget permanently')}
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </motion.span>
-      ))}
+            <button
+              type="button"
+              aria-pressed={chip.active}
+              title={
+                chip.active
+                  ? t('prefs.chips.tapOff', 'Applied — tap to turn off for this session')
+                  : t('prefs.chips.tapOn', 'Off for this session — tap to apply')
+              }
+              className={cn(
+                'inline-flex items-center gap-1 px-2 py-0.5 text-xs transition-colors',
+                chip.active
+                  ? 'bg-foreground text-background'
+                  : 'bg-background text-muted-foreground line-through hover:bg-muted',
+              )}
+              onClick={() => {
+                if (longPressed.current) return; // long-press opened the menu
+                onToggle(chip.id);
+              }}
+              onPointerDown={() => startPress(chip.id)}
+              onPointerUp={cancelPress}
+              onPointerLeave={cancelPress}
+              onContextMenu={(e) => {
+                e.preventDefault();
+                setMenuFor(chip.id);
+              }}
+            >
+              {chip.kind === 'accessibility' && <Accessibility size={12} aria-hidden="true" />}
+              {chip.label}
+            </button>
+            <DropdownMenu
+              open={menuFor === chip.id}
+              onOpenChange={(open) => setMenuFor(open ? chip.id : null)}
+            >
+              <DropdownMenuTrigger asChild>
+                <button
+                  type="button"
+                  aria-label={t('prefs.chips.options', 'Options for {{label}}', {
+                    label: chip.label,
+                  })}
+                  className="inline-flex items-center border-l border-border bg-background px-1 text-muted-foreground hover:bg-muted"
+                >
+                  <ChevronDown size={12} aria-hidden="true" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start">
+                <DropdownMenuItem asChild>
+                  <LocalizedLink to="/settings">
+                    {t('prefs.chips.edit', 'Edit in settings')}
+                  </LocalizedLink>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => void onForget(chip)}>
+                  {t('prefs.chips.forget', 'Forget permanently')}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </motion.span>
+        ))}
       </AnimatePresence>
     </div>
   );

@@ -101,7 +101,7 @@ export function IntentSheet({
               {t('people.intent.travel', 'Travel')}
             </h3>
             {travelCityActive ? (
-              <div className="flex items-center justify-between gap-4 rounded-element border border-border px-4 py-2.5">
+              <div className="flex items-center justify-between gap-4 rounded-element px-4 py-2.5 bg-surface-container">
                 <span className="flex items-center gap-2 text-sm">
                   <Plane className="h-4 w-4 text-muted-foreground" aria-hidden />
                   {t('people.intent.travelActive', {

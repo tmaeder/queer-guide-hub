@@ -15,7 +15,7 @@ function MissionCard({ mission }: { mission: MissionStatus }) {
   return (
     <article
       className={cn(
-        'flex flex-col gap-2 rounded-element border border-border p-4 min-w-[200px]',
+        'flex flex-col gap-2 rounded-element p-4 min-w-[200px] bg-surface-container',
         mission.completed ? 'bg-card' : 'bg-card/60',
       )}
       aria-label={`${mission.title}: ${mission.progress} of ${mission.target}`}
@@ -57,17 +57,18 @@ export function MissionsRow({ className, hideCompleted = false, limit = 6 }: Mis
   const { data: missions = [], isLoading } = useMissions();
 
   if (isLoading) {
-    return (
-      <div className={cn('h-32 rounded-container border border-border bg-card animate-pulse', className)} />
-    );
+    return <div className={cn('h-32 rounded-container bg-card animate-pulse', className)} />;
   }
 
-  const filtered = (hideCompleted ? missions.filter((m) => !m.completed) : missions).slice(0, limit);
+  const filtered = (hideCompleted ? missions.filter((m) => !m.completed) : missions).slice(
+    0,
+    limit,
+  );
   if (filtered.length === 0) return null;
 
   return (
     <section
-      className={cn('rounded-container border border-border bg-card p-4', className)}
+      className={cn('rounded-container bg-card p-4', className)}
       aria-label="Active missions"
     >
       <div className="mb-4 flex items-baseline justify-between">

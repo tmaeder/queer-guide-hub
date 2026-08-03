@@ -57,7 +57,7 @@ export function GuidePickBlock({ pick, index }: { pick: HydratedPick; index: num
 
       <div className="col-span-12 md:col-span-7 space-y-6">
         {pick.tier && (
-          <p className="inline-flex items-center rounded-badge border border-border px-2 py-1 text-13 uppercase tracking-[0.15em]">
+          <p className="inline-flex items-center rounded-badge px-2 py-1 text-13 uppercase tracking-[0.15em] bg-surface-container">
             {tierLabels[pick.tier]}
           </p>
         )}
@@ -75,9 +75,7 @@ export function GuidePickBlock({ pick, index }: { pick: HydratedPick; index: num
             {entity.metaLine}
           </p>
         )}
-        {pick.rationale_md && (
-          <p className="text-body-lg leading-relaxed">{pick.rationale_md}</p>
-        )}
+        {pick.rationale_md && <p className="text-body-lg leading-relaxed">{pick.rationale_md}</p>}
 
         {(pick.pros.length > 0 || pick.cons.length > 0) && (
           <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 text-15">
@@ -139,7 +137,7 @@ export function GuideComparisonTable({ picks }: { picks: HydratedPick[] }) {
   return (
     <section className="mt-16">
       <h2 className="text-display mb-6">{t('guides.detail.atAGlance', 'At a glance')}</h2>
-      <div className="overflow-x-auto rounded-element border border-border">
+      <div className="overflow-x-auto rounded-element bg-surface-container">
         <table className="w-full text-15">
           <thead>
             <tr className="bg-muted">
@@ -166,9 +164,7 @@ export function GuideComparisonTable({ picks }: { picks: HydratedPick[] }) {
                 <td className="p-4 align-top">
                   <div className="font-medium">{pick.entity?.name}</div>
                   {pick.entity?.categoryLabel && (
-                    <div className="text-13 text-muted-foreground">
-                      {pick.entity.categoryLabel}
-                    </div>
+                    <div className="text-13 text-muted-foreground">{pick.entity.categoryLabel}</div>
                   )}
                 </td>
                 <td className="p-4 align-top text-13 text-muted-foreground">

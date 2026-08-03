@@ -55,7 +55,13 @@ export function PersonalityCardSkeleton() {
   );
 }
 
-function PersonalityCardImpl({ personality, loading, onClick, optimizedUrl, thumbnailUrl }: PersonalityCardProps) {
+function PersonalityCardImpl({
+  personality,
+  loading,
+  onClick,
+  optimizedUrl,
+  thumbnailUrl,
+}: PersonalityCardProps) {
   const [imgError, setImgError] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
   const openTimerRef = useRef<number | null>(null);
@@ -83,11 +89,10 @@ function PersonalityCardImpl({ personality, loading, onClick, optimizedUrl, thum
   });
   // Multi-stop srcset via CF Image Resizing when the asset is on img.queer.guide;
   // fall back to two-stop thumb/original pair for external images.
-  const srcSet =
-    optimizedUrl
-      ? (buildCfSrcSet(optimizedUrl, [400, 800, 1200]) ??
-          (thumbnailUrl ? `${thumbnailUrl} 400w, ${optimizedUrl} 1600w` : undefined))
-      : undefined;
+  const srcSet = optimizedUrl
+    ? (buildCfSrcSet(optimizedUrl, [400, 800, 1200]) ??
+      (thumbnailUrl ? `${thumbnailUrl} 400w, ${optimizedUrl} 1600w` : undefined))
+    : undefined;
   const showImage = Boolean(resolvedImageUrl) && !imgError;
   const metaParts = [era, personality.nationality].filter(Boolean) as string[];
   const ariaLabel = personality.profession
@@ -129,7 +134,7 @@ function PersonalityCardImpl({ personality, loading, onClick, optimizedUrl, thum
       onFocus={isFinePointer ? scheduleOpen : undefined}
       onBlur={isFinePointer ? scheduleClose : undefined}
       aria-label={ariaLabel}
-      className="personality-card group relative flex flex-col h-full cursor-pointer no-underline text-inherit bg-background rounded-container border border-border overflow-hidden touch-manipulation transition-colors duration-200 hover:border-foreground/40 hover:bg-muted/40 active:opacity-85 focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2"
+      className="personality-card group relative flex flex-col h-full cursor-pointer no-underline text-inherit bg-surface-container rounded-container overflow-hidden touch-manipulation transition-colors duration-200 hover:bg-muted/40 active:opacity-85 focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2"
       style={{ WebkitTapHighlightColor: 'transparent' }}
     >
       <CardHoverEffect>
@@ -158,7 +163,7 @@ function PersonalityCardImpl({ personality, loading, onClick, optimizedUrl, thum
             />
           ) : (
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-[72px] h-[72px] rounded-full bg-background flex items-center justify-center font-bold text-foreground border border-border">
+              <div className="w-[72px] h-[72px] rounded-full bg-surface-container flex items-center justify-center font-bold text-foreground">
                 {getInitials(personality.name)}
               </div>
             </div>
@@ -166,7 +171,7 @@ function PersonalityCardImpl({ personality, loading, onClick, optimizedUrl, thum
 
           {personality.is_featured && (
             <div
-              className="absolute top-2 right-2 flex items-center gap-1 px-2 py-1 rounded-full bg-background text-foreground border border-border pointer-events-none select-none text-xs font-semibold"
+              className="absolute top-2 right-2 flex items-center gap-1 px-2 py-1 rounded-full bg-surface-container text-foreground pointer-events-none select-none text-xs font-semibold"
               style={{ backdropFilter: 'blur(4px)' }}
             >
               <Star
@@ -256,7 +261,9 @@ function PersonalityCardImpl({ personality, loading, onClick, optimizedUrl, thum
         <div className="p-4 space-y-1.5">
           <div className="text-sm font-semibold leading-snug">{personality.name}</div>
           {personality.profession && (
-            <div className="text-xs text-muted-foreground">{formatProfession(personality.profession)}</div>
+            <div className="text-xs text-muted-foreground">
+              {formatProfession(personality.profession)}
+            </div>
           )}
           {metaParts.length > 0 && (
             <div className="text-xs2 text-muted-foreground/80">{metaParts.join(' · ')}</div>

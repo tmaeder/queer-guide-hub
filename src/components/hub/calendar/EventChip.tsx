@@ -1,4 +1,13 @@
-import { Plane, Ticket, Calendar as CalendarIcon, Star, Users, Cake, Newspaper, Sparkles } from 'lucide-react';
+import {
+  Plane,
+  Ticket,
+  Calendar as CalendarIcon,
+  Star,
+  Users,
+  Cake,
+  Newspaper,
+  Sparkles,
+} from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
@@ -37,7 +46,7 @@ export function EventChip({ item }: { item: CalendarItem }) {
     <LocalizedLink
       to={item.open_target}
       className={cn(
-        'flex min-w-0 items-center gap-1 rounded-badge border px-1.5 py-0.5 text-2xs no-underline',
+        'flex min-w-0 items-center gap-1 rounded-badge px-1.5 py-0.5 text-2xs no-underline bg-surface-container',
         CHIP_STYLE[item.kind],
       )}
       onClick={(e) => e.stopPropagation()}

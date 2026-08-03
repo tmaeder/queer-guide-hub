@@ -384,7 +384,7 @@ export function EventsTimelineView({
             return (
               <span
                 key={b.startMs}
-                className="px-2 py-1 text-xs2 text-foreground/40 rounded-badge border border-foreground/10 whitespace-nowrap"
+                className="px-2 py-1 text-xs2 text-foreground/40 rounded-badge whitespace-nowrap bg-surface-container"
               >
                 {b.label}
               </span>
@@ -400,7 +400,7 @@ export function EventsTimelineView({
                 );
                 el?.scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' });
               }}
-              className="px-2 py-1 text-xs2 rounded-badge border border-foreground/20 hover:bg-muted transition-colors min-h-0 whitespace-nowrap"
+              className="px-2 py-1 text-xs2 rounded-badge hover:bg-muted transition-colors min-h-0 whitespace-nowrap"
             >
               {b.label} <span className="text-foreground/50">{count}</span>
             </button>

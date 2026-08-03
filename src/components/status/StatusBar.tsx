@@ -29,11 +29,7 @@ export function StatusBar({ status, compact = false, className, onClick }: Statu
   if (!status) return null;
 
   const hasContent =
-    status.dndActive ||
-    status.emoji ||
-    status.text ||
-    status.tags.length > 0 ||
-    status.travel;
+    status.dndActive || status.emoji || status.text || status.tags.length > 0 || status.travel;
   if (!hasContent) return null;
 
   const interactive = Boolean(onClick);
@@ -45,7 +41,7 @@ export function StatusBar({ status, compact = false, className, onClick }: Statu
         type={interactive ? 'button' : undefined}
         onClick={onClick}
         className={cn(
-          'inline-flex items-center gap-2 rounded-element border border-border px-2.5 py-1.5 text-sm text-muted-foreground',
+          'inline-flex items-center gap-2 rounded-element px-2.5 py-1.5 text-sm text-muted-foreground bg-surface-container',
           interactive && 'hover:bg-muted/40 transition-colors',
           className,
         )}
@@ -60,7 +56,9 @@ export function StatusBar({ status, compact = false, className, onClick }: Statu
 
   if (compact) {
     const summary = [
-      status.emoji && status.text ? `${status.emoji} ${status.text}` : status.emoji ?? status.text,
+      status.emoji && status.text
+        ? `${status.emoji} ${status.text}`
+        : (status.emoji ?? status.text),
       travel,
     ]
       .filter(Boolean)
@@ -86,7 +84,7 @@ export function StatusBar({ status, compact = false, className, onClick }: Statu
       type={interactive ? 'button' : undefined}
       onClick={onClick}
       className={cn(
-        'flex flex-col gap-2 rounded-container border border-border bg-card p-4 text-left',
+        'flex flex-col gap-2 rounded-container bg-card p-4 text-left',
         interactive && 'hover:bg-muted/30 transition-colors w-full',
         className,
       )}
@@ -108,7 +106,7 @@ export function StatusBar({ status, compact = false, className, onClick }: Statu
           {status.tags.map((t) => (
             <span
               key={t}
-              className="rounded-badge border border-border px-2 py-0.5 text-13 text-muted-foreground"
+              className="rounded-badge px-2 py-0.5 text-13 text-muted-foreground bg-surface-container"
             >
               {AVAILABILITY_TAG_LABELS[t as keyof typeof AVAILABILITY_TAG_LABELS] ?? t}
             </span>

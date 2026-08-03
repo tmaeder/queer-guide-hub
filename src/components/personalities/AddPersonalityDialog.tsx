@@ -656,11 +656,7 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
                     aria-describedby={fieldErrors.birth_date ? 'birth_date-error' : undefined}
                   />
                   {fieldErrors.birth_date && (
-                    <p
-                      id="birth_date-error"
-                      role="alert"
-                      className="text-destructive text-sm mt-1"
-                    >
+                    <p id="birth_date-error" role="alert" className="text-destructive text-sm mt-1">
                       {fieldErrors.birth_date}
                     </p>
                   )}
@@ -734,7 +730,7 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
                         <img
                           src={formData.image_url}
                           alt="Preview"
-                          className="w-32 h-32 object-cover rounded-element border border-border"
+                          className="w-32 h-32 object-cover rounded-element"
                         />
                         <Button type="button" variant="destructive" size="sm" onClick={removeImage}>
                           <X />

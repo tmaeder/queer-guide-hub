@@ -1,9 +1,5 @@
 import { cn } from '@/lib/utils';
-import {
-  COMMUNITY_DOMAINS,
-  DOMAIN_LABELS,
-  type CommunityDomain,
-} from '@/lib/score';
+import { COMMUNITY_DOMAINS, DOMAIN_LABELS, type CommunityDomain } from '@/lib/score';
 
 interface DomainBreakdownProps {
   breakdown: Partial<Record<CommunityDomain, number>>;
@@ -25,7 +21,7 @@ export function DomainBreakdown({ breakdown, className }: DomainBreakdownProps) 
 
   return (
     <section
-      className={cn('rounded-container border border-border bg-card p-4', className)}
+      className={cn('rounded-container bg-card p-4', className)}
       aria-label="Points by domain"
     >
       <div className="mb-4 flex items-baseline justify-between">
@@ -33,7 +29,7 @@ export function DomainBreakdown({ breakdown, className }: DomainBreakdownProps) 
         <span className="text-13 tabular-nums text-muted-foreground">{total} pts</span>
       </div>
       <div
-        className="mb-2 flex h-2 w-full overflow-hidden rounded-badge border border-border"
+        className="mb-2 flex h-2 w-full overflow-hidden rounded-badge bg-surface-container"
         role="img"
         aria-label="Per-domain point distribution"
       >

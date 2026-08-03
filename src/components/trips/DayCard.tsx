@@ -251,7 +251,7 @@ export function DayCard({
                 )}
                 {conflicts.length > 0 && (
                   <span
-                    className="inline-flex items-center gap-1 px-1.5 py-0.5 text-2xs rounded-badge border border-foreground/40 text-foreground"
+                    className="inline-flex items-center gap-1 px-1.5 py-0.5 text-2xs rounded-badge text-foreground bg-surface-container"
                     title={conflicts.map((c) => c.message).join('\n')}
                     data-testid="day-conflict-chip"
                   >
@@ -377,7 +377,7 @@ export function DayCard({
 
         {/* Map peek */}
         {mapOpen && (
-          <div className="mb-4 h-[260px] border border-border rounded-container overflow-hidden">
+          <div className="mb-4 h-[260px] rounded-container overflow-hidden bg-surface-container">
             <TripMap
               places={places}
               days={[day]}

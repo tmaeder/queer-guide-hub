@@ -165,7 +165,7 @@ export function MarketplaceSearchSuggestions({
 
   return (
     <ul
-      className="absolute left-0 right-0 top-full z-30 mt-1 overflow-hidden rounded-element border border-border bg-background"
+      className="absolute left-0 right-0 top-full z-30 mt-1 overflow-hidden rounded-element bg-surface-container"
       role="listbox"
       aria-label="Search suggestions"
     >
@@ -194,12 +194,17 @@ export function MarketplaceSearchSuggestions({
               {s.kind === 'listing' && (
                 <span className="h-8 w-8 shrink-0 overflow-hidden rounded-badge bg-muted">
                   {s.imageUrl && (
-                    <img src={s.imageUrl} alt="" loading="lazy" className="h-full w-full object-cover" />
+                    <img
+                      src={s.imageUrl}
+                      alt=""
+                      loading="lazy"
+                      className="h-full w-full object-cover"
+                    />
                   )}
                 </span>
               )}
               {s.kind === 'brand' && (
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-badge border border-border text-13 font-medium">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-badge text-13 font-medium bg-surface-container">
                   {s.label.charAt(0).toUpperCase()}
                 </span>
               )}
@@ -207,7 +212,9 @@ export function MarketplaceSearchSuggestions({
                 {s.label}
               </span>
               {s.price && (
-                <span className="shrink-0 text-13 tabular-nums text-muted-foreground">{s.price}</span>
+                <span className="shrink-0 text-13 tabular-nums text-muted-foreground">
+                  {s.price}
+                </span>
               )}
             </button>
           </li>

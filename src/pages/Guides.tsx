@@ -29,9 +29,7 @@ const Guides = () => {
   const rawEntity = searchParams.get('entity');
   const filters: GuidesHubFilters = {
     format: FORMATS.includes(rawFormat as GuideFormat) ? (rawFormat as GuideFormat) : null,
-    entity: ENTITIES.includes(rawEntity as GuideEntityType)
-      ? (rawEntity as GuideEntityType)
-      : null,
+    entity: ENTITIES.includes(rawEntity as GuideEntityType) ? (rawEntity as GuideEntityType) : null,
   };
 
   const { data: guides = [], isLoading } = useGuides({
@@ -85,7 +83,7 @@ const Guides = () => {
             {Array.from({ length: 6 }).map((_, i) => (
               <div
                 key={i}
-                className="col-span-12 md:col-span-6 lg:col-span-4 rounded-container border border-border bg-card overflow-hidden"
+                className="col-span-12 md:col-span-6 lg:col-span-4 rounded-container bg-card overflow-hidden"
               >
                 <div className="aspect-[16/9] bg-muted animate-pulse" />
                 <div className="p-6 space-y-2">

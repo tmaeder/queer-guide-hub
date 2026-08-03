@@ -84,7 +84,12 @@ export function NewsSavedSearchesPanel({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button variant="ghost" size="sm" aria-label="Saved searches" style={{ padding: '0 8px', height: 36 }}>
+        <Button
+          variant="ghost"
+          size="sm"
+          aria-label="Saved searches"
+          style={{ padding: '0 8px', height: 36 }}
+        >
           <Bookmark size={16} />
         </Button>
       </PopoverTrigger>
@@ -112,7 +117,7 @@ export function NewsSavedSearchesPanel({
               )}
 
               {showSaveForm && (
-                <div className="flex flex-col gap-2 border border-border rounded-element p-2">
+                <div className="flex flex-col gap-2 rounded-element p-2 bg-surface-container">
                   <Input
                     placeholder="Name this search…"
                     value={saveName}
@@ -121,10 +126,17 @@ export function NewsSavedSearchesPanel({
                     autoFocus
                   />
                   <div className="flex items-center justify-between">
-                    <label htmlFor="alert-switch" className="text-xs text-muted-foreground flex items-center gap-2">
+                    <label
+                      htmlFor="alert-switch"
+                      className="text-xs text-muted-foreground flex items-center gap-2"
+                    >
                       <Bell size={12} /> Email alerts
                     </label>
-                    <Switch id="alert-switch" checked={alertEnabled} onCheckedChange={setAlertEnabled} />
+                    <Switch
+                      id="alert-switch"
+                      checked={alertEnabled}
+                      onCheckedChange={setAlertEnabled}
+                    />
                   </div>
                   {alertEnabled && (
                     <Select
@@ -152,7 +164,10 @@ export function NewsSavedSearchesPanel({
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => { setShowSaveForm(false); setSaveName(''); }}
+                      onClick={() => {
+                        setShowSaveForm(false);
+                        setSaveName('');
+                      }}
                     >
                       Cancel
                     </Button>
@@ -181,7 +196,10 @@ export function NewsSavedSearchesPanel({
                             <p className="text-xs text-muted-foreground truncate">"{s.query}"</p>
                           )}
                           {s.alert_enabled && (
-                            <Badge variant="secondary" style={{ fontSize: '0.65rem', padding: '0 4px', marginTop: 2 }}>
+                            <Badge
+                              variant="secondary"
+                              style={{ fontSize: '0.65rem', padding: '0 4px', marginTop: 2 }}
+                            >
                               {s.alert_frequency} alert
                             </Badge>
                           )}
@@ -194,9 +212,11 @@ export function NewsSavedSearchesPanel({
                             aria-label={s.alert_enabled ? 'Disable alert' : 'Enable alert'}
                             title={s.alert_enabled ? 'Disable alert' : 'Enable alert'}
                           >
-                            {s.alert_enabled
-                              ? <Bell size={13} className="text-primary" />
-                              : <BellOff size={13} className="text-muted-foreground" />}
+                            {s.alert_enabled ? (
+                              <Bell size={13} className="text-primary" />
+                            ) : (
+                              <BellOff size={13} className="text-muted-foreground" />
+                            )}
                           </button>
                           <button
                             type="button"
@@ -204,7 +224,10 @@ export function NewsSavedSearchesPanel({
                             className="p-1 rounded-element hover:bg-background"
                             aria-label="Delete"
                           >
-                            <Trash2 size={13} className="text-muted-foreground hover:text-destructive" />
+                            <Trash2
+                              size={13}
+                              className="text-muted-foreground hover:text-destructive"
+                            />
                           </button>
                         </div>
                       </div>
@@ -221,7 +244,10 @@ export function NewsSavedSearchesPanel({
                     variant="ghost"
                     size="sm"
                     style={{ width: '100%', justifyContent: 'flex-start', fontSize: '0.8rem' }}
-                    onClick={() => { setOpen(false); onOpenHistory(); }}
+                    onClick={() => {
+                      setOpen(false);
+                      onOpenHistory();
+                    }}
                   >
                     <BookOpen size={13} className="mr-2" />
                     Reading history

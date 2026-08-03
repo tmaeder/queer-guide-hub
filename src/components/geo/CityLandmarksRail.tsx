@@ -28,7 +28,7 @@ export function CityLandmarksRail({ cityId }: { cityId: string | undefined }) {
             <LocalizedLink
               key={lm.id}
               to={`/place/${lm.slug ?? lm.id}`}
-              className="group flex items-start gap-4 rounded-element border border-border p-4 transition-colors hover:bg-accent"
+              className="group flex items-start gap-4 rounded-element p-4 transition-colors hover:bg-accent"
             >
               <LandmarkKindIcon kind={kind} className="mt-0.5 h-5 w-5 shrink-0" />
               <div className="min-w-0">

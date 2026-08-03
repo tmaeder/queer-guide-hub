@@ -120,8 +120,7 @@ export function SocialLinksManager({
     }
   };
 
-  const removeAt = (index: number) =>
-    setAccounts((prev) => prev.filter((_, i) => i !== index));
+  const removeAt = (index: number) => setAccounts((prev) => prev.filter((_, i) => i !== index));
 
   const move = (index: number, dir: -1 | 1) =>
     setAccounts((prev) => {
@@ -145,7 +144,10 @@ export function SocialLinksManager({
     if (!backlink) return;
     try {
       await navigator.clipboard.writeText(backlink);
-      toast({ title: 'Copied', description: 'Paste this into the bio of the account you want to verify.' });
+      toast({
+        title: 'Copied',
+        description: 'Paste this into the bio of the account you want to verify.',
+      });
     } catch {
       /* clipboard unavailable */
     }
@@ -163,7 +165,11 @@ export function SocialLinksManager({
         setAccounts((prev) =>
           prev.map((a) =>
             a.url === account.url
-              ? { ...a, verified: result.verified as SocialAccount['verified'], verification_method: result.method ?? null }
+              ? {
+                  ...a,
+                  verified: result.verified as SocialAccount['verified'],
+                  verification_method: result.method ?? null,
+                }
               : a,
           ),
         );
@@ -240,12 +246,12 @@ export function SocialLinksManager({
           </div>
 
           {showSensitiveNotice && (
-            <div className="flex items-start gap-2 rounded-element border border-border bg-muted px-2 py-2">
+            <div className="flex items-start gap-2 rounded-element bg-muted px-2 py-2">
               <EyeOff size={16} className="mt-0.5 shrink-0 text-muted-foreground" />
               <p className="flex-1 text-xs text-muted-foreground">
-                Adult & dating links default to <strong>community</strong> visibility (signed-in members)
-                and show an 18+ badge to visitors. They’re never verified or embedded. Set visibility per
-                link below, or raise to public if you choose.
+                Adult & dating links default to <strong>community</strong> visibility (signed-in
+                members) and show an 18+ badge to visitors. They’re never verified or embedded. Set
+                visibility per link below, or raise to public if you choose.
               </p>
               <Button
                 type="button"
@@ -260,13 +266,19 @@ export function SocialLinksManager({
           )}
 
           {accounts.length > 0 && backlink && (
-            <div className="flex flex-col gap-2 rounded-element border border-border bg-muted px-2 py-2">
+            <div className="flex flex-col gap-2 rounded-element bg-muted px-2 py-2">
               <p className="text-xs text-muted-foreground">
                 To verify an account, add this link to its bio, then click Verify:
               </p>
               <div className="flex items-center gap-2">
                 <code className="flex-1 truncate text-xs">{backlink}</code>
-                <Button type="button" variant="ghost" size="icon" aria-label="Copy profile link" onClick={copyBacklink}>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  aria-label="Copy profile link"
+                  onClick={copyBacklink}
+                >
                   <Copy size={14} />
                 </Button>
               </div>
@@ -278,7 +290,7 @@ export function SocialLinksManager({
               {accounts.map((account, index) => (
                 <li
                   key={`${account.url}-${index}`}
-                  className="flex items-center gap-2 rounded-element border border-border px-2 py-2"
+                  className="flex items-center gap-2 rounded-element px-2 py-2 bg-surface-container"
                 >
                   <Avatar style={{ width: 32, height: 32 }}>
                     {account.avatar_url ? (
@@ -295,10 +307,17 @@ export function SocialLinksManager({
                         <BadgeCheck size={14} className="text-foreground" aria-label="Verified" />
                       )}
                       {account.verified === 'linked' && (
-                        <ShieldCheck size={14} className="text-muted-foreground" aria-label="Self-linked" />
+                        <ShieldCheck
+                          size={14}
+                          className="text-muted-foreground"
+                          aria-label="Self-linked"
+                        />
                       )}
                       {(account.sensitive || isSensitivePlatform(account.platform)) && (
-                        <span className="inline-flex items-center gap-1 rounded-badge bg-muted px-1 text-2xs text-muted-foreground" aria-label="Sensitive — 18+">
+                        <span
+                          className="inline-flex items-center gap-1 rounded-badge bg-muted px-1 text-2xs text-muted-foreground"
+                          aria-label="Sensitive — 18+"
+                        >
                           <EyeOff size={11} />
                           18+
                         </span>
@@ -312,7 +331,10 @@ export function SocialLinksManager({
                     value={account.visibility ?? 'public'}
                     onValueChange={(v) => setVisibility(index, v as AccountVisibility)}
                   >
-                    <SelectTrigger className="h-8 w-28 hidden sm:flex" aria-label="Who can see this">
+                    <SelectTrigger
+                      className="h-8 w-28 hidden sm:flex"
+                      aria-label="Who can see this"
+                    >
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -347,7 +369,11 @@ export function SocialLinksManager({
                   >
                     <Star
                       size={16}
-                      className={account.featured ? 'fill-foreground text-foreground' : 'text-muted-foreground'}
+                      className={
+                        account.featured
+                          ? 'fill-foreground text-foreground'
+                          : 'text-muted-foreground'
+                      }
                     />
                   </Button>
                   <Button

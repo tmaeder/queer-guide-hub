@@ -38,7 +38,13 @@ export function EraKeyFigures({ era }: { era: HistoryEra }) {
       if (f.year < from || f.year > to) continue;
       const cur = byId.get(f.personality_id);
       if (cur) cur.count += 1;
-      else byId.set(f.personality_id, { slug: f.slug, name: f.name, image_url: f.image_url, count: 1 });
+      else
+        byId.set(f.personality_id, {
+          slug: f.slug,
+          name: f.name,
+          image_url: f.image_url,
+          count: 1,
+        });
     }
     return [...byId.values()]
       .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name))
@@ -57,7 +63,7 @@ export function EraKeyFigures({ era }: { era: HistoryEra }) {
           <li key={f.slug}>
             <LocalizedLink
               to={`/personalities/${f.slug}`}
-              className="group flex items-center gap-2 rounded-badge border border-border py-1 pl-1 pr-2 transition-colors hover:bg-muted"
+              className="group flex items-center gap-2 rounded-badge py-1 pl-1 pr-2 transition-colors hover:bg-muted"
             >
               <Avatar className="h-7 w-7">
                 {f.image_url ? <AvatarImage src={f.image_url} alt="" /> : null}

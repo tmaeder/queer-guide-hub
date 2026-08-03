@@ -34,7 +34,7 @@ export function MapEmptyState({ visible, filters }: MapEmptyStateProps) {
     <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 z-10 flex justify-center px-4 pointer-events-none">
       <p
         role="status"
-        className="max-w-xs text-center text-sm text-muted-foreground bg-background/85 border border-border rounded-element px-4 py-2"
+        className="max-w-xs text-center text-sm text-muted-foreground bg-background/85 rounded-element px-4 py-2"
       >
         {message}
       </p>

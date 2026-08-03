@@ -24,7 +24,14 @@ import { useToast } from '@/hooks/use-toast';
 import { useBudgetMutations } from '@/hooks/useTripBudget';
 import type { TripMember } from '@/hooks/useTrips';
 
-const CATEGORIES = ['food', 'transport', 'accommodation', 'activities', 'shopping', 'other'] as const;
+const CATEGORIES = [
+  'food',
+  'transport',
+  'accommodation',
+  'activities',
+  'shopping',
+  'other',
+] as const;
 const CURRENCIES = ['EUR', 'USD', 'GBP', 'CHF', 'CAD', 'AUD', 'JPY', 'THB', 'MXN', 'BRL'];
 
 interface Props {
@@ -35,7 +42,13 @@ interface Props {
   defaultCurrency?: string;
 }
 
-export function AddBudgetDialog({ open, onClose, tripId, members, defaultCurrency = 'EUR' }: Props) {
+export function AddBudgetDialog({
+  open,
+  onClose,
+  tripId,
+  members,
+  defaultCurrency = 'EUR',
+}: Props) {
   const { t } = useTranslation();
   const { toast } = useToast();
   const { addBudgetItem } = useBudgetMutations(tripId);
@@ -210,16 +223,14 @@ export function AddBudgetDialog({ open, onClose, tripId, members, defaultCurrenc
                     type="button"
                     onClick={() => toggleSplitMember(m.user_id)}
                     className={cn(
-                      'inline-flex items-center gap-2 rounded-full border pl-1 pr-4 py-1 text-sm min-h-11 cursor-pointer transition-colors',
+                      'inline-flex items-center gap-2 rounded-full pl-1 pr-4 py-1 text-sm min-h-11 cursor-pointer transition-colors bg-surface-container',
                       selected
                         ? 'bg-primary text-primary-foreground border-primary'
                         : 'bg-background border-border hover:bg-muted',
                     )}
                   >
                     <Avatar className="h-6 w-6">
-                      {m.profiles?.avatar_url && (
-                        <AvatarImage src={m.profiles.avatar_url} alt="" />
-                      )}
+                      {m.profiles?.avatar_url && <AvatarImage src={m.profiles.avatar_url} alt="" />}
                       <AvatarFallback className="text-2xs">{initial}</AvatarFallback>
                     </Avatar>
                     {m.profiles?.display_name || 'Unknown'}

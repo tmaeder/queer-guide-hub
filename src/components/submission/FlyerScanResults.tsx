@@ -98,8 +98,18 @@ function primaryTitle(item: FlyerScanItem, type: DetectedType): string {
 function itemDuplicates(item: FlyerScanItem): DuplicateMatch[] {
   if (item.matches.duplicates?.length) return item.matches.duplicates;
   return [
-    ...item.matches.duplicate_events.map((d) => ({ id: d.id, title: d.title, score: d.score, type: 'event' as DetectedType })),
-    ...item.matches.duplicate_venues.map((d) => ({ id: d.id, title: d.name, score: d.score, type: 'venue' as DetectedType })),
+    ...item.matches.duplicate_events.map((d) => ({
+      id: d.id,
+      title: d.title,
+      score: d.score,
+      type: 'event' as DetectedType,
+    })),
+    ...item.matches.duplicate_venues.map((d) => ({
+      id: d.id,
+      title: d.name,
+      score: d.score,
+      type: 'venue' as DetectedType,
+    })),
   ].sort((a, b) => b.score - a.score);
 }
 
@@ -145,12 +155,19 @@ function ItemRow({
   const readOnlyFields = Object.entries(item.fields)
     .filter(
       ([k, f]) =>
-        f && typeof f === 'object' && 'confidence' in f && f.confidence > 0.2 && !editableKeys.has(k) && k !== 'description',
+        f &&
+        typeof f === 'object' &&
+        'confidence' in f &&
+        f.confidence > 0.2 &&
+        !editableKeys.has(k) &&
+        k !== 'description',
     )
     .slice(0, 6);
 
   return (
-    <div className={`rounded-element overflow-hidden border ${expanded ? 'border-foreground' : 'border-border'}`}>
+    <div
+      className={`rounded-element overflow-hidden border ${expanded ? 'border-foreground' : 'border-border'}`}
+    >
       {/* Header */}
       <div className="flex items-center gap-2 p-4">
         <Checkbox
@@ -167,7 +184,9 @@ function ItemRow({
           <Badge variant="outline" className="font-semibold shrink-0">
             {TYPE_LABEL[draft.type]}
           </Badge>
-          <span className="flex-1 min-w-0 truncate text-sm font-semibold">{primaryTitle(item, draft.type)}</span>
+          <span className="flex-1 min-w-0 truncate text-sm font-semibold">
+            {primaryTitle(item, draft.type)}
+          </span>
           {showFile && (
             <span className="hidden sm:flex items-center gap-1 text-xs text-muted-foreground">
               <FileText size={10} />
@@ -200,7 +219,7 @@ function ItemRow({
 
           {/* Duplicate resolution */}
           {dups.length > 0 && (
-            <div className="rounded-element border border-border p-4 flex flex-col gap-2">
+            <div className="rounded-element p-4 flex flex-col gap-2 bg-surface-container">
               <div className="flex items-center gap-2 text-xs font-semibold">
                 <AlertTriangle size={14} className="shrink-0" />
                 Possible match{dups.length > 1 ? 'es' : ''} already in the guide
@@ -211,12 +230,19 @@ function ItemRow({
                   return (
                     <div key={d.id} className="flex items-center gap-2">
                       <span className="flex-1 min-w-0 truncate text-xs">
-                        {d.title} <span className="text-muted-foreground">({Math.round(d.score * 100)}%)</span>
+                        {d.title}{' '}
+                        <span className="text-muted-foreground">
+                          ({Math.round(d.score * 100)}%)
+                        </span>
                       </span>
                       <Button
                         size="sm"
                         variant={linked ? 'default' : 'outline'}
-                        onClick={() => update({ enrich: linked ? null : { id: d.id, table: TABLE_BY_DETECTED[d.type] } })}
+                        onClick={() =>
+                          update({
+                            enrich: linked ? null : { id: d.id, table: TABLE_BY_DETECTED[d.type] },
+                          })
+                        }
                         className="h-7 gap-1 text-xs"
                       >
                         <Link2 size={12} />
@@ -229,7 +255,11 @@ function ItemRow({
               {draft.enrich && (
                 <p className="text-xs text-muted-foreground">
                   Submitted as an update to the linked entry — an editor reviews the merge.{' '}
-                  <button type="button" className="underline" onClick={() => update({ enrich: null })}>
+                  <button
+                    type="button"
+                    className="underline"
+                    onClick={() => update({ enrich: null })}
+                  >
                     It’s new instead
                   </button>
                 </p>
@@ -260,7 +290,12 @@ function ItemRow({
                 <div key={key} className="flex items-baseline gap-2">
                   <span
                     className="rounded-full shrink-0"
-                    style={{ width: 8, height: 8, marginTop: 4, backgroundColor: confidenceColor(f.confidence) }}
+                    style={{
+                      width: 8,
+                      height: 8,
+                      marginTop: 4,
+                      backgroundColor: confidenceColor(f.confidence),
+                    }}
                     title={`${Math.round(f.confidence * 100)}% confidence`}
                   />
                   <span className="text-xs text-muted-foreground shrink-0" style={{ minWidth: 64 }}>
@@ -277,12 +312,16 @@ function ItemRow({
           {/* Matching venues */}
           {canLinkVenue && venues.length > 0 && (
             <div>
-              <span className="text-xs text-muted-foreground font-semibold mb-1.5 block">Use an existing venue</span>
+              <span className="text-xs text-muted-foreground font-semibold mb-1.5 block">
+                Use an existing venue
+              </span>
               <div className="flex flex-wrap gap-1.5">
                 {venues.map((v: VenueCandidate) => (
                   <Badge
                     key={v.id}
-                    onClick={() => update({ selectedVenueId: draft.selectedVenueId === v.id ? undefined : v.id })}
+                    onClick={() =>
+                      update({ selectedVenueId: draft.selectedVenueId === v.id ? undefined : v.id })
+                    }
                     variant={draft.selectedVenueId === v.id ? 'default' : 'outline'}
                     className="cursor-pointer"
                   >
@@ -305,7 +344,11 @@ function ItemRow({
                     <Badge
                       key={tag.slug}
                       onClick={() =>
-                        update({ tags: on ? draft.tags.filter((s) => s !== tag.slug) : [...draft.tags, tag.slug] })
+                        update({
+                          tags: on
+                            ? draft.tags.filter((s) => s !== tag.slug)
+                            : [...draft.tags, tag.slug],
+                        })
                       }
                       variant={on ? 'default' : 'outline'}
                       className="cursor-pointer"
@@ -423,8 +466,14 @@ export function FlyerScanResults({ results, onSubmitBatch, onDismiss }: FlyerSca
         )}
 
         <div className="sticky bottom-0 mt-4 pt-4 bg-background border-t border-border">
-          <Button onClick={handleSubmit} disabled={includedCount === 0 || submitting} className="w-full">
-            {submitting ? 'Submitting…' : `Submit ${includedCount} item${includedCount === 1 ? '' : 's'}`}
+          <Button
+            onClick={handleSubmit}
+            disabled={includedCount === 0 || submitting}
+            className="w-full"
+          >
+            {submitting
+              ? 'Submitting…'
+              : `Submit ${includedCount} item${includedCount === 1 ? '' : 's'}`}
           </Button>
           <p className="text-xs text-muted-foreground text-center mt-2">
             All submissions are reviewed before publishing.

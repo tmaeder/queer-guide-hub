@@ -54,7 +54,9 @@ export default function ResourceTopic() {
   const topic = hubs.find((h) => h.slug === slug);
 
   useMeta({
-    title: topic ? `${topic.title} — ${t('resources.topic.metaSuffix')}` : t('resources.topic.metaNotFound'),
+    title: topic
+      ? `${topic.title} — ${t('resources.topic.metaSuffix')}`
+      : t('resources.topic.metaNotFound'),
     description: topic?.description,
     canonicalPath: `/tags/topic/${slug}`,
   });
@@ -96,18 +98,29 @@ export default function ResourceTopic() {
       <PageHeader title={topic.title} subtitle={topic.description}>
         <div className="flex items-center gap-4 text-xs text-muted-foreground">
           {iconNode}
-          <span>{t('resources.topic.stats', { guides: counts.guides, orgs: counts.orgs, news: counts.news })}</span>
+          <span>
+            {t('resources.topic.stats', {
+              guides: counts.guides,
+              orgs: counts.orgs,
+              news: counts.news,
+            })}
+          </span>
         </div>
       </PageHeader>
 
       <div className="flex flex-col gap-10 mt-8">
         <section aria-labelledby="topic-guides-heading">
-          <h2 id="topic-guides-heading" className="text-base font-semibold mb-4 inline-flex items-center gap-2">
+          <h2
+            id="topic-guides-heading"
+            className="text-base font-semibold mb-4 inline-flex items-center gap-2"
+          >
             <FileText aria-hidden size={18} /> {t('resources.topic.guidesHeading')}
           </h2>
           {guidesLoading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-24 rounded-container" />)}
+              {Array.from({ length: 4 }).map((_, i) => (
+                <Skeleton key={i} className="h-24 rounded-container" />
+              ))}
             </div>
           ) : guides.length === 0 ? (
             <p className="text-sm text-muted-foreground">{t('resources.topic.guidesEmpty')}</p>
@@ -117,7 +130,7 @@ export default function ResourceTopic() {
                 <li key={g.slug}>
                   <LocalizedLink
                     to={`/p/${g.slug}`}
-                    className="block rounded-container border border-border p-4 hover:bg-foreground/[0.03] no-underline text-inherit"
+                    className="block rounded-container p-4 hover:bg-foreground/[0.03] no-underline text-inherit"
                   >
                     <p className="font-semibold text-sm">{g.title}</p>
                     {(g.excerpt || g.subtitle) && (
@@ -133,29 +146,40 @@ export default function ResourceTopic() {
         </section>
 
         <section aria-labelledby="topic-orgs-heading">
-          <h2 id="topic-orgs-heading" className="text-base font-semibold mb-4">{t('resources.topic.orgsHeading')}</h2>
+          <h2 id="topic-orgs-heading" className="text-base font-semibold mb-4">
+            {t('resources.topic.orgsHeading')}
+          </h2>
           {orgsLoading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-56 rounded-container" />)}
+              {Array.from({ length: 4 }).map((_, i) => (
+                <Skeleton key={i} className="h-56 rounded-container" />
+              ))}
             </div>
           ) : orgs.length === 0 ? (
             <p className="text-sm text-muted-foreground">{t('resources.topic.orgsEmpty')}</p>
           ) : (
             <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {orgs.map((v) => (
-                <li key={v.id}><VenueCard venue={v} /></li>
+                <li key={v.id}>
+                  <VenueCard venue={v} />
+                </li>
               ))}
             </ul>
           )}
         </section>
 
         <section aria-labelledby="topic-news-heading">
-          <h2 id="topic-news-heading" className="text-base font-semibold mb-4 inline-flex items-center gap-2">
+          <h2
+            id="topic-news-heading"
+            className="text-base font-semibold mb-4 inline-flex items-center gap-2"
+          >
             <Newspaper aria-hidden size={18} /> {t('resources.topic.newsHeading')}
           </h2>
           {newsLoading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-32 rounded-container" />)}
+              {Array.from({ length: 3 }).map((_, i) => (
+                <Skeleton key={i} className="h-32 rounded-container" />
+              ))}
             </div>
           ) : news.length === 0 ? (
             <p className="text-sm text-muted-foreground">{t('resources.topic.newsEmpty')}</p>
@@ -165,7 +189,7 @@ export default function ResourceTopic() {
                 <li key={n.id}>
                   <LocalizedLink
                     to={`/news/${n.slug}`}
-                    className="block rounded-container border border-border p-4 hover:bg-foreground/[0.03] no-underline text-inherit"
+                    className="block rounded-container p-4 hover:bg-foreground/[0.03] no-underline text-inherit"
                   >
                     <p className="font-semibold text-sm line-clamp-2">{n.title}</p>
                     {resolvePublisherName({ publisherName: n.publisher_name }) && (

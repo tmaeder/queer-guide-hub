@@ -42,7 +42,7 @@ export default function MarketplaceCategories() {
               <div
                 key={i}
                 aria-hidden="true"
-                className="rounded-container border border-border bg-muted/30 min-h-[120px] animate-pulse"
+                className="rounded-container bg-muted/30 min-h-[120px] animate-pulse"
               />
             ))}
           </div>
@@ -54,10 +54,14 @@ export default function MarketplaceCategories() {
               <LocalizedLink
                 key={tile.slug}
                 to={`/marketplace/category/${tile.slug}`}
-                className="group relative flex flex-col justify-between rounded-container border border-border bg-card p-4 sm:p-6 min-h-[120px] hover:bg-muted transition-colors"
+                className="group relative flex flex-col justify-between rounded-container bg-card p-4 sm:p-6 min-h-[120px] hover:bg-muted transition-colors"
               >
                 <div className="flex items-start justify-between gap-2">
-                  <Tag style={{ width: 22, height: 22 }} className="text-foreground" aria-hidden="true" />
+                  <Tag
+                    style={{ width: 22, height: 22 }}
+                    className="text-foreground"
+                    aria-hidden="true"
+                  />
                   <ArrowUpRight
                     size={14}
                     className="text-muted-foreground group-hover:text-foreground transition-colors"
@@ -65,7 +69,9 @@ export default function MarketplaceCategories() {
                   />
                 </div>
                 <div className="flex flex-col gap-1 mt-4">
-                  <span className="text-sm font-semibold leading-tight text-balance">{prettify(tile.slug)}</span>
+                  <span className="text-sm font-semibold leading-tight text-balance">
+                    {prettify(tile.slug)}
+                  </span>
                   <span className="text-xs2 uppercase tracking-[0.14em] text-muted-foreground">
                     {tile.count.toLocaleString()} listing{tile.count !== 1 ? 's' : ''}
                   </span>

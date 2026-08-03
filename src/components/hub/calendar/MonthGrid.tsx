@@ -146,7 +146,7 @@ export function MonthGrid({
                     <EventChip key={item.id} item={item} />
                   ))}
                   {historyCount > 0 && (
-                    <span className="flex items-center gap-1 rounded-badge border border-border px-1.5 py-0.5 text-2xs text-muted-foreground">
+                    <span className="flex items-center gap-1 rounded-badge px-1.5 py-0.5 text-2xs text-muted-foreground bg-surface-container">
                       <Sparkles className="h-3 w-3 shrink-0" aria-hidden />
                       <span className="truncate">
                         {t('hub.calendar.historyCount', {

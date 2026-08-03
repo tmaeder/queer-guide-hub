@@ -32,7 +32,7 @@ export function FavoritesSummaryCard() {
             {counts.map(({ label, count }) => (
               <span
                 key={label}
-                className="rounded-badge border border-border bg-muted/30 px-2 py-0.5 text-13 tabular-nums"
+                className="rounded-badge bg-muted/30 px-2 py-0.5 text-13 tabular-nums"
               >
                 {count} {label}
               </span>

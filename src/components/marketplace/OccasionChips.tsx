@@ -45,40 +45,42 @@ export function OccasionChips({
       className={`-mx-4 overflow-x-auto ${className ?? 'mb-12'}`}
     >
       <ul className="flex gap-2 px-4 pb-2 min-w-max">
-        {showOccasions && OCCASION_CHIPS.map((c) => {
-          const active = activeOcc === c.slug;
-          return (
-            <li key={c.slug} className="shrink-0">
-              <button
-                type="button"
-                onClick={() => toggleOcc(c.slug)}
-                aria-pressed={active}
-                className={`inline-flex items-center gap-2 rounded-element border px-4 py-2 text-sm transition-colors ${
-                  active
-                    ? 'border-foreground bg-foreground text-background'
-                    : 'border-border hover:border-foreground/40'
-                }`}
+        {showOccasions &&
+          OCCASION_CHIPS.map((c) => {
+            const active = activeOcc === c.slug;
+            return (
+              <li key={c.slug} className="shrink-0">
+                <button
+                  type="button"
+                  onClick={() => toggleOcc(c.slug)}
+                  aria-pressed={active}
+                  className={`inline-flex items-center gap-2 rounded-element border px-4 py-2 text-sm transition-colors ${
+                    active
+                      ? 'border-foreground bg-foreground text-background'
+                      : 'border-border hover:border-foreground/40'
+                  }`}
+                >
+                  <span className="font-medium">{c.label}</span>
+                </button>
+              </li>
+            );
+          })}
+        {showCollections &&
+          collections.map((c) => (
+            <li key={c.id} className="shrink-0">
+              <LocalizedLink
+                to={`/marketplace/collection/${c.slug}`}
+                className="inline-flex items-center gap-2 rounded-element px-4 py-2 text-sm transition-colors bg-surface-container"
               >
-                <span className="font-medium">{c.label}</span>
-              </button>
+                <span className="font-medium">{c.title}</span>
+                {c.subtitle && (
+                  <span className="hidden md:inline text-muted-foreground text-xs">
+                    · {c.subtitle}
+                  </span>
+                )}
+              </LocalizedLink>
             </li>
-          );
-        })}
-        {showCollections && collections.map((c) => (
-          <li key={c.id} className="shrink-0">
-            <LocalizedLink
-              to={`/marketplace/collection/${c.slug}`}
-              className="inline-flex items-center gap-2 rounded-element border border-border px-4 py-2 text-sm hover:border-foreground/40 transition-colors"
-            >
-              <span className="font-medium">{c.title}</span>
-              {c.subtitle && (
-                <span className="hidden md:inline text-muted-foreground text-xs">
-                  · {c.subtitle}
-                </span>
-              )}
-            </LocalizedLink>
-          </li>
-        ))}
+          ))}
       </ul>
     </nav>
   );

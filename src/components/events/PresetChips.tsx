@@ -1,7 +1,16 @@
 /* eslint-disable react-refresh/only-export-components -- intentionally co-locates helpers/constants with the primary component */
 
 import { useTranslation } from 'react-i18next';
-import { MapPin, Sparkles, Ticket, Flag, CalendarDays, Moon, CalendarRange, Plus } from 'lucide-react';
+import {
+  MapPin,
+  Sparkles,
+  Ticket,
+  Flag,
+  CalendarDays,
+  Moon,
+  CalendarRange,
+  Plus,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export type EventPresetId =
@@ -31,13 +40,25 @@ export function PresetChips({ active, onSelect, disabled = [] }: PresetChipsProp
 
   const presets: EventPreset[] = [
     { id: 'tonight', label: t('pages.events.preset.tonight', 'Tonight'), icon: Moon },
-    { id: 'this-weekend', label: t('pages.events.preset.thisWeekend', 'This weekend'), icon: CalendarDays },
-    { id: 'next-7-days', label: t('pages.events.preset.next7Days', 'Next 7 days'), icon: CalendarRange },
+    {
+      id: 'this-weekend',
+      label: t('pages.events.preset.thisWeekend', 'This weekend'),
+      icon: CalendarDays,
+    },
+    {
+      id: 'next-7-days',
+      label: t('pages.events.preset.next7Days', 'Next 7 days'),
+      icon: CalendarRange,
+    },
     { id: 'near-me', label: t('pages.events.preset.nearMe', 'Near me'), icon: MapPin },
     { id: 'pride', label: t('pages.events.preset.pride', 'Pride season'), icon: Flag },
     { id: 'free', label: t('pages.events.preset.free', 'Free'), icon: Ticket },
     { id: 'featured', label: t('pages.events.preset.featured', 'Featured'), icon: Sparkles },
-    { id: 'new-this-week', label: t('pages.events.preset.newThisWeek', 'New this week'), icon: Plus },
+    {
+      id: 'new-this-week',
+      label: t('pages.events.preset.newThisWeek', 'New this week'),
+      icon: Plus,
+    },
   ];
 
   return (
@@ -58,7 +79,7 @@ export function PresetChips({ active, onSelect, disabled = [] }: PresetChipsProp
             disabled={isDisabled}
             onClick={() => onSelect(isActive ? null : id)}
             className={cn(
-              'shrink-0 snap-start inline-flex items-center gap-1.5 px-4 py-2 rounded-full border text-sm font-medium transition-colors',
+              'shrink-0 snap-start inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition-colors bg-surface-container',
               'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
               isActive
                 ? 'bg-foreground text-background border-foreground'

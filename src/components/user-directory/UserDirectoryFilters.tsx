@@ -82,7 +82,7 @@ export const UserDirectoryFilters = ({
   isAuthed,
 }: UserDirectoryFiltersProps) => {
   return (
-    <div className="border border-border rounded-container bg-background">
+    <div className="rounded-container bg-surface-container">
       <CardContent className="p-6">
         <div className="flex flex-col gap-4">
           <div className="flex flex-col sm:flex-row gap-2">
@@ -146,12 +146,7 @@ export const UserDirectoryFilters = ({
                       <h2 className="text-lg font-semibold">Filters</h2>
                     </div>
                     {activeFiltersCount > 0 && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={clearAllFilters}
-                        className="gap-2"
-                      >
+                      <Button variant="ghost" size="sm" onClick={clearAllFilters} className="gap-2">
                         <X size={16} />
                         Clear all ({activeFiltersCount})
                       </Button>
@@ -415,11 +410,7 @@ export const UserDirectoryFilters = ({
                         setFilters((prev) => ({
                           ...prev,
                           sortBy: value as
-                            | 'newest'
-                            | 'oldest'
-                            | 'alphabetical'
-                            | 'last_active'
-                            | 'match',
+                            'newest' | 'oldest' | 'alphabetical' | 'last_active' | 'match',
                         }))
                       }
                     >

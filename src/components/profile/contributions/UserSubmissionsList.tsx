@@ -8,7 +8,7 @@ export function UserSubmissionsList() {
   const { data: submissions = [], isLoading } = useUserSubmissions(user?.id, true);
 
   if (isLoading) {
-    return <div className="h-20 rounded-container border border-border bg-card animate-pulse" />;
+    return <div className="h-20 rounded-container bg-card animate-pulse" />;
   }
   if (submissions.length === 0) {
     return <p className="text-sm text-muted-foreground">No submissions yet.</p>;
@@ -17,10 +17,7 @@ export function UserSubmissionsList() {
   return (
     <ul className="flex flex-col gap-2">
       {submissions.map((s) => (
-        <li
-          key={s.id}
-          className="flex flex-col gap-1 rounded-element border border-border bg-card px-4 py-2"
-        >
+        <li key={s.id} className="flex flex-col gap-1 rounded-element bg-card px-4 py-2">
           <div className="flex items-center justify-between gap-4">
             <div className="min-w-0">
               <p className="text-sm font-medium truncate">{s.name ?? s.content_type}</p>
@@ -32,9 +29,11 @@ export function UserSubmissionsList() {
               {s.promoted ? 'published' : s.status}
             </Badge>
           </div>
-          {!s.promoted && s.reviewer_notes && ['rejected', 'duplicate', 'needs_info'].includes(s.status) && (
-            <p className="text-sm text-muted-foreground">{s.reviewer_notes}</p>
-          )}
+          {!s.promoted &&
+            s.reviewer_notes &&
+            ['rejected', 'duplicate', 'needs_info'].includes(s.status) && (
+              <p className="text-sm text-muted-foreground">{s.reviewer_notes}</p>
+            )}
         </li>
       ))}
     </ul>

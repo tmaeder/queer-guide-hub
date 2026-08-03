@@ -48,7 +48,7 @@ export function VenueFilters({
   });
 
   return (
-    <div className="flex flex-col gap-4 w-full min-w-0 overflow-hidden p-4 rounded-container border border-border bg-card/60">
+    <div className="flex flex-col gap-4 w-full min-w-0 overflow-hidden p-4 rounded-container bg-card/60">
       {/* Search Row */}
       <SearchFilterBar
         search={f.search}
@@ -127,7 +127,11 @@ export function VenueFilters({
           onTargetGroupsOpenChange={f.setTargetGroupsOpen}
           selectedTargetGroups={f.selectedTargetGroups}
           targetGroupsLoading={f.targetGroupsLoading}
-          targetGroupItems={f.targetGroups.map((g) => ({ key: g.id, label: g.name, color: g.color }))}
+          targetGroupItems={f.targetGroups.map((g) => ({
+            key: g.id,
+            label: g.name,
+            color: g.color,
+          }))}
           onToggleTargetGroup={f.handleTargetGroupToggle}
           hasActiveFilters={f.hasActiveFilters}
           onClearFilters={f.clearFilters}

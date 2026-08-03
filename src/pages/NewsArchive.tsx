@@ -33,15 +33,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { EmptyState, LoadingTimeout, ErrorState } from '@/components/ui/EmptyState';
-import {
-  Newspaper,
-  Grid3X3,
-  List,
-  SortAsc,
-  Filter,
-  TrendingUp,
-  Layers,
-} from 'lucide-react';
+import { Newspaper, Grid3X3, List, SortAsc, Filter, TrendingUp, Layers } from 'lucide-react';
 import { useNewsStories } from '@/hooks/useNewsStories';
 import { StoryCard } from '@/components/news/StoryCard';
 import { fetchNamesByIds } from '@/hooks/usePageFetchers';
@@ -312,20 +304,25 @@ export default function NewsArchive() {
 
   const semanticDebounce = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const buildSearchFilters = useCallback((filters: Record<string, unknown>): NewsSearchFilters => ({
-    tags: filters.tags as string[] | undefined,
-    dateRange: filters.dateRange as { from?: string; to?: string } | undefined,
-    featured: filters.featured as boolean | undefined,
-    category: filters.category as string | undefined,
-    countryIds: filters.countryIds as string[] | undefined,
-    cityIds: filters.cityIds as string[] | undefined,
-    sourceIds: filters.sourceId ? [filters.sourceId as string] : (filters.sourceIds as string[] | undefined),
-    language: filters.language as string | undefined,
-    mediaType: filters.mediaType as string | undefined,
-    sentiment: filters.sentiment as string | undefined,
-    trustScoreMin: filters.trustScoreMin as number | undefined,
-    authorNames: filters.authorNames as string[] | undefined,
-  }), []);
+  const buildSearchFilters = useCallback(
+    (filters: Record<string, unknown>): NewsSearchFilters => ({
+      tags: filters.tags as string[] | undefined,
+      dateRange: filters.dateRange as { from?: string; to?: string } | undefined,
+      featured: filters.featured as boolean | undefined,
+      category: filters.category as string | undefined,
+      countryIds: filters.countryIds as string[] | undefined,
+      cityIds: filters.cityIds as string[] | undefined,
+      sourceIds: filters.sourceId
+        ? [filters.sourceId as string]
+        : (filters.sourceIds as string[] | undefined),
+      language: filters.language as string | undefined,
+      mediaType: filters.mediaType as string | undefined,
+      sentiment: filters.sentiment as string | undefined,
+      trustScoreMin: filters.trustScoreMin as number | undefined,
+      authorNames: filters.authorNames as string[] | undefined,
+    }),
+    [],
+  );
 
   const applyFiltersAndFetch = (filters: Record<string, unknown>) => {
     setCurrentFilters(filters);
@@ -635,7 +632,7 @@ export default function NewsArchive() {
         )}
 
         {/* Quick Search & Controls — sticky on mobile so search stays reachable while scrolling */}
-        <div className="border border-border rounded-element p-4 mb-6 bg-background sticky top-[44px] md:static z-10">
+        <div className="rounded-element p-4 mb-6 bg-surface-container sticky top-[44px] md:static z-10">
           <div className="flex flex-col md:flex-row gap-4 md:items-center">
             <div className="flex items-center gap-2 flex-1 md:max-w-[26rem]">
               <NewsSearchInput
@@ -678,7 +675,7 @@ export default function NewsArchive() {
 
               {/* View Mode — Grid + List only. Stories has its own link below. */}
               <div
-                className="hidden md:flex items-center rounded-element p-1 border border-border"
+                className="hidden md:flex items-center rounded-element p-1 bg-surface-container"
                 role="group"
                 aria-label="View mode"
               >
@@ -755,7 +752,7 @@ export default function NewsArchive() {
 
         {/* Active Filters Summary */}
         {hasActiveFilters && sortedArticles.length > 0 && (
-          <div className="flex items-center justify-between mb-6 p-4 border border-border rounded-element bg-background">
+          <div className="flex items-center justify-between mb-6 p-4 rounded-element bg-surface-container">
             <div className="flex items-center gap-2 flex-wrap">
               <Filter size={16} />
               <p className="text-sm text-muted-foreground">
@@ -919,11 +916,10 @@ export default function NewsArchive() {
                           // global total. Fall back to the slice length until counts
                           // resolve. The slice is capped at 200 in useNews, so when
                           // we hit that cap we suffix "+" to be honest.
-                          const truth =
-                            isSemanticSearch
-                              ? (displayTotal ?? undefined)
-                              : (activeCategory && categoryCounts[activeCategory]) ||
-                                (!activeCategory ? displayTotal ?? undefined : undefined);
+                          const truth = isSemanticSearch
+                            ? (displayTotal ?? undefined)
+                            : (activeCategory && categoryCounts[activeCategory]) ||
+                              (!activeCategory ? (displayTotal ?? undefined) : undefined);
                           const sliceLen = sortedArticles.length;
                           const totalForFilter = truth ?? sliceLen;
                           const isCapped = sliceLen >= 200 && truth === undefined;

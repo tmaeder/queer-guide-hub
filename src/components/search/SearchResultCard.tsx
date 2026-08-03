@@ -158,7 +158,7 @@ function SearchResultCardImpl({
         onKeyDown={(e) => {
           if (e.key === 'Enter') onSelect(result);
         }}
-        className="group flex cursor-pointer flex-col overflow-hidden rounded-element border border-border transition-colors hover:bg-accent"
+        className="group flex cursor-pointer flex-col overflow-hidden rounded-element transition-colors hover:bg-accent"
       >
         <div className="relative aspect-[16/9] overflow-hidden bg-muted">
           {result.imageUrl ? (
@@ -187,7 +187,10 @@ function SearchResultCardImpl({
             <div className="flex items-center gap-2">
               {ratingEl}
               {tripEntity && <QuietAddToTripButton variant="inline" entity={tripEntity} />}
-              <SearchFeedbackButtons entity={{ type: result.type, id: result.objectID }} query={query} />
+              <SearchFeedbackButtons
+                entity={{ type: result.type, id: result.objectID }}
+                query={query}
+              />
             </div>
           </div>
           <BoostReasonBadge reason={result._boostReason} />
@@ -205,9 +208,9 @@ function SearchResultCardImpl({
       onKeyDown={(e) => {
         if (e.key === 'Enter') onSelect(result);
       }}
-      className="group flex cursor-pointer items-center gap-4 rounded-element border border-border p-4 transition-colors hover:bg-accent"
+      className="group flex cursor-pointer items-center gap-4 rounded-element p-4 transition-colors hover:bg-accent"
     >
-      <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-element border border-border bg-muted">
+      <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-element bg-muted">
         {result.imageUrl ? (
           <img
             src={result.imageUrl}
@@ -256,7 +259,10 @@ function SearchResultCardImpl({
         {price && <span className="text-base font-semibold">{price}</span>}
         <div className="flex items-center gap-2">
           {tripEntity && <QuietAddToTripButton variant="inline" entity={tripEntity} />}
-          <SearchFeedbackButtons entity={{ type: result.type, id: result.objectID }} query={query} />
+          <SearchFeedbackButtons
+            entity={{ type: result.type, id: result.objectID }}
+            query={query}
+          />
         </div>
       </div>
     </div>

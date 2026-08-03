@@ -73,9 +73,7 @@ export const GeoCard = memo(function GeoCard(props: GeoCardProps) {
   const FallbackIcon = VARIANT_ICON[variant];
 
   const subtitleFallback =
-    variant === 'country' ? capital
-    : variant === 'city' ? countryName
-    : description?.slice(0, 80);
+    variant === 'country' ? capital : variant === 'city' ? countryName : description?.slice(0, 80);
 
   const subtitle = (editorialHook ?? subtitleFallback ?? '').trim();
   const legality = variant === 'country' && legalityData ? getLegalityBadge(legalityData) : null;
@@ -113,13 +111,16 @@ export const GeoCard = memo(function GeoCard(props: GeoCardProps) {
               )}
             >
               <Bookmark
-                className={cn('h-4 w-4', saved ? 'fill-foreground text-foreground' : 'text-foreground')}
+                className={cn(
+                  'h-4 w-4',
+                  saved ? 'fill-foreground text-foreground' : 'text-foreground',
+                )}
               />
             </button>
           )}
           {/* Visited stamp — bottom-left overlay */}
           {visited && (
-            <div className="absolute bottom-2 left-2 inline-flex items-center gap-1 rounded-badge bg-background/85 backdrop-blur border border-border/60 px-2 py-1">
+            <div className="absolute bottom-2 left-2 inline-flex items-center gap-1 rounded-badge bg-background/85 backdrop-blur px-2 py-1">
               <Check className="h-3 w-3" />
               <span className="text-2xs font-medium uppercase tracking-wide">Visited</span>
             </div>
@@ -130,13 +131,14 @@ export const GeoCard = memo(function GeoCard(props: GeoCardProps) {
           <div className="flex items-start justify-between gap-2">
             <h3 className="text-headline font-semibold leading-tight truncate">{name}</h3>
             {variant === 'city' && isCapital && (
-              <Crown className="h-4 w-4 mt-1 shrink-0 text-muted-foreground" aria-label="Capital city" />
+              <Crown
+                className="h-4 w-4 mt-1 shrink-0 text-muted-foreground"
+                aria-label="Capital city"
+              />
             )}
           </div>
 
-          {subtitle && (
-            <p className="text-15 text-muted-foreground line-clamp-2">{subtitle}</p>
-          )}
+          {subtitle && <p className="text-15 text-muted-foreground line-clamp-2">{subtitle}</p>}
 
           {legality && (
             <div className="mt-auto pt-2">

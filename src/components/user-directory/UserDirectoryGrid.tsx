@@ -49,7 +49,7 @@ export const UserDirectoryGrid = ({
   return (
     <div className="flex flex-col gap-6">
       {hasProfiles && (
-        <div className="flex items-center justify-between p-4 bg-muted rounded-element border border-border">
+        <div className="flex items-center justify-between p-4 bg-muted rounded-element">
           <div className="flex items-center gap-2">
             <Users size={18} />
             <span className="font-medium">
@@ -66,12 +66,7 @@ export const UserDirectoryGrid = ({
             onValueChange={(value) =>
               setFilters((prev) => ({
                 ...prev,
-                sortBy: value as
-                  | 'newest'
-                  | 'oldest'
-                  | 'alphabetical'
-                  | 'last_active'
-                  | 'match',
+                sortBy: value as 'newest' | 'oldest' | 'alphabetical' | 'last_active' | 'match',
               }))
             }
           >

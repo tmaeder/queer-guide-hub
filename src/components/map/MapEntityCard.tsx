@@ -237,7 +237,7 @@ export function MapEntityCard({
   // in a tall empty band (most venues have no photo).
   if (variant === 'rail') {
     return (
-      <div className="flex w-full items-center gap-2 overflow-hidden rounded-container border border-border bg-background p-2">
+      <div className="flex w-full items-center gap-2 overflow-hidden rounded-container bg-surface-container p-2">
         {hasImage ? (
           <div className="h-12 w-12 shrink-0 overflow-hidden rounded-element">
             <Image

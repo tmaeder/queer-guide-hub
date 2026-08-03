@@ -1,9 +1,4 @@
-import {
-  useEffect,
-  useRef,
-  useState,
-  useCallback,
-} from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { MapPin, Loader2, Check } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
@@ -57,9 +52,7 @@ export function CityCountryAutocomplete({
   id = 'trip-city-country',
 }: Props) {
   const { t } = useTranslation();
-  const [query, setQuery] = useState(
-    value ? `${value.cityName}, ${value.countryName}` : '',
-  );
+  const [query, setQuery] = useState(value ? `${value.cityName}, ${value.countryName}` : '');
   const debounced = useDebounce(query, 300);
   const [options, setOptions] = useState<Option[]>([]);
   const [loading, setLoading] = useState(false);
@@ -101,16 +94,14 @@ export function CityCountryAutocomplete({
         max_results: 8,
       });
       if (error) throw error;
-      const mapped: Option[] = (data ?? []).map(
-        (row: Record<string, unknown>) => ({
-          cityId: row.id as string,
-          cityName: row.name as string,
-          countryId: row.country_id as string,
-          countryName: row.country_name as string,
-          countryCode: (row.country_code as string | null) ?? null,
-          timezone: (row.timezone as string | null) ?? null,
-        }),
-      );
+      const mapped: Option[] = (data ?? []).map((row: Record<string, unknown>) => ({
+        cityId: row.id as string,
+        cityName: row.name as string,
+        countryId: row.country_id as string,
+        countryName: row.country_name as string,
+        countryCode: (row.country_code as string | null) ?? null,
+        timezone: (row.timezone as string | null) ?? null,
+      }));
       setOptions(mapped);
     } catch (err) {
       console.error('[CityCountryAutocomplete] search failed', err);
@@ -216,7 +207,7 @@ export function CityCountryAutocomplete({
         <div
           id={`${id}-listbox`}
           role="listbox"
-          className="absolute left-0 right-0 mt-1 max-h-80 overflow-y-auto bg-background border border-border rounded-element"
+          className="absolute left-0 right-0 mt-1 max-h-80 overflow-y-auto bg-surface-container rounded-element"
           style={{ zIndex: 1500 }}
         >
           {options.length === 0 && !loading && (
@@ -254,17 +245,12 @@ export function CityCountryAutocomplete({
               onMouseEnter={() => setHighlight(i)}
               className={`px-4 py-2.5 flex items-center gap-2.5 cursor-pointer ${i === highlight ? 'bg-muted' : ''}`}
             >
-              <span
-                className="text-lg leading-none min-w-[22px] text-center"
-                aria-hidden
-              >
+              <span className="text-lg leading-none min-w-[22px] text-center" aria-hidden>
                 {flagEmoji(opt.countryCode)}
               </span>
               <div className="flex-1 min-w-0">
                 <div className="text-sm font-semibold">{opt.cityName}</div>
-                <div className="text-xs text-muted-foreground">
-                  {opt.countryName}
-                </div>
+                <div className="text-xs text-muted-foreground">{opt.countryName}</div>
               </div>
             </div>
           ))}

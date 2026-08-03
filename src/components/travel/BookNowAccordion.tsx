@@ -149,8 +149,10 @@ export function BookNowAccordion({ defaultOpen = false }: Props) {
   const rankResults = <T extends BookingResult>(results: T[]): T[] => {
     if (!usePersonalized || abGroup !== 'personalized') return results;
     return [...results].sort((a, b) => {
-      const aBoost = a.providerData?.cityId && recCityIds.has(a.providerData.cityId as string) ? 10 : 0;
-      const bBoost = b.providerData?.cityId && recCityIds.has(b.providerData.cityId as string) ? 10 : 0;
+      const aBoost =
+        a.providerData?.cityId && recCityIds.has(a.providerData.cityId as string) ? 10 : 0;
+      const bBoost =
+        b.providerData?.cityId && recCityIds.has(b.providerData.cityId as string) ? 10 : 0;
       return bBoost - aBoost || a.price - b.price;
     });
   };
@@ -167,13 +169,19 @@ export function BookNowAccordion({ defaultOpen = false }: Props) {
     setSearchParams((prev) => {
       prev.set('tab', 'hotels');
       prev.set('city', params.city);
-      if (params.checkIn) prev.set('checkIn', params.checkIn); else prev.delete('checkIn');
-      if (params.checkOut) prev.set('checkOut', params.checkOut); else prev.delete('checkOut');
+      if (params.checkIn) prev.set('checkIn', params.checkIn);
+      else prev.delete('checkIn');
+      if (params.checkOut) prev.set('checkOut', params.checkOut);
+      else prev.delete('checkOut');
       prev.set('guests', String(params.guests));
-      if (params.hotelType) prev.set('type', params.hotelType); else prev.delete('type');
-      if (params.priceMin !== undefined) prev.set('priceMin', String(params.priceMin)); else prev.delete('priceMin');
-      if (params.priceMax !== undefined) prev.set('priceMax', String(params.priceMax)); else prev.delete('priceMax');
-      if (params.lgbtqFriendlyOnly) prev.set('lgbtqOnly', '1'); else prev.delete('lgbtqOnly');
+      if (params.hotelType) prev.set('type', params.hotelType);
+      else prev.delete('type');
+      if (params.priceMin !== undefined) prev.set('priceMin', String(params.priceMin));
+      else prev.delete('priceMin');
+      if (params.priceMax !== undefined) prev.set('priceMax', String(params.priceMax));
+      else prev.delete('priceMax');
+      if (params.lgbtqFriendlyOnly) prev.set('lgbtqOnly', '1');
+      else prev.delete('lgbtqOnly');
       return prev;
     });
   };
@@ -181,7 +189,10 @@ export function BookNowAccordion({ defaultOpen = false }: Props) {
   const handleHotelSearch = (params: HotelSearchParams) => {
     setHotelSearch(params);
     syncHotelParamsToUrl(params);
-    track({ eventType: 'search', metadata: { surface: 'travel_book_now', vertical: 'hotel', city: params.city } });
+    track({
+      eventType: 'search',
+      metadata: { surface: 'travel_book_now', vertical: 'hotel', city: params.city },
+    });
   };
 
   const clearHotelFilter = (key: 'hotelType' | 'priceMin' | 'priceMax' | 'lgbtqFriendlyOnly') => {
@@ -211,7 +222,7 @@ export function BookNowAccordion({ defaultOpen = false }: Props) {
       hotelSearch.lgbtqFriendlyOnly === true);
 
   return (
-    <section className="border border-border bg-background mb-8 rounded-element" data-testid="book-now-section">
+    <section className=" bg-surface-container mb-8 rounded-element" data-testid="book-now-section">
       <button
         type="button"
         className="w-full flex items-center justify-between p-6 text-left"
@@ -285,7 +296,11 @@ export function BookNowAccordion({ defaultOpen = false }: Props) {
                     placeholder="Barcelona, Berlin, Bangkok..."
                   />
                 </div>
-                <Button type="submit" size="sm" onClick={() => setActivityCity(activityCity.trim())}>
+                <Button
+                  type="submit"
+                  size="sm"
+                  onClick={() => setActivityCity(activityCity.trim())}
+                >
                   <Ticket size={16} className="mr-1.5" />
                   Search Activities
                 </Button>
@@ -341,7 +356,11 @@ export function BookNowAccordion({ defaultOpen = false }: Props) {
                   {hotelSearch.hotelType && (
                     <Badge variant="secondary" className="inline-flex items-center gap-1">
                       {`${t('pages.travel.hotels.typeLabel', 'Type')}: ${t(`pages.travel.hotels.type.${hotelSearch.hotelType}`, HOTEL_TYPE_LABEL_FALLBACK[hotelSearch.hotelType])}`}
-                      <button type="button" onClick={() => clearHotelFilter('hotelType')} aria-label="Clear">
+                      <button
+                        type="button"
+                        onClick={() => clearHotelFilter('hotelType')}
+                        aria-label="Clear"
+                      >
                         <X size={12} />
                       </button>
                     </Badge>
@@ -349,7 +368,11 @@ export function BookNowAccordion({ defaultOpen = false }: Props) {
                   {hotelSearch.priceMin !== undefined && (
                     <Badge variant="secondary" className="inline-flex items-center gap-1">
                       {`≥ €${hotelSearch.priceMin}`}
-                      <button type="button" onClick={() => clearHotelFilter('priceMin')} aria-label="Clear">
+                      <button
+                        type="button"
+                        onClick={() => clearHotelFilter('priceMin')}
+                        aria-label="Clear"
+                      >
                         <X size={12} />
                       </button>
                     </Badge>
@@ -357,7 +380,11 @@ export function BookNowAccordion({ defaultOpen = false }: Props) {
                   {hotelSearch.priceMax !== undefined && (
                     <Badge variant="secondary" className="inline-flex items-center gap-1">
                       {`≤ €${hotelSearch.priceMax}`}
-                      <button type="button" onClick={() => clearHotelFilter('priceMax')} aria-label="Clear">
+                      <button
+                        type="button"
+                        onClick={() => clearHotelFilter('priceMax')}
+                        aria-label="Clear"
+                      >
                         <X size={12} />
                       </button>
                     </Badge>
@@ -365,7 +392,11 @@ export function BookNowAccordion({ defaultOpen = false }: Props) {
                   {hotelSearch.lgbtqFriendlyOnly && (
                     <Badge variant="secondary" className="inline-flex items-center gap-1">
                       LGBTQ+ friendly
-                      <button type="button" onClick={() => clearHotelFilter('lgbtqFriendlyOnly')} aria-label="Clear">
+                      <button
+                        type="button"
+                        onClick={() => clearHotelFilter('lgbtqFriendlyOnly')}
+                        aria-label="Clear"
+                      >
                         <X size={12} />
                       </button>
                     </Badge>
@@ -392,9 +423,13 @@ export function BookNowAccordion({ defaultOpen = false }: Props) {
                 <EmptyState>
                   <div className="flex flex-col items-center gap-4">
                     <span>
-                      {t('pages.travel.hotels.noResultsWithFilters', 'No hotels match your filters in {{city}}.', {
-                        city: hotelSearch.city,
-                      })}
+                      {t(
+                        'pages.travel.hotels.noResultsWithFilters',
+                        'No hotels match your filters in {{city}}.',
+                        {
+                          city: hotelSearch.city,
+                        },
+                      )}
                     </span>
                     <Button size="sm" variant="outline" onClick={clearAllHotelFilters}>
                       Clear filters
@@ -402,7 +437,9 @@ export function BookNowAccordion({ defaultOpen = false }: Props) {
                   </div>
                 </EmptyState>
               ) : hotelSearch ? (
-                <EmptyState>No hotels found in {hotelSearch.city}. Try a different city.</EmptyState>
+                <EmptyState>
+                  No hotels found in {hotelSearch.city}. Try a different city.
+                </EmptyState>
               ) : (
                 <EmptyState>Search for a city above to find hotels.</EmptyState>
               )}
@@ -430,7 +467,9 @@ export function BookNowAccordion({ defaultOpen = false }: Props) {
                   ))}
                 </ResultsGrid>
               ) : activityCity ? (
-                <EmptyState>No activities found in {activityCity}. Try a different city.</EmptyState>
+                <EmptyState>
+                  No activities found in {activityCity}. Try a different city.
+                </EmptyState>
               ) : (
                 <EmptyState>Search for a city above to find activities and tours.</EmptyState>
               )}

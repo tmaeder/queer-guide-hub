@@ -58,9 +58,7 @@ export default function Feed() {
 
   const sortedPosts = useMemo(() => {
     if (activeTab === 'popular') {
-      return [...filteredPosts].sort(
-        (a, b) => (b.likes_count || 0) - (a.likes_count || 0),
-      );
+      return [...filteredPosts].sort((a, b) => (b.likes_count || 0) - (a.likes_count || 0));
     }
     return filteredPosts;
   }, [filteredPosts, activeTab]);
@@ -83,10 +81,7 @@ export default function Feed() {
       ) : error ? (
         <div className="min-h-[40vh] flex items-center justify-center">
           <div className="text-center flex flex-col gap-4 max-w-md">
-            <AlertTriangle
-              className="h-12 w-12 text-destructive mx-auto"
-              aria-hidden="true"
-            />
+            <AlertTriangle className="h-12 w-12 text-destructive mx-auto" aria-hidden="true" />
             <h6 className="text-base font-semibold">
               {t('pages.feed.errorTitle', "We couldn't load the feed")}
             </h6>
@@ -97,11 +92,7 @@ export default function Feed() {
               )}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button
-                variant="outline"
-                onClick={() => refetch()}
-                className="inline-flex gap-2"
-              >
+              <Button variant="outline" onClick={() => refetch()} className="inline-flex gap-2">
                 <RefreshCw className="h-4 w-4" aria-hidden="true" />
                 {t('common.tryAgain', 'Try Again')}
               </Button>
@@ -121,10 +112,7 @@ export default function Feed() {
             <CardContent className="p-4">
               {user ? (
                 <CreatePostDialog>
-                  <Button
-                    variant="outline"
-                    className="w-full justify-start h-14 text-left"
-                  >
+                  <Button variant="outline" className="w-full justify-start h-14 text-left">
                     <PenSquare className="h-5 w-5 mr-4 text-muted-foreground" />
                     <span className="text-muted-foreground">
                       {t(
@@ -137,10 +125,7 @@ export default function Feed() {
               ) : (
                 <div className="flex flex-col sm:flex-row items-center gap-4">
                   <p className="text-sm text-muted-foreground flex-1 text-center sm:text-left">
-                    {t(
-                      'pages.feed.signInToPost',
-                      'Sign in to share posts, like, and comment.',
-                    )}
+                    {t('pages.feed.signInToPost', 'Sign in to share posts, like, and comment.')}
                   </p>
                   <Button asChild className="inline-flex gap-2 shrink-0">
                     <LocalizedLink to="/auth">
@@ -154,37 +139,24 @@ export default function Feed() {
           </Card>
 
           {/* Search & Tabs */}
-          <div className="p-4 mb-6 bg-background border border-border rounded-element">
+          <div className="p-4 mb-6 bg-surface-container rounded-element">
             <div className="flex flex-col sm:flex-row gap-4 mb-4">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder={t(
-                    'pages.feed.searchPlaceholder',
-                    'Search posts or users...',
-                  )}
+                  placeholder={t('pages.feed.searchPlaceholder', 'Search posts or users...')}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10"
-                  aria-label={t(
-                    'pages.feed.searchPlaceholder',
-                    'Search posts or users...',
-                  )}
+                  aria-label={t('pages.feed.searchPlaceholder', 'Search posts or users...')}
                 />
               </div>
             </div>
 
-            <Tabs
-              value={activeTab}
-              onValueChange={(v) => setActiveTab(v as 'recent' | 'popular')}
-            >
+            <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'recent' | 'popular')}>
               <TabsList>
-                <TabsTrigger value="recent">
-                  {t('pages.feed.recent', 'Recent')}
-                </TabsTrigger>
-                <TabsTrigger value="popular">
-                  {t('pages.feed.popular', 'Popular')}
-                </TabsTrigger>
+                <TabsTrigger value="recent">{t('pages.feed.recent', 'Recent')}</TabsTrigger>
+                <TabsTrigger value="popular">{t('pages.feed.popular', 'Popular')}</TabsTrigger>
               </TabsList>
             </Tabs>
           </div>
@@ -195,10 +167,7 @@ export default function Feed() {
               searchTerm.trim() ? (
                 <EmptyState
                   icon={Search}
-                  title={t(
-                    'pages.feed.searchEmptyTitle',
-                    'No posts match your search',
-                  )}
+                  title={t('pages.feed.searchEmptyTitle', 'No posts match your search')}
                   description={t(
                     'pages.feed.searchEmptyDescription',
                     'Try a different keyword or clear the search to see everything.',
@@ -267,10 +236,7 @@ export default function Feed() {
                       className="inline-flex gap-2"
                     >
                       {isFetchingNextPage && (
-                        <Loader2
-                          className="h-4 w-4 animate-spin"
-                          aria-hidden="true"
-                        />
+                        <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
                       )}
                       {t('pages.feed.loadMore', 'Load more')}
                     </Button>

@@ -28,10 +28,7 @@ export function BrandStoryBlock({ listing }: { listing: MarketplaceListing }) {
   const ownership = (brand.ownership_tags ?? []).filter((t) => OWNERSHIP_LABELS[t]);
 
   return (
-    <section
-      aria-labelledby="brand-story"
-      className="rounded-container bg-muted p-8 lg:p-12"
-    >
+    <section aria-labelledby="brand-story" className="rounded-container bg-muted p-8 lg:p-12">
       <div className="max-w-prose">
         <p className="mb-4 text-2xs uppercase tracking-wider text-muted-foreground">
           About the brand
@@ -41,10 +38,10 @@ export function BrandStoryBlock({ listing }: { listing: MarketplaceListing }) {
             <img
               src={brand.logo_url}
               alt=""
-              className="h-10 w-10 rounded-element border border-border bg-background object-contain p-1"
+              className="h-10 w-10 rounded-element bg-background object-contain p-1"
             />
           ) : (
-            <span className="flex h-10 w-10 items-center justify-center rounded-element border border-border bg-background font-display text-title">
+            <span className="flex h-10 w-10 items-center justify-center rounded-element bg-surface-container font-display text-title">
               {brand.display_name.charAt(0).toUpperCase()}
             </span>
           )}

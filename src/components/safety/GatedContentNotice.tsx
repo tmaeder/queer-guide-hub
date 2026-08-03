@@ -50,7 +50,7 @@ export function GatedContentNotice({ cityId, countryId }: GatedContentNoticeProp
   if (!total) return null;
 
   return (
-    <div className="flex flex-col gap-4 rounded-container border border-border bg-muted p-6 sm:flex-row sm:items-center sm:justify-between">
+    <div className="flex flex-col gap-4 rounded-container bg-muted p-6 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex items-start gap-4">
         <Lock className="mt-0.5 h-5 w-5 shrink-0 text-muted-foreground" aria-hidden="true" />
         <div className="space-y-1">

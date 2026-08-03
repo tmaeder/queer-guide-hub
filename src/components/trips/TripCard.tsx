@@ -197,7 +197,7 @@ export function TripCard({ trip }: Props) {
                 <span
                   aria-label={t(`trips.card.safety.${safetyLevel}`)}
                   className={cn(
-                    'absolute top-2 left-2 w-7 h-7 rounded-full flex items-center justify-center text-white border border-border/40 cursor-help',
+                    'absolute top-2 left-2 w-7 h-7 rounded-full flex items-center justify-center text-white cursor-help bg-surface-container',
                     safetyBg,
                   )}
                 >

@@ -6,10 +6,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { useMeta } from '@/hooks/useMeta';
 import { useBreadcrumbs } from '@/contexts/BreadcrumbContext';
-import {
-  useMilestonesTimeline,
-  useMilestoneYearCounts,
-} from '@/hooks/useMilestones';
+import { useMilestonesTimeline, useMilestoneYearCounts } from '@/hooks/useMilestones';
 import { HISTORY_ERAS } from '@/config/historyEras';
 import { groupMilestonesByEra, sumEraCounts } from '@/lib/historyEraGrouping';
 import { EraJumpNav } from '@/components/milestones/EraJumpNav';
@@ -64,9 +61,7 @@ export default function HistoryTimeline() {
     canonicalPath: '/history',
   });
   // BreadcrumbBar prepends Home itself — publish the entity-only trail.
-  useBreadcrumbs(
-    useMemo(() => [{ label: t('milestones.breadcrumb', 'History') }], [t]),
-  );
+  useBreadcrumbs(useMemo(() => [{ label: t('milestones.breadcrumb', 'History') }], [t]));
 
   const grouped = useMemo(() => groupMilestonesByEra(spine ?? []), [spine]);
   const eraCounts = useMemo(
@@ -169,7 +164,7 @@ export default function HistoryTimeline() {
             value={country ?? ''}
             onChange={(e) => setParam('country', e.target.value || null)}
             aria-label={t('milestones.filter.country', 'Country')}
-            className="h-8 rounded-element border border-border bg-background px-2 text-13"
+            className="h-8 rounded-element bg-surface-container px-2 text-13"
           >
             <option value="">{t('milestones.filter.allCountries', 'All countries')}</option>
             {countries.map((label) => (
@@ -216,7 +211,9 @@ export default function HistoryTimeline() {
                 if (showAll) {
                   // Leaving bulk mode from one era: drop ?all and keep others expanded.
                   setParam('all', null);
-                  setExpandedEras(new Set(visibleEras.filter((e) => e.slug !== era.slug).map((e) => e.slug)));
+                  setExpandedEras(
+                    new Set(visibleEras.filter((e) => e.slug !== era.slug).map((e) => e.slug)),
+                  );
                   return;
                 }
                 setExpandedEras((prev) => {
@@ -249,7 +246,7 @@ function FilterChip({
       onClick={onClick}
       aria-pressed={active}
       className={cn(
-        'rounded-badge border px-2 py-1 text-13 transition-colors',
+        'rounded-badge px-2 py-1 text-13 transition-colors bg-surface-container',
         active
           ? 'border-foreground bg-foreground text-background'
           : 'border-border text-muted-foreground hover:text-foreground',

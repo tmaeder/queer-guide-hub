@@ -310,7 +310,11 @@ export function VenueHero({
   // Adaptive fact bar — only cells with real data.
   const facts: Array<{ icon: typeof Star; label: string; value: React.ReactNode }> = [];
   if (venue.category)
-    facts.push({ icon: TagIcon, label: 'Type', value: <span className="capitalize">{venue.category}</span> });
+    facts.push({
+      icon: TagIcon,
+      label: 'Type',
+      value: <span className="capitalize">{venue.category}</span>,
+    });
   if (venue.price_range)
     facts.push({ icon: DollarSign, label: 'Price', value: getPriceRange(venue.price_range) });
   if (averageRating > 0)
@@ -438,7 +442,7 @@ export function VenueHero({
       {/* Fact bar */}
       {facts.length > 0 && (
         <div
-          className={`mb-6 grid grid-cols-2 gap-px overflow-hidden rounded-element border border-border bg-border ${factColClass}`}
+          className={`mb-6 grid grid-cols-2 gap-px overflow-hidden rounded-element bg-border ${factColClass}`}
         >
           {facts.map((f, i) => (
             <FactCell
@@ -449,9 +453,7 @@ export function VenueHero({
               // Odd count leaves an empty cell on the 2-col mobile grid — let
               // the last fact fill the row. Resets to a single column at sm+.
               className={
-                facts.length % 2 === 1 && i === facts.length - 1
-                  ? 'col-span-2 sm:col-span-1'
-                  : ''
+                facts.length % 2 === 1 && i === facts.length - 1 ? 'col-span-2 sm:col-span-1' : ''
               }
             />
           ))}
@@ -491,7 +493,11 @@ export function VenueHero({
         )}
         {/* Directions live once, in the sidebar Location & contact card. */}
         <ShareMenu
-          url={typeof window !== 'undefined' ? window.location.href : `https://queer.guide/venues/${venue.slug ?? venue.id}`}
+          url={
+            typeof window !== 'undefined'
+              ? window.location.href
+              : `https://queer.guide/venues/${venue.slug ?? venue.id}`
+          }
           title={venue.name}
         />
         <MarkVisitedButton entityType="venue" entityId={venue.id} kind="visited" />
@@ -541,7 +547,7 @@ export function VenueOverview({
       {venue.organizations && (
         <LocalizedLink
           to={`/organizations/${venue.organizations.slug}`}
-          className="flex items-center gap-2 rounded-element border border-border p-4 transition-colors hover:bg-muted"
+          className="flex items-center gap-2 rounded-element p-4 transition-colors hover:bg-muted"
         >
           <Building2 size={20} className="shrink-0 text-muted-foreground" aria-hidden="true" />
           <div className="min-w-0 flex-1">
@@ -933,7 +939,9 @@ export function VenueSidebar({
                 Hours
               </span>
               {openNow !== null && (
-                <Badge variant={openNow ? 'soft' : 'outline'}>{openNow ? 'Open now' : 'Closed'}</Badge>
+                <Badge variant={openNow ? 'soft' : 'outline'}>
+                  {openNow ? 'Open now' : 'Closed'}
+                </Badge>
               )}
             </CardTitle>
           </CardHeader>

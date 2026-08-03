@@ -78,7 +78,7 @@ export function IdentityPreviewCard(props: IdentityPreviewCardProps) {
               email={props.email}
               size="lg"
             />
-            <span className="absolute -bottom-1 -right-1 rounded-full border border-border bg-background p-1.5">
+            <span className="absolute -bottom-1 -right-1 rounded-full bg-surface-container p-1.5">
               <Pencil size={12} aria-hidden="true" />
               <span className="sr-only">Edit avatar</span>
             </span>
@@ -186,8 +186,8 @@ export function IdentityPreviewCard(props: IdentityPreviewCardProps) {
               aria-label={`Profile ${props.completion} percent complete`}
             />
             <p className="text-xs text-muted-foreground mt-2">
-              Counts name, pronouns, location, photo, bio and the preferences that power your
-              search results.
+              Counts name, pronouns, location, photo, bio and the preferences that power your search
+              results.
             </p>
           </div>
         )}

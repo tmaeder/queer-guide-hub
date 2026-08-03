@@ -38,9 +38,19 @@ interface Hotline {
 }
 
 const EMERGENCY_NUMBERS: Record<string, string> = {
-  DE: '112', AT: '112', CH: '112', GB: '999', IE: '112',
-  US: '911', CA: '911', AU: '000', NL: '112', FR: '112',
-  ES: '112', IT: '112', INT: '112 / 911',
+  DE: '112',
+  AT: '112',
+  CH: '112',
+  GB: '999',
+  IE: '112',
+  US: '911',
+  CA: '911',
+  AU: '000',
+  NL: '112',
+  FR: '112',
+  ES: '112',
+  IT: '112',
+  INT: '112 / 911',
 };
 
 const MAX = 4;
@@ -92,25 +102,39 @@ export function CrisisStrip() {
   const visible = useMemo(() => {
     const local = hotlines.filter((h) => h.country === country);
     const international = hotlines.filter((h) => h.country === 'INT');
-    const combined = local.length > 0 ? [...rankHotlines(local), ...rankHotlines(international)] : rankHotlines(international);
+    const combined =
+      local.length > 0
+        ? [...rankHotlines(local), ...rankHotlines(international)]
+        : rankHotlines(international);
     return combined.slice(0, MAX);
   }, [hotlines, country]);
 
-  const showNoLocalNote = !isLoading && country !== 'INT' && localCount === 0 && hotlines.length > 0;
+  const showNoLocalNote =
+    !isLoading && country !== 'INT' && localCount === 0 && hotlines.length > 0;
 
   const emergency = EMERGENCY_NUMBERS[country] ?? EMERGENCY_NUMBERS.INT;
 
   return (
-    <section aria-labelledby="crisis-heading" className="rounded-container bg-foreground/[0.03] border border-border/60 p-6 sm:p-6">
+    <section
+      aria-labelledby="crisis-heading"
+      className="rounded-container bg-foreground/[0.03] p-6 sm:p-6"
+    >
       <header className="flex flex-wrap items-center gap-4 mb-4">
         <div className="flex items-center gap-2">
           <AlertTriangle aria-hidden size={18} />
-          <h2 id="crisis-heading" className="text-base font-semibold">{t('resources.crisis.heading')}</h2>
+          <h2 id="crisis-heading" className="text-base font-semibold">
+            {t('resources.crisis.heading')}
+          </h2>
         </div>
-        <Badge variant="secondary" className="text-xs2">{t('resources.crisis.badge')}</Badge>
+        <Badge variant="secondary" className="text-xs2">
+          {t('resources.crisis.badge')}
+        </Badge>
         <div className="ml-auto flex items-center gap-2">
           <Select value={country} onValueChange={setCountry}>
-            <SelectTrigger className="h-8 w-full sm:w-[170px] text-xs" aria-label={t('resources.crisis.chooseCountryAria')}>
+            <SelectTrigger
+              className="h-8 w-full sm:w-[170px] text-xs"
+              aria-label={t('resources.crisis.chooseCountryAria')}
+            >
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -132,7 +156,12 @@ export function CrisisStrip() {
 
       <p className="text-sm text-muted-foreground mb-4">
         {t('resources.crisis.callEmergencyPrefix')}
-        <a href={`tel:${emergency.split(' ')[0]}`} className="font-semibold text-foreground underline">{emergency}</a>
+        <a
+          href={`tel:${emergency.split(' ')[0]}`}
+          className="font-semibold text-foreground underline"
+        >
+          {emergency}
+        </a>
         {country !== 'INT'
           ? t('resources.crisis.callEmergencySuffix', { country: countryLabel(country) })
           : t('resources.crisis.callEmergencySuffixInt')}
@@ -146,18 +175,25 @@ export function CrisisStrip() {
 
       {isLoading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-24 w-full rounded-element" />)}
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Skeleton key={i} className="h-24 w-full rounded-element" />
+          ))}
         </div>
       ) : visible.length === 0 ? (
         <p className="text-sm text-muted-foreground">{t('resources.crisis.noHotlinesLoaded')}</p>
       ) : (
-        <ul className="grid grid-cols-1 sm:grid-cols-2 gap-4" aria-label={t('resources.crisis.listAria')}>
+        <ul
+          className="grid grid-cols-1 sm:grid-cols-2 gap-4"
+          aria-label={t('resources.crisis.listAria')}
+        >
           {visible.map((h) => (
             <li key={h.id}>
               <Card className="p-4 h-full flex flex-col gap-2">
                 <div className="flex items-start justify-between gap-2">
                   <p className="font-semibold text-sm leading-tight">{h.name}</p>
-                  <Badge variant="outline" className="shrink-0 text-2xs">{countryLabel(h.country)}</Badge>
+                  <Badge variant="outline" className="shrink-0 text-2xs">
+                    {countryLabel(h.country)}
+                  </Badge>
                 </div>
                 {h.phone && (
                   <a
