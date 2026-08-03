@@ -13,10 +13,7 @@ import { EVENT_TYPES } from '../eventTypes';
  * Same approach as the tokenCatalog/index.css drift test.
  */
 function checkValues(migrationFile: string, constraintMarker: string): string[] {
-  const sql = readFileSync(
-    join(__dirname, '../../../supabase/migrations', migrationFile),
-    'utf8',
-  );
+  const sql = readFileSync(join(__dirname, '../../../supabase/migrations', migrationFile), 'utf8');
   const idx = sql.indexOf(constraintMarker);
   expect(idx, `${constraintMarker} not found in ${migrationFile}`).toBeGreaterThan(-1);
   // Grab the ARRAY[...] literal that follows the marker.

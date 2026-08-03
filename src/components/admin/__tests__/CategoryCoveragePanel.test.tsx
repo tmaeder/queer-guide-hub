@@ -27,8 +27,16 @@ const COVERAGE = {
     unexamined_concert: 0,
   },
   last_runs: {
-    venue_category_reclassify: { last_run_at: '2026-08-03T03:35:00Z', status: 'succeeded', enabled: true },
-    event_type_reclassify: { last_run_at: '2026-08-03T03:45:00Z', status: 'succeeded', enabled: true },
+    venue_category_reclassify: {
+      last_run_at: '2026-08-03T03:35:00Z',
+      status: 'succeeded',
+      enabled: true,
+    },
+    event_type_reclassify: {
+      last_run_at: '2026-08-03T03:45:00Z',
+      status: 'succeeded',
+      enabled: true,
+    },
   },
 };
 

@@ -8,13 +8,7 @@ import { useOptimizedCities, useOptimizedCountries } from '@/hooks/usePlaces';
 // ── Types ──────────────────────────────────────────────────────────────────────
 
 export type LayerType =
-  | 'venues'
-  | 'events'
-  | 'cities'
-  | 'countries'
-  | 'restrooms'
-  | 'hotels'
-  | 'neighbourhoods';
+  'venues' | 'events' | 'cities' | 'countries' | 'restrooms' | 'hotels' | 'neighbourhoods';
 
 export interface MapMarker {
   id: string;
@@ -104,7 +98,11 @@ export function useExploreMapData({ enabledLayers, viewport, filters }: UseExplo
 
   // ── Venues ─────────────────────────────────────────────────────────────────
   const venuesEnabled = enabledLayers.includes('venues');
-  const { venues: rawVenues = [], isFetching: venuesFetching, fetchVenues } = useVenues(false);
+  const {
+    venues: rawVenues = [],
+    isFetching: venuesFetching,
+    fetchVenues,
+  } = useVenues(false, { skipDatasetTotal: true });
   const fetchVenuesRef = useRef(fetchVenues);
   // eslint-disable-next-line react-hooks/refs -- "latest value" ref pattern; effect below reads .current.
   fetchVenuesRef.current = fetchVenues;
@@ -140,8 +138,14 @@ export function useExploreMapData({ enabledLayers, viewport, filters }: UseExplo
 
   // ── Events ─────────────────────────────────────────────────────────────────
   const eventsEnabled = enabledLayers.includes('events');
-  const { events: rawEvents = [], isFetching: eventsFetching, fetchEvents } = useEvents(false);
-  const dateRangeKey = filters?.dateRange ? `${filters.dateRange.start}|${filters.dateRange.end}` : '';
+  const {
+    events: rawEvents = [],
+    isFetching: eventsFetching,
+    fetchEvents,
+  } = useEvents(false, { skipDatasetTotal: true });
+  const dateRangeKey = filters?.dateRange
+    ? `${filters.dateRange.start}|${filters.dateRange.end}`
+    : '';
   const dateRangeStart = filters?.dateRange?.start;
   const dateRangeEnd = filters?.dateRange?.end;
 
@@ -150,10 +154,21 @@ export function useExploreMapData({ enabledLayers, viewport, filters }: UseExplo
     fetchEvents({
       limit: shouldUseBounds ? 150 : 300,
       ...(filters?.search ? { search: filters.search } : {}),
-      ...(dateRangeStart && dateRangeEnd ? { dateRange: { start: dateRangeStart, end: dateRangeEnd } } : {}),
+      ...(dateRangeStart && dateRangeEnd
+        ? { dateRange: { start: dateRangeStart, end: dateRangeEnd } }
+        : {}),
       ...(viewportBounds ? { bounds: viewportBounds } : {}),
     });
-  }, [eventsEnabled, filters?.search, dateRangeKey, dateRangeStart, dateRangeEnd, shouldUseBounds, viewportBounds, fetchEvents]);
+  }, [
+    eventsEnabled,
+    filters?.search,
+    dateRangeKey,
+    dateRangeStart,
+    dateRangeEnd,
+    shouldUseBounds,
+    viewportBounds,
+    fetchEvents,
+  ]);
 
   const eventMarkers = useMemo<MapMarker[]>(() => {
     if (!eventsEnabled) return [];
@@ -332,7 +347,10 @@ export function useExploreMapData({ enabledLayers, viewport, filters }: UseExplo
   const neighbourhoodMarkers = useMemo<MapMarker[]>(() => {
     if (!neighbourhoodsEnabled) return [];
     return rawVillages
-      .filter((v: Record<string, unknown>) => typeof v?.latitude === 'number' && typeof v?.longitude === 'number')
+      .filter(
+        (v: Record<string, unknown>) =>
+          typeof v?.latitude === 'number' && typeof v?.longitude === 'number',
+      )
       .map((v: Record<string, unknown>) => ({
         id: `neighbourhood-${v.id}`,
         type: 'neighbourhoods' as const,
