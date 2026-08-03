@@ -1,0 +1,224 @@
+#!/usr/bin/env node
+/**
+ * Repair cities whose stored coordinates disagree with their assigned country.
+ *
+ * 100 live cities sit >2,500 km from their assigned country while being <600 km
+ * from a different one; 343 are suspect on a looser bar. The cause was
+ * match_personality_city() filing a birthplace under the person's NATIONALITY —
+ * Kew (London) under Australia, Whyalla (South Australia) under the United
+ * States, Sibonga (Philippines) under Venezuela. Fixed at the source in
+ * migration 20260811100100; this drains the damage already in the table.
+ *
+ * THE COORDINATES ARE THE TRUSTWORTHY FIELD. They arrived after the row was
+ * minted, from Wikipedia via city-factual-backfill, and are recorded in
+ * field_provenance.coords. The country was never sourced from geography at all.
+ * So the evidence here is a reverse geocode of the stored point, and country_id
+ * is what moves.
+ *
+ *   node scripts/data-quality/repair-city-countries.mjs --dry-run
+ *   node scripts/data-quality/repair-city-countries.mjs --severity hard
+ *   node scripts/data-quality/repair-city-countries.mjs --apply
+ *
+ * Flags:
+ *   --dry-run              default; prints per-row evidence, writes nothing
+ *   --apply                perform writes
+ *   --severity hard|all    default all (hard = the 100 unambiguous ones)
+ *   --limit N              stop after N candidates
+ *   --with-content         ALSO apply to cities that have venues/events/hotels.
+ *                          Off by default: moving those re-gates real content,
+ *                          so they are proposed for review instead.
+ *
+ * Auth: Supabase Management API via the macOS-keychain CLI token (house
+ *   pattern, same as backfill-venue-postal.mjs; set SUPABASE_PAT to override).
+ *
+ * Pacing: 1100ms — the interval this repo has empirically found Photon
+ *   tolerates for sustained bulk use. 343 rows is about 7 minutes.
+ *
+ * SAFETY. Never `UPDATE cities SET country_id`. Nothing on `cities`
+ * repropagates a country change, so a direct update leaves every attached
+ * venue/event/hotel/organization/guide pointing at the old country with a
+ * stale `safety_gated` — content in a criminalizing country stays publicly
+ * visible. All writes go through apply_city_country_repair(), which
+ * repropagates. Verified: moving a 3-venue city into the UAE takes
+ * venues_gated 0 -> 3, and search_documents with it.
+ */
+
+import { execFileSync } from 'node:child_process';
+
+const PROJECT = 'xqeacpakadqfxjxjcewc';
+const args = process.argv.slice(2);
+const APPLY = args.includes('--apply');
+const DRY = !APPLY;
+const WITH_CONTENT = args.includes('--with-content');
+const SEVERITY = args.includes('--severity') ? args[args.indexOf('--severity') + 1] : 'all';
+const LIMIT = Number(args[args.indexOf('--limit') + 1]) || Infinity;
+const INTERVAL_MS = Number(process.env.PHOTON_INTERVAL_MS || 1100);
+const PHOTON = 'https://photon.komoot.io/reverse';
+const UA = 'queer.guide-dataquality/1.0 (tmaeder@me.com)';
+
+function token() {
+  if (process.env.SUPABASE_PAT) return process.env.SUPABASE_PAT;
+  const raw = execFileSync('security', ['find-generic-password', '-s', 'Supabase CLI', '-w'], {
+    encoding: 'utf8',
+  }).trim();
+  return Buffer.from(raw.replace(/^go-keyring-base64:/, ''), 'base64').toString('utf8');
+}
+const TOKEN = token();
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const q = (s) => `'${String(s).replace(/'/g, "''")}'`;
+
+/** Retries transient failures — this is a multi-minute run against a hosted API. */
+async function sql(query, attempt = 0) {
+  let res;
+  try {
+    res = await fetch(`https://api.supabase.com/v1/projects/${PROJECT}/database/query`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${TOKEN}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query }),
+    });
+  } catch (e) {
+    if (attempt >= 5) throw e;
+    await sleep(2000 * 2 ** attempt);
+    return sql(query, attempt + 1);
+  }
+  if (res.ok) return res.json();
+  const body = (await res.text()).slice(0, 300);
+  if ((res.status >= 500 || res.status === 429) && attempt < 5) {
+    console.error(`  mgmt API ${res.status}, retry ${attempt + 1}/5`);
+    await sleep(2000 * 2 ** attempt);
+    return sql(query, attempt + 1);
+  }
+  throw new Error(`mgmt API ${res.status}: ${body}`);
+}
+
+/** &lang=en is required or the country/state names come back in mixed languages. */
+async function reverse(lat, lon, attempt = 0) {
+  try {
+    const res = await fetch(`${PHOTON}?lat=${lat}&lon=${lon}&lang=en`, { headers: { 'User-Agent': UA } });
+    if (res.status === 429) throw new Error('rate_limited');
+    if (!res.ok) throw new Error(`photon_${res.status}`);
+    const p = (await res.json())?.features?.[0]?.properties ?? {};
+    return {
+      countrycode: p.countrycode?.trim().toUpperCase().slice(0, 2) || null,
+      country: p.country?.trim() || null,
+      state: p.state?.trim() || null,
+      name: p.name?.trim() || null,
+    };
+  } catch (e) {
+    if (attempt < 3) {
+      await sleep(3000 * 2 ** attempt);
+      return reverse(lat, lon, attempt + 1);
+    }
+    throw e;
+  }
+}
+
+const rows = await sql(`
+  select city_id, name, assigned_country, assigned_code, km_to_assigned, km_to_nearest,
+         nearest_country, nearest_code, latitude, longitude,
+         n_venues, n_events, n_hotels, n_orgs, n_people, severity
+  from public.city_geo_conflicts(1000)
+  ${SEVERITY === 'hard' ? "where severity = 'hard'" : ''}
+  order by km_to_assigned desc`);
+
+console.log(`${rows.length} candidate(s); mode=${DRY ? 'DRY RUN' : 'APPLY'} severity=${SEVERITY}\n`);
+
+const stats = { checked: 0, verified: 0, repaired: 0, proposed: 0, unresolved: 0, failed: 0 };
+
+for (const r of rows) {
+  if (stats.checked >= LIMIT) break;
+  stats.checked++;
+
+  let geo;
+  try {
+    geo = await reverse(r.latitude, r.longitude);
+  } catch (e) {
+    stats.failed++;
+    console.log(`  ?  ${r.name}: photon failed (${e.message})`);
+    await sleep(INTERVAL_MS);
+    continue;
+  }
+
+  const hasContent = r.n_venues + r.n_events + r.n_hotels + r.n_orgs > 0;
+  const label = `${r.name} [${r.severity}] ${r.assigned_code}→${geo.countrycode ?? '??'} ` +
+    `(${r.km_to_assigned}km from ${r.assigned_country}; photon says ${geo.country ?? 'nothing'})`;
+
+  if (!geo.countrycode) {
+    stats.unresolved++;
+    console.log(`  ?  ${label}`);
+    if (APPLY) {
+      await sql(`update public.cities set
+        enrichment_status = coalesce(enrichment_status,'{}'::jsonb) || jsonb_build_object(
+          'country_repair', jsonb_build_object('state','data_unavailable','at',now())),
+        needs_attention = true
+        where id = ${q(r.city_id)}`);
+    }
+    await sleep(INTERVAL_MS);
+    continue;
+  }
+
+  if (geo.countrycode === r.assigned_code) {
+    // A false positive from the centroid heuristic — a large country, or an
+    // overseas territory legitimately filed under its metropole.
+    stats.verified++;
+    console.log(`  ok ${r.name}: confirmed ${r.assigned_code} (${r.km_to_assigned}km from centroid)`);
+    if (APPLY) {
+      await sql(`update public.cities set
+        enrichment_status = coalesce(enrichment_status,'{}'::jsonb) || jsonb_build_object(
+          'country_repair', jsonb_build_object('state','verified','at',now())),
+        field_provenance = coalesce(field_provenance,'{}'::jsonb) || jsonb_build_object(
+          'country_id', jsonb_build_object('value', country_id, 'source','verified:photon_reverse','at',now()))
+        where id = ${q(r.city_id)}`);
+    }
+    await sleep(INTERVAL_MS);
+    continue;
+  }
+
+  const [target] = await sql(
+    `select id, name from public.countries where upper(code) = ${q(geo.countrycode)} and duplicate_of_id is null limit 1`,
+  );
+  if (!target) {
+    stats.unresolved++;
+    console.log(`  ?  ${label} — no countries row for ${geo.countrycode}`);
+    await sleep(INTERVAL_MS);
+    continue;
+  }
+
+  if (hasContent && !WITH_CONTENT) {
+    // Moving this re-gates real content in both directions. Propose, don't act.
+    stats.proposed++;
+    console.log(`  ~  ${label} — HAS CONTENT ` +
+      `(v${r.n_venues}/e${r.n_events}/h${r.n_hotels}/o${r.n_orgs}), proposed for review`);
+    if (APPLY) {
+      await sql(`update public.cities set needs_attention = true,
+        enrichment_status = coalesce(enrichment_status,'{}'::jsonb) || jsonb_build_object(
+          'country_repair', jsonb_build_object('state','proposed','to',${q(target.id)},
+            'to_code',${q(geo.countrycode)},'source','photon_reverse','at',now()))
+        where id = ${q(r.city_id)}`);
+    }
+    await sleep(INTERVAL_MS);
+    continue;
+  }
+
+  stats.repaired++;
+  console.log(`  ->  ${label}${hasContent ? ' (WITH CONTENT — repropagating)' : ''}`);
+  if (APPLY) {
+    const evidence = JSON.stringify({
+      source: 'photon_reverse',
+      countrycode: geo.countrycode,
+      photon_country: geo.country,
+      photon_state: geo.state,
+      photon_name: geo.name,
+      previous_code: r.assigned_code,
+      km_to_previous: r.km_to_assigned,
+    });
+    const [res] = await sql(
+      `select public.apply_city_country_repair(${q(r.city_id)}, ${q(target.id)}, ${q(evidence)}::jsonb) as r`,
+    );
+    if (!res?.r?.ok) console.error(`     FAILED: ${JSON.stringify(res?.r)}`);
+    else if (res.r.repropagated) console.log(`     repropagated ${JSON.stringify(res.r.repropagated)}`);
+  }
+  await sleep(INTERVAL_MS);
+}
+
+console.log(`\n${DRY ? 'DRY RUN — nothing written' : 'done'}:`, stats);

@@ -80,25 +80,27 @@ async function matchCity(
       if (data) return data
     }
   }
-  // Fallback: name only, largest by population
-  const { data } = await supabase
-    .from('cities')
-    .select('id, country_id')
-    .or(`name.ilike.${cleanName},name.ilike.${cityName}`)
-    .is('duplicate_of_id', null)
-    .not('slug', 'like', 'tmp-%')
-    .order('population', { ascending: false, nullsFirst: false })
-    .limit(1)
-    .single()
-  if (data) return data
+  // There is deliberately NO cross-country fallback here.
+  //
+  // This used to be "name only, largest by population", which is not a
+  // fallback but an active preference for the bigger same-name city: it is
+  // how Portland ME became Portland OR and Charleston SC became Charleston IL.
+  // `cities` holds at most one row per (name, country), so a name-only hit
+  // proves nothing — an unrepresentable twin looks exactly like a genuinely
+  // unambiguous name. Refusing is the safe direction: a NULL city_id is
+  // recoverable, a wrong one is not. `commit_city_staging_item` takes the same
+  // position and raises `city_unresolved_country` rather than guessing.
 
-  // Try alias match
-  const { data: aliasMatch } = await supabase
+  // Curated aliases, still scoped to the country when we know it.
+  let aliasQuery = supabase
     .from('city_aliases')
     .select('city_id, cities!inner(id, country_id)')
     .or(`alias.ilike.${cleanName},alias.ilike.${cityName}`)
-    .limit(1)
-    .single()
+  if (countryCode) {
+    const aliasCountryId = await resolveCountryId(supabase, countryCode)
+    if (aliasCountryId) aliasQuery = aliasQuery.eq('cities.country_id', aliasCountryId)
+  }
+  const { data: aliasMatch } = await aliasQuery.limit(1).single()
   if (aliasMatch?.cities) {
     const c = aliasMatch.cities as unknown as { id: string; country_id: string }
     return { id: c.id, country_id: c.country_id }
@@ -119,23 +121,33 @@ async function matchCity(
     insert.longitude = coords.lon
   }
 
+  // Plain insert, not upsert. `onConflict: 'country_id,name_normalized'` names
+  // uk_cities_country_name_active, which is a PARTIAL index
+  // (WHERE duplicate_of_id IS NULL); PostgREST cannot emit the predicate, so
+  // arbiter inference was never guaranteed and the re-fetch below was already
+  // the load-bearing path. Making that explicit removes the illusion of an
+  // upsert. The re-fetch also covers the case where
+  // trg_cities_aa_split_name rewrote the name onto an existing row.
   const { data: created, error: createErr } = await supabase
     .from('cities')
-    .upsert(insert, { onConflict: 'country_id,name_normalized', ignoreDuplicates: true })
+    .insert(insert)
     .select('id, country_id')
-    .single()
+    .maybeSingle()
 
   if (createErr || !created) {
-    // Conflict = city was just created by another call, re-fetch
     const { data: retry } = await supabase
       .from('cities')
       .select('id, country_id')
-      .ilike('name', cityName)
+      .or(`name.ilike.${cleanName},name.ilike.${cityName}`)
       .eq('country_id', countryId)
       .is('duplicate_of_id', null)
       .limit(1)
-      .single()
-    return retry || null
+      .maybeSingle()
+    if (retry) return retry
+    if (createErr) {
+      console.error(`matchCity: insert failed for "${cleanName}" (${countryCode}): ${createErr.message}`)
+    }
+    return null
   }
 
   console.log(`Auto-created city: ${cityName} (${countryCode})`)

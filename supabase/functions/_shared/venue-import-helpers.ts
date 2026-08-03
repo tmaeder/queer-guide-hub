@@ -13,16 +13,37 @@ export async function getOrCreateCity(
   lat: number,
   lon: number
 ) {
+  // Resolve the country FIRST — every lookup below is scoped to it.
+  //
+  // This used to match on `.eq('name', cityName)` alone, across all countries:
+  // the collision class documented for run_event_city_link (Portland ME →
+  // Portland OR). `cities` holds at most one row per (name, country), so a
+  // name-only hit cannot be told apart from an unrepresentable twin, and there
+  // is no safe way to read one.
+  const { data: country } = await supabase
+    .from('countries')
+    .select('id')
+    .eq('code', countryCode)
+    .maybeSingle()
+
+  if (!country?.id) {
+    // The insert below used to pass `country_id: country?.id || null` into a
+    // NOT NULL column, so an unresolved country failed at the database and the
+    // error was swallowed by `if (!error && newCity)` — the caller only saw
+    // null. Refuse out loud instead; a venue with no city_id is recoverable.
+    console.warn(
+      `getOrCreateCity: unresolved country code "${countryCode}" for "${cityName}" — not linking`,
+    )
+    return null
+  }
+
   // Exclude merged duplicates: a merged row keeps its name, so without this
   // an importer stamps a city_id that a merge already consolidated away.
-  // NOTE: this lookup is still name-only — it has no country scope, so a
-  // same-name pair across countries resolves by whichever row exists. That is
-  // the collision class documented for run_event_city_link and needs its own
-  // fix; maybeSingle() at least fails loudly instead of guessing.
   const { data: existingCity } = await supabase
     .from('cities')
     .select('id')
-    .eq('name', cityName)
+    .eq('country_id', country.id)
+    .ilike('name', cityName)
     .is('duplicate_of_id', null)
     .maybeSingle()
 
@@ -30,17 +51,11 @@ export async function getOrCreateCity(
     return existingCity.id
   }
 
-  const { data: country } = await supabase
-    .from('countries')
-    .select('id')
-    .eq('code', countryCode)
-    .maybeSingle()
-
   const { data: newCity, error } = await supabase
     .from('cities')
     .insert({
       name: cityName,
-      country_id: country?.id || null,
+      country_id: country.id,
       latitude: lat,
       longitude: lon,
       is_major_city: false
@@ -48,11 +63,31 @@ export async function getOrCreateCity(
     .select('id')
     .maybeSingle()
 
-  if (!error && newCity) {
-    console.log(`Created new city: ${cityName}`)
+  if (newCity) {
+    console.log(`Created new city: ${cityName} (${countryCode})`)
     return newCity.id
   }
 
+  // A unique violation means either a concurrent caller won the race, or the
+  // name normalized onto an existing row — trg_cities_aa_split_name strips a
+  // recognised region suffix, so "Springfield, Illinois" lands on
+  // "Springfield". Re-read instead of reporting failure.
+  if (error?.code === '23505') {
+    const { data: raced } = await supabase
+      .from('cities')
+      .select('id')
+      .eq('country_id', country.id)
+      .ilike('name', cityName)
+      .is('duplicate_of_id', null)
+      .maybeSingle()
+    if (raced) return raced.id
+  }
+
+  if (error) {
+    console.error(
+      `getOrCreateCity: insert failed for "${cityName}" (${countryCode}): ${error.message}`,
+    )
+  }
   return null
 }
 
