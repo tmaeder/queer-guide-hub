@@ -1,7 +1,16 @@
 #!/usr/bin/env node
 /**
- * Security gate: no SECURITY DEFINER view in `public` may carry write grants for the
- * API roles (anon / authenticated).
+ * Security gate, two checks:
+ *   1. No SECURITY DEFINER view in `public` may carry write grants for the API roles
+ *      (anon / authenticated).
+ *   2. No view registered in `security_invoker_required_views` may have lost its
+ *      `security_invoker` flag.
+ *
+ * Check 2 exists because check 1 is blind to half the problem: `CREATE OR REPLACE VIEW`
+ * resets reloptions, so a routine edit to a view body silently reverts a previous
+ * `ALTER VIEW ... SET (security_invoker = true)`. If that view's write grants had already
+ * been revoked, check 1 sees nothing while the view quietly goes back to bypassing RLS.
+ * That is how admin_media_unified regressed for weeks (migration 20260810140000).
  *
  * Why this can regress on its own: the project runs Supabase's stock
  *   ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO anon, authenticated
@@ -26,29 +35,75 @@ if (!BASE || !KEY) {
   process.exit(0)
 }
 
-const res = await fetch(`${BASE}/rest/v1/rpc/definer_view_api_write_grants`, {
-  method: 'POST',
-  headers: { apikey: KEY, Authorization: `Bearer ${KEY}`, 'Content-Type': 'application/json' },
-  body: '{}',
-})
-if (!res.ok) {
-  console.error(`definer_view_api_write_grants → HTTP ${res.status}: ${await res.text()}`)
-  process.exit(1)
+/**
+ * @param {string} name
+ * @param {boolean} [optional] When the RPC does not exist yet, warn and skip instead of
+ *   failing. The gate reads PROD, but a migration only reaches prod on merge to main —
+ *   so a check introduced alongside its RPC would otherwise fail on its own PR, and on
+ *   every unrelated PR opened before that merge. Only "function is missing" is tolerated;
+ *   any other error still fails.
+ */
+async function callRpc(name, optional = false) {
+  const res = await fetch(`${BASE}/rest/v1/rpc/${name}`, {
+    method: 'POST',
+    headers: { apikey: KEY, Authorization: `Bearer ${KEY}`, 'Content-Type': 'application/json' },
+    body: '{}',
+  })
+  if (!res.ok) {
+    const body = await res.text()
+    // PostgREST answers an unknown function with 404 PGRST202.
+    if (optional && res.status === 404 && body.includes('PGRST202')) {
+      console.warn(`⚠ ${name}() is not on prod yet — skipping that check until its migration lands.`)
+      return null
+    }
+    console.error(`${name} → HTTP ${res.status}: ${body}`)
+    process.exit(1)
+  }
+  return res.json()
 }
 
-const rows = await res.json()
+// Both checks run before exiting so one CI run reports everything that is wrong.
+let failed = false
 
-if (rows.length === 0) {
+const grantRows = await callRpc('definer_view_api_write_grants')
+
+if (grantRows.length === 0) {
   console.log('✓ No SECURITY DEFINER view exposes write privileges to anon/authenticated.')
-  process.exit(0)
+} else {
+  failed = true
+  console.error('✗ SECURITY DEFINER view(s) writable by an API role — these bypass RLS:\n')
+  for (const r of grantRows) {
+    console.error(`  ${r.view_name}  ${r.grantee}: ${r.privileges}`)
+  }
+  console.error(
+    '\nRevoke the write set on the view, or recreate it WITH (security_invoker = on).' +
+      '\nSee supabase/migrations/20260806180000_revoke_api_write_on_security_definer_views.sql',
+  )
 }
 
-console.error('✗ SECURITY DEFINER view(s) writable by an API role — these bypass RLS:\n')
-for (const r of rows) {
-  console.error(`  ${r.view_name}  ${r.grantee}: ${r.privileges}`)
+// Second, narrower check. The grant check above can only see a view that bypasses RLS
+// AND still happens to carry write grants. `CREATE OR REPLACE VIEW` resets reloptions,
+// so editing a view body silently discards a previous `SET (security_invoker = true)`.
+// If that view's write grants were already revoked, the check above stays SILENT — which
+// is exactly how admin_media_unified regressed unnoticed. See migration
+// 20260810140000_restore_security_invoker_on_replaced_views.sql.
+const invokerRows = await callRpc('security_invoker_view_regressions', true)
+
+if (invokerRows === null) {
+  // Not deployed yet; callRpc already warned.
+} else if (invokerRows.length === 0) {
+  console.log('✓ Every view registered as security_invoker still has it.')
+} else {
+  failed = true
+  console.error('\n✗ View(s) have LOST security_invoker — they now bypass base-table RLS:\n')
+  for (const r of invokerRows) {
+    console.error(`  ${r.view_name}  (${r.reason})`)
+  }
+  console.error(
+    '\nAlmost always a CREATE OR REPLACE VIEW that omitted the option. Re-apply it:' +
+      '\n  alter view public.<name> set (security_invoker = on);' +
+      '\nor write the body as CREATE OR REPLACE VIEW ... WITH (security_invoker = on) AS ...',
+  )
 }
-console.error(
-  '\nRevoke the write set on the view, or recreate it WITH (security_invoker = on).' +
-    '\nSee supabase/migrations/20260806180000_revoke_api_write_on_security_definer_views.sql',
-)
-process.exit(1)
+
+process.exit(failed ? 1 : 0)
