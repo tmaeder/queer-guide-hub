@@ -29,8 +29,14 @@
 -- Same posture as `country_code_is_ambiguous` in resolve_country_from_text.
 --
 -- A suffix that resolves to NOTHING leaves the whole name untouched. That is
--- deliberate: "Washington, D.C.", "Eitelsbach, heute Trier" and "Greiz,
--- Vogtland" must survive verbatim rather than be guessed at.
+-- deliberate: "Eitelsbach, heute Trier" and "Greiz, Vogtland" survive verbatim
+-- rather than being guessed at.
+--
+-- "Washington, D.C." DOES split, because `d c` is a seeded region alias. That
+-- is intended: the table already holds a separate "Washington" row in the US
+-- with region_name 'District of Columbia', so the two are a genuine duplicate
+-- pair that the differing names hid. Splitting surfaces it. The collision is
+-- resolved by merging them, not by special-casing the name.
 
 -- ---------------------------------------------------------------------------
 -- Curated aliases: only what no live table can supply.
