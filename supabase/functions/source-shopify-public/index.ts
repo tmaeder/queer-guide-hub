@@ -253,7 +253,7 @@ Deno.serve(withErrorReporting('source-shopify-public', async (req) => {
     // wiped catalog, …) is skipped no matter who invokes this function.
     const { data: merchant } = await supabase
       .from('marketplace_merchants')
-      .select('is_enabled, config')
+      .select('id, is_enabled, config')
       .eq('shop_domain', shopDomain)
       .maybeSingle()
     if (merchant && merchant.is_enabled === false) {
@@ -293,12 +293,48 @@ Deno.serve(withErrorReporting('source-shopify-public', async (req) => {
       if (!marketCountry) return jsonResponse(skippedResponse('missing_config', ['market_country']), 200, req)
       const expected = normalizeCurrency(currency)
       const sfAdapter = makeStorefrontAdapter(shopDomain, sourceSlug, expected, overrides, storefrontToken, marketCountry)
-      let total = 0, written = 0, pages = 0, cursor: string | null = null
+
+      // ── resumable cursor ───────────────────────────────────────────────────
+      // Without this every invocation restarts at page 1, so a catalog larger than
+      // one run's page budget can never be swept: queerlit stalled at ~1,850 of
+      // 6,955 and the tail (including 45 already-committed listings) was never
+      // re-read. The cursor lives in marketplace_merchants.config alongside
+      // source-shop-crawl's crawl_cursor, so successive runs resume.
+      //
+      // Reaching the end resets to null and increments `wraps` — wrapping IS the
+      // price/stock refresh mechanism, since writeToStaging refresh mode skips
+      // unchanged payloads for free.
+      const sfCursorCfg = (mcfg.storefront_cursor ?? {}) as Record<string, unknown>
+      let cursor: string | null = body.reset_cursor === true
+        ? null
+        : (typeof sfCursorCfg.after === 'string' && sfCursorCfg.after ? sfCursorCfg.after : null)
+      let wraps = Number(sfCursorCfg.wraps ?? 0)
+      const startedAtCursor = cursor
+
+      let total = 0, written = 0, pages = 0
       let seenCurrency: string | null = null
+      let completedSweep = false
+      let cursorRetried = false
+
       for (pages = 0; pages < maxPages; pages++) {
-        const { nodes, hasNext, endCursor }: { nodes: StorefrontProduct[]; hasNext: boolean; endCursor: string | null } =
-          await storefrontPage(shopDomain, storefrontToken, marketCountry, cursor)
-        if (nodes.length === 0) break
+        let page: { nodes: StorefrontProduct[]; hasNext: boolean; endCursor: string | null }
+        try {
+          page = await storefrontPage(shopDomain, storefrontToken, marketCountry, cursor)
+        } catch (err) {
+          // Storefront cursors are opaque and go stale when the product set shifts.
+          // A persisted bad cursor would otherwise wedge this merchant forever, so
+          // fall back to a fresh sweep exactly once per run rather than failing.
+          if (cursor && !cursorRetried) {
+            console.error(`storefront cursor rejected for ${sourceSlug}, restarting sweep:`, (err as Error).message)
+            cursorRetried = true
+            cursor = null
+            pages--
+            continue
+          }
+          throw err
+        }
+        const { nodes, hasNext, endCursor } = page
+        if (nodes.length === 0) { completedSweep = true; break }
 
         // Verify, do not assume. This is the check whose absence let EUR prices be
         // stored as GBP: refuse the batch rather than persist a number whose currency
@@ -327,13 +363,40 @@ Deno.serve(withErrorReporting('source-shopify-public', async (req) => {
           })
         }
         cursor = endCursor
-        if (!hasNext || !cursor) break
+        if (!hasNext || !cursor) { completedSweep = true; break }
       }
+
+      // End of catalog -> back to the start for the next refresh pass.
+      if (completedSweep) { cursor = null; wraps += 1 }
+
+      // Persist only for the registry-driven path. A manual run that overrode the
+      // token or market from the body is not necessarily sweeping the same product
+      // set, so it must not move the shared cursor.
+      const usedRegistryConfig = !body.storefront_token && !body.market_country
+      if (!dryRun && merchant?.id && usedRegistryConfig) {
+        const { error: cErr } = await supabase.from('marketplace_merchants')
+          .update({
+            config: {
+              ...mcfg,
+              storefront_cursor: {
+                after: cursor, wraps,
+                completed_sweep: completedSweep,
+                updated_at: new Date().toISOString(),
+              },
+            },
+          })
+          .eq('id', merchant.id)
+        if (cErr) console.error(`storefront cursor persist ${sourceSlug}:`, cErr.message)
+      }
+
       return jsonResponse({
         success: true, items: dryRun ? total : written, items_total: total,
         items_processed: dryRun ? total : written, items_succeeded: dryRun ? total : written,
         items_failed: 0, pages_fetched: pages + 1,
         source: 'storefront', market_country: marketCountry, currency_verified: seenCurrency,
+        resumed_from: startedAtCursor ? `${startedAtCursor.slice(0, 12)}…` : null,
+        next_cursor: cursor ? `${cursor.slice(0, 12)}…` : null,
+        completed_sweep: completedSweep, wraps, cursor_restarted: cursorRetried,
       }, 200, req)
     }
 
