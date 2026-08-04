@@ -52,6 +52,7 @@ import { buildBodyHtml, buildNoscriptHtml } from './_lib/routeBody';
 import { isLocaleLocalised, LOCALISED_LOCALES } from './_lib/localisedLocales';
 import { resolveDetailRoute, isDetailPath, resolveSlugRedirect } from './_lib/detail';
 import { resolveLandingRoute } from './_lib/landing';
+import { bootGuardTag } from './_lib/boot-guard';
 import {
   applySecurityHeaders,
   generateCspNonce,
@@ -304,6 +305,13 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   // are tolerated by crawlers but we want the *last* tag to win, which
   // append guarantees.
   const headInjections: string[] = [
+    // Blank-page boot guard. index.html ships an identical inline copy, which
+    // covers documents built after it landed; this injection is what reaches
+    // an OLDER document, whose body predates the guard and so can never
+    // recover on its own. Both are no-ops when the page boots normally, and
+    // the shared window.__qgBootGuard sentinel keeps the two from
+    // double-reloading when both are present. See _lib/boot-guard.ts.
+    bootGuardTag(cspNonce),
     `<link rel="canonical" href="${escapeAttr(canonical)}">`,
     `<meta property="og:url" content="${escapeAttr(canonical)}">`,
     `<meta property="og:title" content="${escapeAttr(meta.title)}">`,
