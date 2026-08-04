@@ -45,6 +45,25 @@ describe('useEvents', () => {
     expect(typeof result.current.deleteEvent).toBe('function');
   });
 
+  it('returns the total from the query it just ran, not a stale one', async () => {
+    // `fetchEvents` is memoised with an empty dep array on purpose, so anything
+    // it reads out of component state is frozen at first render. It used to
+    // return the `totalCount` state that way, which made `total` null on the
+    // first call and one query behind on every call after it — while the real
+    // count sat in the same scope, on its way into that very setter. Two calls
+    // with different counts is what separates "reads the fresh value" from
+    // "happened to match once".
+    const { result } = renderHook(() => useEvents(false));
+
+    mockQueryResult.mockResolvedValue({ data: [], error: null, count: 42 });
+    const first = await result.current.fetchEvents();
+    expect(first.total).toBe(42);
+
+    mockQueryResult.mockResolvedValue({ data: [], error: null, count: 7 });
+    const second = await result.current.fetchEvents();
+    expect(second.total).toBe(7);
+  });
+
   it('should handle fetch error', async () => {
     mockQueryResult.mockResolvedValue({ data: null, error: new Error('fail'), count: null });
     const { result } = renderHook(() => useEvents(true));
