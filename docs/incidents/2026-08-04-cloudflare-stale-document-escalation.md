@@ -1,3 +1,24 @@
+> # ⚠️ RETRACTED 2026-08-04 — DO NOT SEND. The cause was our own code.
+>
+> This escalation blames Cloudflare for a bug in `functions/_middleware.ts`.
+> The SPA-fallback branch fetched the shell with `env.ASSETS.fetch('/')` — a
+> key that never changes across deploys — and then copied that subrequest's
+> headers onto the public response.
+>
+> **The `age`, `accept-ranges` and `x-robots-tag: noindex` presented below as
+> evidence against Cloudflare were leaked from that internal subrequest. They
+> never described the edge.** An `age` of 265967 on a `cf-cache-status:
+> DYNAMIC` response is not a Cloudflare contradiction — it is a header we
+> copied from somewhere it did not belong. That is also why purge-by-URL,
+> `purge_everything`, a dashboard purge and disabling Always Online all changed
+> nothing: there was never an object in the zone cache to evict.
+>
+> The homepage was unaffected throughout because a direct hit on `/` never
+> enters the fallback branch, which is what made the fault look per-route.
+>
+> Fixed in PR #2591 (key the subrequest per deployment; stop copying its
+> headers). Kept for the investigation record only.
+
 # Cloudflare escalation — apex serves a 60-hour-old HTML document that no purge can evict
 
 **Account** `7aa3765cc5f50f2b681b782eb4a8d296` · **Zone** `queer.guide` · **Pages project** `queer-guide`

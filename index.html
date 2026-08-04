@@ -31,6 +31,13 @@
          to identify the dead URL. -->
     <script>
       (function () {
+        // Shared sentinel with the copy functions/_middleware.ts injects into
+        // every HTML response (see functions/_lib/boot-guard.ts). That
+        // injection is the only thing that can reach a document older than
+        // this guard; when both are present, whichever runs first wins and the
+        // other bails, so the two can never double-reload.
+        if (window.__qgBootGuard) return;
+        window.__qgBootGuard = 1;
         var KEY = 'preload-error-reload'; // shared with main.tsx, which clears it on a good load
         function alreadyRetried() {
           try {

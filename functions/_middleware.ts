@@ -52,6 +52,7 @@ import { buildBodyHtml, buildNoscriptHtml } from './_lib/routeBody';
 import { isLocaleLocalised, LOCALISED_LOCALES } from './_lib/localisedLocales';
 import { resolveDetailRoute, isDetailPath, resolveSlugRedirect } from './_lib/detail';
 import { resolveLandingRoute } from './_lib/landing';
+import { bootGuardTag } from './_lib/boot-guard';
 import {
   applySecurityHeaders,
   generateCspNonce,
@@ -223,13 +224,42 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   // Detail routes that look like SPA routes but have no matching DB row
   // still 404 — that branch runs after this block.
   if (response.status === 404 && contentType.includes('text/html')) {
-    const indexResponse = await env.ASSETS.fetch(
-      new URL('/', request.url).toString(),
-    );
+    // Key this subrequest to the running deployment. With a bare `/` the key
+    // never changes across deploys, and a stale shell answered it for days:
+    // `/events` and `/venues` served a ~3-day-old document (age: 265967)
+    // referencing `index-BQ4YSaoC.js`, a chunk later deploys had deleted.
+    // Pages then answers that dead /assets/ URL with index.html at 200
+    // text/html, the browser refuses it as a module, and #root stays empty —
+    // a blank page. The homepage was fine throughout because a direct hit on
+    // `/` never goes through this branch, which is why the fault looked
+    // per-route and unreproducible.
+    const buildKey = env.CF_PAGES_COMMIT_SHA;
+    const shellUrl = new URL('/', request.url);
+    if (buildKey) shellUrl.searchParams.set('__build', buildKey);
+    let indexResponse = await env.ASSETS.fetch(shellUrl.toString());
+    // A query string must never cost us the shell: if this Pages runtime
+    // treats `/?__build=…` as a miss, fall back to the bare path rather than
+    // letting every deep route 404.
+    if (!indexResponse.ok && buildKey) {
+      indexResponse = await env.ASSETS.fetch(new URL('/', request.url).toString());
+    }
     if (indexResponse.ok) {
+      // Copy ONLY what this response legitimately owns. The previous code
+      // passed `indexResponse.headers` through wholesale, which published the
+      // subrequest's own cache metadata — `age`, `accept-ranges` — and, worse,
+      // an `x-robots-tag: noindex` that nothing in this repo sets, on real
+      // indexable pages. Those leaked headers are also what made the fault
+      // read as a CDN cache problem for days: an `age` of 265967 on a
+      // `cf-cache-status: DYNAMIC` response is a contradiction, so every
+      // purge (including purge_everything, and a dashboard purge) was aimed
+      // at a cache that never held it.
+      const shellHeaders = new Headers();
+      const shellCt = indexResponse.headers.get('content-type');
+      if (shellCt) shellHeaders.set('content-type', shellCt);
+      shellHeaders.set('cache-control', 'public, max-age=0, must-revalidate');
       response = new Response(indexResponse.body, {
         status: 200,
-        headers: indexResponse.headers,
+        headers: shellHeaders,
       });
       contentType = response.headers.get('content-type') ?? '';
     }
@@ -304,6 +334,13 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   // are tolerated by crawlers but we want the *last* tag to win, which
   // append guarantees.
   const headInjections: string[] = [
+    // Blank-page boot guard. index.html ships an identical inline copy, which
+    // covers documents built after it landed; this injection is what reaches
+    // an OLDER document, whose body predates the guard and so can never
+    // recover on its own. Both are no-ops when the page boots normally, and
+    // the shared window.__qgBootGuard sentinel keeps the two from
+    // double-reloading when both are present. See _lib/boot-guard.ts.
+    bootGuardTag(cspNonce),
     `<link rel="canonical" href="${escapeAttr(canonical)}">`,
     `<meta property="og:url" content="${escapeAttr(canonical)}">`,
     `<meta property="og:title" content="${escapeAttr(meta.title)}">`,

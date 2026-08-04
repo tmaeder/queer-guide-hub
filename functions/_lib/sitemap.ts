@@ -14,6 +14,9 @@ export type Env = {
   SUPABASE_ANON_KEY?: string;
   SUPABASE_SERVICE_ROLE_KEY?: string;
   ASSETS: { fetch: typeof fetch };
+  /** Set by Cloudflare Pages on every deployment. Used to key the SPA-shell
+   *  subrequest per build — see the fallback branch in _middleware.ts. */
+  CF_PAGES_COMMIT_SHA?: string;
 };
 
 export type SitemapEntry = {
