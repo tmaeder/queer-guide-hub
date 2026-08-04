@@ -434,7 +434,15 @@ export const UniversalSearchBar = () => {
                   setIsOpen(true);
                 }}
                 autoComplete="off"
-                className="min-w-0 flex-1 border-0 bg-transparent text-sm shadow-none outline-none focus-visible:ring-0 focus-visible:ring-offset-0 md:text-sm"
+                // `bg-transparent` drops the base Input's inverted plate so the
+                // field blends into the `bg-muted` wrapper above — but the base
+                // also ships `text-background` + `placeholder:text-background/70`,
+                // which are only legible ON that plate. Left inherited, they
+                // render WHITE text on the muted surface: axe measured 1.09:1
+                // against a 4.5:1 requirement, i.e. an invisible search field on
+                // every page. Overriding the fill means overriding the ink with
+                // it — these two must always travel together.
+                className="min-w-0 flex-1 border-0 bg-transparent text-sm text-foreground shadow-none outline-none placeholder:text-muted-foreground focus-visible:ring-0 focus-visible:ring-offset-0 md:text-sm"
                 style={{
                   fontSize: isMobile ? '1rem' : '0.875rem',
                   height: inputHeight,
