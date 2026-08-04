@@ -30,7 +30,9 @@ export function EventSearchBar({
           value={search}
           onChange={(e) => onSearchChange(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && onSearch()}
-          className="border-0 shadow-none p-0 h-auto bg-transparent focus:ring-0 focus:border-0 flex-1 min-w-0"
+          // Dropping `Input`'s inverted-plate background means dropping its
+          // `text-background` foreground too, or the text inverts against the page.
+          className="border-0 shadow-none p-0 h-auto bg-transparent text-foreground placeholder:text-muted-foreground focus:ring-0 focus:border-0 flex-1 min-w-0"
         />
       </div>
       <Button
