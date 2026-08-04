@@ -102,6 +102,13 @@ async function reverse(lat, lon, attempt = 0) {
       countrycode: p.countrycode?.trim().toUpperCase().slice(0, 2) || null,
       country: p.country?.trim() || null,
       state: p.state?.trim() || null,
+      // `name` is the nearest ADDRESSABLE FEATURE, not the settlement — reverse
+      // geocoding Ludlow returns "Greggs", Tokyo returns "Tocho-dori Ave." and
+      // Bexley returns "Tanyard Lane". Comparing a city name against it refuses
+      // almost every correct repair. The locality lives in city/district/county.
+      locality: [p.city, p.district, p.county, p.locality]
+        .map((v) => v?.trim())
+        .filter(Boolean),
       name: p.name?.trim() || null,
     };
   } catch (e) {
@@ -123,7 +130,10 @@ const rows = await sql(`
 
 console.log(`${rows.length} candidate(s); mode=${DRY ? 'DRY RUN' : 'APPLY'} severity=${SEVERITY}\n`);
 
-const stats = { checked: 0, verified: 0, repaired: 0, proposed: 0, unresolved: 0, failed: 0 };
+const stats = {
+  checked: 0, verified: 0, repaired: 0, proposed: 0,
+  name_conflict: 0, unresolved: 0, failed: 0,
+};
 
 for (const r of rows) {
   if (stats.checked >= LIMIT) break;
@@ -180,6 +190,48 @@ for (const r of rows) {
   if (!target) {
     stats.unresolved++;
     console.log(`  ?  ${label} — no countries row for ${geo.countrycode}`);
+    await sleep(INTERVAL_MS);
+    continue;
+  }
+
+  // COORDINATE CORROBORATION. The whole method rests on "coords are right,
+  // country is wrong" — true for the birthplace cohort, whose coords came from
+  // Wikipedia after the row was minted. But when the row's NAME is ambiguous the
+  // wrong Wikipedia page can have been matched, and then the coords are wrong
+  // too; reverse-geocoding merely confirms them and we would "repair" a correct
+  // country into a wrong one. Suffolk, Gloucester, Quincy, Versailles, Bryn Mawr
+  // and Lubeck all exist on both sides of the proposed move, and "Sambia" (German
+  // for Zambia) resolves to the Sambia Peninsula in Kaliningrad.
+  //
+  // Photon reports the locality containing those coordinates. If we get one and
+  // it does not resemble the city's own name, the coordinates — not the country
+  // — are what is wrong. FAIL OPEN: when Photon returns no locality at all we
+  // proceed, because absence of the field is not evidence of a conflict.
+  const norm = (s) =>
+    (s ?? '')
+      .normalize('NFD')
+      .replace(/\p{Diacritic}/gu, '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '');
+  const cityBase = norm(String(r.name).split(',')[0]);
+  const localities = (geo.locality ?? []).map(norm).filter(Boolean);
+  const nameAgrees =
+    !cityBase ||
+    localities.length === 0 ||
+    localities.some((l) => l === cityBase || l.includes(cityBase) || cityBase.includes(l));
+
+  if (!nameAgrees) {
+    stats.name_conflict++;
+    console.log(
+      `  !  ${label} — REFUSED: coords sit in "${geo.locality.join(' / ')}", not "${r.name}" — the COORDS look wrong, not the country`,
+    );
+    if (APPLY) {
+      await sql(`update public.cities set needs_attention = true,
+        enrichment_status = coalesce(enrichment_status,'{}'::jsonb) || jsonb_build_object(
+          'country_repair', jsonb_build_object('state','blocked_coord_name_conflict',
+            'photon_locality',${q((geo.locality ?? []).join(' / '))},'photon_country',${q(geo.countrycode)},'at',now()))
+        where id = ${q(r.city_id)}`);
+    }
     await sleep(INTERVAL_MS);
     continue;
   }
