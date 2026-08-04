@@ -11,7 +11,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Separator } from '@/components/ui/separator';
 import { Bookmark, Bell, BellOff, Trash2, BookOpen } from 'lucide-react';
 import { useNewsSavedSearches, type SavedSearch } from '@/hooks/useNewsSavedSearches';
 import { useAuth } from '@/hooks/useAuth';
@@ -178,7 +177,6 @@ export function NewsSavedSearchesPanel({
               {/* Saved searches list */}
               {searches.length > 0 && (
                 <>
-                  <Separator />
                   <p className="text-xs text-muted-foreground font-medium">Saved searches</p>
                   <div className="flex flex-col gap-1 max-h-64 overflow-y-auto">
                     {searches.map((s) => (
@@ -239,7 +237,6 @@ export function NewsSavedSearchesPanel({
               {/* Reading history link */}
               {onOpenHistory && (
                 <>
-                  <Separator />
                   <Button
                     variant="ghost"
                     size="sm"

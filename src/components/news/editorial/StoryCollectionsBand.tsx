@@ -1,6 +1,5 @@
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { StoryCard } from '@/components/news/StoryCard';
-import { Separator } from '@/components/ui/separator';
 import { Layers } from 'lucide-react';
 
 type Story = {
@@ -29,7 +28,6 @@ export function StoryCollectionsBand({
 
   return (
     <section aria-labelledby="stories-band-heading" className="mb-16">
-      <Separator className="mb-6" />
       <div className="flex flex-wrap items-end justify-between gap-4 mb-8">
         <div className="min-w-0">
           <p className="text-2xs uppercase tracking-[0.2em] text-muted-foreground mb-2 flex items-center gap-2">

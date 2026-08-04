@@ -4,7 +4,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Separator } from '@/components/ui/separator';
 import { Heart, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -171,7 +170,6 @@ export function AuthDialog({ open, onOpenChange, defaultMode = 'signin' }: AuthD
           <div className="mt-6">
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
-                <Separator className="w-full" />
               </div>
               <div className="relative flex justify-center">
                 <span className="text-xs bg-background px-4 text-muted-foreground font-medium uppercase">

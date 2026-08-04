@@ -10,7 +10,6 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { formatNewsTag } from '@/lib/newsTags';
-import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
 import { DatePickerWithRange } from '@/components/ui/date-range-picker';
@@ -427,7 +426,6 @@ export const NewsFilters = ({
           <Switch checked={podcastsOnly} onCheckedChange={handlePodcastsToggle} />
         </div>
 
-        <Separator />
 
         {/* Sentiment */}
         <div className="flex flex-col gap-2">
@@ -471,7 +469,6 @@ export const NewsFilters = ({
           />
         </div>
 
-        <Separator />
 
         {/* Category Filter */}
         {categories.length > 0 && (
@@ -495,7 +492,6 @@ export const NewsFilters = ({
                 </SelectContent>
               </Select>
             </div>
-            <Separator />
           </>
         )}
 
@@ -522,7 +518,6 @@ export const NewsFilters = ({
                 </SelectContent>
               </Select>
             </div>
-            <Separator />
           </>
         )}
 
@@ -540,7 +535,6 @@ export const NewsFilters = ({
           )}
         </div>
 
-        <Separator />
 
         {/* Countries Filter */}
         <div className="flex flex-col gap-4">
@@ -622,7 +616,6 @@ export const NewsFilters = ({
           )}
         </div>
 
-        <Separator />
 
         {/* Source Filter */}
         {sources.length > 0 && (
@@ -712,7 +705,6 @@ export const NewsFilters = ({
         {/* Trending Tags */}
         {trendingTags.length > 0 && (
           <>
-            <Separator />
             <div className="flex flex-col gap-4">
               <div className="flex items-center gap-2">
                 <TrendingUp size={16} />
@@ -738,7 +730,6 @@ export const NewsFilters = ({
         {/* Clear Filters */}
         {hasActiveFilters && (
           <>
-            <Separator />
             <Button variant="outline" onClick={clearFilters} style={{ width: '100%' }}>
               Clear All Filters
             </Button>

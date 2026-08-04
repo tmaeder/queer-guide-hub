@@ -1,6 +1,5 @@
 import { useMemo } from 'react';
 import { NewsCard } from '@/components/news/NewsCard';
-import { Separator } from '@/components/ui/separator';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useEntityImageAssets } from '@/hooks/useEntityImageAssets';
 import { useForYouNews } from '@/hooks/useNewsFront';
@@ -39,7 +38,6 @@ export function ForYouSection({ sourcesMap, categoriesMap, excludeIds = [] }: Fo
 
   return (
     <section aria-labelledby="for-you-heading" className="mb-16">
-      <Separator className="mb-6" />
       <div className="flex items-end justify-between gap-4 mb-8">
         <div>
           <p className="text-2xs uppercase tracking-[0.2em] text-muted-foreground mb-2">For you</p>

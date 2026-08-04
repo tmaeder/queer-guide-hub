@@ -2,7 +2,6 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
 import {
   ExternalLink,
   Shield,
@@ -293,7 +292,6 @@ export default function LGBTJurisdictionInfo({
           </div>
         </div>
 
-        <Separator />
 
         {/* Anti-discrimination protection */}
         <div>
@@ -351,7 +349,6 @@ export default function LGBTJurisdictionInfo({
           </div>
         </div>
 
-        <Separator />
 
         {/* Criminal justice */}
         <div>
@@ -372,7 +369,6 @@ export default function LGBTJurisdictionInfo({
           </div>
         </div>
 
-        <Separator />
 
         {/* Family & relationships */}
         <div>
@@ -414,7 +410,6 @@ export default function LGBTJurisdictionInfo({
           </div>
         </div>
 
-        <Separator />
 
         {/* Identity & health */}
         <div>

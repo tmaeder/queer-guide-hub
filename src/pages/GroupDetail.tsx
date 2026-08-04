@@ -6,7 +6,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
@@ -340,7 +339,6 @@ export default function GroupDetail() {
                 <p className="text-muted-foreground italic">No description available.</p>
               )}
 
-              <Separator />
 
               <div className="flex flex-col gap-4">
                 <h4 className="text-base font-semibold">Group Details</h4>
@@ -371,7 +369,6 @@ export default function GroupDetail() {
 
               {group.tags && group.tags.length > 0 && (
                 <>
-                  <Separator />
                   <div className="flex flex-col gap-4">
                     <h4 className="text-base font-semibold">Tags</h4>
                     <div className="flex flex-wrap gap-2">
@@ -392,7 +389,6 @@ export default function GroupDetail() {
 
               {group.rules && (
                 <>
-                  <Separator />
                   <div className="flex flex-col gap-4">
                     <h4 className="text-base font-semibold">Group Rules</h4>
                     <p className="text-sm text-muted-foreground whitespace-pre-wrap">

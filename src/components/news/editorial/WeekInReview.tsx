@@ -1,4 +1,3 @@
-import { Separator } from '@/components/ui/separator';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { cleanTitle } from '@/utils/htmlDecode';
 import type { Tables } from '@/integrations/supabase/types';
@@ -32,7 +31,6 @@ export function WeekInReview({ articles, sourceCount }: WeekInReviewProps) {
 
   return (
     <section aria-labelledby="week-review-heading" className="mb-16">
-      <Separator className="mb-6" />
       <p className="text-2xs uppercase tracking-[0.2em] text-muted-foreground mb-2">
         This week
       </p>
