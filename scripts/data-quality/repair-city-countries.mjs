@@ -102,6 +102,13 @@ async function reverse(lat, lon, attempt = 0) {
       countrycode: p.countrycode?.trim().toUpperCase().slice(0, 2) || null,
       country: p.country?.trim() || null,
       state: p.state?.trim() || null,
+      // `name` is the nearest ADDRESSABLE FEATURE, not the settlement — reverse
+      // geocoding Ludlow returns "Greggs", Tokyo returns "Tocho-dori Ave." and
+      // Bexley returns "Tanyard Lane". Comparing a city name against it refuses
+      // almost every correct repair. The locality lives in city/district/county.
+      locality: [p.city, p.district, p.county, p.locality]
+        .map((v) => v?.trim())
+        .filter(Boolean),
       name: p.name?.trim() || null,
     };
   } catch (e) {
@@ -123,7 +130,10 @@ const rows = await sql(`
 
 console.log(`${rows.length} candidate(s); mode=${DRY ? 'DRY RUN' : 'APPLY'} severity=${SEVERITY}\n`);
 
-const stats = { checked: 0, verified: 0, repaired: 0, proposed: 0, unresolved: 0, failed: 0 };
+const stats = {
+  checked: 0, verified: 0, repaired: 0, proposed: 0,
+  name_conflict: 0, collided: 0, unresolved: 0, failed: 0,
+};
 
 for (const r of rows) {
   if (stats.checked >= LIMIT) break;
@@ -184,6 +194,48 @@ for (const r of rows) {
     continue;
   }
 
+  // COORDINATE CORROBORATION. The whole method rests on "coords are right,
+  // country is wrong" — true for the birthplace cohort, whose coords came from
+  // Wikipedia after the row was minted. But when the row's NAME is ambiguous the
+  // wrong Wikipedia page can have been matched, and then the coords are wrong
+  // too; reverse-geocoding merely confirms them and we would "repair" a correct
+  // country into a wrong one. Suffolk, Gloucester, Quincy, Versailles, Bryn Mawr
+  // and Lubeck all exist on both sides of the proposed move, and "Sambia" (German
+  // for Zambia) resolves to the Sambia Peninsula in Kaliningrad.
+  //
+  // Photon reports the locality containing those coordinates. If we get one and
+  // it does not resemble the city's own name, the coordinates — not the country
+  // — are what is wrong. FAIL OPEN: when Photon returns no locality at all we
+  // proceed, because absence of the field is not evidence of a conflict.
+  const norm = (s) =>
+    (s ?? '')
+      .normalize('NFD')
+      .replace(/\p{Diacritic}/gu, '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '');
+  const cityBase = norm(String(r.name).split(',')[0]);
+  const localities = (geo.locality ?? []).map(norm).filter(Boolean);
+  const nameAgrees =
+    !cityBase ||
+    localities.length === 0 ||
+    localities.some((l) => l === cityBase || l.includes(cityBase) || cityBase.includes(l));
+
+  if (!nameAgrees) {
+    stats.name_conflict++;
+    console.log(
+      `  !  ${label} — REFUSED: coords sit in "${geo.locality.join(' / ')}", not "${r.name}" — the COORDS look wrong, not the country`,
+    );
+    if (APPLY) {
+      await sql(`update public.cities set needs_attention = true,
+        enrichment_status = coalesce(enrichment_status,'{}'::jsonb) || jsonb_build_object(
+          'country_repair', jsonb_build_object('state','blocked_coord_name_conflict',
+            'photon_locality',${q((geo.locality ?? []).join(' / '))},'photon_country',${q(geo.countrycode)},'at',now()))
+        where id = ${q(r.city_id)}`);
+    }
+    await sleep(INTERVAL_MS);
+    continue;
+  }
+
   if (hasContent && !WITH_CONTENT) {
     // Moving this re-gates real content in both directions. Propose, don't act.
     stats.proposed++;
@@ -200,8 +252,6 @@ for (const r of rows) {
     continue;
   }
 
-  stats.repaired++;
-  console.log(`  ->  ${label}${hasContent ? ' (WITH CONTENT — repropagating)' : ''}`);
   if (APPLY) {
     const evidence = JSON.stringify({
       source: 'photon_reverse',
@@ -212,11 +262,49 @@ for (const r of rows) {
       previous_code: r.assigned_code,
       km_to_previous: r.km_to_assigned,
     });
-    const [res] = await sql(
-      `select public.apply_city_country_repair(${q(r.city_id)}, ${q(target.id)}, ${q(evidence)}::jsonb) as r`,
-    );
-    if (!res?.r?.ok) console.error(`     FAILED: ${JSON.stringify(res?.r)}`);
-    else if (res.r.repropagated) console.log(`     repropagated ${JSON.stringify(res.r.repropagated)}`);
+    try {
+      const [res] = await sql(
+        `select public.apply_city_country_repair(${q(r.city_id)}, ${q(target.id)}, ${q(evidence)}::jsonb) as r`,
+      );
+      stats.repaired++;
+      console.log(`  ->  ${label}${hasContent ? ' (WITH CONTENT — repropagating)' : ''}`);
+      if (!res?.r?.ok) console.error(`     FAILED: ${JSON.stringify(res?.r)}`);
+      else if (res.r.repropagated) console.log(`     repropagated ${JSON.stringify(res.r.repropagated)}`);
+    } catch (e) {
+      // A country move that collides on (country_id, name_normalized) is not a
+      // failure — it is a DISCOVERY. The target country already holds a city
+      // with this name, so the two rows are the same place: "París" filed under
+      // Panama collides with "Paris" in France because normalize_name unaccents
+      // both. Moving it is impossible and also pointless; the answer is a merge.
+      // Queue the pair and move on rather than aborting the whole run.
+      if (!/23505|uk_cities_country_name_active|idx_cities_name_country_unique/.test(e.message)) throw e;
+      stats.collided++;
+      const [twin] = await sql(
+        `select id, name, completeness_score from public.cities
+          where country_id = ${q(target.id)}
+            and name_normalized = public.normalize_name(split_part(${q(r.name)}, ',', 1))
+            and duplicate_of_id is null and id <> ${q(r.city_id)} limit 1`,
+      );
+      console.log(`  =  ${label} — ALREADY EXISTS in ${target.name} as "${twin?.name ?? '?'}" → queued as duplicate`);
+      if (twin?.id) {
+        // Keep the row already sitting in the correct country; it is the one the
+        // rest of the corpus links to.
+        await sql(`insert into public.dedup_review_queue
+            (entity_type, keep_id, drop_id, confidence, reason, source, cluster)
+          values ('city', ${q(twin.id)}, ${q(r.city_id)}, 0.95,
+                  'country_repair_name_collision', 'repair_city_countries',
+                  ${q(JSON.stringify({ moved_from: r.assigned_code, into: geo.countrycode, drop_name: r.name, keep_name: twin.name, evidence: JSON.parse(evidence) }))}::jsonb)
+          on conflict do nothing`);
+      }
+      await sql(`update public.cities set needs_attention = true,
+        enrichment_status = coalesce(enrichment_status,'{}'::jsonb) || jsonb_build_object(
+          'country_repair', jsonb_build_object('state','blocked_name_collision_in_target',
+            'target_country',${q(geo.countrycode)},'twin',${q(twin?.id ?? '')},'at',now()))
+        where id = ${q(r.city_id)}`);
+    }
+  } else {
+    stats.repaired++;
+    console.log(`  ->  ${label}${hasContent ? ' (WITH CONTENT — repropagating)' : ''}`);
   }
   await sleep(INTERVAL_MS);
 }
