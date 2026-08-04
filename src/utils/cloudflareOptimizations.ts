@@ -1,21 +1,46 @@
 // Cloudflare-specific optimizations and utilities
 
+import { isMerchantSrc } from '@/utils/imageHost';
+
 const IMG_CDN_HOST = 'img.queer.guide';
 
 const isHostOrSubdomain = (hostname: string, baseDomain: string): boolean =>
   hostname === baseDomain || hostname.endsWith(`.${baseDomain}`);
 
 /**
- * Supabase Storage public objects are openly fetchable, so CF Image Resizing
- * can pull them cross-origin and resize through the img.queer.guide zone —
- * turning multi-MB originals into right-sized webp for free (paid Images plan,
- * no Supabase transform quota). Merchant CDNs are deliberately NOT included:
- * some block server-side fetchers and would break. Only `/object/` is wrapped —
- * `/render/image/` URLs are already transformed.
+ * Hosts CF Image Resizing must NOT fetch: merchant CDNs that hotlink-protect
+ * against server-side fetchers (cdn.shopify.com 403s CF's fetcher), and hosts
+ * that are already an image-resizing service of their own.
  */
-const isCfResizableSource = (u: URL): boolean =>
-  isHostOrSubdomain(u.hostname.toLowerCase(), IMG_CDN_HOST) ||
-  (u.hostname.toLowerCase().endsWith('.supabase.co') && u.pathname.includes('/storage/v1/object/'));
+const CF_FETCH_DENY_HOSTS = [
+  'cdn.shopify.com',
+  'cms.terminuscash.com',
+  'imagedelivery.net',
+  'cf-images.com',
+];
+
+/**
+ * Any https image URL can be pulled cross-origin by CF Image Resizing through
+ * the img.queer.guide zone (`/cdn-cgi/image/<opts>/<url>`) — turning multi-MB
+ * publisher/stock originals into right-sized webp (paid Images plan). Verified
+ * against the live hosts on the home rails: pexels, i.guim.co.uk, monocle,
+ * jimcdn, starobserver all resize fine. Denylist instead of allowlist:
+ *   - CF_FETCH_DENY_HOSTS + merchant stores (they block CF's fetcher or need
+ *     a referer the fetcher won't send),
+ *   - Supabase `/render/image/` URLs (already transformed; `/object/` is fine),
+ *   - non-https (data:, blob:, http dev URLs).
+ * Consumers keep a raw-URL retry (Image.tsx ladder / ExternalImg onError), so
+ * an unknown host that rejects CF's fetch degrades to the original URL, never
+ * straight to the fallback texture.
+ */
+const isCfResizableSource = (u: URL): boolean => {
+  if (u.protocol !== 'https:') return false;
+  const host = u.hostname.toLowerCase();
+  if (CF_FETCH_DENY_HOSTS.some((d) => isHostOrSubdomain(host, d))) return false;
+  if (isMerchantSrc(u.href)) return false;
+  if (host.endsWith('.supabase.co') && u.pathname.includes('/render/image/')) return false;
+  return true;
+};
 
 /**
  * Build a Cloudflare Image Resizing URL for CF-resizable sources

@@ -6,6 +6,7 @@ import { HomeSection } from './HomeSection';
 import { ParticleBurst } from '@/components/joy/ParticleBurst';
 import { useBornThisWeek } from '@/hooks/useBornThisWeek';
 import { useEntityImageAssets } from '@/hooks/useEntityImageAssets';
+import { ExternalImg } from '@/components/ui/ExternalImg';
 import { useMotionTokens } from '@/lib/motion';
 import { isLowEndDevice } from '@/lib/animation';
 import { resolveImageUrl } from '@/utils/resolveImageUrl';
@@ -28,7 +29,7 @@ function birthYear(iso: string | null): string | null {
   return Number.isFinite(y) ? String(y) : null;
 }
 
-function PersonChip({ person, img }: { person: Person; img: string }) {
+function PersonChip({ person, img }: { person: Person; img: string | null }) {
   const { t } = useTranslation();
   const [burst, setBurst] = useState(false);
   const [celebrated, setCelebrated] = useState(false);
@@ -39,17 +40,12 @@ function PersonChip({ person, img }: { person: Person; img: string }) {
         to={person.slug ? `/personalities/${person.slug}` : '/personalities'}
         className="flex min-w-0 items-center gap-2.5 no-underline"
       >
-        <img
+        <ExternalImg
           src={img}
+          cfWidth={96}
+          fallbackSrc={getFallbackImage('person', person.id)}
           alt=""
           aria-hidden
-          loading="lazy"
-          decoding="async"
-          referrerPolicy="no-referrer"
-          onError={(e) => {
-            const fb = getFallbackImage('person', person.id);
-            if (e.currentTarget.src !== fb) e.currentTarget.src = fb;
-          }}
           className="h-10 w-10 shrink-0 rounded-full bg-muted object-cover"
         />
         <span className="min-w-0">
@@ -103,7 +99,7 @@ export default function HomeBornThisWeek() {
       optimizedUrl: assets.get(p.id)?.optimized_url ?? null,
       thumbnailUrl: assets.get(p.id)?.thumbnail_url ?? null,
       preferThumb: true,
-    }) || getFallbackImage('person', p.id);
+    }) || null;
 
   const chips = people.map((p) => <PersonChip key={p.id} person={p} img={imgFor(p)} />);
 
