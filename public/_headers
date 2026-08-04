@@ -30,16 +30,26 @@
   Onion-Location: http://rlxm6jtzwf2r3brzxyim6kuutj3l2b2da2ceayoe37bwrhmsz3nugcid.onion%{REQUEST_URI}
   Content-Security-Policy: default-src 'self'; script-src 'self' https://challenges.cloudflare.com https://js.stripe.com https://maps.googleapis.com https://maps.gstatic.com https://widget.getyourguide.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data: https://protomaps.github.io https://*.supabase.co; connect-src 'self' https://*.supabase.co https://*.maeder-tobiassimon.workers.dev https://*.queer.guide https://protomaps.github.io https://challenges.cloudflare.com https://js.stripe.com https://maps.googleapis.com https://maps.gstatic.com https://commons.wikimedia.org https://widget.getyourguide.com https://*.getyourguide.com https://api.travelpayouts.com https://pics.avs.io https://*.hotellook.com https://*.ingest.sentry.io https://*.ingest.de.sentry.io https://*.ingest.us.sentry.io https://api.open-meteo.com https://archive-api.open-meteo.com wss://*.supabase.co; frame-src 'self' https://challenges.cloudflare.com https://js.stripe.com https://widget.getyourguide.com https://*.getyourguide.com; frame-ancestors 'self'; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests
 
-# Service worker - MUST come before /*.js or CF Pages applies the wrong
-# long-cache rule. The SW is the update escape hatch; revalidate every load.
+# Service worker. The SW is the update escape hatch; revalidate every load.
 # no-store is intentional: a long-cached SW from an earlier incident was
 # unable to receive a fix-in-place update, blanking the entire site for
 # returning users. Never edge-cache or browser-cache this file.
+#
+# ORDERING DOES NOT PROTECT THIS RULE. Cloudflare Pages does not do
+# first-match-wins — it applies EVERY matching rule and concatenates the
+# values, so a later `/*.js` still lands on /sw.js. Measured on prod
+# 2026-08-04, /sw.js came back as:
+#   public, max-age=0, must-revalidate, public, max-age=0, must-revalidate,
+#   no-cache, no-store, public, max-age=31536000, immutable
+# — `immutable` LAST, on the one file that must never be cached. The only
+# real protection is that no broader rule matches it, which is why the
+# blanket `/*.js` rule below is gone.
 /sw.js
   Cache-Control: public, max-age=0, must-revalidate, no-cache, no-store
 
-# Umami tracker - unversioned mutable script; must come before /*.js or the
-# 1-year immutable rule pins stale tracking code at the edge for a year.
+# Umami tracker - unversioned mutable script, so it must never go immutable.
+# The blanket /*.js rule clobbered this outright: prod served
+# `max-age=31536000, must-revalidate, immutable` and this 3600 never applied.
 /umami.js
   Cache-Control: public, max-age=3600, must-revalidate
 
@@ -48,13 +58,14 @@
   Cache-Control: public, max-age=31536000, immutable
   Cross-Origin-Resource-Policy: cross-origin
 
-# JavaScript files
-/*.js
-  Cache-Control: public, max-age=31536000, immutable
-
-# CSS files
-/*.css
-  Cache-Control: public, max-age=31536000, immutable
+# NOTE: there is deliberately NO blanket `/*.js` or `/*.css` rule.
+# Every hashed bundle already lives under /assets/ and is covered by the
+# /assets/* rule above (verified on prod: /assets/js/index-*.js returns
+# `max-age=31536000, immutable`). The ONLY .js files outside /assets are
+# /sw.js and /umami.js, and both MUST NOT be immutable — a blanket rule
+# matched them and won, which is the exact long-cached-SW failure the
+# /sw.js comment describes. Do not reintroduce these rules; if a new
+# root-level immutable asset ever appears, give it its own explicit path.
 
 # Font files
 /*.woff2
