@@ -483,7 +483,15 @@ purge_poisoned() {
 					case "$ct2" in
 						*html*)
 							echo "    ✗ $item STILL text/html after purge_everything"
-							echo "      Not a cache this pipeline can reach. Escalate to Cloudflare."
+							echo "      DO NOT escalate to Cloudflare on this signal alone. In the"
+							echo "      2026-08-04 incident this exact state was OUR bug: the SPA"
+							echo "      fallback in functions/_middleware.ts fetched the shell with a"
+							echo "      key that never changed across deploys, then copied that"
+							echo "      subrequest's headers onto the response - publishing an age"
+							echo "      that made it read as an unevictable edge cache. Check for"
+							echo "      age / accept-ranges / x-robots-tag on a DYNAMIC response:"
+							echo "      that combination means a header is copied from a subrequest,"
+							echo "      not a CDN fault. See docs/incidents/2026-08-04-*."
 							;;
 						*)  echo "    ✓ $item recovered ($ct2)"; pass=$((pass+1)); fail=$((fail-1)) ;;
 					esac
@@ -495,7 +503,15 @@ purge_poisoned() {
 						pass=$((pass+1)); fail=$((fail-1))
 					else
 						echo "    ✗ $item STILL stale after purge_everything (cached $plain vs origin $origin_now)"
-						echo "      Not a cache this pipeline can reach. Escalate to Cloudflare."
+						echo "      DO NOT escalate to Cloudflare on this signal alone. In the"
+						echo "      2026-08-04 incident this exact state was OUR bug: the SPA"
+						echo "      fallback in functions/_middleware.ts fetched the shell with a"
+						echo "      key that never changed across deploys, then copied that"
+						echo "      subrequest's headers onto the response - publishing an age"
+						echo "      that made it read as an unevictable edge cache. Check for"
+						echo "      age / accept-ranges / x-robots-tag on a DYNAMIC response:"
+						echo "      that combination means a header is copied from a subrequest,"
+						echo "      not a CDN fault. See docs/incidents/2026-08-04-*."
 					fi
 					;;
 			esac
