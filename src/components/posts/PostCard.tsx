@@ -368,7 +368,7 @@ export const PostCard = ({ post, onLike, onUnlike, onDelete }: PostCardProps) =>
         {renderPostContent()}
 
         {/* Actions */}
-        <div className="flex items-center justify-between pt-4 border-t border-border">
+        <div className="flex items-center justify-between pt-4">
           <div className="flex items-center gap-6">
             <Button
               variant="ghost"
@@ -421,7 +421,7 @@ export const PostCard = ({ post, onLike, onUnlike, onDelete }: PostCardProps) =>
               transition={reduced ? { duration: 0 } : { duration: duration.fast, ease: easing.smooth }}
               className="overflow-hidden"
             >
-              <div className="pt-4 border-t border-border">
+              <div className="pt-4">
                 <CommentsSection postId={post.id} />
               </div>
             </motion.div>

@@ -604,7 +604,7 @@ export default function HelpHotlines() {
 
           {/* Support organizations — community centers & advocacy NGOs */}
           {supportOrgs.length > 0 && (
-            <div className="mt-12 border-t pt-6">
+            <div className="mt-12 pt-6">
               <h3 className="mb-4 text-sm font-bold">
                 {t('help.support_orgs', 'Support organizations')}
               </h3>
@@ -647,7 +647,7 @@ export default function HelpHotlines() {
           )}
 
           {/* Related resources */}
-          <div className="mt-12 border-t pt-6">
+          <div className="mt-12 pt-6">
             <h3 className="mb-4 text-sm font-bold">
               {t('help.related_resources', 'Related resources')}
             </h3>
@@ -682,7 +682,7 @@ export default function HelpHotlines() {
             </Button>
           </div>
 
-          <p className="mt-8 border-t pt-6 text-center text-sm text-muted-foreground">
+          <p className="mt-8 pt-6 text-center text-sm text-muted-foreground">
             {t('help.disclaimer', 'Queer Guide does not replace professional help.')}
           </p>
         </>

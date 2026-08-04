@@ -60,7 +60,7 @@ export function ShareControls({ prefs }: { prefs: FootprintSharePrefs }) {
           </div>
         ))}
         {anyOn && (
-          <div className="text-xs text-muted-foreground pt-2 border-t border-border">
+          <div className="text-xs text-muted-foreground pt-2">
             Public URL:{' '}
             <a className="underline" href={publicUrl} target="_blank" rel="noreferrer">
               {publicUrl}

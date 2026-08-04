@@ -113,15 +113,25 @@ export function PrideTable({ events, selectedId, onSelect }: PrideTableProps) {
             </tr>
           </thead>
           <tbody>
-            {sorted.map((e, idx) => {
+            {sorted.map((e) => {
               const isSelected = selectedId === e.id;
               const continent = continentOf(e.country);
               return (
                 <tr
                   key={e.id}
                   className={cn(
-                    'border-t border-foreground/10 transition-colors',
-                    idx === 0 && 'border-t-0',
+                    'transition-colors',
+                    // Zebra PLATE, not a row rule. A dense table still needs the
+                    // eye to track a row across columns, so the separator cannot
+                    // just be deleted — but the rebrand's answer to "separate
+                    // these" is a filled surface, not a hairline. This row rule
+                    // was 41 of the ~131 lines left on /pride.
+                    //
+                    // Gated on !isSelected because `even:` is a variant and
+                    // would otherwise out-order the plain `bg-muted` selection
+                    // fill on even rows, i.e. selecting an even row would look
+                    // unselected.
+                    !isSelected && 'even:bg-surface-container',
                     isSelected ? 'bg-muted' : 'hover:bg-muted/40',
                   )}
                   onClick={() => onSelect?.(isSelected ? null : e.id)}

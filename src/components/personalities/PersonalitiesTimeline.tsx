@@ -65,7 +65,7 @@ export function PersonalitiesTimeline({ personalities }: PersonalitiesTimelinePr
       <div className="flex gap-4 min-w-max">
         {buckets.map((b) => (
           <div key={b.label} className="flex-shrink-0 w-56 rounded-element bg-surface-container">
-            <div className="px-4 py-2 border-b border-border sticky top-0 bg-background">
+            <div className="px-4 py-2 sticky top-0 bg-background">
               <div className="text-sm font-semibold">{b.label}</div>
               <div className="text-xs text-muted-foreground">
                 {b.items.length.toLocaleString()} {b.items.length === 1 ? 'person' : 'people'}

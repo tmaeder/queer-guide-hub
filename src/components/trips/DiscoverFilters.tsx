@@ -239,7 +239,7 @@ export function DiscoverFilters({ value, onChange }: Props) {
           </section>
         </div>
 
-        <SheetFooter className="border-t border-border pt-4 sticky bottom-0 bg-background">
+        <SheetFooter className="pt-4 sticky bottom-0 bg-background">
           <Button
             variant="ghost"
             onClick={() => onChange(DEFAULT_FILTERS)}

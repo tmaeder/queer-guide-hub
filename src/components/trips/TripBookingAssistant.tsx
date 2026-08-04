@@ -280,7 +280,7 @@ export function TripBookingAssistant({ tripId, places, _days, startDate, endDate
                   {cityVenues.map((venue) => (
                     <div
                       key={venue.id}
-                      className="flex items-center gap-2 py-1.5 border-b border-border min-h-11"
+                      className="flex items-center gap-2 py-1.5 min-h-11"
                     >
                       <MapPin size={13} className="text-muted-foreground flex-shrink-0" />
                       <div className="flex-1 min-w-0">
@@ -326,7 +326,7 @@ export function TripBookingAssistant({ tripId, places, _days, startDate, endDate
                   return (
                     <div
                       key={place.id}
-                      className="flex items-center gap-2 py-1.5 border-b border-border min-h-11"
+                      className="flex items-center gap-2 py-1.5 min-h-11"
                     >
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium truncate">{getPlaceName(place)}</p>

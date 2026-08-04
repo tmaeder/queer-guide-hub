@@ -37,7 +37,7 @@ export function SearchPopoverEmpty({
   return (
     <div className="min-h-0 flex-1 overflow-y-auto md:max-h-[560px]">
       {recentItems.length > 0 && onSelectRecent && (
-        <div className="flex flex-wrap items-center gap-1.5 border-b border-border px-4 py-2">
+        <div className="flex flex-wrap items-center gap-1.5 px-4 py-2">
           <Clock className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
           {recentItems.map((term, i) => (
             <span

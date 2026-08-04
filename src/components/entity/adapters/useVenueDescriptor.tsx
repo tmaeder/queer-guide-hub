@@ -159,7 +159,7 @@ export function useVenueDescriptor(slug: string | undefined): EntityDescriptorRe
       ),
       related: { type: 'venue', id: venue.id, title: t('pages.entityDetail.moreVenues', 'More venues') },
       mobileBar: isClosed ? null : (
-        <div className="fixed inset-x-0 bottom-0 z-[1100] flex items-center gap-2 border-t border-border bg-background/95 p-4 backdrop-blur md:hidden">
+        <div className="fixed inset-x-0 bottom-0 z-[1100] flex items-center gap-2 bg-background/95 p-4 backdrop-blur md:hidden">
           <Button className="flex-1" onClick={() => setAddToTripOpen(true)}>
             <Luggage size={16} className="mr-2" />
             {t('pages.venueDetail.addToTrip', 'Add to trip')}

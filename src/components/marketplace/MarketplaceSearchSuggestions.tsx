@@ -176,7 +176,7 @@ export function MarketplaceSearchSuggestions({
         return (
           <li key={`${s.kind}:${s.label}:${i}`}>
             {showGroup && (
-              <p className="border-t border-border px-4 pb-1 pt-2 text-2xs uppercase tracking-wider text-muted-foreground first:border-t-0">
+              <p className="px-4 pb-1 pt-2 text-2xs uppercase tracking-wider text-muted-foreground">
                 {GROUP_LABELS[s.kind]}
               </p>
             )}

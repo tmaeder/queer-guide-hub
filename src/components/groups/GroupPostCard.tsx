@@ -110,7 +110,7 @@ export const GroupPostCard = ({
           })}
         </div>
 
-        <div className="flex items-center justify-between mt-4 pt-2 border-t border-border">
+        <div className="flex items-center justify-between mt-4 pt-2">
           <Button
             variant="ghost"
             size="sm"

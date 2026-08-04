@@ -464,7 +464,7 @@ export function MarketplaceFilterSheet({
           </AccordionItem>
         </Accordion>
 
-        <SheetFooter className="sticky bottom-0 mt-6 flex-row gap-2 border-t border-border bg-background pt-4">
+        <SheetFooter className="sticky bottom-0 mt-6 flex-row gap-2 bg-background pt-4">
           {hasActiveFilters(filters) && (
             <Button variant="outline" onClick={clearAll}>
               <X size={16} />

@@ -341,7 +341,7 @@ function SharedTripPage() {
                     {dayPlaces.map((place) => {
                       const name = place.venue_name || place.event_title || place.hotel_name || place.custom_name || t('trips.shared.unknownPlace');
                       return (
-                        <div key={place.id} className="border-b border-border py-1">
+                        <div key={place.id} className="py-1">
                           <div className="flex items-center gap-2">
                             <MapPin size={14} className="text-muted-foreground flex-shrink-0" />
                             <div className="flex-1 min-w-0">
@@ -378,7 +378,7 @@ function SharedTripPage() {
                   {(placesByDay.get(null) || []).map((place) => {
                     const name = place.venue_name || place.event_title || place.hotel_name || place.custom_name || t('trips.shared.unknownPlace');
                     return (
-                      <div key={place.id} className="flex items-center gap-2 py-1.5 border-b border-border">
+                      <div key={place.id} className="flex items-center gap-2 py-1.5">
                         <MapPin size={14} className="text-muted-foreground flex-shrink-0" />
                         <p className="text-sm font-medium flex-1">{name}</p>
                         {place.category && <Badge variant="outline">{place.category}</Badge>}
@@ -393,7 +393,7 @@ function SharedTripPage() {
           {permissions.budget && (
             <TabsContent value="budget">
               {budgetItems.map((item, i) => (
-                <div key={i} className="flex items-center justify-between py-2 border-b border-border">
+                <div key={i} className="flex items-center justify-between py-2">
                   <div>
                     <p className="text-sm font-medium">{item.title}</p>
                     <div className="flex items-center gap-1.5">

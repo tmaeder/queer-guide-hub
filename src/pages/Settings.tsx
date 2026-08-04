@@ -268,7 +268,7 @@ function AccordionSection({
           </button>
         </CollapsibleTrigger>
         <CollapsibleContent>
-          <div className="px-4 pb-6 pt-2 border-t border-border">{children}</div>
+          <div className="px-4 pb-6 pt-2">{children}</div>
         </CollapsibleContent>
       </div>
     </Collapsible>
@@ -646,7 +646,7 @@ function ProfileSettingsContent({
       </Card>
 
       {/* Sticky auto-save status bar */}
-      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-background/95">
+      <div className="fixed inset-x-0 bottom-0 z-30 bg-background/95">
         <div className="container mx-auto px-4 py-4">
           <SaveStatusLine
             status={saveStatus}

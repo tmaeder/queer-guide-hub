@@ -376,7 +376,7 @@ export default function IntimateOnboard() {
 
 function Row({ k, v }: { k: string; v: string }) {
   return (
-    <div className="flex justify-between border-t border-border pt-4">
+    <div className="flex justify-between pt-4">
       <dt className="text-muted-foreground">{k}</dt>
       <dd className="font-medium">{v}</dd>
     </div>
@@ -407,7 +407,7 @@ function PictogramGrid({
             aria-pressed={isSelected}
             className={`relative p-4 flex items-center justify-center border-border transition-colors ${
               (i + 1) % 4 !== 0 ? 'border-r' : ''
-            } ${row > 0 ? 'border-t' : ''} ${
+            } ${row > 0 ? '' : ''} ${
               isSelected ? 'bg-foreground/5' : 'hover:bg-muted/40'
             }`}
           >

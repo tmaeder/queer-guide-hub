@@ -70,7 +70,7 @@ export function WhatYouNeedDropdown({
         </PopoverTrigger>
         <PopoverContent align="start" className="border-border p-0 w-[320px]">
           <Tabs defaultValue="amenities">
-            <TabsList className="w-full grid grid-cols-3 rounded-none border-b">
+            <TabsList className="w-full grid grid-cols-3 rounded-none">
               <TabsTrigger value="amenities">
                 Amenities{amenitiesSelected.length > 0 ? ` · ${amenitiesSelected.length}` : ''}
               </TabsTrigger>

@@ -156,7 +156,7 @@ export function TripChat({ tripId }: Props) {
 
       {/* Reply preview */}
       {replyTo && (
-        <div className="flex items-center gap-2 px-4 py-1.5 border-t border-border bg-muted">
+        <div className="flex items-center gap-2 px-4 py-1.5 bg-muted">
           <Reply size={14} style={{ opacity: 0.5 }} className="shrink-0" />
           <div className="flex-1 min-w-0">
             <span className="block text-xs2 font-semibold">
@@ -176,7 +176,7 @@ export function TripChat({ tripId }: Props) {
       )}
 
       {/* Input */}
-      <div className="flex gap-2 items-end mt-2 p-4 border-t border-border">
+      <div className="flex gap-2 items-end mt-2 p-4">
         <Textarea
           value={input}
           onChange={(e) => setInput(e.target.value)}

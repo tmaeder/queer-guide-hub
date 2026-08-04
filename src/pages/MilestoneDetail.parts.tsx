@@ -253,7 +253,7 @@ export function MilestonePrevNext({ milestone }: { milestone: Milestone }) {
   return (
     <nav
       aria-label={t('milestones.timelineNav', 'Timeline navigation')}
-      className="grid gap-4 border-t border-border pt-6 sm:grid-cols-2"
+      className="grid gap-4 pt-6 sm:grid-cols-2"
     >
       {milestone.prev ? (
         <LocalizedLink to={`/history/${milestone.prev.slug}`} className="group block">

@@ -294,7 +294,7 @@ export default function TripsDiscoverPage() {
                   )
             }
           />
-          <div className="mt-12 pt-10 border-t border-border">
+          <div className="mt-12 pt-10">
             <TripTemplates />
           </div>
         </>
@@ -366,7 +366,7 @@ export default function TripsDiscoverPage() {
             </>
           )}
           {sparse && (
-            <div className="mt-12 pt-10 border-t border-border">
+            <div className="mt-12 pt-10">
               <h2 className="text-lg font-bold tracking-tight mb-1">
                 {t('trips.discover.moreInspiration', 'More inspiration')}
               </h2>

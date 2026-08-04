@@ -284,7 +284,7 @@ export const CommentsSection = ({ postId }: CommentsSectionProps) => {
     <Card>
       <CardContent>
         {/* Comments Header */}
-        <div className="p-4 border-b">
+        <div className="p-4">
           <p className="font-medium flex items-center gap-2">
             <MessageCircle size={16} />
             Comments ({comments.length})
@@ -293,7 +293,7 @@ export const CommentsSection = ({ postId }: CommentsSectionProps) => {
 
         {/* Add Comment */}
         {user && (
-          <div className="p-4 border-b">
+          <div className="p-4">
             {replyingTo && (
               <div className="mb-2 p-2 bg-accent rounded-badge text-xs text-muted-foreground">
                 Replying to <span className="font-medium">{replyingTo.username}</span>

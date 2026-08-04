@@ -138,7 +138,7 @@ const SubmitHub = () => {
       )}
 
       {/* Manual type cards — primary */}
-      <section className="mt-12 border-t border-border pt-12">
+      <section className="mt-12 pt-12">
         <Eyebrow>{t('pages.submit.manualTitle', 'Prefer to type it in?')}</Eyebrow>
         <div className="mt-6 flex flex-col gap-4">
           {primarySubmissionTypes[0] && (

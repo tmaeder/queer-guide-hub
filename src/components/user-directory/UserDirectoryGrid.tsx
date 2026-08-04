@@ -204,7 +204,7 @@ export const UserDirectoryGrid = ({
                     </div>
                   )}
 
-                  <div className="flex items-center justify-between pt-2 mt-auto border-t border-border">
+                  <div className="flex items-center justify-between pt-2 mt-auto">
                     {profile.website ? (
                       <a
                         href={profile.website}

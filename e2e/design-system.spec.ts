@@ -340,6 +340,20 @@ test.describe('design system: border budget', () => {
   const ALLOWED = /rule-heavy|border-b-2 border-foreground|animate-spin/;
   const BUDGET = 6;
 
+  /**
+   * Two routes, because route choice already fooled this suite once: the guard
+   * passed at 4 on /city/new-york while /cities sat at 830. A single sample is
+   * not evidence about a design system that repeats per row.
+   *
+   * `/cities` is the list-shaped page — its budget is separate because its
+   * survivors are different (sticky headers, the masthead) and because a list
+   * regressing to one hairline per row is the exact failure this catches.
+   */
+  const ROUTES: { path: string; budget: number }[] = [
+    { path: '/city/new-york', budget: BUDGET },
+    { path: '/cities', budget: 12 },
+  ];
+
   test('/city/new-york paints almost no borders', async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 1400 });
     await page.goto('/city/new-york', { waitUntil: 'domcontentloaded' });
@@ -389,6 +403,81 @@ test.describe('design system: border budget', () => {
         unexpected.map((c) => `  ${c.slice(0, 110)}`).join('\n'),
     ).toBeLessThanOrEqual(BUDGET);
   });
+
+  /**
+   * The border check above measures `border*Width` and skips anything under 8px
+   * in either dimension. A divider IS a sub-8px element, so the most common rule
+   * pattern in this tree — a thin filled div, `h-px bg-border` — was invisible
+   * to it, and so was `divide-y` painting through `> * + *` onto short rows.
+   *
+   * That blind spot let the site sit at 5,336 painted lines while this suite was
+   * green at 4. This test closes it: a line is a line whether it arrives as a
+   * border or as a 1px-tall filled box.
+   */
+  for (const { path, budget } of ROUTES) {
+    test(`${path} paints almost no LINES (borders + thin fills)`, async ({ page }) => {
+      await page.setViewportSize({ width: 1440, height: 1400 });
+      await page.goto(path, { waitUntil: 'domcontentloaded' });
+      await page.waitForSelector('#root *', { state: 'attached', timeout: 20_000 });
+      await dismissCookieBanner(page);
+
+      let last = -1;
+      for (let i = 0; i < 30; i++) {
+        const n = await page.evaluate(() => document.body.innerText.trim().length);
+        if (n > 1500 && n === last) break;
+        last = n;
+        await page.waitForTimeout(500);
+      }
+
+      const result = await page.evaluate(() => {
+        const opaque = (c: string) => {
+          if (!c || c === 'transparent') return false;
+          const m = c.match(/^rgba?\(([^)]*)\)$/);
+          if (!m) return true;
+          const p = m[1].split(',').map((s) => parseFloat(s));
+          return p.length < 4 || p[3] > 0.02;
+        };
+        const offenders: string[] = [];
+        for (const el of document.querySelectorAll('#root *, header *, footer *')) {
+          const cs = getComputedStyle(el);
+          if (cs.display === 'none' || cs.visibility === 'hidden' || cs.opacity === '0') continue;
+          const r = el.getBoundingClientRect();
+          if (r.width === 0 || r.height === 0) continue;
+          const cls = el.getAttribute('class') || `<${el.tagName.toLowerCase()}>`;
+
+          const bordered = ['Top', 'Right', 'Bottom', 'Left'].some((s) => {
+            const w =
+              parseFloat(cs[`border${s}Width` as keyof CSSStyleDeclaration] as string) || 0;
+            if (w <= 0) return false;
+            return opaque((cs[`border${s}Color` as keyof CSSStyleDeclaration] as string) || '');
+          });
+          // No 8px floor here — that floor is exactly what hid the dividers.
+          if (bordered) {
+            offenders.push(cls);
+            continue;
+          }
+          // A thin filled box IS a rule: `h-px bg-border`, `w-px bg-foreground`.
+          const thin = (r.height <= 4 && r.width >= 12) || (r.width <= 4 && r.height >= 12);
+          if (thin && opaque(cs.backgroundColor)) offenders.push(cls);
+        }
+        return { offenders, bodyText: document.body.innerText.trim().length };
+      });
+
+      expect(
+        result.bodyText,
+        'the page never rendered its content, so this count proves nothing',
+      ).toBeGreaterThan(1500);
+
+      const unexpected = result.offenders.filter((c) => !ALLOWED.test(c));
+      expect(
+        unexpected.length,
+        `${unexpected.length} painted lines on ${path} (budget ${budget}). ` +
+          'A line counts however it is drawn — border, divide-y, or a thin filled ' +
+          'div. Use a plate (bg-surface-container*) or spacing instead.\n' +
+          unexpected.map((c) => `  ${c.slice(0, 110)}`).join('\n'),
+      ).toBeLessThanOrEqual(budget);
+    });
+  }
 });
 
 test.describe('design system: visual snapshots', () => {

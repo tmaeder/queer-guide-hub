@@ -63,7 +63,7 @@ export function HubShell({ active, children }: { active: HubModuleId; children: 
         <div
           role="navigation"
           aria-label={t('hub.nav', 'Hub modules')}
-          className="flex gap-1 overflow-x-auto border-b border-border px-4"
+          className="flex gap-1 overflow-x-auto px-4"
         >
         {HUB_MODULES.map((m) => {
           const Icon = m.icon;

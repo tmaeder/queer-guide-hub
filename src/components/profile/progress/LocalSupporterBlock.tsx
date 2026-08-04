@@ -14,7 +14,7 @@ const TIER_DESCRIPTION: Record<LocalSupporterCity['tier'], string> = {
 
 function CityRow({ city }: { city: LocalSupporterCity }) {
   return (
-    <li className="border-t border-border first:border-t-0 py-4 flex items-center justify-between gap-4">
+    <li className="py-4 flex items-center justify-between gap-4">
       <div className="min-w-0">
         <p className="text-title leading-tight">{city.city_name}</p>
         <p className="text-13 uppercase tracking-[0.1em] text-muted-foreground mt-1">

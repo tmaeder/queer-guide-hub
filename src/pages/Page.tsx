@@ -96,7 +96,7 @@ export default function Page() {
 
       {/* Tags */}
       {page.tags && page.tags.length > 0 && (
-        <div className="mt-8 pt-4 border-t flex flex-wrap gap-1">
+        <div className="mt-8 pt-4 flex flex-wrap gap-1">
           {page.tags.map((tag) => (
             <Badge key={tag} variant="secondary">
               {tag}

@@ -319,7 +319,7 @@ export default function CMSRoutePage({ slug }: CMSRoutePageProps) {
 
       {/* Accessibility page embeds the live settings panel so it isn't a dead end. */}
       {slug === 'accessibility' && (
-        <section className="mt-12 border-t border-border pt-10 md:mt-16" aria-label="Accessibility settings">
+        <section className="mt-12 pt-10 md:mt-16" aria-label="Accessibility settings">
           <h2 className="text-headline font-bold">Your accessibility settings</h2>
           <p className="mt-2 mb-6 max-w-prose text-15 leading-[1.6] text-muted-foreground">
             These apply instantly and are saved to this device.
@@ -340,7 +340,7 @@ export default function CMSRoutePage({ slug }: CMSRoutePageProps) {
       )}
 
       {!isLegalSection && page.tags && page.tags.length > 0 && (
-        <div className="mt-8 flex flex-wrap gap-2 border-t pt-4">
+        <div className="mt-8 flex flex-wrap gap-2 pt-4">
           {page.tags.map((tag) => (
             <Badge key={tag} variant="secondary">
               {tag}

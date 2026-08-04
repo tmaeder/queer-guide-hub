@@ -68,7 +68,7 @@ export default function People({ tab }: { tab?: PeopleTab }) {
       <div className="container mx-auto px-4 pt-6">
         <div className="flex items-end justify-between gap-4">
           <Tabs value={active} onValueChange={setTab} style={{ width: '100%' }}>
-            <TabsList className="h-auto gap-0 rounded-none border-0 border-b border-border bg-transparent p-0 backdrop-blur-none w-full justify-start overflow-x-auto">
+            <TabsList className="h-auto gap-0 rounded-none border-0 bg-transparent p-0 backdrop-blur-none w-full justify-start overflow-x-auto">
               {triggers.map(([v, label, Icon]) => (
                 <TabsTrigger
                   key={v}

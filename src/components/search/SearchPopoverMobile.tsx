@@ -71,7 +71,7 @@ export function SearchPopoverMobile({
   return (
     // Flex column so the scrollable content fills the 100dvh sheet.
     <div className="flex h-full flex-col">
-      <div className="flex items-center justify-between border-b border-border px-4 py-2">
+      <div className="flex items-center justify-between px-4 py-2">
         <button
           type="button"
           onClick={onClose}

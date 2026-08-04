@@ -46,7 +46,7 @@ export function SearchAskPanel({
 
   return (
     <div className="flex h-[480px] flex-col">
-      <div className="flex items-center gap-2 border-b border-border px-4 py-2">
+      <div className="flex items-center gap-2 px-4 py-2">
         <button
           type="button"
           onClick={onBack}
@@ -121,7 +121,7 @@ export function SearchAskPanel({
         )}
       </div>
 
-      <div className="flex items-center gap-2 border-t border-border px-4 py-2">
+      <div className="flex items-center gap-2 px-4 py-2">
         <input
           ref={inputRef}
           type="text"

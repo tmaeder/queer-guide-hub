@@ -375,7 +375,7 @@ export function BudgetTab({ tripId, members, defaultCurrency }: Props) {
       {/* Settlements */}
       {Object.keys(summary.perPersonBalance).length > 0 && (
         <div className="mt-4">
-          <div className="border-t border-border mb-2" />
+          <div className="mb-2" />
           <span className="uppercase tracking-[0.06em] font-bold text-muted-foreground text-xs2 block mb-1">
             {t('trips.budget.settlements')}
           </span>

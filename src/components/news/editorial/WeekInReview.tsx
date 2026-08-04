@@ -77,7 +77,7 @@ export function WeekInReview({ articles, sourceCount }: WeekInReviewProps) {
           {topRead.map((a, i) => (
             <li
               key={a.id}
-              className="border-b border-border last:border-b-0 py-4 flex gap-6 items-baseline"
+              className="py-4 flex gap-6 items-baseline"
             >
               <span className="text-display font-bold leading-none tracking-tight text-muted-foreground tabular-nums">
                 {(i + 1).toString().padStart(2, '0')}

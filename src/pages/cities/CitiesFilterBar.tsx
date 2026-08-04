@@ -95,7 +95,7 @@ export function CitiesFilterBar({
 
   return (
     <div
-      className="sticky top-0 z-20 -mx-4 md:mx-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 border-b border-border"
+      className="sticky top-0 z-20 -mx-4 md:mx-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80"
       role="group"
       aria-label={t('cities.filtersAriaLabel', 'Filter cities')}
     >

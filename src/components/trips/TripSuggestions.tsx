@@ -221,7 +221,7 @@ export function TripSuggestions({ tripId, places }: Props) {
                 return (
                   <div
                     key={item.id}
-                    className="flex items-center gap-2 py-1.5 border-b border-border min-h-11"
+                    className="flex items-center gap-2 py-1.5 min-h-11"
                   >
                     <Icon size={13} className="text-muted-foreground shrink-0" />
                     <div className="flex-1 min-w-0">

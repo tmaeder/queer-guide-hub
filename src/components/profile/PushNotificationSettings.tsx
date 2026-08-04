@@ -55,7 +55,7 @@ export function PushNotificationSettings() {
         </div>
 
         {subscribed && (
-          <div className="mt-4 flex items-center justify-between gap-4 border-t border-border pt-4">
+          <div className="mt-4 flex items-center justify-between gap-4 pt-4">
             <div className="min-w-0">
               <p className="text-sm font-medium">
                 {t('settings.push.dm.title', 'Direct messages')}

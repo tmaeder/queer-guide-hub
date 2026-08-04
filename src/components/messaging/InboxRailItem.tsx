@@ -71,7 +71,7 @@ export function InboxRailItem({
   return (
     <div
       className={cn(
-        'group relative flex w-full items-start gap-2 border-b p-4 text-left',
+        'group relative flex w-full items-start gap-2 p-4 text-left',
         active && 'bg-muted',
       )}
     >

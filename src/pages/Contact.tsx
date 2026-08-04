@@ -191,7 +191,7 @@ export default function Contact() {
         </div>
 
         {/* FAQ */}
-        <section className="mt-16 md:mt-24 border-t border-border pt-12 md:pt-16">
+        <section className="mt-16 md:mt-24 pt-12 md:pt-16">
           <h2 className="text-headline md:text-display font-bold">Frequently asked questions</h2>
           <div className="mt-8 flex flex-col gap-2 max-w-3xl">
             {faqs.map((faq, index) => (

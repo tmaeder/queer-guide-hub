@@ -98,7 +98,7 @@ export default function KinkShareView() {
 
   return (
     <div className="mx-auto max-w-2xl px-6 py-8">
-      <header className="mb-6 flex items-center gap-4 border-b border-border pb-6">
+      <header className="mb-6 flex items-center gap-4 pb-6">
         {owner.owner_avatar_url ? (
           <img src={owner.owner_avatar_url} alt="" className="h-12 w-12 rounded-element object-cover" />
         ) : (
@@ -136,7 +136,7 @@ export default function KinkShareView() {
         ))}
       </div>
 
-      <p className="mt-8 border-t border-border pt-4 text-13 text-muted-foreground">
+      <p className="mt-8 pt-4 text-13 text-muted-foreground">
         Positives only — No's and hard limits are never part of a shared list.
       </p>
     </div>

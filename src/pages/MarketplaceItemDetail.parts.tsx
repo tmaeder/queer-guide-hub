@@ -483,7 +483,7 @@ export function MarketplaceContent({ listing, reviews, tags }: ContentProps) {
           {reviews.length > 0 ? (
             <div className="flex flex-col">
               {reviews.slice(0, 5).map((review, i) => (
-                <div key={review.id} className={i > 0 ? 'border-t border-border pt-4' : ''}>
+                <div key={review.id} className={i > 0 ? 'pt-4' : ''}>
                   <div className="mb-2 flex items-start justify-between gap-4">
                     <div className="flex items-center gap-4">
                       <Avatar style={{ width: 32, height: 32 }}>

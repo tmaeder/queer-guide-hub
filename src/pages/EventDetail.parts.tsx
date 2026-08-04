@@ -606,7 +606,7 @@ export function EventDecisionCard({
           )}
         </div>
 
-        <div className="border-t border-border pt-4 text-sm">
+        <div className="pt-4 text-sm">
           <div className="flex items-start gap-2">
             <Calendar size={15} className="mt-0.5 shrink-0 text-muted-foreground" />
             <div>
@@ -637,7 +637,7 @@ export function EventDecisionCard({
           )}
         </div>
 
-        <div className="flex flex-wrap items-center gap-1 border-t border-border pt-4">
+        <div className="flex flex-wrap items-center gap-1 pt-4">
           <MarkVisitedButton entityType="event" entityId={event.id} kind="visited" />
           <ReportButton contentType="events" contentId={event.id} contentName={event.title} />
           <AdminEditButton
@@ -1004,7 +1004,7 @@ export function EventMobileBar({
 }) {
   if (isPast) return null;
   return (
-    <div className="fixed inset-x-0 bottom-0 z-[1100] flex items-center gap-2 border-t border-border bg-background/95 p-4 backdrop-blur md:hidden">
+    <div className="fixed inset-x-0 bottom-0 z-[1100] flex items-center gap-2 bg-background/95 p-4 backdrop-blur md:hidden">
       {event.ticket_url ? (
         <Button asChild className="flex-1">
           <a href={event.ticket_url} target="_blank" rel="noopener noreferrer">

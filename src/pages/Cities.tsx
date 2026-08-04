@@ -208,7 +208,7 @@ export default function Cities() {
             </div>
 
             {/* Footer CTA: route browsers to the submission flow. */}
-            <div className="border-t border-border py-8 mb-4">
+            <div className="py-8 mb-4">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div>
                   <p className="text-title font-semibold m-0">

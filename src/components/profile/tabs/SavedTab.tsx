@@ -539,7 +539,7 @@ export function SavedTab() {
         />
       ) : (
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="h-auto gap-0 rounded-none border-0 border-b border-border bg-transparent p-0 backdrop-blur-none w-full justify-start overflow-x-auto">
+          <TabsList className="h-auto gap-0 rounded-none border-0 bg-transparent p-0 backdrop-blur-none w-full justify-start overflow-x-auto">
             {(() => {
               const lineTab =
                 'h-10 rounded-none border-b-2 border-transparent bg-transparent px-4 shadow-none data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:border-foreground data-[state=active]:shadow-none flex items-center gap-2';

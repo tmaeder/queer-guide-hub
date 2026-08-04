@@ -387,7 +387,7 @@ export default function TripPlannerPage() {
 
       {/* === MORE PANEL (secondary tools) === */}
       <section
-        className="mt-8 border-t border-border pt-6"
+        className="mt-8 pt-6"
         aria-label={t('trips.timeline.more', 'More tools')}
       >
         <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground mb-4">

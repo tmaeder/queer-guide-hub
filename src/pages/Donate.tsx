@@ -91,7 +91,7 @@ export default function Donate() {
         </section>
 
         {/* Give */}
-        <section className="mt-16 md:mt-24 border-t border-border pt-12 md:pt-16">
+        <section className="mt-16 md:mt-24 pt-12 md:pt-16">
           {status === 'success' ? (
             <div className="max-w-2xl mx-auto">
               <DonationSuccess />

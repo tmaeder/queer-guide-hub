@@ -89,7 +89,7 @@ export function MonthGrid({
   return (
     <div>
       <div role="grid" aria-label={t('hub.calendar.gridLabel', { defaultValue: 'Calendar' })}>
-        <div role="row" className="grid grid-cols-7 border-b border-border">
+        <div role="row" className="grid grid-cols-7">
           {weekdayLabels.map((label) => (
             <div
               key={label}
@@ -125,7 +125,7 @@ export function MonthGrid({
                 onKeyDown={onKeyDown}
                 onFocus={() => setFocusIdx(idx)}
                 className={cn(
-                  'flex min-h-11 flex-col items-stretch gap-1 border-b border-r border-border p-1 text-left align-top md:min-h-24',
+                  'flex min-h-11 flex-col items-stretch gap-1 border-r p-1 text-left align-top md:min-h-24',
                   'focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-foreground',
                   !inMonth && 'bg-muted/40 text-muted-foreground',
                   'hover:bg-muted/60',

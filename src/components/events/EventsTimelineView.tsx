@@ -443,7 +443,7 @@ export function EventsTimelineView({
                   i % 2 === 1 && 'bg-muted/30',
                 )}
               >
-                <div className="sticky top-0 z-10 px-2 py-1 text-xs2 font-medium tracking-wide text-foreground/70 bg-background/95 border-b border-foreground/10 truncate">
+                <div className="sticky top-0 z-10 px-2 py-1 text-xs2 font-medium tracking-wide text-foreground/70 bg-background/95 truncate">
                   {b.label}
                 </div>
               </div>
@@ -503,7 +503,7 @@ export function EventsTimelineView({
                     collisionPadding={12}
                     className="z-50 w-72 max-w-[calc(100vw-24px)] p-0 rounded-element bg-background"
                   >
-                    <div className="px-4 py-2 border-b border-foreground/10 text-xs2 text-foreground/70">
+                    <div className="px-4 py-2 text-xs2 text-foreground/70">
                       {count} events · {format(new Date(item.startMs), 'PP')}
                     </div>
                     <ul className="max-h-64 overflow-y-auto">
@@ -515,7 +515,7 @@ export function EventsTimelineView({
                               setOpenCluster(null);
                               onEventSelect?.(e);
                             }}
-                            className="block px-4 py-2 hover:bg-muted text-sm no-underline border-b border-foreground/5 last:border-b-0"
+                            className="block px-4 py-2 hover:bg-muted text-sm no-underline"
                           >
                             <p className="font-medium leading-tight truncate">
                               {e.is_featured && (

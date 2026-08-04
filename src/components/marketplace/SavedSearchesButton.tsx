@@ -61,7 +61,7 @@ export function SavedSearchesButton() {
           </div>
 
           {searches.length > 0 && (
-            <div className="border-t border-border pt-4">
+            <div className="pt-4">
               <p className="text-xs uppercase tracking-wider text-muted-foreground mb-2">Saved</p>
               <ul className="flex flex-col gap-1 max-h-[260px] overflow-y-auto">
                 {searches.map((s) => (

@@ -12,7 +12,7 @@ import { KinkPeerActions } from '@/components/kinks/KinkPeerActions';
 
 function Row({ k, v }: { k: string; v: string }) {
   return (
-    <div className="flex justify-between gap-4 border-t border-border pt-4">
+    <div className="flex justify-between gap-4 pt-4">
       <dt className="text-muted-foreground shrink-0">{k}</dt>
       <dd className="text-right">{v}</dd>
     </div>
@@ -88,7 +88,7 @@ export default function IntimateUserDetail() {
 
   return (
     <div className="mx-auto max-w-2xl px-6 py-8">
-      <header className="flex items-center gap-4 pb-6 border-b border-border">
+      <header className="flex items-center gap-4 pb-6">
         {displayProfile?.avatar_url ? (
           <img
             src={displayProfile.avatar_url}
@@ -139,14 +139,14 @@ export default function IntimateUserDetail() {
         )}
       </FlatFieldGroup>
 
-      <div className="border-t border-border pt-6 flex flex-wrap gap-2">
+      <div className="pt-6 flex flex-wrap gap-2">
         <Button onClick={sendRequest} className="rounded-element">Send friend request</Button>
         <Button variant="outline" onClick={() => setReportOpen((v) => !v)} className="rounded-element">Report</Button>
         <Button variant="outline" onClick={block} className="rounded-element">Block</Button>
       </div>
 
       {reportOpen && (
-        <div className="mt-6 border-t border-border pt-6">
+        <div className="mt-6 pt-6">
           <p className="text-sm font-medium mb-4">Reason for report</p>
           <div className="flex flex-wrap gap-2">
             {['underage','spam','impersonation','hateful','illegal','other'].map((r) => (
