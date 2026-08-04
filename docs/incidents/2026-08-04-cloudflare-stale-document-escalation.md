@@ -1,23 +1,33 @@
 > # ⚠️ RETRACTED 2026-08-04 — DO NOT SEND. The cause was our own code.
 >
 > This escalation blames Cloudflare for a bug in `functions/_middleware.ts`.
-> The SPA-fallback branch fetched the shell with `env.ASSETS.fetch('/')` — a
-> key that never changes across deploys — and then copied that subrequest's
-> headers onto the public response.
 >
-> **The `age`, `accept-ranges` and `x-robots-tag: noindex` presented below as
-> evidence against Cloudflare were leaked from that internal subrequest. They
-> never described the edge.** An `age` of 265967 on a `cf-cache-status:
-> DYNAMIC` response is not a Cloudflare contradiction — it is a header we
-> copied from somewhere it did not belong. That is also why purge-by-URL,
-> `purge_everything`, a dashboard purge and disabling Always Online all changed
-> nothing: there was never an object in the zone cache to evict.
+> **Pages' static layer holds an aged object for the exact bare path and
+> answers it with `200`.** The middleware's SPA-fallback branch is gated on
+> `status === 404`, so it never ran; the middleware simply rewrote that stale
+> body — injecting a fresh canonical, nonce and boot guard into a document
+> whose chunk graph a later deploy had deleted — and passed the object's own
+> `age` / `accept-ranges` / `x-robots-tag: noindex` straight through.
 >
-> The homepage was unaffected throughout because a direct hit on `/` never
-> enters the fallback branch, which is what made the fault look per-route.
+> **So the headers presented below as evidence against Cloudflare are ours to
+> explain.** `age: 218475` alongside `cf-cache-status: DYNAMIC` is not a
+> Cloudflare contradiction; it is an aged static object being served through
+> our own code. Item 5 below ("Pages Functions running correctly — the stale
+> document contains middleware output") is the strongest clue in the whole
+> report and was read as exculpatory. It is the opposite: a body that is
+> simultaneously stale *and* freshly rewritten proves our middleware served it.
 >
-> Fixed in PR #2591 (key the subrequest per deployment; stop copying its
-> headers). Kept for the investigation record only.
+> The decisive test, which costs one command: `/events?__fresh=1` returns the
+> CURRENT build over the identical code path. The bare path is stale; a query
+> string is not.
+>
+> Two rounds of fixes: #2591 (per-deploy shell key; stop copying subrequest
+> headers) and #2592 (treat an aged `200` as needing the shell, and stop
+> Cloudflare **Rocket Loader** eating the request-time-injected boot guard —
+> it re-executes inline scripts without their nonce, so the CSP blocked the
+> one script whose job was recovering the blank page).
+>
+> Kept for the investigation record only.
 
 # Cloudflare escalation — apex serves a 60-hour-old HTML document that no purge can evict
 

@@ -223,7 +223,27 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   //
   // Detail routes that look like SPA routes but have no matching DB row
   // still 404 — that branch runs after this block.
-  if (response.status === 404 && contentType.includes('text/html')) {
+  // A 404 is NOT the only way we end up needing the shell. Measured on prod
+  // 2026-08-04: Pages' static layer held an aged object for the exact path
+  // `/events` and answered it with **200**, so this branch was skipped
+  // entirely and the middleware rewrote that stale body — injecting a fresh
+  // canonical, nonce and boot guard into a document referencing
+  // `index-BQ4YSaoC.js`, a chunk later deploys had deleted. The page rendered
+  // blank while every server-side signal looked healthy.
+  //
+  // `age` is the discriminator, and it is a reliable one: our own Functions
+  // (news/[slug], the landing routes) build their HTML per request and never
+  // emit `age`, so its presence means this body came from a cached static
+  // object rather than from code. The same object also carried
+  // `x-robots-tag: noindex` and `accept-ranges` — which is what made this look
+  // like a CDN fault for days, since `age: 270870` alongside
+  // `cf-cache-status: DYNAMIC` reads as a contradiction. Serving a stale SPA
+  // shell is never correct: it is always safe to replace it with the current
+  // one, because the shell is identical for every SPA route.
+  const servedStaleShell =
+    response.status === 200 && contentType.includes('text/html') && response.headers.has('age');
+
+  if ((response.status === 404 || servedStaleShell) && contentType.includes('text/html')) {
     // Key this subrequest to the running deployment. With a bare `/` the key
     // never changes across deploys, and a stale shell answered it for days:
     // `/events` and `/venues` served a ~3-day-old document (age: 265967)
