@@ -44,7 +44,13 @@ export function LeaderboardWidget({ cityId, cityName }: LeaderboardWidgetProps) 
 
       <ol className="space-y-2">
         {loading
-          ? Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-10 w-full" />)
+          ? // The skeletons must stay wrapped in <li>: an <ol> whose direct
+            // children are anything else is an axe `list` violation (serious).
+            Array.from({ length: 5 }).map((_, i) => (
+              <li key={i}>
+                <Skeleton className="h-10 w-full" />
+              </li>
+            ))
           : rows.map((r) => {
               const isYou = user?.id === r.user_id;
               return (
