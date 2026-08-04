@@ -44,6 +44,9 @@ vi.mock('maplibre-gl', () => ({
       extend() {}
     },
   },
+  // config/mapStyle.ts side-effect-imports config/maplibreWorker.ts, which calls
+  // setWorkerUrl() at module scope — a default-only mock throws on import.
+  setWorkerUrl: () => {},
 }));
 vi.mock('maplibre-gl/dist/maplibre-gl.css', () => ({}));
 
