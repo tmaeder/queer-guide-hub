@@ -13,6 +13,7 @@ import { useFavorites } from '@/hooks/useFavorites';
 import { useVisitorLocation } from '@/hooks/useVisitorLocation';
 import { useEntityImageAssets } from '@/hooks/useEntityImageAssets';
 import { useUpcomingPrideEvents } from '@/hooks/useUpcomingPrideEvents';
+import { ExternalImg } from '@/components/ui/ExternalImg';
 import { dedupeEvents } from '@/utils/eventDedup';
 import { resolveImageUrl } from '@/utils/resolveImageUrl';
 import { getFallbackImage } from '@/utils/fallbackImages';
@@ -59,6 +60,12 @@ function isOnNow(ev: Event, now: Date): boolean {
 function PrideFallback() {
   const { t } = useTranslation();
   const { data: pride = [], isLoading } = useUpcomingPrideEvents({ months: 6, limit: 6 });
+  // Merge the R2-mirrored cover (image_asset_links) like the main agenda does —
+  // without this, asset-linked events still rendered the fallback texture.
+  const { assets } = useEntityImageAssets(
+    'event',
+    pride.map((ev) => ev.id),
+  );
 
   if (isLoading || pride.length === 0) return null;
 
@@ -71,24 +78,25 @@ function PrideFallback() {
     >
       <div className="flex gap-4 overflow-x-auto pb-2 snap-x snap-mandatory no-scrollbar">
         {pride.map((ev) => {
-          const fallback = getFallbackImage('event', ev.id);
           const raw = ev.images?.find(Boolean) ?? null;
-          const img = isValidImageUrl(raw) ? raw! : fallback;
+          const img =
+            resolveImageUrl({
+              imageUrl: isValidImageUrl(raw) ? raw : null,
+              optimizedUrl: assets.get(ev.id)?.optimized_url ?? null,
+              thumbnailUrl: assets.get(ev.id)?.thumbnail_url ?? null,
+            }) || null;
           return (
             <LocalizedLink
               key={ev.id}
               to={ev.slug ? `/events/${ev.slug}` : '/events'}
               className="group snap-start shrink-0 w-[240px] no-underline"
             >
-              <img
+              <ExternalImg
                 src={img}
+                cfWidth={500}
+                fallbackSrc={getFallbackImage('event', ev.id)}
                 alt=""
                 aria-hidden
-                loading="lazy"
-                referrerPolicy="no-referrer"
-                onError={(e) => {
-                  if (e.currentTarget.src !== fallback) e.currentTarget.src = fallback;
-                }}
                 className="aspect-[3/2] w-full rounded-element bg-muted object-cover transition-transform group-hover:scale-[1.02]"
               />
               <p className="mt-2 truncate text-15 font-semibold tracking-tight">{ev.title}</p>
@@ -224,7 +232,7 @@ const EventsAgenda = () => {
         optimizedUrl: asset?.optimized_url ?? null,
         thumbnailUrl: asset?.thumbnail_url ?? null,
         preferThumb,
-      }) || getFallbackImage('event', ev.id)
+      }) || null
     );
   };
 
@@ -252,16 +260,12 @@ const EventsAgenda = () => {
                 to={`/events/${lead.slug}`}
                 className="group relative block overflow-hidden rounded-container bg-surface-container no-underline"
               >
-                <img
+                <ExternalImg
                   src={resolveEventImage(lead, false)}
+                  cfWidth={1000}
+                  fallbackSrc={getFallbackImage('event', lead.id)}
                   alt=""
                   aria-hidden
-                  loading="lazy"
-                  referrerPolicy="no-referrer"
-                  onError={(e) => {
-                    const fb = getFallbackImage('event', lead.id);
-                    if (e.currentTarget.src !== fb) e.currentTarget.src = fb;
-                  }}
                   className="aspect-[16/10] w-full bg-muted object-cover transition-transform group-hover:scale-[1.02]"
                 />
                 <div className="img-scrim-readable absolute inset-0" />
@@ -314,16 +318,12 @@ const EventsAgenda = () => {
                         to={`/events/${ev.slug}`}
                         className="group grid grid-cols-[3.5rem_1fr_auto] items-center gap-4 rounded-element px-2 py-4 no-underline transition-colors hover:bg-muted"
                       >
-                        <img
+                        <ExternalImg
                           src={resolveEventImage(ev, true)}
+                          cfWidth={112}
+                          fallbackSrc={getFallbackImage('event', ev.id)}
                           alt=""
                           aria-hidden
-                          loading="lazy"
-                          referrerPolicy="no-referrer"
-                          onError={(e) => {
-                            const fb = getFallbackImage('event', ev.id);
-                            if (e.currentTarget.src !== fb) e.currentTarget.src = fb;
-                          }}
                           className="h-14 w-14 shrink-0 rounded-element bg-muted object-cover"
                         />
                         <span className="min-w-0">

@@ -97,9 +97,9 @@ export function extractTag(xml: string, tag: string): string | null {
 
 export function extractMediaUrl(block: string): string | null {
   const mediaMatch = /url="([^"]+\.(jpg|jpeg|png|gif|webp)[^"]*)"/i.exec(block)
-  if (mediaMatch) return mediaMatch[1]
+  if (mediaMatch) return decodeUrlEntities(mediaMatch[1])
   const encMatch = /<enclosure[^>]+url="([^"]+)"/i.exec(block)
-  return encMatch ? encMatch[1] : null
+  return encMatch ? decodeUrlEntities(encMatch[1]) : null
 }
 
 export function cleanText(s: string): string {

@@ -8,6 +8,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useLatestNews } from '@/hooks/useLatestNews';
 import { useEditorsPick } from '@/hooks/useEditorsPick';
 import { useEntityImageAssets } from '@/hooks/useEntityImageAssets';
+import { ExternalImg } from '@/components/ui/ExternalImg';
 import { resolveImageUrl } from '@/utils/resolveImageUrl';
 import { getFallbackImage } from '@/utils/fallbackImages';
 import { decodeHtmlEntities } from '@/lib/decodeHtmlEntities';
@@ -74,7 +75,7 @@ const NewsMagazine = React.memo(() => {
       imageUrl: a.image_url,
       optimizedUrl: assets.get(a.id)?.optimized_url ?? null,
       thumbnailUrl: assets.get(a.id)?.thumbnail_url ?? null,
-    }) || getFallbackImage('news', a.id);
+    }) || null;
 
   const [lead, ...rest] = latest;
   const secondary = rest.slice(0, 4);
@@ -89,17 +90,12 @@ const NewsMagazine = React.memo(() => {
         {/* Lead story */}
         <LocalizedLink to={`/news/${lead.slug}`} className="group block no-underline">
           <div className="mb-6 aspect-[16/10] overflow-hidden rounded-container bg-muted">
-            <img
+            <ExternalImg
               src={imgFor(lead)}
+              cfWidth={1000}
+              fallbackSrc={getFallbackImage('news', lead.id)}
               alt=""
               aria-hidden
-              loading="lazy"
-              decoding="async"
-              referrerPolicy="no-referrer"
-              onError={(e) => {
-                const fb = getFallbackImage('news', lead.id);
-                if (e.currentTarget.src !== fb) e.currentTarget.src = fb;
-              }}
               className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
             />
           </div>
@@ -128,17 +124,12 @@ const NewsMagazine = React.memo(() => {
                 className="group block no-underline"
               >
                 <div className="mb-4 aspect-[3/2] overflow-hidden rounded-element bg-muted">
-                  <img
+                  <ExternalImg
                     src={imgFor(a)}
+                    cfWidth={500}
+                    fallbackSrc={getFallbackImage('news', a.id)}
                     alt=""
                     aria-hidden
-                    loading="lazy"
-                    decoding="async"
-                    referrerPolicy="no-referrer"
-                    onError={(e) => {
-                      const fb = getFallbackImage('news', a.id);
-                      if (e.currentTarget.src !== fb) e.currentTarget.src = fb;
-                    }}
                     className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
                   />
                 </div>
