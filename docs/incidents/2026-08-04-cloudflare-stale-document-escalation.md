@@ -145,3 +145,41 @@ executing it. Compare the `content-type`, never the status:
 curl -sI https://queer.guide/assets/js/index-BQ4YSaoC.js | grep -i content-type  # text/html  -> DEAD
 curl -sI https://queer.guide/assets/js/index-0qJmkx0m.js | grep -i content-type  # application/javascript
 ```
+
+### Two different stale generations are pinned in two PoPs at the same instant
+
+This is the sharpest evidence available and it came out of one deploy. The
+post-deploy smoke test for `a4938ede6` ran from **SJC** at 09:01 UTC and fired
+the full purge ladder. A manual probe from **ZRH** two hours later saw a
+*different* stale object that the same `purge_everything` had not touched:
+
+| | SJC (CI, 09:01) | ZRH (manual, ~11:00) |
+|---|---|---|
+| origin entry | `index-0qJmkx0m.js` | `index-0qJmkx0m.js` |
+| `/venues` cached entry | `index-vFnBxORB.js` | `index-BQ4YSaoC.js` |
+| `/help` | recovered by targeted purge | still stale |
+
+Three separate entry hashes are therefore in play simultaneously: the live one
+and **two distinct dead generations**, each pinned in its own PoP. A single
+`purge_everything` on the zone cleared neither of the `/venues` objects.
+
+That also refines the earlier "purge has no effect" line, which was too
+absolute: **targeted purge by URL does work on some PoPs for some routes** —
+`/` and `/help` both recovered at SJC in that same run — while `/venues` and
+`/events` survived both a targeted purge and `purge_everything`. So the lever
+reaches part of the fleet and not the rest, which is itself a clue: whatever
+holds these objects is not uniformly subscribed to zone purge.
+
+### The deploy workflow is red on every run because of this
+
+`Deploy to Cloudflare Pages` has failed on `main` since 07:37 UTC. The deploy
+step itself succeeds — the build uploads and the origin serves the current
+chunk — and it is the post-deploy smoke test that exits 1, on exactly these two
+routes. That gating is deliberate: unlike the degraded Pages Functions block
+just below it in `scripts/smoke-pages.sh`, a blank page is a user-facing outage
+and should not be reported-not-gated.
+
+The cost of leaving it that way is worth stating on the ticket, though: while
+this fault is live, a genuinely new deploy regression would land in an already-
+red workflow and be easy to miss. That is an argument for urgency on the
+Cloudflare side, not for softening the gate.
