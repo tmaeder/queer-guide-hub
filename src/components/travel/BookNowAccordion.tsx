@@ -247,8 +247,8 @@ export function BookNowAccordion({ defaultOpen = false }: Props) {
       </button>
 
       {open && (
-        <div className="border-t border-border">
-          <div className="flex border-b border-border">
+        <div className="">
+          <div className="flex">
             {TAB_CONFIG.map(({ value, label, icon: Icon }) => {
               const active = activeTab === value;
               return (
@@ -309,7 +309,7 @@ export function BookNowAccordion({ defaultOpen = false }: Props) {
           </div>
 
           {activeTab === 'flights' && (
-            <div className="border-t border-border p-6">
+            <div className="p-6">
               <div className="flex items-center gap-2 mb-4">
                 <TrendingUp size={20} />
                 <h3 className="text-base font-bold tracking-tight">
@@ -343,7 +343,7 @@ export function BookNowAccordion({ defaultOpen = false }: Props) {
           )}
 
           {activeTab === 'hotels' && (
-            <div className="border-t border-border p-6">
+            <div className="p-6">
               <div className="flex items-center gap-2 mb-4">
                 <Hotel size={20} />
                 <h3 className="text-base font-bold tracking-tight">
@@ -447,7 +447,7 @@ export function BookNowAccordion({ defaultOpen = false }: Props) {
           )}
 
           {activeTab === 'activities' && (
-            <div className="border-t border-border p-6">
+            <div className="p-6">
               <div className="flex items-center gap-2 mb-4">
                 <Ticket size={20} />
                 <h3 className="text-base font-bold tracking-tight">

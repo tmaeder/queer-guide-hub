@@ -121,7 +121,7 @@ export default function Welcome() {
               </p>
             </div>
 
-            <div className="border-t border-border pt-8">
+            <div className="pt-8">
               <div className="flex items-center gap-4 mb-4">
                 <KeyRound size={20} />
                 <p className="text-base font-semibold">
@@ -188,7 +188,7 @@ export default function Welcome() {
             </p>
             <div className="space-y-4 text-sm">
               {['Visitor', 'Explorer', 'Resident', 'Guardian'].map((tier, i) => (
-                <div key={tier} className="flex items-center gap-4 border-t border-border pt-4">
+                <div key={tier} className="flex items-center gap-4 pt-4">
                   <span className="inline-flex h-6 w-6 items-center justify-center rounded-full text-xs font-semibold bg-surface-container">
                     {i + 1}
                   </span>

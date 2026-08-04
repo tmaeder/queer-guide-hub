@@ -177,7 +177,7 @@ export default function Signup({ onBack }: Props) {
 
           <div className="relative text-center">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-border" />
+              <div className="w-full" />
             </div>
             <span className="relative bg-background px-2 text-xs text-muted-foreground uppercase">
               {t('auth.signup.orWithEmail', 'Or with email')}
@@ -265,7 +265,7 @@ export default function Signup({ onBack }: Props) {
             </Button>
           </form>
 
-          <div className="text-center pt-2 border-t border-border">
+          <div className="text-center pt-2">
             <Button variant="ghost" onClick={onBack} disabled={isLoading}>
               <span className="text-sm text-muted-foreground">
                 {t('auth.signup.haveAccountQ', 'Already have an account? Sign in')}

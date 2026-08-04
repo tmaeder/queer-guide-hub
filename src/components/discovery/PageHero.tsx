@@ -83,7 +83,7 @@ export function PageHero({
   return (
     <section
       className={cn(
-        'relative isolate overflow-hidden border-b border-border bg-background',
+        'relative isolate overflow-hidden bg-background',
         className,
       )}
     >

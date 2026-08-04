@@ -31,7 +31,7 @@ export function WhatToExpect() {
         />
       </button>
       {open && (
-        <div className="border-t px-4 py-4 text-sm leading-relaxed text-muted-foreground">
+        <div className="px-4 py-4 text-sm leading-relaxed text-muted-foreground">
           <ul className="list-disc space-y-1 pl-6">
             <li>
               {t(

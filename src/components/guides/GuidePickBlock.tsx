@@ -33,7 +33,7 @@ export function GuidePickBlock({ pick, index }: { pick: HydratedPick; index: num
   return (
     <article
       id={`pick-${index + 1}`}
-      className="grid grid-cols-12 gap-6 md:gap-10 border-t border-border pt-12 first:border-t-0 first:pt-0"
+      className="grid grid-cols-12 gap-6 md:gap-10 pt-12 first:pt-0"
     >
       <div className="col-span-12 md:col-span-5">
         <div className="md:sticky md:top-24 space-y-4">

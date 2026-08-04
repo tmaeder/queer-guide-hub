@@ -116,7 +116,7 @@ export function WishlistPicker({ listingId, size = 'tap' }: WishlistPickerProps)
         className="w-72 p-0"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="border-b border-border px-4 py-2">
+        <div className="px-4 py-2">
           <p className="text-13 uppercase tracking-wide text-muted-foreground">Save to</p>
         </div>
         <div className="max-h-64 overflow-y-auto py-1">
@@ -145,7 +145,7 @@ export function WishlistPicker({ listingId, size = 'tap' }: WishlistPickerProps)
             );
           })}
         </div>
-        <div className="border-t border-border p-4">
+        <div className="p-4">
           <div className="flex gap-2">
             <Input
               value={newTitle}

@@ -125,7 +125,7 @@ function TripSwitcher({
 }) {
   const { t } = useTranslation();
   return (
-    <div className="border-t">
+    <div className="">
       <div
         role="tablist"
         aria-label={t('travel.cockpit.switchTrip', 'Switch active trip')}

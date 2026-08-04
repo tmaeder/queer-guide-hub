@@ -10,7 +10,7 @@ export function AffiliateDisclosure({ compact = false }: { compact?: boolean }) 
     <aside
       role="note"
       aria-label="Affiliate disclosure"
-      className="mt-10 border-t border-border pt-6 text-xs text-muted-foreground leading-relaxed"
+      className="mt-10 pt-6 text-xs text-muted-foreground leading-relaxed"
     >
       <p className="font-semibold uppercase tracking-[0.14em] text-muted-foreground mb-1">
         Affiliate disclosure

@@ -27,6 +27,21 @@ const APPLY = process.argv.includes('--apply');
 // row on every city list. Widening which shapes we look at does not widen what
 // we are willing to delete.
 const WIDE = process.argv.includes('--wide');
+// `--dividers` is a SEPARATE pass, deliberately not part of --wide. It removes
+// horizontal neutral rules (`border-t` / `border-b` + a neutral colour) that act
+// as section and row separators. It is kept apart because the original codemod
+// vetoed directional borders on purpose — a divider can be structural — so this
+// pass restricts itself hard:
+//
+//   - horizontal only: `border-l` / `border-r` are timeline spines and column
+//     rules, which carry layout meaning rather than decoration
+//   - neutral colours only: a bare `border-foreground` is the rationed print
+//     signature and is vetoed by VETO_RE below
+//   - widths >1px are deliberate marks (`border-l-2 border-foreground`)
+//   - tables keep their separation via a zebra plate instead (see PrideTable)
+const DIVIDERS = process.argv.includes('--dividers');
+const DIVIDER_DROP =
+  /(?:^|\s)border-[tb](?=\s|$)|(?:^|\s)border-(?:border|foreground|input|muted)(?:\/\d+)?(?=\s|$)/g;
 
 const SKIP_DIR = new Set(['node_modules', '__tests__', 'admin', 'cms', 'PatternLibrary']);
 const SKIP_FILE = [
@@ -38,6 +53,10 @@ const SKIP_FILE = [
   'src/components/country/SafetyVerdict.tsx',
   'src/components/trips/TripSafetyBriefing.tsx',
   'src/components/map/ExploreMapLayers.tsx',    // per-layer hue lives on the border
+  // Real <table>. Row rules there let the eye track a row across columns, so
+  // they are separation with a job rather than chrome. Where a table is swept,
+  // it gets a zebra plate instead (see PrideTable) — never a bare deletion.
+  'src/components/discovery/CompareRightsSideBySide.tsx',
 ];
 
 // A className string is out of scope if it contains any of these.
@@ -90,6 +109,26 @@ for (const file of files) {
 
   // Only touch quoted string literals that look like class lists.
   out = out.replace(/(['"`])([^'"`\n]*?)\1/g, (whole, q, body) => {
+    if (DIVIDERS) {
+      // Horizontal neutral rule, no shape requirement — a divider is usually a
+      // bare `border-t border-border` on an otherwise unstyled block.
+      if (!/(?:^|\s)border-[tb](?=\s|$)/.test(body)) return whole;
+      // A width suffix (`border-t-2`) or a bare `border-foreground` is a
+      // deliberate mark, not incidental chrome. VETO_RE covers the latter.
+      if (/(?:^|\s)border-[tb]-[0-9]/.test(body)) return whole;
+      if (VETO_RE.some((re) => re.test(body))) return whole;
+      if (/rule-heavy|border-dashed/.test(body)) return whole;
+      let d = body.replace(DIVIDER_DROP, '');
+      // `border-b last:border-b-0` is the "all but the last row" idiom; once the
+      // base rule is gone the exception has nothing to except, so drop it too
+      // rather than leave a class that reads as if a rule were still there.
+      d = d.replace(/(?:^|\s)(?:last|first):border-[tb]-0(?=\s|$)/g, '');
+      d = d.replace(/\s{2,}/g, ' ').trim();
+      if (d === body) return whole;
+      edits++;
+      if (samples.length < 12) samples.push(`${file}\n    - ${body.slice(0, 100)}\n    + ${d.slice(0, 100)}`);
+      return q + d + q;
+    }
     if (!/\bborder\b|\bborder-border\b|\bborder-input\b|border-foreground\/|border-primary\//.test(body)) return whole;
     const SHAPE = WIDE
       ? /rounded-(container|element|badge|full)\b/

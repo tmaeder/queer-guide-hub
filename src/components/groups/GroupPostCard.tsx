@@ -3,7 +3,6 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Separator } from '@/components/ui/separator';
 import { ContentSanitizer } from '@/components/security/ContentSanitizer';
 import {
   Heart,
@@ -110,7 +109,7 @@ export const GroupPostCard = ({
           })}
         </div>
 
-        <div className="flex items-center justify-between mt-4 pt-2 border-t border-border">
+        <div className="flex items-center justify-between mt-4 pt-2">
           <Button
             variant="ghost"
             size="sm"
@@ -202,7 +201,6 @@ export const GroupPostCard = ({
 
             {post.post_type === 'poll' && renderPoll()}
 
-            <Separator />
 
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">

@@ -19,7 +19,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { EntitySocialLinks } from '@/components/entity/EntitySocialLinks';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { ReportButton } from '@/components/moderation/ReportButton';
 import { AdminEditButton } from '@/components/admin/AdminEditButton';
@@ -256,7 +255,6 @@ export function MarketplaceBuyBox({
             </p>
           )}
 
-          <Separator />
 
           <div className="flex flex-col gap-2">
             {outbound && (
@@ -483,7 +481,7 @@ export function MarketplaceContent({ listing, reviews, tags }: ContentProps) {
           {reviews.length > 0 ? (
             <div className="flex flex-col">
               {reviews.slice(0, 5).map((review, i) => (
-                <div key={review.id} className={i > 0 ? 'border-t border-border pt-4' : ''}>
+                <div key={review.id} className={i > 0 ? 'pt-4' : ''}>
                   <div className="mb-2 flex items-start justify-between gap-4">
                     <div className="flex items-center gap-4">
                       <Avatar style={{ width: 32, height: 32 }}>

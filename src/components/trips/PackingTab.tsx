@@ -323,7 +323,7 @@ export function PackingTab({ tripId }: Props) {
                               handleAddItem(group.category);
                             }
                           }}
-                          className="border-0 border-b border-border rounded-none focus-visible:ring-0 focus-visible:border-primary text-sm h-10"
+                          className="border-0 rounded-none focus-visible:ring-0 focus-visible:border-primary text-sm h-10"
                         />
                       </div>
                     </div>
@@ -335,7 +335,7 @@ export function PackingTab({ tripId }: Props) {
         })}
       </div>
 
-      <div className="mt-8 pt-6 border-t border-border opacity-95">
+      <div className="mt-8 pt-6 opacity-95">
         <PackingMarketplaceSuggestions tripId={tripId} />
       </div>
     </div>

@@ -182,7 +182,7 @@ function ComparisonTable({
     <div className="overflow-x-auto rounded-container bg-surface-container">
       <table className="w-full text-13">
         <thead>
-          <tr className="border-b">
+          <tr className="">
             <th
               scope="col"
               className="px-4 py-4 text-left text-2xs uppercase tracking-[0.14em] text-muted-foreground"
@@ -199,7 +199,7 @@ function ComparisonTable({
         </thead>
         <tbody>
           {rows.map((row) => (
-            <tr key={row.label} className="border-b last:border-b-0">
+            <tr key={row.label} className="">
               <th
                 scope="row"
                 className="px-4 py-2 text-left text-13 font-medium text-muted-foreground"

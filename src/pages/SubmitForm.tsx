@@ -566,7 +566,7 @@ function SubmitFormInner({ config }: SubmitFormInnerProps) {
 
             {/* Event recurrence + festival grouping (on the When & Where step) */}
             {config.id === 'event' && currentStepConfig?.id === 'when-where' && (
-              <div className="mt-8 pt-6 border-t border-border">
+              <div className="mt-8 pt-6">
                 <EventSeriesFields data={data} setFields={setFields} />
               </div>
             )}

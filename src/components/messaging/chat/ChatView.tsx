@@ -249,7 +249,7 @@ export const ChatView = ({ conversationId, onBack }: ChatViewProps) => {
       {joy && <JoyBurst onDone={() => setJoy(false)} />}
       {/* Chat Header */}
       <div
-        className="p-4 md:p-4 border-b"
+        className="p-4 md:p-4"
         style={{
           backgroundColor: 'hsl(var(--background) / 0.5)',
           backdropFilter: 'blur(8px)',
@@ -383,7 +383,7 @@ export const ChatView = ({ conversationId, onBack }: ChatViewProps) => {
                       key={hit.id}
                       type="button"
                       onClick={() => jumpToResult(hit)}
-                      className="flex w-full flex-col items-start gap-0.5 border-b border-border px-4 py-2 text-left last:border-b-0 hover:bg-muted"
+                      className="flex w-full flex-col items-start gap-0.5 px-4 py-2 text-left hover:bg-muted"
                     >
                       <span className="text-2xs font-medium text-foreground">
                         {hit.sender_display_name ||
@@ -405,7 +405,7 @@ export const ChatView = ({ conversationId, onBack }: ChatViewProps) => {
 
       {/* Free-to-meet ribbon — 1:1 concept, not shown for groups */}
       {!isGroup && (otherAvailable || selfAvailable) && (
-        <div className="border-b border-border bg-muted/50 px-4 py-1.5 text-center text-13 text-muted-foreground">
+        <div className="bg-muted/50 px-4 py-1.5 text-center text-13 text-muted-foreground">
           {otherAvailable
             ? t('chat.freeToMeet.both', {
                 defaultValue: '{{name}} is free to meet right now 🟢',
@@ -507,7 +507,7 @@ export const ChatView = ({ conversationId, onBack }: ChatViewProps) => {
 
       {/* Reply / edit context banner */}
       {(replyTarget || editing) && (
-        <div className="flex items-center justify-between gap-2 border-t border-border bg-muted/50 px-4 py-2">
+        <div className="flex items-center justify-between gap-2 bg-muted/50 px-4 py-2">
           <div className="min-w-0">
             <p className="text-2xs font-medium text-foreground">
               {editing

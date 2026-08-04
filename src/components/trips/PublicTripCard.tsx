@@ -217,7 +217,7 @@ export function PublicTripCard({ trip }: Props) {
           )}
         </div>
 
-        <div className="flex items-center gap-2 mt-4 pt-4 border-t border-border">
+        <div className="flex items-center gap-2 mt-4 pt-4">
           <Avatar style={{ width: 22, height: 22 }}>
             <AvatarImage
               src={trip.owner?.avatar_url ?? undefined}

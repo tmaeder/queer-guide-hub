@@ -55,7 +55,7 @@ export const TimeRangePicker = ({
 
   return (
     <div>
-      <div className="flex items-center justify-between gap-6 border-b border-border px-4 py-2">
+      <div className="flex items-center justify-between gap-6 px-4 py-2">
         <span className="text-13 font-semibold text-foreground">
           {t('map.time.chooseDates', { defaultValue: 'Choose dates' })}
         </span>
@@ -68,7 +68,7 @@ export const TimeRangePicker = ({
         onSelect={setRange}
         className="px-4 py-4"
       />
-      <div className="flex items-center justify-between gap-2 border-t border-border px-4 py-2">
+      <div className="flex items-center justify-between gap-2 px-4 py-2">
         <Button
           variant="ghost"
           size="sm"

@@ -1,4 +1,3 @@
-import { Separator } from '@/components/ui/separator';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { cleanTitle } from '@/utils/htmlDecode';
 import type { Tables } from '@/integrations/supabase/types';
@@ -32,7 +31,6 @@ export function WeekInReview({ articles, sourceCount }: WeekInReviewProps) {
 
   return (
     <section aria-labelledby="week-review-heading" className="mb-16">
-      <Separator className="mb-6" />
       <p className="text-2xs uppercase tracking-[0.2em] text-muted-foreground mb-2">
         This week
       </p>
@@ -77,7 +75,7 @@ export function WeekInReview({ articles, sourceCount }: WeekInReviewProps) {
           {topRead.map((a, i) => (
             <li
               key={a.id}
-              className="border-b border-border last:border-b-0 py-4 flex gap-6 items-baseline"
+              className="py-4 flex gap-6 items-baseline"
             >
               <span className="text-display font-bold leading-none tracking-tight text-muted-foreground tabular-nums">
                 {(i + 1).toString().padStart(2, '0')}

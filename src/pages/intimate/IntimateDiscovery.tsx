@@ -165,7 +165,7 @@ export default function IntimateDiscovery() {
         </div>
       </header>
 
-      <section className="mb-6 space-y-4 border-b pb-4">
+      <section className="mb-6 space-y-4 pb-4">
         <FilterRow
           label="Role"
           options={ROLES as readonly string[]}
@@ -213,14 +213,14 @@ export default function IntimateDiscovery() {
           onPass={(id) => passMutation.mutate(id)}
         />
       ) : (
-        <ul className="border-t border-border">
+        <ul className="">
           {rankedCards.map((c) => {
             const liked = likedSet.has(c.user_id);
             const matched = matchedSet.has(c.user_id);
             const score = scoreById.get(c.user_id);
             const shared = sharedById.get(c.user_id);
             return (
-              <li key={c.user_id} className="border-b border-border">
+              <li key={c.user_id} className="">
                 <div className="flex items-center gap-4 py-4">
                   <Link
                     to={`/intimate/u/${c.user_id}`}

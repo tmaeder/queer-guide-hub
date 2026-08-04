@@ -123,7 +123,7 @@ export function InviteFriendsDialog({ groupId }: { groupId: string }) {
             : t('groups.invite.send', 'Send {{count}} invites', { count: selected.size })}
         </Button>
 
-        <div className="flex flex-col gap-2 border-t border-border pt-4">
+        <div className="flex flex-col gap-2 pt-4">
           <span className="text-sm font-medium flex items-center gap-2">
             <LinkIcon size={16} />
             {t('groups.invite.shareLink', 'Share an invite link')}

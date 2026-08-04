@@ -117,7 +117,7 @@ export function TripPreTripBlock({ trip }: Props) {
         </p>
       )}
 
-      <div className="mt-4 pt-4 border-t border-border flex items-center justify-between gap-4 flex-wrap">
+      <div className="mt-4 pt-4 flex items-center justify-between gap-4 flex-wrap">
         <div className="inline-flex items-center gap-4 text-sm text-muted-foreground">
           <span className="inline-flex items-center gap-1.5">
             <Ticket className="h-4 w-4" aria-hidden />

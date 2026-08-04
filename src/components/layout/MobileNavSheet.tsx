@@ -175,7 +175,7 @@ export function MobileNavSheet({ open, onOpenChange }: MobileNavSheetProps) {
             })}
 
             {/* Account actions */}
-            <div className="flex flex-col gap-2 border-t border-border pt-4">
+            <div className="flex flex-col gap-2 pt-4">
               {isAdmin || isModerator ? (
                 <LocalizedLink
                   to="/admin"
@@ -216,7 +216,7 @@ export function MobileNavSheet({ open, onOpenChange }: MobileNavSheetProps) {
             </div>
 
             {/* Display controls */}
-            <div className="flex flex-col gap-2 border-t border-border pt-4">
+            <div className="flex flex-col gap-2 pt-4">
               <h3 className="text-2xs font-semibold uppercase tracking-wide text-muted-foreground">
                 {t('header.mobileNav.settingsSection', 'Display')}
               </h3>

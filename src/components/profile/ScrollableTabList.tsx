@@ -56,7 +56,7 @@ export function ScrollableTabList({ className, children, ...props }: ScrollableT
           : undefined;
 
   return (
-    <div className="relative border-b border-border">
+    <div className="relative">
       <TabsList
         ref={ref}
         className={cn(

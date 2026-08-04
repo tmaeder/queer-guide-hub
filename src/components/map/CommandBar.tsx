@@ -185,7 +185,7 @@ export const CommandBar = ({
               align="end"
               className="p-0 w-80 max-h-[70dvh] overflow-hidden flex flex-col"
             >
-              <div className="flex items-center justify-between gap-4 border-b border-border px-4 py-2">
+              <div className="flex items-center justify-between gap-4 px-4 py-2">
                 <span className="text-13 font-semibold text-foreground">
                   {t('map.commandBar.filters', { defaultValue: 'Filters' })}
                 </span>

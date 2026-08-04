@@ -182,7 +182,7 @@ export default function Auth() {
                     <OAuthButtons onError={setError} />
                     <div className="relative text-center my-2">
                       <div className="absolute inset-0 flex items-center">
-                        <div className="w-full border-t border-border" />
+                        <div className="w-full" />
                       </div>
                       <span className="relative bg-background px-2 text-xs text-muted-foreground uppercase">
                         {t('auth.orWithEmail', 'Or with email')}

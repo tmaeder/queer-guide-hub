@@ -123,7 +123,7 @@ export default function Contributors() {
 
   return (
     <div className="mx-auto max-w-5xl px-6 py-16 sm:py-24">
-      <header className="border-b border-border pb-12 mb-12">
+      <header className="pb-12 mb-12">
         <p className="text-sm uppercase tracking-widest text-muted-foreground mb-4">
           Recognition Wall
         </p>
@@ -182,7 +182,7 @@ export default function Contributors() {
         </section>
       ))}
 
-      <footer className="border-t border-border pt-8 mt-16 text-xs text-muted-foreground">
+      <footer className="pt-8 mt-16 text-xs text-muted-foreground">
         Selected by the editorial team. Anyone can opt out of being named in their profile settings.
       </footer>
     </div>

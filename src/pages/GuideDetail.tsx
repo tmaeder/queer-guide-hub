@@ -191,7 +191,7 @@ const GuideDetail = () => {
         </div>
       )}
 
-      <footer className="container mx-auto px-4 max-w-3xl my-16 pt-8 border-t border-border">
+      <footer className="container mx-auto px-4 max-w-3xl my-16 pt-8">
         <p className="inline-flex items-center gap-2 text-13 text-muted-foreground">
           <Clock size={14} aria-hidden />
           {t('guides.detail.lastUpdated', 'Last updated')}{' '}

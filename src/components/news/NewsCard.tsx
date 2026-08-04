@@ -342,7 +342,7 @@ const NewsCardImpl = ({
       <LocalizedLink
         to={`/news/${article.slug}`}
         aria-label={safeTitle}
-        className="flex items-center gap-4 py-4 px-4 transition-colors hover:bg-muted border-b border-border no-underline text-inherit focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="flex items-center gap-4 py-4 px-4 transition-colors hover:bg-muted no-underline text-inherit focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         <div className="flex-1 min-w-0">
           <h3 className="text-sm font-semibold truncate m-0">{safeTitle}</h3>

@@ -520,7 +520,7 @@ export default function NewsDetail() {
             </Editable>
 
             {/* Quiet source attribution — one outbound link, no second button. */}
-            <p className="mt-8 border-t border-border pt-6 text-sm text-muted-foreground">
+            <p className="mt-8 pt-6 text-sm text-muted-foreground">
               {sourceName
                 ? t('newsDetail.originallyPublishedBy', 'Originally published by {{source}}.', {
                     source: sourceName,

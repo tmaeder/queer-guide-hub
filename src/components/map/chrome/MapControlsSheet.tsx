@@ -75,7 +75,7 @@ export const MapControlsSheet = ({
         )}
 
         {hasPanelFilters && (
-          <div className="mt-4 border-t border-border pt-4">
+          <div className="mt-4 pt-4">
             <div className="flex items-center justify-between pb-1.5">
               <p className={sectionTitle}>{t('map.sheet.filters', { defaultValue: 'Filters' })}</p>
               {activeFilterCount > 0 && (
@@ -103,7 +103,7 @@ export const MapControlsSheet = ({
         )}
 
         {availableFilters.includes('time') && (
-          <div className="mt-4 border-t border-border pt-4">
+          <div className="mt-4 pt-4">
             <p className={`${sectionTitle} pb-1.5`}>
               {t('map.sheet.time', { defaultValue: 'Time' })}
             </p>
@@ -118,7 +118,7 @@ export const MapControlsSheet = ({
         )}
 
         {availableLayers.length > 0 && (
-          <div className="mt-4 border-t border-border pt-4">
+          <div className="mt-4 pt-4">
             <p className={`${sectionTitle} pb-1.5`}>
               {t('map.sheet.layers', { defaultValue: 'Layers' })}
             </p>
@@ -131,7 +131,7 @@ export const MapControlsSheet = ({
         )}
 
         {(onGeolocate || onFitBounds || onShare) && (
-          <div className="mt-4 border-t border-border pt-4">
+          <div className="mt-4 pt-4">
             <p className={`${sectionTitle} pb-1.5`}>
               {t('map.sheet.actions', { defaultValue: 'Map actions' })}
             </p>

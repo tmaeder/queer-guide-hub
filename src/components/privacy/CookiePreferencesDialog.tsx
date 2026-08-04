@@ -9,7 +9,6 @@ import {
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { Separator } from '@/components/ui/separator';
 import { useCookieConsent, CookiePreferences } from '@/hooks/useCookieConsent';
 import { Cookie, Shield, BarChart3, Target, Cog } from 'lucide-react';
 
@@ -134,7 +133,6 @@ export function CookiePreferencesDialog({ open, onOpenChange }: CookiePreference
                     disabled={category.required}
                   />
                 </div>
-                {category.id !== 'marketing' && <Separator />}
               </div>
             );
           })}

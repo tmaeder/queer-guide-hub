@@ -61,7 +61,7 @@ export function AdvancedFiltersPanel(props: AdvancedFiltersPanelProps) {
       {/* Desktop: inline */}
       <nav
         aria-label="Venue filters"
-        className="hidden md:flex flex-col gap-6 pt-6 mt-1 border-t border-border"
+        className="hidden md:flex flex-col gap-6 pt-6 mt-1"
       >
         <PanelBody {...props} />
       </nav>

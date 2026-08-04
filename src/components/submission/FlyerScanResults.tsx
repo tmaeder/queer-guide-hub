@@ -465,7 +465,7 @@ export function FlyerScanResults({ results, onSubmitBatch, onDismiss }: FlyerSca
           </div>
         )}
 
-        <div className="sticky bottom-0 mt-4 pt-4 bg-background border-t border-border">
+        <div className="sticky bottom-0 mt-4 pt-4 bg-background">
           <Button
             onClick={handleSubmit}
             disabled={includedCount === 0 || submitting}

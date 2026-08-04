@@ -38,7 +38,7 @@ export function WeekView({
           const timed = items.filter((i) => !i.all_day);
           const isToday = isSameDay(d, today);
           return (
-            <div key={localDayKey(d)} className="flex min-h-48 flex-col gap-1 border-b border-r border-border p-1">
+            <div key={localDayKey(d)} className="flex min-h-48 flex-col gap-1 border-r p-1">
               <button
                 type="button"
                 onClick={() => onSelectDay(d)}

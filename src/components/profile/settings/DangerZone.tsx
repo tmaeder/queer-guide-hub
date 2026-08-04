@@ -105,7 +105,7 @@ export function DangerZone({ username }: DangerZoneProps) {
         </div>
 
         {/* Delete — Art. 17 erasure */}
-        <div className="flex flex-col gap-2 border-t border-border pt-6">
+        <div className="flex flex-col gap-2 pt-6">
           <p className="text-sm font-medium">Delete my account</p>
           <p className="text-sm text-muted-foreground">
             Permanently delete your account and all personal data. This cannot be undone.

@@ -215,7 +215,7 @@ function ErrorFallback({ error, onRetry }: { error: Error | null; onRetry: () =>
         )}
 
         {/* Static jump-links. */}
-        <div className="mt-12 border-t border-border pt-8">
+        <div className="mt-12 pt-8">
           <p className="text-xs2 font-medium uppercase tracking-widest text-muted-foreground mb-4">
             Or jump to
           </p>

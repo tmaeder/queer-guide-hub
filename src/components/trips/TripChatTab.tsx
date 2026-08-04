@@ -77,7 +77,7 @@ export function TripChatTab({ tripId }: Props) {
   return (
     <div className="flex flex-col h-[480px] md:h-[600px]">
       {presentMembers.length > 0 && (
-        <div className="flex items-center gap-2 px-2 py-1.5 mb-2 border-b border-border">
+        <div className="flex items-center gap-2 px-2 py-1.5 mb-2">
           <span
             aria-hidden
             className="w-1.5 h-1.5 rounded-full bg-foreground flex-shrink-0"

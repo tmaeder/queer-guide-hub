@@ -61,7 +61,7 @@ export function SearchPopoverResults({
 
   return (
     <div className="flex min-w-0 flex-1 flex-col">
-      <div className="flex min-h-9 items-center justify-between gap-2 border-b border-border px-4 py-2">
+      <div className="flex min-h-9 items-center justify-between gap-2 px-4 py-2">
         <span className="truncate text-xs text-muted-foreground">{headerText}</span>
         <button
           type="button"
@@ -88,7 +88,7 @@ export function SearchPopoverResults({
         style={{ maxHeight: 460 }}
       >
         {error && (
-          <div role="alert" className="border-b border-border p-4 text-sm text-destructive">
+          <div role="alert" className="p-4 text-sm text-destructive">
             {t('search.unavailable', 'Search unavailable')}.{' '}
             <button
               type="button"
@@ -177,7 +177,7 @@ export function SearchPopoverResults({
           type="button"
           onClick={onAsk}
           className={cn(
-            'flex w-full items-center gap-2 border-t border-border px-4 py-2 text-left text-sm transition-colors hover:bg-accent',
+            'flex w-full items-center gap-2 px-4 py-2 text-left text-sm transition-colors hover:bg-accent',
             thin && 'bg-muted font-medium',
           )}
         >

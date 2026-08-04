@@ -53,7 +53,7 @@ export const NotificationList = () => {
           ))}
         </ScrollArea>
       )}
-      <div className="border-t border-border p-2">
+      <div className="p-2">
         <Button
           variant="ghost"
           size="sm"

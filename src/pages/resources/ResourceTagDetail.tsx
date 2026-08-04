@@ -268,11 +268,11 @@ export function ResourceTagDetail({
             {/* Facts */}
             {facts.length > 0 && (
               <dl
-                className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2 mb-6 border-t pt-4"
+                className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2 mb-6 pt-4"
                 style={{ maxWidth: 680 }}
               >
                 {facts.map(([label, value]) => (
-                  <div key={label} className="flex justify-between gap-4 border-b py-1">
+                  <div key={label} className="flex justify-between gap-4 py-1">
                     <dt className="text-sm text-muted-foreground">{label}</dt>
                     <dd className="text-sm font-medium text-right">{value}</dd>
                   </div>

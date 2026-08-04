@@ -57,7 +57,7 @@ export function TripNewsSection({ countryIds }: Props) {
             href={article.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-start gap-4 p-4 no-underline text-inherit border-t border-border first-of-type:border-t-0 transition-colors hover:bg-muted"
+            className="flex items-start gap-4 p-4 no-underline text-inherit first-of-type:border-t-0 transition-colors hover:bg-muted"
           >
             {article.isSafetyFlagged ? (
               <AlertTriangle

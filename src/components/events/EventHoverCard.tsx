@@ -184,7 +184,7 @@ export function EventHoverCard({
         </div>
 
         {(onRsvp || showSaveBtn) && (
-          <div className="border-t border-foreground/10 px-2 py-2 flex items-center gap-1">
+          <div className="px-2 py-2 flex items-center gap-1">
             {onRsvp && (
               <>
                 <Button
