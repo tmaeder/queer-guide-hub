@@ -51,6 +51,13 @@ export const STATIC_ROUTE_META: Record<string, RouteMeta> = {
     description:
       'Browse cities, neighborhoods and queer villages around the world with LGBTQ+ life and history.',
   },
+  // Without an exact entry, dynamicMeta() reads this as `/city/:slug` and
+  // titles the page "Compare — City".
+  '/city/compare': {
+    title: 'Compare Cities Side by Side | Queer Guide',
+    description:
+      'Compare two cities on LGBTQ+ equality score, currency, language, timezone and airport before you travel.',
+  },
   '/travel': {
     title: 'LGBTQ+ Travel Guide — Safe Destinations | Queer Guide',
     description:

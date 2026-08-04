@@ -125,6 +125,67 @@ lines.forEach((raw, i) => {
   }
 });
 
+// ------------------------------------------ _redirects vs. the SPA route table
+//
+// A _redirects rule runs at the edge, BEFORE React ever mounts, so any rule
+// matching a real SPA route makes that route unreachable in production while
+// staying perfectly healthy in dev and in `vite preview` (neither reads this
+// file). `/cities/compare` was dead this way: the plural-alias rule
+// `/cities/:slug -> /city/:slug` swallowed it, and the edge then hard-404'd
+// /city/compare as a missing city row.
+//
+// Shadowing is legitimate in exactly one case — the route element is itself a
+// redirect to the same place, which is the documented "pair every _redirects
+// rule with a React Router route" convention (it keeps the path working where
+// _redirects is inert). A route that renders a real page is always a bug.
+const ROUTES_TSX = 'src/routes.tsx';
+
+const ruleToRegExp = (from) =>
+  new RegExp(
+    `^${from
+      .replace(/[.+?^${}()|[\]\\]/g, '\\$&')
+      .replace(/\*/g, '.*')
+      .replace(/:[A-Za-z_]\w*/g, '[^/]+')}$`,
+  );
+
+if (existsSync(ROUTES_TSX)) {
+  const routesSrc = readFileSync(ROUTES_TSX, 'utf8');
+
+  // path="foo/bar" ... element={<Component — concrete paths only (a route with
+  // a :param or a splat cannot be compared to a literal rule this way).
+  const spaRoutes = [];
+  for (const m of routesSrc.matchAll(/path="([^"]+)"/g)) {
+    const path = m[1];
+    if (path === '' || path === '*' || /[:*]/.test(path)) continue;
+    const element = routesSrc.slice(m.index, m.index + 400).match(/element=\{<(\w+)/)?.[1] ?? '';
+    spaRoutes.push({ path: `/${path.replace(/^\//, '')}`, element });
+  }
+
+  const rules = lines
+    .map((raw, i) => ({ line: raw.replace(/#.*$/, '').trim(), lineNo: i + 1 }))
+    .filter(({ line }) => line)
+    .map(({ line, lineNo }) => {
+      const [from, to] = line.split(/\s+/);
+      return { from, to, lineNo, line };
+    })
+    .filter((r) => r.from && r.to);
+
+  for (const route of spaRoutes) {
+    // Cloudflare evaluates _redirects top-down, first match wins — only the
+    // first matching rule can ever affect this path.
+    const hit = rules.find((r) => ruleToRegExp(r.from).test(route.path));
+    if (!hit) continue;
+    if (/Redirect|Navigate/.test(route.element)) continue;
+    errors.push(
+      `${REDIRECTS}:${hit.lineNo} — "${hit.line}" matches the real SPA route ` +
+        `"${route.path}" (renders <${route.element || '?'} />). The edge redirects it before ` +
+        `React runs, so the page is unreachable in production while still working in dev ` +
+        `and \`vite preview\`. Either move the route out from under the rule, or make it a ` +
+        `redirect element if the rule is what you actually want.`,
+    );
+  }
+}
+
 if (dynamicCount > MAX_DYNAMIC_RULES) {
   errors.push(
     `${REDIRECTS} has ${dynamicCount} dynamic rules (splat or :placeholder); Cloudflare ` +
