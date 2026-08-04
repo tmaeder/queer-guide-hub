@@ -143,10 +143,24 @@ export default defineConfig(({ mode }) => ({
     // imports the recharts chunk — dragging ~92 KB onto pages that don't
     // use any chart.
     include: ['boneyard-js/react', 'clsx', 'tailwind-merge', 'class-variance-authority'],
-    // maplibre-gl 6 loads its worker as a real module URL; the dep optimizer
-    // can't emit maplibre-gl-worker.mjs, so the map hangs forever in dev.
-    // Excluding it serves maplibre from source (prod build is unaffected).
+    // maplibre-gl 6 derives its worker URL at runtime from a template
+    // variable, so the dep optimizer can't emit maplibre-gl-worker.mjs and the
+    // map hangs forever in dev. Excluding it serves maplibre from source.
+    //
+    // The production build has the SAME defect — "prod build is unaffected"
+    // stood in this comment while every map on the live site was dead. It is
+    // fixed in src/config/maplibreWorker.ts, which bundles the worker
+    // explicitly and hands MapLibre the URL; do not assume a bundler can
+    // resolve that runtime path.
     exclude: ['maplibre-gl'],
+  },
+  // Workers are a SEPARATE rolldown build and it does not inherit `build.minify`
+  // below — the maplibre worker emitted at 615 KB of tab-indented source until
+  // this was set. Check the emitted size, not the config, after a vite bump.
+  worker: {
+    rollupOptions: {
+      output: { minify: mode === 'production' },
+    },
   },
   esbuild: mode === 'production' ? {
     drop: ['console', 'debugger'],
