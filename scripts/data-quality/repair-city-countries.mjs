@@ -132,7 +132,7 @@ console.log(`${rows.length} candidate(s); mode=${DRY ? 'DRY RUN' : 'APPLY'} seve
 
 const stats = {
   checked: 0, verified: 0, repaired: 0, proposed: 0,
-  name_conflict: 0, unresolved: 0, failed: 0,
+  name_conflict: 0, collided: 0, unresolved: 0, failed: 0,
 };
 
 for (const r of rows) {
@@ -252,8 +252,6 @@ for (const r of rows) {
     continue;
   }
 
-  stats.repaired++;
-  console.log(`  ->  ${label}${hasContent ? ' (WITH CONTENT — repropagating)' : ''}`);
   if (APPLY) {
     const evidence = JSON.stringify({
       source: 'photon_reverse',
@@ -264,11 +262,49 @@ for (const r of rows) {
       previous_code: r.assigned_code,
       km_to_previous: r.km_to_assigned,
     });
-    const [res] = await sql(
-      `select public.apply_city_country_repair(${q(r.city_id)}, ${q(target.id)}, ${q(evidence)}::jsonb) as r`,
-    );
-    if (!res?.r?.ok) console.error(`     FAILED: ${JSON.stringify(res?.r)}`);
-    else if (res.r.repropagated) console.log(`     repropagated ${JSON.stringify(res.r.repropagated)}`);
+    try {
+      const [res] = await sql(
+        `select public.apply_city_country_repair(${q(r.city_id)}, ${q(target.id)}, ${q(evidence)}::jsonb) as r`,
+      );
+      stats.repaired++;
+      console.log(`  ->  ${label}${hasContent ? ' (WITH CONTENT — repropagating)' : ''}`);
+      if (!res?.r?.ok) console.error(`     FAILED: ${JSON.stringify(res?.r)}`);
+      else if (res.r.repropagated) console.log(`     repropagated ${JSON.stringify(res.r.repropagated)}`);
+    } catch (e) {
+      // A country move that collides on (country_id, name_normalized) is not a
+      // failure — it is a DISCOVERY. The target country already holds a city
+      // with this name, so the two rows are the same place: "París" filed under
+      // Panama collides with "Paris" in France because normalize_name unaccents
+      // both. Moving it is impossible and also pointless; the answer is a merge.
+      // Queue the pair and move on rather than aborting the whole run.
+      if (!/23505|uk_cities_country_name_active|idx_cities_name_country_unique/.test(e.message)) throw e;
+      stats.collided++;
+      const [twin] = await sql(
+        `select id, name, completeness_score from public.cities
+          where country_id = ${q(target.id)}
+            and name_normalized = public.normalize_name(split_part(${q(r.name)}, ',', 1))
+            and duplicate_of_id is null and id <> ${q(r.city_id)} limit 1`,
+      );
+      console.log(`  =  ${label} — ALREADY EXISTS in ${target.name} as "${twin?.name ?? '?'}" → queued as duplicate`);
+      if (twin?.id) {
+        // Keep the row already sitting in the correct country; it is the one the
+        // rest of the corpus links to.
+        await sql(`insert into public.dedup_review_queue
+            (entity_type, keep_id, drop_id, confidence, reason, source, cluster)
+          values ('city', ${q(twin.id)}, ${q(r.city_id)}, 0.95,
+                  'country_repair_name_collision', 'repair_city_countries',
+                  ${q(JSON.stringify({ moved_from: r.assigned_code, into: geo.countrycode, drop_name: r.name, keep_name: twin.name, evidence: JSON.parse(evidence) }))}::jsonb)
+          on conflict do nothing`);
+      }
+      await sql(`update public.cities set needs_attention = true,
+        enrichment_status = coalesce(enrichment_status,'{}'::jsonb) || jsonb_build_object(
+          'country_repair', jsonb_build_object('state','blocked_name_collision_in_target',
+            'target_country',${q(geo.countrycode)},'twin',${q(twin?.id ?? '')},'at',now()))
+        where id = ${q(r.city_id)}`);
+    }
+  } else {
+    stats.repaired++;
+    console.log(`  ->  ${label}${hasContent ? ' (WITH CONTENT — repropagating)' : ''}`);
   }
   await sleep(INTERVAL_MS);
 }
