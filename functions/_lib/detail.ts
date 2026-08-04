@@ -1121,6 +1121,8 @@ const RESERVED_DETAIL_SLUGS = new Set([
   'all',
   'me',
   'milestones',
+  // /city/compare — the two-city comparison tool, not a city slug.
+  'compare',
 ]);
 
 function matchDetailPath(pathname: string): RegExpMatchArray | null {
