@@ -90,7 +90,7 @@ export function ContinentSection({
     <section aria-label={title} className="flex flex-col gap-6">
       <header className="flex items-center justify-between gap-4">
         <div className="flex flex-col gap-1">
-          <h2 className="text-headline-lg md:text-display font-semibold leading-tight tracking-tight">
+          <h2 className="text-headline md:text-display font-semibold leading-tight tracking-tight">
             {title}
           </h2>
           {description && <p className="text-15 text-muted-foreground max-w-2xl">{description}</p>}

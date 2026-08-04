@@ -147,8 +147,10 @@ export const GLOBAL_TOKENS: GlobalTokenDef[] = [
   { key: 'text-hero--line-height', kind: 'lineHeight', default: '1', label: 'Hero line height' },
   { key: 'text-display', kind: 'size', default: '2.75rem', label: 'Display' },
   { key: 'text-display--line-height', kind: 'lineHeight', default: '1.05', label: 'Display line height' },
-  { key: 'text-headline-lg', kind: 'size', default: '2rem', label: 'Headline large' },
-  { key: 'text-headline-lg--line-height', kind: 'lineHeight', default: '1.1', label: 'Headline large line height' },
+  // `text-headline-lg` removed 2026-08-04: it sat 1.14x from `text-headline`,
+  // which no reader resolves as a separate level, so the two were used
+  // interchangeably. This is one of six layers that move together — see the
+  // note in src/index.css.
   { key: 'text-headline', kind: 'size', default: '1.75rem', label: 'Headline' },
   { key: 'text-headline--line-height', kind: 'lineHeight', default: '1.2', label: 'Headline line height' },
   { key: 'text-title', kind: 'size', default: '1.25rem', label: 'Title' },

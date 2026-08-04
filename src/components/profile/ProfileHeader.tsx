@@ -60,7 +60,7 @@ export function ProfileHeader({
                 src={(profile.avatar_url as string) || undefined}
                 alt={displayName}
               />
-              <AvatarFallback className="text-headline-lg">
+              <AvatarFallback className="text-headline">
                 {(username || 'A').charAt(0).toUpperCase()}
               </AvatarFallback>
             </Avatar>

@@ -81,7 +81,7 @@ export function EditorialHero({
                 {eyebrow}
               </p>
             )}
-            <h1 className="font-bold leading-[1.1] text-display md:text-headline-lg">{title}</h1>
+            <h1 className="font-bold leading-[1.1] text-display">{title}</h1>
             {subtitle && (
               <p className="text-body-lg text-muted-foreground leading-[1.6] max-w-[520px]">
                 {subtitle}

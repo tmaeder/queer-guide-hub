@@ -12,6 +12,16 @@ interface HomeSectionProps {
   seeAllLabel?: string;
   /** Wrapper background tint, e.g. for the alternating "index" band. */
   tinted?: boolean;
+  /**
+   * Header rank. Defaults to `band`.
+   *
+   * This used to be hardcoded to `masthead` for every section, so the homepage
+   * rendered six identical 44px uppercase headings each under its own
+   * `.rule-heavy` — which turned a rationed signature into a repeating divider
+   * and made the page read as six equal-rank slabs. Exactly one section should
+   * be the masthead; the rest are bands.
+   */
+  rank?: 'masthead' | 'band';
   className?: string;
   children: React.ReactNode;
 }
@@ -28,6 +38,7 @@ export function HomeSection({
   seeAllHref,
   seeAllLabel,
   tinted,
+  rank = 'band',
   className,
   children,
 }: HomeSectionProps) {
@@ -50,7 +61,7 @@ export function HomeSection({
           eyebrow={eyebrow}
           title={title}
           subtitle={description}
-          size="masthead"
+          size={rank}
           seeAllHref={seeAllHref}
           seeAllLabel={seeAllLabel}
         />

@@ -39,7 +39,7 @@ export function EditorRail({ rail }: Props) {
   return (
     <section aria-label={rail.title} className="flex flex-col gap-4">
       <header className="flex flex-col gap-1">
-        <h2 className="text-headline-lg md:text-display font-semibold leading-tight tracking-tight">
+        <h2 className="text-headline md:text-display font-semibold leading-tight tracking-tight">
           {rail.title}
         </h2>
         {rail.editor_note && (

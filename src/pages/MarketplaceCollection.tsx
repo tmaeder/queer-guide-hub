@@ -63,7 +63,7 @@ const MarketplaceCollection = () => {
       <div className="container mx-auto py-12 md:py-16 px-4">
         <header className="mb-12 max-w-3xl">
           <p className="text-13 uppercase tracking-wide text-muted-foreground mb-2">Collection</p>
-          <h1 className="text-headline-lg md:text-display font-semibold mb-4 leading-tight">
+          <h1 className="text-headline md:text-display font-semibold mb-4 leading-tight">
             {collection.title}
           </h1>
           {collection.subtitle && (

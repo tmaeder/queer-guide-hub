@@ -282,7 +282,7 @@ const NewsCardImpl = ({
   }
 
   // Section-hero variant: asymmetric text-left / image-right. Used as the
-  // first card inside each <SectionBand/>. Title at --text-headline-lg,
+  // first card inside each <SectionBand/>. Title at --text-headline,
   // italic dek beneath, byline + read-time row.
   if (variant === 'section-hero') {
     return (
@@ -303,7 +303,7 @@ const NewsCardImpl = ({
               {eyebrowParts.join(' · ')}
             </p>
           )}
-          <h3 className="m-0 text-headline md:text-headline-lg font-bold leading-[1.05] tracking-tight">
+          <h3 className="m-0 text-headline font-bold leading-[1.05] tracking-tight">
             {safeTitle}
           </h3>
           {langBadge}

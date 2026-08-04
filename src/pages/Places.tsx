@@ -593,7 +593,7 @@ function AtlasView({
       {(rails ?? []).length === 0 && topQueerCountries.length > 0 && (
         <section className="flex flex-col gap-4">
           <header className="flex flex-col gap-1">
-            <h2 className="text-headline-lg md:text-display font-semibold leading-tight tracking-tight">
+            <h2 className="text-headline md:text-display font-semibold leading-tight tracking-tight">
               Editor&rsquo;s picks
             </h2>
             <p className="text-15 text-muted-foreground max-w-2xl">
@@ -640,7 +640,7 @@ function AtlasView({
       {/* Iconic queer neighborhoods */}
       <section className="flex flex-col gap-6" aria-label="Iconic queer neighborhoods">
         <header className="flex flex-col gap-1">
-          <h2 className="text-headline-lg md:text-display font-semibold leading-tight tracking-tight">
+          <h2 className="text-headline md:text-display font-semibold leading-tight tracking-tight">
             Iconic queer neighborhoods
           </h2>
           <p className="text-15 text-muted-foreground max-w-2xl">

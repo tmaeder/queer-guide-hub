@@ -10,7 +10,6 @@ const customTextSizes = [
   "hero-xl",
   "hero",
   "display",
-  "headline-lg",
   "headline",
   "title",
   "body-lg",

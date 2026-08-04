@@ -108,7 +108,7 @@ const NewsMagazine = React.memo(() => {
               ? `${t('home.news.editorsPick', "Editors' pick")} · ${meta(lead, 'MMM d, yyyy')}`
               : meta(lead, 'MMM d, yyyy')}
           </Eyebrow>
-          <h3 className="text-headline-lg md:text-display font-bold leading-[1.05] tracking-tight line-clamp-3 transition-opacity group-hover:opacity-80">
+          <h3 className="text-headline md:text-display font-bold leading-[1.05] tracking-tight line-clamp-3 transition-opacity group-hover:opacity-80">
             {decodeHtmlEntities(lead.title)}
           </h3>
           {lead.excerpt && (

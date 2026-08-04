@@ -67,7 +67,7 @@ export const LegalPageLayout = ({
         />
       ) : (
         <header className="mb-2">
-          <h1 className="font-bold text-headline-lg md:text-display">{title}</h1>
+          <h1 className="font-bold text-headline md:text-display">{title}</h1>
           {subtitle && (
             <p className="mt-2 max-w-2xl text-body-lg leading-[1.6] text-muted-foreground">
               {subtitle}

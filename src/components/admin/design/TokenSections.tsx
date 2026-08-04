@@ -63,7 +63,7 @@ export function TypographySection({ controller }: { controller: DesignSettingsCo
         const lhToken = byKey.get(lhKey);
         const size = resolveGlobal(draft, token.key);
         const lineHeight = lhToken ? resolveGlobal(draft, lhKey) : undefined;
-        const display = ['text-hero-xl', 'text-hero', 'text-display', 'text-headline-lg', 'text-headline'].includes(
+        const display = ['text-hero-xl', 'text-hero', 'text-display', 'text-headline'].includes(
           token.key,
         );
         return (

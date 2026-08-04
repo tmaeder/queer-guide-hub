@@ -57,7 +57,7 @@ export function AtlasHero({ featuredCountryNames }: Props) {
   if (!view) {
     return (
       <section className="rounded-container bg-muted/40 p-12 text-center">
-        <p className="text-headline-lg font-semibold">Atlas</p>
+        <p className="text-headline font-semibold">Atlas</p>
         <p className="text-15 text-muted-foreground mt-2">
           Cities, countries, and neighborhoods worldwide.
         </p>

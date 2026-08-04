@@ -53,7 +53,7 @@ export function TripCockpit() {
           <LocalizedLink to={`/trips/${current.id}`} className="block no-underline">
             <h2
               id="trip-cockpit-heading"
-              className="truncate text-headline-lg font-bold leading-tight text-foreground"
+              className="truncate text-headline font-bold leading-tight text-foreground"
             >
               {title}
             </h2>
