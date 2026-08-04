@@ -193,7 +193,7 @@ export function FlyerScanUpload({
             <div className="relative flex-1">
               <Link2
                 size={16}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-background/70 pointer-events-none"
                 aria-hidden="true"
               />
               <Input

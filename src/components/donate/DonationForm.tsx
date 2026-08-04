@@ -93,7 +93,7 @@ export function DonationForm() {
             {t('donate.customAmount', 'Custom amount')} ({currency})
           </Label>
           <div className="relative mt-1">
-            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm pointer-events-none z-10">
+            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-background/70 text-sm pointer-events-none z-10">
               {getCurrencySymbol(currency)}
             </div>
             <Input
