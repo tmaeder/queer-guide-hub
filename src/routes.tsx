@@ -584,7 +584,15 @@ export const AppRoutes = () => {
                 <Route path="explore/connections" element={<ConnectionsExplorer />} />
                 <Route path="flights" element={<Navigate to="/travel" replace />} />
                 <Route path="cities" element={<Cities />} />
-                <Route path="cities/compare" element={<CitiesCompare />} />
+                {/* The compare tool lives under the SINGULAR segment because
+                  public/_redirects 301s every `/cities/:slug` to `/city/:slug`
+                  before React ever runs — a plural-namespaced page there is
+                  unreachable in production (it 301'd into /city/compare, which
+                  the edge then hard-404'd as a missing city row). The plural
+                  route below only exists for the localized paths
+                  (/de/cities/compare), which the _redirects rule never sees. */}
+                <Route path="city/compare" element={<CitiesCompare />} />
+                <Route path="cities/compare" element={<LocalizedRedirect to="/city/compare" />} />
                 <Route path="city/:slug" element={<CityDetail />} />
                 <Route path="country/:slug" element={<CountryDetail />} />
                 {/* /users folded into the /community hub (Members tab). */}
