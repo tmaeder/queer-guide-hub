@@ -75,11 +75,23 @@ const setsColour = (cls: string) => {
 const overridesPlateBackground = (cls: string) => /^bg-/.test(cls) && cls !== 'bg-inverse-surface';
 
 /**
+ * The plate has THREE coupled halves, not two: `input.tsx` also sets
+ * `placeholder:text-background/70`. A caller that restores only the value
+ * colour still leaves the placeholder inverted — near-white at 70% over a light
+ * surface, ~1:1. That is not the lesser half of the bug: the field that failed
+ * axe was EMPTY, so the node axe measured was the placeholder.
+ */
+const setsPlaceholderColour = (cls: string) => {
+  const m = /^placeholder:(text-.+)$/.exec(cls);
+  return m ? setsColour(m[1]) : false;
+};
+
+/**
  * Exported so the detector itself is tested against known-good/known-bad input —
  * a repo-wide scan that finds nothing proves nothing on its own.
  */
 export function findPlateOverrideViolations(source: string, file: string) {
-  const out: { file: string; classes: string }[] = [];
+  const out: { file: string; classes: string; missing: string }[] = [];
   // Each <Input ... /> element, non-greedy up to its self-closing tag.
   for (const el of source.matchAll(/<Input\b[\s\S]*?\/>/g)) {
     const tag = el[0];
@@ -87,9 +99,13 @@ export function findPlateOverrideViolations(source: string, file: string) {
     const cn = /className=(?:"([^"]*)"|\{`([^`]*)`\})/.exec(tag);
     if (!cn) continue;
     const classes = (cn[1] ?? cn[2] ?? '').split(/\s+/).filter(Boolean);
-    const strips = classes.some(overridesPlateBackground);
-    const restores = classes.some(setsColour);
-    if (strips && !restores) out.push({ file, classes: classes.join(' ') });
+    if (!classes.some(overridesPlateBackground)) continue;
+    const missing = [
+      classes.some(setsColour) ? null : 'text-*',
+      classes.some(setsPlaceholderColour) ? null : 'placeholder:text-*',
+    ].filter(Boolean);
+    if (missing.length)
+      out.push({ file, classes: classes.join(' '), missing: missing.join(' + ') });
   }
   return out;
 }
@@ -116,8 +132,23 @@ describe('Input inverted-plate override', () => {
     expect(findPlateOverrideViolations(bad, 'x.tsx')).toHaveLength(1);
   });
 
-  it('accepts an override that restores a foreground', () => {
-    const good = '<Input className="bg-transparent text-foreground text-sm" />';
+  it('detects a value colour restored but the placeholder left inverted', () => {
+    // Accepted before this case existed. The primitive's
+    // `placeholder:text-background/70` survives, so an empty field still
+    // renders ~1:1 — and empty is exactly how axe found the original.
+    const bad = '<Input className="bg-transparent text-foreground" />';
+    const [v] = findPlateOverrideViolations(bad, 'x.tsx');
+    expect(v?.missing).toBe('placeholder:text-*');
+  });
+
+  it('treats placeholder:text-sm as a size, not a placeholder colour', () => {
+    const bad = '<Input className="bg-transparent text-foreground placeholder:text-sm" />';
+    expect(findPlateOverrideViolations(bad, 'x.tsx')).toHaveLength(1);
+  });
+
+  it('accepts an override that restores both halves', () => {
+    const good =
+      '<Input className="bg-transparent text-foreground placeholder:text-muted-foreground text-sm" />';
     expect(findPlateOverrideViolations(good, 'x.tsx')).toHaveLength(0);
   });
 
@@ -133,7 +164,7 @@ describe('Input inverted-plate override', () => {
     expect(
       violations,
       `Input overrides its plate background without a foreground:\n${violations
-        .map((v) => `  ${v.file}\n    ${v.classes}`)
+        .map((v) => `  ${v.file}\n    ${v.classes}\n    missing: ${v.missing}`)
         .join('\n')}\nAdd text-foreground (+ placeholder:text-muted-foreground).`,
     ).toEqual([]);
   });
