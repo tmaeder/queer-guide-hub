@@ -152,7 +152,11 @@ jobs:
     needs: [build]
     if: always() && (needs.build.result == 'success' || needs.build.result == 'skipped')
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    # 160 scans. Sequential they took ~24 min and this job — then capped at 20 —
+    # was killed at scan 130 on EVERY run, so it never wrote a report and never
+    # reached the gate step below. SCAN_CONCURRENCY brings it to roughly a third
+    # of that; the cap keeps headroom rather than tracking the new runtime.
+    timeout-minutes: 30
     env:
       BASE_URL: ${{ inputs.base_url != '' && inputs.base_url || (github.event_name == 'schedule' && 'https://queer.guide') || 'http://localhost:4173' }}
       # Whole public manifest × desktop+mobile × light+dark, with the 320px
@@ -161,6 +165,7 @@ jobs:
       SCAN_SCOPE: public
       SCAN_VIEWPORTS: desktop,mobile
       SCAN_THEMES: light,dark
+      SCAN_CONCURRENCY: '4'
       OUT_NAME: axe-postdeploy
     steps:
       - uses: actions/checkout@v7
@@ -193,7 +198,18 @@ jobs:
       - run: node scripts/a11y-axe-scan.mjs
       - name: Fail on serious/critical
         run: |
-          node -e "const r=require('./docs/a11y-audit/axe-postdeploy.json');const bad=r.results.flatMap(x=>(x.violations||[]).filter(v=>v.impact==='serious'||v.impact==='critical'));if(bad.length){console.error('Found',bad.length,'serious/critical');process.exit(1)}console.log('Clean: 0 serious/critical')"
+          # `complete` and the base-URL check are load-bearing: docs/a11y-audit/
+          # axe-postdeploy.json is a COMMITTED file, so a run that dies before
+          # writing leaves April's clean prod scan on disk and this gate would
+          # pass on it. Assert the report is this run's before trusting it.
+          node -e "
+            const r=require('./docs/a11y-audit/axe-postdeploy.json');
+            if(r.complete!==true){console.error('Report is partial or stale:',r.scanned,'of',r.expected,'scans; baseUrl',r.baseUrl);process.exit(1)}
+            if(r.baseUrl!==process.env.BASE_URL){console.error('Report baseUrl',r.baseUrl,'!=',process.env.BASE_URL);process.exit(1)}
+            const bad=r.results.flatMap(x=>(x.violations||[]).filter(v=>v.impact==='serious'||v.impact==='critical'));
+            if(bad.length){console.error('Found',bad.length,'serious/critical');for(const v of bad.slice(0,10))console.error(' ',v.id,JSON.stringify(v.sample?.[0]?.target));process.exit(1)}
+            console.log('Clean:',r.scanned,'scans, 0 serious/critical');
+          "
       - if: always()
         uses: actions/upload-artifact@v7
         with:

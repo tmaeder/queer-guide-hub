@@ -139,7 +139,9 @@ export const MapSearchField = ({
             }}
             onFocus={() => setPopoverOpen(true)}
             onKeyDown={handleEnter}
-            className="pl-8 pr-8 h-7 text-sm border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0"
+            // Dropping `Input`'s inverted-plate background means dropping its
+            // `text-background` foreground too, or the text inverts against the page.
+            className="pl-8 pr-8 h-7 text-sm border-0 bg-transparent text-foreground placeholder:text-muted-foreground focus-visible:ring-0 focus-visible:ring-offset-0"
           />
           {loading && (
             <Loader2

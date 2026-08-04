@@ -11,6 +11,7 @@
 //   SCAN_SCOPE     public | auth | admin | all        (default: public)
 //   SCAN_VIEWPORTS desktop | mobile | desktop,mobile   (default: desktop)
 //   SCAN_THEMES    light | dark | light,dark           (default: light)
+//   SCAN_CONCURRENCY  parallel page scans              (default: 4)
 //   OUT_NAME       output basename in docs/a11y-audit  (default: axe-baseline)
 //   E2E_STORAGE_STATE  storageState json for auth/admin routes
 //                      (default: playwright/.auth/admin.json when present)
@@ -28,6 +29,12 @@ const SCOPE = process.env.SCAN_SCOPE || 'public';
 const VIEWPORTS = (process.env.SCAN_VIEWPORTS || 'desktop').split(',').map((s) => s.trim());
 const THEMES = (process.env.SCAN_THEMES || 'light').split(',').map((s) => s.trim());
 const OUT_NAME = process.env.OUT_NAME || 'axe-baseline';
+// Scans are network- and render-bound, not CPU-bound, so a small pool cuts the
+// sweep well under the job budget. Sequential, the public manifest × 4 variants
+// is 160 scans ≈ 24 min and the 20-minute runner timeout killed it at 130 —
+// leaving no JSON at all, which the CI gate then read as the stale committed
+// file. See writeOut() below for the other half of that fix.
+const CONCURRENCY = Math.max(1, Number(process.env.SCAN_CONCURRENCY || 4) || 4);
 
 const VIEWPORT_SIZES = {
   desktop: { width: 1280, height: 900 },
@@ -186,7 +193,7 @@ function summarize(results) {
   return { byImpact, byRule };
 }
 
-function renderMarkdown(results) {
+function renderMarkdown(results, complete = true) {
   const { byImpact, byRule } = summarize(results);
   const lines = [];
   lines.push(`# axe-core sweep — ${BASE_URL}`);
@@ -195,6 +202,11 @@ function renderMarkdown(results) {
     `Scope: **${SCOPE}** · Viewports: ${VIEWPORTS.join('+')} · Themes: ${THEMES.join('+')} · ` +
     `${results.length} scans on ${new Date().toISOString()}.`,
   );
+  if (!complete) {
+    lines.push('');
+    lines.push('> **PARTIAL — this run did not finish.** Counts below cover only the scans');
+    lines.push('> that completed and must not be read as a clean result.');
+  }
   lines.push('');
   lines.push('## Summary');
   lines.push('');
@@ -244,36 +256,79 @@ function renderMarkdown(results) {
 async function main() {
   const variants = [];
   for (const vp of VIEWPORTS) for (const th of THEMES) variants.push({ vp, th });
-  const total = ROUTES.length * variants.length;
+  const tasks = [];
+  for (const route of ROUTES) for (const { vp, th } of variants) tasks.push({ route, vp, th });
+  const total = tasks.length;
   console.log(
     `Scanning ${ROUTES.length} routes × ${variants.length} variants ` +
-    `(${VIEWPORTS.join('+')} / ${THEMES.join('+')}) = ${total} scans against ${BASE_URL}…`,
+    `(${VIEWPORTS.join('+')} / ${THEMES.join('+')}) = ${total} scans against ${BASE_URL} ` +
+    `with concurrency ${CONCURRENCY}…`,
   );
   if (ROUTES.some((r) => r.auth) && !storageStateAvailable) {
     console.log(`  (no storageState at ${STORAGE_STATE} — auth routes scanned as anonymous gate)`);
   }
   const browser = await chromium.launch();
-  const results = [];
-  for (const route of ROUTES) {
-    for (const { vp, th } of variants) {
-      process.stdout.write(`  ${route.path} [${vp}/${th}] … `);
+  // Slot-indexed so the report keeps manifest order regardless of finish order.
+  const results = new Array(total);
+  let done = 0;
+
+  await mkdir(OUT_DIR, { recursive: true });
+  // Write after every completed scan. A killed run (runner timeout) then still
+  // leaves a `complete: false` report naming the scans it DID finish, instead of
+  // leaving the previous file on disk — which is how a stale committed
+  // axe-postdeploy.json from April got uploaded as if it were this run's result.
+  let writing = null;
+  async function writeOut(complete) {
+    const settled = results.filter(Boolean);
+    await writeFile(
+      JSON_OUT,
+      JSON.stringify(
+        {
+          baseUrl: BASE_URL,
+          scope: SCOPE,
+          viewports: VIEWPORTS,
+          themes: THEMES,
+          generatedAt: new Date().toISOString(),
+          complete,
+          scanned: settled.length,
+          expected: total,
+          results: settled,
+        },
+        null,
+        2,
+      ),
+    );
+    await writeFile(MD_OUT, renderMarkdown(settled, complete));
+  }
+  // Serialize writes so a partial file is never observed half-written.
+  const flush = (complete) => {
+    writing = (writing ?? Promise.resolve()).then(() => writeOut(complete)).catch(() => {});
+    return writing;
+  };
+  await flush(false);
+
+  let next = 0;
+  async function worker() {
+    for (;;) {
+      const i = next++;
+      if (i >= total) return;
+      const { route, vp, th } = tasks[i];
       const r = await scanVariant(browser, route, vp, th);
-      process.stdout.write(`${r.error ? 'ERR' : `${r.violations.length} violations`}\n`);
-      results.push(r);
+      results[i] = r;
+      done += 1;
+      process.stdout.write(
+        `  [${done}/${total}] ${route.path} [${vp}/${th}] … ` +
+        `${r.error ? 'ERR' : `${r.violations.length} violations`}\n`,
+      );
+      await flush(false);
     }
   }
+  await Promise.all(Array.from({ length: Math.min(CONCURRENCY, total) }, worker));
+
   await browser.close();
-  await mkdir(OUT_DIR, { recursive: true });
-  await writeFile(
-    JSON_OUT,
-    JSON.stringify(
-      { baseUrl: BASE_URL, scope: SCOPE, viewports: VIEWPORTS, themes: THEMES, generatedAt: new Date().toISOString(), results },
-      null,
-      2,
-    ),
-  );
-  await writeFile(MD_OUT, renderMarkdown(results));
-  const { byImpact } = summarize(results);
+  await flush(true);
+  await writing;
+  const { byImpact } = summarize(results.filter(Boolean));
   console.log(
     `\nDone. critical=${byImpact.critical || 0} serious=${byImpact.serious || 0} ` +
     `moderate=${byImpact.moderate || 0} minor=${byImpact.minor || 0}`,
