@@ -137,6 +137,37 @@ if (closureKb > ENTRY_CLOSURE_LIMIT_KB) {
   failed = true;
 }
 
+// ── MapLibre worker asset ───────────────────────────────────────────────
+// maplibre-gl 6 builds its worker URL at runtime from a template variable, so
+// no bundler emits the file on its own. When it is missing, Cloudflare Pages'
+// SPA fallback answers the request with index.html at `200 text/html`, the
+// module worker never starts, and EVERY map on the site renders a blank canvas
+// — with no failed request, no console error and a green deploy. That shipped
+// undetected for two days. src/config/maplibreWorker.ts bundles it explicitly;
+// this asserts the bundling actually happened.
+const allAssets = readdirSync('dist/assets', { recursive: true }).map(String);
+const workerAssets = allAssets.filter((f) => /maplibre-gl-worker/.test(f) && f.endsWith('.js'));
+
+if (workerAssets.length === 0) {
+  console.error(
+    '::error::No MapLibre worker asset in dist/assets. maplibre-gl cannot load its own worker in a bundled build — every map will render blank. See src/config/maplibreWorker.ts.',
+  );
+  failed = true;
+} else {
+  for (const f of workerAssets) {
+    // The upstream worker imports ./maplibre-gl-shared.mjs (~478 KB) as a
+    // sibling. If that survives as a bare specifier the worker is not
+    // self-contained and the import 404s at runtime — same blank map.
+    const contents = readFileSync(join('dist/assets', f), 'utf8');
+    if (/["']\.\/maplibre-gl-shared\.mjs["']/.test(contents)) {
+      console.error(
+        `::error::MapLibre worker ${f} still imports "./maplibre-gl-shared.mjs" — the sibling was not bundled in and will 404 at runtime.`,
+      );
+      failed = true;
+    }
+  }
+}
+
 if (failed) {
   console.error('Bundle shape check FAILED.');
   process.exit(1);

@@ -86,6 +86,55 @@ test.describe('MapShell — discover surface (/map)', () => {
   });
 });
 
+/**
+ * Every chrome test above passed while all maps on the site rendered a blank
+ * canvas for two days: maplibre-gl 6 could not load its own worker, and a map
+ * with a dead worker still mounts its controls, its canvas and its DOM. So
+ * none of the assertions above can detect that class of failure.
+ *
+ * Two signals here, both chosen because they are observable from the page:
+ *
+ *  1. The worker exists. maplibre-gl 6 derives its worker URL at runtime, so
+ *     the asset is not emitted unless src/config/maplibreWorker.ts bundles it;
+ *     without it the request falls through to the SPA fallback and returns
+ *     HTML, and no worker ever starts.
+ *  2. Glyph PBFs are fetched. Do NOT swap this for a `.mvt` assertion — tiles
+ *     are fetched from inside the worker and are invisible to page-level
+ *     events (that invisibility is a large part of why this shipped). Glyphs
+ *     are requested on the main thread, and only once the worker has parsed
+ *     tile data and a symbol layer needs a fontstack — so a glyph request is
+ *     positive proof that tiles were fetched AND parsed.
+ */
+test.describe('MapShell — basemap actually loads', () => {
+  test('starts the MapLibre worker and loads glyphs', async ({ page }) => {
+    const workers: string[] = [];
+    const glyphs: string[] = [];
+    page.on('worker', (w) => workers.push(w.url()));
+    page.on('response', (r) => {
+      if (r.url().includes('.pbf')) glyphs.push(`${r.status()} ${r.url()}`);
+    });
+
+    await page.goto('/en/map');
+    await expect(page.locator('canvas.maplibregl-canvas')).toBeVisible({ timeout: 15000 });
+
+    await expect
+      .poll(() => workers.filter((u) => u.includes('maplibre-gl-worker')).length, {
+        timeout: 20000,
+        message:
+          'No MapLibre worker started. The worker asset is probably missing from the build and the request is being answered by the SPA fallback as text/html — see src/config/maplibreWorker.ts.',
+      })
+      .toBeGreaterThan(0);
+
+    await expect
+      .poll(() => glyphs.filter((g) => g.startsWith('200')).length, {
+        timeout: 30000,
+        message:
+          'MapLibre worker started but no glyph PBF loaded, which means no vector tile was parsed. The basemap is blank.',
+      })
+      .toBeGreaterThan(0);
+  });
+});
+
 test.describe('MapShell — mobile chrome (390px)', () => {
   test.use({ viewport: { width: 390, height: 844 } });
 

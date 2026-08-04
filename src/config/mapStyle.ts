@@ -1,6 +1,12 @@
 import { layers, namedFlavor } from '@protomaps/basemaps';
 import type { StyleSpecification } from 'maplibre-gl';
 
+// Side-effect import: registers the bundled MapLibre worker URL. Must run
+// before any map is constructed, which importing it here guarantees — every
+// map surface reaches MapLibre through getMapStyle() below. See the file for
+// why maplibre-gl 6 cannot find its own worker in a bundled build.
+import './maplibreWorker';
+
 // Tile server URL — CF Worker serving PMTiles from R2.
 export const TILE_URL =
   'https://protomaps-tiles.maeder-tobiassimon.workers.dev/planet/{z}/{x}/{y}.mvt';
