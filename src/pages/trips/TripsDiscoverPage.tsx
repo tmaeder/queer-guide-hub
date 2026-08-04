@@ -179,7 +179,7 @@ export default function TripsDiscoverPage() {
           <div className="relative max-w-[460px] flex-1 min-w-[240px]">
             <Search
               size={16}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-background/70"
             />
             <Input
               value={query}

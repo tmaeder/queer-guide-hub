@@ -107,7 +107,7 @@ export function PersonalitiesFiltersBar({ filters, onFiltersChange }: Props) {
       {/* Row 1: search + sort */}
       <div className="flex flex-wrap items-center gap-4">
         <div className="relative flex-1 min-w-[260px]">
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-background/70" />
           <Input
             placeholder="Search by name, profession, description..."
             value={searchInput}

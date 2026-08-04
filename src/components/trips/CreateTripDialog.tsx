@@ -214,7 +214,7 @@ export function CreateTripDialog({ open, onClose, initialGeo, initialStart, init
                 <div className="relative">
                   <CalendarDays
                     size={16}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-background/70 pointer-events-none"
                   />
                   <Input
                     id="trip-title"
