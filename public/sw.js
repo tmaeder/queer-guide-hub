@@ -10,9 +10,47 @@
 // a blank screen). Paired with /assets/* 404 rule in public/_redirects
 // so the CF edge also stops returning the SPA fallback for missing
 // asset paths.
-const STATIC_CACHE = 'static-v12';
-const DYNAMIC_CACHE = 'dynamic-v12';
+// v13: SELF-HEAL the unpurgeable-stale-document fault. v12 stopped the page
+// being *poisoned* but still left it blank: every module 404s, so no page JS
+// survives to recover, and the stale shell predates the inline `?__fresh=`
+// guard (verified on prod 2026-08-04 — /venues served a 60h-old document,
+// `__fresh` absent, #root empty, 48 stale-chunk 404s). The document itself is
+// unreachable by purge (purge_everything re-confirmed ineffective) and is
+// per-colo, so it cannot be fixed from the origin.
+//
+// A service worker can call WindowClient.navigate() with NO page JS running,
+// and a cache-busting query reaches the correct build (proven: bare /venues
+// served the dead chunk while /venues?cb=… served the current one). So when we
+// detect the stale-chunk condition we re-navigate the client once.
+const STATIC_CACHE = 'static-v13';
+const DYNAMIC_CACHE = 'dynamic-v13';
 const DYNAMIC_CACHE_LIMIT = 50;
+
+// Clients we have already re-navigated. Loop safety is layered: this Set, the
+// `__fresh` marker already in the URL, and same-origin-only. All three must
+// hold before we navigate, because an unguarded SW reload loop is far worse
+// than the blank page it is trying to fix.
+const healedClients = new Set();
+
+async function healStaleDocument() {
+  try {
+    const clients = await self.clients.matchAll({ type: 'window' });
+    await Promise.all(clients.map(async (client) => {
+      if (healedClients.has(client.id)) return;
+      let url;
+      try { url = new URL(client.url); } catch { return; }
+      if (url.origin !== location.origin) return;
+      // Already cache-busted → the fresh copy is ALSO broken. Re-navigating
+      // would loop forever; leave it so the real error stays visible.
+      if (url.searchParams.has('__fresh')) return;
+      healedClients.add(client.id);
+      url.searchParams.set('__fresh', Date.now().toString(36));
+      if (typeof client.navigate === 'function') await client.navigate(url.toString());
+    }));
+  } catch {
+    // Never let self-heal break asset serving.
+  }
+}
 
 // Map asset file extensions to the response content-types we'll accept
 // when caching or serving from cache. If the response doesn't match
@@ -206,6 +244,14 @@ self.addEventListener('fetch', event => {
             // ("Failed to load module script: text/html"). Synthesise a
             // 404 instead so the browser surfaces a real missing-asset
             // error and any retry/error-boundary logic can recover.
+            // v13: this is the ONLY reliable signal that the document itself
+            // is a stale shell — the navigation response looked fine (200
+            // text/html with a valid nonce and route-correct <title>), so
+            // nothing earlier could have caught it. Re-navigate past the
+            // poisoned cache entry. Fire-and-forget: the 404 must still be
+            // returned so the browser surfaces a real missing-asset error if
+            // the heal does not apply (e.g. an uncontrolled client).
+            healStaleDocument();
             return new Response('', {
               status: 404,
               statusText: 'Asset not found (stale chunk hash)',
