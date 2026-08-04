@@ -60,7 +60,23 @@ export const BOOT_GUARD_JS = `(function () {
   }, true);
 })();`;
 
-/** The guard as a ready-to-inject `<script>` tag carrying the request nonce. */
+/**
+ * The guard as a ready-to-inject `<script>` tag carrying the request nonce.
+ *
+ * `data-cfasync="false"` is LOAD-BEARING, not a hint. Cloudflare Rocket Loader
+ * is enabled on this zone; it rewrites inline scripts and re-executes them
+ * itself, and the re-executed copy does NOT carry the nonce. Measured on prod
+ * 2026-08-04: the injected guard reached the DOM but came back with
+ * `type="text/javascript"` (we emit no `type`) and never ran —
+ * `window.__qgBootGuard` was unset, with
+ *
+ *   Executing inline script violates ... 'nonce-...'. The action has been
+ *   blocked.  @ /cdn-cgi/scripts/.../rocket-loader.min.js
+ *
+ * so the one script whose whole job is recovering a blank page was the script
+ * being silently disabled. `data-cfasync="false"` is Rocket Loader's official
+ * opt-out and makes it skip the element, leaving the nonce intact.
+ */
 export function bootGuardTag(nonce: string): string {
-  return `<script nonce="${nonce}">${BOOT_GUARD_JS}</script>`;
+  return `<script nonce="${nonce}" data-cfasync="false">${BOOT_GUARD_JS}</script>`;
 }
