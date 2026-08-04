@@ -24,9 +24,12 @@ export function useEvents(autoFetch: boolean = true, opts?: { skipDatasetTotal?:
   const [hasMore, setHasMore] = useState(true);
   const [loadingTimedOut, setLoadingTimedOut] = useState(false);
   const [datasetTotal, setDatasetTotal] = useState<number | null>(null);
-  // D7: true total returned by the most recent filtered query so the page
-  // header can say "Showing N of M events" instead of just "24".
-  const [totalCount, setTotalCount] = useState<number | null>(null);
+  // D7 wanted a `totalCount` state here — the true total of the most recent
+  // filtered query, so a header could say "Showing N of M events". It was never
+  // added to this hook's return value, so nothing could ever read it; the only
+  // consumer was `fetchEvents`, which returned it stale. That is now returned
+  // directly from the query, and the state is gone rather than left writing a
+  // re-render per fetch for no reader. Re-add it here the day a header needs it.
 
   useEffect(() => {
     if (skipDatasetTotal) return;
@@ -82,6 +85,7 @@ export function useEvents(autoFetch: boolean = true, opts?: { skipDatasetTotal?:
       const signal = options?.signal;
       if (signal?.aborted) return { fetched: 0, total: null as number | null };
       let fetchedCount = 0;
+      let resolvedTotal: number | null = null;
       try {
         setLoading(true);
         setLoadingTimedOut(false);
@@ -348,8 +352,7 @@ export function useEvents(autoFetch: boolean = true, opts?: { skipDatasetTotal?:
         }
 
         fetchedCount = eventsData.length;
-        const resultTotal = typeof count === 'number' ? count : null;
-        setTotalCount(resultTotal);
+        resolvedTotal = typeof count === 'number' ? count : null;
 
         if (typeof count === 'number') {
           if (typeof page === 'number') {
@@ -367,7 +370,13 @@ export function useEvents(autoFetch: boolean = true, opts?: { skipDatasetTotal?:
       } finally {
         if (!signal?.aborted) setLoading(false);
       }
-      return { fetched: fetchedCount, total: totalCount } as {
+      // `resolvedTotal`, not the `totalCount` state. The state read is what
+      // react-hooks/exhaustive-deps flagged here, and adding it to the dep array
+      // would have been the wrong repair: this callback is deliberately stable
+      // (`[]`), so `totalCount` was pinned to its value at first render and the
+      // returned `total` could never be anything else — while the correct count
+      // was sitting in scope, already on its way into the same state setter.
+      return { fetched: fetchedCount, total: resolvedTotal } as {
         fetched: number;
         total: number | null;
       };

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useState, useSyncExternalStore } from 'react';
 import { Image as ImageIcon, MapPin, ShieldOff, Sparkles, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
@@ -84,6 +84,39 @@ export function IntimateMatchThread({
   const { data: otherId } = useConversationOther(conversationId);
   const [confirmEnd, setConfirmEnd] = useState(false);
 
+  // Whether a location share is still live is a function of the clock, not only
+  // of the row, so it cannot be read during render — `Date.now()` there is
+  // impure and, more to the point, nothing re-renders at the deadline. The
+  // ribbon went on reading "Shared until 14:30" past 14:30, with "Stop sharing"
+  // in place of the presets, until some unrelated update happened to repaint it.
+  // On a control whose whole promise is that the share auto-expires, that is the
+  // one thing it must not get wrong.
+  //
+  // The clock is exactly the "external mutable source" useSyncExternalStore
+  // exists for, so it is the fix rather than state + an effect: the effect form
+  // has to seed itself with a synchronous setState, which React flags in turn.
+  // The subscription is one timer on the boundary, not a poll.
+  const locationExpiresAt = consent?.location_expires_at ?? null;
+  const readShareLive = useCallback(
+    () => locationExpiresAt !== null && new Date(locationExpiresAt).getTime() > Date.now(),
+    [locationExpiresAt],
+  );
+  const subscribeToExpiry = useCallback(
+    (onExpire: () => void) => {
+      if (locationExpiresAt === null) return () => {};
+      const msLeft = new Date(locationExpiresAt).getTime() - Date.now();
+      // A delay past the 32-bit ceiling fires a setTimeout *immediately*, which
+      // would expire the share instead of extending it. Presets top out at four
+      // hours, so a value near that ceiling is bad data — leave the share alone
+      // and let the next fetch correct it.
+      if (msLeft <= 0 || msLeft > 2_147_483_647) return () => {};
+      const timer = setTimeout(onExpire, msLeft);
+      return () => clearTimeout(timer);
+    },
+    [locationExpiresAt],
+  );
+  const locationActive = useSyncExternalStore(subscribeToExpiry, readShareLive, readShareLive);
+
   if (!consent) return null;
 
   const matchedOn = fmt(consent.matched_at);
@@ -93,11 +126,6 @@ export function IntimateMatchThread({
   const theirUnlocked =
     side === 'a' ? consent.photo_unlocked_b : side === 'b' ? consent.photo_unlocked_a : false;
   const photosUnlockedBoth = consent.photo_unlocked_a && consent.photo_unlocked_b;
-
-  const locationActive =
-     
-    consent.location_expires_at !== null &&
-    new Date(consent.location_expires_at).getTime() > Date.now();
 
   if (ended) {
     return (
