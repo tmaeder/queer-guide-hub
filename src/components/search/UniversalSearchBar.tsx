@@ -434,7 +434,12 @@ export const UniversalSearchBar = () => {
                   setIsOpen(true);
                 }}
                 autoComplete="off"
-                className="min-w-0 flex-1 border-0 bg-transparent text-sm shadow-none outline-none focus-visible:ring-0 focus-visible:ring-offset-0 md:text-sm"
+                // Input is an INVERTED plate (bg-inverse-surface + text-background).
+                // Dropping the plate to sit on this box's own bg-muted surface has to
+                // bring the paired foreground back with it — text-background inverts
+                // with the theme, so keeping it reads white-on-near-white in light
+                // (1.09:1) and near-black-on-near-black in dark (1.20:1).
+                className="min-w-0 flex-1 border-0 bg-transparent text-sm text-foreground shadow-none outline-none placeholder:text-muted-foreground focus-visible:ring-0 focus-visible:ring-offset-0 md:text-sm"
                 style={{
                   fontSize: isMobile ? '1rem' : '0.875rem',
                   height: inputHeight,

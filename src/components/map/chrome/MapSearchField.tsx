@@ -12,10 +12,7 @@ import {
   CommandList,
 } from '@/components/ui/command';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
-import {
-  useSearchSuggestions,
-  type SearchSuggestion,
-} from '@/hooks/useSearchSuggestions';
+import { useSearchSuggestions, type SearchSuggestion } from '@/hooks/useSearchSuggestions';
 import { cn } from '@/lib/utils';
 import type { MapShellFilters } from '../MapShell.types';
 
@@ -139,7 +136,11 @@ export const MapSearchField = ({
             }}
             onFocus={() => setPopoverOpen(true)}
             onKeyDown={handleEnter}
-            className="pl-8 pr-8 h-7 text-sm border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0"
+            // Input is an INVERTED plate (bg-inverse-surface + text-background). Dropping
+            // the plate to sit on the command bar's own bg-background surface has to
+            // bring the paired foreground back with it — text-background inverts with
+            // the theme, so keeping it reads white-on-white light, black-on-black dark.
+            className="pl-8 pr-8 h-7 text-sm text-foreground border-0 bg-transparent placeholder:text-muted-foreground focus-visible:ring-0 focus-visible:ring-offset-0"
           />
           {loading && (
             <Loader2
