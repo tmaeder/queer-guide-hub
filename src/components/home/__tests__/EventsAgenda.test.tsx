@@ -93,6 +93,9 @@ describe('EventsAgenda', () => {
     );
 
     const img = container.querySelector('img');
-    expect(img?.getAttribute('src')).toBe('https://images.example.com/pride-night.jpg');
+    // The raw URL survives inside the CF-resized wrapper (ExternalImg serves
+    // img.queer.guide/cdn-cgi/image/…/<original> first, raw on error).
+    expect(img?.getAttribute('src')).toContain('https://images.example.com/pride-night.jpg');
+    expect(img?.getAttribute('src')).toContain('/cdn-cgi/image/');
   });
 });

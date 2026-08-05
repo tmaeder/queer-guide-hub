@@ -4,6 +4,7 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { HomeSection } from './HomeSection';
 import { StaggerContainer, StaggerItem } from '@/components/motion';
 import { fetchTrendingCities } from '@/hooks/usePersonalizedCities';
+import { ExternalImg } from '@/components/ui/ExternalImg';
 import { getFallbackImage } from '@/utils/fallbackImages';
 import { isValidImageUrl } from '@/lib/images/resolveEntityImage';
 
@@ -41,24 +42,19 @@ export default function HomeDestinations() {
             ))
           : cities.map((city) => {
               const fallback = getFallbackImage('place', city.id);
-              const img = isValidImageUrl(city.image_url) ? city.image_url! : fallback;
+              const img = isValidImageUrl(city.image_url) ? city.image_url! : null;
               return (
                 <StaggerItem key={city.id} className="snap-start shrink-0 w-[200px] sm:w-[240px]">
                   <LocalizedLink
                     to={`/city/${city.slug || city.id}`}
                     className="group relative block aspect-[3/4] overflow-hidden rounded-container bg-surface-container no-underline"
                   >
-                    {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- onError is a media-error handler, not a user-input listener. */}
-                    <img
+                    <ExternalImg
                       src={img}
+                      cfWidth={500}
+                      fallbackSrc={fallback}
                       alt={city.name}
                       className="absolute inset-0 h-full w-full object-cover transition-transform group-hover:scale-[1.03]"
-                      loading="lazy"
-                      decoding="async"
-                      referrerPolicy="no-referrer"
-                      onError={(e) => {
-                        if (e.currentTarget.src !== fallback) e.currentTarget.src = fallback;
-                      }}
                     />
                     <div className="img-scrim-readable absolute inset-0" />
                     <div className="absolute bottom-0 start-0 end-0 p-4 text-white">
