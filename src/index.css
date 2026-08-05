@@ -1205,7 +1205,40 @@ h2,
   position: relative;
   isolation: isolate;
   --plate-offset: 6px;
+  --plate-offset-y: 6px;
+  --plate-rotate: 0deg;
   --plate-offset-ink: var(--spot);
+}
+/* Registration drifts; it does not repeat. A fixed 6px on every card is a
+   transform, not a misprint — in a grid the identical offset reads as a UI
+   effect immediately. These four variants vary the offset on both axes and add
+   a fraction of a degree of rotation, so no two neighbouring cards are
+   off-register the same way.
+
+   Keyed on [data-plate], set from useId() in CardHoverEffect — NOT on
+   :nth-child. This wrapper is almost always the only child of its own link, so
+   every card is "child 1"; a sibling-index selector was measured collapsing six
+   cards onto one identical variant. A cycle of 4 is long enough that a 2-, 3-
+   or 4-across grid never lines up the same way twice. */
+.plate-offset[data-plate='0'] {
+  --plate-offset: 7px;
+  --plate-offset-y: 5px;
+  --plate-rotate: -0.35deg;
+}
+.plate-offset[data-plate='1'] {
+  --plate-offset: 5px;
+  --plate-offset-y: 7px;
+  --plate-rotate: 0.28deg;
+}
+.plate-offset[data-plate='2'] {
+  --plate-offset: 6px;
+  --plate-offset-y: 8px;
+  --plate-rotate: 0.4deg;
+}
+.plate-offset[data-plate='3'] {
+  --plate-offset: 8px;
+  --plate-offset-y: 6px;
+  --plate-rotate: -0.22deg;
 }
 .plate-offset::before {
   content: '';
@@ -1214,13 +1247,13 @@ h2,
   z-index: -1;
   border-radius: var(--radius-container);
   background-color: hsl(var(--plate-offset-ink));
-  transform: translate(var(--plate-offset), var(--plate-offset));
+  transform: translate(var(--plate-offset), var(--plate-offset-y)) rotate(var(--plate-rotate));
   transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1);
   pointer-events: none;
 }
 .plate-offset:hover::before,
 .plate-offset:focus-within::before {
-  transform: translate(0, 0);
+  transform: translate(0, 0) rotate(0deg);
 }
 @media (prefers-reduced-motion: reduce) {
   .plate-offset::before {
@@ -1229,62 +1262,99 @@ h2,
 }
 
 /* ── Halftone screens ──────────────────────────────────────────────────
-   Dot screens, one per drum, each on its own angle the way a real
-   separation is screened so the dots interleave instead of moiré-ing.
-   CSS cannot rotate a background-image, so the angle is faked the way
-   printers describe it anyway — by offsetting alternate rows, which is
-   what a rotated screen looks like locally.
+   Dot screens, one per drum.
 
-   These are TEXTURE. Never put small text on one: the dots halve the
-   effective contrast of anything sitting on top. */
+   These are MASKS, not background-images. A data-URI SVG is a separate
+   document, so `hsl(var(--spot))` cannot resolve inside one — putting the
+   colour in the SVG would hard-code it and silently break both dark mode and
+   the runtime ink overrides in /admin/design. So the SVG carries geometry only
+   and `background-color` still supplies the token. That is also why the older
+   radial-gradient version existed: gradients DO resolve variables. It just
+   could not express an irregular dot.
+
+   Each screen is a 48px tile of dots on a JITTERED lattice with per-dot radius
+   variance — real dot gain. The previous version was a perfect
+   `radial-gradient` lattice at a uniform radius, offset a couple of px to
+   "fake" a screen angle, which is what made it read as CSS rather than as
+   print. Dots straddling the tile edge are duplicated on the opposite side, or
+   the 48px repeat shows as a seam grid.
+
+   The three drums use different seeds AND different pitches (ink 5px, pink and
+   blue 6px) so their lattices never align — that is the job a rotation angle
+   does on a press, achieved here without the seam maths a rotated pattern
+   forces.
+
+   OVERLAY-ONLY. A mask clips the element's children too, so these belong on a
+   dedicated `aria-hidden` layer, never on a content-bearing box. And never put
+   small text over one: the dots halve the effective contrast above them. */
+.halftone-ink,
+.halftone-paper,
 .halftone-pink,
-.halftone-blue,
-.halftone-ink {
-  background-repeat: repeat;
+.halftone-blue {
+  -webkit-mask-repeat: repeat;
+  mask-repeat: repeat;
+  -webkit-mask-size: 48px 48px;
+  mask-size: 48px 48px;
+}
+.halftone-ink,
+.halftone-paper {
+  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'%3E%3Cg fill='black'%3E%3Ccircle cx='47.22' cy='47.30' r='1.68'/%3E%3Ccircle cx='5.32' cy='0.03' r='1.28'/%3E%3Ccircle cx='9.95' cy='47.58' r='1.39'/%3E%3Ccircle cx='15.37' cy='47.61' r='1.11'/%3E%3Ccircle cx='20.42' cy='0.03' r='1.14'/%3E%3Ccircle cx='24.79' cy='47.67' r='1.37'/%3E%3Ccircle cx='29.67' cy='0.76' r='1.17'/%3E%3Ccircle cx='35.60' cy='47.51' r='1.10'/%3E%3Ccircle cx='39.45' cy='47.67' r='1.38'/%3E%3Ccircle cx='45.42' cy='47.32' r='1.64'/%3E%3Ccircle cx='0.09' cy='5.19' r='1.48'/%3E%3Ccircle cx='5.75' cy='5.20' r='1.64'/%3E%3Ccircle cx='10.52' cy='4.26' r='1.12'/%3E%3Ccircle cx='14.77' cy='4.88' r='1.01'/%3E%3Ccircle cx='19.34' cy='5.43' r='1.26'/%3E%3Ccircle cx='24.88' cy='4.95' r='1.66'/%3E%3Ccircle cx='30.33' cy='5.30' r='1.23'/%3E%3Ccircle cx='34.77' cy='4.42' r='1.09'/%3E%3Ccircle cx='40.66' cy='4.72' r='1.13'/%3E%3Ccircle cx='45.21' cy='4.74' r='1.03'/%3E%3Ccircle cx='0.29' cy='10.67' r='1.38'/%3E%3Ccircle cx='5.52' cy='10.25' r='1.64'/%3E%3Ccircle cx='9.39' cy='10.05' r='1.45'/%3E%3Ccircle cx='15.63' cy='10.74' r='1.59'/%3E%3Ccircle cx='20.15' cy='10.74' r='1.68'/%3E%3Ccircle cx='25.08' cy='10.51' r='1.00'/%3E%3Ccircle cx='30.03' cy='9.72' r='1.51'/%3E%3Ccircle cx='35.08' cy='10.41' r='1.68'/%3E%3Ccircle cx='40.09' cy='10.52' r='1.30'/%3E%3Ccircle cx='45.23' cy='10.38' r='1.39'/%3E%3Ccircle cx='47.70' cy='14.58' r='1.01'/%3E%3Ccircle cx='4.24' cy='15.71' r='1.58'/%3E%3Ccircle cx='10.21' cy='14.22' r='1.43'/%3E%3Ccircle cx='15.15' cy='15.35' r='1.70'/%3E%3Ccircle cx='19.64' cy='15.78' r='1.45'/%3E%3Ccircle cx='25.49' cy='15.20' r='1.58'/%3E%3Ccircle cx='29.42' cy='15.79' r='1.35'/%3E%3Ccircle cx='35.11' cy='14.46' r='1.28'/%3E%3Ccircle cx='39.54' cy='15.50' r='1.60'/%3E%3Ccircle cx='45.38' cy='15.25' r='1.69'/%3E%3Ccircle cx='0.17' cy='20.38' r='1.67'/%3E%3Ccircle cx='4.98' cy='19.57' r='1.41'/%3E%3Ccircle cx='10.47' cy='20.57' r='1.13'/%3E%3Ccircle cx='15.09' cy='19.96' r='1.37'/%3E%3Ccircle cx='19.49' cy='19.60' r='1.31'/%3E%3Ccircle cx='24.96' cy='19.47' r='1.00'/%3E%3Ccircle cx='29.48' cy='19.24' r='1.08'/%3E%3Ccircle cx='35.60' cy='20.77' r='1.04'/%3E%3Ccircle cx='39.48' cy='19.85' r='1.35'/%3E%3Ccircle cx='45.37' cy='19.79' r='1.25'/%3E%3Ccircle cx='0.47' cy='25.34' r='1.56'/%3E%3Ccircle cx='5.05' cy='25.48' r='1.29'/%3E%3Ccircle cx='10.10' cy='24.67' r='1.37'/%3E%3Ccircle cx='15.44' cy='24.33' r='1.18'/%3E%3Ccircle cx='20.52' cy='25.52' r='1.54'/%3E%3Ccircle cx='24.89' cy='24.77' r='1.64'/%3E%3Ccircle cx='29.60' cy='24.78' r='1.33'/%3E%3Ccircle cx='35.53' cy='24.85' r='1.68'/%3E%3Ccircle cx='40.08' cy='24.90' r='1.24'/%3E%3Ccircle cx='45.06' cy='24.67' r='1.62'/%3E%3Ccircle cx='0.12' cy='30.78' r='1.59'/%3E%3Ccircle cx='4.99' cy='29.90' r='1.49'/%3E%3Ccircle cx='10.69' cy='30.08' r='1.46'/%3E%3Ccircle cx='14.46' cy='30.31' r='1.27'/%3E%3Ccircle cx='20.18' cy='30.57' r='1.27'/%3E%3Ccircle cx='24.67' cy='29.34' r='1.48'/%3E%3Ccircle cx='30.37' cy='30.74' r='1.22'/%3E%3Ccircle cx='34.62' cy='29.31' r='1.50'/%3E%3Ccircle cx='40.68' cy='30.45' r='1.58'/%3E%3Ccircle cx='45.74' cy='29.56' r='1.69'/%3E%3Ccircle cx='47.65' cy='35.06' r='1.27'/%3E%3Ccircle cx='5.34' cy='35.42' r='1.44'/%3E%3Ccircle cx='10.36' cy='35.19' r='1.42'/%3E%3Ccircle cx='14.64' cy='35.53' r='1.34'/%3E%3Ccircle cx='19.42' cy='35.36' r='1.32'/%3E%3Ccircle cx='25.10' cy='35.08' r='1.62'/%3E%3Ccircle cx='30.72' cy='34.45' r='1.07'/%3E%3Ccircle cx='34.66' cy='35.04' r='1.27'/%3E%3Ccircle cx='40.66' cy='35.57' r='1.37'/%3E%3Ccircle cx='45.65' cy='34.65' r='1.35'/%3E%3Ccircle cx='0.68' cy='40.28' r='1.56'/%3E%3Ccircle cx='4.73' cy='40.66' r='1.68'/%3E%3Ccircle cx='10.55' cy='39.20' r='1.12'/%3E%3Ccircle cx='15.40' cy='39.37' r='1.06'/%3E%3Ccircle cx='20.66' cy='39.63' r='1.41'/%3E%3Ccircle cx='24.62' cy='40.47' r='1.50'/%3E%3Ccircle cx='29.29' cy='39.91' r='1.69'/%3E%3Ccircle cx='34.33' cy='39.34' r='1.27'/%3E%3Ccircle cx='40.46' cy='40.31' r='1.19'/%3E%3Ccircle cx='45.00' cy='39.37' r='1.34'/%3E%3Ccircle cx='47.90' cy='45.07' r='1.12'/%3E%3Ccircle cx='5.44' cy='44.69' r='1.48'/%3E%3Ccircle cx='10.53' cy='44.26' r='1.13'/%3E%3Ccircle cx='15.35' cy='45.63' r='1.20'/%3E%3Ccircle cx='20.54' cy='45.23' r='1.23'/%3E%3Ccircle cx='24.35' cy='44.37' r='1.69'/%3E%3Ccircle cx='30.31' cy='44.61' r='1.36'/%3E%3Ccircle cx='34.31' cy='45.03' r='1.30'/%3E%3Ccircle cx='40.45' cy='44.46' r='1.52'/%3E%3Ccircle cx='44.47' cy='44.58' r='1.14'/%3E%3Ccircle cx='-0.78' cy='47.30' r='1.68'/%3E%3Ccircle cx='47.22' cy='-0.70' r='1.68'/%3E%3Ccircle cx='5.32' cy='48.03' r='1.28'/%3E%3Ccircle cx='9.95' cy='-0.42' r='1.39'/%3E%3Ccircle cx='15.37' cy='-0.39' r='1.11'/%3E%3Ccircle cx='20.42' cy='48.03' r='1.14'/%3E%3Ccircle cx='24.79' cy='-0.33' r='1.37'/%3E%3Ccircle cx='29.67' cy='48.76' r='1.17'/%3E%3Ccircle cx='35.60' cy='-0.49' r='1.10'/%3E%3Ccircle cx='39.45' cy='-0.33' r='1.38'/%3E%3Ccircle cx='-2.58' cy='47.32' r='1.64'/%3E%3Ccircle cx='45.42' cy='-0.68' r='1.64'/%3E%3Ccircle cx='48.09' cy='5.19' r='1.48'/%3E%3Ccircle cx='-2.79' cy='4.74' r='1.03'/%3E%3Ccircle cx='48.29' cy='10.67' r='1.38'/%3E%3Ccircle cx='-2.77' cy='10.38' r='1.39'/%3E%3Ccircle cx='-0.30' cy='14.58' r='1.01'/%3E%3Ccircle cx='-2.62' cy='15.25' r='1.69'/%3E%3Ccircle cx='48.17' cy='20.38' r='1.67'/%3E%3Ccircle cx='-2.63' cy='19.79' r='1.25'/%3E%3Ccircle cx='48.47' cy='25.34' r='1.56'/%3E%3Ccircle cx='-2.94' cy='24.67' r='1.62'/%3E%3Ccircle cx='48.12' cy='30.78' r='1.59'/%3E%3Ccircle cx='-2.26' cy='29.56' r='1.69'/%3E%3Ccircle cx='-0.35' cy='35.06' r='1.27'/%3E%3Ccircle cx='-2.35' cy='34.65' r='1.35'/%3E%3Ccircle cx='48.68' cy='40.28' r='1.56'/%3E%3Ccircle cx='-0.10' cy='45.07' r='1.12'/%3E%3Ccircle cx='47.90' cy='-2.93' r='1.12'/%3E%3Ccircle cx='15.35' cy='-2.37' r='1.20'/%3E%3Ccircle cx='20.54' cy='-2.77' r='1.23'/%3E%3Ccircle cx='34.31' cy='-2.97' r='1.30'/%3E%3C/g%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'%3E%3Cg fill='black'%3E%3Ccircle cx='47.22' cy='47.30' r='1.68'/%3E%3Ccircle cx='5.32' cy='0.03' r='1.28'/%3E%3Ccircle cx='9.95' cy='47.58' r='1.39'/%3E%3Ccircle cx='15.37' cy='47.61' r='1.11'/%3E%3Ccircle cx='20.42' cy='0.03' r='1.14'/%3E%3Ccircle cx='24.79' cy='47.67' r='1.37'/%3E%3Ccircle cx='29.67' cy='0.76' r='1.17'/%3E%3Ccircle cx='35.60' cy='47.51' r='1.10'/%3E%3Ccircle cx='39.45' cy='47.67' r='1.38'/%3E%3Ccircle cx='45.42' cy='47.32' r='1.64'/%3E%3Ccircle cx='0.09' cy='5.19' r='1.48'/%3E%3Ccircle cx='5.75' cy='5.20' r='1.64'/%3E%3Ccircle cx='10.52' cy='4.26' r='1.12'/%3E%3Ccircle cx='14.77' cy='4.88' r='1.01'/%3E%3Ccircle cx='19.34' cy='5.43' r='1.26'/%3E%3Ccircle cx='24.88' cy='4.95' r='1.66'/%3E%3Ccircle cx='30.33' cy='5.30' r='1.23'/%3E%3Ccircle cx='34.77' cy='4.42' r='1.09'/%3E%3Ccircle cx='40.66' cy='4.72' r='1.13'/%3E%3Ccircle cx='45.21' cy='4.74' r='1.03'/%3E%3Ccircle cx='0.29' cy='10.67' r='1.38'/%3E%3Ccircle cx='5.52' cy='10.25' r='1.64'/%3E%3Ccircle cx='9.39' cy='10.05' r='1.45'/%3E%3Ccircle cx='15.63' cy='10.74' r='1.59'/%3E%3Ccircle cx='20.15' cy='10.74' r='1.68'/%3E%3Ccircle cx='25.08' cy='10.51' r='1.00'/%3E%3Ccircle cx='30.03' cy='9.72' r='1.51'/%3E%3Ccircle cx='35.08' cy='10.41' r='1.68'/%3E%3Ccircle cx='40.09' cy='10.52' r='1.30'/%3E%3Ccircle cx='45.23' cy='10.38' r='1.39'/%3E%3Ccircle cx='47.70' cy='14.58' r='1.01'/%3E%3Ccircle cx='4.24' cy='15.71' r='1.58'/%3E%3Ccircle cx='10.21' cy='14.22' r='1.43'/%3E%3Ccircle cx='15.15' cy='15.35' r='1.70'/%3E%3Ccircle cx='19.64' cy='15.78' r='1.45'/%3E%3Ccircle cx='25.49' cy='15.20' r='1.58'/%3E%3Ccircle cx='29.42' cy='15.79' r='1.35'/%3E%3Ccircle cx='35.11' cy='14.46' r='1.28'/%3E%3Ccircle cx='39.54' cy='15.50' r='1.60'/%3E%3Ccircle cx='45.38' cy='15.25' r='1.69'/%3E%3Ccircle cx='0.17' cy='20.38' r='1.67'/%3E%3Ccircle cx='4.98' cy='19.57' r='1.41'/%3E%3Ccircle cx='10.47' cy='20.57' r='1.13'/%3E%3Ccircle cx='15.09' cy='19.96' r='1.37'/%3E%3Ccircle cx='19.49' cy='19.60' r='1.31'/%3E%3Ccircle cx='24.96' cy='19.47' r='1.00'/%3E%3Ccircle cx='29.48' cy='19.24' r='1.08'/%3E%3Ccircle cx='35.60' cy='20.77' r='1.04'/%3E%3Ccircle cx='39.48' cy='19.85' r='1.35'/%3E%3Ccircle cx='45.37' cy='19.79' r='1.25'/%3E%3Ccircle cx='0.47' cy='25.34' r='1.56'/%3E%3Ccircle cx='5.05' cy='25.48' r='1.29'/%3E%3Ccircle cx='10.10' cy='24.67' r='1.37'/%3E%3Ccircle cx='15.44' cy='24.33' r='1.18'/%3E%3Ccircle cx='20.52' cy='25.52' r='1.54'/%3E%3Ccircle cx='24.89' cy='24.77' r='1.64'/%3E%3Ccircle cx='29.60' cy='24.78' r='1.33'/%3E%3Ccircle cx='35.53' cy='24.85' r='1.68'/%3E%3Ccircle cx='40.08' cy='24.90' r='1.24'/%3E%3Ccircle cx='45.06' cy='24.67' r='1.62'/%3E%3Ccircle cx='0.12' cy='30.78' r='1.59'/%3E%3Ccircle cx='4.99' cy='29.90' r='1.49'/%3E%3Ccircle cx='10.69' cy='30.08' r='1.46'/%3E%3Ccircle cx='14.46' cy='30.31' r='1.27'/%3E%3Ccircle cx='20.18' cy='30.57' r='1.27'/%3E%3Ccircle cx='24.67' cy='29.34' r='1.48'/%3E%3Ccircle cx='30.37' cy='30.74' r='1.22'/%3E%3Ccircle cx='34.62' cy='29.31' r='1.50'/%3E%3Ccircle cx='40.68' cy='30.45' r='1.58'/%3E%3Ccircle cx='45.74' cy='29.56' r='1.69'/%3E%3Ccircle cx='47.65' cy='35.06' r='1.27'/%3E%3Ccircle cx='5.34' cy='35.42' r='1.44'/%3E%3Ccircle cx='10.36' cy='35.19' r='1.42'/%3E%3Ccircle cx='14.64' cy='35.53' r='1.34'/%3E%3Ccircle cx='19.42' cy='35.36' r='1.32'/%3E%3Ccircle cx='25.10' cy='35.08' r='1.62'/%3E%3Ccircle cx='30.72' cy='34.45' r='1.07'/%3E%3Ccircle cx='34.66' cy='35.04' r='1.27'/%3E%3Ccircle cx='40.66' cy='35.57' r='1.37'/%3E%3Ccircle cx='45.65' cy='34.65' r='1.35'/%3E%3Ccircle cx='0.68' cy='40.28' r='1.56'/%3E%3Ccircle cx='4.73' cy='40.66' r='1.68'/%3E%3Ccircle cx='10.55' cy='39.20' r='1.12'/%3E%3Ccircle cx='15.40' cy='39.37' r='1.06'/%3E%3Ccircle cx='20.66' cy='39.63' r='1.41'/%3E%3Ccircle cx='24.62' cy='40.47' r='1.50'/%3E%3Ccircle cx='29.29' cy='39.91' r='1.69'/%3E%3Ccircle cx='34.33' cy='39.34' r='1.27'/%3E%3Ccircle cx='40.46' cy='40.31' r='1.19'/%3E%3Ccircle cx='45.00' cy='39.37' r='1.34'/%3E%3Ccircle cx='47.90' cy='45.07' r='1.12'/%3E%3Ccircle cx='5.44' cy='44.69' r='1.48'/%3E%3Ccircle cx='10.53' cy='44.26' r='1.13'/%3E%3Ccircle cx='15.35' cy='45.63' r='1.20'/%3E%3Ccircle cx='20.54' cy='45.23' r='1.23'/%3E%3Ccircle cx='24.35' cy='44.37' r='1.69'/%3E%3Ccircle cx='30.31' cy='44.61' r='1.36'/%3E%3Ccircle cx='34.31' cy='45.03' r='1.30'/%3E%3Ccircle cx='40.45' cy='44.46' r='1.52'/%3E%3Ccircle cx='44.47' cy='44.58' r='1.14'/%3E%3Ccircle cx='-0.78' cy='47.30' r='1.68'/%3E%3Ccircle cx='47.22' cy='-0.70' r='1.68'/%3E%3Ccircle cx='5.32' cy='48.03' r='1.28'/%3E%3Ccircle cx='9.95' cy='-0.42' r='1.39'/%3E%3Ccircle cx='15.37' cy='-0.39' r='1.11'/%3E%3Ccircle cx='20.42' cy='48.03' r='1.14'/%3E%3Ccircle cx='24.79' cy='-0.33' r='1.37'/%3E%3Ccircle cx='29.67' cy='48.76' r='1.17'/%3E%3Ccircle cx='35.60' cy='-0.49' r='1.10'/%3E%3Ccircle cx='39.45' cy='-0.33' r='1.38'/%3E%3Ccircle cx='-2.58' cy='47.32' r='1.64'/%3E%3Ccircle cx='45.42' cy='-0.68' r='1.64'/%3E%3Ccircle cx='48.09' cy='5.19' r='1.48'/%3E%3Ccircle cx='-2.79' cy='4.74' r='1.03'/%3E%3Ccircle cx='48.29' cy='10.67' r='1.38'/%3E%3Ccircle cx='-2.77' cy='10.38' r='1.39'/%3E%3Ccircle cx='-0.30' cy='14.58' r='1.01'/%3E%3Ccircle cx='-2.62' cy='15.25' r='1.69'/%3E%3Ccircle cx='48.17' cy='20.38' r='1.67'/%3E%3Ccircle cx='-2.63' cy='19.79' r='1.25'/%3E%3Ccircle cx='48.47' cy='25.34' r='1.56'/%3E%3Ccircle cx='-2.94' cy='24.67' r='1.62'/%3E%3Ccircle cx='48.12' cy='30.78' r='1.59'/%3E%3Ccircle cx='-2.26' cy='29.56' r='1.69'/%3E%3Ccircle cx='-0.35' cy='35.06' r='1.27'/%3E%3Ccircle cx='-2.35' cy='34.65' r='1.35'/%3E%3Ccircle cx='48.68' cy='40.28' r='1.56'/%3E%3Ccircle cx='-0.10' cy='45.07' r='1.12'/%3E%3Ccircle cx='47.90' cy='-2.93' r='1.12'/%3E%3Ccircle cx='15.35' cy='-2.37' r='1.20'/%3E%3Ccircle cx='20.54' cy='-2.77' r='1.23'/%3E%3Ccircle cx='34.31' cy='-2.97' r='1.30'/%3E%3C/g%3E%3C/svg%3E");
 }
 .halftone-pink {
-  background-image: radial-gradient(hsl(var(--spot) / 0.55) 1.6px, transparent 1.7px);
-  background-size: 6px 6px;
+  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'%3E%3Cg fill='black'%3E%3Ccircle cx='47.16' cy='47.67' r='1.66'/%3E%3Ccircle cx='6.49' cy='0.92' r='1.55'/%3E%3Ccircle cx='12.29' cy='0.06' r='1.73'/%3E%3Ccircle cx='18.61' cy='47.27' r='1.69'/%3E%3Ccircle cx='24.15' cy='47.81' r='1.77'/%3E%3Ccircle cx='29.21' cy='47.23' r='1.70'/%3E%3Ccircle cx='36.41' cy='0.64' r='1.67'/%3E%3Ccircle cx='41.42' cy='47.19' r='1.39'/%3E%3Ccircle cx='0.21' cy='5.60' r='1.41'/%3E%3Ccircle cx='6.72' cy='5.56' r='2.09'/%3E%3Ccircle cx='12.84' cy='5.95' r='1.41'/%3E%3Ccircle cx='17.55' cy='6.79' r='2.01'/%3E%3Ccircle cx='23.05' cy='5.64' r='2.07'/%3E%3Ccircle cx='30.83' cy='5.99' r='1.61'/%3E%3Ccircle cx='35.43' cy='5.60' r='2.00'/%3E%3Ccircle cx='41.17' cy='5.77' r='1.71'/%3E%3Ccircle cx='0.04' cy='12.82' r='1.70'/%3E%3Ccircle cx='5.48' cy='11.25' r='1.86'/%3E%3Ccircle cx='12.20' cy='12.51' r='2.03'/%3E%3Ccircle cx='17.05' cy='11.67' r='1.67'/%3E%3Ccircle cx='23.33' cy='11.73' r='1.96'/%3E%3Ccircle cx='29.40' cy='12.13' r='1.29'/%3E%3Ccircle cx='35.11' cy='11.61' r='1.82'/%3E%3Ccircle cx='42.60' cy='11.27' r='1.79'/%3E%3Ccircle cx='0.28' cy='17.86' r='1.77'/%3E%3Ccircle cx='5.55' cy='17.27' r='1.29'/%3E%3Ccircle cx='12.64' cy='18.82' r='1.65'/%3E%3Ccircle cx='18.79' cy='17.34' r='1.61'/%3E%3Ccircle cx='24.10' cy='17.87' r='1.35'/%3E%3Ccircle cx='29.10' cy='18.72' r='2.07'/%3E%3Ccircle cx='35.89' cy='18.05' r='1.81'/%3E%3Ccircle cx='41.60' cy='18.69' r='1.30'/%3E%3Ccircle cx='0.15' cy='23.93' r='1.80'/%3E%3Ccircle cx='6.08' cy='24.54' r='1.84'/%3E%3Ccircle cx='12.66' cy='23.29' r='1.99'/%3E%3Ccircle cx='18.60' cy='24.55' r='1.78'/%3E%3Ccircle cx='23.21' cy='24.64' r='1.62'/%3E%3Ccircle cx='30.63' cy='24.07' r='1.50'/%3E%3Ccircle cx='35.44' cy='24.55' r='2.09'/%3E%3Ccircle cx='41.56' cy='24.86' r='1.45'/%3E%3Ccircle cx='47.16' cy='30.80' r='1.89'/%3E%3Ccircle cx='5.95' cy='30.38' r='1.99'/%3E%3Ccircle cx='12.03' cy='30.09' r='1.77'/%3E%3Ccircle cx='17.90' cy='29.41' r='1.48'/%3E%3Ccircle cx='23.22' cy='30.77' r='1.48'/%3E%3Ccircle cx='29.63' cy='29.21' r='1.59'/%3E%3Ccircle cx='35.19' cy='29.68' r='1.38'/%3E%3Ccircle cx='42.79' cy='30.46' r='1.97'/%3E%3Ccircle cx='47.54' cy='35.60' r='2.12'/%3E%3Ccircle cx='5.95' cy='36.12' r='1.86'/%3E%3Ccircle cx='12.36' cy='35.38' r='1.70'/%3E%3Ccircle cx='17.62' cy='35.07' r='2.00'/%3E%3Ccircle cx='24.43' cy='35.11' r='2.10'/%3E%3Ccircle cx='30.22' cy='36.71' r='1.28'/%3E%3Ccircle cx='36.88' cy='35.46' r='1.79'/%3E%3Ccircle cx='42.39' cy='36.08' r='2.12'/%3E%3Ccircle cx='0.15' cy='42.52' r='2.10'/%3E%3Ccircle cx='5.62' cy='42.37' r='1.60'/%3E%3Ccircle cx='11.99' cy='42.09' r='1.92'/%3E%3Ccircle cx='17.23' cy='41.74' r='1.98'/%3E%3Ccircle cx='24.27' cy='42.92' r='1.65'/%3E%3Ccircle cx='29.60' cy='42.61' r='1.55'/%3E%3Ccircle cx='35.74' cy='42.12' r='1.33'/%3E%3Ccircle cx='41.41' cy='41.21' r='1.75'/%3E%3Ccircle cx='-0.84' cy='47.67' r='1.66'/%3E%3Ccircle cx='47.16' cy='-0.33' r='1.66'/%3E%3Ccircle cx='6.49' cy='48.92' r='1.55'/%3E%3Ccircle cx='12.29' cy='48.06' r='1.73'/%3E%3Ccircle cx='18.61' cy='-0.73' r='1.69'/%3E%3Ccircle cx='24.15' cy='-0.19' r='1.77'/%3E%3Ccircle cx='29.21' cy='-0.77' r='1.70'/%3E%3Ccircle cx='36.41' cy='48.64' r='1.67'/%3E%3Ccircle cx='41.42' cy='-0.81' r='1.39'/%3E%3Ccircle cx='48.21' cy='5.60' r='1.41'/%3E%3Ccircle cx='48.04' cy='12.82' r='1.70'/%3E%3Ccircle cx='48.28' cy='17.86' r='1.77'/%3E%3Ccircle cx='48.15' cy='23.93' r='1.80'/%3E%3Ccircle cx='-0.84' cy='30.80' r='1.89'/%3E%3Ccircle cx='-0.46' cy='35.60' r='2.12'/%3E%3Ccircle cx='48.15' cy='42.52' r='2.10'/%3E%3C/g%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'%3E%3Cg fill='black'%3E%3Ccircle cx='47.16' cy='47.67' r='1.66'/%3E%3Ccircle cx='6.49' cy='0.92' r='1.55'/%3E%3Ccircle cx='12.29' cy='0.06' r='1.73'/%3E%3Ccircle cx='18.61' cy='47.27' r='1.69'/%3E%3Ccircle cx='24.15' cy='47.81' r='1.77'/%3E%3Ccircle cx='29.21' cy='47.23' r='1.70'/%3E%3Ccircle cx='36.41' cy='0.64' r='1.67'/%3E%3Ccircle cx='41.42' cy='47.19' r='1.39'/%3E%3Ccircle cx='0.21' cy='5.60' r='1.41'/%3E%3Ccircle cx='6.72' cy='5.56' r='2.09'/%3E%3Ccircle cx='12.84' cy='5.95' r='1.41'/%3E%3Ccircle cx='17.55' cy='6.79' r='2.01'/%3E%3Ccircle cx='23.05' cy='5.64' r='2.07'/%3E%3Ccircle cx='30.83' cy='5.99' r='1.61'/%3E%3Ccircle cx='35.43' cy='5.60' r='2.00'/%3E%3Ccircle cx='41.17' cy='5.77' r='1.71'/%3E%3Ccircle cx='0.04' cy='12.82' r='1.70'/%3E%3Ccircle cx='5.48' cy='11.25' r='1.86'/%3E%3Ccircle cx='12.20' cy='12.51' r='2.03'/%3E%3Ccircle cx='17.05' cy='11.67' r='1.67'/%3E%3Ccircle cx='23.33' cy='11.73' r='1.96'/%3E%3Ccircle cx='29.40' cy='12.13' r='1.29'/%3E%3Ccircle cx='35.11' cy='11.61' r='1.82'/%3E%3Ccircle cx='42.60' cy='11.27' r='1.79'/%3E%3Ccircle cx='0.28' cy='17.86' r='1.77'/%3E%3Ccircle cx='5.55' cy='17.27' r='1.29'/%3E%3Ccircle cx='12.64' cy='18.82' r='1.65'/%3E%3Ccircle cx='18.79' cy='17.34' r='1.61'/%3E%3Ccircle cx='24.10' cy='17.87' r='1.35'/%3E%3Ccircle cx='29.10' cy='18.72' r='2.07'/%3E%3Ccircle cx='35.89' cy='18.05' r='1.81'/%3E%3Ccircle cx='41.60' cy='18.69' r='1.30'/%3E%3Ccircle cx='0.15' cy='23.93' r='1.80'/%3E%3Ccircle cx='6.08' cy='24.54' r='1.84'/%3E%3Ccircle cx='12.66' cy='23.29' r='1.99'/%3E%3Ccircle cx='18.60' cy='24.55' r='1.78'/%3E%3Ccircle cx='23.21' cy='24.64' r='1.62'/%3E%3Ccircle cx='30.63' cy='24.07' r='1.50'/%3E%3Ccircle cx='35.44' cy='24.55' r='2.09'/%3E%3Ccircle cx='41.56' cy='24.86' r='1.45'/%3E%3Ccircle cx='47.16' cy='30.80' r='1.89'/%3E%3Ccircle cx='5.95' cy='30.38' r='1.99'/%3E%3Ccircle cx='12.03' cy='30.09' r='1.77'/%3E%3Ccircle cx='17.90' cy='29.41' r='1.48'/%3E%3Ccircle cx='23.22' cy='30.77' r='1.48'/%3E%3Ccircle cx='29.63' cy='29.21' r='1.59'/%3E%3Ccircle cx='35.19' cy='29.68' r='1.38'/%3E%3Ccircle cx='42.79' cy='30.46' r='1.97'/%3E%3Ccircle cx='47.54' cy='35.60' r='2.12'/%3E%3Ccircle cx='5.95' cy='36.12' r='1.86'/%3E%3Ccircle cx='12.36' cy='35.38' r='1.70'/%3E%3Ccircle cx='17.62' cy='35.07' r='2.00'/%3E%3Ccircle cx='24.43' cy='35.11' r='2.10'/%3E%3Ccircle cx='30.22' cy='36.71' r='1.28'/%3E%3Ccircle cx='36.88' cy='35.46' r='1.79'/%3E%3Ccircle cx='42.39' cy='36.08' r='2.12'/%3E%3Ccircle cx='0.15' cy='42.52' r='2.10'/%3E%3Ccircle cx='5.62' cy='42.37' r='1.60'/%3E%3Ccircle cx='11.99' cy='42.09' r='1.92'/%3E%3Ccircle cx='17.23' cy='41.74' r='1.98'/%3E%3Ccircle cx='24.27' cy='42.92' r='1.65'/%3E%3Ccircle cx='29.60' cy='42.61' r='1.55'/%3E%3Ccircle cx='35.74' cy='42.12' r='1.33'/%3E%3Ccircle cx='41.41' cy='41.21' r='1.75'/%3E%3Ccircle cx='-0.84' cy='47.67' r='1.66'/%3E%3Ccircle cx='47.16' cy='-0.33' r='1.66'/%3E%3Ccircle cx='6.49' cy='48.92' r='1.55'/%3E%3Ccircle cx='12.29' cy='48.06' r='1.73'/%3E%3Ccircle cx='18.61' cy='-0.73' r='1.69'/%3E%3Ccircle cx='24.15' cy='-0.19' r='1.77'/%3E%3Ccircle cx='29.21' cy='-0.77' r='1.70'/%3E%3Ccircle cx='36.41' cy='48.64' r='1.67'/%3E%3Ccircle cx='41.42' cy='-0.81' r='1.39'/%3E%3Ccircle cx='48.21' cy='5.60' r='1.41'/%3E%3Ccircle cx='48.04' cy='12.82' r='1.70'/%3E%3Ccircle cx='48.28' cy='17.86' r='1.77'/%3E%3Ccircle cx='48.15' cy='23.93' r='1.80'/%3E%3Ccircle cx='-0.84' cy='30.80' r='1.89'/%3E%3Ccircle cx='-0.46' cy='35.60' r='2.12'/%3E%3Ccircle cx='48.15' cy='42.52' r='2.10'/%3E%3C/g%3E%3C/svg%3E");
+  background-color: hsl(var(--spot) / 0.55);
 }
 .halftone-blue {
-  background-image: radial-gradient(hsl(var(--ink-blue) / 0.5) 1.6px, transparent 1.7px);
-  background-size: 6px 6px;
-  background-position: 3px 3px;
+  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'%3E%3Cg fill='black'%3E%3Ccircle cx='0.85' cy='47.62' r='1.62'/%3E%3Ccircle cx='5.25' cy='47.26' r='1.80'/%3E%3Ccircle cx='11.22' cy='47.26' r='1.90'/%3E%3Ccircle cx='17.47' cy='47.59' r='1.88'/%3E%3Ccircle cx='24.74' cy='47.25' r='1.56'/%3E%3Ccircle cx='29.61' cy='47.77' r='1.75'/%3E%3Ccircle cx='36.34' cy='0.74' r='1.39'/%3E%3Ccircle cx='41.25' cy='0.74' r='1.51'/%3E%3Ccircle cx='0.22' cy='5.87' r='1.86'/%3E%3Ccircle cx='6.30' cy='6.21' r='1.99'/%3E%3Ccircle cx='11.58' cy='6.15' r='1.38'/%3E%3Ccircle cx='17.17' cy='6.55' r='1.88'/%3E%3Ccircle cx='24.02' cy='6.69' r='1.81'/%3E%3Ccircle cx='30.50' cy='6.85' r='1.64'/%3E%3Ccircle cx='36.37' cy='5.66' r='1.41'/%3E%3Ccircle cx='42.50' cy='5.25' r='1.46'/%3E%3Ccircle cx='0.02' cy='12.42' r='1.84'/%3E%3Ccircle cx='5.48' cy='12.43' r='1.28'/%3E%3Ccircle cx='12.77' cy='12.66' r='1.26'/%3E%3Ccircle cx='18.81' cy='11.71' r='1.53'/%3E%3Ccircle cx='23.24' cy='11.86' r='1.96'/%3E%3Ccircle cx='30.55' cy='12.69' r='1.93'/%3E%3Ccircle cx='36.22' cy='11.47' r='1.26'/%3E%3Ccircle cx='42.49' cy='12.44' r='1.47'/%3E%3Ccircle cx='0.36' cy='18.58' r='1.93'/%3E%3Ccircle cx='6.78' cy='18.76' r='1.42'/%3E%3Ccircle cx='11.79' cy='17.70' r='1.67'/%3E%3Ccircle cx='17.20' cy='17.81' r='1.93'/%3E%3Ccircle cx='23.92' cy='18.36' r='1.31'/%3E%3Ccircle cx='29.42' cy='18.13' r='1.33'/%3E%3Ccircle cx='36.44' cy='18.60' r='1.35'/%3E%3Ccircle cx='41.67' cy='18.39' r='1.47'/%3E%3Ccircle cx='47.66' cy='24.01' r='1.87'/%3E%3Ccircle cx='6.65' cy='24.27' r='1.25'/%3E%3Ccircle cx='11.83' cy='24.37' r='1.40'/%3E%3Ccircle cx='17.92' cy='23.60' r='1.21'/%3E%3Ccircle cx='23.84' cy='23.93' r='1.59'/%3E%3Ccircle cx='30.29' cy='23.73' r='1.30'/%3E%3Ccircle cx='35.45' cy='23.34' r='1.57'/%3E%3Ccircle cx='41.99' cy='24.61' r='1.24'/%3E%3Ccircle cx='0.46' cy='30.55' r='1.96'/%3E%3Ccircle cx='6.26' cy='30.29' r='1.32'/%3E%3Ccircle cx='12.81' cy='29.57' r='1.39'/%3E%3Ccircle cx='18.15' cy='29.98' r='1.25'/%3E%3Ccircle cx='23.57' cy='30.37' r='1.73'/%3E%3Ccircle cx='30.11' cy='30.81' r='1.40'/%3E%3Ccircle cx='35.52' cy='29.80' r='1.47'/%3E%3Ccircle cx='42.77' cy='30.59' r='1.99'/%3E%3Ccircle cx='0.64' cy='36.69' r='1.59'/%3E%3Ccircle cx='6.81' cy='36.01' r='1.60'/%3E%3Ccircle cx='11.99' cy='35.55' r='1.72'/%3E%3Ccircle cx='18.74' cy='36.78' r='1.28'/%3E%3Ccircle cx='24.57' cy='35.82' r='1.84'/%3E%3Ccircle cx='30.00' cy='35.85' r='1.72'/%3E%3Ccircle cx='35.99' cy='35.42' r='1.74'/%3E%3Ccircle cx='42.28' cy='36.83' r='1.65'/%3E%3Ccircle cx='0.41' cy='41.41' r='1.79'/%3E%3Ccircle cx='6.49' cy='41.45' r='1.44'/%3E%3Ccircle cx='12.45' cy='42.21' r='1.34'/%3E%3Ccircle cx='18.57' cy='41.40' r='1.76'/%3E%3Ccircle cx='24.38' cy='41.52' r='1.32'/%3E%3Ccircle cx='29.35' cy='42.26' r='1.53'/%3E%3Ccircle cx='36.77' cy='41.93' r='1.63'/%3E%3Ccircle cx='41.54' cy='42.74' r='1.62'/%3E%3Ccircle cx='48.85' cy='47.62' r='1.62'/%3E%3Ccircle cx='0.85' cy='-0.38' r='1.62'/%3E%3Ccircle cx='5.25' cy='-0.74' r='1.80'/%3E%3Ccircle cx='11.22' cy='-0.74' r='1.90'/%3E%3Ccircle cx='17.47' cy='-0.41' r='1.88'/%3E%3Ccircle cx='24.74' cy='-0.75' r='1.56'/%3E%3Ccircle cx='29.61' cy='-0.23' r='1.75'/%3E%3Ccircle cx='36.34' cy='48.74' r='1.39'/%3E%3Ccircle cx='41.25' cy='48.74' r='1.51'/%3E%3Ccircle cx='48.22' cy='5.87' r='1.86'/%3E%3Ccircle cx='48.02' cy='12.42' r='1.84'/%3E%3Ccircle cx='48.36' cy='18.58' r='1.93'/%3E%3Ccircle cx='-0.34' cy='24.01' r='1.87'/%3E%3Ccircle cx='48.46' cy='30.55' r='1.96'/%3E%3Ccircle cx='48.64' cy='36.69' r='1.59'/%3E%3Ccircle cx='48.41' cy='41.41' r='1.79'/%3E%3C/g%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'%3E%3Cg fill='black'%3E%3Ccircle cx='0.85' cy='47.62' r='1.62'/%3E%3Ccircle cx='5.25' cy='47.26' r='1.80'/%3E%3Ccircle cx='11.22' cy='47.26' r='1.90'/%3E%3Ccircle cx='17.47' cy='47.59' r='1.88'/%3E%3Ccircle cx='24.74' cy='47.25' r='1.56'/%3E%3Ccircle cx='29.61' cy='47.77' r='1.75'/%3E%3Ccircle cx='36.34' cy='0.74' r='1.39'/%3E%3Ccircle cx='41.25' cy='0.74' r='1.51'/%3E%3Ccircle cx='0.22' cy='5.87' r='1.86'/%3E%3Ccircle cx='6.30' cy='6.21' r='1.99'/%3E%3Ccircle cx='11.58' cy='6.15' r='1.38'/%3E%3Ccircle cx='17.17' cy='6.55' r='1.88'/%3E%3Ccircle cx='24.02' cy='6.69' r='1.81'/%3E%3Ccircle cx='30.50' cy='6.85' r='1.64'/%3E%3Ccircle cx='36.37' cy='5.66' r='1.41'/%3E%3Ccircle cx='42.50' cy='5.25' r='1.46'/%3E%3Ccircle cx='0.02' cy='12.42' r='1.84'/%3E%3Ccircle cx='5.48' cy='12.43' r='1.28'/%3E%3Ccircle cx='12.77' cy='12.66' r='1.26'/%3E%3Ccircle cx='18.81' cy='11.71' r='1.53'/%3E%3Ccircle cx='23.24' cy='11.86' r='1.96'/%3E%3Ccircle cx='30.55' cy='12.69' r='1.93'/%3E%3Ccircle cx='36.22' cy='11.47' r='1.26'/%3E%3Ccircle cx='42.49' cy='12.44' r='1.47'/%3E%3Ccircle cx='0.36' cy='18.58' r='1.93'/%3E%3Ccircle cx='6.78' cy='18.76' r='1.42'/%3E%3Ccircle cx='11.79' cy='17.70' r='1.67'/%3E%3Ccircle cx='17.20' cy='17.81' r='1.93'/%3E%3Ccircle cx='23.92' cy='18.36' r='1.31'/%3E%3Ccircle cx='29.42' cy='18.13' r='1.33'/%3E%3Ccircle cx='36.44' cy='18.60' r='1.35'/%3E%3Ccircle cx='41.67' cy='18.39' r='1.47'/%3E%3Ccircle cx='47.66' cy='24.01' r='1.87'/%3E%3Ccircle cx='6.65' cy='24.27' r='1.25'/%3E%3Ccircle cx='11.83' cy='24.37' r='1.40'/%3E%3Ccircle cx='17.92' cy='23.60' r='1.21'/%3E%3Ccircle cx='23.84' cy='23.93' r='1.59'/%3E%3Ccircle cx='30.29' cy='23.73' r='1.30'/%3E%3Ccircle cx='35.45' cy='23.34' r='1.57'/%3E%3Ccircle cx='41.99' cy='24.61' r='1.24'/%3E%3Ccircle cx='0.46' cy='30.55' r='1.96'/%3E%3Ccircle cx='6.26' cy='30.29' r='1.32'/%3E%3Ccircle cx='12.81' cy='29.57' r='1.39'/%3E%3Ccircle cx='18.15' cy='29.98' r='1.25'/%3E%3Ccircle cx='23.57' cy='30.37' r='1.73'/%3E%3Ccircle cx='30.11' cy='30.81' r='1.40'/%3E%3Ccircle cx='35.52' cy='29.80' r='1.47'/%3E%3Ccircle cx='42.77' cy='30.59' r='1.99'/%3E%3Ccircle cx='0.64' cy='36.69' r='1.59'/%3E%3Ccircle cx='6.81' cy='36.01' r='1.60'/%3E%3Ccircle cx='11.99' cy='35.55' r='1.72'/%3E%3Ccircle cx='18.74' cy='36.78' r='1.28'/%3E%3Ccircle cx='24.57' cy='35.82' r='1.84'/%3E%3Ccircle cx='30.00' cy='35.85' r='1.72'/%3E%3Ccircle cx='35.99' cy='35.42' r='1.74'/%3E%3Ccircle cx='42.28' cy='36.83' r='1.65'/%3E%3Ccircle cx='0.41' cy='41.41' r='1.79'/%3E%3Ccircle cx='6.49' cy='41.45' r='1.44'/%3E%3Ccircle cx='12.45' cy='42.21' r='1.34'/%3E%3Ccircle cx='18.57' cy='41.40' r='1.76'/%3E%3Ccircle cx='24.38' cy='41.52' r='1.32'/%3E%3Ccircle cx='29.35' cy='42.26' r='1.53'/%3E%3Ccircle cx='36.77' cy='41.93' r='1.63'/%3E%3Ccircle cx='41.54' cy='42.74' r='1.62'/%3E%3Ccircle cx='48.85' cy='47.62' r='1.62'/%3E%3Ccircle cx='0.85' cy='-0.38' r='1.62'/%3E%3Ccircle cx='5.25' cy='-0.74' r='1.80'/%3E%3Ccircle cx='11.22' cy='-0.74' r='1.90'/%3E%3Ccircle cx='17.47' cy='-0.41' r='1.88'/%3E%3Ccircle cx='24.74' cy='-0.75' r='1.56'/%3E%3Ccircle cx='29.61' cy='-0.23' r='1.75'/%3E%3Ccircle cx='36.34' cy='48.74' r='1.39'/%3E%3Ccircle cx='41.25' cy='48.74' r='1.51'/%3E%3Ccircle cx='48.22' cy='5.87' r='1.86'/%3E%3Ccircle cx='48.02' cy='12.42' r='1.84'/%3E%3Ccircle cx='48.36' cy='18.58' r='1.93'/%3E%3Ccircle cx='-0.34' cy='24.01' r='1.87'/%3E%3Ccircle cx='48.46' cy='30.55' r='1.96'/%3E%3Ccircle cx='48.64' cy='36.69' r='1.59'/%3E%3Ccircle cx='48.41' cy='41.41' r='1.79'/%3E%3C/g%3E%3C/svg%3E");
+  background-color: hsl(var(--ink-blue) / 0.5);
 }
 .halftone-ink {
-  background-image: radial-gradient(hsl(var(--foreground) / 0.28) 1.4px, transparent 1.5px);
-  background-size: 5px 5px;
-  background-position: 2px 1px;
+  background-color: hsl(var(--foreground) / 0.28);
 }
 .dark .halftone-ink {
-  background-image: radial-gradient(hsl(var(--foreground) / 0.22) 1.4px, transparent 1.5px);
+  background-color: hsl(var(--foreground) / 0.22);
 }
 /* For INVERTED surfaces (an ink flood, e.g. the homepage CTA band). There the
    screen is the paper showing through the ink, so the dots are --background.
    `.halftone-ink` would be foreground-on-foreground and render nothing. */
 .halftone-paper {
-  background-image: radial-gradient(hsl(var(--background) / 0.22) 1.4px, transparent 1.5px);
-  background-size: 5px 5px;
-  background-position: 2px 1px;
-  background-repeat: repeat;
+  background-color: hsl(var(--background) / 0.22);
 }
 
 /* ── Paper ─────────────────────────────────────────────────────────────
-   The existing .bg-noise turbulence at a heavier alpha (0.06 → 0.11) so the
-   grain reads as stock rather than as JPEG noise. Kept as a separate class:
-   .bg-noise has one live consumer (Index.tsx) whose calibration should not
-   move underneath it in this PR.
+   Two layers, because paper has two scales: a fine tooth and a coarse fibre.
 
-   numOctaves stays at 2 and the tile at 200×200 — the same cost as the
-   `.bg-noise` it mirrors. A 3-octave 300×300 tile was tried first: it is a real
-   rasterisation cost on a full-viewport `fixed inset-0` layer, for grain that is
-   indistinguishable at these alphas. Cheap textures only — this element covers
-   every pixel of every public page. */
+   The fine grain is the existing 200×200 / 2-octave turbulence at a heavier
+   alpha than .bg-noise (0.06 → 0.13). The fibre is a SECOND, much cheaper
+   layer — a 400×400 tile at a very low baseFrequency, so it rasterises a
+   quarter as often per unit area and carries the long-wavelength blotch that
+   makes stock look pressed rather than sprayed.
+
+   Deliberately two composited tiles rather than one richer filter: the note
+   this replaces records that 3 octaves at 300×300 was tried and reverted
+   because octaves are the expensive axis on a full-viewport `fixed inset-0`
+   layer, and this element covers every pixel of every page. Adding a second
+   low-frequency tile buys the same visual depth without touching that axis.
+
+   Layer order is fine-over-coarse: the first background-image paints on top. */
 .paper-grain {
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='p'><feTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.11 0'/></filter><rect width='100%' height='100%' filter='url(%23p)'/></svg>");
+  background-image:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='p'><feTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.13 0'/></filter><rect width='100%' height='100%' filter='url(%23p)'/></svg>"),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='400'><filter id='f'><feTurbulence type='fractalNoise' baseFrequency='0.035' numOctaves='2' seed='5' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.07 0'/></filter><rect width='100%' height='100%' filter='url(%23f)'/></svg>");
+  background-size:
+    200px 200px,
+    400px 400px;
 }
 .dark .paper-grain {
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='p'><feTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.09 0'/></filter><rect width='100%' height='100%' filter='url(%23p)'/></svg>");
+  background-image:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='p'><feTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.10 0'/></filter><rect width='100%' height='100%' filter='url(%23p)'/></svg>"),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='400'><filter id='f'><feTurbulence type='fractalNoise' baseFrequency='0.035' numOctaves='2' seed='5' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.05 0'/></filter><rect width='100%' height='100%' filter='url(%23f)'/></svg>");
+  background-size:
+    200px 200px,
+    400px 400px;
 }
 
 /* ── Overprint ─────────────────────────────────────────────────────────
@@ -1309,16 +1379,27 @@ h2,
 }
 
 /* ── Deckle ────────────────────────────────────────────────────────────
-   Torn/cut edge for full-bleed band boundaries, so a section ends like a
-   piece of paper rather than like a div. Masked, not clipped, so text
-   inside is untouched by the geometry. */
+   Torn edge for full-bleed band boundaries, so a section ends like a piece of
+   paper rather than like a div. Masked, not clipped, so text inside is
+   untouched by the geometry.
+
+   The tear is a straight edge pushed around by fractal noise
+   (feTurbulence -> feDisplacementMap), which is genuinely irregular at every
+   scale. The previous version was a hand-authored zig-zag whose vertices sat
+   on a strict 60px grid alternating high/low — a regular saw-tooth, not a tear.
+
+   It also tiles horizontally at its intrinsic 240px instead of being stretched
+   with `mask-size: 100% 100%`. Stretching a 1200px source meant the teeth got
+   proportionally wider and flatter as the viewport grew, so the same band tore
+   differently on a phone and on a desktop. Repeating keeps the tear the same
+   physical size everywhere, which is how paper behaves. */
 .deckle-bottom {
-  -webkit-mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='1200' height='24' preserveAspectRatio='none'><path d='M0,0 H1200 V14 L1140,19 L1080,12 L1020,20 L960,13 L900,21 L840,14 L780,22 L720,15 L660,20 L600,13 L540,21 L480,14 L420,19 L360,12 L300,20 L240,13 L180,21 L120,14 L60,19 L0,13 Z' fill='black'/></svg>");
-  mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='1200' height='24' preserveAspectRatio='none'><path d='M0,0 H1200 V14 L1140,19 L1080,12 L1020,20 L960,13 L900,21 L840,14 L780,22 L720,15 L660,20 L600,13 L540,21 L480,14 L420,19 L360,12 L300,20 L240,13 L180,21 L120,14 L60,19 L0,13 Z' fill='black'/></svg>");
-  -webkit-mask-size: 100% 100%;
-  mask-size: 100% 100%;
-  -webkit-mask-repeat: no-repeat;
-  mask-repeat: no-repeat;
+  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='24'%3E%3Cfilter id='t' x='-20%25' y='-20%25' width='140%25' height='140%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.04 0.9' numOctaves='3' seed='11' stitchTiles='stitch' result='n'/%3E%3CfeDisplacementMap in='SourceGraphic' in2='n' scale='9' xChannelSelector='R' yChannelSelector='G'/%3E%3C/filter%3E%3Crect x='-4' y='0' width='248' height='15' fill='black' filter='url(%23t)'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='24'%3E%3Cfilter id='t' x='-20%25' y='-20%25' width='140%25' height='140%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.04 0.9' numOctaves='3' seed='11' stitchTiles='stitch' result='n'/%3E%3CfeDisplacementMap in='SourceGraphic' in2='n' scale='9' xChannelSelector='R' yChannelSelector='G'/%3E%3C/filter%3E%3Crect x='-4' y='0' width='248' height='15' fill='black' filter='url(%23t)'/%3E%3C/svg%3E");
+  -webkit-mask-size: 240px 24px;
+  mask-size: 240px 24px;
+  -webkit-mask-repeat: repeat-x;
+  mask-repeat: repeat-x;
 }
 
 /* ── Duotone ───────────────────────────────────────────────────────────

@@ -1,3 +1,4 @@
+import * as React from 'react';
 import { cn } from '@/lib/utils';
 
 interface CardHoverEffectProps {
@@ -36,8 +37,24 @@ const INK_VAR: Record<string, string> = {
  * (`<Card hoverable="group">`).
  */
 export function CardHoverEffect({ children, className, ink = 'pink' }: CardHoverEffectProps) {
+  // Registration drifts; it does not repeat. A single fixed offset on every
+  // card reads as a UI transform the moment two sit side by side, so each
+  // instance takes one of four offset/rotation pairs.
+  //
+  // Keyed off useId() rather than :nth-child because this wrapper is almost
+  // always the ONLY child of its own link, so every card is "child 1" and a
+  // sibling-index selector collapses to one variant — measured before this
+  // fix: six cards, six identical -0.35deg. useId is unique per instance AND
+  // stable across SSR/hydration, which a module-level counter or Math.random
+  // would not be.
+  const reactId = React.useId();
+  let hash = 0;
+  for (let i = 0; i < reactId.length; i += 1) hash = (hash * 31 + reactId.charCodeAt(i)) | 0;
+  const plate = ((hash % 4) + 4) % 4;
+
   return (
     <div
+      data-plate={ink !== 'none' ? plate : undefined}
       className={cn(
         'group relative',
         // PASTE-UP: the off-register second plate. It lives here rather than on
