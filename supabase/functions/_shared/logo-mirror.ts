@@ -54,7 +54,10 @@ export async function mirrorImageToR2(
   contentType: string,
   prefix: string,
 ): Promise<string | null> {
-  if (!CDN_SECRET) return null
+  if (!CDN_SECRET) {
+    console.error('[logo-mirror] IMAGE_CDN_ADMIN_SECRET not set — skipping mirror, caller will hotlink')
+    return null
+  }
   const type = contentType.split(';')[0].trim().toLowerCase()
   const ext = EXT_BY_TYPE[type] ?? 'jpg'
   const hash = await sha256Hex(bytes)
@@ -66,9 +69,13 @@ export async function mirrorImageToR2(
       headers: { 'Content-Type': type || 'image/jpeg', 'X-Admin-Secret': CDN_SECRET },
       body: bytes,
     })
-    if (!res.ok) return null
+    if (!res.ok) {
+      console.error(`[logo-mirror] upload failed: PUT ${CDN_BASE}/upload/${key} -> ${res.status} ${(await res.text()).slice(0, 200)}`)
+      return null
+    }
     return `${CDN_BASE}/${key}`
-  } catch {
+  } catch (e) {
+    console.error(`[logo-mirror] upload threw: ${(e as Error).message}`)
     return null
   }
 }
@@ -83,7 +90,10 @@ export async function mirrorLogoToR2(
   bytes: Uint8Array,
   contentType: string,
 ): Promise<string | null> {
-  if (!CDN_SECRET) return null
+  if (!CDN_SECRET) {
+    console.error('[logo-mirror] IMAGE_CDN_ADMIN_SECRET not set — skipping mirror, caller will hotlink')
+    return null
+  }
   const type = contentType.split(';')[0].trim().toLowerCase()
   const ext = EXT_BY_TYPE[type] ?? 'png'
   const hash = await sha256Hex(bytes)
@@ -95,9 +105,13 @@ export async function mirrorLogoToR2(
       headers: { 'Content-Type': type || 'image/png', 'X-Admin-Secret': CDN_SECRET },
       body: bytes,
     })
-    if (!res.ok) return null
+    if (!res.ok) {
+      console.error(`[logo-mirror] upload failed: PUT ${CDN_BASE}/upload/${key} -> ${res.status} ${(await res.text()).slice(0, 200)}`)
+      return null
+    }
     return `${CDN_BASE}/${key}`
-  } catch {
+  } catch (e) {
+    console.error(`[logo-mirror] upload threw: ${(e as Error).message}`)
     return null
   }
 }
