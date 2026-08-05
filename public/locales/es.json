@@ -1685,6 +1685,7 @@
       "venues": "Lugares",
       "events": "Eventos",
       "places": "Destinos",
+      "cities": "Ciudades",
       "map": "Mapa",
       "feed": "Novedades",
       "groups": "Grupos",
@@ -1699,6 +1700,30 @@
       "tags": "Etiquetas",
       "history": "Historia",
       "guides": "[ES] Guides"
+    },
+    "intents": {
+      "goingOut": {
+        "label": "Salir",
+        "subtitle": "Bares, clubes y qué hay esta noche"
+      },
+      "travelling": {
+        "label": "Viajar",
+        "subtitle": "Si es seguro, dónde alojarse, qué hacer"
+      },
+      "rights": {
+        "label": "Derechos",
+        "subtitle": "Leyes y seguridad LGBTQ+, país por país"
+      },
+      "support": {
+        "label": "Apoyo",
+        "subtitle": "Líneas de ayuda y organizaciones cerca de ti"
+      },
+      "shop": {
+        "label": "Tienda",
+        "subtitle": "Libros, ropa, arte y regalos"
+      },
+      "sheetHeading": "¿Qué buscas?",
+      "browseHeading": "Explorar todo"
     },
     "userMenu": {
       "myTrips": "Mis viajes",

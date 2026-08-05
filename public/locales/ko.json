@@ -1685,6 +1685,7 @@
       "venues": "장소",
       "events": "이벤트",
       "places": "여행지",
+      "cities": "도시",
       "map": "지도",
       "feed": "피드",
       "groups": "그룹",
@@ -1699,6 +1700,30 @@
       "tags": "태그",
       "history": "역사",
       "guides": "[KO] Guides"
+    },
+    "intents": {
+      "goingOut": {
+        "label": "나들이",
+        "subtitle": "바, 클럽 그리고 오늘 밤 일정"
+      },
+      "travelling": {
+        "label": "여행",
+        "subtitle": "안전한지, 어디에 묵을지, 무엇을 할지"
+      },
+      "rights": {
+        "label": "권리",
+        "subtitle": "국가별 LGBTQ+ 법과 안전"
+      },
+      "support": {
+        "label": "지원",
+        "subtitle": "가까운 상담 전화와 단체"
+      },
+      "shop": {
+        "label": "쇼핑",
+        "subtitle": "책, 의류, 예술품, 선물"
+      },
+      "sheetHeading": "무엇을 찾고 있나요?",
+      "browseHeading": "전체 둘러보기"
     },
     "userMenu": {
       "myTrips": "내 여행",

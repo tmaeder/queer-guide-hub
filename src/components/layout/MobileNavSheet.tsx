@@ -15,7 +15,7 @@ import { CurrencySelector } from '@/components/i18n/CurrencySelector';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
 import { AuthDialog } from '@/components/auth/AuthDialog';
 import { Button } from '@/components/ui/button';
-import { DESTINATIONS, NAV_CLUSTERS, LEGAL_ITEMS } from '@/config/navigation';
+import { DESTINATIONS, NAV_CLUSTERS, LEGAL_ITEMS, INTENT_NAV } from '@/config/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
@@ -143,7 +143,43 @@ export function MobileNavSheet({ open, onOpenChange }: MobileNavSheetProps) {
               </LocalizedLink>
             )}
 
-            {/* Destination clusters — single-sourced from config/navigation.ts */}
+            {/* Intents first — the job you came to do. Full-width rows with a
+                subtitle, because unlike the icon grid below these are not
+                self-explanatory nouns. */}
+            <div className="flex flex-col gap-2">
+              <h3 className="text-2xs font-semibold uppercase tracking-wide text-muted-foreground">
+                {t('header.intents.sheetHeading', 'What are you here for?')}
+              </h3>
+              <div className="flex flex-col gap-2">
+                {INTENT_NAV.map((intent) => {
+                  const Icon = intent.icon;
+                  return (
+                    <LocalizedLink
+                      key={intent.to}
+                      to={intent.to}
+                      onClick={close}
+                      className="flex items-center gap-4 rounded-element p-4 no-underline hover:bg-muted"
+                    >
+                      <Icon size={20} className="shrink-0 text-foreground" aria-hidden />
+                      <span className="flex flex-col">
+                        <span className="text-15 font-medium text-foreground">
+                          {t(intent.labelKey, intent.fallback)}
+                        </span>
+                        <span className="text-2xs leading-tight text-muted-foreground">
+                          {t(intent.subtitleKey, intent.subtitleFallback)}
+                        </span>
+                      </span>
+                    </LocalizedLink>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Every destination stays reachable — the intent row is additive,
+                never a replacement. Single-sourced from config/navigation.ts. */}
+            <h3 className="text-2xs font-semibold uppercase tracking-wide text-muted-foreground">
+              {t('header.intents.browseHeading', 'Browse everything')}
+            </h3>
             {NAV_CLUSTERS.map((cluster) => {
               const items = DESTINATIONS.filter((d) => d.cluster === cluster.id);
               if (!items.length) return null;

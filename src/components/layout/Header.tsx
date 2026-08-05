@@ -22,7 +22,7 @@ import { generateAvatarUrl } from '@/lib/avatar';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
-import { USER_MENU_ITEMS as userMenuItems } from '@/config/navigation';
+import { USER_MENU_ITEMS as userMenuItems, INTENT_NAV, isIntentActive } from '@/config/navigation';
 import { getSubmitCta } from '@/lib/submitCta';
 import { useTheme } from '@/components/theme/ThemeProvider';
 import { useSiteBranding } from '@/hooks/useSiteBranding';
@@ -225,23 +225,19 @@ export function Header() {
     </div>
   );
 
-  // ── Desktop primary nav — mirrors the mobile Explore IA. Mobile keeps the
-  // bottom tab bar; desktop finally gets browse paths beyond the search box.
+  // ── Desktop primary nav — the Intent Router row.
+  // Single-sourced from INTENT_NAV in src/config/navigation.ts. This array used
+  // to be hardcoded here and had silently diverged from the config's
+  // PRIMARY_NAV, leaving /venues (the largest catalog) and /people unreachable
+  // from desktop chrome. Never re-inline it.
   const path = stripLocale(location.pathname);
-  const primaryNav = [
-    { to: '/map', labelKey: 'header.nav.map', fallback: 'Map' },
-    { to: '/places', labelKey: 'header.nav.places', fallback: 'Places' },
-    { to: '/events', labelKey: 'header.nav.events', fallback: 'Events' },
-    { to: '/marketplace', labelKey: 'header.nav.marketplace', fallback: 'Marketplace' },
-    { to: '/guides', labelKey: 'header.nav.guides', fallback: 'Guides' },
-    { to: '/news', labelKey: 'header.nav.news', fallback: 'News' },
-  ] as const;
   const desktopNav = (
     // Distinct landmark name — the mobile bottom bar owns "Navigation";
     // duplicate nav landmark names break rotor navigation (landmark-unique).
     <nav aria-label={t('header.primaryNavigation', 'Primary')} className="hidden lg:flex items-center gap-1">
-      {primaryNav.map(({ to, labelKey, fallback }) => {
-        const active = path === to || path.startsWith(`${to}/`);
+      {INTENT_NAV.map((intent) => {
+        const { to, labelKey, fallback } = intent;
+        const active = isIntentActive(intent, path);
         return (
           <LocalizedLink
             key={to}

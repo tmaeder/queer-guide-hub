@@ -30,7 +30,7 @@ export function useDynamicSitemap() {
         { label: "Saved", to: "/hub/saved" },
         { label: "Search", to: "/search" },
         { label: "Personalities", to: "/personalities" },
-        { label: "Places", to: "/places" },
+        { label: "Cities", to: "/cities" },
         { label: "Tags", to: "/tags" },
         { label: "Hub", to: "/hub" },
         { label: "Friends", to: "/community/friends" },

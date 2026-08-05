@@ -33,14 +33,14 @@ export const STATIC_ROUTE_BODY: Record<string, RouteBody> = {
     h1: 'Queer Guide — the global guide to LGBTQ+ life',
     paragraphs: [
       "Queer Guide is an independent, community-led platform for LGBTQ+ people and allies. We map the venues, events, businesses, hotels, news and people that make up queer life around the world — and we vet them so you don't have to.",
-      'Find a bar in a city you have never been to. Plan a trip to a country and check whether it is safe for you to visit. Catch up on a curated, ad-free LGBTQ+ news feed. Discover queer-owned businesses you will actually want to buy from. Browse community events near you. All in one place, all queer-owned, all without trackers selling your data.',
+      'Find a bar in a city you have never been to. Plan a trip to a country and check whether it is safe for you to visit. Catch up on a curated, ad-free LGBTQ+ news feed. Shop books, apparel and art made for the community. Browse community events near you. All in one place, all queer-owned, all without trackers selling your data.',
       'We are not a directory dump and we are not venture-backed. The platform is funded by donations and partnerships with aligned organizations, and the editorial decisions are made by queer people. If you spot something missing or wrong, you can submit edits and we will act on them quickly.',
     ],
     links: [
       { href: '/venues', label: 'Browse LGBTQ+ venues' },
       { href: '/events', label: 'Find events near you' },
       { href: '/travel', label: 'Plan safer queer travel' },
-      { href: '/marketplace', label: 'Shop queer-owned brands' },
+      { href: '/marketplace', label: 'Shop the LGBTQ+ marketplace' },
       { href: '/news', label: 'Read curated LGBTQ+ news' },
       { href: '/about', label: 'About Queer Guide' },
     ],
@@ -115,11 +115,17 @@ export const STATIC_ROUTE_BODY: Record<string, RouteBody> = {
     ],
   },
 
+  // The previous copy claimed "Every listing is checked for queer ownership …
+  // no rainbow-washing" against a catalogue where 24 of 2,583 brands (0.93%)
+  // carry ownership_tags. What the ingestion pipeline actually verifies is
+  // RELEVANCE (the marketplace-relevance LLM gate), not ownership — so that is
+  // what this says. Ownership is a per-brand label we can defend, not a claim
+  // over the whole shelf.
   '/marketplace': {
-    h1: 'Queer-owned marketplace',
+    h1: 'LGBTQ+ marketplace',
     paragraphs: [
-      'Shop products and brands from LGBTQ+ owners and creators. Every listing is checked for queer ownership and editorial relevance before it appears — no rainbow-washing.',
-      'Apparel, books, art, home goods, beauty, music, and more. Where a brand has a direct shop, we link to it. Where we earn affiliate revenue, we say so on the page; that revenue keeps Queer Guide free.',
+      'Books, apparel, art, home goods, beauty and music for and about the LGBTQ+ community. Every listing is screened for relevance to queer life before it appears.',
+      'Brands we have verified as queer-owned carry an explicit label, so a checked claim is distinguishable from an unchecked one. Where a brand has a direct shop, we link to it. Where we earn affiliate revenue, we say so on the page; that revenue keeps Queer Guide free.',
     ],
     links: [
       { href: '/about', label: 'How we vet listings' },
@@ -140,7 +146,69 @@ export const STATIC_ROUTE_BODY: Record<string, RouteBody> = {
     ],
   },
 
-  '/resources': {
+  // Intent Router pages. Their `links` point DOWNWARD into the canonical browse
+  // and detail routes: these are hubs that pass authority to the pages carrying
+  // the rankings, never competitors for the same queries.
+  '/going-out': {
+    h1: 'Going out — LGBTQ+ bars, clubs and nightlife',
+    paragraphs: [
+      'Where to go out, wherever you are: queer bars, clubs, cafés, saunas and the spaces in between, listed by the community rather than by whoever paid to be there.',
+      'We lead with places rather than a calendar, because event listings depend on organisers telling us and our coverage is uneven. Where something is on, we show it and say which time window it came from — an empty week means we have no record, not that nothing is happening.',
+    ],
+    links: [
+      { href: '/venues', label: 'Browse every venue' },
+      { href: '/events', label: 'All upcoming events' },
+      { href: '/map', label: 'See it on the map' },
+      { href: '/cities', label: 'Nightlife by city' },
+    ],
+  },
+
+  '/rights': {
+    h1: 'LGBTQ+ rights and safety, country by country',
+    paragraphs: [
+      'The legal position for LGBTQ+ people in all 250 countries and territories: whether same-sex acts are criminalised, whether the penalty can be death, whether partnerships are recognised, and a composite equality score.',
+      'This is the most completely covered data on Queer Guide — every country has a recorded criminalisation status. Where a country has no equality score we say "not scored" rather than inventing a default.',
+      'We can tell you what the law says. We cannot tell you what it means for your particular situation, and this is not legal advice. If you need help now, the crisis lines are one click away.',
+    ],
+    links: [
+      { href: '/travel', label: 'Plan safer queer travel' },
+      { href: '/support', label: 'Find support organizations' },
+      { href: '/help', label: 'Crisis hotlines' },
+      { href: '/news', label: 'Rights news' },
+    ],
+  },
+
+  '/support': {
+    h1: 'Find LGBTQ+ support near you',
+    paragraphs: [
+      'Support organizations, advocacy groups and community services for LGBTQ+ people, listed by country with direct links to the people who actually run them.',
+      'We list around 2,510 organizations across 76 countries. That is nowhere near everywhere — if a group you trust is missing, tell us and we will add it. An empty result means we have no record, not that no help exists.',
+    ],
+    links: [
+      { href: '/help', label: 'Crisis hotlines by country' },
+      { href: '/organizations', label: 'Every organization' },
+      { href: '/rights', label: 'Know the law where you are' },
+    ],
+  },
+
+  '/shop': {
+    h1: 'Shop — books, apparel, art and gifts',
+    paragraphs: [
+      'Books, fashion, art, home goods and gifts for and about the LGBTQ+ community. Every listing is screened for relevance to queer life before it appears.',
+      'Brands we have verified as queer-owned carry an explicit label and are collected on their own shelf, with the count stated plainly. Most brands carry no ownership information either way, so we do not claim it for them.',
+    ],
+    links: [
+      { href: '/marketplace', label: 'Browse the full catalogue' },
+      { href: '/marketplace/categories', label: 'Shop by category' },
+      { href: '/wishlists', label: 'Wishlists' },
+    ],
+  },
+
+  // Keyed '/resources' until 2026-08 — same dead-copy bug as '/help-hotlines'
+  // below: public/_redirects 301s /resources to /tags, so no crawler could
+  // reach this body and the canonical tag glossary served the generic fallback.
+  // Found by routeMeta.contract.test.ts, not by hand.
+  '/tags': {
     h1: 'Queer Knowledge Hub — guides, references, and reading lists',
     paragraphs: [
       'A growing library of practical and historical resources for queer people. Coming-out guides, healthcare references, legal explainers by jurisdiction, glossaries, reading lists, archive pointers, and crisis resources.',
@@ -213,7 +281,13 @@ export const STATIC_ROUTE_BODY: Record<string, RouteBody> = {
     ],
   },
 
-  '/help-hotlines': {
+  // Keyed '/help-hotlines' until 2026-08, which no crawler could ever reach:
+  // public/_redirects 301s that path to /help at the edge, and there was no
+  // '/help' key — so the canonical crisis page served the generic fallback body
+  // while this hand-written copy sat dead. buildNoscriptHtml still returns null
+  // for /help (crisis routes keep the default hotline <noscript>); this entry
+  // feeds buildBodyHtml, the crawler's first-pass body.
+  '/help': {
     h1: 'LGBTQ+ help hotlines and crisis support',
     paragraphs: [
       'Free, confidential hotlines and crisis lines for LGBTQ+ people, organized by country. If you are in immediate danger, call your local emergency number first — these lines are for support, not emergency dispatch.',

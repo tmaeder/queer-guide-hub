@@ -27,6 +27,15 @@ export interface EditorialDetailLayoutProps {
   footer?: ReactNode;
   entityType: string;
   entityId?: string;
+  /**
+   * Suppress the animated scroll-progress bar.
+   *
+   * Set on crisis-adjacent surfaces (/rights, and anything under /help,
+   * /safety, /report-*), where the design system requires functional motion
+   * only. The bar is a `motion.div` driven by useScroll/useSpring and would
+   * otherwise animate unconditionally on every page using this layout.
+   */
+  disableProgress?: boolean;
 }
 
 /**
@@ -43,6 +52,7 @@ export function EditorialDetailLayout({
   footer,
   entityType: _entityType,
   entityId: _entityId,
+  disableProgress = false,
 }: EditorialDetailLayoutProps) {
   // Publish the trail to the global breadcrumb bar (rendered in LayoutShell).
   useBreadcrumbs(breadcrumbs ?? null);
@@ -126,10 +136,12 @@ export function EditorialDetailLayout({
 
   return (
     <>
-      <motion.div
-        style={{ scaleX, transformOrigin: '0%' }}
-        className="fixed top-0 left-0 right-0 h-[2px] bg-foreground z-[1200]"
-      />
+      {disableProgress ? null : (
+        <motion.div
+          style={{ scaleX, transformOrigin: '0%' }}
+          className="fixed top-0 left-0 right-0 h-[2px] bg-foreground z-[1200]"
+        />
+      )}
       <div className="container mx-auto px-4 py-8" data-testid="editorial-detail-layout">
         <div className="mb-8">{header}</div>
 

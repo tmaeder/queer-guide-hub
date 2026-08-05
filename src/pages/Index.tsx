@@ -6,6 +6,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { useAuth } from '@/hooks/useAuth';
 import { Skeleton } from '@/components/ui/skeleton';
 import { RecentlyViewedRail } from '@/components/home/RecentlyViewedRail';
+import { IntentRail } from '@/components/home/IntentRail';
 import { HeroIdentityOverlay } from '@/components/home/HeroIdentityOverlay';
 import { DeferredSection } from '@/components/home/DeferredSection';
 import { FadeIn } from '@/components/motion';
@@ -175,6 +176,11 @@ const Index = React.memo(() => {
 
       {/* ── Editorial bands — photocopy grain on the whole region, not the map. */}
       <div className="bg-noise">
+        {/* ── Intent Router entry points. Eager and unanimated on purpose —
+             see the comment in IntentRail.tsx: this is navigation, so it must
+             never depend on an IntersectionObserver firing. ────────────────*/}
+        <IntentRail />
+
         {/* ── Returning visitors: one light personalized rail (self-hides) ─ */}
         <RecentlyViewedRail />
 

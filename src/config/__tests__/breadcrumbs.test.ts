@@ -40,15 +40,27 @@ describe('getRouteBreadcrumbs', () => {
     ]);
   });
 
-  it('maps city/country detail under Places', () => {
+  // /places is retired — it redirects to the Travelling intent — so city and
+  // country detail breadcrumbs point at /cities, the real browse page. They
+  // deliberately do NOT point at an intent route: these breadcrumbs are a large
+  // share of the internal links into the browse tier, and moving them would
+  // transfer that link equity away from the pages that carry the rankings.
+  it('maps city/country detail under Cities', () => {
     expect(getRouteBreadcrumbs('/city/berlin', t)?.[1]).toEqual({
-      label: 'Places',
-      href: '/places',
+      label: 'Cities',
+      href: '/cities',
     });
     expect(getRouteBreadcrumbs('/country/germany', t)?.[1]).toEqual({
-      label: 'Places',
-      href: '/places',
+      label: 'Cities',
+      href: '/cities',
     });
+  });
+
+  it('never points a breadcrumb at the retired /places route', () => {
+    for (const path of ['/city/berlin', '/country/germany', '/venues/x', '/events/y']) {
+      const trail = getRouteBreadcrumbs(path, t) ?? [];
+      expect(trail.map((c) => c.href)).not.toContain('/places');
+    }
   });
 
   it('is locale-agnostic (strips a supported non-default locale prefix)', () => {
