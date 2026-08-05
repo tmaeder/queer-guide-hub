@@ -1651,6 +1651,7 @@
       "stats": {
         "places": "[KO] {{n}} places",
         "events": "[KO] {{n}} events",
+        "eventsUpcoming": "예정된 이벤트 {{n}}개",
         "cities": "[KO] {{n}} cities",
         "inView": "[KO] {{n}} places in view"
       },

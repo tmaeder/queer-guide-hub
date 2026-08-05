@@ -5,6 +5,8 @@ import { useMeta } from '@/hooks/useMeta';
 import { IntentPageLayout } from '@/components/intent/IntentPageLayout';
 import { CoverageNote } from '@/components/intent/CoverageNote';
 import { useIntentLocation } from '@/hooks/useIntentLocation';
+import { GatedContentNotice } from '@/components/safety/GatedContentNotice';
+import { CityLandmarksRail } from '@/components/geo/CityLandmarksRail';
 import {
   useNightlifeVenues,
   useEventsWithFallback,
@@ -149,6 +151,36 @@ export default function GoingOut() {
         <LocalizedLink to="/events" className="text-13 no-underline hover:underline">
           All events
         </LocalizedLink>
+      ),
+    },
+    {
+      id: 'scenes',
+      label: 'Scenes',
+      kicker: 'Neighborhoods with their own gravity',
+      // Self-hiding: CityLandmarksRail renders nothing when the city has no
+      // landmarks, which is the common case outside the deepest 71 cities.
+      content: cityId ? <CityLandmarksRail cityId={cityId} /> : null,
+    },
+    {
+      id: 'safety',
+      label: 'Before you go',
+      content: (
+        <div>
+          {/* Anon-safe: gated_count_for_location returns COUNTS only, never rows,
+              so this can tell a signed-out reader that content exists in a
+              criminalising country without exposing any of it. */}
+          <GatedContentNotice cityId={cityId ?? undefined} />
+          <p className="max-w-prose mb-4">
+            Laws differ sharply by country, and going out is where that bites. Check the legal
+            position before the night starts, not after.
+          </p>
+          <LocalizedLink
+            to="/rights"
+            className="border-2 border-foreground px-6 py-2 font-medium no-underline rounded-element inline-block"
+          >
+            LGBTQ+ rights by country
+          </LocalizedLink>
+        </div>
       ),
     },
     {

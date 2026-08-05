@@ -1651,6 +1651,7 @@
       "stats": {
         "places": "[JA] {{n}} places",
         "events": "[JA] {{n}} events",
+        "eventsUpcoming": "今後のイベント {{n}} 件",
         "cities": "[JA] {{n}} cities",
         "inView": "[JA] {{n}} places in view"
       },

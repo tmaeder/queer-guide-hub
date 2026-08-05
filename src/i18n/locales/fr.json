@@ -1655,6 +1655,7 @@
       "stats": {
         "places": "[FR] {{n}} places",
         "events": "[FR] {{n}} events",
+        "eventsUpcoming": "{{n}} événements à venir",
         "cities": "[FR] {{n}} cities",
         "inView": "[FR] {{n}} places in view"
       },

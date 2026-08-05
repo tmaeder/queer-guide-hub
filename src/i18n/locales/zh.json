@@ -1651,6 +1651,7 @@
       "stats": {
         "places": "[ZH] {{n}} places",
         "events": "[ZH] {{n}} events",
+        "eventsUpcoming": "{{n}} 个即将举行的活动",
         "cities": "[ZH] {{n}} cities",
         "inView": "[ZH] {{n}} places in view"
       },

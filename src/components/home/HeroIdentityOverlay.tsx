@@ -53,9 +53,18 @@ export function HeroIdentityOverlay({ variant, dimmed = false }: HeroIdentityOve
       <StatChip key="places" value={stats.venues} labelKey="home.hero.stats.places" fallback="{{n}} places" />,
     );
   }
-  if (stats.events) {
+  // UPCOMING events, not the archive. `stats.events` is every row ever ingested
+  // and 99% of it is in the past (39,757 total vs ~254 in the future), so
+  // advertising it next to the venue count read as a claim about how much is on
+  // and sent readers into an archive. A small true number beats a large false one.
+  if (stats.events_upcoming) {
     chips.push(
-      <StatChip key="events" value={stats.events} labelKey="home.hero.stats.events" fallback="{{n}} events" />,
+      <StatChip
+        key="events"
+        value={stats.events_upcoming}
+        labelKey="home.hero.stats.eventsUpcoming"
+        fallback="{{n}} upcoming events"
+      />,
     );
   }
   if (stats.cities) {

@@ -26,6 +26,15 @@ const ROUTES = [
   '/news',
   '/about',
   '/blog',
+  // Intent Router landing pages. Safe to sample: each is indexable and carries
+  // its own STATIC_ROUTE_META + STATIC_ROUTE_BODY entry, so it gets a real bot
+  // body. A NOINDEX route must never be added here — functions/_middleware.ts
+  // gates the crawler body on `indexable`, so the botH1 / botBodySize
+  // assertions below would fail on it by construction.
+  '/going-out',
+  '/rights',
+  '/support',
+  '/shop',
 ];
 
 const TITLE_MIN = 30;
