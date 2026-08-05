@@ -12,16 +12,12 @@ on:
       - 'scripts/a11y-axe-scan.mjs'
       - 'scripts/a11y-routes.mjs'
       - '.github/workflows/a11y.yml'
+  # Deliberately NOT path-filtered: "Playwright + axe a11y suite" is a REQUIRED
+  # status check on main, and a required check skipped by a `paths:` filter never
+  # reports, which GitHub treats as permanently pending — making any PR outside
+  # the filter unmergeable forever (admin-enforced, so no bypass). The filter now
+  # lives in the `changes` job below. `push` keeps its filter: it gates nothing.
   pull_request:
-    paths:
-      - 'src/**'
-      - 'e2e/a11y-*.spec.ts'
-      - 'e2e/focus-visible.spec.ts'
-      - 'eslint.config.js'
-      - 'playwright.config.ts'
-      - 'scripts/a11y-axe-scan.mjs'
-      - 'scripts/a11y-routes.mjs'
-      - '.github/workflows/a11y.yml'
   schedule:
     - cron: '30 6 * * *'
   workflow_dispatch:
@@ -54,12 +50,45 @@ env:
     }}
 
 jobs:
+  # Replaces the old trigger-level `paths:` filter for pull_request events.
+  # Non-PR events (schedule / push / workflow_dispatch) are always relevant.
+  changes:
+    name: Detect relevant changes
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      relevant: ${{ steps.detect.outputs.relevant }}
+    steps:
+      - name: Detect
+        id: detect
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [ "${{ github.event_name }}" != "pull_request" ]; then
+            echo "relevant=true" >> "$GITHUB_OUTPUT"
+            echo "::notice::${{ github.event_name }} event - always relevant."
+            exit 0
+          fi
+          files=$(gh api "repos/${{ github.repository }}/pulls/${{ github.event.number }}/files" \
+            --paginate --jq '.[].filename')
+          echo "Changed files:"; echo "$files" | sed 's/^/  /'
+          if echo "$files" | grep -qE '^(src/|e2e/a11y-.*\.spec\.ts$|e2e/focus-visible\.spec\.ts$|eslint\.config\.js$|playwright\.config\.ts$|scripts/a11y-axe-scan\.mjs$|scripts/a11y-routes\.mjs$|\.github/workflows/a11y\.yml$)'; then
+            echo "relevant=true" >> "$GITHUB_OUTPUT"
+            echo "::notice::Relevant paths changed - running the a11y gate."
+          else
+            echo "relevant=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::No a11y-relevant paths changed - skipping scans, reporting success."
+          fi
+
   build:
     name: Build (artifact for a11y jobs)
+    needs: [changes]
     if: >-
-      github.event_name == 'pull_request' ||
-      github.event_name == 'push' ||
-      (github.event_name == 'workflow_dispatch' && inputs.base_url == '')
+      needs.changes.outputs.relevant == 'true' && (
+        github.event_name == 'pull_request' ||
+        github.event_name == 'push' ||
+        (github.event_name == 'workflow_dispatch' && inputs.base_url == '')
+      )
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -84,6 +113,8 @@ jobs:
 
   jsx-a11y-lint:
     name: Lint (eslint .)
+    needs: [changes]
+    if: needs.changes.outputs.relevant == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -102,8 +133,12 @@ jobs:
       - run: npm run lint
 
   axe-playwright:
+    # REQUIRED status check on main — must always report, so it runs even when
+    # nothing a11y-relevant changed and simply skips its steps in that case.
+    # Do NOT add a trigger-level path filter or a job-level relevance `if:` here;
+    # either one makes this check never report and blocks every unrelated PR.
     name: Playwright + axe a11y suite
-    needs: [build]
+    needs: [changes, build]
     if: always() && (needs.build.result == 'success' || needs.build.result == 'skipped')
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -112,24 +147,31 @@ jobs:
       E2E_ADMIN_EMAIL: ${{ secrets.E2E_ADMIN_EMAIL }}
       E2E_ADMIN_PASSWORD: ${{ secrets.E2E_ADMIN_PASSWORD }}
     steps:
+      - name: Skip notice
+        if: needs.changes.outputs.relevant != 'true'
+        run: echo "::notice::No a11y-relevant paths changed - reporting success without scanning."
       - uses: actions/checkout@v7
+        if: needs.changes.outputs.relevant == 'true'
       - uses: actions/setup-node@v7
+        if: needs.changes.outputs.relevant == 'true'
         with:
           node-version: 22
           cache: npm
           cache-dependency-path: package-lock.json
       - run: npm install
+        if: needs.changes.outputs.relevant == 'true'
         env:
           HUSKY: '0'
       - run: npx playwright install --with-deps chromium
+        if: needs.changes.outputs.relevant == 'true'
       - name: Download dist
-        if: needs.build.result == 'success'
+        if: needs.changes.outputs.relevant == 'true' && needs.build.result == 'success'
         uses: actions/download-artifact@v8
         with:
           name: dist
           path: dist/
       - name: Serve dist on :4173
-        if: needs.build.result == 'success'
+        if: needs.changes.outputs.relevant == 'true' && needs.build.result == 'success'
         run: |
           npx -y serve@14 -s dist -l 4173 > serve.log 2>&1 &
           for i in $(seq 1 30); do
@@ -140,7 +182,8 @@ jobs:
           done
           echo "::error::serve did not become ready"; cat serve.log; exit 1
       - run: npx playwright test e2e/a11y-admin.spec.ts e2e/a11y-events.spec.ts e2e/a11y-header.spec.ts e2e/a11y-dialogs.spec.ts e2e/focus-visible.spec.ts --workers=1
-      - if: always()
+        if: needs.changes.outputs.relevant == 'true'
+      - if: always() && needs.changes.outputs.relevant == 'true'
         uses: actions/upload-artifact@v7
         with:
           name: playwright-a11y-report
@@ -149,8 +192,10 @@ jobs:
 
   axe-route-sweep:
     name: axe full route sweep
-    needs: [build]
-    if: always() && (needs.build.result == 'success' || needs.build.result == 'skipped')
+    needs: [changes, build]
+    if: >-
+      always() && needs.changes.outputs.relevant == 'true' &&
+      (needs.build.result == 'success' || needs.build.result == 'skipped')
     runs-on: ubuntu-latest
     # 160 scans. Sequential they took ~24 min and this job — then capped at 20 —
     # was killed at scan 130 on EVERY run, so it never wrote a report and never
@@ -220,8 +265,10 @@ jobs:
 
   lighthouse:
     name: Lighthouse a11y >= 95
-    needs: [build]
-    if: always() && (needs.build.result == 'success' || needs.build.result == 'skipped')
+    needs: [changes, build]
+    if: >-
+      always() && needs.changes.outputs.relevant == 'true' &&
+      (needs.build.result == 'success' || needs.build.result == 'skipped')
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:

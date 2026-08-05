@@ -3,18 +3,18 @@ name: E2E Critical Path (PR)
 # Fast subset of the Playwright suite that runs on every PR.
 # Full suite still runs nightly (see e2e-nightly.yml).
 
+# NOTE: deliberately NOT path-filtered at the trigger level.
+# "Critical paths" is a REQUIRED status check on main. A required check skipped
+# by a `paths:` filter never reports at all, and GitHub treats never-reported as
+# permanently pending — so any PR outside the filter (a functions/**-only or
+# supabase/**-only change) became unmergeable forever, with no bypass because
+# the rule is admin-enforced. PRs #2593 and #2595 sat green-but-BLOCKED on
+# exactly this.
+# The filter now lives INSIDE the job: it always reports, and short-circuits the
+# expensive work when nothing relevant changed.
 on:
   pull_request:
     branches: [main]
-    paths:
-      - 'src/**'
-      - 'public/**'
-      - 'index.html'
-      - 'vite.config.ts'
-      - 'playwright.config.ts'
-      - 'e2e/**'
-      - 'package.json'
-      - 'package-lock.json'
 
 concurrency:
   group: e2e-pr-${{ github.head_ref }}
@@ -22,6 +22,7 @@ concurrency:
 
 permissions:
   contents: read
+  pull-requests: read
 
 jobs:
   critical:
@@ -30,17 +31,37 @@ jobs:
     timeout-minutes: 12
     steps:
       - uses: actions/checkout@v7
+      - name: Detect relevant changes
+        id: changes
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          files=$(gh api "repos/${{ github.repository }}/pulls/${{ github.event.number }}/files" \
+            --paginate --jq '.[].filename')
+          echo "Changed files:"; echo "$files" | sed 's/^/  /'
+          if echo "$files" | grep -qE '^(src/|public/|e2e/|index\.html$|vite\.config\.ts$|playwright\.config\.ts$|package\.json$|package-lock\.json$|\.github/workflows/e2e-pr\.yml$)'; then
+            echo "relevant=true" >> "$GITHUB_OUTPUT"
+            echo "::notice::Relevant paths changed - running critical-path specs."
+          else
+            echo "relevant=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::No app/e2e paths changed - skipping specs, reporting success."
+          fi
       - uses: actions/setup-node@v7
+        if: steps.changes.outputs.relevant == 'true'
         with:
           node-version: 22
           cache: npm
       - run: npm ci
+        if: steps.changes.outputs.relevant == 'true'
       - run: npx playwright install --with-deps chromium
+        if: steps.changes.outputs.relevant == 'true'
       - name: Build app
+        if: steps.changes.outputs.relevant == 'true'
         run: npm run build
         env:
           NODE_OPTIONS: --max-old-space-size=4096
       - name: Run critical-path specs
+        if: steps.changes.outputs.relevant == 'true'
         env:
           E2E_BASE_URL: http://localhost:4173
           E2E_ADMIN_EMAIL: ${{ secrets.E2E_ADMIN_EMAIL }}
