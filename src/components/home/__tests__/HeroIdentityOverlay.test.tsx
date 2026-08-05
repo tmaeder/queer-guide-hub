@@ -11,7 +11,10 @@ const mockStats = vi.hoisted(() => ({
     profiles: null,
     cities: 56,
     countries: null,
-    events: 182,
+    // The archive total. It must NEVER reach the masthead — 99% of the events
+    // corpus is in the past, so showing it claims a schedule we do not have.
+    events: 39757,
+    events_upcoming: 182,
     posts: null,
     personalities: null,
     groups: null,
@@ -67,7 +70,10 @@ describe('HeroIdentityOverlay', () => {
     );
     expect(screen.getByRole('heading', { level: 1 }).textContent).toContain('Queer venues,');
     expect(screen.getByText('3,214 places')).toBeTruthy();
-    expect(screen.getByText('182 events')).toBeTruthy();
+    expect(screen.getByText('182 upcoming events')).toBeTruthy();
+    // The regression this guards: the chip used to read `stats.events`, so the
+    // masthead advertised the full archive (39,757) as if it were what's on.
+    expect(screen.queryByText(/39,757/)).toBeNull();
     expect(screen.getByText('56 cities')).toBeTruthy();
     // null stats (profiles etc.) render no chip
     expect(screen.queryByText(/null/)).toBeNull();
