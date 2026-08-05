@@ -66,7 +66,9 @@ export const DESTINATIONS: NavDestination[] = [
   { to: '/venues', icon: MapPin, labelKey: 'header.nav.venues', cluster: 'places', searchType: 'venue' },
   { to: '/people', icon: UserCheck, labelKey: 'header.nav.people', cluster: 'community' },
   { to: '/events', icon: Calendar, labelKey: 'header.nav.events', cluster: 'community', searchType: 'event' },
-  { to: '/places', icon: Globe, labelKey: 'header.nav.places', cluster: 'places' },
+  // /places is retired (redirects to the Travelling intent); /cities is the
+  // real browse page for this job.
+  { to: '/cities', icon: Globe, labelKey: 'header.nav.cities', cluster: 'places' },
   { to: '/marketplace', icon: Store, labelKey: 'header.nav.marketplace', cluster: 'shop', searchType: 'marketplace' },
   { to: '/guides', icon: BookOpen, labelKey: 'header.nav.guides', cluster: 'shop', searchType: 'guide' },
   { to: '/news', icon: Newspaper, labelKey: 'header.nav.news', cluster: 'shop', searchType: 'news' },

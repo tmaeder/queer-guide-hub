@@ -44,7 +44,9 @@ export function InspirationGrid({ visitedFilter = 'all' }: Props) {
         <h3 className="text-lg font-bold tracking-tight">
           {t('pages.travel.inspiration.villages', 'Queer villages')}
         </h3>
-        <LocalizedLink to="/places" className="text-xs">
+        {/* Villages heading → /villages. /places now redirects to /travel,
+            which is the page this grid lives on. */}
+        <LocalizedLink to="/villages" className="text-xs">
           {t('pages.travel.inspiration.viewAll', 'View all')}
         </LocalizedLink>
       </div>

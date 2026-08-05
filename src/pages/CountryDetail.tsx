@@ -171,8 +171,8 @@ export default function CountryDetail() {
           <p className="mb-6 text-muted-foreground">
             {t('country.notFound.body', "The country you're looking for doesn't exist.")}
           </p>
-          <LocalizedLink to="/places" className="font-medium" style={{ color: 'inherit' }}>
-            ← {t('country.notFound.back', 'Back to Places')}
+          <LocalizedLink to="/cities" className="font-medium" style={{ color: 'inherit' }}>
+            ← {t('country.notFound.back', 'Back to Cities')}
           </LocalizedLink>
         </div>
       </div>
