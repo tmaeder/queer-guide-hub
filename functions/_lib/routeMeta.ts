@@ -36,10 +36,14 @@ export const STATIC_ROUTE_META: Record<string, RouteMeta> = {
     description:
       'Find Pride events, queer parties, drag shows, panels and meet-ups happening near you and globally.',
   },
+  // "Queer-Owned Marketplace" until 2026-08: only 24 of 2,583 brands carry
+  // ownership_tags (0.93%), so a page-level ownership claim was indexed against
+  // a catalogue that is 99% unverified. Ownership is a labelled property of the
+  // brands we have actually checked, never an adjective for the whole shelf.
   '/marketplace': {
-    title: 'Queer-Owned Marketplace | Queer Guide',
+    title: 'LGBTQ+ Marketplace — Books, Fashion, Gifts | Queer Guide',
     description:
-      'Shop products and brands from queer-owned businesses, curated for relevance and quality.',
+      'Shop books, fashion, art and gifts for the LGBTQ+ community. Queer-owned brands are labelled where we have verified ownership.',
   },
   '/hotels': {
     title: 'LGBTQ+ Friendly Hotels & Stays | Queer Guide',
@@ -185,6 +189,63 @@ export const STATIC_ROUTE_META: Record<string, RouteMeta> = {
     description:
       'Queer Guide aims for WCAG 2.2 AA. Our current accessibility status, known gaps, and how to report issues.',
   },
+  // Intent Router landing pages. Each targets a TASK query ("what to do tonight
+  // gay berlin", "is it safe for gay travellers in qatar") rather than an
+  // entity/category query, so they complement /venues, /events and /city/:slug
+  // instead of competing with them. Canonical is the bare path — the middleware
+  // strips the query string, so ?city= variants can never fan out into
+  // thousands of thin near-duplicates.
+  '/going-out': {
+    title: 'Going Out — LGBTQ+ Bars, Clubs and Nightlife',
+    description:
+      'Where to go out tonight: queer bars, clubs, cafes and saunas, plus what is actually on, wherever you are.',
+  },
+  '/rights': {
+    title: 'LGBTQ+ Rights and Safety by Country',
+    description:
+      'Legal status for LGBTQ+ people in all 250 countries and territories: criminalisation, partnership recognition and equality scores.',
+  },
+  '/support': {
+    title: 'Find LGBTQ+ Support Organizations Near You',
+    description:
+      'Support organizations, advocacy groups and crisis helplines for LGBTQ+ people, listed by country with direct links.',
+  },
+  '/shop': {
+    title: 'Shop — Books, Apparel, Art and Gifts',
+    description:
+      'Books, fashion, art and gifts for and about the LGBTQ+ community, with queer-owned brands labelled where ownership is verified.',
+  },
+  // Backfill (2026-08): these five are linked from nav, the mobile sheet or the
+  // footer but had no entry here, so resolveMeta fell through to DEFAULT_META —
+  // whose title is byte-identical to the homepage's — and sitemap-static.xml,
+  // which is Object.keys(STATIC_ROUTE_META).filter(isIndexable), omitted them
+  // entirely. A route missing from this table is invisible to the sitemap and
+  // duplicates the homepage title; keep new public routes in sync with it.
+  '/guides': {
+    title: 'LGBTQ+ Guides, Lists and Quests | Queer Guide',
+    description:
+      'Editorial guides, curated lists and community quests for queer travel, nightlife, culture and local scenes worldwide.',
+  },
+  '/cities': {
+    title: 'LGBTQ+ City Guides Worldwide | Queer Guide',
+    description:
+      'Queer city guides with rights and safety context, venues, events, neighborhoods and local history for cities worldwide.',
+  },
+  '/organizations': {
+    title: 'LGBTQ+ Organizations and Support Groups',
+    description:
+      'A directory of LGBTQ+ support organizations, advocacy groups, publishers and sellers, searchable by role and country.',
+  },
+  '/pride': {
+    title: 'Pride Events and Parades by Year | Queer Guide',
+    description:
+      'Pride marches, parades and festivals around the world, listed by year with dates, host cities and what to expect.',
+  },
+  '/community': {
+    title: 'Queer Community — Feed, Groups, Members',
+    description:
+      'Connect with the Queer Guide community: the shared feed, local groups, and members near you or at your destination.',
+  },
 };
 
 const TITLE_SUFFIX = ' | Queer Guide';
@@ -254,6 +315,14 @@ export function isIndexable(pathname: string): boolean {
     /^\/admin(\/|$)/,
     /^\/profile(\/|$)/,
     /^\/settings(\/|$)/,
+    // Query-shaped and personal surfaces: /search is an infinite parameter
+    // space and /hub is the signed-in personal area. Note this also suppresses
+    // the crawler body injection for them (functions/_middleware.ts gates the
+    // bot body on `indexable`), which is intended — there is nothing static to
+    // serve — but it means neither may be added to ROUTES in
+    // scripts/seo-check.mjs, whose botH1/botBodySize assertions would fail.
+    /^\/search(\/|$)/,
+    /^\/hub(\/|$)/,
   ];
   return !noindex.some((r) => r.test(pathname));
 }

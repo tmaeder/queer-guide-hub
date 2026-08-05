@@ -1779,6 +1779,30 @@
       "history": "History",
       "guides": "Guides"
     },
+    "intents": {
+      "goingOut": {
+        "label": "Going out",
+        "subtitle": "Bars, clubs and what is on tonight"
+      },
+      "travelling": {
+        "label": "Travelling",
+        "subtitle": "Is it safe, where to stay, what to do"
+      },
+      "rights": {
+        "label": "Rights",
+        "subtitle": "LGBTQ+ law and safety, country by country"
+      },
+      "support": {
+        "label": "Support",
+        "subtitle": "Helplines and organizations near you"
+      },
+      "shop": {
+        "label": "Shop",
+        "subtitle": "Books, apparel, art and gifts"
+      },
+      "sheetHeading": "What are you here for?",
+      "browseHeading": "Browse everything"
+    },
     "userMenu": {
       "you": "You",
       "community": "Community",

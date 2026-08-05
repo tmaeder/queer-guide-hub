@@ -1700,6 +1700,30 @@
       "history": "Storia",
       "guides": "[IT] Guides"
     },
+    "intents": {
+      "goingOut": {
+        "label": "Uscire",
+        "subtitle": "Bar, club e cosa c’è stasera"
+      },
+      "travelling": {
+        "label": "Viaggiare",
+        "subtitle": "È sicuro, dove dormire, cosa fare"
+      },
+      "rights": {
+        "label": "Diritti",
+        "subtitle": "Diritto e sicurezza LGBTQ+, paese per paese"
+      },
+      "support": {
+        "label": "Sostegno",
+        "subtitle": "Linee di ascolto e organizzazioni vicino a te"
+      },
+      "shop": {
+        "label": "Negozio",
+        "subtitle": "Libri, moda, arte e regali"
+      },
+      "sheetHeading": "Cosa cerchi?",
+      "browseHeading": "Esplora tutto"
+    },
     "userMenu": {
       "myTrips": "I miei viaggi",
       "favorites": "Preferiti",

@@ -34,7 +34,10 @@ const MarketplaceCollection = lazyRetry(() => import('./pages/MarketplaceCollect
 const Wishlist = lazyRetry(() => import('./pages/Wishlist'));
 const Wishlists = lazyRetry(() => import('./pages/Wishlists'));
 
-const Places = lazyRetry(() => import('./pages/Places'));
+const GoingOut = lazyRetry(() => import('./pages/intent/GoingOut'));
+const RightsIntent = lazyRetry(() => import('./pages/intent/Rights'));
+const SupportIntent = lazyRetry(() => import('./pages/intent/Support'));
+const ShopIntent = lazyRetry(() => import('./pages/intent/Shop'));
 const Resources = lazyRetry(() => import('./pages/Resources'));
 const ConnectionsExplorer = lazyRetry(() => import('./pages/explore/ConnectionsExplorer'));
 const ResourceTopic = lazyRetry(() => import('./pages/resources/ResourceTopic'));
@@ -564,7 +567,30 @@ export const AppRoutes = () => {
                 <Route path="place/:slug" element={<PlaceDetail />} />
                 <Route path="festivals" element={<Navigate to="/events" replace />} />
                 <Route path="festivals/:id" element={<Navigate to="/events" replace />} />
-                <Route path="places" element={<Places />} />
+                {/* Intent Router. Top-level nav names the JOB, not the table.
+                    Slug rules, both load-bearing and asserted by
+                    src/config/__tests__/navigation.test.ts and
+                    src/__tests__/intentNavRouting.test.tsx:
+                      1. Never a 2-letter first segment — stripLocale() in
+                         src/lib/locale.ts strips ANY [a-z]{2} leading segment,
+                         so `/go` would be silently rewritten to `/` by the
+                         header, the bottom nav, RouteFade and getSubmitCta.
+                      2. Any future child must be a STATIC two-segment path
+                         (`rights/compare`), never `:tab?` — otherwise `/X/Y`
+                         ties with the `/:locale/Y` branch and LocaleRouter
+                         renders NotFound for an unknown "locale". */}
+                <Route path="going-out" element={<GoingOut />} />
+                <Route path="rights" element={<RightsIntent />} />
+                <Route path="support" element={<SupportIntent />} />
+                {/* `shop` MUST stay declared before `shop/*` so the static
+                    sibling wins the /shop tie, same precedent as `p/:slug`. */}
+                <Route path="shop" element={<ShopIntent />} />
+                {/* /places retired: it duplicated /cities and the Travelling
+                    intent, kept client-side viewMode state instead of routes
+                    (no deep links, broken Back), and shipped dead filters. The
+                    edge rule `/places/* → /city/:splat` in public/_redirects is
+                    untouched and still handles legacy sub-paths. */}
+                <Route path="places" element={<LocalizedRedirect to="/travel" />} />
                 <Route path="travel" element={<Travel />} />
                 <Route path="travel/book" element={<TravelBook />} />
                 {/* /trips list folded into the /hub office (Plans module). The

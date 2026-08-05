@@ -1700,6 +1700,30 @@
       "history": "歴史",
       "guides": "[JA] Guides"
     },
+    "intents": {
+      "goingOut": {
+        "label": "お出かけ",
+        "subtitle": "バー、クラブ、今夜のイベント"
+      },
+      "travelling": {
+        "label": "旅行",
+        "subtitle": "安全か、どこに泊まるか、何をするか"
+      },
+      "rights": {
+        "label": "権利",
+        "subtitle": "国別の LGBTQ+ の法と安全"
+      },
+      "support": {
+        "label": "サポート",
+        "subtitle": "近くの相談窓口と支援団体"
+      },
+      "shop": {
+        "label": "ショップ",
+        "subtitle": "本、ファッション、アート、ギフト"
+      },
+      "sheetHeading": "今日は何をお探しですか？",
+      "browseHeading": "すべて見る"
+    },
     "userMenu": {
       "myTrips": "マイトリップ",
       "favorites": "お気に入り",

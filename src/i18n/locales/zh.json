@@ -1700,6 +1700,30 @@
       "history": "历史",
       "guides": "[ZH] Guides"
     },
+    "intents": {
+      "goingOut": {
+        "label": "夜生活",
+        "subtitle": "酒吧、俱乐部和今晚的活动"
+      },
+      "travelling": {
+        "label": "旅行",
+        "subtitle": "是否安全、住哪里、做什么"
+      },
+      "rights": {
+        "label": "权利",
+        "subtitle": "各国 LGBTQ+ 法律与安全"
+      },
+      "support": {
+        "label": "支持",
+        "subtitle": "附近的求助热线与组织"
+      },
+      "shop": {
+        "label": "商店",
+        "subtitle": "书籍、服饰、艺术与礼物"
+      },
+      "sheetHeading": "你想做什么？",
+      "browseHeading": "浏览全部"
+    },
     "userMenu": {
       "myTrips": "我的行程",
       "favorites": "收藏",

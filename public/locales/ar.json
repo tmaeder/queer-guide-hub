@@ -1706,6 +1706,30 @@
       "history": "التاريخ",
       "guides": "[AR] Guides"
     },
+    "intents": {
+      "goingOut": {
+        "label": "الخروج",
+        "subtitle": "الحانات والنوادي وما يحدث الليلة"
+      },
+      "travelling": {
+        "label": "السفر",
+        "subtitle": "هل المكان آمن، أين تقيم، وماذا تفعل"
+      },
+      "rights": {
+        "label": "الحقوق",
+        "subtitle": "قوانين وسلامة مجتمع الميم، بلدًا بلدًا"
+      },
+      "support": {
+        "label": "الدعم",
+        "subtitle": "خطوط المساعدة والمنظمات القريبة منك"
+      },
+      "shop": {
+        "label": "المتجر",
+        "subtitle": "كتب وأزياء وفنون وهدايا"
+      },
+      "sheetHeading": "ما الذي تبحث عنه؟",
+      "browseHeading": "تصفح كل شيء"
+    },
     "userMenu": {
       "myTrips": "رحلاتي",
       "favorites": "المفضلة",
