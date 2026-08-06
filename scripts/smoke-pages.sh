@@ -268,6 +268,62 @@ else
 	echo "  ✗ no entry script found in / — the HTML shell looks wrong"; fail=$((fail+1))
 fi
 
+# LAZY ROUTE CHUNKS (2026-08-06). Everything above is discovered by grepping
+# the shell's HTML, which can only ever see what the shell preloads. Route
+# chunks reached through import() — discovery-*, Venues-*, every page — appear
+# in no HTML at all, so they were checked by nothing and, worse, were absent
+# from the purge list built out of ALL_ASSETS. In the incident that day
+# discovery-* (which carries PageHero) stayed poisoned through a targeted
+# purge, an escalation to purge_everything AND a full redeploy, because its
+# content had not changed so it was re-emitted under the same hash. Every
+# intent page rendered chrome-only with no <h1> and the smoke run said 60/60.
+#
+# dist/ is present in the deploy job (the build ran in the same job), so the
+# authoritative list of what this deploy emitted is right there. One CORS
+# request each, parallel, and only the suspects pay for the full
+# expect_asset_type treatment — a serial pass over ~800 files with its
+# cache-bust and 5-attempt retry would add many minutes to every deploy.
+sweep_built_assets() {
+	local dist="${DIST_DIR:-dist}"
+	if [ ! -d "$dist/assets" ]; then
+		echo "  · no local $dist/assets — skipping the built-asset sweep (shell assets still checked)"
+		return 0
+	fi
+
+	local list count suspects
+	list=$(cd "$dist" && find assets -type f \( -name '*.js' -o -name '*.css' \) | sed 's|^|/|' | sort)
+	count=$(printf '%s\n' "$list" | grep -c . || true)
+	[ "$count" -eq 0 ] && return 0
+	echo "  · sweeping $count built assets for the CORS cache variant"
+
+	# Only the CORS variant is ever poisoned, so that is the only probe needed
+	# to find suspects. Failures here are re-checked properly below.
+	suspects=$(printf '%s\n' "$list" | SITE="$SITE" xargs -P 12 -I{} sh -c '
+		ct=$(curl -sS -m 10 -o /dev/null -w "%{content_type}" \
+			-H "Origin: $SITE" -H "Sec-Fetch-Mode: cors" -H "Sec-Fetch-Dest: script" \
+			"$SITE{}" 2>/dev/null)
+		case "$ct" in
+			*javascript*|*ecmascript*|*css*) ;;
+			*) printf "%s\n" "{}" ;;
+		esac')
+
+	if [ -z "$suspects" ]; then
+		echo "  ✓ all $count built assets serve the right type to a CORS request"
+		pass=$((pass+1))
+		return 0
+	fi
+
+	while IFS= read -r asset; do
+		[ -z "$asset" ] && continue
+		case "$asset" in
+			*.css) expect_asset_type "$asset" text/css ;;
+			*)     expect_asset_type "$asset" javascript ;;
+		esac
+	done <<< "$suspects"
+}
+
+sweep_built_assets
+
 # A poisoned entry is the one failure here that NO redeploy can clear: the
 # filename hash does not move, so the bad object sits under `immutable,
 # max-age=31536000` for a year. Rotating the hash only works for files we
