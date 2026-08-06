@@ -100,7 +100,9 @@ const Wishlist = () => {
             }
             mood="neutral"
             primaryAction={
-              isOwner ? { label: 'Browse marketplace', onClick: () => navigate('/marketplace') } : undefined
+              isOwner
+                ? { label: 'Browse marketplace', onClick: () => navigate('/marketplace') }
+                : undefined
             }
           />
         ) : (

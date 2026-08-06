@@ -53,9 +53,7 @@ export const PageHeader = ({
             </p>
           )}
         </div>
-        {actions && (
-          <div className="flex items-center gap-2 shrink-0">{actions}</div>
-        )}
+        {actions && <div className="flex items-center gap-2 shrink-0">{actions}</div>}
       </div>
       {children && <div className="mt-4">{children}</div>}
     </div>

@@ -273,6 +273,38 @@ export function isIntentActive(intent: IntentDestination, path: string): boolean
   return intent.activePrefixes.some((p) => path === p || path.startsWith(`${p}/`));
 }
 
+/** The intent a locale-stripped pathname belongs to, if any. */
+export function findActiveIntent(path: string): IntentDestination | undefined {
+  return INTENT_NAV.find((intent) => isIntentActive(intent, path));
+}
+
+/**
+ * Search scope bias per intent. Values are searchTaxonomy ids
+ * (src/lib/searchTaxonomy.ts).
+ *
+ * This exists because the site had THREE unrelated "what are you here for"
+ * taxonomies that never spoke to each other: INTENT_NAV (nav), USER_MODES
+ * (which biased the search popover's trending tiles), and the onboarding
+ * VIBES. The visible consequence was that opening search while standing on
+ * /going-out surfaced exactly the same tiles as standing on /rights — the
+ * strongest available signal about what someone wants, the page they are
+ * currently on, was the one signal the popover ignored.
+ *
+ * Read BEFORE MODE_SCOPE_BIAS, which stays as the fallback for every route
+ * that is not an intent page. Both are only a bias on discovery tiles; neither
+ * filters results.
+ */
+export const INTENT_SCOPE_BIAS: Record<IntentId, string[]> = {
+  'going-out': ['venue', 'event'],
+  travelling: ['city', 'queer_village'],
+  // Groups and events are how meeting actually happens here. There is no user
+  // index in search, so this deliberately does not pretend to surface people.
+  meet: ['group', 'event'],
+  rights: ['country', 'news'],
+  support: ['organization', 'news'],
+  shop: ['marketplace', 'guide'],
+};
+
 /**
  * Mobile bottom-nav tab set — single source of truth for the four destination
  * slots (the raised contribute button is bespoke and not listed here). Tapping

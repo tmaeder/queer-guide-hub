@@ -60,10 +60,20 @@ export function MarketplaceRailShell({
           {subtitle && <p className="text-sm text-muted-foreground mt-1">{subtitle}</p>}
         </div>
         <div className="hidden md:flex gap-1.5">
-          <Button variant="outline" size="icon" onClick={() => scroll(-1)} aria-label={`Scroll ${title} left`}>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => scroll(-1)}
+            aria-label={`Scroll ${title} left`}
+          >
             <ChevronLeft size={16} />
           </Button>
-          <Button variant="outline" size="icon" onClick={() => scroll(1)} aria-label={`Scroll ${title} right`}>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => scroll(1)}
+            aria-label={`Scroll ${title} right`}
+          >
             <ChevronRight size={16} />
           </Button>
         </div>

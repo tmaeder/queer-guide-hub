@@ -25,7 +25,10 @@ type Article = {
 };
 
 function meta(a: Article, dateFmt: string): string {
-  return [resolvePublisherName({ publisherName: a.publisher_name }), format(new Date(a.published_at), dateFmt)]
+  return [
+    resolvePublisherName({ publisherName: a.publisher_name }),
+    format(new Date(a.published_at), dateFmt),
+  ]
     .filter(Boolean)
     .join(' · ');
 }
@@ -118,11 +121,7 @@ const NewsMagazine = React.memo(() => {
         {secondary.length > 0 && (
           <div className="grid grid-cols-2 gap-x-6 gap-y-8">
             {secondary.map((a) => (
-              <LocalizedLink
-                key={a.id}
-                to={`/news/${a.slug}`}
-                className="group block no-underline"
-              >
+              <LocalizedLink key={a.id} to={`/news/${a.slug}`} className="group block no-underline">
                 <div className="mb-4 aspect-[3/2] overflow-hidden rounded-element bg-muted">
                   <ExternalImg
                     src={imgFor(a)}

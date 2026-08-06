@@ -303,9 +303,7 @@ const NewsCardImpl = ({
               {eyebrowParts.join(' · ')}
             </p>
           )}
-          <h3 className="m-0 text-headline font-bold leading-[1.05] tracking-tight">
-            {safeTitle}
-          </h3>
+          <h3 className="m-0 text-headline font-bold leading-[1.05] tracking-tight">{safeTitle}</h3>
           {langBadge}
           {dek && <p className="text-15 italic text-muted-foreground leading-relaxed">{dek}</p>}
           <div className="flex items-center gap-4 text-2xs uppercase tracking-wider text-muted-foreground mt-2">

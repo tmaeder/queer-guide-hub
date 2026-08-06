@@ -255,7 +255,6 @@ export function MarketplaceBuyBox({
             </p>
           )}
 
-
           <div className="flex flex-col gap-2">
             {outbound && (
               <Button variant="accent" className="w-full" asChild>

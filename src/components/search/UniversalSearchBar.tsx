@@ -19,7 +19,8 @@ import { useSearchHotkey } from '@/hooks/useSearchHotkey';
 import { useUserMode } from '@/hooks/useUserMode';
 import { useAuth } from '@/hooks/useAuth';
 import { useAssistant } from '@/hooks/useAssistant';
-import { MODE_SCOPE_BIAS } from '@/config/navigation';
+import { MODE_SCOPE_BIAS, INTENT_SCOPE_BIAS, findActiveIntent } from '@/config/navigation';
+import { stripLocale } from '@/lib/locale';
 import type { SearchFilters } from '@/hooks/useSearch';
 import type { AssistantCard } from '@/lib/assistantClient';
 import { detailHref } from '@/lib/searchRoutes';
@@ -126,10 +127,22 @@ export const UniversalSearchBar = () => {
     error: suggestionsError,
   } = useSearchSuggestions(query, scopeArray);
   const { mode: userMode } = useUserMode();
-  const trendingTypes = useMemo(
-    () => (MODE_SCOPE_BIAS[userMode] ?? ['venue', 'event']).slice(0, 2),
-    [userMode],
-  );
+  // The page someone is standing on is the strongest signal about what they
+  // want, and it used to be the one signal this panel ignored: trending tiles
+  // were biased by user_mode alone, so /going-out and /rights showed the same
+  // six. Intent wins where there is one; user_mode stays the fallback for
+  // every route that is not an intent page.
+  const trendingTypes = useMemo(() => {
+    const intent = findActiveIntent(stripLocale(location.pathname));
+    const intentBias = intent ? (INTENT_SCOPE_BIAS[intent.id] ?? []) : [];
+    const modeBias = MODE_SCOPE_BIAS[userMode] ?? ['venue', 'event'];
+    // Intent types lead, mode types top up — NOT replace. Replacing empties the
+    // panel wherever the intent's own types have no trending rows: measured on
+    // /shop, where ['marketplace','guide'] returned nothing and the tiles
+    // disappeared entirely, which is worse than the generic ones they replaced.
+    // A union biases toward the current job while keeping the panel populated.
+    return [...new Set([...intentBias, ...modeBias])].slice(0, 3);
+  }, [userMode, location.pathname]);
   const { trending } = useTrendingSuggestions(isOpen && !query, 6, trendingTypes);
   // §9.1 zero-query panel: prefer the personalized/popularity-aware recommendations
   // feed when available; fall back to trending. Gated behind a build flag so the

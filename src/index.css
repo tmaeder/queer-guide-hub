@@ -1409,12 +1409,8 @@ h2,
   mask-position:
     top left,
     bottom left;
-  -webkit-mask-repeat:
-    no-repeat,
-    repeat-x;
-  mask-repeat:
-    no-repeat,
-    repeat-x;
+  -webkit-mask-repeat: no-repeat, repeat-x;
+  mask-repeat: no-repeat, repeat-x;
 }
 
 /* ── Duotone ───────────────────────────────────────────────────────────

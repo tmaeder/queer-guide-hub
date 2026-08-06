@@ -43,9 +43,7 @@ export function OrgHero({ org }: { org: Organization }) {
           />
         )}
         <div className="min-w-0 flex-1">
-          <h1 className="font-display text-display leading-tight md:text-display">
-            {org.name}
-          </h1>
+          <h1 className="font-display text-display leading-tight md:text-display">{org.name}</h1>
           <div className="mt-2 flex flex-wrap items-center gap-2">
             {org.roles.map((role) => (
               <Badge key={role} variant="secondary">

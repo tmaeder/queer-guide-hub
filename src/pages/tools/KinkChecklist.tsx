@@ -43,8 +43,8 @@ export default function KinkChecklist() {
       <div className="mx-auto max-w-md p-8 text-center">
         <h1 className="text-headline font-display">Interests & boundaries checklist</h1>
         <p className="mt-4 text-sm text-muted-foreground">
-          This tool is part of the intimate layer — 18+, opt-in, verified email. Everything
-          you enter is private by default; you choose per category who can see it.
+          This tool is part of the intimate layer — 18+, opt-in, verified email. Everything you
+          enter is private by default; you choose per category who can see it.
         </p>
         <Button className="mt-6 rounded-element" onClick={() => navigate('/intimate/onboard')}>
           Enable intimate profile
@@ -58,9 +58,9 @@ export default function KinkChecklist() {
       <header className="mb-6">
         <h1 className="text-display font-display">Interests & boundaries</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Rate what you're into, mark limits, flag things to discuss first. Private by
-          default. Your No's and hard limits are never shown to anyone — they only remove
-          items from comparisons, silently.
+          Rate what you're into, mark limits, flag things to discuss first. Private by default. Your
+          No's and hard limits are never shown to anyone — they only remove items from comparisons,
+          silently.
         </p>
       </header>
 

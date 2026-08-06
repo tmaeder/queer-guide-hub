@@ -48,7 +48,11 @@ export function ProfileHeader({
   const socialAccounts = readAccounts(profile.social_accounts, socialLinks);
   const hasStatus =
     !!status &&
-    (status.emoji || status.text || status.dndActive || status.travel || (status.tags?.length ?? 0) > 0);
+    (status.emoji ||
+      status.text ||
+      status.dndActive ||
+      status.travel ||
+      (status.tags?.length ?? 0) > 0);
 
   return (
     <Card>
@@ -56,10 +60,7 @@ export function ProfileHeader({
         <div className="flex flex-col md:flex-row gap-6 items-start">
           <div className="flex flex-col items-center text-center md:text-left">
             <Avatar className="size-24 md:size-32 mb-4">
-              <AvatarImage
-                src={(profile.avatar_url as string) || undefined}
-                alt={displayName}
-              />
+              <AvatarImage src={(profile.avatar_url as string) || undefined} alt={displayName} />
               <AvatarFallback className="text-headline">
                 {(username || 'A').charAt(0).toUpperCase()}
               </AvatarFallback>
@@ -79,9 +80,7 @@ export function ProfileHeader({
                   {displayName}
                 </h1>
                 <div className="flex flex-wrap items-center justify-center gap-2 md:justify-start">
-                  {!!profile.user_mode && (
-                    <UserModeBadge mode={profile.user_mode} size="lg" />
-                  )}
+                  {!!profile.user_mode && <UserModeBadge mode={profile.user_mode} size="lg" />}
                   <TrustTierBadge userId={profile.user_id as string} showLabel />
                   {score && (
                     <ScoreLevelChip
@@ -111,7 +110,10 @@ export function ProfileHeader({
 
               {(hasStatus || isOwnProfile) && (
                 <div className="mb-4 max-w-2xl">
-                  <StatusBar status={status ?? undefined} onClick={isOwnProfile ? onEditStatus : undefined} />
+                  <StatusBar
+                    status={status ?? undefined}
+                    onClick={isOwnProfile ? onEditStatus : undefined}
+                  />
                   {isOwnProfile && !hasStatus && (
                     <button
                       type="button"
@@ -126,7 +128,10 @@ export function ProfileHeader({
 
               {socialAccounts.length > 0 && (
                 <div className="mb-4">
-                  <SocialAccountsDisplay socialAccounts={profile.social_accounts} socialLinks={socialLinks} />
+                  <SocialAccountsDisplay
+                    socialAccounts={profile.social_accounts}
+                    socialLinks={socialLinks}
+                  />
                 </div>
               )}
 

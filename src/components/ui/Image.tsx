@@ -214,8 +214,7 @@ export const Image = ({
       : resolved;
   // Once this rung's CF-wrapped srcset has errored, render it srcset-free so
   // the browser falls back to the untouched raw URL.
-  const cfSrcSet =
-    cfBase && cfFailedRung !== rung ? buildCfSrcSet(cfBase, widthSet) : undefined;
+  const cfSrcSet = cfBase && cfFailedRung !== rung ? buildCfSrcSet(cfBase, widthSet) : undefined;
   // External hosts can't use CF resizing; fall back to a two-stop set when we
   // have both a small and a large URL for the same asset.
   const externalSrcSet =

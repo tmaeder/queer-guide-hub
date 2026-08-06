@@ -1,9 +1,12 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { resolve, join } from 'node:path';
+import { readFileSync as _rf } from 'node:fs';
 import {
   DESTINATIONS,
   INTENT_NAV,
+  INTENT_SCOPE_BIAS,
+  findActiveIntent,
   BOTTOM_NAV_TABS,
   NAV_CLUSTERS,
   USER_MODES,
@@ -162,5 +165,44 @@ describe('INTENT_NAV', () => {
       }
     }
     expect(collisions).toEqual([]);
+  });
+});
+
+describe('INTENT_SCOPE_BIAS', () => {
+  // searchTaxonomy is the only source of legal scope ids. A typo here does not
+  // throw — it silently biases the discovery panel toward a type that matches
+  // nothing, so the tiles quietly go generic. That is exactly the failure this
+  // whole change exists to remove, so it is asserted rather than trusted.
+  const taxonomy = _rf(resolve(__dirname, '../../lib/searchTaxonomy.ts'), 'utf8');
+  const legalIds = new Set([...taxonomy.matchAll(/id: '([a-z_]+)'/g)].map((m) => m[1]));
+
+  it('covers every intent', () => {
+    for (const intent of INTENT_NAV) {
+      expect(INTENT_SCOPE_BIAS[intent.id], `${intent.id} has no scope bias`).toBeDefined();
+      expect(INTENT_SCOPE_BIAS[intent.id].length).toBeGreaterThan(0);
+    }
+    expect(Object.keys(INTENT_SCOPE_BIAS).sort()).toEqual(INTENT_NAV.map((i) => i.id).sort());
+  });
+
+  it('only names real searchTaxonomy ids', () => {
+    const bogus: string[] = [];
+    for (const [id, scopes] of Object.entries(INTENT_SCOPE_BIAS)) {
+      for (const scope of scopes) if (!legalIds.has(scope)) bogus.push(`${id}: ${scope}`);
+    }
+    expect(bogus, 'these scope ids do not exist in searchTaxonomy').toEqual([]);
+  });
+});
+
+describe('findActiveIntent', () => {
+  it('resolves a route to the intent that owns it', () => {
+    expect(findActiveIntent('/going-out')?.id).toBe('going-out');
+    expect(findActiveIntent('/venues/some-bar')?.id).toBe('going-out');
+    expect(findActiveIntent('/city/berlin')?.id).toBe('travelling');
+    expect(findActiveIntent('/community/groups')?.id).toBe('meet');
+  });
+
+  it('returns undefined off an intent route, so the mode fallback applies', () => {
+    expect(findActiveIntent('/settings')).toBeUndefined();
+    expect(findActiveIntent('/')).toBeUndefined();
   });
 });

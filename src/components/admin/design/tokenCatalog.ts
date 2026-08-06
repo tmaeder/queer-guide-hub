@@ -69,8 +69,18 @@ export type FontSlot = { family: string; files: FontFile[] };
 export type FontSlotKey = 'display' | 'sans';
 
 /** Default family stacks + the CSS var each slot overrides (mirror src/index.css). */
-export const FONT_SLOTS: Array<{ key: FontSlotKey; cssVar: string; label: string; defaultFamily: string }> = [
-  { key: 'display', cssVar: '--font-display', label: 'Display (headings)', defaultFamily: 'Space Grotesk' },
+export const FONT_SLOTS: Array<{
+  key: FontSlotKey;
+  cssVar: string;
+  label: string;
+  defaultFamily: string;
+}> = [
+  {
+    key: 'display',
+    cssVar: '--font-display',
+    label: 'Display (headings)',
+    defaultFamily: 'Space Grotesk',
+  },
   { key: 'sans', cssVar: '--font-sans', label: 'Sans (body & UI)', defaultFamily: 'Inter' },
 ];
 
@@ -138,35 +148,90 @@ export const COLOR_TOKENS: ColorTokenDef[] = [
 ];
 
 export const GLOBAL_TOKENS: GlobalTokenDef[] = [
-  { key: 'radius-container', kind: 'radius', default: '0.5rem', label: 'Container (cards, sheets, dialogs)' },
-  { key: 'radius-element', kind: 'radius', default: '0.25rem', label: 'Element (buttons, inputs, rows)' },
+  {
+    key: 'radius-container',
+    kind: 'radius',
+    default: '0.5rem',
+    label: 'Container (cards, sheets, dialogs)',
+  },
+  {
+    key: 'radius-element',
+    kind: 'radius',
+    default: '0.25rem',
+    label: 'Element (buttons, inputs, rows)',
+  },
   { key: 'radius-badge', kind: 'radius', default: '0rem', label: 'Badge (tags, chips, pills)' },
   { key: 'text-hero-xl', kind: 'size', default: '7rem', label: 'Hero XL' },
-  { key: 'text-hero-xl--line-height', kind: 'lineHeight', default: '0.95', label: 'Hero XL line height' },
+  {
+    key: 'text-hero-xl--line-height',
+    kind: 'lineHeight',
+    default: '0.95',
+    label: 'Hero XL line height',
+  },
   { key: 'text-hero', kind: 'size', default: '4.75rem', label: 'Hero' },
   { key: 'text-hero--line-height', kind: 'lineHeight', default: '1', label: 'Hero line height' },
   { key: 'text-display', kind: 'size', default: '2.75rem', label: 'Display' },
-  { key: 'text-display--line-height', kind: 'lineHeight', default: '1.05', label: 'Display line height' },
+  {
+    key: 'text-display--line-height',
+    kind: 'lineHeight',
+    default: '1.05',
+    label: 'Display line height',
+  },
   // `text-headline-lg` removed 2026-08-04: it sat 1.14x from `text-headline`,
   // which no reader resolves as a separate level, so the two were used
   // interchangeably. This is one of six layers that move together — see the
   // note in src/index.css.
   { key: 'text-headline', kind: 'size', default: '1.75rem', label: 'Headline' },
-  { key: 'text-headline--line-height', kind: 'lineHeight', default: '1.2', label: 'Headline line height' },
+  {
+    key: 'text-headline--line-height',
+    kind: 'lineHeight',
+    default: '1.2',
+    label: 'Headline line height',
+  },
   { key: 'text-title', kind: 'size', default: '1.25rem', label: 'Title' },
-  { key: 'text-title--line-height', kind: 'lineHeight', default: '1.4', label: 'Title line height' },
+  {
+    key: 'text-title--line-height',
+    kind: 'lineHeight',
+    default: '1.4',
+    label: 'Title line height',
+  },
   { key: 'text-body-lg', kind: 'size', default: '1.0625rem', label: 'Body large' },
-  { key: 'text-body-lg--line-height', kind: 'lineHeight', default: '1.7', label: 'Body large line height' },
+  {
+    key: 'text-body-lg--line-height',
+    kind: 'lineHeight',
+    default: '1.7',
+    label: 'Body large line height',
+  },
   { key: 'text-15', kind: 'size', default: '0.9375rem', label: '15px body' },
-  { key: 'text-15--line-height', kind: 'lineHeight', default: '1.375rem', label: '15px line height' },
+  {
+    key: 'text-15--line-height',
+    kind: 'lineHeight',
+    default: '1.375rem',
+    label: '15px line height',
+  },
   { key: 'text-13', kind: 'size', default: '0.8125rem', label: '13px small' },
-  { key: 'text-13--line-height', kind: 'lineHeight', default: '1.125rem', label: '13px line height' },
+  {
+    key: 'text-13--line-height',
+    kind: 'lineHeight',
+    default: '1.125rem',
+    label: '13px line height',
+  },
   { key: 'text-xs2', kind: 'size', default: '0.6875rem', label: '11px extra small' },
   { key: 'text-xs2--line-height', kind: 'lineHeight', default: '1rem', label: '11px line height' },
   { key: 'text-2xs', kind: 'size', default: '0.625rem', label: '10px micro' },
-  { key: 'text-2xs--line-height', kind: 'lineHeight', default: '0.875rem', label: '10px line height' },
+  {
+    key: 'text-2xs--line-height',
+    kind: 'lineHeight',
+    default: '0.875rem',
+    label: '10px line height',
+  },
   { key: 'text-3xs', kind: 'size', default: '0.5625rem', label: '9px nano' },
-  { key: 'text-3xs--line-height', kind: 'lineHeight', default: '0.75rem', label: '9px line height' },
+  {
+    key: 'text-3xs--line-height',
+    kind: 'lineHeight',
+    default: '0.75rem',
+    label: '9px line height',
+  },
   { key: 'tracking-label', kind: 'tracking', default: '0.04em', label: 'Eyebrow label tracking' },
   {
     key: 'transition-smooth',
@@ -252,7 +317,9 @@ export function flattenBrandingDoc(doc: BrandingDoc): Record<string, string> {
   }
   for (const slot of ['display', 'sans'] as const) {
     const s = doc.fonts?.[slot];
-    if (s) out[`fonts.${slot}`] = `${s.family} (${s.files?.length ?? 0} file${s.files?.length === 1 ? '' : 's'})`;
+    if (s)
+      out[`fonts.${slot}`] =
+        `${s.family} (${s.files?.length ?? 0} file${s.files?.length === 1 ? '' : 's'})`;
   }
   return out;
 }
