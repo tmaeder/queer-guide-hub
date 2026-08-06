@@ -97,10 +97,10 @@ export function SectionHeader({
         <h2
           id={id}
           className={cn(
-            size === 'band' && 'text-headline md:text-headline-lg font-bold tracking-tight',
+            size === 'band' && 'text-headline font-bold tracking-tight',
             size === 'section' && 'text-title font-display font-semibold',
             size === 'masthead' &&
-              'text-headline-lg md:text-display font-display font-bold uppercase tracking-[-0.01em] leading-none',
+              'text-headline md:text-display font-display font-bold uppercase tracking-[-0.01em] leading-none',
           )}
           style={size === 'band' ? { letterSpacing: '-0.02em' } : undefined}
         >

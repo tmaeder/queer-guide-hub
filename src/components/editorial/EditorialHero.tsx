@@ -68,11 +68,7 @@ export function EditorialHero({
   if (imagePosition === 'side') {
     return (
       <section
-        className={cn(
-          'relative rounded-container overflow-hidden bg-muted',
-          sizeClass,
-          className,
-        )}
+        className={cn('relative rounded-container overflow-hidden bg-muted', sizeClass, className)}
       >
         <div className="grid grid-cols-1 md:grid-cols-2 h-full min-h-inherit items-stretch">
           <div className="relative z-[1] flex flex-col justify-center gap-4 p-8 md:p-12 order-2 md:order-1">
@@ -81,7 +77,7 @@ export function EditorialHero({
                 {eyebrow}
               </p>
             )}
-            <h1 className="font-bold leading-[1.1] text-display md:text-headline-lg">{title}</h1>
+            <h1 className="font-bold leading-[1.1] text-display">{title}</h1>
             {subtitle && (
               <p className="text-body-lg text-muted-foreground leading-[1.6] max-w-[520px]">
                 {subtitle}
@@ -111,11 +107,7 @@ export function EditorialHero({
   // cover layout
   return (
     <section
-      className={cn(
-        'relative rounded-container overflow-hidden bg-muted',
-        sizeClass,
-        className,
-      )}
+      className={cn('relative rounded-container overflow-hidden bg-muted', sizeClass, className)}
     >
       {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- onError is a media-error handler, not a user-input listener. */}
       <img
@@ -137,9 +129,7 @@ export function EditorialHero({
       {!errored && <CreditTag credit={image.credit} onDark />}
       <div className="relative z-[1] flex h-full flex-col justify-end gap-4 p-8 md:p-12 text-white">
         {eyebrow && (
-          <p className="text-xs2 font-semibold uppercase tracking-wider text-white/80">
-            {eyebrow}
-          </p>
+          <p className="text-xs2 font-semibold uppercase tracking-wider text-white/80">{eyebrow}</p>
         )}
         <h1
           className="font-bold leading-[1.05] text-display md:text-hero max-w-[820px]"

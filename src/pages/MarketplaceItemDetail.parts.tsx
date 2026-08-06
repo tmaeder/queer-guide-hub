@@ -218,7 +218,7 @@ export function MarketplaceBuyBox({
                   {price.modifier}
                 </span>
               )}
-              <span className="text-headline-lg font-display">{price.primary}</span>
+              <span className="text-headline font-display">{price.primary}</span>
             </div>
             {price.secondary && (
               <p className="mt-1 text-sm text-muted-foreground">{price.secondary}</p>
@@ -254,7 +254,6 @@ export function MarketplaceBuyBox({
               Last verified some time ago — link may have changed.
             </p>
           )}
-
 
           <div className="flex flex-col gap-2">
             {outbound && (

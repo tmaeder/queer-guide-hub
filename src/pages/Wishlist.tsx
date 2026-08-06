@@ -74,7 +74,7 @@ const Wishlist = () => {
             <VisibilityIcon size={14} aria-hidden="true" />
             <span>{wishlist.visibility} wishlist</span>
           </div>
-          <h1 className="text-headline-lg md:text-display font-semibold mb-4">{wishlist.title}</h1>
+          <h1 className="text-headline md:text-display font-semibold mb-4">{wishlist.title}</h1>
           {wishlist.description && (
             <p className="text-body-lg text-muted-foreground max-w-2xl">{wishlist.description}</p>
           )}
@@ -100,7 +100,9 @@ const Wishlist = () => {
             }
             mood="neutral"
             primaryAction={
-              isOwner ? { label: 'Browse marketplace', onClick: () => navigate('/marketplace') } : undefined
+              isOwner
+                ? { label: 'Browse marketplace', onClick: () => navigate('/marketplace') }
+                : undefined
             }
           />
         ) : (

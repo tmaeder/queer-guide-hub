@@ -72,7 +72,7 @@ const COLOR_KEYS = new Set([
 const SIZE_KEYS = new Set([
   'radius-container', 'radius-element', 'radius-badge',
   'text-3xs', 'text-2xs', 'text-xs2', 'text-13', 'text-15', 'text-body-lg',
-  'text-title', 'text-headline', 'text-headline-lg', 'text-display', 'text-hero', 'text-hero-xl',
+  'text-title', 'text-headline', 'text-display', 'text-hero', 'text-hero-xl',
 ]);
 
 const LINE_HEIGHT_SUFFIX = '--line-height';

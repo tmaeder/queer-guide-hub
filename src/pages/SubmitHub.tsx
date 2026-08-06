@@ -68,7 +68,7 @@ const SubmitHub = () => {
 
       <header className="mb-12">
         <Eyebrow>{t('pages.submit.eyebrow', 'Contribute')}</Eyebrow>
-        <h1 className="mt-2 font-bold text-display md:text-headline-lg">
+        <h1 className="mt-2 font-bold text-display">
           {t('pages.submit.title', 'Contribute to Queer Guide')}
         </h1>
         <p className="mt-4 text-body-lg leading-[1.6] text-muted-foreground max-w-prose">

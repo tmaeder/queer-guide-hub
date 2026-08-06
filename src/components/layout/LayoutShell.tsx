@@ -90,16 +90,16 @@ export const LayoutShell = ({ children }: { children: React.ReactNode }) => {
 
       {/* PASTE-UP backdrop: the page is a sheet of stock, so the ambient layer
           is paper grain rather than the old dot grid. The grid read as a
-          designer's canvas; grain reads as something printed. */}
-      {!isAdmin && (
-        <>
-          <div aria-hidden="true" className="fixed inset-0 z-0 pointer-events-none bg-background" />
-          <div
-            aria-hidden="true"
-            className="fixed inset-0 z-0 pointer-events-none paper-grain"
-          />
-        </>
-      )}
+          designer's canvas; grain reads as something printed.
+
+          Admin gets the stock too (2026-08-04) — it is the same product, and
+          excluding it was making /admin read as a different application. The
+          grain is the ONLY print layer admin takes: no drum screens, no
+          misregistration. /admin/design especially renders literal colour
+          swatches for judging, and texture behind a swatch defeats the one
+          thing that surface exists to do. */}
+      <div aria-hidden="true" className="fixed inset-0 z-0 pointer-events-none bg-background" />
+      <div aria-hidden="true" className="fixed inset-0 z-0 pointer-events-none paper-grain" />
       <AnalyticsTracker />
       {/* Header + banners are wrapped in dedicated error boundaries so a crash
         in (e.g.) the avatar menu's notifications subscription cannot blank the

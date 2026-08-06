@@ -9,9 +9,13 @@ import { stripLocale } from '@/lib/locale';
  * framer-motion onto the entry chunk's critical path.
  *
  * Remounts on top-level path segment change (same key rule as MotionPage), so
- * the `route-fade` keyframe replays. The keyframe only animates FROM opacity 0
+ * the `paper-feed` keyframe replays. The keyframe only animates FROM opacity 0
  * — if animations never run (reduced motion, headless), content renders at
  * its natural, fully-visible state.
+ *
+ * PASTE-UP: `paper-feed` replaces the flat `route-fade` crossfade with a short
+ * vertical advance, the way a sheet feeds through a press. It was written for
+ * exactly this call site and then never wired to it.
  */
 export const RouteFade = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
@@ -19,7 +23,7 @@ export const RouteFade = ({ children }: { children: React.ReactNode }) => {
   // detail→detail navigation within a section still gets the fade.
   const segmentKey = stripLocale(location.pathname).split('/').slice(0, 3).join('/') || 'root';
   return (
-    <div key={segmentKey} className="route-fade" style={{ minHeight: '100%' }}>
+    <div key={segmentKey} className="paper-feed" style={{ minHeight: '100%' }}>
       {children}
     </div>
   );

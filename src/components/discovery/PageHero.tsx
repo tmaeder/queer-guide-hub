@@ -37,9 +37,7 @@ function CtaButton({ cta, primary }: { cta: CTA; primary: boolean }) {
   // `text-background` utility, leaving the primary CTA's label invisible
   // against the dark pill. Inline style has the highest non-!important
   // specificity and guarantees the contrast that screen-readers already see.
-  const style = primary
-    ? { color: 'hsl(var(--background))' }
-    : undefined;
+  const style = primary ? { color: 'hsl(var(--background))' } : undefined;
   if (cta.href) {
     return (
       <LocalizedLink to={cta.href} className={cls} style={style}>
@@ -63,7 +61,7 @@ const SIZE_PADDING: Record<NonNullable<PageHeroProps['size']>, string> = {
 };
 
 const SIZE_TITLE: Record<NonNullable<PageHeroProps['size']>, string> = {
-  sm: 'text-headline-lg md:text-display',
+  sm: 'text-headline md:text-display',
   md: 'text-display md:text-hero',
   lg: 'text-hero md:text-hero-xl',
 };
@@ -81,12 +79,7 @@ export function PageHero({
   children,
 }: PageHeroProps) {
   return (
-    <section
-      className={cn(
-        'relative isolate overflow-hidden bg-background',
-        className,
-      )}
-    >
+    <section className={cn('relative isolate overflow-hidden bg-background', className)}>
       {effect === 'spotlight' && <SpotlightV2 anchor="top-center" intensity={0.14} />}
 
       <div
@@ -117,12 +110,7 @@ export function PageHero({
         )}
 
         {(primaryCta || secondaryCta) && (
-          <div
-            className={cn(
-              'mt-8 flex flex-wrap gap-4',
-              align === 'center' && 'justify-center',
-            )}
-          >
+          <div className={cn('mt-8 flex flex-wrap gap-4', align === 'center' && 'justify-center')}>
             {primaryCta && <CtaButton cta={primaryCta} primary />}
             {secondaryCta && <CtaButton cta={secondaryCta} primary={false} />}
           </div>

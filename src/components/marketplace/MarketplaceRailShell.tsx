@@ -54,16 +54,26 @@ export function MarketplaceRailShell({
     <section className={className ?? 'mb-16 lg:mb-24'} aria-labelledby={`row-${id}`}>
       <div className="flex items-end justify-between mb-4 gap-4">
         <div>
-          <h2 id={`row-${id}`} className="font-display text-headline-lg tracking-tight">
+          <h2 id={`row-${id}`} className="font-display text-headline tracking-tight">
             {title}
           </h2>
           {subtitle && <p className="text-sm text-muted-foreground mt-1">{subtitle}</p>}
         </div>
         <div className="hidden md:flex gap-1.5">
-          <Button variant="outline" size="icon" onClick={() => scroll(-1)} aria-label={`Scroll ${title} left`}>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => scroll(-1)}
+            aria-label={`Scroll ${title} left`}
+          >
             <ChevronLeft size={16} />
           </Button>
-          <Button variant="outline" size="icon" onClick={() => scroll(1)} aria-label={`Scroll ${title} right`}>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => scroll(1)}
+            aria-label={`Scroll ${title} right`}
+          >
             <ChevronRight size={16} />
           </Button>
         </div>

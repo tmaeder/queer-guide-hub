@@ -70,7 +70,13 @@ function PrideFallback() {
   if (isLoading || pride.length === 0) return null;
 
   return (
+    // The homepage's one masthead; every other section is a band, so the 2px
+    // rule reads as a signature instead of a divider repeated six times. This
+    // section carries it rather than RecentlyViewedRail above it, because that
+    // rail only renders for returning visitors — a masthead that appears and
+    // disappears is not a masthead.
     <HomeSection
+      rank="masthead"
       eyebrow={t('home.events.eyebrow', "What's on")}
       title={t('home.events.prideFallback.title', 'Pride season ahead')}
       seeAllHref="/events"
@@ -237,7 +243,9 @@ const EventsAgenda = () => {
   };
 
   return (
+    // Masthead in both render states — see the note on the fallback above.
     <HomeSection
+      rank="masthead"
       eyebrow={t('home.events.eyebrow', "What's on")}
       title={title}
       seeAllHref="/events"

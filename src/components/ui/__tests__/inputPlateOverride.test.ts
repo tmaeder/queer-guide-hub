@@ -55,7 +55,6 @@ const NON_COLOUR_TEXT = new Set([
   'hero-xl',
   'display',
   'headline',
-  'headline-lg',
   'title',
   'body-lg',
   '15',

@@ -120,9 +120,32 @@ self-hosted woff2 in `public/fonts/`. Plus Jakarta Sans was removed.
 
 Editorial scale, always via a token — ESLint errors on arbitrary `text-[…]`:
 `text-hero-xl` (7rem), `text-hero` (4.75rem), `text-display` (2.75rem),
-`text-headline-lg` (2rem), `text-headline` (1.75rem), `text-title` (1.25rem),
-`text-body-lg` (1.0625rem), `text-15`, `text-13`, `text-xs2`, `text-2xs`,
-`text-3xs`.
+`text-headline` (1.75rem), `text-title` (1.25rem), `text-body-lg` (1.0625rem),
+`text-15`, `text-13`, `text-xs2`, `text-2xs`, `text-3xs`.
+
+### Rank — which token at which level
+
+The scale is a list of sizes; this is the part that was missing, and its absence
+is why four different section-header grammars grew independently.
+
+| Rank | Token | Use |
+|---|---|---|
+| Page identity | `text-hero-xl` / `text-hero` | one per page, the hero only |
+| Page title | `text-display` | the `h1`, or a masthead band heading |
+| Section | `text-headline` | `h2` — a band or major section |
+| Sub-block | `text-title` | `h3` — a group inside a section |
+| Card title | `text-15` / `text-13` + weight | inside a card, never a heading token |
+
+**Adjacent ranks must stay ≥1.25× apart.** They currently step 1.47× / 1.73× /
+1.57× / 1.40×. `--text-headline-lg` (2rem) was removed on 2026-08-04 for
+failing exactly this: at 1.14× from `text-headline` no reader resolved them as
+different levels, so the two were used interchangeably across 34 sites.
+
+`--text-body-lg` is the deliberate exception at 1.06× from base — it is a
+reading-comfort bump for long-form prose, not a rank.
+
+**A card title must never use the same token as the section heading above it.**
+That inversion is what made card grids visually outweigh their own sections.
 
 ## Shape
 

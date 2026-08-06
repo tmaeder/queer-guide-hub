@@ -39,16 +39,13 @@ export function AdminPageHeader({
   const location = useLocation();
   const [searchParams] = useSearchParams();
 
-  const resolvedEyebrow =
-    eyebrow === undefined ? getEyebrowForRoute(location.pathname) : eyebrow;
+  const resolvedEyebrow = eyebrow === undefined ? getEyebrowForRoute(location.pathname) : eyebrow;
 
   // Auto back-link: explicit prop wins, else a `?from=` route param.
   const fromParam = searchParams.get('from');
   const back =
     backTo ??
-    (fromParam
-      ? { route: fromParam, label: getNavItemByRoute(fromParam)?.label ?? 'Back' }
-      : null);
+    (fromParam ? { route: fromParam, label: getNavItemByRoute(fromParam)?.label ?? 'Back' } : null);
 
   return (
     <header
@@ -67,10 +64,12 @@ export function AdminPageHeader({
             Back to {back.label}
           </Link>
         )}
-        {resolvedEyebrow && <Eyebrow as="div" className="mb-2">{resolvedEyebrow}</Eyebrow>}
-        <h1 className="text-headline md:text-headline-lg font-bold tracking-tight text-foreground">
-          {title}
-        </h1>
+        {resolvedEyebrow && (
+          <Eyebrow as="div" className="mb-2">
+            {resolvedEyebrow}
+          </Eyebrow>
+        )}
+        <h1 className="text-headline font-bold tracking-tight text-foreground">{title}</h1>
         {subtitle && <p className="mt-2 max-w-2xl text-13 text-muted-foreground">{subtitle}</p>}
       </div>
       {actions && <div className="flex shrink-0 flex-wrap items-center gap-2">{actions}</div>}

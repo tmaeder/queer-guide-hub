@@ -163,7 +163,8 @@ function statusPill(
   if (s.includes('cancel')) return { label: 'Cancelled', variant: 'destructive' };
   if (s.includes('postpon')) return { label: 'Postponed', variant: 'destructive' };
   if (s.includes('sold')) return { label: 'Sold out', variant: 'outline' };
-  if (s.includes('moved_online') || s === 'online') return { label: 'Moved online', variant: 'soft' };
+  if (s.includes('moved_online') || s === 'online')
+    return { label: 'Moved online', variant: 'soft' };
   return null;
 }
 
@@ -324,7 +325,7 @@ export function EventHero({
       </div>
 
       <h1
-        className="m-0 text-display font-bold leading-[1.05] tracking-tight md:text-headline-lg"
+        className="m-0 text-display font-bold leading-[1.05] tracking-tight md:text-headline"
         style={{ overflowWrap: 'anywhere' }}
       >
         <Editable
@@ -434,11 +435,19 @@ export function EventFactStrip({
         ageRestriction ? 'sm:grid-cols-4' : 'sm:grid-cols-3'
       }`}
     >
-      <FactCell icon={Calendar} label="Date" value={formatEventDate(event.start_date, event.end_date)} />
+      <FactCell
+        icon={Calendar}
+        label="Date"
+        value={formatEventDate(event.start_date, event.end_date)}
+      />
       <FactCell
         icon={Clock}
         label="Time"
-        value={formatEventTime(event.start_date, event.end_date, showEventTz ? event.timezone : null)}
+        value={formatEventTime(
+          event.start_date,
+          event.end_date,
+          showEventTz ? event.timezone : null,
+        )}
         onClick={event.timezone ? () => setShowEventTz((prev) => !prev) : undefined}
         title={event.timezone ? 'Toggle between event timezone and your local time' : undefined}
       />
@@ -531,7 +540,9 @@ export function EventDecisionCard({
             here duplicated it and read like a price. */}
         {getPriceDisplay(event) !== 'Price TBA' && (
           <div className="flex items-baseline justify-between gap-2">
-            <span className="text-headline font-display leading-none">{getPriceDisplay(event)}</span>
+            <span className="text-headline font-display leading-none">
+              {getPriceDisplay(event)}
+            </span>
             {event.is_free && <Badge variant="soft">No ticket needed</Badge>}
           </div>
         )}
@@ -670,9 +681,17 @@ export function EventAbout({
   const locationUnknown = !(event.venues?.name || event.venue_name);
   const sourceUrl = event.website || event.ticket_url;
   const showSource = (priceUnknown || locationUnknown) && Boolean(sourceUrl);
-  const missing = [priceUnknown && 'price', locationUnknown && 'location'].filter(Boolean).join(' and ');
+  const missing = [priceUnknown && 'price', locationUnknown && 'location']
+    .filter(Boolean)
+    .join(' and ');
 
-  if (!event.description && !event.is_recurring && !event.festivals?.id && !hasAccessibility && !showSource) {
+  if (
+    !event.description &&
+    !event.is_recurring &&
+    !event.festivals?.id &&
+    !hasAccessibility &&
+    !showSource
+  ) {
     return null;
   }
 
@@ -736,8 +755,8 @@ export function EventAbout({
       {showSource && (
         <div className="flex flex-wrap items-center gap-4 rounded-element bg-muted p-4">
           <p className="text-sm text-muted-foreground">
-            {missing.charAt(0).toUpperCase() + missing.slice(1)} not listed yet — check the source for
-            the latest info.
+            {missing.charAt(0).toUpperCase() + missing.slice(1)} not listed yet — check the source
+            for the latest info.
           </p>
           <Button size="sm" variant="outline" asChild>
             <a href={sourceUrl!} target="_blank" rel="noopener noreferrer">
@@ -780,7 +799,9 @@ export function EventWhoIsGoing({
 
       {going === 0 && interested === 0 && !isPast && (
         <p className="text-sm text-muted-foreground">
-          {user ? 'No RSVPs yet. Be the first.' : 'No RSVPs yet — sign in to RSVP and see who else is going.'}
+          {user
+            ? 'No RSVPs yet. Be the first.'
+            : 'No RSVPs yet — sign in to RSVP and see who else is going.'}
         </p>
       )}
 
@@ -813,9 +834,21 @@ export function EventWhere({ event, venueRef, countryId, onOrganizerClick }: Whe
     const website = org.website || handles.website;
     if (website) socials.push({ label: 'Website', href: website });
     const insta = org.instagram || handles.instagram;
-    if (insta) socials.push({ label: 'Instagram', href: `https://instagram.com/${insta.replace(/^@/, '')}` });
-    if (handles.telegram) socials.push({ label: 'Telegram', href: `https://t.me/${handles.telegram.replace(/^@/, '')}` });
-    if (handles.bluesky) socials.push({ label: 'Bluesky', href: `https://bsky.app/profile/${handles.bluesky.replace(/^@/, '')}` });
+    if (insta)
+      socials.push({
+        label: 'Instagram',
+        href: `https://instagram.com/${insta.replace(/^@/, '')}`,
+      });
+    if (handles.telegram)
+      socials.push({
+        label: 'Telegram',
+        href: `https://t.me/${handles.telegram.replace(/^@/, '')}`,
+      });
+    if (handles.bluesky)
+      socials.push({
+        label: 'Bluesky',
+        href: `https://bsky.app/profile/${handles.bluesky.replace(/^@/, '')}`,
+      });
     if (org.email) socials.push({ label: 'Email', href: `mailto:${org.email}` });
     if (org.phone) socials.push({ label: 'Call', href: `tel:${org.phone}` });
   }
@@ -935,7 +968,10 @@ export function EventWhere({ event, venueRef, countryId, onOrganizerClick }: Whe
           <CardContent>
             {org ? (
               <>
-                <LocalizedLink to={`/venues/${org.slug || org.id}`} className="font-medium hover:underline">
+                <LocalizedLink
+                  to={`/venues/${org.slug || org.id}`}
+                  className="font-medium hover:underline"
+                >
                   {org.name}
                 </LocalizedLink>
                 {socials.length > 0 && (

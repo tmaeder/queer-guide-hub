@@ -39,7 +39,7 @@ export const PageHeader = ({
       >
         <div className="flex-1 min-w-0">
           <h1
-            className={`content-enter font-display text-display md:text-headline-lg font-bold tracking-tight ${subtitle ? 'mb-2' : ''}`}
+            className={`content-enter font-display text-display font-bold tracking-tight ${subtitle ? 'mb-2' : ''}`}
             style={{ animationDelay: '50ms' }}
           >
             {title}
@@ -53,9 +53,7 @@ export const PageHeader = ({
             </p>
           )}
         </div>
-        {actions && (
-          <div className="flex items-center gap-2 shrink-0">{actions}</div>
-        )}
+        {actions && <div className="flex items-center gap-2 shrink-0">{actions}</div>}
       </div>
       {children && <div className="mt-4">{children}</div>}
     </div>

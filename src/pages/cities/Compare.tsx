@@ -75,7 +75,7 @@ export default function CitiesCompare() {
         </LocalizedLink>
       </nav>
 
-      <h1 className="mb-2 text-headline-lg font-bold tracking-tight">
+      <h1 className="mb-2 text-display font-bold tracking-tight">
         {t('cities.compare.title', 'Compare cities')}
       </h1>
       <p className="mb-8 max-w-prose text-body-lg text-muted-foreground">

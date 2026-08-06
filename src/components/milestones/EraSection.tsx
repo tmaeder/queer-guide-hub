@@ -51,9 +51,13 @@ export function EraSection({
   return (
     <section id={`era-${era.slug}`} className="scroll-mt-24">
       <header className="mb-6 pt-6">
-        <p className="text-2xs uppercase tracking-wider text-muted-foreground">{eraRangeLabel(era)}</p>
-        <h2 className="mt-1 font-display text-headline-lg font-semibold">{t(era.titleKey)}</h2>
-        <p className="mt-2 max-w-prose text-15 leading-relaxed text-muted-foreground">{t(era.introKey)}</p>
+        <p className="text-2xs uppercase tracking-wider text-muted-foreground">
+          {eraRangeLabel(era)}
+        </p>
+        <h2 className="mt-1 font-display text-headline font-semibold">{t(era.titleKey)}</h2>
+        <p className="mt-2 max-w-prose text-15 leading-relaxed text-muted-foreground">
+          {t(era.introKey)}
+        </p>
       </header>
 
       <EraKeyFigures era={era} />
@@ -67,7 +71,11 @@ export function EraSection({
           }
         >
           {anchors.map((m) => (
-            <AnchorMilestoneCard key={m.id} milestone={m} restrained={isRestrainedMilestone(m, era)} />
+            <AnchorMilestoneCard
+              key={m.id}
+              milestone={m}
+              restrained={isRestrainedMilestone(m, era)}
+            />
           ))}
         </div>
       )}
@@ -102,7 +110,9 @@ export function EraSection({
           <Button variant="outline" size="sm" onClick={() => onToggleExpanded(!expanded)}>
             {expanded
               ? t('milestones.era.showFewer', 'Show fewer')
-              : t('milestones.era.showAll', 'Show all {{count}} events', { count: totalCount ?? 0 })}
+              : t('milestones.era.showAll', 'Show all {{count}} events', {
+                  count: totalCount ?? 0,
+                })}
           </Button>
         </div>
       )}
