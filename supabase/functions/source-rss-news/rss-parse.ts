@@ -36,7 +36,11 @@ export function parseRssItems(
     // non-empty-content guard downstream (get_news_front / useNews).
     const desc = extractTag(block, 'content:encoded') || extractTag(block, 'itunes:summary') || extractTag(block, 'description')
     const pubDate = extractTag(block, 'pubDate')
-    const author = extractTag(block, 'dc:creator') || extractTag(block, 'itunes:author') || extractTag(block, 'author')
+    // Sanitized like the other text fields — `author` never went through
+    // cleanText, so it was the one raw string in the payload. Kept null-preserving:
+    // extractTag returns string | null and the metadata shape distinguishes them.
+    const authorRaw = extractTag(block, 'dc:creator') || extractTag(block, 'itunes:author') || extractTag(block, 'author')
+    const author = authorRaw ? stripLoneSurrogates(authorRaw) : authorRaw
 
     if (!title || !link) continue
 
@@ -48,7 +52,7 @@ export function parseRssItems(
       items.push({
         title: cleanText(title), content: cleanText(desc || ''),
         url: link.trim(), image_url: image, author,
-        published_at: pubDate, excerpt: cleanText(desc || '').slice(0, 500),
+        published_at: pubDate, excerpt: excerptOf(cleanText(desc || '')),
         media_type: 'podcast', audio_url: audioUrl,
         duration_seconds: parseItunesDuration(extractTag(block, 'itunes:duration')),
       })
@@ -56,7 +60,7 @@ export function parseRssItems(
       items.push({
         title: cleanText(title), content: cleanText(desc || ''),
         url: link.trim(), image_url: extractMediaUrl(block), author,
-        published_at: pubDate, excerpt: cleanText(desc || '').slice(0, 500),
+        published_at: pubDate, excerpt: excerptOf(cleanText(desc || '')),
       })
     }
   }
@@ -142,9 +146,34 @@ export function cleanText(s: string): string {
   out = decodeHtmlEntities(out)
 
   // Cosmetic RSS-junk removal.
-  return out
+  return stripLoneSurrogates(out
     .replace(/The post .* appeared first on .*\./g, '')
     .replace(/Continue reading.*/g, '')
     .replace(/[ \t]{2,}/g, ' ')
-    .trim()
+    .trim())
+}
+
+// A lone surrogate is not representable in UTF-8, and `ingestion_staging.raw_data`
+// is JSONB — Postgres rejects the INSERT with
+//   22P02 invalid input syntax for type json
+//   DETAIL: Unicode low surrogate must follow a high surrogate.
+// The staging write is ONE batch, so a single bad character discards every item
+// in the run and fails the node. That killed the 2026-08-06 19:00 run in 7s,
+// after all 8 of its sources had already fetched successfully.
+//
+// Two sources of lone surrogates, and both need covering:
+//   1. the feed ships one (mojibake / bad transcoding upstream)
+//   2. WE create one — `.slice(0, 500)` for the excerpt counts UTF-16 code
+//      units, so a cut landing between the halves of an emoji's surrogate pair
+//      orphans the high half. Calling this inside cleanText does NOT cover that,
+//      because the slice runs afterwards — hence excerptOf below.
+export function stripLoneSurrogates(s: string): string {
+  if (!s) return ''
+  // High surrogate not followed by a low one, or low not preceded by a high.
+  return s.replace(/[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/g, '')
+}
+
+// Slice that can never orphan half of a surrogate pair.
+export function excerptOf(s: string, max = 500): string {
+  return stripLoneSurrogates(s.slice(0, max))
 }
