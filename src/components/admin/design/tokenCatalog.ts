@@ -102,15 +102,15 @@ export const COLOR_TOKENS: ColorTokenDef[] = [
   { key: 'success', group: 'feedback', light: '0 0% 4%', dark: '0 0% 96%' },
   { key: 'success-foreground', group: 'feedback', light: '0 0% 100%', dark: '0 0% 4%' },
   // Riso spot ink — brand mark, never semantic. See src/index.css for the rules.
-  { key: 'spot', group: 'feedback', light: '330 95% 55%', dark: '330 100% 66%' },
+  { key: 'spot', group: 'feedback', light: '330 100% 58%', dark: '328 100% 68%' },
   { key: 'spot-foreground', group: 'feedback', light: '0 0% 4%', dark: '0 0% 4%' },
   // PASTE-UP inks — the 2nd and 3rd drums. Same doctrine as `spot`: never
   // semantic, never a state. `ink-pink` is absent on purpose — it is a
   // @theme alias of `spot`, so it has no `:root` declaration to catalog and
   // one runtime override drives both.
-  { key: 'ink-blue', group: 'feedback', light: '223 88% 46%', dark: '219 90% 62%' },
-  { key: 'ink-blue-foreground', group: 'feedback', light: '0 0% 96%', dark: '0 0% 4%' },
-  { key: 'ink-over', group: 'feedback', light: '285 75% 40%', dark: '285 90% 70%' },
+  { key: 'ink-blue', group: 'feedback', light: '193 100% 38%', dark: '186 100% 58%' },
+  { key: 'ink-blue-foreground', group: 'feedback', light: '0 0% 4%', dark: '0 0% 4%' },
+  { key: 'ink-over', group: 'feedback', light: '280 100% 52%', dark: '278 100% 70%' },
   { key: 'ink-over-foreground', group: 'feedback', light: '0 0% 96%', dark: '0 0% 4%' },
   // Text hierarchy
   { key: 'text-primary', group: 'text', light: '0 0% 4%', dark: '0 0% 96%' },
