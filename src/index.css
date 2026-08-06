@@ -322,9 +322,16 @@
   /* Riso spot ink. NON-SEMANTIC BY CONSTRUCTION: red means danger, spot means
      nothing — it is brand ink on wayfinding marks only (::selection, focus ring,
      active-nav underline, inline-link hover). It must never encode state, never
-     appear as small text (3.74:1 fails AA below 18px), and never reach /help,
-     /safety, /report-*, the trip-safety briefing, the equality scale or any risk
-     badge. That is what keeps it from competing with the danger signal. */
+     appear as small text, and never reach /help, /safety, /report-*, the
+     trip-safety briefing, the equality scale or any risk badge. That is what
+     keeps it from competing with the danger signal.
+
+     Re-measured 2026-08-04 when the ink went neon (was 330 95% 55%, 3.74:1):
+       vs page          3.50:1 light / 6.99:1 dark  — clears the 3:1 non-text
+                        bar for the focus ring, still fails AA as small text
+       spot-foreground  5.64:1 light / 6.99:1 dark  — ::selection stays readable
+     The focus ring and ::selection are the two consumers no automated gate
+     covers, so they are checked here by hand whenever this value moves. */
   --spot: 330 100% 58%;
   --spot-foreground: 0 0% 4%;
 
