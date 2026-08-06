@@ -22,6 +22,7 @@ test.use({ reducedMotion: 'reduce' });
 const INTENTS = [
   { label: 'Going out', href: '/going-out' },
   { label: 'Travelling', href: '/travel' },
+  { label: 'Meet people', href: '/people' },
   { label: 'Rights', href: '/rights' },
   { label: 'Support', href: '/support' },
   { label: 'Shop', href: '/shop' },
@@ -30,7 +31,7 @@ const INTENTS = [
 test.describe('desktop intent nav', () => {
   test.skip(({ isMobile }) => !!isMobile, 'desktop row is hidden below lg');
 
-  test('renders exactly the five intents in the primary landmark', async ({ page }) => {
+  test('renders exactly the six intents in the primary landmark', async ({ page }) => {
     await page.goto('/');
     const nav = page.locator('header nav[aria-label="Primary"]');
     await expect(nav).toBeVisible();

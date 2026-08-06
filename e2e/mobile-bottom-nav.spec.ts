@@ -81,12 +81,29 @@ test.describe('Mobile bottom navigation', () => {
     }
   });
 
-  test('Explore deep-links to the discovery surface', async ({ page }) => {
+  test('Explore opens the intent chooser on a plain tap', async ({ page }) => {
+    // The sheet used to open only on long-press, with a 24px chevron as its
+    // sole affordance. An undiscoverable gesture cannot be the entry to
+    // primary navigation, so the tab's own tap opens it now.
     await gotoMobile(page, '/');
-    await bottomNav(page).getByText('Explore', { exact: true }).click();
-    await expect(page).toHaveURL(/\/search\b/);
-    // The bar persists across the navigation (it is not a full-bleed route).
-    await expect(bottomNav(page)).toBeVisible();
+    const explore = bottomNav(page).getByText('Explore', { exact: true });
+    await expect(explore.locator('xpath=ancestor::a')).toHaveAttribute(
+      'aria-haspopup',
+      'dialog',
+    );
+    await explore.click();
+    await expect(page.getByRole('dialog')).toBeVisible();
+    // The tap opened the sheet INSTEAD of navigating.
+    await expect(page).not.toHaveURL(/\/search\b/);
+  });
+
+  test('Explore keeps a real href to the discovery surface', async ({ page }) => {
+    // Intercepting the tap must not cost middle-click, "open in new tab" or a
+    // no-JS fallback, so the slot stays a genuine link to /search.
+    await gotoMobile(page, '/');
+    await expect(
+      bottomNav(page).getByText('Explore', { exact: true }).locator('xpath=ancestor::a'),
+    ).toHaveAttribute('href', /\/search$/);
   });
 
   test('is hidden on desktop viewport', async ({ page }) => {
@@ -96,20 +113,25 @@ test.describe('Mobile bottom navigation', () => {
     await expect(bottomNav(page)).toBeHidden();
   });
 
-  test('the Browse-all affordance opens the destination hub', async ({ page }) => {
+  test('the destination hub lists both intents and every browse route', async ({ page }) => {
     await gotoMobile(page, '/');
-    await bottomNav(page).getByRole('button', { name: /browse all sections/i }).click();
+    await bottomNav(page).getByText('Explore', { exact: true }).click();
 
     const sheet = page.getByRole('dialog');
     await expect(sheet).toBeVisible();
     await expect(sheet.getByText(/Explore Queer Guide/i)).toBeVisible();
-    await expect(sheet.locator('a[href$="/venues"]')).toBeVisible();
-    await expect(sheet.locator('a[href$="/events"]')).toBeVisible();
+    // Intents lead; the browse layer stays reachable beneath them.
+    // /people appears TWICE by design — once as the "Meet people" intent and
+    // once in the browse grid beneath it — so these must not be strict.
+    await expect(sheet.locator('a[href$="/going-out"]').first()).toBeVisible();
+    await expect(sheet.locator('a[href$="/people"]').first()).toBeVisible();
+    await expect(sheet.locator('a[href$="/venues"]').first()).toBeVisible();
+    await expect(sheet.locator('a[href$="/events"]').first()).toBeVisible();
   });
 
   test('tapping a hub destination navigates and closes the sheet', async ({ page }) => {
     await gotoMobile(page, '/');
-    await bottomNav(page).getByRole('button', { name: /browse all sections/i }).click();
+    await bottomNav(page).getByText('Explore', { exact: true }).click();
     const sheet = page.getByRole('dialog');
     await expect(sheet).toBeVisible();
     await sheet.locator('a[href$="/venues"]').first().click();
