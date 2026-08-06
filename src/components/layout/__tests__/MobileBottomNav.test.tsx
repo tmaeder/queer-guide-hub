@@ -78,11 +78,23 @@ describe('MobileBottomNav', () => {
     expect(screen.getByText('Home').closest('a')).not.toHaveAttribute('aria-current');
   });
 
-  it('opens the destination hub from the Browse-all affordance, not Explore', () => {
+  it('opens the intent sheet from a plain Explore tap, no gesture required', () => {
+    // The sheet used to open only on long-press, with a 24px chevron as its
+    // sole affordance. An undiscoverable gesture cannot be the entry to
+    // primary navigation, so the tab's own tap now opens it.
     renderAt('/');
     expect(screen.queryByTestId('nav-sheet')).toBeNull();
-    fireEvent.click(screen.getByLabelText('Browse all sections'));
+    const notCancelled = fireEvent.click(screen.getByText('Explore'));
     expect(screen.getByTestId('nav-sheet')).toBeInTheDocument();
+    // preventDefault() ran → the tap opened the sheet instead of navigating.
+    expect(notCancelled).toBe(false);
+  });
+
+  it('announces Explore as a dialog trigger', () => {
+    renderAt('/');
+    const explore = screen.getByText('Explore').closest('a')!;
+    expect(explore).toHaveAttribute('aria-haspopup', 'dialog');
+    expect(explore).toHaveAttribute('aria-expanded', 'false');
   });
 
   it('contribute routes signed-in users to the context submit form', () => {

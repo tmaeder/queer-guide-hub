@@ -41,11 +41,11 @@ function isTabActive(tab: BottomNavTab, path: string): boolean {
 /**
  * Mobile-only floating-island bottom nav. Four destination tabs —
  * Home · Explore · Hub · You — plus a raised, context-aware contribute
- * button between Explore and Hub. Every tab deep-links: Explore goes to
- * the discovery surface (`/search`); the full destination hub is one
- * long-press away on Explore (with a chevron affordance as the keyboard /
- * screen-reader equivalent). Hub carries the unread badge; You shows the
- * signed-in avatar. Auth-only destinations gate on tap (anon → sign-in). The
+ * button between Explore and Hub. Explore opens the intent sheet — the
+ * "what are you here for?" chooser — on tap; long-press does the same and is
+ * now only a shortcut, not the sole route. Its href stays `/search` so
+ * middle-click and no-JS still reach discovery. Hub carries the unread badge;
+ * You shows the signed-in avatar. Auth-only destinations gate on tap. The
  * bar slides away on scroll-down and returns on scroll-up (disabled under
  * reduced motion), honours safe-area-inset-bottom, hides on md+ and on the
  * full-bleed /map.
@@ -95,16 +95,12 @@ export function MobileBottomNav() {
     navigate(cta.route);
   };
 
-  // Keyboard / screen-reader equivalent of the long-press: opens the same hub.
+  // The chevron is a hint, not a control: since Explore's own tap opens the
+  // sheet, a second button doing the same thing would be a duplicate target.
+  // It stays because it still carries the trip-count dot and reads as "there
+  // is more above". `pointer-events-none` lets taps fall through to the tab.
   const exploreAccessory = (
-    <button
-      type="button"
-      onClick={openHub}
-      aria-haspopup="dialog"
-      aria-expanded={sheetOpen}
-      aria-label={t('header.mobileNav.browseAll', 'Browse all sections')}
-      className="absolute end-0 top-0 flex h-6 w-6 items-center justify-center rounded-full text-muted-foreground transition-colors hover:text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-    >
+    <span className="pointer-events-none absolute end-0 top-0 flex h-6 w-6 items-center justify-center rounded-full text-muted-foreground">
       <ChevronUp className="h-3.5 w-3.5" aria-hidden />
       {!!user && tripCount > 0 && (
         <NavBadge
@@ -114,7 +110,7 @@ export function MobileBottomNav() {
           })}
         />
       )}
-    </button>
+    </span>
   );
 
   return (
@@ -147,9 +143,22 @@ export function MobileBottomNav() {
                 active={isTabActive(tab, path)}
                 reduced={reduced}
                 onTap={tapHaptic}
-                onGate={
-                  anonGated ? () => navigate('/auth', { state: { from: tab.to } }) : undefined
+                // Explore opens the intent sheet on TAP. Previously the sheet
+                // was reachable only by long-press, with a 24px chevron as its
+                // sole affordance — an undiscoverable gesture cannot be the
+                // entry to primary navigation. `/search` stays one keystroke
+                // away (⌘K) and is the whole mobile header row, and the tab
+                // keeps its href so middle-click still opens it.
+                onIntercept={
+                  isExplore
+                    ? // onTap already fired the haptic — openHub would double it.
+                      () => setSheetOpen(true)
+                    : anonGated
+                      ? () => navigate('/auth', { state: { from: tab.to } })
+                      : undefined
                 }
+                hasPopup={isExplore}
+                expanded={isExplore ? sheetOpen : undefined}
                 badgeCount={showUnread ? unreadCount : undefined}
                 badgeLabel={
                   showUnread

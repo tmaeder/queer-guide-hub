@@ -63,11 +63,7 @@ export function Header() {
 
   // ── Brand + right action cluster (shared by mobile row & desktop grid) ───
   const brand = (
-    <Link
-      to="/"
-      aria-label={siteName}
-      className="flex items-center gap-2.5 shrink-0 no-underline"
-    >
+    <Link to="/" aria-label={siteName} className="flex items-center gap-2.5 shrink-0 no-underline">
       <img
         src={branding.logoUrl ?? '/images/logo.png'}
         alt=""
@@ -234,22 +230,34 @@ export function Header() {
   const desktopNav = (
     // Distinct landmark name — the mobile bottom bar owns "Navigation";
     // duplicate nav landmark names break rotor navigation (landmark-unique).
-    <nav aria-label={t('header.primaryNavigation', 'Primary')} className="hidden lg:flex items-center gap-1">
+    // `md:` not `lg:` — useIsMobile flips at md (768) and MobileBottomNav is
+    // md:hidden, so `hidden lg:flex` left 768–1023px (iPad portrait, small
+    // laptops, split-screen) with NO primary navigation at all. Below lg the
+    // label collapses to its icon rather than the nav collapsing: five labels
+    // plus the 280px-min search field and the action cluster genuinely overflow
+    // there.
+    <nav
+      aria-label={t('header.primaryNavigation', 'Primary')}
+      className="hidden md:flex items-center gap-1"
+    >
       {INTENT_NAV.map((intent) => {
-        const { to, labelKey, fallback } = intent;
+        const { to, icon: Icon, labelKey, fallback } = intent;
         const active = isIntentActive(intent, path);
+        const label = t(labelKey, fallback);
         return (
           <LocalizedLink
             key={to}
             to={to}
+            title={label}
             aria-current={active ? 'page' : undefined}
             className={
               active
-                ? 'px-2 py-2 text-sm font-semibold text-foreground underline decoration-spot decoration-[3px] underline-offset-8'
-                : 'px-2 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground no-underline'
+                ? 'flex items-center px-2 py-2 text-sm font-semibold text-foreground underline decoration-spot decoration-[3px] underline-offset-8'
+                : 'flex items-center px-2 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground no-underline'
             }
           >
-            {t(labelKey, fallback)}
+            <Icon size={18} className="lg:hidden" aria-hidden />
+            <span className="sr-only lg:not-sr-only">{label}</span>
           </LocalizedLink>
         );
       })}

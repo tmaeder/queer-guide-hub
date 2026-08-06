@@ -33,6 +33,32 @@ describe('LocalizedLink', () => {
     expect(screen.getByRole('link')).toHaveAttribute('href', '/de/cities');
   });
 
+  it('prefixes from the pathname when rendered OUTSIDE the :locale route', () => {
+    // Header, Footer and MobileNavSheet are siblings of the route table in
+    // LayoutShell, so useParams() gives them no `locale` and every primary-nav
+    // link used to drop the prefix: a reader on /de/going-out clicking
+    // "Reisen" landed on /travel. Chrome is exactly where nav lives, so this
+    // position is the one that matters most.
+    render(
+      <MemoryRouter initialEntries={['/de/going-out']}>
+        <LocalizedLink to="/travel">x</LocalizedLink>
+        <Routes>
+          <Route path="*" element={null} />
+        </Routes>
+      </MemoryRouter>,
+    );
+    expect(screen.getByRole('link')).toHaveAttribute('href', '/de/travel');
+  });
+
+  it('ignores an unsupported first segment rather than treating it as a locale', () => {
+    render(
+      <MemoryRouter initialEntries={['/venues/some-bar']}>
+        <LocalizedLink to="/travel">x</LocalizedLink>
+      </MemoryRouter>,
+    );
+    expect(screen.getByRole('link')).toHaveAttribute('href', '/travel');
+  });
+
   it('does not prefix /admin links', () => {
     render_at('/de/foo', <LocalizedLink to="/admin/users">x</LocalizedLink>);
     expect(screen.getByRole('link')).toHaveAttribute('href', '/admin/users');
