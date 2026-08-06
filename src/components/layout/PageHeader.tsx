@@ -39,7 +39,7 @@ export const PageHeader = ({
       >
         <div className="flex-1 min-w-0">
           <h1
-            className={`content-enter font-display text-display md:text-headline-lg font-bold tracking-tight ${subtitle ? 'mb-2' : ''}`}
+            className={`content-enter font-display text-display font-bold tracking-tight ${subtitle ? 'mb-2' : ''}`}
             style={{ animationDelay: '50ms' }}
           >
             {title}

@@ -16,7 +16,7 @@ export default function Friends() {
       <div className="container mx-auto py-6 px-4">
         <div className="flex flex-col gap-6">
           <div className="flex flex-col gap-2">
-            <h1 className="text-headline-lg font-bold text-foreground">
+            <h1 className="text-display font-bold text-foreground">
               {t('pages.friends.title', 'Friends')}
             </h1>
             <p className="text-muted-foreground">

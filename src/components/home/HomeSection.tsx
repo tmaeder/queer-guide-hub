@@ -12,6 +12,16 @@ interface HomeSectionProps {
   seeAllLabel?: string;
   /** Wrapper background tint, e.g. for the alternating "index" band. */
   tinted?: boolean;
+  /**
+   * Header rank. Defaults to `band`.
+   *
+   * This used to be hardcoded to `masthead` for every section, so the homepage
+   * rendered six identical 44px uppercase headings each under its own
+   * `.rule-heavy` — which turned a rationed signature into a repeating divider
+   * and made the page read as six equal-rank slabs. Exactly one section should
+   * be the masthead; the rest are bands.
+   */
+  rank?: 'masthead' | 'band';
   className?: string;
   children: React.ReactNode;
 }
@@ -28,6 +38,7 @@ export function HomeSection({
   seeAllHref,
   seeAllLabel,
   tinted,
+  rank = 'band',
   className,
   children,
 }: HomeSectionProps) {
@@ -40,17 +51,29 @@ export function HomeSection({
         'px-4 sm:px-6 md:px-8 py-12 md:py-16',
         // The tint alone marks the band — the rules it used to sit between were
         // the last hairlines on the homepage.
-        tinted && 'bg-muted/30',
+        tinted && 'relative isolate bg-muted/30',
         className,
       )}
     >
+      {/*
+        A tinted band is a printed screen, not a flat wash: the halftone gives
+        the tint a dot structure so the band reads as ink laid down on stock.
+
+        Its own layer rather than a class on the <section>, because the screens
+        are masks and a mask clips the element's children — putting it on the
+        section would clip the content away. `-z-10` with the `isolate` above
+        keeps it behind the text without lifting anything else.
+      */}
+      {tinted && (
+        <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 halftone-ink" />
+      )}
       <div className="max-w-7xl mx-auto">
         <SectionHeader
           id={headingId}
           eyebrow={eyebrow}
           title={title}
           subtitle={description}
-          size="masthead"
+          size={rank}
           seeAllHref={seeAllHref}
           seeAllLabel={seeAllLabel}
         />

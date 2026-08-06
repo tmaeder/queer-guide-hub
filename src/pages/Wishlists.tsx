@@ -55,7 +55,7 @@ const Wishlists = () => {
       <div className="container mx-auto py-12 md:py-16 px-4">
         <header className="mb-10">
           <p className="text-13 uppercase tracking-wide text-muted-foreground mb-2">Saved</p>
-          <h1 className="text-headline-lg md:text-display font-semibold">Your wishlists</h1>
+          <h1 className="text-headline md:text-display font-semibold">Your wishlists</h1>
         </header>
 
         <div className="flex gap-2 mb-10 max-w-md">

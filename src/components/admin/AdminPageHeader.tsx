@@ -68,7 +68,7 @@ export function AdminPageHeader({
           </Link>
         )}
         {resolvedEyebrow && <Eyebrow as="div" className="mb-2">{resolvedEyebrow}</Eyebrow>}
-        <h1 className="text-headline md:text-headline-lg font-bold tracking-tight text-foreground">
+        <h1 className="text-headline font-bold tracking-tight text-foreground">
           {title}
         </h1>
         {subtitle && <p className="mt-2 max-w-2xl text-13 text-muted-foreground">{subtitle}</p>}

@@ -143,7 +143,7 @@ export const GuideCard = memo(function GuideCard({
         <h3
           className={
             isHero
-              ? 'text-headline-lg md:text-display leading-tight'
+              ? 'text-headline md:text-display leading-tight'
               : 'text-title md:text-headline leading-tight'
           }
         >

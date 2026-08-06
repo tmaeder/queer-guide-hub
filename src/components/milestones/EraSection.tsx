@@ -52,7 +52,7 @@ export function EraSection({
     <section id={`era-${era.slug}`} className="scroll-mt-24">
       <header className="mb-6 pt-6">
         <p className="text-2xs uppercase tracking-wider text-muted-foreground">{eraRangeLabel(era)}</p>
-        <h2 className="mt-1 font-display text-headline-lg font-semibold">{t(era.titleKey)}</h2>
+        <h2 className="mt-1 font-display text-headline font-semibold">{t(era.titleKey)}</h2>
         <p className="mt-2 max-w-prose text-15 leading-relaxed text-muted-foreground">{t(era.introKey)}</p>
       </header>
 

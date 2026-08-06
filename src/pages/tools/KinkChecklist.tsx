@@ -56,7 +56,7 @@ export default function KinkChecklist() {
   return (
     <div className="mx-auto max-w-3xl px-6 py-8">
       <header className="mb-6">
-        <h1 className="text-headline-lg font-display">Interests & boundaries</h1>
+        <h1 className="text-display font-display">Interests & boundaries</h1>
         <p className="mt-2 text-sm text-muted-foreground">
           Rate what you're into, mark limits, flag things to discuss first. Private by
           default. Your No's and hard limits are never shown to anyone — they only remove

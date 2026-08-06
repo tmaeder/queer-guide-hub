@@ -324,7 +324,7 @@ export function EventHero({
       </div>
 
       <h1
-        className="m-0 text-display font-bold leading-[1.05] tracking-tight md:text-headline-lg"
+        className="m-0 text-display font-bold leading-[1.05] tracking-tight md:text-headline"
         style={{ overflowWrap: 'anywhere' }}
       >
         <Editable

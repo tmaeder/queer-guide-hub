@@ -218,7 +218,7 @@ export function MarketplaceBuyBox({
                   {price.modifier}
                 </span>
               )}
-              <span className="text-headline-lg font-display">{price.primary}</span>
+              <span className="text-headline font-display">{price.primary}</span>
             </div>
             {price.secondary && (
               <p className="mt-1 text-sm text-muted-foreground">{price.secondary}</p>

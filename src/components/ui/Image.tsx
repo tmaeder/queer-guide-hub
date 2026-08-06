@@ -59,6 +59,20 @@ interface ImageProps {
   heightPx?: number;
   /** Named `imageRole` (not `role`) to avoid the ARIA `role` attribute. */
   imageRole?: ImageRole;
+  /**
+   * Print treatment. `none` (default) renders the photograph as shot.
+   *
+   * `riso` applies the two-drum duotone separation (`.duotone-riso`). It is
+   * opt-in and stays opt-in: entity imagery renders in full colour by default
+   * because flattening every portrait on an LGBTQ+ platform has a real
+   * representational cost. Heroes and editorial bands only.
+   *
+   * The treatment wraps the <img> rather than the outer container, because
+   * `.duotone-riso::after` is the element's last child and would otherwise
+   * paint its multiply layer over the scrim and any overlay children — tinting
+   * badges and favourite buttons along with the photo.
+   */
+  treatment?: 'none' | 'riso';
   objectPosition?: string;
   scrim?: ScrimVariant;
   priority?: boolean;
@@ -123,6 +137,7 @@ export const Image = ({
   fit = 'cover',
   heightPx,
   imageRole = 'cover',
+  treatment = 'none',
   objectPosition,
   scrim = 'none',
   priority = false,
@@ -261,6 +276,35 @@ export const Image = ({
 
   const scrimClass = SCRIM_CLASS[scrim];
 
+  const photo = (
+    // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- onError is a media-error handler, not a user-input listener.
+    <img
+      ref={imgRef}
+      src={effectiveSrc ?? undefined}
+      srcSet={srcSet}
+      sizes={srcSet ? (sizes ?? DEFAULT_SIZES[imageRole]) : undefined}
+      alt={alt}
+      loading={priority ? 'eager' : 'lazy'}
+      decoding={priority ? 'sync' : 'async'}
+      fetchPriority={priority ? 'high' : 'auto'}
+      referrerPolicy={referrerPolicy}
+      onLoad={() => setLoaded(true)}
+      // `onImgError`, not `onSourceError`: main added the former as a wrapper
+      // that first sheds the Cloudflare srcset and retries the SAME source raw,
+      // and only then advances the ladder. Extracting this <img> into `photo`
+      // during the riso work carried the older handler forward, which would
+      // have silently dropped that retry.
+      onError={onImgError}
+      style={effectiveObjectPosition ? { objectPosition: effectiveObjectPosition } : undefined}
+      className={cn(
+        'img-lazy-fade h-full w-full transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]',
+        useContain ? 'object-contain p-4' : 'object-cover group-hover:scale-[1.04]',
+        loaded && 'loaded',
+        className,
+      )}
+    />
+  );
+
   return (
     <div
       className={cn(
@@ -274,28 +318,14 @@ export const Image = ({
         <div className="flex h-full w-full items-center justify-center text-muted-foreground">
           {FallbackIcon ? <FallbackIcon className="h-10 w-10" aria-hidden /> : null}
         </div>
+      ) : treatment === 'riso' ? (
+        // `.duotone-riso` targets `> img`, so the wrapper must be the image's
+        // direct parent. It wraps the photo only — not the outer container —
+        // because its ::after is the last child and would otherwise paint the
+        // multiply layer over the scrim and any overlay children.
+        <div className="duotone-riso h-full w-full">{photo}</div>
       ) : (
-        // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- onError is a media-error handler, not a user-input listener.
-        <img
-          ref={imgRef}
-          src={effectiveSrc ?? undefined}
-          srcSet={srcSet}
-          sizes={srcSet ? (sizes ?? DEFAULT_SIZES[imageRole]) : undefined}
-          alt={alt}
-          loading={priority ? 'eager' : 'lazy'}
-          decoding={priority ? 'sync' : 'async'}
-          fetchPriority={priority ? 'high' : 'auto'}
-          referrerPolicy={referrerPolicy}
-          onLoad={() => setLoaded(true)}
-          onError={onImgError}
-          style={effectiveObjectPosition ? { objectPosition: effectiveObjectPosition } : undefined}
-          className={cn(
-            'img-lazy-fade h-full w-full transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]',
-            useContain ? 'object-contain p-4' : 'object-cover group-hover:scale-[1.04]',
-            loaded && 'loaded',
-            className,
-          )}
-        />
+        photo
       )}
       {scrimClass ? (
         <div className={cn('pointer-events-none absolute inset-0', scrimClass)} aria-hidden />

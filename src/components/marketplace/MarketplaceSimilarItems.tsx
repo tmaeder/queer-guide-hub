@@ -22,7 +22,7 @@ export function MarketplaceSimilarItems({ listing, limit = 4, title = 'Similar i
 
   return (
     <section aria-labelledby="similar-items" className="mt-10">
-      <h2 id="similar-items" className="font-display text-headline-lg tracking-tight mb-4">
+      <h2 id="similar-items" className="font-display text-headline tracking-tight mb-4">
         {title}
       </h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

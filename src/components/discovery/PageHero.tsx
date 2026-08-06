@@ -63,7 +63,7 @@ const SIZE_PADDING: Record<NonNullable<PageHeroProps['size']>, string> = {
 };
 
 const SIZE_TITLE: Record<NonNullable<PageHeroProps['size']>, string> = {
-  sm: 'text-headline-lg md:text-display',
+  sm: 'text-headline md:text-display',
   md: 'text-display md:text-hero',
   lg: 'text-hero md:text-hero-xl',
 };

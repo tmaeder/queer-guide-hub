@@ -21,7 +21,7 @@ export default function Book() {
           {t('travel.book.back', 'Travel')}
         </LocalizedLink>
       </nav>
-      <h1 className="mb-2 text-headline-lg font-bold tracking-tight">
+      <h1 className="mb-2 text-display font-bold tracking-tight">
         {t('travel.book.title', 'Book your trip')}
       </h1>
       <p className="mb-8 max-w-prose text-body-lg text-muted-foreground">

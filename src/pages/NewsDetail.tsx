@@ -336,7 +336,7 @@ export default function NewsDetail() {
 
           {/* Title */}
           <div className="mb-4 flex flex-wrap items-center gap-2">
-            <h1 className="m-0 text-display font-bold leading-[1.05] tracking-tight md:text-headline-lg">
+            <h1 className="m-0 text-display font-bold leading-[1.05] tracking-tight md:text-headline">
               <Editable
                 contentType="news_articles"
                 recordId={article.id}
