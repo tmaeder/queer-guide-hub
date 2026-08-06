@@ -290,20 +290,6 @@ sweep_built_assets() {
 		return 0
 	fi
 
-	# dist/ is only authoritative when it IS the build being served. In the
-	# deploy job it is, because the build ran in the same job. Run by hand
-	# against production with a stale local dist/, every hash differs and the
-	# sweep reports hundreds of phantom "poisoned" assets for files that were
-	# simply never deployed. Anchor on the entry chunk: if the live shell does
-	# not reference a chunk this dist emitted, the two are different builds.
-	local live_entry
-	live_entry=$(printf '%s' "$home" | grep -oE '/assets/js/index-[^"]+\.js' | sort -u | head -1)
-	if [ -n "$live_entry" ] && [ ! -f "$dist${live_entry}" ]; then
-		echo "  · local $dist is a DIFFERENT build than the site serves ($live_entry not in it)"
-		echo "    — skipping the built-asset sweep; run it from the deploy job, or rebuild first"
-		return 0
-	fi
-
 	local list count suspects
 	list=$(cd "$dist" && find assets -type f \( -name '*.js' -o -name '*.css' \) | sed 's|^|/|' | sort)
 	count=$(printf '%s\n' "$list" | grep -c . || true)
