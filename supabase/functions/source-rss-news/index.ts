@@ -4,7 +4,7 @@ import type { SourceAdapter, RawItem, NormalizedItem, AdapterConfig } from '../_
 import { writeToStaging } from '../_shared/source-adapter.ts'
 import { withErrorReporting } from '../_shared/report-api-error.ts'
 import { assertPublicHttpUrl } from '../_shared/ssrf-guard.ts'
-import { parseRssItems, cleanText } from './rss-parse.ts'
+import { parseRssItems, cleanText, excerptOf, stripLoneSurrogates } from './rss-parse.ts'
 import {
   isWikinewsHost,
   parseWikinewsCategoryUrl,
@@ -259,10 +259,10 @@ const rssNewsAdapter: SourceAdapter = {
       dates: { start: normalizeDate(d.published_at || d.publishedAt || d.pubDate) },
       tags: extractTags(d.title as string || '', d.content as string || ''),
       metadata: {
-        author: d.author,
+        author: typeof d.author === 'string' ? stripLoneSurrogates(d.author) : d.author,
         source_id: d.source_id,
         source_name: d.source_name,
-        excerpt: cleanText(d.excerpt as string || d.description as string || '').slice(0, 500),
+        excerpt: excerptOf(cleanText(d.excerpt as string || d.description as string || '')),
         published_at: normalizeDate(d.published_at || d.publishedAt || d.pubDate),
         url: d.url,
         image_url: d.image_url || d.image,

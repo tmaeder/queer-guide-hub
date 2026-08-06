@@ -1,5 +1,5 @@
 import { assertEquals } from 'https://deno.land/std@0.168.0/testing/asserts.ts'
-import { cleanText, extractMediaUrl, parseRssItems } from './rss-parse.ts'
+import { cleanText, excerptOf, extractMediaUrl, parseRssItems, stripLoneSurrogates } from './rss-parse.ts'
 
 // Regression: parseRssItems used to build EVERY item in the feed, and the
 // caller sliced to maxArticles afterwards. Each item runs cleanText (a 4-pass
@@ -87,4 +87,84 @@ Deno.test('extractMediaUrl decodes &amp; in media:content URLs', () => {
 Deno.test('extractMediaUrl decodes &amp; in enclosure URLs', () => {
   const block = '<enclosure url="https://example.com/pic?a=1&amp;b=2" type="image/jpeg"/>'
   assertEquals(extractMediaUrl(block), 'https://example.com/pic?a=1&b=2')
+})
+
+// A lone surrogate cannot be encoded as UTF-8. `ingestion_staging.raw_data` is
+// JSONB, so Postgres rejects the INSERT outright:
+//   22P02 invalid input syntax for type json
+//   DETAIL: Unicode low surrogate must follow a high surrogate.
+// The staging write is one batch, so a single bad character throws away every
+// item in the run — that is how the 2026-08-06 19:00 run died in 7s with all 8
+// of its sources already fetched successfully.
+Deno.test('excerptOf never orphans half a surrogate pair at the cut', () => {
+  // 499 chars then an emoji: the 500-char cut lands BETWEEN its two halves.
+  const s = 'a'.repeat(499) + '😀' + 'tail'
+  const out = excerptOf(s)
+  assertEquals(out, 'a'.repeat(499))
+  // The real assertion: what we emit must survive a UTF-8 round trip, which is
+  // what the JSONB insert does. A lone surrogate becomes U+FFFD instead.
+  assertEquals(new TextDecoder().decode(new TextEncoder().encode(out)), out)
+})
+
+Deno.test('excerptOf keeps an emoji that fits wholly inside the cut', () => {
+  const s = 'a'.repeat(400) + '😀'
+  assertEquals(excerptOf(s), 'a'.repeat(400) + '😀')
+})
+
+Deno.test('stripLoneSurrogates removes an orphan high surrogate', () => {
+  const bad = 'hello\uD83Dworld'
+  assertEquals(stripLoneSurrogates(bad), 'helloworld')
+})
+
+Deno.test('stripLoneSurrogates removes an orphan LOW surrogate', () => {
+  const bad = 'hello\uDE00world'
+  assertEquals(stripLoneSurrogates(bad), 'helloworld')
+})
+
+Deno.test('stripLoneSurrogates leaves valid pairs intact', () => {
+  const good = 'pride 🏳️‍🌈 and 😀 emoji'
+  assertEquals(stripLoneSurrogates(good), good)
+})
+
+Deno.test('stripLoneSurrogates is empty-safe', () => {
+  assertEquals(stripLoneSurrogates(''), '')
+})
+
+// cleanText is the funnel every text field passes through, so a feed that
+// SHIPS a lone surrogate (mojibake upstream) is neutralised there too — the
+// slice is only one of the two ways one can reach the payload.
+Deno.test('cleanText strips a feed-supplied lone surrogate', () => {
+  const out = cleanText('Pride march \uD83D report')
+  assertEquals(new TextDecoder().decode(new TextEncoder().encode(out)), out)
+  assertEquals(out.includes('\uD83D'), false)
+})
+
+// Item COUNT does not bound the work; item SIZE does. The 2026-08-06 21:00 run
+// died (HTTP 546, 11s) on a 2.35 MB / 111-item feed: the 100-item cap applied,
+// the 4 MB read cap never fired, but the items average ~21 KB and cleanText is
+// a 4-pass strip/decode loop, so it still faced ~8 MB of string work.
+Deno.test('parseRssItems stops once the text budget is spent, even under maxItems', () => {
+  const fat = (i: number) =>
+    `<item><title>Ep ${i}</title><link>https://x/${i}</link>` +
+    `<description>${'x'.repeat(100_000)}</description></item>`
+  const xml = `<rss><channel>${[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(fat).join('')}</channel></rss>`
+  // 10 items x 100 KB, cap 100 items, but only ~250 KB of text allowed.
+  const out = parseRssItems(xml, false, 100, 250_000)
+  assertEquals(out.length < 10, true, `expected the text budget to bite, got ${out.length}`)
+  assertEquals(out.length >= 1, true, 'must still return the items it could afford')
+})
+
+Deno.test('parseRssItems text budget does not truncate ordinary feeds', () => {
+  // 20 small items are nowhere near the default budget.
+  assertEquals(parseRssItems(feedWith(20)).length, 20)
+})
+
+// Regression: content and excerpt both derive from the same description, and
+// cleanText (the parser's most expensive call) used to run twice per item.
+Deno.test('excerpt is derived from the same cleaned text as content', () => {
+  const xml =
+    '<rss><channel><item><title>T</title><link>https://x/1</link>' +
+    `<description>&lt;p&gt;${'word '.repeat(200)}&lt;/p&gt;</description></item></channel></rss>`
+  const [item] = parseRssItems(xml)
+  assertEquals(String(item.excerpt), excerptOf(String(item.content)))
 })

@@ -16,19 +16,29 @@ import { stripHtmlTags, decodeHtmlEntities } from '../_shared/news-quality/sanit
 // Stopping early is free: RSS is newest-first, so the first N items ARE the N
 // the caller wants. The regex scans from lastIndex, so breaking also means the
 // tail of the string is never scanned at all.
+// `maxTextBytes` bounds the TEXT this call will clean, which is the real cost —
+// item count alone does not imply it. Measured on the 2026-08-06 21:00 run:
+// rss.libsyn.com/shows/384410 is 2.35 MB over 111 items (so the 100-item cap
+// applied and the 4 MB read cap never fired), but its items average ~21 KB and
+// the largest is 184,632 bytes. cleanText is a 4-pass strip/decode loop, so 100
+// such items is ~8 MB of allocating string work and the worker died with
+// HTTP 546 in 11s — two seconds after claiming this one feed.
 export function parseRssItems(
   xml: string,
   isPodcast = false,
   maxItems = Number.POSITIVE_INFINITY,
+  maxTextBytes = 1_000_000,
 ): Record<string, unknown>[] {
   const items: Record<string, unknown>[] = []
   if (maxItems <= 0) return items
   const itemRegex = /<item>([\s\S]*?)<\/item>/gi
+  let textBytes = 0
   let match
   while ((match = itemRegex.exec(xml)) !== null) {
     // Counted on items actually PUSHED, so podcast entries skipped for having
     // no audio enclosure don't consume the budget.
     if (items.length >= maxItems) break
+    if (textBytes >= maxTextBytes) break
     const block = match[1]
     const title = extractTag(block, 'title')
     const link = extractTag(block, 'link') || extractTag(block, 'guid')
@@ -36,7 +46,11 @@ export function parseRssItems(
     // non-empty-content guard downstream (get_news_front / useNews).
     const desc = extractTag(block, 'content:encoded') || extractTag(block, 'itunes:summary') || extractTag(block, 'description')
     const pubDate = extractTag(block, 'pubDate')
-    const author = extractTag(block, 'dc:creator') || extractTag(block, 'itunes:author') || extractTag(block, 'author')
+    // Sanitized like the other text fields — `author` never went through
+    // cleanText, so it was the one raw string in the payload. Kept null-preserving:
+    // extractTag returns string | null and the metadata shape distinguishes them.
+    const authorRaw = extractTag(block, 'dc:creator') || extractTag(block, 'itunes:author') || extractTag(block, 'author')
+    const author = authorRaw ? stripLoneSurrogates(authorRaw) : authorRaw
 
     if (!title || !link) continue
 
@@ -45,18 +59,25 @@ export function parseRssItems(
       // An episode with no audio is not a podcast item — skip it.
       if (!audioUrl) continue
       const image = extractItunesImage(block) || extractMediaUrl(block)
+      // cleanText ONCE per item. `content` and `excerpt` derive from the same
+      // description, and calling it twice doubled the most expensive work in
+      // the parser for no benefit.
+      const cleaned = cleanText(desc || '')
+      textBytes += (desc || '').length
       items.push({
-        title: cleanText(title), content: cleanText(desc || ''),
+        title: cleanText(title), content: cleaned,
         url: link.trim(), image_url: image, author,
-        published_at: pubDate, excerpt: cleanText(desc || '').slice(0, 500),
+        published_at: pubDate, excerpt: excerptOf(cleaned),
         media_type: 'podcast', audio_url: audioUrl,
         duration_seconds: parseItunesDuration(extractTag(block, 'itunes:duration')),
       })
     } else {
+      const cleaned = cleanText(desc || '')
+      textBytes += (desc || '').length
       items.push({
-        title: cleanText(title), content: cleanText(desc || ''),
+        title: cleanText(title), content: cleaned,
         url: link.trim(), image_url: extractMediaUrl(block), author,
-        published_at: pubDate, excerpt: cleanText(desc || '').slice(0, 500),
+        published_at: pubDate, excerpt: excerptOf(cleaned),
       })
     }
   }
@@ -142,9 +163,34 @@ export function cleanText(s: string): string {
   out = decodeHtmlEntities(out)
 
   // Cosmetic RSS-junk removal.
-  return out
+  return stripLoneSurrogates(out
     .replace(/The post .* appeared first on .*\./g, '')
     .replace(/Continue reading.*/g, '')
     .replace(/[ \t]{2,}/g, ' ')
-    .trim()
+    .trim())
+}
+
+// A lone surrogate is not representable in UTF-8, and `ingestion_staging.raw_data`
+// is JSONB — Postgres rejects the INSERT with
+//   22P02 invalid input syntax for type json
+//   DETAIL: Unicode low surrogate must follow a high surrogate.
+// The staging write is ONE batch, so a single bad character discards every item
+// in the run and fails the node. That killed the 2026-08-06 19:00 run in 7s,
+// after all 8 of its sources had already fetched successfully.
+//
+// Two sources of lone surrogates, and both need covering:
+//   1. the feed ships one (mojibake / bad transcoding upstream)
+//   2. WE create one — `.slice(0, 500)` for the excerpt counts UTF-16 code
+//      units, so a cut landing between the halves of an emoji's surrogate pair
+//      orphans the high half. Calling this inside cleanText does NOT cover that,
+//      because the slice runs afterwards — hence excerptOf below.
+export function stripLoneSurrogates(s: string): string {
+  if (!s) return ''
+  // High surrogate not followed by a low one, or low not preceded by a high.
+  return s.replace(/[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/g, '')
+}
+
+// Slice that can never orphan half of a surrogate pair.
+export function excerptOf(s: string, max = 500): string {
+  return stripLoneSurrogates(s.slice(0, max))
 }
