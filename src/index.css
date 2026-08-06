@@ -1158,21 +1158,11 @@ h2,
   background-color: hsl(var(--surface-container));
   border: 0;
 }
-.plate-ink {
-  background-color: hsl(var(--spot));
-  color: hsl(var(--spot-foreground));
-  border: 0;
-}
-.plate-blue {
-  background-color: hsl(var(--ink-blue));
-  color: hsl(var(--ink-blue-foreground));
-  border: 0;
-}
-.plate-over {
-  background-color: hsl(var(--ink-over));
-  color: hsl(var(--ink-over-foreground));
-  border: 0;
-}
+/* `.plate-ink` / `.plate-blue` / `.plate-over` were removed 2026-08-04. They
+   had zero consumers and duplicated the `bg-ink-{pink,blue,over}` Tailwind
+   utilities, which DO have consumers (badge, button, checkbox, the homepage
+   CTA) and pair the matching `text-ink-*-foreground` automatically. Two
+   spellings of one plate is drift, not vocabulary — use the utilities. */
 
 /* ── Misregistration ───────────────────────────────────────────────────
    A second plate, printed a few px off-register, snapping home on hover.
@@ -1369,8 +1359,8 @@ h2,
 
    DECORATIVE ONLY. The composite is whatever the two drums produce, so it
    is not a measured value — never place text on an .overprint region. Use
-   the .plate-over class (--ink-over, measured) when you want the third
-   colour under type. */
+   `bg-ink-over` (--ink-over, measured, with its paired foreground) when you
+   want the third colour under type. */
 .overprint {
   mix-blend-mode: multiply;
 }
@@ -1388,18 +1378,43 @@ h2,
    scale. The previous version was a hand-authored zig-zag whose vertices sat
    on a strict 60px grid alternating high/low — a regular saw-tooth, not a tear.
 
-   It also tiles horizontally at its intrinsic 240px instead of being stretched
-   with `mask-size: 100% 100%`. Stretching a 1200px source meant the teeth got
+   It also tiles horizontally at its intrinsic 240px instead of being stretched.
+   The old `mask-size: 100% 100%` on a 1200px source meant the teeth got
    proportionally wider and flatter as the viewport grew, so the same band tore
    differently on a phone and on a desktop. Repeating keeps the tear the same
-   physical size everywhere, which is how paper behaves. */
+   physical size everywhere, which is how paper behaves.
+
+   TWO mask layers, and the first one is load-bearing. A mask hides everything
+   the mask does not cover, so a lone 24px-tall repeat-x tear masks away the
+   entire element below 24px — on a tall band that is the whole content. Layer 1
+   is an opaque rectangle covering everything except the bottom 23px; layer 2 is
+   the tear, pinned to the bottom edge. The 23-vs-24 overlap is deliberate: a
+   1px seam between the two layers renders as a hairline gap. */
 .deckle-bottom {
-  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='24'%3E%3Cfilter id='t' x='-20%25' y='-20%25' width='140%25' height='140%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.04 0.9' numOctaves='3' seed='11' stitchTiles='stitch' result='n'/%3E%3CfeDisplacementMap in='SourceGraphic' in2='n' scale='9' xChannelSelector='R' yChannelSelector='G'/%3E%3C/filter%3E%3Crect x='-4' y='0' width='248' height='15' fill='black' filter='url(%23t)'/%3E%3C/svg%3E");
-  mask-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='24'%3E%3Cfilter id='t' x='-20%25' y='-20%25' width='140%25' height='140%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.04 0.9' numOctaves='3' seed='11' stitchTiles='stitch' result='n'/%3E%3CfeDisplacementMap in='SourceGraphic' in2='n' scale='9' xChannelSelector='R' yChannelSelector='G'/%3E%3C/filter%3E%3Crect x='-4' y='0' width='248' height='15' fill='black' filter='url(%23t)'/%3E%3C/svg%3E");
-  -webkit-mask-size: 240px 24px;
-  mask-size: 240px 24px;
-  -webkit-mask-repeat: repeat-x;
-  mask-repeat: repeat-x;
+  -webkit-mask-image:
+    linear-gradient(#000, #000),
+    url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='24'%3E%3Cfilter id='t' x='-20%25' y='-20%25' width='140%25' height='140%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.04 0.9' numOctaves='3' seed='11' stitchTiles='stitch' result='n'/%3E%3CfeDisplacementMap in='SourceGraphic' in2='n' scale='9' xChannelSelector='R' yChannelSelector='G'/%3E%3C/filter%3E%3Crect x='-4' y='0' width='248' height='15' fill='black' filter='url(%23t)'/%3E%3C/svg%3E");
+  mask-image:
+    linear-gradient(#000, #000),
+    url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='24'%3E%3Cfilter id='t' x='-20%25' y='-20%25' width='140%25' height='140%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.04 0.9' numOctaves='3' seed='11' stitchTiles='stitch' result='n'/%3E%3CfeDisplacementMap in='SourceGraphic' in2='n' scale='9' xChannelSelector='R' yChannelSelector='G'/%3E%3C/filter%3E%3Crect x='-4' y='0' width='248' height='15' fill='black' filter='url(%23t)'/%3E%3C/svg%3E");
+  -webkit-mask-size:
+    100% calc(100% - 23px),
+    240px 24px;
+  mask-size:
+    100% calc(100% - 23px),
+    240px 24px;
+  -webkit-mask-position:
+    top left,
+    bottom left;
+  mask-position:
+    top left,
+    bottom left;
+  -webkit-mask-repeat:
+    no-repeat,
+    repeat-x;
+  mask-repeat:
+    no-repeat,
+    repeat-x;
 }
 
 /* ── Duotone ───────────────────────────────────────────────────────────
@@ -1434,36 +1449,11 @@ h2,
   pointer-events: none;
 }
 
-/* ── Halftone dissolve ─────────────────────────────────────────────────
-   The one cinematic reveal: the image resolves out of its own dot screen
-   as the mask apertures open. mask-size is the animated property — it is
-   composited, not laid out, so this stays off the layout path.
-
-   Budgeted at ONE per page. It is a hero entrance, not a scroll effect. */
-@keyframes halftone-dissolve {
-  from {
-    -webkit-mask-size: 1px 1px;
-    mask-size: 1px 1px;
-  }
-  to {
-    -webkit-mask-size: 100px 100px;
-    mask-size: 100px 100px;
-  }
-}
-.halftone-dissolve {
-  -webkit-mask-image: radial-gradient(circle at center, black 62%, transparent 64%);
-  mask-image: radial-gradient(circle at center, black 62%, transparent 64%);
-  -webkit-mask-size: 100px 100px;
-  mask-size: 100px 100px;
-  animation: halftone-dissolve 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-@media (prefers-reduced-motion: reduce) {
-  .halftone-dissolve {
-    animation: none;
-    -webkit-mask-image: none;
-    mask-image: none;
-  }
-}
+/* `.halftone-dissolve` was removed 2026-08-04 — zero consumers since it was
+   written. It animated `mask-size` on a single soft radial aperture, which is
+   not actually a dot-screen dissolve, and it would now fight the real screens
+   above (both want the element's mask). If a hero entrance is wanted later,
+   build it from `.halftone-ink` rather than a second, different mask. */
 
 /* ── Paper feed ────────────────────────────────────────────────────────
    Route transition. Replaces the flat .route-fade crossfade with a short
@@ -1554,39 +1544,10 @@ h2,
   background-image: radial-gradient(hsl(var(--foreground) / 0.14) 1px, transparent 1px);
 }
 
-/* Aceternity-style line grid (monochrome). */
-.bg-grid-lines {
-  background-image:
-    linear-gradient(to right, hsl(var(--foreground) / 0.06) 1px, transparent 1px),
-    linear-gradient(to bottom, hsl(var(--foreground) / 0.06) 1px, transparent 1px);
-  background-size: 40px 40px;
-}
-
-/* Aceternity "spotlight" radial overlay — neutral. */
-.spotlight-radial {
-  background: radial-gradient(
-    ellipse 60% 50% at 50% 0%,
-    hsl(var(--foreground) / 0.06),
-    transparent 70%
-  );
-}
-.dark .spotlight-radial {
-  background: radial-gradient(
-    ellipse 60% 50% at 50% 0%,
-    hsl(var(--foreground) / 0.1),
-    transparent 70%
-  );
-}
-
-/* Soft scrim — for readable text over imagery. */
-.scrim-bottom {
-  background: linear-gradient(
-    to top,
-    hsl(0 0% 0% / 0.7) 0%,
-    hsl(0 0% 0% / 0.3) 50%,
-    transparent 100%
-  );
-}
+/* `.bg-grid-lines`, `.spotlight-radial` and `.scrim-bottom` were removed 2026-08-04 — both had
+   zero consumers. The scrim is fully superseded by the 3-tier system below,
+   which is what every caller actually uses; the spotlight is a soft radial glow
+   that the monochrome-strip refactor left behind with nothing to light. */
 
 /* ── 3-tier image scrim system ───────────────────────────────────────
  * The only sanctioned gradients over imagery (black readability scrims).
