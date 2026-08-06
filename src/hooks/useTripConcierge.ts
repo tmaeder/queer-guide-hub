@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { qk } from '@/lib/queryKeys';
 
 export interface ConciergeDraftPlace {
   venue_id?: string;
@@ -24,7 +25,7 @@ export interface ConciergeMessage {
   created_at: string;
 }
 
-const KEY = (tripId: string) => ['trip-concierge', tripId] as const;
+const KEY = (tripId: string) => qk.trip.facet(tripId, 'concierge');
 
 /**
  * Loads the persisted conversation thread for a trip's AI concierge.
@@ -71,10 +72,7 @@ export interface ConciergeSignals {
  * `signals` (client-computed weather + saved accessibility needs) ground
  * the model's scheduling decisions.
  */
-export function useSendConciergeMessage(
-  tripId: string | undefined,
-  signals?: ConciergeSignals,
-) {
+export function useSendConciergeMessage(tripId: string | undefined, signals?: ConciergeSignals) {
   const queryClient = useQueryClient();
 
   return useMutation({

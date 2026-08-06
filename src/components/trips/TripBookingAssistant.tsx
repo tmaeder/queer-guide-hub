@@ -24,6 +24,7 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { PlaceBookableLinks } from './PlaceBookableLinks';
 import { AddReservationDialog } from './AddReservationDialog';
 import { getPlaceName, getPlaceCategory } from './SortablePlaceCard';
+import { qk } from '@/lib/queryKeys';
 
 function reservationTypeForCategory(category: string): 'hotel' | 'activity' | 'flight' | 'other' {
   if (category === 'hotel') return 'hotel';
@@ -76,7 +77,7 @@ export function TripBookingAssistant({ tripId, places, _days, startDate, endDate
   }, [places]);
 
   const { data: cities } = useQuery({
-    queryKey: ['trip-booking-cities', cityIds],
+    queryKey: qk.trip.suggestions('cities', cityIds),
     queryFn: () => fetchBookingAssistantCities(cityIds),
     enabled: cityIds.length > 0,
     staleTime: 10 * 60 * 1000,
@@ -84,7 +85,7 @@ export function TripBookingAssistant({ tripId, places, _days, startDate, endDate
 
   // Fetch reservations to know what's already booked
   const { data: reservations } = useQuery({
-    queryKey: ['trip-reservations', tripId],
+    queryKey: qk.trip.facet(tripId, 'reservations'),
     queryFn: () => fetchTripReservations(tripId),
     staleTime: 5 * 60 * 1000,
   });
@@ -111,7 +112,7 @@ export function TripBookingAssistant({ tripId, places, _days, startDate, endDate
       raw_provider_data: hotel.providerData || {},
     })
       .then(() => {
-        queryClient.invalidateQueries({ queryKey: ['trip-reservations', tripId] });
+        queryClient.invalidateQueries({ queryKey: qk.trip.facet(tripId, 'reservations') });
         toast({
           title: t('trips.bookingAssistant.reservationSaved', 'Reservation saved'),
           description: t(
@@ -126,7 +127,7 @@ export function TripBookingAssistant({ tripId, places, _days, startDate, endDate
 
   // Venue suggestions per city
   const { data: venues, isLoading: venuesLoading } = useQuery({
-    queryKey: ['trip-suggestion-venues', cityIds],
+    queryKey: qk.trip.suggestions('venues', cityIds),
     queryFn: () => fetchBookingAssistantVenues(cityIds),
     enabled: cityIds.length > 0 && activeTab === 'suggestions',
     staleTime: 10 * 60 * 1000,
@@ -278,10 +279,7 @@ export function TripBookingAssistant({ tripId, places, _days, startDate, endDate
                     })}
                   </span>
                   {cityVenues.map((venue) => (
-                    <div
-                      key={venue.id}
-                      className="flex items-center gap-2 py-1.5 min-h-11"
-                    >
+                    <div key={venue.id} className="flex items-center gap-2 py-1.5 min-h-11">
                       <MapPin size={13} className="text-muted-foreground flex-shrink-0" />
                       <div className="flex-1 min-w-0">
                         <p className="text-sm truncate font-medium">{venue.name}</p>
@@ -324,10 +322,7 @@ export function TripBookingAssistant({ tripId, places, _days, startDate, endDate
                 {placesToBook.map((place) => {
                   const cat = getPlaceCategory(place);
                   return (
-                    <div
-                      key={place.id}
-                      className="flex items-center gap-2 py-1.5 min-h-11"
-                    >
+                    <div key={place.id} className="flex items-center gap-2 py-1.5 min-h-11">
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium truncate">{getPlaceName(place)}</p>
                       </div>

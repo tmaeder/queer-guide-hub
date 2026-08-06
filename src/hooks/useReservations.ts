@@ -10,30 +10,15 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import type { Tables } from '@/integrations/supabase/types';
 import { useAuth } from '@/hooks/useAuth';
+import { qk } from '@/lib/queryKeys';
 
 export type ReservationType =
-  | 'flight'
-  | 'hotel'
-  | 'activity'
-  | 'transit'
-  | 'restaurant'
-  | 'event'
-  | 'other';
+  'flight' | 'hotel' | 'activity' | 'transit' | 'restaurant' | 'event' | 'other';
 
-export type ReservationStatus =
-  | 'pending'
-  | 'confirmed'
-  | 'cancelled'
-  | 'completed'
-  | 'failed';
+export type ReservationStatus = 'pending' | 'confirmed' | 'cancelled' | 'completed' | 'failed';
 
 export type ReservationSource =
-  | 'manual'
-  | 'imported_email'
-  | 'provider_api'
-  | 'scraper'
-  | 'inbox'
-  | 'paste';
+  'manual' | 'imported_email' | 'provider_api' | 'scraper' | 'inbox' | 'paste';
 
 export interface Reservation {
   /** Stable composite id used as a React key. */
@@ -68,8 +53,7 @@ export interface Reservation {
   created_at: string;
 }
 
-const RESERVATION_QUERY_KEY = (userId: string | undefined) =>
-  ['reservations', userId] as const;
+const RESERVATION_QUERY_KEY = (userId: string | undefined) => ['reservations', userId] as const;
 
 const normalizeType = (t: string | null | undefined): ReservationType => {
   switch (t) {
@@ -155,15 +139,11 @@ export function useReservations() {
     queryFn: async (): Promise<Reservation[]> => {
       if (!user) return [];
 
-      const { data, error } = await supabase
-        .from('reservations')
-        .select('*, trips(title)');
+      const { data, error } = await supabase.from('reservations').select('*, trips(title)');
 
       if (error) throw error;
 
-      const projected = (data ?? []).map((row) =>
-        project(row as unknown as ReservationRow),
-      );
+      const projected = (data ?? []).map((row) => project(row as unknown as ReservationRow));
 
       projected.sort((a, b) => {
         const ax = a.start_at ?? '';
@@ -198,13 +178,7 @@ export function useAttachBookingToTrip() {
   const { user } = useAuth();
 
   return useMutation({
-    mutationFn: async ({
-      reservationId,
-      tripId,
-    }: {
-      reservationId: string;
-      tripId: string;
-    }) => {
+    mutationFn: async ({ reservationId, tripId }: { reservationId: string; tripId: string }) => {
       const { error } = await supabase
         .from('reservations')
         .update({ trip_id: tripId })
@@ -213,7 +187,7 @@ export function useAttachBookingToTrip() {
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: RESERVATION_QUERY_KEY(user?.id) });
-      void queryClient.invalidateQueries({ queryKey: ['trips', user?.id] });
+      void queryClient.invalidateQueries({ queryKey: qk.trip.list(user?.id) });
     },
   });
 }
@@ -233,7 +207,7 @@ export function useDetachBooking() {
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: RESERVATION_QUERY_KEY(user?.id) });
-      void queryClient.invalidateQueries({ queryKey: ['trips', user?.id] });
+      void queryClient.invalidateQueries({ queryKey: qk.trip.list(user?.id) });
     },
   });
 }

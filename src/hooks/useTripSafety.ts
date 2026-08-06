@@ -1,7 +1,13 @@
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { getScoreLabel, isCriminalized, hasDeathPenalty, type EqualityScoreBreakdown } from '@/utils/equalityScore';
+import {
+  getScoreLabel,
+  isCriminalized,
+  hasDeathPenalty,
+  type EqualityScoreBreakdown,
+} from '@/utils/equalityScore';
+import { qk } from '@/lib/queryKeys';
 
 export interface CountrySafety {
   id: string;
@@ -37,7 +43,7 @@ export function useTripSafety(countryIds: string[]) {
   const uniqueIds = useMemo(() => [...new Set(countryIds.filter(Boolean))], [countryIds]);
 
   const { data: countries } = useQuery({
-    queryKey: ['trip-safety', uniqueIds],
+    queryKey: qk.trip.safetyFor(uniqueIds),
     queryFn: async () => {
       if (uniqueIds.length === 0) return [];
       const { data, error } = await supabase

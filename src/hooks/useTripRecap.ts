@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { qk } from '@/lib/queryKeys';
 
 export interface TripRecapHighlights {
   top_places: string[];
@@ -26,7 +27,7 @@ export interface TripRecap {
  */
 export function useTripRecap(tripId: string | undefined) {
   return useQuery({
-    queryKey: ['trip-recap', tripId],
+    queryKey: qk.trip.facet(tripId, 'recap'),
     queryFn: async (): Promise<TripRecap | null> => {
       const { data, error } = await supabase
         .from('trip_recaps')
@@ -57,7 +58,7 @@ export function useGenerateTripRecap(tripId: string) {
       return data as TripRecap;
     },
     onSuccess: (data) => {
-      qc.setQueryData(['trip-recap', tripId], data);
+      qc.setQueryData(qk.trip.facet(tripId, 'recap'), data);
     },
   });
 }

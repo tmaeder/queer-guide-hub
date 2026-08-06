@@ -12,6 +12,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { untypedRpc } from '@/integrations/supabase/untyped';
 import type { TripInboxItem } from '@/hooks/useTripInbox';
+import { qk } from '@/lib/queryKeys';
 
 export interface TripEmailTurn {
   id: string;
@@ -35,8 +36,8 @@ export type TripEmailItem = TripInboxItem & {
   extracted_entities: ExtractedEntities | null;
 };
 
-const itemKey = (id: string) => ['trip-email-item', id] as const;
-const turnsKey = (id: string) => ['trip-email-turns', id] as const;
+const itemKey = (id: string) => qk.trip.emailItem(id);
+const turnsKey = (id: string) => qk.trip.facet(id, 'email-turns');
 
 export function useTripEmailThread(itemId: string) {
   const queryClient = useQueryClient();
@@ -106,8 +107,8 @@ export function useTripEmailThread(itemId: string) {
     },
     onSuccess: () => {
       invalidate();
-      void queryClient.invalidateQueries({ queryKey: ['trip-inbox-items'] });
-      void queryClient.invalidateQueries({ queryKey: ['trip-reservations'] });
+      void queryClient.invalidateQueries({ queryKey: qk.trip.details() });
+      void queryClient.invalidateQueries({ queryKey: qk.trip.details() });
     },
   });
 
@@ -121,7 +122,7 @@ export function useTripEmailThread(itemId: string) {
     },
     onSuccess: () => {
       invalidate();
-      void queryClient.invalidateQueries({ queryKey: ['trip-inbox-items'] });
+      void queryClient.invalidateQueries({ queryKey: qk.trip.details() });
     },
   });
 

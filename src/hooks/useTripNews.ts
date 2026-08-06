@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { qk } from '@/lib/queryKeys';
 
 /**
  * News articles geo-tagged to one of the trip's countries, last 30 days,
@@ -57,7 +58,7 @@ function isSafetyFlagged(title: string, excerpt: string | null): boolean {
 
 export function useTripNews(countryIds: string[]) {
   return useQuery({
-    queryKey: ['trip-news', [...countryIds].sort()],
+    queryKey: qk.trip.news([...countryIds].sort()),
     queryFn: async (): Promise<TripNewsArticle[]> => {
       if (countryIds.length === 0) return [];
       const sinceIso = new Date(Date.now() - 30 * 86400_000).toISOString();

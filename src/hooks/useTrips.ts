@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { trackSearchEvent } from '@/lib/searchClient';
 import { enqueueMutation } from '@/lib/offline/mutationQueue';
+import { qk } from '@/lib/queryKeys';
 
 /**
  * Adding a place to a trip is a strong intent signal — feed it to the
@@ -93,11 +94,35 @@ export interface TripPlace {
   /** User override for the heuristic route-leg transport mode. */
   arrive_mode?: 'walk' | 'transit' | 'drive' | null;
   // Joined relations
-  venues?: { id: string; name: string; category: string | null; images: string[] | null; address: string | null } | null;
-  events?: { id: string; title: string; event_type: string | null; start_date: string | null; end_date: string | null; images: string[] | null } | null;
-  hotels?: { id: string; name: string; star_rating: number | null; images: string[] | null; address: string | null } | null;
+  venues?: {
+    id: string;
+    name: string;
+    category: string | null;
+    images: string[] | null;
+    address: string | null;
+  } | null;
+  events?: {
+    id: string;
+    title: string;
+    event_type: string | null;
+    start_date: string | null;
+    end_date: string | null;
+    images: string[] | null;
+  } | null;
+  hotels?: {
+    id: string;
+    name: string;
+    star_rating: number | null;
+    images: string[] | null;
+    address: string | null;
+  } | null;
   cities?: { id: string; name: string } | null;
-  countries?: { id: string; name: string; code: string | null; equality_score: number | null } | null;
+  countries?: {
+    id: string;
+    name: string;
+    code: string | null;
+    equality_score: number | null;
+  } | null;
 }
 
 export interface TripWithDetails extends Trip {
@@ -181,7 +206,7 @@ export function useTrips() {
   const { user } = useAuth();
 
   return useQuery({
-    queryKey: ['trips', user?.id],
+    queryKey: qk.trip.list(user?.id),
     queryFn: async (): Promise<TripListItem[]> => {
       // Get trips where user is a member
       const { data: memberRows, error: memberErr } = await supabase
@@ -196,16 +221,17 @@ export function useTrips() {
 
       const { data, error } = await supabase
         .from('trips')
-        .select(
-          '*, trip_members(id), trip_days(id), trip_places(id, countries(equality_score))',
-        )
+        .select('*, trip_members(id), trip_days(id), trip_places(id, countries(equality_score))')
         .in('id', tripIds)
         .order('updated_at', { ascending: false });
 
       if (error) throw error;
       return (data || []).map((t: Record<string, unknown>) => {
         const scores: number[] = ((t.trip_places as Array<Record<string, unknown>>) || [])
-          .map((p: Record<string, unknown>) => (p.countries as Record<string, unknown>)?.equality_score)
+          .map(
+            (p: Record<string, unknown>) =>
+              (p.countries as Record<string, unknown>)?.equality_score,
+          )
           .filter((s: unknown): s is number => typeof s === 'number');
         const min_equality_score = scores.length ? Math.min(...scores) : null;
         return {
@@ -228,7 +254,7 @@ export function useTrips() {
 // ── Single trip with full details ──────────────────────────────
 export function useTrip(tripId: string | undefined) {
   return useQuery({
-    queryKey: ['trip', tripId],
+    queryKey: qk.trip.detail(tripId),
     queryFn: async (): Promise<TripWithDetails> => {
       // maybeSingle (not single): a nonexistent/unauthorized trip id must not
       // produce an HTTP 406 — the browser logs it as a console error, which
@@ -255,14 +281,16 @@ export function useTrip(tripId: string | undefined) {
           .order('date', { ascending: true }),
         supabase
           .from('trip_places')
-          .select(`
+          .select(
+            `
             *,
             venues:venue_id(id, name, category, images, address),
             events:event_id(id, title, event_type, start_date, end_date, images),
             hotels:hotel_id(id, name, star_rating, images, address),
             cities(id, name),
             countries(id, name, code, equality_score)
-          `)
+          `,
+          )
           .eq('trip_id', tripId!)
           .order('sort_order', { ascending: true }),
       ]);
@@ -295,7 +323,7 @@ export function useTripMutations() {
       return data as Trip;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['trips'] });
+      queryClient.invalidateQueries({ queryKey: qk.trip.lists() });
     },
   });
 
@@ -311,8 +339,8 @@ export function useTripMutations() {
       return data as Trip;
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['trip', data.id] });
-      queryClient.invalidateQueries({ queryKey: ['trips'] });
+      queryClient.invalidateQueries({ queryKey: qk.trip.detail(data.id) });
+      queryClient.invalidateQueries({ queryKey: qk.trip.lists() });
     },
   });
 
@@ -322,13 +350,16 @@ export function useTripMutations() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['trips'] });
+      queryClient.invalidateQueries({ queryKey: qk.trip.lists() });
     },
   });
 
   const addPlace = useMutation({
     mutationFn: async (
-      input: Omit<TripPlace, 'id' | 'created_at' | 'venues' | 'events' | 'hotels' | 'cities' | 'countries'>,
+      input: Omit<
+        TripPlace,
+        'id' | 'created_at' | 'venues' | 'events' | 'hotels' | 'cities' | 'countries'
+      >,
     ) => {
       const { data, error } = await supabase
         .from('trip_places')
@@ -339,13 +370,13 @@ export function useTripMutations() {
       return data;
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['trip', data.trip_id] });
+      queryClient.invalidateQueries({ queryKey: qk.trip.detail(data.trip_id) });
       trackPlaceAdded(data, user?.id ?? null, 'trip_add');
     },
   });
 
   // Bulk-insert several places in a single round-trip with ONE cache
-  // invalidation. Looping `addPlace` thrashes the `['trip', id]` query (N
+  // invalidation. Looping `addPlace` thrashes the `qk.trip.detail(id)` query (N
   // refetches) and hits the DB N times — used by the saves→trip bridge and
   // engine-backed suggestions where the user adds many places at once.
   const addPlacesBulk = useMutation({
@@ -359,8 +390,8 @@ export function useTripMutations() {
       return { tripId, inserted: rows.length };
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['trip', data.tripId] });
-      queryClient.invalidateQueries({ queryKey: ['trips'] });
+      queryClient.invalidateQueries({ queryKey: qk.trip.detail(data.tripId) });
+      queryClient.invalidateQueries({ queryKey: qk.trip.lists() });
     },
   });
 
@@ -391,26 +422,24 @@ export function useTripMutations() {
     },
     onMutate: async ({ id, trip_id, ...input }) => {
       if (!trip_id) return {};
-      await queryClient.cancelQueries({ queryKey: ['trip', trip_id] });
-      const prev = queryClient.getQueryData<TripWithDetails>(['trip', trip_id]);
-      queryClient.setQueryData<TripWithDetails>(['trip', trip_id], (old) =>
+      await queryClient.cancelQueries({ queryKey: qk.trip.detail(trip_id) });
+      const prev = queryClient.getQueryData<TripWithDetails>(qk.trip.detail(trip_id));
+      queryClient.setQueryData<TripWithDetails>(qk.trip.detail(trip_id), (old) =>
         old
           ? {
               ...old,
-              trip_places: old.trip_places.map((p) =>
-                p.id === id ? { ...p, ...input } : p,
-              ),
+              trip_places: old.trip_places.map((p) => (p.id === id ? { ...p, ...input } : p)),
             }
           : old,
       );
       return { prev, trip_id };
     },
     onError: (_err, _vars, ctx) => {
-      if (ctx?.prev && ctx.trip_id) queryClient.setQueryData(['trip', ctx.trip_id], ctx.prev);
+      if (ctx?.prev && ctx.trip_id) queryClient.setQueryData(qk.trip.detail(ctx.trip_id), ctx.prev);
     },
     onSuccess: (data) => {
       if (data.trip_id && (typeof navigator === 'undefined' || navigator.onLine)) {
-        queryClient.invalidateQueries({ queryKey: ['trip', data.trip_id] });
+        queryClient.invalidateQueries({ queryKey: qk.trip.detail(data.trip_id) });
       }
     },
   });
@@ -422,7 +451,7 @@ export function useTripMutations() {
       return { tripId };
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['trip', data.tripId] });
+      queryClient.invalidateQueries({ queryKey: qk.trip.detail(data.tripId) });
     },
   });
 
@@ -438,7 +467,7 @@ export function useTripMutations() {
       return data;
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['trip', data.trip_id] });
+      queryClient.invalidateQueries({ queryKey: qk.trip.detail(data.trip_id) });
     },
   });
 

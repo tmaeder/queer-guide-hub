@@ -14,7 +14,12 @@ import {
   useVenueAccessibilityMatches,
 } from '@/hooks/useAccessibilityMatches';
 import { fetchRecommendations } from '@/lib/searchClient';
-import { resolveEntityGeo, tripPlaceRowFromGeo, type EntityGeo } from '@/lib/trips/resolveEntityGeo';
+import {
+  resolveEntityGeo,
+  tripPlaceRowFromGeo,
+  type EntityGeo,
+} from '@/lib/trips/resolveEntityGeo';
+import { qk } from '@/lib/queryKeys';
 
 interface SuggestionItem {
   id: string;
@@ -62,23 +67,20 @@ export function TripSuggestions({ tripId, places }: Props) {
   }, [places]);
 
   const existingIds = useMemo(
-    () =>
-      new Set(
-        places.map((p) => p.venue_id ?? p.event_id).filter((id): id is string => !!id),
-      ),
+    () => new Set(places.map((p) => p.venue_id ?? p.event_id).filter((id): id is string => !!id)),
     [places],
   );
   const existingKey = useMemo(() => Array.from(existingIds).sort().join(','), [existingIds]);
 
   const { data: cities } = useQuery({
-    queryKey: ['trip-suggestion-cities', cityIds],
+    queryKey: qk.trip.suggestions('cities', cityIds),
     queryFn: () => fetchTripSuggestionCities(cityIds),
     enabled: cityIds.length > 0,
     staleTime: 10 * 60 * 1000,
   });
 
   const { data: suggestions, isLoading } = useQuery({
-    queryKey: ['trip-suggestion-recs', cityIds, existingKey, user?.id],
+    queryKey: qk.trip.suggestions('recs', [cityIds, existingKey, user?.id]),
     enabled: !!cities && cities.length > 0,
     staleTime: 10 * 60 * 1000,
     queryFn: async (): Promise<SuggestionItem[]> => {
@@ -162,10 +164,7 @@ export function TripSuggestions({ tripId, places }: Props) {
   const citiesMap = new Map((cities || []).map((c) => [c.id, c]));
   const filtered = (suggestions || [])
     .filter((s) => filter === 'all' || s.type === filter)
-    .sort(
-      (a, b) =>
-        (accessMatches?.has(b.id) ? 1 : 0) - (accessMatches?.has(a.id) ? 1 : 0),
-    );
+    .sort((a, b) => (accessMatches?.has(b.id) ? 1 : 0) - (accessMatches?.has(a.id) ? 1 : 0));
 
   return (
     <div>
@@ -219,10 +218,7 @@ export function TripSuggestions({ tripId, places }: Props) {
               {cityItems.map((item) => {
                 const Icon = item.type === 'event' ? CalendarDays : MapPin;
                 return (
-                  <div
-                    key={item.id}
-                    className="flex items-center gap-2 py-1.5 min-h-11"
-                  >
+                  <div key={item.id} className="flex items-center gap-2 py-1.5 min-h-11">
                     <Icon size={13} className="text-muted-foreground shrink-0" />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium truncate">{item.name}</p>

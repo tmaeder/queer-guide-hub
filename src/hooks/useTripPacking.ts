@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { enqueueMutation } from '@/lib/offline/mutationQueue';
+import { qk } from '@/lib/queryKeys';
 
 export interface PackingItem {
   id: string;
@@ -29,7 +30,9 @@ type CreatePackingInput = {
   suggestion_reason?: string | null;
 };
 
-type UpdatePackingInput = Partial<Pick<PackingItem, 'name' | 'category' | 'quantity' | 'is_checked' | 'sort_order'>> & { id: string };
+type UpdatePackingInput = Partial<
+  Pick<PackingItem, 'name' | 'category' | 'quantity' | 'is_checked' | 'sort_order'>
+> & { id: string };
 
 const TEMPLATES: Record<string, { name: string; category: string }[]> = {
   essentials: [
@@ -105,7 +108,7 @@ const TEMPLATES: Record<string, { name: string; category: string }[]> = {
 
 export function useTripPacking(tripId: string | undefined) {
   const query = useQuery({
-    queryKey: ['trip-packing', tripId],
+    queryKey: qk.trip.facet(tripId, 'packing'),
     queryFn: async () => {
       const { data, error } = await supabase
         .from('trip_packing_items')
@@ -139,7 +142,8 @@ export function useTripPacking(tripId: string | undefined) {
 
 export function usePackingMutations(tripId: string) {
   const queryClient = useQueryClient();
-  const invalidate = () => queryClient.invalidateQueries({ queryKey: ['trip-packing', tripId] });
+  const invalidate = () =>
+    queryClient.invalidateQueries({ queryKey: qk.trip.facet(tripId, 'packing') });
 
   const addPackingItem = useMutation({
     mutationFn: async (input: CreatePackingInput) => {
@@ -191,15 +195,15 @@ export function usePackingMutations(tripId: string) {
       if (error) throw error;
     },
     onMutate: async ({ id, is_checked }) => {
-      await queryClient.cancelQueries({ queryKey: ['trip-packing', tripId] });
-      const prev = queryClient.getQueryData<PackingItem[]>(['trip-packing', tripId]);
-      queryClient.setQueryData<PackingItem[]>(['trip-packing', tripId], (old) =>
+      await queryClient.cancelQueries({ queryKey: qk.trip.facet(tripId, 'packing') });
+      const prev = queryClient.getQueryData<PackingItem[]>(qk.trip.facet(tripId, 'packing'));
+      queryClient.setQueryData<PackingItem[]>(qk.trip.facet(tripId, 'packing'), (old) =>
         (old ?? []).map((i) => (i.id === id ? { ...i, is_checked } : i)),
       );
       return { prev };
     },
     onError: (_err, _vars, ctx) => {
-      if (ctx?.prev) queryClient.setQueryData(['trip-packing', tripId], ctx.prev);
+      if (ctx?.prev) queryClient.setQueryData(qk.trip.facet(tripId, 'packing'), ctx.prev);
     },
     onSuccess: () => {
       if (typeof navigator === 'undefined' || navigator.onLine) invalidate();
@@ -233,7 +237,13 @@ export function usePackingMutations(tripId: string) {
     onSuccess: invalidate,
   });
 
-  return { addPackingItem, updatePackingItem, toggleChecked, deletePackingItem, addPackingTemplate };
+  return {
+    addPackingItem,
+    updatePackingItem,
+    toggleChecked,
+    deletePackingItem,
+    addPackingTemplate,
+  };
 }
 
 /**
@@ -253,12 +263,12 @@ export function getSuggestedTemplates(options: {
   if (latitude != null) {
     const absLat = Math.abs(latitude);
     const isNorthernHemisphere = latitude >= 0;
-    const isWinter = isNorthernHemisphere ? (month >= 11 || month <= 3) : (month >= 5 && month <= 9);
+    const isWinter = isNorthernHemisphere ? month >= 11 || month <= 3 : month >= 5 && month <= 9;
     const isSummer = !isWinter;
 
     if (absLat > 50 && isWinter) suggestions.push('cold-weather');
     if (absLat < 35 || isSummer) suggestions.push('hot-weather');
-    if (absLat < 25 && (month >= 6 && month <= 10)) suggestions.push('rainy-season');
+    if (absLat < 25 && month >= 6 && month <= 10) suggestions.push('rainy-season');
     if (absLat < 35 && isSummer) suggestions.push('beach');
   }
 
