@@ -39,6 +39,33 @@ describe('PresetChips', () => {
     render(<PresetChips active={null} onSelect={vi.fn()} disabled={['featured']} />);
     expect(screen.getByRole('tab', { name: /Featured/i })).toBeDisabled();
   });
+
+  // The corpus holds ~253 future events, ~10 in the next seven days. "Tonight"
+  // was a live, clickable promise that resolved to an empty grid for almost
+  // every visitor — which reads as "the scene is dead" rather than "we have no
+  // listings". These three assertions are the guard on that.
+  it('shows the count on a chip when one is supplied', () => {
+    render(<PresetChips active={null} onSelect={vi.fn()} counts={{ tonight: 3 }} />);
+    expect(screen.getByRole('tab', { name: /Tonight/i })).toHaveTextContent('3');
+  });
+
+  it('disables a chip whose count is zero', () => {
+    render(<PresetChips active={null} onSelect={vi.fn()} counts={{ tonight: 0 }} />);
+    expect(screen.getByRole('tab', { name: /Tonight/i })).toBeDisabled();
+  });
+
+  it('does not disable a chip with no count supplied', () => {
+    // Absent ≠ zero. A preset we cannot count (near-me, free) must stay usable.
+    render(<PresetChips active={null} onSelect={vi.fn()} counts={{ tonight: 0 }} />);
+    expect(screen.getByRole('tab', { name: /Near me/i })).not.toBeDisabled();
+    expect(screen.getByRole('tab', { name: /Free/i })).not.toBeDisabled();
+  });
+
+  it('keeps a zero-count chip visible rather than hiding it', () => {
+    // Hiding it would read as a missing feature; disabling it reads as thin data.
+    render(<PresetChips active={null} onSelect={vi.fn()} counts={{ tonight: 0 }} />);
+    expect(screen.getAllByRole('tab')).toHaveLength(8);
+  });
 });
 
 describe('getPresetDateRange', () => {

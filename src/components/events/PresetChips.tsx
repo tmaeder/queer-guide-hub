@@ -33,9 +33,20 @@ interface PresetChipsProps {
   active: EventPresetId | null;
   onSelect: (preset: EventPresetId | null) => void;
   disabled?: EventPresetId[];
+  /**
+   * How many events each preset would return. Where a count is supplied it is
+   * shown on the chip, and a zero count disables it.
+   *
+   * This exists because the corpus is thin: 253 future events in total, 10 in
+   * the next seven days. "Tonight" was a live, clickable promise that resolved
+   * to an empty grid for virtually every visitor — which reads as "the scene is
+   * dead here" rather than "we have no listings". Showing the number turns a
+   * broken promise into an honest one, and costs a `head: true` count.
+   */
+  counts?: Partial<Record<EventPresetId, number>>;
 }
 
-export function PresetChips({ active, onSelect, disabled = [] }: PresetChipsProps) {
+export function PresetChips({ active, onSelect, disabled = [], counts }: PresetChipsProps) {
   const { t } = useTranslation();
 
   const presets: EventPreset[] = [
@@ -69,7 +80,12 @@ export function PresetChips({ active, onSelect, disabled = [] }: PresetChipsProp
     >
       {presets.map(({ id, label, icon: Icon }) => {
         const isActive = active === id;
-        const isDisabled = disabled.includes(id);
+        const count = counts?.[id];
+        // A preset that can only return an empty grid is not a filter, it is a
+        // dead end. Disable it rather than letting the reader discover that by
+        // clicking — but never hide it, so the absence stays visible and
+        // legible as thin coverage rather than a missing feature.
+        const isDisabled = disabled.includes(id) || count === 0;
         return (
           <button
             key={id}
@@ -89,6 +105,9 @@ export function PresetChips({ active, onSelect, disabled = [] }: PresetChipsProp
           >
             <Icon className="w-4 h-4" />
             {label}
+            {typeof count === 'number' ? (
+              <span className="tabular-nums text-13 opacity-70">{count}</span>
+            ) : null}
           </button>
         );
       })}
