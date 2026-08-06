@@ -16,19 +16,29 @@ import { stripHtmlTags, decodeHtmlEntities } from '../_shared/news-quality/sanit
 // Stopping early is free: RSS is newest-first, so the first N items ARE the N
 // the caller wants. The regex scans from lastIndex, so breaking also means the
 // tail of the string is never scanned at all.
+// `maxTextBytes` bounds the TEXT this call will clean, which is the real cost —
+// item count alone does not imply it. Measured on the 2026-08-06 21:00 run:
+// rss.libsyn.com/shows/384410 is 2.35 MB over 111 items (so the 100-item cap
+// applied and the 4 MB read cap never fired), but its items average ~21 KB and
+// the largest is 184,632 bytes. cleanText is a 4-pass strip/decode loop, so 100
+// such items is ~8 MB of allocating string work and the worker died with
+// HTTP 546 in 11s — two seconds after claiming this one feed.
 export function parseRssItems(
   xml: string,
   isPodcast = false,
   maxItems = Number.POSITIVE_INFINITY,
+  maxTextBytes = 1_000_000,
 ): Record<string, unknown>[] {
   const items: Record<string, unknown>[] = []
   if (maxItems <= 0) return items
   const itemRegex = /<item>([\s\S]*?)<\/item>/gi
+  let textBytes = 0
   let match
   while ((match = itemRegex.exec(xml)) !== null) {
     // Counted on items actually PUSHED, so podcast entries skipped for having
     // no audio enclosure don't consume the budget.
     if (items.length >= maxItems) break
+    if (textBytes >= maxTextBytes) break
     const block = match[1]
     const title = extractTag(block, 'title')
     const link = extractTag(block, 'link') || extractTag(block, 'guid')
@@ -49,18 +59,25 @@ export function parseRssItems(
       // An episode with no audio is not a podcast item — skip it.
       if (!audioUrl) continue
       const image = extractItunesImage(block) || extractMediaUrl(block)
+      // cleanText ONCE per item. `content` and `excerpt` derive from the same
+      // description, and calling it twice doubled the most expensive work in
+      // the parser for no benefit.
+      const cleaned = cleanText(desc || '')
+      textBytes += (desc || '').length
       items.push({
-        title: cleanText(title), content: cleanText(desc || ''),
+        title: cleanText(title), content: cleaned,
         url: link.trim(), image_url: image, author,
-        published_at: pubDate, excerpt: excerptOf(cleanText(desc || '')),
+        published_at: pubDate, excerpt: excerptOf(cleaned),
         media_type: 'podcast', audio_url: audioUrl,
         duration_seconds: parseItunesDuration(extractTag(block, 'itunes:duration')),
       })
     } else {
+      const cleaned = cleanText(desc || '')
+      textBytes += (desc || '').length
       items.push({
-        title: cleanText(title), content: cleanText(desc || ''),
+        title: cleanText(title), content: cleaned,
         url: link.trim(), image_url: extractMediaUrl(block), author,
-        published_at: pubDate, excerpt: excerptOf(cleanText(desc || '')),
+        published_at: pubDate, excerpt: excerptOf(cleaned),
       })
     }
   }

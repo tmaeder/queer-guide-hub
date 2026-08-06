@@ -138,3 +138,33 @@ Deno.test('cleanText strips a feed-supplied lone surrogate', () => {
   assertEquals(new TextDecoder().decode(new TextEncoder().encode(out)), out)
   assertEquals(out.includes('\uD83D'), false)
 })
+
+// Item COUNT does not bound the work; item SIZE does. The 2026-08-06 21:00 run
+// died (HTTP 546, 11s) on a 2.35 MB / 111-item feed: the 100-item cap applied,
+// the 4 MB read cap never fired, but the items average ~21 KB and cleanText is
+// a 4-pass strip/decode loop, so it still faced ~8 MB of string work.
+Deno.test('parseRssItems stops once the text budget is spent, even under maxItems', () => {
+  const fat = (i: number) =>
+    `<item><title>Ep ${i}</title><link>https://x/${i}</link>` +
+    `<description>${'x'.repeat(100_000)}</description></item>`
+  const xml = `<rss><channel>${[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(fat).join('')}</channel></rss>`
+  // 10 items x 100 KB, cap 100 items, but only ~250 KB of text allowed.
+  const out = parseRssItems(xml, false, 100, 250_000)
+  assertEquals(out.length < 10, true, `expected the text budget to bite, got ${out.length}`)
+  assertEquals(out.length >= 1, true, 'must still return the items it could afford')
+})
+
+Deno.test('parseRssItems text budget does not truncate ordinary feeds', () => {
+  // 20 small items are nowhere near the default budget.
+  assertEquals(parseRssItems(feedWith(20)).length, 20)
+})
+
+// Regression: content and excerpt both derive from the same description, and
+// cleanText (the parser's most expensive call) used to run twice per item.
+Deno.test('excerpt is derived from the same cleaned text as content', () => {
+  const xml =
+    '<rss><channel><item><title>T</title><link>https://x/1</link>' +
+    `<description>&lt;p&gt;${'word '.repeat(200)}&lt;/p&gt;</description></item></channel></rss>`
+  const [item] = parseRssItems(xml)
+  assertEquals(String(item.excerpt), excerptOf(String(item.content)))
+})
