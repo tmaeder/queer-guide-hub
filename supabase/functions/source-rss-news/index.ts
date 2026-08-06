@@ -66,10 +66,31 @@ const rssNewsAdapter: SourceAdapter = {
     const deadlineAt = Date.now() + 120_000
     let skippedForTime = 0
 
+    // Cumulative parse budget. Wall-clock alone does NOT bound the worker:
+    // parseRssItems is O(feed size) and podcast archives run 2–3 MB each, so a
+    // batch of them exhausts the memory/CPU limit well inside 120s. This is the
+    // constraint that actually produced HTTP 546 (2026-08-03: the 30 oldest
+    // sources drifted into an all-podcast cohort and every hourly run died).
+    const RUN_BYTE_BUDGET = 12 * 1024 * 1024
+    let bytesParsed = 0
+    let skippedForBytes = 0
+
     for (const source of sources as NewsSource[]) {
       if (Date.now() > deadlineAt) { skippedForTime++; continue }
+      if (bytesParsed > RUN_BYTE_BUDGET) { skippedForBytes++; continue }
       try {
-        await supabase.from('news_sources').update({ status: 'processing' }).eq('id', source.id)
+        // Claim the source: advance last_fetched_at NOW, not on completion.
+        // last_fetched_at is the queue cursor (news_sources_eligible orders by
+        // it ASC), so stamping it only on success means a run that dies mid-loop
+        // re-selects the very same batch next hour — for ever. That is exactly
+        // how one heavy batch turned into 82 consecutive failures. Advancing at
+        // claim time makes the batch rotate whatever the outcome, so this class
+        // of failure self-heals instead of latching. `last_successful_fetch`
+        // remains the field that means "we actually got data".
+        await supabase.from('news_sources').update({
+          status: 'processing',
+          last_fetched_at: new Date().toISOString(),
+        }).eq('id', source.id)
 
         let articles: Record<string, unknown>[] = []
         const apiName = detectApiName(source.url)
@@ -86,7 +107,9 @@ const rssNewsAdapter: SourceAdapter = {
             fetchFromApi(source, sinceHours)
           )
         } else {
-          articles = await fetchFromRss(source.url, source.feed_type === 'podcast')
+          const rss = await fetchFromRss(source.url, source.feed_type === 'podcast')
+          articles = rss.items
+          bytesParsed += rss.bytes
         }
 
         for (let i = 0; i < Math.min(articles.length, maxArticles); i++) {
@@ -161,6 +184,9 @@ const rssNewsAdapter: SourceAdapter = {
 
     if (skippedForTime > 0) {
       console.log(`source-rss-news: hit 120s budget, skipped ${skippedForTime} feed(s) — they rotate to next run`)
+    }
+    if (skippedForBytes > 0) {
+      console.log(`source-rss-news: hit ${RUN_BYTE_BUDGET} byte budget after ${bytesParsed}, skipped ${skippedForBytes} feed(s) — they rotate to next run`)
     }
 
     return allItems
@@ -297,7 +323,10 @@ async function fetchRecentWikinews(url: string, maxArticles: number): Promise<Re
   return fetchWikinewsArticles(target, pageIds)
 }
 
-async function fetchFromRss(feedUrl: string, isPodcast = false): Promise<Record<string, unknown>[]> {
+async function fetchFromRss(
+  feedUrl: string,
+  isPodcast = false,
+): Promise<{ items: Record<string, unknown>[]; bytes: number }> {
   // Throw on failure so the caller's catch can register the failure
   // (consecutive_failures + backoff_until). Returning [] silently would
   // mask flapping feeds and never trip auto-pause.
@@ -329,7 +358,10 @@ async function fetchFromRss(feedUrl: string, isPodcast = false): Promise<Record<
     // the incomplete trailing block. (Hard-failing here auto-paused four
     // legitimate podcast feeds whose full archives exceed 4 MB.)
     const xml = await readCapped(res, MAX_FEED_BYTES)
-    return parseRssItems(xml, isPodcast)
+    // Report the parsed size so the caller can enforce a per-RUN byte budget.
+    // The per-feed cap alone cannot bound a run: 30 feeds each just under the
+    // cap is still ~120 MB of parsing.
+    return { items: parseRssItems(xml, isPodcast), bytes: xml.length }
   } finally {
     clearTimeout(timeout)
   }
