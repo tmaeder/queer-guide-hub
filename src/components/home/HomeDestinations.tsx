@@ -25,7 +25,6 @@ export default function HomeDestinations() {
 
   return (
     <HomeSection
-      eyebrow={t('home.discover', 'Destinations')}
       title={t('home.destinationsTitle', 'Where the scene lives.')}
       description={t('home.destinationsSubtitle', 'Cities with visible queer life, mapped venue by venue.')}
       seeAllHref="/cities"
