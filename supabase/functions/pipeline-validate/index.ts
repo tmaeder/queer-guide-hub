@@ -91,11 +91,18 @@ Deno.serve(withErrorReporting('pipeline-validate', async (req) => {
 
         const meta = (n.metadata ?? {}) as Record<string, unknown>
         const urls = (n.urls ?? []) as string[]
-        const title = String(n.title ?? n.name ?? '').trim()
-        const url   = String(n.url ?? urls[0] ?? meta.url ?? '').trim()
-        const sourceId = (n.source_id as string) ?? (meta.source_id as string | null) ?? null
+        // `||`, NOT `??`, for every multi-source text fallback. `??` only falls
+        // through on null/undefined, and pipeline-normalize emits the key as an
+        // EMPTY STRING rather than omitting it — so `n.content ?? n.description`
+        // returns '' and the body is never read. Measured 2026-08-06: all 34
+        // news rows rejected E_NO_CONTENT that hour had content:"" present with
+        // the full body sitting in description (106-2340 chars), including real
+        // reporting ("Hundreds of thousands attend Pride events in UK").
+        const title = String(n.title || n.name || '').trim()
+        const url   = String(n.url || urls[0] || meta.url || '').trim()
+        const sourceId = (n.source_id as string) || (meta.source_id as string | null) || null
         // Strip HTML for content-length check
-        const rawContent = String(n.content ?? n.description ?? '')
+        const rawContent = String(n.content || n.description || '')
         let stripped = rawContent
           .replace(/&nbsp;/gi, ' ')
           .replace(/&lt;/gi, '<').replace(/&gt;/gi, '>').replace(/&quot;/gi, '"')
@@ -201,11 +208,12 @@ Deno.serve(withErrorReporting('pipeline-validate', async (req) => {
         quality = Math.max(0, 100 - warnings.length * 5 - errors.length * 40)
       } else if (type === 'event' || item.target_table === 'events') {
         // Event-specific validation: title, dates, location, time sanity
-        const title = String(n.title ?? n.name ?? '').trim()
+        // `||` not `??` on the multi-source fallbacks — see the news branch above.
+        const title = String(n.title || n.name || '').trim()
         const loc = (n.location ?? {}) as Record<string, unknown>
         const dates = (n.dates ?? {}) as Record<string, unknown>
-        const startStr = String(n.start_date ?? dates.start ?? '').trim()
-        const endStr   = String(n.end_date ?? dates.end ?? '').trim()
+        const startStr = String(n.start_date || dates.start || '').trim()
+        const endStr   = String(n.end_date || dates.end || '').trim()
 
         if (title.length < 3) errors.push('E_TITLE_TOO_SHORT')
         if (title.length > 300) warnings.push('W_TITLE_TRUNCATED')
@@ -242,7 +250,7 @@ Deno.serve(withErrorReporting('pipeline-validate', async (req) => {
 
         // Location: need either venue_id, city, or geo
         const hasVenue = !!n.venue_id
-        const city = String(loc.city ?? n.city ?? '').trim()
+        const city = String(loc.city || n.city || '').trim()
         const lat = Number(loc.lat ?? n.latitude)
         const lng = Number(loc.lng ?? n.longitude)
         const hasGeo = Number.isFinite(lat) && Number.isFinite(lng) && lat !== 0 && lng !== 0
