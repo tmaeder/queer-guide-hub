@@ -94,14 +94,21 @@ for (const [version, group] of byVersion) {
   }
 }
 
-// 3) Out-of-order versions. `db push` walks migrations in version order and
-//    skips anything at or below what remote history already holds — silently,
-//    exit 0. So a new migration stamped with today's date loses to an existing
-//    future-dated one and never applies. Measured 2026-08-06: 43 migrations in
-//    this repo are dated ahead of wall-clock and remote max is 20260815110000,
-//    nine days out, so every naturally-timestamped migration written this week
-//    would have been dropped without a word. Compare against the highest
-//    PRE-EXISTING version (remote history == base ref once CI has pushed main).
+// 3) Out-of-order versions. A migration whose version sorts BELOW the newest
+//    one remote history already holds makes `db push` abort with "local
+//    migration files to be inserted before the last migration on remote" — and
+//    it aborts on the FIRST such file, taking every later migration in the same
+//    PR down with it, valid ones included. (Distinct from a DUPLICATE version,
+//    which is skipped silently; that is check 2 above.)
+//
+//    This repo makes that the default outcome rather than a rare race:
+//    measured 2026-08-06, 43 migrations are stamped ahead of wall-clock and
+//    remote max is 20260815110000 — NINE DAYS in the future. So any migration
+//    written this week with a natural timestamp is born invalid. Catching it
+//    here turns a failed deploy on main into a failed check on the PR.
+//
+//    Compare against the highest PRE-EXISTING version: remote history and the
+//    base ref agree once CI has pushed main, and this stays pure-local.
 if (base !== null) {
   const baseVersions = files
     .filter((f) => !isNew(f))
@@ -116,8 +123,9 @@ if (base !== null) {
       if (v <= maxBase) {
         errors.push(
           `version ${v} (${f}) is not above the highest existing version ${maxBase}.\n` +
-            `    → \`supabase db push\` applies migrations in version order and skips ` +
-            `anything remote history already passed, with exit 0 and no message. ` +
+            `    → \`supabase db push\` aborts on the first migration that sorts below ` +
+            `remote history ("local migration files to be inserted before the last ` +
+            `migration on remote"), taking every later migration in the same PR with it. ` +
             `Rename this file to a version greater than ${maxBase}.`,
         )
       }
