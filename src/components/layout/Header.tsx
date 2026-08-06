@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router';
 import { Button } from '@/components/ui/button';
-import { LogOut, Moon, Plus, Shield, Sun, UserRound } from 'lucide-react';
+import { Briefcase, LogOut, Moon, Plus, Shield, Sun, UserRound } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
@@ -47,6 +47,10 @@ export function Header() {
     (user?.email ? generateAvatarUrl(user.email, 96) || undefined : undefined);
 
   const submitCta = getSubmitCta(location.pathname, t);
+  // Declared here, not next to desktopNav: rightCluster's JSX reads it and is
+  // evaluated at its own const assignment above, so a later declaration is a
+  // temporal-dead-zone crash on every render.
+  const path = stripLocale(location.pathname);
 
   const displayName = (profile?.display_name as string | null) || null;
   const username = (profile?.username as string | null) || null;
@@ -103,6 +107,24 @@ export function Header() {
         >
           <Plus size={20} />
         </Button>
+      )}
+
+      {/* "Mine" — the second axis. Intents answer WHAT I WANT TO DO; this
+          answers WHERE MY THINGS ARE (trips, saved, messages, plans). /hub was
+          reachable on desktop only by opening the avatar dropdown, so half the
+          product had no visible entry point at all. Rendered outside the
+          intent <nav> on purpose: it is not a sixth peer job, and putting it
+          in that landmark would read as one. */}
+      {user && (
+        <LocalizedLink
+          to="/hub"
+          aria-current={path === '/hub' || path.startsWith('/hub/') ? 'page' : undefined}
+          title={t('header.mobileNav.hub', 'Hub')}
+          className="hidden items-center gap-2 px-2 py-2 text-sm font-medium text-muted-foreground no-underline transition-colors hover:text-foreground aria-[current=page]:font-semibold aria-[current=page]:text-foreground md:inline-flex"
+        >
+          <Briefcase size={18} aria-hidden />
+          <span className="sr-only lg:not-sr-only">{t('header.mobileNav.hub', 'Hub')}</span>
+        </LocalizedLink>
       )}
 
       {user && (
@@ -226,7 +248,6 @@ export function Header() {
   // to be hardcoded here and had silently diverged from the config's
   // PRIMARY_NAV, leaving /venues (the largest catalog) and /people unreachable
   // from desktop chrome. Never re-inline it.
-  const path = stripLocale(location.pathname);
   const desktopNav = (
     // Distinct landmark name — the mobile bottom bar owns "Navigation";
     // duplicate nav landmark names break rotor navigation (landmark-unique).

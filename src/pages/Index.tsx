@@ -140,13 +140,29 @@ const Index = React.memo(() => {
     return () => window.clearTimeout(id);
   }, []);
 
-  const mapHeight = isMobile ? '60vh' : 'calc(100dvh - 64px)';
+  // Desktop drops from a full viewport so the intent rail below it is visible
+  // without scrolling. A full-bleed hero put the site's six primary jobs
+  // entirely below the fold on every screen — a browse TOOL occupying the
+  // position of highest intent.
+  const mapHeight = isMobile ? '60vh' : 'calc(78dvh - 64px)';
 
   return (
     <div className="min-h-screen">
       {/* ── Mobile masthead — the 60vh map + its own chrome leave no room for
           an overlay, so the identity band renders above it in normal flow. */}
       {isMobile && <HeroIdentityOverlay variant="band" />}
+
+      {/* ── On mobile the intent rail IS the primary navigation: the header
+           carries no intent links below lg and the bottom bar's Explore tab
+           opens a sheet, so this rail is the only always-visible expression of
+           the six jobs. It therefore leads, above the 60vh map. On desktop the
+           header already carries them, so the rail stays below the hero (and
+           the hero was shortened so it still lands in the first viewport). */}
+      {isMobile && (
+        <div className="bg-noise">
+          <IntentRail />
+        </div>
+      )}
 
       {/* ── Hero = the live map (same MapShell as /map), search-free ──── */}
       <section
@@ -178,8 +194,11 @@ const Index = React.memo(() => {
       <div className="bg-noise">
         {/* ── Intent Router entry points. Eager and unanimated on purpose —
              see the comment in IntentRail.tsx: this is navigation, so it must
-             never depend on an IntersectionObserver firing. ────────────────*/}
-        <IntentRail />
+             never depend on an IntersectionObserver firing. Rendered here for
+             desktop only; mobile has it above the map (see above), and
+             rendering it twice would duplicate six nav links for a screen
+             reader. ───────────────────────────────────────────────────────*/}
+        {!isMobile && <IntentRail />}
 
         {/* ── Returning visitors: one light personalized rail (self-hides) ─ */}
         <RecentlyViewedRail />

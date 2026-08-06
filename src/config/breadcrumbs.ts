@@ -40,6 +40,8 @@ const SEGMENT_SECTIONS: Record<string, { path: string; key: string; fallback: st
   city: { path: '/cities', key: 'breadcrumb.cities', fallback: 'Cities' },
   country: { path: '/cities', key: 'breadcrumb.cities', fallback: 'Cities' },
   'going-out': { path: '/going-out', key: 'breadcrumb.goingOut', fallback: 'Going out' },
+  people: { path: '/people', key: 'breadcrumb.people', fallback: 'Meet people' },
+  community: { path: '/people', key: 'breadcrumb.people', fallback: 'Meet people' },
   rights: { path: '/rights', key: 'breadcrumb.rights', fallback: 'Rights' },
   support: { path: '/support', key: 'breadcrumb.support', fallback: 'Support' },
   shop: { path: '/shop', key: 'breadcrumb.shop', fallback: 'Shop' },

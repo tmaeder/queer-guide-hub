@@ -42,10 +42,13 @@ describe('navigation config', () => {
 });
 
 describe('INTENT_NAV', () => {
-  it('has five intents with unique ids and routes', () => {
-    expect(INTENT_NAV).toHaveLength(5);
-    expect(new Set(INTENT_NAV.map((i) => i.id)).size).toBe(5);
-    expect(new Set(INTENT_NAV.map((i) => i.to)).size).toBe(5);
+  it('has six intents with unique ids and routes', () => {
+    // Six is the ceiling: the desktop row is one flex line shared with the
+    // search field across 11 locales, and every label is held to <=11 chars
+    // below. A seventh needs a different layout, not a seventh entry.
+    expect(INTENT_NAV).toHaveLength(6);
+    expect(new Set(INTENT_NAV.map((i) => i.id)).size).toBe(6);
+    expect(new Set(INTENT_NAV.map((i) => i.to)).size).toBe(6);
   });
 
   it('never uses a 2-letter first path segment', () => {

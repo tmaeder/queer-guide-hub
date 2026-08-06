@@ -71,19 +71,21 @@ const LENGTH_ENFORCED = [
   '/rights',
   '/support',
   '/shop',
+  '/people',
 ];
 
 /** Every Intent Router path must be indexable and carry its own meta + body. */
-const INTENT_ROUTES = ['/going-out', '/rights', '/support', '/shop', '/travel'];
+const INTENT_ROUTES = ['/going-out', '/rights', '/support', '/shop', '/travel', '/people'];
 
 describe('STATIC_ROUTE_META', () => {
   it('gives every entry a title distinct from the homepage default', () => {
     const offenders = Object.entries(STATIC_ROUTE_META)
       .filter(([path, meta]) => path !== '/' && meta.title === DEFAULT_META.title)
       .map(([path]) => path);
-    expect(offenders, 'these routes are indistinguishable from the homepage in search results').toEqual(
-      [],
-    );
+    expect(
+      offenders,
+      'these routes are indistinguishable from the homepage in search results',
+    ).toEqual([]);
   });
 
   it('has globally unique titles', () => {
@@ -117,7 +119,7 @@ describe('STATIC_ROUTE_META', () => {
   it('makes intent pages link downward into the browse routes', () => {
     // Intent pages are hubs. If they stopped linking out to the canonical
     // browse/detail routes they would compete with them instead of feeding them.
-    for (const path of ['/going-out', '/rights', '/support', '/shop']) {
+    for (const path of ['/going-out', '/rights', '/support', '/shop', '/people']) {
       const links = STATIC_ROUTE_BODY[path]?.links ?? [];
       expect(links.length, `${path} should link out`).toBeGreaterThanOrEqual(3);
     }
@@ -161,7 +163,15 @@ describe('STATIC_ROUTE_BODY', () => {
 
 describe('isIndexable', () => {
   it('excludes personal and query-shaped surfaces', () => {
-    for (const path of ['/auth', '/admin/users', '/profile/settings', '/settings', '/favorites', '/search', '/hub/plans']) {
+    for (const path of [
+      '/auth',
+      '/admin/users',
+      '/profile/settings',
+      '/settings',
+      '/favorites',
+      '/search',
+      '/hub/plans',
+    ]) {
       expect(isIndexable(path), `${path} should be noindex`).toBe(false);
     }
   });
@@ -177,7 +187,9 @@ describe('resolveMeta', () => {
   it('returns the exact entry for a backfilled route rather than the default', () => {
     for (const path of ['/guides', '/cities', '/organizations', '/pride', '/community']) {
       const meta = resolveMeta(path);
-      expect(meta.title, `${path} still resolves to the generic default`).not.toBe(DEFAULT_META.title);
+      expect(meta.title, `${path} still resolves to the generic default`).not.toBe(
+        DEFAULT_META.title,
+      );
     }
   });
 });

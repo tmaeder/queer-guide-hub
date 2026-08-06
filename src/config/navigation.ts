@@ -172,7 +172,7 @@ export const DESTINATIONS: NavDestination[] = [
  *    the legacy `shop/*` redirect, rather than new competing paths.
  * Both are asserted in src/config/__tests__/navigation.test.ts.
  */
-export type IntentId = 'going-out' | 'travelling' | 'rights' | 'support' | 'shop';
+export type IntentId = 'going-out' | 'travelling' | 'meet' | 'rights' | 'support' | 'shop';
 
 export interface IntentDestination {
   id: IntentId;
@@ -217,6 +217,24 @@ export const INTENT_NAV: IntentDestination[] = [
       '/villages',
       '/trips',
     ],
+  },
+  {
+    // The one job the Intent Router shipped without. /people, /community and
+    // /groups are roughly half the product and had NO desktop nav entry at
+    // all — reachable only from the mobile sheet's browse grid. Rebuilt in
+    // place at /people (as /travel was) rather than minting a competing path.
+    // Deliberately NOT a merge of /people and /community: both are already
+    // thin tab shells over two genuinely different jobs — find a person vs
+    // join a group — and folding them yields a seven-tab row. /people is the
+    // intent's home and links across to the community surfaces.
+    id: 'meet',
+    to: '/people',
+    icon: UsersRound,
+    labelKey: 'header.intents.meet.label',
+    fallback: 'Meet people',
+    subtitleKey: 'header.intents.meet.subtitle',
+    subtitleFallback: 'Friends, dates, travel buddies and groups',
+    activePrefixes: ['/people', '/community', '/groups', '/friends', '/dating'],
   },
   {
     id: 'rights',
