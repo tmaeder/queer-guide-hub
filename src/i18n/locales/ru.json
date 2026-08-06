@@ -1683,6 +1683,7 @@
       "stats": {
         "places": "[RU] {{n}} places",
         "events": "[RU] {{n}} events",
+        "eventsUpcoming": "{{n}} предстоящих событий",
         "cities": "[RU] {{n}} cities",
         "inView": "[RU] {{n}} places in view"
       },

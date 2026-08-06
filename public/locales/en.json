@@ -1726,6 +1726,7 @@
       "stats": {
         "places": "{{n}} places",
         "events": "{{n}} events",
+        "eventsUpcoming": "{{n}} upcoming events",
         "cities": "{{n}} cities",
         "inView": "{{n}} places in view"
       },

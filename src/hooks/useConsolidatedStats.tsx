@@ -7,7 +7,10 @@ export interface ConsolidatedStats {
   profiles: number | null;
   cities: number | null;
   countries: number | null;
+  /** Full archive — 99% of it is in the past. Never present this as "what's on". */
   events: number | null;
+  /** start_date >= now(). This is the one to show a reader. */
+  events_upcoming: number | null;
   posts: number | null;
   personalities: number | null;
   groups: number | null;
@@ -24,6 +27,7 @@ const NULL_STATS: ConsolidatedStats = {
   cities: null,
   countries: null,
   events: null,
+  events_upcoming: null,
   posts: null,
   personalities: null,
   groups: null,
@@ -34,7 +38,7 @@ const NULL_STATS: ConsolidatedStats = {
 };
 
 const STAT_KEYS: (keyof ConsolidatedStats)[] = [
-  'venues', 'profiles', 'cities', 'countries', 'events', 'posts',
+  'venues', 'profiles', 'cities', 'countries', 'events', 'events_upcoming', 'posts',
   'personalities', 'groups', 'tags', 'marketplace', 'news', 'cms',
 ];
 

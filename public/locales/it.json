@@ -1651,6 +1651,7 @@
       "stats": {
         "places": "[IT] {{n}} places",
         "events": "[IT] {{n}} events",
+        "eventsUpcoming": "{{n}} eventi in arrivo",
         "cities": "[IT] {{n}} cities",
         "inView": "[IT] {{n}} places in view"
       },
