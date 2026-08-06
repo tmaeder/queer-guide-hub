@@ -3,6 +3,8 @@ import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { EventsHeroSpotlight } from '@/components/events/EventsHeroSpotlight';
 import { SmartEmptyState } from '@/components/events/SmartEmptyState';
 import { PresetChips } from '@/components/events/PresetChips';
+import { CoverageNote } from '@/components/intent/CoverageNote';
+import { useEventWindowCounts } from '@/hooks/useEventWindowCounts';
 import { useEvents } from '@/hooks/useEvents';
 import { useEventFilters } from '@/hooks/useEventFilters';
 import { useMeta } from '@/hooks/useMeta';
@@ -62,6 +64,12 @@ const Events = () => {
 
   const f = useEventFilters(fetchEvents, events);
   const { PAGE_SIZE } = f;
+
+  // Scoped to the city filter when exactly one is selected, so the chip counts
+  // describe the set the reader is actually looking at rather than the globe.
+  const { data: windowCounts } = useEventWindowCounts(
+    f.cities.length === 1 ? f.cities[0] : null,
+  );
 
   const [_selectedEvent, setSelectedEvent] = useState<Event | null>(null);
 
@@ -124,8 +132,27 @@ const Events = () => {
             onToggleFilters={() => f.setShowFilters(!f.showFilters)}
           />
 
-          {/* Smart entry chips — preset filter combos */}
-          <PresetChips active={f.activePreset} onSelect={f.handlePresetSelect} />
+          {/* Smart entry chips — preset filter combos.
+              Counts are passed so a window that would return nothing is
+              disabled and labelled rather than left as a clickable promise;
+              see the note in useEventWindowCounts. */}
+          <PresetChips
+            active={f.activePreset}
+            onSelect={f.handlePresetSelect}
+            counts={windowCounts}
+          />
+
+          {typeof windowCounts?.upcoming === 'number' ? (
+            <CoverageNote>
+              {windowCounts.upcoming === 0
+                ? 'We have no upcoming events listed. That means we have no record — not that nothing is happening.'
+                : `${windowCounts.upcoming.toLocaleString()} upcoming events listed${
+                    typeof windowCounts['next-7-days'] === 'number'
+                      ? `, ${windowCounts['next-7-days']} of them in the next 7 days`
+                      : ''
+                  }. Listings come from organisers and submissions, so a quiet week here is a gap in our coverage rather than a quiet scene.`}
+            </CoverageNote>
+          ) : null}
 
           {/* Extended Filters */}
           {f.showFilters && (

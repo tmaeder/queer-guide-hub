@@ -1,6 +1,6 @@
 {
   "project": "tsconfig.app.json",
-  "total": 1318,
+  "total": 1270,
   "files": {
     "src/assets/intimate/pictograms.tsx": {
       "TS2503": 2
@@ -461,9 +461,6 @@
     "src/components/personalization/SimilarCities.tsx": {
       "TS2339": 2,
       "TS6133": 2
-    },
-    "src/components/places/PlacesCard.tsx": {
-      "TS2339": 23
     },
     "src/components/posts/CreatePostDialog.tsx": {
       "TS2345": 1
@@ -1234,13 +1231,6 @@
     },
     "src/pages/Personalities.tsx": {
       "TS2322": 1
-    },
-    "src/pages/Places.tsx": {
-      "TS2322": 21,
-      "TS2339": 1,
-      "TS2345": 1,
-      "TS2353": 1,
-      "TS6133": 1
     },
     "src/pages/ProfessionDetail.tsx": {
       "TS2345": 2,
