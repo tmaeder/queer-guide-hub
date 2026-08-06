@@ -94,6 +94,37 @@ for (const [version, group] of byVersion) {
   }
 }
 
+// 3) Out-of-order versions. `db push` walks migrations in version order and
+//    skips anything at or below what remote history already holds — silently,
+//    exit 0. So a new migration stamped with today's date loses to an existing
+//    future-dated one and never applies. Measured 2026-08-06: 43 migrations in
+//    this repo are dated ahead of wall-clock and remote max is 20260815110000,
+//    nine days out, so every naturally-timestamped migration written this week
+//    would have been dropped without a word. Compare against the highest
+//    PRE-EXISTING version (remote history == base ref once CI has pushed main).
+if (base !== null) {
+  const baseVersions = files
+    .filter((f) => !isNew(f))
+    .map((f) => f.match(VERSION_RE)?.[1])
+    .filter(Boolean)
+  const maxBase = baseVersions.length > 0 ? baseVersions.reduce((a, b) => (a > b ? a : b)) : null
+
+  if (maxBase) {
+    for (const f of files) {
+      const v = f.match(VERSION_RE)?.[1]
+      if (!v || !isNew(f)) continue
+      if (v <= maxBase) {
+        errors.push(
+          `version ${v} (${f}) is not above the highest existing version ${maxBase}.\n` +
+            `    → \`supabase db push\` applies migrations in version order and skips ` +
+            `anything remote history already passed, with exit 0 and no message. ` +
+            `Rename this file to a version greater than ${maxBase}.`,
+        )
+      }
+    }
+  }
+}
+
 if (warnings.length > 0) {
   console.log(`⚠ ${warnings.length} pre-existing duplicate-version group(s):`)
   for (const w of warnings) console.log(`  - ${w}`)
