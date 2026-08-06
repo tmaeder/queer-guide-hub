@@ -290,6 +290,28 @@ sweep_built_assets() {
 		return 0
 	fi
 
+	# This sweep asks "does prod serve every file MY dist produced?" — which is
+	# only a meaningful question when my dist IS what prod was built from. In
+	# CI it always is (the build and the deploy are the same job). Run locally
+	# against a checkout whose dist/ is a few days old and every chunk whose
+	# hash has since moved reports "ORIGIN IS BROKEN", because prod correctly
+	# does not serve a build it never received. Measured 2026-08-06: a dist
+	# from two days earlier produced 12+ such lines (AdminShell, AdminMaps,
+	# AdminPipelines, …) against a completely healthy prod.
+	#
+	# The entry chunk is the reliable tell: vite.config.ts derives __BUILD_ID__
+	# from Date.now() when CF_PAGES_COMMIT_SHA is unset, so its hash rotates on
+	# every single build. If ours is not the one the live shell references, the
+	# two builds are different and the sweep can only produce noise.
+	local dist_entry live_entry
+	dist_entry=$(cd "$dist" && find assets -name 'index-*.js' -type f 2>/dev/null | sed 's|.*/||' | sort | head -1)
+	live_entry=$(printf '%s' "$home" | grep -oE 'index-[A-Za-z0-9_-]+\.js' | sort -u | head -1)
+	if [ -n "$dist_entry" ] && [ -n "$live_entry" ] && [ "$dist_entry" != "$live_entry" ]; then
+		echo "  · local $dist is not the deployed build ($dist_entry vs live $live_entry)"
+		echo "    — skipping the built-asset sweep; rebuild to make it meaningful."
+		return 0
+	fi
+
 	local list count suspects
 	list=$(cd "$dist" && find assets -type f \( -name '*.js' -o -name '*.css' \) | sed 's|^|/|' | sort)
 	count=$(printf '%s\n' "$list" | grep -c . || true)
