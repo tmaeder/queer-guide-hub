@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { qk } from '@/lib/queryKeys';
 
 export interface DestinationTarget {
   type: 'city' | 'country' | 'village';
@@ -52,15 +53,10 @@ export function useTripsCoveringDestination(target: DestinationTarget | null) {
   const enabled =
     !!user &&
     !!target &&
-    Boolean(
-      target.cityId ||
-        target.countryId ||
-        target.parentCityId ||
-        target.villageId,
-    );
+    Boolean(target.cityId || target.countryId || target.parentCityId || target.villageId);
 
   return useQuery<TripCovering | null>({
-    queryKey: ['trips-covering-destination', user?.id, target],
+    queryKey: qk.trip.coveringDestination(user?.id, target),
     enabled,
     staleTime: 5 * 60 * 1000,
     queryFn: async () => {
@@ -87,8 +83,7 @@ export function useTripsCoveringDestination(target: DestinationTarget | null) {
 
       // Prefer an upcoming or active trip; fall back to the first match.
       const today = new Date().toISOString().slice(0, 10);
-      const upcoming =
-        matching.find((t) => !t.end_date || t.end_date >= today) ?? matching[0];
+      const upcoming = matching.find((t) => !t.end_date || t.end_date >= today) ?? matching[0];
 
       // Count saved trip_places for this trip whose city_id (or country_id) lines up.
       const cityToMatch = target.cityId ?? target.parentCityId ?? null;

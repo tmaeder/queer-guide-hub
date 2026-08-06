@@ -200,6 +200,15 @@ export const STATIC_ROUTE_META: Record<string, RouteMeta> = {
     description:
       'Where to go out tonight: queer bars, clubs, cafes and saunas, plus what is actually on, wherever you are.',
   },
+  // /people is linked from the mobile sheet and the search popover, and is now
+  // the sixth intent, but had NO entry here — so resolveMeta fell through to
+  // DEFAULT_META, whose title is byte-identical to the homepage's, and
+  // sitemap-static.xml (Object.keys(STATIC_ROUTE_META)) omitted it entirely.
+  '/people': {
+    title: 'Meet LGBTQ+ People — Friends, Dates and Travel',
+    description:
+      'Find queer friends, dates, travel buddies and people nearby, plus the groups and community feeds where they already gather.',
+  },
   '/rights': {
     title: 'LGBTQ+ Rights and Safety by Country',
     description:

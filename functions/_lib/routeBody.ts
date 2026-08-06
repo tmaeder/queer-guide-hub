@@ -178,6 +178,20 @@ export const STATIC_ROUTE_BODY: Record<string, RouteBody> = {
     ],
   },
 
+  '/people': {
+    h1: 'Meet people',
+    paragraphs: [
+      'Find queer friends, dates, travel buddies and people nearby — and the groups and community feeds where they already gather.',
+      'Everyone here chose to be listed. Profiles are shown to signed-in members only, dating is a separate opt-in deck behind its own age gate, and nothing about you is shared with anyone you have not matched with.',
+    ],
+    links: [
+      { href: '/community/groups', label: 'Groups to join' },
+      { href: '/community/feed', label: 'What the community is posting' },
+      { href: '/community/members', label: 'Browse members' },
+      { href: '/going-out', label: 'Where people are going tonight' },
+    ],
+  },
+
   '/support': {
     h1: 'Find LGBTQ+ support near you',
     paragraphs: [

@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { qk } from '@/lib/queryKeys';
 
 // ── Types ──────────────────────────────────────────────────────
 
@@ -55,7 +56,7 @@ export function useTripMessages(tripId: string | undefined) {
   const { user } = useAuth();
 
   const query = useQuery({
-    queryKey: ['trip-messages', tripId],
+    queryKey: qk.trip.facet(tripId, 'messages'),
     queryFn: async (): Promise<TripMessage[]> => {
       const { data, error } = await supabase
         .from('trip_messages')
@@ -70,13 +71,7 @@ export function useTripMessages(tripId: string | undefined) {
   });
 
   const sendMessage = useMutation({
-    mutationFn: async ({
-      content,
-      replyTo,
-    }: {
-      content: string;
-      replyTo?: string;
-    }) => {
+    mutationFn: async ({ content, replyTo }: { content: string; replyTo?: string }) => {
       const { data, error } = await supabase
         .from('trip_messages')
         .insert({
@@ -91,20 +86,17 @@ export function useTripMessages(tripId: string | undefined) {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['trip-messages', tripId] });
+      queryClient.invalidateQueries({ queryKey: qk.trip.facet(tripId, 'messages') });
     },
   });
 
   const deleteMessage = useMutation({
     mutationFn: async (messageId: string) => {
-      const { error } = await supabase
-        .from('trip_messages')
-        .delete()
-        .eq('id', messageId);
+      const { error } = await supabase.from('trip_messages').delete().eq('id', messageId);
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['trip-messages', tripId] });
+      queryClient.invalidateQueries({ queryKey: qk.trip.facet(tripId, 'messages') });
     },
   });
 
@@ -118,7 +110,7 @@ export function useTripNotes(tripId: string | undefined) {
   const { user } = useAuth();
 
   const query = useQuery({
-    queryKey: ['trip-notes', tripId],
+    queryKey: qk.trip.facet(tripId, 'notes'),
     queryFn: async (): Promise<TripNote[]> => {
       const { data, error } = await supabase
         .from('trip_notes')
@@ -134,11 +126,7 @@ export function useTripNotes(tripId: string | undefined) {
   });
 
   const createNote = useMutation({
-    mutationFn: async (input: {
-      title?: string;
-      content?: string;
-      category?: string;
-    }) => {
+    mutationFn: async (input: { title?: string; content?: string; category?: string }) => {
       const { data, error } = await supabase
         .from('trip_notes')
         .insert({
@@ -154,7 +142,7 @@ export function useTripNotes(tripId: string | undefined) {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['trip-notes', tripId] });
+      queryClient.invalidateQueries({ queryKey: qk.trip.facet(tripId, 'notes') });
     },
   });
 
@@ -178,20 +166,17 @@ export function useTripNotes(tripId: string | undefined) {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['trip-notes', tripId] });
+      queryClient.invalidateQueries({ queryKey: qk.trip.facet(tripId, 'notes') });
     },
   });
 
   const deleteNote = useMutation({
     mutationFn: async (noteId: string) => {
-      const { error } = await supabase
-        .from('trip_notes')
-        .delete()
-        .eq('id', noteId);
+      const { error } = await supabase.from('trip_notes').delete().eq('id', noteId);
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['trip-notes', tripId] });
+      queryClient.invalidateQueries({ queryKey: qk.trip.facet(tripId, 'notes') });
     },
   });
 
@@ -204,7 +189,7 @@ export function useTripNotes(tripId: string | undefined) {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['trip-notes', tripId] });
+      queryClient.invalidateQueries({ queryKey: qk.trip.facet(tripId, 'notes') });
     },
   });
 
@@ -218,7 +203,7 @@ export function useTripPolls(tripId: string | undefined) {
   const { user } = useAuth();
 
   const query = useQuery({
-    queryKey: ['trip-polls', tripId],
+    queryKey: qk.trip.facet(tripId, 'polls'),
     queryFn: async (): Promise<TripPoll[]> => {
       const { data, error } = await supabase
         .from('trip_polls')
@@ -260,18 +245,12 @@ export function useTripPolls(tripId: string | undefined) {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['trip-polls', tripId] });
+      queryClient.invalidateQueries({ queryKey: qk.trip.facet(tripId, 'polls') });
     },
   });
 
   const vote = useMutation({
-    mutationFn: async ({
-      pollId,
-      optionId,
-    }: {
-      pollId: string;
-      optionId: string;
-    }) => {
+    mutationFn: async ({ pollId, optionId }: { pollId: string; optionId: string }) => {
       // Fetch current poll options
       const { data: poll, error: fetchErr } = await supabase
         .from('trip_polls')
@@ -286,9 +265,7 @@ export function useTripPolls(tripId: string | undefined) {
           const hasVoted = opt.votes.includes(user!.id);
           return {
             ...opt,
-            votes: hasVoted
-              ? opt.votes.filter((v) => v !== user!.id)
-              : [...opt.votes, user!.id],
+            votes: hasVoted ? opt.votes.filter((v) => v !== user!.id) : [...opt.votes, user!.id],
           };
         }
         // If not multiple choice, remove user's vote from other options
@@ -298,14 +275,11 @@ export function useTripPolls(tripId: string | undefined) {
         return opt;
       });
 
-      const { error } = await supabase
-        .from('trip_polls')
-        .update({ options })
-        .eq('id', pollId);
+      const { error } = await supabase.from('trip_polls').update({ options }).eq('id', pollId);
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['trip-polls', tripId] });
+      queryClient.invalidateQueries({ queryKey: qk.trip.facet(tripId, 'polls') });
     },
   });
 
@@ -318,7 +292,7 @@ export function useTripPolls(tripId: string | undefined) {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['trip-polls', tripId] });
+      queryClient.invalidateQueries({ queryKey: qk.trip.facet(tripId, 'polls') });
     },
   });
 
@@ -347,27 +321,27 @@ export function useTripRealtime(tripId: string | undefined) {
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'trip_places', filter: `trip_id=eq.${tripId}` },
-        () => queryClient.invalidateQueries({ queryKey: ['trip', tripId] }),
+        () => queryClient.invalidateQueries({ queryKey: qk.trip.detail(tripId) }),
       )
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'trip_days', filter: `trip_id=eq.${tripId}` },
-        () => queryClient.invalidateQueries({ queryKey: ['trip', tripId] }),
+        () => queryClient.invalidateQueries({ queryKey: qk.trip.detail(tripId) }),
       )
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'trip_notes', filter: `trip_id=eq.${tripId}` },
-        () => queryClient.invalidateQueries({ queryKey: ['trip-notes', tripId] }),
+        () => queryClient.invalidateQueries({ queryKey: qk.trip.facet(tripId, 'notes') }),
       )
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'trip_messages', filter: `trip_id=eq.${tripId}` },
-        () => queryClient.invalidateQueries({ queryKey: ['trip-messages', tripId] }),
+        () => queryClient.invalidateQueries({ queryKey: qk.trip.facet(tripId, 'messages') }),
       )
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'trip_polls', filter: `trip_id=eq.${tripId}` },
-        () => queryClient.invalidateQueries({ queryKey: ['trip-polls', tripId] }),
+        () => queryClient.invalidateQueries({ queryKey: qk.trip.facet(tripId, 'polls') }),
       )
       .subscribe();
 
@@ -394,8 +368,7 @@ export function useTripRealtime(tripId: string | undefined) {
         if (status === 'SUBSCRIBED') {
           await presenceChannel.track({
             userId: user.id,
-            displayName:
-              user.user_metadata?.display_name || user.email || 'Anonymous',
+            displayName: user.user_metadata?.display_name || user.email || 'Anonymous',
           });
         }
       });
@@ -416,8 +389,7 @@ export function useTripRealtime(tripId: string | undefined) {
       event: 'typing',
       payload: {
         userId: user.id,
-        displayName:
-          user.user_metadata?.display_name || user.email || 'Someone',
+        displayName: user.user_metadata?.display_name || user.email || 'Someone',
       },
     });
   }, [user]);

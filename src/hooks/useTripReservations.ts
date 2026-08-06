@@ -14,6 +14,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import type { Tables, TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
 import { useAuth } from '@/hooks/useAuth';
+import { qk } from '@/lib/queryKeys';
 
 export interface Reservation {
   id: string;
@@ -111,7 +112,7 @@ const toUpdateRow = (input: Omit<UpdateReservationInput, 'id'>): TablesUpdate<'r
 
 export function useTripReservations(tripId: string | undefined) {
   return useQuery({
-    queryKey: ['trip-reservations', tripId],
+    queryKey: qk.trip.facet(tripId, 'reservations'),
     queryFn: async () => {
       const { data, error } = await supabase
         .from('reservations')
@@ -132,7 +133,7 @@ export function useReservationMutations(tripId: string) {
   const queryClient = useQueryClient();
   const { user } = useAuth();
   const invalidate = () => {
-    void queryClient.invalidateQueries({ queryKey: ['trip-reservations', tripId] });
+    void queryClient.invalidateQueries({ queryKey: qk.trip.facet(tripId, 'reservations') });
     void queryClient.invalidateQueries({ queryKey: ['reservations', user?.id] });
   };
 

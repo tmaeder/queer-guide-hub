@@ -33,9 +33,21 @@ import {
 } from 'lucide-react';
 
 /**
- * Single source of truth for site navigation. Both the header and the search
- * "discovery hub" (SearchPopoverEmpty) read from here so the menu and search
- * never drift apart.
+ * Single source of truth for site navigation.
+ *
+ * Two layers, and the order between them is the contract:
+ *  - INTENT_NAV is the model the user is TAUGHT — the job they came to do. It
+ *    leads Header, MobileNavSheet, SearchPopoverEmpty, IntentRail and Footer.
+ *  - DESTINATIONS is the additive "browse everything" layer BENEATH it, so
+ *    nothing becomes unreachable. It is never the first thing a surface shows.
+ *
+ * This comment used to claim the header and the search discovery hub shared a
+ * source "so the menu and search never drift apart". They did not: after the
+ * Intent Router landed, the header rendered INTENT_NAV while SearchPopoverEmpty
+ * — the highest-frequency discovery surface on the site — still rendered only
+ * DESTINATIONS, i.e. only the content-type model the router replaced. The
+ * defect class is "a surface renders the browse layer alone", and it is now
+ * asserted at source level in src/config/__tests__/navigation.test.ts.
  */
 
 export type NavCluster = 'places' | 'community' | 'shop' | 'support';
@@ -63,23 +75,75 @@ export const NAV_CLUSTERS: { id: NavCluster; labelKey: string }[] = [
  * this list, never a replacement for it — nothing here becomes unreachable.
  */
 export const DESTINATIONS: NavDestination[] = [
-  { to: '/venues', icon: MapPin, labelKey: 'header.nav.venues', cluster: 'places', searchType: 'venue' },
+  {
+    to: '/venues',
+    icon: MapPin,
+    labelKey: 'header.nav.venues',
+    cluster: 'places',
+    searchType: 'venue',
+  },
   { to: '/people', icon: UserCheck, labelKey: 'header.nav.people', cluster: 'community' },
-  { to: '/events', icon: Calendar, labelKey: 'header.nav.events', cluster: 'community', searchType: 'event' },
+  {
+    to: '/events',
+    icon: Calendar,
+    labelKey: 'header.nav.events',
+    cluster: 'community',
+    searchType: 'event',
+  },
   // /places is retired (redirects to the Travelling intent); /cities is the
   // real browse page for this job.
   { to: '/cities', icon: Globe, labelKey: 'header.nav.cities', cluster: 'places' },
-  { to: '/marketplace', icon: Store, labelKey: 'header.nav.marketplace', cluster: 'shop', searchType: 'marketplace' },
-  { to: '/guides', icon: BookOpen, labelKey: 'header.nav.guides', cluster: 'shop', searchType: 'guide' },
-  { to: '/news', icon: Newspaper, labelKey: 'header.nav.news', cluster: 'shop', searchType: 'news' },
+  {
+    to: '/marketplace',
+    icon: Store,
+    labelKey: 'header.nav.marketplace',
+    cluster: 'shop',
+    searchType: 'marketplace',
+  },
+  {
+    to: '/guides',
+    icon: BookOpen,
+    labelKey: 'header.nav.guides',
+    cluster: 'shop',
+    searchType: 'guide',
+  },
+  {
+    to: '/news',
+    icon: Newspaper,
+    labelKey: 'header.nav.news',
+    cluster: 'shop',
+    searchType: 'news',
+  },
   { to: '/map', icon: Map, labelKey: 'header.nav.map', cluster: 'places' },
   { to: '/community/feed', icon: Rss, labelKey: 'header.nav.feed', cluster: 'community' },
-  { to: '/community/groups', icon: UsersRound, labelKey: 'header.nav.groups', cluster: 'community' },
-  { to: '/community/members', icon: UserCheck, labelKey: 'header.nav.members', cluster: 'community' },
+  {
+    to: '/community/groups',
+    icon: UsersRound,
+    labelKey: 'header.nav.groups',
+    cluster: 'community',
+  },
+  {
+    to: '/community/members',
+    icon: UserCheck,
+    labelKey: 'header.nav.members',
+    cluster: 'community',
+  },
   { to: '/tags', icon: Tags, labelKey: 'header.nav.tags', cluster: 'shop' },
   { to: '/travel', icon: Plane, labelKey: 'header.nav.travel', cluster: 'places' },
-  { to: '/personalities', icon: Users, labelKey: 'header.nav.personalities', cluster: 'community', searchType: 'personality' },
-  { to: '/history', icon: History, labelKey: 'header.nav.history', cluster: 'community', searchType: 'milestone' },
+  {
+    to: '/personalities',
+    icon: Users,
+    labelKey: 'header.nav.personalities',
+    cluster: 'community',
+    searchType: 'personality',
+  },
+  {
+    to: '/history',
+    icon: History,
+    labelKey: 'header.nav.history',
+    cluster: 'community',
+    searchType: 'milestone',
+  },
   { to: '/hotels', icon: Building, labelKey: 'header.nav.hotels', cluster: 'places' },
   { to: '/help', icon: LifeBuoy, labelKey: 'header.nav.help', cluster: 'support' },
 ];
@@ -108,7 +172,7 @@ export const DESTINATIONS: NavDestination[] = [
  *    the legacy `shop/*` redirect, rather than new competing paths.
  * Both are asserted in src/config/__tests__/navigation.test.ts.
  */
-export type IntentId = 'going-out' | 'travelling' | 'rights' | 'support' | 'shop';
+export type IntentId = 'going-out' | 'travelling' | 'meet' | 'rights' | 'support' | 'shop';
 
 export interface IntentDestination {
   id: IntentId;
@@ -143,7 +207,34 @@ export const INTENT_NAV: IntentDestination[] = [
     fallback: 'Travelling',
     subtitleKey: 'header.intents.travelling.subtitle',
     subtitleFallback: 'Is it safe, where to stay, what to do',
-    activePrefixes: ['/travel', '/places', '/city', '/country', '/cities', '/hotels', '/villages', '/trips'],
+    activePrefixes: [
+      '/travel',
+      '/places',
+      '/city',
+      '/country',
+      '/cities',
+      '/hotels',
+      '/villages',
+      '/trips',
+    ],
+  },
+  {
+    // The one job the Intent Router shipped without. /people, /community and
+    // /groups are roughly half the product and had NO desktop nav entry at
+    // all — reachable only from the mobile sheet's browse grid. Rebuilt in
+    // place at /people (as /travel was) rather than minting a competing path.
+    // Deliberately NOT a merge of /people and /community: both are already
+    // thin tab shells over two genuinely different jobs — find a person vs
+    // join a group — and folding them yields a seven-tab row. /people is the
+    // intent's home and links across to the community surfaces.
+    id: 'meet',
+    to: '/people',
+    icon: UsersRound,
+    labelKey: 'header.intents.meet.label',
+    fallback: 'Meet people',
+    subtitleKey: 'header.intents.meet.subtitle',
+    subtitleFallback: 'Friends, dates, travel buddies and groups',
+    activePrefixes: ['/people', '/community', '/groups', '/friends', '/dating'],
   },
   {
     id: 'rights',

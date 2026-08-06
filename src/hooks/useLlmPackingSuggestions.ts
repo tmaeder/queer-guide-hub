@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTrip } from '@/hooks/useTrips';
 import { useTripWeatherSignals, type WeatherSignal } from '@/hooks/useDayWeather';
+import { qk } from '@/lib/queryKeys';
 
 /** Compact one-line weather summary for the LLM prompt (and cache hash). */
 export function summarizeWeatherSignals(byDate: Record<string, WeatherSignal>): string | null {
@@ -47,15 +48,14 @@ export function useLlmPackingSuggestions(tripId: string | undefined) {
     mutationFn: async (): Promise<LlmSuggestionsResult> => {
       if (!tripId) throw new Error('tripId required');
       const weather = summarizeWeatherSignals(weatherByDate);
-      const { data, error } = await supabase.functions.invoke(
-        'packing-suggestions-llm',
-        { body: { trip_id: tripId, ...(weather ? { weather } : {}) } },
-      );
+      const { data, error } = await supabase.functions.invoke('packing-suggestions-llm', {
+        body: { trip_id: tripId, ...(weather ? { weather } : {}) },
+      });
       if (error) throw error;
       return data as LlmSuggestionsResult;
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['trip-packing-suggestions', tripId] });
+      qc.invalidateQueries({ queryKey: qk.trip.facet(tripId, 'packing-suggestions') });
     },
   });
 }

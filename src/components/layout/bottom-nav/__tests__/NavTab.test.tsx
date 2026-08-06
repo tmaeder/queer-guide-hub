@@ -45,13 +45,13 @@ describe('NavTab', () => {
     expect(onTap).toHaveBeenCalledTimes(1);
   });
 
-  it('intercepts the tap when auth-gated (prevents navigation, runs the gate)', () => {
-    const onGate = vi.fn();
+  it('intercepts the tap when asked to (prevents navigation, runs the handler)', () => {
+    const onIntercept = vi.fn();
     const onTap = vi.fn();
-    renderTab({ onGate, onTap });
+    renderTab({ onIntercept, onTap });
     const notCancelled = fireEvent.click(screen.getByText('Messages'));
     expect(onTap).toHaveBeenCalledTimes(1);
-    expect(onGate).toHaveBeenCalledTimes(1);
+    expect(onIntercept).toHaveBeenCalledTimes(1);
     // preventDefault() was called → the click event is reported cancelled.
     expect(notCancelled).toBe(false);
   });

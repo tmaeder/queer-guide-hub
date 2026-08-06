@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { qk } from '@/lib/queryKeys';
 
 export interface TripMessage {
   id: string;
@@ -14,7 +15,7 @@ export interface TripMessage {
   sender?: { display_name: string | null; avatar_url: string | null } | null;
 }
 
-const KEY = (tripId: string) => ['trip-messages', tripId] as const;
+const KEY = (tripId: string) => qk.trip.facet(tripId, 'messages');
 
 /**
  * Subscribes to a trip's chat. Pulls the last 200 messages (oldest first),
@@ -30,7 +31,12 @@ export function useTripChat(tripId: string | undefined) {
       .channel(`trip_messages:${tripId}`)
       .on(
         'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'trip_messages', filter: `trip_id=eq.${tripId}` },
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'trip_messages',
+          filter: `trip_id=eq.${tripId}`,
+        },
         (payload) => {
           queryClient.setQueryData<TripMessage[]>(KEY(tripId), (prev) => {
             const next = prev ? [...prev] : [];

@@ -1743,6 +1743,10 @@
         "label": "Поездки",
         "subtitle": "Безопасно ли, где жить, что делать"
       },
+      "meet": {
+        "label": "Знакомства",
+        "subtitle": "Друзья, свидания, попутчики и сообщества"
+      },
       "rights": {
         "label": "Права",
         "subtitle": "Законы и безопасность ЛГБТК+ по странам"
@@ -3125,7 +3129,8 @@
     "wishlists": "Списки желаний",
     "tags": "Теги",
     "organizations": "[RU] Organizations",
-    "guides": "[RU] Guides"
+    "guides": "[RU] Guides",
+    "people": "Знакомства"
   },
   "chat": {
     "react": "Реакция",

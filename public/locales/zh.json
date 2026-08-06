@@ -1711,6 +1711,10 @@
         "label": "旅行",
         "subtitle": "是否安全、住哪里、做什么"
       },
+      "meet": {
+        "label": "认识朋友",
+        "subtitle": "朋友、约会、旅伴和社群"
+      },
       "rights": {
         "label": "权利",
         "subtitle": "各国 LGBTQ+ 法律与安全"
@@ -3089,7 +3093,8 @@
     "wishlists": "心愿单",
     "tags": "标签",
     "organizations": "[ZH] Organizations",
-    "guides": "[ZH] Guides"
+    "guides": "[ZH] Guides",
+    "people": "认识朋友"
   },
   "chat": {
     "react": "回应",

@@ -12,6 +12,7 @@ import {
 } from '@/utils/settleUp';
 import { useFxRates } from '@/hooks/useFxRates';
 import type { TripMember } from '@/hooks/useTrips';
+import { qk } from '@/lib/queryKeys';
 
 interface Props {
   tripId: string;
@@ -38,15 +39,13 @@ export function CostSplitSummary({ tripId, members, defaultCurrency }: Props) {
   const { t } = useTranslation();
 
   const { data: items, isLoading } = useQuery({
-    queryKey: ['trip-budget-items', tripId],
+    queryKey: qk.trip.facet(tripId, 'budget-items'),
     enabled: !!tripId,
     staleTime: 60 * 1000,
     queryFn: () =>
-      listFromWhere<BudgetItemRow>(
-        'trip_budget_items',
-        'paid_by, split_among, amount, currency',
-        [{ col: 'trip_id', val: tripId }],
-      ),
+      listFromWhere<BudgetItemRow>('trip_budget_items', 'paid_by, split_among, amount, currency', [
+        { col: 'trip_id', val: tripId },
+      ]),
   });
 
   const { data: fxRates } = useFxRates();
@@ -65,12 +64,7 @@ export function CostSplitSummary({ tripId, members, defaultCurrency }: Props) {
     const expenses: ExpenseItem[] = [];
     const rates = fxRates ?? new Map<string, number>();
     for (const i of items ?? []) {
-      const converted = convertAmount(
-        Number(i.amount),
-        i.currency,
-        defaultCurrency,
-        rates,
-      );
+      const converted = convertAmount(Number(i.amount), i.currency, defaultCurrency, rates);
       if (converted == null) {
         skipped += 1;
         continue;
@@ -114,9 +108,7 @@ export function CostSplitSummary({ tripId, members, defaultCurrency }: Props) {
     <div className="mt-8">
       <div className="flex items-center gap-2 mb-4">
         <Scale size={18} className="text-primary" />
-        <p className="text-base font-bold">
-          {t('trips.split.title', 'Settle up')}
-        </p>
+        <p className="text-base font-bold">{t('trips.split.title', 'Settle up')}</p>
       </div>
 
       {/* Per-member balances */}

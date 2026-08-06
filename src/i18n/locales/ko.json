@@ -1711,6 +1711,10 @@
         "label": "여행",
         "subtitle": "안전한지, 어디에 묵을지, 무엇을 할지"
       },
+      "meet": {
+        "label": "사람 만나기",
+        "subtitle": "친구, 데이트, 여행 동행, 그룹"
+      },
       "rights": {
         "label": "권리",
         "subtitle": "국가별 LGBTQ+ 법과 안전"
@@ -3089,7 +3093,8 @@
     "wishlists": "위시리스트",
     "tags": "태그",
     "organizations": "[KO] Organizations",
-    "guides": "[KO] Guides"
+    "guides": "[KO] Guides",
+    "people": "사람 만나기"
   },
   "chat": {
     "react": "반응",

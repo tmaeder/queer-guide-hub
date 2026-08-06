@@ -16,6 +16,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { qk } from '@/lib/queryKeys';
 
 export type DocType =
   | 'passport'
@@ -45,7 +46,7 @@ export interface TripDocument {
 }
 
 const KEY = (userId: string | undefined, scope: 'personal' | 'trip', tripId?: string) =>
-  ['trip-documents', userId, scope, tripId ?? null] as const;
+  qk.trip.documentsScoped(userId, scope, tripId);
 
 /**
  * `tripId` semantics:
@@ -132,7 +133,7 @@ export function useUploadDocument() {
       return data as TripDocument;
     },
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['trip-documents', user?.id] });
+      void queryClient.invalidateQueries({ queryKey: qk.trip.documentsFor(user?.id) });
     },
   });
 }
@@ -157,7 +158,7 @@ export function useDeleteDocument() {
       if (error) throw error;
     },
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['trip-documents', user?.id] });
+      void queryClient.invalidateQueries({ queryKey: qk.trip.documentsFor(user?.id) });
     },
   });
 }

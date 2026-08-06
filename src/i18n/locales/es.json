@@ -1711,6 +1711,10 @@
         "label": "Viajar",
         "subtitle": "Si es seguro, dónde alojarse, qué hacer"
       },
+      "meet": {
+        "label": "Conocer gente",
+        "subtitle": "Amistades, citas, compañeros de viaje y grupos"
+      },
       "rights": {
         "label": "Derechos",
         "subtitle": "Leyes y seguridad LGBTQ+, país por país"
@@ -3091,7 +3095,8 @@
     "wishlists": "Listas de deseos",
     "tags": "Etiquetas",
     "organizations": "[ES] Organizations",
-    "guides": "[ES] Guides"
+    "guides": "[ES] Guides",
+    "people": "Conocer gente"
   },
   "chat": {
     "react": "Reaccionar",

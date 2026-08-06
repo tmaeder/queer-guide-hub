@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useFxRates } from '@/hooks/useFxRates';
 import { convertAmount } from '@/utils/settleUp';
+import { qk } from '@/lib/queryKeys';
 
 export interface BudgetItem {
   id: string;
@@ -37,7 +38,9 @@ export interface PersonBalance {
 }
 
 type CreateBudgetInput = Omit<BudgetItem, 'id' | 'created_at'>;
-type UpdateBudgetInput = Partial<Omit<BudgetItem, 'id' | 'created_at' | 'trip_id'>> & { id: string };
+type UpdateBudgetInput = Partial<Omit<BudgetItem, 'id' | 'created_at' | 'trip_id'>> & {
+  id: string;
+};
 
 function computeSummary(
   items: BudgetItem[],
@@ -77,7 +80,8 @@ function computeSummary(
     const perPerson = Number(item.amount) / splitCount;
 
     // Payer is owed by others
-    netBalance[cur][item.paid_by] = (netBalance[cur][item.paid_by] || 0) + Number(item.amount) - perPerson;
+    netBalance[cur][item.paid_by] =
+      (netBalance[cur][item.paid_by] || 0) + Number(item.amount) - perPerson;
 
     // Each person in split owes their share (except payer already handled)
     for (const userId of item.split_among) {
@@ -139,7 +143,7 @@ function computeSummary(
 
 export function useTripBudget(tripId: string | undefined, displayCurrency?: string) {
   const query = useQuery({
-    queryKey: ['trip-budget', tripId],
+    queryKey: qk.trip.facet(tripId, 'budget'),
     queryFn: async () => {
       const { data, error } = await supabase
         .from('trip_budget_items')
@@ -171,7 +175,8 @@ export function useTripBudget(tripId: string | undefined, displayCurrency?: stri
 
 export function useBudgetMutations(tripId: string) {
   const queryClient = useQueryClient();
-  const invalidate = () => queryClient.invalidateQueries({ queryKey: ['trip-budget', tripId] });
+  const invalidate = () =>
+    queryClient.invalidateQueries({ queryKey: qk.trip.facet(tripId, 'budget') });
 
   const addBudgetItem = useMutation({
     mutationFn: async (input: CreateBudgetInput) => {

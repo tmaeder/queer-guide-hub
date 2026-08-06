@@ -1,7 +1,19 @@
 import { Suspense, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { Heart, Users, Plane, MapPin, SlidersHorizontal, type LucideIcon } from 'lucide-react';
+import {
+  Heart,
+  Users,
+  UsersRound,
+  Rss,
+  UserCheck,
+  Plane,
+  MapPin,
+  SlidersHorizontal,
+  type LucideIcon,
+} from 'lucide-react';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
+import { useMeta } from '@/hooks/useMeta';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useProfile } from '@/hooks/useProfile';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -17,6 +29,34 @@ const IntimateDiscovery = lazyRetry(() => import('@/pages/intimate/IntimateDisco
 
 const TABS = ['friends', 'dating', 'travel', 'nearby'] as const;
 type PeopleTab = (typeof TABS)[number];
+
+/** The group half of the "Meet people" intent. Kept as links, not tabs. */
+const COMMUNITY_BRIDGE = [
+  {
+    to: '/community/groups',
+    icon: UsersRound,
+    key: 'header.nav.groups',
+    fallback: 'Groups',
+    blurbKey: 'people.community.groups',
+    blurb: 'Local and interest groups you can join',
+  },
+  {
+    to: '/community/feed',
+    icon: Rss,
+    key: 'header.nav.feed',
+    fallback: 'Feed',
+    blurbKey: 'people.community.feed',
+    blurb: 'What the community is posting',
+  },
+  {
+    to: '/community/members',
+    icon: UserCheck,
+    key: 'header.nav.members',
+    fallback: 'Members',
+    blurbKey: 'people.community.members',
+    blurb: 'Browse everyone who is listed',
+  },
+] as const;
 
 /** Map the soft profile.user_mode to the tab that opens first. */
 function defaultTabFor(userMode: string | null | undefined): PeopleTab {
@@ -48,6 +88,17 @@ export default function People({ tab }: { tab?: PeopleTab }) {
   const tripId = searchParams.get('tripId') ?? undefined;
   const cityId = searchParams.get('cityId') ?? undefined;
   const showNudge = profile != null && !profile.user_mode;
+
+  // /people is now the "Meet people" intent landing page, and it had no
+  // useMeta call at all — so its client-side title was the homepage's, exactly
+  // as its edge STATIC_ROUTE_META entry was missing. Both are fixed together;
+  // fixing only one leaves crawlers and users seeing different titles.
+  useMeta({
+    title: 'Meet people — LGBTQ+ friends, dates and travel buddies',
+    description:
+      'Find queer friends, dates, travel buddies and people nearby, plus the groups and community feeds where they already gather.',
+    canonicalPath: '/people',
+  });
 
   const fallback = defaultTabFor(profile?.user_mode as string | null | undefined);
   const active: PeopleTab = (TABS as readonly string[]).includes(tab ?? '')
@@ -98,7 +149,10 @@ export default function People({ tab }: { tab?: PeopleTab }) {
             onClick={() => setIntentOpen(true)}
             className="mt-4 flex w-full items-center gap-2 rounded-element border border-border px-4 py-2.5 text-left text-sm transition-colors hover:border-foreground"
           >
-            {t('people.intent.nudge', 'Tell us what you’re here for so we can rank people for you.')}
+            {t(
+              'people.intent.nudge',
+              'Tell us what you’re here for so we can rank people for you.',
+            )}
           </button>
         )}
       </div>
@@ -115,7 +169,10 @@ export default function People({ tab }: { tab?: PeopleTab }) {
           {active === 'friends' && (
             <PeopleModeView
               mode="friends"
-              emptyHint={t('people.empty.friends', 'No one to suggest yet. Check back as the community grows.')}
+              emptyHint={t(
+                'people.empty.friends',
+                'No one to suggest yet. Check back as the community grows.',
+              )}
             />
           )}
           {active === 'dating' && <IntimateDiscovery />}
@@ -132,6 +189,35 @@ export default function People({ tab }: { tab?: PeopleTab }) {
           )}
           {active === 'nearby' && <NearbyView />}
         </Suspense>
+      </div>
+
+      {/* The "Meet people" intent covers two jobs: find a PERSON (the tabs
+          above) and join a GROUP. Both are the same intent to a visitor and
+          were never merged into one page, because /community's surfaces are
+          heavy and a seven-tab row serves neither job. This bridge is what
+          makes the intent honest — without it the nav entry would silently
+          drop half of what it promises. */}
+      <div className="container mx-auto px-4 pb-12">
+        <h2 className="mb-4 text-2xs font-semibold uppercase tracking-wide text-muted-foreground">
+          {t('people.community.heading', 'Or find your people in a group')}
+        </h2>
+        <div className="grid gap-2 sm:grid-cols-3">
+          {COMMUNITY_BRIDGE.map(({ to, icon: Icon, key, fallback, blurbKey, blurb }) => (
+            <LocalizedLink
+              key={to}
+              to={to}
+              className="flex items-center gap-4 rounded-element border border-border p-4 no-underline transition-colors hover:border-foreground"
+            >
+              <Icon size={20} className="shrink-0 text-foreground" aria-hidden />
+              <span className="flex min-w-0 flex-col">
+                <span className="text-15 font-medium text-foreground">{t(key, fallback)}</span>
+                <span className="text-2xs leading-tight text-muted-foreground">
+                  {t(blurbKey, blurb)}
+                </span>
+              </span>
+            </LocalizedLink>
+          ))}
+        </div>
       </div>
 
       <IntentSheet open={intentOpen} onOpenChange={setIntentOpen} />

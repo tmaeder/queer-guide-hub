@@ -10,6 +10,7 @@ import { useCallback, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { qk } from '@/lib/queryKeys';
 
 export interface TripInboxItem {
   id: string;
@@ -50,7 +51,7 @@ export function useTripInbox(tripId: string | undefined) {
   const { user } = useAuth();
 
   const inboxQuery = useQuery({
-    queryKey: ['trip-inbox', tripId],
+    queryKey: qk.trip.facet(tripId, 'inbox'),
     queryFn: async () => {
       const { data, error } = await supabase
         .from('trip_inboxes')
@@ -68,7 +69,7 @@ export function useTripInbox(tripId: string | undefined) {
   });
 
   const itemsQuery = useQuery({
-    queryKey: ['trip-inbox-items', tripId],
+    queryKey: qk.trip.facet(tripId, 'inbox-items'),
     queryFn: async () => {
       const { data, error } = await supabase
         .from('trip_inbox_items')
@@ -97,7 +98,7 @@ export function useTripInbox(tripId: string | undefined) {
       return data;
     },
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['trip-inbox', tripId] });
+      void queryClient.invalidateQueries({ queryKey: qk.trip.facet(tripId, 'inbox') });
     },
   });
 
@@ -111,7 +112,7 @@ export function useTripInbox(tripId: string | undefined) {
       if (error) throw error;
     },
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['trip-inbox', tripId] });
+      void queryClient.invalidateQueries({ queryKey: qk.trip.facet(tripId, 'inbox') });
     },
   });
 
@@ -129,8 +130,8 @@ export function useTripInbox(tripId: string | undefined) {
       return data;
     },
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['trip-inbox-items', tripId] });
-      void queryClient.invalidateQueries({ queryKey: ['trip-reservations', tripId] });
+      void queryClient.invalidateQueries({ queryKey: qk.trip.facet(tripId, 'inbox-items') });
+      void queryClient.invalidateQueries({ queryKey: qk.trip.facet(tripId, 'reservations') });
     },
   });
 
@@ -143,7 +144,7 @@ export function useTripInbox(tripId: string | undefined) {
       if (error) throw error;
     },
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['trip-inbox-items', tripId] });
+      void queryClient.invalidateQueries({ queryKey: qk.trip.facet(tripId, 'inbox-items') });
     },
   });
 
@@ -157,8 +158,8 @@ export function useTripInbox(tripId: string | undefined) {
       return data;
     },
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['trip-inbox-items', tripId] });
-      void queryClient.invalidateQueries({ queryKey: ['trip-reservations', tripId] });
+      void queryClient.invalidateQueries({ queryKey: qk.trip.facet(tripId, 'inbox-items') });
+      void queryClient.invalidateQueries({ queryKey: qk.trip.facet(tripId, 'reservations') });
     },
   });
 

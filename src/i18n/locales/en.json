@@ -20,7 +20,8 @@
     "pride": "Pride",
     "contributors": "Contributors",
     "wishlists": "Wishlists",
-    "guides": "Guides"
+    "guides": "Guides",
+    "people": "Meet people"
   },
   "inbox": {
     "title": "Inbox",
@@ -1789,6 +1790,10 @@
       "travelling": {
         "label": "Travelling",
         "subtitle": "Is it safe, where to stay, what to do"
+      },
+      "meet": {
+        "label": "Meet people",
+        "subtitle": "Friends, dates, travel buddies and groups"
       },
       "rights": {
         "label": "Rights",
