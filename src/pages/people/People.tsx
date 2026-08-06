@@ -117,6 +117,16 @@ export default function People({ tab }: { tab?: PeopleTab }) {
   return (
     <>
       <div className="container mx-auto px-4 pt-6">
+        {/* /people had no <h1> at all. That was survivable while it was a
+            browse route reachable only from a menu; as a top-level indexable
+            intent landing page it is not — the other five all carry one, the
+            crawler body promises one, and axe flags a main region without a
+            heading. Caught by the e2e sweep, not by any unit test. */}
+        <h1 className="text-headline">{t('header.intents.meet.label', 'Meet people')}</h1>
+        <p className="mb-6 mt-2 max-w-2xl text-body-lg text-muted-foreground">
+          {t('header.intents.meet.subtitle', 'Friends, dates, travel buddies and groups')}
+        </p>
+
         <div className="flex items-end justify-between gap-4">
           <Tabs value={active} onValueChange={setTab} style={{ width: '100%' }}>
             <TabsList className="h-auto gap-0 rounded-none border-0 bg-transparent p-0 backdrop-blur-none w-full justify-start overflow-x-auto">
