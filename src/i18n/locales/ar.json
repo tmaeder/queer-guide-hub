@@ -1717,6 +1717,10 @@
         "label": "السفر",
         "subtitle": "هل المكان آمن، أين تقيم، وماذا تفعل"
       },
+      "meet": {
+        "label": "تعرّف على أشخاص",
+        "subtitle": "أصدقاء ومواعيد ورفاق سفر ومجموعات"
+      },
       "rights": {
         "label": "الحقوق",
         "subtitle": "قوانين وسلامة مجتمع الميم، بلدًا بلدًا"
@@ -3095,7 +3099,8 @@
     "wishlists": "قوائم الرغبات",
     "tags": "الوسوم",
     "organizations": "[AR] Organizations",
-    "guides": "[AR] Guides"
+    "guides": "[AR] Guides",
+    "people": "تعرّف على أشخاص"
   },
   "chat": {
     "react": "تفاعل",

@@ -1711,6 +1711,10 @@
         "label": "Viaggiare",
         "subtitle": "È sicuro, dove dormire, cosa fare"
       },
+      "meet": {
+        "label": "Conoscere",
+        "subtitle": "Amicizie, appuntamenti, compagni di viaggio e gruppi"
+      },
       "rights": {
         "label": "Diritti",
         "subtitle": "Diritto e sicurezza LGBTQ+, paese per paese"
@@ -3091,7 +3095,8 @@
     "wishlists": "Liste dei desideri",
     "tags": "Tag",
     "organizations": "[IT] Organizations",
-    "guides": "[IT] Guides"
+    "guides": "[IT] Guides",
+    "people": "Conoscere"
   },
   "chat": {
     "react": "Reagisci",

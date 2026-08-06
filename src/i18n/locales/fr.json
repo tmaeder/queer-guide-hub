@@ -1715,6 +1715,10 @@
         "label": "Voyager",
         "subtitle": "Est-ce sûr, où loger, que faire"
       },
+      "meet": {
+        "label": "Rencontrer",
+        "subtitle": "Amis, rencontres, compagnons de voyage et groupes"
+      },
       "rights": {
         "label": "Droits",
         "subtitle": "Droit et sécurité LGBTQ+, pays par pays"
@@ -3095,7 +3099,8 @@
     "wishlists": "Listes de souhaits",
     "tags": "Tags",
     "organizations": "[FR] Organizations",
-    "guides": "[FR] Guides"
+    "guides": "[FR] Guides",
+    "people": "Rencontrer"
   },
   "chat": {
     "react": "Réagir",

@@ -1711,6 +1711,10 @@
         "label": "Reisen",
         "subtitle": "Ist es sicher, wo übernachten, was tun"
       },
+      "meet": {
+        "label": "Leute treffen",
+        "subtitle": "Freundschaften, Dates, Reisebegleitung und Gruppen"
+      },
       "rights": {
         "label": "Rechte",
         "subtitle": "LGBTQ+ Recht und Sicherheit, Land für Land"
@@ -3091,7 +3095,8 @@
     "wishlists": "Wunschlisten",
     "tags": "Tags",
     "organizations": "[DE] Organizations",
-    "guides": "[DE] Guides"
+    "guides": "[DE] Guides",
+    "people": "Leute treffen"
   },
   "chat": {
     "react": "Reagieren",
