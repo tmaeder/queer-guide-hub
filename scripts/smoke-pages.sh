@@ -298,14 +298,35 @@ sweep_built_assets() {
 
 	# Only the CORS variant is ever poisoned, so that is the only probe needed
 	# to find suspects. Failures here are re-checked properly below.
-	suspects=$(printf '%s\n' "$list" | SITE="$SITE" xargs -P 12 -I{} sh -c '
+	#
+	# `-n 1 sh -c '...' _` passes each path as "$1" rather than substituting it
+	# with `-I{}`. That is not a style choice: BSD/macOS xargs caps an -I
+	# replacement at 255 bytes, and the sh script below is longer, so -I aborted
+	# with "command line cannot be assembled, too long" on every local run.
+	# xargs then produced NO output — which is byte-for-byte what "every asset
+	# is healthy" looks like — and the branch below reported
+	# "✓ all N built assets" having checked exactly zero of them. GNU xargs on
+	# the CI runner has no such limit, so this false green was invisible in CI
+	# and hit only the machine a human runs the script on, on precisely the
+	# sweep that exists to catch poisoned lazy-route chunks.
+	local xrc=0
+	suspects=$(printf '%s\n' "$list" | SITE="$SITE" xargs -P 12 -n 1 sh -c '
 		ct=$(curl -sS -m 10 -o /dev/null -w "%{content_type}" \
 			-H "Origin: $SITE" -H "Sec-Fetch-Mode: cors" -H "Sec-Fetch-Dest: script" \
-			"$SITE{}" 2>/dev/null)
+			"$SITE$1" 2>/dev/null)
 		case "$ct" in
 			*javascript*|*ecmascript*|*css*) ;;
-			*) printf "%s\n" "{}" ;;
-		esac')
+			*) printf "%s\n" "$1" ;;
+		esac' _) || xrc=$?
+
+	# An empty result is only good news if xargs actually ran. Never let a
+	# harness failure read as a pass.
+	if [ "$xrc" -ne 0 ]; then
+		echo "  ✗ built-asset CORS sweep did not run (xargs exited $xrc) — NOT a pass"
+		echo "    $count assets went unchecked; treat this as unknown, not clean."
+		fail=$((fail+1))
+		return 0
+	fi
 
 	if [ -z "$suspects" ]; then
 		echo "  ✓ all $count built assets serve the right type to a CORS request"
