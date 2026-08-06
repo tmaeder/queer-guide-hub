@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { untypedFrom } from '@/integrations/supabase/untyped';
 import { useAuth } from '@/hooks/useAuth';
+import { qk } from '@/lib/queryKeys';
 
 export type JournalMood = 'joy' | 'good' | 'mixed' | 'tough';
 
@@ -19,11 +20,11 @@ export interface JournalEntry {
   photo_urls?: string[];
 }
 
-const KEY = (tripId: string) => ['trip-journal', tripId] as const;
+const KEY = (tripId: string) => qk.trip.facet(tripId, 'journal');
 
 export function useTripJournal(tripId: string | undefined) {
   return useQuery({
-    queryKey: tripId ? KEY(tripId) : ['trip-journal', 'noop'],
+    queryKey: tripId ? KEY(tripId) : qk.trip.facet('noop', 'journal'),
     enabled: !!tripId,
     staleTime: 60 * 1000,
     queryFn: async (): Promise<JournalEntry[]> => {
@@ -98,9 +99,7 @@ export function useTripJournalMutations(tripId: string | undefined) {
         // Storage objects first — a failed row delete keeps paths referenced.
         await supabase.storage.from('trip-photos').remove(entry.photo_paths);
       }
-      const { error } = await untypedFrom('trip_journal_entries')
-        .delete()
-        .eq('id', entry.id);
+      const { error } = await untypedFrom('trip_journal_entries').delete().eq('id', entry.id);
       if (error) throw error;
     },
     onSuccess: invalidate,

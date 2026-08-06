@@ -490,9 +490,12 @@ async function processEventBatch(supabase: SupabaseClient, pK: string, uK: strin
     if (!best) { rejected++; continue }
     if (dryRun) { updated++; continue }
 
-    const { error: upErr } = await supabase.from('events').update({ images: [best.url], updated_at: new Date().toISOString() }).eq('id', e.id)
+    // Mirror to R2 like the city/country branches — never store a fresh stock
+    // hotlink (images live on img.queer.guide, not third-party CDNs).
+    const storedUrl = await storeImageToStorage(supabase, best.url, 'event-images', 'events', e.id)
+    const { error: upErr } = await supabase.from('events').update({ images: [storedUrl], updated_at: new Date().toISOString() }).eq('id', e.id)
     if (upErr) { console.error(`event ${e.id}:`, upErr.message); skipped++ }
-    else { updated++; await upsertImageAsset(supabase, { url: best.url, source: 'scraper', source_ref: `${best.source}:${best.source_id}`, attribution: best.photographer ?? null, alt_text: best.alt ?? null, alt_provenance: 'imported', width: best.width ?? null, height: best.height ?? null, format: deriveImageFormat(best.url), entity_type: 'event', entity_id: e.id, role: 'cover' }) }
+    else { updated++; await upsertImageAsset(supabase, { url: storedUrl, source: 'scraper', source_ref: `${best.source}:${best.source_id}`, attribution: best.photographer ?? null, alt_text: best.alt ?? null, alt_provenance: 'imported', width: best.width ?? null, height: best.height ?? null, format: deriveImageFormat(storedUrl) ?? deriveImageFormat(best.url), entity_type: 'event', entity_id: e.id, role: 'cover' }) }
     await new Promise(r => setTimeout(r, 200))
   }
   return { success: true, updated, skipped, rejected, total: rows.length, dry_run: dryRun }

@@ -16,18 +16,25 @@ interface NavTabProps {
   /** Haptic / analytics nudge on tap. */
   onTap: () => void;
   /**
-   * When set, the tab is auth-gated and the user is anonymous: the tap is
-   * intercepted (navigation prevented) and this runs instead.
+   * When set, the tap is intercepted (navigation prevented) and this runs
+   * instead. Two callers: the anonymous auth gate, and Explore — which opens
+   * the intent sheet rather than navigating to `/search`. `to` is still
+   * required and still rendered, so the slot keeps a real href for
+   * middle-click, "open in new tab" and crawlers.
    */
-  onGate?: () => void;
+  onIntercept?: () => void;
   badgeCount?: number;
   badgeLabel?: string;
   /** When signed in and this is the identity tab, render the avatar. */
   avatar?: { src?: string; initial: string } | null;
   /** Long-press handlers (Explore → open the hub). Spread onto the link. */
   longPress?: LongPressHandlers;
-  /** Secondary affordance rendered inside the slot (e.g. the hub chevron). */
+  /** Secondary affordance rendered inside the slot (e.g. the trip-count dot). */
   accessory?: ReactNode;
+  /** Set when onIntercept opens a dialog rather than navigating. */
+  hasPopup?: boolean;
+  /** Companion to hasPopup — the dialog's open state. */
+  expanded?: boolean;
 }
 
 // `no-underline` is load-bearing, not cosmetic: the global inline-link rule
@@ -51,24 +58,28 @@ export function NavTab({
   active,
   reduced,
   onTap,
-  onGate,
+  onIntercept,
   badgeCount,
   badgeLabel,
   avatar,
   longPress,
   accessory,
+  hasPopup,
+  expanded,
 }: NavTabProps) {
   return (
     <li className="relative flex-1">
       <LocalizedLink
         to={to}
         aria-current={active ? 'page' : undefined}
+        aria-haspopup={hasPopup ? 'dialog' : undefined}
+        aria-expanded={hasPopup ? expanded : undefined}
         {...longPress}
         onClick={(e) => {
           onTap();
-          if (onGate) {
+          if (onIntercept) {
             e.preventDefault();
-            onGate();
+            onIntercept();
           }
         }}
         className={cn(

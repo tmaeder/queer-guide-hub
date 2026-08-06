@@ -4,11 +4,31 @@
 
 import { stripHtmlTags, decodeHtmlEntities } from '../_shared/news-quality/sanitize.ts'
 
-export function parseRssItems(xml: string, isPodcast = false): Record<string, unknown>[] {
+// `maxItems` bounds how many items are PARSED, not just how many are returned.
+// The caller only ever keeps `maxArticles` of these, but this function used to
+// build every item in the feed first — and each one runs cleanText, a 4-pass
+// strip/decode loop over the full description. On a podcast archive that is
+// ruinous: queertheology.com serves 8.5 MB / 652 episodes of long HTML show
+// notes, and fully cleaning all 652 to keep 100 burned ~60s of CPU and killed
+// the edge worker with HTTP 546 — taking the whole news pipeline down with it
+// (2026-08-03 → 2026-08-06, 82 consecutive failed runs).
+//
+// Stopping early is free: RSS is newest-first, so the first N items ARE the N
+// the caller wants. The regex scans from lastIndex, so breaking also means the
+// tail of the string is never scanned at all.
+export function parseRssItems(
+  xml: string,
+  isPodcast = false,
+  maxItems = Number.POSITIVE_INFINITY,
+): Record<string, unknown>[] {
   const items: Record<string, unknown>[] = []
+  if (maxItems <= 0) return items
   const itemRegex = /<item>([\s\S]*?)<\/item>/gi
   let match
   while ((match = itemRegex.exec(xml)) !== null) {
+    // Counted on items actually PUSHED, so podcast entries skipped for having
+    // no audio enclosure don't consume the budget.
+    if (items.length >= maxItems) break
     const block = match[1]
     const title = extractTag(block, 'title')
     const link = extractTag(block, 'link') || extractTag(block, 'guid')
@@ -97,9 +117,9 @@ export function extractTag(xml: string, tag: string): string | null {
 
 export function extractMediaUrl(block: string): string | null {
   const mediaMatch = /url="([^"]+\.(jpg|jpeg|png|gif|webp)[^"]*)"/i.exec(block)
-  if (mediaMatch) return mediaMatch[1]
+  if (mediaMatch) return decodeUrlEntities(mediaMatch[1])
   const encMatch = /<enclosure[^>]+url="([^"]+)"/i.exec(block)
-  return encMatch ? encMatch[1] : null
+  return encMatch ? decodeUrlEntities(encMatch[1]) : null
 }
 
 export function cleanText(s: string): string {

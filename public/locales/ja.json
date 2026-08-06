@@ -1651,6 +1651,7 @@
       "stats": {
         "places": "[JA] {{n}} places",
         "events": "[JA] {{n}} events",
+        "eventsUpcoming": "今後のイベント {{n}} 件",
         "cities": "[JA] {{n}} cities",
         "inView": "[JA] {{n}} places in view"
       },
@@ -1685,6 +1686,7 @@
       "venues": "スポット",
       "events": "イベント",
       "places": "プレイス",
+      "cities": "都市",
       "map": "マップ",
       "feed": "フィード",
       "groups": "グループ",
@@ -1699,6 +1701,34 @@
       "tags": "タグ",
       "history": "歴史",
       "guides": "[JA] Guides"
+    },
+    "intents": {
+      "goingOut": {
+        "label": "お出かけ",
+        "subtitle": "バー、クラブ、今夜のイベント"
+      },
+      "travelling": {
+        "label": "旅行",
+        "subtitle": "安全か、どこに泊まるか、何をするか"
+      },
+      "meet": {
+        "label": "出会う",
+        "subtitle": "友達、デート、旅の仲間、グループ"
+      },
+      "rights": {
+        "label": "権利",
+        "subtitle": "国別の LGBTQ+ の法と安全"
+      },
+      "support": {
+        "label": "サポート",
+        "subtitle": "近くの相談窓口と支援団体"
+      },
+      "shop": {
+        "label": "ショップ",
+        "subtitle": "本、ファッション、アート、ギフト"
+      },
+      "sheetHeading": "今日は何をお探しですか？",
+      "browseHeading": "すべて見る"
     },
     "userMenu": {
       "myTrips": "マイトリップ",
@@ -3063,7 +3093,8 @@
     "wishlists": "ウィッシュリスト",
     "tags": "タグ",
     "organizations": "[JA] Organizations",
-    "guides": "[JA] Guides"
+    "guides": "[JA] Guides",
+    "people": "出会う"
   },
   "chat": {
     "react": "リアクション",

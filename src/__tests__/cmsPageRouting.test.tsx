@@ -72,14 +72,15 @@ const TOP_LEVEL_ROUTE_NAMES = [
   'about', 'about-hub', 'accessibility', 'africa', 'blog', 'bookings', 'cities',
   'community', 'contact', 'cookies', 'cruising', 'dashboard', 'directory',
   'discover', 'dmca', 'donate', 'europe', 'events', 'favorites', 'feed',
-  'feedback', 'festivals', 'flights', 'friends', 'groups', 'guides', 'help',
-  'history', 'home', 'hotels', 'hub', 'inbox', 'intimate', 'kink', 'legal',
-  'login', 'mailbox', 'map', 'marketplace', 'me', 'messages', 'milestones',
-  'my-groups', 'news', 'organizations', 'people', 'personalities', 'places',
-  'press', 'pride', 'privacy', 'quests', 'resources', 'ressources', 'search',
-  'settings', 'share-target', 'signin', 'sitemap', 'submit', 'sustainability',
-  'tags', 'terms', 'travel', 'trips', 'users', 'values', 'venues', 'villages',
-  'vision', 'wishlists',
+  'feedback', 'festivals', 'flights', 'friends', 'going-out', 'groups',
+  'guides', 'help', 'help-hotlines', 'history', 'home', 'hotels', 'hub',
+  'inbox', 'intimate', 'kink', 'legal', 'login', 'mailbox', 'map',
+  'marketplace', 'me', 'messages', 'milestones', 'my-groups', 'news',
+  'organizations', 'people', 'personalities', 'places', 'press', 'pride',
+  'privacy', 'quests', 'resources', 'ressources', 'rights', 'search',
+  'settings', 'share-target', 'shop', 'signin', 'sitemap', 'submit', 'support',
+  'sustainability', 'tags', 'terms', 'travel', 'trips', 'users', 'values',
+  'venues', 'villages', 'vision', 'wishlists',
 ];
 
 function renderAt(path: string) {

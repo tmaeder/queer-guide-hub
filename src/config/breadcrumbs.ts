@@ -30,10 +30,27 @@ const SEGMENT_SECTIONS: Record<string, { path: string; key: string; fallback: st
   professions: { path: '/tags', key: 'breadcrumb.tags', fallback: 'Tags' },
   personalities: { path: '/personalities', key: 'breadcrumb.personalities', fallback: 'People' },
   news: { path: '/news', key: 'breadcrumb.news', fallback: 'News' },
-  places: { path: '/places', key: 'breadcrumb.places', fallback: 'Places' },
+  // /places is retired (it now redirects to the Travelling intent), so these
+  // point at /cities — the real, properly-built equivalent browse page. They
+  // deliberately do NOT point at an intent route: city and country detail pages
+  // carry the rankings, and their breadcrumbs are a large share of the internal
+  // links into the browse tier.
+  places: { path: '/cities', key: 'breadcrumb.cities', fallback: 'Cities' },
   cities: { path: '/cities', key: 'breadcrumb.cities', fallback: 'Cities' },
-  city: { path: '/places', key: 'breadcrumb.places', fallback: 'Places' },
-  country: { path: '/places', key: 'breadcrumb.places', fallback: 'Places' },
+  city: { path: '/cities', key: 'breadcrumb.cities', fallback: 'Cities' },
+  country: { path: '/cities', key: 'breadcrumb.cities', fallback: 'Cities' },
+  'going-out': { path: '/going-out', key: 'breadcrumb.goingOut', fallback: 'Going out' },
+  people: { path: '/people', key: 'breadcrumb.people', fallback: 'Meet people' },
+  community: { path: '/people', key: 'breadcrumb.people', fallback: 'Meet people' },
+  rights: { path: '/rights', key: 'breadcrumb.rights', fallback: 'Rights' },
+  support: { path: '/support', key: 'breadcrumb.support', fallback: 'Support' },
+  shop: { path: '/shop', key: 'breadcrumb.shop', fallback: 'Shop' },
+  travel: { path: '/travel', key: 'breadcrumb.travel', fallback: 'Travelling' },
+  organizations: {
+    path: '/organizations',
+    key: 'breadcrumb.organizations',
+    fallback: 'Organizations',
+  },
   guides: { path: '/guides', key: 'breadcrumb.guides', fallback: 'Guides' },
   groups: { path: '/groups', key: 'breadcrumb.groups', fallback: 'Groups' },
   trips: { path: '/trips', key: 'breadcrumb.trips', fallback: 'Trips' },

@@ -1651,6 +1651,7 @@
       "stats": {
         "places": "[DE] {{n}} places",
         "events": "[DE] {{n}} events",
+        "eventsUpcoming": "{{n}} kommende Events",
         "cities": "[DE] {{n}} cities",
         "inView": "[DE] {{n}} places in view"
       },
@@ -1685,6 +1686,7 @@
       "venues": "Orte",
       "events": "Veranstaltungen",
       "places": "Reiseziele",
+      "cities": "Städte",
       "map": "Karte",
       "feed": "Feed",
       "groups": "Gruppen",
@@ -1699,6 +1701,34 @@
       "tags": "Tags",
       "history": "Geschichte",
       "guides": "[DE] Guides"
+    },
+    "intents": {
+      "goingOut": {
+        "label": "Ausgehen",
+        "subtitle": "Bars, Clubs und was heute Abend läuft"
+      },
+      "travelling": {
+        "label": "Reisen",
+        "subtitle": "Ist es sicher, wo übernachten, was tun"
+      },
+      "meet": {
+        "label": "Leute treffen",
+        "subtitle": "Freundschaften, Dates, Reisebegleitung und Gruppen"
+      },
+      "rights": {
+        "label": "Rechte",
+        "subtitle": "LGBTQ+ Recht und Sicherheit, Land für Land"
+      },
+      "support": {
+        "label": "Hilfe",
+        "subtitle": "Hotlines und Organisationen in deiner Nähe"
+      },
+      "shop": {
+        "label": "Shop",
+        "subtitle": "Bücher, Mode, Kunst und Geschenke"
+      },
+      "sheetHeading": "Wofür bist du hier?",
+      "browseHeading": "Alles durchsuchen"
     },
     "userMenu": {
       "myTrips": "Meine Reisen",
@@ -3065,7 +3095,8 @@
     "wishlists": "Wunschlisten",
     "tags": "Tags",
     "organizations": "[DE] Organizations",
-    "guides": "[DE] Guides"
+    "guides": "[DE] Guides",
+    "people": "Leute treffen"
   },
   "chat": {
     "react": "Reagieren",

@@ -25,6 +25,7 @@ import { resolveTripTitle } from '@/components/trips/tripTitle';
 import { SaveTripButton } from '@/components/trips/SaveTripButton';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
+import { qk } from '@/lib/queryKeys';
 
 interface Props {
   trip: DiscoverableTrip;
@@ -102,7 +103,7 @@ export function PublicTripCard({ trip }: Props) {
             'Your copy is ready — edit days and places freely.',
           ),
         });
-        queryClient.invalidateQueries({ queryKey: ['trips'] });
+        queryClient.invalidateQueries({ queryKey: qk.trip.lists() });
         queryClient.invalidateQueries({ queryKey: ['discoverable-trips'] });
         navigate(`/trips/${rpcData}`);
         return;

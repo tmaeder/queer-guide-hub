@@ -1683,6 +1683,7 @@
       "stats": {
         "places": "[RU] {{n}} places",
         "events": "[RU] {{n}} events",
+        "eventsUpcoming": "{{n}} предстоящих событий",
         "cities": "[RU] {{n}} cities",
         "inView": "[RU] {{n}} places in view"
       },
@@ -1717,6 +1718,7 @@
       "venues": "Места",
       "events": "Мероприятия",
       "places": "Города и страны",
+      "cities": "Города",
       "map": "Карта",
       "feed": "Лента",
       "groups": "Группы",
@@ -1731,6 +1733,34 @@
       "tags": "Теги",
       "history": "История",
       "guides": "[RU] Guides"
+    },
+    "intents": {
+      "goingOut": {
+        "label": "Куда пойти",
+        "subtitle": "Бары, клубы и что сегодня вечером"
+      },
+      "travelling": {
+        "label": "Поездки",
+        "subtitle": "Безопасно ли, где жить, что делать"
+      },
+      "meet": {
+        "label": "Знакомства",
+        "subtitle": "Друзья, свидания, попутчики и сообщества"
+      },
+      "rights": {
+        "label": "Права",
+        "subtitle": "Законы и безопасность ЛГБТК+ по странам"
+      },
+      "support": {
+        "label": "Помощь",
+        "subtitle": "Телефоны доверия и организации рядом"
+      },
+      "shop": {
+        "label": "Магазин",
+        "subtitle": "Книги, одежда, искусство и подарки"
+      },
+      "sheetHeading": "Что вас интересует?",
+      "browseHeading": "Смотреть всё"
     },
     "userMenu": {
       "myTrips": "Мои поездки",
@@ -3099,7 +3129,8 @@
     "wishlists": "Списки желаний",
     "tags": "Теги",
     "organizations": "[RU] Organizations",
-    "guides": "[RU] Guides"
+    "guides": "[RU] Guides",
+    "people": "Знакомства"
   },
   "chat": {
     "react": "Реакция",

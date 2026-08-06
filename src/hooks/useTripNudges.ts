@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { qk } from '@/lib/queryKeys';
 
 export interface TripNudge {
   id: string;
@@ -21,7 +22,7 @@ export interface TripNudge {
  */
 export function useTripNudges(tripId: string | undefined) {
   return useQuery({
-    queryKey: ['trip-nudges', tripId],
+    queryKey: qk.trip.facet(tripId, 'nudges'),
     enabled: !!tripId,
     staleTime: 60 * 1000,
     queryFn: async (): Promise<TripNudge[]> => {
@@ -68,7 +69,7 @@ export function useDismissTripNudge() {
       }
     },
     onSuccess: (_r, vars) => {
-      qc.invalidateQueries({ queryKey: ['trip-nudges', vars.tripId] });
+      qc.invalidateQueries({ queryKey: qk.trip.facet(vars.tripId, 'nudges') });
       qc.invalidateQueries({ queryKey: ['inbox-feed'] });
     },
   });
@@ -88,7 +89,7 @@ export function useScanTripNudges() {
       if (error) throw error;
     },
     onSuccess: (_r, vars) => {
-      qc.invalidateQueries({ queryKey: ['trip-nudges', vars.tripId] });
+      qc.invalidateQueries({ queryKey: qk.trip.facet(vars.tripId, 'nudges') });
     },
   });
 }

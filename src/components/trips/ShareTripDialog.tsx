@@ -26,6 +26,7 @@ import {
 import { untypedRpc } from '@/integrations/supabase/untyped';
 import { useAuth } from '@/hooks/useAuth';
 import { fetchTripShares, createTripShare, deleteTripShare } from '@/hooks/useTripShares';
+import { qk } from '@/lib/queryKeys';
 
 interface Props {
   open: boolean;
@@ -47,20 +48,22 @@ export function ShareTripDialog({ open, onClose, tripId }: Props) {
   const [expiresAt, setExpiresAt] = useState('');
 
   const { data: shares, isLoading } = useQuery({
-    queryKey: ['trip-shares', tripId],
+    queryKey: qk.trip.facet(tripId, 'shares'),
     queryFn: () => fetchTripShares(tripId),
     enabled: open && !!tripId,
   });
 
   const { data: viewStats } = useQuery({
-    queryKey: ['trip-share-view-stats', tripId],
+    queryKey: qk.trip.facet(tripId, 'share-view-stats'),
     queryFn: async () => {
-      const { data, error } = await untypedRpc<Array<{
-        share_id: string;
-        total_views: number;
-        views_7d: number;
-        last_viewed_at: string | null;
-      }>>('get_share_view_stats', { p_trip_id: tripId });
+      const { data, error } = await untypedRpc<
+        Array<{
+          share_id: string;
+          total_views: number;
+          views_7d: number;
+          last_viewed_at: string | null;
+        }>
+      >('get_share_view_stats', { p_trip_id: tripId });
       if (error) throw error;
       const map = new Map<string, { total: number; views7d: number; lastAt: string | null }>();
       for (const row of data ?? []) {
@@ -89,7 +92,7 @@ export function ShareTripDialog({ open, onClose, tripId }: Props) {
         expiresAt: expiresAt ? new Date(expiresAt).toISOString() : null,
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['trip-shares', tripId] });
+      queryClient.invalidateQueries({ queryKey: qk.trip.facet(tripId, 'shares') });
       setShowBudget(false);
       setShowNotes(false);
       setShowPacking(false);
@@ -107,7 +110,7 @@ export function ShareTripDialog({ open, onClose, tripId }: Props) {
   const deleteShare = useMutation({
     mutationFn: (id: string) => deleteTripShare(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['trip-shares', tripId] });
+      queryClient.invalidateQueries({ queryKey: qk.trip.facet(tripId, 'shares') });
       setDeleteConfirmId(null);
       toast({ title: t('trips.share.deleted') });
     },

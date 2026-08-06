@@ -66,10 +66,79 @@ const rssNewsAdapter: SourceAdapter = {
     const deadlineAt = Date.now() + 120_000
     let skippedForTime = 0
 
+    // Cumulative parse budget. Wall-clock alone does NOT bound the worker:
+    // parseRssItems is O(feed size) and podcast archives run 2–3 MB each, so a
+    // batch of them exhausts the memory/CPU limit well inside 120s. This is the
+    // constraint that actually produced HTTP 546 (2026-08-03: the 30 oldest
+    // sources drifted into an all-podcast cohort and every hourly run died).
+    const RUN_BYTE_BUDGET = 12 * 1024 * 1024
+    let bytesParsed = 0
+    let skippedForBytes = 0
+
+    // Cap the ITEMS a run accumulates, not just the bytes it downloads. These
+    // are different constraints and the byte budget does not imply this one:
+    // measured on the 2026-08-06 11:00 run, 30 feeds totalling 6.6 MB (well
+    // under RUN_BYTE_BUDGET) with no single feed reaching the 100-item cap
+    // still produced 1,681 items — and the worker died with HTTP 546 at 44s,
+    // AFTER all 30 sources had been fetched successfully in 30s. The cost is
+    // downstream of the loop (normalize + writeToStaging over allItems), so it
+    // scales with item count. The run that completed the same morning carried
+    // 83 items. 500 sits well inside that gap and bounds the staging payload.
+    const RUN_ITEM_BUDGET = 500
+    let skippedForItems = 0
+
+    // A feed that KILLS the worker never reaches the catch below, so it never
+    // increments consecutive_failures and can never auto-pause. That is how one
+    // source (queertheology.com, 8.5 MB / 652 episodes) took the pipeline down
+    // for three days while sitting at consecutive_failures = 0.
+    //
+    // `status='processing'` is already the marker we need: it is written at
+    // claim and overwritten on every completion path, so a source still showing
+    // it at the START of a later run is one a previous run died on. Charge it a
+    // failure so the existing backoff/auto-pause machinery can finally see it.
+    // We still attempt the fetch — a healthy source then succeeds and resets the
+    // counter, so this cannot slowly pause a feed that is actually fine.
+    const sourceIds = (sources as NewsSource[]).map((s) => s.id)
+    const { data: stalled } = await supabase
+      .from('news_sources')
+      .select('id, consecutive_failures')
+      .in('id', sourceIds)
+      .eq('status', 'processing')
+    const diedLastRun = new Map<string, number>(
+      (stalled ?? []).map((s: Record<string, unknown>) => [s.id as string, (s.consecutive_failures as number) ?? 0]),
+    )
+
     for (const source of sources as NewsSource[]) {
       if (Date.now() > deadlineAt) { skippedForTime++; continue }
+      if (bytesParsed > RUN_BYTE_BUDGET) { skippedForBytes++; continue }
+      if (allItems.length >= RUN_ITEM_BUDGET) { skippedForItems++; continue }
       try {
-        await supabase.from('news_sources').update({ status: 'processing' }).eq('id', source.id)
+        // Claim the source: advance last_fetched_at NOW, not on completion.
+        // last_fetched_at is the queue cursor (news_sources_eligible orders by
+        // it ASC), so stamping it only on success means a run that dies mid-loop
+        // re-selects the very same batch next hour — for ever. That is exactly
+        // how one heavy batch turned into 82 consecutive failures. Advancing at
+        // claim time makes the batch rotate whatever the outcome, so this class
+        // of failure self-heals instead of latching. `last_successful_fetch`
+        // remains the field that means "we actually got data".
+        const claim: Record<string, unknown> = {
+          status: 'processing',
+          last_fetched_at: new Date().toISOString(),
+        }
+        if (diedLastRun.has(source.id)) {
+          const failures = (diedLastRun.get(source.id) ?? 0) + 1
+          claim.consecutive_failures = failures
+          claim.last_error = 'worker terminated while fetching this source (no completion recorded)'
+          claim.backoff_until = new Date(
+            Date.now() + Math.min(5 * 60 * 1000 * Math.pow(2, failures - 1), 24 * 60 * 60 * 1000),
+          ).toISOString()
+          if (failures >= 8) {
+            claim.auto_paused = true
+            claim.auto_paused_reason = `${failures} consecutive failures: worker terminated while fetching (likely oversized feed)`
+          }
+          console.warn(`Source ${source.name} killed a previous run (streak: ${failures})`)
+        }
+        await supabase.from('news_sources').update(claim).eq('id', source.id)
 
         let articles: Record<string, unknown>[] = []
         const apiName = detectApiName(source.url)
@@ -86,7 +155,12 @@ const rssNewsAdapter: SourceAdapter = {
             fetchFromApi(source, sinceHours)
           )
         } else {
-          articles = await fetchFromRss(source.url, source.feed_type === 'podcast')
+          // Pass maxArticles down so the parser STOPS there. The slice below
+          // used to be the only limit, which meant a 652-episode podcast
+          // archive was fully parsed and cleaned just to keep 100.
+          const rss = await fetchFromRss(source.url, source.feed_type === 'podcast', maxArticles)
+          articles = rss.items
+          bytesParsed += rss.bytes
         }
 
         for (let i = 0; i < Math.min(articles.length, maxArticles); i++) {
@@ -161,6 +235,12 @@ const rssNewsAdapter: SourceAdapter = {
 
     if (skippedForTime > 0) {
       console.log(`source-rss-news: hit 120s budget, skipped ${skippedForTime} feed(s) — they rotate to next run`)
+    }
+    if (skippedForBytes > 0) {
+      console.log(`source-rss-news: hit ${RUN_BYTE_BUDGET} byte budget after ${bytesParsed}, skipped ${skippedForBytes} feed(s) — they rotate to next run`)
+    }
+    if (skippedForItems > 0) {
+      console.log(`source-rss-news: hit ${RUN_ITEM_BUDGET} item budget at ${allItems.length}, skipped ${skippedForItems} feed(s) — they rotate to next run`)
     }
 
     return allItems
@@ -297,7 +377,11 @@ async function fetchRecentWikinews(url: string, maxArticles: number): Promise<Re
   return fetchWikinewsArticles(target, pageIds)
 }
 
-async function fetchFromRss(feedUrl: string, isPodcast = false): Promise<Record<string, unknown>[]> {
+async function fetchFromRss(
+  feedUrl: string,
+  isPodcast = false,
+  maxItems = Number.POSITIVE_INFINITY,
+): Promise<{ items: Record<string, unknown>[]; bytes: number }> {
   // Throw on failure so the caller's catch can register the failure
   // (consecutive_failures + backoff_until). Returning [] silently would
   // mask flapping feeds and never trip auto-pause.
@@ -329,7 +413,10 @@ async function fetchFromRss(feedUrl: string, isPodcast = false): Promise<Record<
     // the incomplete trailing block. (Hard-failing here auto-paused four
     // legitimate podcast feeds whose full archives exceed 4 MB.)
     const xml = await readCapped(res, MAX_FEED_BYTES)
-    return parseRssItems(xml, isPodcast)
+    // Report the parsed size so the caller can enforce a per-RUN byte budget.
+    // The per-feed cap alone cannot bound a run: 30 feeds each just under the
+    // cap is still ~120 MB of parsing.
+    return { items: parseRssItems(xml, isPodcast, maxItems), bytes: xml.length }
   } finally {
     clearTimeout(timeout)
   }

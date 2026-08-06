@@ -8,6 +8,7 @@ import {
   listMutations,
   removeMutation,
 } from '@/lib/offline/mutationQueue';
+import { qk } from '@/lib/queryKeys';
 
 /**
  * Replays queued offline trip edits when connectivity returns and exposes
@@ -54,8 +55,8 @@ export function useOfflineTripSync() {
     }
 
     for (const tripId of touchedTrips) {
-      void qc.invalidateQueries({ queryKey: ['trip', tripId] });
-      void qc.invalidateQueries({ queryKey: ['trip-packing', tripId] });
+      void qc.invalidateQueries({ queryKey: qk.trip.detail(tripId) });
+      void qc.invalidateQueries({ queryKey: qk.trip.facet(tripId, 'packing') });
     }
     if (dropped > 0) {
       toast({

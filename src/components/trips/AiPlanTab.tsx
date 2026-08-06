@@ -17,6 +17,7 @@ import {
 } from '@/hooks/useTripConcierge';
 import { useTripWeatherSignals } from '@/hooks/useDayWeather';
 import { useAccessibilityNeeds } from '@/hooks/useAccessibilityMatches';
+import { qk } from '@/lib/queryKeys';
 
 interface Props {
   trip: TripWithDetails;
@@ -115,7 +116,7 @@ export function AiPlanTab({ trip }: Props) {
         }
       }
       toast({ title: t('trips.ai.applied', 'Itinerary applied') });
-      void queryClient.invalidateQueries({ queryKey: ['trip', trip.id] });
+      void queryClient.invalidateQueries({ queryKey: qk.trip.detail(trip.id) });
     } catch (err) {
       toast({
         title: t('trips.ai.applyFailedTitle', 'Apply failed'),

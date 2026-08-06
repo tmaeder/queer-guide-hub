@@ -11,7 +11,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Shield, DollarSign, Compass, Home, Users, Accessibility, Plane, MapPin } from 'lucide-react';
+import {
+  Shield,
+  DollarSign,
+  Compass,
+  Home,
+  Users,
+  Accessibility,
+  Plane,
+  MapPin,
+} from 'lucide-react';
 import {
   fetchProfileTravelPreferences,
   fetchTravelPrefsHomeCity,
@@ -29,6 +38,7 @@ import {
   CityCountryAutocomplete,
   type GeoSelection,
 } from '@/components/trips/create/CityCountryAutocomplete';
+import { qk } from '@/lib/queryKeys';
 
 interface TravelPreferences {
   budget_level: string;
@@ -49,8 +59,16 @@ const DEFAULT_PREFS: TravelPreferences = {
 };
 
 const INTERESTS = [
-  'nightlife', 'culture', 'food', 'nature', 'adventure',
-  'wellness', 'shopping', 'art', 'history', 'beach',
+  'nightlife',
+  'culture',
+  'food',
+  'nature',
+  'adventure',
+  'wellness',
+  'shopping',
+  'art',
+  'history',
+  'beach',
 ];
 
 const ACCOMMODATION_TYPES = [
@@ -60,9 +78,7 @@ const ACCOMMODATION_TYPES = [
   { value: 'apartment', label: 'Apartment' },
 ];
 
-const ACCESSIBILITY_OPTIONS = [
-  'wheelchair', 'hearing', 'visual', 'mobility', 'sensory',
-];
+const ACCESSIBILITY_OPTIONS = ['wheelchair', 'hearing', 'visual', 'mobility', 'sensory'];
 
 const TRANSPORT_OPTIONS: { value: TransportMode; label: string }[] = [
   { value: 'flight', label: 'Flight' },
@@ -135,7 +151,7 @@ export function TravelPreferencesEditor() {
         home_country_id: homeCity?.countryId ?? null,
       });
 
-      qc.invalidateQueries({ queryKey: ['trip-reservation-suggestions'] });
+      qc.invalidateQueries({ queryKey: qk.trip.details() });
       toast({ title: 'Travel preferences saved' });
     } catch (err) {
       toast({ title: 'Failed to save', description: String(err), variant: 'destructive' });
@@ -144,7 +160,10 @@ export function TravelPreferencesEditor() {
     }
   };
 
-  const toggleArrayItem = (key: 'interests' | 'preferred_accommodation' | 'accessibility_needs', value: string) => {
+  const toggleArrayItem = (
+    key: 'interests' | 'preferred_accommodation' | 'accessibility_needs',
+    value: string,
+  ) => {
     setPrefs((prev) => ({
       ...prev,
       [key]: prev[key].includes(value)
@@ -168,7 +187,10 @@ export function TravelPreferencesEditor() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <Select value={prefs.budget_level} onValueChange={(v) => setPrefs((p) => ({ ...p, budget_level: v }))}>
+          <Select
+            value={prefs.budget_level}
+            onValueChange={(v) => setPrefs((p) => ({ ...p, budget_level: v }))}
+          >
             <SelectTrigger>
               <SelectValue />
             </SelectTrigger>
@@ -195,9 +217,7 @@ export function TravelPreferencesEditor() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm mb-4">
-            Minimum LGBTQ+ equality score for recommended destinations
-          </p>
+          <p className="text-sm mb-4">Minimum LGBTQ+ equality score for recommended destinations</p>
           <Slider
             value={[prefs.safety_threshold]}
             onValueChange={([v]) => setPrefs((p) => ({ ...p, safety_threshold: v }))}
@@ -212,7 +232,8 @@ export function TravelPreferencesEditor() {
             <span>Very Safe (100)</span>
           </div>
           <p className="text-xs text-muted-foreground mt-2 block">
-            Current: {prefs.safety_threshold}. Destinations below this score will be deprioritized in recommendations (not hidden)
+            Current: {prefs.safety_threshold}. Destinations below this score will be deprioritized
+            in recommendations (not hidden)
           </p>
         </CardContent>
       </Card>
@@ -234,7 +255,6 @@ export function TravelPreferencesEditor() {
                 key={interest}
                 variant={prefs.interests.includes(interest) ? 'default' : 'outline'}
                 onClick={() => toggleArrayItem('interests', interest)}
-
               >
                 {interest}
               </Badge>
@@ -260,7 +280,6 @@ export function TravelPreferencesEditor() {
                 key={value}
                 variant={prefs.preferred_accommodation.includes(value) ? 'default' : 'outline'}
                 onClick={() => toggleArrayItem('preferred_accommodation', value)}
-
               >
                 {label}
               </Badge>
@@ -280,7 +299,10 @@ export function TravelPreferencesEditor() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <Select value={prefs.travel_style} onValueChange={(v) => setPrefs((p) => ({ ...p, travel_style: v }))}>
+          <Select
+            value={prefs.travel_style}
+            onValueChange={(v) => setPrefs((p) => ({ ...p, travel_style: v }))}
+          >
             <SelectTrigger>
               <SelectValue />
             </SelectTrigger>
@@ -311,7 +333,6 @@ export function TravelPreferencesEditor() {
                 key={need}
                 variant={prefs.accessibility_needs.includes(need) ? 'default' : 'outline'}
                 onClick={() => toggleArrayItem('accessibility_needs', need)}
-
               >
                 {need}
               </Badge>

@@ -1,3 +1,12 @@
+// Cache-poisoning rotation (2026-08-06). During a deploy-propagation window
+// Cloudflare cached the SPA shell HTML under this chunk's URL, keyed to the
+// CORS variant that `<link rel="modulepreload" crossorigin>` requests — so
+// every real browser got text/html for it while plain curl got clean JS. The
+// chunk is lazily imported, so it is absent from the shell's preload list and
+// scripts/smoke-pages.sh never purged it; `purge_everything` did not evict it
+// either. A hashed URL that cannot be purged can only be escaped by changing
+// its bytes, which is what this comment does. Do not remove it to "tidy up" —
+// deleting it re-emits the poisoned hash.
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { useSearchParams } from 'react-router';
@@ -94,7 +103,10 @@ const Venues = () => {
   const parseList = (key: string): string[] => {
     const raw = searchParams.get(key);
     if (!raw) return [];
-    return raw.split(',').map((s) => s.trim()).filter(Boolean);
+    return raw
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean);
   };
   const urlTags = parseList('tags');
   const urlAmenities = parseList('amenities');
@@ -171,16 +183,18 @@ const Venues = () => {
     return f;
   }, [urlSearch, urlCategory]);
 
-  const [currentFilters, setCurrentFilters] = useState<Record<string, unknown>>(buildFiltersFromUrl);
+  const [currentFilters, setCurrentFilters] =
+    useState<Record<string, unknown>>(buildFiltersFromUrl);
 
   // Traveling preference chips — saved accessibility needs apply by default,
   // interest vibes are opt-in per session. Contributions merge into every
   // fetch but stay OUT of currentFilters and the URL (accessibility needs are
   // private; a shared link must not carry them).
-  const { chips: prefChips, toggle: togglePrefChip, forget: forgetPrefChip } = usePreferenceChips([
-    'accessibility',
-    'interest',
-  ]);
+  const {
+    chips: prefChips,
+    toggle: togglePrefChip,
+    forget: forgetPrefChip,
+  } = usePreferenceChips(['accessibility', 'interest']);
   const chipAccessibility = useMemo(() => accessibilitySlugsFromChips(prefChips), [prefChips]);
   const chipTags = useMemo(() => tagsFromChips(prefChips), [prefChips]);
   const chipKey = [...chipAccessibility, ...chipTags].join(',');
@@ -235,7 +249,9 @@ const Venues = () => {
 
   const setSortBy = useCallback(
     (next: string) =>
-      updateParams({ sort: next === (VENUES_V2_ENABLED ? 'relevance' : 'featured') ? undefined : next }),
+      updateParams({
+        sort: next === (VENUES_V2_ENABLED ? 'relevance' : 'featured') ? undefined : next,
+      }),
     [updateParams],
   );
   const setViewMode = useCallback(
@@ -351,7 +367,10 @@ const Venues = () => {
           const nextPage = page + 1;
           setPage(nextPage);
           const result = await fetchVenues(
-            mergeChipFilters({ ...currentFilters, userLocation: userLocation ?? undefined }) as Parameters<typeof fetchVenues>[0],
+            mergeChipFilters({
+              ...currentFilters,
+              userLocation: userLocation ?? undefined,
+            }) as Parameters<typeof fetchVenues>[0],
             baseFetchOptions({
               page: nextPage,
               pageSize: PAGE_SIZE,
@@ -388,11 +407,13 @@ const Venues = () => {
 
         {VENUES_V2_ENABLED && (
           <QuickFilters
-            value={{
-              openNow: urlOpenNow || undefined,
-              radiusKm: urlRadius ?? undefined,
-              priceLevel: urlPrice ?? undefined,
-            } as QuickFiltersValue}
+            value={
+              {
+                openNow: urlOpenNow || undefined,
+                radiusKm: urlRadius ?? undefined,
+                priceLevel: urlPrice ?? undefined,
+              } as QuickFiltersValue
+            }
             hasLocation={!!userLocation}
             onChange={(v) =>
               updateParams({
@@ -427,24 +448,28 @@ const Venues = () => {
         {/* Toolbar */}
         <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            {!loading && venues.length > 0 && (() => {
-              const hasActiveFilters = Object.keys(currentFilters).length > 0;
-              const shown = filteredTotal ?? venues.length;
-              const parts: string[] = [];
-              if (typeof currentFilters.city === 'string' && currentFilters.city)
-                parts.push(currentFilters.city);
-              if (typeof currentFilters.category === 'string' && currentFilters.category)
-                parts.push(currentFilters.category.replace(/[_-]/g, ' '));
-              return (
-                <p className="text-sm font-medium text-muted-foreground" aria-live="polite">
-                  {shown.toLocaleString()} venue{shown !== 1 ? 's' : ''}
-                  {parts.length > 0 && <span className="ml-1 text-xs">· {parts.join(' · ')}</span>}
-                  {!hasActiveFilters && datasetTotal !== null && datasetTotal !== shown && (
-                    <span className="ml-1 text-xs">of {datasetTotal.toLocaleString()}</span>
-                  )}
-                </p>
-              );
-            })()}
+            {!loading &&
+              venues.length > 0 &&
+              (() => {
+                const hasActiveFilters = Object.keys(currentFilters).length > 0;
+                const shown = filteredTotal ?? venues.length;
+                const parts: string[] = [];
+                if (typeof currentFilters.city === 'string' && currentFilters.city)
+                  parts.push(currentFilters.city);
+                if (typeof currentFilters.category === 'string' && currentFilters.category)
+                  parts.push(currentFilters.category.replace(/[_-]/g, ' '));
+                return (
+                  <p className="text-sm font-medium text-muted-foreground" aria-live="polite">
+                    {shown.toLocaleString()} venue{shown !== 1 ? 's' : ''}
+                    {parts.length > 0 && (
+                      <span className="ml-1 text-xs">· {parts.join(' · ')}</span>
+                    )}
+                    {!hasActiveFilters && datasetTotal !== null && datasetTotal !== shown && (
+                      <span className="ml-1 text-xs">of {datasetTotal.toLocaleString()}</span>
+                    )}
+                  </p>
+                );
+              })()}
           </div>
 
           <div className="flex items-center gap-2">
@@ -464,12 +489,8 @@ const Venues = () => {
                 <SelectItem value="featured">
                   {t('pages.venues.sortFeatured', 'Featured')}
                 </SelectItem>
-                <SelectItem value="nearest">
-                  {t('pages.venues.sortNearest', 'Nearest')}
-                </SelectItem>
-                <SelectItem value="created_at">
-                  {t('pages.venues.sortNewest', 'Newest')}
-                </SelectItem>
+                <SelectItem value="nearest">{t('pages.venues.sortNearest', 'Nearest')}</SelectItem>
+                <SelectItem value="created_at">{t('pages.venues.sortNewest', 'Newest')}</SelectItem>
                 <SelectItem value="name">{t('pages.venues.sortName', 'Name')}</SelectItem>
                 <SelectItem value="category">
                   {t('pages.venues.sortCategory', 'Category')}
@@ -484,10 +505,7 @@ const Venues = () => {
                 variant="ghost"
                 size="icon"
                 onClick={() => setViewMode('grid')}
-                className={cn(
-                  'h-9 w-9 rounded-element px-2',
-                  viewMode === 'grid' && 'bg-accent',
-                )}
+                className={cn('h-9 w-9 rounded-element px-2', viewMode === 'grid' && 'bg-accent')}
                 aria-label={t('pages.venues.gridView', 'Grid view')}
               >
                 <Grid size={16} />
@@ -497,10 +515,7 @@ const Venues = () => {
                 variant="ghost"
                 size="icon"
                 onClick={() => setViewMode('map')}
-                className={cn(
-                  'h-9 w-9 rounded-element px-2',
-                  viewMode === 'map' && 'bg-accent',
-                )}
+                className={cn('h-9 w-9 rounded-element px-2', viewMode === 'map' && 'bg-accent')}
                 aria-label={t('pages.venues.mapView', 'Map view')}
               >
                 <Map size={16} />
@@ -544,8 +559,11 @@ const Venues = () => {
               )}
               {loading && loadingTimedOut && <LoadingTimeout onRetry={() => fetchVenues()} />}
 
-              {!loading && !error && venues.length === 0 && (
-                datasetTotal === 0 || (datasetTotal === null && Object.keys(currentFilters).length === 0) ? (
+              {!loading &&
+                !error &&
+                venues.length === 0 &&
+                (datasetTotal === 0 ||
+                (datasetTotal === null && Object.keys(currentFilters).length === 0) ? (
                   <EmptyState
                     icon={MapPin}
                     variant="empty"
@@ -578,33 +596,36 @@ const Venues = () => {
                         : undefined
                     }
                   />
-                )
-              )}
+                ))}
 
               {/* Legacy "Recently added" rail only when V2 flag is OFF */}
-              {!VENUES_V2_ENABLED && !loading && !hasAnyFilters && recentVenues.length >= 4 && (() => {
-                const mainIds = new Set(venues.slice(0, 24).map((v) => v.id));
-                const rail = recentVenues.filter((v) => !mainIds.has(v.id)).slice(0, 8);
-                if (rail.length < 4) return null;
-                return (
-                  <section aria-label="Recently added venues" className="-mt-1">
-                    <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-                      {t('pages.venues.recentlyAdded', 'Recently added')}
-                    </h2>
-                    <div className="flex gap-4 overflow-x-auto pb-2 -mx-4 px-4">
-                      {rail.map((venue) => (
-                        <div key={venue.id} className="w-64 flex-shrink-0">
-                          <VenueCard
-                            venue={venue}
-                            events={events}
-                            onViewDetails={handleViewDetails}
-                          />
-                        </div>
-                      ))}
-                    </div>
-                  </section>
-                );
-              })()}
+              {!VENUES_V2_ENABLED &&
+                !loading &&
+                !hasAnyFilters &&
+                recentVenues.length >= 4 &&
+                (() => {
+                  const mainIds = new Set(venues.slice(0, 24).map((v) => v.id));
+                  const rail = recentVenues.filter((v) => !mainIds.has(v.id)).slice(0, 8);
+                  if (rail.length < 4) return null;
+                  return (
+                    <section aria-label="Recently added venues" className="-mt-1">
+                      <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                        {t('pages.venues.recentlyAdded', 'Recently added')}
+                      </h2>
+                      <div className="flex gap-4 overflow-x-auto pb-2 -mx-4 px-4">
+                        {rail.map((venue) => (
+                          <div key={venue.id} className="w-64 flex-shrink-0">
+                            <VenueCard
+                              venue={venue}
+                              events={events}
+                              onViewDetails={handleViewDetails}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </section>
+                  );
+                })()}
 
               {/* Section header for canonical grid when V2 + filters active */}
               {VENUES_V2_ENABLED && hasAnyFilters && !loading && venues.length > 0 && (
@@ -640,7 +661,10 @@ const Venues = () => {
                         const nextPage = page + 1;
                         setPage(nextPage);
                         await fetchVenues(
-                          mergeChipFilters({ ...currentFilters, userLocation: userLocation ?? undefined }) as Parameters<typeof fetchVenues>[0],
+                          mergeChipFilters({
+                            ...currentFilters,
+                            userLocation: userLocation ?? undefined,
+                          }) as Parameters<typeof fetchVenues>[0],
                           baseFetchOptions({
                             page: nextPage,
                             pageSize: PAGE_SIZE,
@@ -700,12 +724,10 @@ const Venues = () => {
   );
 };
 
-export default Venues;// Must mirror gridClass's breakpoint column counts (sm/md/lg).
+export default Venues; // Must mirror gridClass's breakpoint column counts (sm/md/lg).
 const VENUES_GRID_BREAKPOINTS = [
   { minWidth: 0, columns: 1 },
   { minWidth: 640, columns: 2 },
   { minWidth: 768, columns: 3 },
   { minWidth: 1024, columns: 4 },
 ];
-
-

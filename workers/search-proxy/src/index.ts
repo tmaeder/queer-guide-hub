@@ -181,6 +181,16 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 	);
 	if (!knownCheck.ok) return errorResponse(knownCheck, cors);
 
+	// Safety layer: only a verified-logged-in caller sees high-risk-country
+	// (gated) content. The body's user_id is spoofable, so trust the signed JWT.
+	// Resolved HERE, above the filter-only-browse branch below, rather than at the
+	// top of the keyword pipeline: every URL-driven intent/browse surface returns
+	// from that branch, and it used to call pgHybridSearch with no includeGated at
+	// all — so a signed-in user in a criminalising country silently lost exactly
+	// the content the safety layer gates for them. Every pgHybridSearch call site
+	// must pass this; `src/__tests__/includeGated.test.ts` asserts it.
+	const authed = await isAuthenticatedRequest(request, env);
+
 	// Filter-only browse: an empty query with meaningful filters (tags, category,
 	// audience, city, featured, price, date, …) browses the filtered set via
 	// search_hybrid (empty query + filters returns the set ranked, with facets).
@@ -222,6 +232,7 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 				target_groups: bFilters.target_groups,
 				tags: bExpandedTags,
 			},
+			includeGated: authed,
 			lat: bFilters.lat ?? null,
 			lng: bFilters.lng ?? null,
 			radiusKm: bFilters.radius ?? null,
@@ -290,9 +301,6 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 	const user_id = typeof body.user_id === "string" ? body.user_id : undefined;
 	const session_id = typeof body.session_id === "string" ? body.session_id : undefined;
 	const debug = body.debug === true;
-	// Safety layer: only a verified-logged-in caller sees high-risk-country
-	// (gated) content. The body's user_id is spoofable, so trust the signed JWT.
-	const authed = await isAuthenticatedRequest(request, env);
 
 	// Bug #9: a bare LGBTQ+ token query ('gay', 'queer', 'trans') is a
 	// stop-word in the venue/event indexes — running it through the full

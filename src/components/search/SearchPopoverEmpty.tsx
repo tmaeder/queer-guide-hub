@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { TrendingUp, Sparkles, Clock, X } from 'lucide-react';
 import { type SearchHit } from '@/lib/searchClient';
 import { TYPE_ICONS } from '@/hooks/useSearchSuggestions';
-import { DESTINATIONS, NAV_CLUSTERS } from '@/config/navigation';
+import { DESTINATIONS, INTENT_NAV, NAV_CLUSTERS } from '@/config/navigation';
 import { ModeSwitcher } from './ModeSwitcher';
 
 export interface SearchPopoverEmptyProps {
@@ -66,6 +66,40 @@ export function SearchPopoverEmpty({
         </div>
       )}
 
+      {/* Intents lead. An empty query means the person has not decided what to
+          type, and the most useful thing to hand them is the five jobs — not a
+          content-type index. This block used to be absent entirely, so the
+          site's highest-frequency discovery surface (⌘K on desktop, the whole
+          header row on mobile) taught only the model the Intent Router
+          replaced. Subtitles are carried because, unlike the nouns in the
+          browse grid, a job is not self-explanatory from its label. */}
+      <div className="px-4 pt-4">
+        <div className="mb-1.5 text-13 font-semibold uppercase tracking-wider text-muted-foreground">
+          {t('header.intents.sheetHeading', 'What are you here for?')}
+        </div>
+        {INTENT_NAV.map((intent) => {
+          const Icon = intent.icon;
+          return (
+            <button
+              key={intent.id}
+              type="button"
+              onClick={() => onBrowse(intent.to)}
+              className="flex w-full cursor-pointer items-center gap-2.5 rounded-element border-0 bg-transparent px-2 py-2 text-left transition-colors hover:bg-accent"
+            >
+              <Icon className="h-4 w-4 shrink-0 text-foreground" aria-hidden />
+              <span className="min-w-0">
+                <span className="block truncate text-sm font-semibold">
+                  {t(intent.labelKey, intent.fallback)}
+                </span>
+                <span className="block truncate text-xs text-muted-foreground">
+                  {t(intent.subtitleKey, intent.subtitleFallback)}
+                </span>
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
       {tiles.length > 0 && (
         <div className="px-4 pb-2 pt-4">
           <div className="mb-2 flex items-center gap-1.5 text-13 font-semibold uppercase tracking-wider text-muted-foreground">
@@ -126,35 +160,43 @@ export function SearchPopoverEmpty({
         <span className="ml-auto shrink-0 text-muted-foreground">→</span>
       </button>
 
-      <div className="px-4 pb-4 pt-4">
-        {NAV_CLUSTERS.map((cluster) => {
-          const items = DESTINATIONS.filter((d) => d.cluster === cluster.id);
-          if (items.length === 0) return null;
-          return (
-            <div key={cluster.id} className="mb-4 last:mb-0">
-              <div className="mb-1.5 text-13 font-semibold uppercase tracking-wider text-muted-foreground">
-                {t(cluster.labelKey)}
+      {/* Every browse route stays reachable — the intent row is additive, never
+          a replacement — but it is demoted behind a disclosure so the two
+          models are not presented as peers. */}
+      <details className="px-4 pb-4 pt-2">
+        <summary className="cursor-pointer list-none text-13 font-semibold uppercase tracking-wider text-muted-foreground">
+          {t('header.intents.browseHeading', 'Browse everything')}
+        </summary>
+        <div className="pt-2">
+          {NAV_CLUSTERS.map((cluster) => {
+            const items = DESTINATIONS.filter((d) => d.cluster === cluster.id);
+            if (items.length === 0) return null;
+            return (
+              <div key={cluster.id} className="mb-4 last:mb-0">
+                <div className="mb-1.5 text-13 font-semibold uppercase tracking-wider text-muted-foreground">
+                  {t(cluster.labelKey)}
+                </div>
+                <div className="grid grid-cols-2 gap-1">
+                  {items.map((item) => {
+                    const Icon = item.icon;
+                    return (
+                      <button
+                        key={item.to}
+                        type="button"
+                        onClick={() => onBrowse(item.to)}
+                        className="flex w-full cursor-pointer items-center gap-2 rounded-element border-0 bg-transparent px-2 py-2 text-left transition-colors hover:bg-accent"
+                      >
+                        <Icon className="h-4 w-4 shrink-0 text-muted-foreground" />
+                        <span className="truncate text-sm font-medium">{t(item.labelKey)}</span>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
-              <div className="grid grid-cols-2 gap-1">
-                {items.map((item) => {
-                  const Icon = item.icon;
-                  return (
-                    <button
-                      key={item.to}
-                      type="button"
-                      onClick={() => onBrowse(item.to)}
-                      className="flex w-full cursor-pointer items-center gap-2 rounded-element border-0 bg-transparent px-2 py-2 text-left transition-colors hover:bg-accent"
-                    >
-                      <Icon className="h-4 w-4 shrink-0 text-muted-foreground" />
-                      <span className="truncate text-sm font-medium">{t(item.labelKey)}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
+      </details>
     </div>
   );
 }

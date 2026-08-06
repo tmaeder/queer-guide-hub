@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { getViewerFingerprint } from '@/hooks/useTripReactions';
+import { qk } from '@/lib/queryKeys';
 
 const DISPLAY_NAME_KEY = 'qg.viewerDisplayName';
 
@@ -41,7 +42,7 @@ export interface TripComment {
  */
 export function useTripComments(tripId: string | undefined) {
   return useQuery({
-    queryKey: ['trip-comments', tripId],
+    queryKey: qk.trip.facet(tripId, 'comments'),
     enabled: !!tripId,
     staleTime: 30 * 1000,
     queryFn: async (): Promise<Map<string, TripComment[]>> => {
@@ -91,7 +92,7 @@ export function usePostTripComment() {
       if (!user) setViewerDisplayName(trimmedName);
     },
     onSuccess: (_r, vars) => {
-      qc.invalidateQueries({ queryKey: ['trip-comments', vars.tripId] });
+      qc.invalidateQueries({ queryKey: qk.trip.facet(vars.tripId, 'comments') });
     },
   });
 }
@@ -104,7 +105,7 @@ export function useDeleteTripComment() {
       if (error) throw error;
     },
     onSuccess: (_r, vars) => {
-      qc.invalidateQueries({ queryKey: ['trip-comments', vars.tripId] });
+      qc.invalidateQueries({ queryKey: qk.trip.facet(vars.tripId, 'comments') });
     },
   });
 }

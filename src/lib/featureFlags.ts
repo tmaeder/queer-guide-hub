@@ -37,15 +37,10 @@ export const EDITORIAL_DETAIL_LAYOUT_ENABLED = (() => {
   return truthy(import.meta.env.VITE_EDITORIAL_DETAIL);
 })();
 
-// TRAVEL_HUB_V2_ENABLED — redesigned /travel hub: TripCockpit + named editorial
-// rails ("Because you favorited X", "Travelers like you"), booking accordion
-// moved to /travel/book. Off by default. Enable per session with
-// ?ff=travel_hub_v2 or globally via VITE_TRAVEL_HUB_V2=true.
-export const TRAVEL_HUB_V2_ENABLED = (() => {
-  if (typeof window !== 'undefined') {
-    const params = new URLSearchParams(window.location.search);
-    if (params.get('ff') === 'travel_hub_v2') return true;
-    if (params.get('ff') === 'travel_hub_v2_off') return false;
-  }
-  return truthy(import.meta.env.VITE_TRAVEL_HUB_V2);
-})();
+// TRAVEL_HUB_V2_ENABLED removed 2026-08-05. It gated a dual-branch /travel hub
+// (TripCockpit + named editorial rails vs the legacy trip hero). /travel is now
+// the Travelling intent — a single composite page — so there is no second branch
+// left to switch between. A flag whose branches have collapsed is worse than no
+// flag: it reads as a live kill switch that does nothing.
+// VITE_TRAVEL_HUB_V2 / ?ff=travel_hub_v2 are now inert and can be dropped from
+// any environment that still sets them.

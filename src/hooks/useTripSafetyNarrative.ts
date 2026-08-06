@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { qk } from '@/lib/queryKeys';
 
 export interface TripSafetyBriefing {
   trip_id: string;
@@ -17,7 +18,7 @@ export interface TripSafetyBriefing {
  */
 export function useTripSafetyBriefing(tripId: string | undefined) {
   return useQuery({
-    queryKey: ['trip-safety-briefing', tripId],
+    queryKey: qk.trip.facet(tripId, 'safety-briefing'),
     enabled: !!tripId,
     staleTime: 5 * 60 * 1000,
     queryFn: async (): Promise<TripSafetyBriefing | null> => {
@@ -47,7 +48,7 @@ export function useGenerateTripSafetyBriefing() {
       return data as TripSafetyBriefing;
     },
     onSuccess: (_data, vars) => {
-      qc.invalidateQueries({ queryKey: ['trip-safety-briefing', vars.tripId] });
+      qc.invalidateQueries({ queryKey: qk.trip.facet(vars.tripId, 'safety-briefing') });
     },
   });
 }

@@ -1657,6 +1657,7 @@
       "stats": {
         "places": "[AR] {{n}} places",
         "events": "[AR] {{n}} events",
+        "eventsUpcoming": "{{n}} فعالية قادمة",
         "cities": "[AR] {{n}} cities",
         "inView": "[AR] {{n}} places in view"
       },
@@ -1691,6 +1692,7 @@
       "venues": "الأماكن",
       "events": "الفعاليات",
       "places": "الوجهات",
+      "cities": "المدن",
       "map": "الخريطة",
       "feed": "آخر الأخبار",
       "groups": "المجموعات",
@@ -1705,6 +1707,34 @@
       "tags": "الوسوم",
       "history": "التاريخ",
       "guides": "[AR] Guides"
+    },
+    "intents": {
+      "goingOut": {
+        "label": "الخروج",
+        "subtitle": "الحانات والنوادي وما يحدث الليلة"
+      },
+      "travelling": {
+        "label": "السفر",
+        "subtitle": "هل المكان آمن، أين تقيم، وماذا تفعل"
+      },
+      "meet": {
+        "label": "تعرّف على أشخاص",
+        "subtitle": "أصدقاء ومواعيد ورفاق سفر ومجموعات"
+      },
+      "rights": {
+        "label": "الحقوق",
+        "subtitle": "قوانين وسلامة مجتمع الميم، بلدًا بلدًا"
+      },
+      "support": {
+        "label": "الدعم",
+        "subtitle": "خطوط المساعدة والمنظمات القريبة منك"
+      },
+      "shop": {
+        "label": "المتجر",
+        "subtitle": "كتب وأزياء وفنون وهدايا"
+      },
+      "sheetHeading": "ما الذي تبحث عنه؟",
+      "browseHeading": "تصفح كل شيء"
     },
     "userMenu": {
       "myTrips": "رحلاتي",
@@ -3069,7 +3099,8 @@
     "wishlists": "قوائم الرغبات",
     "tags": "الوسوم",
     "organizations": "[AR] Organizations",
-    "guides": "[AR] Guides"
+    "guides": "[AR] Guides",
+    "people": "تعرّف على أشخاص"
   },
   "chat": {
     "react": "تفاعل",

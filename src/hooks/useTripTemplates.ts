@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useUserTravelPreferences } from '@/hooks/useUserTravelPreferences';
+import { qk } from '@/lib/queryKeys';
 
 /**
  * Dynamic trip templates surfaced on /trips.
@@ -210,25 +211,20 @@ export function useTripTemplates() {
   const homeCityId = prefs?.home_city_id ?? null;
 
   return useQuery({
-    queryKey: ['trip-templates', new Date().getMonth(), homeCountryId, homeCityId],
+    queryKey: qk.trip.templates(new Date().getMonth(), homeCountryId, homeCityId),
     staleTime: 60 * 60 * 1000,
     queryFn: async (): Promise<TripTemplate[]> => {
       const now = new Date();
       const horizon = new Date(now.getTime() + 90 * 86_400_000);
 
       const seasonalSeeds = pickSeasonal(now);
-      const allSlugs = Array.from(
-        new Set(seasonalSeeds.flatMap((s) => s.citySlugs)),
-      );
+      const allSlugs = Array.from(new Set(seasonalSeeds.flatMap((s) => s.citySlugs)));
 
       // Fetch seasonal city photos + event-driven templates + preference
       // cities (when a home country is set) in parallel.
       const [cityRes, eventRes, prefRes] = await Promise.all([
         allSlugs.length
-          ? supabase
-              .from('cities')
-              .select('id, name, slug, image_url')
-              .in('slug', allSlugs)
+          ? supabase.from('cities').select('id, name, slug, image_url').in('slug', allSlugs)
           : Promise.resolve({ data: [], error: null }),
         supabase
           .from('events')
@@ -244,9 +240,7 @@ export function useTripTemplates() {
         homeCountryId
           ? supabase
               .from('cities')
-              .select(
-                'id, name, image_url, lgbt_friendly_rating, countries:country_id(currency)',
-              )
+              .select('id, name, image_url, lgbt_friendly_rating, countries:country_id(currency)')
               .eq('country_id', homeCountryId)
               .eq('is_major_city', true)
               .order('lgbt_friendly_rating', { ascending: false, nullsFirst: false })
@@ -335,9 +329,7 @@ export function useTripTemplates() {
         lgbt_friendly_rating: number | null;
         countries: { currency: string | null } | null;
       };
-      const preferenceTemplates: TripTemplate[] = (
-        (prefRes.data ?? []) as unknown as PrefRow[]
-      )
+      const preferenceTemplates: TripTemplate[] = ((prefRes.data ?? []) as unknown as PrefRow[])
         .filter((c) => c.id !== homeCityId)
         .slice(0, 2)
         .map((c) => ({
@@ -359,9 +351,7 @@ export function useTripTemplates() {
       );
       const eventCityIds = new Set(eventFiltered.flatMap((t) => t.cityIds));
       const seasonalFiltered = seasonalTemplates.filter((t) =>
-        t.cityIds.every(
-          (id) => !preferenceCityIds.has(id) && !eventCityIds.has(id),
-        ),
+        t.cityIds.every((id) => !preferenceCityIds.has(id) && !eventCityIds.has(id)),
       );
 
       // Preference first (personalized), then events (timeliest), then seasonal.

@@ -80,11 +80,20 @@ describe('Image', () => {
       <Image src={REAL} alt="venue" priority fallbackEntityType="venue" fallbackKey="v1" />,
     );
     expect(container.querySelector('img')!.getAttribute('src')).toBe(REAL);
+    // External host → the first attempt goes through the CF resizer srcset.
+    expect(container.querySelector('img')!.getAttribute('srcset')).toContain('/cdn-cgi/image/');
 
+    // First stall window blames the CF wrap: same source, raw, new 8s window.
     act(() => {
       vi.advanceTimersByTime(9000);
     });
+    expect(container.querySelector('img')!.getAttribute('src')).toBe(REAL);
+    expect(container.querySelector('img')!.getAttribute('srcset')).toBeNull();
 
+    // Second stall window concedes to the texture.
+    act(() => {
+      vi.advanceTimersByTime(9000);
+    });
     expect(container.querySelector('img')!.getAttribute('src')).toContain('/images/fallback/');
   });
 
@@ -112,14 +121,21 @@ describe('Image', () => {
     expect(container.querySelector('img')!).toHaveClass('loaded');
   });
 
-  it('falls back when the image reports an error', () => {
+  it('retries an errored CF-wrapped source raw before conceding to the fallback', () => {
     stubLoadState({ complete: false, naturalWidth: 0 });
     const { container } = render(<Image src={REAL} alt="venue" fallbackKey="v1" />);
 
+    // First error sheds the CF srcset — the raw URL gets its own attempt.
     act(() => {
       container.querySelector('img')!.dispatchEvent(new Event('error'));
     });
+    expect(container.querySelector('img')!.getAttribute('src')).toBe(REAL);
+    expect(container.querySelector('img')!.getAttribute('srcset')).toBeNull();
 
+    // Second error (raw also dead) reaches the texture.
+    act(() => {
+      container.querySelector('img')!.dispatchEvent(new Event('error'));
+    });
     expect(container.querySelector('img')!.getAttribute('src')).toContain('/images/fallback/');
   });
 
@@ -131,6 +147,12 @@ describe('Image', () => {
       act(() => {
         c.querySelector('img')!.dispatchEvent(new Event('error'));
       });
+    // Every rung on a CF-resizable host takes two errors: the first sheds the
+    // CF srcset (raw retry of the SAME source), the second moves the ladder.
+    const failRung = (c: HTMLElement) => {
+      fail(c);
+      fail(c);
+    };
 
     it('walks optimized → thumbnail → original before conceding to the texture', () => {
       stubLoadState({ complete: false, naturalWidth: 0 });
@@ -146,12 +168,12 @@ describe('Image', () => {
       const src = () => container.querySelector('img')!.getAttribute('src');
 
       expect(src()).toBe(MIRROR);
-      fail(container);
+      failRung(container);
       expect(src()).toBe(THUMB);
-      fail(container);
+      failRung(container);
       // The whole point: a dead mirror host must not cost us the merchant's image.
       expect(src()).toBe(ORIGINAL);
-      fail(container);
+      failRung(container);
       expect(src()).toContain('/images/fallback/');
     });
 
@@ -161,7 +183,7 @@ describe('Image', () => {
         <Image optimizedUrl={MIRROR} imageUrl={ORIGINAL} alt="listing" fallbackKey="m2" />,
       );
 
-      fail(container);
+      failRung(container);
 
       const img = container.querySelector('img')!;
       expect(img.getAttribute('src')).toBe(ORIGINAL);
@@ -180,7 +202,7 @@ describe('Image', () => {
         />,
       );
 
-      fail(container);
+      failRung(container);
 
       expect(container.querySelector('img')!.getAttribute('src')).toBe(ORIGINAL);
     });

@@ -14,6 +14,7 @@ import { isWebglSupported } from '@/lib/webglSupport';
 import { cn } from '@/lib/utils';
 import type { TripPlace, TripDay } from '@/hooks/useTrips';
 import { useVisitedPlaceLookup } from '@/hooks/useVisitedPlaceLookup';
+import { qk } from '@/lib/queryKeys';
 
 function dayColor(index: number): string {
   const hue = (330 + index * 47) % 360;
@@ -119,14 +120,14 @@ export function TripMap({ places, days, startDate, endDate }: Props) {
   );
 
   const { data: suggestedVenues = [] } = useQuery({
-    queryKey: ['trip-map-venues', cityIds],
+    queryKey: qk.trip.mapSuggestions('venues', cityIds),
     queryFn: () => fetchTripMapVenues<SuggestedVenue>(cityIds),
     enabled: cityIds.length > 0,
     staleTime: 10 * 60 * 1000,
   });
 
   const { data: suggestedEvents = [] } = useQuery({
-    queryKey: ['trip-map-events', cityIds, startDate, endDate],
+    queryKey: qk.trip.mapSuggestions('events', [cityIds, startDate, endDate]),
     queryFn: () => fetchTripMapEvents<SuggestedEvent>(cityIds, startDate, endDate),
     enabled: cityIds.length > 0,
     staleTime: 10 * 60 * 1000,

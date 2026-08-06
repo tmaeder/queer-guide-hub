@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { qk } from '@/lib/queryKeys';
 
 /**
  * Returns the set of trip IDs the current user has saved (bookmarked).
@@ -11,7 +12,7 @@ import { useAuth } from '@/hooks/useAuth';
 export function useMyTripSaves() {
   const { user } = useAuth();
   return useQuery({
-    queryKey: ['trip-saves', user?.id ?? null],
+    queryKey: qk.trip.savesFor(user?.id),
     enabled: !!user,
     staleTime: 60 * 1000,
     queryFn: async (): Promise<Set<string>> => {
@@ -32,13 +33,7 @@ export function useToggleTripSave() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({
-      tripId,
-      saved,
-    }: {
-      tripId: string;
-      saved: boolean;
-    }) => {
+    mutationFn: async ({ tripId, saved }: { tripId: string; saved: boolean }) => {
       if (!user) throw new Error('Sign in to save trips');
       if (saved) {
         const { error } = await supabase
@@ -55,7 +50,7 @@ export function useToggleTripSave() {
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['trip-saves'] });
+      queryClient.invalidateQueries({ queryKey: qk.trip.savesFor(undefined) });
       queryClient.invalidateQueries({ queryKey: ['discoverable-trips'] });
     },
   });

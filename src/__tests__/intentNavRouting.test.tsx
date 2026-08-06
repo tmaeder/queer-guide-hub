@@ -1,0 +1,119 @@
+/**
+ * @vitest-environment jsdom
+ *
+ * Route-resolution guard for the Intent Router paths.
+ *
+ * Same bug class as cmsPageRouting.test.tsx and submitRouting.test.tsx: the
+ * locale layout parent is `<Route path="/:locale?">`, and React Router expands
+ * the optional segment. Two hazards apply to the intent routes specifically:
+ *
+ *  1. `/shop` vs the legacy `shop/*` redirect. The static sibling must be
+ *     declared first or `/shop` resolves to the redirect and the composite page
+ *     is unreachable.
+ *  2. Locale prefixes. `/de/rights` must render the Rights page, not NotFound —
+ *     which is what happens if a route is accidentally declared outside the
+ *     locale parent.
+ *
+ * The 2-letter-slug rule (stripLocale eats any `[a-z]{2}` first segment) is
+ * asserted in src/config/__tests__/navigation.test.ts, where the intent list
+ * itself lives.
+ */
+import { describe, it, expect, vi } from 'vitest';
+import { render, screen } from '@testing-library/react';
+import { MemoryRouter } from 'react-router';
+
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({
+    t: (_key: string, fallback?: string) => fallback ?? _key,
+    i18n: { language: 'en', changeLanguage: () => {} },
+  }),
+}));
+
+vi.mock('@/providers/SearchTelemetryProvider', () => ({
+  useSearchTelemetry: () => {},
+}));
+
+vi.mock('@/components/security/AdminRouteGuard', () => ({
+  AdminRouteGuard: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+}));
+
+vi.mock('@/components/motion', () => ({
+  MotionPage: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+}));
+
+vi.mock('@/pages/intent/GoingOut', () => ({ default: () => <div>GOING_OUT_SENTINEL</div> }));
+vi.mock('@/pages/intent/Rights', () => ({ default: () => <div>RIGHTS_SENTINEL</div> }));
+vi.mock('@/pages/intent/Support', () => ({ default: () => <div>SUPPORT_SENTINEL</div> }));
+vi.mock('@/pages/intent/Shop', () => ({ default: () => <div>SHOP_SENTINEL</div> }));
+vi.mock('@/pages/Travel', () => ({ default: () => <div>TRAVEL_SENTINEL</div> }));
+vi.mock('@/pages/Marketplace', () => ({ default: () => <div>MARKETPLACE_SENTINEL</div> }));
+vi.mock('@/pages/NotFound', () => ({ default: () => <div>NOT_FOUND_SENTINEL</div> }));
+
+import { AppRoutes } from '@/routes';
+
+function renderAt(path: string) {
+  return render(
+    <MemoryRouter initialEntries={[path]}>
+      <AppRoutes />
+    </MemoryRouter>,
+  );
+}
+
+async function expectSentinel(path: string, sentinel: string) {
+  const { unmount } = renderAt(path);
+  expect(
+    await screen.findByText(sentinel),
+    `${path} should render ${sentinel}`,
+  ).toBeTruthy();
+  expect(screen.queryByText('NOT_FOUND_SENTINEL')).toBeNull();
+  unmount();
+}
+
+const INTENTS: [string, string][] = [
+  ['/going-out', 'GOING_OUT_SENTINEL'],
+  ['/rights', 'RIGHTS_SENTINEL'],
+  ['/support', 'SUPPORT_SENTINEL'],
+  ['/shop', 'SHOP_SENTINEL'],
+  ['/travel', 'TRAVEL_SENTINEL'],
+];
+
+describe('intent route resolution', () => {
+  it('resolves every intent route unprefixed', async () => {
+    for (const [path, sentinel] of INTENTS) {
+      await expectSentinel(path, sentinel);
+    }
+  });
+
+  it('resolves every intent route under a locale prefix', async () => {
+    for (const [path, sentinel] of INTENTS) {
+      await expectSentinel(`/en${path}`, sentinel);
+      await expectSentinel(`/de${path}`, sentinel);
+      await expectSentinel(`/ar${path}`, sentinel);
+    }
+  });
+
+  it('gives /shop to the composite page, not the legacy shop/* redirect', async () => {
+    // Declaration order dependent: `shop` must precede `shop/*` in routes.tsx.
+    await expectSentinel('/shop', 'SHOP_SENTINEL');
+  });
+
+  it('still redirects legacy /shop/<anything> to the marketplace', async () => {
+    const { unmount } = renderAt('/shop/some-legacy-path');
+    expect(await screen.findByText('MARKETPLACE_SENTINEL')).toBeTruthy();
+    unmount();
+  });
+
+  it('retires /places to the Travelling intent', async () => {
+    const { unmount } = renderAt('/places');
+    expect(await screen.findByText('TRAVEL_SENTINEL')).toBeTruthy();
+    unmount();
+  });
+
+  it('keeps the locale prefix when retiring /places', async () => {
+    // A bare <Navigate> here would drop the prefix and bounce /de/places to
+    // English; LocalizedRedirect is what preserves it.
+    const { unmount } = renderAt('/de/places');
+    expect(await screen.findByText('TRAVEL_SENTINEL')).toBeTruthy();
+    unmount();
+  });
+});

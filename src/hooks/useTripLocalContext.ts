@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import type { TripWithDetails } from '@/hooks/useTrips';
+import { qk } from '@/lib/queryKeys';
 
 export interface LocalPersonality {
   id: string;
@@ -36,15 +37,11 @@ export interface TripLocalContext {
  */
 export function useTripLocalContext(trip: TripWithDetails | undefined) {
   const cityIds = Array.from(
-    new Set(
-      (trip?.trip_places ?? [])
-        .map((p) => p.city_id)
-        .filter((id): id is string => !!id),
-    ),
+    new Set((trip?.trip_places ?? []).map((p) => p.city_id).filter((id): id is string => !!id)),
   );
 
   return useQuery({
-    queryKey: ['trip-local-context', trip?.id, cityIds],
+    queryKey: qk.trip.localContext(trip?.id, cityIds),
     enabled: !!trip && cityIds.length > 0,
     staleTime: 10 * 60 * 1000,
     queryFn: async (): Promise<TripLocalContext> => {

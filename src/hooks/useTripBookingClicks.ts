@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { qk } from '@/lib/queryKeys';
 
 export interface TripBookingClick {
   id: string;
@@ -26,7 +27,7 @@ export interface TripBookingClickSummary {
  */
 export function useTripBookingClicks(tripId: string | undefined) {
   return useQuery({
-    queryKey: ['trip-booking-clicks', tripId],
+    queryKey: qk.trip.facet(tripId, 'booking-clicks'),
     enabled: !!tripId,
     staleTime: 60 * 1000,
     queryFn: async (): Promise<TripBookingClickSummary> => {

@@ -22,6 +22,11 @@ on:
 
 permissions:
   contents: write
+  # Needed for the protected-branch fallback below, which opens a PR instead of
+  # pushing. Note a GITHUB_TOKEN-authored PR does not trigger CI, so its required
+  # checks stay pending until a human pushes to the branch or re-runs them —
+  # acceptable for a baselines-only change, but do not expect auto-merge.
+  pull-requests: write
 
 jobs:
   update-baselines:
@@ -56,17 +61,40 @@ jobs:
             e2e/**/*-linux.png
           if-no-files-found: error
           retention-days: 7
-      - name: Commit baselines to dispatched branch
+      # `main` is protected, so a direct push from GITHUB_TOKEN is rejected with
+      # GH006 ("N of N required status checks are expected") — and it is rejected
+      # at the LAST step, after ~28 minutes of screenshotting, so the run looks
+      # like it is working right up until it isn't. Dispatching on main is the
+      # obvious thing to do after an intentional UI change, so route that case
+      # through a PR rather than failing.
+      - name: Commit baselines
         if: inputs.commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          BASE_URL: ${{ inputs.base_url || 'https://queer.guide' }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add e2e/*-snapshots/*-linux.png
           if git diff --cached --quiet; then
             echo "baselines unchanged — nothing to commit"
+            exit 0
+          fi
+
+          # skip-checks trailer, not "[skip ci]" — a bracket marker anywhere in a
+          # squashed merge message skips ALL deploys (see the CLAUDE.md gotcha).
+          git commit -m "test(e2e): update linux visual baselines" -m "skip-checks: true"
+
+          if [ "${GITHUB_REF_NAME}" = "${DEFAULT_BRANCH}" ]; then
+            BRANCH="chore/visual-baselines-$(date -u +%Y%m%d-%H%M%S)"
+            git push origin "HEAD:refs/heads/${BRANCH}"
+            gh pr create \
+              --base "${DEFAULT_BRANCH}" \
+              --head "${BRANCH}" \
+              --title "test(e2e): update linux visual baselines" \
+              --body "Regenerated against \`${BASE_URL}\` by the Update Visual Baselines workflow. Direct pushes to \`${DEFAULT_BRANCH}\` are blocked by branch protection, so this lands as a PR."
+            echo "::notice::baselines pushed to ${BRANCH} and a PR opened (cannot push to protected ${DEFAULT_BRANCH})"
           else
-            # skip-checks trailer, not "[skip ci]" — a bracket marker anywhere in a
-            # squashed merge message skips ALL deploys (see the CLAUDE.md gotcha).
-            git commit -m "test(e2e): update linux visual baselines" -m "skip-checks: true"
             git push origin "HEAD:${GITHUB_REF_NAME}"
           fi

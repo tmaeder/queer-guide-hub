@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router';
 import { Button } from '@/components/ui/button';
-import { LogOut, Moon, Plus, Shield, Sun, UserRound } from 'lucide-react';
+import { Briefcase, LogOut, Moon, Plus, Shield, Sun, UserRound } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
@@ -22,7 +22,7 @@ import { generateAvatarUrl } from '@/lib/avatar';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
-import { USER_MENU_ITEMS as userMenuItems } from '@/config/navigation';
+import { USER_MENU_ITEMS as userMenuItems, INTENT_NAV, isIntentActive } from '@/config/navigation';
 import { getSubmitCta } from '@/lib/submitCta';
 import { useTheme } from '@/components/theme/ThemeProvider';
 import { useSiteBranding } from '@/hooks/useSiteBranding';
@@ -47,6 +47,10 @@ export function Header() {
     (user?.email ? generateAvatarUrl(user.email, 96) || undefined : undefined);
 
   const submitCta = getSubmitCta(location.pathname, t);
+  // Declared here, not next to desktopNav: rightCluster's JSX reads it and is
+  // evaluated at its own const assignment above, so a later declaration is a
+  // temporal-dead-zone crash on every render.
+  const path = stripLocale(location.pathname);
 
   const displayName = (profile?.display_name as string | null) || null;
   const username = (profile?.username as string | null) || null;
@@ -63,11 +67,7 @@ export function Header() {
 
   // ── Brand + right action cluster (shared by mobile row & desktop grid) ───
   const brand = (
-    <Link
-      to="/"
-      aria-label={siteName}
-      className="flex items-center gap-2.5 shrink-0 no-underline"
-    >
+    <Link to="/" aria-label={siteName} className="flex items-center gap-2.5 shrink-0 no-underline">
       <img
         src={branding.logoUrl ?? '/images/logo.png'}
         alt=""
@@ -107,6 +107,24 @@ export function Header() {
         >
           <Plus size={20} />
         </Button>
+      )}
+
+      {/* "Mine" — the second axis. Intents answer WHAT I WANT TO DO; this
+          answers WHERE MY THINGS ARE (trips, saved, messages, plans). /hub was
+          reachable on desktop only by opening the avatar dropdown, so half the
+          product had no visible entry point at all. Rendered outside the
+          intent <nav> on purpose: it is not a sixth peer job, and putting it
+          in that landmark would read as one. */}
+      {user && (
+        <LocalizedLink
+          to="/hub"
+          aria-current={path === '/hub' || path.startsWith('/hub/') ? 'page' : undefined}
+          title={t('header.mobileNav.hub', 'Hub')}
+          className="hidden items-center gap-2 px-2 py-2 text-sm font-medium text-muted-foreground no-underline transition-colors hover:text-foreground aria-[current=page]:font-semibold aria-[current=page]:text-foreground md:inline-flex"
+        >
+          <Briefcase size={18} aria-hidden />
+          <span className="sr-only lg:not-sr-only">{t('header.mobileNav.hub', 'Hub')}</span>
+        </LocalizedLink>
       )}
 
       {user && (
@@ -225,35 +243,42 @@ export function Header() {
     </div>
   );
 
-  // ── Desktop primary nav — mirrors the mobile Explore IA. Mobile keeps the
-  // bottom tab bar; desktop finally gets browse paths beyond the search box.
-  const path = stripLocale(location.pathname);
-  const primaryNav = [
-    { to: '/map', labelKey: 'header.nav.map', fallback: 'Map' },
-    { to: '/places', labelKey: 'header.nav.places', fallback: 'Places' },
-    { to: '/events', labelKey: 'header.nav.events', fallback: 'Events' },
-    { to: '/marketplace', labelKey: 'header.nav.marketplace', fallback: 'Marketplace' },
-    { to: '/guides', labelKey: 'header.nav.guides', fallback: 'Guides' },
-    { to: '/news', labelKey: 'header.nav.news', fallback: 'News' },
-  ] as const;
+  // ── Desktop primary nav — the Intent Router row.
+  // Single-sourced from INTENT_NAV in src/config/navigation.ts. This array used
+  // to be hardcoded here and had silently diverged from the config's
+  // PRIMARY_NAV, leaving /venues (the largest catalog) and /people unreachable
+  // from desktop chrome. Never re-inline it.
   const desktopNav = (
     // Distinct landmark name — the mobile bottom bar owns "Navigation";
     // duplicate nav landmark names break rotor navigation (landmark-unique).
-    <nav aria-label={t('header.primaryNavigation', 'Primary')} className="hidden lg:flex items-center gap-1">
-      {primaryNav.map(({ to, labelKey, fallback }) => {
-        const active = path === to || path.startsWith(`${to}/`);
+    // `md:` not `lg:` — useIsMobile flips at md (768) and MobileBottomNav is
+    // md:hidden, so `hidden lg:flex` left 768–1023px (iPad portrait, small
+    // laptops, split-screen) with NO primary navigation at all. Below lg the
+    // label collapses to its icon rather than the nav collapsing: five labels
+    // plus the 280px-min search field and the action cluster genuinely overflow
+    // there.
+    <nav
+      aria-label={t('header.primaryNavigation', 'Primary')}
+      className="hidden md:flex items-center gap-1"
+    >
+      {INTENT_NAV.map((intent) => {
+        const { to, icon: Icon, labelKey, fallback } = intent;
+        const active = isIntentActive(intent, path);
+        const label = t(labelKey, fallback);
         return (
           <LocalizedLink
             key={to}
             to={to}
+            title={label}
             aria-current={active ? 'page' : undefined}
             className={
               active
-                ? 'px-2 py-2 text-sm font-semibold text-foreground underline decoration-spot decoration-[3px] underline-offset-8'
-                : 'px-2 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground no-underline'
+                ? 'flex items-center px-2 py-2 text-sm font-semibold text-foreground underline decoration-spot decoration-[3px] underline-offset-8'
+                : 'flex items-center px-2 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground no-underline'
             }
           >
-            {t(labelKey, fallback)}
+            <Icon size={18} className="lg:hidden" aria-hidden />
+            <span className="sr-only lg:not-sr-only">{label}</span>
           </LocalizedLink>
         );
       })}

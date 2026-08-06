@@ -165,6 +165,10 @@ export const Image = ({
 
   const [rung, setRung] = React.useState(0);
   const [loaded, setLoaded] = React.useState(false);
+  // Rung whose CF-wrapped srcset failed: that rung retries with the raw URL
+  // before the ladder advances. Any host CF's fetcher can't pull (unknown
+  // hotlink protection) must degrade to the original URL, not burn the source.
+  const [cfFailedRung, setCfFailedRung] = React.useState<number | null>(null);
   const imgRef = React.useRef<HTMLImageElement | null>(null);
 
   // Reset when the ladder itself changes. Done during render rather than in an
@@ -176,6 +180,7 @@ export const Image = ({
     setRenderedKey(ladderKey);
     setRung(0);
     setLoaded(false);
+    setCfFailedRung(null);
   }
 
   const resolved = sources[rung] ?? null;
@@ -207,7 +212,10 @@ export const Image = ({
     : onFirstRung
       ? (optimizedUrl ?? resolved)
       : resolved;
-  const cfSrcSet = cfBase ? buildCfSrcSet(cfBase, widthSet) : undefined;
+  // Once this rung's CF-wrapped srcset has errored, render it srcset-free so
+  // the browser falls back to the untouched raw URL.
+  const cfSrcSet =
+    cfBase && cfFailedRung !== rung ? buildCfSrcSet(cfBase, widthSet) : undefined;
   // External hosts can't use CF resizing; fall back to a two-stop set when we
   // have both a small and a large URL for the same asset.
   const externalSrcSet =
@@ -215,6 +223,14 @@ export const Image = ({
       ? `${thumbnailUrl} 400w, ${optimizedUrl} 1600w`
       : undefined;
   const srcSet = cfSrcSet ?? externalSrcSet;
+
+  // An error while a CF-wrapped srcset is live blames the wrap first: retry
+  // this rung raw. Only a raw failure moves the ladder down — the texture
+  // stays a last resort.
+  const onImgError = () => {
+    if (cfSrcSet) setCfFailedRung(rung);
+    else onSourceError();
+  };
 
   // `onLoad` is not a reliable signal that an image loaded — it only says it
   // loaded AFTER React attached the listener. A cached image (back navigation,
@@ -241,11 +257,11 @@ export const Image = ({
       // without firing onLoad must not be replaced by the fallback.
       const el = imgRef.current;
       if (el?.complete && el.naturalWidth > 0) setLoaded(true);
-      else onSourceError();
+      else onImgError();
     }, 8000);
     return () => clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- onSourceError is a stable setState updater; re-arm only when the source or priority changes
-  }, [resolved, priority, error]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- setState updaters are stable; re-arm on source/priority change and on the CF→raw retry (cfFailedRung) so the raw attempt gets its own 8s window
+  }, [resolved, priority, error, cfFailedRung]);
   const referrerPolicy = effectiveSrc ? imageReferrerPolicy(effectiveSrc) : undefined;
 
   // Person photos are framed head-and-shoulders; the face sits in the upper
@@ -273,7 +289,12 @@ export const Image = ({
       fetchPriority={priority ? 'high' : 'auto'}
       referrerPolicy={referrerPolicy}
       onLoad={() => setLoaded(true)}
-      onError={onSourceError}
+      // `onImgError`, not `onSourceError`: main added the former as a wrapper
+      // that first sheds the Cloudflare srcset and retries the SAME source raw,
+      // and only then advances the ladder. Extracting this <img> into `photo`
+      // during the riso work carried the older handler forward, which would
+      // have silently dropped that retry.
+      onError={onImgError}
       style={effectiveObjectPosition ? { objectPosition: effectiveObjectPosition } : undefined}
       className={cn(
         'img-lazy-fade h-full w-full transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]',

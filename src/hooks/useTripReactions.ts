@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { qk } from '@/lib/queryKeys';
 
 const FINGERPRINT_KEY = 'qg.viewerFingerprint';
 
@@ -47,7 +48,7 @@ export function useTripReactions(tripId: string | undefined) {
   const fingerprint = getViewerFingerprint();
 
   return useQuery({
-    queryKey: ['trip-reactions', tripId, user?.id ?? fingerprint],
+    queryKey: qk.trip.reactions(tripId, user?.id ?? fingerprint),
     enabled: !!tripId,
     staleTime: 30 * 1000,
     queryFn: async (): Promise<Map<string, PlaceReactionSummary>> => {
@@ -65,9 +66,7 @@ export function useTripReactions(tripId: string | undefined) {
           byPlace.set(row.place_id, summary);
         }
         summary.counts[row.emoji] = (summary.counts[row.emoji] ?? 0) + 1;
-        const isMine = user
-          ? row.viewer_id === user.id
-          : row.viewer_fingerprint === fingerprint;
+        const isMine = user ? row.viewer_id === user.id : row.viewer_fingerprint === fingerprint;
         if (isMine) summary.mine.add(row.emoji);
       }
       return byPlace;
@@ -114,7 +113,7 @@ export function useToggleReaction() {
       }
     },
     onSuccess: (_r, vars) => {
-      qc.invalidateQueries({ queryKey: ['trip-reactions', vars.tripId] });
+      qc.invalidateQueries({ queryKey: qk.trip.facet(vars.tripId, 'reactions') });
     },
   });
 }

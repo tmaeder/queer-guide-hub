@@ -1651,6 +1651,7 @@
       "stats": {
         "places": "[ES] {{n}} places",
         "events": "[ES] {{n}} events",
+        "eventsUpcoming": "{{n}} eventos próximos",
         "cities": "[ES] {{n}} cities",
         "inView": "[ES] {{n}} places in view"
       },
@@ -1685,6 +1686,7 @@
       "venues": "Lugares",
       "events": "Eventos",
       "places": "Destinos",
+      "cities": "Ciudades",
       "map": "Mapa",
       "feed": "Novedades",
       "groups": "Grupos",
@@ -1699,6 +1701,34 @@
       "tags": "Etiquetas",
       "history": "Historia",
       "guides": "[ES] Guides"
+    },
+    "intents": {
+      "goingOut": {
+        "label": "Salir",
+        "subtitle": "Bares, clubes y qué hay esta noche"
+      },
+      "travelling": {
+        "label": "Viajar",
+        "subtitle": "Si es seguro, dónde alojarse, qué hacer"
+      },
+      "meet": {
+        "label": "Conocer gente",
+        "subtitle": "Amistades, citas, compañeros de viaje y grupos"
+      },
+      "rights": {
+        "label": "Derechos",
+        "subtitle": "Leyes y seguridad LGBTQ+, país por país"
+      },
+      "support": {
+        "label": "Apoyo",
+        "subtitle": "Líneas de ayuda y organizaciones cerca de ti"
+      },
+      "shop": {
+        "label": "Tienda",
+        "subtitle": "Libros, ropa, arte y regalos"
+      },
+      "sheetHeading": "¿Qué buscas?",
+      "browseHeading": "Explorar todo"
     },
     "userMenu": {
       "myTrips": "Mis viajes",
@@ -3065,7 +3095,8 @@
     "wishlists": "Listas de deseos",
     "tags": "Etiquetas",
     "organizations": "[ES] Organizations",
-    "guides": "[ES] Guides"
+    "guides": "[ES] Guides",
+    "people": "Conocer gente"
   },
   "chat": {
     "react": "Reaccionar",
