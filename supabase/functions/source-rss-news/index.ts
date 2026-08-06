@@ -75,6 +75,18 @@ const rssNewsAdapter: SourceAdapter = {
     let bytesParsed = 0
     let skippedForBytes = 0
 
+    // Cap the ITEMS a run accumulates, not just the bytes it downloads. These
+    // are different constraints and the byte budget does not imply this one:
+    // measured on the 2026-08-06 11:00 run, 30 feeds totalling 6.6 MB (well
+    // under RUN_BYTE_BUDGET) with no single feed reaching the 100-item cap
+    // still produced 1,681 items — and the worker died with HTTP 546 at 44s,
+    // AFTER all 30 sources had been fetched successfully in 30s. The cost is
+    // downstream of the loop (normalize + writeToStaging over allItems), so it
+    // scales with item count. The run that completed the same morning carried
+    // 83 items. 500 sits well inside that gap and bounds the staging payload.
+    const RUN_ITEM_BUDGET = 500
+    let skippedForItems = 0
+
     // A feed that KILLS the worker never reaches the catch below, so it never
     // increments consecutive_failures and can never auto-pause. That is how one
     // source (queertheology.com, 8.5 MB / 652 episodes) took the pipeline down
@@ -99,6 +111,7 @@ const rssNewsAdapter: SourceAdapter = {
     for (const source of sources as NewsSource[]) {
       if (Date.now() > deadlineAt) { skippedForTime++; continue }
       if (bytesParsed > RUN_BYTE_BUDGET) { skippedForBytes++; continue }
+      if (allItems.length >= RUN_ITEM_BUDGET) { skippedForItems++; continue }
       try {
         // Claim the source: advance last_fetched_at NOW, not on completion.
         // last_fetched_at is the queue cursor (news_sources_eligible orders by
@@ -225,6 +238,9 @@ const rssNewsAdapter: SourceAdapter = {
     }
     if (skippedForBytes > 0) {
       console.log(`source-rss-news: hit ${RUN_BYTE_BUDGET} byte budget after ${bytesParsed}, skipped ${skippedForBytes} feed(s) — they rotate to next run`)
+    }
+    if (skippedForItems > 0) {
+      console.log(`source-rss-news: hit ${RUN_ITEM_BUDGET} item budget at ${allItems.length}, skipped ${skippedForItems} feed(s) — they rotate to next run`)
     }
 
     return allItems
