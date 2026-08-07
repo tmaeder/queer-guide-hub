@@ -6,6 +6,8 @@ export interface PersonalizedCityRow {
   slug: string | null;
   image_url: string | null;
   population: number | null;
+  editorial_hook: string | null;
+  best_time_to_visit: string | null;
   countries: { name: string; equality_score: number | null } | null;
 }
 
@@ -15,7 +17,7 @@ export async function fetchPersonalizedCitiesByIds(
   if (cityIds.length === 0) return [];
   const { data } = await supabase
     .from('cities')
-    .select('id, name, slug, image_url, population, countries:country_id(name, equality_score)')
+    .select('id, name, slug, image_url, population, editorial_hook, best_time_to_visit, countries:country_id(name, equality_score)')
     .in('id', cityIds);
   return ((data ?? []) as unknown) as PersonalizedCityRow[];
 }
@@ -39,7 +41,7 @@ export async function fetchTrendingCities(
   // 1. Editorial whitelist by name, preserving curated order.
   const { data: whitelisted } = await supabase
     .from('cities')
-    .select('id, name, slug, image_url, population, countries:country_id(name, equality_score)')
+    .select('id, name, slug, image_url, population, editorial_hook, best_time_to_visit, countries:country_id(name, equality_score)')
     .in('name', FEATURED_CITY_WHITELIST)
     .not('slug', 'like', 'tmp-%');
 
@@ -61,7 +63,7 @@ export async function fetchTrendingCities(
   // 2. Fallback — large cities in equality-friendly countries (>= 60).
   const { data: filtered } = await supabase
     .from('cities')
-    .select('id, name, slug, image_url, population, countries:country_id!inner(name, equality_score)')
+    .select('id, name, slug, image_url, population, editorial_hook, best_time_to_visit, countries:country_id!inner(name, equality_score)')
     .not('slug', 'like', 'tmp-%')
     .gte('population', minPopulation)
     .gte('countries.equality_score', 60)

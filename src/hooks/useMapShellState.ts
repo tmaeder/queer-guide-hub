@@ -84,7 +84,10 @@ export function useMapShellState(config: MapShellConfig): UseMapShellStateResult
   const [searchParams, setSearchParams] = useSearchParams();
   const useUrl = config.enableUrlState !== false;
   const prefs = useMemo(() => readPrefs(), []);
-  const defaultLayers = useMemo(() => seedEnabledLayers(config.layers), [config.layers]);
+  const defaultLayers = useMemo(
+    () => config.defaultEnabledLayers ?? seedEnabledLayers(config.layers),
+    [config.defaultEnabledLayers, config.layers],
+  );
 
   const inMemoryRef = useRef<MapShellState>({
     lens: config.defaultLens,

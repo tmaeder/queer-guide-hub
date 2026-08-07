@@ -1,6 +1,6 @@
 {
   "project": "tsconfig.app.json",
-  "total": 1270,
+  "total": 1267,
   "files": {
     "src/assets/intimate/pictograms.tsx": {
       "TS2503": 2
@@ -539,15 +539,6 @@
     },
     "src/components/travel/AirportAutocomplete.tsx": {
       "TS2554": 1
-    },
-    "src/components/travel/InspirationGrid.tsx": {
-      "TS2459": 1
-    },
-    "src/components/travel/__tests__/InspirationGrid.test.tsx": {
-      "TS2304": 1
-    },
-    "src/components/travel/__tests__/ResumeTripStrip.test.tsx": {
-      "TS2304": 1
     },
     "src/components/trips/AddDayNoteDialog.tsx": {
       "TS2345": 1

@@ -2091,11 +2091,47 @@
       "bookNow": {
         "title": "احجز مباشرة",
         "subtitle": "ابحث عن رحلات وفنادق وأنشطة — دون الحاجة لرحلة.",
-        "headline": "احجز بدون رحلة"
+        "headline": "احجز بدون رحلة",
+        "tripContext": "[AR] Searching for your {{city}} trip",
+        "tripContextChange": "[AR] change"
       },
       "plan": {
         "switchTrip": "تبديل الرحلة النشطة"
-      }
+      },
+      "lede": "[AR] Pick a place, build the trip, book the pieces — with the legal picture built in.",
+      "sections": {
+        "plan": "[AR] Plan your trip",
+        "planKicker": "[AR] The planner",
+        "map": "[AR] See the map",
+        "mapKicker": "[AR] Destinations at a glance",
+        "inspiration": "[AR] Where to go",
+        "inspirationKicker": "[AR] Destinations",
+        "villages": "[AR] Neighborhoods",
+        "villagesKicker": "[AR] Queer villages worldwide",
+        "pride": "[AR] Pride season",
+        "book": "[AR] Getting there",
+        "bookKicker": "[AR] Flights and stays",
+        "safety": "[AR] Know before you go",
+        "safetyKicker": "[AR] The legal picture"
+      },
+      "map": {
+        "fullMap": "[AR] Full map with venues and filters",
+        "openFull": "[AR] Open the full map"
+      },
+      "goNow": {
+        "kicker": "[AR] This month",
+        "heading": "[AR] Go now — {{month}}",
+        "trending": "[AR] Trending now"
+      },
+      "cover": {
+        "kicker": "[AR] Cover story",
+        "read": "[AR] Read the guide"
+      },
+      "destinations": {
+        "empty": "[AR] No destinations match this filter."
+      },
+      "collections": "[AR] Collections",
+      "trending": "[AR] Trending now"
     },
     "marketplace": {
       "title": "السوق",

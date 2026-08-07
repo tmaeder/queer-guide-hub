@@ -2091,11 +2091,47 @@
       "bookNow": {
         "title": "Réserver directement",
         "subtitle": "Cherchez vols, hôtels et activités — sans voyage requis.",
-        "headline": "Réserver sans voyage"
+        "headline": "Réserver sans voyage",
+        "tripContext": "[FR] Searching for your {{city}} trip",
+        "tripContextChange": "[FR] change"
       },
       "plan": {
         "switchTrip": "Changer de voyage actif"
-      }
+      },
+      "lede": "[FR] Pick a place, build the trip, book the pieces — with the legal picture built in.",
+      "sections": {
+        "plan": "[FR] Plan your trip",
+        "planKicker": "[FR] The planner",
+        "map": "[FR] See the map",
+        "mapKicker": "[FR] Destinations at a glance",
+        "inspiration": "[FR] Where to go",
+        "inspirationKicker": "[FR] Destinations",
+        "villages": "[FR] Neighborhoods",
+        "villagesKicker": "[FR] Queer villages worldwide",
+        "pride": "[FR] Pride season",
+        "book": "[FR] Getting there",
+        "bookKicker": "[FR] Flights and stays",
+        "safety": "[FR] Know before you go",
+        "safetyKicker": "[FR] The legal picture"
+      },
+      "map": {
+        "fullMap": "[FR] Full map with venues and filters",
+        "openFull": "[FR] Open the full map"
+      },
+      "goNow": {
+        "kicker": "[FR] This month",
+        "heading": "[FR] Go now — {{month}}",
+        "trending": "[FR] Trending now"
+      },
+      "cover": {
+        "kicker": "[FR] Cover story",
+        "read": "[FR] Read the guide"
+      },
+      "destinations": {
+        "empty": "[FR] No destinations match this filter."
+      },
+      "collections": "[FR] Collections",
+      "trending": "[FR] Trending now"
     },
     "marketplace": {
       "title": "Marché",

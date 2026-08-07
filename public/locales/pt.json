@@ -2087,11 +2087,47 @@
       "bookNow": {
         "title": "Reservar direto",
         "subtitle": "Busque voos, hotéis e atividades — sem viagem necessária.",
-        "headline": "Reservar sem viagem"
+        "headline": "Reservar sem viagem",
+        "tripContext": "[PT] Searching for your {{city}} trip",
+        "tripContextChange": "[PT] change"
       },
       "plan": {
         "switchTrip": "Trocar viagem ativa"
-      }
+      },
+      "lede": "[PT] Pick a place, build the trip, book the pieces — with the legal picture built in.",
+      "sections": {
+        "plan": "[PT] Plan your trip",
+        "planKicker": "[PT] The planner",
+        "map": "[PT] See the map",
+        "mapKicker": "[PT] Destinations at a glance",
+        "inspiration": "[PT] Where to go",
+        "inspirationKicker": "[PT] Destinations",
+        "villages": "[PT] Neighborhoods",
+        "villagesKicker": "[PT] Queer villages worldwide",
+        "pride": "[PT] Pride season",
+        "book": "[PT] Getting there",
+        "bookKicker": "[PT] Flights and stays",
+        "safety": "[PT] Know before you go",
+        "safetyKicker": "[PT] The legal picture"
+      },
+      "map": {
+        "fullMap": "[PT] Full map with venues and filters",
+        "openFull": "[PT] Open the full map"
+      },
+      "goNow": {
+        "kicker": "[PT] This month",
+        "heading": "[PT] Go now — {{month}}",
+        "trending": "[PT] Trending now"
+      },
+      "cover": {
+        "kicker": "[PT] Cover story",
+        "read": "[PT] Read the guide"
+      },
+      "destinations": {
+        "empty": "[PT] No destinations match this filter."
+      },
+      "collections": "[PT] Collections",
+      "trending": "[PT] Trending now"
     },
     "marketplace": {
       "title": "Marketplace",
