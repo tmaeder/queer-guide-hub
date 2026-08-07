@@ -81,7 +81,10 @@ jobs:
       - name: Install Supabase CLI
         uses: supabase/setup-cli@v3
         with:
-          version: latest
+          # Pinned 2026-08-07: 'latest' (v2.112.0) fails `supabase link` with
+          # "failed to get api keys: SchemaError(... inserted_at)" — broke the
+          # main deploy run. v2.98.2 verified against this project locally.
+          version: 2.98.2
 
       - name: Push migrations
         if: env.SUPABASE_ACCESS_TOKEN != ''
