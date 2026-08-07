@@ -55,6 +55,13 @@ export interface EnrichmentDriverConfig {
    *  state is then checked once per batch instead of once per item (N+1
    *  fix). Multi-breaker adopters leave this unset. */
   batchBreakerApi?: string
+  /** Opt-in: only enrich rows the deterministic gates have already passed —
+   *  ai_validation_status='approved' AND dedup_status <> 'duplicate'. Meant
+   *  for the reordered DAGs where validate+dedup run BEFORE the LLM stages.
+   *  Default false so the current stage order (enrich first, where both
+   *  columns still read 'pending') keeps working. Request body
+   *  `require_gates` (spread from the DAG node config) overrides this. */
+  requireGates?: boolean
   /** Returns 'skip' when the row lacks the minimum fields (no name/title). */
   enrichItem(
     supabase: ServiceClient,
@@ -89,18 +96,30 @@ export function serveEnrichment(config: EnrichmentDriverConfig) {
         8,
         Math.max(1, body.concurrency ?? config.defaultConcurrency ?? 4)
       )
+      const requireGates = (body.require_gates as boolean | undefined) ?? config.requireGates ?? false
 
       let q = supabase
         .from('ingestion_staging')
         .select('id, normalized_data, entity_type, target_table')
         .in('target_table', config.targetTables)
         .eq('enrichment_status', 'pending')
+        // Rows a deterministic gate already disposed (validate-reject stamps
+        // disposition='rejected') must never reach paid enrichment. Under the
+        // current stage order every enrichment-pending row is still
+        // disposition='pending', so this is a no-op there; once validate+dedup
+        // move ahead of the LLM stages it becomes the cost gate. Mirrors
+        // pipeline-deduplicate's selection. (Column is NOT NULL DEFAULT
+        // 'pending', so eq has no NULL trap.)
+        .eq('disposition', 'pending')
         .not('normalized_data', 'is', null)
-        .order('created_at', { ascending: true })
-        .limit(batchSize)
       if (pipelineRunId) q = q.eq('pipeline_run_id', pipelineRunId)
+      if (requireGates) {
+        q = q.eq('ai_validation_status', 'approved').neq('dedup_status', 'duplicate')
+      }
 
       const { data: items, error } = await q
+        .order('created_at', { ascending: true })
+        .limit(batchSize)
       if (error) return errorResponse(`load: ${error.message}`, 500, req)
       if (!items || items.length === 0) {
         return jsonResponse({ success: true, items: 0, message: 'nothing to enrich' }, 200, req)
