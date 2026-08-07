@@ -1,6 +1,6 @@
 {
   "project": "tsconfig.app.json",
-  "total": 1267,
+  "total": 1265,
   "files": {
     "src/assets/intimate/pictograms.tsx": {
       "TS2503": 2
@@ -1079,9 +1079,6 @@
       "TS2322": 6,
       "TS2345": 2,
       "TS2352": 1
-    },
-    "src/hooks/useTripSafety.ts": {
-      "TS2345": 2
     },
     "src/hooks/useTripSuggestions.ts": {
       "TS2352": 1

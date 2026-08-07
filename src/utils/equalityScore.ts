@@ -129,13 +129,26 @@ export function parseSsuDetails(ssu: string | null | undefined): {
 }
 
 /**
- * Strict criminalization check: `legal === false` only. Mirrors the DB
- * predicate `location_is_high_risk` that drives the safety layer — keep the
- * two in sync.
+ * Strict criminalization check. Mirrors the DB predicate
+ * `location_is_high_risk` that drives the safety layer — keep the two in sync.
+ *
+ * That predicate is a two-arm OR, and this function only implemented the first
+ * arm until 2026-08-07:
+ *
+ *   (co.lgbti_criminalization->>'legal') = 'false'
+ *   or lower(coalesce(co.lgbti_criminalization->>'death_penalty','')) = 'yes'
+ *
+ * On today's data the second arm is redundant — all 7 death-penalty countries
+ * also carry `legal: false`, so the gap selects 0 rows and no user has ever
+ * seen a wrong answer from it. It is implemented anyway because the comment
+ * claimed parity it did not have, and the row that breaks the coincidence
+ * (a jurisdiction ILGA records as death-penalty without an explicit `legal`
+ * flag) would silently un-gate a country rather than fail loudly.
  */
 export function isCriminalized(crim: Record<string, unknown> | null | undefined): boolean {
   if (!crim) return false;
-  return crim.legal === false;
+  if (crim.legal === false) return true;
+  return /^yes$/i.test(String(crim.death_penalty ?? '').trim());
 }
 
 /**
@@ -156,11 +169,45 @@ export function hasAnyCriminalizationSignal(input: unknown): boolean {
   return false;
 }
 
-/** Check if death penalty applies */
+/**
+ * How exposed someone is to a capital penalty, in three states.
+ *
+ * ILGA splits this fact across two fields and neither is sufficient alone:
+ *
+ *   Yemen     death_penalty 'Yes'                penalty 'Death Penalty'
+ *   Nigeria   death_penalty 'Yes'                penalty '10 years to life in prison'
+ *   Qatar     death_penalty 'No legal certainty' penalty 'Death Penalty (possible)'
+ *
+ * Nigeria rules out reading `penalty` alone; Afghanistan, Pakistan, Qatar,
+ * Somalia and the UAE rule out reading `death_penalty` alone. Those five are
+ * why this exists: `hasDeathPenalty` tested only `death_penalty`, so
+ * 'No legal certainty' — ILGA explicitly recording that it does not know —
+ * came back `false`, exactly as if ILGA had said "No". `/rights` therefore
+ * reported 7 countries where the source says death is possible in 12, and
+ * `useTripSafety` rated Afghanistan `high` rather than `critical`.
+ *
+ * `'possible'` must never render as a confirmed claim and must never render as
+ * silence. Absence of certainty is not a negative finding.
+ */
+export type DeathPenaltyRisk = 'confirmed' | 'possible' | 'none';
+
+export function deathPenaltyRisk(
+  crim: Record<string, unknown> | null | undefined,
+): DeathPenaltyRisk {
+  if (!crim) return 'none';
+  const dp = String(crim.death_penalty ?? '').trim();
+  // Checked first: Nigeria is 'Yes' while its penalty text names only prison.
+  if (/^yes$/i.test(dp) || /death/i.test(dp)) return 'confirmed';
+  if (/no legal certainty/i.test(dp)) return 'possible';
+  return /death/i.test(String(crim.penalty ?? '')) ? 'possible' : 'none';
+}
+
+/**
+ * Confirmed capital penalty only. Use where the UI states it as a fact.
+ * For "should this reader be warned", use `deathPenaltyRisk() !== 'none'`.
+ */
 export function hasDeathPenalty(crim: Record<string, unknown> | null | undefined): boolean {
-  if (!crim) return false;
-  const dp = String(crim.death_penalty || '');
-  return dp.includes('Death') || dp === 'Yes';
+  return deathPenaltyRisk(crim) === 'confirmed';
 }
 
 /** Get protection status string for a specific dimension */

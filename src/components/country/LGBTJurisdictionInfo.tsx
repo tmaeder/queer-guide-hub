@@ -23,7 +23,7 @@ import {
   Ban,
 } from 'lucide-react';
 import EqualityScoreBadge from './EqualityScoreBadge';
-import { parseSsuDetails, getProtectionStatus, hasDeathPenalty } from '@/utils/equalityScore';
+import { parseSsuDetails, getProtectionStatus, deathPenaltyRisk } from '@/utils/equalityScore';
 
 interface LGBTJurisdictionInfoProps {
   country: Record<string, unknown>;
@@ -212,7 +212,8 @@ export default function LGBTJurisdictionInfo({
 
   const crimLegal = crim?.legal;
   const crimStatus = crimLegal === true ? 'Legal' : crimLegal === false ? 'Criminalised' : null;
-  const deathPenalty = hasDeathPenalty(crim);
+  const dpRisk = deathPenaltyRisk(crim);
+  const deathPenalty = dpRisk !== 'none';
 
   return (
     <Card className={className} style={style}>
@@ -267,9 +268,11 @@ export default function LGBTJurisdictionInfo({
               <p className="pl-8 text-xs font-medium text-destructive">
                 {t('country.rights.penalty', 'Penalty')}: {crim?.penalty as string}
                 {crim?.max_prison ? ` (${crim.max_prison as string})` : ''}
-                {deathPenalty
-                  ? ` — ${t('country.rights.deathPenalty', 'death penalty possible')}`
-                  : ''}
+                {dpRisk === 'confirmed'
+                  ? ` — ${t('country.rights.deathPenalty', 'death penalty')}`
+                  : dpRisk === 'possible'
+                    ? ` — ${t('country.rights.deathPenaltyPossible', 'death penalty possible, no legal certainty')}`
+                    : ''}
               </p>
             )}
             {crimLegal === true && (crim?.decrim_year_1 as string) && (
