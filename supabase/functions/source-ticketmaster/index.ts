@@ -3,6 +3,7 @@ import { withCircuitBreaker } from '../_shared/circuit-breaker.ts'
 import type { SourceAdapter, RawItem, NormalizedItem, AdapterConfig } from '../_shared/source-adapter.ts'
 import { writeToStaging, MissingCredentialsError, skippedResponse } from '../_shared/source-adapter.ts'
 import { withErrorReporting } from '../_shared/report-api-error.ts'
+import { prefilterEvents, ticketmasterPrefilterFields } from '../_shared/event-prefilter.ts'
 
 // ============================================================
 // Source: Ticketmaster Discovery API
@@ -106,9 +107,22 @@ Deno.serve(withErrorReporting('source-ticketmaster', async (req) => {
       pipelineRunId: body.pipeline_run_id, nodeId: body.node_id,
     }
     const rawItems = await ticketmasterAdapter.fetch(config)
-    if (config.dryRun) return jsonResponse({ success: true, items: rawItems.length, dry_run: true }, 200, req)
-    const written = await writeToStaging(supabase, ticketmasterAdapter, rawItems, { ...config, targetTable: 'events' })
-    return jsonResponse({ success: true, items: written, items_total: rawItems.length, items_processed: written, items_succeeded: written, items_failed: 0 }, 200, req)
+    // LGBTQ+ prefilter (default ON): the Discovery keyword search fuzzy-matches
+    // far beyond the queried terms — measured 10,605 staged rows/30d of which 13
+    // survived the review-gate LLM verdict. The upstream request already sends
+    // the keyword param (nothing stricter exists API-side), so the gate is
+    // client-side: drop events whose own text carries no LGBTQ+ signal BEFORE
+    // they cost staging + validate + dedup + LLM enrichment.
+    const prefilterOn = body.prefilter !== false
+    const keywordOverride = Array.isArray(body.prefilter_keywords) ? (body.prefilter_keywords as string[]) : undefined
+    const { kept, fetched, dropped } = prefilterOn
+      ? prefilterEvents(rawItems, { keywords: keywordOverride, fields: ticketmasterPrefilterFields })
+      : { kept: rawItems, fetched: rawItems.length, dropped: 0 }
+    const prefilter = { enabled: prefilterOn, fetched, kept: kept.length, dropped }
+    if (prefilterOn) console.log(`source-ticketmaster prefilter: fetched=${fetched} kept=${kept.length} dropped=${dropped}`)
+    if (config.dryRun) return jsonResponse({ success: true, items: kept.length, prefilter, dry_run: true }, 200, req)
+    const written = await writeToStaging(supabase, ticketmasterAdapter, kept, { ...config, targetTable: 'events' })
+    return jsonResponse({ success: true, items: written, items_total: fetched, items_processed: written, items_succeeded: written, items_failed: 0, prefilter }, 200, req)
   } catch (error) {
     if (error instanceof MissingCredentialsError) {
       return jsonResponse(skippedResponse('missing_credentials', error.missing), 200, req)

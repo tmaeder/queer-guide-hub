@@ -15,10 +15,12 @@ type Client = Parameters<EnrichmentDriverConfig['enrichItem']>[0]
 interface StubCalls {
   normalizedUpdates: Array<{ id: string; data: Record<string, unknown> }>
   rpcCalls: Array<Record<string, unknown>>
+  /** Every [op, column, value] filter applied to the staging SELECT. */
+  filters: Array<[string, string, unknown]>
 }
 
 function makeStubClient(rows: StagingItem[]): { client: Client; calls: StubCalls } {
-  const calls: StubCalls = { normalizedUpdates: [], rpcCalls: [] }
+  const calls: StubCalls = { normalizedUpdates: [], rpcCalls: [], filters: [] }
 
   const client = {
     from(table: string) {
@@ -27,10 +29,16 @@ function makeStubClient(rows: StagingItem[]): { client: Client; calls: StubCalls
         select() {
           return builder
         },
-        in() {
+        in(col: string, vals: unknown) {
+          calls.filters.push(['in', col, vals])
           return builder
         },
-        eq(_col?: string, _v?: unknown) {
+        eq(col: string, v: unknown) {
+          calls.filters.push(['eq', col, v])
+          return builder
+        },
+        neq(col: string, v: unknown) {
+          calls.filters.push(['neq', col, v])
           return builder
         },
         not() {
@@ -196,4 +204,42 @@ Deno.test('empty batch returns the nothing-to-enrich shape', async () => {
   const res = await handler(post({}))
   const body = await res.json()
   assertEquals(body, { success: true, items: 0, message: 'nothing to enrich' })
+})
+
+// ── Stage-reorder gates (overhaul P3a) ─────────────────────────────────────
+
+const hasFilter = (calls: StubCalls, op: string, col: string, v: unknown) =>
+  calls.filters.some(([o, c, val]) => o === op && c === col && val === v)
+
+Deno.test('selection always excludes already-disposed rows, gates off by default', async () => {
+  const { handler, calls } = makeConfig([row('1')], {})
+  await handler(post({}))
+  assertEquals(hasFilter(calls, 'eq', 'enrichment_status', 'pending'), true)
+  assertEquals(hasFilter(calls, 'eq', 'disposition', 'pending'), true)
+  // Default OFF: current stage order (enrich before validate/dedup) must keep
+  // selecting rows whose gate columns still read 'pending'.
+  assertEquals(calls.filters.some(([, c]) => c === 'ai_validation_status'), false)
+  assertEquals(calls.filters.some(([, c]) => c === 'dedup_status'), false)
+})
+
+Deno.test('requireGates config adds the validate + dedup gate filters', async () => {
+  const { handler, calls } = makeConfig([row('1')], { requireGates: true })
+  await handler(post({}))
+  assertEquals(hasFilter(calls, 'eq', 'ai_validation_status', 'approved'), true)
+  assertEquals(hasFilter(calls, 'neq', 'dedup_status', 'duplicate'), true)
+  assertEquals(hasFilter(calls, 'eq', 'disposition', 'pending'), true)
+})
+
+Deno.test('body require_gates=true enables the gates without a config default', async () => {
+  const { handler, calls } = makeConfig([row('1')], {})
+  await handler(post({ require_gates: true }))
+  assertEquals(hasFilter(calls, 'eq', 'ai_validation_status', 'approved'), true)
+  assertEquals(hasFilter(calls, 'neq', 'dedup_status', 'duplicate'), true)
+})
+
+Deno.test('body require_gates=false overrides a requireGates config default', async () => {
+  const { handler, calls } = makeConfig([row('1')], { requireGates: true })
+  await handler(post({ require_gates: false }))
+  assertEquals(calls.filters.some(([, c]) => c === 'ai_validation_status'), false)
+  assertEquals(calls.filters.some(([, c]) => c === 'dedup_status'), false)
 })

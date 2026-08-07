@@ -123,7 +123,12 @@ Deno.serve(async (req) => {
     // newest-first tick for new products + an oldest-first tick to grind the
     // backlog). Default stays oldest-first (unchanged behavior).
     const ascending = String(body.order ?? 'oldest') !== 'newest'
-    let query = supabase.from('ingestion_staging').select('id, normalized_data').eq('target_table', 'marketplace_listings').eq('ai_validation_status', 'approved').is('classification_result', null).order('created_at', { ascending }).limit(effectiveBatch)
+    // dedup_status guard: never spend an LLM call on a row dedup already marked
+    // 'duplicate' — the commit path discards it anyway. 'pending' stays allowed
+    // so the current DAG order (relevance BEFORE dedup) keeps working; once the
+    // DAG moves dedup ahead of this node, duplicates are filtered here for free.
+    // (Column is NOT NULL DEFAULT 'pending', so .in() has no NULL trap.)
+    let query = supabase.from('ingestion_staging').select('id, normalized_data').eq('target_table', 'marketplace_listings').eq('ai_validation_status', 'approved').is('classification_result', null).in('dedup_status', ['pending', 'unique', 'merge_candidate']).order('created_at', { ascending }).limit(effectiveBatch)
     if (pipelineRunId) query = query.eq('pipeline_run_id', pipelineRunId)
     // Scope the batch to specific merchants. Without this a trust-stamp backfill still
     // pulls a mixed batch and spends most of it on LLM calls for unrelated sources —

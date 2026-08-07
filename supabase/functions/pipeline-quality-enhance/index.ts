@@ -81,6 +81,15 @@ Deno.serve(withErrorReporting('pipeline-quality-enhance', async (req) => {
       .in('target_table', ['news_articles'])
       // apply_enrichment() writes 'enriched' on success — not 'success'.
       .eq('enrichment_status', 'enriched')
+      // Never spend an LLM call on a row a deterministic gate already discarded:
+      // validate-reject stamps disposition='rejected', dedup marks duplicates
+      // (disposition stays 'pending' there, hence the separate neq). validate
+      // and dedup run on their own ticks without waiting for a quality verdict,
+      // so this saves calls in the CURRENT order too, and becomes the main cost
+      // gate once they move ahead of the LLM stages. Both columns are NOT NULL
+      // DEFAULT 'pending' — no NULL trap.
+      .eq('disposition', 'pending')
+      .neq('dedup_status', 'duplicate')
       // Skip rows already quality-enhanced. apply_enrichment re-stamps
       // enrichment_status='enriched' on our own write, so without this filter the
       // node re-selects the oldest rows every tick and the backlog never drains.
