@@ -55,6 +55,21 @@ vi.mock('@/components/travel/BrowseVisitedToolbar', () => ({
 vi.mock('@/components/travel/TravelDiscoveryMap', () => ({
   TravelDiscoveryMap: () => <div data-testid="discovery-map" />,
 }));
+vi.mock('@/components/travel/TravelCoverStory', () => ({
+  TravelCoverStory: () => <div data-testid="cover-story" />,
+}));
+vi.mock('@/components/travel/GoNowRail', () => ({
+  GoNowRail: () => <div data-testid="go-now" />,
+}));
+vi.mock('@/components/travel/DestinationGrid', () => ({
+  DestinationGrid: () => <div data-testid="destination-grid" />,
+}));
+vi.mock('@/components/guides/GuidesRail', () => ({
+  GuidesRail: () => <div data-testid="guides-rail" />,
+}));
+vi.mock('@/components/discovery/TrendingStrip', () => ({
+  TrendingStrip: () => <div data-testid="trending-strip" />,
+}));
 vi.mock('@/components/travel/BookNowAccordion', () => ({
   BookNowAccordion: (p: { defaultOpen: boolean }) => (
     <div data-testid="book" data-open={String(p.defaultOpen)} />
@@ -136,9 +151,12 @@ describe('Travel page (Travelling intent)', () => {
     expect(screen.getByTestId('discoverable')).toBeInTheDocument();
   });
 
-  it('renders the map, villages and pride sections', () => {
+  it('renders the map, inspiration, villages and pride sections', () => {
     renderAt('/travel');
     expect(screen.getByTestId('discovery-map')).toBeInTheDocument();
+    expect(screen.getByTestId('go-now')).toBeInTheDocument();
+    expect(screen.getByTestId('destination-grid')).toBeInTheDocument();
+    expect(screen.getByTestId('guides-rail')).toBeInTheDocument();
     expect(screen.getByTestId('villages')).toBeInTheDocument();
     expect(screen.getByTestId('pride')).toBeInTheDocument();
   });

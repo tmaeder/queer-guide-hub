@@ -13,6 +13,11 @@ import { VillagesRail } from '@/components/travel/VillagesRail';
 import { DiscoverableTripsRail } from '@/components/travel/DiscoverableTripsRail';
 import { BrowseVisitedToolbar } from '@/components/travel/BrowseVisitedToolbar';
 import { TravelDiscoveryMap } from '@/components/travel/TravelDiscoveryMap';
+import { TravelCoverStory } from '@/components/travel/TravelCoverStory';
+import { GoNowRail } from '@/components/travel/GoNowRail';
+import { DestinationGrid } from '@/components/travel/DestinationGrid';
+import { GuidesRail } from '@/components/guides/GuidesRail';
+import { TrendingStrip } from '@/components/discovery/TrendingStrip';
 import { TripTemplates } from '@/components/trips/TripTemplates';
 import { useAuth } from '@/hooks/useAuth';
 import { useTrackEvent } from '@/hooks/useTrackEvent';
@@ -120,17 +125,36 @@ export default function Travel() {
       content: <TravelDiscoveryMap />,
     },
     {
-      id: 'villages',
-      label: t('pages.travel.sections.villages', 'Neighborhoods'),
-      kicker: t('pages.travel.sections.villagesKicker', 'Queer villages worldwide'),
+      id: 'inspiration',
+      label: t('pages.travel.sections.inspiration', 'Where to go'),
+      kicker: t('pages.travel.sections.inspirationKicker', 'Destinations'),
       content: (
         <div>
+          <TravelCoverStory />
+          <GoNowRail />
           <div className="mb-6 flex flex-wrap items-center justify-end">
             <BrowseVisitedToolbar value={visitedFilter} onChange={onVisitedChange} />
           </div>
-          <VillagesRail visitedFilter={visitedFilter} />
+          <DestinationGrid visitedFilter={visitedFilter} />
+          <GuidesRail
+            title={t('pages.travel.collections', 'Collections')}
+            filters={{ format: 'list' }}
+          />
+          <div className="mt-12">
+            <TrendingStrip
+              types={['city', 'event']}
+              limit={10}
+              title={t('pages.travel.trending', 'Trending now')}
+            />
+          </div>
         </div>
       ),
+    },
+    {
+      id: 'villages',
+      label: t('pages.travel.sections.villages', 'Neighborhoods'),
+      kicker: t('pages.travel.sections.villagesKicker', 'Queer villages worldwide'),
+      content: <VillagesRail visitedFilter={visitedFilter} />,
     },
     {
       id: 'pride',
