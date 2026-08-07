@@ -49,11 +49,11 @@ export function VillagesRail({ visitedFilter = 'all', limit = 8 }: Props) {
             {t('travel.villagesRail.heading', 'Queer villages')}
           </h2>
         </div>
-        {/* The rail is queer villages, so "see all" belongs on /villages. It
-            pointed at /places, which now redirects to /travel — i.e. straight
-            back to the page this rail is rendered on. */}
+        {/* /villages itself redirects via /places back to /travel — the page
+            this rail is rendered on — so "see all" goes to the map with the
+            neighbourhoods layer on. */}
         <LocalizedLink
-          to="/villages"
+          to="/map?layers=neighbourhoods"
           className="inline-flex items-center gap-2 text-13 font-medium text-muted-foreground no-underline hover:text-foreground"
         >
           {t('travel.villagesRail.seeAll', 'See all')}

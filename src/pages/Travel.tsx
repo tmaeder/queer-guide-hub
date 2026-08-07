@@ -5,15 +5,14 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useMeta } from '@/hooks/useMeta';
 import { IntentPageLayout } from '@/components/intent/IntentPageLayout';
 import { CoverageNote } from '@/components/intent/CoverageNote';
-import { ResumeTripStrip } from '@/components/travel/ResumeTripStrip';
-import { useHasMeaningfulActiveTrip } from '@/hooks/useMeaningfulTrips';
 import { PrideScroller } from '@/components/travel/PrideScroller';
-import { InspirationGrid } from '@/components/travel/InspirationGrid';
 import { BookNowAccordion } from '@/components/travel/BookNowAccordion';
 import { TripCockpit } from '@/components/travel/TripCockpit';
+import { StartTripHero } from '@/components/travel/StartTripHero';
 import { VillagesRail } from '@/components/travel/VillagesRail';
 import { DiscoverableTripsRail } from '@/components/travel/DiscoverableTripsRail';
 import { BrowseVisitedToolbar } from '@/components/travel/BrowseVisitedToolbar';
+import { TripTemplates } from '@/components/trips/TripTemplates';
 import { useAuth } from '@/hooks/useAuth';
 import { useTrackEvent } from '@/hooks/useTrackEvent';
 import { useIntentLocation } from '@/hooks/useIntentLocation';
@@ -27,26 +26,29 @@ import {
 import type { SectionDef } from '@/components/entity/editorial';
 
 /**
- * `/travel` — the Travelling intent, rebuilt in place.
+ * `/travel` — the Travelling intent, planner-first.
  *
  * Rebuilt at its existing path rather than given a new one: `/travel` already
  * has STATIC_ROUTE_META and STATIC_ROUTE_BODY entries and existing rankings, so
  * keeping the URL means this redesign cannibalises nothing.
  *
- * The reordering is the point. This page used to open on a trip cockpit serving
- * a population of 8 trips. It now opens on "is it safe for me?", because that is
- * the question a queer traveller actually asks first and it is the one question
- * our data can answer completely — 250 of 250 countries carry a criminalisation
- * status. Trips are demoted to a self-hiding section for signed-in users.
+ * The page opens on the trip planner — plan, then book, with the legal picture
+ * as a compact briefing near the end instead of the lead. The planner is the
+ * most built-out system on the site and this page is its front door; safety
+ * data (250/250 countries covered) stays on-page as "Know before you go" and
+ * in full depth inside each trip's safety briefing.
  */
 export default function Travel() {
   const { t } = useTranslation();
   const { user } = useAuth();
   const { track } = useTrackEvent();
   const [params] = useSearchParams();
-  const intentBook = params.get('intent') === 'book';
+  // Any booking deep link (?intent=book from nav CTAs, ?tab/?city from
+  // TripBookingAssistant + CityTravelHub) should land on the booking section
+  // with the accordion open.
+  const bookIntent =
+    params.get('intent') === 'book' || !!params.get('tab') || !!params.get('city');
 
-  const hasActiveTrip = useHasMeaningfulActiveTrip();
   const [visitedFilter, setVisitedFilter] = useState<VisitedFilter>(() =>
     readStoredVisitedFilter(),
   );
@@ -69,8 +71,19 @@ export default function Travel() {
   useEffect(() => {
     // No entityType: 'intent' is not a member of EntityType, and inventing one
     // would feed a synthetic type into the personalization bias vector.
-    track({ eventType: 'page_view', metadata: { intent: 'travelling' } });
+    track({ eventType: 'page_view', metadata: { intent: 'travelling', layout: 'planner-first' } });
   }, [track]);
+
+  // Booking deep links scroll to the book section. EditorialDetailLayout's own
+  // initial-scroll only reads ?section= and has already run by the time this
+  // parent effect fires, so scroll directly; its persist effect then writes
+  // ?section=book once the section becomes active.
+  useEffect(() => {
+    if (!bookIntent || params.get('section')) return;
+    queueMicrotask(() => document.getElementById('book')?.scrollIntoView?.({ block: 'start' }));
+    // One-shot on mount by design.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useMeta({
     title: 'LGBTQ+ Travel Guide — Safe Destinations | Queer Guide',
@@ -86,15 +99,52 @@ export default function Travel() {
 
   const sections: SectionDef[] = [
     {
+      id: 'plan',
+      label: t('pages.travel.sections.plan', 'Plan your trip'),
+      kicker: t('pages.travel.sections.planKicker', 'The planner'),
+      content: (
+        <div>
+          {user ? <TripCockpit /> : <StartTripHero />}
+          <TripTemplates />
+          <div className="mt-12">
+            <DiscoverableTripsRail />
+          </div>
+        </div>
+      ),
+    },
+    {
+      id: 'villages',
+      label: t('pages.travel.sections.villages', 'Neighborhoods'),
+      kicker: t('pages.travel.sections.villagesKicker', 'Queer villages worldwide'),
+      content: (
+        <div>
+          <div className="mb-6 flex flex-wrap items-center justify-end">
+            <BrowseVisitedToolbar value={visitedFilter} onChange={onVisitedChange} />
+          </div>
+          <VillagesRail visitedFilter={visitedFilter} />
+        </div>
+      ),
+    },
+    {
+      id: 'pride',
+      label: t('pages.travel.sections.pride', 'Pride season'),
+      content: <PrideScroller />,
+    },
+    {
+      id: 'book',
+      label: t('pages.travel.sections.book', 'Getting there'),
+      kicker: t('pages.travel.sections.bookKicker', 'Flights and stays'),
+      content: <BookNowAccordion defaultOpen={bookIntent} />,
+    },
+    {
       id: 'safety',
-      label: 'Is it safe?',
-      kicker: 'Before you book',
+      label: t('pages.travel.sections.safety', 'Know before you go'),
+      kicker: t('pages.travel.sections.safetyKicker', 'The legal picture'),
       content: (
         <div>
           <CoverageNote>
-            We hold the legal position for all {countries?.length ?? 250} countries and territories.{' '}
-            {criminalizingCount} of them criminalise same-sex acts. This is the most complete data
-            on the site — everything else here is thinner.
+            We hold the legal position for all {countries?.length ?? 250} countries and
+            territories. {criminalizingCount} of them criminalise same-sex acts.
           </CoverageNote>
           {home ? (
             <p className="text-body-lg mb-4">
@@ -123,53 +173,6 @@ export default function Travel() {
         </div>
       ),
     },
-    {
-      id: 'where',
-      label: 'Where to go',
-      kicker: 'Destinations',
-      content: (
-        <div>
-          <div className="mb-6 flex flex-wrap items-center justify-end">
-            <BrowseVisitedToolbar value={visitedFilter} onChange={onVisitedChange} />
-          </div>
-          <InspirationGrid visitedFilter={visitedFilter} />
-        </div>
-      ),
-    },
-    {
-      id: 'villages',
-      label: 'Neighborhoods',
-      kicker: 'Queer villages worldwide',
-      content: <VillagesRail visitedFilter={visitedFilter} />,
-    },
-    {
-      id: 'pride',
-      label: 'Pride season',
-      content: <PrideScroller />,
-    },
-    {
-      id: 'stay',
-      label: 'Getting there',
-      kicker: 'Flights and stays',
-      content: <BookNowAccordion defaultOpen={intentBook} />,
-    },
-    // Self-hiding: 8 trips exist in the entire database, so this is a personal
-    // tool for signed-in users, not a public destination.
-    ...(user
-      ? [
-          {
-            id: 'your-trips',
-            label: 'Your trips',
-            content: (
-              <div>
-                {hasActiveTrip ? <ResumeTripStrip /> : null}
-                <TripCockpit />
-                <DiscoverableTripsRail />
-              </div>
-            ),
-          } satisfies SectionDef,
-        ]
-      : []),
   ];
 
   return (
@@ -178,7 +181,10 @@ export default function Travel() {
       breadcrumbHref="/travel"
       eyebrow="Travelling"
       title={t('pages.travel.title', 'Where are you going?')}
-      lede="Check the law before you book, then find the places, neighborhoods and stays worth the trip."
+      lede={t(
+        'pages.travel.lede',
+        'Pick a place, build the trip, book the pieces — with the legal picture built in.',
+      )}
       sections={sections}
     />
   );
