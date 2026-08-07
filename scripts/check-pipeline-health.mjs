@@ -95,7 +95,20 @@ if (!hygieneRes.ok) {
     console.error(`✗ Cron jobs with no admin_automations registry row: ${unregistered.join(', ')} — register them (P1 registry-of-record policy)`)
     process.exit(1)
   }
-  console.log(`✓ Cron hygiene clean (${hygiene.cron_total} active jobs); staging pending_review=${pending}`)
+  // Starved-path sentinel (overhaul P2): rows stuck mid-pipeline >48h. Live
+  // baseline at introduction was ~2.8k (news ~1.9k, marketplace ~0.9k, oldest
+  // from June) — thresholds sit above that so only NEW starvation fails.
+  const stale = hygiene.stale_pending_by_entity ?? {}
+  const staleTotal = Object.values(stale).reduce((a, b) => a + Number(b), 0)
+  const staleWorst = Object.entries(stale).sort((a, b) => Number(b[1]) - Number(a[1]))[0]
+  if ((staleWorst && Number(staleWorst[1]) > 5000) || staleTotal > 10000) {
+    console.error(`✗ Staging starvation: ${staleTotal} rows pending >48h (${JSON.stringify(stale)}) — a drain/fill path is dead`)
+    process.exit(1)
+  }
+  if (staleTotal > 3500) {
+    console.warn(`⚠ Staging stale-pending rising: ${staleTotal} rows >48h (${JSON.stringify(stale)})`)
+  }
+  console.log(`✓ Cron hygiene clean (${hygiene.cron_total} active jobs); staging pending_review=${pending}, stale_pending=${staleTotal}`)
 }
 
 // 6. Search reindex queue (P1 overhaul, 2026-08): entity writes enqueue here;
