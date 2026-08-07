@@ -250,7 +250,7 @@ const Index = React.memo(() => {
             real instead of one simply covering the other — which is the whole
             argument for separate drums. Both layers are aria-hidden and sit
             behind the copy, so neither touches the text's contrast. */}
-        <div aria-hidden="true" className="absolute inset-0 -z-10 halftone-pink overprint" />
+        <div aria-hidden="true" className="absolute inset-0 -z-10 halftone-pink overprint-flood" />
         <div className="relative max-w-3xl">
           <h2
             className="font-display text-display md:text-hero font-bold tracking-tight"

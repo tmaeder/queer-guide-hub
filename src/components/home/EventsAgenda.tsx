@@ -77,7 +77,6 @@ function PrideFallback() {
     // disappears is not a masthead.
     <HomeSection
       rank="masthead"
-      eyebrow={t('home.events.eyebrow', "What's on")}
       title={t('home.events.prideFallback.title', 'Pride season ahead')}
       seeAllHref="/events"
       seeAllLabel={t('common.browseAll', 'Browse all')}
@@ -246,7 +245,6 @@ const EventsAgenda = () => {
     // Masthead in both render states — see the note on the fallback above.
     <HomeSection
       rank="masthead"
-      eyebrow={t('home.events.eyebrow', "What's on")}
       title={title}
       seeAllHref="/events"
       seeAllLabel={t('common.browseAll', 'Browse all')}
