@@ -2085,11 +2085,47 @@
       "bookNow": {
         "title": "바로 예약",
         "subtitle": "항공편, 호텔, 액티비티를 바로 검색 — 여행 계획 없이도.",
-        "headline": "여행 없이 예약"
+        "headline": "여행 없이 예약",
+        "tripContext": "[KO] Searching for your {{city}} trip",
+        "tripContextChange": "[KO] change"
       },
       "plan": {
         "switchTrip": "활성 여행 전환"
-      }
+      },
+      "lede": "[KO] Pick a place, build the trip, book the pieces — with the legal picture built in.",
+      "sections": {
+        "plan": "[KO] Plan your trip",
+        "planKicker": "[KO] The planner",
+        "map": "[KO] See the map",
+        "mapKicker": "[KO] Destinations at a glance",
+        "inspiration": "[KO] Where to go",
+        "inspirationKicker": "[KO] Destinations",
+        "villages": "[KO] Neighborhoods",
+        "villagesKicker": "[KO] Queer villages worldwide",
+        "pride": "[KO] Pride season",
+        "book": "[KO] Getting there",
+        "bookKicker": "[KO] Flights and stays",
+        "safety": "[KO] Know before you go",
+        "safetyKicker": "[KO] The legal picture"
+      },
+      "map": {
+        "fullMap": "[KO] Full map with venues and filters",
+        "openFull": "[KO] Open the full map"
+      },
+      "goNow": {
+        "kicker": "[KO] This month",
+        "heading": "[KO] Go now — {{month}}",
+        "trending": "[KO] Trending now"
+      },
+      "cover": {
+        "kicker": "[KO] Cover story",
+        "read": "[KO] Read the guide"
+      },
+      "destinations": {
+        "empty": "[KO] No destinations match this filter."
+      },
+      "collections": "[KO] Collections",
+      "trending": "[KO] Trending now"
     },
     "marketplace": {
       "title": "마켓플레이스",

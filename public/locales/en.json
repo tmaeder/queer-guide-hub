@@ -2119,6 +2119,20 @@
         "fullMap": "Full map with venues and filters",
         "openFull": "Open the full map"
       },
+      "goNow": {
+        "kicker": "This month",
+        "heading": "Go now — {{month}}",
+        "trending": "Trending now"
+      },
+      "cover": {
+        "kicker": "Cover story",
+        "read": "Read the guide"
+      },
+      "destinations": {
+        "empty": "No destinations match this filter."
+      },
+      "collections": "Collections",
+      "trending": "Trending now",
       "activitiesComingSoon": "Activities coming soon.",
       "browseDestinations": "Browse destinations",
       "exploreCta": "LGBTQ+ friendly destinations",
@@ -2163,7 +2177,9 @@
       "bookNow": {
         "title": "Book now",
         "subtitle": "Search flights, hotels, and activities directly — no trip required.",
-        "headline": "Book without a trip"
+        "headline": "Book without a trip",
+        "tripContext": "Searching for your {{city}} trip",
+        "tripContextChange": "change"
       },
       "hotels": {
         "typeLabel": "Type",
