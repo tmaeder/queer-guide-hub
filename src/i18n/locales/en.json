@@ -2177,7 +2177,9 @@
       "bookNow": {
         "title": "Book now",
         "subtitle": "Search flights, hotels, and activities directly — no trip required.",
-        "headline": "Book without a trip"
+        "headline": "Book without a trip",
+        "tripContext": "Searching for your {{city}} trip",
+        "tripContextChange": "change"
       },
       "hotels": {
         "typeLabel": "Type",

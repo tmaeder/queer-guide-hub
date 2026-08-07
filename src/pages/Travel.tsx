@@ -20,6 +20,7 @@ import { GuidesRail } from '@/components/guides/GuidesRail';
 import { TrendingStrip } from '@/components/discovery/TrendingStrip';
 import { TripTemplates } from '@/components/trips/TripTemplates';
 import { useAuth } from '@/hooks/useAuth';
+import { useTripBookingContext } from '@/hooks/useTripBookingContext';
 import { useTrackEvent } from '@/hooks/useTrackEvent';
 import { useIntentLocation } from '@/hooks/useIntentLocation';
 import { useAllCountriesRights } from '@/hooks/useIntentData';
@@ -65,6 +66,7 @@ export default function Travel() {
 
   const { countryCode } = useIntentLocation();
   const { data: countries } = useAllCountriesRights();
+  const tripBookingContext = useTripBookingContext();
 
   const home = useMemo(
     () =>
@@ -165,7 +167,7 @@ export default function Travel() {
       id: 'book',
       label: t('pages.travel.sections.book', 'Getting there'),
       kicker: t('pages.travel.sections.bookKicker', 'Flights and stays'),
-      content: <BookNowAccordion defaultOpen={bookIntent} />,
+      content: <BookNowAccordion defaultOpen={bookIntent} tripContext={tripBookingContext} />,
     },
     {
       id: 'safety',

@@ -31,6 +31,7 @@ vi.mock('@/hooks/useAuth', () => ({ useAuth: authMock }));
 vi.mock('@/hooks/useMeta', () => ({ useMeta: () => {} }));
 vi.mock('@/hooks/useIntentData', () => ({ useAllCountriesRights: countriesMock }));
 vi.mock('@/hooks/useIntentLocation', () => ({ useIntentLocation: intentLocationMock }));
+vi.mock('@/hooks/useTripBookingContext', () => ({ useTripBookingContext: () => null }));
 vi.mock('@/components/travel/PrideScroller', () => ({
   PrideScroller: () => <div data-testid="pride" />,
 }));
