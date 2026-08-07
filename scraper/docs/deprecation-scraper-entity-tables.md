@@ -1,7 +1,7 @@
 # Deprecation plan: `scraper_*` entity tables
 
 ## Status
-**Proposed — not yet started.** Code still writes to these tables. This document is the migration roadmap.
+**Executed 2026-08 (adapted — pipeline overhaul P7).** Instead of the staged read/write-path shift below, the entire dormant machinery was deleted: `src/cli.ts`, `src/jobs/` (node-cron scheduler + orchestrator — the host was never deployed), `src/normalize/`, `src/utils/` (incl. the local dedupe), the dormant connectors (wikipedia, iglta, outsavvy, patroc, misterbnb, travelgay), and the local-persistence layer (`src/db/{pool,queries,migrate}.ts` + `src/db/migrations/`). Nothing writes to `scraper_*` tables anymore; the only remaining path is `scripts/gaycities-sync.ts` → `src/sources/gaycities/` → `src/db/staging-publisher.ts` → Supabase `ingestion_staging`. The local `scraper_*` tables can be archived/dropped at leisure (they live outside Supabase). The original plan is kept below for context.
 
 ## Motivation
 

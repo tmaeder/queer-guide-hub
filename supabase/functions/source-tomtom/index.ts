@@ -26,10 +26,13 @@ const tomtomAdapter: SourceAdapter = {
     const supabase = getServiceClient()
     const cities = (config.filters?.cities as string[]) || ['New York']
     const limit = Math.min(config.batchSize || 15, 15)
+    // Custom terms (admin import dialog) override the curated term set.
+    const customTerms = config.filters?.terms as string[] | undefined
+    const terms = customTerms?.length ? customTerms : SEARCH_TERMS
     const allItems: RawItem[] = []
 
     for (const city of cities) {
-      for (const term of SEARCH_TERMS) {
+      for (const term of terms) {
         try {
           const items = await withCircuitBreaker(supabase, 'tomtom', async () => {
             const searchTerm = encodeURIComponent(`${term} ${city}`)
@@ -48,7 +51,7 @@ const tomtomAdapter: SourceAdapter = {
             return all.filter(r => r.type === 'POI' && (r.poi as Record<string, unknown> | undefined)?.name)
           })
           for (const poi of items) {
-            const id = poi.id || `tt-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+            const id = String(poi.id || `tt-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`)
             allItems.push({ sourceId: id, data: { ...poi, _search_city: city, _search_term: term } })
           }
           await new Promise(r => setTimeout(r, 300))
@@ -102,14 +105,15 @@ Deno.serve(withErrorReporting('source-tomtom', async (req) => {
     const body = await req.json().catch(() => ({}))
     const config: AdapterConfig = {
       batchSize: body.limit || body.batch_size || 15,
-      filters: { cities: body.cities },
+      filters: { cities: body.cities, terms: body.terms },
       apiKey: Deno.env.get('TOMTOM_API_KEY'),
       dryRun: body.dry_run || false,
       pipelineRunId: body.pipeline_run_id, nodeId: body.node_id,
     }
     const rawItems = await tomtomAdapter.fetch(config)
     if (config.dryRun) return jsonResponse({ success: true, items: rawItems.length, dry_run: true }, 200, req)
-    const written = await writeToStaging(supabase, tomtomAdapter, rawItems, { ...config, targetTable: 'venues' })
+    // sourceType: admin imports tag rows 'import-tomtom' for source_type continuity.
+    const written = await writeToStaging(supabase, tomtomAdapter, rawItems, { ...config, targetTable: 'venues', sourceType: body.sourceType })
     return jsonResponse({ success: true, items: written, items_total: rawItems.length, items_processed: written, items_succeeded: written, items_failed: 0 }, 200, req)
   } catch (error) {
     if (error instanceof MissingCredentialsError) {

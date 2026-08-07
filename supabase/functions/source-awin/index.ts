@@ -10,27 +10,60 @@ import { parseCsv } from '../_shared/csv.ts'
 // Replaces: import-awin-products
 // ============================================================
 
+// Default Awin datafeed URL (gzip CSV) built from the API credentials —
+// mirrors the URL the retired import-awin-products fetcher constructed, so
+// the admin import keeps working without an explicit AWIN_FEED_URL.
+function defaultAwinFeedUrl(): string | undefined {
+  const token = Deno.env.get('AWIN_API_TOKEN')
+  const advertiserId = Deno.env.get('AWIN_ADVERTISER_ID')
+  if (!token || !advertiserId) return undefined
+  const columns = [
+    'aw_deep_link', 'product_name', 'aw_product_id', 'merchant_product_id',
+    'merchant_image_url', 'description', 'merchant_category', 'search_price',
+    'merchant_name', 'merchant_id', 'category_name', 'category_id',
+    'aw_image_url', 'currency', 'store_price', 'delivery_cost',
+    'merchant_deep_link', 'language', 'last_updated', 'display_price',
+    'data_feed_id', 'brand_name', 'brand_id', 'colour',
+    'product_short_description', 'specifications', 'condition',
+    'product_model', 'model_number', 'dimensions', 'keywords',
+    'promotional_text', 'product_type', 'rrp_price',
+  ].join(',')
+  return `https://productdata.awin.com/datafeed/download/apikey/${token}/language/en/cid/${advertiserId}/hasEnhancedFeeds/0/columns/${columns}/format/csv/delimiter/%2C/compression/gzip/adultcontent/1/`
+}
+
+// Awin's datafeed download is a gzip FILE (not Content-Encoding), so fetch
+// does not auto-decompress it. Sniff the magic bytes and inflate if needed.
+async function readFeedText(res: Response): Promise<string> {
+  const buf = new Uint8Array(await res.arrayBuffer())
+  if (buf[0] === 0x1f && buf[1] === 0x8b) {
+    const stream = new Blob([buf]).stream().pipeThrough(new DecompressionStream('gzip'))
+    return await new Response(stream).text()
+  }
+  return new TextDecoder().decode(buf)
+}
+
 const awinAdapter: SourceAdapter = {
   name: 'awin',
   entityType: 'marketplace',
 
   async fetch(config: AdapterConfig): Promise<RawItem[]> {
-    const feedUrl = (config.filters?.feedUrl as string) || Deno.env.get('AWIN_FEED_URL')
+    const feedUrl = (config.filters?.feedUrl as string) || Deno.env.get('AWIN_FEED_URL') || defaultAwinFeedUrl()
     if (!feedUrl) throw new MissingCredentialsError('AWIN_FEED_URL')
 
     const supabase = getServiceClient()
     const limit = config.batchSize || 100
+    const offset = config.offset || 0
 
     const csvText = await withCircuitBreaker(supabase, 'awin', async () => {
       const res = await fetch(feedUrl)
       if (!res.ok) throw new Error(`AWIN feed ${res.status}`)
-      return await res.text()
+      return await readFeedText(res)
     })
 
     const rows = parseCsv(csvText)
     const items: RawItem[] = []
 
-    for (const row of rows.slice(0, limit)) {
+    for (const row of rows.slice(offset, offset + limit)) {
       // Content-addressed fallback: use title+merchant hash instead of row index
       const fallbackId = row.aw_product_id || row.product_id
         || `awin-${String(row.product_name ?? '').slice(0, 50)}-${String(row.merchant_name ?? '')}`
@@ -81,13 +114,15 @@ Deno.serve(withErrorReporting('source-awin', async (req) => {
     const body = await req.json().catch(() => ({}))
     const config: AdapterConfig = {
       batchSize: body.limit || body.batch_size || 100,
+      offset: body.offset,
       filters: { feedUrl: body.feedUrl },
       dryRun: body.dry_run || false,
       pipelineRunId: body.pipeline_run_id, nodeId: body.node_id,
     }
     const rawItems = await awinAdapter.fetch(config)
     if (config.dryRun) return jsonResponse({ success: true, items: rawItems.length, dry_run: true }, 200, req)
-    const written = await writeToStaging(supabase, awinAdapter, rawItems, { ...config, targetTable: 'marketplace_listings' })
+    // sourceType: admin imports tag rows 'import-awin' for source_type continuity.
+    const written = await writeToStaging(supabase, awinAdapter, rawItems, { ...config, targetTable: 'marketplace_listings', sourceType: body.sourceType })
     return jsonResponse({ success: true, items: written, items_total: rawItems.length, items_processed: written, items_succeeded: written, items_failed: 0 }, 200, req)
   } catch (error) {
     if (error instanceof MissingCredentialsError) {
