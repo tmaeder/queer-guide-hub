@@ -15,6 +15,7 @@ import {
   type RawCandidate,
   type GuardContext,
 } from '../_shared/dedup-engine.ts'
+import { resolveDedupEntityType } from '../_shared/content-registry.ts'
 
 // ============================================================
 // Pipeline Deduplicate — unified, config-driven (2026-06-23)
@@ -40,21 +41,6 @@ const CF_API_TOKEN = Deno.env.get('CLOUDFLARE_API_TOKEN') || ''
 const EMBED_MODEL = '@cf/baai/bge-m3' // 1024-d, must match workers/ingest stored vectors
 
 interface SemRow { entity_id: string; score: number; distance_m: number | null; country: string | null; title?: string | null }
-
-/** Resolve the registry entity type from a staging row. */
-function resolveEntityType(item: { target_table?: string | null; entity_type?: string | null }): EntityType | 'unknown' {
-  const table = item.target_table
-  const et = item.entity_type
-  if (table === 'events' || et === 'event') return 'event'
-  if (table === 'venues' || et === 'venue') return 'venue'
-  if (table === 'cities' || et === 'city') return 'city'
-  if (table === 'countries' || et === 'country') return 'country'
-  if (table === 'news_articles' || et === 'news_articles' || et === 'news') return 'news'
-  if (table === 'marketplace_listings' || et === 'marketplace') return 'marketplace'
-  if (table === 'personalities' || et === 'personality') return 'personality'
-  if (table === 'organizations' || et === 'organization') return 'organization'
-  return 'unknown'
-}
 
 /** Build the deterministic blocker RPC args for a type from normalized_data. */
 function buildDetArgs(type: EntityType, n: Record<string, unknown>, isHotel: boolean): Record<string, unknown> | null {
@@ -233,7 +219,7 @@ Deno.serve(withErrorReporting('pipeline-deduplicate', async (req) => {
     for (const item of items) {
       const n = (item.normalized_data ?? {}) as Record<string, unknown>
       const table = item.target_table
-      const baseType = resolveEntityType(item)
+      const baseType = resolveDedupEntityType(item)
 
       let circuitOpenForThisItem = false
       const raws: RawCandidate[] = []
