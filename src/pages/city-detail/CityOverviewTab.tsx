@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Badge } from '@/components/ui/badge';
 import { WeatherForecast } from '@/components/weather/WeatherForecast';
 import { PeopleHereRail } from '@/components/people/PeopleHereRail';
@@ -56,6 +57,7 @@ function DefinitionGrid({ heading, entries }: { heading: string; entries: [strin
  * not the old card-in-card soup. No fact repeats what At-a-glance already shows.
  */
 export function CityOverviewTab({ city }: CityOverviewTabProps) {
+  const { t } = useTranslation();
   const facts: { label: string; value: ReactNode }[] = [];
   const civicStatus = city.is_capital ? 'Capital city' : city.is_major_city ? 'Major city' : null;
   if (civicStatus) facts.push({ label: 'Status', value: civicStatus });
@@ -128,7 +130,10 @@ export function CityOverviewTab({ city }: CityOverviewTabProps) {
         <PeopleHereRail
           mode="locals"
           cityId={city.id}
-          title={`Locals & travelers to meet in ${city.name}`}
+          title={t('city.localsToMeet', {
+            defaultValue: 'Locals and travellers to meet in {{city}}',
+            city: city.name,
+          })}
           seeAllHref="/community/members"
         />
       )}

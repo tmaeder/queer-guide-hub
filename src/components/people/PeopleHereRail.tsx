@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, type ReactNode } from 'react';
 import { Link } from 'react-router';
 import { useAuth } from '@/hooks/useAuth';
 import { useStatus } from '@/hooks/useStatus';
@@ -16,6 +16,12 @@ interface PeopleHereRailProps {
   seeAllHref?: string;
   /** Max cards in the rail. */
   limit?: number;
+  /**
+   * Rendered instead of `null` when there is nobody to show. Opt-in, and
+   * default `null`, because the rail is embedded on city / event / trip pages
+   * where silence is correct — see the note on the component.
+   */
+  emptyState?: ReactNode;
 }
 
 /**
@@ -23,7 +29,15 @@ interface PeopleHereRailProps {
  * / trip surfaces, all driven by the shared people-matching engine
  * (people_discovery). Place context (city/event/trip) requires the viewer to
  * have opted into discovery presence; we never leak people onto a place page.
- * Renders nothing when signed-out, not opted-in, or there's no one to show.
+ *
+ * Renders nothing when signed-out, not opted-in, or there's no one to show —
+ * **unless** the caller passes `emptyState`. The silent null is right for an
+ * embedded rail on a venue or city page, but it was also the whole story on
+ * /people itself, where the rail IS the section: with 0 presence rows every
+ * discovery surface on the site was invisible, so nothing ever told a member
+ * that turning on discovery would populate anything. A cold-start product
+ * cannot bootstrap when the affordance that would fill it is itself hidden.
+ * The default stays `null` so the existing embedded call sites are unchanged.
  */
 export function PeopleHereRail({
   mode,
@@ -33,6 +47,7 @@ export function PeopleHereRail({
   title,
   seeAllHref,
   limit = 8,
+  emptyState = null,
 }: PeopleHereRailProps) {
   const { user } = useAuth();
   const { status } = useStatus();
@@ -65,8 +80,9 @@ export function PeopleHereRail({
     }));
   }, [matches, profiles]);
 
-  if (!enabled) return null;
-  if (isLoading || cards.length === 0) return null;
+  if (!enabled) return <>{emptyState}</>;
+  if (isLoading) return null;
+  if (cards.length === 0) return <>{emptyState}</>;
 
   return (
     <section className="space-y-4">

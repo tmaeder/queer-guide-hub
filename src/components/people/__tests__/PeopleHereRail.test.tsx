@@ -11,6 +11,18 @@ let matches: { userId: string; score: number; shared: Record<string, number> }[]
 let friendProfiles: { user_id: string; display_name: string; avatar_url: string | null }[] = [];
 let lastDiscoveryArgs: Record<string, unknown> | null = null;
 
+// See the note in PeopleModeView.test.tsx — the score badge is interpolated, so
+// a pass-through `t` would assert on "{{score}}% match".
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({
+    t: (key: string, opts?: string | Record<string, unknown>) => {
+      if (typeof opts === 'string') return opts;
+      const template = (opts?.defaultValue as string) ?? key;
+      return template.replace(/\{\{(\w+)\}\}/g, (_m, name) => String(opts?.[name] ?? ''));
+    },
+  }),
+}));
+
 vi.mock('@/hooks/useAuth', () => ({ useAuth: () => auth }));
 vi.mock('@/hooks/useStatus', () => ({ useStatus: () => ({ status: statusMock }) }));
 vi.mock('@/hooks/usePeopleDiscovery', () => ({
@@ -30,7 +42,11 @@ const renderRail = () =>
     React.createElement(
       MemoryRouter,
       null,
-      React.createElement(PeopleHereRail, { mode: 'locals', cityId: 'city-1', title: 'Locals to meet' }),
+      React.createElement(PeopleHereRail, {
+        mode: 'locals',
+        cityId: 'city-1',
+        title: 'Locals to meet',
+      }),
     ),
   );
 
