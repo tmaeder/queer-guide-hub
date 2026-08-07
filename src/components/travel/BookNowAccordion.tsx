@@ -76,7 +76,11 @@ interface Props {
 export function BookNowAccordion({ defaultOpen = false }: Props) {
   const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [open, setOpen] = useState(defaultOpen);
+  // ?tab= / ?city= deep links (TripBookingAssistant, CityTravelHub, /travel/book)
+  // must land expanded, not just seed a hidden tab.
+  const [open, setOpen] = useState(
+    () => defaultOpen || !!searchParams.get('tab') || !!searchParams.get('city'),
+  );
 
   const initialTab = (searchParams.get('tab') as BookingTab) || 'flights';
   const initialTo = searchParams.get('to') || undefined;

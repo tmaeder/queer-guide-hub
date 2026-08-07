@@ -21,6 +21,7 @@ import { Editable } from '@/components/admin/inline/Editable';
 import { EntityMap } from '@/components/map/EntityMap';
 import { useNearbyMapPoints } from '@/hooks/useNearbyMapPoints';
 import { getHotelPhotosToShow } from './hotelPhotosUtil';
+import { AFFILIATE_REL, tagKnownAffiliateUrl } from '@/lib/affiliate/links';
 import type { Database } from '@/integrations/supabase/types';
 import { getFallbackImage } from '@/utils/fallbackImages';
 import { isValidImageUrl } from '@/lib/images/resolveEntityImage';
@@ -57,6 +58,7 @@ export function HotelHero({ hotel, cityName, countryName, tripCount, isInTrip, o
   // Website is only useful when it points somewhere different than the
   // booking URL — otherwise it's a duplicate of "Book Now".
   const showWebsite = Boolean(hotel.website) && hotel.website !== hotel.booking_url;
+  const bookingLink = hotel.booking_url ? tagKnownAffiliateUrl(hotel.booking_url, 'hotel') : null;
   return (
     <>
       <ParallaxHero className="w-full h-[300px] mb-6">
@@ -110,9 +112,13 @@ export function HotelHero({ hotel, cityName, countryName, tripCount, isInTrip, o
             currentData={hotel as Record<string, unknown>}
             onSaved={() => window.location.reload()}
           />
-          {hotel.booking_url && (
+          {bookingLink && (
                           <Button size="sm" asChild>
-                <a href={hotel.booking_url} target="_blank" rel="noopener noreferrer">
+                <a
+                  href={bookingLink.href}
+                  target="_blank"
+                  rel={bookingLink.isAffiliate ? AFFILIATE_REL : 'noopener noreferrer'}
+                >
                   <ExternalLink className="w-4 h-4 mr-1.5" />
                   Book Now
                 </a>
