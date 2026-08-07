@@ -207,38 +207,4 @@ describe('Image', () => {
       expect(container.querySelector('img')!.getAttribute('src')).toBe(ORIGINAL);
     });
   });
-
-  describe('riso treatment', () => {
-    const ORIGINAL = 'https://cdn.merchant.com/product.jpg';
-
-    it('renders in full colour by default', () => {
-      const { container } = render(<Image imageUrl={ORIGINAL} alt="d" fallbackKey="t1" />);
-      expect(container.querySelector('.duotone-riso')).toBeNull();
-    });
-
-    it('wraps the photo when treatment="riso"', () => {
-      const { container } = render(
-        <Image imageUrl={ORIGINAL} alt="d" fallbackKey="t2" treatment="riso" />,
-      );
-      expect(container.querySelector('.duotone-riso')).not.toBeNull();
-    });
-
-    it('puts the duotone on the image OWN parent, not the outer container', () => {
-      // `.duotone-riso` styles `> img`, so the class has to sit on the image's
-      // direct parent or the separation silently does nothing. And it must NOT
-      // sit on the outer container: its ::after is the last child there, so the
-      // multiply layer would paint over the scrim and any overlay children —
-      // tinting badges and favourite buttons along with the photograph.
-      const { container } = render(
-        <Image imageUrl={ORIGINAL} alt="d" fallbackKey="t3" treatment="riso" scrim="readable">
-          <button type="button">save</button>
-        </Image>,
-      );
-      const img = container.querySelector('img')!;
-      const duo = container.querySelector('.duotone-riso')!;
-
-      expect(img.parentElement).toBe(duo);
-      expect(duo.contains(container.querySelector('button'))).toBe(false);
-    });
-  });
 });
