@@ -2,10 +2,11 @@ import { getServiceClient, jsonResponse, errorResponse, corsResponse, requireInt
 import { scoreMarketplaceQuality } from '../_shared/marketplace-pipeline-utils.ts'
 import { withErrorReporting } from '../_shared/report-api-error.ts'
 import { gateImages } from '../_shared/image-gate.ts'
+import { resolveStagingContentType, type ContentType } from '../_shared/content-registry.ts'
 
-/** Entity types that carry a photo `images[]` array worth gating before commit. */
-const IMAGE_GATED_TYPES = new Set(['venue', 'event', 'marketplace', 'news_article'])
-const IMAGE_GATED_TABLES = new Set(['venues', 'events', 'marketplace_listings', 'news_articles'])
+/** Content types that carry a photo `images[]` array worth gating before commit
+ *  (was the IMAGE_GATED_TYPES + IMAGE_GATED_TABLES string sets). */
+const IMAGE_GATED_CONTENT_TYPES = new Set<ContentType>(['venue', 'event', 'marketplace', 'news'])
 
 // ============================================================
 // Pipeline Quality Score Node
@@ -53,12 +54,16 @@ Deno.serve(withErrorReporting('pipeline-quality-score', async (req) => {
     for (const item of items) {
       const normalized = (item.normalized_data || {}) as Record<string, unknown>
       const type = item.entity_type || entityType
+      // Rubric + gating selection via the content registry (entity_type first,
+      // then target_table — the same either-matches shape as the old inline
+      // ternary chain). Rubric bodies stay below.
+      const cfg = resolveStagingContentType(type, item.target_table)
 
       // Drop logos / sprites / data-URIs / ad pixels from the image array before
       // scoring + commit. Cheap URL-only checks; dimension/solid-colour checks
       // live downstream in the probe / ingest worker.
       let imageGate: ReturnType<typeof gateImages> | null = null
-      if (IMAGE_GATED_TYPES.has(type) || IMAGE_GATED_TABLES.has(item.target_table)) {
+      if (cfg && IMAGE_GATED_CONTENT_TYPES.has(cfg.type)) {
         const gate = gateImages(normalized.images)
         if (gate.dropped.length > 0) {
           normalized.images = gate.kept
@@ -66,11 +71,12 @@ Deno.serve(withErrorReporting('pipeline-quality-score', async (req) => {
         }
       }
 
-      const score = type === 'personality' || item.target_table === 'personalities'
+      const rubric = cfg?.qualityRubric ?? 'generic'
+      const score = rubric === 'personality'
         ? computePersonalityScore(normalized)
-        : (type === 'marketplace' || item.target_table === 'marketplace_listings')
+        : rubric === 'marketplace'
           ? scoreMarketplaceQuality(normalized)
-          : (type === 'news_article' || item.target_table === 'news_articles')
+          : rubric === 'news'
             ? computeNewsScore(normalized)
             : computeScore(normalized)
 
