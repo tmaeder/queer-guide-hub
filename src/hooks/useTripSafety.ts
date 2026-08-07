@@ -35,9 +35,29 @@ export interface CrossBorderWarning {
   message: string;
 }
 
+/**
+ * Whether `overallRisk` means anything yet.
+ *
+ * `idle`    — no countries asked about; there is nothing to say.
+ * `loading` — the fetch is in flight.
+ * `error`   — the fetch failed.
+ * `ready`   — the verdict below is derived from real rows.
+ *
+ * This exists because the report's empty shape is `overallRisk: 'low'` with
+ * every flag false, which is byte-identical to a country we measured and found
+ * safe. `/country/afghanistan` therefore rendered "Welcoming" under its own
+ * death-penalty travel warning for the whole fetch window (observed live,
+ * ~30s, 2026-08-07). Any surface that states a verdict MUST gate on
+ * `status === 'ready'`; a surface that merely hides itself when things look
+ * fine is already safe, because absence is not a claim.
+ */
+export type TripSafetyStatus = 'idle' | 'loading' | 'error' | 'ready';
+
 export interface TripSafetyReport {
   countries: CountrySafety[];
   crossBorderWarnings: CrossBorderWarning[];
+  status: TripSafetyStatus;
+  /** Only meaningful when `status === 'ready'`. Defaults to 'low' otherwise. */
   overallRisk: 'low' | 'moderate' | 'high' | 'critical';
   hasCriminalizedDestination: boolean;
   /** Confirmed capital penalty. */
@@ -53,7 +73,11 @@ export interface TripSafetyReport {
 export function useTripSafety(countryIds: string[]) {
   const uniqueIds = useMemo(() => [...new Set(countryIds.filter(Boolean))], [countryIds]);
 
-  const { data: countries } = useQuery({
+  const {
+    data: countries,
+    isPending,
+    isError,
+  } = useQuery({
     queryKey: qk.trip.safetyFor(uniqueIds),
     queryFn: async () => {
       if (uniqueIds.length === 0) return [];
@@ -70,11 +94,23 @@ export function useTripSafety(countryIds: string[]) {
     staleTime: 30 * 60 * 1000,
   });
 
+  // `idle` must be tested first: with `enabled: false` react-query reports
+  // isPending forever, so an empty request would otherwise read as loading.
+  const status: TripSafetyStatus =
+    uniqueIds.length === 0
+      ? 'idle'
+      : isError
+        ? 'error'
+        : isPending || !countries
+          ? 'loading'
+          : 'ready';
+
   return useMemo((): TripSafetyReport => {
     if (!countries || countries.length === 0) {
       return {
         countries: [],
         crossBorderWarnings: [],
+        status,
         overallRisk: 'low',
         hasCriminalizedDestination: false,
         hasDeathPenaltyDestination: false,
@@ -146,10 +182,11 @@ export function useTripSafety(countryIds: string[]) {
     return {
       countries: safetySummaries,
       crossBorderWarnings,
+      status,
       overallRisk,
       hasCriminalizedDestination,
       hasDeathPenaltyDestination,
       hasDeathPenaltyRiskDestination,
     };
-  }, [countries, uniqueIds]);
+  }, [countries, uniqueIds, status]);
 }

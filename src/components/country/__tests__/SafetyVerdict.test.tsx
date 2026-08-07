@@ -19,6 +19,7 @@ function makeReport(over: Partial<TripSafetyReport>): TripSafetyReport {
   const base = {
     countries: [],
     crossBorderWarnings: [],
+    status: 'ready' as const,
     overallRisk: 'low' as const,
     hasCriminalizedDestination: false,
     hasDeathPenaltyDestination: false,
@@ -98,6 +99,30 @@ describe('SafetyVerdict', () => {
     const { getByText, queryByText } = render(<SafetyVerdict countryId="c1" equalityScore={90} />);
     expect(queryByText('Welcoming')).toBeNull();
     expect(getByText('Use caution')).toBeTruthy();
+  });
+
+  // Observed live on /country/afghanistan 2026-08-07: the tile read "Welcoming"
+  // for ~30s directly beneath that page's own death-penalty travel warning,
+  // because the report's empty shape (overallRisk 'low', every flag false) is
+  // identical to a country measured and found safe.
+  it('INVARIANT: states no verdict while the fetch is in flight', () => {
+    state.report = makeReport({ status: 'loading' });
+    const { getByText, queryByText } = render(<SafetyVerdict countryId="c1" equalityScore={5} />);
+    expect(queryByText('Welcoming')).toBeNull();
+    expect(queryByText('Dangerous')).toBeNull();
+    expect(getByText('Checking legal status…')).toBeTruthy();
+  });
+
+  it('INVARIANT: states no verdict when the fetch failed', () => {
+    state.report = makeReport({ status: 'error' });
+    const { queryByText } = render(<SafetyVerdict countryId="c1" equalityScore={5} />);
+    expect(queryByText('Welcoming')).toBeNull();
+  });
+
+  it('still shows the equality score while pending — it comes from props, not the fetch', () => {
+    state.report = makeReport({ status: 'loading' });
+    const { getByText } = render(<SafetyVerdict countryId="c1" equalityScore={5} />);
+    expect(getByText('5')).toBeTruthy();
   });
 
   it('shows an em dash for an unknown equality score', () => {
