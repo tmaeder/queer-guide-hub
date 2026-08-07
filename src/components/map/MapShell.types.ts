@@ -1,6 +1,6 @@
 import type { LayerType, ExploreMapFilters } from '@/hooks/useExploreMapData';
 
-export type MapSurface = 'discover' | 'search' | 'city' | 'country' | 'trip' | 'admin';
+export type MapSurface = 'discover' | 'search' | 'city' | 'country' | 'trip' | 'travel' | 'admin';
 
 export type MapLens = 'pins' | 'density' | 'routes' | 'boundary' | 'combined';
 
@@ -25,6 +25,10 @@ export interface MapShellConfig {
   lenses: MapLens[];
   defaultLens: MapLens;
   layers: LayerType[];
+  /** Layers on at boot, overriding the global per-layer `defaultOn` seeding.
+   *  Must be a subset of `layers`. Without this, a preset of area layers only
+   *  (cities/neighbourhoods are `defaultOn: false`) would boot blank. */
+  defaultEnabledLayers?: LayerType[];
   filters: MapFilterKey[];
   showCommandBar?: boolean;
   /** Show the search field inside the command bar. Default true. Set false to
@@ -114,6 +118,21 @@ export const SURFACE_PRESETS: Record<MapSurface, MapShellConfig> = {
     filters: [],
     showCommandBar: false,
     enableSearchThisArea: false,
+    enableUrlState: false,
+  },
+  // /travel destination-discovery embed: cities + queer villages + events at
+  // world altitude — deliberately NO venues layer (that's /map's job). All
+  // three layers are boot-enabled; two of them are `defaultOn: false` globally.
+  travel: {
+    surface: 'travel',
+    lenses: ['pins'],
+    defaultLens: 'pins',
+    layers: ['cities', 'neighbourhoods', 'events'],
+    defaultEnabledLayers: ['cities', 'neighbourhoods', 'events'],
+    filters: [],
+    showCommandBar: true,
+    showSearch: false,
+    enableSearchThisArea: true,
     enableUrlState: false,
   },
   admin: {

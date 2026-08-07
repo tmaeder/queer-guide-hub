@@ -34,6 +34,14 @@ test.describe('Travel hub (/travel)', () => {
     await expect(page.getByRole('link', { name: /check any country/i })).toBeVisible();
   });
 
+  test('mounts the destination map after scrolling to it', async ({ page }) => {
+    await page.goto('/travel');
+    await page.getByRole('heading', { name: /plan a trip/i }).waitFor({ timeout: 15000 });
+    await page.locator('#map').scrollIntoViewIfNeeded();
+    // Deferred + idle-gated: the maplibre chunk loads only on approach.
+    await expect(page.locator('[data-map-surface="travel"]')).toBeVisible({ timeout: 20000 });
+  });
+
   test('renders the Pride scroller heading', async ({ page }) => {
     await page.goto('/travel');
     await expect(page.getByRole('heading', { name: /pride this season/i })).toBeVisible({

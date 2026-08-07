@@ -2115,6 +2115,10 @@
         "safety": "Know before you go",
         "safetyKicker": "The legal picture"
       },
+      "map": {
+        "fullMap": "Full map with venues and filters",
+        "openFull": "Open the full map"
+      },
       "activitiesComingSoon": "Activities coming soon.",
       "browseDestinations": "Browse destinations",
       "exploreCta": "LGBTQ+ friendly destinations",

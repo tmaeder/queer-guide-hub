@@ -12,6 +12,7 @@ import { StartTripHero } from '@/components/travel/StartTripHero';
 import { VillagesRail } from '@/components/travel/VillagesRail';
 import { DiscoverableTripsRail } from '@/components/travel/DiscoverableTripsRail';
 import { BrowseVisitedToolbar } from '@/components/travel/BrowseVisitedToolbar';
+import { TravelDiscoveryMap } from '@/components/travel/TravelDiscoveryMap';
 import { TripTemplates } from '@/components/trips/TripTemplates';
 import { useAuth } from '@/hooks/useAuth';
 import { useTrackEvent } from '@/hooks/useTrackEvent';
@@ -111,6 +112,12 @@ export default function Travel() {
           </div>
         </div>
       ),
+    },
+    {
+      id: 'map',
+      label: t('pages.travel.sections.map', 'See the map'),
+      kicker: t('pages.travel.sections.mapKicker', 'Destinations at a glance'),
+      content: <TravelDiscoveryMap />,
     },
     {
       id: 'villages',
