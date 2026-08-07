@@ -17,6 +17,7 @@
 import { getCorsHeaders, getServiceClient, requireInternalOrAdmin, jsonResponse } from '../_shared/supabase-client.ts'
 import { hasValidWebhookSecret } from '../_shared/webhook-auth.ts'
 import { withCircuitBreaker, CircuitOpenError } from '../_shared/circuit-breaker.ts'
+import { consumeLlmBudget } from '../_shared/llm-budget.ts'
 import { fetchPageText } from '../_shared/enrich-harness.ts'
 import { researchEnrichEventFromPage, type EventMoatEnrichment } from '../_shared/ai-enrichment.ts'
 
@@ -32,6 +33,7 @@ const AUTO_APPLY_CONFIDENCE = 0.8
 const TITLE_APPLY_CONFIDENCE = 0.9  // flyer-title cleanup + extracted venue/address need higher confidence
 const DATE_MISMATCH_TOLERANCE_DAYS = 1  // ignore timezone/off-by-one noise
 const STEP = 'agentic-enrich'
+const BUDGET_KEY = 'event-agentic-enrich' // llm_budget caller_key (seeded 60/day)
 
 const fetchEventPage = (url: string) =>
   fetchPageText(url, {
@@ -62,15 +64,32 @@ Deno.serve(async (req: Request) => {
   const dryRun: boolean = body.dry_run ?? false
   const eventIds: string[] | undefined = body.event_ids
 
-  // Daily cap — count successful enrichments today.
-  const since = new Date(); since.setUTCHours(0, 0, 0, 0)
-  const { count: doneToday } = await supabase
-    .from('enrichment_log').select('id', { count: 'exact', head: true })
-    .eq('step', STEP).eq('status', 'done').gte('created_at', since.toISOString())
-  if (!eventIds?.length && (doneToday ?? 0) >= dailyCap) {
-    return jsonResponse({ enriched: 0, capped: true, done_today: doneToday, daily_cap: dailyCap }, 200, req)
+  // Daily cap — central llm_budget ledger (migration 20260817090000): probe
+  // with n=0 (spends nothing), then one consume per LLM attempt in the loop.
+  // body.daily_cap can only LOWER the effective cap for a run; raising it past
+  // the ledger cap needs an UPDATE on llm_budget. RPC missing (fn deployed
+  // ahead of the migration) → the legacy enrichment_log count keeps the old
+  // behavior unchanged.
+  const probe = await consumeLlmBudget(supabase, BUDGET_KEY, 0)
+  const budgetDegraded = probe.degraded
+  let remaining: number
+  if (budgetDegraded) {
+    const since = new Date(); since.setUTCHours(0, 0, 0, 0)
+    const { count: doneToday } = await supabase
+      .from('enrichment_log').select('id', { count: 'exact', head: true })
+      .eq('step', STEP).eq('status', 'done').gte('created_at', since.toISOString())
+    if (!eventIds?.length && (doneToday ?? 0) >= dailyCap) {
+      return jsonResponse({ enriched: 0, capped: true, done_today: doneToday, daily_cap: dailyCap }, 200, req)
+    }
+    remaining = eventIds?.length ? batchLimit : Math.min(batchLimit, dailyCap - (doneToday ?? 0))
+  } else {
+    const capEff = body.daily_cap != null ? Math.min(dailyCap, probe.cap ?? dailyCap) : (probe.cap ?? dailyCap)
+    const left = Math.max(0, capEff - (probe.spent ?? 0))
+    if (!eventIds?.length && left <= 0) {
+      return jsonResponse({ enriched: 0, capped: true, done_today: probe.spent, daily_cap: capEff }, 200, req)
+    }
+    remaining = eventIds?.length ? batchLimit : Math.min(batchLimit, left)
   }
-  const remaining = eventIds?.length ? batchLimit : Math.min(batchLimit, dailyCap - (doneToday ?? 0))
 
   // Select events still missing a moat field (accessibility or target_groups)
   // that have a per-event URL to ground extraction in. Upcoming first, then
@@ -118,6 +137,16 @@ Deno.serve(async (req: Request) => {
             ? `criminalized${typeof crim.penalty === 'string' && crim.penalty ? ` (${crim.penalty})` : ''}`
             : crim.legal === true ? 'legal' : 'n/a'
           safetyContext = `${c.name}: equality_score=${c.equality_score ?? 'n/a'}, legal_status=${legalStatus}`
+        }
+      }
+
+      // Central budget: one unit per LLM attempt (page-less skips above never
+      // consume). Explicit event_ids runs keep their historical cap bypass —
+      // a denial then just goes unrecorded.
+      if (!budgetDegraded) {
+        const spend = await consumeLlmBudget(supabase, BUDGET_KEY, 1)
+        if (!spend.allowed && !eventIds?.length) {
+          return jsonResponse({ enriched, flagged, skipped, capped: true, daily_cap: spend.cap, results }, 200, req)
         }
       }
 

@@ -6,6 +6,7 @@
 import { assertEquals, assertRejects } from 'jsr:@std/assert'
 import {
   createBatchCircuitChecker,
+  rpcWithBatchBreaker,
   CircuitOpenError,
 } from '../_shared/circuit-breaker.ts'
 import type { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
@@ -129,4 +130,66 @@ Deno.test('half_open degrades to per-call checks and immediate success recording
   // immediate recordSuccess wrote state resets (not buffered)
   assertEquals(calls.updates.length >= 2, true)
   await breaker.flush()
+})
+
+// ---- rpcWithBatchBreaker (the pipeline-deduplicate per-item adapter) ----
+
+/** Stub whose rpc() answers breaker bookkeeping AND a payload RPC. */
+function makeRpcStub(row: Row | null, payload: { data: unknown; error: { message: string } | null }) {
+  const { client, calls } = makeStub(row)
+  const base = client as unknown as { rpc(name: string, args: Record<string, unknown>): Promise<unknown> }
+  const origRpc = base.rpc.bind(base)
+  const payloadCalls: Array<{ name: string; args: Record<string, unknown> }> = []
+  base.rpc = (name: string, args: Record<string, unknown>) => {
+    if (name === 'circuit_breaker_record_failure' || name === 'increment_circuit_breaker_success') {
+      return origRpc(name, args)
+    }
+    payloadCalls.push({ name, args })
+    return Promise.resolve(payload)
+  }
+  return { client, calls, payloadCalls }
+}
+
+Deno.test('rpcWithBatchBreaker returns data through a cached-closed checker', async () => {
+  const { client, calls, payloadCalls } = makeRpcStub(
+    { ...closedRow },
+    { data: [{ id: 'a' }], error: null }
+  )
+  const breaker = createBatchCircuitChecker(client, 'rpc.test')
+  const r1 = await rpcWithBatchBreaker<Array<{ id: string }>>(client, breaker, 'find_x', { p: 1 })
+  const r2 = await rpcWithBatchBreaker<Array<{ id: string }>>(client, breaker, 'find_x', { p: 2 })
+  assertEquals(r1, { data: [{ id: 'a' }], error: null, circuitOpen: false })
+  assertEquals(r2.circuitOpen, false)
+  assertEquals(payloadCalls.length, 2)
+  // one closed-state check for the whole batch, zero per-item bookkeeping
+  assertEquals(calls.selects, 1)
+  assertEquals(calls.updates.length, 0)
+  await breaker.flush()
+  assertEquals(calls.updates.length, 2)
+})
+
+Deno.test('rpcWithBatchBreaker surfaces rpc errors and records the failure', async () => {
+  const { client, calls } = makeRpcStub(
+    { ...closedRow },
+    { data: null, error: { message: 'db exploded' } }
+  )
+  const breaker = createBatchCircuitChecker(client, 'rpc.test')
+  const r = await rpcWithBatchBreaker(client, breaker, 'find_x', {})
+  assertEquals(r.data, null)
+  assertEquals(r.error?.message, 'db exploded')
+  assertEquals(r.circuitOpen, false)
+  assertEquals(calls.rpc.includes('circuit_breaker_record_failure'), true)
+})
+
+Deno.test('rpcWithBatchBreaker reports circuitOpen without calling the rpc', async () => {
+  const future = new Date(Date.now() + 60_000).toISOString()
+  const { client, payloadCalls } = makeRpcStub(
+    { ...closedRow, state: 'open', open_until: future },
+    { data: [], error: null }
+  )
+  const breaker = createBatchCircuitChecker(client, 'rpc.test')
+  const r = await rpcWithBatchBreaker(client, breaker, 'find_x', {})
+  assertEquals(r.circuitOpen, true)
+  assertEquals(r.data, null)
+  assertEquals(payloadCalls.length, 0)
 })

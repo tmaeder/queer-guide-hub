@@ -330,3 +330,31 @@ export async function rpcWithBreaker<T = unknown>(
     return { data: null, error: { message: (err as Error).message }, circuitOpen: false }
   }
 }
+
+/**
+ * Batch variant of rpcWithBreaker: identical result shape, but the circuit
+ * check and success bookkeeping flow through a shared BatchCircuitChecker
+ * (one closed-state read per batch + one flush, instead of 2-3 breaker
+ * round-trips per item). Failure recording stays per-call and half-open
+ * probe semantics are unchanged — see createBatchCircuitChecker.
+ */
+export async function rpcWithBatchBreaker<T = unknown>(
+  supabase: SupabaseClient,
+  checker: BatchCircuitChecker,
+  rpcName: string,
+  args: Record<string, unknown>,
+): Promise<{ data: T | null; error: { message: string } | null; circuitOpen: boolean }> {
+  try {
+    const data = await checker.run(async () => {
+      const res = await supabase.rpc(rpcName, args)
+      if (res.error) throw new Error(res.error.message)
+      return res.data as T
+    })
+    return { data, error: null, circuitOpen: false }
+  } catch (err) {
+    if (err instanceof CircuitOpenError) {
+      return { data: null, error: { message: err.message }, circuitOpen: true }
+    }
+    return { data: null, error: { message: (err as Error).message }, circuitOpen: false }
+  }
+}
