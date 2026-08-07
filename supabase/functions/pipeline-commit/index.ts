@@ -199,12 +199,27 @@ Deno.serve(async (req) => {
     }
 
     if (resolvedTarget === 'news_articles' && !dryRun) {
-      // Find unique job_ids in this batch and commit per-job via news RPC
+      // Find unique job_ids in this batch and commit per-job via news RPC.
+      //
+      // The ORDER is load-bearing. `disposition` stays
+      // 'pending' on any row the RPC skips (already-committed fingerprint, or a
+      // row awaiting human review), so the pending pool only ever grows: it
+      // reached 1,803 rows going back to 2026-07-14 — the very day the review
+      // gate was added — with 441 from that one day. An UNORDERED limit(50)
+      // returns the oldest of those, so every hour we handed the RPC the same
+      // three-week-old job_ids, it skipped all of them, committed 0, and left
+      // them pending to be picked again next hour. Freshly approved articles
+      // sat behind that wall and never committed at all.
+      //
+      // Newest-first guarantees new articles are always inside the window. The
+      // stale backlog stops being drained by this path, but it was never being
+      // drained — it was only blocking.
       const jobQuery = supabase
         .from('ingestion_staging')
         .select('job_id')
         .eq('target_table', 'news_articles')
         .eq('disposition', 'pending')
+        .order('created_at', { ascending: false })
         .limit(50)
       const { data: jobRows, error: jobErr } = await jobQuery
       if (jobErr) return errorResponse(`load jobs: ${jobErr.message}`, 500, req)
