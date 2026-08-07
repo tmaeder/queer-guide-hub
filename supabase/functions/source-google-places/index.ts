@@ -29,16 +29,24 @@ const googlePlacesAdapter: SourceAdapter = {
     const locations = (config.filters?.locations as string[]) || DEFAULT_LOCATIONS
     const limit = config.batchSize || 20
     const mode   = (config.filters?.mode as string) || 'all'  // 'venues' | 'hotels' | 'all'
-    const queries = mode === 'hotels' ? HOTEL_QUERIES
+    // Custom terms (admin import dialog) override the curated query sets.
+    const customTerms = config.filters?.terms as string[] | undefined
+    const queries = customTerms?.length ? customTerms
+                  : mode === 'hotels' ? HOTEL_QUERIES
                   : mode === 'venues' ? QUERIES
                   : [...QUERIES, ...HOTEL_QUERIES]
     const allItems: RawItem[] = []
 
     for (const location of locations) {
+      // Text Search's `location` param needs "lat,lng"; the admin import dialog
+      // sends city names ("Miami, FL") — fold those into the query text instead.
+      const isLatLng = /^-?\d+(\.\d+)?\s*,\s*-?\d+(\.\d+)?$/.test(location)
       for (const query of queries) {
         try {
           const items = await withCircuitBreaker(supabase, 'google_places', async () => {
-            const params = new URLSearchParams({ query, location, radius: '5000', key: apiKey })
+            const params = isLatLng
+              ? new URLSearchParams({ query, location, radius: '5000', key: apiKey })
+              : new URLSearchParams({ query: `${query} in ${location}`, key: apiKey })
             const res = await fetch(`${GP_BASE}?${params}`)
             if (!res.ok) throw new Error(`Google Places ${res.status}`)
             const json = await res.json()
@@ -104,14 +112,15 @@ Deno.serve(withErrorReporting('source-google-places', async (req) => {
     const body = await req.json().catch(() => ({}))
     const config: AdapterConfig = {
       batchSize: body.limit || body.batch_size || 20,
-      filters: { locations: body.locations, mode: body.mode || 'all' },
+      filters: { locations: body.locations, mode: body.mode || 'all', terms: body.terms },
       apiKey: Deno.env.get('GOOGLE_PLACES_API_KEY'),
       dryRun: body.dry_run || false,
       pipelineRunId: body.pipeline_run_id, nodeId: body.node_id,
     }
     const rawItems = await googlePlacesAdapter.fetch(config)
     if (config.dryRun) return jsonResponse({ success: true, items: rawItems.length, dry_run: true }, 200, req)
-    const written = await writeToStaging(supabase, googlePlacesAdapter, rawItems, { ...config, targetTable: 'venues' })
+    // sourceType: admin imports tag rows 'import-google-places' for source_type continuity.
+    const written = await writeToStaging(supabase, googlePlacesAdapter, rawItems, { ...config, targetTable: 'venues', sourceType: body.sourceType })
     return jsonResponse({ success: true, items: written, items_total: rawItems.length, items_processed: written, items_succeeded: written, items_failed: 0 }, 200, req)
   } catch (error) {
     if (error instanceof MissingCredentialsError) {

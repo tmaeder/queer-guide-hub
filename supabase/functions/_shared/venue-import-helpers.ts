@@ -2,8 +2,8 @@ import type { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5
 
 /**
  * Shared helper functions for venue import edge functions.
- * These are used by import-foursquare-venues, import-google-places-venues,
- * import-tripadvisor-venues, and import-tomtom-venues.
+ * Sole remaining consumer: import-tripadvisor-venues (the other import-*
+ * venue fetchers were folded into their source-* peers, overhaul P7).
  */
 
 export async function getOrCreateCity(
