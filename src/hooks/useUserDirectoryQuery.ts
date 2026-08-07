@@ -100,6 +100,29 @@ interface UseUserDirectoryQueryArgs {
 
 export const PROFILE_PAGE_SIZE = 60;
 
+/**
+ * Columns a signed-out visitor may read. `anon` holds a column-level SELECT grant on
+ * `profiles` covering exactly this set (plus the presence columns `profile_status_v`
+ * needs), so `select('*')` here would fail with `permission denied for table profiles`.
+ *
+ * `bio` and `location` are not rendered on the anon card — they back the search `.or()`
+ * below, which is visible signed-out. Everything else the grid shows for anon is here;
+ * the rest of the card sits behind `isAuthed` in UserDirectoryGrid.
+ */
+export const ANON_DIRECTORY_COLS =
+  'user_id, display_name, avatar_url, bio, location, website, user_mode, is_business, verified_identity, created_at, last_active_at';
+
+/**
+ * The anon set plus the fields the signed-in card renders and its filter panel queries.
+ *
+ * Spelled out in full rather than composed as `${ANON_DIRECTORY_COLS}, ...`: postgrest-js
+ * parses the select list at the TYPE level, and a template-literal type defeats that
+ * parser — it degrades the result to `ParserError[]`, which then fails the `as Profile[]`
+ * cast below. Keep both as plain literals.
+ */
+export const AUTHED_DIRECTORY_COLS =
+  'user_id, display_name, avatar_url, bio, location, website, user_mode, is_business, verified_identity, created_at, last_active_at, pronouns, age_range, occupation, education, relationship_status, has_children, has_pets, gender_identity, interests';
+
 export function useUserDirectoryQuery({
   filters,
   nearMe,
@@ -109,7 +132,13 @@ export function useUserDirectoryQuery({
   return useQuery({
     queryKey: ['user-directory', filters, nearMe, userLocation, user?.id],
     queryFn: async () => {
-      let query = supabase.from('profiles').select('*').limit(PROFILE_PAGE_SIZE);
+      // postgrest-js parses the select list at the TYPE level, and it cannot parse a
+      // *union* of two literals — passing `user ? AUTHED : ANON` directly degrades the
+      // result to `ParserError[]`. Pinning the parameter to the anon literal keeps the
+      // inference working and is the honest description of the contract: the anon columns
+      // are the guaranteed subset, and a signed-in caller gets strictly more.
+      const columns = (user ? AUTHED_DIRECTORY_COLS : ANON_DIRECTORY_COLS) as typeof ANON_DIRECTORY_COLS;
+      let query = supabase.from('profiles').select(columns).limit(PROFILE_PAGE_SIZE);
 
       if (filters.searchQuery) {
         const escaped = filters.searchQuery.replace(/[,()]/g, ' ').trim();
