@@ -7,7 +7,7 @@ import { test, expect, type Page } from '@playwright/test';
  * `profiles`, whose RLS filters rows only, so an anonymous visitor received all 173
  * columns — email, date_of_birth, kink_interests, sexual_orientation — of every
  * public-visibility profile. Fixed by a column-level SELECT grant
- * (supabase/migrations/20260816090000_profiles_anon_column_grants.sql) plus an explicit
+ * (supabase/migrations/20260816120000_profiles_anon_column_grants.sql) plus an explicit
  * select list in the hook.
  *
  * This spec is load-bearing, not belt-and-braces. `npm run typecheck` and `npm test`

@@ -37,6 +37,14 @@ jobs:
         if: ${{ !cancelled() && env.SUPABASE_URL != '' && env.SUPABASE_SERVICE_ROLE_KEY != '' }}
         run: node scripts/check-definer-view-grants.mjs
 
+      # RLS on `profiles` filters rows, not columns, so the anon column ACL is the only
+      # thing protecting email / date_of_birth / kink_interests. A blanket
+      # `GRANT SELECT ON ALL TABLES ... TO anon` re-exposes all 173 columns without
+      # touching a single column ACL — this asserts the table grant stays absent.
+      - name: anon cannot read profiles beyond the column allowlist
+        if: ${{ !cancelled() && env.SUPABASE_URL != '' && env.SUPABASE_SERVICE_ROLE_KEY != '' }}
+        run: node scripts/check-profile-column-grants.mjs
+
       - name: Skip (missing secrets)
         if: ${{ env.SUPABASE_URL == '' || env.SUPABASE_SERVICE_ROLE_KEY == '' }}
         run: echo "::warning::SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY not set — skipping data-quality gates. Configure repo secrets to enable."
