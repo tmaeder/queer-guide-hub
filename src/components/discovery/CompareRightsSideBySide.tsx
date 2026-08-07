@@ -49,11 +49,21 @@ export function CompareRightsSideBySide({
     <div className="overflow-x-auto rounded-container bg-surface-container">
       <table className="w-full text-13">
         <thead>
-          <tr className="border-b text-2xs uppercase tracking-[0.14em] text-muted-foreground">
-            <th scope="col" className="px-4 py-2 text-left">
+          {/*
+           * No `border-b` anywhere in this table. Borders were replaced by ink
+           * plates in the monochrome refactor and this component never
+           * followed, because it has rendered `null` for every country since
+           * the 0-10 -> 0-100 scale change (see usePeerCountries) — so its four
+           * hairlines were invisible to `e2e/design-system.spec.ts`'s border
+           * budget. Fixing the range made them appear and blew the /city/:slug
+           * budget at 8 of 6. Row separation is the tonal step, per
+           * src/pages/cities/Compare.tsx.
+           */}
+          <tr className="text-2xs uppercase tracking-[0.14em] text-muted-foreground">
+            <th scope="col" className="px-4 py-4 text-left">
               {t('discovery.compareRights.country', 'Country')}
             </th>
-            <th scope="col" className="px-4 py-2 text-right tabular-nums">
+            <th scope="col" className="px-4 py-4 text-right tabular-nums">
               {t('discovery.compareRights.equality', 'Equality score')}
             </th>
           </tr>
@@ -62,9 +72,7 @@ export function CompareRightsSideBySide({
           {rows.map((row) => (
             <tr
               key={row.id}
-              className={
-                row.isAnchor ? 'border-b bg-muted font-semibold' : 'border-b last:border-b-0'
-              }
+              className={row.isAnchor ? 'bg-surface-container-highest font-semibold' : undefined}
             >
               <td className="px-4 py-2">
                 {row.slug ? (
