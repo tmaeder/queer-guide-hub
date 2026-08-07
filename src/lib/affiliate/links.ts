@@ -11,7 +11,9 @@
  */
 
 import {
+  BOOKING_AID,
   BOOKING_LABEL_BASE,
+  PARTNERS,
   getPartner,
   type AffiliateSurface,
   type AffiliateVertical,
@@ -90,6 +92,32 @@ export function beaconImpression(params: GoLinkParams): void {
     else void fetch(href, { method: 'GET', keepalive: true, mode: 'no-cors' });
   } catch {
     // analytics must never break UX
+  }
+}
+
+/**
+ * Recognise a stored outbound URL (e.g. hotels.booking_url) as a known partner
+ * and tag it for attribution: Booking.com gets the affiliate `aid` when absent,
+ * then the surface sub-id is applied. Unknown hosts pass through untouched so
+ * a hotel's own-website booking link is never rewritten.
+ */
+export function tagKnownAffiliateUrl(
+  rawUrl: string,
+  surface: AffiliateSurface,
+): { href: string; isAffiliate: boolean } {
+  try {
+    const url = new URL(rawUrl);
+    const host = url.hostname.toLowerCase();
+    const partner = Object.values(PARTNERS).find(
+      (p) => host === p.host || host.endsWith(`.${p.host}`),
+    );
+    if (!partner) return { href: rawUrl, isAffiliate: false };
+    if (partner.key === 'booking' && !url.searchParams.has('aid')) {
+      url.searchParams.set('aid', BOOKING_AID);
+    }
+    return { href: applySubId(url.toString(), partner.key, surface), isAffiliate: true };
+  } catch {
+    return { href: rawUrl, isAffiliate: false };
   }
 }
 

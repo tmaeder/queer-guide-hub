@@ -194,6 +194,14 @@ Deno.serve(withErrorReporting('pipeline-review-gate', async (req) => {
       const relWeight = reliabilityMap.get(`${item.source_name ?? ''}|${item.entity_type ?? ''}`)
       const lowReliability = typeof relWeight === 'number' && relWeight < UNRELIABLE_THRESHOLD
 
+      // A source with a strong track record (weight ≥ 0.8) earns a lower review
+      // bar: its reliability substitutes for per-item confidence. Floor at 0.5
+      // so no source ever auto-approves genuinely low-confidence rows. The
+      // UNRELIABLE floor above and the community-trust path are untouched.
+      const effectiveMinConfidence = typeof relWeight === 'number' && relWeight >= 0.8
+        ? Math.max(0.5, minConfidence - 0.15)
+        : minConfidence
+
       // Trust-based auto-approve for community submissions (runs before
       // the main score-based gate so trusted submitters can skip review).
       if (item.source_name === 'community-submissions' && !forceReview && !dryRun) {
@@ -277,7 +285,7 @@ Deno.serve(withErrorReporting('pipeline-review-gate', async (req) => {
           if (e) { failed++; console.error(`approve ${item.id}: ${e.message}`); continue }
         }
         approved++
-      } else if (forceReview || combinedScore < minConfidence || lowReliability) {
+      } else if (forceReview || combinedScore < effectiveMinConfidence || lowReliability) {
         const reason = forceReview ? 'force_review'
           : lowReliability ? 'low_source_reliability'
           : 'low_confidence'
@@ -286,6 +294,7 @@ Deno.serve(withErrorReporting('pipeline-review-gate', async (req) => {
           confidence,
           quality_score: qualityScore ?? null,
           source_reliability_weight: relWeight ?? null,
+          effective_min_confidence: effectiveMinConfidence,
         })
         ok ? sentToReview++ : failed++
       } else {

@@ -2097,8 +2097,42 @@
       "lgbtqFriendly": "LGBTQ+ Friendly"
     },
     "travel": {
-      "title": "Travel",
+      "title": "Where are you going?",
       "subtitle": "Find flights, hotels, and activities for LGBTQ+ friendly destinations",
+      "lede": "Pick a place, build the trip, book the pieces — with the legal picture built in.",
+      "sections": {
+        "plan": "Plan your trip",
+        "planKicker": "The planner",
+        "map": "See the map",
+        "mapKicker": "Destinations at a glance",
+        "inspiration": "Where to go",
+        "inspirationKicker": "Destinations",
+        "villages": "Neighborhoods",
+        "villagesKicker": "Queer villages worldwide",
+        "pride": "Pride season",
+        "book": "Getting there",
+        "bookKicker": "Flights and stays",
+        "safety": "Know before you go",
+        "safetyKicker": "The legal picture"
+      },
+      "map": {
+        "fullMap": "Full map with venues and filters",
+        "openFull": "Open the full map"
+      },
+      "goNow": {
+        "kicker": "This month",
+        "heading": "Go now — {{month}}",
+        "trending": "Trending now"
+      },
+      "cover": {
+        "kicker": "Cover story",
+        "read": "Read the guide"
+      },
+      "destinations": {
+        "empty": "No destinations match this filter."
+      },
+      "collections": "Collections",
+      "trending": "Trending now",
       "activitiesComingSoon": "Activities coming soon.",
       "browseDestinations": "Browse destinations",
       "exploreCta": "LGBTQ+ friendly destinations",
@@ -2143,7 +2177,9 @@
       "bookNow": {
         "title": "Book now",
         "subtitle": "Search flights, hotels, and activities directly — no trip required.",
-        "headline": "Book without a trip"
+        "headline": "Book without a trip",
+        "tripContext": "Searching for your {{city}} trip",
+        "tripContextChange": "change"
       },
       "hotels": {
         "typeLabel": "Type",

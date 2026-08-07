@@ -2085,11 +2085,47 @@
       "bookNow": {
         "title": "直接予約",
         "subtitle": "フライト、ホテル、アクティビティを直接検索 — 旅行プラン不要。",
-        "headline": "旅行なしで予約"
+        "headline": "旅行なしで予約",
+        "tripContext": "[JA] Searching for your {{city}} trip",
+        "tripContextChange": "[JA] change"
       },
       "plan": {
         "switchTrip": "アクティブな旅行を切り替え"
-      }
+      },
+      "lede": "[JA] Pick a place, build the trip, book the pieces — with the legal picture built in.",
+      "sections": {
+        "plan": "[JA] Plan your trip",
+        "planKicker": "[JA] The planner",
+        "map": "[JA] See the map",
+        "mapKicker": "[JA] Destinations at a glance",
+        "inspiration": "[JA] Where to go",
+        "inspirationKicker": "[JA] Destinations",
+        "villages": "[JA] Neighborhoods",
+        "villagesKicker": "[JA] Queer villages worldwide",
+        "pride": "[JA] Pride season",
+        "book": "[JA] Getting there",
+        "bookKicker": "[JA] Flights and stays",
+        "safety": "[JA] Know before you go",
+        "safetyKicker": "[JA] The legal picture"
+      },
+      "map": {
+        "fullMap": "[JA] Full map with venues and filters",
+        "openFull": "[JA] Open the full map"
+      },
+      "goNow": {
+        "kicker": "[JA] This month",
+        "heading": "[JA] Go now — {{month}}",
+        "trending": "[JA] Trending now"
+      },
+      "cover": {
+        "kicker": "[JA] Cover story",
+        "read": "[JA] Read the guide"
+      },
+      "destinations": {
+        "empty": "[JA] No destinations match this filter."
+      },
+      "collections": "[JA] Collections",
+      "trending": "[JA] Trending now"
     },
     "marketplace": {
       "title": "マーケットプレイス",

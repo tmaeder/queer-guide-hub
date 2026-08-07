@@ -12,11 +12,17 @@ import { trackTravelEvent } from '@/utils/travelAnalytics';
 interface FlightSearchFormProps {
   initialDestination?: string;
   initialDestinationLabel?: string;
+  /** Seed dates (e.g. from the active trip). Initial values only — remount
+   *  with a `key` to re-seed. */
+  initialDepartureDate?: string;
+  initialReturnDate?: string;
 }
 
 export function FlightSearchForm({
   initialDestination,
   initialDestinationLabel,
+  initialDepartureDate,
+  initialReturnDate,
 }: FlightSearchFormProps) {
   const { originIata, originCity, loading: originLoading } = useVisitorOrigin();
 
@@ -24,8 +30,8 @@ export function FlightSearchForm({
   const [originLabel, setOriginLabel] = useState('');
   const [destination, setDestination] = useState(initialDestination || '');
   const [destinationLabel, setDestinationLabel] = useState(initialDestinationLabel || '');
-  const [departureDate, setDepartureDate] = useState('');
-  const [returnDate, setReturnDate] = useState('');
+  const [departureDate, setDepartureDate] = useState(initialDepartureDate || '');
+  const [returnDate, setReturnDate] = useState(initialReturnDate || '');
   const [searchTriggered, setSearchTriggered] = useState(false);
   const originInitializedRef = useRef(false);
 

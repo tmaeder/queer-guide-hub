@@ -20,6 +20,11 @@ export function TripTemplates() {
   const { data: templates, isLoading } = useTripTemplates();
 
   const handleUseTemplate = (template: TripTemplate) => {
+    // Rendered on public pages (/travel) — createTrip would RLS-fail for anon.
+    if (!user) {
+      navigate('/auth?redirect=/travel');
+      return;
+    }
     const startDate = startOfDay(addMonths(new Date(), 1));
     const endDate = addDays(startDate, template.days - 1);
 
