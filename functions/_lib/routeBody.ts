@@ -76,13 +76,14 @@ export const STATIC_ROUTE_BODY: Record<string, RouteBody> = {
   },
 
   '/travel': {
-    h1: 'LGBTQ+ travel — safer destinations and country guides',
+    h1: 'Plan LGBTQ+ trips — destinations, itineraries and bookings',
     paragraphs: [
-      "Queer travel is not the same as everyone else's travel. Queer Guide rates every country on legal status, social attitudes, and on-the-ground safety, and pairs that with city-level guides written by people who have actually been there.",
-      'Plan trips knowing what to expect: where to stay, where to go out, what to avoid, what visa rules apply to same-sex partners, and which neighborhoods feel like home. Country pages link to the venues, events, and accommodations we trust on the ground.',
+      'Queer Guide is a trip planner built for queer travelers: pick a destination on the world map of cities, queer villages and pride events, build a day-by-day itinerary with venues, events and stays, and book flights, hotels and activities through trusted partners.',
+      "The legal picture is built in, not bolted on. Every country carries its criminalisation status and equality score, every destination shows it before you book, and each trip gets a full safety briefing — because queer travel is not the same as everyone else's travel.",
     ],
     links: [
-      { href: '/places', label: 'Browse by country' },
+      { href: '/cities', label: 'Browse cities' },
+      { href: '/trips/discover', label: 'Public trip itineraries' },
       { href: '/hotels', label: 'LGBTQ+ friendly hotels' },
       { href: '/venues', label: 'Venues at your destination' },
       { href: '/help', label: 'Crisis support abroad' },

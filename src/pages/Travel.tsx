@@ -94,9 +94,9 @@ export default function Travel() {
   }, []);
 
   useMeta({
-    title: 'LGBTQ+ Travel Guide — Safe Destinations | Queer Guide',
+    title: 'Plan LGBTQ+ Trips — Queer Travel Planner | Queer Guide',
     description:
-      'Plan safer queer travel. Country safety ratings, city guides, and trusted local recommendations.',
+      'Build a queer trip in one place: pick a destination on the map, plan the days, and book flights, stays and activities — with the legal picture built in.',
     canonicalPath: '/travel',
   });
 

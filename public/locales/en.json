@@ -2097,8 +2097,28 @@
       "lgbtqFriendly": "LGBTQ+ Friendly"
     },
     "travel": {
-      "title": "Travel",
+      "title": "Where are you going?",
       "subtitle": "Find flights, hotels, and activities for LGBTQ+ friendly destinations",
+      "lede": "Pick a place, build the trip, book the pieces — with the legal picture built in.",
+      "sections": {
+        "plan": "Plan your trip",
+        "planKicker": "The planner",
+        "map": "See the map",
+        "mapKicker": "Destinations at a glance",
+        "inspiration": "Where to go",
+        "inspirationKicker": "Destinations",
+        "villages": "Neighborhoods",
+        "villagesKicker": "Queer villages worldwide",
+        "pride": "Pride season",
+        "book": "Getting there",
+        "bookKicker": "Flights and stays",
+        "safety": "Know before you go",
+        "safetyKicker": "The legal picture"
+      },
+      "map": {
+        "fullMap": "Full map with venues and filters",
+        "openFull": "Open the full map"
+      },
       "activitiesComingSoon": "Activities coming soon.",
       "browseDestinations": "Browse destinations",
       "exploreCta": "LGBTQ+ friendly destinations",
