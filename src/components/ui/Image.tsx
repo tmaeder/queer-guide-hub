@@ -59,20 +59,6 @@ interface ImageProps {
   heightPx?: number;
   /** Named `imageRole` (not `role`) to avoid the ARIA `role` attribute. */
   imageRole?: ImageRole;
-  /**
-   * Print treatment. `none` (default) renders the photograph as shot.
-   *
-   * `riso` applies the two-drum duotone separation (`.duotone-riso`). It is
-   * opt-in and stays opt-in: entity imagery renders in full colour by default
-   * because flattening every portrait on an LGBTQ+ platform has a real
-   * representational cost. Heroes and editorial bands only.
-   *
-   * The treatment wraps the <img> rather than the outer container, because
-   * `.duotone-riso::after` is the element's last child and would otherwise
-   * paint its multiply layer over the scrim and any overlay children — tinting
-   * badges and favourite buttons along with the photo.
-   */
-  treatment?: 'none' | 'riso';
   objectPosition?: string;
   scrim?: ScrimVariant;
   priority?: boolean;
@@ -137,7 +123,6 @@ export const Image = ({
   fit = 'cover',
   heightPx,
   imageRole = 'cover',
-  treatment = 'none',
   objectPosition,
   scrim = 'none',
   priority = false,
@@ -317,12 +302,6 @@ export const Image = ({
         <div className="flex h-full w-full items-center justify-center text-muted-foreground">
           {FallbackIcon ? <FallbackIcon className="h-10 w-10" aria-hidden /> : null}
         </div>
-      ) : treatment === 'riso' ? (
-        // `.duotone-riso` targets `> img`, so the wrapper must be the image's
-        // direct parent. It wraps the photo only — not the outer container —
-        // because its ::after is the last child and would otherwise paint the
-        // multiply layer over the scrim and any overlay children.
-        <div className="duotone-riso h-full w-full">{photo}</div>
       ) : (
         photo
       )}
