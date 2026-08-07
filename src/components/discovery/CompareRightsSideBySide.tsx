@@ -80,7 +80,7 @@ export function CompareRightsSideBySide({
                 )}
               </td>
               <td className="px-4 py-2 text-right tabular-nums">
-                {row.equality_score != null ? `${row.equality_score}/10` : '—'}
+                {row.equality_score != null ? `${row.equality_score}/100` : '—'}
               </td>
             </tr>
           ))}

@@ -31,7 +31,14 @@ type Risk = 'low' | 'moderate' | 'high' | 'critical';
 interface CrimJson {
   legal?: boolean;
   death_penalty?: string;
-  max_penalty?: string;
+  /**
+   * The real column names. This interface declared `max_penalty` until
+   * 2026-08-07 — a field `countries.lgbti_criminalization` has never had — so
+   * the "(max: …)" clause below always interpolated undefined and was dropped
+   * from the prompt entirely. The model has never been told a sentence length.
+   */
+  penalty?: string;
+  max_prison?: string;
 }
 
 interface CountryRow {
@@ -51,17 +58,27 @@ interface ArticleRow {
 
 function isCriminalized(c: CrimJson | null | undefined): boolean {
   if (!c) return false;
-  return c.legal === false;
+  if (c.legal === false) return true;
+  return /^yes$/i.test(String(c.death_penalty ?? '').trim());
 }
 
-function hasDeathPenalty(c: CrimJson | null | undefined): boolean {
-  if (!c) return false;
-  const dp = String(c.death_penalty ?? '');
-  return dp.includes('Death') || dp === 'Yes';
+/**
+ * Mirrors `deathPenaltyRisk` in src/utils/equalityScore.ts. ILGA splits the
+ * fact across two fields: Nigeria flags 'Yes' while its penalty prose names
+ * only prison, and Afghanistan/Pakistan/Qatar/Somalia/UAE record
+ * 'No legal certainty' while naming the death penalty in `penalty`. Reading
+ * either field alone misclassifies one of those groups.
+ */
+function deathPenaltyRisk(c: CrimJson | null | undefined): 'confirmed' | 'possible' | 'none' {
+  if (!c) return 'none';
+  const dp = String(c.death_penalty ?? '').trim();
+  if (/^yes$/i.test(dp) || /death/i.test(dp)) return 'confirmed';
+  if (/no legal certainty/i.test(dp)) return 'possible';
+  return /death/i.test(String(c.penalty ?? '')) ? 'possible' : 'none';
 }
 
 function overallRisk(countries: CountryRow[]): Risk {
-  if (countries.some((c) => hasDeathPenalty(c.lgbti_criminalization))) return 'critical';
+  if (countries.some((c) => deathPenaltyRisk(c.lgbti_criminalization) !== 'none')) return 'critical';
   if (countries.some((c) => isCriminalized(c.lgbti_criminalization))) return 'high';
   const min = countries.reduce<number>((acc, c) => {
     if (c.equality_score == null) return acc;
@@ -117,11 +134,21 @@ async function generateNarrative(
 ): Promise<string> {
   const countryLine = countries
     .map((c) => {
+      // "equality n/a" rather than a number: a missing score must not reach the
+      // model as a value it can reason about.
       const score = c.equality_score != null ? `equality ${c.equality_score}/100` : 'equality n/a';
+      const maxPenalty =
+        c.lgbti_criminalization?.max_prison || c.lgbti_criminalization?.penalty || null;
       const crim = isCriminalized(c.lgbti_criminalization)
-        ? `, same-sex acts criminalized${c.lgbti_criminalization?.max_penalty ? ` (max: ${c.lgbti_criminalization.max_penalty})` : ''}`
+        ? `, same-sex acts criminalized${maxPenalty ? ` (max: ${maxPenalty})` : ''}`
         : '';
-      const death = hasDeathPenalty(c.lgbti_criminalization) ? ', death penalty applies' : '';
+      const risk = deathPenaltyRisk(c.lgbti_criminalization);
+      const death =
+        risk === 'confirmed'
+          ? ', death penalty applies'
+          : risk === 'possible'
+            ? ', death penalty recorded as possible with no legal certainty (do not describe this as settled either way)'
+            : '';
       return `${c.name} — ${score}${crim}${death}`;
     })
     .join('\n');

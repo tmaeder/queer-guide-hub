@@ -6,6 +6,7 @@ import {
   parseSsuDetails,
   isCriminalized,
   hasDeathPenalty,
+  deathPenaltyRisk,
   getProtectionStatus,
 } from '../equalityScore';
 
@@ -134,6 +135,45 @@ describe('isCriminalized', () => {
 
   it('should return false when legal is true', () => {
     expect(isCriminalized({ legal: true })).toBe(false);
+  });
+
+  // Second arm of the DB predicate `location_is_high_risk`. No live row hits
+  // it today (all 7 death-penalty countries also carry legal:false), so this
+  // guards the parity rather than a current behaviour.
+  it('should return true on death_penalty alone when legal is absent', () => {
+    expect(isCriminalized({ death_penalty: 'Yes' })).toBe(true);
+  });
+});
+
+describe('deathPenaltyRisk', () => {
+  it('returns none for null or an empty shape', () => {
+    expect(deathPenaltyRisk(null)).toBe('none');
+    expect(deathPenaltyRisk({})).toBe('none');
+  });
+
+  // Nigeria: the flag is set but the penalty prose names only prison, so
+  // reading `penalty` alone would miss it.
+  it('trusts an explicit death_penalty flag over the penalty prose', () => {
+    expect(
+      deathPenaltyRisk({ death_penalty: 'Yes', penalty: '10 years to life in prison' }),
+    ).toBe('confirmed');
+  });
+
+  // Afghanistan, Pakistan, Qatar, Somalia, UAE. ILGA records uncertainty in
+  // `death_penalty` and names the penalty in the sibling field. Reading only
+  // `death_penalty` returned false here — identical to a country that had
+  // been measured and found safe.
+  it('reports uncertainty as possible, not as absence', () => {
+    expect(
+      deathPenaltyRisk({
+        death_penalty: 'No legal certainty',
+        penalty: 'Death Penalty (possible)',
+      }),
+    ).toBe('possible');
+  });
+
+  it('never reports a measured No as possible', () => {
+    expect(deathPenaltyRisk({ death_penalty: 'No', penalty: '10 years in prison' })).toBe('none');
   });
 });
 

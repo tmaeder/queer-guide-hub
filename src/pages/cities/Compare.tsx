@@ -148,8 +148,8 @@ function ComparisonTable({
     },
     {
       label: t('cities.compare.row.equality', 'Equality score'),
-      aValue: a.countries?.equality_score != null ? `${a.countries.equality_score}/10` : '—',
-      bValue: b.countries?.equality_score != null ? `${b.countries.equality_score}/10` : '—',
+      aValue: a.countries?.equality_score != null ? `${a.countries.equality_score}/100` : '—',
+      bValue: b.countries?.equality_score != null ? `${b.countries.equality_score}/100` : '—',
     },
     {
       label: t('cities.compare.row.population', 'Population'),

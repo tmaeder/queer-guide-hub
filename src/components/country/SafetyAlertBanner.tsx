@@ -1,5 +1,5 @@
 import { AlertTriangle, Skull } from 'lucide-react';
-import { isCriminalized, hasDeathPenalty } from '@/utils/equalityScore';
+import { isCriminalized, deathPenaltyRisk } from '@/utils/equalityScore';
 
 interface SafetyAlertBannerProps {
   criminalization: Record<string, unknown> | null | undefined;
@@ -12,7 +12,13 @@ export default function SafetyAlertBanner({
 }: SafetyAlertBannerProps) {
   if (!isCriminalized(criminalization)) return null;
 
-  const deathPenalty = hasDeathPenalty(criminalization);
+  // `possible` gets the same red treatment as `confirmed` — the reader is
+  // making the same decision — but says so as uncertainty. Afghanistan,
+  // Pakistan, Qatar, Somalia and the UAE landed on the amber "criminalized"
+  // variant until 2026-08-07 because the flag they carry is
+  // 'No legal certainty', which the old confirmed-only test read as "No".
+  const risk = deathPenaltyRisk(criminalization);
+  const deathPenalty = risk !== 'none';
   const penalty = (criminalization?.penalty as string) || '';
   const maxPrison = (criminalization?.max_prison as string) || '';
 
@@ -35,19 +41,23 @@ export default function SafetyAlertBanner({
             className="font-bold mb-1 text-15"
             style={{ color: deathPenalty ? '#991b1b' : '#92400e' }}
           >
-            {deathPenalty
+            {risk === 'confirmed'
               ? `Travel Warning: Same-sex activity carries the death penalty in ${countryName}`
-              : `Travel Warning: Same-sex activity is criminalized in ${countryName}`}
+              : risk === 'possible'
+                ? `Travel Warning: Same-sex activity may carry the death penalty in ${countryName}`
+                : `Travel Warning: Same-sex activity is criminalized in ${countryName}`}
           </p>
           <p
             style={{ color: deathPenalty ? '#b91c1c' : '#a16207', lineHeight: 1.5 }}
             className="text-13"
           >
-            {deathPenalty
+            {risk === 'confirmed'
               ? 'The death penalty may be imposed for consensual same-sex sexual activity. LGBTQ+ travellers face extreme risk.'
-              : penalty
-                ? `Penalties may include ${penalty.toLowerCase()}${maxPrison ? ` (${maxPrison})` : ''}. LGBTQ+ travellers should exercise extreme caution.`
-                : 'LGBTQ+ travellers should exercise extreme caution and research local laws before visiting.'}
+              : risk === 'possible'
+                ? 'Our source names the death penalty as a possible punishment for consensual same-sex sexual activity but records no legal certainty either way. Treat the risk as real. LGBTQ+ travellers face extreme risk.'
+                : penalty
+                  ? `Penalties may include ${penalty.toLowerCase()}${maxPrison ? ` (${maxPrison})` : ''}. LGBTQ+ travellers should exercise extreme caution.`
+                  : 'LGBTQ+ travellers should exercise extreme caution and research local laws before visiting.'}
           </p>
         </div>
       </div>

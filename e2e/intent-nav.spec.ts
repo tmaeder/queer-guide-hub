@@ -100,7 +100,23 @@ test.describe('intent routes', () => {
 test.describe('honest coverage', () => {
   test('/rights states its coverage rather than implying completeness', async ({ page }) => {
     await page.goto('/rights');
-    await expect(page.locator('main')).toContainText(/250 of 250/);
+    // This asserted /250 of 250/ until 2026-08-07, which the page produced by
+    // rendering `{countries.length} of {countries.length}` — the same number
+    // twice. A tautology cannot fail, so the test was green whatever the data
+    // did, and it certified the exact defect it was written to prevent.
+    // 239 of 250 rows carry a legal status; the other 11 are uninhabited
+    // territories with no ILGA entry, and this number moves if that changes.
+    await expect(page.locator('main')).toContainText(/239 of 250/);
+  });
+
+  test('/rights reaches every country, not just the first twelve per tier', async ({ page }) => {
+    await page.goto('/rights');
+    // The world list was `.slice(0, 12)` per tier with no expander, so only
+    // 103 of 250 countries had any path from this page and — the lists being
+    // alphabetical — everything past B was unreachable.
+    const world = page.locator('#world');
+    await expect(world.getByRole('link', { name: 'Germany', exact: true })).toBeVisible();
+    await expect(world.getByRole('link', { name: 'Thailand', exact: true })).toBeVisible();
   });
 
   test('/going-out names the event window it fell back to', async ({ page }) => {

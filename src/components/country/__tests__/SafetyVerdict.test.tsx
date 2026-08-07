@@ -16,13 +16,21 @@ vi.mock('@/hooks/useTripSafety', () => ({
 import { SafetyVerdict } from '../SafetyVerdict';
 
 function makeReport(over: Partial<TripSafetyReport>): TripSafetyReport {
-  return {
+  const base = {
     countries: [],
     crossBorderWarnings: [],
-    overallRisk: 'low',
+    overallRisk: 'low' as const,
     hasCriminalizedDestination: false,
     hasDeathPenaltyDestination: false,
     ...over,
+  };
+  return {
+    ...base,
+    // Confirmed implies at-risk. Defaulting rather than requiring it keeps the
+    // mock from expressing a state the hook cannot produce (a confirmed death
+    // penalty that is somehow not a death-penalty risk).
+    hasDeathPenaltyRiskDestination:
+      over.hasDeathPenaltyRiskDestination ?? base.hasDeathPenaltyDestination,
   };
 }
 
@@ -55,6 +63,33 @@ describe('SafetyVerdict', () => {
     const { getByText } = render(<SafetyVerdict countryId="c1" equalityScore={4} />);
     expect(getByText('Dangerous')).toBeTruthy();
     expect(getByText('Death penalty in effect for same-sex relations')).toBeTruthy();
+  });
+
+  // Afghanistan, Pakistan, Qatar, Somalia, UAE: ILGA records
+  // death_penalty='No legal certainty' with penalty='Death Penalty (possible)'.
+  // These rendered as plain "Use caution" until 2026-08-07 because the
+  // confirmed-only test treated recorded uncertainty as a measured "No".
+  it('renders "Dangerous" + an uncertainty flag when the death penalty is possible', () => {
+    state.report = makeReport({
+      overallRisk: 'critical',
+      hasCriminalizedDestination: true,
+      hasDeathPenaltyDestination: false,
+      hasDeathPenaltyRiskDestination: true,
+    });
+    const { getByText, queryByText } = render(<SafetyVerdict countryId="c1" equalityScore={5} />);
+    expect(getByText('Dangerous')).toBeTruthy();
+    expect(
+      getByText('Death penalty possible for same-sex relations — no legal certainty'),
+    ).toBeTruthy();
+    // Must not be stated as established fact.
+    expect(queryByText('Death penalty in effect for same-sex relations')).toBeNull();
+  });
+
+  it('INVARIANT: a possible death penalty cannot read as safe if upstream regresses', () => {
+    state.report = makeReport({ overallRisk: 'low', hasDeathPenaltyRiskDestination: true });
+    const { getByText, queryByText } = render(<SafetyVerdict countryId="c1" equalityScore={90} />);
+    expect(queryByText('Welcoming')).toBeNull();
+    expect(getByText('Dangerous')).toBeTruthy();
   });
 
   it('INVARIANT: never reads safe when criminalized, even if upstream risk regresses to low', () => {

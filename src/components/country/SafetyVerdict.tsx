@@ -56,7 +56,7 @@ export function SafetyVerdict({
 
   // Defensive invariant: a criminalizing destination must never read as safe,
   // even if useTripSafety regresses upstream. Outing-safety is load-bearing.
-  const effectiveRisk: OverallRisk = report.hasDeathPenaltyDestination
+  const effectiveRisk: OverallRisk = report.hasDeathPenaltyRiskDestination
     ? 'critical'
     : report.hasCriminalizedDestination && (risk === 'low' || risk === 'moderate')
       ? 'high'
@@ -91,12 +91,23 @@ export function SafetyVerdict({
           <p className="text-title font-bold leading-tight" style={{ color: visual.fg }}>
             {verdictWord}
           </p>
-          {(report.hasDeathPenaltyDestination || report.hasCriminalizedDestination) && (
+          {(report.hasDeathPenaltyRiskDestination || report.hasCriminalizedDestination) && (
             <p className="mt-1 flex items-center gap-1.5 text-13 font-semibold" style={{ color: visual.fg }}>
               {report.hasDeathPenaltyDestination ? (
                 <>
                   <Skull className="h-4 w-4 shrink-0" aria-hidden="true" />
                   {t('trips.safety.flags.deathPenalty', 'Death penalty in effect for same-sex relations')}
+                </>
+              ) : report.hasDeathPenaltyRiskDestination ? (
+                /* Recorded as possible with no legal certainty. Stated as
+                   uncertainty rather than as an established penalty — but with
+                   the Skull, because the decision it informs is the same one. */
+                <>
+                  <Skull className="h-4 w-4 shrink-0" aria-hidden="true" />
+                  {t(
+                    'trips.safety.flags.deathPenaltyPossible',
+                    'Death penalty possible for same-sex relations — no legal certainty',
+                  )}
                 </>
               ) : (
                 <>
