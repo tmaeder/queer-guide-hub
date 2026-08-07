@@ -94,6 +94,45 @@ for (const [version, group] of byVersion) {
   }
 }
 
+// 3) Out-of-order versions. A migration whose version sorts BELOW the newest
+//    one remote history already holds makes `db push` abort with "local
+//    migration files to be inserted before the last migration on remote" — and
+//    it aborts on the FIRST such file, taking every later migration in the same
+//    PR down with it, valid ones included. (Distinct from a DUPLICATE version,
+//    which is skipped silently; that is check 2 above.)
+//
+//    This repo makes that the default outcome rather than a rare race:
+//    measured 2026-08-06, 43 migrations are stamped ahead of wall-clock and
+//    remote max is 20260815110000 — NINE DAYS in the future. So any migration
+//    written this week with a natural timestamp is born invalid. Catching it
+//    here turns a failed deploy on main into a failed check on the PR.
+//
+//    Compare against the highest PRE-EXISTING version: remote history and the
+//    base ref agree once CI has pushed main, and this stays pure-local.
+if (base !== null) {
+  const baseVersions = files
+    .filter((f) => !isNew(f))
+    .map((f) => f.match(VERSION_RE)?.[1])
+    .filter(Boolean)
+  const maxBase = baseVersions.length > 0 ? baseVersions.reduce((a, b) => (a > b ? a : b)) : null
+
+  if (maxBase) {
+    for (const f of files) {
+      const v = f.match(VERSION_RE)?.[1]
+      if (!v || !isNew(f)) continue
+      if (v <= maxBase) {
+        errors.push(
+          `version ${v} (${f}) is not above the highest existing version ${maxBase}.\n` +
+            `    → \`supabase db push\` aborts on the first migration that sorts below ` +
+            `remote history ("local migration files to be inserted before the last ` +
+            `migration on remote"), taking every later migration in the same PR with it. ` +
+            `Rename this file to a version greater than ${maxBase}.`,
+        )
+      }
+    }
+  }
+}
+
 if (warnings.length > 0) {
   console.log(`⚠ ${warnings.length} pre-existing duplicate-version group(s):`)
   for (const w of warnings) console.log(`  - ${w}`)

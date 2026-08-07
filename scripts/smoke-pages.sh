@@ -290,6 +290,28 @@ sweep_built_assets() {
 		return 0
 	fi
 
+	# This sweep asks "does prod serve every file MY dist produced?" — which is
+	# only a meaningful question when my dist IS what prod was built from. In
+	# CI it always is (the build and the deploy are the same job). Run locally
+	# against a checkout whose dist/ is a few days old and every chunk whose
+	# hash has since moved reports "ORIGIN IS BROKEN", because prod correctly
+	# does not serve a build it never received. Measured 2026-08-06: a dist
+	# from two days earlier produced 12+ such lines (AdminShell, AdminMaps,
+	# AdminPipelines, …) against a completely healthy prod.
+	#
+	# The entry chunk is the reliable tell: vite.config.ts derives __BUILD_ID__
+	# from Date.now() when CF_PAGES_COMMIT_SHA is unset, so its hash rotates on
+	# every single build. If ours is not the one the live shell references, the
+	# two builds are different and the sweep can only produce noise.
+	local dist_entry live_entry
+	dist_entry=$(cd "$dist" && find assets -name 'index-*.js' -type f 2>/dev/null | sed 's|.*/||' | sort | head -1)
+	live_entry=$(printf '%s' "$home" | grep -oE 'index-[A-Za-z0-9_-]+\.js' | sort -u | head -1)
+	if [ -n "$dist_entry" ] && [ -n "$live_entry" ] && [ "$dist_entry" != "$live_entry" ]; then
+		echo "  · local $dist is not the deployed build ($dist_entry vs live $live_entry)"
+		echo "    — skipping the built-asset sweep; rebuild to make it meaningful."
+		return 0
+	fi
+
 	local list count suspects
 	list=$(cd "$dist" && find assets -type f \( -name '*.js' -o -name '*.css' \) | sed 's|^|/|' | sort)
 	count=$(printf '%s\n' "$list" | grep -c . || true)
@@ -298,14 +320,35 @@ sweep_built_assets() {
 
 	# Only the CORS variant is ever poisoned, so that is the only probe needed
 	# to find suspects. Failures here are re-checked properly below.
-	suspects=$(printf '%s\n' "$list" | SITE="$SITE" xargs -P 12 -I{} sh -c '
+	#
+	# `-n 1 sh -c '...' _` passes each path as "$1" rather than substituting it
+	# with `-I{}`. That is not a style choice: BSD/macOS xargs caps an -I
+	# replacement at 255 bytes, and the sh script below is longer, so -I aborted
+	# with "command line cannot be assembled, too long" on every local run.
+	# xargs then produced NO output — which is byte-for-byte what "every asset
+	# is healthy" looks like — and the branch below reported
+	# "✓ all N built assets" having checked exactly zero of them. GNU xargs on
+	# the CI runner has no such limit, so this false green was invisible in CI
+	# and hit only the machine a human runs the script on, on precisely the
+	# sweep that exists to catch poisoned lazy-route chunks.
+	local xrc=0
+	suspects=$(printf '%s\n' "$list" | SITE="$SITE" xargs -P 12 -n 1 sh -c '
 		ct=$(curl -sS -m 10 -o /dev/null -w "%{content_type}" \
 			-H "Origin: $SITE" -H "Sec-Fetch-Mode: cors" -H "Sec-Fetch-Dest: script" \
-			"$SITE{}" 2>/dev/null)
+			"$SITE$1" 2>/dev/null)
 		case "$ct" in
 			*javascript*|*ecmascript*|*css*) ;;
-			*) printf "%s\n" "{}" ;;
-		esac')
+			*) printf "%s\n" "$1" ;;
+		esac' _) || xrc=$?
+
+	# An empty result is only good news if xargs actually ran. Never let a
+	# harness failure read as a pass.
+	if [ "$xrc" -ne 0 ]; then
+		echo "  ✗ built-asset CORS sweep did not run (xargs exited $xrc) — NOT a pass"
+		echo "    $count assets went unchecked; treat this as unknown, not clean."
+		fail=$((fail+1))
+		return 0
+	fi
 
 	if [ -z "$suspects" ]; then
 		echo "  ✓ all $count built assets serve the right type to a CORS request"
