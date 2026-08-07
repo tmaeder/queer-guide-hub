@@ -1,5 +1,10 @@
 import { getServiceClient, jsonResponse, errorResponse, corsResponse, requireInternalOrAdmin } from '../_shared/supabase-client.ts'
-import { rpcWithBreaker, withCircuitBreaker, CircuitOpenError } from '../_shared/circuit-breaker.ts'
+import {
+  rpcWithBatchBreaker,
+  createBatchCircuitChecker,
+  CircuitOpenError,
+  type BatchCircuitChecker,
+} from '../_shared/circuit-breaker.ts'
 import { logPipelineError } from '../_shared/pipeline-error-log.ts'
 import { withErrorReporting } from '../_shared/report-api-error.ts'
 import {
@@ -146,16 +151,17 @@ async function buildCityArgs(
   }
 }
 
-/** Embed the staging item with bge-m3 (same space as stored vectors). Circuit-broken. */
+/** Embed the staging item with bge-m3 (same space as stored vectors). Circuit-broken
+ *  through the invocation's shared 'cf.embed.dedup' batch checker. */
 async function embedStagingItem(
-  supabase: ReturnType<typeof getServiceClient>,
+  breaker: BatchCircuitChecker,
   n: Record<string, unknown>,
 ): Promise<number[] | null> {
   if (!CF_ACCOUNT_ID || !CF_API_TOKEN) return null
   const text = composeStagingEmbedText(n)
   if (!text) return null
   try {
-    return await withCircuitBreaker(supabase, 'cf.embed.dedup', async () => {
+    return await breaker.run(async () => {
       const res = await fetch(
         `https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/ai/run/${EMBED_MODEL}`,
         {
@@ -210,6 +216,19 @@ Deno.serve(withErrorReporting('pipeline-deduplicate', async (req) => {
 
     let unique = 0, duplicates = 0, flagged = 0
     let circuitTripped = 0, hardFailures = 0, embedded = 0
+
+    // One batch circuit checker per breaker key per invocation. The per-item
+    // checkCircuit SELECT + recordSuccess UPDATE pair (2-3 breaker round-trips
+    // per item across the deterministic/semantic/embed calls) collapses to one
+    // closed-state read per key + one flush after the loop. Breaker key names,
+    // half-open probing and per-call failure recording are unchanged — see
+    // createBatchCircuitChecker in _shared/circuit-breaker.ts.
+    const breakers = new Map<string, BatchCircuitChecker>()
+    const breakerFor = (api: string): BatchCircuitChecker => {
+      let b = breakers.get(api)
+      if (!b) { b = createBatchCircuitChecker(supabase, api); breakers.set(api, b) }
+      return b
+    }
 
     for (const item of items) {
       const n = (item.normalized_data ?? {}) as Record<string, unknown>
@@ -296,8 +315,8 @@ Deno.serve(withErrorReporting('pipeline-deduplicate', async (req) => {
         if (cfg.candidateRpc) {
           const args = baseType === 'city' ? await buildCityArgs(supabase, n) : buildDetArgs(effType, n, isHotel)
           if (args) {
-            const r = await rpcWithBreaker<Array<Record<string, unknown>>>(
-              supabase, `rpc.${cfg.candidateRpc}`, cfg.candidateRpc, args,
+            const r = await rpcWithBatchBreaker<Array<Record<string, unknown>>>(
+              supabase, breakerFor(`rpc.${cfg.candidateRpc}`), cfg.candidateRpc, args,
             )
             if (r.circuitOpen) { circuitOpenForThisItem = true; circuitTripped++ }
             else if (r.error) console.error(`dedup-${effType} ${item.id}:`, r.error.message)
@@ -320,11 +339,13 @@ Deno.serve(withErrorReporting('pipeline-deduplicate', async (req) => {
         // ---- Semantic blocker (recall). Skipped on circuit-open / dry-run / cap.
         if (!circuitOpenForThisItem && cfg.semantic.enabled && !dryRun && embedded < embedCap) {
           const cached = ((item.dedup_details as Record<string, unknown> | null)?.embedding as number[] | undefined)
-          const vec = Array.isArray(cached) && cached.length > 0 ? cached : await embedStagingItem(supabase, n)
+          const vec = Array.isArray(cached) && cached.length > 0
+            ? cached
+            : await embedStagingItem(breakerFor('cf.embed.dedup'), n)
           if (vec) {
             if (!Array.isArray(cached)) embedded++
-            const r = await rpcWithBreaker<SemRow[]>(
-              supabase, 'rpc.find_semantic_duplicate_candidates', 'find_semantic_duplicate_candidates',
+            const r = await rpcWithBatchBreaker<SemRow[]>(
+              supabase, breakerFor('rpc.find_semantic_duplicate_candidates'), 'find_semantic_duplicate_candidates',
               {
                 p_entity_type: semType,
                 p_query_vec: `[${vec.join(',')}]`,
@@ -374,6 +395,9 @@ Deno.serve(withErrorReporting('pipeline-deduplicate', async (req) => {
         counters: { onUnique: () => unique++, onDup: () => duplicates++, onFlag: () => flagged++, onHardFail: () => hardFailures++ },
       })
     }
+
+    // Flush buffered breaker success bookkeeping (one write pair per key).
+    for (const b of breakers.values()) await b.flush()
 
     return jsonResponse({
       success: true,

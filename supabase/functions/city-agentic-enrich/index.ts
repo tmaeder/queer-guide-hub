@@ -11,6 +11,7 @@
 import { getCorsHeaders, getServiceClient, requireInternalOrAdmin, jsonResponse } from '../_shared/supabase-client.ts'
 import { hasValidWebhookSecret } from '../_shared/webhook-auth.ts'
 import { withCircuitBreaker, CircuitOpenError } from '../_shared/circuit-breaker.ts'
+import { consumeLlmBudget } from '../_shared/llm-budget.ts'
 import { researchEnrichCityFromSources, type CityMoatEnrichment } from '../_shared/ai-enrichment.ts'
 import { fetchPageText } from '../_shared/enrich-harness.ts'
 import { cityNameCandidates } from '../_shared/city-name-normalize.ts'
@@ -70,14 +71,32 @@ Deno.serve(async (req: Request) => {
   // sweep would grow that backlog into the thousands while nobody is draining it.
   const skipGated: boolean = body.skip_gated ?? false
 
-  const since = new Date(); since.setUTCHours(0, 0, 0, 0)
-  const { count: doneToday } = await supabase
-    .from('enrichment_log').select('id', { count: 'exact', head: true })
-    .eq('step', STEP).eq('status', 'done').gte('created_at', since.toISOString())
-  if (!cityIds?.length && (doneToday ?? 0) >= dailyCap) {
-    return jsonResponse({ enriched: 0, capped: true, done_today: doneToday, daily_cap: dailyCap }, 200, req)
+  // Daily cap — central llm_budget ledger (migration 20260817090000; STEP is
+  // the caller_key, seeded 120/day): probe with n=0 (spends nothing), then one
+  // consume per LLM attempt in the loop. body.daily_cap can only LOWER the
+  // effective cap for a run; raising it past the ledger cap needs an UPDATE on
+  // llm_budget. RPC missing (fn deployed ahead of the migration) → the legacy
+  // enrichment_log count keeps the old behavior unchanged.
+  const probe = await consumeLlmBudget(supabase, STEP, 0)
+  const budgetDegraded = probe.degraded
+  let remaining: number
+  if (budgetDegraded) {
+    const since = new Date(); since.setUTCHours(0, 0, 0, 0)
+    const { count: doneToday } = await supabase
+      .from('enrichment_log').select('id', { count: 'exact', head: true })
+      .eq('step', STEP).eq('status', 'done').gte('created_at', since.toISOString())
+    if (!cityIds?.length && (doneToday ?? 0) >= dailyCap) {
+      return jsonResponse({ enriched: 0, capped: true, done_today: doneToday, daily_cap: dailyCap }, 200, req)
+    }
+    remaining = cityIds?.length ? batchLimit : Math.min(batchLimit, dailyCap - (doneToday ?? 0))
+  } else {
+    const capEff = body.daily_cap != null ? Math.min(dailyCap, probe.cap ?? dailyCap) : (probe.cap ?? dailyCap)
+    const left = Math.max(0, capEff - (probe.spent ?? 0))
+    if (!cityIds?.length && left <= 0) {
+      return jsonResponse({ enriched: 0, capped: true, done_today: probe.spent, daily_cap: capEff }, 200, req)
+    }
+    remaining = cityIds?.length ? batchLimit : Math.min(batchLimit, left)
   }
-  const remaining = cityIds?.length ? batchLimit : Math.min(batchLimit, dailyCap - (doneToday ?? 0))
 
   let query = supabase
     .from('cities')
@@ -135,6 +154,16 @@ Deno.serve(async (req: Request) => {
         const legal = crim.legal === false ? `criminalized${typeof crim.penalty === 'string' && crim.penalty ? ` (${crim.penalty})` : ''}`
           : crim.legal === true ? 'legal' : 'n/a'
         safetyContext = `${co.name}: equality_score=${co.equality_score ?? 'n/a'}, legal_status=${legal}`
+      }
+
+      // Central budget: one unit per LLM attempt (no_sources skips above never
+      // consume). Explicit city_ids runs keep their historical cap bypass — a
+      // denial then just goes unrecorded.
+      if (!budgetDegraded) {
+        const spend = await consumeLlmBudget(supabase, STEP, 1)
+        if (!spend.allowed && !cityIds?.length) {
+          return jsonResponse({ enriched, gated, skipped, capped: true, daily_cap: spend.cap, results }, 200, req)
+        }
       }
 
       let ai: CityMoatEnrichment | null = null

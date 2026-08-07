@@ -17,10 +17,17 @@ interface StubCalls {
   rpcCalls: Array<Record<string, unknown>>
   /** Every [op, column, value] filter applied to the staging SELECT. */
   filters: Array<[string, string, unknown]>
+  budgetCalls: Array<Record<string, unknown>>
 }
 
-function makeStubClient(rows: StagingItem[]): { client: Client; calls: StubCalls } {
-  const calls: StubCalls = { normalizedUpdates: [], rpcCalls: [], filters: [] }
+/** llm_budget_consume stub result; 'error' simulates the RPC being absent. */
+type BudgetStub = Record<string, unknown> | 'error'
+
+function makeStubClient(
+  rows: StagingItem[],
+  budget: BudgetStub = { allowed: true, remaining: 999 }
+): { client: Client; calls: StubCalls } {
+  const calls: StubCalls = { normalizedUpdates: [], rpcCalls: [], filters: [], budgetCalls: [] }
 
   const client = {
     from(table: string) {
@@ -63,6 +70,12 @@ function makeStubClient(rows: StagingItem[]): { client: Client; calls: StubCalls
       return builder
     },
     rpc(fn: string, args: Record<string, unknown>) {
+      if (fn === 'llm_budget_consume') {
+        calls.budgetCalls.push(args)
+        return budget === 'error'
+          ? Promise.resolve({ data: null, error: { message: 'function not found' } })
+          : Promise.resolve({ data: budget, error: null })
+      }
       if (fn !== 'apply_enrichment') throw new Error(`unexpected rpc ${fn}`)
       calls.rpcCalls.push(args)
       return Promise.resolve({ error: null })
@@ -73,9 +86,10 @@ function makeStubClient(rows: StagingItem[]): { client: Client; calls: StubCalls
 
 function makeConfig(
   rows: StagingItem[],
-  overrides: Partial<EnrichmentDriverConfig>
+  overrides: Partial<EnrichmentDriverConfig>,
+  budget?: BudgetStub
 ): { handler: (req: Request) => Promise<Response>; calls: StubCalls } {
-  const { client, calls } = makeStubClient(rows)
+  const { client, calls } = makeStubClient(rows, budget)
   const handler = serveEnrichment({
     fnName: 'pipeline-enrich-test',
     targetTables: ['tests'],
@@ -242,4 +256,145 @@ Deno.test('body require_gates=false overrides a requireGates config default', as
   await handler(post({ require_gates: false }))
   assertEquals(calls.filters.some(([, c]) => c === 'ai_validation_status'), false)
   assertEquals(calls.filters.some(([, c]) => c === 'dedup_status'), false)
+})
+
+// ---- Central LLM budget (llmBudgetCaller) ----
+
+Deno.test('llmBudgetCaller consumes the batch size before processing', async () => {
+  const { handler, calls } = makeConfig(
+    [row('1'), row('2'), row('3')],
+    { llmBudgetCaller: 'pipeline-enrich-test' }
+  )
+  const res = await handler(post({}))
+  const body = await res.json()
+  assertEquals(body.items_succeeded, 3)
+  assertEquals(calls.budgetCalls, [{ p_caller: 'pipeline-enrich-test', p_n: 3 }])
+})
+
+Deno.test('exhausted budget skips the whole batch with items 0', async () => {
+  const { handler, calls } = makeConfig(
+    [row('1'), row('2')],
+    { llmBudgetCaller: 'pipeline-enrich-test' },
+    { allowed: false, remaining: 0, cap: 600 }
+  )
+  const res = await handler(post({}))
+  const body = await res.json()
+  assertEquals(body.success, true)
+  assertEquals(body.items, 0)
+  assertEquals(body.items_processed, 0)
+  assertEquals(body.skipped, 2)
+  assertEquals(body.skipped_reason, 'llm_budget_exhausted')
+  assertEquals(body.budget_cap, 600)
+  // no enrichment ran, no writes happened
+  assertEquals(calls.rpcCalls.length, 0)
+})
+
+Deno.test('missing budget RPC degrades to uncapped processing (half-ship safety)', async () => {
+  const { handler, calls } = makeConfig(
+    [row('1')],
+    { llmBudgetCaller: 'pipeline-enrich-test' },
+    'error'
+  )
+  const res = await handler(post({}))
+  const body = await res.json()
+  assertEquals(body.items_succeeded, 1)
+  assertEquals(calls.rpcCalls.length, 1)
+})
+
+Deno.test('no llmBudgetCaller → the budget RPC is never called', async () => {
+  const { handler, calls } = makeConfig([row('1')], {})
+  await handler(post({}))
+  assertEquals(calls.budgetCalls.length, 0)
+})
+
+// ---- Skip-if-unchanged guard ----
+
+function enrichedRow(
+  id: string,
+  hash: string | null,
+  prior: Record<string, unknown> | null
+): StagingItem {
+  return { ...row(id), payload_hash: hash, enriched_data: prior }
+}
+
+Deno.test('unchanged re-staged row skips the LLM and re-marks enriched', async () => {
+  let enrichItemRan = 0
+  const rows = [
+    enrichedRow('1', 'h1', { enriched_at: '2026-08-01T00:00:00Z', payload_hash: 'h1' }),
+  ]
+  const { handler, calls } = makeConfig(rows, {
+    enrichItem: async () => {
+      enrichItemRan++
+      return { succeeded: true, enrichedData: { x: 1 } }
+    },
+  })
+  const res = await handler(post({}))
+  const body = await res.json()
+  assertEquals(enrichItemRan, 0)
+  assertEquals(body.skipped, 1)
+  assertEquals(body.items_succeeded, 0)
+  // re-marked 'enriched' via an empty merge so it leaves the pending pool
+  assertEquals(calls.rpcCalls.length, 1)
+  assertEquals(calls.rpcCalls[0].p_status, 'success')
+  assertEquals(calls.rpcCalls[0].p_new_enriched, {})
+})
+
+Deno.test('changed payload_hash re-enriches and stamps the new hash', async () => {
+  const rows = [
+    enrichedRow('1', 'h2', { enriched_at: '2026-08-01T00:00:00Z', payload_hash: 'h1' }),
+  ]
+  const { handler, calls } = makeConfig(rows, {
+    enrichItem: async () => ({ succeeded: true, enrichedData: { x: 1 } }),
+  })
+  const res = await handler(post({}))
+  const body = await res.json()
+  assertEquals(body.items_succeeded, 1)
+  const enriched = calls.rpcCalls[0].p_new_enriched as Record<string, unknown>
+  assertEquals(enriched.x, 1)
+  assertEquals(enriched.payload_hash, 'h2')
+  assertEquals(typeof enriched.enriched_at, 'string')
+})
+
+Deno.test('prior enrichment without a stored payload_hash re-enriches (no false skip)', async () => {
+  const rows = [enrichedRow('1', 'h1', { enriched_at: '2026-08-01T00:00:00Z' })]
+  const { handler } = makeConfig(rows, {})
+  const res = await handler(post({}))
+  const body = await res.json()
+  assertEquals(body.items_succeeded, 1)
+  assertEquals(body.skipped, 0)
+})
+
+Deno.test('adopter-provided enriched_at wins over the driver stamp', async () => {
+  const { handler, calls } = makeConfig([row('1')], {
+    enrichItem: async () => ({
+      succeeded: true,
+      enrichedData: { enriched_at: 'adopter-time' },
+    }),
+  })
+  await handler(post({}))
+  const enriched = calls.rpcCalls[0].p_new_enriched as Record<string, unknown>
+  assertEquals(enriched.enriched_at, 'adopter-time')
+})
+
+Deno.test('failed outcomes are not stamped with payload_hash', async () => {
+  const rows = [enrichedRow('1', 'h1', null)]
+  const { handler, calls } = makeConfig(rows, {
+    enrichItem: async () => ({ succeeded: false, enrichedData: { partial: true }, error: 'boom' }),
+  })
+  await handler(post({}))
+  const enriched = calls.rpcCalls[0].p_new_enriched as Record<string, unknown>
+  assertEquals(enriched.payload_hash, undefined)
+  assertEquals(enriched.enriched_at, undefined)
+  assertEquals(enriched.partial, true)
+})
+
+Deno.test('dry_run skips unchanged rows without writing', async () => {
+  const rows = [
+    enrichedRow('1', 'h1', { enriched_at: '2026-08-01T00:00:00Z', payload_hash: 'h1' }),
+  ]
+  const { handler, calls } = makeConfig(rows, {})
+  const res = await handler(post({ dry_run: true }))
+  const body = await res.json()
+  assertEquals(body.skipped, 1)
+  assertEquals(calls.rpcCalls.length, 0)
 })
