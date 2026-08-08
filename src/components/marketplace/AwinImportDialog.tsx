@@ -1,7 +1,9 @@
 /**
  * AwinImportDialog — self-contained "Import from Awin CSV feed" trigger + dialog.
  * Extracted from the legacy AdminMarketplace page so the manual Awin import is
- * reachable from the Import data hub. Calls the `import-awin-products` edge fn.
+ * reachable from the Import data hub. Calls the `source-awin` edge fn, which
+ * stages rows into ingestion_staging (source_type 'import-awin') for the
+ * marketplace review pipeline instead of inserting listings directly.
  */
 
 import { useState } from 'react';
@@ -20,17 +22,27 @@ export function AwinImportDialog() {
     csvUrl: '',
     maxProducts: 1000,
     skipRows: 0,
-    batchSize: 100,
   });
 
   const handleImport = async () => {
     setIsImporting(true);
     try {
-      const { data, error } = await supabase.functions.invoke('import-awin-products', {
-        body: params,
+      const { data, error } = await supabase.functions.invoke('source-awin', {
+        body: {
+          sourceType: 'import-awin',
+          feedUrl: params.csvUrl.trim() || undefined,
+          limit: params.maxProducts,
+          offset: params.skipRows,
+        },
       });
       if (error) throw error;
-      toast.success('Import successful', { description: `Imported ${data.imported} products` });
+      if (data?.skipped) {
+        toast.error(`Import skipped: ${data.reason ?? 'feed unavailable'}`);
+        return;
+      }
+      toast.success('Staged for review', {
+        description: `Staged ${data.items ?? 0} products for the review pipeline`,
+      });
       setOpen(false);
     } catch (err: unknown) {
       toast.error(`Import failed: ${err}`);
@@ -58,7 +70,7 @@ export function AwinImportDialog() {
                 onChange={(e) => setParams((p) => ({ ...p, csvUrl: e.target.value }))}
               />
             </div>
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label>Max Products</Label>
                 <Input
@@ -76,16 +88,6 @@ export function AwinImportDialog() {
                   value={params.skipRows}
                   onChange={(e) =>
                     setParams((p) => ({ ...p, skipRows: parseInt(e.target.value) || 0 }))
-                  }
-                />
-              </div>
-              <div>
-                <Label>Batch Size</Label>
-                <Input
-                  type="number"
-                  value={params.batchSize}
-                  onChange={(e) =>
-                    setParams((p) => ({ ...p, batchSize: parseInt(e.target.value) || 100 }))
                   }
                 />
               </div>

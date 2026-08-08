@@ -16,6 +16,10 @@ Deno.serve(
       maxBatchSize: 200,
       defaultConcurrency: 6,
       batchBreakerApi: 'llm.openai.enrich-news',
+      // Central daily cap (llm_budget, seeded 600/day): the driver consumes the
+      // batch size up front and skips the batch when exhausted; RPC missing →
+      // warn + run as before.
+      llmBudgetCaller: 'pipeline-enrich-news',
       async enrichItem(supabase, item, n, breaker) {
         const title = String(n.title ?? n.name ?? '').trim()
         if (!title) return 'skip'

@@ -235,22 +235,12 @@ const Index = React.memo(() => {
       </div>
 
       {/* ── Final CTA — adaptive on auth state ─────────────────────────
-          PASTE-UP: the page's one drenched plate. Black ink flooded edge to
-          edge, with a halftone screen laid over it so the flood reads as
-          something PRINTED rather than a filled div — the dots are what a
-          solid area of ink actually looks like off a riso drum.
-
-          The screen is absolutely positioned and aria-hidden, and the content
-          sits above it; it never touches the text's contrast because it is
-          behind the copy, not over it. */}
-      <section className="relative isolate overflow-hidden rule-heavy deckle-bottom px-4 sm:px-6 md:px-8 py-20 md:py-28 bg-foreground text-background">
-        <div aria-hidden="true" className="absolute inset-0 -z-10 halftone-paper" />
-        {/* The second drum. Pink laid over the paper screen and set to
-            overprint, so where the two screens coincide the inks combine for
-            real instead of one simply covering the other — which is the whole
-            argument for separate drums. Both layers are aria-hidden and sit
-            behind the copy, so neither touches the text's contrast. */}
-        <div aria-hidden="true" className="absolute inset-0 -z-10 halftone-pink overprint-flood" />
+          PASTE-UP: the page's one drenched plate. Flat black ink flooded edge
+          to edge. The halftone-screen / deckle-tear treatment tried here read
+          as a loud, mechanical polka-dot pattern rather than printed texture
+          on a real screenshot pass — removed 2026-08-07 rather than left half
+          right. */}
+      <section className="relative isolate overflow-hidden rule-heavy px-4 sm:px-6 md:px-8 py-20 md:py-28 bg-foreground text-background">
         <div className="relative max-w-3xl">
           <h2
             className="font-display text-display md:text-hero font-bold tracking-tight"

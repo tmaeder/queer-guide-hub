@@ -36,8 +36,12 @@ const foursquareAdapter: SourceAdapter = {
     const supabase = getServiceClient()
     const cities = (config.filters?.cities as string[]) || getCityForHour()
     const limit = config.batchSize || 20
+    const radius = String(config.filters?.radius || 30000)
     const mode  = (config.filters?.mode as string) || 'all'  // 'venues' | 'hotels' | 'all'
-    const terms = mode === 'hotels' ? HOTEL_TERMS
+    // Custom terms (admin import dialog) override the curated term sets.
+    const customTerms = config.filters?.terms as string[] | undefined
+    const terms = customTerms?.length ? customTerms
+                : mode === 'hotels' ? HOTEL_TERMS
                 : mode === 'venues' ? SEARCH_TERMS
                 : [...SEARCH_TERMS, ...HOTEL_TERMS]
     const allItems: RawItem[] = []
@@ -51,7 +55,7 @@ const foursquareAdapter: SourceAdapter = {
               near: city,
               query: term,
               limit: String(limit),
-              radius: '30000',
+              radius,
               fields: FSQ_FIELDS,
             })
             if (isHotelTerm) params.set('categories', HOTEL_CATEGORY_IDS)
@@ -186,7 +190,7 @@ Deno.serve(withErrorReporting('source-foursquare', async (req) => {
     const body = await req.json().catch(() => ({}))
     const config: AdapterConfig = {
       batchSize: body.limit || body.batch_size || 20,
-      filters: { cities: body.cities, mode: body.mode || 'all' },
+      filters: { cities: body.cities, mode: body.mode || 'all', terms: body.terms, radius: body.radius },
       apiKey: body.apiKey || Deno.env.get('FOURSQUARE_API_KEY'),
       dryRun: body.dry_run || false,
       pipelineRunId: body.pipeline_run_id,
@@ -202,6 +206,9 @@ Deno.serve(withErrorReporting('source-foursquare', async (req) => {
     const written = await writeToStaging(supabase, foursquareAdapter, rawItems, {
       ...config,
       targetTable: 'venues',
+      // Admin-triggered imports tag their staged rows 'import-foursquare' so
+      // ingestion_staging.source_type continuity survives the import-* removal.
+      sourceType: body.sourceType,
     })
 
     return jsonResponse({

@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { ShieldCheck, ShieldAlert, Skull } from 'lucide-react';
+import { ShieldCheck, ShieldAlert, ShieldQuestion, Skull } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Eyebrow } from '@/components/ui/Eyebrow';
 import { cn } from '@/lib/utils';
@@ -26,21 +26,32 @@ export function CityAtAGlance({ city, hasAirport, effectiveIata }: CityAtAGlance
   const report = useTripSafety(countryId ? [countryId] : []);
   const score = city.countries?.equality_score as number | null | undefined;
 
-  const danger = report.hasDeathPenaltyDestination || report.hasCriminalizedDestination;
-  const SafetyIcon = report.hasDeathPenaltyDestination
-    ? Skull
-    : report.hasCriminalizedDestination
-      ? ShieldAlert
-      : ShieldCheck;
-  const safetyLabel = report.hasDeathPenaltyDestination
-    ? t('cities.detail.glance.deathPenalty', 'Death penalty')
-    : report.hasCriminalizedDestination
-      ? t('cities.detail.glance.criminalized', 'Criminalized')
-      : score != null
-        ? t('cities.detail.glance.equalityTier', '{{tier}} equality', {
-            tier: getScoreLabel(score).label,
-          })
-        : t('cities.detail.glance.checkLaws', 'Check local laws');
+  // Until the country row lands, every flag on the report is false, so the
+  // fallback branch below would pair a ShieldCheck with an equality tier on a
+  // city whose country criminalises — a reassuring tile on exactly the pages
+  // that must not reassure. Absence of a verdict is the honest render.
+  const settled = report.status === 'ready' || report.status === 'idle';
+
+  const danger =
+    settled && (report.hasDeathPenaltyDestination || report.hasCriminalizedDestination);
+  const SafetyIcon = !settled
+    ? ShieldQuestion
+    : report.hasDeathPenaltyDestination
+      ? Skull
+      : report.hasCriminalizedDestination
+        ? ShieldAlert
+        : ShieldCheck;
+  const safetyLabel = !settled
+    ? t('cities.detail.glance.checkingLaws', 'Checking…')
+    : report.hasDeathPenaltyDestination
+      ? t('cities.detail.glance.deathPenalty', 'Death penalty')
+      : report.hasCriminalizedDestination
+        ? t('cities.detail.glance.criminalized', 'Criminalized')
+        : score != null
+          ? t('cities.detail.glance.equalityTier', '{{tier}} equality', {
+              tier: getScoreLabel(score).label,
+            })
+          : t('cities.detail.glance.checkLaws', 'Check local laws');
 
   const facts: { label: string; value: ReactNode }[] = [];
   if (city.lgbt_friendly_rating)

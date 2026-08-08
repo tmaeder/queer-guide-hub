@@ -68,7 +68,7 @@ CF account: `7aa3765cc5f50f2b681b782eb4a8d296`.
 - `advisor-sync-cron` / `refresh-source-reliability` `17 * * * *`
 
 ### Daily UTC (early morning window)
-- 02:00 — `anonymize-location-data`, `import-foursquare-venues`, `import-ilga-data`, `date-normalizer`
+- 02:00 — `anonymize-location-data`, `import-ilga-data`, `date-normalizer` (the `import-foursquare-venues` workflow was retired with the import-*→source-* consolidation)
 - 03:00 — `run-automated-reviews`, `contact-normalizer`
 - 03:15 — `event-occurrences-expansion`, GitHub Actions full scrape
 - 03:27 — `suggest-story-from-ids-and-titler`

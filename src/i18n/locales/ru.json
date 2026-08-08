@@ -2121,11 +2121,47 @@
       "bookNow": {
         "title": "Забронировать напрямую",
         "subtitle": "Ищите рейсы, отели и активности — без необходимости в поездке.",
-        "headline": "Забронировать без путешествия"
+        "headline": "Забронировать без путешествия",
+        "tripContext": "[RU] Searching for your {{city}} trip",
+        "tripContextChange": "[RU] change"
       },
       "plan": {
         "switchTrip": "Переключить активное путешествие"
-      }
+      },
+      "lede": "[RU] Pick a place, build the trip, book the pieces — with the legal picture built in.",
+      "sections": {
+        "plan": "[RU] Plan your trip",
+        "planKicker": "[RU] The planner",
+        "map": "[RU] See the map",
+        "mapKicker": "[RU] Destinations at a glance",
+        "inspiration": "[RU] Where to go",
+        "inspirationKicker": "[RU] Destinations",
+        "villages": "[RU] Neighborhoods",
+        "villagesKicker": "[RU] Queer villages worldwide",
+        "pride": "[RU] Pride season",
+        "book": "[RU] Getting there",
+        "bookKicker": "[RU] Flights and stays",
+        "safety": "[RU] Know before you go",
+        "safetyKicker": "[RU] The legal picture"
+      },
+      "map": {
+        "fullMap": "[RU] Full map with venues and filters",
+        "openFull": "[RU] Open the full map"
+      },
+      "goNow": {
+        "kicker": "[RU] This month",
+        "heading": "[RU] Go now — {{month}}",
+        "trending": "[RU] Trending now"
+      },
+      "cover": {
+        "kicker": "[RU] Cover story",
+        "read": "[RU] Read the guide"
+      },
+      "destinations": {
+        "empty": "[RU] No destinations match this filter."
+      },
+      "collections": "[RU] Collections",
+      "trending": "[RU] Trending now"
     },
     "marketplace": {
       "title": "Маркетплейс",

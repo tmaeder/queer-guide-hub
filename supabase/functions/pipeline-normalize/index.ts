@@ -10,6 +10,7 @@ import { computeIdempotencyKey } from '../_shared/idempotency.ts'
 import { logPipelineError } from '../_shared/pipeline-error-log.ts'
 import { withErrorReporting } from '../_shared/report-api-error.ts'
 import { coerceLgbtiConnection } from '../_shared/lgbti-connection.ts'
+import { resolveContentType } from '../_shared/content-registry.ts'
 import { extractSocialUrlsFromText, normalizeSocialLinks, detectPlatform, canonicalizeUrl } from '../_shared/social.ts'
 
 // ============================================================
@@ -159,12 +160,10 @@ Deno.serve(withErrorReporting('pipeline-normalize', async (req) => {
 
 function guessEntityType(t: string | null): string {
   if (!t) return 'unknown'
-  const m: Record<string, string> = {
-    venues: 'venue', events: 'event', personalities: 'personality',
-    news_articles: 'news_article', unified_tags: 'tag', cities: 'city',
-    countries: 'country', marketplace_listings: 'marketplace', airports: 'airport',
-  }
-  return m[t] || t.replace(/s$/, '')
+  // Known tables resolve through the content registry (same canonical
+  // entity_type spellings the old inline map emitted); anything the registry
+  // doesn't know keeps the naive-singularize fallback.
+  return resolveContentType(t)?.entityType ?? t.replace(/s$/, '')
 }
 
 function normalizeItem(raw: Record<string, unknown>, entityType: string): Record<string, unknown> {

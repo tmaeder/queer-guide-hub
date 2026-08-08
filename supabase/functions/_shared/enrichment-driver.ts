@@ -6,6 +6,7 @@ import {
   requireInternalOrAdmin,
 } from './supabase-client.ts'
 import { createBatchCircuitChecker, type BatchCircuitChecker } from './circuit-breaker.ts'
+import { consumeLlmBudget } from './llm-budget.ts'
 
 // Shared batch driver for the pipeline-enrich-* staging functions.
 //
@@ -37,6 +38,10 @@ export interface StagingItem {
   normalized_data: Record<string, unknown> | null
   entity_type: string | null
   target_table: string | null
+  /** Prior enrichment payload — read by the skip-if-unchanged guard. */
+  enriched_data?: Record<string, unknown> | null
+  /** Source payload hash stamped by pipeline-normalize (idempotency key). */
+  payload_hash?: string | null
 }
 
 export interface EnrichmentDriverConfig {
@@ -55,6 +60,19 @@ export interface EnrichmentDriverConfig {
    *  state is then checked once per batch instead of once per item (N+1
    *  fix). Multi-breaker adopters leave this unset. */
   batchBreakerApi?: string
+  /** Opt-in: only enrich rows the deterministic gates have already passed —
+   *  ai_validation_status='approved' AND dedup_status <> 'duplicate'. Meant
+   *  for the reordered DAGs where validate+dedup run BEFORE the LLM stages.
+   *  Default false so the current stage order (enrich first, where both
+   *  columns still read 'pending') keeps working. Request body
+   *  `require_gates` (spread from the DAG node config) overrides this. */
+  requireGates?: boolean
+  /** Central LLM budget caller key (llm_budget_consume, migration
+   *  20260817090000). When set, the driver consumes `items.length` before the
+   *  batch runs; an exhausted budget skips the whole batch with
+   *  `skipped_reason: 'llm_budget_exhausted'` (rows stay pending for the next
+   *  window). RPC missing/erroring → console.warn + run as before. */
+  llmBudgetCaller?: string
   /** Returns 'skip' when the row lacks the minimum fields (no name/title). */
   enrichItem(
     supabase: ServiceClient,
@@ -89,21 +107,56 @@ export function serveEnrichment(config: EnrichmentDriverConfig) {
         8,
         Math.max(1, body.concurrency ?? config.defaultConcurrency ?? 4)
       )
+      const requireGates = (body.require_gates as boolean | undefined) ?? config.requireGates ?? false
 
       let q = supabase
         .from('ingestion_staging')
-        .select('id, normalized_data, entity_type, target_table')
+        .select('id, normalized_data, entity_type, target_table, enriched_data, payload_hash')
         .in('target_table', config.targetTables)
         .eq('enrichment_status', 'pending')
+        // Rows a deterministic gate already disposed (validate-reject stamps
+        // disposition='rejected') must never reach paid enrichment. Under the
+        // current stage order every enrichment-pending row is still
+        // disposition='pending', so this is a no-op there; once validate+dedup
+        // move ahead of the LLM stages it becomes the cost gate. Mirrors
+        // pipeline-deduplicate's selection. (Column is NOT NULL DEFAULT
+        // 'pending', so eq has no NULL trap.)
+        .eq('disposition', 'pending')
         .not('normalized_data', 'is', null)
-        .order('created_at', { ascending: true })
-        .limit(batchSize)
       if (pipelineRunId) q = q.eq('pipeline_run_id', pipelineRunId)
+      if (requireGates) {
+        q = q.eq('ai_validation_status', 'approved').neq('dedup_status', 'duplicate')
+      }
 
       const { data: items, error } = await q
+        .order('created_at', { ascending: true })
+        .limit(batchSize)
       if (error) return errorResponse(`load: ${error.message}`, 500, req)
       if (!items || items.length === 0) {
         return jsonResponse({ success: true, items: 0, message: 'nothing to enrich' }, 200, req)
+      }
+
+      // Central LLM spend ceiling — consume the whole batch before any LLM
+      // work. Denied ⇒ skip the batch; rows stay 'pending' and drain
+      // oldest-first once the daily window rolls. (items/items_processed stay
+      // 0 so the executor's run counters don't count skipped work.)
+      if (config.llmBudgetCaller) {
+        const budget = await consumeLlmBudget(supabase, config.llmBudgetCaller, items.length)
+        if (!budget.allowed) {
+          return jsonResponse(
+            {
+              success: true,
+              items: 0,
+              items_processed: 0,
+              skipped: items.length,
+              skipped_reason: 'llm_budget_exhausted',
+              budget_cap: budget.cap,
+              dry_run: dryRun,
+            },
+            200,
+            req
+          )
+        }
       }
 
       let enriched = 0,
@@ -117,6 +170,35 @@ export function serveEnrichment(config: EnrichmentDriverConfig) {
       const processItem = async (item: StagingItem) => {
         const n = (item.normalized_data ?? {}) as Record<string, unknown>
         const startedAt = Date.now()
+
+        // Skip-if-unchanged: a row already enriched once (enriched_at +
+        // payload_hash stamped into enriched_data below) whose source payload
+        // has not moved since would just re-buy the same LLM answer. Re-mark
+        // it 'enriched' with an empty merge so it leaves the pending pool
+        // instead of being reprocessed on every re-stage.
+        const prior = (item.enriched_data ?? {}) as Record<string, unknown>
+        if (
+          typeof prior.enriched_at === 'string' &&
+          item.payload_hash &&
+          prior.payload_hash === item.payload_hash
+        ) {
+          skipped++
+          if (!dryRun) {
+            const { error: skipErr } = await supabase.rpc('apply_enrichment', {
+              p_staging_id: item.id,
+              p_pipeline_run_id: pipelineRunId ?? null,
+              p_stage: stage,
+              p_new_enriched: {},
+              p_actor: config.fnName,
+              p_status: 'success',
+              p_error_message: null,
+              p_duration_ms: 0,
+              p_merged_normalized: null,
+            })
+            if (skipErr) console.error(`apply_enrichment (unchanged) ${item.id}: ${skipErr.message}`)
+          }
+          return
+        }
 
         const outcome = await config.enrichItem(supabase, item, n, breaker)
         if (outcome === 'skip') {
@@ -138,6 +220,15 @@ export function serveEnrichment(config: EnrichmentDriverConfig) {
         if (!outcome.succeeded && !itemError) itemError = 'no_enrichment_data_produced'
         const status = outcome.succeeded ? 'success' : 'failed'
 
+        // Stamp what this enrichment saw so the unchanged guard above can
+        // compare on the next pass: the row's payload_hash, plus enriched_at
+        // for adopters that don't set it themselves (adopter value wins).
+        let enrichedData = outcome.enrichedData
+        if (status === 'success') {
+          enrichedData = { enriched_at: new Date().toISOString(), ...enrichedData }
+          if (item.payload_hash) enrichedData = { ...enrichedData, payload_hash: item.payload_hash }
+        }
+
         // The normalized_data merge rides along inside the RPC — one round-trip
         // instead of a separate per-row UPDATE (the double-write folded per the
         // #1923 follow-up; requires migration 20260704150000).
@@ -145,7 +236,7 @@ export function serveEnrichment(config: EnrichmentDriverConfig) {
           p_staging_id: item.id,
           p_pipeline_run_id: pipelineRunId ?? null,
           p_stage: stage,
-          p_new_enriched: outcome.enrichedData,
+          p_new_enriched: enrichedData,
           p_actor: config.fnName,
           p_status: status,
           p_error_message: itemError,

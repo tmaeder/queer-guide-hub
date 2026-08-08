@@ -16,19 +16,8 @@ export const TicketmasterImport = ({ onImportComplete }: TicketmasterImportProps
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [keyword, setKeyword] = useState("");
-  const [city, setCity] = useState("");
   const [countryCode, setCountryCode] = useState("US");
-  const [classificationName, setClassificationName] = useState("");
   const { toast } = useToast();
-
-  const classifications = [
-    { value: "Music", label: "Music" },
-    { value: "Sports", label: "Sports" },
-    { value: "Arts & Theatre", label: "Arts & Theatre" },
-    { value: "Film", label: "Film" },
-    { value: "Miscellaneous", label: "Miscellaneous" },
-    { value: "Undefined", label: "Undefined" }
-  ];
 
   const countries = [
     { code: "US", name: "United States" },
@@ -64,12 +53,13 @@ export const TicketmasterImport = ({ onImportComplete }: TicketmasterImportProps
 
     setIsLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('import-ticketmaster-events', {
+      // source-ticketmaster searches per keyword within a country and stages
+      // into ingestion_staging (source_type 'ticketmaster', same as the
+      // retired import-ticketmaster-events fn wrote).
+      const { data, error } = await supabase.functions.invoke('source-ticketmaster', {
         body: {
-          keyword: keyword.trim(),
-          city: city.trim() || undefined,
-          countryCode,
-          classificationName: classificationName || undefined
+          keywords: [keyword.trim()],
+          countryCode
         }
       });
 
@@ -77,14 +67,12 @@ export const TicketmasterImport = ({ onImportComplete }: TicketmasterImportProps
 
       toast({
         title: "Staged for review",
-        description: `Staged ${data.staged ?? 0} Ticketmaster events for the review pipeline`
+        description: `Staged ${data.items ?? 0} Ticketmaster events for the review pipeline`
       });
 
       setIsOpen(false);
       setKeyword("");
-      setCity("");
       setCountryCode("US");
-      setClassificationName("");
       onImportComplete?.();
     } catch (error: unknown) {
       console.error('Import error:', error);
@@ -122,16 +110,6 @@ export const TicketmasterImport = ({ onImportComplete }: TicketmasterImportProps
           </div>
 
           <div>
-            <Label htmlFor="city">City</Label>
-            <Input
-              id="city"
-              placeholder="e.g., New York, Berlin"
-              value={city}
-              onChange={(e) => setCity(e.target.value)}
-            />
-          </div>
-
-          <div>
             <Label htmlFor="country">Country</Label>
             <Select value={countryCode} onValueChange={setCountryCode}>
               <SelectTrigger>
@@ -141,22 +119,6 @@ export const TicketmasterImport = ({ onImportComplete }: TicketmasterImportProps
                 {countries.map(country => (
                   <SelectItem key={country.code} value={country.code}>
                     {country.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div>
-            <Label htmlFor="classification">Classification</Label>
-            <Select value={classificationName} onValueChange={setClassificationName}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select classification (optional)" />
-              </SelectTrigger>
-              <SelectContent>
-                {classifications.map(classification => (
-                  <SelectItem key={classification.value} value={classification.value}>
-                    {classification.label}
                   </SelectItem>
                 ))}
               </SelectContent>

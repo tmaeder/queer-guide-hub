@@ -63,9 +63,9 @@ export const STATIC_ROUTE_META: Record<string, RouteMeta> = {
       'Compare two cities on LGBTQ+ equality score, currency, language, timezone and airport before you travel.',
   },
   '/travel': {
-    title: 'LGBTQ+ Travel Guide — Safe Destinations | Queer Guide',
+    title: 'Plan LGBTQ+ Trips — Queer Travel Planner | Queer Guide',
     description:
-      'Plan safer queer travel. Country safety ratings, city guides, and trusted local recommendations.',
+      'Build a queer trip in one place: pick a destination on the map, plan the days, and book flights, stays and activities — with the legal picture built in.',
   },
   '/map': {
     title: 'LGBTQ+ World Map — Venues, Events, Safety | Queer Guide',

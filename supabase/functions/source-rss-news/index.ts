@@ -30,6 +30,17 @@ interface NewsSource {
 
 const LGBTQ_KEYWORDS = ['lgbtq', 'lgbt', 'gay', 'lesbian', 'trans', 'transgender', 'bisexual', 'queer', 'pride', 'nonbinary', 'rainbow', 'drag', 'same-sex']
 
+// Feeds per invocation. 30 was the previous ceiling and per-invocation work
+// still tripped the edge CPU limit (HTTP 546 — top news-DAG failure cause,
+// ×102/14d); the wall-clock/byte/item budgets below bound the tail but the
+// feed count is the primary work knob, so halve the default. Configurable via
+// body.max_feeds_per_run (DAG node config), clamped to the known-safe ceiling.
+// Capped runs lose nothing: last_fetched_at is stamped at claim time and
+// news_sources_eligible orders by it ASC, so the next run picks up the feeds
+// this one didn't touch.
+const MAX_FEEDS_HARD_CAP = 30
+const DEFAULT_MAX_FEEDS_PER_RUN = 15
+
 const rssNewsAdapter: SourceAdapter = {
   name: 'rss-news',
   entityType: 'news_article',
@@ -42,13 +53,18 @@ const rssNewsAdapter: SourceAdapter = {
     // Only pull sources eligible to run right now (respects auto_paused,
     // backoff_until, fetch_frequency). The RPC encapsulates the
     // circuit-breaker policy at the source level — see news_sources_eligible().
-    // Cap 30/run: at ~90+ eligible sources a single invocation hit the edge
-    // worker resource limit (HTTP 546) on alternating hourly runs (2026-07).
-    // Cumulative feed-parse cost is the constraint, so keep the per-run set
-    // small; last_fetched_at ASC ordering rotates the remainder into the next
-    // run so coverage isn't lost.
+    // Bounded per run: at ~90+ eligible sources a single invocation hit the
+    // edge worker resource limit (HTTP 546) on alternating hourly runs
+    // (2026-07). Cumulative feed-parse cost is the constraint, so keep the
+    // per-run set small; last_fetched_at ASC ordering rotates the remainder
+    // into the next run so coverage isn't lost.
+    const maxFeedsRaw = Number(config.filters?.maxFeedsPerRun ?? DEFAULT_MAX_FEEDS_PER_RUN)
+    const maxFeeds = Math.min(
+      MAX_FEEDS_HARD_CAP,
+      Math.max(1, Number.isFinite(maxFeedsRaw) ? Math.floor(maxFeedsRaw) : DEFAULT_MAX_FEEDS_PER_RUN),
+    )
     const { data: sources, error } = await supabase.rpc('news_sources_eligible', {
-      p_limit: 30,
+      p_limit: maxFeeds,
     })
 
     if (error || !sources || sources.length === 0) {
@@ -537,7 +553,13 @@ Deno.serve(withErrorReporting('source-rss-news', async (req) => {
       // in memory at once, contributing to the intermittent HTTP 546
       // (WORKER_LIMIT) that killed runs at ~64s. Recent items are what matter
       // for an hourly feed; older ones are already captured by prior runs.
-      filters: { maxArticles: body.maxArticles || 40, sinceHours: body.sinceHours || 24 },
+      // max_feeds_per_run: per-invocation feed cap (default 15, clamped ≤30) —
+      // see DEFAULT_MAX_FEEDS_PER_RUN above.
+      filters: {
+        maxArticles: body.maxArticles || 40,
+        sinceHours: body.sinceHours || 24,
+        maxFeedsPerRun: body.max_feeds_per_run,
+      },
       dryRun: body.dry_run || false,
       pipelineRunId: body.pipeline_run_id,
       nodeId: body.node_id,

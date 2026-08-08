@@ -3,6 +3,7 @@ import { withCircuitBreaker } from '../_shared/circuit-breaker.ts'
 import type { SourceAdapter, RawItem, NormalizedItem, AdapterConfig } from '../_shared/source-adapter.ts'
 import { writeToStaging, MissingCredentialsError, skippedResponse } from '../_shared/source-adapter.ts'
 import { withErrorReporting } from '../_shared/report-api-error.ts'
+import { prefilterEvents, eventbritePrefilterFields } from '../_shared/event-prefilter.ts'
 
 // ============================================================
 // Source: Eventbrite Events API
@@ -112,9 +113,19 @@ Deno.serve(withErrorReporting('source-eventbrite', async (req) => {
       nodeId: body.node_id,
     }
     const rawItems = await eventbriteAdapter.fetch(config)
-    if (config.dryRun) return jsonResponse({ success: true, items: rawItems.length, dry_run: true }, 200, req)
-    const written = await writeToStaging(supabase, eventbriteAdapter, rawItems, { ...config, targetTable: 'events' })
-    return jsonResponse({ success: true, items: written, items_total: rawItems.length, items_processed: written, items_succeeded: written, items_failed: 0 }, 200, req)
+    // LGBTQ+ prefilter — default OFF here (unlike source-ticketmaster): the
+    // Eventbrite queries are already LGBTQ_QUERIES-targeted and its result set
+    // is small. Opt in via body.prefilter: true when a broad query needs it.
+    const prefilterOn = body.prefilter === true
+    const keywordOverride = Array.isArray(body.prefilter_keywords) ? (body.prefilter_keywords as string[]) : undefined
+    const { kept, fetched, dropped } = prefilterOn
+      ? prefilterEvents(rawItems, { keywords: keywordOverride, fields: eventbritePrefilterFields })
+      : { kept: rawItems, fetched: rawItems.length, dropped: 0 }
+    const prefilter = { enabled: prefilterOn, fetched, kept: kept.length, dropped }
+    if (prefilterOn) console.log(`source-eventbrite prefilter: fetched=${fetched} kept=${kept.length} dropped=${dropped}`)
+    if (config.dryRun) return jsonResponse({ success: true, items: kept.length, prefilter, dry_run: true }, 200, req)
+    const written = await writeToStaging(supabase, eventbriteAdapter, kept, { ...config, targetTable: 'events' })
+    return jsonResponse({ success: true, items: written, items_total: fetched, items_processed: written, items_succeeded: written, items_failed: 0, prefilter }, 200, req)
   } catch (error) {
     if (error instanceof MissingCredentialsError) {
       return jsonResponse(skippedResponse('missing_credentials', error.missing), 200, req)

@@ -680,7 +680,15 @@ async function handleBuiltInNode(
       return { items_out: stamped }
     }
     default:
-      console.warn(`Unknown built-in node type: ${node.type}`)
-      return { items_out: 0 }
+      // A node slug with no pipeline_node_types row used to no-op silently
+      // here — which is how entire DAG stages ran as ghosts for months (the
+      // marketplace 'normalizer'/'committer' era; the drain-cron layer was
+      // built to compensate). Fail the node loudly instead: every live DAG
+      // uses registered slugs (verified 2026-08-07), so reaching this case
+      // means a typo or an unregistered new node type.
+      throw new Error(
+        `Node type '${node.type}' has no pipeline_node_types registration and is not a built-in — ` +
+        `register it (with its edge_function) or fix the node's type slug.`
+      )
   }
 }

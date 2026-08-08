@@ -95,7 +95,45 @@ if (!hygieneRes.ok) {
     console.error(`✗ Cron jobs with no admin_automations registry row: ${unregistered.join(', ')} — register them (P1 registry-of-record policy)`)
     process.exit(1)
   }
-  console.log(`✓ Cron hygiene clean (${hygiene.cron_total} active jobs); staging pending_review=${pending}`)
+  // Starved-path sentinel (overhaul P2): rows stuck mid-pipeline >48h. Live
+  // baseline at introduction was ~2.8k (news ~1.9k, marketplace ~0.9k, oldest
+  // from June) — thresholds sit above that so only NEW starvation fails.
+  const stale = hygiene.stale_pending_by_entity ?? {}
+  const staleTotal = Object.values(stale).reduce((a, b) => a + Number(b), 0)
+  const staleWorst = Object.entries(stale).sort((a, b) => Number(b[1]) - Number(a[1]))[0]
+  if ((staleWorst && Number(staleWorst[1]) > 5000) || staleTotal > 10000) {
+    console.error(`✗ Staging starvation: ${staleTotal} rows pending >48h (${JSON.stringify(stale)}) — a drain/fill path is dead`)
+    process.exit(1)
+  }
+  if (staleTotal > 3500) {
+    console.warn(`⚠ Staging stale-pending rising: ${staleTotal} rows >48h (${JSON.stringify(stale)})`)
+  }
+  console.log(`✓ Cron hygiene clean (${hygiene.cron_total} active jobs); staging pending_review=${pending}, stale_pending=${staleTotal}`)
+}
+
+// 6. Search reindex queue (P1 overhaul, 2026-08): entity writes enqueue here;
+//    search_reindex_drain applies them every minute. A deep AND old queue means
+//    the drain is broken — search results are then frozen at their last index.
+{
+  const res = await fetch(`${BASE}/rest/v1/search_reindex_queue?select=created_at&order=id.asc&limit=1`, {
+    headers: { ...headers, Prefer: 'count=exact' },
+  })
+  if (!res.ok) {
+    console.warn(`⚠ search_reindex_queue probe → HTTP ${res.status} (pre-P1 schema?)`)
+  } else {
+    const depth = Number(res.headers.get('content-range')?.split('/')[1] ?? 0)
+    const rows = await res.json()
+    const oldestMin = rows.length ? (Date.now() - new Date(rows[0].created_at).getTime()) / 60000 : 0
+    if (depth > 25000 && oldestMin > 60) {
+      console.error(`✗ search_reindex_queue stuck: depth=${depth}, oldest=${oldestMin.toFixed(0)}min — drain cron broken?`)
+      process.exit(1)
+    }
+    if (depth > 5000 || oldestMin > 15) {
+      console.warn(`⚠ search_reindex_queue busy: depth=${depth}, oldest=${oldestMin.toFixed(0)}min (backfill in flight is normal)`)
+    } else {
+      console.log(`✓ search reindex queue healthy (depth=${depth})`)
+    }
+  }
 }
 
 console.log('✓ Pipeline health check passed')

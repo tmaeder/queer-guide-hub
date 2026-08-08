@@ -2085,11 +2085,47 @@
       "bookNow": {
         "title": "直接预订",
         "subtitle": "直接搜索航班、酒店和活动 — 无需行程。",
-        "headline": "无旅行直接预订"
+        "headline": "无旅行直接预订",
+        "tripContext": "[ZH] Searching for your {{city}} trip",
+        "tripContextChange": "[ZH] change"
       },
       "plan": {
         "switchTrip": "切换活动旅行"
-      }
+      },
+      "lede": "[ZH] Pick a place, build the trip, book the pieces — with the legal picture built in.",
+      "sections": {
+        "plan": "[ZH] Plan your trip",
+        "planKicker": "[ZH] The planner",
+        "map": "[ZH] See the map",
+        "mapKicker": "[ZH] Destinations at a glance",
+        "inspiration": "[ZH] Where to go",
+        "inspirationKicker": "[ZH] Destinations",
+        "villages": "[ZH] Neighborhoods",
+        "villagesKicker": "[ZH] Queer villages worldwide",
+        "pride": "[ZH] Pride season",
+        "book": "[ZH] Getting there",
+        "bookKicker": "[ZH] Flights and stays",
+        "safety": "[ZH] Know before you go",
+        "safetyKicker": "[ZH] The legal picture"
+      },
+      "map": {
+        "fullMap": "[ZH] Full map with venues and filters",
+        "openFull": "[ZH] Open the full map"
+      },
+      "goNow": {
+        "kicker": "[ZH] This month",
+        "heading": "[ZH] Go now — {{month}}",
+        "trending": "[ZH] Trending now"
+      },
+      "cover": {
+        "kicker": "[ZH] Cover story",
+        "read": "[ZH] Read the guide"
+      },
+      "destinations": {
+        "empty": "[ZH] No destinations match this filter."
+      },
+      "collections": "[ZH] Collections",
+      "trending": "[ZH] Trending now"
     },
     "marketplace": {
       "title": "市集",

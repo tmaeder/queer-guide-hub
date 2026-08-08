@@ -22,11 +22,35 @@ const PROVIDERS: { id: Provider; label: string }[] = [
 ];
 
 const FN_MAP: Record<Provider, string> = {
-  foursquare: 'import-foursquare-venues',
+  foursquare: 'source-foursquare',
   tripadvisor: 'import-tripadvisor-venues',
-  tomtom: 'import-tomtom-venues',
-  'google-places': 'import-google-places-venues',
+  tomtom: 'source-tomtom',
+  'google-places': 'source-google-places',
 };
+
+/**
+ * The source-* fetchers take a flat body (cities/locations, terms, limit);
+ * `sourceType: 'import-<provider>'` keeps ingestion_staging.source_type
+ * continuity with the retired import-* functions so admin-triggered rows
+ * stay attributable to the manual import path. TripAdvisor still uses the
+ * legacy import fn (no source-* peer) and the original config shape.
+ */
+function buildBody(provider: Provider, config: Record<string, unknown>): Record<string, unknown> {
+  if (provider === 'tripadvisor') return config;
+  const c = config as { locations?: string[]; searchTerms?: string[]; limit?: number; radius?: number };
+  const body: Record<string, unknown> = {
+    sourceType: `import-${provider}`,
+    limit: c.limit,
+    terms: c.searchTerms?.length ? c.searchTerms : undefined,
+  };
+  if (provider === 'google-places') {
+    body.locations = c.locations;
+  } else {
+    body.cities = c.locations;
+    if (provider === 'foursquare') body.radius = c.radius;
+  }
+  return body;
+}
 
 export function VenueProviderImport({ onImportComplete }: { onImportComplete?: () => void }) {
   const [dialog, setDialog] = useState<{ open: boolean; provider: Provider | null }>({
@@ -38,11 +62,18 @@ export function VenueProviderImport({ onImportComplete }: { onImportComplete?: (
   const runImport = async (provider: Provider, config: Record<string, unknown>) => {
     setIsImporting(true);
     try {
-      const { data, error } = await supabase.functions.invoke(FN_MAP[provider], { body: config });
+      const { data, error } = await supabase.functions.invoke(FN_MAP[provider], {
+        body: buildBody(provider, config),
+      });
       if (error) throw error;
+      if (data?.skipped) {
+        toast.error(`Import skipped: ${data.reason ?? 'source unavailable'}`);
+        return;
+      }
+      const staged = typeof data?.items === 'number' ? data.items : data?.staged;
       toast.success(
-        typeof data.staged === 'number'
-          ? `Staged ${data.staged} items for the review pipeline`
+        typeof staged === 'number'
+          ? `Staged ${staged} items for the review pipeline`
           : `Import completed: ${data.message}`,
       );
       onImportComplete?.();

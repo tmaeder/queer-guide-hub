@@ -3,6 +3,11 @@ import { logPipelineError } from '../_shared/pipeline-error-log.ts'
 import { reportApiError } from '../_shared/report-api-error.ts'
 import { rpcWithBreaker } from '../_shared/circuit-breaker.ts'
 import { buildRecord } from './build-record.ts'
+import {
+  commitConfigForTable,
+  socialColumnForTable,
+  type SimpleCommitSpec,
+} from '../_shared/content-registry.ts'
 
 // ============================================================
 // Pipeline Commit
@@ -10,39 +15,12 @@ import { buildRecord } from './build-record.ts'
 // News is structurally different (per-job). Venues has post-commit
 // organizer flagging. Everything else flows through commitSimple().
 // Legacy path remains for entity types without a dedicated RPC.
+// Per-type commit config (RPC name, id column, social column) lives in
+// _shared/content-registry.ts — the former SIMPLE_COMMIT_TARGETS /
+// SOCIAL_COLUMN maps.
 // ============================================================
 
-interface SimpleCommitConfig {
-  rpc: string
-  idColumn: string
-  extraArgs?: (ctx: { pipelineRunId?: string }) => Record<string, unknown>
-}
-
-const SIMPLE_COMMIT_TARGETS: Record<string, SimpleCommitConfig> = {
-  venues:         { rpc: 'commit_venue_staging_batch',       idColumn: 'venue_id' },
-  countries:      { rpc: 'commit_country_staging_batch',     idColumn: 'country_id' },
-  cities:         { rpc: 'commit_city_staging_batch',        idColumn: 'city_id' },
-  personalities:  { rpc: 'commit_personality_staging_batch', idColumn: 'personality_id' },
-  events:         { rpc: 'commit_event_staging_batch',       idColumn: 'event_id' },
-  queer_villages: { rpc: 'commit_village_staging_batch',     idColumn: 'village_id' },
-  marketplace_listings: {
-    rpc: 'commit_marketplace_staging_batch',
-    idColumn: 'listing_id',
-    extraArgs: (ctx) => ({ p_pipeline_run_id: ctx.pipelineRunId ?? null }),
-  },
-}
-
 type SimpleCommitRow = { staging_id: string; action: string } & Record<string, string>
-
-// Target table -> the jsonb column that holds normalized social links.
-const SOCIAL_COLUMN: Record<string, string> = {
-  venues: 'social_links',
-  events: 'social_links',
-  cities: 'social_links',
-  queer_villages: 'social_links',
-  personalities: 'social_links',
-  marketplace_listings: 'social_media',
-}
 
 /**
  * Post-commit: persist normalized_data.social_links onto the committed entity
@@ -57,7 +35,7 @@ async function persistSocialLinks(
   rows: SimpleCommitRow[],
   idColumn: string,
 ): Promise<void> {
-  const col = SOCIAL_COLUMN[target]
+  const col = socialColumnForTable(target)
   if (!col || !rows.length) return
   const { data: sRows } = await supabase
     .from('ingestion_staging')
@@ -82,11 +60,14 @@ async function persistSocialLinks(
 async function commitSimple(
   supabase: ReturnType<typeof getServiceClient>,
   target: string,
-  cfg: SimpleCommitConfig,
+  cfg: SimpleCommitSpec,
   ctx: { batchSize: number; pipelineRunId?: string },
   req: Request,
 ): Promise<Response> {
-  const args = { p_limit: ctx.batchSize, ...(cfg.extraArgs?.({ pipelineRunId: ctx.pipelineRunId }) ?? {}) }
+  const args = {
+    p_limit: ctx.batchSize,
+    ...(cfg.passPipelineRunId ? { p_pipeline_run_id: ctx.pipelineRunId ?? null } : {}),
+  }
   const { data, error, circuitOpen } = await rpcWithBreaker<SimpleCommitRow[]>(
     supabase, `rpc.${cfg.rpc}`, cfg.rpc, args,
   )
@@ -136,9 +117,13 @@ Deno.serve(async (req) => {
       return jsonResponse({ success: true, items: 0, message: 'nothing to commit' }, 200, req)
     }
 
+    // Registry commit config for the resolved target table (exact-table match —
+    // unknown tables fall through to the legacy path below, unchanged).
+    const targetCommit = commitConfigForTable(resolvedTarget)?.commit
+
     if (resolvedTarget === 'venues' && !dryRun) {
       // Run the standard simple commit, then post-process for organizer flagging.
-      const cfg = SIMPLE_COMMIT_TARGETS.venues
+      const cfg = targetCommit as SimpleCommitSpec
       const args = { p_limit: batchSize }
       const { data, error, circuitOpen } = await rpcWithBreaker<SimpleCommitRow[]>(
         supabase, `rpc.${cfg.rpc}`, cfg.rpc, args,
@@ -188,17 +173,17 @@ Deno.serve(async (req) => {
 
     // Standard simple targets: countries, cities, personalities, events,
     // queer_villages, marketplace_listings — all go through commitSimple.
-    if (resolvedTarget && !dryRun && resolvedTarget in SIMPLE_COMMIT_TARGETS && resolvedTarget !== 'venues') {
+    if (targetCommit?.kind === 'simple' && !dryRun && resolvedTarget !== 'venues') {
       return commitSimple(
         supabase,
         resolvedTarget,
-        SIMPLE_COMMIT_TARGETS[resolvedTarget],
+        targetCommit,
         { batchSize, pipelineRunId },
         req,
       )
     }
 
-    if (resolvedTarget === 'news_articles' && !dryRun) {
+    if (targetCommit?.kind === 'news_per_job' && !dryRun) {
       // Find unique job_ids in this batch and commit per-job via news RPC.
       //
       // The ORDER is load-bearing. `disposition` stays

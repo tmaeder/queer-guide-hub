@@ -1,26 +1,45 @@
 import { test, expect } from '@playwright/test';
 
 /**
- * E2E tests for the Travel hub page.
+ * E2E tests for the Travel hub page (planner-first layout).
  *
  * The /travel route is the front door of the trip-building system:
- *   - Plan-a-trip hero (default surface)
- *   - Pride scroller
- *   - Inspiration grid (queer villages + public trips)
- *   - Book now accordion (collapsed by default; expanded with ?intent=book)
+ *   - Plan-a-trip hero (StartTripHero for anon, TripCockpit when signed in)
+ *   - Trip templates + public trips
+ *   - Queer villages + Pride scroller
+ *   - Book now accordion (collapsed by default; expanded with ?intent=book,
+ *     ?tab= or ?city= deep links)
+ *   - Compact "Know before you go" legal briefing at the end
  *
  * Tests run against the live site (queer.guide) or a local dev server.
  * Set E2E_BASE_URL env var to override the base URL.
  */
 
 test.describe('Travel hub (/travel)', () => {
-  test('renders the plan-a-trip hero', async ({ page }) => {
+  test('renders the plan-a-trip hero for anonymous visitors', async ({ page }) => {
     await page.goto('/travel');
 
     await expect(page.getByRole('heading', { name: /plan a trip/i })).toBeVisible({
       timeout: 15000,
     });
     await expect(page.getByTestId('travel-plan-trip')).toBeVisible();
+  });
+
+  test('closes with the legal briefing instead of leading with it', async ({ page }) => {
+    await page.goto('/travel');
+    await expect(page.getByRole('heading', { name: /know before you go/i })).toBeVisible({
+      timeout: 15000,
+    });
+    // The rights CTA lives in that section.
+    await expect(page.getByRole('link', { name: /check any country/i })).toBeVisible();
+  });
+
+  test('mounts the destination map after scrolling to it', async ({ page }) => {
+    await page.goto('/travel');
+    await page.getByRole('heading', { name: /plan a trip/i }).waitFor({ timeout: 15000 });
+    await page.locator('#map').scrollIntoViewIfNeeded();
+    // Deferred + idle-gated: the maplibre chunk loads only on approach.
+    await expect(page.locator('[data-map-surface="travel"]')).toBeVisible({ timeout: 20000 });
   });
 
   test('renders the Pride scroller heading', async ({ page }) => {
@@ -45,23 +64,19 @@ test.describe('Travel hub (/travel)', () => {
     await expect(page.getByRole('button', { name: 'Activities', exact: true })).toBeVisible();
   });
 
-  test('?intent=book opens Book now expanded and hides the hero', async ({ page }) => {
+  test('?intent=book opens Book now expanded', async ({ page }) => {
     await page.goto('/travel?intent=book');
-
-    // Hero is gone in book-intent mode.
-    await expect(page.getByRole('heading', { name: /plan a trip/i })).toHaveCount(0);
-
-    // Booking tabs are visible.
     await expect(page.getByRole('button', { name: 'Flights', exact: true })).toBeVisible({
       timeout: 15000,
     });
   });
 
-  test('Hotels tab shows the LGBTQ+ friendly filter checkbox', async ({ page }) => {
-    await page.goto('/travel?intent=book&tab=hotels');
-    await expect(page.locator('label:has-text("LGBTQ+ friendly only")')).toBeVisible({
+  test('?tab=hotels deep link opens the booking accordion on the hotels tab', async ({ page }) => {
+    await page.goto('/travel?tab=hotels');
+    await expect(page.getByRole('button', { name: 'Hotels', exact: true })).toBeVisible({
       timeout: 15000,
     });
+    await expect(page.locator('label:has-text("LGBTQ+ friendly only")')).toBeVisible();
   });
 
   test('travel → plan trip flow routes anonymous user to /trips with city seeded', async ({

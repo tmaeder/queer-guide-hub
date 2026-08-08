@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { Plane, Hotel, Ticket, TrendingUp, X, ChevronDown } from 'lucide-react';
@@ -22,6 +22,8 @@ import { useActivitySearch } from '@/hooks/useActivitySearch';
 import { useVisitorOrigin } from '@/hooks/useVisitorOrigin';
 import { useRecommendations } from '@/hooks/useRecommendations';
 import { useTrackEvent } from '@/hooks/useTrackEvent';
+import { formatEventDateLabel } from '@/hooks/useGoNowDestinations';
+import type { TripBookingContext } from '@/hooks/useTripBookingContext';
 import type { BookingResult } from '@/lib/booking/types';
 
 type BookingTab = 'flights' | 'hotels' | 'activities';
@@ -71,12 +73,19 @@ interface HotelSearchState {
 interface Props {
   /** Whether the accordion starts expanded (true when ?intent=book). */
   defaultOpen?: boolean;
+  /** Active-trip context (from useTripBookingContext). Seeds the search forms
+   *  when the URL carries no explicit search — URL params always win. */
+  tripContext?: TripBookingContext | null;
 }
 
-export function BookNowAccordion({ defaultOpen = false }: Props) {
+export function BookNowAccordion({ defaultOpen = false, tripContext = null }: Props) {
   const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [open, setOpen] = useState(defaultOpen);
+  // ?tab= / ?city= deep links (TripBookingAssistant, CityTravelHub, /travel/book)
+  // must land expanded, not just seed a hidden tab.
+  const [open, setOpen] = useState(
+    () => defaultOpen || !!searchParams.get('tab') || !!searchParams.get('city'),
+  );
 
   const initialTab = (searchParams.get('tab') as BookingTab) || 'flights';
   const initialTo = searchParams.get('to') || undefined;
@@ -106,6 +115,15 @@ export function BookNowAccordion({ defaultOpen = false }: Props) {
       : null,
   );
 
+  // Trip-context seeding: URL params > tripContext > empty. The `change`
+  // button drops the trip seed for this mount without touching the trip.
+  const [ignoreTripContext, setIgnoreTripContext] = useState(false);
+  const tripCtx = ignoreTripContext ? null : tripContext;
+  const urlOverridesTrip = !!initialCity || !!initialTo;
+  const tripSeeding = !!tripCtx?.cityName && !urlOverridesTrip;
+  const tripDates =
+    tripCtx?.checkIn ? formatEventDateLabel(tripCtx.checkIn, tripCtx.checkOut) : '';
+
   const { originIata, originCity, loading: originLoading } = useVisitorOrigin();
 
   const { data: popularDeals, isLoading: flightsLoading } = useTravelDeals({
@@ -128,6 +146,25 @@ export function BookNowAccordion({ defaultOpen = false }: Props) {
   });
 
   const [activityCity, setActivityCity] = useState(initialCity || '');
+
+  // Trips load async — seed the not-yet-touched forms once the context lands.
+  // One-shot; never overwrites URL params or user input.
+  const tripSeededRef = useRef(false);
+  useEffect(() => {
+    if (!tripSeeding || tripSeededRef.current) return;
+    tripSeededRef.current = true;
+    const city = tripCtx!.cityName!;
+    setHotelSearch(
+      (prev) =>
+        prev ?? {
+          city,
+          checkIn: tripCtx!.checkIn ?? undefined,
+          checkOut: tripCtx!.checkOut ?? undefined,
+          guests: 2,
+        },
+    );
+    setActivityCity((prev) => prev || city);
+  }, [tripSeeding, tripCtx]);
   const { data: activityResults, isLoading: activitiesLoading } = useActivitySearch({
     city: activityCity || undefined,
     limit: 9,
@@ -248,6 +285,21 @@ export function BookNowAccordion({ defaultOpen = false }: Props) {
 
       {open && (
         <div className="">
+          {tripSeeding && (
+            <p className="px-6 pb-2 text-13 text-muted-foreground" data-testid="trip-context-banner">
+              {t('pages.travel.bookNow.tripContext', 'Searching for your {{city}} trip', {
+                city: tripCtx!.cityName,
+              })}
+              {tripDates ? ` · ${tripDates}` : ''}{' '}
+              <button
+                type="button"
+                className="underline underline-offset-2 hover:text-foreground"
+                onClick={() => setIgnoreTripContext(true)}
+              >
+                {t('pages.travel.bookNow.tripContextChange', 'change')}
+              </button>
+            </p>
+          )}
           <div className="flex">
             {TAB_CONFIG.map(({ value, label, icon: Icon }) => {
               const active = activeTab === value;
@@ -266,12 +318,33 @@ export function BookNowAccordion({ defaultOpen = false }: Props) {
           </div>
 
           <div className="p-6">
-            {activeTab === 'flights' && <FlightSearchForm initialDestination={initialTo} />}
+            {activeTab === 'flights' && (
+              <FlightSearchForm
+                // Remount when the trip seed lands so the one-shot useState
+                // initializers pick it up (URL params still win).
+                key={initialTo ?? (tripSeeding ? tripCtx!.destinationIata ?? 'trip' : 'none')}
+                initialDestination={initialTo ?? (tripSeeding ? tripCtx!.destinationIata ?? undefined : undefined)}
+                initialDestinationLabel={
+                  !initialTo && tripSeeding ? tripCtx!.destinationLabel ?? undefined : undefined
+                }
+                initialDepartureDate={
+                  !initialTo && tripSeeding ? tripCtx!.checkIn ?? undefined : undefined
+                }
+                initialReturnDate={
+                  !initialTo && tripSeeding ? tripCtx!.checkOut ?? undefined : undefined
+                }
+              />
+            )}
             {activeTab === 'hotels' && (
               <HotelSearchForm
-                initialCity={initialCity}
-                initialCheckIn={initialCheckIn}
-                initialCheckOut={initialCheckOut}
+                key={initialCity ?? (tripSeeding ? tripCtx!.cityName ?? 'trip' : 'none')}
+                initialCity={initialCity ?? (tripSeeding ? tripCtx!.cityName ?? undefined : undefined)}
+                initialCheckIn={
+                  initialCheckIn ?? (tripSeeding ? tripCtx!.checkIn ?? undefined : undefined)
+                }
+                initialCheckOut={
+                  initialCheckOut ?? (tripSeeding ? tripCtx!.checkOut ?? undefined : undefined)
+                }
                 initialGuests={initialGuests}
                 initialHotelType={initialHotelType}
                 initialPriceMin={initialPriceMin}

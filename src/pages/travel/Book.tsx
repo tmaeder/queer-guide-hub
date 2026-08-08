@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { ChevronLeft } from 'lucide-react';
 import { BookNowAccordion } from '@/components/travel/BookNowAccordion';
+import { useTripBookingContext } from '@/hooks/useTripBookingContext';
 
 /**
  * Dedicated booking surface, extracted from /travel in v2.
@@ -10,6 +11,7 @@ import { BookNowAccordion } from '@/components/travel/BookNowAccordion';
  */
 export default function Book() {
   const { t } = useTranslation();
+  const tripBookingContext = useTripBookingContext();
   return (
     <div className="container mx-auto max-w-screen-xl px-4 py-8 md:py-12">
       <nav aria-label="Breadcrumb" className="mb-4 text-sm">
@@ -30,7 +32,7 @@ export default function Book() {
           'Flights, stays, and transfers. We pass your preferences to trusted partners — bookings happen on their site.',
         )}
       </p>
-      <BookNowAccordion defaultOpen />
+      <BookNowAccordion defaultOpen tripContext={tripBookingContext} />
     </div>
   );
 }

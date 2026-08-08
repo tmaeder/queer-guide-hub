@@ -17,6 +17,7 @@ import {
 } from '../_shared/entity-classifier.ts'
 import { withErrorReporting } from '../_shared/report-api-error.ts'
 import { isLgbtiConnectionVocab } from '../_shared/lgbti-connection.ts'
+import { resolveStagingContentType } from '../_shared/content-registry.ts'
 
 // ============================================================
 // Pipeline Validate
@@ -60,12 +61,16 @@ Deno.serve(withErrorReporting('pipeline-validate', async (req) => {
      try {
       const n = (item.normalized_data ?? {}) as Record<string, unknown>
       const type = item.entity_type || entityType
+      // Branch selection via the content registry (entity_type first, then
+      // target_table — the same either-matches shape as the old inline
+      // `type === X || target_table === Y` conditions). Bodies stay here.
+      const validator = resolveStagingContentType(type, item.target_table)?.validator ?? 'generic'
 
       let errors: string[] = []
       let warnings: string[] = []
       let quality = 100
 
-      if (type === 'venue' || item.target_table === 'venues') {
+      if (validator === 'venue') {
         const isHotel = !!n.accommodation_type
         if (isHotel) {
           const r = validateHotelNormalized(n)
@@ -75,16 +80,16 @@ Deno.serve(withErrorReporting('pipeline-validate', async (req) => {
           const r = validateVenueNormalized(n)
           errors = r.errors; warnings = r.warnings; quality = r.quality
         }
-      } else if (type === 'country' || item.target_table === 'countries') {
+      } else if (validator === 'country') {
         const r = validateCountryNormalized(n)
         errors = r.errors; warnings = r.warnings; quality = r.quality
-      } else if (type === 'marketplace' || item.target_table === 'marketplace_listings') {
+      } else if (validator === 'marketplace') {
         const r = validateMarketplaceNormalized(n)
         errors = r.errors; warnings = r.warnings; quality = r.quality
-      } else if (type === 'city' || item.target_table === 'cities') {
+      } else if (validator === 'city') {
         const r = validateCityNormalized(n)
         errors = r.errors; warnings = r.warnings; quality = r.quality
-      } else if (type === 'news_articles' || type === 'news_article' || item.target_table === 'news_articles') {
+      } else if (validator === 'news') {
         // News-specific validation. Tolerant of normalize/adapter shape.
         const minContentLen = (body.min_content_length as number) ?? 120
         const rejectBelow   = (body.reject_below_score as number) ?? 60
@@ -161,7 +166,7 @@ Deno.serve(withErrorReporting('pipeline-validate', async (req) => {
         if (quality < rejectBelow && errors.length === 0) {
           errors.push('E_QUALITY_BELOW_THRESHOLD')
         }
-      } else if (type === 'personality' || item.target_table === 'personalities') {
+      } else if (validator === 'personality') {
         // Personality-specific validation
         const name = String(n.name ?? '').trim()
         if (name.length < 2) errors.push('E_MISSING_NAME')
@@ -206,7 +211,7 @@ Deno.serve(withErrorReporting('pipeline-validate', async (req) => {
         if (!n.wikidata_qid)           warnings.push('W_NO_WIKIDATA_QID')
 
         quality = Math.max(0, 100 - warnings.length * 5 - errors.length * 40)
-      } else if (type === 'event' || item.target_table === 'events') {
+      } else if (validator === 'event') {
         // Event-specific validation: title, dates, location, time sanity
         // `||` not `??` on the multi-source fallbacks — see the news branch above.
         const title = String(n.title || n.name || '').trim()
@@ -303,7 +308,7 @@ Deno.serve(withErrorReporting('pipeline-validate', async (req) => {
       let confidence: number
 
       // Hotel-aware disposition: quality-driven thresholds override warning-count rule.
-      const isHotelItem = (type === 'venue' || item.target_table === 'venues') && !!n.accommodation_type
+      const isHotelItem = validator === 'venue' && !!n.accommodation_type
       if (isHotelItem) {
         const disp = hotelReviewDisposition({ errors, warnings, quality }, quality)
         if (disp === 'auto_reject')  { status = 'rejected';     confidence = 0 }
@@ -331,7 +336,7 @@ Deno.serve(withErrorReporting('pipeline-validate', async (req) => {
           updated_at:           new Date().toISOString(),
         }
         // Persist any in-place normalization (e.g. HTML-stripped content for news)
-        if (type === 'news_articles' || item.target_table === 'news_articles') {
+        if (validator === 'news') {
           update.normalized_data = n
         }
         await supabase.from('ingestion_staging').update(update).eq('id', item.id)
