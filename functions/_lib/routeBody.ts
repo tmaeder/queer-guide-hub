@@ -179,11 +179,16 @@ export const STATIC_ROUTE_BODY: Record<string, RouteBody> = {
     ],
   },
 
+  // Tracks the page, which leads with places rather than a member grid. The
+  // previous body promised friends/dates/travel-buddies first; the page now
+  // opens on community spaces, groups and events, and a crawler body that
+  // describes a different page than the one a visitor lands on is the exact
+  // divergence this module exists to prevent.
   '/people': {
     h1: 'Meet people',
     paragraphs: [
-      'Find queer friends, dates, travel buddies and people nearby — and the groups and community feeds where they already gather.',
-      'Everyone here chose to be listed. Profiles are shown to signed-in members only, dating is a separate opt-in deck behind its own age gate, and nothing about you is shared with anyone you have not matched with.',
+      'Where queer people actually gather: community centres and queer neighbourhoods, the groups you can join, what is on nearby, and the bars and cafes people are regulars at.',
+      'Member profiles sit alongside all of that rather than in front of it. Everyone listed chose to be, profiles are shown to signed-in members only, and dating is a separate opt-in deck behind its own age gate.',
     ],
     links: [
       { href: '/community/groups', label: 'Groups to join' },
