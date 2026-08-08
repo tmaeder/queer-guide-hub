@@ -299,6 +299,29 @@ export default function RightsIntent() {
       ),
     },
     {
+      id: 'sources',
+      label: 'Where this comes from',
+      content: (
+        <div className="max-w-prose">
+          <p className="mb-4">
+            Legal status on this page comes from the ILGA World Database and is re-imported
+            nightly. The equality score is a 0–100 composite we compute from it.
+          </p>
+          <p className="text-muted-foreground">
+            It opens at 50 and adds points per recorded right, so a country we hold little about
+            lands mid-scale rather than reading as unknown — and it is a single number for very
+            different lives. It describes law on paper, not enforcement, and it is not a safety
+            rating.
+          </p>
+        </div>
+      ),
+      action: (
+        <LocalizedLink to="/rights/sources" className="text-13 no-underline hover:underline">
+          Sources and limits
+        </LocalizedLink>
+      ),
+    },
+    {
       id: 'help',
       label: 'If you need help',
       content: (

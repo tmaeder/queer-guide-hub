@@ -43,6 +43,9 @@ vi.mock('@/components/motion', () => ({
 
 vi.mock('@/pages/intent/GoingOut', () => ({ default: () => <div>GOING_OUT_SENTINEL</div> }));
 vi.mock('@/pages/intent/Rights', () => ({ default: () => <div>RIGHTS_SENTINEL</div> }));
+vi.mock('@/pages/rights/RightsSources', () => ({
+  default: () => <div>RIGHTS_SOURCES_SENTINEL</div>,
+}));
 vi.mock('@/pages/intent/Support', () => ({ default: () => <div>SUPPORT_SENTINEL</div> }));
 vi.mock('@/pages/intent/Shop', () => ({ default: () => <div>SHOP_SENTINEL</div> }));
 vi.mock('@/pages/Travel', () => ({ default: () => <div>TRAVEL_SENTINEL</div> }));
@@ -76,6 +79,32 @@ const INTENTS: [string, string][] = [
   ['/shop', 'SHOP_SENTINEL'],
   ['/travel', 'TRAVEL_SENTINEL'],
 ];
+
+/**
+ * Children of an intent route. A STATIC second segment scores 24 in React
+ * Router's ranking and beats `/:locale/<static>` at 17 unconditionally; a
+ * dynamic one (`rights/:right`) ties at 17 and resolves to NotFound for an
+ * unknown "locale". These assertions are what stops someone collapsing the
+ * list into a param later — the failure would otherwise only show up as a
+ * 404 on a locale-prefixed URL nobody tests by hand.
+ */
+describe('intent route children stay static', () => {
+  it('resolves /rights/sources unprefixed and under a locale', async () => {
+    await expectSentinel('/rights/sources', 'RIGHTS_SOURCES_SENTINEL');
+    await expectSentinel('/en/rights/sources', 'RIGHTS_SOURCES_SENTINEL');
+    await expectSentinel('/de/rights/sources', 'RIGHTS_SOURCES_SENTINEL');
+    await expectSentinel('/ar/rights/sources', 'RIGHTS_SOURCES_SENTINEL');
+  });
+
+  it('404s an unknown rights child rather than swallowing it', async () => {
+    // Proves no `rights/*` splat and no `rights/:param` exists. A splat scores
+    // 12 and would lose to /:locale/<static>, making resolution inconsistent;
+    // a param would tie. Either turns a typo into a soft-404 for crawlers.
+    const { unmount } = renderAt('/rights/not-a-real-child');
+    expect(await screen.findByText('NOT_FOUND_SENTINEL')).toBeTruthy();
+    unmount();
+  });
+});
 
 describe('intent route resolution', () => {
   it('resolves every intent route unprefixed', async () => {
