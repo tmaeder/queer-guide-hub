@@ -87,3 +87,65 @@ test('crisis-adjacent surfaces stay animation-free', async ({ page }) => {
   await expect(page.locator('main h1')).toBeVisible({ timeout: 30_000 });
   await expect(page.locator('div.fixed.top-0.left-0.right-0')).toHaveCount(0);
 });
+
+/**
+ * The rights-card value classifier (src/lib/rights/rightsValue.ts).
+ *
+ * Until 2026-08-08 it tested `v.includes('legal')` in its POSITIVE branch, so
+ * every phrase naming a legal BARRIER scored as a protection — a ✓ beside
+ * "Explicit Legal Barriers" on 60 countries and "Legal Barriers Likely to
+ * Exist" on 63 more. Two more groups sat on the wrong side in the other
+ * direction. Asserting the rendered GLYPH, because the chip text was right the
+ * whole time; only the polarity was wrong, and that is what a reader scans.
+ */
+async function glyphFor(page, label: string): Promise<string> {
+  const row = page
+    .locator('div')
+    .filter({ has: page.locator(`:scope > p:text-is("${label}")`) })
+    .first();
+  await row.waitFor({ state: 'attached', timeout: 30_000 });
+  const cls = (await row.locator('svg').nth(1).getAttribute('class')) ?? '';
+  return (cls.match(/lucide-[a-z-]+/) ?? [''])[0];
+}
+
+test('a legal barrier renders as negative, not as a protection', async ({ page }) => {
+  await page.goto('/country/afghanistan');
+  await dismiss(page);
+  // Afghanistan: expression "Non-Explicit Legal Barriers",
+  //              association "Legal Barriers Likely to Exist".
+  expect(await glyphFor(page, 'Freedom of expression')).toBe('lucide-x');
+  expect(await glyphFor(page, 'Freedom of association')).toBe('lucide-x');
+});
+
+test('the best available outcome renders as positive, not partial', async ({ page }) => {
+  await page.goto('/country/germany');
+  await dismiss(page);
+  // Germany: adoption "Joint & Second Parent Adoption" — the best case, which
+  // fell through to the partial default before the vocabulary existed.
+  expect(await glyphFor(page, 'Adoption rights')).toBe('lucide-check');
+  // Control: a genuine "No known legal barriers" must still read positive.
+  expect(await glyphFor(page, 'Freedom of expression')).toBe('lucide-check');
+});
+
+test('/rights/sources exists, states its coverage and refuses to oversell the score', async ({
+  page,
+}) => {
+  await page.goto('/rights/sources');
+  await dismiss(page);
+  const main = page.locator('main');
+  await expect(main).toContainText(/Where this data comes from/, { timeout: 30_000 });
+  await expect(main).toContainText(/ILGA World Database/);
+  await expect(main).toContainText(/239 \/ 250/);
+  // The three honesty claims. If any is edited away, the page stops earning
+  // the citation that /rights points at.
+  await expect(main).toContainText(/lands mid-scale rather than reading as unknown/);
+  await expect(main).toContainText(/not a safety rating/);
+  await expect(main).toContainText(/rights vary by state or province/);
+});
+
+test('/rights cites its source rather than asserting a bare number', async ({ page }) => {
+  await page.goto('/rights');
+  await dismiss(page);
+  await expect(page.locator('main')).toContainText(/Where this comes from/, { timeout: 30_000 });
+  await expect(page.locator('main a[href$="/rights/sources"]').first()).toBeVisible();
+});
