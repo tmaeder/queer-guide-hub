@@ -23,8 +23,13 @@ EMBED_MODEL = "@cf/baai/bge-m3"
 #   SUPABASE_SERVICE_KEY
 #   INGEST_TOKEN   (random 32+ bytes; used by Supabase webhook and backfill caller)
 
+# Backstop drain for rows the DB webhook missed. Was "* * * * *": with
+# get_stale_embeddings averaging 1.4s (timeouts at 8s) that burned ~33 min/day
+# of DB time and 1,440 Workers invocations/day for a webhook-miss trickle.
+# The RPC is fixed (uuid join, ~0.5s) and 10-minute staleness is fine for a
+# backstop — the webhook remains the fast path.
 [triggers]
-crons = ["* * * * *"]
+crons = ["*/10 * * * *"]
 
 [observability]
 enabled = true

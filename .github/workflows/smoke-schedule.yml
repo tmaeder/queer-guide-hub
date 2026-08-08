@@ -1,0 +1,46 @@
+# Scheduled cache-poisoning watchdog.
+#
+# The deploy-time smoke in deploy-pages.yml can only see poisoning that exists
+# DURING its run, and its purge list only contains the URLs of the build it
+# just shipped. 2026-08-08 incident: during a deploy's propagation window,
+# clients holding the previous shell requested OLD chunk URLs, got the 200 SPA
+# fallback, and Cloudflare cached that HTML under the old URLs' CORS variants
+# (immutable, 1 year). A later rollback to the previous deployment resurrected
+# exactly those URLs — site blank for ~8 h, and no deploy-time run could have
+# caught it because the poisoning targeted URLs from a build that was not the
+# one being smoked.
+#
+# This schedule closes that class: probe prod every 2 hours with browser-truth
+# (CORS-variant) requests and purge anything proven poisoned. No dist/ here,
+# so smoke-pages.sh skips the built-asset sweep by design and checks the LIVE
+# shell's referenced assets — which is precisely the set a rollback exposes.
+name: Smoke queer.guide (scheduled)
+
+permissions:
+  contents: read
+
+on:
+  schedule:
+    - cron: '40 */2 * * *'
+  workflow_dispatch: {}
+
+concurrency:
+  group: smoke-schedule
+  cancel-in-progress: false
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 1
+
+      - name: Smoke-test production
+        run: bash scripts/smoke-pages.sh
+        env:
+          SITE_URL: https://queer.guide
+          CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+          CLOUDFLARE_PURGE_TOKEN: ${{ secrets.CLOUDFLARE_PURGE_TOKEN }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}

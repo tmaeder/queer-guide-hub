@@ -113,7 +113,8 @@ export default {
 		}
 	},
 	async scheduled(event: ScheduledController, env: Env, ctx: ExecutionContext): Promise<void> {
-		// Every run: drain up to 200 rows whose row updated_at > embedding updated_at.
+		// Every run (cron now */10, see wrangler.toml): drain up to 15 rows whose
+		// row updated_at > embedding updated_at.
 		// This catches anything the DB webhook missed (e.g. direct SQL updates).
 		// 15 rows × 3 subreqs = 45 — under Workers Free 50 subrequest limit per invocation.
 		ctx.waitUntil(drainStale(env, 15));
