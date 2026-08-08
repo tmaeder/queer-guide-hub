@@ -56,7 +56,7 @@ then guarded unschedule):
 ## B2 — Search drain A2 (upsert-only, kills the residual HNSW churn)
 
 Gate: **14 days of `search_reindex_drain_stats.total_failed` ≈ 0 only.**
-The SET-list precondition is DONE: migration `20260818110000` normalized all
+The SET-list precondition is DONE: migration `20260819120000` normalized all
 14 indexers' ON CONFLICT SET lists to full INSERT coverage (audit found real
 drift, e.g. groups' mutable `slug` missing; harmless today because the A1
 drain deletes-then-inserts so the SET arm never fires — which is also why
