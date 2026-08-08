@@ -220,7 +220,7 @@ function AnonPersonalizationPromo() {
             <Sparkles size={14} />
             {t('venues.rails.forYouPromo.kicker', 'For your taste')}
           </div>
-          <h2 className="text-2xl md:text-3xl font-semibold tracking-tight">
+          <h2 className="text-headline font-semibold tracking-tight">
             {t('venues.rails.forYouPromo.title', 'Tell us what you love.')}
           </h2>
           <p className="mt-2 text-muted-foreground">
