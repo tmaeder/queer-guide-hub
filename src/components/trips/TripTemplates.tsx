@@ -66,7 +66,7 @@ export function TripTemplates() {
           {/* h3, not h5: every call site sits under an h2 (the page's section
               heading, "More inspiration", or EmptyState's title), and the two
               skipped levels failed Lighthouse `heading-order` on /trips/discover. */}
-          <h3 className="font-bold text-2xl">
+          <h3 className="font-bold text-title">
             Trip Templates
           </h3>
           <p className="text-sm text-muted-foreground mt-1">

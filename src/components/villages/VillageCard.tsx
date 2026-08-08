@@ -43,7 +43,7 @@ export const VillageCard = memo(function VillageCard({ village }: VillageCardPro
         </Image>
 
         <div className="p-4 flex-1 flex flex-col gap-1">
-          <h3 className="text-base font-semibold leading-tight truncate">{village.name}</h3>
+          <h3 className="text-15 font-semibold leading-tight truncate">{village.name}</h3>
 
           {(cityName || countryName) && (
             <div className="flex items-center gap-1 text-muted-foreground">
