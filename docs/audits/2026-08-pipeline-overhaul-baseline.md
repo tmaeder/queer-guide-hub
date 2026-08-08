@@ -52,15 +52,20 @@ staging pending_review 505 · dedup_review_queue open 649 (marketplace 397, venu
 
 marketplace-relevance ~800 (capped, saturated) · city-agentic ~111 (70B) · event-agentic ~37 (70B) · enrich-news ≤25/hour · **marketplace-description-enhance: 70B default on `*/5` cron, uncapped** · news enriched-then-rejected ≈ 61 rows/day × 2 calls.
 
-## Phase outcome tracking
+## Phase outcome tracking (after = 2026-08-08, ~14h post-deploy)
 
-| Metric | Before | After (fill in) |
+| Metric | Before | After |
 |---|---|---|
-| 300-row entity batch UPDATE | 14.6 s | |
-| news DAG failure rate (14d) | 49% | |
-| ticketmaster rows staged/mo | 10,605 | |
-| dedup_review_queue open | 649 | |
-| staging pending_review | 505 | |
-| active pg_cron jobs | 197 | |
-| search_embeddings size | 1,449 MB | |
-| workflow_runs size | 2,823 MB | |
+| 300-row entity batch UPDATE | 14.6 s | **0.96 s** (15×; queue+drain, 12,547 reindexes / 0 failures first night) |
+| news DAG failure rate | 49% (14d) | **8%** (1/12 last 12h; the 1 = transient validate timeout, not the reorder) |
+| ticketmaster staged | 10,605/mo junk, 13 committed | prefiltered at source: ~214/12h ALL genuinely queer-relevant; **now actually commit** (the event_missing_title shape bug they exposed is fixed) |
+| dedup_review_queue open | 649 | **249** (venue 200 @0.75–0.85 + personality 46 by-design + city 3 — only genuine ambiguity remains) |
+| staging pending_review | 505 | 599 (prefiltered TM events now reach review; trust-tier gate live) |
+| active pg_cron jobs | 197 | 222 — count UP this wave (drains/fills/sentinels added); the REDUCTION lands with Wave B DAG-start retirement. Scheduled *processing* per family already 1× (mp-drain-commit retired, relevance 8→3/hr, marketplace no longer triple-scheduled) |
+| search_embeddings size | 1,449 MB | unchanged until A2 (gated: 14d zero-fail + indexer SET-list audit) |
+| workflow_runs size | 2,823 MB | retention live (completed 7d, failed 30d, jsonb stripped >48h) — shrinks via autovacuum over days |
+
+Post-deploy discoveries (validated + fixed same-day, migration `20260818100000`):
+1. **Event commit shape bug** — the REAL killer of adapter events all along: commit RPC read `title`/`start_date`/`ticket_url` while the source-adapter contract emits `name`/`dates.{start,end}`/`urls[0]`, plus full-text country ("United States Of America") violating `events_country_iso2_check`. Every adapter event died at commit; the P3a prefilter surfaced it by staging 214 real queer events that then got rejected. Patched by string surgery on the live body; probe committed a real event in a rolled-back txn.
+2. **`merge_entities` dispatcher was anon-executable** with a fail-open null-actor guard (pre-existing; the 20260806130000 core lockdown missed the dispatcher) — an anon PostgREST call could have merged two PERSONALITIES. Revoked from PUBLIC/anon; authenticated stays (in-function admin check), cron/service paths unchanged.
+3. **`staging_rejected_purge` first run timed out** — FK-nullify on unindexed `scraper_dedupe_decisions.staging_id` (60k-row seq scan per delete). Indexed + per-run bound lowered.
