@@ -1,4 +1,5 @@
 import { getServiceClient, jsonResponse, errorResponse, corsResponse, requireInternalOrAdmin } from '../_shared/supabase-client.ts'
+import { consumeLlmBudget } from '../_shared/llm-budget.ts'
 
 interface RelevanceResult {
   queer_relevant: boolean
@@ -111,9 +112,17 @@ Deno.serve(async (req) => {
     // Trust-stamped items make no LLM call, so a run that only has trusted sources
     // must not be short-circuited by the cap. With no trust_sources the behaviour is
     // byte-identical to before.
-    const llmBudget = Math.max(0, dailyCap - (doneToday ?? 0))
+    let llmBudget = Math.max(0, dailyCap - (doneToday ?? 0))
+    // Central ledger (llm_budget, seeded 'marketplace-relevance' @ 800/day):
+    // probe with n=0 and take the tighter of central vs legacy remaining. The
+    // legacy ingestion_events count stays as the degraded fallback — the
+    // helper fails open when the RPC is missing/erroring.
+    const centralProbe = await consumeLlmBudget(supabase, 'marketplace-relevance', 0)
+    if (!centralProbe.degraded && centralProbe.remaining !== null) {
+      llmBudget = Math.min(llmBudget, Math.max(0, centralProbe.remaining))
+    }
     if (llmBudget <= 0 && trustSources.length === 0) {
-      return jsonResponse({ success: true, items: 0, message: 'daily_cap_reached', daily_cap: dailyCap, done_today: doneToday }, 200, req)
+      return jsonResponse({ success: true, items: 0, message: 'daily_cap_reached', daily_cap: dailyCap, done_today: doneToday, central_remaining: centralProbe.remaining }, 200, req)
     }
     const effectiveBatch = trustSources.length > 0 ? batchSize : Math.max(1, Math.min(batchSize, llmBudget))
 
@@ -204,6 +213,11 @@ Deno.serve(async (req) => {
         await supabase.from('ingestion_events').insert({ staging_id: item.id, stage: 'relevance', new_status: r.queer_relevant ? 'approved' : 'rejected', actor: 'marketplace-relevance', payload: classification })
         await new Promise(r => setTimeout(r, 200))
       } catch (err) { console.error(`relevance ${item.id}:`, (err as Error).message) }
+    }
+    // Record the actual LLM spend in the central ledger (fail-open; the
+    // legacy ingestion_events count above remains the degraded fallback).
+    if (llmUsed > 0 && !dryRun) {
+      await consumeLlmBudget(supabase, 'marketplace-relevance', llmUsed)
     }
     const handled = approved + rejected + trusted
     return jsonResponse({

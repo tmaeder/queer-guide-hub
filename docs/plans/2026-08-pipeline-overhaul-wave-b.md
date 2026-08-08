@@ -55,16 +55,13 @@ then guarded unschedule):
 
 ## B2 — Search drain A2 (upsert-only, kills the residual HNSW churn)
 
-Gate: 14 days of `search_reindex_drain_stats.total_failed` ≈ 0, plus the
-SET-list audit below returning zero rows.
-
-```sql
--- Audit: every indexer INSERT column must appear in its ON CONFLICT SET list.
--- (Manual read of pg_get_functiondef for the 13 search_documents_index_* fns;
--- any column present in INSERT but missing from the SET list would go stale
--- under upsert semantics and must be patched first.)
-select proname from pg_proc where proname like 'search_documents_index_%';
-```
+Gate: **14 days of `search_reindex_drain_stats.total_failed` ≈ 0 only.**
+The SET-list precondition is DONE: migration `20260819120000` normalized all
+14 indexers' ON CONFLICT SET lists to full INSERT coverage (audit found real
+drift, e.g. groups' mutable `slug` missing; harmless today because the A1
+drain deletes-then-inserts so the SET arm never fires — which is also why
+normalizing early was zero-risk). Its self-audit hard-fails on residual
+drift; validated against prod in a rolled-back txn (residual_drift=0).
 
 Then one migration: `CREATE OR REPLACE search_reindex_drain` — drop the
 per-entity doc DELETE; call the indexer (they are INSERT … ON CONFLICT DO
@@ -75,14 +72,15 @@ it). Effect: no doc delete → no `search_embeddings` FK cascade → no HNSW
 delete/insert unless the embedding actually changed. Rollback: re-create the
 A1 body (delete-then-index) — one statement.
 
-## B3 — leftover small items
+## B3 — leftover small items (ALL DONE 2026-08-08)
 
-- `marketplace-relevance` → adopt `llm_budget_consume` (seed row exists; the
-  file was owned by P3a this cycle).
-- Legacy `workflow_definitions` seed rows: disable-then-delete after 30 days
-  of `workflow_runs` silence (list: background-import-manager,
-  ingestion-pipeline, scrape-gaycities-events, bulk-scrape-events,
-  import-foursquare-venues, import-rest-countries, import-airports-data,
-  optimize-images-batch).
-- `"marketplace-drain"` (literal quoted name) duplicate `pipeline_definitions`
-  row: delete the quoted one after confirming zero runs reference it.
+- ~~`marketplace-relevance` → adopt `llm_budget_consume`~~ — done: probe with
+  n=0 tightens the legacy budget, actual `llm_used` recorded post-run;
+  fail-open to the ingestion_events count.
+- ~~Legacy `workflow_definitions` rows~~ — liveness measured live: 16 of 19
+  rows run within 30d or are cron-referenced. `marketplace-reingest` deleted
+  (disabled, zero runs ever); `news-quality-backfill` + `send-bulk-email`
+  disabled (zero runs ever, zero repo/cron refs) — delete after 30-day soak.
+- ~~`"marketplace-drain"` quoted-name duplicate~~ — deleted by id (0 runs).
+- 6 orphan deployed `import-*` edge fns deleted from Supabase
+  (`supabase functions delete`); repo was already clean.
