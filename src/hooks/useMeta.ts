@@ -75,7 +75,13 @@ export function useMeta(options: MetaOptions = {}): void {
       noIndex,
     } = options;
 
-    const fullTitle = title ? `${title} | ${DEFAULT_TITLE}` : DEFAULT_TITLE;
+    // Pages following the routeMeta convention already carry the "| Queer
+    // Guide" suffix (client and edge stay byte-identical) — don't double it.
+    const fullTitle = !title
+      ? DEFAULT_TITLE
+      : title.endsWith(`| ${DEFAULT_TITLE}`)
+        ? title
+        : `${title} | ${DEFAULT_TITLE}`;
     const desc = description || DEFAULT_DESCRIPTION;
     const canonical = `${BASE_URL}${canonicalPath ?? pathname}`;
 
