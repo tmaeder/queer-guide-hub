@@ -1,4 +1,5 @@
 import { useEffect, useState, type ReactNode, type RefObject } from 'react';
+import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { format } from 'date-fns';
 import {
@@ -783,6 +784,7 @@ export function EventWhoIsGoing({
   user: { id: string } | null;
   isPast: boolean;
 }) {
+  const { t } = useTranslation();
   const going = event.attendee_counts?.going ?? 0;
   const interested = event.attendee_counts?.interested ?? 0;
 
@@ -800,12 +802,19 @@ export function EventWhoIsGoing({
       {going === 0 && interested === 0 && !isPast && (
         <p className="text-sm text-muted-foreground">
           {user
-            ? 'No RSVPs yet. Be the first.'
-            : 'No RSVPs yet — sign in to RSVP and see who else is going.'}
+            ? t('events.rsvpEmptyMember', 'No RSVPs yet. Be the first.')
+            : /* Was "sign in to RSVP and see who else is going" — but nobody had
+                 RSVP'd, so the second half promised a list that was empty by
+                 definition. Offer only what signing in actually gives. */
+              t('events.rsvpEmptyAnon', 'No RSVPs yet. Sign in to be the first.')}
         </p>
       )}
 
-      <PeopleHereRail mode="locals" eventId={event.id} title="People you may know" />
+      <PeopleHereRail
+        mode="locals"
+        eventId={event.id}
+        title={t('events.peopleYouMayKnow', 'People you may know')}
+      />
     </section>
   );
 }

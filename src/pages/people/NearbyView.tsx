@@ -88,7 +88,11 @@ export function NearbyView() {
 
       <PeopleModeView
         mode="nearby"
-        emptyHint={t('people.empty.nearby', 'No one nearby right now. Check back later.')}
+        emptyState={
+          <p className="text-muted-foreground">
+            {t('people.empty.nearby', 'No one nearby right now. Check back later.')}
+          </p>
+        }
       />
     </div>
   );

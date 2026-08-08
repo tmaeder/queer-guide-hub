@@ -7,6 +7,13 @@ import { useStatus } from '@/hooks/useStatus';
  * Trips → people wedge. From a trip with a known destination, set travel mode
  * and jump to the People hub filtered to who else is heading to that city on
  * overlapping dates (people_discovery travel mode reads the trip server-side).
+ *
+ * The copy describes the opt-in, not a result. It used to read "Find travel
+ * buddies heading to {city}" — but `people_discovery`'s travel branch requires
+ * `presence_visibility.in_discovery`, and there are 0 presence rows, so the
+ * button reliably promised a populated page and delivered an empty one. What it
+ * genuinely does, every time, is publish your travel intent so other travellers
+ * can match you. Say that instead; the destination is unchanged.
  */
 export function TripTravelBuddiesCTA({
   tripId,
@@ -46,10 +53,10 @@ export function TripTravelBuddiesCTA({
       <span>
         {cityName
           ? t('trips.planner.travelBuddies', {
-              defaultValue: 'Find travel buddies heading to {{city}}',
+              defaultValue: 'Let travellers heading to {{city}} find you',
               city: cityName,
             })
-          : t('trips.planner.travelBuddiesNoCity', 'Find travel buddies for this trip')}
+          : t('trips.planner.travelBuddiesNoCity', 'Let other travellers on this trip find you')}
       </span>
     </button>
   );

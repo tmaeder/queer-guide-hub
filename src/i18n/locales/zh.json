@@ -385,7 +385,9 @@
       "daysPlanned_other": "已规划 {{count}} 天",
       "days_one": "{{count}} 天",
       "placesCount_one": "{{count}} 个地点",
-      "daysPlanned_one": "{{count}} 天已规划"
+      "daysPlanned_one": "{{count}} 天已规划",
+      "travelBuddies": "[ZH] Let travellers heading to {{city}} find you",
+      "travelBuddiesNoCity": "[ZH] Let other travellers on this trip find you"
     },
     "share": {
       "title": "分享此行程",
@@ -1162,7 +1164,10 @@
     "cancelled": "已取消",
     "inTrip": "[ZH] In trip",
     "duringYourTrip": "[ZH] During your trip",
-    "featured": "[ZH] Featured"
+    "featured": "[ZH] Featured",
+    "rsvpEmptyMember": "[ZH] No RSVPs yet. Be the first.",
+    "rsvpEmptyAnon": "[ZH] No RSVPs yet. Sign in to be the first.",
+    "peopleYouMayKnow": "[ZH] People you may know"
   },
   "venues": {
     "title": "场所",
@@ -3283,6 +3288,92 @@
         "locals": "当地人",
         "networking": "拓展人脉"
       }
+    },
+    "yourArea": "[ZH] your area",
+    "loadingSpaces": "[ZH] Finding places…",
+    "addPlace": "[ZH] Add one",
+    "allVenues": "[ZH] All venues",
+    "allGroups": "[ZH] All groups",
+    "allEvents": "[ZH] All events",
+    "goingOut": "[ZH] Going out",
+    "backToHub": "[ZH] Meet people",
+    "groupMembers": "[ZH] {{count}} members",
+    "titleCity": "[ZH] Meet people in {{city}}",
+    "fullGuide": "[ZH] Full guide to {{city}}",
+    "lede": "[ZH] The spaces, groups and events where queer people actually gather — plus the members, travel buddies and dates you can find here.",
+    "safetyBody": "[ZH] Meeting strangers carries different risk in different countries. Check the legal position for where you are before you arrange to meet someone.",
+    "safetyCta": "[ZH] LGBTQ+ rights by country",
+    "sections": {
+      "spaces": "[ZH] Community spaces",
+      "spacesKicker": "[ZH] Places built for meeting people",
+      "spacesKickerCity": "[ZH] Places built for meeting people in {{city}}",
+      "spacesEmpty": "[ZH] No community spaces are listed for {{where}} yet.",
+      "spacesCountryFallback": "[ZH] Nothing is listed in {{where}} itself, so these are elsewhere in the country. Community centres are recorded for 120 cities and queer villages for 104 — a gap here means we have no record, not that there is nowhere to go.",
+      "groups": "[ZH] Groups to join",
+      "groupsKicker": "[ZH] Smaller rooms than a whole city",
+      "groupsEmpty": "[ZH] No public groups yet.",
+      "whatsOn": "[ZH] What's on",
+      "whatsOnKicker": "[ZH] Turning up somewhere beats messaging",
+      "regulars": "[ZH] Bars and cafés",
+      "regularsKicker": "[ZH] Where people become regulars",
+      "members": "[ZH] Members",
+      "membersKicker": "[ZH] People you can message directly",
+      "safety": "[ZH] Before you go",
+      "elsewhere": "[ZH] Elsewhere",
+      "elsewhereKicker": "[ZH] Cities with the deepest scenes"
+    },
+    "spaceKind": {
+      "venue": "[ZH] Community centre",
+      "village": "[ZH] Queer neighbourhood"
+    },
+    "rail": {
+      "title": "[ZH] Members to meet",
+      "titleCity": "[ZH] Members in {{city}}",
+      "seeAll": "[ZH] See all"
+    },
+    "card": {
+      "member": "[ZH] Member",
+      "match": "[ZH] {{score}}% match"
+    },
+    "members": {
+      "emptyTitle": "[ZH] No members are listed here yet",
+      "emptyBody": "[ZH] Member profiles are new. Community spaces, groups and events are where people are meeting in the meantime.",
+      "emptyCtaAnon": "[ZH] Create a profile",
+      "emptyCtaMember": "[ZH] Set up your profile",
+      "discoveryOffTitle": "[ZH] You are not discoverable yet",
+      "discoveryOffBody": "[ZH] Discovery is off by default, so you are hidden — and so is everyone else who has left it off. Turn it on to appear to other members, and to see the {{count}} who are listed.",
+      "discoveryOffCta": "[ZH] Turn on discovery",
+      "discoveryOnPending": "[ZH] Turning on…",
+      "countHere": "[ZH] {{count}} members listed in {{city}}",
+      "countTotal": "[ZH] {{count}} members are listed",
+      "signedOutBody": "[ZH] Member profiles are only shown to signed-in members, never to visitors or search engines.",
+      "signedOutCta": "[ZH] Sign in to view",
+      "noneInScope": "[ZH] No members to suggest in {{city}} right now.",
+      "noneGlobal": "[ZH] No members to suggest right now.",
+      "emptyBodyLink": "[ZH] See where to go"
+    },
+    "community": {
+      "groups": "[ZH] Local and interest groups you can join",
+      "feed": "[ZH] What the community is posting",
+      "members": "[ZH] Browse everyone who is listed"
+    },
+    "tabs": {
+      "friends": "[ZH] Friends",
+      "dating": "[ZH] Dating",
+      "travel": "[ZH] Travel buddies",
+      "nearby": "[ZH] Nearby"
+    },
+    "empty": {
+      "nearby": "[ZH] No one nearby right now. Check back later."
+    },
+    "signals": {
+      "chemistryHigh": "[ZH] High chemistry",
+      "chemistry": "[ZH] Chemistry",
+      "mutual": "[ZH] {{count}} mutual",
+      "events_one": "[ZH] {{count}} event",
+      "events_other": "[ZH] {{count}} events",
+      "groups_one": "[ZH] {{count}} group",
+      "groups_other": "[ZH] {{count}} groups"
     }
   },
   "hub": {
@@ -3432,7 +3523,8 @@
     "notFoundTitle": "[ZH] City not found",
     "notFoundDescription": "[ZH] The city you're looking for doesn't exist.",
     "backToPlaces": "[ZH] ← Back to Places",
-    "similarCities": "[ZH] Similar cities"
+    "similarCities": "[ZH] Similar cities",
+    "localsToMeet": "[ZH] Locals and travellers to meet in {{city}}"
   },
   "favorites": {
     "removedTitle": "[ZH] Removed from favorites",

@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, type ReactNode } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { usePeopleDiscovery, type PeopleMode } from '@/hooks/usePeopleDiscovery';
 import { useFriendProfiles } from '@/hooks/useFriendProfiles';
@@ -13,12 +13,18 @@ import { Skeleton } from '@/components/ui/skeleton';
  */
 export function PeopleModeView({
   mode,
-  emptyHint,
+  emptyState,
   cityId,
   tripId,
 }: {
   mode: PeopleMode;
-  emptyHint: string;
+  /**
+   * Shown when signed out OR when the engine returns nobody. One node for both,
+   * because to a visitor they are the same experience — an empty page — and the
+   * previous split rendered a bare `<p>Sign in to find people.</p>` for the
+   * first case, which was the entire signed-out state of a top-level nav intent.
+   */
+  emptyState: ReactNode;
   cityId?: string;
   tripId?: string;
 }) {
@@ -39,11 +45,7 @@ export function PeopleModeView({
     }));
   }, [matches, profiles]);
 
-  if (!user) {
-    return (
-      <p className="text-muted-foreground">Sign in to find people.</p>
-    );
-  }
+  if (!user) return <>{emptyState}</>;
 
   if (isLoading) {
     return (
@@ -55,9 +57,7 @@ export function PeopleModeView({
     );
   }
 
-  if (cards.length === 0) {
-    return <p className="text-muted-foreground">{emptyHint}</p>;
-  }
+  if (cards.length === 0) return <>{emptyState}</>;
 
   return (
     <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
