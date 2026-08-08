@@ -118,7 +118,7 @@ export function CloudflareDashboard() {
             <Cloud size={24} style={{ color: 'white' }} />
           </div>
           <div>
-            <h2 className="font-bold text-2xl">Cloudflare Dashboard</h2>
+            <h2 className="font-bold text-headline">Cloudflare Dashboard</h2>
             {/* An em dash, not "Loading...": this is a fallback VALUE for a
                 field, and the repo renders unknown values as —. */}
             <p className="text-muted-foreground">Zone: {zoneInfo?.result?.name || '—'}</p>

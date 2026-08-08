@@ -65,7 +65,7 @@ export function StartTripHero() {
 
   return (
     <section className=" bg-surface-container p-6 sm:p-8 mb-8 rounded-element">
-      <h2 className="text-3xl font-bold tracking-tight mb-2">
+      <h2 className="text-headline font-bold tracking-tight mb-2">
         {t('pages.travel.hero.title', 'Plan a trip')}
       </h2>
       <p className="text-muted-foreground mb-6 max-w-prose">
