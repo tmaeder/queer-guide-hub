@@ -179,6 +179,24 @@ export const STATIC_ROUTE_BODY: Record<string, RouteBody> = {
     ],
   },
 
+  // Paired with the '/rights/sources' entry in STATIC_ROUTE_META. Both are
+  // required: _middleware.ts gates the crawler body on `indexable` AND on a
+  // body entry existing, so META alone yields an indexable page with no
+  // content for a bot to read.
+  '/rights/sources': {
+    h1: 'Where this data comes from',
+    paragraphs: [
+      'Every legal status on Queer Guide — criminalisation, partnership recognition, anti-discrimination protection, gender recognition, conversion therapy and intersex bodily integrity — comes from the ILGA World Database, re-imported nightly.',
+      'The equality score is a 0–100 composite we compute from that record. It opens at 50 and adds points per recorded right, which means a country we hold almost nothing about lands mid-scale rather than reading as unknown. A middling score can mean middling rights or thin data, and the number cannot tell you which.',
+      'It is national, so where rights vary by state or province a single figure averages that away. It records statutes, not enforcement. And several facts that matter most to trans travellers — facility access, how identity documents are treated at borders, access to gender-affirming healthcare — are not in this dataset at all. It is not a safety rating.',
+    ],
+    links: [
+      { href: '/rights', label: 'Rights by country' },
+      { href: '/travel', label: 'Plan safer queer travel' },
+      { href: '/help', label: 'Crisis hotlines' },
+    ],
+  },
+
   '/people': {
     h1: 'Meet people',
     paragraphs: [

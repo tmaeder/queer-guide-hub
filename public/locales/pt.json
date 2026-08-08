@@ -2957,7 +2957,8 @@
       "requiresDiagnosis": "Requer diagnóstico",
       "conversionTherapy": "Terapia de conversão",
       "intersex": "Integridade corporal intersexo",
-      "ilgaLink": "ILGA World Database"
+      "ilgaLink": "ILGA World Database",
+      "deathPenaltyPossible": "[PT] death penalty possible, no legal certainty"
     },
     "planTripHighRisk": "[PT] Plan carefully — safety briefing included"
   },
@@ -3812,6 +3813,95 @@
     },
     "featuredIn": {
       "title": "[PT] Featured in guides"
+    }
+  },
+  "rights": {
+    "value": {
+      "legal": "[PT] Legal",
+      "criminalised": "[PT] Criminalised",
+      "noKnownLegalBarriers": "[PT] No known legal barriers",
+      "nonExplicitLegalBarriers": "[PT] Non-explicit legal barriers",
+      "explicitLegalBarriers": "[PT] Explicit legal barriers",
+      "legalBarriersLikely": "[PT] Legal barriers likely to exist",
+      "marriage": "[PT] Marriage",
+      "marriageAndCivilUnion": "[PT] Marriage & civil union",
+      "civilUnionOnly": "[PT] Civil union only",
+      "jointAndSecondParentAdoption": "[PT] Joint & second-parent adoption",
+      "secondParentAdoptionOnly": "[PT] Second-parent adoption only",
+      "noAdoptionPossible": "[PT] No adoption possible",
+      "banned": "[PT] Banned",
+      "notBanned": "[PT] Not banned",
+      "indirect": "[PT] Indirect",
+      "possible": "[PT] Possible",
+      "nominallyPossible": "[PT] Nominally possible",
+      "notPossible": "[PT] Not possible",
+      "notPossibleWithExceptions": "[PT] Not possible (exceptions documented)",
+      "yesNonBinaryMarkerOnly": "[PT] Yes (non-binary marker only)",
+      "yes": "[PT] Yes",
+      "no": "[PT] No",
+      "varies": "[PT] Varies",
+      "unclear": "[PT] Unclear",
+      "notApplicable": "[PT] Not applicable"
+    },
+    "attr": {
+      "so": {
+        "abbr": "[PT] SO",
+        "full": "[PT] Sexual orientation"
+      },
+      "gi": {
+        "abbr": "[PT] GI",
+        "full": "[PT] Gender identity"
+      },
+      "ge": {
+        "abbr": "[PT] GE",
+        "full": "[PT] Gender expression"
+      },
+      "sc": {
+        "abbr": "[PT] SC",
+        "full": "[PT] Sex characteristics"
+      }
+    },
+    "sources": {
+      "breadcrumb": "[PT] Sources",
+      "eyebrow": "[PT] Method",
+      "title": "[PT] Where this data comes from",
+      "lede": "[PT] We publish the legal status of LGBTQ+ people in every country and territory we cover. This page says who recorded it, how often we refresh it, how much of it we actually hold, and the questions it cannot answer.",
+      "metaTitle": "[PT] Where our LGBTQ+ rights data comes from",
+      "metaDescription": "[PT] The sources, refresh cadence, coverage and known limits behind the legal status we publish for every country and territory.",
+      "backToRights": "[PT] Back to rights",
+      "section": {
+        "source": "[PT] The source",
+        "coverage": "[PT] Coverage",
+        "score": "[PT] The equality score",
+        "limits": "[PT] What this data cannot tell you"
+      },
+      "kicker": {
+        "source": "[PT] ILGA World",
+        "coverage": "[PT] What we actually hold",
+        "score": "[PT] How it is built, and what it hides"
+      },
+      "coverage": {
+        "status": "[PT] Countries with a recorded legal status",
+        "scored": "[PT] Countries with an equality score",
+        "rights": "[PT] Distinct rights tracked per country"
+      },
+      "body": {
+        "source": "[PT] Every legal status on this site — criminalisation, partnership recognition, anti-discrimination protection, gender recognition, conversion therapy and intersex bodily integrity — comes from the ILGA World Database, the reference dataset maintained by the International Lesbian, Gay, Bisexual, Trans and Intersex Association.",
+        "refresh": "[PT] We re-import it nightly. Where a country page shows an \"Updated\" date, that is the date ILGA last revised that record, not the date we fetched it.",
+        "link": "[PT] ILGA World Database",
+        "unscored": "[PT] The unscored rows are uninhabited or near-uninhabited territories with no ILGA entry. We list them as \"not scored\" rather than giving them a default, because a default would read as a measurement.",
+        "scoreHow": "[PT] The score runs 0–100. It starts at 50 and moves up or down as each recorded right is added: decriminalisation and marriage weigh heaviest, then anti-discrimination protections, hate-crime law, adoption, legal gender recognition and a conversion-therapy ban.",
+        "scoreLimit": "[PT] Because it opens at 50 and adds from there, a country we hold almost nothing about lands mid-scale rather than reading as unknown. A middling score can mean middling rights or thin data, and the number cannot tell you which.",
+        "scoreLens": "[PT] It is also a single number for very different lives. Protections are recorded separately for sexual orientation, gender identity, gender expression and sex characteristics, and those four rarely move together — a country can protect sexual orientation thoroughly and gender identity not at all. Read the per-right breakdown on a country page rather than the score alone.",
+        "scoreNotSafety": "[PT] The score describes law on paper. It is not a safety rating, and it says nothing about enforcement, policing or how welcome you will be made to feel."
+      },
+      "limits": {
+        "national": "[PT] It is national. Where rights vary by state or province — the United States, Indonesia, Nigeria, Mexico and others — a single national figure averages that away.",
+        "enforcement": "[PT] It records statutes, not enforcement. A law that is rarely applied and a law applied constantly look identical here.",
+        "trans": "[PT] Several facts that matter most to trans travellers are not in this dataset at all: bathroom and facility access, how identity documents are treated at borders, and access to gender-affirming healthcare.",
+        "personal": "[PT] It knows nothing about you. Your citizenship, residency, gender marker and relationship status all change what applies, and we hold none of them.",
+        "corrections": "[PT] If something here is wrong, tell us — corrections to the underlying record should also go to ILGA, who maintain it."
+      }
     }
   }
 }
