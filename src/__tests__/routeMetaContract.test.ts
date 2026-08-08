@@ -176,9 +176,28 @@ describe('isIndexable', () => {
     }
   });
 
+  // resolveMeta is an exact match, so these four had no entry and served
+  // DEFAULT_META — the homepage title, on four separate URLs. They are also
+  // signed-in matching surfaces with nothing public to render, so they are
+  // suppressed rather than given four near-duplicate titles competing with the
+  // /people hub.
+  it('excludes the /people matching modes', () => {
+    for (const path of ['/people/friends', '/people/dating', '/people/travel', '/people/nearby']) {
+      expect(isIndexable(path), `${path} should be noindex`).toBe(false);
+    }
+  });
+
   it('keeps public content routes indexable', () => {
     for (const path of ['/', '/venues', '/city/berlin', '/guides', '/organizations', '/help']) {
       expect(isIndexable(path), `${path} should be indexable`).toBe(true);
+    }
+  });
+
+  // The noindex rule is a prefix regex; it must not swallow the hub itself or
+  // any neighbouring path that merely starts with the same characters.
+  it('does not over-match beyond the four modes', () => {
+    for (const path of ['/people', '/peopleish', '/people/x']) {
+      expect(isIndexable(path), `${path} should stay indexable`).toBe(true);
     }
   });
 });
