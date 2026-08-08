@@ -214,6 +214,14 @@ export const STATIC_ROUTE_META: Record<string, RouteMeta> = {
     description:
       'Legal status for LGBTQ+ people in all 250 countries and territories: criminalisation, partnership recognition and equality scores.',
   },
+  // Must be registered here, not just in src/routes.tsx: this map is both the
+  // crawler's <head> source and what sitemap-static.xml enumerates, so a route
+  // missing from it is served the homepage title and never listed.
+  '/rights/sources': {
+    title: 'Where Our LGBTQ+ Rights Data Comes From',
+    description:
+      'The source, refresh cadence, coverage and known limits behind the legal status we publish for every country and territory.',
+  },
   '/support': {
     title: 'Find LGBTQ+ Support Organizations Near You',
     description:
