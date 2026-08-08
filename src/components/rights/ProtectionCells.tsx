@@ -20,7 +20,13 @@ const ATTR_FULL: Record<ProtectionAttr, string> = {
  *
  * Accessibility: the meaning used to live only in a `title` attribute, which
  * screen readers do not reliably announce and touch devices cannot reveal at
- * all. Each cell now carries an explicit accessible name.
+ * all. Each cell now carries visually-hidden text instead.
+ *
+ * NOT `aria-label` — a bare <span> has no implicit ARIA role, and aria-label
+ * is prohibited on role-less elements. Adding one here produced 8 serious
+ * `aria-prohibited-attr` violations in the axe sweep. Giving the span
+ * `role="img"` would also be valid, but sr-only text needs no ARIA at all and
+ * survives a reader that ignores the role.
  */
 export function ProtectionCells({
   data,
@@ -43,7 +49,6 @@ export function ProtectionCells({
           <span
             key={attr}
             title={`${attr.toUpperCase()}: ${value}`}
-            aria-label={`${full}: ${value}`}
             className={
               'flex h-5 w-6 items-center justify-center rounded-badge text-2xs font-semibold ' +
               (isYes
@@ -54,6 +59,7 @@ export function ProtectionCells({
             }
           >
             <span aria-hidden="true">{attr.toUpperCase()}</span>
+            <span className="sr-only">{`${full}: ${value}`}</span>
           </span>
         );
       })}
