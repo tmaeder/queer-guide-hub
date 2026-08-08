@@ -110,7 +110,7 @@ export default function Welcome() {
           <div className="max-w-xl">
             <div className="mb-8">
               <Heart size={40} className="mb-4 text-foreground" style={{ fill: 'currentcolor' }} />
-              <h1 className="text-3xl font-bold tracking-tight mb-2">
+              <h1 className="text-headline font-bold tracking-tight mb-2">
                 {t('onboarding.welcome', 'Welcome to Queer Guide')}
               </h1>
               <p className="text-muted-foreground leading-relaxed">
@@ -157,7 +157,7 @@ export default function Welcome() {
 
         {step === 1 && (
           <div className="max-w-xl">
-            <h1 className="text-3xl font-bold tracking-tight mb-2">
+            <h1 className="text-headline font-bold tracking-tight mb-2">
               {t('onboarding.personalizeTitle', 'Personalize your discovery')}
             </h1>
             <p className="text-muted-foreground leading-relaxed mb-6">
@@ -177,7 +177,7 @@ export default function Welcome() {
         {step === 2 && (
           <div className="max-w-xl">
             <ShieldCheck size={40} className="mb-4 text-foreground" />
-            <h1 className="text-3xl font-bold tracking-tight mb-2">
+            <h1 className="text-headline font-bold tracking-tight mb-2">
               {t('onboarding.trustTitle', 'Trust grows with you')}
             </h1>
             <p className="text-muted-foreground leading-relaxed mb-6">

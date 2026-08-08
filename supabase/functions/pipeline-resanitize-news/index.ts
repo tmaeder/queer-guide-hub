@@ -65,10 +65,20 @@ Deno.serve(withErrorReporting('pipeline-resanitize-news', async (req) => {
     let patternError: string | null = null
 
     if (remaining > 0) {
+      // Recency bound (2026-08-08): the unanchored-ILIKE pattern list forces a
+      // seq scan that detoasts every body it visits — measured 4.3 s mean /
+      // 8 s timeouts across 12.7k runs of this */5 cron, 15 h of DB time
+      // since May. Ingest has sanitized at commit since 2026-04-30, so new
+      // dirt only ever appears on recently written rows; anything older has
+      // been seen by thousands of prior runs and is either clean or a no-op
+      // zombie this sanitizer provably cannot fix. Bounding to 14 days keeps
+      // the janitor for regressions and stops re-scanning the full corpus.
+      const patternSince = new Date(Date.now() - 14 * 24 * 3600 * 1000).toISOString()
       let q = supabase
         .from('news_articles')
         .select(COLS)
         .is('duplicate_of_id', null)
+        .gte('created_at', patternSince)
       if (!includeUnindexed) q = q.eq('seo_indexable', true)
       const { data: patterned, error: patErr } = await q
         .or([

@@ -134,6 +134,140 @@ export function useEventsWithFallback(cityId: string | null | undefined, limit =
   });
 }
 
+export interface MeetSpace {
+  id: string;
+  name: string;
+  slug: string | null;
+  description: string | null;
+  /** 'venue' rows link to /venues/:slug, 'village' rows to /place/:slug. */
+  kind: 'venue' | 'village';
+}
+
+/** Which rung of the fallback ladder produced the spaces we are showing. */
+export type MeetScope = 'city' | 'country' | 'none';
+
+/**
+ * Places whose whole purpose is meeting people: community centres and the
+ * queer villages/neighbourhoods that anchor a scene.
+ *
+ * Coverage is narrow but real: 175 venues carry `category = 'community_center'`
+ * (171 with a city, across 120 cities) and 190 `queer_villages` rows all carry
+ * both a city and a country, across 104 cities. So a given city usually has
+ * neither, and the ladder falls back to the country.
+ *
+ * There is deliberately **no global rung**. Events widen to "soonest anywhere"
+ * because a festival worth travelling to is still useful; a community centre
+ * 5,000 km away is not. When the country rung is empty this returns nothing and
+ * the page falls through to its "Elsewhere" cities section instead.
+ */
+export function useMeetSpaces(
+  cityId: string | null | undefined,
+  countryCode: string | null | undefined,
+  limit = 8,
+) {
+  return useQuery({
+    queryKey: ['intent-meet-spaces', cityId, countryCode, limit],
+    staleTime: 300_000,
+    queryFn: async (): Promise<{ spaces: MeetSpace[]; scope: MeetScope }> => {
+      const venueCols = 'id, name, slug, description';
+      const villageCols = 'id, name, slug, description';
+
+      const collect = async (
+        column: 'city_id' | 'country_id',
+        value: string,
+      ): Promise<MeetSpace[]> => {
+        const [venues, villages] = await Promise.all([
+          supabase
+            .from('venues')
+            .select(venueCols)
+            .eq('category', 'community_center')
+            .eq(column, value)
+            .is('duplicate_of_id', null)
+            .order('quality_score', { ascending: false, nullsFirst: false })
+            .limit(limit),
+          supabase
+            .from('queer_villages')
+            .select(villageCols)
+            .eq(column, value)
+            .is('duplicate_of_id', null)
+            .order('trust_score', { ascending: false, nullsFirst: false })
+            .limit(limit),
+        ]);
+        if (venues.error) throw venues.error;
+        if (villages.error) throw villages.error;
+        return [
+          ...((villages.data ?? []) as Omit<MeetSpace, 'kind'>[]).map((v): MeetSpace => ({
+            ...v,
+            kind: 'village',
+          })),
+          ...((venues.data ?? []) as Omit<MeetSpace, 'kind'>[]).map((v): MeetSpace => ({
+            ...v,
+            kind: 'venue',
+          })),
+        ].slice(0, limit);
+      };
+
+      if (cityId) {
+        const spaces = await collect('city_id', cityId);
+        if (spaces.length > 0) return { spaces, scope: 'city' };
+      }
+
+      if (countryCode) {
+        // Resolve the country id the same way useIntentLocation does; both
+        // venues and queer_villages key on country_id, not on the ISO code.
+        const { data: country } = await supabase
+          .from('countries')
+          .select('id')
+          .ilike('code', countryCode)
+          .maybeSingle();
+        if (country?.id) {
+          const spaces = await collect('country_id', country.id as string);
+          if (spaces.length > 0) return { spaces, scope: 'country' };
+        }
+      }
+
+      return { spaces: [], scope: 'none' };
+    },
+  });
+}
+
+export interface LocalGroup {
+  id: string;
+  name: string;
+  description: string | null;
+  image_url: string | null;
+  member_count: number | null;
+  tags: string[] | null;
+}
+
+/**
+ * Public community groups, most-joined first.
+ *
+ * **Deliberately not city-scoped.** `community_groups.city` is populated on 0 of
+ * the 11 rows, so filtering on it would return an empty list in every city on
+ * the site — the "a sparsely populated column may inform a badge, never a
+ * filter" rule at the top of this file, in its most extreme form. When the
+ * column starts being written, add a city rung here and not before.
+ */
+export function useLocalGroups(limit = 6) {
+  return useQuery({
+    queryKey: ['intent-local-groups', limit],
+    staleTime: 300_000,
+    queryFn: async (): Promise<LocalGroup[]> => {
+      const { data, error } = await supabase
+        .from('community_groups')
+        .select('id, name, description, image_url, member_count, tags')
+        .eq('is_private', false)
+        .is('duplicate_of_id', null)
+        .order('member_count', { ascending: false, nullsFirst: false })
+        .order('last_activity_at', { ascending: false, nullsFirst: false })
+        .limit(limit);
+      if (error) throw error;
+      return (data ?? []) as LocalGroup[];
+    },
+  });
+}
+
 export interface RightsCountry {
   id: string;
   name: string;
@@ -161,7 +295,9 @@ export function useAllCountriesRights() {
     queryFn: async (): Promise<RightsCountry[]> => {
       const { data, error } = await supabase
         .from('countries')
-        .select('id, name, slug, code, equality_score, lgbti_criminalization, lgbti_same_sex_unions')
+        .select(
+          'id, name, slug, code, equality_score, lgbti_criminalization, lgbti_same_sex_unions',
+        )
         .order('name', { ascending: true });
       if (error) throw error;
       return (data ?? []) as RightsCountry[];
@@ -246,7 +382,9 @@ export function useIntentNews(countryId: string | null | undefined, limit = 5) {
   return useQuery({
     queryKey: ['intent-news', countryId, limit],
     staleTime: 300_000,
-    queryFn: async (): Promise<{ id: string; title: string; slug: string | null; published_at: string | null }[]> => {
+    queryFn: async (): Promise<
+      { id: string; title: string; slug: string | null; published_at: string | null }[]
+    > => {
       let q = supabase
         .from('news_articles')
         .select('id, title, slug, published_at')
@@ -255,7 +393,12 @@ export function useIntentNews(countryId: string | null | undefined, limit = 5) {
       if (countryId) q = q.contains('country_ids', [countryId]);
       const { data, error } = await q;
       if (error) throw error;
-      return (data ?? []) as { id: string; title: string; slug: string | null; published_at: string | null }[];
+      return (data ?? []) as {
+        id: string;
+        title: string;
+        slug: string | null;
+        published_at: string | null;
+      }[];
     },
   });
 }

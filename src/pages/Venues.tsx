@@ -629,7 +629,7 @@ const Venues = () => {
 
               {/* Section header for canonical grid when V2 + filters active */}
               {VENUES_V2_ENABLED && hasAnyFilters && !loading && venues.length > 0 && (
-                <h2 className="text-2xl md:text-3xl font-semibold tracking-tight -mb-6">
+                <h2 className="text-headline font-semibold tracking-tight -mb-6">
                   {t('venues.results.title', 'Matching venues')}
                 </h2>
               )}

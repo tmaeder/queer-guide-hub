@@ -385,7 +385,9 @@
       "placesCount_one": "{{count}} lugar",
       "placesCount_other": "{{count}} lugares",
       "daysPlanned_one": "{{count}} día planificado",
-      "daysPlanned_other": "{{count}} días planificados"
+      "daysPlanned_other": "{{count}} días planificados",
+      "travelBuddies": "[ES] Let travellers heading to {{city}} find you",
+      "travelBuddiesNoCity": "[ES] Let other travellers on this trip find you"
     },
     "share": {
       "title": "Compartir este viaje",
@@ -1162,7 +1164,10 @@
     "cancelled": "Cancelado",
     "inTrip": "[ES] In trip",
     "duringYourTrip": "[ES] During your trip",
-    "featured": "[ES] Featured"
+    "featured": "[ES] Featured",
+    "rsvpEmptyMember": "[ES] No RSVPs yet. Be the first.",
+    "rsvpEmptyAnon": "[ES] No RSVPs yet. Sign in to be the first.",
+    "peopleYouMayKnow": "[ES] People you may know"
   },
   "venues": {
     "title": "Lugares",
@@ -3286,6 +3291,92 @@
         "locals": "Gente local",
         "networking": "Networking"
       }
+    },
+    "yourArea": "[ES] your area",
+    "loadingSpaces": "[ES] Finding places…",
+    "addPlace": "[ES] Add one",
+    "allVenues": "[ES] All venues",
+    "allGroups": "[ES] All groups",
+    "allEvents": "[ES] All events",
+    "goingOut": "[ES] Going out",
+    "backToHub": "[ES] Meet people",
+    "groupMembers": "[ES] {{count}} members",
+    "titleCity": "[ES] Meet people in {{city}}",
+    "fullGuide": "[ES] Full guide to {{city}}",
+    "lede": "[ES] The spaces, groups and events where queer people actually gather — plus the members, travel buddies and dates you can find here.",
+    "safetyBody": "[ES] Meeting strangers carries different risk in different countries. Check the legal position for where you are before you arrange to meet someone.",
+    "safetyCta": "[ES] LGBTQ+ rights by country",
+    "sections": {
+      "spaces": "[ES] Community spaces",
+      "spacesKicker": "[ES] Places built for meeting people",
+      "spacesKickerCity": "[ES] Places built for meeting people in {{city}}",
+      "spacesEmpty": "[ES] No community spaces are listed for {{where}} yet.",
+      "spacesCountryFallback": "[ES] Nothing is listed in {{where}} itself, so these are elsewhere in the country. Community centres are recorded for 120 cities and queer villages for 104 — a gap here means we have no record, not that there is nowhere to go.",
+      "groups": "[ES] Groups to join",
+      "groupsKicker": "[ES] Smaller rooms than a whole city",
+      "groupsEmpty": "[ES] No public groups yet.",
+      "whatsOn": "[ES] What's on",
+      "whatsOnKicker": "[ES] Turning up somewhere beats messaging",
+      "regulars": "[ES] Bars and cafés",
+      "regularsKicker": "[ES] Where people become regulars",
+      "members": "[ES] Members",
+      "membersKicker": "[ES] People you can message directly",
+      "safety": "[ES] Before you go",
+      "elsewhere": "[ES] Elsewhere",
+      "elsewhereKicker": "[ES] Cities with the deepest scenes"
+    },
+    "spaceKind": {
+      "venue": "[ES] Community centre",
+      "village": "[ES] Queer neighbourhood"
+    },
+    "rail": {
+      "title": "[ES] Members to meet",
+      "titleCity": "[ES] Members in {{city}}",
+      "seeAll": "[ES] See all"
+    },
+    "card": {
+      "member": "[ES] Member",
+      "match": "[ES] {{score}}% match"
+    },
+    "members": {
+      "emptyTitle": "[ES] No members are listed here yet",
+      "emptyBody": "[ES] Member profiles are new. Community spaces, groups and events are where people are meeting in the meantime.",
+      "emptyCtaAnon": "[ES] Create a profile",
+      "emptyCtaMember": "[ES] Set up your profile",
+      "discoveryOffTitle": "[ES] You are not discoverable yet",
+      "discoveryOffBody": "[ES] Discovery is off by default, so you are hidden — and so is everyone else who has left it off. Turn it on to appear to other members, and to see the {{count}} who are listed.",
+      "discoveryOffCta": "[ES] Turn on discovery",
+      "discoveryOnPending": "[ES] Turning on…",
+      "countHere": "[ES] {{count}} members listed in {{city}}",
+      "countTotal": "[ES] {{count}} members are listed",
+      "signedOutBody": "[ES] Member profiles are only shown to signed-in members, never to visitors or search engines.",
+      "signedOutCta": "[ES] Sign in to view",
+      "noneInScope": "[ES] No members to suggest in {{city}} right now.",
+      "noneGlobal": "[ES] No members to suggest right now.",
+      "emptyBodyLink": "[ES] See where to go"
+    },
+    "community": {
+      "groups": "[ES] Local and interest groups you can join",
+      "feed": "[ES] What the community is posting",
+      "members": "[ES] Browse everyone who is listed"
+    },
+    "tabs": {
+      "friends": "[ES] Friends",
+      "dating": "[ES] Dating",
+      "travel": "[ES] Travel buddies",
+      "nearby": "[ES] Nearby"
+    },
+    "empty": {
+      "nearby": "[ES] No one nearby right now. Check back later."
+    },
+    "signals": {
+      "chemistryHigh": "[ES] High chemistry",
+      "chemistry": "[ES] Chemistry",
+      "mutual": "[ES] {{count}} mutual",
+      "events_one": "[ES] {{count}} event",
+      "events_other": "[ES] {{count}} events",
+      "groups_one": "[ES] {{count}} group",
+      "groups_other": "[ES] {{count}} groups"
     }
   },
   "hub": {
@@ -3435,7 +3526,8 @@
     "notFoundTitle": "[ES] City not found",
     "notFoundDescription": "[ES] The city you're looking for doesn't exist.",
     "backToPlaces": "[ES] ← Back to Places",
-    "similarCities": "[ES] Similar cities"
+    "similarCities": "[ES] Similar cities",
+    "localsToMeet": "[ES] Locals and travellers to meet in {{city}}"
   },
   "favorites": {
     "removedTitle": "[ES] Removed from favorites",

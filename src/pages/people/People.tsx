@@ -1,36 +1,69 @@
-import { Suspense, useState } from 'react';
+import { useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import {
-  Heart,
-  Users,
-  UsersRound,
-  Rss,
-  UserCheck,
-  Plane,
-  MapPin,
-  SlidersHorizontal,
-  type LucideIcon,
-} from 'lucide-react';
+import { SlidersHorizontal, UsersRound, Rss, UserCheck } from 'lucide-react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useMeta } from '@/hooks/useMeta';
-import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useProfile } from '@/hooks/useProfile';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
-import { lazyRetry } from '@/utils/lazyRetry';
+import { IntentPageLayout } from '@/components/intent/IntentPageLayout';
+import { CoverageNote } from '@/components/intent/CoverageNote';
+import { useIntentLocation } from '@/hooks/useIntentLocation';
+import { GatedContentNotice } from '@/components/safety/GatedContentNotice';
 import { IntentSheet } from '@/components/people/IntentSheet';
-import { PeopleModeView } from './PeopleModeView';
-import { NearbyView } from './NearbyView';
+import { PeopleHereRail } from '@/components/people/PeopleHereRail';
+import { MeetMembersNotice } from '@/components/people/MeetMembersNotice';
+import {
+  useMeetSpaces,
+  useLocalGroups,
+  useNightlifeVenues,
+  useEventsWithFallback,
+  useDestinationCities,
+  type EventWindow,
+} from '@/hooks/useIntentData';
+import type { SectionDef } from '@/components/entity/editorial';
 
-// Dating keeps its own opt-in/age-walled deck; it self-gates when not opted in.
-const IntimateDiscovery = lazyRetry(() => import('@/pages/intimate/IntimateDiscovery'));
+/**
+ * `/people` — the "Meet people" intent.
+ *
+ * **Place-led, and that is the whole design.** This page used to open on four
+ * person-matching tabs (friends / dating / travel / nearby), every one of which
+ * needs both a signed-in viewer and a populated member pool. There are 17
+ * profiles, of which 2 are discoverable in any mode, 0 presence rows, 0 follows
+ * and 0 matches — so all four tabs were empty for every visitor, and a
+ * signed-out one got a single line of grey text on an otherwise blank screen.
+ * It was the emptiest page on the site and one of six top-level nav intents.
+ *
+ * The corpus that does exist is places: 175 community centres, 190 queer
+ * villages, 4,431 bars, 306 upcoming events, 11 groups. So the page answers
+ * "where do queer people gather near me?" from rows that are actually there,
+ * and the member section appears above its own honest notice rather than being
+ * the spine. Nothing here changes as the community grows: the member rail
+ * lights up on its own once there is somebody to show.
+ *
+ * This is not a new opinion — `INTENT_SCOPE_BIAS` in src/config/navigation.ts
+ * already biases this exact intent to `['group', 'event']` with the comment
+ * "Groups and events are how meeting actually happens here. There is no user
+ * index in search, so this deliberately does not pretend to surface people."
+ * The page was the one surface still pretending.
+ *
+ * The four `/people/<mode>` child routes are untouched and still render the
+ * matching views — `/intimate`, `/discover` and `/cruising` redirect into
+ * `/people/dating`, and TripTravelBuddiesCTA deep-links to `/people/travel`.
+ * Retiring the tab row from the hub also fixes the mobile defect where the
+ * row's horizontal overflow pushed "Nearby" and the intent button off-screen
+ * at 375px.
+ */
 
-const TABS = ['friends', 'dating', 'travel', 'nearby'] as const;
-type PeopleTab = (typeof TABS)[number];
+const WINDOW_LABEL: Record<EventWindow, string> = {
+  tonight: 'tonight',
+  'this-weekend': 'this weekend',
+  'next-7-days': 'in the next 7 days',
+  'next-30-days': 'in the next 30 days',
+  anywhere: 'soonest anywhere',
+};
 
-/** The group half of the "Meet people" intent. Kept as links, not tabs. */
+/** The community surfaces this intent also covers. Links, not tabs. */
 const COMMUNITY_BRIDGE = [
   {
     to: '/community/groups',
@@ -58,178 +91,391 @@ const COMMUNITY_BRIDGE = [
   },
 ] as const;
 
-/** Map the soft profile.user_mode to the tab that opens first. */
-function defaultTabFor(userMode: string | null | undefined): PeopleTab {
-  switch (userMode) {
-    case 'dating':
-      return 'dating';
-    case 'exploration':
-      return 'travel';
-    case 'fun':
-      return 'nearby';
-    default:
-      return 'friends';
-  }
-}
-
-/**
- * People hub — the unified discovery surface. One shell, mode tabs, all ranked
- * by the shared matching engine. Friends / travel / nearby read public-safe
- * profiles; dating forks to the walled intimate deck. user_mode is a soft
- * default for which tab opens first, never a hard filter.
- */
-export default function People({ tab }: { tab?: PeopleTab }) {
+export default function People() {
   const { t } = useTranslation();
-  const navigate = useLocalizedNavigate();
   const { profile } = useProfile();
-  const [searchParams] = useSearchParams();
+  const [params] = useSearchParams();
   const [intentOpen, setIntentOpen] = useState(false);
 
-  const tripId = searchParams.get('tripId') ?? undefined;
-  const cityId = searchParams.get('cityId') ?? undefined;
-  const showNudge = profile != null && !profile.user_mode;
+  const citySlug = params.get('city');
+  const {
+    cityId,
+    cityName,
+    citySlug: resolvedSlug,
+    countryCode,
+    loading: locLoading,
+  } = useIntentLocation(citySlug);
 
-  // /people is now the "Meet people" intent landing page, and it had no
-  // useMeta call at all — so its client-side title was the homepage's, exactly
-  // as its edge STATIC_ROUTE_META entry was missing. Both are fixed together;
-  // fixing only one leaves crawlers and users seeing different titles.
+  const { data: spacesResult, isLoading: spacesLoading } = useMeetSpaces(cityId, countryCode, 8);
+  const { data: groups } = useLocalGroups(6);
+  const { data: eventsResult } = useEventsWithFallback(cityId, 6);
+  const { data: venues } = useNightlifeVenues(cityId, 6);
+  const { data: cities } = useDestinationCities(8);
+
+  const showNudge = profile != null && !profile.user_mode;
+  const where = cityName ?? t('people.yourArea', 'your area');
+
   useMeta({
     title: 'Meet people — LGBTQ+ friends, dates and travel buddies',
     description:
-      'Find queer friends, dates, travel buddies and people nearby, plus the groups and community feeds where they already gather.',
+      'Where queer people actually gather: community spaces, groups, events and bars near you, plus the members and travel buddies you can meet.',
     canonicalPath: '/people',
   });
 
-  const fallback = defaultTabFor(profile?.user_mode as string | null | undefined);
-  const active: PeopleTab = (TABS as readonly string[]).includes(tab ?? '')
-    ? (tab as PeopleTab)
-    : fallback;
-
-  const setTab = (v: string) => navigate(v === fallback ? '/people' : `/people/${v}`);
-
-  const triggers: ReadonlyArray<readonly [PeopleTab, string, LucideIcon]> = [
-    ['friends', t('people.tabs.friends', 'Friends'), Users],
-    ['dating', t('people.tabs.dating', 'Dating'), Heart],
-    ['travel', t('people.tabs.travel', 'Travel buddies'), Plane],
-    ['nearby', t('people.tabs.nearby', 'Nearby'), MapPin],
-  ];
+  // A section whose content is null is dropped entirely, nav entry included.
+  // `EditorialDetailLayout` renders the label and the "see all" action
+  // regardless of what the content resolves to, so leaving one in produced a
+  // heading with nothing under it — the exact defect this page is being rebuilt
+  // to remove. Sections that can legitimately be empty (spaces) render their own
+  // explanatory copy instead of null; sections that cannot say anything useful
+  // when empty (bars, which are city-gated) return null and disappear.
+  const sections: SectionDef[] = (
+    [
+      {
+        id: 'spaces',
+        label: t('people.sections.spaces', 'Community spaces'),
+        kicker: cityName
+          ? t('people.sections.spacesKickerCity', {
+              defaultValue: 'Places built for meeting people in {{city}}',
+              city: cityName,
+            })
+          : t('people.sections.spacesKicker', 'Places built for meeting people'),
+        content:
+          spacesLoading || locLoading ? (
+            <p className="text-muted-foreground">{t('people.loadingSpaces', 'Finding places…')}</p>
+          ) : spacesResult && spacesResult.spaces.length > 0 ? (
+            <div>
+              {spacesResult.scope === 'country' ? (
+                <CoverageNote>
+                  {t('people.sections.spacesCountryFallback', {
+                    defaultValue:
+                      'Nothing is listed in {{where}} itself, so these are elsewhere in the country. Community centres are recorded for 120 cities and queer villages for 104 — a gap here means we have no record, not that there is nowhere to go.',
+                    where,
+                  })}
+                </CoverageNote>
+              ) : null}
+              <ul className="m-0 grid list-none gap-4 p-0 sm:grid-cols-2 lg:grid-cols-3">
+                {spacesResult.spaces.map((s) => (
+                  <li key={s.id} className="rounded-container border-2 border-foreground p-4">
+                    <p className="mb-2 text-2xs uppercase tracking-wider text-muted-foreground">
+                      {s.kind === 'village'
+                        ? t('people.spaceKind.village', 'Queer neighbourhood')
+                        : t('people.spaceKind.venue', 'Community centre')}
+                    </p>
+                    <h3 className="mb-2 font-display text-title">
+                      {s.slug ? (
+                        <LocalizedLink
+                          to={s.kind === 'village' ? `/place/${s.slug}` : `/venues/${s.slug}`}
+                          className="no-underline hover:underline"
+                        >
+                          {s.name}
+                        </LocalizedLink>
+                      ) : (
+                        s.name
+                      )}
+                    </h3>
+                    {s.description ? (
+                      <p className="line-clamp-3 text-13 text-muted-foreground">{s.description}</p>
+                    ) : null}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : (
+            <p className="text-muted-foreground">
+              {t('people.sections.spacesEmpty', {
+                defaultValue: 'No community spaces are listed for {{where}} yet.',
+                where,
+              })}{' '}
+              <LocalizedLink to="/submit" className="underline underline-offset-4">
+                {t('people.addPlace', 'Add one')}
+              </LocalizedLink>
+              .
+            </p>
+          ),
+        action: (
+          <LocalizedLink to="/venues" className="text-13 no-underline hover:underline">
+            {t('people.allVenues', 'All venues')}
+          </LocalizedLink>
+        ),
+      },
+      {
+        id: 'groups',
+        label: t('people.sections.groups', 'Groups to join'),
+        kicker: t('people.sections.groupsKicker', 'Smaller rooms than a whole city'),
+        content:
+          groups && groups.length > 0 ? (
+            <ul className="m-0 grid list-none gap-4 p-0 sm:grid-cols-2 lg:grid-cols-3">
+              {groups.map((g) => (
+                <li key={g.id} className="rounded-container border-2 border-foreground p-4">
+                  <h3 className="mb-2 font-display text-title">
+                    <LocalizedLink
+                      to={`/community/groups/${g.id}`}
+                      className="no-underline hover:underline"
+                    >
+                      {g.name}
+                    </LocalizedLink>
+                  </h3>
+                  {g.description ? (
+                    <p className="mb-2 line-clamp-2 text-13 text-muted-foreground">
+                      {g.description}
+                    </p>
+                  ) : null}
+                  <p className="text-2xs uppercase tracking-wider text-muted-foreground">
+                    {t('people.groupMembers', {
+                      defaultValue: '{{count}} members',
+                      count: g.member_count ?? 0,
+                    })}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-muted-foreground">
+              {t('people.sections.groupsEmpty', 'No public groups yet.')}
+            </p>
+          ),
+        action: (
+          <LocalizedLink to="/community/groups" className="text-13 no-underline hover:underline">
+            {t('people.allGroups', 'All groups')}
+          </LocalizedLink>
+        ),
+      },
+      {
+        id: 'whats-on',
+        label: t('people.sections.whatsOn', "What's on"),
+        kicker: t('people.sections.whatsOnKicker', 'Turning up somewhere beats messaging'),
+        content: (
+          <div>
+            <CoverageNote>
+              {eventsResult && eventsResult.events.length > 0
+                ? `Showing events ${WINDOW_LABEL[eventsResult.window]}${
+                    eventsResult.window === 'anywhere' && cityName
+                      ? ` — nothing is listed in ${cityName} in the next 30 days.`
+                      : '.'
+                  }`
+                : 'No upcoming events are listed yet.'}{' '}
+              Our events coverage is thin: listings come from organisers and submissions, so an
+              empty week here means we have no record, not that nothing is happening.
+            </CoverageNote>
+            {eventsResult && eventsResult.events.length > 0 ? (
+              <ul className="m-0 list-none p-0">
+                {eventsResult.events.map((e) => (
+                  <li key={e.id} className="border-b border-border py-4">
+                    <div className="flex items-baseline justify-between gap-4">
+                      <span className="font-medium">
+                        {e.slug ? (
+                          <LocalizedLink
+                            to={`/events/${e.slug}`}
+                            className="no-underline hover:underline"
+                          >
+                            {e.title}
+                          </LocalizedLink>
+                        ) : (
+                          e.title
+                        )}
+                      </span>
+                      <span className="whitespace-nowrap text-13 text-muted-foreground">
+                        {new Date(e.start_date).toLocaleDateString()}
+                        {e.city ? ` · ${e.city}` : ''}
+                      </span>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+          </div>
+        ),
+        action: (
+          <LocalizedLink to="/events" className="text-13 no-underline hover:underline">
+            {t('people.allEvents', 'All events')}
+          </LocalizedLink>
+        ),
+      },
+      {
+        id: 'regulars',
+        label: t('people.sections.regulars', 'Bars and cafés'),
+        kicker: t('people.sections.regularsKicker', 'Where people become regulars'),
+        // Self-hiding: useNightlifeVenues is city-gated, so this is absent
+        // entirely when we could not resolve a city.
+        content:
+          venues && venues.length > 0 ? (
+            <ul className="m-0 grid list-none gap-4 p-0 sm:grid-cols-2 lg:grid-cols-3">
+              {venues.map((v) => (
+                <li key={v.id} className="rounded-container border-2 border-foreground p-4">
+                  <p className="mb-2 text-2xs uppercase tracking-wider text-muted-foreground">
+                    {v.category}
+                  </p>
+                  <h3 className="font-display text-title">
+                    {v.slug ? (
+                      <LocalizedLink
+                        to={`/venues/${v.slug}`}
+                        className="no-underline hover:underline"
+                      >
+                        {v.name}
+                      </LocalizedLink>
+                    ) : (
+                      v.name
+                    )}
+                  </h3>
+                </li>
+              ))}
+            </ul>
+          ) : null,
+        action: (
+          <LocalizedLink to="/going-out" className="text-13 no-underline hover:underline">
+            {t('people.goingOut', 'Going out')}
+          </LocalizedLink>
+        ),
+      },
+      {
+        id: 'members',
+        label: t('people.sections.members', 'Members'),
+        kicker: t('people.sections.membersKicker', 'People you can message directly'),
+        content: (
+          <div className="space-y-4">
+            {/* The rail is the payoff and the notice is the honest fallback.
+              emptyState is what makes this section legible at all: with 0
+              presence rows the rail is null everywhere on the site, so without
+              it this heading would sit above nothing. */}
+            <PeopleHereRail
+              mode="locals"
+              cityId={cityId ?? undefined}
+              title={
+                cityName
+                  ? t('people.rail.titleCity', {
+                      defaultValue: 'Members in {{city}}',
+                      city: cityName,
+                    })
+                  : t('people.rail.title', 'Members to meet')
+              }
+              seeAllHref="/community/members"
+              emptyState={<MeetMembersNotice cityId={cityId ?? undefined} cityName={cityName} />}
+            />
+            <div className="grid gap-2 sm:grid-cols-3">
+              {COMMUNITY_BRIDGE.map(({ to, icon: Icon, key, fallback, blurbKey, blurb }) => (
+                <LocalizedLink
+                  key={to}
+                  to={to}
+                  className="flex items-center gap-4 rounded-element border border-border p-4 no-underline transition-colors hover:border-foreground"
+                >
+                  <Icon size={20} className="shrink-0 text-foreground" aria-hidden />
+                  <span className="flex min-w-0 flex-col">
+                    <span className="text-15 font-medium text-foreground">{t(key, fallback)}</span>
+                    <span className="text-2xs leading-tight text-muted-foreground">
+                      {t(blurbKey, blurb)}
+                    </span>
+                  </span>
+                </LocalizedLink>
+              ))}
+            </div>
+          </div>
+        ),
+      },
+      {
+        id: 'safety',
+        label: t('people.sections.safety', 'Before you go'),
+        content: (
+          <div>
+            {/* Counts only, never rows — safe to call anonymously. */}
+            <GatedContentNotice cityId={cityId ?? undefined} />
+            <p className="mb-4 max-w-prose">
+              {t(
+                'people.safetyBody',
+                'Meeting strangers carries different risk in different countries. Check the legal position for where you are before you arrange to meet someone.',
+              )}
+            </p>
+            <LocalizedLink
+              to="/rights"
+              className="inline-block rounded-element border-2 border-foreground px-6 py-2 font-medium no-underline"
+            >
+              {t('people.safetyCta', 'LGBTQ+ rights by country')}
+            </LocalizedLink>
+          </div>
+        ),
+      },
+      {
+        id: 'elsewhere',
+        label: t('people.sections.elsewhere', 'Elsewhere'),
+        kicker: t('people.sections.elsewhereKicker', 'Cities with the deepest scenes'),
+        content: (
+          <ul className="m-0 grid list-none gap-4 p-0 sm:grid-cols-2 lg:grid-cols-4">
+            {(cities ?? []).map((c) => (
+              <li key={c.id} className="rounded-container border-2 border-foreground p-4">
+                <h3 className="font-display text-title">
+                  {c.slug ? (
+                    <LocalizedLink to={`/city/${c.slug}`} className="no-underline hover:underline">
+                      {c.name}
+                    </LocalizedLink>
+                  ) : (
+                    c.name
+                  )}
+                </h3>
+                {c.countries?.name ? (
+                  <p className="text-13 text-muted-foreground">{c.countries.name}</p>
+                ) : null}
+              </li>
+            ))}
+          </ul>
+        ),
+      },
+    ] as SectionDef[]
+  ).filter((s) => s.content !== null);
 
   return (
     <>
-      <div className="container mx-auto px-4 pt-6">
-        {/* /people had no <h1> at all. That was survivable while it was a
-            browse route reachable only from a menu; as a top-level indexable
-            intent landing page it is not — the other five all carry one, the
-            crawler body promises one, and axe flags a main region without a
-            heading. Caught by the e2e sweep, not by any unit test. */}
-        <h1 className="text-headline">{t('header.intents.meet.label', 'Meet people')}</h1>
-        <p className="mb-6 mt-2 max-w-2xl text-body-lg text-muted-foreground">
-          {t('header.intents.meet.subtitle', 'Friends, dates, travel buddies and groups')}
-        </p>
-
-        <div className="flex items-end justify-between gap-4">
-          <Tabs value={active} onValueChange={setTab} style={{ width: '100%' }}>
-            <TabsList className="h-auto gap-0 rounded-none border-0 bg-transparent p-0 backdrop-blur-none w-full justify-start overflow-x-auto">
-              {triggers.map(([v, label, Icon]) => (
-                <TabsTrigger
-                  key={v}
-                  value={v}
-                  className="h-10 rounded-none border-b-2 border-transparent bg-transparent px-4 shadow-none data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:border-foreground data-[state=active]:shadow-none flex items-center gap-2"
-                >
-                  <Icon size={16} aria-hidden />
-                  {label}
-                </TabsTrigger>
-              ))}
-            </TabsList>
-          </Tabs>
-          <Button
-            variant="outline"
-            size="sm"
-            className="mb-2 shrink-0 gap-2"
-            onClick={() => setIntentOpen(true)}
-          >
-            <SlidersHorizontal size={14} aria-hidden />
-            <span className="hidden sm:inline">{t('people.intent.button', "I'm here for…")}</span>
-          </Button>
-        </div>
-
-        {showNudge && (
-          <button
-            type="button"
-            onClick={() => setIntentOpen(true)}
-            className="mt-4 flex w-full items-center gap-2 rounded-element border border-border px-4 py-2.5 text-left text-sm transition-colors hover:border-foreground"
-          >
-            {t(
-              'people.intent.nudge',
-              'Tell us what you’re here for so we can rank people for you.',
-            )}
-          </button>
+      <IntentPageLayout
+        breadcrumbLabel={t('header.intents.meet.label', 'Meet people')}
+        breadcrumbHref="/people"
+        eyebrow={cityName ? `In ${cityName}` : undefined}
+        title={
+          cityName
+            ? t('people.titleCity', {
+                defaultValue: 'Meet people in {{city}}',
+                city: cityName,
+              })
+            : t('header.intents.meet.label', 'Meet people')
+        }
+        lede={t(
+          'people.lede',
+          'The spaces, groups and events where queer people actually gather — plus the members, travel buddies and dates you can find here.',
         )}
-      </div>
-
-      <div className="container mx-auto px-4 py-8">
-        <Suspense
-          fallback={
-            <div className="flex flex-col gap-4">
-              <Skeleton className="h-32 rounded-container" />
-              <Skeleton className="h-32 rounded-container" />
-            </div>
-          }
-        >
-          {active === 'friends' && (
-            <PeopleModeView
-              mode="friends"
-              emptyHint={t(
-                'people.empty.friends',
-                'No one to suggest yet. Check back as the community grows.',
-              )}
-            />
-          )}
-          {active === 'dating' && <IntimateDiscovery />}
-          {active === 'travel' && (
-            <PeopleModeView
-              mode="travel"
-              tripId={tripId}
-              cityId={cityId}
-              emptyHint={t(
-                'people.empty.travel',
-                'No travelers to show. Set a travel city in your status so others heading there can find you.',
-              )}
-            />
-          )}
-          {active === 'nearby' && <NearbyView />}
-        </Suspense>
-      </div>
-
-      {/* The "Meet people" intent covers two jobs: find a PERSON (the tabs
-          above) and join a GROUP. Both are the same intent to a visitor and
-          were never merged into one page, because /community's surfaces are
-          heavy and a seven-tab row serves neither job. This bridge is what
-          makes the intent honest — without it the nav entry would silently
-          drop half of what it promises. */}
-      <div className="container mx-auto px-4 pb-12">
-        <h2 className="mb-4 text-2xs font-semibold uppercase tracking-wide text-muted-foreground">
-          {t('people.community.heading', 'Or find your people in a group')}
-        </h2>
-        <div className="grid gap-2 sm:grid-cols-3">
-          {COMMUNITY_BRIDGE.map(({ to, icon: Icon, key, fallback, blurbKey, blurb }) => (
-            <LocalizedLink
-              key={to}
-              to={to}
-              className="flex items-center gap-4 rounded-element border border-border p-4 no-underline transition-colors hover:border-foreground"
+        scopeBar={
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2"
+              onClick={() => setIntentOpen(true)}
             >
-              <Icon size={20} className="shrink-0 text-foreground" aria-hidden />
-              <span className="flex min-w-0 flex-col">
-                <span className="text-15 font-medium text-foreground">{t(key, fallback)}</span>
-                <span className="text-2xs leading-tight text-muted-foreground">
-                  {t(blurbKey, blurb)}
-                </span>
+              <SlidersHorizontal size={14} aria-hidden />
+              {t('people.intent.button', "I'm here for…")}
+            </Button>
+            {showNudge ? (
+              <span className="text-13 text-muted-foreground">
+                {t(
+                  'people.intent.nudge',
+                  'Tell us what you’re here for so we can rank people for you.',
+                )}
               </span>
+            ) : null}
+          </div>
+        }
+        sections={sections}
+        footer={
+          resolvedSlug ? (
+            <LocalizedLink
+              to={`/city/${resolvedSlug}`}
+              className="font-medium underline underline-offset-4"
+            >
+              {t('people.fullGuide', {
+                defaultValue: 'Full guide to {{city}}',
+                city: cityName,
+              })}
             </LocalizedLink>
-          ))}
-        </div>
-      </div>
-
+          ) : null
+        }
+      />
       <IntentSheet open={intentOpen} onOpenChange={setIntentOpen} />
     </>
   );

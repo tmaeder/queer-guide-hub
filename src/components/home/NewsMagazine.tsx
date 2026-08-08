@@ -107,7 +107,11 @@ const NewsMagazine = React.memo(() => {
               ? `${t('home.news.editorsPick', "Editors' pick")} · ${meta(lead, 'MMM d, yyyy')}`
               : meta(lead, 'MMM d, yyyy')}
           </Eyebrow>
-          <h3 className="text-headline md:text-display font-bold leading-[1.05] tracking-tight line-clamp-3 transition-opacity group-hover:opacity-80">
+          {/* A card headline must never match the section heading above it.
+              This was `md:text-display` — 44px, exactly the size of the
+              homepage masthead h2 — so a grid of story titles visually
+              outweighed the section that contained them. */}
+          <h3 className="text-headline font-bold leading-[1.05] tracking-tight line-clamp-3 transition-opacity group-hover:opacity-80">
             {decodeHtmlEntities(lead.title)}
           </h3>
           {lead.excerpt && (

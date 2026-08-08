@@ -26,7 +26,7 @@ export function Rail({ title, subtitle, action, children, className, compact }: 
     <section className={cn('space-y-4', className)} aria-label={title}>
       <div className="flex items-end justify-between gap-4">
         <div className="min-w-0">
-          <h2 className="text-2xl md:text-3xl font-semibold tracking-tight truncate">{title}</h2>
+          <h2 className="text-headline font-semibold tracking-tight truncate">{title}</h2>
           {subtitle && <p className="text-sm text-muted-foreground mt-1">{subtitle}</p>}
         </div>
         <div className="flex items-center gap-2 shrink-0">

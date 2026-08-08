@@ -242,8 +242,12 @@ const Index = React.memo(() => {
           right. */}
       <section className="relative isolate overflow-hidden rule-heavy px-4 sm:px-6 md:px-8 py-20 md:py-28 bg-foreground text-background">
         <div className="relative max-w-3xl">
+          {/* Rank 2, not rank 1. This sat at `md:text-hero` — 76px, byte-identical
+              to the page's own h1 — so the closing CTA tied the masthead and the
+              page had two things claiming top rank. Measured on production, not
+              inferred from the classes. */}
           <h2
-            className="font-display text-display md:text-hero font-bold tracking-tight"
+            className="font-display text-display font-bold tracking-tight"
             style={{ letterSpacing: '-0.035em' }}
           >
             {t('home.cta.title', 'Built by the community,')}{' '}

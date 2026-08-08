@@ -35,7 +35,7 @@ const NewsCardFixture = () => (
       <p className="text-2xs uppercase tracking-wider text-muted-foreground">
         Politics · Source · 2h ago
       </p>
-      <h3 className="text-base font-semibold leading-tight">Sample News Headline</h3>
+      <h3 className="text-15 font-semibold leading-tight">Sample News Headline</h3>
     </CardHeader>
     <CardContent style={{ flexDirection: 'column' }} className="flex gap-2">
       <p className="text-sm text-muted-foreground">A sample excerpt for the news article.</p>
@@ -218,9 +218,23 @@ const NewsCardImpl = ({
     hideDate && article.is_featured ? 'Featured' : null,
   ].filter(Boolean) as string[];
 
-  // Lead variant: full-bleed magazine hero. Title at --text-hero-xl, dek with
-  // drop cap, byline row beneath. Image fills the container with a quiet
-  // black scrim to keep the title legible. Single CTA: open the article.
+  // Card-title rank ladder. Every variant sits on the type scale, and none of
+  // them may reach the page h1 (--text-hero, 76px) or they tie the masthead:
+  //
+  //   lead          --text-display   44px   the one big story
+  //   section-hero  --text-headline  28px   first card in a band
+  //   featured      --text-title     20px
+  //   compact       --text-15        15px
+  //   default       --text-15        15px
+  //   headline      --text-13        13px   dense list row
+  //
+  // These were `text-2xl` / `text-base` / `text-sm` / `md:text-hero` — four
+  // off-scale sizes and a tie with the h1. Measured on production, not grepped:
+  // a class can be present and still lose, so check the RENDERED px.
+  //
+  // Lead variant: full-bleed magazine hero. Dek with drop cap, byline row
+  // beneath. Image fills the container with a quiet black scrim to keep the
+  // title legible. Single CTA: open the article.
   if (variant === 'lead') {
     return (
       <LocalizedLink
@@ -259,7 +273,10 @@ const NewsCardImpl = ({
               {eyebrowParts.join(' · ')}
             </p>
           )}
-          <h2 className="m-0 mt-2 text-display md:text-hero font-bold leading-[0.95] tracking-tight max-w-4xl">
+          {/* Rank 2. This was `md:text-hero` — 76px, the same size as the
+              IssueMasthead h1 above it — so the lead story tied the page title
+              and the masthead never won. Measured on production. */}
+          <h2 className="m-0 mt-2 text-display font-bold leading-[0.95] tracking-tight max-w-4xl">
             {safeTitle}
           </h2>
           {langBadge}
@@ -343,7 +360,7 @@ const NewsCardImpl = ({
         className="flex items-center gap-4 py-4 px-4 transition-colors hover:bg-muted no-underline text-inherit focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         <div className="flex-1 min-w-0">
-          <h3 className="text-sm font-semibold truncate m-0">{safeTitle}</h3>
+          <h3 className="text-13 font-semibold truncate m-0">{safeTitle}</h3>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0 text-2xs uppercase tracking-wider text-muted-foreground">
           {eyebrowParts.map((part, i) => (
@@ -383,7 +400,7 @@ const NewsCardImpl = ({
               {eyebrowParts.join(' · ')}
             </p>
           )}
-          <h3 className="text-2xl font-bold leading-tight m-0">{safeTitle}</h3>
+          <h3 className="text-title font-bold leading-tight m-0">{safeTitle}</h3>
           {langBadge}
           {excerptText && (
             <p
@@ -445,7 +462,7 @@ const NewsCardImpl = ({
             </p>
           )}
           <h3
-            className="text-base font-semibold leading-snug m-0 overflow-hidden"
+            className="text-15 font-semibold leading-snug m-0 overflow-hidden"
             style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}
           >
             {safeTitle}
@@ -520,7 +537,7 @@ const NewsCardImpl = ({
           )}
 
           <h3
-            className="font-semibold m-0 text-base leading-tight overflow-hidden"
+            className="font-semibold m-0 text-15 leading-tight overflow-hidden"
             style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}
           >
             {safeTitle}
