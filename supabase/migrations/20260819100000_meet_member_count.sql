@@ -11,6 +11,16 @@
 -- Counts only. Never rows. That is the whole safety argument for granting it to
 -- anon, and it is why the return type is a scalar object rather than a setof.
 --
+-- SECURITY DEFINER is load-bearing, not incidental. Since
+-- 20260816120000_profiles_anon_column_grants, `anon` has no table-wide SELECT on
+-- `profiles` at all — only a 21-column allowlist that deliberately excludes
+-- `privacy_settings`, the very column this predicate reads. Verified inside a
+-- rolled-back transaction: `set role anon` calling this function returns
+-- {here:2,total:2} while `has_table_privilege('anon','profiles','SELECT')` and
+-- `has_column_privilege('anon','profiles','privacy_settings','SELECT')` are both
+-- false. An invoker-rights version of this function would raise 42501 for every
+-- signed-out visitor, which is exactly the audience it exists for.
+--
 -- Returns BOTH numbers deliberately:
 --   here  - members whose home city/country matches the page scope
 --   total - members discoverable at all, ignoring location
