@@ -105,16 +105,48 @@ BEGIN
 END $$;
 
 -- (1b) resurrect the last 48h of shape-rejected, review-approved adapter rows
-UPDATE public.ingestion_staging
+-- Un-rejecting must respect the staging idempotency contract:
+-- ux_ingestion_staging_source_idem is UNIQUE on (coalesce(source_name,
+-- source_type), idempotency_key) WHERE idempotency_key IS NOT NULL AND
+-- disposition <> 'rejected'. TWO collision modes (both hit on the first
+-- deploy attempt of this migration):
+--   (a) a later fetch of the same event already sits in a NON-rejected row —
+--       skip; that live twin IS the recommit path;
+--   (b) the same event was rejected TWICE (two fetch runs) — un-rejecting
+--       both makes them collide with each other; reset only the newest per
+--       (source, idempotency_key). NULL-key rows are outside the index
+--       predicate and all reset.
+-- Probe against prod (rolled back): reset=120, zero collisions.
+WITH resettable AS (
+  SELECT s.id, coalesce(s.source_name, s.source_type) AS src, s.idempotency_key, s.created_at
+  FROM public.ingestion_staging s
+  WHERE s.target_table = 'events'
+    AND s.disposition = 'rejected'
+    AND s.review_status = 'approved'
+    AND s.error_message LIKE 'commit_fn: event_missing_title%'
+    AND s.created_at > now() - interval '48 hours'
+    AND (s.idempotency_key IS NULL OR NOT EXISTS (
+      SELECT 1 FROM public.ingestion_staging t
+      WHERE t.id <> s.id
+        AND t.disposition <> 'rejected'
+        AND t.idempotency_key = s.idempotency_key
+        AND coalesce(t.source_name, t.source_type) = coalesce(s.source_name, s.source_type)))
+), picked AS (
+  SELECT id FROM resettable WHERE idempotency_key IS NULL
+  UNION ALL
+  SELECT id FROM (
+    SELECT DISTINCT ON (src, idempotency_key) id
+    FROM resettable WHERE idempotency_key IS NOT NULL
+    ORDER BY src, idempotency_key, created_at DESC
+  ) newest_per_key
+)
+UPDATE public.ingestion_staging s
    SET disposition = 'pending',
        error_message = NULL,
-       review_notes = coalesce(review_notes || E'\n', '') ||
+       review_notes = coalesce(s.review_notes || E'\n', '') ||
          'reset for recommit: rejected only by the event_missing_title shape bug (fixed 20260818100000)'
- WHERE target_table = 'events'
-   AND disposition = 'rejected'
-   AND review_status = 'approved'
-   AND error_message LIKE 'commit_fn: event_missing_title%'
-   AND created_at > now() - interval '48 hours';
+  FROM picked
+ WHERE s.id = picked.id;
 
 -- (2) merge dispatcher + autoapprove privilege lockdown
 REVOKE ALL ON FUNCTION public.merge_entities(text, uuid, uuid) FROM PUBLIC, anon;
