@@ -50,7 +50,7 @@ export const StoryCard = ({ story, hero }: StoryCardProps) => {
       </div>
       <div className="flex flex-col gap-2 px-4 pb-4">
         <h3
-          className="text-lg font-bold leading-tight m-0 overflow-hidden"
+          className="text-title font-bold leading-tight m-0 overflow-hidden"
           style={{ display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical' }}
         >
           {title}

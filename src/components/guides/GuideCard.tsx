@@ -143,8 +143,8 @@ export const GuideCard = memo(function GuideCard({
         <h3
           className={
             isHero
-              ? 'text-headline md:text-display leading-tight'
-              : 'text-title md:text-headline leading-tight'
+              ? 'text-headline leading-tight'
+              : 'text-title leading-tight'
           }
         >
           <LocalizedLink to={detailUrl} className="no-underline hover:underline underline-offset-4">
