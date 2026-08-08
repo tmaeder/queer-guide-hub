@@ -204,10 +204,16 @@ export const STATIC_ROUTE_META: Record<string, RouteMeta> = {
   // the sixth intent, but had NO entry here — so resolveMeta fell through to
   // DEFAULT_META, whose title is byte-identical to the homepage's, and
   // sitemap-static.xml (Object.keys(STATIC_ROUTE_META)) omitted it entirely.
+  // The description tracks the page, which is now place-led: it opens on the
+  // community spaces, groups and events where people actually gather, because
+  // the member pool is 17 profiles and a matching-led page rendered empty for
+  // every visitor. Promising "find friends, dates and travel buddies" here
+  // while the page leads with venues is exactly the crawler/user divergence
+  // this entry was originally added to fix.
   '/people': {
-    title: 'Meet LGBTQ+ People — Friends, Dates and Travel',
+    title: 'Meet LGBTQ+ People — Groups, Spaces and Events',
     description:
-      'Find queer friends, dates, travel buddies and people nearby, plus the groups and community feeds where they already gather.',
+      'Where queer people actually gather: community spaces, groups, events and bars near you, plus the members and travel buddies you can meet.',
   },
   '/rights': {
     title: 'LGBTQ+ Rights and Safety by Country',
@@ -340,6 +346,16 @@ export function isIndexable(pathname: string): boolean {
     // scripts/seo-check.mjs, whose botH1/botBodySize assertions would fail.
     /^\/search(\/|$)/,
     /^\/hub(\/|$)/,
+    // The four /people matching modes. resolveMeta is an exact match, so these
+    // had no entry and served DEFAULT_META — the homepage title, on four
+    // separate URLs. They are also signed-in surfaces with nothing public to
+    // show: friends/travel/nearby render a sign-in notice to anon, and dating
+    // is an age-walled opt-in deck. Same class as /search and /hub above, so
+    // they are suppressed rather than given four near-duplicate titles that
+    // would compete with /people itself. The hub at /people stays indexable and
+    // is the one that carries the content. Per the note above, none of these
+    // may be added to ROUTES in scripts/seo-check.mjs (verified: they are not).
+    /^\/people\/(friends|dating|travel|nearby)(\/|$)/,
   ];
   return !noindex.some((r) => r.test(pathname));
 }
