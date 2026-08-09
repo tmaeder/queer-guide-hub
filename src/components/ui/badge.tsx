@@ -16,9 +16,9 @@ const badgeVariants = cva(
         // legible on a photograph, but takes the ink border like the rest.
         outline: 'bg-background/85 backdrop-blur-sm text-foreground hover:bg-background',
         soft: 'bg-background text-foreground',
-        // Pink track chip. Paper type on the pink fill (the only track that
-        // takes paper — see the text-on-track rule in src/index.css).
-        ink: 'bg-track-pink text-background',
+        // Pink track chip. INK type: paper-on-pink measures 3.43:1 and a
+        // badge is 11px, nowhere near the large-text threshold.
+        ink: 'bg-track-pink text-foreground',
         // Legacy alias.
         secondary: 'bg-surface-container text-foreground',
         destructive: 'bg-destructive text-destructive-foreground',

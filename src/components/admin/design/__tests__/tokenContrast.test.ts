@@ -161,17 +161,24 @@ describe('design tokens: contrast guards', () => {
     }
   });
 
-  it('locks the text-on-track rule: paper on pink, ink on blue/green/yellow', () => {
-    // Deviation from the source design mock (which put paper text on the cyan
-    // bullet, ~2.3:1): bullet/fill text is ink for blue/green/yellow and paper
-    // for pink. These are graphical-object letters (the letter IS the mark),
-    // so the 3:1 non-text bar applies; ink combos clear 4.5 with margin.
-    const paperOnPink = contrastVerdict(value('background', 'light'), value('track-pink', 'light'));
-    expect(paperOnPink!.ratio).toBeGreaterThanOrEqual(3);
-    for (const track of ['track-blue', 'track-green', 'track-yellow']) {
+  it('locks the text-on-track rule: INK on every track fill', () => {
+    // The source design mock puts PAPER type on the pink and cyan fills.
+    // Measured, paper-on-cyan is 2.32:1 and paper-on-pink 3.43:1 — the first
+    // fails even the 3:1 graphical-object bar, and the second fails AA for
+    // anything below 18.66px bold, which the accent button (14px bold), the
+    // ink badge (11px) and the route bullet (17px) all are. So the whole set
+    // takes ink, which clears 4.5:1 on all four. Deviation from the mock is
+    // deliberate and this test is where it is recorded.
+    for (const track of ['track-pink', 'track-blue', 'track-green', 'track-yellow']) {
       const inkOn = contrastVerdict(value('foreground', 'light'), value(track, 'light'));
       expect(inkOn!.ratio, `ink on --${track}`).toBeGreaterThanOrEqual(4.5);
     }
+    // And the inverse must NOT be used: paper on pink is the tempting one.
+    const paperOnPink = contrastVerdict(value('background', 'light'), value('track-pink', 'light'));
+    expect(
+      paperOnPink!.ratio,
+      'paper-on-pink is below AA — if this ever clears 4.5:1 the rule above can relax',
+    ).toBeLessThan(4.5);
   });
 
   it('never lets a track color impersonate the danger signal', () => {

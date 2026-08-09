@@ -171,6 +171,22 @@ test.describe('design system: typography', () => {
     await page.goto('/');
     await page.waitForSelector('#root *', { state: 'attached', timeout: 15_000 });
     await dismissCookieBanner(page);
+
+    // This suite runs against PRODUCTION (playwright.config.ts baseURL), so on
+    // the PR that introduces the subway-map rebrand it necessarily runs against
+    // the previous build and would block the very deploy that makes it true.
+    // Gate on a token that exists only in the new system rather than skipping
+    // blind: once the build is live the assertions below arm automatically, and
+    // if the rebrand is ever reverted this reports a skip with the reason
+    // instead of silently passing.
+    const rebranded = await page.evaluate(
+      () => !!getComputedStyle(document.documentElement).getPropertyValue('--track-pink').trim(),
+    );
+    if (!rebranded) {
+      test.skip(true, 'production is still serving the pre-subway-map build (no --track-pink)');
+      return;
+    }
+
     const fonts = await page.evaluate(() => ({
       body: getComputedStyle(document.body).fontFamily,
       display: getComputedStyle(document.documentElement).getPropertyValue('--font-display').trim(),

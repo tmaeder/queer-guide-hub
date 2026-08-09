@@ -25,14 +25,16 @@ const buttonVariants = cva(
         destructive: 'bg-destructive text-destructive-foreground hover:opacity-90',
         // Flat surface plate, borderless — dense/quiet contexts (admin rows).
         soft: 'bg-surface-container text-foreground hover:bg-surface-container-high',
-        // Pink track conversion action. Paper type (3.4:1 as large/graphical
-        // text — pair with lg size), 2px ink border gates the fill.
+        // Pink track conversion action. INK type, not paper: measured
+        // paper-on-pink at 3.43:1, which fails AA for 14px bold (large text
+        // starts at 18.66px bold). Ink-on-pink is 5.22:1. The 2px ink border
+        // gates the fill for WCAG 1.4.11.
         //
         // The `.ink-bleed` press feedback is deliberately NOT baked in here.
         // `accent`/`brand` are used across src/components/trips/**, and
         // CLAUDE.md keeps travel content motion-free because it is
         // safety-adjacent. Opt in per call site with className="ink-bleed".
-        accent: 'border-2 border-foreground bg-track-pink text-background font-bold hover:opacity-90',
+        accent: 'border-2 border-foreground bg-track-pink text-foreground font-bold hover:opacity-90',
         // Blue track. Ink type (paper-on-blue fails 3:1 — see tokenContrast).
         brand: 'border-2 border-foreground bg-track-blue text-foreground font-bold hover:opacity-90',
         // Legacy alias retained for compat (2026-05-19) — collapses to

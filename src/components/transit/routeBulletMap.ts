@@ -26,10 +26,16 @@ export const ROUTE_BULLET_MAP: Record<string, BulletDef> = {
   trip: { letter: 'T', track: 'blue', label: 'Trip' },
 };
 
-/** Paper text on pink; ink text on blue/green/yellow. Deviation from the
- *  source mock (paper on cyan ≈ 2.3:1) — locked by tokenContrast.test.ts. */
+/** INK text on every track fill.
+ *
+ *  The source mock puts paper type on the pink and cyan bullets. Measured,
+ *  paper-on-cyan is 2.32:1 and paper-on-pink 3.43:1 — the first fails even the
+ *  3:1 graphical-object bar and the second fails AA for anything under
+ *  18.66px bold, which a 17px bullet letter is. Ink clears on all four
+ *  (5.22 / 7.72 / 10.67 / 13.15), so the whole set takes ink and the rule
+ *  stays one sentence instead of a per-track exception. */
 export const TRACK_TEXT: Record<Track, string> = {
-  pink: 'text-background',
+  pink: 'text-foreground',
   blue: 'text-foreground',
   green: 'text-foreground',
   yellow: 'text-foreground',

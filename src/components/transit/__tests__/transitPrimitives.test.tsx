@@ -18,13 +18,16 @@ describe('StationRing', () => {
 });
 
 describe('RouteBullet', () => {
-  it('maps entity types to letter + track and picks accessible text color', () => {
+  it('maps entity types to letter + track and always uses ink for the letter', () => {
+    // Ink on EVERY track fill — paper-on-pink measures 3.43:1 and the bullet
+    // letter is 17px, well under the large-text threshold. See the
+    // text-on-track lock in tokenContrast.test.ts.
     render(<RouteBullet type="venue" />);
     const bullet = screen.getByText('V');
     expect(bullet.className).toContain('bg-track-pink');
-    expect(bullet.className).toContain('text-background'); // paper on pink
+    expect(bullet.className).toContain('text-foreground');
     render(<RouteBullet type="event" />);
-    expect(screen.getByText('E').className).toContain('text-foreground'); // ink on blue
+    expect(screen.getByText('E').className).toContain('text-foreground');
   });
 
   it('covers the search entity vocabulary', () => {
