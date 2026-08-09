@@ -24,7 +24,7 @@ const COMMON_FOOTER_LINKS = [
   { href: '/events', label: 'Events' },
   { href: '/travel', label: 'Travel' },
   { href: '/news', label: 'News' },
-  { href: '/resources', label: 'Knowledge' },
+  { href: '/tags', label: 'Knowledge' },
   { href: '/about', label: 'About' },
 ];
 
@@ -111,7 +111,7 @@ export const STATIC_ROUTE_BODY: Record<string, RouteBody> = {
     ],
     links: [
       { href: '/blog', label: 'Long-form essays' },
-      { href: '/resources', label: 'Knowledge & guides' },
+      { href: '/tags', label: 'Knowledge & guides' },
       { href: '/about', label: 'Editorial standards' },
     ],
   },
@@ -266,7 +266,7 @@ export const STATIC_ROUTE_BODY: Record<string, RouteBody> = {
       'Use the directory to discover queer history beyond the canonical names, or to look up someone you just heard about and want to learn more.',
     ],
     links: [
-      { href: '/resources', label: 'Knowledge hub' },
+      { href: '/tags', label: 'Knowledge hub' },
       { href: '/blog', label: 'Long-form essays' },
     ],
   },
@@ -306,7 +306,7 @@ export const STATIC_ROUTE_BODY: Record<string, RouteBody> = {
     ],
     links: [
       { href: '/news', label: 'Daily news feed' },
-      { href: '/resources', label: 'Reference material' },
+      { href: '/tags', label: 'Reference material' },
       { href: '/contact', label: 'Pitch us' },
     ],
   },
@@ -332,7 +332,7 @@ export const STATIC_ROUTE_BODY: Record<string, RouteBody> = {
       'Lines we list have been verified for current operation and queer-affirming intake. If you find a number that is no longer working or that does not feel safe, please tell us.',
     ],
     links: [
-      { href: '/resources', label: 'Other support resources' },
+      { href: '/tags', label: 'Other support resources' },
       { href: '/feedback', label: 'Report an outdated number' },
     ],
   },

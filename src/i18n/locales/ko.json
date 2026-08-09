@@ -3900,6 +3900,22 @@
         "personal": "[KO] It knows nothing about you. Your citizenship, residency, gender marker and relationship status all change what applies, and we hold none of them.",
         "corrections": "[KO] If something here is wrong, tell us — corrections to the underlying record should also go to ILGA, who maintain it."
       }
+    },
+    "lens": {
+      "title": "[KO] Who the law protects",
+      "lgb": "[KO] Lesbian, gay, bisexual",
+      "trans": "[KO] Trans",
+      "intersex": "[KO] Intersex",
+      "notCovered": "[KO] Not recorded by our source:",
+      "noData": "[KO] We hold no recorded legal status for this country or territory."
+    },
+    "verdict": {
+      "criminalized-severe": "[KO] Criminalised — death penalty",
+      "criminalized": "[KO] Criminalised",
+      "hostile": "[KO] Few or no protections",
+      "partial": "[KO] Some protections",
+      "protected": "[KO] Broad protections",
+      "unknown": "[KO] Not enough data"
     }
   }
 }

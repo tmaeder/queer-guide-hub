@@ -7,6 +7,7 @@ import { CoverageNote } from '@/components/intent/CoverageNote';
 import { useIntentLocation } from '@/hooks/useIntentLocation';
 import { GatedContentNotice } from '@/components/safety/GatedContentNotice';
 import { CityLandmarksRail } from '@/components/geo/CityLandmarksRail';
+import { useCityLandmarks } from '@/hooks/useGeoPlaces';
 import {
   useNightlifeVenues,
   useEventsWithFallback,
@@ -41,11 +42,19 @@ export default function GoingOut() {
   const { t } = useTranslation();
   const [params] = useSearchParams();
   const citySlug = params.get('city');
-  const { cityId, cityName, citySlug: resolvedSlug, loading: locLoading } = useIntentLocation(citySlug);
+  const {
+    cityId,
+    cityName,
+    citySlug: resolvedSlug,
+    loading: locLoading,
+  } = useIntentLocation(citySlug);
 
   const { data: venues, isLoading: venuesLoading } = useNightlifeVenues(cityId, 12);
   const { data: eventsResult } = useEventsWithFallback(cityId, 6);
   const { data: cities } = useDestinationCities(8);
+  // Same query CityLandmarksRail runs; react-query dedupes it. Used only to
+  // decide whether the "Scenes" section should exist at all.
+  const { data: landmarks } = useCityLandmarks(cityId ?? undefined);
 
   const where = cityName ?? 'your area';
 
@@ -61,39 +70,43 @@ export default function GoingOut() {
       id: 'plan',
       label: 'Where to go',
       kicker: cityName ? `Nightlife in ${cityName}` : 'Nightlife near you',
-      content: venuesLoading || locLoading ? (
-        <p className="text-muted-foreground">Finding places…</p>
-      ) : venues && venues.length > 0 ? (
-        <ul className="list-none p-0 m-0 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {venues.map((v) => (
-            <li key={v.id} className="border-2 border-foreground p-4 rounded-container">
-              <p className="text-2xs uppercase tracking-wider text-muted-foreground mb-2">
-                {v.category}
-              </p>
-              <h3 className="font-display text-title mb-2">
-                {v.slug ? (
-                  <LocalizedLink to={`/venues/${v.slug}`} className="no-underline hover:underline">
-                    {v.name}
-                  </LocalizedLink>
-                ) : (
-                  v.name
-                )}
-              </h3>
-              {v.description ? (
-                <p className="text-13 text-muted-foreground line-clamp-3">{v.description}</p>
-              ) : null}
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p className="text-muted-foreground">
-          No nightlife listed for {where} yet.{' '}
-          <LocalizedLink to="/submit" className="underline underline-offset-4">
-            Add a place
-          </LocalizedLink>
-          .
-        </p>
-      ),
+      content:
+        venuesLoading || locLoading ? (
+          <p className="text-muted-foreground">Finding places…</p>
+        ) : venues && venues.length > 0 ? (
+          <ul className="list-none p-0 m-0 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {venues.map((v) => (
+              <li key={v.id} className="border-2 border-foreground p-4 rounded-container">
+                <p className="text-2xs uppercase tracking-wider text-muted-foreground mb-2">
+                  {v.category}
+                </p>
+                <h3 className="font-display text-title mb-2">
+                  {v.slug ? (
+                    <LocalizedLink
+                      to={`/venues/${v.slug}`}
+                      className="no-underline hover:underline"
+                    >
+                      {v.name}
+                    </LocalizedLink>
+                  ) : (
+                    v.name
+                  )}
+                </h3>
+                {v.description ? (
+                  <p className="text-13 text-muted-foreground line-clamp-3">{v.description}</p>
+                ) : null}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-muted-foreground">
+            No nightlife listed for {where} yet.{' '}
+            <LocalizedLink to="/submit" className="underline underline-offset-4">
+              Add a place
+            </LocalizedLink>
+            .
+          </p>
+        ),
       action: (
         <LocalizedLink
           to={cityName ? `/venues?city=${encodeURIComponent(cityName)}` : '/venues'}
@@ -157,8 +170,13 @@ export default function GoingOut() {
       id: 'scenes',
       label: 'Scenes',
       kicker: 'Neighborhoods with their own gravity',
-      // Self-hiding: CityLandmarksRail renders nothing when the city has no
-      // landmarks, which is the common case outside the deepest 71 cities.
+      // "Self-hiding" was only ever true of the RAIL, not the SECTION.
+      // CityLandmarksRail returns null with no landmarks — the common case
+      // outside the deepest 71 cities — but EditorialSection still emitted the
+      // kicker, the <h2> and a live nav anchor over an empty div. Verified in
+      // production in Zürich. `hidden` uses the same hook the rail does, so the
+      // two cannot disagree; the query is deduped by react-query.
+      hidden: !landmarks || landmarks.length === 0,
       content: cityId ? <CityLandmarksRail cityId={cityId} /> : null,
     },
     {
