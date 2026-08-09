@@ -7,78 +7,136 @@
     <meta name="description" content="The global guide to LGBTQ+ venues, events, travel and community. Find safe spaces near you and around the world." />
     <meta name="author" content="Queer Guide" />
 
-    <!-- Blank-page guard for stale HTML after a deploy. MUST stay a classic
-         inline script and MUST stay ahead of the module entry Vite injects.
+    <!-- Blank-page guard for a broken module graph after a deploy. MUST stay
+         a classic inline script and MUST stay ahead of the module entry Vite
+         injects. The BODY of this script must stay byte-identical (modulo
+         whitespace) to BOOT_GUARD_JS in functions/_lib/boot-guard.ts — the
+         copy the middleware injects into documents older than this one; a
+         unit test (bootGuardSync.test.ts) enforces the match. The shared
+         window.__qgBootGuard sentinel keeps the two copies from ever both
+         running.
 
-         A cached index.html (browser, service worker, or CDN) can reference a
-         hashed chunk that a later deploy deleted. Cloudflare Pages ships no
-         404.html, so its built-in fallback answers the dead URL with
-         index.html — 200 text/html. The browser refuses that as a module, the
-         whole entry graph fails, and #root stays empty: a blank page rather
-         than a broken-looking one.
+         Two failure shapes, one symptom (#root stays empty):
 
-         src/main.tsx already has a `vite:preloadError` recovery for this, but
-         it cannot fire here: main.tsx is itself inside the failed graph, so
-         its listener is never registered. Reproduced against a Pages-mimicking
-         server — the page rendered blank with navCount 1 and the
-         sessionStorage gate never armed. That handler covers *dynamic*
-         imports after boot; only an out-of-graph listener covers the entry
-         graph itself.
+         1. STALE DOCUMENT — a cached index.html references a hashed chunk a
+            later deploy deleted. Pages ships no 404.html, so its fallback
+            answers the dead URL with index.html (200 text/html); the browser
+            refuses it as a module. Recovery: reload the document through a
+            throwaway ?__fresh= query — a different cache key reaches origin.
 
-         The failure surfaces as an `error` event on the entry <script>
-         element — verified; the dead chunk's own modulepreload link fires
-         nothing — so match any same-origin /assets/ script rather than trying
-         to identify the dead URL. -->
+         2. POISONED BROWSER CACHE — the document is CURRENT, but a chunk
+            fetched during the deploy window was answered with that fallback
+            HTML or a 404, and public/_headers stamps /assets/* immutable, so
+            the browser cached the failure for a year. A document reload
+            CANNOT fix this one (measured on a real user's Chrome 2026-08-08:
+            8 chunks pinned at 404, the guard fired on every reload, page
+            stayed blank forever). Recovery: rewrite each cache entry with
+            fetch(url, {cache:'reload'}) BEFORE the document reload.
+
+         Both recoveries below; the heal is a no-op when the cache is clean.
+
+         src/main.tsx has a `vite:preloadError` recovery too, but it cannot
+         fire here: main.tsx is itself inside the failed graph, so its
+         listener is never registered. The failure surfaces as an `error`
+         event on the entry <script> element — verified; the dead chunk's own
+         modulepreload link fires nothing — so match any same-origin /assets/
+         script (or stylesheet) rather than trying to identify the dead URL. -->
     <script>
       (function () {
-        // Shared sentinel with the copy functions/_middleware.ts injects into
-        // every HTML response (see functions/_lib/boot-guard.ts). That
-        // injection is the only thing that can reach a document older than
-        // this guard; when both are present, whichever runs first wins and the
-        // other bails, so the two can never double-reload.
-        if (window.__qgBootGuard) return;
-        window.__qgBootGuard = 1;
-        var KEY = 'preload-error-reload'; // shared with main.tsx, which clears it on a good load
+        /* Versioned sentinel: guards from before 2026-08-09 set 1 and lack
+           the cache heal, and on an edge-stale document the OLD inline copy
+           runs before the middleware-injected copy. Run past a v1 sentinel
+           so a heal-capable guard always arms; never run twice ourselves. */
+        if (Number(window.__qgBootGuard) >= 2) return;
+        window.__qgBootGuard = 2;
+        var KEY = 'preload-error-reload';
+        var ASSETS = location.origin + '/assets/';
+        var MAX_ATTEMPTS = 2;
+        var fired = false;
+        function attemptsSoFar() {
+          try {
+            var n = Number(sessionStorage.getItem(KEY)) || 0;
+            /* legacy format stored Date.now() - read it as one attempt used */
+            return n > 1000 ? 1 : n;
+          } catch (e) {
+            return -1; /* storage blocked */
+          }
+        }
         function alreadyRetried() {
+          var n = attemptsSoFar();
+          if (n >= 0) return n >= MAX_ATTEMPTS;
           try {
-            // Storage works (the normal case): precise one-retry-per-session gate,
-            // matching main.tsx so the two mechanisms can't double-reload.
-            return !!sessionStorage.getItem(KEY);
-          } catch (e) { /* storage blocked — fall through */ }
-          try {
-            // No storage: a reload-type navigation means we already retried.
+            /* No storage: bound by the URL itself - a document already
+               carrying __fresh IS the retry. (location.replace records
+               nav.type 'navigate', never 'reload', so the navigation-type
+               check alone cannot gate this path.) */
+            if (String(location.search).indexOf('__fresh=') !== -1) return true;
             var nav = performance.getEntriesByType('navigation')[0];
             return !!(nav && nav.type === 'reload');
           } catch (e2) {
-            return true; // can't tell — refuse to reload rather than risk a loop
+            return true; /* cannot tell - refuse to reload rather than risk a loop */
           }
         }
-        // A plain location.reload() CANNOT fix this. The stale document is held
-        // at the edge, not in the browser cache — /city/berlin was observed
-        // serving `age: 72721` under `s-maxage=300` — so reloading re-requests
-        // the same cache key and gets the same dead chunk hashes back. The
-        // one-retry gate then blocks any further attempt, which is precisely
-        // how a page ends up permanently blank instead of self-healing.
-        // Reloading through a throwaway query param selects a different cache
-        // key and reaches origin; main.tsx strips it once the app boots.
+        function bumpAttempts() {
+          var n = attemptsSoFar();
+          if (n < 0) return; /* private mode */
+          try { sessionStorage.setItem(KEY, String(n + 1)); } catch (e3) { /* ignore */ }
+        }
         function reloadFresh() {
           try {
             var u = new URL(location.href);
             u.searchParams.set('__fresh', String(Date.now()));
             location.replace(u.toString());
-          } catch (e3) {
-            location.reload(); // URL unavailable — better than nothing
+          } catch (e4) {
+            location.reload(); /* URL unavailable - better than nothing */
+          }
+        }
+        function healAssets(done) {
+          var urls = [];
+          var seen = {};
+          function add(u) {
+            u = String(u || '');
+            if (u.lastIndexOf(ASSETS, 0) !== 0 || seen[u]) return;
+            seen[u] = 1;
+            urls.push(u);
+          }
+          try {
+            var els = document.querySelectorAll('script[src], link[rel="modulepreload"], link[rel="stylesheet"]');
+            for (var i = 0; i < els.length; i++) add(els[i].src || els[i].href);
+            var res = performance.getEntriesByType('resource');
+            for (var j = 0; j < res.length; j++) add(res[j].name);
+          } catch (e5) { /* heal whatever was collected */ }
+          if (!urls.length || typeof fetch !== 'function') { done(); return; }
+          var finished = false;
+          var pending = urls.length;
+          function step() {
+            if (finished) return;
+            pending -= 1;
+            if (pending <= 0) { finished = true; done(); }
+          }
+          /* Hard cap so a dead network cannot strand the recovery reload. */
+          setTimeout(function () { if (!finished) { finished = true; done(); } }, 4000);
+          for (var k = 0; k < urls.length; k++) {
+            try { fetch(urls[k], { cache: 'reload' }).then(step, step); } catch (e6) { step(); }
           }
         }
         window.addEventListener('error', function (e) {
           var el = e.target;
-          if (!el || el === window || el.tagName !== 'SCRIPT') return;
-          // Only our own hashed build output; ignore third-party script errors.
-          if (String(el.src || '').lastIndexOf(location.origin + '/assets/', 0) !== 0) return;
-          if (alreadyRetried()) return; // genuinely broken, not stale — don't loop
-          try { sessionStorage.setItem(KEY, String(Date.now())); } catch (err) { /* private mode */ }
-          reloadFresh();
-        }, true); // capture — resource load errors do not bubble
+          /* One recovery per document: a deploy window can poison the entry
+             script AND the stylesheet, firing two error events - without
+             the latch one broken document burns the whole retry budget
+             before its first reload. */
+          if (fired || !el || el === window || !el.tagName) return;
+          var isScript = el.tagName === 'SCRIPT';
+          var isStylesheet = el.tagName === 'LINK' && el.rel === 'stylesheet';
+          if (!isScript && !isStylesheet) return;
+          /* Only our own hashed build output; ignore third-party failures. */
+          if (String(el.src || el.href || '').lastIndexOf(ASSETS, 0) !== 0) return;
+          if (alreadyRetried()) return;
+          fired = true;
+          bumpAttempts();
+          healAssets(reloadFresh);
+        }, true); /* capture - resource load errors do not bubble */
       })();
     </script>
 
