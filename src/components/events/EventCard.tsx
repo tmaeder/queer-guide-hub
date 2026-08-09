@@ -57,7 +57,7 @@ const EventCardFixture = () => (
   <Card hoverable className="overflow-hidden">
     <div className="aspect-[16/10] bg-muted" />
     <div className="p-4">
-      <p className="text-body-lg font-semibold leading-tight">Sample Event Title</p>
+      <p className="font-display text-title leading-tight">Sample Event Title</p>
       <p className="mt-1 text-xs text-muted-foreground">Jun 15</p>
     </div>
   </Card>
@@ -183,7 +183,7 @@ export const EventCard = memo(function EventCard({ event, loading = false, socia
 
             <div className="p-4">
               <div className="flex items-baseline gap-2 min-w-0">
-                <h3 className="text-body-lg font-semibold leading-tight truncate flex-1 min-w-0">
+                <h3 className="font-display text-title leading-tight truncate flex-1 min-w-0">
                   {event.title}
                 </h3>
                 {priceDisplay && (

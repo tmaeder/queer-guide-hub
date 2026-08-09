@@ -1,90 +1,94 @@
 {
-  "generated_at": "2026-08-02T15:01:19.056Z",
-  "token_count": 91,
+  "generated_at": "2026-08-09T17:33:30.939Z",
+  "token_count": 94,
   "usage": [
     {
       "token": "muted-foreground",
-      "count": 3296
+      "count": 3309
     },
     {
       "token": "foreground",
-      "count": 1602
-    },
-    {
-      "token": "border",
-      "count": 1036
+      "count": 1610
     },
     {
       "token": "muted",
-      "count": 963
+      "count": 942
     },
     {
       "token": "radius-element",
-      "count": 851
+      "count": 841
     },
     {
       "token": "text-2xs",
-      "count": 604
+      "count": 610
     },
     {
-      "token": "background",
-      "count": 592
+      "token": "border",
+      "count": 608
     },
     {
       "token": "text-13",
-      "count": 558
+      "count": 607
+    },
+    {
+      "token": "background",
+      "count": 575
     },
     {
       "token": "destructive",
-      "count": 457
+      "count": 458
     },
     {
       "token": "radius-badge",
-      "count": 320
+      "count": 325
     },
     {
       "token": "radius-container",
-      "count": 317
+      "count": 323
     },
     {
       "token": "text-xs2",
-      "count": 283
+      "count": 288
     },
     {
       "token": "primary",
-      "count": 246
+      "count": 237
+    },
+    {
+      "token": "surface-container",
+      "count": 201
     },
     {
       "token": "accent",
       "count": 173
     },
     {
-      "token": "text-15",
-      "count": 153
-    },
-    {
       "token": "text-title",
-      "count": 149
+      "count": 166
     },
     {
-      "token": "text-primary",
-      "count": 94
-    },
-    {
-      "token": "card",
-      "count": 89
+      "token": "text-15",
+      "count": 165
     },
     {
       "token": "text-headline",
-      "count": 75
+      "count": 106
+    },
+    {
+      "token": "text-primary",
+      "count": 92
+    },
+    {
+      "token": "card",
+      "count": 85
     },
     {
       "token": "text-body-lg",
-      "count": 74
+      "count": 79
     },
     {
       "token": "text-display",
-      "count": 71
+      "count": 74
     },
     {
       "token": "ring",
@@ -96,11 +100,7 @@
     },
     {
       "token": "primary-foreground",
-      "count": 39
-    },
-    {
-      "token": "text-headline-lg",
-      "count": 37
+      "count": 38
     },
     {
       "token": "text-3xs",
@@ -108,38 +108,42 @@
     },
     {
       "token": "radius",
-      "count": 30
+      "count": 29
     },
     {
       "token": "text-hero",
-      "count": 26
-    },
-    {
-      "token": "input",
-      "count": 22
+      "count": 28
     },
     {
       "token": "warning",
       "count": 19
     },
     {
-      "token": "popover",
+      "token": "input",
       "count": 18
     },
     {
       "token": "secondary",
-      "count": 17
+      "count": 15
     },
     {
-      "token": "surface-container",
+      "token": "surface-container-highest",
+      "count": 15
+    },
+    {
+      "token": "popover",
+      "count": 13
+    },
+    {
+      "token": "track-pink",
+      "count": 13
+    },
+    {
+      "token": "spot",
       "count": 13
     },
     {
       "token": "success",
-      "count": 12
-    },
-    {
-      "token": "spot",
       "count": 12
     },
     {
@@ -151,7 +155,19 @@
       "count": 10
     },
     {
+      "token": "track-blue",
+      "count": 10
+    },
+    {
+      "token": "surface-container-low",
+      "count": 10
+    },
+    {
       "token": "destructive-foreground",
+      "count": 9
+    },
+    {
+      "token": "track-green",
       "count": 9
     },
     {
@@ -159,15 +175,15 @@
       "count": 9
     },
     {
-      "token": "surface-container-high",
-      "count": 9
-    },
-    {
       "token": "text-hero-xl",
       "count": 8
     },
     {
-      "token": "surface-container-low",
+      "token": "track-yellow",
+      "count": 8
+    },
+    {
+      "token": "inverse-surface",
       "count": 8
     },
     {
@@ -175,39 +191,27 @@
       "count": 7
     },
     {
+      "token": "surface-container-high",
+      "count": 7
+    },
+    {
       "token": "text-secondary",
-      "count": 7
-    },
-    {
-      "token": "text-muted",
-      "count": 7
-    },
-    {
-      "token": "ink-blue",
       "count": 6
     },
     {
-      "token": "ink-pink",
-      "count": 5
+      "token": "text-muted",
+      "count": 6
     },
     {
       "token": "card-foreground",
       "count": 5
     },
     {
-      "token": "spot-foreground",
+      "token": "ink-blue",
       "count": 4
     },
     {
-      "token": "secondary-foreground",
-      "count": 3
-    },
-    {
-      "token": "ink-blue-foreground",
-      "count": 3
-    },
-    {
-      "token": "ink-over",
+      "token": "spot-foreground",
       "count": 3
     },
     {
@@ -215,16 +219,36 @@
       "count": 2
     },
     {
+      "token": "secondary-foreground",
+      "count": 2
+    },
+    {
+      "token": "ink-over",
+      "count": 2
+    },
+    {
+      "token": "ink-pink",
+      "count": 1
+    },
+    {
+      "token": "shadow-hard",
+      "count": 1
+    },
+    {
+      "token": "shadow-hard-sm",
+      "count": 1
+    },
+    {
+      "token": "shadow-hard-accent",
+      "count": 1
+    },
+    {
+      "token": "ink-blue-foreground",
+      "count": 1
+    },
+    {
       "token": "ink-over-foreground",
-      "count": 2
-    },
-    {
-      "token": "surface-container-highest",
-      "count": 2
-    },
-    {
-      "token": "plate-offset",
-      "count": 2
+      "count": 1
     },
     {
       "token": "sidebar-background",
@@ -271,14 +295,6 @@
       "count": 1
     },
     {
-      "token": "inverse-surface",
-      "count": 1
-    },
-    {
-      "token": "plate-offset-ink",
-      "count": 1
-    },
-    {
       "token": "font-sans",
       "count": 0
     },
@@ -300,10 +316,6 @@
     },
     {
       "token": "text-15--line-height",
-      "count": 0
-    },
-    {
-      "token": "text-headline-lg--line-height",
       "count": 0
     },
     {
@@ -374,7 +386,6 @@
     "text-xs2--line-height",
     "text-13--line-height",
     "text-15--line-height",
-    "text-headline-lg--line-height",
     "text-hero-xl--line-height",
     "text-hero--line-height",
     "text-display--line-height",
@@ -395,7 +406,7 @@
     "design_rule_suppressions": 0
   },
   "color_literals": {
-    "total": 263,
+    "total": 260,
     "files": [
       {
         "file": "src/hooks/useRiskVisual.ts",
@@ -450,10 +461,6 @@
         "count": 6
       },
       {
-        "file": "src/index.css",
-        "count": 6
-      },
-      {
         "file": "src/pages/PatternLibrary/pattern-library.css",
         "count": 6
       },
@@ -502,6 +509,10 @@
         "count": 4
       },
       {
+        "file": "src/index.css",
+        "count": 4
+      },
+      {
         "file": "src/components/location/LocationInfo.tsx",
         "count": 3
       },
@@ -522,6 +533,7 @@
   "docs": {
     "missing_from_docs": [
       "font-sans",
+      "font-display",
       "font-mono",
       "text-3xs",
       "text-3xs--line-height",
@@ -531,28 +543,23 @@
       "text-xs2--line-height",
       "text-13",
       "text-13--line-height",
-      "text-15",
       "text-15--line-height",
-      "text-headline-lg",
-      "text-headline-lg--line-height",
-      "text-hero-xl",
       "text-hero-xl--line-height",
-      "text-hero",
       "text-hero--line-height",
-      "text-display",
       "text-display--line-height",
-      "text-headline",
       "text-headline--line-height",
-      "text-title",
       "text-title--line-height",
-      "text-body-lg",
       "text-body-lg--line-height",
       "tracking-label",
       "radius-none",
+      "radius-element",
+      "radius-badge",
       "radius-full",
       "ink-pink",
       "shadow-none",
       "shadow-hairline",
+      "shadow-hard-sm",
+      "shadow-hard-accent",
       "asset-rev",
       "card",
       "card-foreground",
@@ -562,6 +569,7 @@
       "primary-foreground",
       "secondary",
       "secondary-foreground",
+      "accent",
       "accent-foreground",
       "destructive-foreground",
       "warning",
@@ -571,7 +579,6 @@
       "spot-foreground",
       "ink-blue-foreground",
       "ink-over-foreground",
-      "input",
       "input-bg",
       "sidebar-background",
       "sidebar-foreground",
@@ -590,16 +597,14 @@
       "surface",
       "surface-container-lowest",
       "surface-container-low",
+      "surface-container",
       "surface-container-high",
       "surface-container-highest",
       "surface-dim",
-      "inverse-surface",
-      "plate-offset",
-      "plate-offset-ink"
+      "inverse-surface"
     ],
     "stale_in_docs": [
-      "token",
-      "text-"
+      "token"
     ]
   }
 }

@@ -45,11 +45,20 @@ describe('CardHoverEffect', () => {
   // The off-register second plate lives on the WRAPPER, not the Card: entity
   // cards pass `overflow-hidden` to clip their cover image, which would clip
   // the offset plate out of existence.
-  it('prints the misregistered plate on the wrapper, and lets callers opt out', () => {
-    const { container: inked } = render(<CardHoverEffect>x</CardHoverEffect>);
-    expect(inked.firstElementChild?.className).toContain('plate-offset');
+  it('applies the hard-shadow lift on the wrapper, and lets callers opt out', () => {
+    // The PASTE-UP `.plate-offset` misregistration plate was replaced by
+    // `.card-lift` in the subway-map rebrand: the wrapper now carries the
+    // MOTION (hover translate + 6px hard ink shadow) while the card itself
+    // owns its 3px border — putting a border on both doubled every card edge.
+    const { container: lifted } = render(<CardHoverEffect>x</CardHoverEffect>);
+    expect(lifted.firstElementChild?.className).toContain('card-lift');
 
     const { container: plain } = render(<CardHoverEffect ink="none">x</CardHoverEffect>);
-    expect(plain.firstElementChild?.className).not.toContain('plate-offset');
+    expect(plain.firstElementChild?.className).not.toContain('card-lift');
+  });
+
+  it('casts the accent shadow for a live/urgent card', () => {
+    const { container } = render(<CardHoverEffect ink="accent">x</CardHoverEffect>);
+    expect(container.firstElementChild?.className).toContain('card-lift-accent');
   });
 });

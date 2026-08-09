@@ -9,15 +9,16 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
       type={type}
       ref={ref}
       className={cn(
-        'flex h-10 w-full rounded-element px-4.5 py-2 text-base md:text-sm transition-all duration-200',
-        // PASTE-UP: an INVERTED PLATE, not a box and not a rule. --inverse-surface
-        // flips with the theme on its own (near-black on paper, near-white on a
-        // dark page) so one class is correct in both modes. Measured 19.78:1
-        // light / 18.11:1 dark against the page — a light fill managed 1.17:1,
-        // which is why the field could not simply lose its outline.
-        'bg-inverse-surface text-background placeholder:text-background/70',
-        'focus:outline-none focus:ring-2 focus:ring-spot/40',
-        'hover:opacity-95',
+        'flex h-10 w-full rounded-element px-4 py-2 text-base md:text-sm transition-all duration-200',
+        // Subway-map: a form field is an ink-bordered box on paper, like every
+        // other surface in the system. This REPLACES the PASTE-UP inverted
+        // plate (bg-inverse-surface + text-background), whose two halves were
+        // coupled — a caller overriding only the background left near-white
+        // type on a light surface at 1.09:1, which shipped and failed axe.
+        // Ink-on-paper is the safe default: overriding the fill with any light
+        // surface keeps the type readable.
+        'border-2 border-foreground bg-background text-foreground placeholder:text-muted-foreground',
+        'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background',
         'disabled:cursor-not-allowed disabled:opacity-50',
         className,
       )}

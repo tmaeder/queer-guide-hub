@@ -444,3 +444,22 @@ export const MODE_SCOPE_BIAS: Record<UserMode, string[]> = {
   networking: ['event', 'personality', 'venue'],
   community: ['event', 'venue', 'news'],
 };
+
+/**
+ * Track colour per intent — the subway-map wayfinding layer.
+ *
+ * The design spec ("Header and Footer.dc.html") puts a 6px rule under every
+ * nav tab and states the rule: "Colour appears once: as the rule under the
+ * active section." The active tab additionally reverses to an ink fill.
+ *
+ * Fixed per intent, never derived from index, so a rider learns "Travelling is
+ * the blue line" and it stays true when the row is reordered.
+ */
+export const INTENT_TRACK: Record<string, 'pink' | 'blue' | 'green' | 'yellow'> = {
+  'going-out': 'pink',
+  travelling: 'blue',
+  meet: 'green',
+  rights: 'yellow',
+  support: 'pink',
+  shop: 'blue',
+};

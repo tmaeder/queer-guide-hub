@@ -3,19 +3,21 @@ import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 
 /**
- * Guard on `Input`'s inverted-plate contract.
+ * Guard on `Input`'s fill/foreground coupling.
  *
- * `src/components/ui/input.tsx` styles the field as a PLATE — a coupled pair,
- * `bg-inverse-surface` + `text-background`. Both halves flip with the theme
- * together, which is what makes one class correct in light and dark (measured
- * 19.78:1 / 18.11:1 against the page).
+ * The subway-map rebrand (2026-08-09) changed the field from an INVERTED plate
+ * (`bg-inverse-surface` + `text-background`) to an ink-bordered paper box
+ * (`bg-background` + `text-foreground`), which makes the historical failure
+ * mode much harder to hit — overriding the fill with any light surface still
+ * leaves readable ink type. The guard stays because the coupling itself is
+ * what was fragile, not one particular pair of tokens: a caller that repaints
+ * the fill and not the type is still asserting a contrast ratio it never
+ * measured.
  *
- * A caller that overrides only the BACKGROUND breaks the couple: the plate's
- * foreground survives onto whatever surface the field now sits on. That shipped
- * — `UniversalSearchBar` passed `bg-transparent`, leaving `text-background` over
- * the container's `bg-muted`: **white on #f5f5f5, 1.09:1** in light mode and
- * near-black on #1f1f1f in dark. It failed `Playwright + axe a11y suite` and
- * `Lighthouse a11y >= 95` on every PR while main sat red.
+ * The original incident: `UniversalSearchBar` passed `bg-transparent`, leaving
+ * `text-background` over the container's `bg-muted` — **white on #f5f5f5,
+ * 1.09:1**. It failed `Playwright + axe a11y suite` and `Lighthouse a11y >= 95`
+ * on every PR while main sat red.
  *
  * This lives in the REQUIRED `test` job on purpose. The two checks that caught
  * it are not required, and `axe full route sweep` — the only thing that would
@@ -71,14 +73,14 @@ const setsColour = (cls: string) => {
   return !NON_COLOUR_TEXT.has(suffix);
 };
 
-const overridesPlateBackground = (cls: string) => /^bg-/.test(cls) && cls !== 'bg-inverse-surface';
+const overridesPlateBackground = (cls: string) => /^bg-/.test(cls) && cls !== 'bg-background';
 
 /**
- * The plate has THREE coupled halves, not two: `input.tsx` also sets
- * `placeholder:text-background/70`. A caller that restores only the value
- * colour still leaves the placeholder inverted — near-white at 70% over a light
- * surface, ~1:1. That is not the lesser half of the bug: the field that failed
- * axe was EMPTY, so the node axe measured was the placeholder.
+ * The field has THREE coupled halves, not two: `input.tsx` also sets
+ * `placeholder:text-muted-foreground`. A caller that restores only the value
+ * colour still leaves the placeholder on the primitive's assumption. That is
+ * not the lesser half of the bug: the field that failed axe was EMPTY, so the
+ * node axe measured was the placeholder.
  */
 const setsPlaceholderColour = (cls: string) => {
   const m = /^placeholder:(text-.+)$/.exec(cls);

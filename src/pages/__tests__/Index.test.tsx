@@ -59,8 +59,10 @@ describe('Index', () => {
     );
     const h1 = container.querySelector('h1');
     expect(h1).toBeTruthy();
-    // The masthead h1 is visible (identity overlay), not sr-only.
+    // The masthead h1 is visible, not sr-only.
     expect(h1?.className).not.toContain('sr-only');
-    expect(h1?.textContent).toContain('Queer venues,');
+    // Subway-map hero copy (Front Page.dc.html). The map-hero identity
+    // overlay it replaced carried "Queer venues, events, and people."
+    expect(h1?.textContent).toContain('No straight lines here.');
   });
 });

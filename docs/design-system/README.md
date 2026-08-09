@@ -1,259 +1,152 @@
-# Design System — PASTE-UP
+# Design System — SUBWAY MAP
 
-Black ink on white paper, plus a three-drum risograph ink set. Flat, printed,
-editorial. Content is the hero.
+Paper and ink plus four track colors. The identity borrows the visual language
+of a metropolitan subway map: identities are tracks that travel independently,
+run parallel, or meet at communal hubs. Loud, legible, built for everyone on
+the map. Light-only — the poster does not have a dark mode.
 
-The reference is the queer flyer — the pasted-up gig poster, the community
-bulletin board, the photocopied zine. Overlapping plates, misregistration,
-halftone, hand-cut edges.
+Source design: claude.ai/design project "Queer Guide subway map design"
+(`Pattern Library.dc.html` + `Brand Guidelines.dc.html` + `Icon System.dc.html`).
+Spec: `docs/superpowers/specs/2026-08-09-design-system-foundation-design.md`.
 
-**`src/components/admin/design/tokenCatalog.ts` is the machine-readable source of
-truth** and is drift-tested against `src/index.css` on every PR. This document is
-prose; where the two disagree, the catalog is right.
+**`src/components/admin/design/tokenCatalog.ts` is the machine-readable source
+of truth** and is drift-tested against `src/index.css` on every PR. This
+document is prose; where the two disagree, the catalog is right.
+
+## Hard rules
+
+- Illustrative transit lines are never straight — every line bends.
+- The master symbol is black-only: ink on paper, or reversed.
+- Track colors are wayfinding, not decoration — one accent per context; the
+  intersection gradient (`.intersection-gradient`) only where lines meet.
+- Anton for display, Space Grotesk for everything else. One icon stroke weight.
+- Squared corners everywhere except circles: rings, bullets, avatars.
+- A card fills ink on hover or lifts with the hard shadow — never both.
 
 ## Tokens (src/index.css)
 
-All colors are HSL channel values used via `hsl(var(--token))`.
+All colors are HSL channel values used via `hsl(var(--token))`. Light-only.
 
-| Token | Light | Dark | Usage |
-|-------|-------|------|-------|
-| `--background` | `0 0% 100%` (white) | `0 0% 4%` (near-black) | Page background |
-| `--foreground` | `0 0% 4%` | `0 0% 96%` | Body text, primary UI |
-| `--muted` | `0 0% 96%` | `0 0% 12%` | Subtle backgrounds |
-| `--muted-foreground` | `0 0% 35%` | `0 0% 68%` | Secondary text |
-| `--accent` | `0 0% 96%` | `0 0% 12%` | Interactive hover states |
-| `--border` | `0 0% 58%` | `0 0% 37%` | Hairlines (being retired in favour of plates) |
-| `--destructive` | `0 70% 38%` | `0 84% 62%` | **Danger. The only semantic hue.** |
-| `--ring` | `0 0% 4%` | `0 0% 96%` | Focus rings |
-| `--radius-container` | `0.5rem` | — | Cards, sheets, dialogs, hero blocks |
-| `--radius-element` | `0.25rem` | — | Buttons, inputs, list rows |
-| `--radius-badge` | `0rem` | — | Chips, tags, status pills |
+| Token | Value | Usage |
+|-------|-------|-------|
+| `--background` | `60 33% 97%` (#FAFAF5 paper) | Page + card background |
+| `--foreground` | `0 0% 7%` (#111 ink) | Type, rules, borders, station rings |
+| `--border` / `--input` | `0 0% 7%` | Ink borders ARE the system |
+| `--muted` | `60 9% 93%` | Subtle paper-tinted fills |
+| `--muted-foreground` | `0 0% 33%` | Secondary text |
+| `--destructive` | `0 70% 38%` | **Danger. The only non-track semantic hue.** |
+| `--ring` | `330 100% 56%` | Focus ring (pink track) |
+| `--radius-container/element/badge` | `0rem` | Squared. `rounded-full` for circles only |
 
-Card, popover, primary, secondary tokens mirror foreground/background. The
-surface ladder (`--surface-container*`), text hierarchy (`--text-*`) and sidebar
-family are in `src/index.css`.
+### Track colors — SEMANTIC wayfinding lines
 
-### The ink set
+| Token | Value | Hex | Line | Text on the fill |
+|-------|-------|-----|------|------------------|
+| `--track-pink` | `330 100% 56%` | #FF1F8F | Feminine spectrum | **paper** (3.4:1) |
+| `--track-blue` | `193 100% 45%` | #00B4E6 | Masculine spectrum | **ink** (7.7:1) |
+| `--track-green` | `136 75% 52%` | #2BE05A | Non-binary | **ink** (10.4:1) |
+| `--track-yellow` | `50 100% 50%` | #FFD500 | Agender / other | **ink** (13.5:1) |
 
-| Token | Light | Dark | vs page | Type on it |
-|-------|-------|------|---------|------------|
-| `--spot` (= `--color-ink-pink`) | `330 95% 55%` | `330 100% 66%` | 3.74 / 6.61 | black — 5.29 / 6.61 |
-| `--ink-blue` | `223 88% 46%` | `219 90% 62%` | 7.00 / 5.54 | white / black — 6.41 / 5.54 |
-| `--ink-over` | `285 75% 40%` | `285 90% 70%` | 7.22 / 6.96 | white / black — 6.61 / 6.96 |
+Rules (gated by `tokenContrast.test.ts`):
 
-`ink-pink` is a `@theme` **alias** of `--spot`, not a second declaration, so one
-runtime override in `/admin/design` moves both and they cannot drift.
-
-**The ink is non-semantic by construction.** This is the entire reason chromatic
-brand colour is safe on a product used in criminalising countries:
-
-- Red means danger. Ink means nothing at all — it is a drum on a press.
-- An ink may never encode a state, a status, or a risk level.
-- An ink may never be body text. `tokenContrast.test.ts` lists them in
-  `NON_TEXT_ON_PAGE` (3:1 fill bar) and asserts they are absent from
-  `TEXT_ON_PAGE`. Type on a plate uses the paired `*-foreground`, gated at 4.5:1
-  through `CONTRAST_PAIRS`, and flips by mode because the inks do.
-- An ink may never appear on `/help`, `/safety`, `/report-*`, the trip-safety
-  briefing, the equality scale, or any risk badge.
-- `tokenContrast.test.ts` asserts every ink stays >25° from the `--destructive`
-  hue, so a decorative plate can never be mistaken for a danger signal.
-
-Adding or renaming an ink touches **four layers in lockstep** or CI goes red:
-`src/index.css` → `tokenCatalog.ts` (`COLOR_TOKENS` + `CONTRAST_PAIRS`) →
-`functions/_lib/branding.ts` `COLOR_KEYS` → a migration extending
-`branding_validate`'s `v_color_keys` (precedent:
-`supabase/migrations/20260809164200_branding_pasteup_ink_tokens.sql`).
-
-## The print layer
-
-Structure is carried by a **filled plate**, not by a 1px line and never by a
-shadow. Utilities live in `src/index.css`; components only apply class names.
-
-| Class | What it is |
-|-------|-----------|
-| `.plate` / `.plate-ink` / `.plate-blue` / `.plate-over` | Flat fills. The tonal step against the parent is the edge, measured ≥3:1 (WCAG 1.4.11). |
-| `.plate-offset` | Misregistered second plate on a `::before`, snapping into register on hover/focus. A positioned element, **not** a `box-shadow`. |
-| `.halftone-pink` / `-blue` / `-ink` | Dot screens, one per drum, offset so they interleave instead of moiré-ing. Texture only — never put small text on one. |
-| `.paper-grain` | Stock texture. `.bg-noise` retuned up and retiled. |
-| `.overprint` | `multiply` on paper, `screen` on a dark page — the physics inverts. Decorative only; the composite is unmeasured. |
-| `.deckle-bottom` | Torn-edge mask for full-bleed band boundaries. |
-| `.duotone-riso` | Two-drum photo separation. Opt-in via `<Image treatment="riso">`, heroes and editorial only. |
-| `.halftone-dissolve` | The one cinematic hero reveal. Budget: one per page. |
-| `.paper-feed` | Route transition. |
-| `.ink-bleed` | Press feedback on a primary action. |
-
-Every animated class has a `prefers-reduced-motion` branch.
-
-### Where the ink is actually used
-
-Ink is an accent, not a surface. It appears in exactly these places:
-
-| Surface | Treatment |
-|---|---|
-| Homepage masthead | The closing line (`Worldwide.`) prints on a pink plate; the other two stay black. Inking all three would make ink the surface. |
-| Homepage CTA band | Drenched black flood + `.halftone-paper` screen, primary CTA in pink with `.ink-bleed`. |
-| `Button variant="accent"` | First drum (pink). |
-| `Button variant="brand"` | Second drum (blue). No longer deprecated. |
-| `Badge variant="ink"` | Pink chip. |
-| Interactive cards | Off-register pink plate behind the card, snapping into register on hover. |
-| `::selection`, focus ring, active nav, inline-link hover | The four original `--spot` marks, unchanged. |
-
-**Where it is banned**, beyond the token rules above: `Button variant="accent"` was in
-use on `GatedContentNotice` and `GatedDetailFallback` — the safety-gating
-surfaces shown to users in criminalising countries — and was reverted to
-monochrome there. `.ink-bleed` is deliberately NOT baked into any button
-variant, because `brand` is used across `src/components/trips/**` and travel
-content stays motion-free; opt in per call site.
-
-### Fields are ruled, not boxed
-
-Inputs, textareas and selects dropped their outline for a tonal fill plus a 2px
-black bottom rule — a printed form has a line you write ON. The fill alone
-measures **1.17:1** against the page, nowhere near the 3:1 WCAG 1.4.11 wants for
-a control boundary, so the rule is load-bearing rather than decorative. At
-`--foreground` it is 19.78:1.
+- **Fill-only.** A track color is never body text.
+- **Border-gated.** Blue/green/yellow measure under 3:1 against paper, so every
+  filled shape carries a 2–3px ink border — WCAG 1.4.11 is satisfied by
+  fill-vs-ink. Pink alone clears 3:1 bare and may draw borderless marks
+  (focus ring, active-nav underline, ::selection).
+- **Text-on-fill** deviates from the source mock on a11y grounds: ink on
+  blue/green/yellow, paper on pink (the mock's paper-on-cyan is 2.3:1).
+- **One accent per context.** Never a rainbow of fills in one component; the
+  four blend only in `.intersection-gradient` (master-symbol moments).
+- **Never a state.** Track colors never reach /help, /safety, /report-*, the
+  trip-safety briefing, the equality scale or any risk badge; all four hues
+  sit >25° from the destructive red (hue-gated in the test).
+- `--spot` / `--ink-blue` / `--ink-over` are **deprecated aliases** of
+  pink/blue/green kept so old `bg-spot`/`bg-ink-*` call sites render until the
+  Public/Admin phases retire them. No new code.
 
 ## Typography
 
-Inter for body/UI, Space Grotesk (`--font-display`) for large headings. Both
-self-hosted woff2 in `public/fonts/`. Plus Jakarta Sans was removed.
+Anton (display, single weight 400) + Space Grotesk (everything else, 400 for
+reading, 700 for station names). Inter removed. Both self-hosted woff2
+(`public/fonts/anton/`, `public/fonts/space-grotesk/`).
 
-Editorial scale, always via a token — ESLint errors on arbitrary `text-[…]`:
-`text-hero-xl` (7rem), `text-hero` (4.75rem), `text-display` (2.75rem),
-`text-headline` (1.75rem), `text-title` (1.25rem), `text-body-lg` (1.0625rem),
-`text-15`, `text-13`, `text-xs2`, `text-2xs`, `text-3xs`.
+Rank table — ladder 96/76/52/32/20 px, adjacent ratios 1.26/1.46/1.63/1.60
+(all ≥1.25 so every pair resolves as a different level):
 
-### Rank — which token at which level
+| Rank | Token | Size | Face | Belongs at |
+|------|-------|------|------|------------|
+| 0 | `--text-hero-xl` | 6rem/96px | Anton | Marketing covers only |
+| 1 | `--text-hero` | 4.75rem/76px | Anton | Page h1 |
+| 2 | `--text-display` | 3.25rem/52px | Anton | Section h2 |
+| 3 | `--text-headline` | 2rem/32px | Anton | Sub-section / large card title |
+| 4 | `--text-title` | 1.25rem/20px | Space Grotesk 700 | Card titles, row titles |
+| — | `--text-body-lg` | 1.0625rem | Space Grotesk | Long-form prose (not a rank) |
 
-The scale is a list of sizes; this is the part that was missing, and its absence
-is why four different section-header grammars grew independently.
+A card title may never use the same token as the section heading above it.
+Anton is never letterspaced apart (tracking ≥ -0.02em, tight); the eyebrow
+convention (`text-2xs uppercase tracking-wide`) stays the one wide-tracking
+exception. Micro-scale (`--text-15/13/xs2/2xs/3xs`) unchanged.
 
-| Rank | Token | Use |
-|---|---|---|
-| Page identity | `text-hero-xl` / `text-hero` | one per page, the hero only |
-| Page title | `text-display` | the `h1`, or a masthead band heading |
-| Section | `text-headline` | `h2` — a band or major section |
-| Sub-block | `text-title` | `h3` — a group inside a section |
-| Card title | `text-15` / `text-13` + weight | inside a card, never a heading token |
+**Changing a size token is still a multi-layer change**: `src/index.css`
+(`@theme` + `@source` safelist) → `tokenCatalog.ts` → `functions/_lib/
+branding.ts` SIZE_KEYS → `src/lib/utils.ts` customTextSizes → a migration on
+`branding_validate` (which RAISEs on unknown keys — check `site_branding` and
+`site_branding_versions` before *removing* one). The radius trio was ZEROED,
+not deleted, precisely to avoid that procedure and keep every
+`rounded-container/element/badge` call site valid.
 
-**Adjacent ranks must stay ≥1.25× apart.** They currently step 1.47× / 1.73× /
-1.57× / 1.40×. `--text-headline-lg` (2rem) was removed on 2026-08-04 for
-failing exactly this: at 1.14× from `text-headline` no reader resolved them as
-different levels, so the two were used interchangeably across 34 sites.
+## Depth
 
-`--text-body-lg` is the deliberate exception at 1.06× from base — it is a
-reading-comfort bump for long-form prose, not a rank.
+Soft elevation shadows stay banned (`shadow-md/lg/xl/2xl` are ESLint errors).
+The sanctioned depth treatment is the **hard poster shadow**:
 
-**A card title must never use the same token as the section heading above it.**
-That inversion is what made card grids visually outweigh their own sections.
+- Every bordered surface: 3px ink border, zero radius (`Card` does this).
+- Interactive cards add `.card-lift`: hover/focus translates −3,−3 and casts
+  `--shadow-hard` (`6px 6px 0` ink, no blur). Small tiles: `.card-lift-sm`
+  (5px/−2). Live/urgent: `.card-lift-accent` casts in pink.
+- The PASTE-UP `.plate-offset` misregistration layer, halftone screens,
+  deckle, duotone and paper grain were deleted; their class names are inert
+  until the Public/Admin phases remove the call sites.
 
-## Shape
+## Core patterns (`src/components/transit/`)
 
-Semantic 3-tier trio in the Tailwind v4 `@theme` block (there is **no**
-`tailwind.config.ts` — config is CSS-first): `rounded-container` (8px),
-`rounded-element` (4px), `rounded-badge` (0px).
+- **`TransitIcon`** — 42-icon wayfinding set (stroke-only, currentColor, round
+  terminals, one station ring per icon; stroke weight bumps below 32px).
+  Never takes track colors. Never mix with lucide in the same surface —
+  lucide remains the default for UI chrome until a surface is migrated.
+- **`StationRing`** — open ring = place · filled track = typed entity ·
+  filled ink = done/past.
+- **`RouteBullet`** — letter = content type, color = its line; the mapping
+  table is `routeBulletMap.ts` (single point of change). 2px ink ring.
+- **`DepartureRow`** — bullet · time · title · status.
+- **`LineStepper`** — progress is always a bending line with stations.
+- **Buttons** — `default` (ink fill), `outline` (2px ink border, hover fills
+  ink), `accent` (pink), `brand` (blue), `destructive` unchanged.
 
-- `rounded-full` allowed only for avatars and indicator dots.
-- ESLint errors on `rounded-(xs|sm|md|lg|xl|2xl|3xl|4xl)` and bare `rounded`.
+## Brand (`src/components/brand/`)
 
-## Shadows
+- **`MasterSymbol`** — "Cupid's transit", one line left to right: arrow in,
+  through the heart, out as a wavy exit. Black-only via currentColor.
+- **`Wordmark`** — lowercase Anton "queer.guide", pink heart nested in the
+  g's descender. Header default (the /admin/design logoUrl override keeps the
+  img branch).
+- Favicon/app icons/OG regenerate via `node scripts/generate-brand-assets.mjs`.
 
-Disabled. Depth is the plate: a filled surface whose tonal step against its
-parent is measured, plus `.plate-offset` for interactive cards.
+## Dark mode
 
-- ESLint errors on `shadow-(md|lg|xl|2xl)`.
-- `e2e/design-system.spec.ts` asserts `getComputedStyle('.bg-card').boxShadow === 'none'`
-  on every PR, which is why misregistration is a `::before` and not a shadow.
-
-## Gradients
-
-Not allowed **in JSX**. ESLint errors on `bg-gradient-to-*` in components;
-exceptions are black readability scrims over images (`from-black/NN`) and
-`from-background` scroll fades.
-
-The print layer's gradients, masks and blend modes live in `src/index.css`.
-ESLint is scoped to `**/*.{ts,tsx}` and matches `Literal` AST nodes, so it never
-parses CSS — keeping the print layer in the stylesheet is what lets it exist
-without weakening a single JSX rule.
-
-## Icons
-
-lucide-react only. Always inherit color from parent (`currentColor`).
-
-Public surfaces re-cut every icon as a chunky flat mark with two edits and no
-library swap: `<LucideProvider strokeWidth={2.5}>` around the non-admin branch of
-`LayoutShell`, plus `[data-ink-icons] .lucide { stroke-linecap: butt;
-stroke-linejoin: miter }`. Admin keeps the softer default.
-
-## Motion
-
-Functional only. Defined in `src/lib/animation.ts`.
-
-Allowed: skeleton pulse, dialog/sheet transitions, accordion, AnimatedCounter, StaggerGrid entrance.
-Removed: Aurora, ScrollReveal on hero, placeholder gradients.
-
-## Copy
-
-Direct factual voice. No marketing language.
-
-| Banned | Use instead |
-|--------|------------|
-| "Discover X" | "Search X" or "X" |
-| "Explore" | "Browse" or omit |
-| "Unlock" | "Add dates for..." |
-| "Curated / tailored / personalized for you" | Omit |
-| "Journey / amazing" | Omit |
-| Empty state metaphors ("dance floor is empty") | "No X yet." |
-
-## Components (src/components/ui/)
-
-51 shadcn/ui primitives. Key components and their variants:
-
-| Component | Variants | Notes |
-|-----------|----------|-------|
-| `button` | default (black solid), outline (1px border), ghost, destructive | Sizes: sm, md, lg, icon |
-| `badge` | default (solid), outline, secondary, destructive | All caps tracking optional |
-| `card` | Single variant | 1px border, no shadow, no radius |
-| `input` | Single variant | 1px border, focus ring |
-| `dialog` | Single variant | No backdrop blur, no radius |
-| `tabs` | Single variant | Underline-active style |
-| `tooltip` | Single variant | Foreground bg, background text |
-
-## Admin exceptions
-
-Admin pages (`src/components/admin/`, `src/pages/Admin*`, `src/pages/admin/`) are exempt from:
-- Color literal ESLint rule
-- Monochrome constraint
-
-Admin status colors (functional, not branding):
-
-| Meaning | Usage |
-|---------|-------|
-| Green `#10b981` | Success / completed |
-| Blue `#3b82f6` | In progress / active |
-| Amber `#f59e0b` | Pending / warning |
-| Red `#ef4444` | Failed / error |
-
-These are confined to pipeline dashboards, moderation queues, and data-viz surfaces.
+Removed 2026-08. `ThemeProvider` always reports light and strips persisted
+dark state; the `.dark` CSS block is gone; `dark:` utilities in components are
+inert and get deleted surface-by-surface in later phases.
 
 ## Enforcement
 
-All rules live in `eslint.config.js`:
-
-1. **Color literals** (error): blocks `#hex`, `rgb()`, `hsl()` literals in `src/` outside allowlisted files.
-2. **Rounded classes** (warn): blocks `rounded-(sm|md|lg|xl|2xl|3xl)`.
-3. **Shadow classes** (warn): blocks `shadow-(md|lg|xl|2xl)`.
-4. **Gradient classes** (warn): blocks `bg-gradient-to-*`.
-
-Admin/CMS/test files are excluded from all rules.
-
-## Files
-
-| Purpose | Path |
-|---------|------|
-| CSS tokens | `src/index.css` |
-| Tailwind config | `tailwind.config.ts` |
-| Animation tokens | `src/lib/animation.ts` |
-| Layout helpers | `src/lib/sx.ts` |
-| UI components | `src/components/ui/` (51 files) |
-| ESLint enforcement | `eslint.config.js` |
+- `tokenCatalog.test.ts` — catalog ↔ index.css drift (light-only model).
+- `tokenContrast.test.ts` — AA pairs, fill-only + border-gated track rules,
+  hue distance from destructive.
+- `e2e/design-system.spec.ts` — radius tokens, no shadow at rest + hard
+  shadow on `.card-lift` hover, Anton/Space Grotesk/no-Inter, sanctioned
+  saturated backgrounds (track colors + destructive only). The old border/line
+  budget was deleted — ink borders are the idiom now.
+- `eslint.config.js` — hex/rgb/hsl literals, chromatic Tailwind classes,
+  soft shadows, JSX gradients: unchanged and still errors.

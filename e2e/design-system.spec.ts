@@ -1,11 +1,12 @@
 import { test, expect } from '@playwright/test';
 
 /**
- * Design system enforcement tests.
+ * Design system enforcement tests (subway-map rebrand 2026-08).
  *
- * Verify the semantic 3-tier radius (see CLAUDE.md §Shape) and that public
- * pages only ever paint sanctioned brand ink (see the PASTE-UP guard below —
- * it replaced the old "at most 5 chromatic backgrounds" budget).
+ * Verify the semantic radius tokens (zeroed — squared corners), the hard-shadow
+ * rule (none at rest, hard ink shadow on .card-lift hover), fonts (Anton +
+ * Space Grotesk, no Inter), and that public pages only ever paint sanctioned
+ * color (paper/ink + the four track colors + destructive).
  *
  * Radius assertions resolve --radius-{container,element,badge} through a probe
  * element at runtime instead of hardcoding px. They used to assert 16/8/4
@@ -82,11 +83,25 @@ test.describe('design system: semantic radius (token-derived)', () => {
     expect(radius).toBe(await resolveRadius(page, '--radius-container'));
   });
 
-  test('cards have no box-shadow', async ({ page }) => {
+  test('cards have no box-shadow at rest', async ({ page }) => {
     const card = page.locator('.bg-card').first();
     await expect(card).toBeVisible();
     const shadow = await card.evaluate((el) => getComputedStyle(el).boxShadow);
     expect(shadow).toBe('none');
+  });
+
+  test('interactive cards lift with the hard ink shadow on hover', async ({ page }) => {
+    // Foundation ships the .card-lift utility; surfaces adopt it in the
+    // Public phase. Zero elements => explicit skip, never a vacuous pass.
+    const probe = page.locator('.card-lift, .card-lift-sm').first();
+    if ((await probe.count()) === 0) {
+      test.skip(true, 'no .card-lift on /events yet — wired in the Public phase');
+      return;
+    }
+    await probe.hover();
+    await page.waitForTimeout(200);
+    const shadow = await probe.evaluate((el) => getComputedStyle(el).boxShadow);
+    expect(shadow).toMatch(/[56]px [56]px 0(px)?/);
   });
 
   test('badges use --radius-badge', async ({ page }) => {
@@ -152,6 +167,45 @@ test.describe('design system: dialog', () => {
 });
 
 test.describe('design system: typography', () => {
+  test('Anton display + Space Grotesk body, no Inter', async ({ page }) => {
+    await page.goto('/');
+    await page.waitForSelector('#root *', { state: 'attached', timeout: 15_000 });
+    await dismissCookieBanner(page);
+
+    // This suite runs against PRODUCTION (playwright.config.ts baseURL), so on
+    // the PR that introduces the subway-map rebrand it necessarily runs against
+    // the previous build and would block the very deploy that makes it true.
+    // Gate on a token that exists only in the new system rather than skipping
+    // blind: once the build is live the assertions below arm automatically, and
+    // if the rebrand is ever reverted this reports a skip with the reason
+    // instead of silently passing.
+    const rebranded = await page.evaluate(
+      () => !!getComputedStyle(document.documentElement).getPropertyValue('--track-pink').trim(),
+    );
+    if (!rebranded) {
+      test.skip(true, 'production is still serving the pre-subway-map build (no --track-pink)');
+      return;
+    }
+
+    const fonts = await page.evaluate(() => ({
+      body: getComputedStyle(document.body).fontFamily,
+      display: getComputedStyle(document.documentElement).getPropertyValue('--font-display').trim(),
+    }));
+    expect(fonts.body.toLowerCase()).toContain('space grotesk');
+    expect(fonts.display.toLowerCase()).toContain('anton');
+    const hasInter = await page.evaluate(() => {
+      for (const sheet of Array.from(document.styleSheets)) {
+        try {
+          for (const rule of sheet.cssRules) {
+            if (rule instanceof CSSFontFaceRule && /inter/i.test(rule.style.getPropertyValue('font-family'))) return true;
+          }
+        } catch { /* cross-origin */ }
+      }
+      return false;
+    });
+    expect(hasInter).toBe(false);
+  });
+
   test('no Plus Jakarta Sans in font stack', async ({ page }) => {
     await page.goto('/');
     // Wait for the app to paint, not for the network to fall idle. These guards
@@ -193,12 +247,13 @@ test.describe('design system: typography', () => {
  * at runtime — and then requires EVERY saturated background on the page to be
  * one of those values. The numeric budget is gone: one unsanctioned hue fails.
  *
- * The allowlist is the three PASTE-UP drums plus --destructive. It deliberately
+ * The allowlist is the four track colors (plus their deprecated PASTE-UP
+ * aliases, which resolve to the same values) plus --destructive. It deliberately
  * does NOT include the locked functional palettes (trip-safety traffic light,
  * equality scale, map layers) because none of them render on these four routes;
  * if one ever does, add it here explicitly rather than widening the tolerance.
  */
-const SANCTIONED_TOKENS = ['spot', 'ink-blue', 'ink-over', 'destructive'];
+const SANCTIONED_TOKENS = ['track-pink', 'track-blue', 'track-green', 'track-yellow', 'spot', 'ink-blue', 'ink-over', 'destructive'];
 
 test.describe('design system: sanctioned ink only', () => {
   // /news excluded — news cards may have category images with chromatic content
@@ -332,170 +387,9 @@ test.describe('design system: sanctioned ink only', () => {
   }
 });
 
-/**
- * PASTE-UP border budget.
- *
- * The rebrand replaced outlines with filled ink plates, and then drifted back to
- * 150 bordered elements on a single city page because nothing measured it.
- *
- * Computed border width is the signal, not the class name: it catches a border
- * however it arrives (utility, `divide-y`, inline style, a stylesheet) and it
- * ignores the `border-<color>`-without-width classes that the `@layer base`
- * reset in src/index.css already neutralises. Fully transparent borders are
- * skipped too — `scroll-area` and `switch` use them purely as spacing.
- *
- * Route choice is load-bearing. `/`, `/news`, `/places` and `/marketplace` all
- * report 2-8 and would have declared this fixed while the city page sat at 150;
- * they simply had not loaded much content. Measure a dense page, and confirm it
- * actually rendered before believing the number.
- */
-test.describe('design system: border budget', () => {
-  // Survivors, by design: `.rule-heavy` band rules and the masthead's 2px rule
-  // (the rationed PASTE-UP signature) plus the spinner, which is drawn WITH a
-  // border rather than wearing one. Focus rings use `outline`, so they are
-  // outside this check by construction.
-  const ALLOWED = /rule-heavy|border-b-2 border-foreground|animate-spin/;
-  const BUDGET = 6;
-
-  /**
-   * Two routes, because route choice already fooled this suite once: the guard
-   * passed at 4 on /city/new-york while /cities sat at 830. A single sample is
-   * not evidence about a design system that repeats per row.
-   *
-   * `/cities` is the list-shaped page — its budget is separate because its
-   * survivors are different (sticky headers, the masthead) and because a list
-   * regressing to one hairline per row is the exact failure this catches.
-   */
-  const ROUTES: { path: string; budget: number }[] = [
-    { path: '/city/new-york', budget: BUDGET },
-    { path: '/cities', budget: 12 },
-  ];
-
-  test('/city/new-york paints almost no borders', async ({ page }) => {
-    await page.setViewportSize({ width: 1440, height: 1400 });
-    await page.goto('/city/new-york', { waitUntil: 'domcontentloaded' });
-    await page.waitForSelector('#root *', { state: 'attached', timeout: 20_000 });
-    await dismissCookieBanner(page);
-
-    // Wait for CONTENT. `#root *` attaches when the header mounts; a count
-    // taken then measures the chrome and misses the entire page.
-    let last = -1;
-    for (let i = 0; i < 30; i++) {
-      const n = await page.evaluate(() => document.body.innerText.trim().length);
-      if (n > 1500 && n === last) break;
-      last = n;
-      await page.waitForTimeout(500);
-    }
-
-    const result = await page.evaluate(() => {
-      const offenders: string[] = [];
-      for (const el of document.querySelectorAll('#root *, header *, footer *')) {
-        const cs = getComputedStyle(el);
-        const visible = ['Top', 'Right', 'Bottom', 'Left'].some((s) => {
-          if ((parseFloat(cs[`border${s}Width` as keyof CSSStyleDeclaration] as string) || 0) <= 0)
-            return false;
-          const c = (cs[`border${s}Color` as keyof CSSStyleDeclaration] as string) || '';
-          const m = c.match(/^rgba?\([^)]*?,\s*([\d.]+)\s*\)$/);
-          if (m && Number(m[1]) === 0) return false;
-          return c !== 'transparent';
-        });
-        if (!visible) continue;
-        const r = el.getBoundingClientRect();
-        if (r.width < 8 || r.height < 8) continue;
-        offenders.push(el.getAttribute('class') || `<${el.tagName.toLowerCase()}>`);
-      }
-      return { offenders, bodyText: document.body.innerText.trim().length };
-    });
-
-    expect(
-      result.bodyText,
-      'the page never rendered its content, so this count proves nothing',
-    ).toBeGreaterThan(1500);
-
-    const unexpected = result.offenders.filter((c) => !ALLOWED.test(c));
-    expect(
-      unexpected.length,
-      `${unexpected.length} bordered elements on /city/new-york (budget ${BUDGET}). ` +
-        'Borders were replaced by ink plates — use bg-surface-container* instead.\n' +
-        unexpected.map((c) => `  ${c.slice(0, 110)}`).join('\n'),
-    ).toBeLessThanOrEqual(BUDGET);
-  });
-
-  /**
-   * The border check above measures `border*Width` and skips anything under 8px
-   * in either dimension. A divider IS a sub-8px element, so the most common rule
-   * pattern in this tree — a thin filled div, `h-px bg-border` — was invisible
-   * to it, and so was `divide-y` painting through `> * + *` onto short rows.
-   *
-   * That blind spot let the site sit at 5,336 painted lines while this suite was
-   * green at 4. This test closes it: a line is a line whether it arrives as a
-   * border or as a 1px-tall filled box.
-   */
-  for (const { path, budget } of ROUTES) {
-    test(`${path} paints almost no LINES (borders + thin fills)`, async ({ page }) => {
-      await page.setViewportSize({ width: 1440, height: 1400 });
-      await page.goto(path, { waitUntil: 'domcontentloaded' });
-      await page.waitForSelector('#root *', { state: 'attached', timeout: 20_000 });
-      await dismissCookieBanner(page);
-
-      let last = -1;
-      for (let i = 0; i < 30; i++) {
-        const n = await page.evaluate(() => document.body.innerText.trim().length);
-        if (n > 1500 && n === last) break;
-        last = n;
-        await page.waitForTimeout(500);
-      }
-
-      const result = await page.evaluate(() => {
-        const opaque = (c: string) => {
-          if (!c || c === 'transparent') return false;
-          const m = c.match(/^rgba?\(([^)]*)\)$/);
-          if (!m) return true;
-          const p = m[1].split(',').map((s) => parseFloat(s));
-          return p.length < 4 || p[3] > 0.02;
-        };
-        const offenders: string[] = [];
-        for (const el of document.querySelectorAll('#root *, header *, footer *')) {
-          const cs = getComputedStyle(el);
-          if (cs.display === 'none' || cs.visibility === 'hidden' || cs.opacity === '0') continue;
-          const r = el.getBoundingClientRect();
-          if (r.width === 0 || r.height === 0) continue;
-          const cls = el.getAttribute('class') || `<${el.tagName.toLowerCase()}>`;
-
-          const bordered = ['Top', 'Right', 'Bottom', 'Left'].some((s) => {
-            const w =
-              parseFloat(cs[`border${s}Width` as keyof CSSStyleDeclaration] as string) || 0;
-            if (w <= 0) return false;
-            return opaque((cs[`border${s}Color` as keyof CSSStyleDeclaration] as string) || '');
-          });
-          // No 8px floor here — that floor is exactly what hid the dividers.
-          if (bordered) {
-            offenders.push(cls);
-            continue;
-          }
-          // A thin filled box IS a rule: `h-px bg-border`, `w-px bg-foreground`.
-          const thin = (r.height <= 4 && r.width >= 12) || (r.width <= 4 && r.height >= 12);
-          if (thin && opaque(cs.backgroundColor)) offenders.push(cls);
-        }
-        return { offenders, bodyText: document.body.innerText.trim().length };
-      });
-
-      expect(
-        result.bodyText,
-        'the page never rendered its content, so this count proves nothing',
-      ).toBeGreaterThan(1500);
-
-      const unexpected = result.offenders.filter((c) => !ALLOWED.test(c));
-      expect(
-        unexpected.length,
-        `${unexpected.length} painted lines on ${path} (budget ${budget}). ` +
-          'A line counts however it is drawn — border, divide-y, or a thin filled ' +
-          'div. Use a plate (bg-surface-container*) or spacing instead.\n' +
-          unexpected.map((c) => `  ${c.slice(0, 110)}`).join('\n'),
-      ).toBeLessThanOrEqual(budget);
-    });
-  }
-});
+/* The PASTE-UP border/line budget was DELETED with the subway-map rebrand:
+   3px ink borders are now the system's core idiom (every card, button and
+   board row wears one), so a border count is no longer a smell metric. */
 
 test.describe('design system: visual snapshots', () => {
   test('homepage above fold', async ({ page }) => {
@@ -522,7 +416,12 @@ test.describe('design system: visual snapshots', () => {
   test('events card grid', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 900 });
     await page.goto('/events');
-    await page.waitForLoadState('networkidle');
+    // NOT networkidle: this file's own guards were rewritten off it because
+    // 500ms of zero requests never arrives on pages with maps, lazy images and
+    // analytics — these two screenshots were the last callers, and they timed
+    // out under --update-snapshots, so their baselines silently stayed on the
+    // pre-rebrand design while home/trips regenerated.
+    await page.waitForSelector('#root *', { state: 'attached', timeout: 20_000 });
     await dismissCookieBanner(page);
     await page.waitForTimeout(500);
     // Events grid is data-driven (the hourly pipeline rotates cards daily —
@@ -537,7 +436,12 @@ test.describe('design system: visual snapshots', () => {
   test('venues card grid', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 900 });
     await page.goto('/venues');
-    await page.waitForLoadState('networkidle');
+    // NOT networkidle: this file's own guards were rewritten off it because
+    // 500ms of zero requests never arrives on pages with maps, lazy images and
+    // analytics — these two screenshots were the last callers, and they timed
+    // out under --update-snapshots, so their baselines silently stayed on the
+    // pre-rebrand design while home/trips regenerated.
+    await page.waitForSelector('#root *', { state: 'attached', timeout: 20_000 });
     await dismissCookieBanner(page);
     await page.waitForTimeout(500);
     // Venues grid is data-driven (recent listings shuffle hard between

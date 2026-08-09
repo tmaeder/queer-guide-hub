@@ -144,8 +144,8 @@
     <!-- Fonts: self-hosted (no external CDN) — see src/index.css @font-face.
          Preload the two latin variable files (body + display) so headings
          don't late-swap; latin-ext/italic variants stay lazy. -->
-    <link rel="preload" href="/fonts/inter/inter-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="/fonts/space-grotesk/space-grotesk-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/fonts/anton/anton-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
 
     <!-- Resource Hints: image CDN (entity photos are served/resized here).
          The former Mapbox preconnects were stale — maps use maplibre + protomaps. -->
@@ -154,9 +154,9 @@
 
     <!-- PWA Manifest & Meta -->
     <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#0a0a0a" media="(prefers-color-scheme: dark)">
-    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#FAFAF5">
     <link rel="apple-touch-icon" sizes="180x180" href="/icons/icon-180.png">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-48.png">
     <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
     <meta name="application-name" content="Queer Guide">
@@ -196,22 +196,16 @@
     <link rel="apple-touch-startup-image" href="/icons/splash/apple-splash-2048x2732.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
     <link rel="apple-touch-startup-image" href="/icons/splash/apple-splash-2732x2048.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
 
-    <!-- Sync theme before paint. Reads the same localStorage key the
-         ThemeProvider uses and applies the .light/.dark class to <html>
-         immediately, so the first paint matches the user's saved choice.
-         Without this the page rendered as light first, then flipped to
-         dark when React hydrated. -->
+    <!-- Dark mode removed 2026-08 (subway-map rebrand: fixed paper/ink
+         identity). Strip any persisted dark class before paint so a
+         returning dark-mode user gets the light poster immediately. -->
     <script>
       (function () {
         try {
-          var saved = localStorage.getItem('ui-theme');
-          var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-          var resolved = saved === 'dark' || saved === 'light'
-            ? saved
-            : (prefersDark ? 'dark' : 'light');
-          document.documentElement.classList.remove('light', 'dark');
-          document.documentElement.classList.add(resolved);
-        } catch (e) { /* private mode or no localStorage — fall back to light */ }
+          document.documentElement.classList.remove('dark');
+          document.documentElement.classList.add('light');
+          localStorage.removeItem('ui-theme');
+        } catch (e) { /* private mode — fine */ }
       })();
     </script>
 
