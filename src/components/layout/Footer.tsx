@@ -159,7 +159,13 @@ export function Footer() {
                 {t(link.labelKey, link.fallback)}
               </LocalizedLink>
             ))}
-            <span className="text-13 text-background/60">&copy; {currentYear}</span>
+            {/* The spec's bottom row ends on a bare "© 2026". The site name is
+                kept here because the footer is the only place it appears as
+                text once the header wordmark became a graphic — dropping it
+                left the page with no machine-readable owner. */}
+            <span className="text-13 text-background/60">
+              &copy; {currentYear} Queer Guide
+            </span>
           </div>
         </div>
         <div className="mx-auto flex w-full max-w-7xl flex-wrap items-center gap-2 px-4 pb-5 sm:px-6 md:px-8">
