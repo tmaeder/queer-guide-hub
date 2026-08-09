@@ -3,6 +3,7 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { ChevronLeft } from 'lucide-react';
 import { BookNowAccordion } from '@/components/travel/BookNowAccordion';
 import { useTripBookingContext } from '@/hooks/useTripBookingContext';
+import { useMeta } from '@/hooks/useMeta';
 
 /**
  * Dedicated booking surface, extracted from /travel in v2.
@@ -12,6 +13,17 @@ import { useTripBookingContext } from '@/hooks/useTripBookingContext';
 export default function Book() {
   const { t } = useTranslation();
   const tripBookingContext = useTripBookingContext();
+
+  // This page had no useMeta at all, so it kept the homepage title through both
+  // the edge pass AND the React render — the only intent child that failed on
+  // both. Must match STATIC_ROUTE_META['/travel/book'].
+  useMeta({
+    title: 'Book LGBTQ+ Friendly Flights, Stays and Tours',
+    description:
+      'Book the pieces of a queer trip — flights, stays, transfers and activities — with the legal and safety picture for the destination alongside.',
+    canonicalPath: '/travel/book',
+  });
+
   return (
     <div className="container mx-auto max-w-screen-xl px-4 py-8 md:py-12">
       <nav aria-label="Breadcrumb" className="mb-4 text-sm">

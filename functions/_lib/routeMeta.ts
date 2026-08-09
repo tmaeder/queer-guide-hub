@@ -269,6 +269,52 @@ export const STATIC_ROUTE_META: Record<string, RouteMeta> = {
     description:
       'Connect with the Queer Guide community: the shared feed, local groups, and members near you or at your destination.',
   },
+  // The three community tabs are the outbound links in /people's own crawler
+  // body (routeBody.ts), and all three fell through to DEFAULT_META — so the
+  // /people fix pointed Googlebot at three URLs that each served the homepage
+  // title. `resolveMeta` is an exact match; a parent entry does not cover
+  // children.
+  '/community/groups': {
+    title: 'LGBTQ+ Groups to Join — Local and Interest',
+    description:
+      'Local and interest-based LGBTQ+ groups you can join, from book clubs and hiking to professional networks and peer support.',
+  },
+  '/community/feed': {
+    title: 'Community Feed — What Queer People Are Posting',
+    description:
+      'What the Queer Guide community is posting right now: recommendations, questions, meet-ups and news from members worldwide.',
+  },
+  '/community/members': {
+    title: 'Browse LGBTQ+ Community Members',
+    description:
+      'Browse the members who have chosen to be listed on Queer Guide, with the interests, pronouns and cities they have shared.',
+  },
+  // /community/friends is the signed-in friends list. Same class as /hub — a
+  // personal surface with nothing public to render — so it is noindexed in
+  // isIndexable() below rather than given meta.
+  '/travel/book': {
+    title: 'Book LGBTQ+ Friendly Flights, Stays and Tours',
+    description:
+      'Book the pieces of a queer trip — flights, stays, transfers and activities — with the legal and safety picture for the destination alongside.',
+  },
+  // The remaining three targets of STATIC_ROUTE_BODY links that resolved to
+  // DEFAULT_META. A crawler body exists to give the bot somewhere to go next;
+  // sending it to three pages titled like the homepage defeats the point.
+  '/trips/discover': {
+    title: 'Public LGBTQ+ Trip Itineraries to Copy',
+    description:
+      'Trip itineraries shared by the community: day-by-day plans for Pride weekends and longer queer trips, ready to copy and adapt.',
+  },
+  '/marketplace/categories': {
+    title: 'Shop LGBTQ+ Products by Category',
+    description:
+      'Every marketplace category in one place — books, apparel, art, home, beauty and gifts made for and about the LGBTQ+ community.',
+  },
+  '/wishlists': {
+    title: 'LGBTQ+ Gift Wishlists to Share',
+    description:
+      'Build and share a wishlist of queer books, apparel, art and gifts, so the people buying for you know what you actually want.',
+  },
 };
 
 const TITLE_SUFFIX = ' | Queer Guide';
@@ -356,6 +402,13 @@ export function isIndexable(pathname: string): boolean {
     // is the one that carries the content. Per the note above, none of these
     // may be added to ROUTES in scripts/seo-check.mjs (verified: they are not).
     /^\/people\/(friends|dating|travel|nearby)(\/|$)/,
+    // The signed-in friends list. Nothing public to render, same class as /hub.
+    /^\/community\/friends(\/|$)/,
+    // `/shop/*` is a React `Navigate` to /marketplace with no edge redirect, so
+    // every path under it returned 200 + the homepage title + the generic
+    // fallback body — an unbounded indexable URL space. `/shop` itself stays
+    // indexable and is excluded by the negative lookahead.
+    /^\/shop\/.+/,
   ];
   return !noindex.some((r) => r.test(pathname));
 }
