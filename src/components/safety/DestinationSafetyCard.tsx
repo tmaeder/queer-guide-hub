@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { ChevronRight } from 'lucide-react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
-import { useTripSafety } from '@/hooks/useTripSafety';
+import { useTripSafety, worstCountryOf } from '@/hooks/useTripSafety';
 import { useRiskVisual, type OverallRisk } from '@/hooks/useRiskVisual';
 
 const HEADLINE: Record<OverallRisk, string> = {
@@ -35,9 +35,13 @@ export function DestinationSafetyCard({ countryIds, className }: Props) {
 
   const Icon = visual.Icon;
 
-  const worst = [...report.countries].sort(
-    (a, b) => (a.equality_score ?? 100) - (b.equality_score ?? 100),
-  )[0];
+  // Ranked by verdict, not score. Sorting on `equality_score ?? 100` put every
+  // unmeasured country LAST, so it could never be picked as the worst — and
+  // the sentences below NAME this country, meaning a criminalising destination
+  // with no score could be silently swapped for another inside a sentence
+  // about the death penalty.
+  const worst = worstCountryOf(report.countries);
+  if (!worst) return null;
 
   const subtext = report.hasDeathPenaltyDestination
     ? `Same-sex activity can carry the death penalty in ${worst.name}. Read the safety briefing before you travel.`

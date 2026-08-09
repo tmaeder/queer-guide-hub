@@ -13,7 +13,7 @@ import { useTranslation } from 'react-i18next';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { useTripSafety, type TripSafetyReport } from '@/hooks/useTripSafety';
+import { useTripSafety, worstCountryOf, type TripSafetyReport } from '@/hooks/useTripSafety';
 import { useRiskVisual } from '@/hooks/useRiskVisual';
 import { TripNewsSection } from './TripNewsSection';
 import { AiSafetyNarrativeCard } from './AiSafetyNarrativeCard';
@@ -111,11 +111,9 @@ function RiskSnapshot({ report }: { report: TripSafetyReport }) {
   const visual = useRiskVisual(report.overallRisk);
   const Icon = visual.Icon;
 
-  const worstCountry = useMemo(() => {
-    return [...report.countries].sort(
-      (a, b) => (a.equality_score ?? 100) - (b.equality_score ?? 100),
-    )[0];
-  }, [report.countries]);
+  // Ranked by verdict, not score: `equality_score ?? 100` sorted every
+  // unmeasured country last, so it could never be named as the worst leg.
+  const worstCountry = useMemo(() => worstCountryOf(report.countries), [report.countries]);
 
   return (
     <div className="p-2.5 md:p-4 mb-4" style={{ backgroundColor: visual.bg }}>

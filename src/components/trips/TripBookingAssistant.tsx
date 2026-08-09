@@ -154,7 +154,8 @@ export function TripBookingAssistant({ tripId, places, _days, startDate, endDate
   const existingVenueIds = new Set(places.filter((p) => p.venue_id).map((p) => p.venue_id));
 
   const unsafeCities = (cities || []).filter(
-    (c) => c.countries?.equality_score != null && (c.countries?.equality_score ?? 100) < 40,
+    // `?? 100` here was unreachable — the != null guard already ran.
+    (c) => c.countries?.equality_score != null && c.countries.equality_score < 40,
   );
 
   const handleAddVenue = async (venue: {
