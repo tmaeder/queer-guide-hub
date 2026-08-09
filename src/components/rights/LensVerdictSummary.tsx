@@ -83,13 +83,21 @@ export function LensVerdictSummary({
         {t('rights.lens.title', 'Who the law protects')}
       </p>
 
-      <ul className="list-none p-0 m-0">
+      {/*
+        A plate, not ruled rows. Borders were replaced by ink plates in the
+        monochrome refactor, and /city/:slug carries a hard budget of 6 painted
+        lines (e2e/design-system.spec.ts) which counts a border, a divide-y and
+        a thin filled div alike. Three `border-b` rows here took it to 8 — the
+        same mistake CompareRightsSideBySide had. Separation is the tonal step
+        plus spacing.
+      */}
+      <ul className="list-none p-0 m-0 rounded-container bg-surface-container">
         {LENS_ORDER.map((lens) => {
           const v = profile[lens];
           return (
             <li
               key={lens}
-              className="flex items-baseline justify-between gap-4 border-b border-border py-2 last:border-b-0"
+              className="flex items-baseline justify-between gap-4 px-4 py-2 first:pt-4 last:pb-4"
             >
               <span className="text-13">{t(`rights.lens.${lens}`, LENS_LABEL[lens])}</span>
               <span className={`shrink-0 text-13 ${verdictClass(v.verdict)}`}>
