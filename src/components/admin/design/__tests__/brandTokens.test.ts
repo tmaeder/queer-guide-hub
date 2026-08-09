@@ -33,11 +33,13 @@ describe('brand token API composer', () => {
   });
 
   it('renders a :root + .dark stylesheet', () => {
+    // .dark still renders in the /brand/tokens.css API for backward compat —
+    // its values mirror light since the subway-map rebrand removed dark mode.
     const css = tokensToCss(resolveTokens(null));
     expect(css).toContain(':root {');
     expect(css).toContain('.dark {');
-    expect(css).toContain('--background: 0 0% 100%;');
-    expect(css).toContain('--radius-container: 0.5rem;');
+    expect(css).toContain('--background: 60 33% 97%;');
+    expect(css).toContain('--radius-container: 0rem;');
   });
 
   it('produces structured JSON with color + global sections', () => {
