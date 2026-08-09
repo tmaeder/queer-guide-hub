@@ -416,7 +416,12 @@ test.describe('design system: visual snapshots', () => {
   test('events card grid', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 900 });
     await page.goto('/events');
-    await page.waitForLoadState('networkidle');
+    // NOT networkidle: this file's own guards were rewritten off it because
+    // 500ms of zero requests never arrives on pages with maps, lazy images and
+    // analytics — these two screenshots were the last callers, and they timed
+    // out under --update-snapshots, so their baselines silently stayed on the
+    // pre-rebrand design while home/trips regenerated.
+    await page.waitForSelector('#root *', { state: 'attached', timeout: 20_000 });
     await dismissCookieBanner(page);
     await page.waitForTimeout(500);
     // Events grid is data-driven (the hourly pipeline rotates cards daily —
@@ -431,7 +436,12 @@ test.describe('design system: visual snapshots', () => {
   test('venues card grid', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 900 });
     await page.goto('/venues');
-    await page.waitForLoadState('networkidle');
+    // NOT networkidle: this file's own guards were rewritten off it because
+    // 500ms of zero requests never arrives on pages with maps, lazy images and
+    // analytics — these two screenshots were the last callers, and they timed
+    // out under --update-snapshots, so their baselines silently stayed on the
+    // pre-rebrand design while home/trips regenerated.
+    await page.waitForSelector('#root *', { state: 'attached', timeout: 20_000 });
     await dismissCookieBanner(page);
     await page.waitForTimeout(500);
     // Venues grid is data-driven (recent listings shuffle hard between
