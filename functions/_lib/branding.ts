@@ -58,9 +58,12 @@ const COLOR_KEYS = new Set([
   'muted', 'muted-foreground', 'accent', 'accent-foreground',
   'destructive', 'destructive-foreground', 'warning', 'warning-foreground',
   'success', 'success-foreground', 'spot', 'spot-foreground',
-  // PASTE-UP inks (2nd + 3rd drums). `ink-pink` is absent by design — it is a
-  // @theme alias of `spot`, so overriding `spot` moves both.
+  // PASTE-UP inks (deprecated aliases of the track colors). `ink-pink` is
+  // absent by design — it is a @theme alias of `spot`, so overriding `spot`
+  // moves both.
   'ink-blue', 'ink-blue-foreground', 'ink-over', 'ink-over-foreground',
+  // Subway-map track colors (semantic wayfinding lines, 2026-08 rebrand).
+  'track-pink', 'track-blue', 'track-green', 'track-yellow',
   'border', 'input', 'input-bg', 'ring',
   'sidebar-background', 'sidebar-foreground', 'sidebar-primary', 'sidebar-primary-foreground',
   'sidebar-accent', 'sidebar-accent-foreground', 'sidebar-border', 'sidebar-ring',
@@ -97,8 +100,8 @@ const FONT_SLOTS = ['display', 'sans'] as const;
 // Stock fallback stacks (src/index.css @theme) — custom family is PREPENDED, so
 // a failed webfont still renders these.
 const FONT_FALLBACK: Record<(typeof FONT_SLOTS)[number], string> = {
-  display: "'Space Grotesk', 'Inter', system-ui, sans-serif",
-  sans: "'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+  display: "'Anton', 'Space Grotesk', system-ui, sans-serif",
+  sans: "'Space Grotesk', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
 };
 
 type ValidFontFile = { url: string; weight: string; style: string };
