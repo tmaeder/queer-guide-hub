@@ -34,16 +34,18 @@
 @source inline("rounded-{t,b,l,r,tl,tr,bl,br}-{container,element,badge}");
 @source inline("{,hover:,dark:}{text,bg,border}-text-{primary,secondary,muted}");
 @source inline("{,dark:}border-border-hairline");
-/* PASTE-UP inks. P0 ships the system with no consumers yet, so without this
-   safelist Tailwind purges every ink utility and the plate classes below
-   would resolve to nothing the moment P1 starts using them. */
+/* PASTE-UP inks (deprecated aliases) + subway-map track colors. Safelisted
+   so the utilities exist before consumers do — Tailwind would otherwise
+   purge them and the transit primitives would resolve to nothing. */
 @source inline("{,hover:,focus:,group-hover:,dark:}{bg,text,decoration}-ink-{pink,blue,over}");
 @source inline("{,dark:}{bg,text}-ink-{pink,blue,over}-foreground");
+@source inline("{,hover:,focus:,group-hover:}{bg,text,border,decoration}-track-{pink,blue,green,yellow}");
+@source inline("shadow-{hard,hard-sm}");
 
 @theme {
   /* ── Font families ─────────────────────────────────────────────── */
-  --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --font-display: 'Space Grotesk', 'Inter', system-ui, sans-serif;
+  --font-sans: 'Space Grotesk', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-display: 'Anton', 'Space Grotesk', system-ui, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
 
   /* ── Custom font sizes ─────────────────────────────────────────── */
@@ -61,9 +63,10 @@
   /* ── Editorial type scale — hero / display / headline tokens ──────
      Added 2026-05-20 (UI audit P5 sub-PR 1) to replace recurring
      `text-[NNrem]` arbitrary values across About.tsx + Index.tsx +
-     SharedTripPage.tsx. Re-tuned 2026-07-26 (PHOTOCOPY rebrand):
-     heroes up + sub-1.0 leading, title down — wider jumps between
-     levels. Mirror any change in tokenCatalog.ts (drift test).
+     SharedTripPage.tsx. Re-tuned 2026-08-09 (subway-map rebrand):
+     Anton display ladder 96/76/52/32/20 px, ratios 1.26/1.46/1.63/1.60
+     — all adjacent ranks ≥1.25x. Mirror any change in tokenCatalog.ts
+     (drift test).
 
      `--text-headline-lg` (2rem) was REMOVED 2026-08-04. It sat 1.14x from
      --text-headline (32px vs 28px) — under the ~1.2x a reader resolves as a
@@ -76,14 +79,14 @@
      pair is resolvable. --text-body-lg deliberately stays 1.06x from the base
      size: it is a reading-comfort bump for long-form prose, not a heading
      rank, and widening it would only make body copy large. */
-  --text-hero-xl: 7rem;
+  --text-hero-xl: 6rem;
   --text-hero-xl--line-height: 0.95;
   --text-hero: 4.75rem;
-  --text-hero--line-height: 1;
-  --text-display: 2.75rem;
-  --text-display--line-height: 1.05;
-  --text-headline: 1.75rem;
-  --text-headline--line-height: 1.2;
+  --text-hero--line-height: 0.98;
+  --text-display: 3.25rem;
+  --text-display--line-height: 1.02;
+  --text-headline: 2rem;
+  --text-headline--line-height: 1.15;
   --text-title: 1.25rem;
   --text-title--line-height: 1.4;
   --text-body-lg: 1.0625rem;
@@ -105,10 +108,10 @@
      scope, fighting via CSS last-wins. Scoped variants are now expressed
      via class selectors below (.admin-shell, .sensitive-controls). */
   --radius-none: 0;
-  --radius-container: 0.5rem; /* 8px — Bento grids, large cards, hero blocks */
-  --radius-element: 0.25rem; /* 4px — buttons, inputs, list rows, nested cards */
-  --radius-badge: 0rem; /* 0px — tags, chips, status pills, metadata */
-  --radius-full: 9999px;
+  --radius-container: 0rem; /* squared — subway-map identity */
+  --radius-element: 0rem; /* squared */
+  --radius-badge: 0rem; /* squared */
+  --radius-full: 9999px; /* circles ONLY: station rings, route bullets, avatars, dots */
 
   /* ── Colors — CSS-variable-based monochrome ────────────────────── */
   --color-border: hsl(var(--border));
@@ -132,7 +135,13 @@
   --color-spot: hsl(var(--spot));
   --color-spot-foreground: hsl(var(--spot-foreground));
 
-  /* ── PASTE-UP inks ───────────────────────────────────────────────
+  /* ── Track colors — subway-map wayfinding lines ─────────────────── */
+  --color-track-pink: hsl(var(--track-pink));
+  --color-track-blue: hsl(var(--track-blue));
+  --color-track-green: hsl(var(--track-green));
+  --color-track-yellow: hsl(var(--track-yellow));
+
+  /* ── DEPRECATED PASTE-UP ink aliases (now point at track values) ──
      `ink-pink` is an ALIAS of --spot, not a second declaration: one value,
      one runtime override in /admin/design, no drift. That also keeps it out
      of tokenCatalog's COLOR_TOKENS (which would otherwise assert a second
@@ -161,8 +170,7 @@
   --color-border-hairline: hsl(var(--border-hairline));
 
   /* ── Surface elevation ladder (monochrome depth, no shadows) ─────
-     Light mode steps up via darker grays; dark mode steps up via
-     lighter grays. Defined in :root / .dark blocks below. */
+     Paper-tinted neutral steps, defined in :root below. */
   --color-surface: hsl(var(--surface));
   --color-surface-container-lowest: hsl(var(--surface-container-lowest));
   --color-surface-container-low: hsl(var(--surface-container-low));
@@ -181,67 +189,47 @@
   --color-sidebar-border: hsl(var(--sidebar-border));
   --color-sidebar-ring: hsl(var(--sidebar-ring));
 
-  /* ── Box shadow — disabled per design system (border-only depth).
-     Shadows removed 2026-05-21 (P1 normalize). Use `border` or
-     `bg-muted` for depth cues. */
+  /* ── Box shadow — hard poster shadows (subway-map rebrand 2026-08).
+     Soft elevation shadows stay banned; the ONLY sanctioned shadows are
+     the hard-edged ink offsets below (flat print shadow, no blur),
+     applied via .card-lift on interactive surfaces. */
   --shadow-none: none;
   --shadow-hairline: 0 1px 0 hsl(var(--border));
+  --shadow-hard: 6px 6px 0 hsl(var(--foreground));
+  --shadow-hard-sm: 5px 5px 0 hsl(var(--foreground));
+  --shadow-hard-accent: 6px 6px 0 hsl(var(--track-pink));
 }
 
-/* ── Self-hosted fonts (Inter only) ───────────────────────────────────
-   Plus Jakarta Sans was removed during the strict-monochrome overhaul
-   (refactor/bw-design-system). Inter ships in 4 woff2 files (latin/ext
-   × upright/italic), variable weight 100–900. */
+/* ── Self-hosted fonts (subway-map rebrand 2026-08) ──────────────────
+   Anton = display/wordmark (single weight 400, upright only). Space
+   Grotesk = body + UI (variable 300–700). Inter removed. */
 
 @font-face {
-  font-family: 'Inter';
+  font-family: 'Anton';
   font-style: normal;
-  font-weight: 100 900;
+  font-weight: 400;
   font-display: swap;
-  src: url('/fonts/inter/inter-latin-wght-normal.woff2') format('woff2');
+  src: url('/fonts/anton/anton-latin-wght-normal.woff2') format('woff2');
   unicode-range:
     U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
     U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
 @font-face {
-  font-family: 'Inter';
+  font-family: 'Anton';
   font-style: normal;
-  font-weight: 100 900;
+  font-weight: 400;
   font-display: swap;
-  src: url('/fonts/inter/inter-latin-ext-wght-normal.woff2') format('woff2');
+  src: url('/fonts/anton/anton-latin-ext-wght-normal.woff2') format('woff2');
   unicode-range:
     U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329,
     U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F,
     U+A720-A7FF;
 }
 
-@font-face {
-  font-family: 'Inter';
-  font-style: italic;
-  font-weight: 100 900;
-  font-display: swap;
-  src: url('/fonts/inter/inter-latin-wght-italic.woff2') format('woff2');
-  unicode-range:
-    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
-    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-}
-
-@font-face {
-  font-family: 'Inter';
-  font-style: italic;
-  font-weight: 100 900;
-  font-display: swap;
-  src: url('/fonts/inter/inter-latin-ext-wght-italic.woff2') format('woff2');
-  unicode-range:
-    U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329,
-    U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F,
-    U+A720-A7FF;
-}
-
-/* ── Self-hosted Space Grotesk — display face for heroes + large headings.
-   Variable weight 300–700, upright only (no italic). Body/UI stays Inter.
-   Wired via --font-display; applied to h1/h2 + .font-display below. */
+/* ── Self-hosted Space Grotesk — body + UI face (was display-only).
+   Variable weight 300–700, upright only (no italic). 400 for reading,
+   700 for station names (nav items, card titles). */
 
 @font-face {
   font-family: 'Space Grotesk';
@@ -266,11 +254,10 @@
     U+A720-A7FF;
 }
 
-/* ── CSS Variables — Strict Monochrome (Black & White only) ──────────
-   Only neutrals + a single semantic destructive red. The --cat-* family
-   are aliased to --foreground as documented placeholders for any future
-   admin chromatic palette (see CLAUDE.md). New code MUST use
-   --foreground or --primary directly. */
+/* ── CSS Variables — Subway-map identity (paper/ink + 4 track colors) ──
+   Paper #FAFAF5 + ink #111, plus four SEMANTIC track colors (wayfinding
+   lines, one accent per context) and the destructive red. Light-only:
+   dark mode was removed 2026-08 (fixed poster identity). */
 
 :root {
   /* Bump this integer to force a new stylesheet content hash — the deploy-only
@@ -281,26 +268,26 @@
      index-BWI3mGiS.css to index-Bt7ko9Qm.css. */
   --asset-rev: 1;
 
-  --background: 0 0% 100%;
-  --foreground: 0 0% 4%;
+  --background: 60 33% 97%;
+  --foreground: 0 0% 7%;
 
-  --card: 0 0% 100%;
-  --card-foreground: 0 0% 4%;
+  --card: 60 33% 97%;
+  --card-foreground: 0 0% 7%;
 
-  --popover: 0 0% 100%;
-  --popover-foreground: 0 0% 4%;
+  --popover: 60 33% 97%;
+  --popover-foreground: 0 0% 7%;
 
-  --primary: 0 0% 4%;
-  --primary-foreground: 0 0% 100%;
+  --primary: 0 0% 7%;
+  --primary-foreground: 60 33% 97%;
 
-  --secondary: 0 0% 4%;
-  --secondary-foreground: 0 0% 100%;
+  --secondary: 0 0% 7%;
+  --secondary-foreground: 60 33% 97%;
 
-  --muted: 0 0% 96%;
-  --muted-foreground: 0 0% 35%;
+  --muted: 60 9% 93%;
+  --muted-foreground: 0 0% 33%;
 
-  --accent: 0 0% 96%;
-  --accent-foreground: 0 0% 4%;
+  --accent: 60 9% 93%;
+  --accent-foreground: 0 0% 7%;
 
   /* Sole permitted hue: error semantics. `--warning` was a literal duplicate of
      this until 2026-07-27, so 22 caution states shouted in the same red as hard
@@ -311,74 +298,53 @@
      --destructive-foreground to near-black in dark instead. Darkening the red
      to fix the button broke the text case in reverse — see #2366. */
   --destructive: 0 70% 38%;
-  --destructive-foreground: 0 0% 100%;
-  --warning: 0 0% 4%;
-  --warning-foreground: 0 0% 100%;
+  --destructive-foreground: 60 33% 97%;
+  --warning: 0 0% 7%;
+  --warning-foreground: 60 33% 97%;
 
   /* Success / info collapse to neutral foreground — differentiated by icon + label, not color. */
-  --success: 0 0% 4%;
-  --success-foreground: 0 0% 100%;
+  --success: 0 0% 7%;
+  --success-foreground: 60 33% 97%;
 
-  /* Riso spot ink. NON-SEMANTIC BY CONSTRUCTION: red means danger, spot means
-     nothing — it is brand ink on wayfinding marks only (::selection, focus ring,
-     active-nav underline, inline-link hover). It must never encode state, never
-     appear as small text, and never reach /help, /safety, /report-*, the
-     trip-safety briefing, the equality scale or any risk badge. That is what
-     keeps it from competing with the danger signal.
+  /* ── Track colors — SEMANTIC wayfinding lines (subway-map rebrand).
+     One accent per context. FILL-ONLY: never body text. Filled shapes
+     carry a 2-3px ink border (that border is the WCAG 1.4.11 story for
+     yellow, which cannot clear 3:1 against paper on its own).
+     Text ON a fill: ink for blue/green/yellow, paper for pink
+     (paper-on-blue measures ~2.3:1 and is NOT used, deviating from the
+     source design mock on a11y grounds).
+     Track colors never reach /help, /safety, /report-*, the trip-safety
+     briefing, the equality scale or any risk badge — red stays the only
+     danger signal (all four hues sit >25° from hue 0). */
+  --track-pink: 330 100% 56%;
+  --track-blue: 193 100% 45%;
+  --track-green: 136 75% 52%;
+  --track-yellow: 50 100% 50%;
 
-     Re-measured 2026-08-04 when the ink went neon (was 330 95% 55%, 3.74:1):
-       vs page          3.50:1 light / 6.99:1 dark  — clears the 3:1 non-text
-                        bar for the focus ring, still fails AA as small text
-       spot-foreground  5.64:1 light / 6.99:1 dark  — ::selection stays readable
-     The focus ring and ::selection are the two consumers no automated gate
-     covers, so they are checked here by hand whenever this value moves. */
-  --spot: 330 100% 58%;
-  --spot-foreground: 0 0% 4%;
+  /* DEPRECATED aliases — old PASTE-UP ink names kept so existing bg-spot /
+     bg-ink-blue / bg-ink-over call sites keep rendering until the Public and
+     Admin phases retire them. Do not use in new code; use track-* tokens. */
+  --spot: 330 100% 56%;
+  --spot-foreground: 0 0% 7%;
+  --ink-blue: 193 100% 45%;
+  --ink-blue-foreground: 0 0% 7%;
+  --ink-over: 136 75% 52%;
+  --ink-over-foreground: 0 0% 7%;
 
-  /* ── PASTE-UP ink set ────────────────────────────────────────────
-     The second and third drums. `--spot` above is the first (fluorescent
-     pink) and is aliased as `--color-ink-pink` in @theme rather than
-     duplicated here, so the two can never drift apart.
+  /* Ink borders ARE the system: every rule, divider and card edge is ink. */
+  --border: 0 0% 7%;
+  --input: 0 0% 7%;
+  --input-bg: 60 33% 97%;
+  --ring: 330 100% 56%;
 
-     The whole `--spot` doctrine six lines up applies verbatim to these:
-     NON-SEMANTIC BY CONSTRUCTION. Ink is never a state, never a status,
-     never a risk signal, and never reaches /help, /safety, /report-*, the
-     trip-safety briefing, the equality scale or any risk badge. Red is the
-     only colour in this product that means something.
-
-     Every value below was measured with src/lib/wcagContrast.ts before it
-     was written, in both modes:
-       ink-blue  vs page  7.00 light / 5.54 dark   (WCAG 1.4.11 wants 3)
-       ink-over  vs page  7.22 light / 6.96 dark
-     Both are NON-TEXT tokens — they tint plates, never letterforms. Text
-     placed ON a plate uses the paired *-foreground, which flips by mode
-     because the inks themselves flip: on white paper blue and violet are
-     dark inks that take white type; on a black page they are light inks
-     that take black type. Measured: 6.41 / 5.54 (blue), 6.61 / 6.96 (over).
-
-     Pink keeps --spot-foreground (black type, 5.29 light / 6.61 dark) — it
-     is the one ink that is light in both modes. */
-  --ink-blue: 193 100% 38%;
-  --ink-blue-foreground: 0 0% 4%;
-  --ink-over: 280 100% 52%;
-  --ink-over-foreground: 0 0% 96%;
-
-  /* Shadows are disabled, so these 1px rules carry ALL structural depth. Kept at
-     exactly the lightest value clearing WCAG 1.4.11 (3:1 non-text) against this
-     mode's background — 58% = 3.04:1 on white; 59% drops to 2.94:1. */
-  --border: 0 0% 58%;
-  --input: 0 0% 58%;
-  --input-bg: 0 0% 100%;
-  --ring: 0 0% 4%;
-
-  --sidebar-background: 0 0% 100%;
-  --sidebar-foreground: 0 0% 4%;
-  --sidebar-primary: 0 0% 4%;
-  --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 0 0% 96%;
-  --sidebar-accent-foreground: 0 0% 4%;
-  --sidebar-border: 0 0% 58%;
-  --sidebar-ring: 0 0% 4%;
+  --sidebar-background: 60 33% 97%;
+  --sidebar-foreground: 0 0% 7%;
+  --sidebar-primary: 0 0% 7%;
+  --sidebar-primary-foreground: 60 33% 97%;
+  --sidebar-accent: 60 9% 93%;
+  --sidebar-accent-foreground: 0 0% 7%;
+  --sidebar-border: 0 0% 7%;
+  --sidebar-ring: 0 0% 7%;
 
   --radius: var(--radius-element);
 
@@ -386,21 +352,21 @@
      primary  = body, headings
      secondary = supporting copy
      muted    = captions, hints, disabled */
-  --text-primary: 0 0% 4%;
-  --text-secondary: 0 0% 32%;
-  --text-muted: 0 0% 45%;
-  --border-hairline: 0 0% 58%;
+  --text-primary: 0 0% 7%;
+  --text-secondary: 0 0% 30%;
+  --text-muted: 0 0% 40%;
+  --border-hairline: 0 0% 7%;
   --transition-smooth: all 0.18s cubic-bezier(0.22, 1, 0.36, 1);
 
-  /* Surface tonal layering (light) — five neutral steps. */
-  --surface: 0 0% 100%;
-  --surface-container-lowest: 0 0% 100%;
-  --surface-container-low: 0 0% 98%;
-  --surface-container: 0 0% 96%;
-  --surface-container-high: 0 0% 93%;
-  --surface-container-highest: 0 0% 90%;
-  --surface-dim: 0 0% 88%;
-  --inverse-surface: 0 0% 4%;
+  /* Surface tonal layering — paper-tinted neutral steps. */
+  --surface: 60 33% 97%;
+  --surface-container-lowest: 60 33% 97%;
+  --surface-container-low: 60 20% 95%;
+  --surface-container: 60 9% 93%;
+  --surface-container-high: 60 6% 90%;
+  --surface-container-highest: 60 4% 87%;
+  --surface-dim: 60 4% 85%;
+  --inverse-surface: 0 0% 7%;
 
   --z-dropdown: 50;
   --z-sticky: 100;
@@ -416,75 +382,10 @@
   --admin-content-min-h: 100dvh;
 }
 
-.dark {
-  --background: 0 0% 4%;
-  --foreground: 0 0% 96%;
-
-  --card: 0 0% 4%;
-  --card-foreground: 0 0% 96%;
-
-  --popover: 0 0% 7%;
-  --popover-foreground: 0 0% 96%;
-
-  --primary: 0 0% 96%;
-  --primary-foreground: 0 0% 4%;
-
-  --secondary: 0 0% 96%;
-  --secondary-foreground: 0 0% 4%;
-
-  --muted: 0 0% 12%;
-  --muted-foreground: 0 0% 68%;
-
-  --accent: 0 0% 12%;
-  --accent-foreground: 0 0% 96%;
-
-  --destructive: 0 84% 62%;
-  --destructive-foreground: 0 0% 4%;
-  --warning: 0 0% 96%;
-  --warning-foreground: 0 0% 4%;
-
-  --success: 0 0% 96%;
-  --success-foreground: 0 0% 4%;
-
-  --spot: 328 100% 68%;
-  --spot-foreground: 0 0% 4%;
-
-  /* PASTE-UP ink set — dark drums. The inks lighten and their type flips to
-     black; see the light-mode block for the measured ratios. */
-  --ink-blue: 186 100% 58%;
-  --ink-blue-foreground: 0 0% 4%;
-  --ink-over: 278 100% 70%;
-  --ink-over-foreground: 0 0% 4%;
-
-  --border: 0 0% 37%;
-  --input: 0 0% 37%;
-  --input-bg: 0 0% 7%;
-  --ring: 0 0% 96%;
-
-  --sidebar-background: 0 0% 4%;
-  --sidebar-foreground: 0 0% 96%;
-  --sidebar-primary: 0 0% 96%;
-  --sidebar-primary-foreground: 0 0% 4%;
-  --sidebar-accent: 0 0% 12%;
-  --sidebar-accent-foreground: 0 0% 96%;
-  --sidebar-border: 0 0% 37%;
-  --sidebar-ring: 0 0% 96%;
-
-  /* ── Semantic text hierarchy (dark) ──────────────────────────── */
-  --text-primary: 0 0% 96%;
-  --text-secondary: 0 0% 64%;
-  --text-muted: 0 0% 62%;
-  --border-hairline: 0 0% 37%;
-
-  --surface: 0 0% 4%;
-  --surface-container-lowest: 0 0% 2%;
-  --surface-container-low: 0 0% 6%;
-  --surface-container: 0 0% 9%;
-  --surface-container-high: 0 0% 12%;
-  --surface-container-highest: 0 0% 16%;
-  --surface-dim: 0 0% 8%;
-  --inverse-surface: 0 0% 96%;
-}
+/* Dark mode removed 2026-08 (subway-map rebrand): the identity is a fixed
+   paper/ink poster. The `.dark` override block is gone; `dark:` utilities in
+   components are inert because the class is never applied (they get stripped
+   surface-by-surface in the Public/Admin phases). */
 
 /* ── MapLibre popup theme (Aceternity card vibe) ───────────────────── */
 .maplibregl-popup-content {
@@ -1137,329 +1038,70 @@ h2,
 }
 
 /* ══════════════════════════════════════════════════════════════════════
-   PASTE-UP — the print layer
+   SUBWAY MAP — poster utilities
    ══════════════════════════════════════════════════════════════════════
 
    Everything below lives in the stylesheet on purpose. eslint.config.js
    scopes every design rule to `**​/*.{ts,tsx}` and matches `Literal` AST
-   nodes, so ESLint never parses this file — which is why the gradients,
-   masks and blend modes a print system needs can exist here without
-   touching the no-gradient / no-hex / no-shadow bans, and without adding
-   a single entry to their ~50-file `ignores` allowlist. Components only
-   ever apply a class name.
+   nodes, so ESLint never parses this file — components only ever apply a
+   class name. The old PASTE-UP print layer (plates, halftones, deckle,
+   duotone, paper grain) was removed 2026-08-09 with the subway-map
+   rebrand; its class names in components are inert no-ops until the
+   Public/Admin phases delete them. */
 
-   The system's one structural idea: depth is carried by a FILLED PLATE,
-   not by a 1px line and never by a shadow. See docs/design-system.
-   ══════════════════════════════════════════════════════════════════════ */
-
-/* ── Plates ────────────────────────────────────────────────────────────
-   The replacement for `border border-border`. A plate is a flat fill; its
-   edge is the tonal step against whatever it sits on, which is measured to
-   clear WCAG 1.4.11 (3:1 non-text) — strictly better than the 3.04:1 the
-   hairline manages today.
-
-   `border: 0` is belt-and-braces: the @layer base reset already zeroes
-   every border-width, so a leftover `border-border` colour utility on a
-   migrated component is inert rather than half-styled. */
-.plate {
-  background-color: hsl(var(--surface-container));
-  border: 0;
+/* ── Card lift ─────────────────────────────────────────────────────────
+   The interactive-card treatment: 3px ink border at rest; on hover/focus
+   the card translates up-left and casts a HARD ink shadow (flat poster
+   shadow, no blur). Never combine with a hover ink-fill on the same
+   element — a card fills ink or lifts, never both. */
+.card-lift {
+  border: 3px solid hsl(var(--foreground));
+  transition:
+    transform 120ms ease-out,
+    box-shadow 120ms ease-out;
 }
-/* `.plate-ink` / `.plate-blue` / `.plate-over` were removed 2026-08-04. They
-   had zero consumers and duplicated the `bg-ink-{pink,blue,over}` Tailwind
-   utilities, which DO have consumers (badge, button, checkbox, the homepage
-   CTA) and pair the matching `text-ink-*-foreground` automatically. Two
-   spellings of one plate is drift, not vocabulary — use the utilities. */
-
-/* ── Misregistration ───────────────────────────────────────────────────
-   A second plate, printed a few px off-register, snapping home on hover.
-   It is a real positioned element (::before), NOT a box-shadow — which is
-   both truer to the press (it IS another plate) and the reason
-   `e2e/design-system.spec.ts`'s `expect(boxShadow).toBe('none')` stays
-   green on every card.
-
-   `--plate-offset` and `--plate-offset-ink` are per-instance knobs so a
-   component can shift the amount or swap the drum without new CSS.
-
-   Goes on the card's WRAPPER, never the card itself: entity cards pass
-   `overflow-hidden` to clip their cover image to the radius, which would clip
-   the off-register plate out of existence. The wrapper is already the `group`
-   that drives card hover, so the two belong together anyway.
-
-   Depth is handled with `isolation: isolate` + `z-index: -1`, NOT by lifting
-   the children. Two traps closed at once:
-     - Without the isolate, `position: relative; z-index: auto` does not create
-       a stacking context, so a negative z escapes behind the nearest ancestor
-       that does — the page — and the plate never appears at all.
-     - The obvious alternative, `.plate-offset > * { position: relative }`,
-       would silently break every card. This rule is UNLAYERED, and unlayered
-       CSS beats Tailwind utilities regardless of specificity, so it would
-       override the `absolute inset-0` on each card's overlay click target and
-       drop the link into the flow.
-   With the isolate, ::before paints above the wrapper's own background and
-   below its in-flow content, and the children are left completely alone. */
-.plate-offset {
-  position: relative;
-  isolation: isolate;
-  --plate-offset: 6px;
-  --plate-offset-y: 6px;
-  --plate-rotate: 0deg;
-  --plate-offset-ink: var(--spot);
+.card-lift:hover,
+.card-lift:focus-visible,
+.card-lift:focus-within {
+  transform: translate(-3px, -3px);
+  box-shadow: var(--shadow-hard);
 }
-/* Registration drifts; it does not repeat. A fixed 6px on every card is a
-   transform, not a misprint — in a grid the identical offset reads as a UI
-   effect immediately. These four variants vary the offset on both axes and add
-   a fraction of a degree of rotation, so no two neighbouring cards are
-   off-register the same way.
-
-   Keyed on [data-plate], set from useId() in CardHoverEffect — NOT on
-   :nth-child. This wrapper is almost always the only child of its own link, so
-   every card is "child 1"; a sibling-index selector was measured collapsing six
-   cards onto one identical variant. A cycle of 4 is long enough that a 2-, 3-
-   or 4-across grid never lines up the same way twice. */
-.plate-offset[data-plate='0'] {
-  --plate-offset: 7px;
-  --plate-offset-y: 5px;
-  --plate-rotate: -0.35deg;
+.card-lift-sm {
+  border: 3px solid hsl(var(--foreground));
+  transition:
+    transform 120ms ease-out,
+    box-shadow 120ms ease-out;
 }
-.plate-offset[data-plate='1'] {
-  --plate-offset: 5px;
-  --plate-offset-y: 7px;
-  --plate-rotate: 0.28deg;
+.card-lift-sm:hover,
+.card-lift-sm:focus-visible {
+  transform: translate(-2px, -2px);
+  box-shadow: var(--shadow-hard-sm);
 }
-.plate-offset[data-plate='2'] {
-  --plate-offset: 6px;
-  --plate-offset-y: 8px;
-  --plate-rotate: 0.4deg;
-}
-.plate-offset[data-plate='3'] {
-  --plate-offset: 8px;
-  --plate-offset-y: 6px;
-  --plate-rotate: -0.22deg;
-}
-.plate-offset::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  border-radius: var(--radius-container);
-  background-color: hsl(var(--plate-offset-ink));
-  transform: translate(var(--plate-offset), var(--plate-offset-y)) rotate(var(--plate-rotate));
-  transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1);
-  pointer-events: none;
-}
-.plate-offset:hover::before,
-.plate-offset:focus-within::before {
-  transform: translate(0, 0) rotate(0deg);
+/* Live/urgent variant — the shadow prints in the accent instead of ink. */
+.card-lift-accent:hover,
+.card-lift-accent:focus-visible {
+  box-shadow: var(--shadow-hard-accent);
 }
 @media (prefers-reduced-motion: reduce) {
-  .plate-offset::before {
+  .card-lift,
+  .card-lift-sm {
     transition: none;
   }
 }
 
-/* ── Halftone screens ──────────────────────────────────────────────────
-   Dot screens, one per drum, COARSE on purpose.
-
-   The first version was 5-6px pitch with ~1.4px dots. At normal viewing
-   distance that is grey mush, not a dot screen — it read as noise rather than
-   as print. These are ~3x the pitch and ~3x the dot, so the screen is legible
-   AS a screen. Ink coverage is unchanged (27-29%), so the bands are no darker;
-   the dots are simply resolvable.
-
-   Real screen angles, and seamless — which the first version could not manage
-   and faked with jitter. A lattice of pitch p rotated by atan(b/a) maps onto
-   ITSELF with period p*sqrt(a^2+b^2), so a Pythagorean (3,4) gives 36.87deg and
-   (4,3) gives 53.13deg, each tiling exactly at 5p. Different pitch AND
-   different angle per drum is what stops them moiring.
-
-   MASKS, not background-images: a data-URI SVG is a separate document, so
-   hsl(var(--spot)) cannot resolve inside one. Colour in the SVG would hard-code
-   the inks and silently break dark mode and the /admin/design overrides.
-   Geometry here, colour on background-color.
-
-   OVERLAY-ONLY. A mask clips the element's children, so these belong on a
-   dedicated aria-hidden layer, never on a content box — and never put small
-   text over one: the dots halve the effective contrast above them. */
-.halftone-ink,
-.halftone-paper {
-  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='70' height='70' viewBox='0 0 70 70'%3E%3Cg fill='black'%3E%3Ccircle cx='47.60' cy='53.20' r='4.1'/%3E%3Ccircle cx='39.20' cy='64.40' r='4.1'/%3E%3Ccircle cx='30.80' cy='5.60' r='4.1'/%3E%3Ccircle cx='22.40' cy='16.80' r='4.1'/%3E%3Ccircle cx='14.00' cy='28.00' r='4.1'/%3E%3Ccircle cx='5.60' cy='39.20' r='4.1'/%3E%3Ccircle cx='67.20' cy='50.40' r='4.1'/%3E%3Ccircle cx='58.80' cy='61.60' r='4.1'/%3E%3Ccircle cx='50.40' cy='2.80' r='4.1'/%3E%3Ccircle cx='42.00' cy='14.00' r='4.1'/%3E%3Ccircle cx='33.60' cy='25.20' r='4.1'/%3E%3Ccircle cx='25.20' cy='36.40' r='4.1'/%3E%3Ccircle cx='16.80' cy='47.60' r='4.1'/%3E%3Ccircle cx='8.40' cy='58.80' r='4.1'/%3E%3Ccircle cx='0.00' cy='70.00' r='4.1'/%3E%3Ccircle cx='61.60' cy='11.20' r='4.1'/%3E%3Ccircle cx='53.20' cy='22.40' r='4.1'/%3E%3Ccircle cx='44.80' cy='33.60' r='4.1'/%3E%3Ccircle cx='36.40' cy='44.80' r='4.1'/%3E%3Ccircle cx='28.00' cy='56.00' r='4.1'/%3E%3Ccircle cx='19.60' cy='67.20' r='4.1'/%3E%3Ccircle cx='11.20' cy='8.40' r='4.1'/%3E%3Ccircle cx='2.80' cy='19.60' r='4.1'/%3E%3Ccircle cx='64.40' cy='30.80' r='4.1'/%3E%3Ccircle cx='0.00' cy='0.00' r='4.1'/%3E%3Ccircle cx='56.00' cy='42.00' r='4.1'/%3E%3Ccircle cx='70.00' cy='70.00' r='4.1'/%3E%3Ccircle cx='70.00' cy='0.00' r='4.1'/%3E%3Ccircle cx='-2.80' cy='50.40' r='4.1'/%3E%3Ccircle cx='50.40' cy='72.80' r='4.1'/%3E%3Ccircle cx='70.00' cy='70.00' r='4.1'/%3E%3Ccircle cx='0.00' cy='-0.00' r='4.1'/%3E%3Ccircle cx='70.00' cy='-0.00' r='4.1'/%3E%3Ccircle cx='19.60' cy='-2.80' r='4.1'/%3E%3Ccircle cx='72.80' cy='19.60' r='4.1'/%3E%3Ccircle cx='70.00' cy='0.00' r='4.1'/%3E%3Ccircle cx='0.00' cy='70.00' r='4.1'/%3E%3Ccircle cx='70.00' cy='70.00' r='4.1'/%3E%3Ccircle cx='-0.00' cy='70.00' r='4.1'/%3E%3Ccircle cx='70.00' cy='-0.00' r='4.1'/%3E%3Ccircle cx='-0.00' cy='-0.00' r='4.1'/%3E%3Ccircle cx='-0.00' cy='0.00' r='4.1'/%3E%3Ccircle cx='70.00' cy='70.00' r='4.1'/%3E%3Ccircle cx='-0.00' cy='70.00' r='4.1'/%3E%3C/g%3E%3C/svg%3E");
-  mask-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='70' height='70' viewBox='0 0 70 70'%3E%3Cg fill='black'%3E%3Ccircle cx='47.60' cy='53.20' r='4.1'/%3E%3Ccircle cx='39.20' cy='64.40' r='4.1'/%3E%3Ccircle cx='30.80' cy='5.60' r='4.1'/%3E%3Ccircle cx='22.40' cy='16.80' r='4.1'/%3E%3Ccircle cx='14.00' cy='28.00' r='4.1'/%3E%3Ccircle cx='5.60' cy='39.20' r='4.1'/%3E%3Ccircle cx='67.20' cy='50.40' r='4.1'/%3E%3Ccircle cx='58.80' cy='61.60' r='4.1'/%3E%3Ccircle cx='50.40' cy='2.80' r='4.1'/%3E%3Ccircle cx='42.00' cy='14.00' r='4.1'/%3E%3Ccircle cx='33.60' cy='25.20' r='4.1'/%3E%3Ccircle cx='25.20' cy='36.40' r='4.1'/%3E%3Ccircle cx='16.80' cy='47.60' r='4.1'/%3E%3Ccircle cx='8.40' cy='58.80' r='4.1'/%3E%3Ccircle cx='0.00' cy='70.00' r='4.1'/%3E%3Ccircle cx='61.60' cy='11.20' r='4.1'/%3E%3Ccircle cx='53.20' cy='22.40' r='4.1'/%3E%3Ccircle cx='44.80' cy='33.60' r='4.1'/%3E%3Ccircle cx='36.40' cy='44.80' r='4.1'/%3E%3Ccircle cx='28.00' cy='56.00' r='4.1'/%3E%3Ccircle cx='19.60' cy='67.20' r='4.1'/%3E%3Ccircle cx='11.20' cy='8.40' r='4.1'/%3E%3Ccircle cx='2.80' cy='19.60' r='4.1'/%3E%3Ccircle cx='64.40' cy='30.80' r='4.1'/%3E%3Ccircle cx='0.00' cy='0.00' r='4.1'/%3E%3Ccircle cx='56.00' cy='42.00' r='4.1'/%3E%3Ccircle cx='70.00' cy='70.00' r='4.1'/%3E%3Ccircle cx='70.00' cy='0.00' r='4.1'/%3E%3Ccircle cx='-2.80' cy='50.40' r='4.1'/%3E%3Ccircle cx='50.40' cy='72.80' r='4.1'/%3E%3Ccircle cx='70.00' cy='70.00' r='4.1'/%3E%3Ccircle cx='0.00' cy='-0.00' r='4.1'/%3E%3Ccircle cx='70.00' cy='-0.00' r='4.1'/%3E%3Ccircle cx='19.60' cy='-2.80' r='4.1'/%3E%3Ccircle cx='72.80' cy='19.60' r='4.1'/%3E%3Ccircle cx='70.00' cy='0.00' r='4.1'/%3E%3Ccircle cx='0.00' cy='70.00' r='4.1'/%3E%3Ccircle cx='70.00' cy='70.00' r='4.1'/%3E%3Ccircle cx='-0.00' cy='70.00' r='4.1'/%3E%3Ccircle cx='70.00' cy='-0.00' r='4.1'/%3E%3Ccircle cx='-0.00' cy='-0.00' r='4.1'/%3E%3Ccircle cx='-0.00' cy='0.00' r='4.1'/%3E%3Ccircle cx='70.00' cy='70.00' r='4.1'/%3E%3Ccircle cx='-0.00' cy='70.00' r='4.1'/%3E%3C/g%3E%3C/svg%3E");
-  -webkit-mask-size: 70px 70px;
-  mask-size: 70px 70px;
-  -webkit-mask-repeat: repeat;
-  mask-repeat: repeat;
+/* ── Intersection gradient ─────────────────────────────────────────────
+   The ONLY sanctioned multicolor gradient: where tracks meet, colors
+   blend. Master symbol backdrops + moments of convergence only — never a
+   background wash, never under text. */
+.intersection-gradient {
+  background: linear-gradient(
+    90deg,
+    hsl(var(--track-pink)),
+    hsl(var(--track-blue)) 38%,
+    hsl(var(--track-green)) 70%,
+    hsl(var(--track-yellow))
+  );
 }
-.halftone-pink {
-  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Cg fill='black'%3E%3Ccircle cx='25.60' cy='60.80' r='4.9'/%3E%3Ccircle cx='12.80' cy='70.40' r='4.9'/%3E%3Ccircle cx='80.00' cy='0.00' r='4.9'/%3E%3Ccircle cx='67.20' cy='9.60' r='4.9'/%3E%3Ccircle cx='54.40' cy='19.20' r='4.9'/%3E%3Ccircle cx='41.60' cy='28.80' r='4.9'/%3E%3Ccircle cx='28.80' cy='38.40' r='4.9'/%3E%3Ccircle cx='16.00' cy='48.00' r='4.9'/%3E%3Ccircle cx='3.20' cy='57.60' r='4.9'/%3E%3Ccircle cx='70.40' cy='67.20' r='4.9'/%3E%3Ccircle cx='57.60' cy='76.80' r='4.9'/%3E%3Ccircle cx='44.80' cy='6.40' r='4.9'/%3E%3Ccircle cx='32.00' cy='16.00' r='4.9'/%3E%3Ccircle cx='19.20' cy='25.60' r='4.9'/%3E%3Ccircle cx='6.40' cy='35.20' r='4.9'/%3E%3Ccircle cx='73.60' cy='44.80' r='4.9'/%3E%3Ccircle cx='60.80' cy='54.40' r='4.9'/%3E%3Ccircle cx='35.20' cy='73.60' r='4.9'/%3E%3Ccircle cx='22.40' cy='3.20' r='4.9'/%3E%3Ccircle cx='9.60' cy='12.80' r='4.9'/%3E%3Ccircle cx='76.80' cy='22.40' r='4.9'/%3E%3Ccircle cx='64.00' cy='32.00' r='4.9'/%3E%3Ccircle cx='51.20' cy='41.60' r='4.9'/%3E%3Ccircle cx='38.40' cy='51.20' r='4.9'/%3E%3Ccircle cx='48.00' cy='64.00' r='4.9'/%3E%3Ccircle cx='0.00' cy='0.00' r='4.9'/%3E%3Ccircle cx='80.00' cy='80.00' r='4.9'/%3E%3Ccircle cx='0.00' cy='80.00' r='4.9'/%3E%3Ccircle cx='-0.00' cy='0.00' r='4.9'/%3E%3Ccircle cx='80.00' cy='80.00' r='4.9'/%3E%3Ccircle cx='-0.00' cy='80.00' r='4.9'/%3E%3Ccircle cx='83.20' cy='57.60' r='4.9'/%3E%3Ccircle cx='57.60' cy='-3.20' r='4.9'/%3E%3Ccircle cx='22.40' cy='83.20' r='4.9'/%3E%3Ccircle cx='-3.20' cy='22.40' r='4.9'/%3E%3Ccircle cx='80.00' cy='0.00' r='4.9'/%3E%3Ccircle cx='0.00' cy='80.00' r='4.9'/%3E%3Ccircle cx='80.00' cy='80.00' r='4.9'/%3E%3Ccircle cx='-0.00' cy='80.00' r='4.9'/%3E%3Ccircle cx='80.00' cy='-0.00' r='4.9'/%3E%3Ccircle cx='-0.00' cy='-0.00' r='4.9'/%3E%3Ccircle cx='80.00' cy='80.00' r='4.9'/%3E%3Ccircle cx='0.00' cy='-0.00' r='4.9'/%3E%3Ccircle cx='80.00' cy='-0.00' r='4.9'/%3E%3C/g%3E%3C/svg%3E");
-  mask-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Cg fill='black'%3E%3Ccircle cx='25.60' cy='60.80' r='4.9'/%3E%3Ccircle cx='12.80' cy='70.40' r='4.9'/%3E%3Ccircle cx='80.00' cy='0.00' r='4.9'/%3E%3Ccircle cx='67.20' cy='9.60' r='4.9'/%3E%3Ccircle cx='54.40' cy='19.20' r='4.9'/%3E%3Ccircle cx='41.60' cy='28.80' r='4.9'/%3E%3Ccircle cx='28.80' cy='38.40' r='4.9'/%3E%3Ccircle cx='16.00' cy='48.00' r='4.9'/%3E%3Ccircle cx='3.20' cy='57.60' r='4.9'/%3E%3Ccircle cx='70.40' cy='67.20' r='4.9'/%3E%3Ccircle cx='57.60' cy='76.80' r='4.9'/%3E%3Ccircle cx='44.80' cy='6.40' r='4.9'/%3E%3Ccircle cx='32.00' cy='16.00' r='4.9'/%3E%3Ccircle cx='19.20' cy='25.60' r='4.9'/%3E%3Ccircle cx='6.40' cy='35.20' r='4.9'/%3E%3Ccircle cx='73.60' cy='44.80' r='4.9'/%3E%3Ccircle cx='60.80' cy='54.40' r='4.9'/%3E%3Ccircle cx='35.20' cy='73.60' r='4.9'/%3E%3Ccircle cx='22.40' cy='3.20' r='4.9'/%3E%3Ccircle cx='9.60' cy='12.80' r='4.9'/%3E%3Ccircle cx='76.80' cy='22.40' r='4.9'/%3E%3Ccircle cx='64.00' cy='32.00' r='4.9'/%3E%3Ccircle cx='51.20' cy='41.60' r='4.9'/%3E%3Ccircle cx='38.40' cy='51.20' r='4.9'/%3E%3Ccircle cx='48.00' cy='64.00' r='4.9'/%3E%3Ccircle cx='0.00' cy='0.00' r='4.9'/%3E%3Ccircle cx='80.00' cy='80.00' r='4.9'/%3E%3Ccircle cx='0.00' cy='80.00' r='4.9'/%3E%3Ccircle cx='-0.00' cy='0.00' r='4.9'/%3E%3Ccircle cx='80.00' cy='80.00' r='4.9'/%3E%3Ccircle cx='-0.00' cy='80.00' r='4.9'/%3E%3Ccircle cx='83.20' cy='57.60' r='4.9'/%3E%3Ccircle cx='57.60' cy='-3.20' r='4.9'/%3E%3Ccircle cx='22.40' cy='83.20' r='4.9'/%3E%3Ccircle cx='-3.20' cy='22.40' r='4.9'/%3E%3Ccircle cx='80.00' cy='0.00' r='4.9'/%3E%3Ccircle cx='0.00' cy='80.00' r='4.9'/%3E%3Ccircle cx='80.00' cy='80.00' r='4.9'/%3E%3Ccircle cx='-0.00' cy='80.00' r='4.9'/%3E%3Ccircle cx='80.00' cy='-0.00' r='4.9'/%3E%3Ccircle cx='-0.00' cy='-0.00' r='4.9'/%3E%3Ccircle cx='80.00' cy='80.00' r='4.9'/%3E%3Ccircle cx='0.00' cy='-0.00' r='4.9'/%3E%3Ccircle cx='80.00' cy='-0.00' r='4.9'/%3E%3C/g%3E%3C/svg%3E");
-  -webkit-mask-size: 80px 80px;
-  mask-size: 80px 80px;
-  -webkit-mask-repeat: repeat;
-  mask-repeat: repeat;
-  background-color: hsl(var(--spot) / 0.5);
-}
-.halftone-blue {
-  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='90' height='90' viewBox='0 0 90 90'%3E%3Cg fill='black'%3E%3Ccircle cx='61.20' cy='68.40' r='5.4'/%3E%3Ccircle cx='50.40' cy='82.80' r='5.4'/%3E%3Ccircle cx='39.60' cy='7.20' r='5.4'/%3E%3Ccircle cx='28.80' cy='21.60' r='5.4'/%3E%3Ccircle cx='18.00' cy='36.00' r='5.4'/%3E%3Ccircle cx='7.20' cy='50.40' r='5.4'/%3E%3Ccircle cx='86.40' cy='64.80' r='5.4'/%3E%3Ccircle cx='75.60' cy='79.20' r='5.4'/%3E%3Ccircle cx='64.80' cy='3.60' r='5.4'/%3E%3Ccircle cx='54.00' cy='18.00' r='5.4'/%3E%3Ccircle cx='43.20' cy='32.40' r='5.4'/%3E%3Ccircle cx='32.40' cy='46.80' r='5.4'/%3E%3Ccircle cx='21.60' cy='61.20' r='5.4'/%3E%3Ccircle cx='10.80' cy='75.60' r='5.4'/%3E%3Ccircle cx='0.00' cy='90.00' r='5.4'/%3E%3Ccircle cx='79.20' cy='14.40' r='5.4'/%3E%3Ccircle cx='68.40' cy='28.80' r='5.4'/%3E%3Ccircle cx='57.60' cy='43.20' r='5.4'/%3E%3Ccircle cx='46.80' cy='57.60' r='5.4'/%3E%3Ccircle cx='36.00' cy='72.00' r='5.4'/%3E%3Ccircle cx='25.20' cy='86.40' r='5.4'/%3E%3Ccircle cx='14.40' cy='10.80' r='5.4'/%3E%3Ccircle cx='3.60' cy='25.20' r='5.4'/%3E%3Ccircle cx='82.80' cy='39.60' r='5.4'/%3E%3Ccircle cx='0.00' cy='0.00' r='5.4'/%3E%3Ccircle cx='72.00' cy='54.00' r='5.4'/%3E%3Ccircle cx='90.00' cy='90.00' r='5.4'/%3E%3Ccircle cx='90.00' cy='0.00' r='5.4'/%3E%3Ccircle cx='-3.60' cy='64.80' r='5.4'/%3E%3Ccircle cx='64.80' cy='93.60' r='5.4'/%3E%3Ccircle cx='90.00' cy='90.00' r='5.4'/%3E%3Ccircle cx='0.00' cy='-0.00' r='5.4'/%3E%3Ccircle cx='90.00' cy='-0.00' r='5.4'/%3E%3Ccircle cx='25.20' cy='-3.60' r='5.4'/%3E%3Ccircle cx='93.60' cy='25.20' r='5.4'/%3E%3Ccircle cx='90.00' cy='0.00' r='5.4'/%3E%3Ccircle cx='0.00' cy='90.00' r='5.4'/%3E%3Ccircle cx='90.00' cy='90.00' r='5.4'/%3E%3Ccircle cx='-0.00' cy='90.00' r='5.4'/%3E%3Ccircle cx='90.00' cy='-0.00' r='5.4'/%3E%3Ccircle cx='-0.00' cy='-0.00' r='5.4'/%3E%3Ccircle cx='-0.00' cy='0.00' r='5.4'/%3E%3Ccircle cx='90.00' cy='90.00' r='5.4'/%3E%3Ccircle cx='-0.00' cy='90.00' r='5.4'/%3E%3C/g%3E%3C/svg%3E");
-  mask-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='90' height='90' viewBox='0 0 90 90'%3E%3Cg fill='black'%3E%3Ccircle cx='61.20' cy='68.40' r='5.4'/%3E%3Ccircle cx='50.40' cy='82.80' r='5.4'/%3E%3Ccircle cx='39.60' cy='7.20' r='5.4'/%3E%3Ccircle cx='28.80' cy='21.60' r='5.4'/%3E%3Ccircle cx='18.00' cy='36.00' r='5.4'/%3E%3Ccircle cx='7.20' cy='50.40' r='5.4'/%3E%3Ccircle cx='86.40' cy='64.80' r='5.4'/%3E%3Ccircle cx='75.60' cy='79.20' r='5.4'/%3E%3Ccircle cx='64.80' cy='3.60' r='5.4'/%3E%3Ccircle cx='54.00' cy='18.00' r='5.4'/%3E%3Ccircle cx='43.20' cy='32.40' r='5.4'/%3E%3Ccircle cx='32.40' cy='46.80' r='5.4'/%3E%3Ccircle cx='21.60' cy='61.20' r='5.4'/%3E%3Ccircle cx='10.80' cy='75.60' r='5.4'/%3E%3Ccircle cx='0.00' cy='90.00' r='5.4'/%3E%3Ccircle cx='79.20' cy='14.40' r='5.4'/%3E%3Ccircle cx='68.40' cy='28.80' r='5.4'/%3E%3Ccircle cx='57.60' cy='43.20' r='5.4'/%3E%3Ccircle cx='46.80' cy='57.60' r='5.4'/%3E%3Ccircle cx='36.00' cy='72.00' r='5.4'/%3E%3Ccircle cx='25.20' cy='86.40' r='5.4'/%3E%3Ccircle cx='14.40' cy='10.80' r='5.4'/%3E%3Ccircle cx='3.60' cy='25.20' r='5.4'/%3E%3Ccircle cx='82.80' cy='39.60' r='5.4'/%3E%3Ccircle cx='0.00' cy='0.00' r='5.4'/%3E%3Ccircle cx='72.00' cy='54.00' r='5.4'/%3E%3Ccircle cx='90.00' cy='90.00' r='5.4'/%3E%3Ccircle cx='90.00' cy='0.00' r='5.4'/%3E%3Ccircle cx='-3.60' cy='64.80' r='5.4'/%3E%3Ccircle cx='64.80' cy='93.60' r='5.4'/%3E%3Ccircle cx='90.00' cy='90.00' r='5.4'/%3E%3Ccircle cx='0.00' cy='-0.00' r='5.4'/%3E%3Ccircle cx='90.00' cy='-0.00' r='5.4'/%3E%3Ccircle cx='25.20' cy='-3.60' r='5.4'/%3E%3Ccircle cx='93.60' cy='25.20' r='5.4'/%3E%3Ccircle cx='90.00' cy='0.00' r='5.4'/%3E%3Ccircle cx='0.00' cy='90.00' r='5.4'/%3E%3Ccircle cx='90.00' cy='90.00' r='5.4'/%3E%3Ccircle cx='-0.00' cy='90.00' r='5.4'/%3E%3Ccircle cx='90.00' cy='-0.00' r='5.4'/%3E%3Ccircle cx='-0.00' cy='-0.00' r='5.4'/%3E%3Ccircle cx='-0.00' cy='0.00' r='5.4'/%3E%3Ccircle cx='90.00' cy='90.00' r='5.4'/%3E%3Ccircle cx='-0.00' cy='90.00' r='5.4'/%3E%3C/g%3E%3C/svg%3E");
-  -webkit-mask-size: 90px 90px;
-  mask-size: 90px 90px;
-  -webkit-mask-repeat: repeat;
-  mask-repeat: repeat;
-  background-color: hsl(var(--ink-blue) / 0.45);
-}
-.halftone-ink {
-  background-color: hsl(var(--foreground) / 0.24);
-}
-.dark .halftone-ink {
-  background-color: hsl(var(--foreground) / 0.18);
-}
-/* For INVERTED surfaces (an ink flood, e.g. the homepage CTA band). There the
-   screen is the paper showing through the ink, so the dots are --background.
-   `.halftone-ink` would be foreground-on-foreground and render nothing. */
-.halftone-paper {
-  background-color: hsl(var(--background) / 0.20);
-}
-
-/* ── Paper ─────────────────────────────────────────────────────────────
-   ONE layer: a fine 200×200 / 2-octave turbulence at a heavier alpha than
-   .bg-noise (0.06 → 0.13). Grain is a substrate — it should be felt, not seen.
-
-   A second "fibre" layer was tried here (400×400 tile, baseFrequency 0.035) on
-   the theory that paper has two scales. Screenshotted, it was plainly wrong: at
-   that wavelength the noise stops reading as stock and reads as dirt — large
-   soft grey blotches drifting across every page, which is worse than no texture
-   at all. Removed. The long-wavelength interest belongs to the halftone screens,
-   which are structured; unstructured noise at that scale is just a stain.
-
-   Keep this cheap regardless. The note this replaces records that 3 octaves at
-   300×300 was tried and reverted, because octaves are the expensive axis on a
-   full-viewport `fixed inset-0` layer covering every pixel of every page. */
-.paper-grain {
-  background-image:
-    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='p'><feTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.13 0'/></filter><rect width='100%' height='100%' filter='url(%23p)'/></svg>");
-}
-.dark .paper-grain {
-  background-image:
-    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='p'><feTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.10 0'/></filter><rect width='100%' height='100%' filter='url(%23p)'/></svg>");
-}
-
-/* ── Overprint ─────────────────────────────────────────────────────────
-   Where two plates overlap, the inks combine for real.
-
-   The blend mode flips by theme because the physics does. On white paper
-   ink SUBTRACTS light, so overlapping plates multiply — pink over blue
-   composites to a deep indigo (measured 15.7:1 against the page). On a
-   black page there is no paper to absorb anything and the inks read as
-   emitted light, so they screen; multiplying there collapses to 2.0:1
-   against the background, which fails WCAG 1.4.11 outright.
-
-   DECORATIVE ONLY. The composite is whatever the two drums produce, so it
-   is not a measured value — never place text on an .overprint region. Use
-   `bg-ink-over` (--ink-over, measured, with its paired foreground) when you
-   want the third colour under type. */
-.overprint {
-  mix-blend-mode: multiply;
-}
-.dark .overprint {
-  mix-blend-mode: screen;
-}
-
-/* For an INK FLOOD — a band that is dark regardless of theme, like the homepage
-   CTA. `.overprint` keys off the THEME, but the physics keys off the local
-   backdrop: on a flooded black band in LIGHT mode, multiply drives every ink to
-   black, so the second drum renders as muddy maroon instead of neon. Measured
-   from a screenshot, not reasoned about — the dots were visibly dead.
-
-   There is no paper under a flood, so the ink reads as emitted light and
-   screens, in both themes. Same relationship `.halftone-paper` has to
-   `.halftone-ink`: an inverted-surface counterpart, not a variant. */
-.overprint-flood {
-  mix-blend-mode: screen;
-}
-
-/* ── Deckle ────────────────────────────────────────────────────────────
-   Torn edge for full-bleed band boundaries, so a section ends like a piece of
-   paper rather than like a div. Masked, not clipped, so text inside is
-   untouched by the geometry.
-
-   The tear is a straight edge pushed around by fractal noise
-   (feTurbulence -> feDisplacementMap), which is genuinely irregular at every
-   scale. The previous version was a hand-authored zig-zag whose vertices sat
-   on a strict 60px grid alternating high/low — a regular saw-tooth, not a tear.
-
-   It also tiles horizontally at its intrinsic 240px instead of being stretched.
-   The old `mask-size: 100% 100%` on a 1200px source meant the teeth got
-   proportionally wider and flatter as the viewport grew, so the same band tore
-   differently on a phone and on a desktop. Repeating keeps the tear the same
-   physical size everywhere, which is how paper behaves.
-
-   TWO mask layers, and the first one is load-bearing. A mask hides everything
-   the mask does not cover, so a lone 24px-tall repeat-x tear masks away the
-   entire element below 24px — on a tall band that is the whole content. Layer 1
-   is an opaque rectangle covering everything except the bottom 23px; layer 2 is
-   the tear, pinned to the bottom edge. The 23-vs-24 overlap is deliberate: a
-   1px seam between the two layers renders as a hairline gap. */
-.deckle-bottom {
-  -webkit-mask-image:
-    linear-gradient(#000, #000),
-    url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='24'%3E%3Cfilter id='t' x='-20%25' y='-20%25' width='140%25' height='140%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.04 0.9' numOctaves='3' seed='11' stitchTiles='stitch' result='n'/%3E%3CfeDisplacementMap in='SourceGraphic' in2='n' scale='9' xChannelSelector='R' yChannelSelector='G'/%3E%3C/filter%3E%3Crect x='-4' y='0' width='248' height='15' fill='black' filter='url(%23t)'/%3E%3C/svg%3E");
-  mask-image:
-    linear-gradient(#000, #000),
-    url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='24'%3E%3Cfilter id='t' x='-20%25' y='-20%25' width='140%25' height='140%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.04 0.9' numOctaves='3' seed='11' stitchTiles='stitch' result='n'/%3E%3CfeDisplacementMap in='SourceGraphic' in2='n' scale='9' xChannelSelector='R' yChannelSelector='G'/%3E%3C/filter%3E%3Crect x='-4' y='0' width='248' height='15' fill='black' filter='url(%23t)'/%3E%3C/svg%3E");
-  -webkit-mask-size:
-    100% calc(100% - 23px),
-    240px 24px;
-  mask-size:
-    100% calc(100% - 23px),
-    240px 24px;
-  -webkit-mask-position:
-    top left,
-    bottom left;
-  mask-position:
-    top left,
-    bottom left;
-  -webkit-mask-repeat: no-repeat, repeat-x;
-  mask-repeat: no-repeat, repeat-x;
-}
-
-/* ── Duotone ───────────────────────────────────────────────────────────
-   Two-drum separation of a photograph: shadows take the ink, highlights
-   take the paper. Applied ONLY through <Image treatment="riso">, which is
-   opt-in and off by default — src/components/ui/Image.tsx documents a
-   deliberate decision that entity imagery renders in full colour, and
-   flattening every portrait on an LGBTQ+ platform has a real
-   representational cost. Heroes and editorial bands only. */
-.duotone-riso {
-  position: relative;
-  isolation: isolate;
-}
-.duotone-riso > img {
-  filter: grayscale(1) contrast(1.18) brightness(1.02);
-}
-.duotone-riso::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-color: hsl(var(--spot));
-  mix-blend-mode: multiply;
-  pointer-events: none;
-}
-.duotone-riso::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  background-color: hsl(var(--ink-blue) / 0.35);
-  mix-blend-mode: screen;
-  pointer-events: none;
-}
-
-/* `.halftone-dissolve` was removed 2026-08-04 — zero consumers since it was
-   written. It animated `mask-size` on a single soft radial aperture, which is
-   not actually a dot-screen dissolve, and it would now fight the real screens
-   above (both want the element's mask). If a hero entrance is wanted later,
-   build it from `.halftone-ink` rather than a second, different mask. */
 
 /* ── Paper feed ────────────────────────────────────────────────────────
    Route transition. Replaces the flat .route-fade crossfade with a short
@@ -1526,10 +1168,9 @@ h2,
 
    Scoped under [data-ink-icons] so the admin console, which shares the
    same lucide build, keeps its softer default. */
-[data-ink-icons] .lucide {
-  stroke-linecap: butt;
-  stroke-linejoin: miter;
-}
+/* Subway-map rule is ROUND terminals ("a line still growing"), which is
+   lucide's own default — so no cap/join override is needed anymore; the
+   [data-ink-icons] hook stays in LayoutShell for the strokeWidth prop only. */
 
 /* ── Aceternity-style monochrome backgrounds ───────────────────────── */
 
@@ -1537,17 +1178,11 @@ h2,
 .bg-noise {
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.06 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
 }
-.dark .bg-noise {
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.05 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
-}
 
 /* Aceternity-style dotted grid background (monochrome). */
 .bg-grid-dots {
   background-image: radial-gradient(hsl(var(--foreground) / 0.1) 1px, transparent 1px);
   background-size: 24px 24px;
-}
-.dark .bg-grid-dots {
-  background-image: radial-gradient(hsl(var(--foreground) / 0.14) 1px, transparent 1px);
 }
 
 /* `.bg-grid-lines`, `.spotlight-radial` and `.scrim-bottom` were removed 2026-08-04 — both had
