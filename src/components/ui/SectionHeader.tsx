@@ -11,9 +11,9 @@ import { cn } from '@/lib/utils';
  *   - `band`    — page-level content band (home sections, marketplace bands)
  *   - `section` — sub-section inside a page (profile hub blocks)
  * One "see all" affordance: quiet text link with the sliding arrow.
- *   - `masthead` — zine issue-opener (PHOTOCOPY rebrand): 2px black rule,
- *     0.2em kicker, uppercase Space Grotesk title. Flagship surfaces only;
- *     never on /help, /safety, or crisis pages.
+ *   - `masthead` — page opener (subway-map rebrand): heavy ink rule, ink-chip
+ *     kicker, Anton title. Flagship surfaces only; never on /help, /safety,
+ *     or crisis pages.
  */
 
 export function SeeAllLink({
@@ -97,12 +97,12 @@ export function SectionHeader({
         <h2
           id={id}
           className={cn(
-            size === 'band' && 'text-headline font-bold tracking-tight',
-            size === 'section' && 'text-title font-display font-semibold',
-            size === 'masthead' &&
-              'text-headline md:text-display font-display font-bold uppercase tracking-[-0.01em] leading-none',
+            // Anton carries every heading rank now (font-display); it has a
+            // single 400 weight, so no font-bold — faux-bolding Anton smears.
+            size === 'band' && 'font-display text-headline md:text-display tracking-tight',
+            size === 'section' && 'font-display text-title',
+            size === 'masthead' && 'font-display text-display md:text-hero leading-none tracking-tight',
           )}
-          style={size === 'band' ? { letterSpacing: '-0.02em' } : undefined}
         >
           {title}
         </h2>

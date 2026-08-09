@@ -5,7 +5,7 @@ type EyebrowElement = 'span' | 'div' | 'p';
 
 interface EyebrowProps extends React.HTMLAttributes<HTMLElement> {
   as?: EyebrowElement;
-  /** `kicker` = masthead dateline treatment (wider 0.2em tracking). */
+  /** `kicker` = subway-map masthead chip: paper type on an ink block. */
   variant?: 'label' | 'kicker';
 }
 
@@ -16,8 +16,10 @@ export const Eyebrow = React.forwardRef<HTMLElement, EyebrowProps>(
       {
         ref,
         className: cn(
-          'inline-block text-2xs font-semibold uppercase text-muted-foreground',
-          variant === 'kicker' ? 'tracking-[0.2em]' : 'tracking-label',
+          'inline-block uppercase',
+          variant === 'kicker'
+            ? 'bg-foreground px-2 py-1 font-display text-13 normal-case text-background'
+            : 'text-2xs font-semibold tracking-label text-muted-foreground',
           className,
         ),
         ...rest,

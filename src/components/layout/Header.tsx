@@ -265,8 +265,8 @@ export function Header() {
             aria-current={active ? 'page' : undefined}
             className={
               active
-                ? 'flex items-center px-2 py-2 text-sm font-semibold text-foreground underline decoration-spot decoration-[3px] underline-offset-8'
-                : 'flex items-center px-2 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground no-underline'
+                ? 'flex items-center px-2 py-2 text-15 font-bold text-foreground underline decoration-track-pink decoration-[3px] underline-offset-8'
+                : 'flex items-center px-2 py-2 text-15 font-bold text-foreground no-underline hover:underline hover:decoration-track-pink hover:decoration-[3px] underline-offset-8'
             }
           >
             <Icon size={18} className="lg:hidden" aria-hidden />
@@ -281,10 +281,8 @@ export function Header() {
 
   return (
     <header
-      // PASTE-UP masthead: a heavy 2px black rule under the header rather than
-      // a hairline box edge, matching the footer and the section mastheads.
-      // `.rule-heavy` draws on the top edge, so the bottom rule is spelled out.
-      className="sticky top-0 border-b-2 border-foreground bg-background/80 backdrop-blur-xl"
+      // Subway-map masthead: the template's heavy 4px ink rule under the nav.
+      className="sticky top-0 border-b-4 border-foreground bg-background/90 backdrop-blur-xl"
       style={{ zIndex: 1100, paddingTop: 'env(safe-area-inset-top, 0px)' }}
     >
       <div className="px-4 sm:px-6 md:px-8">
