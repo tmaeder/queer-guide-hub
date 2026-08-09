@@ -54,40 +54,49 @@ export default function SupportIntent() {
       id: 'near-you',
       label: 'Near you',
       kicker: countryCode ? `Organizations in ${countryCode}` : 'Support organizations',
-      content: isLoading ? (
-        <p className="text-muted-foreground">Loading organizations…</p>
-      ) : orgs && orgs.length > 0 ? (
-        <ul className="list-none p-0 m-0 grid gap-4 sm:grid-cols-2">
-          {orgs.map((o) => (
-            <li key={o.id} className="border-2 border-foreground p-4 rounded-container">
-              <h3 className="font-display text-title mb-1">
-                {o.slug ? (
-                  <LocalizedLink
-                    to={`/organizations/${o.slug}`}
-                    className="no-underline hover:underline"
-                  >
-                    {o.name}
-                  </LocalizedLink>
-                ) : (
-                  o.name
-                )}
-              </h3>
-              {o.description ? (
-                <p className="text-13 text-muted-foreground line-clamp-3">{o.description}</p>
-              ) : null}
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <div>
-          <p className="text-muted-foreground mb-4">
-            We have no support organizations listed for your country yet.
-          </p>
-          <LocalizedLink to="/organizations" className="underline underline-offset-4">
-            Browse every organization
-          </LocalizedLink>
-        </div>
-      ),
+      // `isLoading || locLoading`, not `isLoading` alone. The query is
+      // `enabled: !locLoading`, and in react-query v5 a DISABLED query reports
+      // `isLoading === false` (isLoading = isPending && isFetching). So while
+      // the location was still resolving, this fell straight past the loading
+      // branch into the empty state and told the reader "We have no support
+      // organizations listed for your country yet" before it had asked —  on
+      // the page someone reaches in a crisis. GoingOut.tsx:64 and People.tsx:144
+      // already use the combined guard; Support was the outlier.
+      content:
+        isLoading || locLoading ? (
+          <p className="text-muted-foreground">Loading organizations…</p>
+        ) : orgs && orgs.length > 0 ? (
+          <ul className="list-none p-0 m-0 grid gap-4 sm:grid-cols-2">
+            {orgs.map((o) => (
+              <li key={o.id} className="border-2 border-foreground p-4 rounded-container">
+                <h3 className="font-display text-title mb-1">
+                  {o.slug ? (
+                    <LocalizedLink
+                      to={`/organizations/${o.slug}`}
+                      className="no-underline hover:underline"
+                    >
+                      {o.name}
+                    </LocalizedLink>
+                  ) : (
+                    o.name
+                  )}
+                </h3>
+                {o.description ? (
+                  <p className="text-13 text-muted-foreground line-clamp-3">{o.description}</p>
+                ) : null}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <div>
+            <p className="text-muted-foreground mb-4">
+              We have no support organizations listed for your country yet.
+            </p>
+            <LocalizedLink to="/organizations" className="underline underline-offset-4">
+              Browse every organization
+            </LocalizedLink>
+          </div>
+        ),
       action: (
         <LocalizedLink
           to="/organizations?role=support"

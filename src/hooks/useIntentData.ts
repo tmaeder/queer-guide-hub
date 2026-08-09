@@ -348,11 +348,25 @@ export function useVerifiedOwnedBrands(limit = 24) {
     queryFn: async (): Promise<VerifiedBrand[]> => {
       const { data, error } = await supabase
         .from('marketplace_brands')
+        // `not('ownership_tags','is',null)` did NOT filter: the column is
+        // non-null on all 2,583 rows and 2,559 of them hold an EMPTY array. So
+        // the limit was applied to the whole catalogue and the client-side
+        // non-empty filter then ran on an already-truncated window — a
+        // filter-after-limit bug. Measured 2026-08-08: 24 brands are genuinely
+        // tagged, the page rendered 22, and "Boy Butter" and "Buck Angel" sat at
+        // positions 24 and 25 of the ordering, permanently outside the window.
+        // `not(...,'eq','{}')` filters server-side so the limit applies to the
+        // right set. Written as `.not()` rather than `.neq()` because the
+        // generated column type is `string[]` and `.neq()` will not accept the
+        // `'{}'` array literal PostgREST needs; `.not()` takes the raw value.
         .select('id, display_name, brand_key, slug, logo_url, product_count, ownership_tags')
-        .not('ownership_tags', 'is', null)
+        .not('ownership_tags', 'eq', '{}')
         .order('product_count', { ascending: false, nullsFirst: false })
         .limit(limit);
       if (error) throw error;
+      // Belt-and-braces only — the server filter above is what makes the count
+      // correct. Kept so a null slipping in cannot render an untagged brand
+      // under a heading that claims verified ownership.
       return ((data ?? []) as VerifiedBrand[]).filter(
         (b) => Array.isArray(b.ownership_tags) && b.ownership_tags.length > 0,
       );

@@ -58,7 +58,32 @@ export function EditorialDetailLayout({
   useBreadcrumbs(breadcrumbs ?? null);
 
   const [searchParams, setSearchParams] = useSearchParams();
-  const sectionIds = useMemo(() => sections.map((s) => s.id), [sections]);
+
+  // A section with nothing in it must not leave a heading behind.
+  //
+  // `EditorialSection` emits kicker + <h2> + action unconditionally, and this
+  // layout also feeds every section to `SectionNav`. So an empty `content`
+  // produced a full heading block, a "see all" link and a live nav anchor over
+  // an empty <div> — verified in production on /going-out's "Scenes" (Zürich,
+  // no landmarks) and reachable on /shop's "Categories" on every first paint.
+  //
+  // Filtering here rather than in each page fixes all six intent pages plus
+  // /city/:slug at once; /people previously carried its own local `.filter()`.
+  // `hidden` covers what this cannot detect — a valid element whose component
+  // returns null (see SectionDef.hidden).
+  const visibleSections = useMemo(
+    () =>
+      sections.filter((s) => {
+        if (s.hidden) return false;
+        const c = s.content;
+        if (c === null || c === undefined || c === false) return false;
+        if (Array.isArray(c) && c.length === 0) return false;
+        return true;
+      }),
+    [sections],
+  );
+
+  const sectionIds = useMemo(() => visibleSections.map((s) => s.id), [visibleSections]);
   const [activeId, selectSection] = useActiveSection(sectionIds);
 
   // Legacy ?tab= → ?section= redirect (1:1 mapping). One-shot per navigation.
@@ -81,7 +106,9 @@ export function EditorialDetailLayout({
 
   // Initial scroll to ?section= target after sections mount.
   useEffect(() => {
-    if (loading || sections.length === 0) return;
+    // visibleSections, not sections: a ?section= pointing at a filtered-out
+    // section must not scroll to an element that was never rendered.
+    if (loading || visibleSections.length === 0) return;
     const target = searchParams.get('section');
     if (!target || !sectionIds.includes(target)) return;
     const el = document.getElementById(target);
@@ -148,13 +175,13 @@ export function EditorialDetailLayout({
         {banner ? <div className="mb-6">{banner}</div> : null}
 
         <SectionNav
-          items={sections.map((s) => ({ id: s.id, label: s.label }))}
+          items={visibleSections.map((s) => ({ id: s.id, label: s.label }))}
           activeId={activeId}
           onSelect={selectSection}
         />
 
         <div>
-          {sections.map((s) => (
+          {visibleSections.map((s) => (
             <EditorialSection
               key={s.id}
               id={s.id}

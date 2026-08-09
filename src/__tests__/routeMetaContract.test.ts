@@ -159,6 +159,75 @@ describe('STATIC_ROUTE_BODY', () => {
     const offenders = Object.keys(STATIC_ROUTE_BODY).filter((p) => !isIndexable(p));
     expect(offenders).toEqual([]);
   });
+
+  // A crawler body exists to give the bot somewhere to go next. Sending it to a
+  // page that resolves to DEFAULT_META wastes the link and puts another
+  // homepage-titled URL in the index. This caught 7 at introduction, including
+  // all three /community/* targets of the /people body — the /people SEO fix
+  // had moved the same defect one hop down without anyone noticing.
+  const bodyLinks = Object.entries(STATIC_ROUTE_BODY).flatMap(([key, body]) =>
+    (body.links ?? []).map((l) => ({ from: key, href: l.href.split('?')[0].replace(/\/+$/, '') })),
+  );
+
+  it('never links the crawler at a page that serves the homepage title', () => {
+    const offenders = bodyLinks
+      .filter(({ href }) => href.startsWith('/'))
+      .filter(({ href }) => isIndexable(href))
+      .filter(({ href }) => resolveMeta(href).title === DEFAULT_META.title)
+      .map(({ from, href }) => `${from} -> ${href}`);
+    expect(
+      [...new Set(offenders)],
+      'give these routes their own STATIC_ROUTE_META entry, noindex them, or link somewhere else',
+    ).toEqual([]);
+  });
+
+  it('never links the crawler at a redirect source', () => {
+    // `/resources` 301s to `/tags`; five body entries pointed at it, so every
+    // one spent a crawl hop on a redirect.
+    const offenders = bodyLinks
+      .filter(({ href }) => href.startsWith('/') && isShadowedByRedirect(href))
+      .map(({ from, href }) => `${from} -> ${href}`);
+    expect([...new Set(offenders)], 'link the redirect TARGET instead').toEqual([]);
+  });
+});
+
+/**
+ * The six Intent Router hubs are the site's primary navigation, and their child
+ * routes kept shipping without meta: `/people/{friends,dating,travel,nearby}`
+ * and `/travel/book` all served DEFAULT_META — a title byte-identical to the
+ * homepage's, on five separate URLs. `resolveMeta` is an exact match, so a
+ * parent entry never covers a child.
+ *
+ * Parsing `src/routes.tsx` rather than trusting a hand-kept list, because a
+ * hand-kept list is exactly what let these through. Precedent for reading the
+ * route table in a test: src/utils/__tests__/reservedDetailSlugs.test.ts.
+ */
+describe('intent child routes', () => {
+  const routesSrc = readFileSync(join(REPO, 'src', 'routes.tsx'), 'utf8');
+  const INTENTS = ['going-out', 'travel', 'rights', 'support', 'shop', 'people'];
+
+  // path="<intent>/<static-segment>" — params and splats are dynamicMeta's job.
+  const children = [
+    ...new Set(
+      [...routesSrc.matchAll(/path="([a-z0-9-]+\/[a-z0-9-]+)"/g)]
+        .map((m) => `/${m[1]}`)
+        .filter((p) => INTENTS.includes(p.split('/')[1])),
+    ),
+  ].sort();
+
+  it('finds the known children (guards the regex itself)', () => {
+    expect(children).toEqual(
+      expect.arrayContaining(['/people/dating', '/people/friends', '/travel/book']),
+    );
+  });
+
+  it.each(children)('%s has its own meta or is noindex', (path) => {
+    if (!isIndexable(path)) return; // deliberately suppressed, nothing to assert
+    expect(
+      resolveMeta(path).title,
+      `${path} is indexable but resolves to DEFAULT_META — the homepage title`,
+    ).not.toBe(DEFAULT_META.title);
+  });
 });
 
 describe('isIndexable', () => {

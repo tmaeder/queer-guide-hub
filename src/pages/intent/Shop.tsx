@@ -22,7 +22,11 @@ import type { SectionDef } from '@/components/entity/editorial';
 
 const OCCASIONS: { label: string; blurb: string; to: string }[] = [
   { label: 'Pride kit', blurb: 'Flags, pins and what to wear', to: '/marketplace?tags=pride' },
-  { label: 'A gift', blurb: 'For a partner, a friend, a chosen family', to: '/marketplace?tags=gift' },
+  {
+    label: 'A gift',
+    blurb: 'For a partner, a friend, a chosen family',
+    to: '/marketplace?tags=gift',
+  },
   { label: 'Books', blurb: 'Fiction, history, memoir', to: '/marketplace?categories=books' },
   { label: 'Art & prints', blurb: 'For your walls', to: '/marketplace?categories=art' },
   { label: 'Apparel', blurb: 'Everyday wear', to: '/marketplace?categories=apparel' },
@@ -106,6 +110,12 @@ export default function ShopIntent() {
     {
       id: 'categories',
       label: 'Categories',
+      // Unguarded, this mapped an undefined-then-empty array, so EVERY first
+      // paint showed <h2>Categories</h2> + "All products" + a nav anchor over
+      // an empty <ul> until the query settled. Unlike the geo-dependent cases
+      // this fired for every visitor. `hidden` drops the whole section — heading,
+      // action and nav entry — until there is something to put in it.
+      hidden: !categories || categories.length === 0,
       content: (
         <ul className="list-none p-0 m-0 flex flex-wrap gap-2">
           {(categories ?? []).map((c) => (
