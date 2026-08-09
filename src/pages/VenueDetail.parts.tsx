@@ -402,7 +402,7 @@ export function VenueHero({
         )}
 
         <h1
-          className="m-0 text-display font-bold leading-[1.05] tracking-tight"
+          className="m-0 font-display text-display md:text-hero leading-[1] tracking-tight"
           style={{ overflowWrap: 'anywhere' }}
         >
           <Editable
