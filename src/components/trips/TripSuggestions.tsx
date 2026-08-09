@@ -159,7 +159,8 @@ export function TripSuggestions({ tripId, places }: Props) {
   }
 
   const unsafeCities = (cities || []).filter(
-    (c) => c.countries?.equality_score != null && (c.countries?.equality_score ?? 100) < 40,
+    // `?? 100` here was unreachable — the != null guard already ran.
+    (c) => c.countries?.equality_score != null && c.countries.equality_score < 40,
   );
   const citiesMap = new Map((cities || []).map((c) => [c.id, c]));
   const filtered = (suggestions || [])

@@ -32,6 +32,7 @@ function makeReport(over: Partial<TripSafetyReport>): TripSafetyReport {
     // penalty that is somehow not a death-penalty risk).
     hasDeathPenaltyRiskDestination:
       over.hasDeathPenaltyRiskDestination ?? base.hasDeathPenaltyDestination,
+    hasUnknownDestination: over.hasUnknownDestination ?? false,
   };
 }
 
