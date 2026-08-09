@@ -103,8 +103,18 @@ async function glyphFor(page, label: string): Promise<string> {
     .locator('div')
     .filter({ has: page.locator(`:scope > p:text-is("${label}")`) })
     .first();
-  await row.waitFor({ state: 'attached', timeout: 30_000 });
-  const cls = (await row.locator('svg').nth(1).getAttribute('class')) ?? '';
+  // Wait for the GLYPH, not just the row.
+  //
+  // This waited on the row being `attached` and then read `svg.nth(1)`
+  // immediately. The row attaches before its status icon paints, so the read
+  // could return null, the class match yield '', and the assertion fail
+  // against a page that was perfectly correct a frame later — a different test
+  // flaking on each run. Playwright retries `expect(locator)` but not a bare
+  // getAttribute, so the wait has to be explicit.
+  const glyph = row.locator('svg').nth(1);
+  await expect(glyph).toBeAttached({ timeout: 30_000 });
+  await expect(glyph).toHaveAttribute('class', /lucide-/, { timeout: 30_000 });
+  const cls = (await glyph.getAttribute('class')) ?? '';
   return (cls.match(/lucide-[a-z-]+/) ?? [''])[0];
 }
 
