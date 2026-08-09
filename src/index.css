@@ -657,22 +657,31 @@ h6 {
   line-height: 1.1;
 }
 
-/* Display face (Space Grotesk) on the large editorial headings only.
-   h1/h2 are page heroes + section headlines; h3+ (card titles, 22px
-   and down) stay on Inter for legibility density. `.font-display`
-   opts in any non-heading hero element (eyebrows, big numbers). */
+/* Display face (Anton) on the large editorial headings. h1/h2 are page
+   heroes + section headlines; h3+ (card titles) stay on Space Grotesk for
+   legibility density unless they opt in with `.font-display`.
+
+   `font-synthesis-weight: none` is load-bearing, not a nicety. Anton ships a
+   SINGLE 400 weight, and ~100 call sites across this tree pair `font-display`
+   with `font-bold`/`font-semibold` (correct while the display face was
+   variable Space Grotesk). Without this the browser fakes the bold by
+   smearing each glyph outward, which on a 96px Anton hero is plainly visible
+   as mush. One declaration neutralises every one of those call sites and any
+   future one, which is why they were NOT edited file by file. */
 h1,
 h2,
 .font-display {
   font-family: var(--font-display);
   letter-spacing: -0.03em;
+  font-synthesis-weight: none;
 }
 
-/* Heroes get the tightest tracking — Space Grotesk reads wide at scale. */
+/* Heroes get the tightest tracking — Anton reads wide at scale. */
 .text-hero-xl,
 .text-hero {
   font-family: var(--font-display);
   letter-spacing: -0.04em;
+  font-synthesis-weight: none;
 }
 
 /* ── Legacy gradient utilities — now flat solid ────────────────────── */
@@ -1050,12 +1059,17 @@ h2,
    Public/Admin phases delete them. */
 
 /* ── Card lift ─────────────────────────────────────────────────────────
-   The interactive-card treatment: 3px ink border at rest; on hover/focus
-   the card translates up-left and casts a HARD ink shadow (flat poster
-   shadow, no blur). Never combine with a hover ink-fill on the same
-   element — a card fills ink or lifts, never both. */
+   The interactive-card MOTION: on hover/focus the surface translates up-left
+   and casts a HARD ink shadow (flat poster shadow, no blur). Never combine
+   with a hover ink-fill on the same element — a card fills ink or lifts,
+   never both.
+
+   Deliberately NO border here. The border belongs to the surface itself
+   (`Card` carries `border-[3px] border-foreground`), and putting one on the
+   wrapper too rendered every entity card with a doubled 6px edge — the
+   wrapper's border around the card's own. Standalone lifted surfaces that
+   are not a `Card` declare their own border utility. */
 .card-lift {
-  border: 3px solid hsl(var(--foreground));
   transition:
     transform 120ms ease-out,
     box-shadow 120ms ease-out;
@@ -1067,7 +1081,6 @@ h2,
   box-shadow: var(--shadow-hard);
 }
 .card-lift-sm {
-  border: 3px solid hsl(var(--foreground));
   transition:
     transform 120ms ease-out,
     box-shadow 120ms ease-out;

@@ -24,7 +24,7 @@ export function SubwayHero() {
         <div className="mt-8 flex flex-wrap items-center gap-4">
           <LocalizedLink
             to="/search"
-            className="card-lift flex w-full max-w-xl items-center gap-2 bg-background px-4 py-4 no-underline shadow-hard"
+            className="card-lift flex w-full max-w-xl items-center gap-2 border-[3px] border-foreground bg-background px-4 py-4 no-underline shadow-hard"
             aria-label={t('home.hero.searchLabel', 'Search the whole network')}
           >
             <TransitIcon name="search" size={22} />

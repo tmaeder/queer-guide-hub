@@ -276,7 +276,7 @@ const NewsCardImpl = ({
           {/* Rank 2. This was `md:text-hero` — 76px, the same size as the
               IssueMasthead h1 above it — so the lead story tied the page title
               and the masthead never won. Measured on production. */}
-          <h2 className="m-0 mt-2 text-display font-bold leading-[0.95] tracking-tight max-w-4xl">
+          <h2 className="m-0 mt-2 font-display text-display leading-[0.95] tracking-tight max-w-4xl">
             {safeTitle}
           </h2>
           {langBadge}
@@ -320,7 +320,7 @@ const NewsCardImpl = ({
               {eyebrowParts.join(' · ')}
             </p>
           )}
-          <h3 className="m-0 text-headline font-bold leading-[1.05] tracking-tight">{safeTitle}</h3>
+          <h3 className="m-0 font-display text-headline leading-[1.05] tracking-tight">{safeTitle}</h3>
           {langBadge}
           {dek && <p className="text-15 italic text-muted-foreground leading-relaxed">{dek}</p>}
           <div className="flex items-center gap-4 text-2xs uppercase tracking-wider text-muted-foreground mt-2">
@@ -400,7 +400,7 @@ const NewsCardImpl = ({
               {eyebrowParts.join(' · ')}
             </p>
           )}
-          <h3 className="text-title font-bold leading-tight m-0">{safeTitle}</h3>
+          <h3 className="font-display text-title leading-tight m-0">{safeTitle}</h3>
           {langBadge}
           {excerptText && (
             <p

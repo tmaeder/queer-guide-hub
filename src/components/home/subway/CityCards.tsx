@@ -49,7 +49,7 @@ export function CityCards() {
                 <div key={i} className="h-32 animate-pulse border-[3px] border-foreground/20" />
               ))
             : cities.map((city, i) => (
-                <div key={city.id} className="card-lift group relative bg-background p-4">
+                <div key={city.id} className="card-lift group relative border-[3px] border-foreground bg-background p-4">
                   <div className="flex items-baseline justify-between gap-2">
                     <span className="truncate font-display text-headline">{city.name}</span>
                     {city.countries?.equality_score != null && (
