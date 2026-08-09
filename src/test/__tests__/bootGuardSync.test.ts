@@ -21,10 +21,12 @@ const ROOT = path.resolve(__dirname, '../../..');
 function inlineGuardBody(): string {
   // Strip HTML comments first — the guard's own doc comment mentions the
   // literal <script> tag, which would otherwise start the match inside it.
-  const html = readFileSync(path.join(ROOT, 'index.html'), 'utf8').replace(
-    /<!--[\s\S]*?-->/g,
-    '',
-  );
+  let html = readFileSync(path.join(ROOT, 'index.html'), 'utf8');
+  let previous: string;
+  do {
+    previous = html;
+    html = html.replace(/<!--[\s\S]*?-->/g, '');
+  } while (html !== previous);
   const bodies = Array.from(html.matchAll(/<script>([\s\S]*?)<\/script>/g), (m) => m[1]);
   const guard = bodies.find((b) => b.includes('__qgBootGuard'));
   if (!guard) throw new Error('index.html: inline boot guard <script> not found');
