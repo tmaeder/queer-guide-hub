@@ -22,8 +22,8 @@
 // and a cache-busting query reaches the correct build (proven: bare /venues
 // served the dead chunk while /venues?cb=… served the current one). So when we
 // detect the stale-chunk condition we re-navigate the client once.
-const STATIC_CACHE = 'static-v13';
-const DYNAMIC_CACHE = 'dynamic-v13';
+const STATIC_CACHE = 'static-v14';
+const DYNAMIC_CACHE = 'dynamic-v14';
 const DYNAMIC_CACHE_LIMIT = 50;
 
 // Clients we have already re-navigated. Loop safety is layered: this Set, the
@@ -231,7 +231,40 @@ self.addEventListener('fetch', event => {
         }
 
         try {
-          const networkResponse = await fetch(request);
+          let networkResponse = await fetch(request);
+          // v14: a wrong-type 200 or an error status here is, more often than
+          // not, the browser HTTP cache replaying a POISONED entry from a
+          // deploy window — public/_headers stamps /assets/* (and /fonts/*)
+          // immutable for a year, and Pages answers a missing chunk with the
+          // SPA shell (200 text/html) or, mid-deploy, a 404; the browser
+          // caches either failure under the asset URL. `fetch(request)` above
+          // reads through that cache, so the poison replays forever (measured
+          // on a real user's Chrome 2026-08-08: 8 chunks pinned at 404).
+          // Retrying with cache:'reload' bypasses AND rewrites the entry,
+          // healing the client transparently before the page sees a failure.
+          // Guarded so a request that is already cache-bypassing (the boot
+          // guard's own heal fetches) is never retried, and scoped to the
+          // hashed/immutable trees where the poison class exists.
+          // Scoped to the poison shapes (wrong-MIME 200, 404, 5xx): a stale
+          // document referencing ~48 dead chunks would otherwise double every
+          // fetch, and 4xx auth/quota statuses never heal via cache bypass.
+          const suspect =
+            (networkResponse.status === 200 &&
+              !isResponseValidForUrl(networkResponse, url.pathname)) ||
+            networkResponse.status === 404 ||
+            networkResponse.status >= 500;
+          const immutableTree =
+            url.pathname.startsWith('/assets/') || url.pathname.startsWith('/fonts/');
+          if (suspect && immutableTree && request.cache !== 'reload') {
+            try {
+              const fresh = await fetch(new Request(request, { cache: 'reload' }));
+              if (fresh.status === 200 && isResponseValidForUrl(fresh, url.pathname)) {
+                networkResponse = fresh;
+              }
+            } catch {
+              // Bypass fetch failed — keep the original response.
+            }
+          }
           if (networkResponse.status === 200) {
             if (isResponseValidForUrl(networkResponse, url.pathname)) {
               const cache = await caches.open(STATIC_CACHE);
