@@ -3900,6 +3900,22 @@
         "personal": "[ZH] It knows nothing about you. Your citizenship, residency, gender marker and relationship status all change what applies, and we hold none of them.",
         "corrections": "[ZH] If something here is wrong, tell us — corrections to the underlying record should also go to ILGA, who maintain it."
       }
+    },
+    "lens": {
+      "title": "[ZH] Who the law protects",
+      "lgb": "[ZH] Lesbian, gay, bisexual",
+      "trans": "[ZH] Trans",
+      "intersex": "[ZH] Intersex",
+      "notCovered": "[ZH] Not recorded by our source:",
+      "noData": "[ZH] We hold no recorded legal status for this country or territory."
+    },
+    "verdict": {
+      "criminalized-severe": "[ZH] Criminalised — death penalty",
+      "criminalized": "[ZH] Criminalised",
+      "hostile": "[ZH] Few or no protections",
+      "partial": "[ZH] Some protections",
+      "protected": "[ZH] Broad protections",
+      "unknown": "[ZH] Not enough data"
     }
   }
 }
