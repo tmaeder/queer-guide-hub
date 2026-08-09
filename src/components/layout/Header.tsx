@@ -25,6 +25,7 @@ import { useAdminRoles } from '@/hooks/useAdminRoles';
 import { USER_MENU_ITEMS as userMenuItems, INTENT_NAV, isIntentActive } from '@/config/navigation';
 import { getSubmitCta } from '@/lib/submitCta';
 import { useTheme } from '@/components/theme/ThemeProvider';
+import { cn } from '@/lib/utils';
 import { useSiteBranding } from '@/hooks/useSiteBranding';
 
 // ── Component ───────────────────────────────────────────────────────────────
@@ -120,7 +121,7 @@ export function Header() {
           to="/hub"
           aria-current={path === '/hub' || path.startsWith('/hub/') ? 'page' : undefined}
           title={t('header.mobileNav.hub', 'Hub')}
-          className="hidden items-center gap-2 px-2 py-2 text-sm font-medium text-muted-foreground no-underline transition-colors hover:text-foreground aria-[current=page]:font-semibold aria-[current=page]:text-foreground md:inline-flex"
+          className="ink-underline hidden items-center gap-2 px-2 py-2 text-sm font-medium text-muted-foreground no-underline transition-colors hover:text-foreground aria-[current=page]:font-semibold aria-[current=page]:text-foreground md:inline-flex"
         >
           <Briefcase size={18} aria-hidden />
           <span className="sr-only lg:not-sr-only">{t('header.mobileNav.hub', 'Hub')}</span>
@@ -186,7 +187,15 @@ export function Header() {
             <DropdownMenuItem
               onSelect={(e) => {
                 e.preventDefault();
-                setTheme(isDark ? 'light' : 'dark');
+                // `onSelect` carries no coordinates, so locate the wipe on the
+                // row itself rather than falling back to the viewport centre —
+                // this menu sits in the top-right corner and a centre wipe
+                // would visibly disagree with where the user clicked.
+                const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                setTheme(isDark ? 'light' : 'dark', {
+                  x: r.left + r.width / 2,
+                  y: r.top + r.height / 2,
+                });
               }}
               className="flex gap-2"
             >
@@ -271,11 +280,16 @@ export function Header() {
             to={to}
             title={label}
             aria-current={active ? 'page' : undefined}
-            className={
+            // One class for both states: `.ink-underline` keys the active rule
+            // off `aria-current`, which is already set above. The active branch
+            // used a real `underline decoration-spot`, so the two states are now
+            // the same stroke rather than two different treatments that drift.
+            className={cn(
+              'ink-underline flex items-center px-2 py-2 text-sm no-underline transition-colors',
               active
-                ? 'flex items-center px-2 py-2 text-sm font-semibold text-foreground underline decoration-spot decoration-[3px] underline-offset-8'
-                : 'flex items-center px-2 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground no-underline'
-            }
+                ? 'font-semibold text-foreground'
+                : 'font-medium text-muted-foreground hover:text-foreground',
+            )}
           >
             <Icon size={18} className="lg:hidden" aria-hidden />
             <span className="sr-only lg:not-sr-only">{label}</span>
