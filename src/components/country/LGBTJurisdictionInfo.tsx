@@ -17,6 +17,7 @@ import { StatusGlyph } from '@/components/rights/StatusGlyph';
 import { ProtectionCells, ProtectionCellsHeader } from '@/components/rights/ProtectionCells';
 import { RightRow } from '@/components/rights/RightRow';
 import { SourceLine } from '@/components/rights/SourceLine';
+import { LensVerdictSummary } from '@/components/rights/LensVerdictSummary';
 
 interface LGBTJurisdictionInfoProps {
   country: Record<string, unknown>;
@@ -300,6 +301,14 @@ export default function LGBTJurisdictionInfo({
         <SourceLine updatedAt={country.lgbti_data_last_updated} showLink={false} />
       </CardHeader>
       <CardContent>
+        {/*
+          Leads the card. The equality score in the header is one number for
+          three very different situations — 82 countries have LGB and trans
+          verdicts that disagree — so the split goes first and the score stays
+          as a secondary, cited figure.
+        */}
+        <LensVerdictSummary country={country} className="mb-2" />
+
         {RIGHT_SECTION_ORDER.map(renderSection)}
 
         <div className="pt-2">
