@@ -33,7 +33,14 @@ export function useRiskVisual(risk: OverallRisk): RiskVisual {
   }[risk];
   const fg = {
     low: isDark ? '#34d399' : '#047857',
-    moderate: isDark ? '#fbbf24' : '#b45309',
+    // amber-700 (#b45309) measured 4.36:1 on --surface-container after the
+    // subway-map rebrand darkened that token (0 0% 96% -> 60 9% 93%), failing
+    // AA for the 13px "jump to rights" link on /country/*. amber-800 clears it
+    // on every surface this scale lands on: 6.15 on surface-container, 6.77 on
+    // paper, 6.84 on its own amber tint. Hue is unchanged — this is the
+    // user-locked trip-safety traffic light, so it stays amber and keeps
+    // meaning caution; only the lightness moved.
+    moderate: isDark ? '#fbbf24' : '#92400e',
     high: isDark ? '#f87171' : '#b91c1c',
     critical: isDark ? '#fca5a5' : '#7f1d1d',
   }[risk];
