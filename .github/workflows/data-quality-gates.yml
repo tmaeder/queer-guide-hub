@@ -45,6 +45,14 @@ jobs:
         if: ${{ !cancelled() && env.SUPABASE_URL != '' && env.SUPABASE_SERVICE_ROLE_KEY != '' }}
         run: node scripts/check-profile-column-grants.mjs
 
+      # Stock ALTER DEFAULT PRIVILEGES also grants EXECUTE on every new FUNCTION to anon —
+      # how 97 admin/cron RPCs became anon-callable (20260822100000). The database cannot
+      # be made fail-closed here: ALTER DEFAULT PRIVILEGES cannot subtract the built-in
+      # EXECUTE-to-PUBLIC, and an event trigger needs superuser. So CI catches the 98th.
+      - name: anon cannot call write-capable SECURITY DEFINER functions
+        if: ${{ !cancelled() && env.SUPABASE_URL != '' && env.SUPABASE_SERVICE_ROLE_KEY != '' }}
+        run: node scripts/check-anon-function-grants.mjs
+
       - name: Skip (missing secrets)
         if: ${{ env.SUPABASE_URL == '' || env.SUPABASE_SERVICE_ROLE_KEY == '' }}
         run: echo "::warning::SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY not set — skipping data-quality gates. Configure repo secrets to enable."
