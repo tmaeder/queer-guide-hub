@@ -65,4 +65,52 @@ begin
   end if;
 end $$;
 
+-- `authenticated` must not hold EXECUTE on the unguarded cron RPCs either
+-- (20260823100000). Same population, one role over. Nothing in src/ calls these
+-- — they are pg_cron and service-key only — so a grant here means a signed-in
+-- member can run a sweep.
+--
+-- TRIGGER functions are excluded on purpose and the exclusion is load-bearing:
+-- sync_geo_spine_* and admin_automations_touch_updated_at match the admin-shaped
+-- name pattern but have live triggers attached, so revoking `authenticated`
+-- would break ordinary user writes (editing a city fires the geo-spine mirror).
+do $$
+declare
+  offenders text[];
+begin
+  select coalesce(array_agg(format('%s(%s)', p.proname, pg_get_function_identity_arguments(p.oid)) order by p.proname), '{}')
+    into offenders
+  from pg_proc p
+  where p.pronamespace = 'public'::regnamespace
+    and p.prokind = 'f'
+    and p.provolatile = 'v'
+    and has_function_privilege('authenticated', p.oid, 'EXECUTE')
+    and p.prorettype <> 'trigger'::regtype
+    and (select count(*) from pg_trigger t where t.tgfoid = p.oid and not t.tgisinternal) = 0
+    and (
+      p.proname ~ '^(run_|admin_|rebuild_|backfill_|seed_|purge_|prune_|collapse_|relink_|reset_|archive_city|unarchive_city|merge_tag|merge_vocab|unmerge_|approve_dedup|claim_dm|cluster_news|guide_picks|dlq_claim|commit_)'
+      or p.proname ~ '(_sweep|_recompute|_backfill|_automerge|_maintain)$'
+    )
+    -- Guarded functions legitimately keep `authenticated`: the admin console
+    -- calls them and assert_admin_or_internal() sorts admin from member.
+    and pg_get_functiondef(p.oid) !~* '(assert_admin_or_internal|is_admin|has_role|auth\.uid|jwt|current_setting|p_secret)';
+
+  if array_length(offenders, 1) > 0 then
+    raise exception
+      E'authenticated holds EXECUTE on % UNGUARDED admin/cron function(s):\n  %\n\nEither add `perform assert_admin_or_internal();` to the body (if the admin console needs it) or `revoke execute ... from authenticated;` (if it is cron/service-role only).',
+      array_length(offenders, 1), array_to_string(offenders, E'\n  ');
+  end if;
+end $$;
+
+-- Positive control for the trigger exclusion. If a future edit drops the
+-- `prorettype <> 'trigger'` filter, sync_geo_spine_city would be reported as an
+-- offender and someone would "fix" it by revoking — breaking every city write by
+-- a normal user. Assert the exclusion still holds.
+do $$
+begin
+  if not has_function_privilege('authenticated', 'public.sync_geo_spine_city()', 'EXECUTE') then
+    raise exception 'sync_geo_spine_city is a TRIGGER function and must keep EXECUTE for authenticated — revoking it breaks ordinary writes to cities';
+  end if;
+end $$;
+
 rollback;
