@@ -26,7 +26,17 @@ function latestDefinitionOf(fn: string): string {
     .sort();
   for (const f of [...files].reverse()) {
     const sql = readFileSync(join(MIGRATIONS, f), 'utf8');
-    if (new RegExp(`function public\\.${fn}\\s*\\(`, 'i').test(sql)) return sql;
+    // `create [or replace] function`, not merely `function`. A GRANT, REVOKE,
+    // COMMENT ON, DROP or ALTER naming the function also contains
+    // "function public.<fn>(" and was picked up as its "latest definition".
+    // Not hypothetical: 20260822100000 revokes anon on ~97 RPCs including
+    // `sync_geo_spine_country()`, sorts last by filename, and so won the
+    // reverse scan — the upsert regex below then matched nothing and the suite
+    // died at collection with a null deref instead of a readable assertion.
+    if (
+      new RegExp(`create\\s+(or\\s+replace\\s+)?function\\s+public\\.${fn}\\s*\\(`, 'i').test(sql)
+    )
+      return sql;
   }
   throw new Error(`no migration defines ${fn}`);
 }
@@ -42,9 +52,14 @@ describe('sync_geo_spine_country keeps its three column lists in step', () => {
     expect(block, 'could not find the geo_country_profiles upsert').not.toBeNull();
   });
 
-  const cols = block![1].split(',').map((c) => c.trim());
-  const vals = block![2].split(',').map((v) => v.trim());
-  const sets = [...block![3].matchAll(/(\w+)\s*=\s*excluded\./g)].map((m) => m[1]);
+  // Destructured defensively: these run in the describe body, i.e. at COLLECTION
+  // time, before the `it` above ever executes. With `block!` a null match threw a
+  // TypeError that failed the whole SUITE — so the one assertion written to
+  // explain the problem ("could not find the geo_country_profiles upsert") never
+  // got to run. Falling back to empty arrays lets that assertion do its job.
+  const cols = block ? block[1].split(',').map((c) => c.trim()) : [];
+  const vals = block ? block[2].split(',').map((v) => v.trim()) : [];
+  const sets = block ? [...block[3].matchAll(/(\w+)\s*=\s*excluded\./g)].map((m) => m[1]) : [];
 
   it('has as many values as columns', () => {
     expect(vals.length, `${cols.length} columns vs ${vals.length} values`).toBe(cols.length);
