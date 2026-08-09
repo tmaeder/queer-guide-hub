@@ -420,7 +420,7 @@
 }
 
 /* Lightweight hover previews (cluster composition + point name). Token-driven
-   so they inherit Inter and stay correct in dark mode. */
+   so they inherit the body face (Space Grotesk). */
 .qg-map-hover {
   display: flex;
   gap: 8px;
@@ -495,13 +495,11 @@
 }
 
 html {
-  font-family:
-    'Inter',
-    system-ui,
-    -apple-system,
-    BlinkMacSystemFont,
-    'Segoe UI',
-    sans-serif;
+  /* Drives the whole document: `body` is `font-family: inherit`, so this rule
+     — not the `--font-sans` token — is what getComputedStyle reports. It was
+     still hard-coding Inter after the token moved to Space Grotesk, which the
+     e2e font gate caught. Read the token so the two can never diverge again. */
+  font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
