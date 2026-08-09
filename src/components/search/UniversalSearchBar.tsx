@@ -399,7 +399,7 @@ export const UniversalSearchBar = () => {
               ref={searchBoxRef}
               role="search"
               aria-label="Site search"
-              className="flex cursor-text items-center rounded-container bg-muted transition-colors hover:bg-accent"
+              className="flex cursor-text items-center rounded-container border-2 border-foreground bg-background transition-colors focus-within:shadow-hard-sm"
               onClick={() => {
                 setIsOpen(true);
                 focusInput();
@@ -447,10 +447,11 @@ export const UniversalSearchBar = () => {
                   setIsOpen(true);
                 }}
                 autoComplete="off"
-                // `Input` is an inverted plate (`bg-inverse-surface text-background`);
-                // dropping the plate's background means dropping its foreground too.
-                // Left alone, `text-background` lands on this container's `bg-muted`:
-                // white on #f5f5f5 (1.09:1) in light, near-black on #1f1f1f in dark.
+                // The field sits INSIDE this component's own bordered shell, so
+                // it drops the primitive's border and fill — and therefore must
+                // restate its foreground + placeholder (see inputPlateOverride
+                // test: repainting the fill without the type is the failure
+                // mode that once shipped white-on-#f5f5f5 at 1.09:1).
                 className="min-w-0 flex-1 border-0 bg-transparent text-foreground placeholder:text-muted-foreground text-sm shadow-none outline-none focus-visible:ring-0 focus-visible:ring-offset-0 md:text-sm"
                 style={{
                   fontSize: isMobile ? '1rem' : '0.875rem',
@@ -493,7 +494,7 @@ export const UniversalSearchBar = () => {
                 {!query && !isMobile && (
                   <kbd
                     aria-hidden="true"
-                    className="pointer-events-none rounded-badge bg-surface-container-high px-1.5 py-0.5 text-xs2 leading-none text-muted-foreground font-[inherit]"
+                    className="pointer-events-none rounded-badge border border-foreground px-1.5 py-0.5 text-xs2 leading-none text-muted-foreground font-[inherit]"
                   >
                     {isMac ? '⌘K' : 'Ctrl+K'}
                   </kbd>
