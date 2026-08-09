@@ -149,3 +149,52 @@ test('/rights cites its source rather than asserting a bare number', async ({ pa
   await expect(page.locator('main')).toContainText(/Where this comes from/, { timeout: 30_000 });
   await expect(page.locator('main a[href$="/rights/sources"]').first()).toBeVisible();
 });
+
+/**
+ * The per-lens split (#2647).
+ *
+ * A single number said the United States was 86/100, which concealed that the
+ * trans picture there is materially worse than the LGB one — 82 countries have
+ * LGB and trans verdicts that disagree. These assert the split renders and
+ * that it still names what the dataset does not cover.
+ */
+test('a country page says who the law protects, per identity', async ({ page }) => {
+  await page.goto('/country/united-states');
+  await dismiss(page);
+  const main = page.locator('main');
+  await expect(main).toContainText(/Who the law protects/i, { timeout: 30_000 });
+  for (const lens of ['Lesbian, gay, bisexual', 'Trans', 'Intersex']) {
+    await expect(main).toContainText(lens);
+  }
+  // The split must be a split: LGB and trans must not read identically here.
+  const block = await main.innerText();
+  const i = block.search(/Who the law protects/i);
+  const rows = block.slice(i, i + 260);
+  expect(rows).toMatch(/Some protections|Broad protections/);
+  expect(rows).toMatch(/Few or no protections/);
+});
+
+test('the verdict names what our source does not record', async ({ page }) => {
+  await page.goto('/country/united-states');
+  await dismiss(page);
+  // Without this, a green trans verdict reads as a promise about a passport
+  // check ILGA never made.
+  await expect(page.locator('main')).toContainText(
+    /identity documents are treated at borders/i,
+    { timeout: 30_000 },
+  );
+});
+
+test('a criminalising country reads criminalised on every lens', async ({ page }) => {
+  await page.goto('/country/afghanistan');
+  await dismiss(page);
+  const main = page.locator('main');
+  await expect(main).toContainText(/Who the law protects/i, { timeout: 30_000 });
+  const block = await main.innerText();
+  const i = block.search(/Who the law protects/i);
+  const rows = block.slice(i, i + 260);
+  // INV-1: no accumulation of protections can lift a criminalising country,
+  // and that must survive all the way to the rendered page.
+  expect(rows).not.toMatch(/Broad protections|Some protections/);
+  expect((rows.match(/Criminalised/g) || []).length).toBeGreaterThanOrEqual(3);
+});
