@@ -1,4 +1,5 @@
 import { getServiceClient, jsonResponse, errorResponse, corsResponse, requireInternalOrAdmin } from '../_shared/supabase-client.ts'
+import { writeToStaging } from '../_shared/source-adapter.ts'
 import type { RawItem, NormalizedItem } from '../_shared/source-adapter.ts'
 import { withErrorReporting } from '../_shared/report-api-error.ts'
 
@@ -175,45 +176,45 @@ Deno.serve(withErrorReporting('source-osm-venue', async (req) => {
       return jsonResponse({ success: true, items: allItems.length, dry_run: true }, 200, req)
     }
 
-    // Normalize inline (adapter pattern but without a class)
-    const normalized: NormalizedItem[] = allItems.map(raw => {
-      const d = raw.data as { el: Record<string, unknown>; city: string }
-      return osmToNormalized(d.el, d.city)
-    })
-
-    // Write to staging using bulk insert
-    let written = 0
-    const batchSize = 50
-    for (let i = 0; i < normalized.length; i += batchSize) {
-      const batch = normalized.slice(i, i + batchSize)
-      const rows = batch.map(item => ({
-        source_name:       'osm',
-        entity_type:       'venue',
-        target_table:      'venues',
-        source_entity_id:  item.sourceId,
-        raw_data:          item,
-        normalized_data:   item,
-        enrichment_status: 'pending',
-        dedup_status:      'pending',
-        pipeline_run_id:   pipelineRunId ?? null,
-        node_id:           nodeId ?? null,
-      }))
-      const { error } = await supabase.from('ingestion_staging').upsert(rows, {
-        onConflict: 'source_name,source_entity_id',
-        ignoreDuplicates: false,
-      })
-      if (error) console.error('OSM staging insert error:', error.message)
-      else written += batch.length
-    }
+    // Stage through the shared adapter contract. The hand-rolled bulk upsert
+    // this replaces failed EVERY row while returning HTTP 200 (so the cron
+    // read "succeeded" and staged nothing — 120/120 failed, measured
+    // 2026-08-09): it never set `source_type` (NOT NULL), and its
+    // onConflict:'source_name,source_entity_id' matches no unique index
+    // (42P10) — the real ones are keyed on idempotency_key / payload_hash.
+    // writeToStaging owns all of that, plus batch-level sourceId dedup.
+    const written = dryRun ? 0 : await writeToStaging(
+      supabase,
+      {
+        name: 'osm',
+        entityType: 'venue',
+        fetch: () => Promise.resolve(allItems),
+        normalize: (raw: RawItem) => {
+          const d = raw.data as { el: Record<string, unknown>; city: string }
+          return osmToNormalized(d.el, d.city)
+        },
+        getSourceId: (raw: RawItem) => {
+          const d = raw.data as { el: Record<string, unknown> }
+          return `osm-${d.el?.type ?? 'node'}-${d.el?.id}`
+        },
+      },
+      allItems,
+      { targetTable: 'venues', batchSize: limit, dryRun, pipelineRunId, nodeId },
+    )
 
     return jsonResponse({
       success: true,
       items: written,
-      items_total: normalized.length,
+      items_total: allItems.length,
       items_processed: written,
       items_succeeded: written,
-      items_failed: normalized.length - written,
+      // Already-seen OSM ids are skipped by the adapter's idempotency, not
+      // failures — report the shortfall as skipped so a green run with a
+      // stable corpus can't look like a broken one.
+      items_skipped: allItems.length - written,
+      items_failed: 0,
       cities_queried: citiesQueried,
+      dry_run: dryRun,
     }, 200, req)
   } catch (error) {
     console.error('source-osm-venue:', error)
