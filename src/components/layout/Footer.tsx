@@ -2,7 +2,6 @@ import { useLocation } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { ThemeToggle } from '@/components/theme/ThemeToggle';
 import { LanguageSwitcher } from '@/components/i18n/LanguageSwitcher';
 import { CurrencySelector } from '@/components/i18n/CurrencySelector';
 import { cn } from '@/lib/utils';
@@ -114,7 +113,6 @@ export function Footer() {
         <div className="flex items-center justify-center flex-wrap gap-0.5 order-1 md:order-2">
           <LanguageSwitcher />
           <CurrencySelector />
-          <ThemeToggle />
           <Button
             variant="ghost"
             size="sm"
