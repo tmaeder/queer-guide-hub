@@ -3,23 +3,24 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
 
 const badgeVariants = cva(
-  // PASTE-UP: a badge is a stamped chip, so the base carries no border at all
-  // and every variant is a flat fill.
-  'inline-flex items-center rounded-badge px-2.5 py-0.5 text-xs2 font-semibold tracking-tight transition-all focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
+  // Subway-map: a badge is a stamped chip — squared, 2px ink border, flat
+  // fill. The border is what border-gates a track-colour fill (WCAG 1.4.11,
+  // see tokenContrast.test.ts), so it belongs in the BASE, not per-variant.
+  'inline-flex items-center rounded-badge border-2 border-foreground px-2 py-0.5 text-xs2 font-bold uppercase tracking-tight transition-all focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
   {
     variants: {
       variant: {
         default: 'bg-foreground text-background',
         // Over-image chip. 131 call sites across 76 files — the single
-        // highest-leverage line in the border sweep. Was the one bordered
-        // variant; now a translucent plate, still legible on a photograph.
-        outline: 'bg-background/80 backdrop-blur-sm text-foreground hover:bg-background',
-        soft: 'bg-surface-container-high text-foreground',
-        // Brand ink chip. NON-SEMANTIC — never use it to mean a status, and
-        // never on a safety surface. See the doctrine in src/index.css.
-        ink: 'bg-ink-pink text-ink-pink-foreground',
+        // highest-leverage line here. Stays a translucent plate so it is
+        // legible on a photograph, but takes the ink border like the rest.
+        outline: 'bg-background/85 backdrop-blur-sm text-foreground hover:bg-background',
+        soft: 'bg-background text-foreground',
+        // Pink track chip. INK type: paper-on-pink measures 3.43:1 and a
+        // badge is 11px, nowhere near the large-text threshold.
+        ink: 'bg-track-pink text-foreground',
         // Legacy alias.
-        secondary: 'bg-surface-container-high text-foreground',
+        secondary: 'bg-surface-container text-foreground',
         destructive: 'bg-destructive text-destructive-foreground',
       },
     },

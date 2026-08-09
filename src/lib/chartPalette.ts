@@ -48,3 +48,11 @@ export const monoChartGrid = {
   stroke: 'hsl(var(--border))',
   strokeDasharray: '3 3',
 } as const;
+
+/** Subway-map qualitative palette — one track per series, cycling.
+ *  Track colors are wayfinding (functional categorical), consistent with the
+ *  "one accent per context" rule extended to one accent per series. */
+const TRACKS = ['--track-pink', '--track-blue', '--track-green', '--track-yellow'] as const;
+export function trackChartPalette(n: number): string[] {
+  return Array.from({ length: n }, (_, i) => `hsl(var(${TRACKS[i % TRACKS.length]}))`);
+}

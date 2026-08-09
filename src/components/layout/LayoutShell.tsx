@@ -99,7 +99,6 @@ export const LayoutShell = ({ children }: { children: React.ReactNode }) => {
           swatches for judging, and texture behind a swatch defeats the one
           thing that surface exists to do. */}
       <div aria-hidden="true" className="fixed inset-0 z-0 pointer-events-none bg-background" />
-      <div aria-hidden="true" className="fixed inset-0 z-0 pointer-events-none paper-grain" />
       <AnalyticsTracker />
       {/* Header + banners are wrapped in dedicated error boundaries so a crash
         in (e.g.) the avatar menu's notifications subscription cannot blank the

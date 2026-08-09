@@ -17,14 +17,13 @@ export type ColorTokenDef = {
   light: string; // "H S% L%" channels
   dark: string;
   /**
-   * A PASTE-UP drum: brand ink that tints plates and is NEVER a letterform or a
-   * semantic state. Flagging it here enrols it in the safety guards in
-   * __tests__/tokenContrast.test.ts — the 3:1 fill bar, the ban on body text,
-   * and above all the check that it never drifts into the `--destructive` hue
-   * band. Those guards used to read a hardcoded `['spot','ink-blue','ink-over']`,
-   * so a fourth drum added everywhere else would have been silently unguarded
-   * against impersonating the danger signal on a product used in criminalising
-   * countries. Set this on every new ink; the tests pick it up automatically.
+   * A wayfinding TRACK colour (or one of its deprecated PASTE-UP ink aliases):
+   * a fill that is NEVER a letterform and never a semantic state. Flagging it
+   * here enrols it in the safety guards in __tests__/tokenContrast.test.ts —
+   * the ban on body text and, above all, the check that it never drifts into
+   * the `--destructive` hue band. Those guards used to read a hardcoded
+   * `['spot','ink-blue','ink-over']`, so a fourth colour added everywhere else
+   * would have been silently unguarded (adopted from #2659).
    */
   ink?: true;
 };
@@ -90,89 +89,98 @@ export const FONT_SLOTS: Array<{
     key: 'display',
     cssVar: '--font-display',
     label: 'Display (headings)',
-    defaultFamily: 'Space Grotesk',
+    defaultFamily: 'Anton',
   },
-  { key: 'sans', cssVar: '--font-sans', label: 'Sans (body & UI)', defaultFamily: 'Inter' },
+  { key: 'sans', cssVar: '--font-sans', label: 'Sans (body & UI)', defaultFamily: 'Space Grotesk' },
 ];
 
 export const COLOR_TOKENS: ColorTokenDef[] = [
-  // Core
-  { key: 'background', group: 'core', light: '0 0% 100%', dark: '0 0% 4%' },
-  { key: 'foreground', group: 'core', light: '0 0% 4%', dark: '0 0% 96%' },
-  { key: 'card', group: 'core', light: '0 0% 100%', dark: '0 0% 4%' },
-  { key: 'card-foreground', group: 'core', light: '0 0% 4%', dark: '0 0% 96%' },
-  { key: 'popover', group: 'core', light: '0 0% 100%', dark: '0 0% 7%' },
-  { key: 'popover-foreground', group: 'core', light: '0 0% 4%', dark: '0 0% 96%' },
-  { key: 'primary', group: 'core', light: '0 0% 4%', dark: '0 0% 96%' },
-  { key: 'primary-foreground', group: 'core', light: '0 0% 100%', dark: '0 0% 4%' },
-  { key: 'secondary', group: 'core', light: '0 0% 4%', dark: '0 0% 96%' },
-  { key: 'secondary-foreground', group: 'core', light: '0 0% 100%', dark: '0 0% 4%' },
-  { key: 'muted', group: 'core', light: '0 0% 96%', dark: '0 0% 12%' },
-  { key: 'muted-foreground', group: 'core', light: '0 0% 35%', dark: '0 0% 68%' },
-  { key: 'accent', group: 'core', light: '0 0% 96%', dark: '0 0% 12%' },
-  { key: 'accent-foreground', group: 'core', light: '0 0% 4%', dark: '0 0% 96%' },
-  { key: 'border', group: 'core', light: '0 0% 58%', dark: '0 0% 37%' },
-  { key: 'input', group: 'core', light: '0 0% 58%', dark: '0 0% 37%' },
-  { key: 'input-bg', group: 'core', light: '0 0% 100%', dark: '0 0% 7%' },
-  { key: 'ring', group: 'core', light: '0 0% 4%', dark: '0 0% 96%' },
+  // Core — paper (#FAFAF5) / ink (#111). Light-only: dark mirrors light
+  // (dark mode removed 2026-08, subway-map rebrand).
+  { key: 'background', group: 'core', light: '60 33% 97%', dark: '60 33% 97%' },
+  { key: 'foreground', group: 'core', light: '0 0% 7%', dark: '0 0% 7%' },
+  { key: 'card', group: 'core', light: '60 33% 97%', dark: '60 33% 97%' },
+  { key: 'card-foreground', group: 'core', light: '0 0% 7%', dark: '0 0% 7%' },
+  { key: 'popover', group: 'core', light: '60 33% 97%', dark: '60 33% 97%' },
+  { key: 'popover-foreground', group: 'core', light: '0 0% 7%', dark: '0 0% 7%' },
+  { key: 'primary', group: 'core', light: '0 0% 7%', dark: '0 0% 7%' },
+  { key: 'primary-foreground', group: 'core', light: '60 33% 97%', dark: '60 33% 97%' },
+  { key: 'secondary', group: 'core', light: '0 0% 7%', dark: '0 0% 7%' },
+  { key: 'secondary-foreground', group: 'core', light: '60 33% 97%', dark: '60 33% 97%' },
+  { key: 'muted', group: 'core', light: '60 9% 93%', dark: '60 9% 93%' },
+  { key: 'muted-foreground', group: 'core', light: '0 0% 33%', dark: '0 0% 33%' },
+  { key: 'accent', group: 'core', light: '60 9% 93%', dark: '60 9% 93%' },
+  { key: 'accent-foreground', group: 'core', light: '0 0% 7%', dark: '0 0% 7%' },
+  { key: 'border', group: 'core', light: '0 0% 7%', dark: '0 0% 7%' },
+  { key: 'input', group: 'core', light: '0 0% 7%', dark: '0 0% 7%' },
+  { key: 'input-bg', group: 'core', light: '60 33% 97%', dark: '60 33% 97%' },
+  { key: 'ring', group: 'core', light: '330 100% 56%', dark: '330 100% 56%' },
+  // Track colors — SEMANTIC wayfinding lines. Fill-only, never body text;
+  // filled shapes carry a 2-3px ink border. See src/index.css for the rules.
+  { key: 'track-pink', group: 'core', light: '330 100% 56%', dark: '330 100% 56%' , ink: true },
+  { key: 'track-blue', group: 'core', light: '193 100% 45%', dark: '193 100% 45%' , ink: true },
+  { key: 'track-green', group: 'core', light: '136 75% 52%', dark: '136 75% 52%' , ink: true },
+  { key: 'track-yellow', group: 'core', light: '50 100% 50%', dark: '50 100% 50%' , ink: true },
   // Feedback — destructive is the only chromatic hue; warning + success are neutral
-  { key: 'destructive', group: 'feedback', light: '0 70% 38%', dark: '0 84% 62%' },
-  { key: 'destructive-foreground', group: 'feedback', light: '0 0% 100%', dark: '0 0% 4%' },
-  { key: 'warning', group: 'feedback', light: '0 0% 4%', dark: '0 0% 96%' },
-  { key: 'warning-foreground', group: 'feedback', light: '0 0% 100%', dark: '0 0% 4%' },
-  { key: 'success', group: 'feedback', light: '0 0% 4%', dark: '0 0% 96%' },
-  { key: 'success-foreground', group: 'feedback', light: '0 0% 100%', dark: '0 0% 4%' },
-  // Riso spot ink — brand mark, never semantic. See src/index.css for the rules.
-  { key: 'spot', group: 'feedback', light: '330 100% 58%', dark: '328 100% 68%', ink: true },
-  { key: 'spot-foreground', group: 'feedback', light: '0 0% 4%', dark: '0 0% 4%' },
-  // PASTE-UP inks — the 2nd and 3rd drums. Same doctrine as `spot`: never
-  // semantic, never a state. `ink-pink` is absent on purpose — it is a
-  // @theme alias of `spot`, so it has no `:root` declaration to catalog and
-  // one runtime override drives both.
-  { key: 'ink-blue', group: 'feedback', light: '193 100% 38%', dark: '186 100% 58%', ink: true },
-  { key: 'ink-blue-foreground', group: 'feedback', light: '0 0% 4%', dark: '0 0% 4%' },
-  { key: 'ink-over', group: 'feedback', light: '280 100% 52%', dark: '278 100% 70%', ink: true },
-  { key: 'ink-over-foreground', group: 'feedback', light: '0 0% 96%', dark: '0 0% 4%' },
+  { key: 'destructive', group: 'feedback', light: '0 70% 38%', dark: '0 70% 38%' },
+  { key: 'destructive-foreground', group: 'feedback', light: '60 33% 97%', dark: '60 33% 97%' },
+  { key: 'warning', group: 'feedback', light: '0 0% 7%', dark: '0 0% 7%' },
+  { key: 'warning-foreground', group: 'feedback', light: '60 33% 97%', dark: '60 33% 97%' },
+  { key: 'success', group: 'feedback', light: '0 0% 7%', dark: '0 0% 7%' },
+  { key: 'success-foreground', group: 'feedback', light: '60 33% 97%', dark: '60 33% 97%' },
+  // DEPRECATED PASTE-UP ink aliases. Deliberately NOT flagged `ink: true`:
+  // they hold the SAME values as the track colours above, so flagging them
+  // would make the mutual-hue-distinctness guard compare a colour with itself
+  // and fail at 0°. The canonical track tokens carry the flag. — now point at the track values so
+  // existing bg-spot / bg-ink-* call sites keep rendering until the
+  // Public/Admin phases retire them. `ink-pink` is absent on purpose — it is
+  // a @theme alias of `spot`, so it has no `:root` declaration to catalog.
+  { key: 'spot', group: 'feedback', light: '330 100% 56%', dark: '330 100% 56%' },
+  { key: 'spot-foreground', group: 'feedback', light: '0 0% 7%', dark: '0 0% 7%' },
+  { key: 'ink-blue', group: 'feedback', light: '193 100% 45%', dark: '193 100% 45%' },
+  { key: 'ink-blue-foreground', group: 'feedback', light: '0 0% 7%', dark: '0 0% 7%' },
+  { key: 'ink-over', group: 'feedback', light: '136 75% 52%', dark: '136 75% 52%' },
+  { key: 'ink-over-foreground', group: 'feedback', light: '0 0% 7%', dark: '0 0% 7%' },
   // Text hierarchy
-  { key: 'text-primary', group: 'text', light: '0 0% 4%', dark: '0 0% 96%' },
-  { key: 'text-secondary', group: 'text', light: '0 0% 32%', dark: '0 0% 64%' },
-  { key: 'text-muted', group: 'text', light: '0 0% 45%', dark: '0 0% 62%' },
-  { key: 'border-hairline', group: 'text', light: '0 0% 58%', dark: '0 0% 37%' },
-  // Surface elevation ladder
-  { key: 'surface', group: 'surface', light: '0 0% 100%', dark: '0 0% 4%' },
-  { key: 'surface-container-lowest', group: 'surface', light: '0 0% 100%', dark: '0 0% 2%' },
-  { key: 'surface-container-low', group: 'surface', light: '0 0% 98%', dark: '0 0% 6%' },
-  { key: 'surface-container', group: 'surface', light: '0 0% 96%', dark: '0 0% 9%' },
-  { key: 'surface-container-high', group: 'surface', light: '0 0% 93%', dark: '0 0% 12%' },
-  { key: 'surface-container-highest', group: 'surface', light: '0 0% 90%', dark: '0 0% 16%' },
-  { key: 'surface-dim', group: 'surface', light: '0 0% 88%', dark: '0 0% 8%' },
-  { key: 'inverse-surface', group: 'surface', light: '0 0% 4%', dark: '0 0% 96%' },
+  { key: 'text-primary', group: 'text', light: '0 0% 7%', dark: '0 0% 7%' },
+  { key: 'text-secondary', group: 'text', light: '0 0% 30%', dark: '0 0% 30%' },
+  { key: 'text-muted', group: 'text', light: '0 0% 40%', dark: '0 0% 40%' },
+  { key: 'border-hairline', group: 'text', light: '0 0% 7%', dark: '0 0% 7%' },
+  // Surface elevation ladder — paper-tinted neutral steps
+  { key: 'surface', group: 'surface', light: '60 33% 97%', dark: '60 33% 97%' },
+  { key: 'surface-container-lowest', group: 'surface', light: '60 33% 97%', dark: '60 33% 97%' },
+  { key: 'surface-container-low', group: 'surface', light: '60 20% 95%', dark: '60 20% 95%' },
+  { key: 'surface-container', group: 'surface', light: '60 9% 93%', dark: '60 9% 93%' },
+  { key: 'surface-container-high', group: 'surface', light: '60 6% 90%', dark: '60 6% 90%' },
+  { key: 'surface-container-highest', group: 'surface', light: '60 4% 87%', dark: '60 4% 87%' },
+  { key: 'surface-dim', group: 'surface', light: '60 4% 85%', dark: '60 4% 85%' },
+  { key: 'inverse-surface', group: 'surface', light: '0 0% 7%', dark: '0 0% 7%' },
   // Sidebar
-  { key: 'sidebar-background', group: 'sidebar', light: '0 0% 100%', dark: '0 0% 4%' },
-  { key: 'sidebar-foreground', group: 'sidebar', light: '0 0% 4%', dark: '0 0% 96%' },
-  { key: 'sidebar-primary', group: 'sidebar', light: '0 0% 4%', dark: '0 0% 96%' },
-  { key: 'sidebar-primary-foreground', group: 'sidebar', light: '0 0% 100%', dark: '0 0% 4%' },
-  { key: 'sidebar-accent', group: 'sidebar', light: '0 0% 96%', dark: '0 0% 12%' },
-  { key: 'sidebar-accent-foreground', group: 'sidebar', light: '0 0% 4%', dark: '0 0% 96%' },
-  { key: 'sidebar-border', group: 'sidebar', light: '0 0% 58%', dark: '0 0% 37%' },
-  { key: 'sidebar-ring', group: 'sidebar', light: '0 0% 4%', dark: '0 0% 96%' },
+  { key: 'sidebar-background', group: 'sidebar', light: '60 33% 97%', dark: '60 33% 97%' },
+  { key: 'sidebar-foreground', group: 'sidebar', light: '0 0% 7%', dark: '0 0% 7%' },
+  { key: 'sidebar-primary', group: 'sidebar', light: '0 0% 7%', dark: '0 0% 7%' },
+  { key: 'sidebar-primary-foreground', group: 'sidebar', light: '60 33% 97%', dark: '60 33% 97%' },
+  { key: 'sidebar-accent', group: 'sidebar', light: '60 9% 93%', dark: '60 9% 93%' },
+  { key: 'sidebar-accent-foreground', group: 'sidebar', light: '0 0% 7%', dark: '0 0% 7%' },
+  { key: 'sidebar-border', group: 'sidebar', light: '0 0% 7%', dark: '0 0% 7%' },
+  { key: 'sidebar-ring', group: 'sidebar', light: '0 0% 7%', dark: '0 0% 7%' },
 ];
 
 export const GLOBAL_TOKENS: GlobalTokenDef[] = [
   {
     key: 'radius-container',
     kind: 'radius',
-    default: '0.5rem',
+    default: '0rem',
     label: 'Container (cards, sheets, dialogs)',
   },
   {
     key: 'radius-element',
     kind: 'radius',
-    default: '0.25rem',
+    default: '0rem',
     label: 'Element (buttons, inputs, rows)',
   },
   { key: 'radius-badge', kind: 'radius', default: '0rem', label: 'Badge (tags, chips, pills)' },
-  { key: 'text-hero-xl', kind: 'size', default: '7rem', label: 'Hero XL' },
+  { key: 'text-hero-xl', kind: 'size', default: '6rem', label: 'Hero XL' },
   {
     key: 'text-hero-xl--line-height',
     kind: 'lineHeight',
@@ -180,23 +188,23 @@ export const GLOBAL_TOKENS: GlobalTokenDef[] = [
     label: 'Hero XL line height',
   },
   { key: 'text-hero', kind: 'size', default: '4.75rem', label: 'Hero' },
-  { key: 'text-hero--line-height', kind: 'lineHeight', default: '1', label: 'Hero line height' },
-  { key: 'text-display', kind: 'size', default: '2.75rem', label: 'Display' },
+  { key: 'text-hero--line-height', kind: 'lineHeight', default: '0.98', label: 'Hero line height' },
+  { key: 'text-display', kind: 'size', default: '3.25rem', label: 'Display' },
   {
     key: 'text-display--line-height',
     kind: 'lineHeight',
-    default: '1.05',
+    default: '1.02',
     label: 'Display line height',
   },
   // `text-headline-lg` removed 2026-08-04: it sat 1.14x from `text-headline`,
   // which no reader resolves as a separate level, so the two were used
   // interchangeably. This is one of six layers that move together — see the
   // note in src/index.css.
-  { key: 'text-headline', kind: 'size', default: '1.75rem', label: 'Headline' },
+  { key: 'text-headline', kind: 'size', default: '2rem', label: 'Headline' },
   {
     key: 'text-headline--line-height',
     kind: 'lineHeight',
-    default: '1.2',
+    default: '1.15',
     label: 'Headline line height',
   },
   { key: 'text-title', kind: 'size', default: '1.25rem', label: 'Title' },
@@ -266,12 +274,14 @@ export const CONTRAST_PAIRS: Array<{ fg: string; bg: string; label: string }> = 
   { fg: 'warning-foreground', bg: 'warning', label: 'Warning' },
   { fg: 'success-foreground', bg: 'success', label: 'Success' },
   { fg: 'spot-foreground', bg: 'spot', label: 'Spot ink (selection highlight)' },
-  // Type sitting on a PASTE-UP plate. Both foregrounds flip by mode because
-  // the inks do — dark ink + white type on paper, light ink + black type on
-  // a black page. Gating them here means /admin/design cannot publish an ink
-  // override that makes plate copy unreadable.
-  { fg: 'ink-blue-foreground', bg: 'ink-blue', label: 'Blue ink plate' },
-  { fg: 'ink-over-foreground', bg: 'ink-over', label: 'Overprint plate' },
+  // Type sitting on a track fill: ink on blue/green/yellow, paper on pink
+  // (see the text-on-track rule in src/index.css). Gating them here means
+  // /admin/design cannot publish an override that makes fill copy unreadable.
+  { fg: 'ink-blue-foreground', bg: 'ink-blue', label: 'Blue ink plate (deprecated alias)' },
+  { fg: 'ink-over-foreground', bg: 'ink-over', label: 'Overprint plate (deprecated alias)' },
+  { fg: 'foreground', bg: 'track-blue', label: 'Ink on blue track fill' },
+  { fg: 'foreground', bg: 'track-green', label: 'Ink on green track fill' },
+  { fg: 'foreground', bg: 'track-yellow', label: 'Ink on yellow track fill' },
   { fg: 'text-primary', bg: 'background', label: 'Text hierarchy: primary' },
   { fg: 'text-secondary', bg: 'background', label: 'Text hierarchy: secondary' },
   { fg: 'text-muted', bg: 'background', label: 'Text hierarchy: muted' },

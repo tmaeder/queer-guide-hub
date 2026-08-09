@@ -22,9 +22,6 @@ vi.mock('@/components/i18n/LanguageSwitcher', () => ({
 vi.mock('@/components/i18n/CurrencySelector', () => ({
   CurrencySelector: () => <div data-testid="cur" />,
 }));
-vi.mock('@/components/theme/ThemeToggle', () => ({
-  ThemeToggle: () => <div data-testid="theme" />,
-}));
 vi.mock('@/components/auth/AuthDialog', () => ({ AuthDialog: () => null }));
 
 import { MobileNavSheet } from '../MobileNavSheet';
@@ -62,7 +59,8 @@ describe('MobileNavSheet', () => {
     renderSheet(true);
     expect(screen.getByTestId('lang')).toBeInTheDocument();
     expect(screen.getByTestId('cur')).toBeInTheDocument();
-    expect(screen.getByTestId('theme')).toBeInTheDocument();
+    // theme toggle removed 2026-08 (dark mode dropped, subway-map rebrand)
+    expect(screen.queryByTestId('theme')).toBeNull();
   });
 
   it('offers sign-in for anon and sign-out for signed-in users', () => {

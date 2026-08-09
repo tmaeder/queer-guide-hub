@@ -1,49 +1,35 @@
 import React from 'react';
-import { LocalizedLink } from '@/components/routing/LocalizedLink';
-import { useTranslation } from 'react-i18next';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { useAuth } from '@/hooks/useAuth';
 import { Skeleton } from '@/components/ui/skeleton';
 import { RecentlyViewedRail } from '@/components/home/RecentlyViewedRail';
 import { IntentRail } from '@/components/home/IntentRail';
-import { HeroIdentityOverlay } from '@/components/home/HeroIdentityOverlay';
 import { DeferredSection } from '@/components/home/DeferredSection';
 import { FadeIn } from '@/components/motion';
-import { lazyOptional, lazyRetry } from '@/utils/lazyRetry';
+import { lazyOptional } from '@/utils/lazyRetry';
+import { SubwayHero } from '@/components/home/subway/SubwayHero';
+import { DeparturesBoard } from '@/components/home/subway/DeparturesBoard';
+import { CityCards } from '@/components/home/subway/CityCards';
+import { SupportBand } from '@/components/home/subway/SupportBand';
 
-// Plain React.lazy reads `.default` off whatever the dynamic import resolves to.
-// During a deploy window a stale index.html requests a chunk hash the new deploy
-// no longer serves, the import resolves to undefined, and the homepage crashes
-// with "Cannot read properties of undefined (reading 'default')". lazyRetry /
-// lazyOptional guard that shape and retry → reload → degrade instead.
-const MapShell = lazyRetry(() => import('@/components/map/MapShell'));
+// Plain React.lazy reads `.default` off whatever the dynamic import resolves
+// to; lazyOptional degrades to null when a stale deploy no longer serves the
+// chunk instead of crashing the homepage.
 const NewsMagazine = lazyOptional(() => import('@/components/home/NewsMagazine'));
-const EventsAgenda = lazyOptional(() => import('@/components/home/EventsAgenda'));
 const HomeShoppingSection = lazyOptional(() => import('@/components/home/HomeShoppingSection'));
-const HomeDestinations = lazyOptional(() => import('@/components/home/HomeDestinations'));
 const HomeBornThisWeek = lazyOptional(() => import('@/components/home/HomeBornThisWeek'));
 const HomeOnThisDay = lazyOptional(() => import('@/components/home/HomeOnThisDay'));
 
-// Hide the on-map search (the top-bar search is the single search) and keep the
-// landing URL clean (no ?lat&lng&z written as the visitor pans).
-const HOME_MAP_CONFIG = { showSearch: false, enableUrlState: false } as const;
-
 // ── Section shells ───────────────────────────────────────────────────────────
-// One skeleton per section archetype, shared between the near-viewport deferral
-// (DeferredSection) and the chunk load (Suspense) so nothing shifts.
 
-const agendaSkeleton = (
+const magazineSkeleton = (
   <div className="px-4 sm:px-6 md:px-8 py-12 md:py-16">
-    <div className="max-w-7xl mx-auto">
-      <Skeleton className="mb-8 h-9 w-64" />
-      <div className="grid grid-cols-1 gap-10 md:grid-cols-[1.1fr_1fr]">
-        <Skeleton className="aspect-[16/10] w-full rounded-container" />
-        <div className="flex flex-col gap-4">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <Skeleton key={i} className="h-16 w-full rounded-element" />
-          ))}
-        </div>
+    <div className="max-w-7xl mx-auto grid grid-cols-1 gap-10 md:grid-cols-[1.1fr_1fr]">
+      <Skeleton className="aspect-[16/10] w-full rounded-container" />
+      <div className="grid grid-cols-2 gap-x-6 gap-y-8">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <Skeleton key={i} className="aspect-[3/2] w-full rounded-element" />
+        ))}
       </div>
     </div>
   </div>
@@ -59,19 +45,6 @@ const railSkeleton = (
             key={i}
             className="aspect-[3/4] w-[200px] sm:w-[240px] shrink-0 rounded-container"
           />
-        ))}
-      </div>
-    </div>
-  </div>
-);
-
-const magazineSkeleton = (
-  <div className="px-4 sm:px-6 md:px-8 py-12 md:py-16">
-    <div className="max-w-7xl mx-auto grid grid-cols-1 gap-10 md:grid-cols-[1.1fr_1fr]">
-      <Skeleton className="aspect-[16/10] w-full rounded-container" />
-      <div className="grid grid-cols-2 gap-x-6 gap-y-8">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <Skeleton key={i} className="aspect-[3/2] w-full rounded-element" />
         ))}
       </div>
     </div>
@@ -100,197 +73,65 @@ function HomeDeferred({
   );
 }
 
+/**
+ * Homepage — subway-map edition (2026-08-09 rebrand).
+ *
+ * The template's shape: Anton hero + search entry + the four-track network
+ * drawing, then band after band separated by 4px ink rules — departures
+ * (real events), cities, news, history, marketplace, support. The old
+ * map-hero was replaced by a "/map" entry point in the hero, which also
+ * drops the ~1MB maplibre chunk from the homepage entirely.
+ */
 const Index = React.memo(() => {
   const isMobile = useIsMobile();
-  const { t } = useTranslation();
-  const { user } = useAuth();
-
-  // One-way fade of the masthead on the first real map interaction. Wheel is
-  // deliberately excluded — with cooperative gestures it scrolls the page.
-  const [heroDimmed, setHeroDimmed] = React.useState(false);
-  const heroRef = React.useRef<HTMLElement>(null);
-  React.useEffect(() => {
-    const node = heroRef.current;
-    if (!node) return;
-    const dim = () => setHeroDimmed(true);
-    const opts = { capture: true, once: true, passive: true } as const;
-    node.addEventListener('pointerdown', dim, opts);
-    node.addEventListener('touchstart', dim, opts);
-    return () => {
-      node.removeEventListener('pointerdown', dim, { capture: true });
-      node.removeEventListener('touchstart', dim, { capture: true });
-    };
-  }, []);
-
-  // Defer mounting the hero map until the browser is idle after first paint.
-  // MapShell pulls the ~1MB maplibre chunk + heavy GL init; mounting it on the
-  // first frame makes it contend with page text + the news/events data fetches.
-  // The skeleton below holds the layout so nothing shifts.
-  const [mapReady, setMapReady] = React.useState(false);
-  React.useEffect(() => {
-    const w = window as typeof window & {
-      requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number;
-      cancelIdleCallback?: (id: number) => void;
-    };
-    if (typeof w.requestIdleCallback === 'function') {
-      const id = w.requestIdleCallback(() => setMapReady(true), { timeout: 1500 });
-      return () => w.cancelIdleCallback?.(id);
-    }
-    const id = window.setTimeout(() => setMapReady(true), 200);
-    return () => window.clearTimeout(id);
-  }, []);
-
-  // Desktop drops from a full viewport so the intent rail below it is visible
-  // without scrolling. A full-bleed hero put the site's six primary jobs
-  // entirely below the fold on every screen — a browse TOOL occupying the
-  // position of highest intent.
-  const mapHeight = isMobile ? '60vh' : 'calc(78dvh - 64px)';
 
   return (
     <div className="min-h-screen">
-      {/* ── Mobile masthead — the 60vh map + its own chrome leave no room for
-          an overlay, so the identity band renders above it in normal flow. */}
-      {isMobile && <HeroIdentityOverlay variant="band" />}
-
       {/* ── On mobile the intent rail IS the primary navigation: the header
            carries no intent links below lg and the bottom bar's Explore tab
-           opens a sheet, so this rail is the only always-visible expression of
-           the six jobs. It therefore leads, above the 60vh map. On desktop the
-           header already carries them, so the rail stays below the hero (and
-           the hero was shortened so it still lands in the first viewport). */}
-      {isMobile && (
-        <div className="bg-noise">
-          <IntentRail />
-        </div>
-      )}
+           opens a sheet, so the rail leads, above the hero. On desktop the
+           header carries them and the rail follows the hero. */}
+      {isMobile && <IntentRail />}
 
-      {/* ── Hero = the live map (same MapShell as /map), search-free ──── */}
-      <section
-        ref={heroRef}
-        className="relative isolate overflow-hidden"
-        style={{ height: mapHeight }}
-      >
-        <ErrorBoundary section="map" fallback={<div className="h-full w-full bg-muted" />}>
-          {mapReady ? (
-            <React.Suspense fallback={<div className="h-full w-full animate-pulse bg-muted" />}>
-              <MapShell
-                surface="discover"
-                height={mapHeight}
-                cooperativeGestures
-                configOverride={HOME_MAP_CONFIG}
-              />
-            </React.Suspense>
-          ) : (
-            <div className="h-full w-full animate-pulse bg-muted" />
-          )}
-        </ErrorBoundary>
+      <SubwayHero />
 
-        {/* Desktop masthead — identity statement + live stats over the map.
-            Fades (never unmounts — SEO) on the first map interaction. */}
-        {!isMobile && <HeroIdentityOverlay variant="overlay" dimmed={heroDimmed} />}
-      </section>
+      {!isMobile && <IntentRail />}
 
-      {/* ── Editorial bands — photocopy grain on the whole region, not the map. */}
-      <div className="bg-noise">
-        {/* ── Intent Router entry points. Eager and unanimated on purpose —
-             see the comment in IntentRail.tsx: this is navigation, so it must
-             never depend on an IntersectionObserver firing. Rendered here for
-             desktop only; mobile has it above the map (see above), and
-             rendering it twice would duplicate six nav links for a screen
-             reader. ───────────────────────────────────────────────────────*/}
-        {!isMobile && <IntentRail />}
+      {/* ── Returning visitors: one light personalized rail (self-hides) ─ */}
+      <RecentlyViewedRail />
 
-        {/* ── Returning visitors: one light personalized rail (self-hides) ─ */}
-        <RecentlyViewedRail />
+      {/* ── Departures — the soonest real events as board rows ─────────── */}
+      <ErrorBoundary section="departures" fallback={null}>
+        <DeparturesBoard />
+      </ErrorBoundary>
 
-        {/* ── Events near you — lead card + date-grouped agenda ─────────── */}
-        <HomeDeferred section="events-agenda" skeleton={agendaSkeleton}>
-          <EventsAgenda />
-        </HomeDeferred>
+      {/* ── Cities — bordered cards with bending track lines ───────────── */}
+      <ErrorBoundary section="cities" fallback={null}>
+        <CityCards />
+      </ErrorBoundary>
 
-        {/* ── Destinations — editorial city rail ────────────────────────── */}
-        <HomeDeferred section="home-destinations" skeleton={railSkeleton}>
-          <HomeDestinations />
-        </HomeDeferred>
+      {/* ── Latest news — editorial magazine grid ────────────────────── */}
+      <HomeDeferred section="news-magazine" skeleton={magazineSkeleton}>
+        <NewsMagazine />
+      </HomeDeferred>
 
-        {/* ── Latest news — editorial magazine grid ────────────────────── */}
-        <HomeDeferred section="news-magazine" skeleton={magazineSkeleton}>
-          <NewsMagazine />
-        </HomeDeferred>
+      {/* ── On this day — queer-history milestones (self-hides) ───────── */}
+      <HomeDeferred section="on-this-day" skeleton={null}>
+        <HomeOnThisDay />
+      </HomeDeferred>
 
-        {/* ── On this day — queer-history milestones (self-hides) ───────── */}
-        <HomeDeferred section="on-this-day" skeleton={null}>
-          <HomeOnThisDay />
-        </HomeDeferred>
+      {/* ── Born this week — community history marquee ────────────────── */}
+      <HomeDeferred section="born-this-week" skeleton={null}>
+        <HomeBornThisWeek />
+      </HomeDeferred>
 
-        {/* ── Born this week — community history marquee ────────────────── */}
-        <HomeDeferred section="born-this-week" skeleton={null}>
-          <HomeBornThisWeek />
-        </HomeDeferred>
+      {/* ── Marketplace — brand-safe spotlight + rail (self-hides) ───── */}
+      <HomeDeferred section="home-shopping" skeleton={railSkeleton}>
+        <HomeShoppingSection />
+      </HomeDeferred>
 
-        {/* ── Marketplace — brand-safe spotlight + rail (self-hides) ───── */}
-        <HomeDeferred section="home-shopping" skeleton={railSkeleton}>
-          <HomeShoppingSection />
-        </HomeDeferred>
-      </div>
-
-      {/* ── Final CTA — adaptive on auth state ─────────────────────────
-          PASTE-UP: the page's one drenched plate. Flat black ink flooded edge
-          to edge. The halftone-screen / deckle-tear treatment tried here read
-          as a loud, mechanical polka-dot pattern rather than printed texture
-          on a real screenshot pass — removed 2026-08-07 rather than left half
-          right. */}
-      <section className="relative isolate overflow-hidden rule-heavy px-4 sm:px-6 md:px-8 py-20 md:py-28 bg-foreground text-background">
-        <div className="relative max-w-3xl">
-          {/* Rank 2, not rank 1. This sat at `md:text-hero` — 76px, byte-identical
-              to the page's own h1 — so the closing CTA tied the masthead and the
-              page had two things claiming top rank. Measured on production, not
-              inferred from the classes. */}
-          <h2
-            className="font-display text-display font-bold tracking-tight"
-            style={{ letterSpacing: '-0.035em' }}
-          >
-            {t('home.cta.title', 'Built by the community,')}{' '}
-            {t('home.cta.title2', 'for the community.')}
-          </h2>
-          <p className="mt-6 max-w-xl text-base opacity-70">
-            {t('home.cta.subtitle', 'Verified safe spaces, real reviews, no paywalls.')}
-          </p>
-          <div className="mt-10 flex flex-wrap gap-4">
-            {user ? (
-              <>
-                <LocalizedLink
-                  to="/submit"
-                  className="ink-bleed inline-flex items-center justify-center rounded-element bg-ink-pink px-8 py-4 text-sm font-bold tracking-tight text-ink-pink-foreground transition-opacity hover:opacity-90 no-underline"
-                >
-                  {t('home.cta.submit', 'Add a venue')}
-                </LocalizedLink>
-                <LocalizedLink
-                  to="/friends"
-                  className="inline-flex items-center justify-center rounded-element bg-background/15 hover:bg-background/25 transition-colors px-8 py-4 text-sm font-bold tracking-tight text-background transition-colors hover:border-background no-underline"
-                >
-                  {t('home.cta.invite', 'Invite friends')}
-                </LocalizedLink>
-              </>
-            ) : (
-              <>
-                <LocalizedLink
-                  to="/auth?mode=signup"
-                  className="ink-bleed inline-flex items-center justify-center rounded-element bg-ink-pink px-8 py-4 text-sm font-bold tracking-tight text-ink-pink-foreground transition-opacity hover:opacity-90 no-underline"
-                >
-                  {t('home.cta.join', 'Join the community')}
-                </LocalizedLink>
-                <LocalizedLink
-                  to="/about"
-                  className="inline-flex items-center justify-center rounded-element bg-background/15 hover:bg-background/25 transition-colors px-8 py-4 text-sm font-bold tracking-tight text-background transition-colors hover:border-background no-underline"
-                >
-                  {t('home.cta.about', 'Read the mission')}
-                </LocalizedLink>
-              </>
-            )}
-          </div>
-        </div>
-      </section>
+      {/* ── Support — the closing band, paper with ink CTAs ───────────── */}
+      <SupportBand />
     </div>
   );
 });

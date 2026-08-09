@@ -12,7 +12,6 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { LanguageSwitcher } from '@/components/i18n/LanguageSwitcher';
 import { CurrencySelector } from '@/components/i18n/CurrencySelector';
-import { ThemeToggle } from '@/components/theme/ThemeToggle';
 import { AuthDialog } from '@/components/auth/AuthDialog';
 import { Button } from '@/components/ui/button';
 import { DESTINATIONS, NAV_CLUSTERS, LEGAL_ITEMS, INTENT_NAV } from '@/config/navigation';
@@ -259,7 +258,6 @@ export function MobileNavSheet({ open, onOpenChange }: MobileNavSheetProps) {
               <div className="flex items-center gap-2">
                 <LanguageSwitcher />
                 <CurrencySelector />
-                <ThemeToggle />
               </div>
             </div>
           </div>

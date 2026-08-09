@@ -1,27 +1,48 @@
 import { useLocation } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { ChevronUp } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { ThemeToggle } from '@/components/theme/ThemeToggle';
 import { LanguageSwitcher } from '@/components/i18n/LanguageSwitcher';
 import { CurrencySelector } from '@/components/i18n/CurrencySelector';
 import { cn } from '@/lib/utils';
-import { INTENT_NAV, isIntentActive } from '@/config/navigation';
+import { INTENT_NAV, INTENT_TRACK, isIntentActive } from '@/config/navigation';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
+import { MasterSymbol } from '@/components/brand/MasterSymbol';
+import { FooterTracks } from './FooterTracks';
 
-// Site/meta links only. The intent row above them is single-sourced from
-// config/navigation.ts — this list used to be the site's third, hardcoded
-// nav source, divergent from both the header and the mobile sheet.
-const footerLinks = [
-  { href: '/about', labelKey: 'footer.about' },
-  { href: '/history', labelKey: 'footer.history' },
-  { href: '/legal', labelKey: 'footer.legalLink' },
-  { href: '/accessibility', labelKey: 'header.legal.accessibility' },
-  { href: '/privacy', labelKey: 'footer.privacy' },
-  { href: '/terms', labelKey: 'footer.terms' },
-  { href: '/contact', labelKey: 'footer.contact' },
-  { href: '/donate', labelKey: 'footer.supportUs' },
+/**
+ * Footer — the station map at the end of the line
+ * ("Header and Footer.dc.html", panel 06).
+ *
+ * Structure is load-bearing and specified, not stylistic:
+ *   1. two crossing track lines, so the page ends on the metaphor it opened on
+ *   2. columns are TRACKS, not a sitemap dump — one per intent, each led by its
+ *      own line swatch, so the footer teaches the same six jobs the topbar does
+ *   3. the anti-discrimination policy and the crisis lines sit ABOVE the legal
+ *      row, "because that is the order of importance, not the order of
+ *      convention"
+ *   4. legal + tagline last
+ *
+ * Ink flood throughout: this is the one drenched plate on the page.
+ */
+
+/** Site/meta links. Deliberately NOT a third nav source — the track columns
+ *  above are single-sourced from INTENT_NAV; these are the legal/meta row. */
+const legalLinks = [
+  { href: '/privacy', labelKey: 'footer.privacy', fallback: 'Privacy' },
+  { href: '/terms', labelKey: 'footer.terms', fallback: 'Terms' },
+  { href: '/legal', labelKey: 'footer.legalLink', fallback: 'Legal' },
+  { href: '/accessibility', labelKey: 'header.legal.accessibility', fallback: 'Accessibility' },
+  { href: '/contributors', labelKey: 'footer.contributors', fallback: 'Contributors' },
+  { href: '/about', labelKey: 'footer.about', fallback: 'About' },
+  { href: '/contact', labelKey: 'footer.contact', fallback: 'Contact' },
+  { href: '/donate', labelKey: 'footer.supportUs', fallback: 'Support Us' },
 ];
+
+const TRACK_SWATCH: Record<string, string> = {
+  pink: 'bg-track-pink',
+  blue: 'bg-track-blue',
+  green: 'bg-track-green',
+  yellow: 'bg-track-yellow',
+};
 
 export function Footer() {
   const { t } = useTranslation();
@@ -30,100 +51,126 @@ export function Footer() {
   const localePath = pathname.replace(/^\/(?:[a-z]{2}\/)?/, '/');
 
   return (
-    <footer className="bg-background/70 backdrop-blur-xl rule-heavy mt-auto">
-      <div className="w-full px-4 sm:px-6 md:px-8 py-4 flex flex-col md:flex-row items-center justify-center md:justify-between gap-2">
-        <div className="flex flex-col items-center gap-0.5 order-2 md:order-1 md:flex-1">
-          {/* One landmark, two rows. A second <nav> here would need its own
-              unique accessible name — the header already owns "Primary" and the
-              mobile bar owns "Navigation", and duplicate landmark names break
-              rotor navigation. */}
-          <nav aria-label="Footer navigation" className="flex flex-col items-center gap-0.5">
-            <div className="flex flex-wrap justify-center gap-0.5">
-              {INTENT_NAV.map((intent, i) => {
-                const active = isIntentActive(intent, localePath);
-                return (
-                  <div key={intent.to} className="flex items-center gap-0.5">
-                    {i > 0 && (
-                      <span className="text-xs text-muted-foreground" aria-hidden>
-                        ·
-                      </span>
-                    )}
-                    <LocalizedLink
-                      to={intent.to}
-                      aria-current={active ? 'page' : undefined}
-                      style={{ alignItems: 'center', minHeight: 44, padding: '4px 8px' }}
-                      className="no-underline inline-flex"
-                    >
-                      <span
-                        className={cn(
-                          'text-xs transition-colors',
-                          active
-                            ? 'text-foreground font-semibold underline underline-offset-4'
-                            : 'text-foreground hover:text-primary',
-                        )}
-                      >
-                        {t(intent.labelKey, intent.fallback)}
-                      </span>
-                    </LocalizedLink>
-                  </div>
-                );
-              })}
-            </div>
+    <footer className="mt-auto bg-foreground text-background">
+      <div className="mx-auto w-full max-w-7xl px-4 pt-8 sm:px-6 md:px-8">
+        <FooterTracks />
+      </div>
 
-            <div className="flex flex-wrap justify-center gap-0.5">
-              {footerLinks.map((link, i) => {
-                const active = localePath === link.href;
-                return (
-                  <div key={link.href} className="flex items-center gap-0.5">
-                    {i > 0 && (
-                      <span className="text-xs text-muted-foreground" aria-hidden>
-                        ·
-                      </span>
-                    )}
-                    {/* LocalizedLink, not Link: these are all locale-aware
-                      routes under /:locale?, and a bare Link dropped an /ar
-                      reader back to English mid-session. */}
-                    <LocalizedLink
-                      to={link.href}
-                      aria-current={active ? 'page' : undefined}
-                      style={{ alignItems: 'center', minHeight: 44, padding: '4px 8px' }}
-                      className="no-underline inline-flex"
-                    >
-                      <span
-                        className={cn(
-                          'text-xs transition-colors',
-                          active
-                            ? 'text-foreground font-semibold underline underline-offset-4'
-                            : 'text-muted-foreground hover:text-primary',
-                        )}
-                      >
-                        {t(link.labelKey)}
-                      </span>
-                    </LocalizedLink>
-                  </div>
-                );
-              })}
+      {/* ── Track columns. One per intent, single-sourced from INTENT_NAV so
+           the footer can never drift from the topbar (the defect class that
+           put /venues and /people out of reach of desktop chrome). ────── */}
+      <nav
+        aria-label="Footer navigation"
+        className="mx-auto grid w-full max-w-7xl grid-cols-2 gap-6 px-4 pb-8 pt-4 sm:px-6 md:grid-cols-3 md:px-8 lg:grid-cols-6"
+      >
+        {INTENT_NAV.map((intent) => {
+          const active = isIntentActive(intent, localePath);
+          const track = INTENT_TRACK[intent.id] ?? 'pink';
+          return (
+            <div key={intent.to}>
+              <div className="mb-2 flex items-center gap-2">
+                <span aria-hidden className={cn('h-2 w-5 rounded-full', TRACK_SWATCH[track])} />
+                <LocalizedLink
+                  to={intent.to}
+                  aria-current={active ? 'page' : undefined}
+                  className="font-display text-title text-background no-underline hover:underline underline-offset-4"
+                >
+                  {t(intent.labelKey, intent.fallback)}
+                </LocalizedLink>
+              </div>
+              <p className="text-13 leading-relaxed text-background/70">
+                {t(intent.subtitleKey, intent.subtitleFallback)}
+              </p>
             </div>
-          </nav>
+          );
+        })}
+      </nav>
 
-          <span className="text-muted-foreground" style={{ fontSize: '0.65rem' }}>
-            &copy; {currentYear} Queer Guide
-          </span>
+      {/* ── Policy + crisis. Above the legal row on purpose. ──────────── */}
+      <div className="border-t-[3px] border-background">
+        <div className="mx-auto grid w-full max-w-7xl gap-8 px-4 py-8 sm:px-6 md:grid-cols-2 md:px-8">
+          <div>
+            <h2 className="max-w-md font-display text-headline leading-tight">
+              {t('footer.antiDiscrimination.title', "We don't do bigotry here.")}
+            </h2>
+            <p className="mt-2 max-w-lg text-13 leading-relaxed text-background/80">
+              {t(
+                'footer.antiDiscrimination.body',
+                'Racism, transphobia, and discrimination are automatic grounds for getting booted off the platform. Period.',
+              )}
+            </p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <LocalizedLink
+                to="/report"
+                className="border-2 border-background px-4 py-2 text-xs2 font-bold text-background no-underline hover:bg-background hover:text-foreground"
+              >
+                {t('footer.reportSomething', 'Report something')}
+              </LocalizedLink>
+              <LocalizedLink
+                to="/help"
+                className="border-2 border-background px-4 py-2 text-xs2 font-bold text-background no-underline hover:bg-background hover:text-foreground"
+              >
+                {t('footer.hotlines', 'Hotlines')}
+              </LocalizedLink>
+            </div>
+          </div>
+
+          <div>
+            <div className="text-2xs font-bold uppercase tracking-label text-background/70">
+              {t('footer.emergency.eyebrow', 'In an emergency')}
+            </div>
+            {/* The crisis block is a link, not a card with a link in it: on the
+                one surface where seconds matter the whole box is the target. */}
+            <LocalizedLink
+              to="/help"
+              className="mt-2 block border-[3px] border-background p-4 text-background no-underline hover:bg-background hover:text-foreground"
+            >
+              <span className="block font-display text-title">
+                {t('footer.emergency.title', 'Crisis lines, 24 hours')}
+              </span>
+              <span className="mt-1.5 block text-13 leading-relaxed">
+                {t(
+                  'footer.emergency.body',
+                  'Trans helpline, LGBT+ crisis support, and local emergency numbers, listed by country and always one click from any page.',
+                )}
+              </span>
+            </LocalizedLink>
+          </div>
         </div>
+      </div>
 
-        <div className="flex items-center justify-center flex-wrap gap-0.5 order-1 md:order-2">
+      {/* ── Legal + tagline ───────────────────────────────────────────── */}
+      <div className="border-t-[3px] border-background">
+        <div className="mx-auto flex w-full max-w-7xl flex-wrap items-center justify-between gap-4 px-4 py-6 sm:px-6 md:px-8">
+          <div className="flex flex-wrap items-center gap-4">
+            <MasterSymbol className="w-14 text-background" />
+            <span className="text-13">
+              {t('footer.tagline', 'Every track. Every station. Everyone.')}
+            </span>
+          </div>
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+            {legalLinks.map((link) => (
+              <LocalizedLink
+                key={link.href}
+                to={link.href}
+                aria-current={localePath === link.href ? 'page' : undefined}
+                className="text-13 text-background/80 no-underline hover:text-background hover:underline underline-offset-4"
+              >
+                {t(link.labelKey, link.fallback)}
+              </LocalizedLink>
+            ))}
+            {/* The spec's bottom row ends on a bare "© 2026". The site name is
+                kept here because the footer is the only place it appears as
+                text once the header wordmark became a graphic — dropping it
+                left the page with no machine-readable owner. */}
+            <span className="text-13 text-background/60">
+              &copy; {currentYear} Queer Guide
+            </span>
+          </div>
+        </div>
+        <div className="mx-auto flex w-full max-w-7xl flex-wrap items-center gap-2 px-4 pb-6 sm:px-6 md:px-8">
           <LanguageSwitcher />
           <CurrencySelector />
-          <ThemeToggle />
-          <Button
-            variant="ghost"
-            size="sm"
-            className="min-w-11 min-h-11"
-            aria-label="Scroll to top"
-            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-          >
-            <ChevronUp size={14} />
-          </Button>
         </div>
       </div>
     </footer>

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router';
 import { Button } from '@/components/ui/button';
-import { Briefcase, LogOut, Moon, Plus, Shield, Sun, UserRound } from 'lucide-react';
+import { Briefcase, LogOut, Plus, Shield, UserRound } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
@@ -22,11 +22,18 @@ import { generateAvatarUrl } from '@/lib/avatar';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
-import { USER_MENU_ITEMS as userMenuItems, INTENT_NAV, isIntentActive } from '@/config/navigation';
+import {
+  USER_MENU_ITEMS as userMenuItems,
+  INTENT_NAV,
+  INTENT_TRACK,
+  isIntentActive,
+} from '@/config/navigation';
 import { getSubmitCta } from '@/lib/submitCta';
-import { useTheme } from '@/components/theme/ThemeProvider';
-import { cn } from '@/lib/utils';
 import { useSiteBranding } from '@/hooks/useSiteBranding';
+import { Wordmark } from '@/components/brand/Wordmark';
+import { MasterSymbol } from '@/components/brand/MasterSymbol';
+import { useCompactHeader } from '@/hooks/useCompactHeader';
+import { cn } from '@/lib/utils';
 
 // ── Component ───────────────────────────────────────────────────────────────
 
@@ -37,9 +44,8 @@ export function Header() {
   const isMobile = useIsMobile();
   const { t } = useTranslation();
 
+  const compact = useCompactHeader();
   const { user, signOut } = useAuth();
-  const { theme, setTheme } = useTheme();
-  const isDark = theme === 'dark';
   const { profile } = useProfile();
   const { isAdmin, isModerator } = useAdminRoles();
 
@@ -69,18 +75,35 @@ export function Header() {
   // ── Brand + right action cluster (shared by mobile row & desktop grid) ───
   const brand = (
     <Link to="/" aria-label={siteName} className="flex items-center gap-2.5 shrink-0 no-underline">
-      <img
-        src={branding.logoUrl ?? '/images/logo.png'}
-        alt=""
-        aria-hidden="true"
-        tabIndex={-1}
-        className={`${branding.logoUrl ? '' : 'brightness-0 dark:invert '}transition-transform duration-150 hover:-rotate-6 hover:scale-110 active:scale-95 object-contain`}
-        style={{ height: 34, width: 34 }}
-      />
-      <span className="hidden flex-col font-display text-base font-bold leading-[1.1] tracking-tight text-foreground md:flex">
-        <span>{wordmarkTop}</span>
-        {wordmarkBottom && <span>{wordmarkBottom}</span>}
-      </span>
+      {branding.logoUrl ? (
+        // /admin/design custom-logo escape hatch keeps the img branch.
+        <>
+          <img
+            src={branding.logoUrl}
+            alt=""
+            aria-hidden="true"
+            tabIndex={-1}
+            className="transition-transform duration-150 hover:-rotate-6 hover:scale-110 active:scale-95 object-contain"
+            style={{ height: 34, width: 34 }}
+          />
+          <span className="hidden flex-col font-display text-base font-bold leading-[1.1] tracking-tight text-foreground md:flex">
+            <span>{wordmarkTop}</span>
+            {wordmarkBottom && <span>{wordmarkBottom}</span>}
+          </span>
+        </>
+      ) : (
+        // Spec row 1: the mark and the wordmark travel together.
+        //
+        // The wordmark steps DOWN on small screens and is dropped entirely
+        // below `sm`. Anton at --text-headline measures 142px, and on a 320px
+        // viewport that left the search field 32px wide — unusable, and 94
+        // `target-size` violations in the axe route sweep, which scans down to
+        // 320px. The mark alone carries the brand at that width.
+        <>
+          <MasterSymbol className="w-10 shrink-0 text-foreground sm:w-12" />
+          <Wordmark className="hidden text-title text-foreground sm:inline-block md:text-headline" />
+        </>
+      )}
     </Link>
   );
 
@@ -121,7 +144,7 @@ export function Header() {
           to="/hub"
           aria-current={path === '/hub' || path.startsWith('/hub/') ? 'page' : undefined}
           title={t('header.mobileNav.hub', 'Hub')}
-          className="ink-underline hidden items-center gap-2 px-2 py-2 text-sm font-medium text-muted-foreground no-underline transition-colors hover:text-foreground aria-[current=page]:font-semibold aria-[current=page]:text-foreground md:inline-flex"
+          className="hidden items-center gap-2 px-2 py-2 text-sm font-medium text-muted-foreground no-underline transition-colors hover:text-foreground aria-[current=page]:font-semibold aria-[current=page]:text-foreground md:inline-flex"
         >
           <Briefcase size={18} aria-hidden />
           <span className="sr-only lg:not-sr-only">{t('header.mobileNav.hub', 'Hub')}</span>
@@ -182,30 +205,8 @@ export function Header() {
               </LocalizedLink>
             </DropdownMenuItem>
 
-            {/* Light/dark switch — sits directly above Settings. onSelect
-                preventDefault keeps the menu open so it reads as a toggle. */}
-            <DropdownMenuItem
-              onSelect={(e) => {
-                e.preventDefault();
-                // `onSelect` carries no coordinates, so locate the wipe on the
-                // row itself rather than falling back to the viewport centre —
-                // this menu sits in the top-right corner and a centre wipe
-                // would visibly disagree with where the user clicked.
-                const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
-                setTheme(isDark ? 'light' : 'dark', {
-                  x: r.left + r.width / 2,
-                  y: r.top + r.height / 2,
-                });
-              }}
-              className="flex gap-2"
-            >
-              {isDark ? <Sun size={16} /> : <Moon size={16} />}
-              <span>
-                {isDark
-                  ? t('header.userMenu.lightMode', 'Light mode')
-                  : t('header.userMenu.darkMode', 'Dark mode')}
-              </span>
-            </DropdownMenuItem>
+            {/* Theme switch removed 2026-08: dark mode dropped with the
+                subway-map rebrand (fixed paper/ink poster identity). */}
 
             {userMenuItems.map((item) => (
               <DropdownMenuItem asChild key={item.to}>
@@ -257,42 +258,60 @@ export function Header() {
   // to be hardcoded here and had silently diverged from the config's
   // PRIMARY_NAV, leaving /venues (the largest catalog) and /people unreachable
   // from desktop chrome. Never re-inline it.
+  // ── Desktop primary nav — the Intent Router row, as TRACK TABS.
+  // Single-sourced from INTENT_NAV in src/config/navigation.ts. This array used
+  // to be hardcoded here and had silently diverged from the config's
+  // PRIMARY_NAV, leaving /venues (the largest catalog) and /people unreachable
+  // from desktop chrome. Never re-inline it.
+  //
+  // Design contract ("Header and Footer.dc.html", panel 01): every tab carries
+  // a 6px rule and the ACTIVE tab reverses to an ink fill. "Colour appears
+  // once: as the rule under the active section" — so inactive rules are
+  // transparent, not a muted tint.
   const desktopNav = (
     // Distinct landmark name — the mobile bottom bar owns "Navigation";
     // duplicate nav landmark names break rotor navigation (landmark-unique).
     // `md:` not `lg:` — useIsMobile flips at md (768) and MobileBottomNav is
-    // md:hidden, so `hidden lg:flex` left 768–1023px (iPad portrait, small
-    // laptops, split-screen) with NO primary navigation at all. Below lg the
-    // label collapses to its icon rather than the nav collapsing: five labels
-    // plus the 280px-min search field and the action cluster genuinely overflow
-    // there.
+    // md:hidden, so `hidden lg:flex` left 768–1023px with no primary nav.
     <nav
       aria-label={t('header.primaryNavigation', 'Primary')}
-      className="hidden md:flex items-center gap-1"
+      className="hidden items-stretch md:flex"
     >
       {INTENT_NAV.map((intent) => {
-        const { to, icon: Icon, labelKey, fallback } = intent;
+        const { to, labelKey, fallback, id } = intent;
         const active = isIntentActive(intent, path);
         const label = t(labelKey, fallback);
+        const track = INTENT_TRACK[id] ?? 'pink';
         return (
           <LocalizedLink
             key={to}
             to={to}
             title={label}
             aria-current={active ? 'page' : undefined}
-            // One class for both states: `.ink-underline` keys the active rule
-            // off `aria-current`, which is already set above. The active branch
-            // used a real `underline decoration-spot`, so the two states are now
-            // the same stroke rather than two different treatments that drift.
             className={cn(
-              'ink-underline flex items-center px-2 py-2 text-sm no-underline transition-colors',
+              'flex flex-col justify-end no-underline transition-colors',
               active
-                ? 'font-semibold text-foreground'
-                : 'font-medium text-muted-foreground hover:text-foreground',
+                ? 'bg-foreground text-background'
+                : 'text-foreground hover:bg-surface-container',
             )}
           >
-            <Icon size={18} className="lg:hidden" aria-hidden />
-            <span className="sr-only lg:not-sr-only">{label}</span>
+            <span className="whitespace-nowrap px-4 pb-2 pt-4 text-15 font-bold lg:px-6">
+              {label}
+            </span>
+            <span
+              aria-hidden
+              className={cn(
+                'h-1.5',
+                active
+                  ? {
+                      pink: 'bg-track-pink',
+                      blue: 'bg-track-blue',
+                      green: 'bg-track-green',
+                      yellow: 'bg-track-yellow',
+                    }[track]
+                  : 'bg-transparent',
+              )}
+            />
           </LocalizedLink>
         );
       })}
@@ -301,40 +320,77 @@ export function Header() {
 
   // ── Render ──────────────────────────────────────────────────────────────
 
+  // Design contract, panel 02: "On scroll the bar reverses to ink and drops to
+  // one line, carrying the current track colour and the page action with it.
+  // Nothing else survives the collapse."
+  const activeIntent = INTENT_NAV.find((i) => isIntentActive(i, path));
+  const activeTrack = activeIntent ? (INTENT_TRACK[activeIntent.id] ?? 'pink') : 'pink';
+  const trackSwatch = {
+    pink: 'bg-track-pink',
+    blue: 'bg-track-blue',
+    green: 'bg-track-green',
+    yellow: 'bg-track-yellow',
+  }[activeTrack];
+
   return (
     <header
-      // PASTE-UP masthead: a heavy 2px black rule under the header rather than
-      // a hairline box edge, matching the footer and the section mastheads.
-      // `.rule-heavy` draws on the top edge, so the bottom rule is spelled out.
-      className="sticky top-0 border-b-2 border-foreground bg-background/80 backdrop-blur-xl"
+      // The whole bar is one 4px-ruled box (spec panel 01), not a hairline
+      // edge. No backdrop blur: the compact state is a solid ink flood, and a
+      // blurred translucent bar under it reads as a third, muddier surface.
+      className={cn(
+        'sticky top-0 border-b-4 border-foreground',
+        compact && !isMobile ? 'bg-foreground text-background' : 'bg-background',
+      )}
       style={{ zIndex: 1100, paddingTop: 'env(safe-area-inset-top, 0px)' }}
     >
-      <div className="px-4 sm:px-6 md:px-8">
-        {isMobile ? (
-          /* ── Mobile: brand · search · actions ── */
-          <div className="flex items-center gap-2 sm:gap-4" style={{ height: 56 }}>
-            {brand}
-            <div className="flex-1 min-w-0 mx-2 sm:mx-4">
-              <UniversalSearchBar />
-            </div>
-            {rightCluster}
+      {compact && !isMobile ? (
+        /* ── 02 · Compact, after scroll — one ink line ────────────────── */
+        <div className="flex flex-wrap items-center gap-4 px-4 py-2 sm:px-6 md:px-8">
+          <Link to="/" className="no-underline" aria-label={siteName}>
+            <Wordmark className="text-title text-background" />
+          </Link>
+          {activeIntent && (
+            <span className="flex items-center gap-2 text-15 font-bold">
+              <span aria-hidden className={cn('h-2 w-5 rounded-full', trackSwatch)} />
+              {t(activeIntent.labelKey, activeIntent.fallback)}
+            </span>
+          )}
+          <span className="ms-auto flex items-center gap-2">{rightCluster}</span>
+        </div>
+      ) : (
+        <>
+          {/* ── 01 · Primary. Search is the WIDEST thing in the bar: on a map
+               product it is the main verb. ─────────────────────────────── */}
+          <div className="px-4 sm:px-6 md:px-8">
+            {isMobile ? (
+              <div className="flex items-center gap-2" style={{ height: 56 }}>
+                {brand}
+                <div className="mx-2 min-w-0 flex-1">
+                  <UniversalSearchBar />
+                </div>
+                {rightCluster}
+              </div>
+            ) : (
+              <div className="flex items-center gap-4" style={{ height: 68 }}>
+                <div className="flex shrink-0 items-center gap-2.5">{brand}</div>
+                <div className="min-w-0 flex-1">
+                  <UniversalSearchBar />
+                </div>
+                <div className="shrink-0">{rightCluster}</div>
+              </div>
+            )}
           </div>
-        ) : (
-          /* ── Desktop: brand + nav left · search center · actions right ── */
-          <div className="flex items-center gap-4" style={{ height: 64 }}>
-            <div className="flex items-center gap-6 shrink-0">
-              {brand}
+
+          {/* ── Track tabs under a 3px rule, so each tab's 6px track rule
+               lands on the bar's own bottom edge. Mobile keeps the bottom
+               bar (MobileBottomNav) as its track row. ─────────────────── */}
+          {!isMobile && (
+            <div className="flex items-stretch border-t-[3px] border-foreground px-4 sm:px-6 md:px-8">
               {desktopNav}
             </div>
-            <div className="min-w-0 flex-1 flex justify-center">
-              <div className="w-full" style={{ maxWidth: 'clamp(280px, 36vw, 672px)' }}>
-                <UniversalSearchBar />
-              </div>
-            </div>
-            <div className="shrink-0">{rightCluster}</div>
-          </div>
-        )}
-      </div>
+          )}
+        </>
+      )}
 
       <AuthDialog open={authDialogOpen} onOpenChange={setAuthDialogOpen} />
     </header>
