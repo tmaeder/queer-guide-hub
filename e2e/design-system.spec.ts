@@ -7,14 +7,22 @@ import { test, expect } from '@playwright/test';
  * pages only ever paint sanctioned brand ink (see the PASTE-UP guard below —
  * it replaced the old "at most 5 chromatic backgrounds" budget).
  *
- * Radius assertions read --radius-{container,element,badge} off the document
- * at runtime instead of hardcoding px. They used to assert 16/8/4 literally,
- * which silently went stale the moment a design pass re-tuned the trio (the
- * PHOTOCOPY rebrand moved it to 8/4/0 and broke four of these tests) — and
- * because this spec is nightly-only, nothing surfaced it on the PR. The trio
- * is also runtime-overridable via /admin/design, so a literal can never be
- * the source of truth. What these tests actually guard is that cards/buttons/
- * dialogs/badges each consume the RIGHT tier, not any particular value.
+ * Radius assertions resolve --radius-{container,element,badge} through a probe
+ * element at runtime instead of hardcoding px. They used to assert 16/8/4
+ * literally, which silently went stale the moment a design pass re-tuned the
+ * trio (the PHOTOCOPY rebrand moved it to 8/4/0 and broke four of these tests).
+ * The trio is also runtime-overridable via /admin/design, so a literal can
+ * never be the source of truth. What these tests actually guard is that
+ * cards/buttons/dialogs/badges each consume the RIGHT tier, not any value.
+ *
+ * WHERE THIS RUNS. Everything here except the `visual snapshots` block is
+ * PR-BLOCKING: .github/workflows/e2e-pr.yml runs
+ *   npx playwright test e2e/design-system.spec.ts --grep-invert "visual snapshots"
+ * against localhost:4173 on every PR. Only the snapshot block is nightly-only,
+ * because it needs CI-generated baselines. This header previously claimed the
+ * whole spec was nightly-only and used that to explain why a breakage reached
+ * main — the claim was wrong, so treat a failure here as blocking, not as
+ * something that can be sorted out later.
  */
 
 const dismissCookieBanner = async (page) => {
@@ -24,6 +32,32 @@ const dismissCookieBanner = async (page) => {
     .click({ timeout: 3000 })
     .catch(() => {});
 };
+
+/**
+ * Resolve a radius token to the px the browser actually computes.
+ *
+ * These tests used to do `${parseFloat(token) * 16}px`, which assumes the token
+ * is authored in rem. It is not unit-agnostic and it is not override-safe:
+ * a pill badge (`--radius-badge: 9999px`) evaluates to `159984px` and fails,
+ * so the trio simply could not express a px value. That arithmetic is also
+ * where the button test's `px >= 9999` escape hatch came from — it was papering
+ * over this bug for `rounded-full` rather than allowing a real exception.
+ *
+ * Handing `var(--token)` to a probe element lets the engine do the conversion:
+ * correct for rem, px, and anything added later, and it still reflects a
+ * runtime override injected by /admin/design.
+ */
+const resolveRadius = (page, token: string): Promise<string> =>
+  page.evaluate((name) => {
+    const probe = document.createElement('div');
+    probe.style.position = 'absolute';
+    probe.style.visibility = 'hidden';
+    probe.style.borderRadius = `var(${name})`;
+    document.documentElement.appendChild(probe);
+    const value = getComputedStyle(probe).borderRadius;
+    probe.remove();
+    return value;
+  }, token);
 
 test.describe('design system: semantic radius (token-derived)', () => {
   test.beforeEach(async ({ page }) => {
@@ -44,14 +78,8 @@ test.describe('design system: semantic radius (token-derived)', () => {
   test('cards use --radius-container', async ({ page }) => {
     const cards = page.locator('.bg-card').first();
     await expect(cards).toBeVisible();
-    const { radius, token } = await cards.evaluate((el) => ({
-      radius: getComputedStyle(el).borderRadius,
-      token: getComputedStyle(document.documentElement)
-        .getPropertyValue('--radius-container')
-        .trim(),
-    }));
-    const expected = `${parseFloat(token) * 16}px`;
-    expect(radius).toBe(expected);
+    const radius = await cards.evaluate((el) => getComputedStyle(el).borderRadius);
+    expect(radius).toBe(await resolveRadius(page, '--radius-container'));
   });
 
   test('cards have no box-shadow', async ({ page }) => {
@@ -64,11 +92,8 @@ test.describe('design system: semantic radius (token-derived)', () => {
   test('badges use --radius-badge', async ({ page }) => {
     const badge = page.locator('[class*="badge"]').first();
     if ((await badge.count()) > 0) {
-      const { radius, token } = await badge.evaluate((el) => ({
-        radius: getComputedStyle(el).borderRadius,
-        token: getComputedStyle(document.documentElement).getPropertyValue('--radius-badge').trim(),
-      }));
-      expect(radius).toBe(`${parseFloat(token) * 16}px`);
+      const radius = await badge.evaluate((el) => getComputedStyle(el).borderRadius);
+      expect(radius).toBe(await resolveRadius(page, '--radius-badge'));
     }
   });
 });
@@ -88,16 +113,13 @@ test.describe('design system: buttons', () => {
     const btn = page.locator('main button, header button').filter({ hasNotText: '' }).first();
     if ((await btn.count()) > 0) {
       await expect(btn).toBeVisible();
-      const { radius, token } = await btn.evaluate((el) => ({
-        radius: getComputedStyle(el).borderRadius,
-        token: getComputedStyle(document.documentElement)
-          .getPropertyValue('--radius-element')
-          .trim(),
-      }));
-      // Read the token, not a literal, so a design pass can re-tune the trio.
-      // Allow rounded-full (≥9999px) escape hatch for icon/avatar buttons.
-      const px = parseInt(radius, 10);
-      expect(px === parseFloat(token) * 16 || px >= 9999).toBe(true);
+      const radius = await btn.evaluate((el) => getComputedStyle(el).borderRadius);
+      // `rounded-full` is a sanctioned escape hatch for icon/avatar buttons, so
+      // accept either. This used to be spelled `px >= 9999`, which was really
+      // compensating for the rem-only arithmetic rather than allowing a pill —
+      // it would also have silently accepted a genuinely wrong large radius.
+      const element = await resolveRadius(page, '--radius-element');
+      expect([element, '9999px']).toContain(radius);
     }
   });
 });
@@ -118,17 +140,12 @@ test.describe('design system: dialog', () => {
       await page.waitForTimeout(500);
       const dialog = page.getByRole('dialog').first();
       if ((await dialog.count()) > 0) {
-        const { radius, token } = await dialog.evaluate((el) => {
+        const radius = await dialog.evaluate((el) => {
           // The dialog content panel is the styled child
           const panel = el.querySelector('[class*="DialogContent"], [class*="dialog"]') || el;
-          return {
-            radius: getComputedStyle(panel).borderRadius,
-            token: getComputedStyle(document.documentElement)
-              .getPropertyValue('--radius-container')
-              .trim(),
-          };
+          return getComputedStyle(panel).borderRadius;
         });
-        expect(radius).toBe(`${parseFloat(token) * 16}px`);
+        expect(radius).toBe(await resolveRadius(page, '--radius-container'));
       }
     }
   });

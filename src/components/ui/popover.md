@@ -27,9 +27,10 @@ Default · hover · active · focus · disabled. Loading where applicable.
 ## Do / Don't
 
 - **Do** import from `@/components/ui/popover`.
-- **Do** stay flat: zero radius, zero shadow, zero border. Enforced
-  by `__tests__/flat-compliance.test.tsx` for the canonical
-  primitives.
+- **Do** take radius from the semantic trio (`rounded-container`/
+  `rounded-element`/`rounded-badge`) and avoid the soft `shadow-*`
+  ramp. Enforced by `__tests__/token-compliance.test.tsx` for the
+  canonical primitives.
 - **Don't** import the underlying MUI component directly when this
   wrapper exists.
 - **Don't** introduce hardcoded color literals — use theme tokens

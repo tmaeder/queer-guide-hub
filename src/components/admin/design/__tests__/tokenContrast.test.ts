@@ -38,6 +38,27 @@ const value = (key: string, mode: 'light' | 'dark'): string => {
 
 const MODES = ['light', 'dark'] as const;
 
+/**
+ * The PASTE-UP drums, DERIVED from the catalog's `ink` flag.
+ *
+ * This was three separate hardcoded `['spot','ink-blue','ink-over']` arrays —
+ * one in NON_TEXT_ON_PAGE, one in the body-text ban, one in the danger-hue
+ * check. Adding a fourth drum meant remembering all three, and the one that is
+ * easiest to forget is the safety-critical one, which fails OPEN: an ink absent
+ * from that loop is simply never checked against `--destructive`. Deriving it
+ * means flagging the token in tokenCatalog.ts is sufficient and sole.
+ */
+const INKS = COLOR_TOKENS.filter((t) => t.ink).map((t) => t.key);
+
+/** Hue of a token's "H S% L%" channel triple. */
+const hueOf = (v: string) => Number(v.split(' ')[0]);
+
+/** Shortest angular distance between two hues, in degrees. */
+const hueDistance = (a: number, b: number) => {
+  const d = Math.abs(a - b) % 360;
+  return d > 180 ? 360 - d : d;
+};
+
 /** Tokens rendered as body-sized TEXT directly on the page background. */
 const TEXT_ON_PAGE = [
   'foreground',
@@ -61,12 +82,11 @@ const NON_TEXT_ON_PAGE = [
   'border-hairline',
   'sidebar-border',
   'ring',
-  'spot',
   // PASTE-UP inks. These tint plates; they are never letterforms. With borders
   // removed, a plate's own fill IS its boundary, so 1.4.11 applies to the ink
-  // exactly as it did to the hairline it replaced.
-  'ink-blue',
-  'ink-over',
+  // exactly as it did to the hairline it replaced. Derived, so a new drum is
+  // enrolled by flagging it in the catalog and nothing else.
+  ...INKS,
 ];
 
 describe('design tokens: contrast guards', () => {
@@ -75,7 +95,10 @@ describe('design tokens: contrast guards', () => {
     (_label, fg, bg, mode) => {
       const v = contrastVerdict(value(fg, mode), value(bg, mode));
       expect(v, `unparseable token value for ${fg}/${bg}`).not.toBeNull();
-      expect(v!.ratio, `${fg} on ${bg} (${mode}) is ${v!.ratio}:1, needs >= 4.5`).toBeGreaterThanOrEqual(4.5);
+      expect(
+        v!.ratio,
+        `${fg} on ${bg} (${mode}) is ${v!.ratio}:1, needs >= 4.5`,
+      ).toBeGreaterThanOrEqual(4.5);
     },
   );
 
@@ -112,12 +135,22 @@ describe('design tokens: contrast guards', () => {
     expect(NON_TEXT_ON_PAGE).toContain('spot');
   });
 
+  it('has at least one ink to guard', () => {
+    // The three checks below iterate INKS. If the `ink` flag were ever dropped
+    // from the catalog they would all iterate nothing and pass vacuously —
+    // which is exactly how a safety guard dies quietly.
+    expect(
+      INKS.length,
+      'no COLOR_TOKENS carry `ink: true`; the ink guards below are vacuous',
+    ).toBeGreaterThan(0);
+  });
+
   it('keeps every PASTE-UP ink off the small-text path', () => {
-    // Same contract as --spot, extended to the 2nd and 3rd drums. An ink is a
-    // plate fill; type on a plate uses the paired *-foreground, which
-    // CONTRAST_PAIRS gates at 4.5:1. If an ink ever appears here as text, the
-    // axe route sweep fails first and this test explains why it should.
-    for (const ink of ['ink-blue', 'ink-over']) {
+    // Same contract as --spot, extended to every drum. An ink is a plate fill;
+    // type on a plate uses the paired *-foreground, which CONTRAST_PAIRS gates
+    // at 4.5:1. If an ink ever appears here as text, the axe route sweep fails
+    // first and this test explains why it should.
+    for (const ink of INKS) {
       expect(TEXT_ON_PAGE, `--${ink} must never be body text`).not.toContain(ink);
       expect(NON_TEXT_ON_PAGE, `--${ink} must still clear the 3:1 fill bar`).toContain(ink);
     }
@@ -128,24 +161,54 @@ describe('design tokens: contrast guards', () => {
     // nothing. If a brand ink ever drifts into the red hue band, a risk badge
     // and a decorative plate become indistinguishable on a product used in
     // criminalising countries. Guard the hue directly.
-    const hueOf = (v: string) => Number(v.split(' ')[0]);
-    for (const ink of ['spot', 'ink-blue', 'ink-over']) {
+    //
+    // Measured against --destructive's ACTUAL hue per mode, not against 0. The
+    // old form was `Math.min(hue, 360 - hue)`, i.e. distance from red-as-zero,
+    // which is only correct while --destructive happens to sit at hue 0. It is
+    // runtime-overridable via /admin/design, so that was luck, not a fact.
+    for (const ink of INKS) {
       for (const mode of MODES) {
         const hue = hueOf(value(ink, mode));
-        const distanceFromRed = Math.min(hue, 360 - hue);
+        const danger = hueOf(value('destructive', mode));
+        const distance = hueDistance(hue, danger);
         expect(
-          distanceFromRed,
-          `--${ink} (${mode}) sits at hue ${hue}, only ${distanceFromRed}° from --destructive. ` +
-            'Brand ink must never be mistakable for the danger signal.',
+          distance,
+          `--${ink} (${mode}) sits at hue ${hue}, only ${distance}° from --destructive ` +
+            `(hue ${danger}). Brand ink must never be mistakable for the danger signal.`,
         ).toBeGreaterThan(25);
+      }
+    }
+  });
+
+  it('keeps the drums distinguishable from each other', () => {
+    // Five drums that all read as "pinkish" are one drum with extra steps, and
+    // under a widened palette this is the constraint that actually keeps a
+    // multi-ink page legible. 25° is the same separation the danger check uses.
+    for (const mode of MODES) {
+      for (let i = 0; i < INKS.length; i++) {
+        for (let j = i + 1; j < INKS.length; j++) {
+          const a = hueOf(value(INKS[i], mode));
+          const b = hueOf(value(INKS[j], mode));
+          expect(
+            hueDistance(a, b),
+            `--${INKS[i]} (${a}) and --${INKS[j]} (${b}) are within 25° in ${mode} mode; ` +
+              'two drums that close read as one ink.',
+          ).toBeGreaterThan(25);
+        }
       }
     }
   });
 
   it('audits every token that CONTRAST_PAIRS references', () => {
     for (const p of CONTRAST_PAIRS) {
-      expect(COLOR_TOKENS.some((t) => t.key === p.fg), `unknown fg --${p.fg}`).toBe(true);
-      expect(COLOR_TOKENS.some((t) => t.key === p.bg), `unknown bg --${p.bg}`).toBe(true);
+      expect(
+        COLOR_TOKENS.some((t) => t.key === p.fg),
+        `unknown fg --${p.fg}`,
+      ).toBe(true);
+      expect(
+        COLOR_TOKENS.some((t) => t.key === p.bg),
+        `unknown bg --${p.bg}`,
+      ).toBe(true);
     }
   });
 });
