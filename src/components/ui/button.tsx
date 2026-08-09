@@ -9,39 +9,35 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        // Solid foreground CTA with subtle lift on hover.
-        default: 'bg-foreground text-background hover:opacity-90',
-        // Plate, not an outline. Fills to solid ink on hover.
+        // Subway-map primary: solid ink, squared, 2px ink border so it sits
+        // flush next to `outline` in a row.
+        default: 'border-2 border-foreground bg-foreground text-background font-bold hover:opacity-90',
+        // Secondary: 2px ink border on paper. Hover FILLS ink — a button
+        // fills or lifts, never both (design-system hard rule).
         outline:
-          'bg-surface-container-high text-foreground hover:bg-foreground hover:text-background',
+          'border-2 border-foreground bg-background text-foreground font-bold hover:bg-foreground hover:text-background',
         // No chrome until hover — useful in headers / menus.
         ghost: 'bg-transparent text-foreground hover:bg-muted',
         // Inline link styling.
         link: 'bg-transparent text-foreground underline underline-offset-4 hover:opacity-70',
         // Single chromatic exception carrying MEANING: irreversible actions.
-        // Ink never competes with this — see the doctrine in src/index.css.
+        // Track colors never compete with this — see src/index.css.
         destructive: 'bg-destructive text-destructive-foreground hover:opacity-90',
-        // Flat surface plate. Was `bg-muted` + a hairline border; the border is
-        // gone and the fill carries the edge.
+        // Flat surface plate, borderless — dense/quiet contexts (admin rows).
         soft: 'bg-surface-container text-foreground hover:bg-surface-container-high',
-        // PASTE-UP: primary conversion action, printed in the first drum.
-        // Pink is the one ink that is light in BOTH modes, so its type stays
-        // near-black either way (5.29:1 light / 6.61:1 dark) — the button does
-        // not have to flip its own foreground with the theme.
+        // Pink track conversion action. Paper type (3.4:1 as large/graphical
+        // text — pair with lg size), 2px ink border gates the fill.
         //
         // The `.ink-bleed` press feedback is deliberately NOT baked in here.
-        // `brand` is used across src/components/trips/**, and CLAUDE.md keeps
-        // travel content motion-free because it is safety-adjacent; baking
-        // motion into a variant would smuggle it onto every one of those
-        // screens. Opt in per call site with className="ink-bleed".
-        accent: 'bg-ink-pink text-ink-pink-foreground hover:opacity-90',
-        // The second drum. Blue is DARK on paper and LIGHT on a black page, so
-        // its foreground token flips with the mode — hence the token rather
-        // than a literal.
-        brand: 'bg-ink-blue text-ink-blue-foreground hover:opacity-90',
+        // `accent`/`brand` are used across src/components/trips/**, and
+        // CLAUDE.md keeps travel content motion-free because it is
+        // safety-adjacent. Opt in per call site with className="ink-bleed".
+        accent: 'border-2 border-foreground bg-track-pink text-background font-bold hover:opacity-90',
+        // Blue track. Ink type (paper-on-blue fails 3:1 — see tokenContrast).
+        brand: 'border-2 border-foreground bg-track-blue text-foreground font-bold hover:opacity-90',
         // Legacy alias retained for compat (2026-05-19) — collapses to
         // `default`. Use variant="default".
-        secondary: 'bg-foreground text-background hover:opacity-85',
+        secondary: 'border-2 border-foreground bg-foreground text-background font-bold hover:opacity-85',
       },
       size: {
         default: 'h-10 px-6',

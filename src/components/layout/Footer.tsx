@@ -7,6 +7,7 @@ import { CurrencySelector } from '@/components/i18n/CurrencySelector';
 import { cn } from '@/lib/utils';
 import { INTENT_NAV, isIntentActive } from '@/config/navigation';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
+import { MasterSymbol } from '@/components/brand/MasterSymbol';
 
 // Site/meta links only. The intent row above them is single-sourced from
 // config/navigation.ts — this list used to be the site's third, hardcoded
@@ -105,7 +106,8 @@ export function Footer() {
             </div>
           </nav>
 
-          <span className="text-muted-foreground" style={{ fontSize: '0.65rem' }}>
+          <span className="flex items-center gap-2 text-muted-foreground" style={{ fontSize: '0.65rem' }}>
+            <MasterSymbol className="w-14 text-foreground" />
             &copy; {currentYear} Queer Guide
           </span>
         </div>

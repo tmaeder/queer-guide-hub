@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router';
 import { Button } from '@/components/ui/button';
-import { Briefcase, LogOut, Moon, Plus, Shield, Sun, UserRound } from 'lucide-react';
+import { Briefcase, LogOut, Plus, Shield, UserRound } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
@@ -24,8 +24,8 @@ import { NotificationBell } from '@/components/notifications/NotificationBell';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
 import { USER_MENU_ITEMS as userMenuItems, INTENT_NAV, isIntentActive } from '@/config/navigation';
 import { getSubmitCta } from '@/lib/submitCta';
-import { useTheme } from '@/components/theme/ThemeProvider';
 import { useSiteBranding } from '@/hooks/useSiteBranding';
+import { Wordmark } from '@/components/brand/Wordmark';
 
 // ── Component ───────────────────────────────────────────────────────────────
 
@@ -37,8 +37,6 @@ export function Header() {
   const { t } = useTranslation();
 
   const { user, signOut } = useAuth();
-  const { theme, setTheme } = useTheme();
-  const isDark = theme === 'dark';
   const { profile } = useProfile();
   const { isAdmin, isModerator } = useAdminRoles();
 
@@ -68,18 +66,26 @@ export function Header() {
   // ── Brand + right action cluster (shared by mobile row & desktop grid) ───
   const brand = (
     <Link to="/" aria-label={siteName} className="flex items-center gap-2.5 shrink-0 no-underline">
-      <img
-        src={branding.logoUrl ?? '/images/logo.png'}
-        alt=""
-        aria-hidden="true"
-        tabIndex={-1}
-        className={`${branding.logoUrl ? '' : 'brightness-0 dark:invert '}transition-transform duration-150 hover:-rotate-6 hover:scale-110 active:scale-95 object-contain`}
-        style={{ height: 34, width: 34 }}
-      />
-      <span className="hidden flex-col font-display text-base font-bold leading-[1.1] tracking-tight text-foreground md:flex">
-        <span>{wordmarkTop}</span>
-        {wordmarkBottom && <span>{wordmarkBottom}</span>}
-      </span>
+      {branding.logoUrl ? (
+        // /admin/design custom-logo escape hatch keeps the img branch.
+        <>
+          <img
+            src={branding.logoUrl}
+            alt=""
+            aria-hidden="true"
+            tabIndex={-1}
+            className="transition-transform duration-150 hover:-rotate-6 hover:scale-110 active:scale-95 object-contain"
+            style={{ height: 34, width: 34 }}
+          />
+          <span className="hidden flex-col font-display text-base font-bold leading-[1.1] tracking-tight text-foreground md:flex">
+            <span>{wordmarkTop}</span>
+            {wordmarkBottom && <span>{wordmarkBottom}</span>}
+          </span>
+        </>
+      ) : (
+        // Default: the Anton wordmark with the heart in the g's descender.
+        <Wordmark className="text-headline text-foreground" />
+      )}
     </Link>
   );
 
@@ -181,22 +187,8 @@ export function Header() {
               </LocalizedLink>
             </DropdownMenuItem>
 
-            {/* Light/dark switch — sits directly above Settings. onSelect
-                preventDefault keeps the menu open so it reads as a toggle. */}
-            <DropdownMenuItem
-              onSelect={(e) => {
-                e.preventDefault();
-                setTheme(isDark ? 'light' : 'dark');
-              }}
-              className="flex gap-2"
-            >
-              {isDark ? <Sun size={16} /> : <Moon size={16} />}
-              <span>
-                {isDark
-                  ? t('header.userMenu.lightMode', 'Light mode')
-                  : t('header.userMenu.darkMode', 'Dark mode')}
-              </span>
-            </DropdownMenuItem>
+            {/* Theme switch removed 2026-08: dark mode dropped with the
+                subway-map rebrand (fixed paper/ink poster identity). */}
 
             {userMenuItems.map((item) => (
               <DropdownMenuItem asChild key={item.to}>
