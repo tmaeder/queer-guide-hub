@@ -19,16 +19,20 @@ import { describe, expect, it } from 'vitest';
 const ROOT = path.resolve(__dirname, '../../..');
 
 function inlineGuardBody(): string {
-  // Strip HTML comments first — the guard's own doc comment mentions the
-  // literal <script> tag, which would otherwise start the match inside it.
-  const html = readFileSync(path.join(ROOT, 'index.html'), 'utf8').replace(
-    /<!--[\s\S]*?-->/g,
-    '',
-  );
-  const bodies = Array.from(html.matchAll(/<script>([\s\S]*?)<\/script>/g), (m) => m[1]);
-  const guard = bodies.find((b) => b.includes('__qgBootGuard'));
-  if (!guard) throw new Error('index.html: inline boot guard <script> not found');
-  return guard;
+  // indexOf-based extraction, deliberately regex-free: tag-matching regexes
+  // here trip CodeQL's sanitizer heuristics (js/bad-tag-filter), and the
+  // guard's own HTML doc comment mentions the literal tag, which a naive
+  // match would start inside. The sentinel ASSIGNMENT only exists in code,
+  // so anchoring on it lands inside the real script block.
+  const html = readFileSync(path.join(ROOT, 'index.html'), 'utf8');
+  const marker = html.indexOf('window.__qgBootGuard = 2');
+  if (marker === -1) throw new Error('index.html: boot guard sentinel assignment not found');
+  const open = html.lastIndexOf('<' + 'script>', marker);
+  const close = html.indexOf('</' + 'script>', marker);
+  if (open === -1 || close === -1) {
+    throw new Error('index.html: inline boot guard <script> block not found');
+  }
+  return html.slice(open + '<script>'.length, close);
 }
 
 function injectedGuardBody(): string {
