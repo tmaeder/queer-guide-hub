@@ -68,7 +68,7 @@ export function Footer() {
           const track = INTENT_TRACK[intent.id] ?? 'pink';
           return (
             <div key={intent.to}>
-              <div className="mb-3 flex items-center gap-2">
+              <div className="mb-2 flex items-center gap-2">
                 <span aria-hidden className={cn('h-2 w-5 rounded-full', TRACK_SWATCH[track])} />
                 <LocalizedLink
                   to={intent.to}
@@ -102,13 +102,13 @@ export function Footer() {
             <div className="mt-4 flex flex-wrap gap-2">
               <LocalizedLink
                 to="/report"
-                className="border-2 border-background px-3 py-2 text-xs2 font-bold text-background no-underline hover:bg-background hover:text-foreground"
+                className="border-2 border-background px-4 py-2 text-xs2 font-bold text-background no-underline hover:bg-background hover:text-foreground"
               >
                 {t('footer.reportSomething', 'Report something')}
               </LocalizedLink>
               <LocalizedLink
                 to="/help"
-                className="border-2 border-background px-3 py-2 text-xs2 font-bold text-background no-underline hover:bg-background hover:text-foreground"
+                className="border-2 border-background px-4 py-2 text-xs2 font-bold text-background no-underline hover:bg-background hover:text-foreground"
               >
                 {t('footer.hotlines', 'Hotlines')}
               </LocalizedLink>
@@ -141,14 +141,14 @@ export function Footer() {
 
       {/* ── Legal + tagline ───────────────────────────────────────────── */}
       <div className="border-t-[3px] border-background">
-        <div className="mx-auto flex w-full max-w-7xl flex-wrap items-center justify-between gap-4 px-4 py-5 sm:px-6 md:px-8">
-          <div className="flex flex-wrap items-center gap-3">
+        <div className="mx-auto flex w-full max-w-7xl flex-wrap items-center justify-between gap-4 px-4 py-6 sm:px-6 md:px-8">
+          <div className="flex flex-wrap items-center gap-4">
             <MasterSymbol className="w-14 text-background" />
             <span className="text-13">
               {t('footer.tagline', 'Every track. Every station. Everyone.')}
             </span>
           </div>
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
             {legalLinks.map((link) => (
               <LocalizedLink
                 key={link.href}
@@ -168,7 +168,7 @@ export function Footer() {
             </span>
           </div>
         </div>
-        <div className="mx-auto flex w-full max-w-7xl flex-wrap items-center gap-2 px-4 pb-5 sm:px-6 md:px-8">
+        <div className="mx-auto flex w-full max-w-7xl flex-wrap items-center gap-2 px-4 pb-6 sm:px-6 md:px-8">
           <LanguageSwitcher />
           <CurrencySelector />
         </div>

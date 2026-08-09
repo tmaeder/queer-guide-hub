@@ -289,7 +289,7 @@ export function Header() {
                 : 'text-foreground hover:bg-surface-container',
             )}
           >
-            <span className="whitespace-nowrap px-4 pb-2 pt-3 text-15 font-bold lg:px-5">
+            <span className="whitespace-nowrap px-4 pb-2 pt-4 text-15 font-bold lg:px-6">
               {label}
             </span>
             <span
@@ -365,7 +365,7 @@ export function Header() {
                 {rightCluster}
               </div>
             ) : (
-              <div className="flex items-center gap-5" style={{ height: 68 }}>
+              <div className="flex items-center gap-4" style={{ height: 68 }}>
                 <div className="flex shrink-0 items-center gap-2.5">{brand}</div>
                 <div className="min-w-0 flex-1">
                   <UniversalSearchBar />
