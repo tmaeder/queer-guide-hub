@@ -1116,6 +1116,110 @@ h2,
   );
 }
 
+/* ══════════════════════════════════════════════════════════════════════
+   Per-entity IMAGE TREATMENT (kept from #2659)
+   ══════════════════════════════════════════════════════════════════════
+
+   These are the only survivors of the PASTE-UP print layer. They are NOT the
+   design system's texture — the subway-map rebrand deleted the band-level
+   screens, deckle, grain and misregistration. They stay because an admin can
+   set `image_treatment` per venue / event / news row (migration
+   20260825100000_entity_image_treatment.sql + `src/lib/imageTreatment.ts`),
+   so deleting the CSS would leave a shipped, DB-backed editorial control
+   pointing at nothing.
+
+   Reached ONLY through <Image treatment="riso" | "halftone">; opt-in and off
+   by default, because flattening every portrait on an LGBTQ+ platform has a
+   real representational cost. They render in TRACK colours now: `--spot` and
+   `--ink-blue` are aliases of --track-pink / --track-blue.
+
+   OVERLAY-ONLY: a mask clips the element's children, so these belong on a
+   dedicated aria-hidden layer, never on a content box. */
+
+.halftone-ink,
+.halftone-paper {
+  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='70' height='70' viewBox='0 0 70 70'%3E%3Cg fill='black'%3E%3Ccircle cx='47.60' cy='53.20' r='4.1'/%3E%3Ccircle cx='39.20' cy='64.40' r='4.1'/%3E%3Ccircle cx='30.80' cy='5.60' r='4.1'/%3E%3Ccircle cx='22.40' cy='16.80' r='4.1'/%3E%3Ccircle cx='14.00' cy='28.00' r='4.1'/%3E%3Ccircle cx='5.60' cy='39.20' r='4.1'/%3E%3Ccircle cx='67.20' cy='50.40' r='4.1'/%3E%3Ccircle cx='58.80' cy='61.60' r='4.1'/%3E%3Ccircle cx='50.40' cy='2.80' r='4.1'/%3E%3Ccircle cx='42.00' cy='14.00' r='4.1'/%3E%3Ccircle cx='33.60' cy='25.20' r='4.1'/%3E%3Ccircle cx='25.20' cy='36.40' r='4.1'/%3E%3Ccircle cx='16.80' cy='47.60' r='4.1'/%3E%3Ccircle cx='8.40' cy='58.80' r='4.1'/%3E%3Ccircle cx='0.00' cy='70.00' r='4.1'/%3E%3Ccircle cx='61.60' cy='11.20' r='4.1'/%3E%3Ccircle cx='53.20' cy='22.40' r='4.1'/%3E%3Ccircle cx='44.80' cy='33.60' r='4.1'/%3E%3Ccircle cx='36.40' cy='44.80' r='4.1'/%3E%3Ccircle cx='28.00' cy='56.00' r='4.1'/%3E%3Ccircle cx='19.60' cy='67.20' r='4.1'/%3E%3Ccircle cx='11.20' cy='8.40' r='4.1'/%3E%3Ccircle cx='2.80' cy='19.60' r='4.1'/%3E%3Ccircle cx='64.40' cy='30.80' r='4.1'/%3E%3Ccircle cx='0.00' cy='0.00' r='4.1'/%3E%3Ccircle cx='56.00' cy='42.00' r='4.1'/%3E%3Ccircle cx='70.00' cy='70.00' r='4.1'/%3E%3Ccircle cx='70.00' cy='0.00' r='4.1'/%3E%3Ccircle cx='-2.80' cy='50.40' r='4.1'/%3E%3Ccircle cx='50.40' cy='72.80' r='4.1'/%3E%3Ccircle cx='70.00' cy='70.00' r='4.1'/%3E%3Ccircle cx='0.00' cy='-0.00' r='4.1'/%3E%3Ccircle cx='70.00' cy='-0.00' r='4.1'/%3E%3Ccircle cx='19.60' cy='-2.80' r='4.1'/%3E%3Ccircle cx='72.80' cy='19.60' r='4.1'/%3E%3Ccircle cx='70.00' cy='0.00' r='4.1'/%3E%3Ccircle cx='0.00' cy='70.00' r='4.1'/%3E%3Ccircle cx='70.00' cy='70.00' r='4.1'/%3E%3Ccircle cx='-0.00' cy='70.00' r='4.1'/%3E%3Ccircle cx='70.00' cy='-0.00' r='4.1'/%3E%3Ccircle cx='-0.00' cy='-0.00' r='4.1'/%3E%3Ccircle cx='-0.00' cy='0.00' r='4.1'/%3E%3Ccircle cx='70.00' cy='70.00' r='4.1'/%3E%3Ccircle cx='-0.00' cy='70.00' r='4.1'/%3E%3C/g%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='70' height='70' viewBox='0 0 70 70'%3E%3Cg fill='black'%3E%3Ccircle cx='47.60' cy='53.20' r='4.1'/%3E%3Ccircle cx='39.20' cy='64.40' r='4.1'/%3E%3Ccircle cx='30.80' cy='5.60' r='4.1'/%3E%3Ccircle cx='22.40' cy='16.80' r='4.1'/%3E%3Ccircle cx='14.00' cy='28.00' r='4.1'/%3E%3Ccircle cx='5.60' cy='39.20' r='4.1'/%3E%3Ccircle cx='67.20' cy='50.40' r='4.1'/%3E%3Ccircle cx='58.80' cy='61.60' r='4.1'/%3E%3Ccircle cx='50.40' cy='2.80' r='4.1'/%3E%3Ccircle cx='42.00' cy='14.00' r='4.1'/%3E%3Ccircle cx='33.60' cy='25.20' r='4.1'/%3E%3Ccircle cx='25.20' cy='36.40' r='4.1'/%3E%3Ccircle cx='16.80' cy='47.60' r='4.1'/%3E%3Ccircle cx='8.40' cy='58.80' r='4.1'/%3E%3Ccircle cx='0.00' cy='70.00' r='4.1'/%3E%3Ccircle cx='61.60' cy='11.20' r='4.1'/%3E%3Ccircle cx='53.20' cy='22.40' r='4.1'/%3E%3Ccircle cx='44.80' cy='33.60' r='4.1'/%3E%3Ccircle cx='36.40' cy='44.80' r='4.1'/%3E%3Ccircle cx='28.00' cy='56.00' r='4.1'/%3E%3Ccircle cx='19.60' cy='67.20' r='4.1'/%3E%3Ccircle cx='11.20' cy='8.40' r='4.1'/%3E%3Ccircle cx='2.80' cy='19.60' r='4.1'/%3E%3Ccircle cx='64.40' cy='30.80' r='4.1'/%3E%3Ccircle cx='0.00' cy='0.00' r='4.1'/%3E%3Ccircle cx='56.00' cy='42.00' r='4.1'/%3E%3Ccircle cx='70.00' cy='70.00' r='4.1'/%3E%3Ccircle cx='70.00' cy='0.00' r='4.1'/%3E%3Ccircle cx='-2.80' cy='50.40' r='4.1'/%3E%3Ccircle cx='50.40' cy='72.80' r='4.1'/%3E%3Ccircle cx='70.00' cy='70.00' r='4.1'/%3E%3Ccircle cx='0.00' cy='-0.00' r='4.1'/%3E%3Ccircle cx='70.00' cy='-0.00' r='4.1'/%3E%3Ccircle cx='19.60' cy='-2.80' r='4.1'/%3E%3Ccircle cx='72.80' cy='19.60' r='4.1'/%3E%3Ccircle cx='70.00' cy='0.00' r='4.1'/%3E%3Ccircle cx='0.00' cy='70.00' r='4.1'/%3E%3Ccircle cx='70.00' cy='70.00' r='4.1'/%3E%3Ccircle cx='-0.00' cy='70.00' r='4.1'/%3E%3Ccircle cx='70.00' cy='-0.00' r='4.1'/%3E%3Ccircle cx='-0.00' cy='-0.00' r='4.1'/%3E%3Ccircle cx='-0.00' cy='0.00' r='4.1'/%3E%3Ccircle cx='70.00' cy='70.00' r='4.1'/%3E%3Ccircle cx='-0.00' cy='70.00' r='4.1'/%3E%3C/g%3E%3C/svg%3E");
+  -webkit-mask-size: 70px 70px;
+  mask-size: 70px 70px;
+  -webkit-mask-repeat: repeat;
+  mask-repeat: repeat;
+}
+.halftone-pink {
+  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Cg fill='black'%3E%3Ccircle cx='25.60' cy='60.80' r='4.9'/%3E%3Ccircle cx='12.80' cy='70.40' r='4.9'/%3E%3Ccircle cx='80.00' cy='0.00' r='4.9'/%3E%3Ccircle cx='67.20' cy='9.60' r='4.9'/%3E%3Ccircle cx='54.40' cy='19.20' r='4.9'/%3E%3Ccircle cx='41.60' cy='28.80' r='4.9'/%3E%3Ccircle cx='28.80' cy='38.40' r='4.9'/%3E%3Ccircle cx='16.00' cy='48.00' r='4.9'/%3E%3Ccircle cx='3.20' cy='57.60' r='4.9'/%3E%3Ccircle cx='70.40' cy='67.20' r='4.9'/%3E%3Ccircle cx='57.60' cy='76.80' r='4.9'/%3E%3Ccircle cx='44.80' cy='6.40' r='4.9'/%3E%3Ccircle cx='32.00' cy='16.00' r='4.9'/%3E%3Ccircle cx='19.20' cy='25.60' r='4.9'/%3E%3Ccircle cx='6.40' cy='35.20' r='4.9'/%3E%3Ccircle cx='73.60' cy='44.80' r='4.9'/%3E%3Ccircle cx='60.80' cy='54.40' r='4.9'/%3E%3Ccircle cx='35.20' cy='73.60' r='4.9'/%3E%3Ccircle cx='22.40' cy='3.20' r='4.9'/%3E%3Ccircle cx='9.60' cy='12.80' r='4.9'/%3E%3Ccircle cx='76.80' cy='22.40' r='4.9'/%3E%3Ccircle cx='64.00' cy='32.00' r='4.9'/%3E%3Ccircle cx='51.20' cy='41.60' r='4.9'/%3E%3Ccircle cx='38.40' cy='51.20' r='4.9'/%3E%3Ccircle cx='48.00' cy='64.00' r='4.9'/%3E%3Ccircle cx='0.00' cy='0.00' r='4.9'/%3E%3Ccircle cx='80.00' cy='80.00' r='4.9'/%3E%3Ccircle cx='0.00' cy='80.00' r='4.9'/%3E%3Ccircle cx='-0.00' cy='0.00' r='4.9'/%3E%3Ccircle cx='80.00' cy='80.00' r='4.9'/%3E%3Ccircle cx='-0.00' cy='80.00' r='4.9'/%3E%3Ccircle cx='83.20' cy='57.60' r='4.9'/%3E%3Ccircle cx='57.60' cy='-3.20' r='4.9'/%3E%3Ccircle cx='22.40' cy='83.20' r='4.9'/%3E%3Ccircle cx='-3.20' cy='22.40' r='4.9'/%3E%3Ccircle cx='80.00' cy='0.00' r='4.9'/%3E%3Ccircle cx='0.00' cy='80.00' r='4.9'/%3E%3Ccircle cx='80.00' cy='80.00' r='4.9'/%3E%3Ccircle cx='-0.00' cy='80.00' r='4.9'/%3E%3Ccircle cx='80.00' cy='-0.00' r='4.9'/%3E%3Ccircle cx='-0.00' cy='-0.00' r='4.9'/%3E%3Ccircle cx='80.00' cy='80.00' r='4.9'/%3E%3Ccircle cx='0.00' cy='-0.00' r='4.9'/%3E%3Ccircle cx='80.00' cy='-0.00' r='4.9'/%3E%3C/g%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Cg fill='black'%3E%3Ccircle cx='25.60' cy='60.80' r='4.9'/%3E%3Ccircle cx='12.80' cy='70.40' r='4.9'/%3E%3Ccircle cx='80.00' cy='0.00' r='4.9'/%3E%3Ccircle cx='67.20' cy='9.60' r='4.9'/%3E%3Ccircle cx='54.40' cy='19.20' r='4.9'/%3E%3Ccircle cx='41.60' cy='28.80' r='4.9'/%3E%3Ccircle cx='28.80' cy='38.40' r='4.9'/%3E%3Ccircle cx='16.00' cy='48.00' r='4.9'/%3E%3Ccircle cx='3.20' cy='57.60' r='4.9'/%3E%3Ccircle cx='70.40' cy='67.20' r='4.9'/%3E%3Ccircle cx='57.60' cy='76.80' r='4.9'/%3E%3Ccircle cx='44.80' cy='6.40' r='4.9'/%3E%3Ccircle cx='32.00' cy='16.00' r='4.9'/%3E%3Ccircle cx='19.20' cy='25.60' r='4.9'/%3E%3Ccircle cx='6.40' cy='35.20' r='4.9'/%3E%3Ccircle cx='73.60' cy='44.80' r='4.9'/%3E%3Ccircle cx='60.80' cy='54.40' r='4.9'/%3E%3Ccircle cx='35.20' cy='73.60' r='4.9'/%3E%3Ccircle cx='22.40' cy='3.20' r='4.9'/%3E%3Ccircle cx='9.60' cy='12.80' r='4.9'/%3E%3Ccircle cx='76.80' cy='22.40' r='4.9'/%3E%3Ccircle cx='64.00' cy='32.00' r='4.9'/%3E%3Ccircle cx='51.20' cy='41.60' r='4.9'/%3E%3Ccircle cx='38.40' cy='51.20' r='4.9'/%3E%3Ccircle cx='48.00' cy='64.00' r='4.9'/%3E%3Ccircle cx='0.00' cy='0.00' r='4.9'/%3E%3Ccircle cx='80.00' cy='80.00' r='4.9'/%3E%3Ccircle cx='0.00' cy='80.00' r='4.9'/%3E%3Ccircle cx='-0.00' cy='0.00' r='4.9'/%3E%3Ccircle cx='80.00' cy='80.00' r='4.9'/%3E%3Ccircle cx='-0.00' cy='80.00' r='4.9'/%3E%3Ccircle cx='83.20' cy='57.60' r='4.9'/%3E%3Ccircle cx='57.60' cy='-3.20' r='4.9'/%3E%3Ccircle cx='22.40' cy='83.20' r='4.9'/%3E%3Ccircle cx='-3.20' cy='22.40' r='4.9'/%3E%3Ccircle cx='80.00' cy='0.00' r='4.9'/%3E%3Ccircle cx='0.00' cy='80.00' r='4.9'/%3E%3Ccircle cx='80.00' cy='80.00' r='4.9'/%3E%3Ccircle cx='-0.00' cy='80.00' r='4.9'/%3E%3Ccircle cx='80.00' cy='-0.00' r='4.9'/%3E%3Ccircle cx='-0.00' cy='-0.00' r='4.9'/%3E%3Ccircle cx='80.00' cy='80.00' r='4.9'/%3E%3Ccircle cx='0.00' cy='-0.00' r='4.9'/%3E%3Ccircle cx='80.00' cy='-0.00' r='4.9'/%3E%3C/g%3E%3C/svg%3E");
+  /* HALF the tile's intrinsic 80px, i.e. a 40px pitch with ~2.5px dots.
+     An exact 1/2 scale keeps the lattice seamless — the pattern self-tiles at
+     its intrinsic size, so only integer divisions preserve the wrap.
+
+     Retuned from `80px 80px` + alpha 0.5, which was reverted from the homepage
+     on 2026-08-07 as "a loud, mechanical polka-dot pattern". At 80px pitch a
+     1280px band shows sixteen ~10px dots across — that is polka dot geometry,
+     not a screen. Measured on a screenshot sweep of pitch × alpha: the two
+     configurations tried before were the two bad corners of that grid, coarse
+     + strong (polka dots) and fine + strong (rejected as "grey mush"), and the
+     conclusion drawn each time was about pitch. Both variables matter, and the
+     usable region is medium pitch at LOW alpha. */
+  -webkit-mask-size: 40px 40px;
+  mask-size: 40px 40px;
+  -webkit-mask-repeat: repeat;
+  mask-repeat: repeat;
+  background-color: hsl(var(--spot) / 0.22);
+}
+.halftone-blue {
+  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='90' height='90' viewBox='0 0 90 90'%3E%3Cg fill='black'%3E%3Ccircle cx='61.20' cy='68.40' r='5.4'/%3E%3Ccircle cx='50.40' cy='82.80' r='5.4'/%3E%3Ccircle cx='39.60' cy='7.20' r='5.4'/%3E%3Ccircle cx='28.80' cy='21.60' r='5.4'/%3E%3Ccircle cx='18.00' cy='36.00' r='5.4'/%3E%3Ccircle cx='7.20' cy='50.40' r='5.4'/%3E%3Ccircle cx='86.40' cy='64.80' r='5.4'/%3E%3Ccircle cx='75.60' cy='79.20' r='5.4'/%3E%3Ccircle cx='64.80' cy='3.60' r='5.4'/%3E%3Ccircle cx='54.00' cy='18.00' r='5.4'/%3E%3Ccircle cx='43.20' cy='32.40' r='5.4'/%3E%3Ccircle cx='32.40' cy='46.80' r='5.4'/%3E%3Ccircle cx='21.60' cy='61.20' r='5.4'/%3E%3Ccircle cx='10.80' cy='75.60' r='5.4'/%3E%3Ccircle cx='0.00' cy='90.00' r='5.4'/%3E%3Ccircle cx='79.20' cy='14.40' r='5.4'/%3E%3Ccircle cx='68.40' cy='28.80' r='5.4'/%3E%3Ccircle cx='57.60' cy='43.20' r='5.4'/%3E%3Ccircle cx='46.80' cy='57.60' r='5.4'/%3E%3Ccircle cx='36.00' cy='72.00' r='5.4'/%3E%3Ccircle cx='25.20' cy='86.40' r='5.4'/%3E%3Ccircle cx='14.40' cy='10.80' r='5.4'/%3E%3Ccircle cx='3.60' cy='25.20' r='5.4'/%3E%3Ccircle cx='82.80' cy='39.60' r='5.4'/%3E%3Ccircle cx='0.00' cy='0.00' r='5.4'/%3E%3Ccircle cx='72.00' cy='54.00' r='5.4'/%3E%3Ccircle cx='90.00' cy='90.00' r='5.4'/%3E%3Ccircle cx='90.00' cy='0.00' r='5.4'/%3E%3Ccircle cx='-3.60' cy='64.80' r='5.4'/%3E%3Ccircle cx='64.80' cy='93.60' r='5.4'/%3E%3Ccircle cx='90.00' cy='90.00' r='5.4'/%3E%3Ccircle cx='0.00' cy='-0.00' r='5.4'/%3E%3Ccircle cx='90.00' cy='-0.00' r='5.4'/%3E%3Ccircle cx='25.20' cy='-3.60' r='5.4'/%3E%3Ccircle cx='93.60' cy='25.20' r='5.4'/%3E%3Ccircle cx='90.00' cy='0.00' r='5.4'/%3E%3Ccircle cx='0.00' cy='90.00' r='5.4'/%3E%3Ccircle cx='90.00' cy='90.00' r='5.4'/%3E%3Ccircle cx='-0.00' cy='90.00' r='5.4'/%3E%3Ccircle cx='90.00' cy='-0.00' r='5.4'/%3E%3Ccircle cx='-0.00' cy='-0.00' r='5.4'/%3E%3Ccircle cx='-0.00' cy='0.00' r='5.4'/%3E%3Ccircle cx='90.00' cy='90.00' r='5.4'/%3E%3Ccircle cx='-0.00' cy='90.00' r='5.4'/%3E%3C/g%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='90' height='90' viewBox='0 0 90 90'%3E%3Cg fill='black'%3E%3Ccircle cx='61.20' cy='68.40' r='5.4'/%3E%3Ccircle cx='50.40' cy='82.80' r='5.4'/%3E%3Ccircle cx='39.60' cy='7.20' r='5.4'/%3E%3Ccircle cx='28.80' cy='21.60' r='5.4'/%3E%3Ccircle cx='18.00' cy='36.00' r='5.4'/%3E%3Ccircle cx='7.20' cy='50.40' r='5.4'/%3E%3Ccircle cx='86.40' cy='64.80' r='5.4'/%3E%3Ccircle cx='75.60' cy='79.20' r='5.4'/%3E%3Ccircle cx='64.80' cy='3.60' r='5.4'/%3E%3Ccircle cx='54.00' cy='18.00' r='5.4'/%3E%3Ccircle cx='43.20' cy='32.40' r='5.4'/%3E%3Ccircle cx='32.40' cy='46.80' r='5.4'/%3E%3Ccircle cx='21.60' cy='61.20' r='5.4'/%3E%3Ccircle cx='10.80' cy='75.60' r='5.4'/%3E%3Ccircle cx='0.00' cy='90.00' r='5.4'/%3E%3Ccircle cx='79.20' cy='14.40' r='5.4'/%3E%3Ccircle cx='68.40' cy='28.80' r='5.4'/%3E%3Ccircle cx='57.60' cy='43.20' r='5.4'/%3E%3Ccircle cx='46.80' cy='57.60' r='5.4'/%3E%3Ccircle cx='36.00' cy='72.00' r='5.4'/%3E%3Ccircle cx='25.20' cy='86.40' r='5.4'/%3E%3Ccircle cx='14.40' cy='10.80' r='5.4'/%3E%3Ccircle cx='3.60' cy='25.20' r='5.4'/%3E%3Ccircle cx='82.80' cy='39.60' r='5.4'/%3E%3Ccircle cx='0.00' cy='0.00' r='5.4'/%3E%3Ccircle cx='72.00' cy='54.00' r='5.4'/%3E%3Ccircle cx='90.00' cy='90.00' r='5.4'/%3E%3Ccircle cx='90.00' cy='0.00' r='5.4'/%3E%3Ccircle cx='-3.60' cy='64.80' r='5.4'/%3E%3Ccircle cx='64.80' cy='93.60' r='5.4'/%3E%3Ccircle cx='90.00' cy='90.00' r='5.4'/%3E%3Ccircle cx='0.00' cy='-0.00' r='5.4'/%3E%3Ccircle cx='90.00' cy='-0.00' r='5.4'/%3E%3Ccircle cx='25.20' cy='-3.60' r='5.4'/%3E%3Ccircle cx='93.60' cy='25.20' r='5.4'/%3E%3Ccircle cx='90.00' cy='0.00' r='5.4'/%3E%3Ccircle cx='0.00' cy='90.00' r='5.4'/%3E%3Ccircle cx='90.00' cy='90.00' r='5.4'/%3E%3Ccircle cx='-0.00' cy='90.00' r='5.4'/%3E%3Ccircle cx='90.00' cy='-0.00' r='5.4'/%3E%3Ccircle cx='-0.00' cy='-0.00' r='5.4'/%3E%3Ccircle cx='-0.00' cy='0.00' r='5.4'/%3E%3Ccircle cx='90.00' cy='90.00' r='5.4'/%3E%3Ccircle cx='-0.00' cy='90.00' r='5.4'/%3E%3C/g%3E%3C/svg%3E");
+  /* Same retune as `.halftone-pink`, same reasoning — half the intrinsic 90px
+     tile, alpha down from 0.45. The two chromatic drums shared the failure.
+     `.halftone-ink` / `.halftone-paper` are deliberately NOT retuned here: they
+     are neutral (foreground/background at 0.24/0.20), a different contrast
+     problem, and no screenshot evidence has been gathered for them. Measure
+     before changing them. */
+  -webkit-mask-size: 45px 45px;
+  mask-size: 45px 45px;
+  -webkit-mask-repeat: repeat;
+  mask-repeat: repeat;
+  background-color: hsl(var(--ink-blue) / 0.2);
+}
+.halftone-ink {
+  background-color: hsl(var(--foreground) / 0.24);
+}
+.dark .halftone-ink {
+  background-color: hsl(var(--foreground) / 0.18);
+}
+/* For INVERTED surfaces (an ink flood, e.g. the homepage CTA band). There the
+   screen is the paper showing through the ink, so the dots are --background.
+   `.halftone-ink` would be foreground-on-foreground and render nothing. */
+.halftone-paper {
+  background-color: hsl(var(--background) / 0.2);
+}
+
+
+.duotone-riso {
+  position: relative;
+  isolation: isolate;
+}
+.duotone-riso > img {
+  filter: grayscale(1) contrast(1.18) brightness(1.02);
+}
+.duotone-riso::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-color: hsl(var(--spot));
+  mix-blend-mode: multiply;
+  pointer-events: none;
+}
+.duotone-riso::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background-color: hsl(var(--ink-blue) / 0.35);
+  mix-blend-mode: screen;
+  pointer-events: none;
+}
+
 /* ── Paper feed ────────────────────────────────────────────────────────
    Route transition. Replaces the flat .route-fade crossfade with a short
    vertical feed, the way a sheet advances through a press. No fill-mode

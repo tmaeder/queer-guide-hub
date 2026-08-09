@@ -49,11 +49,12 @@ export function HomeSection({
       aria-labelledby={headingId}
       className={cn(
         'px-4 sm:px-6 md:px-8 py-12 md:py-16',
-        // The tint alone marks the band — the rules it used to sit between were
-        // the last hairlines on the homepage. A halftone-screen layer was tried
-        // here too and removed 2026-08-07: on a real screenshot it read as a
-        // loud, mechanical dot pattern rather than printed texture.
-        tinted && 'bg-muted/30',
+        // The tint alone marks the band. The halftone screen that briefly sat
+        // here was band-level design-system texture; the subway-map rebrand
+        // replaces that with the 4px ink rules between bands, so the screen
+        // (and its .screen-fade-down wrapper) went with the rest of the print
+        // layer. Per-entity image treatments are unaffected — see Image.tsx.
+        tinted && 'border-b-4 border-foreground bg-surface-container',
         className,
       )}
     >

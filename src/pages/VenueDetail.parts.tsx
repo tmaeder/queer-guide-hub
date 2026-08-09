@@ -44,6 +44,7 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { SocialSignalBadges } from '@/components/trips/SocialSignalBadges';
 import { buildPlaceChain } from '@/config/breadcrumbs';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { entityImageTreatment } from '@/lib/imageTreatment';
 import { getVenueVisual } from '@/lib/venueVisual';
 import type { TFunction } from 'i18next';
 import type { useVenueSocialSignals } from '@/hooks/useVenueSocialSignals';
@@ -341,6 +342,10 @@ export function VenueHero({
           imageRole="hero"
           rounded="container"
           scrim={!visual.isLogo && hasFlag ? 'readable' : 'none'}
+          // Editor-set, default none. A venue cover also falls back to the
+          // operator's logo (`fit="contain"`), which Image refuses to separate
+          // regardless — so a mistaken opt-in still cannot duotone a brand mark.
+          treatment={entityImageTreatment(venue)}
           priority
           fallbackEntityType="venue"
           fallbackKey={venue.id}

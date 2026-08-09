@@ -48,6 +48,7 @@ import { formatEventTime } from '@/lib/event-time';
 import { formatCurrency } from '@/lib/currency';
 import { isMeaningfulTag } from '@/utils/eventText';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { entityImageTreatment } from '@/lib/imageTreatment';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { useProfile } from '@/hooks/useProfile';
 import { matchNeeds, needLabel } from '@/lib/accessibilityNeeds';
@@ -276,6 +277,7 @@ export function EventHero({
           imageRole="hero"
           rounded="container"
           scrim={pill || event.is_featured ? 'readable' : 'none'}
+          treatment={entityImageTreatment(event)}
           priority
           fallbackEntityType="event"
           fallbackKey={event.id}

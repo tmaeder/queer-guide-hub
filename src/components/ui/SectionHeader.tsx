@@ -29,7 +29,7 @@ export function SeeAllLink({
     <LocalizedLink
       to={to}
       className={cn(
-        'group inline-flex items-center gap-1 text-13 font-medium text-muted-foreground transition-colors hover:text-foreground no-underline',
+        'ink-underline group inline-flex items-center gap-1 text-13 font-medium text-muted-foreground transition-colors hover:text-foreground no-underline',
         className,
       )}
     >

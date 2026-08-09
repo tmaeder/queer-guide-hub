@@ -16,6 +16,16 @@ export type ColorTokenDef = {
   group: ColorGroup;
   light: string; // "H S% L%" channels
   dark: string;
+  /**
+   * A wayfinding TRACK colour (or one of its deprecated PASTE-UP ink aliases):
+   * a fill that is NEVER a letterform and never a semantic state. Flagging it
+   * here enrols it in the safety guards in __tests__/tokenContrast.test.ts —
+   * the ban on body text and, above all, the check that it never drifts into
+   * the `--destructive` hue band. Those guards used to read a hardcoded
+   * `['spot','ink-blue','ink-over']`, so a fourth colour added everywhere else
+   * would have been silently unguarded (adopted from #2659).
+   */
+  ink?: true;
 };
 
 export type GlobalTokenKind = 'size' | 'lineHeight' | 'radius' | 'tracking' | 'transition';
@@ -107,10 +117,10 @@ export const COLOR_TOKENS: ColorTokenDef[] = [
   { key: 'ring', group: 'core', light: '330 100% 56%', dark: '330 100% 56%' },
   // Track colors — SEMANTIC wayfinding lines. Fill-only, never body text;
   // filled shapes carry a 2-3px ink border. See src/index.css for the rules.
-  { key: 'track-pink', group: 'core', light: '330 100% 56%', dark: '330 100% 56%' },
-  { key: 'track-blue', group: 'core', light: '193 100% 45%', dark: '193 100% 45%' },
-  { key: 'track-green', group: 'core', light: '136 75% 52%', dark: '136 75% 52%' },
-  { key: 'track-yellow', group: 'core', light: '50 100% 50%', dark: '50 100% 50%' },
+  { key: 'track-pink', group: 'core', light: '330 100% 56%', dark: '330 100% 56%' , ink: true },
+  { key: 'track-blue', group: 'core', light: '193 100% 45%', dark: '193 100% 45%' , ink: true },
+  { key: 'track-green', group: 'core', light: '136 75% 52%', dark: '136 75% 52%' , ink: true },
+  { key: 'track-yellow', group: 'core', light: '50 100% 50%', dark: '50 100% 50%' , ink: true },
   // Feedback — destructive is the only chromatic hue; warning + success are neutral
   { key: 'destructive', group: 'feedback', light: '0 70% 38%', dark: '0 70% 38%' },
   { key: 'destructive-foreground', group: 'feedback', light: '60 33% 97%', dark: '60 33% 97%' },
@@ -118,7 +128,10 @@ export const COLOR_TOKENS: ColorTokenDef[] = [
   { key: 'warning-foreground', group: 'feedback', light: '60 33% 97%', dark: '60 33% 97%' },
   { key: 'success', group: 'feedback', light: '0 0% 7%', dark: '0 0% 7%' },
   { key: 'success-foreground', group: 'feedback', light: '60 33% 97%', dark: '60 33% 97%' },
-  // DEPRECATED PASTE-UP ink aliases — now point at the track values so
+  // DEPRECATED PASTE-UP ink aliases. Deliberately NOT flagged `ink: true`:
+  // they hold the SAME values as the track colours above, so flagging them
+  // would make the mutual-hue-distinctness guard compare a colour with itself
+  // and fail at 0°. The canonical track tokens carry the flag. — now point at the track values so
   // existing bg-spot / bg-ink-* call sites keep rendering until the
   // Public/Admin phases retire them. `ink-pink` is absent on purpose — it is
   // a @theme alias of `spot`, so it has no `:root` declaration to catalog.

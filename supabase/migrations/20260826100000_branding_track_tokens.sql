@@ -7,6 +7,10 @@
 -- branding.ts COLOR_KEYS -> here — so /admin/design can override them at
 -- runtime.
 --
+-- Version note: this was 20260825100000 until #2659 landed a migration at the
+-- same stamp (entity_image_treatment). A duplicate version makes `db push`
+-- SKIP one of them SILENTLY, so it was renamed to exceed the remote max.
+--
 -- ADDITIVE ONLY: no key is removed, so persisted docs and
 -- site_branding_versions replays (branding_revert) remain valid by
 -- construction; no history check is required.

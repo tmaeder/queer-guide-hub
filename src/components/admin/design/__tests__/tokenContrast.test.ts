@@ -3,6 +3,15 @@ import { contrastVerdict } from '@/lib/wcagContrast';
 import { COLOR_TOKENS, CONTRAST_PAIRS } from '../tokenCatalog';
 
 /**
+ * Derived, never hardcoded (adopted from #2659): the guards below used to read
+ * a literal ['spot','ink-blue','ink-over'], so a FOURTH wayfinding colour added
+ * everywhere else would simply never have been checked against --destructive.
+ * Flagging `ink: true` on the catalog row is now sufficient and sole.
+ */
+const INKS = COLOR_TOKENS.filter((t) => t.ink).map((t) => t.key);
+const hueOf = (v: string) => Number(v.split(' ')[0]);
+
+/**
  * Accessibility guard on the compiled-in token values.
  *
  * Why this exists as a UNIT test rather than leaving it to the axe sweep:
@@ -57,15 +66,7 @@ const TEXT_ON_PAGE = [
  * an ink border belong here (the focus ring, ::selection, the active-nav
  * underline — all pink).
  */
-const NON_TEXT_ON_PAGE = [
-  'border',
-  'input',
-  'border-hairline',
-  'sidebar-border',
-  'ring',
-  'spot',
-  'track-pink',
-];
+const NON_TEXT_ON_PAGE = ['border', 'input', 'border-hairline', 'sidebar-border', 'ring', 'spot', 'track-pink'];
 
 /**
  * BORDER-GATED fills (subway-map rebrand): blue/green/yellow track fills
@@ -126,12 +127,37 @@ describe('design tokens: contrast guards', () => {
     },
   );
 
+  it('has a non-empty derived ink list (the guards below iterate it)', () => {
+    // If the `ink` flag were ever dropped from every row, the three checks
+    // that iterate INKS would pass vacuously. Assert the list exists first.
+    expect(INKS.length, 'no COLOR_TOKENS row carries `ink: true`').toBeGreaterThanOrEqual(4);
+  });
+
   it('keeps every track color off the small-text path', () => {
     // Track colors are FILL-ONLY. Type on a fill uses ink (blue/green/yellow)
     // or paper (pink), gated at their own pairs; a track color as body text
     // fails AA and the axe route sweep would catch it — this documents why.
-    for (const track of ['spot', 'track-pink', 'track-blue', 'track-green', 'track-yellow', 'ink-blue', 'ink-over']) {
+    for (const track of [...INKS, 'spot', 'ink-blue', 'ink-over']) {
       expect(TEXT_ON_PAGE, `--${track} must never be body text`).not.toContain(track);
+    }
+  });
+
+  it('keeps the track colors mutually distinguishable', () => {
+    // Four lines that a rider must tell apart at a glance. Two tracks within
+    // 25° of each other is a wayfinding failure, not an aesthetic one.
+    for (const mode of MODES) {
+      for (let i = 0; i < INKS.length; i++) {
+        for (let j = i + 1; j < INKS.length; j++) {
+          const a = hueOf(value(INKS[i], mode));
+          const b = hueOf(value(INKS[j], mode));
+          const d = Math.abs(a - b);
+          expect(
+            Math.min(d, 360 - d),
+            `--${INKS[i]} (${a}) and --${INKS[j]} (${b}) are within 25° in ${mode} mode; ` +
+              'two lines that close read as one on the map.',
+          ).toBeGreaterThan(25);
+        }
+      }
     }
   });
 
@@ -150,18 +176,22 @@ describe('design tokens: contrast guards', () => {
 
   it('never lets a track color impersonate the danger signal', () => {
     // The safety contract in src/index.css: red means danger. If a track
-    // color ever drifts into the red hue band, a risk badge and a wayfinding
-    // mark become indistinguishable on a product used in criminalising
-    // countries. Guard the hue directly (all four sit >=30° from hue 0).
-    const hueOf = (v: string) => Number(v.split(' ')[0]);
-    for (const track of ['spot', 'track-pink', 'track-blue', 'track-green', 'track-yellow', 'ink-blue', 'ink-over']) {
+    // colour drifts into the red hue band, a risk badge and a wayfinding mark
+    // become indistinguishable on a product used in criminalising countries.
+    //
+    // Measured against --destructive's ACTUAL hue per mode, not against 0
+    // (adopted from #2659): the old form assumed red sits at hue 0, which is
+    // true today but is runtime-overridable via /admin/design.
+    for (const track of [...INKS, 'spot', 'ink-blue', 'ink-over']) {
       for (const mode of MODES) {
         const hue = hueOf(value(track, mode));
-        const distanceFromRed = Math.min(hue, 360 - hue);
+        const danger = hueOf(value('destructive', mode));
+        const raw = Math.abs(hue - danger);
+        const distance = Math.min(raw, 360 - raw);
         expect(
-          distanceFromRed,
-          `--${track} (${mode}) sits at hue ${hue}, only ${distanceFromRed}° from --destructive. ` +
-            'A wayfinding color must never be mistakable for the danger signal.',
+          distance,
+          `--${track} (${mode}) sits at hue ${hue}, only ${distance}° from --destructive ` +
+            `(${danger}). A wayfinding colour must never be mistakable for the danger signal.`,
         ).toBeGreaterThan(25);
       }
     }
