@@ -93,9 +93,15 @@ export function Header() {
         </>
       ) : (
         // Spec row 1: the mark and the wordmark travel together.
+        //
+        // The wordmark steps DOWN on small screens and is dropped entirely
+        // below `sm`. Anton at --text-headline measures 142px, and on a 320px
+        // viewport that left the search field 32px wide — unusable, and 94
+        // `target-size` violations in the axe route sweep, which scans down to
+        // 320px. The mark alone carries the brand at that width.
         <>
-          <MasterSymbol className="hidden w-12 text-foreground sm:block" />
-          <Wordmark className="text-headline text-foreground" />
+          <MasterSymbol className="w-10 shrink-0 text-foreground sm:w-12" />
+          <Wordmark className="hidden text-title text-foreground sm:inline-block md:text-headline" />
         </>
       )}
     </Link>
