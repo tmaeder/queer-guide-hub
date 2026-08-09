@@ -1,5 +1,6 @@
 import { getCorsHeaders, getServiceClient, requireAdmin } from '../_shared/supabase-client.ts';
 import { calculateEqualityScore } from '../_shared/equality-score.ts';
+import { computeRightsProfile, toStoredVerdicts } from '../_shared/rights/verdict.ts';
 
 const ILGA_GRAPHQL = 'https://database.ilga.org/graphql';
 
@@ -397,8 +398,21 @@ Deno.serve(async (req) => {
       // Calculate equality score
       row.equality_score = calculateEqualityScore(row);
 
+      // Categorical verdict, set on the SAME row object and therefore written
+      // by the same UPDATE — no extra write, and no extra
+      // trg_search_documents_country fire on a disk-constrained DB.
+      // `equality_score` above stays as the deprecated projection until every
+      // consumer has migrated (Phase 2c); it is still what the
+      // crim_consistency release gate asserts against.
+      const profile = computeRightsProfile(row);
+      row.rights_verdicts = toStoredVerdicts(profile);
+      row.rights_verdict_general = profile.general.verdict;
+
       if (dryRun) {
-        console.log(`[DRY RUN] Would update ${country.name} (${code}): score=${row.equality_score}`);
+        console.log(
+          `[DRY RUN] Would update ${country.name} (${code}): score=${row.equality_score} ` +
+            `verdict=${row.rights_verdict_general} (${profile.general.headline || 'no data'})`,
+        );
         updated++;
         continue;
       }
