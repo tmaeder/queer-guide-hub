@@ -19,7 +19,7 @@ export function CategoryChips({ category, onCategoryClick }: CategoryChipsProps)
           variant={category === cat ? 'default' : 'outline'}
           size="sm"
           onClick={() => onCategoryClick(cat)}
-          className="rounded-full h-8 px-4.5 text-xs font-medium transition-all whitespace-nowrap flex-shrink-0"
+          className="rounded-badge h-8 px-4 text-xs font-bold uppercase transition-all whitespace-nowrap flex-shrink-0"
         >
           {categoryLabels[cat] ?? cat}
         </Button>
