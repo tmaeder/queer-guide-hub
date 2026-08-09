@@ -5976,6 +5976,7 @@ export type Database = {
           geo_linked_at: string | null
           group_id: string | null
           id: string
+          image_treatment: string | null
           images: string[] | null
           is_featured: boolean
           is_free: boolean | null
@@ -6055,6 +6056,7 @@ export type Database = {
           geo_linked_at?: string | null
           group_id?: string | null
           id?: string
+          image_treatment?: string | null
           images?: string[] | null
           is_featured?: boolean
           is_free?: boolean | null
@@ -6134,6 +6136,7 @@ export type Database = {
           geo_linked_at?: string | null
           group_id?: string | null
           id?: string
+          image_treatment?: string | null
           images?: string[] | null
           is_featured?: boolean
           is_free?: boolean | null
@@ -12778,6 +12781,7 @@ export type Database = {
           id: string
           image_attribution: string | null
           image_hash: string | null
+          image_treatment: string | null
           image_url: string | null
           ingestion_run_id: string | null
           ingestion_staging_id: string | null
@@ -12839,6 +12843,7 @@ export type Database = {
           id?: string
           image_attribution?: string | null
           image_hash?: string | null
+          image_treatment?: string | null
           image_url?: string | null
           ingestion_run_id?: string | null
           ingestion_staging_id?: string | null
@@ -12900,6 +12905,7 @@ export type Database = {
           id?: string
           image_attribution?: string | null
           image_hash?: string | null
+          image_treatment?: string | null
           image_url?: string | null
           ingestion_run_id?: string | null
           ingestion_staging_id?: string | null
@@ -24072,6 +24078,7 @@ export type Database = {
           geocode_attempted: boolean | null
           hours: Json | null
           id: string
+          image_treatment: string | null
           images: string[] | null
           instagram: string | null
           is_featured: boolean
@@ -24159,6 +24166,7 @@ export type Database = {
           geocode_attempted?: boolean | null
           hours?: Json | null
           id?: string
+          image_treatment?: string | null
           images?: string[] | null
           instagram?: string | null
           is_featured?: boolean
@@ -24246,6 +24254,7 @@ export type Database = {
           geocode_attempted?: boolean | null
           hours?: Json | null
           id?: string
+          image_treatment?: string | null
           images?: string[] | null
           instagram?: string | null
           is_featured?: boolean

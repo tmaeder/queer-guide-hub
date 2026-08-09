@@ -18,7 +18,9 @@ import { getFallbackImage, type FallbackTheme } from '@/utils/fallbackImages';
  *   - a deterministic, on-brand fallback (stable per entity — no reload reshuffle)
  *
  * Cohesion comes from a small fixed set of aspect ratios and a 3-tier scrim —
- * NOT from desaturation. Images render in full color.
+ * NOT from desaturation. Images render in full color by default; `treatment`
+ * opts a surface into the riso/halftone print separations and is off unless a
+ * call site asks for it.
  *
  * The hover zoom assumes a `group` ancestor (the card root); it's a no-op
  * otherwise.
@@ -27,6 +29,11 @@ import { getFallbackImage, type FallbackTheme } from '@/utils/fallbackImages';
 export type ImageRole = 'cover' | 'hero' | 'thumb' | 'avatar';
 export type AspectToken = 'card' | 'hero' | 'portrait' | 'thumb' | 'square' | 'auto';
 export type ScrimVariant = 'none' | 'readable' | 'strong';
+/**
+ * Print separation applied over the photo. `none` is the default and stays the
+ * default deliberately — see the `treatment` prop below.
+ */
+export type ImageTreatment = 'none' | 'riso' | 'halftone';
 type RoundedToken = 'container' | 'element' | 'top' | 'none';
 
 interface ImageProps {
@@ -61,6 +68,21 @@ interface ImageProps {
   imageRole?: ImageRole;
   objectPosition?: string;
   scrim?: ScrimVariant;
+  /**
+   * Print separation over the photo. Opt-in, and `none` by default on purpose.
+   *
+   * `riso` is the two-drum duotone: shadows take the ink, highlights the paper.
+   * It is for heroes and editorial bands, NOT for entity card grids — this
+   * primitive's contract is that entity imagery renders in full colour, and
+   * flattening every portrait on an LGBTQ+ platform has a real representational
+   * cost. Turning it on globally would be a content decision, not a style one.
+   *
+   * `halftone` is a dot screen laid over the photo as its own aria-hidden
+   * layer. It is a mask, and a mask clips its element's children, so it can
+   * never be applied to the frame itself — it renders as a sibling overlay,
+   * beneath the scrim so scrimmed text keeps its measured contrast.
+   */
+  treatment?: ImageTreatment;
   priority?: boolean;
   rounded?: RoundedToken;
 
@@ -125,6 +147,7 @@ export const Image = ({
   imageRole = 'cover',
   objectPosition,
   scrim = 'none',
+  treatment = 'none',
   priority = false,
   rounded = 'top',
   sizes,
@@ -289,6 +312,27 @@ export const Image = ({
     />
   );
 
+  // `.duotone-riso > img` is a DIRECT-child selector and the two ink plates are
+  // its ::before/::after, so the wrapper has to be the img's immediate parent
+  // and has to fill the frame — putting the class on the outer frame instead
+  // would tint the badges, favourite buttons and scrim in `children` too.
+  //
+  // Two cases refuse the separation regardless of what the call site asked for,
+  // because in both the result is a defect rather than a treatment:
+  //   - the fallback texture / icon tile: there is no photograph to separate,
+  //     so the plates would just stain a grey placeholder.
+  //   - `fit="contain"`, which in this codebase means a brand LOGO (venue
+  //     covers fall back to the operator's logo). Duotoning a logo destroys
+  //     the mark's own colour and reads as a rendering bug. Enforcing it here
+  //     rather than at the call site means no future hero can get it wrong.
+  const canSeparate = !showingFallback && fit !== 'contain';
+  const separated =
+    treatment === 'riso' && canSeparate ? (
+      <div className="duotone-riso h-full w-full">{photo}</div>
+    ) : (
+      photo
+    );
+
   return (
     <div
       className={cn(
@@ -303,8 +347,14 @@ export const Image = ({
           {FallbackIcon ? <FallbackIcon className="h-10 w-10" aria-hidden /> : null}
         </div>
       ) : (
-        photo
+        separated
       )}
+      {/* Beneath the scrim on purpose: the dots halve effective contrast above
+          them, and the scrim is what `readable`/`strong` callers measured their
+          overlaid text against. */}
+      {treatment === 'halftone' && canSeparate ? (
+        <div className="halftone-ink pointer-events-none absolute inset-0" aria-hidden />
+      ) : null}
       {scrimClass ? (
         <div className={cn('pointer-events-none absolute inset-0', scrimClass)} aria-hidden />
       ) : null}

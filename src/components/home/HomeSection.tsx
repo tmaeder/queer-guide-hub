@@ -49,14 +49,25 @@ export function HomeSection({
       aria-labelledby={headingId}
       className={cn(
         'px-4 sm:px-6 md:px-8 py-12 md:py-16',
-        // The tint alone marks the band — the rules it used to sit between were
-        // the last hairlines on the homepage. A halftone-screen layer was tried
-        // here too and removed 2026-08-07: on a real screenshot it read as a
-        // loud, mechanical dot pattern rather than printed texture.
-        tinted && 'bg-muted/30',
+        // The tint marks the band; the screen below gives it a printed edge.
+        // A FLAT screen was tried here and removed 2026-08-07 — on a real
+        // screenshot it read as a loud, mechanical dot pattern rather than
+        // printed texture. It is back only because the falloff wrapper fixes
+        // what was actually wrong with it (uniform coverage), not because the
+        // verdict was wrong. See `.screen-fade-down` in src/index.css.
+        tinted && 'relative isolate bg-muted/30',
         className,
       )}
     >
+      {/* One texture layer per band, never per card — cost is O(1) in the
+          number of rows the section renders. Nested because the fade masks the
+          wrapper and the screen masks itself; a single element cannot carry
+          both masks without duplicating the dot payload. */}
+      {tinted ? (
+        <div className="screen-fade-down absolute inset-0 -z-10 overflow-hidden" aria-hidden>
+          <div className="halftone-pink absolute inset-0" />
+        </div>
+      ) : null}
       <div className="max-w-7xl mx-auto">
         <SectionHeader
           id={headingId}

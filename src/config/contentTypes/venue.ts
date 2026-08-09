@@ -155,6 +155,19 @@ export const venueFields: FieldConfig[] = [
   // Media
   { name: 'images', label: 'Images', type: 'images', group: 'media' },
   { name: 'logo_url', label: 'Logo', type: 'image', group: 'media' },
+  {
+    name: 'image_treatment',
+    label: 'Hero print treatment',
+    type: 'select',
+    group: 'media',
+    helpText:
+      'Off by default. "Riso" separates the hero photo onto two ink drums — it looks like print on architecture and interiors, but it DESTROYS rainbow, trans and bi flags, because their colours are the meaning. Only set this when the photo’s colour is decorative.',
+    options: [
+      { value: 'none', label: 'None (default)' },
+      { value: 'riso', label: 'Riso duotone' },
+      { value: 'halftone', label: 'Halftone screen' },
+    ],
+  },
   // Settings
   // The legacy `venues.featured` column was dropped in PR #312; the toggle kept writing
   // to it and did nothing. `is_featured` is the column every other entity uses.
