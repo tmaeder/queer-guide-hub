@@ -1,9 +1,18 @@
 # Pipeline Overhaul — Wave B playbook (GATED, do not apply blind)
 
-Status: **waiting on soak evidence** (started 2026-08-08). Wave A (P1–P7) is live.
-This file is the ready-to-execute plan for the two gated follow-ups. Neither is
-a migration in `supabase/migrations/` on purpose — each is gated on live
-evidence that needs ~1–2 weeks to accumulate.
+Status: **soak clocks RUNNING; execution is automated.** Wave A (P1–P8) is
+live. Fill crons for venues/cities started 2026-08-08 (P6); fill crons for
+marketplace/events/news/community started 2026-08-09 (#2648:
+`mp-fill-awin/shopify/etsy/ohmyfantasy`, `ev-fill-eventbrite/ticketmaster`,
+`news-fill-rss` hourly :30, `cm-fill-community` hourly :20 — the last one
+drains ALL content types, replacing the per-DAG community source nodes at
+retirement). A scheduled agent **`wave-b-gate-executor`** (daily 09:00 local,
+`~/.claude/scheduled-tasks/wave-b-gate-executor/SKILL.md`) checks the gate
+dashboard below every day and executes at most one family per day when its
+gate clears, then A2, then the 2026-09-08 row deletions, then updates this
+file + CLAUDE.md and deletes itself. Earliest family retirement ≈ 2026-08-16;
+A2 ≈ 2026-08-22. Manual execution remains possible with the steps below —
+if you do that, note it here so the agent's next run sees it.
 
 ## Gate dashboard (check before executing anything below)
 
