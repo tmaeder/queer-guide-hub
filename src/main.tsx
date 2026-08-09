@@ -9,6 +9,7 @@ import { installErrorBuffer, installNetworkBuffer } from '@/utils/feedbackContex
 import { installGlobalErrorSurfacing } from '@/utils/globalErrorSurfacing'
 import { installBuildVersionCheck } from '@/utils/buildVersion'
 import { installAnalyticsConsentLoader } from '@/utils/analyticsLoader'
+import { healBootAssets, healFailedAssets } from '@/utils/assetHeal'
 
 installSentry();
 installErrorBuffer();
@@ -32,13 +33,48 @@ initCloudflareOptimizations();
 // the post-load gate-clear re-armed the reload each time, loops forever.
 // Post-boot, we `preventDefault()` so Vite doesn't rethrow, and let the
 // component's own lazyRetry/lazyOptional + ErrorBoundary recover quietly.
+// The default resource-timing buffer (~250 entries) fills within minutes in
+// a long-lived tab (API calls, images), after which new entries are DROPPED —
+// including the failed chunk fetch the post-boot heal needs to see. Raise it.
+try {
+  performance.setResourceTimingBufferSize?.(1000);
+} catch {
+  /* older engines — heal falls back to the event-payload URL */
+}
+
+// Vite's preload error message usually names the failing URL ("Unable to
+// preload CSS for /assets/...", "Failed to fetch dynamically imported
+// module: https://.../assets/js/..."). Extract it so the heal works even
+// when the resource-timing buffer overflowed or hides the status.
+function assetUrlFromPreloadError(event: Event): string[] {
+  try {
+    const message = String(
+      (event as Event & { payload?: { message?: unknown } }).payload?.message ?? '',
+    );
+    const match = message.match(/(?:https?:\/\/[^\s'")]+)?\/assets\/[^\s'")]+/);
+    return match ? [new URL(match[0], window.location.origin).toString()] : [];
+  } catch {
+    return [];
+  }
+}
+
 let appBooted = false;
+let bootRecoveryFired = false;
 window.addEventListener('vite:preloadError', (event) => {
   if (appBooted) {
     // Interactive failure — handled gracefully at the component level.
     event.preventDefault();
+    // Quietly heal the browser HTTP cache underneath that recovery. A chunk
+    // fetched during a deploy window can be a cached-immutable 404/HTML
+    // (see src/utils/assetHeal.ts); without the heal, that route chunk
+    // replays the poisoned entry on EVERY future visit in this browser.
+    void healFailedAssets(assetUrlFromPreloadError(event));
     return;
   }
+  // Vite fires one event per failed dependency (a chunk + its CSS = two
+  // events in the same tick). Without this latch a single broken document
+  // would burn the whole retry budget before its first reload.
+  if (bootRecoveryFired) return;
   // Boot-time stale chunk: one-time hard reload to pick up the current
   // index.html / chunk hashes. sessionStorage gate prevents a loop if the
   // file is genuinely broken rather than stale.
@@ -61,15 +97,34 @@ window.addEventListener('vite:preloadError', (event) => {
       window.location.reload();
     }
   };
+  // Heal the poisoned cache entries BEFORE the document reload — the reload
+  // alone re-imports the same hashed URLs through the browser HTTP cache,
+  // which is exactly what pinned a real user blank on 2026-08-08.
+  const healThenReload = () => {
+    bootRecoveryFired = true;
+    void healBootAssets(assetUrlFromPreloadError(event)).finally(reloadFresh);
+  };
+  // Two attempts, not one: attempt 1 can land while the deploy window is
+  // still propagating (heal re-fetches the still-missing chunk), so a second
+  // healed retry is what rescues the tab. The counter is shared with the
+  // inline index.html guard; a legacy Date.now() value counts as one attempt.
   try {
-    if (!sessionStorage.getItem(key)) {
-      sessionStorage.setItem(key, String(Date.now()));
-      reloadFresh();
+    const raw = Number(sessionStorage.getItem(key)) || 0;
+    const attempts = raw > 1000 ? 1 : raw;
+    if (attempts < 2) {
+      sessionStorage.setItem(key, String(attempts + 1));
+      healThenReload();
     }
   } catch {
-    // sessionStorage unavailable (private mode, sandbox) — best-effort
-    // reload anyway; this path is rare.
-    reloadFresh();
+    // sessionStorage unavailable (private mode, sandbox) — bound the retry
+    // by the URL itself: a document already carrying ?__fresh= IS the retry.
+    // (A location.replace navigation reports nav.type 'navigate', never
+    // 'reload', so the navigation-type check cannot gate this path.)
+    try {
+      if (!window.location.search.includes('__fresh=')) healThenReload();
+    } catch {
+      /* location unavailable — refuse to reload rather than risk a loop */
+    }
   }
 });
 
