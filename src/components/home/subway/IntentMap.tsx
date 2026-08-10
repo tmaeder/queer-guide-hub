@@ -51,7 +51,10 @@ export function IntentMap() {
           is exactly right here and is already translated in all 11 locales. */}
       <h2
         id="intent-map-heading"
-        className="mx-auto mb-8 max-w-7xl font-display text-headline lg:mb-24 lg:px-8"
+        // `max-w-page`, not `max-w-7xl`: the heading is page copy and lines up
+        // with the nav above it. The map STAGE below deliberately does not —
+        // it is a full-bleed illustration with its own 1728px canvas.
+        className="mx-auto mb-8 max-w-page font-display text-headline lg:mb-24 lg:px-8"
       >
         {t('header.intents.sheetHeading', 'What are you here for?')}
       </h2>
@@ -64,7 +67,11 @@ export function IntentMap() {
           the type is never reversed because nothing is scaled. */}
       <div className="intent-map relative lg:mx-auto lg:max-w-[1728px]">
         {/* Decorative: every label on this map is HTML. */}
-        <svg viewBox={`0 0 ${VIEWBOX.w} ${VIEWBOX.h}`} className="hidden w-full lg:block" aria-hidden>
+        <svg
+          viewBox={`0 0 ${VIEWBOX.w} ${VIEWBOX.h}`}
+          className="hidden w-full lg:block"
+          aria-hidden
+        >
           <g
             fill="none"
             strokeWidth={12}
@@ -103,15 +110,7 @@ export function IntentMap() {
   );
 }
 
-function StationNode({
-  station,
-  path,
-  rtl,
-}: {
-  station: Station;
-  path: string;
-  rtl: boolean;
-}) {
+function StationNode({ station, path, rtl }: { station: Station; path: string; rtl: boolean }) {
   const { t } = useTranslation();
   const interchange = station.id === 'interchange';
   // `findActiveIntent('/')` is undefined, so nothing is ever current on the
