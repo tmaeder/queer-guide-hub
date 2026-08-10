@@ -47,7 +47,7 @@ async function callWorkersAI(acct: string, token: string, title: string, source:
   // runs on a */5 cron and its old default was the ~9x-pricier 70B — the single
   // largest mis-priced LLM call site behind invoice IN-72568830. The strong
   // model stays reachable per-run (body.model) or fleet-wide (CF_AI_MODEL).
-  const model = modelOverride || Deno.env.get('CF_AI_MODEL') || '@cf/meta/llama-3.1-8b-instruct'
+  const model = modelOverride || Deno.env.get('CF_AI_MODEL') || '@cf/meta/llama-3.1-8b-instruct-fast'
   const ctrl = new AbortController(); const t = setTimeout(() => ctrl.abort(), 45000)
   try {
     const res = await fetch(`https://api.cloudflare.com/client/v4/accounts/${acct}/ai/run/${model}`, { method: 'POST', signal: ctrl.signal, headers: { Authorization: `Bearer ${token}`, 'content-type': 'application/json' }, body: JSON.stringify({ messages: [{ role: 'system', content: SYSTEM_PROMPT }, { role: 'user', content: `Title: ${title}\nSource:\n${(source || '').slice(0, 1500)}` }], max_tokens: 400 }) })
