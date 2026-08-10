@@ -1679,6 +1679,13 @@
       "title": "[FR] Born this week",
       "seeAll": "[FR] All personalities",
       "celebrate": "[FR] Celebrate {{name}}"
+    },
+    "map": {
+      "interchangeEyebrow": "[FR] Interchange",
+      "interchange": {
+        "label": "[FR] Search everything",
+        "subtitle": "[FR] Every line meets here"
+      }
     }
   },
   "header": {

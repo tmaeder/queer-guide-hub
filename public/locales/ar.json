@@ -1681,6 +1681,13 @@
       "title": "[AR] Born this week",
       "seeAll": "[AR] All personalities",
       "celebrate": "[AR] Celebrate {{name}}"
+    },
+    "map": {
+      "interchangeEyebrow": "[AR] Interchange",
+      "interchange": {
+        "label": "[AR] Search everything",
+        "subtitle": "[AR] Every line meets here"
+      }
     }
   },
   "header": {

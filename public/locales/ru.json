@@ -1707,6 +1707,13 @@
       "title": "[RU] Born this week",
       "seeAll": "[RU] All personalities",
       "celebrate": "[RU] Celebrate {{name}}"
+    },
+    "map": {
+      "interchangeEyebrow": "[RU] Interchange",
+      "interchange": {
+        "label": "[RU] Search everything",
+        "subtitle": "[RU] Every line meets here"
+      }
     }
   },
   "header": {

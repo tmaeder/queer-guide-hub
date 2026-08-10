@@ -1675,6 +1675,13 @@
       "title": "[JA] Born this week",
       "seeAll": "[JA] All personalities",
       "celebrate": "[JA] Celebrate {{name}}"
+    },
+    "map": {
+      "interchangeEyebrow": "[JA] Interchange",
+      "interchange": {
+        "label": "[JA] Search everything",
+        "subtitle": "[JA] Every line meets here"
+      }
     }
   },
   "header": {
