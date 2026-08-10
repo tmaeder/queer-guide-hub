@@ -10,6 +10,7 @@ import { useSlugRedirect } from '@/hooks/useSlugRedirect';
 import { PageLoading } from '@/components/ui/loading';
 import SafetyAlertBanner from '@/components/country/SafetyAlertBanner';
 import { GatedContentNotice } from '@/components/safety/GatedContentNotice';
+import { FactGrid } from '@/components/transit/FactGrid';
 import { CountryHero } from '@/components/country/CountryHero';
 import { SafetyVerdict } from '@/components/country/SafetyVerdict';
 import { CountryPracticalInfo } from '@/components/country/CountryPracticalInfo';
@@ -23,7 +24,6 @@ import { useNews } from '@/hooks/useNews';
 import {
   EditorialDetailLayout,
   IntroEssay,
-  KeyFactsStrip,
   type KeyFact,
   type SectionDef,
 } from '@/components/entity/editorial';
@@ -184,15 +184,20 @@ export default function CountryDetail() {
     { label: country.name },
   ];
 
+  // Module 01 — the shared fact strip, so a country reads like every other
+  // single (spec rule 1).
+  //
+  // EQUALITY IS DELIBERATELY NOT HERE. <SafetyVerdict> above already carries
+  // the score WITH its tier label and the legal verdict around it; a bare
+  // "22/100" cell sitting between Capital and Cities flattens a legal finding
+  // into trivia, which is the same reason the city single keeps its safety
+  // block outside the grid. It is also the worse of the two copies, and a
+  // headline fact lives once.
   const facts: KeyFact[] = [
     { label: t('country.facts.capital', 'Capital'), value: country.capital || null },
     {
       label: t('country.facts.population', 'Population'),
       value: country.population ? `${(country.population / 1e6).toFixed(1)}M` : null,
-    },
-    {
-      label: t('country.facts.equality', 'Equality'),
-      value: country.equality_score != null ? `${country.equality_score}/100` : null,
     },
     // Languages + Currency live in CountryPracticalInfo directly above this
     // strip — repeating them here read as a data bug (2026-07 critique).
@@ -309,7 +314,7 @@ export default function CountryDetail() {
             </div>
             <IntroEssay text={country.editorial_long || country.description} />
             <CountryPracticalInfo country={country} />
-            <KeyFactsStrip facts={facts} />
+            <FactGrid facts={facts} />
           </div>
         }
         sections={sections}

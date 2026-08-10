@@ -319,7 +319,15 @@ function villageStops(venues: VillageVenue[]): Stop[] {
         Number(v.latitude),
         Number(v.longitude),
       );
-      gap = km < 1 ? `~${Math.round((km * 1000) / 50) * 50} m` : `~${km.toFixed(1)} km`;
+      if (km < 1) {
+        const m = Math.round((km * 1000) / 50) * 50;
+        // Below ~25 m the rounding lands on zero, and "~0 m" is not a gap — it
+        // is two venues sharing a coordinate (often a city centroid stamped by
+        // the geo backfill). No label is honest; a zero label is not.
+        gap = m > 0 ? `~${m} m` : null;
+      } else {
+        gap = `~${km.toFixed(1)} km`;
+      }
     }
     return {
       id: v.id,
@@ -344,9 +352,10 @@ export function VillageVenuesTab({
   return (
     <ScrollReveal direction="up">
       <div className="mt-6">
-        <h3 className="mb-4 text-lg font-semibold">
-          Venues in {village.cities?.name || 'the area'}
-        </h3>
+        {/* The village, not its city. This read "Venues in Madrid" while the
+            query was city-wide; now that the list is the village's own venues,
+            the city name would misdescribe it. */}
+        <h3 className="mb-4 text-lg font-semibold">Venues in {village.name}</h3>
         {loading ? (
           <div className="flex justify-center py-16">
             <p className="text-muted-foreground">Loading venues...</p>
