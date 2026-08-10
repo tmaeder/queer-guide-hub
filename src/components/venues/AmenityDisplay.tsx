@@ -6,6 +6,7 @@ import { useAmenityVocabulary } from '@/hooks/useAmenityVocabulary';
 import { amenityIcon } from '@/lib/amenityIcons';
 import { useProfile } from '@/hooks/useProfile';
 import { matchNeeds, needLabel } from '@/lib/accessibilityNeeds';
+import { AccessGrid, type AccessItem } from '@/components/transit/AccessGrid';
 
 function humanize(slug: string) {
   return slug.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
@@ -97,16 +98,24 @@ export function AmenityDisplay({ amenities, accessibility, accessibilityNotes }:
               </div>
             )}
             {accessList.length > 0 && (
-              <div className="grid grid-cols-2 gap-2 md:grid-cols-3">
-                {accessList.map((slug) => (
-                  <div
-                    key={slug}
-                    className={matchedSlugSet.has(slug) ? 'rounded-element bg-muted' : undefined}
-                  >
-                    <Row slug={slug} />
-                  </div>
-                ))}
-              </div>
+              <AccessGrid
+                items={accessList.map<AccessItem>((slug) => ({
+                  label: label(slug),
+                  // NEGATIVE ASSERTIONS ARE THE POINT. The vocabulary keeps
+                  // `not-step-free` / `no-accessible-restroom` as first-class
+                  // values so they are never collapsed into a positive claim
+                  // (see CLAUDE.md) — but this block used to render every slug
+                  // through one <Row>: same icon, same weight, same list. In a
+                  // grid of amenities "Not step-free" reads as a feature that
+                  // IS present at a glance, which is the exact harm the
+                  // vocabulary was designed to prevent. The state dot plus the
+                  // spelled-out value restores the distinction.
+                  state: /^(not|no)-/.test(slug) ? 'no' : 'yes',
+                  value: matchedSlugSet.has(slug)
+                    ? t('accessibility.matchesYours', 'matches yours')
+                    : undefined,
+                }))}
+              />
             )}
             {unlisted.length > 0 && (
               <p className="text-xs text-muted-foreground">

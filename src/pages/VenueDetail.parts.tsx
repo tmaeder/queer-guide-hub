@@ -24,6 +24,7 @@ import { Button } from '@/components/ui/button';
 import { Eyebrow } from '@/components/ui/Eyebrow';
 import { RouteBullet } from '@/components/transit/RouteBullet';
 import { FactGrid } from '@/components/transit/FactGrid';
+import { HoursTable, type HoursRow } from '@/components/transit/HoursTable';
 import { Image } from '@/components/ui/Image';
 import { FavoriteButton } from '@/components/ui/favorite-button';
 import { ReportButton } from '@/components/moderation/ReportButton';
@@ -232,18 +233,17 @@ export function formatHours(hours: Record<string, unknown>) {
   if (Object.keys(dayMap).length === 0)
     return <p className="text-sm text-muted-foreground">Hours not available</p>;
 
-  return (
-    <div className="flex flex-col gap-2">
-      {HOURS_DAYS.map((day, index) => (
-        <div key={day} className="flex items-baseline justify-between gap-4">
-          <span className="text-sm font-medium">{HOURS_DAY_NAMES[index]}</span>
-          <span className="text-sm text-muted-foreground tabular-nums">
-            {dayMap[day] ?? 'Closed'}
-          </span>
-        </div>
-      ))}
-    </div>
-  );
+  const rows: HoursRow[] = HOURS_DAYS.map((day, index) => ({
+    day: HOURS_DAY_NAMES[index],
+    open: dayMap[day] ?? 'Closed',
+  }));
+
+  // `todayIndex` is deliberately NOT passed. HOURS_DAYS is Monday-first, and
+  // the reader's weekday is not the venue's — a bar in Auckland is already on
+  // tomorrow. Highlighting the wrong row is worse than highlighting none, so
+  // the table stays neutral until the venue's local day is available (it needs
+  // `venue.timezone`, which this helper does not receive).
+  return <HoursTable rows={rows} />;
 }
 
 /* ───────────────────────────── Hero ───────────────────────────── */
