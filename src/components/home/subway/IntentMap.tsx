@@ -4,7 +4,7 @@ import { useLocation } from 'react-router';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { TRACK_BG, type Track } from '@/components/transit/routeBulletMap';
 import { isIntentActive } from '@/config/navigation';
-import { stripLocale } from '@/lib/locale';
+import { isRtlLocale, stripLocale } from '@/lib/locale';
 import { cn } from '@/lib/utils';
 import { STATIONS, TRACK_PATHS, VIEWBOX, pct, type Station } from './intentMapGeometry';
 
@@ -37,13 +37,10 @@ import { STATIONS, TRACK_PATHS, VIEWBOX, pct, type Station } from './intentMapGe
 export function IntentMap() {
   const { t, i18n } = useTranslation();
   const path = stripLocale(useLocation().pathname);
-  // `i18n.dir()` with no argument reads `resolvedLanguage`, which falls back
-  // to English whenever the requested locale's bundle fails to load — while
-  // `syncHtmlLangDir` (src/i18n/index.ts) sets <html dir> from `language`,
-  // the REQUESTED one. On a flaky CDN those two disagree, and the page's
-  // logical properties follow the attribute. Pass the language explicitly so
-  // this map mirrors with the rest of the page, never against it.
-  const rtl = i18n.dir(i18n.language) === 'rtl';
+  // `isRtlLocale` is the same predicate `syncHtmlLangDir` uses to write
+  // <html dir>, so this map mirrors WITH the page and can never mirror
+  // against it. Not `i18n.dir()` — see the note on the shared helper.
+  const rtl = isRtlLocale(i18n.language);
 
   return (
     <section

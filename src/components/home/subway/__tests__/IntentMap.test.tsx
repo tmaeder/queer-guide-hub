@@ -8,6 +8,7 @@ import {
 import i18n from '@/i18n';
 import { TRACK_BG } from '@/components/transit/routeBulletMap';
 import { INTENT_NAV, INTENT_TRACK } from '@/config/navigation';
+import { isRtlLocale } from '@/lib/locale';
 import { IntentMap } from '../IntentMap';
 import { STATIONS } from '../intentMapGeometry';
 
@@ -117,7 +118,10 @@ describe('IntentMap', () => {
     rtlRender.unmount();
     await i18n.changeLanguage('en');
 
-    expect(i18n.dir('ar')).toBe('rtl');
+    // The map must read direction from the SAME predicate that writes
+    // <html dir>, or it mirrors against the page rather than with it.
+    expect(isRtlLocale('ar')).toBe(true);
+    expect(isRtlLocale('en')).toBe(false);
     // Each station lands at its own mirror image, and the drawing mirrors with
     // it — internally, so the SVG's own box never moves.
     expect(rtl).toEqual(ltr.map((x) => Number((100 - x).toFixed(4))));
