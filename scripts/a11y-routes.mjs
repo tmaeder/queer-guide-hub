@@ -42,6 +42,17 @@ export const PUBLIC_ROUTES = [
   { path: '/personalities/derek-jacobi', name: 'personality-detail' },
   { path: '/tags', name: 'tags' },
   { path: '/tags/community-resource', name: 'tag-detail' },
+  // The six intent pages are the product's front doors, and three of them were
+  // never swept: /going-out, /rights and /shop were absent from this list
+  // entirely, while /travel and /help were covered. They are public, high
+  // traffic, and each was rebuilt in #2692. /people is listed below under
+  // auth:'user', so CI (SCAN_SCOPE: public) never reaches it either — its
+  // SIGNED-OUT state is a real public surface with 27 interactive chips on it,
+  // so it gets a public entry too.
+  { path: '/going-out', name: 'intent-going-out' },
+  { path: '/rights', name: 'intent-rights' },
+  { path: '/shop', name: 'intent-shop' },
+  { path: '/people', name: 'intent-people-signed-out' },
   { path: '/travel', name: 'travel' },
   { path: '/trips/discover', name: 'trips-discover' },
   { path: '/search', name: 'search' },
