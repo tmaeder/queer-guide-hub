@@ -799,6 +799,90 @@ h2,
   animation: content-enter 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
+/* ── Track loader ──────────────────────────────────────────────────────
+   The working indicator, from the design system's Loading Animation spec:
+   "A closed loop, drawn as track. Replaces the spinner everywhere."
+
+   A travelling dash, not a rotation — nothing spins in a transit system,
+   things travel along tracks. pathLength=120 normalises the dash to the
+   path so the same numbers work at any size.
+
+   Reduced motion does NOT hide it: a working indicator that stops moving
+   is indistinguishable from a hung request. The spec's own reduced-motion
+   rule is "lines appear drawn, rider hidden, counter still runs" — the
+   line stays visible, it simply stops travelling. */
+@keyframes track-loop {
+  from {
+    stroke-dashoffset: 120;
+  }
+  to {
+    stroke-dashoffset: -120;
+  }
+}
+.track-loader path {
+  stroke-dasharray: 30 90;
+  animation: track-loop 1.4s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .track-loader path {
+    animation: none;
+    stroke-dasharray: none;
+    opacity: 0.55;
+  }
+}
+
+/* ── Station pop ───────────────────────────────────────────────────────
+   Spec: 500ms, overshoot to 1.28x, settles. Fires when a line reaches a
+   stop — arrival confirmation, not decoration.
+
+   NOTE: this is the ONE sanctioned overshoot outside the joy zone. The
+   repo's standing rule removed spring easing (the old 1.56 overshoot)
+   because bounce read as decorative; the design system reintroduces a
+   smaller one for exactly this semantic — a train seating at a platform.
+   1.28x, not 1.56x, and only on arrival. */
+@keyframes station-pop {
+  0% {
+    transform: scale(0);
+  }
+  62% {
+    transform: scale(1.28);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+.station-pop {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: station-pop 500ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .station-pop {
+    animation: none;
+  }
+}
+
+/* ── Text rise ─────────────────────────────────────────────────────────
+   Spec: 700ms, 14px up, fades in. Used where content lands after a wait. */
+@keyframes text-rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.text-rise {
+  animation: text-rise 700ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .text-rise {
+    animation: none;
+  }
+}
+
 /* Skeleton shimmer — neutral grayscale only. */
 .shimmer {
   background: linear-gradient(90deg, transparent 0%, hsl(var(--muted) / 0.6) 50%, transparent 100%);
