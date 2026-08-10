@@ -1,7 +1,8 @@
 import { useEffect, useRef } from 'react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
-import { Loader2 } from 'lucide-react';
+
 
 interface LoadMoreSentinelProps {
   hasMore: boolean;
@@ -48,7 +49,7 @@ export function LoadMoreSentinel({ hasMore, loading, onLoadMore }: LoadMoreSenti
       <Button variant="outline" onClick={onLoadMore} disabled={loading}>
         {loading ? (
           <>
-            <Loader2 className="animate-spin mr-2" size={14} />
+            <TrackLoader size={14} className="mr-2" />
             {t('search.loading', 'Loading…')}
           </>
         ) : (

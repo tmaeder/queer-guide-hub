@@ -1,7 +1,8 @@
 import { useState, useMemo } from 'react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { formatDistanceToNow } from 'date-fns';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { AlertTriangle, RefreshCw, Trash2, Play, Loader2 } from 'lucide-react';
+import { AlertTriangle, RefreshCw, Trash2, Play} from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { untypedFrom } from '@/integrations/supabase/untyped';
@@ -126,7 +127,7 @@ export default function DLQTab() {
             className="h-8 text-xs"
           >
             {triggerConsumer.isPending
-              ? <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
+              ? <TrackLoader size={14} className="mr-1.5" />
               : <Play className="h-3.5 w-3.5 mr-1.5" />}
             Run consumer now
           </Button>

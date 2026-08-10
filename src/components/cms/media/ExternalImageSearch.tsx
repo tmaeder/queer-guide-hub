@@ -5,7 +5,8 @@
  */
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Search, Check, ExternalLink, Camera, Loader2 } from 'lucide-react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
+import { Search, Check, ExternalLink, Camera} from 'lucide-react';
 import { useExternalImageSearch, type ExternalImage } from '@/hooks/useExternalImageSearch';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -147,7 +148,7 @@ export default function ExternalImageSearch({
 
         {loading && displayResults.length === 0 && (
           <div className="flex justify-center py-12">
-            <Loader2 className="h-6 w-6 animate-spin" aria-label="Loading" />
+            <TrackLoader size={24} label="Loading" />
           </div>
         )}
 
@@ -248,7 +249,7 @@ export default function ExternalImageSearch({
 
             {loading && displayResults.length > 0 && (
               <div className="flex justify-center py-4">
-                <Loader2 className="h-6 w-6 animate-spin" aria-label="Loading" />
+                <TrackLoader size={24} label="Loading" />
               </div>
             )}
           </>

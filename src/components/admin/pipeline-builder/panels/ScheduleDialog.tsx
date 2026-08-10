@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Calendar, Loader2 } from 'lucide-react';
+import { Calendar} from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -70,7 +71,7 @@ export default function ScheduleDialog({ pipelineId, currentSchedule }: Schedule
           <Button variant="ghost" size="sm" onClick={() => setOpen(false)}>Cancel</Button>
           <Button size="sm" onClick={() => save.mutate()} disabled={save.isPending || !pipelineId}>
             {save.isPending
-              ? <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
+              ? <TrackLoader size={14} className="mr-1.5" />
               : <Calendar className="h-3.5 w-3.5 mr-1.5" />}
             Save schedule
           </Button>

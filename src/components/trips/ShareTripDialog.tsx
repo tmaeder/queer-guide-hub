@@ -1,6 +1,7 @@
 import { useState } from 'react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Copy, Trash2, Check, Link2, Lock, Calendar, Eye, Loader2 } from 'lucide-react';
+import { Copy, Trash2, Check, Link2, Lock, Calendar, Eye} from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -172,7 +173,7 @@ export function ShareTripDialog({ open, onClose, tripId }: Props) {
           {/* Existing shares */}
           {isLoading ? (
             <div className="flex justify-center py-4">
-              <Loader2 className="h-6 w-6 animate-spin" />
+              <TrackLoader size={24} />
             </div>
           ) : (
             (shares || []).length > 0 && (
@@ -384,7 +385,7 @@ export function ShareTripDialog({ open, onClose, tripId }: Props) {
               disabled={createShare.isPending}
             >
               {createShare.isPending ? (
-                <Loader2 size={16} className="mr-1 animate-spin" />
+                <TrackLoader size={16} className="mr-1" />
               ) : (
                 <Link2 size={16} className="mr-1.5" />
               )}

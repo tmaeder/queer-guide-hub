@@ -6,7 +6,8 @@
  */
 
 import { useEffect, useState } from 'react';
-import { Loader2 } from 'lucide-react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
+
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
@@ -63,7 +64,7 @@ export function PersonalityNotesPanel({ personalityId }: { personalityId: string
   if (loading) {
     return (
       <div className="flex items-center justify-center py-4">
-        <Loader2 className="animate-spin" size={24} aria-label="Loading" />
+        <TrackLoader size={24} label="Loading" />
       </div>
     );
   }

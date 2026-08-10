@@ -1,6 +1,7 @@
 import { useState } from 'react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useTranslation } from 'react-i18next';
-import { Loader2 } from 'lucide-react';
+
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -104,7 +105,7 @@ export function StartTripHero() {
           />
         </div>
         <Button onClick={handlePlan} disabled={createTrip.isPending} data-testid="travel-plan-trip">
-          {createTrip.isPending && <Loader2 size={16} className="animate-spin mr-1.5" />}
+          {createTrip.isPending && <TrackLoader size={16} className="mr-1.5" />}
           {t('pages.travel.hero.cta', 'Plan this trip')}
         </Button>
       </div>

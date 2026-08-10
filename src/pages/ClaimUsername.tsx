@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useNavigate } from 'react-router';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2 } from 'lucide-react';
+
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile, type Profile } from '@/hooks/useProfile';
 import { UsernameSelector } from '@/components/auth/UsernameSelector';
@@ -53,7 +54,7 @@ export default function ClaimUsername() {
   if (authLoading || profileLoading || !user || username) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center" role="status" aria-label="Loading">
-        <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" aria-hidden="true" />
+        <TrackLoader size={24} />
       </div>
     );
   }
@@ -82,7 +83,7 @@ export default function ClaimUsername() {
             disabled={!pendingUsername || !pendingAvatar || saving}
             onClick={handleSave}
           >
-            {saving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+            {saving && <TrackLoader size={16} className="mr-2" />}
             Save and continue
           </Button>
         </CardContent>

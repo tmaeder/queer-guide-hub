@@ -1,6 +1,7 @@
 import { useState } from 'react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useTranslation } from 'react-i18next';
-import { Loader2 } from 'lucide-react';
+
 import {
   Dialog,
   DialogContent,
@@ -153,7 +154,7 @@ export function AddDayNoteDialog({ open, onClose, tripId, dayId, nextSortOrder }
             {t('common.cancel', 'Cancel')}
           </Button>
           <Button onClick={handleSave} disabled={!text.trim() || addPlace.isPending}>
-            {addPlace.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+            {addPlace.isPending && <TrackLoader size={16} className="mr-2" />}
             {t('trips.dayNotes.save', 'Add note')}
           </Button>
         </DialogFooter>

@@ -1,17 +1,8 @@
 import { useMemo } from 'react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
-import {
-  ArrowRight,
-  CalendarClock,
-  Check,
-  CheckCheck,
-  Heart,
-  Loader2,
-  MessageCircle,
-  Users,
-  X,
-} from 'lucide-react';
+import { ArrowRight, CalendarClock, Check, CheckCheck, Heart, MessageCircle, Users, X } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -133,7 +124,7 @@ export function OverviewModule() {
       </h1>
 
       {loading ? (
-        <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" aria-hidden />
+        <TrackLoader size={20} />
       ) : !hasAnything ? (
         <div className="flex flex-col items-start gap-2 py-8">
           <CheckCheck className="h-5 w-5 text-muted-foreground" aria-hidden />

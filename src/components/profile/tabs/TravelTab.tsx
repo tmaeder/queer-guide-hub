@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Loader2 } from 'lucide-react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { EntityMap, type EntityMapMarker } from '@/components/map/EntityMap';
@@ -92,7 +93,7 @@ function PublicTravel({ userId }: { userId: string }) {
   if (loading) {
     return (
       <div className="py-12 flex justify-center">
-        <Loader2 className="h-6 w-6 animate-spin" />
+        <TrackLoader size={24} />
       </div>
     );
   }
@@ -267,7 +268,7 @@ function OwnTravel() {
   if (isLoading) {
     return (
       <div className="py-12 flex justify-center">
-        <Loader2 className="h-6 w-6 animate-spin" />
+        <TrackLoader size={24} />
       </div>
     );
   }

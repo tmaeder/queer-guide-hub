@@ -1,5 +1,6 @@
-import { Loader2 } from 'lucide-react';
+
 import { useTranslation } from 'react-i18next';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 
 interface MapResultsPillProps {
   showResultCount: boolean;
@@ -36,10 +37,7 @@ export function MapResultsPill({
       }}
     >
       {(isFetching || isCounterStale) && (
-        <Loader2
-          className="h-3 w-3 animate-spin"
-          aria-label={t('map.canvas.loading', { defaultValue: 'Loading' })}
-        />
+        <TrackLoader size={12} />
       )}
       <span className="text-xs text-muted-foreground">
         {isFetching || isCounterStale

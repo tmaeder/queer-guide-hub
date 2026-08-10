@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Eye, EyeOff, Heart, Loader2 } from 'lucide-react';
+import { Eye, EyeOff, Heart} from 'lucide-react';
 import { Trans, useTranslation } from 'react-i18next';
 import { useAuth } from '@/hooks/useAuth';
 import { useTurnstile } from '@/hooks/useTurnstile';
@@ -145,7 +146,7 @@ export default function Signup({ onBack }: Props) {
                 pendingUsername && pendingAvatar && performSignup(pendingUsername, pendingAvatar)
               }
             >
-              {isLoading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+              {isLoading && <TrackLoader size={16} className="mr-2" />}
               Create account
             </Button>
           </div>
@@ -260,7 +261,7 @@ export default function Signup({ onBack }: Props) {
             </Label>
 
             <Button type="submit" disabled={isLoading} className="mt-2">
-              {isLoading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+              {isLoading && <TrackLoader size={16} className="mr-2" />}
               {t('auth.signup.create', 'Create account')}
             </Button>
           </form>

@@ -1,6 +1,7 @@
 import { useState } from 'react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useTranslation } from 'react-i18next';
-import { Heart, Loader2 } from 'lucide-react';
+import { Heart} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -181,7 +182,7 @@ export function DonationForm() {
           onClick={handleSubmit}
         >
           {checkout.isPending ? (
-            <Loader2 className="h-4 w-4 animate-spin mr-2" />
+            <TrackLoader size={16} className="mr-2" />
           ) : (
             <Heart className="h-4 w-4 mr-2" />
           )}

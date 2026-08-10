@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/button';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
@@ -10,7 +11,7 @@ import {
   CommandList,
 } from '@/components/ui/command';
 import { Badge } from '@/components/ui/badge';
-import { X, Check, ChevronDown, Loader2 } from 'lucide-react';
+import { X, Check, ChevronDown} from 'lucide-react';
 import { xStyle, type FilterOption } from './constants';
 
 // Extracted filter dropdown component to reduce repetition
@@ -72,7 +73,7 @@ export function FilterDropdown({
               <CommandGroup>
                 {loading ? (
                   <div className="flex items-center justify-center p-4">
-                    <Loader2 size={16} />
+                    <TrackLoader size={16} />
                   </div>
                 ) : (
                   items.map((item) => (

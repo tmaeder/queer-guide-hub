@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Mail, Loader2, CheckCircle2 } from 'lucide-react';
+import { Mail, CheckCircle2 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useTranslation } from 'react-i18next';
@@ -85,11 +86,7 @@ export function EmailVerificationScreen({ email, onBackToLogin }: Props) {
             disabled={cooldown > 0 || status === 'sending'}
           >
             {status === 'sending' && (
-              <Loader2
-                size={16}
-                style={{ animation: 'spin 1s linear infinite' }}
-                className="mr-2"
-              />
+              <TrackLoader size={16} className="mr-2" />
             )}
             {cooldown > 0
               ? t('auth.verifyEmail.resendIn', {

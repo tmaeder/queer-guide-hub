@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
-import { Loader2, ThumbsUp } from 'lucide-react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
+import {ThumbsUp } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { RoadmapItemDrawer } from '@/components/admin/feedback/RoadmapItemDrawer';
 import { AdminEmpty } from '@/components/admin/primitives/AdminEmpty';
@@ -29,7 +30,7 @@ export function RoadmapTab() {
   if (isLoading) {
     return (
       <div className="p-12 text-center">
-        <Loader2 className="h-6 w-6 animate-spin mx-auto" />
+        <TrackLoader size={24} className="mx-auto" />
       </div>
     );
   }

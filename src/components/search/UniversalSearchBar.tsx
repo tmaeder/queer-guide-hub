@@ -2,7 +2,8 @@ import React, { useState, useRef, useEffect, useCallback, useMemo, Suspense } fr
 import { lazyOptional } from '@/utils/lazyRetry';
 import { useTranslation } from 'react-i18next';
 import { useLocation } from 'react-router';
-import { Loader2, Search, X, Mic } from 'lucide-react';
+import { Search, X, Mic } from 'lucide-react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useTrackClick } from '@/hooks/useSearchActions';
 import { trackSearchUx } from '@/lib/searchClient';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
@@ -500,10 +501,7 @@ export const UniversalSearchBar = () => {
                   </kbd>
                 )}
                 {query && suggestionsLoading && (
-                  <Loader2
-                    className="animate-spin text-muted-foreground"
-                    style={{ height: isMobile ? 14 : 12, width: isMobile ? 14 : 12 }}
-                  />
+                  <TrackLoader size={isMobile ? 14 : 12} />
                 )}
                 {query && (
                   <Button

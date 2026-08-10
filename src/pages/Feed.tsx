@@ -1,19 +1,11 @@
 import { useMemo, useState } from 'react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
-import {
-  Users,
-  PenSquare,
-  Search,
-  AlertTriangle,
-  RefreshCw,
-  Home,
-  Loader2,
-  LogIn,
-} from 'lucide-react';
+import { Users, PenSquare, Search, AlertTriangle, RefreshCw, Home, LogIn } from 'lucide-react';
 import { PostCard } from '@/components/posts/PostCard';
 import { CreatePostDialog } from '@/components/posts/CreatePostDialog';
 import { useCommunityPosts } from '@/hooks/useCommunityPosts';
@@ -236,7 +228,7 @@ export default function Feed() {
                       className="inline-flex gap-2"
                     >
                       {isFetchingNextPage && (
-                        <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                        <TrackLoader size={16} />
                       )}
                       {t('pages.feed.loadMore', 'Load more')}
                     </Button>

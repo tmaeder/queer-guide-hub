@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -11,7 +12,6 @@ import {
   ShieldCheck,
   Bug,
   Link2,
-  Loader2,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
@@ -215,7 +215,7 @@ function ConnectCard({
             <Button onClick={onConnect} disabled={status === 'connecting'}>
               {status === 'connecting' ? (
                 <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />{' '}
+                  <TrackLoader size={16} className="mr-2" />{' '}
                   {t('extension.connect.connecting', 'Connecting…')}
                 </>
               ) : (

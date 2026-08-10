@@ -1,11 +1,12 @@
 import { useState } from 'react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, Plus, AlertCircle, CheckCircle, XCircle, RefreshCw } from 'lucide-react';
+import { Plus, AlertCircle, CheckCircle, XCircle, RefreshCw } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
@@ -334,7 +335,7 @@ export const BulkCreatePersonalities = () => {
             <Button onClick={handleBulkCreate} disabled={isLoading || !names.trim()}>
               {isLoading ? (
                 <>
-                  <Loader2 />
+                  <TrackLoader size={16} />
                   Creating Personalities...
                 </>
               ) : (

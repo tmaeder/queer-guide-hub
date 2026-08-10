@@ -1,6 +1,7 @@
 import { useState } from 'react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { Button } from '@/components/ui/button';
-import { Download, Loader2 } from 'lucide-react';
+import { Download} from 'lucide-react';
 import { toast } from 'sonner';
 
 interface ExportExcelButtonProps {
@@ -34,7 +35,7 @@ export function ExportExcelButton({ onExport, label = 'Export Excel' }: ExportEx
       className="inline-flex gap-1.5"
     >
       {isExporting ? (
-        <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} />
+        <TrackLoader size={16} />
       ) : (
         <Download size={16} />
       )}

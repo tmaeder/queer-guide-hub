@@ -1,7 +1,8 @@
 import { memo } from 'react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useTranslation } from 'react-i18next';
 import { Handle, Position, type NodeProps, type Node } from '@xyflow/react';
-import { ArrowUpRight, Loader2 } from 'lucide-react';
+import { ArrowUpRight} from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Image } from '@/components/ui/Image';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
@@ -63,7 +64,7 @@ function EntityNode({ data: d, id }: NodeProps<EgoFlowNode>) {
       <div className="p-2">
         <div className="flex items-start gap-1">
           <span className="text-13 font-medium leading-tight line-clamp-2 flex-1">
-            {d.loading ? <Loader2 className="h-3.5 w-3.5 animate-spin inline" /> : d.title}
+            {d.loading ? <TrackLoader size={14} className="inline" /> : d.title}
           </span>
           {d.href && (
             <LocalizedLink

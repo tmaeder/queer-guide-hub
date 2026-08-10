@@ -1,4 +1,5 @@
-import { Check, Bookmark, Loader2 } from 'lucide-react';
+import { Check, Bookmark} from 'lucide-react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import {
@@ -68,7 +69,7 @@ export function MarkVisitedButton({
       aria-pressed={active}
     >
       {toggle.isPending ? (
-        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+        <TrackLoader size={16} className="mr-2" />
       ) : (
         <Icon className="h-4 w-4 mr-2" />
       )}

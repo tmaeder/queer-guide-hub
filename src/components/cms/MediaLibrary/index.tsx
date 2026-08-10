@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -12,7 +13,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { AlertTriangle, Trash2, Zap, Loader2 } from 'lucide-react';
+import { AlertTriangle, Trash2, Zap} from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
 import { useUnifiedMedia, PAGE_SIZE } from '@/hooks/useUnifiedMedia';
@@ -80,7 +81,7 @@ export function MediaLibrary() {
   if (rolesLoading) {
     return (
       <div className="flex items-center justify-center py-24">
-        <Loader2 className="h-8 w-8 animate-spin" />
+        <TrackLoader size={32} />
       </div>
     );
   }

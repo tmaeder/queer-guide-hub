@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Check, Navigation, Loader2 } from 'lucide-react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
+import { Check, Navigation} from 'lucide-react';
 import {
   Command,
   CommandEmpty,
@@ -200,7 +201,7 @@ export const MapFiltersPanel = ({
             )}
           >
             {locating ? (
-              <Loader2 size={14} className="animate-spin" aria-hidden="true" />
+              <TrackLoader size={14} />
             ) : (
               <Navigation size={14} aria-hidden="true" />
             )}

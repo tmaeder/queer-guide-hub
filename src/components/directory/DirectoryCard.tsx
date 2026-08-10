@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { MapPin, Users, Globe, Building2, Loader2, ImageIcon, Crown } from 'lucide-react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
+import { MapPin, Users, Globe, Building2, ImageIcon, Crown } from 'lucide-react';
 import { Country, City } from '@/hooks/useDirectory';
 import { useState, useEffect } from 'react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
@@ -273,11 +274,7 @@ export const DirectoryCard = ({ type, name, data, onClick }: DirectoryCardProps)
               }}
               className="flex"
             >
-              <Loader2
-                size={24}
-                style={{ animation: 'spin 1s linear infinite' }}
-                className="text-muted-foreground"
-              />
+              <TrackLoader size={24} />
             </div>
           ) : cityImageUrl && !cityImageError ? (
             <img

@@ -1,26 +1,8 @@
 import { useMemo, useState, lazy, Suspense } from 'react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useParams } from 'react-router';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
-import {
-  MapPin,
-  Shield,
-  Wallet,
-  Ticket,
-  CheckSquare,
-  MessageCircle,
-  Share2,
-  ArrowLeft,
-  Plus,
-  Hotel,
-  Sparkles,
-  MessagesSquare,
-  FileText,
-  Download,
-  Check,
-  Loader2,
-  Lightbulb,
-  NotebookPen,
-} from 'lucide-react';
+import { MapPin, Shield, Wallet, Ticket, CheckSquare, MessageCircle, Share2, ArrowLeft, Plus, Hotel, Sparkles, MessagesSquare, FileText, Download, Check, Lightbulb, NotebookPen } from 'lucide-react';
 import { format, differenceInDays } from 'date-fns';
 import { useTranslation } from 'react-i18next';
 import { useTrip, canEditTrip, type TripWithDetails } from '@/hooks/useTrips';
@@ -107,7 +89,7 @@ function hasSafetyWarnings(trip: TripWithDetails): boolean {
 
 const SuspenseLoader = () => (
   <div className="flex justify-center my-8">
-    <Loader2 className="h-6 w-6 animate-spin" />
+    <TrackLoader size={24} />
   </div>
 );
 
@@ -274,7 +256,7 @@ export default function TripPlannerPage() {
           className="flex items-center gap-2 rounded-element px-4 py-2 mb-4 text-sm text-muted-foreground bg-surface-container"
           data-testid="offline-pending-banner"
         >
-          <Loader2 size={14} className="animate-spin" aria-hidden />
+          <TrackLoader size={14} />
           {t('trips.offline.pending', '{{count}} changes waiting to sync', {
             count: pendingOffline,
           })}

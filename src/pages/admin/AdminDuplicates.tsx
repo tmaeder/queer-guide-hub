@@ -1,9 +1,10 @@
 import { useMemo, useState } from 'react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { Link, useSearchParams } from 'react-router';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Check, Loader2, GitMerge, Image as ImageIcon, Wand2 } from 'lucide-react';
+import { Check, GitMerge, Image as ImageIcon, Wand2 } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   useDedupTypes,
@@ -230,7 +231,7 @@ function ContentDuplicates({
         <>
           {isLoading && (
             <div className="text-muted-foreground flex items-center gap-2 p-4">
-              <Loader2 className="animate-spin" size={16} /> Loading clusters…
+              <TrackLoader size={16} /> Loading clusters…
             </div>
           )}
           {isError && (
@@ -254,7 +255,7 @@ function ContentDuplicates({
                       <Badge variant="secondary">{c.count} copies</Badge>
                     </div>
                     <Button size="sm" onClick={() => mergeMutation.mutate(c)} disabled={busy}>
-                      {busy ? <Loader2 className="animate-spin" size={16} /> : <GitMerge size={16} />}
+                      {busy ? <TrackLoader size={16} /> : <GitMerge size={16} />}
                       Merge {c.count - 1} into selected
                     </Button>
                   </div>
@@ -357,7 +358,7 @@ function FuzzyDuplicates({ type }: { type: DedupType }) {
   if (isLoading) {
     return (
       <div className="text-muted-foreground flex items-center gap-2 p-4">
-        <Loader2 className="animate-spin" size={16} /> Loading pairs…
+        <TrackLoader size={16} /> Loading pairs…
       </div>
     );
   }
@@ -378,7 +379,7 @@ function FuzzyDuplicates({ type }: { type: DedupType }) {
             onClick={() => autoMerge.mutate()}
             disabled={autoMerge.isPending || autoCount === 0}
           >
-            {autoMerge.isPending ? <Loader2 className="animate-spin" size={16} /> : <Wand2 size={16} />}
+            {autoMerge.isPending ? <TrackLoader size={16} /> : <Wand2 size={16} />}
             Auto-merge {autoCount} same-place
           </Button>
         )}
@@ -401,7 +402,7 @@ function FuzzyDuplicates({ type }: { type: DedupType }) {
                 {c.dist_m != null && <Badge variant="outline">{c.dist_m} m apart</Badge>}
               </div>
               <Button size="sm" variant="outline" onClick={() => mergeOne.mutate(c)} disabled={busy}>
-                {busy ? <Loader2 className="animate-spin" size={16} /> : <GitMerge size={16} />}
+                {busy ? <TrackLoader size={16} /> : <GitMerge size={16} />}
                 Merge
               </Button>
             </div>

@@ -1,5 +1,6 @@
-import { Loader2 } from 'lucide-react';
+
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { updateCommunitySubmission } from '@/hooks/usePageFetchers';
 import { AnalyticsTab } from '@/components/admin/feedback/analytics/AnalyticsTab';
@@ -23,7 +24,7 @@ export default function AdminFeedback() {
   if (c.isLoading || c.errorsLoading) {
     return (
       <div className="p-12 text-center">
-        <Loader2 className="h-6 w-6 animate-spin mx-auto" />
+        <TrackLoader size={24} className="mx-auto" />
       </div>
     );
   }

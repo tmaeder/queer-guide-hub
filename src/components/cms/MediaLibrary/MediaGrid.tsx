@@ -1,15 +1,10 @@
 import { useNavigate } from 'react-router';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
-import {
-  Star,
-  Flag,
-  Loader2,
-  Image as ImageIcon,
-  ImageOff,
-} from 'lucide-react';
+import { Star, Flag, Image as ImageIcon, ImageOff } from 'lucide-react';
 import { useState } from 'react';
 import type { UnifiedMediaItem, ViewMode } from './types';
 import { formatFileSize, getFileIcon, getOptimizationIcon, getThumbnailUrl } from './utils';
@@ -98,7 +93,7 @@ export function MediaGrid(props: MediaGridProps) {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 className="h-8 w-8 animate-spin" />
+        <TrackLoader size={32} />
       </div>
     );
   }

@@ -1,5 +1,6 @@
-import { Loader2 } from 'lucide-react';
+
 import { MapShell } from '@/components/map/MapShell';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { MAP_SHELL_ENABLED } from '@/lib/featureFlags';
 import type { CityRelation } from './types';
 
@@ -29,7 +30,7 @@ export function CityMapTab({ city, ExploreMap, Suspense }: CityMapTabProps) {
     <Suspense
       fallback={
         <div className="flex justify-center py-8">
-          <Loader2 className="h-8 w-8 animate-spin" aria-label="Loading" />
+          <TrackLoader size={32} label="Loading" />
         </div>
       }
     >

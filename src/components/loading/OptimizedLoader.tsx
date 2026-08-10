@@ -1,5 +1,6 @@
 import React from 'react';
-import { Loader2 } from 'lucide-react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
+
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 
@@ -118,7 +119,7 @@ export const OptimizedLoader = ({
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center flex flex-col gap-4 items-center">
-          <Loader2 className="animate-spin" size={48} aria-label="Loading" />
+          <TrackLoader size={48} label="Loading" />
           <p className="text-sm text-muted-foreground">Loading your data...</p>
         </div>
       </div>

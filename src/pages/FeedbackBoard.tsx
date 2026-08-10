@@ -1,6 +1,7 @@
 import { useState, useMemo, useCallback } from 'react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Loader2 } from 'lucide-react';
+
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -96,7 +97,7 @@ export default function FeedbackBoard() {
   if (isLoading) {
     return (
       <div className="container mx-auto px-4 py-12 text-center">
-        <Loader2 className="animate-spin h-8 w-8 mx-auto" aria-label="Loading" />
+        <TrackLoader size={32} label="Loading" className="mx-auto" />
       </div>
     );
   }

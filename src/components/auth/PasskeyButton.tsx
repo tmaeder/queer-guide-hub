@@ -1,6 +1,7 @@
 import { useState } from 'react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { Button } from '@/components/ui/button';
-import { Fingerprint, Loader2 } from 'lucide-react';
+import { Fingerprint} from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 
@@ -82,7 +83,7 @@ export const PasskeyButton = ({
         className="w-full"
       >
         {isLoading ? (
-          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          <TrackLoader size={16} className="mr-2" />
         ) : (
           <Fingerprint className="mr-2 h-4 w-4" />
         )}
