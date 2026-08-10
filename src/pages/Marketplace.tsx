@@ -40,6 +40,7 @@ import {
   hasActiveFilters as hasActiveFiltersFn,
   parseFiltersFromParams,
 } from '@/lib/marketplaceFilterParams';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 // Must mirror the grid classes' breakpoint column counts (sm/lg/2xl).
 const MARKETPLACE_GRID_BREAKPOINTS = [
@@ -396,7 +397,7 @@ const Marketplace = () => {
           }}
           size="md"
         />
-        <div className="container mx-auto py-8 md:py-12 px-4 relative">
+        <PageContainer className="relative">
           {/* Boutique landing: cover story, asymmetric department bento,
               one brand feature, two rails, magazine guide teasers — then
               the grid. Every section registers with CuratedIds so the
@@ -500,7 +501,7 @@ const Marketplace = () => {
           </div>
 
           <AffiliateDisclosure />
-        </div>
+        </PageContainer>
         <AdultContentGate active={hasAdultListings} fallbackPath="/" />
       </div>
     </CuratedIdsProvider>

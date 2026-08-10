@@ -9,6 +9,7 @@ import { SubwayHero } from '@/components/home/subway/SubwayHero';
 import { DeparturesBoard } from '@/components/home/subway/DeparturesBoard';
 import { CityCards } from '@/components/home/subway/CityCards';
 import { SupportBand } from '@/components/home/subway/SupportBand';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 // Plain React.lazy reads `.default` off whatever the dynamic import resolves
 // to; lazyOptional degrades to null when a stale deploy no longer serves the
@@ -21,32 +22,28 @@ const HomeOnThisDay = lazyOptional(() => import('@/components/home/HomeOnThisDay
 // ── Section shells ───────────────────────────────────────────────────────────
 
 const magazineSkeleton = (
-  <div className="px-4 sm:px-6 md:px-8 py-12 md:py-16">
-    <div className="max-w-7xl mx-auto grid grid-cols-1 gap-10 md:grid-cols-[1.1fr_1fr]">
-      <Skeleton className="aspect-[16/10] w-full rounded-container" />
-      <div className="grid grid-cols-2 gap-x-6 gap-y-8">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <Skeleton key={i} className="aspect-[3/2] w-full rounded-element" />
-        ))}
-      </div>
+  <PageContainer className="grid grid-cols-1 gap-10 md:grid-cols-[1.1fr_1fr]">
+    <Skeleton className="aspect-[16/10] w-full rounded-container" />
+    <div className="grid grid-cols-2 gap-x-6 gap-y-8">
+      {Array.from({ length: 4 }).map((_, i) => (
+        <Skeleton key={i} className="aspect-[3/2] w-full rounded-element" />
+      ))}
     </div>
-  </div>
+  </PageContainer>
 );
 
 const railSkeleton = (
-  <div className="px-4 sm:px-6 md:px-8 py-12 md:py-16">
-    <div className="max-w-7xl mx-auto">
-      <Skeleton className="mb-8 h-9 w-64" />
-      <div className="flex gap-4 overflow-hidden">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <Skeleton
-            key={i}
-            className="aspect-[3/4] w-[200px] sm:w-[240px] shrink-0 rounded-container"
-          />
-        ))}
-      </div>
+  <PageContainer>
+    <Skeleton className="mb-8 h-9 w-64" />
+    <div className="flex gap-4 overflow-hidden">
+      {Array.from({ length: 4 }).map((_, i) => (
+        <Skeleton
+          key={i}
+          className="aspect-[3/4] w-[200px] sm:w-[240px] shrink-0 rounded-container"
+        />
+      ))}
     </div>
-  </div>
+  </PageContainer>
 );
 
 /** Shared wrapper: error isolation + near-viewport deferral (code AND data)

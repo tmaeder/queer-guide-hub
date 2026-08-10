@@ -14,6 +14,7 @@ import { useEgoNetwork, egoKey, type EgoNode } from '@/hooks/useEgoNetwork';
 import { detailHref } from '@/lib/searchRoutes';
 import EgoGraph from '@/components/explore/EgoGraph';
 import type { EgoFlowNode } from '@/components/explore/EntityNode';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 function nodeHref(n: EgoNode): string | null {
   return detailHref({ type: n.type, slug: n.slug, id: n.id, title: n.title });
@@ -90,7 +91,7 @@ export default function ConnectionsExplorer() {
 
   if (!center) {
     return (
-      <div className="container mx-auto px-4 py-12">
+      <PageContainer>
         <EmptyState
           icon={Waypoints}
           title={t('connections.emptyTitle')}
@@ -103,7 +104,7 @@ export default function ConnectionsExplorer() {
             </LocalizedLink>
           </Button>
         </EmptyState>
-      </div>
+      </PageContainer>
     );
   }
 
@@ -117,9 +118,9 @@ export default function ConnectionsExplorer() {
     // Definite height (not min-height): React Flow sizes itself 100% of its
     // parent, which must resolve — flex-1 under an indefinite parent yields a
     // zero-height, non-interactive pane.
-    <div
-      className="container mx-auto px-4 py-6 flex flex-col gap-4"
+    <PageContainer
       style={{ height: isMobile ? undefined : 'max(640px, calc(100vh - 120px))' }}
+      className="flex flex-col gap-4"
     >
       <div className="flex flex-wrap items-center gap-2">
         <Waypoints className="h-5 w-5" aria-hidden="true" />
@@ -187,6 +188,6 @@ export default function ConnectionsExplorer() {
           <EgoGraph nodes={flowNodes} edges={flowEdges} onNodeClick={expand} />
         </div>
       )}
-    </div>
+    </PageContainer>
   );
 }

@@ -52,7 +52,7 @@ export function Footer() {
 
   return (
     <footer className="mt-auto bg-foreground text-background">
-      <div className="mx-auto w-full max-w-7xl px-4 pt-8 sm:px-6 md:px-8">
+      <div className="mx-auto w-full max-w-page px-4 pt-8 sm:px-6 md:px-8">
         <FooterTracks />
       </div>
 
@@ -61,7 +61,7 @@ export function Footer() {
            put /venues and /people out of reach of desktop chrome). ────── */}
       <nav
         aria-label="Footer navigation"
-        className="mx-auto grid w-full max-w-7xl grid-cols-2 gap-6 px-4 pb-8 pt-4 sm:px-6 md:grid-cols-3 md:px-8 lg:grid-cols-6"
+        className="mx-auto grid w-full max-w-page grid-cols-2 gap-6 px-4 pb-8 pt-4 sm:px-6 md:grid-cols-3 md:px-8 lg:grid-cols-6"
       >
         {INTENT_NAV.map((intent) => {
           const active = isIntentActive(intent, localePath);
@@ -88,7 +88,7 @@ export function Footer() {
 
       {/* ── Policy + crisis. Above the legal row on purpose. ──────────── */}
       <div className="border-t-[3px] border-background">
-        <div className="mx-auto grid w-full max-w-7xl gap-8 px-4 py-8 sm:px-6 md:grid-cols-2 md:px-8">
+        <div className="mx-auto grid w-full max-w-page gap-8 px-4 py-8 sm:px-6 md:grid-cols-2 md:px-8">
           <div>
             <h2 className="max-w-md font-display text-headline leading-tight">
               {t('footer.antiDiscrimination.title', "We don't do bigotry here.")}
@@ -141,7 +141,7 @@ export function Footer() {
 
       {/* ── Legal + tagline ───────────────────────────────────────────── */}
       <div className="border-t-[3px] border-background">
-        <div className="mx-auto flex w-full max-w-7xl flex-wrap items-center justify-between gap-4 px-4 py-6 sm:px-6 md:px-8">
+        <div className="mx-auto flex w-full max-w-page flex-wrap items-center justify-between gap-4 px-4 py-6 sm:px-6 md:px-8">
           <div className="flex flex-wrap items-center gap-4">
             <MasterSymbol className="w-14 text-background" />
             <span className="text-13">
@@ -163,12 +163,10 @@ export function Footer() {
                 kept here because the footer is the only place it appears as
                 text once the header wordmark became a graphic — dropping it
                 left the page with no machine-readable owner. */}
-            <span className="text-13 text-background/60">
-              &copy; {currentYear} Queer Guide
-            </span>
+            <span className="text-13 text-background/60">&copy; {currentYear} Queer Guide</span>
           </div>
         </div>
-        <div className="mx-auto flex w-full max-w-7xl flex-wrap items-center gap-2 px-4 pb-6 sm:px-6 md:px-8">
+        <div className="mx-auto flex w-full max-w-page flex-wrap items-center gap-2 px-4 pb-6 sm:px-6 md:px-8">
           <LanguageSwitcher />
           <CurrencySelector />
         </div>

@@ -13,6 +13,7 @@ import {
 } from '@/hooks/useUserDirectoryQuery';
 import { UserDirectoryFilters } from '@/components/user-directory/UserDirectoryFilters';
 import { UserDirectoryGrid } from '@/components/user-directory/UserDirectoryGrid';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 const UserDirectory = () => {
   const { t } = useTranslation();
@@ -111,7 +112,7 @@ const UserDirectory = () => {
   const memberCount = profiles?.length ?? 0;
 
   return (
-    <div className="container mx-auto py-8 px-4 flex flex-col gap-8">
+    <PageContainer className="flex flex-col gap-8">
       <header className="rounded-container p-8 text-center flex flex-col gap-4 bg-surface-container">
         <h1 className="text-display font-bold text-foreground">
           {t('pages.members.title', 'Members')}
@@ -195,7 +196,7 @@ const UserDirectory = () => {
           clearAllFilters={clearAllFilters}
         />
       )}
-    </div>
+    </PageContainer>
   );
 };
 

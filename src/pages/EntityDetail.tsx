@@ -17,6 +17,7 @@ import { useVenueDescriptor } from '@/components/entity/adapters/useVenueDescrip
 import { useOrganizationDescriptor } from '@/components/entity/adapters/useOrganizationDescriptor';
 import { useMilestoneDescriptor } from '@/components/entity/adapters/useMilestoneDescriptor';
 import type { EntitySource, EntityDescriptorResult } from '@/components/entity/entityDescriptor';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 /**
  * Unified detail page. The route fixes `source`; we branch once into a
@@ -97,9 +98,7 @@ function EntityDetailView({
   }, [redirectSlug, navigate]);
 
   useMeta(descriptor?.meta ?? {});
-  useTrackView(
-    (descriptor?.trackView ?? { type: source }) as Parameters<typeof useTrackView>[0],
-  );
+  useTrackView((descriptor?.trackView ?? { type: source }) as Parameters<typeof useTrackView>[0]);
 
   useEffect(() => {
     // user_events only models venues (entityType union); orgs use recently-viewed.
@@ -133,27 +132,28 @@ const NO_REDIRECT_CONFIG: SlugRedirectConfig & { routePrefix: string } = {
   routePrefix: '',
 };
 
-const REDIRECT_CONFIG: Partial<Record<EntitySource, SlugRedirectConfig & { routePrefix: string }>> = {
-  organization: {
-    redirectTable: 'org_slug_redirects',
-    redirectIdColumn: 'organization_id',
-    entityTable: 'organizations',
-    routePrefix: '/organizations',
-  },
-  milestone: {
-    redirectTable: 'milestone_slug_redirects',
-    redirectIdColumn: 'milestone_id',
-    entityTable: 'milestones',
-    routePrefix: '/history',
-  },
-};
+const REDIRECT_CONFIG: Partial<Record<EntitySource, SlugRedirectConfig & { routePrefix: string }>> =
+  {
+    organization: {
+      redirectTable: 'org_slug_redirects',
+      redirectIdColumn: 'organization_id',
+      entityTable: 'organizations',
+      routePrefix: '/organizations',
+    },
+    milestone: {
+      redirectTable: 'milestone_slug_redirects',
+      redirectIdColumn: 'milestone_id',
+      entityTable: 'milestones',
+      routePrefix: '/history',
+    },
+  };
 
 const SECTION_SLUGS = ['hotels', 'events', 'news', 'marketplace', 'travel', 'groups', 'resources'];
 
 function VenueNotFound({ slug, t }: { slug: string | undefined; t: TFunction }) {
   const didYouMeanSection = slug && SECTION_SLUGS.includes(slug) ? slug : null;
   return (
-    <div className="container mx-auto py-8 px-4 text-center">
+    <PageContainer className="text-center">
       <NotFoundMeta title={t('pages.venueDetail.notFoundTitle', 'Venue not found')} />
       <h1 className="text-xl font-bold mb-4">
         {t('pages.venueDetail.notFoundTitle', 'Venue not found')}
@@ -181,13 +181,13 @@ function VenueNotFound({ slug, t }: { slug: string | undefined; t: TFunction }) 
           {t('pages.venueDetail.backToVenues', 'Back to Venues')}
         </LocalizedLink>
       </Button>
-    </div>
+    </PageContainer>
   );
 }
 
 function MilestoneNotFound({ t }: { t: TFunction }) {
   return (
-    <div className="container mx-auto px-4 py-8 text-center">
+    <PageContainer className="text-center">
       <NotFoundMeta title={t('pages.entityDetail.milestoneNotFoundTitle', 'Milestone not found')} />
       <h1 className="mb-4 text-xl font-bold">
         {t('pages.entityDetail.milestoneNotFoundTitle', 'Milestone not found')}
@@ -204,13 +204,13 @@ function MilestoneNotFound({ t }: { t: TFunction }) {
           {t('pages.entityDetail.backToHistory', 'Back to the timeline')}
         </LocalizedLink>
       </Button>
-    </div>
+    </PageContainer>
   );
 }
 
 function OrgNotFound({ t }: { t: TFunction }) {
   return (
-    <div className="container mx-auto px-4 py-8 text-center">
+    <PageContainer className="text-center">
       <NotFoundMeta title={t('pages.entityDetail.orgNotFoundTitle', 'Organization not found')} />
       <h1 className="mb-4 text-xl font-bold">
         {t('pages.entityDetail.orgNotFoundTitle', 'Organization not found')}
@@ -227,6 +227,6 @@ function OrgNotFound({ t }: { t: TFunction }) {
           {t('pages.entityDetail.backToSearch', 'Back to search')}
         </LocalizedLink>
       </Button>
-    </div>
+    </PageContainer>
   );
 }

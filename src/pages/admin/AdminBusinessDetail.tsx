@@ -106,7 +106,7 @@ export default function AdminBusinessDetail() {
   const linkedCount = (type: OrgEntityType | 'news_source') => linked?.[type]?.length ?? 0;
 
   return (
-    <div className="p-6">
+    <div>
       <AdminPageHeader
         eyebrow="COCKPIT · BUSINESS"
         title={
@@ -213,7 +213,9 @@ export default function AdminBusinessDetail() {
         <OrgEntityPickerDialog
           orgId={org.id}
           entityType={pickerType}
-          typeLabel={ROLE_TABS.find((t) => t.type === pickerType)?.label.replace(/s$/, '') ?? pickerType}
+          typeLabel={
+            ROLE_TABS.find((t) => t.type === pickerType)?.label.replace(/s$/, '') ?? pickerType
+          }
           open={Boolean(pickerType)}
           onOpenChange={(open) => !open && setPickerType(null)}
         />

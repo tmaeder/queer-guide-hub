@@ -45,6 +45,7 @@ import { LayoutGrid, Rows3, Map as MapIcon } from 'lucide-react';
 import { GrainOverlay } from '@/components/effects/GrainOverlay';
 import { BackgroundDots } from '@/components/effects/BackgroundDots';
 import { useTranslation } from 'react-i18next';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 const PAGE_SIZE = 24;
 const AUTO_LOAD_CAP = 48;
@@ -366,7 +367,7 @@ export default function Personalities() {
       <SpotlightV2 anchor="top-center" intensity={0.12} />
       <BackgroundDots className="" dotSpacing={24}>
         <GrainOverlay opacity={0.025} />
-        <div className="container mx-auto px-4 pt-12 pb-8 md:pt-20 md:pb-12 relative">
+        <PageContainer className="relative">
           <PageHeader
             title={<ColourfulText text={t('pages.personalities.title', 'Personalities')} />}
             subtitle={
@@ -379,9 +380,9 @@ export default function Personalities() {
               user ? <AddPersonalityDialog onSuccess={() => window.location.reload()} /> : undefined
             }
           />
-        </div>
+        </PageContainer>
       </BackgroundDots>
-      <div className="container mx-auto px-4 py-8 md:py-12">
+      <PageContainer>
         {/* NSFW visibility hint — surfaces the otherwise-hidden adult filter. */}
         <div className="text-center text-xs text-muted-foreground mb-6">
           {filters.exclude_adult !== false ? (
@@ -609,7 +610,7 @@ export default function Personalities() {
             {loading && personalities.length > 0 && <p className="text-sm">Loading more…</p>}
           </>
         )}
-      </div>
+      </PageContainer>
     </div>
   );
 }

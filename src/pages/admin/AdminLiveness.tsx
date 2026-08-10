@@ -17,14 +17,20 @@ const TYPES = ['venue', 'event', 'marketplace'] as const;
  * >=2-signal auto-archive happens in run_existence_decision; this is the human gate.
  */
 export default function AdminLiveness() {
-  const { overview, reviewQueue, recentArchives, blindSpots, approve, reject, reopen } = useExistenceEngine();
+  const { overview, reviewQueue, recentArchives, blindSpots, approve, reject, reopen } =
+    useExistenceEngine();
   const [busy, setBusy] = useState<string | null>(null);
 
   const wrap = async (key: string, fn: () => Promise<unknown>, ok: string) => {
     setBusy(key);
-    try { await fn(); toast.success(ok); }
-    catch (e) { toast.error(`Error: ${(e as Error).message}`); }
-    finally { setBusy(null); }
+    try {
+      await fn();
+      toast.success(ok);
+    } catch (e) {
+      toast.error(`Error: ${(e as Error).message}`);
+    } finally {
+      setBusy(null);
+    }
   };
 
   const sig = (r: ExistenceAuditRow) => {
@@ -36,7 +42,7 @@ export default function AdminLiveness() {
   };
 
   return (
-    <div className="mx-auto flex max-w-5xl flex-col gap-6 p-6">
+    <div className="flex flex-col gap-6">
       {/* mb-0: the parent already spaces children with gap-6. */}
       <AdminPageHeader
         className="mb-0"
@@ -50,7 +56,9 @@ export default function AdminLiveness() {
           const o = overview.data?.[t];
           return (
             <Card key={t}>
-              <CardHeader className="pb-2"><CardTitle className="text-title capitalize">{t}</CardTitle></CardHeader>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-title capitalize">{t}</CardTitle>
+              </CardHeader>
               <CardContent className="flex flex-col gap-1 text-13">
                 <Row label="Flagged for review" value={o?.flagged} />
                 <Row label="Auto-archived (7d)" value={o?.auto_archived_7d} />
@@ -65,34 +73,62 @@ export default function AdminLiveness() {
       {/* review queue */}
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="flex items-center gap-2 text-title"><Flag size={16} /> Review queue</CardTitle>
+          <CardTitle className="flex items-center gap-2 text-title">
+            <Flag size={16} /> Review queue
+          </CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           <p className="text-13 text-muted-foreground">
-            Single dead signal, or a strong-dead match on a featured / saved entity. Approve to archive (reversible),
-            or dismiss as still-alive.
+            Single dead signal, or a strong-dead match on a featured / saved entity. Approve to
+            archive (reversible), or dismiss as still-alive.
           </p>
           {reviewQueue.isLoading && <AdminTextSkeleton lines={2} />}
           {!reviewQueue.isLoading && (reviewQueue.data ?? []).length === 0 && (
             <p className="text-13 text-muted-foreground">Nothing awaiting review.</p>
           )}
           {(reviewQueue.data ?? []).map((r) => (
-            <div key={r.audit_id} className="flex items-center justify-between gap-4 rounded-element border p-4">
+            <div
+              key={r.audit_id}
+              className="flex items-center justify-between gap-4 rounded-element border p-4"
+            >
               <div className="flex flex-col gap-1">
                 <div className="flex items-center gap-2">
                   <span className="font-medium">{r.label ?? r.entity_id.slice(0, 8)}</span>
-                  <Badge variant="outline" className="font-normal capitalize">{r.entity_type}</Badge>
-                  <Badge variant="outline" className="font-normal">{r.reason}</Badge>
+                  <Badge variant="outline" className="font-normal capitalize">
+                    {r.entity_type}
+                  </Badge>
+                  <Badge variant="outline" className="font-normal">
+                    {r.reason}
+                  </Badge>
                 </div>
                 <span className="text-13 text-muted-foreground">{sig(r)}</span>
               </div>
               <div className="flex gap-2">
-                <Button size="sm" variant="outline" disabled={busy === `r${r.audit_id}`}
-                  onClick={() => wrap(`r${r.audit_id}`, () => reject.mutateAsync(r.audit_id), 'Dismissed — kept live')}>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={busy === `r${r.audit_id}`}
+                  onClick={() =>
+                    wrap(
+                      `r${r.audit_id}`,
+                      () => reject.mutateAsync(r.audit_id),
+                      'Dismissed — kept live',
+                    )
+                  }
+                >
                   <X size={14} className="mr-1" /> Still here
                 </Button>
-                <Button size="sm" disabled={busy === `a${r.audit_id}`}
-                  onClick={() => wrap(`a${r.audit_id}`, () => approve.mutateAsync(r.audit_id), 'Archived (reversible)')}>
+                <Button
+                  size="sm"
+                  disabled={busy === `a${r.audit_id}`}
+                  onClick={() =>
+                    wrap(
+                      `a${r.audit_id}`,
+                      () => approve.mutateAsync(r.audit_id),
+                      'Archived (reversible)',
+                    )
+                  }
+                >
                   <Check size={14} className="mr-1" /> Archive
                 </Button>
               </div>
@@ -104,21 +140,40 @@ export default function AdminLiveness() {
       {/* recent auto-archives */}
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="flex items-center gap-2 text-title"><Archive size={16} /> Recently archived</CardTitle>
+          <CardTitle className="flex items-center gap-2 text-title">
+            <Archive size={16} /> Recently archived
+          </CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           {!recentArchives.isLoading && (recentArchives.data ?? []).length === 0 && (
             <p className="text-13 text-muted-foreground">No archived entities.</p>
           )}
           {(recentArchives.data ?? []).map((r) => (
-            <div key={r.audit_id} className="flex items-center justify-between gap-4 rounded-element border p-4">
+            <div
+              key={r.audit_id}
+              className="flex items-center justify-between gap-4 rounded-element border p-4"
+            >
               <div className="flex items-center gap-2">
                 <span className="font-medium">{r.label ?? r.entity_id.slice(0, 8)}</span>
-                <Badge variant="outline" className="font-normal capitalize">{r.entity_type}</Badge>
-                <span className="text-13 text-muted-foreground">{new Date(r.created_at).toLocaleDateString()}</span>
+                <Badge variant="outline" className="font-normal capitalize">
+                  {r.entity_type}
+                </Badge>
+                <span className="text-13 text-muted-foreground">
+                  {new Date(r.created_at).toLocaleDateString()}
+                </span>
               </div>
-              <Button size="sm" variant="outline" disabled={busy === `o${r.audit_id}`}
-                onClick={() => wrap(`o${r.audit_id}`, () => reopen.mutateAsync({ entityType: r.entity_type, entityId: r.entity_id }), 'Reopened')}>
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={busy === `o${r.audit_id}`}
+                onClick={() =>
+                  wrap(
+                    `o${r.audit_id}`,
+                    () => reopen.mutateAsync({ entityType: r.entity_type, entityId: r.entity_id }),
+                    'Reopened',
+                  )
+                }
+              >
                 <RotateCcw size={14} className="mr-1" /> Reopen
               </Button>
             </div>
@@ -129,20 +184,27 @@ export default function AdminLiveness() {
       {/* blind spots */}
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="flex items-center gap-2 text-title"><EyeOff size={16} /> Blind spots</CardTitle>
+          <CardTitle className="flex items-center gap-2 text-title">
+            <EyeOff size={16} /> Blind spots
+          </CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col gap-2">
           <p className="text-13 text-muted-foreground">
-            Live entities the engine cannot verify — no website, no coordinates, no source link. Add a reference to make
-            them checkable.
+            Live entities the engine cannot verify — no website, no coordinates, no source link. Add
+            a reference to make them checkable.
           </p>
           {(blindSpots.data ?? []).length === 0 && !blindSpots.isLoading && (
             <p className="text-13 text-muted-foreground">No blind spots.</p>
           )}
           <div className="flex flex-wrap gap-2">
             {(blindSpots.data ?? []).map((b) => (
-              <Badge key={`${b.entity_type}:${b.entity_id}`} variant="outline" className="font-normal">
-                <span className="capitalize">{b.entity_type}</span>: {b.label ?? b.entity_id.slice(0, 8)}
+              <Badge
+                key={`${b.entity_type}:${b.entity_id}`}
+                variant="outline"
+                className="font-normal"
+              >
+                <span className="capitalize">{b.entity_type}</span>:{' '}
+                {b.label ?? b.entity_id.slice(0, 8)}
               </Badge>
             ))}
           </div>

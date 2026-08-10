@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useAuth } from '@/hooks/useAuth';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 /** "No ads. No data sales. Just riders." — the closing support band.
  *  Paper band with ink CTAs (template: Support section); auth-adaptive. */
@@ -9,7 +10,7 @@ export function SupportBand() {
   const { user } = useAuth();
   return (
     <section className="border-b-4 border-foreground">
-      <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-8 px-4 py-12 sm:px-6 md:px-8 md:py-14">
+      <PageContainer className="flex flex-wrap items-center justify-between gap-8">
         <div className="max-w-xl">
           <h2 className="font-display text-display">
             {t('home.support.title', 'No ads. No data sales. Just riders.')}
@@ -54,7 +55,7 @@ export function SupportBand() {
             </>
           )}
         </div>
-      </div>
+      </PageContainer>
     </section>
   );
 }

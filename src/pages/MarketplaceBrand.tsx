@@ -9,6 +9,7 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useMarketplaceBrand } from '@/hooks/useMarketplaceBrands';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 const OWNERSHIP_LABELS: Record<string, string> = {
   queer_owned: 'Queer-owned',
@@ -43,7 +44,7 @@ export default function MarketplaceBrand() {
 
   if (!isLoading && !brand) {
     return (
-      <div className="container mx-auto py-12 px-4 text-center">
+      <PageContainer className="text-center">
         <h1 className="mb-4 text-headline font-display">Brand not found</h1>
         {/* asChild, not a Link wrapping a Button — that nests a <button>
             inside an <a>, which is invalid HTML. */}
@@ -53,7 +54,7 @@ export default function MarketplaceBrand() {
             Back to Marketplace
           </LocalizedLink>
         </Button>
-      </div>
+      </PageContainer>
     );
   }
   if (!brand) return null;
@@ -62,7 +63,7 @@ export default function MarketplaceBrand() {
 
   return (
     <div className="min-h-screen">
-      <div className="container mx-auto py-12 md:py-20 px-4">
+      <PageContainer>
         <PageHeader
           title={brand.display_name}
           subtitle={`${brand.product_count.toLocaleString()} listings`}
@@ -93,7 +94,7 @@ export default function MarketplaceBrand() {
           emptyTitle="No listings from this brand yet."
           emptyDescription="Check back soon."
         />
-      </div>
+      </PageContainer>
     </div>
   );
 }

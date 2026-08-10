@@ -48,7 +48,11 @@ export function HomeSection({
     <section
       aria-labelledby={headingId}
       className={cn(
-        'px-4 sm:px-6 md:px-8 py-12 md:py-16',
+        // The band's tint and rule are full-bleed — they span the viewport, so
+        // the section itself carries no gutter. Spacing and the content cap
+        // live on the PageContainer inside it, which is what puts a home rail's
+        // first card on the same vertical as the nav tab above it.
+        //
         // The tint alone marks the band. The halftone screen that briefly sat
         // here was band-level design-system texture; the subway-map rebrand
         // replaces that with the 4px ink rules between bands, so the screen
@@ -58,7 +62,7 @@ export function HomeSection({
         className,
       )}
     >
-      <div className="max-w-7xl mx-auto">
+      <PageContainer>
         <SectionHeader
           id={headingId}
           eyebrow={eyebrow}
@@ -76,7 +80,7 @@ export function HomeSection({
             <SeeAllLink to={seeAllHref} label={seeAllLabel} />
           </div>
         )}
-      </div>
+      </PageContainer>
     </section>
   );
 }

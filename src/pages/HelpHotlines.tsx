@@ -77,6 +77,7 @@ import { WhatToExpect } from '@/components/help/WhatToExpect';
 import { SelfHelpDrawer } from '@/components/help/SelfHelpDrawer';
 import { ReportHotline } from '@/components/help/ReportHotline';
 import type { CMSPage, Hotline, HotlineChannel } from '@/types/cms';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 interface HelpBodyJson {
   hotlines?: Hotline[];
@@ -344,7 +345,7 @@ export default function HelpHotlines() {
   };
 
   return (
-    <div className="mx-auto w-full max-w-screen-lg px-4 py-8 sm:px-6">
+    <PageContainer className="w-full">
       <style dangerouslySetInnerHTML={{ __html: INTRO_HTML_CSS }} />
 
       <QuickExit />
@@ -653,10 +654,10 @@ export default function HelpHotlines() {
                   "no help exists". */}
               <div className="mt-6">
                 <CoverageNote>
-                {t(
-                  'help.org_coverage',
-                  'This directory is nowhere near everywhere. If a group you trust is missing, tell us about it. An empty result here means we have no record — not that no help exists.',
-                )}{' '}
+                  {t(
+                    'help.org_coverage',
+                    'This directory is nowhere near everywhere. If a group you trust is missing, tell us about it. An empty result here means we have no record — not that no help exists.',
+                  )}{' '}
                   <LocalizedLink to="/submit" className="underline underline-offset-4">
                     {t('help.tell_us', 'Tell us about it')}
                   </LocalizedLink>
@@ -724,7 +725,7 @@ export default function HelpHotlines() {
           </p>
         </>
       )}
-    </div>
+    </PageContainer>
   );
 }
 

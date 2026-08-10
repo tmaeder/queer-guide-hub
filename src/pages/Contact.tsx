@@ -19,6 +19,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { EditorialHero } from '@/components/editorial/EditorialHero';
 import { EDITORIAL_IMAGES } from '@/lib/editorialImages';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 const categories = [
   { value: 'support', label: 'Email Support' },
@@ -90,8 +91,8 @@ export default function Contact() {
   }
 
   return (
-    <div className="px-4 sm:px-6 md:px-8 py-8 md:py-12">
-      <div className="max-w-6xl mx-auto">
+    <PageContainer>
+      <div>
         <EditorialHero
           eyebrow="Contact"
           title="Say hello."
@@ -223,6 +224,6 @@ export default function Contact() {
           </div>
         </section>
       </div>
-    </div>
+    </PageContainer>
   );
 }

@@ -5,6 +5,7 @@ import { useBreadcrumbs } from '@/contexts/BreadcrumbContext';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 export interface EntityDetailTab {
   id: string;
@@ -97,25 +98,25 @@ export function EntityDetailLayout({
 
   if (error) {
     return (
-      <div className="container mx-auto px-4 py-8" data-testid="entity-detail-error">
+      <PageContainer data-testid="entity-detail-error">
         <Alert variant="destructive">
           <AlertTitle>Failed to load</AlertTitle>
           <AlertDescription>{error.message || 'Something went wrong.'}</AlertDescription>
         </Alert>
-      </div>
+      </PageContainer>
     );
   }
 
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-8" data-testid="entity-detail-loading">
+      <PageContainer data-testid="entity-detail-loading">
         <Skeleton variant="rectangular" height={32} style={{ width: '40%' }} className="mb-4" />
         <Skeleton variant="rectangular" height={192} className="mb-6 rounded-container" />
         <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr] gap-6">
           <Skeleton variant="rectangular" height={320} className="rounded-container" />
           <Skeleton variant="rectangular" height={240} className="rounded-container" />
         </div>
-      </div>
+      </PageContainer>
     );
   }
 
@@ -125,7 +126,7 @@ export function EntityDetailLayout({
         style={{ scaleX, transformOrigin: '0%' }}
         className="fixed top-0 left-0 right-0 h-[2px] bg-foreground z-[1200]"
       />
-      <div className="container mx-auto px-4 py-8" data-testid="entity-detail-layout">
+      <PageContainer data-testid="entity-detail-layout">
         <div className="mb-6">{hero}</div>
 
         <div className={`grid grid-cols-1 ${sidebar ? 'md:grid-cols-[2fr_1fr]' : ''} gap-6`}>
@@ -164,7 +165,7 @@ export function EntityDetailLayout({
           </div>
           {sidebar && <div>{sidebar}</div>}
         </div>
-      </div>
+      </PageContainer>
     </>
   );
 }

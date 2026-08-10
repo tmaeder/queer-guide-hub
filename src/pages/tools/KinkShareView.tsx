@@ -10,6 +10,7 @@ import { useKinkShareView, type KinkShareViewRow } from '@/hooks/useKinkShare';
 import { useKinkTaxonomy } from '@/hooks/useKinkTaxonomy';
 import { kinkLabel } from '@/lib/kinks/types';
 import { SIDE_LABEL } from '@/components/kinks/kinkRatingMeta';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 /**
  * Share-code landing: shows the owner's opted-in categories to signed-in,
@@ -51,22 +52,22 @@ export default function KinkShareView() {
 
   if (!user) {
     return (
-      <div className="mx-auto max-w-md p-8 text-center">
+      <PageContainer size="form" className="text-center">
         <h1 className="text-headline font-display">Shared checklist</h1>
         <p className="mt-4 text-sm text-muted-foreground">
-          Someone shared their interests checklist with you. Sign in to view it — this
-          content is only visible to signed-in adult members.
+          Someone shared their interests checklist with you. Sign in to view it — this content is
+          only visible to signed-in adult members.
         </p>
         <Button className="mt-6 rounded-element" onClick={() => navigate('/auth')}>
           Sign in
         </Button>
-      </div>
+      </PageContainer>
     );
   }
 
   if (!eligible) {
     return (
-      <div className="mx-auto max-w-md p-8 text-center">
+      <PageContainer size="form" className="text-center">
         <h1 className="text-headline font-display">Shared checklist</h1>
         <p className="mt-4 text-sm text-muted-foreground">
           Viewing shared checklists requires the 18+ intimate opt-in.
@@ -74,7 +75,7 @@ export default function KinkShareView() {
         <Button className="mt-6 rounded-element" onClick={() => navigate('/intimate/onboard')}>
           Enable intimate profile
         </Button>
-      </div>
+      </PageContainer>
     );
   }
 
@@ -84,23 +85,27 @@ export default function KinkShareView() {
 
   if (isError || !rows?.length) {
     return (
-      <div className="mx-auto max-w-md p-8 text-center">
+      <PageContainer size="form" className="text-center">
         <h1 className="text-headline font-display">Link not available</h1>
         <p className="mt-4 text-sm text-muted-foreground">
-          This link doesn't exist, expired, or was revoked by its owner — or nothing is
-          shared on it yet.
+          This link doesn't exist, expired, or was revoked by its owner — or nothing is shared on it
+          yet.
         </p>
-      </div>
+      </PageContainer>
     );
   }
 
   const owner = rows[0];
 
   return (
-    <div className="mx-auto max-w-2xl px-6 py-8">
+    <PageContainer size="form">
       <header className="mb-6 flex items-center gap-4 pb-6">
         {owner.owner_avatar_url ? (
-          <img src={owner.owner_avatar_url} alt="" className="h-12 w-12 rounded-element object-cover" />
+          <img
+            src={owner.owner_avatar_url}
+            alt=""
+            className="h-12 w-12 rounded-element object-cover"
+          />
         ) : (
           <div className="h-12 w-12 rounded-element bg-muted" />
         )}
@@ -139,6 +144,6 @@ export default function KinkShareView() {
       <p className="mt-8 pt-4 text-13 text-muted-foreground">
         Positives only — No's and hard limits are never part of a shared list.
       </p>
-    </div>
+    </PageContainer>
   );
 }

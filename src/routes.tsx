@@ -7,6 +7,7 @@ import { LocaleRouter } from '@/components/routing/LocaleRouter';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { RouteFade } from '@/components/layout/RouteFade';
+import { PageContainer } from '@/components/layout/PageContainer';
 import { lazyRetry } from '@/utils/lazyRetry';
 import { submissionRegistry } from '@/config/submissionRegistry';
 import { DEFAULT_LOCALE, isSupportedLocale } from '@/i18n/languages';
@@ -328,12 +329,12 @@ export const AppRoutes = () => {
         <ErrorBoundary key={location.pathname}>
           <Suspense
             fallback={
-              <div className="py-10 px-4 sm:px-6 mx-auto">
+              <PageContainer>
                 <div className="grid gap-6 grid-cols-1 sm:grid-cols-2">
                   <Skeleton />
                   <Skeleton />
                 </div>
-              </div>
+              </PageContainer>
             }
           >
             <RouteFade>

@@ -10,6 +10,7 @@ import { ActiveQuestBanner } from '@/components/guides/ActiveQuestBanner';
 import { ContinueReadingRail } from '@/components/guides/ContinueReadingRail';
 import { PageHero } from '@/components/discovery';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 const FORMATS: GuideFormat[] = ['guide', 'list', 'quest'];
 const ENTITIES: GuideEntityType[] = [
@@ -71,7 +72,7 @@ const Guides = () => {
         )}
         size="md"
       />
-      <div className="container mx-auto py-8 md:py-12 px-4">
+      <PageContainer>
         <ActiveQuestBanner />
         <div className="sticky top-0 z-20 -mx-4 md:mx-0 px-4 md:px-0 py-2 mb-8 border-b-[3px] border-foreground bg-background">
           <GuidesFilterBar filters={filters} onChange={setFilters} />
@@ -113,7 +114,7 @@ const Guides = () => {
             )}
           </div>
         )}
-      </div>
+      </PageContainer>
     </div>
   );
 };

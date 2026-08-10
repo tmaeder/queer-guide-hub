@@ -8,7 +8,12 @@ import { useContentGraph } from '@/hooks/useContentGraph';
 import OntologyMap from '@/components/admin/content-graph/OntologyMap';
 import GraphDetailPanel from '@/components/admin/content-graph/GraphDetailPanel';
 import EntityEgoExplorer from '@/components/admin/content-graph/EntityEgoExplorer';
-import { edgeId, GRAPH_STROKE, typeMeta, type GraphEdgeStat } from '@/components/admin/content-graph/contentGraphMeta';
+import {
+  edgeId,
+  GRAPH_STROKE,
+  typeMeta,
+  type GraphEdgeStat,
+} from '@/components/admin/content-graph/contentGraphMeta';
 
 const nf = new Intl.NumberFormat('en-US');
 
@@ -25,7 +30,15 @@ function Legend() {
       {LEGEND.map((l) => (
         <span key={l.label} className="flex items-center gap-1.5 text-2xs text-muted-foreground">
           <svg width="26" height="8" aria-hidden="true">
-            <line x1="0" y1="4" x2="26" y2="4" stroke={GRAPH_STROKE} strokeWidth="2" strokeDasharray={l.dash} />
+            <line
+              x1="0"
+              y1="4"
+              x2="26"
+              y2="4"
+              stroke={GRAPH_STROKE}
+              strokeWidth="2"
+              strokeDasharray={l.dash}
+            />
           </svg>
           {l.label}
         </span>
@@ -45,19 +58,26 @@ export default function ContentGraph() {
   const snapshot = data ?? { nodes: [], edges: [], generated_at: '' };
 
   const selectedEdge: GraphEdgeStat | null = useMemo(
-    () => (selectedEdgeId ? snapshot.edges.find((e) => edgeId(e) === selectedEdgeId) ?? null : null),
+    () =>
+      selectedEdgeId ? (snapshot.edges.find((e) => edgeId(e) === selectedEdgeId) ?? null) : null,
     [snapshot.edges, selectedEdgeId],
   );
 
-  const selectNode = (type: string | null) => { setSelectedType(type); setSelectedEdgeId(null); };
-  const selectEdge = (id: string | null) => { setSelectedEdgeId(id); setSelectedType(null); };
+  const selectNode = (type: string | null) => {
+    setSelectedType(type);
+    setSelectedEdgeId(null);
+  };
+  const selectEdge = (id: string | null) => {
+    setSelectedEdgeId(id);
+    setSelectedType(null);
+  };
 
   const generatedNote = snapshot.generated_at
     ? `Snapshot ${new Date(snapshot.generated_at).toLocaleString()} · rebuilt nightly`
     : undefined;
 
   return (
-    <div className="flex flex-col gap-4 p-6">
+    <div className="flex flex-col gap-4">
       <AdminPageHeader
         title="Content Graph"
         subtitle="How every content type and attribute links together. Node size = record count; edge thickness = real link count."
@@ -69,13 +89,19 @@ export default function ContentGraph() {
       </div>
 
       {error && (
-        <div role="alert" className="rounded-container border border-border p-8 text-center text-13 text-muted-foreground">
+        <div
+          role="alert"
+          className="rounded-container border border-border p-8 text-center text-13 text-muted-foreground"
+        >
           Could not load the content graph. You may not have admin access.
         </div>
       )}
 
       {isLoading && (
-        <div className="h-[560px] rounded-container border border-border bg-muted/20 animate-pulse" aria-hidden="true" />
+        <div
+          className="h-[560px] rounded-container border border-border bg-muted/20 animate-pulse"
+          aria-hidden="true"
+        />
       )}
 
       {!isLoading && !error && isMobile && (
@@ -88,13 +114,19 @@ export default function ContentGraph() {
                   <Icon size={15} className="text-muted-foreground" aria-hidden="true" />
                   <span className="text-13 font-medium">{n.label}</span>
                 </div>
-                <div className="text-title font-display tabular-nums mt-1">{nf.format(n.count)}</div>
+                <div className="text-title font-display tabular-nums mt-1">
+                  {nf.format(n.count)}
+                </div>
                 <div className="flex flex-wrap gap-1 mt-1">
                   {n.orphan_count != null && n.orphan_count > 0 && (
-                    <Badge variant="destructive" className="text-2xs px-1 py-0 tabular-nums">{nf.format(n.orphan_count)} orphan</Badge>
+                    <Badge variant="destructive" className="text-2xs px-1 py-0 tabular-nums">
+                      {nf.format(n.orphan_count)} orphan
+                    </Badge>
                   )}
                   {n.dup_count > 0 && (
-                    <Badge variant="secondary" className="text-2xs px-1 py-0 tabular-nums">{nf.format(n.dup_count)} dup</Badge>
+                    <Badge variant="secondary" className="text-2xs px-1 py-0 tabular-nums">
+                      {nf.format(n.dup_count)} dup
+                    </Badge>
                   )}
                 </div>
               </div>
@@ -104,10 +136,7 @@ export default function ContentGraph() {
       )}
 
       {!isLoading && !error && !isMobile && (
-        <div
-          className="flex gap-4"
-          style={{ height: 'calc(100vh - 240px)', minHeight: 560 }}
-        >
+        <div className="flex gap-4" style={{ height: 'calc(100vh - 240px)', minHeight: 560 }}>
           <div className="flex-1 min-w-0 rounded-container border border-border overflow-hidden">
             <OntologyMap
               nodes={snapshot.nodes}

@@ -14,6 +14,7 @@ import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useVenueSlugRedirect } from '@/hooks/useVenueSlugRedirect';
 import { useGeoSlugRedirect } from '@/hooks/useGeoSlugRedirect';
 import { hrefForEntity } from '@/lib/searchRoutes';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 const SUGGESTIONS = [
   { to: '/venues', icon: MapPin, labelKey: 'nav.venues', fallback: 'Venues' },
@@ -154,7 +155,7 @@ const NotFound = () => {
   return (
     <div className="min-h-[60vh] bg-background">
       <NotFoundMeta title={t('pages.notFound.title', 'Page not found')} />
-      <div className="max-w-3xl mx-auto px-4 py-16">
+      <PageContainer size="reading">
         <div className="text-center">
           <h2 className="font-display text-display md:text-hero font-bold mb-4">404</h2>
           <h6 className="text-title font-semibold mb-2">
@@ -285,7 +286,7 @@ const NotFound = () => {
             ))}
           </div>
         </div>
-      </div>
+      </PageContainer>
     </div>
   );
 };

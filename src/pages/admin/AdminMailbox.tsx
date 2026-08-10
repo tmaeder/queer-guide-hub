@@ -100,7 +100,9 @@ export default function AdminMailbox() {
     enabled: !!uid,
     queryFn: async () => {
       const { data, error } = await untypedFrom('admin_messages')
-        .select('id, sender_id, recipient_id, subject, body, thread_id, is_read, is_draft, created_at')
+        .select(
+          'id, sender_id, recipient_id, subject, body, thread_id, is_read, is_draft, created_at',
+        )
         .order('created_at', { ascending: false });
       if (error) throw error;
       return (data ?? []) as AdminMessage[];
@@ -130,8 +132,7 @@ export default function AdminMailbox() {
     },
   });
 
-  const nameOf = (id: string) =>
-    staff?.find((s) => s.user_id === id)?.name ?? id.slice(0, 8);
+  const nameOf = (id: string) => staff?.find((s) => s.user_id === id)?.name ?? id.slice(0, 8);
 
   const filtered = useMemo(() => {
     const rows = messages ?? [];
@@ -141,7 +142,8 @@ export default function AdminMailbox() {
   }, [messages, tab, uid]);
 
   const unread = useMemo(
-    () => (messages ?? []).filter((m) => m.recipient_id === uid && !m.is_read && !m.is_draft).length,
+    () =>
+      (messages ?? []).filter((m) => m.recipient_id === uid && !m.is_read && !m.is_draft).length,
     [messages, uid],
   );
 
@@ -163,7 +165,7 @@ export default function AdminMailbox() {
   });
 
   return (
-    <div className="mx-auto flex max-w-3xl flex-col gap-4 p-6">
+    <div className="flex flex-col gap-4">
       {/* mb-0: the parent already spaces children with gap-4. */}
       <AdminPageHeader
         className="mb-0"

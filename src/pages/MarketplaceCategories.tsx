@@ -4,6 +4,7 @@ import { PageHeader } from '@/components/layout/PageHeader';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Button } from '@/components/ui/button';
 import { useMarketplaceSubcategoryTiles } from '@/hooks/useMarketplaceQueries';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 function prettify(slug: string): string {
   return slug.replace(/[_-]+/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
@@ -20,7 +21,7 @@ export default function MarketplaceCategories() {
 
   return (
     <div className="min-h-screen">
-      <div className="container mx-auto py-12 md:py-20 px-4">
+      <PageContainer>
         <div className="mb-4">
           {/* asChild, not a Link wrapping a Button — that nests a <button>
               inside an <a>, which is invalid HTML. */}
@@ -80,7 +81,7 @@ export default function MarketplaceCategories() {
             ))}
           </div>
         )}
-      </div>
+      </PageContainer>
     </div>
   );
 }

@@ -1,5 +1,5 @@
-import { cn } from '@/lib/utils';
 import { DetailMasthead } from './DetailMasthead';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 /**
  * The single-page shell — spine parts S2/S3 plus the two-column frame every
@@ -44,7 +44,11 @@ export function SinglePage({
   className?: string;
 }) {
   return (
-    <article className={cn('mx-auto w-full max-w-7xl px-4 sm:px-6 md:px-8', className)}>
+    /* `flush` — the single owns its own vertical rhythm: each of the three
+       spine blocks below carries `py-8` and the rules between them have to sit
+       on those edges, so a container-level `py-*` would double the first and
+       last gap. */
+    <PageContainer as="article" flush className={className}>
       <div className="border-b-4 border-foreground py-8">
         <DetailMasthead type={type} eyebrow={eyebrow} title={title} status={status} lead={lead} />
         {tags && <div className="mt-6">{tags}</div>}
@@ -57,7 +61,7 @@ export function SinglePage({
       </div>
 
       {footer && <div className="border-t-4 border-foreground py-8">{footer}</div>}
-    </article>
+    </PageContainer>
   );
 }
 

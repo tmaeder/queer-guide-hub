@@ -8,6 +8,7 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { Button } from '@/components/ui/button';
 import { Heart, Plus, Lock, Globe, Link2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 const VISIBILITY_ICON = {
   private: Lock,
@@ -52,7 +53,7 @@ const Wishlists = () => {
 
   return (
     <div className="min-h-screen">
-      <div className="container mx-auto py-12 md:py-16 px-4">
+      <PageContainer>
         <header className="mb-10">
           <p className="text-13 uppercase tracking-wide text-muted-foreground mb-2">Saved</p>
           <h1 className="text-headline md:text-display font-semibold">Your wishlists</h1>
@@ -105,7 +106,7 @@ const Wishlists = () => {
             })}
           </ul>
         )}
-      </div>
+      </PageContainer>
     </div>
   );
 };

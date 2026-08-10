@@ -17,6 +17,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
 import { ArrowLeft, ChevronRight, ChevronDown, ExternalLink, Network, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 const TagRelationshipGraph = lazy(() => import('@/components/tags/TagRelationshipGraph'));
 
@@ -105,7 +106,7 @@ export function ResourceTagDetail({
         onSetViewMode('overview');
       }}
     >
-      <div className="container mx-auto py-8 md:py-16 px-4">
+      <PageContainer>
         {/* Breadcrumbs */}
         <div className="flex items-center gap-1 mb-4 flex-wrap">
           <button
@@ -373,7 +374,7 @@ export function ResourceTagDetail({
         <div className="mt-10">
           <TagLinkedContent tagId={selectedTag.id} tagName={selectedTag.name} />
         </div>
-      </div>
+      </PageContainer>
     </TagDetailWithGate>
   );
 }

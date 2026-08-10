@@ -24,6 +24,7 @@ import { VenueCard } from '@/components/venues/VenueCard';
 import { TOPIC_HUBS } from '@/pages/resources/topics.config';
 import { resolvePublisherName } from '@/lib/publisherName';
 import { ChevronLeft, ChevronRight, FileText, Newspaper } from 'lucide-react';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 // Render a Lucide icon by name without binding a per-render component
 // identity (avoids react-hooks/static-components when used inline).
@@ -76,17 +77,17 @@ export default function ResourceTopic() {
 
   if (!topic) {
     return (
-      <div className="container mx-auto py-16 px-4 text-center">
+      <PageContainer className="text-center">
         <h1 className="text-2xl font-bold mb-2">{t('resources.topic.notFound')}</h1>
         <Button onClick={() => navigate('/tags')}>{t('resources.topic.backToResources')}</Button>
-      </div>
+      </PageContainer>
     );
   }
 
   const iconNode = renderTopicIcon(topic.icon_name);
 
   return (
-    <div className="container mx-auto py-8 md:py-16 px-4">
+    <PageContainer>
       <LocalizedLink
         to="/tags"
         className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground hover:underline"
@@ -212,6 +213,6 @@ export default function ResourceTopic() {
           <ChevronRight aria-hidden size={14} />
         </LocalizedLink>
       </div>
-    </div>
+    </PageContainer>
   );
 }

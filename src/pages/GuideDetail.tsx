@@ -10,6 +10,7 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { resolveImageUrl } from '@/utils/resolveImageUrl';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 function SectionBlock({ section }: { section: GuideSection }) {
   if (!section.body_md) return null;
@@ -63,17 +64,17 @@ const GuideDetail = () => {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto py-12 px-4">
+      <PageContainer>
         <div className="h-3 w-32 bg-muted animate-pulse rounded-badge mb-6" />
         <div className="h-12 w-3/4 bg-muted animate-pulse rounded-element mb-4" />
         <div className="h-6 w-2/3 bg-muted animate-pulse rounded-element" />
-      </div>
+      </PageContainer>
     );
   }
 
   if (error || !data) {
     return (
-      <div className="container mx-auto py-16 px-4">
+      <PageContainer>
         <EmptyState
           icon={BookOpen}
           title={t('guides.detail.notFound.title', 'Guide not found.')}
@@ -86,7 +87,7 @@ const GuideDetail = () => {
             onClick: () => navigate('/guides'),
           }}
         />
-      </div>
+      </PageContainer>
     );
   }
 
@@ -186,9 +187,9 @@ const GuideDetail = () => {
       )}
 
       {guide.format === 'guide' && (
-        <div className="container mx-auto px-4 max-w-5xl">
+        <PageContainer flush>
           <GuideComparisonTable picks={picks} />
-        </div>
+        </PageContainer>
       )}
 
       <footer className="container mx-auto px-4 max-w-3xl my-16 pt-8">

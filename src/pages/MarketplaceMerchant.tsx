@@ -11,6 +11,7 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Button } from '@/components/ui/button';
 import { useOrgSlugByDomain } from '@/hooks/useOrganization';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 export default function MarketplaceMerchant() {
   const { t } = useTranslation();
@@ -42,7 +43,7 @@ export default function MarketplaceMerchant() {
 
   if (!cleanDomain) {
     return (
-      <div className="container mx-auto py-12 px-4 text-center">
+      <PageContainer className="text-center">
         <h1 className="text-2xl font-bold mb-4">Merchant not found</h1>
         {/* asChild, not a Link wrapping a Button — that nests a <button>
             inside an <a>, which is invalid HTML. */}
@@ -52,13 +53,13 @@ export default function MarketplaceMerchant() {
             Back to Marketplace
           </LocalizedLink>
         </Button>
-      </div>
+      </PageContainer>
     );
   }
 
   return (
     <div className="min-h-screen">
-      <div className="container mx-auto py-12 md:py-20 px-4">
+      <PageContainer>
         <PageHeader
           title={displayName.charAt(0).toUpperCase() + displayName.slice(1)}
           subtitle={cleanDomain}
@@ -77,7 +78,7 @@ export default function MarketplaceMerchant() {
           emptyTitle="No listings from this merchant yet."
           emptyDescription="They may have not synced products recently."
         />
-      </div>
+      </PageContainer>
     </div>
   );
 }

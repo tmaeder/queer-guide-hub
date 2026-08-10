@@ -4,6 +4,7 @@ import { List, ChevronDown, ChevronUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { EditorialHero } from '@/components/editorial/EditorialHero';
 import type { EditorialImage } from '@/lib/editorialImages';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 interface Section {
   id: string;
@@ -53,7 +54,13 @@ export const LegalPageLayout = ({
   };
 
   return (
-    <div className="container mx-auto max-w-[1100px] px-4 py-8 sm:px-6">
+    // Gutter and vertical rhythm come from the page standard. The cap does not:
+    // this is a prose layout with a 224px sticky TOC beside it, so the page cap
+    // (1600) would stretch legal text to an unreadable measure and `reading`
+    // (768) would leave the prose column ~430px once the TOC takes its share.
+    // 1100 is TOC + gap + a readable measure, and it is the ONLY bespoke width
+    // left in the layout tier.
+    <PageContainer className="max-w-[1100px]">
       {heroImage ? (
         <EditorialHero
           eyebrow={eyebrow ?? 'Legal'}
@@ -158,6 +165,6 @@ export const LegalPageLayout = ({
           </div>
         </div>
       </div>
-    </div>
+    </PageContainer>
   );
 };

@@ -16,6 +16,7 @@ import { PageLoadingState } from '@/components/layout/PageLoadingState';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { useTranslation } from 'react-i18next';
 import { VirtualizedGrid } from '@/components/ui/VirtualizedGrid';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 export default function Feed() {
   const { t } = useTranslation();
@@ -56,7 +57,7 @@ export default function Feed() {
   }, [filteredPosts, activeTab]);
 
   return (
-    <div className="container mx-auto py-8 px-4">
+    <PageContainer>
       <PageHeader
         title={t('pages.nav.feed', 'Feed')}
         subtitle={t(
@@ -239,6 +240,6 @@ export default function Feed() {
           </div>
         </>
       )}
-    </div>
+    </PageContainer>
   );
 }

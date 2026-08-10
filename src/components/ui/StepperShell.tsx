@@ -3,6 +3,7 @@ import { Check, ArrowLeft, ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { AnimatedBeamConnector } from '@/components/ui/AnimatedBeamConnector';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 export interface StepperStep {
   id: string;
@@ -58,7 +59,7 @@ export function StepperShell({
     return (
       <div className={cn('min-h-screen bg-background flex flex-col', className)}>
         <div>
-          <div className="container mx-auto px-4 py-4 flex items-center justify-between gap-4">
+          <PageContainer size="form" flush className="flex items-center justify-between gap-4 py-4">
             <div className="flex items-baseline gap-4">
               <span className="text-xs tracking-widest uppercase text-muted-foreground">
                 {String(current + 1).padStart(2, '0')} / {String(total).padStart(2, '0')}
@@ -70,7 +71,7 @@ export function StepperShell({
                 {skipLabel}
               </Button>
             )}
-          </div>
+          </PageContainer>
           <div className="h-px bg-border relative">
             <div
               className="absolute inset-y-0 left-0 bg-foreground transition-[width] duration-normal ease-out motion-reduce:transition-none"
@@ -84,12 +85,12 @@ export function StepperShell({
             step's content on screen while the header advances (seen live on
             /intimate/onboard 2026-06-11). Discreet mode promises no
             decorative motion anyway — swap instantly. */}
-        <div className="flex-1 container mx-auto px-4 py-8 max-w-2xl w-full">
+        <PageContainer size="form" className="flex-1">
           <div key={active?.id ?? current}>{children}</div>
-        </div>
+        </PageContainer>
 
         <div className="sticky bottom-0 bg-surface-container/95 backdrop-blur-sm">
-          <div className="container mx-auto px-4 py-4 max-w-2xl flex items-center justify-between gap-4">
+          <PageContainer size="form" flush className="flex items-center justify-between gap-4 py-4">
             <Button
               variant="ghost"
               onClick={onPrev}
@@ -106,7 +107,7 @@ export function StepperShell({
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
             </div>
-          </div>
+          </PageContainer>
         </div>
       </div>
     );
@@ -114,7 +115,7 @@ export function StepperShell({
 
   return (
     <div className={cn('min-h-screen bg-background', className)}>
-      <div className="container mx-auto px-4 py-8 lg:py-12">
+      <PageContainer>
         <div className="grid lg:grid-cols-[280px_1fr] gap-8 lg:gap-12">
           {/* Sidebar: vertical step indicator */}
           <aside className="hidden lg:block">
@@ -215,7 +216,7 @@ export function StepperShell({
             </div>
           </main>
         </div>
-      </div>
+      </PageContainer>
     </div>
   );
 }

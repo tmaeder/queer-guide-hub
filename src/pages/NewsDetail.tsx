@@ -56,6 +56,7 @@ import {
   type NewsDetailData,
   type NewsArticleFull,
 } from './NewsDetail.parts';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 interface DbCategory {
   slug: string;
@@ -229,7 +230,7 @@ export default function NewsDetail() {
   // Loading skeleton matching the 2-column grid pattern.
   if (loading) {
     return (
-      <div className="container mx-auto py-8 px-4">
+      <PageContainer>
         <div className="animate-pulse">
           <div className="mb-6 h-48 rounded-container bg-muted" />
           <div className="mb-4 h-6 w-2/5 rounded-element bg-muted" />
@@ -249,13 +250,13 @@ export default function NewsDetail() {
             </div>
           </div>
         </div>
-      </div>
+      </PageContainer>
     );
   }
 
   if (!article) {
     return (
-      <div className="container mx-auto py-8 px-4 text-center">
+      <PageContainer className="text-center">
         <h1 className="mb-4 text-xl font-bold">{t('newsDetail.notFound', 'Article Not Found')}</h1>
         <p className="mb-6 text-muted-foreground">
           {t('newsDetail.notFoundDesc', "The article you're looking for doesn't exist.")}
@@ -268,7 +269,7 @@ export default function NewsDetail() {
             {t('newsDetail.backToNews', 'Back to News')}
           </LocalizedLink>
         </Button>
-      </div>
+      </PageContainer>
     );
   }
 
@@ -283,7 +284,7 @@ export default function NewsDetail() {
   const categoryLabel = hasCategory ? getCategoryLabel(articleCategory) : null;
 
   return (
-    <div className="container mx-auto px-4 py-8 pb-24">
+    <PageContainer>
       <ReadingProgressBar />
 
       {/* Hero image */}
@@ -560,6 +561,6 @@ export default function NewsDetail() {
         <MilestonesForEntity entityType="news" entityId={article.id} />
       </div>
       <RelatedNewsRail articleId={article.id} className="mt-12" />
-    </div>
+    </PageContainer>
   );
 }

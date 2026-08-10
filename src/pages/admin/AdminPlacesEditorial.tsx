@@ -34,7 +34,7 @@ export default function AdminPlacesEditorial() {
   });
 
   return (
-    <div className="container mx-auto py-8 px-4 flex flex-col gap-6">
+    <div className="flex flex-col gap-6">
       {/* mb-0: the parent already spaces children with gap-6. */}
       <AdminPageHeader
         className="mb-0"
@@ -248,12 +248,7 @@ function DraftRow({ draft }: { draft: EditorialDraft }) {
           )}
           Approve & publish
         </Button>
-        <Button
-          variant="outline"
-          onClick={handleSave}
-          disabled={save.isPending}
-          size="sm"
-        >
+        <Button variant="outline" onClick={handleSave} disabled={save.isPending} size="sm">
           Save draft
         </Button>
         <Button variant="outline" onClick={handleReject} disabled={reject.isPending} size="sm">
@@ -295,16 +290,11 @@ function CoversEditor() {
                   <Badge variant="outline" className="text-2xs uppercase">
                     {c.entity_type}
                   </Badge>
-                  <Badge
-                    variant={c.published ? 'default' : 'secondary'}
-                    className="text-2xs"
-                  >
+                  <Badge variant={c.published ? 'default' : 'secondary'} className="text-2xs">
                     {c.published ? 'published' : 'unpublished'}
                   </Badge>
                 </div>
-                {c.pull_quote && (
-                  <p className="text-15 text-muted-foreground">{c.pull_quote}</p>
-                )}
+                {c.pull_quote && <p className="text-15 text-muted-foreground">{c.pull_quote}</p>}
                 <p className="text-2xs text-muted-foreground">
                   Starts {new Date(c.starts_at).toLocaleDateString()}
                   {c.author ? ` · by ${c.author}` : ''}

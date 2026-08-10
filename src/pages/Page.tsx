@@ -18,6 +18,7 @@ import { Badge } from '@/components/ui/badge';
 import DOMPurify from 'dompurify';
 import { useCMSPage } from '@/hooks/useCMSPage';
 import { useMeta } from '@/hooks/useMeta';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 export default function Page() {
   const { slug } = useParams<{ slug: string }>();
@@ -34,27 +35,27 @@ export default function Page() {
 
   if (loading) {
     return (
-      <div className="container mx-auto py-16 text-center">
+      <PageContainer className="text-center">
         <TrackLoader size={32} label="Loading" className="mx-auto" />
-      </div>
+      </PageContainer>
     );
   }
 
   if (notFound || !page) {
     return (
-      <div className="container mx-auto py-16 text-center">
+      <PageContainer className="text-center">
         <h4 className="text-2xl font-bold mb-2">Page Not Found</h4>
         <p className="text-muted-foreground">
           The page you're looking for doesn't exist or hasn't been published yet.
         </p>
-      </div>
+      </PageContainer>
     );
   }
 
   const sanitizedHtml = page.body_html ? DOMPurify.sanitize(page.body_html) : '';
 
   return (
-    <div className="container mx-auto py-8 px-4">
+    <PageContainer>
       {/* Cover image */}
       {page.cover_image_url && (
         <img
@@ -105,6 +106,6 @@ export default function Page() {
           ))}
         </div>
       )}
-    </div>
+    </PageContainer>
   );
 }

@@ -42,6 +42,7 @@ import type { Tables } from '@/integrations/supabase/types';
 type FeaturedArticle = Tables<'news_articles'> & { news_sources?: Tables<'news_sources'> };
 import { StaggerGrid } from '@/components/animation/StaggerGrid';
 import { useTranslation } from 'react-i18next';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 const ARTICLES_PER_PAGE = 24;
 
@@ -558,7 +559,7 @@ export default function NewsArchive() {
         </div>
       </PageHero>
       {/* pb-24 reserves space for the fixed bottom-right Feedback FAB so it doesn't overlap the last row of cards / pagination. */}
-      <div className="container mx-auto py-8 md:py-12 px-4 pb-24 relative">
+      <PageContainer className="relative">
         {/* Category Tabs (sticky) */}
         {categories.length > 0 && (
           <div
@@ -1018,7 +1019,7 @@ export default function NewsArchive() {
               )}
           </div>
         </div>
-      </div>
+      </PageContainer>
       <ReadingHistoryPanel open={historyOpen} onOpenChange={setHistoryOpen} />
     </div>
   );
