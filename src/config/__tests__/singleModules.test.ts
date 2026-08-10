@@ -27,7 +27,7 @@ describe('single-page content model', () => {
   });
 
   it('references only real module numbers', () => {
-    const valid = new Set(SINGLE_MODULES.map((m) => m.n));
+    const valid = new Set<number>(SINGLE_MODULES.map((m) => m.n));
     for (const [type, s] of Object.entries(SINGLE_TYPE_STACKS)) {
       for (const n of [...s.required, ...s.conditional]) {
         expect(valid.has(n), `${type} references module ${n}`).toBe(true);

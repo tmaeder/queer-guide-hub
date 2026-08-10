@@ -138,7 +138,8 @@
       "home_city": "In your home city",
       "recent_city": "In a city you've explored",
       "featured": "Featured"
-    }
+    },
+    "ariaLabel": "[KO] Search Queer Guide"
   },
   "common": {
     "contentInLanguage": "{{lang}}(으)로",
@@ -209,7 +210,14 @@
     "terms": "이용약관",
     "contact": "문의",
     "supportUs": "후원하기",
-    "history": "역사"
+    "history": "역사",
+    "tagline": "[KO] Every track. Every station. Everyone.",
+    "contributors": "[KO] Contributors",
+    "emergency": {
+      "eyebrow": "[KO] In an emergency",
+      "title": "[KO] Crisis lines, 24 hours",
+      "body": "[KO] Trans helpline, LGBT+ crisis support, and local emergency numbers, listed by country and always one click from any page."
+    }
   },
   "trips": {
     "title": "내 여행",
@@ -1798,7 +1806,8 @@
       "tripsBadge": "확인이 필요한 여행 항목 {{count}}개",
       "hub": "허브"
     },
-    "primaryNavigation": "[KO] Primary"
+    "primaryNavigation": "[KO] Primary",
+    "signInToContribute": "[KO] Sign in to contribute"
   },
   "pages": {
     "venues": {

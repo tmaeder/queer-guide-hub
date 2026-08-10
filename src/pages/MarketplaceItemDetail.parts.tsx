@@ -32,6 +32,7 @@ import {
   trustPillsFor,
 } from '@/components/marketplace/marketplaceHelpers';
 import { brandSlug, departmentLabel, ATTRIBUTE_KIND_LABELS } from '@/lib/marketplaceTaxonomy';
+import { FactGrid } from '@/components/transit/FactGrid';
 import { tagHref } from '@/lib/searchRoutes';
 import type { ListingTag } from '@/hooks/usePageFetchers';
 import { AffiliateDisclosure } from '@/components/marketplace/AffiliateDisclosure';
@@ -340,15 +341,6 @@ export function MarketplaceBuyBox({
   );
 }
 
-function Fact({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div className="flex flex-col gap-0.5 py-2">
-      <dt className="text-xs2 uppercase tracking-[0.12em] text-muted-foreground">{label}</dt>
-      <dd className="text-sm">{children}</dd>
-    </div>
-  );
-}
-
 function ProductFacts({ listing }: { listing: MarketplaceListing }) {
   const dept =
     listing.department && listing.department !== 'other'
@@ -365,31 +357,22 @@ function ProductFacts({ listing }: { listing: MarketplaceListing }) {
           : null;
   const isAdult = listing.content_rating === 'adult' || listing.content_rating === 'explicit';
 
-  const hasAny = listing.brand || dept || subcat || availability || listing.location || isAdult;
-  if (!hasAny) return null;
+  // Module 01 — the fact strip. Availability stays a FACT here rather than
+  // becoming a variant chip: the schema has no purchasable variants, and a
+  // lone "Out of stock" chip in a picker would imply options that never
+  // existed (spec module 09's rule — a sold-out variant must not misrepresent
+  // what the maker offers).
+  const facts = [
+    { label: 'Brand', value: listing.brand },
+    { label: 'Department', value: dept },
+    { label: 'Category', value: subcat },
+    { label: 'Availability', value: availability },
+    { label: 'Ships from', value: listing.location },
+    { label: 'Listed', value: new Date(listing.created_at).toLocaleDateString() },
+    ...(isAdult ? [{ label: 'Content', value: <Badge variant="outline">Adult</Badge> }] : []),
+  ];
 
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Details</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <dl className="grid grid-cols-1 gap-x-8 sm:grid-cols-2">
-          {listing.brand && <Fact label="Brand">{listing.brand}</Fact>}
-          {dept && <Fact label="Department">{dept}</Fact>}
-          {subcat && <Fact label="Category">{subcat}</Fact>}
-          {availability && <Fact label="Availability">{availability}</Fact>}
-          {listing.location && <Fact label="Ships from">{listing.location}</Fact>}
-          <Fact label="Listed">{new Date(listing.created_at).toLocaleDateString()}</Fact>
-          {isAdult && (
-            <Fact label="Content">
-              <Badge variant="outline">Adult</Badge>
-            </Fact>
-          )}
-        </dl>
-      </CardContent>
-    </Card>
-  );
+  return <FactGrid facts={facts} />;
 }
 
 const ATTRIBUTE_ORDER: Array<keyof typeof ATTRIBUTE_KIND_LABELS> = ['material', 'occasion', 'vibe'];
