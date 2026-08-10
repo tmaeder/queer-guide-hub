@@ -135,17 +135,17 @@ The sanctioned depth treatment is the **hard poster shadow**:
   strokes next to the icons' 2.4px. viewBox `0 24 354 190` is trimmed to the
   ink (~10 units of pad on every side) — the old `0 0 360 210` spent a third
   of the height on nothing.
-- **`Wordmark`** — lowercase Anton "queer.guide", pink heart nested in the
-  g's descender at `right-[2.02em] bottom-[-0.16em] w-[0.28em]`. Both numbers
-  are Anton metrics: the tail terminal sits 2.32em from the string's right
-  edge, so the heart tucks into the crook without sitting on the ink (it did,
-  and read as a collision). Re-measure if the display face or tracking
-  changes. Header default (the /admin/design logoUrl override keeps the img
-  branch).
+- **`Wordmark`** — lowercase Anton "queer.guide", ink only. It carried a pink
+  heart nested at the g's descender until 2026-08; that is **removed on
+  purpose — do not re-add it**. The whole mark now obeys one rule, the
+  master symbol's: ink on paper, or reversed. It also drops the wordmark's
+  dependence on Anton's metrics (the heart needed a hand-measured
+  `right-[2.02em]` that held only for that string, face and tracking).
+  Header default (the /admin/design logoUrl override keeps the img branch).
 - The mark exists as three copies — component, `scripts/generate-brand-assets.mjs`
   (OG), `public/favicon.svg` (square crop, the source every icon PNG is
-  rasterised from). `__tests__/brandAssetSync.test.ts` pins them together and
-  asserts both tracks bend.
+  rasterised from). `__tests__/brandAssetSync.test.ts` pins them together,
+  asserts both tracks bend, and fails if any hue reappears in any of them.
 - Icons / maskables / favicon.ico / OG regenerate via
   `node scripts/generate-brand-assets.mjs` — playwright, no `sharp` (which was
   never installed, so the script could not run and the icons drifted).
