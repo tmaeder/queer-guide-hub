@@ -1,13 +1,17 @@
--- drift-recovery: version 20260810075202 is already recorded in remote schema_migrations.
+-- DRIFT RECOVERY — this file's version is already in remote schema_migrations.
 --
--- This file was applied live via the Supabase MCP on 2026-08-10 and then stranded in an
--- unmerged draft PR (#2680), so the version existed in prod history with no repo file —
--- the exact drift state `check-migration-drift.mjs` exists to catch. Its version sorts
--- below the current remote max (20260826100000), which the ordering guard in
--- `check-migration-versions.mjs` would normally reject; that guard's premise ("db push
--- aborts on it") does not hold for a version prod has already applied, so the
--- `drift-recovery:` marker above exempts it. Do not copy that marker onto a migration
--- that has NOT been applied to prod at exactly this version.
+-- Applied live via the Supabase MCP on 2026-08-10 and then stranded in an unmerged draft
+-- PR (#2680), so prod held the version with no repo file — the exact drift state
+-- `check-migration-drift.mjs` exists to catch, and it fails EVERY pull request in the repo
+-- while it lasts, not just the one that caused it. Committed here at the exact stamped
+-- version, which is the documented recovery.
+--
+-- That version sorts below the current remote max (20260826100000), so the ordering rule in
+-- `check-migration-versions.mjs` would normally reject it. It does not, because that rule
+-- now checks remote history: `db push` matches by version and SKIPS an already-applied
+-- migration rather than aborting on it. Nothing about this file's header grants the
+-- exemption — prod's own history does. Do not renumber it upward; the version is how
+-- `db push` recognises it as applied.
 --
 -- Drops zero-scan, non-constraint indexes (public schema, idx_scan = 0 at time of writing).
 -- Excludes search_documents_geog_gix and user_presence_geog_gist: geospatial GIST indexes
