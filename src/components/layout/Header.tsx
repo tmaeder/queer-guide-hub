@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router';
 import { Button } from '@/components/ui/button';
-import { Briefcase, LogOut, Plus, Shield, UserRound } from 'lucide-react';
+import { LogOut, Shield, UserRound } from 'lucide-react';
+import { TransitIcon } from '@/components/transit/TransitIcon';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
@@ -118,7 +119,7 @@ export function Header() {
           title={submitCta.label}
           style={{ height: 40, width: 40, padding: 0 }}
         >
-          <Plus size={20} />
+          <TransitIcon name="add-station" size={20} />
         </Button>
       ) : (
         <Button
@@ -129,7 +130,7 @@ export function Header() {
           title={t('header.signInToContribute', 'Sign in to contribute')}
           style={{ height: 40, width: 40, padding: 0 }}
         >
-          <Plus size={20} />
+          <TransitIcon name="add-station" size={20} />
         </Button>
       )}
 
@@ -146,7 +147,7 @@ export function Header() {
           title={t('header.mobileNav.hub', 'Hub')}
           className="hidden items-center gap-2 px-2 py-2 text-sm font-medium text-muted-foreground no-underline transition-colors hover:text-foreground aria-[current=page]:font-semibold aria-[current=page]:text-foreground md:inline-flex"
         >
-          <Briefcase size={18} aria-hidden />
+          <TransitIcon name="home-base" size={18} />
           <span className="sr-only lg:not-sr-only">{t('header.mobileNav.hub', 'Hub')}</span>
         </LocalizedLink>
       )}
