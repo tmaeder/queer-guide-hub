@@ -319,7 +319,15 @@ function villageStops(venues: VillageVenue[]): Stop[] {
         Number(v.latitude),
         Number(v.longitude),
       );
-      gap = km < 1 ? `~${Math.round((km * 1000) / 50) * 50} m` : `~${km.toFixed(1)} km`;
+      if (km < 1) {
+        const m = Math.round((km * 1000) / 50) * 50;
+        // Below ~25 m the rounding lands on zero, and "~0 m" is not a gap — it
+        // is two venues sharing a coordinate (often a city centroid stamped by
+        // the geo backfill). No label is honest; a zero label is not.
+        gap = m > 0 ? `~${m} m` : null;
+      } else {
+        gap = `~${km.toFixed(1)} km`;
+      }
     }
     return {
       id: v.id,

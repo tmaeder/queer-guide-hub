@@ -103,4 +103,19 @@ describe('VillageVenuesTab — module 05 (stop list)', () => {
     // measurable gap and must not borrow the previous one.
     expect((container.textContent ?? '').match(/~[\d.]+\s*(?:km|m)(?![a-z])/g)).toHaveLength(1);
   });
+  it('renders NO gap label for two venues sharing a coordinate', () => {
+    // Caught on production: several Chueca venues carry an identical
+    // city-centroid coordinate, so the rounded distance was 0 and the module
+    // printed "~0 m". A zero gap is not a gap.
+    const coincident = [
+      { id: 'x', name: 'Cafe One', slug: 'cafe-one', latitude: 40.4227, longitude: -3.6993 },
+      { id: 'y', name: 'Cafe Two', slug: 'cafe-two', latitude: 40.4227, longitude: -3.6993 },
+    ] as never[];
+    const { container } = renderWithProviders(
+      <VillageVenuesTab village={stopVillage} venues={coincident} loading={false} />,
+    );
+    const text = container.textContent ?? '';
+    expect(screen.getByText('Cafe Two')).toBeInTheDocument();
+    expect(text).not.toMatch(/~\s*0\s*(m|km)/i);
+  });
 });
