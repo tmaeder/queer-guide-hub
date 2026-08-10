@@ -3384,6 +3384,12 @@
       "events_other": "[KO] {{count}} events",
       "groups_one": "[KO] {{count}} group",
       "groups_other": "[KO] {{count}} groups"
+    },
+    "interests": {
+      "title": "[KO] What are you into?",
+      "blurb": "[KO] Pick a few. They shape what we suggest, and they are how other members find people with something in common.",
+      "blurbSignedOut": "[KO] Sign in to pick a few. They shape what we suggest, and they are how other members find people with something in common.",
+      "count": "[KO] {{count}} selected"
     }
   },
   "hub": {

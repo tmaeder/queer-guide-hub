@@ -3390,6 +3390,12 @@
       "events_other": "[AR] {{count}} events",
       "groups_one": "[AR] {{count}} group",
       "groups_other": "[AR] {{count}} groups"
+    },
+    "interests": {
+      "title": "[AR] What are you into?",
+      "blurb": "[AR] Pick a few. They shape what we suggest, and they are how other members find people with something in common.",
+      "blurbSignedOut": "[AR] Sign in to pick a few. They shape what we suggest, and they are how other members find people with something in common.",
+      "count": "[AR] {{count}} selected"
     }
   },
   "hub": {

@@ -3384,6 +3384,12 @@
       "events_other": "[ZH] {{count}} events",
       "groups_one": "[ZH] {{count}} group",
       "groups_other": "[ZH] {{count}} groups"
+    },
+    "interests": {
+      "title": "[ZH] What are you into?",
+      "blurb": "[ZH] Pick a few. They shape what we suggest, and they are how other members find people with something in common.",
+      "blurbSignedOut": "[ZH] Sign in to pick a few. They shape what we suggest, and they are how other members find people with something in common.",
+      "count": "[ZH] {{count}} selected"
     }
   },
   "hub": {
