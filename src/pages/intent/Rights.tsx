@@ -4,7 +4,7 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useMeta } from '@/hooks/useMeta';
 import { IntentPageLayout } from '@/components/intent/IntentPageLayout';
 import { CoverageNote } from '@/components/intent/CoverageNote';
-import { useAllCountriesRights, useIntentNews, type RightsCountry } from '@/hooks/useIntentData';
+import { useAllCountriesRightsFull, useIntentNews, type RightsCountry } from '@/hooks/useIntentData';
 import { summariseRightsWorldwide } from '@/lib/rights/rightsWorldSummary';
 import { RIGHT_SECTION_ORDER, RIGHT_SECTION_LABEL } from '@/lib/rights/rightsCatalog';
 import { useIntentLocation } from '@/hooks/useIntentLocation';
@@ -124,7 +124,7 @@ const SUMMARY_LABEL: Record<string, string> = {
 
 export default function RightsIntent() {
   const { t } = useTranslation();
-  const { data: countries, isLoading, error } = useAllCountriesRights();
+  const { data: countries, isLoading, error } = useAllCountriesRightsFull();
 
   // The rights themselves, counted across every country we hold. This is the
   // page's new lead: it answers "where do queer rights stand" without making
