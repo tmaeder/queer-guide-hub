@@ -331,15 +331,44 @@ export const RIGHTS_SELECT_COLUMNS =
   'id, name, slug, code, equality_score, lgbti_criminalization, lgbti_expression_restrictions, lgbti_association_restrictions, lgbti_constitutional_protection, lgbti_employment_protection, lgbti_housing_protection, lgbti_education_protection, lgbti_health_protection, lgbti_goods_services_protection, lgbti_bullying_protection, lgbti_hate_crime_law, lgbti_incitement_prohibition, lgbti_same_sex_unions, lgbti_adoption_rights, lgbti_gender_recognition, lgbti_conversion_therapy_regulation, lgbti_intersex_protection' as const;
 
 
+/**
+ * The NARROW fetch: what /travel and /rights/sources actually read.
+ *
+ * /travel uses this only to locate the visitor's country, count criminalising
+ * ones and show a total — three fields. It must not pay for the 22-column
+ * payload the /rights summary needs; widening the shared hook made a
+ * high-traffic entry page download 250 rows of jsonb protection matrices to
+ * render a number.
+ */
 export function useAllCountriesRights() {
   return useQuery({
-    queryKey: ['intent-rights-countries'],
+    queryKey: ['intent-rights-countries', 'core'],
     staleTime: 600_000,
     queryFn: async (): Promise<RightsCountry[]> => {
       const { data, error } = await supabase
         .from('countries')
-        // Written out above rather than derived from RIGHT_TOPICS — importing
-        // the catalog here dragged its lucide icons into every intent page.
+        .select('id, name, slug, code, equality_score, lgbti_criminalization, lgbti_same_sex_unions')
+        .order('name', { ascending: true });
+      if (error) throw error;
+      return (data ?? []) as RightsCountry[];
+    },
+  });
+}
+
+/**
+ * The WIDE fetch: every column RIGHT_TOPICS names, for the /rights per-right
+ * summary. Separate query key, so the two are cached independently and no
+ * other page inherits the cost.
+ */
+export function useAllCountriesRightsFull() {
+  return useQuery({
+    queryKey: ['intent-rights-countries', 'full'],
+    staleTime: 600_000,
+    queryFn: async (): Promise<RightsCountry[]> => {
+      const { data, error } = await supabase
+        .from('countries')
+        // Written out rather than derived from RIGHT_TOPICS — importing the
+        // catalog here dragged its lucide icons into every intent page.
         // rightsColumns.test.ts is what stops the two drifting.
         .select(RIGHTS_SELECT_COLUMNS)
         .order('name', { ascending: true });
