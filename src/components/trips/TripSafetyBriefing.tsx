@@ -269,7 +269,7 @@ function CountryAccordion({
             </div>
 
             <ChevronDown
-              className="w-[18px] h-[18px] flex-shrink-0 opacity-50 transition-transform duration-200"
+              className="w-[18px] h-[18px] flex-shrink-0 opacity-50 transition-transform duration-fast"
               style={{ transform: open ? 'rotate(180deg)' : 'rotate(0deg)' }}
               aria-hidden="true"
             />

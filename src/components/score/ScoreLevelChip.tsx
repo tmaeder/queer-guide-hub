@@ -72,7 +72,7 @@ export function ScoreLevelChip({
           aria-label={`Progress to level ${level + 1}`}
         >
           <div
-            className="h-full bg-foreground transition-[width] duration-500"
+            className="h-full bg-foreground transition-[width] duration-slow"
             style={{ width: `${pct * 100}%` }}
           />
         </div>

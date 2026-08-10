@@ -255,7 +255,7 @@ export function UserDetailSheet({ user, open, onOpenChange, onUserUpdated }: Use
 
                 <div className="h-1.5 bg-muted rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-primary rounded-full transition-[width] duration-300"
+                    className="h-full bg-primary rounded-full transition-[width] duration-normal"
                     style={{ width: `${user.profile_completion_percentage ?? 0}%` }}
                   />
                 </div>

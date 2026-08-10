@@ -227,6 +227,11 @@ export default tseslint.config(
       "no-restricted-syntax": [
         "error",
         {
+          selector: "Literal[value=/\\bduration-(75|100|150|200|300|500|700|1000)\\b|\\bduration-\\[/]",
+          message:
+            "Raw transition duration. Use duration-fast / duration-normal / duration-slow (src/index.css @utility, mirroring `duration` in src/lib/animation.ts). Three comparable speeds, the same way the type scale replaced arbitrary text-[19px].",
+        },
+        {
           selector:
             "Literal[value=/^#[0-9a-fA-F]{3,8}$|^rgba?\\(\\s*\\d|^hsla?\\(\\s*\\d/]",
           message:
@@ -260,6 +265,11 @@ export default tseslint.config(
     rules: {
       "no-restricted-syntax": [
         "warn",
+        {
+          selector: "Literal[value=/\\bduration-(75|100|150|200|300|500|700|1000)\\b|\\bduration-\\[/]",
+          message:
+            "Raw transition duration. Use duration-fast / duration-normal / duration-slow (src/index.css @utility, mirroring `duration` in src/lib/animation.ts). Three comparable speeds, the same way the type scale replaced arbitrary text-[19px].",
+        },
         {
           selector:
             "Literal[value=/\\brounded-(xs|sm|md|lg|xl|2xl|3xl|4xl)\\b/]",
@@ -304,6 +314,11 @@ export default tseslint.config(
     rules: {
       "no-restricted-syntax": [
         "error",
+        {
+          selector: "Literal[value=/\\bduration-(75|100|150|200|300|500|700|1000)\\b|\\bduration-\\[/]",
+          message:
+            "Raw transition duration. Use duration-fast / duration-normal / duration-slow (src/index.css @utility, mirroring `duration` in src/lib/animation.ts). Three comparable speeds, the same way the type scale replaced arbitrary text-[19px].",
+        },
         {
           selector:
             "Literal[value=/^#[0-9a-fA-F]{3,8}$|^rgba?\\(\\s*\\d|^hsla?\\(\\s*\\d/]",
@@ -389,6 +404,11 @@ export default tseslint.config(
     rules: {
       "no-restricted-syntax": [
         "error",
+        {
+          selector: "Literal[value=/\\bduration-(75|100|150|200|300|500|700|1000)\\b|\\bduration-\\[/]",
+          message:
+            "Raw transition duration. Use duration-fast / duration-normal / duration-slow (src/index.css @utility, mirroring `duration` in src/lib/animation.ts). Three comparable speeds, the same way the type scale replaced arbitrary text-[19px].",
+        },
         {
           selector:
             "Literal[value=/\\brounded(-(t|b|l|r|tl|tr|bl|br))?-(xs|sm|md|lg|xl|2xl|3xl|4xl)\\b/]",
@@ -497,6 +517,11 @@ export default tseslint.config(
       // "promote to error once flushed" intent.
       "no-restricted-syntax": [
         "error",
+        {
+          selector: "Literal[value=/\\bduration-(75|100|150|200|300|500|700|1000)\\b|\\bduration-\\[/]",
+          message:
+            "Raw transition duration. Use duration-fast / duration-normal / duration-slow (src/index.css @utility, mirroring `duration` in src/lib/animation.ts). Three comparable speeds, the same way the type scale replaced arbitrary text-[19px].",
+        },
         {
           selector:
             "Literal[value=/^#[0-9a-fA-F]{3,8}$|^rgba?\\(\\s*\\d|^hsla?\\(\\s*\\d/]",

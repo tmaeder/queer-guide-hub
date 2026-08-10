@@ -13,9 +13,10 @@ import { stripLocale } from '@/lib/locale';
  * — if animations never run (reduced motion, headless), content renders at
  * its natural, fully-visible state.
  *
- * PASTE-UP: `paper-feed` replaces the flat `route-fade` crossfade with a short
- * vertical advance, the way a sheet feeds through a press. It was written for
- * exactly this call site and then never wired to it.
+ * The keyframe is `station-arrive`: content decelerates the last few pixels
+ * and comes to rest, the way a train settles at a platform. It replaced
+ * `paper-feed`, a printing metaphor inherited from the retired PASTE-UP
+ * identity — mechanically similar, but naming a press rather than a network.
  */
 export const RouteFade = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
@@ -23,7 +24,7 @@ export const RouteFade = ({ children }: { children: React.ReactNode }) => {
   // detail→detail navigation within a section still gets the fade.
   const segmentKey = stripLocale(location.pathname).split('/').slice(0, 3).join('/') || 'root';
   return (
-    <div key={segmentKey} className="paper-feed" style={{ minHeight: '100%' }}>
+    <div key={segmentKey} className="station-arrive" style={{ minHeight: '100%' }}>
       {children}
     </div>
   );
