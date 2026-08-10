@@ -1675,6 +1675,13 @@
       "title": "[KO] Born this week",
       "seeAll": "[KO] All personalities",
       "celebrate": "[KO] Celebrate {{name}}"
+    },
+    "map": {
+      "interchangeEyebrow": "[KO] Interchange",
+      "interchange": {
+        "label": "[KO] Search everything",
+        "subtitle": "[KO] Every line meets here"
+      }
     }
   },
   "header": {

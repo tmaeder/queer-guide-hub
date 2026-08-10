@@ -60,6 +60,49 @@ test.describe('desktop intent nav', () => {
   });
 });
 
+test.describe('homepage intent map', () => {
+  const MAP = 'section[aria-labelledby="intent-map-heading"]';
+
+  // Where the stations actually POINT, which is not `INTENTS[].href` above:
+  // that list carries `/support`, the legacy path the intent routes tests
+  // exercise through its redirect, while `INTENT_NAV.support.to` is `/help`.
+  // Asserting an href has to use the destination, not the redirect source.
+  const STATION_HREFS = [
+    '/going-out',
+    '/travel',
+    '/people',
+    '/search', // the interchange, where all four lines meet
+    '/rights',
+    '/help',
+    '/shop',
+  ];
+
+  test('renders the six intents plus the interchange as stations', async ({ page }) => {
+    // The desktop visual snapshot masks `main section:first-of-type`, which
+    // this section matches — so the screenshot does NOT guard the map. This
+    // does. It also catches the CSS-only breakpoint split degrading into two
+    // rendered layouts (fourteen anchors for seven destinations).
+    await page.goto('/');
+    const map = page.locator(MAP);
+    await expect(map).toBeVisible();
+    await expect(map.locator('li')).toHaveCount(STATION_HREFS.length);
+
+    for (const href of STATION_HREFS) {
+      await expect(map.locator(`a[href$="${href}"]`)).toHaveCount(1);
+    }
+    await expect(map.locator('a')).toHaveCount(STATION_HREFS.length);
+  });
+
+  test('claims no nav landmark of its own', async ({ page }) => {
+    // The map lives inside SubwayHero's <header>, so a <nav> here would be a
+    // second `header nav[...]` and turn every such locator in this file into
+    // a Playwright strict-mode violation. It is a <section> named by its
+    // visible <h2> precisely so it cannot collide.
+    await page.goto('/');
+    await expect(page.locator(`${MAP} nav`)).toHaveCount(0);
+  });
+});
+
 test.describe('intent routes', () => {
   for (const intent of INTENTS) {
     test(`${intent.href} renders a page, not a 404`, async ({ page }) => {

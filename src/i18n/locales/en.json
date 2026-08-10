@@ -1629,6 +1629,13 @@
     "error": "Failed to send alert. Please try again."
   },
   "home": {
+    "map": {
+      "interchangeEyebrow": "Interchange",
+      "interchange": {
+        "label": "Search everything",
+        "subtitle": "Every line meets here"
+      }
+    },
     "heroLine1": "Queer venues,",
     "heroLine2": "events, and people.",
     "heroLine3": "Worldwide.",

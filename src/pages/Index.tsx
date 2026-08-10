@@ -1,9 +1,7 @@
 import React from 'react';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
-import { useIsMobile } from '@/hooks/use-mobile';
 import { Skeleton } from '@/components/ui/skeleton';
 import { RecentlyViewedRail } from '@/components/home/RecentlyViewedRail';
-import { IntentRail } from '@/components/home/IntentRail';
 import { DeferredSection } from '@/components/home/DeferredSection';
 import { FadeIn } from '@/components/motion';
 import { lazyOptional } from '@/utils/lazyRetry';
@@ -83,19 +81,13 @@ function HomeDeferred({
  * drops the ~1MB maplibre chunk from the homepage entirely.
  */
 const Index = React.memo(() => {
-  const isMobile = useIsMobile();
-
   return (
     <div className="min-h-screen">
-      {/* ── On mobile the intent rail IS the primary navigation: the header
-           carries no intent links below lg and the bottom bar's Explore tab
-           opens a sheet, so the rail leads, above the hero. On desktop the
-           header carries them and the rail follows the hero. */}
-      {isMobile && <IntentRail />}
-
+      {/* ── The hero now CARRIES the primary navigation: SubwayHero renders
+           IntentMap, whose stations are the six intents. One canvas, one
+           position, every breakpoint — the old isMobile split existed only to
+           put the separate intent rail above the hero on phones. */}
       <SubwayHero />
-
-      {!isMobile && <IntentRail />}
 
       {/* ── Returning visitors: one light personalized rail (self-hides) ─ */}
       <RecentlyViewedRail />

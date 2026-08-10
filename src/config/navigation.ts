@@ -45,7 +45,7 @@ export type NavIcon = ComponentType<{ size?: number; className?: string }>;
  *
  * Two layers, and the order between them is the contract:
  *  - INTENT_NAV is the model the user is TAUGHT — the job they came to do. It
- *    leads Header, MobileNavSheet, SearchPopoverEmpty, IntentRail and Footer.
+ *    leads Header, MobileNavSheet, SearchPopoverEmpty, IntentMap and Footer.
  *  - DESTINATIONS is the additive "browse everything" layer BENEATH it, so
  *    nothing becomes unreachable. It is never the first thing a surface shows.
  *
