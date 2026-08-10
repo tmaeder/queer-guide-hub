@@ -53,7 +53,7 @@ export function CityHero({
         fetchPriority="high"
         referrerPolicy="no-referrer"
         onError={(e) => { if (e.currentTarget.src !== fallback) e.currentTarget.src = fallback; }}
-        className="absolute inset-0 h-full w-full object-cover transition-transform duration-[1200ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-105"
+        className="absolute inset-0 h-full w-full object-cover transition-transform duration-slow ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-105"
       />
       <div className="pointer-events-none absolute inset-0 img-scrim-strong" aria-hidden="true" />
 

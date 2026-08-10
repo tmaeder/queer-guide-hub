@@ -69,6 +69,7 @@
      `duration-300` is the motion equivalent of an arbitrary text-[19px].
      Tailwind v4 has no --transition-duration-* namespace, so the matching
      utilities are declared with @utility below. */
+  --motion-instant: 100ms;
   --motion-fast: 200ms;
   --motion-normal: 300ms;
   --motion-slow: 500ms;
@@ -1049,8 +1050,8 @@ h2,
    are not a `Card` declare their own border utility. */
 .card-lift {
   transition:
-    transform 120ms ease-out,
-    box-shadow 120ms ease-out;
+    transform var(--motion-instant) ease-out,
+    box-shadow var(--motion-instant) ease-out;
 }
 .card-lift:hover,
 .card-lift:focus-visible,
@@ -1058,24 +1059,26 @@ h2,
   transform: translate(-3px, -3px);
   box-shadow: var(--shadow-hard);
 }
-.card-lift-sm {
-  transition:
-    transform 120ms ease-out,
-    box-shadow 120ms ease-out;
-}
-.card-lift-sm:hover,
-.card-lift-sm:focus-visible {
-  transform: translate(-2px, -2px);
-  box-shadow: var(--shadow-hard-sm);
+/* Press. Hover does not exist on touch, and this product is mobile-first, so
+   without an :active state the primary interactive surface gives a tapping
+   user no feedback whatsoever — the lift is a pointer-only affordance.
+   Pressing SEATS the card: it returns to the page and the shadow collapses,
+   the inverse of the lift rather than a second, competing motion. Listed
+   after :hover so it wins on a device that reports both. */
+.card-lift:active {
+  transform: translate(0, 0);
+  box-shadow: none;
 }
 /* Live/urgent variant — the shadow prints in the accent instead of ink. */
 .card-lift-accent:hover,
 .card-lift-accent:focus-visible {
   box-shadow: var(--shadow-hard-accent);
 }
+.card-lift-accent:active {
+  box-shadow: none;
+}
 @media (prefers-reduced-motion: reduce) {
-  .card-lift,
-  .card-lift-sm {
+  .card-lift {
     transition: none;
   }
 }

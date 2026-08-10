@@ -253,7 +253,7 @@ const NewsCardImpl = ({
             role="presentation"
             width={1600}
             height={900}
-            className="block w-full h-full object-cover transition-transform duration-[600ms] ease-out group-hover:scale-[1.03] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
+            className="block w-full h-full object-cover transition-transform duration-slow ease-out group-hover:scale-[1.03] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
             onError={() => setImgFailed(true)}
           />
           <div
@@ -343,7 +343,7 @@ const NewsCardImpl = ({
             role="presentation"
             width={800}
             height={600}
-            className="block w-full h-full object-cover aspect-[4/3] transition-transform duration-[600ms] ease-out group-hover:scale-[1.03] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
+            className="block w-full h-full object-cover aspect-[4/3] transition-transform duration-slow ease-out group-hover:scale-[1.03] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
             onError={() => setImgFailed(true)}
           />
         </div>
