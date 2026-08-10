@@ -59,6 +59,8 @@ export function useVenues(autoFetch: boolean = true, opts?: { skipDatasetTotal?:
       city?: string;
       cityId?: string;
       countryId?: string;
+      /** venues.queer_village_id — the venues actually inside a queer village. */
+      queerVillageId?: string;
       category?: string;
       tags?: string[];
       amenities?: string[];
@@ -102,7 +104,11 @@ export function useVenues(autoFetch: boolean = true, opts?: { skipDatasetTotal?:
 
       // New ranked path via rpc_venues_ranked. Used when caller opts in.
       // Falls back to the legacy PostgREST query on RPC error.
-      if (options?.useRanking) {
+      // rpc_venues_ranked has no queer_village_id argument. Routing such a
+      // call down the direct PostgREST path is deliberate: the alternative is
+      // accepting the filter and silently ignoring it, which is how the village
+      // page ended up listing city-wide venues in the first place.
+      if (options?.useRanking && !filters?.queerVillageId) {
         try {
           const rpcFilters: Record<string, unknown> = {};
           if (filters?.search) rpcFilters.search = filters.search;
@@ -199,6 +205,10 @@ export function useVenues(autoFetch: boolean = true, opts?: { skipDatasetTotal?:
 
       if (filters?.countryId) {
         query = query.eq('country_id', filters.countryId);
+      }
+
+      if (filters?.queerVillageId) {
+        query = query.eq('queer_village_id', filters.queerVillageId);
       }
 
       if (filters?.cityId) {

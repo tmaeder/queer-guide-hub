@@ -352,9 +352,10 @@ export function VillageVenuesTab({
   return (
     <ScrollReveal direction="up">
       <div className="mt-6">
-        <h3 className="mb-4 text-lg font-semibold">
-          Venues in {village.cities?.name || 'the area'}
-        </h3>
+        {/* The village, not its city. This read "Venues in Madrid" while the
+            query was city-wide; now that the list is the village's own venues,
+            the city name would misdescribe it. */}
+        <h3 className="mb-4 text-lg font-semibold">Venues in {village.name}</h3>
         {loading ? (
           <div className="flex justify-center py-16">
             <p className="text-muted-foreground">Loading venues...</p>
