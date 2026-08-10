@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { SectionHeader, SeeAllLink } from '@/components/ui/SectionHeader';
 import { cn } from '@/lib/utils';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 interface HomeSectionProps {
   /** Small uppercase label above the title. */
