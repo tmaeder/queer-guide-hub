@@ -123,7 +123,7 @@ export const GuideCard = memo(function GuideCard({
             src={hero}
             alt=""
             loading={priority ? 'eager' : 'lazy'}
-            className="absolute inset-0 size-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
+            className="absolute inset-0 size-full object-cover transition-transform duration-slow group-hover:scale-[1.02]"
           />
         ) : (
           <div className="absolute inset-0 grid place-items-center text-muted-foreground text-xs2 uppercase tracking-[0.15em]">

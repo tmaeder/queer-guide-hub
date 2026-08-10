@@ -46,6 +46,18 @@ export interface IntentVenue {
    * not a defect — render nothing rather than "hours unknown".
    */
   hours: unknown;
+  /**
+   * The rest is what VenueCard actually renders. `images` and `hours` were
+   * already selected and then thrown away by the caller, which is why /going-out
+   * was a text list while the card component sitting next to it could show a
+   * photo, an open-now state and a verified badge from the same row.
+   */
+  state: string | null;
+  tags: string[] | null;
+  price_range: number | null;
+  verified: boolean | null;
+  verification_status: string | null;
+  closed_at: string | null;
 }
 
 /** Nightlife venues for a city, ranked by the site's own quality signal. */
@@ -57,7 +69,9 @@ export function useNightlifeVenues(cityId: string | null | undefined, limit = 12
     queryFn: async (): Promise<IntentVenue[]> => {
       const { data, error } = await supabase
         .from('venues')
-        .select('id, name, slug, category, city, description, images, hours')
+        .select(
+          'id, name, slug, category, city, state, description, images, hours, tags, price_range, verified, verification_status, closed_at',
+        )
         .eq('city_id', cityId!)
         .is('duplicate_of_id', null)
         .in('category', NIGHTLIFE_CATEGORIES as unknown as string[])
@@ -80,6 +94,13 @@ export interface IntentEvent {
 /** Which rung of the fallback ladder produced the events we are showing. */
 export type EventWindow = 'tonight' | 'this-weekend' | 'next-7-days' | 'next-30-days' | 'anywhere';
 
+/** What useEventsWithFallback resolves to. Named so shared consumers (see
+ *  components/intent/UpcomingEvents) do not restate the shape and drift. */
+export interface EventsWithFallback {
+  events: IntentEvent[];
+  window: EventWindow;
+}
+
 const WINDOW_DAYS: Record<Exclude<EventWindow, 'anywhere'>, number> = {
   tonight: 1,
   'this-weekend': 3,
@@ -100,7 +121,7 @@ export function useEventsWithFallback(cityId: string | null | undefined, limit =
   return useQuery({
     queryKey: ['intent-events-fallback', cityId, limit],
     staleTime: 300_000,
-    queryFn: async (): Promise<{ events: IntentEvent[]; window: EventWindow }> => {
+    queryFn: async (): Promise<EventsWithFallback> => {
       const select = 'id, title, slug, start_date, city';
       const now = new Date().toISOString();
 
@@ -288,16 +309,68 @@ export interface RightsCountry {
  * numeric-range filter, so "equality_score < 40" is not expressible there.
  * `useTripSafety` already sets this precedent.
  */
+/**
+ * `id, name, slug, code, equality_score` plus every column named by
+ * RIGHT_TOPICS.
+ *
+ * Written out rather than derived from the catalog on purpose. Importing
+ * rightsCatalog here pulled its 14 lucide icon modules into useIntentData,
+ * which every intent page imports — it slowed the full-router test render from
+ * 12.5s to 20.2s and tipped cmsPageRouting over its 15s timeout. A data hook
+ * should not depend on a module that exists to carry icons.
+ *
+ * The guarantee that this list stays complete moved to a test
+ * (src/lib/rights/__tests__/rightsColumns.test.ts), which fails if a topic is
+ * added to the catalog without being added here. Same protection, no import.
+ */
+// One `as const` literal, NOT [...].join(', '). PostgREST's typegen resolves
+// columns from the literal type of the select string; building it at runtime
+// widens it to `string`, inference collapses to GenericStringError[] and the
+// row cast below becomes a TS2352. Caught by the typecheck ratchet.
+export const RIGHTS_SELECT_COLUMNS =
+  'id, name, slug, code, equality_score, lgbti_criminalization, lgbti_expression_restrictions, lgbti_association_restrictions, lgbti_constitutional_protection, lgbti_employment_protection, lgbti_housing_protection, lgbti_education_protection, lgbti_health_protection, lgbti_goods_services_protection, lgbti_bullying_protection, lgbti_hate_crime_law, lgbti_incitement_prohibition, lgbti_same_sex_unions, lgbti_adoption_rights, lgbti_gender_recognition, lgbti_conversion_therapy_regulation, lgbti_intersex_protection' as const;
+
+
+/**
+ * The NARROW fetch: what /travel and /rights/sources actually read.
+ *
+ * /travel uses this only to locate the visitor's country, count criminalising
+ * ones and show a total — three fields. It must not pay for the 22-column
+ * payload the /rights summary needs; widening the shared hook made a
+ * high-traffic entry page download 250 rows of jsonb protection matrices to
+ * render a number.
+ */
 export function useAllCountriesRights() {
   return useQuery({
-    queryKey: ['intent-rights-countries'],
+    queryKey: ['intent-rights-countries', 'core'],
     staleTime: 600_000,
     queryFn: async (): Promise<RightsCountry[]> => {
       const { data, error } = await supabase
         .from('countries')
-        .select(
-          'id, name, slug, code, equality_score, lgbti_criminalization, lgbti_same_sex_unions',
-        )
+        .select('id, name, slug, code, equality_score, lgbti_criminalization, lgbti_same_sex_unions')
+        .order('name', { ascending: true });
+      if (error) throw error;
+      return (data ?? []) as RightsCountry[];
+    },
+  });
+}
+
+/**
+ * The WIDE fetch: every column RIGHT_TOPICS names, for the /rights per-right
+ * summary. Separate query key, so the two are cached independently and no
+ * other page inherits the cost.
+ */
+export function useAllCountriesRightsFull() {
+  return useQuery({
+    queryKey: ['intent-rights-countries', 'full'],
+    staleTime: 600_000,
+    queryFn: async (): Promise<RightsCountry[]> => {
+      const { data, error } = await supabase
+        .from('countries')
+        // Written out rather than derived from RIGHT_TOPICS — importing the
+        // catalog here dragged its lucide icons into every intent page.
+        // rightsColumns.test.ts is what stops the two drifting.
+        .select(RIGHTS_SELECT_COLUMNS)
         .order('name', { ascending: true });
       if (error) throw error;
       return (data ?? []) as RightsCountry[];
@@ -370,23 +443,6 @@ export function useVerifiedOwnedBrands(limit = 24) {
       return ((data ?? []) as VerifiedBrand[]).filter(
         (b) => Array.isArray(b.ownership_tags) && b.ownership_tags.length > 0,
       );
-    },
-  });
-}
-
-/** Marketplace categories for the Shop browse section. */
-export function useShopCategories(limit = 18) {
-  return useQuery({
-    queryKey: ['intent-shop-categories', limit],
-    staleTime: 600_000,
-    queryFn: async (): Promise<{ id: string; name: string; slug: string | null }[]> => {
-      const { data, error } = await supabase
-        .from('marketplace_categories')
-        .select('id, name, slug')
-        .order('name', { ascending: true })
-        .limit(limit);
-      if (error) throw error;
-      return (data ?? []) as { id: string; name: string; slug: string | null }[];
     },
   });
 }

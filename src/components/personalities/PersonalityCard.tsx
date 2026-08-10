@@ -134,7 +134,7 @@ function PersonalityCardImpl({
       onFocus={isFinePointer ? scheduleOpen : undefined}
       onBlur={isFinePointer ? scheduleClose : undefined}
       aria-label={ariaLabel}
-      className="personality-card group relative flex flex-col h-full cursor-pointer no-underline text-inherit bg-surface-container rounded-container overflow-hidden touch-manipulation transition-colors duration-200 hover:bg-muted/40 active:opacity-85 focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2"
+      className="personality-card group relative flex flex-col h-full cursor-pointer no-underline text-inherit bg-surface-container rounded-container overflow-hidden touch-manipulation transition-colors duration-fast hover:bg-muted/40 active:opacity-85 focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2"
       style={{ WebkitTapHighlightColor: 'transparent' }}
     >
       <CardHoverEffect>
@@ -159,7 +159,7 @@ function PersonalityCardImpl({
               draggable={false}
               referrerPolicy="no-referrer"
               onError={() => setImgError(true)}
-              className="personality-card-image absolute inset-0 w-full h-full object-cover object-top transition-transform duration-300 group-hover:scale-[1.04]"
+              className="personality-card-image absolute inset-0 w-full h-full object-cover object-top transition-transform duration-normal group-hover:scale-[1.04]"
             />
           ) : (
             <div className="absolute inset-0 flex items-center justify-center">

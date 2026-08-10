@@ -46,7 +46,7 @@ vi.mock('@/pages/intent/Rights', () => ({ default: () => <div>RIGHTS_SENTINEL</d
 vi.mock('@/pages/rights/RightsSources', () => ({
   default: () => <div>RIGHTS_SOURCES_SENTINEL</div>,
 }));
-vi.mock('@/pages/intent/Support', () => ({ default: () => <div>SUPPORT_SENTINEL</div> }));
+vi.mock('@/pages/HelpHotlines', () => ({ default: () => <div>HELP_SENTINEL</div> }));
 vi.mock('@/pages/intent/Shop', () => ({ default: () => <div>SHOP_SENTINEL</div> }));
 vi.mock('@/pages/Travel', () => ({ default: () => <div>TRAVEL_SENTINEL</div> }));
 vi.mock('@/pages/Marketplace', () => ({ default: () => <div>MARKETPLACE_SENTINEL</div> }));
@@ -75,7 +75,11 @@ async function expectSentinel(path: string, sentinel: string) {
 const INTENTS: [string, string][] = [
   ['/going-out', 'GOING_OUT_SENTINEL'],
   ['/rights', 'RIGHTS_SENTINEL'],
-  ['/support', 'SUPPORT_SENTINEL'],
+  // /support is now a redirect: the page was the org-directory slice of /help
+  // (same hook, same role filter) and /help is the superset. The URL must keep
+  // resolving — it is the Support track's identity and has inbound links — so
+  // this asserts it lands on /help rather than 404ing.
+  ['/support', 'HELP_SENTINEL'],
   ['/shop', 'SHOP_SENTINEL'],
   ['/travel', 'TRAVEL_SENTINEL'],
 ];

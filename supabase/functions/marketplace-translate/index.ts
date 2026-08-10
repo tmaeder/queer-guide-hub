@@ -61,6 +61,7 @@ Deno.serve(async (req) => {
       let map: Map<number, string>
       try {
         const res = await llmChatCompletion({
+          callerFn: 'marketplace-translate',
           messages: [
             { role: 'system', content: MARKETPLACE_TRANSLATE_SYSTEM },
             { role: 'user', content: buildMarketplaceTranslateUserPrompt(items) },

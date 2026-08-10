@@ -45,7 +45,7 @@ function MissionCard({ mission }: { mission: MissionStatus }) {
         aria-valuenow={Math.round(pct * 100)}
       >
         <div
-          className="h-full bg-foreground transition-[width] duration-500"
+          className="h-full bg-foreground transition-[width] duration-slow"
           style={{ width: `${pct * 100}%` }}
         />
       </div>

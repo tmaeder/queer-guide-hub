@@ -382,6 +382,7 @@ CRITICAL RULES:
 Return ONLY valid JSON, no additional text.`;
 
     const aiResult = await chatCompletion(supabaseClient, {
+      callerFn: 'bulk-create-personalities',
       model: 'gpt-4.1-2025-04-14',
       messages: [
         { role: 'system', content: 'You are an expert LGBTI historian and researcher. Provide accurate, factual information about people\'s relationship to the LGBTI/queer community.' },

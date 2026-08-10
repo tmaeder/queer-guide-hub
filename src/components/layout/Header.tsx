@@ -84,7 +84,7 @@ export function Header() {
             alt=""
             aria-hidden="true"
             tabIndex={-1}
-            className="transition-transform duration-150 hover:-rotate-6 hover:scale-110 active:scale-95 object-contain"
+            className="transition-transform duration-fast hover:-rotate-6 hover:scale-110 active:scale-95 object-contain"
             style={{ height: 34, width: 34 }}
           />
           <span className="hidden flex-col font-display text-base font-bold leading-[1.1] tracking-tight text-foreground md:flex">

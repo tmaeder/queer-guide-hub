@@ -37,7 +37,6 @@ const Wishlists = lazyRetry(() => import('./pages/Wishlists'));
 const GoingOut = lazyRetry(() => import('./pages/intent/GoingOut'));
 const RightsIntent = lazyRetry(() => import('./pages/intent/Rights'));
 const RightsSources = lazyRetry(() => import('./pages/rights/RightsSources'));
-const SupportIntent = lazyRetry(() => import('./pages/intent/Support'));
 const ShopIntent = lazyRetry(() => import('./pages/intent/Shop'));
 const Resources = lazyRetry(() => import('./pages/Resources'));
 const ConnectionsExplorer = lazyRetry(() => import('./pages/explore/ConnectionsExplorer'));
@@ -714,7 +713,12 @@ export const AppRoutes = () => {
                       at 17 unconditionally. A param here would tie at 17 and
                       resolve to NotFound for an unknown "locale"; see rule 2. */}
                   <Route path="rights/sources" element={<RightsSources />} />
-                  <Route path="support" element={<SupportIntent />} />
+                  {/* /support was the org-directory slice of /help wrapped in
+                    intent chrome: same hook, same `role: 'support'` filter, and its
+                    own crisis band was just a link to /help. Its two unique pieces
+                    (coverage note, "know the law") now live on /help. The URL stays
+                    so the Support track keeps its identity and inbound links work. */}
+                  <Route path="support" element={<LocalizedRedirect to="/help" />} />
                   {/* `shop` MUST stay declared before `shop/*` so the static
                     sibling wins the /shop tie, same precedent as `p/:slug`. */}
                   <Route path="shop" element={<ShopIntent />} />

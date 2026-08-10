@@ -211,6 +211,7 @@ async function handle(req: Request): Promise<Response> {
   let result;
   try {
     result = await llmChatCompletion({
+      callerFn: 'cms-ai',
       messages: [
         { role: 'system', content: prompt.system },
         { role: 'user', content: prompt.user },

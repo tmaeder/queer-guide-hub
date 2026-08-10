@@ -480,7 +480,7 @@ function FeatureImageTile({
           if (image.fallback) setSrc(image.fallback);
           setErrored(true);
         }}
-        className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+        className="absolute inset-0 h-full w-full object-cover transition-transform duration-slow group-hover:scale-[1.03]"
       />
       {!errored && image.credit && (
         <span

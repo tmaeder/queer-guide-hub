@@ -31,7 +31,7 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
     <div
       ref={ref}
       className={cn(
-        'border-[3px] border-foreground bg-card text-card-foreground rounded-container transition-all duration-[250ms] ease-[cubic-bezier(0.22,1,0.36,1)]',
+        'border-[3px] border-foreground bg-card text-card-foreground rounded-container transition-all duration-fast ease-[cubic-bezier(0.22,1,0.36,1)]',
         hoverable === 'group' && 'group-hover:bg-surface-container-low',
         hoverable === true && 'cursor-pointer hover:bg-surface-container-low',
         className,

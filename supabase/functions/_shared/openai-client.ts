@@ -11,6 +11,7 @@
 import type { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
 import { gatewayBaseUrl, gatewayHeaders } from './ai-gateway.ts'
 import { mapToCfModel } from './cf-model-map.ts'
+import { recordLlmUsage } from './llm-usage-log.ts'
 
 // ---------------------------------------------------------------------------
 // AES-GCM encryption helpers (same pattern as manage-api-keys)
@@ -206,6 +207,10 @@ export interface ChatCompletionOptions {
   temperature?: number
   max_tokens?: number
   response_format?: { type: string }
+  /** Edge function name, for llm_call_log attribution. */
+  callerFn?: string
+  /** Optional grouping key for llm_call_log (pipeline run, entity id). */
+  contextKey?: string | null
 }
 
 export interface ChatCompletionResult {
@@ -339,6 +344,13 @@ export async function chatCompletion(
           if (attempt < 2) { await new Promise(r => setTimeout(r, 1000 * (attempt + 1))); continue }
           throw lastError
         }
+        recordLlmUsage({
+          fn: options.callerFn ?? 'chatCompletion',
+          model: effectiveModel,
+          tokensIn: data.result?.usage?.prompt_tokens,
+          tokensOut: data.result?.usage?.completion_tokens,
+          contextKey: options.contextKey ?? null,
+        })
         return {
           content: cfContent,
           usage: data.result?.usage,
@@ -351,6 +363,13 @@ export async function chatCompletion(
         if (attempt < 2) { await new Promise(r => setTimeout(r, 1000 * (attempt + 1))); continue }
         throw lastError
       }
+      recordLlmUsage({
+        fn: options.callerFn ?? 'chatCompletion',
+        model: data.model ?? effectiveModel,
+        tokensIn: data.usage?.prompt_tokens,
+        tokensOut: data.usage?.completion_tokens,
+        contextKey: options.contextKey ?? null,
+      })
       return {
         content: oaContent,
         usage: data.usage,

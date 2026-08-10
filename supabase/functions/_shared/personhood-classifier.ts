@@ -143,6 +143,7 @@ function parseLlmJson(content: string): LlmPersonhood | null {
 export async function llmPersonhood(input: PersonhoodInput): Promise<LlmPersonhood | null> {
   if (!isLlmConfigured()) return null
   const res = await llmChatCompletion({
+    callerFn: 'shared:personhood-classifier',
     messages: [
       { role: 'system', content: LLM_SYSTEM },
       { role: 'user', content: buildLlmPrompt(input) },

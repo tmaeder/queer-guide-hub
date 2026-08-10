@@ -164,6 +164,7 @@ Deno.serve(async (req: Request) => {
     let long: string
     try {
       const res = await withCircuitBreaker(supabase, BREAKER, () => llmChatCompletion({
+        callerFn: 'pipeline-enrich-country-editorial',
         messages: [{ role: 'system', content: SYSTEM }, { role: 'user', content: userMsg }],
         temperature: 0.4, max_tokens: 600, timeoutMs: 30_000, retries: 2,
       }))

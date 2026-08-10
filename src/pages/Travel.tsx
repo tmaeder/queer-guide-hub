@@ -121,12 +121,6 @@ export default function Travel() {
       ),
     },
     {
-      id: 'map',
-      label: t('pages.travel.sections.map', 'See the map'),
-      kicker: t('pages.travel.sections.mapKicker', 'Destinations at a glance'),
-      content: <TravelDiscoveryMap />,
-    },
-    {
       id: 'inspiration',
       label: t('pages.travel.sections.inspiration', 'Where to go'),
       kicker: t('pages.travel.sections.inspirationKicker', 'Destinations'),
@@ -151,6 +145,17 @@ export default function Travel() {
           </div>
         </div>
       ),
+    },
+    {
+      id: 'map',
+      label: t('pages.travel.sections.map', 'See the map'),
+      kicker: t('pages.travel.sections.mapKicker', 'Destinations at a glance'),
+      // Moved out from between 'plan' and 'inspiration'. The map is a tool, and
+      // sitting second it split the two things this page is for — the planner
+      // and the reasons to use it — with a full-width utility surface. It now
+      // follows the inspiration cluster it belongs to thematically ("where to
+      // go", seen at a glance) instead of interrupting it.
+      content: <TravelDiscoveryMap />,
     },
     {
       id: 'villages',

@@ -33,7 +33,7 @@ export function ResourceProfessions({
             onClick={() =>
               onNavigate(`/personalities?profession=${encodeURIComponent(profession)}`)
             }
-            className="inline-flex items-center px-4.5 py-1.5 rounded-full cursor-pointer bg-background text-inherit border-0 hover:bg-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary transition-all duration-150"
+            className="inline-flex items-center px-4.5 py-1.5 rounded-full cursor-pointer bg-background text-inherit border-0 hover:bg-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary transition-all duration-fast"
             style={{ minHeight: 36 }}
           >
             <span className="font-medium" style={{ fontSize: '0.8rem' }}>{profession}</span>

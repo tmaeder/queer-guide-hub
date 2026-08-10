@@ -236,7 +236,7 @@ export function SavedTab() {
                 <img
                   src={item.image_url}
                   alt={item.title}
-                  className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-105"
+                  className="w-full h-full object-cover transition-transform duration-fast group-hover:scale-105"
                 />
                 <div className="absolute top-2 left-2">
                   <Badge variant="secondary">
@@ -258,7 +258,7 @@ export function SavedTab() {
             )}
           </div>
           <CardContent>
-            <h6 className="font-semibold text-lg mb-2 overflow-hidden transition-colors duration-150 group-hover:text-primary [display:-webkit-box] [-webkit-line-clamp:2] [-webkit-box-orient:vertical]">
+            <h6 className="font-semibold text-lg mb-2 overflow-hidden transition-colors duration-fast group-hover:text-primary [display:-webkit-box] [-webkit-line-clamp:2] [-webkit-box-orient:vertical]">
               {item.title}
             </h6>
             {item.description && (
@@ -310,7 +310,7 @@ export function SavedTab() {
                 <img
                   src={item.image_url}
                   alt={item.title}
-                  className="w-20 h-20 object-cover rounded-element transition-transform duration-200 group-hover:scale-105"
+                  className="w-20 h-20 object-cover rounded-element transition-transform duration-fast group-hover:scale-105"
                 />
               </div>
             )}
@@ -322,7 +322,7 @@ export function SavedTab() {
                     <Badge variant="secondary">{item.type}</Badge>
                     {item.category && <Badge variant="outline">{item.category}</Badge>}
                   </div>
-                  <h6 className="font-semibold text-xl leading-tight mb-2 transition-colors duration-150 group-hover:text-primary">
+                  <h6 className="font-semibold text-xl leading-tight mb-2 transition-colors duration-fast group-hover:text-primary">
                     {item.title}
                   </h6>
                   {item.description && (

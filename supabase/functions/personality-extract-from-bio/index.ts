@@ -74,6 +74,7 @@ const SYS =
 async function llm(supabase: ReturnType<typeof getServiceClient>, user: string, model: string) {
   return withCircuitBreaker(supabase, 'llm.openai.enrich-news', () =>
     chatCompletion(supabase, {
+      callerFn: 'personality-extract-from-bio',
       model,
       temperature: 0.0,
       max_tokens: 120,
