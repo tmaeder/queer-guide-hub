@@ -1,11 +1,12 @@
 import { useState } from "react";
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Calendar, Loader2 } from "lucide-react";
+import { Calendar } from "lucide-react";
 
 interface EventbriteImportProps {
   onImportComplete?: () => void;
@@ -112,7 +113,7 @@ export const EventbriteImport = ({ onImportComplete }: EventbriteImportProps) =>
             >
               {isLoading ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <TrackLoader size={16} className="mr-2" />
                   Importing...
                 </>
               ) : (

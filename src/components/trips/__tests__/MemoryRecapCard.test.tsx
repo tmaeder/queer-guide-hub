@@ -44,7 +44,11 @@ describe('MemoryRecapCard', () => {
   it('shows spinner while loading', () => {
     useRecapMock.mockReturnValue({ data: undefined, isLoading: true });
     const { container } = render(<MemoryRecapCard tripId="t1" />);
-    expect(container.querySelector('.animate-spin')).toBeInTheDocument();
+    // The working indicator is the track loop, not a rotating icon — the
+    // design system replaced every spinner with it. Asserting the class
+    // keeps the test's intent (a loading state is shown) rather than
+    // pinning it to the old implementation.
+    expect(container.querySelector('.track-loader')).toBeInTheDocument();
   });
 
   it('shows empty CTA when no recap; click triggers generate', () => {

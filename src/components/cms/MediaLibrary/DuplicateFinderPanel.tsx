@@ -1,10 +1,11 @@
 import { useState } from 'react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { untypedSupabase } from '@/integrations/supabase/untyped';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, Merge, Check } from 'lucide-react';
+import {Merge, Check } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import type { DuplicateGroup, VisualDuplicatePair } from './types';
 
@@ -123,7 +124,7 @@ export function DuplicateFinderPanel() {
 
       {loading && (
         <div className="flex items-center justify-center py-12">
-          <Loader2 className="h-6 w-6 animate-spin" />
+          <TrackLoader size={24} />
         </div>
       )}
 

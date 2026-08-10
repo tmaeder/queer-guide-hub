@@ -5,8 +5,9 @@
  * relationships, roles and (later) claims.
  */
 import { useState } from 'react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { Link, useParams } from 'react-router';
-import { ExternalLink, Link2, Loader2, Unlink } from 'lucide-react';
+import { ExternalLink, Link2, Unlink } from 'lucide-react';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { AffiliatePartnersManager } from '@/components/admin/AffiliatePartnersManager';
 import { MerchantsManager } from '@/components/admin/affiliate/MerchantsManager';
@@ -94,7 +95,7 @@ export default function AdminBusinessDetail() {
   if (isLoading) {
     return (
       <div className="flex justify-center py-16">
-        <Loader2 className="h-6 w-6 animate-spin" aria-label="Loading" />
+        <TrackLoader size={24} label="Loading" />
       </div>
     );
   }

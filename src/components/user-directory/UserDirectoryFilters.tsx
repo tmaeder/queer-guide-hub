@@ -1,4 +1,5 @@
 import React from 'react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -21,24 +22,7 @@ import {
 } from '@/components/ui/command';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
-import {
-  Search,
-  MapPin,
-  Calendar,
-  Users,
-  Filter,
-  X,
-  ChevronDown,
-  Check,
-  Heart,
-  Briefcase,
-  GraduationCap,
-  Navigation,
-  Loader2,
-  Sparkles,
-  TrendingUp,
-  Star,
-} from 'lucide-react';
+import { Search, MapPin, Calendar, Users, Filter, X, ChevronDown, Check, Heart, Briefcase, GraduationCap, Navigation, Sparkles, TrendingUp, Star } from 'lucide-react';
 import {
   UserFilters,
   ageRanges,
@@ -110,7 +94,7 @@ export const UserDirectoryFilters = ({
                 aria-pressed={nearMe}
               >
                 {isDetectingLocation ? (
-                  <Loader2 size={16} className="animate-spin" />
+                  <TrackLoader size={16} />
                 ) : (
                   <Navigation size={16} />
                 )}

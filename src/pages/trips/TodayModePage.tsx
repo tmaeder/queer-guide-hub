@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useParams } from 'react-router';
 import {
   Calendar,
@@ -13,7 +14,6 @@ import {
   Skull,
   WifiOff,
   Bell,
-  Loader2,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
@@ -234,7 +234,7 @@ export default function TodayModePage() {
   if (isLoading && !effectiveTrip) {
     return (
       <div className="container mx-auto py-16 px-4 text-center">
-        <Loader2 className="h-6 w-6 animate-spin mx-auto" aria-label="Loading" />
+        <TrackLoader size={24} label="Loading" className="mx-auto" />
       </div>
     );
   }

@@ -1,7 +1,8 @@
 import { useState } from 'react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { Loader2, Sparkles } from 'lucide-react';
+import {Sparkles } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
 interface DiscoveryResult {
@@ -59,7 +60,7 @@ export function MilestoneDiscoveryButton({ onComplete }: { onComplete?: () => vo
 
   return (
     <Button variant="outline" onClick={run} disabled={loading}>
-      {loading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Sparkles className="w-4 h-4 mr-2" />}
+      {loading ? <TrackLoader size={16} className="mr-2" /> : <Sparkles className="w-4 h-4 mr-2" />}
       KI-Vorschläge suchen
     </Button>
   );

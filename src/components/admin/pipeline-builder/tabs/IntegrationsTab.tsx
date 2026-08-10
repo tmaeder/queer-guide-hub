@@ -1,7 +1,8 @@
 import { useState } from 'react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { formatDistanceToNow } from 'date-fns';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Webhook, Plus, Trash2, Send, Loader2, CheckCircle2, XCircle } from 'lucide-react';
+import { Webhook, Plus, Trash2, Send, CheckCircle2, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -218,7 +219,7 @@ export default function IntegrationsTab() {
               <DialogFooter>
                 <Button variant="ghost" size="sm" onClick={() => setDialogOpen(false)}>Cancel</Button>
                 <Button size="sm" disabled={!canSave || create.isPending} onClick={() => create.mutate()}>
-                  {create.isPending ? <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> : null}
+                  {create.isPending ? <TrackLoader size={14} className="mr-1.5" /> : null}
                   Add integration
                 </Button>
               </DialogFooter>

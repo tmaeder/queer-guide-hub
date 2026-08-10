@@ -1,16 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useTranslation } from 'react-i18next';
-import {
-  Ticket,
-  Check,
-  X,
-  Send,
-  ExternalLink,
-  Loader2,
-  Calendar,
-  MapPin,
-  Plus,
-} from 'lucide-react';
+import { Ticket, Check, X, Send, ExternalLink, Calendar, MapPin, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -49,7 +40,7 @@ export function TripEmailThread({ itemId }: { itemId: string }) {
   if (itemLoading) {
     return (
       <div className="flex flex-1 items-center justify-center">
-        <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" aria-hidden />
+        <TrackLoader size={20} />
       </div>
     );
   }
@@ -241,7 +232,7 @@ export function TripEmailThread({ itemId }: { itemId: string }) {
           ))}
           {send.isPending && (
             <div className="flex items-center gap-2 self-start text-13 text-muted-foreground">
-              <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden />
+              <TrackLoader size={14} />
               {t('inbox.tripmail.thinking', { defaultValue: 'Checking the email…' })}
             </div>
           )}

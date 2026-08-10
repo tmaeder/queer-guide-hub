@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { Link, useNavigate } from 'react-router';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { formatDistanceToNow } from 'date-fns';
@@ -10,7 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
-import { Activity, AlertTriangle, CheckCircle, Play, Workflow, GitBranch, Search, Loader2 } from 'lucide-react';
+import { Activity, AlertTriangle, CheckCircle, Play, Workflow, GitBranch, Search} from 'lucide-react';
 import { AdminStatTile } from '@/components/admin/primitives/AdminStatTile';
 import { useUnifiedPipelineOverview, usePipelineRunCounts24h, useCircuitBreakers, type UnifiedPipelineRow } from '../hooks/usePipelineHistory';
 import { AdminTableRowSkeleton } from '@/components/admin/primitives/AdminLoading';
@@ -294,7 +295,7 @@ export default function OverviewTab() {
                       onClick={() => runNow.mutate(row)}
                     >
                       {runNow.isPending && runNow.variables?.id === row.id
-                        ? <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                        ? <TrackLoader size={12} className="mr-1" />
                         : <Play className="h-3 w-3 mr-1" />}
                       Run
                     </Button>

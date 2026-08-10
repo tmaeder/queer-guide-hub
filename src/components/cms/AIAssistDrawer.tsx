@@ -5,19 +5,8 @@
  */
 
 import { useState, useCallback } from 'react';
-import {
-  Sparkles,
-  X,
-  Check,
-  RotateCcw,
-  FileText,
-  Image as ImageIcon,
-  Tag,
-  Search,
-  Globe,
-  Loader2,
-  Gauge,
-} from 'lucide-react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
+import { Sparkles, X, Check, RotateCcw, FileText, Image as ImageIcon, Tag, Search, Globe, Gauge } from 'lucide-react';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -207,7 +196,7 @@ export function AIAssistDrawer({
                     className="text-xs font-semibold gap-1"
                   >
                     {busy ? (
-                      <Loader2 className="h-3 w-3 animate-spin" />
+                      <TrackLoader size={12} />
                     ) : result ? (
                       <RotateCcw size={12} />
                     ) : (

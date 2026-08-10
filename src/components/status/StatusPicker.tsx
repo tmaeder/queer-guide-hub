@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Loader2, X } from 'lucide-react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
+import {X } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -305,7 +306,7 @@ export function StatusPicker({ open, onOpenChange }: StatusPickerProps) {
             Clear status
           </Button>
           <Button type="button" onClick={onSave} disabled={saving}>
-            {saving && <Loader2 className="h-4 w-4 animate-spin" />}
+            {saving && <TrackLoader size={16} />}
             Save
           </Button>
         </DialogFooter>

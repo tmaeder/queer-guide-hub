@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { FolderPlus, Loader2, Plus, Trash2 } from 'lucide-react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
+import { FolderPlus, Plus, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -149,7 +150,7 @@ function NewCollectionDialog({ groupId }: { groupId: string }) {
               Cancel
             </Button>
             <Button type="submit" disabled={createMutation.isPending || !name.trim()}>
-              {createMutation.isPending && <Loader2 className="h-4 w-4 animate-spin mr-1" />}
+              {createMutation.isPending && <TrackLoader size={16} className="mr-1" />}
               Create
             </Button>
           </DialogFooter>

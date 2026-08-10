@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import {
   Dialog,
   DialogContent,
@@ -12,7 +13,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Upload, X, Edit3, Trash2, Camera, ImageIcon, Loader2, ZoomIn } from 'lucide-react';
+import { Plus, Upload, X, Edit3, Trash2, Camera, ImageIcon, ZoomIn } from 'lucide-react';
 import { useUserPhotos } from '@/hooks/useUserPhotos';
 
 interface PhotoGalleryProps {
@@ -125,7 +126,7 @@ export function PhotoGallery({ userId, isOwnProfile }: PhotoGalleryProps) {
       <Card>
         <CardContent className="p-6">
           <div className="flex items-center justify-center h-32">
-            <Loader2 className="w-6 h-6 animate-spin" />
+            <TrackLoader size={24} />
           </div>
         </CardContent>
       </Card>
@@ -207,7 +208,7 @@ export function PhotoGallery({ userId, isOwnProfile }: PhotoGalleryProps) {
                       disabled={!selectedFile || uploadPhoto.isPending}
                     >
                       {uploadPhoto.isPending ? (
-                        <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                        <TrackLoader size={16} className="mr-2" />
                       ) : (
                         <Upload className="w-4 h-4 mr-2" />
                       )}

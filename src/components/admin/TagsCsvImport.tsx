@@ -1,5 +1,6 @@
 import { useState, useRef } from "react";
-import { Loader2 } from 'lucide-react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -164,7 +165,7 @@ export function TagsCsvImport({ onImportComplete }: { onImportComplete?: () => v
               {isUploading && (
                 <div className="text-center py-4">
                   <div className="inline-flex items-center gap-2">
-                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <TrackLoader size={16} />
                     Uploading and processing CSV...
                   </div>
                 </div>

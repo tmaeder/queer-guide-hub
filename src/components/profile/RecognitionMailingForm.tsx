@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
-import { Loader2, Trash2 } from 'lucide-react';
+import {Trash2 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import {
@@ -97,7 +98,7 @@ export function RecognitionMailingForm() {
       <CardContent>
         {isLoading ? (
           <div className="flex justify-center py-4">
-            <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+            <TrackLoader size={20} />
           </div>
         ) : (
           <div className="flex flex-col gap-4">
@@ -186,7 +187,7 @@ export function RecognitionMailingForm() {
                 </Button>
               )}
               <Button onClick={handleSave} disabled={saving}>
-                {saving && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+                {saving && <TrackLoader size={16} className="mr-2" />}
                 {hasRow ? 'Update' : 'Save'}
               </Button>
             </div>

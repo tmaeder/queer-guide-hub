@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Download, Trash2, Loader2 } from 'lucide-react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
+import { Download, Trash2} from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -98,7 +99,7 @@ export function DangerZone({ username }: DangerZoneProps) {
           </p>
           <div>
             <Button variant="outline" onClick={handleExport} disabled={exporting}>
-              {exporting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
+              {exporting ? <TrackLoader size={16} className="mr-2" /> : <Download className="mr-2 h-4 w-4" />}
               {exporting ? 'Preparing your data…' : 'Download my data'}
             </Button>
           </div>
@@ -148,7 +149,7 @@ export function DangerZone({ username }: DangerZoneProps) {
               Cancel
             </Button>
             <Button variant="destructive" onClick={handleDelete} disabled={!canDelete || deleting}>
-              {deleting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+              {deleting ? <TrackLoader size={16} className="mr-2" /> : null}
               {deleting ? 'Deleting your account…' : 'Delete forever'}
             </Button>
           </AlertDialogFooter>

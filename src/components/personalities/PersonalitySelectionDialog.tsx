@@ -1,9 +1,10 @@
 import { useState } from 'react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, User, Calendar, Briefcase, MapPin } from "lucide-react";
+import { User, Calendar, Briefcase, MapPin } from "lucide-react";
 
 interface Candidate {
   id: string;
@@ -125,7 +126,7 @@ export function PersonalitySelectionDialog({
             Cancel
           </Button>
           <Button onClick={handleSelect} disabled={!selectedCandidate || loading}>
-            {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {loading && <TrackLoader size={16} className="mr-2" />}
             {loading ? 'Processing...' : 'Select Person'}
           </Button>
         </div>

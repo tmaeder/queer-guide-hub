@@ -5,7 +5,8 @@
  */
 
 import { useEffect, useRef, useState } from 'react';
-import { Save, Check, Loader2 } from 'lucide-react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
+import { Save, Check} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
@@ -45,7 +46,7 @@ export function SaveButton({ isDirty, isSaving, hasError, onSave, shortcutLabel 
           className="font-semibold normal-case min-w-[80px]"
         >
           {isSaving ? (
-            <Loader2 className="h-4 w-4 animate-spin mr-1" aria-label="Loading" />
+            <TrackLoader size={16} label="Loading" className="mr-1" />
           ) : justSaved ? (
             <Check className="h-4 w-4 mr-1" />
           ) : (

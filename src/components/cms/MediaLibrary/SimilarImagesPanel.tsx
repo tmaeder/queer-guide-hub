@@ -1,8 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { Link } from 'react-router';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Images } from 'lucide-react';
+import {Images } from 'lucide-react';
 import { untypedSupabase } from '@/integrations/supabase/untyped';
 
 interface SimilarRow {
@@ -40,7 +41,7 @@ export function SimilarImagesPanel({ assetId }: { assetId: string }) {
       <CardContent>
         {isLoading ? (
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Loader2 size={14} className="animate-spin" /> Searching…
+            <TrackLoader size={14} /> Searching…
           </div>
         ) : error ? (
           <p className="text-sm text-destructive">Could not load similar images.</p>

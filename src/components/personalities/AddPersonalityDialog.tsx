@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef } from 'react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -20,7 +21,7 @@ import {
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { Plus, X, Upload, ImageIcon, Search, Loader2, Check } from 'lucide-react';
+import { Plus, X, Upload, ImageIcon, Search, Check } from 'lucide-react';
 import { usePersonalities } from '@/hooks/usePersonalities';
 import { useAddressResolver } from '@/hooks/useAddressResolver';
 import { CountryAutocomplete } from '@/components/ui/country-autocomplete';
@@ -504,7 +505,7 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
                 onClick={handleWikipediaLookup}
                 disabled={lookupLoading || !searchTerm.trim()}
               >
-                {lookupLoading ? <Loader2 /> : <Search />}
+                {lookupLoading ? <TrackLoader size={16} /> : <Search />}
                 {lookupLoading ? 'Searching...' : 'Lookup'}
               </Button>
             </div>
@@ -595,18 +596,9 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
                       placeholder="City, Country (e.g. New York, United States)"
                     />
                     {resolvingGeo && (
-                      <Loader2
-                        style={{
-                          right: 8,
-                          top: '50%',
-                          transform: 'translateY(-50%)',
-                          width: 14,
-                          height: 14,
-                          animation: 'spin 1s linear infinite',
-                          color: '#999',
-                        }}
-                        className="absolute"
-                      />
+                      <span className="absolute right-2 top-1/2 -translate-y-1/2">
+                        <TrackLoader size={14} />
+                      </span>
                     )}
                   </div>
                   {resolvedCityId && (

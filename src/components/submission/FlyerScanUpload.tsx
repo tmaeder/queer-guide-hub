@@ -5,8 +5,9 @@
  */
 
 import { useRef, useState, useCallback } from 'react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useTranslation } from 'react-i18next';
-import { Loader2 } from 'lucide-react';
+
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -164,7 +165,7 @@ export function FlyerScanUpload({
       <Card>
         <CardContent>
           <div className="flex flex-col items-center gap-4 py-2">
-            <Loader2 className="animate-spin h-8 w-8 text-foreground" aria-label="Loading" />
+            <TrackLoader size={32} label="Loading" />
             <p className="text-sm font-medium">{progressText}</p>
             {totalFiles > 1 && (
               <div className="w-full h-1 bg-muted rounded-badge overflow-hidden">

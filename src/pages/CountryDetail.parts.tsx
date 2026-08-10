@@ -4,9 +4,9 @@ import {
   Calendar,
   Newspaper,
   Activity,
-  Loader2,
   ShieldAlert,
 } from 'lucide-react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { hasAnyCriminalizationSignal } from '@/utils/equalityScore';
 import { MapShell } from '@/components/map/MapShell';
 import { MAP_SHELL_ENABLED } from '@/lib/featureFlags';
@@ -68,7 +68,7 @@ export function SectionLoader({ label }: { label: string }) {
       role="status"
       aria-label={`Loading ${label}`}
     >
-      <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" aria-hidden="true" />
+      <TrackLoader size={24} />
     </div>
   );
 }
@@ -280,7 +280,7 @@ export function CountryMapTab({
     <Suspense
       fallback={
         <div className="flex justify-center py-8">
-          <Loader2 className="h-8 w-8 animate-spin" aria-label="Loading" />
+          <TrackLoader size={32} label="Loading" />
         </div>
       }
     >

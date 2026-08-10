@@ -1,5 +1,6 @@
 import { Suspense, lazy, type ComponentProps } from 'react';
-import { Loader2 } from 'lucide-react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
+
 import type { TriageItem } from '@/hooks/useUnifiedTriageQueue';
 import { AdminEmpty } from '@/components/admin/primitives/AdminEmpty';
 
@@ -90,7 +91,7 @@ export function EntityPreviewCard({ item, entityData }: EntityPreviewCardProps) 
 
   const loading = (
     <div className="flex items-center justify-center py-8">
-      <Loader2 className="h-4 w-4 animate-spin" />
+      <TrackLoader size={16} />
     </div>
   );
 

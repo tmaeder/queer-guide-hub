@@ -6,7 +6,8 @@
  */
 
 import { useState, useCallback } from 'react';
-import { CheckCheck, Archive, EyeOff, Languages, ChevronDown, X, Loader2 } from 'lucide-react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
+import { CheckCheck, Archive, EyeOff, Languages, ChevronDown, X} from 'lucide-react';
 import { upsertCMSContentMetadata, insertContentActions } from '@/hooks/useCMSContentMetadata';
 import { useBulkColumnEdit } from '@/hooks/useBulkColumnEdit';
 import type { ContentBulkEditField } from '@/types/cms';
@@ -190,7 +191,7 @@ export function BulkActionsBar({
         className="bg-foreground hover:bg-foreground text-background normal-case font-semibold"
       >
         {busy ? (
-          <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" />
+          <TrackLoader size={14} className="mr-1" />
         ) : (
           <CheckCheck size={14} className="mr-1" />
         )}

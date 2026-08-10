@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useTranslation } from 'react-i18next';
-import { Search, MapPin, Star, Clock, X, Loader2, Sparkles } from 'lucide-react';
+import { Search, MapPin, Star, Clock, X, Sparkles } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -500,11 +501,7 @@ export function AddPlaceDialog({
                 className="pl-10 pr-10 h-11 rounded-container"
               />
               {searching && (
-                <Loader2
-                  size={16}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 animate-spin text-muted-foreground"
-                  aria-label="Loading"
-                />
+                <TrackLoader size={16} label="Loading" className="absolute right-3 top-1/2 -translate-y-1/2" />
               )}
             </div>
 
@@ -592,11 +589,7 @@ export function AddPlaceDialog({
           <TabsContent value="nearby">
             {nearbyLoading && (
               <div className="flex justify-center py-8">
-                <Loader2
-                  size={20}
-                  className="animate-spin text-muted-foreground"
-                  aria-label="Loading"
-                />
+                <TrackLoader size={20} label="Loading" />
               </div>
             )}
             {!nearbyLoading && nearbyResults.length > 0 && renderResultItems(nearbyResults)}
@@ -682,7 +675,7 @@ export function AddPlaceDialog({
           </Button>
           <Button onClick={handleSubmit} disabled={!canSubmit || addPlace.isPending}>
             {addPlace.isPending && (
-              <Loader2 size={16} className="mr-1 animate-spin" aria-label="Loading" />
+              <TrackLoader size={16} label="Loading" className="mr-1" />
             )}
             {t('trips.addPlace.title', 'Add Place')}
           </Button>

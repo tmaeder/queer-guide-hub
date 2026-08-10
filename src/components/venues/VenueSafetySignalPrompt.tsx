@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Loader2 } from 'lucide-react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
+
 import {
   Dialog,
   DialogContent,
@@ -71,7 +72,7 @@ export function VenueSafetySignalPrompt({ venueId, open, onOpenChange }: Props) 
 
         {isLoading && (
           <div className="flex items-center gap-2 py-6 text-sm text-muted-foreground">
-            <Loader2 className="w-4 h-4 animate-spin" />
+            <TrackLoader size={16} />
             Loading…
           </div>
         )}

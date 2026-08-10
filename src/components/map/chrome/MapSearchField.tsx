@@ -1,5 +1,6 @@
 import React, { useRef, useState } from 'react';
-import { Search, X, Loader2 } from 'lucide-react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
+import { Search, X} from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -141,11 +142,7 @@ export const MapSearchField = ({
             className="pl-8 pr-8 h-7 text-sm border-0 bg-transparent text-foreground placeholder:text-muted-foreground focus-visible:ring-0 focus-visible:ring-offset-0"
           />
           {loading && (
-            <Loader2
-              size={12}
-              className="absolute right-7 top-1/2 -translate-y-1/2 animate-spin text-muted-foreground"
-              aria-label={t('map.commandBar.searching', { defaultValue: 'Searching' })}
-            />
+            <TrackLoader size={12} className="absolute right-7 top-1/2 -translate-y-1/2" />
           )}
           {query && (
             <button

@@ -1,23 +1,11 @@
 import { useState, useEffect, useCallback, type ReactNode } from 'react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useSearchParams } from 'react-router';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import {
-  User,
-  ArrowLeft,
-  Loader2,
-  Heart,
-  Lock,
-  Check,
-  Settings as SettingsIcon,
-  ChevronDown,
-  Luggage,
-  FileText,
-  Sparkles,
-  X,
-} from 'lucide-react';
+import { User, ArrowLeft, Heart, Lock, Check, Settings as SettingsIcon, ChevronDown, Luggage, FileText, Sparkles, X } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { useAuth } from '@/hooks/useAuth';
 import { useMeta } from '@/hooks/useMeta';
@@ -176,7 +164,7 @@ function SaveStatusLine({
     >
       {status === 'saving' && (
         <>
-          <Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} />
+          <TrackLoader size={14} />
           <span className="text-muted-foreground">Saving…</span>
         </>
       )}

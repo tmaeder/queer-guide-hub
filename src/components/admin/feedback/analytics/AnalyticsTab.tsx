@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
-import { Loader2 } from 'lucide-react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
+
 import {
   AreaChart,
   Area,
@@ -86,7 +87,7 @@ export function AnalyticsTab({ items, voteCounts }: Props) {
   if (dailyLoading || slaLoading) {
     return (
       <div className="p-12 text-center">
-        <Loader2 className="h-8 w-8 animate-spin mx-auto" aria-label="Loading" />
+        <TrackLoader size={32} label="Loading" className="mx-auto" />
       </div>
     );
   }

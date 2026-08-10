@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import * as maplibregl from 'maplibre-gl';
 import type { GeoJSONSource } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
-import { Loader2 } from 'lucide-react';
+
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useTheme } from '@/components/theme/ThemeProvider';
 import { getMapStyle } from '@/config/mapStyle';
@@ -244,7 +245,7 @@ export function EventsMapView({ events, height = 600, className }: EventsMapView
           className="absolute inset-0 flex items-center justify-center"
           style={{ backgroundColor: 'hsl(var(--background) / 0.7)', zIndex: 5 }}
         >
-          <Loader2 className="animate-spin" size={24} aria-label="Loading map" />
+          <TrackLoader size={24} label="Loading map" />
         </div>
       )}
 

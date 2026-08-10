@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FloatingInput } from '@/components/effects';
@@ -12,7 +13,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { Mail, ChevronDown, Send, Loader2 } from 'lucide-react';
+import { Mail, ChevronDown, Send} from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
@@ -178,7 +179,7 @@ export default function Contact() {
                     }
                   >
                     {submitting ? (
-                      <Loader2 size={16} className="mr-2 animate-spin" />
+                      <TrackLoader size={16} className="mr-2" />
                     ) : (
                       <Send size={16} className="mr-2" />
                     )}

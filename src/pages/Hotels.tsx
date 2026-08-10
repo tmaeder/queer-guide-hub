@@ -1,7 +1,8 @@
 import { useEffect, useCallback, useMemo, useState, useRef, lazy, Suspense } from 'react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useSearchParams } from 'react-router';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
-import { Hotel as HotelIcon, Plus, Loader2, Map as MapIcon, LayoutGrid } from 'lucide-react';
+import { Hotel as HotelIcon, Plus, Map as MapIcon, LayoutGrid } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { HotelCard } from '@/components/hotels/HotelCard';
 import { HotelFilters } from '@/components/hotels/HotelFilters';
@@ -287,7 +288,7 @@ export default function Hotels() {
           <Suspense
             fallback={
               <div className="flex items-center justify-center h-[560px] border border-foreground/10" role="status" aria-label="Loading map">
-                <Loader2 className="animate-spin" aria-hidden="true" />
+                <TrackLoader size={20} />
               </div>
             }
           >
@@ -350,7 +351,7 @@ export default function Hotels() {
             {hasMore && (
               <div className="flex justify-center mt-8">
                 <Button variant="outline" onClick={handleLoadMore} disabled={loading}>
-                  {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-label="Loading" /> : null}
+                  {loading ? <TrackLoader size={16} label="Loading" className="mr-2" /> : null}
                   {t('common.loadMore', 'Load More')}
                 </Button>
               </div>

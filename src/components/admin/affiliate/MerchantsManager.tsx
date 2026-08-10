@@ -12,8 +12,9 @@
  */
 
 import { useMemo, useState } from 'react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Plus, Edit2, Trash2, RefreshCw, Loader2 } from 'lucide-react';
+import { Plus, Edit2, Trash2, RefreshCw} from 'lucide-react';
 import { toast } from 'sonner';
 import { untypedSupabase } from '@/integrations/supabase/untyped';
 import { useAffiliateLinks } from '@/hooks/useAffiliateLinks';
@@ -201,7 +202,7 @@ export function MerchantsManager({
   if (isLoading) {
     return (
       <div className="flex justify-center py-16">
-        <Loader2 className="w-6 h-6 animate-spin" aria-label="Loading" />
+        <TrackLoader size={24} label="Loading" />
       </div>
     );
   }

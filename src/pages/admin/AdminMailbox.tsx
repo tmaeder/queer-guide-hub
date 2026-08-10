@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Mail, Send, Trash2, Loader2, Plus } from 'lucide-react';
+import { Mail, Send, Trash2, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 import { untypedFrom } from '@/integrations/supabase/untyped';
 import { useAuth } from '@/hooks/useAuth';
@@ -350,7 +351,7 @@ function ComposeDialog({
             onClick={() => send.mutate(false)}
           >
             {send.isPending ? (
-              <Loader2 className="mr-1 h-4 w-4 animate-spin" />
+              <TrackLoader size={16} className="mr-1" />
             ) : (
               <Send className="mr-1 h-4 w-4" />
             )}

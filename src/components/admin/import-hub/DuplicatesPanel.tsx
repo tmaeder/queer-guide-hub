@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Loader2 } from 'lucide-react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -105,7 +106,7 @@ function StagingDedupSection() {
 
             <Button onClick={handleScan} disabled={batchScan.isPending} className="flex gap-2">
               {batchScan.isPending ? (
-                <Loader2 className="h-4 w-4 animate-spin" aria-label="Loading" />
+                <TrackLoader size={16} label="Loading" />
               ) : (
                 <Search size={16} />
               )}
@@ -212,7 +213,7 @@ function ExistingDedupSection() {
 
             <Button onClick={handleScan} disabled={scanMutation.isPending} className="flex gap-2">
               {scanMutation.isPending ? (
-                <Loader2 className="h-4 w-4 animate-spin" aria-label="Loading" />
+                <TrackLoader size={16} label="Loading" />
               ) : (
                 <Search size={16} />
               )}
@@ -239,7 +240,7 @@ function ExistingDedupSection() {
       {/* Results grouped by confidence */}
       {isLoading ? (
         <div className="flex justify-center py-8">
-          <Loader2 className="h-7 w-7 animate-spin" aria-label="Loading" />
+          <TrackLoader size={28} label="Loading" />
         </div>
       ) : pairs.length === 0 ? (
         <Card>
@@ -360,7 +361,7 @@ function MergeHistorySection() {
         <CardContent>
           {isLoading ? (
             <div className="flex justify-center py-8">
-              <Loader2 className="h-7 w-7 animate-spin" aria-label="Loading" />
+              <TrackLoader size={28} label="Loading" />
             </div>
           ) : history.length === 0 ? (
             <AdminEmpty noun="merges" description="Merges you perform appear here." />

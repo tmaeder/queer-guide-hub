@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
@@ -12,7 +13,7 @@ import {
   CommandItem,
   CommandList,
 } from '@/components/ui/command';
-import { Loader2, Search, SlidersHorizontal, X } from 'lucide-react';
+import {Search, SlidersHorizontal, X } from 'lucide-react';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useSearchSuggestions, type SearchSuggestion } from '@/hooks/useSearchSuggestions';
 import type { ExploreMapFilters as Filters } from '@/hooks/useExploreMapData';
@@ -129,11 +130,7 @@ export const ExploreMapFiltersPanel = ({ filters, onFiltersChange }: ExploreMapF
                 className="pl-8 pr-8 h-9 text-sm rounded-element"
               />
               {loading && (
-                <Loader2
-                  size={14}
-                  className="absolute right-8 top-1/2 -translate-y-1/2 animate-spin text-muted-foreground"
-                  aria-label="Searching"
-                />
+                <TrackLoader size={14} label="Searching" className="absolute right-8 top-1/2 -translate-y-1/2" />
               )}
               {query && (
                 <Button

@@ -5,7 +5,8 @@
  */
 
 import { useState, useEffect } from 'react';
-import { ChevronDown, FileText, Clock, Loader2 } from 'lucide-react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
+import { ChevronDown, FileText, Clock} from 'lucide-react';
 import {
   Collapsible,
   CollapsibleContent,
@@ -191,7 +192,7 @@ export function EditorSidebar({
           </p>
         ) : mediaLoading ? (
           <div className="flex items-center justify-center py-4">
-            <Loader2 className="animate-spin" size={24} aria-label="Loading" />
+            <TrackLoader size={24} label="Loading" />
           </div>
         ) : attachments.length === 0 ? (
           <p className="text-sm text-muted-foreground">
@@ -240,7 +241,7 @@ export function EditorSidebar({
           </p>
         ) : revisionsLoading ? (
           <div className="flex items-center justify-center py-4">
-            <Loader2 className="animate-spin" size={24} aria-label="Loading" />
+            <TrackLoader size={24} label="Loading" />
           </div>
         ) : revisions.length === 0 ? (
           <p className="text-sm text-muted-foreground">

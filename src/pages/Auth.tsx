@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useLocation, useSearchParams } from 'react-router';
 import { motion, AnimatePresence } from 'motion/react';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
@@ -8,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { FloatingInput } from '@/components/effects';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Heart, Eye, EyeOff, Loader2 } from 'lucide-react';
+import { Heart, Eye, EyeOff} from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { useTurnstile } from '@/hooks/useTurnstile';
@@ -255,7 +256,7 @@ export default function Auth() {
                       {captcha}
 
                       <Button type="submit" disabled={isLoading || (captchaRequired && !captchaToken)}>
-                        {isLoading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                        {isLoading && <TrackLoader size={16} className="mr-2" />}
                         {mode === 'forgot' ? t('auth.sendResetLink', 'Send reset link') : t('auth.signIn', 'Sign in')}
                       </Button>
                     </div>

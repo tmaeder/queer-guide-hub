@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { MapPin, Loader2, Shield } from 'lucide-react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
+import { MapPin, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -161,7 +162,7 @@ export function VenueCheckInButton({
               style={{ flex: 1, alignItems: 'center' }}
               className="flex gap-2"
             >
-              {loading ? <Loader2 size={16} /> : <MapPin size={16} />}
+              {loading ? <TrackLoader size={16} /> : <MapPin size={16} />}
               {loading ? 'Checking in...' : 'Check In'}
             </Button>
           </div>

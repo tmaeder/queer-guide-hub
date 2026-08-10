@@ -1,4 +1,5 @@
 import { useId, useState } from 'react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -6,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Check, X, Sparkles } from 'lucide-react';
+import {Check, X, Sparkles } from 'lucide-react';
 import { useMeta } from '@/hooks/useMeta';
 import {
   type EditorialEntityType,
@@ -127,7 +128,7 @@ function DraftsQueue() {
         </div>
         <Button onClick={handleGenerate} disabled={generate.isPending}>
           {generate.isPending ? (
-            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            <TrackLoader size={16} className="mr-2" />
           ) : (
             <Sparkles className="h-4 w-4 mr-2" />
           )}
@@ -241,7 +242,7 @@ function DraftRow({ draft }: { draft: EditorialDraft }) {
           size="sm"
         >
           {approve.isPending ? (
-            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            <TrackLoader size={16} className="mr-2" />
           ) : (
             <Check className="h-4 w-4 mr-2" />
           )}

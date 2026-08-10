@@ -3,7 +3,8 @@
  * them to the organization via link_organization_entity.
  */
 import { useState } from 'react';
-import { Loader2 } from 'lucide-react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
+
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -58,7 +59,7 @@ export function OrgEntityPickerDialog({ orgId, entityType, typeLabel, open, onOp
         <div className="flex min-h-24 flex-col gap-1">
           {isFetching ? (
             <div className="flex justify-center py-6">
-              <Loader2 className="h-5 w-5 animate-spin" aria-label="Searching" />
+              <TrackLoader size={20} label="Searching" />
             </div>
           ) : q.trim().length < 2 ? (
             <p className="py-4 text-13 text-muted-foreground">Type at least two characters.</p>

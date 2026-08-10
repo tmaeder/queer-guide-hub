@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useParams, useNavigate, Link } from 'react-router';
 import { useMediaDetail } from '@/hooks/useMediaDetail';
 import { useMediaMutations } from '@/hooks/useMediaMutations';
@@ -33,19 +34,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  ArrowLeft,
-  Star,
-  Trash2,
-  ExternalLink,
-  Copy,
-  Zap,
-  Flag,
-  Loader2,
-  Image as ImageIcon,
-  X,
-  Crown,
-} from 'lucide-react';
+import { ArrowLeft, Star, Trash2, ExternalLink, Copy, Zap, Flag, Image as ImageIcon, X, Crown } from 'lucide-react';
 import { getOptimizationStatusBadge, formatFileSize, entityTypeLabel, entityAdminPath, getImageUrl } from './utils';
 import { GovernancePanel } from './GovernancePanel';
 import { AssetVersionSidebar } from './AssetVersionSidebar';
@@ -71,7 +60,7 @@ export function MediaDetailPage() {
   if (rolesLoading) {
     return (
       <div className="flex items-center justify-center py-24">
-        <Loader2 className="h-8 w-8 animate-spin" />
+        <TrackLoader size={32} />
       </div>
     );
   }
@@ -87,7 +76,7 @@ export function MediaDetailPage() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-24">
-        <Loader2 className="h-8 w-8 animate-spin" />
+        <TrackLoader size={32} />
       </div>
     );
   }

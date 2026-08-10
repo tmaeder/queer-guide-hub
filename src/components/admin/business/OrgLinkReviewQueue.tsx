@@ -3,7 +3,8 @@
  * entity→organization matches (and queer-brand mint proposals) an admin
  * approves or rejects via decide_org_adoption.
  */
-import { Check, Loader2, X } from 'lucide-react';
+import { Check, X } from 'lucide-react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -45,7 +46,7 @@ export function OrgLinkReviewQueue() {
   if (isLoading) {
     return (
       <div className="flex justify-center py-16">
-        <Loader2 className="h-6 w-6 animate-spin" aria-label="Loading" />
+        <TrackLoader size={24} label="Loading" />
       </div>
     );
   }

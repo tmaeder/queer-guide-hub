@@ -14,8 +14,9 @@
  * redirects there.
  */
 import { useState } from 'react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { Link, Navigate, useSearchParams } from 'react-router';
-import { Loader2 } from 'lucide-react';
+
 import { toast } from 'sonner';
 import { untypedSupabase } from '@/integrations/supabase/untyped';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
@@ -197,7 +198,7 @@ export default function AdminBusiness() {
 
           {isLoading ? (
             <div className="flex justify-center py-16">
-              <Loader2 className="h-6 w-6 animate-spin" aria-label="Loading" />
+              <TrackLoader size={24} label="Loading" />
             </div>
           ) : (orgs ?? []).length === 0 ? (
             <p className="py-8 text-13 text-muted-foreground">No businesses match.</p>

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -6,7 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Ticket, Loader2 } from "lucide-react";
+import { Ticket } from "lucide-react";
 
 interface TicketmasterImportProps {
   onImportComplete?: () => void;
@@ -141,7 +142,7 @@ export const TicketmasterImport = ({ onImportComplete }: TicketmasterImportProps
             >
               {isLoading ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <TrackLoader size={16} className="mr-2" />
                   Importing...
                 </>
               ) : (

@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Loader2 } from 'lucide-react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
+
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -139,7 +140,7 @@ export function ReportDialog({ open, onOpenChange, contentType, contentId, conte
             disabled={loading || reason.trim().length < 10}
           >
             {loading ? (
-              <Loader2 className="mr-1 h-4 w-4 animate-spin" aria-label="Loading" />
+              <TrackLoader size={16} label="Loading" className="mr-1" />
             ) : null}
             Submit Report
           </Button>

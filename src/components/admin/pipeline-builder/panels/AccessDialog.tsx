@@ -1,7 +1,8 @@
 import { useState } from 'react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { formatDistanceToNow } from 'date-fns';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Users, UserPlus, Trash2, Loader2, Shield, Eye, Pencil, Play } from 'lucide-react';
+import { Users, UserPlus, Trash2, Shield, Eye, Pencil, Play } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -144,7 +145,7 @@ export default function AccessDialog({ pipelineId, pipelineName }: AccessDialogP
               </Select>
             </div>
             <Button size="sm" className="h-8" onClick={() => addGrant.mutate()} disabled={!email || addGrant.isPending}>
-              {addGrant.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <UserPlus className="h-3.5 w-3.5" />}
+              {addGrant.isPending ? <TrackLoader size={14} /> : <UserPlus className="h-3.5 w-3.5" />}
             </Button>
           </div>
 
