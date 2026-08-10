@@ -1,4 +1,3 @@
-/* eslint-disable queerguide/no-supabase-from-in-pages -- realtime channel listener; not a data query */
 import { useEffect, useRef } from 'react';
 import { Sparkles } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
