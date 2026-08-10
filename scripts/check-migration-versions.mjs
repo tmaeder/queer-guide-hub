@@ -24,7 +24,7 @@
  * Usage: node scripts/check-migration-versions.mjs
  */
 
-import { readdirSync } from 'node:fs'
+import { readdirSync, readFileSync } from 'node:fs'
 import { execSync } from 'node:child_process'
 
 const MIGRATIONS_DIR = 'supabase/migrations'
@@ -109,6 +109,36 @@ for (const [version, group] of byVersion) {
 //
 //    Compare against the highest PRE-EXISTING version: remote history and the
 //    base ref agree once CI has pushed main, and this stays pure-local.
+//
+//    ONE EXEMPTION — drift recovery. When a migration is applied live (Supabase
+//    MCP `apply_migration`) and its file never reaches main, prod holds a version
+//    with no repo file, and `check-migration-drift.mjs` then fails EVERY pull
+//    request in the repo until that file is committed AT THAT EXACT VERSION. If
+//    the version sorts below remote max, the two guards deadlock: drift demands
+//    the file, this check forbids it, and renaming it upward would re-break the
+//    file↔history match that drift is protecting. (Lived it 2026-08-10: version
+//    20260810075202 was applied live and stranded in draft PR #2680, blocking
+//    #2681 and #2672 as collateral.)
+//
+//    The premise above does not hold for such a file — prod has already applied
+//    it, so `db push` never tries to insert it and has nothing to abort on. A
+//    file may declare itself that case with a header line naming its OWN version:
+//
+//      -- drift-recovery: version 20260810075202 is already recorded in remote schema_migrations.
+//
+//    The version in the marker must equal the version in the filename, so the
+//    marker cannot be copy-pasted onto an unrelated out-of-order migration. It
+//    downgrades to a warning — visible, never silent.
+const DRIFT_RECOVERY_RE = /^--\s*drift-recovery:\s*version\s*(\d{14})\b/im
+function declaresDriftRecovery(file, version) {
+  try {
+    const src = readFileSync(`${MIGRATIONS_DIR}/${file}`, 'utf8')
+    return src.match(DRIFT_RECOVERY_RE)?.[1] === version
+  } catch {
+    return false
+  }
+}
+
 if (base !== null) {
   const baseVersions = files
     .filter((f) => !isNew(f))
@@ -121,6 +151,14 @@ if (base !== null) {
       const v = f.match(VERSION_RE)?.[1]
       if (!v || !isNew(f)) continue
       if (v <= maxBase) {
+        if (declaresDriftRecovery(f, v)) {
+          warnings.push(
+            `version ${v} (${f}) sorts below the highest existing version ${maxBase}, but ` +
+              `declares itself a drift recovery — prod already applied this version, so ` +
+              `\`db push\` will not try to insert it.`,
+          )
+          continue
+        }
         errors.push(
           `version ${v} (${f}) is not above the highest existing version ${maxBase}.\n` +
             `    → \`supabase db push\` aborts on the first migration that sorts below ` +
@@ -134,7 +172,7 @@ if (base !== null) {
 }
 
 if (warnings.length > 0) {
-  console.log(`⚠ ${warnings.length} pre-existing duplicate-version group(s):`)
+  console.log(`⚠ ${warnings.length} grandfathered / exempted version issue(s):`)
   for (const w of warnings) console.log(`  - ${w}`)
 }
 
