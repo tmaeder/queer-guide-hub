@@ -219,7 +219,7 @@ function SubmitTypeCard({ type, onClick, featured = false }: SubmitTypeCardProps
             <ArrowRight
               size={14}
               aria-hidden="true"
-              className="transition-transform duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/card:translate-x-1"
+              className="transition-transform duration-fast ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/card:translate-x-1"
             />
           </div>
         </div>

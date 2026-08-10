@@ -26,6 +26,19 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* Semantic transition durations. Raw `duration-<number>` is blocked by
+   ESLint (queerguide/no-raw-duration) so the three speeds stay comparable
+   across the product. */
+@utility duration-fast {
+  transition-duration: var(--motion-fast);
+}
+@utility duration-normal {
+  transition-duration: var(--motion-normal);
+}
+@utility duration-slow {
+  transition-duration: var(--motion-slow);
+}
+
 /* Force-generate the semantic 3-tier radius + text-hierarchy utilities even
    before they appear in source files — they're the public API of the design
    system and must be applicable to any Aceternity / shadcn component. */
@@ -47,6 +60,18 @@
   --font-sans: 'Space Grotesk', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-display: 'Anton', 'Space Grotesk', system-ui, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* ── Motion durations ──────────────────────────────────────────────
+     Mirrors `duration` in src/lib/animation.ts, which is the source of
+     truth for JS/inline motion. These exist so Tailwind class names can
+     name the same three speeds instead of picking a raw number: the type
+     scale solved this exact problem with --text-13 and friends, and raw
+     `duration-300` is the motion equivalent of an arbitrary text-[19px].
+     Tailwind v4 has no --transition-duration-* namespace, so the matching
+     utilities are declared with @utility below. */
+  --motion-fast: 200ms;
+  --motion-normal: 300ms;
+  --motion-slow: 500ms;
 
   /* ── Custom font sizes ─────────────────────────────────────────── */
   --text-3xs: 0.5625rem;
@@ -1177,21 +1202,36 @@ h2,
    Route transition. Replaces the flat .route-fade crossfade with a short
    vertical feed, the way a sheet advances through a press. No fill-mode
    dependency: if the animation never runs the page is simply visible. */
-@keyframes paper-feed {
+/* ── Station arrival ───────────────────────────────────────────────────
+   The route transition. Replaces `paper-feed`, whose own comment described
+   it as "the way a sheet feeds through a press" — a printing metaphor left
+   over from the retired PASTE-UP identity.
+
+   A train does not fade in; it decelerates and comes to rest. So the easing
+   is pure deceleration (ease.decel from lib/animation) rather than the
+   smooth in-out curve, and the travel is short — content settles the last
+   few pixels into the platform rather than sliding across it.
+
+   No overshoot. A bouncing carriage is a derailment, and elastic easing is
+   banned outside the joy zone anyway.
+
+   Animates only FROM a displaced state, so if animations never run (reduced
+   motion, headless, print) content renders at its natural resting position. */
+@keyframes station-arrive {
   from {
     opacity: 0;
-    transform: translateY(12px);
+    transform: translateY(10px);
   }
   to {
     opacity: 1;
     transform: translateY(0);
   }
 }
-.paper-feed {
-  animation: paper-feed 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+.station-arrive {
+  animation: station-arrive var(--motion-normal) cubic-bezier(0, 0, 0.2, 1);
 }
 @media (prefers-reduced-motion: reduce) {
-  .paper-feed {
+  .station-arrive {
     animation: none;
   }
 }

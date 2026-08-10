@@ -90,7 +90,7 @@ export function VenuesPersonalStrip() {
           </div>
           <div className="h-2 w-full overflow-hidden rounded-element bg-muted">
             <div
-              className="h-full bg-foreground transition-[width] duration-500"
+              className="h-full bg-foreground transition-[width] duration-slow"
               style={{ width: `${progress * 100}%` }}
             />
           </div>

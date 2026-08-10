@@ -505,7 +505,7 @@ const NewsCardImpl = ({
       {/* No inline borderColor: an inline style beats every class, so it
           silently killed the hover border below. Card already defaults to
           `border-border`. */}
-      <Card className="transition-colors duration-300 group-hover:border-foreground/40 cursor-pointer">
+      <Card className="transition-colors duration-normal group-hover:border-foreground/40 cursor-pointer">
         <CardHeader style={{ flexDirection: 'column' }} className="flex gap-2 p-0">
           <div className="relative overflow-hidden rounded-container rounded-b-none">
             <img

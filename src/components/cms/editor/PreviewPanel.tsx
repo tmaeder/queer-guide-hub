@@ -117,7 +117,7 @@ export function PreviewPanel({
               key={`${src}-${reloadKey}`}
               src={src}
               title="Content preview"
-              className="bg-background border-0 h-full transition-[width] duration-200"
+              className="bg-background border-0 h-full transition-[width] duration-fast"
               style={{ width: device === 'mobile' ? 375 : '100%', maxWidth: '100%' }}
             />
           ) : (

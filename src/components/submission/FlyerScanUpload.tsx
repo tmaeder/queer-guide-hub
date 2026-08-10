@@ -232,7 +232,7 @@ export function FlyerScanUpload({
         }}
         onDragLeave={() => setDragOver(false)}
         onDrop={handleDrop}
-        className="group/drop w-full rounded-container border-2 border-dashed border-border bg-card px-6 py-10 text-center transition-colors duration-200 hover:border-foreground/40 hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ring-offset-background"
+        className="group/drop w-full rounded-container border-2 border-dashed border-border bg-card px-6 py-10 text-center transition-colors duration-fast hover:border-foreground/40 hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ring-offset-background"
       >
         <input
           ref={fileInputRef}
