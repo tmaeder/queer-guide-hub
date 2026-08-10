@@ -76,6 +76,7 @@ Deno.serve(async (req) => {
       let cats: Map<number, string>
       try {
         const res = await llmChatCompletion({
+          callerFn: 'marketplace-categorize',
           messages: [
             { role: 'system', content: MARKETPLACE_CATEGORY_SYSTEM },
             { role: 'user', content: buildMarketplaceCategoryUserPrompt(items) },

@@ -247,6 +247,7 @@ Respond with JSON:
 
   try {
     const result = await chatCompletion(supabase, {
+      callerFn: 'shared:ai-enrichment',
       messages: [
         { role: 'system', content: VENUE_SYSTEM_PROMPT },
         { role: 'user', content: userPrompt },
@@ -287,6 +288,7 @@ Respond with JSON:
 
   try {
     const result = await chatCompletion(supabase, {
+      callerFn: 'shared:ai-enrichment',
       messages: [
         { role: 'system', content: EVENT_SYSTEM_PROMPT },
         { role: 'user', content: userPrompt },
@@ -325,6 +327,7 @@ Respond with JSON:
 
   try {
     const result = await chatCompletion(supabase, {
+      callerFn: 'shared:ai-enrichment',
       model: 'gpt-4o-mini',
       messages: [
         { role: 'system', content: PERSONALITY_SYSTEM_PROMPT },
@@ -367,6 +370,7 @@ Keep "summary" under 40 words. Respond with ONLY this JSON, nothing before or af
 
   try {
     const result = await chatCompletion(supabase, {
+      callerFn: 'shared:ai-enrichment',
       messages: [
         { role: 'system', content: NEWS_SYSTEM_PROMPT },
         { role: 'user', content: userPrompt },
@@ -417,6 +421,7 @@ Respond with JSON:
 
   try {
     const result = await chatCompletion(supabase, {
+      callerFn: 'shared:ai-enrichment',
       messages: [
         { role: 'system', content: SCRAPED_CONTENT_SYSTEM_PROMPT },
         { role: 'user', content: userPrompt },
@@ -520,6 +525,7 @@ Respond with JSON using these keys (null where unknown):
 
   try {
     const result = await chatCompletion(supabase, {
+      callerFn: 'shared:ai-enrichment',
       // Moat/editorial output quality-sensitive → opt into the 70B (this caller
       // is daily-capped, so the cost is bounded). See CF_MODEL_STRONG note.
       model: '@cf/meta/llama-3.3-70b-instruct-fp8-fast',
@@ -606,6 +612,7 @@ Respond with JSON using these keys (null where unknown):
 
   try {
     const result = await chatCompletion(supabase, {
+      callerFn: 'shared:ai-enrichment',
       // Moat/editorial output quality-sensitive → opt into the 70B (daily-capped).
       model: '@cf/meta/llama-3.3-70b-instruct-fp8-fast',
       messages: [
@@ -688,6 +695,7 @@ Respond with JSON using these keys (null where unknown):
 
   try {
     const result = await chatCompletion(supabase, {
+      callerFn: 'shared:ai-enrichment',
       // Moat/editorial output quality-sensitive → opt into the 70B (daily-capped).
       model: '@cf/meta/llama-3.3-70b-instruct-fp8-fast',
       messages: [
@@ -762,6 +770,7 @@ Respond with JSON (empty arrays / null where unknown):
 
   try {
     const result = await chatCompletion(supabase, {
+      callerFn: 'shared:ai-enrichment',
       messages: [
         { role: 'system', content: VENUE_AMENITY_SYSTEM_PROMPT },
         { role: 'user', content: userPrompt },
@@ -849,6 +858,7 @@ Respond with JSON (omit/empty where unknown):
 
   try {
     const result = await chatCompletion(supabase, {
+      callerFn: 'shared:ai-enrichment',
       messages: [
         { role: 'system', content: MARKETPLACE_TAG_SYSTEM_PROMPT },
         { role: 'user', content: userPrompt },
@@ -955,6 +965,7 @@ Return ONLY the JSON object described in the system prompt.`
 
   try {
     const result = await chatCompletion(supabase, {
+      callerFn: 'shared:ai-enrichment',
       model: 'gpt-4o-mini',
       messages: [
         { role: 'system', content: MILESTONE_DISCOVERY_SYSTEM_PROMPT },

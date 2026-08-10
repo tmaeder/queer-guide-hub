@@ -277,6 +277,7 @@ async function structureChunk(
   let content: string
   try {
     const result = await chatCompletion(supabase, {
+      callerFn: 'analyze-flyer',
       // The 70B follows the JSON contract reliably (Scout produced garbled JSON on
       // real links). Each call is bounded to one CHUNK_SIZE window so it stays
       // ~20-30s under the 45s ceiling; many items come from running chunks in

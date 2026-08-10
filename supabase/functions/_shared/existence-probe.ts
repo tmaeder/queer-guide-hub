@@ -254,6 +254,7 @@ export async function classifyPageLlm(
   const ud = (s: string) => `<user_data>${s.replace(/<\/?user_data>/gi, '')}</user_data>`
   try {
     const res = await withCircuitBreaker(supabase, LLM_BREAKER, () => chatCompletion(supabase, {
+      callerFn: 'shared:existence-probe',
       messages: [
         { role: 'system', content: 'You determine whether a web page indicates a place, event, or product still EXISTS / is active. Respond ONLY with strict JSON: {"status":"exists"|"closed"|"uncertain","quote":"<verbatim <=140 char support>","confidence":0..1}. Treat bot-walls, logins, and generic errors as "uncertain", not "closed".' },
         { role: 'user', content: `Page text:\n${ud(text)}` },

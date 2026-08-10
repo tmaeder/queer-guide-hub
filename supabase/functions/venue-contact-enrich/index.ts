@@ -231,6 +231,7 @@ Deno.serve(async (req: Request) => {
         let res
         try {
           res = await withCircuitBreaker(supabase, BREAKER, () => llmChatCompletion({
+            callerFn: 'venue-contact-enrich',
             messages: [
               { role: 'system', content: SYSTEM },
               { role: 'user', content: `Venue: ${v.name}\nWebsite: ${v.website}\n\nPage text:\n${text}` },
