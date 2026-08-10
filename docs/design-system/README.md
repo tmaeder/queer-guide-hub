@@ -128,10 +128,27 @@ The sanctioned depth treatment is the **hard poster shadow**:
 
 - **`MasterSymbol`** — "Cupid's transit", one line left to right: arrow in,
   through the heart, out as a wavy exit. Black-only via currentColor.
+  **Both tracks bend** — the entry ran straight (`H 134`) with its arrowhead
+  stranded mid-shaft until 2026-08, i.e. the mark broke hard rule #1. Stroke
+  15 in a 354-unit box (~4.2%) so it carries the same visual weight as
+  `TransitIcon` beside it; at the old 12/360 the header mark drew ~1.3px
+  strokes next to the icons' 2.4px. viewBox `0 24 354 190` is trimmed to the
+  ink (~10 units of pad on every side) — the old `0 0 360 210` spent a third
+  of the height on nothing.
 - **`Wordmark`** — lowercase Anton "queer.guide", pink heart nested in the
-  g's descender. Header default (the /admin/design logoUrl override keeps the
-  img branch).
-- Favicon/app icons/OG regenerate via `node scripts/generate-brand-assets.mjs`.
+  g's descender at `right-[2.02em] bottom-[-0.16em] w-[0.28em]`. Both numbers
+  are Anton metrics: the tail terminal sits 2.32em from the string's right
+  edge, so the heart tucks into the crook without sitting on the ink (it did,
+  and read as a collision). Re-measure if the display face or tracking
+  changes. Header default (the /admin/design logoUrl override keeps the img
+  branch).
+- The mark exists as three copies — component, `scripts/generate-brand-assets.mjs`
+  (OG), `public/favicon.svg` (square crop, the source every icon PNG is
+  rasterised from). `__tests__/brandAssetSync.test.ts` pins them together and
+  asserts both tracks bend.
+- Icons / maskables / favicon.ico / OG regenerate via
+  `node scripts/generate-brand-assets.mjs` — playwright, no `sharp` (which was
+  never installed, so the script could not run and the icons drifted).
 
 ## Dark mode
 
