@@ -1,10 +1,13 @@
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
-import { Globe, Mail, Phone, Newspaper, ShoppingBag, MapPin, Building2 } from 'lucide-react';
+import { Globe, Mail, Phone, Newspaper, ShoppingBag, MapPin } from 'lucide-react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
+import { NestedEntityCard } from '@/components/transit/NestedEntityCard';
+import { MapInset } from '@/components/transit/MapInset';
+import { SidebarCard } from '@/components/transit/SidebarCard';
 import { SocialCards } from '@/components/social/SocialCard';
 import { EntityMap } from '@/components/map/EntityMap';
 import { NearbyMapLegend } from '@/components/map/NearbyMapLegend';
@@ -197,7 +200,7 @@ export function OrgVisit({ org }: { org: Organization }) {
   return (
     <div className="flex flex-col gap-6">
       {center && (
-        <div className="flex flex-col gap-2">
+        <MapInset className="flex flex-col gap-2">
           <EntityMap
             center={[Number(center.longitude), Number(center.latitude)]}
             zoom={located.length > 1 ? 4 : 14}
@@ -214,28 +217,23 @@ export function OrgVisit({ org }: { org: Organization }) {
               })),
               ...nearbyPoints,
             ]}
-            className="rounded-container"
           />
           <NearbyMapLegend markers={nearbyPoints} />
-        </div>
+        </MapInset>
       )}
+      {/* Module 08 — the type's OWNER module. A business is legible only through
+          the entities it operates, and each one carries the VENUE bullet, not the
+          organization's: spec rule 4, "cross-type links use the other type's
+          bullet, so the network is legible from inside any page." */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         {org.venues.map((v) => (
-          <LocalizedLink key={v.id} to={`/venues/${v.slug}`}>
-            <Card className="h-full transition-colors hover:bg-muted">
-              <CardContent className="flex items-center gap-2 p-4">
-                <Building2
-                  size={18}
-                  className="shrink-0 text-muted-foreground"
-                  aria-hidden="true"
-                />
-                <div className="min-w-0">
-                  <div className="truncate font-medium">{v.name}</div>
-                  {v.city && <div className="text-13 text-muted-foreground">{v.city}</div>}
-                </div>
-              </CardContent>
-            </Card>
-          </LocalizedLink>
+          <NestedEntityCard
+            key={v.id}
+            type="venue"
+            name={v.name}
+            description={v.city}
+            href={`/venues/${v.slug}`}
+          />
         ))}
       </div>
     </div>
@@ -275,11 +273,8 @@ export function OrgSidebar({ org }: { org: Organization }) {
   const hasContact = org.website || org.email || org.phone;
   if (!hasContact) return null;
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-title">{t('pages.entityDetail.contact', 'Contact')}</CardTitle>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-2 text-15">
+    <SidebarCard title={t('pages.entityDetail.contact', 'Contact')}>
+      <div className="flex flex-col gap-2 text-15">
         {org.website && (
           <a
             href={org.website}
@@ -303,7 +298,7 @@ export function OrgSidebar({ org }: { org: Organization }) {
             <span>{org.phone}</span>
           </a>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </SidebarCard>
   );
 }

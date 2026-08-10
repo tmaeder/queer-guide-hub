@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ArrowLeft, ArrowRight, ExternalLink, MapPin } from 'lucide-react';
+import { ArrowLeft, ArrowRight, ExternalLink } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { TagChip } from '@/components/tags/TagChip';
@@ -8,6 +8,7 @@ import { MilestoneImpactMarker } from '@/components/milestones/MilestoneImpactMa
 import { MilestoneRow } from '@/components/milestones/MilestoneRow';
 import { useMilestonesForCountry, useMilestonesTimeline } from '@/hooks/useMilestones';
 import { eraForYear } from '@/config/historyEras';
+import { FactGrid } from '@/components/transit/FactGrid';
 import { isRestrainedMilestone } from '@/lib/historyEraGrouping';
 import { formatMilestoneDate, milestoneYear } from '@/lib/milestoneDate';
 import { displayableMilestoneImage } from '@/lib/milestoneImage';
@@ -26,12 +27,6 @@ export function MilestoneHero({ milestone }: { milestone: Milestone }) {
     milestone.date_end,
     milestone.date_end_precision,
   );
-  const place = [
-    milestone.city?.name ?? milestone.city_name,
-    milestone.country?.name ?? milestone.country_name,
-  ]
-    .filter(Boolean)
-    .join(', ');
   const era = eraForYear(milestoneYear(milestone.date));
   // Persecution/negative milestones keep imagery documentary-sized — never a
   // full-bleed celebratory hero.
@@ -43,25 +38,39 @@ export function MilestoneHero({ milestone }: { milestone: Milestone }) {
       </p>
       <p className="mt-2 font-display text-display font-semibold leading-none">{dateLabel}</p>
       <h1 className="mt-2 font-display text-display font-semibold">{milestone.title}</h1>
-      <div className="mt-4 flex flex-wrap items-center gap-2">
-        <MilestoneImpactMarker impact={milestone.impact} />
-        <span className="text-13 text-muted-foreground">
-          {t(`milestones.impact.${milestone.impact}`)}
-        </span>
-        <MilestoneCategoryBadge category={milestone.category} />
-        {place && (
-          <span className="inline-flex items-center gap-1 text-13 text-muted-foreground">
-            <MapPin className="h-3 w-3" aria-hidden />
-            {place}
-          </span>
-        )}
-        <LocalizedLink
-          to={`/history#era-${era.slug}`}
-          className="rounded-badge border border-border px-2 py-0.5 text-13 text-muted-foreground hover:border-foreground hover:text-foreground"
-        >
-          {t('milestones.partOf', 'Part of: {{era}}', { era: t(era.titleKey) })}
-        </LocalizedLink>
-      </div>
+      {/* Module 01 — the fact strip. These five facts were a chip row unique to
+          this type; the grid is the same grid every other single uses, which is
+          spec rule 1: "a rider who learns one single has learned all thirteen."
+          Impact and category keep their own markers as VALUES — the module
+          renders nodes, so the milestone-specific semantics survive the move.
+          PLACE is deliberately NOT here: the sidebar already carries Place, City
+          and Country as LINKS, and the spine's rule is that a headline fact
+          lives once. A flat "Zurich, Switzerland" string in the strip would
+          both duplicate the sidebar and be the worse of the two copies. */}
+      <FactGrid
+        className="mt-4"
+        facts={[
+          {
+            label: t('milestones.facts.impact', 'Impact'),
+            value: (
+              <span className="inline-flex items-center gap-2">
+                <MilestoneImpactMarker impact={milestone.impact} />
+                {t(`milestones.impact.${milestone.impact}`)}
+              </span>
+            ),
+          },
+          {
+            label: t('milestones.facts.category', 'Category'),
+            value: <MilestoneCategoryBadge category={milestone.category} />,
+          },
+          {
+            label: t('milestones.facts.era', 'Era'),
+            value: (
+              <LocalizedLink to={`/history#era-${era.slug}`}>{t(era.titleKey)}</LocalizedLink>
+            ),
+          },
+        ]}
+      />
       {imageUrl && (
         <figure className={cn('mt-6', restrained ? 'max-w-sm' : '')}>
           <span className="block overflow-hidden rounded-container bg-muted">

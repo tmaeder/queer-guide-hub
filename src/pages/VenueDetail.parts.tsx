@@ -10,9 +10,6 @@ import {
   Tag as TagIcon,
   DollarSign,
   Sparkles,
-  Newspaper,
-  ShoppingBag,
-  Building2,
 } from 'lucide-react';
 import { Instagram } from '@/components/icons/brand';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -25,6 +22,9 @@ import { Eyebrow } from '@/components/ui/Eyebrow';
 import { RouteBullet } from '@/components/transit/RouteBullet';
 import { FactGrid } from '@/components/transit/FactGrid';
 import { HoursTable, type HoursRow } from '@/components/transit/HoursTable';
+import { NestedEntityCard } from '@/components/transit/NestedEntityCard';
+import { MapInset } from '@/components/transit/MapInset';
+import { SingleSection } from '@/components/transit/SinglePage';
 import { Image } from '@/components/ui/Image';
 import { FavoriteButton } from '@/components/ui/favorite-button';
 import { ReportButton } from '@/components/moderation/ReportButton';
@@ -581,27 +581,31 @@ export function VenueOverview({
       <FeaturedInGuides entityType="venue" entityId={venue.id} />
 
       {venue.organizations && (
-        <LocalizedLink
-          to={`/organizations/${venue.organizations.slug}`}
-          className="flex items-center gap-2 rounded-element p-4 transition-colors hover:bg-muted"
-        >
-          <Building2 size={20} className="shrink-0 text-muted-foreground" aria-hidden="true" />
-          <div className="min-w-0 flex-1">
-            <div className="font-medium">Part of {venue.organizations.name}</div>
-            <div className="mt-1 flex flex-wrap items-center gap-2 text-13 text-muted-foreground">
-              {venue.organizations.roles?.includes('publisher') && (
-                <span className="inline-flex items-center gap-1">
-                  <Newspaper size={13} aria-hidden="true" /> Also publishes news
-                </span>
-              )}
-              {venue.organizations.roles?.includes('seller') && (
-                <span className="inline-flex items-center gap-1">
-                  <ShoppingBag size={13} aria-hidden="true" /> Also sells online
-                </span>
-              )}
-            </div>
-          </div>
-        </LocalizedLink>
+        // Spec module 08, "Run by" — REQUIRED on venues. It was a bespoke
+        // inline link; as a NestedEntityCard it now leads with the
+        // organization's OWN route bullet, which is rule 4: "cross-type links
+        // use the other type's bullet and colour, so the network is legible
+        // from inside any page." A rider seeing the business bullet here
+        // learns the type before they click.
+        <SingleSection title={t('venues.detail.runBy', 'Run by')}>
+          <NestedEntityCard
+            type="organization"
+            eyebrow={t('venues.detail.business', 'Business')}
+            name={venue.organizations.name}
+            description={[
+              venue.organizations.roles?.includes('publisher')
+                ? t('venues.detail.alsoPublishes', 'Also publishes news')
+                : null,
+              venue.organizations.roles?.includes('seller')
+                ? t('venues.detail.alsoSells', 'Also sells online')
+                : null,
+            ]
+              .filter(Boolean)
+              .join(' · ')}
+            href={`/organizations/${venue.organizations.slug}`}
+            actionLabel={t('venues.detail.openBusiness', 'Open business')}
+          />
+        </SingleSection>
       )}
 
       {venue.description && (
@@ -820,7 +824,13 @@ export function VenueSidebar({
           </CardHeader>
           <CardContent className="flex flex-col gap-4">
             {hasMap && (
-              <div className="flex flex-col gap-2">
+              // Spec module 16, "Around this station" — REQUIRED on venues.
+              // A FRAME around the existing EntityMap, not a second map: the
+              // real one already carries clustering, tile loading and the
+              // safety-gating that hides venues in criminalising countries
+              // from signed-out readers. Re-implementing it here would fork
+              // all three.
+              <MapInset className="border-0 p-0">
                 <EntityMap
                   center={[Number(venue.longitude), Number(venue.latitude)]}
                   zoom={15}
@@ -838,7 +848,7 @@ export function VenueSidebar({
                   ]}
                 />
                 <NearbyMapLegend markers={nearbyPoints} />
-              </div>
+              </MapInset>
             )}
 
             {venue.address && (

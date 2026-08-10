@@ -7,7 +7,6 @@ import {
   MapPin,
   Users,
   Clock,
-  DollarSign,
   ExternalLink,
   Phone,
   Globe,
@@ -52,6 +51,8 @@ import { entityImageTreatment } from '@/lib/imageTreatment';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { useProfile } from '@/hooks/useProfile';
 import { matchNeeds, needLabel } from '@/lib/accessibilityNeeds';
+import { FactGrid } from '@/components/transit/FactGrid';
+import { NestedEntityCard } from '@/components/transit/NestedEntityCard';
 import { getEventLiveState } from '@/lib/event-countdown';
 
 export type EventWithRelations = Database['public']['Tables']['events']['Row'] & {
@@ -392,35 +393,6 @@ export function EventHero({
 /* Fact strip — date / time / price / ages, the canonical glance       */
 /* ------------------------------------------------------------------ */
 
-function FactCell({
-  icon: Icon,
-  label,
-  value,
-  onClick,
-  title,
-}: {
-  icon: typeof Calendar;
-  label: string;
-  value: string;
-  onClick?: () => void;
-  title?: string;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      title={title}
-      disabled={!onClick}
-      className={`bg-background p-4 text-left ${onClick ? 'cursor-pointer hover:bg-muted/50' : 'cursor-default'}`}
-    >
-      <span className="flex items-center gap-1.5 text-muted-foreground">
-        <Icon size={13} aria-hidden="true" />
-        <Eyebrow as="span">{label}</Eyebrow>
-      </span>
-      <span className="mt-1 block text-15 font-medium">{value}</span>
-    </button>
-  );
-}
 
 export function EventFactStrip({
   event,
@@ -432,31 +404,37 @@ export function EventFactStrip({
   setShowEventTz: (fn: (prev: boolean) => boolean) => void;
 }) {
   const ageRestriction = event.age_restriction;
+  // Spec module 01 — the bordered fact strip, shared with every other single.
+  // The timezone toggle survives the move as a node in the Time cell: an event
+  // read from another country is ambiguous without it, and dropping an
+  // interactive affordance to gain a border would be a bad trade.
   return (
-    <div
-      className={`grid grid-cols-2 gap-px overflow-hidden rounded-element border border-border bg-border ${
-        ageRestriction ? 'sm:grid-cols-4' : 'sm:grid-cols-3'
-      }`}
-    >
-      <FactCell
-        icon={Calendar}
-        label="Date"
-        value={formatEventDate(event.start_date, event.end_date)}
-      />
-      <FactCell
-        icon={Clock}
-        label="Time"
-        value={formatEventTime(
-          event.start_date,
-          event.end_date,
-          showEventTz ? event.timezone : null,
-        )}
-        onClick={event.timezone ? () => setShowEventTz((prev) => !prev) : undefined}
-        title={event.timezone ? 'Toggle between event timezone and your local time' : undefined}
-      />
-      <FactCell icon={DollarSign} label="Price" value={getPriceDisplay(event)} />
-      {ageRestriction && <FactCell icon={Users} label="Ages" value={ageRestriction} />}
-    </div>
+    <FactGrid
+      facts={[
+        {
+          label: 'Date',
+          value: formatEventDate(event.start_date, event.end_date),
+        },
+        {
+          label: 'Time',
+          value: event.timezone ? (
+            <button
+              type="button"
+              onClick={() => setShowEventTz((prev) => !prev)}
+              aria-pressed={showEventTz}
+              title="Toggle between event timezone and your local time"
+              className="text-start underline decoration-dotted underline-offset-4"
+            >
+              {formatEventTime(event.start_date, event.end_date, showEventTz ? event.timezone : null)}
+            </button>
+          ) : (
+            formatEventTime(event.start_date, event.end_date, null)
+          ),
+        },
+        { label: 'Price', value: getPriceDisplay(event) },
+        { label: 'Ages', value: ageRestriction },
+      ]}
+    />
   );
 }
 
@@ -901,18 +879,29 @@ export function EventWhere({ event, venueRef, countryId, onOrganizerClick }: Whe
             />
           )}
           {event.venues ? (
-            <div className="flex items-start gap-2">
-              <MapPin size={16} className="mt-0.5 shrink-0 text-muted-foreground" />
-              <div>
-                <p className="text-sm font-medium">{event.venues.name}</p>
-                <p className="text-sm text-muted-foreground">
-                  {event.venues.address}
-                  {event.venues.address ? <br /> : null}
-                  {event.venues.city}
-                  {event.venues.state ? `, ${event.venues.state}` : ''} {event.venues.country}
-                </p>
-              </div>
-            </div>
+            // Spec module 08 — REQUIRED on events, and the spec's own example
+            // of it ("the venue on an event"). It leads with the VENUE's
+            // bullet, not the event's, per rule 4: the reader should be able
+            // to tell it links to a different type before clicking.
+            //
+            // Only the linked-venue branch becomes a card. `venue_name` below
+            // is free text with no venue row behind it, so there is nothing to
+            // link to — rendering it as a card would promise a page that does
+            // not exist.
+            <NestedEntityCard
+              type="venue"
+              eyebrow="Venue"
+              name={event.venues.name}
+              description={[
+                event.venues.address,
+                [event.venues.city, event.venues.state].filter(Boolean).join(', '),
+                event.venues.country,
+              ]
+                .filter(Boolean)
+                .join(' · ')}
+              href={`/venues/${event.venues.slug ?? event.venues.id}`}
+              actionLabel="Open venue"
+            />
           ) : (
             event.venue_name && (
               <div className="flex items-start gap-2">

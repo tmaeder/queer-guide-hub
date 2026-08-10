@@ -138,7 +138,8 @@
       "home_city": "In your home city",
       "recent_city": "In a city you've explored",
       "featured": "Featured"
-    }
+    },
+    "ariaLabel": "[ZH] Search Queer Guide"
   },
   "common": {
     "contentInLanguage": "语言：{{lang}}",
@@ -209,7 +210,14 @@
     "terms": "条款",
     "contact": "联系",
     "supportUs": "支持我们",
-    "history": "历史"
+    "history": "历史",
+    "tagline": "[ZH] Every track. Every station. Everyone.",
+    "contributors": "[ZH] Contributors",
+    "emergency": {
+      "eyebrow": "[ZH] In an emergency",
+      "title": "[ZH] Crisis lines, 24 hours",
+      "body": "[ZH] Trans helpline, LGBT+ crisis support, and local emergency numbers, listed by country and always one click from any page."
+    }
   },
   "trips": {
     "title": "我的行程",
@@ -1798,7 +1806,8 @@
       "tripsBadge": "{{count}} 个行程项目需要关注",
       "hub": "中心"
     },
-    "primaryNavigation": "[ZH] Primary"
+    "primaryNavigation": "[ZH] Primary",
+    "signInToContribute": "[ZH] Sign in to contribute"
   },
   "pages": {
     "venues": {

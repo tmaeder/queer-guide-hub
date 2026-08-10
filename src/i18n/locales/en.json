@@ -237,7 +237,8 @@
       "news": "Read news…",
       "resources": "Search resources",
       "personalities": "Meet personalities…"
-    }
+    },
+    "ariaLabel": "Search Queer Guide"
   },
   "common": {
     "back": "Back",
@@ -302,7 +303,14 @@
     "terms": "Terms",
     "contact": "Contact",
     "supportUs": "Support Us",
-    "history": "History"
+    "history": "History",
+    "tagline": "Every track. Every station. Everyone.",
+    "contributors": "Contributors",
+    "emergency": {
+      "eyebrow": "In an emergency",
+      "title": "Crisis lines, 24 hours",
+      "body": "Trans helpline, LGBT+ crisis support, and local emergency numbers, listed by country and always one click from any page."
+    }
   },
   "auth": {
     "welcome": "Welcome!",
@@ -1874,7 +1882,8 @@
       "unreadCount": "{{count}} unread",
       "tripsBadge": "{{count}} trip items need attention",
       "hub": "Hub"
-    }
+    },
+    "signInToContribute": "Sign in to contribute"
   },
   "pages": {
     "venues": {

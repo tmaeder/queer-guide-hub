@@ -138,7 +138,8 @@
       "home_city": "In your home city",
       "recent_city": "In a city you've explored",
       "featured": "Featured"
-    }
+    },
+    "ariaLabel": "[AR] Search Queer Guide"
   },
   "common": {
     "contentInLanguage": "باللغة {{lang}}",
@@ -209,7 +210,14 @@
     "terms": "الشروط",
     "contact": "تواصل معنا",
     "supportUs": "ادعمنا",
-    "history": "التاريخ"
+    "history": "التاريخ",
+    "tagline": "[AR] Every track. Every station. Everyone.",
+    "contributors": "[AR] Contributors",
+    "emergency": {
+      "eyebrow": "[AR] In an emergency",
+      "title": "[AR] Crisis lines, 24 hours",
+      "body": "[AR] Trans helpline, LGBT+ crisis support, and local emergency numbers, listed by country and always one click from any page."
+    }
   },
   "trips": {
     "title": "رحلاتي",
@@ -1804,7 +1812,8 @@
       "tripsBadge": "{{count}} عناصر رحلة تحتاج إلى انتباه",
       "hub": "المركز"
     },
-    "primaryNavigation": "[AR] Primary"
+    "primaryNavigation": "[AR] Primary",
+    "signInToContribute": "[AR] Sign in to contribute"
   },
   "pages": {
     "venues": {
