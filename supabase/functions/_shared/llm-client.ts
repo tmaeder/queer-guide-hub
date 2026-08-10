@@ -15,6 +15,7 @@
  */
 
 import { gatewayBaseUrl, gatewayHeaders } from './ai-gateway.ts'
+import { mapToCfModel } from './cf-model-map.ts'
 
 export interface LlmMessage {
   role: 'system' | 'user' | 'assistant'
@@ -109,7 +110,14 @@ export async function llmChatCompletion(
   // CF Workers AI (/ai/v1), and json_object guided generation hangs that
   // endpoint (mirrors the same guard in openai-client.ts). Callers must request
   // JSON via the prompt and parse defensively.
-  const body: Record<string, unknown> = { model, messages, temperature, max_tokens }
+  // Map the caller's name to a real Workers AI id. This endpoint is
+  // OpenAI-compat but it is still Workers AI: a `claude-*` string reaches
+  // Cloudflare as a model id that does not exist. openai-client.ts mapped;
+  // this client did not, and the Anthropic shim runs through THIS one — so
+  // forwarding the shim's model without this line sends `claude-haiku-4-5`
+  // straight to Cloudflare.
+  const cfModel = mapToCfModel(model)
+  const body: Record<string, unknown> = { model: cfModel, messages, temperature, max_tokens }
 
   // CF Workers AI / AI Gateway occasionally return a transient HTML 5xx error
   // page (or drop the connection) on an otherwise-valid request. Retry those a
@@ -146,7 +154,7 @@ export async function llmChatCompletion(
         return {
           content,
           usage: data.usage,
-          model: data.model ?? model,
+          model: data.model ?? cfModel,
         }
       }
 
