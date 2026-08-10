@@ -218,7 +218,7 @@ export interface ChatCompletionResult {
 // 70B is reserved for callers that OPT IN (pass a `@cf/...` id, or a `claude-`
 // name via the shim). A one-off $765 Workers-AI bill (invoice IN-72568830,
 // Jul 2026) traced back to everything silently defaulting to the 70B here.
-const CF_MODEL_DEFAULT = '@cf/meta/llama-3.1-8b-instruct'
+const CF_MODEL_DEFAULT = '@cf/meta/llama-3.1-8b-instruct-fast'
 const CF_MODEL_STRONG = '@cf/meta/llama-3.3-70b-instruct-fp8-fast'
 
 /**

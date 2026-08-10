@@ -71,7 +71,7 @@ function readConfig() {
     apiKey: cfToken,
     // Cheap 8B by default (cost control — see openai-client CF_MODEL_DEFAULT note
     // + invoice IN-72568830). Callers needing the 70B pass model explicitly.
-    defaultModel: Deno.env.get('CF_AI_MODEL') || '@cf/meta/llama-3.1-8b-instruct',
+    defaultModel: Deno.env.get('CF_AI_MODEL') || '@cf/meta/llama-3.1-8b-instruct-fast',
     gatewayed: true,
   }
 }

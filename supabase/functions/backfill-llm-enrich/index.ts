@@ -118,7 +118,7 @@ Deno.serve(async (req) => {
     const cfg = TARGETS[target]
     if (!cfg) return errorResponse(`unknown target '${target}'`, 400, req)
     const batchSize = Math.min(50, body.batch_size ?? 20)
-    const model = (body.model as string) || '@cf/meta/llama-3.1-8b-instruct'
+    const model = (body.model as string) || '@cf/meta/llama-3.1-8b-instruct-fast'
     const idGte = body.id_gte as string | undefined
     const idLt = body.id_lt as string | undefined
     const dryRun = body.dry_run === true
