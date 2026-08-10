@@ -58,10 +58,26 @@ async function* walk(dir: string): AsyncGenerator<string> {
 
 Deno.test('no deprecated Workers AI model is referenced', async () => {
   const offenders: string[] = []
-  const self = 'deprecated-models.test.ts'
+
+  // Files that legitimately NAME a retired model without calling one. Kept
+  // deliberately short and explicit — each entry is a hole in this guard.
+  //   llm-cost.ts   a price table; it lists retired models so that a stray call
+  //                 is still costed rather than silently logged as null.
+  //   llm-cost.test.ts  asserts that a retired model is still COSTED, so it has
+  //                 to name one.
+  //   this test     obviously.
+  //
+  // Note the shape of the exemptions: both are about PRICING a retired model,
+  // never about calling one. A file that actually issues a request must never
+  // appear here.
+  const EXEMPT = [
+    'deprecated-models.test.ts',
+    '_shared/llm-cost.ts',
+    '_tests/llm-cost.test.ts',
+  ]
 
   for await (const path of walk('.')) {
-    if (path.endsWith(self)) continue
+    if (EXEMPT.some((e) => path.endsWith(e))) continue
     const src = await Deno.readTextFile(path)
     for (const model of DEPRECATED_MODELS) {
       // Terminator required so the still-active `-fast` / `-lora` variants pass.
