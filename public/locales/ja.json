@@ -138,7 +138,8 @@
       "home_city": "In your home city",
       "recent_city": "In a city you've explored",
       "featured": "Featured"
-    }
+    },
+    "ariaLabel": "[JA] Search Queer Guide"
   },
   "common": {
     "contentInLanguage": "言語：{{lang}}",
@@ -209,7 +210,14 @@
     "terms": "利用規約",
     "contact": "お問い合わせ",
     "supportUs": "サポートする",
-    "history": "歴史"
+    "history": "歴史",
+    "tagline": "[JA] Every track. Every station. Everyone.",
+    "contributors": "[JA] Contributors",
+    "emergency": {
+      "eyebrow": "[JA] In an emergency",
+      "title": "[JA] Crisis lines, 24 hours",
+      "body": "[JA] Trans helpline, LGBT+ crisis support, and local emergency numbers, listed by country and always one click from any page."
+    }
   },
   "trips": {
     "title": "マイトリップ",
@@ -1798,7 +1806,8 @@
       "tripsBadge": "確認が必要な旅行項目が {{count}} 件",
       "hub": "ハブ"
     },
-    "primaryNavigation": "[JA] Primary"
+    "primaryNavigation": "[JA] Primary",
+    "signInToContribute": "[JA] Sign in to contribute"
   },
   "pages": {
     "venues": {

@@ -138,7 +138,8 @@
       "home_city": "In your home city",
       "recent_city": "In a city you've explored",
       "featured": "Featured"
-    }
+    },
+    "ariaLabel": "[RU] Search Queer Guide"
   },
   "common": {
     "contentInLanguage": "На языке: {{lang}}",
@@ -209,7 +210,14 @@
     "terms": "Условия",
     "contact": "Контакты",
     "supportUs": "Поддержать нас",
-    "history": "История"
+    "history": "История",
+    "tagline": "[RU] Every track. Every station. Everyone.",
+    "contributors": "[RU] Contributors",
+    "emergency": {
+      "eyebrow": "[RU] In an emergency",
+      "title": "[RU] Crisis lines, 24 hours",
+      "body": "[RU] Trans helpline, LGBT+ crisis support, and local emergency numbers, listed by country and always one click from any page."
+    }
   },
   "trips": {
     "title": "Мои поездки",
@@ -1830,7 +1838,8 @@
       "tripsBadge": "{{count}} элементов поездки требуют внимания",
       "hub": "Хаб"
     },
-    "primaryNavigation": "[RU] Primary"
+    "primaryNavigation": "[RU] Primary",
+    "signInToContribute": "[RU] Sign in to contribute"
   },
   "pages": {
     "venues": {

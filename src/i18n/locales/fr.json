@@ -138,7 +138,8 @@
       "home_city": "In your home city",
       "recent_city": "In a city you've explored",
       "featured": "Featured"
-    }
+    },
+    "ariaLabel": "[FR] Search Queer Guide"
   },
   "common": {
     "contentInLanguage": "En {{lang}}",
@@ -209,7 +210,14 @@
     "terms": "Conditions",
     "contact": "Contact",
     "supportUs": "Nous soutenir",
-    "history": "Histoire"
+    "history": "Histoire",
+    "tagline": "[FR] Every track. Every station. Everyone.",
+    "contributors": "[FR] Contributors",
+    "emergency": {
+      "eyebrow": "[FR] In an emergency",
+      "title": "[FR] Crisis lines, 24 hours",
+      "body": "[FR] Trans helpline, LGBT+ crisis support, and local emergency numbers, listed by country and always one click from any page."
+    }
   },
   "trips": {
     "title": "Mes voyages",
@@ -1802,7 +1810,8 @@
       "tripsBadge": "{{count}} éléments de voyage à vérifier",
       "hub": "Hub"
     },
-    "primaryNavigation": "[FR] Primary"
+    "primaryNavigation": "[FR] Primary",
+    "signInToContribute": "[FR] Sign in to contribute"
   },
   "pages": {
     "venues": {

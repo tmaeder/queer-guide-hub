@@ -19,7 +19,8 @@ import { TagChipRow } from '@/components/tags/TagChipRow';
 import { ReportButton } from '@/components/moderation/ReportButton';
 import { AdminEditButton } from '@/components/admin/AdminEditButton';
 import { Editable } from '@/components/admin/inline/Editable';
-import { VenueCard } from '@/components/venues/VenueCard';
+import { StopList, type Stop } from '@/components/transit/StopList';
+import { calculateDistanceKm } from '@/utils/calculateDistance';
 import { EventCard } from '@/components/events/EventCard';
 import { EntityMap } from '@/components/map/EntityMap';
 import { useVisitedPlaceLookup } from '@/hooks/useVisitedPlaceLookup';
@@ -290,6 +291,47 @@ export function VillageOverviewTab({ village, onContentUpdated }: { village: Vil
   );
 }
 
+/**
+ * Venues → stop-list stops, with the gap between consecutive stops expressed
+ * as straight-line distance.
+ *
+ * Deliberately NOT sorted by rating, popularity or any score: the spec's
+ * zero-hierarchy rule applies, and a village walk is a sequence, not a
+ * ranking. Order is whatever the caller supplied.
+ *
+ * A venue missing coordinates simply gets no gap label rather than being
+ * dropped — it is still a stop on the walk, we just cannot say how far.
+ */
+function villageStops(venues: VillageVenue[]): Stop[] {
+  return venues.map((v, i) => {
+    const prev = i > 0 ? venues[i - 1] : null;
+    const hasPair =
+      prev &&
+      typeof prev.latitude === 'number' &&
+      typeof prev.longitude === 'number' &&
+      typeof v.latitude === 'number' &&
+      typeof v.longitude === 'number';
+    let gap: string | null = null;
+    if (hasPair) {
+      const km = calculateDistanceKm(
+        Number(prev!.latitude),
+        Number(prev!.longitude),
+        Number(v.latitude),
+        Number(v.longitude),
+      );
+      gap = km < 1 ? `~${Math.round((km * 1000) / 50) * 50} m` : `~${km.toFixed(1)} km`;
+    }
+    return {
+      id: v.id,
+      name: v.name,
+      type: 'venue',
+      href: v.slug ? `/venues/${v.slug}` : undefined,
+      walkFromPrevious: gap,
+      accessNote: v.category ?? null,
+    };
+  });
+}
+
 export function VillageVenuesTab({
   village,
   venues,
@@ -310,11 +352,18 @@ export function VillageVenuesTab({
             <p className="text-muted-foreground">Loading venues...</p>
           </div>
         ) : venues.length > 0 ? (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
-            {venues.map((venue) => (
-              <VenueCard key={venue.id} venue={venue} />
-            ))}
-          </div>
+          // Spec module 05 (stop list) — REQUIRED on villages, and the module
+          // the spec says defines the type: "A village is a walkable cluster.
+          // It reads as a route through stations with walking times, not a
+          // boundary polygon." A card grid states membership; a stop list
+          // states the walk, which is the thing worth knowing.
+          //
+          // The gap label is STRAIGHT-LINE distance, not a routed walking
+          // time. The spec asks for walk times and the product has no routing
+          // source, so this derives what the coordinates honestly support and
+          // labels it as distance ("~400 m"). Rendering "5 min walk" from a
+          // crow-flies number would invent precision across a canal.
+          <StopList stops={villageStops(venues)} />
         ) : (
           <div className="py-16 text-center">
             <Building

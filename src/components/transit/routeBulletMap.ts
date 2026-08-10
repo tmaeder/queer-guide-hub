@@ -24,6 +24,13 @@ export const ROUTE_BULLET_MAP: Record<string, BulletDef> = {
   landmark: { letter: 'L', track: 'green', label: 'Landmark' },
   milestone: { letter: 'M', track: 'pink', label: 'Milestone' },
   trip: { letter: 'T', track: 'blue', label: 'Trip' },
+  // The content model (src/config/singleModules.ts) declares thirteen single
+  // types, and rule 4 — "cross-type links use the other type's bullet and
+  // colour" — is unsatisfiable for any type missing here. These two were the
+  // gap; a test in singleModules.test.ts now keeps the two lists in step.
+  // `#` is the spec's own bullet for a tag wiki, not a letter.
+  tag: { letter: '#', track: 'pink', label: 'Tag' },
+  page: { letter: 'P', track: 'blue', label: 'Page' },
 };
 
 /** INK text on every track fill.
