@@ -1,6 +1,24 @@
 -- Drops zero-scan, non-constraint indexes (public schema, idx_scan = 0 at time of writing).
 -- Excludes search_documents_geog_gix and user_presence_geog_gist: geospatial GIST indexes
 -- backing proximity search/nearby-user features, left for manual review rather than auto-drop.
+--
+-- Comments below added 2026-08-10 (comment-only; the SQL is byte-identical to what prod
+-- applied). This file's version sorts BELOW the remote max — it was applied live via the
+-- Supabase MCP, which stamps the call time, and recovered here at that exact version. That
+-- is legal and deliberate: `db push` matches by version and SKIPS an already-applied
+-- migration rather than aborting on it, which is why the ordering rule in
+-- `check-migration-versions.mjs` consults remote history. Do NOT renumber it upward — the
+-- version is how `db push` recognises it as applied.
+--
+-- Evidence the zero-scan window is trustworthy, measured after the fact because the original
+-- pass did not check it: `idx_scan = 0` means nothing if the stats window is short.
+-- `pg_stat_database.stats_reset` is NULL, the postmaster had been up 98 days, and max
+-- `idx_scan` across the cluster is 264,784,231 — so zero scans is 98 days of real traffic,
+-- not a reset artifact. Every table whose FK-lookup index was dropped holds 0-7 rows (the
+-- cold-start social/community tables); the drops on the four large tables (venues,
+-- personalities, organizations, image_assets) are GIN/partial indexes on columns nothing
+-- filters by, not FK lookups. Those FK indexes WILL be wanted again once the social
+-- features carry real traffic — this is not a permanent verdict, it is a snapshot.
 
 DROP INDEX IF EXISTS public.idx_venues_day_part_gin;
 DROP INDEX IF EXISTS public.idx_venues_vibe_tags_gin;
