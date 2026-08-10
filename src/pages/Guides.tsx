@@ -73,7 +73,7 @@ const Guides = () => {
       />
       <div className="container mx-auto py-8 md:py-12 px-4">
         <ActiveQuestBanner />
-        <div className="mb-8">
+        <div className="sticky top-0 z-20 -mx-4 md:mx-0 px-4 md:px-0 py-2 mb-8 border-b-[3px] border-foreground bg-background">
           <GuidesFilterBar filters={filters} onChange={setFilters} />
         </div>
         <ContinueReadingRail />

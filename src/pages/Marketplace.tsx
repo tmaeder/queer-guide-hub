@@ -423,7 +423,7 @@ const Marketplace = () => {
           )}
 
           <div className="mb-6">
-            <div className="sticky top-0 z-20 rounded-element p-4 mb-6 bg-surface-container-low/95 backdrop-blur supports-[backdrop-filter]:bg-surface-container-low/80">
+            <div className="sticky top-0 z-20 rounded-element border-[3px] border-foreground p-4 mb-6 bg-surface-container-low">
               <MarketplaceControlBar
                 filters={filters}
                 onFiltersChange={handleFiltersChange}

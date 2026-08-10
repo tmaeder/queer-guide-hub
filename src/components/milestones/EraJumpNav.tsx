@@ -12,7 +12,7 @@ export function EraJumpNav({ counts }: { counts: Map<string, number> | undefined
   return (
     <nav
       aria-label={t('milestones.eraNav', 'Jump to era')}
-      className="sticky top-[56px] z-10 -mx-4 mb-8 bg-background px-4 md:top-[64px]"
+      className="sticky top-[56px] z-10 -mx-4 mb-8 bg-background border-b-[3px] border-foreground px-4 md:top-[64px]"
     >
       {/* Right-edge fade signals horizontal scrollability (monochrome mask, not a color gradient). */}
       <div className="no-scrollbar flex gap-2 overflow-x-auto py-2 [mask-image:linear-gradient(to_right,black,black_calc(100%-24px),transparent)]">
