@@ -44,7 +44,7 @@ export function StickyLetterBar({ letter, onChange, stickyTop = 64 }: Props) {
   return (
     <nav
       aria-label="Jump to letter"
-      className="z-10 bg-background backdrop-blur-md px-2 py-2 mb-4 overflow-x-auto sticky"
+      className="z-10 bg-background border-b-[3px] border-foreground px-2 py-2 mb-4 overflow-x-auto sticky"
       style={{ top: stickyTop }}
     >
       <div className="flex gap-0.5 items-center" style={{ minWidth: 'max-content' }}>

@@ -446,7 +446,7 @@ const Venues = () => {
         />
 
         {/* Toolbar */}
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
+        <div className="sticky top-0 z-20 -mx-4 md:mx-0 px-4 md:px-0 py-2 mb-4 border-b-[3px] border-foreground bg-background flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             {!loading &&
               venues.length > 0 &&

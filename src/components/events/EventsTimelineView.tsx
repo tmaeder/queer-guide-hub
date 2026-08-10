@@ -443,7 +443,7 @@ export function EventsTimelineView({
                   i % 2 === 1 && 'bg-muted/30',
                 )}
               >
-                <div className="sticky top-0 z-10 px-2 py-1 text-xs2 font-medium tracking-wide text-foreground/70 bg-background/95 truncate">
+                <div className="sticky top-0 z-10 px-2 py-1 text-xs2 font-medium tracking-wide text-foreground/70 bg-background border-b-2 border-foreground truncate">
                   {b.label}
                 </div>
               </div>
