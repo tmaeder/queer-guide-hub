@@ -1,29 +1,6 @@
--- DRIFT RECOVERY — this file's version is already in remote schema_migrations.
---
--- Applied live via the Supabase MCP on 2026-08-10 and then stranded in an unmerged draft
--- PR (#2680), so prod held the version with no repo file — the exact drift state
--- `check-migration-drift.mjs` exists to catch, and it fails EVERY pull request in the repo
--- while it lasts, not just the one that caused it. Committed here at the exact stamped
--- version, which is the documented recovery.
---
--- That version sorts below the current remote max (20260826100000), so the ordering rule in
--- `check-migration-versions.mjs` would normally reject it. It does not, because that rule
--- now checks remote history: `db push` matches by version and SKIPS an already-applied
--- migration rather than aborting on it. Nothing about this file's header grants the
--- exemption — prod's own history does. Do not renumber it upward; the version is how
--- `db push` recognises it as applied.
---
 -- Drops zero-scan, non-constraint indexes (public schema, idx_scan = 0 at time of writing).
 -- Excludes search_documents_geog_gix and user_presence_geog_gist: geospatial GIST indexes
 -- backing proximity search/nearby-user features, left for manual review rather than auto-drop.
---
--- Evidence the zero-scan window is trustworthy (verified 2026-08-10, after the fact):
--- pg_stat_database.stats_reset is NULL and the postmaster has been up 98 days with a
--- max idx_scan of 264,784,231 — so idx_scan = 0 is 98 days of real traffic, not a reset
--- artifact. Every table whose FK-lookup index was dropped holds 0-7 rows (the cold-start
--- social/community tables); the drops on the large tables (venues, personalities,
--- organizations, image_assets) are GIN/partial indexes on columns nothing filters by.
--- These FK indexes will be wanted again if the social features get real traffic.
 
 DROP INDEX IF EXISTS public.idx_venues_day_part_gin;
 DROP INDEX IF EXISTS public.idx_venues_vibe_tags_gin;

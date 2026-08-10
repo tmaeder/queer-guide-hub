@@ -64,6 +64,8 @@ const errors = []
 const warnings = []
 /** Versions below max that are already in remote history — reported, never fatal. */
 const applied = []
+/** Ordering violations we could NOT check against remote history (no token / API down). */
+const unverified = []
 
 // 1) Filename format — only enforced on newly added files (don't retroactively
 //    fail PRs for historical naming).
@@ -153,18 +155,20 @@ if (base !== null) {
         continue
       }
 
-      errors.push(
+      const msg =
         `version ${v} (${f}) is not above the highest existing version ${maxBase}.\n` +
-          `    → \`supabase db push\` aborts on the first migration that sorts below ` +
-          `remote history ("local migration files to be inserted before the last ` +
-          `migration on remote"), taking every later migration in the same PR with it. ` +
-          `Rename this file to a version greater than ${maxBase}.` +
-          (remote
-            ? ''
-            : `\n    → Remote history was unreadable, so an already-applied version could ` +
-              `not be exempted. If this migration IS applied to prod, set ` +
-              `SUPABASE_ACCESS_TOKEN and re-run.`),
-      )
+        `    → \`supabase db push\` aborts on the first migration that sorts below ` +
+        `remote history ("local migration files to be inserted before the last ` +
+        `migration on remote"), taking every later migration in the same PR with it. ` +
+        `Rename this file to a version greater than ${maxBase}.`
+
+      // Only a CONFIRMED violation blocks. When remote history is unreadable we
+      // cannot tell this apart from the legitimate already-applied recovery, and
+      // the repo's convention for a check that could not fully run is to warn —
+      // see the drift branch of .husky/pre-push. CI has the token, so the strict
+      // answer is still enforced there.
+      if (remote) errors.push(msg)
+      else unverified.push(msg + `\n    → Remote history unreadable; set SUPABASE_ACCESS_TOKEN to verify.`)
     }
   }
 }
@@ -179,6 +183,11 @@ if (warnings.length > 0) {
   for (const w of warnings) console.log(`  - ${w}`)
 }
 
+if (unverified.length > 0) {
+  console.error(`\n⚠ ${unverified.length} ordering violation(s) that could NOT be verified:`)
+  for (const u of unverified) console.error(`  - ${u}`)
+}
+
 if (errors.length > 0) {
   console.error(`\n✗ ${errors.length} migration-version problem(s) introduced by this branch:`)
   for (const e of errors) console.error(`  - ${e}`)
@@ -187,6 +196,15 @@ if (errors.length > 0) {
       'Rename so every migration has a unique version.',
   )
   process.exit(1)
+}
+
+// Exit 2 = "could not fully check", mirroring scripts/check-migration-drift.mjs.
+// The pre-push hook and CI both treat 1 as fatal and anything else as a warning,
+// so an unverifiable ordering violation cannot silently pass as OK, and cannot
+// block a developer who simply has no Supabase token.
+if (unverified.length > 0) {
+  console.error('\n→ Could not verify against remote history. Set SUPABASE_ACCESS_TOKEN to get a definitive answer.')
+  process.exit(2)
 }
 
 console.log(`✓ migration versions OK (${files.length} files, ${byVersion.size} unique versions)`)

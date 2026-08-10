@@ -91,7 +91,6 @@ export function MarketplaceControlBar({
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
     setSearch(filters.search ?? '');
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters.search]);
   const searchDebounce = useRef<ReturnType<typeof setTimeout>>(undefined);
   const applySearch = (value: string) => {
