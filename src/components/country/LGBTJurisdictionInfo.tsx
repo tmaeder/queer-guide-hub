@@ -12,7 +12,7 @@ import {
   type RightSection,
   type RightTopic,
 } from '@/lib/rights/rightsCatalog';
-import { readRightValue } from '@/lib/rights/rightsValue';
+import { readRightValue, topicScalarValue } from '@/lib/rights/rightsValue';
 import { StatusGlyph } from '@/components/rights/StatusGlyph';
 import { ProtectionCells, ProtectionCellsHeader } from '@/components/rights/ProtectionCells';
 import { RightRow } from '@/components/rights/RightRow';
@@ -58,13 +58,6 @@ function topicLabel(t: ReturnType<typeof useTranslation>['t'], topic: RightTopic
 }
 
 /** Reads the scalar a status-kind topic renders. */
-function scalarValue(country: Record<string, unknown>, topic: RightTopic): unknown {
-  const raw = country[topic.column];
-  if (topic.slug === 'expression') return (raw as Record<string, unknown> | null)?.summary;
-  if (topic.slug === 'association') return (raw as Record<string, unknown> | null)?.status;
-  return raw;
-}
-
 export default function LGBTJurisdictionInfo({
   country,
   className = '',
@@ -278,7 +271,7 @@ export default function LGBTJurisdictionInfo({
                 key={topic.slug}
                 label={topicLabel(t, topic)}
                 icon={topic.icon}
-                value={scalarValue(country, topic) as string | null | undefined}
+                value={topicScalarValue(country, topic) as string | null | undefined}
                 severeNegative={topic.severeNegative}
               />
             );
