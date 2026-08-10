@@ -135,7 +135,7 @@ const SheetContent = React.forwardRef<HTMLDivElement, SheetContentProps>(
     return createPortal(
       <div className="fixed inset-0 z-50">
         <div
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-300"
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-normal"
           onClick={() => onOpenChange(false)}
           aria-hidden="true"
         />
@@ -146,7 +146,7 @@ const SheetContent = React.forwardRef<HTMLDivElement, SheetContentProps>(
           tabIndex={-1}
           data-state={open ? 'open' : 'closed'}
           className={cn(
-            'fixed bg-surface-container-highest p-6 transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] overflow-auto',
+            'fixed bg-surface-container-highest p-6 transition-transform duration-normal ease-[cubic-bezier(0.22,1,0.36,1)] overflow-auto',
             side === 'left' || side === 'right' ? 'rounded-none' : 'rounded-t-container',
             sideClasses[side],
             className,

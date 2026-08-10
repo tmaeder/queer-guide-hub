@@ -33,6 +33,7 @@ Deno.serve(async (req) => {
     }
 
     const result = await llmChatCompletion({
+      callerFn: 'intimate-moderation',
       messages: [
         { role: 'system', content: SYSTEM },
         { role: 'user', content: combined.slice(0, 4000) },

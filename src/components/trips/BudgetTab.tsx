@@ -358,7 +358,7 @@ export function BudgetTab({ tripId, members, defaultCurrency }: Props) {
                     </span>
                     <Button
                       variant="ghost"
-                      className="h-7 w-7 p-0 opacity-45 hover:opacity-100 hover:text-destructive transition-[opacity,color] duration-150"
+                      className="h-7 w-7 p-0 opacity-45 hover:opacity-100 hover:text-destructive transition-[opacity,color] duration-fast"
                       onClick={() => setDeleteConfirmId(item.id)}
                       aria-label={t('trips.budget.deleteAria')}
                     >

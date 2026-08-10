@@ -73,7 +73,7 @@ export function StepperShell({
           </div>
           <div className="h-px bg-border relative">
             <div
-              className="absolute inset-y-0 left-0 bg-foreground transition-[width] duration-300 ease-out motion-reduce:transition-none"
+              className="absolute inset-y-0 left-0 bg-foreground transition-[width] duration-normal ease-out motion-reduce:transition-none"
               style={{ width: `${progressPct}%`, height: '1px' }}
             />
           </div>

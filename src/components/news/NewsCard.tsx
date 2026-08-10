@@ -253,7 +253,7 @@ const NewsCardImpl = ({
             role="presentation"
             width={1600}
             height={900}
-            className="block w-full h-full object-cover transition-transform duration-[600ms] ease-out group-hover:scale-[1.03] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
+            className="block w-full h-full object-cover transition-transform duration-slow ease-out group-hover:scale-[1.03] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
             onError={() => setImgFailed(true)}
           />
           <div
@@ -343,7 +343,7 @@ const NewsCardImpl = ({
             role="presentation"
             width={800}
             height={600}
-            className="block w-full h-full object-cover aspect-[4/3] transition-transform duration-[600ms] ease-out group-hover:scale-[1.03] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
+            className="block w-full h-full object-cover aspect-[4/3] transition-transform duration-slow ease-out group-hover:scale-[1.03] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
             onError={() => setImgFailed(true)}
           />
         </div>
@@ -505,7 +505,7 @@ const NewsCardImpl = ({
       {/* No inline borderColor: an inline style beats every class, so it
           silently killed the hover border below. Card already defaults to
           `border-border`. */}
-      <Card className="transition-colors duration-300 group-hover:border-foreground/40 cursor-pointer">
+      <Card className="transition-colors duration-normal group-hover:border-foreground/40 cursor-pointer">
         <CardHeader style={{ flexDirection: 'column' }} className="flex gap-2 p-0">
           <div className="relative overflow-hidden rounded-container rounded-b-none">
             <img

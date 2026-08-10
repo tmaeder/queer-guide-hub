@@ -202,7 +202,7 @@ function SubmitTypeCard({ type, onClick, featured = false }: SubmitTypeCardProps
       onClick={onClick}
       className={cn(
         'group/card w-full text-left rounded-container bg-card text-card-foreground',
-        'cursor-pointer transition-all duration-[250ms] ease-[cubic-bezier(0.22,1,0.36,1)]',
+        'cursor-pointer transition-all duration-fast ease-[cubic-bezier(0.22,1,0.36,1)]',
         'hover:bg-muted/40 hover:border-foreground/30',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ring-offset-background',
       )}
@@ -219,7 +219,7 @@ function SubmitTypeCard({ type, onClick, featured = false }: SubmitTypeCardProps
             <ArrowRight
               size={14}
               aria-hidden="true"
-              className="transition-transform duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/card:translate-x-1"
+              className="transition-transform duration-fast ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/card:translate-x-1"
             />
           </div>
         </div>

@@ -64,7 +64,7 @@ export function EntityCard({
     <div
       className={cn(
         SPAN_CLASSES[span],
-        'group relative isolate flex flex-col overflow-hidden rounded-container bg-surface-container transition-colors duration-300 hover:bg-surface-container',
+        'group relative isolate flex flex-col overflow-hidden rounded-container bg-surface-container transition-colors duration-normal hover:bg-surface-container',
         className,
       )}
     >
@@ -75,7 +75,7 @@ export function EntityCard({
             alt={imageAlt}
             loading="lazy"
             decoding="async"
-            className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.04]"
+            className="h-full w-full object-cover transition-transform duration-slow ease-out group-hover:scale-[1.04]"
           />
         ) : (
           <div className="h-full w-full bg-muted" />
@@ -125,7 +125,7 @@ export function EntityCard({
 
       <span
         aria-hidden="true"
-        className="absolute inset-x-0 bottom-0 h-px w-0 bg-foreground transition-[width] duration-500 ease-out group-hover:w-full"
+        className="absolute inset-x-0 bottom-0 h-px w-0 bg-foreground transition-[width] duration-slow ease-out group-hover:w-full"
       />
 
       {/* Card-wide click target. Overlay sibling (not a wrapper) so anything

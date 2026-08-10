@@ -99,7 +99,7 @@ const NewsMagazine = React.memo(() => {
               fallbackSrc={getFallbackImage('news', lead.id)}
               alt=""
               aria-hidden
-              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
+              className="h-full w-full object-cover transition-transform duration-slow group-hover:scale-[1.02]"
             />
           </div>
           <Eyebrow as="div" className="mb-4">
@@ -133,7 +133,7 @@ const NewsMagazine = React.memo(() => {
                     fallbackSrc={getFallbackImage('news', a.id)}
                     alt=""
                     aria-hidden
-                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                    className="h-full w-full object-cover transition-transform duration-slow group-hover:scale-[1.03]"
                   />
                 </div>
                 <div className="mb-2 truncate text-2xs font-semibold uppercase tracking-label text-muted-foreground">

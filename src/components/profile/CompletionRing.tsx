@@ -45,7 +45,7 @@ export function CompletionRing({
           cy={size / 2}
           r={r}
           fill="none"
-          className="stroke-foreground transition-[stroke-dasharray] duration-500"
+          className="stroke-foreground transition-[stroke-dasharray] duration-slow"
           strokeWidth={strokeWidth}
           strokeDasharray={`${dash} ${c}`}
           strokeLinecap="round"

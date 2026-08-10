@@ -701,7 +701,7 @@ export function VenueOverview({
                     alt={`${venue.name} ${index + 1}`}
                     role="presentation"
                     referrerPolicy="no-referrer"
-                    className="h-full w-full cursor-pointer object-cover transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.04]"
+                    className="h-full w-full cursor-pointer object-cover transition-transform duration-slow ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.04]"
                     onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
                       (e.target as HTMLImageElement).src = '/placeholder.svg';
                     }}

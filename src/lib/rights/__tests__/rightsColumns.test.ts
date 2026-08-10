@@ -10,6 +10,9 @@ import { RIGHTS_SELECT_COLUMNS } from '@/hooks/useIntentData';
  * silently under-report it forever, because the column is simply never fetched.
  */
 describe('rights select stays in step with the catalog', () => {
+  // Guards the WIDE select (useAllCountriesRightsFull). The narrow one is
+  // deliberately smaller — /travel and /rights/sources must not pay for the
+  // 22-column payload — so it is not checked here.
   const selected = new Set(RIGHTS_SELECT_COLUMNS.split(',').map((c) => c.trim()));
 
   it('fetches every column named by RIGHT_TOPICS', () => {

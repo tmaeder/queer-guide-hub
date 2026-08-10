@@ -48,6 +48,7 @@ async function callQualityLLM(
 ): Promise<QualityDecision | null> {
   if (!(await isOpenAIAvailable(supabase))) return null
   const result = await chatCompletion(supabase, {
+    callerFn: 'pipeline-quality-enhance',
     messages: [
       { role: 'system', content: QUALITY_SYSTEM_PROMPT },
       { role: 'user', content: userPrompt },

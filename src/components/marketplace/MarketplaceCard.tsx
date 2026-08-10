@@ -134,7 +134,7 @@ function MarketplaceCardImpl({
                 src={secondImage}
                 alt=""
                 loading="lazy"
-                className="absolute inset-0 h-full w-full rounded-element object-cover opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+                className="absolute inset-0 h-full w-full rounded-element object-cover opacity-0 transition-opacity duration-normal group-hover:opacity-100"
               />
             )}
           </div>
@@ -154,7 +154,7 @@ function MarketplaceCardImpl({
     return (
       <CardHoverEffect>
         <Card
-          className="group flex flex-row items-stretch gap-4 p-2 transition-colors duration-300 hover:border-foreground/40"
+          className="group flex flex-row items-stretch gap-4 p-2 transition-colors duration-normal hover:border-foreground/40"
           onMouseEnter={() => setHovered(true)}
         >
           <div className="relative w-28 shrink-0 overflow-hidden rounded-element sm:w-32">
@@ -196,7 +196,7 @@ function MarketplaceCardImpl({
   return (
     <CardHoverEffect>
       <Card
-        className="group overflow-hidden transition-colors duration-300 hover:border-foreground/40"
+        className="group overflow-hidden transition-colors duration-normal hover:border-foreground/40"
         onMouseEnter={() => setHovered(true)}
       >
         {imageBlock}
@@ -284,7 +284,7 @@ function MarketplaceCardImpl({
           )}
           {/* Quiet trust line, revealed on hover where hover exists. */}
           {metaFacts.length > 0 && (
-            <p className="hidden text-2xs uppercase tracking-wider text-muted-foreground sm:block sm:opacity-0 sm:transition-opacity sm:duration-300 sm:group-hover:opacity-100">
+            <p className="hidden text-2xs uppercase tracking-wider text-muted-foreground sm:block sm:opacity-0 sm:transition-opacity sm:duration-normal sm:group-hover:opacity-100">
               {metaFacts.join(' · ')}
             </p>
           )}

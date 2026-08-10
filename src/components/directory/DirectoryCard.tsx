@@ -211,7 +211,7 @@ export const DirectoryCard = ({ type, name, data, onClick }: DirectoryCardProps)
     return null;
   };
   const cardContent = (
-    <Card className="group overflow-hidden transition-colors duration-300 hover:border-foreground/40 cursor-pointer">
+    <Card className="group overflow-hidden transition-colors duration-normal hover:border-foreground/40 cursor-pointer">
       {/* Country Image */}
       {type === 'country' && (
         <div
@@ -246,7 +246,7 @@ export const DirectoryCard = ({ type, name, data, onClick }: DirectoryCardProps)
                 `https://images.unsplash.com/photo-1466442929976-97f336a657be?w=400&h=200&fit=crop`
               }
               alt={`${name} landscape`}
-              className="transition-transform duration-500 ease-out group-hover:scale-[1.04]"
+              className="transition-transform duration-slow ease-out group-hover:scale-[1.04]"
               style={{ width: '100%', height: '100%', objectFit: 'cover' }}
               onError={(e) => {
                 // Fallback to default image if Pexels image fails to load
@@ -285,7 +285,7 @@ export const DirectoryCard = ({ type, name, data, onClick }: DirectoryCardProps)
               role="presentation"
               src={cityImageUrl}
               alt={`${name} cityscape`}
-              className="transition-transform duration-500 ease-out group-hover:scale-[1.04]"
+              className="transition-transform duration-slow ease-out group-hover:scale-[1.04]"
               style={{ width: '100%', height: '100%', objectFit: 'cover' }}
               onError={() => setCityImageError(true)}
             />

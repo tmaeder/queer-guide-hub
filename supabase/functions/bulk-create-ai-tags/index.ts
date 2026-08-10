@@ -205,6 +205,7 @@ Respond with JSON in this format:
 }`;
 
     const result = await chatCompletion(client, {
+      callerFn: 'bulk-create-ai-tags',
       model: 'gpt-4o-mini',
       messages: [
         {
