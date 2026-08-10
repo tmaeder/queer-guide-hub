@@ -26,13 +26,22 @@ export function FactGrid({ facts, className }: { facts: Fact[]; className?: stri
     <dl
       className={cn(
         'grid grid-cols-1 border-[3px] border-foreground sm:grid-cols-2 lg:grid-cols-3',
+        // Dividers are drawn on the TOP of each cell, with the first row
+        // suppressed — not on the bottom. A bottom border leaves a stub on a
+        // partly-filled last row (4 facts in 3 columns ends the line mid-width),
+        // and "which cells are in the last row" is not expressible in CSS
+        // because it depends on both the count and the breakpoint. Which cells
+        // are in the FIRST row is just the first 1 / 2 / 3 children, which is.
+        '[&>*:nth-child(1)]:border-t-0',
+        'sm:[&>*:nth-child(-n+2)]:border-t-0',
+        'lg:[&>*:nth-child(-n+3)]:border-t-0',
         className,
       )}
     >
       {shown.map((f) => (
         <div
           key={f.label}
-          className="border-b-2 border-r-2 border-foreground/15 px-4 py-4 last:border-r-0"
+          className="border-t-2 border-r-2 border-foreground/15 px-4 py-4 last:border-r-0"
         >
           <dt className="text-2xs font-bold uppercase tracking-label text-muted-foreground">
             {f.label}
