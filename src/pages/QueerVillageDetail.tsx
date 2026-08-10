@@ -72,15 +72,22 @@ export default function QueerVillageDetail() {
   }, [redirectVillageSlug, navigate]);
 
   const cityName = village?.cities?.name;
+  const villageId = village?.id;
   const { venues, loading: venuesLoading, fetchVenues } = useVenues(false);
   const { events, loading: eventsLoading, fetchEvents } = useEvents(false);
   const fetchVenuesRef = useRef(fetchVenues);
   // eslint-disable-next-line react-hooks/refs -- "latest value" ref pattern: keeps the freshest fetchVenues closure available to the city-change effect below without re-running on every fetchVenues identity change.
   fetchVenuesRef.current = fetchVenues;
 
+  // Filter by the VILLAGE, not by its city. This previously asked for 8 venues
+  // from anywhere in the parent city, so /villages/chueca listed an Apple Store
+  // and a venue 3.7 km away while all 192 venues actually linked to Chueca were
+  // never shown. The stop list made it visible by printing the distance between
+  // consecutive stops; the old card grid concealed it.
   useEffect(() => {
-    fetchVenuesRef.current({ city: cityName, limit: 8, railQuality: true });
-  }, [cityName]);
+    if (!villageId) return;
+    fetchVenuesRef.current({ queerVillageId: villageId, limit: 24, railQuality: true });
+  }, [villageId]);
 
   useEffect(() => {
     fetchEvents({ city: cityName, limit: 8 });

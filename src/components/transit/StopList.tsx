@@ -36,7 +36,12 @@ export function StopList({ stops, className }: { stops: Stop[]; className?: stri
           {i > 0 && s.walkFromPrevious && (
             <div className="flex items-center gap-2 border-b-2 border-t-2 border-foreground/15 bg-surface-container px-4 py-1.5">
               <span aria-hidden className="h-4 w-0.5 bg-track-green" />
-              <span className="text-xs2 font-bold uppercase tracking-label text-muted-foreground">
+              {/* NOT `uppercase`. The eyebrow convention is for LABELS; this
+                  string is a measured VALUE, and SI units are case-sensitive —
+                  uppercasing turned "~500 m" into "~500 M", which reads as the
+                  mega prefix, and "km" into "KM". Caught on production; jsdom
+                  applies no text-transform, so the unit tests could not see it. */}
+              <span className="text-xs2 font-bold tracking-label text-muted-foreground">
                 {s.walkFromPrevious}
               </span>
             </div>
