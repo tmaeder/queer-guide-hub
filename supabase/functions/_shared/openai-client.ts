@@ -10,6 +10,7 @@
 
 import type { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
 import { gatewayBaseUrl, gatewayHeaders } from './ai-gateway.ts'
+import { mapToCfModel } from './cf-model-map.ts'
 
 // ---------------------------------------------------------------------------
 // AES-GCM encryption helpers (same pattern as manage-api-keys)
@@ -215,33 +216,10 @@ export interface ChatCompletionResult {
 
 // Cost-control defaults. The 8B model costs ~9x less per output token than the
 // 70B and handles classification/extraction/normalization/relevance fine. The
-// 70B is reserved for callers that OPT IN (pass a `@cf/...` id, or a `claude-`
-// name via the shim). A one-off $765 Workers-AI bill (invoice IN-72568830,
-// Jul 2026) traced back to everything silently defaulting to the 70B here.
-const CF_MODEL_DEFAULT = '@cf/meta/llama-3.1-8b-instruct-fast'
-const CF_MODEL_STRONG = '@cf/meta/llama-3.3-70b-instruct-fp8-fast'
-
-/**
- * Map a legacy OpenAI model name to the CF Workers AI equivalent. Edge cases
- * (e.g. embeddings, tool-calling) should opt out by passing a `@cf/...` model
- * directly so this map is not consulted.
- */
-export function mapToCfModel(openaiModel: string): string {
-  if (openaiModel.startsWith('@cf/')) return openaiModel
-  // Anthropic models come through the shim. Map by TIER, not by vendor:
-  // `claude-haiku-*` IS Anthropic's cheap tier, so routing it to the 70B is
-  // backwards and expensive — it would have moved 10 of the 11 shim callers
-  // (trip-concierge, ai-plan-trip, trip-inbox-chat, …) onto the big model,
-  // which is precisely the pattern behind the $765 bill cited above.
-  // Only sonnet/opus are a deliberate request for strength.
-  if (/^claude-(sonnet|opus)/.test(openaiModel)) {
-    return Deno.env.get('CF_AI_MODEL_STRONG') || CF_MODEL_STRONG
-  }
-  if (openaiModel.startsWith('claude-')) return Deno.env.get('CF_AI_MODEL') || CF_MODEL_DEFAULT
-  // Default: the cheap model. Callers that need the 70B pass a `@cf/...` id (or
-  // a `claude-` name) explicitly. Override the fleet default via CF_AI_MODEL.
-  return Deno.env.get('CF_AI_MODEL') || CF_MODEL_DEFAULT
-}
+// Model ids + tier map now live in cf-model-map.ts so llm-client.ts (the
+// OpenAI-compat client behind the Anthropic shim) applies the SAME mapping.
+// Re-exported because callers and tests import it from here.
+export { CF_MODEL_DEFAULT, CF_MODEL_STRONG, mapToCfModel } from './cf-model-map.ts'
 
 /**
  * Coerce an LLM `content` field to a string. Workers AI (and occasionally the
