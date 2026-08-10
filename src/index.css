@@ -736,17 +736,6 @@ h2,
   }
 }
 
-@keyframes reveal-up {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
 @keyframes content-enter {
   from {
     opacity: 0;
@@ -766,28 +755,6 @@ h2,
   to {
     opacity: 1;
     transform: scale(1);
-  }
-}
-
-@keyframes slide-up-in {
-  from {
-    opacity: 0;
-    transform: translateY(12px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes slide-down-in {
-  from {
-    opacity: 0;
-    transform: translateY(-8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
   }
 }
 
@@ -1002,11 +969,6 @@ h2,
   opacity: 0.7;
 }
 
-/* ── Reveal & Enter Animations ─────────────────────────────────────── */
-
-.reveal-up {
-  animation: reveal-up 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
 .reveal-delay-1 {
   animation-delay: 0.08s;
 }
@@ -1025,13 +987,6 @@ h2,
 
 .content-crossfade-enter {
   animation: fade-in 0.25s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-
-.slide-up-in {
-  animation: slide-up-in 0.25s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-.slide-down-in {
-  animation: slide-down-in 0.25s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 /* ── Utility helpers ───────────────────────────────────────────────── */
@@ -1329,151 +1284,10 @@ h2,
   );
 }
 
-/* Animated border-conic for "moving border" cards (monochrome). */
-@keyframes border-rotate {
-  to {
-    transform: rotate(360deg);
-  }
-}
-.moving-border::before {
-  content: '';
-  position: absolute;
-  inset: -1px;
-  border-radius: inherit;
-  background: conic-gradient(
-    from 0deg,
-    transparent 0%,
-    hsl(var(--foreground) / 0.4) 12%,
-    transparent 25%
-  );
-  animation: border-rotate 6s linear infinite;
-  z-index: 0;
-  pointer-events: none;
-}
-.moving-border > * {
-  position: relative;
-  z-index: 1;
-}
-@media (prefers-reduced-motion: reduce) {
-  .moving-border::before {
-    animation: none;
-  }
-}
 
-/* Meteor streak — diagonal trail with fading tail. */
-@keyframes meteor {
-  0% {
-    transform: rotate(215deg) translateX(0);
-    opacity: 1;
-  }
-  70% {
-    opacity: 1;
-  }
-  100% {
-    transform: rotate(215deg) translateX(-500px);
-    opacity: 0;
-  }
-}
-.meteor {
-  animation: meteor 5s linear infinite;
-}
-.meteor::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 50px;
-  height: 1px;
-  background: linear-gradient(to right, hsl(var(--foreground)), transparent);
-}
-@media (prefers-reduced-motion: reduce) {
-  .meteor {
-    animation: none;
-    opacity: 0;
-  }
-}
 
-/* Pulsing beam — vertical, soft falloff. */
-@keyframes beam-pulse {
-  0%,
-  100% {
-    opacity: 0;
-    transform: translateY(-100%);
-  }
-  50% {
-    opacity: 0.8;
-    transform: translateY(100%);
-  }
-}
-.beam {
-  position: absolute;
-  inset-block: -10%;
-  width: 1px;
-  background: linear-gradient(to bottom, transparent, hsl(var(--foreground) / 0.7), transparent);
-  animation: beam-pulse 6s ease-in-out infinite;
-}
-@media (prefers-reduced-motion: reduce) {
-  .beam {
-    animation: none;
-    opacity: 0.2;
-  }
-}
 
-/* Button shine sweep. */
-@keyframes shine-sweep {
-  0% {
-    transform: translateX(-100%) skewX(-12deg);
-  }
-  100% {
-    transform: translateX(250%) skewX(-12deg);
-  }
-}
-.shine-on-hover {
-  position: relative;
-  overflow: hidden;
-}
-.shine-on-hover::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(90deg, transparent, hsl(var(--background) / 0.45), transparent);
-  transform: translateX(-100%) skewX(-12deg);
-  transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
-  pointer-events: none;
-}
-.shine-on-hover:hover::after {
-  animation: shine-sweep 0.9s ease-out;
-}
-@media (prefers-reduced-motion: reduce) {
-  .shine-on-hover:hover::after {
-    animation: none;
-    transform: translateX(0);
-  }
-}
 
-/* Conic moving border — for hover-border-gradient effect. */
-@keyframes hover-border-spin {
-  to {
-    --hover-angle: 360deg;
-  }
-}
-@property --hover-angle {
-  syntax: '<angle>';
-  initial-value: 0deg;
-  inherits: false;
-}
-.hover-border-gradient {
-  --hover-angle: 0deg;
-  background: conic-gradient(
-    from var(--hover-angle),
-    hsl(var(--foreground) / 0),
-    hsl(var(--foreground) / 0.8) 25%,
-    hsl(var(--foreground) / 0) 50%
-  );
-}
-.hover-border-gradient.active {
-  animation: hover-border-spin 2s linear infinite;
-}
 
 /* Marquee — horizontal infinite scroll. */
 @keyframes marquee-fwd {
@@ -1499,31 +1313,6 @@ h2,
   }
 }
 
-/* Aurora replacement — slow, soft, monochrome luminance shift. */
-@keyframes aurora-pan {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
-}
-.aurora-mono {
-  background:
-    radial-gradient(ellipse at 20% 30%, hsl(var(--foreground) / 0.08), transparent 50%),
-    radial-gradient(ellipse at 80% 60%, hsl(var(--foreground) / 0.06), transparent 50%),
-    radial-gradient(ellipse at 50% 90%, hsl(var(--foreground) / 0.05), transparent 50%);
-  background-size: 200% 200%;
-  animation: aurora-pan 20s ease infinite;
-}
-@media (prefers-reduced-motion: reduce) {
-  .aurora-mono {
-    animation: none;
-  }
-}
 
 /* ── Image lazy-load fade ─────────────────────────────────────────── */
 
