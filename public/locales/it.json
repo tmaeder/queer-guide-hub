@@ -3393,6 +3393,12 @@
       "events_other": "[IT] {{count}} events",
       "groups_one": "[IT] {{count}} group",
       "groups_other": "[IT] {{count}} groups"
+    },
+    "interests": {
+      "title": "[IT] What are you into?",
+      "blurb": "[IT] Pick a few. They shape what we suggest, and they are how other members find people with something in common.",
+      "blurbSignedOut": "[IT] Sign in to pick a few. They shape what we suggest, and they are how other members find people with something in common.",
+      "count": "[IT] {{count}} selected"
     }
   },
   "hub": {

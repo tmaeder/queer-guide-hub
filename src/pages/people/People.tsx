@@ -14,6 +14,7 @@ import { GatedContentNotice } from '@/components/safety/GatedContentNotice';
 import { IntentSheet } from '@/components/people/IntentSheet';
 import { PeopleHereRail } from '@/components/people/PeopleHereRail';
 import { MeetMembersNotice } from '@/components/people/MeetMembersNotice';
+import { InterestPicker } from '@/components/people/InterestPicker';
 import {
   useMeetSpaces,
   useLocalGroups,
@@ -312,6 +313,13 @@ export default function People() {
             seeAllHref="/community/members"
             emptyState={<MeetMembersNotice cityId={cityId ?? undefined} cityName={cityName} />}
           />
+
+          {/* Directly under the rail it feeds. The shared-interest signal that
+              makes that rail worth reading has had nothing to work with:
+              tag_follows held 0 rows against 9,170 tags because the only way to
+              declare an interest was one tag-detail page at a time. This is the
+              input, placed where its effect shows up. */}
+          <InterestPicker className="mt-4" />
           <div className="grid gap-2 sm:grid-cols-3">
             {COMMUNITY_BRIDGE.map(({ to, icon: Icon, key, fallback, blurbKey, blurb }) => (
               <LocalizedLink

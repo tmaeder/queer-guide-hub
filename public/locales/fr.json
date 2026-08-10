@@ -3397,6 +3397,12 @@
       "events_other": "[FR] {{count}} events",
       "groups_one": "[FR] {{count}} group",
       "groups_other": "[FR] {{count}} groups"
+    },
+    "interests": {
+      "title": "[FR] What are you into?",
+      "blurb": "[FR] Pick a few. They shape what we suggest, and they are how other members find people with something in common.",
+      "blurbSignedOut": "[FR] Sign in to pick a few. They shape what we suggest, and they are how other members find people with something in common.",
+      "count": "[FR] {{count}} selected"
     }
   },
   "hub": {

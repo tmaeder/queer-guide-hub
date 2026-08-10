@@ -59,6 +59,13 @@ vi.mock('@/components/people/PeopleHereRail', () => ({
 vi.mock('@/components/people/MeetMembersNotice', () => ({
   MeetMembersNotice: () => <div data-testid="member-notice">members notice</div>,
 }));
+// Same reason as the two above: it reaches useAuth (via useFollowedTags), which
+// throws outside an AuthProvider. This suite renders the page bare on purpose,
+// so provider-dependent children are stubbed here and covered by their own
+// test — see components/people/__tests__/InterestPicker.test.tsx.
+vi.mock('@/components/people/InterestPicker', () => ({
+  InterestPicker: () => <div data-testid="interest-picker">interests</div>,
+}));
 
 import People from '../People';
 

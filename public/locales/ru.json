@@ -3427,6 +3427,12 @@
       "events_other": "[RU] {{count}} events",
       "groups_one": "[RU] {{count}} group",
       "groups_other": "[RU] {{count}} groups"
+    },
+    "interests": {
+      "title": "[RU] What are you into?",
+      "blurb": "[RU] Pick a few. They shape what we suggest, and they are how other members find people with something in common.",
+      "blurbSignedOut": "[RU] Sign in to pick a few. They shape what we suggest, and they are how other members find people with something in common.",
+      "count": "[RU] {{count}} selected"
     }
   },
   "hub": {
