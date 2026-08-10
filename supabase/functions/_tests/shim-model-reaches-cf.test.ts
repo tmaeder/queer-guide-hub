@@ -64,3 +64,46 @@ Deno.test('no model supplied still sends a @cf id', async () => {
   await llmAnthropicStyle({ messages: [{ role: 'user', content: 'hi' }] })
   assertStringIncludes(f.modelSent(), '@cf/')
 })
+
+/**
+ * PATH test, not a helper test — the distinction that let a live bug through
+ * earlier today. Asserts that a completion actually WRITES a usage row, by
+ * intercepting the PostgREST insert.
+ */
+Deno.test('llmChatCompletion records a usage row', async () => {
+  const { setLlmUsageFireAndForget } = await import('../_shared/llm-usage-log.ts')
+  const { llmChatCompletion } = await import('../_shared/llm-client.ts')
+  const prev = setLlmUsageFireAndForget(false)
+  Deno.env.set('SUPABASE_URL', 'https://example.test')
+  Deno.env.set('SUPABASE_SERVICE_ROLE_KEY', 'k')
+
+  let logged: Record<string, unknown> | null = null
+  globalThis.fetch = ((url: string | URL | Request, init?: RequestInit) => {
+    const u = String(url)
+    if (u.includes('/rest/v1/llm_call_log')) {
+      logged = JSON.parse(String(init?.body ?? '{}'))
+      return Promise.resolve(new Response('', { status: 201 }))
+    }
+    return Promise.resolve(new Response(JSON.stringify({
+      choices: [{ message: { content: 'ok' } }],
+      usage: { prompt_tokens: 120, completion_tokens: 34 },
+      model: '@cf/meta/llama-3.1-8b-instruct-fast',
+    }), { status: 200, headers: { 'content-type': 'application/json' } }))
+  }) as typeof fetch
+
+  await llmChatCompletion({
+    messages: [{ role: 'user', content: 'hi' }],
+    callerFn: 'my-edge-fn',
+  })
+  // Give the fire-and-forget insert a tick even in sync mode.
+  await new Promise((r) => setTimeout(r, 0))
+
+  assertEquals(logged !== null, true, 'a usage row must be written')
+  assertEquals(logged!.function, 'my-edge-fn')
+  assertEquals(logged!.tokens_in, 120)
+  assertEquals(logged!.tokens_out, 34)
+  assertEquals(typeof logged!.cost_usd, 'number')
+  setLlmUsageFireAndForget(prev)
+  Deno.env.delete('SUPABASE_URL')
+  Deno.env.delete('SUPABASE_SERVICE_ROLE_KEY')
+})
