@@ -1,14 +1,14 @@
 import type { ReactNode } from 'react';
-import type { LucideIcon } from 'lucide-react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { NavBadge } from './NavBadge';
 import type { LongPressHandlers } from '@/hooks/useLongPress';
 import { cn } from '@/lib/utils';
+import type { NavIcon } from '@/config/navigation';
 
 interface NavTabProps {
   to: string;
-  icon: LucideIcon;
+  icon: NavIcon;
   label: string;
   active: boolean;
   /** prefers-reduced-motion → static pill (no scale-in animation). */
@@ -104,7 +104,12 @@ export function NavTab({
               <AvatarFallback className="text-2xs">{avatar.initial}</AvatarFallback>
             </Avatar>
           ) : (
-            <Icon className={cn('relative h-5 w-5', active && 'stroke-[2.25]')} aria-hidden />
+            // No stroke-width bump on active. `stroke-[2.25]` is CSS, so it beats
+            // the SVG attribute — sensible on lucide's 24-unit viewBox, but a
+            // near-invisible hairline on a TransitIcon's 100-unit one. Active
+            // already reads through two stronger, icon-system-agnostic cues:
+            // text-foreground, and the bg-muted pill behind the glyph.
+            <Icon className="relative h-5 w-5" aria-hidden />
           )}
           {badgeCount != null && badgeCount > 0 && (
             <NavBadge count={badgeCount} label={badgeLabel} />
