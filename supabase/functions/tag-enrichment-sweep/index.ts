@@ -83,6 +83,7 @@ async function fetchWikipediaSummary(name: string): Promise<WikiSummary | null> 
 async function generateDescription(name: string): Promise<string | null> {
   try {
     const r = await chatCompletion(supabase, {
+      callerFn: 'tag-enrichment-sweep',
       model: 'gpt-4o-mini',
       messages: [
         {
@@ -171,6 +172,7 @@ async function categorizePass(
   let mapping: Record<string, string>
   try {
     const r = await chatCompletion(supabase, {
+      callerFn: 'tag-enrichment-sweep',
       model: 'gpt-4o-mini',
       messages: [
         { role: 'system', content: 'Expert LGBTQ+ tag categorizer. Respond with valid JSON only, no markdown fences.' },

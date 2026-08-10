@@ -82,6 +82,7 @@ Deno.serve(withErrorReporting('pipeline-safety-relevance', async (req) => {
           'cf-ai-safety-relevance',
           () =>
             llmChatCompletion({
+              callerFn: 'pipeline-safety-relevance',
               messages: [
                 { role: 'system', content: SAFETY_RELEVANCE_SYSTEM },
                 { role: 'user', content: userPrompt },

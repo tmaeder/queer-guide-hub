@@ -184,6 +184,7 @@ function buildContext(entityType: EntityType, r: Record<string, unknown>): strin
 async function draftHook(c: DraftCandidate): Promise<string> {
   const userMsg = `Place: ${c.name}\nType: ${c.entity_type}\n${c.context}\n\nWrite one hook.`
   const res = await llmChatCompletion({
+    callerFn: 'pipeline-enrich-places',
     messages: [
       { role: 'system', content: HOOK_SYSTEM },
       { role: 'user',   content: userMsg },
@@ -202,6 +203,7 @@ async function draftHook(c: DraftCandidate): Promise<string> {
 async function draftLong(c: DraftCandidate): Promise<string> {
   const userMsg = `Place: ${c.name}\nType: ${c.entity_type}\n${c.context}\n\nWrite the paragraph.`
   const res = await llmChatCompletion({
+    callerFn: 'pipeline-enrich-places',
     messages: [
       { role: 'system', content: LONG_SYSTEM },
       { role: 'user',   content: userMsg },

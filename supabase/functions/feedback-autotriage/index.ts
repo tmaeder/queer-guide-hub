@@ -162,6 +162,7 @@ Deno.serve(async (req) => {
     try {
       const res = await withCircuitBreaker(supabase, BREAKER, () =>
         llmChatCompletion({
+          callerFn: 'feedback-autotriage',
           messages: [{ role: 'user', content: buildPrompt(text) }],
           temperature: 0.1,
           max_tokens: 300,

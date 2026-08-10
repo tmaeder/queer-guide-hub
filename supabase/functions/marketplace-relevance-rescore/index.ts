@@ -68,6 +68,7 @@ Deno.serve(async (req) => {
       let scores: Map<number, number>
       try {
         const res = await llmChatCompletion({
+          callerFn: 'marketplace-relevance-rescore',
           messages: [
             { role: 'system', content: MARKETPLACE_RELEVANCE_SYSTEM },
             { role: 'user', content: buildMarketplaceRelevanceUserPrompt(items) },

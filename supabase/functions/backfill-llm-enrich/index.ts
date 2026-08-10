@@ -98,6 +98,7 @@ const TARGETS: Record<string, TargetCfg> = {
 async function llm(supabase: ReturnType<typeof getServiceClient>, system: string, user: string, model: string) {
   return withCircuitBreaker(supabase, 'llm.openai.enrich-news', () =>
     chatCompletion(supabase, {
+      callerFn: 'backfill-llm-enrich',
       model,
       temperature: 0.1,
       max_tokens: 120,
