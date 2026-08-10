@@ -50,12 +50,23 @@ export async function anthropicMessages(
     return await resp.json()
   }
 
+  // Forward the model. It was silently dropped here, so mapToCfModel() never saw
+  // the caller's choice and every shim call got the fleet default regardless of
+  // what it asked for — `translate-i18n-batch` requested claude-sonnet-4-6 for
+  // translation quality and ran on the 8B for its whole life.
+  //
+  // The name is NOT sent to Workers AI as-is (there is no `claude-*` model
+  // there); mapToCfModel translates it to a CF id by tier. That mapping had to
+  // be made tier-aware in the same change — it treated every `claude-` name as
+  // a request for the 70B, so forwarding without fixing it would have promoted
+  // the ten haiku callers to the expensive model.
   const result = await llmAnthropicStyle({
     system: input.system,
     messages: input.messages,
     max_tokens: input.max_tokens,
     temperature: input.temperature,
     timeoutMs: input.timeoutMs,
+    model: input.model,
   })
 
   return {

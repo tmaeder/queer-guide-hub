@@ -43,7 +43,7 @@ Deno.serve(async (req) => {
     const acct = Deno.env.get('CF_ACCOUNT_ID') ?? Deno.env.get('CLOUDFLARE_ACCOUNT_ID')
     const tok = Deno.env.get('CF_AI_API_TOKEN') ?? Deno.env.get('CLOUDFLARE_API_TOKEN')
     // Relevance scoring is a classification task → cheap 8B (cost control, IN-72568830).
-    const model = Deno.env.get('CF_AI_MODEL') ?? '@cf/meta/llama-3.1-8b-instruct'
+    const model = Deno.env.get('CF_AI_MODEL') ?? '@cf/meta/llama-3.1-8b-instruct-fast'
     if (!acct || !tok) return json({ error: 'CF AI not configured in edge env' }, 500)
     const url = `https://api.cloudflare.com/client/v4/accounts/${acct}/ai/run/${model}`
 

@@ -789,7 +789,13 @@ Deno.serve(async (req) => {
     }
 
     const matched = result.results.filter(r => r.status === 'matched').length
-    const geocoded = result.results.filter(r => ['geocoded_no_city_match', 'coords_only', 'city_text_only'].includes(r.status)).length
+    // 'coords_filled' MUST be in this list. It is the status for a venue that
+    // already had a city and got coordinates — the entire output of the centroid
+    // repair — and it was added without being tallied anywhere, so the cron
+    // reported `geocoded: 0` while actually filling coordinates. Measured on the
+    // first live run: processed 25, matched 0, geocoded 0, skipped 12, which
+    // leaves 13 rows unaccounted for and reads as "this job does nothing".
+    const geocoded = result.results.filter(r => ['geocoded_no_city_match', 'coords_only', 'city_text_only', 'coords_filled'].includes(r.status)).length
     const skipped = result.results.filter(r => ['no_results', 'no_address', 'no_city_in_response'].includes(r.status)).length
     const errors = result.results.filter(r => r.status.startsWith('error') || r.status.startsWith('nominatim_error')).length
 

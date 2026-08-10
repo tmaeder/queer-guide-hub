@@ -269,25 +269,25 @@
   --asset-rev: 1;
 
   --background: 60 33% 97%;
-  --foreground: 0 0% 7%;
+  --foreground: 0 0% 6.7%;
 
   --card: 60 33% 97%;
-  --card-foreground: 0 0% 7%;
+  --card-foreground: 0 0% 6.7%;
 
   --popover: 60 33% 97%;
-  --popover-foreground: 0 0% 7%;
+  --popover-foreground: 0 0% 6.7%;
 
-  --primary: 0 0% 7%;
+  --primary: 0 0% 6.7%;
   --primary-foreground: 60 33% 97%;
 
-  --secondary: 0 0% 7%;
+  --secondary: 0 0% 6.7%;
   --secondary-foreground: 60 33% 97%;
 
   --muted: 60 9% 93%;
   --muted-foreground: 0 0% 33%;
 
   --accent: 60 9% 93%;
-  --accent-foreground: 0 0% 7%;
+  --accent-foreground: 0 0% 6.7%;
 
   /* Sole permitted hue: error semantics. `--warning` was a literal duplicate of
      this until 2026-07-27, so 22 caution states shouted in the same red as hard
@@ -299,11 +299,11 @@
      to fix the button broke the text case in reverse — see #2366. */
   --destructive: 0 70% 38%;
   --destructive-foreground: 60 33% 97%;
-  --warning: 0 0% 7%;
+  --warning: 0 0% 6.7%;
   --warning-foreground: 60 33% 97%;
 
   /* Success / info collapse to neutral foreground — differentiated by icon + label, not color. */
-  --success: 0 0% 7%;
+  --success: 0 0% 6.7%;
   --success-foreground: 60 33% 97%;
 
   /* ── Track colors — SEMANTIC wayfinding lines (subway-map rebrand).
@@ -318,33 +318,33 @@
      danger signal (all four hues sit >25° from hue 0). */
   --track-pink: 330 100% 56%;
   --track-blue: 193 100% 45%;
-  --track-green: 136 75% 52%;
-  --track-yellow: 50 100% 50%;
+  --track-green: 135.6 74.5% 52.4%;
+  --track-yellow: 50.1 100% 50%;
 
   /* DEPRECATED aliases — old PASTE-UP ink names kept so existing bg-spot /
      bg-ink-blue / bg-ink-over call sites keep rendering until the Public and
      Admin phases retire them. Do not use in new code; use track-* tokens. */
   --spot: 330 100% 56%;
-  --spot-foreground: 0 0% 7%;
+  --spot-foreground: 0 0% 6.7%;
   --ink-blue: 193 100% 45%;
-  --ink-blue-foreground: 0 0% 7%;
-  --ink-over: 136 75% 52%;
-  --ink-over-foreground: 0 0% 7%;
+  --ink-blue-foreground: 0 0% 6.7%;
+  --ink-over: 135.6 74.5% 52.4%;
+  --ink-over-foreground: 0 0% 6.7%;
 
   /* Ink borders ARE the system: every rule, divider and card edge is ink. */
-  --border: 0 0% 7%;
-  --input: 0 0% 7%;
+  --border: 0 0% 6.7%;
+  --input: 0 0% 6.7%;
   --input-bg: 60 33% 97%;
   --ring: 330 100% 56%;
 
   --sidebar-background: 60 33% 97%;
-  --sidebar-foreground: 0 0% 7%;
-  --sidebar-primary: 0 0% 7%;
+  --sidebar-foreground: 0 0% 6.7%;
+  --sidebar-primary: 0 0% 6.7%;
   --sidebar-primary-foreground: 60 33% 97%;
   --sidebar-accent: 60 9% 93%;
-  --sidebar-accent-foreground: 0 0% 7%;
-  --sidebar-border: 0 0% 7%;
-  --sidebar-ring: 0 0% 7%;
+  --sidebar-accent-foreground: 0 0% 6.7%;
+  --sidebar-border: 0 0% 6.7%;
+  --sidebar-ring: 0 0% 6.7%;
 
   --radius: var(--radius-element);
 
@@ -352,10 +352,10 @@
      primary  = body, headings
      secondary = supporting copy
      muted    = captions, hints, disabled */
-  --text-primary: 0 0% 7%;
+  --text-primary: 0 0% 6.7%;
   --text-secondary: 0 0% 30%;
   --text-muted: 0 0% 40%;
-  --border-hairline: 0 0% 7%;
+  --border-hairline: 0 0% 6.7%;
   --transition-smooth: all 0.18s cubic-bezier(0.22, 1, 0.36, 1);
 
   /* Surface tonal layering — paper-tinted neutral steps. */
@@ -366,7 +366,7 @@
   --surface-container-high: 60 6% 90%;
   --surface-container-highest: 60 4% 87%;
   --surface-dim: 60 4% 85%;
-  --inverse-surface: 0 0% 7%;
+  --inverse-surface: 0 0% 6.7%;
 
   --z-dropdown: 50;
   --z-sticky: 100;

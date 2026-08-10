@@ -23,14 +23,22 @@ import {
   Info,
   Accessibility,
   Scale,
-  Compass,
-  MessageCircle,
-  User,
   History,
   BookOpen,
   Martini,
-  type LucideIcon,
 } from 'lucide-react';
+import type { ComponentType } from 'react';
+import { transitIcon } from '@/components/transit/navTransitIcon';
+
+/**
+ * A nav entry's icon component. Widened from LucideIcon so the tables can hold
+ * either system: lucide icons are ForwardRefExoticComponents, TransitIcon
+ * bindings are plain function components, and `LucideIcon` demands the former
+ * (`$$typeof`). Both accept {size, className}, which is all any render site
+ * passes — so this is the real contract, and LucideIcon was an over-narrow
+ * stand-in for it.
+ */
+export type NavIcon = ComponentType<{ size?: number; className?: string }>;
 
 /**
  * Single source of truth for site navigation.
@@ -54,7 +62,7 @@ export type NavCluster = 'places' | 'community' | 'shop' | 'support';
 
 export interface NavDestination {
   to: string;
-  icon: LucideIcon;
+  icon: NavIcon;
   labelKey: string;
   cluster: NavCluster;
   /** Maps to a searchTaxonomy id when the destination is 1:1 with an index. */
@@ -177,7 +185,7 @@ export type IntentId = 'going-out' | 'travelling' | 'meet' | 'rights' | 'support
 export interface IntentDestination {
   id: IntentId;
   to: string;
-  icon: LucideIcon;
+  icon: NavIcon;
   /** Desktop row label. Keep ≤11 chars — six locales share one flex row. */
   labelKey: string;
   fallback: string;
@@ -248,13 +256,17 @@ export const INTENT_NAV: IntentDestination[] = [
   },
   {
     id: 'support',
-    to: '/support',
+    // Points at /help, not /support: the two pages were redundant (same
+    // useOrganizationsList({role:'support'}) source) and /help is the superset —
+    // it owns the CMS hotline corpus, per-country routes, QuickExit and the
+    // EmergencyService JSON-LD. /support still resolves, as a redirect.
+    to: '/help',
     icon: LifeBuoy,
     labelKey: 'header.intents.support.label',
     fallback: 'Support',
     subtitleKey: 'header.intents.support.subtitle',
     subtitleFallback: 'Helplines and organizations near you',
-    activePrefixes: ['/support', '/organizations'],
+    activePrefixes: ['/support', '/help', '/organizations'],
   },
   {
     id: 'shop',
@@ -314,7 +326,7 @@ export const INTENT_SCOPE_BIAS: Record<IntentId, string[]> = {
 export interface BottomNavTab {
   id: 'home' | 'explore' | 'hub' | 'you';
   to: string;
-  icon: LucideIcon;
+  icon: NavIcon;
   labelKey: string;
   /** Locale-stripped prefixes that light this tab. '/' is matched exactly. */
   activePrefixes: string[];
@@ -327,11 +339,11 @@ export interface BottomNavTab {
 }
 
 export const BOTTOM_NAV_TABS: BottomNavTab[] = [
-  { id: 'home', to: '/', icon: Home, labelKey: 'header.mobileNav.home', activePrefixes: ['/'] },
+  { id: 'home', to: '/', icon: transitIcon('home-base'), labelKey: 'header.mobileNav.home', activePrefixes: ['/'] },
   {
     id: 'explore',
     to: '/search',
-    icon: Compass,
+    icon: transitIcon('compass'),
     labelKey: 'header.mobileNav.explore',
     // Any browse/discovery route lights Explore — "you're in the catalogue".
     activePrefixes: [
@@ -341,6 +353,11 @@ export const BOTTOM_NAV_TABS: BottomNavTab[] = [
       '/going-out',
       '/rights',
       '/support',
+      // The Support intent now lands on /help (the two pages were merged), so
+      // Explore must light there too — otherwise the mobile tab goes dark the
+      // moment someone taps Support. /support stays listed because the URL
+      // still resolves as a redirect and may arrive from an inbound link.
+      '/help',
       '/shop',
       '/organizations',
       '/cities',
@@ -367,7 +384,7 @@ export const BOTTOM_NAV_TABS: BottomNavTab[] = [
   {
     id: 'hub',
     to: '/hub',
-    icon: MessageCircle,
+    icon: transitIcon('chat'),
     labelKey: 'header.mobileNav.hub',
     // Old /messages and /me both redirect into /hub — keep them lighting this tab.
     activePrefixes: ['/hub', '/messages', '/me'],
@@ -379,7 +396,7 @@ export const BOTTOM_NAV_TABS: BottomNavTab[] = [
     // /user/<id> for signed-in users ('/me' is the anon gate fallback).
     id: 'you',
     to: '/me',
-    icon: User,
+    icon: transitIcon('profile'),
     labelKey: 'header.mobileNav.you',
     activePrefixes: ['/profile', '/user'],
     authGated: true,
@@ -389,7 +406,7 @@ export const BOTTOM_NAV_TABS: BottomNavTab[] = [
 
 export interface NavItem {
   to: string;
-  icon: LucideIcon;
+  icon: NavIcon;
   labelKey: string;
 }
 
@@ -414,7 +431,7 @@ export const USER_MODE_VALUES = [
 
 export type UserMode = (typeof USER_MODE_VALUES)[number];
 
-export const USER_MODES: { value: UserMode; icon: LucideIcon; labelKey: string }[] = [
+export const USER_MODES: { value: UserMode; icon: NavIcon; labelKey: string }[] = [
   { value: 'dating', icon: Heart, labelKey: 'header.modes.dating' },
   { value: 'friends', icon: Users, labelKey: 'header.modes.friends' },
   { value: 'exploration', icon: Map, labelKey: 'header.modes.exploration' },

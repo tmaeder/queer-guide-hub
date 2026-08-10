@@ -10,6 +10,7 @@
 
 import type { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
 import { gatewayBaseUrl, gatewayHeaders } from './ai-gateway.ts'
+import { mapToCfModel } from './cf-model-map.ts'
 
 // ---------------------------------------------------------------------------
 // AES-GCM encryption helpers (same pattern as manage-api-keys)
@@ -215,26 +216,10 @@ export interface ChatCompletionResult {
 
 // Cost-control defaults. The 8B model costs ~9x less per output token than the
 // 70B and handles classification/extraction/normalization/relevance fine. The
-// 70B is reserved for callers that OPT IN (pass a `@cf/...` id, or a `claude-`
-// name via the shim). A one-off $765 Workers-AI bill (invoice IN-72568830,
-// Jul 2026) traced back to everything silently defaulting to the 70B here.
-const CF_MODEL_DEFAULT = '@cf/meta/llama-3.1-8b-instruct'
-const CF_MODEL_STRONG = '@cf/meta/llama-3.3-70b-instruct-fp8-fast'
-
-/**
- * Map a legacy OpenAI model name to the CF Workers AI equivalent. Edge cases
- * (e.g. embeddings, tool-calling) should opt out by passing a `@cf/...` model
- * directly so this map is not consulted.
- */
-function mapToCfModel(openaiModel: string): string {
-  if (openaiModel.startsWith('@cf/')) return openaiModel
-  // Anthropic models smuggled through (via shim) are a DELIBERATE request for a
-  // strong model → big Llama (overridable via CF_AI_MODEL_STRONG).
-  if (openaiModel.startsWith('claude-')) return Deno.env.get('CF_AI_MODEL_STRONG') || CF_MODEL_STRONG
-  // Default: the cheap model. Callers that need the 70B pass a `@cf/...` id (or
-  // a `claude-` name) explicitly. Override the fleet default via CF_AI_MODEL.
-  return Deno.env.get('CF_AI_MODEL') || CF_MODEL_DEFAULT
-}
+// Model ids + tier map now live in cf-model-map.ts so llm-client.ts (the
+// OpenAI-compat client behind the Anthropic shim) applies the SAME mapping.
+// Re-exported because callers and tests import it from here.
+export { CF_MODEL_DEFAULT, CF_MODEL_STRONG, mapToCfModel } from './cf-model-map.ts'
 
 /**
  * Coerce an LLM `content` field to a string. Workers AI (and occasionally the

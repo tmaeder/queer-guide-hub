@@ -93,7 +93,7 @@ Deno.serve(async (req) => {
   try {
     const body = await req.json().catch(() => ({}))
     const batchSize = Math.min(50, body.batch_size ?? 20)
-    const model = (body.model as string) || '@cf/meta/llama-3.1-8b-instruct'
+    const model = (body.model as string) || '@cf/meta/llama-3.1-8b-instruct-fast'
     const dryRun = body.dry_run === true
 
     // Unanchored, non-archived rows with a substantive bio but at least one

@@ -5,6 +5,8 @@ import { useMeta } from '@/hooks/useMeta';
 import { IntentPageLayout } from '@/components/intent/IntentPageLayout';
 import { CoverageNote } from '@/components/intent/CoverageNote';
 import { useAllCountriesRights, useIntentNews, type RightsCountry } from '@/hooks/useIntentData';
+import { summariseRightsWorldwide } from '@/lib/rights/rightsWorldSummary';
+import { RIGHT_SECTION_ORDER, RIGHT_SECTION_LABEL } from '@/lib/rights/rightsCatalog';
 import { useIntentLocation } from '@/hooks/useIntentLocation';
 import {
   hasAnyCriminalizationSignal,
@@ -107,9 +109,29 @@ function CountryLink({
   );
 }
 
+/**
+ * Two topics share `labelKey: 'unions'` in the catalog — on the country card
+ * they render inside one bespoke union block, so the collision never showed.
+ * A flat per-right list produces two rows both reading "Same-sex unions", with
+ * different numbers, which looks like a data error. Disambiguated here rather
+ * than in the catalog: the country card's combined block is still correct for
+ * its own layout.
+ */
+const SUMMARY_LABEL: Record<string, string> = {
+  marriage: 'Marriage equality',
+  'civil-union': 'Civil unions',
+};
+
 export default function RightsIntent() {
   const { t } = useTranslation();
   const { data: countries, isLoading, error } = useAllCountriesRights();
+
+  // The rights themselves, counted across every country we hold. This is the
+  // page's new lead: it answers "where do queer rights stand" without making
+  // the reader pick a country first.
+  const rightsSummary = summariseRightsWorldwide(
+    (countries ?? []) as unknown as Record<string, unknown>[],
+  );
   const { countryCode } = useIntentLocation();
 
   useMeta({
@@ -179,6 +201,76 @@ export default function RightsIntent() {
   );
 
   const sections: SectionDef[] = [
+    {
+      id: 'rights',
+      label: 'The rights themselves',
+      kicker: 'Where each one stands worldwide',
+      // Deliberately FIRST, above 'here' and 'world'. The page used to open on
+      // a country index — you had to already know which country you cared
+      // about before it told you anything. The 18 rights sat in the database at
+      // 100% coverage while the page rendered one of them (see rightsCatalog's
+      // own note). This turns the axis around; the country ledger still exists,
+      // one scroll down.
+      hidden: !countries || countries.length === 0,
+      content: (
+        <div className="flex flex-col gap-8">
+          {RIGHT_SECTION_ORDER.map((sectionId) => {
+            const rows = rightsSummary.filter((r) => r.topic.section === sectionId);
+            if (rows.length === 0) return null;
+            return (
+              <div key={sectionId}>
+                <h3 className="mb-4 text-2xs font-bold uppercase tracking-label text-muted-foreground">
+                  {RIGHT_SECTION_LABEL[sectionId]}
+                </h3>
+                <ul className="list-none p-0 m-0 grid gap-4 sm:grid-cols-2">
+                  {rows.map(({ topic, yes, no, measured, uncounted }) => {
+                    const Icon = topic.icon;
+                    return (
+                      <li
+                        key={topic.slug}
+                        className="flex items-start gap-4 border-2 border-foreground p-4 rounded-container"
+                      >
+                        <Icon size={20} aria-hidden="true" className="mt-0.5 shrink-0" />
+                        <div className="min-w-0">
+                          <p className="font-medium">
+                            {SUMMARY_LABEL[topic.slug] ??
+                              t(`country.rights.${topic.labelKey}`, topic.labelDefault)}
+                          </p>
+                          {uncounted ? (
+                            // Rendered WITHOUT a number rather than dropped. An
+                            // omitted right reads as "this does not exist";
+                            // an uncounted one reads as what it is.
+                            <p className="text-13 text-muted-foreground">
+                              Recorded per country — open a country to read it.
+                            </p>
+                          ) : (
+                            <p className="text-13 text-muted-foreground tabular-nums">
+                              {topic.severeNegative
+                                ? `${no} of ${measured} countries criminalise`
+                                : topic.kind === 'protection-matrix'
+                                  ? // "fully" is load-bearing: the bar is all four
+                                    // of SO/GI/GE/SC, so a country protecting only
+                                    // sexual orientation is not counted here.
+                                    `${yes} of ${measured} countries fully protect`
+                                  : `${yes} of ${measured} countries protect`}
+                            </p>
+                          )}
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            );
+          })}
+        </div>
+      ),
+      action: (
+        <LocalizedLink to="/rights/sources" className="text-13 no-underline hover:underline">
+          How we know
+        </LocalizedLink>
+      ),
+    },
     {
       id: 'here',
       label: 'Where you are',
