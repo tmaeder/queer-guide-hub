@@ -22,6 +22,8 @@ import { ShareMenu } from '@/components/share/ShareMenu';
 import { TagChipRow } from '@/components/tags/TagChipRow';
 import { Button } from '@/components/ui/button';
 import { Eyebrow } from '@/components/ui/Eyebrow';
+import { RouteBullet } from '@/components/transit/RouteBullet';
+import { FactGrid } from '@/components/transit/FactGrid';
 import { Image } from '@/components/ui/Image';
 import { FavoriteButton } from '@/components/ui/favorite-button';
 import { ReportButton } from '@/components/moderation/ReportButton';
@@ -387,8 +389,12 @@ export function VenueHero({
 
       {/* Editorial header — masthead opener (PHOTOCOPY): 2px rule + kicker. */}
       <div className="mb-6 rule-heavy pt-2">
-        {(venue.category || venue.countries?.equality_score != null) && (
-          <div className="mb-2 flex flex-wrap items-center gap-2">
+        {/* Spec masthead: the typed route bullet leads, then the kicker and
+            any status. The bullet is what makes a mixed row (search results,
+            boards, admin tables) readable, so the single-page header states
+            the same type the row would have shown. */}
+        <div className="mb-2 flex flex-wrap items-center gap-2">
+            <RouteBullet type="venue" size={44} />
             {venue.category && (
               <Eyebrow as="span" variant="kicker" className="capitalize">
                 {venue.category}
@@ -398,8 +404,7 @@ export function VenueHero({
               <EqualityScoreBadge score={venue.countries.equality_score} size="sm" />
             )}
             <SocialSignalBadges signal={socialSignal} tripUsageThreshold={1} />
-          </div>
-        )}
+        </div>
 
         <h1
           className="m-0 font-display text-display md:text-hero leading-[1] tracking-tight"
@@ -545,8 +550,34 @@ export function VenueOverview({
   const hasImages = (venue.images?.length ?? 0) > 0;
   const hasTags = (venue.tags?.length ?? 0) > 0;
 
+  const cityLabel = [venue.cities?.name, venue.countries?.name].filter(Boolean).join(', ');
+
   return (
     <div className="flex flex-col gap-10">
+      {/* Spec module: the bordered fact grid every single opens with. Empty
+          columns are dropped by FactGrid itself, so a thin record collapses to
+          a shorter grid rather than rendering blank cells. */}
+      <FactGrid
+        facts={[
+          { label: t('venues.detail.address', 'Address'), value: venue.address },
+          { label: t('venues.detail.city', 'City'), value: cityLabel },
+          { label: t('venues.detail.category', 'Category'), value: venue.category },
+          {
+            label: t('venues.detail.price', 'Price'),
+            value: getPriceRange(venue.price_range ?? null),
+          },
+          { label: t('venues.detail.phone', 'Phone'), value: venue.phone },
+          {
+            label: t('venues.detail.website', 'Website'),
+            value: venue.website ? (
+              <a href={venue.website} target="_blank" rel="noopener noreferrer">
+                {venue.website.replace(/^https?:\/\//, '').replace(/\/$/, '')}
+              </a>
+            ) : null,
+          },
+        ]}
+      />
+
       <FeaturedInGuides entityType="venue" entityId={venue.id} />
 
       {venue.organizations && (

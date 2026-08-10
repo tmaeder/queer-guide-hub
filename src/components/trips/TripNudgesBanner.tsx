@@ -38,7 +38,7 @@ export function TripNudgesBanner({ tripId }: Props) {
           n.severity === 'critical'
             ? { bg: 'rgba(220, 38, 38, 0.08)', fg: '#dc2626' }
             : n.severity === 'warning'
-              ? { bg: 'rgba(217, 119, 6, 0.08)', fg: '#b45309' }
+              ? { bg: 'rgba(217, 119, 6, 0.08)', fg: '#92400e' }
               : { bg: 'hsl(var(--muted))', fg: 'hsl(var(--foreground))' };
 
         const isInternal = n.action_url?.startsWith('/');

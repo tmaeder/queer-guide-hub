@@ -204,12 +204,24 @@ jobs:
     timeout-minutes: 30
     env:
       BASE_URL: ${{ inputs.base_url != '' && inputs.base_url || (github.event_name == 'schedule' && 'https://queer.guide') || 'http://localhost:4173' }}
-      # Whole public manifest × desktop+mobile × light+dark, with the 320px
-      # reflow gate folded into the mobile pass. OUT_NAME must match the file the
-      # gate step below reads.
+      # Whole public manifest × desktop+mobile, with the 320px reflow gate
+      # folded into the mobile pass. OUT_NAME must match the file the gate step
+      # below reads.
+      #
+      # LIGHT ONLY since the 2026-08-09 subway-map rebrand removed dark mode:
+      # the `.dark` block is gone from src/index.css, ThemeProvider hard-reports
+      # light, and the pre-paint script in index.html strips the class. The dark
+      # pass set `ui-theme=dark` (which the app now deletes) and emulated a dark
+      # colour-scheme, so it rendered a state NO user can reach — and duly
+      # reported a contrast failure on /villages/adams-point that does not exist
+      # in the product. Scanning it would mean maintaining contrast for an
+      # unreachable render forever.
+      #
+      # If dark mode ever returns, restore `light,dark` here in the same change
+      # that reintroduces the `.dark` token block.
       SCAN_SCOPE: public
       SCAN_VIEWPORTS: desktop,mobile
-      SCAN_THEMES: light,dark
+      SCAN_THEMES: light
       SCAN_CONCURRENCY: '4'
       OUT_NAME: axe-postdeploy
     steps:
