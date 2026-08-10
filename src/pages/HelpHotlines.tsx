@@ -55,6 +55,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useHotlineBookmarks } from '@/hooks/useHotlineBookmarks';
 import { useGeoCountry } from '@/hooks/useGeoCountry';
 import { useOrganizationsList } from '@/hooks/useOrganization';
+import { CoverageNote } from '@/components/intent/CoverageNote';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -297,7 +298,7 @@ export default function HelpHotlines() {
   const { data: supportOrgs = [] } = useOrganizationsList({
     role: 'support',
     countryCode: countryFilter,
-    limit: 12,
+    limit: 24,
   });
 
   const bookmarkedHotlines = useMemo(() => {
@@ -643,8 +644,44 @@ export default function HelpHotlines() {
                   <ChevronRight size={16} className="ml-1" />
                 </LocalizedLink>
               </Button>
+
+              {/* Carried over from /support when that page was folded in here.
+                  The specific counts it used to quote ("2,510 organizations
+                  across 76 countries") are deliberately NOT reproduced: they
+                  were hardcoded prose and would rot silently. The load-bearing
+                  sentence is the last one — an empty result must not read as
+                  "no help exists". */}
+              <div className="mt-6">
+                <CoverageNote>
+                {t(
+                  'help.org_coverage',
+                  'This directory is nowhere near everywhere. If a group you trust is missing, tell us about it. An empty result here means we have no record — not that no help exists.',
+                )}{' '}
+                  <LocalizedLink to="/submit" className="underline underline-offset-4">
+                    {t('help.tell_us', 'Tell us about it')}
+                  </LocalizedLink>
+                </CoverageNote>
+              </div>
             </div>
           )}
+
+          {/* Also carried over from /support: whether it is safe to be out, to
+              seek healthcare, or to report a crime depends on where you are, and
+              someone on this page is often deciding exactly that. */}
+          <div className="mt-12 pt-6">
+            <h3 className="mb-4 text-sm font-bold">{t('help.know_the_law', 'Know the law')}</h3>
+            <p className="mb-4 max-w-prose text-muted-foreground">
+              {t(
+                'help.know_the_law_body',
+                'Whether it is safe to be out, to seek healthcare, or to report a crime depends on where you are. Check the legal position before you act on it.',
+              )}
+            </p>
+            <Button asChild variant="outline" size="sm">
+              <LocalizedLink to="/rights">
+                {t('help.rights_by_country', 'LGBTQ+ rights by country')}
+              </LocalizedLink>
+            </Button>
+          </div>
 
           {/* Related resources */}
           <div className="mt-12 pt-6">
