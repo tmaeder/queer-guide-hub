@@ -393,8 +393,13 @@ const Venues = () => {
   const gridClass = 'grid gap-6 pb-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4';
   const gridColumns = useGridColumns(VENUES_GRID_BREAKPOINTS);
 
+  // overflow-x-CLIP, not -hidden: `overflow-x: hidden` computes overflow-y to
+  // `auto`, which makes this div a scroll container and silently kills
+  // `position: sticky` for every descendant (it broke the sticky result bar
+  // below). `clip` contains the same horizontal overflow without creating a
+  // scroll container. Matches LayoutShell's own <main>.
   return (
-    <div className="min-h-screen overflow-x-hidden">
+    <div className="min-h-screen overflow-x-clip">
       <AchievementToast />
       <div className="mx-auto w-full max-w-screen-xl px-4 py-6 md:py-10 min-w-0 space-y-8">
         {/* Editorial top: hero + personal strip when v2 + grid view */}
