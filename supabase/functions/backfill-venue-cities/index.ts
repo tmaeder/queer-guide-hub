@@ -266,11 +266,21 @@ async function processForward(
   supabase: ReturnType<typeof getServiceClient>,
   batchSize: number,
 ): Promise<{ results: VenueResult[]; remaining: number }> {
-  // Venues with address but no coords and no city_id, not yet attempted
+  // Venues with a usable address but no coordinates, not yet attempted.
+  //
+  // The `city_id IS NULL` filter was REMOVED. It made this pass unreachable for
+  // exactly the rows the centroid repair produces: a venue that already has a
+  // city_id but whose coordinates were nulled because they were a city-centroid
+  // placeholder. Those rows have a real street address and are the most
+  // recoverable population there is, and the filter would have stranded ~3,277
+  // of them at NULL permanently — a worse state than the wrong pin they had.
+  //
+  // Nothing downstream depended on the exclusion: the pass fills coordinates
+  // (and city_id only when absent), so a row that already has a city simply
+  // keeps it.
   const { data: venues, error } = await supabase
     .from('venues')
-    .select('id, name, address, city, country, country_id')
-    .is('city_id', null)
+    .select('id, name, address, city, country, country_id, city_id')
     .is('duplicate_of_id', null)
     .or('latitude.is.null,longitude.is.null')
     .not('address', 'is', null)
@@ -298,10 +308,12 @@ async function processForward(
     }
   }
 
+  // Mirrors the selection above — including the dropped city_id filter. A
+  // count computed over a narrower set than the one being drained reports a
+  // backlog that never shrinks.
   const { count } = await supabase
     .from('venues')
     .select('id', { count: 'exact', head: true })
-    .is('city_id', null)
     .is('duplicate_of_id', null)
     .or('latitude.is.null,longitude.is.null')
     .not('address', 'is', null)
@@ -359,7 +371,13 @@ async function processForward(
         const fwdCoords = (lat && lon) ? { lat, lon } : null
         const cityMatch = await matchCity(supabase, cityName, countryCode, fwdCoords)
         if (cityMatch) {
-          update.city_id = cityMatch.id
+          // Only ever FILL a missing city — never re-link one that exists.
+          // This pass now also sees venues that already have a city_id (their
+          // coordinates were nulled by the centroid repair), and re-resolving
+          // a city by NAME is how Portland ME becomes Portland OR. The venue's
+          // existing link is the better evidence; the geocoder is here for the
+          // coordinates.
+          if (!venue.city_id) update.city_id = cityMatch.id
           if (!venue.country_id) update.country_id = cityMatch.country_id
         }
       }
@@ -374,7 +392,13 @@ async function processForward(
       await supabase.from('venues').update(update).eq('id', venue.id)
       results.push({
         id: venue.id,
-        status: update.city_id ? 'matched' : cityName ? 'geocoded_no_city_match' : lat ? 'coords_only' : 'no_useful_data',
+        status: update.city_id
+          ? 'matched'
+          : update.latitude
+            ? 'coords_filled'
+            : cityName
+              ? 'geocoded_no_city_match'
+              : 'no_useful_data',
         city_name: cityName || undefined,
         city_id: update.city_id as string | undefined,
       })
