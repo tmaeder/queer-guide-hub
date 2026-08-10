@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { ShieldCheck, ShieldAlert, ShieldQuestion, Skull } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Eyebrow } from '@/components/ui/Eyebrow';
+import { FactGrid } from '@/components/transit/FactGrid';
 import { cn } from '@/lib/utils';
 import { useTripSafety } from '@/hooks/useTripSafety';
 import { getScoreLabel } from '@/utils/equalityScore';
@@ -85,51 +86,42 @@ export function CityAtAGlance({ city, hasAirport, effectiveIata }: CityAtAGlance
       value: hasAirport ? effectiveIata : `~${effectiveIata}`,
     });
 
-  // PASTE-UP: separate plates with a gutter, not a hairline grid. Each fact
-  // used to be ruled with border-t/border-l plus -mt-px/-ml-px compensation;
-  // now every fact is its own pasted tile and the page shows through between
-  // them — closer to real paste-up than the rules were, and it still rags
-  // cleanly when the conditional fact count leaves the last row short.
+  // Spec module 01 (fact strip) — but the SAFETY verdict is deliberately NOT
+  // inside it. The strip renders every cell with equal weight, which is right
+  // for population and currency and wrong for "Criminalized": flattening a
+  // legal verdict into a row of trivia is exactly how a reader skims past it.
+  // So safety keeps its own block above, at full width, with the reserved
+  // --destructive token and the jump link intact; the ordinary facts adopt
+  // the shared module below.
   return (
-    <div className="rounded-element">
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
-        <a
-          href="#rights"
-          className="col-span-2 block bg-surface-container p-4 no-underline sm:col-span-1"
-          aria-label={t('cities.detail.glance.safetyLink', 'Jump to safety & rights')}
-        >
-          <Eyebrow as="div" className="mb-2">
-            {t('cities.detail.glance.safety', 'Safety')}
-          </Eyebrow>
-          <span
-            className={cn(
-              'inline-flex items-center gap-1.5 rounded-badge px-2 py-1 text-13 font-semibold transition-colors',
-              danger
-                ? 'bg-destructive/10 text-destructive'
-                : 'bg-surface-container-high text-foreground hover:bg-surface-container-highest',
-            )}
-          >
-            <SafetyIcon size={14} aria-hidden="true" />
-            {safetyLabel}
-          </span>
-          {score != null && (
-            <span className="ml-2 font-mono text-13 tabular-nums text-muted-foreground">
-              {score}/100
-            </span>
+    <div className="flex flex-col gap-2">
+      <a
+        href="#rights"
+        className="block border-[3px] border-foreground p-4 no-underline"
+        aria-label={t('cities.detail.glance.safetyLink', 'Jump to safety & rights')}
+      >
+        <Eyebrow as="div" className="mb-2">
+          {t('cities.detail.glance.safety', 'Safety')}
+        </Eyebrow>
+        <span
+          className={cn(
+            'inline-flex items-center gap-1.5 rounded-badge px-2 py-1 text-13 font-semibold transition-colors',
+            danger
+              ? 'bg-destructive/10 text-destructive'
+              : 'bg-surface-container-high text-foreground hover:bg-surface-container-highest',
           )}
-        </a>
+        >
+          <SafetyIcon size={14} aria-hidden="true" />
+          {safetyLabel}
+        </span>
+        {score != null && (
+          <span className="ml-2 font-mono text-13 tabular-nums text-muted-foreground">
+            {score}/100
+          </span>
+        )}
+      </a>
 
-        {facts.map((f) => (
-          <div key={f.label} className="min-w-0 bg-surface-container p-4">
-            <Eyebrow as="div" className="mb-2">
-              {f.label}
-            </Eyebrow>
-            <p className="truncate font-mono text-15 font-medium tabular-nums text-foreground">
-              {f.value}
-            </p>
-          </div>
-        ))}
-      </div>
+      <FactGrid facts={facts} />
     </div>
   );
 }
