@@ -129,3 +129,23 @@ export function readRightValue(
 
 /** Vocabulary coverage, for the drift test. */
 export const KNOWN_RIGHT_VALUES: readonly string[] = Object.keys(VOCAB);
+
+
+/**
+ * The scalar a topic's column actually carries.
+ *
+ * Lifted verbatim out of LGBTJurisdictionInfo so the country card and the
+ * /rights index read ONE implementation. Two columns are objects whose
+ * headline string lives on a named key; the rest are already scalars. Getting
+ * this wrong does not throw — it yields `none` and silently undercounts a
+ * legal protection, which on this page is the expensive kind of wrong.
+ */
+export function topicScalarValue(
+  country: Record<string, unknown>,
+  topic: { slug: string; column: string },
+): unknown {
+  const raw = country[topic.column];
+  if (topic.slug === 'expression') return (raw as Record<string, unknown> | null)?.summary;
+  if (topic.slug === 'association') return (raw as Record<string, unknown> | null)?.status;
+  return raw;
+}
