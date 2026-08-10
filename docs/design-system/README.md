@@ -96,6 +96,52 @@ branding.ts` SIZE_KEYS → `src/lib/utils.ts` customTextSizes → a migration on
 not deleted, precisely to avoid that procedure and keep every
 `rounded-container/element/badge` call site valid.
 
+## Page layout
+
+One primitive frames every page: **`<PageContainer>`**
+(`src/components/layout/PageContainer.tsx`). Never hand-roll
+`container mx-auto px-4 py-8` — ESLint errors on it in `src/pages/**`
+(`queerguide/no-hand-rolled-page-wrapper`).
+
+| Aspect | Value | Token |
+|---|---|---|
+| Gutter | `px-4 sm:px-6 md:px-8` | `PAGE_GUTTER` |
+| Vertical | `py-8 md:py-12` — the ONE rhythm, no per-page override | `PAGE_VERTICAL` |
+| Default cap | 1600 — grids, listings, detail pages | `--container-page` → `max-w-page` |
+| Reading cap | 768 — long-form prose | `--container-reading` → `max-w-reading` |
+| Form cap | 512 — auth, steppers, single-column forms | `--container-form` → `max-w-form` |
+
+- `size="reading" | "form"` picks the measure. Default is `page`.
+- `flush` drops the vertical for a page that owns its own bands (heroes, the
+  home rails, `SinglePage`'s three spine blocks). It never drops the gutter.
+- `as` renders a different element (`article`, `section`, `header`, `footer`).
+
+**The gutter ladder is the same one `Header` and `Footer` use.** That is the
+whole point: a page's first pixel of content sits on the same vertical as the
+nav tab above it, at every breakpoint. Full-bleed bars (header rows, the
+breadcrumb bar, tinted home bands) stay full-bleed — their rule or tint IS the
+band's edge — and take the cap on their *content row* only.
+
+Why 1600 rather than the `max-w-7xl` (1280) it replaced: the cap exists to stop
+grids spreading, and 1280 left roughly a third of a common desktop viewport as
+dead margin. Prose does not scale with it, which is what the second and third
+tokens are for.
+
+Adding a container token is a **three-layer** change — `src/index.css` `@theme`,
+the `customContainerSizes` list in `src/lib/utils.ts` (tailwind-merge only knows
+t-shirt sizes in the `max-w` group, so without it two caps apply at once and
+stylesheet order decides), and this table. It does **not** touch `tokenCatalog`
+or `branding_validate` — those enumerate colour and text-size keys only.
+
+One bespoke width survives, deliberately: `LegalPageLayout` at 1100px. It is
+prose with a 224px sticky TOC beside it, so the page cap would stretch legal
+text to an unreadable measure and `reading` would leave the prose ~430px.
+
+Admin uses the same standard from one place: `AdminShell`'s `<main>` applies
+the ladder plus a `max-w-page` inner wrapper, and admin **pages render bare
+content** — adding their own `p-6` on top is what produced 48px gutters on some
+pages and 16px on others across six different content widths.
+
 ## Depth
 
 Soft elevation shadows stay banned (`shadow-md/lg/xl/2xl` are ESLint errors).
@@ -165,5 +211,13 @@ inert and get deleted surface-by-surface in later phases.
   shadow on `.card-lift` hover, Anton/Space Grotesk/no-Inter, sanctioned
   saturated backgrounds (track colors + destructive only). The old border/line
   budget was deleted — ink borders are the idiom now.
+- `e2e/page-layout.spec.ts` — the page-layout invariant: a page's outermost
+  container's content edge equals the header's, across 12 routes ×
+  390/768/1440/1920, plus no horizontal overflow. Asserts the *relationship*
+  rather than pixel values, so it survives a change to the gutter ladder itself.
 - `eslint.config.js` — hex/rgb/hsl literals, chromatic Tailwind classes,
-  soft shadows, JSX gradients: unchanged and still errors.
+  soft shadows, JSX gradients: unchanged and still errors. Plus
+  `queerguide/no-hand-rolled-page-wrapper` on `src/pages/**` (a NAMED rule, not
+  another `no-restricted-syntax` selector — that rule is replaced WHOLESALE per
+  file in flat config, so a new selector would have to be re-stated in all four
+  blocks and one miss silently disables load-bearing ones; precedent #2049).

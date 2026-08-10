@@ -64,10 +64,10 @@ export default function Community({ tab }: { tab?: CommunityTab }) {
 
       <Suspense
         fallback={
-          <div className="container mx-auto px-4 py-8 flex flex-col gap-4">
+          <PageContainer className="flex flex-col gap-4">
             <Skeleton className="h-32 rounded-container" />
             <Skeleton className="h-32 rounded-container" />
-          </div>
+          </PageContainer>
         }
       >
         {active === 'feed' && <Feed />}

@@ -128,7 +128,7 @@ const GuideDetail = () => {
 
   return (
     <article className="min-h-screen">
-      <header className="container mx-auto px-4 pt-8 pb-12 max-w-4xl">
+      <PageContainer as="header" flush size="reading" className="max-w-4xl pt-8 pb-12">
         <LocalizedLink
           to="/guides"
           className="inline-flex items-center gap-2 text-13 text-muted-foreground hover:text-foreground mb-8"
@@ -144,46 +144,46 @@ const GuideDetail = () => {
         {guide.dek && (
           <p className="italic text-body-lg text-muted-foreground max-w-2xl">{guide.dek}</p>
         )}
-      </header>
+      </PageContainer>
 
       {hero && (
-        <div className="container mx-auto px-4 max-w-5xl mb-12">
+        <PageContainer flush className="max-w-5xl mb-12">
           <div className="relative aspect-[16/9] rounded-container overflow-hidden bg-muted">
             <img src={hero} alt="" className="absolute inset-0 size-full object-cover" />
           </div>
-        </div>
+        </PageContainer>
       )}
 
       {guide.intro_md && (
-        <section className="container mx-auto px-4 max-w-3xl mb-16 space-y-6">
+        <PageContainer as="section" flush size="reading" className="mb-16 space-y-6">
           {guide.intro_md.split(/\n\n+/).map((para, i) => (
             <p key={i} className="text-body-lg leading-relaxed">
               {para}
             </p>
           ))}
-        </section>
+        </PageContainer>
       )}
 
       {isQuest && (
-        <div className="container mx-auto px-4 max-w-4xl mb-16">
+        <PageContainer flush className="max-w-4xl mb-16">
           <QuestModule guide={guide} />
-        </div>
+        </PageContainer>
       )}
 
       {sections.length > 0 && (
-        <section className="container mx-auto px-4 max-w-3xl mb-16 space-y-10">
+        <PageContainer as="section" flush size="reading" className="mb-16 space-y-10">
           {sections.map((s) => (
             <SectionBlock key={s.id} section={s} />
           ))}
-        </section>
+        </PageContainer>
       )}
 
       {picks.length > 0 && (
-        <section className="container mx-auto px-4 max-w-5xl space-y-16">
+        <PageContainer as="section" flush className="max-w-5xl space-y-16">
           {picks.map((pick, i) => (
             <GuidePickBlock key={pick.id} pick={pick} index={i} />
           ))}
-        </section>
+        </PageContainer>
       )}
 
       {guide.format === 'guide' && (
@@ -192,7 +192,7 @@ const GuideDetail = () => {
         </PageContainer>
       )}
 
-      <footer className="container mx-auto px-4 max-w-3xl my-16 pt-8">
+      <PageContainer as="footer" flush size="reading" className="my-16 pt-8">
         <p className="inline-flex items-center gap-2 text-13 text-muted-foreground">
           <Clock size={14} aria-hidden />
           {t('guides.detail.lastUpdated', 'Last updated')}{' '}
@@ -202,7 +202,7 @@ const GuideDetail = () => {
             day: 'numeric',
           })}
         </p>
-      </footer>
+      </PageContainer>
     </article>
   );
 };
