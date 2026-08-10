@@ -166,7 +166,17 @@ jobs:
           else
             echo "MIGRATION_BASE_REF=HEAD~1" >> "$GITHUB_ENV"
           fi
-      - run: node scripts/check-migration-versions.mjs
+      # The token lets this step exempt versions ALREADY in remote history. A
+      # migration applied via MCP is stamped with the call time, so on this
+      # repo (whose migrations are future-dated) the recovered file is born
+      # below max — the drift check demands the file and, without this, the
+      # ordering rule refuses it. Both gates then block every PR. Without the
+      # secret the step stays strict and says it could not verify.
+      - name: Run node scripts/check-migration-versions.mjs
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_PROJECT_REF: xqeacpakadqfxjxjcewc
+        run: node scripts/check-migration-versions.mjs
 
       # Remote-only versions: a migration applied to prod (MCP apply_migration or
       # raw Management-API SQL) with no committed file makes `supabase db push`
