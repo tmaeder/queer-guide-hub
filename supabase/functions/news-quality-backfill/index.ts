@@ -33,6 +33,10 @@ async function loadCandidatePools(supabase: ReturnType<typeof getServiceClient>)
 
 const DEFAULT_RUN_BATCH = 10
 const DEFAULT_ENQUEUE_BATCH = 200
+// Attempt ceiling per ARTICLE (not per job row — see the enqueue comment).
+// Three 'no_decision' verdicts on the same content is not a transient failure;
+// it is the model telling us the article is undecidable.
+const DEFAULT_MAX_FAILURES = 3
 
 interface RunSummary {
   processed: number; passed: number; review: number; rejected: number; failed: number; mutated: number
@@ -188,11 +192,28 @@ Deno.serve(async (req) => {
 
     if (action === 'enqueue') {
       const limit = Math.min(20000, body.limit ?? DEFAULT_ENQUEUE_BATCH)
-      const onlyMissing = body.only_missing !== false
-      // Newest-first: heal the most-visible recent articles before the long tail.
-      let q = supabase.from('news_articles').select('id').limit(limit).order('published_at', { ascending: false })
-      if (onlyMissing) q = q.is('quality_pipeline_version', null)
-      const { data: rows, error } = await q
+      const maxFailures = Math.max(1, body.max_failures ?? DEFAULT_MAX_FAILURES)
+
+      // Candidate selection moved into SQL (news_quality_enqueue_candidates).
+      //
+      // The old query here was `quality_pipeline_version IS NULL` and nothing
+      // else, which had no attempt ceiling: a 'no_decision' failure never
+      // stamps that column, so the same article was re-enqueued forever. Each
+      // re-enqueue INSERTs a fresh row, so the per-row `attempts` counter never
+      // exceeded 1 and no backoff could ever see the repetition. Measured
+      // 2026-08-10: 29,181 failed jobs across 1,159 articles (~25 attempts
+      // each), all 'no_decision', ~$41/month of LLM spend re-asking questions
+      // that had already returned "no answer".
+      //
+      // Asking an undecidable article a 26th time does not make it decidable.
+      //
+      // The SQL version also excludes articles that already have a pending or
+      // running job, which the old query did not — that is where the duplicate
+      // churn came from.
+      const { data: rows, error } = await supabase.rpc('news_quality_enqueue_candidates', {
+        p_limit: limit,
+        p_max_failures: maxFailures,
+      })
       if (error) return errorResponse(`enqueue load: ${error.message}`, 500, req)
 
       const jobs = (rows ?? []).map((r: { id: string }) => ({
