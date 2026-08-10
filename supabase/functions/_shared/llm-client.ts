@@ -16,6 +16,7 @@
 
 import { gatewayBaseUrl, gatewayHeaders } from './ai-gateway.ts'
 import { mapToCfModel } from './cf-model-map.ts'
+import { recordLlmUsage } from './llm-usage-log.ts'
 
 export interface LlmMessage {
   role: 'system' | 'user' | 'assistant'
@@ -36,6 +37,10 @@ export interface LlmCompletionOptions {
   // AI Gateway intermittently return HTML 5xx error pages; one retry recovers
   // them. Timeouts (AbortError) are never retried — they only compound latency.
   retries?: number
+  /** Edge function name, for llm_call_log attribution. */
+  callerFn?: string
+  /** Optional grouping key for llm_call_log (pipeline run, entity id). */
+  contextKey?: string | null
 }
 
 export interface LlmCompletionResult {
@@ -151,6 +156,19 @@ export async function llmChatCompletion(
         // stringify anything non-string — callers that want JSON re-parse it.
         const rawContent = data.choices?.[0]?.message?.content ?? ''
         const content = typeof rawContent === 'string' ? rawContent : JSON.stringify(rawContent)
+        // Spend telemetry. Fire-and-forget and never throws — see
+        // llm-usage-log.ts. `callerFn` is the only thing the caller has to
+        // supply for the row to be attributable; without it the spend is
+        // recorded but not blamed on anyone, which is still better than the
+        // zero rows this table had before.
+        recordLlmUsage({
+          fn: options.callerFn ?? 'llmChatCompletion',
+          model: data.model ?? cfModel,
+          tokensIn: data.usage?.prompt_tokens,
+          tokensOut: data.usage?.completion_tokens,
+          contextKey: options.contextKey ?? null,
+        })
+
         return {
           content,
           usage: data.usage,
