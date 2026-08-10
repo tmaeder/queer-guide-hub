@@ -26,6 +26,7 @@
 
 import { readdirSync } from 'node:fs'
 import { execSync } from 'node:child_process'
+import { fetchRemoteVersions } from './lib/remote-migrations.mjs'
 
 const MIGRATIONS_DIR = 'supabase/migrations'
 const VERSION_RE = /^(\d{14})_.+\.sql$/
@@ -61,6 +62,10 @@ const files = readdirSync(MIGRATIONS_DIR).filter((f) => f.endsWith('.sql'))
 
 const errors = []
 const warnings = []
+/** Versions below max that are already in remote history — reported, never fatal. */
+const applied = []
+/** Ordering violations we could NOT check against remote history (no token / API down). */
+const unverified = []
 
 // 1) Filename format — only enforced on newly added files (don't retroactively
 //    fail PRs for historical naming).
@@ -117,25 +122,70 @@ if (base !== null) {
   const maxBase = baseVersions.length > 0 ? baseVersions.reduce((a, b) => (a > b ? a : b)) : null
 
   if (maxBase) {
+    // A version that is ALREADY in remote history is exempt. `db push` matches
+    // files to history by version and SKIPS the ones already applied — it only
+    // aborts on an unapplied file that sorts too low. Without this exemption the
+    // check contradicts the documented recovery for an MCP-applied migration
+    // ("commit the file with the SAME version — CI then skips it"): apply via
+    // MCP, which stamps the version from the CALL time, and on a repo whose
+    // migrations are future-dated the recovered file is born below max. The
+    // drift check then demands the file and this check refuses it — the two
+    // gates deadlock and NOTHING can merge, which is exactly what happened on
+    // 2026-08-10 with 20260810075202_drop_unused_indexes.
+    let remote = null
+    try {
+      remote = await fetchRemoteVersions()
+    } catch (e) {
+      // Reachability failure is NOT "nothing is applied". Say so and stay strict.
+      console.log(`⚠ could not read remote migration history (${e.message.split('\n')[0]});`)
+      console.log('  no version is treated as already-applied, so a legitimate recovery may fail here.')
+    }
+
     for (const f of files) {
       const v = f.match(VERSION_RE)?.[1]
       if (!v || !isNew(f)) continue
-      if (v <= maxBase) {
-        errors.push(
-          `version ${v} (${f}) is not above the highest existing version ${maxBase}.\n` +
-            `    → \`supabase db push\` aborts on the first migration that sorts below ` +
-            `remote history ("local migration files to be inserted before the last ` +
-            `migration on remote"), taking every later migration in the same PR with it. ` +
-            `Rename this file to a version greater than ${maxBase}.`,
+      if (v > maxBase) continue
+
+      if (remote?.has(v)) {
+        applied.push(
+          `version ${v} (${f}) sorts below ${maxBase} but is ALREADY APPLIED to prod — ` +
+            `db push will skip it, not abort. Committing it at this exact version is the ` +
+            `correct recovery for an MCP-applied migration.`,
         )
+        continue
       }
+
+      const msg =
+        `version ${v} (${f}) is not above the highest existing version ${maxBase}.\n` +
+        `    → \`supabase db push\` aborts on the first migration that sorts below ` +
+        `remote history ("local migration files to be inserted before the last ` +
+        `migration on remote"), taking every later migration in the same PR with it. ` +
+        `Rename this file to a version greater than ${maxBase}.`
+
+      // Only a CONFIRMED violation blocks. When remote history is unreadable we
+      // cannot tell this apart from the legitimate already-applied recovery, and
+      // the repo's convention for a check that could not fully run is to warn —
+      // see the drift branch of .husky/pre-push. CI has the token, so the strict
+      // answer is still enforced there.
+      if (remote) errors.push(msg)
+      else unverified.push(msg + `\n    → Remote history unreadable; set SUPABASE_ACCESS_TOKEN to verify.`)
     }
   }
+}
+
+if (applied.length > 0) {
+  console.log(`✓ ${applied.length} already-applied version(s) exempted from the ordering rule:`)
+  for (const a of applied) console.log(`  - ${a}`)
 }
 
 if (warnings.length > 0) {
   console.log(`⚠ ${warnings.length} pre-existing duplicate-version group(s):`)
   for (const w of warnings) console.log(`  - ${w}`)
+}
+
+if (unverified.length > 0) {
+  console.error(`\n⚠ ${unverified.length} ordering violation(s) that could NOT be verified:`)
+  for (const u of unverified) console.error(`  - ${u}`)
 }
 
 if (errors.length > 0) {
@@ -146,6 +196,15 @@ if (errors.length > 0) {
       'Rename so every migration has a unique version.',
   )
   process.exit(1)
+}
+
+// Exit 2 = "could not fully check", mirroring scripts/check-migration-drift.mjs.
+// The pre-push hook and CI both treat 1 as fatal and anything else as a warning,
+// so an unverifiable ordering violation cannot silently pass as OK, and cannot
+// block a developer who simply has no Supabase token.
+if (unverified.length > 0) {
+  console.error('\n→ Could not verify against remote history. Set SUPABASE_ACCESS_TOKEN to get a definitive answer.')
+  process.exit(2)
 }
 
 console.log(`✓ migration versions OK (${files.length} files, ${byVersion.size} unique versions)`)
