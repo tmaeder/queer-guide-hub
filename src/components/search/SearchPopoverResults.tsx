@@ -1,6 +1,7 @@
 import React from 'react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useTranslation } from 'react-i18next';
-import { Loader2, Search, SlidersHorizontal, Sparkles } from 'lucide-react';
+import {Search, SlidersHorizontal, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { type SearchSuggestion } from '@/hooks/useSearchSuggestions';
 import { CONTENT_TYPES } from '@/lib/searchTaxonomy';
@@ -166,7 +167,7 @@ export function SearchPopoverResults({
 
         {loading && suggestions.length > 0 && (
           <div className="flex justify-center p-2">
-            <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
+            <TrackLoader size={14} />
           </div>
         )}
       </div>

@@ -11,6 +11,7 @@ import { IntentSheet } from '@/components/people/IntentSheet';
 import { MeetMembersNotice } from '@/components/people/MeetMembersNotice';
 import { PeopleModeView } from './PeopleModeView';
 import { NearbyView } from './NearbyView';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 // Dating keeps its own opt-in/age-walled deck; it self-gates when not opted in.
 const IntimateDiscovery = lazyRetry(() => import('@/pages/intimate/IntimateDiscovery'));
@@ -80,7 +81,7 @@ export default function PeopleMode({ tab }: { tab: PeopleTab }) {
 
   return (
     <>
-      <div className="container mx-auto px-4 pt-6">
+      <PageContainer>
         <LocalizedLink
           to="/people"
           className="mb-4 inline-flex items-center gap-2 text-13 text-muted-foreground no-underline hover:text-foreground"
@@ -101,9 +102,9 @@ export default function PeopleMode({ tab }: { tab: PeopleTab }) {
             {t('people.intent.button', "I'm here for…")}
           </Button>
         </div>
-      </div>
+      </PageContainer>
 
-      <div className="container mx-auto px-4 py-8">
+      <PageContainer>
         <Suspense
           fallback={
             <div className="flex flex-col gap-4">
@@ -126,7 +127,7 @@ export default function PeopleMode({ tab }: { tab: PeopleTab }) {
           )}
           {tab === 'nearby' && <NearbyView />}
         </Suspense>
-      </div>
+      </PageContainer>
 
       <IntentSheet open={intentOpen} onOpenChange={setIntentOpen} />
     </>

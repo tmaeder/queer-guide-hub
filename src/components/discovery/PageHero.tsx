@@ -3,6 +3,7 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { SpotlightV2 } from '@/components/effects/SpotlightV2';
 import { Eyebrow } from '@/components/ui/Eyebrow';
 import { cn } from '@/lib/utils';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 interface CTA {
   label: React.ReactNode;
@@ -20,12 +21,16 @@ interface PageHeroProps {
   effect?: 'none' | 'spotlight';
   align?: 'left' | 'center';
   size?: 'sm' | 'md' | 'lg';
+  /** Skip the page gutter + cap because a parent PageContainer already applies
+   *  them (IntentPageLayout renders the hero inside EditorialDetailLayout).
+   *  Nesting two containers doubles the gutter. */
+  bare?: boolean;
   className?: string;
   children?: React.ReactNode;
 }
 
 const PRIMARY_CLASSES =
-  'inline-flex items-center gap-2 rounded-full bg-foreground px-8 py-4 text-sm font-bold tracking-tight text-background transition-opacity duration-300 hover:opacity-90 no-underline';
+  'inline-flex items-center gap-2 rounded-full bg-foreground px-8 py-4 text-sm font-bold tracking-tight text-background transition-opacity duration-normal hover:opacity-90 no-underline';
 
 const SECONDARY_CLASSES =
   'inline-flex items-center gap-2 rounded-full border border-foreground px-8 py-4 text-sm font-bold tracking-tight text-foreground hover:bg-foreground hover:text-background transition-colors no-underline';
@@ -54,6 +59,15 @@ function CtaButton({ cta, primary }: { cta: CTA; primary: boolean }) {
   );
 }
 
+/** Stand-in for PageContainer when the hero is nested inside one already. */
+const PlainFrame = ({
+  className,
+  children,
+}: {
+  className?: string;
+  children?: React.ReactNode;
+}) => <div className={className}>{children}</div>;
+
 const SIZE_PADDING: Record<NonNullable<PageHeroProps['size']>, string> = {
   sm: 'py-12 md:py-16',
   md: 'py-16 md:py-24',
@@ -75,19 +89,25 @@ export function PageHero({
   effect = 'spotlight',
   align = 'left',
   size = 'lg',
+  bare = false,
   className,
   children,
 }: PageHeroProps) {
+  const Frame = bare ? PlainFrame : PageContainer;
+
   return (
     <section className={cn('relative isolate overflow-hidden bg-background', className)}>
       {effect === 'spotlight' && <SpotlightV2 anchor="top-center" intensity={0.14} />}
 
-      <div
-        className={cn(
-          'relative mx-auto max-w-7xl px-6',
-          SIZE_PADDING[size],
-          align === 'center' && 'text-center',
-        )}
+      {/* `flush` — the hero keeps its own size-keyed vertical scale (SIZE_PADDING);
+          only the gutter and the content cap come from the page standard.
+          `bare` swaps the container for a plain div: overriding it with
+          `px-0` would not work, because tailwind-merge drops the base `px-4`
+          but leaves `sm:px-6 md:px-8` standing (different modifiers, different
+          merge keys), so the gutter would silently come back at ≥640px. */}
+      <Frame
+        {...(bare ? {} : { flush: true })}
+        className={cn('relative', SIZE_PADDING[size], align === 'center' && 'text-center')}
       >
         {eyebrow && <Eyebrow as="div">{eyebrow}</Eyebrow>}
         <h1
@@ -117,7 +137,7 @@ export function PageHero({
         )}
 
         {children && <div className="mt-10">{children}</div>}
-      </div>
+      </Frame>
     </section>
   );
 }

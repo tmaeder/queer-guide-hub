@@ -17,6 +17,7 @@ import {
 } from '@/components/pride/PrideFilterRail';
 import { exportPrideIcs } from '@/utils/prideIcs';
 import { Skeleton } from '@/components/ui/skeleton';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 const MIN_YEAR = 2024;
 const MAX_YEAR = 2028;
@@ -108,7 +109,7 @@ export default function PridePage() {
   }, [year, t]);
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 lg:py-12">
+    <PageContainer>
       {/* Hero */}
       <header className="mb-8 lg:mb-12 flex flex-col gap-4">
         <div className="flex items-center gap-2 text-xs2 uppercase tracking-wider text-foreground/60">
@@ -232,6 +233,6 @@ export default function PridePage() {
           </div>
         )}
       </div>
-    </div>
+    </PageContainer>
   );
 }

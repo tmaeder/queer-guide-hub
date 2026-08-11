@@ -174,6 +174,7 @@ Return ONLY valid JSON — tag names as keys, category slugs as values:
 {"example-tag": "category-slug"}`;
 
         const aiResult = await chatCompletion(supabase, {
+          callerFn: 'categorize-tags',
           model: 'gpt-4o-mini',
           messages: [
             { role: 'system', content: 'You are an expert AI categorization system for an inclusive LGBTQ+ community platform. Always respond with valid JSON only, no markdown fences.' },

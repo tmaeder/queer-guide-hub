@@ -12,7 +12,7 @@ export default function AdminNotFound() {
   const location = useLocation();
 
   return (
-    <div className="p-6">
+    <div>
       <AdminPageHeader
         eyebrow={null}
         title="Page not found"

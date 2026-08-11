@@ -6,6 +6,7 @@
  */
 
 import { useState, useEffect } from 'react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import {
   Dialog,
   DialogContent,
@@ -24,7 +25,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { MapPin, Loader2, CheckCircle, AlertCircle, Globe } from 'lucide-react';
+import { MapPin, CheckCircle, AlertCircle, Globe } from 'lucide-react';
 import { useGeoLink } from '@/hooks/useGeoLink';
 
 const CONTENT_TYPES = [
@@ -208,7 +209,7 @@ export default function BatchGeoLinkDialog({ onComplete }: BatchGeoLinkDialogPro
           {loading && (
             <div className="flex flex-col gap-2">
               <div className="flex items-center gap-2">
-                <Loader2 size={16} className="animate-spin" />
+                <TrackLoader size={16} />
                 <span className="text-sm">Processing...</span>
               </div>
               <div className="h-1 w-full overflow-hidden rounded-badge bg-secondary">

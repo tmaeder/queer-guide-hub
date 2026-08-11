@@ -1,10 +1,11 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useTranslation } from 'react-i18next';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Loader2, MessageCircle, Search, X, CalendarClock, Users } from 'lucide-react';
+import {MessageCircle, Search, X, CalendarClock, Users } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useMessaging, type Message } from '@/hooks/useMessaging';
 import { useChatImageUpload, type ChatImage } from '@/hooks/useChatImageUpload';
@@ -438,7 +439,7 @@ export const ChatView = ({ conversationId, onBack }: ChatViewProps) => {
         <div className="p-4 md:p-4">
           {isLoadingOlder && (
             <div className="flex justify-center py-2">
-              <Loader2 size={18} className="animate-spin text-muted-foreground" />
+              <TrackLoader size={18} />
             </div>
           )}
           {isTravelInbox && <TravelInboxAddressBanner />}

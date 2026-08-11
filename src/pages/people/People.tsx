@@ -8,18 +8,19 @@ import { useProfile } from '@/hooks/useProfile';
 import { Button } from '@/components/ui/button';
 import { IntentPageLayout } from '@/components/intent/IntentPageLayout';
 import { CoverageNote } from '@/components/intent/CoverageNote';
+import { UpcomingEvents } from '@/components/intent/UpcomingEvents';
 import { useIntentLocation } from '@/hooks/useIntentLocation';
 import { GatedContentNotice } from '@/components/safety/GatedContentNotice';
 import { IntentSheet } from '@/components/people/IntentSheet';
 import { PeopleHereRail } from '@/components/people/PeopleHereRail';
 import { MeetMembersNotice } from '@/components/people/MeetMembersNotice';
+import { InterestPicker } from '@/components/people/InterestPicker';
 import {
   useMeetSpaces,
   useLocalGroups,
   useNightlifeVenues,
   useEventsWithFallback,
   useDestinationCities,
-  type EventWindow,
 } from '@/hooks/useIntentData';
 import type { SectionDef } from '@/components/entity/editorial';
 
@@ -55,13 +56,6 @@ import type { SectionDef } from '@/components/entity/editorial';
  * at 375px.
  */
 
-const WINDOW_LABEL: Record<EventWindow, string> = {
-  tonight: 'tonight',
-  'this-weekend': 'this weekend',
-  'next-7-days': 'in the next 7 days',
-  'next-30-days': 'in the next 30 days',
-  anywhere: 'soonest anywhere',
-};
 
 /** The community surfaces this intent also covers. Links, not tabs. */
 const COMMUNITY_BRIDGE = [
@@ -252,47 +246,7 @@ export default function People() {
       id: 'whats-on',
       label: t('people.sections.whatsOn', "What's on"),
       kicker: t('people.sections.whatsOnKicker', 'Turning up somewhere beats messaging'),
-      content: (
-        <div>
-          <CoverageNote>
-            {eventsResult && eventsResult.events.length > 0
-              ? `Showing events ${WINDOW_LABEL[eventsResult.window]}${
-                  eventsResult.window === 'anywhere' && cityName
-                    ? ` — nothing is listed in ${cityName} in the next 30 days.`
-                    : '.'
-                }`
-              : 'No upcoming events are listed yet.'}{' '}
-            Our events coverage is thin: listings come from organisers and submissions, so an empty
-            week here means we have no record, not that nothing is happening.
-          </CoverageNote>
-          {eventsResult && eventsResult.events.length > 0 ? (
-            <ul className="m-0 list-none p-0">
-              {eventsResult.events.map((e) => (
-                <li key={e.id} className="border-b border-border py-4">
-                  <div className="flex items-baseline justify-between gap-4">
-                    <span className="font-medium">
-                      {e.slug ? (
-                        <LocalizedLink
-                          to={`/events/${e.slug}`}
-                          className="no-underline hover:underline"
-                        >
-                          {e.title}
-                        </LocalizedLink>
-                      ) : (
-                        e.title
-                      )}
-                    </span>
-                    <span className="whitespace-nowrap text-13 text-muted-foreground">
-                      {new Date(e.start_date).toLocaleDateString()}
-                      {e.city ? ` · ${e.city}` : ''}
-                    </span>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          ) : null}
-        </div>
-      ),
+      content: <UpcomingEvents eventsResult={eventsResult} cityName={cityName} />,
       action: (
         <LocalizedLink to="/events" className="text-13 no-underline hover:underline">
           {t('people.allEvents', 'All events')}
@@ -359,6 +313,13 @@ export default function People() {
             seeAllHref="/community/members"
             emptyState={<MeetMembersNotice cityId={cityId ?? undefined} cityName={cityName} />}
           />
+
+          {/* Directly under the rail it feeds. The shared-interest signal that
+              makes that rail worth reading has had nothing to work with:
+              tag_follows held 0 rows against 9,170 tags because the only way to
+              declare an interest was one tag-detail page at a time. This is the
+              input, placed where its effect shows up. */}
+          <InterestPicker className="mt-4" />
           <div className="grid gap-2 sm:grid-cols-3">
             {COMMUNITY_BRIDGE.map(({ to, icon: Icon, key, fallback, blurbKey, blurb }) => (
               <LocalizedLink

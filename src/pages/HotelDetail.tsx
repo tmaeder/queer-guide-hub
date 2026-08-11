@@ -21,6 +21,7 @@ import {
   type HotelWithRelations,
 } from './HotelDetail.parts';
 import { getHotelPhotosToShow } from './hotelPhotosUtil';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 // Bare geo embeds (no column hints) — see VenueDetail.parts VENUE_SELECT_FIELDS.
 const JOIN_SPEC = '*, cities(id, name), countries(id, name)';
@@ -84,13 +85,13 @@ export default function HotelDetail() {
 
   if (!loading && !hotel && !primaryError) {
     return (
-      <div className="container mx-auto py-16 text-center">
+      <PageContainer className="text-center">
         <NotFoundMeta />
         <h5 className="text-xl font-semibold mb-4">Hotel not found</h5>
         <Button asChild variant="outline">
           <LocalizedLink to="/hotels">Back to Hotels</LocalizedLink>
         </Button>
-      </div>
+      </PageContainer>
     );
   }
 
@@ -100,9 +101,19 @@ export default function HotelDetail() {
   const photosToShow = hotel ? getHotelPhotosToShow(hotel.images) : [];
   const tabs: EntityDetailTab[] = hotel
     ? [
-        { id: 'overview', label: t('pages.hotelDetail.overview', 'Overview'), content: <HotelOverview hotel={hotel} t={t} onContentUpdated={refetch} /> },
+        {
+          id: 'overview',
+          label: t('pages.hotelDetail.overview', 'Overview'),
+          content: <HotelOverview hotel={hotel} t={t} onContentUpdated={refetch} />,
+        },
         ...(photosToShow.length > 0
-          ? [{ id: 'photos', label: `Photos (${photosToShow.length})`, content: <HotelPhotos hotel={hotel} /> }]
+          ? [
+              {
+                id: 'photos',
+                label: `Photos (${photosToShow.length})`,
+                content: <HotelPhotos hotel={hotel} />,
+              },
+            ]
           : []),
       ]
     : [];

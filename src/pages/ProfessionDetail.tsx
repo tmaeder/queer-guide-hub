@@ -11,6 +11,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { ArrowLeft, Users, MapPin, Calendar, User } from 'lucide-react';
 import { PersonalityCard } from '@/components/personalities/PersonalityCard';
 import { useEntityImageAssets } from '@/hooks/useEntityImageAssets';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 interface ProfessionData {
   name: string;
@@ -65,16 +66,13 @@ export default function ProfessionDetail() {
 
   useBreadcrumbs(
     professionData
-      ? [
-          { label: t('breadcrumb.tags', 'Tags'), href: '/tags' },
-          { label: professionData.name },
-        ]
+      ? [{ label: t('breadcrumb.tags', 'Tags'), href: '/tags' }, { label: professionData.name }]
       : null,
   );
 
   if (loading) {
     return (
-      <div className="container mx-auto py-6 px-4">
+      <PageContainer>
         <div className="flex flex-col gap-6">
           <div className="flex items-center gap-4">
             <Skeleton style={{ height: 40, width: 96 }} />
@@ -92,13 +90,13 @@ export default function ProfessionDetail() {
             ))}
           </div>
         </div>
-      </div>
+      </PageContainer>
     );
   }
 
   if (error || !professionData) {
     return (
-      <div className="container mx-auto py-6 px-4">
+      <PageContainer>
         <Card style={{ borderColor: 'hsl(var(--destructive))' }}>
           <CardContent className="p-6 text-center">
             <p className="text-destructive">{error || 'Profession not found'}</p>
@@ -108,12 +106,12 @@ export default function ProfessionDetail() {
             </Button>
           </CardContent>
         </Card>
-      </div>
+      </PageContainer>
     );
   }
 
   return (
-    <div className="container mx-auto py-6 px-4">
+    <PageContainer>
       <div className="flex flex-col gap-6">
         {/* Header */}
         <div className="flex items-center gap-4">
@@ -203,6 +201,6 @@ export default function ProfessionDetail() {
           )}
         </div>
       </div>
-    </div>
+    </PageContainer>
   );
 }

@@ -1629,6 +1629,13 @@
     "error": "Failed to send alert. Please try again."
   },
   "home": {
+    "map": {
+      "interchangeEyebrow": "Interchange",
+      "interchange": {
+        "label": "Search everything",
+        "subtitle": "Every line meets here"
+      }
+    },
     "heroLine1": "Queer venues,",
     "heroLine2": "events, and people.",
     "heroLine3": "Worldwide.",
@@ -3361,6 +3368,12 @@
       "events_other": "{{count}} events",
       "groups_one": "{{count}} group",
       "groups_other": "{{count}} groups"
+    },
+    "interests": {
+      "title": "What are you into?",
+      "blurb": "Pick a few. They shape what we suggest, and they are how other members find people with something in common.",
+      "blurbSignedOut": "Sign in to pick a few. They shape what we suggest, and they are how other members find people with something in common.",
+      "count": "{{count}} selected"
     }
   },
   "hub": {

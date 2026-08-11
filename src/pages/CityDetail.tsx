@@ -43,6 +43,7 @@ import {
   CityNewsTab,
   CityMapTab,
 } from './CityDetail.parts';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 export default function CityDetail() {
   const { t } = useTranslation();
@@ -204,11 +205,10 @@ export default function CityDetail() {
     // Content-shaped skeleton mirroring the loaded layout (hero → facts row →
     // section stubs) so there's no full-screen spinner and no layout shift.
     return (
-      <div
+      <PageContainer
         role="status"
         aria-live="polite"
         aria-label={t('city.loadingDetails', 'Loading city details...')}
-        className="mx-auto max-w-7xl px-4 sm:px-6 md:px-8 py-6"
       >
         <div className="h-[58vh] min-h-[380px] max-h-[600px] w-full rounded-container bg-muted animate-pulse" />
         <div className="mt-6 h-11 w-48 rounded-element bg-muted animate-pulse" />
@@ -225,14 +225,14 @@ export default function CityDetail() {
             <div key={i} className="h-40 w-full rounded-container bg-muted animate-pulse" />
           ))}
         </div>
-      </div>
+      </PageContainer>
     );
   }
 
   if (!city) {
     return (
       <div className="min-h-screen bg-background">
-        <div className="mx-auto px-4 py-8 text-center">
+        <PageContainer className="text-center">
           <h5 className="text-xl font-bold mb-4">{t('city.notFoundTitle', 'City not found')}</h5>
           <p className="text-muted-foreground mb-6">
             {t('city.notFoundDescription', "The city you're looking for doesn't exist.")}
@@ -240,7 +240,7 @@ export default function CityDetail() {
           <LocalizedLink to="/places" className="font-medium" style={{ color: 'inherit' }}>
             {t('city.backToPlaces', '← Back to Places')}
           </LocalizedLink>
-        </div>
+        </PageContainer>
       </div>
     );
   }

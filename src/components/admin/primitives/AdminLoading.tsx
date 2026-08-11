@@ -1,5 +1,6 @@
-import { Loader2 } from 'lucide-react';
+
 import { Skeleton } from '@/components/ui/skeleton';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { cn } from '@/lib/utils';
 
 /**
@@ -125,12 +126,8 @@ export function AdminInlineSpinner({
   className?: string;
   label?: string;
 }) {
-  return (
-    <Loader2
-      size={14}
-      className={cn('animate-spin text-muted-foreground', className)}
-      role="status"
-      aria-label={label}
-    />
-  );
+  // className and label are part of this component's API — the codemod that
+  // swapped the spinner dropped both, which silently disabled every caller's
+  // positioning and its screen-reader announcement.
+  return <TrackLoader size={14} label={label} className={className} />;
 }

@@ -7,6 +7,7 @@ import { PlansModule } from '@/components/hub/modules/PlansModule';
 import { SavedModule } from '@/components/hub/modules/SavedModule';
 import { useMeta } from '@/hooks/useMeta';
 import type { HubModuleId } from '@/config/hubModules';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 const MODULE_TITLES: Record<HubModuleId, string> = {
   overview: 'Overview',
@@ -43,9 +44,9 @@ export default function HubPage({ module = 'overview' }: { module?: HubModuleId 
       title={t('hub.title', 'Your hub')}
       description={t('hub.signInDesc', 'Sign in to see your messages, plans and saved places.')}
     >
-      <div className="container mx-auto px-4 py-6 pb-24 md:py-8">
+      <PageContainer>
         <HubShell active={module}>{body}</HubShell>
-      </div>
+      </PageContainer>
     </AuthGate>
   );
 }

@@ -51,6 +51,7 @@ import { cn } from '@/lib/utils';
 import { getVenueVisual } from '@/lib/venueVisual';
 import { useTranslation } from 'react-i18next';
 import { VENUES_V2_ENABLED } from '@/lib/featureFlags';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 type Venue = Database['public']['Tables']['venues']['Row'];
 
@@ -397,10 +398,15 @@ const Venues = () => {
   const gridClass = 'grid gap-6 pb-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4';
   const gridColumns = useGridColumns(VENUES_GRID_BREAKPOINTS);
 
+  // overflow-x-CLIP, not -hidden: `overflow-x: hidden` computes overflow-y to
+  // `auto`, which makes this div a scroll container and silently kills
+  // `position: sticky` for every descendant (it broke the sticky result bar
+  // below). `clip` contains the same horizontal overflow without creating a
+  // scroll container. Matches LayoutShell's own <main>.
   return (
-    <div className="min-h-screen overflow-x-hidden">
+    <div className="min-h-screen overflow-x-clip">
       <AchievementToast />
-      <div className="mx-auto w-full max-w-screen-xl px-4 py-6 md:py-10 min-w-0 space-y-8">
+      <PageContainer className="min-w-0 space-y-8">
         {/* Editorial top: hero + personal strip when v2 + grid view */}
         {showRails && (
           <div className="space-y-6">
@@ -450,7 +456,7 @@ const Venues = () => {
         />
 
         {/* Toolbar */}
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
+        <div className="sticky top-0 z-20 -mx-4 md:mx-0 px-4 md:px-0 py-2 mb-4 border-b-[3px] border-foreground bg-background flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             {!loading &&
               venues.length > 0 &&
@@ -716,7 +722,7 @@ const Venues = () => {
             </motion.div>
           )}
         </AnimatePresence>
-      </div>
+      </PageContainer>
     </div>
   );
 };

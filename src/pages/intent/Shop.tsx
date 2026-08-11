@@ -3,7 +3,9 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useMeta } from '@/hooks/useMeta';
 import { IntentPageLayout } from '@/components/intent/IntentPageLayout';
 import { CoverageNote } from '@/components/intent/CoverageNote';
-import { useVerifiedOwnedBrands, useShopCategories } from '@/hooks/useIntentData';
+import { useVerifiedOwnedBrands } from '@/hooks/useIntentData';
+import { DepartmentBento } from '@/components/marketplace/DepartmentBento';
+import { OCCASION_CHIPS, DEPARTMENT_LABELS } from '@/lib/marketplaceTaxonomy';
 import type { SectionDef } from '@/components/entity/editorial';
 
 /**
@@ -20,23 +22,49 @@ import type { SectionDef } from '@/components/entity/editorial';
  * exist beyond "a list of categories".
  */
 
+/**
+ * Occasions, built from the REAL filter contract.
+ *
+ * The previous list linked to `?categories=books`, `?categories=art` and
+ * `?categories=apparel`. `categories` is not a filter parameter — the valid keys
+ * are q/dept/cat/type/loc/price/owned/tags/cur/avail/verified — so those three
+ * tiles were silently dropped and landed on the UNFILTERED full catalogue while
+ * presenting as curated entries. Two more pointed at `?tags=pride` and
+ * `?tags=gift`; the occasion vocabulary is `occ-*` and there is no `gift` tag.
+ *
+ * Occasion slugs now come from OCCASION_CHIPS (the same source the marketplace
+ * chips use) and department slugs from DEPARTMENT_LABELS, so a rename in the
+ * taxonomy breaks the build here instead of quietly emptying a tile.
+ */
+const OCCASION_BLURBS: Record<string, string> = {
+  'occ-pride': 'Flags, pins and what to wear',
+  'occ-drag': 'Wigs, lashes, performance wear',
+  'occ-wedding': 'Rings, outfits, the whole day',
+  'occ-everyday': 'The things you actually use',
+};
+
+const DEPARTMENT_PICKS: { dept: keyof typeof DEPARTMENT_LABELS & string; blurb: string }[] = [
+  { dept: 'books_art', blurb: 'Fiction, history, memoir, prints' },
+  { dept: 'apparel', blurb: 'Everyday wear' },
+];
+
 const OCCASIONS: { label: string; blurb: string; to: string }[] = [
-  { label: 'Pride kit', blurb: 'Flags, pins and what to wear', to: '/marketplace?tags=pride' },
-  {
-    label: 'A gift',
-    blurb: 'For a partner, a friend, a chosen family',
-    to: '/marketplace?tags=gift',
-  },
-  { label: 'Books', blurb: 'Fiction, history, memoir', to: '/marketplace?categories=books' },
-  { label: 'Art & prints', blurb: 'For your walls', to: '/marketplace?categories=art' },
-  { label: 'Apparel', blurb: 'Everyday wear', to: '/marketplace?categories=apparel' },
+  ...OCCASION_CHIPS.map((c) => ({
+    label: c.label,
+    blurb: OCCASION_BLURBS[c.slug] ?? '',
+    to: `/marketplace?tags=${encodeURIComponent(c.slug)}`,
+  })),
+  ...DEPARTMENT_PICKS.map((d) => ({
+    label: DEPARTMENT_LABELS[d.dept],
+    blurb: d.blurb,
+    to: `/marketplace?dept=${encodeURIComponent(d.dept)}`,
+  })),
   { label: 'Everything', blurb: 'The full catalogue', to: '/marketplace' },
 ];
 
 export default function ShopIntent() {
   const { t } = useTranslation();
   const { data: brands } = useVerifiedOwnedBrands(24);
-  const { data: categories } = useShopCategories(18);
 
   useMeta({
     title: 'Shop — books, apparel, art and gifts',
@@ -78,8 +106,8 @@ export default function ShopIntent() {
         <div>
           <CoverageNote>
             {brands?.length ?? 0} brands in our catalogue are verified queer-owned. That is a small
-            fraction of the {(2583).toLocaleString()} brands we list — most carry no ownership
-            information either way, so we do not claim it for them.
+            fraction of everything we list — most brands carry no ownership information either way,
+            so we do not claim it for them.
           </CoverageNote>
           {brands && brands.length > 0 ? (
             <ul className="list-none p-0 m-0 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -109,27 +137,20 @@ export default function ShopIntent() {
     },
     {
       id: 'categories',
-      label: 'Categories',
-      // Unguarded, this mapped an undefined-then-empty array, so EVERY first
-      // paint showed <h2>Categories</h2> + "All products" + a nav anchor over
-      // an empty <ul> until the query settled. Unlike the geo-dependent cases
-      // this fired for every visitor. `hidden` drops the whole section — heading,
-      // action and nav entry — until there is something to put in it.
-      hidden: !categories || categories.length === 0,
-      content: (
-        <ul className="list-none p-0 m-0 flex flex-wrap gap-2">
-          {(categories ?? []).map((c) => (
-            <li key={c.id}>
-              <LocalizedLink
-                to={c.slug ? `/marketplace/category/${c.slug}` : '/marketplace'}
-                className="border-2 border-foreground px-4 py-2 no-underline inline-block rounded-badge"
-              >
-                {c.name}
-              </LocalizedLink>
-            </li>
-          ))}
-        </ul>
-      ),
+      label: 'Browse by department',
+      kicker: 'What the catalogue is actually sorted into',
+      // WAS: chips from `marketplace_categories` via useShopCategories, ordered
+      // alphabetically and capped at 18. That table is an orphan — it appears
+      // nowhere else in src/ — and its slugs are not what /marketplace/category
+      // resolves. That route understands DEPARTMENT keys and fine subcategory
+      // slugs, which is how listings are actually classified, so the chips
+      // pointed into a taxonomy the catalogue does not use.
+      //
+      // DepartmentBento is the real thing, already shipping on /marketplace: it
+      // orders by DEPARTMENT_ORDER, shows live per-department counts, HIDES
+      // departments with zero listings (so no tile is a dead end), and respects
+      // the visitor's adult opt-in. No new query, no new taxonomy.
+      content: <DepartmentBento />,
       action: (
         <LocalizedLink to="/marketplace" className="text-13 no-underline hover:underline">
           All products

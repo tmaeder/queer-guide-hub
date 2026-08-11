@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, Check, X } from 'lucide-react';
+import {Check, X } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { USERNAME_RE, usernameFormatError } from '@/components/auth/usernameRules';
 
@@ -117,7 +118,7 @@ export function UsernameSelector({ value, onChange }: Props) {
             disabled={loading}
           >
             {loading ? (
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              <TrackLoader size={16} className="mr-2" />
             ) : null}
             Reroll 🎲
           </Button>
@@ -137,7 +138,7 @@ export function UsernameSelector({ value, onChange }: Props) {
           />
           <div className="absolute right-2 top-1/2 -translate-y-1/2">
             {status === 'checking' && (
-              <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+              <TrackLoader size={16} />
             )}
             {status === 'available' && (
               <Check className="w-4 h-4 text-foreground" />

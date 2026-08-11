@@ -1,8 +1,9 @@
 import { useMemo, useState, useEffect } from 'react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Loader2, CheckCircle2 } from 'lucide-react';
+import {CheckCircle2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { untypedFrom } from '@/integrations/supabase/untyped';
 import { useAuth } from '@/hooks/useAuth';
@@ -182,7 +183,7 @@ export function PostTripMemoryPrompt({ trip }: Props) {
             onClick={submit}
             disabled={submitting || checked.size === 0}
           >
-            {submitting && <Loader2 className="h-3.5 w-3.5 mr-2 animate-spin" />}
+            {submitting && <TrackLoader size={14} className="mr-2" />}
             Confirm {checked.size > 0 ? `(${checked.size})` : 'all visited'}
           </Button>
           {checked.size < candidates.length && (

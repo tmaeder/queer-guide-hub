@@ -10,6 +10,7 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { resolveImageUrl } from '@/utils/resolveImageUrl';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 function SectionBlock({ section }: { section: GuideSection }) {
   if (!section.body_md) return null;
@@ -63,17 +64,17 @@ const GuideDetail = () => {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto py-12 px-4">
+      <PageContainer>
         <div className="h-3 w-32 bg-muted animate-pulse rounded-badge mb-6" />
         <div className="h-12 w-3/4 bg-muted animate-pulse rounded-element mb-4" />
         <div className="h-6 w-2/3 bg-muted animate-pulse rounded-element" />
-      </div>
+      </PageContainer>
     );
   }
 
   if (error || !data) {
     return (
-      <div className="container mx-auto py-16 px-4">
+      <PageContainer>
         <EmptyState
           icon={BookOpen}
           title={t('guides.detail.notFound.title', 'Guide not found.')}
@@ -86,7 +87,7 @@ const GuideDetail = () => {
             onClick: () => navigate('/guides'),
           }}
         />
-      </div>
+      </PageContainer>
     );
   }
 
@@ -127,7 +128,7 @@ const GuideDetail = () => {
 
   return (
     <article className="min-h-screen">
-      <header className="container mx-auto px-4 pt-8 pb-12 max-w-4xl">
+      <PageContainer as="header" flush size="reading" className="max-w-4xl pt-8 pb-12">
         <LocalizedLink
           to="/guides"
           className="inline-flex items-center gap-2 text-13 text-muted-foreground hover:text-foreground mb-8"
@@ -143,55 +144,55 @@ const GuideDetail = () => {
         {guide.dek && (
           <p className="italic text-body-lg text-muted-foreground max-w-2xl">{guide.dek}</p>
         )}
-      </header>
+      </PageContainer>
 
       {hero && (
-        <div className="container mx-auto px-4 max-w-5xl mb-12">
+        <PageContainer flush className="max-w-5xl mb-12">
           <div className="relative aspect-[16/9] rounded-container overflow-hidden bg-muted">
             <img src={hero} alt="" className="absolute inset-0 size-full object-cover" />
           </div>
-        </div>
+        </PageContainer>
       )}
 
       {guide.intro_md && (
-        <section className="container mx-auto px-4 max-w-3xl mb-16 space-y-6">
+        <PageContainer as="section" flush size="reading" className="mb-16 space-y-6">
           {guide.intro_md.split(/\n\n+/).map((para, i) => (
             <p key={i} className="text-body-lg leading-relaxed">
               {para}
             </p>
           ))}
-        </section>
+        </PageContainer>
       )}
 
       {isQuest && (
-        <div className="container mx-auto px-4 max-w-4xl mb-16">
+        <PageContainer flush className="max-w-4xl mb-16">
           <QuestModule guide={guide} />
-        </div>
+        </PageContainer>
       )}
 
       {sections.length > 0 && (
-        <section className="container mx-auto px-4 max-w-3xl mb-16 space-y-10">
+        <PageContainer as="section" flush size="reading" className="mb-16 space-y-10">
           {sections.map((s) => (
             <SectionBlock key={s.id} section={s} />
           ))}
-        </section>
+        </PageContainer>
       )}
 
       {picks.length > 0 && (
-        <section className="container mx-auto px-4 max-w-5xl space-y-16">
+        <PageContainer as="section" flush className="max-w-5xl space-y-16">
           {picks.map((pick, i) => (
             <GuidePickBlock key={pick.id} pick={pick} index={i} />
           ))}
-        </section>
+        </PageContainer>
       )}
 
       {guide.format === 'guide' && (
-        <div className="container mx-auto px-4 max-w-5xl">
+        <PageContainer flush>
           <GuideComparisonTable picks={picks} />
-        </div>
+        </PageContainer>
       )}
 
-      <footer className="container mx-auto px-4 max-w-3xl my-16 pt-8">
+      <PageContainer as="footer" flush size="reading" className="my-16 pt-8">
         <p className="inline-flex items-center gap-2 text-13 text-muted-foreground">
           <Clock size={14} aria-hidden />
           {t('guides.detail.lastUpdated', 'Last updated')}{' '}
@@ -201,7 +202,7 @@ const GuideDetail = () => {
             day: 'numeric',
           })}
         </p>
-      </footer>
+      </PageContainer>
     </article>
   );
 };

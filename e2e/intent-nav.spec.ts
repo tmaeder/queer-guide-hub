@@ -24,7 +24,13 @@ const INTENTS = [
   { label: 'Travelling', href: '/travel' },
   { label: 'Meet people', href: '/people' },
   { label: 'Rights', href: '/rights' },
-  { label: 'Support', href: '/support' },
+  // /help, not /support: the Support intent was repointed in #2692 because the
+  // two pages had the same source and /help is the superset (CMS hotline
+  // corpus, per-country routes, QuickExit, EmergencyService JSON-LD). This row
+  // asserted /support until 2026-08-10, i.e. it required the nav to link at a
+  // redirect. /support itself still resolves and is still covered, by the
+  // crisis-adjacent block at the bottom of this file.
+  { label: 'Support', href: '/help' },
   { label: 'Shop', href: '/shop' },
 ];
 
@@ -57,6 +63,47 @@ test.describe('desktop intent nav', () => {
     await page.goto('/venues');
     const current = page.locator('header nav[aria-label="Primary"] a[aria-current="page"]');
     await expect(current).toHaveText('Going out');
+  });
+});
+
+test.describe('homepage intent map', () => {
+  const MAP = 'section[aria-labelledby="intent-map-heading"]';
+
+  // Where the stations actually POINT. This is INTENTS[].href above plus
+  // `/search` — the interchange, which is not an intent and so has no nav tab.
+  const STATION_HREFS = [
+    '/going-out',
+    '/travel',
+    '/people',
+    '/search', // the interchange, where all four lines meet
+    '/rights',
+    '/help',
+    '/shop',
+  ];
+
+  test('renders the six intents plus the interchange as stations', async ({ page }) => {
+    // The desktop visual snapshot masks `main section:first-of-type`, which
+    // this section matches — so the screenshot does NOT guard the map. This
+    // does. It also catches the CSS-only breakpoint split degrading into two
+    // rendered layouts (fourteen anchors for seven destinations).
+    await page.goto('/');
+    const map = page.locator(MAP);
+    await expect(map).toBeVisible();
+    await expect(map.locator('li')).toHaveCount(STATION_HREFS.length);
+
+    for (const href of STATION_HREFS) {
+      await expect(map.locator(`a[href$="${href}"]`)).toHaveCount(1);
+    }
+    await expect(map.locator('a')).toHaveCount(STATION_HREFS.length);
+  });
+
+  test('claims no nav landmark of its own', async ({ page }) => {
+    // The map lives inside SubwayHero's <header>, so a <nav> here would be a
+    // second `header nav[...]` and turn every such locator in this file into
+    // a Playwright strict-mode violation. It is a <section> named by its
+    // visible <h2> precisely so it cannot collide.
+    await page.goto('/');
+    await expect(page.locator(`${MAP} nav`)).toHaveCount(0);
   });
 });
 

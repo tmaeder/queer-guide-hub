@@ -14,6 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { useTranslation } from 'react-i18next';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 export default function Groups() {
   const { t } = useTranslation();
@@ -80,8 +81,11 @@ export default function Groups() {
 
   const hasActiveFilters = !!searchQuery || selectedTags.length > 0 || activeFilters.length > 0;
 
-  const { groups: recommendedGroups, isLoading: recsLoading, isEmpty: recsEmpty } =
-    useRecommendedGroups(12);
+  const {
+    groups: recommendedGroups,
+    isLoading: recsLoading,
+    isEmpty: recsEmpty,
+  } = useRecommendedGroups(12);
 
   const featuredGroups = useMemo(
     () => groups.filter((g) => g.featured && !g.is_private).slice(0, 12),
@@ -121,7 +125,7 @@ export default function Groups() {
   };
 
   return (
-    <div className="container mx-auto py-12 md:py-20 px-4 flex flex-col gap-6 relative">
+    <PageContainer className="flex flex-col gap-6 relative">
       <PageHeader
         title={t('pages.groups.title', 'Community Groups')}
         subtitle={t(
@@ -175,228 +179,228 @@ export default function Groups() {
           </TabsTrigger>
         </TabsList>
 
-            <TabsContent
-              value="discover"
-              style={{ flexDirection: 'column', gap: '1.5rem' }}
-              className="flex"
-            >
-              <GroupFilters
-                searchQuery={searchQuery}
-                onSearchChange={setSearchQuery}
-                activeFilters={activeFilters}
-                onFilterChange={setActiveFilters}
-                showMyGroups={showMyGroups}
-                onShowMyGroupsChange={setShowMyGroups}
-                selectedTags={selectedTags}
-                onTagsChange={setSelectedTags}
-              />
+        <TabsContent
+          value="discover"
+          style={{ flexDirection: 'column', gap: '1.5rem' }}
+          className="flex"
+        >
+          <GroupFilters
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            activeFilters={activeFilters}
+            onFilterChange={setActiveFilters}
+            showMyGroups={showMyGroups}
+            onShowMyGroupsChange={setShowMyGroups}
+            selectedTags={selectedTags}
+            onTagsChange={setSelectedTags}
+          />
 
-              {hasActiveFilters ? (
-                isLoading ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {Array.from({ length: 6 }).map((_, i) => (
-                      <GroupCard key={i} loading />
-                    ))}
-                  </div>
-                ) : filteredGroups.length === 0 ? (
-                  <EmptyState
-                    icon={Search}
-                    title={t('pages.groups.noMatchTitle', 'No groups match your search')}
-                    description={t(
-                      'pages.groups.noMatchDescription',
-                      'Try a different keyword or clear your filters.',
-                    )}
-                    mood="neutral"
-                    primaryAction={{
-                      label: t('pages.groups.clearFilters', 'Clear filters'),
-                      onClick: () => {
-                        setSearchQuery('');
-                        setActiveFilters([]);
-                        setSelectedTags([]);
-                      },
-                    }}
+          {hasActiveFilters ? (
+            isLoading ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <GroupCard key={i} loading />
+                ))}
+              </div>
+            ) : filteredGroups.length === 0 ? (
+              <EmptyState
+                icon={Search}
+                title={t('pages.groups.noMatchTitle', 'No groups match your search')}
+                description={t(
+                  'pages.groups.noMatchDescription',
+                  'Try a different keyword or clear your filters.',
+                )}
+                mood="neutral"
+                primaryAction={{
+                  label: t('pages.groups.clearFilters', 'Clear filters'),
+                  onClick: () => {
+                    setSearchQuery('');
+                    setActiveFilters([]);
+                    setSelectedTags([]);
+                  },
+                }}
+              />
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {filteredGroups.map((group) => (
+                  <GroupCard
+                    key={group.id}
+                    group={group}
+                    isAuthenticated={!!user}
+                    onJoin={joinGroup}
+                    onRequestJoin={(id) => requestJoin({ groupId: id })}
+                    onLeave={leaveGroup}
+                    isJoining={isJoining}
+                    isRequesting={isRequesting}
+                    isLeaving={isLeaving}
                   />
-                ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {filteredGroups.map((group) => (
-                      <GroupCard
-                        key={group.id}
-                        group={group}
-                        isAuthenticated={!!user}
-                        onJoin={joinGroup}
-                        onRequestJoin={(id) => requestJoin({ groupId: id })}
-                        onLeave={leaveGroup}
-                        isJoining={isJoining}
-                        isRequesting={isRequesting}
-                        isLeaving={isLeaving}
+                ))}
+              </div>
+            )
+          ) : isLoading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <GroupCard key={i} loading />
+              ))}
+            </div>
+          ) : groups.length === 0 ? (
+            <EmptyState
+              icon={Users}
+              title={t('pages.groups.emptyTitle', 'No groups here yet')}
+              description={t(
+                'pages.groups.emptyDescription',
+                'Be the spark — create the first group and bring people together.',
+              )}
+              mood="encouraging"
+              primaryAction={
+                user
+                  ? {
+                      label: t('pages.groups.createGroup', 'Create a Group'),
+                      onClick: () => setCreateOpen(true),
+                    }
+                  : {
+                      label: t('common.signIn', 'Sign in'),
+                      onClick: () => navigate('/auth'),
+                    }
+              }
+            />
+          ) : (
+            <>
+              {user && (
+                <GroupDiscoveryRail
+                  title={t('pages.groups.forYou', 'For you')}
+                  icon={Sparkles}
+                  groups={recommendedGroups}
+                  loading={recsLoading}
+                  {...railHandlers}
+                  emptyState={
+                    recsEmpty ? (
+                      <EmptyState
+                        icon={Sparkles}
+                        title={t('pages.groups.forYouEmptyTitle', 'Nothing tailored yet')}
+                        description={t(
+                          'pages.groups.forYouEmptyDescription',
+                          "Join a group or two and we'll start finding your people.",
+                        )}
+                        mood="encouraging"
                       />
-                    ))}
-                  </div>
-                )
-              ) : isLoading ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {Array.from({ length: 6 }).map((_, i) => (
-                    <GroupCard key={i} loading />
-                  ))}
-                </div>
-              ) : groups.length === 0 ? (
-                <EmptyState
-                  icon={Users}
-                  title={t('pages.groups.emptyTitle', 'No groups here yet')}
-                  description={t(
-                    'pages.groups.emptyDescription',
-                    'Be the spark — create the first group and bring people together.',
-                  )}
-                  mood="encouraging"
-                  primaryAction={
-                    user
-                      ? {
-                          label: t('pages.groups.createGroup', 'Create a Group'),
-                          onClick: () => setCreateOpen(true),
-                        }
-                      : {
-                          label: t('common.signIn', 'Sign in'),
-                          onClick: () => navigate('/auth'),
-                        }
+                    ) : undefined
                   }
                 />
-              ) : (
-                <>
-                  {user && (
-                    <GroupDiscoveryRail
-                      title={t('pages.groups.forYou', 'For you')}
-                      icon={Sparkles}
-                      groups={recommendedGroups}
-                      loading={recsLoading}
-                      {...railHandlers}
-                      emptyState={
-                        recsEmpty ? (
-                          <EmptyState
-                            icon={Sparkles}
-                            title={t('pages.groups.forYouEmptyTitle', 'Nothing tailored yet')}
-                            description={t(
-                              'pages.groups.forYouEmptyDescription',
-                              "Join a group or two and we'll start finding your people.",
-                            )}
-                            mood="encouraging"
-                          />
-                        ) : undefined
-                      }
-                    />
-                  )}
-
-                  {featuredGroups.length > 0 && (
-                    <GroupDiscoveryRail
-                      title={t('pages.groups.featured', 'Featured')}
-                      icon={Star}
-                      groups={featuredGroups}
-                      {...railHandlers}
-                    />
-                  )}
-
-                  <GroupDiscoveryRail
-                    title={t('pages.groups.trending', 'Trending this week')}
-                    icon={TrendingUp}
-                    groups={trendingGroups}
-                    {...railHandlers}
-                  />
-
-                  <div className="flex flex-col gap-4">
-                    <h2 className="text-lg font-semibold flex items-center gap-2">
-                      <Users className="h-5 w-5 text-foreground" />
-                      {t('pages.groups.allGroups', 'All groups')}
-                    </h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                      {groups.map((group) => (
-                        <GroupCard
-                          key={group.id}
-                          group={group}
-                          isAuthenticated={!!user}
-                          onJoin={joinGroup}
-                          onRequestJoin={(id) => requestJoin({ groupId: id })}
-                          onLeave={leaveGroup}
-                          isJoining={isJoining}
-                          isRequesting={isRequesting}
-                          isLeaving={isLeaving}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                </>
               )}
-            </TabsContent>
 
-            <TabsContent
-              value="my-groups"
-              style={{ flexDirection: 'column', gap: '1.5rem' }}
-              className="flex"
-            >
-              {userGroups.length === 0 ? (
-                <EmptyState
-                  icon={Users}
-                  title={t('pages.groups.emptyTitle', 'No groups here yet')}
-                  description={t(
-                    'pages.groups.emptyDescription',
-                    'Be the spark — create the first group and bring people together.',
-                  )}
-                  mood="encouraging"
-                  primaryAction={{
-                    label: t('pages.groups.createGroup', 'Create a Group'),
-                    onClick: () => setCreateOpen(true),
-                  }}
+              {featuredGroups.length > 0 && (
+                <GroupDiscoveryRail
+                  title={t('pages.groups.featured', 'Featured')}
+                  icon={Star}
+                  groups={featuredGroups}
+                  {...railHandlers}
                 />
-              ) : (
+              )}
+
+              <GroupDiscoveryRail
+                title={t('pages.groups.trending', 'Trending this week')}
+                icon={TrendingUp}
+                groups={trendingGroups}
+                {...railHandlers}
+              />
+
+              <div className="flex flex-col gap-4">
+                <h2 className="text-lg font-semibold flex items-center gap-2">
+                  <Users className="h-5 w-5 text-foreground" />
+                  {t('pages.groups.allGroups', 'All groups')}
+                </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {userGroups.map((group) => (
+                  {groups.map((group) => (
                     <GroupCard
                       key={group.id}
                       group={group}
+                      isAuthenticated={!!user}
+                      onJoin={joinGroup}
+                      onRequestJoin={(id) => requestJoin({ groupId: id })}
                       onLeave={leaveGroup}
+                      isJoining={isJoining}
+                      isRequesting={isRequesting}
+                      isLeaving={isLeaving}
+                    />
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
+        </TabsContent>
+
+        <TabsContent
+          value="my-groups"
+          style={{ flexDirection: 'column', gap: '1.5rem' }}
+          className="flex"
+        >
+          {userGroups.length === 0 ? (
+            <EmptyState
+              icon={Users}
+              title={t('pages.groups.emptyTitle', 'No groups here yet')}
+              description={t(
+                'pages.groups.emptyDescription',
+                'Be the spark — create the first group and bring people together.',
+              )}
+              mood="encouraging"
+              primaryAction={{
+                label: t('pages.groups.createGroup', 'Create a Group'),
+                onClick: () => setCreateOpen(true),
+              }}
+            />
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {userGroups.map((group) => (
+                <GroupCard
+                  key={group.id}
+                  group={group}
+                  onLeave={leaveGroup}
+                  isLeaving={isLeaving}
+                />
+              ))}
+            </div>
+          )}
+        </TabsContent>
+
+        <TabsContent
+          value="popular"
+          style={{ flexDirection: 'column', gap: '1.5rem' }}
+          className="flex"
+        >
+          <Card>
+            <CardHeader>
+              <CardTitle style={{ alignItems: 'center', gap: '0.5rem' }} className="flex">
+                <TrendingUp size={20} />
+                {t('pages.groups.mostPopularGroups', 'Most Popular Groups')}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {popularGroups.length === 0 ? (
+                <p className="text-center text-muted-foreground py-8">
+                  {t('pages.groups.noPopularYet', 'No popular groups available yet.')}
+                </p>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {popularGroups.map((group) => (
+                    <GroupCard
+                      key={group.id}
+                      group={group}
+                      isAuthenticated={!!user}
+                      onJoin={joinGroup}
+                      onRequestJoin={(id) => requestJoin({ groupId: id })}
+                      onLeave={leaveGroup}
+                      isJoining={isJoining}
+                      isRequesting={isRequesting}
                       isLeaving={isLeaving}
                     />
                   ))}
                 </div>
               )}
-            </TabsContent>
-
-            <TabsContent
-              value="popular"
-              style={{ flexDirection: 'column', gap: '1.5rem' }}
-              className="flex"
-            >
-              <Card>
-                <CardHeader>
-                  <CardTitle style={{ alignItems: 'center', gap: '0.5rem' }} className="flex">
-                    <TrendingUp size={20} />
-                    {t('pages.groups.mostPopularGroups', 'Most Popular Groups')}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {popularGroups.length === 0 ? (
-                    <p className="text-center text-muted-foreground py-8">
-                      {t('pages.groups.noPopularYet', 'No popular groups available yet.')}
-                    </p>
-                  ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                      {popularGroups.map((group) => (
-                        <GroupCard
-                          key={group.id}
-                          group={group}
-                          isAuthenticated={!!user}
-                          onJoin={joinGroup}
-                          onRequestJoin={(id) => requestJoin({ groupId: id })}
-                          onLeave={leaveGroup}
-                          isJoining={isJoining}
-                          isRequesting={isRequesting}
-                          isLeaving={isLeaving}
-                        />
-                      ))}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
-    </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+    </PageContainer>
   );
 }

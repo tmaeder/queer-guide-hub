@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
-import { Sparkles, MapPin, Calendar, Wallet, RefreshCw, Loader2 } from 'lucide-react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
+import { Sparkles, MapPin, Calendar, Wallet, RefreshCw} from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { format } from 'date-fns';
 import { Card, CardContent } from '@/components/ui/card';
@@ -58,7 +59,7 @@ export function MemoryRecapCard({ tripId }: Props) {
       <Card>
         <CardContent>
           <div className="flex justify-center py-4">
-            <Loader2 className="h-5 w-5 animate-spin" />
+            <TrackLoader size={20} />
           </div>
         </CardContent>
       </Card>
@@ -93,7 +94,7 @@ export function MemoryRecapCard({ tripId }: Props) {
               disabled={generate.isPending}
             >
               {generate.isPending ? (
-                <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />
+                <TrackLoader size={16} className="mr-1.5" />
               ) : (
                 <Sparkles size={16} className="mr-1.5" />
               )}
@@ -120,7 +121,7 @@ export function MemoryRecapCard({ tripId }: Props) {
             aria-label={t('trips.recap.regenerate', 'Regenerate recap')}
           >
             {generate.isPending ? (
-              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              <TrackLoader size={14} />
             ) : (
               <RefreshCw size={14} />
             )}

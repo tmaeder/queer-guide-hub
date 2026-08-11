@@ -9,6 +9,7 @@ import {
   type GeoSelection,
 } from '@/components/trips/create/CityCountryAutocomplete';
 import { useCityCompareData, type CityComparison } from '@/hooks/useCityCompareData';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 /**
  * Two-picker city comparison. URL ?a=<cityId>&b=<cityId> deep-links so users
@@ -64,7 +65,7 @@ export default function CitiesCompare() {
   };
 
   return (
-    <div className="container mx-auto max-w-screen-lg px-4 py-8 md:py-12">
+    <PageContainer>
       <nav aria-label="Breadcrumb" className="mb-4 text-sm">
         <LocalizedLink
           to="/travel"
@@ -115,7 +116,7 @@ export default function CitiesCompare() {
       ) : (
         <EmptyHint t={t} hasOne={Boolean(a || b)} />
       )}
-    </div>
+    </PageContainer>
   );
 }
 

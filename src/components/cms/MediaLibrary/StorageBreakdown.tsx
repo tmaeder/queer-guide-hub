@@ -1,7 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { untypedFrom } from '@/integrations/supabase/untyped';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2 } from 'lucide-react';
+
 import { formatFileSize } from './utils';
 
 interface BucketStats {
@@ -84,7 +85,7 @@ export function StorageBreakdown() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-8">
-        <Loader2 className="h-6 w-6 animate-spin" />
+        <TrackLoader size={24} />
       </div>
     );
   }

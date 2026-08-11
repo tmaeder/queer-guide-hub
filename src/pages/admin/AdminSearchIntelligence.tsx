@@ -25,7 +25,7 @@ export default function AdminSearchIntelligence() {
   };
 
   return (
-    <div className="container mx-auto max-w-screen-xl px-4 py-8">
+    <div>
       <AdminPageHeader
         eyebrow="Data"
         title="Search Intelligence"

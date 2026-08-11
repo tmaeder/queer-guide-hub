@@ -263,8 +263,31 @@ jobs:
             const r=require('./docs/a11y-audit/axe-postdeploy.json');
             if(r.complete!==true){console.error('Report is partial or stale:',r.scanned,'of',r.expected,'scans; baseUrl',r.baseUrl);process.exit(1)}
             if(r.baseUrl!==process.env.BASE_URL){console.error('Report baseUrl',r.baseUrl,'!=',process.env.BASE_URL);process.exit(1)}
-            const bad=r.results.flatMap(x=>(x.violations||[]).filter(v=>v.impact==='serious'||v.impact==='critical'));
-            if(bad.length){console.error('Found',bad.length,'serious/critical');for(const v of bad.slice(0,10))console.error(' ',v.id,JSON.stringify(v.sample?.[0]?.target));process.exit(1)}
+            // Keep route + variant through the flatten. Without them the
+            // failure line was a rule and a CSS selector with no page and no
+            // viewport attached, so diagnosing one meant correlating it against
+            // the per-route '… N violations' line minutes earlier in the log —
+            // and then rebuilding the whole environment to guess the rest.
+            const bad=r.results.flatMap(x=>(x.violations||[])
+              .filter(v=>v.impact==='serious'||v.impact==='critical')
+              .map(v=>({...v, route:x.route, variant:x.variant})));
+            if(bad.length){
+              console.error('Found',bad.length,'serious/critical\n');
+              for(const v of bad.slice(0,10)){
+                const n=v.sample?.[0]||{};
+                console.error(\`  \${v.route} [\${v.variant}] — \${v.id} (\${v.impact}) ×\${v.nodes}\`);
+                console.error(\`    \${v.help}\`);
+                if(n.target) console.error(\`    target: \${JSON.stringify(n.target)}\`);
+                if(n.html) console.error(\`    html:   \${String(n.html).replace(/\s+/g,' ').slice(0,160)}\`);
+                // The failure summary is the part that says WHY — for
+                // color-contrast it carries the measured ratio and both colours,
+                // which is the difference between a fix and a guess.
+                if(n.failureSummary) console.error('    why:    '+String(n.failureSummary).replace(/\n/g,' | ').slice(0,300));
+                console.error(\`    docs:   \${v.helpUrl}\`);
+              }
+              if(bad.length>10) console.error(\`  … and \${bad.length-10} more — see the axe-postdeploy artifact\`);
+              process.exit(1);
+            }
             console.log('Clean:',r.scanned,'scans, 0 serious/critical');
           "
       - if: always()

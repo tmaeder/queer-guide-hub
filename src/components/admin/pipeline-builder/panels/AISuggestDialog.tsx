@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Sparkles, Loader2, Wand2 } from 'lucide-react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
+import { Sparkles, Wand2 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -183,7 +184,7 @@ export default function AISuggestDialog({ nodeTypes, onApply }: AISuggestDialogP
         <DialogFooter>
           {!suggestion ? (
             <Button onClick={handleGenerate} disabled={loading || description.length < 10} className="w-full">
-              {loading ? <Loader2 className="h-3.5 w-3.5 mr-2 animate-spin" /> : <Sparkles className="h-3.5 w-3.5 mr-2" />}
+              {loading ? <TrackLoader size={14} className="mr-2" /> : <Sparkles className="h-3.5 w-3.5 mr-2" />}
               {loading ? 'Designing…' : 'Generate suggestion'}
             </Button>
           ) : (

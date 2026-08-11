@@ -20,10 +20,19 @@ const customTextSizes = [
   '3xs',
 ];
 
+// Custom container tokens defined in src/index.css @theme (--container-page,
+// --container-reading, --container-form). tailwind-merge only recognizes
+// t-shirt sizes in the `max-w` group, so without this it would treat
+// `max-w-page` as an unknown class and let a caller's `max-w-reading` sit
+// alongside it instead of replacing it — two caps applying at once, decided by
+// stylesheet order rather than by the caller.
+const customContainerSizes = ['page', 'reading', 'form'];
+
 const twMerge = extendTailwindMerge({
   extend: {
     classGroups: {
       'font-size': [{ text: customTextSizes }],
+      'max-w': [{ 'max-w': customContainerSizes }],
     },
   },
 });

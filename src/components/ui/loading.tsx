@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 
 interface LoadingProps {
   size?: 'sm' | 'md' | 'lg';
@@ -9,7 +10,6 @@ interface LoadingProps {
 }
 
 const dotSize = { sm: 'h-1.5 w-1.5', md: 'h-2 w-2', lg: 'h-3 w-3' } as const;
-const spinnerSize = { sm: 'h-4 w-4', md: 'h-6 w-6', lg: 'h-8 w-8' } as const;
 
 export function Loading({ size = 'md', text, label }: LoadingProps) {
   const { t } = useTranslation();
@@ -24,10 +24,14 @@ export function Loading({ size = 'md', text, label }: LoadingProps) {
     >
       <div className="flex items-center gap-1" aria-hidden="true">
         {[0, 1, 2].map((i) => (
-          <div
+          /* Spec, "Micro": three stations on a hidden track. They POP in
+             sequence (station-pop, 500ms, 1.28x overshoot) rather than
+             pulsing opacity — a station appearing as the line reaches it,
+             which is the same event the map uses. */
+          <span
             key={i}
-            style={{ animationDelay: `${i * 0.2}s` }}
-            className={`${dotSize[size]} rounded-full bg-current animate-pulse motion-reduce:animate-none`}
+            style={{ animationDelay: `${i * 0.15}s`, animationIterationCount: 'infinite' }}
+            className={`${dotSize[size]} station-pop rounded-full border-2 border-foreground bg-background`}
           />
         ))}
       </div>
@@ -52,12 +56,10 @@ export function LoadingSpinner({ size = 'md', label, className }: LoadingSpinner
       ? { 'aria-hidden': true as const }
       : { role: 'status' as const, 'aria-live': 'polite' as const, 'aria-label': label ?? t('common.loading') };
 
-  return (
-    <div
-      {...a11y}
-      className={`${spinnerSize[size]} rounded-full border-2 border-border border-t-current animate-spin motion-reduce:animate-none ${className ?? ''}`}
-    />
-  );
+  // Was a rotating border ring. The design system replaces every spinner with
+  // a track loop — nothing in a transit system spins, things travel a line.
+  const px = { sm: 16, md: 24, lg: 32 } as const;
+  return <TrackLoader size={px[size]} className={className} {...a11y} />;
 }
 
 interface PageLoadingProps {

@@ -1,6 +1,7 @@
 import { useState } from 'react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useTranslation } from 'react-i18next';
-import { Loader2 } from 'lucide-react';
+
 import {
   Dialog,
   DialogContent,
@@ -247,7 +248,7 @@ export function AddBudgetDialog({
           </Button>
           <Button onClick={handleSubmit} disabled={!canSubmit || addBudgetItem.isPending}>
             {addBudgetItem.isPending && (
-              <Loader2 className="mr-1 h-4 w-4 animate-spin" aria-label="Loading" />
+              <TrackLoader size={16} label="Loading" className="mr-1" />
             )}
             {t('trips.budget.addExpense', 'Add Expense')}
           </Button>

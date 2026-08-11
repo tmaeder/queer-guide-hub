@@ -35,6 +35,7 @@ import { Wordmark } from '@/components/brand/Wordmark';
 import { MasterSymbol } from '@/components/brand/MasterSymbol';
 import { useCompactHeader } from '@/hooks/useCompactHeader';
 import { cn } from '@/lib/utils';
+import { PAGE_GUTTER } from '@/components/layout/PageContainer';
 
 // ── Component ───────────────────────────────────────────────────────────────
 
@@ -84,7 +85,7 @@ export function Header() {
             alt=""
             aria-hidden="true"
             tabIndex={-1}
-            className="transition-transform duration-150 hover:-rotate-6 hover:scale-110 active:scale-95 object-contain"
+            className="transition-transform duration-fast hover:-rotate-6 hover:scale-110 active:scale-95 object-contain"
             style={{ height: 34, width: 34 }}
           />
           <span className="hidden flex-col font-display text-base font-bold leading-[1.1] tracking-tight text-foreground md:flex">
@@ -346,7 +347,12 @@ export function Header() {
     >
       {compact && !isMobile ? (
         /* ── 02 · Compact, after scroll — one ink line ────────────────── */
-        <div className="flex flex-wrap items-center gap-4 px-4 py-2 sm:px-6 md:px-8">
+        <div
+          className={cn(
+            'mx-auto flex w-full max-w-page flex-wrap items-center gap-4 py-2',
+            PAGE_GUTTER,
+          )}
+        >
           <Link to="/" className="no-underline" aria-label={siteName}>
             <Wordmark className="text-title text-background" />
           </Link>
@@ -362,7 +368,7 @@ export function Header() {
         <>
           {/* ── 01 · Primary. Search is the WIDEST thing in the bar: on a map
                product it is the main verb. ─────────────────────────────── */}
-          <div className="px-4 sm:px-6 md:px-8">
+          <div className={cn('mx-auto w-full max-w-page', PAGE_GUTTER)}>
             {isMobile ? (
               <div className="flex items-center gap-2" style={{ height: 56 }}>
                 {brand}
@@ -386,8 +392,13 @@ export function Header() {
                lands on the bar's own bottom edge. Mobile keeps the bottom
                bar (MobileBottomNav) as its track row. ─────────────────── */}
           {!isMobile && (
-            <div className="flex items-stretch border-t-[3px] border-foreground px-4 sm:px-6 md:px-8">
-              {desktopNav}
+            /* The 3px rule spans the viewport (it is the bar's edge); the tabs
+               inside it take the page cap so tab 1 starts on the same vertical
+               as the page content below. */
+            <div className="border-t-[3px] border-foreground">
+              <div className={cn('mx-auto flex w-full max-w-page items-stretch', PAGE_GUTTER)}>
+                {desktopNav}
+              </div>
             </div>
           )}
         </>

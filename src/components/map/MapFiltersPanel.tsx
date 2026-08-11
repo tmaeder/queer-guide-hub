@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Check, Loader2 } from 'lucide-react';
+import { Check } from 'lucide-react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import {
   Command,
   CommandEmpty,
@@ -197,11 +198,7 @@ export const MapFiltersPanel = ({
             disabled={locating}
             className={cn(chip, 'self-start', filters.nearMe ? chipOn : chipOff)}
           >
-            {locating ? (
-              <Loader2 size={14} className="animate-spin" aria-hidden="true" />
-            ) : (
-              <TransitIcon name="near-you" size={14} />
-            )}
+            {locating ? <TrackLoader size={14} /> : <TransitIcon name="near-you" size={14} />}
             {filters.nearMe ? 'Within 10 km of you' : 'Near me'}
           </button>
         </div>

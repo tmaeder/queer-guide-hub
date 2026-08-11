@@ -26,6 +26,19 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* Semantic transition durations. Raw `duration-<number>` is blocked by
+   ESLint (queerguide/no-raw-duration) so the three speeds stay comparable
+   across the product. */
+@utility duration-fast {
+  transition-duration: var(--motion-fast);
+}
+@utility duration-normal {
+  transition-duration: var(--motion-normal);
+}
+@utility duration-slow {
+  transition-duration: var(--motion-slow);
+}
+
 /* Force-generate the semantic 3-tier radius + text-hierarchy utilities even
    before they appear in source files — they're the public API of the design
    system and must be applicable to any Aceternity / shadcn component. */
@@ -44,9 +57,23 @@
 
 @theme {
   /* ── Font families ─────────────────────────────────────────────── */
-  --font-sans: 'Space Grotesk', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-sans:
+    'Space Grotesk', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-display: 'Anton', 'Space Grotesk', system-ui, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* ── Motion durations ──────────────────────────────────────────────
+     Mirrors `duration` in src/lib/animation.ts, which is the source of
+     truth for JS/inline motion. These exist so Tailwind class names can
+     name the same three speeds instead of picking a raw number: the type
+     scale solved this exact problem with --text-13 and friends, and raw
+     `duration-300` is the motion equivalent of an arbitrary text-[19px].
+     Tailwind v4 has no --transition-duration-* namespace, so the matching
+     utilities are declared with @utility below. */
+  --motion-instant: 100ms;
+  --motion-fast: 200ms;
+  --motion-normal: 300ms;
+  --motion-slow: 500ms;
 
   /* ── Custom font sizes ─────────────────────────────────────────── */
   --text-3xs: 0.5625rem;
@@ -98,6 +125,24 @@
      `tracking-wide` literal flagged in UI audit P8 §5 and the
      `tracking-[0.04em]` arbitraries scattered across admin + trips. */
   --tracking-label: 0.04em;
+
+  /* ── Page containers — the ONE page-layout API ─────────────────────
+     Tailwind v4's --container-* namespace generates max-w-* utilities, so
+     these are reachable as `max-w-page` / `max-w-reading` / `max-w-form`.
+     Consume them through <PageContainer> (src/components/layout/
+     PageContainer.tsx), never by hand — see docs/design-system/README.md
+     §Page layout. Before these existed, nothing owned page-level spacing:
+     the shell contributes zero gutters, so ~118 page files each redeclared
+     their own and produced 12 distinct caps with 62 pages pinned at a flat
+     px-4 while the header and footer grew to md:px-8.
+
+     1600 rather than the old de-facto max-w-7xl (1280): the cap exists to
+     keep grids from spreading, and 1280 was leaving a third of a common
+     desktop viewport as dead margin. Prose does not scale with it — long
+     text keeps its own measure, hence the second and third tokens. */
+  --container-page: 100rem; /* 1600 — standard page content cap */
+  --container-reading: 48rem; /* 768  — long-form prose measure */
+  --container-form: 32rem; /* 512  — single-column forms, auth, steppers */
 
   /* ── Border radius — semantic 3-tier system + flat + full ──────────
      Legacy --radius-{xs..4xl} ladder retired 2026-05-20 (UI audit P6);
@@ -736,17 +781,6 @@ h2,
   }
 }
 
-@keyframes reveal-up {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
 @keyframes content-enter {
   from {
     opacity: 0;
@@ -769,28 +803,6 @@ h2,
   }
 }
 
-@keyframes slide-up-in {
-  from {
-    opacity: 0;
-    transform: translateY(12px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes slide-down-in {
-  from {
-    opacity: 0;
-    transform: translateY(-8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
 /* ── Animation Utilities ───────────────────────────────────────────── */
 
 .animate-fade-in {
@@ -804,6 +816,90 @@ h2,
 }
 .content-enter {
   animation: content-enter 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* ── Track loader ──────────────────────────────────────────────────────
+   The working indicator, from the design system's Loading Animation spec:
+   "A closed loop, drawn as track. Replaces the spinner everywhere."
+
+   A travelling dash, not a rotation — nothing spins in a transit system,
+   things travel along tracks. pathLength=120 normalises the dash to the
+   path so the same numbers work at any size.
+
+   Reduced motion does NOT hide it: a working indicator that stops moving
+   is indistinguishable from a hung request. The spec's own reduced-motion
+   rule is "lines appear drawn, rider hidden, counter still runs" — the
+   line stays visible, it simply stops travelling. */
+@keyframes track-loop {
+  from {
+    stroke-dashoffset: 120;
+  }
+  to {
+    stroke-dashoffset: -120;
+  }
+}
+.track-loader path {
+  stroke-dasharray: 30 90;
+  animation: track-loop 1.4s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .track-loader path {
+    animation: none;
+    stroke-dasharray: none;
+    opacity: 0.55;
+  }
+}
+
+/* ── Station pop ───────────────────────────────────────────────────────
+   Spec: 500ms, overshoot to 1.28x, settles. Fires when a line reaches a
+   stop — arrival confirmation, not decoration.
+
+   NOTE: this is the ONE sanctioned overshoot outside the joy zone. The
+   repo's standing rule removed spring easing (the old 1.56 overshoot)
+   because bounce read as decorative; the design system reintroduces a
+   smaller one for exactly this semantic — a train seating at a platform.
+   1.28x, not 1.56x, and only on arrival. */
+@keyframes station-pop {
+  0% {
+    transform: scale(0);
+  }
+  62% {
+    transform: scale(1.28);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+.station-pop {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: station-pop 500ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .station-pop {
+    animation: none;
+  }
+}
+
+/* ── Text rise ─────────────────────────────────────────────────────────
+   Spec: 700ms, 14px up, fades in. Used where content lands after a wait. */
+@keyframes text-rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.text-rise {
+  animation: text-rise 700ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .text-rise {
+    animation: none;
+  }
 }
 
 /* Skeleton shimmer — neutral grayscale only. */
@@ -1002,11 +1098,6 @@ h2,
   opacity: 0.7;
 }
 
-/* ── Reveal & Enter Animations ─────────────────────────────────────── */
-
-.reveal-up {
-  animation: reveal-up 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
 .reveal-delay-1 {
   animation-delay: 0.08s;
 }
@@ -1025,13 +1116,6 @@ h2,
 
 .content-crossfade-enter {
   animation: fade-in 0.25s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-
-.slide-up-in {
-  animation: slide-up-in 0.25s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-.slide-down-in {
-  animation: slide-down-in 0.25s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 /* ── Utility helpers ───────────────────────────────────────────────── */
@@ -1069,8 +1153,8 @@ h2,
    are not a `Card` declare their own border utility. */
 .card-lift {
   transition:
-    transform 120ms ease-out,
-    box-shadow 120ms ease-out;
+    transform var(--motion-instant) ease-out,
+    box-shadow var(--motion-instant) ease-out;
 }
 .card-lift:hover,
 .card-lift:focus-visible,
@@ -1078,24 +1162,26 @@ h2,
   transform: translate(-3px, -3px);
   box-shadow: var(--shadow-hard);
 }
-.card-lift-sm {
-  transition:
-    transform 120ms ease-out,
-    box-shadow 120ms ease-out;
-}
-.card-lift-sm:hover,
-.card-lift-sm:focus-visible {
-  transform: translate(-2px, -2px);
-  box-shadow: var(--shadow-hard-sm);
+/* Press. Hover does not exist on touch, and this product is mobile-first, so
+   without an :active state the primary interactive surface gives a tapping
+   user no feedback whatsoever — the lift is a pointer-only affordance.
+   Pressing SEATS the card: it returns to the page and the shadow collapses,
+   the inverse of the lift rather than a second, competing motion. Listed
+   after :hover so it wins on a device that reports both. */
+.card-lift:active {
+  transform: translate(0, 0);
+  box-shadow: none;
 }
 /* Live/urgent variant — the shadow prints in the accent instead of ink. */
 .card-lift-accent:hover,
 .card-lift-accent:focus-visible {
   box-shadow: var(--shadow-hard-accent);
 }
+.card-lift-accent:active {
+  box-shadow: none;
+}
 @media (prefers-reduced-motion: reduce) {
-  .card-lift,
-  .card-lift-sm {
+  .card-lift {
     transition: none;
   }
 }
@@ -1112,6 +1198,30 @@ h2,
     hsl(var(--track-green)) 70%,
     hsl(var(--track-yellow))
   );
+}
+
+/* ── Intent map: a station lights its own line ─────────────────────────
+   The station plates are HTML siblings of the track <svg>, not descendants
+   of it, so `group-hover` cannot reach across the boundary. `:has()` on the
+   shared stage is the only mechanism that can. Thickening the stroke reflows
+   nothing. See src/components/home/subway/IntentMap.tsx. */
+.intent-map [class^='intent-track-'] {
+  transition: stroke-width var(--motion-fast) ease-out;
+}
+.intent-map:has(li[data-track='pink']:hover) .intent-track-pink,
+.intent-map:has(li[data-track='pink']:focus-within) .intent-track-pink,
+.intent-map:has(li[data-track='blue']:hover) .intent-track-blue,
+.intent-map:has(li[data-track='blue']:focus-within) .intent-track-blue,
+.intent-map:has(li[data-track='green']:hover) .intent-track-green,
+.intent-map:has(li[data-track='green']:focus-within) .intent-track-green,
+.intent-map:has(li[data-track='yellow']:hover) .intent-track-yellow,
+.intent-map:has(li[data-track='yellow']:focus-within) .intent-track-yellow {
+  stroke-width: 18;
+}
+@media (prefers-reduced-motion: reduce) {
+  .intent-map [class^='intent-track-'] {
+    transition: none;
+  }
 }
 
 /* ══════════════════════════════════════════════════════════════════════
@@ -1192,7 +1302,6 @@ h2,
   background-color: hsl(var(--background) / 0.2);
 }
 
-
 .duotone-riso {
   position: relative;
   isolation: isolate;
@@ -1222,21 +1331,36 @@ h2,
    Route transition. Replaces the flat .route-fade crossfade with a short
    vertical feed, the way a sheet advances through a press. No fill-mode
    dependency: if the animation never runs the page is simply visible. */
-@keyframes paper-feed {
+/* ── Station arrival ───────────────────────────────────────────────────
+   The route transition. Replaces `paper-feed`, whose own comment described
+   it as "the way a sheet feeds through a press" — a printing metaphor left
+   over from the retired PASTE-UP identity.
+
+   A train does not fade in; it decelerates and comes to rest. So the easing
+   is pure deceleration (ease.decel from lib/animation) rather than the
+   smooth in-out curve, and the travel is short — content settles the last
+   few pixels into the platform rather than sliding across it.
+
+   No overshoot. A bouncing carriage is a derailment, and elastic easing is
+   banned outside the joy zone anyway.
+
+   Animates only FROM a displaced state, so if animations never run (reduced
+   motion, headless, print) content renders at its natural resting position. */
+@keyframes station-arrive {
   from {
     opacity: 0;
-    transform: translateY(12px);
+    transform: translateY(10px);
   }
   to {
     opacity: 1;
     transform: translateY(0);
   }
 }
-.paper-feed {
-  animation: paper-feed 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+.station-arrive {
+  animation: station-arrive var(--motion-normal) cubic-bezier(0, 0, 0.2, 1);
 }
 @media (prefers-reduced-motion: reduce) {
-  .paper-feed {
+  .station-arrive {
     animation: none;
   }
 }
@@ -1329,152 +1453,6 @@ h2,
   );
 }
 
-/* Animated border-conic for "moving border" cards (monochrome). */
-@keyframes border-rotate {
-  to {
-    transform: rotate(360deg);
-  }
-}
-.moving-border::before {
-  content: '';
-  position: absolute;
-  inset: -1px;
-  border-radius: inherit;
-  background: conic-gradient(
-    from 0deg,
-    transparent 0%,
-    hsl(var(--foreground) / 0.4) 12%,
-    transparent 25%
-  );
-  animation: border-rotate 6s linear infinite;
-  z-index: 0;
-  pointer-events: none;
-}
-.moving-border > * {
-  position: relative;
-  z-index: 1;
-}
-@media (prefers-reduced-motion: reduce) {
-  .moving-border::before {
-    animation: none;
-  }
-}
-
-/* Meteor streak — diagonal trail with fading tail. */
-@keyframes meteor {
-  0% {
-    transform: rotate(215deg) translateX(0);
-    opacity: 1;
-  }
-  70% {
-    opacity: 1;
-  }
-  100% {
-    transform: rotate(215deg) translateX(-500px);
-    opacity: 0;
-  }
-}
-.meteor {
-  animation: meteor 5s linear infinite;
-}
-.meteor::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 50px;
-  height: 1px;
-  background: linear-gradient(to right, hsl(var(--foreground)), transparent);
-}
-@media (prefers-reduced-motion: reduce) {
-  .meteor {
-    animation: none;
-    opacity: 0;
-  }
-}
-
-/* Pulsing beam — vertical, soft falloff. */
-@keyframes beam-pulse {
-  0%,
-  100% {
-    opacity: 0;
-    transform: translateY(-100%);
-  }
-  50% {
-    opacity: 0.8;
-    transform: translateY(100%);
-  }
-}
-.beam {
-  position: absolute;
-  inset-block: -10%;
-  width: 1px;
-  background: linear-gradient(to bottom, transparent, hsl(var(--foreground) / 0.7), transparent);
-  animation: beam-pulse 6s ease-in-out infinite;
-}
-@media (prefers-reduced-motion: reduce) {
-  .beam {
-    animation: none;
-    opacity: 0.2;
-  }
-}
-
-/* Button shine sweep. */
-@keyframes shine-sweep {
-  0% {
-    transform: translateX(-100%) skewX(-12deg);
-  }
-  100% {
-    transform: translateX(250%) skewX(-12deg);
-  }
-}
-.shine-on-hover {
-  position: relative;
-  overflow: hidden;
-}
-.shine-on-hover::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(90deg, transparent, hsl(var(--background) / 0.45), transparent);
-  transform: translateX(-100%) skewX(-12deg);
-  transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
-  pointer-events: none;
-}
-.shine-on-hover:hover::after {
-  animation: shine-sweep 0.9s ease-out;
-}
-@media (prefers-reduced-motion: reduce) {
-  .shine-on-hover:hover::after {
-    animation: none;
-    transform: translateX(0);
-  }
-}
-
-/* Conic moving border — for hover-border-gradient effect. */
-@keyframes hover-border-spin {
-  to {
-    --hover-angle: 360deg;
-  }
-}
-@property --hover-angle {
-  syntax: '<angle>';
-  initial-value: 0deg;
-  inherits: false;
-}
-.hover-border-gradient {
-  --hover-angle: 0deg;
-  background: conic-gradient(
-    from var(--hover-angle),
-    hsl(var(--foreground) / 0),
-    hsl(var(--foreground) / 0.8) 25%,
-    hsl(var(--foreground) / 0) 50%
-  );
-}
-.hover-border-gradient.active {
-  animation: hover-border-spin 2s linear infinite;
-}
-
 /* Marquee — horizontal infinite scroll. */
 @keyframes marquee-fwd {
   from {
@@ -1496,32 +1474,6 @@ h2,
   [style*='marquee-fwd'],
   [style*='marquee-rev'] {
     animation: none !important;
-  }
-}
-
-/* Aurora replacement — slow, soft, monochrome luminance shift. */
-@keyframes aurora-pan {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
-}
-.aurora-mono {
-  background:
-    radial-gradient(ellipse at 20% 30%, hsl(var(--foreground) / 0.08), transparent 50%),
-    radial-gradient(ellipse at 80% 60%, hsl(var(--foreground) / 0.06), transparent 50%),
-    radial-gradient(ellipse at 50% 90%, hsl(var(--foreground) / 0.05), transparent 50%);
-  background-size: 200% 200%;
-  animation: aurora-pan 20s ease infinite;
-}
-@media (prefers-reduced-motion: reduce) {
-  .aurora-mono {
-    animation: none;
   }
 }
 

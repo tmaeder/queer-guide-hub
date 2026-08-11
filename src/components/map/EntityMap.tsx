@@ -6,10 +6,11 @@
  */
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import * as maplibregl from 'maplibre-gl';
 import type { GeoJSONSource } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
-import { Loader2 } from 'lucide-react';
+
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { getMapStyle, MAP_FONT_BOLD } from '@/config/mapStyle';
 import { ink, paper } from '@/lib/mapTokens';
@@ -459,7 +460,7 @@ export const EntityMap = ({
           className="absolute inset-0 flex items-center justify-center"
           style={{ backgroundColor: paper(0.7), zIndex: 5 }}
         >
-          <Loader2 className="animate-spin" size={24} aria-label="Loading" />
+          <TrackLoader size={24} label="Loading" />
         </div>
       )}
 

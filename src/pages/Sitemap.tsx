@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useDynamicSitemap } from '@/hooks/useDynamicSitemap';
 import { useTranslation } from 'react-i18next';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 function setMetaTag(name: string, content: string) {
   let tag = document.querySelector(`meta[name="${name}"]`);
@@ -91,19 +92,19 @@ export default function Sitemap() {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto py-8 px-4">
+      <PageContainer>
         <h4 className="text-3xl font-bold tracking-tight mb-4">Queer Guide Sitemap</h4>
         <p className="text-muted-foreground">Loading dynamic sitemap...</p>
-      </div>
+      </PageContainer>
     );
   }
 
   if (error) {
     return (
-      <div className="container mx-auto py-8 px-4">
+      <PageContainer>
         <h4 className="text-3xl font-bold tracking-tight mb-4">Queer Guide Sitemap</h4>
         <p className="text-muted-foreground">Failed to load sitemap. Please try again later.</p>
-      </div>
+      </PageContainer>
     );
   }
 
@@ -115,7 +116,7 @@ export default function Sitemap() {
       />
 
       <header className="py-8">
-        <div className="container mx-auto px-4">
+        <PageContainer flush>
           <div className="flex items-center justify-between">
             <LocalizedLink to="/" style={{ marginLeft: -8 }} className="font-bold">
               Queer Guide
@@ -127,8 +128,8 @@ export default function Sitemap() {
               GitHub
             </a>
           </div>
-        </div>
-        <div className="container mx-auto px-4">
+        </PageContainer>
+        <PageContainer flush>
           <h4 className="text-3xl font-bold tracking-tight">Queer Guide Sitemap</h4>
           <p className="text-muted-foreground mt-2">
             Quickly jump to any main section.{' '}
@@ -162,10 +163,10 @@ export default function Sitemap() {
               )}
             </div>
           </div>
-        </div>
+        </PageContainer>
       </header>
 
-      <div className="container mx-auto px-4">
+      <PageContainer flush>
         <main className="grid gap-6 md:grid-cols-[240px_1fr]">
           <aside className="md:sticky md:top-24">
             <nav aria-label="Section jump navigation" className="p-4 bg-card rounded-container">
@@ -327,7 +328,7 @@ export default function Sitemap() {
             </div>
           </section>
         </main>
-      </div>
+      </PageContainer>
     </>
   );
 }

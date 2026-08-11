@@ -1,26 +1,8 @@
 import { useMemo, useState, lazy, Suspense } from 'react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useParams } from 'react-router';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
-import {
-  MapPin,
-  Shield,
-  Wallet,
-  Ticket,
-  CheckSquare,
-  MessageCircle,
-  Share2,
-  ArrowLeft,
-  Plus,
-  Hotel,
-  Sparkles,
-  MessagesSquare,
-  FileText,
-  Download,
-  Check,
-  Loader2,
-  Lightbulb,
-  NotebookPen,
-} from 'lucide-react';
+import { MapPin, Shield, Wallet, Ticket, CheckSquare, MessageCircle, Share2, ArrowLeft, Plus, Hotel, Sparkles, MessagesSquare, FileText, Download, Check, Lightbulb, NotebookPen } from 'lucide-react';
 import { format, differenceInDays } from 'date-fns';
 import { useTranslation } from 'react-i18next';
 import { useTrip, canEditTrip, type TripWithDetails } from '@/hooks/useTrips';
@@ -62,6 +44,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { ErrorState } from '@/components/ui/EmptyState';
 import { classifyTripError } from '@/utils/tripError';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 const BudgetTab = lazy(() =>
   import('@/components/trips/BudgetTab').then((m) => ({ default: m.BudgetTab })),
@@ -107,7 +90,7 @@ function hasSafetyWarnings(trip: TripWithDetails): boolean {
 
 const SuspenseLoader = () => (
   <div className="flex justify-center my-8">
-    <Loader2 className="h-6 w-6 animate-spin" />
+    <TrackLoader size={24} />
   </div>
 );
 
@@ -146,18 +129,18 @@ export default function TripPlannerPage() {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto py-6 md:py-10">
+      <PageContainer>
         <Skeleton className="h-[220px] rounded-container mb-6" />
         <Skeleton className="h-7 w-60" />
         <Skeleton className="h-[400px] mt-6 rounded-container" />
-      </div>
+      </PageContainer>
     );
   }
 
   if (error || !trip) {
     const kind = classifyTripError(tripId, error, trip) ?? 'load-error';
     return (
-      <div className="container mx-auto py-8 md:py-16">
+      <PageContainer>
         <ErrorState
           title={t(`trips.error.${kind}.title`)}
           description={t(`trips.error.${kind}.description`)}
@@ -167,7 +150,7 @@ export default function TripPlannerPage() {
             variant: 'default',
           }}
         />
-      </div>
+      </PageContainer>
     );
   }
 
@@ -195,7 +178,7 @@ export default function TripPlannerPage() {
   };
 
   return (
-    <div className="container mx-auto py-6 md:py-8">
+    <PageContainer>
       {/* Back to trips */}
       <Button
         variant="ghost"
@@ -274,7 +257,7 @@ export default function TripPlannerPage() {
           className="flex items-center gap-2 rounded-element px-4 py-2 mb-4 text-sm text-muted-foreground bg-surface-container"
           data-testid="offline-pending-banner"
         >
-          <Loader2 size={14} className="animate-spin" aria-hidden />
+          <TrackLoader size={14} />
           {t('trips.offline.pending', '{{count}} changes waiting to sync', {
             count: pendingOffline,
           })}
@@ -386,10 +369,7 @@ export default function TripPlannerPage() {
       )}
 
       {/* === MORE PANEL (secondary tools) === */}
-      <section
-        className="mt-8 pt-6"
-        aria-label={t('trips.timeline.more', 'More tools')}
-      >
+      <section className="mt-8 pt-6" aria-label={t('trips.timeline.more', 'More tools')}>
         <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground mb-4">
           {t('trips.timeline.more', 'More tools')}
         </h2>
@@ -603,6 +583,6 @@ export default function TripPlannerPage() {
       />
 
       <ShareTripDialog open={shareOpen} onClose={() => setShareOpen(false)} tripId={trip.id} />
-    </div>
+    </PageContainer>
   );
 }

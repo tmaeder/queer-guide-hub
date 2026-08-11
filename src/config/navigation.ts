@@ -45,7 +45,7 @@ export type NavIcon = ComponentType<{ size?: number; className?: string }>;
  *
  * Two layers, and the order between them is the contract:
  *  - INTENT_NAV is the model the user is TAUGHT — the job they came to do. It
- *    leads Header, MobileNavSheet, SearchPopoverEmpty, IntentRail and Footer.
+ *    leads Header, MobileNavSheet, SearchPopoverEmpty, IntentMap and Footer.
  *  - DESTINATIONS is the additive "browse everything" layer BENEATH it, so
  *    nothing becomes unreachable. It is never the first thing a surface shows.
  *
@@ -256,13 +256,17 @@ export const INTENT_NAV: IntentDestination[] = [
   },
   {
     id: 'support',
-    to: '/support',
+    // Points at /help, not /support: the two pages were redundant (same
+    // useOrganizationsList({role:'support'}) source) and /help is the superset —
+    // it owns the CMS hotline corpus, per-country routes, QuickExit and the
+    // EmergencyService JSON-LD. /support still resolves, as a redirect.
+    to: '/help',
     icon: LifeBuoy,
     labelKey: 'header.intents.support.label',
     fallback: 'Support',
     subtitleKey: 'header.intents.support.subtitle',
     subtitleFallback: 'Helplines and organizations near you',
-    activePrefixes: ['/support', '/organizations'],
+    activePrefixes: ['/support', '/help', '/organizations'],
   },
   {
     id: 'shop',
@@ -349,6 +353,11 @@ export const BOTTOM_NAV_TABS: BottomNavTab[] = [
       '/going-out',
       '/rights',
       '/support',
+      // The Support intent now lands on /help (the two pages were merged), so
+      // Explore must light there too — otherwise the mobile tab goes dark the
+      // moment someone taps Support. /support stays listed because the URL
+      // still resolves as a redirect and may arrive from an inbound link.
+      '/help',
       '/shop',
       '/organizations',
       '/cities',

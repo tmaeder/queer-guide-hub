@@ -1,5 +1,6 @@
 import { useMemo, useRef, useState } from 'react';
-import { Upload, MapPin, Loader2, CircleCheck } from 'lucide-react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
+import { Upload, MapPin, CircleCheck } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import {
   Dialog,
@@ -169,7 +170,7 @@ export function ImportPlacesDialog({ open, onClose, tripId, nextSortOrder }: Pro
               <div className="flex items-center gap-2">
                 {matching ? (
                   <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
-                    <Loader2 className="w-3 h-3 animate-spin" aria-hidden />
+                    <TrackLoader size={12} />
                     {t('trips.import.matching', 'Matching venues…')}
                   </span>
                 ) : (
@@ -243,7 +244,7 @@ export function ImportPlacesDialog({ open, onClose, tripId, nextSortOrder }: Pro
             onClick={handleImport}
             disabled={selectedRows.length === 0 || matching || addPlacesBulk.isPending}
           >
-            {addPlacesBulk.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+            {addPlacesBulk.isPending && <TrackLoader size={16} className="mr-2" />}
             {t('trips.import.confirm', 'Import {{count}} places', {
               count: selectedRows.length,
             })}

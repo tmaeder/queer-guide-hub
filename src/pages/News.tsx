@@ -23,6 +23,7 @@ import { StoryCollectionsBand } from '@/components/news/editorial/StoryCollectio
 import { WeekInReview } from '@/components/news/editorial/WeekInReview';
 import { ReaderRail } from '@/components/news/editorial/ReaderRail';
 import { NewStoriesPill } from '@/components/news/editorial/NewStoriesPill';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 type Article = Tables<'news_articles'> & { news_sources?: Tables<'news_sources'> };
 
@@ -139,7 +140,7 @@ export default function News() {
 
   return (
     <div className="min-h-screen relative">
-      <div className="container mx-auto px-4 pt-12 md:pt-16 pb-24">
+      <PageContainer>
         <IssueMasthead
           totalArticles={totalArticles ?? articles.length}
           sourceCount={sources.length}
@@ -222,7 +223,7 @@ export default function News() {
             <ReaderRail />
           </aside>
         </div>
-      </div>
+      </PageContainer>
     </div>
   );
 }

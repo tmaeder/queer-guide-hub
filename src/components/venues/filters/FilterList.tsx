@@ -1,3 +1,4 @@
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import {
   Command,
   CommandEmpty,
@@ -6,7 +7,7 @@ import {
   CommandItem,
   CommandList,
 } from '@/components/ui/command';
-import { Check, Loader2 } from 'lucide-react';
+import { Check} from 'lucide-react';
 
 export function FilterList({
   items,
@@ -35,7 +36,7 @@ export function FilterList({
         <CommandGroup>
           {loading ? (
             <div className="flex items-center justify-center p-4">
-              <Loader2 size={16} />
+              <TrackLoader size={16} />
             </div>
           ) : (
             items.map((item) => (

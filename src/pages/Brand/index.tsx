@@ -9,6 +9,7 @@ import {
   type ColorGroup,
 } from '@/components/admin/design/tokenCatalog';
 import { contrastVerdict, hslChannelsToCss } from '@/lib/wcagContrast';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 const GROUP_ORDER: ColorGroup[] = ['core', 'surface', 'text', 'sidebar', 'feedback'];
 
@@ -23,7 +24,7 @@ export default function BrandGuidelines() {
   const radiusTokens = GLOBAL_TOKENS.filter((g) => g.kind === 'radius');
 
   return (
-    <div className="max-w-screen-lg mx-auto px-6 py-16 flex flex-col gap-16">
+    <PageContainer className="flex flex-col gap-16">
       {/* Hero */}
       <header className="flex flex-col gap-4">
         <p className="text-2xs uppercase tracking-wider text-muted-foreground">Brand system</p>
@@ -166,6 +167,6 @@ export default function BrandGuidelines() {
           </Card>
         </div>
       </section>
-    </div>
+    </PageContainer>
   );
 }

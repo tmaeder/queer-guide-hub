@@ -1,10 +1,11 @@
 import { useState } from 'react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { UsernameSelector } from '@/components/auth/UsernameSelector';
 import { useToast } from '@/hooks/use-toast';
 import { untypedRpc } from '@/integrations/supabase/untyped';
-import { Loader2 } from 'lucide-react';
+
 
 interface UsernamePanelProps {
   username: string | null;
@@ -85,7 +86,7 @@ export function UsernamePanel({ username, autoAssigned, onChanged }: UsernamePan
       <UsernameSelector value={pending} onChange={setPending} />
       <div className="flex gap-2">
         <Button onClick={commit} disabled={!pending || saving} className="rounded-element">
-          {saving && <Loader2 size={16} className="mr-2 animate-spin" />}
+          {saving && <TrackLoader size={16} className="mr-2" />}
           {username ? 'Confirm change' : 'Claim username'}
         </Button>
         {username && (

@@ -5,6 +5,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import {
   Search,
   Upload,
@@ -16,7 +17,6 @@ import {
   Check,
   Globe,
   FolderOpen,
-  Loader2,
 } from 'lucide-react';
 import { useCMSMedia } from '@/hooks/useCMSMedia';
 import { supabase } from '@/integrations/supabase/client';
@@ -322,7 +322,7 @@ export default function MediaPickerDialog({
 
               {loading && (
                 <div className="flex justify-center py-12">
-                  <Loader2 className="h-6 w-6 animate-spin" aria-label="Loading" />
+                  <TrackLoader size={24} label="Loading" />
                 </div>
               )}
 

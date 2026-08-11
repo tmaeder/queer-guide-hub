@@ -6,6 +6,7 @@ import {
   DESTINATIONS,
   INTENT_NAV,
   INTENT_SCOPE_BIAS,
+  INTENT_TRACK,
   findActiveIntent,
   BOTTOM_NAV_TABS,
   NAV_CLUSTERS,
@@ -190,6 +191,31 @@ describe('INTENT_SCOPE_BIAS', () => {
       for (const scope of scopes) if (!legalIds.has(scope)) bogus.push(`${id}: ${scope}`);
     }
     expect(bogus, 'these scope ids do not exist in searchTaxonomy').toEqual([]);
+  });
+});
+
+describe('INTENT_TRACK', () => {
+  const TRACKS = ['pink', 'blue', 'green', 'yellow'] as const;
+
+  it('assigns a line to every intent and to nothing else', () => {
+    expect(Object.keys(INTENT_TRACK).sort()).toEqual(INTENT_NAV.map((i) => i.id).sort());
+  });
+
+  it('only names real tracks', () => {
+    for (const [id, track] of Object.entries(INTENT_TRACK)) {
+      expect(TRACKS, `${id} is on an unknown line`).toContain(track);
+    }
+  });
+
+  it('puts at least one intent on each of the four lines', () => {
+    // The homepage draws all four tracks. A line with no station on it is a
+    // stripe of colour that leads nowhere.
+    for (const track of TRACKS) {
+      expect(
+        Object.values(INTENT_TRACK),
+        `no intent rides the ${track} line`,
+      ).toContain(track);
+    }
   });
 });
 

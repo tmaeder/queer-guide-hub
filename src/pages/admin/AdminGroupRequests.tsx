@@ -11,7 +11,7 @@ import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
  */
 export default function AdminGroupRequests() {
   return (
-    <div className="mx-auto flex max-w-5xl flex-col gap-6 p-6">
+    <div className="flex flex-col gap-6">
       {/* mb-0: the parent already spaces children with gap-6. */}
       <AdminPageHeader
         className="mb-0"

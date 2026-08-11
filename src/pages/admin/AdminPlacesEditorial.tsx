@@ -1,4 +1,5 @@
 import { useId, useState } from 'react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -6,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Check, X, Sparkles } from 'lucide-react';
+import {Check, X, Sparkles } from 'lucide-react';
 import { useMeta } from '@/hooks/useMeta';
 import {
   type EditorialEntityType,
@@ -33,7 +34,7 @@ export default function AdminPlacesEditorial() {
   });
 
   return (
-    <div className="container mx-auto py-8 px-4 flex flex-col gap-6">
+    <div className="flex flex-col gap-6">
       {/* mb-0: the parent already spaces children with gap-6. */}
       <AdminPageHeader
         className="mb-0"
@@ -127,7 +128,7 @@ function DraftsQueue() {
         </div>
         <Button onClick={handleGenerate} disabled={generate.isPending}>
           {generate.isPending ? (
-            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            <TrackLoader size={16} className="mr-2" />
           ) : (
             <Sparkles className="h-4 w-4 mr-2" />
           )}
@@ -241,18 +242,13 @@ function DraftRow({ draft }: { draft: EditorialDraft }) {
           size="sm"
         >
           {approve.isPending ? (
-            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            <TrackLoader size={16} className="mr-2" />
           ) : (
             <Check className="h-4 w-4 mr-2" />
           )}
           Approve & publish
         </Button>
-        <Button
-          variant="outline"
-          onClick={handleSave}
-          disabled={save.isPending}
-          size="sm"
-        >
+        <Button variant="outline" onClick={handleSave} disabled={save.isPending} size="sm">
           Save draft
         </Button>
         <Button variant="outline" onClick={handleReject} disabled={reject.isPending} size="sm">
@@ -294,16 +290,11 @@ function CoversEditor() {
                   <Badge variant="outline" className="text-2xs uppercase">
                     {c.entity_type}
                   </Badge>
-                  <Badge
-                    variant={c.published ? 'default' : 'secondary'}
-                    className="text-2xs"
-                  >
+                  <Badge variant={c.published ? 'default' : 'secondary'} className="text-2xs">
                     {c.published ? 'published' : 'unpublished'}
                   </Badge>
                 </div>
-                {c.pull_quote && (
-                  <p className="text-15 text-muted-foreground">{c.pull_quote}</p>
-                )}
+                {c.pull_quote && <p className="text-15 text-muted-foreground">{c.pull_quote}</p>}
                 <p className="text-2xs text-muted-foreground">
                   Starts {new Date(c.starts_at).toLocaleDateString()}
                   {c.author ? ` · by ${c.author}` : ''}

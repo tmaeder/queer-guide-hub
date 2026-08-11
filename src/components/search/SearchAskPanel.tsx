@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, Sparkles, Loader2, CornerDownLeft } from 'lucide-react';
+import { ArrowLeft, Sparkles, CornerDownLeft } from 'lucide-react';
 import { TYPE_ICONS } from '@/hooks/useSearchSuggestions';
 import { SearchResultRow } from './SearchResultRow';
 import type { AssistantMessage } from '@/hooks/useAssistant';
@@ -102,7 +103,7 @@ export function SearchAskPanel({
 
         {pending && (
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Loader2 className="h-4 w-4 animate-spin" />
+            <TrackLoader size={16} />
             {t('search.ask.thinking', 'Thinking…')}
           </div>
         )}

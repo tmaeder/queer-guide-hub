@@ -75,7 +75,7 @@ export function ResourcesFilterBar({
   const [advancedOpen, setAdvancedOpen] = useState(advancedActive);
 
   return (
-    <div className="rounded-element bg-surface-container p-4 md:p-6 mb-6">
+    <div className="sticky top-0 z-20 rounded-element border-[3px] border-foreground bg-surface-container p-4 md:p-6 mb-6">
       <div className="flex flex-col sm:flex-row gap-4 mb-4">
         <div className="relative flex-1">
           <Search

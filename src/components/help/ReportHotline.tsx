@@ -4,8 +4,9 @@
  */
 
 import { useState } from 'react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useTranslation } from 'react-i18next';
-import { Flag, Loader2 } from 'lucide-react';
+import { Flag} from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -125,7 +126,7 @@ export function ReportHotline({ hotlineId }: { hotlineId: string }) {
             </Button>
             <Button onClick={submit} disabled={submitting}>
               {submitting ? (
-                <Loader2 size={14} className="mr-2 animate-spin" />
+                <TrackLoader size={14} className="mr-2" />
               ) : (
                 <Flag size={14} className="mr-2" />
               )}

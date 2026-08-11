@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -24,7 +25,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Eye, Edit, Save, X, Mail, Loader2, FileText, TestTube } from 'lucide-react';
+import { Eye, Edit, Save, X, Mail, FileText, TestTube } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { fetchEmailTemplates, upsertEmailTemplate } from '@/hooks/usePageFetchers';
 import { useAuth } from '@/hooks/useAuth';
@@ -78,7 +79,6 @@ export default function EmailTemplates() {
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
     fetchTemplates();
-     
   }, []);
 
   const handleSaveTemplate = async () => {
@@ -172,13 +172,13 @@ export default function EmailTemplates() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="h-8 w-8 animate-spin" />
+        <TrackLoader size={32} />
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto py-8 px-4 flex flex-col gap-6">
+    <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
         <div>
           <h4 className="text-2xl font-bold">Email Templates</h4>
@@ -297,7 +297,7 @@ export default function EmailTemplates() {
                     </Button>
                     <Button onClick={handleSaveTemplate} disabled={isSaving}>
                       {isSaving ? (
-                        <Loader2 size={16} className="animate-spin mr-2" />
+                        <TrackLoader size={16} className="mr-2" />
                       ) : (
                         <Save size={16} className="mr-2" />
                       )}
@@ -499,7 +499,7 @@ export default function EmailTemplates() {
                               disabled={!testEmail || isSendingTest}
                             >
                               {isSendingTest ? (
-                                <Loader2 size={16} className="animate-spin mr-2" />
+                                <TrackLoader size={16} className="mr-2" />
                               ) : (
                                 <Mail size={16} className="mr-2" />
                               )}

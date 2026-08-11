@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useParams } from 'react-router';
 import {
   Calendar,
@@ -13,7 +14,6 @@ import {
   Skull,
   WifiOff,
   Bell,
-  Loader2,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
@@ -30,6 +30,7 @@ import { Badge } from '@/components/ui/badge';
 import { ErrorState } from '@/components/ui/EmptyState';
 import { classifyTripError } from '@/utils/tripError';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 /**
  * Day-of-travel mode.
@@ -233,16 +234,16 @@ export default function TodayModePage() {
 
   if (isLoading && !effectiveTrip) {
     return (
-      <div className="container mx-auto py-16 px-4 text-center">
-        <Loader2 className="h-6 w-6 animate-spin mx-auto" aria-label="Loading" />
-      </div>
+      <PageContainer className="text-center">
+        <TrackLoader size={24} label="Loading" className="mx-auto" />
+      </PageContainer>
     );
   }
 
   if ((error && !effectiveTrip) || !effectiveTrip) {
     const kind = classifyTripError(tripId, error, effectiveTrip) ?? 'load-error';
     return (
-      <div className="container mx-auto py-16 px-4">
+      <PageContainer>
         <ErrorState
           title={t(`trips.error.${kind}.title`)}
           description={t(`trips.error.${kind}.description`)}
@@ -252,13 +253,13 @@ export default function TodayModePage() {
             variant: 'default',
           }}
         />
-      </div>
+      </PageContainer>
     );
   }
 
   if (!isTripActiveToday(effectiveTrip.start_date, effectiveTrip.end_date, now)) {
     return (
-      <div className="container mx-auto py-16 px-4">
+      <PageContainer>
         <div className="text-center max-w-[480px] mx-auto">
           <h5 className="text-xl font-bold mb-2">
             {t('trips.today.inactiveTitle', "This trip isn't active today")}
@@ -278,12 +279,12 @@ export default function TodayModePage() {
             </LocalizedLink>
           </Button>
         </div>
-      </div>
+      </PageContainer>
     );
   }
 
   return (
-    <div className="container mx-auto py-8 md:py-12 px-4">
+    <PageContainer>
       {(!online || servingFromSnapshot) && (
         <div
           className="mb-4 p-4 bg-muted flex items-center gap-2 text-sm text-muted-foreground"
@@ -472,7 +473,7 @@ export default function TodayModePage() {
           })}
         </div>
       )}
-    </div>
+    </PageContainer>
   );
 }
 

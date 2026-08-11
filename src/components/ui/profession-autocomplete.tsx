@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Check, ChevronsUpDown, Loader2 } from 'lucide-react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
+import { Check, ChevronsUpDown} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Command,
@@ -53,10 +54,7 @@ export function ProfessionAutocomplete({
         >
           <span className="truncate">{value || placeholder}</span>
           {loading ? (
-            <Loader2
-              className="ml-2 h-4 w-4 shrink-0 animate-spin opacity-50"
-              aria-label="Loading"
-            />
+            <TrackLoader size={16} label="Loading" className="ml-2 shrink-0 opacity-50" />
           ) : (
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           )}

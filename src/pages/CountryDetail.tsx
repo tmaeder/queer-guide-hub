@@ -46,6 +46,7 @@ import {
   fetchCountryWeather,
   type WeatherDataType,
 } from './CountryDetail.parts';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 export default function CountryDetail() {
   const { slug: countrySlug } = useParams<{ slug: string }>();
@@ -169,7 +170,7 @@ export default function CountryDetail() {
   if (!country) {
     return (
       <div className="min-h-screen bg-background">
-        <div className="mx-auto px-4 py-8 text-center">
+        <PageContainer className="text-center">
           <h5 className="mb-4 text-xl font-bold">
             {t('country.notFound.title', 'Country not found')}
           </h5>
@@ -179,7 +180,7 @@ export default function CountryDetail() {
           <LocalizedLink to="/cities" className="font-medium" style={{ color: 'inherit' }}>
             ← {t('country.notFound.back', 'Back to Cities')}
           </LocalizedLink>
-        </div>
+        </PageContainer>
       </div>
     );
   }

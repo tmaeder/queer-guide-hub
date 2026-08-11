@@ -1,9 +1,7 @@
 import React from 'react';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
-import { useIsMobile } from '@/hooks/use-mobile';
 import { Skeleton } from '@/components/ui/skeleton';
 import { RecentlyViewedRail } from '@/components/home/RecentlyViewedRail';
-import { IntentRail } from '@/components/home/IntentRail';
 import { DeferredSection } from '@/components/home/DeferredSection';
 import { FadeIn } from '@/components/motion';
 import { lazyOptional } from '@/utils/lazyRetry';
@@ -11,6 +9,7 @@ import { SubwayHero } from '@/components/home/subway/SubwayHero';
 import { DeparturesBoard } from '@/components/home/subway/DeparturesBoard';
 import { CityCards } from '@/components/home/subway/CityCards';
 import { SupportBand } from '@/components/home/subway/SupportBand';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 // Plain React.lazy reads `.default` off whatever the dynamic import resolves
 // to; lazyOptional degrades to null when a stale deploy no longer serves the
@@ -23,32 +22,28 @@ const HomeOnThisDay = lazyOptional(() => import('@/components/home/HomeOnThisDay
 // ── Section shells ───────────────────────────────────────────────────────────
 
 const magazineSkeleton = (
-  <div className="px-4 sm:px-6 md:px-8 py-12 md:py-16">
-    <div className="max-w-7xl mx-auto grid grid-cols-1 gap-10 md:grid-cols-[1.1fr_1fr]">
-      <Skeleton className="aspect-[16/10] w-full rounded-container" />
-      <div className="grid grid-cols-2 gap-x-6 gap-y-8">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <Skeleton key={i} className="aspect-[3/2] w-full rounded-element" />
-        ))}
-      </div>
+  <PageContainer className="grid grid-cols-1 gap-10 md:grid-cols-[1.1fr_1fr]">
+    <Skeleton className="aspect-[16/10] w-full rounded-container" />
+    <div className="grid grid-cols-2 gap-x-6 gap-y-8">
+      {Array.from({ length: 4 }).map((_, i) => (
+        <Skeleton key={i} className="aspect-[3/2] w-full rounded-element" />
+      ))}
     </div>
-  </div>
+  </PageContainer>
 );
 
 const railSkeleton = (
-  <div className="px-4 sm:px-6 md:px-8 py-12 md:py-16">
-    <div className="max-w-7xl mx-auto">
-      <Skeleton className="mb-8 h-9 w-64" />
-      <div className="flex gap-4 overflow-hidden">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <Skeleton
-            key={i}
-            className="aspect-[3/4] w-[200px] sm:w-[240px] shrink-0 rounded-container"
-          />
-        ))}
-      </div>
+  <PageContainer>
+    <Skeleton className="mb-8 h-9 w-64" />
+    <div className="flex gap-4 overflow-hidden">
+      {Array.from({ length: 4 }).map((_, i) => (
+        <Skeleton
+          key={i}
+          className="aspect-[3/4] w-[200px] sm:w-[240px] shrink-0 rounded-container"
+        />
+      ))}
     </div>
-  </div>
+  </PageContainer>
 );
 
 /** Shared wrapper: error isolation + near-viewport deferral (code AND data)
@@ -83,19 +78,13 @@ function HomeDeferred({
  * drops the ~1MB maplibre chunk from the homepage entirely.
  */
 const Index = React.memo(() => {
-  const isMobile = useIsMobile();
-
   return (
     <div className="min-h-screen">
-      {/* ── On mobile the intent rail IS the primary navigation: the header
-           carries no intent links below lg and the bottom bar's Explore tab
-           opens a sheet, so the rail leads, above the hero. On desktop the
-           header carries them and the rail follows the hero. */}
-      {isMobile && <IntentRail />}
-
+      {/* ── The hero now CARRIES the primary navigation: SubwayHero renders
+           IntentMap, whose stations are the six intents. One canvas, one
+           position, every breakpoint — the old isMobile split existed only to
+           put the separate intent rail above the hero on phones. */}
       <SubwayHero />
-
-      {!isMobile && <IntentRail />}
 
       {/* ── Returning visitors: one light personalized rail (self-hides) ─ */}
       <RecentlyViewedRail />

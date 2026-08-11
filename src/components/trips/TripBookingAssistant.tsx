@@ -1,7 +1,8 @@
 import { useState, useMemo } from 'react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useTranslation } from 'react-i18next';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Plane, Hotel, Plus, Shield, MapPin, Star, Check, Loader2 } from 'lucide-react';
+import { Plane, Hotel, Plus, Shield, MapPin, Star, Check} from 'lucide-react';
 import {
   fetchBookingAssistantCities,
   fetchTripReservations,
@@ -261,7 +262,7 @@ export function TripBookingAssistant({ tripId, places, _days, startDate, endDate
         <>
           {venuesLoading ? (
             <div className="flex justify-center py-8">
-              <Loader2 size={24} className="animate-spin" aria-label="Loading" />
+              <TrackLoader size={24} label="Loading" />
             </div>
           ) : (
             cityIds.map((cityId) => {
@@ -293,7 +294,7 @@ export function TripBookingAssistant({ tripId, places, _days, startDate, endDate
                         disabled={addingId === venue.id}
                       >
                         {addingId === venue.id ? (
-                          <Loader2 size={12} className="animate-spin" aria-label="Loading" />
+                          <TrackLoader size={12} label="Loading" />
                         ) : (
                           <Plus size={12} />
                         )}

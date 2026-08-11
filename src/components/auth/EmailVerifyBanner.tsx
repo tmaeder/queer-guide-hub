@@ -1,8 +1,9 @@
 import { useState } from 'react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
-import { Mail, Loader2 } from 'lucide-react';
+import { Mail} from 'lucide-react';
 
 /**
  * Persistent banner shown to users with a session but no verified email.
@@ -42,7 +43,7 @@ export function EmailVerifyBanner() {
             onClick={handleResend}
             disabled={status === 'sending'}
           >
-            {status === 'sending' && <Loader2 className="w-3 h-3 mr-1.5 animate-spin" />}
+            {status === 'sending' && <TrackLoader size={12} className="mr-1.5" />}
             {t('auth.verifyEmail.resendShort', 'Resend')}
           </Button>
         )}

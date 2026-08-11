@@ -20,7 +20,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import {
   Select,
   SelectContent,
@@ -136,7 +142,12 @@ function NodeRow({
         </button>
       </div>
       {open && (
-        <NodeChildren parentId={node.id} depth={depth + 1} selected={selected} onSelect={onSelect} />
+        <NodeChildren
+          parentId={node.id}
+          depth={depth + 1}
+          selected={selected}
+          onSelect={onSelect}
+        />
       )}
     </div>
   );
@@ -170,7 +181,15 @@ function NodeChildren({
   );
 }
 
-function MoveDialog({ node, open, onClose }: { node: GeoNode; open: boolean; onClose: () => void }) {
+function MoveDialog({
+  node,
+  open,
+  onClose,
+}: {
+  node: GeoNode;
+  open: boolean;
+  onClose: () => void;
+}) {
   const { toast } = useToast();
   const [search, setSearch] = useState('');
   const legalTypes = LEGAL_PARENT[node.place_type] ?? [];
@@ -439,7 +458,11 @@ function DetailPanel({
               approve.mutate(undefined, {
                 onSuccess: () => toast({ title: 'Approved — now public and searchable' }),
                 onError: (e: Error) =>
-                  toast({ title: 'Approve failed', description: e.message, variant: 'destructive' }),
+                  toast({
+                    title: 'Approve failed',
+                    description: e.message,
+                    variant: 'destructive',
+                  }),
               })
             }
           >
@@ -471,7 +494,11 @@ function DetailPanel({
                   remove.mutate(node.id, {
                     onSuccess: () => toast({ title: `Deleted ${node.name}` }),
                     onError: (e: Error) =>
-                      toast({ title: 'Delete failed', description: e.message, variant: 'destructive' }),
+                      toast({
+                        title: 'Delete failed',
+                        description: e.message,
+                        variant: 'destructive',
+                      }),
                   });
                 }
               }}
@@ -541,7 +568,7 @@ export default function AdminGeography() {
   const [landmarkEdit, setLandmarkEdit] = useState(false);
 
   return (
-    <div className="mx-auto flex max-w-6xl flex-col gap-6 p-6">
+    <div className="flex flex-col gap-6">
       <AdminPageHeader
         title="Geography"
         subtitle="The full geo tree — continents to landmarks. Move nodes, add parks/beaches/landmarks, review integrity."
@@ -580,7 +607,9 @@ export default function AdminGeography() {
           <IntegrityTab />
         </TabsContent>
       </Tabs>
-      {selected && <MoveDialog node={selected} open={moveOpen} onClose={() => setMoveOpen(false)} />}
+      {selected && (
+        <MoveDialog node={selected} open={moveOpen} onClose={() => setMoveOpen(false)} />
+      )}
       {selected && (
         <LandmarkDialog
           parent={landmarkEdit ? null : selected}

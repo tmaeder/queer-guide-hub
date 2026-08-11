@@ -1,4 +1,5 @@
-import { Check, X, Loader2 } from 'lucide-react';
+import { Check, X} from 'lucide-react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 
 interface Props {
   onConfirm: () => void;
@@ -19,7 +20,7 @@ export function EditorActions({ onConfirm, onCancel, saving, disabled }: Props) 
         className="inline-flex items-center justify-center rounded-element border border-border bg-background hover:bg-accent disabled:opacity-50"
         style={{ width: 28, height: 28 }}
       >
-        {saving ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
+        {saving ? <TrackLoader size={14} /> : <Check size={14} />}
       </button>
       <button
         type="button"

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Sparkles, RefreshCw, Loader2 } from 'lucide-react';
+import { Sparkles, RefreshCw} from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import {
   Dialog,
@@ -150,7 +151,7 @@ export function EstimateCostsDialog({ open, onClose, tripId, members, currentUse
 
         {estimate.isPending && (
           <div className="flex items-center gap-4 py-8 justify-center">
-            <Loader2 className="h-4 w-4 animate-spin" aria-label="Loading" />
+            <TrackLoader size={16} label="Loading" />
             <p className="text-sm text-muted-foreground">
               {t('trips.budget.estimate.loading', { defaultValue: 'Crunching numbers…' })}
             </p>

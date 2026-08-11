@@ -1,9 +1,10 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { type Root } from 'react-dom/client';
 import * as maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { Button } from '@/components/ui/button';
-import { ExternalLink, Loader2 } from 'lucide-react';
+import { ExternalLink } from 'lucide-react';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { type MapPointSummary } from './mapPoint';
@@ -465,7 +466,7 @@ export const ExploreMap = ({
       {/* Loading overlay */}
       {!mapReady && (
         <div className="absolute inset-0 flex items-center justify-center bg-background opacity-70 z-[5]">
-          <Loader2 className="h-8 w-8 animate-spin" aria-label="Loading" />
+          <TrackLoader size={32} label="Loading" />
         </div>
       )}
 

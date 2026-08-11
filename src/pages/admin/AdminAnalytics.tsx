@@ -1,10 +1,10 @@
-import { useEffect, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { supabase } from "@/integrations/supabase/client";
-import { UmamiAnalyticsDashboard } from "@/components/analytics/UmamiAnalyticsDashboard";
-import { GrowthConversionDashboard } from "@/components/analytics/GrowthConversionDashboard";
+import { useEffect, useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { supabase } from '@/integrations/supabase/client';
+import { UmamiAnalyticsDashboard } from '@/components/analytics/UmamiAnalyticsDashboard';
+import { GrowthConversionDashboard } from '@/components/analytics/GrowthConversionDashboard';
 import {
   Users,
   Calendar,
@@ -14,8 +14,8 @@ import {
   BarChart3,
   TrendingUp,
   Activity,
-  Filter
-} from "lucide-react";
+  Filter,
+} from 'lucide-react';
 
 export default function AdminAnalytics() {
   const [stats, setStats] = useState({
@@ -25,7 +25,7 @@ export default function AdminAnalytics() {
     totalGroups: 0,
     marketplaceItems: 0,
     newsArticles: 0,
-    totalEngagement: 0
+    totalEngagement: 0,
   });
   const [loading, setLoading] = useState(true);
 
@@ -56,7 +56,7 @@ export default function AdminAnalytics() {
   };
 
   return (
-    <div className="container mx-auto max-w-5xl py-8 px-4">
+    <div>
       <div className="flex items-center justify-between mb-8">
         <div>
           <h4 className="text-2xl font-bold">Analytics Dashboard</h4>

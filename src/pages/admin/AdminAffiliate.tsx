@@ -14,7 +14,13 @@ import { useState } from 'react';
 import { Navigate, useSearchParams } from 'react-router';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { PerformancePanel } from '@/components/admin/affiliate/PerformancePanel';
 import { RevenuePanel } from '@/components/admin/affiliate/RevenuePanel';
 import { LinkHealthPanel } from '@/components/admin/affiliate/LinkHealthPanel';
@@ -62,38 +68,48 @@ export default function AdminAffiliate() {
   const tab: Tab = TABS.includes(rawTab as Tab) ? (rawTab as Tab) : 'performance';
 
   return (
-    <div className="p-6">
+    <div>
       <AdminPageHeader
         eyebrow="COCKPIT · AFFILIATE"
         title={HEADERS[tab].title}
         subtitle={HEADERS[tab].subtitle}
         actions={
           <div className="flex gap-2">
-              {tab === 'performance' && (
-                <Select value={vertical} onValueChange={setVertical}>
-                  <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {VERTICALS.map((v) => (
-                      <SelectItem key={v.value} value={v.value}>{v.label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-              <Select value={days} onValueChange={setDays}>
-                <SelectTrigger className="w-44"><SelectValue /></SelectTrigger>
+            {tab === 'performance' && (
+              <Select value={vertical} onValueChange={setVertical}>
+                <SelectTrigger className="w-40">
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
-                  {PERIODS.map((p) => (
-                    <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>
+                  {VERTICALS.map((v) => (
+                    <SelectItem key={v.value} value={v.value}>
+                      {v.label}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
+            )}
+            <Select value={days} onValueChange={setDays}>
+              <SelectTrigger className="w-44">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {PERIODS.map((p) => (
+                  <SelectItem key={p.value} value={p.value}>
+                    {p.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         }
       />
 
       <Tabs
         value={tab}
-        onValueChange={(v) => setSearchParams(v === 'performance' ? {} : { tab: v }, { replace: true })}
+        onValueChange={(v) =>
+          setSearchParams(v === 'performance' ? {} : { tab: v }, { replace: true })
+        }
         className="mb-6"
       >
         <TabsList>

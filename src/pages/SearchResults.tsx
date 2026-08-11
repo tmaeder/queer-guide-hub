@@ -48,6 +48,7 @@ import {
 } from '@/config/searchTypeConfig';
 import type { AssistantCard } from '@/lib/assistantClient';
 import { cn } from '@/lib/utils';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 const MAX_HEADING_QUERY_LEN = 80;
 // Must mirror gridClass's breakpoint column counts (md/lg/xl).
@@ -334,7 +335,7 @@ export default function SearchResults() {
 
   return (
     <div className="relative">
-      <div className="container relative mx-auto px-4 py-8">
+      <PageContainer className="relative">
         <PageHeader
           title={t('search.resultsTitle', 'Search')}
           subtitle={
@@ -555,7 +556,7 @@ export default function SearchResults() {
             />
           </div>
         )}
-      </div>
+      </PageContainer>
 
       <BackToTopButton />
 

@@ -1,6 +1,7 @@
 import { useState, useCallback, useMemo } from 'react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { toast } from 'sonner';
-import { Loader2, Maximize2, CheckCheck } from 'lucide-react';
+import {Maximize2, CheckCheck } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -293,7 +294,7 @@ export function TriageView({ initialQueueType }: TriageViewProps) {
               {total}
             </Badge>
           )}
-          {isLoading && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+          {isLoading && <TrackLoader size={14} />}
         </div>
         <div className="flex items-center gap-2">
           {selectedIds.size > 0 && (

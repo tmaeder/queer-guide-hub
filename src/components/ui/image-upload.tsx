@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
-import { Upload, X, Image as ImageIcon, Loader2 } from 'lucide-react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
+import { Upload, X, Image as ImageIcon} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -231,11 +232,7 @@ export function ImageUpload({
           <CardContent className="p-8 text-center">
             {uploading ? (
               <div style={{ flexDirection: 'column', alignItems: 'center' }} className="flex gap-2">
-                <Loader2
-                  size={32}
-                  style={{ animation: 'spin 1s linear infinite' }}
-                  className="text-muted-foreground"
-                />
+                <TrackLoader size={32} />
                 <p className="text-sm text-muted-foreground m-0">Uploading...</p>
               </div>
             ) : (

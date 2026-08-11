@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { MapPin, Users, Globe, Building2, Loader2, ImageIcon, Crown } from 'lucide-react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
+import { MapPin, Users, Globe, Building2, ImageIcon, Crown } from 'lucide-react';
 import { Country, City } from '@/hooks/useDirectory';
 import { useState, useEffect } from 'react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
@@ -211,7 +212,7 @@ export const DirectoryCard = ({ type, name, data, onClick }: DirectoryCardProps)
     return null;
   };
   const cardContent = (
-    <Card className="group overflow-hidden transition-colors duration-300 hover:border-foreground/40 cursor-pointer">
+    <Card className="group overflow-hidden transition-colors duration-normal hover:border-foreground/40 cursor-pointer">
       {/* Country Image */}
       {type === 'country' && (
         <div
@@ -246,7 +247,7 @@ export const DirectoryCard = ({ type, name, data, onClick }: DirectoryCardProps)
                 `https://images.unsplash.com/photo-1466442929976-97f336a657be?w=400&h=200&fit=crop`
               }
               alt={`${name} landscape`}
-              className="transition-transform duration-500 ease-out group-hover:scale-[1.04]"
+              className="transition-transform duration-slow ease-out group-hover:scale-[1.04]"
               style={{ width: '100%', height: '100%', objectFit: 'cover' }}
               onError={(e) => {
                 // Fallback to default image if Pexels image fails to load
@@ -273,11 +274,7 @@ export const DirectoryCard = ({ type, name, data, onClick }: DirectoryCardProps)
               }}
               className="flex"
             >
-              <Loader2
-                size={24}
-                style={{ animation: 'spin 1s linear infinite' }}
-                className="text-muted-foreground"
-              />
+              <TrackLoader size={24} />
             </div>
           ) : cityImageUrl && !cityImageError ? (
             <img
@@ -285,7 +282,7 @@ export const DirectoryCard = ({ type, name, data, onClick }: DirectoryCardProps)
               role="presentation"
               src={cityImageUrl}
               alt={`${name} cityscape`}
-              className="transition-transform duration-500 ease-out group-hover:scale-[1.04]"
+              className="transition-transform duration-slow ease-out group-hover:scale-[1.04]"
               style={{ width: '100%', height: '100%', objectFit: 'cover' }}
               onError={() => setCityImageError(true)}
             />

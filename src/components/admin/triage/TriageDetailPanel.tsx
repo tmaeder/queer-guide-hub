@@ -1,7 +1,8 @@
 import { Link } from 'react-router';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Loader2, Clock, User, Zap } from 'lucide-react';
+import {Clock, User, Zap } from 'lucide-react';
 import { EntityPreviewCard } from './EntityPreviewCard';
 import { StagingPreview } from './StagingPreview';
 import { FieldDiffView, computeFieldDiffs } from './FieldDiffView';
@@ -146,7 +147,7 @@ export function TriageDetailPanel({ item, onAction, isActionLoading }: TriageDet
       <div className="flex-1 overflow-y-auto">
         {entityLoading ? (
           <div className="flex items-center justify-center py-12">
-            <Loader2 className="h-5 w-5 animate-spin" />
+            <TrackLoader size={20} />
           </div>
         ) : (
           <>

@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Heart, Eye, EyeOff, Loader2 } from 'lucide-react';
+import { Heart, Eye, EyeOff} from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { useTurnstile } from '@/hooks/useTurnstile';
@@ -158,7 +159,7 @@ export function AuthDialog({ open, onOpenChange, defaultMode = 'signin' }: AuthD
             <Button type="submit" disabled={loading || (captchaRequired && !captchaToken)}>
               {loading ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <TrackLoader size={16} className="mr-2" />
                   Signing in...
                 </>
               ) : (

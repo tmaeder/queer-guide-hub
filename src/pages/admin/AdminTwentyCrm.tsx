@@ -46,7 +46,7 @@ export default function AdminTwentyCrm() {
   };
 
   return (
-    <div className="mx-auto flex max-w-5xl flex-col gap-6 p-6">
+    <div className="flex flex-col gap-6">
       {/* mb-0: the parent already spaces children with gap-6. */}
       <AdminPageHeader
         className="mb-0"
@@ -74,8 +74,12 @@ export default function AdminTwentyCrm() {
                   <span className="font-mono text-13 text-muted-foreground">{r.external_id}</span>
                 </div>
                 <div className="flex gap-2">
-                  <Button size="sm" variant="outline" disabled={busy === r.id}
-                    onClick={() => act(r.id, 'reject')}>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    disabled={busy === r.id}
+                    onClick={() => act(r.id, 'reject')}
+                  >
                     <X size={14} className="mr-1" /> Reject
                   </Button>
                   <Button size="sm" disabled={busy === r.id} onClick={() => act(r.id, 'approve')}>

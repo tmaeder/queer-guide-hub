@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Sparkles, Check, Send, Info, Loader2 } from 'lucide-react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
+import { Sparkles, Check, Send, Info} from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
@@ -144,7 +145,7 @@ export function AiPlanTab({ trip }: Props) {
       <div ref={scrollRef} className="flex-1 overflow-y-auto flex flex-col gap-4 pr-2 mb-4">
         {isLoading && (
           <div className="py-4 text-center text-muted-foreground">
-            <Loader2 size={16} className="animate-spin inline" />
+            <TrackLoader size={16} className="inline" />
           </div>
         )}
 
@@ -218,7 +219,7 @@ export function AiPlanTab({ trip }: Props) {
                         disabled={applyingId === m.id}
                       >
                         {applyingId === m.id ? (
-                          <Loader2 size={14} className="animate-spin mr-1.5" />
+                          <TrackLoader size={14} className="mr-1.5" />
                         ) : (
                           <Check size={14} className="mr-1.5" />
                         )}
@@ -235,7 +236,7 @@ export function AiPlanTab({ trip }: Props) {
         {send.isPending && (
           <div className="flex">
             <div className="p-4 bg-muted text-muted-foreground text-sm flex items-center gap-2">
-              <Loader2 size={12} className="animate-spin" />
+              <TrackLoader size={12} />
               {t('trips.ai.thinking', 'Concierge is thinking…')}
             </div>
           </div>

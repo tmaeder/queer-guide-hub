@@ -1,6 +1,7 @@
 import { useState, useMemo, useCallback } from 'react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Loader2 } from 'lucide-react';
+
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -13,6 +14,7 @@ import { useToast } from '@/hooks/use-toast';
 import { fetchFeedbackBoardItems, toggleFeedbackVote } from '@/hooks/usePageFetchers';
 import { Bug, Lightbulb, Sparkles, BookOpen, ChevronUp, Clock } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 const columns = [
   { id: 'new', label: 'New', color: 'hsl(var(--foreground))' },
@@ -95,14 +97,14 @@ export default function FeedbackBoard() {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto px-4 py-12 text-center">
-        <Loader2 className="animate-spin h-8 w-8 mx-auto" aria-label="Loading" />
-      </div>
+      <PageContainer className="text-center">
+        <TrackLoader size={32} label="Loading" className="mx-auto" />
+      </PageContainer>
     );
   }
 
   return (
-    <div className="container mx-auto px-4 py-4 sm:py-8">
+    <PageContainer flush className="py-4">
       <PageHeader
         title="Community Feedback"
         subtitle="Ideas, bugs, and improvements from the community. Vote on what matters most."
@@ -228,6 +230,6 @@ export default function FeedbackBoard() {
           )}
         </DialogContent>
       </Dialog>
-    </div>
+    </PageContainer>
   );
 }

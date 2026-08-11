@@ -1,11 +1,11 @@
 import * as React from 'react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { Slot } from '@radix-ui/react-slot';
 import { cva, type VariantProps } from 'class-variance-authority';
-import { Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const buttonVariants = cva(
-  'group relative inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-element text-sm font-semibold tracking-tight ring-offset-background transition-all duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-40 active:scale-[0.98] [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0',
+  'group relative inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-element text-sm font-semibold tracking-tight ring-offset-background transition-all duration-fast ease-[cubic-bezier(0.22,1,0.36,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-40 active:scale-[0.98] [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0',
   {
     variants: {
       variant: {
@@ -76,7 +76,12 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     const content = loading ? (
       <span className="relative inline-flex items-center">
         <span className="invisible inline-flex items-center">{children}</span>
-        <Loader2 className="absolute left-1/2 top-1/2 -ml-2 -mt-2 h-4 w-4 animate-spin" />
+        {/* The design system's Loading Animation spec: "A closed loop, drawn as
+            track. Replaces the spinner everywhere." Its primary example is
+            exactly this — a track loop on an ink button. Changing it here
+            rather than at each call site is what makes the swap reach every
+            loading button at once. */}
+        <TrackLoader size={16} className="absolute left-1/2 top-1/2 -ml-2 -mt-2" />
       </span>
     ) : (
       children

@@ -23,6 +23,7 @@ import { FlyerScanUpload } from '@/components/submission/FlyerScanUpload';
 import { FlyerScanResults } from '@/components/submission/FlyerScanResults';
 import { ArrowRight, ArrowLeft, ChevronDown } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 const SubmitHub = () => {
   const navigate = useLocalizedNavigate();
@@ -55,7 +56,7 @@ const SubmitHub = () => {
   };
 
   return (
-    <div className="mx-auto max-w-3xl py-8 px-4">
+    <PageContainer size="reading">
       <Button
         variant="ghost"
         size="sm"
@@ -180,7 +181,7 @@ const SubmitHub = () => {
           </div>
         </details>
       </section>
-    </div>
+    </PageContainer>
   );
 };
 
@@ -202,7 +203,7 @@ function SubmitTypeCard({ type, onClick, featured = false }: SubmitTypeCardProps
       onClick={onClick}
       className={cn(
         'group/card w-full text-left rounded-container bg-card text-card-foreground',
-        'cursor-pointer transition-all duration-[250ms] ease-[cubic-bezier(0.22,1,0.36,1)]',
+        'cursor-pointer transition-all duration-fast ease-[cubic-bezier(0.22,1,0.36,1)]',
         'hover:bg-muted/40 hover:border-foreground/30',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ring-offset-background',
       )}
@@ -219,7 +220,7 @@ function SubmitTypeCard({ type, onClick, featured = false }: SubmitTypeCardProps
             <ArrowRight
               size={14}
               aria-hidden="true"
-              className="transition-transform duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/card:translate-x-1"
+              className="transition-transform duration-fast ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/card:translate-x-1"
             />
           </div>
         </div>

@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import Cropper from 'react-easy-crop';
 import { BigHead } from '@bigheads/core';
 import { Button } from '@/components/ui/button';
@@ -13,7 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Loader2, Upload, Globe, Palette, RefreshCw } from 'lucide-react';
+import {Upload, Globe, Palette, RefreshCw } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -368,7 +369,7 @@ export function AvatarChooser({ email, currentUrl, currentConfig, onSave }: Avat
               </div>
               <div className="flex gap-2">
                 <Button onClick={saveCrop} disabled={busy} className="flex-1">
-                  {busy && <Loader2 size={16} className="mr-2 animate-spin" />}
+                  {busy && <TrackLoader size={16} className="mr-2" />}
                   Save photo
                 </Button>
                 <Button
@@ -454,7 +455,7 @@ export function AvatarChooser({ email, currentUrl, currentConfig, onSave }: Avat
               onClick={resolveImport}
               disabled={busy || !identifier.trim() || (needsEmailConfirm && !emailConfirmed)}
             >
-              {busy && <Loader2 size={16} className="mr-2 animate-spin" />}
+              {busy && <TrackLoader size={16} className="mr-2" />}
               Look up
             </Button>
           ) : (
@@ -573,7 +574,7 @@ export function AvatarChooser({ email, currentUrl, currentConfig, onSave }: Avat
           </div>
 
           <Button onClick={saveBuilder} disabled={busy}>
-            {busy && <Loader2 size={16} className="mr-2 animate-spin" />}
+            {busy && <TrackLoader size={16} className="mr-2" />}
             Use this avatar
           </Button>
         </TabsContent>

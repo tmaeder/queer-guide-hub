@@ -1,12 +1,5 @@
-import {
-  MapPin,
-  Building2,
-  Calendar,
-  Newspaper,
-  Activity,
-  Loader2,
-  ShieldAlert,
-} from 'lucide-react';
+import { MapPin, Building2, Calendar, Newspaper, Activity, ShieldAlert } from 'lucide-react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { hasAnyCriminalizationSignal } from '@/utils/equalityScore';
 import { MapShell } from '@/components/map/MapShell';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -67,7 +60,7 @@ export function SectionLoader({ label }: { label: string }) {
       role="status"
       aria-label={`Loading ${label}`}
     >
-      <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" aria-hidden="true" />
+      <TrackLoader size={24} />
     </div>
   );
 }

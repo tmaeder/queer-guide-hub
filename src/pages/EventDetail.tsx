@@ -40,6 +40,7 @@ import {
   exportEventToCalendar,
   formatEventDate,
 } from './EventDetail.parts';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 export default function EventDetail() {
   const { slug } = useParams<{ slug: string }>();
@@ -119,7 +120,9 @@ export default function EventDetail() {
               : undefined,
           image: eventOgImage || undefined,
           description: event.description ?? undefined,
-          sameAs: socialSameAs(event.social_links).length ? socialSameAs(event.social_links) : undefined,
+          sameAs: socialSameAs(event.social_links).length
+            ? socialSameAs(event.social_links)
+            : undefined,
         }
       : undefined,
   });
@@ -186,7 +189,10 @@ export default function EventDetail() {
     if (!user || !event) {
       toast({
         title: t('pages.eventDetail.authRequired', 'Authentication required'),
-        description: t('pages.eventDetail.signInAttendance', 'Please sign in to update your attendance'),
+        description: t(
+          'pages.eventDetail.signInAttendance',
+          'Please sign in to update your attendance',
+        ),
         variant: 'destructive',
       });
       return;
@@ -226,7 +232,10 @@ export default function EventDetail() {
       await exportEventToCalendar(event);
       toast({
         title: t('pages.eventDetail.exportSuccess', 'Calendar export successful'),
-        description: t('pages.eventDetail.exportSuccessDesc', 'Event has been exported to your calendar'),
+        description: t(
+          'pages.eventDetail.exportSuccessDesc',
+          'Event has been exported to your calendar',
+        ),
       });
     } catch (e) {
       console.error('Error exporting calendar:', e);
@@ -242,31 +251,31 @@ export default function EventDetail() {
 
   if (error) {
     return (
-      <div className="container mx-auto px-4 py-8" data-testid="event-detail-error">
+      <PageContainer data-testid="event-detail-error">
         <Alert variant="destructive">
           <AlertTitle>Failed to load</AlertTitle>
           <AlertDescription>{(error as Error).message || 'Something went wrong.'}</AlertDescription>
         </Alert>
-      </div>
+      </PageContainer>
     );
   }
 
   if (isLoading) {
     return (
-      <div className="container mx-auto px-4 py-8" data-testid="event-detail-loading">
+      <PageContainer data-testid="event-detail-loading">
         <Skeleton variant="rectangular" height={380} className="mb-6 rounded-container" />
         <Skeleton variant="rectangular" height={28} style={{ width: '50%' }} className="mb-6" />
         <div className="grid grid-cols-1 gap-8 md:grid-cols-[2fr_1fr]">
           <Skeleton variant="rectangular" height={320} className="rounded-container" />
           <Skeleton variant="rectangular" height={280} className="rounded-container" />
         </div>
-      </div>
+      </PageContainer>
     );
   }
 
   if (!event) {
     const eventNotFound = (
-      <div className="container mx-auto px-4 py-8 text-center">
+      <PageContainer className="text-center">
         <h2 className="mb-4 text-2xl font-bold">Event Not Found</h2>
         <p className="mb-6 text-muted-foreground">The event you're looking for doesn't exist.</p>
         {/* asChild, not a Link wrapping a Button — that nests a <button>
@@ -277,7 +286,7 @@ export default function EventDetail() {
             Back to Events
           </LocalizedLink>
         </Button>
-      </div>
+      </PageContainer>
     );
     return <GatedDetailFallback entityType="event" slug={slug} notFound={eventNotFound} />;
   }
@@ -300,7 +309,7 @@ export default function EventDetail() {
 
   return (
     <>
-      <div className="container mx-auto px-4 py-8" data-testid="event-detail-layout">
+      <PageContainer data-testid="event-detail-layout">
         {/* Per-section guards: one bad field degrades a module, never the route. */}
         <ErrorBoundary
           section="event-hero"
@@ -321,10 +330,18 @@ export default function EventDetail() {
           {/* Main column */}
           <div className="flex flex-col gap-8">
             <ErrorBoundary section="event-fact-strip" fallback={null}>
-              <EventFactStrip event={event} showEventTz={showEventTz} setShowEventTz={setShowEventTz} />
+              <EventFactStrip
+                event={event}
+                showEventTz={showEventTz}
+                setShowEventTz={setShowEventTz}
+              />
             </ErrorBoundary>
             <ErrorBoundary section="event-for-you" fallback={null}>
-              <EventForYou event={event} isInTrip={tripStatus?.isInTrip} tripCount={tripStatus?.count} />
+              <EventForYou
+                event={event}
+                isInTrip={tripStatus?.isInTrip}
+                tripCount={tripStatus?.count}
+              />
             </ErrorBoundary>
 
             {/* Decision card inline on mobile (rail hides it on md+) */}
@@ -371,7 +388,7 @@ export default function EventDetail() {
             <EventMoreEvents eventId={event.id} city={cityName} />
           </ErrorBoundary>
         </div>
-      </div>
+      </PageContainer>
 
       <AddToTripDialog
         open={addToTripOpen}

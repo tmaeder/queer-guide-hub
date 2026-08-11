@@ -4,6 +4,7 @@
  */
 
 import { useEffect, useState } from 'react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useNavigate } from 'react-router';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { formatDistanceToNow } from 'date-fns';
@@ -15,7 +16,6 @@ import {
   Clock,
   AlertCircle,
   FlaskConical,
-  Loader2,
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { untypedFrom } from '@/integrations/supabase/untyped';
@@ -271,7 +271,7 @@ export default function AdminAutomation() {
             title="Preview every enabled automation in one click"
           >
             {busySlug === 'dry-all' ? (
-              <Loader2 size={12} className="mr-1 animate-spin" />
+              <TrackLoader size={12} className="mr-1" />
             ) : (
               <FlaskConical size={12} className="mr-1" />
             )}
@@ -287,7 +287,7 @@ export default function AdminAutomation() {
               title="Disable every automation (emergency kill switch)"
             >
               {busySlug === 'pause-all:false' ? (
-                <Loader2 size={12} className="mr-1 animate-spin" />
+                <TrackLoader size={12} className="mr-1" />
               ) : null}
               Pause all
             </Button>
@@ -298,7 +298,7 @@ export default function AdminAutomation() {
               disabled={busySlug !== null}
             >
               {busySlug === 'pause-all:true' ? (
-                <Loader2 size={12} className="mr-1 animate-spin" />
+                <TrackLoader size={12} className="mr-1" />
               ) : null}
               Resume all
             </Button>
@@ -370,7 +370,7 @@ export default function AdminAutomation() {
                           className="font-normal h-6 text-2xs"
                         >
                           {busySlug === `toggle:${a.slug}` ? (
-                            <Loader2 size={11} className="mr-1 animate-spin" />
+                            <TrackLoader size={11} className="mr-1" />
                           ) : null}
                           {a.enabled
                             ? 'enabled · click to pause'
@@ -416,7 +416,7 @@ export default function AdminAutomation() {
                         className="ml-2"
                       >
                         {busySlug === `dry:${a.slug}` ? (
-                          <Loader2 size={12} className="mr-1 animate-spin" />
+                          <TrackLoader size={12} className="mr-1" />
                         ) : (
                           <FlaskConical size={12} className="mr-1" />
                         )}
@@ -435,7 +435,7 @@ export default function AdminAutomation() {
                           title={a.enabled ? 'Run now' : 'Enable to run'}
                         >
                           {busySlug === `run:${a.slug}` ? (
-                            <Loader2 size={12} className="mr-1 animate-spin" />
+                            <TrackLoader size={12} className="mr-1" />
                           ) : (
                             <Play size={12} className="mr-1" />
                           )}

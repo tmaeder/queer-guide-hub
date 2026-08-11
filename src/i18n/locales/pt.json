@@ -1675,6 +1675,13 @@
       "title": "[PT] Born this week",
       "seeAll": "[PT] All personalities",
       "celebrate": "[PT] Celebrate {{name}}"
+    },
+    "map": {
+      "interchangeEyebrow": "[PT] Interchange",
+      "interchange": {
+        "label": "[PT] Search everything",
+        "subtitle": "[PT] Every line meets here"
+      }
     }
   },
   "header": {
@@ -3386,6 +3393,12 @@
       "events_other": "[PT] {{count}} events",
       "groups_one": "[PT] {{count}} group",
       "groups_other": "[PT] {{count}} groups"
+    },
+    "interests": {
+      "title": "[PT] What are you into?",
+      "blurb": "[PT] Pick a few. They shape what we suggest, and they are how other members find people with something in common.",
+      "blurbSignedOut": "[PT] Sign in to pick a few. They shape what we suggest, and they are how other members find people with something in common.",
+      "count": "[PT] {{count}} selected"
     }
   },
   "hub": {

@@ -1,8 +1,9 @@
 import { useState } from 'react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { GitMerge, Loader2, Undo2 } from 'lucide-react';
+import { GitMerge, Undo2 } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   VOCABULARIES,
@@ -93,7 +94,7 @@ export function VocabMerge() {
         </p>
         {isLoading ? (
           <div className="text-muted-foreground flex items-center gap-2">
-            <Loader2 className="animate-spin" size={16} /> Loading terms…
+            <TrackLoader size={16} /> Loading terms…
           </div>
         ) : terms.length < 2 ? (
           <div className="text-muted-foreground text-15">Not enough active terms to merge.</div>
@@ -124,7 +125,7 @@ export function VocabMerge() {
               </select>
             </label>
             <Button size="sm" onClick={() => merge.mutate()} disabled={!canMerge}>
-              {merge.isPending ? <Loader2 className="animate-spin" size={16} /> : <GitMerge size={16} />}
+              {merge.isPending ? <TrackLoader size={16} /> : <GitMerge size={16} />}
               Merge
             </Button>
           </div>

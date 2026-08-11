@@ -18,6 +18,7 @@ import { SwipeDeck, type SwipeableCard } from '@/components/intimate/SwipeDeck';
 import { useToast } from '@/hooks/use-toast';
 import { AGE_BANDS, BODY_TYPES, INTO_TAGS, ROLES } from '@/assets/intimate/options';
 import { JoyBurst } from '@/components/messaging/JoyBurst';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 export default function IntimateDiscovery() {
   const { data: me, isLoading } = useMyIntimateProfile();
@@ -116,18 +117,18 @@ export default function IntimateDiscovery() {
 
   if (!me?.opted_in_at) {
     return (
-      <div className="mx-auto max-w-md p-8 text-center">
+      <PageContainer size="form" className="text-center">
         <h1 className="mb-4 text-2xl">Intimate</h1>
         <p className="mb-6 text-muted-foreground">
           You haven&apos;t opted into the intimate profile yet.
         </p>
         <Button onClick={() => navigate('/intimate/onboard')}>Get started</Button>
-      </div>
+      </PageContainer>
     );
   }
 
   return (
-    <div className="relative mx-auto max-w-5xl p-6">
+    <PageContainer className="relative">
       {matchJoy && <JoyBurst onDone={() => setMatchJoy(false)} />}
       <header className="mb-6 flex items-baseline justify-between">
         <h1 className="text-2xl">Intimate</h1>
@@ -270,7 +271,7 @@ export default function IntimateDiscovery() {
           })}
         </ul>
       )}
-    </div>
+    </PageContainer>
   );
 }
 

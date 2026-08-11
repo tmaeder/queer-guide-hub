@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Heart, Loader2, KeyRound, ShieldCheck, Check } from 'lucide-react';
+import { Heart, KeyRound, ShieldCheck, Check } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useSignupFunnel } from '@/hooks/useSignupFunnel';
 import { useToast } from '@/hooks/use-toast';
@@ -85,7 +86,7 @@ export default function Welcome() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin" />
+        <TrackLoader size={32} />
       </div>
     );
   }
@@ -145,7 +146,7 @@ export default function Welcome() {
                 onClick={handleEnrollPasskey}
                 disabled={enrolling || hasPasskey}
               >
-                {enrolling && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {enrolling && <TrackLoader size={16} className="mr-2" />}
                 {hasPasskey && <Check className="mr-2 h-4 w-4" />}
                 {hasPasskey
                   ? t('onboarding.passkeyAlreadyEnrolled', 'Passkey already enabled')
