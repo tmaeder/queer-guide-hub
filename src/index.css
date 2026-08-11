@@ -1204,6 +1204,19 @@ h2,
 .card-lift-accent:active {
   box-shadow: none;
 }
+/* Reversed variant — the shadow prints in paper instead of ink, for cards that
+   sit ON an ink band (`bg-foreground`). Same MODIFIER contract as
+   `-accent`: pair it with `.card-lift` (or `-sm`), which owns the transform.
+   Without it a lifted card on ink casts an ink shadow onto ink and the whole
+   depth cue silently disappears — the card just slides. */
+.card-lift-invert:hover,
+.card-lift-invert:focus-visible,
+.card-lift-invert:focus-within {
+  box-shadow: 6px 6px 0 hsl(var(--background));
+}
+.card-lift-invert:active {
+  box-shadow: none;
+}
 @media (prefers-reduced-motion: reduce) {
   .card-lift,
   .card-lift-sm {
