@@ -4,7 +4,7 @@ import { MemoryRouter } from 'react-router';
 import type { ReactNode } from 'react';
 import { useMapShellState } from '@/hooks/useMapShellState';
 import { SURFACE_PRESETS } from '@/components/map/MapShell.types';
-import { LAYER_DEFS } from '@/components/map/ExploreMapLayers';
+import { LAYER_DEFS } from '@/config/mapLayers';
 
 function wrapper(initial: string) {
   return ({ children }: { children: ReactNode }) => (

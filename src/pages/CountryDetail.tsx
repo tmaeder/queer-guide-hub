@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, lazy, Suspense } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
@@ -47,8 +47,6 @@ import {
   type WeatherDataType,
 } from './CountryDetail.parts';
 import { PageContainer } from '@/components/layout/PageContainer';
-
-const ExploreMap = lazy(() => import('@/components/map/ExploreMap'));
 
 export default function CountryDetail() {
   const { slug: countrySlug } = useParams<{ slug: string }>();
@@ -278,7 +276,7 @@ export default function CountryDetail() {
         )}
       />
     ),
-    map: <CountryMapTab country={country} ExploreMap={ExploreMap} Suspense={Suspense} />,
+    map: <CountryMapTab country={country} />,
   };
 
   const omit = new Set<string>();

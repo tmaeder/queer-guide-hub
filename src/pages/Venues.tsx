@@ -32,7 +32,8 @@ import { VenuesRails } from '@/components/venues/VenuesRails';
 import { GuidesRail } from '@/components/guides/GuidesRail';
 import { LeaderboardWidget } from '@/components/venues/LeaderboardWidget';
 import { AchievementToast } from '@/components/venues/AchievementToast';
-import { ExploreMap } from '@/components/map/ExploreMap';
+import { MapShell } from '@/components/map/MapShell';
+import type { MapShellFilters } from '@/components/map/MapShell.types';
 import { Button } from '@/components/ui/button';
 import {
   Select,
@@ -181,8 +182,11 @@ const Venues = () => {
     urlRadius,
   ]);
 
-  const mapFilters = useMemo(() => {
-    const f: Record<string, string> = {};
+  /** The page's own search + category, handed to the map as a one-way
+   *  contribution (MapShell never writes these back to the URL — this page
+   *  owns its query string). */
+  const mapFilters = useMemo<MapShellFilters>(() => {
+    const f: MapShellFilters = {};
     if (urlSearch) f.search = urlSearch;
     if (urlCategory) f.category = urlCategory;
     return f;
@@ -706,14 +710,7 @@ const Venues = () => {
               exit={{ opacity: 0, scale: 0.98 }}
               transition={{ duration: 0.2 }}
             >
-              <ExploreMap
-                key={`map-${urlSearch}|${urlCategory}`}
-                height={700}
-                defaultLayers={['venues']}
-                defaultFilters={mapFilters}
-                showLayerToggles
-                showFilters
-              />
+              <MapShell surface="venues" height={700} filtersOverride={mapFilters} />
               {!loading && filteredTotal === 0 && Object.keys(currentFilters).length > 0 && (
                 <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/60 pointer-events-none">
                   <div className="pointer-events-auto rounded-element bg-background p-6 text-center">

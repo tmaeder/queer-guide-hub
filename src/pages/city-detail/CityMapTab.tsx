@@ -1,48 +1,15 @@
-
 import { MapShell } from '@/components/map/MapShell';
-import { TrackLoader } from '@/components/transit/TrackLoader';
-import { MAP_SHELL_ENABLED } from '@/lib/featureFlags';
 import type { CityRelation } from './types';
 
 export interface CityMapTabProps {
   city: CityRelation;
-  ExploreMap: React.ComponentType<Record<string, unknown>>;
-  Suspense: typeof import('react').Suspense;
 }
 
-export function CityMapTab({ city, ExploreMap, Suspense }: CityMapTabProps) {
+export function CityMapTab({ city }: CityMapTabProps) {
   if (typeof city.latitude !== 'number' || typeof city.longitude !== 'number') return null;
   const center: [number, number] = [Number(city.longitude), Number(city.latitude)];
 
-  if (MAP_SHELL_ENABLED) {
-    return (
-      <MapShell
-        surface="city"
-        height={500}
-        initialCenter={center}
-        initialZoom={12}
-        skipAutoFly
-      />
-    );
-  }
-
   return (
-    <Suspense
-      fallback={
-        <div className="flex justify-center py-8">
-          <TrackLoader size={32} label="Loading" />
-        </div>
-      }
-    >
-      <ExploreMap
-        height={500}
-        initialCenter={center}
-        initialZoom={12}
-        defaultLayers={['venues', 'events', 'neighbourhoods']}
-        showLayerToggles
-        showFilters={false}
-        skipAutoFly
-      />
-    </Suspense>
+    <MapShell surface="city" height={500} initialCenter={center} initialZoom={12} skipAutoFly />
   );
 }

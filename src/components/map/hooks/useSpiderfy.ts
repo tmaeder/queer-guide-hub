@@ -1,6 +1,7 @@
 import { useCallback, type MutableRefObject } from 'react';
 import * as maplibregl from 'maplibre-gl';
 import { summaryFromFeature } from '@/components/map/mapPoint';
+import { ink } from '@/lib/mapTokens';
 import type { PointFeature } from '@/hooks/useViewportPoints';
 
 interface UseSpiderfyParams {
@@ -46,7 +47,9 @@ export function useSpiderfy({ spiderMarkersRef, showPopup, onSelectPointRef }: U
         el.type = 'button';
         el.setAttribute('aria-label', summary.name);
         el.title = summary.name;
-        el.style.cssText = `width:22px;height:22px;border-radius:9999px;background:${summary.color};border:2.5px solid #fff;box-sizing:border-box;cursor:pointer;padding:0;`;
+        // Small stations: track fill inside the same 2px ink border every
+        // other pin carries (the fills are border-gated, see usePointLayers).
+        el.style.cssText = `width:22px;height:22px;border-radius:9999px;background:${summary.color};border:2px solid ${ink()};box-sizing:border-box;cursor:pointer;padding:0;`;
         el.addEventListener('click', (ev) => {
           ev.stopPropagation();
           showPopup(map, lngLat, summary);

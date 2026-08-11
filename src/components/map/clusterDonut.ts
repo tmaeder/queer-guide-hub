@@ -1,10 +1,11 @@
 import type { ExpressionSpecification } from 'maplibre-gl';
 import { LAYER_COLORS, type LayerType } from '@/hooks/useExploreMapData';
+import { ink, paper } from '@/lib/mapTokens';
 
 /**
  * Segmented donut cluster icons. Each cluster renders as a WebGL symbol whose
  * icon id encodes the cluster's quantized composition (venues / events /
- * restrooms / hotels). Icons are rasterized on demand in a `styleimagemissing`
+ * restrooms / hotels). Icons are rasterized on demand in the missing-image
  * handler — zero per-frame JS, no DOM markers, all existing cluster handlers
  * (click-to-zoom, spiderfy, hover preview) keep working because the layer id
  * doesn't change.
@@ -98,9 +99,16 @@ export function donutSegments(
 
 /**
  * Synchronous canvas render — pure `arc()` calls, no image loading, safe to
- * run inside `styleimagemissing`. White base disc doubles as the halo and the
- * count-text background; segments run clockwise from 12 o'clock in a fixed
- * order so adjacent clusters read consistently.
+ * run inside the missing-image resolver. Segments run clockwise from 12
+ * o'clock in a fixed order so adjacent clusters read consistently.
+ *
+ * This is the map's INTERCHANGE symbol: a paper disc inside a track-coloured
+ * ring inside a solid ink edge. The ink edge is not decoration — three of the
+ * four tracks sit under 3:1 against paper (blue 2.25, green 1.64, yellow 1.34)
+ * and only clear the WCAG 1.4.11 bar against ink, so a track-coloured mark on
+ * this map is *required* to carry one. It replaces a `rgba(0,0,0,0.10)`
+ * hairline that was doing a visual job (separating a white disc from pale
+ * tiles) rather than an accessibility one.
  */
 export function renderDonut(
   spec: DonutSpec,
@@ -112,14 +120,16 @@ export function renderDonut(
   const ctx = canvas.getContext('2d');
   if (!ctx) return null;
 
+  const edge = 2 * PIXEL_RATIO; // the ink border, 2px logical
   const c = size / 2;
-  const rOuter = c - PIXEL_RATIO; // 1px logical inset so strokes don't clip
+  const rOuter = c - edge / 2; // inset by half the stroke so it can't clip
   const ring = Math.max(5, spec.diameter * 0.16) * PIXEL_RATIO;
+  const inkColor = ink();
 
-  // Base disc — halo + count background (basemap is always the light flavor).
+  // Base disc — halo + count background.
   ctx.beginPath();
   ctx.arc(c, c, rOuter, 0, 2 * Math.PI);
-  ctx.fillStyle = '#ffffff';
+  ctx.fillStyle = paper();
   ctx.fill();
 
   const segments = donutSegments(spec.tenths);
@@ -128,7 +138,7 @@ export function renderDonut(
     // Unknown composition — full neutral ring so the donut never reads blank.
     ctx.beginPath();
     ctx.arc(c, c, rMid, 0, 2 * Math.PI);
-    ctx.strokeStyle = 'hsl(0 0% 4%)';
+    ctx.strokeStyle = inkColor;
     ctx.lineWidth = ring;
     ctx.stroke();
   } else {
@@ -138,24 +148,27 @@ export function renderDonut(
       ctx.beginPath();
       // Tiny overdraw on single-segment donuts avoids a hairline seam.
       ctx.arc(c, c, rMid, a0, segments.length === 1 ? a0 + 2 * Math.PI : a1);
-      ctx.strokeStyle = colors[layer] ?? 'hsl(0 0% 4%)';
+      ctx.strokeStyle = colors[layer] ?? inkColor;
       ctx.lineWidth = ring;
       ctx.stroke();
       a0 = a1;
     }
   }
 
-  // Hairline outer edge so the white disc separates from pale basemap tiles.
+  // Ink edge — the border-gate for the track fills inside it.
   ctx.beginPath();
   ctx.arc(c, c, rOuter, 0, 2 * Math.PI);
-  ctx.strokeStyle = 'rgba(0,0,0,0.10)';
-  ctx.lineWidth = PIXEL_RATIO;
+  ctx.strokeStyle = inkColor;
+  ctx.lineWidth = edge;
   ctx.stroke();
 
   return ctx.getImageData(0, 0, size, size);
 }
 
-// Module-level cache — ImageData is shared across map instances.
+// Module-level cache — ImageData is shared across map instances. Keyed by
+// composition only, so a live `/admin/design` token change won't repaint
+// already-rendered donuts until the next page load. Acceptable: publishing
+// branding is a deliberate act followed by a reload, not a hot path.
 const donutCache = new Map<string, ImageData>();
 
 /** Resolve an icon id to ImageData (cached). Null for non-donut ids. */

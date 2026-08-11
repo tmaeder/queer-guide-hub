@@ -11,45 +11,45 @@ import * as maplibregl from 'maplibre-gl';
 import type { GeoJSONSource, MapLayerMouseEvent } from 'maplibre-gl';
 import type { LayerType, MapMarker } from '@/hooks/useExploreMapData';
 import { enrichBoundaryFeatures } from '@/utils/boundaryUtils';
+import { ink, paper } from '@/lib/mapTokens';
+import { MAP_FONT_BOLD } from '@/config/mapStyle';
 import type { MatchMode } from '@/utils/boundaryUtils';
 
 /**
- * Refined per-entity boundary styling. Defaults are deliberately quiet —
- * desaturated hairlines on a near-invisible wash so administrative borders read
- * as context, not a cage. Hover deepens slightly; `selected` lights up to the
- * vivid identity hue (matching the entity's pin/legend colour) so the active
- * area is unmistakable. Each tuple is [default, hovered, selected].
+ * Per-entity boundary styling.
+ *
+ * Boundaries are ink, at three weights. They used to carry their own
+ * chromatic palette — "muted terracotta" `#a85e54` for countries and "muted
+ * steel" `#5b82b0` for cities, each lighting up to a vivid hue on selection —
+ * a second colour system invented alongside `LAYER_COLORS` and desaturated by
+ * hand. The selected country stroke was `#dc2626`, i.e. the destructive red,
+ * on an element that means "you clicked this", not "danger".
+ *
+ * Ink is also the *right* answer, not just the compliant one: administrative
+ * borders are context under the pins, and on a subway map the only things
+ * allowed to carry a track colour are the lines and their stations. Selection
+ * now reads through weight and opacity instead of hue.
+ *
+ * Each tuple is [default, hovered, selected]. Values are resolved lazily
+ * because `/admin/design` can repaint the tokens at runtime.
  */
-const INK = '#18181b'; // true-neutral near-black for labels
 interface BoundaryPaint {
-  line: string; // desaturated default stroke
-  lineSelected: string; // vivid identity hue on selection
-  fill: string;
   fillOpacity: [number, number, number];
   lineWidth: [number, number, number];
   lineOpacity: [number, number, number];
 }
 const BOUNDARY_PAINT: Record<string, BoundaryPaint> = {
   countries: {
-    line: '#a85e54', // muted terracotta (desaturated from the red identity hue)
-    lineSelected: '#dc2626',
-    fill: '#a85e54',
     fillOpacity: [0.035, 0.09, 0.16],
     lineWidth: [0.7, 1.2, 2.0],
     lineOpacity: [0.32, 0.6, 0.85],
   },
   cities: {
-    line: '#5b82b0', // muted steel (desaturated from the blue identity hue)
-    lineSelected: '#3b82f6',
-    fill: '#5b82b0',
     fillOpacity: [0.05, 0.12, 0.2],
     lineWidth: [0.8, 1.4, 2.2],
     lineOpacity: [0.4, 0.62, 0.85],
   },
   neighbourhoods: {
-    line: 'hsl(0 0% 4%)', // foreground ink (concrete — MapLibre can't parse var())
-    lineSelected: 'hsl(0 0% 4%)',
-    fill: 'hsl(0 0% 4%)',
     fillOpacity: [0.06, 0.14, 0.22],
     lineWidth: [0.8, 1.4, 2.2],
     lineOpacity: [0.4, 0.62, 0.8],
@@ -82,10 +82,18 @@ interface UseMapBoundaryLayersOptions {
   onPopup: (map: maplibregl.Map, lngLat: maplibregl.LngLat, marker: MapMarker) => void;
 }
 
-function sourceId(key: string) { return `boundary-${key}`; }
-function fillId(key: string) { return `boundary-${key}-fill`; }
-function strokeId(key: string) { return `boundary-${key}-stroke`; }
-function labelId(key: string) { return `boundary-${key}-label`; }
+function sourceId(key: string) {
+  return `boundary-${key}`;
+}
+function fillId(key: string) {
+  return `boundary-${key}-fill`;
+}
+function strokeId(key: string) {
+  return `boundary-${key}-stroke`;
+}
+function labelId(key: string) {
+  return `boundary-${key}-label`;
+}
 
 export function useMapBoundaryLayers({
   mapRef,
@@ -106,22 +114,31 @@ export function useMapBoundaryLayers({
   const stroke = strokeId(key);
   const label = labelId(key);
 
-  const removeLayers = useCallback((m: maplibregl.Map) => {
-    try {
-      if (m.getLayer(label)) m.removeLayer(label);
-      if (m.getLayer(stroke)) m.removeLayer(stroke);
-      if (m.getLayer(fill)) m.removeLayer(fill);
-      if (m.getSource(src)) m.removeSource(src);
-    } catch { /* map may be destroyed */ }
-    addedRef.current = false;
-  }, [src, fill, stroke, label]);
+  const removeLayers = useCallback(
+    (m: maplibregl.Map) => {
+      try {
+        if (m.getLayer(label)) m.removeLayer(label);
+        if (m.getLayer(stroke)) m.removeLayer(stroke);
+        if (m.getLayer(fill)) m.removeLayer(fill);
+        if (m.getSource(src)) m.removeSource(src);
+      } catch {
+        /* map may be destroyed */
+      }
+      addedRef.current = false;
+    },
+    [src, fill, stroke, label],
+  );
 
   useEffect(() => {
     const map = mapRef.current;
     const tooltipEl = tooltipRef.current;
     if (!map || !mapReady) return;
     // Guard against destroyed map (e.g. ErrorBoundary remount)
-    try { map.getContainer(); } catch { return; }
+    try {
+      map.getContainer();
+    } catch {
+      return;
+    }
 
     // Remove if disabled or no data
     if (!boundaries || !enabled) {
@@ -154,11 +171,13 @@ export function useMapBoundaryLayers({
       source: src,
       ...(minLayerZoom != null && { minzoom: minLayerZoom }),
       paint: {
-        'fill-color': paint.fill,
+        'fill-color': ink(),
         'fill-opacity': [
           'case',
-          ['boolean', ['feature-state', 'selected'], false], paint.fillOpacity[2],
-          ['boolean', ['feature-state', 'hovered'], false], paint.fillOpacity[1],
+          ['boolean', ['feature-state', 'selected'], false],
+          paint.fillOpacity[2],
+          ['boolean', ['feature-state', 'hovered'], false],
+          paint.fillOpacity[1],
           paint.fillOpacity[0],
         ],
         'fill-opacity-transition': { duration: 250 },
@@ -171,21 +190,21 @@ export function useMapBoundaryLayers({
       source: src,
       ...(minLayerZoom != null && { minzoom: minLayerZoom }),
       paint: {
-        'line-color': [
-          'case',
-          ['boolean', ['feature-state', 'selected'], false], paint.lineSelected,
-          paint.line,
-        ],
+        'line-color': ink(),
         'line-width': [
           'case',
-          ['boolean', ['feature-state', 'selected'], false], paint.lineWidth[2],
-          ['boolean', ['feature-state', 'hovered'], false], paint.lineWidth[1],
+          ['boolean', ['feature-state', 'selected'], false],
+          paint.lineWidth[2],
+          ['boolean', ['feature-state', 'hovered'], false],
+          paint.lineWidth[1],
           paint.lineWidth[0],
         ],
         'line-opacity': [
           'case',
-          ['boolean', ['feature-state', 'selected'], false], paint.lineOpacity[2],
-          ['boolean', ['feature-state', 'hovered'], false], paint.lineOpacity[1],
+          ['boolean', ['feature-state', 'selected'], false],
+          paint.lineOpacity[2],
+          ['boolean', ['feature-state', 'hovered'], false],
+          paint.lineOpacity[1],
           paint.lineOpacity[0],
         ],
         'line-width-transition': { duration: 200 },
@@ -201,14 +220,14 @@ export function useMapBoundaryLayers({
       layout: {
         'text-field': ['get', 'name'],
         'text-size': ['interpolate', ['linear'], ['zoom'], 2, 10, 5, 12, 8, 14],
-        'text-font': ['Noto Sans Medium'],
+        'text-font': [MAP_FONT_BOLD],
         'text-allow-overlap': false,
         'text-ignore-placement': false,
         'text-anchor': 'center',
       },
       paint: {
-        'text-color': INK,
-        'text-halo-color': '#ffffff',
+        'text-color': ink(),
+        'text-halo-color': paper(),
         'text-halo-width': 1.25,
       },
     });
@@ -258,7 +277,11 @@ export function useMapBoundaryLayers({
       const meta: Record<string, unknown> = {};
       for (const [k, v] of Object.entries(props)) {
         if (k.startsWith('meta_')) {
-          try { meta[k.slice(5)] = JSON.parse(v); } catch { meta[k.slice(5)] = v; }
+          try {
+            meta[k.slice(5)] = JSON.parse(v);
+          } catch {
+            meta[k.slice(5)] = v;
+          }
         }
       }
       const marker = markers.find((m) => m.id === props.entityId);
@@ -278,8 +301,27 @@ export function useMapBoundaryLayers({
     });
 
     addedRef.current = true;
-  }, [mapRef, mapReady, boundaries, markers, enabled, config, tooltipRef, onPopup, removeLayers,
-      src, fill, stroke, label, key, entityType, matchKey, matchMode, minLabelZoom, minLayerZoom]);
+  }, [
+    mapRef,
+    mapReady,
+    boundaries,
+    markers,
+    enabled,
+    config,
+    tooltipRef,
+    onPopup,
+    removeLayers,
+    src,
+    fill,
+    stroke,
+    label,
+    key,
+    entityType,
+    matchKey,
+    matchMode,
+    minLabelZoom,
+    minLayerZoom,
+  ]);
 
   return { removeLayers };
 }

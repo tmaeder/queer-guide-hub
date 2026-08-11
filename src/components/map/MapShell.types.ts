@@ -1,6 +1,7 @@
 import type { LayerType, ExploreMapFilters } from '@/hooks/useExploreMapData';
 
-export type MapSurface = 'discover' | 'search' | 'city' | 'country' | 'trip' | 'travel' | 'admin';
+export type MapSurface =
+  'discover' | 'search' | 'venues' | 'city' | 'country' | 'trip' | 'travel' | 'admin';
 
 export type MapLens = 'pins' | 'density' | 'routes' | 'boundary' | 'combined';
 
@@ -86,6 +87,19 @@ export const SURFACE_PRESETS: Record<MapSurface, MapShellConfig> = {
     defaultLens: 'pins',
     layers: ['venues', 'events'],
     filters: ['near-me'],
+    showCommandBar: true,
+    enableSearchThisArea: true,
+    enableUrlState: false,
+  },
+  // The /venues directory map. Venues only — the page is already scoped to
+  // them — and no URL state, because the page owns its own query string.
+  venues: {
+    surface: 'venues',
+    lenses: ['pins', 'density'],
+    defaultLens: 'pins',
+    layers: ['venues'],
+    defaultEnabledLayers: ['venues'],
+    filters: ['category', 'tags', 'near-me'],
     showCommandBar: true,
     enableSearchThisArea: true,
     enableUrlState: false,

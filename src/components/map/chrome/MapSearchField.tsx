@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
+import { X } from 'lucide-react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
-import { Search, X} from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -16,6 +16,7 @@ import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useSearchSuggestions, type SearchSuggestion } from '@/hooks/useSearchSuggestions';
 import { cn } from '@/lib/utils';
 import type { MapShellFilters } from '../MapShell.types';
+import { TransitIcon } from '@/components/transit/TransitIcon';
 
 const TYPE_PATH: Record<string, (slug: string) => string> = {
   venue: (slug) => `/venues/${slug}`,
@@ -57,8 +58,7 @@ export interface MapSearchFieldProps {
 }
 
 /**
- * Expanded map search combobox — shared by the desktop CommandBar and the
- * mobile top bar. Primary action narrows the map to the typed term; picking
+ * Expanded map search combobox, mounted by `MapBar` at every width. Primary action narrows the map to the typed term; picking
  * a suggestion jumps to that entity's detail page.
  */
 export const MapSearchField = ({
@@ -113,18 +113,22 @@ export const MapSearchField = ({
       <PopoverTrigger asChild>
         <div
           className={cn(
-            'relative w-56 shrink-0 rounded-element focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-1',
+            // The field owns its own box. It used to be a frameless input
+            // relying on CommandBar's pill for a border; MapBar has no pill,
+            // and a search field that only looks like one inside a particular
+            // parent is a field that will lose its edges the next time it
+            // moves.
+            'relative flex h-10 w-56 shrink-0 items-center border-2 border-foreground bg-background',
+            'focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-1',
             className,
           )}
           role="combobox"
           aria-expanded={popoverOpen}
           aria-controls="map-shell-listbox"
         >
-          <Search
-            size={14}
-            className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground"
-            aria-hidden="true"
-          />
+          <span className="pointer-events-none absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground">
+            <TransitIcon name="search" size={14} />
+          </span>
           <Input
             ref={inputRef}
             placeholder={searchLabel}
@@ -137,9 +141,10 @@ export const MapSearchField = ({
             }}
             onFocus={() => setPopoverOpen(true)}
             onKeyDown={handleEnter}
-            // Dropping `Input`'s inverted-plate background means dropping its
-            // `text-background` foreground too, or the text inverts against the page.
-            className="pl-8 pr-8 h-7 text-sm border-0 bg-transparent text-foreground placeholder:text-muted-foreground focus-visible:ring-0 focus-visible:ring-offset-0"
+            // The wrapper draws the border and the fill; the input is just the
+            // text. Dropping `Input`'s plate background means dropping its
+            // `text-background` foreground too, or the text inverts.
+            className="h-full border-0 bg-transparent pl-8 pr-8 text-sm text-foreground placeholder:text-muted-foreground focus-visible:ring-0 focus-visible:ring-offset-0"
           />
           {loading && (
             <TrackLoader size={12} className="absolute right-7 top-1/2 -translate-y-1/2" />
@@ -181,7 +186,7 @@ export const MapSearchField = ({
                   onSelect={() => applySearchFilter(query)}
                   className="flex items-center gap-2 cursor-pointer"
                 >
-                  <Search size={14} aria-hidden="true" />
+                  <TransitIcon name="search" size={14} />
                   <span className="flex-1 truncate text-sm">
                     {t('map.commandBar.filterMapFor', {
                       defaultValue: 'Filter map for "{{query}}"',
