@@ -85,9 +85,17 @@ export function RouteStrip({
         aria-label={label}
         /* Same grammar as SectionNav: solid paper, an ink rule that IS the
            band's edge, and a bleed that follows PAGE_GUTTER at every
-           breakpoint so the rule reaches the viewport edge. */
+           breakpoint so the rule reaches the viewport edge.
+
+           The offset is the site header's PINNED height — 60px on mobile,
+           64px from md where it collapses to the one-line ink flood. A flat
+           `top-16` left a 4px slot on mobile for content to slide through.
+           These are the values of `STICKY_UNDER_HEADER` in PageContainer.tsx
+           (added by #2710, which is in main but not yet merged into this
+           branch); import that constant once it is, rather than restating it. */
         className={cn(
-          'sticky top-16 z-30 -mx-4 border-b-2 border-foreground bg-background sm:-mx-6 md:-mx-8',
+          'sticky top-[60px] z-30 border-b-2 border-foreground bg-background md:top-[64px]',
+          '-mx-4 sm:-mx-6 md:-mx-8',
           className,
         )}
       >
