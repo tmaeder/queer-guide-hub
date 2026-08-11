@@ -294,7 +294,7 @@ export default function Auth() {
                             type="submit"
                             disabled={isLoading || (captchaRequired && !captchaToken)}
                           >
-                            {isLoading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                            {isLoading && <TrackLoader size={16} className="mr-2" />}
                             {mode === 'forgot'
                               ? t('auth.sendResetLink', 'Send reset link')
                               : t('auth.signIn', 'Sign in')}
@@ -326,18 +326,6 @@ export default function Auth() {
                           </span>
                         </Button>
                       )}
-
-                      {captcha}
-
-                      <Button
-                        type="submit"
-                        disabled={isLoading || (captchaRequired && !captchaToken)}
-                      >
-                        {isLoading && <TrackLoader size={16} className="mr-2" />}
-                        {mode === 'forgot'
-                          ? t('auth.sendResetLink', 'Send reset link')
-                          : t('auth.signIn', 'Sign in')}
-                      </Button>
                     </div>
                   </div>
                 </CardContent>
