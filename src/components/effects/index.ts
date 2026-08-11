@@ -1,9 +1,6 @@
-export { BackgroundDots } from './BackgroundDots';
 export { CardHoverEffect } from './CardHoverEffect';
-export { GrainOverlay } from './GrainOverlay';
 export { ParallaxHero } from './ParallaxHero';
 export { FloatingInput } from './FloatingInput';
 export { SkeletonCrossfade } from './SkeletonCrossfade';
-export { Timeline } from './Timeline';
 export { ColourfulText } from './ColourfulText';
 export { SpotlightV2 } from './SpotlightV2';

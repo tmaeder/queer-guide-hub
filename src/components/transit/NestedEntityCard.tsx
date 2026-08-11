@@ -25,12 +25,22 @@ export function NestedEntityCard({
   eyebrow?: string;
   name: string;
   description?: string | null;
-  href: string;
+  /** Omit when the row has no reachable page yet — an unslugged city or venue
+   *  still belongs in the list, it just is not a link. The card then drops the
+   *  overlay AND the lift: lifting something with no click target promises an
+   *  interaction that does not exist. */
+  href?: string;
   actionLabel?: string;
   className?: string;
 }) {
   return (
-    <div className={cn('card-lift group relative border-[3px] border-foreground p-4', className)}>
+    <div
+      className={cn(
+        'group relative border-[3px] border-foreground p-4',
+        href && 'card-lift',
+        className,
+      )}
+    >
       <div className="flex items-start gap-4">
         <RouteBullet type={type} size={34} />
         <div className="min-w-0 flex-1">
@@ -52,7 +62,9 @@ export function NestedEntityCard({
           </span>
         )}
       </div>
-      <LocalizedLink to={href} aria-label={name} className="absolute inset-0 no-underline" />
+      {href && (
+        <LocalizedLink to={href} aria-label={name} className="absolute inset-0 no-underline" />
+      )}
     </div>
   );
 }

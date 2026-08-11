@@ -28,11 +28,19 @@ export function SectionNav({ items, activeId, onSelect, className }: SectionNavP
   return (
     <nav
       aria-label="Sections"
-      className={cn('sticky top-16 z-30 -mx-4 mb-8 bg-background/80 backdrop-blur', className)}
+      /* A route strip, not a frosted iOS tab bar: solid paper with an ink rule
+         that IS the band's edge. The bleed follows PAGE_GUTTER so the rule
+         reaches the viewport edge at every breakpoint and the item row still
+         lines up with the page content above it — at a flat `-mx-4` the rule
+         stopped 16px short of the gutter from `sm` up. */
+      className={cn(
+        'sticky top-16 z-30 -mx-4 mb-8 border-b-2 border-foreground bg-background sm:-mx-6 md:-mx-8',
+        className,
+      )}
     >
       <ul
         ref={listRef}
-        className="mx-auto flex h-12 max-w-screen-2xl items-center gap-6 overflow-x-auto px-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        className="mx-auto flex h-12 max-w-screen-2xl items-center gap-6 overflow-x-auto px-4 sm:px-6 md:px-8 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
         {items.map((item) => {
           const isActive = item.id === activeId;
@@ -51,9 +59,12 @@ export function SectionNav({ items, activeId, onSelect, className }: SectionNavP
                   }
                 }}
                 className={cn(
-                  'relative inline-flex h-12 items-center whitespace-nowrap text-sm transition-colors no-underline',
+                  'relative inline-flex h-12 items-center whitespace-nowrap text-13 font-bold transition-colors no-underline',
                   isActive
-                    ? 'text-foreground after:absolute after:inset-x-0 after:bottom-0 after:h-[2px] after:bg-foreground'
+                    // Sits ON the nav's own rule and is thicker than it, so the
+                    // active station reads as a stop on the line rather than a
+                    // tint difference.
+                    ? 'text-foreground after:absolute after:inset-x-0 after:-bottom-0.5 after:h-1 after:bg-foreground'
                     : 'text-muted-foreground hover:text-foreground',
                 )}
               >

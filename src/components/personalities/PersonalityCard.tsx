@@ -3,7 +3,7 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Star } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Popover, PopoverAnchor, PopoverContent } from '@/components/ui/popover';
-import { CardHoverEffect } from '@/components/effects/CardHoverEffect';
+import { RouteBullet } from '@/components/transit/RouteBullet';
 import type { Personality } from '@/hooks/usePersonalities';
 import { resolveImageUrl } from '@/utils/resolveImageUrl';
 import { buildCfSrcSet } from '@/utils/cloudflareOptimizations';
@@ -42,13 +42,16 @@ function formatEra(p: Personality): string | null {
 
 export function PersonalityCardSkeleton() {
   return (
-    <div className="flex flex-col h-full bg-background overflow-hidden">
-      <div className="relative w-full bg-muted" style={{ paddingTop: '133.33%' }}>
-        <Skeleton className="absolute inset-0 w-full h-full rounded-none" />
+    // Matches the card's own frame — this was `bg-background` against a
+    // `bg-surface-container` card, so the grid visibly changed colour as it
+    // loaded.
+    <div className="flex h-full flex-col border-[3px] border-foreground bg-background">
+      <div className="relative aspect-[3/4] w-full border-b-[3px] border-foreground bg-muted">
+        <Skeleton className="absolute inset-0 h-full w-full rounded-none" />
       </div>
       <div className="p-4">
-        <Skeleton className="h-4 w-3/4 mb-2" />
-        <Skeleton className="h-4 w-[55%] mb-2" />
+        <Skeleton className="mb-2 h-4 w-3/4" />
+        <Skeleton className="mb-2 h-4 w-[55%]" />
         <Skeleton className="h-4 w-[65%]" />
       </div>
     </div>
@@ -134,93 +137,75 @@ function PersonalityCardImpl({
       onFocus={isFinePointer ? scheduleOpen : undefined}
       onBlur={isFinePointer ? scheduleClose : undefined}
       aria-label={ariaLabel}
-      className="personality-card group relative flex flex-col h-full cursor-pointer no-underline text-inherit bg-surface-container rounded-container overflow-hidden touch-manipulation transition-colors duration-fast hover:bg-muted/40 active:opacity-85 focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2"
+      /* The lift and the border live on the LINK itself. `CardHoverEffect`'s
+         group/overlay contract exists for cards whose click target is a
+         sibling overlay — this card has no nested interactive elements, so the
+         whole anchor is the target and a nested lift wrapper only meant the
+         border sat on one element while a different one moved. */
+      className="personality-card card-lift group flex h-full cursor-pointer touch-manipulation flex-col border-[3px] border-foreground bg-background text-inherit no-underline focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2"
       style={{ WebkitTapHighlightColor: 'transparent' }}
     >
-      <CardHoverEffect>
-        {/* Image */}
-        <div
-          className="relative w-full overflow-hidden"
-          style={{
-            paddingTop: '133.33%',
-            background:
-              'linear-gradient(135deg, hsl(var(--foreground) / 0.18) 0%, hsl(var(--foreground) / 0.10) 100%)',
-          }}
-        >
-          {showImage ? (
-            <img
-              src={resolvedImageUrl!}
-              srcSet={srcSet}
-              sizes="(max-width: 640px) 160px, (max-width: 1024px) 200px, 250px"
-              alt={personality.name}
-              role="presentation"
-              loading="lazy"
-              decoding="async"
-              draggable={false}
-              referrerPolicy="no-referrer"
-              onError={() => setImgError(true)}
-              className="personality-card-image absolute inset-0 w-full h-full object-cover object-top transition-transform duration-normal group-hover:scale-[1.04]"
-            />
-          ) : (
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-[72px] h-[72px] rounded-full bg-surface-container flex items-center justify-center font-bold text-foreground">
-                {getInitials(personality.name)}
-              </div>
-            </div>
-          )}
+      {/* Portrait. `aspect-[3/4]` replaces a `paddingTop: 133.33%` box and an
+          inline foreground-alpha gradient — both pre-rebrand idioms. */}
+      <div className="relative aspect-[3/4] w-full overflow-hidden border-b-[3px] border-foreground bg-muted">
+        {showImage ? (
+          <img
+            src={resolvedImageUrl!}
+            srcSet={srcSet}
+            sizes="(max-width: 640px) 160px, (max-width: 1024px) 200px, 250px"
+            alt={personality.name}
+            loading="lazy"
+            decoding="async"
+            draggable={false}
+            referrerPolicy="no-referrer"
+            onError={() => setImgError(true)}
+            className="personality-card-image absolute inset-0 h-full w-full object-cover object-top"
+          />
+        ) : (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <span className="font-display text-headline text-muted-foreground">
+              {getInitials(personality.name)}
+            </span>
+          </div>
+        )}
 
-          {personality.is_featured && (
-            <div
-              className="absolute top-2 right-2 flex items-center gap-1 px-2 py-1 rounded-full bg-surface-container text-foreground pointer-events-none select-none text-xs font-semibold"
-              style={{ backdropFilter: 'blur(4px)' }}
-            >
-              <Star
-                size={12}
-                fill="hsl(var(--foreground))"
-                color="hsl(var(--foreground))"
-                aria-hidden="true"
-              />
-              <span>Featured</span>
-            </div>
-          )}
-        </div>
+        {/* The station marker. Makes a person legible as a P-line stop
+            wherever this card travels — tag pages, profession pages, search. */}
+        <RouteBullet
+          type="personality"
+          size={26}
+          className="pointer-events-none absolute left-2 top-2"
+        />
 
-        {/* Content */}
-        <div className="p-4 flex-grow">
-          <h3
-            className="text-foreground overflow-hidden text-ellipsis whitespace-nowrap font-semibold"
-            style={{ fontSize: '0.95rem', lineHeight: 1.3 }}
-          >
-            {personality.name}
-          </h3>
-          {personality.profession && (
-            <p className="text-muted-foreground mt-0.5 overflow-hidden text-ellipsis whitespace-nowrap text-13">
-              {formatProfession(personality.profession)}
-            </p>
-          )}
-          {metaParts.length > 0 && (
-            <p
-              className="text-muted-foreground mt-0.5 overflow-hidden text-ellipsis whitespace-nowrap text-xs"
-              style={{ opacity: 0.85 }}
-            >
-              {metaParts.join(' · ')}
-            </p>
-          )}
-          {(personality.description || personality.bio) && (
-            <p
-              className="text-muted-foreground mt-1.5 text-xs overflow-hidden"
-              style={{
-                lineHeight: 1.4,
-                display: '-webkit-box',
-                WebkitLineClamp: 2,
-                WebkitBoxOrient: 'vertical',
-              }}
-            >
-              {personality.description || personality.bio}
-            </p>
-          )}
-        </div>
-      </CardHoverEffect>
+        {personality.is_featured && (
+          <div className="pointer-events-none absolute right-2 top-2 flex select-none items-center gap-1 bg-foreground px-2 py-1 text-2xs font-bold text-background">
+            <Star size={10} fill="currentColor" color="currentColor" aria-hidden="true" />
+            <span>Featured</span>
+          </div>
+        )}
+      </div>
+
+      {/* Content */}
+      <div className="flex-grow p-4">
+        <h3 className="truncate font-display text-title leading-tight text-foreground">
+          {personality.name}
+        </h3>
+        {personality.profession && (
+          <p className="mt-1 truncate text-2xs font-bold uppercase tracking-label text-muted-foreground">
+            {formatProfession(personality.profession)}
+          </p>
+        )}
+        {metaParts.length > 0 && (
+          <p className="mt-1 truncate text-13 tabular-nums text-muted-foreground">
+            {metaParts.join(' · ')}
+          </p>
+        )}
+        {(personality.description || personality.bio) && (
+          <p className="mt-1.5 line-clamp-2 text-13 leading-snug text-muted-foreground">
+            {personality.description || personality.bio}
+          </p>
+        )}
+      </div>
     </LocalizedLink>
   );
 
@@ -233,7 +218,7 @@ function PersonalityCardImpl({
         side="top"
         align="center"
         sideOffset={8}
-        className="w-72 p-0 overflow-hidden"
+        className="w-72 overflow-hidden border-[3px] border-foreground p-0"
         onMouseEnter={() => {
           if (closeTimerRef.current) {
             window.clearTimeout(closeTimerRef.current);
@@ -251,28 +236,25 @@ function PersonalityCardImpl({
             alt=""
             loading="lazy"
             referrerPolicy="no-referrer"
-            className="w-full h-40 object-cover object-top bg-muted"
+            className="h-40 w-full border-b-[3px] border-foreground bg-muted object-cover object-top"
           />
         ) : (
-          <div className="w-full h-24 bg-muted flex items-center justify-center text-3xl font-bold text-muted-foreground">
+          <div className="flex h-24 w-full items-center justify-center border-b-[3px] border-foreground bg-muted font-display text-headline text-muted-foreground">
             {getInitials(personality.name)}
           </div>
         )}
-        <div className="p-4 space-y-1.5">
-          <div className="text-sm font-semibold leading-snug">{personality.name}</div>
+        <div className="space-y-1.5 p-4">
+          <div className="font-display text-title leading-snug">{personality.name}</div>
           {personality.profession && (
-            <div className="text-xs text-muted-foreground">
+            <div className="text-2xs font-bold uppercase tracking-label text-muted-foreground">
               {formatProfession(personality.profession)}
             </div>
           )}
           {metaParts.length > 0 && (
-            <div className="text-xs2 text-muted-foreground/80">{metaParts.join(' · ')}</div>
+            <div className="text-13 tabular-nums text-muted-foreground">{metaParts.join(' · ')}</div>
           )}
           {previewText && (
-            <p
-              className="text-xs text-muted-foreground pt-1 overflow-hidden"
-              style={{ display: '-webkit-box', WebkitLineClamp: 5, WebkitBoxOrient: 'vertical' }}
-            >
+            <p className="line-clamp-5 pt-1 text-13 leading-snug text-muted-foreground">
               {previewText}
             </p>
           )}

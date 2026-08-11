@@ -11,7 +11,6 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 import {
   Sheet,
   SheetContent,
@@ -20,6 +19,7 @@ import {
   SheetDescription,
 } from '@/components/ui/sheet';
 import { useDebounce } from '@/hooks/useDebounce';
+import { cn } from '@/lib/utils';
 import {
   useProfessionFacets,
   type PersonalityFilters,
@@ -46,16 +46,24 @@ interface FilterChipProps {
   capitalize?: boolean;
 }
 
+/** A real `<button>`. This was a `<Badge>` carrying an `onClick` — a `<div>`
+ *  with a click handler, so it was unreachable by keyboard and announced
+ *  nothing about its pressed state, on the page's primary filter control. */
 function FilterChip({ label, active, onClick, capitalize }: FilterChipProps) {
   return (
-    <Badge
-      variant={active ? 'default' : 'outline'}
+    <button
+      type="button"
       onClick={onClick}
-      className={`cursor-pointer flex-shrink-0 ${capitalize ? 'capitalize' : ''}`}
+      aria-pressed={active}
+      className={cn(
+        'shrink-0 cursor-pointer border-2 border-foreground px-4 py-1 text-13 font-bold transition-colors',
+        active ? 'bg-foreground text-background' : 'bg-background hover:bg-surface-container',
+        capitalize && 'capitalize',
+      )}
       style={{ scrollSnapAlign: 'start' }}
     >
       {label}
-    </Badge>
+    </button>
   );
 }
 
@@ -103,11 +111,16 @@ export function PersonalitiesFiltersBar({ filters, onFiltersChange }: Props) {
     !filters.profession && filters.is_living === undefined && !filters.featured_only;
 
   return (
-    <div className="flex flex-col gap-4 p-4 bg-background">
+    <div className="flex flex-col gap-4 bg-background py-4">
       {/* Row 1: search + sort */}
       <div className="flex flex-wrap items-center gap-4">
-        <div className="relative flex-1 min-w-[260px]">
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-background/70" />
+        <div className="relative min-w-[260px] flex-1">
+          {/* Was `text-background/70` — paper-on-paper inside a `bg-background`
+              container, i.e. an invisible search icon. */}
+          <Search
+            size={16}
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+          />
           <Input
             placeholder="Search by name, profession, description..."
             value={searchInput}
@@ -127,9 +140,11 @@ export function PersonalitiesFiltersBar({ filters, onFiltersChange }: Props) {
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="text-sm text-muted-foreground hidden sm:block">Sort</span>
+          <span className="hidden text-2xs font-bold uppercase tracking-label text-muted-foreground sm:block">
+            Sort
+          </span>
           <Select value={filters.sortBy ?? 'featured'} onValueChange={(v) => setSort(v as PersonalitySort)}>
-            <SelectTrigger style={{ width: 160 }} aria-label="Sort personalities">
+            <SelectTrigger className="w-40" aria-label="Sort personalities">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -270,7 +285,7 @@ export function PersonalitiesFiltersBar({ filters, onFiltersChange }: Props) {
             <div className="flex gap-2 mt-2">
               <Button
                 variant="outline"
-                style={{ flex: 1 }}
+                className="flex-1"
                 onClick={() =>
                   onFiltersChange({
                     sortBy: filters.sortBy ?? 'featured',
@@ -279,7 +294,7 @@ export function PersonalitiesFiltersBar({ filters, onFiltersChange }: Props) {
               >
                 Reset filters
               </Button>
-              <Button style={{ flex: 1 }} onClick={() => setDrawerOpen(false)}>
+              <Button className="flex-1" onClick={() => setDrawerOpen(false)}>
                 Done
               </Button>
             </div>
