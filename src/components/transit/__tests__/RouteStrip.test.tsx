@@ -83,6 +83,11 @@ describe('RouteStrip', () => {
     for (const cls of ['sticky', '-mx-4', 'sm:-mx-6', 'md:-mx-8', 'border-b-2']) {
       expect(nav.className).toContain(cls);
     }
+    // Pinned under the site header at its COMPACT height (60/64), not at a
+    // round `top-16` — that left a 4px slot on mobile for content to show
+    // through. Mirrors STICKY_UNDER_HEADER in PageContainer.tsx.
+    expect(nav.className).toContain('top-[60px]');
+    expect(nav.className).toContain('md:top-[64px]');
   });
 
   it('names the nav landmark', () => {
