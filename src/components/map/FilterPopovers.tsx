@@ -4,10 +4,10 @@ import * as SliderPrimitive from '@radix-ui/react-slider';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { CalendarRange, History } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { DateRange } from 'react-day-picker';
 import type { MapShellFilters } from './MapShell.types';
+import { TransitIcon } from '@/components/transit/TransitIcon';
 
 function fmt(d: Date | undefined): string {
   return d ? d.toISOString().slice(0, 10) : '';
@@ -123,7 +123,9 @@ export const TimePopover = ({ value, onChange, trigger }: TimePopoverProps) => {
             title={t('map.time.label', { defaultValue: 'Time range' })}
             className="h-8 px-2"
           >
-            <CalendarRange size={14} className="mr-1.5" aria-hidden="true" />
+            <span className="mr-1.5 inline-flex">
+              <TransitIcon name="events" size={14} />
+            </span>
             <span className="text-xs">
               {value
                 ? `${value.start} → ${value.end}`
@@ -171,7 +173,9 @@ export const EraPopover = ({
       <PopoverTrigger asChild>
         {trigger ?? (
           <Button variant="ghost" size="sm" aria-label="Era" title="Era" className="h-8 px-2">
-            <History size={14} className="mr-1.5" aria-hidden="true" />
+            <span className="mr-1.5 inline-flex">
+              <TransitIcon name="hours" size={14} />
+            </span>
             <span className="text-xs">
               {value ? `${value.decadeStart}s–${value.decadeEnd}s` : 'Any era'}
             </span>

@@ -4,7 +4,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
-import { Suspense } from 'react';
 
 // CityMapTab renders MapShell, which needs router state (useSearchParams),
 // reads auth + favorites (saved layer, map wave 3), and renders the real
@@ -26,12 +25,10 @@ vi.mock('@/hooks/useFavorites', () => ({
 
 import { CityMapTab } from '../CityMapTab';
 
-function FakeMap() { return <div data-testid="explore-map">map</div>; }
-
 function renderTab(city: Record<string, unknown>) {
   return render(
     <MemoryRouter>
-      <CityMapTab city={city as never} ExploreMap={FakeMap} Suspense={Suspense} />
+      <CityMapTab city={city as never} />
     </MemoryRouter>,
   );
 }

@@ -1,16 +1,6 @@
-import React from 'react';
-import {
-  ExternalLink,
-  Share2,
-  Star,
-  Clock,
-  Radio,
-  MapPin,
-  TrendingUp,
-  Users,
-  Heart,
-  type LucideIcon,
-} from 'lucide-react';
+import { ExternalLink, Star, Clock, Radio, MapPin, TrendingUp, Users, Heart } from 'lucide-react';
+import { TransitIcon } from '@/components/transit/TransitIcon';
+import type { TransitIconName } from '@/components/transit/transitIconPaths';
 import { Image } from '@/components/ui/Image';
 import type { FallbackTheme } from '@/utils/fallbackImages';
 import { Badge } from '@/components/ui/badge';
@@ -46,20 +36,13 @@ function priceLabel(range?: number | null): string | null {
 }
 
 /**
- * Renders a dynamically-selected marker icon. Receiving the icon as a prop (vs.
- * rendering `iconForMarker(...)`'s return value as JSX inline) keeps the
- * component reference stable per React's static-components rule.
+ * Renders a dynamically-selected marker icon. `iconForMarker` now returns a
+ * TransitIconName rather than a component, so there is no static-components
+ * rule to work around — this stays as a named wrapper only because three call
+ * sites want the same default sizing behaviour.
  */
-function MarkerGlyph({
-  icon: Icon,
-  className,
-  style,
-}: {
-  icon: LucideIcon;
-  className?: string;
-  style?: React.CSSProperties;
-}) {
-  return <Icon className={className} style={style} aria-hidden />;
+function MarkerGlyph({ icon, size = 20 }: { icon: TransitIconName; size?: number }) {
+  return <TransitIcon name={icon} size={size} />;
 }
 
 /** Small signal pills shared across variants. */
@@ -192,7 +175,7 @@ export function MapEntityCard({
   onShare,
   className,
 }: MapEntityCardProps) {
-  const Icon = iconForMarker(point.type, point.category);
+  const icon = iconForMarker(point.type, point.category);
   const fallbackTheme = FALLBACK_THEME[point.type] ?? 'default';
   // "other" is a non-informative catch-all category — drop it from the label.
   const cat = point.category && point.category.toLowerCase() !== 'other' ? point.category : '';
@@ -219,7 +202,6 @@ export function MapEntityCard({
               imageRole="thumb"
               fallbackEntityType={fallbackTheme}
               fallbackKey={point.id}
-              fallbackIcon={Icon}
             />
           </div>
         )}
@@ -250,12 +232,11 @@ export function MapEntityCard({
               imageRole="thumb"
               fallbackEntityType={fallbackTheme}
               fallbackKey={point.id}
-              fallbackIcon={Icon}
             />
           </div>
         ) : (
           <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-element bg-muted">
-            <MarkerGlyph icon={Icon} className="h-5 w-5" style={{ color: point.color }} />
+            <MarkerGlyph icon={icon} size={20} />
           </div>
         )}
         <div className="flex min-w-0 flex-1 flex-col gap-0.5">
@@ -285,18 +266,17 @@ export function MapEntityCard({
             imageRole="cover"
             fallbackEntityType={fallbackTheme}
             fallbackKey={point.id}
-            fallbackIcon={Icon}
             rounded="none"
           />
           <div className="absolute left-2 top-2">
-            <span className="inline-flex h-6 w-6 items-center justify-center rounded-badge bg-background/90 text-foreground">
-              <MarkerGlyph icon={Icon} className="h-3.5 w-3.5" />
+            <span className="inline-flex h-6 w-6 items-center justify-center rounded-badge bg-background text-foreground">
+              <MarkerGlyph icon={icon} size={14} />
             </span>
           </div>
         </div>
       ) : (
         <div className="flex h-16 w-full items-center justify-center bg-muted">
-          <MarkerGlyph icon={Icon} className="h-6 w-6" style={{ color: point.color }} />
+          <MarkerGlyph icon={icon} size={24} />
         </div>
       )}
 
@@ -325,7 +305,7 @@ export function MapEntityCard({
                 onClick={() => onShare(point)}
                 className="inline-flex items-center gap-1 text-13 text-muted-foreground underline"
               >
-                <Share2 className="h-3.5 w-3.5" aria-hidden />
+                <TransitIcon name="share" size={14} />
                 Share
               </button>
             )}

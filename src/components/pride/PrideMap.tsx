@@ -4,7 +4,6 @@ import * as maplibregl from 'maplibre-gl';
 import type { GeoJSONSource } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { getMapStyle } from '@/config/mapStyle';
-import { useTheme } from '@/components/theme/ThemeProvider';
 import { isWebglSupported } from '@/lib/webglSupport';
 import type { PrideCalendarEvent } from '@/hooks/usePrideCalendar';
 
@@ -27,7 +26,6 @@ export function PrideMap({ events, selectedId, onSelect, height = 480 }: PrideMa
   const mapRef = useRef<maplibregl.Map | null>(null);
   const popupRef = useRef<maplibregl.Popup | null>(null);
   const [ready, setReady] = useState(false);
-  const { resolvedTheme } = useTheme();
 
   // Recreated when the theme flips so the basemap flavor follows it.
   useEffect(() => {
@@ -35,7 +33,7 @@ export function PrideMap({ events, selectedId, onSelect, height = 480 }: PrideMa
     if (!isWebglSupported()) return;
     const map = new maplibregl.Map({
       container: containerRef.current,
-      style: getMapStyle(resolvedTheme),
+      style: getMapStyle(),
       center: [10, 20],
       zoom: 1.2,
       attributionControl: false,
@@ -56,7 +54,7 @@ export function PrideMap({ events, selectedId, onSelect, height = 480 }: PrideMa
       setReady(false);
       map.remove();
     };
-  }, [resolvedTheme]);
+  }, []);
 
   useEffect(() => {
     const map = mapRef.current;

@@ -1,13 +1,15 @@
 // Feature flags. Read from Vite env vars at build time.
 
-const truthy = (v: string | undefined) =>
-  v === 'true' || v === '1' || v === 'yes';
+const truthy = (v: string | undefined) => v === 'true' || v === '1' || v === 'yes';
 
-// MAP_SHELL_ENABLED — gates the new unified MapShell (command bar + lens
-// picker + filter chips) that replaces per-surface map chrome. Phase 1
-// ships behind this flag so /map can A/B against the legacy ExploreMap
-// chrome. When stable, all callers migrate and the flag is deleted.
-export const MAP_SHELL_ENABLED = truthy(import.meta.env.VITE_MAP_SHELL);
+// MAP_SHELL_ENABLED removed 2026-08-10. It gated the unified MapShell against
+// the legacy per-surface ExploreMap chrome, and `VITE_MAP_SHELL: 'true'` was
+// set in BOTH deploy-pages.yml and ci.yml — so the off-branch had not rendered
+// for anyone, anywhere, in a long time while still costing four dead fallbacks
+// and three skipped e2e specs. /map, the city + country map tabs and the search
+// results map now go straight to MapShell.
+// (Note: /venues still mounts ExploreMap directly with its own layer + filter
+// panels. That is a separate, genuinely live surface — not this flag.)
 
 // VENUES_V2_ENABLED — personalized + gamified /venues experience
 // (editorial rails, personal stats strip, leaderboard widget, ranked RPC).

@@ -3,8 +3,8 @@ import * as maplibregl from 'maplibre-gl';
 import type { GeoJSONSource, MapLayerMouseEvent } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
-import { useTheme } from '@/components/theme/ThemeProvider';
-import { getMapStyle } from '@/config/mapStyle';
+import { getMapStyle, MAP_FONT_BOLD } from '@/config/mapStyle';
+import { ink, paper } from '@/lib/mapTokens';
 import { isWebglSupported } from '@/lib/webglSupport';
 import { useCountryCentroids, type CountryCentroid } from '@/hooks/useCountryCentroids';
 import type { Personality } from '@/hooks/usePersonalities';
@@ -110,7 +110,6 @@ export function PersonalitiesMap({ personalities, height = 600 }: PersonalitiesM
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const navigate = useLocalizedNavigate();
-  const { resolvedTheme } = useTheme();
   const { centroids, loading: countriesLoading } = useCountryCentroids();
   const [unmappedCount, setUnmappedCount] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -121,7 +120,7 @@ export function PersonalitiesMap({ personalities, height = 600 }: PersonalitiesM
     if (!isWebglSupported()) return;
     const map = new maplibregl.Map({
       container: containerRef.current,
-      style: getMapStyle(resolvedTheme),
+      style: getMapStyle(),
       center: [0, 30],
       zoom: 1.5,
     });
@@ -131,7 +130,7 @@ export function PersonalitiesMap({ personalities, height = 600 }: PersonalitiesM
       map.remove();
       mapRef.current = null;
     };
-  }, [resolvedTheme]);
+  }, []);
 
   // Build features whenever the input list or country centroids change.
   useEffect(() => {
@@ -140,7 +139,6 @@ export function PersonalitiesMap({ personalities, height = 600 }: PersonalitiesM
     if (countriesLoading) return;
     const index = new Map(centroids.map((c) => [c.name, c]));
     {
-
       const features: Feature[] = [];
       let unmapped = 0;
       for (const p of personalities) {
@@ -198,14 +196,10 @@ export function PersonalitiesMap({ personalities, height = 600 }: PersonalitiesM
           source: SOURCE_ID,
           filter: ['has', 'point_count'],
           paint: {
-            'circle-radius': [
-              'step',
-              ['get', 'point_count'],
-              16, 10, 22, 50, 28, 100, 36,
-            ],
-            'circle-color': 'hsl(0, 0%, 10%)',
+            'circle-radius': ['step', ['get', 'point_count'], 16, 10, 22, 50, 28, 100, 36],
+            'circle-color': ink(),
             'circle-stroke-width': 2,
-            'circle-stroke-color': 'hsl(0, 0%, 100%)',
+            'circle-stroke-color': paper(),
             'circle-opacity': 0.9,
           },
         });
@@ -217,10 +211,10 @@ export function PersonalitiesMap({ personalities, height = 600 }: PersonalitiesM
           filter: ['has', 'point_count'],
           layout: {
             'text-field': ['get', 'point_count_abbreviated'],
-            'text-font': ['Noto Sans Medium'],
+            'text-font': [MAP_FONT_BOLD],
             'text-size': 12,
           },
-          paint: { 'text-color': 'hsl(0, 0%, 100%)' },
+          paint: { 'text-color': paper() },
         });
 
         map.addLayer({
@@ -230,9 +224,9 @@ export function PersonalitiesMap({ personalities, height = 600 }: PersonalitiesM
           filter: ['!', ['has', 'point_count']],
           paint: {
             'circle-radius': 6,
-            'circle-color': 'hsl(0, 0%, 10%)',
+            'circle-color': ink(),
             'circle-stroke-width': 2,
-            'circle-stroke-color': 'hsl(0, 0%, 100%)',
+            'circle-stroke-color': paper(),
           },
         });
 
@@ -256,16 +250,23 @@ export function PersonalitiesMap({ personalities, height = 600 }: PersonalitiesM
         map.on('click', POINTS_LAYER, (e: MapLayerMouseEvent) => {
           const feat = e.features?.[0];
           if (!feat) return;
-          const props = feat.properties as { slug: string; name: string; profession: string; image_url: string };
+          const props = feat.properties as {
+            slug: string;
+            name: string;
+            profession: string;
+            image_url: string;
+          };
           const coords = (feat.geometry as GeoJSON.Point).coordinates as [number, number];
 
           const popupNode = document.createElement('div');
           popupNode.style.maxWidth = '200px';
           popupNode.innerHTML = `
             <div style="display:flex;gap:8px;align-items:center;">
-              ${props.image_url
-                ? `<img src="${props.image_url}" alt="" referrerpolicy="no-referrer" style="width:40px;height:40px;border-radius:6px;object-fit:cover;flex-shrink:0;" />`
-                : ''}
+              ${
+                props.image_url
+                  ? `<img src="${props.image_url}" alt="" referrerpolicy="no-referrer" style="width:40px;height:40px;border-radius:6px;object-fit:cover;flex-shrink:0;" />`
+                  : ''
+              }
               <div style="min-width:0;">
                 <div style="font-weight:600;font-size:13px;">${escapeHtml(props.name)}</div>
                 <div style="font-size:11px;color:#666;">${escapeHtml(props.profession || '')}</div>
@@ -296,8 +297,7 @@ export function PersonalitiesMap({ personalities, height = 600 }: PersonalitiesM
       if (map.isStyleLoaded()) apply();
       else map.once('load', apply);
     }
-    // resolvedTheme: re-wire sources/layers onto the recreated map after a theme flip.
-  }, [personalities, navigate, centroids, countriesLoading, resolvedTheme]);
+  }, [personalities, navigate, centroids, countriesLoading]);
 
   return (
     <div>

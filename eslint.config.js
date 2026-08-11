@@ -182,8 +182,14 @@ export default tseslint.config(
       // hex is required by the SVG data-URI (CSS vars don't resolve there).
       "src/lib/avatar.ts",
       // OG/recap PNG generated via canvas — hex literals are required by the canvas API.
-      // Map style + security dashboards = data-viz, hardcoded by design.
-      "src/components/map/**",
+      // NOTE: `src/components/map/**` used to be listed here (and in the P4
+      // block below). Because flat config replaces no-restricted-syntax
+      // WHOLESALE per file, that one wildcard removed EVERY design selector —
+      // colour, radius, shadow, gradient, spacing, arbitrary text — from all
+      // 56 map files, not just the hex rule it was written for. The map then
+      // drifted onto Tailwind's stock palette unchallenged. The map now
+      // resolves its colours from tokens at runtime via `src/lib/mapTokens.ts`
+      // and needs no exemption at all.
       "src/components/hotels/HotelsMap.tsx",
       "src/components/events/EventsMapView.tsx",
       // Submission scan results — confidence traffic-light + flyer overlays.
@@ -198,8 +204,6 @@ export default tseslint.config(
       "src/components/auth/PasswordStrengthMeter.tsx",
       "src/components/country/WorldBankDataPanel.tsx",
       "src/components/personalities/AddPersonalityDialog.tsx",
-      "src/hooks/useExploreMapData.ts",
-      "src/hooks/useMapBoundaryLayers.ts",
       "src/config/workflowConfig.ts",
       // Map style — vector tile color overrides, intentional.
       "src/components/trips/TripMap.tsx",
@@ -450,7 +454,10 @@ export default tseslint.config(
       "src/components/trips/TripMap.tsx",
       "src/components/trips/create/CityCountryAutocomplete.tsx",
       "src/components/profile/PhotoGallery.tsx",
-      "src/components/map/**",
+      // `src/components/map/**` deliberately absent — see the note in the
+      // P2-1 block above. This is the block that actually governs public
+      // files, so listing it here is what silently disabled the whole design
+      // ruleset for the map.
       "src/components/hotels/HotelsMap.tsx",
       "src/components/events/EventsMapView.tsx",
       "src/components/submission/**",
@@ -459,8 +466,6 @@ export default tseslint.config(
       "src/components/auth/PasswordStrengthMeter.tsx",
       "src/components/auth/OAuthButtons.tsx",
       "src/components/personalities/AddPersonalityDialog.tsx",
-      "src/hooks/useExploreMapData.ts",
-      "src/hooks/useMapBoundaryLayers.ts",
       "src/components/theme/ThemeProvider.tsx",
       "src/components/analytics/UmamiAnalyticsDashboard.tsx",
       "src/components/resources/TagListRenderer.tsx",

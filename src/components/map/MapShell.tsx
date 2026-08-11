@@ -1,17 +1,15 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import * as maplibregl from 'maplibre-gl';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import { tweens } from '@/lib/motion';
 import { distance } from '@/lib/animation';
 import { ExploreMap, type ExploreMapHandle } from './ExploreMap';
-import { CommandBar } from './CommandBar';
-import { MobileMapBar } from './chrome/MobileMapBar';
+import { MapBar } from './chrome/MapBar';
 import { MapNavControls } from './chrome/MapNavControls';
+import { MapNotice } from './chrome/MapNotice';
+import { MapRail } from './chrome/MapRail';
 import { FilterChips } from './FilterChips';
-import { useIsMobile } from '@/hooks/use-mobile';
-import { MapLegend } from './MapLegend';
-import { SpotlightRail } from './SpotlightRail';
-import { MapFirstRunHint } from './MapFirstRunHint';
 import type { MapPointSummary } from './mapPoint';
 import { useMapShellState } from '@/hooks/useMapShellState';
 import { useToast } from '@/hooks/use-toast';
@@ -42,6 +40,14 @@ export interface MapShellProps {
   /** Cooperative gestures — wheel-scroll passes through to the page (zoom needs
    *  a modifier). Use when the shell is embedded above page content. */
   cooperativeGestures?: boolean;
+  /**
+   * Filters owned by the HOST page, merged over the shell's own on the way to
+   * the map but never written back to shell or URL state — the same one-way
+   * contribution `usePreferenceChips` makes below. This is what lets a page
+   * with its own filter UI (the /venues directory) drive the map without
+   * either side fighting for the query string.
+   */
+  filtersOverride?: MapShellFilters;
 }
 
 /**
@@ -62,6 +68,7 @@ export const MapShell = ({
   initialZoom,
   skipAutoFly,
   cooperativeGestures,
+  filtersOverride,
 }: MapShellProps) => {
   const config: MapShellConfig = useMemo(
     () => ({ ...SURFACE_PRESETS[surface], ...configOverride }),
@@ -69,7 +76,6 @@ export const MapShell = ({
   );
 
   const reducedMotion = useReducedMotion() ?? false;
-  const isMobile = useIsMobile();
   const { state, setLens, setLayers, setFilters, setViewport } = useMapShellState(config);
   const { toast } = useToast();
   const { t } = useTranslation();
@@ -80,6 +86,7 @@ export const MapShell = ({
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [fetching, setFetching] = useState(false);
   const [savedOnly, setSavedOnly] = useState(false);
+  const [locationHint, setLocationHint] = useState<string | null>(null);
   const showRail = config.showCommandBar !== false;
 
   // Favorites layer — the viewer's saved venues + events, prefixed to match
@@ -123,16 +130,19 @@ export const MapShell = ({
   // control; the contribution merges into the map's filters without touching
   // shell/URL state (accessibility needs are private).
   const supportsAccessibility = config.filters.includes('accessibility');
-  const { chips: prefChips, toggle: togglePrefChip, forget: forgetPrefChip } =
-    usePreferenceChips(supportsAccessibility ? ['accessibility'] : []);
+  const {
+    chips: prefChips,
+    toggle: togglePrefChip,
+    forget: forgetPrefChip,
+  } = usePreferenceChips(supportsAccessibility ? ['accessibility'] : []);
   const chipAccessible = accessibilitySlugsFromChips(prefChips).length > 0;
-  const mapFilters: MapShellFilters = useMemo(
-    () =>
+  const mapFilters: MapShellFilters = useMemo(() => {
+    const base =
       chipAccessible && !exposedFilters.accessible
         ? { ...exposedFilters, accessible: true }
-        : exposedFilters,
-    [exposedFilters, chipAccessible],
-  );
+        : exposedFilters;
+    return filtersOverride ? { ...base, ...filtersOverride } : base;
+  }, [exposedFilters, chipAccessible, filtersOverride]);
 
   const removeFilter = useCallback(
     (key: keyof MapShellFilters) => {
@@ -159,12 +169,14 @@ export const MapShell = ({
     [setViewport],
   );
 
-  const handleLayersChange = useCallback(
-    (next: LayerType[]) => {
-      setLayers(next);
-    },
-    [setLayers],
-  );
+  /** Per-line counts for the key, from the same in-view feed the board ranks.
+   *  Deliberately not a second query: the number in the key and the number on
+   *  the board must be the same number. */
+  const layerCounts = useMemo(() => {
+    const out: Partial<Record<LayerType, number>> = {};
+    for (const p of pointsInView) out[p.type] = (out[p.type] ?? 0) + 1;
+    return out;
+  }, [pointsInView]);
 
   const fallbackCenter = state.viewport?.center ?? initialCenter;
   const fallbackZoom = state.viewport?.zoom ?? initialZoom;
@@ -213,6 +225,20 @@ export const MapShell = ({
     }
   }, [mapHandle, t, toast]);
 
+  // "Fit to results" — frame everything currently in the rail's feed.
+  //
+  // Both chromes have rendered this menu item behind `onFitBounds &&` since
+  // they shipped, and MapShell never passed the prop — so the item silently
+  // did not exist. `pointsInView` is exactly the set the user is being shown,
+  // which makes it the honest target for "fit to results".
+  const handleFitBounds = useCallback(() => {
+    const map = mapHandle?.map;
+    if (!map || pointsInView.length === 0) return;
+    const bounds = new maplibregl.LngLatBounds();
+    for (const p of pointsInView) bounds.extend([p.lng, p.lat]);
+    map.fitBounds(bounds, { padding: 64, maxZoom: 15, duration: 600 });
+  }, [mapHandle, pointsInView]);
+
   // GeolocateControl errors → the same informational toasts the old
   // navigator.geolocation path showed. Match the PositionError codes so the
   // user knows why nothing moved.
@@ -259,21 +285,18 @@ export const MapShell = ({
         height={height}
         defaultLayers={exploreLayers}
         defaultFilters={mapFilters}
-        showLayerToggles={false}
-        showFilters={false}
         initialCenter={fallbackCenter}
         initialZoom={fallbackZoom}
         skipAutoFly={skipAutoFly ?? fallbackCenter != null}
         onViewportChange={handleViewportChange}
-        onLayersChange={handleLayersChange}
         renderMode={lensToRenderMode(state.lens)}
-        mapShellMode
-        onPointsInView={showRail ? setPointsInView : undefined}
+        onPointsInView={setPointsInView}
+        onLocationHint={setLocationHint}
         selectedId={selectedId}
         highlightedId={hoveredId}
         showResultCount={!showRail}
         onSelectPoint={showRail ? setSelectedId : undefined}
-        onFetchingChange={showRail ? setFetching : undefined}
+        onFetchingChange={setFetching}
         favoriteIds={favoriteIds}
         savedOnly={savedActive}
         cooperativeGestures={cooperativeGestures}
@@ -284,109 +307,66 @@ export const MapShell = ({
       <MapNavControls handle={mapHandle} />
 
       {showRail && (
-        <>
-          <MapLegend lens={state.lens} layers={exploreLayers} raised />
-          <SpotlightRail
-            points={pointsInView}
-            selectedId={selectedId}
-            loading={fetching}
-            onHover={setHoveredId}
-            onSelect={(id) => setSelectedId(id)}
-          />
-        </>
+        <MapRail
+          points={pointsInView}
+          selectedId={selectedId}
+          loading={fetching}
+          onHover={setHoveredId}
+          onSelect={(id) => setSelectedId(id)}
+        />
       )}
 
-      {config.showCommandBar !== false &&
-        (isMobile ? (
-          /* Mobile: one top stack — fixed control row, scrollable quick chips,
-             then any active-filter chips flowing below (no absolute overlap). */
-          <div className="absolute inset-x-3 top-3 z-20 flex flex-col gap-1.5">
-            <MobileMapBar
-              showSearch={config.showSearch}
-              lenses={config.lenses}
-              lens={state.lens}
-              onLensChange={setLens}
-              availableLayers={config.layers}
-              enabledLayers={state.enabledLayers}
-              onLayersChange={setLayers}
-              availableFilters={config.filters}
-              filters={state.filters}
-              onFiltersChange={setFilters}
-              onGeolocate={handleGeolocate}
-              onShare={handleShare}
-              canSave={canSave}
-              savedOnly={savedActive}
-              onToggleSaved={() => setSavedOnly((v) => !v)}
-            />
-            <AnimatePresence initial={false}>
-              {(Object.keys(exposedFilters).length > 0 || prefChips.length > 0) && (
-                <motion.div
-                  initial={reducedMotion ? false : { opacity: 0, y: -distance.sm }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={reducedMotion ? { opacity: 0 } : { opacity: 0, y: -distance.sm }}
-                  transition={reducedMotion ? { duration: 0 } : tweens.fast}
-                  className="flex flex-col gap-1.5"
-                >
-                  <PreferenceChips
-                    chips={prefChips}
-                    onToggle={togglePrefChip}
-                    onForget={forgetPrefChip}
-                  />
-                  <FilterChips
-                    filters={exposedFilters}
-                    onRemove={removeFilter}
-                    onClearAll={() => setFilters({})}
-                  />
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-        ) : (
-          <>
-            <CommandBar
-              showSearch={config.showSearch}
-              lenses={config.lenses}
-              lens={state.lens}
-              onLensChange={setLens}
-              availableLayers={config.layers}
-              enabledLayers={state.enabledLayers}
-              onLayersChange={setLayers}
-              availableFilters={config.filters}
-              filters={state.filters}
-              onFiltersChange={setFilters}
-              onGeolocate={handleGeolocate}
-              onShare={handleShare}
-              canSave={canSave}
-              savedOnly={savedActive}
-              onToggleSaved={() => setSavedOnly((v) => !v)}
-            />
-            <AnimatePresence initial={false}>
-              {(Object.keys(exposedFilters).length > 0 || prefChips.length > 0) && (
-                <motion.div
-                  initial={reducedMotion ? false : { opacity: 0, y: -distance.sm }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={reducedMotion ? { opacity: 0 } : { opacity: 0, y: -distance.sm }}
-                  transition={reducedMotion ? { duration: 0 } : tweens.fast}
-                  className="absolute top-[3.25rem] left-3 right-3 z-20 flex flex-col gap-1.5"
-                >
-                  <PreferenceChips
-                    chips={prefChips}
-                    onToggle={togglePrefChip}
-                    onForget={forgetPrefChip}
-                  />
-                  <FilterChips
-                    filters={exposedFilters}
-                    onRemove={removeFilter}
-                    onClearAll={() => setFilters({})}
-                  />
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </>
-        ))}
+      <MapNotice
+        count={pointsInView.length}
+        ready={!fetching}
+        filters={mapFilters}
+        locationHint={locationHint}
+      />
 
-      {showRail && (
-        <MapFirstRunHint count={pointsInView.length} ready={!fetching} />
+      {config.showCommandBar !== false && (
+        <div className="absolute inset-x-3 top-3 z-20 flex flex-col items-start gap-1.5 md:right-auto md:max-w-[calc(100%-1.5rem)]">
+          <MapBar
+            showSearch={config.showSearch}
+            availableLayers={config.layers}
+            enabledLayers={state.enabledLayers}
+            onLayersChange={setLayers}
+            layerCounts={layerCounts}
+            availableFilters={config.filters}
+            filters={state.filters}
+            onFiltersChange={setFilters}
+            lenses={config.lenses}
+            lens={state.lens}
+            onLensChange={setLens}
+            canSave={canSave}
+            savedOnly={savedActive}
+            onToggleSaved={() => setSavedOnly((v) => !v)}
+            onGeolocate={handleGeolocate}
+            onFitBounds={handleFitBounds}
+            onShare={handleShare}
+          />
+          <AnimatePresence initial={false}>
+            {(Object.keys(exposedFilters).length > 0 || prefChips.length > 0) && (
+              <motion.div
+                initial={reducedMotion ? false : { opacity: 0, y: -distance.sm }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={reducedMotion ? { opacity: 0 } : { opacity: 0, y: -distance.sm }}
+                transition={reducedMotion ? { duration: 0 } : tweens.fast}
+                className="flex flex-col gap-1.5"
+              >
+                <PreferenceChips
+                  chips={prefChips}
+                  onToggle={togglePrefChip}
+                  onForget={forgetPrefChip}
+                />
+                <FilterChips
+                  filters={exposedFilters}
+                  onRemove={removeFilter}
+                  onClearAll={() => setFilters({})}
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       )}
     </div>
   );

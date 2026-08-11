@@ -3,7 +3,6 @@ import * as maplibregl from 'maplibre-gl';
 import type { GeoJSONSource } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { getMapStyle } from '@/config/mapStyle';
-import { useTheme } from '@/components/theme/ThemeProvider';
 import { isWebglSupported } from '@/lib/webglSupport';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import type { Hotel } from '@/hooks/useHotels';
@@ -23,7 +22,6 @@ export function HotelsMap({ hotels, height = 560 }: HotelsMapProps) {
   const mapRef = useRef<maplibregl.Map | null>(null);
   const popupRef = useRef<maplibregl.Popup | null>(null);
   const navigate = useLocalizedNavigate();
-  const { resolvedTheme } = useTheme();
   const [ready, setReady] = useState(false);
 
   // Init — recreated when the theme flips so the basemap flavor follows it.
@@ -32,7 +30,7 @@ export function HotelsMap({ hotels, height = 560 }: HotelsMapProps) {
     if (!isWebglSupported()) return;
     const map = new maplibregl.Map({
       container: containerRef.current,
-      style: getMapStyle(resolvedTheme),
+      style: getMapStyle(),
       center: [10, 20],
       zoom: 1.5,
       attributionControl: false,
@@ -51,7 +49,7 @@ export function HotelsMap({ hotels, height = 560 }: HotelsMapProps) {
       setReady(false);
       map.remove();
     };
-  }, [resolvedTheme]);
+  }, []);
 
   // Build/update source + layers
   useEffect(() => {
@@ -198,10 +196,6 @@ export function HotelsMap({ hotels, height = 560 }: HotelsMapProps) {
   }, [hotels, ready, navigate]);
 
   return (
-    <div
-      ref={containerRef}
-      className="w-full border border-foreground/10"
-      style={{ height }}
-    />
+    <div ref={containerRef} className="w-full border border-foreground/10" style={{ height }} />
   );
 }
