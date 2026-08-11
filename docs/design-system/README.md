@@ -134,8 +134,11 @@ stylesheet order decides), and this table. It does **not** touch `tokenCatalog`
 or `branding_validate` — those enumerate colour and text-size keys only.
 
 One bespoke width survives, deliberately: `LegalPageLayout` at 1100px. It is
-prose with a 224px sticky TOC beside it, so the page cap would stretch legal
-text to an unreadable measure and `reading` would leave the prose ~430px.
+prose with a 224px sticky rail beside it, so the page cap would stretch legal
+text to an unreadable measure and `reading` would leave the prose ~430px. This
+is also why policy routes are **not** in `e2e/page-layout.spec.ts` — that spec
+asserts the page container's content edge equals the header's, which a 1100 cap
+deliberately fails at wide viewports.
 
 Admin uses the same standard from one place: `AdminShell`'s `<main>` applies
 the ladder plus a `max-w-page` inner wrapper, and admin **pages render bare
@@ -167,8 +170,47 @@ The sanctioned depth treatment is the **hard poster shadow**:
   table is `routeBulletMap.ts` (single point of change). 2px ink ring.
 - **`DepartureRow`** — bullet · time · title · status.
 - **`LineStepper`** — progress is always a bending line with stations.
+- **`RouteStrip`** — a long document's table of contents *as a route*: sections
+  are stations on a line, `depth: 2` renders `<h3>` sub-stations. Vertical for
+  a sticky rail, horizontal for the mobile band (same bleed grammar as
+  `SectionNav`). Stations are `<a href="#id">`, never buttons — see below.
 - **Buttons** — `default` (ink fill), `outline` (2px ink border, hover fills
   ink), `accent` (pink), `brand` (blue), `destructive` unchanged.
+
+### The policy line
+
+A policy is a line; each `<h2>` is a station. `LegalPageLayout` +
+`RouteStrip` + `policyLines.ts` implement it for `/terms`, `/privacy`,
+`/cookies`, `/dmca` and `/accessibility`; `/legal` is the route index.
+
+Line identities live in `src/components/transit/policyLines.ts`, **not** in
+`ROUTE_BULLET_MAP`: that table is keyed to the `search_documents` entity vocab
+and is the source of truth for the map's layer colours (`mapPalette.test.ts`
+asserts the two agree). Policies are not entities, and would collide anyway —
+`T`-blue is already `trip`, `C`-yellow already `country`. `RouteBullet` takes
+optional `letter`/`track`/`label` overrides for exactly this case.
+
+Terms `T` blue · Privacy `P` green · Cookies `C` yellow · Copyright `©` pink ·
+Accessibility `A` **ink**. Accessibility runs monochrome on purpose: a page
+about not depending on colour must not use colour as its only identity.
+
+Three rules the implementation exists to hold:
+
+1. **Every section is addressable.** Stations are anchors that write the
+   fragment, and `extractSections` gives every `<h2>`/`<h3>` a stable id. The
+   old TOC was `<button>` + `scrollIntoView` and wrote nothing, so no clause of
+   any policy could be linked or shared.
+2. **Section numbers come from a CSS counter, never from the prose.**
+   `.qg-cms-body--legal h2::before` renders the station circle;
+   `stripTypedNumber` removes any hand-typed `1.` from the DOM so the two can
+   never disagree.
+3. **The fragment is written only once the reader moves between stations**
+   (`replaceState`, so scrolling never fills the Back button). Seeding it on
+   load turned every policy URL into a section URL.
+
+Scroll-spy is a rAF-gated scroll listener, **not** an IntersectionObserver: IO
+reports changes in intersection, and a heading far above the fold has none left
+to report, so after a jump to section 11 the rail stayed pinned to section 1.
 
 ## Brand (`src/components/brand/`)
 
@@ -195,6 +237,48 @@ The sanctioned depth treatment is the **hard poster shadow**:
 - Icons / maskables / favicon.ico / OG regenerate via
   `node scripts/generate-brand-assets.mjs` — playwright, no `sharp` (which was
   never installed, so the script could not run and the icons drifted).
+
+## Crisis surfaces (`/help`, `/safety`, `/report-*`)
+
+The canonical build is `/help` (`src/pages/HelpHotlines.tsx` +
+`src/components/help/`). `CLAUDE.md` points at a Pattern Library "§A11y
+exemption" for this — **that section does not exist**; this is the spec.
+
+- **No track colors.** Not `RouteBullet`, `StationRing`, `AccessGrid`,
+  `LineStepper`, `TrackLoader` (every `track` value is a track color),
+  `.intersection-gradient`, or `Button variant="accent"|"brand"`. On these
+  pages every visual distinction a reader makes is a risk judgement; teach
+  them that hue means "content type" and the red warning becomes just another
+  line color. `TransitIcon` is fine — it is `currentColor` by construction.
+- **Weight comes from inversion and rules**, never hue: 3px ink borders, one
+  ink-flooded panel (`SidebarCard tone="ink"` is the shared idiom), `--shadow-hard`.
+- **`--destructive` is rationed to danger *to the reader*.** On `/help` that
+  is exactly three things: the emergency band, `QuickExit`, and the per-line
+  "may contact police without your consent" strip. A fourth candidate must
+  pass: *would a reader be harmed by not noticing this?* An explicit
+  non-carceral policy is a reassurance and renders in **ink**, not red —
+  flattening the two into one color destroys the distinction.
+- **Animation-free.** No `PageHeader` (hardcodes `.content-enter`), no
+  `PageHero` (defaults to `effect="spotlight"`), no `EditorialDetailLayout` /
+  `IntentPageLayout` / `SectionNav` (they pull `motion/react` and smooth
+  scroll, and the layouts gate the whole page behind `loading` — which would
+  put the emergency band behind a fetch). Copy `SectionNav`'s class string,
+  not the component. Sheet/Dialog transitions and focus rings are sanctioned.
+- **Unknown renders as silence.** A line whose hours we cannot structure is
+  never labelled "Closed"; a line with no police-policy value shows nothing.
+  Telling someone a crisis line is shut when it is open is the harmful
+  direction, so every uncertainty resolves to null rather than false.
+- **Life-safety blocks render synchronously** — outside any `loading`/`ready`
+  branch, with inline English `t()` defaults, so a dead locale bundle or a
+  failed CMS fetch cannot blank them. Guarded by `e2e/help-a11y.spec.ts`.
+- **A card is not a lift unless it is one click target.** Hotline cards carry
+  a Call button, channel buttons, a keep toggle and a report dialog, so they
+  take no `.card-lift`; directory rows and org rows do.
+
+Guarded by `e2e/help-a11y.spec.ts` (axe at 320 + 1280, no 320px overflow,
+i18n-failure paint) and `e2e/help-crisis.spec.ts` (structured data matches the
+recommended line, search cannot rewrite it, country lands in the URL,
+directories are never callable, unstructured hours never read as closed).
 
 ## Dark mode
 

@@ -1,9 +1,11 @@
 import { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router';
-import { motion, useReducedMotion } from 'motion/react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { usePublicRecognitions, type RecognitionPublicRow } from '@/hooks/useRecognitions';
 import { PageContainer } from '@/components/layout/PageContainer';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
+import { useMeta } from '@/hooks/useMeta';
+import { cn } from '@/lib/utils';
 
 const CATEGORY_LABELS: Record<string, string> = {
   venue_scout: 'Venue scouts',
@@ -25,6 +27,8 @@ const CATEGORY_ORDER = [
   'community',
 ];
 
+const FIRST_YEAR = 2024;
+
 function getInitials(name: string): string {
   return name
     .split(/\s+/)
@@ -33,66 +37,78 @@ function getInitials(name: string): string {
     .join('');
 }
 
-interface ContributorCardProps {
-  row: RecognitionPublicRow;
+function Avatar({ row }: { row: RecognitionPublicRow }) {
+  if (row.avatar_url) {
+    return (
+      <img
+        src={row.avatar_url}
+        alt=""
+        className="h-12 w-12 shrink-0 rounded-full border-[3px] border-foreground bg-muted object-cover"
+        loading="lazy"
+      />
+    );
+  }
+  return (
+    <span
+      aria-hidden
+      className="grid h-12 w-12 shrink-0 place-items-center rounded-full border-[3px] border-foreground bg-muted text-13 font-bold"
+    >
+      {getInitials(row.display_name)}
+    </span>
+  );
 }
 
-function ContributorCard({ row }: ContributorCardProps) {
-  const reduced = useReducedMotion();
-  const hasDetail = !!row.blurb_md;
+/**
+ * A contributor.
+ *
+ * The blurb is rendered inline. It used to live behind a `motion` opacity
+ * crossfade that only ran on hover and focus — decorative motion the design
+ * rules disallow, and on a touch screen the text was simply unreachable. A
+ * recognition wall that hides why someone is being recognised is not
+ * recognising them.
+ */
+function ContributorCard({ row }: { row: RecognitionPublicRow }) {
+  return (
+    <article className="flex h-full flex-col gap-4 border-[3px] border-foreground bg-background p-4">
+      <div className="flex items-center gap-4">
+        <Avatar row={row} />
+        {/* No category label here: every card sits under a band header that
+            already names the category, and repeating it made "Venue scouts"
+            appear once per contributor. */}
+        <p className="min-w-0 font-display text-title leading-tight">{row.display_name}</p>
+      </div>
+      {row.blurb_md && (
+        <p className="text-13 leading-relaxed text-muted-foreground">{row.blurb_md}</p>
+      )}
+    </article>
+  );
+}
 
-  const restState = { opacity: 1 };
-  const hoverState = { opacity: hasDetail ? 0 : 1 };
-  const detailRest = { opacity: 0, y: reduced ? 0 : 6 };
-  const detailHover = { opacity: 1, y: 0 };
+function YearSwitcher({ year }: { year: number }) {
+  const thisYear = new Date().getFullYear();
+  const years: number[] = [];
+  for (let y = thisYear; y >= FIRST_YEAR; y--) years.push(y);
+  if (years.length < 2) return null;
 
   return (
-    <motion.article
-      className="group relative h-44 overflow-hidden rounded-container bg-card focus-within:ring-2 focus-within:ring-foreground/40"
-      initial="rest"
-      animate="rest"
-      whileHover="hover"
-      whileFocus="hover"
-      tabIndex={hasDetail ? 0 : -1}
-    >
-      {/* Base layer */}
-      <motion.div
-        variants={{ rest: restState, hover: hoverState }}
-        transition={{ duration: reduced ? 0 : 0.2, ease: [0.22, 1, 0.36, 1] }}
-        className="absolute inset-0 flex flex-col items-start justify-between p-6"
-      >
-        <div className="flex items-center gap-4">
-          {row.avatar_url ? (
-            <img
-              src={row.avatar_url}
-              alt=""
-              className="h-10 w-10 rounded-full object-cover bg-muted"
-              loading="lazy"
-            />
-          ) : (
-            <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center text-xs font-semibold text-muted-foreground">
-              {getInitials(row.display_name)}
-            </div>
+    <nav aria-label="Year" className="inline-flex border-2 border-foreground">
+      {years.map((y, i) => (
+        <LocalizedLink
+          key={y}
+          to={`/contributors/${y}`}
+          aria-current={y === year ? 'page' : undefined}
+          className={cn(
+            'px-4 py-2 text-13 font-bold tabular-nums no-underline transition-colors',
+            i > 0 && 'border-l-2 border-foreground',
+            y === year
+              ? 'bg-foreground text-background'
+              : 'bg-background text-foreground hover:bg-surface-container',
           )}
-        </div>
-        <div className="flex flex-col gap-1">
-          <span className="text-base font-medium leading-tight">{row.display_name}</span>
-          {hasDetail && <span className="text-xs text-muted-foreground">Hover for details</span>}
-        </div>
-      </motion.div>
-      {hasDetail && (
-        <motion.div
-          variants={{ rest: detailRest, hover: detailHover }}
-          transition={{ duration: reduced ? 0 : 0.22, ease: [0.22, 1, 0.36, 1] }}
-          className="absolute inset-0 flex items-end rounded-container bg-background/95 p-6 backdrop-blur-sm pointer-events-none"
-          aria-hidden="true"
         >
-          <p className="text-sm text-muted-foreground leading-relaxed line-clamp-5">
-            {row.blurb_md}
-          </p>
-        </motion.div>
-      )}
-    </motion.article>
+          {y}
+        </LocalizedLink>
+      ))}
+    </nav>
   );
 }
 
@@ -100,7 +116,7 @@ export default function Contributors() {
   const { year: yearParam } = useParams<{ year?: string }>();
   const navigate = useNavigate();
   const year = yearParam ? parseInt(yearParam, 10) : new Date().getFullYear();
-  const validYear = Number.isFinite(year) && year >= 2024 && year <= 2100;
+  const validYear = Number.isFinite(year) && year >= FIRST_YEAR && year <= 2100;
 
   useEffect(() => {
     if (!yearParam) {
@@ -108,9 +124,11 @@ export default function Contributors() {
     }
   }, [yearParam, navigate]);
 
-  useEffect(() => {
-    document.title = `Contributors ${year} — queer.guide`;
-  }, [year]);
+  useMeta({
+    title: `Contributors ${year}`,
+    description: `The people who shaped queer.guide in ${year}.`,
+    canonicalPath: `/contributors/${year}`,
+  });
 
   const { data, isLoading } = usePublicRecognitions(validYear ? year : 0);
   const rows = data?.rows ?? [];
@@ -124,19 +142,24 @@ export default function Contributors() {
 
   return (
     <PageContainer>
-      <header className="pb-12 mb-12">
-        <p className="text-sm uppercase tracking-widest text-muted-foreground mb-4">
-          Recognition Wall
+      <header className="border-b-4 border-foreground pb-6">
+        <p className="text-2xs font-bold uppercase tracking-label text-muted-foreground">
+          Recognition wall
         </p>
-        <h1 className="text-5xl sm:text-7xl font-semibold tracking-tight">{year}</h1>
-        <p className="mt-6 max-w-xl text-base text-muted-foreground">
+        <h1 className="mt-4 font-display text-hero leading-none tracking-tight tabular-nums md:text-hero-xl">
+          {year}
+        </h1>
+        <p className="mt-4 max-w-xl text-body-lg text-muted-foreground">
           The people who shaped queer.guide this year — venue scouts, history documentarians, safety
           reporters, translators. Names. Not a leaderboard.
         </p>
+        <div className="mt-6">
+          <YearSwitcher year={year} />
+        </div>
       </header>
 
       {isLoading && (
-        <div className="space-y-4">
+        <div className="mt-12 space-y-4">
           <Skeleton className="h-8 w-1/3" />
           <Skeleton className="h-6 w-2/3" />
           <Skeleton className="h-6 w-1/2" />
@@ -144,23 +167,32 @@ export default function Contributors() {
       )}
 
       {!isLoading && rows.length === 0 && !error && (
-        <p className="text-muted-foreground">No recognitions published for {year} yet.</p>
+        <p className="mt-12 text-body-lg text-muted-foreground">
+          No recognitions published for {year} yet.
+        </p>
       )}
 
-      {error && <p className="text-destructive">{error}</p>}
+      {error && <p className="mt-12 text-body-lg text-destructive">{error}</p>}
 
       {featured.length > 0 && (
-        <section className="mb-16">
-          <h2 className="text-sm uppercase tracking-widest text-muted-foreground mb-6">Featured</h2>
-          <ul className="space-y-10">
+        <section className="mt-12" aria-labelledby="featured">
+          <h2
+            id="featured"
+            className="border-b-[3px] border-foreground bg-foreground px-4 py-2 font-display text-title leading-tight text-background"
+          >
+            Featured
+          </h2>
+          <ul className="mt-6 flex flex-col gap-8">
             {featured.map((row) => (
               <li key={row.id}>
-                <p className="text-2xl sm:text-3xl font-medium">{row.display_name}</p>
-                <p className="mt-1 text-sm text-muted-foreground">
+                <p className="font-display text-headline leading-tight md:text-display">
+                  {row.display_name}
+                </p>
+                <p className="mt-1 text-2xs font-bold uppercase tracking-label text-muted-foreground">
                   {CATEGORY_LABELS[row.category] ?? row.category}
                 </p>
                 {row.blurb_md && (
-                  <p className="mt-4 max-w-2xl text-base leading-relaxed">{row.blurb_md}</p>
+                  <p className="mt-4 max-w-2xl text-body-lg leading-relaxed">{row.blurb_md}</p>
                 )}
               </li>
             ))}
@@ -169,11 +201,15 @@ export default function Contributors() {
       )}
 
       {grouped.map(({ category, rows: catRows }) => (
-        <section key={category} className="mb-14">
-          <h2 className="text-sm uppercase tracking-widest text-muted-foreground mb-6">
+        <section key={category} className="mt-12" aria-labelledby={`cat-${category}`}>
+          <h2
+            id={`cat-${category}`}
+            className="border-b-[3px] border-foreground bg-foreground px-4 py-2 font-display text-title leading-tight text-background"
+          >
             {CATEGORY_LABELS[category] ?? category}
+            <span className="ml-2 text-2xs tabular-nums text-background/70">{catRows.length}</span>
           </h2>
-          <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          <ul className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
             {catRows.map((row) => (
               <li key={row.id}>
                 <ContributorCard row={row} />
@@ -183,7 +219,7 @@ export default function Contributors() {
         </section>
       ))}
 
-      <footer className="pt-8 mt-16 text-xs text-muted-foreground">
+      <footer className="mt-16 border-t-2 border-foreground pt-6 text-13 text-muted-foreground">
         Selected by the editorial team. Anyone can opt out of being named in their profile settings.
       </footer>
     </PageContainer>
