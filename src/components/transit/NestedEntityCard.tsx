@@ -22,7 +22,11 @@ export function NestedEntityCard({
   className,
 }: {
   type: string;
-  eyebrow?: string;
+  /** Nullable to match `description`: the columns these come from
+   *  (`venues.category`, `cities.countries.name`) are nullable in the DB, and
+   *  making every call site write `?? undefined` pushes the same coalesce into
+   *  each of them. */
+  eyebrow?: string | null;
   name: string;
   description?: string | null;
   /** Omit when the row has no reachable page yet — an unslugged city or venue

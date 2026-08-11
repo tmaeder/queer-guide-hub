@@ -13,7 +13,21 @@ test.use({ reducedMotion: 'reduce' });
 
 const WCAG_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'];
 
-const ROUTES = ['/', '/venues', '/news', '/marketplace', '/cities'];
+// `/personalities` earns its place the hard way: it shipped with NO `<h1>` at
+// all for the length of the subway rebrand — its masthead was nested inside a
+// `<BackgroundDots>` that had been gutted to `return null` and declares no
+// `children` prop, so React dropped the heading, the result count and the
+// Add-Personality button. Nothing caught it because this sweep did not cover
+// the route. `/people` is its sibling surface.
+const ROUTES = [
+  '/',
+  '/venues',
+  '/news',
+  '/marketplace',
+  '/cities',
+  '/personalities',
+  '/people',
+];
 
 test.describe('Public routes — automated a11y', () => {
   test.setTimeout(120_000);
