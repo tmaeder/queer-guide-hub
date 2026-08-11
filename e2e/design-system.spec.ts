@@ -265,11 +265,28 @@ test.describe('design system: sanctioned ink only', () => {
   // here as "the map is on-palette"; it means the panels over it are.
   const publicPages = ['/', '/events', '/venues', '/hotels', '/map'];
 
+  // What counts as "this page has rendered its chrome".
+  //
+  // `#root *` is a weak signal: its first match is often the toast container,
+  // which exists long before any content does — so the sweep can run against
+  // an essentially empty page and pass having measured nothing. For /map we
+  // wait for the bar, i.e. the exact thing this test measures.
+  //
+  // Measured on production: goto(load) 2.5s, bar attached +2.4s, ~5s total —
+  // so the 15s budget was never the constraint and the extra headroom below is
+  // for a loaded CI runner, not for a known slowness. If /map ever does take
+  // 30s, that is a real regression and should fail.
+  const readySelector = (path: string) =>
+    path === '/map' ? '[data-testid=map-bar]' : '#root *';
+
   for (const path of publicPages) {
     test(`only sanctioned brand ink on ${path}`, async ({ page }) => {
       await page.setViewportSize({ width: 1280, height: 900 });
       await page.goto(path);
-      await page.waitForSelector('#root *', { state: 'attached', timeout: 15_000 });
+      await page.waitForSelector(readySelector(path), {
+        state: 'attached',
+        timeout: path === '/map' ? 30_000 : 15_000,
+      });
       await dismissCookieBanner(page);
       await page.waitForTimeout(500);
 

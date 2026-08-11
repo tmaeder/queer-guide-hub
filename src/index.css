@@ -548,6 +548,29 @@ html {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+
+  /* Keep anchor jumps, `scrollIntoView` and focus-scrolling clear of the
+     sticky header, which would otherwise land the target underneath it. Every
+     "bring this into view" scroll is measured against a scrollport inset by
+     this much, so the browser stops with the target below the bar rather than
+     behind it.
+
+     Not cosmetic — without it `block: 'nearest'` reads an element sitting
+     under the header as not-visible and scrolls the page to "reveal" it,
+     which parks whatever was above it INTO the header band. That is exactly
+     how SectionNav's active-item scroll pushed a city page's "Official
+     website" link under the header and tripped axe `target-size`
+     ("partially obscured"), the moment the header started sticking at all.
+
+     Matches STICKY_UNDER_HEADER in PageContainer.tsx — the header's PINNED
+     height, 60px on mobile and 64px from md. */
+  scroll-padding-top: 60px;
+}
+
+@media (min-width: 768px) {
+  html {
+    scroll-padding-top: 64px;
+  }
 }
 
 body {
@@ -1172,7 +1195,31 @@ h2,
   transform: translate(0, 0);
   box-shadow: none;
 }
-/* Live/urgent variant — the shadow prints in the accent instead of ink. */
+/* Small-tile variant — a COMPLETE lift, not a modifier. The docs and
+   e2e/design-system.spec.ts (which probes `.card-lift, .card-lift-sm` and may
+   match this one first) both prescribed it from the rebrand onward, but no
+   rule ever defined it: `--shadow-hard-sm` sat unused and applying the class
+   was a silent no-op — no transition, no lift, no shadow. Shorter throw and a
+   shorter shadow so a 5-across tile grid does not read as a stack of full
+   cards. Do NOT combine with `.card-lift`; pick one per surface. */
+.card-lift-sm {
+  transition:
+    transform var(--motion-instant) ease-out,
+    box-shadow var(--motion-instant) ease-out;
+}
+.card-lift-sm:hover,
+.card-lift-sm:focus-visible,
+.card-lift-sm:focus-within {
+  transform: translate(-2px, -2px);
+  box-shadow: var(--shadow-hard-sm);
+}
+.card-lift-sm:active {
+  transform: translate(0, 0);
+  box-shadow: none;
+}
+/* Live/urgent variant — the shadow prints in the accent instead of ink.
+   A MODIFIER: it overrides only the shadow colour, so it must sit alongside
+   `.card-lift` (or `-sm`), which owns the transition and the transform. */
 .card-lift-accent:hover,
 .card-lift-accent:focus-visible {
   box-shadow: var(--shadow-hard-accent);
@@ -1181,7 +1228,8 @@ h2,
   box-shadow: none;
 }
 @media (prefers-reduced-motion: reduce) {
-  .card-lift {
+  .card-lift,
+  .card-lift-sm {
     transition: none;
   }
 }

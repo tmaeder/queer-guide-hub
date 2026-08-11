@@ -17,12 +17,9 @@ import {
   type EraKey,
   type View,
 } from '@/lib/personalitiesFilters';
-import { PageHeader } from '@/components/layout/PageHeader';
-import { ColourfulText } from '@/components/effects/ColourfulText';
-import { SpotlightV2 } from '@/components/effects/SpotlightV2';
+import { PageHero } from '@/components/discovery';
 import { EmptyState, ErrorState } from '@/components/ui/EmptyState';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { VirtualizedGrid } from '@/components/ui/VirtualizedGrid';
 import { useGridColumns } from '@/components/ui/useGridColumns';
 
@@ -35,6 +32,7 @@ import { PersonalitiesFiltersBar } from '@/components/personalities/Personalitie
 import { StickyLetterBar } from '@/components/personalities/StickyLetterBar';
 import { FeaturedPersonalityRail } from '@/components/personalities/FeaturedPersonalityRail';
 import { EditorialEntries } from '@/components/personalities/EditorialEntries';
+import { EraLine } from '@/components/personalities/EraLine';
 import { PersonalitiesTimeline } from '@/components/personalities/PersonalitiesTimeline';
 // Lazy: keeps the maplibre chunk off the default grid/timeline views
 const PersonalitiesMap = lazy(() =>
@@ -42,10 +40,9 @@ const PersonalitiesMap = lazy(() =>
 );
 import { AddPersonalityDialog } from '@/components/personalities/AddPersonalityDialog';
 import { LayoutGrid, Rows3, Map as MapIcon } from 'lucide-react';
-import { GrainOverlay } from '@/components/effects/GrainOverlay';
-import { BackgroundDots } from '@/components/effects/BackgroundDots';
 import { useTranslation } from 'react-i18next';
 import { PageContainer } from '@/components/layout/PageContainer';
+import { cn } from '@/lib/utils';
 
 const PAGE_SIZE = 24;
 const AUTO_LOAD_CAP = 48;
@@ -62,6 +59,32 @@ const GRID_BREAKPOINTS = [
 ];
 
 const MAX_DEEP_LINK_PAGE = 50;
+
+/** The three views, in tab order. `title` and the resolved label are what
+ *  e2e selects on — changing either breaks personalities-views.spec.ts. */
+const VIEW_TABS = [
+  {
+    key: 'grid',
+    icon: LayoutGrid,
+    labelKey: 'pages.personalities.view.grid',
+    fallback: 'Grid',
+    title: 'Grid view',
+  },
+  {
+    key: 'timeline',
+    icon: Rows3,
+    labelKey: 'pages.personalities.view.timeline',
+    fallback: 'Timeline',
+    title: 'Timeline view',
+  },
+  {
+    key: 'map',
+    icon: MapIcon,
+    labelKey: 'pages.personalities.view.map',
+    fallback: 'Map',
+    title: 'Map view',
+  },
+] as const satisfies ReadonlyArray<{ key: View; [k: string]: unknown }>;
 
 function pageFromParams(params: URLSearchParams): number {
   const raw = params.get('page');
@@ -363,28 +386,33 @@ export default function Personalities() {
   const loadedCount = personalities.length;
 
   return (
-    <div className="min-h-screen relative">
-      <SpotlightV2 anchor="top-center" intensity={0.12} />
-      <BackgroundDots className="" dotSpacing={24}>
-        <GrainOverlay opacity={0.025} />
-        <PageContainer className="relative">
-          <PageHeader
-            title={<ColourfulText text={t('pages.personalities.title', 'Personalities')} />}
-            subtitle={
-              loading && totalCount === 0
-                ? 'Loading personalities…'
-                : `Browse ${totalCount.toLocaleString()} LGBTQ+ activists, artists, writers, athletes, and historical icons.`
-            }
-            center
-            actions={
-              user ? <AddPersonalityDialog onSuccess={() => window.location.reload()} /> : undefined
-            }
-          />
-        </PageContainer>
-      </BackgroundDots>
-      <PageContainer>
+    <div className="relative">
+      {/* The masthead was DEAD until 2026-08-11: it was nested inside
+          `<BackgroundDots>`, which the rebrand had gutted to `return null` —
+          and that stub declares no `children` prop, so React dropped the whole
+          block. This top-10 page shipped with no `<h1>`, no result count and no
+          Add-Personality button, and it is not in e2e/a11y-public-routes.spec.ts,
+          which is why nothing caught it. `PageHero` is the primitive /cities,
+          /events, /hotels, /marketplace and /guides already share. */}
+      <PageHero
+        title={t('pages.personalities.title', 'Personalities')}
+        lede={
+          loading && totalCount === 0
+            ? t('pages.personalities.ledeLoading', 'Loading personalities…')
+            : t('pages.personalities.lede', {
+                defaultValue:
+                  '{{count}} LGBTQ+ activists, artists, writers, athletes and historical icons.',
+                count: totalCount,
+              })
+        }
+        size="sm"
+        effect="none"
+      >
+        {user ? <AddPersonalityDialog onSuccess={() => window.location.reload()} /> : null}
+      </PageHero>
+      <PageContainer className="relative">
         {/* NSFW visibility hint — surfaces the otherwise-hidden adult filter. */}
-        <div className="text-center text-xs text-muted-foreground mb-6">
+        <div className="mb-6 text-13 text-muted-foreground">
           {filters.exclude_adult !== false ? (
             <>
               Hiding adult performers ·{' '}
@@ -410,13 +438,21 @@ export default function Personalities() {
           )}
         </div>
 
+        {/* The P line. ALWAYS rendered — it is the page's spine, not editorial
+            decoration, so unlike the block below it must survive a filter being
+            applied. Inside EditorialEntries it unmounted on its own click. */}
+        <section className="mb-8" aria-label="Browse by era">
+          <h2 className="mb-2 text-2xs font-bold uppercase tracking-label text-muted-foreground">
+            {t('pages.personalities.editorial.browseByEra', 'Browse by era')}
+          </h2>
+          <EraLine activeEra={activeEra} onEraSelect={handleEraSelect} />
+        </section>
+
         {/* Editorial entry points + featured rail — only on the cold default view */}
         {!hasAnyFilter && (
           <>
             <EditorialEntries
-              activeEra={activeEra}
               activeProfession={filters.profession}
-              onEraSelect={handleEraSelect}
               onProfessionSelect={handleProfessionSelect}
             />
             <FeaturedPersonalityRail />
@@ -427,59 +463,36 @@ export default function Personalities() {
           <div className="flex-1 min-w-0">
             <PersonalitiesFiltersBar filters={filters} onFiltersChange={handleFiltersChange} />
           </div>
+          {/* One ink frame, ink-filled active segment, 2px ink dividers. The
+              `role="tab"` / accessible-name contract is load-bearing —
+              e2e/personalities-views.spec.ts selects these by name and asserts
+              the `?view=` they write. All three glyphs stay lucide: this is UI
+              chrome, and a surface never mixes lucide with TransitIcon. */}
           <div
             role="tablist"
             aria-label="View mode"
-            className="inline-flex rounded-element overflow-hidden bg-surface-container"
+            className="inline-flex border-2 border-foreground"
           >
-            <button
-              type="button"
-              role="tab"
-              aria-selected={view === 'grid'}
-              onClick={() => setView('grid')}
-              className={
-                'px-4 py-2 text-sm flex items-center gap-1.5 ' +
-                (view === 'grid'
-                  ? 'bg-foreground text-background'
-                  : 'bg-background hover:bg-accent')
-              }
-              title="Grid view"
-            >
-              <LayoutGrid size={14} aria-hidden="true" />
-              <span className="hidden sm:inline">{t('pages.personalities.view.grid', 'Grid')}</span>
-            </button>
-            <button
-              type="button"
-              role="tab"
-              aria-selected={view === 'timeline'}
-              onClick={() => setView('timeline')}
-              className={
-                'px-4 py-2 text-sm flex items-center gap-1.5 border-l border-border ' +
-                (view === 'timeline'
-                  ? 'bg-foreground text-background'
-                  : 'bg-background hover:bg-accent')
-              }
-              title="Timeline view"
-            >
-              <Rows3 size={14} aria-hidden="true" />
-              <span className="hidden sm:inline">
-                {t('pages.personalities.view.timeline', 'Timeline')}
-              </span>
-            </button>
-            <button
-              type="button"
-              role="tab"
-              aria-selected={view === 'map'}
-              onClick={() => setView('map')}
-              className={
-                'px-4 py-2 text-sm flex items-center gap-1.5 border-l border-border ' +
-                (view === 'map' ? 'bg-foreground text-background' : 'bg-background hover:bg-accent')
-              }
-              title="Map view"
-            >
-              <MapIcon size={14} aria-hidden="true" />
-              <span className="hidden sm:inline">{t('pages.personalities.view.map', 'Map')}</span>
-            </button>
+            {VIEW_TABS.map(({ key, icon: Icon, labelKey, fallback, title }, i) => (
+              <button
+                key={key}
+                type="button"
+                role="tab"
+                aria-selected={view === key}
+                onClick={() => setView(key)}
+                className={cn(
+                  'flex items-center gap-1.5 px-4 py-2 text-13 font-bold transition-colors',
+                  i > 0 && 'border-l-2 border-foreground',
+                  view === key
+                    ? 'bg-foreground text-background'
+                    : 'bg-background hover:bg-surface-container',
+                )}
+                title={title}
+              >
+                <Icon size={14} aria-hidden="true" />
+                <span className="hidden sm:inline">{t(labelKey, fallback)}</span>
+              </button>
+            ))}
           </div>
         </div>
 
@@ -487,20 +500,25 @@ export default function Personalities() {
 
         {/* Active filter chips */}
         {activeChips.length > 0 && (
-          <div className="flex flex-wrap items-center gap-2 mb-4">
-            <p className="text-sm">Active:</p>
+          <div className="mb-4 flex flex-wrap items-center gap-2">
+            <p className="text-2xs font-bold uppercase tracking-label text-muted-foreground">
+              Active:
+            </p>
             {activeChips.map((chip) => (
-              <Badge key={chip.key} variant="secondary">
+              <span
+                key={chip.key}
+                className="inline-flex items-center gap-1.5 border-2 border-foreground px-2 py-1 text-13 font-bold"
+              >
                 {chip.label}
                 <button
                   type="button"
                   onClick={chip.onRemove}
                   aria-label={`Remove ${chip.label}`}
-                  className="inline-flex items-center justify-center bg-transparent border-none cursor-pointer p-0 ml-1"
+                  className="inline-flex cursor-pointer items-center justify-center border-none bg-transparent p-0"
                 >
                   <X size={12} />
                 </button>
-              </Badge>
+              </span>
             ))}
             <Button variant="ghost" size="sm" onClick={clearAll}>
               Clear all
@@ -519,7 +537,7 @@ export default function Personalities() {
           className="flex items-center justify-between mb-4"
           aria-labelledby="all-personalities-heading"
         >
-          <p className="text-sm">
+          <p className="text-13 tabular-nums text-muted-foreground">
             {loading && personalities.length === 0
               ? 'Loading…'
               : totalCount > 0
@@ -568,7 +586,7 @@ export default function Personalities() {
             ) : view === 'map' ? (
               <Suspense
                 fallback={
-                  <div className="h-[600px] w-full rounded-container bg-muted animate-pulse" />
+                  <div className="h-[600px] w-full animate-pulse border-[3px] border-foreground bg-muted" />
                 }
               >
                 <PersonalitiesMap personalities={personalities} />
@@ -578,7 +596,11 @@ export default function Personalities() {
                 items={personalities}
                 columns={gridColumns}
                 rowClassName={GRID_CLASS}
-                estimateRowHeight={320}
+                // Measured on the redesigned card at lg: 432px box + the 24px
+                // row gap. The old 320 was tuned for the pre-rebrand card and
+                // now under-estimates by a quarter, which makes the
+                // virtualizer's scrollbar jump as rows measure in.
+                estimateRowHeight={456}
                 itemKey={(p) => p.id}
                 renderItem={(p) => {
                   const asset = imageAssets.get(p.id);
@@ -607,7 +629,9 @@ export default function Personalities() {
               </div>
             )}
 
-            {loading && personalities.length > 0 && <p className="text-sm">Loading more…</p>}
+            {loading && personalities.length > 0 && (
+              <p className="text-13 text-muted-foreground">Loading more…</p>
+            )}
           </>
         )}
       </PageContainer>

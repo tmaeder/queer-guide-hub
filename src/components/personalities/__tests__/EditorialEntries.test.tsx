@@ -11,7 +11,9 @@ import { EditorialEntries } from '../EditorialEntries';
 
 describe('EditorialEntries', () => {
   it('renders', () => {
-    const { container } = render(<EditorialEntries onEraSelect={vi.fn()} onProfessionSelect={vi.fn()} />);
+    // No `onEraSelect`: the era stations moved out to <EraLine>, which the
+    // page renders itself so that applying a filter cannot unmount them.
+    const { container } = render(<EditorialEntries onProfessionSelect={vi.fn()} />);
     expect(container).toBeTruthy();
   });
 });

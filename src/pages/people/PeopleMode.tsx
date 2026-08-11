@@ -81,17 +81,22 @@ export default function PeopleMode({ tab }: { tab: PeopleTab }) {
 
   return (
     <>
+      {/* ONE container. This was two siblings, so the page paid
+          `py-8 md:py-12` twice and opened with a doubled gap between the title
+          block and its content that no other page on the site has. */}
       <PageContainer>
         <LocalizedLink
           to="/people"
-          className="mb-4 inline-flex items-center gap-2 text-13 text-muted-foreground no-underline hover:text-foreground"
+          className="mb-4 inline-flex items-center gap-2 text-13 font-bold text-muted-foreground no-underline hover:text-foreground"
         >
           <ArrowLeft size={14} aria-hidden />
           {t('people.backToHub', 'Meet people')}
         </LocalizedLink>
 
-        <div className="flex flex-wrap items-end justify-between gap-4">
-          <h1 className="text-headline">{t(meta.labelKey, meta.label)}</h1>
+        {/* Was a bare `text-headline` h1 with no rule under it — the one place
+            in the hub's subtree that read as an unstyled page. */}
+        <div className="mb-8 flex flex-wrap items-end justify-between gap-4 border-b-2 border-foreground pb-4">
+          <h1 className="font-display text-display">{t(meta.labelKey, meta.label)}</h1>
           <Button
             variant="outline"
             size="sm"
@@ -102,14 +107,12 @@ export default function PeopleMode({ tab }: { tab: PeopleTab }) {
             {t('people.intent.button', "I'm here for…")}
           </Button>
         </div>
-      </PageContainer>
 
-      <PageContainer>
         <Suspense
           fallback={
             <div className="flex flex-col gap-4">
-              <Skeleton className="h-32 rounded-container" />
-              <Skeleton className="h-32 rounded-container" />
+              <Skeleton className="h-32" />
+              <Skeleton className="h-32" />
             </div>
           }
         >

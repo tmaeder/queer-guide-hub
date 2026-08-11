@@ -51,7 +51,11 @@ import { cn } from '@/lib/utils';
 import { getVenueVisual } from '@/lib/venueVisual';
 import { useTranslation } from 'react-i18next';
 import { VENUES_V2_ENABLED } from '@/lib/featureFlags';
-import { PageContainer } from '@/components/layout/PageContainer';
+import {
+  PageContainer,
+  PAGE_BLEED_MOBILE,
+  STICKY_UNDER_HEADER,
+} from '@/components/layout/PageContainer';
 
 type Venue = Database['public']['Tables']['venues']['Row'];
 
@@ -456,7 +460,13 @@ const Venues = () => {
         />
 
         {/* Toolbar */}
-        <div className="sticky top-0 z-20 -mx-4 md:mx-0 px-4 md:px-0 py-2 mb-4 border-b-[3px] border-foreground bg-background flex flex-wrap items-center justify-between gap-4">
+        <div
+          className={cn(
+            `sticky ${STICKY_UNDER_HEADER} z-20 py-2 mb-4 border-b-[3px] border-foreground bg-background`,
+            PAGE_BLEED_MOBILE,
+            'flex flex-wrap items-center justify-between gap-4',
+          )}
+        >
           <div className="flex items-center gap-4">
             {!loading &&
               venues.length > 0 &&

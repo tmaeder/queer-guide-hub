@@ -28,7 +28,11 @@ import { EventSearchBar } from '@/components/events/EventSearchBar';
 import { EventFiltersPanel } from '@/components/events/EventFiltersPanel';
 import { EventsResultBar } from '@/components/events/EventsResultBar';
 import { EventGridView } from '@/components/events/EventGridView';
-import { PageContainer } from '@/components/layout/PageContainer';
+import {
+  PageContainer,
+  PAGE_BLEED_MOBILE,
+  STICKY_UNDER_HEADER,
+} from '@/components/layout/PageContainer';
 
 type Event = Database['public']['Tables']['events']['Row'];
 
@@ -225,7 +229,9 @@ const Events = () => {
 
         {/* Result-meta row: count + view toggle + sort + past toggle */}
         {!loading && !error && (
-          <div className="sticky top-0 z-20 -mx-4 md:mx-0 px-4 md:px-0 py-2 mb-4 border-b-[3px] border-foreground bg-background">
+          <div
+            className={`sticky ${STICKY_UNDER_HEADER} z-20 ${PAGE_BLEED_MOBILE} py-2 mb-4 border-b-[3px] border-foreground bg-background`}
+          >
             <EventsResultBar
               eventsCount={events.length}
               totalCount={totalCount}

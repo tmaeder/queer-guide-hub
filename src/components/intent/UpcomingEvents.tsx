@@ -1,5 +1,6 @@
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { CoverageNote } from '@/components/intent/CoverageNote';
+import { RouteBullet } from '@/components/transit/RouteBullet';
 import type { EventWindow, EventsWithFallback } from '@/hooks/useIntentData';
 
 /**
@@ -49,25 +50,34 @@ export function UpcomingEvents({
         Our events coverage is thin: listings come from organisers and submissions, so an empty week
         here means we have no record, not that nothing is happening.
       </CoverageNote>
+      {/* A departures board: one ink frame, hairline rules between rows, the
+          event bullet leading each. Follows the homepage DeparturesBoard rather
+          than the standalone `DepartureRow` primitive, whose own 2px border
+          would double against its neighbour's in a stack. */}
       {events.length > 0 ? (
-        <ul className="list-none p-0 m-0">
+        <ul className="m-0 list-none border-[3px] border-foreground bg-background p-0">
           {events.map((e) => (
-            <li key={e.id} className="border-b border-border py-4">
-              <div className="flex items-baseline justify-between gap-4">
-                <span className="font-medium">
-                  {e.slug ? (
-                    <LocalizedLink to={`/events/${e.slug}`} className="no-underline hover:underline">
-                      {e.title}
-                    </LocalizedLink>
-                  ) : (
-                    e.title
-                  )}
+            <li
+              key={e.id}
+              className="group relative border-b-2 border-foreground/10 last:border-b-0"
+            >
+              <div className="flex items-center gap-4 px-4 py-4 transition-colors group-hover:bg-surface-container">
+                <RouteBullet type="event" size={34} />
+                <span className="min-w-0 flex-1 truncate font-display text-title leading-tight">
+                  {e.title}
                 </span>
-                <span className="text-13 text-muted-foreground whitespace-nowrap">
+                <span className="shrink-0 whitespace-nowrap text-13 tabular-nums text-muted-foreground">
                   {new Date(e.start_date).toLocaleDateString()}
                   {e.city ? ` · ${e.city}` : ''}
                 </span>
               </div>
+              {e.slug ? (
+                <LocalizedLink
+                  to={`/events/${e.slug}`}
+                  aria-label={e.title}
+                  className="absolute inset-0 no-underline"
+                />
+              ) : null}
             </li>
           ))}
         </ul>

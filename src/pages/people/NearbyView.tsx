@@ -37,12 +37,12 @@ export function NearbyView() {
 
   if (!isLive) {
     return (
-      <div className="mx-auto max-w-md rounded-container p-6 text-center bg-surface-container">
+      <div className="mx-auto max-w-md border-[3px] border-foreground bg-background p-6 text-center">
         <MapPin className="mx-auto mb-4 h-8 w-8 text-muted-foreground" aria-hidden />
-        <h2 className="mb-2 text-title font-display">
+        <h2 className="mb-2 font-display text-headline">
           {t('people.nearby.goLiveTitle', 'Go live to see who’s nearby')}
         </h2>
-        <p className="mb-2 text-sm text-muted-foreground">
+        <p className="mb-2 text-13 text-muted-foreground">
           {t(
             'people.nearby.goLiveBody',
             'Your location is approximate (snapped to ~750m), shared only while you’re live, and clears on its own.',
@@ -54,12 +54,12 @@ export function NearbyView() {
             : t('people.nearby.goLive', 'Go live')}
         </Button>
         {error === 'denied' && (
-          <p className="mt-4 text-sm text-destructive">
+          <p className="mt-4 text-13 text-destructive">
             {t('people.nearby.denied', 'Location permission was denied. Enable it to use Nearby.')}
           </p>
         )}
         {error === 'presence_failed' && (
-          <p className="mt-4 text-sm text-destructive">
+          <p className="mt-4 text-13 text-destructive">
             {t('people.nearby.failed', 'Could not go live. Try again.')}
           </p>
         )}
@@ -69,12 +69,17 @@ export function NearbyView() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-wrap items-center justify-between gap-4 rounded-element px-4 py-2.5 bg-surface-container">
-        <span className="flex items-center gap-2 text-sm">
-          <span className="h-2 w-2 rounded-full bg-foreground" aria-hidden />
+      {/* Ink only, and no lift. Two rules meet here: a track colour may never
+          encode a state (and "you are live" is a state, on a bar that also
+          carries the high-risk-country warning), and a lift on a container
+          that is not itself a click target promises an interaction that does
+          not exist. */}
+      <div className="flex flex-wrap items-center justify-between gap-4 border-[3px] border-foreground bg-background px-4 py-2">
+        <span className="flex items-center gap-2 text-13 font-bold">
+          <span className="h-3 w-3 rounded-full bg-foreground" aria-hidden />
           {t('people.nearby.live', 'You’re visible nearby')}
           {liveStatus?.isHighRisk && (
-            <span className="inline-flex items-center gap-1 text-muted-foreground">
+            <span className="inline-flex items-center gap-1 font-medium text-muted-foreground">
               <ShieldAlert className="h-3.5 w-3.5" aria-hidden />
               {t('people.nearby.highRisk', 'High-risk area — coarse location only')}
             </span>

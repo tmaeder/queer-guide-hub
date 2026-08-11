@@ -9,8 +9,19 @@ const HINT_KEY = 'qg_map_hint_v1';
 export interface MapNoticeProps {
   /** Points currently in view. Drives both the first-run nudge and "empty". */
   count: number;
-  /** Map has loaded and settled (not mid-fetch). */
+  /** Not mid-fetch. */
   ready: boolean;
+  /**
+   * At least one fetch has COMPLETED. Without this the empty state fires on a
+   * cold load — before the first request goes out, `ready` is already true and
+   * the count is still 0, so the map says "No spots here yet" about an area it
+   * has not looked at. The component this replaced gated on `mapReady` and
+   * `!isCounterStale` for the same reason; dropping them was a regression.
+   */
+  settled: boolean;
+  /** Any point layer switched on. All-off is a different situation from empty
+   *  and needs different advice — panning will not help. */
+  hasPointLayers: boolean;
   filters: ExploreMapFilters;
   /** Ambient "you are here" string, when the map has just located the user. */
   locationHint?: string | null;
@@ -18,6 +29,11 @@ export interface MapNoticeProps {
 
 /**
  * The map's one ephemeral message slot.
+ *
+ * Precedence, highest first: no lines on > empty > first run > location. The
+ * empty state is the fussiest of these to get right — it is the only one that
+ * makes a CLAIM about the data ("there is nothing here"), so it has to wait
+ * until the map has actually looked.
  *
  * There used to be three independent absolutely-positioned overlays —
  * `MapFirstRunHint` (top centre), `LocationHint` (bottom left) and
@@ -32,7 +48,14 @@ export interface MapNoticeProps {
  *
  * One at a time, one place, one style.
  */
-export function MapNotice({ count, ready, filters, locationHint }: MapNoticeProps) {
+export function MapNotice({
+  count,
+  ready,
+  settled,
+  hasPointLayers,
+  filters,
+  locationHint,
+}: MapNoticeProps) {
   const { t } = useTranslation();
   const [firstRun, setFirstRun] = useState(false);
   const triggered = useRef(false);
@@ -56,7 +79,8 @@ export function MapNotice({ count, ready, filters, locationHint }: MapNoticeProp
     };
   }, [ready, count]);
 
-  const empty = ready && count === 0;
+  const noLines = hasPointLayers === false;
+  const empty = !noLines && ready && settled && count === 0;
 
   const emptyMessage = filters.openNow
     ? t('map.canvas.emptyOpenNow', {
@@ -78,7 +102,15 @@ export function MapNotice({ count, ready, filters, locationHint }: MapNoticeProp
   let body: React.ReactNode = null;
   let dismiss: (() => void) | undefined;
 
-  if (empty) {
+  if (noLines) {
+    body = (
+      <span className="max-w-xs text-center">
+        {t('map.canvas.noLines', {
+          defaultValue: 'Every line is switched off — turn one on under Lines.',
+        })}
+      </span>
+    );
+  } else if (empty) {
     body = <span className="max-w-xs text-center">{emptyMessage}</span>;
   } else if (firstRun) {
     body = (

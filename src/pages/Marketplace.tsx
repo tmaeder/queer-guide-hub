@@ -40,7 +40,7 @@ import {
   hasActiveFilters as hasActiveFiltersFn,
   parseFiltersFromParams,
 } from '@/lib/marketplaceFilterParams';
-import { PageContainer } from '@/components/layout/PageContainer';
+import { PageContainer, STICKY_UNDER_HEADER } from '@/components/layout/PageContainer';
 
 // Must mirror the grid classes' breakpoint column counts (sm/lg/2xl).
 const MARKETPLACE_GRID_BREAKPOINTS = [
@@ -424,7 +424,9 @@ const Marketplace = () => {
           )}
 
           <div className="mb-6">
-            <div className="sticky top-0 z-20 rounded-element border-[3px] border-foreground p-4 mb-6 bg-surface-container-low">
+            <div
+              className={`sticky ${STICKY_UNDER_HEADER} z-20 rounded-element border-[3px] border-foreground p-4 mb-6 bg-surface-container-low`}
+            >
               <MarketplaceControlBar
                 filters={filters}
                 onFiltersChange={handleFiltersChange}

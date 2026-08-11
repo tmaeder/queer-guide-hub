@@ -12,14 +12,20 @@ import { eraStroke, horizontalLine, pct, verticalLine } from './eraLineGeometry'
  * The ten curated eras drawn as ten stations on the pink line — /history's
  * table of contents, and the page's one illustrative diagram.
  *
- * Replaces the old horizontal chip strip, which was `sticky` and could not be:
- * the offset was hardcoded `top-[56px] md:top-[64px]` while the real header is
- * 56px on mobile, ~118px on desktop at rest and ~44px once it compacts, so no
- * single literal was ever right; and LayoutShell gives the header and the page
- * content equal `z-10` with content later in the DOM, so the bar overlapped the
- * header rather than tucking under it. The diagram sits once, high on the page,
- * as its own band instead. `BackToTopButton` is the affordance if a reader
- * wants to get back to it.
+ * Replaces the old horizontal chip strip, which was `sticky`. This one is NOT,
+ * for one reason only: **a line diagram is 3–8× the height of a chip row**
+ * (340px desktop, 560px at 390px wide), and pinning that to the top of a phone
+ * viewport spends most of the screen on navigation. It sits once, high on the
+ * page, as its own band; `BackToTopButton` is the affordance for getting back.
+ *
+ * Two OTHER reasons were true when this was written and are no longer — do not
+ * repeat them. #2710 found that the header never stuck at all (LayoutShell
+ * wrapped it in a box only as tall as the chrome inside it, and that wrapper's
+ * `z-10` capped the header's own z-index), fixed both, and added
+ * `STICKY_UNDER_HEADER` next to `PAGE_GUTTER` so a bar no longer hand-rolls an
+ * offset literal. So "the offset can never be right" and "the bar would overlap
+ * the header" are both settled. If the height objection is ever answered — a
+ * collapsed rail, say — sticky is available and `STICKY_UNDER_HEADER` is how.
  *
  * One `<ol>` renders both layouts, switched by CSS. A JS breakpoint gate would
  * double the anchor count and is one more way primary navigation can fail into
