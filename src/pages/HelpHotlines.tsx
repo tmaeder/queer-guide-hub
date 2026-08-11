@@ -868,8 +868,13 @@ function HotlineCard({
           {hotline.operator && (
             <div className="text-xs">
               {t('help.operator', 'Operated by')}: {hotline.operator}
+              {/* The affiliation tag carries no opacity: at 12px an `opacity-80`
+                  blended the muted ink to #757574 on paper — 4.4:1, just under
+                  the 4.5 AA bar, which the axe sweep fails. A crisis page is
+                  the last place to shave legibility for a decorative
+                  half-tone. */}
               {hotline.affiliation && hotline.affiliation !== 'secular' && (
-                <span className="ml-1 opacity-80">
+                <span className="ml-1">
                   ({t(`help.affiliation.${hotline.affiliation}`, hotline.affiliation)})
                 </span>
               )}
