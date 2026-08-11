@@ -24,7 +24,13 @@ const INTENTS = [
   { label: 'Travelling', href: '/travel' },
   { label: 'Meet people', href: '/people' },
   { label: 'Rights', href: '/rights' },
-  { label: 'Support', href: '/support' },
+  // /help, not /support: the Support intent was repointed in #2692 because the
+  // two pages had the same source and /help is the superset (CMS hotline
+  // corpus, per-country routes, QuickExit, EmergencyService JSON-LD). This row
+  // asserted /support until 2026-08-10, i.e. it required the nav to link at a
+  // redirect. /support itself still resolves and is still covered, by the
+  // crisis-adjacent block at the bottom of this file.
+  { label: 'Support', href: '/help' },
   { label: 'Shop', href: '/shop' },
 ];
 
@@ -63,10 +69,8 @@ test.describe('desktop intent nav', () => {
 test.describe('homepage intent map', () => {
   const MAP = 'section[aria-labelledby="intent-map-heading"]';
 
-  // Where the stations actually POINT, which is not `INTENTS[].href` above:
-  // that list carries `/support`, the legacy path the intent routes tests
-  // exercise through its redirect, while `INTENT_NAV.support.to` is `/help`.
-  // Asserting an href has to use the destination, not the redirect source.
+  // Where the stations actually POINT. This is INTENTS[].href above plus
+  // `/search` — the interchange, which is not an intent and so has no nav tab.
   const STATION_HREFS = [
     '/going-out',
     '/travel',
