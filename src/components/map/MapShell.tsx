@@ -23,6 +23,7 @@ import {
 } from './MapShell.types';
 import type { LayerType } from '@/hooks/useExploreMapData';
 import { lensToRenderMode, exploreLayersFor } from './mapShellAdapters';
+import { AREA_LAYERS } from '@/config/mapLayers';
 import { PreferenceChips } from '@/components/preferences/PreferenceChips';
 import { usePreferenceChips, accessibilitySlugsFromChips } from '@/hooks/usePreferenceChips';
 
@@ -87,6 +88,23 @@ export const MapShell = ({
   const [fetching, setFetching] = useState(false);
   const [savedOnly, setSavedOnly] = useState(false);
   const [locationHint, setLocationHint] = useState<string | null>(null);
+
+  /** True once a viewport fetch has completed at least once. The empty state
+   *  is a claim about the data, so it must not be made before the map has
+   *  looked — on a cold load `fetching` is false and the feed is empty, which
+   *  otherwise reads as "nothing here". */
+  const [settled, setSettled] = useState(false);
+  const sawFetchRef = useRef(false);
+  useEffect(() => {
+    if (fetching) {
+      sawFetchRef.current = true;
+      return;
+    }
+    if (!sawFetchRef.current || settled) return;
+    // Scheduled, never a synchronous setState in an effect body.
+    const id = setTimeout(() => setSettled(true), 0);
+    return () => clearTimeout(id);
+  }, [fetching, settled]);
   const showRail = config.showCommandBar !== false;
 
   // Favorites layer — the viewer's saved venues + events, prefixed to match
@@ -319,6 +337,8 @@ export const MapShell = ({
       <MapNotice
         count={pointsInView.length}
         ready={!fetching}
+        settled={settled}
+        hasPointLayers={exploreLayers.some((l) => !AREA_LAYERS.includes(l))}
         filters={mapFilters}
         locationHint={locationHint}
       />
