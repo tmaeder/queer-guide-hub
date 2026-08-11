@@ -20,9 +20,22 @@ export function SectionNav({ items, activeId, onSelect, className }: SectionNavP
     const list = listRef.current;
     if (!list) return;
     const active = list.querySelector<HTMLElement>(`[data-section-id="${activeId}"]`);
-    if (active) {
-      active.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' });
-    }
+    if (!active) return;
+    // Scroll the LIST horizontally — never via scrollIntoView, which also
+    // scrolls the PAGE. Even `block: 'nearest'` scrolls vertically when the
+    // element is not fully visible, and this nav is sticky directly beneath a
+    // sticky header, so on mount it read as obscured and jumped the document
+    // ~260px. That dragged whatever sat above into the header band: it put a
+    // city page's "Official website" link under the header and failed axe
+    // `target-size` ("partially obscured"). Centring by scrollLeft touches
+    // only this element's own scroll offset and cannot move the document.
+    const left = Math.max(0, active.offsetLeft - (list.clientWidth - active.offsetWidth) / 2);
+    // jsdom implements neither scrollTo nor smooth behaviour on elements, and
+    // an unguarded call throws inside the effect — which took every
+    // EditorialDetailLayout test down with it. Assigning scrollLeft is the
+    // equivalent instant scroll and works everywhere.
+    if (typeof list.scrollTo === 'function') list.scrollTo({ left, behavior: 'smooth' });
+    else list.scrollLeft = left;
   }, [activeId]);
 
   return (

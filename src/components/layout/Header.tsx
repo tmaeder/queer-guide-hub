@@ -343,7 +343,18 @@ export function Header() {
         'sticky top-0 border-b-4 border-foreground',
         compact && !isMobile ? 'bg-foreground text-background' : 'bg-background',
       )}
-      style={{ zIndex: 1100, paddingTop: 'env(safe-area-inset-top, 0px)' }}
+      // z-40, NOT the 1100 this carried before. Every portaled overlay in the
+      // app — dialog, alert-dialog, dropdown, popover, select, sheet, tooltip,
+      // and this header's OWN avatar menu and mobile search sheet — renders at
+      // z-50 on document.body. 1100 only ever looked harmless because the
+      // header sat inside a `relative z-10` wrapper that capped it; the moment
+      // it became a root-level child (so it could actually stick) that 1100
+      // entered the root stacking context and painted the bar over all of
+      // them, which is how the mobile search sheet's Cancel button ended up
+      // unclickable behind the wordmark. 40 keeps the header above page
+      // content and the sticky page bars (z-20/z-30) and level with
+      // MobileBottomNav, while staying under the z-50 overlay layer.
+      style={{ zIndex: 40, paddingTop: 'env(safe-area-inset-top, 0px)' }}
     >
       {compact && !isMobile ? (
         /* ── 02 · Compact, after scroll — one ink line ────────────────── */

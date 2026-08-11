@@ -31,6 +31,29 @@ export const PAGE_GUTTER = 'px-4 sm:px-6 md:px-8';
  *  roomier or tighter one; a page that needs its own bands passes `flush`. */
 export const PAGE_VERTICAL = 'py-8 md:py-12';
 
+/** Cancels PAGE_GUTTER so a child inside the container can reach the viewport
+ *  edge — full-bleed sticky bars, rules, tinted bands. It MUST track the gutter
+ *  ladder step for step: a flat `-mx-4` against `sm:px-6 md:px-8` leaves an 8px
+ *  notch at sm and 16px at md, which is exactly what the sticky bars shipped
+ *  with when the ladder became responsive under them. Re-apply PAGE_GUTTER
+ *  inside so the contents stay aligned with the column. */
+export const PAGE_BLEED = '-mx-4 sm:-mx-6 md:-mx-8';
+
+/** Where a page-level sticky element must pin so the site header does not cover
+ *  it. The header is `sticky top-0` at `z-1100`; anything a page pins at
+ *  `top-0` lands underneath it. Measured against the header's PINNED height,
+ *  which is the compact state (it latches at 40px of scroll, long before any
+ *  page bar reaches the top): 60px on mobile, 64px from md where the bar
+ *  collapses to the one-line ink flood. Page bars sit at z-20 — far below the
+ *  header — so this offset, not a z-index, is what keeps them visible. */
+export const STICKY_UNDER_HEADER = 'top-[60px] md:top-[64px]';
+
+/** Bleed on narrow viewports only, snapping back to the content column at md.
+ *  Carries its own re-padding, so contents stay aligned while the background
+ *  and border reach the screen edge on mobile. For sticky bars that should span
+ *  a phone screen but sit inside the column on desktop. */
+export const PAGE_BLEED_MOBILE = '-mx-4 sm:-mx-6 md:mx-0 px-4 sm:px-6 md:px-0';
+
 const SIZE = {
   /** 1600 — grids, listings, detail pages. The default. */
   page: 'max-w-page',
