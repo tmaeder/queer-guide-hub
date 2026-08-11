@@ -28,6 +28,9 @@ const ROUTES = [
   '/marketplace',
   '/rights',
   '/going-out',
+  // A stack of full-bleed bands, each owning its own PageContainer — the shape
+  // most likely to drift out of alignment with the header.
+  '/history',
 ];
 
 const WIDTHS = [390, 768, 1440, 1920];
@@ -73,6 +76,59 @@ test.describe('page layout — one gutter, one cap, one rhythm', () => {
         }
 
         expect(r.overflow, `${route} @${width} scrolls horizontally`).toBeLessThanOrEqual(0);
+      });
+    }
+  }
+});
+
+/**
+ * DETAIL routes. ROUTES above is listing-only, and that gap is exactly why
+ * `EntityDetailScroll` — the shell behind milestone, venue and organization
+ * detail — kept a hand-rolled `container mx-auto px-4 py-8` through the whole
+ * layout sweep without anything noticing.
+ *
+ * Slugs are data-dependent, so each case samples one from its listing and
+ * skips when there is none, rather than hardcoding a slug that can be merged
+ * or unpublished out from under the suite.
+ */
+const DETAIL_ROUTES: Array<{ name: string; listing: string; hrefPattern: RegExp }> = [
+  { name: 'milestone', listing: '/history', hrefPattern: /\/history\/[^/]+$/ },
+  { name: 'venue', listing: '/venues', hrefPattern: /\/venues?\/[^/]+$/ },
+];
+
+test.describe('page layout — detail routes', () => {
+  for (const width of [390, 1440]) {
+    for (const { name, listing, hrefPattern } of DETAIL_ROUTES) {
+      test(`${name} detail aligns with the header at ${width}px`, async ({ page }) => {
+        await page.setViewportSize({ width, height: 900 });
+        await page.goto(listing);
+        await page.waitForLoadState('domcontentloaded');
+
+        const href = await page
+          .locator(`a[href]`)
+          .evaluateAll(
+            (nodes, pattern) =>
+              nodes
+                .map((n) => (n as HTMLAnchorElement).getAttribute('href') ?? '')
+                .find((h) => new RegExp(pattern).test(h)) ?? null,
+            hrefPattern.source,
+          );
+        test.skip(!href, `no ${name} link found on ${listing}`);
+
+        await page.goto(href as string);
+        await page.waitForLoadState('domcontentloaded');
+        await page.waitForTimeout(600);
+
+        const r = await page.evaluate(EDGES);
+        expect(r.pages.length, `${href} has no PageContainer`).toBeGreaterThan(0);
+        expect(r.header, 'header has no capped content row').not.toBeNull();
+        for (const left of r.pages) {
+          expect(
+            Math.abs(left - (r.header as number)),
+            `${href} @${width}: content starts at ${left}, header at ${r.header}`,
+          ).toBeLessThanOrEqual(1);
+        }
+        expect(r.overflow, `${href} @${width} scrolls horizontally`).toBeLessThanOrEqual(0);
       });
     }
   }

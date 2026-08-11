@@ -3601,7 +3601,11 @@
       "allCountries": "すべての国",
       "clear": "フィルターをクリア",
       "major": "主要なマイルストーン",
-      "showAll": "すべてのマイルストーン"
+      "showAll": "すべてのマイルストーン",
+      "heading": "[JA] Filter the timeline",
+      "categoryGroup": "[JA] Category",
+      "scopeGroup": "[JA] Depth",
+      "impactGroup": "[JA] Impact"
     },
     "category": {
       "uprising-movement": "蜂起・運動",
@@ -3621,7 +3625,9 @@
       "sources": "出典",
       "linked": "関係する人物と場所",
       "related": "{{country}}のその他の出来事",
-      "sameYear": "[JA] Elsewhere in {{year}}"
+      "sameYear": "[JA] Elsewhere in {{year}}",
+      "story": "[JA] What happened",
+      "sameYearNote": "[JA] What was happening in other countries the same year."
     },
     "sidebar": {
       "facts": "基本情報",
@@ -3713,7 +3719,16 @@
       "country": "[JA] Travel guide: {{name}}",
       "city": "[JA] City guide: {{name}}",
       "events": "[JA] Events in {{name}} today"
-    }
+    },
+    "facts": {
+      "impact": "[JA] Impact",
+      "category": "[JA] Category",
+      "era": "[JA] Era"
+    },
+    "photoCredit": "[JA] Photo",
+    "eraNavHeading": "[JA] The line, end to end",
+    "eraNavStation": "[JA] {{era}} — {{count}} milestones",
+    "emptyTitle": "[JA] No service on this stretch of the line"
   },
   "guides": {
     "hub": {

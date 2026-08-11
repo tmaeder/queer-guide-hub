@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
+import { RouteBullet } from '@/components/transit/RouteBullet';
 import { cn } from '@/lib/utils';
 import { formatMilestoneDate, milestoneYear } from '@/lib/milestoneDate';
 import { displayableMilestoneImage } from '@/lib/milestoneImage';
@@ -39,17 +40,30 @@ export function AnchorMilestoneCard({
     return (
       <LocalizedLink
         to={`/history/${milestone.slug}`}
+        // Same 3px plate and the same `card-lift` as the celebratory variant.
+        // The affordance must NOT differ — a persecution milestone that refuses
+        // to respond to the pointer reads as broken, not as sombre. Only the
+        // treatment is documentary: no image, no poster year.
         className={cn(
-          'group flex items-start gap-4 rounded-element p-4 bg-surface-container',
+          'card-lift group flex items-start gap-4 border-[3px] border-foreground bg-background p-4 no-underline',
           className,
         )}
       >
-        <span className="mt-1.5 shrink-0">
-          <MilestoneImpactMarker impact={milestone.impact} />
+        <span className="mt-1 flex w-4 shrink-0 justify-center">
+          <MilestoneImpactMarker impact={milestone.impact} size="station" />
         </span>
         <span className="min-w-0 flex-1">
-          <span className="block text-13 text-muted-foreground">{eyebrow}</span>
-          <span className="mt-1 block font-display text-title font-semibold group-hover:underline">
+          <span className="flex items-center gap-2">
+            {/* The line goes dark here, so the M bullet takes ink rather than
+                pink. RouteBullet puts `className` last in its cn(), so this
+                overrides the track fill without the component learning about
+                eras. */}
+            <RouteBullet type="milestone" size={24} className="bg-foreground text-background" />
+            <span className="text-2xs uppercase tracking-label text-muted-foreground">
+              {eyebrow}
+            </span>
+          </span>
+          <span className="mt-2 block font-display text-headline leading-tight group-hover:underline">
             {milestone.title}
           </span>
           {milestone.description ? (
@@ -68,9 +82,15 @@ export function AnchorMilestoneCard({
   }
 
   return (
-    <LocalizedLink to={`/history/${milestone.slug}`} className={cn('group block', className)}>
+    <LocalizedLink
+      to={`/history/${milestone.slug}`}
+      className={cn(
+        'card-lift group block border-[3px] border-foreground bg-background no-underline',
+        className,
+      )}
+    >
       {imageUrl ? (
-        <span className="mb-4 block aspect-[16/10] overflow-hidden rounded-container bg-muted">
+        <span className="block aspect-[16/10] overflow-hidden border-b-[3px] border-foreground bg-muted">
           {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- onError is a media-error handler, not a user-input listener. */}
           <img
             src={imageUrl}
@@ -81,25 +101,34 @@ export function AnchorMilestoneCard({
           />
         </span>
       ) : (
+        // The year AS the poster. Ink, not a 40%-opacity ghost — that was a
+        // soft-UI move, and Anton 400 at 40% would nearly vanish next to the
+        // 3px plate around it.
         <span
           aria-hidden
-          className="mb-4 block select-none font-display text-hero font-semibold leading-none text-muted-foreground/40"
+          className="block select-none border-b-[3px] border-foreground px-4 py-6 font-display text-hero leading-none"
         >
           {milestoneYear(milestone.date)}
         </span>
       )}
-      <span className="block text-13 text-muted-foreground">{eyebrow}</span>
-      <span className="mt-1 block font-display text-headline font-semibold leading-tight group-hover:underline">
-        {milestone.title}
-      </span>
-      {milestone.description ? (
-        <span className="mt-2 line-clamp-3 block text-15 text-muted-foreground">
-          {milestone.description}
+      <span className="block p-4">
+        <span className="flex items-center gap-2">
+          <RouteBullet type="milestone" size={30} />
+          <span className="text-2xs uppercase tracking-label text-muted-foreground">{eyebrow}</span>
         </span>
-      ) : null}
-      <span className="mt-4 flex items-center gap-2">
-        <MilestoneImpactMarker impact={milestone.impact} />
-        {milestone.category ? <MilestoneCategoryBadge category={milestone.category} /> : null}
+        <span className="mt-2 block font-display text-headline leading-tight group-hover:underline">
+          {milestone.title}
+        </span>
+        {milestone.description ? (
+          <span className="mt-2 line-clamp-3 block text-15 text-muted-foreground">
+            {milestone.description}
+          </span>
+        ) : null}
+        {milestone.category ? (
+          <span className="mt-4 block">
+            <MilestoneCategoryBadge category={milestone.category} />
+          </span>
+        ) : null}
       </span>
     </LocalizedLink>
   );
