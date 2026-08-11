@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { fetchTrendingCities } from '@/hooks/usePersonalizedCities';
 import type { Track } from '@/components/transit/routeBulletMap';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 /** Per-card bending line — four precomputed paths cycled by index so
  *  neighbouring cards never bend the same way (template geometry). */
@@ -34,7 +35,7 @@ export function CityCards() {
 
   return (
     <section className="border-b-4 border-foreground">
-      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 md:px-8 md:py-16">
+      <PageContainer>
         <div className="mb-6 flex flex-wrap items-baseline justify-between gap-4">
           <h2 className="font-display text-display">
             {t('home.cities.title', 'Where are you riding?')}
@@ -49,11 +50,17 @@ export function CityCards() {
                 <div key={i} className="h-32 animate-pulse border-[3px] border-foreground/20" />
               ))
             : cities.map((city, i) => (
-                <div key={city.id} className="card-lift group relative border-[3px] border-foreground bg-background p-4">
+                <div
+                  key={city.id}
+                  className="card-lift group relative border-[3px] border-foreground bg-background p-4"
+                >
                   <div className="flex items-baseline justify-between gap-2">
                     <span className="truncate font-display text-headline">{city.name}</span>
                     {city.countries?.equality_score != null && (
-                      <span className="shrink-0 text-13 font-bold" title={t('home.cities.equality', 'Equality score')}>
+                      <span
+                        className="shrink-0 text-13 font-bold"
+                        title={t('home.cities.equality', 'Equality score')}
+                      >
                         {city.countries.equality_score}
                       </span>
                     )}
@@ -66,7 +73,14 @@ export function CityCards() {
                       strokeWidth={6}
                       strokeLinecap="round"
                     />
-                    <circle cx={100} cy={17} r={6} fill="hsl(var(--background))" stroke="hsl(var(--foreground))" strokeWidth={3} />
+                    <circle
+                      cx={100}
+                      cy={17}
+                      r={6}
+                      fill="hsl(var(--background))"
+                      stroke="hsl(var(--foreground))"
+                      strokeWidth={3}
+                    />
                   </svg>
                   <div className="truncate text-13 text-muted-foreground">
                     {city.editorial_hook || city.countries?.name || ''}
@@ -79,7 +93,7 @@ export function CityCards() {
                 </div>
               ))}
         </div>
-      </div>
+      </PageContainer>
     </section>
   );
 }

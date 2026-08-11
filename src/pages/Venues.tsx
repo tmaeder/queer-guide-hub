@@ -50,6 +50,7 @@ import { cn } from '@/lib/utils';
 import { getVenueVisual } from '@/lib/venueVisual';
 import { useTranslation } from 'react-i18next';
 import { VENUES_V2_ENABLED } from '@/lib/featureFlags';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 type Venue = Database['public']['Tables']['venues']['Row'];
 
@@ -401,7 +402,7 @@ const Venues = () => {
   return (
     <div className="min-h-screen overflow-x-clip">
       <AchievementToast />
-      <div className="mx-auto w-full max-w-screen-xl px-4 py-6 md:py-10 min-w-0 space-y-8">
+      <PageContainer className="min-w-0 space-y-8">
         {/* Editorial top: hero + personal strip when v2 + grid view */}
         {showRails && (
           <div className="space-y-6">
@@ -724,7 +725,7 @@ const Venues = () => {
             </motion.div>
           )}
         </AnimatePresence>
-      </div>
+      </PageContainer>
     </div>
   );
 };

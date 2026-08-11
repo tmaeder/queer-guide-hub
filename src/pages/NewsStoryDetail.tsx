@@ -11,6 +11,7 @@ import { decodeHtmlEntities } from '@/utils/htmlDecode';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Newspaper } from 'lucide-react';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 export default function NewsStoryDetail() {
   const { slug } = useParams<{ slug: string }>();
@@ -51,26 +52,26 @@ export default function NewsStoryDetail() {
 
   if (loading)
     return (
-      <div className="container mx-auto px-4 py-12">
+      <PageContainer>
         <PageLoadingState count={1} />
-      </div>
+      </PageContainer>
     );
 
   if (!story) {
     return (
-      <div className="container mx-auto px-4 py-12">
+      <PageContainer>
         <EmptyState
           icon={Newspaper}
           title="Story not found"
           description="This story may have been removed."
           primaryAction={{ label: 'Back to News', onClick: () => window.history.back() }}
         />
-      </div>
+      </PageContainer>
     );
   }
 
   return (
-    <div className="container mx-auto px-4 py-12 max-w-3xl">
+    <PageContainer size="reading">
       <LocalizedLink
         to="/news"
         className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-6 no-underline"
@@ -134,6 +135,6 @@ export default function NewsStoryDetail() {
           </li>
         ))}
       </ol>
-    </div>
+    </PageContainer>
   );
 }

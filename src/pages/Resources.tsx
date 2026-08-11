@@ -32,6 +32,7 @@ import {
   type DisplayMode,
   type SortOption,
 } from '@/pages/resources/resourceHelpers';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 const TagRelationshipGraph = lazy(() => import('@/components/tags/TagRelationshipGraph'));
 
@@ -405,29 +406,26 @@ export default function Resources() {
 
   if (loading) {
     return (
-      <div className="container mx-auto py-8 md:py-16 px-4">
+      <PageContainer>
         <PageLoadingState count={12} />
-      </div>
+      </PageContainer>
     );
   }
   if (error) {
     return (
-      <div className="container mx-auto py-8 md:py-16 px-4">
+      <PageContainer>
         <ErrorState
           message={t('resources.errorLoading')}
           onRetry={() => window.location.reload()}
         />
-      </div>
+      </PageContainer>
     );
   }
 
   // ───────── Tag Not Found (P1-4) ─────────
   if (viewMode === 'not-found' || (tagName && tagNotFound)) {
     return (
-      <div
-        className="container mx-auto py-16 md:py-24 px-4 text-center"
-        data-testid="tag-not-found"
-      >
+      <PageContainer data-testid="tag-not-found" className="text-center">
         <h1 className="text-3xl font-bold mb-2">{t('resources.tagNotFound.title')}</h1>
         <p className="text-muted-foreground mb-6">
           <Trans i18nKey="resources.tagNotFound.bodyPrefix" values={{ tag: tagName ?? '' }} />
@@ -443,7 +441,7 @@ export default function Resources() {
         >
           {t('resources.tagNotFound.browse')}
         </Button>
-      </div>
+      </PageContainer>
     );
   }
 
@@ -492,7 +490,7 @@ export default function Resources() {
 
   return (
     <div className="relative">
-      <div className="container mx-auto pt-8 md:pt-10 pb-8 md:pb-12 px-4 relative">
+      <PageContainer className="relative">
         <header className="mb-6 md:mb-8">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground mb-2">
             {t('resources.hero.eyebrow')}
@@ -627,7 +625,7 @@ export default function Resources() {
             onTagClick={handleTagClick}
           />
         )}
-      </div>
+      </PageContainer>
     </div>
   );
 }

@@ -20,7 +20,7 @@ export default function DesignSystem() {
   const controller = useDesignSettings();
 
   return (
-    <div className="container mx-auto max-w-screen-xl px-4 py-8">
+    <div>
       <AdminPageHeader
         title="Design & Branding"
         subtitle="Design tokens, brand assets, SEO identity and email branding — published changes go live without a deploy."

@@ -38,6 +38,7 @@ import {
   VillageTabLabel,
   villageTabIcons,
 } from './QueerVillageDetail.parts';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 const JOIN_SPEC =
   '*, cities:city_id(id, slug, name), countries:country_id(id, slug, name, flag_emoji)';
@@ -64,7 +65,11 @@ export default function QueerVillageDetail() {
   // Merged-duplicate slug redirect (village_slug_redirects); client-side
   // fallback for in-app navigation — the edge middleware handles the 301.
   const redirectVillageSlug = useSlugRedirect(
-    { redirectTable: 'village_slug_redirects', redirectIdColumn: 'village_id', entityTable: 'queer_villages' },
+    {
+      redirectTable: 'village_slug_redirects',
+      redirectIdColumn: 'village_id',
+      entityTable: 'queer_villages',
+    },
     !isLoading && !village ? (slug ?? null) : null,
   );
   useEffect(() => {
@@ -120,7 +125,7 @@ export default function QueerVillageDetail() {
   if (!isLoading && !error && !village) {
     return (
       <div className="min-h-screen bg-background">
-        <div className="mx-auto px-4 py-8 text-center">
+        <PageContainer className="text-center">
           <h5 className="text-xl font-bold mb-4">Village Not Found</h5>
           <p className="text-muted-foreground mb-6">
             The queer village you&apos;re looking for doesn&apos;t exist.
@@ -128,7 +133,7 @@ export default function QueerVillageDetail() {
           <LocalizedLink to="/villages" style={{ color: 'inherit' }} className="font-medium">
             ← Back to Villages
           </LocalizedLink>
-        </div>
+        </PageContainer>
       </div>
     );
   }
@@ -187,9 +192,10 @@ export default function QueerVillageDetail() {
       content: sectionContent[def.id] ?? null,
     }));
 
-    const tagsValue = Array.isArray(village.tags) && village.tags.length > 0
-      ? village.tags.slice(0, 3).join(', ')
-      : null;
+    const tagsValue =
+      Array.isArray(village.tags) && village.tags.length > 0
+        ? village.tags.slice(0, 3).join(', ')
+        : null;
 
     const facts: KeyFact[] = [
       { label: 'City', value: village.cities?.name || null },
@@ -206,16 +212,17 @@ export default function QueerVillageDetail() {
       { label: 'Featured', value: village.is_featured ? 'Editor’s pick' : null },
     ];
 
-    const planGeo = village.cities?.id && village.countries?.id
-      ? {
-          cityId: village.cities.id,
-          cityName: village.cities.name ?? '',
-          countryId: village.countries.id,
-          countryName: village.countries.name ?? '',
-          countryCode: village.countries.code ?? null,
-          timezone: null,
-        }
-      : null;
+    const planGeo =
+      village.cities?.id && village.countries?.id
+        ? {
+            cityId: village.cities.id,
+            cityName: village.cities.name ?? '',
+            countryId: village.countries.id,
+            countryName: village.countries.name ?? '',
+            countryCode: village.countries.code ?? null,
+            timezone: null,
+          }
+        : null;
 
     return (
       <>
@@ -296,13 +303,13 @@ export default function QueerVillageDetail() {
         entityId={village?.id}
       />
       {village && (
-        <div className="mx-auto px-4">
+        <PageContainer flush>
           <div className="mt-6 flex flex-wrap gap-2">
             <MarkVisitedButton entityType="village" entityId={village.id} kind="visited" />
             <MarkVisitedButton entityType="village" entityId={village.id} kind="saved" />
           </div>
           <SimilarItems entity={{ type: 'queer_village', id: village.id }} className="mt-8" />
-        </div>
+        </PageContainer>
       )}
     </>
   );

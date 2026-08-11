@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { TransitIcon } from '@/components/transit/TransitIcon';
 import { IntentMap } from './IntentMap';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 /** Subway-map homepage hero: Anton headline, search entry with the hard
  *  shadow, and the network itself — whose stations ARE the six intents
@@ -16,10 +17,11 @@ export function SubwayHero() {
   const { t } = useTranslation();
   return (
     <header className="border-b-4 border-foreground relative overflow-hidden">
-      {/* Tighter above `md` than the desktop hero: the intent map is the
-          primary navigation on mobile and now sits below the fold, so every
-          reclaimed pixel above it counts. */}
-      <div className="relative z-1 mx-auto max-w-7xl px-4 pt-8 sm:px-6 md:px-8 md:pt-20">
+      {/* `flush` — the hero owns an asymmetric rhythm: a tall top and no bottom
+          padding, because IntentMap fills that space. Tighter above `md` than
+          the desktop hero — the intent map is the primary navigation on mobile
+          and now sits below the fold, so every reclaimed pixel above it counts. */}
+      <PageContainer flush className="relative z-1 pt-8 md:pt-20">
         <h1 className="font-display text-hero md:text-hero-xl max-w-4xl">
           {t('home.hero.title', 'No straight lines here.')}
         </h1>
@@ -51,7 +53,7 @@ export function SubwayHero() {
             {t('home.hero.openMap', 'Open the map')}
           </LocalizedLink>
         </div>
-      </div>
+      </PageContainer>
       <IntentMap />
     </header>
   );

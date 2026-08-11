@@ -133,10 +133,7 @@ function SharedTripPage() {
 
   useEffect(() => {
     if (!data?.trip) return;
-    const resolved = resolveTripTitle(
-      { title: data.trip.title, primary_city_name: null },
-      t,
-    );
+    const resolved = resolveTripTitle({ title: data.trip.title, primary_city_name: null }, t);
     const title = `${resolved} · Queer Guide`;
     document.title = title;
     const desc = data.trip.description || t('trips.shared.metaDescription');
@@ -213,11 +210,32 @@ function SharedTripPage() {
     sort_order: p.sort_order,
     created_by: null,
     created_at: '',
-    venues: p.venue_name ? { id: '', name: p.venue_name, category: p.category, images: null, address: p.custom_address } : null,
-    events: p.event_title ? { id: '', title: p.event_title, event_type: p.category, start_date: null, end_date: null, images: null } : null,
-    hotels: p.hotel_name ? { id: '', name: p.hotel_name, star_rating: null, images: null, address: p.custom_address } : null,
+    venues: p.venue_name
+      ? {
+          id: '',
+          name: p.venue_name,
+          category: p.category,
+          images: null,
+          address: p.custom_address,
+        }
+      : null,
+    events: p.event_title
+      ? {
+          id: '',
+          title: p.event_title,
+          event_type: p.category,
+          start_date: null,
+          end_date: null,
+          images: null,
+        }
+      : null,
+    hotels: p.hotel_name
+      ? { id: '', name: p.hotel_name, star_rating: null, images: null, address: p.custom_address }
+      : null,
     cities: null,
-    countries: p.country_name ? { id: '', name: p.country_name, code: p.country_code, equality_score: p.equality_score } : null,
+    countries: p.country_name
+      ? { id: '', name: p.country_name, code: p.country_code, equality_score: p.equality_score }
+      : null,
   }));
 
   const mapDays = days.map((d) => ({
@@ -233,7 +251,7 @@ function SharedTripPage() {
   const hasCover = !!trip.cover_image_url;
 
   return (
-    <div className="mx-auto pb-6">
+    <div className="pb-6">
       {/* Branded cover band */}
       <div
         className="relative rounded-none sm:rounded-container overflow-hidden mb-4 sm:mx-2 sm:mt-2 min-h-[180px] md:min-h-[220px] flex items-end bg-cover bg-center"
@@ -245,7 +263,9 @@ function SharedTripPage() {
         <div
           aria-hidden
           className="absolute inset-0 pointer-events-none"
-          style={{ background: 'linear-gradient(180deg, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.7) 100%)' }}
+          style={{
+            background: 'linear-gradient(180deg, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.7) 100%)',
+          }}
         />
         <div className="relative z-[1] w-full px-[1.25rem] md:px-4 py-[1.25rem] md:py-4">
           <div
@@ -268,7 +288,8 @@ function SharedTripPage() {
           </h1>
           {trip.start_date && trip.end_date && (
             <p className="text-sm mt-1" style={{ color: 'rgba(255,255,255,0.92)' }}>
-              {format(new Date(trip.start_date), 'MMM d, yyyy')} – {format(new Date(trip.end_date), 'MMM d, yyyy')}
+              {format(new Date(trip.start_date), 'MMM d, yyyy')} –{' '}
+              {format(new Date(trip.end_date), 'MMM d, yyyy')}
             </p>
           )}
           {trip.description && (
@@ -317,9 +338,15 @@ function SharedTripPage() {
         <Tabs defaultValue="itinerary">
           <TabsList>
             <TabsTrigger value="itinerary">{t('trips.shared.tabs.itinerary')}</TabsTrigger>
-            {permissions.budget && budgetItems.length > 0 && <TabsTrigger value="budget">{t('trips.shared.tabs.budget')}</TabsTrigger>}
-            {permissions.notes && notes.length > 0 && <TabsTrigger value="notes">{t('trips.shared.tabs.notes')}</TabsTrigger>}
-            {permissions.packing && packingItems.length > 0 && <TabsTrigger value="packing">{t('trips.shared.tabs.packing')}</TabsTrigger>}
+            {permissions.budget && budgetItems.length > 0 && (
+              <TabsTrigger value="budget">{t('trips.shared.tabs.budget')}</TabsTrigger>
+            )}
+            {permissions.notes && notes.length > 0 && (
+              <TabsTrigger value="notes">{t('trips.shared.tabs.notes')}</TabsTrigger>
+            )}
+            {permissions.packing && packingItems.length > 0 && (
+              <TabsTrigger value="packing">{t('trips.shared.tabs.packing')}</TabsTrigger>
+            )}
           </TabsList>
 
           <TabsContent value="itinerary">
@@ -329,17 +356,28 @@ function SharedTripPage() {
                 <Card key={day.id} className="mb-2">
                   <CardContent>
                     <div className="flex items-center gap-2 mb-1">
-                      <Badge variant="default">{t('trips.shared.dayLabel', { number: dayIdx + 1 })}</Badge>
-                      <p className="text-sm font-semibold">{format(new Date(day.date), 'EEEE, MMM d')}</p>
+                      <Badge variant="default">
+                        {t('trips.shared.dayLabel', { number: dayIdx + 1 })}
+                      </Badge>
+                      <p className="text-sm font-semibold">
+                        {format(new Date(day.date), 'EEEE, MMM d')}
+                      </p>
                       {day.title && <p className="text-sm text-muted-foreground">— {day.title}</p>}
                     </div>
 
                     {dayPlaces.length === 0 && (
-                      <p className="text-sm text-muted-foreground py-1">{t('trips.shared.noPlaces')}</p>
+                      <p className="text-sm text-muted-foreground py-1">
+                        {t('trips.shared.noPlaces')}
+                      </p>
                     )}
 
                     {dayPlaces.map((place) => {
-                      const name = place.venue_name || place.event_title || place.hotel_name || place.custom_name || t('trips.shared.unknownPlace');
+                      const name =
+                        place.venue_name ||
+                        place.event_title ||
+                        place.hotel_name ||
+                        place.custom_name ||
+                        t('trips.shared.unknownPlace');
                       return (
                         <div key={place.id} className="py-1">
                           <div className="flex items-center gap-2">
@@ -347,7 +385,9 @@ function SharedTripPage() {
                             <div className="flex-1 min-w-0">
                               <p className="text-sm font-medium">{name}</p>
                               {place.custom_address && (
-                                <span className="text-xs text-muted-foreground">{place.custom_address}</span>
+                                <span className="text-xs text-muted-foreground">
+                                  {place.custom_address}
+                                </span>
                               )}
                             </div>
                             {place.category && <Badge variant="outline">{place.category}</Badge>}
@@ -374,9 +414,16 @@ function SharedTripPage() {
             {(placesByDay.get(null) || []).length > 0 && (
               <Card className="mb-2">
                 <CardContent>
-                  <p className="text-sm font-semibold text-muted-foreground mb-1">{t('trips.shared.unassigned')}</p>
+                  <p className="text-sm font-semibold text-muted-foreground mb-1">
+                    {t('trips.shared.unassigned')}
+                  </p>
                   {(placesByDay.get(null) || []).map((place) => {
-                    const name = place.venue_name || place.event_title || place.hotel_name || place.custom_name || t('trips.shared.unknownPlace');
+                    const name =
+                      place.venue_name ||
+                      place.event_title ||
+                      place.hotel_name ||
+                      place.custom_name ||
+                      t('trips.shared.unknownPlace');
                     return (
                       <div key={place.id} className="flex items-center gap-2 py-1.5">
                         <MapPin size={14} className="text-muted-foreground flex-shrink-0" />
@@ -398,7 +445,9 @@ function SharedTripPage() {
                     <p className="text-sm font-medium">{item.title}</p>
                     <div className="flex items-center gap-1.5">
                       {item.category && <Badge variant="outline">{item.category}</Badge>}
-                      {item.date && <span className="text-xs text-muted-foreground">{item.date}</span>}
+                      {item.date && (
+                        <span className="text-xs text-muted-foreground">{item.date}</span>
+                      )}
                     </div>
                   </div>
                   <p className="text-sm font-bold">{formatAmount(item.amount, item.currency)}</p>
@@ -414,13 +463,19 @@ function SharedTripPage() {
                   <Card key={i}>
                     <CardContent>
                       <div className="flex items-start justify-between gap-1">
-                        <p className="text-sm font-semibold">{note.title || t('trips.shared.untitled')}</p>
+                        <p className="text-sm font-semibold">
+                          {note.title || t('trips.shared.untitled')}
+                        </p>
                         {note.category && <Badge variant="outline">{note.category}</Badge>}
                       </div>
                       {note.content && (
                         <p
                           className="text-xs text-muted-foreground mt-0.5 overflow-hidden"
-                          style={{ display: '-webkit-box', WebkitLineClamp: 4, WebkitBoxOrient: 'vertical' }}
+                          style={{
+                            display: '-webkit-box',
+                            WebkitLineClamp: 4,
+                            WebkitBoxOrient: 'vertical',
+                          }}
                         >
                           {note.content}
                         </p>
@@ -464,7 +519,11 @@ function SharedTripPage() {
                 <Button asChild variant="brand" className="font-bold">
                   <RouterLink to="/trips">{t('trips.shared.ctaPrimary')}</RouterLink>
                 </Button>
-                <Button variant="outline" onClick={() => setAuthOpen(true)} className="font-semibold">
+                <Button
+                  variant="outline"
+                  onClick={() => setAuthOpen(true)}
+                  className="font-semibold"
+                >
                   {t('trips.shared.ctaSecondary')}
                 </Button>
               </div>
@@ -472,7 +531,9 @@ function SharedTripPage() {
           </CardContent>
         </Card>
 
-        <p className="text-xs text-muted-foreground block text-center mt-4">{t('trips.shared.footer')}</p>
+        <p className="text-xs text-muted-foreground block text-center mt-4">
+          {t('trips.shared.footer')}
+        </p>
       </div>
 
       <AuthDialog open={authOpen} onOpenChange={setAuthOpen} />
@@ -516,7 +577,9 @@ function SharedPackingList({ items }: { items: SharedTripData['packing_items'] }
                   className="text-sm"
                   style={{
                     textDecoration: item.is_checked ? 'line-through' : 'none',
-                    color: item.is_checked ? 'hsl(var(--muted-foreground))' : 'hsl(var(--foreground))',
+                    color: item.is_checked
+                      ? 'hsl(var(--muted-foreground))'
+                      : 'hsl(var(--foreground))',
                   }}
                 >
                   {item.name}

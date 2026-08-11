@@ -7,6 +7,7 @@ import { DonorWall } from '@/components/donate/DonorWall';
 import { DonationSuccess } from '@/components/donate/DonationSuccess';
 import { EditorialHero } from '@/components/editorial/EditorialHero';
 import { EDITORIAL_IMAGES, type EditorialImage } from '@/lib/editorialImages';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 const IMPACT = [
   {
@@ -35,8 +36,8 @@ export default function Donate() {
   const impactImages = donateImages.extras ?? [];
 
   return (
-    <div className="px-4 sm:px-6 md:px-8 py-8 sm:py-12">
-      <div className="max-w-6xl mx-auto">
+    <PageContainer>
+      <div>
         <EditorialHero
           eyebrow="Donate"
           title={t('donate.title', 'Support queer.guide')}
@@ -120,7 +121,7 @@ export default function Donate() {
           )}
         </section>
       </div>
-    </div>
+    </PageContainer>
   );
 }
 

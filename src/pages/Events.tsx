@@ -28,6 +28,7 @@ import { EventSearchBar } from '@/components/events/EventSearchBar';
 import { EventFiltersPanel } from '@/components/events/EventFiltersPanel';
 import { EventsResultBar } from '@/components/events/EventsResultBar';
 import { EventGridView } from '@/components/events/EventGridView';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 type Event = Database['public']['Tables']['events']['Row'];
 
@@ -117,7 +118,7 @@ const Events = () => {
         primaryCta={{ label: t('pages.events.submitEvent', 'Add an event'), href: '/submit' }}
         size="md"
       />
-      <div className="container mx-auto px-4 py-8 md:py-12">
+      <PageContainer>
         <GuidesRail filters={{ entityType: 'event', limit: 6 }} />
         {/* Filters — first interactive surface after hero */}
         <div className="flex flex-col gap-4 p-4 bg-card rounded-container mb-6">
@@ -387,7 +388,7 @@ const Events = () => {
             )}
           </div>
         )}
-      </div>
+      </PageContainer>
     </div>
   );
 };

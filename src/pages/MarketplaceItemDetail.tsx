@@ -16,10 +16,7 @@ import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useSlugRedirect } from '@/hooks/useSlugRedirect';
 import { useMeta } from '@/hooks/useMeta';
 import { toast } from '@/hooks/use-toast';
-import {
-  fetchMarketplaceListingBundle,
-  toggleMarketplaceFavorite,
-} from '@/hooks/usePageFetchers';
+import { fetchMarketplaceListingBundle, toggleMarketplaceFavorite } from '@/hooks/usePageFetchers';
 import {
   type MarketplaceListing,
   type MarketplaceReview,
@@ -29,6 +26,7 @@ import {
 import { MarketplaceGallery } from '@/components/marketplace/MarketplaceGallery';
 import type { ListingTag } from '@/hooks/usePageFetchers';
 import { FeaturedInGuides } from '@/components/guides/FeaturedInGuides';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 interface ListingBundle {
   listing: MarketplaceListing;
@@ -37,7 +35,10 @@ interface ListingBundle {
   tags: ListingTag[];
 }
 
-async function fetchListingBundle(slug: string, userId: string | undefined): Promise<ListingBundle | null> {
+async function fetchListingBundle(
+  slug: string,
+  userId: string | undefined,
+): Promise<ListingBundle | null> {
   return fetchMarketplaceListingBundle<MarketplaceListing, MarketplaceReview>(slug, userId);
 }
 
@@ -55,7 +56,9 @@ const GENERIC_CATEGORIES = new Set([
 ]);
 
 /** Turn a raw listing.category into a clean, linked breadcrumb crumb, or null. */
-function buildCategoryCrumb(category: string | null | undefined): { label: string; href: string } | null {
+function buildCategoryCrumb(
+  category: string | null | undefined,
+): { label: string; href: string } | null {
   const raw = category?.trim();
   if (!raw || GENERIC_CATEGORIES.has(raw.toLowerCase())) return null;
   const label = raw.replace(/[-_]+/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
@@ -70,12 +73,7 @@ export default function MarketplaceItemDetail() {
   const { incrementViews } = useMarketplace();
   const [isFavorited, setIsFavorited] = useState(false);
 
-  const {
-    data,
-    isLoading,
-    error,
-    refetch,
-  } = useQuery<ListingBundle | null>({
+  const { data, isLoading, error, refetch } = useQuery<ListingBundle | null>({
     queryKey: ['marketplace-detail', slug, user?.id ?? null],
     enabled: Boolean(slug),
     staleTime: 60_000,
@@ -121,9 +119,9 @@ export default function MarketplaceItemDetail() {
           ? {
               aggregateRating: {
                 '@type': 'AggregateRating',
-                ratingValue: (
-                  reviews.reduce((s, r) => s + r.rating, 0) / reviews.length
-                ).toFixed(1),
+                ratingValue: (reviews.reduce((s, r) => s + r.rating, 0) / reviews.length).toFixed(
+                  1,
+                ),
                 reviewCount: reviews.length,
               },
             }
@@ -212,14 +210,17 @@ export default function MarketplaceItemDetail() {
       await navigator.clipboard.writeText(shareUrl);
       toast({
         title: t('pages.marketplaceDetail.linkCopied', 'Link copied'),
-        description: t('pages.marketplaceDetail.linkCopiedDesc', 'Listing link copied to clipboard'),
+        description: t(
+          'pages.marketplaceDetail.linkCopiedDesc',
+          'Listing link copied to clipboard',
+        ),
       });
     }
   };
 
   if (!isLoading && !listing && !error) {
     return (
-      <div className="container mx-auto py-8 text-center px-4">
+      <PageContainer className="text-center">
         <h5 className="text-xl font-bold mb-4">Item Not Found</h5>
         <p className="text-muted-foreground mb-6">
           The marketplace item you're looking for doesn't exist.
@@ -232,7 +233,7 @@ export default function MarketplaceItemDetail() {
             Back to Marketplace
           </LocalizedLink>
         </Button>
-      </div>
+      </PageContainer>
     );
   }
 
@@ -277,7 +278,11 @@ export default function MarketplaceItemDetail() {
         hero={
           listing ? (
             <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1.6fr)_minmax(360px,1fr)] lg:gap-12">
-              <MarketplaceGallery listingId={listing.id} images={listing.images} title={listing.title} />
+              <MarketplaceGallery
+                listingId={listing.id}
+                images={listing.images}
+                title={listing.title}
+              />
               <MarketplaceBuyBox
                 listing={listing}
                 reviewsCount={reviews.length}
@@ -295,11 +300,11 @@ export default function MarketplaceItemDetail() {
         entityId={listing?.id}
       />
       {listing && (
-        <div className="container mx-auto flex flex-col gap-16 px-4 pb-16 pt-8">
+        <PageContainer className="flex flex-col gap-16">
           <BrandStoryBlock listing={listing} />
           <BrandMoreFrom listing={listing} />
           <PairsWithRail listing={listing} />
-        </div>
+        </PageContainer>
       )}
     </>
   );

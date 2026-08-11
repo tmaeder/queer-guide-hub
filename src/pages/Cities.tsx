@@ -13,6 +13,7 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { ArrowRight } from 'lucide-react';
 import { CitiesFilterBar } from './cities/CitiesFilterBar';
 import { CityListPane } from './cities/CityListPane';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 // Map pane is lazy-mounted: maplibre-gl is ~1.1 s of scripting on first
 // load (Lighthouse #1094). Importing it via React.lazy keeps the maplibre
@@ -114,7 +115,7 @@ export default function Cities() {
         }}
         size="sm"
       />
-      <div className="container mx-auto px-4 relative">
+      <PageContainer className="relative">
         <CitiesFilterBar
           q={url.q}
           onQChange={url.setQ}
@@ -229,7 +230,7 @@ export default function Cities() {
             </div>
           </>
         )}
-      </div>
+      </PageContainer>
     </div>
   );
 }

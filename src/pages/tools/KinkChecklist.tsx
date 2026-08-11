@@ -9,6 +9,7 @@ import { KinkGridEditor } from '@/components/kinks/KinkGridEditor';
 import { KinkWizard } from '@/components/kinks/KinkWizard';
 import { KinkVisibilityStep } from '@/components/kinks/KinkVisibilityStep';
 import { KinkShareManager } from '@/components/kinks/KinkShareManager';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 /**
  * The interests & boundaries checklist tool. 18+ — sits entirely behind the
@@ -26,7 +27,7 @@ export default function KinkChecklist() {
 
   if (!user) {
     return (
-      <div className="mx-auto max-w-md p-8 text-center">
+      <PageContainer size="form" className="text-center">
         <h1 className="text-headline font-display">Interests & boundaries checklist</h1>
         <p className="mt-4 text-sm text-muted-foreground">
           A private checklist for consenting adults. Sign in to use it.
@@ -34,13 +35,13 @@ export default function KinkChecklist() {
         <Button className="mt-6 rounded-element" onClick={() => navigate('/auth')}>
           Sign in
         </Button>
-      </div>
+      </PageContainer>
     );
   }
 
   if (!me?.opted_in_at) {
     return (
-      <div className="mx-auto max-w-md p-8 text-center">
+      <PageContainer size="form" className="text-center">
         <h1 className="text-headline font-display">Interests & boundaries checklist</h1>
         <p className="mt-4 text-sm text-muted-foreground">
           This tool is part of the intimate layer — 18+, opt-in, verified email. Everything you
@@ -49,12 +50,12 @@ export default function KinkChecklist() {
         <Button className="mt-6 rounded-element" onClick={() => navigate('/intimate/onboard')}>
           Enable intimate profile
         </Button>
-      </div>
+      </PageContainer>
     );
   }
 
   return (
-    <div className="mx-auto max-w-3xl px-6 py-8">
+    <PageContainer size="reading">
       <header className="mb-6">
         <h1 className="text-display font-display">Interests & boundaries</h1>
         <p className="mt-2 text-sm text-muted-foreground">
@@ -96,6 +97,6 @@ export default function KinkChecklist() {
           <KinkShareManager />
         </TabsContent>
       </Tabs>
-    </div>
+    </PageContainer>
   );
 }

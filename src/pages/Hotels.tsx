@@ -14,16 +14,13 @@ import { DestinationTiles } from '@/components/hotels/DestinationTiles';
 import { HotelScrollerRow } from '@/components/hotels/HotelScrollerRow';
 import { useHotels, type HotelFilters as HotelFilterType } from '@/hooks/useHotels';
 import { useHotelFilterMeta } from '@/hooks/useHotelFilterMeta';
-import {
-  useFeaturedHotel,
-  useEditorialHotels,
-  useTopHotelCities,
-} from '@/hooks/useHotelDiscovery';
+import { useFeaturedHotel, useEditorialHotels, useTopHotelCities } from '@/hooks/useHotelDiscovery';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useMeta } from '@/hooks/useMeta';
 import { EmptyState, type EmptyStateFilterChip } from '@/components/ui/EmptyState';
 import { useTranslation } from 'react-i18next';
 import { PageHero, BentoSection, spansForPreset } from '@/components/discovery';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 const HOTEL_SPAN_CLASS: Record<string, string> = {
   sm: 'col-span-12 sm:col-span-6 md:col-span-4 lg:col-span-3',
@@ -53,8 +50,8 @@ export default function Hotels() {
   const [priceRange, setPriceRange] = useState(() => searchParams.get('price') ?? 'all');
   const [vibe, setVibe] = useState<string | null>(() => searchParams.get('vibe'));
   const [city, setCity] = useState<string | null>(() => searchParams.get('city'));
-  const [view, setView] = useState<ViewMode>(
-    () => (searchParams.get('view') === 'map' ? 'map' : 'grid'),
+  const [view, setView] = useState<ViewMode>(() =>
+    searchParams.get('view') === 'map' ? 'map' : 'grid',
   );
   const [page, setPage] = useState(1);
 
@@ -150,8 +147,7 @@ export default function Hotels() {
     if (effectivePriceRange !== 'all') {
       chips.push({
         label:
-          HOTEL_PRICE_LABEL[effectivePriceRange] ??
-          '$'.repeat(Number(effectivePriceRange) || 0),
+          HOTEL_PRICE_LABEL[effectivePriceRange] ?? '$'.repeat(Number(effectivePriceRange) || 0),
         onRemove: () => setPriceRange('all'),
       });
     }
@@ -183,7 +179,16 @@ export default function Hotels() {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
     setPage(1);
     fetchHotels(buildFilters(), { page: 1, mapMode: view === 'map' });
-  }, [debouncedSearch, hotelType, effectivePriceRange, vibe, city, view, buildFilters, fetchHotels]);
+  }, [
+    debouncedSearch,
+    hotelType,
+    effectivePriceRange,
+    vibe,
+    city,
+    view,
+    buildFilters,
+    fetchHotels,
+  ]);
 
   const handleLoadMore = () => {
     const nextPage = page + 1;
@@ -210,156 +215,159 @@ export default function Hotels() {
         }}
         size="md"
       />
-      <div className="container mx-auto py-8 md:py-12 px-4 space-y-10 relative">
+      <PageContainer className="space-y-10 relative">
+        {showDiscovery && featuredHotel && <HotelHero hotel={featuredHotel} />}
 
-      {showDiscovery && featuredHotel && (
-        <HotelHero hotel={featuredHotel} />
-      )}
+        <VibeChipsRow active={vibe} onChange={setVibe} />
 
-      <VibeChipsRow active={vibe} onChange={setVibe} />
-
-      {showDiscovery && topCities.length > 0 && (
-        <section className="space-y-4">
-          <h3 className="text-lg font-semibold">Top cities for queer stays</h3>
-          <DestinationTiles cities={topCities} />
-        </section>
-      )}
-
-      {showDiscovery && inVillages.length > 0 && (
-        <HotelScrollerRow
-          title="In queer villages"
-          subtitle="Hotels in historic LGBTQ+ neighborhoods"
-          hotels={inVillages}
-        />
-      )}
-
-      {showDiscovery && picks.length > 0 && (
-        <HotelScrollerRow
-          title="Editor's picks"
-          hotels={picks}
-        />
-      )}
-
-      <section className="space-y-4">
-        <div className="flex items-center justify-between gap-4 flex-wrap">
-          <h3 className="text-lg font-semibold">
-            {hasActiveFilters ? 'Matching hotels' : 'All hotels'}
-          </h3>
-          <div className="inline-flex border border-foreground/20">
-            <button
-              type="button"
-              onClick={() => setView('grid')}
-              aria-pressed={view === 'grid'}
-              className={
-                'px-4 py-2 text-sm inline-flex items-center gap-1.5 ' +
-                (view === 'grid'
-                  ? 'bg-foreground text-background'
-                  : 'bg-background hover:bg-muted')
-              }
-            >
-              <LayoutGrid className="w-4 h-4" /> Grid
-            </button>
-            <button
-              type="button"
-              onClick={() => setView('map')}
-              aria-pressed={view === 'map'}
-              className={
-                'px-4 py-2 text-sm inline-flex items-center gap-1.5 border-l border-foreground/20 ' +
-                (view === 'map'
-                  ? 'bg-foreground text-background'
-                  : 'bg-background hover:bg-muted')
-              }
-            >
-              <MapIcon className="w-4 h-4" /> Map
-            </button>
-          </div>
-        </div>
-
-        <HotelFilters
-          search={search}
-          onSearchChange={setSearch}
-          hotelType={hotelType}
-          onTypeChange={setHotelType}
-          priceRange={priceRange}
-          onPriceChange={setPriceRange}
-        />
-
-        {view === 'map' ? (
-          <Suspense
-            fallback={
-              <div className="flex items-center justify-center h-[560px] border border-foreground/10" role="status" aria-label="Loading map">
-                <TrackLoader size={20} />
-              </div>
-            }
-          >
-            <HotelsMap hotels={hotels} />
-          </Suspense>
-        ) : loading && hotels.length === 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {Array.from({ length: 8 }).map((_, i) => (<HotelCard key={i} loading />))}
-          </div>
-        ) : hotels.length === 0 ? (
-          isModuleEmpty ? (
-            <EmptyState
-              icon={HotelIcon}
-              variant="empty"
-              title={t('pages.hotels.emptyDataset.title', 'No hotels yet')}
-              description={t(
-                'pages.hotels.emptyDataset.body',
-                "We haven't added any hotels here yet. Help us grow the guide by submitting one.",
-              )}
-              primaryAction={{
-                label: t('pages.hotels.submitHotel', 'Submit Hotel'),
-                onClick: () => navigate('/submit/hotel'),
-              }}
-            />
-          ) : (
-            <EmptyState
-              icon={HotelIcon}
-              variant="filtered"
-              title={t('pages.hotels.filteredEmpty.title', 'No hotels match your filters')}
-              description={t(
-                'pages.hotels.filteredEmpty.body',
-                'Try adjusting your filters or search to see more results.',
-              )}
-              activeFilters={activeFilterChips}
-              primaryAction={{
-                label: t('pages.hotels.submitHotel', 'Submit Hotel'),
-                onClick: () => navigate('/submit/hotel'),
-              }}
-              secondaryAction={
-                hasActiveFilters
-                  ? {
-                      label: t('pages.hotels.resetFilters', 'Reset filters'),
-                      onClick: resetFilters,
-                      variant: 'outline',
-                    }
-                  : undefined
-              }
-            />
-          )
-        ) : (
-          <>
-            <BentoSection preset="mosaic">
-              {hotels.map((hotel, i) => (
-                <div key={hotel.id} className={HOTEL_SPAN_CLASS[spansForPreset('mosaic', i, hotels.length)]}>
-                  <HotelCard hotel={hotel} />
-                </div>
-              ))}
-            </BentoSection>
-
-            {hasMore && (
-              <div className="flex justify-center mt-8">
-                <Button variant="outline" onClick={handleLoadMore} disabled={loading}>
-                  {loading ? <TrackLoader size={16} label="Loading" className="mr-2" /> : null}
-                  {t('common.loadMore', 'Load More')}
-                </Button>
-              </div>
-            )}
-          </>
+        {showDiscovery && topCities.length > 0 && (
+          <section className="space-y-4">
+            <h3 className="text-lg font-semibold">Top cities for queer stays</h3>
+            <DestinationTiles cities={topCities} />
+          </section>
         )}
-      </section>
-      </div>
+
+        {showDiscovery && inVillages.length > 0 && (
+          <HotelScrollerRow
+            title="In queer villages"
+            subtitle="Hotels in historic LGBTQ+ neighborhoods"
+            hotels={inVillages}
+          />
+        )}
+
+        {showDiscovery && picks.length > 0 && (
+          <HotelScrollerRow title="Editor's picks" hotels={picks} />
+        )}
+
+        <section className="space-y-4">
+          <div className="flex items-center justify-between gap-4 flex-wrap">
+            <h3 className="text-lg font-semibold">
+              {hasActiveFilters ? 'Matching hotels' : 'All hotels'}
+            </h3>
+            <div className="inline-flex border border-foreground/20">
+              <button
+                type="button"
+                onClick={() => setView('grid')}
+                aria-pressed={view === 'grid'}
+                className={
+                  'px-4 py-2 text-sm inline-flex items-center gap-1.5 ' +
+                  (view === 'grid'
+                    ? 'bg-foreground text-background'
+                    : 'bg-background hover:bg-muted')
+                }
+              >
+                <LayoutGrid className="w-4 h-4" /> Grid
+              </button>
+              <button
+                type="button"
+                onClick={() => setView('map')}
+                aria-pressed={view === 'map'}
+                className={
+                  'px-4 py-2 text-sm inline-flex items-center gap-1.5 border-l border-foreground/20 ' +
+                  (view === 'map'
+                    ? 'bg-foreground text-background'
+                    : 'bg-background hover:bg-muted')
+                }
+              >
+                <MapIcon className="w-4 h-4" /> Map
+              </button>
+            </div>
+          </div>
+
+          <HotelFilters
+            search={search}
+            onSearchChange={setSearch}
+            hotelType={hotelType}
+            onTypeChange={setHotelType}
+            priceRange={priceRange}
+            onPriceChange={setPriceRange}
+          />
+
+          {view === 'map' ? (
+            <Suspense
+              fallback={
+                <div
+                  className="flex items-center justify-center h-[560px] border border-foreground/10"
+                  role="status"
+                  aria-label="Loading map"
+                >
+                  <TrackLoader size={20} />
+                </div>
+              }
+            >
+              <HotelsMap hotels={hotels} />
+            </Suspense>
+          ) : loading && hotels.length === 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <HotelCard key={i} loading />
+              ))}
+            </div>
+          ) : hotels.length === 0 ? (
+            isModuleEmpty ? (
+              <EmptyState
+                icon={HotelIcon}
+                variant="empty"
+                title={t('pages.hotels.emptyDataset.title', 'No hotels yet')}
+                description={t(
+                  'pages.hotels.emptyDataset.body',
+                  "We haven't added any hotels here yet. Help us grow the guide by submitting one.",
+                )}
+                primaryAction={{
+                  label: t('pages.hotels.submitHotel', 'Submit Hotel'),
+                  onClick: () => navigate('/submit/hotel'),
+                }}
+              />
+            ) : (
+              <EmptyState
+                icon={HotelIcon}
+                variant="filtered"
+                title={t('pages.hotels.filteredEmpty.title', 'No hotels match your filters')}
+                description={t(
+                  'pages.hotels.filteredEmpty.body',
+                  'Try adjusting your filters or search to see more results.',
+                )}
+                activeFilters={activeFilterChips}
+                primaryAction={{
+                  label: t('pages.hotels.submitHotel', 'Submit Hotel'),
+                  onClick: () => navigate('/submit/hotel'),
+                }}
+                secondaryAction={
+                  hasActiveFilters
+                    ? {
+                        label: t('pages.hotels.resetFilters', 'Reset filters'),
+                        onClick: resetFilters,
+                        variant: 'outline',
+                      }
+                    : undefined
+                }
+              />
+            )
+          ) : (
+            <>
+              <BentoSection preset="mosaic">
+                {hotels.map((hotel, i) => (
+                  <div
+                    key={hotel.id}
+                    className={HOTEL_SPAN_CLASS[spansForPreset('mosaic', i, hotels.length)]}
+                  >
+                    <HotelCard hotel={hotel} />
+                  </div>
+                ))}
+              </BentoSection>
+
+              {hasMore && (
+                <div className="flex justify-center mt-8">
+                  <Button variant="outline" onClick={handleLoadMore} disabled={loading}>
+                    {loading ? <TrackLoader size={16} label="Loading" className="mr-2" /> : null}
+                    {t('common.loadMore', 'Load More')}
+                  </Button>
+                </div>
+              )}
+            </>
+          )}
+        </section>
+      </PageContainer>
     </div>
   );
 }

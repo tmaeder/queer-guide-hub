@@ -41,6 +41,7 @@ import { GroupEventCard } from '@/components/groups/GroupEventCard';
 import { useTranslation } from 'react-i18next';
 import { Editable } from '@/components/admin/inline/Editable';
 import { GroupCollections } from '@/components/groups/GroupCollections';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 export default function GroupDetail() {
   const { groupId } = useParams<{ groupId: string }>();
@@ -109,31 +110,31 @@ export default function GroupDetail() {
 
   if (!user) {
     return (
-      <div className="mx-auto py-8">
+      <PageContainer>
         <Alert>
           <AlertDescription>
             {t('pages.groupDetail.signInRequired', 'Please sign in to view group details.')}
           </AlertDescription>
         </Alert>
-      </div>
+      </PageContainer>
     );
   }
 
   if (isLoading) {
     return (
-      <div className="mx-auto py-8">
+      <PageContainer>
         <div className="animate-pulse flex flex-col gap-6">
           <div className="h-8 bg-muted rounded-element w-1/3" />
           <div className="h-32 bg-muted rounded-element" />
           <div className="h-64 bg-muted rounded-element" />
         </div>
-      </div>
+      </PageContainer>
     );
   }
 
   if (!group) {
     return (
-      <div className="mx-auto py-8">
+      <PageContainer>
         <div className="text-center flex flex-col gap-4">
           <h1 className="text-2xl font-bold">Group not found</h1>
           <p className="text-muted-foreground">
@@ -146,14 +147,14 @@ export default function GroupDetail() {
             </LocalizedLink>
           </Button>
         </div>
-      </div>
+      </PageContainer>
     );
   }
 
   const canManage = group.user_role === 'admin' || group.user_role === 'moderator';
 
   return (
-    <div className="mx-auto py-8 flex flex-col gap-6">
+    <PageContainer className="flex flex-col gap-6">
       {/* Header */}
       <div className="flex items-center gap-4 mb-6">
         <Button variant="outline" onClick={() => navigate(-1)}>
@@ -183,9 +184,7 @@ export default function GroupDetail() {
                       field="name"
                       value={group.name}
                       onSaved={(next) =>
-                        setGroup((prev) =>
-                          prev ? { ...prev, name: String(next ?? '') } : prev,
-                        )
+                        setGroup((prev) => (prev ? { ...prev, name: String(next ?? '') } : prev))
                       }
                     >
                       {group.name}
@@ -232,9 +231,7 @@ export default function GroupDetail() {
                   field="description"
                   value={group.description}
                   onSaved={(next) =>
-                    setGroup((prev) =>
-                      prev ? { ...prev, description: String(next ?? '') } : prev,
-                    )
+                    setGroup((prev) => (prev ? { ...prev, description: String(next ?? '') } : prev))
                   }
                   fieldOverride={{ type: 'textarea' }}
                   as="div"
@@ -315,7 +312,11 @@ export default function GroupDetail() {
             <Calendar size={16} />
             Events
           </TabsTrigger>
-          <TabsTrigger value="collections" style={{ alignItems: 'center', gap: '8px' }} className="flex">
+          <TabsTrigger
+            value="collections"
+            style={{ alignItems: 'center', gap: '8px' }}
+            className="flex"
+          >
             <Folder size={16} />
             Collections
           </TabsTrigger>
@@ -338,7 +339,6 @@ export default function GroupDetail() {
               ) : (
                 <p className="text-muted-foreground italic">No description available.</p>
               )}
-
 
               <div className="flex flex-col gap-4">
                 <h4 className="text-base font-semibold">Group Details</h4>
@@ -444,11 +444,7 @@ export default function GroupDetail() {
           </Card>
         </TabsContent>
 
-        <TabsContent
-          value="chat"
-          style={{ flexDirection: 'column', gap: '24px' }}
-          className="flex"
-        >
+        <TabsContent value="chat" style={{ flexDirection: 'column', gap: '24px' }} className="flex">
           <Card>
             <CardContent
               style={{ padding: '32px' }}
@@ -614,6 +610,6 @@ export default function GroupDetail() {
           <GroupCollections groupId={groupId!} isMember={Boolean(group.is_member)} />
         </TabsContent>
       </Tabs>
-    </div>
+    </PageContainer>
   );
 }

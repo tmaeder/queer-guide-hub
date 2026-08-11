@@ -14,6 +14,7 @@ import { EraSection } from '@/components/milestones/EraSection';
 import { OnThisDayBand } from '@/components/milestones/OnThisDayBand';
 import { MILESTONE_CATEGORIES, milestoneCategoryLabelKey } from '@/types/milestone';
 import { cn } from '@/lib/utils';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 const IMPACTS = ['positive', 'neutral', 'negative'] as const;
 
@@ -102,7 +103,7 @@ export default function HistoryTimeline() {
   });
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <PageContainer>
       {/* Editorial hero */}
       <header className="mb-10 max-w-3xl">
         <p className="text-2xs uppercase tracking-wider text-muted-foreground">
@@ -227,7 +228,7 @@ export default function HistoryTimeline() {
           ))}
         </div>
       )}
-    </div>
+    </PageContainer>
   );
 }
 

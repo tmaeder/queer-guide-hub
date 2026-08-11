@@ -20,6 +20,7 @@ import { useConsolidatedStats } from '@/hooks/useConsolidatedStats';
 import { Timeline } from '@/components/effects/Timeline';
 import { EditorialHero } from '@/components/editorial/EditorialHero';
 import { EDITORIAL_IMAGES, type EditorialImage } from '@/lib/editorialImages';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 interface FeatureItem {
   icon: typeof MapPin;
@@ -187,8 +188,8 @@ export default function About() {
   return (
     <div className="min-h-screen">
       {/* Hero */}
-      <section className="px-4 sm:px-6 md:px-8 pt-8 md:pt-12">
-        <div className="max-w-6xl mx-auto">
+      <section className="pt-8 md:pt-12">
+        <PageContainer flush>
           <EditorialHero
             eyebrow="About us"
             title="Built by queers, for everyone."
@@ -198,12 +199,12 @@ export default function About() {
             decoration="grid"
             height="lg"
           />
-        </div>
+        </PageContainer>
       </section>
 
       {/* Stats strip */}
       <div className="mt-12 md:mt-16 bg-foreground text-background">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 md:px-8 py-10 md:py-14">
+        <PageContainer>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-8">
             {statItems.map((stat) => (
               <div key={stat.label}>
@@ -218,12 +219,15 @@ export default function About() {
               </div>
             ))}
           </div>
-        </div>
+        </PageContainer>
       </div>
 
       {/* Our Story */}
-      <section className="px-4 sm:px-6 md:px-8 py-16 md:py-24">
-        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-[1.1fr_0.9fr] gap-10 md:gap-16">
+      <section className="py-16 md:py-24">
+        <PageContainer
+          flush
+          className="grid grid-cols-1 md:grid-cols-[1.1fr_0.9fr] gap-10 md:gap-16"
+        >
           <div>
             <h2 className="font-bold text-headline md:text-display">Our story</h2>
             <div className="mt-6 flex flex-col gap-6 max-w-prose">
@@ -252,12 +256,12 @@ export default function About() {
               ))}
             </dl>
           </div>
-        </div>
+        </PageContainer>
       </section>
 
       {/* What We Offer */}
-      <section className="px-4 sm:px-6 md:px-8 py-16 md:py-24 bg-muted/40 dark:bg-card/30 border-y border-border">
-        <div className="max-w-6xl mx-auto">
+      <section className="py-16 md:py-24 bg-muted/40 dark:bg-card/30 border-y border-border">
+        <PageContainer flush>
           <h2 className="font-bold text-headline md:text-display">What we offer</h2>
           <p className="mt-4 text-body-lg leading-[1.6] text-muted-foreground max-w-prose">
             Five ways to find your people — and the spaces that welcome them.
@@ -296,12 +300,12 @@ export default function About() {
               </LocalizedLink>
             ))}
           </div>
-        </div>
+        </PageContainer>
       </section>
 
       {/* Our Values */}
-      <section className="px-4 sm:px-6 md:px-8 py-16 md:py-24">
-        <div className="max-w-6xl mx-auto">
+      <section className="py-16 md:py-24">
+        <PageContainer flush>
           <h2 className="font-bold text-headline md:text-display">What we value</h2>
           <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-8">
             {values.map((value) => (
@@ -318,12 +322,12 @@ export default function About() {
               </div>
             ))}
           </div>
-        </div>
+        </PageContainer>
       </section>
 
       {/* The People Behind It */}
-      <section className="px-4 sm:px-6 md:px-8 py-16 md:py-24 bg-muted/40 dark:bg-card/30 border-y border-border">
-        <div className="max-w-6xl mx-auto">
+      <section className="py-16 md:py-24 bg-muted/40 dark:bg-card/30 border-y border-border">
+        <PageContainer flush>
           <h2 className="font-bold text-headline md:text-display">The people behind it</h2>
           <p className="mt-4 text-body-lg leading-[1.6] text-muted-foreground max-w-prose">
             Queer Guide isn't run by a corporation — it's powered by community members who volunteer
@@ -344,17 +348,17 @@ export default function About() {
               </Card>
             ))}
           </div>
-        </div>
+        </PageContainer>
       </section>
 
       {/* Timeline */}
-      <section className="px-4 sm:px-6 md:px-8 py-16 md:py-24">
-        <div className="max-w-6xl mx-auto">
+      <section className="py-16 md:py-24">
+        <PageContainer flush>
           <h2 className="font-bold text-headline md:text-display">How we got here</h2>
           <p className="mt-4 text-body-lg leading-[1.6] text-muted-foreground max-w-prose">
             A side-project that became a global directory.
           </p>
-        </div>
+        </PageContainer>
         <Timeline
           data={[
             {
@@ -399,8 +403,8 @@ export default function About() {
       </section>
 
       {/* Closing CTA — get involved */}
-      <section className="px-4 sm:px-6 md:px-8 py-16 md:py-24 bg-foreground text-background">
-        <div className="max-w-6xl mx-auto">
+      <section className="py-16 md:py-24 bg-foreground text-background">
+        <PageContainer flush>
           <h2 className="font-bold text-headline md:text-display max-w-2xl">
             Help us write the next chapter.
           </h2>
@@ -449,7 +453,7 @@ export default function About() {
               </LocalizedLink>
             </Button>
           </div>
-        </div>
+        </PageContainer>
       </section>
     </div>
   );

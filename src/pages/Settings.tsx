@@ -40,6 +40,7 @@ import type { AvatarConfig } from '@/components/profile/avatarConfig';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { cn } from '@/lib/utils';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 /** Columns newer than the generated Supabase types. */
 type ProfileX = Profile & {
@@ -420,7 +421,7 @@ function ProfileSettingsContent({
   const toggleSection = (next: SectionKind) => setActiveSection(next);
 
   return (
-    <div className="container mx-auto py-8 px-4 flex flex-col gap-6 pb-24 max-w-2xl">
+    <PageContainer size="form" className="flex flex-col gap-6">
       <PageHeader
         title="Settings"
         subtitle="Your profile, the way you want to be seen"
@@ -635,14 +636,14 @@ function ProfileSettingsContent({
 
       {/* Sticky auto-save status bar */}
       <div className="fixed inset-x-0 bottom-0 z-30 bg-background/95">
-        <div className="container mx-auto px-4 py-4">
+        <PageContainer flush className="py-4">
           <SaveStatusLine
             status={saveStatus}
             onRetry={() => handleSave(false)}
             onSignIn={() => navigate('/auth')}
           />
-        </div>
+        </PageContainer>
       </div>
-    </div>
+    </PageContainer>
   );
 }

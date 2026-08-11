@@ -10,6 +10,7 @@ import { MarketplaceCard } from '@/components/marketplace/MarketplaceCard';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Store } from 'lucide-react';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 const MarketplaceCollection = () => {
   const { t } = useTranslation();
@@ -38,7 +39,7 @@ const MarketplaceCollection = () => {
 
   if (notFound) {
     return (
-      <div className="container mx-auto py-16 px-4">
+      <PageContainer>
         <EmptyState
           icon={Store}
           title="Collection not found"
@@ -46,21 +47,21 @@ const MarketplaceCollection = () => {
           mood="neutral"
           primaryAction={{ label: 'Back to marketplace', onClick: () => navigate('/marketplace') }}
         />
-      </div>
+      </PageContainer>
     );
   }
 
   if (loading || !collection) {
     return (
-      <div className="container mx-auto py-16 px-4">
+      <PageContainer>
         <p className="text-muted-foreground">Loading…</p>
-      </div>
+      </PageContainer>
     );
   }
 
   return (
     <div className="min-h-screen">
-      <div className="container mx-auto py-12 md:py-16 px-4">
+      <PageContainer>
         <header className="mb-12 max-w-3xl">
           <p className="text-13 uppercase tracking-wide text-muted-foreground mb-2">Collection</p>
           <h1 className="text-headline md:text-display font-semibold mb-4 leading-tight">
@@ -96,7 +97,7 @@ const MarketplaceCollection = () => {
             ))}
           </div>
         )}
-      </div>
+      </PageContainer>
     </div>
   );
 };

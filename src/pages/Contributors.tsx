@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router';
 import { motion, useReducedMotion } from 'motion/react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { usePublicRecognitions, type RecognitionPublicRow } from '@/hooks/useRecognitions';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 const CATEGORY_LABELS: Record<string, string> = {
   venue_scout: 'Venue scouts',
@@ -122,7 +123,7 @@ export default function Contributors() {
   })).filter((g) => g.rows.length > 0);
 
   return (
-    <div className="mx-auto max-w-5xl px-6 py-16 sm:py-24">
+    <PageContainer>
       <header className="pb-12 mb-12">
         <p className="text-sm uppercase tracking-widest text-muted-foreground mb-4">
           Recognition Wall
@@ -185,6 +186,6 @@ export default function Contributors() {
       <footer className="pt-8 mt-16 text-xs text-muted-foreground">
         Selected by the editorial team. Anyone can opt out of being named in their profile settings.
       </footer>
-    </div>
+    </PageContainer>
   );
 }

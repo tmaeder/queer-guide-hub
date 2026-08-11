@@ -15,6 +15,7 @@ import {
   useMarketplaceTagFacets,
 } from '@/hooks/useMarketplaceQueries';
 import { DEPARTMENT_GROUPS, DEPARTMENT_LABELS, groupLabel } from '@/lib/marketplaceTaxonomy';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 function prettify(slug: string): string {
   return slug.replace(/[_-]+/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
@@ -131,7 +132,7 @@ export default function MarketplaceCategory() {
 
   if (!subcategory) {
     return (
-      <div className="container mx-auto py-12 px-4 text-center">
+      <PageContainer className="text-center">
         <h1 className="text-2xl font-bold mb-4">Category not found</h1>
         {/* asChild, not a Link wrapping a Button — that nests a <button>
             inside an <a>, which is invalid HTML. */}
@@ -141,14 +142,17 @@ export default function MarketplaceCategory() {
             Back to Marketplace
           </LocalizedLink>
         </Button>
-      </div>
+      </PageContainer>
     );
   }
 
   return (
     <div className="min-h-screen">
-      <div className="container mx-auto py-12 md:py-20 px-4">
-        <PageHeader title={name} subtitle="Queer-friendly products and services in this category." />
+      <PageContainer>
+        <PageHeader
+          title={name}
+          subtitle="Queer-friendly products and services in this category."
+        />
 
         {isDepartment && groupTiles.length > 1 && (
           <div className="mb-6 flex flex-wrap gap-2" aria-label="Filter by subcategory">
@@ -172,7 +176,8 @@ export default function MarketplaceCategory() {
                 active={selectedTags.includes(tag.slug)}
                 onClick={() => toggleTag(tag.slug)}
               >
-                {tag.name} <span className="text-muted-foreground">{tag.count.toLocaleString()}</span>
+                {tag.name}{' '}
+                <span className="text-muted-foreground">{tag.count.toLocaleString()}</span>
               </Chip>
             ))}
           </div>
@@ -183,7 +188,7 @@ export default function MarketplaceCategory() {
           emptyTitle={`No ${name.toLowerCase()} listings yet.`}
           emptyDescription="Check back soon or list a business."
         />
-      </div>
+      </PageContainer>
       <AdultContentGate active={isAdultCategorySlug(subcategory)} fallbackPath="/marketplace" />
     </div>
   );

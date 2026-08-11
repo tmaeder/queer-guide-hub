@@ -44,6 +44,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { ErrorState } from '@/components/ui/EmptyState';
 import { classifyTripError } from '@/utils/tripError';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 const BudgetTab = lazy(() =>
   import('@/components/trips/BudgetTab').then((m) => ({ default: m.BudgetTab })),
@@ -128,18 +129,18 @@ export default function TripPlannerPage() {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto py-6 md:py-10">
+      <PageContainer>
         <Skeleton className="h-[220px] rounded-container mb-6" />
         <Skeleton className="h-7 w-60" />
         <Skeleton className="h-[400px] mt-6 rounded-container" />
-      </div>
+      </PageContainer>
     );
   }
 
   if (error || !trip) {
     const kind = classifyTripError(tripId, error, trip) ?? 'load-error';
     return (
-      <div className="container mx-auto py-8 md:py-16">
+      <PageContainer>
         <ErrorState
           title={t(`trips.error.${kind}.title`)}
           description={t(`trips.error.${kind}.description`)}
@@ -149,7 +150,7 @@ export default function TripPlannerPage() {
             variant: 'default',
           }}
         />
-      </div>
+      </PageContainer>
     );
   }
 
@@ -177,7 +178,7 @@ export default function TripPlannerPage() {
   };
 
   return (
-    <div className="container mx-auto py-6 md:py-8">
+    <PageContainer>
       {/* Back to trips */}
       <Button
         variant="ghost"
@@ -368,10 +369,7 @@ export default function TripPlannerPage() {
       )}
 
       {/* === MORE PANEL (secondary tools) === */}
-      <section
-        className="mt-8 pt-6"
-        aria-label={t('trips.timeline.more', 'More tools')}
-      >
+      <section className="mt-8 pt-6" aria-label={t('trips.timeline.more', 'More tools')}>
         <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground mb-4">
           {t('trips.timeline.more', 'More tools')}
         </h2>
@@ -585,6 +583,6 @@ export default function TripPlannerPage() {
       />
 
       <ShareTripDialog open={shareOpen} onClose={() => setShareOpen(false)} tripId={trip.id} />
-    </div>
+    </PageContainer>
   );
 }

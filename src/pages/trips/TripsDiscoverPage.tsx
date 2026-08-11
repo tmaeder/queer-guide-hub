@@ -28,6 +28,7 @@ import {
   REGION_ORDER,
   type DiscoverRegion,
 } from '@/components/trips/regions';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 const DiscoverMap = lazy(() =>
   import('@/components/trips/DiscoverMap').then((m) => ({ default: m.DiscoverMap })),
@@ -161,7 +162,7 @@ export default function TripsDiscoverPage() {
   }, [sorted, showRegionRails]);
 
   return (
-    <div className="container mx-auto max-w-screen-lg px-4 py-6 md:py-10">
+    <PageContainer>
       <PageHeader
         eyebrow={t('trips.discover.eyebrow', 'Real travelers')}
         title={t('trips.discover.title', 'Public trips')}
@@ -381,7 +382,7 @@ export default function TripsDiscoverPage() {
           )}
         </>
       )}
-    </div>
+    </PageContainer>
   );
 }
 

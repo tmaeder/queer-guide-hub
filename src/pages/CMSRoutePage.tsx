@@ -30,6 +30,7 @@ import { AccessibilityControls } from '@/components/accessibility/AccessibilityC
 import { EDITORIAL_IMAGES, type EditorialImage } from '@/lib/editorialImages';
 import type { CMSPage } from '@/types/cms';
 import type { LucideIcon } from 'lucide-react';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 // Slugs that get the polished EditorialHero treatment in the default CMS layout
 // (instead of the raw cover_image_url <img>).
@@ -113,7 +114,7 @@ function CmsBodyStyles() {
 // ── Skeleton ────────────────────────────────────────────────────────────────
 function PageSkeleton() {
   return (
-    <div className="mx-auto w-full max-w-screen-lg px-4 py-8 sm:px-6">
+    <PageContainer className="w-full">
       <Skeleton className="mb-4 h-6 w-32" />
       <Skeleton className="mb-2 h-12 w-[70%]" />
       <Skeleton className="mb-8 h-7 w-1/2" />
@@ -122,7 +123,7 @@ function PageSkeleton() {
       <Skeleton className="mb-2 h-5 w-[90%]" />
       <Skeleton className="mb-2 h-5 w-[95%]" />
       <Skeleton className="h-5 w-[80%]" />
-    </div>
+    </PageContainer>
   );
 }
 
@@ -202,12 +203,12 @@ export default function CMSRoutePage({ slug }: CMSRoutePageProps) {
 
   if (notFound || !page) {
     return (
-      <div className="mx-auto w-full max-w-screen-lg px-4 py-16 text-center sm:px-6">
+      <PageContainer className="w-full text-center">
         <h1 className="mb-2 text-3xl font-bold">Page Not Found</h1>
         <p className="text-muted-foreground">
           The page you're looking for doesn't exist or hasn't been published yet.
         </p>
-      </div>
+      </PageContainer>
     );
   }
 
@@ -219,7 +220,7 @@ export default function CMSRoutePage({ slug }: CMSRoutePageProps) {
   // ── Legal hub layout ────────────────────────────────────────────────────
   if (isLegalHub) {
     return (
-      <div className="mx-auto w-full max-w-[900px] px-4 py-8 sm:px-6 md:py-12">
+      <PageContainer size="reading" className="w-full">
         <EditorialHero
           eyebrow="Legal"
           title="The Legal Stuff"
@@ -243,7 +244,7 @@ export default function CMSRoutePage({ slug }: CMSRoutePageProps) {
             legal@queer.guide
           </a>
         </p>
-      </div>
+      </PageContainer>
     );
   }
 
@@ -286,7 +287,7 @@ export default function CMSRoutePage({ slug }: CMSRoutePageProps) {
   const editorialHero = EDITORIAL_SLUGS.has(slug) ? getEditorialImage(slug) : undefined;
 
   return (
-    <div className="mx-auto w-full max-w-screen-lg px-4 py-8 sm:px-6">
+    <PageContainer className="w-full">
       <CmsBodyStyles />
 
       {editorialHero ? (
@@ -348,6 +349,6 @@ export default function CMSRoutePage({ slug }: CMSRoutePageProps) {
           ))}
         </div>
       )}
-    </div>
+    </PageContainer>
   );
 }

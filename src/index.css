@@ -57,7 +57,8 @@
 
 @theme {
   /* ── Font families ─────────────────────────────────────────────── */
-  --font-sans: 'Space Grotesk', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-sans:
+    'Space Grotesk', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-display: 'Anton', 'Space Grotesk', system-ui, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
 
@@ -124,6 +125,24 @@
      `tracking-wide` literal flagged in UI audit P8 §5 and the
      `tracking-[0.04em]` arbitraries scattered across admin + trips. */
   --tracking-label: 0.04em;
+
+  /* ── Page containers — the ONE page-layout API ─────────────────────
+     Tailwind v4's --container-* namespace generates max-w-* utilities, so
+     these are reachable as `max-w-page` / `max-w-reading` / `max-w-form`.
+     Consume them through <PageContainer> (src/components/layout/
+     PageContainer.tsx), never by hand — see docs/design-system/README.md
+     §Page layout. Before these existed, nothing owned page-level spacing:
+     the shell contributes zero gutters, so ~118 page files each redeclared
+     their own and produced 12 distinct caps with 62 pages pinned at a flat
+     px-4 while the header and footer grew to md:px-8.
+
+     1600 rather than the old de-facto max-w-7xl (1280): the cap exists to
+     keep grids from spreading, and 1280 was leaving a third of a common
+     desktop viewport as dead margin. Prose does not scale with it — long
+     text keeps its own measure, hence the second and third tokens. */
+  --container-page: 100rem; /* 1600 — standard page content cap */
+  --container-reading: 48rem; /* 768  — long-form prose measure */
+  --container-form: 32rem; /* 512  — single-column forms, auth, steppers */
 
   /* ── Border radius — semantic 3-tier system + flat + full ──────────
      Legacy --radius-{xs..4xl} ladder retired 2026-05-20 (UI audit P6);
@@ -1283,7 +1302,6 @@ h2,
   background-color: hsl(var(--background) / 0.2);
 }
 
-
 .duotone-riso {
   position: relative;
   isolation: isolate;
@@ -1435,11 +1453,6 @@ h2,
   );
 }
 
-
-
-
-
-
 /* Marquee — horizontal infinite scroll. */
 @keyframes marquee-fwd {
   from {
@@ -1463,7 +1476,6 @@ h2,
     animation: none !important;
   }
 }
-
 
 /* ── Image lazy-load fade ─────────────────────────────────────────── */
 

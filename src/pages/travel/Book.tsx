@@ -4,6 +4,7 @@ import { ChevronLeft } from 'lucide-react';
 import { BookNowAccordion } from '@/components/travel/BookNowAccordion';
 import { useTripBookingContext } from '@/hooks/useTripBookingContext';
 import { useMeta } from '@/hooks/useMeta';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 /**
  * Dedicated booking surface, extracted from /travel in v2.
@@ -25,7 +26,7 @@ export default function Book() {
   });
 
   return (
-    <div className="container mx-auto max-w-screen-xl px-4 py-8 md:py-12">
+    <PageContainer>
       <nav aria-label="Breadcrumb" className="mb-4 text-sm">
         <LocalizedLink
           to="/travel"
@@ -45,6 +46,6 @@ export default function Book() {
         )}
       </p>
       <BookNowAccordion defaultOpen tripContext={tripBookingContext} />
-    </div>
+    </PageContainer>
   );
 }

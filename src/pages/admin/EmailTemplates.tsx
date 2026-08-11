@@ -79,7 +79,6 @@ export default function EmailTemplates() {
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- effect synchronizes state with external props/data; React Compiler can't infer the sync direction. Documented exemption from the eslint.config.js staged-ratchet plan.
     fetchTemplates();
-     
   }, []);
 
   const handleSaveTemplate = async () => {
@@ -179,7 +178,7 @@ export default function EmailTemplates() {
   }
 
   return (
-    <div className="container mx-auto py-8 px-4 flex flex-col gap-6">
+    <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
         <div>
           <h4 className="text-2xl font-bold">Email Templates</h4>

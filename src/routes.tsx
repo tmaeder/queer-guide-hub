@@ -7,6 +7,7 @@ import { LocaleRouter } from '@/components/routing/LocaleRouter';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { RouteFade } from '@/components/layout/RouteFade';
+import { PageContainer } from '@/components/layout/PageContainer';
 import { lazyRetry } from '@/utils/lazyRetry';
 import { submissionRegistry } from '@/config/submissionRegistry';
 import { DEFAULT_LOCALE, isSupportedLocale } from '@/i18n/languages';
@@ -271,15 +272,29 @@ export const AppRoutes = () => {
 
   // Move focus to main content on route change (a11y: WCAG 2.4.3)
   const mainRef = React.useRef<HTMLElement>(null);
-  const isFirstRender = React.useRef(true);
+  const lastPathRef = React.useRef<string | null>(null);
   const [routeAnnouncement, setRouteAnnouncement] = React.useState('');
   const { t } = useTranslation();
 
+  // Gate on the pathname ACTUALLY changing, not on "this isn't the first
+  // effect run". `t` is a dependency (the announcement is translated) and
+  // react-i18next hands back a fresh `t` identity once i18next emits
+  // `initialized`/`loaded` — which happens shortly AFTER first paint. The old
+  // one-shot `isFirstRender` flag was already spent by then, so that second
+  // run focused <main> on the very first page load. Focusing a `tabIndex={-1}`
+  // <main> with `preventScroll: false` scrolls it into view, which jumped the
+  // document ~127px with no user input, latched useCompactHeader (>40px, and
+  // it never un-latches without a later scroll below 4px) and collapsed the
+  // header to its one-line state — deleting the entire desktop Intent Router
+  // row, so /venues and /people were unreachable from desktop chrome on every
+  // fresh load. It also announced "Navigated to …" to screen readers before
+  // any navigation had happened.
   React.useEffect(() => {
-    if (isFirstRender.current) {
-      isFirstRender.current = false;
-      return;
-    }
+    const previousPath = lastPathRef.current;
+    lastPathRef.current = location.pathname;
+    // null = first run (seed only). Equal = a `t` identity change or a
+    // StrictMode double-invoke, neither of which is a navigation.
+    if (previousPath === null || previousPath === location.pathname) return;
     requestAnimationFrame(() => {
       mainRef.current?.focus({ preventScroll: false });
       // Announce route change to screen readers
@@ -314,12 +329,12 @@ export const AppRoutes = () => {
         <ErrorBoundary key={location.pathname}>
           <Suspense
             fallback={
-              <div className="py-10 px-4 sm:px-6 mx-auto">
+              <PageContainer>
                 <div className="grid gap-6 grid-cols-1 sm:grid-cols-2">
                   <Skeleton />
                   <Skeleton />
                 </div>
-              </div>
+              </PageContainer>
             }
           >
             <RouteFade>
