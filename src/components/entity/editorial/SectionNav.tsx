@@ -1,4 +1,5 @@
 import { useEffect, useRef, type ReactNode } from 'react';
+import { STICKY_UNDER_HEADER } from '@/components/layout/PageContainer';
 import { cn } from '@/lib/utils';
 
 export interface SectionNavItem {
@@ -47,7 +48,8 @@ export function SectionNav({ items, activeId, onSelect, className }: SectionNavP
          lines up with the page content above it — at a flat `-mx-4` the rule
          stopped 16px short of the gutter from `sm` up. */
       className={cn(
-        'sticky top-16 z-30 -mx-4 mb-8 border-b-2 border-foreground bg-background sm:-mx-6 md:-mx-8',
+        'sticky z-30 -mx-4 mb-8 border-b-2 border-foreground bg-background sm:-mx-6 md:-mx-8',
+        STICKY_UNDER_HEADER,
         className,
       )}
     >
