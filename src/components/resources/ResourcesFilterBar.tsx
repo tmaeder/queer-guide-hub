@@ -27,6 +27,7 @@ import {
 } from 'lucide-react';
 import { getCategoryShortName, parentOrder } from './categoryMeta';
 import type { CategoryTreeNode } from '@/hooks/useCentralizedTags';
+import { STICKY_UNDER_HEADER } from '@/components/layout/PageContainer';
 
 type DisplayMode = 'chips' | 'grid' | 'list';
 type SortOption = 'alphabetical' | 'usage' | 'recent';
@@ -75,7 +76,9 @@ export function ResourcesFilterBar({
   const [advancedOpen, setAdvancedOpen] = useState(advancedActive);
 
   return (
-    <div className="sticky top-0 z-20 rounded-element border-[3px] border-foreground bg-surface-container p-4 md:p-6 mb-6">
+    <div
+      className={`sticky ${STICKY_UNDER_HEADER} z-20 rounded-element border-[3px] border-foreground bg-surface-container p-4 md:p-6 mb-6`}
+    >
       <div className="flex flex-col sm:flex-row gap-4 mb-4">
         <div className="relative flex-1">
           <Search

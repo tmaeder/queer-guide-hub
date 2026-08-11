@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { HISTORY_ERAS } from '@/config/historyEras';
+import { PAGE_BLEED, PAGE_GUTTER, STICKY_UNDER_HEADER } from '@/components/layout/PageContainer';
 
 /**
  * Sticky chapter navigation for /history — era title + filtered count chips
@@ -12,7 +13,7 @@ export function EraJumpNav({ counts }: { counts: Map<string, number> | undefined
   return (
     <nav
       aria-label={t('milestones.eraNav', 'Jump to era')}
-      className="sticky top-[56px] z-10 -mx-4 mb-8 bg-background border-b-[3px] border-foreground px-4 md:top-[64px]"
+      className={`sticky ${STICKY_UNDER_HEADER} z-10 ${PAGE_BLEED} mb-8 bg-background border-b-[3px] border-foreground ${PAGE_GUTTER}`}
     >
       {/* Right-edge fade signals horizontal scrollability (monochrome mask, not a color gradient). */}
       <div className="no-scrollbar flex gap-2 overflow-x-auto py-2 [mask-image:linear-gradient(to_right,black,black_calc(100%-24px),transparent)]">
