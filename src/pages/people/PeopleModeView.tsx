@@ -51,7 +51,9 @@ export function PeopleModeView({
     return (
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
         {Array.from({ length: 8 }).map((_, i) => (
-          <Skeleton key={i} className="h-44 rounded-element" />
+          // Same token as PersonCard's own skeleton — these two boxes are the
+          // same box and were declaring different radii for it.
+          <Skeleton key={i} className="h-44" />
         ))}
       </div>
     );

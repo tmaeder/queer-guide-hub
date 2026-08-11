@@ -17,6 +17,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { TagChipRow } from '@/components/tags/TagChipRow';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { RouteBullet } from '@/components/transit/RouteBullet';
 import { ReportButton } from '@/components/moderation/ReportButton';
 import { AdminEditButton } from '@/components/admin/AdminEditButton';
 import { Editable } from '@/components/admin/inline/Editable';
@@ -178,46 +179,49 @@ export function PersonalityHero({
   return (
     <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
       <div className="flex items-start gap-4">
-        <Avatar style={{ height: 96, width: 96 }}>
+        {/* Portrait as a station ring — the same 3px ink circle the P-line
+            cards and the featured rail draw. `rounded-full` is the sanctioned
+            circle case. */}
+        <Avatar className="h-24 w-24 shrink-0 border-[3px] border-foreground">
           <AvatarImage
             src={personality.image_url || ''}
             alt={personality.name}
             referrerPolicy="no-referrer"
-            style={{ objectFit: 'cover', objectPosition: 'top' }}
+            className="object-cover object-top"
           />
-          <AvatarFallback className="text-xl font-semibold">
+          <AvatarFallback className="font-display text-headline">
             {getInitials(personality.name)}
           </AvatarFallback>
         </Avatar>
 
-        <div>
-          <div className="flex items-center gap-4 mb-2">
-            <h1 className="text-3xl font-bold">
-              <Editable
-                contentType="personalities"
-                recordId={personality.id}
-                field="name"
-                value={personality.name}
-                onSaved={onContentUpdated}
-              >
-                {personality.name}
-              </Editable>
-            </h1>
+        <div className="min-w-0">
+          {/* The masthead grammar from DetailMasthead: bullet, then eyebrow and
+              status chips, then the Anton title. */}
+          <div className="mb-2 flex flex-wrap items-center gap-2">
+            <RouteBullet type="personality" size={34} />
             {personality.is_featured && (
-              <Badge
-                variant="secondary"
-                style={{ alignItems: 'center', gap: '0.25rem' }}
-                className="flex"
-              >
-                <Star size={12} />
+              <span className="inline-flex items-center gap-1 border-2 border-foreground px-2 py-1 text-2xs font-bold uppercase tracking-label">
+                <Star size={12} aria-hidden="true" />
                 Featured
-              </Badge>
+              </span>
             )}
             <VerificationBadge status={personality.verification_status} />
           </div>
 
+          <h1 className="m-0 font-display text-headline leading-none tracking-tight md:text-display">
+            <Editable
+              contentType="personalities"
+              recordId={personality.id}
+              field="name"
+              value={personality.name}
+              onSaved={onContentUpdated}
+            >
+              {personality.name}
+            </Editable>
+          </h1>
+
           {personality.pronouns && (
-            <p className="text-muted-foreground mb-2">({personality.pronouns})</p>
+            <p className="mb-2 mt-2 text-13 text-muted-foreground">({personality.pronouns})</p>
           )}
 
           <div className="flex items-center gap-4 text-muted-foreground mb-4 flex-wrap">
@@ -342,19 +346,19 @@ function RelatedContent({ personality }: { personality: Personality }) {
                 <li key={n.id}>
                   <LocalizedLink
                     to={`/news/${n.slug}`}
-                    className="flex items-start gap-4 py-4 no-underline text-inherit hover:bg-accent transition-colors -mx-2 px-2 rounded-element"
+                    className="-mx-2 flex items-start gap-4 border-b-2 border-foreground/10 px-2 py-4 text-inherit no-underline transition-colors hover:bg-surface-container"
                   >
                     {n.image_url && (
                       <img
                         src={n.image_url}
                         alt=""
                         loading="lazy"
-                        className="w-16 h-16 rounded-element object-cover flex-shrink-0 bg-muted"
+                        className="h-16 w-16 shrink-0 border-2 border-foreground bg-muted object-cover"
                       />
                     )}
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium line-clamp-2">{n.title}</p>
-                      <p className="text-xs text-muted-foreground mt-1">
+                      <p className="line-clamp-2 text-13 font-bold">{n.title}</p>
+                      <p className="mt-1 text-2xs text-muted-foreground">
                         {resolvePublisherName({ publisherName: n.publisher_name })
                           ? `${resolvePublisherName({ publisherName: n.publisher_name })} · `
                           : ''}
@@ -386,20 +390,20 @@ function RelatedContent({ personality }: { personality: Personality }) {
                 <li key={e.id}>
                   <LocalizedLink
                     to={`/events/${e.slug ?? e.id}`}
-                    className="flex items-start gap-4 p-2 rounded-element no-underline text-inherit hover:bg-accent transition-colors"
+                    className="card-lift-sm flex items-start gap-4 border-2 border-foreground bg-background p-2 text-inherit no-underline"
                   >
                     {e.image_url && (
                       <img
                         src={e.image_url}
                         alt=""
                         loading="lazy"
-                        className="w-14 h-14 rounded-element object-cover flex-shrink-0 bg-muted"
+                        className="h-14 w-14 shrink-0 border-2 border-foreground bg-muted object-cover"
                       />
                     )}
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium line-clamp-2">{e.title}</p>
+                      <p className="line-clamp-2 text-13 font-bold">{e.title}</p>
                       {e.start_date && (
-                        <p className="text-xs text-muted-foreground mt-1">
+                        <p className="mt-1 text-2xs text-muted-foreground">
                           <time dateTime={e.start_date}>
                             {new Date(e.start_date).toLocaleDateString(undefined, {
                               year: 'numeric',

@@ -60,7 +60,7 @@ export function SignalChips({
       {chips.slice(0, max).map(({ icon: Icon, label }) => (
         <span
           key={label}
-          className="inline-flex items-center gap-1 rounded-badge bg-muted px-1.5 py-0.5 text-2xs text-muted-foreground"
+          className="inline-flex items-center gap-1 border border-foreground bg-background px-1.5 py-0.5 text-2xs font-bold"
         >
           <Icon size={10} aria-hidden />
           {label}
