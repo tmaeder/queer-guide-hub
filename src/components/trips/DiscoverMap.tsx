@@ -3,7 +3,6 @@ import * as maplibregl from 'maplibre-gl';
 import { type Map as MaplibreMap } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { getMapStyle } from '@/config/mapStyle';
-import { useTheme } from '@/components/theme/ThemeProvider';
 import { isWebglSupported } from '@/lib/webglSupport';
 import type { DiscoverableTrip } from '@/hooks/useDiscoverableTrips';
 import { PublicTripCard } from '@/components/trips/PublicTripCard';
@@ -30,7 +29,6 @@ interface Geo {
 export function DiscoverMap({ trips, height = 480 }: Props) {
   const mapContainer = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<MaplibreMap | null>(null);
-  const { resolvedTheme } = useTheme();
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const geocoded = useMemo<Geo[]>(
@@ -55,7 +53,7 @@ export function DiscoverMap({ trips, height = 480 }: Props) {
     if (!isWebglSupported()) return;
     const map = new maplibregl.Map({
       container: mapContainer.current,
-      style: getMapStyle(resolvedTheme),
+      style: getMapStyle(),
       center: [10, 40],
       zoom: 1.5,
       attributionControl: { compact: true },
@@ -66,7 +64,7 @@ export function DiscoverMap({ trips, height = 480 }: Props) {
       map.remove();
       mapRef.current = null;
     };
-  }, [resolvedTheme]);
+  }, []);
 
   // Update markers when data changes.
   useEffect(() => {
@@ -145,9 +143,7 @@ export function DiscoverMap({ trips, height = 480 }: Props) {
     };
     if (map.isStyleLoaded()) apply();
     else map.once('load', apply);
-    // resolvedTheme: re-wire markers (and re-resolve token colors) onto the
-    // recreated map after a theme flip.
-  }, [geocoded, resolvedTheme]);
+  }, [geocoded]);
 
   return (
     <div className="relative" style={{ height }}>

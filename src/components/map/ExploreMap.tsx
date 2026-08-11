@@ -4,10 +4,9 @@ import { type Root } from 'react-dom/client';
 import * as maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { Button } from '@/components/ui/button';
-import { ExternalLink} from 'lucide-react';
+import { ExternalLink } from 'lucide-react';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
-import { useTheme } from '@/components/theme/ThemeProvider';
 import { type MapPointSummary } from './mapPoint';
 import {
   useExploreMapData,
@@ -17,11 +16,7 @@ import {
   LAYER_COLORS,
 } from '@/hooks/useExploreMapData';
 import { useViewportPoints, POINT_LAYER_TYPES } from '@/hooks/useViewportPoints';
-import { ExploreMapLayers, LAYER_DEFS } from '@/components/map/ExploreMapLayers';
-import { ExploreMapFiltersPanel } from '@/components/map/ExploreMapFilters';
 import { MapResultsPill } from '@/components/map/MapResultsPill';
-import { LocationHint } from '@/components/map/LocationHint';
-import { MapEmptyState } from '@/components/map/MapEmptyState';
 import { useLocationHint } from '@/components/map/hooks/useLocationHint';
 import { useMapAutoFly } from '@/components/map/hooks/useMapAutoFly';
 import { usePopupManager } from '@/components/map/hooks/usePopupManager';
@@ -45,6 +40,7 @@ import { useMapBoundaryLayers } from '@/hooks/useMapBoundaryLayers';
 import { type RenderMode } from './mapShellAdapters';
 import {
   AREA_LAYERS,
+  LAYER_DEFS,
   COUNTRY_BOUNDARY_CONFIG,
   CITY_BOUNDARY_CONFIG,
   NEIGHBOURHOOD_BOUNDARY_CONFIG,
@@ -56,8 +52,6 @@ export interface ExploreMapProps {
   height?: number | string;
   defaultLayers?: LayerType[];
   defaultFilters?: Partial<ExploreMapFilters>;
-  showLayerToggles?: boolean;
-  showFilters?: boolean;
   linkToFullMap?: string;
   className?: string;
   /** Initial center override [lng, lat] */
@@ -69,20 +63,18 @@ export interface ExploreMapProps {
   /** Fired on map idle / moveend with the new viewport. Use to encode
    *  state in the URL or persist preferences. */
   onViewportChange?: (viewport: { center: [number, number]; zoom: number }) => void;
-  /** Fired when the enabled layer set changes. */
-  onLayersChange?: (layers: LayerType[]) => void;
   /** Rendering style for point data. `'pins'` (default) shows clusters + markers.
    *  `'heatmap'` swaps clusters/markers for the density layer. `'combined'`
    *  draws the heatmap beneath the pins (both visible). */
   renderMode?: RenderMode;
-  /** MapShell-only mode flag — enables the queer-voiced empty state and other
-   *  MapShell-specific UX. (The former pride-spectrum palette was removed in
-   *  the monochrome strip; all maps now use the functional LAYER_COLORS and a
-   *  monochrome density ramp.) */
-  mapShellMode?: boolean;
   /** Fired (debounced, on data/viewport change) with the point summaries
-   *  currently inside the visible bounds. Powers the spotlight rail. */
+   *  currently inside the visible bounds. Powers the departure board. */
   onPointsInView?: (points: MapPointSummary[]) => void;
+  /** Ambient "Showing <city>" string after an auto-fly, or null when it
+   *  expires. Published rather than rendered so `MapNotice` can arbitrate it
+   *  against the empty state and the first-run nudge — three overlays mounting
+   *  independently is exactly what that component exists to stop. */
+  onLocationHint?: (hint: string | null) => void;
   /** Point id to fly to + open a popup for (e.g. a rail card click). */
   selectedId?: string | null;
   /** Point id to draw a focus ring around (e.g. a rail card hover). */
@@ -127,18 +119,15 @@ export const ExploreMap = ({
   height = 480,
   defaultLayers,
   defaultFilters,
-  showLayerToggles = true,
-  showFilters = true,
   linkToFullMap,
   className,
   initialCenter,
   initialZoom,
   skipAutoFly = false,
   onViewportChange: onViewportChangeProp,
-  onLayersChange: onLayersChangeProp,
   renderMode = 'pins',
-  mapShellMode = false,
   onPointsInView,
+  onLocationHint,
   selectedId,
   highlightedId,
   showResultCount = true,
@@ -153,7 +142,6 @@ export const ExploreMap = ({
   const navigate = useLocalizedNavigate();
   const { toast } = useToast();
   const prefersReducedMotion = useReducedMotion();
-  const { resolvedTheme } = useTheme();
 
   // Ambient "where am I" hint chip — auto-fades, never stacks with toasts.
   const { locationHint, showLocationHint } = useLocationHint();
@@ -184,9 +172,14 @@ export const ExploreMap = ({
   const [mapReady, setMapReady] = useState(false);
   const [currentZoom, setCurrentZoom] = useState(initialZoom ?? DEFAULT_ZOOM);
 
-  const [enabledLayers, setEnabledLayers] = useState<LayerType[]>(
+  // DERIVED, not state. The layer set is owned entirely by the caller now that
+  // the toggle lives in MapBar's line key — holding it as `useState(() => …)`
+  // made the prop initial-only, so a line switched off in the key would never
+  // have reached the data layer.
+  const enabledLayers = useMemo<LayerType[]>(
     () =>
       defaultLayers ?? LAYER_DEFS.filter((d) => d.defaultOn && !d.comingSoon).map((d) => d.type),
+    [defaultLayers],
   );
 
   const [viewport, setViewport] = useState<MapViewport>({
@@ -196,15 +189,14 @@ export const ExploreMap = ({
 
   const [filters, setFilters] = useState<ExploreMapFilters>(defaultFilters ?? {});
 
-  // When the parent owns filters (MapShell: showFilters=false passes a memoized
-  // `defaultFilters`), keep our filter state in sync with it. Without this the
-  // command bar's category / time / open-now / search controls never reach the
-  // data layer — they only seeded the initial state. Legacy maps with the
-  // built-in filter panel (showFilters=true) keep managing filters themselves.
-  // Adjusting state during render (vs. an effect) on the memoized `defaultFilters`
-  // reference change avoids a cascading re-render.
+  // The parent always owns filters now — every consumer passes a memoized
+  // `defaultFilters` and there is no in-map filter panel left to fight it.
+  // Without this sync the bar's category / time / open-now / search controls
+  // would only seed initial state and never reach the data layer. Adjusting
+  // state during render (vs. an effect) on the memoized reference change
+  // avoids a cascading re-render.
   const [syncedDefault, setSyncedDefault] = useState(defaultFilters);
-  if (!showFilters && defaultFilters !== syncedDefault) {
+  if (defaultFilters !== syncedDefault) {
     setSyncedDefault(defaultFilters);
     setFilters(defaultFilters ?? {});
   }
@@ -225,11 +217,11 @@ export const ExploreMap = ({
 
   // ── Data: area layers (global fetch — small, static datasets) ──────────
   const areaEnabledLayers = enabledLayers.filter((l) => AREA_LAYERS.includes(l));
-  const {
-    markers: areaMarkers,
-    isFetching: areaFetching,
-    layerCounts: areaLayerCounts,
-  } = useExploreMapData({ enabledLayers: areaEnabledLayers, viewport, filters });
+  const { markers: areaMarkers, isFetching: areaFetching } = useExploreMapData({
+    enabledLayers: areaEnabledLayers,
+    viewport,
+    filters,
+  });
 
   // ── Data: point layers (viewport-based fetch with clustering) ──────────
   const pointEnabledLayers = enabledLayers.filter((l) => POINT_LAYER_TYPES.includes(l));
@@ -240,7 +232,6 @@ export const ExploreMap = ({
     // hook's interface — discard via underscore.
     totalCount: _padCount,
     isFetching: pointsFetching,
-    layerCounts: pointLayerCounts,
     onViewportChange,
   } = useViewportPoints({
     enabledLayers: pointEnabledLayers,
@@ -256,18 +247,18 @@ export const ExploreMap = ({
   const { data: cityBoundaries } = useCityBoundaries(citiesEnabled);
   const { data: neighbourhoodBoundaries } = useNeighbourhoodBoundaries(neighbourhoodsEnabled);
 
-  // Merged counts for the layer toggle panel
-  const layerCounts: Record<LayerType, number> = {
-    ...areaLayerCounts,
-    venues: pointLayerCounts.venues ?? 0,
-    events: pointLayerCounts.events ?? 0,
-    restrooms: pointLayerCounts.restrooms ?? 0,
-    hotels: 0,
-  };
-
   const isFetching = areaFetching || pointsFetching;
 
-  // Surface loading state to the parent (spotlight rail skeleton).
+  // Surface the ambient location hint to the parent (MapNotice).
+  const onLocationHintRef = useRef(onLocationHint);
+  useEffect(() => {
+    onLocationHintRef.current = onLocationHint;
+  });
+  useEffect(() => {
+    onLocationHintRef.current?.(locationHint);
+  }, [locationHint]);
+
+  // Surface loading state to the parent (departure board skeleton).
   const onFetchingChangeRef = useRef(onFetchingChange);
   useEffect(() => {
     onFetchingChangeRef.current = onFetchingChange;
@@ -276,17 +267,8 @@ export const ExploreMap = ({
     onFetchingChangeRef.current?.(isFetching);
   }, [isFetching]);
 
-  // ── Layer toggle ─────────────────────────────────────────────────────────
-  const toggleLayer = useCallback(
-    (layer: LayerType) => {
-      setEnabledLayers((prev) => {
-        const next = prev.includes(layer) ? prev.filter((l) => l !== layer) : [...prev, layer];
-        onLayersChangeProp?.(next);
-        return next;
-      });
-    },
-    [onLayersChangeProp],
-  );
+  // The layer toggle lives in MapBar's line key now; this component no longer
+  // owns a control that changes the set, only the prop that declares it.
 
   // ── Geolocation ──────────────────────────────────────────────────────────
   const flyToLocation = useCallback((lng: number, lat: number, zoom = 12) => {
@@ -336,7 +318,6 @@ export const ExploreMap = ({
     initialZoom,
     viewport,
     mapReady,
-    basemapMode: resolvedTheme,
     cooperativeGestures,
     linkToFullMap,
     showNativeNav,
@@ -489,16 +470,6 @@ export const ExploreMap = ({
         </div>
       )}
 
-      {/* Layer toggles */}
-      {showLayerToggles && (
-        <ExploreMapLayers
-          enabledLayers={enabledLayers}
-          onToggle={toggleLayer}
-          layerCounts={layerCounts}
-          compact={!!linkToFullMap}
-        />
-      )}
-
       {/* Fetching indicator + result count */}
       <MapResultsPill
         showResultCount={showResultCount}
@@ -507,21 +478,11 @@ export const ExploreMap = ({
         inBoundsCount={inBoundsCount}
       />
 
-      {/* Ambient location hint */}
-      <LocationHint hint={locationHint} />
-
-      {/* Queer-voiced empty state (MapShell only) */}
-      <MapEmptyState
-        visible={
-          mapShellMode &&
-          mapReady &&
-          !isFetching &&
-          !isCounterStale &&
-          inBoundsCount === 0 &&
-          pointEnabledLayers.length > 0
-        }
-        filters={filters}
-      />
+      {/* The empty state moved to MapShell's <MapNotice>, which arbitrates it
+          against the first-run nudge and the location hint — all three used to
+          mount independently and could show at once on a first visit to an
+          empty area. Raw-ExploreMap consumers (/venues) keep the results pill,
+          which already says "0 results in view". */}
 
       {/* "Open full map" link for embedded previews */}
       {linkToFullMap && (
@@ -530,15 +491,12 @@ export const ExploreMap = ({
           variant="ghost"
           aria-label="Open full map"
           onClick={() => navigate(linkToFullMap)}
-          className="absolute bottom-3 left-3 z-10 min-w-0 px-4 py-1.5 rounded-full normal-case text-xs leading-tight bg-background/85 hover:bg-background"
+          className="absolute bottom-3 left-3 z-10 min-w-0 px-4 py-1.5 rounded-full normal-case text-xs leading-tight bg-background hover:bg-background"
         >
           <ExternalLink size={14} />
           <span className="hidden sm:inline ml-1">Full map</span>
         </Button>
       )}
-
-      {/* Filters bar */}
-      {showFilters && <ExploreMapFiltersPanel filters={filters} onFiltersChange={setFilters} />}
     </div>
   );
 };

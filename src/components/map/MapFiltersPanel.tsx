@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
+import { Check } from 'lucide-react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
-import { Check, Navigation} from 'lucide-react';
 import {
   Command,
   CommandEmpty,
@@ -15,6 +15,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from 'react-i18next';
 import type { MapFilterKey, MapShellFilters } from './MapShell.types';
 import { VENUE_CATEGORY_OPTIONS } from '@/lib/venueCategories';
+import { TransitIcon } from '@/components/transit/TransitIcon';
 
 // Venue categories that carry real data. `other` is still excluded — filtering to a
 // catch-all is meaningless — but the rest now come from the shared vocabulary rather
@@ -51,17 +52,24 @@ interface MapFiltersPanelProps {
 
 function SectionLabel({ children, count }: { children: React.ReactNode; count?: number }) {
   return (
-    <div className="flex items-center gap-1.5 text-2xs uppercase tracking-[0.18em] text-muted-foreground">
-      <span className="w-1.5 h-1.5 rounded-full bg-foreground" aria-hidden="true" />
+    <div className="flex items-center gap-1.5 text-2xs uppercase tracking-wider text-muted-foreground">
       {children}
       {count != null && count > 0 && (
-        <span className="ml-1 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1.5 rounded-full bg-foreground text-background text-2xs font-semibold normal-case tracking-normal">
+        <span className="grid h-4 min-w-4 place-items-center rounded-full bg-foreground px-1 text-2xs font-bold normal-case tracking-normal text-background">
           {count}
         </span>
       )}
     </div>
   );
 }
+
+/** Same chip as the rest of the controls surface: an ink-bordered box that
+ *  fills ink when it is on. The soft grey `bg-surface-container` pill this
+ *  replaced read as disabled next to them. */
+const chip =
+  'inline-flex h-9 items-center gap-1.5 border-2 border-foreground px-4 text-xs font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 disabled:opacity-50';
+const chipOn = 'bg-foreground text-background';
+const chipOff = 'bg-background text-foreground hover:bg-foreground hover:text-background';
 
 /**
  * Real, data-backed map filters: category (single-select chips), tags
@@ -170,12 +178,7 @@ export const MapFiltersPanel = ({
                   type="button"
                   aria-pressed={active}
                   onClick={() => setCategory(c.value)}
-                  className={cn(
-                    'h-8 px-4 text-xs rounded-badge transition-colors focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 bg-surface-container',
-                    active
-                      ? 'bg-foreground text-background border-foreground font-semibold'
-                      : 'border-border text-muted-foreground hover:bg-muted',
-                  )}
+                  className={cn(chip, active ? chipOn : chipOff)}
                 >
                   {c.label}
                 </button>
@@ -193,18 +196,9 @@ export const MapFiltersPanel = ({
             aria-pressed={!!filters.nearMe}
             onClick={toggleNearMe}
             disabled={locating}
-            className={cn(
-              'inline-flex items-center gap-2 h-9 px-4 text-sm rounded-element transition-colors focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 bg-surface-container',
-              filters.nearMe
-                ? 'bg-foreground text-background border-foreground'
-                : 'border-border hover:bg-muted',
-            )}
+            className={cn(chip, 'self-start', filters.nearMe ? chipOn : chipOff)}
           >
-            {locating ? (
-              <TrackLoader size={14} />
-            ) : (
-              <Navigation size={14} aria-hidden="true" />
-            )}
+            {locating ? <TrackLoader size={14} /> : <TransitIcon name="near-you" size={14} />}
             {filters.nearMe ? 'Within 10 km of you' : 'Near me'}
           </button>
         </div>
@@ -213,7 +207,7 @@ export const MapFiltersPanel = ({
       {showTags && (
         <div className="flex flex-col gap-2">
           <SectionLabel count={selectedTags.length}>Tags</SectionLabel>
-          <Command className="rounded-element bg-surface-container">
+          <Command className="border-2 border-foreground bg-background">
             <CommandInput placeholder="Search tags…" className="h-9" />
             <CommandList className="max-h-44">
               <CommandEmpty>No tags found.</CommandEmpty>

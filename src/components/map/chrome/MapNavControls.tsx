@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Compass, Locate, LocateFixed, Minus, Plus } from 'lucide-react';
+import { Minus, Plus } from 'lucide-react';
+import { TransitIcon } from '@/components/transit/TransitIcon';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
@@ -63,7 +64,7 @@ export const MapNavControls = ({ handle, className }: MapNavControlsProps) => {
   return (
     <div
       className={cn(
-        'absolute right-3 z-10 flex flex-col overflow-hidden rounded-element bg-background/95 backdrop-blur-md gap-px',
+        'absolute right-3 z-10 flex flex-col overflow-hidden rounded-element border-[3px] border-foreground bg-background gap-px',
         // Mobile: bottom-right thumb zone, lifted above the spotlight rail.
         'bottom-[calc(var(--map-rail-clearance,4.5rem)+0.75rem)] md:bottom-auto md:top-16',
         className,
@@ -92,11 +93,12 @@ export const MapNavControls = ({ handle, className }: MapNavControlsProps) => {
           onClick={() => map.easeTo({ bearing: 0, pitch: 0, duration: reducedMotion ? 0 : 300 })}
           className={btn}
         >
-          <Compass
-            size={16}
+          <span
             aria-hidden="true"
-            style={{ transform: `rotate(${-45 - bearing}deg)` }}
-          />
+            style={{ transform: `rotate(${-45 - bearing}deg)`, display: 'inline-flex' }}
+          >
+            <TransitIcon name="compass" size={18} />
+          </span>
         </button>
       )}
       <button
@@ -106,11 +108,7 @@ export const MapNavControls = ({ handle, className }: MapNavControlsProps) => {
         onClick={() => handle?.triggerGeolocate()}
         className={btn}
       >
-        {tracking ? (
-          <LocateFixed size={16} aria-hidden="true" />
-        ) : (
-          <Locate size={16} aria-hidden="true" />
-        )}
+        <TransitIcon name={tracking ? 'near-you' : 'compass'} size={18} />
       </button>
     </div>
   );

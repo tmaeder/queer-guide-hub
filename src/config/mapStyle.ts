@@ -1,5 +1,6 @@
-import { layers, namedFlavor } from '@protomaps/basemaps';
+import { layers, type Flavor } from '@protomaps/basemaps';
 import type { StyleSpecification } from 'maplibre-gl';
+import { ink, paper, inkMuted } from '@/lib/mapTokens';
 
 // Side-effect import: registers the bundled MapLibre worker URL. Must run
 // before any map is constructed, which importing it here guarantees — every
@@ -53,23 +54,195 @@ const ASSETS_BASE =
   import.meta.env.VITE_BASEMAP_ASSETS_URL ?? 'https://protomaps.github.io/basemaps-assets';
 const GLYPHS_URL = `${ASSETS_BASE}/fonts/{fontstack}/{range}.pbf`;
 
-/** Basemap flavor — follows the app's resolved theme. */
-export type BasemapMode = 'light' | 'dark';
+/**
+ * Brand font stacks for the basemap's own labels.
+ *
+ * These are directory names under `${ASSETS_BASE}/fonts/`, and Protomaps
+ * substitutes them for its hardcoded `Noto Sans Regular / Medium / Italic`
+ * wherever the flavor supplies them (`e.regular || "Noto Sans Regular"` in the
+ * built layer specs). Space Grotesk has no italic cut, so the italic slot —
+ * used only for water labels — takes the regular one rather than letting
+ * MapLibre synthesise a slant.
+ *
+ * Requires the matching SDF glyph PBFs to exist at that path. Until
+ * `VITE_BASEMAP_ASSETS_URL` points at a mirror that has them, this falls back
+ * to Noto (see BASEMAP_FONTS_AVAILABLE below) — a missing fontstack makes
+ * MapLibre drop every label on the map, which is far worse than the wrong
+ * typeface.
+ */
+const BRAND_FONTS = {
+  regular: 'Space Grotesk Regular',
+  bold: 'Space Grotesk Bold',
+  italic: 'Space Grotesk Regular',
+} as const;
 
-const styleCache: Partial<Record<BasemapMode, StyleSpecification>> = {};
+/** Only claim the brand glyphs when we're serving our own asset mirror —
+ *  protomaps.github.io has Noto and nothing else. */
+const useBrandFonts = Boolean(import.meta.env.VITE_BASEMAP_ASSETS_URL);
 
 /**
- * Shared MapLibre style for all map components, in the given theme flavor.
- * Uses Protomaps basemap tiles served from Cloudflare R2. Cached per mode —
- * `layers()` builds a large spec, so don't rebuild it per map instance.
+ * The paper-and-ink basemap.
+ *
+ * Every value is one of three things — paper, ink, or ink at an alpha — so the
+ * basemap is a printed map rather than a satellite-ish one, and so the four
+ * track colours are the only chromatic marks on the whole canvas. This is what
+ * makes the pins readable: on stock Protomaps `light` a pink pin sat on green
+ * landcover next to blue water and orange motorway shields.
+ *
+ * Roads follow the printed-map convention: paper fill with an ink casing, so
+ * the network reads as drawn lines at every zoom instead of coloured ribbons.
+ * Weight, not hue, carries the hierarchy — casings darken from `other` up to
+ * `highway`.
+ *
+ * POI and landcover colours are included deliberately: Protomaps tints POI
+ * icons blue/green/pink/red/tangerine/turquoise by category, which would put
+ * six uncontrolled hues back on the canvas one zoom level below where the
+ * track colours live.
  */
-export function getMapStyle(mode: BasemapMode = 'light'): StyleSpecification {
-  const cached = styleCache[mode];
-  if (cached) return cached;
-  const style: StyleSpecification = {
+function paperFlavor(): Flavor {
+  const P = paper();
+  const wash = (a: number) => ink(a);
+
+  return {
+    background: P,
+    earth: P,
+
+    // Land uses — barely-there ink washes, ordered so a park reads as slightly
+    // more "something" than bare earth without ever competing with a pin.
+    park_a: wash(0.05),
+    park_b: wash(0.07),
+    wood_a: wash(0.06),
+    wood_b: wash(0.08),
+    scrub_a: wash(0.04),
+    scrub_b: wash(0.05),
+    hospital: wash(0.05),
+    industrial: wash(0.05),
+    school: wash(0.05),
+    pedestrian: wash(0.04),
+    glacier: wash(0.03),
+    sand: wash(0.04),
+    beach: wash(0.05),
+    aerodrome: wash(0.04),
+    runway: wash(0.1),
+    zoo: wash(0.05),
+    military: wash(0.05),
+    buildings: wash(0.09),
+    pier: wash(0.12),
+
+    // Water is a wash, not a colour. A transit map prints the harbour in the
+    // same ink as everything else.
+    water: wash(0.09),
+
+    // Roads — paper fill, ink casing, hierarchy by casing weight.
+    other: P,
+    minor_service: P,
+    minor_a: P,
+    minor_b: P,
+    link: P,
+    major: P,
+    highway: P,
+    minor_service_casing: wash(0.16),
+    minor_casing: wash(0.2),
+    link_casing: wash(0.26),
+    major_casing_early: wash(0.3),
+    major_casing_late: wash(0.3),
+    highway_casing_early: wash(0.42),
+    highway_casing_late: wash(0.42),
+
+    // Tunnels: same ladder, lighter (they're under something).
+    tunnel_other: P,
+    tunnel_minor: P,
+    tunnel_link: P,
+    tunnel_major: P,
+    tunnel_highway: P,
+    tunnel_other_casing: wash(0.1),
+    tunnel_minor_casing: wash(0.12),
+    tunnel_link_casing: wash(0.16),
+    tunnel_major_casing: wash(0.18),
+    tunnel_highway_casing: wash(0.24),
+
+    // Bridges: same ladder, heavier (they're over something).
+    bridges_other: P,
+    bridges_minor: P,
+    bridges_link: P,
+    bridges_major: P,
+    bridges_highway: P,
+    bridges_other_casing: wash(0.2),
+    bridges_minor_casing: wash(0.24),
+    bridges_link_casing: wash(0.3),
+    bridges_major_casing: wash(0.34),
+    bridges_highway_casing: wash(0.46),
+
+    railway: wash(0.35),
+    boundaries: wash(0.3),
+
+    // Labels — ink on paper haloes, ranked by ink strength.
+    country_label: ink(),
+    state_label: inkMuted(),
+    state_label_halo: P,
+    city_label: ink(),
+    city_label_halo: P,
+    subplace_label: inkMuted(),
+    subplace_label_halo: P,
+    roads_label_major: inkMuted(),
+    roads_label_major_halo: P,
+    roads_label_minor: ink(0.55),
+    roads_label_minor_halo: P,
+    address_label: ink(0.5),
+    address_label_halo: P,
+    ocean_label: ink(0.45),
+
+    ...(useBrandFonts ? BRAND_FONTS : {}),
+
+    // Protomaps tints POI icons by category. Flatten them all to ink so the
+    // track colours stay the only hues on the canvas.
+    pois: {
+      blue: ink(0.55),
+      green: ink(0.55),
+      lapis: ink(0.55),
+      pink: ink(0.55),
+      red: ink(0.55),
+      slategray: ink(0.55),
+      tangerine: ink(0.55),
+      turquoise: ink(0.55),
+    },
+
+    landcover: {
+      barren: wash(0.03),
+      farmland: wash(0.04),
+      forest: wash(0.06),
+      glacier: wash(0.03),
+      grassland: wash(0.04),
+      scrub: wash(0.05),
+      urban_area: wash(0.06),
+    },
+  };
+}
+
+let styleCache: StyleSpecification | undefined;
+
+/**
+ * Shared MapLibre style for every map surface in the app.
+ *
+ * Took a `'light' | 'dark'` flavor argument until 2026-08-10. Dark mode was
+ * removed with the subway rebrand — `ThemeProvider` always reports light and
+ * the `.dark` block is gone from index.css — so the dark branch had been
+ * unreachable while still making ten surfaces subscribe to `resolvedTheme` and
+ * tear down + rebuild their whole MapLibre instance on a "theme flip" that can
+ * never happen.
+ *
+ * Cached: `layers()` builds a large spec, so don't rebuild it per instance.
+ * Cached LAZILY, though, and never at module scope — `paperFlavor()` reads
+ * live CSS custom properties, which do not exist until the stylesheet has
+ * been applied. (The old eager `export const mapStyle = getMapStyle()` is gone
+ * for exactly this reason; nothing outside the tests used it.)
+ */
+export function getMapStyle(): StyleSpecification {
+  if (styleCache) return styleCache;
+  styleCache = {
     version: 8,
     glyphs: GLYPHS_URL,
-    sprite: `${ASSETS_BASE}/sprites/v4/${mode}`,
+    sprite: `${ASSETS_BASE}/sprites/v4/light`,
     sources: {
       [BASEMAP_SOURCE_ID]: {
         type: 'vector',
@@ -81,20 +254,32 @@ export function getMapStyle(mode: BasemapMode = 'light'): StyleSpecification {
           '&copy; <a href="https://openstreetmap.org">OpenStreetMap</a>',
       },
     },
-    layers: layers('protomaps', namedFlavor(mode), { lang: 'en' }),
+    // The `pois` layer is dropped, not restyled. Its icons come from the
+    // Protomaps SPRITE — a pre-coloured raster atlas — so no flavor value can
+    // reach them: measured on the paper basemap, parks still drew green
+    // markers, stations blue and the zoo its own hue, six uncontrolled colours
+    // sitting one layer under our own pins. (The palette unit test cannot see
+    // this either; it walks paint values, and a sprite icon has none.) A
+    // transit map does not print generic OSM POIs anyway — the stations ARE
+    // the points of interest here, and the labels were competing with them.
+    layers: layers('protomaps', paperFlavor(), { lang: 'en' }).filter((l) => l.id !== 'pois'),
   };
-  styleCache[mode] = style;
-  return style;
+  return styleCache;
 }
 
-/** Light-flavor style — legacy alias; theme-aware surfaces use getMapStyle(). */
-export const mapStyle: StyleSpecification = getMapStyle('light');
+/** The map's own label fontstacks, for overlay layers that add their own
+ *  `text-font` (cluster counts, area labels, boundary labels). Keeping them on
+ *  the same stack as the basemap is the whole point of shipping the glyphs. */
+export const MAP_FONT_REGULAR = useBrandFonts ? BRAND_FONTS.regular : 'Noto Sans Regular';
+export const MAP_FONT_BOLD = useBrandFonts ? BRAND_FONTS.bold : 'Noto Sans Medium';
 
 /**
- * Fog/atmosphere settings for globe projection maps.
+ * Fog/atmosphere settings for globe projection maps. Paper all the way out —
+ * the old `rgb(200, 200, 225)` high-colour put a blue rim on the globe, the
+ * last chromatic value in this file.
  */
-export const globeFog = {
-  color: 'rgb(255, 255, 255)',
-  'high-color': 'rgb(200, 200, 225)',
+export const globeFog = () => ({
+  color: paper(),
+  'high-color': ink(0.12),
   'horizon-blend': 0.02,
-};
+});

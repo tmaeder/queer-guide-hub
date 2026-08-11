@@ -1,32 +1,38 @@
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import type { Map as MaplibreMap } from 'maplibre-gl';
-import type { LucideIcon } from 'lucide-react';
+import { TransitIcon } from '@/components/transit/TransitIcon';
+import type { TransitIconName } from '@/components/transit/transitIconPaths';
 import { GLYPH_DEFS } from './mapIcons';
+import { ink } from '@/lib/mapTokens';
 
 /**
- * Rasterizes lucide category icons into MapLibre images so unclustered pins
- * can show a white category glyph on top of their colored dot — bar vs sauna
- * vs event readable at a glance on the canvas itself.
+ * Rasterizes category icons into MapLibre images so unclustered pins can show
+ * a glyph on top of their track-coloured dot — bar vs sauna vs event readable
+ * at a glance on the canvas itself.
+ *
+ * The glyph is INK, not white. Ink-on-track measures 5.22 (pink) / 7.72 (blue)
+ * / 10.67 (green) / 13.15 (yellow); white-on-track fails badly on the two
+ * light tracks, which is what this used to draw. Recolouring was an
+ * accessibility fix that the palette change merely forced.
  *
  * Degrades safely: if rasterization fails for any icon, that glyph is simply
- * absent (the `['image', …]` expression returns null and the colored circle
+ * absent (the `['image', …]` expression returns null and the coloured circle
  * still renders). Never throws into the map lifecycle.
  */
 
 const GLYPH_PX = 20; // logical size; rendered at 2× for retina
 const SCALE = 2;
 
-function rasterize(Icon: LucideIcon): Promise<ImageData | null> {
+function rasterize(name: TransitIconName): Promise<ImageData | null> {
   return new Promise((resolve) => {
     try {
+      // `color` (not a className) because this markup is serialised standalone
+      // into a data-URI — there is no ancestor for `currentColor` to inherit.
+      // TransitIcon picks its own stroke weight from `size`, which is why the
+      // old explicit strokeWidth is gone.
       const svg = renderToStaticMarkup(
-        createElement(Icon, {
-          size: GLYPH_PX,
-          color: '#ffffff',
-          strokeWidth: 2.5,
-          absoluteStrokeWidth: true,
-        }),
+        createElement(TransitIcon, { name, size: GLYPH_PX, color: ink() }),
       );
       const img = new Image();
       img.onload = () => {
@@ -58,9 +64,9 @@ export async function loadGlyphImages(map: MaplibreMap): Promise<void> {
   if (loadedMaps.has(map)) return;
   loadedMaps.add(map);
   await Promise.all(
-    GLYPH_DEFS.map(async ({ key, Icon }) => {
+    GLYPH_DEFS.map(async ({ key, icon }) => {
       if (map.hasImage(key)) return;
-      const data = await rasterize(Icon);
+      const data = await rasterize(icon);
       if (data && !map.hasImage(key)) {
         try {
           map.addImage(key, data, { pixelRatio: SCALE });

@@ -9,7 +9,6 @@ import { format } from 'date-fns';
 import { fetchTripMapVenues, fetchTripMapEvents } from '@/hooks/useTripSuggestions';
 import { Button } from '@/components/ui/button';
 import { getMapStyle } from '@/config/mapStyle';
-import { useTheme } from '@/components/theme/ThemeProvider';
 import { isWebglSupported } from '@/lib/webglSupport';
 import { cn } from '@/lib/utils';
 import type { TripPlace, TripDay } from '@/hooks/useTrips';
@@ -74,7 +73,6 @@ export function TripMap({ places, days, startDate, endDate }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const markersRef = useRef<maplibregl.Marker[]>([]);
-  const { resolvedTheme } = useTheme();
   const [dayFilter, setDayFilter] = useState<string | null>(null);
   const [showAttractions, setShowAttractions] = useState(true);
   const [showEvents, setShowEvents] = useState(true);
@@ -179,7 +177,7 @@ export function TripMap({ places, days, startDate, endDate }: Props) {
 
     const map = new maplibregl.Map({
       container: containerRef.current,
-      style: getMapStyle(resolvedTheme),
+      style: getMapStyle(),
       center: [10, 48],
       zoom: 3,
     });
@@ -191,7 +189,7 @@ export function TripMap({ places, days, startDate, endDate }: Props) {
       map.remove();
       mapRef.current = null;
     };
-  }, [resolvedTheme]);
+  }, []);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -367,7 +365,7 @@ export function TripMap({ places, days, startDate, endDate }: Props) {
       setTimeout(fitBounds, 200);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [geoPlaces, dayIndexMap, days, t, visibleVenues, visibleEvents, visitedLookup, resolvedTheme]);
+  }, [geoPlaces, dayIndexMap, days, t, visibleVenues, visibleEvents, visitedLookup]);
 
   if (places.length === 0 && cityIds.length === 0) {
     return (

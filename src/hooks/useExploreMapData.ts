@@ -4,6 +4,11 @@ import { supabase } from '@/integrations/supabase/client';
 import { useVenues } from '@/hooks/useVenues';
 import { useEvents } from '@/hooks/useEvents';
 import { useOptimizedCities, useOptimizedCountries } from '@/hooks/usePlaces';
+import { ink, trackColor } from '@/lib/mapTokens';
+import { ROUTE_BULLET_MAP, type Track } from '@/components/transit/routeBulletMap';
+// Value import; `mapLayers` only imports TYPES back from here, so there is no
+// runtime cycle.
+import { AREA_LAYERS as AREA_LAYER_TYPES } from '@/config/mapLayers';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -42,27 +47,79 @@ export interface ExploreMapFilters {
 
 // ── Layer colours ──────────────────────────────────────────────────────────────
 
-export const LAYER_COLORS: Record<LayerType, string> = {
-  venues: '#6366f1', // indigo
-  events: '#ec4899', // pink
-  cities: '#3b82f6', // blue
-  countries: '#dc2626', // red
-  restrooms: '#10b981', // emerald
-  hotels: '#f59e0b', // amber
-  neighbourhoods: 'hsl(0 0% 4%)', // foreground — concrete; MapLibre can't parse CSS var()
+/**
+ * Layer → subway track. This is a projection of `ROUTE_BULLET_MAP`, not a
+ * second palette: an entity carries the same colour on the map that its route
+ * bullet carries in a list, a card or a search result.
+ *
+ * The four POINT layers take the four tracks, one each, so no two pin types
+ * share a hue. The three AREA layers are deliberately NOT tracks — they render
+ * as translucent discs and boundary lines under the pins, and geography is not
+ * a line on this map. They take ink, which also keeps them from competing with
+ * the pins for attention.
+ *
+ * Until 2026-08-10 this was Tailwind's stock palette (`#6366f1` indigo,
+ * `#ec4899`, `#3b82f6`, `#dc2626`, `#10b981`, `#f59e0b`) — six chromatic hues
+ * unrelated to the design system, one of which was the destructive red sitting
+ * on a layer that carries no danger meaning.
+ */
+/** Layer → the `ROUTE_BULLET_MAP` key describing the same entity type. */
+const LAYER_BULLET_KEY: Record<LayerType, string> = {
+  venues: 'venue',
+  events: 'event',
+  hotels: 'hotel',
+  restrooms: 'restroom',
+  cities: 'city',
+  countries: 'country',
+  neighbourhoods: 'queer_village',
 };
 
-/** Monochrome black-alpha density ramp stops `[density, color][]` — the single
- *  source of truth for BOTH the canvas heatmap expression and the legend's
- *  gradient swatch, so the two can never drift apart. */
-export const MONO_HEAT_STOPS: [number, string][] = [
-  [0, 'rgba(0,0,0,0)'],
-  [0.2, 'rgba(0,0,0,0.10)'],
-  [0.4, 'rgba(0,0,0,0.20)'],
-  [0.6, 'rgba(0,0,0,0.32)'],
-  [0.8, 'rgba(0,0,0,0.44)'],
-  [1, 'rgba(0,0,0,0.55)'],
+const LAYER_TRACKS: Record<LayerType, Track | 'ink'> = Object.fromEntries(
+  (Object.keys(LAYER_BULLET_KEY) as LayerType[]).map((layer) => [
+    layer,
+    AREA_LAYER_TYPES.includes(layer)
+      ? 'ink'
+      : (ROUTE_BULLET_MAP[LAYER_BULLET_KEY[layer]]?.track ?? 'pink'),
+  ]),
+) as Record<LayerType, Track | 'ink'>;
+
+/**
+ * Resolved layer colours, keyed exactly like the old constant.
+ *
+ * Reads through to the live CSS custom properties on every access instead of
+ * freezing hexes at module scope, for two reasons: `/admin/design` can
+ * repaint any track at runtime, and module-eval would run before the
+ * stylesheet exists (returning empty strings that MapLibre rejects as invalid
+ * paint values). Every read here happens inside an effect, long after paint.
+ */
+export const LAYER_COLORS: Record<LayerType, string> = new Proxy({} as Record<LayerType, string>, {
+  get: (_t, key: string) => {
+    const track = LAYER_TRACKS[key as LayerType];
+    if (!track) return undefined;
+    return track === 'ink' ? ink() : trackColor(track);
+  },
+  has: (_t, key: string) => key in LAYER_TRACKS,
+  ownKeys: () => Object.keys(LAYER_TRACKS),
+  getOwnPropertyDescriptor: () => ({ enumerable: true, configurable: true }),
+});
+
+/** Density ramp alpha stops `[density, inkAlpha][]`. */
+const HEAT_ALPHAS: [number, number][] = [
+  [0, 0],
+  [0.2, 0.1],
+  [0.4, 0.2],
+  [0.6, 0.32],
+  [0.8, 0.44],
+  [1, 0.55],
 ];
+
+/** Monochrome ink density ramp `[density, color][]` — the single source of
+ *  truth for BOTH the canvas heatmap expression and the legend's gradient
+ *  swatch, so the two can never drift apart. A function, not a constant: it
+ *  resolves `--foreground` live, and a module-scope read would run before the
+ *  stylesheet exists. (Was a literal `rgba(0,0,0,…)` ramp, which assumed the
+ *  ink is pure black — it is `0 0% 6.7%`.) */
+export const monoHeatStops = (): [number, string][] => HEAT_ALPHAS.map(([d, a]) => [d, ink(a)]);
 
 // ── Hook ───────────────────────────────────────────────────────────────────────
 

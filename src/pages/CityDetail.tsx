@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, lazy, Suspense } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { SeeAllLink } from '@/components/ui/SectionHeader';
 import { useParams } from 'react-router';
@@ -44,8 +44,6 @@ import {
   CityMapTab,
 } from './CityDetail.parts';
 import { PageContainer } from '@/components/layout/PageContainer';
-
-const ExploreMap = lazy(() => import('@/components/map/ExploreMap'));
 
 export default function CityDetail() {
   const { t } = useTranslation();
@@ -280,7 +278,7 @@ export default function CityDetail() {
       />
     ),
     events: <CityEventsTab city={city} events={events} eventsLoading={eventsLoading} />,
-    map: hasCoords ? <CityMapTab city={city} ExploreMap={ExploreMap} Suspense={Suspense} /> : null,
+    map: hasCoords ? <CityMapTab city={city} /> : null,
     personalities: (
       <PersonalitiesForEntity
         cityId={city.id}

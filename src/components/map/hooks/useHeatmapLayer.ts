@@ -1,13 +1,8 @@
 import { useEffect, type MutableRefObject } from 'react';
 import * as maplibregl from 'maplibre-gl';
 import { type GeoJSONSource } from 'maplibre-gl';
-import { MONO_HEAT_STOPS, type LayerType } from '@/hooks/useExploreMapData';
-import {
-  CLUSTERS_LAYER,
-  HEATMAP_LAYER,
-  HEATMAP_SOURCE,
-  PIN_LAYER_IDS,
-} from '@/config/mapLayers';
+import { monoHeatStops, type LayerType } from '@/hooks/useExploreMapData';
+import { CLUSTERS_LAYER, HEATMAP_LAYER, HEATMAP_SOURCE, PIN_LAYER_IDS } from '@/config/mapLayers';
 import { heatmapRenderPlan, type RenderMode } from '@/components/map/mapShellAdapters';
 
 interface UseHeatmapLayerParams {
@@ -36,10 +31,7 @@ export function useHeatmapLayer({
     const map = mapRef.current;
     if (!map || !mapReady) return;
 
-    const { wantHeatmap, hidePins } = heatmapRenderPlan(
-      renderMode,
-      pointEnabledLayers.length > 0,
-    );
+    const { wantHeatmap, hidePins } = heatmapRenderPlan(renderMode, pointEnabledLayers.length > 0);
 
     if (!wantHeatmap) {
       if (map.getLayer(HEATMAP_LAYER)) map.removeLayer(HEATMAP_LAYER);
@@ -97,35 +89,39 @@ export function useHeatmapLayer({
       16,
       0,
     ];
-    map.addLayer({
-      id: HEATMAP_LAYER,
-      type: 'heatmap',
-      source: HEATMAP_SOURCE,
-      maxzoom: 16,
-      paint: {
-        'heatmap-weight': 1,
-        'heatmap-intensity': ['interpolate', ['linear'], ['zoom'], 0, 0.5, 9, 1.4],
-        // Monochrome black-alpha density ramp (design system: no hue, no
-        // shadow). Kept low-alpha so the field reads as a soft underglow
-        // beneath the pins — never an opaque blanket that buries them.
-        // Stops shared with the legend via MONO_HEAT_STOPS.
-        'heatmap-color': [
-          'interpolate',
-          ['linear'],
-          ['heatmap-density'],
-          ...MONO_HEAT_STOPS.flat(),
-        ] as maplibregl.ExpressionSpecification,
-        'heatmap-radius': ['interpolate', ['linear'], ['zoom'], 0, 6, 9, 26, 14, 52],
-        // Start transparent and cross-fade in when switching into a heat lens.
-        'heatmap-opacity': prefersReducedMotion ? heatOpacityExpr : 0,
-        'heatmap-opacity-transition': { duration: 350, delay: 0 },
+    map.addLayer(
+      {
+        id: HEATMAP_LAYER,
+        type: 'heatmap',
+        source: HEATMAP_SOURCE,
+        maxzoom: 16,
+        paint: {
+          'heatmap-weight': 1,
+          'heatmap-intensity': ['interpolate', ['linear'], ['zoom'], 0, 0.5, 9, 1.4],
+          // Monochrome black-alpha density ramp (design system: no hue, no
+          // shadow). Kept low-alpha so the field reads as a soft underglow
+          // beneath the pins — never an opaque blanket that buries them.
+          // Stops shared with the legend via monoHeatStops().
+          'heatmap-color': [
+            'interpolate',
+            ['linear'],
+            ['heatmap-density'],
+            ...monoHeatStops().flat(),
+          ] as maplibregl.ExpressionSpecification,
+          'heatmap-radius': ['interpolate', ['linear'], ['zoom'], 0, 6, 9, 26, 14, 52],
+          // Start transparent and cross-fade in when switching into a heat lens.
+          'heatmap-opacity': prefersReducedMotion ? heatOpacityExpr : 0,
+          'heatmap-opacity-transition': { duration: 350, delay: 0 },
+        },
       },
-    }, beforeId);
+      beforeId,
+    );
 
     if (!prefersReducedMotion) {
       requestAnimationFrame(() => {
         const m = mapRef.current;
-        if (m?.getLayer(HEATMAP_LAYER)) m.setPaintProperty(HEATMAP_LAYER, 'heatmap-opacity', heatOpacityExpr);
+        if (m?.getLayer(HEATMAP_LAYER))
+          m.setPaintProperty(HEATMAP_LAYER, 'heatmap-opacity', heatOpacityExpr);
       });
     }
   }, [renderMode, pointsGeoJSON, pointEnabledLayers, mapReady, prefersReducedMotion, mapRef]);

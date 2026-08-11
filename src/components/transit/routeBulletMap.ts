@@ -19,7 +19,16 @@ export const ROUTE_BULLET_MAP: Record<string, BulletDef> = {
   personality: { letter: 'P', track: 'pink', label: 'Person' },
   news: { letter: 'N', track: 'blue', label: 'News' },
   marketplace: { letter: 'M', track: 'yellow', label: 'Marketplace' },
-  hotel: { letter: 'H', track: 'blue', label: 'Hotel' },
+  // Hotel moved blue → yellow on 2026-08-10 so the map's four POINT layers
+  // (venue / event / hotel / restroom) get four distinct track colours and no
+  // two pin types share a hue. Duplicate colours distinguished by letter is
+  // already how this table works — see city C-green vs country C-yellow, which
+  // is the same trick in the other direction.
+  hotel: { letter: 'H', track: 'yellow', label: 'Hotel' },
+  // Restrooms are a map layer with no single-type page, but they need a track
+  // like every other pin type; without an entry here the map would have to
+  // invent a colour outside this table.
+  restroom: { letter: 'R', track: 'green', label: 'Restroom' },
   organization: { letter: 'O', track: 'green', label: 'Organization' },
   landmark: { letter: 'L', track: 'green', label: 'Landmark' },
   milestone: { letter: 'M', track: 'pink', label: 'Milestone' },

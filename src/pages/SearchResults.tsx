@@ -520,11 +520,7 @@ export default function SearchResults() {
             onBrowse={(p) => navigate(p)}
           />
         ) : effectiveView === 'map' ? (
-          <ResultsMapView
-            results={accumulated}
-            onSelect={navigateToResult}
-            onAreaSearch={(area) => handleFiltersChange({ ...filters, ...area })}
-          />
+          <ResultsMapView results={accumulated} />
         ) : effectiveView === 'calendar' ? (
           <div className={cn(loading && 'opacity-60 transition-opacity')} aria-busy={loading}>
             <SearchCalendarView results={accumulated} query={query} onSelect={navigateToResult} />

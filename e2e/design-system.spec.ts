@@ -257,7 +257,13 @@ const SANCTIONED_TOKENS = ['track-pink', 'track-blue', 'track-green', 'track-yel
 
 test.describe('design system: sanctioned ink only', () => {
   // /news excluded — news cards may have category images with chromatic content
-  const publicPages = ['/', '/events', '/venues', '/hotels'];
+  //
+  // /map covers the map CHROME only. The canvas is a <canvas>, so none of the
+  // basemap, the pins or the cluster donuts have DOM backgrounds for this
+  // sweep to read — that half is gated by the unit test in
+  // src/components/map/__tests__/mapPalette.test.ts. Do not read a green run
+  // here as "the map is on-palette"; it means the panels over it are.
+  const publicPages = ['/', '/events', '/venues', '/hotels', '/map'];
 
   for (const path of publicPages) {
     test(`only sanctioned brand ink on ${path}`, async ({ page }) => {

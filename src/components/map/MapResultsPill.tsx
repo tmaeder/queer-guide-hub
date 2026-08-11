@@ -1,4 +1,3 @@
-
 import { useTranslation } from 'react-i18next';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 
@@ -25,7 +24,7 @@ export function MapResultsPill({
     <div
       role="status"
       aria-live="polite"
-      className="absolute z-10 flex items-center gap-1.5 rounded-element bg-background/90 backdrop-blur px-4 py-1.5 pointer-events-none transition-opacity duration-fast"
+      className="absolute z-10 flex items-center gap-1.5 rounded-element border-[3px] border-foreground bg-background px-4 py-1.5 pointer-events-none transition-opacity duration-fast"
       style={{
         bottom: 40,
         right: 8,
@@ -36,9 +35,7 @@ export function MapResultsPill({
             : 0,
       }}
     >
-      {(isFetching || isCounterStale) && (
-        <TrackLoader size={12} />
-      )}
+      {(isFetching || isCounterStale) && <TrackLoader size={12} />}
       <span className="text-xs text-muted-foreground">
         {isFetching || isCounterStale
           ? t('map.canvas.loadingEllipsis', { defaultValue: 'Loading...' })
