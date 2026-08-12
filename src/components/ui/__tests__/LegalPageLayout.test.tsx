@@ -194,7 +194,30 @@ describe('LegalPageLayout', () => {
     // The prod defect: a fragment jump parks its target just BELOW the trigger
     // line, so the heading above it is the last one past that line. Someone who
     // clicked "Your Privacy Rights" was told they were at "Data Retention".
+    //
+    // Clicked for real rather than simulated with a `hashchange`, because the
+    // rail navigates with `pushState` and that fires no `hashchange` at all —
+    // testing the event instead of the click is what let the first fix pass
+    // its unit tests and still fail on prod.
     it('outranks the geometry after a rail click', async () => {
+      renderWithHeadings();
+      positionHeadings({ acceptance: 20, description: 300, sub: 900 });
+      fireEvent.scroll(window);
+      await waitFor(() => expect(activeHrefs()).toEqual(['#acceptance', '#acceptance']));
+
+      const rail = screen.getAllByRole('navigation', { name: 'Sections of this policy' })[0];
+      fireEvent.click(within(rail).getByRole('link', { name: /Description of Service/ }));
+
+      await waitFor(() => expect(activeHrefs()).toEqual(['#description', '#description']));
+      expect(window.location.hash).toBe('#description');
+
+      // A programmatic scroll must not undo it — that is the very event the
+      // jump itself fires.
+      fireEvent.scroll(window);
+      await waitFor(() => expect(activeHrefs()).toEqual(['#description', '#description']));
+    });
+
+    it('also follows Back/Forward across those fragments', async () => {
       renderWithHeadings();
       positionHeadings({ acceptance: 20, description: 300, sub: 900 });
       fireEvent.scroll(window);
@@ -203,11 +226,6 @@ describe('LegalPageLayout', () => {
       window.history.replaceState(null, '', '#description');
       fireEvent(window, new HashChangeEvent('hashchange'));
 
-      await waitFor(() => expect(activeHrefs()).toEqual(['#description', '#description']));
-
-      // A programmatic scroll must not undo it — that is the very event the
-      // jump itself fires.
-      fireEvent.scroll(window);
       await waitFor(() => expect(activeHrefs()).toEqual(['#description', '#description']));
     });
 

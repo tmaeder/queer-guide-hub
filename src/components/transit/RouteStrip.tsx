@@ -20,6 +20,9 @@ interface RouteStripProps {
   className?: string;
   /** Accessible name for the nav landmark. */
   label?: string;
+  /** The reader chose a station. `pushState` fires no `hashchange`, so this is
+   *  the only signal the owner gets that navigation — not scrolling — happened. */
+  onNavigate?: (id: string) => void;
 }
 
 /**
@@ -47,6 +50,7 @@ export function RouteStrip({
   orientation = 'vertical',
   className,
   label = 'Sections',
+  onNavigate,
 }: RouteStripProps) {
   const listRef = useRef<HTMLOListElement | null>(null);
   const lineColor = track ? TRACK_BG[track] : 'bg-foreground';
@@ -78,6 +82,12 @@ export function RouteStrip({
     // Preserve history.state — react-router keeps its own key in there, and
     // dropping it desyncs the router's idea of where it is.
     window.history.pushState(window.history.state, '', `#${id}`);
+    // `pushState` deliberately fires no `hashchange`, so a listener on that
+    // event never learns about this. Without telling the owner directly, the
+    // scroll-spy would keep answering with whatever the geometry says — and a
+    // jump parks its target below the trigger line, so that is the station
+    // BEFORE the one just clicked.
+    onNavigate?.(id);
   };
 
   if (orientation === 'horizontal') {
