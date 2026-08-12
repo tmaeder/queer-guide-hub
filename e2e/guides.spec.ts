@@ -17,11 +17,23 @@ test.describe('Guides — unified hub', () => {
     await expect(guideLinks.first()).toBeVisible({ timeout: 30_000 });
   });
 
-  test('header primary nav links to /guides', async ({ page }) => {
-    await page.goto('/');
+  // WAS: 'header primary nav links to /guides'. The subway rebrand turned the
+  // desktop header into the Intent Router — six intents, no destination links
+  // and no dropdowns — so /venues, /events, /news, /marketplace and /guides all
+  // left the header by design. The others are still reachable because their
+  // cluster hub links them; /guides was not, which left the whole family with
+  // no path from desktop chrome at all. `/shop` (the `shop` cluster hub, per
+  // DESTINATIONS in src/config/navigation.ts) now carries it, and this test
+  // guards that path rather than the retired header one.
+  test('the shop hub links to the guides family', async ({ page }) => {
+    await page.goto('/shop');
     await page.waitForLoadState('domcontentloaded');
-    const nav = page.getByRole('navigation', { name: /primary/i });
-    await expect(nav.getByRole('link', { name: /guides/i })).toBeVisible({ timeout: 30_000 });
+    const main = page.getByRole('main');
+    // The "All guides" action is deliberately data-independent — the guide
+    // cards beside it come from a query that can legitimately return nothing,
+    // and gating the only nav path on that query is what orphaned /guides in
+    // the first place. Assert the unconditional link, not the cards.
+    await expect(main.locator('a[href*="/guides"]').first()).toBeVisible({ timeout: 30_000 });
   });
 
   test('guide detail renders hero + picks', async ({ page }) => {
