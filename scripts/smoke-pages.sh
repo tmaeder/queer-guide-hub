@@ -418,9 +418,24 @@ purge_poisoned() {
 	# this runner sees one PoP, purge-by-URL is global. On 2026-08-08 the 6
 	# entries MSP could see were purged and reported "recovered 6/6" while 29
 	# chunks kept serving text/html from ZRH.
+	# TWO entries per asset: the plain URL and the CORS variant.
+	#
+	# A purge by bare URL does NOT evict the copy Cloudflare stored for the same
+	# URL under `Vary: Origin`. Modules are fetched with `crossorigin`, so the
+	# copy a BROWSER receives is that variant — and it can stay poisoned through
+	# a purge the API reports as entirely successful. Measured 2026-08-12: after
+	# a clean "purged 58 URL(s)" run, bare curl returned application/javascript
+	# while `curl -H 'Origin: https://queer.guide'` still returned text/html for
+	# rolldown-runtime, router, useAuth and ten more. Every route on prod was
+	# blank, because the module runtime itself was being served as HTML.
+	#
+	# Same asymmetry the detection rule at the top of this file already knows
+	# about: bare curl proves nothing about what a browser gets. It applies to
+	# purging exactly as it applies to probing.
 	for entry in ${ALL_ASSETS[@]+"${ALL_ASSETS[@]}"}; do
 		path=${entry%%|*}
 		files+=("\"$SITE$path\"")
+		files+=("{\"url\":\"$SITE$path\",\"headers\":{\"Origin\":\"$SITE\"}}")
 	done
 	# Stale HTML documents purge by the same mechanism, just a different cache
 	# class (DYNAMIC rather than the hashed assets' immutable entries).
