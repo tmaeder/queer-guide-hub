@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { cn } from '@/lib/utils';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
@@ -94,20 +94,24 @@ export const LegalPageLayout = ({
     return () => cancelAnimationFrame(raf);
   }, [sections.length]);
 
-  // A rail click is a native fragment navigation: the browser owns the scroll
-  // (smoothly), so there is nothing to redo — but the station the reader chose
-  // is known immediately and must not wait for the animation to cross the
-  // trigger line before the rail admits where they are going.
+  // The reader chose a station. Either route reaches the same place:
+  //
+  // - `onNavigate` from the rail, which owns its own scroll and writes the
+  //   fragment with `pushState` — and `pushState` fires NO `hashchange`, so
+  //   the listener below cannot see a rail click at all.
+  // - `hashchange`, for Back/Forward across those entries and for a fragment
+  //   typed into the address bar.
+  const goToStation = useCallback((id: string) => {
+    if (!id || !document.getElementById(id)) return;
+    pinned.current = id;
+    setActiveSection(id);
+  }, []);
+
   useEffect(() => {
-    const onHashChange = () => {
-      const id = decodeURIComponent(window.location.hash.slice(1));
-      if (!id || !document.getElementById(id)) return;
-      pinned.current = id;
-      setActiveSection(id);
-    };
+    const onHashChange = () => goToStation(decodeURIComponent(window.location.hash.slice(1)));
     window.addEventListener('hashchange', onHashChange);
     return () => window.removeEventListener('hashchange', onHashChange);
-  }, []);
+  }, [goToStation]);
 
   useEffect(() => {
     if (!sections.length) return;
@@ -235,6 +239,7 @@ export const LegalPageLayout = ({
           track={track}
           orientation="horizontal"
           label="Sections of this policy"
+          onNavigate={goToStation}
           className="mb-8 md:hidden"
         />
       )}
@@ -250,6 +255,7 @@ export const LegalPageLayout = ({
               activeId={activeSection}
               track={track}
               label="Sections of this policy"
+              onNavigate={goToStation}
             />
           </div>
         )}
