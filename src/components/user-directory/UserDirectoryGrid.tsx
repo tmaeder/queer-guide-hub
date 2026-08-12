@@ -70,7 +70,12 @@ export const UserDirectoryGrid = ({
               }))
             }
           >
-            <SelectTrigger className="w-auto border-0 bg-transparent shadow-none focus:ring-0">
+            {/* Chromeless sort control. `text-foreground` is not redundant
+                here: stripping the primitive's fill without restating the type
+                colour is exactly the coupling that once shipped near-white
+                text on a light surface at 1.09:1 — see
+                inputPlateOverride.test.ts, which now covers SelectTrigger. */}
+            <SelectTrigger className="w-auto border-0 bg-transparent text-foreground shadow-none focus:ring-0">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
