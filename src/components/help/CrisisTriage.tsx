@@ -183,6 +183,29 @@ export function CrisisTriage({
             </div>
           )}
 
+          {/* The commoner case, and the one the fallback above cannot reach.
+              Measured on production 2026-08-12: CA, FR, IE and NL each carry
+              exactly ONE line, and both INT entries are directories — so when
+              that single line shuts, there is nothing open to offer and the
+              reader is left holding a number that rings out. Four of the ten
+              covered countries were in that state at the time of writing.
+              Naming the closure and pointing somewhere is the minimum; the
+              real remedy is more lines in the corpus. */}
+          {heroClosed && !openAlt && (
+            <p className="mt-6 border-2 border-background/40 p-4 text-13 leading-relaxed text-background/80">
+              {t(
+                'help.closed_no_alt',
+                'This line is closed right now and we have no other line open for this country. In acute danger, use the emergency number above.',
+              )}{' '}
+              <a
+                href="#help-browse"
+                className="font-bold text-background underline underline-offset-4"
+              >
+                {t('help.see_all_lines', 'See every line we have')}
+              </a>
+            </p>
+          )}
+
           {/* Non-voice routes at equal weight — many readers cannot safely make
               a voice call. When a line publishes none, say so rather than
               rendering an empty region that reads as "not offered here". */}

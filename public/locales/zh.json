@@ -1541,6 +1541,7 @@
     "browse_title": "浏览全部求助热线",
     "cant_speak": "不方便说话？",
     "closed_now": "当前休息",
+    "closed_no_alt": "该热线现在不在服务时间，本国也没有其他正在开放的热线。如有紧急危险，请拨打上方的紧急号码。",
     "directories_subtitle": "这些是转介机构和名录——是网站，而不是可直接通话的热线。",
     "directories_title": "名录与其他支持",
     "emergency_short": "紧急电话",
@@ -1580,7 +1581,8 @@
     "tell_us": "告诉我们",
     "unkeep": "取消收藏",
     "visit_site": "打开其网站",
-    "website": "网站"
+    "website": "网站",
+    "see_all_lines": "查看所有热线"
   },
   "sos": {
     "button": "SOS",

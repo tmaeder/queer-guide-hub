@@ -1526,6 +1526,7 @@
       "email": "Email"
     },
     "closed_now": "Closed right now",
+    "closed_no_alt": "This line is closed right now and we have no other line open for this country. In acute danger, use the emergency number above.",
     "directories_subtitle": "These are referral organisations and directories — websites rather than direct phone lines.",
     "directories_title": "Directories & further support",
     "disclaimer": "Queer Guide does not replace professional help.",
@@ -1656,7 +1657,8 @@
     "unsave": "Remove from saved",
     "verified_on": "Verified",
     "visit_site": "Open their website",
-    "website": "Website"
+    "website": "Website",
+    "see_all_lines": "See every line we have"
   },
   "sos": {
     "button": "SOS",

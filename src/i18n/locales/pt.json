@@ -1541,6 +1541,7 @@
     "browse_title": "Ver todas as linhas",
     "cant_speak": "Não consegues falar?",
     "closed_now": "Fechado agora",
+    "closed_no_alt": "Esta linha está fechada agora e não temos nenhuma outra aberta para este país. Em perigo imediato, usa o número de emergência acima.",
     "directories_subtitle": "São diretórios e organizações de encaminhamento — sites, não linhas telefónicas diretas.",
     "directories_title": "Diretórios e mais apoio",
     "emergency_short": "Emergência",
@@ -1580,7 +1581,8 @@
     "tell_us": "Diz-nos",
     "unkeep": "Deixar de guardar",
     "visit_site": "Abrir o site deles",
-    "website": "Site"
+    "website": "Site",
+    "see_all_lines": "Ver todas as linhas"
   },
   "sos": {
     "button": "SOS",

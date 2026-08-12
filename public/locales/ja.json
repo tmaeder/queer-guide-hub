@@ -1541,6 +1541,7 @@
     "browse_title": "すべての相談窓口を見る",
     "cant_speak": "話すのが難しいですか？",
     "closed_now": "現在は受付時間外",
+    "closed_no_alt": "この窓口は現在受付時間外で、この国で開いている他の窓口はありません。差し迫った危険がある場合は上の緊急番号をご利用ください。",
     "directories_subtitle": "これらは紹介団体やディレクトリで、直接の電話窓口ではなくウェブサイトです。",
     "directories_title": "ディレクトリとその他の支援",
     "emergency_short": "緊急通報",
@@ -1580,7 +1581,8 @@
     "tell_us": "教えてください",
     "unkeep": "保存を解除",
     "visit_site": "公式サイトを開く",
-    "website": "ウェブサイト"
+    "website": "ウェブサイト",
+    "see_all_lines": "すべての窓口を見る"
   },
   "sos": {
     "button": "SOS",

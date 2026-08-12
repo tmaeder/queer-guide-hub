@@ -1541,6 +1541,7 @@
     "browse_title": "Sfoglia tutte le linee",
     "cant_speak": "Non riesci a parlare?",
     "closed_now": "Ora chiuso",
+    "closed_no_alt": "Questa linea è chiusa in questo momento e non abbiamo altre linee aperte per questo paese. In caso di pericolo immediato, usa il numero di emergenza qui sopra.",
     "directories_subtitle": "Sono elenchi e organizzazioni di riferimento: siti web, non linee telefoniche dirette.",
     "directories_title": "Elenchi e altro supporto",
     "emergency_short": "Emergenza",
@@ -1580,7 +1581,8 @@
     "tell_us": "Segnalacelo",
     "unkeep": "Non conservare più",
     "visit_site": "Apri il loro sito",
-    "website": "Sito web"
+    "website": "Sito web",
+    "see_all_lines": "Vedi tutte le linee"
   },
   "sos": {
     "button": "SOS",

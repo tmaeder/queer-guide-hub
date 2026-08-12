@@ -1541,6 +1541,7 @@
     "browse_title": "모든 상담 창구 보기",
     "cant_speak": "말하기 어려우신가요?",
     "closed_now": "지금은 운영 시간이 아닙니다",
+    "closed_no_alt": "이 상담선은 지금 운영하지 않으며, 이 국가에 열려 있는 다른 상담선이 없습니다. 급박한 위험 상황이라면 위의 긴급 번호를 이용하세요.",
     "directories_subtitle": "연계 단체와 디렉터리입니다. 직접 통화하는 전화선이 아니라 웹사이트입니다.",
     "directories_title": "디렉터리 및 추가 지원",
     "emergency_short": "긴급 전화",
@@ -1580,7 +1581,8 @@
     "tell_us": "알려주세요",
     "unkeep": "저장 해제",
     "visit_site": "웹사이트 열기",
-    "website": "웹사이트"
+    "website": "웹사이트",
+    "see_all_lines": "모든 상담선 보기"
   },
   "sos": {
     "button": "SOS",

@@ -1125,6 +1125,7 @@
     "browse_title": "Alle Angebote durchsuchen",
     "cant_speak": "Kannst du nicht sprechen?",
     "closed_now": "Gerade geschlossen",
+    "closed_no_alt": "Diese Nummer ist gerade geschlossen, und wir haben für dieses Land keine andere offene Leitung. Bei akuter Gefahr nutze die Notrufnummer oben.",
     "directories_subtitle": "Das sind Vermittlungsstellen und Verzeichnisse — Websites, keine direkten Telefonleitungen.",
     "directories_title": "Verzeichnisse & weitere Hilfe",
     "emergency_short": "Notruf",
@@ -1164,7 +1165,8 @@
     "tell_us": "Sag uns Bescheid",
     "unkeep": "Nicht mehr merken",
     "visit_site": "Website öffnen",
-    "website": "Website"
+    "website": "Website",
+    "see_all_lines": "Alle Leitungen anzeigen"
   },
   "auth": {
     "welcome": "Willkommen!",

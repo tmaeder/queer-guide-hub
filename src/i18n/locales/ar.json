@@ -1547,6 +1547,7 @@
     "browse_title": "تصفّح كل خطوط المساعدة",
     "cant_speak": "لا تستطيع التحدّث؟",
     "closed_now": "مغلق الآن",
+    "closed_no_alt": "هذا الخط مغلق الآن ولا يوجد لدينا خط آخر مفتوح لهذا البلد. في حالة الخطر الفوري، استخدم رقم الطوارئ أعلاه.",
     "directories_subtitle": "هذه أدلة ومنظمات إحالة — مواقع إلكترونية، وليست خطوط هاتف مباشرة.",
     "directories_title": "الأدلة ودعم إضافي",
     "emergency_short": "طوارئ",
@@ -1590,7 +1591,8 @@
     "result_count_zero": "لا توجد خطوط",
     "result_count_two": "خطّان",
     "result_count_few": "{{count}} خطوط",
-    "result_count_many": "{{count}} خطًا"
+    "result_count_many": "{{count}} خطًا",
+    "see_all_lines": "عرض كل الخطوط"
   },
   "sos": {
     "button": "طوارئ",
