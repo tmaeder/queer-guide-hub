@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { cn } from '@/lib/utils';
-import { STICKY_UNDER_HEADER } from '@/components/layout/PageContainer';
+import { PAGE_BLEED, STICKY_UNDER_HEADER } from '@/components/layout/PageContainer';
 import { StationRing } from './StationRing';
 import { TRACK_BG, type Track } from './routeBulletMap';
 
@@ -88,14 +88,15 @@ export function RouteStrip({
            band's edge, and a bleed that follows PAGE_GUTTER at every
            breakpoint so the rule reaches the viewport edge.
 
-           The offset is the site header's PINNED height — 60px on mobile,
-           64px from md where it collapses to the one-line ink flood. A flat
-           `top-16` left a 4px slot on mobile for content to slide through, so
-           it comes from the shared `STICKY_UNDER_HEADER` constant rather than
-           a second copy of those numbers. */
+           Both geometry values come from PageContainer, which owns the page
+           frame — `PAGE_BLEED` cancels the gutter and `STICKY_UNDER_HEADER`
+           is the site header's PINNED height (60px on mobile, 64px from md
+           where it collapses to the one-line ink flood; a flat `top-16` left
+           a 4px slot on mobile for content to slide through). Restating
+           either here is how the two drift apart. */
         className={cn(
           `sticky ${STICKY_UNDER_HEADER} z-30 border-b-2 border-foreground bg-background`,
-          '-mx-4 sm:-mx-6 md:-mx-8',
+          PAGE_BLEED,
           className,
         )}
       >
