@@ -3573,7 +3573,11 @@
       "allCountries": "All countries",
       "clear": "Clear filters",
       "major": "Major milestones",
-      "showAll": "All milestones"
+      "showAll": "All milestones",
+      "heading": "Filter the timeline",
+      "categoryGroup": "Category",
+      "scopeGroup": "Depth",
+      "impactGroup": "Impact"
     },
     "category": {
       "uprising-movement": "Uprising / Movement",
@@ -3593,7 +3597,9 @@
       "sources": "Sources",
       "linked": "People & places involved",
       "related": "More from {{country}}",
-      "sameYear": "Elsewhere in {{year}}"
+      "sameYear": "Elsewhere in {{year}}",
+      "story": "What happened",
+      "sameYearNote": "What was happening in other countries the same year."
     },
     "sidebar": {
       "facts": "Facts",
@@ -3685,7 +3691,16 @@
       "country": "Travel guide: {{name}}",
       "city": "City guide: {{name}}",
       "events": "Events in {{name}} today"
-    }
+    },
+    "facts": {
+      "impact": "Impact",
+      "category": "Category",
+      "era": "Era"
+    },
+    "photoCredit": "Photo",
+    "eraNavHeading": "The line, end to end",
+    "eraNavStation": "{{era}} — {{count}} milestones",
+    "emptyTitle": "No service on this stretch of the line"
   },
   "guides": {
     "hub": {

@@ -3607,7 +3607,11 @@
       "allCountries": "كل الدول",
       "clear": "مسح المرشحات",
       "major": "المحطات الرئيسية",
-      "showAll": "كل المحطات"
+      "showAll": "كل المحطات",
+      "heading": "[AR] Filter the timeline",
+      "categoryGroup": "[AR] Category",
+      "scopeGroup": "[AR] Depth",
+      "impactGroup": "[AR] Impact"
     },
     "category": {
       "uprising-movement": "انتفاضة / حركة",
@@ -3627,7 +3631,9 @@
       "sources": "المصادر",
       "linked": "أشخاص وأماكن ذات صلة",
       "related": "المزيد من {{country}}",
-      "sameYear": "[AR] Elsewhere in {{year}}"
+      "sameYear": "[AR] Elsewhere in {{year}}",
+      "story": "[AR] What happened",
+      "sameYearNote": "[AR] What was happening in other countries the same year."
     },
     "sidebar": {
       "facts": "حقائق",
@@ -3719,7 +3725,16 @@
       "country": "[AR] Travel guide: {{name}}",
       "city": "[AR] City guide: {{name}}",
       "events": "[AR] Events in {{name}} today"
-    }
+    },
+    "facts": {
+      "impact": "[AR] Impact",
+      "category": "[AR] Category",
+      "era": "[AR] Era"
+    },
+    "photoCredit": "[AR] Photo",
+    "eraNavHeading": "[AR] The line, end to end",
+    "eraNavStation": "[AR] {{era}} — {{count}} milestones",
+    "emptyTitle": "[AR] No service on this stretch of the line"
   },
   "guides": {
     "hub": {

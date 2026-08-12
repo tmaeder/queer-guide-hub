@@ -3603,7 +3603,11 @@
       "allCountries": "Tutti i paesi",
       "clear": "Cancella filtri",
       "major": "Pietre miliari principali",
-      "showAll": "Tutte le pietre miliari"
+      "showAll": "Tutte le pietre miliari",
+      "heading": "[IT] Filter the timeline",
+      "categoryGroup": "[IT] Category",
+      "scopeGroup": "[IT] Depth",
+      "impactGroup": "[IT] Impact"
     },
     "category": {
       "uprising-movement": "Rivolta / Movimento",
@@ -3623,7 +3627,9 @@
       "sources": "Fonti",
       "linked": "Persone e luoghi coinvolti",
       "related": "Altro da {{country}}",
-      "sameYear": "[IT] Elsewhere in {{year}}"
+      "sameYear": "[IT] Elsewhere in {{year}}",
+      "story": "[IT] What happened",
+      "sameYearNote": "[IT] What was happening in other countries the same year."
     },
     "sidebar": {
       "facts": "Fatti",
@@ -3715,7 +3721,16 @@
       "country": "[IT] Travel guide: {{name}}",
       "city": "[IT] City guide: {{name}}",
       "events": "[IT] Events in {{name}} today"
-    }
+    },
+    "facts": {
+      "impact": "[IT] Impact",
+      "category": "[IT] Category",
+      "era": "[IT] Era"
+    },
+    "photoCredit": "[IT] Photo",
+    "eraNavHeading": "[IT] The line, end to end",
+    "eraNavStation": "[IT] {{era}} — {{count}} milestones",
+    "emptyTitle": "[IT] No service on this stretch of the line"
   },
   "guides": {
     "hub": {
