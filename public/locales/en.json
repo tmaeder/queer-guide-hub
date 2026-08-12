@@ -3926,5 +3926,163 @@
       "protected": "Broad protections",
       "unknown": "Not enough data"
     }
+  },
+  "about": {
+    "eyebrow": "About",
+    "title": "Built by queers, for everyone.",
+    "lede": "Queer Guide maps the places, events and people that make up queer life — verified by the community, free for everyone, everywhere in the world.",
+    "diagram": {
+      "label": "Four lines — venues, events, community and places — converging on one station."
+    },
+    "scale": {
+      "kicker": "The network today",
+      "venues": "Venues",
+      "events": "Upcoming events",
+      "cities": "Cities",
+      "countries": "Countries"
+    },
+    "lines": {
+      "kicker": "The network",
+      "title": "Five lines",
+      "lede": "Each part of the platform runs on its own line. Take whichever one you need.",
+      "action": "Open",
+      "venues": {
+        "name": "Venues",
+        "description": "Queer-friendly bars, cafés, clubs and businesses, reviewed by real people."
+      },
+      "events": {
+        "name": "Events",
+        "description": "Pride marches, drag shows, support groups, screenings — near you or anywhere."
+      },
+      "marketplace": {
+        "name": "Marketplace",
+        "description": "LGBTQ+ owned businesses and creators. Shop where your money matters."
+      },
+      "community": {
+        "name": "Community",
+        "description": "Ask questions, share stories, find your people. Moderated, always."
+      },
+      "places": {
+        "name": "Places",
+        "description": "Cities and countries: local laws, rights and safety notes before you go."
+      }
+    },
+    "story": {
+      "kicker": "Our story",
+      "title": "How this started",
+      "p1": "Finding a queer-friendly bar shouldn't take a group chat, three forum threads and a leap of faith. We started Queer Guide because we were tired of guessing which spaces were actually safe — and which just put a rainbow on the logo in June.",
+      "p2": "A personal list of trusted venues turned into a global directory: verified by the community, built on real experience, free to use. Travelling solo, moving city, or just looking for somewhere to be on a Friday night — start here."
+    },
+    "legend": {
+      "kicker": "Legend",
+      "title": "What makes us different",
+      "verified": {
+        "label": "Community-verified",
+        "body": "Every venue is reviewed by real LGBTQ+ people, not an algorithm."
+      },
+      "safety": {
+        "label": "Safety-first",
+        "body": "Local laws, rights and risk notes on every country page."
+      },
+      "free": {
+        "label": "Always free",
+        "body": "No paywall, no premium tier. The platform belongs to everyone."
+      },
+      "global": {
+        "label": "Global reach",
+        "body": "Berlin to Bangkok, São Paulo to Sydney — and growing."
+      }
+    },
+    "history": {
+      "kicker": "How we got here",
+      "title": "The line so far",
+      "lede": "A side-project that became a global directory.",
+      "y2021": {
+        "year": "2021",
+        "body": "Three contributors, one spreadsheet. Safe bars in five European cities, shared in a Telegram group."
+      },
+      "y2023": {
+        "year": "2023",
+        "body": "A thousand venues across eighty cities. The events pipeline and the community submissions extension shipped."
+      },
+      "y2025": {
+        "year": "2025",
+        "body": "Tens of thousands of venues on every continent. Marketplace, trip planner, safety briefings and country-by-country rights."
+      },
+      "y2026": {
+        "year": "2026",
+        "body": "You are here. Add a venue, post an event, or join the contributor circle."
+      }
+    },
+    "values": {
+      "kicker": "What we stand for",
+      "title": "What we value",
+      "inclusivity": {
+        "title": "Inclusivity",
+        "description": "Every identity, every background, every story belongs here."
+      },
+      "safety": {
+        "title": "Safety",
+        "description": "Safe spaces online and off. It comes before everything else."
+      },
+      "community": {
+        "title": "Community",
+        "description": "Real connections between people and the organizations that serve them."
+      },
+      "authenticity": {
+        "title": "Authenticity",
+        "description": "Be yourself. We built this so you never have to hide."
+      },
+      "accessibility": {
+        "title": "Accessibility",
+        "description": "We mark step-free entrances, accessible restrooms — and what's missing."
+      },
+      "growth": {
+        "title": "Growth",
+        "description": "Always changing, always listening. Built on what you tell us."
+      }
+    },
+    "people": {
+      "kicker": "Who runs it",
+      "title": "The people behind it",
+      "lede": "No corporation. Community members who give their time.",
+      "moderators": {
+        "name": "Community moderators",
+        "role": "Keeping it safe",
+        "description": "Volunteers who keep the platform welcoming and respectful, around the clock."
+      },
+      "ambassadors": {
+        "name": "Local ambassadors",
+        "role": "Eyes on the ground",
+        "description": "Community leaders who surface local needs and champion inclusive spaces in their region."
+      },
+      "contributors": {
+        "name": "Contributors",
+        "role": "Sharing knowledge",
+        "description": "Members who write reviews, post events and build the resources everyone else relies on."
+      }
+    },
+    "cta": {
+      "title": "Help us extend the line.",
+      "body": "The network grows because people add to it. Every verified entry has someone behind it — add yours.",
+      "primary": "Submit a venue",
+      "secondary": "Contact us",
+      "addVenues": {
+        "title": "Add a venue",
+        "desc": "Know a safe spot? Put it on the map."
+      },
+      "createEvents": {
+        "title": "Post an event",
+        "desc": "Organize something. Bring people together."
+      },
+      "joinGroups": {
+        "title": "Join a group",
+        "desc": "Your voice belongs in the conversation."
+      },
+      "support": {
+        "title": "Support us",
+        "desc": "Keep the platform free for everyone."
+      }
+    }
   }
 }

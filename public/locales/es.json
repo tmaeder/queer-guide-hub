@@ -3956,5 +3956,163 @@
       "protected": "[ES] Broad protections",
       "unknown": "[ES] Not enough data"
     }
+  },
+  "about": {
+    "eyebrow": "Quiénes somos",
+    "title": "Hecho por personas queer, para todo el mundo.",
+    "lede": "Queer Guide mapea los lugares, eventos y personas que forman la vida queer: verificado por la comunidad, gratis para todo el mundo, en cualquier parte.",
+    "diagram": {
+      "label": "Cuatro líneas —locales, eventos, comunidad y lugares— que confluyen en una estación."
+    },
+    "scale": {
+      "kicker": "La red hoy",
+      "venues": "Locales",
+      "events": "Próximos eventos",
+      "cities": "Ciudades",
+      "countries": "Países"
+    },
+    "lines": {
+      "kicker": "La red",
+      "title": "Cinco líneas",
+      "lede": "Cada parte de la plataforma va por su propia línea. Toma la que necesites.",
+      "action": "Abrir",
+      "venues": {
+        "name": "Locales",
+        "description": "Bares, cafés, clubes y negocios queer-friendly, revisados por personas reales."
+      },
+      "events": {
+        "name": "Eventos",
+        "description": "Marchas del Orgullo, shows de drag, grupos de apoyo, proyecciones: cerca de ti o en cualquier lugar."
+      },
+      "marketplace": {
+        "name": "Mercado",
+        "description": "Negocios y creadores LGBTQ+. Compra donde tu dinero importa."
+      },
+      "community": {
+        "name": "Comunidad",
+        "description": "Pregunta, comparte, encuentra a los tuyos. Siempre con moderación."
+      },
+      "places": {
+        "name": "Lugares",
+        "description": "Ciudades y países: leyes locales, derechos y avisos de seguridad antes de ir."
+      }
+    },
+    "story": {
+      "kicker": "Nuestra historia",
+      "title": "Cómo empezó",
+      "p1": "Encontrar un bar queer-friendly no debería costar un grupo de chat, tres hilos de foro y un salto de fe. Empezamos Queer Guide porque nos cansamos de adivinar qué espacios eran seguros de verdad, y cuáles solo ponían un arcoíris en el logo en junio.",
+      "p2": "Una lista personal de sitios de confianza se convirtió en un directorio global: verificado por la comunidad, construido sobre experiencias reales, gratis. Viajando en solitario, mudándote de ciudad o buscando dónde estar un viernes por la noche: empieza aquí."
+    },
+    "legend": {
+      "kicker": "Leyenda",
+      "title": "Qué nos hace diferentes",
+      "verified": {
+        "label": "Verificado por la comunidad",
+        "body": "Cada local lo revisan personas LGBTQ+ reales, no un algoritmo."
+      },
+      "safety": {
+        "label": "La seguridad primero",
+        "body": "Leyes locales, derechos y avisos de riesgo en cada página de país."
+      },
+      "free": {
+        "label": "Siempre gratis",
+        "body": "Sin muro de pago, sin plan premium. La plataforma es de todo el mundo."
+      },
+      "global": {
+        "label": "Alcance global",
+        "body": "De Berlín a Bangkok, de São Paulo a Sídney, y creciendo."
+      }
+    },
+    "history": {
+      "kicker": "Cómo llegamos aquí",
+      "title": "La línea hasta ahora",
+      "lede": "Un proyecto paralelo que se convirtió en un directorio global.",
+      "y2021": {
+        "year": "2021",
+        "body": "Tres colaboradores, una hoja de cálculo. Bares seguros en cinco ciudades europeas, compartidos en un grupo de Telegram."
+      },
+      "y2023": {
+        "year": "2023",
+        "body": "Mil locales en ochenta ciudades. Se lanzaron el sistema de eventos y la extensión de propuestas de la comunidad."
+      },
+      "y2025": {
+        "year": "2025",
+        "body": "Decenas de miles de locales en todos los continentes. Mercado, planificador de viajes, informes de seguridad y derechos país por país."
+      },
+      "y2026": {
+        "year": "2026",
+        "body": "Estás aquí. Añade un local, publica un evento o únete al grupo de colaboradores."
+      }
+    },
+    "values": {
+      "kicker": "Lo que defendemos",
+      "title": "Lo que valoramos",
+      "inclusivity": {
+        "title": "Inclusión",
+        "description": "Toda identidad, todo origen, toda historia tiene su sitio aquí."
+      },
+      "safety": {
+        "title": "Seguridad",
+        "description": "Espacios seguros dentro y fuera de internet. Va antes que todo lo demás."
+      },
+      "community": {
+        "title": "Comunidad",
+        "description": "Conexiones reales entre personas y las organizaciones que las acompañan."
+      },
+      "authenticity": {
+        "title": "Autenticidad",
+        "description": "Sé tú. Construimos esto para que nunca tengas que esconderte."
+      },
+      "accessibility": {
+        "title": "Accesibilidad",
+        "description": "Señalamos entradas sin escalones, baños accesibles y lo que falta."
+      },
+      "growth": {
+        "title": "Crecimiento",
+        "description": "Siempre cambiando, siempre escuchando. Construido con lo que nos cuentan."
+      }
+    },
+    "people": {
+      "kicker": "Quién lo lleva",
+      "title": "Las personas detrás",
+      "lede": "Ninguna empresa. Personas de la comunidad que ponen su tiempo.",
+      "moderators": {
+        "name": "Moderación de la comunidad",
+        "role": "Manteniéndolo seguro",
+        "description": "Voluntariado que mantiene la plataforma acogedora y respetuosa a todas horas."
+      },
+      "ambassadors": {
+        "name": "Personas embajadoras locales",
+        "role": "Sobre el terreno",
+        "description": "Referentes de la comunidad que detectan necesidades locales y defienden espacios inclusivos en su zona."
+      },
+      "contributors": {
+        "name": "Colaboradores",
+        "role": "Compartiendo conocimiento",
+        "description": "Miembros que escriben reseñas, publican eventos y crean los recursos en los que se apoyan los demás."
+      }
+    },
+    "cta": {
+      "title": "Ayúdanos a alargar la línea.",
+      "body": "La red crece porque la gente aporta. Detrás de cada entrada verificada hay alguien: aporta la tuya.",
+      "primary": "Proponer un local",
+      "secondary": "Contacto",
+      "addVenues": {
+        "title": "Añadir un local",
+        "desc": "¿Conoces un sitio seguro? Ponlo en el mapa."
+      },
+      "createEvents": {
+        "title": "Publicar un evento",
+        "desc": "Organiza algo. Junta a la gente."
+      },
+      "joinGroups": {
+        "title": "Unirte a un grupo",
+        "desc": "Tu voz cuenta en la conversación."
+      },
+      "support": {
+        "title": "Apóyanos",
+        "desc": "Para que la plataforma siga siendo gratis para todo el mundo."
+      }
+    }
   }
 }

@@ -263,7 +263,12 @@ test.describe('design system: sanctioned ink only', () => {
   // sweep to read — that half is gated by the unit test in
   // src/components/map/__tests__/mapPalette.test.ts. Do not read a green run
   // here as "the map is on-palette"; it means the panels over it are.
-  const publicPages = ['/', '/events', '/venues', '/hotels', '/map'];
+  //
+  // /about earns its place: since the subway redesign it is the most
+  // track-colour-dense page on the site — a five-line index showing all four
+  // tracks at once, plus the only sanctioned `.intersection-gradient`. If any
+  // page is going to drift an unsanctioned hue in, it is this one.
+  const publicPages = ['/', '/events', '/venues', '/hotels', '/map', '/about'];
 
   // What counts as "this page has rendered its chrome".
   //
