@@ -1471,7 +1471,7 @@
     "hide_screen": "화면 가리기",
     "reveal_aria": "아무 곳이나 클릭하면 페이지가 다시 표시됩니다",
     "hidden_hint": "페이지를 가렸습니다. 아무 곳이나 클릭하면 다시 표시됩니다.",
-    "hero_label": "Recommended right now",
+    "hero_label": "지금 추천",
     "expect_title": "전화하면 어떻게 되나요",
     "expect_short": "What to expect",
     "expect_1": "You'll hear a short greeting. You don't have to give your name.",
@@ -1541,6 +1541,7 @@
     "browse_title": "모든 상담 창구 보기",
     "cant_speak": "말하기 어려우신가요?",
     "closed_now": "지금은 운영 시간이 아닙니다",
+    "closed_no_alt": "이 상담선은 지금 운영하지 않으며, 이 국가에 열려 있는 다른 상담선이 없습니다. 급박한 위험 상황이라면 위의 긴급 번호를 이용하세요.",
     "directories_subtitle": "연계 단체와 디렉터리입니다. 직접 통화하는 전화선이 아니라 웹사이트입니다.",
     "directories_title": "디렉터리 및 추가 지원",
     "emergency_short": "긴급 전화",
@@ -1558,6 +1559,7 @@
     "no_lines_title": "목록을 불러오지 못했습니다",
     "no_police_policy": "이 창구는 당사자의 명시적인 요청 없이는 경찰이나 응급 서비스에 연락하지 않는다고 명시하고 있습니다.",
     "open_always": "24시간 연중무휴",
+    "open_instead": "대신 지금 연결되는 곳",
     "open_now": "지금 운영 중",
     "org_coverage": "이 목록은 결코 완전하지 않습니다. 신뢰하는 단체가 빠져 있다면 알려주세요. 결과가 비어 있다는 것은 도움이 없다는 뜻이 아니라 저희에게 기록이 없다는 뜻입니다.",
     "phone_only": "저희 기록상 전화로만 운영됩니다.",
@@ -1579,7 +1581,8 @@
     "tell_us": "알려주세요",
     "unkeep": "저장 해제",
     "visit_site": "웹사이트 열기",
-    "website": "웹사이트"
+    "website": "웹사이트",
+    "see_all_lines": "모든 상담선 보기"
   },
   "sos": {
     "button": "SOS",

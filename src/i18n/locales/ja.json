@@ -1471,7 +1471,7 @@
     "hide_screen": "画面を隠す",
     "reveal_aria": "どこかをクリックするとページを再表示します",
     "hidden_hint": "ページを隠しています。どこかをクリックすると再表示します。",
-    "hero_label": "Recommended right now",
+    "hero_label": "今のおすすめ",
     "expect_title": "電話するとどうなるか",
     "expect_short": "What to expect",
     "expect_1": "You'll hear a short greeting. You don't have to give your name.",
@@ -1541,6 +1541,7 @@
     "browse_title": "すべての相談窓口を見る",
     "cant_speak": "話すのが難しいですか？",
     "closed_now": "現在は受付時間外",
+    "closed_no_alt": "この窓口は現在受付時間外で、この国で開いている他の窓口はありません。差し迫った危険がある場合は上の緊急番号をご利用ください。",
     "directories_subtitle": "これらは紹介団体やディレクトリで、直接の電話窓口ではなくウェブサイトです。",
     "directories_title": "ディレクトリとその他の支援",
     "emergency_short": "緊急通報",
@@ -1558,6 +1559,7 @@
     "no_lines_title": "一覧を読み込めませんでした",
     "no_police_policy": "この窓口は、あなたの明確な要請なしに警察や緊急サービスに連絡しないことを明示しています。",
     "open_always": "24時間365日対応",
+    "open_instead": "代わりに今すぐつながる窓口",
     "open_now": "現在受付中",
     "org_coverage": "この一覧はまだ十分ではありません。信頼できる団体が見つからない場合はお知らせください。結果が空でも、支援が存在しないという意味ではなく、私たちに記録がないという意味です。",
     "phone_only": "当方の記録では電話のみの対応です。",
@@ -1579,7 +1581,8 @@
     "tell_us": "教えてください",
     "unkeep": "保存を解除",
     "visit_site": "公式サイトを開く",
-    "website": "ウェブサイト"
+    "website": "ウェブサイト",
+    "see_all_lines": "すべての窓口を見る"
   },
   "sos": {
     "button": "SOS",

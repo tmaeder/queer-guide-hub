@@ -1125,6 +1125,7 @@
     "browse_title": "Alle Angebote durchsuchen",
     "cant_speak": "Kannst du nicht sprechen?",
     "closed_now": "Gerade geschlossen",
+    "closed_no_alt": "Diese Nummer ist gerade geschlossen, und wir haben für dieses Land keine andere offene Leitung. Bei akuter Gefahr nutze die Notrufnummer oben.",
     "directories_subtitle": "Das sind Vermittlungsstellen und Verzeichnisse — Websites, keine direkten Telefonleitungen.",
     "directories_title": "Verzeichnisse & weitere Hilfe",
     "emergency_short": "Notruf",
@@ -1142,6 +1143,7 @@
     "no_lines_title": "Das Verzeichnis konnte nicht geladen werden",
     "no_police_policy": "Diese Stelle sagt ausdrücklich zu, ohne deine ausdrückliche Bitte weder Polizei noch Rettungsdienst zu verständigen.",
     "open_always": "Rund um die Uhr erreichbar",
+    "open_instead": "Stattdessen jetzt erreichbar",
     "open_now": "Jetzt erreichbar",
     "org_coverage": "Dieses Verzeichnis ist längst nicht vollständig. Wenn eine Gruppe fehlt, der du vertraust, sag uns Bescheid. Ein leeres Ergebnis heißt: Wir haben keinen Eintrag — nicht, dass es keine Hilfe gibt.",
     "phone_only": "Nach unseren Angaben nur telefonisch erreichbar.",
@@ -1163,7 +1165,8 @@
     "tell_us": "Sag uns Bescheid",
     "unkeep": "Nicht mehr merken",
     "visit_site": "Website öffnen",
-    "website": "Website"
+    "website": "Website",
+    "see_all_lines": "Alle Leitungen anzeigen"
   },
   "auth": {
     "welcome": "Willkommen!",

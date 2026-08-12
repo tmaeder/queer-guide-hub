@@ -3,6 +3,7 @@ import {
   isOpenNow,
   isAlwaysOpen,
   selectPrimaryLine,
+  selectOpenAlternative,
   sortByAvailability,
   hotlineChannels,
   nonVoiceChannels,
@@ -46,13 +47,18 @@ describe('isOpenNow', () => {
   });
 
   it('returns null when slots exist but the timezone is missing', () => {
-    expect(isOpenNow(line({ hours_slots: [{ day: 2, open: '10:00', close: '18:00' }] }))).toBeNull();
+    expect(
+      isOpenNow(line({ hours_slots: [{ day: 2, open: '10:00', close: '18:00' }] })),
+    ).toBeNull();
   });
 
   it('returns null for an unrecognised IANA zone rather than guessing', () => {
     expect(
       isOpenNow(
-        line({ hours_slots: [{ day: 2, open: '10:00', close: '18:00' }], timezone: 'Mars/Olympus' }),
+        line({
+          hours_slots: [{ day: 2, open: '10:00', close: '18:00' }],
+          timezone: 'Mars/Olympus',
+        }),
         tueBerlin1500,
       ),
     ).toBeNull();
@@ -154,7 +160,12 @@ describe('selectPrimaryLine', () => {
   });
 
   it('penalises a line that may contact police without consent', () => {
-    const carceral = line({ id: 'carceral', always_open: true, free: true, reports_to_police: true });
+    const carceral = line({
+      id: 'carceral',
+      always_open: true,
+      free: true,
+      reports_to_police: true,
+    });
     const safe = line({ id: 'safe', always_open: true, free: true });
     expect(selectPrimaryLine([carceral, safe], 'DE')?.id).toBe('safe');
   });
@@ -165,6 +176,64 @@ describe('selectPrimaryLine', () => {
     const all = [line({ id: 'a', always_open: true, free: true }), line({ id: 'b' })];
     expect(selectPrimaryLine(all, 'DE')?.id).toBe('a');
     expect(selectPrimaryLine([all[0]], 'DE')?.id).toBe('a');
+  });
+});
+
+describe('selectOpenAlternative', () => {
+  const open247 = line({
+    id: 'always',
+    name: 'Always',
+    country: 'DE',
+    always_open: true,
+  });
+  const closed = line({
+    id: 'shut',
+    name: 'Shut',
+    country: 'DE',
+    hours_slots: [{ day: 2, open: '10:00', close: '12:00' }],
+    timezone: 'Europe/Berlin',
+  });
+
+  it('offers an open line when the recommended one is shut', () => {
+    const got = selectOpenAlternative([closed, open247], 'DE', closed, tueBerlin1500);
+    expect(got?.id).toBe('always');
+  });
+
+  it('never offers the line it was told to exclude', () => {
+    expect(selectOpenAlternative([open247], 'DE', open247, tueBerlin1500)).toBeNull();
+  });
+
+  it('never offers a directory, even one that is open', () => {
+    const dir = line({ id: 'd', country: 'DE', kind: 'directory', always_open: true });
+    expect(selectOpenAlternative([closed, dir], 'DE', closed, tueBerlin1500)).toBeNull();
+  });
+
+  it('will not promote a line whose hours we could not structure', () => {
+    // isOpenNow returns null here. Unknown is not open — offering it as
+    // "open right now" is the same false promise as calling it closed.
+    const unknown = line({ id: 'u', country: 'DE', hours: 'ring sometimes' });
+    expect(selectOpenAlternative([closed, unknown], 'DE', closed, tueBerlin1500)).toBeNull();
+  });
+
+  it('prefers a national line over an international one at equal strength', () => {
+    const intl = line({ id: 'i', country: 'INT', always_open: true });
+    const got = selectOpenAlternative([intl, open247], 'DE', closed, tueBerlin1500);
+    expect(got?.id).toBe('always');
+  });
+
+  it('falls back to an international line when the country has none open', () => {
+    const intl = line({ id: 'i', country: 'INT', always_open: true });
+    const got = selectOpenAlternative([closed, intl], 'DE', closed, tueBerlin1500);
+    expect(got?.id).toBe('i');
+  });
+
+  it('ignores lines from an unrelated country', () => {
+    const other = line({ id: 'o', country: 'GB', always_open: true });
+    expect(selectOpenAlternative([closed, other], 'DE', closed, tueBerlin1500)).toBeNull();
+  });
+
+  it('returns null for the ALL scope', () => {
+    expect(selectOpenAlternative([open247], 'ALL', null, tueBerlin1500)).toBeNull();
   });
 });
 

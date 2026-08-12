@@ -1475,7 +1475,7 @@
     "hide_screen": "Masquer l’écran",
     "reveal_aria": "Cliquez n’importe où pour réafficher la page",
     "hidden_hint": "Page masquée. Cliquez n’importe où pour la réafficher.",
-    "hero_label": "Recommended right now",
+    "hero_label": "Recommandé maintenant",
     "expect_title": "Ce qui se passe quand vous appelez",
     "expect_short": "What to expect",
     "expect_1": "You'll hear a short greeting. You don't have to give your name.",
@@ -1545,6 +1545,7 @@
     "browse_title": "Parcourir toutes les lignes",
     "cant_speak": "Vous ne pouvez pas parler ?",
     "closed_now": "Fermé actuellement",
+    "closed_no_alt": "Cette ligne est fermée en ce moment et nous n'avons aucune autre ligne ouverte pour ce pays. En cas de danger immédiat, utilise le numéro d'urgence ci-dessus.",
     "directories_subtitle": "Ce sont des annuaires et des associations relais — des sites web, pas des lignes téléphoniques directes.",
     "directories_title": "Annuaires et autres soutiens",
     "emergency_short": "Urgence",
@@ -1562,6 +1563,7 @@
     "no_lines_title": "Impossible de charger l'annuaire",
     "no_police_policy": "Cette ligne s'engage à ne jamais contacter la police ni les secours sans votre demande explicite.",
     "open_always": "Ouvert 24h/24, 7j/7",
+    "open_instead": "Ouvert maintenant à la place",
     "open_now": "Ouvert maintenant",
     "org_coverage": "Cet annuaire est loin d'être complet. S'il manque un groupe en qui vous avez confiance, dites-le-nous. Un résultat vide signifie que nous n'avons pas d'information — pas qu'aucune aide n'existe.",
     "phone_only": "Uniquement par téléphone, d'après nos informations.",
@@ -1583,7 +1585,8 @@
     "tell_us": "Dites-le-nous",
     "unkeep": "Ne plus garder",
     "visit_site": "Ouvrir leur site",
-    "website": "Site web"
+    "website": "Site web",
+    "see_all_lines": "Voir toutes les lignes"
   },
   "sos": {
     "button": "SOS",

@@ -143,33 +143,29 @@ test.describe('MapShell — basemap actually loads', () => {
       })
       .toBeGreaterThan(0);
 
-    // Distinct colours on the canvas. A blank paper rectangle is 1–2; a drawn
-    // basemap has roads, water washes, landcover and labels.
-    await expect
-      .poll(
-        () =>
-          page.evaluate(() => {
-            const c = document.querySelector('canvas.maplibregl-canvas') as HTMLCanvasElement;
-            if (!c) return 0;
-            const g = document.createElement('canvas');
-            g.width = 120;
-            g.height = 120;
-            const ctx = g.getContext('2d');
-            if (!ctx) return 0;
-            ctx.drawImage(c, 0, 0, 120, 120);
-            const { data } = ctx.getImageData(0, 0, 120, 120);
-            const seen = new Set<string>();
-            for (let i = 0; i < data.length; i += 4) {
-              seen.add(`${data[i]},${data[i + 1]},${data[i + 2]}`);
-            }
-            return seen.size;
-          }),
-        {
-          timeout: 30000,
-          message: 'The canvas is a flat fill — tiles loaded but nothing was drawn.',
-        },
-      )
-      .toBeGreaterThan(8);
+    // REMOVED 2026-08-12: a distinct-colour count taken by drawing the MapLibre
+    // canvas into a 2D canvas and reading getImageData. It could never pass and
+    // never did — it failed on every nightly from the day it was added (#2708).
+    //
+    // A WebGL drawing buffer is cleared once the frame is composited unless the
+    // context was created with `preserveDrawingBuffer: true`. MapLibre does not
+    // set that and neither do we (the flag has never appeared in src/), so
+    // `drawImage` from that canvas yields a blank image and the count is always
+    // 1 — the exact "Received: 1" in the failure. The map itself is healthy: it
+    // paints correctly in a real browser, and this test's own worker and glyph
+    // assertions above pass, so the worker booted and vector tiles were fetched
+    // and parsed.
+    //
+    // Deliberately NOT "fixed" by enabling preserveDrawingBuffer: that costs
+    // memory and a per-frame copy on every visitor's map, and degrading prod to
+    // satisfy a test is the wrong trade. The blank-basemap regression this file
+    // exists for (#2589 — the worker asset 404'd and the SPA fallback answered
+    // with text/html) is already caught by the two assertions above, which are
+    // the ones that actually failed then.
+    //
+    // A real paint guard is still possible: screenshot the canvas through
+    // Playwright (its capture goes via the compositor, so it DOES see WebGL
+    // content) and compare to a baseline or a byte-size floor.
   });
 });
 
