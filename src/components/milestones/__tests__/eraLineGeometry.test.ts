@@ -65,7 +65,14 @@ describe.each([
   it.each(COUNTS)('never emits a straight segment (n=%i)', (n) => {
     for (const d of make(n).segments) {
       expect(d).not.toMatch(/[LHVlhv]/);
-      expect(d).toMatch(/^M [-\d.]+ [-\d.]+( C .+)+$/);
+      // Asserted in three linear pieces rather than one `( C .+)+$`. That form
+      // nests `.+` inside a `+`, which CodeQL flagged as js/redos (high): the
+      // two quantifiers can split the same input many ways, so a near-miss
+      // string backtracks exponentially. A test file has no attacker input,
+      // but the pattern is wrong wherever it appears.
+      expect(d.startsWith('M ')).toBe(true);
+      expect(d).toMatch(/^M [-\d.]+ [-\d.]+ C /);
+      expect(d.split(' C ').length - 1).toBeGreaterThan(0);
     }
   });
 
