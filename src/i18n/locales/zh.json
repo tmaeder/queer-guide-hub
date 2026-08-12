@@ -3644,7 +3644,11 @@
       "allCountries": "所有国家",
       "clear": "清除筛选",
       "major": "主要里程碑",
-      "showAll": "全部里程碑"
+      "showAll": "全部里程碑",
+      "heading": "[ZH] Filter the timeline",
+      "categoryGroup": "[ZH] Category",
+      "scopeGroup": "[ZH] Depth",
+      "impactGroup": "[ZH] Impact"
     },
     "category": {
       "uprising-movement": "起义 / 运动",
@@ -3664,7 +3668,9 @@
       "sources": "来源",
       "linked": "相关人物与地点",
       "related": "{{country}}的更多里程碑",
-      "sameYear": "[ZH] Elsewhere in {{year}}"
+      "sameYear": "[ZH] Elsewhere in {{year}}",
+      "story": "[ZH] What happened",
+      "sameYearNote": "[ZH] What was happening in other countries the same year."
     },
     "sidebar": {
       "facts": "事实",
@@ -3756,7 +3762,16 @@
       "country": "[ZH] Travel guide: {{name}}",
       "city": "[ZH] City guide: {{name}}",
       "events": "[ZH] Events in {{name}} today"
-    }
+    },
+    "facts": {
+      "impact": "[ZH] Impact",
+      "category": "[ZH] Category",
+      "era": "[ZH] Era"
+    },
+    "photoCredit": "[ZH] Photo",
+    "eraNavHeading": "[ZH] The line, end to end",
+    "eraNavStation": "[ZH] {{era}} — {{count}} milestones",
+    "emptyTitle": "[ZH] No service on this stretch of the line"
   },
   "guides": {
     "hub": {

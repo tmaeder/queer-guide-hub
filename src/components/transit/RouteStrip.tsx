@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { cn } from '@/lib/utils';
+import { STICKY_UNDER_HEADER } from '@/components/layout/PageContainer';
 import { StationRing } from './StationRing';
 import { TRACK_BG, type Track } from './routeBulletMap';
 
@@ -89,12 +90,11 @@ export function RouteStrip({
 
            The offset is the site header's PINNED height — 60px on mobile,
            64px from md where it collapses to the one-line ink flood. A flat
-           `top-16` left a 4px slot on mobile for content to slide through.
-           These are the values of `STICKY_UNDER_HEADER` in PageContainer.tsx
-           (added by #2710, which is in main but not yet merged into this
-           branch); import that constant once it is, rather than restating it. */
+           `top-16` left a 4px slot on mobile for content to slide through, so
+           it comes from the shared `STICKY_UNDER_HEADER` constant rather than
+           a second copy of those numbers. */
         className={cn(
-          'sticky top-[60px] z-30 border-b-2 border-foreground bg-background md:top-[64px]',
+          `sticky ${STICKY_UNDER_HEADER} z-30 border-b-2 border-foreground bg-background`,
           '-mx-4 sm:-mx-6 md:-mx-8',
           className,
         )}

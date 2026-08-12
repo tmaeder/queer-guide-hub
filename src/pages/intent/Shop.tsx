@@ -4,6 +4,7 @@ import { useMeta } from '@/hooks/useMeta';
 import { IntentPageLayout } from '@/components/intent/IntentPageLayout';
 import { CoverageNote } from '@/components/intent/CoverageNote';
 import { useVerifiedOwnedBrands } from '@/hooks/useIntentData';
+import { useGuides } from '@/hooks/useGuides';
 import { DepartmentBento } from '@/components/marketplace/DepartmentBento';
 import { OCCASION_CHIPS, DEPARTMENT_LABELS } from '@/lib/marketplaceTaxonomy';
 import type { SectionDef } from '@/components/entity/editorial';
@@ -65,6 +66,7 @@ const OCCASIONS: { label: string; blurb: string; to: string }[] = [
 export default function ShopIntent() {
   const { t } = useTranslation();
   const { data: brands } = useVerifiedOwnedBrands(24);
+  const { data: shoppingGuides = [] } = useGuides({ entityType: 'marketplace', limit: 3 });
 
   useMeta({
     title: 'Shop — books, apparel, art and gifts',
@@ -154,6 +156,46 @@ export default function ShopIntent() {
       action: (
         <LocalizedLink to="/marketplace" className="text-13 no-underline hover:underline">
           All products
+        </LocalizedLink>
+      ),
+    },
+    {
+      id: 'guides',
+      label: 'Guides',
+      kicker: 'What to buy, and why',
+      // Deliberately NOT `hidden`-gated on the guide count, which is the usual
+      // pattern for a self-hiding rail. After the subway rebrand the header is
+      // the Intent Router — six intents, no destination links and no dropdowns
+      // — and `/shop` is the only hub for the `shop` cluster, so this section
+      // is the single path from desktop chrome to the guides family. Hiding it
+      // on a thin result would orphan `/guides` from the site entirely (which
+      // is exactly what happened: `header primary nav links to /guides` failed
+      // the nightly for days). The `action` link is data-independent for the
+      // same reason; only the card list reacts to the query.
+      content: shoppingGuides.length ? (
+        <ul className="list-none p-0 m-0 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {shoppingGuides.map((g) => (
+            <li key={g.id} className="border-2 border-foreground p-6 rounded-container">
+              <h3 className="font-display text-title mb-1">
+                <LocalizedLink to={`/guides/${g.slug}`} className="no-underline hover:underline">
+                  {g.title}
+                </LocalizedLink>
+              </h3>
+              {g.dek ? <p className="text-13 text-muted-foreground">{g.dek}</p> : null}
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="text-13 text-muted-foreground">
+          Editorial lists and buying guides, written by the community.
+        </p>
+      ),
+      action: (
+        <LocalizedLink
+          to="/guides?entity=marketplace"
+          className="text-13 no-underline hover:underline"
+        >
+          All guides
         </LocalizedLink>
       ),
     },

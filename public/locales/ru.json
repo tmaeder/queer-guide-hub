@@ -3680,7 +3680,11 @@
       "allCountries": "Все страны",
       "clear": "Сбросить фильтры",
       "major": "Ключевые вехи",
-      "showAll": "Все вехи"
+      "showAll": "Все вехи",
+      "heading": "[RU] Filter the timeline",
+      "categoryGroup": "[RU] Category",
+      "scopeGroup": "[RU] Depth",
+      "impactGroup": "[RU] Impact"
     },
     "category": {
       "uprising-movement": "Восстание / Движение",
@@ -3700,7 +3704,9 @@
       "sources": "Источники",
       "linked": "Причастные люди и места",
       "related": "Ещё из {{country}}",
-      "sameYear": "[RU] Elsewhere in {{year}}"
+      "sameYear": "[RU] Elsewhere in {{year}}",
+      "story": "[RU] What happened",
+      "sameYearNote": "[RU] What was happening in other countries the same year."
     },
     "sidebar": {
       "facts": "Факты",
@@ -3792,7 +3798,16 @@
       "country": "[RU] Travel guide: {{name}}",
       "city": "[RU] City guide: {{name}}",
       "events": "[RU] Events in {{name}} today"
-    }
+    },
+    "facts": {
+      "impact": "[RU] Impact",
+      "category": "[RU] Category",
+      "era": "[RU] Era"
+    },
+    "photoCredit": "[RU] Photo",
+    "eraNavHeading": "[RU] The line, end to end",
+    "eraNavStation": "[RU] {{era}} — {{count}} milestones",
+    "emptyTitle": "[RU] No service on this stretch of the line"
   },
   "guides": {
     "hub": {

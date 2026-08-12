@@ -1,4 +1,5 @@
 import { useEffect, useRef, type ReactNode } from 'react';
+import { STICKY_UNDER_HEADER } from '@/components/layout/PageContainer';
 import { cn } from '@/lib/utils';
 
 export interface SectionNavItem {
@@ -20,9 +21,22 @@ export function SectionNav({ items, activeId, onSelect, className }: SectionNavP
     const list = listRef.current;
     if (!list) return;
     const active = list.querySelector<HTMLElement>(`[data-section-id="${activeId}"]`);
-    if (active) {
-      active.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' });
-    }
+    if (!active) return;
+    // Scroll the LIST horizontally — never via scrollIntoView, which also
+    // scrolls the PAGE. Even `block: 'nearest'` scrolls vertically when the
+    // element is not fully visible, and this nav is sticky directly beneath a
+    // sticky header, so on mount it read as obscured and jumped the document
+    // ~260px. That dragged whatever sat above into the header band: it put a
+    // city page's "Official website" link under the header and failed axe
+    // `target-size` ("partially obscured"). Centring by scrollLeft touches
+    // only this element's own scroll offset and cannot move the document.
+    const left = Math.max(0, active.offsetLeft - (list.clientWidth - active.offsetWidth) / 2);
+    // jsdom implements neither scrollTo nor smooth behaviour on elements, and
+    // an unguarded call throws inside the effect — which took every
+    // EditorialDetailLayout test down with it. Assigning scrollLeft is the
+    // equivalent instant scroll and works everywhere.
+    if (typeof list.scrollTo === 'function') list.scrollTo({ left, behavior: 'smooth' });
+    else list.scrollLeft = left;
   }, [activeId]);
 
   return (
@@ -34,7 +48,8 @@ export function SectionNav({ items, activeId, onSelect, className }: SectionNavP
          lines up with the page content above it — at a flat `-mx-4` the rule
          stopped 16px short of the gutter from `sm` up. */
       className={cn(
-        'sticky top-16 z-30 -mx-4 mb-8 border-b-2 border-foreground bg-background sm:-mx-6 md:-mx-8',
+        'sticky z-30 -mx-4 mb-8 border-b-2 border-foreground bg-background sm:-mx-6 md:-mx-8',
+        STICKY_UNDER_HEADER,
         className,
       )}
     >

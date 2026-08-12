@@ -9,6 +9,10 @@ import { MilestoneRow } from '@/components/milestones/MilestoneRow';
 import { useMilestonesForCountry, useMilestonesTimeline } from '@/hooks/useMilestones';
 import { eraForYear } from '@/config/historyEras';
 import { FactGrid } from '@/components/transit/FactGrid';
+import { DetailMasthead } from '@/components/transit/DetailMasthead';
+import { SingleSection } from '@/components/transit/SinglePage';
+import { SidebarCard, SidebarRow } from '@/components/transit/SidebarCard';
+import { RouteBullet } from '@/components/transit/RouteBullet';
 import { isRestrainedMilestone } from '@/lib/historyEraGrouping';
 import { formatMilestoneDate, milestoneYear } from '@/lib/milestoneDate';
 import { displayableMilestoneImage } from '@/lib/milestoneImage';
@@ -32,12 +36,22 @@ export function MilestoneHero({ milestone }: { milestone: Milestone }) {
   // full-bleed celebratory hero.
   const restrained = isRestrainedMilestone(milestone, era);
   return (
-    <header>
-      <p className="text-2xs uppercase tracking-wider text-muted-foreground">
-        {t('milestones.eyebrow', 'Queer history')}
-      </p>
-      <p className="mt-2 font-display text-display font-semibold leading-none">{dateLabel}</p>
-      <h1 className="mt-2 font-display text-display font-semibold">{milestone.title}</h1>
+    // A plain div: DetailMasthead already renders the <header>, and nesting one
+    // inside another is a landmark smell for no benefit.
+    <div>
+      {/* The date is the masthead's status chip rather than a second
+          text-display slab stacked above the title: rank 2 belongs to the title
+          alone. The chip is an ink outline, so it cannot be mistaken for a
+          filled track. `type="milestone"` supplies the pink M route bullet, the
+          same mark this entity carries everywhere else in the product. `lead`
+          is deliberately unset — Milestone has no standfirst column, and
+          passing `description` would duplicate MilestoneStory verbatim. */}
+      <DetailMasthead
+        type="milestone"
+        eyebrow={t('milestones.eyebrow', 'Queer history')}
+        title={milestone.title}
+        status={dateLabel}
+      />
       {/* Module 01 — the fact strip. These five facts were a chip row unique to
           this type; the grid is the same grid every other single uses, which is
           spec rule 1: "a rider who learns one single has learned all thirteen."
@@ -48,7 +62,7 @@ export function MilestoneHero({ milestone }: { milestone: Milestone }) {
           lives once. A flat "Zurich, Switzerland" string in the strip would
           both duplicate the sidebar and be the worse of the two copies. */}
       <FactGrid
-        className="mt-4"
+        className="mt-6"
         facts={[
           {
             label: t('milestones.facts.impact', 'Impact'),
@@ -65,15 +79,22 @@ export function MilestoneHero({ milestone }: { milestone: Milestone }) {
           },
           {
             label: t('milestones.facts.era', 'Era'),
+            // `milestones.partOf` shipped in all 12 locales but had no caller —
+            // #2678 replaced the era chip with a bare link, which left
+            // e2e/history-timeline.spec.ts asserting a "Part of:" link that no
+            // longer existed. Restoring the phrasing turns that test green and
+            // gives the link an accessible name that says what it does.
             value: (
-              <LocalizedLink to={`/history#era-${era.slug}`}>{t(era.titleKey)}</LocalizedLink>
+              <LocalizedLink to={`/history#era-${era.slug}`}>
+                {t('milestones.partOf', 'Part of: {{era}}', { era: t(era.titleKey) })}
+              </LocalizedLink>
             ),
           },
         ]}
       />
       {imageUrl && (
         <figure className={cn('mt-6', restrained ? 'max-w-sm' : '')}>
-          <span className="block overflow-hidden rounded-container bg-muted">
+          <span className="block overflow-hidden border-[3px] border-foreground bg-muted">
             {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- onError is a media-error handler, not a user-input listener. */}
             <img
               src={imageUrl}
@@ -93,15 +114,29 @@ export function MilestoneHero({ milestone }: { milestone: Milestone }) {
           )}
         </figure>
       )}
-    </header>
+      {/* Spine position S4: breadcrumb → bullet/kicker → title/standfirst →
+          TAGS → action. They used to render as the sixth body section, between
+          "Elsewhere in {year}" and prev/next, which is nowhere in that order. */}
+      {milestone.tags.length > 0 && (
+        <div className="mt-6">
+          <MilestoneTags milestone={milestone} />
+        </div>
+      )}
+    </div>
   );
 }
 
 export function MilestoneStory({ milestone }: { milestone: Milestone }) {
+  const { t } = useTranslation();
   return (
-    <section aria-labelledby="milestone-story">
-      <p className="whitespace-pre-line text-body-lg leading-relaxed">{milestone.description}</p>
-    </section>
+    // `aria-labelledby="milestone-story"` pointed at an id that never existed.
+    // A real heading is the fix; max-w-[68ch] is the measure cap VenueOverview
+    // already uses — without it the widened frame runs ~118 characters a line.
+    <SingleSection title={t('milestones.sections.story', 'What happened')}>
+      <p className="max-w-[68ch] whitespace-pre-line text-body-lg leading-relaxed">
+        {milestone.description}
+      </p>
+    </SingleSection>
   );
 }
 
@@ -109,10 +144,7 @@ export function MilestoneStory({ milestone }: { milestone: Milestone }) {
 export function MilestoneSources({ milestone }: { milestone: Milestone }) {
   const { t } = useTranslation();
   return (
-    <section>
-      <h2 className="mb-4 font-display text-title font-semibold">
-        {t('milestones.sections.sources', 'Sources')}
-      </h2>
+    <SingleSection title={t('milestones.sections.sources', 'Sources')}>
       <ol className="space-y-2">
         {milestone.sources.map((s, i) => (
           <li key={`${s.label}-${i}`} className="flex items-start gap-2 text-15">
@@ -140,7 +172,7 @@ export function MilestoneSources({ milestone }: { milestone: Milestone }) {
           </li>
         ))}
       </ol>
-    </section>
+    </SingleSection>
   );
 }
 
@@ -164,11 +196,14 @@ function linkedHref(link: MilestoneLink): string | null {
 export function MilestoneLinkedEntities({ links }: { links: MilestoneLink[] }) {
   const { t } = useTranslation();
   return (
-    <section>
-      <h2 className="mb-4 font-display text-title font-semibold">
-        {t('milestones.sections.linked', 'People & places involved')}
-      </h2>
-      <ul className="space-y-2">
+    <SingleSection title={t('milestones.sections.linked', 'People & places involved')}>
+      {/* Deliberately NOT NestedEntityCard, which has no image slot. Dropping
+          the portraits off an LGBTQ+ history page has a representational cost
+          the design system recognises elsewhere (it is why `duotone` is opt-in
+          rather than the default treatment for faces). So: the card frame and
+          the cross-type RouteBullet from that module — rule 4, a person shows a
+          pink P, an organization a green O — kept alongside the avatar. */}
+      <ul className="m-0 grid list-none gap-4 p-0 sm:grid-cols-2">
         {links.map((link) => {
           const href = linkedHref(link);
           const body = (
@@ -181,10 +216,10 @@ export function MilestoneLinkedEntities({ links }: { links: MilestoneLink[] }) {
                   className="h-10 w-10 shrink-0 rounded-full object-cover"
                 />
               ) : (
-                <span className="h-10 w-10 shrink-0 rounded-full bg-muted" aria-hidden />
+                <RouteBullet type={link.entity_type} size={40} />
               )}
               <span className="min-w-0">
-                <span className="block truncate text-15 font-medium group-hover:underline">
+                <span className="block truncate font-display text-title leading-tight group-hover:underline">
                   {link.name}
                 </span>
                 <span className="block truncate text-13 text-muted-foreground">
@@ -196,17 +231,24 @@ export function MilestoneLinkedEntities({ links }: { links: MilestoneLink[] }) {
           return (
             <li key={`${link.entity_type}-${link.entity_id}`}>
               {href ? (
-                <LocalizedLink to={href} className="group block">
+                <LocalizedLink
+                  to={href}
+                  className="card-lift group block border-[3px] border-foreground bg-background p-4 no-underline"
+                >
                   {body}
                 </LocalizedLink>
               ) : (
-                body
+                // No resolvable route — a plate, but not a lift: nothing to
+                // click, so nothing should imply it.
+                <span className="block border-[3px] border-foreground bg-background p-4">
+                  {body}
+                </span>
               )}
             </li>
           );
         })}
       </ul>
-    </section>
+    </SingleSection>
   );
 }
 
@@ -216,18 +258,17 @@ export function MilestoneRelated({ milestone }: { milestone: Milestone }) {
   const others = (data ?? []).filter((m) => m.id !== milestone.id);
   if (!others.length) return null;
   return (
-    <section>
-      <h2 className="mb-4 font-display text-title font-semibold">
-        {t('milestones.sections.related', 'More from {{country}}', {
-          country: milestone.country?.name ?? milestone.country_name ?? '',
-        })}
-      </h2>
+    <SingleSection
+      title={t('milestones.sections.related', 'More from {{country}}', {
+        country: milestone.country?.name ?? milestone.country_name ?? '',
+      })}
+    >
       <div className="space-y-4">
         {others.map((m) => (
           <MilestoneRow key={m.id} milestone={m} density="compact" />
         ))}
       </div>
-    </section>
+    </SingleSection>
   );
 }
 
@@ -242,16 +283,19 @@ export function MilestoneSameYear({ milestone }: { milestone: Milestone }) {
     .slice(0, 4);
   if (!others.length) return null;
   return (
-    <section>
-      <h2 className="mb-4 font-display text-title font-semibold">
-        {t('milestones.sections.sameYear', 'Elsewhere in {{year}}', { year })}
-      </h2>
+    <SingleSection
+      title={t('milestones.sections.sameYear', 'Elsewhere in {{year}}', { year })}
+      note={t(
+        'milestones.sections.sameYearNote',
+        'What was happening in other countries the same year.',
+      )}
+    >
       <div className="space-y-4">
         {others.map((m) => (
           <MilestoneRow key={m.id} milestone={m} density="compact" />
         ))}
       </div>
-    </section>
+    </SingleSection>
   );
 }
 
@@ -262,15 +306,20 @@ export function MilestonePrevNext({ milestone }: { milestone: Milestone }) {
   return (
     <nav
       aria-label={t('milestones.timelineNav', 'Timeline navigation')}
-      className="grid gap-4 pt-6 sm:grid-cols-2"
+      // The 4px ink rule is the system's block separator — the same edge
+      // SinglePage puts above its footer block.
+      className="grid gap-4 border-t-4 border-foreground pt-8 sm:grid-cols-2"
     >
       {milestone.prev ? (
-        <LocalizedLink to={`/history/${milestone.prev.slug}`} className="group block">
+        <LocalizedLink
+          to={`/history/${milestone.prev.slug}`}
+          className="card-lift group block border-[3px] border-foreground bg-background p-4 no-underline"
+        >
           <span className="inline-flex items-center gap-1 text-13 text-muted-foreground">
             <ArrowLeft className="h-3 w-3" aria-hidden />
             {t('milestones.prev', 'Earlier')} · {milestoneYear(milestone.prev.date)}
           </span>
-          <span className="mt-1 block text-15 font-semibold group-hover:underline">
+          <span className="mt-1 block font-display text-title leading-tight group-hover:underline">
             {milestone.prev.title}
           </span>
         </LocalizedLink>
@@ -278,12 +327,15 @@ export function MilestonePrevNext({ milestone }: { milestone: Milestone }) {
         <span />
       )}
       {milestone.next ? (
-        <LocalizedLink to={`/history/${milestone.next.slug}`} className="group block sm:text-right">
+        <LocalizedLink
+          to={`/history/${milestone.next.slug}`}
+          className="card-lift group block border-[3px] border-foreground bg-background p-4 no-underline sm:text-right"
+        >
           <span className="inline-flex items-center gap-1 text-13 text-muted-foreground">
             {t('milestones.next', 'Later')} · {milestoneYear(milestone.next.date)}
             <ArrowRight className="h-3 w-3" aria-hidden />
           </span>
-          <span className="mt-1 block text-15 font-semibold group-hover:underline">
+          <span className="mt-1 block font-display text-title leading-tight group-hover:underline">
             {milestone.next.title}
           </span>
         </LocalizedLink>
@@ -305,19 +357,11 @@ export function MilestoneTags({ milestone }: { milestone: Milestone }) {
 }
 
 export function MilestoneSidebar({ milestone }: { milestone: Milestone }) {
-  const { t, i18n } = useTranslation();
-  const rows: Array<{ label: string; value: React.ReactNode }> = [
-    {
-      label: t('milestones.sidebar.date', 'Date'),
-      value: formatMilestoneDate(
-        milestone.date,
-        milestone.date_precision,
-        i18n.language,
-        milestone.date_end,
-        milestone.date_end_precision,
-      ),
-    },
-  ];
+  const { t } = useTranslation();
+  // No Date row: the date is the masthead's status chip now, and a headline
+  // fact lives once — the same rule that already keeps Place out of the
+  // FactGrid (see the comment in MilestoneHero).
+  const rows: Array<{ label: string; value: React.ReactNode }> = [];
   if (milestone.location)
     rows.push({ label: t('milestones.sidebar.place', 'Place'), value: milestone.location });
   if (milestone.city?.slug ?? milestone.city_name) {
@@ -371,36 +415,29 @@ export function MilestoneSidebar({ milestone }: { milestone: Milestone }) {
       to: `/events?city=${encodeURIComponent(cityLabel)}`,
     });
   }
+  // gap-4 matches SinglePage's rail. Tinted-fill panels were the pre-rebrand
+  // idiom; SidebarCard is the 3px ink plate every other single stacks.
   return (
-    <div className="space-y-6">
-      <aside className="rounded-container bg-surface-container p-6">
-        <h2 className="mb-4 text-2xs uppercase tracking-wider text-muted-foreground">
-          {t('milestones.sidebar.facts', 'Facts')}
-        </h2>
-        <dl className="space-y-4">
+    <div className="flex flex-col gap-4">
+      {rows.length > 0 && (
+        <SidebarCard eyebrow={t('milestones.sidebar.facts', 'Facts')}>
           {rows.map((r) => (
-            <div key={r.label}>
-              <dt className="text-13 text-muted-foreground">{r.label}</dt>
-              <dd className="text-15">{r.value}</dd>
-            </div>
+            <SidebarRow key={r.label} label={r.label} value={r.value} />
           ))}
-        </dl>
-      </aside>
+        </SidebarCard>
+      )}
       {exploreLinks.length > 0 && (
-        <aside className="rounded-container bg-surface-container p-6">
-          <h2 className="mb-4 text-2xs uppercase tracking-wider text-muted-foreground">
-            {t('milestones.sidebar.explore', 'Then & now')}
-          </h2>
-          <ul className="space-y-2">
+        <SidebarCard eyebrow={t('milestones.sidebar.explore', 'Then & now')}>
+          <ul className="m-0 flex list-none flex-col gap-2 p-0">
             {exploreLinks.map((l) => (
               <li key={l.to}>
-                <LocalizedLink to={l.to} className="text-15 underline underline-offset-2">
+                <LocalizedLink to={l.to} className="text-13 underline underline-offset-2">
                   {l.label}
                 </LocalizedLink>
               </li>
             ))}
           </ul>
-        </aside>
+        </SidebarCard>
       )}
     </div>
   );

@@ -6,6 +6,7 @@ import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { SimilarItems } from '@/components/discovery/SimilarItems';
 import { MoreLikeThisByTag } from '@/components/tags/MoreLikeThisByTag';
 import { EntityPersonalizationBand } from '@/components/entity/EntityPersonalizationBand';
+import { PageContainer } from '@/components/layout/PageContainer';
 import type { EntityDescriptor } from '@/components/entity/entityDescriptor';
 
 export interface EntityDetailScrollProps {
@@ -15,10 +16,19 @@ export interface EntityDetailScrollProps {
 }
 
 /**
- * Single-scroll shell for entity detail pages (venues + organisations).
- * No tabs: it renders hero → personalisation band → grid(sections | sidebar)
- * → ONE related rail, plus the sticky mobile bar and any overlays. The tabbed
- * `EntityDetailLayout` still serves city/country.
+ * Single-scroll shell for entity detail pages (venues, organisations,
+ * milestones). No tabs: it renders hero → personalisation band →
+ * grid(sections | sidebar) → ONE related rail, plus the sticky mobile bar and
+ * any overlays. The tabbed `EntityDetailLayout` still serves city/country.
+ *
+ * Framed by `PageContainer`, like every other page. It used to hand-roll
+ * `container mx-auto px-4 py-8`, which the 2026-08-10 layout sweep fixed in the
+ * sibling `EntityDetailLayout` but missed here — leaving these three types as
+ * the last pages off the standard, capped by Tailwind's bare `.container`
+ * (96rem, one breakpoint behind the viewport) with a flat 16px gutter while the
+ * header breathed to 32px. No `flush`: this shell has no bands of its own and
+ * LayoutShell's <main> contributes zero vertical, so `flush` would strip the
+ * page's top and bottom air entirely.
  */
 export function EntityDetailScroll({ descriptor, loading, error }: EntityDetailScrollProps) {
   // Publish the trail to the global breadcrumb bar (rendered in LayoutShell).
@@ -31,25 +41,25 @@ export function EntityDetailScroll({ descriptor, loading, error }: EntityDetailS
 
   if (error) {
     return (
-      <div className="container mx-auto px-4 py-8" data-testid="entity-detail-error">
+      <PageContainer data-testid="entity-detail-error">
         <Alert variant="destructive">
           <AlertTitle>Failed to load</AlertTitle>
           <AlertDescription>{error.message || 'Something went wrong.'}</AlertDescription>
         </Alert>
-      </div>
+      </PageContainer>
     );
   }
 
   if (loading || !descriptor) {
     return (
-      <div className="container mx-auto px-4 py-8" data-testid="entity-detail-loading">
+      <PageContainer data-testid="entity-detail-loading">
         <Skeleton variant="rectangular" height={32} style={{ width: '40%' }} className="mb-4" />
         <Skeleton variant="rectangular" height={192} className="mb-6 rounded-container" />
         <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr] gap-6">
           <Skeleton variant="rectangular" height={320} className="rounded-container" />
           <Skeleton variant="rectangular" height={240} className="rounded-container" />
         </div>
-      </div>
+      </PageContainer>
     );
   }
 
@@ -62,12 +72,10 @@ export function EntityDetailScroll({ descriptor, loading, error }: EntityDetailS
         style={{ scaleX, transformOrigin: '0%' }}
         className="fixed top-0 left-0 right-0 h-[2px] bg-foreground z-[1200]"
       />
-      <div className="container mx-auto px-4 py-8" data-testid="entity-detail-layout">
+      <PageContainer data-testid="entity-detail-layout">
         <div className="mb-6">{hero}</div>
 
-        {personalization && (
-          <EntityPersonalizationBand inputs={personalization} className="mb-6" />
-        )}
+        {personalization && <EntityPersonalizationBand inputs={personalization} className="mb-6" />}
 
         <div className={`grid grid-cols-1 ${sidebar ? 'md:grid-cols-[2fr_1fr]' : ''} gap-6`}>
           <div className="flex flex-col gap-10">
@@ -89,14 +97,10 @@ export function EntityDetailScroll({ descriptor, loading, error }: EntityDetailS
                 own type+id for both EntityDetailScroll adapters (venue, org),
                 so it doubles as the source for tag-based discovery. Renders
                 nothing until ≥3 tag-related items exist. */}
-            <MoreLikeThisByTag
-              entityType={related.type}
-              entityId={related.id}
-              className="mt-10"
-            />
+            <MoreLikeThisByTag entityType={related.type} entityId={related.id} className="mt-10" />
           </div>
         )}
-      </div>
+      </PageContainer>
 
       {overlays}
       {mobileBar}

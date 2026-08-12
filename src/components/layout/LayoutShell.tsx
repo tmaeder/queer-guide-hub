@@ -105,20 +105,32 @@ export const LayoutShell = ({ children }: { children: React.ReactNode }) => {
         whole app. The inner ErrorBoundary in routes.tsx handles route-level
         crashes; this outer boundary catches the chrome. */}
       {!isAdmin && (
-        <div className="relative z-10">
+        <>
+          {/* The header is a DIRECT child of the flex column, deliberately NOT
+              inside the chrome wrapper below. `position: sticky` can only
+              travel inside its parent's box, and that wrapper is exactly as
+              tall as the chrome it contains — so a header nested in it stuck
+              for 0px and scrolled straight off, which is why the compact ink
+              state (Header.tsx panel 02) was never once visible in production.
+              The wrapper's `z-10` also capped the header's own `z-1100` to
+              that stacking context, letting the equally-z-10 content column
+              below paint over it. Anything given `sticky` here must be a child
+              of the tall column, not of a wrapper sized to its own content. */}
           <ErrorBoundary section="header" fallback={null}>
             <Header />
           </ErrorBoundary>
-          <ErrorBoundary section="banners" fallback={null}>
-            <EmailVerifyBanner />
-            <TripContextBar />
-          </ErrorBoundary>
-          {!isFullBleedMap && (
-            <ErrorBoundary section="breadcrumbs" fallback={null}>
-              <BreadcrumbBar />
+          <div className="relative z-10">
+            <ErrorBoundary section="banners" fallback={null}>
+              <EmailVerifyBanner />
+              <TripContextBar />
             </ErrorBoundary>
-          )}
-        </div>
+            {!isFullBleedMap && (
+              <ErrorBoundary section="breadcrumbs" fallback={null}>
+                <BreadcrumbBar />
+              </ErrorBoundary>
+            )}
+          </div>
+        </>
       )}
       {/* Route transitions live in RouteFade (routes.tsx) — the former
           AnimatePresence mode="wait" wrapper here both duplicated that fade

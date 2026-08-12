@@ -61,16 +61,53 @@ export const LegalPageLayout = ({
   const line = slug ? POLICY_LINES[slug] : undefined;
   const track = slug ? policyTrack(slug) : undefined;
   const didUserMove = useRef(false);
+  // The station the reader ASKED for, via a deep link or a rail click. It
+  // outranks the geometry until they scroll away themselves — see the spy.
+  const pinned = useRef<string | null>(null);
 
   // Deep links. The browser's own fragment jump fires before the CMS body has
   // arrived over the network, so an SPA has to redo it once the headings
   // actually exist in the document.
+  //
+  // It is redone for several frames, not once: the site header pins to its
+  // COMPACT height as soon as the page is scrolled, and that happens after the
+  // first jump — which left the target 64px below where it asked to be, with
+  // the PREVIOUS heading sitting on the trigger line. Measured on /privacy
+  // #your-rights: the heading settled at top 192 while `retention` sat at 1.
   useEffect(() => {
     if (!sections.length) return;
     const id = decodeURIComponent(window.location.hash.slice(1));
     if (!id) return;
-    document.getElementById(id)?.scrollIntoView({ block: 'start' });
+    let raf = 0;
+    let tries = 0;
+    const settle = () => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.scrollIntoView({ block: 'start' });
+      pinned.current = id;
+      setActiveSection(id);
+      // ~6 frames (100ms). Long enough for the header to collapse, far too
+      // short for a reader to have scrolled anywhere themselves.
+      if (++tries < 6) raf = requestAnimationFrame(settle);
+    };
+    settle();
+    return () => cancelAnimationFrame(raf);
   }, [sections.length]);
+
+  // A rail click is a native fragment navigation: the browser owns the scroll
+  // (smoothly), so there is nothing to redo — but the station the reader chose
+  // is known immediately and must not wait for the animation to cross the
+  // trigger line before the rail admits where they are going.
+  useEffect(() => {
+    const onHashChange = () => {
+      const id = decodeURIComponent(window.location.hash.slice(1));
+      if (!id || !document.getElementById(id)) return;
+      pinned.current = id;
+      setActiveSection(id);
+    };
+    window.addEventListener('hashchange', onHashChange);
+    return () => window.removeEventListener('hashchange', onHashChange);
+  }, []);
 
   useEffect(() => {
     if (!sections.length) return;
@@ -89,6 +126,15 @@ export const LegalPageLayout = ({
     // Now it runs at most once per painted frame.
     const resolve = () => {
       frame = 0;
+      // A station the reader asked for wins over the one the geometry would
+      // name. A fragment jump parks its target near the trigger line, so the
+      // heading ABOVE it is usually the last one past that line — answering
+      // "you are at Data Retention" to someone who just clicked Your Privacy
+      // Rights. Released the moment they scroll for themselves.
+      if (pinned.current) {
+        setActiveSection(pinned.current);
+        return;
+      }
       let current = sections[0]?.id ?? '';
       for (const s of sections) {
         const el = document.getElementById(s.id);
@@ -107,12 +153,25 @@ export const LegalPageLayout = ({
       if (!frame) frame = requestAnimationFrame(resolve);
     };
 
+    // Gestures, not scroll: a programmatic jump fires `scroll` too, so
+    // releasing the pin there would release it on the very jump that set it.
+    const release = () => {
+      pinned.current = null;
+      schedule();
+    };
+
     window.addEventListener('scroll', schedule, { passive: true });
     window.addEventListener('resize', schedule, { passive: true });
+    window.addEventListener('wheel', release, { passive: true });
+    window.addEventListener('touchmove', release, { passive: true });
+    window.addEventListener('keydown', release);
     resolve();
     return () => {
       window.removeEventListener('scroll', schedule);
       window.removeEventListener('resize', schedule);
+      window.removeEventListener('wheel', release);
+      window.removeEventListener('touchmove', release);
+      window.removeEventListener('keydown', release);
       if (frame) cancelAnimationFrame(frame);
     };
   }, [sections]);

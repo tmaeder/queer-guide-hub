@@ -1,3 +1,4 @@
+import { STICKY_UNDER_HEADER } from '@/components/layout/PageContainer';
 import { cn } from '@/lib/utils';
 
 const LETTERS = [
@@ -35,8 +36,9 @@ interface Props {
 }
 
 /** The line's index — every station by first letter. Sticks under the site
- *  header at the same `top-16` the editorial SectionNav uses, rather than the
- *  inline `top: 64` literal it carried, which could not track a header change. */
+ *  header via the shared `STICKY_UNDER_HEADER` offset the editorial SectionNav
+ *  also uses, rather than an inline `top: 64` literal that could not track a
+ *  header change — the header is 60px on mobile and 64px only from `md`. */
 export function StickyLetterBar({ letter, onChange }: Props) {
   const entries: { value: string | null; label: string }[] = [
     { value: null, label: 'All' },
@@ -47,7 +49,10 @@ export function StickyLetterBar({ letter, onChange }: Props) {
   return (
     <nav
       aria-label="Jump to letter"
-      className="sticky top-16 z-10 mb-4 overflow-x-auto border-b-[3px] border-foreground bg-background py-2"
+      className={cn(
+        'sticky z-10 mb-4 overflow-x-auto border-b-[3px] border-foreground bg-background py-2',
+        STICKY_UNDER_HEADER,
+      )}
     >
       <div className="flex w-max items-center gap-1">
         {entries.map(({ value, label }) => {

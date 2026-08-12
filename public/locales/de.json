@@ -3646,7 +3646,11 @@
       "allCountries": "Alle Länder",
       "clear": "Filter zurücksetzen",
       "major": "Wichtige Meilensteine",
-      "showAll": "Alle Meilensteine"
+      "showAll": "Alle Meilensteine",
+      "heading": "[DE] Filter the timeline",
+      "categoryGroup": "[DE] Category",
+      "scopeGroup": "[DE] Depth",
+      "impactGroup": "[DE] Impact"
     },
     "category": {
       "uprising-movement": "Aufstand / Bewegung",
@@ -3666,7 +3670,9 @@
       "sources": "Quellen",
       "linked": "Beteiligte Personen & Orte",
       "related": "Mehr aus {{country}}",
-      "sameYear": "Anderswo im Jahr {{year}}"
+      "sameYear": "Anderswo im Jahr {{year}}",
+      "story": "[DE] What happened",
+      "sameYearNote": "[DE] What was happening in other countries the same year."
     },
     "sidebar": {
       "facts": "Fakten",
@@ -3758,7 +3764,16 @@
       "country": "Reiseführer: {{name}}",
       "city": "Stadtguide: {{name}}",
       "events": "Events heute in {{name}}"
-    }
+    },
+    "facts": {
+      "impact": "[DE] Impact",
+      "category": "[DE] Category",
+      "era": "[DE] Era"
+    },
+    "photoCredit": "[DE] Photo",
+    "eraNavHeading": "[DE] The line, end to end",
+    "eraNavStation": "[DE] {{era}} — {{count}} milestones",
+    "emptyTitle": "[DE] No service on this stretch of the line"
   },
   "guides": {
     "hub": {

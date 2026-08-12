@@ -163,4 +163,77 @@ describe('LegalPageLayout', () => {
       await waitFor(() => expect(window.location.hash).toBe('#description'));
     });
   });
+
+  describe('the station the reader asked for', () => {
+    /** jsdom does no layout, so every rect is 0×0 — position has to be faked. */
+    const positionHeadings = (tops: Record<string, number>) => {
+      for (const [id, top] of Object.entries(tops)) {
+        const el = document.getElementById(id);
+        if (el) el.getBoundingClientRect = () => ({ top }) as DOMRect;
+      }
+    };
+
+    const renderWithHeadings = () =>
+      renderWithProviders(
+        <LegalPageLayout title="Terms of Service" sections={SECTIONS} slug="terms">
+          <div>
+            <h2 id="acceptance">Acceptance of Terms</h2>
+            <h2 id="description">Description of Service</h2>
+            <h3 id="sub">A sub-clause</h3>
+          </div>
+        </LegalPageLayout>,
+      );
+
+    const activeHrefs = () =>
+      screen
+        .getAllByRole('navigation', { name: 'Sections of this policy' })
+        .flatMap((nav) => within(nav).queryAllByRole('link'))
+        .filter((a) => a.getAttribute('aria-current') === 'true')
+        .map((a) => a.getAttribute('href'));
+
+    // The prod defect: a fragment jump parks its target just BELOW the trigger
+    // line, so the heading above it is the last one past that line. Someone who
+    // clicked "Your Privacy Rights" was told they were at "Data Retention".
+    it('outranks the geometry after a rail click', async () => {
+      renderWithHeadings();
+      positionHeadings({ acceptance: 20, description: 300, sub: 900 });
+      fireEvent.scroll(window);
+      await waitFor(() => expect(activeHrefs()).toEqual(['#acceptance', '#acceptance']));
+
+      window.history.replaceState(null, '', '#description');
+      fireEvent(window, new HashChangeEvent('hashchange'));
+
+      await waitFor(() => expect(activeHrefs()).toEqual(['#description', '#description']));
+
+      // A programmatic scroll must not undo it — that is the very event the
+      // jump itself fires.
+      fireEvent.scroll(window);
+      await waitFor(() => expect(activeHrefs()).toEqual(['#description', '#description']));
+    });
+
+    it('gives way as soon as the reader scrolls for themselves', async () => {
+      renderWithHeadings();
+      positionHeadings({ acceptance: 20, description: 300, sub: 900 });
+      window.history.replaceState(null, '', '#description');
+      fireEvent(window, new HashChangeEvent('hashchange'));
+      await waitFor(() => expect(activeHrefs()).toEqual(['#description', '#description']));
+
+      fireEvent.wheel(window);
+      fireEvent.scroll(window);
+      await waitFor(() => expect(activeHrefs()).toEqual(['#acceptance', '#acceptance']));
+    });
+
+    it('ignores a fragment that names no heading', async () => {
+      renderWithHeadings();
+      positionHeadings({ acceptance: 20, description: 300, sub: 900 });
+      fireEvent.scroll(window);
+      await waitFor(() => expect(activeHrefs()).toEqual(['#acceptance', '#acceptance']));
+
+      window.history.replaceState(null, '', '#not-a-section');
+      fireEvent(window, new HashChangeEvent('hashchange'));
+      fireEvent.scroll(window);
+
+      await waitFor(() => expect(activeHrefs()).toEqual(['#acceptance', '#acceptance']));
+    });
+  });
 });

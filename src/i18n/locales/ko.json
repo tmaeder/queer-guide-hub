@@ -3644,7 +3644,11 @@
       "allCountries": "모든 국가",
       "clear": "필터 지우기",
       "major": "주요 이정표",
-      "showAll": "모든 이정표"
+      "showAll": "모든 이정표",
+      "heading": "[KO] Filter the timeline",
+      "categoryGroup": "[KO] Category",
+      "scopeGroup": "[KO] Depth",
+      "impactGroup": "[KO] Impact"
     },
     "category": {
       "uprising-movement": "봉기 / 운동",
@@ -3664,7 +3668,9 @@
       "sources": "출처",
       "linked": "관련 인물과 장소",
       "related": "{{country}}의 다른 이정표",
-      "sameYear": "[KO] Elsewhere in {{year}}"
+      "sameYear": "[KO] Elsewhere in {{year}}",
+      "story": "[KO] What happened",
+      "sameYearNote": "[KO] What was happening in other countries the same year."
     },
     "sidebar": {
       "facts": "정보",
@@ -3756,7 +3762,16 @@
       "country": "[KO] Travel guide: {{name}}",
       "city": "[KO] City guide: {{name}}",
       "events": "[KO] Events in {{name}} today"
-    }
+    },
+    "facts": {
+      "impact": "[KO] Impact",
+      "category": "[KO] Category",
+      "era": "[KO] Era"
+    },
+    "photoCredit": "[KO] Photo",
+    "eraNavHeading": "[KO] The line, end to end",
+    "eraNavStation": "[KO] {{era}} — {{count}} milestones",
+    "emptyTitle": "[KO] No service on this stretch of the line"
   },
   "guides": {
     "hub": {

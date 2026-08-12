@@ -55,21 +55,24 @@ export function EraKeyFigures({ era }: { era: HistoryEra }) {
 
   return (
     <div className="mb-8">
-      <p className="mb-4 text-2xs uppercase tracking-wider text-muted-foreground">
+      <p className="mb-4 text-2xs uppercase tracking-label text-muted-foreground">
         {t('milestones.era.keyFigures', 'Key figures of this era')}
       </p>
-      <ul className="flex flex-wrap gap-2">
+      <ul className="m-0 flex list-none flex-wrap gap-2 p-0">
         {top.map((f) => (
           <li key={f.slug}>
             <LocalizedLink
               to={`/personalities/${f.slug}`}
-              className="group flex items-center gap-2 rounded-badge py-1 pl-1 pr-2 transition-colors hover:bg-muted"
+              // A chip FILLS on hover — it never lifts. `no-underline` keeps the
+              // unlayered `li a` rule from collapsing the flex row.
+              className="flex items-center gap-2 border-2 border-foreground bg-background py-1 pl-1 pr-2 text-13 no-underline transition-colors duration-fast hover:bg-foreground hover:text-background"
             >
+              {/* Avatars are circles — the sanctioned rounded-full exception. */}
               <Avatar className="h-7 w-7">
                 {f.image_url ? <AvatarImage src={f.image_url} alt="" /> : null}
                 <AvatarFallback className="text-2xs">{initials(f.name)}</AvatarFallback>
               </Avatar>
-              <span className="text-13 group-hover:text-foreground">{f.name}</span>
+              {f.name}
             </LocalizedLink>
           </li>
         ))}

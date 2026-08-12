@@ -3650,7 +3650,11 @@
       "allCountries": "Tous les pays",
       "clear": "Effacer les filtres",
       "major": "Jalons majeurs",
-      "showAll": "Tous les jalons"
+      "showAll": "Tous les jalons",
+      "heading": "[FR] Filter the timeline",
+      "categoryGroup": "[FR] Category",
+      "scopeGroup": "[FR] Depth",
+      "impactGroup": "[FR] Impact"
     },
     "category": {
       "uprising-movement": "Soulèvement / Mouvement",
@@ -3670,7 +3674,9 @@
       "sources": "Sources",
       "linked": "Personnes et lieux impliqués",
       "related": "Plus de {{country}}",
-      "sameYear": "[FR] Elsewhere in {{year}}"
+      "sameYear": "[FR] Elsewhere in {{year}}",
+      "story": "[FR] What happened",
+      "sameYearNote": "[FR] What was happening in other countries the same year."
     },
     "sidebar": {
       "facts": "Faits",
@@ -3762,7 +3768,16 @@
       "country": "[FR] Travel guide: {{name}}",
       "city": "[FR] City guide: {{name}}",
       "events": "[FR] Events in {{name}} today"
-    }
+    },
+    "facts": {
+      "impact": "[FR] Impact",
+      "category": "[FR] Category",
+      "era": "[FR] Era"
+    },
+    "photoCredit": "[FR] Photo",
+    "eraNavHeading": "[FR] The line, end to end",
+    "eraNavStation": "[FR] {{era}} — {{count}} milestones",
+    "emptyTitle": "[FR] No service on this stretch of the line"
   },
   "guides": {
     "hub": {

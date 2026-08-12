@@ -83,7 +83,12 @@ export function OrgAbout({ org }: { org: Organization }) {
   return (
     <section>
       <h2 className="mb-4 font-display text-headline">{t('pages.entityDetail.about', 'About')}</h2>
-      <p className="whitespace-pre-line text-body-lg leading-relaxed text-foreground/90">{about}</p>
+      {/* max-w-[68ch]: EntityDetailScroll moved off the bare `.container` onto
+          PageContainer's 1600 cap, which takes this body column to ~1000px.
+          Same measure cap VenueOverview's About already carries. */}
+      <p className="max-w-[68ch] whitespace-pre-line text-body-lg leading-relaxed text-foreground/90">
+        {about}
+      </p>
     </section>
   );
 }

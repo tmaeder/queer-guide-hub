@@ -24,11 +24,14 @@ export default function HomeOnThisDay() {
       seeAllHref="/history"
       seeAllLabel={t('milestones.home.seeAll', 'Full timeline')}
     >
-      <ul className="grid gap-6 md:grid-cols-3">
+      <ul className="m-0 grid list-none gap-6 p-0 md:grid-cols-3">
         {data.map((m) => (
           <li key={m.id}>
             <LocalizedLink to={`/history/${m.slug}`} className="group block no-underline">
-              <span className="block font-display text-display font-semibold leading-none">
+              {/* text-headline, not text-display: HomeSection's own heading is
+                  text-display at md, and a cell inside a section may not carry
+                  the same rank as the heading above it. */}
+              <span className="block font-display text-headline leading-none">
                 {m.date.slice(0, 4)}
               </span>
               <span className="mt-2 flex items-start gap-2">
@@ -36,7 +39,9 @@ export default function HomeOnThisDay() {
                   <MilestoneImpactMarker impact={m.impact} />
                 </span>
                 <span className="min-w-0">
-                  <span className="block text-15 font-semibold group-hover:underline">{m.title}</span>
+                  <span className="block font-display text-title leading-tight group-hover:underline">
+                    {m.title}
+                  </span>
                   <span className="block text-13 text-muted-foreground">
                     {[m.city_name, m.country_name].filter(Boolean).join(', ') || ' '}
                     {' · '}

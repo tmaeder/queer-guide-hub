@@ -3646,7 +3646,11 @@
       "allCountries": "Todos os países",
       "clear": "Limpar filtros",
       "major": "Marcos principais",
-      "showAll": "Todos os marcos"
+      "showAll": "Todos os marcos",
+      "heading": "[PT] Filter the timeline",
+      "categoryGroup": "[PT] Category",
+      "scopeGroup": "[PT] Depth",
+      "impactGroup": "[PT] Impact"
     },
     "category": {
       "uprising-movement": "Levante / Movimento",
@@ -3666,7 +3670,9 @@
       "sources": "Fontes",
       "linked": "Pessoas e lugares envolvidos",
       "related": "Mais de {{country}}",
-      "sameYear": "[PT] Elsewhere in {{year}}"
+      "sameYear": "[PT] Elsewhere in {{year}}",
+      "story": "[PT] What happened",
+      "sameYearNote": "[PT] What was happening in other countries the same year."
     },
     "sidebar": {
       "facts": "Fatos",
@@ -3758,7 +3764,16 @@
       "country": "[PT] Travel guide: {{name}}",
       "city": "[PT] City guide: {{name}}",
       "events": "[PT] Events in {{name}} today"
-    }
+    },
+    "facts": {
+      "impact": "[PT] Impact",
+      "category": "[PT] Category",
+      "era": "[PT] Era"
+    },
+    "photoCredit": "[PT] Photo",
+    "eraNavHeading": "[PT] The line, end to end",
+    "eraNavStation": "[PT] {{era}} — {{count}} milestones",
+    "emptyTitle": "[PT] No service on this stretch of the line"
   },
   "guides": {
     "hub": {

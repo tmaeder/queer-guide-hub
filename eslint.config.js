@@ -133,7 +133,30 @@ export default tseslint.config(
       'jsx-a11y/heading-has-content': 'error',
       'jsx-a11y/img-redundant-alt': 'warn',
       'jsx-a11y/label-has-associated-control': 'error',
-      'jsx-a11y/no-noninteractive-element-interactions': 'warn',
+      // Options mirror jsx-a11y's own recommended config. Without them the rule
+      // falls back to bare defaults, which have no per-element exceptions — so
+      // an `<img onError>` fallback (not a user interaction at all) is reported
+      // as an a11y defect and lands in GitHub code scanning.
+      'jsx-a11y/no-noninteractive-element-interactions': [
+        'warn',
+        {
+          handlers: [
+            'onClick',
+            'onError',
+            'onLoad',
+            'onMouseDown',
+            'onMouseUp',
+            'onKeyPress',
+            'onKeyDown',
+            'onKeyUp',
+          ],
+          alert: ['onKeyUp', 'onKeyDown', 'onKeyPress'],
+          body: ['onError', 'onLoad'],
+          dialog: ['onKeyUp', 'onKeyDown', 'onKeyPress'],
+          iframe: ['onError', 'onLoad'],
+          img: ['onError', 'onLoad'],
+        },
+      ],
       'jsx-a11y/no-static-element-interactions': 'warn',
       'jsx-a11y/role-has-required-aria-props': 'error',
       'jsx-a11y/role-supports-aria-props': 'error',
