@@ -14,7 +14,15 @@ const SelectTrigger = React.forwardRef<
   <SelectPrimitive.Trigger
     ref={ref}
     className={cn(
-      'flex h-10 w-full items-center justify-between rounded-element px-4.5 py-2 text-sm ring-offset-background transition-all bg-inverse-surface text-background placeholder:text-background/70 hover:opacity-95 focus:outline-none focus:ring-2 focus:ring-spot/40 focus:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1',
+      'flex h-10 w-full items-center justify-between rounded-element px-4 py-2 text-sm transition-all duration-fast',
+      // Subway-map: matches `Input` exactly. This REPLACES the PASTE-UP
+      // inverted plate (bg-inverse-surface + text-background), whose two
+      // halves are COUPLED — a caller overriding only the background left
+      // near-white type on a light surface at 1.09:1, which shipped and failed
+      // axe. Ink-on-paper survives a partial override.
+      'border-2 border-foreground bg-background text-foreground',
+      'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background',
+      'disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1',
       className,
     )}
     {...props}
@@ -63,7 +71,9 @@ const SelectContent = React.forwardRef<
     <SelectPrimitive.Content
       ref={ref}
       className={cn(
-        'relative z-50 max-h-96 min-w-[8rem] overflow-hidden rounded-container bg-surface-container-highest text-popover-foreground data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95',
+        // The popover is a paper surface with an ink edge, like every other
+        // floating surface in the system — not a raised grey step.
+        'relative z-50 max-h-96 min-w-[8rem] overflow-hidden rounded-container border-2 border-foreground bg-popover text-popover-foreground data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95',
         position === 'popper' &&
           'data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1',
         className,
@@ -106,7 +116,10 @@ const SelectItem = React.forwardRef<
   <SelectPrimitive.Item
     ref={ref}
     className={cn(
-      'relative flex w-full cursor-default select-none items-center rounded-element py-1.5 pl-8 pr-2 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
+      // Highlight fills ink, the same move chips and list rows make elsewhere,
+      // instead of stepping up a grey. Radix sets `focus` on pointer hover too,
+      // so this is the hover state as well.
+      'relative flex w-full cursor-default select-none items-center rounded-element py-1.5 pl-8 pr-2 text-sm outline-none transition-colors focus:bg-foreground focus:text-background data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
       className,
     )}
     {...props}
