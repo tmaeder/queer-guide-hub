@@ -23,7 +23,13 @@
 import { useTranslation } from 'react-i18next';
 import { Phone, MessageSquare, MessageCircle, Mail, Globe } from 'lucide-react';
 import type { Hotline, HotlineChannel } from '@/types/cms';
-import { channelHref, isAlwaysOpen, isOpenNow, nonVoiceChannels } from './helpData';
+import {
+  channelHref,
+  isAlwaysOpen,
+  isOpenNow,
+  nonVoiceChannels,
+  selectOpenAlternative,
+} from './helpData';
 import { CountryScope } from './CountryScope';
 import { SelfHelpDrawer } from './SelfHelpDrawer';
 
@@ -40,6 +46,9 @@ const PRIMARY =
   'flex w-full items-center justify-between gap-4 border-[3px] border-background bg-background px-6 py-6 text-foreground no-underline transition-opacity hover:opacity-90';
 const SECONDARY =
   'flex items-center justify-center gap-2 border-2 border-background px-4 py-4 text-13 font-bold text-background no-underline transition-colors hover:bg-background hover:text-foreground';
+/** Same paper-on-ink logic as SECONDARY, tightened for a row of kept lines. */
+const KEPT =
+  'flex items-center gap-2 border-2 border-background px-4 py-2 text-13 font-bold text-background no-underline transition-colors hover:bg-background hover:text-foreground';
 
 function Availability({ hotline }: { hotline: Hotline }) {
   const { t } = useTranslation();
@@ -83,6 +92,17 @@ export function CrisisTriage({
   const { t } = useTranslation();
   const alt = hero ? nonVoiceChannels(hero) : [];
   const phone = hero ? (hero.channels?.find((c) => c.kind === 'phone')?.value ?? hero.phone) : null;
+
+  // A known-closed recommendation is the one case where the strongest line is
+  // the wrong thing to act on. `null` — hours we could not structure — is
+  // deliberately excluded: we do not know it is shut, so we do not second-guess
+  // it. Only a hard `false` earns the fallback.
+  const heroClosed = hero ? isOpenNow(hero) === false : false;
+  const openAlt = heroClosed ? selectOpenAlternative(hotlines, country, hero) : null;
+  const altPhone = openAlt
+    ? (openAlt.channels?.find((c) => c.kind === 'phone')?.value ?? openAlt.phone)
+    : null;
+  const altChannel = openAlt ? nonVoiceChannels(openAlt)[0] : null;
   // The phone-bill reassurance is factually scoped to three countries and
   // reads as noise anywhere else.
   const showBillNote = ['DE', 'AT', 'CH'].includes(country);
@@ -94,11 +114,7 @@ export function CrisisTriage({
       </h1>
 
       <div className="mt-4">
-        <CountryScope
-          country={country}
-          available={availableCountries}
-          onChange={onCountryChange}
-        />
+        <CountryScope country={country} available={availableCountries} onChange={onCountryChange} />
       </div>
 
       {hero ? (
@@ -127,6 +143,67 @@ export function CrisisTriage({
               </span>
               <span className="font-display text-title tabular-nums">{phone}</span>
             </a>
+          )}
+
+          {/* A closed line is not an action. When the recommendation is shut
+              and something else is demonstrably open, offer it here — directly
+              beside the button that would otherwise ring out. */}
+          {openAlt && (
+            <div className="mt-6 border-2 border-background/40 p-4">
+              <p className="text-2xs font-bold uppercase tracking-label text-background/70">
+                {t('help.open_instead', 'Open right now instead')}
+              </p>
+              <p className="mt-2 text-15 font-bold">{openAlt.name}</p>
+              <p className="mt-1">
+                <Availability hotline={openAlt} />
+              </p>
+              {altPhone ? (
+                <a
+                  href={channelHref({ kind: 'phone', value: altPhone })}
+                  className={`mt-4 ${SECONDARY}`}
+                  aria-label={t('help.call_aria', 'Call {{name}} {{phone}}', {
+                    name: openAlt.name,
+                    phone: altPhone,
+                  })}
+                >
+                  <Phone size={16} aria-hidden />
+                  <span className="tabular-nums">{altPhone}</span>
+                </a>
+              ) : altChannel ? (
+                <a
+                  href={channelHref(altChannel)}
+                  target={altChannel.kind === 'chat' ? '_blank' : undefined}
+                  rel={altChannel.kind === 'chat' ? 'noopener noreferrer' : undefined}
+                  className={`mt-4 ${SECONDARY}`}
+                  aria-label={`${openAlt.name} — ${altChannel.label ?? altChannel.kind}`}
+                >
+                  {altChannel.label ?? t(`help.channel.${altChannel.kind}`, altChannel.kind)}
+                </a>
+              ) : null}
+            </div>
+          )}
+
+          {/* The commoner case, and the one the fallback above cannot reach.
+              Measured on production 2026-08-12: CA, FR, IE and NL each carry
+              exactly ONE line, and both INT entries are directories — so when
+              that single line shuts, there is nothing open to offer and the
+              reader is left holding a number that rings out. Four of the ten
+              covered countries were in that state at the time of writing.
+              Naming the closure and pointing somewhere is the minimum; the
+              real remedy is more lines in the corpus. */}
+          {heroClosed && !openAlt && (
+            <p className="mt-6 border-2 border-background/40 p-4 text-13 leading-relaxed text-background/80">
+              {t(
+                'help.closed_no_alt',
+                'This line is closed right now and we have no other line open for this country. In acute danger, use the emergency number above.',
+              )}{' '}
+              <a
+                href="#help-browse"
+                className="font-bold text-background underline underline-offset-4"
+              >
+                {t('help.see_all_lines', 'See every line we have')}
+              </a>
+            </p>
           )}
 
           {/* Non-voice routes at equal weight — many readers cannot safely make
@@ -199,11 +276,50 @@ export function CrisisTriage({
         </div>
       )}
 
+      {/* You keep a line so you can reach it fast under pressure. Rendering the
+          names as a joined string made the feature decorative — the one moment
+          it exists for is the one moment you cannot act on it. */}
       {savedLines.length > 0 && (
-        <p className="mt-6 text-13 text-background/80">
-          <span className="font-bold text-background">{t('help.saved_lines', 'Kept lines')}:</span>{' '}
-          {savedLines.map((h) => h.name).join(' · ')}
-        </p>
+        <div className="mt-6">
+          <p className="text-2xs font-bold uppercase tracking-label text-background/70">
+            {t('help.saved_lines', 'Kept lines')}
+          </p>
+          <ul className="m-0 mt-2 flex list-none flex-wrap gap-2 p-0">
+            {savedLines.map((h) => {
+              const keptPhone = h.channels?.find((c) => c.kind === 'phone')?.value ?? h.phone;
+              const keptChannel = keptPhone ? null : nonVoiceChannels(h)[0];
+              const href = keptPhone
+                ? channelHref({ kind: 'phone', value: keptPhone })
+                : keptChannel
+                  ? channelHref(keptChannel)
+                  : h.url;
+              // A kept line we cannot route anywhere is not worth a dead chip.
+              if (!href) return null;
+              const offsite = !keptPhone && (!keptChannel || keptChannel.kind === 'chat');
+              return (
+                <li key={h.id}>
+                  <a
+                    href={href}
+                    target={offsite ? '_blank' : undefined}
+                    rel={offsite ? 'noopener noreferrer' : undefined}
+                    className={KEPT}
+                    aria-label={
+                      keptPhone
+                        ? t('help.call_aria', 'Call {{name}} {{phone}}', {
+                            name: h.name,
+                            phone: keptPhone,
+                          })
+                        : h.name
+                    }
+                  >
+                    {keptPhone && <Phone size={14} aria-hidden />}
+                    {h.name}
+                  </a>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
       )}
 
       <div className="mt-8 border-t-2 border-background/30 pt-6">
@@ -221,7 +337,10 @@ export function CrisisTriage({
             )}
           </li>
           <li>
-            {t('help.expect_4', 'If you can’t speak, ask for text or chat — most hotlines offer it.')}
+            {t(
+              'help.expect_4',
+              'If you can’t speak, ask for text or chat — most hotlines offer it.',
+            )}
           </li>
           {showBillNote && (
             <li>

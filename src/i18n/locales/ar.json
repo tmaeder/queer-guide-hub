@@ -1477,7 +1477,7 @@
     "hide_screen": "إخفاء الشاشة",
     "reveal_aria": "انقر في أي مكان لإظهار الصفحة من جديد",
     "hidden_hint": "الصفحة مخفية. انقر في أي مكان لإظهارها.",
-    "hero_label": "Recommended right now",
+    "hero_label": "موصى به الآن",
     "expect_title": "ماذا يحدث عندما تتصل",
     "expect_short": "What to expect",
     "expect_1": "You'll hear a short greeting. You don't have to give your name.",
@@ -1547,6 +1547,7 @@
     "browse_title": "تصفّح كل خطوط المساعدة",
     "cant_speak": "لا تستطيع التحدّث؟",
     "closed_now": "مغلق الآن",
+    "closed_no_alt": "هذا الخط مغلق الآن ولا يوجد لدينا خط آخر مفتوح لهذا البلد. في حالة الخطر الفوري، استخدم رقم الطوارئ أعلاه.",
     "directories_subtitle": "هذه أدلة ومنظمات إحالة — مواقع إلكترونية، وليست خطوط هاتف مباشرة.",
     "directories_title": "الأدلة ودعم إضافي",
     "emergency_short": "طوارئ",
@@ -1564,6 +1565,7 @@
     "no_lines_title": "تعذّر تحميل الدليل",
     "no_police_policy": "يعلن هذا الخط أنه لا يتصل بالشرطة أو خدمات الطوارئ أبدًا دون طلب صريح منك.",
     "open_always": "متاح على مدار الساعة",
+    "open_instead": "بديل متاح الآن",
     "open_now": "متاح الآن",
     "org_coverage": "هذا الدليل بعيد عن الاكتمال. إذا كانت هناك جهة تثق بها وغير مدرجة، أخبرنا. النتيجة الفارغة تعني أنه لا سجلّ لدينا، لا أنّ المساعدة غير موجودة.",
     "phone_only": "وفق سجلاتنا، الاتصال الهاتفي فقط.",
@@ -1589,7 +1591,8 @@
     "result_count_zero": "لا توجد خطوط",
     "result_count_two": "خطّان",
     "result_count_few": "{{count}} خطوط",
-    "result_count_many": "{{count}} خطًا"
+    "result_count_many": "{{count}} خطًا",
+    "see_all_lines": "عرض كل الخطوط"
   },
   "sos": {
     "button": "طوارئ",
