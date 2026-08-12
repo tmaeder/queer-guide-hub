@@ -47,6 +47,96 @@ const VIEWPORT_SIZES = {
 // target-size still runs.
 const ALLOW_INNER_SCROLL = new Set(['map']);
 
+/**
+ * Wait until the app is actually ready to be sampled. Steps 1–4 are a port of
+ * `e2e/support/appReady.ts` — that file is TypeScript and this script is plain
+ * `.mjs` run by bare node, so it cannot be imported; keep the two in step. The
+ * final content-settle step is extra, and only this scan needs it (the specs
+ * assert against elements they name, so they wait for those directly).
+ *
+ * **`waitForLoadState('networkidle')` is NOT that signal**, which is what this
+ * scan used to rely on. It never settles against a live app (persistent
+ * Supabase realtime sockets, analytics beacons on a timer, streaming map
+ * tiles), so it burns its whole timeout and the flat `waitForTimeout(800)`
+ * after it was doing all the real work. 800 ms happens to outlast the 0.3 s
+ * `station-arrive` route fade, so route transitions were never the problem —
+ * but it does NOT outlast the lazy overlay chunks (cookie banner, feedback
+ * FAB) that LayoutShell mounts after first paint. axe then samples one
+ * half-mounted and blends its transient opacity into the computed colour,
+ * reporting greys that match no token in the system. The e2e suite hit exactly
+ * this on /events in PR #2522 (#ffffff on #e2e2e2, 1.29:1) and fixed it here.
+ */
+async function waitForAppReady(page, timeout = 30_000) {
+  await page.waitForFunction(
+    () => (document.getElementById('root')?.children.length ?? 0) > 0,
+    undefined,
+    { timeout },
+  );
+  // Non-fatal: a font that never resolves should not fail a scan.
+  await page.evaluate(() => document.fonts.ready).catch(() => {});
+  // Load-bearing for axe: sampling before the theme stylesheet applies reads
+  // fallback greys and reports bogus contrast ratios.
+  await page
+    .waitForFunction(
+      () =>
+        getComputedStyle(document.documentElement).getPropertyValue('--foreground').trim() !== '',
+      undefined,
+      { timeout: 10_000 },
+    )
+    .catch(() => {});
+  // Two steps: give the lazy overlay chunk a bounded window to appear, THEN
+  // require it to be opaque. Checking opacity alone passes trivially while the
+  // chunk is still in flight, which is the race itself.
+  await page
+    .waitForSelector('[aria-label="Cookie settings"]', { state: 'attached', timeout: 5_000 })
+    .catch(() => { /* consent stored, or the chunk failed — nothing to settle */ });
+  await page
+    .waitForFunction(
+      () => {
+        const overlays = document.querySelectorAll(
+          '[aria-label="Cookie settings"], [aria-label="Share feedback"]',
+        );
+        return [...overlays].every((el) => {
+          const o = Number(getComputedStyle(el).opacity);
+          return Number.isNaN(o) || o === 0 || o === 1;
+        });
+      },
+      undefined,
+      { timeout: 10_000 },
+    )
+    .catch(() => {});
+
+  // Then wait for the page's OWN data to land, which `waitForAppReady` does not
+  // cover — it guarantees the shell, not the content.
+  //
+  // Measured against prod: at app-ready every data-driven route carries ~850
+  // characters of header and footer and nothing else. Seconds later /cities
+  // reaches 16,001, /news 11,965 and /events 3,767. The sweep was therefore
+  // reporting "0 violations" for pages whose entire content it had never seen,
+  // and *which* fragment had landed by the sample moment moved with network
+  // speed — so the violation set drifted run to run on unchanged code. That
+  // reads exactly like a flaky scanner and is really a scan racing its data.
+  //
+  // Quiet-period, not a fixed sleep: settle when the rendered text stops
+  // changing for 1.5 s. Bounded, and non-fatal — a route that streams forever
+  // (map tiles) just scans at the cap instead of failing.
+  await page
+    .waitForFunction(
+      () => {
+        const n = document.body.innerText.length;
+        if (window.__qgLastLen !== n) {
+          window.__qgLastLen = n;
+          window.__qgStableSince = Date.now();
+          return false;
+        }
+        return Date.now() - (window.__qgStableSince ?? 0) > 1500;
+      },
+      undefined,
+      { timeout: 20_000, polling: 300 },
+    )
+    .catch(() => {});
+}
+
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const OUT_DIR = resolve(__dirname, '..', 'docs', 'a11y-audit');
 const JSON_OUT = resolve(OUT_DIR, `${OUT_NAME}.json`);
@@ -106,8 +196,7 @@ async function scanVariant(browser, route, viewport, theme) {
   try {
     const resp = await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60_000 });
     result.status = resp?.status() ?? null;
-    await page.waitForLoadState('networkidle', { timeout: 15_000 }).catch(() => {});
-    await page.waitForTimeout(800);
+    await waitForAppReady(page);
     const axe = await new AxeBuilder({ page })
       // link-in-text-block: handled by inline-link underline rule in
       // src/index.css. maplibre attribution/zoom widgets are third-party
