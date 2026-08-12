@@ -58,11 +58,22 @@ test.describe('Policy lines', () => {
     await link.click();
     await expect(page).toHaveURL(/#managing-cookies$/);
 
-    const top = await page
-      .locator('#managing-cookies')
-      .evaluate((el) => el.getBoundingClientRect().top);
-    // Landed near the top of the viewport rather than wherever we started.
-    expect(top).toBeLessThan(200);
+    // The browser owns this scroll and animates it, so reading the rect right
+    // after the click samples the journey rather than the destination
+    // (measured on prod: top 2248 at t=0, 128 once settled). Wait for arrival
+    // instead of a fixed delay, so the assertion keeps its meaning if the
+    // animation changes.
+    await page.waitForFunction(
+      () => (document.getElementById('managing-cookies')?.getBoundingClientRect().top ?? 1e6) < 200,
+      undefined,
+      { timeout: 15_000 },
+    );
+
+    // And the rail names the station the reader chose, not the one above it.
+    await expect(page.locator(`${RAIL} a[aria-current="true"]`).last()).toHaveAttribute(
+      'href',
+      '#managing-cookies',
+    );
   });
 
   test('an inbound deep link lands on the section, not the top of the page', async ({ page }) => {
