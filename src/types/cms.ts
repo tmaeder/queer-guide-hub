@@ -542,6 +542,24 @@ export interface HotlineChannel {
 
 export type HotlineAffiliation = 'secular' | 'religious' | 'state' | 'ngo';
 
+/**
+ * One opening slot, in the hotline's OWN timezone (see `Hotline.timezone`).
+ *
+ * Deliberately not the `src/utils/openingHours.ts` shape (`day: 1-7`, `"HHMM"`).
+ * That one is scraper-written and never read by a human; these live in a CMS
+ * jsonb blob that admins hand-edit, so they use the legible `0 = Sunday` /
+ * `"HH:MM"` form. `close: "24:00"` means end of day; a `close` at or before
+ * `open` means the slot runs past midnight into the next day.
+ */
+export interface HotlineHoursSlot {
+  /** 0 = Sunday … 6 = Saturday. */
+  day: number;
+  /** "HH:MM", 24h, in `Hotline.timezone`. */
+  open: string;
+  /** "HH:MM", 24h. "24:00" = end of day; <= `open` = runs past midnight. */
+  close: string;
+}
+
 export interface Hotline {
   id: string;
   name: string;
@@ -554,12 +572,33 @@ export interface Hotline {
   /** Finer-grained populations: trans-youth, asylum, sex-work, hiv, elders, deaf, … */
   intersections?: string[];
   languages: string[];
+  /** Human-readable display string. Stays authoritative for what we SHOW. */
   hours: string;
+  /**
+   * Machine-readable form of `hours`, for open-now sorting and labelling.
+   * Absent = unknown, which must render as silence: a line whose hours we
+   * cannot structure is never labelled "Closed". Only ever derived from what
+   * the operator itself publishes.
+   */
+  hours_slots?: HotlineHoursSlot[];
+  /** IANA zone the slots are expressed in. Required alongside `hours_slots`. */
+  timezone?: string;
+  /** True only where the operator publishes round-the-clock availability. */
+  always_open?: boolean;
   description: string;
   /** 2–3 sentence reassurance shown in card expand + as the per-hotline override of the generic block */
   what_to_expect?: string;
   free?: boolean;
   anonymous?: boolean;
+  /**
+   * THREE-state, and the distinction is load-bearing — this is an outing risk.
+   *   true   — the operator publishes that it may contact police / emergency
+   *            services WITHOUT the caller's consent.
+   *   false  — the operator publishes an explicit policy that it does not.
+   *   absent — the operator does not address it. Renders nothing.
+   * Never inferred from "anonymous" or "confidential" claims. `false` is a
+   * positive safety claim and needs its own citation, exactly like `true`.
+   */
   reports_to_police?: boolean;
   operator?: string;
   affiliation?: HotlineAffiliation;

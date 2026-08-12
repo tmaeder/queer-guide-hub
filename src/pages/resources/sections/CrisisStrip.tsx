@@ -23,19 +23,11 @@ import {
 } from '@/components/ui/select';
 import { Phone, Clock, Languages, AlertTriangle, ChevronRight } from 'lucide-react';
 
-interface Hotline {
-  id: string;
-  name: string;
-  country: string;
-  phone: string | null;
-  url?: string;
-  topics: string[];
-  languages: string[];
-  hours: string;
-  description: string;
-  free?: boolean;
-  anonymous?: boolean;
-}
+// Imported rather than re-declared. This file used to carry its own copy of
+// the shape, which silently went stale every time the canonical one gained a
+// field — it never learned about `kind`, so directories were eligible for a
+// strip whose entire premise is a phone number.
+import type { Hotline } from '@/types/cms';
 
 const EMERGENCY_NUMBERS: Record<string, string> = {
   DE: '112',
@@ -100,8 +92,15 @@ export function CrisisStrip() {
   );
 
   const visible = useMemo(() => {
-    const local = hotlines.filter((h) => h.country === country);
-    const international = hotlines.filter((h) => h.country === 'INT');
+    // This strip exists to put a dialable number in front of someone in a
+    // hurry, and it renders no alternative channels — so an entry with no
+    // phone is a dead row here. Several are legitimately phone-less (LGBT
+    // YouthLine retired its line in 2023; LSVD and TGNS route to email and
+    // regional services), and those belong on /help, which shows their text,
+    // chat and email routes properly. Directories never belonged here at all.
+    const callable = hotlines.filter((h) => !!h.phone && h.kind !== 'directory');
+    const local = callable.filter((h) => h.country === country);
+    const international = callable.filter((h) => h.country === 'INT');
     const combined =
       local.length > 0
         ? [...rankHotlines(local), ...rankHotlines(international)]
