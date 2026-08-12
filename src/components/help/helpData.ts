@@ -226,6 +226,49 @@ export function selectPrimaryLine(
 }
 
 /**
+ * The best line that is demonstrably reachable RIGHT NOW.
+ *
+ * `selectPrimaryLine` scores open-now heavily but still returns the strongest
+ * line even when it is shut, so at 03:00 the panel offers a full-width "Call
+ * now" against a number that rings out. This is the mirror of the
+ * unknown-hours rule: we refuse to call a line closed when we are unsure, and
+ * we equally refuse to leave a known-closed line as the only thing on offer.
+ *
+ * Deliberately separate from `selectPrimaryLine` rather than folded into it —
+ * that one feeds the EmergencyService JSON-LD, and an alternative that changed
+ * with the clock would make the structured data unstable.
+ *
+ * Requires `isOpenNow === true`, strictly. `null` means we could not structure
+ * the hours, and promoting an unknown to "open right now" is the same false
+ * promise from the other direction. Same country before INT, because a
+ * national line usually answers in the local language.
+ */
+export function selectOpenAlternative(
+  hotlines: Hotline[],
+  country: string,
+  exclude: Hotline | null,
+  now: Date = new Date(),
+): Hotline | null {
+  if (country === 'ALL' || hotlines.length === 0) return null;
+
+  const open = hotlines.filter(
+    (h) =>
+      h.id !== exclude?.id &&
+      !isDirectory(h) &&
+      (h.country === country || h.country === 'INT') &&
+      isOpenNow(h, now) === true,
+  );
+  if (open.length === 0) return null;
+
+  return open.sort((a, b) => {
+    const localFirst = (h: Hotline) => (h.country === country ? 0 : 1);
+    const d = localFirst(a) - localFirst(b);
+    if (d !== 0) return d;
+    return score(b, now) - score(a, now);
+  })[0];
+}
+
+/**
  * Directory sort: reachable now first, then always-open, then the rest.
  * This is the triage the topic filter was pretending to be.
  */
