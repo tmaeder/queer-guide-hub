@@ -27,7 +27,13 @@ export function useCMSPage(slug: string | null | undefined) {
         .eq('workflow_state', 'published')
         .single();
 
-      if (error || !data) return { page: null as CMSPage | null, parent: null as CMSPage | null, children: [] as CMSPage[], notFound: true };
+      if (error || !data)
+        return {
+          page: null as CMSPage | null,
+          parent: null as CMSPage | null,
+          children: [] as CMSPage[],
+          notFound: true,
+        };
       if (error || !data) {
         return {
           page: null as CMSPage | null,
@@ -50,7 +56,10 @@ export function useCMSPage(slug: string | null | undefined) {
           : Promise.resolve({ data: null, error: null }),
         supabase
           .from('cms_pages' as const)
-          .select('slug, title, subtitle, excerpt, category')
+          // body_html is here so a hub can say how long each child document
+          // is — the legal hub prints a station count per policy. A hub has a
+          // handful of children, so this is tens of KB, not a payload problem.
+          .select('slug, title, subtitle, excerpt, category, body_html')
           .eq('parent_slug', slug as string)
           .eq('workflow_state', 'published')
           .order('title'),
