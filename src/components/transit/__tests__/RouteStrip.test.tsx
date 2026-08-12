@@ -4,6 +4,7 @@
 import { describe, expect, it } from 'vitest';
 import { render, screen, within } from '@testing-library/react';
 import { RouteStrip, type RouteStation } from '@/components/transit/RouteStrip';
+import { PAGE_BLEED, STICKY_UNDER_HEADER } from '@/components/layout/PageContainer';
 
 const STATIONS: RouteStation[] = [
   { id: 'what-are-cookies', title: 'What Are Cookies', depth: 1 },
@@ -79,15 +80,17 @@ describe('RouteStrip', () => {
       <RouteStrip stations={STATIONS} activeId="types" orientation="horizontal" />,
     );
     const nav = container.querySelector('nav')!;
-    // A flat -mx-4 leaves the rule 16px short of the gutter from `sm` up.
-    for (const cls of ['sticky', '-mx-4', 'sm:-mx-6', 'md:-mx-8', 'border-b-2']) {
+    for (const cls of ['sticky', 'border-b-2']) {
       expect(nav.className).toContain(cls);
     }
-    // Pinned under the site header at its COMPACT height (60/64), not at a
-    // round `top-16` — that left a 4px slot on mobile for content to show
-    // through. Mirrors STICKY_UNDER_HEADER in PageContainer.tsx.
-    expect(nav.className).toContain('top-[60px]');
-    expect(nav.className).toContain('md:top-[64px]');
+    // Sourced from PageContainer rather than restated: this asserts the strip
+    // carries EVERY breakpoint variant of the shared bleed and offset (a flat
+    // -mx-4 leaves the rule 16px short of the gutter from `sm` up; a round
+    // top-16 leaves a 4px slot on mobile for content to slide through), and it
+    // keeps meaning if the ladder itself is re-tuned.
+    for (const cls of [...PAGE_BLEED.split(/\s+/), ...STICKY_UNDER_HEADER.split(/\s+/)]) {
+      expect(nav.className).toContain(cls);
+    }
   });
 
   it('names the nav landmark', () => {
