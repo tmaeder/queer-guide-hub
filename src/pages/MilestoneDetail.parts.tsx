@@ -95,7 +95,7 @@ export function MilestoneHero({ milestone }: { milestone: Milestone }) {
       {imageUrl && (
         <figure className={cn('mt-6', restrained ? 'max-w-sm' : '')}>
           <span className="block overflow-hidden border-[3px] border-foreground bg-muted">
-            {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- onError is a media-error handler, not a user-input listener. */}
+            { }
             <img
               src={imageUrl}
               alt={milestone.image_metadata?.alt ?? ''}
@@ -219,7 +219,7 @@ export function MilestoneLinkedEntities({ links }: { links: MilestoneLink[] }) {
                 <RouteBullet type={link.entity_type} size={40} />
               )}
               <span className="min-w-0">
-                <span className="block truncate font-display text-title leading-tight group-hover:underline">
+                <span className="block truncate text-title font-bold leading-tight group-hover:underline">
                   {link.name}
                 </span>
                 <span className="block truncate text-13 text-muted-foreground">
@@ -319,7 +319,7 @@ export function MilestonePrevNext({ milestone }: { milestone: Milestone }) {
             <ArrowLeft className="h-3 w-3" aria-hidden />
             {t('milestones.prev', 'Earlier')} · {milestoneYear(milestone.prev.date)}
           </span>
-          <span className="mt-1 block font-display text-title leading-tight group-hover:underline">
+          <span className="mt-1 block text-title font-bold leading-tight group-hover:underline">
             {milestone.prev.title}
           </span>
         </LocalizedLink>
@@ -335,7 +335,7 @@ export function MilestonePrevNext({ milestone }: { milestone: Milestone }) {
             {t('milestones.next', 'Later')} · {milestoneYear(milestone.next.date)}
             <ArrowRight className="h-3 w-3" aria-hidden />
           </span>
-          <span className="mt-1 block font-display text-title leading-tight group-hover:underline">
+          <span className="mt-1 block text-title font-bold leading-tight group-hover:underline">
             {milestone.next.title}
           </span>
         </LocalizedLink>

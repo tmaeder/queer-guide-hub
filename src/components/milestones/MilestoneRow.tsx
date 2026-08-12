@@ -69,7 +69,7 @@ export function MilestoneRow({
               {dateLabel}
               {place ? ` · ${place}` : ''}
             </span>
-            <span className="block font-display text-title group-hover:underline">
+            <span className="block text-title font-bold group-hover:underline">
               {milestone.title}
             </span>
             {'description' in milestone && milestone.description ? (
@@ -89,9 +89,12 @@ export function MilestoneRow({
               {dateLabel}
               {place ? ` · ${place}` : ''}
             </span>
-            {/* Anton, matching `card` — a row and a card are the same station,
-                they differ in how much of the story they carry, not in rank. */}
-            <span className="block font-display text-title group-hover:underline">
+            {/* Same token as `card` — a row and a card are the same station,
+                they differ in how much of the story they carry, not in rank.
+                Space Grotesk 700 is rank 4 per the docs' table; the transit
+                components render this rank in Anton, but they are 41 files
+                against 111 and both docs say otherwise. */}
+            <span className="block text-title font-bold group-hover:underline">
               {milestone.title}
             </span>
           </span>
