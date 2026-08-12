@@ -12,7 +12,11 @@ test.describe('Venues — map view', () => {
     await expect(canvas).toBeVisible({ timeout: 15_000 });
 
     // Results count badge appears (may say "Loading..." initially).
-    const countBadge = page.locator('text=/\\d+ results in view|Loading/');
+    // Two components render this pill with different wording — MapResultsPill
+    // says "N results in view", the subway rebrand's MapRail (which is what
+    // /venues?view=map renders now) says "N places in view" — so match either
+    // rather than pinning one component's copy.
+    const countBadge = page.locator('text=/\\d+ (results|places) in view|Loading/');
     await expect(countBadge).toBeVisible({ timeout: 20_000 });
   });
 
@@ -31,10 +35,16 @@ test.describe('Venues — map view', () => {
     const canvas = page.locator('canvas.maplibregl-canvas');
     await expect(canvas).toBeVisible({ timeout: 15_000 });
 
-    // The in-view counter starts as "Loading…" and only switches to
-    // "N results in view" once the cluster source has loaded. Wait for it to
-    // leave the loading state first (generous window for a cold source load).
-    const counter = page.locator('text=/\\d+ results in view/');
+    // The in-view counter starts as "Loading…" and only switches to the count
+    // once the cluster source has loaded. Wait for it to leave the loading
+    // state first (generous window for a cold source load).
+    //
+    // Matches BOTH wordings. The subway rebrand moved this surface onto MapRail
+    // ("N places in view") while MapResultsPill still says "N results in view";
+    // pinned to "results" alone this never matched and the test timed out at
+    // 45s on every nightly, reading as a dead cluster source when the map was
+    // in fact plotting 80 venues.
+    const counter = page.locator('text=/\\d+ (results|places) in view/');
     await expect(counter).toBeVisible({ timeout: 45_000 });
 
     // The map auto-flies to the visitor's IP geolocation at zoom 10

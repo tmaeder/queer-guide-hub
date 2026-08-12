@@ -8,19 +8,37 @@ import { test, expect } from '@playwright/test';
 
 test.describe('unified travel experience', () => {
   // The Browse/Plan tablist was removed — /travel is now a single hub page
-  // (src/pages/Travel.tsx). Legacy ?mode= URLs are still accepted and
-  // normalised away (or redirected to the primary trip for mode=plan).
+  // (src/pages/Travel.tsx).
+  //
+  // The h1 is matched by its ACTUAL copy, not the word "travel". The planner
+  // redesign (#2621/#2694) and the subway rebrand left the heading as the
+  // question "Where are you going?", which /travel/i cannot match — the test
+  // then read as "the travel hub does not render" while the hub was fine.
   test('/travel renders the travel hub', async ({ page }) => {
     await page.goto('/travel');
     await expect(
-      page.getByRole('heading', { level: 1, name: /travel/i }),
+      page.getByRole('heading', { level: 1, name: /where are you going/i }),
     ).toBeVisible({ timeout: 15_000 });
   });
 
-  test('legacy ?mode=browse is dropped from the URL', async ({ page }) => {
+  // WAS: 'legacy ?mode=browse is dropped from the URL'. The rebuilt /travel has
+  // no ?mode handling left at all (grep: "mode" does not appear in Travel.tsx),
+  // so the param is inert rather than normalised away — it selects nothing and
+  // the hub renders exactly as it does without it. Verified on prod that the
+  // canonical is still https://queer.guide/travel, so a stray legacy param
+  // costs nothing in SEO either, which is the only reason the stripping
+  // existed. Assert the contract that actually matters — a legacy URL still
+  // lands on a working hub — instead of a URL rewrite the redesign dropped.
+  test('a legacy ?mode= URL still lands on the travel hub', async ({ page }) => {
     await page.goto('/travel?mode=browse');
-    await expect(page).not.toHaveURL(/[?&]mode=/, { timeout: 15_000 });
     await expect(page).toHaveURL(/\/travel/);
+    await expect(
+      page.getByRole('heading', { level: 1, name: /where are you going/i }),
+    ).toBeVisible({ timeout: 15_000 });
+    await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
+      'href',
+      /\/travel$/,
+    );
   });
 
   test('/hotels survives as transactional shortcut', async ({ page }) => {
