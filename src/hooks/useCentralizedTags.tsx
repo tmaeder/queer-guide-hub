@@ -266,7 +266,7 @@ export const useCentralizedTags = () => {
 
   const getTagsByCategory = (category: string): CentralizedTag[] => {
     return allTags.filter((tag) =>
-      tag.categories?.some((c) => c.name === category || c.parent_name === category)
+      tag.categories?.some((c) => c.name === category || c.parent_name === category),
     );
   };
 
@@ -384,6 +384,17 @@ export const useCentralizedTags = () => {
   };
 };
 
+/** Disjoint entity_type buckets in `tag_usage_summary`. No roll-up column exists. */
+const ENTITY_COUNT_COLUMNS = [
+  'venue_count',
+  'event_count',
+  'group_count',
+  'news_count',
+  'post_count',
+  'marketplace_count',
+  'content_count',
+] as const;
+
 /**
  * Efficient usage counts from the DB view — replaces the O(n²) client-side
  * computation that fetched all venues/groups/events and looped over all tags.
@@ -394,7 +405,9 @@ export function useTagUsageCounts() {
     queryFn: async (): Promise<Record<string, number>> => {
       const { data, error } = await supabase
         .from('tag_usage_summary' as 'venues')
-        .select('name, usage_count, venue_count, event_count, group_count');
+        .select(
+          'name, usage_count, venue_count, event_count, group_count, news_count, post_count, marketplace_count, content_count',
+        );
 
       if (error) {
         console.error('Error fetching tag usage counts:', error);
@@ -412,10 +425,15 @@ export function useTagUsageCounts() {
       }
 
       const map: Record<string, number> = {};
-      for (const row of (data || []) as unknown as Array<Record<string, unknown>>) {
-        // Sum all entity-type counts for a true cross-content usage count
-        const total = (row.venue_count || 0) + (row.event_count || 0) + (row.group_count || 0);
-        map[row.name] = total > 0 ? total : row.usage_count || 0;
+      for (const row of (data || []) as unknown as Array<Record<string, number | string>>) {
+        // Every *_count in the view is a disjoint entity_type bucket of
+        // unified_tag_assignments (verified against pg_get_viewdef) — there is
+        // no roll-up column, so summing all seven is the true cross-content
+        // count. Summing only venue/event/group, as this did until 2026-08-12,
+        // reported 0 uses for every news- or marketplace-only tag and silently
+        // mis-ordered `sort=usage` and the used/unused filter.
+        const total = ENTITY_COUNT_COLUMNS.reduce((sum, col) => sum + (Number(row[col]) || 0), 0);
+        map[row.name as string] = total > 0 ? total : Number(row.usage_count) || 0;
       }
       return map;
     },

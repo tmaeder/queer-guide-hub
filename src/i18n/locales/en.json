@@ -2688,145 +2688,6 @@
       "tags_other": "{{count}} tags"
     }
   },
-  "resources": {
-    "hero": {
-      "eyebrow": "Support",
-      "title": "Help & resources.",
-      "lede": "Crisis support, practical guides, and the people and organisations behind them."
-    },
-    "errorLoading": "Something went wrong while loading resources. Please try again later.",
-    "disclosure": "Browse all topics & search",
-    "disclosureAria": "Browse all topics, search and advanced filters",
-    "browseAllTopics": "Browse all topics",
-    "professions": {
-      "title": "Professions",
-      "description": "Browse LGBTQ+ personalities by profession",
-      "back": "Back"
-    },
-    "category": {
-      "back": "Back",
-      "viewAll": "View all →",
-      "comingSoon": "Coming soon",
-      "tagCount": "{{count}} tags",
-      "tagCountTotal": "{{count}} tags total (across all subcategories)",
-      "tagCountTotalAria": "{{count}} tags total across all subcategories",
-      "totalChildHint": "Each subcategory's count is the number of tags directly assigned to it",
-      "supportNewsAlert": "Need immediate help? Browse our crisis hotlines directory.",
-      "crisisHotlines": "Crisis Hotlines",
-      "emptyTitle": "No tags in this category yet",
-      "emptyDescription": "Check back soon — this bucket is being filled.",
-      "subcategoryEmptyTitle": "No tags here yet",
-      "subcategoryEmptyDescription": "This subcategory is being populated."
-    },
-    "crisis": {
-      "heading": "Crisis & safety",
-      "badge": "Free, anonymous",
-      "chooseCountryAria": "Choose country",
-      "callEmergencyPrefix": "In immediate danger? Call ",
-      "callEmergencySuffix": " ({{country}}).",
-      "callEmergencySuffixInt": ".",
-      "noLocal": "No {{country}} hotlines indexed yet — showing international.",
-      "callAria": "Call {{name}} at {{phone}}",
-      "noHotlinesLoaded": "No hotlines loaded yet.",
-      "listAria": "Crisis hotlines",
-      "seeAll": "See all hotlines"
-    },
-    "topicHubs": {
-      "heading": "Topic hubs"
-    },
-    "topic": {
-      "back": "Resources",
-      "notFound": "Topic not found",
-      "backToResources": "Back to resources",
-      "metaSuffix": "Resources",
-      "metaNotFound": "Topic not found",
-      "stats": "{{guides}} guides · {{orgs}} orgs · {{news}} articles",
-      "guidesHeading": "Guides",
-      "guidesEmpty": "No guides published yet for this topic.",
-      "orgsHeading": "Organisations",
-      "orgsEmpty": "No organisations indexed for this topic yet.",
-      "newsHeading": "Recent news",
-      "newsEmpty": "No recent articles tagged for this topic.",
-      "moreTopics": "More topics"
-    },
-    "orgs": {
-      "heading": "Support organisations",
-      "filterAria": "Filter organisations by country",
-      "noLocal": "No organisations in {{country}} indexed yet — showing global.",
-      "browseAll": "Browse all organisations",
-      "emptyPrefix": "No support organisations indexed yet. Submit one via the Chrome extension or ",
-      "emptyLink": "get in touch",
-      "emptySuffix": "."
-    },
-    "filter": {
-      "searchPlaceholder": "Search tags, categories, descriptions…",
-      "searchAria": "Search resources",
-      "filterAria": "Filter by category",
-      "categoryPlaceholder": "Category",
-      "allCategories": "All Categories",
-      "sortAria": "Sort by",
-      "sortPlaceholder": "Sort by",
-      "sortMostUsed": "Most used",
-      "sortAlphabetical": "Alphabetical",
-      "sortNewest": "Newest",
-      "advanced": "Advanced",
-      "usageAria": "Filter by usage",
-      "usagePlaceholder": "Usage",
-      "usageAll": "All Tags",
-      "usageUsed": "Used",
-      "usageUnused": "Unused",
-      "hasImage": "Has Image",
-      "hasImageTitle": "Only show tags with images",
-      "sortDirAsc": "Sort direction (ascending)",
-      "sortDirDesc": "Sort direction (descending)",
-      "active": "Active:",
-      "clearAll": "Clear all",
-      "view": {
-        "chips": "Chips",
-        "grid": "Grid",
-        "list": "List",
-        "ariaSuffix": " view"
-      },
-      "graph": "Tag relationship graph"
-    },
-    "search": {
-      "resultsHeading": "Search results",
-      "categoryTagsHeading": "{{category}} tags",
-      "filteredHeading": "Filtered tags",
-      "countBadge": "{{visible}} of {{total}}",
-      "countAria": "{{count}} matching tags",
-      "showMore": "Show {{count}} more",
-      "empty": {
-        "title": "No results",
-        "description": "Try a broader query or clearing your filters."
-      }
-    },
-    "tagNotFound": {
-      "title": "Tag not found",
-      "bodyPrefix": "We couldn't find a tag matching ",
-      "browse": "Browse all resources"
-    },
-    "tagDetail": {
-      "breadcrumbHome": "Tags",
-      "noDefinition": "No definition yet for this term.",
-      "tableOfContents": "Contents",
-      "seeAlso": "See also",
-      "hierarchy": "In the taxonomy",
-      "broader": "Broader",
-      "narrower": "More specific",
-      "related": "Related",
-      "alsoKnownAs": "Also known as",
-      "sensitiveContentTitle": "Sensitive topic",
-      "sensitiveContentBody": "This topic may contain sensitive content. If you need support, visit our crisis hotlines page.",
-      "readOnWikipedia": "Read on Wikipedia",
-      "viewAsGraph": "View as graph",
-      "searchTagged": "Search everything tagged {{name}}"
-    },
-    "graph": {
-      "title": "Tag Relationship Graph",
-      "description": "See how tags relate by semantic similarity and co-occurrence"
-    }
-  },
   "cities": {
     "metaTitle": "Cities",
     "metaDescription": "Browse LGBTQ+ friendly cities around the world.",
@@ -4128,6 +3989,141 @@
       "support": {
         "title": "Support us",
         "desc": "Keep the platform free for everyone."
+      }
+    }
+  },
+  "tags": {
+    "meta": {
+      "title": "LGBTQ+ glossary",
+      "categoryTitle": "{{name}} — LGBTQ+ glossary",
+      "description": "Browse and search {{count}} LGBTQ+ terms — identities, practices, history and community language, each linked to the venues, events, people and news that use it."
+    },
+    "hero": {
+      "eyebrow": "Glossary",
+      "title": "The glossary",
+      "lede": "Every word the guide uses, defined — and everything tagged with it.",
+      "legend": "{{terms}} terms · {{lines}} lines · {{stops}} stops"
+    },
+    "stats": {
+      "kicker": "The corpus",
+      "terms": "Terms",
+      "lines": "Lines",
+      "stops": "Stops",
+      "illustrated": "Illustrated"
+    },
+    "rail": {
+      "label": "Topic lines",
+      "all": "All terms",
+      "expandAria": "Show stops on {{line}}",
+      "collapseAria": "Hide stops on {{line}}"
+    },
+    "spine": {
+      "searchLabel": "Search the glossary",
+      "searchPlaceholder": "Search terms, or a synonym"
+    },
+    "view": {
+      "label": "Display",
+      "grid": "Grid",
+      "list": "List",
+      "chips": "Chips",
+      "graph": "Graph"
+    },
+    "sort": {
+      "label": "Sort",
+      "usage": "Most used",
+      "alphabetical": "A–Z",
+      "recent": "Newest",
+      "dirAsc": "Ascending — switch to descending",
+      "dirDesc": "Descending — switch to ascending"
+    },
+    "filter": {
+      "used": "In use",
+      "unused": "Unused",
+      "withImage": "Illustrated",
+      "reset": "Reset filters",
+      "includeAdult": "Include 18+ terms"
+    },
+    "letters": {
+      "label": "Jump to a letter",
+      "all": "All",
+      "other": "Numbers and other scripts",
+      "jump": "Terms starting with {{letter}}"
+    },
+    "alias": {
+      "heading": "Also found under other names",
+      "description": "These match a synonym or a close spelling rather than the term itself.",
+      "badge": "alias"
+    },
+    "card": {
+      "uses": "{{count}} uses"
+    },
+    "count": "{{count}} terms",
+    "showMore": "Show {{count}} more",
+    "searching": "Searching…",
+    "loading": "Loading the glossary",
+    "error": "The glossary is down",
+    "retry": "Try again",
+    "empty": {
+      "title": "No terms match.",
+      "description": "Try a broader letter, line, or search."
+    },
+    "category": {
+      "lede": "Every term filed under {{name}}."
+    },
+    "endOfLine": {
+      "eyebrow": "End of line",
+      "title": "Looking for something else?",
+      "body": "The glossary defines the words. These are the places that use them.",
+      "helpCta": "Crisis lines and support",
+      "orgsCta": "Organisations",
+      "guidesCta": "Guides"
+    },
+    "detail": {
+      "loading": "Loading",
+      "about": "About",
+      "sections": "Sections",
+      "noDefinition": "No definition has been written for this term yet.",
+      "interchangeEyebrow": "Interchange",
+      "interchangeTitle": "In the taxonomy",
+      "inTaxonomy": "In the taxonomy",
+      "changeHereFor": "Change here for",
+      "contentNote": "Content note",
+      "contentNoteBody": "This entry covers a subject some readers find difficult. Nothing here is graphic, and the page is a definition, not advice.",
+      "findSupport": "Find support",
+      "whereItAppears": "Where it appears",
+      "elsewhere": "Elsewhere",
+      "readThere": "Read",
+      "editors": "Queer Guide editors",
+      "factLine": "Line",
+      "factTagged": "Tagged on",
+      "venues": "Venues",
+      "venuesNote": "{{count}} tagged",
+      "events": "Events",
+      "eventsNote": "{{count}} tagged",
+      "people": "People",
+      "peopleNote": "{{count}} tagged",
+      "news": "News",
+      "newsNote": "{{count}} articles",
+      "newsNoteMore": "{{shown}} of {{count}} articles",
+      "villages": "Queer villages",
+      "shop": "Shop",
+      "communities": "Communities",
+      "everythingTagged": "Everything tagged {{name}}",
+      "everythingTaggedBody": "{{count}} items across the guide carry this tag.",
+      "searchTagged": "Search everything tagged {{name}}",
+      "moreOnThisLine": "More on this line",
+      "notFound": {
+        "title": "No such term",
+        "body": "Nothing in the glossary is filed under",
+        "browse": "Browse the glossary"
+      },
+      "alias": {
+        "synonym": "Also called",
+        "abbreviation": "Short for",
+        "plural": "Plural",
+        "misspelling": "Common misspelling",
+        "historical": "Historically",
+        "slang": "Slang"
       }
     }
   }

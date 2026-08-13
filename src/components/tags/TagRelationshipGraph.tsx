@@ -5,6 +5,7 @@ import ForceGraph2D, {
   type LinkObject,
 } from 'react-force-graph-2d';
 import { useTagGraph } from '@/hooks/useTagRelationships';
+import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Slider } from '@/components/ui/slider';
 import {
@@ -21,7 +22,12 @@ import { Maximize2, Filter, AlertTriangle } from 'lucide-react';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
 
 interface TagRelationshipGraphProps {
-  onTagClick: (tag: { id: string; name: string }) => void;
+  /** Optional. Omit it and the graph navigates to `/tags/<slug>` itself.
+   *  It used to be required and every caller passed a handler that navigated by
+   *  `name` — but the route is keyed by SLUG, so any tag whose name is not
+   *  already its own slug ("Bear Bar", "Trans*") landed on a 404. The node
+   *  carries `slug`, so the graph is the right place to resolve it. */
+  onTagClick?: (tag: { id: string; name: string; slug: string }) => void;
   categoryFilter?: string | null;
   categories?: string[];
 }
@@ -89,6 +95,7 @@ export default function TagRelationshipGraph({
   categories = [],
 }: TagRelationshipGraphProps) {
   const isMobile = useIsMobile();
+  const navigate = useLocalizedNavigate();
   const palette = useCanvasPalette();
   const graphRef = useRef<ForceGraphMethods | undefined>();
   const observerRef = useRef<ResizeObserver | null>(null);
@@ -134,8 +141,7 @@ export default function TagRelationshipGraph({
     const g = graphRef.current;
     if (!g) return;
     const centerForce = g.d3Force('center') as
-      | { x: (v: number) => void; y: (v: number) => void }
-      | undefined;
+      { x: (v: number) => void; y: (v: number) => void } | undefined;
     if (centerForce) {
       centerForce.x(dimensions.width / 2);
       centerForce.y(dimensions.height / 2);
@@ -167,14 +173,24 @@ export default function TagRelationshipGraph({
     };
   }, [graphData]);
 
+  const goToTag = useCallback(
+    (n: { id: string; name: string; slug: string }) => {
+      if (!n.name) return;
+      if (onTagClick) {
+        onTagClick(n);
+        return;
+      }
+      navigate(`/tags/${encodeURIComponent(n.slug || n.name)}`);
+    },
+    [onTagClick, navigate],
+  );
+
   const handleNodeClick = useCallback(
     (node: NodeObject) => {
       const n = node as ForceNode;
-      if (n.name) {
-        onTagClick({ id: n.id, name: n.name });
-      }
+      goToTag({ id: n.id, name: n.name, slug: n.slug });
     },
-    [onTagClick],
+    [goToTag],
   );
 
   const handleNodeHover = useCallback((node: NodeObject | null) => {
@@ -226,11 +242,14 @@ export default function TagRelationshipGraph({
     [hoveredNode, palette],
   );
 
-  const linkColor = useCallback((link: LinkObject) => {
-    const l = link as ForceLink;
-    const alpha = Math.min(0.8, (l.score || 0.3) * 1.2);
-    return `hsl(${palette.linkTriplet} / ${alpha})`;
-  }, [palette]);
+  const linkColor = useCallback(
+    (link: LinkObject) => {
+      const l = link as ForceLink;
+      const alpha = Math.min(0.8, (l.score || 0.3) * 1.2);
+      return `hsl(${palette.linkTriplet} / ${alpha})`;
+    },
+    [palette],
+  );
 
   const linkWidth = useCallback((link: LinkObject) => {
     const l = link as ForceLink;
@@ -277,7 +296,7 @@ export default function TagRelationshipGraph({
             <Card
               key={node.id}
               className="cursor-pointer"
-              onClick={() => onTagClick({ id: node.id, name: node.name })}
+              onClick={() => goToTag({ id: node.id, name: node.name, slug: node.slug })}
             >
               <CardContent className="p-4">
                 <p className="text-sm font-semibold truncate" style={{ fontSize: '0.8rem' }}>

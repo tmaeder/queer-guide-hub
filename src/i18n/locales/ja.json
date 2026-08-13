@@ -2612,145 +2612,6 @@
       "tags_other": "[JA] {{count}} tags"
     }
   },
-  "resources": {
-    "hero": {
-      "eyebrow": "サポート",
-      "title": "ヘルプとリソース。",
-      "lede": "危機支援、実用ガイド、その背後にある人々と団体。"
-    },
-    "errorLoading": "リソースの読み込みに失敗しました。後ほどお試しください。",
-    "disclosure": "すべてのトピックと検索",
-    "disclosureAria": "すべてのトピック、検索、詳細フィルター",
-    "browseAllTopics": "すべてのトピック",
-    "professions": {
-      "title": "職業",
-      "description": "職業で LGBTQ+ パーソナリティを探す",
-      "back": "戻る"
-    },
-    "category": {
-      "back": "戻る",
-      "viewAll": "すべて見る →",
-      "comingSoon": "近日公開",
-      "tagCount": "タグ {{count}} 件",
-      "tagCountTotal": "タグ {{count}} 件（全サブカテゴリ）",
-      "tagCountTotalAria": "全サブカテゴリで {{count}} 件のタグ",
-      "totalChildHint": "各サブカテゴリの数は直接割り当てられたタグの数です",
-      "supportNewsAlert": "今すぐ助けが必要ですか？危機ホットラインの一覧を見る。",
-      "crisisHotlines": "危機ホットライン",
-      "emptyTitle": "このカテゴリにはまだタグがありません",
-      "emptyDescription": "まもなく追加されます。",
-      "subcategoryEmptyTitle": "まだタグがありません",
-      "subcategoryEmptyDescription": "このサブカテゴリは追加中です。"
-    },
-    "crisis": {
-      "heading": "危機と安全",
-      "badge": "無料・匿名",
-      "chooseCountryAria": "国を選択",
-      "callEmergencyPrefix": "今すぐ危険ですか？ ",
-      "callEmergencySuffix": "に電話（{{country}}）。",
-      "callEmergencySuffixInt": "に電話。",
-      "noLocal": "{{country}} のホットラインはまだ登録されていません — 国際版を表示。",
-      "callAria": "{{name}}（{{phone}}）に電話",
-      "noHotlinesLoaded": "ホットラインはまだ読み込まれていません。",
-      "listAria": "危機ホットライン",
-      "seeAll": "すべてのホットラインを見る"
-    },
-    "topicHubs": {
-      "heading": "トピック"
-    },
-    "topic": {
-      "back": "リソース",
-      "notFound": "トピックが見つかりません",
-      "backToResources": "リソースに戻る",
-      "metaSuffix": "リソース",
-      "metaNotFound": "トピックが見つかりません",
-      "stats": "ガイド {{guides}} · 団体 {{orgs}} · 記事 {{news}}",
-      "guidesHeading": "ガイド",
-      "guidesEmpty": "このトピックのガイドはまだ公開されていません。",
-      "orgsHeading": "団体",
-      "orgsEmpty": "このトピックの団体はまだ登録されていません。",
-      "newsHeading": "最新ニュース",
-      "newsEmpty": "このトピックの最新記事はまだありません。",
-      "moreTopics": "他のトピック"
-    },
-    "orgs": {
-      "heading": "支援団体",
-      "filterAria": "国で団体を絞り込む",
-      "noLocal": "{{country}} の団体はまだ登録されていません — グローバル団体を表示。",
-      "browseAll": "すべての団体を見る",
-      "emptyPrefix": "支援団体はまだ登録されていません。Chrome 拡張で送るか ",
-      "emptyLink": "お問い合わせ",
-      "emptySuffix": "。"
-    },
-    "filter": {
-      "searchPlaceholder": "タグ、カテゴリ、説明を検索…",
-      "searchAria": "リソースを検索",
-      "filterAria": "カテゴリで絞り込む",
-      "categoryPlaceholder": "カテゴリ",
-      "allCategories": "すべてのカテゴリ",
-      "sortAria": "並び替え",
-      "sortPlaceholder": "並び替え",
-      "sortMostUsed": "使用順",
-      "sortAlphabetical": "アルファベット順",
-      "sortNewest": "新着順",
-      "advanced": "詳細",
-      "usageAria": "使用状況で絞り込む",
-      "usagePlaceholder": "使用状況",
-      "usageAll": "すべてのタグ",
-      "usageUsed": "使用中",
-      "usageUnused": "未使用",
-      "hasImage": "画像あり",
-      "hasImageTitle": "画像のあるタグだけ表示",
-      "sortDirAsc": "昇順",
-      "sortDirDesc": "降順",
-      "active": "アクティブ:",
-      "clearAll": "すべてクリア",
-      "view": {
-        "chips": "チップ",
-        "grid": "グリッド",
-        "list": "リスト",
-        "ariaSuffix": " ビュー"
-      },
-      "graph": "タグ関係グラフ"
-    },
-    "search": {
-      "resultsHeading": "検索結果",
-      "categoryTagsHeading": "{{category}} のタグ",
-      "filteredHeading": "絞り込みタグ",
-      "countBadge": "{{visible}} / {{total}}",
-      "countAria": "一致するタグ {{count}} 件",
-      "showMore": "さらに {{count}} 件表示",
-      "empty": {
-        "title": "結果なし",
-        "description": "範囲を広げるか、フィルターをクリアしてください。"
-      }
-    },
-    "tagNotFound": {
-      "title": "タグが見つかりません",
-      "bodyPrefix": "次のタグが見つかりませんでした：",
-      "browse": "すべてのリソースを見る"
-    },
-    "tagDetail": {
-      "breadcrumbHome": "リソース",
-      "noDefinition": "この用語にはまだ定義がありません。",
-      "alsoKnownAs": "別名",
-      "readOnWikipedia": "Wikipediaで読む",
-      "searchTagged": "{{name}}のタグが付いたすべてを検索",
-      "seeAlso": "関連項目",
-      "sensitiveContentBody": "このトピックにはセンシティブな内容が含まれる場合があります。サポートが必要な場合は、危機ホットラインのページをご覧ください。",
-      "sensitiveContentTitle": "センシティブなトピック",
-      "tableOfContents": "目次",
-      "viewAsGraph": "グラフで表示",
-      "hierarchy": "[JA] In the taxonomy",
-      "broader": "[JA] Broader",
-      "narrower": "[JA] More specific",
-      "related": "[JA] Related"
-    },
-    "graph": {
-      "title": "タグ関係グラフ",
-      "description": "意味的類似度と共起でタグの関係を探る"
-    }
-  },
   "cities": {
     "metaTitle": "都市",
     "metaDescription": "世界中のLGBTQ+フレンドリーな都市を探そう。",
@@ -4156,6 +4017,141 @@
       "support": {
         "title": "支援する",
         "desc": "このプラットフォームを、みんなに無料のままで。"
+      }
+    }
+  },
+  "tags": {
+    "meta": {
+      "title": "LGBTQ+ 用語集",
+      "categoryTitle": "{{name}} — LGBTQ+ 用語集",
+      "description": "LGBTQ+ の用語 {{count}} 件を検索・閲覧できます。アイデンティティ、実践、歴史、コミュニティの言葉を、それを使う店舗・イベント・人物・ニュースとひも付けています。"
+    },
+    "hero": {
+      "eyebrow": "用語集",
+      "title": "用語集",
+      "lede": "このガイドが使うすべての言葉の説明と、そのタグが付いたすべて。",
+      "legend": "用語 {{terms}} 件 · 路線 {{lines}} 本 · 駅 {{stops}} 個"
+    },
+    "stats": {
+      "kicker": "収録内容",
+      "terms": "用語",
+      "lines": "路線",
+      "stops": "駅",
+      "illustrated": "画像あり"
+    },
+    "rail": {
+      "label": "テーマ路線",
+      "all": "すべての用語",
+      "expandAria": "{{line}} の駅を表示",
+      "collapseAria": "{{line}} の駅を隠す"
+    },
+    "spine": {
+      "searchLabel": "用語集を検索",
+      "searchPlaceholder": "用語または同義語"
+    },
+    "view": {
+      "label": "表示",
+      "grid": "グリッド",
+      "list": "リスト",
+      "chips": "チップ",
+      "graph": "グラフ"
+    },
+    "sort": {
+      "label": "並び替え",
+      "usage": "使用数順",
+      "alphabetical": "A–Z",
+      "recent": "新着順",
+      "dirAsc": "昇順 — 降順に切り替え",
+      "dirDesc": "降順 — 昇順に切り替え"
+    },
+    "filter": {
+      "used": "使用中",
+      "unused": "未使用",
+      "withImage": "画像あり",
+      "reset": "フィルターをリセット",
+      "includeAdult": "18歳以上向けの用語を表示"
+    },
+    "letters": {
+      "label": "頭文字へ移動",
+      "all": "すべて",
+      "other": "数字とその他の文字",
+      "jump": "{{letter}} で始まる用語"
+    },
+    "alias": {
+      "heading": "別名でも見つかりました",
+      "description": "用語そのものではなく、同義語または近い綴りに一致しています。",
+      "badge": "別名"
+    },
+    "card": {
+      "uses": "{{count}} 件で使用"
+    },
+    "count": "{{count}} 件の用語",
+    "showMore": "さらに {{count}} 件表示",
+    "searching": "検索中…",
+    "loading": "用語集を読み込み中",
+    "error": "用語集を表示できません",
+    "retry": "再試行",
+    "empty": {
+      "title": "一致する用語はありません。",
+      "description": "別の頭文字・路線・検索語をお試しください。"
+    },
+    "category": {
+      "lede": "{{name}} に分類されたすべての用語。"
+    },
+    "endOfLine": {
+      "eyebrow": "終点",
+      "title": "お探しのものは別ですか？",
+      "body": "用語集は言葉を説明します。こちらはその言葉が使われている場所です。",
+      "helpCta": "相談窓口とサポート",
+      "orgsCta": "団体",
+      "guidesCta": "ガイド"
+    },
+    "detail": {
+      "loading": "読み込み中",
+      "about": "概要",
+      "sections": "セクション",
+      "noDefinition": "この用語の説明はまだ書かれていません。",
+      "interchangeEyebrow": "乗換",
+      "interchangeTitle": "分類のなかで",
+      "inTaxonomy": "分類のなかで",
+      "changeHereFor": "こちらへ乗換",
+      "contentNote": "内容についての注意",
+      "contentNoteBody": "この項目は、人によってはつらく感じる話題を扱います。露骨な描写はなく、あくまで定義であり助言ではありません。",
+      "findSupport": "サポートを探す",
+      "whereItAppears": "使われている場所",
+      "elsewhere": "外部リンク",
+      "readThere": "読む",
+      "editors": "Queer Guide 編集部",
+      "factLine": "路線",
+      "factTagged": "タグ付け数",
+      "venues": "店舗",
+      "venuesNote": "{{count}} 件",
+      "events": "イベント",
+      "eventsNote": "{{count}} 件",
+      "people": "人物",
+      "peopleNote": "{{count}} 件",
+      "news": "ニュース",
+      "newsNote": "{{count}} 本",
+      "newsNoteMore": "{{count}} 本中 {{shown}} 本",
+      "villages": "クィアの街",
+      "shop": "ショップ",
+      "communities": "コミュニティ",
+      "everythingTagged": "{{name}} が付いたすべて",
+      "everythingTaggedBody": "ガイド内の {{count}} 件にこのタグが付いています。",
+      "searchTagged": "{{name}} が付いたものをすべて検索",
+      "moreOnThisLine": "この路線の他の駅",
+      "notFound": {
+        "title": "その用語はありません",
+        "body": "用語集にこの項目はありません:",
+        "browse": "用語集を見る"
+      },
+      "alias": {
+        "synonym": "別名",
+        "abbreviation": "略称",
+        "plural": "複数形",
+        "misspelling": "よくある誤記",
+        "historical": "歴史的表現",
+        "slang": "スラング"
       }
     }
   }

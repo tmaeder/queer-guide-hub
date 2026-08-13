@@ -31,6 +31,10 @@ const ROUTES = [
   // A stack of full-bleed bands, each owning its own PageContainer — the shape
   // most likely to drift out of alignment with the header.
   '/history',
+  // The glossary: a masthead, a full-bleed ink scale-board and a two-column
+  // body, all separate PageContainers. Absent from this list until the 2026-08
+  // rebuild.
+  '/tags',
 ];
 
 const WIDTHS = [390, 768, 1440, 1920];
