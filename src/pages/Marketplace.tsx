@@ -9,12 +9,15 @@ import { useEntityImageAssets } from '@/hooks/useEntityImageAssets';
 import { useMeta } from '@/hooks/useMeta';
 import { MarketplaceCard } from '@/components/marketplace/MarketplaceCard';
 import { MarketplaceControlBar } from '@/components/marketplace/MarketplaceControlBar';
-import { DepartmentBento } from '@/components/marketplace/DepartmentBento';
+import { MarketplaceLineIndex } from '@/components/marketplace/MarketplaceLineIndex';
+import { VerifiedOwnedBrands } from '@/components/marketplace/VerifiedOwnedBrands';
 import { OccasionChips } from '@/components/marketplace/OccasionChips';
 import { MarketplaceHeroCover } from '@/components/marketplace/MarketplaceHeroCover';
 import { BrandSpotlight } from '@/components/marketplace/BrandSpotlight';
 import { GuidesRail } from '@/components/guides/GuidesRail';
-import { ContinueReadingRail } from '@/components/guides/ContinueReadingRail';
+// ContinueReadingRail was the SECOND thing on this page — a /guides component
+// on the shopping surface, IA debris rather than a section. It still lives on
+// /guides, where it belongs.
 import { AdultContentGate } from '@/components/marketplace/AdultContentGate';
 import { isAdultListing, useAdultAcknowledgement } from '@/hooks/useAdultContent';
 import { MarketplaceRow } from '@/components/marketplace/MarketplaceRow';
@@ -30,7 +33,7 @@ import { useDidYouMean } from '@/hooks/useDidYouMean';
 import type { Database } from '@/integrations/supabase/types';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-import { PageHero } from '@/components/discovery';
+import { RouteBullet } from '@/components/transit/RouteBullet';
 import { VirtualizedGrid } from '@/components/ui/VirtualizedGrid';
 import { useGridColumns } from '@/components/ui/useGridColumns';
 import { useTranslation } from 'react-i18next';
@@ -61,8 +64,6 @@ interface MainGridSectionProps {
   listingAssets: Map<string, import('@/hooks/useEntityImageAssets').EntityImageAsset>;
   searchQuery: string | undefined;
   userPresent: boolean;
-  onViewDetails: (listing: MarketplaceListing) => void;
-  onToggleFavorite: (id: string) => void;
   canLoadMore: boolean;
   loading: boolean;
   onLoadMore: () => void;
@@ -77,8 +78,6 @@ function MainGridSection({
   listingAssets,
   searchQuery,
   userPresent,
-  onViewDetails,
-  onToggleFavorite,
   canLoadMore,
   loading,
   onLoadMore,
@@ -114,8 +113,6 @@ function MainGridSection({
         renderItem={(listing, index) => (
           <MarketplaceCard
             listing={listing}
-            onViewDetails={onViewDetails}
-            onToggleFavorite={userPresent ? onToggleFavorite : undefined}
             showFavoriteButton={userPresent}
             searchQuery={searchQuery}
             imageAsset={listingAssets.get(listing.id)}
@@ -173,8 +170,9 @@ const Marketplace = () => {
     loadingTimedOut,
     error,
     fetchListings,
-    toggleFavorite,
-    incrementViews,
+    // `toggleFavorite` / `incrementViews` are intentionally not pulled in here:
+    // the handlers that used them were unreachable (see the note further down).
+    // They remain on the hook for MarketplaceItemDetail, which does call them.
   } = useMarketplace();
   const { user } = useAuth();
   const { toast } = useToast();
@@ -222,7 +220,6 @@ const Marketplace = () => {
     setUrlParams({ page: undefined });
   };
 
-  const [_selectedListing, setSelectedListing] = useState<MarketplaceListing | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>(() => {
     if (typeof window === 'undefined') return 'grid';
     const stored = window.localStorage.getItem(VIEW_MODE_KEY);
@@ -339,108 +336,143 @@ const Marketplace = () => {
     setUrlParams({ page: String(page + 1) });
   };
 
-  const handleToggleFavorite = async (listingId: string) => {
-    if (!user) {
-      toast({
-        title: t('pages.marketplace.signInRequired', 'Sign in required'),
-        description: t('pages.marketplace.signInFavorites', 'Please sign in to save favorites.'),
-        variant: 'destructive',
-      });
-      return;
-    }
-    const { favorited, error } = await toggleFavorite(listingId);
-    if (error) {
-      toast({ title: 'Error', description: error, variant: 'destructive' });
-    } else {
-      toast({
-        title: favorited ? 'Added to favorites' : 'Removed from favorites',
-        description: favorited
-          ? 'You can find this in your favorites list.'
-          : 'Item removed from your favorites.',
-      });
-      fetchListings(combinedFilters, page, sortBy);
-    }
-  };
-
-  const handleViewDetails = (listing: MarketplaceListing) => {
-    setSelectedListing(listing);
-    incrementViews(listing.id);
-  };
+  // `handleToggleFavorite` and `handleViewDetails` lived here — 23 lines of
+  // auth check, toast and refetch, plus an `incrementViews` call — and were
+  // passed to MarketplaceCard as props the card DECLARED but never
+  // destructured. Neither could ever fire, and `_selectedListing` was written
+  // and never read. Favoriting is <WishlistPicker/>'s job; the whole card is a
+  // link to the detail page, which is where a view is counted. Deleted rather
+  // than wired up, because wiring them would have changed live behaviour under
+  // cover of a design change.
 
   const totalPages = Math.ceil(total / pageSize);
   const canLoadMore = page < totalPages - 1;
 
+  const handleListBusiness = () => {
+    if (!user) {
+      toast({
+        title: 'Sign in required',
+        description: t(
+          'pages.marketplace.signInList',
+          'Create a free account to list your business.',
+        ),
+        variant: 'default',
+      });
+      navigate('/auth');
+      return;
+    }
+    // `/marketplace/submit` was never a declared route — it fell through to
+    // `marketplace/:slug` and rendered a not-found listing. `/submit/product`
+    // is the real form (submissionRegistry `productSubmission`), and it is
+    // already what src/lib/submitCta.ts resolves for `/marketplace*`, so the
+    // two paths now agree.
+    navigate('/submit/product');
+  };
+
   return (
     <CuratedIdsProvider>
+      {/* THE M LINE.
+          The landing is the line map; filtering is riding it. What that buys is
+          one rule: nothing which is NAVIGATION may disappear when you start
+          riding. Before this, seven blocks were gated on `!hasActiveFilters` —
+          and `hasActiveFilters` includes `?occ=`, so tapping an occasion chip
+          INSIDE the control bar deleted ~4000px above it and threw the bar up
+          the document under the reader's finger. The scroll length was never
+          the defect; the persistent chrome moving was.
+
+          Masthead, control band and department index now render in every
+          state. Exactly ONE band still flips: the cover story, because a
+          magazine cover above someone's search results is noise. The editorial
+          tail moved BELOW the grid, where it is an ending rather than a wall,
+          and none of it was ever filter-dependent — each block runs its own
+          query and self-hides when empty. */}
       <div className="min-h-screen relative">
-        <PageHero
-          title={t('pages.marketplace.title', 'Marketplace.')}
-          lede={t('pages.marketplace.subtitle', 'Queer-friendly products and services.')}
-          primaryCta={{
-            label: t('pages.marketplace.listBusiness', 'List your business'),
-            icon: <Plus size={16} aria-hidden="true" />,
-            onClick: () => {
-              if (!user) {
-                toast({
-                  title: 'Sign in required',
-                  description: t(
-                    'pages.marketplace.signInList',
-                    'Create a free account to list your business.',
-                  ),
-                  variant: 'default',
-                });
-                navigate('/auth');
-                return;
-              }
-              navigate('/marketplace/submit');
-            },
-          }}
-          size="md"
-        />
-        <PageContainer className="relative">
-          {/* Boutique landing: cover story, asymmetric department bento,
-              one brand feature, two rails, magazine guide teasers — then
-              the grid. Every section registers with CuratedIds so the
-              grid never repeats curated items. */}
-          {!hasActiveFilters && (
-            <>
-              <MarketplaceHeroCover />
-              <ContinueReadingRail />
-              <DepartmentBento />
-              {/* Editor-curated collection chips; occasion toggles moved
-                  into the control bar. */}
-              <OccasionChips kinds={['collection']} className="mb-16" />
-              <BrandSpotlight />
-              <MarketplaceRow rowKey="new" title="New this week" />
-              <MarketplaceRow
-                rowKey="queer-owned"
-                title="Queer-owned picks"
-                subtitle="From queer- and trans-owned businesses"
-              />
-              <div className="mb-16 lg:mb-24">
-                <GuidesRail filters={{ entityType: 'marketplace', limit: 3 }} />
-              </div>
-            </>
-          )}
-
-          <div className="mb-6">
-            <div
-              className={`sticky ${STICKY_UNDER_HEADER} z-20 rounded-element border-[3px] border-foreground p-4 mb-6 bg-surface-container-low`}
-            >
-              <MarketplaceControlBar
-                filters={filters}
-                onFiltersChange={handleFiltersChange}
-                sortBy={sortBy}
-                sortOptions={sortOptions}
-                onSortChange={handleSortChange}
-                viewMode={viewMode}
-                onViewModeChange={setViewMode}
-                includeAdult={includeAdult}
-                onIncludeAdultChange={handleIncludeAdultChange}
-                resultCount={total}
-              />
+        <header className="border-b-4 border-foreground">
+          <PageContainer flush className="pb-8 pt-8 md:pb-12 md:pt-16">
+            <div className="flex items-center gap-4">
+              <RouteBullet type="marketplace" size={44} />
+              <p className="text-2xs font-bold uppercase tracking-label text-muted-foreground">
+                Marketplace · Yellow line
+              </p>
             </div>
+            {/* `text-hero` flat, no md:text-hero-xl — that rank is for
+                marketing covers, not a listing index. */}
+            <h1 className="mt-4 font-display text-hero leading-[0.95]">
+              {t('pages.marketplace.title', 'Marketplace.')}
+            </h1>
+            <p className="mt-4 max-w-reading text-body-lg">
+              {t('pages.marketplace.subtitle', 'Queer-friendly products and services.')}
+            </p>
+            {/* The one place on the page that names the line. A track colour
+                has to earn its appearance; everywhere else this page is ink on
+                paper. Border-gated by the ink rule beside it. */}
+            {total > 0 && (
+              <p className="mt-6 flex items-center gap-4 text-13 text-muted-foreground">
+                <span
+                  aria-hidden="true"
+                  className="h-1.5 w-10 shrink-0 border border-foreground bg-track-yellow"
+                />
+                <span className="tabular-nums">
+                  {total.toLocaleString()} listing{total !== 1 ? 's' : ''} in view
+                </span>
+              </p>
+            )}
+            <div className="mt-8 flex flex-wrap items-center gap-4">
+              <Button onClick={handleListBusiness}>
+                <Plus size={16} aria-hidden="true" />
+                {t('pages.marketplace.listBusiness', 'List your business')}
+              </Button>
+            </div>
+            {/* Disclosure BEFORE the monetised links, not after an infinite
+                grid — which is where the full statement used to sit alone. */}
+            <AffiliateDisclosure variant="strip" className="mt-8" />
+          </PageContainer>
+        </header>
 
+        {/* A band, not an island. The control bar used to be a floating
+            bordered box inside the content column; bands are the page's
+            grammar and a band cannot be scrolled past without being noticed. */}
+        <section
+          className={`sticky ${STICKY_UNDER_HEADER} z-20 border-b-4 border-foreground bg-surface-container-low`}
+        >
+          <PageContainer flush className="py-4 md:py-6">
+            <MarketplaceControlBar
+              filters={filters}
+              onFiltersChange={handleFiltersChange}
+              sortBy={sortBy}
+              sortOptions={sortOptions}
+              onSortChange={handleSortChange}
+              viewMode={viewMode}
+              onViewModeChange={setViewMode}
+              includeAdult={includeAdult}
+              onIncludeAdultChange={handleIncludeAdultChange}
+              resultCount={total}
+              onClearAll={handleClearAll}
+            />
+          </PageContainer>
+        </section>
+
+        {/* Band wrappers are `div`, not `section`: each already contains a
+            component that renders its own labelled <section>, and an outer
+            <section> with no accessible name only adds a hollow region. */}
+        <div className="border-b-4 border-foreground">
+          <PageContainer flush className="py-8 md:py-12">
+            {/* `department` is a single slug, not an array — indexing it would
+                mark the station whose slug starts with that letter. */}
+            <MarketplaceLineIndex activeDepartment={filters.department} />
+          </PageContainer>
+        </div>
+
+        {!hasActiveFilters && (
+          <div className="border-b-4 border-foreground">
+            <PageContainer flush className="py-8 md:py-12">
+              <MarketplaceHeroCover />
+            </PageContainer>
+          </div>
+        )}
+
+        <PageContainer className="relative">
+          <div className="mb-6">
             {error && (
               <ErrorState
                 message={t(
@@ -468,18 +500,7 @@ const Marketplace = () => {
                 onFiltersChange={handleFiltersChange}
                 didYouMean={dymHit?.title}
                 onClear={handleClearAll}
-                onListBusiness={() => {
-                  if (!user) {
-                    toast({
-                      title: 'Sign in required',
-                      description: 'Create a free account to list your business.',
-                      variant: 'default',
-                    });
-                    navigate('/auth');
-                    return;
-                  }
-                  navigate('/marketplace/submit');
-                }}
+                onListBusiness={handleListBusiness}
               />
             )}
 
@@ -493,17 +514,32 @@ const Marketplace = () => {
                 listingAssets={listingAssets}
                 searchQuery={filters.search}
                 userPresent={!!user}
-                onViewDetails={handleViewDetails}
-                onToggleFavorite={handleToggleFavorite}
                 canLoadMore={canLoadMore}
                 loading={loading}
                 onLoadMore={handleLoadMore}
               />
             )}
           </div>
-
-          <AffiliateDisclosure />
         </PageContainer>
+
+        {/* ALSO ON THIS LINE — the editorial tail.
+            These sat ABOVE the grid and vanished with any filter. Nothing here
+            depends on the filter state (each block runs its own query), so
+            gating them only ever cost the reader the page. Below the grid they
+            are an ending. Each self-hides when it has nothing. */}
+        <div className="border-t-4 border-foreground">
+          <PageContainer flush className="flex flex-col gap-16 py-12 md:gap-24 md:py-16">
+            <VerifiedOwnedBrands />
+            <BrandSpotlight />
+            <MarketplaceRow rowKey="new" title="New this week" />
+            {/* Editor-curated collection chips; occasion toggles live in the
+                control band. */}
+            <OccasionChips kinds={['collection']} />
+            <GuidesRail filters={{ entityType: 'marketplace', limit: 3 }} />
+            <AffiliateDisclosure />
+          </PageContainer>
+        </div>
+
         <AdultContentGate active={hasAdultListings} fallbackPath="/" />
       </div>
     </CuratedIdsProvider>
