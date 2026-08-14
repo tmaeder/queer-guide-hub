@@ -405,18 +405,27 @@ const Marketplace = () => {
             </p>
             {/* The one place on the page that names the line. A track colour
                 has to earn its appearance; everywhere else this page is ink on
-                paper. Border-gated by the ink rule beside it. */}
-            {total > 0 && (
-              <p className="mt-6 flex items-center gap-4 text-13 text-muted-foreground">
-                <span
-                  aria-hidden="true"
-                  className="h-1.5 w-10 shrink-0 border border-foreground bg-track-yellow"
-                />
-                <span className="tabular-nums">
-                  {total.toLocaleString()} listing{total !== 1 ? 's' : ''} in view
-                </span>
-              </p>
-            )}
+                paper. Border-gated by the ink rule beside it.
+
+                RENDERED UNCONDITIONALLY, and that is the point. This was
+                `{total > 0 && …}`, so filtering down to zero results unmounted
+                a whole masthead row and shifted the control band up — the exact
+                thing the rest of this page is built to prevent, reintroduced
+                three elements above the band itself. The anti-flip e2e test
+                caught it in CI (it passed locally only because the filter I
+                measured happened to return rows). A row that reserves its space
+                and reads "0 listings in view" is both honest and stable. */}
+            <p className="mt-6 flex items-center gap-4 text-13 text-muted-foreground">
+              <span
+                aria-hidden="true"
+                className="h-1.5 w-10 shrink-0 border border-foreground bg-track-yellow"
+              />
+              <span className="tabular-nums">
+                {loading && total === 0
+                  ? 'Counting…'
+                  : `${total.toLocaleString()} listing${total !== 1 ? 's' : ''} in view`}
+              </span>
+            </p>
             <div className="mt-8 flex flex-wrap items-center gap-4">
               <Button onClick={handleListBusiness}>
                 <Plus size={16} aria-hidden="true" />
