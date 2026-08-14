@@ -1201,12 +1201,12 @@
       }
     },
     "discover": {
-      "title": "Public trips",
-      "button": "Browse trips",
+      "title": "Build a route",
+      "button": "Build a route",
       "eyebrow": "Real travelers",
       "subtitle": "Real itineraries from QG travelers — copy ideas, find queer-friendly stops, plan your own.",
       "searchPlaceholder": "Filter by city…",
-      "aria": "Browse public trips",
+      "aria": "Build a route through real cities",
       "sortAria": "Sort trips",
       "viewAria": "View mode",
       "filterAria": "Filter trips",
@@ -1286,7 +1286,81 @@
       "inspiredTitle": "Inspired by: {{title}}",
       "signalsAria": "Trip activity",
       "forkCount": "{{count}} forks",
-      "saveCount": "{{count}} saves"
+      "saveCount": "{{count}} saves",
+      "meta": {
+        "title": "Build a route | Queer Guide",
+        "description": "Pick a vibe, a season and a pace. Get a route of real cities with venue counts, legal status and what is on while you are there."
+      },
+      "eyebrowRoute": "Route builder",
+      "titleRoute": "Three cities. One line.",
+      "ledeRoute": "Tell us what you are after and how fast you move. We draw you a line through real cities — with the venue counts, the legal status and what is on while you are there.",
+      "picker": {
+        "heading": "Set the line",
+        "hint": "Pick a vibe, a season and a pace. The line redraws.",
+        "vibeGroup": "What you are after",
+        "seasonGroup": "When",
+        "paceGroup": "How fast",
+        "stationCount": "{{count}} stations",
+        "stopCount": "{{count}} stops",
+        "tooFew": "only {{count}} stations",
+        "thin": "{{count}} stations, none close enough to line up",
+        "vibe": {
+          "nightlife": "Out late",
+          "sauna": "Steam",
+          "slow": "Slow mornings",
+          "community": "Community",
+          "outdoors": "Outdoors"
+        },
+        "season": {
+          "now": "Soon",
+          "autumn": "Autumn",
+          "winter": "Winter",
+          "pride": "Pride season"
+        },
+        "pace": {
+          "slow": "Take it slow",
+          "steady": "Steady",
+          "sprint": "Cover ground"
+        }
+      },
+      "route": {
+        "heading": "Your line",
+        "reroll": "Draw another",
+        "summary": "{{stops}} stops · {{km}} km · {{countries}} countries",
+        "snapped": "Starting {{km}} km from {{name}} — the nearest city we have enough on.",
+        "short": "This line runs {{delivered}} stops, not {{requested}}. {{eligible}} cities match that vibe, and the rest are further apart than this pace goes.",
+        "announced": "Line drawn: {{stations}}. {{count}} stops.",
+        "stopsAria": "Stops on this line, in order",
+        "stopAria": "Stop {{n}}: {{city}}, {{country}}",
+        "swapStopAria": "Swap stop {{n}}, {{city}}",
+        "tripTitle": "{{cities}} line"
+      },
+      "station": {
+        "venues": "{{count}} places"
+      },
+      "loading": {
+        "pool": "Loading the station list",
+        "slow": "Still working. The city index is slow right now."
+      },
+      "degraded": {
+        "none": "No cities match those picks.",
+        "title": "Only {{count}} cities match.",
+        "body": "A line needs three stops. Clear a pick to widen it.",
+        "terminus": "The nearest match is {{name}}, {{km}} km away — further than this pace goes.",
+        "clearVibe": "Any vibe",
+        "goFurther": "Cover more ground"
+      },
+      "error": {
+        "title": "Could not build the trip",
+        "poolTitle": "The station list did not load.",
+        "retry": "Try again"
+      },
+      "cta": {
+        "heading": "Ride this line.",
+        "body": "Turns into a trip you own, with every stop already on it. Change anything you like afterwards.",
+        "primary": "Make it a trip",
+        "secondary": "Draw another"
+      }
     },
     "polls": {
       "createdToast": "Poll created",
@@ -1491,6 +1565,15 @@
       "openThread": "Review in chat",
       "forwardHint": "Forward Booking.com, Airbnb or airline confirmations to {{address}} — they appear in your Travel Inbox, ready to add to a trip. Or paste one here to add it straight to this trip.",
       "forwardHintNoAddress": "Forward booking confirmations to your queer.guide address and they appear in your Travel Inbox. Or paste one here to add it straight to this trip."
+    },
+    "templates": {
+      "heading": "Start from a template",
+      "subheading": "LGBTQ+ itineraries to build on",
+      "days": "{{count}} days",
+      "use": "Use template",
+      "created": "Trip created",
+      "createdDescription": "Add your stops from here.",
+      "error": "Could not create the trip"
     }
   },
   "help": {

@@ -717,12 +717,12 @@
       }
     },
     "discover": {
-      "title": "Открыть места",
-      "button": "Открыть маркетплейс",
+      "title": "Построить маршрут",
+      "button": "Построить маршрут",
       "eyebrow": "Real travelers",
       "subtitle": "Real itineraries from QG travelers — copy ideas, find queer-friendly stops, plan your own.",
       "searchPlaceholder": "Filter by city…",
-      "aria": "Discover public trips",
+      "aria": "Построить маршрут по реальным городам",
       "sortAria": "Sort trips",
       "viewAria": "View mode",
       "filterAria": "Filter trips",
@@ -802,7 +802,81 @@
       "signalsAria": "Trip activity",
       "forkCount": "{{count}} forks",
       "saveCount": "{{count}} saves",
-      "filtersButton": "Filters"
+      "filtersButton": "Filters",
+      "meta": {
+        "title": "Построить маршрут | Queer Guide",
+        "description": "Выберите настроение, сезон и темп. Получите маршрут по реальным городам с количеством мест, правовым статусом и тем, что там происходит во время поездки."
+      },
+      "eyebrowRoute": "Конструктор маршрута",
+      "titleRoute": "Три города. Одна линия.",
+      "ledeRoute": "Скажите, что вам нужно и как быстро вы перемещаетесь. Мы проведём линию через реальные города — с количеством мест, правовым статусом и тем, что там происходит во время поездки.",
+      "picker": {
+        "heading": "Задайте линию",
+        "hint": "Выберите настроение, сезон и темп. Линия перерисуется.",
+        "vibeGroup": "Что вам нужно",
+        "seasonGroup": "Когда",
+        "paceGroup": "Как быстро",
+        "stationCount": "станций: {{count}}",
+        "stopCount": "остановок: {{count}}",
+        "tooFew": "всего {{count}} станций",
+        "thin": "станций: {{count}}, ни одна не рядом настолько, чтобы собрать линию",
+        "vibe": {
+          "nightlife": "Ночная жизнь",
+          "sauna": "Сауна",
+          "slow": "Неспешные утра",
+          "community": "Сообщество",
+          "outdoors": "На природе"
+        },
+        "season": {
+          "now": "Скоро",
+          "autumn": "Осень",
+          "winter": "Зима",
+          "pride": "Сезон прайдов"
+        },
+        "pace": {
+          "slow": "Не спеша",
+          "steady": "Ровно",
+          "sprint": "Охватить больше"
+        }
+      },
+      "route": {
+        "heading": "Ваша линия",
+        "reroll": "Построить другую",
+        "summary": "остановок: {{stops}} · {{km}} км · стран: {{countries}}",
+        "snapped": "Старт в {{km}} км от {{name}} — ближайший город, по которому у нас достаточно данных.",
+        "short": "В этой линии {{delivered}} остановок, а не {{requested}}. Подходящих городов: {{eligible}}, остальные дальше, чем позволяет этот темп.",
+        "announced": "Линия построена: {{stations}}. Остановок: {{count}}.",
+        "stopsAria": "Остановки этой линии, по порядку",
+        "stopAria": "Остановка {{n}}: {{city}}, {{country}}",
+        "swapStopAria": "Заменить остановку {{n}}, {{city}}",
+        "tripTitle": "Линия {{cities}}"
+      },
+      "station": {
+        "venues": "мест: {{count}}"
+      },
+      "loading": {
+        "pool": "Загружаем список станций",
+        "slow": "Всё ещё работаем. Индекс городов сейчас отвечает медленно."
+      },
+      "degraded": {
+        "none": "Под эти условия не подходит ни один город.",
+        "title": "Подходит только {{count}} городов.",
+        "body": "Линии нужны три остановки. Снимите один фильтр, чтобы расширить её.",
+        "terminus": "Ближайший вариант — {{name}}, в {{km}} км: дальше, чем позволяет этот темп.",
+        "clearVibe": "Любое настроение",
+        "goFurther": "Охватить больше"
+      },
+      "error": {
+        "title": "Не удалось создать поездку",
+        "poolTitle": "Список станций не загрузился.",
+        "retry": "Попробовать снова"
+      },
+      "cta": {
+        "heading": "Поехали по этой линии.",
+        "body": "Превратится в вашу поездку со всеми остановками. Потом можно изменить что угодно.",
+        "primary": "Сделать поездкой",
+        "secondary": "Построить другую"
+      }
     },
     "polls": {
       "createdToast": "Poll created",
@@ -1031,6 +1105,15 @@
       "openThread": "Проверить в чате",
       "forwardHint": "[RU] Forward Booking.com, Airbnb or airline confirmations to {{address}} — they appear in your Travel Inbox, ready to add to a trip. Or paste one here to add it straight to this trip.",
       "forwardHintNoAddress": "[RU] Forward booking confirmations to your queer.guide address and they appear in your Travel Inbox. Or paste one here to add it straight to this trip."
+    },
+    "templates": {
+      "heading": "Начать с шаблона",
+      "subheading": "ЛГБТК+ маршруты как отправная точка",
+      "days": "дней: {{count}}",
+      "use": "Использовать шаблон",
+      "created": "Поездка создана",
+      "createdDescription": "Добавляйте остановки отсюда.",
+      "error": "Не удалось создать поездку"
     }
   },
   "auth": {

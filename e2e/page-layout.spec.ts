@@ -31,6 +31,11 @@ const ROUTES = [
   // A stack of full-bleed bands, each owning its own PageContainer — the shape
   // most likely to drift out of alignment with the header.
   '/history',
+  // The same band shape, plus three horizontally-scrolling picker rails that
+  // each carry a `min-w-[520px]`. That min-width is only safe because it sits
+  // inside an `overflow-x-auto` wrapper — remove the wrapper and this route
+  // overflows the viewport at 390px, which is precisely what this spec catches.
+  '/trips/discover',
   // The glossary: a masthead, a full-bleed ink scale-board and a two-column
   // body, all separate PageContainers. Absent from this list until the 2026-08
   // rebuild.

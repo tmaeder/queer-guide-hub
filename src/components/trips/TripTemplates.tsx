@@ -8,14 +8,15 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { ScrollReveal } from '@/components/animation/ScrollReveal';
 import { useToast } from '@/hooks/use-toast';
 import { useTripMutations } from '@/hooks/useTrips';
-import { insertRows } from '@/hooks/usePageFetchers';
 import { useAuth } from '@/hooks/useAuth';
 import { useTripTemplates, type TripTemplate } from '@/hooks/useTripTemplates';
+import { useTranslation } from 'react-i18next';
 
 export function TripTemplates() {
+  const { t } = useTranslation();
   const navigate = useLocalizedNavigate();
   const { user } = useAuth();
-  const { createTrip } = useTripMutations();
+  const { createTrip, addPlacesBulk } = useTripMutations();
   const { toast } = useToast();
   const { data: templates, isLoading } = useTripTemplates();
 
@@ -28,32 +29,72 @@ export function TripTemplates() {
     const startDate = startOfDay(addMonths(new Date(), 1));
     const endDate = addDays(startDate, template.days - 1);
 
+    // `trips.primary_city_id` and `primary_country_id` are NOT NULL. This call
+    // site sent neither until 2026-08, so every click raised 23502 and this
+    // button had never once worked. The unit test below mocks `createTrip`,
+    // which is why nothing caught it — the fix therefore also has to be visible
+    // in the types, not just here: `TripTemplate` now carries both, and a
+    // template that cannot resolve them is dropped in useTripTemplates rather
+    // than rendered as an affordance that cannot function.
     createTrip.mutate(
       {
         title: template.title,
         start_date: format(startDate, 'yyyy-MM-dd'),
         end_date: format(endDate, 'yyyy-MM-dd'),
         currency: template.currency,
+        cover_image_url: template.coverImageUrl ?? undefined,
+        primary_city_id: template.primaryCityId,
+        primary_country_id: template.primaryCountryId,
       },
       {
         onSuccess: async (trip) => {
-          if (template.cityIds.length && user) {
-            const rows = template.cityIds.map((cityId, idx) => ({
-              trip_id: trip.id,
-              city_id: cityId,
-              sort_order: idx,
-              created_by: user.id,
-            }));
-            const { error } = await insertRows('trip_places', rows);
-            if (error) {
-              console.warn('[TripTemplates] trip_places seed failed', error);
+          if (template.cityIds.length) {
+            try {
+              // addPlacesBulk, not the raw insertRows this used to call: the
+              // mutation adds trip_id/created_by, invalidates the trip detail
+              // and list caches, and emits the per-place telemetry. The raw
+              // insert did none of that, so a seeded trip opened empty until
+              // something else happened to refetch it.
+              await addPlacesBulk.mutateAsync({
+                tripId: trip.id,
+                rows: template.cityIds.map((cityId, idx) => ({
+                  day_id: null,
+                  venue_id: null,
+                  event_id: null,
+                  hotel_id: null,
+                  custom_name: null,
+                  custom_address: null,
+                  latitude: null,
+                  longitude: null,
+                  city_id: cityId,
+                  country_id: template.primaryCountryId,
+                  start_time: null,
+                  end_time: null,
+                  duration_minutes: null,
+                  notes: null,
+                  category: 'city',
+                  sort_order: idx,
+                  icon: null,
+                  arrive_mode: null,
+                }),
+                ),
+              });
+            } catch (err) {
+              console.warn('[TripTemplates] trip_places seed failed', err);
             }
           }
-          toast({ title: 'Trip created!', description: 'Start adding destinations.' });
+          toast({
+            title: t('trips.templates.created', 'Trip created'),
+            description: t('trips.templates.createdDescription', 'Add your stops from here.'),
+          });
           navigate(`/trips/${trip.id}`);
         },
         onError: (err) => {
-          toast({ title: 'Error', description: err.message, variant: 'destructive' });
+          toast({
+            title: t('trips.templates.error', 'Could not create the trip'),
+            description: err.message,
+            variant: 'destructive',
+          });
         },
       },
     );
@@ -67,10 +108,10 @@ export function TripTemplates() {
               heading, "More inspiration", or EmptyState's title), and the two
               skipped levels failed Lighthouse `heading-order` on /trips/discover. */}
           <h3 className="font-bold text-title">
-            Trip Templates
+            {t('trips.templates.heading', 'Start from a template')}
           </h3>
           <p className="text-sm text-muted-foreground mt-1">
-            LGBTQ+ travel itineraries to start from
+            {t('trips.templates.subheading', 'LGBTQ+ itineraries to build on')}
           </p>
         </div>
       </ScrollReveal>
@@ -127,7 +168,7 @@ export function TripTemplates() {
                       <Badge variant="secondary">
                         <span className="inline-flex items-center gap-1">
                           <Clock size={12} />
-                          {template.days} days
+                          {t('trips.templates.days', '{{count}} days', { count: template.days })}
                         </span>
                       </Badge>
                     </div>
@@ -144,7 +185,7 @@ export function TripTemplates() {
                       }}
                       disabled={createTrip.isPending}
                     >
-                      Use Template
+                      {t('trips.templates.use', 'Use template')}
                       <ArrowRight size={16} />
                     </Button>
                   </CardContent>
