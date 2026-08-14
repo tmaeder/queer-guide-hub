@@ -117,7 +117,24 @@ test.describe('Marketplace — discovery surface', () => {
     await expect(band).toBeVisible({ timeout: 30_000 });
     await expect(index).toBeVisible({ timeout: 30_000 });
 
-    await page.evaluate(() => window.scrollTo(0, 0));
+    // Settle BEFORE taking the baseline, or the baseline is the flaky half of
+    // this test. The masthead above the band contains a `text-hero` h1 in
+    // Anton: until the webfont swaps in, that line is laid out in the fallback
+    // face at a different height, so an early measurement reads several px
+    // high. Measured in CI: the post-filter value was rock-stable at 686.609
+    // across all three attempts while the BASELINE drifted (689.757, 691.250)
+    // — the band was not moving, the ruler was.
+    const settle = async () => {
+      await page.evaluate(() => document.fonts.ready);
+      // The count line renders "Counting…" until the first query resolves.
+      await expect(page.locator('main header .tabular-nums')).not.toHaveText(/Counting/, {
+        timeout: 15_000,
+      });
+      await page.evaluate(() => window.scrollTo(0, 0));
+      await page.waitForTimeout(300);
+    };
+
+    await settle();
     const beforeY = (await band.boundingBox())?.y;
     expect(beforeY, 'control band must have a measurable position').toBeDefined();
 
@@ -127,8 +144,17 @@ test.describe('Marketplace — discovery surface', () => {
     // The department index must survive the filter — it is the map, and losing
     // it at the moment of use is what made this feel like two different pages.
     await expect(index).toBeVisible();
-    await page.evaluate(() => window.scrollTo(0, 0));
-    expect((await band.boundingBox())?.y).toBe(beforeY);
+    await settle();
+
+    // 2px, not exact equality. What this guards is a band that jumps hundreds
+    // of px because an editorial block above it unmounted; sub-pixel font
+    // metrics are not that, and demanding Object.is on a fractional CSS pixel
+    // makes the guard fail for reasons that have nothing to do with the rule.
+    const afterY = (await band.boundingBox())?.y;
+    expect(
+      Math.abs((afterY ?? 0) - (beforeY ?? 0)),
+      `control band moved ${beforeY} -> ${afterY}`,
+    ).toBeLessThanOrEqual(2);
   });
 
   test('the verified queer-owned shelf states its own coverage', async ({ page }) => {
