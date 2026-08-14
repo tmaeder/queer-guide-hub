@@ -717,12 +717,12 @@
       }
     },
     "discover": {
-      "title": "Открыть места",
-      "button": "Открыть маркетплейс",
+      "title": "Построить маршрут",
+      "button": "Построить маршрут",
       "eyebrow": "Real travelers",
       "subtitle": "Real itineraries from QG travelers — copy ideas, find queer-friendly stops, plan your own.",
       "searchPlaceholder": "Filter by city…",
-      "aria": "Discover public trips",
+      "aria": "Построить маршрут по реальным городам",
       "sortAria": "Sort trips",
       "viewAria": "View mode",
       "filterAria": "Filter trips",

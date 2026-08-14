@@ -873,6 +873,43 @@ h2,
   }
 }
 
+/* ── Route draw ────────────────────────────────────────────────────────
+   The /trips/discover generated line arrives the way a train does: drawn
+   leg by leg, in the direction of travel. A travelling dash like
+   .track-loader above — but finite, because this one terminates at a
+   destination.
+
+   pathLength=100 on each <path> normalises the dash to the path itself,
+   which is what makes the same numbers hold at any width AND under
+   preserveAspectRatio="none" + vector-effect="non-scaling-stroke", where
+   user-unit length and painted length disagree. Same trick TrackLoader
+   uses at pathLength=120.
+
+   The BASE state carries no dash. If this class is never applied — or the
+   keyframe never runs — the line renders complete. That is the same
+   contract .station-arrive states: animate only FROM a displaced state, so
+   content that is never animated still renders at rest.
+
+   Easing is ease.decel, matching .station-arrive, for the reason stated
+   there: a train does not fade in, it decelerates. No overshoot on the
+   line; the overshoot belongs to the station arriving, below. */
+@keyframes route-draw {
+  from {
+    stroke-dashoffset: 100;
+  }
+}
+.route-draw path {
+  stroke-dasharray: 100;
+  animation: route-draw var(--motion-slow) cubic-bezier(0, 0, 0.2, 1) both;
+  animation-delay: calc(var(--leg, 0) * 90ms);
+}
+@media (prefers-reduced-motion: reduce) {
+  .route-draw path {
+    animation: none;
+    stroke-dasharray: none;
+  }
+}
+
 /* ── Station pop ───────────────────────────────────────────────────────
    Spec: 500ms, overshoot to 1.28x, settles. Fires when a line reaches a
    stop — arrival confirmation, not decoration.

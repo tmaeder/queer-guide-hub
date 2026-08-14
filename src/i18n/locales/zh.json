@@ -689,12 +689,12 @@
       }
     },
     "discover": {
-      "title": "发现地点",
-      "button": "浏览市场",
+      "title": "规划路线",
+      "button": "规划路线",
       "eyebrow": "Real travelers",
       "subtitle": "Real itineraries from QG travelers — copy ideas, find queer-friendly stops, plan your own.",
       "searchPlaceholder": "Filter by city…",
-      "aria": "Discover public trips",
+      "aria": "规划一条穿过真实城市的路线",
       "sortAria": "Sort trips",
       "viewAria": "View mode",
       "filterAria": "Filter trips",

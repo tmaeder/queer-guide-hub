@@ -689,12 +689,12 @@
       }
     },
     "discover": {
-      "title": "Descubrir lugares",
-      "button": "Explorar mercado",
+      "title": "Crear una ruta",
+      "button": "Crear una ruta",
       "eyebrow": "Real travelers",
       "subtitle": "Real itineraries from QG travelers — copy ideas, find queer-friendly stops, plan your own.",
       "searchPlaceholder": "Filter by city…",
-      "aria": "Discover public trips",
+      "aria": "Crear una ruta por ciudades reales",
       "sortAria": "Sort trips",
       "viewAria": "View mode",
       "filterAria": "Filter trips",

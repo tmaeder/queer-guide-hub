@@ -689,12 +689,12 @@
       }
     },
     "discover": {
-      "title": "اكتشاف أماكن",
-      "button": "تصفح السوق",
+      "title": "أنشئ مساراً",
+      "button": "أنشئ مساراً",
       "eyebrow": "Real travelers",
       "subtitle": "Real itineraries from QG travelers — copy ideas, find queer-friendly stops, plan your own.",
       "searchPlaceholder": "Filter by city…",
-      "aria": "Discover public trips",
+      "aria": "أنشئ مساراً عبر مدن حقيقية",
       "sortAria": "Sort trips",
       "viewAria": "View mode",
       "filterAria": "Filter trips",

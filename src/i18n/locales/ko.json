@@ -689,12 +689,12 @@
       }
     },
     "discover": {
-      "title": "장소 탐색",
-      "button": "마켓 둘러보기",
+      "title": "경로 만들기",
+      "button": "경로 만들기",
       "eyebrow": "Real travelers",
       "subtitle": "Real itineraries from QG travelers — copy ideas, find queer-friendly stops, plan your own.",
       "searchPlaceholder": "Filter by city…",
-      "aria": "Discover public trips",
+      "aria": "실제 도시를 잇는 경로 만들기",
       "sortAria": "Sort trips",
       "viewAria": "View mode",
       "filterAria": "Filter trips",

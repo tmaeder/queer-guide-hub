@@ -689,12 +689,12 @@
       }
     },
     "discover": {
-      "title": "場所を探す",
-      "button": "マーケットを見る",
+      "title": "ルートをつくる",
+      "button": "ルートをつくる",
       "eyebrow": "Real travelers",
       "subtitle": "Real itineraries from QG travelers — copy ideas, find queer-friendly stops, plan your own.",
       "searchPlaceholder": "Filter by city…",
-      "aria": "Discover public trips",
+      "aria": "実在の都市をつなぐルートをつくる",
       "sortAria": "Sort trips",
       "viewAria": "View mode",
       "filterAria": "Filter trips",
