@@ -80,7 +80,13 @@ const STATION_POINTS: Record<string, { x: number; y: number; lane: Lane }> = {
   meet: { x: 480, y: 85, lane: 'above' },
   rights: { x: 980, y: 280, lane: 'below' },
   support: { x: 1180, y: 80, lane: 'above' },
-  shop: { x: 1290, y: 280, lane: 'below' },
+  // Moved off the blue line's (1290, 280) when shop flipped to yellow — shop
+  // is the one intent that maps 1:1 to a content type, so INTENT_TRACK has to
+  // agree with ROUTE_BULLET_MAP, where marketplace is M-yellow. (1240, 212) is
+  // yellow's remaining free endpoint (the final pair of `C 1157 225 1240 212`);
+  // rights already holds (980, 280). It sits 60px from support in x but in the
+  // opposite lane, so the two name plates cannot collide.
+  shop: { x: 1240, y: 212, lane: 'below' },
 };
 
 /**

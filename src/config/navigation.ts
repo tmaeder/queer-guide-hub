@@ -471,6 +471,13 @@ export const MODE_SCOPE_BIAS: Record<UserMode, string[]> = {
  *
  * Fixed per intent, never derived from index, so a rider learns "Travelling is
  * the blue line" and it stays true when the row is reordered.
+ *
+ * WHERE AN INTENT MAPS 1:1 TO A CONTENT TYPE, ITS LINE MUST MATCH THAT TYPE'S
+ * LINE in ROUTE_BULLET_MAP — otherwise wayfinding says one colour in the header
+ * and another on the page it opens. `shop` is the only such intent (going-out
+ * spans venue+event, travelling spans city+country+hotel, meet spans group+
+ * event, rights → country, support → organization), and it read 'blue' against
+ * a yellow marketplace bullet until 2026-08-12. Asserted in navigation.test.ts.
  */
 export const INTENT_TRACK: Record<string, 'pink' | 'blue' | 'green' | 'yellow'> = {
   'going-out': 'pink',
@@ -478,5 +485,5 @@ export const INTENT_TRACK: Record<string, 'pink' | 'blue' | 'green' | 'yellow'> 
   meet: 'green',
   rights: 'yellow',
   support: 'pink',
-  shop: 'blue',
+  shop: 'yellow',
 };
