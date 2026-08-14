@@ -63,6 +63,8 @@ export function BrandStoryBlock({ listing }: { listing: MarketplaceListing }) {
         <p className="mb-4 text-2xs font-bold uppercase tracking-label text-muted-foreground">
           About the brand
         </p>
+        {/* Monogram fallback: ink border, and Space Grotesk at rank 4 — #2744
+            unified `text-title` on font-bold, so Anton stops at rank 3. */}
         <div className="mb-4 flex items-center gap-4">
           {brand.logo_url ? (
             <img
@@ -71,8 +73,6 @@ export function BrandStoryBlock({ listing }: { listing: MarketplaceListing }) {
               className="h-10 w-10 border-2 border-foreground bg-background object-contain p-1"
             />
           ) : (
-            {/* Ink border (mine) + Space Grotesk at rank 4 (#2744: `text-title`
-                is font-bold, never font-display — Anton stops at rank 3). */}
             <span className="flex h-10 w-10 items-center justify-center border-2 border-foreground bg-surface-container text-title font-bold">
               {brand.display_name.charAt(0).toUpperCase()}
             </span>
