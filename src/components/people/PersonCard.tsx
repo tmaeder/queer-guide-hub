@@ -78,7 +78,7 @@ export const PersonCard = memo(function PersonCard({
             </div>
           )}
           <div className="min-w-0">
-            <div className="truncate font-display text-title leading-tight">{name}</div>
+            <div className="truncate text-title font-bold leading-tight">{name}</div>
             {typeof person.score === 'number' && person.score > 0 ? (
               <div className="mt-1 inline-block border border-foreground bg-background px-1.5 py-0.5 text-2xs font-bold uppercase tracking-label">
                 {t('people.card.match', {

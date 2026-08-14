@@ -58,13 +58,17 @@ export function StopList({ stops, className }: { stops: Stop[]; className?: stri
               </span>
             )}
             <div className="min-w-0 flex-1">
-              <div className="font-display text-title leading-tight">{s.name}</div>
+              <div className="text-title font-bold leading-tight">{s.name}</div>
               {s.accessNote && (
                 <div className="mt-1 text-13 text-muted-foreground">{s.accessNote}</div>
               )}
             </div>
             {s.href && (
-              <LocalizedLink to={s.href} aria-label={s.name} className="absolute inset-0 no-underline" />
+              <LocalizedLink
+                to={s.href}
+                aria-label={s.name}
+                className="absolute inset-0 no-underline"
+              />
             )}
           </div>
         </li>

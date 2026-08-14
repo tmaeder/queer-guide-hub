@@ -71,7 +71,9 @@ export function BrandStoryBlock({ listing }: { listing: MarketplaceListing }) {
               className="h-10 w-10 border-2 border-foreground bg-background object-contain p-1"
             />
           ) : (
-            <span className="flex h-10 w-10 items-center justify-center border-2 border-foreground bg-surface-container font-display text-title">
+            {/* Ink border (mine) + Space Grotesk at rank 4 (#2744: `text-title`
+                is font-bold, never font-display — Anton stops at rank 3). */}
+            <span className="flex h-10 w-10 items-center justify-center border-2 border-foreground bg-surface-container text-title font-bold">
               {brand.display_name.charAt(0).toUpperCase()}
             </span>
           )}

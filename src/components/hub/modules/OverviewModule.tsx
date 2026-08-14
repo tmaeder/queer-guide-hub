@@ -2,7 +2,16 @@ import { useMemo } from 'react';
 import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
-import { ArrowRight, CalendarClock, Check, CheckCheck, Heart, MessageCircle, Users, X } from 'lucide-react';
+import {
+  ArrowRight,
+  CalendarClock,
+  Check,
+  CheckCheck,
+  Heart,
+  MessageCircle,
+  Users,
+  X,
+} from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -40,7 +49,7 @@ function OverviewSection({
   return (
     <section className="flex flex-col gap-2">
       <div className="flex items-center justify-between gap-2">
-        <h2 className="flex items-center gap-2 text-title font-display">
+        <h2 className="flex items-center gap-2 text-title font-bold">
           <Icon className="h-4 w-4 text-muted-foreground" aria-hidden />
           {title}
         </h2>

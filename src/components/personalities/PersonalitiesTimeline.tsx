@@ -68,9 +68,12 @@ export function PersonalitiesTimeline({ personalities }: PersonalitiesTimelinePr
           rather than as a list inside a tinted panel. */}
       <div className="flex min-w-max gap-4">
         {buckets.map((b) => (
-          <div key={b.label} className="w-56 flex-shrink-0 border-[3px] border-foreground bg-background">
+          <div
+            key={b.label}
+            className="w-56 flex-shrink-0 border-[3px] border-foreground bg-background"
+          >
             <div className="sticky top-0 border-b-[3px] border-foreground bg-foreground px-4 py-2 text-background">
-              <div className="font-display text-title leading-tight">{b.label}</div>
+              <div className="text-title font-bold leading-tight">{b.label}</div>
               <div className="text-2xs tabular-nums text-background/70">
                 {b.items.length.toLocaleString()} {b.items.length === 1 ? 'person' : 'people'}
               </div>

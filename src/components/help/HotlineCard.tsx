@@ -72,7 +72,7 @@ export function HotlineCard({
     <article className="flex h-full flex-col border-[3px] border-foreground bg-background">
       <header className="border-b-2 border-foreground/10 p-4">
         <div className="flex items-start justify-between gap-4">
-          <h3 className="min-w-0 font-display text-title leading-tight">{hotline.name}</h3>
+          <h3 className="min-w-0 text-title font-bold leading-tight">{hotline.name}</h3>
           <div className="flex shrink-0 items-center gap-2">
             {showCountry && <span className={CHIP}>{countryLabel(hotline.country)}</span>}
             <button
@@ -205,7 +205,7 @@ export function HotlineCard({
                 <Phone size={16} aria-hidden />
                 {t('help.call_now', 'Call now')}
               </span>
-              <span className="font-display text-title tabular-nums">{primaryPhone.value}</span>
+              <span className="text-title font-bold tabular-nums">{primaryPhone.value}</span>
             </a>
           )}
 

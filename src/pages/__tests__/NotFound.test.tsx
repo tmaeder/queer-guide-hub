@@ -6,11 +6,26 @@ import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 
 vi.mock('react-i18next', () => ({
-  useTranslation: () => ({ t: (_k: string, d?: string) => d ?? _k }),
+  useTranslation: () => ({
+    // Mirrors i18next's `t(key, defaultValue, options)` closely enough to
+    // catch an interpolation that never lands: the page renders the failed
+    // path INTO the lede, so a mock that ignored `options` would let a
+    // literal `{{path}}` ship.
+    t: (k: string, d?: string, opts?: Record<string, unknown>) =>
+      (d ?? k).replace(/\{\{(\w+)\}\}/g, (m, name) => String(opts?.[name] ?? m)),
+  }),
 }));
 vi.mock('@/components/seo/NotFoundMeta', () => ({ NotFoundMeta: () => null }));
 vi.mock('@/components/routing/LocalizedLink', () => ({
-  LocalizedLink: ({ to, children }: { to: string; children: React.ReactNode }) => <a href={to}>{children}</a>,
+  LocalizedLink: ({
+    to,
+    children,
+    ...rest
+  }: { to: string; children: React.ReactNode } & React.AnchorHTMLAttributes<HTMLAnchorElement>) => (
+    <a href={to} {...rest}>
+      {children}
+    </a>
+  ),
 }));
 // RecommendedForYou pulls useAuth + a network fetch; not under test here.
 vi.mock('@/components/discovery/RecommendedForYou', () => ({ RecommendedForYou: () => null }));
@@ -21,15 +36,35 @@ vi.mock('@/utils/autoFileError', () => ({ fileError: () => {} }));
 
 import NotFound from '../NotFound';
 
+const renderAt = (path: string) =>
+  render(
+    <MemoryRouter initialEntries={[path]}>
+      <NotFound />
+    </MemoryRouter>,
+  );
+
 describe('NotFound page', () => {
-  it('renders 404 heading + return home link', () => {
-    render(<MemoryRouter><NotFound /></MemoryRouter>);
-    expect(screen.getByRole('heading', { name: '404' })).toBeInTheDocument();
+  it('renders the heading, the 404 service code and a return-home link', () => {
+    renderAt('/nope');
+    expect(screen.getByRole('heading', { level: 1, name: /No stop here/i })).toBeInTheDocument();
+    // 404 survives as the service code in the kicker, not as the heading.
+    expect(screen.getByText(/404/)).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Return Home/i })).toHaveAttribute('href', '/');
   });
 
   it('shows Go Back button', () => {
-    render(<MemoryRouter><NotFound /></MemoryRouter>);
+    renderAt('/nope');
     expect(screen.getByRole('button', { name: /Go Back/i })).toBeInTheDocument();
+  });
+
+  it('names the failed path in the lede and the failed slug as the ghost station', () => {
+    renderAt('/venues/blue-oyster');
+    expect(screen.getByText(/\/venues\/blue-oyster/)).toBeInTheDocument();
+    expect(screen.getByText('blue-oyster')).toBeInTheDocument();
+  });
+
+  it('uses type-aware copy for a known section', () => {
+    renderAt('/venues/blue-oyster');
+    expect(screen.getByRole('heading', { level: 1, name: /No venue at this stop/i })).toBeInTheDocument();
   });
 });

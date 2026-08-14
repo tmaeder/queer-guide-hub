@@ -20,26 +20,34 @@ async function headCount(build: (q: ReturnType<typeof baseQuery>) => unknown): P
   const { count } = (await build(q)) as { count: number | null };
   return count ?? 0;
 }
-const baseQuery = () =>
-  untypedFrom('personalities').select('*', { count: 'exact', head: true });
+const baseQuery = () => untypedFrom('personalities').select('*', { count: 'exact', head: true });
 
 function useCounts() {
   return useQuery({
     queryKey: ['personality-check-counts'],
     staleTime: 5 * 60_000,
     queryFn: async () => {
-      const [total, approved, manuallyVerified, pending, archived, publicVis, noImage, noSource, deceased] =
-        await Promise.all([
-          headCount((q) => q),
-          headCount((q) => q.eq('review_status', 'approved')),
-          headCount((q) => q.eq('review_status', 'manually_verified')),
-          headCount((q) => q.eq('review_status', 'pending')),
-          headCount((q) => q.eq('review_status', 'archived')),
-          headCount((q) => q.eq('visibility', 'public')),
-          headCount((q) => q.is('image_url', null)),
-          headCount((q) => q.is('lgbti_connection_source', null)),
-          headCount((q) => q.not('death_date', 'is', null)),
-        ]);
+      const [
+        total,
+        approved,
+        manuallyVerified,
+        pending,
+        archived,
+        publicVis,
+        noImage,
+        noSource,
+        deceased,
+      ] = await Promise.all([
+        headCount((q) => q),
+        headCount((q) => q.eq('review_status', 'approved')),
+        headCount((q) => q.eq('review_status', 'manually_verified')),
+        headCount((q) => q.eq('review_status', 'pending')),
+        headCount((q) => q.eq('review_status', 'archived')),
+        headCount((q) => q.eq('visibility', 'public')),
+        headCount((q) => q.is('image_url', null)),
+        headCount((q) => q.is('lgbti_connection_source', null)),
+        headCount((q) => q.not('death_date', 'is', null)),
+      ]);
       // Milestones are a first-class content type now — count only the
       // published (online) ones, not drafts awaiting review.
       const { count: milestone } = await untypedFrom('milestones')
@@ -75,8 +83,7 @@ function Tile({
 }) {
   // useRiskVisual is theme-aware and must be called unconditionally (see its doc).
   const visual = useRiskVisual(tone && tone !== 'gray' ? AMPEL_RISK[tone] : 'low');
-  const dotColor =
-    tone && tone !== 'gray' ? visual.fg : 'hsl(var(--muted-foreground))';
+  const dotColor = tone && tone !== 'gray' ? visual.fg : 'hsl(var(--muted-foreground))';
   const inner = (
     <div className="flex flex-col gap-1 rounded-container border border-border p-4">
       <div className="flex items-center gap-2">
@@ -162,11 +169,13 @@ export function PersonalityCheckPanel() {
 
       {/* Anniversary stream */}
       <div>
-        <h2 className="mb-2 text-title font-display">Anstehende Jahrestage</h2>
+        <h2 className="mb-2 text-title font-bold">Anstehende Jahrestage</h2>
         {loading ? (
           <p className="text-13 text-muted-foreground">Lädt…</p>
         ) : upcoming.length === 0 ? (
-          <p className="text-13 text-muted-foreground">Keine Jahrestage in den nächsten 30 Tagen.</p>
+          <p className="text-13 text-muted-foreground">
+            Keine Jahrestage in den nächsten 30 Tagen.
+          </p>
         ) : (
           <ul className="flex flex-col gap-2">
             {upcoming.map((it) => {
@@ -178,8 +187,10 @@ export function PersonalityCheckPanel() {
                   className="flex items-center gap-4 rounded-element border border-border p-2"
                 >
                   <div className="flex w-10 shrink-0 flex-col items-center">
-                    <span className="text-title font-display leading-none tabular-nums">{d}</span>
-                    <span className="text-2xs uppercase text-muted-foreground">{MONTHS[m - 1]}</span>
+                    <span className="text-title font-bold leading-none tabular-nums">{d}</span>
+                    <span className="text-2xs uppercase text-muted-foreground">
+                      {MONTHS[m - 1]}
+                    </span>
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-1.5">
@@ -206,7 +217,7 @@ export function PersonalityCheckPanel() {
                       <span className="text-13 font-semibold">Heute</span>
                     ) : (
                       <>
-                        <span className="text-title font-display tabular-nums">{it.days}</span>
+                        <span className="text-title font-bold tabular-nums">{it.days}</span>
                         <span className="ml-1 text-2xs text-muted-foreground">
                           {it.days === 1 ? 'Tag' : 'Tage'}
                         </span>
