@@ -166,6 +166,15 @@ const ANCHOR_MEMORY = 5;
 /** Anchors are drawn from the top of the affinity ranking, not the whole pool. */
 const ANCHOR_POOL = 40;
 
+/**
+ * How many different anchors to try before accepting a short line.
+ *
+ * Bounded on purpose: each attempt is O(stations x eligible), so this is at
+ * worst twelve passes over a few hundred rows — microseconds — and the cap
+ * keeps a pathologically sparse pool from turning a reroll into a scan.
+ */
+const ANCHOR_ATTEMPTS = 12;
+
 /** Beyond this the origin is a different part of the world, not a near miss. */
 const ORIGIN_SNAP_KM = 300;
 
@@ -341,63 +350,119 @@ export function generateLine(pool: Station[], input: GenerateLineInput): LineRes
     }
   }
 
-  if (!anchor) {
+  /**
+   * Grow a line from one anchor. Pure apart from `rng`, so the retry loop below
+   * can call it repeatedly and the whole thing stays reproducible from the seed.
+   */
+  const chainFrom = (start: Station) => {
+    const line: Station[] = [start];
+    const perCountry = new Map<string, number>([[start.countryId, 1]]);
+    let refused: LineResult['nearestRefused'] = null;
+
+    while (line.length < plan.stations) {
+      const last = line[line.length - 1];
+      const chosen = new Set(line.map((s) => s.id));
+      const candidates: Station[] = [];
+
+      for (const s of eligible) {
+        if (chosen.has(s.id)) continue;
+        if ((perCountry.get(s.countryId) ?? 0) >= MAX_PER_COUNTRY) continue;
+        // MIN_HOP against EVERY chosen stop, not just the last one.
+        //
+        // The ordering pass below reorders for the shortest path, so any two
+        // stops can end up adjacent regardless of the order they were picked
+        // in. Checking only `last` let Toronto and Mississauga — 22 km apart —
+        // land next to each other on a live line, which is one destination with
+        // a bus between them, not two stops. Enforcing it against the whole set
+        // makes the floor hold under every permutation.
+        if (line.some((c) => haversineKm(c, s) < MIN_HOP_KM)) continue;
+        const km = haversineKm(last, s);
+        if (km > maxHopKm) {
+          if (!refused || km < refused.km) refused = { name: s.name, km: Math.round(km) };
+          continue;
+        }
+        // Keep the whole line within reach of its anchor, or a five-stop sprint
+        // spirals away from where the traveller said they wanted to be.
+        if (haversineKm(start, s) > maxHopKm * (plan.stations - 1)) continue;
+        candidates.push(s);
+      }
+
+      if (candidates.length === 0) break; // Short line. Never padded.
+
+      const next = pickWeighted(
+        candidates,
+        (s) => {
+          const km = haversineKm(last, s);
+          const novelty = perCountry.has(s.countryId) ? 0.4 : 1;
+          return Math.max(0.001, affinity(s)) * spacing(km, maxHopKm) * novelty;
+        },
+        rng,
+      );
+      if (!next) break;
+      line.push(next);
+      perCountry.set(next.countryId, (perCountry.get(next.countryId) ?? 0) + 1);
+    }
+    return { line, refused };
+  };
+
+  /**
+   * TRY OTHER ANCHORS BEFORE GIVING UP.
+   *
+   * The chain is only as good as where it starts, and affinity says nothing
+   * about whether a city has reachable neighbours. Measured against the live
+   * 337-station anon pool, a single-attempt anchor produced fewer than three
+   * stops on 9 of 25 rolls — 36% of the time the page answered a click with
+   * "this is not a line". Johannesburg is the archetype: high affinity, and
+   * nothing else in the country within 800 km except Durban.
+   *
+   * This does NOT relax anything. The line still never pads, never repeats a
+   * stop, never touches a city failing the pool gate, and still reports a short
+   * result honestly when one is genuinely the best available. It just declines
+   * to settle for the first anchor when a better starting point exists — which
+   * is what a person does when they look at a map.
+   *
+   * A named origin gets exactly one attempt: "start from here" is an
+   * instruction, and silently starting somewhere else to get a longer line is
+   * the kind of small lie the whole module is built to avoid.
+   */
+  let nearestRefused: LineResult['nearestRefused'] = null;
+  let line: Station[] = [];
+
+  if (anchor) {
+    const attempt = chainFrom(anchor);
+    line = attempt.line;
+    nearestRefused = attempt.refused;
+  } else {
     const ranked = [...eligible].sort((a, b) => affinity(b) - affinity(a)).slice(0, ANCHOR_POOL);
     // Suppress recent anchors so a reroll actually rerolls — unless the eligible
     // set is so small that suppressing would leave nothing to pick from.
     const recent = new Set((input.recentAnchorIds ?? []).slice(-ANCHOR_MEMORY));
     const roomToBeChoosy = eligible.length >= 2 * plan.stations;
-    anchor = pickWeighted(
-      ranked,
-      (s) => (roomToBeChoosy && recent.has(s.id) ? 0 : affinity(s)),
-      rng,
-    );
-  }
+    const tried = new Set<string>();
 
-  if (!anchor) return base({ eligibleCount: eligible.length });
+    for (let attemptNo = 0; attemptNo < ANCHOR_ATTEMPTS; attemptNo += 1) {
+      const candidates = ranked.filter((s) => !tried.has(s.id));
+      if (candidates.length === 0) break;
+      const start = pickWeighted(
+        candidates,
+        (s) => (roomToBeChoosy && recent.has(s.id) ? 0 : affinity(s)),
+        rng,
+      );
+      if (!start) break;
+      tried.add(start.id);
 
-  /* Greedy chain. This is what keeps Berlin away from Sydney. */
-  const line: Station[] = [anchor];
-  const perCountry = new Map<string, number>([[anchor.countryId, 1]]);
-  let nearestRefused: LineResult['nearestRefused'] = null;
-
-  while (line.length < plan.stations) {
-    const last = line[line.length - 1];
-    const chosen = new Set(line.map((s) => s.id));
-    const candidates: Station[] = [];
-
-    for (const s of eligible) {
-      if (chosen.has(s.id)) continue;
-      if ((perCountry.get(s.countryId) ?? 0) >= MAX_PER_COUNTRY) continue;
-      const km = haversineKm(last, s);
-      if (km < MIN_HOP_KM) continue;
-      if (km > maxHopKm) {
-        if (!nearestRefused || km < nearestRefused.km) {
-          nearestRefused = { name: s.name, km: Math.round(km) };
-        }
-        continue;
+      const attempt = chainFrom(start);
+      // Keep the longest line seen, and the refusal that belongs to it, so the
+      // copy explains the line the reader is actually looking at.
+      if (attempt.line.length > line.length) {
+        line = attempt.line;
+        nearestRefused = attempt.refused;
       }
-      // Keep the whole line within reach of its anchor, or a five-stop sprint
-      // spirals away from where the traveller said they wanted to be.
-      if (haversineKm(anchor, s) > maxHopKm * (plan.stations - 1)) continue;
-      candidates.push(s);
+      if (line.length >= plan.stations) break;
     }
-
-    if (candidates.length === 0) break; // Short line. Never padded.
-
-    const next = pickWeighted(
-      candidates,
-      (s) => {
-        const km = haversineKm(last, s);
-        const novelty = perCountry.has(s.countryId) ? 0.4 : 1;
-        return Math.max(0.001, affinity(s)) * spacing(km, maxHopKm) * novelty;
-      },
-      rng,
-    );
-    if (!next) break;
-    line.push(next);
-    perCountry.set(next.countryId, (perCountry.get(next.countryId) ?? 0) + 1);
   }
+
+  if (line.length === 0) return base({ eligibleCount: eligible.length });
 
   /* Order. n <= 5, so brute-force every permutation and take the shortest total
      path — exact, trivially testable, and no 2-opt heuristic to get subtly
