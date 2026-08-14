@@ -1,6 +1,6 @@
 {
   "project": "tsconfig.app.json",
-  "total": 1257,
+  "total": 1252,
   "files": {
     "src/assets/intimate/pictograms.tsx": {
       "TS2503": 2
@@ -570,9 +570,6 @@
       "TS2551": 1
     },
     "src/components/trips/TripSafetyBriefing.tsx": {
-      "TS2345": 1
-    },
-    "src/components/trips/TripTemplates.tsx": {
       "TS2345": 1
     },
     "src/components/trips/__tests__/CityCountryAutocomplete.test.tsx": {
@@ -1288,12 +1285,6 @@
     },
     "src/pages/trips/TripPlannerPage.tsx": {
       "TS2345": 1
-    },
-    "src/pages/trips/TripsDiscoverPage.tsx": {
-      "TS2322": 1,
-      "TS2558": 1,
-      "TS7006": 1,
-      "TS7009": 1
     },
     "src/pages/trips/__tests__/TripSubrouteRedirect.test.tsx": {
       "TS2322": 1
