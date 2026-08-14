@@ -22,6 +22,27 @@ function dayOfYear(d: Date): number {
  * the relevant date, then filters client-side. Cheap (one round-trip, ~500
  * rows) and needs no schema changes. Promote to a server-side RPC if the
  * list grows.
+ *
+ * Adult performers are ALWAYS excluded, and that is not configurable here.
+ *
+ * This query had no `is_adult` predicate at all until 2026-08-14, while
+ * /personalities rendered "Hiding adult performers" directly above the strips
+ * it feeds — the page stated a guarantee its own rails did not keep. Measured
+ * that day: the ±3-day pool of 500 held 43-45 adult rows and the "Remembered
+ * this week" strip was publicly showing one. `view_count DESC` makes it worse
+ * rather than better, since those profiles draw traffic and so crowd the top
+ * of the pool the window is taken from.
+ *
+ * No opt-in parameter, deliberately, because there is no state in which one
+ * would be honoured: `EditorialEntries` is gated on `!hasAnyFilter`, and
+ * `exclude_adult === false` counts toward `activeFilterCount`, so clicking
+ * "Show all" unmounts these strips outright. The same hook also feeds
+ * `HomeBornThisWeek` on the anonymous homepage, which has no toggle at all.
+ *
+ * `.eq('is_adult', false)` also drops NULLs. Verified safe: 0 of 1,612 public
+ * personalities have a NULL `is_adult` (45 true / 1,567 false), so this loses
+ * nobody legitimate. If the column ever becomes nullable in practice, prefer
+ * `.not('is_adult', 'is', true)` over relaxing the check.
  */
 export function useBornThisWeek(limit = 6, mode: 'born' | 'died' = 'born') {
   const [state, setState] = useState<State>({ items: [], loading: true });
@@ -34,6 +55,7 @@ export function useBornThisWeek(limit = 6, mode: 'born' | 'died' = 'born') {
         .from('personalities')
         .select('id,slug,name,image_url,profession,birth_date,death_date,is_living,view_count')
         .eq('visibility', 'public')
+        .eq('is_adult', false)
         .is('duplicate_of_id', null)
         .not(dateCol, 'is', null)
         .order('view_count', { ascending: false })
