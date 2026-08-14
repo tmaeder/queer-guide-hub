@@ -135,7 +135,11 @@ export function PickerLine({
           ))}
         </div>
 
-        <ul
+        {/* A labelled group of toggle buttons, per the semantics note above —
+            so `role="group"` is deliberate. It must NOT sit on a <ul>: the role
+            replaces the implicit `list`, which orphans every <li> (axe
+            `listitem`, serious). Divs carry the group without the conflict. */}
+        <div
           role="group"
           aria-label={label}
           className="m-0 grid list-none p-0"
@@ -146,7 +150,7 @@ export function PickerLine({
           {options.map((option) => {
             const active = activeId === option.id && !option.disabled;
             return (
-              <li key={option.id}>
+              <div key={option.id}>
                 <button
                   type="button"
                   onClick={() => !option.disabled && onSelect(active ? null : option.id)}
@@ -175,10 +179,10 @@ export function PickerLine({
                     <span className="text-2xs tabular-nums text-muted-foreground">{option.meta}</span>
                   )}
                 </button>
-              </li>
+              </div>
             );
           })}
-        </ul>
+        </div>
       </div>
     </div>
   );
