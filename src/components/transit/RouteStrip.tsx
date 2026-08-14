@@ -193,7 +193,13 @@ export function RouteStrip({
                 </span>
                 <span
                   className={cn(
-                    'min-w-0 flex-1 px-2 py-1 text-left text-13 leading-snug transition-colors',
+                    // The active state fades an ink plate in under the label.
+                    // Mid-fade the pair measures ~3.2:1, which axe catches as a
+                    // serious contrast violation the moment a station goes
+                    // active during a scan. A reader who asked for less motion
+                    // should get the state instantly anyway — so honour the
+                    // preference and the dip cannot occur for them.
+                    'min-w-0 flex-1 px-2 py-1 text-left text-13 leading-snug transition-colors motion-reduce:transition-none',
                     s.depth === 2 && 'ml-4 text-2xs',
                     isActive
                       ? 'bg-foreground font-bold text-background'
