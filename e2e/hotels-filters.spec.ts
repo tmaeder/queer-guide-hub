@@ -60,11 +60,11 @@ test.describe('Hotels — Phase 1 quick wins', () => {
       waitUntil: 'networkidle',
     });
     // Two 404 renderers depending on environment: the CF Pages middleware
-    // ("We couldn't find that hotel", functions/_middleware.ts) on prod, and
+    // ("No hotel at this stop.", functions/_middleware.ts) on prod, and
     // the React SPA fallback ("Hotel not found", HotelDetail.tsx) on the
     // vite-preview PR build where the middleware doesn't run. Accept either.
     await expect(
-      page.getByText(/couldn.t find that hotel|hotel not found/i).first(),
+      page.getByText(/no hotel at this stop|hotel not found/i).first(),
     ).toBeVisible();
 
     // Prerender meta is only emitted by the static-site prerender pipeline.
