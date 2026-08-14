@@ -38,7 +38,6 @@ const Wishlists = lazyRetry(() => import('./pages/Wishlists'));
 const GoingOut = lazyRetry(() => import('./pages/intent/GoingOut'));
 const RightsIntent = lazyRetry(() => import('./pages/intent/Rights'));
 const RightsSources = lazyRetry(() => import('./pages/rights/RightsSources'));
-const ShopIntent = lazyRetry(() => import('./pages/intent/Shop'));
 const Resources = lazyRetry(() => import('./pages/Resources'));
 const ConnectionsExplorer = lazyRetry(() => import('./pages/explore/ConnectionsExplorer'));
 const ResourceTopic = lazyRetry(() => import('./pages/resources/ResourceTopic'));
@@ -734,9 +733,22 @@ export const AppRoutes = () => {
                     (coverage note, "know the law") now live on /help. The URL stays
                     so the Support track keeps its identity and inbound links work. */}
                   <Route path="support" element={<LocalizedRedirect to="/help" />} />
-                  {/* `shop` MUST stay declared before `shop/*` so the static
-                    sibling wins the /shop tie, same precedent as `p/:slug`. */}
-                  <Route path="shop" element={<ShopIntent />} />
+                  {/* /shop was /marketplace twice. Two of its three sections were
+                    duplicates — an occasions grid pointing at the same ?tags=occ-*
+                    filters the marketplace control bar exposes, and the very same
+                    <DepartmentBento /> instance — while /marketplace's unfiltered
+                    landing was already the editorial front door. /marketplace is the
+                    superset: it owns all ten deep routes, marketplace_slug_redirects,
+                    the `marketplace` search entity and the M-yellow bullet. Same shape
+                    as /support → /help above. The nav still says "Shop"; labels are
+                    decoupled from paths.
+
+                    public/_redirects 301s this at the edge, but that is a Cloudflare
+                    Pages feature and is inert in local dev, `vite preview` and the PR
+                    e2e run — and it is unprefixed-only, so this route is also the ONLY
+                    layer that carries /de/shop → /de/marketplace. `shop` stays declared
+                    before `shop/*` so the static sibling wins the /shop tie. */}
+                  <Route path="shop" element={<LocalizedRedirect to="/marketplace" />} />
                   {/* /places retired: it duplicated /cities and the Travelling
                     intent, kept client-side viewMode state instead of routes
                     (no deep links, broken Back), and shipped dead filters. The

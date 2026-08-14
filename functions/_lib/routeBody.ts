@@ -126,9 +126,17 @@ export const STATIC_ROUTE_BODY: Record<string, RouteBody> = {
     h1: 'LGBTQ+ marketplace',
     paragraphs: [
       'Books, apparel, art, home goods, beauty and music for and about the LGBTQ+ community. Every listing is screened for relevance to queer life before it appears.',
-      'Brands we have verified as queer-owned carry an explicit label, so a checked claim is distinguishable from an unchecked one. Where a brand has a direct shop, we link to it. Where we earn affiliate revenue, we say so on the page; that revenue keeps Queer Guide free.',
+      // Second half absorbed from the deleted '/shop' body when the two pages
+      // merged: "collected on their own shelf, with the count stated plainly"
+      // and the explicit statement that most brands carry nothing either way
+      // are the honest-coverage sentences that make the labelled set defensible.
+      'Brands we have verified as queer-owned carry an explicit label and are collected on their own shelf, with the count stated plainly; most brands carry no ownership information either way, so we do not claim it for them. Where a brand has a direct shop, we link to it. Where we earn affiliate revenue, we say so on the page; that revenue keeps Queer Guide free.',
     ],
     links: [
+      // /marketplace/categories was reachable to crawlers only through the old
+      // '/shop' body. Dropping that body without this line would have removed
+      // the sole internal link to the category index.
+      { href: '/marketplace/categories', label: 'Shop by category' },
       { href: '/about', label: 'How we vet listings' },
       { href: '/donate', label: 'Other ways to support us' },
     ],
@@ -229,18 +237,10 @@ export const STATIC_ROUTE_BODY: Record<string, RouteBody> = {
     ],
   },
 
-  '/shop': {
-    h1: 'Shop — books, apparel, art and gifts',
-    paragraphs: [
-      'Books, fashion, art, home goods and gifts for and about the LGBTQ+ community. Every listing is screened for relevance to queer life before it appears.',
-      'Brands we have verified as queer-owned carry an explicit label and are collected on their own shelf, with the count stated plainly. Most brands carry no ownership information either way, so we do not claim it for them.',
-    ],
-    links: [
-      { href: '/marketplace', label: 'Browse the full catalogue' },
-      { href: '/marketplace/categories', label: 'Shop by category' },
-      { href: '/wishlists', label: 'Wishlists' },
-    ],
-  },
+  // No '/shop' body: it 301s to /marketplace, so no crawler can reach it — the
+  // same dead-copy bug as '/resources' below. Its verified-brands sentences were
+  // folded into '/marketplace' above rather than deleted, and its unique
+  // /marketplace/categories link moved there too.
 
   // Keyed '/resources' until 2026-08 — same dead-copy bug as '/help-hotlines'
   // below: public/_redirects 301s /resources to /tags, so no crawler could
@@ -287,7 +287,7 @@ export const STATIC_ROUTE_BODY: Record<string, RouteBody> = {
   '/about': {
     h1: 'About Queer Guide',
     paragraphs: [
-      "Queer Guide exists because the LGBTQ+ community deserves a resource that is queer-owned, ad-free, tracker-free, and built to last. We are independent — not venture-backed, not advertising-driven, not for sale.",
+      'Queer Guide exists because the LGBTQ+ community deserves a resource that is queer-owned, ad-free, tracker-free, and built to last. We are independent — not venture-backed, not advertising-driven, not for sale.',
       'The platform is run by a small team and a wider network of contributors. Editorial decisions are made by queer people. We publish our funding sources, our moderation policies, and our limits in plain language.',
     ],
     links: [
@@ -356,11 +356,7 @@ export function buildNoscriptHtml(pathname: string): string | null {
   if (!entry) return null;
 
   const escape = (s: string) =>
-    s
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;');
+    s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
   const intro = entry.paragraphs[0] ?? '';
   const links = (entry.links ?? COMMON_FOOTER_LINKS).slice(0, 5);
@@ -384,11 +380,7 @@ export function buildBodyHtml(
   const entry = STATIC_ROUTE_BODY[clean];
 
   const escape = (s: string) =>
-    s
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;');
+    s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
   let h1: string;
   let paragraphs: string[];
@@ -399,8 +391,11 @@ export function buildBodyHtml(
     paragraphs = entry.paragraphs;
     links = entry.links ?? COMMON_FOOTER_LINKS;
   } else {
-    h1 = fallback.title.replace(/\s*\|\s*Queer Guide.*$/, '').replace(/\s*—.*$/, '').trim() ||
-      fallback.title;
+    h1 =
+      fallback.title
+        .replace(/\s*\|\s*Queer Guide.*$/, '')
+        .replace(/\s*—.*$/, '')
+        .trim() || fallback.title;
     paragraphs = [FALLBACK_PARAGRAPH_FOR(fallback.description)];
     links = COMMON_FOOTER_LINKS;
   }

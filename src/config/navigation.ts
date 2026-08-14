@@ -175,9 +175,11 @@ export const DESTINATIONS: NavDestination[] = [
  *  - Never a 2-letter first segment. `stripLocale` (src/lib/locale.ts) strips
  *    ANY two-letter leading segment, so `/go` would silently break header
  *    active state, MobileBottomNav, RouteFade and getSubmitCta at once.
- *  - Never collide with an existing top-level route. That is why travel is
- *    rebuilt in place at `/travel` and shopping is `/shop` declared ahead of
- *    the legacy `shop/*` redirect, rather than new competing paths.
+ *  - Never a new competing path. Rebuild the real page in place instead — that
+ *    is why travelling is `/travel`, support is `/help` and shop is
+ *    `/marketplace`. An intent whose `to` is a thin wrapper over an existing
+ *    browse page becomes that page's redundant twin; two of the six have
+ *    already had to be collapsed for exactly that reason.
  * Both are asserted in src/config/__tests__/navigation.test.ts.
  */
 export type IntentId = 'going-out' | 'travelling' | 'meet' | 'rights' | 'support' | 'shop';
@@ -270,12 +272,22 @@ export const INTENT_NAV: IntentDestination[] = [
   },
   {
     id: 'shop',
-    to: '/shop',
+    // Points at /marketplace, not a thin /shop page: the two were redundant —
+    // /shop's occasions grid linked to the same ?tags=occ-* filters the
+    // marketplace control bar exposes and its third section was literally the
+    // same <DepartmentBento /> — while /marketplace is the superset, owning
+    // every deep route, marketplace_slug_redirects, the `marketplace` search
+    // entity and the M-yellow bullet. Same call as support → /help above.
+    // The label stays "Shop"; `to` and `labelKey` are independent.
+    to: '/marketplace',
     icon: Store,
     labelKey: 'header.intents.shop.label',
     fallback: 'Shop',
     subtitleKey: 'header.intents.shop.subtitle',
     subtitleFallback: 'Books, apparel, art and gifts',
+    // `/shop` stays listed even though it now redirects: public/_redirects is
+    // inert off Cloudflare, so in dev, `vite preview` and e2e the path reaches
+    // the router first and the tab would go dark for a frame without it.
     activePrefixes: ['/shop', '/marketplace', '/wishlists'],
   },
 ];

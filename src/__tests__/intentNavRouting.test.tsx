@@ -7,9 +7,12 @@
  * locale layout parent is `<Route path="/:locale?">`, and React Router expands
  * the optional segment. Two hazards apply to the intent routes specifically:
  *
- *  1. `/shop` vs the legacy `shop/*` redirect. The static sibling must be
- *     declared first or `/shop` resolves to the redirect and the composite page
- *     is unreachable.
+ *  1. `/shop` and `shop/*`. Both now redirect to /marketplace — the two pages
+ *     were the same surface, so declaration order no longer changes what
+ *     renders. The order is preserved and asserted anyway, because this is the
+ *     ONLY layer that carries the LOCALIZED case: the public/_redirects 301 is
+ *     unprefixed by design and is inert off Cloudflare entirely, so `/de/shop`
+ *     has nothing but the router.
  *  2. Locale prefixes. `/de/rights` must render the Rights page, not NotFound —
  *     which is what happens if a route is accidentally declared outside the
  *     locale parent.
@@ -47,7 +50,6 @@ vi.mock('@/pages/rights/RightsSources', () => ({
   default: () => <div>RIGHTS_SOURCES_SENTINEL</div>,
 }));
 vi.mock('@/pages/HelpHotlines', () => ({ default: () => <div>HELP_SENTINEL</div> }));
-vi.mock('@/pages/intent/Shop', () => ({ default: () => <div>SHOP_SENTINEL</div> }));
 vi.mock('@/pages/Travel', () => ({ default: () => <div>TRAVEL_SENTINEL</div> }));
 vi.mock('@/pages/Marketplace', () => ({ default: () => <div>MARKETPLACE_SENTINEL</div> }));
 vi.mock('@/pages/NotFound', () => ({ default: () => <div>NOT_FOUND_SENTINEL</div> }));
@@ -64,10 +66,7 @@ function renderAt(path: string) {
 
 async function expectSentinel(path: string, sentinel: string) {
   const { unmount } = renderAt(path);
-  expect(
-    await screen.findByText(sentinel),
-    `${path} should render ${sentinel}`,
-  ).toBeTruthy();
+  expect(await screen.findByText(sentinel), `${path} should render ${sentinel}`).toBeTruthy();
   expect(screen.queryByText('NOT_FOUND_SENTINEL')).toBeNull();
   unmount();
 }
@@ -80,7 +79,11 @@ const INTENTS: [string, string][] = [
   // resolving — it is the Support track's identity and has inbound links — so
   // this asserts it lands on /help rather than 404ing.
   ['/support', 'HELP_SENTINEL'],
-  ['/shop', 'SHOP_SENTINEL'],
+  // /shop is now a redirect too, for the same reason: it was /marketplace's
+  // twin (two of its three sections were duplicates of blocks the marketplace
+  // landing already rendered) and /marketplace is the superset. Listing it here
+  // is what asserts `/de/shop` → `/de/marketplace`, which nothing else covers.
+  ['/shop', 'MARKETPLACE_SENTINEL'],
   ['/travel', 'TRAVEL_SENTINEL'],
 ];
 
@@ -125,9 +128,11 @@ describe('intent route resolution', () => {
     }
   });
 
-  it('gives /shop to the composite page, not the legacy shop/* redirect', async () => {
-    // Declaration order dependent: `shop` must precede `shop/*` in routes.tsx.
-    await expectSentinel('/shop', 'SHOP_SENTINEL');
+  it('redirects bare /shop to the marketplace, not just /shop/<something>', async () => {
+    // `shop` still precedes `shop/*` in routes.tsx so the static sibling wins
+    // the tie; both targets are the same now, but a bare /shop falling through
+    // to the splat is the shape that would silently drop the locale prefix.
+    await expectSentinel('/shop', 'MARKETPLACE_SENTINEL');
   });
 
   it('still redirects legacy /shop/<anything> to the marketplace', async () => {

@@ -27,6 +27,18 @@
 # rather than drop it.
 /help-hotlines   /help          301
 
+# /shop was /marketplace twice — two of its three sections were duplicates of
+# blocks the marketplace landing already rendered, and /marketplace is the
+# superset (every deep route, the slug-redirect table, the search entity).
+# Unprefixed only, deliberately: a `/:lang/shop` rule would ALSO match
+# /marketplace/shop, i.e. a listing whose slug is "shop". Localized paths
+# redirect in the router instead (src/routes.tsx) — same split as /places/*.
+# First match wins in this file: adding a broader rule above these silently
+# stops the 301 and /shop starts serving an SPA hop, which no test can see
+# because _redirects is inert off Cloudflare. scripts/smoke-pages.sh asserts it.
+/shop            /marketplace   301
+/shop/*          /marketplace   301
+
 # ---------------------------------------------------------------------------
 # There is deliberately NO SPA catch-all rule below. Do not add one.
 #
