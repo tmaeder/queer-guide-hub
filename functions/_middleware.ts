@@ -653,18 +653,23 @@ function notFoundHtml(pathname: string): string {
   * { box-sizing: border-box; }
   html, body { height: 100%; }
   body { font-family: 'Space Grotesk', system-ui, sans-serif; margin: 0; min-height: 100vh; display: flex; flex-direction: column; background: hsl(var(--paper)); color: hsl(var(--ink)); }
-  main { flex: 1; display: flex; align-items: center; justify-content: center; padding: 2rem 1rem; }
-  .card { width: 100%; max-width: 44rem; }
+  /* Same frame as every other page: the 1600 (--container-page) cap and the
+     4/6/8 gutter that PageContainer applies in the SPA. Prose and artwork are
+     capped separately so the measure stays readable at full width. */
+  main { flex: 1; width: 100%; max-width: 100rem; margin: 0 auto; padding: 2rem 1rem; }
+  @media (min-width: 640px) { main { padding: 3rem 1.5rem; } }
+  @media (min-width: 768px) { main { padding: 3rem 2rem; } }
+  .card { width: 100%; }
   .kicker { display: inline-block; background: hsl(var(--ink)); color: hsl(var(--paper)); font-family: 'Anton', 'Space Grotesk', sans-serif; font-size: 0.8125rem; padding: 0.25rem 0.5rem; }
-  h1 { font-family: 'Anton', 'Space Grotesk', sans-serif; font-weight: 400; font-size: clamp(2.5rem, 9vw, 4.75rem); line-height: 0.95; margin: 1.5rem 0 0; }
-  .lede { color: hsl(var(--muted)); font-size: 1.0625rem; line-height: 1.7; margin: 1.5rem 0 0; }
-  .panel { border: 3px solid hsl(var(--ink)); padding: 1.5rem; margin-top: 2.5rem; }
+  h1 { font-family: 'Anton', 'Space Grotesk', sans-serif; font-weight: 400; font-size: clamp(3.25rem, 9vw, 4.75rem); line-height: 0.95; margin: 1.5rem 0 0; }
+  .lede { color: hsl(var(--muted)); font-size: 1.0625rem; line-height: 1.7; margin: 1.5rem 0 0; max-width: 48rem; }
+  .panel { border: 3px solid hsl(var(--ink)); padding: 1.5rem; margin-top: 2.5rem; max-width: 56rem; }
   .panel svg { display: block; width: 100%; height: auto; }
   .stop { margin: 1rem 0 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.5rem; }
-  .stop-label { font-size: 0.625rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: hsl(var(--muted)); }
-  .stop-name { font-family: 'Anton', 'Space Grotesk', sans-serif; font-size: 1.25rem; line-height: 1.2; word-break: break-all; }
+  .stop-label { font-size: 0.8125rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: hsl(var(--muted)); }
+  .stop-name { font-family: 'Anton', 'Space Grotesk', sans-serif; font-size: 2rem; line-height: 1.2; word-break: break-all; }
   .exits { margin-top: 2rem; display: flex; flex-wrap: wrap; gap: 0.5rem; }
-  .exits a { display: inline-flex; align-items: center; border: 2px solid hsl(var(--ink)); padding: 0.5rem 1rem; font-size: 0.8125rem; font-weight: 700; text-decoration: none; color: hsl(var(--ink)); }
+  .exits a { display: inline-flex; align-items: center; border: 2px solid hsl(var(--ink)); padding: 0.5rem 1rem; font-size: 0.9375rem; font-weight: 700; text-decoration: none; color: hsl(var(--ink)); }
   .exits a.primary { background: hsl(var(--ink)); color: hsl(var(--paper)); }
   footer { border-top: 3px solid hsl(var(--ink)); padding: 1rem; text-align: center; color: hsl(var(--muted)); font-size: 0.8125rem; }
 </style>
