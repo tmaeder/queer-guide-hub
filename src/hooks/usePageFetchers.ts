@@ -58,18 +58,49 @@ export async function fetchCountryNameById(id: string): Promise<string | null> {
   return (data?.name as string | undefined) ?? null;
 }
 
-/** ProfessionDetail.tsx — list personalities (filtered downstream). */
-export function usePersonalitiesByProfession() {
+/**
+ * ProfessionDetail.tsx — personalities for one profession.
+ *
+ * Three things this query got wrong until 2026-08-14, all measured on prod:
+ *
+ * 1. No `visibility` filter. RLS does NOT contain this — the anon key can read
+ *    16,060 personality rows of which 14,448 are `visibility='draft'`, so the
+ *    page published them. /professions/drag queen rendered 25 draft rows out of
+ *    52 ("10th place", "3rd place" — import junk), and /professions/adult
+ *    performer rendered 571 drafts. 171 profession pages were affected.
+ *    Explicit filters are mandatory here; see the same lesson in
+ *    functions/_lib/detail.ts, which learned it for the crawler path.
+ *
+ * 2. No `is_adult` filter, while /personalities defaults to hiding adult
+ *    performers and this surface has no toggle to opt in. It was listing 574 of
+ *    them to anonymous visitors.
+ *
+ * 3. No profession filter and no limit. It fetched the WHOLE table and matched
+ *    client-side, but PostgREST hard-caps at 1000 rows — verified, `limit=1500`
+ *    and `limit=5000` both return exactly 1000 — so it saw 1,000 of 12,169 rows
+ *    ordered by name and every profession late in the alphabet silently lost
+ *    people. Filtering by visibility alone does not fix this: that is still
+ *    1,612 rows, over the cap.
+ *
+ * The profession match now happens server-side as a SUPERSET (`ilike %name%`),
+ * with ProfessionDetail keeping its exact comma-token comparison on top — the
+ * column holds comma-separated lists, so a substring match over-selects and the
+ * caller narrows. That keeps a single profession's result far under the cap.
+ */
+export function usePersonalitiesByProfession(profession?: string) {
   return useQuery({
-    queryKey: ['personalities-with-profession'],
+    queryKey: ['personalities-with-profession', profession ?? null],
     staleTime: STALE,
     queryFn: async () => {
-      const { data, error } = await supabase
+      let q = supabase
         .from('personalities')
         .select('*')
         .not('profession', 'is', null)
         .is('duplicate_of_id', null)
-        .order('name');
+        .eq('visibility', 'public')
+        .eq('is_adult', false);
+      if (profession) q = q.ilike('profession', `%${profession}%`);
+      const { data, error } = await q.order('name').limit(1000);
       if (error) throw error;
       return data ?? [];
     },
