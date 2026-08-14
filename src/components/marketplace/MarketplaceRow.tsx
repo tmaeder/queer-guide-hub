@@ -10,7 +10,8 @@ interface MarketplaceRowProps {
   subtitle?: string;
   limit?: number;
   showFavoriteButton?: boolean;
-  onToggleFavorite?: (id: string) => void;
+  // No `onToggleFavorite`: it was declared, never destructured, and passed to a
+  // card that also never read it. Favoriting is <WishlistPicker/>'s job.
   /** Attribution surface for outbound /go links; defaults to the marketplace grid. */
   surface?: MarketplaceSurface;
 }
@@ -27,7 +28,10 @@ export function MarketplaceRow({
   const { register } = useCuratedIds();
 
   useEffect(() => {
-    register(rowKey, data.map((l) => l.id));
+    register(
+      rowKey,
+      data.map((l) => l.id),
+    );
   }, [rowKey, data, register]);
 
   if (!loading && (error || data.length === 0)) return null;
