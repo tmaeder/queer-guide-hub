@@ -20,10 +20,15 @@ export function SelfHelpDrawer() {
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button variant="outline" size="sm">
-          <Wind size={14} className="mr-2" />
-          {t('help.self_help_trigger', 'While you wait')}
-        </Button>
+        {/* Styled for the ink-flooded triage panel, its only home — an
+            ink-on-ink outline button would be invisible there. */}
+        <button
+          type="button"
+          className="inline-flex items-center gap-2 border-2 border-background px-4 py-2 text-13 font-bold text-background transition-colors hover:bg-background hover:text-foreground"
+        >
+          <Wind size={14} aria-hidden />
+          {t('help.self_help_trigger', 'Not ready to talk?')}
+        </button>
       </SheetTrigger>
       <SheetContent className="w-full max-w-md overflow-y-auto sm:max-w-md">
         <SheetHeader>
@@ -37,11 +42,11 @@ export function SelfHelpDrawer() {
         </SheetHeader>
 
         <section className="mt-6">
-          <h3 className="flex items-center gap-2 text-base font-semibold">
+          <h3 className="flex items-center gap-2 font-display text-title leading-tight">
             <Wind size={16} aria-hidden />
             {t('help.breathing_title', '4-7-8 breathing')}
           </h3>
-          <ol className="mt-2 list-decimal space-y-1 pl-6 text-sm text-muted-foreground">
+          <ol className="mt-2 list-decimal space-y-1 pl-6 text-13 leading-relaxed text-muted-foreground">
             <li>{t('help.breathing_1', 'Breathe in through your nose for 4 seconds.')}</li>
             <li>{t('help.breathing_2', 'Hold your breath for 7 seconds.')}</li>
             <li>{t('help.breathing_3', 'Breathe out through your mouth for 8 seconds.')}</li>
@@ -50,14 +55,14 @@ export function SelfHelpDrawer() {
         </section>
 
         <section className="mt-6">
-          <h3 className="flex items-center gap-2 text-base font-semibold">
+          <h3 className="flex items-center gap-2 font-display text-title leading-tight">
             <Hand size={16} aria-hidden />
             {t('help.grounding_title', '5-4-3-2-1 grounding')}
           </h3>
-          <p className="mt-2 text-sm text-muted-foreground">
+          <p className="mt-2 text-13 leading-relaxed text-muted-foreground">
             {t('help.grounding_intro', 'Name, out loud or in your head:')}
           </p>
-          <ul className="mt-2 list-disc space-y-1 pl-6 text-sm text-muted-foreground">
+          <ul className="mt-2 list-disc space-y-1 pl-6 text-13 leading-relaxed text-muted-foreground">
             <li>{t('help.grounding_5', '5 things you can see')}</li>
             <li>{t('help.grounding_4', '4 things you can touch')}</li>
             <li>{t('help.grounding_3', '3 things you can hear')}</li>
@@ -67,17 +72,17 @@ export function SelfHelpDrawer() {
         </section>
 
         <section className="mt-6">
-          <h3 className="flex items-center gap-2 text-base font-semibold">
+          <h3 className="flex items-center gap-2 font-display text-title leading-tight">
             <FileText size={16} aria-hidden />
             {t('help.safety_plan_title', 'Safety plan')}
           </h3>
-          <p className="mt-2 text-sm text-muted-foreground">
+          <p className="mt-2 text-13 leading-relaxed text-muted-foreground">
             {t(
               'help.safety_plan_desc',
               'A short written plan you can pull up when things get bad — your warning signs, coping steps, people to call, and reasons to live.',
             )}
           </p>
-          <Button asChild variant="link" className="mt-1 h-auto p-0 text-sm">
+          <Button asChild variant="link" className="mt-1 h-auto p-0 text-13">
             <a
               href="https://suicidesafetyplan.com/"
               target="_blank"

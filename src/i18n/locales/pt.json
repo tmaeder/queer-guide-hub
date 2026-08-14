@@ -689,12 +689,12 @@
       }
     },
     "discover": {
-      "title": "Descobrir lugares",
-      "button": "Explorar mercado",
+      "title": "Criar uma rota",
+      "button": "Criar uma rota",
       "eyebrow": "Real travelers",
       "subtitle": "Real itineraries from QG travelers — copy ideas, find queer-friendly stops, plan your own.",
       "searchPlaceholder": "Filter by city…",
-      "aria": "Discover public trips",
+      "aria": "Criar uma rota por cidades reais",
       "sortAria": "Sort trips",
       "viewAria": "View mode",
       "filterAria": "Filter trips",
@@ -774,7 +774,81 @@
       "signalsAria": "Trip activity",
       "forkCount": "{{count}} forks",
       "saveCount": "{{count}} saves",
-      "filtersButton": "Filters"
+      "filtersButton": "Filters",
+      "meta": {
+        "title": "Criar uma rota | Queer Guide",
+        "description": "Escolhe um ambiente, uma estação e um ritmo. Recebes uma rota de cidades reais com o número de locais, a situação legal e o que há enquanto lá estiveres."
+      },
+      "eyebrowRoute": "Construtor de rotas",
+      "titleRoute": "Três cidades. Uma linha.",
+      "ledeRoute": "Diz-nos o que procuras e a que ritmo te moves. Traçamos uma linha por cidades reais, com o número de locais, a situação legal e o que há enquanto lá estiveres.",
+      "picker": {
+        "heading": "Define a linha",
+        "hint": "Escolhe um ambiente, uma estação e um ritmo. A linha é redesenhada.",
+        "vibeGroup": "O que procuras",
+        "seasonGroup": "Quando",
+        "paceGroup": "A que ritmo",
+        "stationCount": "{{count}} estações",
+        "stopCount": "{{count}} paragens",
+        "tooFew": "apenas {{count}} estações",
+        "thin": "{{count}} estações, nenhuma perto o suficiente para formar uma linha",
+        "vibe": {
+          "nightlife": "Noites longas",
+          "sauna": "Sauna",
+          "slow": "Manhãs calmas",
+          "community": "Comunidade",
+          "outdoors": "Ao ar livre"
+        },
+        "season": {
+          "now": "Em breve",
+          "autumn": "Outono",
+          "winter": "Inverno",
+          "pride": "Época do Orgulho"
+        },
+        "pace": {
+          "slow": "Com calma",
+          "steady": "Constante",
+          "sprint": "Percorrer muito"
+        }
+      },
+      "route": {
+        "heading": "A tua linha",
+        "reroll": "Traçar outra",
+        "summary": "{{stops}} paragens · {{km}} km · {{countries}} países",
+        "snapped": "Começa a {{km}} km de {{name}} — a cidade mais próxima sobre a qual temos o suficiente.",
+        "short": "Esta linha tem {{delivered}} paragens, não {{requested}}. {{eligible}} cidades correspondem e as restantes estão mais longe do que este ritmo permite.",
+        "announced": "Linha traçada: {{stations}}. {{count}} paragens.",
+        "stopsAria": "Paragens desta linha, por ordem",
+        "stopAria": "Paragem {{n}}: {{city}}, {{country}}",
+        "swapStopAria": "Trocar a paragem {{n}}, {{city}}",
+        "tripTitle": "Linha {{cities}}"
+      },
+      "station": {
+        "venues": "{{count}} locais"
+      },
+      "loading": {
+        "pool": "A carregar a lista de estações",
+        "slow": "Ainda a trabalhar. O índice de cidades está lento neste momento."
+      },
+      "degraded": {
+        "none": "Nenhuma cidade corresponde a essas escolhas.",
+        "title": "Apenas {{count}} cidades correspondem.",
+        "body": "Uma linha precisa de três paragens. Retira uma escolha para a alargar.",
+        "terminus": "A mais próxima é {{name}}, a {{km}} km — mais longe do que este ritmo vai.",
+        "clearVibe": "Qualquer ambiente",
+        "goFurther": "Percorrer mais"
+      },
+      "error": {
+        "title": "Não foi possível criar a viagem",
+        "poolTitle": "A lista de estações não carregou.",
+        "retry": "Tentar de novo"
+      },
+      "cta": {
+        "heading": "Segue esta linha.",
+        "body": "Torna-se uma viagem tua, com todas as paragens já lá. Depois podes mudar o que quiseres.",
+        "primary": "Transformar em viagem",
+        "secondary": "Traçar outra"
+      }
     },
     "polls": {
       "createdToast": "Poll created",
@@ -999,6 +1073,15 @@
       "openThread": "Revisar no chat",
       "forwardHint": "[PT] Forward Booking.com, Airbnb or airline confirmations to {{address}} — they appear in your Travel Inbox, ready to add to a trip. Or paste one here to add it straight to this trip.",
       "forwardHintNoAddress": "[PT] Forward booking confirmations to your queer.guide address and they appear in your Travel Inbox. Or paste one here to add it straight to this trip."
+    },
+    "templates": {
+      "heading": "Começar com um modelo",
+      "subheading": "Itinerários LGBTQ+ para desenvolver",
+      "days": "{{count}} dias",
+      "use": "Usar modelo",
+      "created": "Viagem criada",
+      "createdDescription": "Adiciona as tuas paragens a partir daqui.",
+      "error": "Não foi possível criar a viagem"
     }
   },
   "auth": {
@@ -1466,19 +1549,19 @@
       "relationships": "Relacionamentos",
       "women": "Mulheres"
     },
-    "quick_exit": "Quick exit",
-    "quick_exit_aria": "Leave this page immediately (ESC)",
-    "hide_screen": "Hide screen",
-    "reveal_aria": "Click anywhere to show the page again",
-    "hidden_hint": "Page hidden. Click anywhere to show again.",
-    "hero_label": "Recommended right now",
-    "expect_title": "What happens when you call",
+    "quick_exit": "Saída rápida",
+    "quick_exit_aria": "Sair desta página imediatamente (Esc)",
+    "hide_screen": "Ocultar ecrã",
+    "reveal_aria": "Clica em qualquer sítio para mostrar a página outra vez",
+    "hidden_hint": "Página oculta. Clica em qualquer sítio para a mostrar.",
+    "hero_label": "Recomendado agora",
+    "expect_title": "O que acontece quando ligas",
     "expect_short": "What to expect",
     "expect_1": "You'll hear a short greeting. You don't have to give your name.",
     "expect_2": "You can hang up at any time. You can call back as often as you need.",
     "expect_3": "Free hotlines in DE/AT/CH don't appear on itemized phone bills.",
     "expect_4": "If you can't speak, ask for text or chat — most hotlines offer it.",
-    "self_help_trigger": "While you wait",
+    "self_help_trigger": "Ainda não consegues falar?",
     "self_help_title": "Steady yourself",
     "self_help_desc": "Short techniques you can use while you wait, or instead of a call if you're not ready.",
     "breathing_title": "4-7-8 breathing",
@@ -1496,7 +1579,7 @@
     "safety_plan_title": "Safety plan",
     "safety_plan_desc": "A short written plan you can pull up when things get bad — your warning signs, coping steps, people to call, and reasons to live.",
     "safety_plan_link": "Open template (Stanley-Brown)",
-    "report": "Report",
+    "report": "Reportar",
     "report_aria": "Report a problem with this hotline",
     "report_title": "Report this hotline",
     "report_desc": "Thanks for helping keep this list accurate. Reports are reviewed by our team.",
@@ -1536,7 +1619,53 @@
       "closed": "Service has shut down",
       "unsafe": "Unsafe / harmful experience",
       "other": "Other"
-    }
+    },
+    "browse_support_orgs": "Ver todas as organizações",
+    "browse_title": "Ver todas as linhas",
+    "cant_speak": "Não consegues falar?",
+    "closed_now": "Fechado agora",
+    "closed_no_alt": "Esta linha está fechada agora e não temos nenhuma outra aberta para este país. Em perigo imediato, usa o número de emergência acima.",
+    "directories_subtitle": "São diretórios e organizações de encaminhamento — sites, não linhas telefónicas diretas.",
+    "directories_title": "Diretórios e mais apoio",
+    "emergency_short": "Emergência",
+    "helping_body": "Se estás a ouvir alguém em crise: fica com essa pessoa, leva a sério o que ela diz e não a deixes sozinha. Não precisas de ter as respostas. Liguem juntos para uma linha, ou liga tu para perguntar o que fazer.",
+    "helping_title": "Ajudar outra pessoa",
+    "keep": "Guardar esta linha",
+    "know_the_law": "Conhece a lei",
+    "know_the_law_body": "Se é seguro viver abertamente, procurar cuidados de saúde ou denunciar um crime depende de onde estás. Verifica a situação legal antes de agir.",
+    "link_unavailable": "Site indisponível de momento — a ser verificado novamente.",
+    "loading": "A carregar o diretório…",
+    "more_support": "Mais apoio",
+    "no_country_body": "Escolhe um país acima e mostramos a melhor linha. Todas as linhas estão listadas abaixo.",
+    "no_country_title": "Não conseguimos determinar onde estás",
+    "no_lines_body": "Se estás em perigo agora, liga para a emergência: 112 (UE) ou 911 (EUA/CA).",
+    "no_lines_title": "Não foi possível carregar o diretório",
+    "no_police_policy": "Esta linha declara nunca contactar a polícia ou os serviços de emergência sem o teu pedido explícito.",
+    "open_always": "Aberto 24 horas por dia",
+    "open_instead": "Aberto agora, em alternativa",
+    "open_now": "Aberto agora",
+    "org_coverage": "Este diretório está longe de ser completo. Se falta um grupo em que confias, diz-nos. Um resultado vazio significa que não temos registo — não que não exista ajuda.",
+    "phone_only": "Apenas por telefone, segundo os nossos dados.",
+    "phone_only_with_site": "Apenas por telefone, segundo os nossos dados. O site deles pode ter chat ou email.",
+    "provenance": "Proveniência",
+    "report_submitting": "A enviar…",
+    "reports_police_warning": "Esta linha pode contactar a polícia ou os serviços de emergência sem o teu consentimento.",
+    "result_count_one": "{{count}} linha",
+    "result_count_other": "{{count}} linhas",
+    "rights_by_country": "Direitos LGBTQ+ por país",
+    "saved_lines": "Linhas guardadas",
+    "scope_all": "Linhas de todos os países registados.",
+    "scope_change": "Alterar",
+    "scope_dialog_desc": "As linhas estão organizadas pelo país que servem. Os diretórios internacionais aparecem sempre, qualquer que seja a escolha.",
+    "scope_dialog_title": "Escolher um país",
+    "scope_prefix": "Linhas para",
+    "support_orgs": "Organizações de apoio",
+    "support_orgs_body": "Centros comunitários e associações com apoio presencial.",
+    "tell_us": "Diz-nos",
+    "unkeep": "Deixar de guardar",
+    "visit_site": "Abrir o site deles",
+    "website": "Site",
+    "see_all_lines": "Ver todas as linhas"
   },
   "sos": {
     "button": "SOS",
@@ -2566,145 +2695,6 @@
       "queerOwned": "[PT] Queer-owned",
       "tags_one": "[PT] {{count}} tag",
       "tags_other": "[PT] {{count}} tags"
-    }
-  },
-  "resources": {
-    "hero": {
-      "eyebrow": "Ajuda",
-      "title": "Ajuda e recursos.",
-      "lede": "Apoio em crise, guias práticos, e as pessoas e organizações por trás."
-    },
-    "errorLoading": "Algo deu errado ao carregar. Tenta de novo mais tarde.",
-    "disclosure": "Todos os temas e busca",
-    "disclosureAria": "Todos os temas, busca e filtros avançados",
-    "browseAllTopics": "Todos os temas",
-    "professions": {
-      "title": "Profissões",
-      "description": "Personalidades LGBTQ+ por profissão",
-      "back": "Voltar"
-    },
-    "category": {
-      "back": "Voltar",
-      "viewAll": "Ver todos →",
-      "comingSoon": "Em breve",
-      "tagCount": "{{count}} tags",
-      "tagCountTotal": "{{count}} tags no total (em todas as subcategorias)",
-      "tagCountTotalAria": "{{count}} tags no total em todas as subcategorias",
-      "totalChildHint": "O número de cada subcategoria mostra os tags atribuídos diretamente",
-      "supportNewsAlert": "Precisa de ajuda imediata? Consulta o diretório de linhas de crise.",
-      "crisisHotlines": "Linhas de crise",
-      "emptyTitle": "Ainda sem tags nesta categoria",
-      "emptyDescription": "Volta em breve — está a ser preenchida.",
-      "subcategoryEmptyTitle": "Ainda sem tags aqui",
-      "subcategoryEmptyDescription": "Esta subcategoria está a ser preenchida."
-    },
-    "crisis": {
-      "heading": "Crise e segurança",
-      "badge": "Grátis, anónimo",
-      "chooseCountryAria": "Escolher país",
-      "callEmergencyPrefix": "Em perigo imediato? Liga para ",
-      "callEmergencySuffix": " ({{country}}).",
-      "callEmergencySuffixInt": ".",
-      "noLocal": "Ainda sem linhas para {{country}} — a mostrar internacionais.",
-      "callAria": "Ligar para {{name}} no {{phone}}",
-      "noHotlinesLoaded": "Ainda sem linhas carregadas.",
-      "listAria": "Linhas de crise",
-      "seeAll": "Ver todas as linhas"
-    },
-    "topicHubs": {
-      "heading": "Temas"
-    },
-    "topic": {
-      "back": "Recursos",
-      "notFound": "Tema não encontrado",
-      "backToResources": "Voltar aos recursos",
-      "metaSuffix": "Recursos",
-      "metaNotFound": "Tema não encontrado",
-      "stats": "{{guides}} guias · {{orgs}} orgs · {{news}} artigos",
-      "guidesHeading": "Guias",
-      "guidesEmpty": "Ainda sem guias publicados para este tema.",
-      "orgsHeading": "Organizações",
-      "orgsEmpty": "Ainda sem organizações para este tema.",
-      "newsHeading": "Notícias recentes",
-      "newsEmpty": "Ainda sem artigos recentes sobre este tema.",
-      "moreTopics": "Mais temas"
-    },
-    "orgs": {
-      "heading": "Organizações de apoio",
-      "filterAria": "Filtrar organizações por país",
-      "noLocal": "Ainda sem organizações em {{country}} — a mostrar globais.",
-      "browseAll": "Ver todas as organizações",
-      "emptyPrefix": "Ainda sem organizações de apoio. Submete uma pela extensão Chrome ou ",
-      "emptyLink": "fala connosco",
-      "emptySuffix": "."
-    },
-    "filter": {
-      "searchPlaceholder": "Procurar tags, categorias, descrições…",
-      "searchAria": "Procurar nos recursos",
-      "filterAria": "Filtrar por categoria",
-      "categoryPlaceholder": "Categoria",
-      "allCategories": "Todas as categorias",
-      "sortAria": "Ordenar por",
-      "sortPlaceholder": "Ordenar por",
-      "sortMostUsed": "Mais usados",
-      "sortAlphabetical": "Alfabético",
-      "sortNewest": "Mais recentes",
-      "advanced": "Avançado",
-      "usageAria": "Filtrar por uso",
-      "usagePlaceholder": "Uso",
-      "usageAll": "Todos os tags",
-      "usageUsed": "Usados",
-      "usageUnused": "Não usados",
-      "hasImage": "Com imagem",
-      "hasImageTitle": "Mostrar só tags com imagem",
-      "sortDirAsc": "Ordem crescente",
-      "sortDirDesc": "Ordem decrescente",
-      "active": "Ativo:",
-      "clearAll": "Limpar tudo",
-      "view": {
-        "chips": "Chips",
-        "grid": "Grelha",
-        "list": "Lista",
-        "ariaSuffix": " vista"
-      },
-      "graph": "Grafo de relações"
-    },
-    "search": {
-      "resultsHeading": "Resultados",
-      "categoryTagsHeading": "Tags {{category}}",
-      "filteredHeading": "Tags filtrados",
-      "countBadge": "{{visible}} de {{total}}",
-      "countAria": "{{count}} tags correspondentes",
-      "showMore": "Mostrar mais {{count}}",
-      "empty": {
-        "title": "Sem resultados",
-        "description": "Tenta uma busca mais ampla ou remove os filtros."
-      }
-    },
-    "tagNotFound": {
-      "title": "Tag não encontrado",
-      "bodyPrefix": "Não encontrámos um tag para ",
-      "browse": "Ver todos os recursos"
-    },
-    "tagDetail": {
-      "breadcrumbHome": "Recursos",
-      "noDefinition": "Ainda sem definição para este termo.",
-      "alsoKnownAs": "Também conhecido como",
-      "readOnWikipedia": "Ler na Wikipédia",
-      "searchTagged": "Pesquisar tudo com a tag {{name}}",
-      "seeAlso": "Ver também",
-      "sensitiveContentBody": "Este tópico pode conter conteúdo sensível. Se precisar de apoio, visite a nossa página de linhas de apoio em crise.",
-      "sensitiveContentTitle": "Tópico sensível",
-      "tableOfContents": "Conteúdo",
-      "viewAsGraph": "Ver como grafo",
-      "hierarchy": "[PT] In the taxonomy",
-      "broader": "[PT] Broader",
-      "narrower": "[PT] More specific",
-      "related": "[PT] Related"
-    },
-    "graph": {
-      "title": "Grafo de relações",
-      "description": "Como os tags se relacionam por semelhança semântica e co-ocorrência"
     }
   },
   "cities": {
@@ -4112,6 +4102,141 @@
       "support": {
         "title": "Apoie a gente",
         "desc": "Para a plataforma seguir gratuita para todo mundo."
+      }
+    }
+  },
+  "tags": {
+    "meta": {
+      "title": "Glossário LGBTQ+",
+      "categoryTitle": "{{name}} — glossário LGBTQ+",
+      "description": "Explore e pesquise {{count}} termos LGBTQ+ — identidades, práticas, história e linguagem da comunidade, cada um ligado aos locais, eventos, pessoas e notícias que o usam."
+    },
+    "hero": {
+      "eyebrow": "Glossário",
+      "title": "O glossário",
+      "lede": "Cada palavra que o guia usa, explicada — e tudo o que leva essa etiqueta.",
+      "legend": "{{terms}} termos · {{lines}} linhas · {{stops}} paragens"
+    },
+    "stats": {
+      "kicker": "O acervo",
+      "terms": "Termos",
+      "lines": "Linhas",
+      "stops": "Paragens",
+      "illustrated": "Ilustrados"
+    },
+    "rail": {
+      "label": "Linhas temáticas",
+      "all": "Todos os termos",
+      "expandAria": "Mostrar paragens da {{line}}",
+      "collapseAria": "Ocultar paragens da {{line}}"
+    },
+    "spine": {
+      "searchLabel": "Pesquisar no glossário",
+      "searchPlaceholder": "Um termo, ou um sinónimo"
+    },
+    "view": {
+      "label": "Vista",
+      "grid": "Grelha",
+      "list": "Lista",
+      "chips": "Fichas",
+      "graph": "Grafo"
+    },
+    "sort": {
+      "label": "Ordenar",
+      "usage": "Mais usados",
+      "alphabetical": "A–Z",
+      "recent": "Mais recentes",
+      "dirAsc": "Crescente — mudar para decrescente",
+      "dirDesc": "Decrescente — mudar para crescente"
+    },
+    "filter": {
+      "used": "Em uso",
+      "unused": "Sem uso",
+      "withImage": "Ilustrados",
+      "reset": "Limpar filtros",
+      "includeAdult": "Incluir termos 18+"
+    },
+    "letters": {
+      "label": "Ir para uma letra",
+      "all": "Todas",
+      "other": "Números e outras escritas",
+      "jump": "Termos começados por {{letter}}"
+    },
+    "alias": {
+      "heading": "Também encontrados com outros nomes",
+      "description": "Correspondem a um sinónimo ou a uma grafia próxima, não ao termo em si.",
+      "badge": "sinónimo"
+    },
+    "card": {
+      "uses": "{{count}} usos"
+    },
+    "count": "{{count}} termos",
+    "showMore": "Mostrar mais {{count}}",
+    "searching": "A pesquisar…",
+    "loading": "A carregar o glossário",
+    "error": "O glossário está indisponível",
+    "retry": "Tentar de novo",
+    "empty": {
+      "title": "Nenhum termo corresponde.",
+      "description": "Experimente outra letra, outra linha ou outra pesquisa."
+    },
+    "category": {
+      "lede": "Todos os termos sob {{name}}."
+    },
+    "endOfLine": {
+      "eyebrow": "Fim de linha",
+      "title": "Procura outra coisa?",
+      "body": "O glossário define as palavras. Estes são os sítios que as usam.",
+      "helpCta": "Linhas de crise e apoio",
+      "orgsCta": "Organizações",
+      "guidesCta": "Guias"
+    },
+    "detail": {
+      "loading": "A carregar",
+      "about": "Sobre",
+      "sections": "Secções",
+      "noDefinition": "Ainda não foi escrita uma definição para este termo.",
+      "interchangeEyebrow": "Ligação",
+      "interchangeTitle": "Na taxonomia",
+      "inTaxonomy": "Na taxonomia",
+      "changeHereFor": "Ligação para",
+      "contentNote": "Nota de conteúdo",
+      "contentNoteBody": "Esta entrada trata um tema que algumas pessoas acham difícil. Nada aqui é explícito: é uma definição, não um conselho.",
+      "findSupport": "Encontrar apoio",
+      "whereItAppears": "Onde aparece",
+      "elsewhere": "Noutros sítios",
+      "readThere": "Ler",
+      "editors": "Redação do Queer Guide",
+      "factLine": "Linha",
+      "factTagged": "Etiquetado em",
+      "venues": "Locais",
+      "venuesNote": "{{count}} etiquetados",
+      "events": "Eventos",
+      "eventsNote": "{{count}} etiquetados",
+      "people": "Pessoas",
+      "peopleNote": "{{count}} etiquetadas",
+      "news": "Notícias",
+      "newsNote": "{{count}} artigos",
+      "newsNoteMore": "{{shown}} de {{count}} artigos",
+      "villages": "Bairros queer",
+      "shop": "Loja",
+      "communities": "Comunidades",
+      "everythingTagged": "Tudo etiquetado com {{name}}",
+      "everythingTaggedBody": "{{count}} entradas do guia levam esta etiqueta.",
+      "searchTagged": "Pesquisar tudo etiquetado com {{name}}",
+      "moreOnThisLine": "Mais nesta linha",
+      "notFound": {
+        "title": "Termo inexistente",
+        "body": "No glossário não há nada sob",
+        "browse": "Explorar o glossário"
+      },
+      "alias": {
+        "synonym": "Também chamado",
+        "abbreviation": "Abreviatura de",
+        "plural": "Plural",
+        "misspelling": "Erro comum",
+        "historical": "Historicamente",
+        "slang": "Calão"
       }
     }
   }

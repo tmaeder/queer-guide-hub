@@ -89,11 +89,12 @@ export const STATIC_ROUTE_META: Record<string, RouteMeta> = {
   },
   // The tag glossary lives at /tags; /resources is a legacy redirect to it, so
   // the canonical page — and the route the SEO check samples — is /tags. Copy
-  // mirrors the client-side OVERVIEW_META in src/pages/Resources.tsx.
+  // mirrors the client-side `useMeta` call in src/pages/TagsIndex.tsx.
+  // Category pages (/tags/c/:slug) are handled by dynamicMeta below.
   '/tags': {
-    title: 'LGBTQ+ Resource Hub & Tag Glossary | Queer Guide',
+    title: 'LGBTQ+ Glossary & Tag Index | Queer Guide',
     description:
-      'Browse LGBTQ+ topics, identities, and support resources by tag — venues, events, people, and crisis help across the glossary.',
+      'Browse and search LGBTQ+ terms — identities, practices, history and community language, each linked to the venues, events, people and news that use it.',
   },
   '/news': {
     title: 'LGBTQ+ News — Curated Daily | Queer Guide',
@@ -335,6 +336,22 @@ const titlecase = (s: string) =>
     .replace(/Lgbtq\+?/i, 'LGBTQ+');
 
 function dynamicMeta(pathname: string): RouteMeta | null {
+  // Glossary category pages, ahead of the generic matcher below — which would
+  // otherwise read `/tags/c/health-wellness` as kind=tag, slug="c" and title
+  // all 56 of them "C — Tag | Queer Guide". These URLs became indexable when
+  // the category moved from a query param into the path.
+  const category = /^\/tags\/c\/([^/?#]+)/.exec(pathname);
+  if (category) {
+    const nice = titlecase(decodeURIComponent(category[1]));
+    return {
+      title: truncate(`${nice} — LGBTQ+ Glossary${TITLE_SUFFIX}`, MAX_TITLE),
+      description: truncate(
+        `Every ${nice.toLowerCase()} term in the Queer Guide glossary, linked to the venues, events, people and news that use it.`,
+        MAX_DESC,
+      ),
+    };
+  }
+
   const match =
     /^\/(venue|venues|event|events|hotel|hotels|news|blog|personality|personalities|tag|tags|city|cities|country|countries|place|places|article|user|users)\/([^/?#]+)/.exec(
       pathname,

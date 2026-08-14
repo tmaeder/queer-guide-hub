@@ -32,7 +32,7 @@ export function OnThisDayBand() {
                 className="group flex items-center gap-2 no-underline"
               >
                 <MilestoneImpactMarker impact={m.impact} size="station" />
-                <span className="font-display text-title leading-none">{m.date.slice(0, 4)}</span>
+                <span className="text-title font-bold leading-none">{m.date.slice(0, 4)}</span>
                 <span className="min-w-0 truncate text-15 group-hover:underline">{m.title}</span>
                 <span className="ms-auto hidden shrink-0 text-13 text-muted-foreground sm:inline">
                   {t('milestones.home.yearsAgo', '{{count}} years ago', { count: m.years_ago })}

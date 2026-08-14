@@ -57,6 +57,36 @@ describe('useBornThisWeek — query shape', () => {
   });
 });
 
+describe('useBornThisWeek — adult exclusion', () => {
+  // Regression guard. This hook had no is_adult predicate until 2026-08-14
+  // while /personalities rendered "Hiding adult performers" directly above the
+  // strips it feeds, and the same hook feeds HomeBornThisWeek on the anonymous
+  // homepage, which has no toggle at all. Measured that day: the ±3-day pool
+  // held 43-45 adult rows and "Remembered this week" was publicly showing one.
+  //
+  // Asserted on the QUERY, not the returned rows: the exclusion has to happen
+  // server-side. Filtering after the fact would still let adult profiles
+  // consume slots in the top-500-by-view_count pool the window is drawn from,
+  // silently shrinking the strip instead of showing the wrong people.
+  it.each(['born', 'died'] as const)('excludes adult performers in %s mode', async (mode) => {
+    withResults({ data: [], error: null });
+    const { result } = renderHook(() => useBornThisWeek(6, mode));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    const eqCalls = state.calls[0].chain.filter((s) => s.method === 'eq');
+    expect(eqCalls).toContainEqual({ method: 'eq', args: ['is_adult', false] });
+  });
+
+  it('still restricts to public visibility', async () => {
+    withResults({ data: [], error: null });
+    const { result } = renderHook(() => useBornThisWeek(6, 'born'));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    const eqCalls = state.calls[0].chain.filter((s) => s.method === 'eq');
+    expect(eqCalls).toContainEqual({ method: 'eq', args: ['visibility', 'public'] });
+  });
+});
+
 describe('useBornThisWeek — window filtering', () => {
   it('keeps personalities whose anniversary is today (always in window)', async () => {
     // Synthesize a birth date that matches today's month+day (any year).

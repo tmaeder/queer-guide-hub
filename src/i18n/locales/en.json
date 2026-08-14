@@ -1201,12 +1201,12 @@
       }
     },
     "discover": {
-      "title": "Public trips",
-      "button": "Browse trips",
+      "title": "Build a route",
+      "button": "Build a route",
       "eyebrow": "Real travelers",
       "subtitle": "Real itineraries from QG travelers — copy ideas, find queer-friendly stops, plan your own.",
       "searchPlaceholder": "Filter by city…",
-      "aria": "Browse public trips",
+      "aria": "Build a route through real cities",
       "sortAria": "Sort trips",
       "viewAria": "View mode",
       "filterAria": "Filter trips",
@@ -1286,7 +1286,81 @@
       "inspiredTitle": "Inspired by: {{title}}",
       "signalsAria": "Trip activity",
       "forkCount": "{{count}} forks",
-      "saveCount": "{{count}} saves"
+      "saveCount": "{{count}} saves",
+      "meta": {
+        "title": "Build a route | Queer Guide",
+        "description": "Pick a vibe, a season and a pace. Get a route of real cities with venue counts, legal status and what is on while you are there."
+      },
+      "eyebrowRoute": "Route builder",
+      "titleRoute": "Three cities. One line.",
+      "ledeRoute": "Tell us what you are after and how fast you move. We draw you a line through real cities — with the venue counts, the legal status and what is on while you are there.",
+      "picker": {
+        "heading": "Set the line",
+        "hint": "Pick a vibe, a season and a pace. The line redraws.",
+        "vibeGroup": "What you are after",
+        "seasonGroup": "When",
+        "paceGroup": "How fast",
+        "stationCount": "{{count}} stations",
+        "stopCount": "{{count}} stops",
+        "tooFew": "only {{count}} stations",
+        "thin": "{{count}} stations, none close enough to line up",
+        "vibe": {
+          "nightlife": "Out late",
+          "sauna": "Steam",
+          "slow": "Slow mornings",
+          "community": "Community",
+          "outdoors": "Outdoors"
+        },
+        "season": {
+          "now": "Soon",
+          "autumn": "Autumn",
+          "winter": "Winter",
+          "pride": "Pride season"
+        },
+        "pace": {
+          "slow": "Take it slow",
+          "steady": "Steady",
+          "sprint": "Cover ground"
+        }
+      },
+      "route": {
+        "heading": "Your line",
+        "reroll": "Draw another",
+        "summary": "{{stops}} stops · {{km}} km · {{countries}} countries",
+        "snapped": "Starting {{km}} km from {{name}} — the nearest city we have enough on.",
+        "short": "This line runs {{delivered}} stops, not {{requested}}. {{eligible}} cities match that vibe, and the rest are further apart than this pace goes.",
+        "announced": "Line drawn: {{stations}}. {{count}} stops.",
+        "stopsAria": "Stops on this line, in order",
+        "stopAria": "Stop {{n}}: {{city}}, {{country}}",
+        "swapStopAria": "Swap stop {{n}}, {{city}}",
+        "tripTitle": "{{cities}} line"
+      },
+      "station": {
+        "venues": "{{count}} places"
+      },
+      "loading": {
+        "pool": "Loading the station list",
+        "slow": "Still working. The city index is slow right now."
+      },
+      "degraded": {
+        "none": "No cities match those picks.",
+        "title": "Only {{count}} cities match.",
+        "body": "A line needs three stops. Clear a pick to widen it.",
+        "terminus": "The nearest match is {{name}}, {{km}} km away — further than this pace goes.",
+        "clearVibe": "Any vibe",
+        "goFurther": "Cover more ground"
+      },
+      "error": {
+        "title": "Could not build the trip",
+        "poolTitle": "The station list did not load.",
+        "retry": "Try again"
+      },
+      "cta": {
+        "heading": "Ride this line.",
+        "body": "Turns into a trip you own, with every stop already on it. Change anything you like afterwards.",
+        "primary": "Make it a trip",
+        "secondary": "Draw another"
+      }
     },
     "polls": {
       "createdToast": "Poll created",
@@ -1491,97 +1565,42 @@
       "openThread": "Review in chat",
       "forwardHint": "Forward Booking.com, Airbnb or airline confirmations to {{address}} — they appear in your Travel Inbox, ready to add to a trip. Or paste one here to add it straight to this trip.",
       "forwardHintNoAddress": "Forward booking confirmations to your queer.guide address and they appear in your Travel Inbox. Or paste one here to add it straight to this trip."
+    },
+    "templates": {
+      "heading": "Start from a template",
+      "subheading": "LGBTQ+ itineraries to build on",
+      "days": "{{count}} days",
+      "use": "Use template",
+      "created": "Trip created",
+      "createdDescription": "Add your stops from here.",
+      "error": "Could not create the trip"
     }
   },
   "help": {
-    "title": "Help & Crisis Hotlines",
-    "subtitle": "You are not alone. Find immediate support here.",
-    "meta_description": "Free, anonymous LGBTQIA+ crisis hotlines and counselling services worldwide. You are not alone.",
-    "emergency_title": "In acute danger?",
-    "emergency_body": "Call emergency services immediately: 112 (EU) or 911 (US/CA). Every second counts.",
-    "filter_country": "Country",
-    "filter_country_all": "All countries",
-    "filter_topic": "Topic",
-    "filter_topic_all": "All topics",
-    "call_now": "Call now",
-    "call_aria": "Call {{name}} {{phone}}",
-    "hours": "Hours",
-    "languages": "Languages",
-    "disclaimer": "Queer Guide does not replace professional help.",
-    "no_results": "No hotlines match these filters. Try \"All countries\" or check the international directories.",
-    "no_results_title": "No hotlines found",
-    "search_placeholder": "Search hotlines...",
-    "saved_hotlines": "Your saved hotlines",
-    "quick_call": "Quick call",
-    "badge_24_7": "24/7",
-    "badge_free": "Free",
-    "badge_anonymous": "Anonymous",
-    "save": "Save hotline",
-    "unsave": "Remove from saved",
-    "reset_filters": "Reset filters",
-    "related_resources": "Related resources",
-    "browse_resources": "Browse all resources",
-    "breadcrumb_resources": "Resources",
-    "breadcrumb_support": "Support & News",
-    "breadcrumb_hotlines": "Crisis Hotlines",
-    "error_title": "Help page unavailable",
-    "error_body": "In acute danger, call your local emergency number: 112 (EU) or 911 (US/CA).",
-    "quick_exit": "Quick exit",
-    "quick_exit_aria": "Leave this page immediately (ESC)",
-    "hide_screen": "Hide screen",
-    "reveal_aria": "Click anywhere to show the page again",
-    "hidden_hint": "Page hidden. Click anywhere to show again.",
-    "hero_label": "Recommended right now",
-    "expect_title": "What happens when you call",
-    "expect_short": "What to expect",
-    "expect_1": "You'll hear a short greeting. You don't have to give your name.",
-    "expect_2": "You can hang up at any time. You can call back as often as you need.",
-    "expect_3": "Free hotlines in DE/AT/CH don't appear on itemized phone bills.",
-    "expect_4": "If you can't speak, ask for text or chat — most hotlines offer it.",
-    "self_help_trigger": "While you wait",
-    "self_help_title": "Steady yourself",
-    "self_help_desc": "Short techniques you can use while you wait, or instead of a call if you're not ready.",
-    "breathing_title": "4-7-8 breathing",
-    "breathing_1": "Breathe in through your nose for 4 seconds.",
-    "breathing_2": "Hold your breath for 7 seconds.",
-    "breathing_3": "Breathe out through your mouth for 8 seconds.",
-    "breathing_4": "Repeat 4 times.",
-    "grounding_title": "5-4-3-2-1 grounding",
-    "grounding_intro": "Name, out loud or in your head:",
-    "grounding_5": "5 things you can see",
-    "grounding_4": "4 things you can touch",
-    "grounding_3": "3 things you can hear",
-    "grounding_2": "2 things you can smell",
-    "grounding_1": "1 thing you can taste",
-    "safety_plan_title": "Safety plan",
-    "safety_plan_desc": "A short written plan you can pull up when things get bad — your warning signs, coping steps, people to call, and reasons to live.",
-    "safety_plan_link": "Open template (Stanley-Brown)",
-    "report": "Report",
-    "report_aria": "Report a problem with this hotline",
-    "report_title": "Report this hotline",
-    "report_desc": "Thanks for helping keep this list accurate. Reports are reviewed by our team.",
-    "report_reason": "Reason",
-    "report_options": {
-      "disconnected": "Number disconnected / no answer",
-      "wrong_number": "Wrong number",
-      "closed": "Service has shut down",
-      "unsafe": "Unsafe / harmful experience",
-      "other": "Other"
-    },
-    "report_detail": "Details (optional)",
-    "report_submit": "Submit report",
-    "report_thanks": "Thank you. We'll review it.",
-    "filter_intersection": "Population",
-    "filter_intersection_all": "All",
-    "badge_reports_police": "May report to police",
-    "operator": "Operated by",
-    "verified_on": "Verified",
     "affiliation": {
       "religious": "religious",
       "state": "state",
       "ngo": "NGO",
       "secular": "secular"
     },
+    "badge_24_7": "24/7",
+    "badge_anonymous": "Anonymous",
+    "badge_free": "Free",
+    "badge_reports_police": "May report to police",
+    "breadcrumb_hotlines": "Crisis Hotlines",
+    "breadcrumb_resources": "Resources",
+    "breadcrumb_support": "Support & News",
+    "breathing_1": "Breathe in through your nose for 4 seconds.",
+    "breathing_2": "Hold your breath for 7 seconds.",
+    "breathing_3": "Breathe out through your mouth for 8 seconds.",
+    "breathing_4": "Repeat 4 times.",
+    "breathing_title": "4-7-8 breathing",
+    "browse_resources": "Browse all resources",
+    "browse_support_orgs": "Browse all support organizations",
+    "browse_title": "Browse every line",
+    "call_aria": "Call {{name}} {{phone}}",
+    "call_now": "Call now",
+    "cant_speak": "Can’t speak?",
     "channel": {
       "phone": "Call",
       "sms": "Text",
@@ -1589,6 +1608,41 @@
       "chat": "Chat",
       "email": "Email"
     },
+    "closed_now": "Closed right now",
+    "closed_no_alt": "This line is closed right now and we have no other line open for this country. In acute danger, use the emergency number above.",
+    "directories_subtitle": "These are referral organisations and directories — websites rather than direct phone lines.",
+    "directories_title": "Directories & further support",
+    "disclaimer": "Queer Guide does not replace professional help.",
+    "emergency_body": "Call emergency services immediately: 112 (EU) or 911 (US/CA). Every second counts.",
+    "emergency_short": "Emergency",
+    "emergency_title": "In acute danger?",
+    "error_body": "In acute danger, call your local emergency number: 112 (EU) or 911 (US/CA).",
+    "error_title": "Help page unavailable",
+    "expect_1": "You'll hear a short greeting. You don't have to give your name.",
+    "expect_2": "You can hang up at any time. You can call back as often as you need.",
+    "expect_3": "Free hotlines in DE/AT/CH don't appear on itemized phone bills.",
+    "expect_4": "If you can't speak, ask for text or chat — most hotlines offer it.",
+    "expect_short": "What to expect",
+    "expect_title": "What happens when you call",
+    "filter_country": "Country",
+    "filter_country_all": "All countries",
+    "filter_intersection": "Population",
+    "filter_intersection_all": "All",
+    "filter_topic": "Topic",
+    "filter_topic_all": "All topics",
+    "grounding_1": "1 thing you can taste",
+    "grounding_2": "2 things you can smell",
+    "grounding_3": "3 things you can hear",
+    "grounding_4": "4 things you can touch",
+    "grounding_5": "5 things you can see",
+    "grounding_intro": "Name, out loud or in your head:",
+    "grounding_title": "5-4-3-2-1 grounding",
+    "helping_body": "If you are listening to someone in crisis: stay with them, take what they say seriously, and do not leave them alone. You do not have to have the answers. Call a line together, or call one yourself to ask what to do next.",
+    "helping_title": "Helping someone else",
+    "hero_label": "Recommended right now",
+    "hidden_hint": "Page hidden. Click anywhere to show again.",
+    "hide_screen": "Hide screen",
+    "hours": "Hours",
     "intersection": {
       "trans-youth": "Trans youth",
       "asylum": "Asylum seekers",
@@ -1597,6 +1651,75 @@
       "elders": "Elders",
       "deaf": "Deaf / HoH"
     },
+    "keep": "Keep this line",
+    "know_the_law": "Know the law",
+    "know_the_law_body": "Whether it is safe to be out, to seek healthcare, or to report a crime depends on where you are. Check the legal position before you act on it.",
+    "languages": "Languages",
+    "link_unavailable": "Website currently unavailable — being re-checked.",
+    "loading": "Loading the directory…",
+    "meta_description": "Free, anonymous LGBTQIA+ crisis hotlines and counselling services worldwide. You are not alone.",
+    "more_support": "More support",
+    "no_country_body": "Pick a country above and we will show the best line for it. Every line we have is listed below.",
+    "no_country_title": "We could not work out where you are",
+    "no_lines_body": "If you are in danger right now, call your local emergency number: 112 (EU) or 911 (US/CA).",
+    "no_lines_title": "We could not load the directory",
+    "no_police_policy": "This line publishes a policy of never contacting police or emergency services without your explicit request.",
+    "no_results": "No hotlines match these filters. Try \"All countries\" or check the international directories.",
+    "no_results_title": "No hotlines found",
+    "open_always": "Open 24/7",
+    "open_instead": "Open right now instead",
+    "open_now": "Open now",
+    "operator": "Operated by",
+    "org_coverage": "This directory is nowhere near everywhere. If a group you trust is missing, tell us about it. An empty result here means we have no record — not that no help exists.",
+    "phone_only": "This line is phone-only in our records.",
+    "phone_only_with_site": "This line is phone-only in our records. Their website may offer chat or email.",
+    "provenance": "Provenance",
+    "quick_call": "Quick call",
+    "quick_exit": "Quick exit",
+    "quick_exit_aria": "Leave this page immediately (ESC)",
+    "related_resources": "Related resources",
+    "report": "Report",
+    "report_aria": "Report a problem with this hotline",
+    "report_desc": "Thanks for helping keep this list accurate. Reports are reviewed by our team.",
+    "report_detail": "Details (optional)",
+    "report_options": {
+      "disconnected": "Number disconnected / no answer",
+      "wrong_number": "Wrong number",
+      "closed": "Service has shut down",
+      "unsafe": "Unsafe / harmful experience",
+      "other": "Other"
+    },
+    "report_reason": "Reason",
+    "report_submit": "Submit report",
+    "report_submitting": "Sending…",
+    "report_thanks": "Thank you. We'll review it.",
+    "report_title": "Report this hotline",
+    "reports_police_warning": "This line may contact police or emergency services without your consent.",
+    "reset_filters": "Reset filters",
+    "result_count_one": "{{count}} line",
+    "result_count_other": "{{count}} lines",
+    "reveal_aria": "Click anywhere to show the page again",
+    "rights_by_country": "LGBTQ+ rights by country",
+    "safety_plan_desc": "A short written plan you can pull up when things get bad — your warning signs, coping steps, people to call, and reasons to live.",
+    "safety_plan_link": "Open template (Stanley-Brown)",
+    "safety_plan_title": "Safety plan",
+    "save": "Save hotline",
+    "saved_hotlines": "Your saved hotlines",
+    "saved_lines": "Kept lines",
+    "scope_all": "Showing lines from every country we have.",
+    "scope_change": "Change",
+    "scope_dialog_desc": "Lines are listed by the country they serve. International directories stay listed whichever you pick.",
+    "scope_dialog_title": "Choose a country",
+    "scope_prefix": "Showing lines for",
+    "search_placeholder": "Search hotlines...",
+    "self_help_desc": "Short techniques you can use while you wait, or instead of a call if you're not ready.",
+    "self_help_title": "Steady yourself",
+    "self_help_trigger": "Not ready to talk?",
+    "subtitle": "You are not alone. Find immediate support here.",
+    "support_orgs": "Support organizations",
+    "support_orgs_body": "Community centres and advocacy groups that offer in-person support.",
+    "tell_us": "Tell us about it",
+    "title": "Help & Crisis Hotlines",
     "topic": {
       "general": "General",
       "crisis": "Crisis",
@@ -1612,7 +1735,13 @@
       "legal": "Legal",
       "relationships": "Relationships",
       "women": "Women"
-    }
+    },
+    "unkeep": "Stop keeping this line",
+    "unsave": "Remove from saved",
+    "verified_on": "Verified",
+    "visit_site": "Open their website",
+    "website": "Website",
+    "see_all_lines": "See every line we have"
   },
   "sos": {
     "button": "SOS",
@@ -2640,145 +2769,6 @@
       "queerOwned": "Queer-owned",
       "tags_one": "{{count}} tag",
       "tags_other": "{{count}} tags"
-    }
-  },
-  "resources": {
-    "hero": {
-      "eyebrow": "Support",
-      "title": "Help & resources.",
-      "lede": "Crisis support, practical guides, and the people and organisations behind them."
-    },
-    "errorLoading": "Something went wrong while loading resources. Please try again later.",
-    "disclosure": "Browse all topics & search",
-    "disclosureAria": "Browse all topics, search and advanced filters",
-    "browseAllTopics": "Browse all topics",
-    "professions": {
-      "title": "Professions",
-      "description": "Browse LGBTQ+ personalities by profession",
-      "back": "Back"
-    },
-    "category": {
-      "back": "Back",
-      "viewAll": "View all →",
-      "comingSoon": "Coming soon",
-      "tagCount": "{{count}} tags",
-      "tagCountTotal": "{{count}} tags total (across all subcategories)",
-      "tagCountTotalAria": "{{count}} tags total across all subcategories",
-      "totalChildHint": "Each subcategory's count is the number of tags directly assigned to it",
-      "supportNewsAlert": "Need immediate help? Browse our crisis hotlines directory.",
-      "crisisHotlines": "Crisis Hotlines",
-      "emptyTitle": "No tags in this category yet",
-      "emptyDescription": "Check back soon — this bucket is being filled.",
-      "subcategoryEmptyTitle": "No tags here yet",
-      "subcategoryEmptyDescription": "This subcategory is being populated."
-    },
-    "crisis": {
-      "heading": "Crisis & safety",
-      "badge": "Free, anonymous",
-      "chooseCountryAria": "Choose country",
-      "callEmergencyPrefix": "In immediate danger? Call ",
-      "callEmergencySuffix": " ({{country}}).",
-      "callEmergencySuffixInt": ".",
-      "noLocal": "No {{country}} hotlines indexed yet — showing international.",
-      "callAria": "Call {{name}} at {{phone}}",
-      "noHotlinesLoaded": "No hotlines loaded yet.",
-      "listAria": "Crisis hotlines",
-      "seeAll": "See all hotlines"
-    },
-    "topicHubs": {
-      "heading": "Topic hubs"
-    },
-    "topic": {
-      "back": "Resources",
-      "notFound": "Topic not found",
-      "backToResources": "Back to resources",
-      "metaSuffix": "Resources",
-      "metaNotFound": "Topic not found",
-      "stats": "{{guides}} guides · {{orgs}} orgs · {{news}} articles",
-      "guidesHeading": "Guides",
-      "guidesEmpty": "No guides published yet for this topic.",
-      "orgsHeading": "Organisations",
-      "orgsEmpty": "No organisations indexed for this topic yet.",
-      "newsHeading": "Recent news",
-      "newsEmpty": "No recent articles tagged for this topic.",
-      "moreTopics": "More topics"
-    },
-    "orgs": {
-      "heading": "Support organisations",
-      "filterAria": "Filter organisations by country",
-      "noLocal": "No organisations in {{country}} indexed yet — showing global.",
-      "browseAll": "Browse all organisations",
-      "emptyPrefix": "No support organisations indexed yet. Submit one via the Chrome extension or ",
-      "emptyLink": "get in touch",
-      "emptySuffix": "."
-    },
-    "filter": {
-      "searchPlaceholder": "Search tags, categories, descriptions…",
-      "searchAria": "Search resources",
-      "filterAria": "Filter by category",
-      "categoryPlaceholder": "Category",
-      "allCategories": "All Categories",
-      "sortAria": "Sort by",
-      "sortPlaceholder": "Sort by",
-      "sortMostUsed": "Most used",
-      "sortAlphabetical": "Alphabetical",
-      "sortNewest": "Newest",
-      "advanced": "Advanced",
-      "usageAria": "Filter by usage",
-      "usagePlaceholder": "Usage",
-      "usageAll": "All Tags",
-      "usageUsed": "Used",
-      "usageUnused": "Unused",
-      "hasImage": "Has Image",
-      "hasImageTitle": "Only show tags with images",
-      "sortDirAsc": "Sort direction (ascending)",
-      "sortDirDesc": "Sort direction (descending)",
-      "active": "Active:",
-      "clearAll": "Clear all",
-      "view": {
-        "chips": "Chips",
-        "grid": "Grid",
-        "list": "List",
-        "ariaSuffix": " view"
-      },
-      "graph": "Tag relationship graph"
-    },
-    "search": {
-      "resultsHeading": "Search results",
-      "categoryTagsHeading": "{{category}} tags",
-      "filteredHeading": "Filtered tags",
-      "countBadge": "{{visible}} of {{total}}",
-      "countAria": "{{count}} matching tags",
-      "showMore": "Show {{count}} more",
-      "empty": {
-        "title": "No results",
-        "description": "Try a broader query or clearing your filters."
-      }
-    },
-    "tagNotFound": {
-      "title": "Tag not found",
-      "bodyPrefix": "We couldn't find a tag matching ",
-      "browse": "Browse all resources"
-    },
-    "tagDetail": {
-      "breadcrumbHome": "Tags",
-      "noDefinition": "No definition yet for this term.",
-      "tableOfContents": "Contents",
-      "seeAlso": "See also",
-      "hierarchy": "In the taxonomy",
-      "broader": "Broader",
-      "narrower": "More specific",
-      "related": "Related",
-      "alsoKnownAs": "Also known as",
-      "sensitiveContentTitle": "Sensitive topic",
-      "sensitiveContentBody": "This topic may contain sensitive content. If you need support, visit our crisis hotlines page.",
-      "readOnWikipedia": "Read on Wikipedia",
-      "viewAsGraph": "View as graph",
-      "searchTagged": "Search everything tagged {{name}}"
-    },
-    "graph": {
-      "title": "Tag Relationship Graph",
-      "description": "See how tags relate by semantic similarity and co-occurrence"
     }
   },
   "cities": {
@@ -4082,6 +4072,141 @@
       "support": {
         "title": "Support us",
         "desc": "Keep the platform free for everyone."
+      }
+    }
+  },
+  "tags": {
+    "meta": {
+      "title": "LGBTQ+ glossary",
+      "categoryTitle": "{{name}} — LGBTQ+ glossary",
+      "description": "Browse and search {{count}} LGBTQ+ terms — identities, practices, history and community language, each linked to the venues, events, people and news that use it."
+    },
+    "hero": {
+      "eyebrow": "Glossary",
+      "title": "The glossary",
+      "lede": "Every word the guide uses, defined — and everything tagged with it.",
+      "legend": "{{terms}} terms · {{lines}} lines · {{stops}} stops"
+    },
+    "stats": {
+      "kicker": "The corpus",
+      "terms": "Terms",
+      "lines": "Lines",
+      "stops": "Stops",
+      "illustrated": "Illustrated"
+    },
+    "rail": {
+      "label": "Topic lines",
+      "all": "All terms",
+      "expandAria": "Show stops on {{line}}",
+      "collapseAria": "Hide stops on {{line}}"
+    },
+    "spine": {
+      "searchLabel": "Search the glossary",
+      "searchPlaceholder": "Search terms, or a synonym"
+    },
+    "view": {
+      "label": "Display",
+      "grid": "Grid",
+      "list": "List",
+      "chips": "Chips",
+      "graph": "Graph"
+    },
+    "sort": {
+      "label": "Sort",
+      "usage": "Most used",
+      "alphabetical": "A–Z",
+      "recent": "Newest",
+      "dirAsc": "Ascending — switch to descending",
+      "dirDesc": "Descending — switch to ascending"
+    },
+    "filter": {
+      "used": "In use",
+      "unused": "Unused",
+      "withImage": "Illustrated",
+      "reset": "Reset filters",
+      "includeAdult": "Include 18+ terms"
+    },
+    "letters": {
+      "label": "Jump to a letter",
+      "all": "All",
+      "other": "Numbers and other scripts",
+      "jump": "Terms starting with {{letter}}"
+    },
+    "alias": {
+      "heading": "Also found under other names",
+      "description": "These match a synonym or a close spelling rather than the term itself.",
+      "badge": "alias"
+    },
+    "card": {
+      "uses": "{{count}} uses"
+    },
+    "count": "{{count}} terms",
+    "showMore": "Show {{count}} more",
+    "searching": "Searching…",
+    "loading": "Loading the glossary",
+    "error": "The glossary is down",
+    "retry": "Try again",
+    "empty": {
+      "title": "No terms match.",
+      "description": "Try a broader letter, line, or search."
+    },
+    "category": {
+      "lede": "Every term filed under {{name}}."
+    },
+    "endOfLine": {
+      "eyebrow": "End of line",
+      "title": "Looking for something else?",
+      "body": "The glossary defines the words. These are the places that use them.",
+      "helpCta": "Crisis lines and support",
+      "orgsCta": "Organisations",
+      "guidesCta": "Guides"
+    },
+    "detail": {
+      "loading": "Loading",
+      "about": "About",
+      "sections": "Sections",
+      "noDefinition": "No definition has been written for this term yet.",
+      "interchangeEyebrow": "Interchange",
+      "interchangeTitle": "In the taxonomy",
+      "inTaxonomy": "In the taxonomy",
+      "changeHereFor": "Change here for",
+      "contentNote": "Content note",
+      "contentNoteBody": "This entry covers a subject some readers find difficult. Nothing here is graphic, and the page is a definition, not advice.",
+      "findSupport": "Find support",
+      "whereItAppears": "Where it appears",
+      "elsewhere": "Elsewhere",
+      "readThere": "Read",
+      "editors": "Queer Guide editors",
+      "factLine": "Line",
+      "factTagged": "Tagged on",
+      "venues": "Venues",
+      "venuesNote": "{{count}} tagged",
+      "events": "Events",
+      "eventsNote": "{{count}} tagged",
+      "people": "People",
+      "peopleNote": "{{count}} tagged",
+      "news": "News",
+      "newsNote": "{{count}} articles",
+      "newsNoteMore": "{{shown}} of {{count}} articles",
+      "villages": "Queer villages",
+      "shop": "Shop",
+      "communities": "Communities",
+      "everythingTagged": "Everything tagged {{name}}",
+      "everythingTaggedBody": "{{count}} items across the guide carry this tag.",
+      "searchTagged": "Search everything tagged {{name}}",
+      "moreOnThisLine": "More on this line",
+      "notFound": {
+        "title": "No such term",
+        "body": "Nothing in the glossary is filed under",
+        "browse": "Browse the glossary"
+      },
+      "alias": {
+        "synonym": "Also called",
+        "abbreviation": "Short for",
+        "plural": "Plural",
+        "misspelling": "Common misspelling",
+        "historical": "Historically",
+        "slang": "Slang"
       }
     }
   }

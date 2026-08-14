@@ -62,6 +62,16 @@ function setJsonLd(data: Record<string, unknown> | Record<string, unknown>[]): v
 export function useMeta(options: MetaOptions = {}): void {
   const { pathname } = useLocation();
 
+  // Serialized so the effect can depend on the CONTENT of jsonLd rather than
+  // the object identity, which is fresh on every render and would loop.
+  //
+  // Without this dep, `jsonLd` was captured on the first render and never
+  // updated — so any page building it from fetched data published the
+  // placeholder it had before the fetch resolved. On /help that meant the
+  // EmergencyService block never once carried a telephone number: it was
+  // computed while the hotline list was still empty.
+  const jsonLdKey = options.jsonLd ? JSON.stringify(options.jsonLd) : '';
+
   useEffect(() => {
     const {
       title,
@@ -128,5 +138,12 @@ export function useMeta(options: MetaOptions = {}): void {
       document.querySelectorAll('script[data-meta-jsonld]').forEach((el) => el.remove());
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pathname, options.title, options.description, options.canonicalPath, options.noIndex]);
+  }, [
+    pathname,
+    options.title,
+    options.description,
+    options.canonicalPath,
+    options.noIndex,
+    jsonLdKey,
+  ]);
 }

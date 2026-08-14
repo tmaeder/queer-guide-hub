@@ -4,9 +4,8 @@
  */
 
 import { useState } from 'react';
-import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useTranslation } from 'react-i18next';
-import { Flag} from 'lucide-react';
+import { Flag } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -124,13 +123,14 @@ export function ReportHotline({ hotlineId }: { hotlineId: string }) {
             <Button variant="ghost" onClick={() => setOpen(false)} disabled={submitting}>
               {t('common.cancel', 'Cancel')}
             </Button>
+            {/* No TrackLoader: every one of its `track` values is a track
+                colour, and those are banned on /help. A text state is also
+                simply clearer than a spinner for a one-shot submit. */}
             <Button onClick={submit} disabled={submitting}>
-              {submitting ? (
-                <TrackLoader size={14} className="mr-2" />
-              ) : (
-                <Flag size={14} className="mr-2" />
-              )}
-              {t('help.report_submit', 'Submit report')}
+              <Flag size={14} className="mr-2" />
+              {submitting
+                ? t('help.report_submitting', 'Sending…')
+                : t('help.report_submit', 'Submit report')}
             </Button>
           </DialogFooter>
         )}

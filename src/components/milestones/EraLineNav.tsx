@@ -55,7 +55,7 @@ export function EraLineNav({ counts }: { counts: Map<string, number> | undefined
         </h2>
 
         {/* Stage height has to clear BOTH lanes: a plate is ~120px tall (p-4 +
-            range line + a two-line Anton title + the count) and sits 24px off
+            range line + a two-line rank-4 title + the count) and sits 24px off
             the line, so the below-lane needs 50% + 24 + 120 to stay inside the
             band. 240px clipped it into the next section. */}
         <div className="relative mt-6 lg:mt-10 lg:h-[340px]">
@@ -196,7 +196,7 @@ function EraStation({
         )}
       >
         <span className="text-2xs uppercase tracking-label opacity-70">{eraRangeLabel(era)}</span>
-        <span className="min-w-0 flex-1 truncate font-display text-title lg:line-clamp-2 lg:whitespace-normal">
+        <span className="min-w-0 flex-1 truncate text-title font-bold lg:line-clamp-2 lg:whitespace-normal">
           {label}
         </span>
         {count != null && <span className="shrink-0 text-13 font-bold tabular-nums">{count}</span>}

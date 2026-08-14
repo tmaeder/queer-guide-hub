@@ -717,12 +717,12 @@
       }
     },
     "discover": {
-      "title": "Открыть места",
-      "button": "Открыть маркетплейс",
+      "title": "Построить маршрут",
+      "button": "Построить маршрут",
       "eyebrow": "Real travelers",
       "subtitle": "Real itineraries from QG travelers — copy ideas, find queer-friendly stops, plan your own.",
       "searchPlaceholder": "Filter by city…",
-      "aria": "Discover public trips",
+      "aria": "Построить маршрут по реальным городам",
       "sortAria": "Sort trips",
       "viewAria": "View mode",
       "filterAria": "Filter trips",
@@ -802,7 +802,81 @@
       "signalsAria": "Trip activity",
       "forkCount": "{{count}} forks",
       "saveCount": "{{count}} saves",
-      "filtersButton": "Filters"
+      "filtersButton": "Filters",
+      "meta": {
+        "title": "Построить маршрут | Queer Guide",
+        "description": "Выберите настроение, сезон и темп. Получите маршрут по реальным городам с количеством мест, правовым статусом и тем, что там происходит во время поездки."
+      },
+      "eyebrowRoute": "Конструктор маршрута",
+      "titleRoute": "Три города. Одна линия.",
+      "ledeRoute": "Скажите, что вам нужно и как быстро вы перемещаетесь. Мы проведём линию через реальные города — с количеством мест, правовым статусом и тем, что там происходит во время поездки.",
+      "picker": {
+        "heading": "Задайте линию",
+        "hint": "Выберите настроение, сезон и темп. Линия перерисуется.",
+        "vibeGroup": "Что вам нужно",
+        "seasonGroup": "Когда",
+        "paceGroup": "Как быстро",
+        "stationCount": "станций: {{count}}",
+        "stopCount": "остановок: {{count}}",
+        "tooFew": "всего {{count}} станций",
+        "thin": "станций: {{count}}, ни одна не рядом настолько, чтобы собрать линию",
+        "vibe": {
+          "nightlife": "Ночная жизнь",
+          "sauna": "Сауна",
+          "slow": "Неспешные утра",
+          "community": "Сообщество",
+          "outdoors": "На природе"
+        },
+        "season": {
+          "now": "Скоро",
+          "autumn": "Осень",
+          "winter": "Зима",
+          "pride": "Сезон прайдов"
+        },
+        "pace": {
+          "slow": "Не спеша",
+          "steady": "Ровно",
+          "sprint": "Охватить больше"
+        }
+      },
+      "route": {
+        "heading": "Ваша линия",
+        "reroll": "Построить другую",
+        "summary": "остановок: {{stops}} · {{km}} км · стран: {{countries}}",
+        "snapped": "Старт в {{km}} км от {{name}} — ближайший город, по которому у нас достаточно данных.",
+        "short": "В этой линии {{delivered}} остановок, а не {{requested}}. Подходящих городов: {{eligible}}, остальные дальше, чем позволяет этот темп.",
+        "announced": "Линия построена: {{stations}}. Остановок: {{count}}.",
+        "stopsAria": "Остановки этой линии, по порядку",
+        "stopAria": "Остановка {{n}}: {{city}}, {{country}}",
+        "swapStopAria": "Заменить остановку {{n}}, {{city}}",
+        "tripTitle": "Линия {{cities}}"
+      },
+      "station": {
+        "venues": "мест: {{count}}"
+      },
+      "loading": {
+        "pool": "Загружаем список станций",
+        "slow": "Всё ещё работаем. Индекс городов сейчас отвечает медленно."
+      },
+      "degraded": {
+        "none": "Под эти условия не подходит ни один город.",
+        "title": "Подходит только {{count}} городов.",
+        "body": "Линии нужны три остановки. Снимите один фильтр, чтобы расширить её.",
+        "terminus": "Ближайший вариант — {{name}}, в {{km}} км: дальше, чем позволяет этот темп.",
+        "clearVibe": "Любое настроение",
+        "goFurther": "Охватить больше"
+      },
+      "error": {
+        "title": "Не удалось создать поездку",
+        "poolTitle": "Список станций не загрузился.",
+        "retry": "Попробовать снова"
+      },
+      "cta": {
+        "heading": "Поехали по этой линии.",
+        "body": "Превратится в вашу поездку со всеми остановками. Потом можно изменить что угодно.",
+        "primary": "Сделать поездкой",
+        "secondary": "Построить другую"
+      }
     },
     "polls": {
       "createdToast": "Poll created",
@@ -1031,6 +1105,15 @@
       "openThread": "Проверить в чате",
       "forwardHint": "[RU] Forward Booking.com, Airbnb or airline confirmations to {{address}} — they appear in your Travel Inbox, ready to add to a trip. Or paste one here to add it straight to this trip.",
       "forwardHintNoAddress": "[RU] Forward booking confirmations to your queer.guide address and they appear in your Travel Inbox. Or paste one here to add it straight to this trip."
+    },
+    "templates": {
+      "heading": "Начать с шаблона",
+      "subheading": "ЛГБТК+ маршруты как отправная точка",
+      "days": "дней: {{count}}",
+      "use": "Использовать шаблон",
+      "created": "Поездка создана",
+      "createdDescription": "Добавляйте остановки отсюда.",
+      "error": "Не удалось создать поездку"
     }
   },
   "auth": {
@@ -1498,19 +1581,19 @@
       "relationships": "Отношения",
       "women": "Женщины"
     },
-    "quick_exit": "Quick exit",
-    "quick_exit_aria": "Leave this page immediately (ESC)",
-    "hide_screen": "Hide screen",
-    "reveal_aria": "Click anywhere to show the page again",
-    "hidden_hint": "Page hidden. Click anywhere to show again.",
-    "hero_label": "Recommended right now",
-    "expect_title": "What happens when you call",
+    "quick_exit": "Быстрый выход",
+    "quick_exit_aria": "Немедленно покинуть страницу (Esc)",
+    "hide_screen": "Скрыть экран",
+    "reveal_aria": "Нажмите в любом месте, чтобы снова показать страницу",
+    "hidden_hint": "Страница скрыта. Нажмите в любом месте, чтобы показать её.",
+    "hero_label": "Рекомендуем сейчас",
+    "expect_title": "Что происходит, когда вы звоните",
     "expect_short": "What to expect",
     "expect_1": "You'll hear a short greeting. You don't have to give your name.",
     "expect_2": "You can hang up at any time. You can call back as often as you need.",
     "expect_3": "Free hotlines in DE/AT/CH don't appear on itemized phone bills.",
     "expect_4": "If you can't speak, ask for text or chat — most hotlines offer it.",
-    "self_help_trigger": "While you wait",
+    "self_help_trigger": "Пока не готовы говорить?",
     "self_help_title": "Steady yourself",
     "self_help_desc": "Short techniques you can use while you wait, or instead of a call if you're not ready.",
     "breathing_title": "4-7-8 breathing",
@@ -1528,7 +1611,7 @@
     "safety_plan_title": "Safety plan",
     "safety_plan_desc": "A short written plan you can pull up when things get bad — your warning signs, coping steps, people to call, and reasons to live.",
     "safety_plan_link": "Open template (Stanley-Brown)",
-    "report": "Report",
+    "report": "Сообщить",
     "report_aria": "Report a problem with this hotline",
     "report_title": "Report this hotline",
     "report_desc": "Thanks for helping keep this list accurate. Reports are reviewed by our team.",
@@ -1568,7 +1651,53 @@
       "closed": "Service has shut down",
       "unsafe": "Unsafe / harmful experience",
       "other": "Other"
-    }
+    },
+    "browse_support_orgs": "Все организации поддержки",
+    "browse_title": "Все линии помощи",
+    "cant_speak": "Не можете говорить?",
+    "closed_now": "Сейчас закрыто",
+    "closed_no_alt": "Эта линия сейчас закрыта, и для этой страны у нас нет других работающих линий. При непосредственной опасности звоните по экстренному номеру выше.",
+    "directories_subtitle": "Это справочники и организации-посредники — сайты, а не прямые телефонные линии.",
+    "directories_title": "Справочники и другая помощь",
+    "emergency_short": "Экстренный вызов",
+    "helping_body": "Если вы слушаете человека в кризисе: побудьте рядом, отнеситесь серьёзно к его словам и не оставляйте его одного. Вам не нужно знать ответы. Позвоните на линию вместе или позвоните сами и спросите, что делать дальше.",
+    "helping_title": "Помочь другому человеку",
+    "keep": "Сохранить линию",
+    "know_the_law": "Знайте закон",
+    "know_the_law_body": "Безопасно ли жить открыто, обращаться за медицинской помощью или заявлять о преступлении — зависит от того, где вы находитесь. Проверьте правовую ситуацию, прежде чем действовать.",
+    "link_unavailable": "Сайт сейчас недоступен — идёт повторная проверка.",
+    "loading": "Загрузка справочника…",
+    "more_support": "Другая помощь",
+    "no_country_body": "Выберите страну выше, и мы покажем подходящую линию. Все линии перечислены ниже.",
+    "no_country_title": "Не удалось определить, где вы находитесь",
+    "no_lines_body": "Если вы сейчас в опасности, звоните в экстренные службы: 112 (ЕС) или 911 (США/Канада).",
+    "no_lines_title": "Не удалось загрузить справочник",
+    "no_police_policy": "Эта линия заявляет, что никогда не обращается в полицию или экстренные службы без вашей явной просьбы.",
+    "open_always": "Круглосуточно",
+    "open_instead": "Сейчас работает другая линия",
+    "open_now": "Сейчас работает",
+    "org_coverage": "Этот справочник далеко не полон. Если здесь нет организации, которой вы доверяете, сообщите нам. Пустой результат означает, что у нас нет данных, а не что помощи не существует.",
+    "phone_only": "По нашим данным — только по телефону.",
+    "phone_only_with_site": "По нашим данным — только по телефону. На их сайте могут быть чат или электронная почта.",
+    "provenance": "Источник данных",
+    "report_submitting": "Отправка…",
+    "reports_police_warning": "Эта линия может обратиться в полицию или экстренные службы без вашего согласия.",
+    "result_count_one": "{{count}} линия",
+    "result_count_other": "{{count}} линий",
+    "rights_by_country": "Права ЛГБТК+ по странам",
+    "saved_lines": "Сохранённые линии",
+    "scope_all": "Линии из всех стран, которые у нас есть.",
+    "scope_change": "Изменить",
+    "scope_dialog_desc": "Линии сгруппированы по стране, которую они обслуживают. Международные справочники видны при любом выборе.",
+    "scope_dialog_title": "Выберите страну",
+    "scope_prefix": "Линии для страны",
+    "support_orgs": "Организации поддержки",
+    "support_orgs_body": "Общественные центры и организации, помогающие очно.",
+    "tell_us": "Сообщите нам",
+    "unkeep": "Убрать из сохранённых",
+    "visit_site": "Открыть их сайт",
+    "website": "Сайт",
+    "see_all_lines": "Показать все линии"
   },
   "sos": {
     "button": "SOS",
@@ -2600,145 +2729,6 @@
       "queerOwned": "[RU] Queer-owned",
       "tags_one": "[RU] {{count}} tag",
       "tags_other": "[RU] {{count}} tags"
-    }
-  },
-  "resources": {
-    "hero": {
-      "eyebrow": "Помощь",
-      "title": "Помощь и ресурсы.",
-      "lede": "Кризисная поддержка, практические гиды, и люди и организации, стоящие за ними."
-    },
-    "errorLoading": "Ошибка загрузки ресурсов. Попробуй позже.",
-    "disclosure": "Все темы и поиск",
-    "disclosureAria": "Все темы, поиск и расширенные фильтры",
-    "browseAllTopics": "Все темы",
-    "professions": {
-      "title": "Профессии",
-      "description": "ЛГБТК+ персоналии по профессии",
-      "back": "Назад"
-    },
-    "category": {
-      "back": "Назад",
-      "viewAll": "Смотреть все →",
-      "comingSoon": "Скоро",
-      "tagCount": "{{count}} тегов",
-      "tagCountTotal": "{{count}} тегов всего (по всем подкатегориям)",
-      "tagCountTotalAria": "{{count}} тегов всего по всем подкатегориям",
-      "totalChildHint": "Число у каждой подкатегории — это теги, назначенные напрямую",
-      "supportNewsAlert": "Нужна срочная помощь? Открой каталог кризисных линий.",
-      "crisisHotlines": "Кризисные линии",
-      "emptyTitle": "Пока нет тегов в этой категории",
-      "emptyDescription": "Загляни позже — она заполняется.",
-      "subcategoryEmptyTitle": "Пока нет тегов",
-      "subcategoryEmptyDescription": "Подкатегория заполняется."
-    },
-    "crisis": {
-      "heading": "Кризис и безопасность",
-      "badge": "Бесплатно, анонимно",
-      "chooseCountryAria": "Выбрать страну",
-      "callEmergencyPrefix": "Опасность сейчас? Звони ",
-      "callEmergencySuffix": " ({{country}}).",
-      "callEmergencySuffixInt": ".",
-      "noLocal": "Пока нет линий для {{country}} — показываем международные.",
-      "callAria": "Позвонить {{name}} по {{phone}}",
-      "noHotlinesLoaded": "Линии ещё не загружены.",
-      "listAria": "Кризисные линии",
-      "seeAll": "Все линии"
-    },
-    "topicHubs": {
-      "heading": "Темы"
-    },
-    "topic": {
-      "back": "Ресурсы",
-      "notFound": "Тема не найдена",
-      "backToResources": "К ресурсам",
-      "metaSuffix": "Ресурсы",
-      "metaNotFound": "Тема не найдена",
-      "stats": "{{guides}} гидов · {{orgs}} орг. · {{news}} статей",
-      "guidesHeading": "Гиды",
-      "guidesEmpty": "Пока нет опубликованных гидов по этой теме.",
-      "orgsHeading": "Организации",
-      "orgsEmpty": "Пока нет организаций по этой теме.",
-      "newsHeading": "Свежие новости",
-      "newsEmpty": "Пока нет свежих статей по этой теме.",
-      "moreTopics": "Ещё темы"
-    },
-    "orgs": {
-      "heading": "Организации поддержки",
-      "filterAria": "Фильтр по стране",
-      "noLocal": "Пока нет организаций в {{country}} — показываем глобальные.",
-      "browseAll": "Все организации",
-      "emptyPrefix": "Пока нет организаций поддержки. Отправь через расширение Chrome или ",
-      "emptyLink": "напиши нам",
-      "emptySuffix": "."
-    },
-    "filter": {
-      "searchPlaceholder": "Поиск тегов, категорий, описаний…",
-      "searchAria": "Поиск ресурсов",
-      "filterAria": "Фильтр по категории",
-      "categoryPlaceholder": "Категория",
-      "allCategories": "Все категории",
-      "sortAria": "Сортировка",
-      "sortPlaceholder": "Сортировка",
-      "sortMostUsed": "Популярные",
-      "sortAlphabetical": "По алфавиту",
-      "sortNewest": "Новые",
-      "advanced": "Расширенный",
-      "usageAria": "Фильтр по использованию",
-      "usagePlaceholder": "Использование",
-      "usageAll": "Все теги",
-      "usageUsed": "Используются",
-      "usageUnused": "Не используются",
-      "hasImage": "С картинкой",
-      "hasImageTitle": "Показывать только теги с картинкой",
-      "sortDirAsc": "По возрастанию",
-      "sortDirDesc": "По убыванию",
-      "active": "Активно:",
-      "clearAll": "Очистить всё",
-      "view": {
-        "chips": "Чипы",
-        "grid": "Сетка",
-        "list": "Список",
-        "ariaSuffix": " — вид"
-      },
-      "graph": "Граф связей"
-    },
-    "search": {
-      "resultsHeading": "Результаты поиска",
-      "categoryTagsHeading": "Теги {{category}}",
-      "filteredHeading": "Отфильтрованные теги",
-      "countBadge": "{{visible}} из {{total}}",
-      "countAria": "{{count}} подходящих тегов",
-      "showMore": "Показать ещё {{count}}",
-      "empty": {
-        "title": "Ничего не найдено",
-        "description": "Попробуй более широкий запрос или сбрось фильтры."
-      }
-    },
-    "tagNotFound": {
-      "title": "Тег не найден",
-      "bodyPrefix": "Тег не найден для ",
-      "browse": "Все ресурсы"
-    },
-    "tagDetail": {
-      "breadcrumbHome": "Ресурсы",
-      "noDefinition": "Пока нет описания для этого термина.",
-      "alsoKnownAs": "Также известно как",
-      "readOnWikipedia": "Читать в Википедии",
-      "searchTagged": "Искать всё с тегом {{name}}",
-      "seeAlso": "См. также",
-      "sensitiveContentBody": "Эта тема может содержать деликатный контент. Если вам нужна поддержка, посетите нашу страницу с кризисными горячими линиями.",
-      "sensitiveContentTitle": "Деликатная тема",
-      "tableOfContents": "Содержание",
-      "viewAsGraph": "Показать в виде графа",
-      "hierarchy": "[RU] In the taxonomy",
-      "broader": "[RU] Broader",
-      "narrower": "[RU] More specific",
-      "related": "[RU] Related"
-    },
-    "graph": {
-      "title": "Граф связей тегов",
-      "description": "Как теги связаны по семантическому сходству и совместной встречаемости"
     }
   },
   "cities": {
@@ -4146,6 +4136,141 @@
       "support": {
         "title": "Поддержать нас",
         "desc": "Чтобы платформа оставалась бесплатной для всех."
+      }
+    }
+  },
+  "tags": {
+    "meta": {
+      "title": "ЛГБТК+ глоссарий",
+      "categoryTitle": "{{name}} — ЛГБТК+ глоссарий",
+      "description": "Просматривайте и ищите среди {{count}} ЛГБТК+ терминов — идентичности, практики, история и язык сообщества, каждый связан с местами, событиями, людьми и новостями, где он используется."
+    },
+    "hero": {
+      "eyebrow": "Глоссарий",
+      "title": "Глоссарий",
+      "lede": "Каждое слово, которое использует гид, с объяснением — и всё, что им помечено.",
+      "legend": "Терминов: {{terms}} · линий: {{lines}} · станций: {{stops}}"
+    },
+    "stats": {
+      "kicker": "Корпус",
+      "terms": "Терминов",
+      "lines": "Линий",
+      "stops": "Станций",
+      "illustrated": "С иллюстрацией"
+    },
+    "rail": {
+      "label": "Тематические линии",
+      "all": "Все термины",
+      "expandAria": "Показать станции линии {{line}}",
+      "collapseAria": "Скрыть станции линии {{line}}"
+    },
+    "spine": {
+      "searchLabel": "Поиск по глоссарию",
+      "searchPlaceholder": "Термин или синоним"
+    },
+    "view": {
+      "label": "Вид",
+      "grid": "Плитки",
+      "list": "Список",
+      "chips": "Метки",
+      "graph": "Граф"
+    },
+    "sort": {
+      "label": "Сортировка",
+      "usage": "Чаще всего",
+      "alphabetical": "А–Я",
+      "recent": "Новые",
+      "dirAsc": "По возрастанию — переключить на убывание",
+      "dirDesc": "По убыванию — переключить на возрастание"
+    },
+    "filter": {
+      "used": "Используются",
+      "unused": "Не используются",
+      "withImage": "С иллюстрацией",
+      "reset": "Сбросить фильтры",
+      "includeAdult": "Показать термины 18+"
+    },
+    "letters": {
+      "label": "Перейти к букве",
+      "all": "Все",
+      "other": "Цифры и другие письменности",
+      "jump": "Термины на {{letter}}"
+    },
+    "alias": {
+      "heading": "Найдено под другими названиями",
+      "description": "Совпадение по синониму или близкому написанию, а не по самому термину.",
+      "badge": "синоним"
+    },
+    "card": {
+      "uses": "Использований: {{count}}"
+    },
+    "count": "Терминов: {{count}}",
+    "showMore": "Показать ещё {{count}}",
+    "searching": "Поиск…",
+    "loading": "Загрузка глоссария",
+    "error": "Глоссарий недоступен",
+    "retry": "Повторить",
+    "empty": {
+      "title": "Ничего не найдено.",
+      "description": "Попробуйте другую букву, другую линию или другой запрос."
+    },
+    "category": {
+      "lede": "Все термины в разделе «{{name}}»."
+    },
+    "endOfLine": {
+      "eyebrow": "Конечная",
+      "title": "Ищете что-то другое?",
+      "body": "Глоссарий объясняет слова. А это места, где они используются.",
+      "helpCta": "Кризисные линии и поддержка",
+      "orgsCta": "Организации",
+      "guidesCta": "Гиды"
+    },
+    "detail": {
+      "loading": "Загрузка",
+      "about": "О термине",
+      "sections": "Разделы",
+      "noDefinition": "Определение для этого термина ещё не написано.",
+      "interchangeEyebrow": "Пересадка",
+      "interchangeTitle": "В таксономии",
+      "inTaxonomy": "В таксономии",
+      "changeHereFor": "Пересадка на",
+      "contentNote": "Примечание о содержании",
+      "contentNoteBody": "Эта статья затрагивает тему, которая для некоторых читателей тяжела. Здесь нет откровенных описаний: это определение, а не совет.",
+      "findSupport": "Найти поддержку",
+      "whereItAppears": "Где встречается",
+      "elsewhere": "Другие источники",
+      "readThere": "Читать",
+      "editors": "Редакция Queer Guide",
+      "factLine": "Линия",
+      "factTagged": "Помечено в",
+      "venues": "Места",
+      "venuesNote": "помечено: {{count}}",
+      "events": "События",
+      "eventsNote": "помечено: {{count}}",
+      "people": "Люди",
+      "peopleNote": "помечено: {{count}}",
+      "news": "Новости",
+      "newsNote": "статей: {{count}}",
+      "newsNoteMore": "{{shown}} из {{count}} статей",
+      "villages": "Квир-районы",
+      "shop": "Магазин",
+      "communities": "Сообщества",
+      "everythingTagged": "Всё с меткой «{{name}}»",
+      "everythingTaggedBody": "Эту метку носят {{count}} записей гида.",
+      "searchTagged": "Искать всё с меткой «{{name}}»",
+      "moreOnThisLine": "Ещё на этой линии",
+      "notFound": {
+        "title": "Такого термина нет",
+        "body": "В глоссарии ничего нет по адресу",
+        "browse": "Открыть глоссарий"
+      },
+      "alias": {
+        "synonym": "Также называется",
+        "abbreviation": "Сокращение от",
+        "plural": "Множественное число",
+        "misspelling": "Частая ошибка",
+        "historical": "Исторически",
+        "slang": "Сленг"
       }
     }
   }

@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { cn } from '@/lib/utils';
-import { STICKY_UNDER_HEADER } from '@/components/layout/PageContainer';
+import { PAGE_BLEED, STICKY_UNDER_HEADER } from '@/components/layout/PageContainer';
 import { StationRing } from './StationRing';
 import { TRACK_BG, type Track } from './routeBulletMap';
 
@@ -20,6 +20,9 @@ interface RouteStripProps {
   className?: string;
   /** Accessible name for the nav landmark. */
   label?: string;
+  /** The reader chose a station. `pushState` fires no `hashchange`, so this is
+   *  the only signal the owner gets that navigation — not scrolling — happened. */
+  onNavigate?: (id: string) => void;
 }
 
 /**
@@ -47,6 +50,7 @@ export function RouteStrip({
   orientation = 'vertical',
   className,
   label = 'Sections',
+  onNavigate,
 }: RouteStripProps) {
   const listRef = useRef<HTMLOListElement | null>(null);
   const lineColor = track ? TRACK_BG[track] : 'bg-foreground';
@@ -78,6 +82,12 @@ export function RouteStrip({
     // Preserve history.state — react-router keeps its own key in there, and
     // dropping it desyncs the router's idea of where it is.
     window.history.pushState(window.history.state, '', `#${id}`);
+    // `pushState` deliberately fires no `hashchange`, so a listener on that
+    // event never learns about this. Without telling the owner directly, the
+    // scroll-spy would keep answering with whatever the geometry says — and a
+    // jump parks its target below the trigger line, so that is the station
+    // BEFORE the one just clicked.
+    onNavigate?.(id);
   };
 
   if (orientation === 'horizontal') {
@@ -88,14 +98,15 @@ export function RouteStrip({
            band's edge, and a bleed that follows PAGE_GUTTER at every
            breakpoint so the rule reaches the viewport edge.
 
-           The offset is the site header's PINNED height — 60px on mobile,
-           64px from md where it collapses to the one-line ink flood. A flat
-           `top-16` left a 4px slot on mobile for content to slide through, so
-           it comes from the shared `STICKY_UNDER_HEADER` constant rather than
-           a second copy of those numbers. */
+           Both geometry values come from PageContainer, which owns the page
+           frame — `PAGE_BLEED` cancels the gutter and `STICKY_UNDER_HEADER`
+           is the site header's PINNED height (60px on mobile, 64px from md
+           where it collapses to the one-line ink flood; a flat `top-16` left
+           a 4px slot on mobile for content to slide through). Restating
+           either here is how the two drift apart. */
         className={cn(
           `sticky ${STICKY_UNDER_HEADER} z-30 border-b-2 border-foreground bg-background`,
-          '-mx-4 sm:-mx-6 md:-mx-8',
+          PAGE_BLEED,
           className,
         )}
       >
@@ -182,7 +193,13 @@ export function RouteStrip({
                 </span>
                 <span
                   className={cn(
-                    'min-w-0 flex-1 px-2 py-1 text-left text-13 leading-snug transition-colors',
+                    // The active state fades an ink plate in under the label.
+                    // Mid-fade the pair measures ~3.2:1, which axe catches as a
+                    // serious contrast violation the moment a station goes
+                    // active during a scan. A reader who asked for less motion
+                    // should get the state instantly anyway — so honour the
+                    // preference and the dip cannot occur for them.
+                    'min-w-0 flex-1 px-2 py-1 text-left text-13 leading-snug transition-colors motion-reduce:transition-none',
                     s.depth === 2 && 'ml-4 text-2xs',
                     isActive
                       ? 'bg-foreground font-bold text-background'

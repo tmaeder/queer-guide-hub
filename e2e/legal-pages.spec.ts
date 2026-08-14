@@ -121,7 +121,11 @@ test.describe('Legal hub', () => {
   test('indexes the four lines in line order, with their lengths', async ({ page }) => {
     await page.goto('/legal');
     await waitForAppReady(page);
-    await page.waitForSelector('a[href$="/terms"]', { timeout: 30_000 });
+    // Wait for the index cards themselves, never for `a[href$="/terms"]` — the
+    // FOOTER carries that link on every page, so it resolves before the CMS
+    // children query does and `$$eval` then snapshots an empty grid. That is
+    // what made this test fail against a healthy production page.
+    await expect(page.locator('main a.card-lift h2')).toHaveCount(4, { timeout: 30_000 });
 
     const titles = await page.$$eval('main a.card-lift h2', (els) =>
       els.map((el) => (el.textContent ?? '').trim()),

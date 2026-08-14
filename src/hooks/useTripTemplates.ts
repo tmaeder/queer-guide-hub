@@ -26,6 +26,18 @@ export interface TripTemplate {
   cities: string;
   /** Resolved city IDs used to pre-populate trip_places after creation. */
   cityIds: string[];
+  /**
+   * Country of the FIRST resolved city. `trips.primary_city_id` and
+   * `primary_country_id` are both NOT NULL, and until 2026-08 this type carried
+   * neither — so "Use Template" sent an INSERT missing two non-nullable columns
+   * and raised 23502 on every single click, for the whole life of the feature.
+   * The unit test mocked `createTrip`, so nothing caught it.
+   *
+   * A template with no resolved city cannot supply these and is dropped rather
+   * than shipped as a button that cannot work.
+   */
+  primaryCityId: string;
+  primaryCountryId: string;
   days: number;
   currency: string;
   coverImageUrl: string | null;
@@ -75,7 +87,7 @@ const SEASONAL_POOL: SeasonalSeed[] = [
   {
     key: 'nyc-pride',
     title: 'NYC Pride & Beyond',
-    citySlugs: ['new-york-city', 'new-york'],
+    citySlugs: ['new-york'],
     cityDisplayNames: ['New York City'],
     days: 5,
     currency: 'USD',
@@ -91,16 +103,6 @@ const SEASONAL_POOL: SeasonalSeed[] = [
     currency: 'EUR',
     gradient: 'linear-gradient(135deg, #F43F5E 0%, #8B5CF6 100%)',
     months: [6, 7],
-  },
-  {
-    key: 'sao-paulo-parada',
-    title: 'São Paulo Parada',
-    citySlugs: ['sao-paulo'],
-    cityDisplayNames: ['São Paulo'],
-    days: 5,
-    currency: 'BRL',
-    gradient: 'linear-gradient(135deg, #10B981 0%, #F59E0B 100%)',
-    months: [5, 6],
   },
   // Shoulder (Sep–Nov)
   {
@@ -135,24 +137,14 @@ const SEASONAL_POOL: SeasonalSeed[] = [
   },
   // Winter sun (Dec–Mar)
   {
-    key: 'bangkok-phuket',
-    title: 'Bangkok & Phuket LGBTQ+ Explorer',
-    citySlugs: ['bangkok', 'phuket'],
-    cityDisplayNames: ['Bangkok', 'Phuket'],
+    key: 'bangkok',
+    title: 'Bangkok in the dry season',
+    citySlugs: ['bangkok'],
+    cityDisplayNames: ['Bangkok'],
     days: 10,
     currency: 'THB',
     gradient: 'linear-gradient(135deg, #10B981 0%, #6366F1 100%)',
     months: [1, 2, 3, 11, 12],
-  },
-  {
-    key: 'mykonos',
-    title: 'Mykonos Island Escape',
-    citySlugs: ['mykonos'],
-    cityDisplayNames: ['Mykonos'],
-    days: 6,
-    currency: 'EUR',
-    gradient: 'linear-gradient(135deg, #0EA5E9 0%, #6366F1 100%)',
-    months: [5, 6, 7, 8, 9],
   },
   {
     key: 'rio-carnival',
@@ -167,7 +159,7 @@ const SEASONAL_POOL: SeasonalSeed[] = [
   {
     key: 'gran-canaria-winter',
     title: 'Gran Canaria Winter Pride',
-    citySlugs: ['las-palmas-de-gran-canaria', 'maspalomas'],
+    citySlugs: ['maspalomas'],
     cityDisplayNames: ['Maspalomas'],
     days: 5,
     currency: 'EUR',
@@ -224,12 +216,15 @@ export function useTripTemplates() {
       // cities (when a home country is set) in parallel.
       const [cityRes, eventRes, prefRes] = await Promise.all([
         allSlugs.length
-          ? supabase.from('cities').select('id, name, slug, image_url').in('slug', allSlugs)
+          ? supabase
+              .from('cities')
+              .select('id, name, slug, image_url, country_id')
+              .in('slug', allSlugs)
           : Promise.resolve({ data: [], error: null }),
         supabase
           .from('events')
           .select(
-            'id, title, start_date, end_date, images, city_id, event_type, cities(id, name, image_url, countries:country_id(currency))',
+            'id, title, start_date, end_date, images, city_id, event_type, cities(id, name, image_url, country_id, countries:country_id(currency))',
           )
           .eq('is_featured', true)
           .gte('start_date', now.toISOString().slice(0, 10))
@@ -240,7 +235,7 @@ export function useTripTemplates() {
         homeCountryId
           ? supabase
               .from('cities')
-              .select('id, name, image_url, lgbt_friendly_rating, countries:country_id(currency)')
+              .select('id, name, image_url, country_id, lgbt_friendly_rating, countries:country_id(currency)')
               .eq('country_id', homeCountryId)
               .eq('is_major_city', true)
               .order('lgbt_friendly_rating', { ascending: false, nullsFirst: false })
@@ -255,15 +250,19 @@ export function useTripTemplates() {
         console.warn('[useTripTemplates] event fetch failed', eventRes.error);
       }
 
-      const citiesBySlug = new Map<
-        string,
-        { id: string; name: string; image_url: string | null }
-      >();
+      type ResolvedCity = {
+        id: string;
+        name: string;
+        image_url: string | null;
+        country_id: string | null;
+      };
+      const citiesBySlug = new Map<string, ResolvedCity>();
       for (const c of cityRes.data ?? []) {
         citiesBySlug.set(c.slug, {
           id: c.id,
           name: c.name,
           image_url: c.image_url,
+          country_id: c.country_id,
         });
       }
 
@@ -279,18 +278,21 @@ export function useTripTemplates() {
           id: string;
           name: string;
           image_url: string | null;
+          country_id: string | null;
           countries: { currency: string | null } | null;
         } | null;
       };
       for (const raw of (eventRes.data ?? []) as unknown as EventRow[]) {
         const city = raw.cities;
-        if (!city) continue;
+        if (!city?.country_id) continue;
         const cover = raw.images?.[0] ?? city.image_url ?? null;
         eventTemplates.push({
           id: `event:${raw.id}`,
           title: raw.title,
           cities: city.name,
           cityIds: [city.id],
+          primaryCityId: city.id,
+          primaryCountryId: city.country_id,
           days: diffDays(raw.start_date, raw.end_date),
           currency: city.countries?.currency ?? 'USD',
           coverImageUrl: cover,
@@ -299,23 +301,35 @@ export function useTripTemplates() {
         });
       }
 
-      const seasonalTemplates: TripTemplate[] = seasonalSeeds.map((seed) => {
-        const resolved = seed.citySlugs
-          .map((slug) => citiesBySlug.get(slug))
-          .filter((c): c is { id: string; name: string; image_url: string | null } => !!c);
-        const cover = resolved.find((c) => c.image_url)?.image_url ?? null;
-        return {
-          id: `seasonal:${seed.key}`,
-          title: seed.title,
-          cities: seed.cityDisplayNames.join(', '),
-          cityIds: resolved.map((c) => c.id),
-          days: seed.days,
-          currency: seed.currency,
-          coverImageUrl: cover,
-          gradient: seed.gradient,
-          source: 'seasonal',
-        };
-      });
+      const seasonalTemplates: TripTemplate[] = seasonalSeeds
+        .map((seed): TripTemplate | null => {
+          const resolved = seed.citySlugs
+            .map((slug) => citiesBySlug.get(slug))
+            .filter((c): c is ResolvedCity => !!c);
+          const head = resolved.find((c) => c.country_id);
+          // A seed whose slugs resolve to nothing (or to a city with no
+          // country) produced a template with an empty cityIds array and a
+          // create button that could not populate the NOT NULL columns. Five
+          // slugs in this pool were dead — mykonos, sao-paulo, phuket,
+          // las-palmas-de-gran-canaria, new-york-city — so this was not
+          // hypothetical. Drop it rather than render a broken affordance.
+          if (!head?.country_id) return null;
+          const cover = resolved.find((c) => c.image_url)?.image_url ?? null;
+          return {
+            id: `seasonal:${seed.key}`,
+            title: seed.title,
+            cities: seed.cityDisplayNames.join(', '),
+            cityIds: resolved.map((c) => c.id),
+            primaryCityId: head.id,
+            primaryCountryId: head.country_id,
+            days: seed.days,
+            currency: seed.currency,
+            coverImageUrl: cover,
+            gradient: seed.gradient,
+            source: 'seasonal' as const,
+          };
+        })
+        .filter((tpl) => tpl !== null);
 
       // Preference tier: 1–2 cities in the user's home country (excluding
       // home city). Best-effort — failures don't block other tiers.
@@ -326,17 +340,20 @@ export function useTripTemplates() {
         id: string;
         name: string;
         image_url: string | null;
+        country_id: string | null;
         lgbt_friendly_rating: number | null;
         countries: { currency: string | null } | null;
       };
       const preferenceTemplates: TripTemplate[] = ((prefRes.data ?? []) as unknown as PrefRow[])
-        .filter((c) => c.id !== homeCityId)
+        .filter((c) => c.id !== homeCityId && !!c.country_id)
         .slice(0, 2)
         .map((c) => ({
           id: `preference:${c.id}`,
           title: `Weekend in ${c.name}`,
           cities: c.name,
           cityIds: [c.id],
+          primaryCityId: c.id,
+          primaryCountryId: c.country_id as string,
           days: 3,
           currency: c.countries?.currency ?? 'USD',
           coverImageUrl: c.image_url,

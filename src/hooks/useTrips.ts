@@ -182,6 +182,14 @@ type CreateTripInput = {
   primary_city_name?: string;
   primary_country_code?: string;
   timezone?: string;
+  /**
+   * Provenance for generated trips. /trips/discover stores the picks and the
+   * seed that produced a line (`vibe:nightlife`, `pace:steady`, `seed:41`) so a
+   * trip can be traced back to the line it came from — and so a shared line can
+   * be regenerated exactly. Both columns already exist on `public.trips`.
+   */
+  vibe_tags?: string[];
+  traveler_type?: string;
 };
 
 type UpdateTripInput = Partial<CreateTripInput> & {

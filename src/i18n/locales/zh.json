@@ -689,12 +689,12 @@
       }
     },
     "discover": {
-      "title": "发现地点",
-      "button": "浏览市场",
+      "title": "规划路线",
+      "button": "规划路线",
       "eyebrow": "Real travelers",
       "subtitle": "Real itineraries from QG travelers — copy ideas, find queer-friendly stops, plan your own.",
       "searchPlaceholder": "Filter by city…",
-      "aria": "Discover public trips",
+      "aria": "规划一条穿过真实城市的路线",
       "sortAria": "Sort trips",
       "viewAria": "View mode",
       "filterAria": "Filter trips",
@@ -774,7 +774,81 @@
       "signalsAria": "Trip activity",
       "forkCount": "{{count}} forks",
       "saveCount": "{{count}} saves",
-      "filtersButton": "Filters"
+      "filtersButton": "Filters",
+      "meta": {
+        "title": "规划路线 | Queer Guide",
+        "description": "选择氛围、季节和节奏，生成一条串联真实城市的路线，附带场所数量、法律状况以及你在时正在举办的活动。"
+      },
+      "eyebrowRoute": "路线生成器",
+      "titleRoute": "三座城市。一条线。",
+      "ledeRoute": "告诉我们你想要什么、走得多快。我们为你画一条穿过真实城市的线，附带场所数量、法律状况，以及你在时正在举办的活动。",
+      "picker": {
+        "heading": "设定这条线",
+        "hint": "选择氛围、季节和节奏，线路会重新绘制。",
+        "vibeGroup": "你想要什么",
+        "seasonGroup": "什么时候",
+        "paceGroup": "多快",
+        "stationCount": "{{count}} 个站点",
+        "stopCount": "{{count}} 站",
+        "tooFew": "仅 {{count}} 个站点",
+        "thin": "{{count}} 个站点，没有足够接近的可以连成一条线",
+        "vibe": {
+          "nightlife": "夜生活",
+          "sauna": "桑拿",
+          "slow": "慢早晨",
+          "community": "社群",
+          "outdoors": "户外"
+        },
+        "season": {
+          "now": "近期",
+          "autumn": "秋季",
+          "winter": "冬季",
+          "pride": "骄傲季"
+        },
+        "pace": {
+          "slow": "慢慢来",
+          "steady": "平稳",
+          "sprint": "多走几地"
+        }
+      },
+      "route": {
+        "heading": "你的线路",
+        "reroll": "再画一条",
+        "summary": "{{stops}} 站 · {{km}} 公里 · {{countries}} 个国家",
+        "snapped": "起点距 {{name}} {{km}} 公里，这是我们资料足够的最近城市。",
+        "short": "这条线是 {{delivered}} 站，不是 {{requested}} 站。有 {{eligible}} 座城市符合条件，其余的距离超出了这个节奏能走的范围。",
+        "announced": "线路已生成：{{stations}}。共 {{count}} 站。",
+        "stopsAria": "本线路的站点，按顺序",
+        "stopAria": "第 {{n}} 站：{{city}}，{{country}}",
+        "swapStopAria": "更换第 {{n}} 站，{{city}}",
+        "tripTitle": "{{cities}} 线"
+      },
+      "station": {
+        "venues": "{{count}} 个场所"
+      },
+      "loading": {
+        "pool": "正在加载站点列表",
+        "slow": "仍在处理。城市索引目前较慢。"
+      },
+      "degraded": {
+        "none": "没有城市符合这些选择。",
+        "title": "只有 {{count}} 座城市符合。",
+        "body": "一条线需要三站。取消一项选择可以放宽范围。",
+        "terminus": "最近的是 {{name}}，{{km}} 公里外，超出了这个节奏能走的范围。",
+        "clearVibe": "不限氛围",
+        "goFurther": "走得更远"
+      },
+      "error": {
+        "title": "无法创建行程",
+        "poolTitle": "站点列表未能加载。",
+        "retry": "重试"
+      },
+      "cta": {
+        "heading": "就走这条线。",
+        "body": "会变成属于你的行程，所有站点都已加入。之后你可以随意修改。",
+        "primary": "生成行程",
+        "secondary": "再画一条"
+      }
     },
     "polls": {
       "createdToast": "Poll created",
@@ -999,6 +1073,15 @@
       "openThread": "在聊天中核对",
       "forwardHint": "[ZH] Forward Booking.com, Airbnb or airline confirmations to {{address}} — they appear in your Travel Inbox, ready to add to a trip. Or paste one here to add it straight to this trip.",
       "forwardHintNoAddress": "[ZH] Forward booking confirmations to your queer.guide address and they appear in your Travel Inbox. Or paste one here to add it straight to this trip."
+    },
+    "templates": {
+      "heading": "从模板开始",
+      "subheading": "可作为起点的 LGBTQ+ 行程",
+      "days": "{{count}} 天",
+      "use": "使用模板",
+      "created": "行程已创建",
+      "createdDescription": "从这里添加你的站点。",
+      "error": "无法创建行程"
     }
   },
   "auth": {
@@ -1466,19 +1549,19 @@
       "relationships": "关系",
       "women": "女性"
     },
-    "quick_exit": "Quick exit",
-    "quick_exit_aria": "Leave this page immediately (ESC)",
-    "hide_screen": "Hide screen",
-    "reveal_aria": "Click anywhere to show the page again",
-    "hidden_hint": "Page hidden. Click anywhere to show again.",
-    "hero_label": "Recommended right now",
-    "expect_title": "What happens when you call",
+    "quick_exit": "快速离开",
+    "quick_exit_aria": "立即离开此页面（Esc 键）",
+    "hide_screen": "隐藏页面",
+    "reveal_aria": "点击任意位置可重新显示页面",
+    "hidden_hint": "页面已隐藏。点击任意位置可重新显示。",
+    "hero_label": "当前推荐",
+    "expect_title": "打电话时会发生什么",
     "expect_short": "What to expect",
     "expect_1": "You'll hear a short greeting. You don't have to give your name.",
     "expect_2": "You can hang up at any time. You can call back as often as you need.",
     "expect_3": "Free hotlines in DE/AT/CH don't appear on itemized phone bills.",
     "expect_4": "If you can't speak, ask for text or chat — most hotlines offer it.",
-    "self_help_trigger": "While you wait",
+    "self_help_trigger": "还没准备好开口？",
     "self_help_title": "Steady yourself",
     "self_help_desc": "Short techniques you can use while you wait, or instead of a call if you're not ready.",
     "breathing_title": "4-7-8 breathing",
@@ -1496,7 +1579,7 @@
     "safety_plan_title": "Safety plan",
     "safety_plan_desc": "A short written plan you can pull up when things get bad — your warning signs, coping steps, people to call, and reasons to live.",
     "safety_plan_link": "Open template (Stanley-Brown)",
-    "report": "Report",
+    "report": "举报",
     "report_aria": "Report a problem with this hotline",
     "report_title": "Report this hotline",
     "report_desc": "Thanks for helping keep this list accurate. Reports are reviewed by our team.",
@@ -1536,7 +1619,53 @@
       "closed": "Service has shut down",
       "unsafe": "Unsafe / harmful experience",
       "other": "Other"
-    }
+    },
+    "browse_support_orgs": "查看所有支持机构",
+    "browse_title": "浏览全部求助热线",
+    "cant_speak": "不方便说话？",
+    "closed_now": "当前休息",
+    "closed_no_alt": "该热线现在不在服务时间，本国也没有其他正在开放的热线。如有紧急危险，请拨打上方的紧急号码。",
+    "directories_subtitle": "这些是转介机构和名录——是网站，而不是可直接通话的热线。",
+    "directories_title": "名录与其他支持",
+    "emergency_short": "紧急电话",
+    "helping_body": "如果你正在陪伴一个处于危机中的人：留在他身边，认真对待他所说的话，不要让他独自一人。你不需要知道所有答案。可以一起拨打热线，也可以自己打电话询问接下来该怎么做。",
+    "helping_title": "帮助他人",
+    "keep": "收藏该热线",
+    "know_the_law": "了解当地法律",
+    "know_the_law_body": "能否安全地公开身份、就医或报警，取决于你所在的地方。采取行动前请先了解当地的法律状况。",
+    "link_unavailable": "该网站暂时无法访问，正在重新核查。",
+    "loading": "正在加载名录…",
+    "more_support": "更多支持",
+    "no_country_body": "在上方选择国家，我们会显示最合适的热线。下方列出了我们收录的全部热线。",
+    "no_country_title": "我们无法确定你所在的位置",
+    "no_lines_body": "如果你此刻身处危险，请拨打紧急电话：112（欧盟）或 911（美国/加拿大）。",
+    "no_lines_title": "无法加载名录",
+    "no_police_policy": "该热线明确承诺，未经你本人明确请求，绝不联系警方或急救服务。",
+    "open_always": "24 小时全天开放",
+    "open_instead": "现在可联系的其他热线",
+    "open_now": "现在开放",
+    "org_coverage": "这份名录远未覆盖所有地区。如果缺少你信任的机构，请告诉我们。结果为空只说明我们没有收录，并不代表没有帮助。",
+    "phone_only": "据我们掌握的信息，仅提供电话服务。",
+    "phone_only_with_site": "据我们掌握的信息，仅提供电话服务。其网站上可能有在线聊天或电子邮件。",
+    "provenance": "信息来源",
+    "report_submitting": "正在提交…",
+    "reports_police_warning": "该热线可能在未经你同意的情况下联系警方或急救服务。",
+    "result_count_one": "{{count}} 条",
+    "result_count_other": "{{count}} 条",
+    "rights_by_country": "各国 LGBTQ+ 权利",
+    "saved_lines": "已收藏的热线",
+    "scope_all": "显示我们收录的所有国家的热线。",
+    "scope_change": "更改",
+    "scope_dialog_desc": "热线按其服务的国家排列。无论选择哪个国家，国际名录都会保持显示。",
+    "scope_dialog_title": "选择国家",
+    "scope_prefix": "所在国家：",
+    "support_orgs": "支持机构",
+    "support_orgs_body": "提供面对面支持的社群中心和公益组织。",
+    "tell_us": "告诉我们",
+    "unkeep": "取消收藏",
+    "visit_site": "打开其网站",
+    "website": "网站",
+    "see_all_lines": "查看所有热线"
   },
   "sos": {
     "button": "SOS",
@@ -2564,145 +2693,6 @@
       "queerOwned": "[ZH] Queer-owned",
       "tags_one": "[ZH] {{count}} tag",
       "tags_other": "[ZH] {{count}} tags"
-    }
-  },
-  "resources": {
-    "hero": {
-      "eyebrow": "帮助",
-      "title": "帮助与资源。",
-      "lede": "危机支援、实用指南，以及背后的人和组织。"
-    },
-    "errorLoading": "加载资源时出错，请稍后再试。",
-    "disclosure": "所有主题与搜索",
-    "disclosureAria": "所有主题、搜索与进阶筛选",
-    "browseAllTopics": "所有主题",
-    "professions": {
-      "title": "职业",
-      "description": "按职业浏览 LGBTQ+ 人物",
-      "back": "返回"
-    },
-    "category": {
-      "back": "返回",
-      "viewAll": "查看全部 →",
-      "comingSoon": "即将上线",
-      "tagCount": "{{count}} 个标签",
-      "tagCountTotal": "共 {{count}} 个标签（所有子分类）",
-      "tagCountTotalAria": "所有子分类共 {{count}} 个标签",
-      "totalChildHint": "每个子分类的数字代表直接归属的标签数",
-      "supportNewsAlert": "需要立即帮助？查看精选危机热线目录。",
-      "crisisHotlines": "危机热线",
-      "emptyTitle": "此分类暂无标签",
-      "emptyDescription": "稍后再来 — 正在填充中。",
-      "subcategoryEmptyTitle": "此处暂无标签",
-      "subcategoryEmptyDescription": "此子分类正在填充。"
-    },
-    "crisis": {
-      "heading": "危机与安全",
-      "badge": "免费，匿名",
-      "chooseCountryAria": "选择国家",
-      "callEmergencyPrefix": "紧急危险？请拨打 ",
-      "callEmergencySuffix": "（{{country}}）。",
-      "callEmergencySuffixInt": "。",
-      "noLocal": "{{country}} 暂无收录的热线 — 显示国际热线。",
-      "callAria": "拨打 {{name}}：{{phone}}",
-      "noHotlinesLoaded": "热线尚未加载。",
-      "listAria": "危机热线",
-      "seeAll": "查看所有热线"
-    },
-    "topicHubs": {
-      "heading": "主题"
-    },
-    "topic": {
-      "back": "资源",
-      "notFound": "未找到主题",
-      "backToResources": "返回资源",
-      "metaSuffix": "资源",
-      "metaNotFound": "未找到主题",
-      "stats": "{{guides}} 篇指南 · {{orgs}} 个组织 · {{news}} 篇文章",
-      "guidesHeading": "指南",
-      "guidesEmpty": "此主题暂无发布的指南。",
-      "orgsHeading": "组织",
-      "orgsEmpty": "此主题暂无收录的组织。",
-      "newsHeading": "最新新闻",
-      "newsEmpty": "此主题暂无最新文章。",
-      "moreTopics": "更多主题"
-    },
-    "orgs": {
-      "heading": "支援组织",
-      "filterAria": "按国家筛选组织",
-      "noLocal": "{{country}} 暂无收录的组织 — 显示全球组织。",
-      "browseAll": "查看所有组织",
-      "emptyPrefix": "尚无支援组织。通过 Chrome 扩展提交，或 ",
-      "emptyLink": "联系我们",
-      "emptySuffix": "。"
-    },
-    "filter": {
-      "searchPlaceholder": "搜索标签、分类、描述…",
-      "searchAria": "搜索资源",
-      "filterAria": "按分类筛选",
-      "categoryPlaceholder": "分类",
-      "allCategories": "全部分类",
-      "sortAria": "排序方式",
-      "sortPlaceholder": "排序方式",
-      "sortMostUsed": "最常用",
-      "sortAlphabetical": "字母顺序",
-      "sortNewest": "最新",
-      "advanced": "进阶",
-      "usageAria": "按使用情况筛选",
-      "usagePlaceholder": "使用情况",
-      "usageAll": "全部标签",
-      "usageUsed": "已使用",
-      "usageUnused": "未使用",
-      "hasImage": "有图片",
-      "hasImageTitle": "只显示带图片的标签",
-      "sortDirAsc": "升序",
-      "sortDirDesc": "降序",
-      "active": "已启用：",
-      "clearAll": "全部清除",
-      "view": {
-        "chips": "标签",
-        "grid": "网格",
-        "list": "列表",
-        "ariaSuffix": "视图"
-      },
-      "graph": "标签关系图"
-    },
-    "search": {
-      "resultsHeading": "搜索结果",
-      "categoryTagsHeading": "{{category}} 标签",
-      "filteredHeading": "已筛选标签",
-      "countBadge": "{{visible}} / {{total}}",
-      "countAria": "{{count}} 个匹配标签",
-      "showMore": "再显示 {{count}} 个",
-      "empty": {
-        "title": "无结果",
-        "description": "试试更宽松的查询，或清除筛选条件。"
-      }
-    },
-    "tagNotFound": {
-      "title": "未找到标签",
-      "bodyPrefix": "未找到匹配的标签：",
-      "browse": "浏览所有资源"
-    },
-    "tagDetail": {
-      "breadcrumbHome": "资源",
-      "noDefinition": "此条目暂无定义。",
-      "alsoKnownAs": "又称",
-      "readOnWikipedia": "在维基百科上阅读",
-      "searchTagged": "搜索所有带有 {{name}} 标签的内容",
-      "seeAlso": "参见",
-      "sensitiveContentBody": "该主题可能包含敏感内容。如果你需要支持，请访问我们的危机热线页面。",
-      "sensitiveContentTitle": "敏感主题",
-      "tableOfContents": "目录",
-      "viewAsGraph": "以图谱形式查看",
-      "hierarchy": "[ZH] In the taxonomy",
-      "broader": "[ZH] Broader",
-      "narrower": "[ZH] More specific",
-      "related": "[ZH] Related"
-    },
-    "graph": {
-      "title": "标签关系图",
-      "description": "通过语义相似度和共现关系了解标签如何相互关联"
     }
   },
   "cities": {
@@ -4110,6 +4100,141 @@
       "support": {
         "title": "支持我们",
         "desc": "让平台对所有人保持免费。"
+      }
+    }
+  },
+  "tags": {
+    "meta": {
+      "title": "LGBTQ+ 词汇表",
+      "categoryTitle": "{{name}} — LGBTQ+ 词汇表",
+      "description": "浏览并搜索 {{count}} 个 LGBTQ+ 词条——身份、实践、历史与社群用语，每一条都关联着使用它的场所、活动、人物与新闻。"
+    },
+    "hero": {
+      "eyebrow": "词汇表",
+      "title": "词汇表",
+      "lede": "本指南使用的每一个词，都有解释——以及所有带这个标签的内容。",
+      "legend": "{{terms}} 个词条 · {{lines}} 条线路 · {{stops}} 个站点"
+    },
+    "stats": {
+      "kicker": "收录范围",
+      "terms": "词条",
+      "lines": "线路",
+      "stops": "站点",
+      "illustrated": "有配图"
+    },
+    "rail": {
+      "label": "主题线路",
+      "all": "全部词条",
+      "expandAria": "显示 {{line}} 的站点",
+      "collapseAria": "隐藏 {{line}} 的站点"
+    },
+    "spine": {
+      "searchLabel": "搜索词汇表",
+      "searchPlaceholder": "输入词条或同义词"
+    },
+    "view": {
+      "label": "视图",
+      "grid": "网格",
+      "list": "列表",
+      "chips": "标签",
+      "graph": "图谱"
+    },
+    "sort": {
+      "label": "排序",
+      "usage": "最常用",
+      "alphabetical": "A–Z",
+      "recent": "最新",
+      "dirAsc": "升序——切换为降序",
+      "dirDesc": "降序——切换为升序"
+    },
+    "filter": {
+      "used": "使用中",
+      "unused": "未使用",
+      "withImage": "有配图",
+      "reset": "重置筛选",
+      "includeAdult": "显示 18+ 词条"
+    },
+    "letters": {
+      "label": "跳到字母",
+      "all": "全部",
+      "other": "数字与其他文字",
+      "jump": "以 {{letter}} 开头的词条"
+    },
+    "alias": {
+      "heading": "也以其他名称找到",
+      "description": "这些匹配的是同义词或相近拼写，而非词条本身。",
+      "badge": "同义词"
+    },
+    "card": {
+      "uses": "使用 {{count}} 次"
+    },
+    "count": "{{count}} 个词条",
+    "showMore": "再显示 {{count}} 个",
+    "searching": "搜索中…",
+    "loading": "正在加载词汇表",
+    "error": "词汇表暂时无法访问",
+    "retry": "重试",
+    "empty": {
+      "title": "没有匹配的词条。",
+      "description": "换一个字母、线路或搜索词试试。"
+    },
+    "category": {
+      "lede": "归入 {{name}} 的所有词条。"
+    },
+    "endOfLine": {
+      "eyebrow": "终点站",
+      "title": "在找别的？",
+      "body": "词汇表解释这些词。而这些是使用它们的地方。",
+      "helpCta": "危机热线与支持",
+      "orgsCta": "组织",
+      "guidesCta": "指南"
+    },
+    "detail": {
+      "loading": "加载中",
+      "about": "简介",
+      "sections": "章节",
+      "noDefinition": "这个词条还没有写解释。",
+      "interchangeEyebrow": "换乘",
+      "interchangeTitle": "在分类体系中",
+      "inTaxonomy": "在分类体系中",
+      "changeHereFor": "在此换乘至",
+      "contentNote": "内容提示",
+      "contentNoteBody": "本词条涉及部分读者会感到沉重的话题。内容并不露骨，这是一则释义，而非建议。",
+      "findSupport": "寻找支持",
+      "whereItAppears": "出现在哪里",
+      "elsewhere": "外部链接",
+      "readThere": "阅读",
+      "editors": "Queer Guide 编辑部",
+      "factLine": "线路",
+      "factTagged": "被标记次数",
+      "venues": "场所",
+      "venuesNote": "{{count}} 个",
+      "events": "活动",
+      "eventsNote": "{{count}} 个",
+      "people": "人物",
+      "peopleNote": "{{count}} 位",
+      "news": "新闻",
+      "newsNote": "{{count}} 篇",
+      "newsNoteMore": "{{count}} 篇中的 {{shown}} 篇",
+      "villages": "酷儿街区",
+      "shop": "商店",
+      "communities": "社群",
+      "everythingTagged": "所有带 {{name}} 标签的内容",
+      "everythingTaggedBody": "指南中有 {{count}} 条内容带这个标签。",
+      "searchTagged": "搜索所有带 {{name}} 标签的内容",
+      "moreOnThisLine": "这条线路上的更多站点",
+      "notFound": {
+        "title": "没有这个词条",
+        "body": "词汇表中没有以下条目：",
+        "browse": "浏览词汇表"
+      },
+      "alias": {
+        "synonym": "又称",
+        "abbreviation": "缩写自",
+        "plural": "复数",
+        "misspelling": "常见误写",
+        "historical": "历史用法",
+        "slang": "俚语"
       }
     }
   }

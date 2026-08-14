@@ -1,6 +1,6 @@
 {
   "project": "tsconfig.app.json",
-  "total": 1262,
+  "total": 1257,
   "files": {
     "src/assets/intimate/pictograms.tsx": {
       "TS2503": 2
@@ -508,9 +508,6 @@
       "TS6133": 1,
       "TS7053": 2
     },
-    "src/components/resources/__tests__/ResourcesFilterBar.test.tsx": {
-      "TS2322": 1
-    },
     "src/components/score/CommunityLevelUpToast.tsx": {
       "TS2345": 1
     },
@@ -749,9 +746,7 @@
     "src/hooks/useCentralizedTags.tsx": {
       "TS2322": 8,
       "TS2345": 3,
-      "TS2352": 1,
-      "TS2365": 1,
-      "TS2538": 1
+      "TS2352": 1
     },
     "src/hooks/useCitiesDirectory.ts": {
       "TS2339": 2
@@ -1046,12 +1041,6 @@
       "TS2353": 1
     },
     "src/hooks/useTagRelationships.tsx": {
-      "TS2345": 1
-    },
-    "src/hooks/useTagSearch.ts": {
-      "TS2345": 1
-    },
-    "src/hooks/useTopicHubs.ts": {
       "TS2345": 1
     },
     "src/hooks/useTrackEvent.ts": {

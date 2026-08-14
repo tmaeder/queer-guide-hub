@@ -283,15 +283,29 @@ test.describe('design system: sanctioned ink only', () => {
   // track-colour-dense page on the site — a five-line index showing all four
   // tracks at once, plus the only sanctioned `.intersection-gradient`. If any
   // page is going to drift an unsanctioned hue in, it is this one.
+  // /tags and a tag page join the sweep with the 2026-08 glossary rebuild:
+  // both were pre-rebrand (rgba gradients, rounded containers, a lucide-only
+  // surface) and neither was in any design guard, so the whole rebuild would
+  // otherwise ship with no automated check that it stayed on-system.
   //
-  // /marketplace was added when it was rebuilt as the M line, and it had been
-  // outside this sweep entirely — which is how the app's LARGEST grid ran for
-  // months with cards that both hover-tinted and cast the hard shadow. Its
-  // only saturated fills are the M-yellow bullet, the yellow count rule and
-  // the ink-filled active department station; product photography arrives in
-  // <img>, not as a background, so it is invisible to this sweep (unlike
-  // /news, which is excluded because its category images are backgrounds).
-  const publicPages = ['/', '/events', '/venues', '/hotels', '/map', '/about', '/marketplace'];
+  // /marketplace joins it with the M-line rebuild, and it had been outside this
+  // sweep entirely — which is how the app's LARGEST grid ran for months with
+  // cards that both hover-tinted and cast the hard shadow. Its only saturated
+  // fills are the M-yellow bullet, the yellow count rule and the ink-filled
+  // active department station; product photography arrives in <img>, not as a
+  // background, so it is invisible to this sweep (unlike /news, which is
+  // excluded because its category images are backgrounds).
+  const publicPages = [
+    '/',
+    '/events',
+    '/venues',
+    '/hotels',
+    '/map',
+    '/about',
+    '/tags',
+    '/tags/lesbian',
+    '/marketplace',
+  ];
 
   // What counts as "this page has rendered its chrome".
   //

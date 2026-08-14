@@ -1,4 +1,11 @@
 # Redirect old paths to /tags (canonical)
+#
+# The topic-hub rules MUST sit above the /resources/* splat. Rules are matched
+# in file order, so with the splat first `/resources/topic/x` becomes
+# `/tags/topic/x` — a URL that no longer exists and only bounces again
+# client-side. Two hops and a soft redirect where one 301 belongs.
+/tags/topic/*  /tags  301
+/resources/topic/*  /tags  301
 /ressources  /tags  301
 /ressources/*  /tags/:splat  301
 /resources  /tags  301

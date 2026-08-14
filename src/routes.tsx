@@ -38,9 +38,9 @@ const Wishlists = lazyRetry(() => import('./pages/Wishlists'));
 const GoingOut = lazyRetry(() => import('./pages/intent/GoingOut'));
 const RightsIntent = lazyRetry(() => import('./pages/intent/Rights'));
 const RightsSources = lazyRetry(() => import('./pages/rights/RightsSources'));
-const Resources = lazyRetry(() => import('./pages/Resources'));
+const TagsIndex = lazyRetry(() => import('./pages/TagsIndex'));
+const TagDetail = lazyRetry(() => import('./pages/TagDetail'));
 const ConnectionsExplorer = lazyRetry(() => import('./pages/explore/ConnectionsExplorer'));
-const ResourceTopic = lazyRetry(() => import('./pages/resources/ResourceTopic'));
 const Personalities = lazyRetry(() => import('./pages/Personalities'));
 const PersonalityDetail = lazyRetry(() => import('./pages/PersonalityDetail'));
 // CMS-managed pages (content from cms_pages table)
@@ -820,14 +820,21 @@ export const AppRoutes = () => {
                   <Route path="africa" element={<LocalizedRedirect to="/cities" />} />
                   <Route path="quests" element={<LocalizedRedirect to="/guides?format=quest" />} />
                   <Route path="quests/:slug" element={<SlugAliasRedirect toBase="guides" />} />
-                  <Route path="tags" element={<Resources />} />
-                  <Route path="tags/topic/:slug" element={<ResourceTopic />} />
-                  <Route path="tags/c/:categorySlug" element={<Resources />} />
-                  <Route path="tags/:tagName" element={<Resources />} />
+                  <Route path="tags" element={<TagsIndex />} />
+                  {/* Same component: the category comes from the PATH. Three
+                      spellings of that filter used to coexist (?cat=, ?category=
+                      and this route); the query forms are now legacy inputs
+                      that resolve to a redirect. */}
+                  <Route path="tags/c/:categorySlug" element={<TagsIndex />} />
+                  <Route path="tags/:tagName" element={<TagDetail />} />
+                  {/* The topic hubs are gone — 8 curated tag clusters that
+                      duplicated what the taxonomy already expresses. 301'd in
+                      public/_redirects; this SPA route is the fallback. */}
+                  <Route path="tags/topic/:slug" element={<Navigate to="/tags" replace />} />
                   <Route path="professions/:professionName" element={<ProfessionDetail />} />
                   {/* Legacy redirects → /tags */}
                   <Route path="resources" element={<Navigate to="/tags" replace />} />
-                  <Route path="resources/topic/:slug" element={<ResourceTopic />} />
+                  <Route path="resources/topic/:slug" element={<Navigate to="/tags" replace />} />
                   <Route
                     path="resources/c/:categorySlug"
                     element={<Navigate to="/tags" replace />}

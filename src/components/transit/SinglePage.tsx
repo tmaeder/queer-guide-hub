@@ -70,18 +70,22 @@ export function SinglePage({
  * under one of these, so the h2 level and spacing cannot drift per page.
  */
 export function SingleSection({
+  id,
   title,
   note,
   children,
   className,
 }: {
+  /** Anchor target, so a RouteStrip station can link straight to this band
+   *  without the caller wrapping it in a div just to hold the id. */
+  id?: string;
   title: string;
   note?: string;
   children: React.ReactNode;
   className?: string;
 }) {
   return (
-    <section className={className}>
+    <section id={id} className={className}>
       <h2 className="font-display text-headline leading-tight">{title}</h2>
       {note && <p className="mt-1 text-13 leading-relaxed text-muted-foreground">{note}</p>}
       <div className="mt-4">{children}</div>

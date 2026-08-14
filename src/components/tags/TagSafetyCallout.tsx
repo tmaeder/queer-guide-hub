@@ -1,40 +1,76 @@
+/**
+ * TagSafetyCallout — a content note on a sensitive glossary term.
+ *
+ * **No `--destructive` here, deliberately.** The test the design system sets
+ * for red is "would a reader be harmed by not noticing this?" A note about a
+ * topic the reader navigated to on purpose fails it, and spending red on a
+ * definition page devalues red where it counts (the trip-safety briefing, an
+ * irreversible confirm). Weight comes from inversion instead: this is the
+ * shared one-inverted-panel idiom, ink-flooded with paper type.
+ *
+ * A sensitive tag page does NOT inherit the crisis-surface carve-out either.
+ * That carve-out is scoped by its own justification — on /help every visual
+ * distinction a reader makes is a risk judgement — and a glossary entry is
+ * wayfinding. Forking the page's colour on `is_sensitive` would also mean the
+ * tag's own bullet changed hue by data flag, which is a track colour encoding
+ * a state, banned everywhere and not just there.
+ *
+ * Two constraints DO carry over and are load-bearing: this renders
+ * synchronously (never behind a loading branch — a failed ontology or linked
+ * content fetch must not be able to blank it), and it carries no animation.
+ */
+
 import { useTranslation } from 'react-i18next';
-import { AlertTriangle } from 'lucide-react';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
 
 interface TagSafetyCalloutProps {
-  isSensitive?: boolean;
-  sensitiveTopics?: string[] | null;
+  isSensitive?: boolean | null;
+  /** `unified_tags.sensitive_topics` — was fetched but never rendered before. */
+  topics?: string[] | null;
 }
 
-export function TagSafetyCallout({ isSensitive, sensitiveTopics }: TagSafetyCalloutProps) {
-  const { t } = useTranslation();
+function humanize(topic: string): string {
+  return topic.replace(/[-_]+/g, ' ');
+}
 
-  if (!isSensitive && (!sensitiveTopics || sensitiveTopics.length === 0)) return null;
+export function TagSafetyCallout({ isSensitive, topics }: TagSafetyCalloutProps) {
+  const { t } = useTranslation();
+  if (!isSensitive) return null;
+  const list = (topics ?? []).filter(Boolean);
 
   return (
-    <div
-      className="flex gap-4 items-start rounded-element bg-muted p-4 mb-6"
-      style={{ maxWidth: 680 }}
+    <aside
       role="note"
-      aria-label={t('resources.tagDetail.sensitiveContent', 'Content note')}
+      aria-label={t('tags.detail.contentNote', 'Content note')}
+      className="border-[3px] border-foreground bg-foreground p-4 text-background"
     >
-      <AlertTriangle size={18} className="text-muted-foreground shrink-0 mt-0.5" />
-      <div className="text-sm">
-        <p className="font-medium mb-1">
-          {t('resources.tagDetail.sensitiveContentTitle', 'Content note')}
-        </p>
-        <p className="text-muted-foreground">
-          {t(
-            'resources.tagDetail.sensitiveContentBody',
-            'This topic may include sensitive content. If you need support, visit our help resources.',
-          )}
-        </p>
-        {sensitiveTopics && sensitiveTopics.length > 0 && (
-          <p className="text-muted-foreground mt-1 text-xs">
-            {sensitiveTopics.join(' · ')}
-          </p>
+      <p className="text-2xs font-bold uppercase tracking-label text-background/70">
+        {t('tags.detail.contentNote', 'Content note')}
+      </p>
+      <p className="mt-2 text-13 leading-relaxed text-background/90">
+        {t(
+          'tags.detail.contentNoteBody',
+          'This entry covers a subject some readers find difficult. Nothing here is graphic, and the page is a definition, not advice.',
         )}
-      </div>
-    </div>
+      </p>
+      {list.length > 0 && (
+        <ul className="mt-4 flex list-none flex-wrap gap-2 p-0">
+          {list.map((topic) => (
+            <li
+              key={topic}
+              className="border-2 border-background px-2 py-1 text-2xs font-bold uppercase tracking-label"
+            >
+              {humanize(topic)}
+            </li>
+          ))}
+        </ul>
+      )}
+      <LocalizedLink
+        to="/help"
+        className="mt-4 inline-block border-2 border-background px-4 py-2 text-13 font-bold text-background no-underline transition-colors hover:bg-background hover:text-foreground"
+      >
+        {t('tags.detail.findSupport', 'Find support')}
+      </LocalizedLink>
+    </aside>
   );
 }
