@@ -68,7 +68,7 @@ export function MoreLikeThisByTag({
 
   return (
     <section className={className}>
-      <h2 className="mb-4 text-title font-display">{title}</h2>
+      <h2 className="mb-4 text-title font-bold">{title}</h2>
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
         {data.map((item) => {
           const href = hrefForEntity({ type: item.type, slug: item.slug, title: item.title });

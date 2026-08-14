@@ -6,7 +6,10 @@ import {
   type AmpelTone,
   type FreigabeStufe,
 } from '@/lib/personalityStatus';
-import { useFreigabeFunnel, type FreigabeFunnel as FunnelCounts } from '@/hooks/usePersonalityFreigabe';
+import {
+  useFreigabeFunnel,
+  type FreigabeFunnel as FunnelCounts,
+} from '@/hooks/usePersonalityFreigabe';
 
 /**
  * Freigabe-Funnel — the multi-stage traffic-light ("Ampel") for newly captured
@@ -85,10 +88,10 @@ export function FreigabeFunnel({
 
   return (
     <section className="flex flex-col gap-2">
-      <h2 className="text-title font-display">Freigabeprozess</h2>
+      <h2 className="text-title font-bold">Freigabeprozess</h2>
       <p className="text-13 text-muted-foreground">
-        Ablauf neu erfasster Personen. Sichere Fälle werden nächtlich automatisch freigegeben
-        (Stufe „Freigabe bereit"); der Rest wartet in „In Prüfung" auf eine manuelle Entscheidung.
+        Ablauf neu erfasster Personen. Sichere Fälle werden nächtlich automatisch freigegeben (Stufe
+        „Freigabe bereit"); der Rest wartet in „In Prüfung" auf eine manuelle Entscheidung.
       </p>
       <div className="flex flex-col gap-4 lg:flex-row lg:items-stretch">
         {/* Forward funnel */}

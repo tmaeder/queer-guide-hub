@@ -93,7 +93,7 @@ describe('PickerLine', () => {
     const { container } = renderWithProviders(
       <PickerLine options={opts().slice(0, 3)} activeId={null} onSelect={vi.fn()} label="Pace" />,
     );
-    const list = container.querySelector('ul[role="group"]') as HTMLElement;
+    const list = container.querySelector('[role="group"]') as HTMLElement;
     expect(list.style.gridTemplateColumns).toBe('repeat(3, minmax(0, 1fr))');
   });
 
@@ -101,6 +101,16 @@ describe('PickerLine', () => {
     const { container } = renderWithProviders(
       <PickerLine options={opts().slice(0, 1)} activeId={null} onSelect={vi.fn()} label="Pace" />,
     );
-    expect(container.querySelector('ul')).toBeNull();
+    expect(container.querySelector('[role="group"]')).toBeNull();
+  });
+
+  // role="group" replaces the implicit `list` role, so <li> children would have
+  // a parent that is not a list — axe `listitem`, serious, and it shipped.
+  it('carries the group on a non-list element, so no list item is orphaned', () => {
+    const { container } = renderWithProviders(
+      <PickerLine options={opts()} activeId={null} onSelect={vi.fn()} label="Vibe" />,
+    );
+    expect(container.querySelector('[role="group"]')?.tagName).toBe('DIV');
+    expect(container.querySelectorAll('li')).toHaveLength(0);
   });
 });

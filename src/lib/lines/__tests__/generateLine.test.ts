@@ -440,3 +440,131 @@ describe('swapStation', () => {
     }
   });
 });
+
+describe('generateLine — anchor retry', () => {
+  /**
+   * The Johannesburg shape, which is what forced this behaviour.
+   *
+   * One high-affinity city with a single reachable neighbour, plus a dense
+   * cluster far away. A single-attempt anchor lands on the isolated pair
+   * (highest affinity wins the weighted pick often) and returns two stops. The
+   * pool can clearly support a four-stop line — it just does not start there.
+   */
+  const isolatedPlusCluster = () => {
+    const isolated = [
+      makeStation(90, { name: 'Isolated A', latitude: -26, longitude: 28, venueCount: 900, countryId: 'ZA' }),
+      makeStation(91, { name: 'Isolated B', latitude: -29.9, longitude: 31, venueCount: 800, countryId: 'ZA' }),
+    ];
+    // Eight cities ~220 km apart, two per country so the country cap cannot bite.
+    const cluster = Array.from({ length: 8 }, (_, i) =>
+      makeStation(i, {
+        latitude: 45 + i * 2,
+        longitude: 10,
+        venueCount: 100,
+        countryId: `cluster-${Math.floor(i / 2)}`,
+      }),
+    );
+    return [...isolated, ...cluster];
+  };
+
+  it('finds a full line where one exists instead of settling for the first anchor', () => {
+    const p = isolatedPlusCluster();
+    let full = 0;
+    for (let seed = 0; seed < 30; seed += 1) {
+      if (generateLine(p, { vibe: null, pace: 'steady', seed }).delivered === 4) full += 1;
+    }
+    // Before the retry this sat far below 30 — the isolated pair won the anchor
+    // pick often enough to answer a third of clicks with "this is not a line".
+    expect(full).toBe(30);
+  });
+
+  it('still reports a short line honestly when no anchor can do better', () => {
+    // Three reachable cities and nothing else in range: every anchor stalls.
+    const r = generateLine(pool(3), { vibe: null, pace: 'sprint', seed: 5 });
+    expect(r.delivered).toBe(3);
+    expect(r.outcome).toBe('chain_exhausted');
+    expect(r.nearestRefused === null || r.nearestRefused.km > 0).toBe(true);
+  });
+
+  it('never pads, repeats or exceeds the hop bounds while retrying', () => {
+    const p = isolatedPlusCluster();
+    for (let seed = 0; seed < 30; seed += 1) {
+      const r = generateLine(p, { vibe: null, pace: 'steady', seed });
+      expect(new Set(ids(r)).size).toBe(r.stations.length);
+      expect(r.stations.length).toBeLessThanOrEqual(r.requested);
+      for (let i = 0; i < r.stations.length - 1; i += 1) {
+        const km = haversineKm(r.stations[i], r.stations[i + 1]);
+        expect(km).toBeGreaterThanOrEqual(MIN_HOP_KM);
+        expect(km).toBeLessThanOrEqual(PACE.steady.maxHopKm);
+      }
+    }
+  });
+
+  // "Start from here" is an instruction. Quietly starting somewhere else to win
+  // a longer line is exactly the class of small lie this module exists to avoid.
+  it('does not re-anchor away from a named origin', () => {
+    const p = isolatedPlusCluster();
+    const home = p[0]; // Isolated A — deliberately a dead end
+    const r = generateLine(p, {
+      vibe: null,
+      pace: 'steady',
+      seed: 3,
+      origin: { id: home.id, name: home.name, latitude: home.latitude, longitude: home.longitude },
+    });
+    expect(r.stations[0].id).toBe(home.id);
+    expect(r.delivered).toBeLessThan(r.requested);
+  });
+
+  it('stays deterministic for a seed', () => {
+    const p = isolatedPlusCluster();
+    const a = generateLine(p, { vibe: null, pace: 'steady', seed: 77 });
+    const b = generateLine(p, { vibe: null, pace: 'steady', seed: 77 });
+    expect(ids(a)).toEqual(ids(b));
+  });
+});
+
+describe('generateLine — minimum hop survives reordering', () => {
+  /**
+   * A metro and its suburb, plus far-apart cities.
+   *
+   * The grid fixture used everywhere else cannot catch this: its cities sit on
+   * one line of latitude, so reordering for the shortest path never changes
+   * which pairs are adjacent. Real geography does — a live line came back as
+   * Washington DC → Toronto → Mississauga → Indianapolis, and Mississauga is
+   * 22 km from Toronto. The chain had checked MIN_HOP only against the previous
+   * pick, and the permutation pass then sat the two next to each other.
+   */
+  const metroAndSuburb = () => [
+    makeStation(0, { name: 'Metro', latitude: 43.65, longitude: -79.38, countryId: 'CA' }),
+    makeStation(1, { name: 'Suburb', latitude: 43.59, longitude: -79.64, countryId: 'CA' }),
+    makeStation(2, { name: 'Capital', latitude: 38.9, longitude: -77.04, countryId: 'US' }),
+    makeStation(3, { name: 'Midwest', latitude: 39.77, longitude: -86.16, countryId: 'US' }),
+    makeStation(4, { name: 'East', latitude: 42.36, longitude: -71.06, countryId: 'US2' }),
+    makeStation(5, { name: 'Lakeside', latitude: 41.88, longitude: -87.63, countryId: 'US3' }),
+  ];
+
+  it('never seats two stops closer than MIN_HOP, in any order', () => {
+    const p = metroAndSuburb();
+    for (const pace of ['slow', 'steady', 'sprint'] as PaceId[]) {
+      for (let seed = 0; seed < 40; seed += 1) {
+        const r = generateLine(p, { vibe: null, pace, seed });
+        // Every PAIR, not just consecutive ones — the ordering is free to move
+        // any of them next to any other.
+        for (let i = 0; i < r.stations.length; i += 1) {
+          for (let j = i + 1; j < r.stations.length; j += 1) {
+            const km = haversineKm(r.stations[i], r.stations[j]);
+            expect(km).toBeGreaterThanOrEqual(MIN_HOP_KM);
+          }
+        }
+      }
+    }
+  });
+
+  it('picks at most one of a metro/suburb pair', () => {
+    const p = metroAndSuburb();
+    for (let seed = 0; seed < 40; seed += 1) {
+      const names = generateLine(p, { vibe: null, pace: 'sprint', seed }).stations.map((s) => s.name);
+      expect(names.includes('Metro') && names.includes('Suburb')).toBe(false);
+    }
+  });
+});

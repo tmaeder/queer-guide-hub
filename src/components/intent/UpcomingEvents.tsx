@@ -63,7 +63,7 @@ export function UpcomingEvents({
             >
               <div className="flex items-center gap-4 px-4 py-4 transition-colors group-hover:bg-surface-container">
                 <RouteBullet type="event" size={34} />
-                <span className="min-w-0 flex-1 truncate font-display text-title leading-tight">
+                <span className="min-w-0 flex-1 truncate text-title font-bold leading-tight">
                   {e.title}
                 </span>
                 <span className="shrink-0 whitespace-nowrap text-13 tabular-nums text-muted-foreground">

@@ -17,7 +17,7 @@ export function SavedModule() {
       <SavedTab />
 
       <section className="flex flex-col gap-4">
-        <h2 className="text-title font-display">
+        <h2 className="text-title font-bold">
           {t('hub.news.savedSearches', { defaultValue: 'Saved searches' })}
         </h2>
         <NewsSavedSearchesPanel />

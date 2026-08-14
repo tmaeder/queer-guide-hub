@@ -89,7 +89,7 @@ export default function ShopIntent() {
         <ul className="list-none p-0 m-0 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {OCCASIONS.map((o) => (
             <li key={o.label} className="border-2 border-foreground p-6 rounded-container">
-              <h3 className="font-display text-title mb-1">
+              <h3 className="text-title font-bold mb-1">
                 <LocalizedLink to={o.to} className="no-underline hover:underline">
                   {o.label}
                 </LocalizedLink>
@@ -115,7 +115,7 @@ export default function ShopIntent() {
             <ul className="list-none p-0 m-0 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               {brands.map((b) => (
                 <li key={b.id} className="border-2 border-foreground p-4 rounded-container">
-                  <h3 className="font-display text-title">
+                  <h3 className="text-title font-bold">
                     {b.slug ? (
                       <LocalizedLink
                         to={`/marketplace/brands/${b.slug}`}
@@ -176,7 +176,7 @@ export default function ShopIntent() {
         <ul className="list-none p-0 m-0 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {shoppingGuides.map((g) => (
             <li key={g.id} className="border-2 border-foreground p-6 rounded-container">
-              <h3 className="font-display text-title mb-1">
+              <h3 className="text-title font-bold mb-1">
                 <LocalizedLink to={`/guides/${g.slug}`} className="no-underline hover:underline">
                   {g.title}
                 </LocalizedLink>

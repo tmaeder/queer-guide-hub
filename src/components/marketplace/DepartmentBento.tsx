@@ -100,7 +100,7 @@ export function DepartmentBento() {
                 </div>
                 <div className="flex items-end justify-between gap-2 p-4">
                   <div className="flex flex-col gap-1">
-                    <span className="font-display text-title leading-tight">
+                    <span className="text-title font-bold leading-tight">
                       {departmentLabel(tile.slug)}
                     </span>
                     <span className="text-xs2 uppercase tracking-[0.14em] text-muted-foreground">

@@ -30,7 +30,6 @@ import type { SectionDef } from '@/components/entity/editorial';
  * on arrival.
  */
 
-
 export default function GoingOut() {
   const { t } = useTranslation();
   const [params] = useSearchParams();
@@ -149,7 +148,7 @@ export default function GoingOut() {
         <ul className="list-none p-0 m-0 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {(cities ?? []).map((c) => (
             <li key={c.id} className="border-2 border-foreground p-4 rounded-container">
-              <h3 className="font-display text-title">
+              <h3 className="text-title font-bold">
                 {c.slug ? (
                   <LocalizedLink to={`/city/${c.slug}`} className="no-underline hover:underline">
                     {c.name}

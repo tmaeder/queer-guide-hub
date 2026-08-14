@@ -23,13 +23,7 @@ export interface ChecklistStep {
  * possible process and an unsafe one. A generic step list drops exactly those
  * three and keeps the prose.
  */
-export function Checklist({
-  steps,
-  className,
-}: {
-  steps: ChecklistStep[];
-  className?: string;
-}) {
+export function Checklist({ steps, className }: { steps: ChecklistStep[]; className?: string }) {
   if (steps.length === 0) return null;
 
   return (
@@ -46,7 +40,7 @@ export function Checklist({
             {i + 1}
           </span>
           <div className="min-w-0 flex-1">
-            <div className="font-display text-title leading-tight">{s.title}</div>
+            <div className="text-title font-bold leading-tight">{s.title}</div>
             {s.detail && <p className="mt-1 text-13 leading-relaxed">{s.detail}</p>}
             <div className="mt-2 flex flex-wrap gap-2">
               {s.form && (

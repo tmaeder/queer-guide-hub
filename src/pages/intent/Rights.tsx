@@ -4,15 +4,15 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useMeta } from '@/hooks/useMeta';
 import { IntentPageLayout } from '@/components/intent/IntentPageLayout';
 import { CoverageNote } from '@/components/intent/CoverageNote';
-import { useAllCountriesRightsFull, useIntentNews, type RightsCountry } from '@/hooks/useIntentData';
+import {
+  useAllCountriesRightsFull,
+  useIntentNews,
+  type RightsCountry,
+} from '@/hooks/useIntentData';
 import { summariseRightsWorldwide } from '@/lib/rights/rightsWorldSummary';
 import { RIGHT_SECTION_ORDER, RIGHT_SECTION_LABEL } from '@/lib/rights/rightsCatalog';
 import { useIntentLocation } from '@/hooks/useIntentLocation';
-import {
-  hasAnyCriminalizationSignal,
-  deathPenaltyRisk,
-  tierForScore,
-} from '@/utils/equalityScore';
+import { hasAnyCriminalizationSignal, deathPenaltyRisk, tierForScore } from '@/utils/equalityScore';
 import type { SectionDef } from '@/components/entity/editorial';
 
 /**
@@ -314,16 +314,15 @@ export default function RightsIntent() {
       content: (
         <div>
           <CoverageNote>
-            {withLegalStatus} of {countries?.length ?? 0} countries and territories carry a
-            recorded criminalisation status. The remaining{' '}
-            {(countries?.length ?? 0) - withLegalStatus} also carry no equality score and are
-            listed as “not scored” rather than given a default or folded in with countries we
-            have measured.
+            {withLegalStatus} of {countries?.length ?? 0} countries and territories carry a recorded
+            criminalisation status. The remaining {(countries?.length ?? 0) - withLegalStatus} also
+            carry no equality score and are listed as “not scored” rather than given a default or
+            folded in with countries we have measured.
           </CoverageNote>
           <div className="grid gap-8 md:grid-cols-2">
             {TIER_ORDER.map((tier) => (
               <div key={tier}>
-                <h3 className="font-display text-title mb-2">{TIER_LABEL[tier]}</h3>
+                <h3 className="text-title font-bold mb-2">{TIER_LABEL[tier]}</h3>
                 <p className="text-13 text-muted-foreground mb-4">
                   {buckets[tier].length} countries
                 </p>
@@ -346,9 +345,7 @@ export default function RightsIntent() {
         <div>
           <CoverageNote>
             {criminalizing.length} countries criminalise same-sex acts.{' '}
-            {deathConfirmed.length > 0
-              ? `In ${deathConfirmed.length} the penalty is death.`
-              : null}{' '}
+            {deathConfirmed.length > 0 ? `In ${deathConfirmed.length} the penalty is death.` : null}{' '}
             {deathPossible.length > 0
               ? `In ${deathPossible.length} more our source names the death penalty as possible but records no legal certainty; we list those as uncertain rather than as safe.`
               : null}{' '}
@@ -396,8 +393,8 @@ export default function RightsIntent() {
       content: (
         <div className="max-w-prose">
           <p className="mb-4">
-            Legal status on this page comes from the ILGA World Database and is re-imported
-            nightly. The equality score is a 0–100 composite we compute from it.
+            Legal status on this page comes from the ILGA World Database and is re-imported nightly.
+            The equality score is a 0–100 composite we compute from it.
           </p>
           <p className="text-muted-foreground">
             It opens at 50 and adds points per recorded right, so a country we hold little about

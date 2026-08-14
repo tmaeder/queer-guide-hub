@@ -157,10 +157,7 @@ export default function HelpHotlines() {
 
   // The ONE ranking, over the unfiltered list. Feeds both the CTA and the
   // JSON-LD, so a search keystroke can never rewrite the structured data.
-  const hero = useMemo(
-    () => selectPrimaryLine(hotlines, countryFilter),
-    [hotlines, countryFilter],
-  );
+  const hero = useMemo(() => selectPrimaryLine(hotlines, countryFilter), [hotlines, countryFilter]);
 
   const savedLines = useMemo(
     () => (bookmarkedIds.size === 0 ? [] : hotlines.filter((h) => bookmarkedIds.has(h.id))),
@@ -233,7 +230,7 @@ export default function HelpHotlines() {
           </p>
         ) : callNow.length === 0 && directories.length === 0 ? (
           <div className="mt-6 border-[3px] border-foreground p-6">
-            <h3 className="font-display text-title leading-tight">
+            <h3 className="text-title font-bold leading-tight">
               {t('help.no_results_title', 'No lines match these filters')}
             </h3>
             <p className="mt-2 text-15 leading-relaxed text-muted-foreground">
