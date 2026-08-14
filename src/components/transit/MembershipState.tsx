@@ -7,7 +7,10 @@ const COPY: Record<Membership, { label: string; note: string }> = {
   open: { label: 'Open', note: 'Anyone can join. No approval step.' },
   vetted: { label: 'Vetted', note: 'A member vouches for you, then a moderator confirms.' },
   private: { label: 'Private', note: 'Invitation only. The member list is not public.' },
-  forming: { label: 'Forming', note: 'Not running yet — register interest and you will be told when it starts.' },
+  forming: {
+    label: 'Forming',
+    note: 'Not running yet — register interest and you will be told when it starts.',
+  },
 };
 
 /**
@@ -37,7 +40,7 @@ export function MembershipState({
       <div className="text-2xs font-bold uppercase tracking-label text-muted-foreground">
         Membership
       </div>
-      <div className="mt-1 font-display text-title leading-tight">{c.label}</div>
+      <div className="mt-1 text-title font-bold leading-tight">{c.label}</div>
       <p className="mt-1 text-13 leading-relaxed">{c.note}</p>
       {action && <div className="mt-4">{action}</div>}
     </div>

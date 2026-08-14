@@ -34,10 +34,15 @@ function FeaturedItem({
   thumbnailUrl?: string | null;
 }) {
   const href = `/personalities/${p.slug ?? p.id}`;
-  const resolvedSrc = resolveImageUrl({ imageUrl: p.image_url, optimizedUrl, thumbnailUrl, preferThumb: true });
+  const resolvedSrc = resolveImageUrl({
+    imageUrl: p.image_url,
+    optimizedUrl,
+    thumbnailUrl,
+    preferThumb: true,
+  });
   const srcSet = optimizedUrl
     ? (buildCfSrcSet(optimizedUrl, [160, 320]) ??
-        (thumbnailUrl ? `${thumbnailUrl} 400w, ${optimizedUrl} 1600w` : undefined))
+      (thumbnailUrl ? `${thumbnailUrl} 400w, ${optimizedUrl} 1600w` : undefined))
     : undefined;
   return (
     <LocalizedLink
@@ -69,7 +74,7 @@ function FeaturedItem({
           </span>
         )}
       </div>
-      <p className="truncate text-center font-display text-title leading-tight">{p.name}</p>
+      <p className="truncate text-center text-title font-bold leading-tight">{p.name}</p>
       {p.profession && (
         <p className="truncate text-center text-2xs font-bold uppercase tracking-label text-muted-foreground">
           {formatProfession(p.profession)}

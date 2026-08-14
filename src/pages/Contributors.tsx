@@ -75,7 +75,7 @@ function ContributorCard({ row }: { row: RecognitionPublicRow }) {
         {/* No category label here: every card sits under a band header that
             already names the category, and repeating it made "Venue scouts"
             appear once per contributor. */}
-        <p className="min-w-0 font-display text-title leading-tight">{row.display_name}</p>
+        <p className="min-w-0 text-title font-bold leading-tight">{row.display_name}</p>
       </div>
       {row.blurb_md && (
         <p className="text-13 leading-relaxed text-muted-foreground">{row.blurb_md}</p>
@@ -178,7 +178,7 @@ export default function Contributors() {
         <section className="mt-12" aria-labelledby="featured">
           <h2
             id="featured"
-            className="border-b-[3px] border-foreground bg-foreground px-4 py-2 font-display text-title leading-tight text-background"
+            className="border-b-[3px] border-foreground bg-foreground px-4 py-2 text-title font-bold leading-tight text-background"
           >
             Featured
           </h2>
@@ -204,7 +204,7 @@ export default function Contributors() {
         <section key={category} className="mt-12" aria-labelledby={`cat-${category}`}>
           <h2
             id={`cat-${category}`}
-            className="border-b-[3px] border-foreground bg-foreground px-4 py-2 font-display text-title leading-tight text-background"
+            className="border-b-[3px] border-foreground bg-foreground px-4 py-2 text-title font-bold leading-tight text-background"
           >
             {CATEGORY_LABELS[category] ?? category}
             <span className="ml-2 text-2xs tabular-nums text-background/70">{catRows.length}</span>

@@ -320,7 +320,9 @@ const NewsCardImpl = ({
               {eyebrowParts.join(' · ')}
             </p>
           )}
-          <h3 className="m-0 font-display text-headline leading-[1.05] tracking-tight">{safeTitle}</h3>
+          <h3 className="m-0 font-display text-headline leading-[1.05] tracking-tight">
+            {safeTitle}
+          </h3>
           {langBadge}
           {dek && <p className="text-15 italic text-muted-foreground leading-relaxed">{dek}</p>}
           <div className="flex items-center gap-4 text-2xs uppercase tracking-wider text-muted-foreground mt-2">
@@ -379,7 +381,7 @@ const NewsCardImpl = ({
     return (
       <div className="relative flex flex-col md:flex-row gap-6 cursor-pointer transition-opacity hover:opacity-90">
         <div className="md:flex-[0_0_45%] rounded-container overflow-hidden">
-          {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- onError is a non-interactive image lifecycle event */}
+          { }
           <img
             loading={priority ? 'eager' : 'lazy'}
             fetchPriority={priority ? 'high' : 'auto'}
@@ -400,7 +402,7 @@ const NewsCardImpl = ({
               {eyebrowParts.join(' · ')}
             </p>
           )}
-          <h3 className="font-display text-title leading-tight m-0">{safeTitle}</h3>
+          <h3 className="text-title font-bold leading-tight m-0">{safeTitle}</h3>
           {langBadge}
           {excerptText && (
             <p

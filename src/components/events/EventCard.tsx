@@ -57,7 +57,7 @@ const EventCardFixture = () => (
   <Card hoverable className="overflow-hidden">
     <div className="aspect-[16/10] bg-muted" />
     <div className="p-4">
-      <p className="font-display text-title leading-tight">Sample Event Title</p>
+      <p className="text-title font-bold leading-tight">Sample Event Title</p>
       <p className="mt-1 text-xs text-muted-foreground">Jun 15</p>
     </div>
   </Card>
@@ -75,7 +75,11 @@ function formatEventDate(startDate: string, endDate?: string | null) {
   return format(start, 'MMM d');
 }
 
-export const EventCard = memo(function EventCard({ event, loading = false, socialSignal }: EventCardProps) {
+export const EventCard = memo(function EventCard({
+  event,
+  loading = false,
+  socialSignal,
+}: EventCardProps) {
   const { t } = useTranslation();
   const { data: tripStatus } = useEntityTripStatus('event', event?.id);
   const { activeTrip } = useActiveTrip();
@@ -93,7 +97,8 @@ export const EventCard = memo(function EventCard({ event, loading = false, socia
     if (!event) return null;
     if (event.is_free) return 'Free';
     if (event.price_min && event.price_max) {
-      if (event.price_min === event.price_max) return formatCurrency(event.price_min, event.currency);
+      if (event.price_min === event.price_max)
+        return formatCurrency(event.price_min, event.currency);
       return `${formatCurrency(event.price_min, event.currency)} – ${formatCurrency(event.price_max, event.currency)}`;
     }
     if (event.price_min) return `From ${formatCurrency(event.price_min, event.currency)}`;
@@ -125,8 +130,7 @@ export const EventCard = memo(function EventCard({ event, loading = false, socia
     ? [event.venues?.name || event.venue_name, event.city].filter(Boolean).join(', ')
     : '';
 
-  const eventTypeTag =
-    event && isMeaningfulTag(event.event_type) ? event.event_type : null;
+  const eventTypeTag = event && isMeaningfulTag(event.event_type) ? event.event_type : null;
 
   return (
     <Skeleton
@@ -183,7 +187,7 @@ export const EventCard = memo(function EventCard({ event, loading = false, socia
 
             <div className="p-4">
               <div className="flex items-baseline gap-2 min-w-0">
-                <h3 className="font-display text-title leading-tight truncate flex-1 min-w-0">
+                <h3 className="text-title font-bold leading-tight truncate flex-1 min-w-0">
                   {event.title}
                 </h3>
                 {priceDisplay && (

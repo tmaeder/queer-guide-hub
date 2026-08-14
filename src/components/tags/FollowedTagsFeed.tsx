@@ -65,7 +65,7 @@ export function FollowedTagsFeed({ className }: { className?: string }) {
   return (
     <section className={className}>
       <div className="mb-4 flex flex-wrap items-center gap-2">
-        <h2 className="mr-2 text-title font-display">Tags you follow</h2>
+        <h2 className="mr-2 text-title font-bold">Tags you follow</h2>
         {followedTags.slice(0, 12).map((tg) => (
           <TagChip key={tg.tagId} tag={tg.slug || tg.name} name={tg.name} size="sm" />
         ))}

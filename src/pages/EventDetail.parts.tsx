@@ -393,7 +393,6 @@ export function EventHero({
 /* Fact strip — date / time / price / ages, the canonical glance       */
 /* ------------------------------------------------------------------ */
 
-
 export function EventFactStrip({
   event,
   showEventTz,
@@ -425,7 +424,11 @@ export function EventFactStrip({
               title="Toggle between event timezone and your local time"
               className="text-start underline decoration-dotted underline-offset-4"
             >
-              {formatEventTime(event.start_date, event.end_date, showEventTz ? event.timezone : null)}
+              {formatEventTime(
+                event.start_date,
+                event.end_date,
+                showEventTz ? event.timezone : null,
+              )}
             </button>
           ) : (
             formatEventTime(event.start_date, event.end_date, null)
@@ -771,7 +774,7 @@ export function EventWhoIsGoing({
   return (
     <section className="flex flex-col gap-4">
       <div className="flex items-baseline justify-between gap-2">
-        <h2 className="text-title font-display">Who's going</h2>
+        <h2 className="text-title font-bold">Who's going</h2>
         {(going > 0 || interested > 0) && (
           <span className="text-sm text-muted-foreground">
             {going} going · {interested} interested

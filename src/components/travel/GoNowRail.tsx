@@ -64,7 +64,7 @@ export function GoNowRail() {
                   />
                   <div className="img-scrim-readable absolute inset-0" />
                   <div className="absolute bottom-0 start-0 end-0 p-4 text-white">
-                    <p className="font-display text-title font-bold leading-tight">{d.name}</p>
+                    <p className="text-title font-bold leading-tight">{d.name}</p>
                     {d.countryName && <p className="mt-0.5 text-13 opacity-90">{d.countryName}</p>}
                     <p className="mt-2 flex items-center gap-1.5 text-13 opacity-90">
                       <ReasonIcon size={13} aria-hidden className="shrink-0" />

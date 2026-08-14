@@ -36,7 +36,12 @@ export function CalendarToolbar({
 
   const rangeLabel =
     view === 'day'
-      ? date.toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })
+      ? date.toLocaleDateString([], {
+          weekday: 'long',
+          month: 'long',
+          day: 'numeric',
+          year: 'numeric',
+        })
       : date.toLocaleDateString([], { month: 'long', year: 'numeric' });
 
   return (
@@ -64,7 +69,7 @@ export function CalendarToolbar({
           <Button variant="outline" size="sm" onClick={onToday}>
             {t('hub.calendar.nav.today', { defaultValue: 'Today' })}
           </Button>
-          <h2 className="ml-2 text-title font-display">{rangeLabel}</h2>
+          <h2 className="ml-2 text-title font-bold">{rangeLabel}</h2>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">

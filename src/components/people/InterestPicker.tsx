@@ -36,9 +36,7 @@ export function InterestPicker({ className }: { className?: string }) {
 
   return (
     <section className={cn('border-[3px] border-foreground p-6', className)}>
-      <h3 className="font-display text-title">
-        {t('people.interests.title', 'What are you into?')}
-      </h3>
+      <h3 className="text-title font-bold">{t('people.interests.title', 'What are you into?')}</h3>
       <p className="mt-2 max-w-prose text-13 text-muted-foreground">
         {signedIn
           ? t(

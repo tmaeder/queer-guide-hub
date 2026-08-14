@@ -141,7 +141,7 @@ export function CrisisTriage({
                 <Phone size={20} aria-hidden />
                 {t('help.call_now', 'Call now')}
               </span>
-              <span className="font-display text-title tabular-nums">{phone}</span>
+              <span className="text-title font-bold tabular-nums">{phone}</span>
             </a>
           )}
 
@@ -257,7 +257,7 @@ export function CrisisTriage({
       ) : (
         // The geo-failure default used to render nothing at all here.
         <div className="mt-8 border-2 border-background/40 p-4">
-          <h2 className="font-display text-title leading-tight">
+          <h2 className="text-title font-bold leading-tight">
             {hotlines.length === 0
               ? t('help.no_lines_title', 'We could not load the directory')
               : t('help.no_country_title', 'We could not work out where you are')}

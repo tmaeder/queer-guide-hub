@@ -187,7 +187,7 @@ function PersonalityCardImpl({
 
       {/* Content */}
       <div className="flex-grow p-4">
-        <h3 className="truncate font-display text-title leading-tight text-foreground">
+        <h3 className="truncate text-title font-bold leading-tight text-foreground">
           {personality.name}
         </h3>
         {personality.profession && (
@@ -244,14 +244,16 @@ function PersonalityCardImpl({
           </div>
         )}
         <div className="space-y-1.5 p-4">
-          <div className="font-display text-title leading-snug">{personality.name}</div>
+          <div className="text-title font-bold leading-snug">{personality.name}</div>
           {personality.profession && (
             <div className="text-2xs font-bold uppercase tracking-label text-muted-foreground">
               {formatProfession(personality.profession)}
             </div>
           )}
           {metaParts.length > 0 && (
-            <div className="text-13 tabular-nums text-muted-foreground">{metaParts.join(' · ')}</div>
+            <div className="text-13 tabular-nums text-muted-foreground">
+              {metaParts.join(' · ')}
+            </div>
           )}
           {previewText && (
             <p className="line-clamp-5 pt-1 text-13 leading-snug text-muted-foreground">

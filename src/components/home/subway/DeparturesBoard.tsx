@@ -49,7 +49,7 @@ export function DeparturesBoard() {
                       {formatBoardTime(r.start_date, i18n.language)}
                     </span>
                     <span className="min-w-0">
-                      <span className="block truncate font-display text-title md:text-headline">
+                      <span className="block truncate text-title font-bold md:text-headline">
                         {r.title}
                       </span>
                       <span className="mt-0.5 block truncate text-13 text-muted-foreground">
