@@ -4,7 +4,6 @@ import {
   ADULT_CATEGORY_NAMES,
   isAdultCategoryName,
   isAdultTag,
-  getCategoryIcon,
   getCategoryShortName,
 } from '../categoryMeta';
 
@@ -42,9 +41,6 @@ describe('categoryMeta', () => {
     });
   });
 
-  it('getCategoryIcon returns a component', () => {
-    expect(getCategoryIcon('anything')).toBeDefined();
-  });
   it('getCategoryShortName returns string', () => {
     expect(typeof getCategoryShortName('unknown')).toBe('string');
   });

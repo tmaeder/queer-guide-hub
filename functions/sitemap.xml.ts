@@ -24,6 +24,9 @@ export const onRequest: PagesFunction<Env> = async () => {
     { loc: `${ORIGIN}/sitemap-personalities.xml`, lastmod },
     { loc: `${ORIGIN}/sitemap-milestones.xml`, lastmod },
     { loc: `${ORIGIN}/sitemap-tags.xml`, lastmod },
+    // The 56 glossary category hubs. New URLs as of the 2026-08 rebuild: the
+    // category used to be a query param, so no sitemap could have listed them.
+    { loc: `${ORIGIN}/sitemap-tag-categories.xml`, lastmod },
   ]);
   return xmlResponse(xml, 3600);
 };

@@ -36,6 +36,10 @@ const ROUTES = [
   // inside an `overflow-x-auto` wrapper — remove the wrapper and this route
   // overflows the viewport at 390px, which is precisely what this spec catches.
   '/trips/discover',
+  // The glossary: a masthead, a full-bleed ink scale-board and a two-column
+  // body, all separate PageContainers. Absent from this list until the 2026-08
+  // rebuild.
+  '/tags',
 ];
 
 const WIDTHS = [390, 768, 1440, 1920];
