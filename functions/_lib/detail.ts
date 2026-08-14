@@ -61,21 +61,28 @@ function gatedDetailResult(): DetailResult {
  * middleware serve the SPA shell (humans get the GatedDetailFallback sign-in
  * gate) while bots still receive noindex + no real content.
  */
-async function isGatedEntity(env: Env, entityType: 'venue' | 'event' | 'milestone' | 'guide', slug: string): Promise<boolean> {
+async function isGatedEntity(
+  env: Env,
+  entityType: 'venue' | 'event' | 'milestone' | 'guide',
+  slug: string,
+): Promise<boolean> {
   if (!env.SUPABASE_URL) return false;
   const key = env.SUPABASE_SERVICE_ROLE_KEY ?? env.SUPABASE_ANON_KEY;
   if (!key) return false;
   try {
-    const res = await fetch(`${env.SUPABASE_URL.replace(/\/$/, '')}/rest/v1/rpc/gated_entity_exists`, {
-      method: 'POST',
-      headers: {
-        apikey: key,
-        Authorization: `Bearer ${key}`,
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
+    const res = await fetch(
+      `${env.SUPABASE_URL.replace(/\/$/, '')}/rest/v1/rpc/gated_entity_exists`,
+      {
+        method: 'POST',
+        headers: {
+          apikey: key,
+          Authorization: `Bearer ${key}`,
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+        body: JSON.stringify({ p_entity_type: entityType, p_slug: slug }),
       },
-      body: JSON.stringify({ p_entity_type: entityType, p_slug: slug }),
-    });
+    );
     if (!res.ok) return false;
     return (await res.json()) === true;
   } catch {
@@ -215,7 +222,10 @@ async function venueDetail(env: Env, slug: string, pathname: string): Promise<De
     numField(row, 'tomtom_rating'),
   ].filter((n): n is number => n !== undefined);
   const aggregate = ratings.length
-    ? { ratingValue: ratings.reduce((a, b) => a + b, 0) / ratings.length, ratingCount: ratings.length }
+    ? {
+        ratingValue: ratings.reduce((a, b) => a + b, 0) / ratings.length,
+        ratingCount: ratings.length,
+      }
     : null;
 
   const localBusiness: Record<string, unknown> = {
@@ -228,18 +238,18 @@ async function venueDetail(env: Env, slug: string, pathname: string): Promise<De
     // Schema.org/Google flags PostalAddress entries without streetAddress
     // as invalid LocalBusiness markup. City + country alone go into the
     // areaServed field below; they don't pretend to be a postal address.
-    address:
-      address
-        ? {
-            '@type': 'PostalAddress',
-            streetAddress: address,
-            addressLocality: city,
-            addressRegion: stringField(row, 'state'),
-            postalCode: stringField(row, 'postal_code'),
-            addressCountry: country,
-          }
-        : undefined,
-    areaServed: !address && (city || country) ? [city, country].filter(Boolean).join(', ') : undefined,
+    address: address
+      ? {
+          '@type': 'PostalAddress',
+          streetAddress: address,
+          addressLocality: city,
+          addressRegion: stringField(row, 'state'),
+          postalCode: stringField(row, 'postal_code'),
+          addressCountry: country,
+        }
+      : undefined,
+    areaServed:
+      !address && (city || country) ? [city, country].filter(Boolean).join(', ') : undefined,
     geo:
       numField(row, 'latitude') !== undefined && numField(row, 'longitude') !== undefined
         ? {
@@ -269,7 +279,8 @@ function mapVenueType(subtype: string): string {
   if (s.includes('cafe') || s.includes('café')) return 'CafeOrCoffeeShop';
   if (s.includes('club') || s.includes('night')) return 'NightClub';
   if (s.includes('restaurant')) return 'Restaurant';
-  if (s.includes('hotel') || s.includes('hostel') || s.includes('accommodation')) return 'LodgingBusiness';
+  if (s.includes('hotel') || s.includes('hostel') || s.includes('accommodation'))
+    return 'LodgingBusiness';
   if (s.includes('shop') || s.includes('store') || s.includes('boutique')) return 'Store';
   return 'LocalBusiness';
 }
@@ -359,7 +370,9 @@ async function eventDetail(env: Env, slug: string, pathname: string): Promise<De
       ? { '@type': 'Organization', name: stringField(row, 'organizer_name') }
       : undefined,
     offers:
-      stringField(row, 'ticket_url') || numField(row, 'price_min') !== undefined || row.is_free === true
+      stringField(row, 'ticket_url') ||
+      numField(row, 'price_min') !== undefined ||
+      row.is_free === true
         ? {
             '@type': 'Offer',
             url: stringField(row, 'ticket_url'),
@@ -414,7 +427,7 @@ async function newsDetail(env: Env, slug: string, pathname: string): Promise<Det
       <ul>
         <li><a href="/news">All news</a></li>
         <li><a href="/blog">Long-form essays</a></li>
-        <li><a href="/resources">Knowledge hub</a></li>
+        <li><a href="/tags">Glossary</a></li>
       </ul>
     </nav>
   </main>`;
@@ -504,14 +517,14 @@ async function personalityDetail(
     <article>
       <h1>${escape(name)}</h1>
       ${profession ? `<p><strong>${escape(profession)}</strong></p>` : ''}
-      ${birthDate || deathDate ? `<p>${birthDate ? escape(birthDate.slice(0, 10)) : '?'} – ${deathDate ? escape(deathDate.slice(0, 10)) : (row.is_living === true ? 'present' : '?')}</p>` : ''}
+      ${birthDate || deathDate ? `<p>${birthDate ? escape(birthDate.slice(0, 10)) : '?'} – ${deathDate ? escape(deathDate.slice(0, 10)) : row.is_living === true ? 'present' : '?'}</p>` : ''}
       ${description ? paragraphsHtml(description) : ''}
       ${bio && bio !== description ? paragraphsHtml(bio) : ''}
     </article>
     <nav aria-label="Site sections">
       <ul>
         <li><a href="/personalities">All personalities</a></li>
-        <li><a href="/resources">Knowledge hub</a></li>
+        <li><a href="/tags">Glossary</a></li>
       </ul>
     </nav>
   </main>`;
@@ -669,15 +682,18 @@ async function cityDetail(env: Env, slug: string, pathname: string): Promise<Det
       }
     : null;
 
-  const jsonLd =
-    renderLd(prune(placeLd)) + (itemList ? '\n' + renderLd(prune(itemList)) : '');
+  const jsonLd = renderLd(prune(placeLd)) + (itemList ? '\n' + renderLd(prune(itemList)) : '');
 
   return { meta, body, jsonLd };
 }
 
 // Country — /country/:slug
 
-async function countryDetail(env: Env, slug: string, pathname: string): Promise<DetailResult | null> {
+async function countryDetail(
+  env: Env,
+  slug: string,
+  pathname: string,
+): Promise<DetailResult | null> {
   // duplicate_of_id=is.null — see the identical comment in venueDetail.
   const rows = await fetchRows(
     env,
@@ -700,9 +716,7 @@ async function countryDetail(env: Env, slug: string, pathname: string): Promise<
   const meta: RouteMeta = {
     title: truncate(`LGBTQ+ rights & travel — ${name}${TITLE_SUFFIX}`, MAX_TITLE),
     description: truncate(
-      hook ||
-        description ||
-        `LGBTQ+ legal status, safety, venues and travel guide for ${name}.`,
+      hook || description || `LGBTQ+ legal status, safety, venues and travel guide for ${name}.`,
       MAX_DESC,
     ),
     ogImage: safeOgImage(image ?? DEFAULT_OG_IMAGE),
@@ -814,7 +828,9 @@ async function hotelDetail(env: Env, slug: string, pathname: string): Promise<De
       : undefined,
     telephone: stringField(row, 'phone'),
     priceRange:
-      numField(row, 'price_range') !== undefined ? '$'.repeat(numField(row, 'price_range') as number) : undefined,
+      numField(row, 'price_range') !== undefined
+        ? '$'.repeat(numField(row, 'price_range') as number)
+        : undefined,
     sameAs: stringField(row, 'website') ? [stringField(row, 'website')] : undefined,
   };
 
@@ -823,7 +839,11 @@ async function hotelDetail(env: Env, slug: string, pathname: string): Promise<De
 
 // Queer villages — /villages/:slug
 
-async function villageDetail(env: Env, slug: string, pathname: string): Promise<DetailResult | null> {
+async function villageDetail(
+  env: Env,
+  slug: string,
+  pathname: string,
+): Promise<DetailResult | null> {
   // duplicate_of_id=is.null — see the identical comment in venueDetail.
   const rows = await fetchRows(
     env,
@@ -839,7 +859,8 @@ async function villageDetail(env: Env, slug: string, pathname: string): Promise<
   const description = stringField(row, 'description') ?? '';
   const history = stringField(row, 'history') ?? '';
   const landmarks = arrayField(row, 'notable_landmarks') ?? [];
-  const image = stringField(row, 'image_url') ?? (arrayField(row, 'images')?.[0] as string | undefined);
+  const image =
+    stringField(row, 'image_url') ?? (arrayField(row, 'images')?.[0] as string | undefined);
 
   const meta: RouteMeta = {
     title: truncate(`${name} — Queer village${TITLE_SUFFIX}`, MAX_TITLE),
@@ -912,7 +933,10 @@ async function tagDetail(env: Env, slug: string, pathname: string): Promise<Deta
   const category = stringField(row, 'category');
 
   const meta: RouteMeta = {
-    title: truncate(`${name} — Topic${TITLE_SUFFIX}`, MAX_TITLE),
+    // Byte-identical to the SPA's `useMeta({ title: tag.name })`. The edge used
+    // to append "— Topic", so a crawler and a reader saw two different titles
+    // for the same URL.
+    title: truncate(`${name}${TITLE_SUFFIX}`, MAX_TITLE),
     description: truncate(
       description || `Articles, venues and events about ${name} on Queer Guide.`,
       MAX_DESC,
@@ -929,7 +953,7 @@ async function tagDetail(env: Env, slug: string, pathname: string): Promise<Deta
     </article>
     <nav aria-label="Site sections">
       <ul>
-        <li><a href="/resources">Knowledge hub</a></li>
+        <li><a href="/tags">Glossary</a></li>
         <li><a href="/news">Related news</a></li>
         <li><a href="/blog">Long-form essays</a></li>
       </ul>
@@ -1045,7 +1069,8 @@ async function guideDetail(env: Env, slug: string, pathname: string): Promise<De
   const dek = stringField(row, 'dek');
   const intro = stringField(row, 'intro_md') ?? '';
   const format = stringField(row, 'format') ?? 'guide';
-  const formatLabel = format === 'quest' ? 'Community quest' : format === 'list' ? 'Curated list' : 'Guide';
+  const formatLabel =
+    format === 'quest' ? 'Community quest' : format === 'list' ? 'Curated list' : 'Guide';
   const picks = numField(row, 'pick_count');
   const hero = stringField(row, 'hero_image_path');
 
@@ -1156,15 +1181,69 @@ const SLUG_REDIRECT_KINDS: Array<{
   entityTable: string;
   routePrefix: string;
 }> = [
-  { test: (k) => k.startsWith('venue'), redirectTable: 'venue_slug_redirects', redirectIdColumn: 'venue_id', entityTable: 'venues', routePrefix: '/venues' },
-  { test: (k) => k.startsWith('event'), redirectTable: 'event_slug_redirects', redirectIdColumn: 'event_id', entityTable: 'events', routePrefix: '/events' },
-  { test: (k) => k.startsWith('personalit'), redirectTable: 'personality_slug_redirects', redirectIdColumn: 'personality_id', entityTable: 'personalities', routePrefix: '/personalities' },
-  { test: (k) => k === 'country', redirectTable: 'country_slug_redirects', redirectIdColumn: 'country_id', entityTable: 'countries', routePrefix: '/country' },
-  { test: (k) => k.startsWith('hotel'), redirectTable: 'hotel_slug_redirects', redirectIdColumn: 'hotel_id', entityTable: 'hotels', routePrefix: '/hotels' },
-  { test: (k) => k.startsWith('village'), redirectTable: 'village_slug_redirects', redirectIdColumn: 'village_id', entityTable: 'queer_villages', routePrefix: '/villages' },
-  { test: (k) => k === 'news', redirectTable: 'news_slug_redirects', redirectIdColumn: 'article_id', entityTable: 'news_articles', routePrefix: '/news' },
-  { test: (k) => k === 'history', redirectTable: 'milestone_slug_redirects', redirectIdColumn: 'milestone_id', entityTable: 'milestones', routePrefix: '/history' },
-  { test: (k) => k === 'guides', redirectTable: 'guide_slug_redirects', redirectIdColumn: 'guide_id', entityTable: 'guides', routePrefix: '/guides' },
+  {
+    test: (k) => k.startsWith('venue'),
+    redirectTable: 'venue_slug_redirects',
+    redirectIdColumn: 'venue_id',
+    entityTable: 'venues',
+    routePrefix: '/venues',
+  },
+  {
+    test: (k) => k.startsWith('event'),
+    redirectTable: 'event_slug_redirects',
+    redirectIdColumn: 'event_id',
+    entityTable: 'events',
+    routePrefix: '/events',
+  },
+  {
+    test: (k) => k.startsWith('personalit'),
+    redirectTable: 'personality_slug_redirects',
+    redirectIdColumn: 'personality_id',
+    entityTable: 'personalities',
+    routePrefix: '/personalities',
+  },
+  {
+    test: (k) => k === 'country',
+    redirectTable: 'country_slug_redirects',
+    redirectIdColumn: 'country_id',
+    entityTable: 'countries',
+    routePrefix: '/country',
+  },
+  {
+    test: (k) => k.startsWith('hotel'),
+    redirectTable: 'hotel_slug_redirects',
+    redirectIdColumn: 'hotel_id',
+    entityTable: 'hotels',
+    routePrefix: '/hotels',
+  },
+  {
+    test: (k) => k.startsWith('village'),
+    redirectTable: 'village_slug_redirects',
+    redirectIdColumn: 'village_id',
+    entityTable: 'queer_villages',
+    routePrefix: '/villages',
+  },
+  {
+    test: (k) => k === 'news',
+    redirectTable: 'news_slug_redirects',
+    redirectIdColumn: 'article_id',
+    entityTable: 'news_articles',
+    routePrefix: '/news',
+  },
+  {
+    test: (k) => k === 'history',
+    redirectTable: 'milestone_slug_redirects',
+    redirectIdColumn: 'milestone_id',
+    entityTable: 'milestones',
+    routePrefix: '/history',
+  },
+  {
+    test: (k) => k === 'guides',
+    redirectTable: 'guide_slug_redirects',
+    redirectIdColumn: 'guide_id',
+    entityTable: 'guides',
+    routePrefix: '/guides',
+  },
 ];
 
 /**
@@ -1174,10 +1253,7 @@ const SLUG_REDIRECT_KINDS: Array<{
  * path so the middleware can emit a real 301 (keeps SEO link equity). Returns
  * the de-localised target path, or null if no redirect exists.
  */
-export async function resolveSlugRedirect(
-  env: Env,
-  pathname: string,
-): Promise<string | null> {
+export async function resolveSlugRedirect(env: Env, pathname: string): Promise<string | null> {
   if (!env.SUPABASE_URL || (!env.SUPABASE_ANON_KEY && !env.SUPABASE_SERVICE_ROLE_KEY)) {
     return null;
   }
@@ -1206,10 +1282,7 @@ export async function resolveSlugRedirect(
   }
 }
 
-export async function resolveDetailRoute(
-  env: Env,
-  pathname: string,
-): Promise<DetailResult | null> {
+export async function resolveDetailRoute(env: Env, pathname: string): Promise<DetailResult | null> {
   if (!env.SUPABASE_URL || (!env.SUPABASE_ANON_KEY && !env.SUPABASE_SERVICE_ROLE_KEY)) {
     return null;
   }
