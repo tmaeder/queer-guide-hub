@@ -338,7 +338,12 @@ export default function TripsDiscoverPage() {
               <button
                 type="button"
                 onClick={bump}
-                aria-controls="route-stations"
+                // `#route-stations` is the <ol> inside RouteLineStage, which
+                // refuses to draw a line under three stops. With one or two the
+                // caller renders plain cards instead, so the id is absent and a
+                // static aria-controls would point at nothing (axe
+                // aria-valid-attr-value, critical). Reroll still works there.
+                aria-controls={drawable ? 'route-stations' : undefined}
                 className="inline-flex h-10 items-center gap-2 border-2 border-foreground px-4 text-15 font-bold transition-colors duration-fast hover:bg-foreground hover:text-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
               >
                 <TransitIcon name="route" size={18} />
