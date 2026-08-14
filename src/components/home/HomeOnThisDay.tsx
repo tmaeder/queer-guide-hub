@@ -39,7 +39,7 @@ export default function HomeOnThisDay() {
                   <MilestoneImpactMarker impact={m.impact} />
                 </span>
                 <span className="min-w-0">
-                  <span className="block font-display text-title leading-tight group-hover:underline">
+                  <span className="block text-title font-bold leading-tight group-hover:underline">
                     {m.title}
                   </span>
                   <span className="block text-13 text-muted-foreground">

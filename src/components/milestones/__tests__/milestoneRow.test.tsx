@@ -97,6 +97,23 @@ describe('MilestoneRow', () => {
     });
   });
 
+  /**
+   * Rank 4 (`--text-title`) is Space Grotesk 700 — the docs' rank table, and
+   * the 111-site majority. The transit components render this rank in Anton
+   * (41 files), and following that minority is how history drifted the first
+   * time. Pinned here because the token name alone does not say which face,
+   * so nothing else would catch a revert.
+   */
+  it.each(['card', 'row'] as const)('renders the %s title in Space Grotesk, not Anton', (d) => {
+    const { container } = render(<MilestoneRow milestone={row()} density={d} />);
+    const title = [...container.querySelectorAll('span')].find((el) =>
+      el.className.includes('text-title'),
+    );
+    expect(title).toBeTruthy();
+    expect(title?.className).not.toContain('font-display');
+    expect(title?.className).toContain('font-bold');
+  });
+
   describe('marker', () => {
     // Scoped to `.rounded-full`: the category badge's lucide icon is also
     // h-3 w-3, so a bare size selector matches it and reports a marker that
