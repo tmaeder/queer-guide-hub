@@ -79,6 +79,19 @@ export const SINGLE_TYPE_STACKS: Record<
   news: { label: 'News', required: [1, 12, 11], conditional: [8, 7], owner: 'Provenance' },
   guide: { label: 'Guides', required: [1, 5, 4], conditional: [16, 12, 8, 15], owner: 'Stop list' },
   page: { label: 'Pages', required: [12], conditional: [1, 6, 11], owner: 'Version history' },
+  // MODULE 09 (Variant picker) CANNOT RENDER, and that is a schema fact, not a
+  // to-do someone forgot. `marketplace_listings` has no variant, size, colour,
+  // option or SKU column at all — the nearest fields are `in_stock`,
+  // `availability` and `price_type` — so rule 2 above applies: "a module with
+  // no data does not render. No empty shells." The reasoned decision to keep
+  // availability as a fact-strip fact instead is at
+  // src/pages/MarketplaceItemDetail.parts.tsx (`ProductFacts`).
+  //
+  // The row still declares 09 because the spec does, and this file is a
+  // transcription of the spec. Note the consequence though: this is the only
+  // type whose OWNER module — the one meant to define it — is unrenderable.
+  // Fixing that needs a variants data model, which is its own spec; do not
+  // "resolve" it by wiring an empty picker.
   marketplace: { label: 'Marketplace', required: [1, 9, 15, 8], conditional: [11, 12, 4], owner: 'Variant picker' },
   organization: { label: 'Business', required: [1, 2, 4, 8, 11], conditional: [16, 3, 15, 7], owner: 'Nested entity card' },
   tag: { label: 'Tags (wiki)', required: [1, 12, 7], conditional: [11, 5, 15], owner: 'Version history' },

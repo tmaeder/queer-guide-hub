@@ -197,9 +197,15 @@ test.describe('design system: typography', () => {
       for (const sheet of Array.from(document.styleSheets)) {
         try {
           for (const rule of sheet.cssRules) {
-            if (rule instanceof CSSFontFaceRule && /inter/i.test(rule.style.getPropertyValue('font-family'))) return true;
+            if (
+              rule instanceof CSSFontFaceRule &&
+              /inter/i.test(rule.style.getPropertyValue('font-family'))
+            )
+              return true;
           }
-        } catch { /* cross-origin */ }
+        } catch {
+          /* cross-origin */
+        }
       }
       return false;
     });
@@ -253,7 +259,16 @@ test.describe('design system: typography', () => {
  * equality scale, map layers) because none of them render on these four routes;
  * if one ever does, add it here explicitly rather than widening the tolerance.
  */
-const SANCTIONED_TOKENS = ['track-pink', 'track-blue', 'track-green', 'track-yellow', 'spot', 'ink-blue', 'ink-over', 'destructive'];
+const SANCTIONED_TOKENS = [
+  'track-pink',
+  'track-blue',
+  'track-green',
+  'track-yellow',
+  'spot',
+  'ink-blue',
+  'ink-over',
+  'destructive',
+];
 
 test.describe('design system: sanctioned ink only', () => {
   // /news excluded — news cards may have category images with chromatic content
@@ -268,7 +283,15 @@ test.describe('design system: sanctioned ink only', () => {
   // track-colour-dense page on the site — a five-line index showing all four
   // tracks at once, plus the only sanctioned `.intersection-gradient`. If any
   // page is going to drift an unsanctioned hue in, it is this one.
-  const publicPages = ['/', '/events', '/venues', '/hotels', '/map', '/about'];
+  //
+  // /marketplace was added when it was rebuilt as the M line, and it had been
+  // outside this sweep entirely — which is how the app's LARGEST grid ran for
+  // months with cards that both hover-tinted and cast the hard shadow. Its
+  // only saturated fills are the M-yellow bullet, the yellow count rule and
+  // the ink-filled active department station; product photography arrives in
+  // <img>, not as a background, so it is invisible to this sweep (unlike
+  // /news, which is excluded because its category images are backgrounds).
+  const publicPages = ['/', '/events', '/venues', '/hotels', '/map', '/about', '/marketplace'];
 
   // What counts as "this page has rendered its chrome".
   //
@@ -281,8 +304,7 @@ test.describe('design system: sanctioned ink only', () => {
   // so the 15s budget was never the constraint and the extra headroom below is
   // for a loaded CI runner, not for a known slowness. If /map ever does take
   // 30s, that is a real regression and should fail.
-  const readySelector = (path: string) =>
-    path === '/map' ? '[data-testid=map-bar]' : '#root *';
+  const readySelector = (path: string) => (path === '/map' ? '[data-testid=map-bar]' : '#root *');
 
   for (const path of publicPages) {
     test(`only sanctioned brand ink on ${path}`, async ({ page }) => {
@@ -358,11 +380,7 @@ test.describe('design system: sanctioned ink only', () => {
         const isSanctioned = (r: number, g: number, b: number) => {
           for (const s of sanctioned) {
             const [sr, sg, sb] = s.split(',').map(Number);
-            if (
-              Math.abs(r - sr) <= NEAR &&
-              Math.abs(g - sg) <= NEAR &&
-              Math.abs(b - sb) <= NEAR
-            ) {
+            if (Math.abs(r - sr) <= NEAR && Math.abs(g - sg) <= NEAR && Math.abs(b - sb) <= NEAR) {
               return true;
             }
           }
