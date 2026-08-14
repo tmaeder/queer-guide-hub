@@ -774,7 +774,81 @@
       "signalsAria": "Trip activity",
       "forkCount": "{{count}} forks",
       "saveCount": "{{count}} saves",
-      "filtersButton": "Filters"
+      "filtersButton": "Filters",
+      "meta": {
+        "title": "Crear una ruta | Queer Guide",
+        "description": "Elige un ambiente, una temporada y un ritmo. Obtén una ruta de ciudades reales con número de lugares, situación legal y qué hay mientras estés allí."
+      },
+      "eyebrowRoute": "Constructor de rutas",
+      "titleRoute": "Tres ciudades. Una línea.",
+      "ledeRoute": "Dinos qué buscas y a qué ritmo te mueves. Te trazamos una línea por ciudades reales, con el número de lugares, la situación legal y qué hay mientras estés allí.",
+      "picker": {
+        "heading": "Define la línea",
+        "hint": "Elige un ambiente, una temporada y un ritmo. La línea se vuelve a trazar.",
+        "vibeGroup": "Qué buscas",
+        "seasonGroup": "Cuándo",
+        "paceGroup": "A qué ritmo",
+        "stationCount": "{{count}} estaciones",
+        "stopCount": "{{count}} paradas",
+        "tooFew": "solo {{count}} estaciones",
+        "thin": "{{count}} estaciones, ninguna lo bastante cerca para formar una línea",
+        "vibe": {
+          "nightlife": "Noches largas",
+          "sauna": "Sauna",
+          "slow": "Mañanas tranquilas",
+          "community": "Comunidad",
+          "outdoors": "Aire libre"
+        },
+        "season": {
+          "now": "Pronto",
+          "autumn": "Otoño",
+          "winter": "Invierno",
+          "pride": "Temporada del Orgullo"
+        },
+        "pace": {
+          "slow": "Con calma",
+          "steady": "Constante",
+          "sprint": "Recorrer mucho"
+        }
+      },
+      "route": {
+        "heading": "Tu línea",
+        "reroll": "Trazar otra",
+        "summary": "{{stops}} paradas · {{km}} km · {{countries}} países",
+        "snapped": "Empieza a {{km}} km de {{name}}: la ciudad más cercana de la que tenemos suficiente.",
+        "short": "Esta línea tiene {{delivered}} paradas, no {{requested}}. {{eligible}} ciudades encajan y el resto está más lejos de lo que permite este ritmo.",
+        "announced": "Línea trazada: {{stations}}. {{count}} paradas.",
+        "stopsAria": "Paradas de esta línea, en orden",
+        "stopAria": "Parada {{n}}: {{city}}, {{country}}",
+        "swapStopAria": "Cambiar la parada {{n}}, {{city}}",
+        "tripTitle": "Línea {{cities}}"
+      },
+      "station": {
+        "venues": "{{count}} lugares"
+      },
+      "loading": {
+        "pool": "Cargando la lista de estaciones",
+        "slow": "Seguimos en ello. El índice de ciudades va lento ahora mismo."
+      },
+      "degraded": {
+        "none": "Ninguna ciudad encaja con esa selección.",
+        "title": "Solo encajan {{count}} ciudades.",
+        "body": "Una línea necesita tres paradas. Quita una opción para ampliarla.",
+        "terminus": "Lo más cercano es {{name}}, a {{km}} km: más lejos de lo que llega este ritmo.",
+        "clearVibe": "Cualquier ambiente",
+        "goFurther": "Recorrer más"
+      },
+      "error": {
+        "title": "No se pudo crear el viaje",
+        "poolTitle": "La lista de estaciones no se cargó.",
+        "retry": "Reintentar"
+      },
+      "cta": {
+        "heading": "Recorre esta línea.",
+        "body": "Se convierte en un viaje tuyo, con todas las paradas ya incluidas. Después puedes cambiar lo que quieras.",
+        "primary": "Convertir en viaje",
+        "secondary": "Trazar otra"
+      }
     },
     "polls": {
       "createdToast": "Encuesta creada",
@@ -999,6 +1073,15 @@
       "openThread": "Revisar en el chat",
       "forwardHint": "[ES] Forward Booking.com, Airbnb or airline confirmations to {{address}} — they appear in your Travel Inbox, ready to add to a trip. Or paste one here to add it straight to this trip.",
       "forwardHintNoAddress": "[ES] Forward booking confirmations to your queer.guide address and they appear in your Travel Inbox. Or paste one here to add it straight to this trip."
+    },
+    "templates": {
+      "heading": "Empezar con una plantilla",
+      "subheading": "Itinerarios LGBTQ+ para partir de ahí",
+      "days": "{{count}} días",
+      "use": "Usar plantilla",
+      "created": "Viaje creado",
+      "createdDescription": "Añade tus paradas desde aquí.",
+      "error": "No se pudo crear el viaje"
     }
   },
   "auth": {

@@ -689,12 +689,12 @@
       }
     },
     "discover": {
-      "title": "Scopri luoghi",
-      "button": "Esplora mercato",
+      "title": "Crea un percorso",
+      "button": "Crea un percorso",
       "eyebrow": "Real travelers",
       "subtitle": "Real itineraries from QG travelers — copy ideas, find queer-friendly stops, plan your own.",
       "searchPlaceholder": "Filter by city…",
-      "aria": "Discover public trips",
+      "aria": "Crea un percorso tra città reali",
       "sortAria": "Sort trips",
       "viewAria": "View mode",
       "filterAria": "Filter trips",
@@ -774,7 +774,81 @@
       "signalsAria": "Trip activity",
       "forkCount": "{{count}} forks",
       "saveCount": "{{count}} saves",
-      "filtersButton": "Filters"
+      "filtersButton": "Filters",
+      "meta": {
+        "title": "Crea un percorso | Queer Guide",
+        "description": "Scegli un’atmosfera, una stagione e un ritmo. Ottieni un percorso di città reali con il numero di locali, la situazione legale e cosa c’è mentre sei lì."
+      },
+      "eyebrowRoute": "Costruttore di percorsi",
+      "titleRoute": "Tre città. Una linea.",
+      "ledeRoute": "Dicci cosa cerchi e con che ritmo ti muovi. Ti tracciamo una linea attraverso città reali, con il numero di locali, la situazione legale e cosa c’è mentre sei lì.",
+      "picker": {
+        "heading": "Imposta la linea",
+        "hint": "Scegli un’atmosfera, una stagione e un ritmo. La linea viene ridisegnata.",
+        "vibeGroup": "Cosa cerchi",
+        "seasonGroup": "Quando",
+        "paceGroup": "Con che ritmo",
+        "stationCount": "{{count}} stazioni",
+        "stopCount": "{{count}} fermate",
+        "tooFew": "solo {{count}} stazioni",
+        "thin": "{{count}} stazioni, nessuna abbastanza vicina per fare una linea",
+        "vibe": {
+          "nightlife": "Notti lunghe",
+          "sauna": "Sauna",
+          "slow": "Mattine lente",
+          "community": "Comunità",
+          "outdoors": "All’aperto"
+        },
+        "season": {
+          "now": "Presto",
+          "autumn": "Autunno",
+          "winter": "Inverno",
+          "pride": "Stagione del Pride"
+        },
+        "pace": {
+          "slow": "Con calma",
+          "steady": "Costante",
+          "sprint": "Macinare strada"
+        }
+      },
+      "route": {
+        "heading": "La tua linea",
+        "reroll": "Disegnane un’altra",
+        "summary": "{{stops}} fermate · {{km}} km · {{countries}} paesi",
+        "snapped": "Si parte a {{km}} km da {{name}}: la città più vicina su cui abbiamo abbastanza.",
+        "short": "Questa linea ha {{delivered}} fermate, non {{requested}}. {{eligible}} città corrispondono e il resto è più distante di quanto consenta questo ritmo.",
+        "announced": "Linea tracciata: {{stations}}. {{count}} fermate.",
+        "stopsAria": "Fermate di questa linea, in ordine",
+        "stopAria": "Fermata {{n}}: {{city}}, {{country}}",
+        "swapStopAria": "Sostituisci la fermata {{n}}, {{city}}",
+        "tripTitle": "Linea {{cities}}"
+      },
+      "station": {
+        "venues": "{{count}} locali"
+      },
+      "loading": {
+        "pool": "Caricamento dell’elenco delle stazioni",
+        "slow": "Ci stiamo ancora lavorando. L’indice delle città è lento in questo momento."
+      },
+      "degraded": {
+        "none": "Nessuna città corrisponde a queste scelte.",
+        "title": "Corrispondono solo {{count}} città.",
+        "body": "Una linea ha bisogno di tre fermate. Togli una scelta per allargarla.",
+        "terminus": "La più vicina è {{name}}, a {{km}} km: più lontano di quanto arrivi questo ritmo.",
+        "clearVibe": "Qualsiasi atmosfera",
+        "goFurther": "Coprire più strada"
+      },
+      "error": {
+        "title": "Impossibile creare il viaggio",
+        "poolTitle": "L’elenco delle stazioni non è stato caricato.",
+        "retry": "Riprova"
+      },
+      "cta": {
+        "heading": "Percorri questa linea.",
+        "body": "Diventa un viaggio tuo, con tutte le fermate già dentro. Dopo puoi cambiare quello che vuoi.",
+        "primary": "Trasformalo in viaggio",
+        "secondary": "Disegnane un’altra"
+      }
     },
     "polls": {
       "createdToast": "Poll created",
@@ -999,6 +1073,15 @@
       "openThread": "Rivedi in chat",
       "forwardHint": "[IT] Forward Booking.com, Airbnb or airline confirmations to {{address}} — they appear in your Travel Inbox, ready to add to a trip. Or paste one here to add it straight to this trip.",
       "forwardHintNoAddress": "[IT] Forward booking confirmations to your queer.guide address and they appear in your Travel Inbox. Or paste one here to add it straight to this trip."
+    },
+    "templates": {
+      "heading": "Parti da un modello",
+      "subheading": "Itinerari LGBTQ+ da cui partire",
+      "days": "{{count}} giorni",
+      "use": "Usa il modello",
+      "created": "Viaggio creato",
+      "createdDescription": "Aggiungi le tue tappe da qui.",
+      "error": "Impossibile creare il viaggio"
     }
   },
   "auth": {

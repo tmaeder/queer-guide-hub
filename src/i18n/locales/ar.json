@@ -774,7 +774,81 @@
       "signalsAria": "Trip activity",
       "forkCount": "{{count}} forks",
       "saveCount": "{{count}} saves",
-      "filtersButton": "Filters"
+      "filtersButton": "Filters",
+      "meta": {
+        "title": "أنشئ مساراً | Queer Guide",
+        "description": "اختر الأجواء والموسم والإيقاع، واحصل على مسار عبر مدن حقيقية مع عدد الأماكن والوضع القانوني وما يجري هناك أثناء وجودك."
+      },
+      "eyebrowRoute": "أداة إنشاء المسار",
+      "titleRoute": "ثلاث مدن. خط واحد.",
+      "ledeRoute": "أخبرنا بما تبحث عنه وبسرعة تنقّلك، ونرسم لك خطاً عبر مدن حقيقية — مع عدد الأماكن والوضع القانوني وما يجري هناك أثناء وجودك.",
+      "picker": {
+        "heading": "حدّد الخط",
+        "hint": "اختر الأجواء والموسم والإيقاع، ويُعاد رسم الخط.",
+        "vibeGroup": "ما الذي تبحث عنه",
+        "seasonGroup": "متى",
+        "paceGroup": "بأي سرعة",
+        "stationCount": "{{count}} محطة",
+        "stopCount": "{{count}} توقف",
+        "tooFew": "{{count}} محطة فقط",
+        "thin": "{{count}} محطة، ولا واحدة قريبة بما يكفي لتشكيل خط",
+        "vibe": {
+          "nightlife": "سهر",
+          "sauna": "ساونا",
+          "slow": "صباحات هادئة",
+          "community": "مجتمع",
+          "outdoors": "في الهواء الطلق"
+        },
+        "season": {
+          "now": "قريباً",
+          "autumn": "الخريف",
+          "winter": "الشتاء",
+          "pride": "موسم الفخر"
+        },
+        "pace": {
+          "slow": "على مهل",
+          "steady": "إيقاع ثابت",
+          "sprint": "تغطية مسافة أكبر"
+        }
+      },
+      "route": {
+        "heading": "خطك",
+        "reroll": "ارسم خطاً آخر",
+        "summary": "{{stops}} توقف · {{km}} كم · {{countries}} دولة",
+        "snapped": "تبدأ على بعد {{km}} كم من {{name}} — أقرب مدينة لدينا عنها بيانات كافية.",
+        "short": "هذا الخط فيه {{delivered}} توقف لا {{requested}}. تطابق {{eligible}} مدينة، وبقية المدن أبعد مما يسمح به هذا الإيقاع.",
+        "announced": "تم رسم الخط: {{stations}}. {{count}} توقف.",
+        "stopsAria": "محطات هذا الخط بالترتيب",
+        "stopAria": "المحطة {{n}}: {{city}}، {{country}}",
+        "swapStopAria": "استبدال المحطة {{n}}، {{city}}",
+        "tripTitle": "خط {{cities}}"
+      },
+      "station": {
+        "venues": "{{count}} مكان"
+      },
+      "loading": {
+        "pool": "جارٍ تحميل قائمة المحطات",
+        "slow": "ما زال العمل جارياً. فهرس المدن بطيء حالياً."
+      },
+      "degraded": {
+        "none": "لا توجد مدن تطابق هذه الاختيارات.",
+        "title": "{{count}} مدن فقط تطابق.",
+        "body": "الخط يحتاج ثلاث محطات. ألغِ أحد الاختيارات لتوسيعه.",
+        "terminus": "أقرب تطابق هو {{name}} على بعد {{km}} كم — أبعد مما يصل إليه هذا الإيقاع.",
+        "clearVibe": "أي أجواء",
+        "goFurther": "تغطية مسافة أكبر"
+      },
+      "error": {
+        "title": "تعذّر إنشاء الرحلة",
+        "poolTitle": "لم يتم تحميل قائمة المحطات.",
+        "retry": "أعد المحاولة"
+      },
+      "cta": {
+        "heading": "اسلك هذا الخط.",
+        "body": "يتحول إلى رحلة تملكها، وكل المحطات فيها بالفعل. يمكنك تغيير ما تشاء بعد ذلك.",
+        "primary": "حوّلها إلى رحلة",
+        "secondary": "ارسم خطاً آخر"
+      }
     },
     "polls": {
       "createdToast": "Poll created",
@@ -1005,6 +1079,15 @@
       "openThread": "راجع في الدردشة",
       "forwardHint": "[AR] Forward Booking.com, Airbnb or airline confirmations to {{address}} — they appear in your Travel Inbox, ready to add to a trip. Or paste one here to add it straight to this trip.",
       "forwardHintNoAddress": "[AR] Forward booking confirmations to your queer.guide address and they appear in your Travel Inbox. Or paste one here to add it straight to this trip."
+    },
+    "templates": {
+      "heading": "ابدأ من قالب",
+      "subheading": "مسارات LGBTQ+ للانطلاق منها",
+      "days": "{{count}} يوم",
+      "use": "استخدم القالب",
+      "created": "تم إنشاء الرحلة",
+      "createdDescription": "أضف محطاتك من هنا.",
+      "error": "تعذّر إنشاء الرحلة"
     }
   },
   "auth": {

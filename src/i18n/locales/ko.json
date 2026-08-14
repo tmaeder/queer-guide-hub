@@ -774,7 +774,81 @@
       "signalsAria": "Trip activity",
       "forkCount": "{{count}} forks",
       "saveCount": "{{count}} saves",
-      "filtersButton": "Filters"
+      "filtersButton": "Filters",
+      "meta": {
+        "title": "경로 만들기 | Queer Guide",
+        "description": "분위기, 계절, 속도를 고르면 실제 도시를 잇는 경로가 만들어집니다. 장소 수, 법적 상황, 머무는 동안 열리는 행사까지 함께 보여줍니다."
+      },
+      "eyebrowRoute": "경로 빌더",
+      "titleRoute": "세 도시. 하나의 노선.",
+      "ledeRoute": "무엇을 원하는지, 얼마나 빠르게 움직이는지 알려주세요. 실제 도시를 잇는 노선을 그려 드립니다. 장소 수, 법적 상황, 머무는 동안의 행사와 함께.",
+      "picker": {
+        "heading": "노선 정하기",
+        "hint": "분위기, 계절, 속도를 고르면 노선이 다시 그려집니다.",
+        "vibeGroup": "무엇을 원하는지",
+        "seasonGroup": "언제",
+        "paceGroup": "얼마나 빠르게",
+        "stationCount": "{{count}}개 역",
+        "stopCount": "{{count}}개 정거장",
+        "tooFew": "{{count}}개 역뿐",
+        "thin": "{{count}}개 역, 노선을 이을 만큼 가까운 역이 없습니다",
+        "vibe": {
+          "nightlife": "늦은 밤",
+          "sauna": "사우나",
+          "slow": "느긋한 아침",
+          "community": "커뮤니티",
+          "outdoors": "야외"
+        },
+        "season": {
+          "now": "곧",
+          "autumn": "가을",
+          "winter": "겨울",
+          "pride": "프라이드 시즌"
+        },
+        "pace": {
+          "slow": "천천히",
+          "steady": "적당히",
+          "sprint": "많이 둘러보기"
+        }
+      },
+      "route": {
+        "heading": "당신의 노선",
+        "reroll": "다시 그리기",
+        "summary": "{{stops}}개 정거장 · {{km}} km · {{countries}}개국",
+        "snapped": "{{name}}에서 {{km}} km 떨어진 곳에서 시작합니다. 자료가 충분한 가장 가까운 도시입니다.",
+        "short": "이 노선은 {{requested}}개가 아니라 {{delivered}}개 정거장입니다. 조건에 맞는 도시는 {{eligible}}곳이고, 나머지는 이 속도로 갈 수 있는 거리보다 멉니다.",
+        "announced": "노선을 그렸습니다: {{stations}}. 정거장 {{count}}개.",
+        "stopsAria": "이 노선의 정거장, 순서대로",
+        "stopAria": "{{n}}번째: {{city}}, {{country}}",
+        "swapStopAria": "{{n}}번째 {{city}} 교체",
+        "tripTitle": "{{cities}} 노선"
+      },
+      "station": {
+        "venues": "장소 {{count}}곳"
+      },
+      "loading": {
+        "pool": "역 목록을 불러오는 중",
+        "slow": "아직 작업 중입니다. 지금은 도시 색인이 느립니다."
+      },
+      "degraded": {
+        "none": "그 조건에 맞는 도시가 없습니다.",
+        "title": "{{count}}개 도시만 맞습니다.",
+        "body": "노선에는 정거장 세 곳이 필요합니다. 조건을 하나 해제해 보세요.",
+        "terminus": "가장 가까운 곳은 {{km}} km 떨어진 {{name}}으로, 이 속도로 갈 수 있는 거리보다 멉니다.",
+        "clearVibe": "분위기 상관없음",
+        "goFurther": "더 멀리까지"
+      },
+      "error": {
+        "title": "여행을 만들지 못했습니다",
+        "poolTitle": "역 목록을 불러오지 못했습니다.",
+        "retry": "다시 시도"
+      },
+      "cta": {
+        "heading": "이 노선으로 떠나기.",
+        "body": "모든 정거장이 담긴, 당신의 여행이 됩니다. 이후에 무엇이든 바꿀 수 있습니다.",
+        "primary": "여행으로 만들기",
+        "secondary": "다시 그리기"
+      }
     },
     "polls": {
       "createdToast": "Poll created",
@@ -999,6 +1073,15 @@
       "openThread": "채팅에서 검토",
       "forwardHint": "[KO] Forward Booking.com, Airbnb or airline confirmations to {{address}} — they appear in your Travel Inbox, ready to add to a trip. Or paste one here to add it straight to this trip.",
       "forwardHintNoAddress": "[KO] Forward booking confirmations to your queer.guide address and they appear in your Travel Inbox. Or paste one here to add it straight to this trip."
+    },
+    "templates": {
+      "heading": "템플릿으로 시작하기",
+      "subheading": "출발점이 되는 LGBTQ+ 일정",
+      "days": "{{count}}일",
+      "use": "템플릿 사용",
+      "created": "여행을 만들었습니다",
+      "createdDescription": "여기에서 정거장을 추가하세요.",
+      "error": "여행을 만들지 못했습니다"
     }
   },
   "auth": {

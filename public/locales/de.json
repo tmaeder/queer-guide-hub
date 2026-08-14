@@ -689,12 +689,12 @@
       }
     },
     "discover": {
-      "title": "Orte entdecken",
-      "button": "Marktplatz durchsuchen",
+      "title": "Route bauen",
+      "button": "Route bauen",
       "eyebrow": "Real travelers",
       "subtitle": "Real itineraries from QG travelers — copy ideas, find queer-friendly stops, plan your own.",
       "searchPlaceholder": "Filter by city…",
-      "aria": "Discover public trips",
+      "aria": "Eine Route durch echte Städte bauen",
       "sortAria": "Sort trips",
       "viewAria": "View mode",
       "filterAria": "Filter trips",
@@ -774,7 +774,81 @@
       "signalsAria": "Trip activity",
       "forkCount": "{{count}} forks",
       "saveCount": "{{count}} saves",
-      "filtersButton": "Filters"
+      "filtersButton": "Filters",
+      "meta": {
+        "title": "Route bauen | Queer Guide",
+        "description": "Wähle Stimmung, Saison und Tempo. Du bekommst eine Route durch echte Städte – mit Anzahl der Orte, Rechtslage und was dort gerade läuft."
+      },
+      "eyebrowRoute": "Routenbauer",
+      "titleRoute": "Drei Städte. Eine Linie.",
+      "ledeRoute": "Sag uns, worauf du Lust hast und wie schnell du unterwegs bist. Wir zeichnen dir eine Linie durch echte Städte – mit Anzahl der Orte, Rechtslage und was dort gerade läuft.",
+      "picker": {
+        "heading": "Linie festlegen",
+        "hint": "Wähle Stimmung, Saison und Tempo. Die Linie wird neu gezeichnet.",
+        "vibeGroup": "Worauf du Lust hast",
+        "seasonGroup": "Wann",
+        "paceGroup": "Wie schnell",
+        "stationCount": "{{count}} Stationen",
+        "stopCount": "{{count}} Stopps",
+        "tooFew": "nur {{count}} Stationen",
+        "thin": "{{count}} Stationen, keine nah genug für eine Linie",
+        "vibe": {
+          "nightlife": "Lange Nächte",
+          "sauna": "Sauna",
+          "slow": "Langsame Morgen",
+          "community": "Community",
+          "outdoors": "Draußen"
+        },
+        "season": {
+          "now": "Bald",
+          "autumn": "Herbst",
+          "winter": "Winter",
+          "pride": "Pride-Saison"
+        },
+        "pace": {
+          "slow": "Lass dir Zeit",
+          "steady": "Gleichmäßig",
+          "sprint": "Viel sehen"
+        }
+      },
+      "route": {
+        "heading": "Deine Linie",
+        "reroll": "Neu zeichnen",
+        "summary": "{{stops}} Stopps · {{km}} km · {{countries}} Länder",
+        "snapped": "Start {{km}} km von {{name}} – die nächste Stadt, zu der wir genug haben.",
+        "short": "Diese Linie hat {{delivered}} Stopps, nicht {{requested}}. {{eligible}} Städte passen dazu, der Rest liegt weiter auseinander, als dieses Tempo zulässt.",
+        "announced": "Linie gezeichnet: {{stations}}. {{count}} Stopps.",
+        "stopsAria": "Stopps auf dieser Linie, der Reihe nach",
+        "stopAria": "Stopp {{n}}: {{city}}, {{country}}",
+        "swapStopAria": "Stopp {{n}} tauschen, {{city}}",
+        "tripTitle": "Linie {{cities}}"
+      },
+      "station": {
+        "venues": "{{count}} Orte"
+      },
+      "loading": {
+        "pool": "Stationsliste wird geladen",
+        "slow": "Läuft noch. Der Städteindex ist gerade langsam."
+      },
+      "degraded": {
+        "none": "Keine Städte passen zu dieser Auswahl.",
+        "title": "Nur {{count}} Städte passen.",
+        "body": "Eine Linie braucht drei Stopps. Nimm eine Auswahl zurück.",
+        "terminus": "Am nächsten liegt {{name}}, {{km}} km entfernt – weiter, als dieses Tempo geht.",
+        "clearVibe": "Egal welche Stimmung",
+        "goFurther": "Mehr Strecke"
+      },
+      "error": {
+        "title": "Reise konnte nicht erstellt werden",
+        "poolTitle": "Die Stationsliste wurde nicht geladen.",
+        "retry": "Erneut versuchen"
+      },
+      "cta": {
+        "heading": "Fahr diese Linie.",
+        "body": "Wird zu einer Reise, die dir gehört, mit allen Stopps darauf. Danach kannst du alles ändern.",
+        "primary": "Reise daraus machen",
+        "secondary": "Neu zeichnen"
+      }
     },
     "polls": {
       "createdToast": "Umfrage erstellt",
@@ -999,6 +1073,15 @@
       "openThread": "Im Chat prüfen",
       "forwardHint": "[DE] Forward Booking.com, Airbnb or airline confirmations to {{address}} — they appear in your Travel Inbox, ready to add to a trip. Or paste one here to add it straight to this trip.",
       "forwardHintNoAddress": "[DE] Forward booking confirmations to your queer.guide address and they appear in your Travel Inbox. Or paste one here to add it straight to this trip."
+    },
+    "templates": {
+      "heading": "Mit einer Vorlage starten",
+      "subheading": "LGBTQ+-Routen als Ausgangspunkt",
+      "days": "{{count}} Tage",
+      "use": "Vorlage verwenden",
+      "created": "Reise erstellt",
+      "createdDescription": "Füge von hier aus deine Stopps hinzu.",
+      "error": "Reise konnte nicht erstellt werden"
     }
   },
   "help": {

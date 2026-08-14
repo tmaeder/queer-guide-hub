@@ -689,12 +689,12 @@
       }
     },
     "discover": {
-      "title": "場所を探す",
-      "button": "マーケットを見る",
+      "title": "ルートをつくる",
+      "button": "ルートをつくる",
       "eyebrow": "Real travelers",
       "subtitle": "Real itineraries from QG travelers — copy ideas, find queer-friendly stops, plan your own.",
       "searchPlaceholder": "Filter by city…",
-      "aria": "Discover public trips",
+      "aria": "実在の都市をつなぐルートをつくる",
       "sortAria": "Sort trips",
       "viewAria": "View mode",
       "filterAria": "Filter trips",
@@ -774,7 +774,81 @@
       "signalsAria": "Trip activity",
       "forkCount": "{{count}} forks",
       "saveCount": "{{count}} saves",
-      "filtersButton": "Filters"
+      "filtersButton": "Filters",
+      "meta": {
+        "title": "ルートをつくる | Queer Guide",
+        "description": "雰囲気・季節・ペースを選ぶと、実在の都市をつないだルートができます。スポット数、法的状況、滞在中に開かれるイベントも表示します。"
+      },
+      "eyebrowRoute": "ルートビルダー",
+      "titleRoute": "3つの都市。1本の路線。",
+      "ledeRoute": "何を求めていて、どれくらいのペースで動くかを教えてください。実在の都市をつなぐ路線を引きます。スポット数、法的状況、滞在中のイベントつきで。",
+      "picker": {
+        "heading": "路線を決める",
+        "hint": "雰囲気・季節・ペースを選ぶと、路線が引き直されます。",
+        "vibeGroup": "何を求めているか",
+        "seasonGroup": "いつ",
+        "paceGroup": "どれくらいのペースで",
+        "stationCount": "{{count}}駅",
+        "stopCount": "{{count}}停車",
+        "tooFew": "{{count}}駅のみ",
+        "thin": "{{count}}駅。路線を組めるほど近い駅がありません",
+        "vibe": {
+          "nightlife": "夜遊び",
+          "sauna": "サウナ",
+          "slow": "ゆっくりした朝",
+          "community": "コミュニティ",
+          "outdoors": "アウトドア"
+        },
+        "season": {
+          "now": "まもなく",
+          "autumn": "秋",
+          "winter": "冬",
+          "pride": "プライドシーズン"
+        },
+        "pace": {
+          "slow": "ゆっくり",
+          "steady": "ほどよく",
+          "sprint": "たくさん回る"
+        }
+      },
+      "route": {
+        "heading": "あなたの路線",
+        "reroll": "もう一度引く",
+        "summary": "{{stops}}停車・{{km}} km・{{countries}}か国",
+        "snapped": "{{name}}から{{km}} kmの地点が起点です。十分な情報がある最寄りの都市です。",
+        "short": "この路線は{{requested}}ではなく{{delivered}}停車です。条件に合う都市は{{eligible}}件で、残りはこのペースで行ける距離を超えています。",
+        "announced": "路線を引きました：{{stations}}。{{count}}停車。",
+        "stopsAria": "この路線の停車地（順番どおり）",
+        "stopAria": "{{n}}番目：{{city}}、{{country}}",
+        "swapStopAria": "{{n}}番目の{{city}}を入れ替える",
+        "tripTitle": "{{cities}}ライン"
+      },
+      "station": {
+        "venues": "{{count}}スポット"
+      },
+      "loading": {
+        "pool": "駅リストを読み込み中",
+        "slow": "まだ処理中です。都市インデックスが今は遅くなっています。"
+      },
+      "degraded": {
+        "none": "その条件に合う都市はありません。",
+        "title": "合う都市は{{count}}件だけです。",
+        "body": "路線には3停車が必要です。条件をひとつ外すと広がります。",
+        "terminus": "最も近いのは{{km}} km先の{{name}}で、このペースで行ける距離を超えています。",
+        "clearVibe": "雰囲気は問わない",
+        "goFurther": "もっと回る"
+      },
+      "error": {
+        "title": "旅程を作成できませんでした",
+        "poolTitle": "駅リストを読み込めませんでした。",
+        "retry": "再試行"
+      },
+      "cta": {
+        "heading": "この路線で行く。",
+        "body": "すべての停車地が入った、あなたの旅程になります。あとから自由に変更できます。",
+        "primary": "旅程にする",
+        "secondary": "もう一度引く"
+      }
     },
     "polls": {
       "createdToast": "Poll created",
@@ -999,6 +1073,15 @@
       "openThread": "チャットで確認",
       "forwardHint": "[JA] Forward Booking.com, Airbnb or airline confirmations to {{address}} — they appear in your Travel Inbox, ready to add to a trip. Or paste one here to add it straight to this trip.",
       "forwardHintNoAddress": "[JA] Forward booking confirmations to your queer.guide address and they appear in your Travel Inbox. Or paste one here to add it straight to this trip."
+    },
+    "templates": {
+      "heading": "テンプレートから始める",
+      "subheading": "出発点になるLGBTQ+の旅程",
+      "days": "{{count}}日",
+      "use": "テンプレートを使う",
+      "created": "旅程を作成しました",
+      "createdDescription": "ここから停車地を追加できます。",
+      "error": "旅程を作成できませんでした"
     }
   },
   "auth": {
