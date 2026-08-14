@@ -535,7 +535,15 @@ const Marketplace = () => {
             {/* Editor-curated collection chips; occasion toggles live in the
                 control band. */}
             <OccasionChips kinds={['collection']} />
-            <GuidesRail filters={{ entityType: 'marketplace', limit: 3 }} />
+            {/* `alwaysRender` is load-bearing, not a preference. With /shop
+                folded in, /marketplace is the `shop` cluster hub, and the
+                desktop header is the Intent Router — no destination links — so
+                this is the ONLY path from desktop chrome into the guides
+                family. #2723 fixed a nightly that failed for days because
+                nothing linked /guides at all; letting this rail self-hide on a
+                thin query would re-orphan it. Guarded by
+                "the shop hub links to the guides family" in e2e/guides.spec.ts. */}
+            <GuidesRail filters={{ entityType: 'marketplace', limit: 3 }} alwaysRender />
             <AffiliateDisclosure />
           </PageContainer>
         </div>
