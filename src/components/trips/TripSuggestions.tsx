@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useQuery } from '@tanstack/react-query';
-import { Plus, MapPin, CalendarDays, Shield, Loader2, Accessibility } from 'lucide-react';
+import { Plus, MapPin, CalendarDays, Shield, Accessibility } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -199,7 +200,7 @@ export function TripSuggestions({ tripId, places }: Props) {
 
       {isLoading && (
         <div className="flex justify-center py-8">
-          <Loader2 size={24} className="animate-spin" aria-label="Loading" />
+          <TrackLoader size={24} label="Loading" />
         </div>
       )}
 
@@ -242,7 +243,7 @@ export function TripSuggestions({ tripId, places }: Props) {
                       disabled={addingId === item.id}
                     >
                       {addingId === item.id ? (
-                        <Loader2 size={12} className="animate-spin" aria-label="Loading" />
+                        <TrackLoader size={12} label="Loading" />
                       ) : (
                         <Plus size={12} />
                       )}

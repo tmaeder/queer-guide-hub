@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import * as maplibregl from 'maplibre-gl';
 import type { GeoJSONSource } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
-import { Loader2 } from 'lucide-react';
+
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
-import { useTheme } from '@/components/theme/ThemeProvider';
-import { getMapStyle } from '@/config/mapStyle';
+import { getMapStyle, MAP_FONT_BOLD } from '@/config/mapStyle';
 import { isWebglSupported } from '@/lib/webglSupport';
 import type { Database } from '@/integrations/supabase/types';
 import { format } from 'date-fns';
@@ -32,9 +32,10 @@ export function EventsMapView({ events, height = 600, className }: EventsMapView
   // fallback without a setState during the init effect (react-hooks/set-state-in-effect).
   const [mapError, setMapError] = useState(() => !isWebglSupported());
   const navigate = useLocalizedNavigate();
-  const { resolvedTheme } = useTheme();
 
-  const geolocated = events.filter((e) => typeof e.latitude === 'number' && typeof e.longitude === 'number');
+  const geolocated = events.filter(
+    (e) => typeof e.latitude === 'number' && typeof e.longitude === 'number',
+  );
 
   // Init map — recreated when the theme flips so the basemap flavor follows it.
   useEffect(() => {
@@ -42,7 +43,7 @@ export function EventsMapView({ events, height = 600, className }: EventsMapView
 
     const map = new maplibregl.Map({
       container: containerRef.current,
-      style: getMapStyle(resolvedTheme),
+      style: getMapStyle(),
       center: [10, 30],
       zoom: 1.5,
       attributionControl: false,
@@ -90,8 +91,8 @@ export function EventsMapView({ events, height = 600, className }: EventsMapView
       setMapReady(false);
       map.remove();
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [resolvedTheme]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Update markers when events change
   useEffect(() => {
@@ -103,7 +104,10 @@ export function EventsMapView({ events, height = 600, className }: EventsMapView
       type: 'FeatureCollection',
       features: geolocated.map((e) => ({
         type: 'Feature' as const,
-        geometry: { type: 'Point' as const, coordinates: [e.longitude as number, e.latitude as number] },
+        geometry: {
+          type: 'Point' as const,
+          coordinates: [e.longitude as number, e.latitude as number],
+        },
         properties: {
           id: e.id,
           slug: e.slug,
@@ -149,7 +153,7 @@ export function EventsMapView({ events, height = 600, className }: EventsMapView
         layout: {
           'text-field': ['get', 'point_count_abbreviated'],
           'text-size': 13,
-          'text-font': ['Noto Sans Medium'],
+          'text-font': [MAP_FONT_BOLD],
         },
         paint: { 'text-color': '#ffffff' },
       });
@@ -183,10 +187,18 @@ export function EventsMapView({ events, height = 600, className }: EventsMapView
       });
 
       // Hover cursors
-      map.on('mouseenter', CLUSTER_LAYER, () => { map.getCanvas().style.cursor = 'pointer'; });
-      map.on('mouseleave', CLUSTER_LAYER, () => { map.getCanvas().style.cursor = ''; });
-      map.on('mouseenter', UNCLUSTERED_LAYER, () => { map.getCanvas().style.cursor = 'pointer'; });
-      map.on('mouseleave', UNCLUSTERED_LAYER, () => { map.getCanvas().style.cursor = ''; });
+      map.on('mouseenter', CLUSTER_LAYER, () => {
+        map.getCanvas().style.cursor = 'pointer';
+      });
+      map.on('mouseleave', CLUSTER_LAYER, () => {
+        map.getCanvas().style.cursor = '';
+      });
+      map.on('mouseenter', UNCLUSTERED_LAYER, () => {
+        map.getCanvas().style.cursor = 'pointer';
+      });
+      map.on('mouseleave', UNCLUSTERED_LAYER, () => {
+        map.getCanvas().style.cursor = '';
+      });
 
       // Click marker → popup
       map.on('click', UNCLUSTERED_LAYER, (e) => {
@@ -229,7 +241,7 @@ export function EventsMapView({ events, height = 600, className }: EventsMapView
         map.fitBounds(bounds, { padding: 60, maxZoom: 12, duration: 400 });
       }
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [events, mapReady]);
 
   return (
@@ -244,7 +256,7 @@ export function EventsMapView({ events, height = 600, className }: EventsMapView
           className="absolute inset-0 flex items-center justify-center"
           style={{ backgroundColor: 'hsl(var(--background) / 0.7)', zIndex: 5 }}
         >
-          <Loader2 className="animate-spin" size={24} aria-label="Loading map" />
+          <TrackLoader size={24} label="Loading map" />
         </div>
       )}
 
@@ -273,12 +285,18 @@ export function EventsMapView({ events, height = 600, className }: EventsMapView
 function escapeHtml(value: string): string {
   return String(value).replace(/[&<>"']/g, (c) => {
     switch (c) {
-      case '&': return '&amp;';
-      case '<': return '&lt;';
-      case '>': return '&gt;';
-      case '"': return '&quot;';
-      case "'": return '&#39;';
-      default: return c;
+      case '&':
+        return '&amp;';
+      case '<':
+        return '&lt;';
+      case '>':
+        return '&gt;';
+      case '"':
+        return '&quot;';
+      case "'":
+        return '&#39;';
+      default:
+        return c;
     }
   });
 }

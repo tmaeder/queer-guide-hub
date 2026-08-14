@@ -4,7 +4,6 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { MapPin } from 'lucide-react';
 import { getMapStyle } from '@/config/mapStyle';
-import { useTheme } from '@/components/theme/ThemeProvider';
 import { isWebglSupported } from '@/lib/webglSupport';
 
 interface CountryData {
@@ -80,7 +79,6 @@ export const UmamiMap = ({ countryData, loading = false }: UmamiMapProps) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<maplibregl.Map | null>(null);
   const markers = useRef<maplibregl.Marker[]>([]);
-  const { resolvedTheme } = useTheme();
   const [mapReady, setMapReady] = useState(false);
 
   // Initialize map — recreated when the theme flips so the basemap follows it.
@@ -90,7 +88,7 @@ export const UmamiMap = ({ countryData, loading = false }: UmamiMapProps) => {
 
     const mapInstance = new maplibregl.Map({
       container: mapContainer.current,
-      style: getMapStyle(resolvedTheme),
+      style: getMapStyle(),
       zoom: 1.5,
       center: [0, 20],
     });
@@ -114,7 +112,7 @@ export const UmamiMap = ({ countryData, loading = false }: UmamiMapProps) => {
       setMapReady(false);
       mapInstance.remove();
     };
-  }, [resolvedTheme]);
+  }, []);
 
   // Update markers when data changes
   useEffect(() => {

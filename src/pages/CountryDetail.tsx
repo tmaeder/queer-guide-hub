@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, lazy, Suspense } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
@@ -46,8 +46,7 @@ import {
   fetchCountryWeather,
   type WeatherDataType,
 } from './CountryDetail.parts';
-
-const ExploreMap = lazy(() => import('@/components/map/ExploreMap'));
+import { PageContainer } from '@/components/layout/PageContainer';
 
 export default function CountryDetail() {
   const { slug: countrySlug } = useParams<{ slug: string }>();
@@ -60,7 +59,11 @@ export default function CountryDetail() {
   // Merged-duplicate slug redirect (country_slug_redirects); client-side
   // fallback for in-app navigation — the edge middleware handles the 301.
   const redirectCountrySlug = useSlugRedirect(
-    { redirectTable: 'country_slug_redirects', redirectIdColumn: 'country_id', entityTable: 'countries' },
+    {
+      redirectTable: 'country_slug_redirects',
+      redirectIdColumn: 'country_id',
+      entityTable: 'countries',
+    },
     !loading && !country ? (countrySlug ?? null) : null,
   );
   useEffect(() => {
@@ -103,7 +106,8 @@ export default function CountryDetail() {
   }, [country?.id, country?.name, track]);
 
   useEffect(() => {
-    if (country?.id) fetchVenuesRef.current({ countryId: country.id, limit: 12, railQuality: true });
+    if (country?.id)
+      fetchVenuesRef.current({ countryId: country.id, limit: 12, railQuality: true });
   }, [country?.id]);
 
   useEffect(() => {
@@ -166,15 +170,17 @@ export default function CountryDetail() {
   if (!country) {
     return (
       <div className="min-h-screen bg-background">
-        <div className="mx-auto px-4 py-8 text-center">
-          <h5 className="mb-4 text-xl font-bold">{t('country.notFound.title', 'Country not found')}</h5>
+        <PageContainer className="text-center">
+          <h5 className="mb-4 text-xl font-bold">
+            {t('country.notFound.title', 'Country not found')}
+          </h5>
           <p className="mb-6 text-muted-foreground">
             {t('country.notFound.body', "The country you're looking for doesn't exist.")}
           </p>
           <LocalizedLink to="/cities" className="font-medium" style={{ color: 'inherit' }}>
             ← {t('country.notFound.back', 'Back to Cities')}
           </LocalizedLink>
-        </div>
+        </PageContainer>
       </div>
     );
   }
@@ -211,7 +217,10 @@ export default function CountryDetail() {
         cities={cities}
         citiesLoading={citiesLoading}
         emptyTitle={t('country.cities.emptyTitle', 'No cities yet')}
-        emptyDescription={t('country.cities.emptyBody', 'No cities are listed for this country yet.')}
+        emptyDescription={t(
+          'country.cities.emptyBody',
+          'No cities are listed for this country yet.',
+        )}
       />
     ),
     venues: (
@@ -230,7 +239,10 @@ export default function CountryDetail() {
         events={events}
         eventsLoading={eventsLoading}
         emptyTitle={t('country.events.emptyTitle', 'No upcoming events')}
-        emptyDescription={t('country.events.emptyBody', 'No events are scheduled for this country yet.')}
+        emptyDescription={t(
+          'country.events.emptyBody',
+          'No events are scheduled for this country yet.',
+        )}
       />
     ),
     travel: (
@@ -258,21 +270,26 @@ export default function CountryDetail() {
         newsLoading={newsLoading}
         onViewArticle={incrementViews}
         emptyTitle={t('country.news.emptyTitle', 'No local news yet')}
-        emptyDescription={t('country.news.emptyBody', 'No news articles are available for this country yet.')}
+        emptyDescription={t(
+          'country.news.emptyBody',
+          'No news articles are available for this country yet.',
+        )}
       />
     ),
-    map: <CountryMapTab country={country} ExploreMap={ExploreMap} Suspense={Suspense} />,
+    map: <CountryMapTab country={country} />,
   };
 
   const omit = new Set<string>();
   if (!hasStats) omit.add('stats');
   if (!hasCoords) omit.add('map');
 
-  const sections: SectionDef[] = COUNTRY_SECTION_DEFS.filter((def) => !omit.has(def.id)).map((def) => ({
-    id: def.id,
-    label: t(`country.section.${def.id}`, def.label),
-    content: sectionContent[def.id] ?? null,
-  }));
+  const sections: SectionDef[] = COUNTRY_SECTION_DEFS.filter((def) => !omit.has(def.id)).map(
+    (def) => ({
+      id: def.id,
+      label: t(`country.section.${def.id}`, def.label),
+      content: sectionContent[def.id] ?? null,
+    }),
+  );
 
   return (
     <>
@@ -292,11 +309,12 @@ export default function CountryDetail() {
         }
         header={
           <div className="flex flex-col gap-8">
-            <CountryHero country={country} weatherData={weatherData} onContentUpdated={refetchCountry} />
-            <SafetyVerdict
-              countryId={country.id}
-              equalityScore={country.equality_score ?? null}
+            <CountryHero
+              country={country}
+              weatherData={weatherData}
+              onContentUpdated={refetchCountry}
             />
+            <SafetyVerdict countryId={country.id} equalityScore={country.equality_score ?? null} />
             <div className="flex flex-wrap gap-2">
               <PlanTripFromHereButton
                 initialGeo={null}

@@ -26,6 +26,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useMeta } from '@/hooks/useMeta';
 import { useTranslation } from 'react-i18next';
 import { publicDisplayName } from '@/lib/displayName';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 // Saved + Trips moved to the /hub office modules (stale /user/:id/saved links
 // fall back to overview via the TABS.includes guard below).
@@ -118,19 +119,19 @@ export default function ProfilePage({ tab: tabProp }: { tab?: string } = {}) {
 
   if (loading) {
     return (
-      <div className="container mx-auto p-6">
+      <PageContainer>
         <div className="flex flex-col gap-6 animate-pulse">
           <div className="h-8 bg-muted rounded-element w-1/4" />
           <div className="h-64 bg-muted rounded-container" />
           <div className="h-32 bg-muted rounded-container" />
         </div>
-      </div>
+      </PageContainer>
     );
   }
 
   if (error || !profile) {
     return (
-      <div className="container mx-auto p-6">
+      <PageContainer>
         <div className="text-center py-12">
           <User size={48} style={{ margin: '0 auto 16px' }} className="text-muted-foreground" />
           <p className="text-base font-medium mb-2">Profile not found</p>
@@ -142,13 +143,13 @@ export default function ProfilePage({ tab: tabProp }: { tab?: string } = {}) {
             Back to directory
           </Button>
         </div>
-      </div>
+      </PageContainer>
     );
   }
 
   if ((profile as Record<string, unknown>).locked && !isOwnProfile) {
     return (
-      <div className="container mx-auto p-6">
+      <PageContainer>
         <div className="text-center py-12 flex flex-col items-center gap-4">
           <Shield size={48} className="text-muted-foreground" aria-hidden />
           <div>
@@ -161,7 +162,7 @@ export default function ProfilePage({ tab: tabProp }: { tab?: string } = {}) {
           </div>
           <UserRelationshipActions targetUserId={profile.user_id} />
         </div>
-      </div>
+      </PageContainer>
     );
   }
 
@@ -170,7 +171,7 @@ export default function ProfilePage({ tab: tabProp }: { tab?: string } = {}) {
       string | boolean | undefined) ?? 'public';
   if ((visibility === 'private' || visibility === false) && !isOwnProfile) {
     return (
-      <div className="container mx-auto p-6">
+      <PageContainer>
         <div className="text-center py-12">
           <Shield size={48} style={{ margin: '0 auto 16px' }} className="text-muted-foreground" />
           <p className="text-base font-medium mb-2">Private profile</p>
@@ -180,12 +181,12 @@ export default function ProfilePage({ tab: tabProp }: { tab?: string } = {}) {
             Back to directory
           </Button>
         </div>
-      </div>
+      </PageContainer>
     );
   }
 
   return (
-    <div className="container mx-auto p-6 pb-24">
+    <PageContainer>
       <div className="flex flex-col gap-6">
         <div className="flex items-center justify-between">
           {isMeRoute ? (
@@ -334,6 +335,6 @@ export default function ProfilePage({ tab: tabProp }: { tab?: string } = {}) {
         </Tabs>
       </div>
       {isOwnProfile && <StatusPicker open={statusPickerOpen} onOpenChange={setStatusPickerOpen} />}
-    </div>
+    </PageContainer>
   );
 }

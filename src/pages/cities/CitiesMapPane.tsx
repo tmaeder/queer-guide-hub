@@ -2,8 +2,7 @@ import { useEffect, useRef } from 'react';
 import * as maplibregl from 'maplibre-gl';
 import type { GeoJSONSource, MapLayerMouseEvent } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
-import { getMapStyle } from '@/config/mapStyle';
-import { useTheme } from '@/components/theme/ThemeProvider';
+import { getMapStyle, MAP_FONT_BOLD } from '@/config/mapStyle';
 import { isWebglSupported } from '@/lib/webglSupport';
 import { getScoreRingColor } from '@/utils/equalityScore';
 import type { DirectoryCity } from '@/hooks/useCitiesDirectory';
@@ -79,12 +78,10 @@ export function CitiesMapPane({
 }: CitiesMapPaneProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
-  const { resolvedTheme } = useTheme();
   const lastFitKeyRef = useRef<string>('');
   const fitTimerRef = useRef<number | null>(null);
   const reducedMotion =
-    typeof window !== 'undefined' &&
-    window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   // Init map — recreated when the theme flips so the basemap flavor follows it.
   useEffect(() => {
@@ -92,7 +89,7 @@ export function CitiesMapPane({
     if (!isWebglSupported()) return;
     const map = new maplibregl.Map({
       container: containerRef.current,
-      style: getMapStyle(resolvedTheme),
+      style: getMapStyle(),
       center: [0, 20],
       zoom: 1.5,
     });
@@ -104,7 +101,7 @@ export function CitiesMapPane({
       // Let the fit effect re-fit the recreated map to the current city set.
       lastFitKeyRef.current = '';
     };
-  }, [resolvedTheme]);
+  }, []);
 
   // Build / update features and layers whenever filtered cities change.
   useEffect(() => {
@@ -148,7 +145,7 @@ export function CitiesMapPane({
         filter: ['has', 'point_count'],
         layout: {
           'text-field': ['get', 'point_count_abbreviated'],
-          'text-font': ['Noto Sans Medium'],
+          'text-font': [MAP_FONT_BOLD],
           'text-size': 12,
         },
         paint: { 'text-color': 'hsl(0, 0%, 100%)' },
@@ -173,19 +170,9 @@ export function CitiesMapPane({
         source: SOURCE_ID,
         filter: ['!', ['has', 'point_count']],
         paint: {
-          'circle-radius': [
-            'case',
-            ['boolean', ['feature-state', 'hover'], false],
-            6,
-            5,
-          ],
+          'circle-radius': ['case', ['boolean', ['feature-state', 'hover'], false], 6, 5],
           'circle-color': ['get', 'color'],
-          'circle-stroke-width': [
-            'case',
-            ['boolean', ['feature-state', 'hover'], false],
-            2,
-            0,
-          ],
+          'circle-stroke-width': ['case', ['boolean', ['feature-state', 'hover'], false], 2, 0],
           'circle-stroke-color': 'hsl(0, 0%, 10%)',
         },
       });
@@ -263,8 +250,7 @@ export function CitiesMapPane({
 
     if (map.isStyleLoaded()) apply();
     else map.once('load', apply);
-    // resolvedTheme: re-wire sources/layers onto the recreated map after a theme flip.
-  }, [cities, onSelectCity, onHoverCity, reducedMotion, resolvedTheme]);
+  }, [cities, onSelectCity, onHoverCity, reducedMotion]);
 
   // Fit bounds when the filtered city set changes (debounced + de-duped).
   useEffect(() => {
@@ -278,7 +264,9 @@ export function CitiesMapPane({
       const b = boundsOf(cities);
       if (!b) return;
       if (!map.isStyleLoaded()) {
-        map.once('load', () => map.fitBounds(b, { padding: 40, maxZoom: 6, duration: reducedMotion ? 0 : 600 }));
+        map.once('load', () =>
+          map.fitBounds(b, { padding: 40, maxZoom: 6, duration: reducedMotion ? 0 : 600 }),
+        );
       } else {
         map.fitBounds(b, { padding: 40, maxZoom: 6, duration: reducedMotion ? 0 : 600 });
       }
@@ -290,7 +278,7 @@ export function CitiesMapPane({
         fitTimerRef.current = null;
       }
     };
-  }, [cities, reducedMotion, resolvedTheme]);
+  }, [cities, reducedMotion]);
 
   // Sync external hover (list → map): set the new id, clear the previous
   // on cleanup. Wrapped in try/catch since the feature may not be in
@@ -318,7 +306,11 @@ export function CitiesMapPane({
     if (!map || !map.getSource(SOURCE_ID)) return;
     if (!map.getLayer(POINTS_SELECTED_LAYER)) return;
     if (selectedCityId) {
-      map.setFilter(POINTS_SELECTED_LAYER, ['==', ['get', 'slug'], selectedCityId] as unknown as maplibregl.FilterSpecification);
+      map.setFilter(POINTS_SELECTED_LAYER, [
+        '==',
+        ['get', 'slug'],
+        selectedCityId,
+      ] as unknown as maplibregl.FilterSpecification);
       const city = cities.find((c) => c.slug === selectedCityId || c.id === selectedCityId);
       if (city && city.latitude != null && city.longitude != null) {
         map.flyTo({
@@ -328,7 +320,11 @@ export function CitiesMapPane({
         });
       }
     } else {
-      map.setFilter(POINTS_SELECTED_LAYER, ['==', ['get', 'id'], ''] as unknown as maplibregl.FilterSpecification);
+      map.setFilter(POINTS_SELECTED_LAYER, [
+        '==',
+        ['get', 'id'],
+        '',
+      ] as unknown as maplibregl.FilterSpecification);
     }
   }, [selectedCityId, cities, reducedMotion]);
 

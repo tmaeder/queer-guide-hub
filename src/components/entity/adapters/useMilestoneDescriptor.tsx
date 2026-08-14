@@ -11,9 +11,11 @@ import {
   MilestoneSidebar,
   MilestoneSources,
   MilestoneStory,
-  MilestoneTags,
 } from '@/pages/MilestoneDetail.parts';
-import type { EntityDescriptor, EntityDescriptorResult } from '@/components/entity/entityDescriptor';
+import type {
+  EntityDescriptor,
+  EntityDescriptorResult,
+} from '@/components/entity/entityDescriptor';
 
 /** Milestone adapter → normalised `EntityDescriptor` (text-first single scroll). */
 export function useMilestoneDescriptor(slug: string | undefined): EntityDescriptorResult {
@@ -30,13 +32,35 @@ export function useMilestoneDescriptor(slug: string | undefined): EntityDescript
       title: milestone.title,
       hero: <MilestoneHero milestone={milestone} />,
       sections: [
-        { id: 'story', when: Boolean(milestone.description), render: () => <MilestoneStory milestone={milestone} /> },
-        { id: 'linked', when: links.length > 0, render: () => <MilestoneLinkedEntities links={links} /> },
-        { id: 'sources', when: milestone.sources.length > 0, render: () => <MilestoneSources milestone={milestone} /> },
-        { id: 'related', when: Boolean(milestone.country_id), render: () => <MilestoneRelated milestone={milestone} /> },
+        {
+          id: 'story',
+          when: Boolean(milestone.description),
+          render: () => <MilestoneStory milestone={milestone} />,
+        },
+        {
+          id: 'linked',
+          when: links.length > 0,
+          render: () => <MilestoneLinkedEntities links={links} />,
+        },
+        {
+          id: 'sources',
+          when: milestone.sources.length > 0,
+          render: () => <MilestoneSources milestone={milestone} />,
+        },
+        {
+          id: 'related',
+          when: Boolean(milestone.country_id),
+          render: () => <MilestoneRelated milestone={milestone} />,
+        },
         { id: 'same-year', when: true, render: () => <MilestoneSameYear milestone={milestone} /> },
-        { id: 'tags', when: milestone.tags.length > 0, render: () => <MilestoneTags milestone={milestone} /> },
-        { id: 'prev-next', when: Boolean(milestone.prev || milestone.next), render: () => <MilestonePrevNext milestone={milestone} /> },
+        // No `tags` section — MilestoneHero renders them at spine position S4
+        // (breadcrumb → bullet → title → TAGS → action). They used to sit sixth
+        // in the body, between "Elsewhere in {year}" and prev/next.
+        {
+          id: 'prev-next',
+          when: Boolean(milestone.prev || milestone.next),
+          render: () => <MilestonePrevNext milestone={milestone} />,
+        },
       ],
       sidebar: <MilestoneSidebar milestone={milestone} />,
       // The shell's SimilarItems rail is venue/org-typed; milestone "related"

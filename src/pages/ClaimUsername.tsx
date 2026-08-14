@@ -1,21 +1,25 @@
 import { useEffect, useState } from 'react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useNavigate } from 'react-router';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2 } from 'lucide-react';
+
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile, type Profile } from '@/hooks/useProfile';
 import { UsernameSelector } from '@/components/auth/UsernameSelector';
 import { AvatarQuickPick } from '@/components/profile/AvatarQuickPick';
 import { generateRandomConfig, type AvatarConfig } from '@/components/profile/avatarConfig';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 export default function ClaimUsername() {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const { profile, loading: profileLoading, updateProfile } = useProfile();
   const [pendingUsername, setPendingUsername] = useState<string | null>(null);
-  const [pendingAvatar, setPendingAvatar] = useState<AvatarConfig | null>(() => generateRandomConfig());
+  const [pendingAvatar, setPendingAvatar] = useState<AvatarConfig | null>(() =>
+    generateRandomConfig(),
+  );
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -52,15 +56,19 @@ export default function ClaimUsername() {
 
   if (authLoading || profileLoading || !user || username) {
     return (
-      <div className="min-h-[60vh] flex items-center justify-center" role="status" aria-label="Loading">
-        <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" aria-hidden="true" />
+      <div
+        className="min-h-[60vh] flex items-center justify-center"
+        role="status"
+        aria-label="Loading"
+      >
+        <TrackLoader size={24} />
       </div>
     );
   }
 
   return (
-    <div className="py-10 px-4 sm:px-6">
-      <Card className="max-w-md mx-auto rounded-container">
+    <PageContainer size="form">
+      <Card className="rounded-container">
         <CardHeader>
           <CardTitle className="text-2xl font-bold tracking-tight text-center text-balance">
             Set up your profile
@@ -82,11 +90,11 @@ export default function ClaimUsername() {
             disabled={!pendingUsername || !pendingAvatar || saving}
             onClick={handleSave}
           >
-            {saving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+            {saving && <TrackLoader size={16} className="mr-2" />}
             Save and continue
           </Button>
         </CardContent>
       </Card>
-    </div>
+    </PageContainer>
   );
 }

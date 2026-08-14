@@ -2,7 +2,7 @@
 import { useCallback, useMemo, useRef } from 'react';
 import { useSearchParams } from 'react-router';
 import type { LayerType } from '@/hooks/useExploreMapData';
-import { LAYER_DEFS } from '@/components/map/ExploreMapLayers';
+import { LAYER_DEFS } from '@/config/mapLayers';
 import type {
   MapLens,
   MapShellConfig,
@@ -96,8 +96,8 @@ export function useMapShellState(config: MapShellConfig): UseMapShellStateResult
   });
 
   const lens: MapLens = useUrl
-    ? parseLens(searchParams.get('lens'), config.lenses) ??
-      (prefs?.lens && config.lenses.includes(prefs.lens) ? prefs.lens : config.defaultLens)
+    ? (parseLens(searchParams.get('lens'), config.lenses) ??
+      (prefs?.lens && config.lenses.includes(prefs.lens) ? prefs.lens : config.defaultLens))
     : inMemoryRef.current.lens;
 
   // An empty saved layer set must fall back to the surface defaults, NOT
@@ -106,8 +106,8 @@ export function useMapShellState(config: MapShellConfig): UseMapShellStateResult
   // layers — a blank map — on every bare /map visit. Guard on length.
   const savedLayers = prefs?.enabledLayers?.filter((l) => config.layers.includes(l));
   const enabledLayers: LayerType[] = useUrl
-    ? parseLayers(searchParams.get('layers'), config.layers) ??
-      (savedLayers && savedLayers.length > 0 ? savedLayers : defaultLayers)
+    ? (parseLayers(searchParams.get('layers'), config.layers) ??
+      (savedLayers && savedLayers.length > 0 ? savedLayers : defaultLayers))
     : inMemoryRef.current.enabledLayers;
 
   const filters: MapShellFilters = useMemo(() => {

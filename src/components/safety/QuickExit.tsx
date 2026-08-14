@@ -11,7 +11,6 @@
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { LogOut } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { performQuickExit } from './perform-quick-exit';
 
 export function QuickExit() {
@@ -26,22 +25,26 @@ export function QuickExit() {
   }, []);
 
   return (
-    <div className="pointer-events-none fixed right-4 top-20 z-50 sm:right-6">
-      {/* text-xl + bold makes this WCAG large text (>=14pt bold): the
-        dark-mode destructive red only reaches 3.59:1 with white, which clears
-        the 3:1 large-text bar but not the 4.5:1 normal-text bar. Larger, bolder
-        is also better crisis UX for a quick-exit affordance. */}
-      <Button
+    <div className="pointer-events-none fixed right-4 top-24 z-50 sm:right-6">
+      {/* Deliberately not <Button>: that base carries `active:scale-[0.98]`,
+        and a scale transform is the wrong thing on the one control someone
+        hits in a panic.
+
+        text-xl + bold keeps this WCAG large text (>=14pt bold) — the size is
+        also simply better crisis UX for a quick-exit affordance.
+
+        The hard shadow is STATIC, never a hover reward: it reads as a physical
+        sticker sitting above the page. And there is no hover colour change —
+        red IS the signal here, so losing it on hover would lose the signal. */}
+      <button
         type="button"
-        variant="destructive"
-        size="lg"
         onClick={performQuickExit}
-        className="pointer-events-auto text-xl font-bold"
+        className="pointer-events-auto inline-flex items-center gap-2 border-[3px] border-foreground bg-destructive px-6 py-4 text-xl font-bold text-destructive-foreground shadow-hard-sm"
         aria-label={t('help.quick_exit_aria', 'Leave this page immediately (ESC)')}
       >
-        <LogOut size={20} className="mr-2" aria-hidden="true" />
+        <LogOut size={20} aria-hidden="true" />
         {t('help.quick_exit', 'Quick exit')}
-      </Button>
+      </button>
     </div>
   );
 }

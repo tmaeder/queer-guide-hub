@@ -1,6 +1,7 @@
 import { useState } from 'react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useTranslation } from 'react-i18next';
-import { Luggage, Plus, Loader2, MapPin } from 'lucide-react';
+import { Luggage, Plus, MapPin } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
@@ -131,7 +132,7 @@ function SavedCityRow({ group }: { group: SavedCityGroup }) {
                 disabled={busy !== null}
               >
                 {busy === 'active' ? (
-                  <Loader2 size={14} className="mr-1.5 animate-spin" aria-label="Loading" />
+                  <TrackLoader size={14} label="Loading" className="mr-1.5" />
                 ) : (
                   <Plus size={14} className="mr-1.5" aria-hidden="true" />
                 )}
@@ -141,7 +142,7 @@ function SavedCityRow({ group }: { group: SavedCityGroup }) {
             {canStartTrip && (
               <Button size="sm" onClick={handleStartTrip} disabled={busy !== null}>
                 {busy === 'new' ? (
-                  <Loader2 size={14} className="mr-1.5 animate-spin" aria-label="Loading" />
+                  <TrackLoader size={14} label="Loading" className="mr-1.5" />
                 ) : (
                   <Luggage size={14} className="mr-1.5" aria-hidden="true" />
                 )}

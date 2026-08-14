@@ -46,6 +46,10 @@ const CARD_ROUTES = ['/city/berlin', '/events', '/venues', '/news', '/places'];
 // page instead of the not-found branch — there is no anon-reachable URL that
 // exercises those two buttons. The unit-level guards still cover them.
 const STATIC_ROUTES = [
+  // The homepage hero carries the primary navigation as clickable subway
+  // stations (IntentMap), so the site's most-used links belong under this
+  // guard — they were unguarded here while the intent rail was a plain grid.
+  '/',
   '/about',
   '/marketplace/categories',
   '/marketplace/share',

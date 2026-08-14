@@ -1,18 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useTranslation } from 'react-i18next';
 import DOMPurify from 'dompurify';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import {
-  ImagePlus,
-  Loader2,
-  ScanLine,
-  Send,
-  Smile,
-  Sparkles,
-  Sticker as StickerIcon,
-  X,
-} from 'lucide-react';
+import { ImagePlus, ScanLine, Send, Smile, Sparkles, Sticker as StickerIcon, X } from 'lucide-react';
 import { EmojiPicker } from '@/components/messaging/EmojiPicker';
 import { StickerPicker } from '@/components/messaging/StickerPicker';
 import { pickIcebreaker } from '@/lib/icebreakers';
@@ -155,7 +147,7 @@ export const MessageInput = ({
             ) : null}
             {uploadingImage && (
               <div className="absolute inset-0 flex items-center justify-center bg-background/60">
-                <Loader2 size={18} className="animate-spin text-muted-foreground" />
+                <TrackLoader size={18} />
               </div>
             )}
             {pendingImage && !uploadingImage && onClearImage && (

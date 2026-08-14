@@ -8,6 +8,7 @@ import { SectionNav } from './SectionNav';
 import { useActiveSection } from './useActiveSection';
 import { EditorialSection } from './EditorialSection';
 import type { SectionDef } from './types';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 export interface EditorialBreadcrumb {
   label: ReactNode;
@@ -142,22 +143,22 @@ export function EditorialDetailLayout({
 
   if (error) {
     return (
-      <div className="container mx-auto py-8" data-testid="editorial-detail-error">
+      <PageContainer data-testid="editorial-detail-error">
         <Alert variant="destructive">
           <AlertTitle>Failed to load</AlertTitle>
           <AlertDescription>{error.message || 'Something went wrong.'}</AlertDescription>
         </Alert>
-      </div>
+      </PageContainer>
     );
   }
 
   if (loading) {
     return (
-      <div className="container mx-auto py-8" data-testid="editorial-detail-loading">
+      <PageContainer data-testid="editorial-detail-loading">
         <Skeleton variant="rectangular" height={32} style={{ width: '40%' }} className="mb-4" />
         <Skeleton variant="rectangular" height={320} className="mb-8 rounded-container" />
         <Skeleton variant="rectangular" height={120} className="mb-8 rounded-container" />
-      </div>
+      </PageContainer>
     );
   }
 
@@ -169,7 +170,7 @@ export function EditorialDetailLayout({
           className="fixed top-0 left-0 right-0 h-[2px] bg-foreground z-[1200]"
         />
       )}
-      <div className="container mx-auto px-4 py-8" data-testid="editorial-detail-layout">
+      <PageContainer data-testid="editorial-detail-layout">
         <div className="mb-8">{header}</div>
 
         {banner ? <div className="mb-6">{banner}</div> : null}
@@ -196,7 +197,7 @@ export function EditorialDetailLayout({
         </div>
 
         {footer ? <div className="mt-12">{footer}</div> : null}
-      </div>
+      </PageContainer>
     </>
   );
 }

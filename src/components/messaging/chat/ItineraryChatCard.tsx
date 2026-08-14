@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useTranslation } from 'react-i18next';
 import { format, isValid, parseISO } from 'date-fns';
 import {
@@ -12,7 +13,6 @@ import {
   Check,
   X,
   Plus,
-  Loader2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -138,7 +138,7 @@ export function ItineraryChatCard({ meta }: { meta: ItineraryMeta }) {
               onClick={() => decide('approved')}
             >
               {busy === 'approved' ? (
-                <Loader2 size={14} className="animate-spin" />
+                <TrackLoader size={14} />
               ) : (
                 <Check size={14} className="mr-1" />
               )}
@@ -167,7 +167,7 @@ export function ItineraryChatCard({ meta }: { meta: ItineraryMeta }) {
             <DropdownMenuTrigger asChild>
               <Button size="sm" variant="outline" className="h-8" disabled={!!busy}>
                 {busy === 'slot' ? (
-                  <Loader2 size={14} className="mr-1 animate-spin" />
+                  <TrackLoader size={14} className="mr-1" />
                 ) : (
                   <Plus size={14} className="mr-1" />
                 )}

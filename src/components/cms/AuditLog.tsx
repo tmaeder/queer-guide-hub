@@ -5,8 +5,9 @@
  */
 
 import { useEffect, useState, useCallback, useMemo } from 'react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useSearchParams } from 'react-router';
-import { History, Clock, User, Loader2 } from 'lucide-react';
+import { History, Clock, User} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useCMSAudit } from '@/hooks/useCMSAudit';
 import { formatRelativeTime, formatAction } from '@/lib/audit-format';
@@ -207,7 +208,7 @@ export function AuditLog({ sourceTable, sourceId }: AuditLogProps) {
 
       {loading ? (
         <div className="flex justify-center py-8">
-          <Loader2 className="h-6 w-6 animate-spin" aria-label="Loading" />
+          <TrackLoader size={24} label="Loading" />
         </div>
       ) : error ? (
         <Alert variant="destructive" className="mb-2">

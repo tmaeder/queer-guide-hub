@@ -1,6 +1,10 @@
 import { useParams, useNavigate } from 'react-router';
 import { useAuth } from '@/hooks/useAuth';
-import { useIntimateProfile, useMyIntimateProfile, useReportIntimateProfile } from '@/hooks/useIntimateProfile';
+import {
+  useIntimateProfile,
+  useMyIntimateProfile,
+  useReportIntimateProfile,
+} from '@/hooks/useIntimateProfile';
 import { useBlockUser, useProfileDisplay, useSendFriendRequest } from '@/hooks/useIntimateActions';
 import { Button } from '@/components/ui/button';
 import { FlatFieldGroup } from '@/components/ui/FlatFieldGroup';
@@ -9,6 +13,7 @@ import { getGenitalPictogramSet, bodyPictograms, angleOptions } from '@/assets/i
 import { useState } from 'react';
 import { KinkVisibleList } from '@/components/kinks/KinkVisibleList';
 import { KinkPeerActions } from '@/components/kinks/KinkPeerActions';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 function Row({ k, v }: { k: string; v: string }) {
   return (
@@ -36,10 +41,10 @@ export default function IntimateUserDetail() {
   if (isLoading) return <div className="p-8">Loading…</div>;
   if (!me?.opted_in_at) {
     return (
-      <div className="mx-auto max-w-md p-8 text-center">
+      <PageContainer size="form" className="text-center">
         <p className="mb-6">Opt in to view intimate profiles.</p>
         <Button onClick={() => navigate('/intimate/onboard')}>Get started</Button>
-      </div>
+      </PageContainer>
     );
   }
   if (!profile) {
@@ -82,12 +87,13 @@ export default function IntimateUserDetail() {
     ? getGenitalPictogramSet(profile.genitalia)[profile.genital_pictogram_key]
     : null;
   const BPicto = profile.body_pictogram_key ? bodyPictograms[profile.body_pictogram_key] : null;
-  const Angle = profile.erection_angle_deg !== null
-    ? angleOptions.find((a) => a.deg === profile.erection_angle_deg)?.Picto
-    : null;
+  const Angle =
+    profile.erection_angle_deg !== null
+      ? angleOptions.find((a) => a.deg === profile.erection_angle_deg)?.Picto
+      : null;
 
   return (
-    <div className="mx-auto max-w-2xl px-6 py-8">
+    <PageContainer size="form">
       <header className="flex items-center gap-4 pb-6">
         {displayProfile?.avatar_url ? (
           <img
@@ -103,8 +109,13 @@ export default function IntimateUserDetail() {
             {displayProfile?.display_name ?? 'Anon'}
           </h1>
           <p className="text-sm text-muted-foreground">
-            {[profile.age_band, profile.body_type, profile.height_cm ? `${profile.height_cm}cm` : null]
-              .filter(Boolean).join(' · ')}
+            {[
+              profile.age_band,
+              profile.body_type,
+              profile.height_cm ? `${profile.height_cm}cm` : null,
+            ]
+              .filter(Boolean)
+              .join(' · ')}
           </p>
         </div>
       </header>
@@ -128,28 +139,38 @@ export default function IntimateUserDetail() {
           {profile.role?.length ? <Row k="Role" v={profile.role.join(', ')} /> : null}
           {profile.into_tags?.length ? <Row k="Into" v={profile.into_tags.join(', ')} /> : null}
           {profile.limits?.length ? <Row k="Limits" v={profile.limits.join(', ')} /> : null}
-          {profile.safer_sex_prefs?.length ? <Row k="Safer sex" v={profile.safer_sex_prefs.join(', ')} /> : null}
+          {profile.safer_sex_prefs?.length ? (
+            <Row k="Safer sex" v={profile.safer_sex_prefs.join(', ')} />
+          ) : null}
         </dl>
       </FlatFieldGroup>
 
       <FlatFieldGroup title="Interests & boundaries">
         {userId && <KinkVisibleList ownerId={userId} />}
-        {userId && (
-          <KinkPeerActions otherId={userId} otherName={displayProfile?.display_name} />
-        )}
+        {userId && <KinkPeerActions otherId={userId} otherName={displayProfile?.display_name} />}
       </FlatFieldGroup>
 
       <div className="pt-6 flex flex-wrap gap-2">
-        <Button onClick={sendRequest} className="rounded-element">Send friend request</Button>
-        <Button variant="outline" onClick={() => setReportOpen((v) => !v)} className="rounded-element">Report</Button>
-        <Button variant="outline" onClick={block} className="rounded-element">Block</Button>
+        <Button onClick={sendRequest} className="rounded-element">
+          Send friend request
+        </Button>
+        <Button
+          variant="outline"
+          onClick={() => setReportOpen((v) => !v)}
+          className="rounded-element"
+        >
+          Report
+        </Button>
+        <Button variant="outline" onClick={block} className="rounded-element">
+          Block
+        </Button>
       </div>
 
       {reportOpen && (
         <div className="mt-6 pt-6">
           <p className="text-sm font-medium mb-4">Reason for report</p>
           <div className="flex flex-wrap gap-2">
-            {['underage','spam','impersonation','hateful','illegal','other'].map((r) => (
+            {['underage', 'spam', 'impersonation', 'hateful', 'illegal', 'other'].map((r) => (
               <Button
                 key={r}
                 size="sm"
@@ -163,6 +184,6 @@ export default function IntimateUserDetail() {
           </div>
         </div>
       )}
-    </div>
+    </PageContainer>
   );
 }

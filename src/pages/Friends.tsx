@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { AuthGate } from '@/components/layout/AuthGate';
 import { FriendsPanel } from '@/components/community/FriendsPanel';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 /**
  * /community/friends — own-only page around the shared FriendsPanel (also
@@ -13,7 +14,7 @@ export default function Friends() {
       title={t('pages.friends.title', 'Friends')}
       description={t('pages.friends.gate', 'Please sign in to view your friends.')}
     >
-      <div className="container mx-auto py-6 px-4">
+      <PageContainer>
         <div className="flex flex-col gap-6">
           <div className="flex flex-col gap-2">
             <h1 className="text-display font-bold text-foreground">
@@ -25,7 +26,7 @@ export default function Friends() {
           </div>
           <FriendsPanel />
         </div>
-      </div>
+      </PageContainer>
     </AuthGate>
   );
 }

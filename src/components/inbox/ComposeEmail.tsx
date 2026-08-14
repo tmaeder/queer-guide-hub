@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
-import { Send, Loader2 } from 'lucide-react';
+import { Send} from 'lucide-react';
 import { useMailbox } from '@/hooks/useMailbox';
 import { useMailboxAddress } from '@/hooks/useMailboxAddress';
 import { RichTextEditor } from '@/components/cms/editor/RichTextEditor';
@@ -111,7 +112,7 @@ export const ComposeEmail = ({ replyTo, onSent, onCancel }: ComposeEmailProps) =
           )}
           <Button onClick={handleSend} disabled={sending || !to.trim()}>
             {sending ? (
-              <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+              <TrackLoader size={16} className="mr-1" />
             ) : (
               <Send className="h-4 w-4 mr-1" />
             )}

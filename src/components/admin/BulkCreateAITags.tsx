@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from 'sonner';
-import { Loader2, Sparkles, CheckCircle, XCircle, AlertCircle, ExternalLink } from "lucide-react";
+import { Sparkles, CheckCircle, XCircle, AlertCircle, ExternalLink } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
 
@@ -193,7 +194,7 @@ const BulkCreateAITags = ({ onComplete }: BulkCreateAITagsProps) => {
               onClick={handleSubmit}
               disabled={isLoading || !terms.trim()}
             >
-              {isLoading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+              {isLoading && <TrackLoader size={16} className="mr-2" />}
               Create Tags with AI
             </Button>
           </div>

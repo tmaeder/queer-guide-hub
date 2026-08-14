@@ -1,19 +1,11 @@
 import { useMemo, useState } from 'react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
-import {
-  Users,
-  PenSquare,
-  Search,
-  AlertTriangle,
-  RefreshCw,
-  Home,
-  Loader2,
-  LogIn,
-} from 'lucide-react';
+import { Users, PenSquare, Search, AlertTriangle, RefreshCw, Home, LogIn } from 'lucide-react';
 import { PostCard } from '@/components/posts/PostCard';
 import { CreatePostDialog } from '@/components/posts/CreatePostDialog';
 import { useCommunityPosts } from '@/hooks/useCommunityPosts';
@@ -24,6 +16,7 @@ import { PageLoadingState } from '@/components/layout/PageLoadingState';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { useTranslation } from 'react-i18next';
 import { VirtualizedGrid } from '@/components/ui/VirtualizedGrid';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 export default function Feed() {
   const { t } = useTranslation();
@@ -64,7 +57,7 @@ export default function Feed() {
   }, [filteredPosts, activeTab]);
 
   return (
-    <div className="container mx-auto py-8 px-4">
+    <PageContainer>
       <PageHeader
         title={t('pages.nav.feed', 'Feed')}
         subtitle={t(
@@ -236,7 +229,7 @@ export default function Feed() {
                       className="inline-flex gap-2"
                     >
                       {isFetchingNextPage && (
-                        <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                        <TrackLoader size={16} />
                       )}
                       {t('pages.feed.loadMore', 'Load more')}
                     </Button>
@@ -247,6 +240,6 @@ export default function Feed() {
           </div>
         </>
       )}
-    </div>
+    </PageContainer>
   );
 }

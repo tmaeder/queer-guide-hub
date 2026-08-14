@@ -10,6 +10,11 @@ import { ActiveQuestBanner } from '@/components/guides/ActiveQuestBanner';
 import { ContinueReadingRail } from '@/components/guides/ContinueReadingRail';
 import { PageHero } from '@/components/discovery';
 import { EmptyState } from '@/components/ui/EmptyState';
+import {
+  PageContainer,
+  PAGE_BLEED_MOBILE,
+  STICKY_UNDER_HEADER,
+} from '@/components/layout/PageContainer';
 
 const FORMATS: GuideFormat[] = ['guide', 'list', 'quest'];
 const ENTITIES: GuideEntityType[] = [
@@ -71,9 +76,11 @@ const Guides = () => {
         )}
         size="md"
       />
-      <div className="container mx-auto py-8 md:py-12 px-4">
+      <PageContainer>
         <ActiveQuestBanner />
-        <div className="mb-8">
+        <div
+          className={`sticky ${STICKY_UNDER_HEADER} z-20 ${PAGE_BLEED_MOBILE} py-2 mb-8 border-b-[3px] border-foreground bg-background`}
+        >
           <GuidesFilterBar filters={filters} onChange={setFilters} />
         </div>
         <ContinueReadingRail />
@@ -113,7 +120,7 @@ const Guides = () => {
             )}
           </div>
         )}
-      </div>
+      </PageContainer>
     </div>
   );
 };

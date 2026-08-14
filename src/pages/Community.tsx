@@ -6,6 +6,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { lazyRetry } from '@/utils/lazyRetry';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 // Each tab renders the existing standalone surface. Radix mounts only the active
 // tab's content, so a surface's data hooks fire only when its tab is open.
@@ -38,15 +39,13 @@ export default function Community({ tab }: { tab?: CommunityTab }) {
   const triggers: ReadonlyArray<readonly [CommunityTab, string, LucideIcon]> = [
     ['feed', t('header.nav.feed', 'Feed'), Rss],
     ['members', t('header.nav.members', 'Members'), UserCheck],
-    ...(user
-      ? ([['friends', t('header.userMenu.friends', 'Friends'), Users]] as const)
-      : []),
+    ...(user ? ([['friends', t('header.userMenu.friends', 'Friends'), Users]] as const) : []),
     ['groups', t('header.nav.groups', 'Groups'), UsersRound],
   ];
 
   return (
     <>
-      <div className="container mx-auto px-4 pt-6">
+      <PageContainer>
         <Tabs value={active} onValueChange={setTab} style={{ width: '100%' }}>
           <TabsList className="h-auto gap-0 rounded-none border-0 bg-transparent p-0 backdrop-blur-none w-full justify-start overflow-x-auto">
             {triggers.map(([v, label, Icon]) => (
@@ -61,14 +60,14 @@ export default function Community({ tab }: { tab?: CommunityTab }) {
             ))}
           </TabsList>
         </Tabs>
-      </div>
+      </PageContainer>
 
       <Suspense
         fallback={
-          <div className="container mx-auto px-4 py-8 flex flex-col gap-4">
+          <PageContainer className="flex flex-col gap-4">
             <Skeleton className="h-32 rounded-container" />
             <Skeleton className="h-32 rounded-container" />
-          </div>
+          </PageContainer>
         }
       >
         {active === 'feed' && <Feed />}

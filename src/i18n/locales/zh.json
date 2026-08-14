@@ -1466,19 +1466,19 @@
       "relationships": "关系",
       "women": "女性"
     },
-    "quick_exit": "Quick exit",
-    "quick_exit_aria": "Leave this page immediately (ESC)",
-    "hide_screen": "Hide screen",
-    "reveal_aria": "Click anywhere to show the page again",
-    "hidden_hint": "Page hidden. Click anywhere to show again.",
-    "hero_label": "Recommended right now",
-    "expect_title": "What happens when you call",
+    "quick_exit": "快速离开",
+    "quick_exit_aria": "立即离开此页面（Esc 键）",
+    "hide_screen": "隐藏页面",
+    "reveal_aria": "点击任意位置可重新显示页面",
+    "hidden_hint": "页面已隐藏。点击任意位置可重新显示。",
+    "hero_label": "当前推荐",
+    "expect_title": "打电话时会发生什么",
     "expect_short": "What to expect",
     "expect_1": "You'll hear a short greeting. You don't have to give your name.",
     "expect_2": "You can hang up at any time. You can call back as often as you need.",
     "expect_3": "Free hotlines in DE/AT/CH don't appear on itemized phone bills.",
     "expect_4": "If you can't speak, ask for text or chat — most hotlines offer it.",
-    "self_help_trigger": "While you wait",
+    "self_help_trigger": "还没准备好开口？",
     "self_help_title": "Steady yourself",
     "self_help_desc": "Short techniques you can use while you wait, or instead of a call if you're not ready.",
     "breathing_title": "4-7-8 breathing",
@@ -1496,7 +1496,7 @@
     "safety_plan_title": "Safety plan",
     "safety_plan_desc": "A short written plan you can pull up when things get bad — your warning signs, coping steps, people to call, and reasons to live.",
     "safety_plan_link": "Open template (Stanley-Brown)",
-    "report": "Report",
+    "report": "举报",
     "report_aria": "Report a problem with this hotline",
     "report_title": "Report this hotline",
     "report_desc": "Thanks for helping keep this list accurate. Reports are reviewed by our team.",
@@ -1536,7 +1536,53 @@
       "closed": "Service has shut down",
       "unsafe": "Unsafe / harmful experience",
       "other": "Other"
-    }
+    },
+    "browse_support_orgs": "查看所有支持机构",
+    "browse_title": "浏览全部求助热线",
+    "cant_speak": "不方便说话？",
+    "closed_now": "当前休息",
+    "closed_no_alt": "该热线现在不在服务时间，本国也没有其他正在开放的热线。如有紧急危险，请拨打上方的紧急号码。",
+    "directories_subtitle": "这些是转介机构和名录——是网站，而不是可直接通话的热线。",
+    "directories_title": "名录与其他支持",
+    "emergency_short": "紧急电话",
+    "helping_body": "如果你正在陪伴一个处于危机中的人：留在他身边，认真对待他所说的话，不要让他独自一人。你不需要知道所有答案。可以一起拨打热线，也可以自己打电话询问接下来该怎么做。",
+    "helping_title": "帮助他人",
+    "keep": "收藏该热线",
+    "know_the_law": "了解当地法律",
+    "know_the_law_body": "能否安全地公开身份、就医或报警，取决于你所在的地方。采取行动前请先了解当地的法律状况。",
+    "link_unavailable": "该网站暂时无法访问，正在重新核查。",
+    "loading": "正在加载名录…",
+    "more_support": "更多支持",
+    "no_country_body": "在上方选择国家，我们会显示最合适的热线。下方列出了我们收录的全部热线。",
+    "no_country_title": "我们无法确定你所在的位置",
+    "no_lines_body": "如果你此刻身处危险，请拨打紧急电话：112（欧盟）或 911（美国/加拿大）。",
+    "no_lines_title": "无法加载名录",
+    "no_police_policy": "该热线明确承诺，未经你本人明确请求，绝不联系警方或急救服务。",
+    "open_always": "24 小时全天开放",
+    "open_instead": "现在可联系的其他热线",
+    "open_now": "现在开放",
+    "org_coverage": "这份名录远未覆盖所有地区。如果缺少你信任的机构，请告诉我们。结果为空只说明我们没有收录，并不代表没有帮助。",
+    "phone_only": "据我们掌握的信息，仅提供电话服务。",
+    "phone_only_with_site": "据我们掌握的信息，仅提供电话服务。其网站上可能有在线聊天或电子邮件。",
+    "provenance": "信息来源",
+    "report_submitting": "正在提交…",
+    "reports_police_warning": "该热线可能在未经你同意的情况下联系警方或急救服务。",
+    "result_count_one": "{{count}} 条",
+    "result_count_other": "{{count}} 条",
+    "rights_by_country": "各国 LGBTQ+ 权利",
+    "saved_lines": "已收藏的热线",
+    "scope_all": "显示我们收录的所有国家的热线。",
+    "scope_change": "更改",
+    "scope_dialog_desc": "热线按其服务的国家排列。无论选择哪个国家，国际名录都会保持显示。",
+    "scope_dialog_title": "选择国家",
+    "scope_prefix": "所在国家：",
+    "support_orgs": "支持机构",
+    "support_orgs_body": "提供面对面支持的社群中心和公益组织。",
+    "tell_us": "告诉我们",
+    "unkeep": "取消收藏",
+    "visit_site": "打开其网站",
+    "website": "网站",
+    "see_all_lines": "查看所有热线"
   },
   "sos": {
     "button": "SOS",
@@ -1675,6 +1721,13 @@
       "title": "[ZH] Born this week",
       "seeAll": "[ZH] All personalities",
       "celebrate": "[ZH] Celebrate {{name}}"
+    },
+    "map": {
+      "interchangeEyebrow": "[ZH] Interchange",
+      "interchange": {
+        "label": "[ZH] Search everything",
+        "subtitle": "[ZH] Every line meets here"
+      }
     }
   },
   "header": {
@@ -3384,6 +3437,12 @@
       "events_other": "[ZH] {{count}} events",
       "groups_one": "[ZH] {{count}} group",
       "groups_other": "[ZH] {{count}} groups"
+    },
+    "interests": {
+      "title": "[ZH] What are you into?",
+      "blurb": "[ZH] Pick a few. They shape what we suggest, and they are how other members find people with something in common.",
+      "blurbSignedOut": "[ZH] Sign in to pick a few. They shape what we suggest, and they are how other members find people with something in common.",
+      "count": "[ZH] {{count}} selected"
     }
   },
   "hub": {
@@ -3588,7 +3647,11 @@
       "allCountries": "所有国家",
       "clear": "清除筛选",
       "major": "主要里程碑",
-      "showAll": "全部里程碑"
+      "showAll": "全部里程碑",
+      "heading": "[ZH] Filter the timeline",
+      "categoryGroup": "[ZH] Category",
+      "scopeGroup": "[ZH] Depth",
+      "impactGroup": "[ZH] Impact"
     },
     "category": {
       "uprising-movement": "起义 / 运动",
@@ -3608,7 +3671,9 @@
       "sources": "来源",
       "linked": "相关人物与地点",
       "related": "{{country}}的更多里程碑",
-      "sameYear": "[ZH] Elsewhere in {{year}}"
+      "sameYear": "[ZH] Elsewhere in {{year}}",
+      "story": "[ZH] What happened",
+      "sameYearNote": "[ZH] What was happening in other countries the same year."
     },
     "sidebar": {
       "facts": "事实",
@@ -3700,7 +3765,16 @@
       "country": "[ZH] Travel guide: {{name}}",
       "city": "[ZH] City guide: {{name}}",
       "events": "[ZH] Events in {{name}} today"
-    }
+    },
+    "facts": {
+      "impact": "[ZH] Impact",
+      "category": "[ZH] Category",
+      "era": "[ZH] Era"
+    },
+    "photoCredit": "[ZH] Photo",
+    "eraNavHeading": "[ZH] The line, end to end",
+    "eraNavStation": "[ZH] {{era}} — {{count}} milestones",
+    "emptyTitle": "[ZH] No service on this stretch of the line"
   },
   "guides": {
     "hub": {
@@ -3925,6 +3999,164 @@
       "partial": "[ZH] Some protections",
       "protected": "[ZH] Broad protections",
       "unknown": "[ZH] Not enough data"
+    }
+  },
+  "about": {
+    "eyebrow": "关于我们",
+    "title": "由酷儿打造，属于每个人。",
+    "lede": "Queer Guide 汇集构成酷儿生活的场所、活动与人——由社群核实，向所有人免费开放，覆盖全球。",
+    "diagram": {
+      "label": "四条线路——场所、活动、社群与目的地——汇聚于同一座站点。"
+    },
+    "scale": {
+      "kicker": "此刻的网络",
+      "venues": "场所",
+      "events": "即将举行的活动",
+      "cities": "城市",
+      "countries": "国家和地区"
+    },
+    "lines": {
+      "kicker": "网络",
+      "title": "五条线路",
+      "lede": "平台的每一部分都有自己的线路。需要哪条就搭哪条。",
+      "action": "进入",
+      "venues": {
+        "name": "场所",
+        "description": "对酷儿友好的酒吧、咖啡馆、俱乐部与商家，由真实的人核实。"
+      },
+      "events": {
+        "name": "活动",
+        "description": "骄傲游行、变装秀、互助小组、放映会——就在附近，或世界任何角落。"
+      },
+      "marketplace": {
+        "name": "市集",
+        "description": "LGBTQ+ 经营的商家与创作者。让你的钱花在该去的地方。"
+      },
+      "community": {
+        "name": "社群",
+        "description": "提问、讲述、找到同伴。始终有人审核。"
+      },
+      "places": {
+        "name": "目的地",
+        "description": "城市与国家的当地法律、权利与安全提示，出发前先看。"
+      }
+    },
+    "story": {
+      "kicker": "我们的故事",
+      "title": "这一切怎么开始的",
+      "p1": "找一家对酷儿友好的酒吧，不该需要一个群聊、三个论坛帖子和一点运气。我们做 Queer Guide，是因为受够了猜哪些地方真的安全——以及哪些只是在六月给标志加了道彩虹。",
+      "p2": "一份私人的可信场所清单，变成了一个全球目录：由社群核实，基于真实经历，永久免费。独自旅行、搬到新城市，或只是想找个周五晚上待着的地方——从这里开始。"
+    },
+    "legend": {
+      "kicker": "图例",
+      "title": "我们有什么不同",
+      "verified": {
+        "label": "社群核实",
+        "body": "每一个场所都由真实的 LGBTQ+ 人士审核，而不是算法。"
+      },
+      "safety": {
+        "label": "安全优先",
+        "body": "每个国家页面都标注当地法律、权利与风险提示。"
+      },
+      "free": {
+        "label": "永远免费",
+        "body": "没有付费墙，没有会员等级。这个平台属于所有人。"
+      },
+      "global": {
+        "label": "覆盖全球",
+        "body": "从柏林到曼谷，从圣保罗到悉尼——还在不断扩展。"
+      }
+    },
+    "history": {
+      "kicker": "我们怎么走到这里",
+      "title": "目前的线路",
+      "lede": "一个副业项目，长成了全球目录。",
+      "y2021": {
+        "year": "2021",
+        "body": "三个人，一张表格。五座欧洲城市的安全酒吧，分享在一个 Telegram 群里。"
+      },
+      "y2023": {
+        "year": "2023",
+        "body": "八十座城市、一千个场所。活动收录流程和社群提交扩展上线。"
+      },
+      "y2025": {
+        "year": "2025",
+        "body": "各大洲数以万计的场所。市集、行程规划、安全简报，以及逐国的权利资料。"
+      },
+      "y2026": {
+        "year": "2026",
+        "body": "你在这里。添加一个场所、发布一场活动，或加入内容共建者。"
+      }
+    },
+    "values": {
+      "kicker": "我们的立场",
+      "title": "我们看重什么",
+      "inclusivity": {
+        "title": "包容",
+        "description": "每一种身份、每一种背景、每一段经历，都属于这里。"
+      },
+      "safety": {
+        "title": "安全",
+        "description": "线上线下都要安全。这排在其他一切之前。"
+      },
+      "community": {
+        "title": "社群",
+        "description": "人与支持他们的组织之间，真实的连接。"
+      },
+      "authenticity": {
+        "title": "真实",
+        "description": "做你自己。我们建这个地方，就是为了让你不必躲藏。"
+      },
+      "accessibility": {
+        "title": "无障碍",
+        "description": "我们标注无台阶入口、无障碍卫生间——以及缺少什么。"
+      },
+      "growth": {
+        "title": "成长",
+        "description": "一直在变，一直在听。建立在你们告诉我们的事情之上。"
+      }
+    },
+    "people": {
+      "kicker": "谁在运营",
+      "title": "背后的人",
+      "lede": "没有公司。只有拿出时间的社群成员。",
+      "moderators": {
+        "name": "社群审核员",
+        "role": "守住安全",
+        "description": "志愿者全天候维护平台的友善与尊重。"
+      },
+      "ambassadors": {
+        "name": "本地大使",
+        "role": "扎根当地",
+        "description": "社群中的组织者，把本地需求带上来，并为所在地区的包容空间发声。"
+      },
+      "contributors": {
+        "name": "共建者",
+        "role": "分享知识",
+        "description": "撰写评价、发布活动、搭建资料的成员——其他人都靠这些。"
+      }
+    },
+    "cta": {
+      "title": "帮我们把线路延长。",
+      "body": "网络之所以生长，是因为有人不断添砖加瓦。每一条核实过的记录背后都有一个人——加上你的那一条。",
+      "primary": "提交场所",
+      "secondary": "联系我们",
+      "addVenues": {
+        "title": "添加场所",
+        "desc": "知道哪里安全？把它标到地图上。"
+      },
+      "createEvents": {
+        "title": "发布活动",
+        "desc": "组织一场。把人聚起来。"
+      },
+      "joinGroups": {
+        "title": "加入小组",
+        "desc": "这场对话里有你的位置。"
+      },
+      "support": {
+        "title": "支持我们",
+        "desc": "让平台对所有人保持免费。"
+      }
     }
   }
 }

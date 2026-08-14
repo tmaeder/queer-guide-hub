@@ -12,7 +12,7 @@ import { EventCard } from '@/components/events/EventCard';
 import { EventsTimelineView } from '@/components/events/EventsTimelineView';
 // Lazy: keeps the maplibre chunk off the default grid/timeline views
 const EventsMapView = lazy(() =>
-  import('@/components/events/EventsMapView').then((m) => ({ default: m.EventsMapView }))
+  import('@/components/events/EventsMapView').then((m) => ({ default: m.EventsMapView })),
 );
 import { Button } from '@/components/ui/button';
 import { PageHero } from '@/components/discovery';
@@ -28,6 +28,11 @@ import { EventSearchBar } from '@/components/events/EventSearchBar';
 import { EventFiltersPanel } from '@/components/events/EventFiltersPanel';
 import { EventsResultBar } from '@/components/events/EventsResultBar';
 import { EventGridView } from '@/components/events/EventGridView';
+import {
+  PageContainer,
+  PAGE_BLEED_MOBILE,
+  STICKY_UNDER_HEADER,
+} from '@/components/layout/PageContainer';
 
 type Event = Database['public']['Tables']['events']['Row'];
 
@@ -67,9 +72,7 @@ const Events = () => {
 
   // Scoped to the city filter when exactly one is selected, so the chip counts
   // describe the set the reader is actually looking at rather than the globe.
-  const { data: windowCounts } = useEventWindowCounts(
-    f.cities.length === 1 ? f.cities[0] : null,
-  );
+  const { data: windowCounts } = useEventWindowCounts(f.cities.length === 1 ? f.cities[0] : null);
 
   const [_selectedEvent, setSelectedEvent] = useState<Event | null>(null);
 
@@ -119,7 +122,7 @@ const Events = () => {
         primaryCta={{ label: t('pages.events.submitEvent', 'Add an event'), href: '/submit' }}
         size="md"
       />
-      <div className="container mx-auto px-4 py-8 md:py-12">
+      <PageContainer>
         <GuidesRail filters={{ entityType: 'event', limit: 6 }} />
         {/* Filters — first interactive surface after hero */}
         <div className="flex flex-col gap-4 p-4 bg-card rounded-container mb-6">
@@ -226,24 +229,28 @@ const Events = () => {
 
         {/* Result-meta row: count + view toggle + sort + past toggle */}
         {!loading && !error && (
-          <EventsResultBar
-            eventsCount={events.length}
-            totalCount={totalCount}
-            autoLocationLabel={f.autoLocationLabel}
-            cities={f.cities}
-            onShowWorldwide={() => {
-              f.setCities([]);
-              f.setAutoLocationLabel(null);
-            }}
-            showPast={f.showPast}
-            onToggleShowPast={() => f.setShowPast(!f.showPast)}
-            sort={f.sort}
-            onSortChange={f.setSort}
-            userLocation={f.userLocation}
-            nearMe={f.nearMe}
-            viewMode={f.viewMode}
-            onViewModeChange={f.setViewMode}
-          />
+          <div
+            className={`sticky ${STICKY_UNDER_HEADER} z-20 ${PAGE_BLEED_MOBILE} py-2 mb-4 border-b-[3px] border-foreground bg-background`}
+          >
+            <EventsResultBar
+              eventsCount={events.length}
+              totalCount={totalCount}
+              autoLocationLabel={f.autoLocationLabel}
+              cities={f.cities}
+              onShowWorldwide={() => {
+                f.setCities([]);
+                f.setAutoLocationLabel(null);
+              }}
+              showPast={f.showPast}
+              onToggleShowPast={() => f.setShowPast(!f.showPast)}
+              sort={f.sort}
+              onSortChange={f.setSort}
+              userLocation={f.userLocation}
+              nearMe={f.nearMe}
+              viewMode={f.viewMode}
+              onViewModeChange={f.setViewMode}
+            />
+          </div>
         )}
 
         {/* Status region for screen readers */}
@@ -387,7 +394,7 @@ const Events = () => {
             )}
           </div>
         )}
-      </div>
+      </PageContainer>
     </div>
   );
 };

@@ -22,7 +22,17 @@ const CATEGORY_ICON: Record<MilestoneCategory, LucideIcon> = {
   other: MilestoneIcon,
 };
 
-/** Monochrome outline badge naming the milestone category (vocab-driven icon + i18n label). */
+/**
+ * Monochrome outline badge naming the milestone category (vocab-driven icon +
+ * i18n label).
+ *
+ * Icons stay lucide. `TransitIcon`'s 42-name set carries no legal or history
+ * vocabulary — there is no scale, gavel, flag, ban or stethoscope in it — so
+ * the design system's "never mix the two families in one surface" rule is
+ * satisfied by keeping every history surface lucide, which is what it already
+ * is. (`RouteBullet` / `StationRing` are geometric content-type marks, not
+ * icons, and are permitted alongside — see VenueDetail.parts.tsx.)
+ */
 export function MilestoneCategoryBadge({
   category,
   className,
@@ -36,7 +46,7 @@ export function MilestoneCategoryBadge({
   return (
     <span
       className={cn(
-        'inline-flex items-center gap-1 rounded-badge px-1.5 py-0.5 text-2xs uppercase tracking-wide text-muted-foreground bg-surface-container',
+        'inline-flex items-center gap-1 border-2 border-foreground bg-background px-1.5 py-0.5 text-2xs uppercase tracking-label text-foreground',
         className,
       )}
     >

@@ -9,6 +9,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useMeta } from '@/hooks/useMeta';
 import { useBreadcrumbs } from '@/contexts/BreadcrumbContext';
 import { useOrganizationsList, type OrgListItem, type OrgRole } from '@/hooks/useOrganization';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 const ROLE_LABEL: Partial<Record<OrgRole, string>> = {
   support: 'Support organization',
@@ -95,7 +96,7 @@ export default function Organizations() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8 md:py-12">
+    <PageContainer>
       <PageHeader
         title="Organizations"
         subtitle="Support organizations, news outlets, and shops in the LGBTQ+ community."
@@ -144,6 +145,6 @@ export default function Organizations() {
           ))}
         </div>
       )}
-    </div>
+    </PageContainer>
   );
 }

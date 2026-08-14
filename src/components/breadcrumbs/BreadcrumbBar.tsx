@@ -14,6 +14,7 @@ import {
 import { useBreadcrumbState, type BreadcrumbItem as Crumb } from '@/contexts/BreadcrumbContext';
 import { getRouteBreadcrumbs, homeCrumb, localeFromPath } from '@/config/breadcrumbs';
 import { breadcrumbJsonLd } from '@/lib/breadcrumbJsonLd';
+import { PAGE_GUTTER } from '@/components/layout/PageContainer';
 
 /**
  * Global breadcrumb bar rendered below the header (in LayoutShell).
@@ -61,7 +62,12 @@ export function BreadcrumbBar() {
 
   return (
     <div className="bg-background">
-      <div className="container mx-auto flex min-h-11 items-center overflow-hidden px-4 py-2.5">
+      {/* Bar is full-bleed; its CONTENT takes the page gutter + cap so the
+          first crumb starts on the same vertical as the page heading below it
+          and the nav above it. */}
+      <div
+        className={`mx-auto flex w-full max-w-page min-h-11 items-center overflow-hidden py-2.5 ${PAGE_GUTTER}`}
+      >
         <Breadcrumb className="min-w-0 max-w-full">
           {/* Locked to a single line: every crumb but the last keeps its width
               (shrink-0); the last crumb absorbs the remaining space and

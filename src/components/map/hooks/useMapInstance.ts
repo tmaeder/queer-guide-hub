@@ -8,7 +8,7 @@ import {
 } from 'react';
 import { type Root } from 'react-dom/client';
 import * as maplibregl from 'maplibre-gl';
-import { getMapStyle, type BasemapMode } from '@/config/mapStyle';
+import { getMapStyle } from '@/config/mapStyle';
 import { isWebglSupported } from '@/lib/webglSupport';
 import { loadGlyphImages } from '@/components/map/mapGlyphs';
 import { installBasemapFallback } from '@/components/map/basemapFallback';
@@ -24,8 +24,6 @@ interface UseMapInstanceParams {
   initialZoom?: number;
   viewport: MapViewport;
   mapReady: boolean;
-  /** Resolved app theme — the basemap follows it (light/dark Protomaps flavor). */
-  basemapMode: BasemapMode;
   cooperativeGestures: boolean;
   linkToFullMap?: string;
   /** Add MapLibre's native NavigationControl. MapShell passes false and mounts
@@ -61,10 +59,13 @@ interface UseMapInstanceParams {
  * Map lifecycle: constructs the MapLibre instance + controls, wires the
  * load/movestart/moveend handlers, flies to the initial viewport, and tears the
  * whole thing down (cancelling rAF, unmounting the popup root, clearing spider
- * markers, resetting coordination refs). Extracted verbatim from ExploreMap —
- * behavior-preserving. The init effect re-runs only on `basemapMode` changes
- * (theme toggle → recreate with the matching Protomaps flavor, camera kept);
- * the shared coordination refs stay component-owned and are threaded in.
+ * markers, resetting coordination refs). The shared coordination refs stay
+ * component-owned and are threaded in.
+ *
+ * The init effect runs exactly once per mount. It used to re-run on
+ * `basemapMode` (theme toggle → rebuild with the matching Protomaps flavor,
+ * camera preserved); dark mode was removed with the subway rebrand, so that
+ * branch is gone along with the camera-restore machinery it existed for.
  */
 export function useMapInstance({
   containerRef,
@@ -73,7 +74,6 @@ export function useMapInstance({
   initialZoom,
   viewport,
   mapReady,
-  basemapMode,
   cooperativeGestures,
   linkToFullMap,
   showNativeNav,
@@ -101,10 +101,6 @@ export function useMapInstance({
     });
   }, []);
 
-  // Camera of the previous map instance — captured on teardown so a
-  // basemap-mode recreate (theme toggle) resumes exactly where the user was.
-  const lastCameraRef = useRef<{ center: [number, number]; zoom: number } | null>(null);
-
   // Initial-fetch deferral bookkeeping. Refs, not deps: the map is built once
   // and re-running that effect would tear down and recreate the whole instance.
   const deferInitialFetchRef = useRef(deferInitialFetch);
@@ -116,8 +112,8 @@ export function useMapInstance({
   }, [deferInitialFetch]);
   const didViewportFetchRef = useRef(false);
   const initialFetchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  // Detach fn for the basemap failover listener, cleared on teardown so a
-  // basemap-mode recreate does not leak a listener onto the dead map.
+  // Detach fn for the basemap failover listener, cleared on teardown so it
+  // cannot leak onto a dead map.
   const detachBasemapFallbackRef = useRef<(() => void) | null>(null);
 
   // ── Map initialisation ───────────────────────────────────────────────────
@@ -129,19 +125,16 @@ export function useMapInstance({
 
     const map = new maplibregl.Map({
       container: containerRef.current,
-      style: getMapStyle(basemapMode),
-      center: lastCameraRef.current?.center ?? initialCenter ?? viewport.center,
-      zoom: lastCameraRef.current?.zoom ?? initialZoom ?? viewport.zoom,
+      style: getMapStyle(),
+      center: initialCenter ?? viewport.center,
+      zoom: initialZoom ?? viewport.zoom,
       attributionControl: false,
       // Embedded above page content → let the page scroll; zoom needs a modifier.
       cooperativeGestures,
     });
-    // mapRef is published inside `load` (below), NOT here. On a basemap-mode
-    // recreate (theme toggle) the commit that constructs the replacement map
-    // still renders with the previous `mapReady=true`, so layer effects with
-    // unchanged-but-truthy guards would call addSource/addLayer against a
-    // style that is still loading and throw. Keeping mapRef null until `load`
-    // makes every `!mapRef.current` guard hold through that window.
+    // mapRef is published inside `load` (below), NOT here. Layer effects gate
+    // on `!mapRef.current`, and publishing early would let them call
+    // addSource/addLayer against a style that is still loading, which throws.
 
     map.addControl(new maplibregl.AttributionControl({ compact: true }), 'bottom-right');
     if (showNativeNav) {
@@ -172,16 +165,21 @@ export function useMapInstance({
     // Donut cluster icons are generated on demand: the cluster layer's
     // icon-image expression produces composition-encoded ids; any id the
     // style doesn't know yet is rasterized synchronously right here.
-    // (v5 callback event. On a future maplibre-gl 6 upgrade this must move to
-    // map.setMissingStyleImageResolver — v6 makes this event notify-only. The
-    // v6 form shipped prematurely in #2352 while the dep was still 5.24 and
-    // threw on every map, so keep this matched to the installed major.)
-    map.on('styleimagemissing', (e: { id: string }) => {
-      if (!e.id.startsWith(`${DONUT_PREFIX}|`) || map.hasImage(e.id)) return;
-      const img = getDonutImage(e.id);
-      if (img && !map.hasImage(e.id)) {
+    //
+    // This MUST be the resolver, not a `styleimagemissing` listener. On
+    // maplibre-gl 6 (installed since the 6.2.0 bump) the event is notify-only
+    // and fires AFTER the resolver has already declined — an addImage from the
+    // listener lands too late for the frame that needed it, so clusters paint
+    // their count with no disc behind it until some later repaint happens to
+    // pick the image up. That is the intermittent bare-number cluster seen in
+    // production. The resolver is awaited by MapLibre before the image counts
+    // as missing, so the disc is there on first paint.
+    map.setMissingStyleImageResolver((id: string) => {
+      if (!id.startsWith(`${DONUT_PREFIX}|`) || map.hasImage(id)) return;
+      const img = getDonutImage(id);
+      if (img && !map.hasImage(id)) {
         try {
-          map.addImage(e.id, img, { pixelRatio: DONUT_PIXEL_RATIO });
+          map.addImage(id, img, { pixelRatio: DONUT_PIXEL_RATIO });
         } catch {
           /* concurrent add — ignore */
         }
@@ -259,9 +257,6 @@ export function useMapInstance({
       // holds NOW (not a mount-time snapshot) that the handle is gone.
       // eslint-disable-next-line react-hooks/exhaustive-deps
       onMapHandleRef.current?.(null);
-      // Remember the camera so a basemap-mode recreate resumes in place.
-      const c = map.getCenter();
-      lastCameraRef.current = { center: [c.lng, c.lat], zoom: map.getZoom() };
       if (pulseRafRef.current) {
         cancelAnimationFrame(pulseRafRef.current);
         pulseRafRef.current = null;
@@ -284,10 +279,10 @@ export function useMapInstance({
       setMapReady(false);
       map.remove();
     };
-    // Re-runs only when the basemap mode flips (theme toggle) — full teardown +
-    // re-init is the safe way to swap styles without losing custom layers/images.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [basemapMode]);
+    // Mount-once: every value read above is either a ref or a first-render
+    // prop, and re-running would tear down and rebuild the whole instance.
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- construct once per mount
+  }, []);
 
   // Fly to initial viewport once map is ready (e.g. from IP geo)
   useEffect(() => {

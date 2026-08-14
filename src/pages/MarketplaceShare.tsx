@@ -8,6 +8,7 @@ import { AffiliateDisclosure } from '@/components/marketplace/AffiliateDisclosur
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Button } from '@/components/ui/button';
 import { useMarketplaceListingsByIds } from '@/hooks/useMarketplaceListingsByIds';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -36,7 +37,7 @@ export default function MarketplaceShare() {
 
   return (
     <div className="min-h-screen">
-      <div className="container mx-auto py-12 md:py-20 px-4">
+      <PageContainer>
         <div className="mb-4">
           {/* asChild, not a Link wrapping a Button — that nests a <button>
               inside an <a>, which is invalid HTML. */}
@@ -76,7 +77,7 @@ export default function MarketplaceShare() {
         )}
 
         <AffiliateDisclosure />
-      </div>
+      </PageContainer>
     </div>
   );
 }

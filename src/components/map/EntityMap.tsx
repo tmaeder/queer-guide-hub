@@ -6,13 +6,14 @@
  */
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import * as maplibregl from 'maplibre-gl';
 import type { GeoJSONSource } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
-import { Loader2 } from 'lucide-react';
+
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
-import { useTheme } from '@/components/theme/ThemeProvider';
-import { getMapStyle } from '@/config/mapStyle';
+import { getMapStyle, MAP_FONT_BOLD } from '@/config/mapStyle';
+import { ink, paper } from '@/lib/mapTokens';
 import { isWebglSupported } from '@/lib/webglSupport';
 import { LAYER_COLORS, type MapMarker } from '@/hooks/useExploreMapData';
 import { renderPopupHTML } from '@/components/map/ExploreMapPopup';
@@ -99,7 +100,6 @@ export const EntityMap = ({
   onMoveEnd,
 }: EntityMapProps) => {
   const navigate = useLocalizedNavigate();
-  const { resolvedTheme } = useTheme();
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const popupRef = useRef<maplibregl.Popup | null>(null);
@@ -195,7 +195,7 @@ export const EntityMap = ({
 
     const map = new maplibregl.Map({
       container: containerRef.current,
-      style: getMapStyle(resolvedTheme),
+      style: getMapStyle(),
       center,
       zoom,
       attributionControl: false,
@@ -259,7 +259,7 @@ export const EntityMap = ({
     };
     // Theme toggle recreates the map with the matching basemap flavor.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [resolvedTheme]);
+  }, []);
 
   // Render markers
   useEffect(() => {
@@ -294,7 +294,7 @@ export const EntityMap = ({
             'circle-radius': 10,
             'circle-color': ['get', 'color'],
             'circle-stroke-width': 3,
-            'circle-stroke-color': '#ffffff',
+            'circle-stroke-color': ink(),
             'circle-opacity': 0.95,
           },
         });
@@ -306,13 +306,13 @@ export const EntityMap = ({
           layout: {
             'text-field': ['get', 'name'],
             'text-size': 13,
-            'text-font': ['Noto Sans Medium'],
+            'text-font': [MAP_FONT_BOLD],
             'text-offset': [0, 1.8],
             'text-anchor': 'top',
           },
           paint: {
-            'text-color': '#1e293b',
-            'text-halo-color': '#ffffff',
+            'text-color': ink(),
+            'text-halo-color': paper(),
             'text-halo-width': 2,
           },
         });
@@ -361,7 +361,7 @@ export const EntityMap = ({
             'circle-radius': 6,
             'circle-color': ['get', 'color'],
             'circle-stroke-width': 1.5,
-            'circle-stroke-color': '#ffffff',
+            'circle-stroke-color': ink(),
             'circle-opacity': ['case', ['==', ['get', 'visited'], 1], 0.3, 0.8],
           },
         });
@@ -449,7 +449,7 @@ export const EntityMap = ({
         style={{
           pointerEvents: 'none',
           zIndex: 20,
-          background: 'rgba(255,255,255,0.95)',
+          background: paper(0.95),
           padding: '5px 10px',
           fontSize: 13,
         }}
@@ -458,9 +458,9 @@ export const EntityMap = ({
       {!mapReady && !mapError && (
         <div
           className="absolute inset-0 flex items-center justify-center"
-          style={{ backgroundColor: 'rgba(255,255,255,0.7)', zIndex: 5 }}
+          style={{ backgroundColor: paper(0.7), zIndex: 5 }}
         >
-          <Loader2 className="animate-spin" size={24} aria-label="Loading" />
+          <TrackLoader size={24} label="Loading" />
         </div>
       )}
 

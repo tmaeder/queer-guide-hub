@@ -17,6 +17,8 @@ import {
 import { CLUSTER_MAX_ZOOM, CLUSTER_RADIUS } from '@/utils/mapViewport';
 import { EMPTY_FAV, mapDebug } from '@/components/map/mapDebug';
 import { donutIconExpression } from '@/components/map/clusterDonut';
+import { ink, paper } from '@/lib/mapTokens';
+import { MAP_FONT_BOLD } from '@/config/mapStyle';
 import { clusterHoverHtml, pointHoverHtml } from '@/components/map/mapHoverHtml';
 
 interface UsePointLayersParams {
@@ -141,7 +143,7 @@ export function usePointLayers({
     // composition (what's inside, not just how much). Same layer id as the
     // old circle layer, so PIN_LAYER_IDS, the heatmap beforeId, and every
     // click/hover handler keep working. Icons come from the map's
-    // `styleimagemissing` handler (registered in useMapInstance).
+    // missing-image resolver (registered in useMapInstance).
     map.addLayer({
       id: CLUSTERS_LAYER,
       type: 'symbol',
@@ -161,13 +163,13 @@ export function usePointLayers({
       filter: ['has', 'point_count'],
       layout: {
         'text-field': ['get', 'point_count_abbreviated'],
-        'text-font': ['Noto Sans Medium'],
+        'text-font': [MAP_FONT_BOLD],
         'text-size': 13,
         'text-allow-overlap': true,
         'text-ignore-placement': true,
       },
-      // Dark ink on the donut's white center disc.
-      paint: { 'text-color': '#18181b' },
+      // Ink on the interchange symbol's paper centre disc.
+      paint: { 'text-color': ink() },
     });
 
     // Live pulse — an expanding ring beneath live/open-now pins. Static at
@@ -185,18 +187,22 @@ export function usePointLayers({
       },
     });
 
-    // Featured outer ring — makes editorially-chosen spots read first.
+    // Featured ring — the INTERCHANGE treatment. A second concentric ink
+    // ring outside the station's own ink border, the way a transit map marks
+    // an interchange apart from an ordinary stop. It used to be a single
+    // ring in the pin's own colour, which read as a slightly fatter pin
+    // rather than a different class of thing.
     map.addLayer({
       id: FEATURED_RING_LAYER,
       type: 'circle',
       source: POINTS_SOURCE,
       filter: ['all', ['!', ['has', 'point_count']], ['==', ['get', 'featured'], true]],
       paint: {
-        'circle-radius': 12,
-        'circle-color': 'rgba(0,0,0,0)',
+        'circle-radius': 14,
+        'circle-color': paper(),
         'circle-stroke-width': 2,
-        'circle-stroke-color': ['get', 'color'],
-        'circle-stroke-opacity': 0.9,
+        'circle-stroke-color': ink(),
+        'circle-stroke-opacity': 1,
       },
     });
 
@@ -219,10 +225,14 @@ export function usePointLayers({
           ['case', ['==', ['get', 'featured'], true], 13, 11],
         ],
         'circle-color': ['get', 'color'],
-        // Thicker white halo so pins separate cleanly from the colored
-        // basemap and the (now softened) density heat beneath them.
-        'circle-stroke-width': 2.5,
-        'circle-stroke-color': '#ffffff',
+        // The ink border, not a halo. Blue/green/yellow measure 2.25 / 1.64
+        // / 1.34 against paper and only clear WCAG 1.4.11's 3:1 against ink,
+        // so a track-coloured mark is border-GATED — this stroke is what
+        // makes the fill legal, not just tidy. (Was a 2.5px white halo,
+        // which separated the pin from the basemap but left the fill itself
+        // unmeasurable against anything.)
+        'circle-stroke-width': 2,
+        'circle-stroke-color': ink(),
         // Steady-state opacity = time-of-day expression (dims closed at night).
         'circle-opacity': pinOpacityExpr,
         // Entrance fade — opacity transitions in on first paint / data swap.

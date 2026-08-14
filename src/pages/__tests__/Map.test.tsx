@@ -8,9 +8,6 @@ import { MemoryRouter, Routes, Route } from 'react-router';
 vi.mock('@/components/map/ExploreMap', () => ({
   ExploreMap: () => <div data-testid="map" />,
 }));
-vi.mock('@/components/map/ExploreMapLayers', () => ({
-  LAYER_DEFS: [{ type: 'venues', comingSoon: false }, { type: 'events', comingSoon: false }],
-}));
 // MapShell consumes auth + favorites (saved layer, map wave 3) — these page
 // tests don't mount providers, so stub both hooks.
 vi.mock('@/hooks/useAuth', () => ({
@@ -30,7 +27,9 @@ import MapPage from '../Map';
 function renderAt(path: string) {
   return render(
     <MemoryRouter initialEntries={[path]}>
-      <Routes><Route path="/map" element={<MapPage />} /></Routes>
+      <Routes>
+        <Route path="/map" element={<MapPage />} />
+      </Routes>
     </MemoryRouter>,
   );
 }

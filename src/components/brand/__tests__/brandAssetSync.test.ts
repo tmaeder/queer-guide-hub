@@ -54,17 +54,24 @@ describe('brand asset sync', () => {
     expect(w).toBe(h);
   });
 
-  it('the OG wordmark carries the same heart, in the same place', () => {
-    const heart = (src: string) => paths(src).find((d) => d.startsWith('M12 21'));
-    expect(heart(script)).toBe(heart(wordmark));
-    // Anchored on the declaration, never the prose: the component's comment
-    // quotes the superseded offsets and would otherwise match too.
-    const nums = (line: string) => [...line.matchAll(/(-?[\d.]+)em/g)].map((m) => m[1]);
-    const classNames = wordmark.match(/className="absolute[^"]*"/)?.[0];
-    const styleRule = script.match(/\.wm svg \{[^}]*\}/)?.[0];
-    expect(classNames).toBeTruthy();
-    expect(styleRule).toBeTruthy();
-    expect(nums(styleRule!)).toEqual(nums(classNames!));
+  it('the mark carries no colour, in any rendition', () => {
+    // The wordmark used to nest a pink heart at the g's descender. It was
+    // removed on purpose — the mark is ink-only, like MasterSymbol — and these
+    // renditions have already drifted apart once, so pin it: a hue reappearing
+    // in ANY of them is the regression.
+    for (const src of [wordmark, component, script, favicon]) {
+      expect(src).not.toMatch(/track-pink|#FF1F8F/i);
+    }
+    // Paper and ink are the only literals the non-TSX copies may name.
+    for (const src of [script, favicon]) {
+      for (const hex of src.match(/#[0-9A-Fa-f]{3,8}\b/g) ?? []) {
+        expect(hex.toUpperCase()).toMatch(/^#(FAFAF5|111|111111)$/);
+      }
+    }
+    // The heart was a <path>; the wordmark is now plain text, and the OG copy
+    // must not resurrect it.
+    expect(paths(wordmark)).toEqual([]);
+    expect(paths(script).some((d) => d.startsWith('M12 21'))).toBe(false);
   });
 
   it('both transit tracks bend — hard rule #1 of the subway map', () => {

@@ -31,7 +31,9 @@ export const PageHeader = ({
     // PASTE-UP masthead. The outlined card is gone: a page title does not live
     // in a box, it sits under a heavy rule like the head of a printed section.
     // `.rule-heavy` is the existing rationed 2px black signature.
-    <div className="content-enter rule-heavy pt-6 pb-6 sm:pb-8 mb-6">
+    // No top padding: PageContainer owns the page's top gap now, and adding a
+    // second one here made the masthead sit lower on pages that use both.
+    <div className="content-enter rule-heavy pb-6 sm:pb-8 mb-6">
       <div
         className={`flex flex-col gap-4 justify-between sm:flex-row sm:items-center ${
           center ? 'sm:flex-col text-center' : 'items-start'

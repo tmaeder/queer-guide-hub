@@ -1,20 +1,13 @@
-/* eslint-disable react-hooks/refs -- this component threads map+entity refs through props/hooks during render; MapShell + EntityMap subscribe to .current themselves. */
-import { calculateDistanceMeters } from '@/utils/calculateDistance';
-import { useMemo, useRef, useState } from 'react';
+/* eslint-disable react-hooks/refs -- this component threads the initial-center ref through props during render; MapShell subscribes to .current itself. */
+import { useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { EntityMap, type EntityMapMarker } from '@/components/map/EntityMap';
+import type { EntityMapMarker } from '@/components/map/EntityMap';
 import { MapShell } from '@/components/map/MapShell';
-import { Button } from '@/components/ui/button';
-import { Navigation } from 'lucide-react';
 import type { SearchResult } from '@/hooks/useSearch';
-import { MAP_SHELL_ENABLED } from '@/lib/featureFlags';
 
 interface ResultsMapViewProps {
   results: SearchResult[];
   height?: number | string;
-  onSelect?: (result: SearchResult) => void;
-  /** Called with lat/lng/radius (meters) when the user clicks "Search this area". */
-  onAreaSearch?: (area: { lat: number; lng: number; radius: number }) => void;
 }
 
 /** Upper bound on markers rendered at once — protects MapLibre on huge result sets. */
@@ -31,16 +24,19 @@ const TYPE_TO_MAP_KIND: Record<string, EntityMapMarker['type']> = {
   countries: 'countries',
 };
 
-export function ResultsMapView({
-  results,
-  height = 480,
-  onSelect,
-  onAreaSearch,
-}: ResultsMapViewProps) {
+/**
+ * Map view for search results.
+ *
+ * `results` sets the opening camera and decides whether there is anything to
+ * show at all; the pins themselves come from MapShell, which fetches by
+ * viewport. Selection and "search this area" are MapShell's too (the `search`
+ * preset sets `enableSearchThisArea`) — the old `onSelect` / `onAreaSearch`
+ * props were dropped 2026-08-10 because the MapShell branch had never called
+ * them, so SearchResults was passing two callbacks into a void.
+ */
+export function ResultsMapView({ results, height = 480 }: ResultsMapViewProps) {
   const { t } = useTranslation();
-  const lastBoundsRef = useRef<{ center: [number, number]; radius: number } | null>(null);
   const initialCenterRef = useRef<[number, number] | null>(null);
-  const [showAreaSearch, setShowAreaSearch] = useState(false);
   const markers: EntityMapMarker[] = useMemo(() => {
     const out: EntityMapMarker[] = [];
     for (const r of results) {
@@ -60,7 +56,9 @@ export function ResultsMapView({
     // No silent truncation: log how many were dropped.
     if (out.length > MAX_MARKERS) {
       const dropped = out.length - MAX_MARKERS;
-      console.info(`[ResultsMapView] capped map markers: showing ${MAX_MARKERS}, dropped ${dropped}`);
+      console.info(
+        `[ResultsMapView] capped map markers: showing ${MAX_MARKERS}, dropped ${dropped}`,
+      );
       return out.slice(0, MAX_MARKERS);
     }
     return out;
@@ -90,73 +88,13 @@ export function ResultsMapView({
 
   if (!initialCenterRef.current) initialCenterRef.current = center;
 
-  if (MAP_SHELL_ENABLED) {
-    return (
-      <MapShell
-        surface="search"
-        height={height}
-        initialCenter={initialCenterRef.current}
-        initialZoom={markers.length === 1 ? 12 : 5}
-        skipAutoFly
-      />
-    );
-  }
-
   return (
-    <div
-      style={{ height }}
-      className="relative"
-      onClickCapture={(e) => {
-        if (!onSelect) return;
-        const el = (e.target as HTMLElement | null)?.closest(
-          '[data-marker-id]',
-        ) as HTMLElement | null;
-        const id = el?.getAttribute('data-marker-id');
-        if (!id) return;
-        const hit = results.find((r) => r.objectID === id);
-        if (hit) onSelect(hit);
-      }}
-    >
-      <EntityMap
-        center={initialCenterRef.current}
-        zoom={markers.length === 1 ? 12 : 5}
-        height={height}
-        markers={markers}
-        scrollZoom
-        onMoveEnd={({ center: c, bounds }) => {
-          // Radius = half the diagonal of the visible bbox (rough but adequate).
-          const diag = calculateDistanceMeters(bounds.south, bounds.west, bounds.north, bounds.east);
-          lastBoundsRef.current = { center: c, radius: Math.round(diag / 2) };
-          setShowAreaSearch(true);
-        }}
-      />
-      {onAreaSearch && showAreaSearch && lastBoundsRef.current && (
-        <Button
-          size="sm"
-          onClick={() => {
-            if (!lastBoundsRef.current) return;
-            onAreaSearch({
-              lat: lastBoundsRef.current.center[1],
-              lng: lastBoundsRef.current.center[0],
-              radius: lastBoundsRef.current.radius,
-            });
-            setShowAreaSearch(false);
-          }}
-          style={{
-            position: 'absolute',
-            top: 12,
-            left: '50%',
-            transform: 'translateX(-50%)',
-            zIndex: 5,
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 6,
-          }}
-        >
-          <Navigation size={14} />
-          {t('search.searchThisArea', 'Search this area')}
-        </Button>
-      )}
-    </div>
+    <MapShell
+      surface="search"
+      height={height}
+      initialCenter={initialCenterRef.current}
+      initialZoom={markers.length === 1 ? 12 : 5}
+      skipAutoFly
+    />
   );
 }

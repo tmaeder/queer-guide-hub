@@ -9,6 +9,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useResolveGroupInvite, useGroupInvites } from '@/hooks/useGroupInvites';
 import { useTranslation } from 'react-i18next';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 export default function GroupInviteAccept() {
   const { t } = useTranslation();
@@ -29,7 +30,7 @@ export default function GroupInviteAccept() {
   };
 
   return (
-    <div className="container mx-auto max-w-xl py-12 md:py-20 px-4">
+    <PageContainer size="form">
       {isLoading ? (
         <Card>
           <CardContent className="flex flex-col gap-4 p-6">
@@ -113,6 +114,6 @@ export default function GroupInviteAccept() {
           </CardContent>
         </Card>
       )}
-    </div>
+    </PageContainer>
   );
 }

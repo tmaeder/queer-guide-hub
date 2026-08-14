@@ -48,7 +48,7 @@ export function EventsResultBar({
 }: EventsResultBarProps) {
   const { t, i18n } = useTranslation();
   return (
-    <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
+    <div className="flex flex-wrap items-center justify-between gap-4">
       <p className="text-sm text-muted-foreground" aria-live="polite">
         {/* D7: show "Showing N of M events" whenever the true total
             exceeds what's currently rendered, so users aren't misled
@@ -103,13 +103,21 @@ export function EventsResultBar({
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="date-asc">{t('pages.events.sort.dateAsc', 'Soonest first')}</SelectItem>
-            <SelectItem value="date-desc">{t('pages.events.sort.dateDesc', 'Latest first')}</SelectItem>
+            <SelectItem value="date-asc">
+              {t('pages.events.sort.dateAsc', 'Soonest first')}
+            </SelectItem>
+            <SelectItem value="date-desc">
+              {t('pages.events.sort.dateDesc', 'Latest first')}
+            </SelectItem>
             <SelectItem value="distance" disabled={!userLocation && !nearMe}>
               {t('pages.events.sort.distance', 'Closest to me')}
             </SelectItem>
-            <SelectItem value="popularity">{t('pages.events.sort.popularity', 'Most popular')}</SelectItem>
-            <SelectItem value="recent">{t('pages.events.sort.recent', 'Recently added')}</SelectItem>
+            <SelectItem value="popularity">
+              {t('pages.events.sort.popularity', 'Most popular')}
+            </SelectItem>
+            <SelectItem value="recent">
+              {t('pages.events.sort.recent', 'Recently added')}
+            </SelectItem>
           </SelectContent>
         </Select>
         <ShareFiltersButton />

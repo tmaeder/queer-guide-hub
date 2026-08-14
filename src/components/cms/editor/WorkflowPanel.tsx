@@ -6,7 +6,8 @@
  */
 
 import React, { useState, useCallback } from 'react';
-import { Loader2, Clock, Eye, EyeOff, Lock, Globe, CalendarClock } from 'lucide-react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
+import {Clock, Eye, EyeOff, Lock, Globe, CalendarClock } from 'lucide-react';
 import { useCMSWorkflow } from '@/hooks/useCMSWorkflow';
 import { loadCMSContentMetadata, upsertCMSContentMetadata } from '@/hooks/useCMSContentMetadata';
 import { getStateColor, getStateLabel } from '@/config/workflowConfig';
@@ -196,7 +197,7 @@ export function WorkflowPanel({ contentType, itemId }: WorkflowPanelProps) {
                     )}
                   >
                     {isTransitioning ? (
-                      <Loader2 className="h-3.5 w-3.5 animate-spin" aria-label="Loading" />
+                      <TrackLoader size={14} label="Loading" />
                     ) : (
                       <span
                         className="inline-block rounded-full"

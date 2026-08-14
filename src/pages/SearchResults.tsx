@@ -48,6 +48,7 @@ import {
 } from '@/config/searchTypeConfig';
 import type { AssistantCard } from '@/lib/assistantClient';
 import { cn } from '@/lib/utils';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 const MAX_HEADING_QUERY_LEN = 80;
 // Must mirror gridClass's breakpoint column counts (md/lg/xl).
@@ -125,7 +126,9 @@ export default function SearchResults() {
 
   // Clamp to what the scope allows (defends against a stale URL/state).
   const effectiveView = availableViews.includes(viewMode) ? viewMode : config.defaultView;
-  const effectiveSort = availableSorts.includes(sortId) ? sortId : (availableSorts[0] ?? 'relevance');
+  const effectiveSort = availableSorts.includes(sortId)
+    ? sortId
+    : (availableSorts[0] ?? 'relevance');
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- sync input with URL query.
@@ -134,14 +137,15 @@ export default function SearchResults() {
 
   // Traveling preference chips — the saved budget applies as a default price
   // range unless the user sets one manually. Stays out of filters/URL.
-  const { chips: prefChips, toggle: togglePrefChip, forget: forgetPrefChip } =
-    usePreferenceChips(['budget']);
+  const {
+    chips: prefChips,
+    toggle: togglePrefChip,
+    forget: forgetPrefChip,
+  } = usePreferenceChips(['budget']);
   const chipPriceRange = priceRangeFromChips(prefChips);
   const effectiveFilters = useMemo<SearchFilters>(
     () =>
-      chipPriceRange && !filters.priceRange
-        ? { ...filters, priceRange: chipPriceRange }
-        : filters,
+      chipPriceRange && !filters.priceRange ? { ...filters, priceRange: chipPriceRange } : filters,
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [filters, chipPriceRange?.[0], chipPriceRange?.[1]],
   );
@@ -331,7 +335,7 @@ export default function SearchResults() {
 
   return (
     <div className="relative">
-      <div className="container relative mx-auto px-4 py-8">
+      <PageContainer className="relative">
         <PageHeader
           title={t('search.resultsTitle', 'Search')}
           subtitle={
@@ -516,11 +520,7 @@ export default function SearchResults() {
             onBrowse={(p) => navigate(p)}
           />
         ) : effectiveView === 'map' ? (
-          <ResultsMapView
-            results={accumulated}
-            onSelect={navigateToResult}
-            onAreaSearch={(area) => handleFiltersChange({ ...filters, ...area })}
-          />
+          <ResultsMapView results={accumulated} />
         ) : effectiveView === 'calendar' ? (
           <div className={cn(loading && 'opacity-60 transition-opacity')} aria-busy={loading}>
             <SearchCalendarView results={accumulated} query={query} onSelect={navigateToResult} />
@@ -556,7 +556,7 @@ export default function SearchResults() {
             />
           </div>
         )}
-      </div>
+      </PageContainer>
 
       <BackToTopButton />
 
@@ -606,7 +606,9 @@ function ZeroState({
   if (!hasQuery) {
     return (
       <Card className="p-6">
-        <h3 className="mb-4 text-lg font-semibold">{t('search.trySearching', 'Try searching for…')}</h3>
+        <h3 className="mb-4 text-lg font-semibold">
+          {t('search.trySearching', 'Try searching for…')}
+        </h3>
         <div className="mb-6 flex flex-wrap gap-2">
           {SUGGESTED_SEARCHES.map((s) => (
             <Button key={s} variant="outline" size="sm" onClick={() => onSuggest(s)}>
@@ -614,7 +616,9 @@ function ZeroState({
             </Button>
           ))}
         </div>
-        <p className="mb-4 text-sm text-muted-foreground">{t('search.orBrowse', 'Or browse by category:')}</p>
+        <p className="mb-4 text-sm text-muted-foreground">
+          {t('search.orBrowse', 'Or browse by category:')}
+        </p>
         <div className="flex flex-wrap gap-2">
           {[
             { label: t('nav.venues', 'Venues'), path: '/venues' },
@@ -634,12 +638,17 @@ function ZeroState({
 
   if (errorKind === 'unavailable') {
     return (
-      <div role="alert" className="flex flex-col items-center justify-center pb-12 pt-12 text-center">
+      <div
+        role="alert"
+        className="flex flex-col items-center justify-center pb-12 pt-12 text-center"
+      >
         <Search className="mb-4 h-12 w-12 text-muted-foreground" />
         <h3 className="mb-2 text-lg font-semibold">
           {t('search.unavailableTitle', 'Search is temporarily unavailable')}
         </h3>
-        <p className="text-muted-foreground">{error ?? t('search.unavailableBody', "We've been notified.")}</p>
+        <p className="text-muted-foreground">
+          {error ?? t('search.unavailableBody', "We've been notified.")}
+        </p>
       </div>
     );
   }
@@ -668,7 +677,9 @@ function ZeroState({
         </Button>
       </div>
       <div className="mt-8">
-        <p className="mb-4 text-sm text-muted-foreground">{t('search.orTry', 'Or try one of these:')}</p>
+        <p className="mb-4 text-sm text-muted-foreground">
+          {t('search.orTry', 'Or try one of these:')}
+        </p>
         <div className="flex flex-wrap justify-center gap-2">
           {SUGGESTED_SEARCHES.map((s) => (
             <Button key={s} variant="outline" size="sm" onClick={() => onSuggest(s)}>

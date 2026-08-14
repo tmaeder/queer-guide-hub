@@ -1,7 +1,8 @@
 import type { Node } from '@xyflow/react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { formatDistanceToNow } from 'date-fns';
 import {
-  Save, Play, PlayCircle, BarChart3, Upload, Plus, Clock, Loader2, Check,
+  Save, Play, PlayCircle, BarChart3, Upload, Plus, Clock, Check,
   LayoutGrid, Undo2, Redo2, AlertCircle, Command, StickyNote, Folder, Terminal,
 } from 'lucide-react';
 
@@ -166,7 +167,7 @@ export default function PipelineToolbar(p: Props) {
             disabled={p.isSaving}
             className={p.showSavedPulse ? 'bg-muted dark:bg-foreground/30 text-foreground dark:text-foreground border-foreground/40 dark:border-foreground/40' : ''}
           >
-            {p.isSaving ? <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> :
+            {p.isSaving ? <TrackLoader size={14} className="mr-1.5" /> :
              p.showSavedPulse ? <Check className="h-3.5 w-3.5 mr-1.5" /> :
              <Save className="h-3.5 w-3.5 mr-1.5" />}
             {p.isSaving ? 'Saving...' : p.showSavedPulse ? 'Saved' : 'Save'}
@@ -209,7 +210,7 @@ export default function PipelineToolbar(p: Props) {
         Dry Run
       </Button>
       <Button size="sm" onClick={() => p.handleRun()} disabled={p.isRunning}>
-        {p.isRunning ? <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> : <Play className="h-3.5 w-3.5 mr-1.5" />}
+        {p.isRunning ? <TrackLoader size={14} className="mr-1.5" /> : <Play className="h-3.5 w-3.5 mr-1.5" />}
         {p.isRunning ? 'Starting...' : 'Run'}
       </Button>
       <Separator orientation="vertical" className="h-6" />

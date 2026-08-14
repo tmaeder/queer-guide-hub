@@ -3,19 +3,8 @@
  */
 
 import React, { useState, useRef, useCallback, useEffect } from 'react';
-import {
-  X,
-  RotateCcw,
-  Eye,
-  Pencil,
-  Sparkles,
-  Loader2,
-  ChevronLeft,
-  ChevronRight,
-  ThumbsUp,
-  ThumbsDown,
-  FileText,
-} from 'lucide-react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
+import { X, RotateCcw, Eye, Pencil, Sparkles, ChevronLeft, ChevronRight, ThumbsUp, ThumbsDown, FileText } from 'lucide-react';
 import type { ContentTypeConfig, EditorState } from '@/types/cms';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -229,7 +218,7 @@ export function EditorHeader({
 
         {state.isSaving && (
           <div className="flex items-center gap-1.5 flex-shrink-0">
-            <Loader2 className="h-4 w-4 animate-spin" aria-label="Loading" />
+            <TrackLoader size={16} label="Loading" />
             <p className="text-xs text-muted-foreground font-medium">Saving...</p>
           </div>
         )}
@@ -249,7 +238,7 @@ export function EditorHeader({
                     className="font-semibold normal-case bg-foreground hover:bg-foreground text-background"
                   >
                     {isTransitioning ? (
-                      <Loader2 className="h-4 w-4 animate-spin mr-1" />
+                      <TrackLoader size={16} className="mr-1" />
                     ) : (
                       <ThumbsUp className="h-4 w-4 mr-1" />
                     )}
@@ -321,7 +310,7 @@ export function EditorHeader({
                   style={{ borderColor: 'hsl(var(--foreground))' }}
                 >
                   {isEnriching ? (
-                    <Loader2 className="h-4 w-4 animate-spin mr-1" />
+                    <TrackLoader size={16} className="mr-1" />
                   ) : (
                     <Sparkles className="h-4 w-4 mr-1" />
                   )}

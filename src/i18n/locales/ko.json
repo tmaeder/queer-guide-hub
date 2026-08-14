@@ -1466,19 +1466,19 @@
       "relationships": "관계",
       "women": "여성"
     },
-    "quick_exit": "Quick exit",
-    "quick_exit_aria": "Leave this page immediately (ESC)",
-    "hide_screen": "Hide screen",
-    "reveal_aria": "Click anywhere to show the page again",
-    "hidden_hint": "Page hidden. Click anywhere to show again.",
-    "hero_label": "Recommended right now",
-    "expect_title": "What happens when you call",
+    "quick_exit": "빠른 나가기",
+    "quick_exit_aria": "이 페이지에서 즉시 나가기 (Esc)",
+    "hide_screen": "화면 가리기",
+    "reveal_aria": "아무 곳이나 클릭하면 페이지가 다시 표시됩니다",
+    "hidden_hint": "페이지를 가렸습니다. 아무 곳이나 클릭하면 다시 표시됩니다.",
+    "hero_label": "지금 추천",
+    "expect_title": "전화하면 어떻게 되나요",
     "expect_short": "What to expect",
     "expect_1": "You'll hear a short greeting. You don't have to give your name.",
     "expect_2": "You can hang up at any time. You can call back as often as you need.",
     "expect_3": "Free hotlines in DE/AT/CH don't appear on itemized phone bills.",
     "expect_4": "If you can't speak, ask for text or chat — most hotlines offer it.",
-    "self_help_trigger": "While you wait",
+    "self_help_trigger": "아직 말할 준비가 안 되셨나요?",
     "self_help_title": "Steady yourself",
     "self_help_desc": "Short techniques you can use while you wait, or instead of a call if you're not ready.",
     "breathing_title": "4-7-8 breathing",
@@ -1496,7 +1496,7 @@
     "safety_plan_title": "Safety plan",
     "safety_plan_desc": "A short written plan you can pull up when things get bad — your warning signs, coping steps, people to call, and reasons to live.",
     "safety_plan_link": "Open template (Stanley-Brown)",
-    "report": "Report",
+    "report": "신고",
     "report_aria": "Report a problem with this hotline",
     "report_title": "Report this hotline",
     "report_desc": "Thanks for helping keep this list accurate. Reports are reviewed by our team.",
@@ -1536,7 +1536,53 @@
       "closed": "Service has shut down",
       "unsafe": "Unsafe / harmful experience",
       "other": "Other"
-    }
+    },
+    "browse_support_orgs": "모든 지원 단체 보기",
+    "browse_title": "모든 상담 창구 보기",
+    "cant_speak": "말하기 어려우신가요?",
+    "closed_now": "지금은 운영 시간이 아닙니다",
+    "closed_no_alt": "이 상담선은 지금 운영하지 않으며, 이 국가에 열려 있는 다른 상담선이 없습니다. 급박한 위험 상황이라면 위의 긴급 번호를 이용하세요.",
+    "directories_subtitle": "연계 단체와 디렉터리입니다. 직접 통화하는 전화선이 아니라 웹사이트입니다.",
+    "directories_title": "디렉터리 및 추가 지원",
+    "emergency_short": "긴급 전화",
+    "helping_body": "위기에 처한 사람의 이야기를 듣고 있다면: 곁에 있어 주고, 그 사람의 말을 진지하게 받아들이고, 혼자 두지 마세요. 답을 알고 있을 필요는 없습니다. 함께 상담 전화를 걸거나, 직접 전화해 다음에 무엇을 해야 할지 물어보세요.",
+    "helping_title": "다른 사람을 돕기",
+    "keep": "이 창구 저장",
+    "know_the_law": "법을 확인하세요",
+    "know_the_law_body": "자신을 드러내고 사는 것, 의료 서비스를 받는 것, 범죄를 신고하는 것이 안전한지는 어디에 있는지에 따라 다릅니다. 행동하기 전에 법적 상황을 확인하세요.",
+    "link_unavailable": "현재 웹사이트에 접속할 수 없습니다. 다시 확인 중입니다.",
+    "loading": "목록을 불러오는 중…",
+    "more_support": "추가 지원",
+    "no_country_body": "위에서 국가를 선택하면 가장 적합한 창구를 보여드립니다. 모든 창구는 아래에 있습니다.",
+    "no_country_title": "현재 위치를 확인하지 못했습니다",
+    "no_lines_body": "지금 위험한 상황이라면 긴급 번호로 전화하세요: 112(EU) 또는 911(미국/캐나다).",
+    "no_lines_title": "목록을 불러오지 못했습니다",
+    "no_police_policy": "이 창구는 당사자의 명시적인 요청 없이는 경찰이나 응급 서비스에 연락하지 않는다고 명시하고 있습니다.",
+    "open_always": "24시간 연중무휴",
+    "open_instead": "대신 지금 연결되는 곳",
+    "open_now": "지금 운영 중",
+    "org_coverage": "이 목록은 결코 완전하지 않습니다. 신뢰하는 단체가 빠져 있다면 알려주세요. 결과가 비어 있다는 것은 도움이 없다는 뜻이 아니라 저희에게 기록이 없다는 뜻입니다.",
+    "phone_only": "저희 기록상 전화로만 운영됩니다.",
+    "phone_only_with_site": "저희 기록상 전화로만 운영됩니다. 해당 웹사이트에 채팅이나 이메일이 있을 수 있습니다.",
+    "provenance": "정보 출처",
+    "report_submitting": "전송 중…",
+    "reports_police_warning": "이 창구는 당사자의 동의 없이 경찰이나 응급 서비스에 연락할 수 있습니다.",
+    "result_count_one": "{{count}}곳",
+    "result_count_other": "{{count}}곳",
+    "rights_by_country": "국가별 LGBTQ+ 권리",
+    "saved_lines": "저장한 창구",
+    "scope_all": "등록된 모든 국가의 창구입니다.",
+    "scope_change": "변경",
+    "scope_dialog_desc": "창구는 담당 국가별로 정리되어 있습니다. 국제 디렉터리는 어떤 국가를 선택하든 계속 표시됩니다.",
+    "scope_dialog_title": "국가 선택",
+    "scope_prefix": "대상 국가:",
+    "support_orgs": "지원 단체",
+    "support_orgs_body": "대면 지원을 제공하는 커뮤니티 센터와 단체입니다.",
+    "tell_us": "알려주세요",
+    "unkeep": "저장 해제",
+    "visit_site": "웹사이트 열기",
+    "website": "웹사이트",
+    "see_all_lines": "모든 상담선 보기"
   },
   "sos": {
     "button": "SOS",
@@ -1675,6 +1721,13 @@
       "title": "[KO] Born this week",
       "seeAll": "[KO] All personalities",
       "celebrate": "[KO] Celebrate {{name}}"
+    },
+    "map": {
+      "interchangeEyebrow": "[KO] Interchange",
+      "interchange": {
+        "label": "[KO] Search everything",
+        "subtitle": "[KO] Every line meets here"
+      }
     }
   },
   "header": {
@@ -3384,6 +3437,12 @@
       "events_other": "[KO] {{count}} events",
       "groups_one": "[KO] {{count}} group",
       "groups_other": "[KO] {{count}} groups"
+    },
+    "interests": {
+      "title": "[KO] What are you into?",
+      "blurb": "[KO] Pick a few. They shape what we suggest, and they are how other members find people with something in common.",
+      "blurbSignedOut": "[KO] Sign in to pick a few. They shape what we suggest, and they are how other members find people with something in common.",
+      "count": "[KO] {{count}} selected"
     }
   },
   "hub": {
@@ -3588,7 +3647,11 @@
       "allCountries": "모든 국가",
       "clear": "필터 지우기",
       "major": "주요 이정표",
-      "showAll": "모든 이정표"
+      "showAll": "모든 이정표",
+      "heading": "[KO] Filter the timeline",
+      "categoryGroup": "[KO] Category",
+      "scopeGroup": "[KO] Depth",
+      "impactGroup": "[KO] Impact"
     },
     "category": {
       "uprising-movement": "봉기 / 운동",
@@ -3608,7 +3671,9 @@
       "sources": "출처",
       "linked": "관련 인물과 장소",
       "related": "{{country}}의 다른 이정표",
-      "sameYear": "[KO] Elsewhere in {{year}}"
+      "sameYear": "[KO] Elsewhere in {{year}}",
+      "story": "[KO] What happened",
+      "sameYearNote": "[KO] What was happening in other countries the same year."
     },
     "sidebar": {
       "facts": "정보",
@@ -3700,7 +3765,16 @@
       "country": "[KO] Travel guide: {{name}}",
       "city": "[KO] City guide: {{name}}",
       "events": "[KO] Events in {{name}} today"
-    }
+    },
+    "facts": {
+      "impact": "[KO] Impact",
+      "category": "[KO] Category",
+      "era": "[KO] Era"
+    },
+    "photoCredit": "[KO] Photo",
+    "eraNavHeading": "[KO] The line, end to end",
+    "eraNavStation": "[KO] {{era}} — {{count}} milestones",
+    "emptyTitle": "[KO] No service on this stretch of the line"
   },
   "guides": {
     "hub": {
@@ -3925,6 +3999,164 @@
       "partial": "[KO] Some protections",
       "protected": "[KO] Broad protections",
       "unknown": "[KO] Not enough data"
+    }
+  },
+  "about": {
+    "eyebrow": "소개",
+    "title": "퀴어가 만들고, 모두를 위해.",
+    "lede": "Queer Guide는 퀴어의 삶을 이루는 공간과 행사, 사람을 지도로 모읍니다. 커뮤니티가 검증하고, 누구에게나 무료이며, 전 세계 어디서나.",
+    "diagram": {
+      "label": "네 개의 노선 — 공간, 행사, 커뮤니티, 여행지 — 이 하나의 역에서 만나는 그림."
+    },
+    "scale": {
+      "kicker": "지금의 네트워크",
+      "venues": "공간",
+      "events": "예정된 행사",
+      "cities": "도시",
+      "countries": "국가"
+    },
+    "lines": {
+      "kicker": "네트워크",
+      "title": "다섯 개의 노선",
+      "lede": "플랫폼의 각 부분은 저마다의 노선을 달립니다. 필요한 노선을 타세요.",
+      "action": "열기",
+      "venues": {
+        "name": "공간",
+        "description": "퀴어 친화적인 바, 카페, 클럽, 가게. 실제 사람이 확인합니다."
+      },
+      "events": {
+        "name": "행사",
+        "description": "프라이드 행진, 드랙 쇼, 지지 모임, 상영회 — 가까운 곳에서든 어디서든."
+      },
+      "marketplace": {
+        "name": "마켓",
+        "description": "LGBTQ+가 운영하는 가게와 창작자들. 돈이 향할 곳을 고르세요."
+      },
+      "community": {
+        "name": "커뮤니티",
+        "description": "묻고, 이야기하고, 사람을 찾으세요. 언제나 관리됩니다."
+      },
+      "places": {
+        "name": "여행지",
+        "description": "도시와 국가의 법, 권리, 안전 정보. 떠나기 전에."
+      }
+    },
+    "story": {
+      "kicker": "우리 이야기",
+      "title": "이렇게 시작했습니다",
+      "p1": "퀴어 친화적인 바를 찾는 데 단체 대화방과 게시판 글 세 개, 그리고 약간의 운이 필요해서는 안 됩니다. 어떤 공간이 정말 안전한지 — 그리고 어디가 6월에만 로고에 무지개를 붙이는지 — 짐작하는 데 지쳐서 Queer Guide를 시작했습니다.",
+      "p2": "믿을 만한 장소를 적어 둔 개인 목록이 전 세계 디렉터리가 되었습니다. 커뮤니티가 검증하고, 실제 경험 위에 쌓았고, 무료입니다. 혼자 여행하든, 도시를 옮기든, 금요일 밤 갈 곳을 찾든 — 여기서 시작하세요."
+    },
+    "legend": {
+      "kicker": "범례",
+      "title": "무엇이 다른가",
+      "verified": {
+        "label": "커뮤니티 검증",
+        "body": "모든 공간은 알고리즘이 아니라 실제 LGBTQ+ 사람들이 확인합니다."
+      },
+      "safety": {
+        "label": "안전이 먼저",
+        "body": "국가 페이지마다 현지 법률과 권리, 위험 정보를 적어 둡니다."
+      },
+      "free": {
+        "label": "언제나 무료",
+        "body": "결제 장벽도, 유료 등급도 없습니다. 이 플랫폼은 모두의 것입니다."
+      },
+      "global": {
+        "label": "전 세계",
+        "body": "베를린에서 방콕까지, 상파울루에서 시드니까지 — 계속 넓어집니다."
+      }
+    },
+    "history": {
+      "kicker": "여기까지 온 길",
+      "title": "지금까지의 노선",
+      "lede": "곁다리 프로젝트가 전 세계 디렉터리가 되었습니다.",
+      "y2021": {
+        "year": "2021",
+        "body": "세 사람과 스프레드시트 하나. 유럽 다섯 도시의 안전한 바 목록을 텔레그램 그룹에서 나눴습니다."
+      },
+      "y2023": {
+        "year": "2023",
+        "body": "여든 개 도시, 천 개의 공간. 행사 수집 파이프라인과 커뮤니티 제보 확장 프로그램이 시작됐습니다."
+      },
+      "y2025": {
+        "year": "2025",
+        "body": "모든 대륙에 걸쳐 수만 개의 공간. 마켓, 여행 계획, 안전 브리핑, 국가별 권리 자료."
+      },
+      "y2026": {
+        "year": "2026",
+        "body": "당신은 여기 있습니다. 공간을 추가하고, 행사를 올리고, 함께 쓰는 사람이 되어 주세요."
+      }
+    },
+    "values": {
+      "kicker": "우리가 선 자리",
+      "title": "우리가 중요하게 여기는 것",
+      "inclusivity": {
+        "title": "포용",
+        "description": "모든 정체성, 모든 배경, 모든 이야기가 여기에 속합니다."
+      },
+      "safety": {
+        "title": "안전",
+        "description": "온라인에서도 밖에서도 안전한 공간. 다른 무엇보다 먼저입니다."
+      },
+      "community": {
+        "title": "커뮤니티",
+        "description": "사람과, 그 사람을 돕는 단체 사이의 진짜 연결."
+      },
+      "authenticity": {
+        "title": "있는 그대로",
+        "description": "당신인 채로. 숨지 않아도 되도록 이곳을 만들었습니다."
+      },
+      "accessibility": {
+        "title": "접근성",
+        "description": "턱 없는 입구와 이용 가능한 화장실을 표시합니다 — 없는 것도 함께."
+      },
+      "growth": {
+        "title": "성장",
+        "description": "계속 바뀌고, 계속 듣습니다. 여러분이 알려 준 것으로 만듭니다."
+      }
+    },
+    "people": {
+      "kicker": "누가 운영하나",
+      "title": "뒤에 있는 사람들",
+      "lede": "회사가 아닙니다. 시간을 내어 주는 커뮤니티 구성원들입니다.",
+      "moderators": {
+        "name": "커뮤니티 모더레이터",
+        "role": "안전하게 지키기",
+        "description": "플랫폼이 환대하고 존중하는 곳으로 남도록 하루 종일 살피는 자원활동가들입니다."
+      },
+      "ambassadors": {
+        "name": "지역 앰배서더",
+        "role": "현장에서",
+        "description": "지역의 필요를 전하고, 자기 지역의 포용적인 공간을 지지하는 커뮤니티 활동가들입니다."
+      },
+      "contributors": {
+        "name": "기여자",
+        "role": "아는 것을 나누기",
+        "description": "후기를 쓰고, 행사를 올리고, 모두가 기대는 자료를 만드는 구성원들입니다."
+      }
+    },
+    "cta": {
+      "title": "노선을 늘리는 데 함께해 주세요.",
+      "body": "네트워크는 사람들이 보태기 때문에 자랍니다. 검증된 항목 하나마다 누군가가 있습니다 — 당신의 것을 더해 주세요.",
+      "primary": "공간 제보",
+      "secondary": "문의하기",
+      "addVenues": {
+        "title": "공간 추가",
+        "desc": "안전한 곳을 아시나요? 지도에 올려 주세요."
+      },
+      "createEvents": {
+        "title": "행사 올리기",
+        "desc": "무언가를 열고, 사람을 모으세요."
+      },
+      "joinGroups": {
+        "title": "그룹 참여",
+        "desc": "이 대화에 당신의 목소리가 있습니다."
+      },
+      "support": {
+        "title": "후원하기",
+        "desc": "플랫폼을 모두에게 무료로 유지하기 위해."
+      }
     }
   }
 }

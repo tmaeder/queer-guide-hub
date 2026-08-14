@@ -23,19 +23,19 @@ import {
 } from '@/components/ui/select';
 import { Phone, Clock, Languages, AlertTriangle, ChevronRight } from 'lucide-react';
 
-interface Hotline {
-  id: string;
-  name: string;
-  country: string;
-  phone: string | null;
-  url?: string;
-  topics: string[];
-  languages: string[];
-  hours: string;
-  description: string;
-  free?: boolean;
-  anonymous?: boolean;
-}
+// Imported rather than re-declared. This file used to carry its own copy of
+// the shape, which silently went stale every time the canonical one gained a
+// field — it never learned about `kind`, so directories were eligible for a
+// strip whose entire premise is a phone number.
+import type { Hotline } from '@/types/cms';
+// Ranking is imported for the same reason the type is. This file used to carry
+// its own `is247` (a substring match over free text) and its own `rankHotlines`
+// (24/7 → free → topic count), so /resources and /help could recommend
+// different lines from one corpus — and the local copy could not see
+// `hours_slots`, so it had no notion of whether a line was open *now*.
+// `sortByAvailability` is the same triage /help applies: reachable now first,
+// unknown ahead of known-closed, never a line that may call the police.
+import { isDirectory, sortByAvailability } from '@/components/help/helpData';
 
 const EMERGENCY_NUMBERS: Record<string, string> = {
   DE: '112',
@@ -54,23 +54,6 @@ const EMERGENCY_NUMBERS: Record<string, string> = {
 };
 
 const MAX = 4;
-
-function is247(hours: string): boolean {
-  const h = hours.toLowerCase();
-  return h.includes('24/7') || h.includes('24 h') || h.includes('rund um die uhr');
-}
-
-function rankHotlines(list: Hotline[]): Hotline[] {
-  return [...list].sort((a, b) => {
-    const a247 = is247(a.hours) ? 1 : 0;
-    const b247 = is247(b.hours) ? 1 : 0;
-    if (b247 !== a247) return b247 - a247;
-    const aFree = a.free ? 1 : 0;
-    const bFree = b.free ? 1 : 0;
-    if (bFree !== aFree) return bFree - aFree;
-    return b.topics.length - a.topics.length;
-  });
-}
 
 export function CrisisStrip() {
   const { t } = useTranslation();
@@ -100,12 +83,19 @@ export function CrisisStrip() {
   );
 
   const visible = useMemo(() => {
-    const local = hotlines.filter((h) => h.country === country);
-    const international = hotlines.filter((h) => h.country === 'INT');
+    // This strip exists to put a dialable number in front of someone in a
+    // hurry, and it renders no alternative channels — so an entry with no
+    // phone is a dead row here. Several are legitimately phone-less (LGBT
+    // YouthLine retired its line in 2023; LSVD and TGNS route to email and
+    // regional services), and those belong on /help, which shows their text,
+    // chat and email routes properly. Directories never belonged here at all.
+    const callable = hotlines.filter((h) => !!h.phone && !isDirectory(h));
+    const local = callable.filter((h) => h.country === country);
+    const international = callable.filter((h) => h.country === 'INT');
     const combined =
       local.length > 0
-        ? [...rankHotlines(local), ...rankHotlines(international)]
-        : rankHotlines(international);
+        ? [...sortByAvailability(local), ...sortByAvailability(international)]
+        : sortByAvailability(international);
     return combined.slice(0, MAX);
   }, [hotlines, country]);
 
@@ -175,8 +165,12 @@ export function CrisisStrip() {
 
       {isLoading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {/* Static placeholders. /resources is not one of the routes the design
+              system lists as a crisis surface, but this block is a crisis strip
+              wherever it sits, and a pulsing shimmer is the one animation a
+              reader in distress reads as the page still deciding something. */}
           {Array.from({ length: 4 }).map((_, i) => (
-            <Skeleton key={i} className="h-24 w-full rounded-element" />
+            <Skeleton key={i} animation={false} className="h-24 w-full rounded-element" />
           ))}
         </div>
       ) : visible.length === 0 ? (

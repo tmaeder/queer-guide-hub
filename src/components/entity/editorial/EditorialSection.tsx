@@ -31,7 +31,7 @@ export function EditorialSection({
       <header className="mb-8 flex items-end justify-between gap-4">
         <div className="min-w-0">
           {kicker ? (
-            <p className="mb-2 text-2xs uppercase tracking-[0.18em] text-muted-foreground">
+            <p className="mb-2 text-2xs font-bold uppercase tracking-label text-muted-foreground">
               {kicker}
             </p>
           ) : null}

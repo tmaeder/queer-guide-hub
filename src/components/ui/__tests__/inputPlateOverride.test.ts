@@ -91,22 +91,42 @@ const setsPlaceholderColour = (cls: string) => {
  * Exported so the detector itself is tested against known-good/known-bad input —
  * a repo-wide scan that finds nothing proves nothing on its own.
  */
+/**
+ * The three primitives that share the fill/foreground coupling. `Textarea` and
+ * `SelectTrigger` were migrated off the PASTE-UP inverted plate onto `Input`'s
+ * ink-on-paper box (2026-08-11) — the same shape means the same failure mode,
+ * so they belong in the same guard rather than waiting for their own incident.
+ *
+ * `SelectTrigger` renders no placeholder (a select always shows a value or
+ * `SelectValue`'s own child), so requiring `placeholder:text-*` of it would be
+ * a false positive. The primitives that DO set a placeholder colour are listed
+ * here; the requirement is derived from that, not assumed for all three.
+ */
+const PLATE_PRIMITIVES = ['Input', 'Textarea', 'SelectTrigger'] as const;
+const SETS_PLACEHOLDER = new Set(['Input', 'Textarea']);
+
 export function findPlateOverrideViolations(source: string, file: string) {
   const out: { file: string; classes: string; missing: string }[] = [];
-  // Each <Input ... /> element, non-greedy up to its self-closing tag.
-  for (const el of source.matchAll(/<Input\b[\s\S]*?\/>/g)) {
-    const tag = el[0];
-    // className="..." — the only form that can carry a literal override.
-    const cn = /className=(?:"([^"]*)"|\{`([^`]*)`\})/.exec(tag);
-    if (!cn) continue;
-    const classes = (cn[1] ?? cn[2] ?? '').split(/\s+/).filter(Boolean);
-    if (!classes.some(overridesPlateBackground)) continue;
-    const missing = [
-      classes.some(setsColour) ? null : 'text-*',
-      classes.some(setsPlaceholderColour) ? null : 'placeholder:text-*',
-    ].filter(Boolean);
-    if (missing.length)
-      out.push({ file, classes: classes.join(' '), missing: missing.join(' + ') });
+  for (const name of PLATE_PRIMITIVES) {
+    // Each element, non-greedy to its self-closing tag OR its opening `>`;
+    // SelectTrigger wraps children, so it is not self-closing.
+    const re = new RegExp(`<${name}\\b[^>]*?/?>`, 'g');
+    for (const el of source.matchAll(re)) {
+      const tag = el[0];
+      // className="..." — the only form that can carry a literal override.
+      const cn = /className=(?:"([^"]*)"|\{`([^`]*)`\})/.exec(tag);
+      if (!cn) continue;
+      const classes = (cn[1] ?? cn[2] ?? '').split(/\s+/).filter(Boolean);
+      if (!classes.some(overridesPlateBackground)) continue;
+      const missing = [
+        classes.some(setsColour) ? null : 'text-*',
+        SETS_PLACEHOLDER.has(name) && !classes.some(setsPlaceholderColour)
+          ? 'placeholder:text-*'
+          : null,
+      ].filter(Boolean);
+      if (missing.length)
+        out.push({ file: `${file} (<${name}>)`, classes: classes.join(' '), missing: missing.join(' + ') });
+    }
   }
   return out;
 }

@@ -1,6 +1,6 @@
 {
   "project": "tsconfig.app.json",
-  "total": 1265,
+  "total": 1262,
   "files": {
     "src/assets/intimate/pictograms.tsx": {
       "TS2503": 2
@@ -357,9 +357,6 @@
       "TS6133": 1
     },
     "src/components/loading/OptimizedLoader.tsx": {
-      "TS6133": 1
-    },
-    "src/components/map/CommandBar.tsx": {
       "TS6133": 1
     },
     "src/components/map/EntityMap.tsx": {
@@ -1201,9 +1198,6 @@
     "src/pages/HotelDetail.tsx": {
       "TS2322": 2
     },
-    "src/pages/Map.tsx": {
-      "TS6133": 1
-    },
     "src/pages/News.tsx": {
       "TS2352": 1,
       "TS2362": 1,
@@ -1216,9 +1210,6 @@
       "TS2538": 1,
       "TS2719": 1,
       "TS2769": 2
-    },
-    "src/pages/Personalities.tsx": {
-      "TS2322": 1
     },
     "src/pages/ProfessionDetail.tsx": {
       "TS2345": 2,

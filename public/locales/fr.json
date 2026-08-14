@@ -1470,19 +1470,19 @@
       "relationships": "Relations",
       "women": "Femmes"
     },
-    "quick_exit": "Quick exit",
-    "quick_exit_aria": "Leave this page immediately (ESC)",
-    "hide_screen": "Hide screen",
-    "reveal_aria": "Click anywhere to show the page again",
-    "hidden_hint": "Page hidden. Click anywhere to show again.",
-    "hero_label": "Recommended right now",
-    "expect_title": "What happens when you call",
+    "quick_exit": "Sortie rapide",
+    "quick_exit_aria": "Quitter cette page immédiatement (Échap)",
+    "hide_screen": "Masquer l’écran",
+    "reveal_aria": "Cliquez n’importe où pour réafficher la page",
+    "hidden_hint": "Page masquée. Cliquez n’importe où pour la réafficher.",
+    "hero_label": "Recommandé maintenant",
+    "expect_title": "Ce qui se passe quand vous appelez",
     "expect_short": "What to expect",
     "expect_1": "You'll hear a short greeting. You don't have to give your name.",
     "expect_2": "You can hang up at any time. You can call back as often as you need.",
     "expect_3": "Free hotlines in DE/AT/CH don't appear on itemized phone bills.",
     "expect_4": "If you can't speak, ask for text or chat — most hotlines offer it.",
-    "self_help_trigger": "While you wait",
+    "self_help_trigger": "Pas prêt·e à parler ?",
     "self_help_title": "Steady yourself",
     "self_help_desc": "Short techniques you can use while you wait, or instead of a call if you're not ready.",
     "breathing_title": "4-7-8 breathing",
@@ -1500,7 +1500,7 @@
     "safety_plan_title": "Safety plan",
     "safety_plan_desc": "A short written plan you can pull up when things get bad — your warning signs, coping steps, people to call, and reasons to live.",
     "safety_plan_link": "Open template (Stanley-Brown)",
-    "report": "Report",
+    "report": "Signaler",
     "report_aria": "Report a problem with this hotline",
     "report_title": "Report this hotline",
     "report_desc": "Thanks for helping keep this list accurate. Reports are reviewed by our team.",
@@ -1540,7 +1540,53 @@
       "closed": "Service has shut down",
       "unsafe": "Unsafe / harmful experience",
       "other": "Other"
-    }
+    },
+    "browse_support_orgs": "Voir toutes les associations",
+    "browse_title": "Parcourir toutes les lignes",
+    "cant_speak": "Vous ne pouvez pas parler ?",
+    "closed_now": "Fermé actuellement",
+    "closed_no_alt": "Cette ligne est fermée en ce moment et nous n'avons aucune autre ligne ouverte pour ce pays. En cas de danger immédiat, utilise le numéro d'urgence ci-dessus.",
+    "directories_subtitle": "Ce sont des annuaires et des associations relais — des sites web, pas des lignes téléphoniques directes.",
+    "directories_title": "Annuaires et autres soutiens",
+    "emergency_short": "Urgence",
+    "helping_body": "Si vous écoutez quelqu'un en crise : restez avec cette personne, prenez au sérieux ce qu'elle dit et ne la laissez pas seule. Vous n'avez pas besoin d'avoir les réponses. Appelez une ligne ensemble, ou appelez vous-même pour demander quoi faire ensuite.",
+    "helping_title": "Aider quelqu'un d'autre",
+    "keep": "Garder cette ligne",
+    "know_the_law": "Connaître la loi",
+    "know_the_law_body": "Pouvoir vivre ouvertement, consulter un médecin ou porter plainte en sécurité dépend de l'endroit où vous êtes. Vérifiez la situation juridique avant d'agir.",
+    "link_unavailable": "Site actuellement indisponible — nouvelle vérification en cours.",
+    "loading": "Chargement de l'annuaire…",
+    "more_support": "Autres soutiens",
+    "no_country_body": "Choisissez un pays ci-dessus et nous afficherons la meilleure ligne. Toutes nos lignes sont listées ci-dessous.",
+    "no_country_title": "Nous n'avons pas pu déterminer où vous êtes",
+    "no_lines_body": "Si vous êtes en danger immédiat, appelez les secours : 112 (UE) ou 911 (US/CA).",
+    "no_lines_title": "Impossible de charger l'annuaire",
+    "no_police_policy": "Cette ligne s'engage à ne jamais contacter la police ni les secours sans votre demande explicite.",
+    "open_always": "Ouvert 24h/24, 7j/7",
+    "open_instead": "Ouvert maintenant à la place",
+    "open_now": "Ouvert maintenant",
+    "org_coverage": "Cet annuaire est loin d'être complet. S'il manque un groupe en qui vous avez confiance, dites-le-nous. Un résultat vide signifie que nous n'avons pas d'information — pas qu'aucune aide n'existe.",
+    "phone_only": "Uniquement par téléphone, d'après nos informations.",
+    "phone_only_with_site": "Uniquement par téléphone, d'après nos informations. Leur site propose peut-être un chat ou un e-mail.",
+    "provenance": "Provenance",
+    "report_submitting": "Envoi…",
+    "reports_police_warning": "Cette ligne peut contacter la police ou les secours sans votre consentement.",
+    "result_count_one": "{{count}} ligne",
+    "result_count_other": "{{count}} lignes",
+    "rights_by_country": "Droits LGBTQ+ par pays",
+    "saved_lines": "Lignes gardées",
+    "scope_all": "Lignes de tous les pays répertoriés.",
+    "scope_change": "Modifier",
+    "scope_dialog_desc": "Les lignes sont classées par pays desservi. Les annuaires internationaux restent visibles quel que soit votre choix.",
+    "scope_dialog_title": "Choisir un pays",
+    "scope_prefix": "Lignes pour",
+    "support_orgs": "Associations d'aide",
+    "support_orgs_body": "Centres communautaires et associations proposant un accompagnement en personne.",
+    "tell_us": "Dites-le-nous",
+    "unkeep": "Ne plus garder",
+    "visit_site": "Ouvrir leur site",
+    "website": "Site web",
+    "see_all_lines": "Voir toutes les lignes"
   },
   "sos": {
     "button": "SOS",
@@ -1679,6 +1725,13 @@
       "title": "[FR] Born this week",
       "seeAll": "[FR] All personalities",
       "celebrate": "[FR] Celebrate {{name}}"
+    },
+    "map": {
+      "interchangeEyebrow": "[FR] Interchange",
+      "interchange": {
+        "label": "[FR] Search everything",
+        "subtitle": "[FR] Every line meets here"
+      }
     }
   },
   "header": {
@@ -3390,6 +3443,12 @@
       "events_other": "[FR] {{count}} events",
       "groups_one": "[FR] {{count}} group",
       "groups_other": "[FR] {{count}} groups"
+    },
+    "interests": {
+      "title": "[FR] What are you into?",
+      "blurb": "[FR] Pick a few. They shape what we suggest, and they are how other members find people with something in common.",
+      "blurbSignedOut": "[FR] Sign in to pick a few. They shape what we suggest, and they are how other members find people with something in common.",
+      "count": "[FR] {{count}} selected"
     }
   },
   "hub": {
@@ -3594,7 +3653,11 @@
       "allCountries": "Tous les pays",
       "clear": "Effacer les filtres",
       "major": "Jalons majeurs",
-      "showAll": "Tous les jalons"
+      "showAll": "Tous les jalons",
+      "heading": "[FR] Filter the timeline",
+      "categoryGroup": "[FR] Category",
+      "scopeGroup": "[FR] Depth",
+      "impactGroup": "[FR] Impact"
     },
     "category": {
       "uprising-movement": "Soulèvement / Mouvement",
@@ -3614,7 +3677,9 @@
       "sources": "Sources",
       "linked": "Personnes et lieux impliqués",
       "related": "Plus de {{country}}",
-      "sameYear": "[FR] Elsewhere in {{year}}"
+      "sameYear": "[FR] Elsewhere in {{year}}",
+      "story": "[FR] What happened",
+      "sameYearNote": "[FR] What was happening in other countries the same year."
     },
     "sidebar": {
       "facts": "Faits",
@@ -3706,7 +3771,16 @@
       "country": "[FR] Travel guide: {{name}}",
       "city": "[FR] City guide: {{name}}",
       "events": "[FR] Events in {{name}} today"
-    }
+    },
+    "facts": {
+      "impact": "[FR] Impact",
+      "category": "[FR] Category",
+      "era": "[FR] Era"
+    },
+    "photoCredit": "[FR] Photo",
+    "eraNavHeading": "[FR] The line, end to end",
+    "eraNavStation": "[FR] {{era}} — {{count}} milestones",
+    "emptyTitle": "[FR] No service on this stretch of the line"
   },
   "guides": {
     "hub": {
@@ -3931,6 +4005,164 @@
       "partial": "[FR] Some protections",
       "protected": "[FR] Broad protections",
       "unknown": "[FR] Not enough data"
+    }
+  },
+  "about": {
+    "eyebrow": "À propos",
+    "title": "Fait par des personnes queer, pour tout le monde.",
+    "lede": "Queer Guide cartographie les lieux, les événements et les personnes qui font la vie queer — vérifié par la communauté, gratuit pour tout le monde, partout dans le monde.",
+    "diagram": {
+      "label": "Quatre lignes — lieux, événements, communauté et destinations — convergent vers une seule station."
+    },
+    "scale": {
+      "kicker": "Le réseau aujourd'hui",
+      "venues": "Lieux",
+      "events": "Événements à venir",
+      "cities": "Villes",
+      "countries": "Pays"
+    },
+    "lines": {
+      "kicker": "Le réseau",
+      "title": "Cinq lignes",
+      "lede": "Chaque partie de la plateforme a sa propre ligne. Prends celle qu'il te faut.",
+      "action": "Ouvrir",
+      "venues": {
+        "name": "Lieux",
+        "description": "Bars, cafés, clubs et commerces queer-friendly, vérifiés par de vraies personnes."
+      },
+      "events": {
+        "name": "Événements",
+        "description": "Marches des fiertés, spectacles drag, groupes de parole, projections — près de chez toi ou ailleurs."
+      },
+      "marketplace": {
+        "name": "Boutique",
+        "description": "Commerces et créateur·ices LGBTQ+. Achète là où ton argent compte."
+      },
+      "community": {
+        "name": "Communauté",
+        "description": "Pose des questions, partage, trouve les tiens. Toujours modéré."
+      },
+      "places": {
+        "name": "Destinations",
+        "description": "Villes et pays : lois locales, droits et notes de sécurité avant de partir."
+      }
+    },
+    "story": {
+      "kicker": "Notre histoire",
+      "title": "Comment ça a commencé",
+      "p1": "Trouver un bar queer-friendly ne devrait pas demander un groupe de discussion, trois fils de forum et un acte de foi. On a lancé Queer Guide parce qu'on en avait assez de deviner quels lieux étaient vraiment sûrs — et lesquels collaient juste un arc-en-ciel sur leur logo en juin.",
+      "p2": "Une liste personnelle de lieux de confiance est devenue un annuaire mondial : vérifié par la communauté, bâti sur des expériences réelles, gratuit. En voyage seul·e, en train de déménager, ou simplement à la recherche d'un endroit où être un vendredi soir — commence ici."
+    },
+    "legend": {
+      "kicker": "Légende",
+      "title": "Ce qui nous distingue",
+      "verified": {
+        "label": "Vérifié par la communauté",
+        "body": "Chaque lieu est vérifié par de vraies personnes LGBTQ+, pas par un algorithme."
+      },
+      "safety": {
+        "label": "La sécurité d'abord",
+        "body": "Lois locales, droits et alertes de risque sur chaque page pays."
+      },
+      "free": {
+        "label": "Toujours gratuit",
+        "body": "Pas de péage, pas d'offre premium. La plateforme appartient à tout le monde."
+      },
+      "global": {
+        "label": "Partout dans le monde",
+        "body": "De Berlin à Bangkok, de São Paulo à Sydney — et ça continue."
+      }
+    },
+    "history": {
+      "kicker": "Comment on en est arrivés là",
+      "title": "La ligne jusqu'ici",
+      "lede": "Un projet parallèle devenu un annuaire mondial.",
+      "y2021": {
+        "year": "2021",
+        "body": "Trois contributeur·ices, un tableur. Des bars sûrs dans cinq villes européennes, partagés dans un groupe Telegram."
+      },
+      "y2023": {
+        "year": "2023",
+        "body": "Mille lieux dans quatre-vingts villes. Le pipeline d'événements et l'extension de propositions communautaires sont lancés."
+      },
+      "y2025": {
+        "year": "2025",
+        "body": "Des dizaines de milliers de lieux sur tous les continents. Boutique, planificateur de voyage, briefings sécurité et droits pays par pays."
+      },
+      "y2026": {
+        "year": "2026",
+        "body": "Tu es ici. Ajoute un lieu, publie un événement, ou rejoins le cercle des contributeur·ices."
+      }
+    },
+    "values": {
+      "kicker": "Ce qu'on défend",
+      "title": "Nos valeurs",
+      "inclusivity": {
+        "title": "Inclusion",
+        "description": "Toutes les identités, tous les parcours, toutes les histoires ont leur place ici."
+      },
+      "safety": {
+        "title": "Sécurité",
+        "description": "Des espaces sûrs en ligne et hors ligne. Ça passe avant tout le reste."
+      },
+      "community": {
+        "title": "Communauté",
+        "description": "De vraies connexions entre les personnes et les associations qui les accompagnent."
+      },
+      "authenticity": {
+        "title": "Authenticité",
+        "description": "Sois toi-même. On a construit ça pour que tu n'aies jamais à te cacher."
+      },
+      "accessibility": {
+        "title": "Accessibilité",
+        "description": "On signale les entrées de plain-pied, les toilettes accessibles — et ce qui manque."
+      },
+      "growth": {
+        "title": "Évolution",
+        "description": "Toujours en mouvement, toujours à l'écoute. Construit sur ce que vous nous dites."
+      }
+    },
+    "people": {
+      "kicker": "Qui fait tourner ça",
+      "title": "Les personnes derrière",
+      "lede": "Aucune entreprise. Des membres de la communauté qui donnent de leur temps.",
+      "moderators": {
+        "name": "Modération communautaire",
+        "role": "Garder les lieux sûrs",
+        "description": "Des bénévoles qui gardent la plateforme accueillante et respectueuse, à toute heure."
+      },
+      "ambassadors": {
+        "name": "Relais locaux",
+        "role": "Sur le terrain",
+        "description": "Des personnes de la communauté qui font remonter les besoins locaux et défendent les espaces inclusifs dans leur région."
+      },
+      "contributors": {
+        "name": "Contributeur·ices",
+        "role": "Partager les savoirs",
+        "description": "Des membres qui écrivent des avis, publient des événements et construisent les ressources dont tout le monde se sert."
+      }
+    },
+    "cta": {
+      "title": "Aide-nous à prolonger la ligne.",
+      "body": "Le réseau grandit parce que des gens y ajoutent quelque chose. Derrière chaque fiche vérifiée, il y a quelqu'un — ajoute la tienne.",
+      "primary": "Proposer un lieu",
+      "secondary": "Nous contacter",
+      "addVenues": {
+        "title": "Ajouter un lieu",
+        "desc": "Tu connais un endroit sûr ? Mets-le sur la carte."
+      },
+      "createEvents": {
+        "title": "Publier un événement",
+        "desc": "Organise quelque chose. Rassemble."
+      },
+      "joinGroups": {
+        "title": "Rejoindre un groupe",
+        "desc": "Ta voix a sa place dans la conversation."
+      },
+      "support": {
+        "title": "Nous soutenir",
+        "desc": "Pour que la plateforme reste gratuite pour tout le monde."
+      }
     }
   }
 }

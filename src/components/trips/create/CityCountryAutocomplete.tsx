@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { MapPin, Loader2, Check } from 'lucide-react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
+import { MapPin, Check } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
 import { useDebounce } from '@/hooks/useDebounce';
@@ -196,7 +197,7 @@ export function CityCountryAutocomplete({
         />
         <span className="absolute right-3 top-1/2 -translate-y-1/2 flex">
           {loading ? (
-            <Loader2 size={16} className="animate-spin" />
+            <TrackLoader size={16} />
           ) : value ? (
             <Check size={16} className="text-foreground" />
           ) : null}

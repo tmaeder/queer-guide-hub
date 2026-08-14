@@ -1,6 +1,7 @@
 import { Input } from '@/components/ui/input';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { Button } from '@/components/ui/button';
-import { Search, Filter, Navigation, Loader2 } from 'lucide-react';
+import { Search, Filter, Navigation} from 'lucide-react';
 
 interface SearchFilterBarProps {
   search: string;
@@ -50,7 +51,7 @@ export function SearchFilterBar({
           className="h-11 w-11 rounded-element"
           aria-label="Find near me"
         >
-          {isDetectingLocation ? <Loader2 size={16} /> : <Navigation size={16} />}
+          {isDetectingLocation ? <TrackLoader size={16} /> : <Navigation size={16} />}
         </Button>
         <Button onClick={onSearch} size="icon" className="h-11 w-11 rounded-element" aria-label="Search">
           <Search size={16} />

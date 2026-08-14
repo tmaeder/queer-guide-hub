@@ -1,12 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import * as maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
-import { Loader2, Check, Bookmark } from 'lucide-react';
+import { Check, Bookmark } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { getMapStyle } from '@/config/mapStyle';
-import { useTheme } from '@/components/theme/ThemeProvider';
 import { isWebglSupported } from '@/lib/webglSupport';
 import { useCountryBoundaries } from '@/hooks/useBoundaryData';
 import { useAtlas, useToggleCountryMark } from '@/hooks/useAtlas';
@@ -26,7 +26,6 @@ const SRC = 'atlas-countries';
  */
 export function AtlasMap() {
   const { t } = useTranslation();
-  const { resolvedTheme } = useTheme();
   const mapContainer = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const [mapReady, setMapReady] = useState(false);
@@ -61,7 +60,7 @@ export function AtlasMap() {
     if (!isWebglSupported()) return;
     const map = new maplibregl.Map({
       container: mapContainer.current,
-      style: getMapStyle(resolvedTheme),
+      style: getMapStyle(),
       center: [10, 25],
       zoom: 0.9,
       attributionControl: false,
@@ -79,7 +78,7 @@ export function AtlasMap() {
       mapRef.current = null;
       setMapReady(false);
     };
-  }, [resolvedTheme]);
+  }, []);
 
   // (Re)wire boundary source + layers whenever data changes.
   useEffect(() => {
@@ -149,7 +148,7 @@ export function AtlasMap() {
         <div ref={mapContainer} className="absolute inset-0" />
         {(isLoading || !boundaries) && (
           <div className="absolute inset-0 flex items-center justify-center bg-background/40">
-            <Loader2 className="h-5 w-5 animate-spin" aria-label={t('common.loading', 'Loading')} />
+            <TrackLoader size={20} label={t('common.loading', 'Loading')} />
           </div>
         )}
       </div>

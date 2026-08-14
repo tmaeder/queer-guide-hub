@@ -5,8 +5,9 @@
  */
 
 import { useState, useCallback } from 'react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useDropzone } from 'react-dropzone';
-import { Upload, X, FileText, Loader2 } from 'lucide-react';
+import { Upload, X, FileText} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useCMSMedia } from '@/hooks/useCMSMedia';
@@ -129,7 +130,7 @@ export default function MediaUploader({ onUploaded, bucket, accept }: MediaUploa
             disabled={uploading}
           >
             {uploading ? (
-              <Loader2 size={16} className="mr-2 animate-spin" />
+              <TrackLoader size={16} className="mr-2" />
             ) : (
               <Upload size={16} className="mr-2" />
             )}

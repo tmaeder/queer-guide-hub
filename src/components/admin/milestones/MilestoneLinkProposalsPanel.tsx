@@ -58,7 +58,9 @@ export function MilestoneLinkProposalsPanel() {
   if (isLoading || !proposals?.length) return null;
 
   return (
-    <div className="mx-4 mt-4 rounded-container border border-border p-4">
+    // `mx-4 mt-4` existed only to counteract the page's missing gutters. The
+    // page sits on AdminShell's ladder with gap-6 now, so it would double-inset.
+    <section className="border border-border p-4">
       <div className="mb-4 flex items-center gap-2">
         <h2 className="text-15 font-semibold">Link proposals</h2>
         <Badge variant="outline">{proposals.length} pending</Badge>
@@ -114,6 +116,6 @@ export function MilestoneLinkProposalsPanel() {
           </li>
         ))}
       </ul>
-    </div>
+    </section>
   );
 }

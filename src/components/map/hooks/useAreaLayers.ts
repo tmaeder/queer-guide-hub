@@ -1,12 +1,10 @@
 import { useEffect, useRef, type MutableRefObject } from 'react';
 import * as maplibregl from 'maplibre-gl';
 import { type GeoJSONSource, type MapLayerMouseEvent } from 'maplibre-gl';
-import {
-  type LayerType,
-  type MapMarker,
-  LAYER_COLORS,
-} from '@/hooks/useExploreMapData';
+import { type LayerType, type MapMarker, LAYER_COLORS } from '@/hooks/useExploreMapData';
 import { AREA_LAYERS, AREA_RADIUS, AREA_STYLE } from '@/config/mapLayers';
+import { ink, paper } from '@/lib/mapTokens';
+import { MAP_FONT_BOLD } from '@/config/mapStyle';
 
 interface UseAreaLayersParams {
   mapRef: MutableRefObject<maplibregl.Map | null>;
@@ -85,7 +83,7 @@ export function useAreaLayers({
 
       const style = AREA_STYLE[type] ?? AREA_STYLE.cities;
       const radii = AREA_RADIUS[type] ?? AREA_RADIUS.cities;
-      const color = LAYER_COLORS[type as LayerType] ?? '#888';
+      const color = LAYER_COLORS[type as LayerType] ?? ink();
 
       const radiusExpr: unknown[] = ['interpolate', ['linear'], ['zoom']];
       for (const [z, r] of radii) radiusExpr.push(z, r);
@@ -124,14 +122,14 @@ export function useAreaLayers({
           layout: {
             'text-field': ['get', 'name'],
             'text-size': ['interpolate', ['linear'], ['zoom'], 2, 10, 6, 12, 10, 14],
-            'text-font': ['Noto Sans Medium'],
+            'text-font': [MAP_FONT_BOLD],
             'text-allow-overlap': false,
             'text-ignore-placement': false,
             'text-anchor': 'center',
           },
           paint: {
-            'text-color': '#18181b',
-            'text-halo-color': '#ffffff',
+            'text-color': ink(),
+            'text-halo-color': paper(),
             'text-halo-width': 1.25,
             'text-opacity': [
               'interpolate',

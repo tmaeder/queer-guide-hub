@@ -14,12 +14,13 @@ import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useUserIntent, useDerivedTravelIntent } from '@/hooks/useUserIntent';
 import { IntentChips } from '@/components/status/IntentChips';
 
+/** Both branches set a `border-*` COLOUR and neither ever set a border WIDTH,
+ *  so the border they were selecting between never rendered at all — the
+ *  active and inactive chips differed only by fill. */
 const chip = (active: boolean) =>
   cn(
-    'inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-element px-2.5 py-2 text-xs transition-colors bg-surface-container',
-    active
-      ? 'border-foreground bg-foreground text-background'
-      : 'border-border text-muted-foreground hover:text-foreground',
+    'inline-flex shrink-0 cursor-pointer items-center gap-1.5 border-2 border-foreground px-2.5 py-2 text-13 font-bold transition-colors',
+    active ? 'bg-foreground text-background' : 'bg-background hover:bg-surface-container',
   );
 
 /**
@@ -65,7 +66,7 @@ export function IntentSheet({
 
         <div className="mt-6 flex flex-col gap-8">
           <section>
-            <h3 className="mb-2 text-13 font-semibold uppercase tracking-wider text-muted-foreground">
+            <h3 className="mb-2 text-2xs font-bold uppercase tracking-label text-muted-foreground">
               {t('people.intent.mode', 'Mode')}
             </h3>
             <div role="radiogroup" className="flex flex-wrap gap-2">
@@ -90,18 +91,18 @@ export function IntentSheet({
           </section>
 
           <section>
-            <h3 className="mb-2 text-13 font-semibold uppercase tracking-wider text-muted-foreground">
+            <h3 className="mb-2 text-2xs font-bold uppercase tracking-label text-muted-foreground">
               {t('people.intent.lookingFor', "What you're looking for")}
             </h3>
             <IntentChips />
           </section>
 
           <section>
-            <h3 className="mb-2 text-13 font-semibold uppercase tracking-wider text-muted-foreground">
+            <h3 className="mb-2 text-2xs font-bold uppercase tracking-label text-muted-foreground">
               {t('people.intent.travel', 'Travel')}
             </h3>
             {travelCityActive ? (
-              <div className="flex items-center justify-between gap-4 rounded-element px-4 py-2.5 bg-surface-container">
+              <div className="flex items-center justify-between gap-4 border-2 border-foreground px-4 py-2 bg-background">
                 <span className="flex items-center gap-2 text-sm">
                   <Plane className="h-4 w-4 text-muted-foreground" aria-hidden />
                   {t('people.intent.travelActive', {
@@ -117,7 +118,7 @@ export function IntentSheet({
               <button
                 type="button"
                 onClick={useTrip}
-                className="flex w-full items-center gap-2 rounded-element border border-border px-4 py-2.5 text-left transition-colors hover:border-foreground"
+                className="flex w-full items-center gap-2 border-2 border-foreground bg-background px-4 py-2 text-left transition-colors hover:bg-surface-container"
               >
                 <Plane className="h-4 w-4 text-muted-foreground" aria-hidden />
                 <span className="text-sm">

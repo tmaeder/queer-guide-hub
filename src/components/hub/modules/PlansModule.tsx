@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useSearchParams } from 'react-router';
 import { endOfMonth, endOfWeek, startOfMonth, startOfWeek } from 'date-fns';
 import { useCalendarState } from '@/components/hub/calendar/useCalendarState';
@@ -9,7 +10,7 @@ import { MonthGrid } from '@/components/hub/calendar/MonthGrid';
 import { WeekView } from '@/components/hub/calendar/WeekView';
 import { DayView } from '@/components/hub/calendar/DayView';
 import { TripsDrawer } from '@/components/hub/calendar/TripsDrawer';
-import { Loader2 } from 'lucide-react';
+
 
 /**
  * Hub Plans module — the unified calendar (2026-07). Month/week/day views over
@@ -75,7 +76,7 @@ export function PlansModule() {
 
       {loading ? (
         <div className="flex items-center justify-center py-16">
-          <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" aria-hidden />
+          <TrackLoader size={20} />
         </div>
       ) : view === 'month' ? (
         <MonthGrid date={date} byDay={byDay} onSelectDay={goDay} />

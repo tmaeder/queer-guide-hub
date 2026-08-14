@@ -96,6 +96,55 @@ branding.ts` SIZE_KEYS → `src/lib/utils.ts` customTextSizes → a migration on
 not deleted, precisely to avoid that procedure and keep every
 `rounded-container/element/badge` call site valid.
 
+## Page layout
+
+One primitive frames every page: **`<PageContainer>`**
+(`src/components/layout/PageContainer.tsx`). Never hand-roll
+`container mx-auto px-4 py-8` — ESLint errors on it in `src/pages/**`
+(`queerguide/no-hand-rolled-page-wrapper`).
+
+| Aspect | Value | Token |
+|---|---|---|
+| Gutter | `px-4 sm:px-6 md:px-8` | `PAGE_GUTTER` |
+| Vertical | `py-8 md:py-12` — the ONE rhythm, no per-page override | `PAGE_VERTICAL` |
+| Default cap | 1600 — grids, listings, detail pages | `--container-page` → `max-w-page` |
+| Reading cap | 768 — long-form prose | `--container-reading` → `max-w-reading` |
+| Form cap | 512 — auth, steppers, single-column forms | `--container-form` → `max-w-form` |
+
+- `size="reading" | "form"` picks the measure. Default is `page`.
+- `flush` drops the vertical for a page that owns its own bands (heroes, the
+  home rails, `SinglePage`'s three spine blocks). It never drops the gutter.
+- `as` renders a different element (`article`, `section`, `header`, `footer`).
+
+**The gutter ladder is the same one `Header` and `Footer` use.** That is the
+whole point: a page's first pixel of content sits on the same vertical as the
+nav tab above it, at every breakpoint. Full-bleed bars (header rows, the
+breadcrumb bar, tinted home bands) stay full-bleed — their rule or tint IS the
+band's edge — and take the cap on their *content row* only.
+
+Why 1600 rather than the `max-w-7xl` (1280) it replaced: the cap exists to stop
+grids spreading, and 1280 left roughly a third of a common desktop viewport as
+dead margin. Prose does not scale with it, which is what the second and third
+tokens are for.
+
+Adding a container token is a **three-layer** change — `src/index.css` `@theme`,
+the `customContainerSizes` list in `src/lib/utils.ts` (tailwind-merge only knows
+t-shirt sizes in the `max-w` group, so without it two caps apply at once and
+stylesheet order decides), and this table. It does **not** touch `tokenCatalog`
+or `branding_validate` — those enumerate colour and text-size keys only.
+
+One bespoke width survives, deliberately: `LegalPageLayout` at 1100px. It is
+prose with a 224px sticky rail beside it, so the page cap would stretch legal
+text to an unreadable measure and `reading` would leave the prose ~430px. This
+is also why policy routes are **not** in `e2e/page-layout.spec.ts` — that spec
+asserts the page container's content edge equals the header's, which a 1100 cap
+deliberately fails at wide viewports.
+
+Admin uses the same standard from one place: `AdminShell`'s `<main>` applies
+the ladder plus a `max-w-page` inner wrapper, and admin **pages render bare
+content** — adding their own `p-6` on top is what produced 48px gutters on some
+pages and 16px on others across six different content widths.
+
 ## Depth
 
 Soft elevation shadows stay banned (`shadow-md/lg/xl/2xl` are ESLint errors).
@@ -121,8 +170,47 @@ The sanctioned depth treatment is the **hard poster shadow**:
   table is `routeBulletMap.ts` (single point of change). 2px ink ring.
 - **`DepartureRow`** — bullet · time · title · status.
 - **`LineStepper`** — progress is always a bending line with stations.
+- **`RouteStrip`** — a long document's table of contents *as a route*: sections
+  are stations on a line, `depth: 2` renders `<h3>` sub-stations. Vertical for
+  a sticky rail, horizontal for the mobile band (same bleed grammar as
+  `SectionNav`). Stations are `<a href="#id">`, never buttons — see below.
 - **Buttons** — `default` (ink fill), `outline` (2px ink border, hover fills
   ink), `accent` (pink), `brand` (blue), `destructive` unchanged.
+
+### The policy line
+
+A policy is a line; each `<h2>` is a station. `LegalPageLayout` +
+`RouteStrip` + `policyLines.ts` implement it for `/terms`, `/privacy`,
+`/cookies`, `/dmca` and `/accessibility`; `/legal` is the route index.
+
+Line identities live in `src/components/transit/policyLines.ts`, **not** in
+`ROUTE_BULLET_MAP`: that table is keyed to the `search_documents` entity vocab
+and is the source of truth for the map's layer colours (`mapPalette.test.ts`
+asserts the two agree). Policies are not entities, and would collide anyway —
+`T`-blue is already `trip`, `C`-yellow already `country`. `RouteBullet` takes
+optional `letter`/`track`/`label` overrides for exactly this case.
+
+Terms `T` blue · Privacy `P` green · Cookies `C` yellow · Copyright `©` pink ·
+Accessibility `A` **ink**. Accessibility runs monochrome on purpose: a page
+about not depending on colour must not use colour as its only identity.
+
+Three rules the implementation exists to hold:
+
+1. **Every section is addressable.** Stations are anchors that write the
+   fragment, and `extractSections` gives every `<h2>`/`<h3>` a stable id. The
+   old TOC was `<button>` + `scrollIntoView` and wrote nothing, so no clause of
+   any policy could be linked or shared.
+2. **Section numbers come from a CSS counter, never from the prose.**
+   `.qg-cms-body--legal h2::before` renders the station circle;
+   `stripTypedNumber` removes any hand-typed `1.` from the DOM so the two can
+   never disagree.
+3. **The fragment is written only once the reader moves between stations**
+   (`replaceState`, so scrolling never fills the Back button). Seeding it on
+   load turned every policy URL into a section URL.
+
+Scroll-spy is a rAF-gated scroll listener, **not** an IntersectionObserver: IO
+reports changes in intersection, and a heading far above the fold has none left
+to report, so after a jump to section 11 the rail stayed pinned to section 1.
 
 ## Brand (`src/components/brand/`)
 
@@ -135,20 +223,62 @@ The sanctioned depth treatment is the **hard poster shadow**:
   strokes next to the icons' 2.4px. viewBox `0 24 354 190` is trimmed to the
   ink (~10 units of pad on every side) — the old `0 0 360 210` spent a third
   of the height on nothing.
-- **`Wordmark`** — lowercase Anton "queer.guide", pink heart nested in the
-  g's descender at `right-[2.02em] bottom-[-0.16em] w-[0.28em]`. Both numbers
-  are Anton metrics: the tail terminal sits 2.32em from the string's right
-  edge, so the heart tucks into the crook without sitting on the ink (it did,
-  and read as a collision). Re-measure if the display face or tracking
-  changes. Header default (the /admin/design logoUrl override keeps the img
-  branch).
+- **`Wordmark`** — lowercase Anton "queer.guide", ink only. It carried a pink
+  heart nested at the g's descender until 2026-08; that is **removed on
+  purpose — do not re-add it**. The whole mark now obeys one rule, the
+  master symbol's: ink on paper, or reversed. It also drops the wordmark's
+  dependence on Anton's metrics (the heart needed a hand-measured
+  `right-[2.02em]` that held only for that string, face and tracking).
+  Header default (the /admin/design logoUrl override keeps the img branch).
 - The mark exists as three copies — component, `scripts/generate-brand-assets.mjs`
   (OG), `public/favicon.svg` (square crop, the source every icon PNG is
-  rasterised from). `__tests__/brandAssetSync.test.ts` pins them together and
-  asserts both tracks bend.
+  rasterised from). `__tests__/brandAssetSync.test.ts` pins them together,
+  asserts both tracks bend, and fails if any hue reappears in any of them.
 - Icons / maskables / favicon.ico / OG regenerate via
   `node scripts/generate-brand-assets.mjs` — playwright, no `sharp` (which was
   never installed, so the script could not run and the icons drifted).
+
+## Crisis surfaces (`/help`, `/safety`, `/report-*`)
+
+The canonical build is `/help` (`src/pages/HelpHotlines.tsx` +
+`src/components/help/`). `CLAUDE.md` points at a Pattern Library "§A11y
+exemption" for this — **that section does not exist**; this is the spec.
+
+- **No track colors.** Not `RouteBullet`, `StationRing`, `AccessGrid`,
+  `LineStepper`, `TrackLoader` (every `track` value is a track color),
+  `.intersection-gradient`, or `Button variant="accent"|"brand"`. On these
+  pages every visual distinction a reader makes is a risk judgement; teach
+  them that hue means "content type" and the red warning becomes just another
+  line color. `TransitIcon` is fine — it is `currentColor` by construction.
+- **Weight comes from inversion and rules**, never hue: 3px ink borders, one
+  ink-flooded panel (`SidebarCard tone="ink"` is the shared idiom), `--shadow-hard`.
+- **`--destructive` is rationed to danger *to the reader*.** On `/help` that
+  is exactly three things: the emergency band, `QuickExit`, and the per-line
+  "may contact police without your consent" strip. A fourth candidate must
+  pass: *would a reader be harmed by not noticing this?* An explicit
+  non-carceral policy is a reassurance and renders in **ink**, not red —
+  flattening the two into one color destroys the distinction.
+- **Animation-free.** No `PageHeader` (hardcodes `.content-enter`), no
+  `PageHero` (defaults to `effect="spotlight"`), no `EditorialDetailLayout` /
+  `IntentPageLayout` / `SectionNav` (they pull `motion/react` and smooth
+  scroll, and the layouts gate the whole page behind `loading` — which would
+  put the emergency band behind a fetch). Copy `SectionNav`'s class string,
+  not the component. Sheet/Dialog transitions and focus rings are sanctioned.
+- **Unknown renders as silence.** A line whose hours we cannot structure is
+  never labelled "Closed"; a line with no police-policy value shows nothing.
+  Telling someone a crisis line is shut when it is open is the harmful
+  direction, so every uncertainty resolves to null rather than false.
+- **Life-safety blocks render synchronously** — outside any `loading`/`ready`
+  branch, with inline English `t()` defaults, so a dead locale bundle or a
+  failed CMS fetch cannot blank them. Guarded by `e2e/help-a11y.spec.ts`.
+- **A card is not a lift unless it is one click target.** Hotline cards carry
+  a Call button, channel buttons, a keep toggle and a report dialog, so they
+  take no `.card-lift`; directory rows and org rows do.
+
+Guarded by `e2e/help-a11y.spec.ts` (axe at 320 + 1280, no 320px overflow,
+i18n-failure paint) and `e2e/help-crisis.spec.ts` (structured data matches the
+recommended line, search cannot rewrite it, country lands in the URL,
+directories are never callable, unstructured hours never read as closed).
 
 ## Dark mode
 
@@ -165,5 +295,13 @@ inert and get deleted surface-by-surface in later phases.
   shadow on `.card-lift` hover, Anton/Space Grotesk/no-Inter, sanctioned
   saturated backgrounds (track colors + destructive only). The old border/line
   budget was deleted — ink borders are the idiom now.
+- `e2e/page-layout.spec.ts` — the page-layout invariant: a page's outermost
+  container's content edge equals the header's, across 12 routes ×
+  390/768/1440/1920, plus no horizontal overflow. Asserts the *relationship*
+  rather than pixel values, so it survives a change to the gutter ladder itself.
 - `eslint.config.js` — hex/rgb/hsl literals, chromatic Tailwind classes,
-  soft shadows, JSX gradients: unchanged and still errors.
+  soft shadows, JSX gradients: unchanged and still errors. Plus
+  `queerguide/no-hand-rolled-page-wrapper` on `src/pages/**` (a NAMED rule, not
+  another `no-restricted-syntax` selector — that rule is replaced WHOLESALE per
+  file in flat config, so a new selector would have to be re-stated in all four
+  blocks and one miss silently disables load-bearing ones; precedent #2049).

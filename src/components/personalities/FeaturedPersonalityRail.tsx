@@ -43,19 +43,12 @@ function FeaturedItem({
     <LocalizedLink
       to={href}
       aria-label={`${p.name}${p.profession ? ', ' + formatProfession(p.profession) : ''}`}
-      className="flex-none w-40 block transition-opacity hover:opacity-80 group no-underline"
-      style={{ scrollSnapAlign: 'start', color: 'inherit' }}
+      className="group block w-40 flex-none text-inherit no-underline"
+      style={{ scrollSnapAlign: 'start' }}
     >
-      <div
-        className="featured-avatar relative flex items-center justify-center overflow-hidden mb-2 rounded-full"
-        style={{
-          width: 160,
-          height: 160,
-          background:
-            'linear-gradient(135deg, hsl(var(--foreground) / 0.25) 0%, hsl(var(--foreground) / 0.15) 100%)',
-          border: '2px solid hsl(var(--foreground))',
-        }}
-      >
+      {/* A station ring at portrait scale — `rounded-full` is sanctioned for
+          avatars, and the 3px ink ring is the same one StationRing draws. */}
+      <div className="featured-avatar relative mb-2 flex h-40 w-40 items-center justify-center overflow-hidden rounded-full border-[3px] border-foreground bg-muted transition-colors group-hover:bg-surface-container">
         {resolvedSrc ? (
           <img
             src={resolvedSrc}
@@ -68,19 +61,19 @@ function FeaturedItem({
             {...(eager ? ({ fetchpriority: 'high' } as { fetchpriority: 'high' }) : {})}
             decoding="async"
             referrerPolicy="no-referrer"
-            style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top' }}
+            className="h-full w-full object-cover object-top"
           />
         ) : (
-          <span style={{ fontSize: '2rem' }} className="font-bold">
+          <span className="font-display text-headline text-muted-foreground">
             {getInitials(p.name)}
           </span>
         )}
       </div>
-      <p className="text-center truncate font-semibold" style={{ fontSize: '0.9rem' }}>
-        {p.name}
-      </p>
+      <p className="truncate text-center font-display text-title leading-tight">{p.name}</p>
       {p.profession && (
-        <p className="text-xs text-muted-foreground text-center truncate">{formatProfession(p.profession)}</p>
+        <p className="truncate text-center text-2xs font-bold uppercase tracking-label text-muted-foreground">
+          {formatProfession(p.profession)}
+        </p>
       )}
     </LocalizedLink>
   );
@@ -96,22 +89,19 @@ export function FeaturedPersonalityRail() {
 
   return (
     <div className="mb-8">
-      <div className="flex items-center gap-2 mb-4">
-        <Star
-          size={18}
-          className="text-foreground"
-          fill="hsl(var(--foreground))"
-          aria-hidden="true"
-        />
-        <h2 className="font-bold text-lg">Featured icons</h2>
-      </div>
+      {/* Same rank as the other editorial section labels on this page, so the
+          card names below (text-title) stay a clear level down from it. */}
+      <h2 className="mb-4 flex items-center gap-2 text-2xs font-bold uppercase tracking-label text-muted-foreground">
+        <Star size={14} fill="currentColor" aria-hidden="true" />
+        Featured icons
+      </h2>
       <div className="flex gap-6 overflow-x-auto pb-2" style={{ scrollSnapType: 'x mandatory' }}>
         {loading
           ? Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="flex-none w-40">
-                <div className="bg-muted mb-2 rounded-full" style={{ width: 160, height: 160 }} />
-                <div className="h-3 bg-muted mb-1" />
-                <div className="h-3 bg-muted w-3/4 mx-auto" />
+              <div key={i} className="w-40 flex-none">
+                <div className="mb-2 h-40 w-40 animate-pulse rounded-full border-[3px] border-foreground bg-muted" />
+                <div className="mb-1 h-4 animate-pulse bg-muted" />
+                <div className="mx-auto h-4 w-3/4 animate-pulse bg-muted" />
               </div>
             ))
           : featured.map((p, i) => {

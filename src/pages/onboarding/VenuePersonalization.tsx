@@ -14,6 +14,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 const CATEGORIES = [
   'bar',
@@ -110,10 +111,14 @@ const VenuePersonalization = () => {
   );
 
   return (
-    <div className="mx-auto w-full max-w-2xl px-4 py-10 space-y-8">
+    <PageContainer size="form" className="space-y-8">
       <header className="space-y-2">
         <p className="text-xs uppercase tracking-wider text-muted-foreground">
-          {t('venues.onboarding.progress', { current: step + 1, total: 4, defaultValue: 'Step {{current}} of {{total}}' })}
+          {t('venues.onboarding.progress', {
+            current: step + 1,
+            total: 4,
+            defaultValue: 'Step {{current}} of {{total}}',
+          })}
         </p>
         <h1 className="text-headline font-semibold">{stepTitles[step]}</h1>
       </header>
@@ -194,7 +199,10 @@ const VenuePersonalization = () => {
           )}
           {cityChoice && (
             <p className="text-sm text-muted-foreground">
-              {t('venues.onboarding.citySelected', { city: cityChoice.name, defaultValue: 'Selected: {{city}}' })}
+              {t('venues.onboarding.citySelected', {
+                city: cityChoice.name,
+                defaultValue: 'Selected: {{city}}',
+              })}
             </p>
           )}
         </div>
@@ -218,7 +226,7 @@ const VenuePersonalization = () => {
           </Button>
         )}
       </div>
-    </div>
+    </PageContainer>
   );
 };
 

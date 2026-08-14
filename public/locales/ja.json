@@ -1466,19 +1466,19 @@
       "relationships": "人間関係",
       "women": "女性"
     },
-    "quick_exit": "Quick exit",
-    "quick_exit_aria": "Leave this page immediately (ESC)",
-    "hide_screen": "Hide screen",
-    "reveal_aria": "Click anywhere to show the page again",
-    "hidden_hint": "Page hidden. Click anywhere to show again.",
-    "hero_label": "Recommended right now",
-    "expect_title": "What happens when you call",
+    "quick_exit": "すぐに離れる",
+    "quick_exit_aria": "このページをすぐに離れる（Escキー）",
+    "hide_screen": "画面を隠す",
+    "reveal_aria": "どこかをクリックするとページを再表示します",
+    "hidden_hint": "ページを隠しています。どこかをクリックすると再表示します。",
+    "hero_label": "今のおすすめ",
+    "expect_title": "電話するとどうなるか",
     "expect_short": "What to expect",
     "expect_1": "You'll hear a short greeting. You don't have to give your name.",
     "expect_2": "You can hang up at any time. You can call back as often as you need.",
     "expect_3": "Free hotlines in DE/AT/CH don't appear on itemized phone bills.",
     "expect_4": "If you can't speak, ask for text or chat — most hotlines offer it.",
-    "self_help_trigger": "While you wait",
+    "self_help_trigger": "まだ話す準備ができていませんか？",
     "self_help_title": "Steady yourself",
     "self_help_desc": "Short techniques you can use while you wait, or instead of a call if you're not ready.",
     "breathing_title": "4-7-8 breathing",
@@ -1496,7 +1496,7 @@
     "safety_plan_title": "Safety plan",
     "safety_plan_desc": "A short written plan you can pull up when things get bad — your warning signs, coping steps, people to call, and reasons to live.",
     "safety_plan_link": "Open template (Stanley-Brown)",
-    "report": "Report",
+    "report": "報告",
     "report_aria": "Report a problem with this hotline",
     "report_title": "Report this hotline",
     "report_desc": "Thanks for helping keep this list accurate. Reports are reviewed by our team.",
@@ -1536,7 +1536,53 @@
       "closed": "Service has shut down",
       "unsafe": "Unsafe / harmful experience",
       "other": "Other"
-    }
+    },
+    "browse_support_orgs": "支援団体をすべて見る",
+    "browse_title": "すべての相談窓口を見る",
+    "cant_speak": "話すのが難しいですか？",
+    "closed_now": "現在は受付時間外",
+    "closed_no_alt": "この窓口は現在受付時間外で、この国で開いている他の窓口はありません。差し迫った危険がある場合は上の緊急番号をご利用ください。",
+    "directories_subtitle": "これらは紹介団体やディレクトリで、直接の電話窓口ではなくウェブサイトです。",
+    "directories_title": "ディレクトリとその他の支援",
+    "emergency_short": "緊急通報",
+    "helping_body": "危機にある人の話を聞いているときは、そばにいて、その人の言葉を真剣に受け止め、ひとりにしないでください。答えを持っている必要はありません。一緒に相談窓口に電話するか、あなた自身が電話して次にどうすればよいか尋ねてください。",
+    "helping_title": "誰かを支えるとき",
+    "keep": "この窓口を保存",
+    "know_the_law": "法律を知る",
+    "know_the_law_body": "自分らしく生きること、医療を受けること、犯罪を届け出ることが安全かどうかは、どこにいるかによって変わります。行動する前に法的状況を確認してください。",
+    "link_unavailable": "ウェブサイトに現在アクセスできません。再確認中です。",
+    "loading": "一覧を読み込んでいます…",
+    "more_support": "その他の支援",
+    "no_country_body": "上で国を選ぶと、最適な窓口を表示します。すべての窓口は下に一覧表示されています。",
+    "no_country_title": "現在地を特定できませんでした",
+    "no_lines_body": "いま危険な状況にある場合は、緊急通報番号に電話してください：112（EU）または911（米国・カナダ）。",
+    "no_lines_title": "一覧を読み込めませんでした",
+    "no_police_policy": "この窓口は、あなたの明確な要請なしに警察や緊急サービスに連絡しないことを明示しています。",
+    "open_always": "24時間365日対応",
+    "open_instead": "代わりに今すぐつながる窓口",
+    "open_now": "現在受付中",
+    "org_coverage": "この一覧はまだ十分ではありません。信頼できる団体が見つからない場合はお知らせください。結果が空でも、支援が存在しないという意味ではなく、私たちに記録がないという意味です。",
+    "phone_only": "当方の記録では電話のみの対応です。",
+    "phone_only_with_site": "当方の記録では電話のみの対応です。公式サイトにチャットやメールがある場合があります。",
+    "provenance": "情報の出所",
+    "report_submitting": "送信中…",
+    "reports_police_warning": "この窓口は、あなたの同意なく警察や緊急サービスに連絡することがあります。",
+    "result_count_one": "{{count}}件",
+    "result_count_other": "{{count}}件",
+    "rights_by_country": "国別のLGBTQ+の権利",
+    "saved_lines": "保存した窓口",
+    "scope_all": "登録されているすべての国の窓口を表示しています。",
+    "scope_change": "変更",
+    "scope_dialog_desc": "窓口は対応する国ごとに並んでいます。国際的なディレクトリはどの国を選んでも表示されます。",
+    "scope_dialog_title": "国を選択",
+    "scope_prefix": "対象の国：",
+    "support_orgs": "支援団体",
+    "support_orgs_body": "対面での支援を行うコミュニティセンターや団体。",
+    "tell_us": "教えてください",
+    "unkeep": "保存を解除",
+    "visit_site": "公式サイトを開く",
+    "website": "ウェブサイト",
+    "see_all_lines": "すべての窓口を見る"
   },
   "sos": {
     "button": "SOS",
@@ -1675,6 +1721,13 @@
       "title": "[JA] Born this week",
       "seeAll": "[JA] All personalities",
       "celebrate": "[JA] Celebrate {{name}}"
+    },
+    "map": {
+      "interchangeEyebrow": "[JA] Interchange",
+      "interchange": {
+        "label": "[JA] Search everything",
+        "subtitle": "[JA] Every line meets here"
+      }
     }
   },
   "header": {
@@ -3384,6 +3437,12 @@
       "events_other": "[JA] {{count}} events",
       "groups_one": "[JA] {{count}} group",
       "groups_other": "[JA] {{count}} groups"
+    },
+    "interests": {
+      "title": "[JA] What are you into?",
+      "blurb": "[JA] Pick a few. They shape what we suggest, and they are how other members find people with something in common.",
+      "blurbSignedOut": "[JA] Sign in to pick a few. They shape what we suggest, and they are how other members find people with something in common.",
+      "count": "[JA] {{count}} selected"
     }
   },
   "hub": {
@@ -3588,7 +3647,11 @@
       "allCountries": "すべての国",
       "clear": "フィルターをクリア",
       "major": "主要なマイルストーン",
-      "showAll": "すべてのマイルストーン"
+      "showAll": "すべてのマイルストーン",
+      "heading": "[JA] Filter the timeline",
+      "categoryGroup": "[JA] Category",
+      "scopeGroup": "[JA] Depth",
+      "impactGroup": "[JA] Impact"
     },
     "category": {
       "uprising-movement": "蜂起・運動",
@@ -3608,7 +3671,9 @@
       "sources": "出典",
       "linked": "関係する人物と場所",
       "related": "{{country}}のその他の出来事",
-      "sameYear": "[JA] Elsewhere in {{year}}"
+      "sameYear": "[JA] Elsewhere in {{year}}",
+      "story": "[JA] What happened",
+      "sameYearNote": "[JA] What was happening in other countries the same year."
     },
     "sidebar": {
       "facts": "基本情報",
@@ -3700,7 +3765,16 @@
       "country": "[JA] Travel guide: {{name}}",
       "city": "[JA] City guide: {{name}}",
       "events": "[JA] Events in {{name}} today"
-    }
+    },
+    "facts": {
+      "impact": "[JA] Impact",
+      "category": "[JA] Category",
+      "era": "[JA] Era"
+    },
+    "photoCredit": "[JA] Photo",
+    "eraNavHeading": "[JA] The line, end to end",
+    "eraNavStation": "[JA] {{era}} — {{count}} milestones",
+    "emptyTitle": "[JA] No service on this stretch of the line"
   },
   "guides": {
     "hub": {
@@ -3925,6 +3999,164 @@
       "partial": "[JA] Some protections",
       "protected": "[JA] Broad protections",
       "unknown": "[JA] Not enough data"
+    }
+  },
+  "about": {
+    "eyebrow": "私たちについて",
+    "title": "クィアがつくり、すべての人へ。",
+    "lede": "Queer Guide は、クィアの暮らしをかたちづくる場所・イベント・人をマッピングしています。コミュニティによる検証、誰でも無料、世界中どこでも。",
+    "diagram": {
+      "label": "4本の路線——スポット、イベント、コミュニティ、旅先——がひとつの駅に集まる図。"
+    },
+    "scale": {
+      "kicker": "いまのネットワーク",
+      "venues": "スポット",
+      "events": "これからのイベント",
+      "cities": "都市",
+      "countries": "国・地域"
+    },
+    "lines": {
+      "kicker": "ネットワーク",
+      "title": "5つの路線",
+      "lede": "機能ごとに路線があります。必要な路線に乗ってください。",
+      "action": "開く",
+      "venues": {
+        "name": "スポット",
+        "description": "クィアフレンドリーなバー、カフェ、クラブ、お店。実際の人が確認しています。"
+      },
+      "events": {
+        "name": "イベント",
+        "description": "プライドパレード、ドラァグショー、サポートグループ、上映会——近くでも、世界のどこでも。"
+      },
+      "marketplace": {
+        "name": "マーケット",
+        "description": "LGBTQ+ が営む店とつくり手。お金の行き先を選べます。"
+      },
+      "community": {
+        "name": "コミュニティ",
+        "description": "質問する、語る、仲間を見つける。つねにモデレートされています。"
+      },
+      "places": {
+        "name": "旅先",
+        "description": "都市と国の法律・権利・安全情報。出発前に。"
+      }
+    },
+    "story": {
+      "kicker": "私たちの話",
+      "title": "はじまり",
+      "p1": "クィアフレンドリーなバーを探すのに、グループチャットと3つの掲示板スレッドと運任せは必要ないはずです。どの場所が本当に安全なのか——そして6月だけロゴに虹をつけるのはどこなのか——を推測するのに疲れて、Queer Guide を始めました。",
+      "p2": "信頼できる店の個人的なリストは、世界規模のディレクトリになりました。コミュニティが検証し、実体験の上に築かれ、無料で使えます。ひとり旅でも、引っ越しでも、金曜の夜の行き先探しでも、ここから。"
+    },
+    "legend": {
+      "kicker": "凡例",
+      "title": "私たちが違うところ",
+      "verified": {
+        "label": "コミュニティが検証",
+        "body": "すべてのスポットは、アルゴリズムではなく実在の LGBTQ+ の人が確認しています。"
+      },
+      "safety": {
+        "label": "安全がさき",
+        "body": "国ごとのページに、現地の法律・権利・リスクの注意を載せています。"
+      },
+      "free": {
+        "label": "ずっと無料",
+        "body": "有料の壁もプレミアム枠もありません。このプラットフォームはみんなのものです。"
+      },
+      "global": {
+        "label": "世界中で",
+        "body": "ベルリンからバンコクへ、サンパウロからシドニーへ——いまも広がっています。"
+      }
+    },
+    "history": {
+      "kicker": "ここまでの道のり",
+      "title": "これまでの路線",
+      "lede": "サイドプロジェクトが世界規模のディレクトリになりました。",
+      "y2021": {
+        "year": "2021",
+        "body": "3人と1枚のスプレッドシート。ヨーロッパ5都市の安全なバーを、Telegram グループで共有していました。"
+      },
+      "y2023": {
+        "year": "2023",
+        "body": "80都市・1000スポット。イベント取り込みの仕組みと、コミュニティ投稿用の拡張機能が動き出しました。"
+      },
+      "y2025": {
+        "year": "2025",
+        "body": "すべての大陸に数万のスポット。マーケット、旅程プランナー、安全ブリーフィング、国ごとの権利情報。"
+      },
+      "y2026": {
+        "year": "2026",
+        "body": "あなたはいまここ。スポットを追加する、イベントを投稿する、書き手として参加する。"
+      }
+    },
+    "values": {
+      "kicker": "立っている場所",
+      "title": "大切にしていること",
+      "inclusivity": {
+        "title": "包摂",
+        "description": "どんなアイデンティティも、どんな背景も、どんな物語も、ここに居場所があります。"
+      },
+      "safety": {
+        "title": "安全",
+        "description": "オンラインでもオフラインでも安全な場所を。ほかの何よりも先です。"
+      },
+      "community": {
+        "title": "コミュニティ",
+        "description": "人と、その人を支える団体との、本当のつながり。"
+      },
+      "authenticity": {
+        "title": "ありのまま",
+        "description": "そのままのあなたで。隠さなくていいように、この場所をつくりました。"
+      },
+      "accessibility": {
+        "title": "アクセシビリティ",
+        "description": "段差のない入口、利用しやすいトイレ——そして足りないものも記します。"
+      },
+      "growth": {
+        "title": "成長",
+        "description": "変わりつづけ、聞きつづける。みなさんの声でできています。"
+      }
+    },
+    "people": {
+      "kicker": "運営しているのは",
+      "title": "つくっている人たち",
+      "lede": "企業ではありません。時間を出しあうコミュニティのメンバーです。",
+      "moderators": {
+        "name": "コミュニティモデレーター",
+        "role": "安全を保つ",
+        "description": "プラットフォームが心地よく敬意ある場であり続けるよう、24時間見ているボランティアです。"
+      },
+      "ambassadors": {
+        "name": "ローカルアンバサダー",
+        "role": "現場から",
+        "description": "地域の必要を届け、インクルーシブな場を後押しするコミュニティの担い手です。"
+      },
+      "contributors": {
+        "name": "コントリビューター",
+        "role": "知識を分ける",
+        "description": "レビューを書き、イベントを投稿し、みんなが頼る情報をつくるメンバーです。"
+      }
+    },
+    "cta": {
+      "title": "路線を延ばすのを手伝ってください。",
+      "body": "ネットワークは、人が足していくから伸びます。検証済みの一件ごとに、誰かがいます。あなたの一件を。",
+      "primary": "スポットを送る",
+      "secondary": "お問い合わせ",
+      "addVenues": {
+        "title": "スポットを追加",
+        "desc": "安全な場所を知っていますか？地図に載せましょう。"
+      },
+      "createEvents": {
+        "title": "イベントを投稿",
+        "desc": "なにか企画して、人を集めましょう。"
+      },
+      "joinGroups": {
+        "title": "グループに参加",
+        "desc": "この会話には、あなたの声の場所があります。"
+      },
+      "support": {
+        "title": "支援する",
+        "desc": "このプラットフォームを、みんなに無料のままで。"
+      }
     }
   }
 }

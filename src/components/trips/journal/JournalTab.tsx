@@ -1,16 +1,7 @@
 import { useRef, useState } from 'react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { format } from 'date-fns';
-import {
-  Sparkles,
-  Smile,
-  Meh,
-  CloudRain,
-  ImagePlus,
-  Trash2,
-  Loader2,
-  NotebookPen,
-  X,
-} from 'lucide-react';
+import { Sparkles, Smile, Meh, CloudRain, ImagePlus, Trash2, NotebookPen, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -139,7 +130,7 @@ export function JournalTab({ tripId, members }: Props) {
                 {t('trips.journal.addPhotos', 'Photos')}
               </Button>
               <Button size="sm" onClick={submit} disabled={!body.trim() || addEntry.isPending}>
-                {addEntry.isPending && <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />}
+                {addEntry.isPending && <TrackLoader size={16} className="mr-1.5" />}
                 {t('trips.journal.save', 'Save entry')}
               </Button>
             </div>
@@ -169,7 +160,7 @@ export function JournalTab({ tripId, members }: Props) {
       {/* Feed */}
       {isLoading && (
         <div className="flex justify-center py-8">
-          <Loader2 className="w-5 h-5 animate-spin" aria-label={t('common.loading', 'Loading')} />
+          <TrackLoader size={20} label={t('common.loading', 'Loading')} />
         </div>
       )}
 

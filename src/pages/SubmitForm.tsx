@@ -25,6 +25,7 @@ import { EventSeriesFields } from '@/components/submission/EventSeriesFields';
 import { ArrowLeft, ArrowRight, CheckCircle, Send } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useEventTypeOptions } from '@/lib/eventTypes';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 const SubmitForm = ({ contentType: contentTypeProp }: { contentType?: string } = {}) => {
   const { _t } = useTranslation();
@@ -45,13 +46,13 @@ const SubmitForm = ({ contentType: contentTypeProp }: { contentType?: string } =
   // Unknown type fallback
   if (!config) {
     return (
-      <div className="mx-auto py-12 px-4 text-center">
+      <PageContainer className="text-center">
         <h5 className="text-xl font-semibold mb-2">Unknown submission type</h5>
         <p className="text-muted-foreground mb-4">
           The submission type "{contentType}" is not supported.
         </p>
         <Button onClick={() => navigate('/submit')}>Back to Hub</Button>
-      </div>
+      </PageContainer>
     );
   }
 
@@ -189,7 +190,7 @@ function SubmitFormInner({ config }: SubmitFormInnerProps) {
 
   if (isSubmitted) {
     return (
-      <div className="mx-auto py-12 px-4">
+      <PageContainer>
         <Card>
           <CardContent>
             <CheckCircle size={48} style={{ margin: '0 auto 16px' }} className="text-foreground" />
@@ -206,14 +207,14 @@ function SubmitFormInner({ config }: SubmitFormInnerProps) {
             </div>
           </CardContent>
         </Card>
-      </div>
+      </PageContainer>
     );
   }
 
   const Icon = config.icon;
 
   return (
-    <div className="mx-auto py-8 px-4">
+    <PageContainer>
       {/* Back button */}
       <Button
         variant="ghost"
@@ -323,9 +324,8 @@ function SubmitFormInner({ config }: SubmitFormInnerProps) {
                 <div
                   className="flex-1 h-0.5 rounded-badge mx-1 min-w-4"
                   style={{
-                    backgroundColor: i < currentStep
-                      ? 'hsl(var(--foreground))'
-                      : 'hsl(var(--border))',
+                    backgroundColor:
+                      i < currentStep ? 'hsl(var(--foreground))' : 'hsl(var(--border))',
                   }}
                 />
               )}
@@ -348,22 +348,130 @@ function SubmitFormInner({ config }: SubmitFormInnerProps) {
       {/* Review mode — single screen, all sections, one Submit (arrives prefilled from scan) */}
       {reviewMode && (
         <>
-        <DuplicateWarning
-          submissionTypeId={config.id}
-          typeLabel={config.label}
-          matches={duplicateMatches}
-        />
+          <DuplicateWarning
+            submissionTypeId={config.id}
+            typeLabel={config.label}
+            matches={duplicateMatches}
+          />
+          <Card>
+            <CardContent>
+              <p className="text-sm text-muted-foreground mb-6">
+                We pre-filled this from your scan. Check the details, fix anything that looks off,
+                then submit.
+              </p>
+              <form
+                noValidate
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  submit();
+                }}
+              >
+                {/* Honeypot — hidden from real users */}
+                <div className="absolute -left-[9999px] opacity-0 h-0 overflow-hidden">
+                  <Input
+                    tabIndex={-1}
+                    autoComplete="off"
+                    value={honeypot}
+                    onChange={(e) => setHoneypot(e.target.value)}
+                  />
+                </div>
+
+                {reviewSections.map((section) =>
+                  section.fields.length === 0 ? null : (
+                    <fieldset key={section.label} className="mb-8 border-0 p-0 m-0">
+                      <legend className="text-sm font-semibold mb-4 text-foreground">
+                        {section.label}
+                      </legend>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        {section.fields.map((fieldConfig) => (
+                          <div
+                            key={fieldConfig.name}
+                            style={{ gridColumn: fieldConfig.colSpan === 2 ? '1 / -1' : undefined }}
+                          >
+                            <Controller
+                              control={control}
+                              name={fieldConfig.name}
+                              render={({ field, fieldState }) => (
+                                <FieldRenderer
+                                  field={fieldConfig}
+                                  value={field.value ?? ''}
+                                  onChange={(val) => field.onChange(val)}
+                                  error={fieldState.error?.message ?? errors[fieldConfig.name]}
+                                  setFields={setFields}
+                                  allValues={data}
+                                />
+                              )}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </fieldset>
+                  ),
+                )}
+
+                {/* Event recurrence + festival grouping */}
+                {config.id === 'event' && (
+                  <fieldset className="mb-8 border-0 p-0 m-0">
+                    <legend className="text-sm font-semibold mb-4 text-foreground">
+                      Series & recurrence
+                    </legend>
+                    <EventSeriesFields data={data} setFields={setFields} />
+                  </fieldset>
+                )}
+
+                <div className="flex justify-between mt-6 gap-4">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => navigate('/submit')}
+                    className="flex items-center gap-1.5"
+                  >
+                    <ArrowLeft className="w-4 h-4" />
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    disabled={isSubmitting}
+                    aria-describedby={!user ? 'submit-auth-hint' : undefined}
+                    className="flex items-center gap-1.5"
+                  >
+                    {isSubmitting ? (
+                      'Submitting...'
+                    ) : (
+                      <>
+                        Submit <Send className="w-3.5 h-3.5" />
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+        </>
+      )}
+
+      {/* Form card (wizard mode) */}
+      {!reviewMode && (
         <Card>
           <CardContent>
-            <p className="text-sm text-muted-foreground mb-6">
-              We pre-filled this from your scan. Check the details, fix anything that looks off,
-              then submit.
-            </p>
             <form
               noValidate
-              onSubmit={(e) => {
+              onSubmit={async (e) => {
                 e.preventDefault();
-                submit();
+                if (isLastStep) {
+                  submit();
+                  return;
+                }
+                const result = await nextStep();
+                if (!result.ok && result.firstInvalid) {
+                  requestAnimationFrame(() => {
+                    const el = document.getElementById(result.firstInvalid as string);
+                    if (el) {
+                      (el as HTMLElement).focus();
+                      el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+                    }
+                  });
+                }
               }}
             >
               {/* Honeypot — hidden from real users */}
@@ -376,70 +484,120 @@ function SubmitFormInner({ config }: SubmitFormInnerProps) {
                 />
               </div>
 
-              {reviewSections.map((section) =>
-                section.fields.length === 0 ? null : (
-                  <fieldset key={section.label} className="mb-8 border-0 p-0 m-0">
-                    <legend className="text-sm font-semibold mb-4 text-foreground">
-                      {section.label}
-                    </legend>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                      {section.fields.map((fieldConfig) => (
-                        <div
-                          key={fieldConfig.name}
-                          style={{ gridColumn: fieldConfig.colSpan === 2 ? '1 / -1' : undefined }}
-                        >
-                          <Controller
-                            control={control}
-                            name={fieldConfig.name}
-                            render={({ field, fieldState }) => (
-                              <FieldRenderer
-                                field={fieldConfig}
-                                value={field.value ?? ''}
-                                onChange={(val) => field.onChange(val)}
-                                error={fieldState.error?.message ?? errors[fieldConfig.name]}
-                                setFields={setFields}
-                                allValues={data}
-                              />
-                            )}
-                          />
-                        </div>
+              {/* Step label */}
+              {totalSteps > 1 && (
+                <p className="text-sm font-semibold mb-4 text-foreground">
+                  Step {currentStep + 1}: {currentStepConfig?.label}
+                </p>
+              )}
+
+              {/* Error summary — lists fields that need fixing on this step */}
+              {(() => {
+                const stepErrors = stepFields
+                  .map((f) => ({ name: f.name, label: f.label, message: errors[f.name] }))
+                  .filter((e) => !!e.message);
+                if (stepErrors.length === 0) return null;
+                return (
+                  <div
+                    role="alert"
+                    aria-live="polite"
+                    className="mb-4 p-4 rounded-element"
+                    style={{
+                      backgroundColor: 'hsl(var(--destructive) / 0.08)',
+                      border: '1px solid hsl(var(--destructive) / 0.35)',
+                    }}
+                  >
+                    <p className="text-sm font-semibold mb-1 text-destructive">
+                      Please fix the following to continue:
+                    </p>
+                    <ul className="m-0 pl-4">
+                      {stepErrors.map((e) => (
+                        <li key={e.name}>
+                          <a
+                            href={`#${e.name}`}
+                            onClick={(ev: React.MouseEvent) => {
+                              ev.preventDefault();
+                              const el = document.getElementById(e.name);
+                              if (el) {
+                                (el as HTMLElement).focus();
+                                el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+                              }
+                            }}
+                            className="text-destructive underline cursor-pointer"
+                          >
+                            {e.label}: {e.message}
+                          </a>
+                        </li>
                       ))}
-                    </div>
-                  </fieldset>
-                ),
-              )}
+                    </ul>
+                  </div>
+                );
+              })()}
 
-              {/* Event recurrence + festival grouping */}
-              {config.id === 'event' && (
-                <fieldset className="mb-8 border-0 p-0 m-0">
-                  <legend className="text-sm font-semibold mb-4 text-foreground">
-                    Series & recurrence
-                  </legend>
+              {/* Live region for step announcements (a11y) */}
+              <div role="status" aria-live="polite" className="sr-only">
+                {stepAnnouncement}
+              </div>
+
+              {/* Fields */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                {stepFields.map((fieldConfig) => (
+                  <div
+                    key={fieldConfig.name}
+                    style={{ gridColumn: fieldConfig.colSpan === 2 ? '1 / -1' : undefined }}
+                  >
+                    <Controller
+                      control={control}
+                      name={fieldConfig.name}
+                      render={({ field, fieldState }) => (
+                        <FieldRenderer
+                          field={fieldConfig}
+                          value={field.value ?? ''}
+                          onChange={(val) => field.onChange(val)}
+                          error={fieldState.error?.message ?? errors[fieldConfig.name]}
+                          setFields={setFields}
+                          allValues={data}
+                        />
+                      )}
+                    />
+                  </div>
+                ))}
+              </div>
+
+              {/* Event recurrence + festival grouping (on the When & Where step) */}
+              {config.id === 'event' && currentStepConfig?.id === 'when-where' && (
+                <div className="mt-8 pt-6">
                   <EventSeriesFields data={data} setFields={setFields} />
-                </fieldset>
+                </div>
               )}
 
+              {/* Navigation buttons */}
               <div className="flex justify-between mt-6 gap-4">
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => navigate('/submit')}
+                  onClick={currentStep === 0 ? () => navigate('/submit') : prevStep}
                   className="flex items-center gap-1.5"
                 >
                   <ArrowLeft className="w-4 h-4" />
-                  Cancel
+                  {currentStep === 0 ? 'Cancel' : 'Back'}
                 </Button>
+
                 <Button
                   type="submit"
                   disabled={isSubmitting}
-                  aria-describedby={!user ? 'submit-auth-hint' : undefined}
+                  aria-describedby={!user && isLastStep ? 'submit-auth-hint' : undefined}
                   className="flex items-center gap-1.5"
                 >
                   {isSubmitting ? (
                     'Submitting...'
-                  ) : (
+                  ) : isLastStep ? (
                     <>
                       Submit <Send className="w-3.5 h-3.5" />
+                    </>
+                  ) : (
+                    <>
+                      Next <ArrowRight className="w-3.5 h-3.5" />
                     </>
                   )}
                 </Button>
@@ -447,166 +605,8 @@ function SubmitFormInner({ config }: SubmitFormInnerProps) {
             </form>
           </CardContent>
         </Card>
-        </>
       )}
-
-      {/* Form card (wizard mode) */}
-      {!reviewMode && (
-      <Card>
-        <CardContent>
-          <form
-            noValidate
-            onSubmit={async (e) => {
-              e.preventDefault();
-              if (isLastStep) {
-                submit();
-                return;
-              }
-              const result = await nextStep();
-              if (!result.ok && result.firstInvalid) {
-                requestAnimationFrame(() => {
-                  const el = document.getElementById(result.firstInvalid as string);
-                  if (el) {
-                    (el as HTMLElement).focus();
-                    el.scrollIntoView({ block: 'center', behavior: 'smooth' });
-                  }
-                });
-              }
-            }}
-          >
-            {/* Honeypot — hidden from real users */}
-            <div className="absolute -left-[9999px] opacity-0 h-0 overflow-hidden">
-              <Input
-                tabIndex={-1}
-                autoComplete="off"
-                value={honeypot}
-                onChange={(e) => setHoneypot(e.target.value)}
-              />
-            </div>
-
-            {/* Step label */}
-            {totalSteps > 1 && (
-              <p className="text-sm font-semibold mb-4 text-foreground">
-                Step {currentStep + 1}: {currentStepConfig?.label}
-              </p>
-            )}
-
-            {/* Error summary — lists fields that need fixing on this step */}
-            {(() => {
-              const stepErrors = stepFields
-                .map((f) => ({ name: f.name, label: f.label, message: errors[f.name] }))
-                .filter((e) => !!e.message);
-              if (stepErrors.length === 0) return null;
-              return (
-                <div
-                  role="alert"
-                  aria-live="polite"
-                  className="mb-4 p-4 rounded-element"
-                  style={{
-                    backgroundColor: 'hsl(var(--destructive) / 0.08)',
-                    border: '1px solid hsl(var(--destructive) / 0.35)',
-                  }}
-                >
-                  <p className="text-sm font-semibold mb-1 text-destructive">
-                    Please fix the following to continue:
-                  </p>
-                  <ul className="m-0 pl-4">
-                    {stepErrors.map((e) => (
-                      <li key={e.name}>
-                        <a
-                          href={`#${e.name}`}
-                          onClick={(ev: React.MouseEvent) => {
-                            ev.preventDefault();
-                            const el = document.getElementById(e.name);
-                            if (el) {
-                              (el as HTMLElement).focus();
-                              el.scrollIntoView({ block: 'center', behavior: 'smooth' });
-                            }
-                          }}
-                          className="text-destructive underline cursor-pointer"
-                        >
-                          {e.label}: {e.message}
-                        </a>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              );
-            })()}
-
-            {/* Live region for step announcements (a11y) */}
-            <div role="status" aria-live="polite" className="sr-only">
-              {stepAnnouncement}
-            </div>
-
-            {/* Fields */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              {stepFields.map((fieldConfig) => (
-                <div
-                  key={fieldConfig.name}
-                  style={{ gridColumn: fieldConfig.colSpan === 2 ? '1 / -1' : undefined }}
-                >
-                  <Controller
-                    control={control}
-                    name={fieldConfig.name}
-                    render={({ field, fieldState }) => (
-                      <FieldRenderer
-                        field={fieldConfig}
-                        value={field.value ?? ''}
-                        onChange={(val) => field.onChange(val)}
-                        error={fieldState.error?.message ?? errors[fieldConfig.name]}
-                        setFields={setFields}
-                        allValues={data}
-                      />
-                    )}
-                  />
-                </div>
-              ))}
-            </div>
-
-            {/* Event recurrence + festival grouping (on the When & Where step) */}
-            {config.id === 'event' && currentStepConfig?.id === 'when-where' && (
-              <div className="mt-8 pt-6">
-                <EventSeriesFields data={data} setFields={setFields} />
-              </div>
-            )}
-
-            {/* Navigation buttons */}
-            <div className="flex justify-between mt-6 gap-4">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={currentStep === 0 ? () => navigate('/submit') : prevStep}
-                className="flex items-center gap-1.5"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                {currentStep === 0 ? 'Cancel' : 'Back'}
-              </Button>
-
-              <Button
-                type="submit"
-                disabled={isSubmitting}
-                aria-describedby={!user && isLastStep ? 'submit-auth-hint' : undefined}
-                className="flex items-center gap-1.5"
-              >
-                {isSubmitting ? (
-                  'Submitting...'
-                ) : isLastStep ? (
-                  <>
-                    Submit <Send className="w-3.5 h-3.5" />
-                  </>
-                ) : (
-                  <>
-                    Next <ArrowRight className="w-3.5 h-3.5" />
-                  </>
-                )}
-              </Button>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
-      )}
-    </div>
+    </PageContainer>
   );
 }
 

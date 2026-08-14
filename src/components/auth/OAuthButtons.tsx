@@ -1,6 +1,7 @@
 import { useState } from 'react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { Button } from '@/components/ui/button';
-import { Loader2 } from 'lucide-react';
+
 import { useAuth } from '@/hooks/useAuth';
 import { useSignupFunnel } from '@/hooks/useSignupFunnel';
 import { useTranslation } from 'react-i18next';
@@ -39,7 +40,7 @@ export function OAuthButtons({ onError }: Props) {
         disabled={loading}
       >
         {loading ? (
-          <Loader2 size={18} style={{ animation: 'spin 1s linear infinite' }} className="mr-2" />
+          <TrackLoader size={18} className="mr-2" />
         ) : (
           <AppleIcon />
         )}

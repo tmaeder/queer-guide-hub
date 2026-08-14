@@ -25,8 +25,10 @@ export function CountryLegalHistory({
   const seeAll = countryName ? `/history?country=${encodeURIComponent(countryName)}` : '/history';
 
   return (
-    <section className="rounded-container bg-surface-container p-6">
-      <h3 className="mb-4 text-2xs uppercase tracking-wider text-muted-foreground">
+    // Ink plate, not a tinted panel. `compact` rows stay a bare truncated line
+    // — this strip is ~340px wide and any per-row chrome multiplies by 6.
+    <section className="border-[3px] border-foreground p-4">
+      <h3 className="mb-4 text-2xs uppercase tracking-label text-muted-foreground">
         {t('milestones.legalHistory.title', 'Legal history')}
       </h3>
       <div className="space-y-4">

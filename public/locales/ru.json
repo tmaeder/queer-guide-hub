@@ -1498,19 +1498,19 @@
       "relationships": "Отношения",
       "women": "Женщины"
     },
-    "quick_exit": "Quick exit",
-    "quick_exit_aria": "Leave this page immediately (ESC)",
-    "hide_screen": "Hide screen",
-    "reveal_aria": "Click anywhere to show the page again",
-    "hidden_hint": "Page hidden. Click anywhere to show again.",
-    "hero_label": "Recommended right now",
-    "expect_title": "What happens when you call",
+    "quick_exit": "Быстрый выход",
+    "quick_exit_aria": "Немедленно покинуть страницу (Esc)",
+    "hide_screen": "Скрыть экран",
+    "reveal_aria": "Нажмите в любом месте, чтобы снова показать страницу",
+    "hidden_hint": "Страница скрыта. Нажмите в любом месте, чтобы показать её.",
+    "hero_label": "Рекомендуем сейчас",
+    "expect_title": "Что происходит, когда вы звоните",
     "expect_short": "What to expect",
     "expect_1": "You'll hear a short greeting. You don't have to give your name.",
     "expect_2": "You can hang up at any time. You can call back as often as you need.",
     "expect_3": "Free hotlines in DE/AT/CH don't appear on itemized phone bills.",
     "expect_4": "If you can't speak, ask for text or chat — most hotlines offer it.",
-    "self_help_trigger": "While you wait",
+    "self_help_trigger": "Пока не готовы говорить?",
     "self_help_title": "Steady yourself",
     "self_help_desc": "Short techniques you can use while you wait, or instead of a call if you're not ready.",
     "breathing_title": "4-7-8 breathing",
@@ -1528,7 +1528,7 @@
     "safety_plan_title": "Safety plan",
     "safety_plan_desc": "A short written plan you can pull up when things get bad — your warning signs, coping steps, people to call, and reasons to live.",
     "safety_plan_link": "Open template (Stanley-Brown)",
-    "report": "Report",
+    "report": "Сообщить",
     "report_aria": "Report a problem with this hotline",
     "report_title": "Report this hotline",
     "report_desc": "Thanks for helping keep this list accurate. Reports are reviewed by our team.",
@@ -1568,7 +1568,53 @@
       "closed": "Service has shut down",
       "unsafe": "Unsafe / harmful experience",
       "other": "Other"
-    }
+    },
+    "browse_support_orgs": "Все организации поддержки",
+    "browse_title": "Все линии помощи",
+    "cant_speak": "Не можете говорить?",
+    "closed_now": "Сейчас закрыто",
+    "closed_no_alt": "Эта линия сейчас закрыта, и для этой страны у нас нет других работающих линий. При непосредственной опасности звоните по экстренному номеру выше.",
+    "directories_subtitle": "Это справочники и организации-посредники — сайты, а не прямые телефонные линии.",
+    "directories_title": "Справочники и другая помощь",
+    "emergency_short": "Экстренный вызов",
+    "helping_body": "Если вы слушаете человека в кризисе: побудьте рядом, отнеситесь серьёзно к его словам и не оставляйте его одного. Вам не нужно знать ответы. Позвоните на линию вместе или позвоните сами и спросите, что делать дальше.",
+    "helping_title": "Помочь другому человеку",
+    "keep": "Сохранить линию",
+    "know_the_law": "Знайте закон",
+    "know_the_law_body": "Безопасно ли жить открыто, обращаться за медицинской помощью или заявлять о преступлении — зависит от того, где вы находитесь. Проверьте правовую ситуацию, прежде чем действовать.",
+    "link_unavailable": "Сайт сейчас недоступен — идёт повторная проверка.",
+    "loading": "Загрузка справочника…",
+    "more_support": "Другая помощь",
+    "no_country_body": "Выберите страну выше, и мы покажем подходящую линию. Все линии перечислены ниже.",
+    "no_country_title": "Не удалось определить, где вы находитесь",
+    "no_lines_body": "Если вы сейчас в опасности, звоните в экстренные службы: 112 (ЕС) или 911 (США/Канада).",
+    "no_lines_title": "Не удалось загрузить справочник",
+    "no_police_policy": "Эта линия заявляет, что никогда не обращается в полицию или экстренные службы без вашей явной просьбы.",
+    "open_always": "Круглосуточно",
+    "open_instead": "Сейчас работает другая линия",
+    "open_now": "Сейчас работает",
+    "org_coverage": "Этот справочник далеко не полон. Если здесь нет организации, которой вы доверяете, сообщите нам. Пустой результат означает, что у нас нет данных, а не что помощи не существует.",
+    "phone_only": "По нашим данным — только по телефону.",
+    "phone_only_with_site": "По нашим данным — только по телефону. На их сайте могут быть чат или электронная почта.",
+    "provenance": "Источник данных",
+    "report_submitting": "Отправка…",
+    "reports_police_warning": "Эта линия может обратиться в полицию или экстренные службы без вашего согласия.",
+    "result_count_one": "{{count}} линия",
+    "result_count_other": "{{count}} линий",
+    "rights_by_country": "Права ЛГБТК+ по странам",
+    "saved_lines": "Сохранённые линии",
+    "scope_all": "Линии из всех стран, которые у нас есть.",
+    "scope_change": "Изменить",
+    "scope_dialog_desc": "Линии сгруппированы по стране, которую они обслуживают. Международные справочники видны при любом выборе.",
+    "scope_dialog_title": "Выберите страну",
+    "scope_prefix": "Линии для страны",
+    "support_orgs": "Организации поддержки",
+    "support_orgs_body": "Общественные центры и организации, помогающие очно.",
+    "tell_us": "Сообщите нам",
+    "unkeep": "Убрать из сохранённых",
+    "visit_site": "Открыть их сайт",
+    "website": "Сайт",
+    "see_all_lines": "Показать все линии"
   },
   "sos": {
     "button": "SOS",
@@ -1707,6 +1753,13 @@
       "title": "[RU] Born this week",
       "seeAll": "[RU] All personalities",
       "celebrate": "[RU] Celebrate {{name}}"
+    },
+    "map": {
+      "interchangeEyebrow": "[RU] Interchange",
+      "interchange": {
+        "label": "[RU] Search everything",
+        "subtitle": "[RU] Every line meets here"
+      }
     }
   },
   "header": {
@@ -3420,6 +3473,12 @@
       "events_other": "[RU] {{count}} events",
       "groups_one": "[RU] {{count}} group",
       "groups_other": "[RU] {{count}} groups"
+    },
+    "interests": {
+      "title": "[RU] What are you into?",
+      "blurb": "[RU] Pick a few. They shape what we suggest, and they are how other members find people with something in common.",
+      "blurbSignedOut": "[RU] Sign in to pick a few. They shape what we suggest, and they are how other members find people with something in common.",
+      "count": "[RU] {{count}} selected"
     }
   },
   "hub": {
@@ -3624,7 +3683,11 @@
       "allCountries": "Все страны",
       "clear": "Сбросить фильтры",
       "major": "Ключевые вехи",
-      "showAll": "Все вехи"
+      "showAll": "Все вехи",
+      "heading": "[RU] Filter the timeline",
+      "categoryGroup": "[RU] Category",
+      "scopeGroup": "[RU] Depth",
+      "impactGroup": "[RU] Impact"
     },
     "category": {
       "uprising-movement": "Восстание / Движение",
@@ -3644,7 +3707,9 @@
       "sources": "Источники",
       "linked": "Причастные люди и места",
       "related": "Ещё из {{country}}",
-      "sameYear": "[RU] Elsewhere in {{year}}"
+      "sameYear": "[RU] Elsewhere in {{year}}",
+      "story": "[RU] What happened",
+      "sameYearNote": "[RU] What was happening in other countries the same year."
     },
     "sidebar": {
       "facts": "Факты",
@@ -3736,7 +3801,16 @@
       "country": "[RU] Travel guide: {{name}}",
       "city": "[RU] City guide: {{name}}",
       "events": "[RU] Events in {{name}} today"
-    }
+    },
+    "facts": {
+      "impact": "[RU] Impact",
+      "category": "[RU] Category",
+      "era": "[RU] Era"
+    },
+    "photoCredit": "[RU] Photo",
+    "eraNavHeading": "[RU] The line, end to end",
+    "eraNavStation": "[RU] {{era}} — {{count}} milestones",
+    "emptyTitle": "[RU] No service on this stretch of the line"
   },
   "guides": {
     "hub": {
@@ -3961,6 +4035,164 @@
       "partial": "[RU] Some protections",
       "protected": "[RU] Broad protections",
       "unknown": "[RU] Not enough data"
+    }
+  },
+  "about": {
+    "eyebrow": "О нас",
+    "title": "Сделано квир-людьми — для всех.",
+    "lede": "Queer Guide — это карта мест, событий и людей, из которых состоит квир-жизнь. Проверено сообществом, бесплатно для всех и везде.",
+    "diagram": {
+      "label": "Четыре линии — места, события, сообщество и направления — сходятся на одной станции."
+    },
+    "scale": {
+      "kicker": "Сеть сегодня",
+      "venues": "Места",
+      "events": "Ближайшие события",
+      "cities": "Города",
+      "countries": "Страны"
+    },
+    "lines": {
+      "kicker": "Сеть",
+      "title": "Пять линий",
+      "lede": "У каждой части платформы своя линия. Садитесь на ту, которая нужна.",
+      "action": "Открыть",
+      "venues": {
+        "name": "Места",
+        "description": "Квир-дружелюбные бары, кафе, клубы и заведения, проверенные живыми людьми."
+      },
+      "events": {
+        "name": "События",
+        "description": "Прайды, драг-шоу, группы поддержки, показы — рядом с вами или где угодно."
+      },
+      "marketplace": {
+        "name": "Маркет",
+        "description": "ЛГБТК+ бизнесы и авторы. Покупайте там, где ваши деньги важны."
+      },
+      "community": {
+        "name": "Сообщество",
+        "description": "Задавайте вопросы, делитесь историями, находите своих. Всегда с модерацией."
+      },
+      "places": {
+        "name": "Направления",
+        "description": "Города и страны: местные законы, права и заметки о безопасности."
+      }
+    },
+    "story": {
+      "kicker": "Наша история",
+      "title": "С чего всё началось",
+      "p1": "Чтобы найти квир-дружелюбный бар, не должно требоваться три ветки форума, групповой чат и вера в удачу. Мы начали Queer Guide, потому что устали гадать, какие места действительно безопасны, — а какие просто вешают радугу на логотип в июне.",
+      "p2": "Личный список проверенных мест превратился в глобальный каталог: проверенный сообществом, построенный на реальном опыте, бесплатный. Едете одни, переезжаете в новый город или просто ищете, где провести вечер пятницы, — начните отсюда."
+    },
+    "legend": {
+      "kicker": "Условные обозначения",
+      "title": "Чем мы отличаемся",
+      "verified": {
+        "label": "Проверено сообществом",
+        "body": "Каждое место проверяют живые ЛГБТК+ люди, а не алгоритм."
+      },
+      "safety": {
+        "label": "Безопасность прежде всего",
+        "body": "Местные законы, права и предупреждения о рисках на странице каждой страны."
+      },
+      "free": {
+        "label": "Всегда бесплатно",
+        "body": "Никаких платных стен и премиум-тарифов. Платформа принадлежит всем."
+      },
+      "global": {
+        "label": "По всему миру",
+        "body": "От Берлина до Бангкока, от Сан-Паулу до Сиднея — и это не предел."
+      }
+    },
+    "history": {
+      "kicker": "Как мы сюда пришли",
+      "title": "Линия до сих пор",
+      "lede": "Побочный проект, ставший глобальным каталогом.",
+      "y2021": {
+        "year": "2021",
+        "body": "Три человека и одна таблица. Безопасные бары в пяти европейских городах, список в Telegram-группе."
+      },
+      "y2023": {
+        "year": "2023",
+        "body": "Тысяча мест в восьмидесяти городах. Запустились обработка событий и расширение для заявок от сообщества."
+      },
+      "y2025": {
+        "year": "2025",
+        "body": "Десятки тысяч мест на всех континентах. Маркет, планировщик поездок, сводки по безопасности и права по странам."
+      },
+      "y2026": {
+        "year": "2026",
+        "body": "Вы здесь. Добавьте место, опубликуйте событие или присоединяйтесь к тем, кто это пишет."
+      }
+    },
+    "values": {
+      "kicker": "За что мы",
+      "title": "Что для нас важно",
+      "inclusivity": {
+        "title": "Инклюзивность",
+        "description": "Любая идентичность, любой опыт, любая история — здесь есть место всем."
+      },
+      "safety": {
+        "title": "Безопасность",
+        "description": "Безопасные пространства онлайн и офлайн. Это важнее всего остального."
+      },
+      "community": {
+        "title": "Сообщество",
+        "description": "Настоящие связи между людьми и организациями, которые их поддерживают."
+      },
+      "authenticity": {
+        "title": "Подлинность",
+        "description": "Будьте собой. Мы сделали это место, чтобы вам не приходилось прятаться."
+      },
+      "accessibility": {
+        "title": "Доступность",
+        "description": "Отмечаем входы без ступеней, доступные туалеты — и то, чего нет."
+      },
+      "growth": {
+        "title": "Развитие",
+        "description": "Меняемся и слушаем. Строим на том, что вы нам говорите."
+      }
+    },
+    "people": {
+      "kicker": "Кто это делает",
+      "title": "Люди за проектом",
+      "lede": "Никакой корпорации. Люди из сообщества, которые тратят своё время.",
+      "moderators": {
+        "name": "Модерация сообщества",
+        "role": "Держат пространство безопасным",
+        "description": "Волонтёры, которые круглосуточно следят, чтобы платформа оставалась дружелюбной и уважительной."
+      },
+      "ambassadors": {
+        "name": "Локальные амбассадоры",
+        "role": "На местах",
+        "description": "Люди из сообщества, которые доносят местные потребности и отстаивают инклюзивные пространства в своём регионе."
+      },
+      "contributors": {
+        "name": "Авторы",
+        "role": "Делятся знанием",
+        "description": "Участники, которые пишут отзывы, публикуют события и собирают материалы, на которые опираются остальные."
+      }
+    },
+    "cta": {
+      "title": "Помогите продлить линию.",
+      "body": "Сеть растёт, потому что люди её дополняют. За каждой проверенной записью кто-то стоит — добавьте свою.",
+      "primary": "Предложить место",
+      "secondary": "Связаться с нами",
+      "addVenues": {
+        "title": "Добавить место",
+        "desc": "Знаете безопасное место? Нанесите его на карту."
+      },
+      "createEvents": {
+        "title": "Опубликовать событие",
+        "desc": "Организуйте что-то. Соберите людей."
+      },
+      "joinGroups": {
+        "title": "Вступить в группу",
+        "desc": "Ваш голос — часть разговора."
+      },
+      "support": {
+        "title": "Поддержать нас",
+        "desc": "Чтобы платформа оставалась бесплатной для всех."
+      }
     }
   }
 }

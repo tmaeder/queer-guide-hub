@@ -6,6 +6,8 @@
  * 1.7k-line component, and so `AREA_LAYERS` is defined once (it was
  * previously duplicated in `mapShellAdapters.ts`).
  */
+import type React from 'react';
+import { MapPin, Calendar, Building2, Globe, Accessibility, Hotel, Landmark } from 'lucide-react';
 import type { LayerType } from '@/hooks/useExploreMapData';
 import type { BoundaryLayerConfig } from '@/hooks/useMapBoundaryLayers';
 
@@ -13,6 +15,30 @@ import type { BoundaryLayerConfig } from '@/hooks/useMapBoundaryLayers';
 
 /** Layers rendered as native MapLibre circle + label layers (area feel). */
 export const AREA_LAYERS: LayerType[] = ['cities', 'countries', 'neighbourhoods'];
+
+// ── Layer registry ───────────────────────────────────────────────────────────
+
+export interface LayerDef {
+  type: LayerType;
+  label: string;
+  icon: React.ElementType;
+  defaultOn: boolean;
+  comingSoon?: boolean;
+}
+
+/** The layer registry — order here is the order every layer UI renders in.
+ *  Lived in the (now deleted) `ExploreMapLayers` component, which forced the
+ *  legend, the layer switch and `useMapShellState` to import a constant from a
+ *  React component file. */
+export const LAYER_DEFS: LayerDef[] = [
+  { type: 'venues', label: 'Venues', icon: MapPin, defaultOn: true },
+  { type: 'events', label: 'Events', icon: Calendar, defaultOn: true },
+  { type: 'cities', label: 'Cities', icon: Building2, defaultOn: false },
+  { type: 'countries', label: 'Countries', icon: Globe, defaultOn: false },
+  { type: 'restrooms', label: 'Restrooms', icon: Accessibility, defaultOn: false },
+  { type: 'hotels', label: 'Hotels', icon: Hotel, defaultOn: true },
+  { type: 'neighbourhoods', label: 'Villages', icon: Landmark, defaultOn: false },
+];
 
 /** Circle radius interpolation stops per area type: `[zoom, radiusPx][]`.
  *  Stops grow the disc as you zoom in so a country reads as a broad region at

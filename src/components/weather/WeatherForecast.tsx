@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Cloud, Droplets, Wind, Gauge, Loader2 } from 'lucide-react';
+import { Cloud, Droplets, Wind, Gauge} from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
 interface WeatherDay {
@@ -128,7 +129,7 @@ export const WeatherForecast = ({ latitude, longitude, cityName, className }: We
           </CardHeader>
           <CardContent>
             <div className="flex items-center justify-center py-8">
-              <Loader2 className="h-6 w-6 animate-spin" />
+              <TrackLoader size={24} />
               <span className="ml-2">Loading weather data...</span>
             </div>
           </CardContent>

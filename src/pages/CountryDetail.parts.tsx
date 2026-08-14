@@ -1,15 +1,7 @@
-import {
-  MapPin,
-  Building2,
-  Calendar,
-  Newspaper,
-  Activity,
-  Loader2,
-  ShieldAlert,
-} from 'lucide-react';
+import { MapPin, Building2, Calendar, Newspaper, Activity, ShieldAlert } from 'lucide-react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { hasAnyCriminalizationSignal } from '@/utils/equalityScore';
 import { MapShell } from '@/components/map/MapShell';
-import { MAP_SHELL_ENABLED } from '@/lib/featureFlags';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { VenueCard } from '@/components/venues/VenueCard';
 import { EventCard } from '@/components/events/EventCard';
@@ -68,7 +60,7 @@ export function SectionLoader({ label }: { label: string }) {
       role="status"
       aria-label={`Loading ${label}`}
     >
-      <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" aria-hidden="true" />
+      <TrackLoader size={24} />
     </div>
   );
 }
@@ -258,41 +250,11 @@ export function CountryNewsTab({
   );
 }
 
-export function CountryMapTab({
-  country,
-  ExploreMap,
-  Suspense,
-}: {
-  country: CountryRelation;
-  ExploreMap: React.ComponentType<Record<string, unknown>>;
-  Suspense: typeof import('react').Suspense;
-}) {
+export function CountryMapTab({ country }: { country: CountryRelation }) {
   if (typeof country.latitude !== 'number' || typeof country.longitude !== 'number') return null;
   const center: [number, number] = [Number(country.longitude), Number(country.latitude)];
 
-  if (MAP_SHELL_ENABLED) {
-    return (
-      <MapShell surface="country" height={500} initialCenter={center} initialZoom={5} skipAutoFly />
-    );
-  }
-
   return (
-    <Suspense
-      fallback={
-        <div className="flex justify-center py-8">
-          <Loader2 className="h-8 w-8 animate-spin" aria-label="Loading" />
-        </div>
-      }
-    >
-      <ExploreMap
-        height={500}
-        initialCenter={center}
-        initialZoom={5}
-        defaultLayers={['venues', 'events', 'cities']}
-        showLayerToggles
-        showFilters={false}
-        skipAutoFly
-      />
-    </Suspense>
+    <MapShell surface="country" height={500} initialCenter={center} initialZoom={5} skipAutoFly />
   );
 }

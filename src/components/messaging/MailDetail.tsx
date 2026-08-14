@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useTranslation } from 'react-i18next';
-import { Loader2, Reply, Send, X } from 'lucide-react';
+import {Reply, Send, X } from 'lucide-react';
 import { useMailbox, type MailboxEmail } from '@/hooks/useMailbox';
 import { EmailView } from '@/components/inbox/EmailView';
 import { Button } from '@/components/ui/button';
@@ -52,7 +53,7 @@ export function MailDetail({ emailId }: { emailId: string }) {
   if (loading) {
     return (
       <div className="flex h-full items-center justify-center p-6">
-        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" aria-hidden />
+        <TrackLoader size={24} />
       </div>
     );
   }
@@ -104,7 +105,7 @@ export function MailDetail({ emailId }: { emailId: string }) {
             <div className="flex justify-end">
               <Button onClick={handleSendReply} disabled={sending || !replyBody.trim()}>
                 {sending ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden />
+                  <TrackLoader size={16} className="mr-2" />
                 ) : (
                   <Send className="mr-2 h-4 w-4" aria-hidden />
                 )}

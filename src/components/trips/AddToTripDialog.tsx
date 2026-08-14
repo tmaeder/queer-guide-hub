@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useTranslation } from 'react-i18next';
-import { Loader2, Luggage, Check, Plus, Users, Calendar } from 'lucide-react';
+import {Luggage, Check, Plus, Users, Calendar } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -284,7 +285,7 @@ export function AddToTripDialog({ open, onClose, entity }: AddToTripDialogProps)
 
           {tripsLoading ? (
             <div className="flex justify-center py-8">
-              <Loader2 className="animate-spin" size={24} aria-label="Loading" />
+              <TrackLoader size={24} label="Loading" />
             </div>
           ) : hasTrips && !showCreateForm ? (
             <>
@@ -444,14 +445,14 @@ export function AddToTripDialog({ open, onClose, entity }: AddToTripDialogProps)
               disabled={!newTripTitle.trim() || createTrip.isPending || addPlace.isPending}
             >
               {(createTrip.isPending || addPlace.isPending) && (
-                <Loader2 className="animate-spin mr-1" size={16} aria-label="Loading" />
+                <TrackLoader size={16} label="Loading" className="mr-1" />
               )}
               {t('trips.addTo.createAndAdd', 'Create & Add')}
             </Button>
           ) : (
             <Button onClick={handleAddToTrip} disabled={!selectedTripId || addPlace.isPending}>
               {addPlace.isPending && (
-                <Loader2 className="animate-spin mr-1" size={16} aria-label="Loading" />
+                <TrackLoader size={16} label="Loading" className="mr-1" />
               )}
               {t('trips.addTo.title', 'Add to Trip')}
             </Button>

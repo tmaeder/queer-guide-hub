@@ -62,26 +62,30 @@ export function PersonalitiesTimeline({ personalities }: PersonalitiesTimelinePr
       role="region"
       aria-label="Timeline of personalities by birth decade"
     >
-      <div className="flex gap-4 min-w-max">
+      {/* Each decade is a segment of the line and each person a stop on it.
+          The avatar IS the station ring (3px ink, `rounded-full` — the
+          sanctioned circle case), so the column reads top-to-bottom as a route
+          rather than as a list inside a tinted panel. */}
+      <div className="flex min-w-max gap-4">
         {buckets.map((b) => (
-          <div key={b.label} className="flex-shrink-0 w-56 rounded-element bg-surface-container">
-            <div className="px-4 py-2 sticky top-0 bg-background">
-              <div className="text-sm font-semibold">{b.label}</div>
-              <div className="text-xs text-muted-foreground">
+          <div key={b.label} className="w-56 flex-shrink-0 border-[3px] border-foreground bg-background">
+            <div className="sticky top-0 border-b-[3px] border-foreground bg-foreground px-4 py-2 text-background">
+              <div className="font-display text-title leading-tight">{b.label}</div>
+              <div className="text-2xs tabular-nums text-background/70">
                 {b.items.length.toLocaleString()} {b.items.length === 1 ? 'person' : 'people'}
               </div>
             </div>
-            <ul className="max-h-[70vh] overflow-y-auto">
+            <ul className="m-0 max-h-[70vh] list-none overflow-y-auto p-0">
               {b.items.map((p) => {
                 const year = p.birth_date ? new Date(p.birth_date).getFullYear() : null;
                 return (
-                  <li key={p.id}>
+                  <li key={p.id} className="border-b-2 border-foreground/10 last:border-b-0">
                     <LocalizedLink
                       to={`/personalities/${p.slug ?? p.id}`}
-                      className="flex items-center gap-2 px-4 py-2 hover:bg-accent transition-colors no-underline text-inherit"
+                      className="flex items-center gap-2 px-4 py-2 text-inherit no-underline transition-colors hover:bg-surface-container"
                     >
                       <div
-                        className="w-8 h-8 rounded-full bg-muted overflow-hidden flex-shrink-0 flex items-center justify-center text-xs font-bold"
+                        className="flex h-8 w-8 flex-shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-foreground bg-muted text-2xs font-bold"
                         aria-hidden="true"
                       >
                         {p.image_url ? (
@@ -89,15 +93,15 @@ export function PersonalitiesTimeline({ personalities }: PersonalitiesTimelinePr
                             src={p.image_url}
                             alt=""
                             loading="lazy"
-                            className="w-full h-full object-cover object-top"
+                            className="h-full w-full object-cover object-top"
                           />
                         ) : (
                           p.name.slice(0, 1).toUpperCase()
                         )}
                       </div>
                       <div className="min-w-0 flex-1">
-                        <div className="text-xs font-medium truncate">{p.name}</div>
-                        <div className="text-xs2 text-muted-foreground truncate">
+                        <div className="truncate text-13 font-bold leading-tight">{p.name}</div>
+                        <div className="truncate text-2xs text-muted-foreground">
                           {year ?? ''}
                           {p.profession
                             ? `${year ? ' · ' : ''}${formatProfession(p.profession)}`

@@ -8,8 +8,9 @@
  */
 
 import { useState } from 'react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Loader2, ExternalLink, Trash2, Archive } from 'lucide-react';
+import {ExternalLink, Trash2, Archive } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { untypedFrom } from '@/integrations/supabase/untyped';
@@ -111,7 +112,7 @@ export function PersonalityAttachmentsPanel({ personalityId }: { personalityId: 
           className="self-end"
         >
           {archive.isPending ? (
-            <Loader2 className="mr-1 h-4 w-4 animate-spin" />
+            <TrackLoader size={16} className="mr-1" />
           ) : (
             <Archive className="mr-1 h-4 w-4" />
           )}
@@ -121,7 +122,7 @@ export function PersonalityAttachmentsPanel({ personalityId }: { personalityId: 
 
       {isLoading ? (
         <div className="flex justify-center py-2">
-          <Loader2 className="animate-spin" size={20} aria-label="Loading" />
+          <TrackLoader size={20} label="Loading" />
         </div>
       ) : (rows ?? []).length === 0 ? (
         <p className="text-sm text-muted-foreground">No attachments yet.</p>

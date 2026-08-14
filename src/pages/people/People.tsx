@@ -1,8 +1,11 @@
 import { useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { SlidersHorizontal, UsersRound, Rss, UserCheck } from 'lucide-react';
+import { SlidersHorizontal } from 'lucide-react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
+import { NestedEntityCard } from '@/components/transit/NestedEntityCard';
+import { TransitIcon } from '@/components/transit/TransitIcon';
+import type { TransitIconName } from '@/components/transit/transitIconPaths';
 import { useMeta } from '@/hooks/useMeta';
 import { useProfile } from '@/hooks/useProfile';
 import { Button } from '@/components/ui/button';
@@ -14,6 +17,7 @@ import { GatedContentNotice } from '@/components/safety/GatedContentNotice';
 import { IntentSheet } from '@/components/people/IntentSheet';
 import { PeopleHereRail } from '@/components/people/PeopleHereRail';
 import { MeetMembersNotice } from '@/components/people/MeetMembersNotice';
+import { InterestPicker } from '@/components/people/InterestPicker';
 import {
   useMeetSpaces,
   useLocalGroups,
@@ -60,7 +64,7 @@ import type { SectionDef } from '@/components/entity/editorial';
 const COMMUNITY_BRIDGE = [
   {
     to: '/community/groups',
-    icon: UsersRound,
+    icon: 'meetups',
     key: 'header.nav.groups',
     fallback: 'Groups',
     blurbKey: 'people.community.groups',
@@ -68,7 +72,7 @@ const COMMUNITY_BRIDGE = [
   },
   {
     to: '/community/feed',
-    icon: Rss,
+    icon: 'chat',
     key: 'header.nav.feed',
     fallback: 'Feed',
     blurbKey: 'people.community.feed',
@@ -76,13 +80,13 @@ const COMMUNITY_BRIDGE = [
   },
   {
     to: '/community/members',
-    icon: UserCheck,
+    icon: 'community',
     key: 'header.nav.members',
     fallback: 'Members',
     blurbKey: 'people.community.members',
     blurb: 'Browse everyone who is listed',
   },
-] as const;
+] as const satisfies ReadonlyArray<{ icon: TransitIconName; [k: string]: unknown }>;
 
 export default function People() {
   const { t } = useTranslation();
@@ -158,27 +162,24 @@ export default function People() {
             ) : null}
             <ul className="m-0 grid list-none gap-4 p-0 sm:grid-cols-2 lg:grid-cols-3">
               {spacesResult.spaces.map((s) => (
-                <li key={s.id} className="rounded-container border-2 border-foreground p-4">
-                  <p className="mb-2 text-2xs uppercase tracking-wider text-muted-foreground">
-                    {s.kind === 'village'
-                      ? t('people.spaceKind.village', 'Queer neighbourhood')
-                      : t('people.spaceKind.venue', 'Community centre')}
-                  </p>
-                  <h3 className="mb-2 font-display text-title">
-                    {s.slug ? (
-                      <LocalizedLink
-                        to={s.kind === 'village' ? `/place/${s.slug}` : `/venues/${s.slug}`}
-                        className="no-underline hover:underline"
-                      >
-                        {s.name}
-                      </LocalizedLink>
-                    ) : (
-                      s.name
-                    )}
-                  </h3>
-                  {s.description ? (
-                    <p className="line-clamp-3 text-13 text-muted-foreground">{s.description}</p>
-                  ) : null}
+                <li key={s.id}>
+                  <NestedEntityCard
+                    type={s.kind === 'village' ? 'queer_village' : 'venue'}
+                    eyebrow={
+                      s.kind === 'village'
+                        ? t('people.spaceKind.village', 'Queer neighbourhood')
+                        : t('people.spaceKind.venue', 'Community centre')
+                    }
+                    name={s.name}
+                    description={s.description}
+                    href={
+                      s.slug
+                        ? s.kind === 'village'
+                          ? `/place/${s.slug}`
+                          : `/venues/${s.slug}`
+                        : undefined
+                    }
+                  />
                 </li>
               ))}
             </ul>
@@ -209,24 +210,17 @@ export default function People() {
         groups && groups.length > 0 ? (
           <ul className="m-0 grid list-none gap-4 p-0 sm:grid-cols-2 lg:grid-cols-3">
             {groups.map((g) => (
-              <li key={g.id} className="rounded-container border-2 border-foreground p-4">
-                <h3 className="mb-2 font-display text-title">
-                  <LocalizedLink
-                    to={`/community/groups/${g.id}`}
-                    className="no-underline hover:underline"
-                  >
-                    {g.name}
-                  </LocalizedLink>
-                </h3>
-                {g.description ? (
-                  <p className="mb-2 line-clamp-2 text-13 text-muted-foreground">{g.description}</p>
-                ) : null}
-                <p className="text-2xs uppercase tracking-wider text-muted-foreground">
-                  {t('people.groupMembers', {
+              <li key={g.id}>
+                <NestedEntityCard
+                  type="group"
+                  eyebrow={t('people.groupMembers', {
                     defaultValue: '{{count}} members',
                     count: g.member_count ?? 0,
                   })}
-                </p>
+                  name={g.name}
+                  description={g.description}
+                  href={`/community/groups/${g.id}`}
+                />
               </li>
             ))}
           </ul>
@@ -262,22 +256,13 @@ export default function People() {
         venues && venues.length > 0 ? (
           <ul className="m-0 grid list-none gap-4 p-0 sm:grid-cols-2 lg:grid-cols-3">
             {venues.map((v) => (
-              <li key={v.id} className="rounded-container border-2 border-foreground p-4">
-                <p className="mb-2 text-2xs uppercase tracking-wider text-muted-foreground">
-                  {v.category}
-                </p>
-                <h3 className="font-display text-title">
-                  {v.slug ? (
-                    <LocalizedLink
-                      to={`/venues/${v.slug}`}
-                      className="no-underline hover:underline"
-                    >
-                      {v.name}
-                    </LocalizedLink>
-                  ) : (
-                    v.name
-                  )}
-                </h3>
+              <li key={v.id}>
+                <NestedEntityCard
+                  type="venue"
+                  eyebrow={v.category}
+                  name={v.name}
+                  href={v.slug ? `/venues/${v.slug}` : undefined}
+                />
               </li>
             ))}
           </ul>
@@ -312,16 +297,25 @@ export default function People() {
             seeAllHref="/community/members"
             emptyState={<MeetMembersNotice cityId={cityId ?? undefined} cityName={cityName} />}
           />
-          <div className="grid gap-2 sm:grid-cols-3">
-            {COMMUNITY_BRIDGE.map(({ to, icon: Icon, key, fallback, blurbKey, blurb }) => (
+
+          {/* Directly under the rail it feeds. The shared-interest signal that
+              makes that rail worth reading has had nothing to work with:
+              tag_follows held 0 rows against 9,170 tags because the only way to
+              declare an interest was one tag-detail page at a time. This is the
+              input, placed where its effect shows up. */}
+          <InterestPicker className="mt-4" />
+          {/* Station plates, not hairline rows. These were `border border-border`
+              — a 1px grey rule whose only hover affordance was going darker. */}
+          <div className="grid gap-4 sm:grid-cols-3">
+            {COMMUNITY_BRIDGE.map(({ to, icon, key, fallback, blurbKey, blurb }) => (
               <LocalizedLink
                 key={to}
                 to={to}
-                className="flex items-center gap-4 rounded-element border border-border p-4 no-underline transition-colors hover:border-foreground"
+                className="card-lift flex items-center gap-4 border-[3px] border-foreground bg-background p-4 no-underline"
               >
-                <Icon size={20} className="shrink-0 text-foreground" aria-hidden />
+                <TransitIcon name={icon} size={28} className="shrink-0 text-foreground" />
                 <span className="flex min-w-0 flex-col">
-                  <span className="text-15 font-medium text-foreground">{t(key, fallback)}</span>
+                  <span className="font-display text-title text-foreground">{t(key, fallback)}</span>
                   <span className="text-2xs leading-tight text-muted-foreground">
                     {t(blurbKey, blurb)}
                   </span>
@@ -345,12 +339,11 @@ export default function People() {
               'Meeting strangers carries different risk in different countries. Check the legal position for where you are before you arrange to meet someone.',
             )}
           </p>
-          <LocalizedLink
-            to="/rights"
-            className="inline-block rounded-element border-2 border-foreground px-6 py-2 font-medium no-underline"
-          >
-            {t('people.safetyCta', 'LGBTQ+ rights by country')}
-          </LocalizedLink>
+          <Button variant="outline" asChild>
+            <LocalizedLink to="/rights" className="no-underline">
+              {t('people.safetyCta', 'LGBTQ+ rights by country')}
+            </LocalizedLink>
+          </Button>
         </div>
       ),
     },
@@ -361,19 +354,13 @@ export default function People() {
       content: (
         <ul className="m-0 grid list-none gap-4 p-0 sm:grid-cols-2 lg:grid-cols-4">
           {(cities ?? []).map((c) => (
-            <li key={c.id} className="rounded-container border-2 border-foreground p-4">
-              <h3 className="font-display text-title">
-                {c.slug ? (
-                  <LocalizedLink to={`/city/${c.slug}`} className="no-underline hover:underline">
-                    {c.name}
-                  </LocalizedLink>
-                ) : (
-                  c.name
-                )}
-              </h3>
-              {c.countries?.name ? (
-                <p className="text-13 text-muted-foreground">{c.countries.name}</p>
-              ) : null}
+            <li key={c.id}>
+              <NestedEntityCard
+                type="city"
+                eyebrow={c.countries?.name}
+                name={c.name}
+                href={c.slug ? `/city/${c.slug}` : undefined}
+              />
             </li>
           ))}
         </ul>

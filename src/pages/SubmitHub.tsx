@@ -23,6 +23,7 @@ import { FlyerScanUpload } from '@/components/submission/FlyerScanUpload';
 import { FlyerScanResults } from '@/components/submission/FlyerScanResults';
 import { ArrowRight, ArrowLeft, ChevronDown } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 const SubmitHub = () => {
   const navigate = useLocalizedNavigate();
@@ -55,7 +56,7 @@ const SubmitHub = () => {
   };
 
   return (
-    <div className="mx-auto max-w-3xl py-8 px-4">
+    <PageContainer size="reading">
       <Button
         variant="ghost"
         size="sm"
@@ -180,7 +181,7 @@ const SubmitHub = () => {
           </div>
         </details>
       </section>
-    </div>
+    </PageContainer>
   );
 };
 

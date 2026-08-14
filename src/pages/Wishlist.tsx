@@ -10,6 +10,7 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { Button } from '@/components/ui/button';
 import { Heart, Share2, Lock, Globe } from 'lucide-react';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 const Wishlist = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -43,7 +44,7 @@ const Wishlist = () => {
 
   if (notFound) {
     return (
-      <div className="container mx-auto py-16 px-4">
+      <PageContainer>
         <EmptyState
           icon={Heart}
           title="Wishlist not found"
@@ -51,15 +52,15 @@ const Wishlist = () => {
           mood="neutral"
           primaryAction={{ label: 'Back to marketplace', onClick: () => navigate('/marketplace') }}
         />
-      </div>
+      </PageContainer>
     );
   }
 
   if (loading || !wishlist) {
     return (
-      <div className="container mx-auto py-16 px-4">
+      <PageContainer>
         <p className="text-muted-foreground">Loading…</p>
-      </div>
+      </PageContainer>
     );
   }
 
@@ -68,7 +69,7 @@ const Wishlist = () => {
 
   return (
     <div className="min-h-screen">
-      <div className="container mx-auto py-12 md:py-16 px-4">
+      <PageContainer>
         <header className="mb-12">
           <div className="flex items-center gap-2 text-13 uppercase tracking-wide text-muted-foreground mb-2">
             <VisibilityIcon size={14} aria-hidden="true" />
@@ -118,7 +119,7 @@ const Wishlist = () => {
             ))}
           </div>
         )}
-      </div>
+      </PageContainer>
     </div>
   );
 };

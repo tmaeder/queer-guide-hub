@@ -23,6 +23,44 @@ test.describe('/history era timeline', () => {
     expect(title.match(/Queer Guide/g)?.length ?? 0).toBe(1);
   });
 
+  /**
+   * The unlayered `li a:not(.no-underline)` rule in index.css sets
+   * display:inline. EraTrack renders every spine row inside an <li>, so if
+   * MilestoneRow ever loses its `no-underline` the timeline collapses to
+   * running text and the station markers drift off the rail.
+   *
+   * jsdom never applies that stylesheet, so no unit test can catch this —
+   * this is the only layer that can.
+   */
+  test('spine rows stay flex inside the track list', async ({ page }) => {
+    await page.goto('/history');
+    const row = page.locator('ol li a[href*="/history/"]').first();
+    await expect(row).toBeVisible({ timeout: 30_000 });
+    await expect
+      .poll(async () => row.evaluate((n) => getComputedStyle(n).display), { timeout: 10_000 })
+      .toBe('flex');
+  });
+
+  test('the era line bends, and goes dark across persecution eras', async ({ page }) => {
+    await page.goto('/history');
+    const nav = page.getByRole('navigation', { name: /jump to era/i });
+    await expect(nav).toBeVisible({ timeout: 30_000 });
+
+    const paths = await nav
+      .locator('svg path')
+      .evaluateAll((nodes) =>
+        nodes.map((n) => ({ d: n.getAttribute('d') ?? '', stroke: n.getAttribute('stroke') ?? '' })),
+      );
+    // Zero paths would make every assertion below vacuously true.
+    expect(paths.length).toBeGreaterThan(0);
+    // Hard rule #1: an illustrative transit line is never straight.
+    for (const p of paths) expect(p.d).not.toMatch(/[LHVlhv]/);
+    // Both strokes must actually appear — the line runs pink, then ink.
+    const strokes = new Set(paths.map((p) => p.stroke));
+    expect([...strokes].some((s) => s.includes('--track-pink'))).toBe(true);
+    expect([...strokes].some((s) => s.includes('--foreground'))).toBe(true);
+  });
+
   test('era expansion fetches the full chronology', async ({ page }) => {
     await page.goto('/history');
     const liberation = page.locator('#era-liberation');

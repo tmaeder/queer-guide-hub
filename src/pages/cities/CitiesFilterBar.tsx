@@ -10,6 +10,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { X } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { PAGE_BLEED_MOBILE, STICKY_UNDER_HEADER } from '@/components/layout/PageContainer';
 import { EqualityChip, TIER_LABEL } from './EqualityChip';
 import { EQUALITY_TIERS, CITIES_SORT_KEYS } from '@/utils/citiesFilter';
 import type { CitiesSortKey, EqualityTier } from '@/utils/citiesFilter';
@@ -95,11 +96,16 @@ export function CitiesFilterBar({
 
   return (
     <div
-      className="sticky top-0 z-20 -mx-4 md:mx-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80"
+      className={cn(
+        `sticky ${STICKY_UNDER_HEADER} z-20 bg-background border-b-[3px] border-foreground`,
+        PAGE_BLEED_MOBILE,
+      )}
       role="group"
       aria-label={t('cities.filtersAriaLabel', 'Filter cities')}
     >
-      <div className="px-4 md:px-0 py-4 space-y-4">
+      {/* Horizontal padding lives on the bleeding parent (PAGE_BLEED_MOBILE);
+          repeating it here would double the inset on mobile. */}
+      <div className="py-4 space-y-4">
         {/* Row 1: Search + Reset */}
         <div className="flex items-center gap-4">
           <div className="max-w-[480px] flex-1">

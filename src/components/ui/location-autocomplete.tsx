@@ -1,8 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { MapPin, Check, Navigation, Loader2 } from 'lucide-react';
+import { MapPin, Check, Navigation} from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -352,11 +353,7 @@ export function LocationAutocomplete({
           >
             {isValidated && <Check size={16} className="text-foreground" />}
             {isLoading && (
-              <Loader2
-                size={12}
-                style={{ animation: 'spin 1s linear infinite' }}
-                className="text-muted-foreground"
-              />
+              <TrackLoader size={12} />
             )}
             <Button
               type="button"
@@ -381,7 +378,7 @@ export function LocationAutocomplete({
           title="Detect my location"
         >
           {isDetectingLocation ? (
-            <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} />
+            <TrackLoader size={16} />
           ) : (
             <Navigation size={16} />
           )}

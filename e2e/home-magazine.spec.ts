@@ -1,7 +1,11 @@
 import { test, expect, type Page } from '@playwright/test';
 
 /**
- * Homepage "magazine front page" (PR #2055).
+ * Homepage "magazine front page" (PR #2055), rebuilt on the subway-map system
+ * in #2673/#2701 — the section headings below are the rebrand's copy
+ * (Departures / Where are you riding? / No ads…), not the original magazine
+ * wording. Update them together or this spec reports missing sections that are
+ * merely renamed.
  *
  * Runs against the configured baseURL — defaults to production. Anonymous
  * state, no fixtures. Below-fold sections are mounted lazily by
@@ -23,9 +27,9 @@ async function dismissCookieBanner(page: Page) {
 
 async function gotoHome(page: Page, viewport: { width: number; height: number }) {
   await page.setViewportSize(viewport);
-  // The hero is a live MapLibre map (continuous tile requests) so `networkidle`
-  // never settles — wait for the masthead h1 instead (same rationale as
-  // design-system.spec.ts).
+  // Wait for the masthead h1 rather than `networkidle`: the page keeps
+  // background queries in flight for the deferred bands, so networkidle is not
+  // a reliable settle point (same rationale as design-system.spec.ts).
   await page.goto('/', { waitUntil: 'domcontentloaded' });
   await page.locator('main h1').waitFor({ state: 'visible', timeout: 30_000 });
   await dismissCookieBanner(page);
@@ -67,24 +71,13 @@ test.describe('homepage masthead', () => {
     await expect(mapLink).toHaveAttribute('href', /\/map/);
   });
 
-  test('desktop: masthead fades after first map interaction but stays in the DOM', async ({
-    page,
-  }) => {
-    await gotoHome(page, DESKTOP);
-    const h1 = page.locator('main h1');
-    await expect(h1).toBeVisible();
-
-    // First pointer interaction anywhere on the hero map dims the masthead.
-    await page
-      .locator('main section')
-      .first()
-      .dispatchEvent('pointerdown', { bubbles: true });
-
-    const overlay = page.locator('main h1').locator('xpath=ancestor::div[1]');
-    await expect(overlay).toHaveAttribute('aria-hidden', 'true', { timeout: 10_000 });
-    // SEO: the headline is still in the DOM.
-    await expect(h1).toHaveCount(1);
-  });
+  // REMOVED 2026-08-11: 'masthead fades after first map interaction'. The
+  // subway rebrand replaced the live MapLibre hero with a static SubwayHero
+  // whose CTA links to /map (deliberately dropping the ~1MB maplibre chunk from
+  // the homepage), so there is no hero map to interact with and no aria-hidden
+  // dimming to observe. The test asserted behaviour that was removed on
+  // purpose and could never pass again. The hero contract that still exists —
+  // visible non-sr-only h1 plus a /map CTA — is covered by the test above.
 
   test('mobile: identity band renders above the map in normal flow', async ({ page }) => {
     await gotoHome(page, MOBILE);
@@ -117,15 +110,21 @@ test.describe('homepage sections', () => {
     const headings = page.locator('main h2');
     const texts = (await headings.allTextContents()).map((t) => t.trim());
 
-    // Events section — either the live agenda or its pride-season fallback,
-    // never silently absent.
+    // Events — the DeparturesBoard band. Asserted strictly on purpose: it
+    // `return null`s when the query yields no rows, which is exactly the shape
+    // a broken query takes, so "absent" is a signal rather than an empty week.
+    // (The pre-rebrand section had a pride-season fallback that guaranteed
+    // presence; the subway rebuild dropped it, so this assertion IS the guard.)
     expect(
-      texts.some((t) => /upcoming events|pride season ahead/i.test(t)),
+      texts.some((t) => /departures/i.test(t)),
       `events section missing; h2s: ${texts.join(' | ')}`,
     ).toBeTruthy();
 
-    // Destinations — guaranteed by the editorial whitelist.
-    expect(texts.some((t) => /where the scene lives/i.test(t))).toBeTruthy();
+    // Destinations — the CityCards band, also self-hiding on an empty result.
+    expect(
+      texts.some((t) => /where are you riding/i.test(t)),
+      `destinations section missing; h2s: ${texts.join(' | ')}`,
+    ).toBeTruthy();
 
     // News magazine.
     expect(texts.some((t) => /latest news/i.test(t))).toBeTruthy();
@@ -137,8 +136,11 @@ test.describe('homepage sections', () => {
     expect(shopIdx).toBeGreaterThan(-1);
     expect(shopIdx).toBeGreaterThan(newsIdx);
 
-    // Closing CTA.
-    expect(texts.some((t) => /built by the community/i.test(t))).toBeTruthy();
+    // Closing CTA — the static SupportBand, so this one can never self-hide.
+    expect(
+      texts.some((t) => /no ads|just riders/i.test(t)),
+      `closing CTA missing; h2s: ${texts.join(' | ')}`,
+    ).toBeTruthy();
   });
 
   test('desktop: no 4xx from PostgREST while the homepage loads and mounts', async ({ page }) => {

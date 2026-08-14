@@ -1,7 +1,8 @@
 import { useState } from 'react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { Loader2, Sparkles } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
 interface DiscoveryResult {
@@ -32,26 +33,25 @@ export function MilestoneDiscoveryButton({ onComplete }: { onComplete?: () => vo
       if (error) throw error;
       const r = data ?? { proposed: 0, inserted: 0 };
       if (r.circuit_open) {
-        toast.warning('KI vorübergehend gesperrt', {
-          description: 'Circuit breaker offen — später erneut versuchen.',
+        toast.warning('AI temporarily unavailable', {
+          description: 'Circuit breaker is open — try again later.',
         });
       } else if (r.capped) {
-        toast.info('Tageslimit erreicht', {
-          description: 'Heute wurden bereits genug Vorschläge erzeugt.',
+        toast.info('Daily limit reached', {
+          description: 'Enough suggestions have already been generated today.',
         });
       } else if (r.inserted > 0) {
-        toast.success(`${r.inserted} Vorschläge zur Prüfung angelegt`, {
-          description:
-            'Als "pending" gestaged (nicht öffentlich). Unten prüfen und freigeben.',
+        toast.success(`${r.inserted} suggestions staged for review`, {
+          description: 'Staged as "pending" — not public. Review and publish them below.',
         });
       } else {
-        toast.info('Keine neuen Vorschläge', {
-          description: `${r.proposed} vorgeschlagen, alle waren Duplikate oder ungültig.`,
+        toast.info('No new suggestions', {
+          description: `${r.proposed} proposed, all were duplicates or invalid.`,
         });
       }
       onComplete?.();
     } catch (e) {
-      toast.error(`Fehler: ${(e as Error).message}`);
+      toast.error(`Failed: ${(e as Error).message}`);
     } finally {
       setLoading(false);
     }
@@ -59,8 +59,8 @@ export function MilestoneDiscoveryButton({ onComplete }: { onComplete?: () => vo
 
   return (
     <Button variant="outline" onClick={run} disabled={loading}>
-      {loading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Sparkles className="w-4 h-4 mr-2" />}
-      KI-Vorschläge suchen
+      {loading ? <TrackLoader size={16} className="me-2" /> : <Sparkles className="me-2 h-4 w-4" />}
+      Find AI suggestions
     </Button>
   );
 }

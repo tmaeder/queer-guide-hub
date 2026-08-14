@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
-import { Loader2, CalendarDays, Sparkles } from 'lucide-react';
+import {CalendarDays, Sparkles } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import {
   Dialog,
@@ -144,7 +145,7 @@ export function CreateTripDialog({ open, onClose, initialGeo, initialStart, init
       >
         {open && !ready ? (
           <div className="flex items-center justify-center min-h-80">
-            <Loader2 className="animate-spin" size={24} />
+            <TrackLoader size={24} />
           </div>
         ) : (
           <form onSubmit={handleSubmit}>
@@ -270,7 +271,7 @@ export function CreateTripDialog({ open, onClose, initialGeo, initialStart, init
               </Button>
               <Button type="submit" variant="brand" disabled={!canSubmit}>
                 {createTrip.isPending && (
-                  <Loader2 className="animate-spin mr-1" size={16} />
+                  <TrackLoader size={16} className="mr-1" />
                 )}
                 {t('trips.dialog.create.submit')}
               </Button>

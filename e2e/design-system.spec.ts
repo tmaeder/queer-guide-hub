@@ -257,13 +257,41 @@ const SANCTIONED_TOKENS = ['track-pink', 'track-blue', 'track-green', 'track-yel
 
 test.describe('design system: sanctioned ink only', () => {
   // /news excluded — news cards may have category images with chromatic content
-  const publicPages = ['/', '/events', '/venues', '/hotels'];
+  //
+  // /map covers the map CHROME only. The canvas is a <canvas>, so none of the
+  // basemap, the pins or the cluster donuts have DOM backgrounds for this
+  // sweep to read — that half is gated by the unit test in
+  // src/components/map/__tests__/mapPalette.test.ts. Do not read a green run
+  // here as "the map is on-palette"; it means the panels over it are.
+  //
+  // /about earns its place: since the subway redesign it is the most
+  // track-colour-dense page on the site — a five-line index showing all four
+  // tracks at once, plus the only sanctioned `.intersection-gradient`. If any
+  // page is going to drift an unsanctioned hue in, it is this one.
+  const publicPages = ['/', '/events', '/venues', '/hotels', '/map', '/about'];
+
+  // What counts as "this page has rendered its chrome".
+  //
+  // `#root *` is a weak signal: its first match is often the toast container,
+  // which exists long before any content does — so the sweep can run against
+  // an essentially empty page and pass having measured nothing. For /map we
+  // wait for the bar, i.e. the exact thing this test measures.
+  //
+  // Measured on production: goto(load) 2.5s, bar attached +2.4s, ~5s total —
+  // so the 15s budget was never the constraint and the extra headroom below is
+  // for a loaded CI runner, not for a known slowness. If /map ever does take
+  // 30s, that is a real regression and should fail.
+  const readySelector = (path: string) =>
+    path === '/map' ? '[data-testid=map-bar]' : '#root *';
 
   for (const path of publicPages) {
     test(`only sanctioned brand ink on ${path}`, async ({ page }) => {
       await page.setViewportSize({ width: 1280, height: 900 });
       await page.goto(path);
-      await page.waitForSelector('#root *', { state: 'attached', timeout: 15_000 });
+      await page.waitForSelector(readySelector(path), {
+        state: 'attached',
+        timeout: path === '/map' ? 30_000 : 15_000,
+      });
       await dismissCookieBanner(page);
       await page.waitForTimeout(500);
 

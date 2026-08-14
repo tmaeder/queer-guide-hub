@@ -42,6 +42,12 @@ import type { Tables } from '@/integrations/supabase/types';
 type FeaturedArticle = Tables<'news_articles'> & { news_sources?: Tables<'news_sources'> };
 import { StaggerGrid } from '@/components/animation/StaggerGrid';
 import { useTranslation } from 'react-i18next';
+import {
+  PageContainer,
+  PAGE_BLEED,
+  PAGE_GUTTER,
+  STICKY_UNDER_HEADER,
+} from '@/components/layout/PageContainer';
 
 const ARTICLES_PER_PAGE = 24;
 
@@ -558,13 +564,13 @@ export default function NewsArchive() {
         </div>
       </PageHero>
       {/* pb-24 reserves space for the fixed bottom-right Feedback FAB so it doesn't overlap the last row of cards / pagination. */}
-      <div className="container mx-auto py-8 md:py-12 px-4 pb-24 relative">
+      <PageContainer className="relative">
         {/* Category Tabs (sticky) */}
         {categories.length > 0 && (
           <div
             role="tablist"
             aria-label={t('pages.news.categoriesLabel', 'News categories')}
-            className="flex gap-2 mb-6 overflow-x-auto pb-2 sticky top-0 z-20 bg-surface-container-low/95 backdrop-blur supports-[backdrop-filter]:bg-surface-container-low/75 border-border-hairline -mx-4 px-4 pt-2"
+            className={`flex gap-2 mb-6 overflow-x-auto pb-2 sticky ${STICKY_UNDER_HEADER} z-20 bg-surface-container-low border-b-[3px] border-foreground ${PAGE_BLEED} ${PAGE_GUTTER} pt-2`}
             style={{ scrollbarWidth: 'none' }}
           >
             <button
@@ -631,8 +637,14 @@ export default function NewsArchive() {
           </section>
         )}
 
-        {/* Quick Search & Controls — sticky on mobile so search stays reachable while scrolling */}
-        <div className="rounded-element p-4 mb-6 bg-surface-container sticky top-[44px] md:static z-10">
+        {/* Quick Search & Controls. Deliberately NOT sticky: it used to pin at
+            top-[44px], directly under the category tabs back when those pinned
+            at 0 and the site header did not stick at all. Now that the header
+            genuinely pins (60px) and the tabs sit below it (63px), a third
+            pinned layer would hold ~186px — 23% of an 812px phone — before a
+            single article is visible. The tabs are the scroll-status bar; this
+            panel scrolls with the content. */}
+        <div className="rounded-element border-[3px] border-foreground p-4 mb-6 bg-surface-container">
           <div className="flex flex-col md:flex-row gap-4 md:items-center">
             <div className="flex items-center gap-2 flex-1 md:max-w-[26rem]">
               <NewsSearchInput
@@ -1018,7 +1030,7 @@ export default function NewsArchive() {
               )}
           </div>
         </div>
-      </div>
+      </PageContainer>
       <ReadingHistoryPanel open={historyOpen} onOpenChange={setHistoryOpen} />
     </div>
   );

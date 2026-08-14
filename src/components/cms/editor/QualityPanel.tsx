@@ -6,7 +6,8 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Gauge, Loader2, RotateCcw, Check, CornerDownRight } from 'lucide-react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
+import { Gauge, RotateCcw, Check, CornerDownRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
@@ -155,7 +156,7 @@ export function QualityPanel({
           className="text-xs font-semibold gap-1 shrink-0"
         >
           {loading ? (
-            <Loader2 className="h-3 w-3 animate-spin" />
+            <TrackLoader size={12} />
           ) : result ? (
             <RotateCcw size={12} />
           ) : (

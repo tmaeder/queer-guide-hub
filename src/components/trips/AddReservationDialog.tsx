@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Loader2 } from 'lucide-react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
+
 import {
   Dialog,
   DialogContent,
@@ -295,7 +296,7 @@ export function AddReservationDialog({
             Cancel
           </Button>
           <Button onClick={handleSubmit} disabled={!canSubmit || isPending}>
-            {isPending && <Loader2 className="mr-1 h-4 w-4 animate-spin" aria-label="Loading" />}
+            {isPending && <TrackLoader size={16} label="Loading" className="mr-1" />}
             {isEdit ? 'Save' : 'Add Reservation'}
           </Button>
         </DialogFooter>

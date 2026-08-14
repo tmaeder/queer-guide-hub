@@ -53,7 +53,7 @@ export const PersonCard = memo(function PersonCard({
   const width = fullWidth ? 'w-full' : 'w-40 shrink-0';
 
   if (loading || !person) {
-    return <Skeleton className={`h-44 rounded-container ${width}`} />;
+    return <Skeleton className={`h-44 ${width}`} />;
   }
 
   const name = person.displayName ?? t('people.card.member', 'Member');
@@ -67,20 +67,20 @@ export const PersonCard = memo(function PersonCard({
               src={person.avatarUrl}
               alt=""
               loading="lazy"
-              className="h-16 w-16 rounded-full object-cover object-top"
+              className="h-16 w-16 rounded-full border-[3px] border-foreground object-cover object-top"
             />
           ) : (
             <div
-              className="flex h-16 w-16 items-center justify-center rounded-full bg-muted text-15 font-medium text-muted-foreground"
+              className="flex h-16 w-16 items-center justify-center rounded-full border-[3px] border-foreground bg-muted text-15 font-bold text-muted-foreground"
               aria-hidden
             >
               {initials(name)}
             </div>
           )}
           <div className="min-w-0">
-            <div className="truncate text-15 font-medium">{name}</div>
+            <div className="truncate font-display text-title leading-tight">{name}</div>
             {typeof person.score === 'number' && person.score > 0 ? (
-              <div className="mt-1 inline-block rounded-badge bg-muted px-1.5 py-0.5 text-2xs uppercase tracking-wide text-muted-foreground">
+              <div className="mt-1 inline-block border border-foreground bg-background px-1.5 py-0.5 text-2xs font-bold uppercase tracking-label">
                 {t('people.card.match', {
                   defaultValue: '{{score}}% match',
                   score: person.score,

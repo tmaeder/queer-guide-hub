@@ -2,6 +2,7 @@ import { useEffect, type MutableRefObject } from 'react';
 import * as maplibregl from 'maplibre-gl';
 import { type GeoJSONSource } from 'maplibre-gl';
 import { FOCUS_RING_LAYER, FOCUS_SOURCE } from '@/config/mapLayers';
+import { ink } from '@/lib/mapTokens';
 
 interface UseFocusRingParams {
   mapRef: MutableRefObject<maplibregl.Map | null>;
@@ -53,9 +54,9 @@ export function useFocusRing({
         source: FOCUS_SOURCE,
         paint: {
           'circle-radius': 18,
-          'circle-color': 'rgba(10,10,10,0.06)',
+          'circle-color': ink(0.06),
           'circle-stroke-width': 3.5,
-          'circle-stroke-color': '#0a0a0a',
+          'circle-stroke-color': ink(),
           'circle-stroke-opacity': 1,
           'circle-radius-transition': { duration: 180, delay: 0 },
         },

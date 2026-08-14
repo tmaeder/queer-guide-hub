@@ -45,6 +45,7 @@ import { AdminAreaHint } from '@/components/admin/AdminAreaHint';
 import { AdminCommandPaletteHost } from '@/components/admin/command-palette/AdminCommandPalette';
 import { AdminCommandActionsProvider } from '@/components/admin/command-palette/useAdminCommandActions';
 import { GlobalAdminActions } from '@/components/admin/command-palette/useGlobalAdminActions';
+import { PAGE_GUTTER, PAGE_VERTICAL } from '@/components/layout/PageContainer';
 
 // ── Editor Context ────────────────────────────────────────────────────────────
 
@@ -190,136 +191,152 @@ export function AdminShell() {
 
   return (
     <AdminShellContext.Provider value={{ openEditor, closeEditor }}>
-     <AdminCommandActionsProvider>
-      <AdminCommandPaletteHost />
-      <GlobalAdminActions />
-      <a
-        href="#admin-main-content"
-        className="absolute -left-[9999px] top-2 z-[2000] px-4 py-2 bg-background text-foreground no-underline font-semibold focus:left-2 focus:outline-2 focus:outline-[hsl(var(--foreground))]"
-      >
-        Skip to admin content
-      </a>
-      <div
-        className="flex w-full bg-surface-container-low"
-        style={{ minHeight: 'var(--admin-content-min-h)' }}
-      >
-        {/* Sidebar -- drawer on mobile, persistent on desktop */}
-        {isMobile ? (
-          <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-            <SheetContent side="left" className="w-[260px] p-0">
-              {sidebar}
-            </SheetContent>
-          </Sheet>
-        ) : (
-          <div className="flex-shrink-0">{sidebar}</div>
-        )}
-
-        {/* Main content */}
-        <div className="flex-1 min-w-0 flex flex-col overflow-hidden">
-          {/* Mobile top bar: menu + current page + ⌘K */}
-          {isMobile && (
-            <div className="sticky top-0 z-[1200] flex items-center gap-2 border-b border-border bg-background px-4 py-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-8 w-8 p-0"
-                aria-label="Open admin navigation"
-                onClick={() => setMobileOpen(true)}
-              >
-                <Menu size={18} />
-              </Button>
-              <span className="flex-1 truncate text-sm font-semibold">
-                {breadcrumbs[breadcrumbs.length - 1]?.label ?? 'Admin'}
-              </span>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-8 w-8 p-0"
-                aria-label="Open command palette"
-                onClick={() => window.dispatchEvent(new Event(OPEN_COMMAND_PALETTE_EVENT))}
-              >
-                <Search size={16} />
-              </Button>
-            </div>
+      <AdminCommandActionsProvider>
+        <AdminCommandPaletteHost />
+        <GlobalAdminActions />
+        <a
+          href="#admin-main-content"
+          className="absolute -left-[9999px] top-2 z-[2000] px-4 py-2 bg-background text-foreground no-underline font-semibold focus:left-2 focus:outline-2 focus:outline-[hsl(var(--foreground))]"
+        >
+          Skip to admin content
+        </a>
+        <div
+          className="flex w-full bg-surface-container-low"
+          style={{ minHeight: 'var(--admin-content-min-h)' }}
+        >
+          {/* Sidebar -- drawer on mobile, persistent on desktop */}
+          {isMobile ? (
+            <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+              <SheetContent side="left" className="w-[260px] p-0">
+                {sidebar}
+              </SheetContent>
+            </Sheet>
+          ) : (
+            <div className="flex-shrink-0">{sidebar}</div>
           )}
 
-          {/* Breadcrumb bar (hidden under sm on mobile to avoid doubling the top-bar title) */}
-          {breadcrumbs.length > 1 && (
-            <div
-              className={`${isMobile ? 'hidden sm:flex' : 'flex'} px-4 sm:px-6 py-2.5 bg-background border-b border-border items-center min-h-11`}
-            >
-              <Breadcrumb>
-                <BreadcrumbList className="flex-nowrap text-13">
-                  {breadcrumbs.map((crumb, i) => {
-                    const isLast = i === breadcrumbs.length - 1;
-                    return (
-                      <Fragment key={i}>
-                        {i > 0 && <BreadcrumbSeparator />}
-                        <BreadcrumbItem>
-                          {isLast || !crumb.route ? (
-                            <BreadcrumbPage className="font-semibold whitespace-nowrap overflow-hidden text-ellipsis max-w-[150px] sm:max-w-[300px] md:max-w-[500px] inline-block">
-                              {crumb.label}
-                            </BreadcrumbPage>
-                          ) : (
-                            <BreadcrumbLink asChild className="font-medium whitespace-nowrap hover:underline">
-                              <Link to={crumb.route}>{crumb.label}</Link>
-                            </BreadcrumbLink>
-                          )}
-                        </BreadcrumbItem>
-                      </Fragment>
-                    );
-                  })}
-                </BreadcrumbList>
-              </Breadcrumb>
-            </div>
-          )}
-
-          {/* Area hint — one-line "what is this area" under the breadcrumb */}
-          {!editor && <AdminAreaHint />}
-
-          {/* Content area */}
-          <main id="admin-main-content" tabIndex={-1} className="flex-1 overflow-auto p-4 sm:p-6">
-            {/* Editor overlay takes priority when open */}
-            {editor ? (
-              <Suspense fallback={<ShellSkeleton />}>
-                <CMSEditorLayout
-                  contentType={editor.contentType}
-                  itemId={editor.itemId}
-                  queue={editor.queue}
-                  onNavigate={navigateQueue}
-                  onClose={closeEditor}
-                  onSaved={handleEditorSaved}
-                />
-              </Suspense>
-            ) : (
-              <ErrorBoundary>
-                <div key={location.pathname} className="content-enter">
-                  {routeDenied ? (
-                    <div
-                      className="flex flex-col items-center gap-2 rounded-container border border-border bg-muted/30 p-8 text-center"
-                      role="alert"
-                    >
-                      <Lock className="h-6 w-6 text-muted-foreground" aria-hidden />
-                      <p className="text-13 font-medium">You don't have access to this area</p>
-                      <p className="text-2xs text-muted-foreground">
-                        Requires {requiredRole} role. Ask an admin if you need it.
-                      </p>
-                      <Button variant="outline" size="sm" onClick={() => navigate('/admin')}>
-                        Back to Cockpit
-                      </Button>
-                    </div>
-                  ) : routeGatingPending ? (
-                    <Skeleton className="h-64 w-full rounded-container" />
-                  ) : (
-                    <Outlet />
-                  )}
-                </div>
-              </ErrorBoundary>
+          {/* Main content */}
+          <div className="flex-1 min-w-0 flex flex-col overflow-hidden">
+            {/* Mobile top bar: menu + current page + ⌘K */}
+            {isMobile && (
+              <div
+                className={`sticky top-0 z-[1200] flex items-center gap-2 border-b border-border bg-background py-2 ${PAGE_GUTTER}`}
+              >
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 w-8 p-0"
+                  aria-label="Open admin navigation"
+                  onClick={() => setMobileOpen(true)}
+                >
+                  <Menu size={18} />
+                </Button>
+                <span className="flex-1 truncate text-sm font-semibold">
+                  {breadcrumbs[breadcrumbs.length - 1]?.label ?? 'Admin'}
+                </span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 w-8 p-0"
+                  aria-label="Open command palette"
+                  onClick={() => window.dispatchEvent(new Event(OPEN_COMMAND_PALETTE_EVENT))}
+                >
+                  <Search size={16} />
+                </Button>
+              </div>
             )}
-          </main>
+
+            {/* Breadcrumb bar (hidden under sm on mobile to avoid doubling the top-bar title) */}
+            {breadcrumbs.length > 1 && (
+              <div
+                className={`${isMobile ? 'hidden sm:flex' : 'flex'} ${PAGE_GUTTER} py-2.5 bg-background border-b border-border items-center min-h-11`}
+              >
+                <Breadcrumb>
+                  <BreadcrumbList className="flex-nowrap text-13">
+                    {breadcrumbs.map((crumb, i) => {
+                      const isLast = i === breadcrumbs.length - 1;
+                      return (
+                        <Fragment key={i}>
+                          {i > 0 && <BreadcrumbSeparator />}
+                          <BreadcrumbItem>
+                            {isLast || !crumb.route ? (
+                              <BreadcrumbPage className="font-semibold whitespace-nowrap overflow-hidden text-ellipsis max-w-[150px] sm:max-w-[300px] md:max-w-[500px] inline-block">
+                                {crumb.label}
+                              </BreadcrumbPage>
+                            ) : (
+                              <BreadcrumbLink
+                                asChild
+                                className="font-medium whitespace-nowrap hover:underline"
+                              >
+                                <Link to={crumb.route}>{crumb.label}</Link>
+                              </BreadcrumbLink>
+                            )}
+                          </BreadcrumbItem>
+                        </Fragment>
+                      );
+                    })}
+                  </BreadcrumbList>
+                </Breadcrumb>
+              </div>
+            )}
+
+            {/* Area hint — one-line "what is this area" under the breadcrumb */}
+            {!editor && <AdminAreaHint />}
+
+            {/* Content area */}
+            {/* The ONE owner of admin page spacing. Pages render bare content —
+              they must not add their own px/py/max-w on top, which is what
+              produced 48px gutters on some pages and 16px on others across six
+              different content widths. Same gutter ladder and cap as the public
+              tree, so /admin reads as the same product. */}
+            <main
+              id="admin-main-content"
+              tabIndex={-1}
+              className={`flex-1 overflow-auto ${PAGE_GUTTER} ${PAGE_VERTICAL}`}
+            >
+              <div className="mx-auto w-full max-w-page">
+                {/* Editor overlay takes priority when open */}
+                {editor ? (
+                  <Suspense fallback={<ShellSkeleton />}>
+                    <CMSEditorLayout
+                      contentType={editor.contentType}
+                      itemId={editor.itemId}
+                      queue={editor.queue}
+                      onNavigate={navigateQueue}
+                      onClose={closeEditor}
+                      onSaved={handleEditorSaved}
+                    />
+                  </Suspense>
+                ) : (
+                  <ErrorBoundary>
+                    <div key={location.pathname} className="content-enter">
+                      {routeDenied ? (
+                        <div
+                          className="flex flex-col items-center gap-2 rounded-container border border-border bg-muted/30 p-8 text-center"
+                          role="alert"
+                        >
+                          <Lock className="h-6 w-6 text-muted-foreground" aria-hidden />
+                          <p className="text-13 font-medium">You don't have access to this area</p>
+                          <p className="text-2xs text-muted-foreground">
+                            Requires {requiredRole} role. Ask an admin if you need it.
+                          </p>
+                          <Button variant="outline" size="sm" onClick={() => navigate('/admin')}>
+                            Back to Cockpit
+                          </Button>
+                        </div>
+                      ) : routeGatingPending ? (
+                        <Skeleton className="h-64 w-full rounded-container" />
+                      ) : (
+                        <Outlet />
+                      )}
+                    </div>
+                  </ErrorBoundary>
+                )}
+              </div>
+            </main>
+          </div>
         </div>
-      </div>
-     </AdminCommandActionsProvider>
+      </AdminCommandActionsProvider>
     </AdminShellContext.Provider>
   );
 }

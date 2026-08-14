@@ -21,6 +21,7 @@ import {
   PersonalitySidebar,
   fetchPersonalityBySlug,
 } from './PersonalityDetail.parts';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 export default function PersonalityDetail() {
   const { t } = useTranslation();
@@ -53,7 +54,8 @@ export default function PersonalityDetail() {
     !isLoading && !personality ? (slug ?? null) : null,
   );
   useEffect(() => {
-    if (redirectPersonalitySlug) navigate(`/personalities/${redirectPersonalitySlug}`, { replace: true });
+    if (redirectPersonalitySlug)
+      navigate(`/personalities/${redirectPersonalitySlug}`, { replace: true });
   }, [redirectPersonalitySlug, navigate]);
 
   // Note: deliberately NOT storing nationality — it's sensitive personal data
@@ -160,9 +162,7 @@ export default function PersonalityDetail() {
         {
           id: 'overview',
           label: 'Overview',
-          content: (
-            <PersonalityOverview personality={personality} onContentUpdated={refetch} />
-          ),
+          content: <PersonalityOverview personality={personality} onContentUpdated={refetch} />,
         },
       ]
     : [];
@@ -190,16 +190,12 @@ export default function PersonalityDetail() {
           ) : null
         }
         tabs={tabs}
-        sidebar={
-          personality ? (
-            <PersonalitySidebar personality={personality} />
-          ) : null
-        }
+        sidebar={personality ? <PersonalitySidebar personality={personality} /> : null}
         entityType="personality"
         entityId={personality?.id}
       />
       {personality && (
-        <div className="mx-auto px-4">
+        <PageContainer flush>
           <MilestonesForEntity
             entityType="personality"
             entityId={personality.id}
@@ -216,7 +212,7 @@ export default function PersonalityDetail() {
             title="Related by tag"
             className="mt-8"
           />
-        </div>
+        </PageContainer>
       )}
     </>
   );

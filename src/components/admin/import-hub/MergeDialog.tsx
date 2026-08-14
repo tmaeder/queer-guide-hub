@@ -1,3 +1,4 @@
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import {
   Dialog,
   DialogContent,
@@ -5,7 +6,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from '@/components/ui/dialog';
-import { Loader2 } from 'lucide-react';
+
 import { SideBySideComparison } from './SideBySideComparison';
 import { useEntityById, useMergeEntities } from '@/hooks/useImportHubQueries';
 import { AdminTextSkeleton } from '@/components/admin/primitives/AdminLoading';
@@ -61,7 +62,7 @@ export function MergeDialog({
 
         {loading ? (
           <div className="flex justify-center items-center py-16">
-            <Loader2 className="h-8 w-8 animate-spin" aria-label="Loading" />
+            <TrackLoader size={32} label="Loading" />
             <AdminTextSkeleton lines={2} />
           </div>
         ) : !entityA || !entityB ? (
@@ -86,7 +87,7 @@ export function MergeDialog({
 
         {mergeMutation.isPending && (
           <div className="flex justify-center items-center py-4">
-            <Loader2 className="h-5 w-5 animate-spin" aria-label="Loading" />
+            <TrackLoader size={20} label="Loading" />
             <p className="ml-2 text-sm text-muted-foreground">Merging records...</p>
           </div>
         )}

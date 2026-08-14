@@ -1,6 +1,7 @@
 import { formatDistanceToNow } from 'date-fns';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { AlertTriangle, Activity, BarChart3, Trash2, CheckCircle, Loader2 } from 'lucide-react';
+import { AlertTriangle, Activity, BarChart3, Trash2, CheckCircle} from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { listFrom } from '@/hooks/usePageFetchers';
 import { toast } from 'sonner';
@@ -147,7 +148,7 @@ export default function ScraperHealthTab() {
                         disabled={prune.isPending}
                       >
                         {prune.isPending && prune.variables === o.entity_type
-                          ? <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                          ? <TrackLoader size={12} className="mr-1" />
                           : <Trash2 className="h-3 w-3 mr-1" />}
                         Prune
                       </Button>

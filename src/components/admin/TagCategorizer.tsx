@@ -1,8 +1,9 @@
 import { useState } from 'react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { Loader2, Tag, CheckCircle, AlertCircle } from 'lucide-react';
+import {Tag, CheckCircle, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -77,7 +78,7 @@ export function TagCategorizer() {
           <Button onClick={handleCategorizeAll} disabled={isRunning}>
             {isRunning ? (
               <>
-                <Loader2 className="w-4 h-4 animate-spin" />
+                <TrackLoader size={16} />
                 Categorizing...
               </>
             ) : (

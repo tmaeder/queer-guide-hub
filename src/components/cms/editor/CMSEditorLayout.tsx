@@ -8,18 +8,8 @@
  */
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import {
-  FileText,
-  List,
-  MapPin,
-  Image,
-  Search,
-  Settings,
-  Heart,
-  ExternalLink,
-  Loader2,
-  Sparkles,
-} from 'lucide-react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
+import { FileText, List, MapPin, Image, Search, Settings, Heart, ExternalLink, Sparkles } from 'lucide-react';
 import { useCMSEditor } from '@/hooks/useCMSEditor';
 import { useCMSWorkflow } from '@/hooks/useCMSWorkflow';
 import {
@@ -253,7 +243,7 @@ export function CMSEditorLayout({
   if (state.isLoading) {
     return (
       <div className="flex flex-col items-center justify-center h-full gap-4 p-8">
-        <Loader2 className="h-10 w-10 animate-spin" aria-label="Loading" />
+        <TrackLoader size={40} label="Loading" />
         <p className="text-sm text-muted-foreground">
           Loading {config.label.singular.toLowerCase()}...
         </p>

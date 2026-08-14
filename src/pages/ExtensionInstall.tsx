@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { TrackLoader } from '@/components/transit/TrackLoader';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -11,11 +12,11 @@ import {
   ShieldCheck,
   Bug,
   Link2,
-  Loader2,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { supabase } from '@/integrations/supabase/client';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 const RELEASE_ZIP_URL = '/extension/queer-guide-extension.zip';
 // Kept in step with the deployed zip by the `sync-extension-zip` CI workflow,
@@ -99,7 +100,7 @@ export default function ExtensionInstall() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-10 max-w-3xl">
+    <PageContainer size="reading">
       <div className="flex items-center gap-4 mb-4">
         <Puzzle className="h-8 w-8" />
         <div>
@@ -152,7 +153,7 @@ export default function ExtensionInstall() {
         </a>
         .
       </div>
-    </div>
+    </PageContainer>
   );
 }
 
@@ -215,7 +216,7 @@ function ConnectCard({
             <Button onClick={onConnect} disabled={status === 'connecting'}>
               {status === 'connecting' ? (
                 <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />{' '}
+                  <TrackLoader size={16} className="mr-2" />{' '}
                   {t('extension.connect.connecting', 'Connecting…')}
                 </>
               ) : (
