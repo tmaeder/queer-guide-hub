@@ -28,8 +28,14 @@ interface TagRelationshipGraphProps {
    *  already its own slug ("Bear Bar", "Trans*") landed on a 404. The node
    *  carries `slug`, so the graph is the right place to resolve it. */
   onTagClick?: (tag: { id: string; name: string; slug: string }) => void;
+  /** A `tag_categories.id`. `get_tag_graph_data(p_category_filter)` is typed
+   *  `uuid`, so passing a category NAME here makes Postgres raise 22P02
+   *  ("invalid input syntax for type uuid") and the graph renders its error
+   *  state. Both call sites used to pass a name. */
   categoryFilter?: string | null;
-  categories?: string[];
+  /** `{ id, name }` — the Select shows the name and filters by the id, for the
+   *  same reason. */
+  categories?: { id: string; name: string }[];
 }
 
 interface ForceNode extends NodeObject {
@@ -334,8 +340,8 @@ export default function TagRelationshipGraph({
             <SelectContent>
               <SelectItem value="all">All Categories</SelectItem>
               {categories.map((cat) => (
-                <SelectItem key={cat} value={cat}>
-                  {cat}
+                <SelectItem key={cat.id} value={cat.id}>
+                  {cat.name}
                 </SelectItem>
               ))}
             </SelectContent>
