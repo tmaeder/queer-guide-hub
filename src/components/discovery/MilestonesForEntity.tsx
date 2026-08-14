@@ -22,10 +22,10 @@ export function MilestonesForEntity({
   const { data } = useMilestonesForEntity(entityType, entityId);
   if (!data?.length) return null;
 
-  // SingleSection rather than a hand-rolled h2: at `font-display text-title`
-  // this heading sat one rank BELOW its siblings on organization detail
-  // (OrgAbout / OrgSocial are text-headline), so the milestones block read as a
-  // subordinate card instead of a peer section.
+  // SingleSection rather than a hand-rolled h2: at rank 4 (`text-title`) this
+  // heading sat one rank BELOW its siblings on organization detail (OrgAbout /
+  // OrgSocial are text-headline), so the milestones block read as a subordinate
+  // card instead of a peer section.
   return (
     <SingleSection title={heading ?? t('milestones.forEntity.heading', 'Milestones')}>
       <div className="space-y-4">

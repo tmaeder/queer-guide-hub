@@ -220,37 +220,42 @@ export default function About() {
     },
   ];
 
-  const getInvolved: { key: string; icon: TransitIconName; to: string; title: string; desc: string }[] =
-    [
-      {
-        key: 'addVenues',
-        icon: 'add-station',
-        to: '/venues/new',
-        title: t('about.cta.addVenues.title', 'Add a venue'),
-        desc: t('about.cta.addVenues.desc', 'Know a safe spot? Put it on the map.'),
-      },
-      {
-        key: 'createEvents',
-        icon: 'events',
-        to: '/events/new',
-        title: t('about.cta.createEvents.title', 'Post an event'),
-        desc: t('about.cta.createEvents.desc', 'Organize something. Bring people together.'),
-      },
-      {
-        key: 'joinGroups',
-        icon: 'chat',
-        to: '/groups',
-        title: t('about.cta.joinGroups.title', 'Join a group'),
-        desc: t('about.cta.joinGroups.desc', 'Your voice belongs in the conversation.'),
-      },
-      {
-        key: 'support',
-        icon: 'saved',
-        to: '/donate',
-        title: t('about.cta.support.title', 'Support us'),
-        desc: t('about.cta.support.desc', 'Keep the platform free for everyone.'),
-      },
-    ];
+  const getInvolved: {
+    key: string;
+    icon: TransitIconName;
+    to: string;
+    title: string;
+    desc: string;
+  }[] = [
+    {
+      key: 'addVenues',
+      icon: 'add-station',
+      to: '/venues/new',
+      title: t('about.cta.addVenues.title', 'Add a venue'),
+      desc: t('about.cta.addVenues.desc', 'Know a safe spot? Put it on the map.'),
+    },
+    {
+      key: 'createEvents',
+      icon: 'events',
+      to: '/events/new',
+      title: t('about.cta.createEvents.title', 'Post an event'),
+      desc: t('about.cta.createEvents.desc', 'Organize something. Bring people together.'),
+    },
+    {
+      key: 'joinGroups',
+      icon: 'chat',
+      to: '/groups',
+      title: t('about.cta.joinGroups.title', 'Join a group'),
+      desc: t('about.cta.joinGroups.desc', 'Your voice belongs in the conversation.'),
+    },
+    {
+      key: 'support',
+      icon: 'saved',
+      to: '/donate',
+      title: t('about.cta.support.title', 'Support us'),
+      desc: t('about.cta.support.desc', 'Keep the platform free for everyone.'),
+    },
+  ];
 
   return (
     <div className="min-h-screen">
@@ -448,7 +453,7 @@ export default function About() {
               className="flex h-full flex-col gap-2 border-[3px] border-foreground p-6"
             >
               <TransitIcon name={value.icon} size={32} className="text-foreground" />
-              <h3 className="mt-2 font-display text-title leading-tight">{value.title}</h3>
+              <h3 className="mt-2 text-title font-bold leading-tight">{value.title}</h3>
               <p className="text-13 leading-relaxed text-muted-foreground">{value.description}</p>
             </li>
           ))}
@@ -471,7 +476,7 @@ export default function About() {
                   {member.role}
                 </span>
               </p>
-              <h3 className="mt-4 font-display text-title leading-tight">{member.name}</h3>
+              <h3 className="mt-4 text-title font-bold leading-tight">{member.name}</h3>
               <p className="mt-2 text-13 leading-relaxed text-muted-foreground">
                 {member.description}
               </p>
@@ -503,7 +508,7 @@ export default function About() {
                   className="card-lift card-lift-invert flex h-full flex-col gap-2 border-[3px] border-background p-6 text-background no-underline"
                 >
                   <TransitIcon name={item.icon} size={28} />
-                  <span className="mt-2 font-display text-title leading-tight">{item.title}</span>
+                  <span className="mt-2 text-title font-bold leading-tight">{item.title}</span>
                   <span className="text-13 leading-relaxed text-background/75">{item.desc}</span>
                 </LocalizedLink>
               </li>

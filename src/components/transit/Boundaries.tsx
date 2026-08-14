@@ -39,10 +39,13 @@ export function Boundaries({
     <div className={cn('grid grid-cols-1 gap-2 sm:grid-cols-3', className)}>
       {cols.map((c) => (
         <section key={c.key} className="border-[3px] border-foreground p-4">
-          <h3 className="font-display text-title leading-none">{c.label}</h3>
+          <h3 className="text-title font-bold leading-none">{c.label}</h3>
           <ul className="mt-2 list-none p-0">
             {c.items.map((item) => (
-              <li key={item} className="border-b-2 border-foreground/15 py-2 text-13 last:border-b-0">
+              <li
+                key={item}
+                className="border-b-2 border-foreground/15 py-2 text-13 last:border-b-0"
+              >
                 {item}
               </li>
             ))}

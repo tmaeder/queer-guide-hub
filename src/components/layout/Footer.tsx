@@ -73,7 +73,7 @@ export function Footer() {
                 <LocalizedLink
                   to={intent.to}
                   aria-current={active ? 'page' : undefined}
-                  className="font-display text-title text-background no-underline hover:underline underline-offset-4"
+                  className="text-title font-bold text-background no-underline hover:underline underline-offset-4"
                 >
                   {t(intent.labelKey, intent.fallback)}
                 </LocalizedLink>
@@ -125,7 +125,7 @@ export function Footer() {
               to="/help"
               className="mt-2 block border-[3px] border-background p-4 text-background no-underline hover:bg-background hover:text-foreground"
             >
-              <span className="block font-display text-title">
+              <span className="block text-title font-bold">
                 {t('footer.emergency.title', 'Crisis lines, 24 hours')}
               </span>
               <span className="mt-1.5 block text-13 leading-relaxed">

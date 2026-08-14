@@ -114,9 +114,7 @@ export default function ContentGraph() {
                   <Icon size={15} className="text-muted-foreground" aria-hidden="true" />
                   <span className="text-13 font-medium">{n.label}</span>
                 </div>
-                <div className="text-title font-display tabular-nums mt-1">
-                  {nf.format(n.count)}
-                </div>
+                <div className="text-title font-bold tabular-nums mt-1">{nf.format(n.count)}</div>
                 <div className="flex flex-wrap gap-1 mt-1">
                   {n.orphan_count != null && n.orphan_count > 0 && (
                     <Badge variant="destructive" className="text-2xs px-1 py-0 tabular-nums">

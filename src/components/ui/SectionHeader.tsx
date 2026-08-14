@@ -97,11 +97,16 @@ export function SectionHeader({
         <h2
           id={id}
           className={cn(
-            // Anton carries every heading rank now (font-display); it has a
-            // single 400 weight, so no font-bold — faux-bolding Anton smears.
+            // Anton (font-display) carries the DISPLAY ranks — hero, display,
+            // headline. It ships a single 400 weight, so never pair it with a
+            // weight class; faux-bolding Anton smears the stems.
+            // Rank 4 (`text-title`) is Space Grotesk 700 per the rank table in
+            // docs/design-system/README.md, which is why `section` below is the
+            // one size here that is not font-display.
             size === 'band' && 'font-display text-headline md:text-display tracking-tight',
-            size === 'section' && 'font-display text-title',
-            size === 'masthead' && 'font-display text-display md:text-hero leading-none tracking-tight',
+            size === 'section' && 'text-title font-bold',
+            size === 'masthead' &&
+              'font-display text-display md:text-hero leading-none tracking-tight',
           )}
         >
           {title}

@@ -59,7 +59,6 @@ import type { SectionDef } from '@/components/entity/editorial';
  * at 375px.
  */
 
-
 /** The community surfaces this intent also covers. Links, not tabs. */
 const COMMUNITY_BRIDGE = [
   {
@@ -315,7 +314,7 @@ export default function People() {
               >
                 <TransitIcon name={icon} size={28} className="shrink-0 text-foreground" />
                 <span className="flex min-w-0 flex-col">
-                  <span className="font-display text-title text-foreground">{t(key, fallback)}</span>
+                  <span className="text-title font-bold text-foreground">{t(key, fallback)}</span>
                   <span className="text-2xs leading-tight text-muted-foreground">
                     {t(blurbKey, blurb)}
                   </span>

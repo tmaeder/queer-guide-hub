@@ -53,7 +53,7 @@ export function NestedEntityCard({
               {eyebrow}
             </div>
           )}
-          <div className="mt-0.5 font-display text-title leading-tight">{name}</div>
+          <div className="mt-0.5 text-title font-bold leading-tight">{name}</div>
           {description && (
             <p className="mt-1 line-clamp-2 text-13 leading-relaxed text-muted-foreground">
               {description}

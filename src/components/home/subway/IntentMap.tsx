@@ -178,7 +178,7 @@ function StationNode({ station, path, rtl }: { station: Station; path: string; r
             {t('home.map.interchangeEyebrow', 'Interchange')}
           </span>
         )}
-        <span className="font-display text-title text-foreground">
+        <span className="text-title font-bold text-foreground">
           {t(station.labelKey, station.labelFallback)}
         </span>
         {/* `line-clamp-2` holds the plate at the height the overflow budget

@@ -126,7 +126,7 @@ export function EventMoreEvents({ eventId, city, limit = 8, className }: Props) 
   if (isLoading) {
     return (
       <section className={className} aria-label="More events">
-        <h2 className="mb-4 text-title font-display">More events</h2>
+        <h2 className="mb-4 text-title font-bold">More events</h2>
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
           {Array.from({ length: limit }).map((_, i) => (
             <Skeleton key={i} className="h-48 rounded-element" />
@@ -140,7 +140,7 @@ export function EventMoreEvents({ eventId, city, limit = 8, className }: Props) 
 
   return (
     <section className={className} aria-label="More events">
-      <h2 className="mb-4 text-title font-display">More events</h2>
+      <h2 className="mb-4 text-title font-bold">More events</h2>
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
         {data.map((c) => {
           const location = [c.city, c.country].filter(Boolean).join(', ');

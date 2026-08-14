@@ -32,7 +32,7 @@ export function Itinerary({ days, className }: { days: ItineraryDay[]; className
     <div className={cn('border-[3px] border-foreground', className)}>
       {days.map((d) => (
         <section key={d.id} className="border-b-2 border-foreground/15 last:border-b-0">
-          <h3 className="bg-foreground px-4 py-2 font-display text-title leading-none text-background">
+          <h3 className="bg-foreground px-4 py-2 text-title font-bold leading-none text-background">
             {d.label}
           </h3>
           {d.entries.length === 0 ? (
