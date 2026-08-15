@@ -26,6 +26,10 @@ const ROUTES = [
   '/help',
   '/hotels',
   '/marketplace',
+  // The makers directory (#2770): a masthead band plus a control band plus a
+  // capped grid, each owning its own PageContainer — the drift-prone shape, and
+  // unswept until now because a new route joins no static route list by itself.
+  '/marketplace/brands',
   '/rights',
   '/going-out',
   // A stack of full-bleed bands, each owning its own PageContainer — the shape

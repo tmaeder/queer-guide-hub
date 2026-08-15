@@ -19,11 +19,17 @@ const WCAG_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'];
 // `children` prop, so React dropped the heading, the result count and the
 // Add-Personality button. Nothing caught it because this sweep did not cover
 // the route. `/people` is its sibling surface.
+// `/marketplace/brands` is the makers directory added in #2770 — a new route
+// joins no sweep by default, since every route list in e2e/ is static, so it
+// shipped unswept. Its 26 cards are overlay-link plates whose only accessible
+// name is an `aria-label`, which is exactly the shape axe's `link-name` rule
+// exists for.
 const ROUTES = [
   '/',
   '/venues',
   '/news',
   '/marketplace',
+  '/marketplace/brands',
   '/cities',
   '/personalities',
   '/people',
