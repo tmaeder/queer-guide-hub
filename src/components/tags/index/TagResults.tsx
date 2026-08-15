@@ -49,9 +49,12 @@ export interface TagResultsProps {
   categoryLabelFor: (tag: CentralizedTag) => string | undefined;
   /** Ids the query reached through a synonym rather than the canonical name. */
   aliasIds?: Set<string>;
-  /** Graph view only — narrows the graph to one parent category. */
+  /** Graph view only — narrows the graph to one parent category.
+   *  Both are `tag_categories.id`, not names: `get_tag_graph_data`'s
+   *  `p_category_filter` is typed `uuid`, so a name raises 22P02 and the graph
+   *  shows its error state. */
   graphCategory?: string | null;
-  graphCategories?: string[];
+  graphCategories?: { id: string; name: string }[];
 }
 
 export function TagResults({

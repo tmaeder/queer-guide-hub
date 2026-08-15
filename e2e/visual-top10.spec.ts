@@ -12,7 +12,7 @@ import { test, expect } from '@playwright/test';
  *
  * "Top 10" selected by traffic + business value, not strict analytics:
  *   /, /venues, /events, /news, /marketplace, /cities, /trips, /personalities,
- *   /resources, /help
+ *   /tags, /help
  */
 
 const ROUTES = [
@@ -41,6 +41,22 @@ const ROUTES = [
 // page is still guarded above the fold instead of being flaky-red below it.
 const STATIC_ROUTES = new Set(['/trips']);
 
+// "The page has actually rendered", per route.
+//
+// Waiting for `main` + a fixed 1.5s is not a content signal on a page that
+// fetches before it renders anything. /tags loads the whole ~3,700-term corpus
+// behind a loader, so BOTH the pre-rebuild baseline (skeleton cards) and the
+// first post-rebuild regeneration (a TrackLoader spinner over the footer) were
+// pictures of a loading state — the route has never once been visually guarded,
+// and the test would flip between loader and content with network speed.
+//
+// A route listed here waits for its own content instead. Same idea as
+// design-system.spec.ts waiting on [data-testid=map-bar] for /map.
+const READY_SELECTOR: Record<string, string> = {
+  // The filter spine only mounts once the corpus has resolved.
+  '/tags': 'input[type="search"]',
+};
+
 test.describe('Top-10 desktop visual baselines', () => {
   test.setTimeout(60_000);
 
@@ -49,6 +65,8 @@ test.describe('Top-10 desktop visual baselines', () => {
       await page.goto(route);
       await page.waitForLoadState('domcontentloaded');
       await page.waitForSelector('main', { timeout: 30_000 }).catch(() => {});
+      const ready = READY_SELECTOR[route];
+      if (ready) await page.waitForSelector(ready, { timeout: 30_000 });
       // Dismiss cookie banner if present
       await page
         .getByRole('button', { name: /accept all|necessary only/i })

@@ -151,10 +151,15 @@ export default function TagsIndex() {
     if (!categorySlug) return null;
     const lower = categorySlug.toLowerCase();
     const parent = categoriesTree.find((c) => c.slug?.toLowerCase() === lower);
-    if (parent) return { name: parent.name, isParent: true, node: parent as CategoryTreeNode };
+    // `id` is carried for the graph: get_tag_graph_data's p_category_filter is
+    // typed `uuid`, so filtering it by name raises 22P02 and the graph shows an
+    // error instead of a filtered network.
+    if (parent) {
+      return { id: parent.id, name: parent.name, isParent: true, node: parent as CategoryTreeNode };
+    }
     for (const p of categoriesTree) {
       const child = p.children?.find((c) => c.slug?.toLowerCase() === lower);
-      if (child) return { name: child.name, isParent: false, parentName: p.name };
+      if (child) return { id: child.id, name: child.name, isParent: false, parentName: p.name };
     }
     return null;
   }, [categorySlug, categoriesTree]);
@@ -274,6 +279,17 @@ export default function TagsIndex() {
     const primary = tag.categories?.find((c) => c.is_primary) ?? tag.categories?.[0];
     return primary ? getCategoryShortName(primary.name) : undefined;
   }, []);
+
+  /** The graph filters by `tag_categories.id`, so the picker needs ids, not the
+   *  display names the rail uses. Ordered by `parentOrder` via CATEGORY_LINES. */
+  const graphCategories = useMemo(
+    () =>
+      CATEGORY_LINE_ORDER.map((line) => {
+        const node = categoriesTree.find((c) => c.name === line.name);
+        return node ? { id: node.id, name: getCategoryShortName(node.name) } : null;
+      }).filter((c): c is { id: string; name: string } => c !== null),
+    [categoriesTree],
+  );
 
   const paramsSuffix = useMemo(() => {
     const qs = serializeTagsParams({ ...state, letter: null }).toString();
@@ -446,7 +462,7 @@ export default function TagsIndex() {
             <div className="mt-6">
               {primaryResults.length === 0 && state.view !== 'graph' ? (
                 <div className="border-[3px] border-foreground p-6">
-                  <h2 className="font-display text-title">
+                  <h2 className="text-title font-bold">
                     {t('tags.empty.title', 'No terms match.')}
                   </h2>
                   <p className="mt-2 text-13 text-muted-foreground">
@@ -461,8 +477,8 @@ export default function TagsIndex() {
                   lineFor={lineFor}
                   categoryLabelFor={categoryLabelFor}
                   aliasIds={aliasIds}
-                  graphCategory={scope?.name ?? null}
-                  graphCategories={CATEGORY_LINE_ORDER.map((l) => l.name)}
+                  graphCategory={scope?.id ?? null}
+                  graphCategories={graphCategories}
                 />
               )}
             </div>

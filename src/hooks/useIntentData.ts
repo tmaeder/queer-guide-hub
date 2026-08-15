@@ -330,7 +330,6 @@ export interface RightsCountry {
 export const RIGHTS_SELECT_COLUMNS =
   'id, name, slug, code, equality_score, lgbti_criminalization, lgbti_expression_restrictions, lgbti_association_restrictions, lgbti_constitutional_protection, lgbti_employment_protection, lgbti_housing_protection, lgbti_education_protection, lgbti_health_protection, lgbti_goods_services_protection, lgbti_bullying_protection, lgbti_hate_crime_law, lgbti_incitement_prohibition, lgbti_same_sex_unions, lgbti_adoption_rights, lgbti_gender_recognition, lgbti_conversion_therapy_regulation, lgbti_intersex_protection' as const;
 
-
 /**
  * The NARROW fetch: what /travel and /rights/sources actually read.
  *
@@ -347,7 +346,9 @@ export function useAllCountriesRights() {
     queryFn: async (): Promise<RightsCountry[]> => {
       const { data, error } = await supabase
         .from('countries')
-        .select('id, name, slug, code, equality_score, lgbti_criminalization, lgbti_same_sex_unions')
+        .select(
+          'id, name, slug, code, equality_score, lgbti_criminalization, lgbti_same_sex_unions',
+        )
         .order('name', { ascending: true });
       if (error) throw error;
       return (data ?? []) as RightsCountry[];
@@ -395,57 +396,11 @@ export function useDestinationCities(limit = 8) {
   });
 }
 
-export interface VerifiedBrand {
-  id: string;
-  /** `marketplace_brands` has no `name` column — the label is `display_name`. */
-  display_name: string | null;
-  brand_key: string;
-  slug: string | null;
-  logo_url: string | null;
-  product_count: number | null;
-  ownership_tags: string[] | null;
-}
-
-/**
- * Brands we have actually verified as queer-owned.
- *
- * 24 of 2,583 brands carry `ownership_tags` (0.93%). That is why the marketplace
- * is labelled "Shop" and not "queer-owned": ownership is a property of the rows
- * below, never an adjective for the catalogue. The count is rendered literally
- * so the claim stays checkable.
- */
-export function useVerifiedOwnedBrands(limit = 24) {
-  return useQuery({
-    queryKey: ['intent-verified-brands', limit],
-    staleTime: 600_000,
-    queryFn: async (): Promise<VerifiedBrand[]> => {
-      const { data, error } = await supabase
-        .from('marketplace_brands')
-        // `not('ownership_tags','is',null)` did NOT filter: the column is
-        // non-null on all 2,583 rows and 2,559 of them hold an EMPTY array. So
-        // the limit was applied to the whole catalogue and the client-side
-        // non-empty filter then ran on an already-truncated window — a
-        // filter-after-limit bug. Measured 2026-08-08: 24 brands are genuinely
-        // tagged, the page rendered 22, and "Boy Butter" and "Buck Angel" sat at
-        // positions 24 and 25 of the ordering, permanently outside the window.
-        // `not(...,'eq','{}')` filters server-side so the limit applies to the
-        // right set. Written as `.not()` rather than `.neq()` because the
-        // generated column type is `string[]` and `.neq()` will not accept the
-        // `'{}'` array literal PostgREST needs; `.not()` takes the raw value.
-        .select('id, display_name, brand_key, slug, logo_url, product_count, ownership_tags')
-        .not('ownership_tags', 'eq', '{}')
-        .order('product_count', { ascending: false, nullsFirst: false })
-        .limit(limit);
-      if (error) throw error;
-      // Belt-and-braces only — the server filter above is what makes the count
-      // correct. Kept so a null slipping in cannot render an untagged brand
-      // under a heading that claims verified ownership.
-      return ((data ?? []) as VerifiedBrand[]).filter(
-        (b) => Array.isArray(b.ownership_tags) && b.ownership_tags.length > 0,
-      );
-    },
-  });
-}
+// `VerifiedBrand` + `useVerifiedOwnedBrands` moved to
+// src/hooks/useMarketplaceBrands.ts when /shop folded into /marketplace. This
+// file is the data layer for the Intent Router composite pages; with no intent
+// page consuming it, a marketplace query living here only invites the next
+// person to import intent data into a marketplace component.
 
 /** Recent news scoped to a country, for the intent pages' news sections. */
 export function useIntentNews(countryId: string | null | undefined, limit = 5) {

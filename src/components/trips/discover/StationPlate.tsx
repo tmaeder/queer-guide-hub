@@ -143,7 +143,7 @@ export function StationPlate({
             </button>
           )}
         </div>
-        <p className="mt-0.5 font-display text-title leading-tight">{station.name}</p>
+        <p className="mt-0.5 text-title font-bold leading-tight">{station.name}</p>
         <p className="text-13 text-muted-foreground">{station.countryName}</p>
 
         {hook && (
@@ -151,9 +151,13 @@ export function StationPlate({
         )}
 
         <p className="mt-2 flex flex-wrap gap-x-4 text-xs2 font-bold tabular-nums">
-          <span>{t('trips.discover.station.venues', '{{count}} places', { count: station.venueCount })}</span>
+          <span>
+            {t('trips.discover.station.venues', '{{count}} places', { count: station.venueCount })}
+          </span>
           {station.villageCount > 0 && station.villageName && (
-            <span className="truncate font-medium text-muted-foreground">{station.villageName}</span>
+            <span className="truncate font-medium text-muted-foreground">
+              {station.villageName}
+            </span>
           )}
         </p>
 

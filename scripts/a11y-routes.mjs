@@ -51,7 +51,9 @@ export const PUBLIC_ROUTES = [
   // so it gets a public entry too.
   { path: '/going-out', name: 'intent-going-out' },
   { path: '/rights', name: 'intent-rights' },
-  { path: '/shop', name: 'intent-shop' },
+  // No /shop entry: it folded into /marketplace, which is already swept above.
+  // Do not re-add it — sweeping a redirect scans the target twice under a name
+  // that claims to be a distinct surface.
   { path: '/people', name: 'intent-people-signed-out' },
   { path: '/travel', name: 'travel' },
   { path: '/trips/discover', name: 'trips-discover' },

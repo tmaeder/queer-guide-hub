@@ -8,6 +8,7 @@ import {
   resolveMeta,
 } from '../../functions/_lib/routeMeta';
 import { STATIC_ROUTE_BODY } from '../../functions/_lib/routeBody';
+import { INTENT_NAV } from '@/config/navigation';
 
 /**
  * Contract tests for the edge SEO tables.
@@ -66,16 +67,21 @@ const LENGTH_ENFORCED = [
   '/organizations',
   '/pride',
   '/community',
-  // Intent Router landing pages.
+  // Intent Router landing pages. (Shop's is /marketplace, already above.)
   '/going-out',
   '/rights',
   '/support',
-  '/shop',
   '/people',
 ];
 
-/** Every Intent Router path must be indexable and carry its own meta + body. */
-const INTENT_ROUTES = ['/going-out', '/rights', '/support', '/shop', '/travel', '/people'];
+/**
+ * Every Intent Router path must be indexable and carry its own meta + body.
+ *
+ * Read from INTENT_NAV rather than hand-listed: `/shop` sat here for a week
+ * after the shop intent moved to /marketplace would have made this table lie,
+ * and the failure mode is a redirect source being held to landing-page rules.
+ */
+const INTENT_ROUTES = [...new Set(INTENT_NAV.map((i) => i.to))];
 
 describe('STATIC_ROUTE_META', () => {
   it('gives every entry a title distinct from the homepage default', () => {
@@ -119,7 +125,7 @@ describe('STATIC_ROUTE_META', () => {
   it('makes intent pages link downward into the browse routes', () => {
     // Intent pages are hubs. If they stopped linking out to the canonical
     // browse/detail routes they would compete with them instead of feeding them.
-    for (const path of ['/going-out', '/rights', '/support', '/shop', '/people']) {
+    for (const path of ['/going-out', '/rights', '/support', '/marketplace', '/people']) {
       const links = STATIC_ROUTE_BODY[path]?.links ?? [];
       expect(links.length, `${path} should link out`).toBeGreaterThanOrEqual(3);
     }
@@ -204,7 +210,11 @@ describe('STATIC_ROUTE_BODY', () => {
  */
 describe('intent child routes', () => {
   const routesSrc = readFileSync(join(REPO, 'src', 'routes.tsx'), 'utf8');
-  const INTENTS = ['going-out', 'travel', 'rights', 'support', 'shop', 'people'];
+  // `shop` was dropped when /shop folded into /marketplace. Deliberately NOT
+  // replaced with 'marketplace': that would pull in /marketplace/share,
+  // /marketplace/missions and /marketplace/guides, three pre-existing meta gaps
+  // unrelated to this merge. They are worth fixing — in their own change.
+  const INTENTS = ['going-out', 'travel', 'rights', 'support', 'people'];
 
   // path="<intent>/<static-segment>" — params and splats are dynamicMeta's job.
   const children = [

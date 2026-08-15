@@ -186,7 +186,7 @@ async function fetchUnifiedMedia(params: UnifiedMediaParams) {
   if (error) throw error;
 
   return {
-    items: (data || []) as UnifiedMediaItem[],
+    items: (data || []) as unknown as UnifiedMediaItem[],
     totalCount: count ?? 0,
   };
 }

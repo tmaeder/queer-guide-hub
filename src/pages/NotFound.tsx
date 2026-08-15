@@ -103,19 +103,21 @@ function StopRow({
   meta?: string | null;
 }) {
   return (
-    <li className="card-lift-sm relative flex items-center gap-4 border-2 border-foreground bg-background px-4 py-2">
-      <RouteBullet type={type} size={30} />
-      <span className="min-w-0 flex-1 truncate font-display text-15 leading-tight">{title}</span>
-      {meta && <span className="shrink-0 text-13 text-muted-foreground">{meta}</span>}
+    <li className="card-lift-sm relative flex items-center gap-4 border-2 border-foreground bg-background px-4 py-4">
+      <RouteBullet type={type} size={38} />
+      <span className="min-w-0 flex-1 truncate text-title font-bold leading-tight">{title}</span>
+      {meta && <span className="shrink-0 text-15 text-muted-foreground">{meta}</span>}
       <LocalizedLink to={href} aria-label={title} className="absolute inset-0 no-underline" />
     </li>
   );
 }
 
-const SECTION_LABEL = 'text-2xs font-bold uppercase tracking-label text-muted-foreground';
+/** `text-13`, not the `text-2xs` eyebrow convention: this page runs at the full
+ *  site width, and a 10px label floating over a 1600px column is unreadable. */
+const SECTION_LABEL = 'text-13 font-bold uppercase tracking-label text-muted-foreground';
 
 const END_OF_LINE_LINK =
-  'inline-flex items-center gap-2 border-2 border-background px-4 py-2 text-13 font-bold text-background no-underline transition-colors hover:bg-background hover:text-foreground';
+  'inline-flex items-center gap-2 border-2 border-background px-4 py-2 text-15 font-bold text-background no-underline transition-colors hover:bg-background hover:text-foreground';
 
 const NotFound = () => {
   const location = useLocation();
@@ -203,7 +205,10 @@ const NotFound = () => {
   }, [segs, location.pathname]);
 
   return (
-    <PageContainer size="reading">
+    // Default size = the 1600 page cap, the same frame every other page uses.
+    // Prose inside is capped to `max-w-reading` so the measure stays readable
+    // at full width — the container sets the FRAME, not the line length.
+    <PageContainer>
       <NotFoundMeta title={t('pages.notFound.title', 'Page not found')} />
 
       <header>
@@ -213,7 +218,7 @@ const NotFound = () => {
         <h1 className="mt-6 font-display text-display leading-[0.95] md:text-hero">
           {kind ? t(kind.key, kind.fallback) : t('pages.notFound.heading', 'No stop here.')}
         </h1>
-        <p className="mt-6 text-body-lg leading-relaxed text-muted-foreground">
+        <p className="mt-6 max-w-reading text-body-lg leading-relaxed text-muted-foreground">
           {t(
             'pages.notFound.description',
             'Nothing is on the map at {{path}}. It was moved, removed, or never existed.',
@@ -249,7 +254,7 @@ const NotFound = () => {
         <h2 id="notfound-search" className={SECTION_LABEL}>
           {t('pages.notFound.searchLabel', 'Plan another route')}
         </h2>
-        <form onSubmit={onSearch} className="mt-4 flex gap-2" role="search">
+        <form onSubmit={onSearch} className="mt-4 flex max-w-reading gap-2" role="search">
           <Input
             type="search"
             value={searchQuery}
@@ -271,7 +276,9 @@ const NotFound = () => {
           <h2 id="notfound-nearest" className={SECTION_LABEL}>
             {t('pages.notFound.didYouMean', 'Nearest stops')}
           </h2>
-          <ul className="mt-4 flex list-none flex-col gap-2 p-0">
+          {/* Two columns at the full page width — a single 1600px-wide row per
+              stop reads as empty track, not as a board. */}
+          <ul className="mt-4 grid list-none grid-cols-1 gap-2 p-0 lg:grid-cols-2">
             {suggestions.map((hit) => (
               <StopRow
                 key={`${hit.type}:${hit.id}`}
@@ -295,7 +302,9 @@ const NotFound = () => {
           <h2 id="notfound-recent" className={SECTION_LABEL}>
             {t('pages.notFound.recentlyViewed', 'Your last stops')}
           </h2>
-          <ul className="mt-4 flex list-none flex-col gap-2 p-0">
+          {/* Two columns at the full page width — a single 1600px-wide row per
+              stop reads as empty track, not as a board. */}
+          <ul className="mt-4 grid list-none grid-cols-1 gap-2 p-0 lg:grid-cols-2">
             {recent.map((item) => (
               <StopRow
                 key={`${item.type}:${item.slug}`}
@@ -317,13 +326,13 @@ const NotFound = () => {
         aria-labelledby="notfound-end-of-line"
         className="mt-12 border-[3px] border-foreground bg-foreground p-6 text-background md:p-8"
       >
-        <p className="text-2xs font-bold uppercase tracking-label text-background/70">
+        <p className="text-13 font-bold uppercase tracking-label text-background/70">
           {t('pages.notFound.suggestionsLabel', 'End of line')}
         </p>
-        <h2 id="notfound-end-of-line" className="mt-1 font-display text-headline leading-tight">
+        <h2 id="notfound-end-of-line" className="mt-2 font-display text-display leading-tight">
           {t('pages.notFound.endOfLineTitle', 'Pick up another line.')}
         </h2>
-        <div className="mt-6 flex flex-wrap gap-2">
+        <div className="mt-8 flex flex-wrap gap-2">
           {SUGGESTIONS.map(({ to, icon, labelKey, fallback }) => (
             <LocalizedLink key={to} to={to} className={END_OF_LINE_LINK}>
               <TransitIcon name={icon} size={18} />
