@@ -141,6 +141,7 @@ export function useVenueDescriptor(slug: string | undefined): EntityDescriptorRe
         {
           id: 'about',
           title: t('venues.detail.section.about', 'About'),
+          when: Boolean(venue.description),
           render: () => <VenueAbout venue={venue} onContentUpdated={refetch} />,
         },
         {
@@ -150,8 +151,17 @@ export function useVenueDescriptor(slug: string | undefined): EntityDescriptorRe
           render: () => formatHours(venue.hours),
         },
         {
+          // `when` is REQUIRED here, not optional tidiness. `VenueAmenities`
+          // returns null from its own body, and the section filter cannot see
+          // that — so this rendered an "Access" heading with ZERO content on
+          // every venue with no amenities, which is 91% of them (and 99.97%
+          // for accessibility specifically). Shipped, caught on prod.
           id: 'access',
           title: t('venues.detail.section.access', 'Access'),
+          when:
+            (venue.amenities?.length ?? 0) > 0 ||
+            (venue.accessibility_attributes?.length ?? 0) > 0 ||
+            Boolean(venue.accessibility_notes),
           render: () => <VenueAmenities venue={venue} />,
         },
         {
