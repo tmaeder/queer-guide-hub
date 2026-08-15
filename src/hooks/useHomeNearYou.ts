@@ -31,6 +31,27 @@ export interface NearYouResult {
  *  dead-link rows because the old query filtered neither. */
 const DEAD_LIVENESS = ['dead', 'cancelled', 'dead_link'];
 
+/**
+ * Categories that must never lead the homepage.
+ *
+ * Not a taste call — both are structurally wrong for this surface, verified
+ * against the corpus:
+ *
+ *  - `hotel` (337 rows) is almost entirely PRIVATE ROOM listings: "Room in a
+ *    big Apt, located in a Courtyard", "Guest room in a quite and modern
+ *    apartment", "Top floor apartment in hip De Pijp area". Someone's spare
+ *    bedroom is not a place to go out, and hotels have their own surface.
+ *  - `toilet` (732 rows) is mislabelled facilities — "Walmart Fuel Station",
+ *    "Martinez Petco", "Courtyard by Marriott". These are places that HAVE a
+ *    restroom, not destinations.
+ *
+ * A blocklist rather than an allowlist on purpose: `category` is 56% the
+ * literal string 'other' (13,073 rows), and that bucket holds real queer
+ * institutions — Gay Men's Health Crisis, Hi Tops, Nowhere, The Boiler Room.
+ * Allowlisting the seven "nightlife" categories would delete them.
+ */
+const NOT_A_DESTINATION = ['hotel', 'toilet'];
+
 const EVENT_SELECT = 'id, title, slug, start_date, venue_name, city:cities(id, name)';
 const VENUE_SELECT = 'id, name, slug, category, city, quality_score';
 
@@ -125,7 +146,14 @@ export function useHomeNearYou(region: HomeRegion, limit = 6) {
           .eq('city_id', cityId)
           .is('duplicate_of_id', null)
           .is('closed_at', null)
+          .not('category', 'in', `(${NOT_A_DESTINATION.join(',')})`)
+          // quality_score alone is not an order: 654 rows share the top value
+          // of 95, so ties came back in whatever order Postgres felt like and
+          // a spare-room listing outranked Berghain in Berlin. Featured first
+          // among equals, then the most recently maintained record.
           .order('quality_score', { ascending: false, nullsFirst: false })
+          .order('is_featured', { ascending: false })
+          .order('updated_at', { ascending: false })
           .limit(limit - rows.length);
         for (const v of (data ?? []) as unknown as VenueRow[]) rows.push(toVenueRow(v, 'local'));
       }
@@ -140,7 +168,14 @@ export function useHomeNearYou(region: HomeRegion, limit = 6) {
           .is('duplicate_of_id', null)
           .is('closed_at', null)
           .not('id', 'in', `(${rows.map((r) => r.id).join(',') || '00000000-0000-0000-0000-000000000000'})`)
+          .not('category', 'in', `(${NOT_A_DESTINATION.join(',')})`)
+          // quality_score alone is not an order: 654 rows share the top value
+          // of 95, so ties came back in whatever order Postgres felt like and
+          // a spare-room listing outranked Berghain in Berlin. Featured first
+          // among equals, then the most recently maintained record.
           .order('quality_score', { ascending: false, nullsFirst: false })
+          .order('is_featured', { ascending: false })
+          .order('updated_at', { ascending: false })
           .limit(limit - rows.length);
         for (const v of (data ?? []) as unknown as VenueRow[]) rows.push(toVenueRow(v, 'local'));
       }
