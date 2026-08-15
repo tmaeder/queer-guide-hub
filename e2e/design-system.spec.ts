@@ -305,6 +305,13 @@ test.describe('design system: sanctioned ink only', () => {
     '/tags',
     '/tags/lesbian',
     '/marketplace',
+    // The three geo singles, added with their 2026-08 subway rebuild. The city
+    // one is load-bearing here: /city/berlin is the only public page that
+    // renders the four-track network diagram, so it is where an unsanctioned
+    // hue would first appear.
+    '/city/berlin',
+    '/country/germany',
+    '/villages/chueca',
   ];
 
   // What counts as "this page has rendered its chrome".

@@ -1,41 +1,43 @@
-// Section definitions for the editorial CountryDetail page. Order is
-// destination-led but safety-first: the rights breakdown leads the deep
-// sections (it's why the platform exists), then the trip-planning funnel
-// (cities → venues → events → travel), then context (stats → voices →
-// nearby → news → map).
+// Section ids for the country single. Order is destination-led but
+// safety-first: the rights breakdown leads (it's why the platform exists),
+// then the legal record that dates it, then the trip-planning funnel
+// (cities → venues → events → travel), then context.
 //
 // Ids that match the retired COUNTRY_TAB_DEFS 1:1 (rights/cities/venues/
-// events/travel/news/map) keep EditorialDetailLayout's ?tab=→?section=
-// redirect working. `overview` was dissolved into the header + stats/
-// practical bands; `stats` is new. Labels here are English fallbacks —
-// CountryDetail translates them via t(`country.section.${id}`).
+// events/travel/news/map) keep old `?tab=` / `?section=` deep links resolving,
+// and `#rights` is the jump target the safety verdict links to.
+//
+// `history` is new and is the type's OWNER module (spec module 12): "a country
+// page is a living legal record; safety information without a date is
+// dangerous." It had never been rendered.
+//
+// `personalities` and `nearby` are NOT sections. Both are composite rails that
+// self-hide from inside their own bodies, which the section filter cannot see,
+// so each would leave a station on the route rail pointing at an empty
+// heading. They render in the page footer, where there are no stations.
+//
+// The `label` field is gone. The page builds each section's heading from a
+// `country.section.*` key at the call site, where the interpolated country
+// name is in scope — a second English fallback stored here could only drift
+// from the one actually rendered.
 
 export type CountrySectionId =
   | 'rights'
+  | 'history'
   | 'cities'
   | 'venues'
   | 'events'
   | 'travel'
   | 'stats'
-  | 'personalities'
-  | 'nearby'
-  | 'news'
-  | 'map';
+  | 'news';
 
-export interface CountrySectionDef {
-  id: CountrySectionId;
-  label: string;
-}
-
-export const COUNTRY_SECTION_DEFS: CountrySectionDef[] = [
-  { id: 'rights', label: 'Rights & safety' },
-  { id: 'cities', label: 'Cities' },
-  { id: 'venues', label: 'Venues' },
-  { id: 'events', label: 'Events' },
-  { id: 'travel', label: 'Travel' },
-  { id: 'stats', label: 'In numbers' },
-  { id: 'personalities', label: 'Voices' },
-  { id: 'nearby', label: 'Nearby' },
-  { id: 'news', label: 'News' },
-  { id: 'map', label: 'Map' },
+export const COUNTRY_SECTION_ORDER: CountrySectionId[] = [
+  'rights',
+  'history',
+  'cities',
+  'venues',
+  'events',
+  'travel',
+  'stats',
+  'news',
 ];

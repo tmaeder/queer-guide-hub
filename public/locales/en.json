@@ -2818,6 +2818,69 @@
         "currency": "Currency",
         "bestTime": "Best time",
         "airport": "Airport"
+      },
+      "eyebrow": "City",
+      "sections": "Sections",
+      "loadingVenues": "Loading venues",
+      "openEvent": "Open",
+      "openMap": "Open the full map",
+      "createTrip": "Create trip",
+      "officialWebsite": "Official website",
+      "favorite": "Save to favorites",
+      "favorited": "Saved to favorites",
+      "census": {
+        "stops": "{{n}} stops",
+        "districts": "{{n}} districts",
+        "departures": "{{n}} departures"
+      },
+      "section": {
+        "rights": "Safety & rights",
+        "rightsNote": "Know before you go.",
+        "venues": "Where to go",
+        "districts": "Queer districts",
+        "districtsNote": "Walkable clusters of bars, cafés and community spaces.",
+        "events": "Next departures",
+        "overview": "About {{city}}",
+        "travel": "Getting there",
+        "news": "In the news",
+        "nearby": "Nearby"
+      },
+      "stats": {
+        "venues": "Venues",
+        "districts": "Districts",
+        "events": "Upcoming events"
+      },
+      "about": {
+        "status": "Status",
+        "capital": "Capital city",
+        "majorCity": "Major city",
+        "region": "Region",
+        "timezone": "Timezone",
+        "founded": "Founded",
+        "area": "Area",
+        "elevation": "Elevation",
+        "mayor": "Mayor",
+        "postalCodes": "Postal codes",
+        "costOfLiving": "Cost of living",
+        "universities": "Universities",
+        "sisterCities": "Sister cities"
+      },
+      "travel": {
+        "majorAirport": "Major airport",
+        "nearestAirport": "Nearest airport",
+        "allCodes": "All airport codes",
+        "lines": "Lines",
+        "networkCaption": "Rapid-transit lines, drawn from OpenStreetMap. Schematic, not to scale.",
+        "gettingAround": "Getting around",
+        "noDealsTitle": "We don't promote travel deals for destinations where LGBTQ+ people face criminal penalties.",
+        "noDealsBody": "If you need to travel to {{city}}, read the safety and rights section first and use the trip planner — it includes a safety briefing for high-risk destinations."
+      },
+      "endOfLine": {
+        "eyebrow": "End of line",
+        "title": "Riding on?",
+        "body": "Every city on the guide carries the same modules: safety and rights first, then the places.",
+        "allCities": "All cities",
+        "country": "More in {{country}}"
       }
     },
     "empty": "No cities are currently listed.",
@@ -2998,7 +3061,9 @@
       "personalities": "Voices",
       "nearby": "Nearby",
       "news": "News",
-      "map": "Map"
+      "map": "Map",
+      "history": "Legal record",
+      "historyNote": "What changed and when. Safety information without a date is not safety information."
     },
     "practical": {
       "languages": "Languages",
@@ -3017,7 +3082,10 @@
       "hdi": "HDI",
       "lifeExpectancy": "Life expectancy",
       "literacy": "Literacy",
-      "income": "Income level"
+      "income": "Income level",
+      "venues": "Venues",
+      "events": "Upcoming events",
+      "weather": "Now in {{city}}"
     },
     "cities": {
       "emptyTitle": "No cities yet",
@@ -3033,7 +3101,9 @@
     },
     "travel": {
       "activities": "Activities & tours",
-      "activitiesBody": "Experiences in {{country}}"
+      "activitiesBody": "Experiences in {{country}}",
+      "noDealsTitle": "We don't promote travel deals for destinations where LGBTQ+ people face criminal penalties.",
+      "noDealsBody": "If you need to travel to {{country}}, read the rights section on this page first and use the trip planner — it includes a safety briefing for high-risk destinations."
     },
     "news": {
       "emptyTitle": "No local news yet",
@@ -3080,7 +3150,24 @@
       "ilgaLink": "ILGA World Database",
       "deathPenaltyPossible": "death penalty possible, no legal certainty"
     },
-    "planTripHighRisk": "Plan carefully — safety briefing included"
+    "planTripHighRisk": "Plan carefully — safety briefing included",
+    "eyebrow": "Country",
+    "sections": "Sections",
+    "openMap": "Open the full map",
+    "census": {
+      "cities": "{{n}} cities",
+      "stops": "{{n}} stops",
+      "departures": "{{n}} departures"
+    },
+    "history": {
+      "seeAll": "Full timeline"
+    },
+    "endOfLine": {
+      "eyebrow": "End of line",
+      "title": "Compare the law elsewhere",
+      "body": "Every country page carries the same legal breakdown, from the same sources, with the date it was checked.",
+      "rights": "Rights across the world"
+    }
   },
   "extension": {
     "signInGate": {
@@ -4272,6 +4359,70 @@
       },
       "spansAllRights": "This covers a whole field of law, not one statute. We track 18 separate rights, country by country.",
       "seeAllRights": "See all 18 rights by country"
+    }
+  },
+  "village": {
+    "eyebrow": "District · Green line",
+    "loading": "Loading this district",
+    "loadingVenues": "Loading the stop list",
+    "sections": "Sections",
+    "planTrip": "Plan a trip to {{name}}",
+    "relatedByTag": "Related by tag",
+    "notFound": {
+      "title": "No such district.",
+      "body": "This stop is not on the line.",
+      "cta": "All queer villages"
+    },
+    "toast": {
+      "errorTitle": "Error",
+      "loadFailed": "Failed to load village details"
+    },
+    "facts": {
+      "city": "City",
+      "country": "Country",
+      "venues": "Venues",
+      "events": "Upcoming events",
+      "editorsPick": "Editor’s pick"
+    },
+    "census": {
+      "stops": "{{n}} stops",
+      "departures": "{{n}} departures"
+    },
+    "section": {
+      "about": "About {{name}}",
+      "walk": "The walk",
+      "walkNote": "Stops in order, with the straight-line gap between them.",
+      "events": "Next departures",
+      "photos": "Photos",
+      "city": "On the same line"
+    },
+    "action": {
+      "website": "Website",
+      "favorite": "Save to favorites",
+      "favorited": "Saved to favorites"
+    },
+    "events": {
+      "open": "Open"
+    },
+    "landmarks": {
+      "title": "Notable landmarks"
+    },
+    "photo": {
+      "caption": "{{village}}, {{city}}",
+      "alt": "{{name}}, photo {{n}}"
+    },
+    "parentCity": {
+      "body": "The wider city this district sits in.",
+      "action": "Open"
+    },
+    "map": {
+      "caption": "Walking distance in {{city}}."
+    },
+    "endOfLine": {
+      "eyebrow": "End of line",
+      "title": "Looking for another district?",
+      "body": "Queer villages are walkable clusters of bars, cafés and community spaces. There are more of them.",
+      "city": "More in {{city}}"
     }
   }
 }

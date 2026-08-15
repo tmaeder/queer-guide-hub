@@ -1,41 +1,41 @@
-// Section definitions for the editorial CityDetail. Order is rendered top-to-bottom
-// and drives the sticky section nav. Section IDs match the legacy CITY_TAB_DEFS ids
-// 1:1 so EditorialDetailLayout's ?tab=→?section= redirect keeps old deep-links working.
+// Section ids for the city single. Order is rendered top-to-bottom and drives
+// the route rail's stations.
 //
-// Order leads with the queer-travel jobs (safety → where to go → what's on → map →
-// voices) before the encyclopedic "About", then getting-there / news / nearby.
+// Ids are unchanged from the legacy tab set where the section survived, so old
+// `?tab=` / `?section=` deep links and the `#rights` jump target from the
+// safety verdict keep resolving. `districts` is new (the queer villages were
+// buried at the bottom of the venue grid); `overview` was renamed nowhere —
+// it kept its id even though its heading changed.
+//
+// Order leads with the queer-travel jobs — safety, then where to go, then the
+// districts, then what's on — before the encyclopaedic "About", then getting
+// there and news.
+//
+// `personalities` and `nearby` are NOT sections any more. Both are composite
+// rails that self-hide from inside their own bodies, which the section filter
+// cannot see, so each would leave a station on the route rail pointing at an
+// empty heading. They render in the page footer, where there are no stations.
+//
+// Unlike the version this replaces, there is no `label` field. It carried a
+// short sticky-nav label that the page never read: `CityDetail` passed
+// `def.heading` as the nav label, so "Safety" was dead code for its whole life
+// while the nav showed "Safety & rights". One string, one use.
 
 export type CitySectionId =
   | 'rights'
   | 'venues'
+  | 'districts'
   | 'events'
-  | 'map'
-  | 'personalities'
   | 'overview'
   | 'travel'
-  | 'news'
-  | 'nearby';
+  | 'news';
 
-export interface CitySectionDef {
-  id: CitySectionId;
-  /** Sticky-nav label — short. */
-  label: string;
-  /** Editorial section heading — fuller voice. */
-  heading: string;
-  /** Optional eyebrow. Only where it adds information the heading doesn't
-   *  carry — a kicker on every section is scaffolding, not voice
-   *  (2026-07 critique: eyebrow saturation was the site's top AI tell). */
-  kicker?: string;
-}
-
-export const CITY_SECTION_DEFS: CitySectionDef[] = [
-  { id: 'rights', label: 'Safety', heading: 'Safety & rights', kicker: 'Know before you go' },
-  { id: 'venues', label: 'Venues', heading: 'Where to go', kicker: 'Bars, clubs & spaces' },
-  { id: 'events', label: 'Events', heading: "What's on" },
-  { id: 'map', label: 'Map', heading: 'On the map' },
-  { id: 'personalities', label: 'Voices', heading: 'Voices', kicker: 'People & history' },
-  { id: 'overview', label: 'About', heading: 'About the city' },
-  { id: 'travel', label: 'Travel', heading: 'Getting there' },
-  { id: 'news', label: 'News', heading: 'In the news' },
-  { id: 'nearby', label: 'Nearby', heading: 'Nearby' },
+export const CITY_SECTION_ORDER: CitySectionId[] = [
+  'rights',
+  'venues',
+  'districts',
+  'events',
+  'overview',
+  'travel',
+  'news',
 ];

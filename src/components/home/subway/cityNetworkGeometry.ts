@@ -41,7 +41,12 @@ export type NetworkMode = 'subway' | 'light_rail' | 'tram';
 export interface NetworkLine {
   /** Track color, assigned by core-length rank. */
   track: Track;
-  /** The line's own OSM `ref` (e.g. "U1") — debugging aid, never rendered. */
+  /**
+   * The line's own OSM `ref` (e.g. "U1"). Not rendered on the homepage card,
+   * where the diagram is decorative and `aria-hidden`; the city single's
+   * `CityNetworkPanel` DOES render it as a legend, which is what turns the
+   * same geometry from ornament into information.
+   */
   ref: string;
   /** Path data. `M`/`L` only, integer coordinates. */
   d: string;
@@ -4577,6 +4582,13 @@ export const CITY_NETWORKS: Record<string, CityNetwork> = {
  * it commits: the diagram REPLACES a meaningless placeholder (an initial-letter
  * tile, a type glyph, a stock skyline belonging to no particular city) and must
  * never replace a real photograph of the place. Most cities have no geometry.
+ *
+ * 22 of ~3,070 cities have one. The card grid may fall back to a template
+ * squiggle — fine at 200px as an ornament in a grid that must not have holes —
+ * but a city SINGLE may not: a fabricated network drawn under a heading that
+ * says "Getting around" is a claim about that city's transit, and for 99.3% of
+ * cities it would be false. `CityNetworkPanel` gates on this and renders
+ * nothing when it returns false (spec rule 2).
  */
 export function hasCityNetwork(slug: string | null | undefined): boolean {
   return !!slug && slug in CITY_NETWORKS;

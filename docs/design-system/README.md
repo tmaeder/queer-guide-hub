@@ -255,15 +255,54 @@ particular city — and never replaces a real photograph of the place. Only the
 homepage passes `index`, which opts into the template line; everywhere else a
 city we have no geometry for keeps whatever placeholder it already had.
 
-**`hasCityNetwork(slug)` is the integration point.** Most cities have no
-geometry, so a surface must ask before it commits: the diagram *replaces a
-meaningless placeholder* — the generic `Globe` glyph in search, the
-deterministic stock skyline that belongs to no particular city — and never
-replaces a real photograph of the place. Only surfaces that want the template
-line pass `index`; everywhere else a city we have no geometry for keeps
-whatever placeholder it already had.
+**On a city SINGLE the fallback is forbidden outright** — the caption rule above
+governs the CARD, where a hole in the grid would be worse. `CityNetworkPanel`
+(`src/components/geo/`) gates on `hasCityNetwork(slug)` and renders nothing
+otherwise. A template squiggle is a fine ornament in a card grid that must have
+no holes; drawn under a heading that says "Getting around" it is a claim about
+that city's transit, and 22 of ~3,070 cities have one. The panel also renders
+the line refs as a legend — that is what makes the same geometry information
+rather than decoration, and it is why the panel is not `aria-hidden` while the
+card's copy is. It sits in the travel section, deliberately far from the safety
+verdict in the rail: the four-hue vocabulary must never share a viewport with a
+risk badge.
+
 Geometry is derived from © OpenStreetMap contributors and licensed ODbL;
 the credit sits in the site footer alongside the map's.
+
+### Geo singles (city / country / queer village)
+
+All three render `SinglePage` with the module stack their type declares in
+`src/config/singleModules.ts` — city owns Map inset, country owns Version
+history, village owns Stop list. Shared pieces live in `src/components/geo/`.
+
+Four rules, each of which was a bug before it was a rule:
+
+- **Sections and route-rail stations come from one array.** `geoSections()`
+  filters the definitions and `geoStations()` reads the filtered result, so a
+  station cannot outlive the section it points at. The filter sees `null` /
+  `undefined` / `false` / `[]`; it cannot see a component that returns `null`
+  from its own body.
+- **A self-hiding composite rail is never a section.** `PersonalitiesForEntity`,
+  `NearbyTriptych`, `TrendingStrip`, `GuidesRail` and friends decide internally
+  whether they have data, so each one used as a section leaves a dead station.
+  They render in the page footer, which has no stations.
+- **The route rail renders twice**, horizontal at the top of the body and
+  vertical in the rail, because `SinglePage`'s 360px rail reflows *under* the
+  body on mobile — a rail-only TOC lands below the content it indexes. Same
+  two-render pattern as `/tags`' `CategoryTreeRail`.
+- **The census strip renders unconditionally**, zeros included. Gating it on a
+  non-zero count unmounts a masthead row and shifts the page under the reader
+  (`/marketplace` learned this one).
+
+Safety composes rather than restyles: `GeoSafetyBanner` wraps the unmodified
+`SafetyAlertBanner` + `GatedContentNotice`, and `GeoSafetyVerdict` is the shared
+verdict tile. It stays monochrome + `--destructive`, gates on `useTripSafety`'s
+settled status, and is deliberately **not** a `SidebarCard tone="ink"` even
+though the spec reserves that inversion for safety blocks — `bg-destructive/10
+text-destructive` on flooded ink is unreadable. The country single keeps its own
+richer `SafetyVerdict` instead; six assertions in `rights-safety.spec.ts` bind
+to its copy.
 
 ### The policy line
 

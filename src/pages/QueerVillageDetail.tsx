@@ -1,8 +1,9 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useParams } from 'react-router';
 import { SimilarItems } from '@/components/discovery/SimilarItems';
+import { PersonalitiesForEntity } from '@/components/discovery/PersonalitiesForEntity';
 import { MoreLikeThisByTag } from '@/components/tags/MoreLikeThisByTag';
 import { MarketplaceForVillage } from '@/components/marketplace/MarketplaceForVillage';
 import { MarkVisitedButton } from '@/components/marks/MarkVisitedButton';
@@ -13,38 +14,46 @@ import { useEvents } from '@/hooks/useEvents';
 import { useEntityDetail } from '@/hooks/useEntityDetail';
 import { useSlugRedirect } from '@/hooks/useSlugRedirect';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
-import { EntityDetailLayout } from '@/components/entity/EntityDetailLayout';
+import { useBreadcrumbs } from '@/contexts/BreadcrumbContext';
+import { SinglePage } from '@/components/transit/SinglePage';
+import { FactGrid, type Fact } from '@/components/transit/FactGrid';
+import { ProvenanceLine } from '@/components/transit/ProvenanceLine';
+import { TrackLoader } from '@/components/transit/TrackLoader';
+import { PageContainer } from '@/components/layout/PageContainer';
+import { GeoCensus } from '@/components/geo/GeoCensus';
+import { GeoSafetyBanner, GeoSafetyVerdict } from '@/components/geo/GeoSafetyBlock';
+import { GeoSectionList, GeoRouteRail } from '@/components/geo/GeoSections';
 import {
-  EditorialDetailLayout,
-  IntroEssay,
-  KeyFactsStrip,
-  type KeyFact,
-  type SectionDef,
-} from '@/components/entity/editorial';
-import { EDITORIAL_DETAIL_LAYOUT_ENABLED } from '@/lib/featureFlags';
+  geoSections,
+  useGeoActiveSection,
+  type GeoSection,
+} from '@/components/geo/geoSectionModel';
 import { TripCoveringBanner } from '@/components/trips/TripCoveringBanner';
 import { PlanTripFromHereButton } from '@/components/trips/PlanTripFromHereButton';
-import { VILLAGE_SECTION_DEFS } from './queer-village-detail/VillageSectionDefs';
-import { PersonalitiesForEntity } from '@/components/discovery/PersonalitiesForEntity';
 import {
   type VillageWithRelations,
   buildVillageBreadcrumbs,
-  VillageHero,
-  VillageOverviewTab,
-  VillageVenuesTab,
-  VillageEventsTab,
-  VillagePhotosTab,
-  VillageMapTab,
-  VillageTabLabel,
-  villageTabIcons,
+  VillageActions,
+  VillageTags,
+  VillageAbout,
+  VillageStops,
+  VillageOccurrences,
+  VillageParentCity,
+  VillagePhotos,
+  VillageMapInset,
 } from './QueerVillageDetail.parts';
-import { PageContainer } from '@/components/layout/PageContainer';
 
+// `equality_score` + `lgbti_criminalization` are new here: the village page had
+// no safety layer at all, which meant a district in a criminalising country
+// rendered exactly like one in Berlin.
 const JOIN_SPEC =
-  '*, cities:city_id(id, slug, name), countries:country_id(id, slug, name, flag_emoji)';
+  '*, cities:city_id(id, slug, name), countries:country_id(id, slug, name, code, flag_emoji, equality_score, lgbti_criminalization)';
+
+const OUTLINE_ON_INK =
+  'inline-flex items-center gap-2 border-2 border-background px-4 py-2 text-13 font-bold text-background no-underline transition-colors hover:bg-background hover:text-foreground';
 
 export default function QueerVillageDetail() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { slug } = useParams<{ slug: string }>();
   const { toast } = useToast();
   const navigate = useLocalizedNavigate();
@@ -76,13 +85,15 @@ export default function QueerVillageDetail() {
     if (redirectVillageSlug) navigate(`/villages/${redirectVillageSlug}`, { replace: true });
   }, [redirectVillageSlug, navigate]);
 
-  const cityName = village?.cities?.name;
   const villageId = village?.id;
   const { venues, loading: venuesLoading, fetchVenues } = useVenues(false);
-  const { events, loading: eventsLoading, fetchEvents } = useEvents(false);
+  const { events, fetchEvents } = useEvents(false, { skipDatasetTotal: true });
   const fetchVenuesRef = useRef(fetchVenues);
-  // eslint-disable-next-line react-hooks/refs -- "latest value" ref pattern: keeps the freshest fetchVenues closure available to the city-change effect below without re-running on every fetchVenues identity change.
+  // eslint-disable-next-line react-hooks/refs -- "latest value" ref pattern: keeps the freshest fetchVenues closure available to the village-change effect below without re-running on every fetchVenues identity change.
   fetchVenuesRef.current = fetchVenues;
+  const fetchEventsRef = useRef(fetchEvents);
+  // eslint-disable-next-line react-hooks/refs -- same pattern; the events effect keys off the venue id list, not the fetcher identity.
+  fetchEventsRef.current = fetchEvents;
 
   // Filter by the VILLAGE, not by its city. This previously asked for 8 venues
   // from anywhere in the parent city, so /villages/chueca listed an Apple Store
@@ -94,223 +105,330 @@ export default function QueerVillageDetail() {
     fetchVenuesRef.current({ queerVillageId: villageId, limit: 24, railQuality: true });
   }, [villageId]);
 
+  const venueIdKey = venues.map((v) => v.id).join(',');
+  // Events are scoped THROUGH the venues, for the same reason. `events` carries
+  // no village FK, so "events in this district" can only mean "events at the
+  // venues in this district"; the old query asked the parent city and
+  // advertised everything in Madrid as if it were on the Chueca strip.
   useEffect(() => {
-    fetchEvents({ city: cityName, limit: 8 });
-  }, [cityName, fetchEvents]);
+    if (!venueIdKey) return;
+    fetchEventsRef.current({ venueIds: venueIdKey.split(','), limit: 12 });
+  }, [venueIdKey]);
 
   useEffect(() => {
     if (error) {
       console.error('Error fetching village:', error);
       toast({
-        title: 'Error',
-        description: 'Failed to load village details',
+        title: t('village.toast.errorTitle', 'Error'),
+        description: t('village.toast.loadFailed', 'Failed to load village details'),
         variant: 'destructive',
       });
     }
-  }, [error, toast]);
+  }, [error, toast, t]);
 
-  const handleFavoriteToggle = async () => {
-    if (!village) return;
-    try {
-      await toggleFavorite(village.id);
-      toast({
-        title: isFavorited(village.id) ? 'Removed from favorites' : 'Added to favorites',
-        description: `${village.name} ${isFavorited(village.id) ? 'removed from' : 'added to'} your favorites`,
-      });
-    } catch {
-      toast({ title: 'Error', description: 'Failed to update favorites', variant: 'destructive' });
-    }
-  };
+  const breadcrumbs = useMemo(
+    () => (village ? buildVillageBreadcrumbs(village, t) : null),
+    [village, t],
+  );
+  useBreadcrumbs(breadcrumbs);
 
-  if (!isLoading && !error && !village) {
-    return (
-      <div className="min-h-screen bg-background">
-        <PageContainer className="text-center">
-          <h5 className="text-xl font-bold mb-4">Village Not Found</h5>
-          <p className="text-muted-foreground mb-6">
-            The queer village you&apos;re looking for doesn&apos;t exist.
-          </p>
-          <LocalizedLink to="/villages" style={{ color: 'inherit' }} className="font-medium">
-            ← Back to Villages
-          </LocalizedLink>
-        </PageContainer>
-      </div>
-    );
-  }
+  const cityName = village?.cities?.name ?? null;
+  const countryName = village?.countries?.name ?? null;
 
-  const sectionContent: Record<string, React.ReactNode> = village
-    ? {
-        overview: <VillageOverviewTab village={village} onContentUpdated={refetch} />,
-        venues: <VillageVenuesTab village={village} venues={venues} loading={venuesLoading} />,
-        events: <VillageEventsTab village={village} events={events} loading={eventsLoading} />,
-        personalities: (
-          <PersonalitiesForEntity
-            cityId={village.cities?.id ?? null}
-            countryId={village.countries?.id ?? null}
-            cityName={village.cities?.name ?? village.name}
-          />
-        ),
-        photos: <VillagePhotosTab village={village} />,
-        map: <VillageMapTab village={village} venues={venues} />,
-      }
-    : {};
-
-  const tabs = village
-    ? [
+  // Spec module order for `queer_village`: 01 fact strip, 03 occurrences,
+  // 05 stop list (the owner), 08 nested entity, 16 map inset.
+  //
+  // Module 04 (access panel) is REQUIRED on this type and is deliberately not
+  // rendered: villages carry no access column, and folding the linked venues'
+  // `accessibility_attributes` into a district-wide yes/partial/no would be a
+  // fabricated access claim. The amenity engine review-gates accessibility for
+  // exactly this reason — a wrong access claim is real-world harm. Rule 2 says
+  // a module with no data does not render, so it does not.
+  //
+  // Built unconditionally (empty while loading) so the section list and the
+  // active-section hook below stay above the early returns — the route rail's
+  // stations and the rendered sections must come from the same array.
+  const sections: GeoSection[] = village
+    ? geoSections([
         {
-          id: 'overview',
-          label: <VillageTabLabel icon={villageTabIcons.Landmark} label="Overview" />,
-          content: sectionContent.overview,
+          id: 'about',
+          title: t('village.section.about', 'About {{name}}', { name: village.name }),
+          content:
+            village.image_url || village.history || village.notable_landmarks?.length ? (
+              <VillageAbout village={village} onContentUpdated={refetch} t={t} />
+            ) : null,
         },
         {
-          id: 'venues',
-          label: <VillageTabLabel icon={villageTabIcons.Building} label="Venues" />,
-          content: sectionContent.venues,
+          id: 'walk',
+          title: t('village.section.walk', 'The walk'),
+          note: t(
+            'village.section.walkNote',
+            'Stops in order, with the straight-line gap between them.',
+          ),
+          content: venuesLoading ? (
+            <TrackLoader label={t('village.loadingVenues', 'Loading the stop list')} />
+          ) : venues.length > 0 ? (
+            <VillageStops venues={venues} />
+          ) : null,
         },
         {
           id: 'events',
-          label: <VillageTabLabel icon={villageTabIcons.Calendar} label="Events" />,
-          content: sectionContent.events,
+          title: t('village.section.events', 'Next departures'),
+          content:
+            events.length > 0 ? (
+              <VillageOccurrences
+                events={events}
+                venues={venues}
+                locale={i18n.language}
+                openLabel={t('village.events.open', 'Open')}
+              />
+            ) : null,
         },
         {
           id: 'photos',
-          label: <VillageTabLabel icon={villageTabIcons.ImageIcon} label="Photos" />,
-          content: sectionContent.photos,
+          title: t('village.section.photos', 'Photos'),
+          content: village.images?.length ? <VillagePhotos village={village} t={t} /> : null,
         },
         {
-          id: 'map',
-          label: <VillageTabLabel icon={villageTabIcons.MapPin} label="Map" />,
-          content: sectionContent.map,
+          id: 'city',
+          title: t('village.section.city', 'On the same line'),
+          content: village.cities ? <VillageParentCity village={village} t={t} /> : null,
         },
-      ]
+      ])
     : [];
 
-  if (village && EDITORIAL_DETAIL_LAYOUT_ENABLED) {
-    const sections: SectionDef[] = VILLAGE_SECTION_DEFS.map((def) => ({
-      id: def.id,
-      label: def.label,
-      content: sectionContent[def.id] ?? null,
-    }));
+  const { activeId, select } = useGeoActiveSection(sections);
 
-    const tagsValue =
-      Array.isArray(village.tags) && village.tags.length > 0
-        ? village.tags.slice(0, 3).join(', ')
-        : null;
+  const handleFavoriteToggle = async () => {
+    if (!village) return;
+    const wasFavorited = isFavorited(village.id);
+    try {
+      await toggleFavorite(village.id);
+      toast({
+        title: wasFavorited
+          ? t('favorites.removedTitle', 'Removed from favorites')
+          : t('favorites.addedTitle', 'Added to favorites'),
+        description: village.name,
+      });
+    } catch {
+      toast({
+        title: t('village.toast.errorTitle', 'Error'),
+        description: t('favorites.updateFailed', 'Failed to update favorites'),
+        variant: 'destructive',
+      });
+    }
+  };
 
-    const facts: KeyFact[] = [
-      { label: 'City', value: village.cities?.name || null },
-      {
-        label: 'Country',
-        value:
-          village.countries?.flag_emoji || village.countries?.name
-            ? `${village.countries.flag_emoji ?? ''} ${village.countries.name ?? ''}`.trim()
-            : null,
-      },
-      { label: 'Vibe', value: tagsValue },
-      { label: 'Venues nearby', value: venues.length || null },
-      { label: 'Events', value: events.length || null },
-      { label: 'Featured', value: village.is_featured ? 'Editor’s pick' : null },
-    ];
-
-    const planGeo =
-      village.cities?.id && village.countries?.id
-        ? {
-            cityId: village.cities.id,
-            cityName: village.cities.name ?? '',
-            countryId: village.countries.id,
-            countryName: village.countries.name ?? '',
-            countryCode: village.countries.code ?? null,
-            timezone: null,
-          }
-        : null;
-
+  if (isLoading) {
     return (
-      <>
-        <EditorialDetailLayout
-          loading={isLoading}
-          error={error as Error | null}
-          breadcrumbs={buildVillageBreadcrumbs(village, t)}
-          banner={
-            <TripCoveringBanner
-              target={{
-                type: 'village',
-                villageId: village.id,
-                parentCityId: village.cities?.id ?? null,
-                countryId: village.countries?.id ?? null,
-              }}
-            />
-          }
-          header={
-            <div className="flex flex-col gap-8">
-              <VillageHero
-                village={village}
-                isFavorited={isFavorited(village.id)}
-                onFavoriteToggle={handleFavoriteToggle}
-                onContentUpdated={refetch}
-              />
-              <div className="flex flex-wrap gap-2">
-                <PlanTripFromHereButton
-                  initialGeo={planGeo}
-                  label={`Plan a trip to ${village.name}`}
-                />
-              </div>
-              <IntroEssay text={village.description} />
-              <KeyFactsStrip facts={facts} />
-            </div>
-          }
-          sections={sections}
-          footer={
-            <div className="px-0">
-              <MarketplaceForVillage parentCityName={village.cities?.name ?? null} />
-              <div className="mb-6 mt-8 flex flex-wrap gap-2">
-                <MarkVisitedButton entityType="village" entityId={village.id} kind="visited" />
-                <MarkVisitedButton entityType="village" entityId={village.id} kind="saved" />
-              </div>
-              <SimilarItems entity={{ type: 'queer_village', id: village.id }} />
-              <MoreLikeThisByTag
-                entityType="queer_village"
-                entityId={village.id}
-                title="Related by tag"
-                className="mt-8"
-              />
-            </div>
-          }
-          entityType="queer_village"
-          entityId={village.id}
-        />
-      </>
+      <PageContainer>
+        <TrackLoader label={t('village.loading', 'Loading this district')} />
+      </PageContainer>
     );
   }
 
-  return (
-    <>
-      <EntityDetailLayout
-        loading={isLoading}
-        error={error as Error | null}
-        breadcrumbs={village ? buildVillageBreadcrumbs(village, t) : undefined}
-        hero={
-          village ? (
-            <VillageHero
-              village={village}
-              isFavorited={isFavorited(village.id)}
-              onFavoriteToggle={handleFavoriteToggle}
-              onContentUpdated={refetch}
-            />
-          ) : null
+  if (!village) {
+    return (
+      <PageContainer>
+        <h1 className="font-display text-display leading-none">
+          {t('village.notFound.title', 'No such district.')}
+        </h1>
+        <p className="mt-4 max-w-reading text-body-lg text-muted-foreground">
+          {t('village.notFound.body', 'This stop is not on the line.')}
+        </p>
+        <LocalizedLink
+          to="/villages"
+          className="mt-6 inline-flex items-center gap-2 border-2 border-foreground px-4 py-2 text-13 font-bold no-underline transition-colors hover:bg-foreground hover:text-background"
+        >
+          {t('village.notFound.cta', 'All queer villages')}
+        </LocalizedLink>
+      </PageContainer>
+    );
+  }
+
+  const facts: Fact[] = [
+    { label: t('village.facts.city', 'City'), value: cityName },
+    {
+      label: t('village.facts.country', 'Country'),
+      value: countryName ? `${village.countries?.flag_emoji ?? ''} ${countryName}`.trim() : null,
+    },
+    { label: t('village.facts.venues', 'Venues'), value: venues.length || null },
+    { label: t('village.facts.events', 'Upcoming events'), value: events.length || null },
+  ];
+
+  const planGeo =
+    village.cities?.id && village.countries?.id
+      ? {
+          cityId: village.cities.id,
+          cityName: village.cities.name ?? '',
+          countryId: village.countries.id,
+          countryName: village.countries.name ?? '',
+          countryCode: village.countries.code ?? null,
+          timezone: null,
         }
-        tabs={tabs}
-        entityType="queer_village"
-        entityId={village?.id}
-      />
-      {village && (
-        <PageContainer flush>
-          <div className="mt-6 flex flex-wrap gap-2">
-            <MarkVisitedButton entityType="village" entityId={village.id} kind="visited" />
-            <MarkVisitedButton entityType="village" entityId={village.id} kind="saved" />
-          </div>
-          <SimilarItems entity={{ type: 'queer_village', id: village.id }} className="mt-8" />
-        </PageContainer>
-      )}
-    </>
+      : null;
+
+  // Rendered unconditionally, zeros included — see GeoCensus. A row that
+  // appears and disappears shifts the masthead under the reader.
+  const census = [
+    t('village.census.stops', '{{n}} stops', { n: venues.length }),
+    t('village.census.departures', '{{n}} departures', { n: events.length }),
+  ];
+  if (cityName) census.push(cityName);
+
+  return (
+    <SinglePage
+      type="queer_village"
+      eyebrow={t('village.eyebrow', 'District · Green line')}
+      title={village.name}
+      status={village.featured ? t('village.facts.editorsPick', 'Editor’s pick') : undefined}
+      lead={village.description}
+      tags={
+        <div className="flex flex-col gap-4">
+          <GeoCensus type="queer_village" items={census} />
+          <VillageTags village={village} />
+        </div>
+      }
+      action={
+        <>
+          <PlanTripFromHereButton
+            initialGeo={planGeo}
+            label={t('village.planTrip', 'Plan a trip to {{name}}', { name: village.name })}
+          />
+          <MarkVisitedButton entityType="village" entityId={village.id} kind="visited" />
+          <MarkVisitedButton entityType="village" entityId={village.id} kind="saved" />
+          <VillageActions village={village} onContentUpdated={refetch} t={t} />
+        </>
+      }
+      body={
+        <>
+          {/* Safety first, full width, above everything. A criminalisation
+              warning in a 360px rail is a warning the reader scrolls past. */}
+          <GeoSafetyBanner
+            criminalization={village.countries?.lgbti_criminalization}
+            countryName={countryName}
+            cityId={village.cities?.id}
+          />
+          <TripCoveringBanner
+            target={{
+              type: 'village',
+              villageId: village.id,
+              parentCityId: village.cities?.id ?? null,
+              countryId: village.countries?.id ?? null,
+            }}
+          />
+          {/* Spec module 01 is slot HEAD, not rail: `FactGrid` is a
+              1/2/3-column grid keyed to the VIEWPORT, so in the 360px rail its
+              cells collapse to ~110px on a desktop. Same for
+              `CountryPracticalInfo`. The rail carries the rail-slot modules —
+              map inset (16) and stat line (15). */}
+          <FactGrid facts={facts} />
+          <GeoRouteRail
+            sections={sections}
+            activeId={activeId}
+            onNavigate={select}
+            orientation="horizontal"
+            track="green"
+            label={t('village.sections', 'Sections')}
+            className="lg:hidden"
+          />
+          <GeoSectionList sections={sections} />
+        </>
+      }
+      rail={
+        <>
+          <GeoSafetyVerdict
+            countryId={village.countries?.id}
+            equalityScore={village.countries?.equality_score}
+            rightsHref={
+              village.countries?.slug ? `/country/${village.countries.slug}#rights` : null
+            }
+          />
+          <VillageMapInset
+            village={village}
+            venues={venues}
+            caption={
+              cityName
+                ? t('village.map.caption', 'Walking distance in {{city}}.', { city: cityName })
+                : undefined
+            }
+          />
+          <GeoRouteRail
+            sections={sections}
+            activeId={activeId}
+            onNavigate={select}
+            orientation="vertical"
+            track="green"
+            label={t('village.sections', 'Sections')}
+            className="hidden lg:block"
+          />
+          <ProvenanceLine
+            addedAt={village.created_at}
+            checkedAt={village.last_verified_at ?? null}
+            correctHref="/contact"
+          />
+        </>
+      }
+      footer={
+        <div className="flex flex-col gap-12">
+          {/* Rails live in the footer, not in `sections`: each self-hides when
+              empty from inside its own body, which the section filter cannot
+              see, so a station would point at nothing. */}
+          <PersonalitiesForEntity
+            cityId={village.cities?.id ?? null}
+            countryId={village.countries?.id ?? null}
+            cityName={cityName ?? village.name}
+          />
+          <MarketplaceForVillage parentCityName={cityName} />
+          <SimilarItems entity={{ type: 'queer_village', id: village.id }} />
+          <MoreLikeThisByTag
+            entityType="queer_village"
+            entityId={village.id}
+            title={t('village.relatedByTag', 'Related by tag')}
+          />
+          <section
+            aria-labelledby="village-end-of-line"
+            className="border-[3px] border-foreground bg-foreground p-6 text-background md:p-8"
+          >
+            <p className="text-2xs font-bold uppercase tracking-label text-background/70">
+              {t('village.endOfLine.eyebrow', 'End of line')}
+            </p>
+            <h2 id="village-end-of-line" className="mt-1 font-display text-headline leading-tight">
+              {t('village.endOfLine.title', 'Looking for another district?')}
+            </h2>
+            <p className="mt-2 max-w-reading text-13 leading-relaxed text-background/80">
+              {t(
+                'village.endOfLine.body',
+                'Queer villages are walkable clusters of bars, cafés and community spaces. There are more of them.',
+              )}
+            </p>
+            <div className="mt-6 flex flex-wrap gap-2">
+              <LocalizedLink to="/villages" className={OUTLINE_ON_INK}>
+                {t('village.notFound.cta', 'All queer villages')}
+              </LocalizedLink>
+              {village.cities && (
+                <LocalizedLink
+                  to={`/city/${village.cities.slug || village.cities.id}`}
+                  className={OUTLINE_ON_INK}
+                >
+                  {t('village.endOfLine.city', 'More in {{city}}', { city: village.cities.name })}
+                </LocalizedLink>
+              )}
+            </div>
+          </section>
+          {/* The favourite toggle lives here rather than the masthead: it is a
+              personal bookmark, not one of the page's concrete verbs. */}
+          <button
+            type="button"
+            onClick={handleFavoriteToggle}
+            className="self-start border-2 border-foreground px-4 py-2 text-13 font-bold transition-colors hover:bg-foreground hover:text-background"
+          >
+            {isFavorited(village.id)
+              ? t('village.action.favorited', 'Saved to favorites')
+              : t('village.action.favorite', 'Save to favorites')}
+          </button>
+        </div>
+      }
+    />
   );
 }
